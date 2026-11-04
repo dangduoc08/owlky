@@ -24,9 +24,10 @@
     "check": "pnpm lint && pnpm typecheck && pnpm build && pnpm check:boundaries && pnpm check:size && pnpm check:packages && pnpm test",
     "changeset": "changeset",
     "version-packages": "changeset version && node scripts/sync-versions.mjs && pnpm install --lockfile-only",
-    "release": "pnpm build && changeset publish",
+    "release": "pnpm build && pnpm -r --filter \"./packages/*\" publish --access public --no-git-checks",
     "test:visual:docker": "docker run --rm --ipc=host --network=host -v \"$PWD\":/work -w /work/e2e -e CI=1 mcr.microsoft.com/playwright:v1.64.1-noble npx playwright test --grep @visual --project chromium",
-    "test:visual:update": "docker run --rm --ipc=host --network=host -v \"$PWD\":/work -w /work/e2e mcr.microsoft.com/playwright:v1.64.1-noble npx playwright test --grep @visual --project chromium --update-snapshots"
+    "test:visual:update": "docker run --rm --ipc=host --network=host -v \"$PWD\":/work -w /work/e2e mcr.microsoft.com/playwright:v1.64.1-noble npx playwright test --grep @visual --project chromium --update-snapshots",
+    "check:release": "node scripts/check-release.mjs"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "0.18.5",

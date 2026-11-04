@@ -1,19 +1,51 @@
 name: Release
 
+# Publishing happens only from a release tag on main:
+#   pnpm changeset            (in PRs)  →  pnpm version-packages  →  commit to main
+#   git tag release/v1.2.3 <commit on main> && git push origin release/v1.2.3
+# Pushes to main and pull requests only run CI (ci.yml). See ADR-0012.
 on:
   push:
-    branches: [main]
+    tags: ["release/v**"]
 
 permissions:
-  contents: write
-  pull-requests: write
-  id-token: write # npm trusted publishing (OIDC) + provenance
+  contents: read
 
-concurrency: release
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 jobs:
-  release:
+  verify:
+    name: Verify tag
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Tagged commit is on main
+        run: |
+          git fetch --no-tags origin main
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "::error::Tag $GITHUB_REF_NAME points to $GITHUB_SHA, which is not on main."
+            exit 1
+          fi
+      - name: Tag matches package versions
+        run: node scripts/check-release.mjs "$GITHUB_REF_NAME"
+
+  ci:
+    name: CI
+    needs: verify
+    uses: ./.github/workflows/ci.yml
+
+  publish:
+    name: Publish to npm
+    needs: [verify, ci]
+    runs-on: ubuntu-latest
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write # npm trusted publishing (OIDC) + provenance
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -23,15 +55,8 @@ jobs:
           cache: pnpm
           registry-url: https://registry.npmjs.org
       - run: pnpm install --frozen-lockfile
-      - run: pnpm build
-      - run: pnpm check:boundaries && pnpm check:packages
-      # Opens a "Version Packages" PR; when that PR is merged, publishes to npm.
-      - uses: changesets/action@v1
-        with:
-          version: pnpm version-packages
-          publish: pnpm release
-          title: "chore: version packages"
-          commit: "chore: version packages"
+      - run: pnpm release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_CONFIG_PROVENANCE: "true"
+          # Only needed until npm trusted publishing is configured for every package.
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

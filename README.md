@@ -96,7 +96,9 @@ pnpm check            # everything CI runs
 | [specs/](specs/README.md)                    | Component contracts                        |
 | [AGENTS.md](AGENTS.md)                       | Conventions for contributors and AI agents |
 
-Releases use Changesets: `pnpm changeset` in your PR; the release workflow publishes from `main`.
+Releases use Changesets: `pnpm changeset` in your PR. Pushing to `main` only runs CI; publishing
+happens when a `release/v<version>` tag is pushed on a `main` commit — see
+[ADR-0012](docs/adr/0012-release-by-tag.md) for the procedure.
 
 ## License
 

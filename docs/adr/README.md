@@ -13,8 +13,9 @@ ADR that supersedes the old one — don't rewrite history.
 | [0006](0006-browser-baseline-and-fallbacks.md) | Browser baseline and native-API fallbacks                                 | Accepted |
 | [0007](0007-shared-state-and-versioning.md)    | Page-wide shared state and runtime version policy                         | Accepted |
 | [0008](0008-framework-independence.md)         | Framework independence, enforced                                          | Accepted |
-| [0009](0009-build-and-publishing.md)           | Build, distribution and publishing                                        | Accepted |
+| [0009](0009-build-and-publishing.md)           | Build, distribution and publishing                                        | Accepted (publishing trigger superseded by 0012) |
 | [0010](0010-testing-strategy.md)               | Testing strategy                                                          | Accepted |
 | [0011](0011-foundations-first.md)             | Foundations first; sample components removed (references in git)        | Accepted |
+| [0012](0012-release-by-tag.md)                | Release only from `release/v*` tags on main                              | Accepted |
 
 Template: **Context** (why decide) · **Decision** (what) · **Consequences** (trade-offs, follow-ups).

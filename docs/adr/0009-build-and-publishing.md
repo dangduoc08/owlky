@@ -1,6 +1,6 @@
 # ADR-0009: Build, distribution and publishing
 
-**Status:** Accepted
+**Status:** Accepted — the *Publishing* trigger is superseded by ADR-0012 (release tags)
 
 ## Decision
 
