@@ -98,6 +98,10 @@ export function createRuntime(): Runtime {
     }
   }
 
+  function initRoot(root: ParentNode) {
+    for (const definition of definitions.values()) initWith(root, definition);
+  }
+
   /** Destroys instances whose element left the document (memory-leak guard). */
   function sweep() {
     for (const [element, byName] of [...instances]) {
@@ -150,7 +154,7 @@ export function createRuntime(): Runtime {
       }
       for (const node of added) {
         if (node.isConnected && (node instanceof Element || node instanceof DocumentFragment)) {
-          runtime.init(node);
+          initRoot(node);
         }
       }
       added.clear();
@@ -239,7 +243,7 @@ export function createRuntime(): Runtime {
 
     init(root = document) {
       sweep();
-      for (const definition of definitions.values()) initWith(root, definition);
+      initRoot(root);
     },
 
     destroy(root = document) {
