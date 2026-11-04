@@ -24,7 +24,8 @@ components on top of them.
   *content*. Presentation follows Storybook defaults: one story per section (sidebar sub-items),
   an autodocs page per foundation, Controls for adjustable demos. Values come from the tokens,
   shown with our variable names (`--mt-*`).
-- Where the reference conflicts with WCAG 2.2 AA (e.g. white text on `#00A76F`), AA wins.
+- Where the reference conflicts with WCAG 2.2 AA, AA wins — superseded for brand colors by
+  ADR-0014 (reference look); AA still applies to neutral text.
 - Tokens follow the reference where it differs from the first version: responsive type sizes
   (min-width 600 / 900 / 1200px, emitted as media-query overrides of the same `--mt-typography-*`
   variables), a display font (Barlow) for h1–h3, h5 = 18→19px, h6 = 17→18px at weight 600,

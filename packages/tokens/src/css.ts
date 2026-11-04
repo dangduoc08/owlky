@@ -1,6 +1,8 @@
+import { hexToRgb } from "./color.js";
 import {
   breakpointNames,
   type ColorScheme,
+  componentColorNames,
   greyShades,
   type PaletteColor,
   paletteColorNames,
@@ -23,11 +25,15 @@ export interface ThemeCssVariables {
 /** Component color bindings. Non-inheriting, so a colored parent never leaks into children. */
 export const colorBindingVariables = [
   "--mt-c-main",
+  "--mt-c-channel",
   "--mt-c-hover",
   "--mt-c-contrast",
   "--mt-c-text",
   "--mt-c-shadow",
 ] as const;
+
+/** `#00A76F` → `0 167 111`, for `rgb(var(--…-channel) / <alpha>)`. */
+const channel = (hex: string) => hexToRgb(hex).join(" ");
 
 const kebab = (value: string) => value.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`);
 
@@ -45,12 +51,18 @@ function rootVariables(theme: Theme): CssVariables {
     const color: PaletteColor = theme.palette[name];
     for (const [shade, value] of Object.entries(color)) {
       vars[`--mt-palette-${name}-${kebab(shade)}`] = value;
+      vars[`--mt-palette-${name}-${kebab(shade)}-channel`] = channel(value);
     }
     vars[`--mt-shadow-${name}`] = shadow([theme.colorShadow], `var(--mt-palette-${name}-main)`);
   }
-  for (const shade of greyShades) vars[`--mt-palette-grey-${shade}`] = theme.grey[shade];
+  for (const shade of greyShades) {
+    vars[`--mt-palette-grey-${shade}`] = theme.grey[shade];
+    vars[`--mt-palette-grey-${shade}-channel`] = channel(theme.grey[shade]);
+  }
   vars["--mt-palette-common-white"] = theme.common.white;
+  vars["--mt-palette-common-white-channel"] = channel(theme.common.white);
   vars["--mt-palette-common-black"] = theme.common.black;
+  vars["--mt-palette-common-black-channel"] = channel(theme.common.black);
 
   const { typography } = theme;
   vars["--mt-font-family"] = typography.fontFamily;
@@ -58,6 +70,9 @@ function rootVariables(theme: Theme): CssVariables {
   vars["--mt-font-family-mono"] = typography.fontFamilyMono;
   for (const [name, weight] of Object.entries(typography.fontWeight)) {
     vars[`--mt-font-weight-${name}`] = String(weight);
+  }
+  for (const [name, size] of Object.entries(typography.fontSize)) {
+    vars[`--mt-font-size-${name}`] = size;
   }
   for (const variant of typographyVariants) {
     const style = typography.variants[variant];
@@ -175,6 +190,30 @@ function splitShadows(vars: CssVariables): [scheme: CssVariables, shadows: CssVa
   return [scheme, shadows];
 }
 
+/** `--mt-c-*` values for one component color. */
+function colorBinding(name: (typeof componentColorNames)[number]): CssVariables {
+  if (name === "black" || name === "white") {
+    const self = `--mt-palette-common-${name}`;
+    const other = `--mt-palette-common-${name === "black" ? "white" : "black"}`;
+    return {
+      "--mt-c-main": `var(${self})`,
+      "--mt-c-channel": `var(${self}-channel)`,
+      "--mt-c-hover": `rgb(var(${self}-channel) / 0.72)`,
+      "--mt-c-contrast": `var(${other})`,
+      "--mt-c-text": `var(${self})`,
+      "--mt-c-shadow": "var(--mt-shadow-z8)",
+    };
+  }
+  return {
+    "--mt-c-main": `var(--mt-palette-${name}-main)`,
+    "--mt-c-channel": `var(--mt-palette-${name}-main-channel)`,
+    "--mt-c-hover": `var(--mt-palette-${name}-dark)`,
+    "--mt-c-contrast": `var(--mt-palette-${name}-contrast-text)`,
+    "--mt-c-text": `var(--mt-palette-${name}-text)`,
+    "--mt-c-shadow": `var(--mt-shadow-${name})`,
+  };
+}
+
 export function themeToCss(theme: Theme, options: ThemeCssOptions = {}): string {
   const { root, light, dark } = themeToCssVariables(theme);
   const [lightScheme, shadows] = splitShadows(light);
@@ -201,16 +240,8 @@ export function themeToCss(theme: Theme, options: ThemeCssOptions = {}): string 
     ]),
   ];
   if (options.colorBindings !== false) {
-    for (const name of paletteColorNames) {
-      parts.push(
-        block(`[data-mt-color="${name}"]`, {
-          "--mt-c-main": `var(--mt-palette-${name}-main)`,
-          "--mt-c-hover": `var(--mt-palette-${name}-dark)`,
-          "--mt-c-contrast": `var(--mt-palette-${name}-contrast-text)`,
-          "--mt-c-text": `var(--mt-palette-${name}-text)`,
-          "--mt-c-shadow": `var(--mt-shadow-${name})`,
-        }),
-      );
+    for (const name of componentColorNames) {
+      parts.push(block(`[data-mt-color="${name}"]`, colorBinding(name)));
     }
   }
   parts.push("}");

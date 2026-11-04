@@ -9,8 +9,12 @@ export const paletteColorNames = [
 
 export type PaletteColorName = (typeof paletteColorNames)[number];
 
-/** A component color: one of the palette colors, or `inherit` (neutral, follows the text color). */
-export type ColorName = PaletteColorName | "inherit";
+/** Colors a component can take through `data-mt-color` (bound to `--mt-c-*`). */
+export const componentColorNames = [...paletteColorNames, "black", "white"] as const;
+export type ComponentColorName = (typeof componentColorNames)[number];
+
+/** A component color, or `inherit` (neutral, follows the text color; no binding). */
+export type ColorName = ComponentColorName | "inherit";
 
 export interface PaletteColor {
   lighter: string;
@@ -91,6 +95,8 @@ export interface Typography {
     bold: number;
     extrabold: number;
   };
+  /** Font-size scale for component text that isn't a typography variant (e.g. button sizes). */
+  fontSize: Record<"xs" | "sm" | "md" | "lg" | "xl", string>;
   variants: Record<TypographyVariant, TypographyStyle>;
 }
 

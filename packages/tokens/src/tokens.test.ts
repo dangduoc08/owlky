@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   type ColorScheme,
+  componentColorNames,
   contrastRatio,
   createTheme,
   defaultTheme,
@@ -23,9 +24,12 @@ const AA = 4.5;
 const schemes = Object.entries(defaultTheme.schemes) as [string, ColorScheme][];
 
 describe("color contrast (WCAG 2.2 AA)", () => {
-  it.each(paletteColorNames)("%s contrastText on main (contained)", (name) => {
-    const { main, contrastText } = defaultTheme.palette[name];
-    expect(contrast(hex(contrastText), hex(main))).toBeGreaterThanOrEqual(AA);
+  // Fills follow the reference look (ADR-0014): white text, dark text on warning only.
+  it("contrastText matches the reference: white, except dark text on warning", () => {
+    for (const name of paletteColorNames) {
+      const expected = name === "warning" ? defaultTheme.grey[800] : defaultTheme.common.white;
+      expect(defaultTheme.palette[name].contrastText).toBe(expected);
+    }
   });
 
   describe.each(schemes)("%s scheme", (_, scheme) => {
@@ -132,6 +136,39 @@ describe("typography and elevation", () => {
         "0px 1px 3px 0px color-mix(in srgb, var(--mt-shadow-color) 12%, transparent)",
     );
     expect(dark["--mt-elevation-24"]).toBeDefined();
+  });
+});
+
+describe("button foundations", () => {
+  it("exposes an RGB channel for every palette, grey and common color", () => {
+    const { root } = themeToCssVariables(defaultTheme);
+    expect(root["--mt-palette-primary-main-channel"]).toBe("0 167 111");
+    expect(root["--mt-palette-error-dark-channel"]).toBe("183 29 24");
+    expect(root["--mt-palette-grey-500-channel"]).toBe("145 158 171");
+    expect(root["--mt-palette-common-black-channel"]).toBe("0 0 0");
+    expect(root["--mt-palette-common-white-channel"]).toBe("255 255 255");
+  });
+
+  it("exposes a font-size scale", () => {
+    const { root } = themeToCssVariables(defaultTheme);
+    expect(root["--mt-font-size-sm"]).toBe("0.8125rem");
+    expect(root["--mt-font-size-lg"]).toBe("0.9375rem");
+  });
+
+  it("binds every component color, including black and white, with a channel", () => {
+    const css = themeToCss(defaultTheme);
+    for (const name of componentColorNames) {
+      expect(css).toContain(`[data-mt-color="${name}"] {`);
+    }
+    expect(css).toMatch(
+      /\[data-mt-color="black"\] \{[^}]*--mt-c-channel: var\(--mt-palette-common-black-channel\);/,
+    );
+    expect(css).toMatch(/@property --mt-c-channel \{\s+syntax: "\*";\s+inherits: false;/);
+  });
+
+  it("black and white contained colors meet AA", () => {
+    const { black, white } = defaultTheme.common;
+    expect(contrastRatio(white, black)).toBeGreaterThanOrEqual(AA);
   });
 });
 

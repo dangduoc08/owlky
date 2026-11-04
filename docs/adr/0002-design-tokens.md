@@ -1,6 +1,6 @@
 # ADR-0002: TypeScript tokens → CSS variables, AA-checked
 
-**Status:** Accepted
+**Status:** Accepted — contrast rules for brand colors superseded by ADR-0014
 
 ## Context
 

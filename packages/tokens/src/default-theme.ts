@@ -1,9 +1,9 @@
 import type { ColorScheme, GreyScale, Theme } from "./types.js";
 
 /*
- * Default theme. Visual language inspired by the Minimal dashboard (soft greys, green primary,
- * generous radius, soft tinted shadows). Contrast-sensitive values (`contrastText`, `paletteText`)
- * are chosen to meet WCAG 2.2 AA — see ADR-0002 and `tokens.test.ts`.
+ * Default theme. Visual language of the Minimal dashboard (soft greys, green primary, generous
+ * radius, soft tinted shadows). `contrastText` follows the reference (white on fills, dark on
+ * warning — ADR-0014); neutral text and `paletteText` (soft variants) meet WCAG 2.2 AA.
  */
 
 const grey: GreyScale = {
@@ -220,7 +220,7 @@ export const defaultTheme: Theme = {
       main: "#00A76F",
       dark: "#007867",
       darker: "#004B50",
-      contrastText: grey[900],
+      contrastText: common.white,
     },
     secondary: {
       lighter: "#EFD6FF",
@@ -236,7 +236,7 @@ export const defaultTheme: Theme = {
       main: "#00B8D9",
       dark: "#006C9C",
       darker: "#003768",
-      contrastText: grey[900],
+      contrastText: common.white,
     },
     success: {
       lighter: "#D3FCD2",
@@ -244,7 +244,7 @@ export const defaultTheme: Theme = {
       main: "#22C55E",
       dark: "#118D57",
       darker: "#065E49",
-      contrastText: grey[900],
+      contrastText: common.white,
     },
     warning: {
       lighter: "#FFF5CC",
@@ -252,7 +252,7 @@ export const defaultTheme: Theme = {
       main: "#FFAB00",
       dark: "#B76E00",
       darker: "#7A4100",
-      contrastText: grey[900],
+      contrastText: grey[800],
     },
     error: {
       lighter: "#FFE9D5",
@@ -260,7 +260,7 @@ export const defaultTheme: Theme = {
       main: "#FF5630",
       dark: "#B71D18",
       darker: "#7A0916",
-      contrastText: grey[900],
+      contrastText: common.white,
     },
   },
   grey,
@@ -274,6 +274,7 @@ export const defaultTheme: Theme = {
     fontFamilyMono:
       'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
     fontWeight: { regular: 400, medium: 500, semibold: 600, bold: 700, extrabold: 800 },
+    fontSize: { xs: "0.75rem", sm: "0.8125rem", md: "0.875rem", lg: "0.9375rem", xl: "1rem" },
     variants: {
       h1: {
         fontSize: "2.5rem",
