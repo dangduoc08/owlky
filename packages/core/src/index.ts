@@ -1,11 +1,5 @@
 export type { ColorName, PaletteColorName } from "@minimal-tailwind/tokens";
-export * from "./anatomy/anatomy.js";
-export {
-  createDialogController,
-  type DialogController,
-  type DialogControllerOptions,
-  type DialogDismissReason,
-} from "./dialog/dialog-controller.js";
+export type { DataAttributes } from "./anatomy/anatomy.js";
 export { focusInitial, getTabbables, isFocusable, trapTab } from "./dom/focus.js";
 export { createId } from "./dom/id.js";
 export { type Supports, supports } from "./dom/support.js";

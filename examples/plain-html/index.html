@@ -14,52 +14,36 @@
     <link rel="stylesheet" href="../../packages/styles/dist/base.css" />
     <script src="../../packages/html/dist/minimal-tailwind.js" defer></script>
     <style>
-      main { max-width: 56rem; margin: 0 auto; padding: 2rem 1rem; display: grid; gap: 2rem; }
-      section { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; }
+      main { max-width: 56rem; margin: 0 auto; padding: 2rem 1rem; display: grid; gap: 1.5rem; }
       h1 { margin: 0; }
+      .palette { display: grid; grid-template-columns: repeat(5, 1fr); border-radius: var(--mt-radius-xl); overflow: hidden; box-shadow: var(--mt-shadow-card); }
+      .palette div { height: 4rem; }
     </style>
   </head>
   <body>
     <main>
       <header>
         <h1>Plain HTML</h1>
-        <p>No framework. One stylesheet, one script, copy-pasted snippets.</p>
-        <label data-mt-switch data-mt-color="primary" data-mt-size="md">
-          <input id="theme-toggle" type="checkbox" role="switch" data-mt-switch-input />
-          <span data-mt-switch-track aria-hidden="true"><span data-mt-switch-thumb></span></span>
-          <span data-mt-switch-label>Dark mode</span>
-        </label>
+        <p>No framework, no build step: one stylesheet, one script, design tokens as CSS variables.</p>
+        <button id="theme-toggle" type="button" aria-pressed="false">Dark mode</button>
       </header>
 
-      <section aria-label="Buttons">
-        <button type="button" data-mt-button data-mt-variant="contained" data-mt-color="inherit" data-mt-size="md">Contained</button>
-        <button type="button" data-mt-button data-mt-variant="outlined" data-mt-color="inherit" data-mt-size="md">Outlined</button>
-        <button type="button" data-mt-button data-mt-variant="soft" data-mt-color="primary" data-mt-size="md">Soft</button>
-        <button type="button" data-mt-button data-mt-variant="contained" data-mt-color="primary" data-mt-size="md">Primary</button>
-      </section>
-
-      <section aria-label="Dialog">
-        <button type="button" data-mt-button data-mt-variant="contained" data-mt-color="inherit" data-mt-size="md" aria-haspopup="dialog" data-mt-dialog-open="confirm-dialog">Open dialog</button>
-
-        <dialog id="confirm-dialog" data-mt-dialog data-mt-size="xs" aria-labelledby="confirm-dialog-title" aria-describedby="confirm-dialog-description">
-          <div data-mt-dialog-content>
-            <h2 id="confirm-dialog-title" data-mt-dialog-title>Delete project?</h2>
-            <div data-mt-dialog-body>
-              <p id="confirm-dialog-description">This permanently deletes the project and its files. You can't undo this.</p>
-            </div>
-            <div data-mt-dialog-actions>
-              <button type="button" data-mt-button data-mt-variant="outlined" data-mt-color="inherit" data-mt-size="md" data-mt-dialog-close>Cancel</button>
-              <button type="button" data-mt-button data-mt-variant="contained" data-mt-color="error" data-mt-size="md" data-mt-dialog-close>Delete</button>
-            </div>
-          </div>
-        </dialog>
+      <section aria-label="Primary palette" class="palette">
+        <div style="background: var(--mt-palette-primary-lighter)"></div>
+        <div style="background: var(--mt-palette-primary-light)"></div>
+        <div id="primary-main" style="background: var(--mt-palette-primary-main)"></div>
+        <div style="background: var(--mt-palette-primary-dark)"></div>
+        <div style="background: var(--mt-palette-primary-darker)"></div>
       </section>
     </main>
 
     <script>
       // Page code (not library code): a theme toggle.
-      document.getElementById("theme-toggle").addEventListener("change", (event) => {
-        document.documentElement.dataset.mtTheme = event.target.checked ? "dark" : "light";
+      const toggle = document.getElementById("theme-toggle");
+      toggle.addEventListener("click", () => {
+        const dark = toggle.getAttribute("aria-pressed") !== "true";
+        toggle.setAttribute("aria-pressed", String(dark));
+        document.documentElement.dataset.mtTheme = dark ? "dark" : "light";
       });
     </script>
   </body>

@@ -1,17 +1,12 @@
 /*
  * @minimal-tailwind/html — side-effect free entry. Nothing runs on import.
  *
- *   import { getRuntime, dialog } from "@minimal-tailwind/html";
- *   getRuntime().register(dialog).start();
+ *   import { components, getRuntime } from "@minimal-tailwind/html";
+ *   getRuntime().register(...components).start();
  *
  * Or import "@minimal-tailwind/html/auto" to register every component and start.
  */
-export {
-  components,
-  type DialogCloseReason,
-  type DialogInstance,
-  dialog,
-} from "./components/index.js";
+export { components } from "./components/index.js";
 export { defineComponent, readBooleanOption } from "./runtime/define.js";
 export { getRuntime } from "./runtime/global.js";
 export { createRuntime, RUNTIME_OFF_SELECTOR } from "./runtime/runtime.js";

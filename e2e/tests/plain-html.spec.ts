@@ -7,28 +7,17 @@ test.describe("plain HTML page with the CDN bundle", () => {
     await page.waitForFunction(() => Boolean(window.MinimalTailwind));
   });
 
-  test("applies the CSS and exposes exactly one global", async ({ page }) => {
-    const bg = await page
-      .getByRole("button", { name: "Primary" })
-      .evaluate((el) => getComputedStyle(el).backgroundColor);
-    expect(bg).toBe("rgb(0, 167, 111)");
+  test("applies the design tokens and exposes exactly one global", async ({ page }) => {
+    await expect(page.locator("#primary-main")).toHaveCSS("background-color", "rgb(0, 167, 111)");
     const globals = await page.evaluate(() =>
       Object.keys(window).filter((key) => /minimal/i.test(key)),
     );
     expect(globals).toEqual(["MinimalTailwind"]);
+    expect(await page.evaluate(() => window.MinimalTailwind?.active)).toBe(true);
   });
 
-  test("dialog works with zero custom JavaScript", async ({ page }) => {
-    const trigger = page.getByRole("button", { name: "Open dialog" });
-    await trigger.click();
-    await expect(page.getByRole("dialog", { name: "Delete project?" })).toBeVisible();
-    await page.getByRole("button", { name: "Cancel" }).click();
-    await expect(page.getByRole("dialog")).toBeHidden();
-    await expect(trigger).toBeFocused();
-  });
-
-  test("loading the runtime script twice creates no duplicate listeners", async ({ page }) => {
-    const first = await page.evaluate(() => window.MinimalTailwind);
+  test("loading the runtime script twice keeps a single runtime", async ({ page }) => {
+    const before = await page.evaluate(() => window.MinimalTailwind?.version);
     await page.evaluate(
       () =>
         new Promise<void>((resolve) => {
@@ -38,26 +27,25 @@ test.describe("plain HTML page with the CDN bundle", () => {
           document.head.append(script);
         }),
     );
-    const opens = await page.evaluate(() => {
-      let count = 0;
-      document.addEventListener("mt:dialog:open", () => count++);
-      (document.querySelector("[data-mt-dialog-open]") as HTMLElement).click();
-      return count;
+    const same = await page.evaluate(() => {
+      const slot = (globalThis as unknown as Record<symbol, { runtime: unknown }>)[
+        Symbol.for("minimal-tailwind.runtime")
+      ];
+      return slot?.runtime === window.MinimalTailwind;
     });
-    expect(opens).toBe(1);
-    expect(await page.evaluate(() => window.MinimalTailwind)).toEqual(first);
+    expect(same).toBe(true);
+    expect(await page.evaluate(() => window.MinimalTailwind?.version)).toBe(before);
   });
 
-  test("the theme switch toggles dark mode", async ({ page }) => {
-    await page.getByRole("switch", { name: "Dark mode" }).check();
+  test("dark mode switches the token values", async ({ page }) => {
+    await page.getByRole("button", { name: "Dark mode" }).click();
     expect(await page.evaluate(() => document.documentElement.dataset["mtTheme"])).toBe("dark");
-    const bg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
-    expect(bg).toBe("rgb(20, 26, 33)");
+    await expect(page.locator("body")).toHaveCSS("background-color", "rgb(20, 26, 33)");
   });
 });
 
 declare global {
   interface Window {
-    MinimalTailwind?: { version: string };
+    MinimalTailwind?: { version: string; active: boolean };
   }
 }
