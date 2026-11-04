@@ -1,0 +1,43 @@
+{
+  "name": "minimal-tailwind-monorepo",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@12.16.1",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "build": "pnpm -r --filter \"./packages/*\" run build",
+    "typecheck": "tsc -p tsconfig.json && pnpm -r run typecheck",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "pnpm --filter @minimal-tailwind/e2e run test",
+    "test:visual": "pnpm test:visual:docker",
+    "storybook": "pnpm build && pnpm --filter @minimal-tailwind/storybook run dev",
+    "storybook:build": "pnpm --filter @minimal-tailwind/storybook run build",
+    "check:packages": "node scripts/check-packages.mjs",
+    "check:boundaries": "node scripts/check-boundaries.mjs",
+    "check:size": "node scripts/check-size.mjs",
+    "check": "pnpm lint && pnpm typecheck && pnpm build && pnpm check:boundaries && pnpm check:size && pnpm check:packages && pnpm test",
+    "changeset": "changeset",
+    "version-packages": "changeset version && node scripts/sync-versions.mjs && pnpm install --lockfile-only",
+    "release": "pnpm build && changeset publish",
+    "test:visual:docker": "docker run --rm --ipc=host --network=host -v \"$PWD\":/work -w /work/e2e -e CI=1 mcr.microsoft.com/playwright:v1.64.1-noble npx playwright test --grep @visual --project chromium",
+    "test:visual:update": "docker run --rm --ipc=host --network=host -v \"$PWD\":/work -w /work/e2e mcr.microsoft.com/playwright:v1.64.1-noble npx playwright test --grep @visual --project chromium --update-snapshots"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/cli": "0.18.5",
+    "@biomejs/biome": "2.6.4",
+    "@changesets/cli": "3.0.3",
+    "@types/node": "^22.19.0",
+    "@vitest/browser-playwright": "5.1.0",
+    "axe-core": "4.14.0",
+    "playwright": "1.64.1",
+    "publint": "0.3.25",
+    "typescript": "7.0.2",
+    "vitest": "5.1.0"
+  }
+}
