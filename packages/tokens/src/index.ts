@@ -1,3 +1,10 @@
+export {
+  contrastRatio,
+  getContrastText,
+  hexToRgb,
+  type RgbChannels,
+  relativeLuminance,
+} from "./color.js";
 export { createTheme } from "./create-theme.js";
 export {
   type CssVariables,
@@ -5,6 +12,7 @@ export {
   DARK_SELECTOR,
   LAYER_ORDER,
   LIGHT_SELECTOR,
+  responsiveTypographyVariables,
   type ThemeCssOptions,
   type ThemeCssVariables,
   themeToCss,

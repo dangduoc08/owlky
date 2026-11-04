@@ -1,4 +1,5 @@
 import {
+  breakpointNames,
   type ColorScheme,
   greyShades,
   type PaletteColor,
@@ -53,12 +54,17 @@ function rootVariables(theme: Theme): CssVariables {
 
   const { typography } = theme;
   vars["--mt-font-family"] = typography.fontFamily;
+  vars["--mt-font-family-secondary"] = typography.fontFamilySecondary;
   vars["--mt-font-family-mono"] = typography.fontFamilyMono;
   for (const [name, weight] of Object.entries(typography.fontWeight)) {
     vars[`--mt-font-weight-${name}`] = String(weight);
   }
   for (const variant of typographyVariants) {
     const style = typography.variants[variant];
+    vars[`--mt-typography-${variant}-font-family`] =
+      style.fontFamily === "secondary"
+        ? "var(--mt-font-family-secondary)"
+        : "var(--mt-font-family)";
     vars[`--mt-typography-${variant}-font-size`] = style.fontSize;
     vars[`--mt-typography-${variant}-line-height`] = style.lineHeight;
     vars[`--mt-typography-${variant}-font-weight`] = String(style.fontWeight);
@@ -67,6 +73,9 @@ function rootVariables(theme: Theme): CssVariables {
 
   for (const name of radiusNames) vars[`--mt-radius-${name}`] = theme.radius[name];
   vars["--mt-spacing"] = theme.spacing;
+  for (const name of breakpointNames) {
+    vars[`--mt-breakpoint-${name}`] = `${theme.breakpoints[name]}px`;
+  }
   for (const [name, value] of Object.entries(theme.zIndex)) vars[`--mt-z-${name}`] = String(value);
   for (const [name, value] of Object.entries(theme.motion.duration)) {
     vars[`--mt-duration-${name}`] = value;
@@ -103,6 +112,9 @@ function schemeVariables(scheme: ColorScheme, theme: Theme): CssVariables {
   for (const name of shadowNames) {
     vars[`--mt-shadow-${name}`] = shadow(theme.shadows[name], "var(--mt-shadow-color)");
   }
+  theme.elevation.forEach((layers, index) => {
+    vars[`--mt-elevation-${index + 1}`] = shadow(layers, "var(--mt-shadow-color)");
+  });
   return vars;
 }
 
@@ -112,6 +124,21 @@ export function themeToCssVariables(theme: Theme): ThemeCssVariables {
     light: schemeVariables(theme.schemes.light, theme),
     dark: schemeVariables(theme.schemes.dark, theme),
   };
+}
+
+/** Responsive type sizes: the variables to override from each breakpoint up. */
+export function responsiveTypographyVariables(theme: Theme): [minWidth: number, CssVariables][] {
+  const result: [number, CssVariables][] = [];
+  for (const breakpoint of breakpointNames) {
+    if (breakpoint === "xs") continue;
+    const vars: CssVariables = {};
+    for (const variant of typographyVariants) {
+      const size = theme.typography.variants[variant].responsiveFontSize?.[breakpoint];
+      if (size) vars[`--mt-typography-${variant}-font-size`] = size;
+    }
+    if (Object.keys(vars).length > 0) result.push([theme.breakpoints[breakpoint], vars]);
+  }
+  return result;
 }
 
 const block = (selector: string, vars: CssVariables, extra = "") =>
@@ -134,18 +161,44 @@ export interface ThemeCssOptions {
  * overrides them. The layer order statement keeps library layers in Tailwind's order even when
  * this file loads before Tailwind (see ADR-0003).
  */
+/** Shadow variables: identical text in every scheme, resolved against `--mt-shadow-color`. */
+const isShadowVariable = (name: string) =>
+  name.startsWith("--mt-elevation-") ||
+  (name.startsWith("--mt-shadow-") && name !== "--mt-shadow-color");
+
+function splitShadows(vars: CssVariables): [scheme: CssVariables, shadows: CssVariables] {
+  const scheme: CssVariables = {};
+  const shadows: CssVariables = {};
+  for (const [name, value] of Object.entries(vars) as [keyof CssVariables, string][]) {
+    (isShadowVariable(name) ? shadows : scheme)[name] = value;
+  }
+  return [scheme, shadows];
+}
+
 export function themeToCss(theme: Theme, options: ThemeCssOptions = {}): string {
   const { root, light, dark } = themeToCssVariables(theme);
+  const [lightScheme, shadows] = splitShadows(light);
+  const [darkScheme] = splitShadows(dark);
   const parts = [
     LAYER_ORDER,
     "",
     "@layer theme {",
-    block(":root", { ...root, ...light }, "    color-scheme: light;\n"),
-    block(DARK_SELECTOR, dark, "    color-scheme: dark;\n"),
-    block(LIGHT_SELECTOR, light, "    color-scheme: light;\n"),
+    block(":root", root),
+    block(DARK_SELECTOR, darkScheme, "    color-scheme: dark;\n"),
+    // `:where(:root)` has zero specificity, so a dark scope on the root element still wins,
+    // while an explicit `data-mt-theme="light"` (declared after dark) wins over `.dark`.
+    block(`:where(:root), ${LIGHT_SELECTOR}`, lightScheme, "    color-scheme: light;\n"),
     "  @media (prefers-color-scheme: dark) {",
-    block('[data-mt-theme="system"]', dark, "    color-scheme: dark;\n").replace(/^/gm, "  "),
+    block('[data-mt-theme="system"]', darkScheme, "    color-scheme: dark;\n").replace(/^/gm, "  "),
     "  }",
+    // Declared once on every theme scope: a custom property referencing another one is resolved
+    // where it is declared, so each scope computes its shadows from its own --mt-shadow-color.
+    block(":root, [data-mt-theme], .dark", shadows),
+    ...responsiveTypographyVariables(theme).flatMap(([minWidth, vars]) => [
+      `  @media (min-width: ${minWidth}px) {`,
+      block(":root", vars).replace(/^/gm, "  "),
+      "  }",
+    ]),
   ];
   if (options.colorBindings !== false) {
     for (const name of paletteColorNames) {

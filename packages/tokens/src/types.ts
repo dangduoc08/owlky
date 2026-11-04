@@ -64,15 +64,25 @@ export const typographyVariants = [
 ] as const;
 export type TypographyVariant = (typeof typographyVariants)[number];
 
+export const breakpointNames = ["xs", "sm", "md", "lg", "xl"] as const;
+export type BreakpointName = (typeof breakpointNames)[number];
+
 export interface TypographyStyle {
+  /** Font size below the `sm` breakpoint. */
   fontSize: string;
+  /** Larger font sizes from a breakpoint up (`min-width`). */
+  responsiveFontSize?: Partial<Record<Exclude<BreakpointName, "xs">, string>>;
   lineHeight: string;
   fontWeight: number;
+  /** `secondary` = display font (headings h1–h3). Default `primary`. */
+  fontFamily?: "primary" | "secondary";
   textTransform?: "uppercase" | "none";
 }
 
 export interface Typography {
   fontFamily: string;
+  /** Display font for large headings. */
+  fontFamilySecondary: string;
   fontFamilyMono: string;
   fontWeight: {
     regular: number;
@@ -119,7 +129,14 @@ export interface Theme {
   radius: Record<RadiusName, string>;
   /** Base spacing unit. Spacing step `n` = `n × spacing`. */
   spacing: string;
+  /** Breakpoint min-widths in px. */
+  breakpoints: Record<BreakpointName, number>;
   shadows: Record<ShadowName, ShadowLayer[]>;
+  /**
+   * System elevations 1–24 (index 0 = elevation 1): umbra, penumbra and ambient layers, tinted
+   * with the scheme's shadow color.
+   */
+  elevation: ShadowLayer[][];
   /** Shadow under filled (contained) components, tinted with their palette color. */
   colorShadow: ShadowLayer;
   zIndex: { dropdown: number; modal: number; toast: number; tooltip: number };

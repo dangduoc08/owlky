@@ -16,6 +16,7 @@
 @theme inline {
   --font-sans: var(--mt-font-family);
   --font-mono: var(--mt-font-family-mono);
+  --font-display: var(--mt-font-family-secondary);
   --spacing: var(--mt-spacing);
 
   --color-primary: var(--mt-palette-primary-main);
@@ -102,6 +103,30 @@
   --shadow-card: var(--mt-shadow-card);
   --shadow-dropdown: var(--mt-shadow-dropdown);
   --shadow-dialog: var(--mt-shadow-dialog);
+  --shadow-elevation-1: var(--mt-elevation-1);
+  --shadow-elevation-2: var(--mt-elevation-2);
+  --shadow-elevation-3: var(--mt-elevation-3);
+  --shadow-elevation-4: var(--mt-elevation-4);
+  --shadow-elevation-5: var(--mt-elevation-5);
+  --shadow-elevation-6: var(--mt-elevation-6);
+  --shadow-elevation-7: var(--mt-elevation-7);
+  --shadow-elevation-8: var(--mt-elevation-8);
+  --shadow-elevation-9: var(--mt-elevation-9);
+  --shadow-elevation-10: var(--mt-elevation-10);
+  --shadow-elevation-11: var(--mt-elevation-11);
+  --shadow-elevation-12: var(--mt-elevation-12);
+  --shadow-elevation-13: var(--mt-elevation-13);
+  --shadow-elevation-14: var(--mt-elevation-14);
+  --shadow-elevation-15: var(--mt-elevation-15);
+  --shadow-elevation-16: var(--mt-elevation-16);
+  --shadow-elevation-17: var(--mt-elevation-17);
+  --shadow-elevation-18: var(--mt-elevation-18);
+  --shadow-elevation-19: var(--mt-elevation-19);
+  --shadow-elevation-20: var(--mt-elevation-20);
+  --shadow-elevation-21: var(--mt-elevation-21);
+  --shadow-elevation-22: var(--mt-elevation-22);
+  --shadow-elevation-23: var(--mt-elevation-23);
+  --shadow-elevation-24: var(--mt-elevation-24);
 
   --text-h1: var(--mt-typography-h1-font-size);
   --text-h1--line-height: var(--mt-typography-h1-line-height);

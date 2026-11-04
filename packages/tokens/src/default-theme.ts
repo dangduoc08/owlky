@@ -21,6 +21,146 @@ const grey: GreyScale = {
 
 const common = { white: "#FFFFFF", black: "#000000" };
 
+/*
+ * System elevations 1–24 as [y, blur, spread] for the umbra, penumbra and ambient layers
+ * (Material elevation geometry; alphas 20 % / 14 % / 12 %). x is always 0.
+ */
+const ELEVATION: [number, number, number][][] = [
+  [
+    [2, 1, -1],
+    [1, 1, 0],
+    [1, 3, 0],
+  ],
+  [
+    [3, 1, -2],
+    [2, 2, 0],
+    [1, 5, 0],
+  ],
+  [
+    [3, 3, -2],
+    [3, 4, 0],
+    [1, 8, 0],
+  ],
+  [
+    [2, 4, -1],
+    [4, 5, 0],
+    [1, 10, 0],
+  ],
+  [
+    [3, 5, -1],
+    [5, 8, 0],
+    [1, 14, 0],
+  ],
+  [
+    [3, 5, -1],
+    [6, 10, 0],
+    [1, 18, 0],
+  ],
+  [
+    [4, 5, -2],
+    [7, 10, 1],
+    [2, 16, 1],
+  ],
+  [
+    [5, 5, -3],
+    [8, 10, 1],
+    [3, 14, 2],
+  ],
+  [
+    [5, 6, -3],
+    [9, 12, 1],
+    [3, 16, 2],
+  ],
+  [
+    [6, 6, -3],
+    [10, 14, 1],
+    [4, 18, 3],
+  ],
+  [
+    [6, 7, -4],
+    [11, 15, 1],
+    [4, 20, 3],
+  ],
+  [
+    [7, 8, -4],
+    [12, 17, 2],
+    [5, 22, 4],
+  ],
+  [
+    [7, 8, -4],
+    [13, 19, 2],
+    [5, 24, 4],
+  ],
+  [
+    [7, 9, -4],
+    [14, 21, 2],
+    [5, 26, 4],
+  ],
+  [
+    [8, 9, -5],
+    [15, 22, 2],
+    [6, 28, 5],
+  ],
+  [
+    [8, 10, -5],
+    [16, 24, 2],
+    [6, 30, 5],
+  ],
+  [
+    [8, 11, -5],
+    [17, 26, 2],
+    [6, 32, 5],
+  ],
+  [
+    [9, 11, -5],
+    [18, 28, 2],
+    [7, 34, 6],
+  ],
+  [
+    [9, 12, -6],
+    [19, 29, 2],
+    [7, 36, 6],
+  ],
+  [
+    [10, 13, -6],
+    [20, 31, 3],
+    [8, 38, 7],
+  ],
+  [
+    [10, 13, -6],
+    [21, 33, 3],
+    [8, 40, 7],
+  ],
+  [
+    [10, 14, -6],
+    [22, 35, 3],
+    [8, 42, 7],
+  ],
+  [
+    [11, 14, -7],
+    [23, 36, 3],
+    [9, 44, 8],
+  ],
+  [
+    [11, 15, -7],
+    [24, 38, 3],
+    [9, 46, 8],
+  ],
+];
+const ELEVATION_ALPHAS = [20, 14, 12] as const;
+
+function elevationLayers() {
+  return ELEVATION.map((layers) =>
+    layers.map(([y, blur, spread], i) => ({
+      x: 0,
+      y,
+      blur,
+      spread,
+      alpha: ELEVATION_ALPHAS[i] ?? 12,
+    })),
+  );
+}
+
 const mix = (color: string, percent: number) =>
   `color-mix(in srgb, ${color} ${percent}%, transparent)`;
 
@@ -129,16 +269,51 @@ export const defaultTheme: Theme = {
   typography: {
     fontFamily:
       '"Public Sans Variable", "Public Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+    fontFamilySecondary:
+      '"Barlow", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
     fontFamilyMono:
       'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
     fontWeight: { regular: 400, medium: 500, semibold: 600, bold: 700, extrabold: 800 },
     variants: {
-      h1: { fontSize: "4rem", lineHeight: "1.25", fontWeight: 800 },
-      h2: { fontSize: "3rem", lineHeight: "1.3333", fontWeight: 800 },
-      h3: { fontSize: "2rem", lineHeight: "1.5", fontWeight: 700 },
-      h4: { fontSize: "1.5rem", lineHeight: "1.5", fontWeight: 700 },
-      h5: { fontSize: "1.25rem", lineHeight: "1.5", fontWeight: 700 },
-      h6: { fontSize: "1.125rem", lineHeight: "1.5556", fontWeight: 700 },
+      h1: {
+        fontSize: "2.5rem",
+        responsiveFontSize: { sm: "3.25rem", md: "3.625rem", lg: "4rem" },
+        lineHeight: "1.25",
+        fontWeight: 800,
+        fontFamily: "secondary",
+      },
+      h2: {
+        fontSize: "2rem",
+        responsiveFontSize: { sm: "2.5rem", md: "2.75rem", lg: "3rem" },
+        lineHeight: "1.3333",
+        fontWeight: 800,
+        fontFamily: "secondary",
+      },
+      h3: {
+        fontSize: "1.5rem",
+        responsiveFontSize: { sm: "1.625rem", md: "1.875rem", lg: "2rem" },
+        lineHeight: "1.5",
+        fontWeight: 700,
+        fontFamily: "secondary",
+      },
+      h4: {
+        fontSize: "1.25rem",
+        responsiveFontSize: { md: "1.5rem" },
+        lineHeight: "1.5",
+        fontWeight: 700,
+      },
+      h5: {
+        fontSize: "1.125rem",
+        responsiveFontSize: { sm: "1.1875rem" },
+        lineHeight: "1.5",
+        fontWeight: 700,
+      },
+      h6: {
+        fontSize: "1.0625rem",
+        responsiveFontSize: { sm: "1.125rem" },
+        lineHeight: "1.5556",
+        fontWeight: 600,
+      },
       subtitle1: { fontSize: "1rem", lineHeight: "1.5", fontWeight: 600 },
       subtitle2: { fontSize: "0.875rem", lineHeight: "1.5714", fontWeight: 600 },
       body1: { fontSize: "1rem", lineHeight: "1.5", fontWeight: 400 },
@@ -163,6 +338,7 @@ export const defaultTheme: Theme = {
     full: "9999px",
   },
   spacing: "0.25rem",
+  breakpoints: { xs: 0, sm: 600, md: 900, lg: 1200, xl: 1536 },
   shadows: {
     z1: [{ x: 0, y: 1, blur: 2, spread: 0, alpha: 16 }],
     z4: [{ x: 0, y: 4, blur: 8, spread: 0, alpha: 16 }],
@@ -181,6 +357,7 @@ export const defaultTheme: Theme = {
     ],
     dialog: [{ x: -40, y: 40, blur: 80, spread: -8, alpha: 24 }],
   },
+  elevation: elevationLayers(),
   colorShadow: { x: 0, y: 8, blur: 16, spread: 0, alpha: 24 },
   zIndex: { dropdown: 1200, modal: 1300, toast: 1400, tooltip: 1500 },
   motion: {

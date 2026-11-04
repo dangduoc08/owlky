@@ -1,31 +1,20 @@
 import { describe, expect, it } from "vitest";
 import {
   type ColorScheme,
+  contrastRatio,
   createTheme,
   defaultTheme,
+  getContrastText,
+  hexToRgb,
   paletteColorNames,
+  type RgbChannels,
   themeToCss,
   themeToCssVariables,
 } from "./index.js";
 
-// --- WCAG 2.2 relative luminance / contrast ---------------------------------------------------
-type Rgb = [number, number, number];
-const hex = (value: string): Rgb => {
-  const m = /^#([0-9a-f]{6})$/i.exec(value);
-  if (!m?.[1]) throw new Error(`Expected #RRGGBB, got ${value}`);
-  const n = Number.parseInt(m[1], 16);
-  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
-};
-const channel = (c: number) => {
-  const s = c / 255;
-  return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
-};
-const luminance = ([r, g, b]: Rgb) =>
-  0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
-const contrast = (a: Rgb, b: Rgb) => {
-  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x) as [number, number];
-  return (hi + 0.05) / (lo + 0.05);
-};
+type Rgb = RgbChannels;
+const hex = hexToRgb;
+const contrast = contrastRatio;
 /** sRGB blend, matching `color-mix(in srgb, fg p%, transparent)` painted over `bg`. */
 const over = (fg: Rgb, percent: number, bg: Rgb): Rgb =>
   fg.map((c, i) => Math.round((c * percent + (bg[i] ?? 0) * (100 - percent)) / 100)) as Rgb;
@@ -86,6 +75,18 @@ describe("themeToCss", () => {
     expect(css).toMatch(/@property --mt-c-main \{\s+syntax: "\*";\s+inherits: false;/);
   });
 
+  it("declares each scheme once and every shadow once", () => {
+    const count = (needle: string) => css.split(needle).length - 1;
+    expect(count("--mt-text-primary:")).toBe(3); // light, dark, system
+    expect(count("--mt-elevation-24:")).toBe(1);
+    expect(count("--mt-shadow-card:")).toBe(1);
+    expect(css).toContain(':where(:root), [data-mt-theme="light"] {');
+    expect(css).toContain(":root, [data-mt-theme], .dark {");
+    expect(css.indexOf('[data-mt-theme="dark"], .dark {')).toBeLessThan(
+      css.indexOf(':where(:root), [data-mt-theme="light"] {'),
+    );
+  });
+
   it("can omit color bindings", () => {
     expect(themeToCss(defaultTheme, { colorBindings: false })).not.toContain("@property");
   });
@@ -100,6 +101,37 @@ describe("themeToCss", () => {
   it("declares the same keys for light and dark", () => {
     const { light, dark } = themeToCssVariables(defaultTheme);
     expect(Object.keys(dark)).toEqual(Object.keys(light));
+  });
+});
+
+describe("typography and elevation", () => {
+  it("emits responsive font sizes as min-width overrides, smallest first", () => {
+    const css = themeToCss(defaultTheme);
+    expect(css).toMatch(
+      /@media \(min-width: 600px\) \{\s+:root \{[^}]*--mt-typography-h1-font-size: 3\.25rem;/,
+    );
+    expect(css).toMatch(
+      /@media \(min-width: 1200px\) \{\s+:root \{[^}]*--mt-typography-h1-font-size: 4rem;/,
+    );
+    expect(css.indexOf("min-width: 600px")).toBeLessThan(css.indexOf("min-width: 900px"));
+  });
+
+  it("uses the display font for h1–h3 only", () => {
+    const { root } = themeToCssVariables(defaultTheme);
+    expect(root["--mt-typography-h1-font-family"]).toBe("var(--mt-font-family-secondary)");
+    expect(root["--mt-typography-h3-font-family"]).toBe("var(--mt-font-family-secondary)");
+    expect(root["--mt-typography-h4-font-family"]).toBe("var(--mt-font-family)");
+  });
+
+  it("defines 24 three-layer system elevations per scheme", () => {
+    const { light, dark } = themeToCssVariables(defaultTheme);
+    expect(defaultTheme.elevation).toHaveLength(24);
+    expect(light["--mt-elevation-1"]).toBe(
+      "0px 2px 1px -1px color-mix(in srgb, var(--mt-shadow-color) 20%, transparent), " +
+        "0px 1px 1px 0px color-mix(in srgb, var(--mt-shadow-color) 14%, transparent), " +
+        "0px 1px 3px 0px color-mix(in srgb, var(--mt-shadow-color) 12%, transparent)",
+    );
+    expect(dark["--mt-elevation-24"]).toBeDefined();
   });
 });
 
@@ -118,5 +150,25 @@ describe("createTheme", () => {
   it("replaces arrays instead of merging them", () => {
     const layer = { x: 0, y: 2, blur: 4, spread: 0, alpha: 10 };
     expect(createTheme({ shadows: { z1: [layer] } }).shadows.z1).toEqual([layer]);
+  });
+});
+
+describe("color utilities", () => {
+  it("parses #RGB and #RRGGBB", () => {
+    expect(hexToRgb("#00A76F")).toEqual([0, 167, 111]);
+    expect(hexToRgb("#fff")).toEqual([255, 255, 255]);
+    expect(() => hexToRgb("red")).toThrow(TypeError);
+  });
+
+  it("computes WCAG contrast ratios", () => {
+    expect(contrastRatio("#000000", "#FFFFFF")).toBeCloseTo(21, 5);
+    expect(contrastRatio("#777777", "#777777")).toBe(1);
+  });
+
+  it("picks the more readable text color", () => {
+    expect(getContrastText("#004B50")).toBe("#FFFFFF");
+    expect(getContrastText("#C8FAD6")).toBe("#141A21");
+    // White on the primary main is only 3.1:1, so dark text wins (AA).
+    expect(getContrastText("#00A76F")).toBe("#141A21");
   });
 });
