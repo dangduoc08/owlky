@@ -86,6 +86,10 @@ and small-screen tests pick up new stories automatically from Storybook's `index
 - publint rejects `exports` globs that match no files; `styles/components/*` and
   `html/snippets/*` are restored with the first component (checklist steps 3 and 5).
 - Biome is configured to skip Markdown (`!**/*.md`): its formatter breaks command frontmatter.
+- `pnpm-workspace.yaml` → `overrides` pins `glob` 14.0.3 for Storybook's docgen plugin (security
+  fix for glob/minimatch advisories; upstream still pins glob 13). Remove it once
+  `@storybook/react-vite` resolves a fixed version — check with `pnpm audit` after upgrades.
+  Security fixes may use releases younger than 14 days (Renovate `vulnerabilityAlerts`).
 - Tailwind's compiler rewrites `color-mix()` in custom properties into an `@supports` pair whose
   fallback **drops the alpha** (opaque colors). `tokens.css` is therefore concatenated, not
   compiled (`styles/scripts/build.mjs`). Component CSS *is* compiled: check its dist output, and

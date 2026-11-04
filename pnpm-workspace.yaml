@@ -6,3 +6,7 @@ packages:
 allowBuilds:
   "@parcel/watcher": false
   esbuild: true
+overrides:
+  # Security fix (GHSA: glob AbortSignal bypass, minimatch ReDoS). Storybook's docgen plugin
+  # still pins glob ^13 upstream; remove once @storybook/react-vite ships a fixed version.
+  "@joshwooding/vite-plugin-react-docgen-typescript>glob": "14.0.3"
