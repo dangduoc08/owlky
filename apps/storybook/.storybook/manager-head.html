@@ -1,0 +1,15 @@
+<style>
+  /*
+   * Code panel: long story sources pushed the Copy button far below the fold. Keep its bar
+   * stuck to the bottom of the panel (overflow: clip instead of hidden, so sticky can work).
+   */
+  #storybook-panel-root .docblock-source {
+    overflow: clip;
+  }
+
+  #storybook-panel-root .docblock-source > div:has(> button) {
+    position: sticky;
+    bottom: 0;
+    z-index: 1;
+  }
+</style>

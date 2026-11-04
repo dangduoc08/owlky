@@ -23,3 +23,4 @@ export function DemoIcon({ name }: { name: DemoIconName }) {
     </svg>
   );
 }
+DemoIcon.displayName = "DemoIcon";

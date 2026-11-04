@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { htmlGroupsStory } from "../../helpers/groups.js";
+import { htmlSetup, snippetStory } from "../shared/snippets.js";
 import { GROUP_FILES } from "./button-examples.js";
 
 const snippets = import.meta.glob(
@@ -7,19 +7,13 @@ const snippets = import.meta.glob(
   { query: "?raw", import: "default", eager: true },
 ) as Record<string, string>;
 
-const snippet = (variant: string, file: string) => {
-  const html = Object.entries(snippets).find(([path]) => path.endsWith(`/${variant}-${file}.html`));
-  if (!html) throw new Error(`Missing snippet ${variant}-${file}.html`);
-  return html[1];
-};
+const SETUP = htmlSetup(["button.css"]);
+const story = (variant: string) => snippetStory(snippets, variant, GROUP_FILES, SETUP);
 
-const variantStory = (variant: string): StoryObj =>
-  htmlGroupsStory(GROUP_FILES.map(([title, file]) => ({ title, html: snippet(variant, file) })));
-
-const meta = { title: "HTML/Button", tags: ["!autodocs"] } satisfies Meta;
+const meta = { title: "HTML/Button/Button" } satisfies Meta;
 export default meta;
 
-export const Contained: StoryObj = variantStory("contained");
-export const Outlined: StoryObj = variantStory("outlined");
-export const Text: StoryObj = variantStory("text");
-export const Soft: StoryObj = variantStory("soft");
+export const Contained: StoryObj = story("contained");
+export const Outlined: StoryObj = story("outlined");
+export const Text: StoryObj = story("text");
+export const Soft: StoryObj = story("soft");

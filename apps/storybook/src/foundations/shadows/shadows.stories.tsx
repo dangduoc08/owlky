@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { UsageDocs } from "../../helpers/docs-pages.js";
 import { ColorShadows, CustomShadows, SystemShadows } from "./shadows.js";
 
 const meta = {
@@ -6,10 +7,11 @@ const meta = {
   tags: ["autodocs"],
   parameters: {
     docs: {
+      page: UsageDocs,
       canvas: { sourceState: "none" },
       description: {
         component:
-          "Shadow tokens from `@minimal-tailwind/tokens`, tinted per theme. Use the CSS variables or Tailwind `shadow-elevation-<n>`, `shadow-z<n>`, `shadow-card`, `shadow-dropdown`, `shadow-dialog`.",
+          "Shadow tokens from `@minimal-tailwind/tokens`, tinted per theme. Use the CSS variables or Tailwind `shadow-elevation-<n>`, `shadow-z<n>`, `shadow-card`, `shadow-dropdown`, `shadow-dialog`, `shadow-dialog-start`.",
       },
     },
   },

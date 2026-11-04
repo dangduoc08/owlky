@@ -15,10 +15,10 @@ npm users (package README) and component users (spec, Storybook docs for React a
 1. **Resolve the target.**
    $ARGUMENTS may be a package (`react`, `packages/html`, `@minimal-tailwind/styles`) or a component (`dialog`, `button`). Resolve it to exactly one target. If ambiguous, ask instead of guessing.
    - **Package** → output is `packages/<name>/README.md`.
-   - **Component** → outputs are `specs/components/<name>.md`, `apps/storybook/src/components/<name>/<name>.html.mdx`, and the `parameters.docs.description.component` text in `<name>.react.stories.tsx`.
+   - **Component** → output is `specs/components/<name>.md` (components have no Storybook docs page; usage lives in each story's Code panel via `htmlSetup()` / `jsxSource()`).
 
 2. **Read the structure references.**
-   - Component docs: follow the Dialog docs from git history exactly — `git show bd5fb2d:specs/components/dialog.md` (spec) and `git show bd5fb2d:apps/storybook/src/components/dialog/dialog.html.mdx` (HTML page) — they are the reference for structure and level of detail (ADR-0011).
+   - Component docs: follow the Dialog spec from git history — `git show bd5fb2d:specs/components/dialog.md` — for structure and level of detail (ADR-0011).
    - Foundation docs: follow `apps/storybook/src/foundations/colors/` (page component + story).
    - Package README structure:
      - `# @minimal-tailwind/<name>` + one-line description
@@ -60,7 +60,7 @@ npm users (package README) and component users (spec, Storybook docs for React a
 
 ## Rules
 
-- Never modify source code, tests or snippets — output is documentation only (`README.md`, `specs/**`, `*.mdx`, story `docs.description` strings).
+- Never modify source code, tests or snippets — output is documentation only (`README.md`, `specs/**`, foundation story `docs.description` strings).
 - Every documented prop/field states its TypeScript type and default.
 - Every example uses real exported identifiers and real `data-mt-*` attributes.
 - Do not document internal (non-exported) identifiers.

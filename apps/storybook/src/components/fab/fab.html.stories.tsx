@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { snippetStory } from "../shared/snippets.js";
+import { htmlSetup, snippetStory } from "../shared/snippets.js";
 import { FAB_ANIMATE_FILES, FAB_FILES } from "./fab-examples.js";
 
 const snippets = import.meta.glob(
@@ -11,13 +11,15 @@ const snippets = import.meta.glob(
   },
 ) as Record<string, string>;
 
-const meta = { title: "HTML/Fab", tags: ["!autodocs"] } satisfies Meta;
+const SETUP = htmlSetup(["fab.css"]);
+
+const meta = { title: "HTML/Button/Fab" } satisfies Meta;
 export default meta;
 
-export const Default: StoryObj = snippetStory(snippets, "contained", FAB_FILES);
-export const Outlined: StoryObj = snippetStory(snippets, "outlined", FAB_FILES);
-export const Soft: StoryObj = snippetStory(snippets, "soft", FAB_FILES);
+export const Default: StoryObj = snippetStory(snippets, "contained", FAB_FILES, SETUP);
+export const Outlined: StoryObj = snippetStory(snippets, "outlined", FAB_FILES, SETUP);
+export const Soft: StoryObj = snippetStory(snippets, "soft", FAB_FILES, SETUP);
 export const WithAnimate: StoryObj = {
-  ...snippetStory(snippets, "animate", FAB_ANIMATE_FILES),
+  ...snippetStory(snippets, "animate", FAB_ANIMATE_FILES, SETUP),
   name: "With animate",
 };

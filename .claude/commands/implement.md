@@ -41,7 +41,7 @@ Always balance correctness, accessibility, and simplicity.
    3. `packages/styles/src/components/<name>.css` (+ import in `src/index.css`)
    4. `packages/react/src/<name>/<name>.tsx` (+ export; `"use client"` only if it uses hooks; interactive roots render `data-mt-runtime="off"`)
    5. `packages/html/src/components/<name>/examples/*.html`; if it needs JS: `<name>.ts` with `defineComponent` + one line in `src/components/index.ts`
-   6. `apps/storybook/src/components/<name>/` — `.react.stories.tsx`, `.html.stories.tsx` (**identical story names**), `.html.mdx`
+   6. `apps/storybook/src/components/<name>/` — `.react.stories.tsx`, `.html.stories.tsx` (**identical story names**), built with `reactGroupsStory()` / `snippetStory(…, htmlSetup())` (Code panel with imports; no docs page)
    7. `e2e/tests` — parity pairs + interaction spec run for both implementations
 
    Keep public APIs stable. Do not add features, abstractions or options beyond what was asked. Prefer the platform over new dependencies.
@@ -77,7 +77,7 @@ Always balance correctness, accessibility, and simplicity.
 10. **Lint & package checks:** `pnpm lint:fix`, then `pnpm lint`, `pnpm typecheck`, `pnpm check:boundaries`, `pnpm check:packages`. Fix errors first, then accessibility rules, then style.
 
 11. **Documentation** — after everything passes:
-    - Spec, HTML `.mdx` page (requirements table, attributes, keyboard, accessibility, JS API), React story `docs.description`.
+    - Spec (attributes, keyboard, accessibility, JS API) and the `htmlSetup()` of the HTML stories (what to load).
     - Package `README.md` if the public API changed; `docs/roadmap.md` / `CLAUDE.md` status if a roadmap item is done.
     - Remind the user to add a changeset (`pnpm changeset`) — do not create it unasked.
 

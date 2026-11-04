@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { UsageDocs } from "../../helpers/docs-pages.js";
 import { ColumnDemo, SpacingDemo } from "./grid.js";
 
 const meta = {
@@ -6,6 +7,7 @@ const meta = {
   tags: ["autodocs"],
   parameters: {
     docs: {
+      page: UsageDocs,
       canvas: { sourceState: "none" },
       description: {
         component:

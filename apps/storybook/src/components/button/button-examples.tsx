@@ -16,6 +16,7 @@ export const MailIcon = () => (
     <path d="m3 7 9 6 9-6" />
   </svg>
 );
+MailIcon.displayName = "MailIcon";
 
 const COLORS = ["inherit", "primary", "secondary", "info", "success", "warning", "error"] as const;
 const SIZES = [

@@ -17,8 +17,19 @@ export async function openStory(page: Page, id: string, theme: "light" | "dark" 
   await page.evaluate(() => new Promise((r) => setTimeout(r, 0)));
 }
 
-export const storyId = (impl: Implementation, component: string, story: string) =>
-  `${impl}-${component}--${story}`;
+/** Storybook folder of each component (sidebar `<Impl>/<Folder>/<Component>`), if nested. */
+const FOLDERS: Record<string, string> = {
+  button: "button",
+  "icon-button": "button",
+  fab: "button",
+  "button-group": "button",
+  "toggle-button": "button",
+};
+
+export const storyId = (impl: Implementation, component: string, story: string) => {
+  const folder = FOLDERS[component];
+  return `${impl}-${folder ? `${folder}-` : ""}${component}--${story}`;
+};
 
 export interface NormalizedNode {
   tag: string;
@@ -45,6 +56,8 @@ export function normalizeStory(page: Page): Promise<NormalizedNode> {
       "data-mt-escape-close",
       "data-mt-backdrop-close",
       "data-mt-open",
+      "data-mt-drawer-open",
+      "data-mt-drawer-close",
     ]);
     const REFERENCES = new Set(["aria-labelledby", "aria-describedby", "aria-controls", "for"]);
 

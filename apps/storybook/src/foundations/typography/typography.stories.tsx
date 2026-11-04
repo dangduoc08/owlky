@@ -1,5 +1,6 @@
 import { typographyVariants } from "@minimal-tailwind/tokens";
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { UsageDocs } from "../../helpers/docs-pages.js";
 import { TextColors, TypographySample } from "./typography.js";
 
 const meta = {
@@ -8,6 +9,7 @@ const meta = {
   tags: ["autodocs"],
   parameters: {
     docs: {
+      page: UsageDocs,
       canvas: { sourceState: "none" },
       description: {
         component:

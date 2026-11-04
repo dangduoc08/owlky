@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { snippetStory } from "../shared/snippets.js";
+import { htmlSetup, snippetStory } from "../shared/snippets.js";
 import { TOGGLE_FILES } from "./toggle-button-examples.js";
 
 const snippets = import.meta.glob(
@@ -7,12 +7,13 @@ const snippets = import.meta.glob(
   { query: "?raw", import: "default", eager: true },
 ) as Record<string, string>;
 
+const SETUP = htmlSetup(["toggle-button.css"], true);
 const story = (name: string, label?: string): StoryObj => ({
-  ...snippetStory(snippets, name, TOGGLE_FILES[name] ?? []),
+  ...snippetStory(snippets, name, TOGGLE_FILES[name] ?? [], SETUP),
   ...(label ? { name: label } : {}),
 });
 
-const meta = { title: "HTML/Toggle button", tags: ["!autodocs"] } satisfies Meta;
+const meta = { title: "HTML/Button/Toggle button" } satisfies Meta;
 export default meta;
 
 export const Exclusive: StoryObj = story("exclusive", "Exclusive selection");

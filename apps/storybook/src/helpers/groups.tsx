@@ -1,5 +1,6 @@
 import type { StoryObj } from "@storybook/react-vite";
 import type { ReactNode } from "react";
+import { jsxSource } from "./jsx-source.js";
 
 /*
  * Story layout shared by React and HTML stories, so both render identical DOM (parity tests):
@@ -33,14 +34,25 @@ export function Groups({ groups }: { groups: ReactGroup[] }) {
   );
 }
 
+/** React story: the groups plus their JSX (with imports) in the Code panel. */
+export function reactGroupsStory(groups: ReactGroup[]): StoryObj {
+  return {
+    render: () => <Groups groups={groups} />,
+    parameters: { docs: { source: { language: "tsx", code: jsxSource(groups) } } },
+  };
+}
+
 export interface HtmlGroup {
   title: string;
   /** A canonical snippet from @minimal-tailwind/html, rendered exactly as users paste it. */
   html: string;
 }
 
-/** HTML story: the same groups, each row filled with a canonical snippet. */
-export function htmlGroupsStory(groups: HtmlGroup[]): StoryObj {
+/**
+ * HTML story: the same groups, each row filled with a canonical snippet. `setup` (what to load:
+ * CSS, runtime) heads the code shown in the Code panel.
+ */
+export function htmlGroupsStory(groups: HtmlGroup[], setup = ""): StoryObj {
   return {
     render: () => (
       <div className="sb-groups">
@@ -56,7 +68,12 @@ export function htmlGroupsStory(groups: HtmlGroup[]): StoryObj {
       docs: {
         source: {
           language: "html",
-          code: groups.map((group) => `<!-- ${group.title} -->\n${group.html.trim()}`).join("\n\n"),
+          code: [
+            setup.trim(),
+            ...groups.map((group) => `<!-- ${group.title} -->\n${group.html.trim()}`),
+          ]
+            .filter(Boolean)
+            .join("\n\n"),
         },
       },
     },

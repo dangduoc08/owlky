@@ -129,7 +129,9 @@ project. Never copy the reference's source code, branding or assets.
       `<name>.ts` (`defineComponent`) + tests and one line in `components/index.ts` if it needs JS
    6. `apps/storybook/src/components/<name>/` — `<name>.react.stories.tsx` and
       `<name>.html.stories.tsx` with **identical story names = the reference sections**, default
-      Storybook UI (no custom page chrome), Controls for options, `<name>.html.mdx` for HTML usage
+      Storybook UI (no custom page chrome), no docs page or Playground: stories built with
+      `reactGroupsStory()` / `snippetStory(…, htmlSetup())` so the Code panel shows the source,
+      the imports and a copy button
    7. `e2e/tests` — parity pairs, an interaction spec (incl. touch on mobile widths) and a
       **responsive spec** (`<name>.responsive.spec.ts`) run for both implementations over the
       [Viewport matrix](#viewport-matrix); `a11y.spec.ts` and `visual.spec.ts` pick up stories

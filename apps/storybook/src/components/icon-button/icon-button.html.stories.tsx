@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { snippetStory } from "../shared/snippets.js";
+import { htmlSetup, snippetStory } from "../shared/snippets.js";
 import { ICON_BUTTON_FILES } from "./icon-button-examples.js";
 
 const snippets = import.meta.glob(
@@ -7,9 +7,10 @@ const snippets = import.meta.glob(
   { query: "?raw", import: "default", eager: true },
 ) as Record<string, string>;
 
-const story = (name: string) => snippetStory(snippets, name, ICON_BUTTON_FILES[name] ?? []);
+const SETUP = htmlSetup(["icon-button.css"]);
+const story = (name: string) => snippetStory(snippets, name, ICON_BUTTON_FILES[name] ?? [], SETUP);
 
-const meta = { title: "HTML/Icon button", tags: ["!autodocs"] } satisfies Meta;
+const meta = { title: "HTML/Button/Icon button" } satisfies Meta;
 export default meta;
 
 export const Base: StoryObj = story("base");

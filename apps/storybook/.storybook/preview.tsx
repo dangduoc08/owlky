@@ -25,6 +25,8 @@ const preview: Preview = {
     layout: "padded",
     backgrounds: { disable: true },
     a11y: { test: "error" },
+    // "Code" panel under every story: the example's source (with imports) and a copy button.
+    docs: { codePanel: true },
     options: {
       storySort: {
         order: [

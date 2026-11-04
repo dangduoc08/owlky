@@ -25,7 +25,7 @@ If the answer is anything less than "yes", identify every reason.
 
 **Repository:** packages (`tokens`, `styles`, `core`, `react`, `html`), the HTML runtime, component CSS, snippets, Storybook, e2e, scripts, CI, package `exports`.
 
-**Knowledge base:** `CLAUDE.md`, `AGENTS.md`, `docs/architecture.md`, `docs/roadmap.md`, `docs/testing.md`, `docs/adr/*`, `specs/**`, package `README.md`s, Storybook `.mdx` pages.
+**Knowledge base:** `CLAUDE.md`, `AGENTS.md`, `docs/architecture.md`, `docs/roadmap.md`, `docs/testing.md`, `docs/adr/*`, `specs/**`, package `README.md`s.
 
 Read all of it.
 

@@ -18,7 +18,7 @@ Your goal: determine whether the AI Knowledge Base lets you complete real tasks 
 # Ground Rules
 
 - Start from zero; do not use prior knowledge of this project.
-- Attempt every task using only: `CLAUDE.md`, `AGENTS.md`, `docs/**`, `specs/**`, package READMEs, Storybook `.mdx` pages, `.claude/commands/*`.
+- Attempt every task using only: `CLAUDE.md`, `AGENTS.md`, `docs/**`, `specs/**`, package READMEs, `.claude/commands/*`.
 - Inspect source only when unavoidable — and record **which file and why**. Every such read is a knowledge gap.
 
 ---
