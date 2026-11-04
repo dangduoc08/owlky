@@ -1,0 +1,60 @@
+{
+  "name": "@minimal-tailwind/html",
+  "version": "0.0.0",
+  "description": "Framework-free Minimal Tailwind components: copy-paste HTML snippets plus a tiny shared runtime that wires up behavior through data-mt-* attributes.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": [
+    "./dist/esm/auto.js",
+    "./dist/minimal-tailwind.js",
+    "**/*.css"
+  ],
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/esm/index.d.ts",
+      "import": "./dist/esm/index.js"
+    },
+    "./auto": {
+      "types": "./dist/esm/auto.d.ts",
+      "import": "./dist/esm/auto.js"
+    },
+    "./minimal-tailwind.js": "./dist/minimal-tailwind.js",
+    "./minimal-tailwind.css": "./dist/minimal-tailwind.css",
+    "./minimal-tailwind.min.css": "./dist/minimal-tailwind.min.css",
+    "./snippets/*": "./dist/snippets/*",
+    "./package.json": "./package.json"
+  },
+  "unpkg": "./dist/minimal-tailwind.js",
+  "jsdelivr": "./dist/minimal-tailwind.js",
+  "scripts": {
+    "build": "rm -rf dist && tsc -p tsconfig.build.json && vite build && node scripts/copy-assets.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@minimal-tailwind/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@minimal-tailwind/styles": "workspace:*",
+    "vite": "8.3.5"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OWNER/minimal-tailwind.git",
+    "directory": "packages/html"
+  },
+  "keywords": [
+    "html",
+    "vanilla",
+    "components",
+    "no-framework",
+    "accessible",
+    "tailwindcss"
+  ]
+}
