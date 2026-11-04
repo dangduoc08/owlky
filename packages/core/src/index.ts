@@ -11,6 +11,9 @@ export {
   buttonSizes,
   buttonVariants,
   type DataAttributes,
+  type DrawerAnchor,
+  drawerAnchors,
+  drawerAttributes,
   type FabAnatomyOptions,
   type FabColor,
   type FabSize,
@@ -39,6 +42,12 @@ export {
 export { focusInitial, getTabbables, isFocusable, trapTab } from "./dom/focus.js";
 export { createId } from "./dom/id.js";
 export { type Supports, supports } from "./dom/support.js";
+export {
+  createModalController,
+  type ModalController,
+  type ModalControllerOptions,
+  type ModalDismissReason,
+} from "./modal/modal-controller.js";
 export { inertOutside } from "./overlay/inert-outside.js";
 export { layerStack } from "./overlay/layer-stack.js";
 export { isScrollLocked, lockScroll } from "./overlay/scroll-lock.js";

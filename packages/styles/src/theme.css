@@ -103,6 +103,7 @@
   --shadow-card: var(--mt-shadow-card);
   --shadow-dropdown: var(--mt-shadow-dropdown);
   --shadow-dialog: var(--mt-shadow-dialog);
+  --shadow-dialog-start: var(--mt-shadow-dialog-start);
   --shadow-elevation-1: var(--mt-elevation-1);
   --shadow-elevation-2: var(--mt-elevation-2);
   --shadow-elevation-3: var(--mt-elevation-3);

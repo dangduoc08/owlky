@@ -54,6 +54,7 @@ export function SystemShadows() {
 const CUSTOM_ORDER: ShadowName[] = [
   ...shadowNames.filter((name) => name.startsWith("z")),
   "dialog",
+  "dialogStart",
   "card",
   "dropdown",
 ];
@@ -65,8 +66,10 @@ export function CustomShadows() {
       {CUSTOM_ORDER.map((name) => (
         <ShadowTile
           key={name}
-          label={name.startsWith("z") ? name : capitalize(name)}
-          variable={`--mt-shadow-${name}`}
+          label={
+            name.startsWith("z") ? name : capitalize(name.replace(/([A-Z])/g, " $1").toLowerCase())
+          }
+          variable={`--mt-shadow-${name.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}`}
         />
       ))}
     </div>

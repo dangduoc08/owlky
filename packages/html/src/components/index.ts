@@ -4,10 +4,12 @@
  * Adding a component = one folder + one entry here (checked by components.test.ts).
  */
 import type { ComponentDefinition } from "../runtime/types.js";
+import { drawer } from "./drawer/drawer.js";
 import { toggleButton } from "./toggle-button/toggle-button.js";
 import { toggleGroup } from "./toggle-group/toggle-group.js";
 
 export const components: readonly ComponentDefinition[] = [
+  drawer as ComponentDefinition,
   toggleButton as ComponentDefinition,
   toggleGroup as ComponentDefinition,
 ];

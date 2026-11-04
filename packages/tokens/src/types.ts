@@ -123,6 +123,7 @@ export const shadowNames = [
   "card",
   "dropdown",
   "dialog",
+  "dialogStart",
 ] as const;
 export type ShadowName = (typeof shadowNames)[number];
 

@@ -165,3 +165,16 @@ export function toggleGroupAttributes(options: ToggleGroupAnatomyOptions = {}): 
   if (options.exclusive === true) attributes["data-mt-exclusive"] = "";
   return attributes;
 }
+
+// --- Drawer -----------------------------------------------------------------------------------
+
+export const drawerAnchors = ["left", "right", "top", "bottom"] as const;
+export type DrawerAnchor = (typeof drawerAnchors)[number];
+
+/** `data-mt-*` attributes of a drawer `<dialog>`. */
+export function drawerAttributes(options: { anchor?: DrawerAnchor | undefined } = {}) {
+  return {
+    "data-mt-drawer": "",
+    "data-mt-anchor": pick(drawerAnchors, options.anchor, "left"),
+  } satisfies DataAttributes;
+}

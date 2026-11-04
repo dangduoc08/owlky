@@ -1,0 +1,132 @@
+/*
+ * Drawer — spec: specs/components/drawer.md
+ *
+ * Anatomy:  dialog[data-mt-drawer]          transparent, full-viewport layout container
+ *             › div[data-mt-drawer-content] the visible paper
+ * Modifiers: data-mt-anchor = left (default) | right | top | bottom
+ * States:    [open]; [data-mt-fallback] when the browser lacks showModal() (ADR-0006).
+ *
+ * A click whose target is the <dialog> itself is a click outside the paper (backdrop click).
+ * Single :where() selectors in @layer components (zero specificity); `::backdrop` is the only
+ * pseudo-element after one. Opening animates with @starting-style where supported.
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-mt-drawer]) {
+    /* Room left for the backdrop, so a tap outside can always close the drawer. */
+    --_mt-max: calc(100% - var(--mt-spacing) * 14);
+
+    box-sizing: border-box;
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--mt-text-primary);
+    font-family: var(--mt-font-family);
+    overflow: hidden;
+  }
+
+  /* The UA hides closed dialogs (display: none); only lay out open ones. */
+  :where([data-mt-drawer][open]) {
+    display: flex;
+    flex-direction: row;
+  }
+
+  :where(
+    [data-mt-drawer][data-mt-anchor="top"][open],
+    [data-mt-drawer][data-mt-anchor="bottom"][open]
+  ) {
+    flex-direction: column;
+  }
+
+  :where([data-mt-drawer])::backdrop {
+    background-color: var(--mt-backdrop);
+  }
+
+  /* Fallback path: no ::backdrop or top layer, so the container paints the backdrop itself. */
+  :where([data-mt-drawer][data-mt-fallback]) {
+    z-index: var(--mt-z-modal);
+    background-color: var(--mt-backdrop);
+  }
+
+  :where([data-mt-drawer-content]) {
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    height: 100%;
+    max-width: var(--_mt-max);
+    margin-right: auto;
+    overflow: auto;
+    overscroll-behavior: contain;
+    background-color: var(--mt-bg-paper);
+    box-shadow: var(--mt-shadow-dialog-start);
+    outline: none;
+    transition: transform var(--mt-duration-short) var(--mt-easing-decelerate);
+  }
+
+  :where([data-mt-drawer][data-mt-anchor="right"] > [data-mt-drawer-content]) {
+    margin-right: 0;
+    margin-left: auto;
+    box-shadow: var(--mt-shadow-dialog);
+  }
+
+  :where(
+    [data-mt-drawer][data-mt-anchor="top"] > [data-mt-drawer-content],
+    [data-mt-drawer][data-mt-anchor="bottom"] > [data-mt-drawer-content]
+  ) {
+    width: 100%;
+    max-width: none;
+    height: auto;
+    max-height: var(--_mt-max);
+    margin: 0 0 auto;
+    box-shadow: var(--mt-shadow-z16);
+  }
+
+  :where([data-mt-drawer][data-mt-anchor="bottom"] > [data-mt-drawer-content]) {
+    margin: auto 0 0;
+  }
+
+  /* Enter: slide in from the anchored edge, fade the backdrop in. */
+  @starting-style {
+    :where([data-mt-drawer][open] > [data-mt-drawer-content]) {
+      transform: translateX(-100%);
+    }
+
+    :where([data-mt-drawer][data-mt-anchor="right"][open] > [data-mt-drawer-content]) {
+      transform: translateX(100%);
+    }
+
+    :where([data-mt-drawer][data-mt-anchor="top"][open] > [data-mt-drawer-content]) {
+      transform: translateY(-100%);
+    }
+
+    :where([data-mt-drawer][data-mt-anchor="bottom"][open] > [data-mt-drawer-content]) {
+      transform: translateY(100%);
+    }
+
+    :where([data-mt-drawer][open])::backdrop {
+      opacity: 0;
+    }
+  }
+
+  :where([data-mt-drawer])::backdrop {
+    transition: opacity var(--mt-duration-short) var(--mt-easing-standard);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :where([data-mt-drawer-content]) {
+      transition: none;
+    }
+
+    :where([data-mt-drawer])::backdrop {
+      transition: none;
+    }
+  }
+}

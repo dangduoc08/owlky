@@ -4,9 +4,10 @@ Framework-free [Minimal Tailwind](../../README.md) components: copy-paste HTML s
 ~2 kB (gzip) Core Runtime that wires behavior up through `data-mt-*` attributes.
 
 Components: **Button**, **Icon button**, **Fab**, **Button group** (CSS only — no JavaScript
-needed) and **Toggle button** (runtime: `toggle-button` + `toggle-group`, events
+needed) **Drawer** (runtime: `drawer`, triggers `data-mt-drawer-open="<id>"` / `data-mt-drawer-close`,
+events `mt:drawer:beforeopen|open|beforeclose|close`) and **Toggle button** (runtime: `toggle-button` + `toggle-group`, events
 `mt:toggle-button:change` / `mt:toggle-group:change`). Snippets ship in
-`@minimal-tailwind/html/snippets/<component>/<story>-<group>.html` and in Storybook (HTML/…).
+`@minimal-tailwind/html/snippets/<component>/<story>-<group>.html` and in Storybook (HTML/Button/…).
 
 ## CDN — include once per page
 

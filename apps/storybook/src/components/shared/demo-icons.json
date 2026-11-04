@@ -9,5 +9,6 @@
   "viewQuilt": ["M4 5h6v14H4zM12 5h8v6h-8zM12 13h8v6h-8z"],
   "bold": ["M7 5h6a3.5 3.5 0 0 1 0 7H7zM7 12h7a3.5 3.5 0 0 1 0 7H7z"],
   "italic": ["M10 5h8M6 19h8M14 5l-4 14"],
-  "underline": ["M7 4v7a5 5 0 0 0 10 0V4M5 20h14"]
+  "underline": ["M7 4v7a5 5 0 0 0 10 0V4M5 20h14"],
+  "inbox": ["M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"]
 }

@@ -17,13 +17,16 @@ export default defineConfig({
       // component's files here.
       thresholds: {
         "packages/core/src/anatomy/**": COMPONENT_THRESHOLDS,
+        "packages/core/src/modal/**": COMPONENT_THRESHOLDS,
         "packages/core/src/toggle/**": COMPONENT_THRESHOLDS,
         "packages/react/src/button/**": COMPONENT_THRESHOLDS,
         "packages/react/src/button-group/**": COMPONENT_THRESHOLDS,
+        "packages/react/src/drawer/**": COMPONENT_THRESHOLDS,
         "packages/react/src/fab/**": COMPONENT_THRESHOLDS,
         "packages/react/src/icon-button/**": COMPONENT_THRESHOLDS,
         "packages/react/src/toggle-button/**": COMPONENT_THRESHOLDS,
         "packages/react/src/utils/**": COMPONENT_THRESHOLDS,
+        "packages/html/src/components/drawer/**": COMPONENT_THRESHOLDS,
         "packages/html/src/components/toggle-button/**": COMPONENT_THRESHOLDS,
         "packages/html/src/components/toggle-group/**": COMPONENT_THRESHOLDS,
       },

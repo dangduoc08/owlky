@@ -40,3 +40,54 @@
   background-color: var(--mt-bg-paper);
   box-shadow: var(--mt-shadow-card);
 }
+
+/* Drawer demo content (stories only; a List component will replace it). */
+[data-mt-drawer-content] > nav {
+  min-inline-size: 250px;
+  padding-block: calc(var(--mt-spacing) * 2);
+}
+
+[data-mt-drawer-content] > nav ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+[data-mt-drawer-content] > nav hr {
+  margin: calc(var(--mt-spacing) * 2) 0;
+  border: 0;
+  border-top: 1px solid var(--mt-divider);
+}
+
+[data-mt-drawer-content] > nav button {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--mt-spacing) * 4);
+  box-sizing: border-box;
+  width: 100%;
+  min-height: calc(var(--mt-spacing) * 11);
+  padding: calc(var(--mt-spacing) * 2) calc(var(--mt-spacing) * 5);
+  border: 0;
+  background: transparent;
+  color: var(--mt-text-primary);
+  font: inherit;
+  font-size: var(--mt-font-size-md);
+  font-weight: var(--mt-font-weight-semibold);
+  text-align: start;
+  cursor: pointer;
+}
+
+[data-mt-drawer-content] > nav button:hover {
+  background-color: var(--mt-action-hover);
+}
+
+[data-mt-drawer-content] > nav button:focus-visible {
+  outline: 2px solid var(--mt-text-primary);
+  outline-offset: -2px;
+}
+
+[data-mt-drawer-content] > nav svg {
+  flex-shrink: 0;
+  width: calc(var(--mt-spacing) * 6);
+  height: calc(var(--mt-spacing) * 6);
+}

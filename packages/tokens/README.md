@@ -23,7 +23,7 @@ const css = themeToCss(
 | Channels | `--mt-palette-<color>-<shade>-channel`, `--mt-palette-grey-<n>-channel`, `--mt-palette-common-white\|black-channel` | e.g. `0 167 111`, for `rgb(var(…) / 0.16)` (ADR-0013) |
 | Font sizes | `--mt-font-size-xs\|sm\|md\|lg\|xl` | 12 / 13 / 14 / 15 / 16px |
 | Component color | `[data-mt-color="primary…error\|black\|white"]` → `--mt-c-main\|channel\|hover\|contrast\|text\|shadow` | non-inheriting bindings |
-| Shadows | `--mt-elevation-1…24`, `--mt-shadow-z1\|z4\|…\|z24\|card\|dropdown\|dialog`, `--mt-shadow-<color>` | Tinted with `--mt-shadow-color` per theme |
+| Shadows | `--mt-elevation-1…24`, `--mt-shadow-z1\|z4\|…\|z24\|card\|dropdown\|dialog\|dialog-start`, `--mt-shadow-<color>` | Tinted with `--mt-shadow-color` per theme |
 | Shape & layout | `--mt-radius-*`, `--mt-spacing` (4px), `--mt-breakpoint-*`, `--mt-z-*` | |
 | Motion | `--mt-duration-*`, `--mt-easing-*` | |
 

@@ -5,6 +5,8 @@ import {
   buttonGroupAttributes,
   buttonSizes,
   buttonVariants,
+  drawerAnchors,
+  drawerAttributes,
   fabAttributes,
   fabColors,
   fabSizes,
@@ -174,5 +176,17 @@ describe("toggleButtonAttributes", () => {
 
   it.each(toggleButtonSizes)("maps size %s", (size) => {
     expect(toggleButtonAttributes({ size })["data-mt-size"]).toBe(size);
+  });
+});
+
+describe("drawerAttributes", () => {
+  it("emits explicit defaults and rejects unknown values", () => {
+    const defaults = { "data-mt-drawer": "", "data-mt-anchor": "left" };
+    expect(drawerAttributes()).toEqual(defaults);
+    expect(drawerAttributes({ anchor: HOSTILE })).toEqual(defaults);
+  });
+
+  it.each(drawerAnchors)("maps anchor %s", (anchor) => {
+    expect(drawerAttributes({ anchor })["data-mt-anchor"]).toBe(anchor);
   });
 });

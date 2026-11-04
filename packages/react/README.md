@@ -30,6 +30,7 @@ import { Button, ButtonGroup, Fab, IconButton, ToggleButton, ToggleButtonGroup }
 | `Fab` | `variant` (`contained` · `outlined` · `soft`), `color` (as IconButton), `size` (`sm` · `md` · `lg`), `extended`, `animate` |
 | `ButtonGroup` | `orientation` (`horizontal` · `vertical`); `variant`, `color`, `size`, `disabled` are copied to direct child Buttons (a child prop wins) |
 | `ToggleButton` | `value`, `color` (`inherit` · palette), `size`, standalone `selected` / `defaultSelected` / `onChange(selected)` |
+| `Drawer` / `DrawerTrigger` / `DrawerContent` / `DrawerClose` | `Drawer`: `open` / `defaultOpen` / `onOpenChange`; `DrawerContent`: `anchor` (`left` · `right` · `top` · `bottom`), `closeOnEscape`, `closeOnBackdropClick`, needs `aria-label` / `aria-labelledby`; trigger and close are Buttons |
 | `ToggleButtonGroup` | `exclusive`, `value` / `defaultValue` / `onChange(value)` (`string \| null` when exclusive, else `string[]`), `orientation`, `color`, `size`, `disabled` |
 
 Same markup and CSS as `@minimal-tailwind/html` (specs: `specs/components/`).

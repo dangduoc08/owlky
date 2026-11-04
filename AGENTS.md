@@ -45,7 +45,9 @@ Read this first (humans and AI agents). Architecture: `docs/architecture.md`. De
    the `"./snippets/*": "./dist/snippets/*"` export in `html/package.json`). If it needs JS:
    `<name>.ts` (`defineComponent`) + tests, one line in `html/src/components/index.ts`.
 6. Storybook: `apps/storybook/src/components/<name>/` — `<name>.react.stories.tsx`,
-   `<name>.html.stories.tsx` (**same story names**), `<name>.html.mdx` docs.
+   `<name>.html.stories.tsx` (**same story names**). No docs page and no Playground: build stories
+   with `reactGroupsStory()` / `snippetStory(…, htmlSetup(css, runtime))`, so each story's
+   **Code** panel shows the source with what to import, plus a copy button.
 7. E2E: add pairs to `e2e/tests/parity.spec.ts` (first component: restore it with
    `git show bd5fb2d:e2e/tests/parity.spec.ts`); interaction spec for both implementations.
 8. `pnpm changeset`, then `pnpm check`.
@@ -53,7 +55,8 @@ Read this first (humans and AI agents). Architecture: `docs/architecture.md`. De
 ## Foundations in Storybook
 `apps/storybook/src/foundations/<name>/` — presentational components (`<name>.tsx`) and
 `<name>.stories.tsx` with **one story per section** (they become the sidebar sub-items) plus the
-autodocs page. Use Storybook's default layout and Controls for anything adjustable; don't build
+autodocs page (`UsageDocs` in `helpers/docs-pages.tsx`: description only, never the stories
+again). Components have no docs pages (see checklist step 6). MDX has no GFM: use lists, not tables. Use Storybook's default layout and Controls for anything adjustable; don't build
 page chrome (headers, tables of contents, custom navigation). Read every value from
 `@minimal-tailwind/tokens` or `--mt-*` variables — never hard-code a token value. The reference
 site is for content only; brand colors follow it, neutral text must meet WCAG AA (ADR-0014). E2E a11y, visual
@@ -103,6 +106,12 @@ and small-screen tests pick up new stories automatically from Storybook's `index
 - Biome 2 lints the HTML snippets too: decorative `<svg>` needs `aria-hidden="true"` itself (not
   only on its wrapper), and demo links need a real `href` and descriptive text.
 - Add each new component's files to `coverage.thresholds` in `vitest.config.ts`.
+- Components from one reference page share a Storybook folder: titles `React/Button/<Name>` and
+  `HTML/Button/<Name>` (ids `react-button-<name>--…`). Register the folder in `FOLDERS`
+  (`e2e/tests/helpers.ts`) so `storyId()` keeps working; source folders stay one per component.
+- Modal components use core `createModalController(element, { contentSelector })` (native
+  `<dialog>` + fallback). Test React modal behavior through the built core: core's own tests must
+  cover the controller (React tests don't count toward `core/src` coverage).
 - `--mt-spacing` is **4px** (Tailwind scale): `calc(var(--mt-spacing) * 9)` = 36px. Convert
   reference px values by dividing by 4.
 - HTML behavior-only folders (e.g. `toggle-group`, whose markup lives in `toggle-button/examples`)

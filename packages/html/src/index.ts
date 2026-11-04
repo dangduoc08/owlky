@@ -6,6 +6,11 @@
  *
  * Or import "@minimal-tailwind/html/auto" to register every component and start.
  */
+
+export type {
+  DrawerCloseReason,
+  DrawerInstance,
+} from "./components/drawer/drawer.js";
 export { components } from "./components/index.js";
 export type { ToggleButtonInstance } from "./components/toggle-button/toggle-button.js";
 export type { ToggleGroupInstance } from "./components/toggle-group/toggle-group.js";

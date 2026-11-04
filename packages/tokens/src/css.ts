@@ -125,7 +125,7 @@ function schemeVariables(scheme: ColorScheme, theme: Theme): CssVariables {
   // where it is declared, so nested `data-mt-theme` scopes need their own copy.
   vars["--mt-shadow-color"] = scheme.shadowColor;
   for (const name of shadowNames) {
-    vars[`--mt-shadow-${name}`] = shadow(theme.shadows[name], "var(--mt-shadow-color)");
+    vars[`--mt-shadow-${kebab(name)}`] = shadow(theme.shadows[name], "var(--mt-shadow-color)");
   }
   theme.elevation.forEach((layers, index) => {
     vars[`--mt-elevation-${index + 1}`] = shadow(layers, "var(--mt-shadow-color)");

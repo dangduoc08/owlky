@@ -36,6 +36,12 @@ Follow-ups from the same reference page, added in the same review (Update mode):
 **Fab**, **Button group** (CSS only) and **Toggle button** (core `nextToggleSelection()`, HTML
 runtime `toggle-button` / `toggle-group`, React state). No new tokens.
 
+## ✅ Components — Drawer (2026-11-04)
+Created with `/component` from the reference "Drawer" page (story: Anchor — left / right / top /
+bottom). Native `<dialog>` + core `createModalController()` (restored from the removed Dialog,
+shared by future modals). Token added: `--mt-shadow-dialog-start`. Demo menu content is styled in
+the Storybook preview until a List component exists.
+
 ## Next — components (awaiting the owner's go-ahead)
 Order to be confirmed. Candidate sequence, each in React + HTML with parity tests:
 1. Form controls: Input, Textarea, Checkbox, Radio/RadioGroup (+ restore empty export globs)

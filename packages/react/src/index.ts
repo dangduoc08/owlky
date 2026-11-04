@@ -3,6 +3,7 @@ export type {
   ButtonSize,
   ButtonVariant,
   ColorName,
+  DrawerAnchor,
   FabColor,
   FabSize,
   FabVariant,
@@ -21,6 +22,14 @@ export {
   type ButtonProps,
 } from "./button/button.js";
 export { ButtonGroup, type ButtonGroupProps } from "./button-group/button-group.js";
+export {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  type DrawerContentProps,
+  type DrawerProps,
+  DrawerTrigger,
+} from "./drawer/drawer.js";
 export { Fab, type FabProps } from "./fab/fab.js";
 export { IconButton, type IconButtonProps } from "./icon-button/icon-button.js";
 export {

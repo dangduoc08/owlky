@@ -1,4 +1,4 @@
-import { defaultTheme, typographyVariants } from "@minimal-tailwind/tokens";
+import { defaultTheme, shadowNames, typographyVariants } from "@minimal-tailwind/tokens";
 import { expect, test } from "@playwright/test";
 import { openStory, storyIds } from "./helpers.js";
 
@@ -49,7 +49,7 @@ test.describe("Foundations / Shadows", () => {
       /0\.2\) 0px 2px 1px -1px, .*0\.14\) 0px 1px 1px 0px, .*0\.12\) 0px 1px 3px 0px$/,
     );
     await openStory(page, "foundations-shadows--custom");
-    await expect(page.locator("[data-shadow]")).toHaveCount(10);
+    await expect(page.locator("[data-shadow]")).toHaveCount(shadowNames.length);
     await expect(page.locator('[data-shadow="--mt-shadow-z8"]')).toHaveCSS(
       "box-shadow",
       /0\.16\) 0px 8px 16px 0px$/,

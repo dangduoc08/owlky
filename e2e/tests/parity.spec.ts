@@ -30,6 +30,7 @@ const pairs: [component: string, story: string][] = [
   ["toggle-button", "disabled"],
   ["toggle-button", "colors"],
   ["toggle-button", "vertical"],
+  ["drawer", "anchor"],
 ];
 
 for (const [component, story] of pairs) {

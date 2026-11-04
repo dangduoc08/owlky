@@ -13,7 +13,7 @@ import {
   type Ref,
 } from "react";
 
-interface ButtonOwnProps {
+export interface ButtonOwnProps {
   /** Visual style. Default `"text"`. */
   variant?: ButtonVariant | undefined;
   /** Default `"inherit"` (neutral). `black` / `white` are meant for light / dark surfaces. */

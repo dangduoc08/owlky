@@ -357,6 +357,8 @@ export const defaultTheme: Theme = {
       { x: -20, y: 20, blur: 40, spread: -4, alpha: 24 },
     ],
     dialog: [{ x: -40, y: 40, blur: 80, spread: -8, alpha: 24 }],
+    // Mirror of `dialog` for surfaces attached to the inline start (left drawers).
+    dialogStart: [{ x: 40, y: 40, blur: 80, spread: -8, alpha: 24 }],
   },
   elevation: elevationLayers(),
   colorShadow: { x: 0, y: 8, blur: 16, spread: 0, alpha: 24 },
