@@ -22,13 +22,15 @@
     "check:packages": "node scripts/check-packages.mjs",
     "check:boundaries": "node scripts/check-boundaries.mjs",
     "check:size": "node scripts/check-size.mjs",
-    "check": "pnpm lint && pnpm build && pnpm typecheck && pnpm check:boundaries && pnpm check:size && pnpm check:packages && pnpm test",
+    "check": "pnpm lint && pnpm build && pnpm typecheck && pnpm check:boundaries && pnpm check:size && pnpm check:packages && pnpm check:specs && pnpm test",
     "changeset": "changeset",
     "version-packages": "changeset version && node scripts/sync-versions.mjs && pnpm install --lockfile-only",
     "release": "pnpm build && pnpm -r --filter \"./packages/*\" publish --access public --no-git-checks",
     "test:visual:docker": "docker run --rm --ipc=host --network=host -v \"$PWD\":/work -w /work/e2e -e CI=1 mcr.microsoft.com/playwright:v1.64.1-noble npx playwright test --grep @visual --project chromium",
     "test:visual:update": "docker run --rm --ipc=host --network=host -v \"$PWD\":/work -w /work/e2e mcr.microsoft.com/playwright:v1.64.1-noble npx playwright test --grep @visual --project chromium --update-snapshots",
-    "check:release": "node scripts/check-release.mjs"
+    "check:release": "node scripts/check-release.mjs",
+    "specs:options": "node scripts/spec-options.mjs",
+    "check:specs": "node scripts/spec-options.mjs --check"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "0.18.5",

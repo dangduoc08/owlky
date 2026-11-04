@@ -15,6 +15,8 @@ import {
   iconButtonColors,
   iconButtonSizes,
   orientations,
+  sortableAttributes,
+  sortableLayouts,
   toggleButtonAttributes,
   toggleButtonColors,
   toggleButtonSizes,
@@ -163,7 +165,7 @@ describe("toggleButtonAttributes", () => {
   it("emits explicit defaults and rejects unknown values", () => {
     const defaults = {
       "data-mt-toggle-button": "",
-      "data-mt-color": "inherit",
+      "data-mt-color": "standard",
       "data-mt-size": "md",
     };
     expect(toggleButtonAttributes()).toEqual(defaults);
@@ -181,12 +183,57 @@ describe("toggleButtonAttributes", () => {
 
 describe("drawerAttributes", () => {
   it("emits explicit defaults and rejects unknown values", () => {
-    const defaults = { "data-mt-drawer": "", "data-mt-anchor": "left" };
+    const defaults = {
+      "data-mt-drawer": "",
+      "data-mt-anchor": "left",
+      "data-mt-variant": "temporary",
+    };
     expect(drawerAttributes()).toEqual(defaults);
     expect(drawerAttributes({ anchor: HOSTILE })).toEqual(defaults);
   });
 
   it.each(drawerAnchors)("maps anchor %s", (anchor) => {
     expect(drawerAttributes({ anchor })["data-mt-anchor"]).toBe(anchor);
+  });
+});
+
+describe("sortableAttributes", () => {
+  it("emits explicit defaults and rejects unknown values", () => {
+    const defaults = { "data-mt-sortable": "", "data-mt-layout": "grid" };
+    expect(sortableAttributes()).toEqual(defaults);
+    expect(sortableAttributes({ layout: HOSTILE })).toEqual(defaults);
+  });
+
+  it.each(sortableLayouts)("maps layout %s", (layout) => {
+    expect(sortableAttributes({ layout })["data-mt-layout"]).toBe(layout);
+  });
+});
+
+describe("options added in the upstream API review", () => {
+  it("button and toggle flags; optional icon button edge", () => {
+    expect(buttonAttributes({ disableElevation: true })).toHaveProperty(
+      "data-mt-disable-elevation",
+      "",
+    );
+    expect(toggleButtonAttributes({ fullWidth: true })).toHaveProperty("data-mt-full-width", "");
+    expect(toggleGroupAttributes({ fullWidth: true })).toHaveProperty("data-mt-full-width", "");
+    expect(buttonGroupAttributes({ fullWidth: true })).toHaveProperty("data-mt-full-width", "");
+    expect(iconButtonAttributes({ edge: "end", loading: true })).toMatchObject({
+      "data-mt-edge": "end",
+      "data-mt-loading": "",
+    });
+    expect(iconButtonAttributes({ edge: HOSTILE })).not.toHaveProperty("data-mt-edge");
+  });
+
+  it("drawer variants and flags", () => {
+    expect(
+      drawerAttributes({ variant: "permanent", hideBackdrop: true, disableEscapeKeyDown: true }),
+    ).toEqual({
+      "data-mt-drawer": "",
+      "data-mt-anchor": "left",
+      "data-mt-variant": "permanent",
+      "data-mt-hide-backdrop": "",
+      "data-mt-disable-escape-key-down": "",
+    });
   });
 });

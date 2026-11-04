@@ -2,10 +2,11 @@
  * Button group — spec: specs/components/button-group.md
  *
  * Anatomy:  div[role="group"][data-mt-button-group] › [data-mt-button]…
- * Modifiers: data-mt-orientation = horizontal (default) | vertical
+ * Modifiers: data-mt-orientation = horizontal (default) | vertical, data-mt-full-width
  *
  * The group only joins its Buttons (see button.css for their look): outer corners rounded, a 1px
- * separator between buttons, shared borders for outlined buttons, no hover shadow. Loaded after
+ * separator between buttons, shared borders for outlined buttons (no hover shadow comes from the buttons'
+ * data-mt-disable-elevation, on by default in groups). Loaded after
  * button.css; every selector is a single :where() in @layer components, so source order decides.
  * Translucent colors use channels, never color-mix() (AGENTS.md).
  */
@@ -23,6 +24,15 @@
     flex-direction: column;
   }
 
+  :where([data-mt-button-group][data-mt-full-width]) {
+    display: flex;
+    width: 100%;
+  }
+
+  :where([data-mt-button-group][data-mt-full-width] > [data-mt-button]) {
+    flex: 1 1 0;
+  }
+
   :where([data-mt-button-group] > [data-mt-button]) {
     /* Separator: palette `dark` for colored buttons, neutral grey otherwise. */
     --_mt-group-channel: var(--mt-palette-grey-500-channel);
@@ -30,7 +40,6 @@
     --_mt-separator: rgb(var(--_mt-group-channel) / var(--_mt-separator-alpha));
 
     min-width: calc(var(--mt-spacing) * 10);
-    box-shadow: none;
   }
 
   :where([data-mt-button-group] > [data-mt-color="primary"]) {
@@ -134,12 +143,6 @@
       > [data-mt-variant="outlined"]:not(:last-child)
   ) {
     border-block-end-color: transparent;
-  }
-
-  @media (hover: hover) {
-    :where([data-mt-button-group] > [data-mt-button]:hover) {
-      box-shadow: none;
-    }
   }
 
   /* Keep the focus outline above the neighbouring buttons. */

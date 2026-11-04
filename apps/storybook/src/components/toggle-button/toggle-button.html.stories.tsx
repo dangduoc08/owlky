@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { htmlSetup, snippetStory } from "../shared/snippets.js";
-import { TOGGLE_FILES } from "./toggle-button-examples.js";
+import { TOGGLE_CONTROLS, TOGGLE_FILES } from "./toggle-button-examples.js";
 
 const snippets = import.meta.glob(
   "../../../../../packages/html/src/components/toggle-button/examples/*.html",
@@ -9,7 +9,7 @@ const snippets = import.meta.glob(
 
 const SETUP = htmlSetup(["toggle-button.css"], true);
 const story = (name: string, label?: string): StoryObj => ({
-  ...snippetStory(snippets, name, TOGGLE_FILES[name] ?? [], SETUP),
+  ...snippetStory(snippets, name, TOGGLE_FILES[name] ?? [], SETUP, TOGGLE_CONTROLS),
   ...(label ? { name: label } : {}),
 });
 

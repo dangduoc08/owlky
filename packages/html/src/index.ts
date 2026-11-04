@@ -12,6 +12,7 @@ export type {
   DrawerInstance,
 } from "./components/drawer/drawer.js";
 export { components } from "./components/index.js";
+export type { SortableInstance } from "./components/sortable/sortable.js";
 export type { ToggleButtonInstance } from "./components/toggle-button/toggle-button.js";
 export type { ToggleGroupInstance } from "./components/toggle-group/toggle-group.js";
 export { defineComponent, readBooleanOption } from "./runtime/define.js";

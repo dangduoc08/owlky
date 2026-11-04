@@ -22,6 +22,8 @@ export interface ButtonOwnProps {
   size?: ButtonSize | undefined;
   /** Stretch to the container width. */
   fullWidth?: boolean | undefined;
+  /** No shadow on contained buttons (on by default inside a ButtonGroup). */
+  disableElevation?: boolean | undefined;
   /** Decorative icon before the label (hidden from assistive technology). */
   startIcon?: ReactNode;
   /** Decorative icon after the label (hidden from assistive technology). */
@@ -59,6 +61,7 @@ export const Button = forwardRef<HTMLButtonElement | HTMLAnchorElement, ButtonPr
       color,
       size,
       fullWidth,
+      disableElevation,
       startIcon,
       endIcon,
       loading = false,
@@ -73,6 +76,7 @@ export const Button = forwardRef<HTMLButtonElement | HTMLAnchorElement, ButtonPr
       color,
       size,
       fullWidth,
+      disableElevation,
       loading,
       loadingPosition,
     });

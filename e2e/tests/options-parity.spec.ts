@@ -1,0 +1,57 @@
+import { type OptionSpec, optionSchemas } from "@minimal-tailwind/core";
+import { expect, test } from "@playwright/test";
+import { normalizeStory, openStory, storyId } from "./helpers.js";
+
+/**
+ * ADR-0015: every option offered in the stories' Controls exists in both implementations and
+ * gives the same DOM — React through props, HTML through attributes. One story per component;
+ * each option is set to a non-default value in both and the anatomies are compared.
+ */
+const CASES: [
+  component: string,
+  story: string,
+  schema: keyof typeof optionSchemas,
+  keys: string[],
+][] = [
+  ["button", "contained", "button", ["size", "disabled", "fullWidth", "disableElevation"]],
+  ["icon-button", "colors", "icon-button", ["size", "edge", "disabled", "animate"]],
+  ["fab", "default", "fab", ["size", "disabled", "animate"]],
+  ["button-group", "outlined", "button-group", ["orientation", "size", "fullWidth", "disabled"]],
+  ["toggle-button", "colors", "toggle-button", ["size", "color", "fullWidth", "disabled"]],
+  ["drawer", "anchor", "drawer", ["hideBackdrop", "disableEscapeKeyDown"]],
+  ["sortable", "grid", "sortable", ["layout"]],
+];
+
+/** A non-default value for the option, in Storybook's URL args syntax. */
+function testValue(spec: OptionSpec): string {
+  if (spec.kind === "style") {
+    return spec.optional
+      ? (spec.values[0] as string)
+      : (spec.values.find((v) => v !== spec.default) as string);
+  }
+  if (spec.kind === "behavior") return spec.default ? "!false" : "!true";
+  return "!true";
+}
+
+for (const [component, story, schemaName, keys] of CASES) {
+  const schema = optionSchemas[schemaName];
+  for (const key of keys) {
+    const spec = schema.options[key as keyof typeof schema.options] as OptionSpec;
+    const args = `${key}:${testValue(spec)}`;
+    test(`${component}: option ${args} gives the same anatomy in React and HTML`, async ({
+      page,
+      browserName,
+    }) => {
+      test.skip(browserName !== "chromium", "Structure is browser-independent.");
+      await openStory(page, storyId("react", component, story), "light", args);
+      const react = await normalizeStory(page);
+      await openStory(page, storyId("html", component, story), "light", args);
+      const html = await normalizeStory(page);
+      expect(react).toEqual(html);
+      // The option really changed something (or is a runtime behavior read on action).
+      await openStory(page, storyId("html", component, story));
+      const pristine = await normalizeStory(page);
+      if (spec.kind !== "behavior") expect(html).not.toEqual(pristine);
+    });
+  }
+}

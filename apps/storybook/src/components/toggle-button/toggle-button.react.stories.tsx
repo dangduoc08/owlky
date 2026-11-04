@@ -1,9 +1,12 @@
+import { ToggleButton } from "@minimal-tailwind/react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { reactGroupsStory } from "../../helpers/groups.js";
-import { toggleStories } from "./toggle-button-examples.js";
+import { reactGroupsStory, type StoryControls } from "../../helpers/groups.js";
+import { TOGGLE_CONTROLS, toggleStories } from "./toggle-button-examples.js";
+
+const controls: StoryControls = { ...TOGGLE_CONTROLS, target: ToggleButton };
 
 const story = (name: string, label?: string): StoryObj => ({
-  ...reactGroupsStory(toggleStories[name] ?? []),
+  ...reactGroupsStory(toggleStories[name] ?? [], controls),
   ...(label ? { name: label } : {}),
 });
 

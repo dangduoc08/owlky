@@ -10,13 +10,13 @@ import { Drawer, DrawerClose, DrawerContent, type DrawerProps, DrawerTrigger } f
 
 function Example({
   anchor,
-  closeOnEscape,
-  closeOnBackdropClick,
+  disableEscapeKeyDown,
+  hideBackdrop,
   ...props
 }: DrawerProps & {
   anchor?: "left" | "right" | "top" | "bottom";
-  closeOnEscape?: boolean;
-  closeOnBackdropClick?: boolean;
+  disableEscapeKeyDown?: boolean;
+  hideBackdrop?: boolean;
 }) {
   return (
     <Drawer {...props}>
@@ -24,8 +24,8 @@ function Example({
       <DrawerContent
         anchor={anchor}
         aria-label="Menu"
-        closeOnEscape={closeOnEscape}
-        closeOnBackdropClick={closeOnBackdropClick}
+        disableEscapeKeyDown={disableEscapeKeyDown}
+        hideBackdrop={hideBackdrop}
       >
         <Button>Inside</Button>
         <DrawerClose>Close</DrawerClose>
@@ -37,6 +37,62 @@ function Example({
 const dialog = () => document.querySelector("dialog") as HTMLDialogElement;
 const backdropClick = () =>
   userEvent.click(dialog(), { position: { x: window.innerWidth - 10, y: 10 } });
+
+function RefuseBackdrop({ report }: { report: (open: boolean, reason?: string) => void }) {
+  const [open, setOpen] = useState(true);
+  return (
+    <Example
+      open={open}
+      onOpenChange={(next, reason) => {
+        report(next, reason);
+        if (reason !== "backdrop") setOpen(next);
+      }}
+    />
+  );
+}
+
+describe("Docked drawers", () => {
+  it("persistent: an <aside> toggled by its trigger (aria-expanded, aria-controls), no modal", async () => {
+    const onOpenChange = vi.fn();
+    render(
+      <Drawer variant="persistent" onOpenChange={onOpenChange}>
+        <DrawerTrigger>Menu</DrawerTrigger>
+        <DrawerContent aria-label="Nav" anchor="right">
+          <Button>Inside</Button>
+        </DrawerContent>
+      </Drawer>,
+    );
+    const aside = screen.getByLabelText("Nav", { selector: "aside" });
+    const trigger = screen.getByRole("button", { name: "Menu" });
+    expect(aside.dataset).toMatchObject({ mtVariant: "persistent", mtAnchor: "right" });
+    expect(aside.hidden).toBe(true);
+    expect(trigger.getAttribute("aria-controls")).toBe(aside.id);
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+    expect(trigger.hasAttribute("aria-haspopup")).toBe(false);
+    await userEvent.click(trigger);
+    expect(aside.hidden).toBe(false);
+    expect(trigger.getAttribute("aria-expanded")).toBe("true");
+    expect(isScrollLocked()).toBe(false);
+    await userEvent.click(trigger);
+    expect(aside.hidden).toBe(true);
+    expect(onOpenChange.mock.calls).toEqual([[true], [false, "close"]]);
+  });
+
+  it("permanent: always shown, keeps a custom id and has no axe violations", async () => {
+    render(
+      <Drawer variant="permanent" open={false}>
+        <DrawerContent aria-label="Side" id="side">
+          <Button>Link</Button>
+        </DrawerContent>
+      </Drawer>,
+    );
+    const aside = screen.getByLabelText("Side", { selector: "aside" });
+    expect(aside.hidden).toBe(false);
+    expect(aside.id).toBe("side");
+    expect(getComputedStyle(aside.firstElementChild as Element).boxShadow).toBe("none");
+    await expectNoAxeViolations();
+  });
+});
 
 describe("Drawer anatomy", () => {
   it("renders a closed, named drawer with explicit defaults and a trigger", () => {
@@ -59,7 +115,7 @@ describe("Drawer anatomy", () => {
   });
 
   it("forwards object and callback refs to the dialog", () => {
-    const objectRef = { current: null as HTMLDialogElement | null };
+    const objectRef = { current: null as HTMLElement | null };
     let fromCallback: HTMLDialogElement | null = null;
     render(
       <>
@@ -69,7 +125,7 @@ describe("Drawer anatomy", () => {
         <Drawer>
           <DrawerContent
             ref={(node) => {
-              fromCallback = node;
+              fromCallback = node as HTMLDialogElement | null;
             }}
             aria-label="B"
           />
@@ -121,7 +177,7 @@ describe("Drawer behavior", () => {
     expect(dialog().open).toBe(false);
     expect(document.activeElement).toBe(trigger);
     expect(isScrollLocked()).toBe(false);
-    expect(onOpenChange.mock.calls).toEqual([[true], [false]]);
+    expect(onOpenChange.mock.calls).toEqual([[true], [false, "escape"]]);
   });
 
   it("backdrop click and DrawerClose close it; a click inside doesn't", async () => {
@@ -136,11 +192,27 @@ describe("Drawer behavior", () => {
     expect(dialog().open).toBe(false);
   });
 
-  it("closeOnEscape / closeOnBackdropClick = false keep it open", async () => {
-    render(<Example defaultOpen closeOnEscape={false} closeOnBackdropClick={false} />);
+  it("disableEscapeKeyDown ignores Escape; hideBackdrop keeps the drawer modal", async () => {
+    render(<Example defaultOpen disableEscapeKeyDown hideBackdrop />);
+    expect(dialog().dataset).toMatchObject({ mtDisableEscapeKeyDown: "", mtHideBackdrop: "" });
     await userEvent.keyboard("{Escape}");
+    expect(dialog().open).toBe(true);
+    expect(getComputedStyle(dialog(), "::backdrop").backgroundColor).toBe("rgba(0, 0, 0, 0)");
+    await backdropClick();
+    expect(dialog().open).toBe(false);
+  });
+
+  it("reports why it closes; a controlled owner can refuse by reason", async () => {
+    const onOpenChange = vi.fn();
+    render(<RefuseBackdrop report={onOpenChange} />);
     await backdropClick();
     expect(dialog().open).toBe(true);
+    await userEvent.keyboard("{Escape}");
+    expect(dialog().open).toBe(false);
+    expect(onOpenChange.mock.calls).toEqual([
+      [false, "backdrop"],
+      [false, "escape"],
+    ]);
   });
 
   it("controlled: the owner decides; preventDefault on trigger / close cancels", async () => {
@@ -152,7 +224,7 @@ describe("Drawer behavior", () => {
     rerender(<Example open onOpenChange={onOpenChange} />);
     expect(dialog().open).toBe(true);
     await userEvent.keyboard("{Escape}");
-    expect(onOpenChange).toHaveBeenLastCalledWith(false);
+    expect(onOpenChange).toHaveBeenLastCalledWith(false, "escape");
     expect(dialog().open).toBe(true);
 
     rerender(

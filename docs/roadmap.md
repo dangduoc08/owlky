@@ -42,6 +42,38 @@ bottom). Native `<dialog>` + core `createModalController()` (restored from the r
 shared by future modals). Token added: `--mt-shadow-dialog-start`. Demo menu content is styled in
 the Storybook preview until a List component exists.
 
+## ✅ Components — Sortable (2026-11-04)
+Created with `/component` from the reference "Dnd" page (stories: Grid, Vertical, Horizontal).
+Core `createSortableController()`: Pointer Events dragging (mouse, touch, pen), keyboard and
+two-tap moves (WCAG 2.1.1 / 2.5.7), live announcements; remove buttons built in, "Add item" is app
+logic (HTML: `<template data-mt-sortable-template>`). No new tokens.
+
+## Pending integrations
+Places that use a native feature, demo markup or a small built-in part until the component exists
+— any component, not only these. When that component is built, integrate these in the same review
+(additive: no DOM or API change).
+
+| Waiting for | Where | Today |
+|---|---|---|
+| Scrollbar | `sortable.css` (vertical, horizontal), `drawer.css` (`[data-mt-drawer-content]`) | native scrolling (`overflow: auto`), OS scrollbar |
+| List | Drawer stories (mailbox menu) | demo `<nav><ul><button>` styled in `.storybook/preview.css` |
+| Typography (display text) | Sortable stories (card numbers) | demo `<span>` styled in `.storybook/preview.css` |
+| Progress | Button loading: `[data-mt-button-spinner]` in `button.css` (library) | own spinner; keep the attribute as public anatomy and share Progress's styles / tokens |
+| Divider | Drawer stories (mailbox menu) | demo `<hr>` styled in `.storybook/preview.css` |
+| Backdrop | Drawer: native `::backdrop` | share `--mt-backdrop` with a future Backdrop component |
+
+## ✅ Upstream API review (ADR-0015, 2026-11-04)
+Components checked against their upstream API (MUI). Rule from the owner: what the Minimals page
+shows wins, otherwise the upstream component. Added: Button / ButtonGroup `disableElevation`,
+ButtonGroup / ToggleButton / ToggleButtonGroup `fullWidth`, IconButton `edge` + `loading`, Fab
+`href`, Drawer `variant` (temporary / persistent / permanent), `hideBackdrop`,
+`disableEscapeKeyDown`, `onOpenChange(open, reason)`. Renamed: Toggle neutral color `inherit` →
+`standard`; Drawer `closeOnEscape` → `disableEscapeKeyDown`, `closeOnBackdropClick` removed (refuse
+with the reason). Defaults: ButtonGroup `variant="outlined"`.
+
+**Backlog (deferred):** Sortable auto-scroll while dragging near an edge; "Move to top / bottom"
+keyboard actions (pragmatic-drag-and-drop accessibility guidance).
+
 ## Next — components (awaiting the owner's go-ahead)
 Order to be confirmed. Candidate sequence, each in React + HTML with parity tests:
 1. Form controls: Input, Textarea, Checkbox, Radio/RadioGroup (+ restore empty export globs)

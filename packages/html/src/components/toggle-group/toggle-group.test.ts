@@ -14,7 +14,7 @@ afterEach(() => {
 });
 
 const button = (value: string, pressed = false, extra = "") =>
-  `<button type="button" data-mt-toggle-button data-mt-color="inherit" data-mt-size="md" value="${value}" aria-pressed="${pressed}" aria-label="${value}" ${extra}></button>`;
+  `<button type="button" data-mt-toggle-button data-mt-color="standard" data-mt-size="md" value="${value}" aria-pressed="${pressed}" aria-label="${value}" ${extra}></button>`;
 
 function setup(exclusive: boolean, inner: string) {
   const host = mount(

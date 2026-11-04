@@ -26,7 +26,7 @@ Read this first (humans and AI agents). Architecture: `docs/architecture.md`. De
 | Root / part attribute | `data-mt-<component>[-<part>]`        | `data-mt-dialog-title`         |
 | Modifier              | `data-mt-variant/color/size/…`        | `data-mt-size="sm"`            |
 | HTML trigger          | `data-mt-<component>-<action>="<id>"` | `data-mt-dialog-open="x"`      |
-| HTML option           | `data-mt-<option>`                    | `data-mt-escape-close="false"` |
+| HTML option           | `data-mt-<option>`                    | `data-mt-disable-escape-key-down` |
 | Event                 | `mt:<component>:<event>`              | `mt:dialog:beforeclose`        |
 | Public CSS variable   | `--mt-<group>-<name>`                 | `--mt-palette-primary-main`    |
 | Private CSS variable  | `--_mt-<name>` (component-internal)   | `--_mt-main`                   |
@@ -34,8 +34,11 @@ Read this first (humans and AI agents). Architecture: `docs/architecture.md`. De
 
 ## Adding a component (checklist)
 
-1. `specs/components/<name>.md` (template in `specs/README.md`).
-2. `core/src/anatomy/anatomy.ts`: `<name>Attributes()`; behavior → `core/src/<name>/` + tests
+1. `specs/components/<name>.md` (template in `specs/README.md`). Its Options table is generated:
+   add `<!-- options:<schema> -->` / `<!-- /options:<schema> -->` markers and the schema to
+   `scripts/spec-options.mjs`, then `pnpm build && pnpm specs:options` (`check:specs` in CI).
+2. `core/src/anatomy/anatomy.ts`: the option schema `<name>Options` (`defineOptions`, ADR-0015) and
+   `<name>Attributes()` built from it (`optionAttributes`); behavior → `core/src/<name>/` + tests
    (native **and** fallback paths), exported from `core/src/index.ts`.
 3. `styles/src/components/<name>.css` + `@import` in `styles/src/index.css`. (First component
    only: restore the `"./components/*": "./dist/components/*"` export in `styles/package.json`.)
@@ -48,6 +51,11 @@ Read this first (humans and AI agents). Architecture: `docs/architecture.md`. De
    `<name>.html.stories.tsx` (**same story names**). No docs page and no Playground: build stories
    with `reactGroupsStory()` / `snippetStory(…, htmlSetup(css, runtime))`, so each story's
    **Code** panel shows the source with what to import, plus a copy button.
+   Controls come from the option schema (ADR-0015): export `<NAME>_CONTROLS = { schema, keys }`
+   from the examples file and pass it to both stories — React `reactGroupsStory(groups,
+   { ...CONTROLS, target })`, HTML `snippetStory(…, setup, CONTROLS)`. Only options that change
+   every example at once; defaults keep the examples identical. Add the component to
+   `e2e/tests/options-parity.spec.ts`.
 7. E2E: add pairs to `e2e/tests/parity.spec.ts` (first component: restore it with
    `git show bd5fb2d:e2e/tests/parity.spec.ts`); interaction spec for both implementations.
 8. `pnpm changeset`, then `pnpm check`.
@@ -112,6 +120,16 @@ and small-screen tests pick up new stories automatically from Storybook's `index
 - Modal components use core `createModalController(element, { contentSelector })` (native
   `<dialog>` + fallback). Test React modal behavior through the built core: core's own tests must
   cover the controller (React tests don't count toward `core/src` coverage).
+- Interactive DOM behavior that moves nodes must expect focus loss: moving the focused element
+  blurs it (Firefox fires `focusout` during the move; Safari doesn't focus buttons on click).
+  `createSortableController` holds focus across owner updates and ignores press-related focusouts.
+- Parity normalization skips `<template>` (HTML-only markup such as Sortable's new-item template).
+- Examples with state can't be expanded by `jsxSource()`: pass the Code panel source to
+  `reactGroupsStory(groups, code)` (see Sortable).
+- General rule for any part the library doesn't have yet (scrollbar, list, progress, divider,
+  typography, backdrop, …): use a native feature or story-only demo markup, never a library
+  stand-in, and list it in `docs/roadmap.md` → "Pending integrations", so the later component can
+  integrate it without breaking DOM or API.
 - `--mt-spacing` is **4px** (Tailwind scale): `calc(var(--mt-spacing) * 9)` = 36px. Convert
   reference px values by dividing by 4.
 - HTML behavior-only folders (e.g. `toggle-group`, whose markup lives in `toggle-button/examples`)

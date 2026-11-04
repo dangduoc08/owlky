@@ -1,3 +1,4 @@
+import { iconButtonOptions } from "@minimal-tailwind/core";
 import { IconButton, type IconButtonColor } from "@minimal-tailwind/react";
 import type { ReactGroup } from "../../helpers/groups.js";
 import { MailIcon } from "../button/button-examples.js";
@@ -87,3 +88,9 @@ export const ICON_BUTTON_FILES: Record<string, GroupFiles> = {
   sizes: [["Sizes", "group"]],
   animate: [["With animate", "group"]],
 };
+
+/** Story Controls shared by the React and HTML stories (ADR-0015). */
+export const ICON_BUTTON_CONTROLS = {
+  schema: iconButtonOptions,
+  keys: ["size", "edge", "disabled", "animate"],
+} as const;

@@ -56,6 +56,13 @@ project. Never copy the reference's source code, branding or assets.
    - dark mode, if the reference has a toggle.
    Look at the screenshots. Never copy text or code verbatim; record values.
 
+   **Read the upstream component (ADR-0015).** The reference page links the component it is built
+   on (the first link under the title: MUI, Atlassian pragmatic-drag-and-drop, simplebar…). Read
+   its API page (MUI: `https://mui.com/material-ui/api/<name>/`) and demo page with `WebFetch`:
+   every prop with its type, default and description, events / callbacks, keyboard and ARIA notes,
+   and the features the Minimals demo doesn't show (e.g. Drawer `variant`, `hideBackdrop`). Record
+   behavior and API only — never copy source code.
+
    **Update mode — also capture the current component** with the same script against the built
    Storybook (`pnpm build && pnpm storybook:build`, served by `e2e/serve.mjs`) for both
    implementations, and read its spec, CSS, React/HTML sources and tests. Build a **gap table**:
@@ -73,6 +80,15 @@ project. Never copy the reference's source code, branding or assets.
      same way as Button (`CONTRAST_EXEMPT` in the test helpers) — never disable axe wholesale.
 
 5. **Propose, then wait for approval** (review-gated workflow). Show the mode, then:
+   - the **API mapping table** (ADR-0015): every upstream prop → *kept* (same name) · *renamed*
+     (reason) · *deferred* (backlog row in `docs/roadmap.md`) · *not applicable* (reason: `sx`,
+     `classes`, `slotProps`, `component`, transition / ripple props…). Callbacks keep this
+     project's value-first shape (`onOpenChange(open, reason?)`, `onChange(value)`);
+   - **options beyond the reference:** every option found neither on the reference page nor
+     upstream, with its reason (accessibility, security, HTML parity) — each needs approval;
+   - the **React ↔ HTML option table**: each option's React prop, HTML attribute / state /
+     event / instance method per the ADR-0015 mapping, default and kind (`style` · `behavior` ·
+     `state`) — this becomes the component's option schema in `core/src/options/`;
    - the draft spec (anatomy with `data-mt-*` attributes, options table HTML ↔ React prop ↔
      default, states, keyboard, ARIA, events, **responsive behavior per breakpoint**) — following
      the template in `specs/README.md`;
@@ -92,6 +108,14 @@ project. Never copy the reference's source code, branding or assets.
        used (see [Visual regression](#visual-regression)); Chromatic or any other paid service or
        new dependency may only be *proposed* here, never added without approval;
    - the stories (one per reference section) and the files to be created (Create) or changed (Update);
+   - **reuse and stand-ins:** which existing components / core helpers this one reuses; every part
+     the reference builds from a component we don't have yet, and how it is covered meanwhile —
+     native platform feature or story-only demo markup, never a home-made stand-in in the library
+     (a later component must integrate without DOM or API changes); add each to
+     `docs/roadmap.md` → "Pending integrations";
+   - **integrations this component unlocks:** the rows of "Pending integrations" waiting for it
+     (and a search of existing components for the same pattern, e.g. `overflow: auto` for a
+     Scrollbar), with the planned change per dependent and its API impact (normally additive);
    - **Update mode:** the gap table and the planned change for each gap; the **public API
      impact** — none / additive (new option, value, story) / **breaking** (renamed or removed
      prop, `data-mt-*` attribute or value, `--mt-*` variable, event, changed default or DOM
@@ -115,7 +139,8 @@ project. Never copy the reference's source code, branding or assets.
    slice the approved gaps touch, always React **and** HTML together — keeping existing names,
    defaults and DOM unless a breaking change was approved; add the missing slices if any:
    1. `specs/components/<name>.md` (the approved spec)
-   2. `packages/core` — `<name>Attributes()` in `anatomy/anatomy.ts`; behavior controller in
+   2. `packages/core` — the option schema in `src/options/` (ADR-0015) and `<name>Attributes()`
+      in `anatomy/anatomy.ts` built from it; behavior controller in
       `src/<name>/` if interactive (reports intent, owns no state; native + fallback paths)
    3. `packages/styles/src/components/<name>.css` — single `:where()` selectors in
       `@layer components`, order base → sizes → variants → hover → focus → disabled, `--mt-*`
@@ -131,7 +156,8 @@ project. Never copy the reference's source code, branding or assets.
       `<name>.html.stories.tsx` with **identical story names = the reference sections**, default
       Storybook UI (no custom page chrome), no docs page or Playground: stories built with
       `reactGroupsStory()` / `snippetStory(…, htmlSetup())` so the Code panel shows the source,
-      the imports and a copy button
+      the imports and a copy button; both stories get the same Controls from the option schema
+      (`<NAME>_CONTROLS`, see AGENTS.md) and the component joins `options-parity.spec.ts`
    7. `e2e/tests` — parity pairs, an interaction spec (incl. touch on mobile widths) and a
       **responsive spec** (`<name>.responsive.spec.ts`) run for both implementations over the
       [Viewport matrix](#viewport-matrix); `a11y.spec.ts` and `visual.spec.ts` pick up stories
@@ -173,7 +199,8 @@ project. Never copy the reference's source code, branding or assets.
     viewport, light and dark) next to the reference capture. List remaining visual differences:
     fix the unintended ones, keep and report the intentional ones.
 
-12. **Document & hand off.** Update `docs/roadmap.md` / `CLAUDE.md` status, package READMEs if
+12. **Document & hand off.** Update `docs/roadmap.md` (status and "Pending integrations": add new
+    stand-ins, remove the rows this component closed) / `CLAUDE.md` status, package READMEs if
     exports changed, `AGENTS.md` gotchas for anything new you learned, and remind the user to add
     a changeset (`pnpm changeset`) at the level from step 5 — Update mode with breaking changes
     also lists the migration notes for the changeset and the `!` / `BREAKING CHANGE:` commit

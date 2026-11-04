@@ -1,5 +1,8 @@
+import type { OptionSchema } from "@minimal-tailwind/core";
 import type { StoryObj } from "@storybook/react-vite";
-import type { ReactNode } from "react";
+import { type ReactNode, useLayoutEffect, useRef } from "react";
+import { applyArgs } from "./apply-args.js";
+import { applyHtmlArgs, schemaControls } from "./controls.js";
 import { jsxSource } from "./jsx-source.js";
 
 /*
@@ -34,12 +37,68 @@ export function Groups({ groups }: { groups: ReactGroup[] }) {
   );
 }
 
-/** React story: the groups plus their JSX (with imports) in the Code panel. */
-export function reactGroupsStory(groups: ReactGroup[]): StoryObj {
+/**
+ * Story Controls (ADR-0015): options of `schema`, applied to every example — as props of `target`
+ * in React, as attributes in HTML.
+ */
+export interface StoryControls {
+  schema: OptionSchema;
+  keys: readonly string[];
+  /** React: the component (or stateful demo) that receives the props. */
+  target?: unknown;
+}
+
+/**
+ * React story: the groups plus their JSX (with imports) in the Code panel. `controls` adds props
+ * that change every example at once (defaults leave the examples untouched). Pass `code` for
+ * examples that keep state (their components can't be expanded into JSX).
+ */
+export function reactGroupsStory(
+  groups: ReactGroup[],
+  controls?: StoryControls,
+  code?: string,
+): StoryObj {
   return {
-    render: () => <Groups groups={groups} />,
-    parameters: { docs: { source: { language: "tsx", code: jsxSource(groups) } } },
+    render: (args) => (
+      <Groups
+        groups={
+          controls
+            ? groups.map((group) => ({
+                ...group,
+                content: applyArgs(group.content, controls.target, args),
+              }))
+            : groups
+        }
+      />
+    ),
+    ...(controls ? { argTypes: schemaControls(controls.schema, controls.keys) } : {}),
+    parameters: { docs: { source: { language: "tsx", code: code ?? jsxSource(groups) } } },
   };
+}
+
+function HtmlGroups({
+  groups,
+  controls,
+  args,
+}: {
+  groups: HtmlGroup[];
+  controls: StoryControls | undefined;
+  args: Record<string, unknown>;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    if (controls && ref.current) applyHtmlArgs(ref.current, controls.schema, args);
+  }, [controls, args]);
+  return (
+    <div ref={ref} className="sb-groups">
+      {groups.map((group) => (
+        <Group key={group.title} title={group.title}>
+          {/* biome-ignore lint/security/noDangerouslySetInnerHtml: trusted, repository-owned snippet files. */}
+          <div className="sb-row" dangerouslySetInnerHTML={{ __html: group.html }} />
+        </Group>
+      ))}
+    </div>
+  );
 }
 
 export interface HtmlGroup {
@@ -52,18 +111,17 @@ export interface HtmlGroup {
  * HTML story: the same groups, each row filled with a canonical snippet. `setup` (what to load:
  * CSS, runtime) heads the code shown in the Code panel.
  */
-export function htmlGroupsStory(groups: HtmlGroup[], setup = ""): StoryObj {
+export function htmlGroupsStory(
+  groups: HtmlGroup[],
+  setup = "",
+  controls?: StoryControls,
+): StoryObj {
   return {
-    render: () => (
-      <div className="sb-groups">
-        {groups.map((group) => (
-          <Group key={group.title} title={group.title}>
-            {/* biome-ignore lint/security/noDangerouslySetInnerHtml: trusted, repository-owned snippet files. */}
-            <div className="sb-row" dangerouslySetInnerHTML={{ __html: group.html }} />
-          </Group>
-        ))}
-      </div>
+    render: (args) => (
+      // A new key per args value re-inserts pristine snippets before the args are written.
+      <HtmlGroups key={JSON.stringify(args)} groups={groups} controls={controls} args={args} />
     ),
+    ...(controls ? { argTypes: schemaControls(controls.schema, controls.keys) } : {}),
     parameters: {
       docs: {
         source: {

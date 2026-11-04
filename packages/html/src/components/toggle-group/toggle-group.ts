@@ -2,6 +2,7 @@ import {
   fromSelection,
   nextToggleSelection,
   type ToggleGroupValue,
+  toggleGroupOptions,
   toSelection,
 } from "@minimal-tailwind/core";
 import { defineComponent } from "../../runtime/define.js";
@@ -29,7 +30,7 @@ export const toggleGroup = defineComponent<ToggleGroupInstance>({
   selector: "[data-mt-toggle-group]",
 
   setup(element, { emit }) {
-    const exclusive = () => element.hasAttribute("data-mt-exclusive");
+    const exclusive = () => element.hasAttribute(toggleGroupOptions.options.exclusive.attr);
     /** Own buttons only: a nested group keeps its own buttons. */
     const buttons = () =>
       [...element.querySelectorAll<HTMLElement>("[data-mt-toggle-button]")].filter(

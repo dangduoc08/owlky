@@ -4,9 +4,9 @@ import {
   type FabVariant,
   fabAttributes,
 } from "@minimal-tailwind/core";
-import { type ButtonHTMLAttributes, forwardRef } from "react";
+import { type AnchorHTMLAttributes, type ButtonHTMLAttributes, forwardRef, type Ref } from "react";
 
-export interface FabProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "color"> {
+interface FabOwnProps {
   /** Default `"contained"`. */
   variant?: FabVariant | undefined;
   /** `default` (grey), `inherit` (dark) or a palette color. Default `"default"`. */
@@ -19,20 +19,41 @@ export interface FabProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 
   animate?: boolean | undefined;
 }
 
+export type FabAsButtonProps = FabOwnProps &
+  Omit<ButtonHTMLAttributes<HTMLButtonElement>, "color"> & { href?: undefined };
+
+export type FabAsLinkProps = FabOwnProps &
+  Omit<AnchorHTMLAttributes<HTMLAnchorElement>, "color"> & {
+    /** Renders an `<a>` with the fab styling. */
+    href: string;
+    /** Removes `href` and sets `aria-disabled`, so the link can't be followed. */
+    disabled?: boolean | undefined;
+  };
+
+export type FabProps = FabAsButtonProps | FabAsLinkProps;
+
 /**
- * Fab — spec: specs/components/fab.md. A native `<button type="button">`; round fabs need
- * `aria-label`, extended fabs are named by their label.
+ * Fab — spec: specs/components/fab.md. A native `<button type="button">`, or an `<a>` when `href`
+ * is set; round fabs need `aria-label`, extended fabs are named by their label.
  */
-export const Fab = forwardRef<HTMLButtonElement, FabProps>(function Fab(
-  { variant, color, size, extended, animate, type = "button", ...props },
+export const Fab = forwardRef<HTMLButtonElement | HTMLAnchorElement, FabProps>(function Fab(
+  { variant, color, size, extended, animate, ...rest },
   ref,
 ) {
-  return (
-    <button
-      ref={ref}
-      type={type}
-      {...fabAttributes({ variant, color, size, extended, animate })}
-      {...props}
-    />
-  );
+  const attributes = fabAttributes({ variant, color, size, extended, animate });
+  if (rest.href !== undefined) {
+    const { href, disabled, ...anchor } = rest as FabAsLinkProps;
+    return (
+      <a
+        ref={ref as Ref<HTMLAnchorElement>}
+        {...attributes}
+        {...anchor}
+        href={disabled ? undefined : href}
+        role={disabled ? "link" : anchor.role}
+        aria-disabled={disabled ? true : anchor["aria-disabled"]}
+      />
+    );
+  }
+  const { type = "button", ...button } = rest as FabAsButtonProps;
+  return <button ref={ref as Ref<HTMLButtonElement>} type={type} {...attributes} {...button} />;
 });

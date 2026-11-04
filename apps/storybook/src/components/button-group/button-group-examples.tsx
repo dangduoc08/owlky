@@ -1,3 +1,4 @@
+import { buttonGroupOptions } from "@minimal-tailwind/core";
 import { Button, ButtonGroup, type ButtonVariant, type ColorName } from "@minimal-tailwind/react";
 import type { ReactGroup } from "../../helpers/groups.js";
 import type { GroupFiles } from "../shared/snippets.js";
@@ -100,3 +101,9 @@ export const BUTTON_GROUP_FILES: GroupFiles = [
 ];
 export const SIZE_FILES: GroupFiles = [["Sizes", "group"]];
 export const ORIENTATION_FILES: GroupFiles = [["Vertical", "group"]];
+
+/** Story Controls shared by the React and HTML stories (ADR-0015). */
+export const BUTTON_GROUP_CONTROLS = {
+  schema: buttonGroupOptions,
+  keys: ["orientation", "size", "fullWidth", "disabled"],
+} as const;

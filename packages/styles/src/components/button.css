@@ -8,7 +8,8 @@
  *            data-mt-color   = inherit (default) | primary | secondary | info | success | warning
  *                              | error | black | white
  *            data-mt-size    = md (default) | sm | lg | xl
- *            data-mt-full-width, data-mt-loading + data-mt-loading-position = center | start | end
+ *            data-mt-full-width, data-mt-disable-elevation,
+ *            data-mt-loading + data-mt-loading-position = center | start | end
  * States:    :hover (hover-capable devices), :focus-visible, :disabled, [aria-disabled="true"]
  *
  * Every selector is a single :where() (zero specificity) inside @layer components, so rules apply
@@ -170,6 +171,10 @@
     :where([data-mt-button][data-mt-variant="contained"]:hover) {
       background-color: var(--_mt-hover);
       box-shadow: var(--_mt-shadow);
+    }
+
+    :where([data-mt-button][data-mt-disable-elevation]:hover) {
+      box-shadow: none;
     }
 
     :where([data-mt-button][data-mt-variant="outlined"]:hover) {

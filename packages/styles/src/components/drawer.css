@@ -4,6 +4,8 @@
  * Anatomy:  dialog[data-mt-drawer]          transparent, full-viewport layout container
  *             › div[data-mt-drawer-content] the visible paper
  * Modifiers: data-mt-anchor = left (default) | right | top | bottom
+ *            data-mt-variant = temporary (default: modal <dialog>) | persistent | permanent
+ *            (docked: an <aside> in the page flow, closed with `hidden`), data-mt-hide-backdrop
  * States:    [open]; [data-mt-fallback] when the browser lacks showModal() (ADR-0006).
  *
  * A click whose target is the <dialog> itself is a click outside the paper (backdrop click).
@@ -93,6 +95,75 @@
     margin: auto 0 0;
   }
 
+  :where([data-mt-drawer][data-mt-hide-backdrop])::backdrop {
+    background-color: transparent;
+  }
+
+  :where([data-mt-drawer][data-mt-hide-backdrop][data-mt-fallback]) {
+    background-color: transparent;
+  }
+
+  /* Docked (persistent / permanent): part of the page layout — no backdrop, no shadow, a divider
+     on the inner edge. Place it in a flex row (left / right) or column (top / bottom). */
+  :where(
+    [data-mt-drawer][data-mt-variant="persistent"],
+    [data-mt-drawer][data-mt-variant="permanent"]
+  ) {
+    position: relative;
+    inset: auto;
+    flex-shrink: 0;
+    width: auto;
+    height: auto;
+    overflow: visible;
+  }
+
+  :where(
+    [data-mt-drawer][data-mt-variant="persistent"]:not([hidden]),
+    [data-mt-drawer][data-mt-variant="permanent"]:not([hidden])
+  ) {
+    display: flex;
+  }
+
+  :where(
+    [data-mt-drawer][data-mt-variant="persistent"] > [data-mt-drawer-content],
+    [data-mt-drawer][data-mt-variant="permanent"] > [data-mt-drawer-content]
+  ) {
+    width: 100%;
+    max-width: none;
+    height: auto;
+    max-height: none;
+    margin: 0;
+    box-shadow: none;
+    border-right: 1px solid var(--mt-divider);
+  }
+
+  :where(
+    [data-mt-drawer][data-mt-variant="persistent"][data-mt-anchor="right"]
+      > [data-mt-drawer-content],
+    [data-mt-drawer][data-mt-variant="permanent"][data-mt-anchor="right"] > [data-mt-drawer-content]
+  ) {
+    border-right: 0;
+    border-left: 1px solid var(--mt-divider);
+  }
+
+  :where(
+    [data-mt-drawer][data-mt-variant="persistent"][data-mt-anchor="top"] > [data-mt-drawer-content],
+    [data-mt-drawer][data-mt-variant="permanent"][data-mt-anchor="top"] > [data-mt-drawer-content]
+  ) {
+    border-right: 0;
+    border-bottom: 1px solid var(--mt-divider);
+  }
+
+  :where(
+    [data-mt-drawer][data-mt-variant="persistent"][data-mt-anchor="bottom"]
+      > [data-mt-drawer-content],
+    [data-mt-drawer][data-mt-variant="permanent"][data-mt-anchor="bottom"]
+      > [data-mt-drawer-content]
+  ) {
+    border-right: 0;
+    border-top: 1px solid var(--mt-divider);
+  }
+
   /* Enter: slide in from the anchored edge, fade the backdrop in. */
   @starting-style {
     :where([data-mt-drawer][open] > [data-mt-drawer-content]) {
@@ -113,6 +184,34 @@
 
     :where([data-mt-drawer][open])::backdrop {
       opacity: 0;
+    }
+
+    /* A persistent drawer slides in when it is shown. */
+    :where(
+        [data-mt-drawer][data-mt-variant="persistent"]:not([hidden]) > [data-mt-drawer-content]
+      ) {
+      transform: translateX(-100%);
+    }
+
+    :where(
+        [data-mt-drawer][data-mt-variant="persistent"][data-mt-anchor="right"]:not([hidden])
+          > [data-mt-drawer-content]
+      ) {
+      transform: translateX(100%);
+    }
+
+    :where(
+        [data-mt-drawer][data-mt-variant="persistent"][data-mt-anchor="top"]:not([hidden])
+          > [data-mt-drawer-content]
+      ) {
+      transform: translateY(-100%);
+    }
+
+    :where(
+        [data-mt-drawer][data-mt-variant="persistent"][data-mt-anchor="bottom"]:not([hidden])
+          > [data-mt-drawer-content]
+      ) {
+      transform: translateY(100%);
     }
   }
 

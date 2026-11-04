@@ -5,11 +5,17 @@ export type Implementation = "react" | "html";
 export const implementations: Implementation[] = ["react", "html"];
 
 /** Opens one story in the bare Storybook iframe (no manager UI). */
-export async function openStory(page: Page, id: string, theme: "light" | "dark" = "light") {
+export async function openStory(
+  page: Page,
+  id: string,
+  theme: "light" | "dark" = "light",
+  /** Storybook URL args, e.g. `size:lg;disabled:!true`. */
+  args = "",
+) {
   // Components animate color changes; reduced motion (honored by the CSS) makes reads instant.
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto(
-    `/apps/storybook/storybook-static/iframe.html?id=${id}&viewMode=story&globals=theme:${theme};a11y.manual:!true`,
+    `/apps/storybook/storybook-static/iframe.html?id=${id}&viewMode=story&globals=theme:${theme};a11y.manual:!true${args ? `&args=${args}` : ""}`,
   );
   await page.locator("#storybook-root > *").first().waitFor();
   await page.waitForFunction((t) => document.documentElement.dataset["mtTheme"] === t, theme);
@@ -53,11 +59,10 @@ export function normalizeStory(page: Page): Promise<NormalizedNode> {
       // HTML runtime hooks and options; React expresses these as event handlers and props.
       "data-mt-dialog-open",
       "data-mt-dialog-close",
-      "data-mt-escape-close",
-      "data-mt-backdrop-close",
       "data-mt-open",
       "data-mt-drawer-open",
       "data-mt-drawer-close",
+      "data-mt-sortable-add",
     ]);
     const REFERENCES = new Set(["aria-labelledby", "aria-describedby", "aria-controls", "for"]);
 
@@ -81,7 +86,8 @@ export function normalizeStory(page: Page): Promise<NormalizedNode> {
             const last = children[children.length - 1];
             if (typeof last === "string") children[children.length - 1] = last + text;
             else children.push(text);
-          } else if (child instanceof Element) {
+          } else if (child instanceof Element && child.localName !== "template") {
+            // <template> holds HTML-only markup for new items (React renders them from state).
             children.push(walk(child));
           }
         }
@@ -121,6 +127,6 @@ export function storyIds(prefix: string): string[] {
 export const CONTRAST_EXEMPT = [
   '[data-mt-button][data-mt-color]:not([data-mt-color="inherit"]):not([data-mt-variant="soft"])',
   '[data-mt-fab]:not([data-mt-variant="soft"])',
-  '[data-mt-toggle-button][aria-pressed="true"]:not([data-mt-color="inherit"])',
+  '[data-mt-toggle-button][aria-pressed="true"]:not([data-mt-color="standard"])',
   "[data-swatch]",
 ];

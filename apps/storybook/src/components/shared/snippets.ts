@@ -1,5 +1,5 @@
 import type { StoryObj } from "@storybook/react-vite";
-import { htmlGroupsStory } from "../../helpers/groups.js";
+import { htmlGroupsStory, type StoryControls } from "../../helpers/groups.js";
 
 /** Group title ↔ snippet file suffix, in story order. */
 export type GroupFiles = readonly (readonly [title: string, file: string])[];
@@ -34,6 +34,7 @@ export function snippetStory(
   story: string,
   groups: GroupFiles,
   setup: string,
+  controls?: StoryControls,
 ): StoryObj {
   return htmlGroupsStory(
     groups.map(([title, file]) => {
@@ -44,5 +45,6 @@ export function snippetStory(
       return { title, html: entry[1] };
     }),
     setup,
+    controls,
   );
 }

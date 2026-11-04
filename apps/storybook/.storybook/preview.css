@@ -20,6 +20,8 @@
 /* Story layout for grouped examples (see src/helpers/groups.tsx). */
 .sb-groups {
   display: grid;
+  /* One column that never grows past the page: wide content (scrollers) scrolls inside itself. */
+  grid-template-columns: minmax(0, 1fr);
   gap: 1.5rem;
 }
 
@@ -90,4 +92,39 @@
   flex-shrink: 0;
   width: calc(var(--mt-spacing) * 6);
   height: calc(var(--mt-spacing) * 6);
+}
+
+/* Sortable demo content (stories only): the reference's big card numbers. */
+[data-mt-sortable-item] > span {
+  color: var(--mt-text-secondary);
+  font-family: var(--mt-typography-h2-font-family);
+  font-size: var(--mt-typography-h2-font-size);
+  font-weight: var(--mt-typography-h2-font-weight);
+  line-height: var(--mt-typography-h2-line-height);
+}
+
+/* Sortable stories: the "Add item" button above the list, like the reference. */
+.sb-row:has(> [data-mt-sortable]) {
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.sb-row > [data-mt-sortable][data-mt-layout="vertical"] {
+  align-self: center;
+}
+
+/* Docked drawer stories: a small app frame (drawer + page area). */
+.sb-row > div:has(> [data-mt-drawer]) {
+  display: flex;
+  width: 100%;
+  height: calc(var(--mt-spacing) * 70);
+  overflow: hidden;
+  border: 1px dashed var(--mt-divider);
+  border-radius: var(--mt-radius-lg);
+}
+
+.sb-row > div:has(> [data-mt-drawer]) > div {
+  flex: 1;
+  padding: calc(var(--mt-spacing) * 5);
+  color: var(--mt-text-secondary);
 }

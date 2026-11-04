@@ -23,7 +23,7 @@ export function resetPage(): void {
 const CONTRAST_EXEMPT = [
   '[data-mt-button][data-mt-color]:not([data-mt-color="inherit"]):not([data-mt-variant="soft"])',
   '[data-mt-fab]:not([data-mt-variant="soft"])',
-  '[data-mt-toggle-button][aria-pressed="true"]:not([data-mt-color="inherit"])',
+  '[data-mt-toggle-button][aria-pressed="true"]:not([data-mt-color="standard"])',
 ];
 const TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 

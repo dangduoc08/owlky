@@ -58,7 +58,12 @@ describe("ButtonGroup", () => {
         <Button>One</Button>
       </ButtonGroup>,
     );
-    expect(screen.getByRole("button").dataset).toMatchObject({ mtVariant: "text", mtSize: "md" });
+    // Group defaults: outlined (MUI), no elevation (reference).
+    expect(screen.getByRole("button").dataset).toMatchObject({
+      mtVariant: "outlined",
+      mtSize: "md",
+      mtDisableElevation: "",
+    });
   });
 
   it("joins buttons: outer corners rounded, separators between, no gap", () => {
@@ -79,6 +84,21 @@ describe("ButtonGroup", () => {
     const a = (first as Element).getBoundingClientRect();
     const b = (middle as Element).getBoundingClientRect();
     expect(b.left).toBe(a.right);
+  });
+
+  it("fullWidth stretches the group and shares the width", () => {
+    render(
+      <div style={{ width: 600 }}>
+        <ButtonGroup fullWidth disableElevation={false}>
+          <Button>A</Button>
+          <Button>B</Button>
+        </ButtonGroup>
+      </div>,
+    );
+    expect(screen.getByRole("group").getBoundingClientRect().width).toBe(600);
+    const a = screen.getByRole("button", { name: "A" });
+    expect(a.getBoundingClientRect().width).toBe(300);
+    expect(a.hasAttribute("data-mt-disable-elevation")).toBe(false);
   });
 
   it("stacks vertically with separators below", () => {

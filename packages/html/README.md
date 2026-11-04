@@ -5,7 +5,8 @@ Framework-free [Minimal Tailwind](../../README.md) components: copy-paste HTML s
 
 Components: **Button**, **Icon button**, **Fab**, **Button group** (CSS only — no JavaScript
 needed) **Drawer** (runtime: `drawer`, triggers `data-mt-drawer-open="<id>"` / `data-mt-drawer-close`,
-events `mt:drawer:beforeopen|open|beforeclose|close`) and **Toggle button** (runtime: `toggle-button` + `toggle-group`, events
+events `mt:drawer:beforeopen|open|beforeclose|close`) **Sortable** (runtime: `sortable`, events `mt:sortable:move|remove|add`, add trigger
+`data-mt-sortable-add="<list id>"` + `<template data-mt-sortable-template>`) and **Toggle button** (runtime: `toggle-button` + `toggle-group`, events
 `mt:toggle-button:change` / `mt:toggle-group:change`). Snippets ship in
 `@minimal-tailwind/html/snippets/<component>/<story>-<group>.html` and in Storybook (HTML/Button/…).
 

@@ -27,6 +27,8 @@ const preview: Preview = {
     a11y: { test: "error" },
     // "Code" panel under every story: the example's source (with imports) and a copy button.
     docs: { codePanel: true },
+    // Controls show each prop's description and type, not only its control.
+    controls: { expanded: true },
     options: {
       storySort: {
         order: [

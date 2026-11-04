@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { htmlSetup, snippetStory } from "../shared/snippets.js";
-import { ICON_BUTTON_FILES } from "./icon-button-examples.js";
+import { ICON_BUTTON_CONTROLS, ICON_BUTTON_FILES } from "./icon-button-examples.js";
 
 const snippets = import.meta.glob(
   "../../../../../packages/html/src/components/icon-button/examples/*.html",
@@ -8,7 +8,8 @@ const snippets = import.meta.glob(
 ) as Record<string, string>;
 
 const SETUP = htmlSetup(["icon-button.css"]);
-const story = (name: string) => snippetStory(snippets, name, ICON_BUTTON_FILES[name] ?? [], SETUP);
+const story = (name: string) =>
+  snippetStory(snippets, name, ICON_BUTTON_FILES[name] ?? [], SETUP, ICON_BUTTON_CONTROLS);
 
 const meta = { title: "HTML/Button/Icon button" } satisfies Meta;
 export default meta;

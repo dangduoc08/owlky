@@ -1,3 +1,4 @@
+import { buttonOptions } from "@minimal-tailwind/core";
 import { Button, type ButtonVariant } from "@minimal-tailwind/react";
 import type { ReactGroup } from "../../helpers/groups.js";
 
@@ -161,3 +162,9 @@ export const GROUP_FILES = [
   ["Sizes · loading start", "sizes-loading-start"],
   ["Sizes · loading end", "sizes-loading-end"],
 ] as const;
+
+/** Story Controls shared by the React and HTML stories (ADR-0015). */
+export const BUTTON_CONTROLS = {
+  schema: buttonOptions,
+  keys: ["size", "disabled", "fullWidth", "disableElevation"],
+} as const;

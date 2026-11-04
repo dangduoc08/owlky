@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { htmlSetup, snippetStory } from "../shared/snippets.js";
-import { GROUP_FILES } from "./button-examples.js";
+import { BUTTON_CONTROLS, GROUP_FILES } from "./button-examples.js";
 
 const snippets = import.meta.glob(
   "../../../../../packages/html/src/components/button/examples/*.html",
@@ -8,7 +8,8 @@ const snippets = import.meta.glob(
 ) as Record<string, string>;
 
 const SETUP = htmlSetup(["button.css"]);
-const story = (variant: string) => snippetStory(snippets, variant, GROUP_FILES, SETUP);
+const story = (variant: string) =>
+  snippetStory(snippets, variant, GROUP_FILES, SETUP, BUTTON_CONTROLS);
 
 const meta = { title: "HTML/Button/Button" } satisfies Meta;
 export default meta;

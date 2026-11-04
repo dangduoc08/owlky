@@ -3,7 +3,8 @@
  *
  * Anatomy:  button[data-mt-icon-button] › svg | img
  * Modifiers: data-mt-color = default (default) | inherit | primary … error | black | white
- *            data-mt-size  = md (default) | sm | lg,  data-mt-animate
+ *            data-mt-size  = md (default) | sm | lg,  data-mt-edge = start | end (optional),
+ *            data-mt-animate, data-mt-loading › [data-mt-icon-button-loader] › [data-mt-button-spinner]
  * States:    :hover (hover-capable devices), :active, :focus-visible, :disabled
  *
  * Single :where() selectors in @layer components (zero specificity). Translucent colors use
@@ -18,6 +19,7 @@
     --_mt-size: calc(var(--mt-spacing) * 9);
     --_mt-icon-size: calc(var(--mt-spacing) * 5);
 
+    position: relative;
     display: inline-flex;
     flex-shrink: 0;
     align-items: center;
@@ -42,6 +44,31 @@
   :where([data-mt-icon-button] > svg, [data-mt-icon-button] > img) {
     width: var(--_mt-icon-size);
     height: var(--_mt-icon-size);
+  }
+
+  /* Edge: pulls the button out by its padding so the icon lines up with the container edge. */
+  :where([data-mt-icon-button][data-mt-edge="start"]) {
+    margin-inline-start: calc((var(--_mt-size) - var(--_mt-icon-size)) / -2);
+  }
+
+  :where([data-mt-icon-button][data-mt-edge="end"]) {
+    margin-inline-end: calc((var(--_mt-size) - var(--_mt-icon-size)) / -2);
+  }
+
+  /* Loading: the loader replaces the icon (the button stays named by its aria-label). */
+  :where([data-mt-icon-button-loader]) {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  :where(
+    [data-mt-icon-button][data-mt-loading] > svg,
+    [data-mt-icon-button][data-mt-loading] > img
+  ) {
+    visibility: hidden;
   }
 
   :where([data-mt-icon-button][data-mt-color="inherit"]) {

@@ -1,8 +1,11 @@
+import { IconButton } from "@minimal-tailwind/react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { reactGroupsStory } from "../../helpers/groups.js";
-import { iconButtonStories } from "./icon-button-examples.js";
+import { reactGroupsStory, type StoryControls } from "../../helpers/groups.js";
+import { ICON_BUTTON_CONTROLS, iconButtonStories } from "./icon-button-examples.js";
 
-const story = (name: string) => reactGroupsStory(iconButtonStories[name] ?? []);
+const controls: StoryControls = { ...ICON_BUTTON_CONTROLS, target: IconButton };
+
+const story = (name: string) => reactGroupsStory(iconButtonStories[name] ?? [], controls);
 
 const meta = { title: "React/Button/Icon button" } satisfies Meta;
 export default meta;

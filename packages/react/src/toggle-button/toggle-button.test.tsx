@@ -28,7 +28,7 @@ describe("ToggleButton (standalone)", () => {
     expect(button.getAttribute("aria-pressed")).toBe("false");
     expect(button.dataset).toMatchObject({
       mtToggleButton: "",
-      mtColor: "inherit",
+      mtColor: "standard",
       mtSize: "md",
       mtRuntime: "off",
     });
@@ -81,6 +81,23 @@ describe("ToggleButton (standalone)", () => {
     await userEvent.click(screen.getByRole("button", { name: "Kept" }));
     await userEvent.click(screen.getByRole("button", { name: "Off" }), { force: true });
     expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it("fullWidth stretches a button or a group", () => {
+    render(
+      <div style={{ width: 400 }}>
+        <ToggleButton aria-label="wide" fullWidth />
+        <ToggleButtonGroup fullWidth aria-label="g">
+          <ToggleButton value="a" aria-label="a" />
+          <ToggleButton value="b" aria-label="b" />
+        </ToggleButtonGroup>
+      </div>,
+    );
+    expect(screen.getByRole("button", { name: "wide" }).getBoundingClientRect().width).toBe(400);
+    expect(screen.getByRole("group").getBoundingClientRect().width).toBe(400);
+    expect(screen.getByRole("button", { name: "a" }).getBoundingClientRect().width).toBeGreaterThan(
+      150,
+    );
   });
 
   it("pressed colored buttons get the main color, a tint and a border", () => {

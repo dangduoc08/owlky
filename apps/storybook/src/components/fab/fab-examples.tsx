@@ -1,3 +1,4 @@
+import { fabOptions } from "@minimal-tailwind/core";
 import { Fab, type FabColor, type FabVariant } from "@minimal-tailwind/react";
 import type { ReactGroup } from "../../helpers/groups.js";
 import { MailIcon } from "../button/button-examples.js";
@@ -97,3 +98,6 @@ export const FAB_FILES: GroupFiles = [
   ["Disabled", "disabled"],
 ];
 export const FAB_ANIMATE_FILES: GroupFiles = [["With animate", "group"]];
+
+/** Story Controls shared by the React and HTML stories (ADR-0015). */
+export const FAB_CONTROLS = { schema: fabOptions, keys: ["size", "disabled", "animate"] } as const;

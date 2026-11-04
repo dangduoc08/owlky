@@ -258,6 +258,19 @@ describe("Button styles (shipped CSS)", () => {
     await vi.waitFor(() => expect(css(button).backgroundColor).toBe("rgb(0, 120, 103)"));
   });
 
+  it("disableElevation drops the hover shadow of contained buttons", async () => {
+    render(
+      <Button variant="contained" color="primary" disableElevation>
+        flat
+      </Button>,
+    );
+    const button = screen.getByRole("button");
+    expect(button.dataset["mtDisableElevation"]).toBe("");
+    await userEvent.hover(button);
+    await vi.waitFor(() => expect(css(button).backgroundColor).toBe("rgb(0, 120, 103)"));
+    expect(css(button).boxShadow).toBe("none");
+  });
+
   it("hides the label visually but not from the accessibility tree while loading", () => {
     render(<Button loading>Submit</Button>);
     const label = screen.getByText("Submit");

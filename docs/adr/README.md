@@ -19,5 +19,6 @@ ADR that supersedes the old one — don't rewrite history.
 | [0012](0012-release-by-tag.md)                | Release only from `release/v*` tags on main                              | Accepted |
 | [0013](0013-translucent-colors-via-channels.md) | Translucent colors via RGB channel tokens (no `color-mix()` in components) | Accepted |
 | [0014](0014-brand-colors-follow-reference.md) | Brand colors follow the reference look (white on fills, `main` text) | Accepted |
+| [0015](0015-component-api-and-option-schema.md) | Component API from the upstream component; one option schema for React and HTML | Accepted |
 
 Template: **Context** (why decide) · **Decision** (what) · **Consequences** (trade-offs, follow-ups).

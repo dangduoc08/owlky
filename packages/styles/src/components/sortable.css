@@ -1,0 +1,146 @@
+/*
+ * Sortable — spec: specs/components/sortable.md
+ *
+ * Anatomy:  ul[data-mt-sortable] › li[data-mt-sortable-item] › … + div[data-mt-sortable-actions]
+ *             › button[data-mt-sortable-remove]? + button[data-mt-sortable-handle]
+ *           (handles and remove buttons are Icon buttons: icon-button.css)
+ *           div[data-mt-sortable-announcer]   live region, created by the controller
+ * Modifiers: data-mt-layout = grid (default) | vertical | horizontal
+ * States:    [data-mt-dragging] on the list and the dragged item, [data-mt-grabbed] on an item
+ *
+ * Single :where() selectors in @layer components (zero specificity). Translucent colors use
+ * channels, never color-mix() (AGENTS.md).
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-mt-sortable]) {
+    --_mt-frame: 1px dashed rgb(var(--mt-palette-grey-500-channel) / 0.16);
+
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, calc(var(--mt-spacing) * 40)), 1fr));
+    gap: calc(var(--mt-spacing) * 5);
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  :where([data-mt-sortable][data-mt-layout="vertical"]) {
+    display: flex;
+    flex-direction: column;
+    width: min(100%, calc(var(--mt-spacing) * 120));
+    max-height: calc(var(--mt-spacing) * 140);
+    padding: calc(var(--mt-spacing) * 5);
+    border: var(--_mt-frame);
+    border-radius: var(--mt-radius-lg);
+    overflow: auto;
+  }
+
+  :where([data-mt-sortable][data-mt-layout="horizontal"]) {
+    display: flex;
+    flex-direction: row;
+    padding: calc(var(--mt-spacing) * 5);
+    border: var(--_mt-frame);
+    border-radius: var(--mt-radius-lg);
+    overflow: auto;
+  }
+
+  :where([data-mt-sortable-item]) {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    min-width: 0;
+    padding: calc(var(--mt-spacing) * 10);
+    border: 1px solid rgb(var(--mt-palette-grey-500-channel) / 0.16);
+    border-radius: var(--mt-radius-lg);
+    background-color: rgb(var(--mt-palette-grey-500-channel) / 0.04);
+    transition: box-shadow var(--mt-duration-short) var(--mt-easing-standard);
+  }
+
+  :where([data-mt-sortable][data-mt-layout="vertical"] > [data-mt-sortable-item]) {
+    flex-shrink: 0;
+    padding: calc(var(--mt-spacing) * 6) calc(var(--mt-spacing) * 10);
+  }
+
+  :where([data-mt-sortable][data-mt-layout="horizontal"] > [data-mt-sortable-item]) {
+    flex: 0 0 calc(var(--mt-spacing) * 36);
+    padding: calc(var(--mt-spacing) * 10) calc(var(--mt-spacing) * 4);
+  }
+
+  :where([data-mt-sortable-actions]) {
+    position: absolute;
+    top: calc(var(--mt-spacing) * 2);
+    right: calc(var(--mt-spacing) * 2);
+    display: flex;
+    align-items: center;
+  }
+
+  :where([data-mt-sortable-handle]) {
+    cursor: grab;
+    touch-action: none;
+  }
+
+  /* Remove buttons appear on item hover or keyboard focus; always on touch screens. */
+  :where([data-mt-sortable-remove]) {
+    opacity: 0;
+    transition: opacity var(--mt-duration-shorter) var(--mt-easing-standard);
+  }
+
+  :where(
+    [data-mt-sortable-item]:hover [data-mt-sortable-remove],
+    [data-mt-sortable-item]:focus-within [data-mt-sortable-remove]
+  ) {
+    opacity: 1;
+  }
+
+  @media (hover: none) {
+    :where([data-mt-sortable-remove]) {
+      opacity: 1;
+    }
+  }
+
+  /* Grabbed with the keyboard or a tap. */
+  :where([data-mt-sortable-item][data-mt-grabbed]) {
+    outline: 2px solid var(--mt-text-secondary);
+    outline-offset: 2px;
+    box-shadow: var(--mt-shadow-z8);
+  }
+
+  /* Dragged: follows the pointer above the others; the pointer sees the items underneath. */
+  :where([data-mt-sortable-item][data-mt-dragging]) {
+    z-index: 1;
+    box-shadow: var(--mt-shadow-z16);
+    background-color: var(--mt-bg-paper);
+    pointer-events: none;
+    transition: none;
+  }
+
+  :where([data-mt-sortable][data-mt-dragging]) {
+    cursor: grabbing;
+    user-select: none;
+  }
+
+  :where([data-mt-sortable-announcer]) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :where([data-mt-sortable-item], [data-mt-sortable-remove]) {
+      transition: none;
+    }
+  }
+}

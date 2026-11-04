@@ -138,13 +138,56 @@ describe("drawer runtime", () => {
     expect(instance.isOpen).toBe(false);
   });
 
-  it("honors data-mt-escape-close / data-mt-backdrop-close = false", async () => {
-    mount(SIMPLE('data-mt-escape-close="false" data-mt-backdrop-close="false"'));
+  it("honors data-mt-disable-escape-key-down; data-mt-hide-backdrop keeps it modal", async () => {
+    mount(SIMPLE("data-mt-disable-escape-key-down data-mt-hide-backdrop"));
     await settle();
     await userEvent.click($("#trigger"));
     await userEvent.keyboard("{Escape}");
-    await userEvent.click($("#d"), { position: { x: window.innerWidth - 10, y: 10 } });
     expect($<HTMLDialogElement>("#d").open).toBe(true);
+    expect(getComputedStyle($("#d"), "::backdrop").backgroundColor).toBe("rgba(0, 0, 0, 0)");
+    await userEvent.click($("#d"), { position: { x: window.innerWidth - 10, y: 10 } });
+    expect($<HTMLDialogElement>("#d").open).toBe(false);
+  });
+
+  it("persistent drawers toggle from their trigger and keep aria-expanded in sync", async () => {
+    mount(`<button type="button" id="t" data-mt-drawer-open="p">Menu</button>
+      <aside id="p" data-mt-drawer data-mt-variant="persistent" aria-label="Nav" hidden><div data-mt-drawer-content><button type="button" data-mt-drawer-close>Close</button></div></aside>`);
+    await settle();
+    const aside = $("#p");
+    const events = record(aside);
+    expect($("#t").getAttribute("aria-expanded")).toBe("false");
+    expect($("#t").getAttribute("aria-controls")).toBe("p");
+    await userEvent.click($("#t"));
+    expect(aside.hidden).toBe(false);
+    expect($("#t").getAttribute("aria-expanded")).toBe("true");
+    expect(isScrollLocked()).toBe(false);
+    await userEvent.click($("#t"));
+    expect(aside.hidden).toBe(true);
+    const instance = runtime.get<DrawerInstance>(aside, "drawer") as DrawerInstance;
+    instance.open();
+    await userEvent.click(aside.querySelector("[data-mt-drawer-close]") as HTMLElement);
+    expect(aside.hidden).toBe(true);
+    expect(events).toEqual([
+      "beforeopen",
+      "open",
+      "beforeclose:trigger",
+      "close:trigger",
+      "beforeopen",
+      "open",
+      "beforeclose:trigger",
+      "close:trigger",
+    ]);
+  });
+
+  it("permanent drawers are always shown and can't be closed; ids are optional", async () => {
+    mount(`<aside id="perm" data-mt-drawer data-mt-variant="permanent" aria-label="Side" hidden><div data-mt-drawer-content>x</div></aside>
+      <aside data-mt-drawer data-mt-variant="persistent" aria-label="No id" data-mt-open hidden><div data-mt-drawer-content>y</div></aside>`);
+    await settle();
+    const perm = $("#perm");
+    expect(perm.hidden).toBe(false);
+    expect(runtime.get<DrawerInstance>(perm, "drawer")?.close()).toBe(false);
+    expect(perm.hidden).toBe(false);
+    expect((document.querySelector('[aria-label="No id"]') as HTMLElement).hidden).toBe(false);
   });
 
   it("cancelable events keep the drawer as it is; the API toggles and reports results", async () => {

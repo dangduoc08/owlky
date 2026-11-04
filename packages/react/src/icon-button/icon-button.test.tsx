@@ -107,6 +107,34 @@ describe("IconButton", () => {
     );
   });
 
+  it("edge pulls the button out by its padding; loading replaces the icon and disables", () => {
+    render(
+      <>
+        <IconButton aria-label="start" edge="start">
+          <Icon />
+        </IconButton>
+        <IconButton aria-label="end" edge="end" size="sm" />
+        <IconButton aria-label="busy" loading>
+          <Icon />
+        </IconButton>
+        <IconButton aria-label="text" loading loadingIndicator="…" />
+      </>,
+    );
+    const start = screen.getByRole("button", { name: "start" });
+    expect(start.dataset["mtEdge"]).toBe("start");
+    expect(css(start).marginLeft).toBe("-8px");
+    expect(css(screen.getByRole("button", { name: "end" })).marginRight).toBe("-5px");
+    expect(start.hasAttribute("aria-busy")).toBe(false);
+    const busy = screen.getByRole("button", { name: "busy" }) as HTMLButtonElement;
+    expect(busy.disabled).toBe(true);
+    expect(busy.getAttribute("aria-busy")).toBe("true");
+    expect(
+      busy.querySelector("[data-mt-icon-button-loader] [data-mt-button-spinner]"),
+    ).not.toBeNull();
+    expect(css(busy.querySelector("svg") as Element).visibility).toBe("hidden");
+    expect(screen.getByRole("button", { name: "text" }).textContent).toBe("…");
+  });
+
   it("renders the same markup on the server and has no axe violations", async () => {
     const element = (
       <IconButton aria-label="Mail" color="error" size="lg" animate>

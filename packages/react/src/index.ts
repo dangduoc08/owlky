@@ -4,13 +4,18 @@ export type {
   ButtonVariant,
   ColorName,
   DrawerAnchor,
+  DrawerCloseReason,
+  DrawerVariant,
   FabColor,
   FabSize,
   FabVariant,
   IconButtonColor,
+  IconButtonEdge,
   IconButtonSize,
   Orientation,
   PaletteColorName,
+  SortableLayout,
+  SortableMessages,
   ToggleButtonColor,
   ToggleButtonSize,
   ToggleGroupValue,
@@ -30,8 +35,9 @@ export {
   type DrawerProps,
   DrawerTrigger,
 } from "./drawer/drawer.js";
-export { Fab, type FabProps } from "./fab/fab.js";
+export { Fab, type FabAsButtonProps, type FabAsLinkProps, type FabProps } from "./fab/fab.js";
 export { IconButton, type IconButtonProps } from "./icon-button/icon-button.js";
+export { arrayMove, Sortable, type SortableProps } from "./sortable/sortable.js";
 export {
   ToggleButton,
   ToggleButtonGroup,

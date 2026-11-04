@@ -131,6 +131,26 @@ describe("Fab", () => {
     expect(css(fab).backgroundColor).toMatch(/^(rgba\(145, 158, 171|color\(srgb 0\.5686)/);
   });
 
+  it("renders a link with href, and an inert link when disabled", () => {
+    const ref = createRef<HTMLButtonElement | HTMLAnchorElement>();
+    render(
+      <>
+        <Fab ref={ref} href="/new" aria-label="New">
+          <Icon />
+        </Fab>
+        <Fab href="/new" disabled aria-label="Off" />
+      </>,
+    );
+    const link = screen.getByRole("link", { name: "New" });
+    expect(ref.current).toBe(link);
+    expect(link.getAttribute("href")).toBe("/new");
+    expect(css(link).textDecorationLine).toBe("none");
+    const off = screen.getByRole("link", { name: "Off" });
+    expect(off.hasAttribute("href")).toBe(false);
+    expect(off.getAttribute("aria-disabled")).toBe("true");
+    expect(css(off).boxShadow).toBe("none");
+  });
+
   it("renders the same markup on the server and has no axe violations", async () => {
     const element = (
       <div>

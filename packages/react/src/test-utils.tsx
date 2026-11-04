@@ -9,7 +9,7 @@ import { expect } from "vitest";
 export const CONTRAST_EXEMPT = [
   '[data-mt-button][data-mt-color]:not([data-mt-color="inherit"]):not([data-mt-variant="soft"])',
   '[data-mt-fab]:not([data-mt-variant="soft"])',
-  '[data-mt-toggle-button][aria-pressed="true"]:not([data-mt-color="inherit"])',
+  '[data-mt-toggle-button][aria-pressed="true"]:not([data-mt-color="standard"])',
   "[data-swatch]",
 ];
 

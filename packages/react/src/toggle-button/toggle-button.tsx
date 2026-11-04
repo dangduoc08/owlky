@@ -36,10 +36,12 @@ export interface ToggleButtonProps
   extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "color" | "value" | "onChange"> {
   /** Identifies the button inside a `ToggleButtonGroup`. */
   value?: string | undefined;
-  /** Default `"inherit"` (or the group's color). */
+  /** Default `"standard"` (or the group's color). */
   color?: ToggleButtonColor | undefined;
   /** Standalone `sm` 40 · `md` 48 · `lg` 56; in a group 30 / 38 / 46. Default `"md"`. */
   size?: ToggleButtonSize | undefined;
+  /** Stretch to the container width. */
+  fullWidth?: boolean | undefined;
   /** Standalone, controlled: pressed state. */
   selected?: boolean | undefined;
   /** Standalone, uncontrolled: initial pressed state. */
@@ -54,7 +56,18 @@ export interface ToggleButtonProps
  * `selected` / `onChange` or uncontrolled with `defaultSelected`.
  */
 export const ToggleButton = forwardRef<HTMLButtonElement, ToggleButtonProps>(function ToggleButton(
-  { value, color, size, selected, defaultSelected = false, onChange, onClick, disabled, ...props },
+  {
+    value,
+    color,
+    size,
+    fullWidth,
+    selected,
+    defaultSelected = false,
+    onChange,
+    onClick,
+    disabled,
+    ...props
+  },
   ref,
 ) {
   const group = useContext(ToggleGroupContext);
@@ -77,7 +90,11 @@ export const ToggleButton = forwardRef<HTMLButtonElement, ToggleButtonProps>(fun
     <button
       ref={ref}
       type="button"
-      {...toggleButtonAttributes({ color: color ?? group?.color, size: size ?? group?.size })}
+      {...toggleButtonAttributes({
+        color: color ?? group?.color,
+        size: size ?? group?.size,
+        fullWidth,
+      })}
       data-mt-runtime={group === null ? "off" : undefined}
       {...props}
       value={value}
@@ -100,6 +117,8 @@ export interface ToggleButtonGroupProps
   onChange?: ((value: ToggleGroupValue) => void) | undefined;
   /** Default `"horizontal"`. */
   orientation?: Orientation | undefined;
+  /** Stretch to the container width; the buttons share it. */
+  fullWidth?: boolean | undefined;
   /** Passed to every ToggleButton that doesn't set its own. */
   color?: ToggleButtonColor | undefined;
   size?: ToggleButtonSize | undefined;
@@ -115,6 +134,7 @@ export const ToggleButtonGroup = forwardRef<HTMLDivElement, ToggleButtonGroupPro
       defaultValue,
       onChange,
       orientation,
+      fullWidth,
       color,
       size,
       disabled,
@@ -146,7 +166,7 @@ export const ToggleButtonGroup = forwardRef<HTMLDivElement, ToggleButtonGroupPro
         ref={ref}
         role="group"
         data-mt-runtime="off"
-        {...toggleGroupAttributes({ orientation, exclusive })}
+        {...toggleGroupAttributes({ orientation, exclusive, fullWidth })}
         {...props}
       >
         <ToggleGroupContext.Provider value={context}>{children}</ToggleGroupContext.Provider>

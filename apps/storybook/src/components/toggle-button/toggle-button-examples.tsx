@@ -1,3 +1,4 @@
+import { toggleButtonOptions } from "@minimal-tailwind/core";
 import {
   ToggleButton,
   type ToggleButtonColor,
@@ -10,7 +11,7 @@ import type { GroupFiles } from "../shared/snippets.js";
 
 const capitalize = (value: string) => value.charAt(0).toUpperCase() + value.slice(1);
 const COLORS: ToggleButtonColor[] = [
-  "inherit",
+  "standard",
   "primary",
   "secondary",
   "info",
@@ -198,3 +199,9 @@ export const TOGGLE_FILES: Record<string, GroupFiles> = {
   ],
   vertical: [["Vertical & standalone", "group"]],
 };
+
+/** Story Controls shared by the React and HTML stories (ADR-0015). */
+export const TOGGLE_CONTROLS = {
+  schema: toggleButtonOptions,
+  keys: ["size", "color", "fullWidth", "disabled"],
+} as const;

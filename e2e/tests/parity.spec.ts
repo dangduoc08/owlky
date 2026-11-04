@@ -31,6 +31,10 @@ const pairs: [component: string, story: string][] = [
   ["toggle-button", "colors"],
   ["toggle-button", "vertical"],
   ["drawer", "anchor"],
+  ["drawer", "variants"],
+  ["sortable", "grid"],
+  ["sortable", "vertical"],
+  ["sortable", "horizontal"],
 ];
 
 for (const [component, story] of pairs) {

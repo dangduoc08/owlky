@@ -35,6 +35,7 @@ jobs:
       - run: pnpm check:boundaries
       - run: pnpm check:size
       - run: pnpm check:packages
+      - run: pnpm check:specs
       - run: pnpm test
         env:
           VITEST_BROWSERS: chromium,firefox,webkit

@@ -3,7 +3,7 @@
  *
  * Anatomy:  div[role="group"][data-mt-toggle-group] › button[data-mt-toggle-button][aria-pressed]…
  *           or a standalone button[data-mt-toggle-button][aria-pressed]
- * Modifiers: data-mt-color = inherit (default) | primary … error
+ * Modifiers: data-mt-color = standard (default) | primary … error, data-mt-full-width
  *            data-mt-size  = md (default) | sm | lg
  *            group: data-mt-orientation = horizontal (default) | vertical, data-mt-exclusive
  * States:    [aria-pressed="true"], :hover (hover-capable devices), :focus-visible, :disabled
@@ -54,8 +54,8 @@
     height: calc(var(--mt-spacing) * 5);
   }
 
-  /* Neutral selection uses the action tokens (no palette binding for inherit). */
-  :where([data-mt-toggle-button][data-mt-color="inherit"]) {
+  /* Neutral selection uses the action tokens (no palette binding for standard). */
+  :where([data-mt-toggle-button][data-mt-color="standard"]) {
     --_mt-selected-bg: var(--mt-action-selected);
     --_mt-hover-bg: var(--mt-action-hover);
   }
@@ -85,6 +85,19 @@
 
   :where([data-mt-toggle-group][data-mt-orientation="vertical"]) {
     flex-direction: column;
+  }
+
+  :where([data-mt-toggle-button][data-mt-full-width]) {
+    width: 100%;
+  }
+
+  :where([data-mt-toggle-group][data-mt-full-width]) {
+    display: flex;
+    width: 100%;
+  }
+
+  :where([data-mt-toggle-group][data-mt-full-width] > [data-mt-toggle-button]) {
+    flex: 1 1 0;
   }
 
   :where([data-mt-toggle-group] > [data-mt-toggle-button]) {
