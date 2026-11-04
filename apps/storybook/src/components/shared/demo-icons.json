@@ -11,5 +11,6 @@
   "italic": ["M10 5h8M6 19h8M14 5l-4 14"],
   "underline": ["M7 4v7a5 5 0 0 0 10 0V4M5 20h14"],
   "inbox": ["M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"],
-  "plus": ["M12 5v14M5 12h14"]
+  "plus": ["M12 5v14M5 12h14"],
+  "chevronDown": ["m6 9 6 6 6-6"]
 }

@@ -1,0 +1,121 @@
+/*
+ * Alert — spec: specs/components/alert.md
+ *
+ * Anatomy:  [data-ok-alert] › [data-ok-alert-icon]? › [data-ok-alert-message] (› [data-ok-alert-title]?)
+ *             › [data-ok-alert-action]?
+ * Modifiers: data-ok-severity = success | info | warning | error (icon meaning)
+ *            data-ok-color    = success | info | warning | error (colors, via the --ok-c-* bindings)
+ *            data-ok-variant  = standard (default) | filled | outlined
+ *
+ * Single :where() selectors in @layer components (zero specificity). Translucent colors use
+ * channels, never color-mix(); `light-dark()` picks the standard tones per color scheme, with the
+ * light look as fallback (ADR-0006).
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-ok-alert]) {
+    --_ok-main: var(--ok-c-main, var(--ok-palette-success-main));
+    --_ok-channel: var(--ok-c-channel, var(--ok-palette-success-main-channel));
+    --_ok-lighter: var(--ok-palette-success-lighter);
+    --_ok-darker: var(--ok-palette-success-darker);
+    --_ok-dark: var(--ok-palette-success-dark);
+
+    display: flex;
+    align-items: flex-start;
+    gap: calc(var(--ok-spacing) * 3);
+    box-sizing: border-box;
+    padding: calc(var(--ok-spacing) * 1.5) calc(var(--ok-spacing) * 4);
+    border: 1px solid transparent;
+    border-radius: var(--ok-radius-md);
+    /* Fallback (no light-dark(), ADR-0006): the light tones in every theme. */
+    background-color: var(--_ok-lighter);
+    color: var(--_ok-darker);
+    font-family: var(--ok-font-family);
+    font-size: var(--ok-typography-body2-font-size);
+    line-height: var(--ok-typography-body2-line-height);
+  }
+
+  /* Standard: tinted in light themes, inverted in dark ones (follows the scope's color-scheme). */
+  @supports (color: light-dark(#000, #fff)) {
+    :where([data-ok-alert]) {
+      background-color: light-dark(var(--_ok-lighter), var(--_ok-darker));
+      color: light-dark(var(--_ok-darker), var(--_ok-lighter));
+    }
+  }
+
+  :where([data-ok-alert][data-ok-color="info"]) {
+    --_ok-lighter: var(--ok-palette-info-lighter);
+    --_ok-darker: var(--ok-palette-info-darker);
+    --_ok-dark: var(--ok-palette-info-dark);
+  }
+
+  :where([data-ok-alert][data-ok-color="warning"]) {
+    --_ok-lighter: var(--ok-palette-warning-lighter);
+    --_ok-darker: var(--ok-palette-warning-darker);
+    --_ok-dark: var(--ok-palette-warning-dark);
+  }
+
+  :where([data-ok-alert][data-ok-color="error"]) {
+    --_ok-lighter: var(--ok-palette-error-lighter);
+    --_ok-darker: var(--ok-palette-error-darker);
+    --_ok-dark: var(--ok-palette-error-dark);
+  }
+
+  :where([data-ok-alert-icon]) {
+    display: flex;
+    flex-shrink: 0;
+    padding: calc(var(--ok-spacing) * 1.75) 0;
+    color: var(--_ok-main);
+  }
+
+  :where([data-ok-alert-icon] > svg) {
+    width: calc(var(--ok-spacing) * 6);
+    height: calc(var(--ok-spacing) * 6);
+  }
+
+  :where([data-ok-alert-message]) {
+    flex: 1;
+    min-width: 0;
+    padding: calc(var(--ok-spacing) * 2) 0;
+    overflow-wrap: anywhere;
+  }
+
+  :where([data-ok-alert-title]) {
+    margin-bottom: calc(var(--ok-spacing) * 0.5);
+    font-size: var(--ok-typography-subtitle1-font-size);
+    font-weight: var(--ok-typography-subtitle1-font-weight);
+    line-height: var(--ok-typography-subtitle1-line-height);
+  }
+
+  :where([data-ok-alert-action]) {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: calc(var(--ok-spacing) * 2);
+    margin-inline-start: auto;
+    padding: calc(var(--ok-spacing) * 1) 0 0 calc(var(--ok-spacing) * 4);
+  }
+
+  :where([data-ok-alert-close]) {
+    color: inherit;
+  }
+
+  /* Filled */
+  :where([data-ok-alert][data-ok-variant="filled"]) {
+    background-color: var(--_ok-main);
+    color: var(--ok-c-contrast, var(--ok-palette-common-white));
+    font-weight: var(--ok-font-weight-medium);
+  }
+
+  :where([data-ok-alert][data-ok-variant="filled"] [data-ok-alert-icon]) {
+    color: inherit;
+  }
+
+  /* Outlined */
+  :where([data-ok-alert][data-ok-variant="outlined"]) {
+    border-color: rgb(var(--_ok-channel) / 0.16);
+    background-color: rgb(var(--_ok-channel) / 0.08);
+    color: var(--_ok-dark);
+  }
+}

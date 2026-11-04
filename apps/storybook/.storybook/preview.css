@@ -109,6 +109,42 @@
   align-items: flex-end;
 }
 
+/* Tables (container + pagination) stack at full width. */
+.sb-row:has(> [data-ok-table-container]) {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+}
+
+/* Like the reference demos: wide tables keep their columns and scroll inside the container. */
+.sb-row > [data-ok-table-container] > [data-ok-table] {
+  min-width: 40rem;
+}
+
+/* Fixed header demo: the app limits the container's height. */
+.sb-row > [data-ok-table-container]:has(> [data-ok-sticky-header]) {
+  max-height: 27.5rem;
+}
+
+/* Story-only: native checkboxes in tables until a Checkbox component exists. */
+[data-ok-table-select],
+[data-ok-table-select-all] {
+  width: 1.125rem;
+  height: 1.125rem;
+  margin: 0.75rem;
+  accent-color: var(--ok-palette-primary-main);
+}
+
+/* Accordions and alerts stack at full width, as on the reference page. */
+.sb-row:has(> [data-ok-accordion], > [data-ok-alert]) {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.sb-row:has(> [data-ok-accordion]) {
+  gap: 0;
+}
+
 .sb-row > [data-ok-sortable][data-ok-layout="vertical"] {
   align-self: center;
 }

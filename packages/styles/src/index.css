@@ -3,10 +3,13 @@
  * Every file in ./components must be imported here (enforced by styles.test.ts).
  */
 @import "@owlky/tokens/tokens.css";
+@import "./components/accordion.css";
 @import "./components/button.css";
 @import "./components/button-group.css";
 @import "./components/icon-button.css";
+@import "./components/alert.css";
 @import "./components/fab.css";
 @import "./components/toggle-button.css";
+@import "./components/table.css";
 @import "./components/drawer.css";
 @import "./components/sortable.css";

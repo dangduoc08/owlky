@@ -18,8 +18,11 @@ const CASES: [
   ["fab", "default", "fab", ["size", "disabled", "animate"]],
   ["button-group", "outlined", "button-group", ["orientation", "size", "fullWidth", "disabled"]],
   ["toggle-button", "colors", "toggle-button", ["size", "color", "fullWidth", "disabled"]],
+  ["accordion", "simple", "accordion", ["variant", "disableGutters"]],
+  ["alert", "standard", "alert", ["variant", "color"]],
   ["drawer", "anchor", "drawer", ["hideBackdrop", "disableEscapeKeyDown"]],
   ["sortable", "grid", "sortable", ["layout"]],
+  ["table", "basic", "table", ["size", "stickyHeader"]],
 ];
 
 /** A non-default value for the option, in Storybook's URL args syntax. */

@@ -63,8 +63,17 @@ export function normalizeStory(page: Page): Promise<NormalizedNode> {
       "data-ok-drawer-open",
       "data-ok-drawer-close",
       "data-ok-sortable-add",
+      // React sets <option> selection as a property (compared through the select's :value).
+      "selected",
     ]);
-    const REFERENCES = new Set(["aria-labelledby", "aria-describedby", "aria-controls", "for"]);
+    const REFERENCES = new Set([
+      "aria-labelledby",
+      "aria-describedby",
+      "aria-controls",
+      "for",
+      "data-ok-table-pagination",
+      "data-ok-table-expand",
+    ]);
 
     function walk(element: Element): NormalizedNode {
       const attrs: Record<string, string> = {};
@@ -78,6 +87,7 @@ export function normalizeStory(page: Page): Promise<NormalizedNode> {
         attrs[":checked"] = String(element.checked);
         attrs[":disabled"] = String(element.disabled);
       }
+      if (element instanceof HTMLSelectElement) attrs[":value"] = element.value;
       const children: (NormalizedNode | string)[] = [];
       if (element.localName !== "svg") {
         for (const child of Array.from(element.childNodes)) {
@@ -86,8 +96,13 @@ export function normalizeStory(page: Page): Promise<NormalizedNode> {
             const last = children[children.length - 1];
             if (typeof last === "string") children[children.length - 1] = last + text;
             else children.push(text);
-          } else if (child instanceof Element && child.localName !== "template") {
-            // <template> holds HTML-only markup for new items (React renders them from state).
+          } else if (
+            child instanceof Element &&
+            child.localName !== "template" &&
+            !child.hasAttribute("hidden")
+          ) {
+            // <template> holds HTML-only markup for new items (React renders them from state);
+            // hidden rows are pages the HTML runtime keeps in the DOM (React renders one page).
             children.push(walk(child));
           }
         }
@@ -128,5 +143,6 @@ export const CONTRAST_EXEMPT = [
   '[data-ok-button][data-ok-color]:not([data-ok-color="inherit"]):not([data-ok-variant="soft"])',
   '[data-ok-fab]:not([data-ok-variant="soft"])',
   '[data-ok-toggle-button][aria-pressed="true"]:not([data-ok-color="standard"])',
+  '[data-ok-alert]:not([data-ok-variant="standard"])',
   "[data-swatch]",
 ];

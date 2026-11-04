@@ -7,7 +7,7 @@ language. Every component ships twice — **React** and **framework-free HTML** 
 Conventions, naming and the add-a-component checklist are in AGENTS.md (imported below). This
 file covers project status, workflow and orientation.
 
-## Status (updated 2026-11-04)
+## Status (updated 2026-11-05)
 
 | Phase | Scope | State |
 |---|---|---|
@@ -15,7 +15,7 @@ file covers project status, workflow and orientation.
 | 1 Tokens & theming | tokens → CSS vars, light/dark/system/nested, `createTheme()`, AA contrast tests, Tailwind v4 theme, HTML runtime | ✅ done |
 | 2 Pattern components | Button, Switch, Dialog | ↩ removed (ADR-0011); reference at commit `bd5fb2d` |
 | 2' Foundations | Tokens + Storybook › Foundations (Colors, Typography, Shadows, Grid, Icons): one story per section, default Storybook UI | ✅ done, awaiting review |
-| Components | Button, Icon button, Fab, Button group, Toggle button, Drawer, Sortable ✅ (via `/component`) | awaiting review |
+| Components | Button, Icon button, Fab, Button group, Toggle button, Drawer, Sortable, Accordion, Alert, Table ✅ (via `/component`) | awaiting review |
 
 Full plan: `docs/roadmap.md`. Not published yet.
 

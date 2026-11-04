@@ -5,6 +5,8 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { optionSchemas } from "../packages/core/dist/index.js";
 
 const SPECS = {
+  accordion: "accordion.md",
+  alert: "alert.md",
   button: "button.md",
   "icon-button": "icon-button.md",
   fab: "fab.md",
@@ -13,6 +15,8 @@ const SPECS = {
   "toggle-group": "toggle-button.md",
   drawer: "drawer.md",
   sortable: "sortable.md",
+  table: "table.md",
+  "table-sort-label": "table.md",
 };
 
 const code = (value) => `\`${value}\``;

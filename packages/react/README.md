@@ -25,6 +25,8 @@ import { Button, ButtonGroup, Fab, IconButton, ToggleButton, ToggleButtonGroup }
 
 | Component | Props |
 |---|---|
+| `Accordion` / `AccordionSummary` / `AccordionDetails` / `AccordionActions` | `Accordion` (a `<details>`): `expanded` / `defaultExpanded` / `onChange(expanded)`, `variant` (`default` · `outlined` · `soft`), `disableGutters`, `disabled`, `name` (one open at a time); `AccordionSummary`: `expandIcon` (`null` hides it) |
+| `Alert` / `AlertTitle` | `severity` (`success` · `info` · `warning` · `error`), `variant` (`standard` · `filled` · `outlined`), `color` (default: the severity's), `icon` (`false` hides it), `iconMapping`, `action`, `onClose` (renders a close button), `closeText`, `role` (default `alert`) |
 | `Button` | `variant` (`contained` · `outlined` · `text` · `soft`), `color` (`inherit` · palette · `black` · `white`), `size` (`sm` · `md` · `lg` · `xl`), `fullWidth`, `startIcon`, `endIcon`, `loading`, `loadingPosition`, `loadingIndicator`, `href` (renders `<a>`), plus native button / anchor props |
 | `IconButton` | `color` (`default` · `inherit` · palette · `black` · `white`), `size` (`sm` · `md` · `lg`), `animate`; needs `aria-label` |
 | `Fab` | `variant` (`contained` · `outlined` · `soft`), `color` (as IconButton), `size` (`sm` · `md` · `lg`), `extended`, `animate` |
@@ -32,6 +34,8 @@ import { Button, ButtonGroup, Fab, IconButton, ToggleButton, ToggleButtonGroup }
 | `ToggleButton` | `value`, `color` (`inherit` · palette), `size`, standalone `selected` / `defaultSelected` / `onChange(selected)` |
 | `Drawer` / `DrawerTrigger` / `DrawerContent` / `DrawerClose` | `Drawer`: `open` / `defaultOpen` / `onOpenChange`; `Drawer`: also `variant` (`temporary` · `persistent` · `permanent`), `onOpenChange(open, reason)`; `DrawerContent`: `anchor` (`left` · `right` · `top` · `bottom`), `hideBackdrop`, `disableEscapeKeyDown`, needs `aria-label` / `aria-labelledby`; trigger and close are Buttons |
 | `Sortable` | `items`, `getKey`, `renderItem`, `onReorder(items)` (controlled), `onRemove(item, index)` (renders remove buttons), `getItemLabel`, `layout` (`grid` · `vertical` · `horizontal`), `messages`; helper `arrayMove` |
+| `Table` / `TableContainer` / `TableHead` / `TableBody` / `TableFooter` / `TableRow` / `TableCell` | `Table`: `size` (`medium` · `small`), `padding` (`normal` · `checkbox` · `none`), `stickyHeader`; `TableContainer`: needs `aria-label` (focusable scroll region); `TableRow`: `hover`, `selected`; `TableCell`: `align`, `padding`, `size`, `sortDirection` (→ `aria-sort`), `scope="row"` renders `<th>` |
+| `TableSortLabel` / `TablePagination` / `TableExpandButton` / `TableDetailRow` | `TableSortLabel`: `active`, `direction`, `hideSortIcon`, `icon`; `TablePagination`: `count`, `page`, `rowsPerPage`, `onPageChange(page)`, `onRowsPerPageChange(rows)`, `rowsPerPageOptions`, `labelRowsPerPage`, `labelDisplayedRows`, `getItemAriaLabel`, `showFirstButton`, `showLastButton`, `disabled`; `TableExpandButton`: `expanded`, `controls`, `aria-label`; `TableDetailRow`: `id`, `open`, `colSpan`. Data helpers in `@owlky/core` |
 | `ToggleButtonGroup` | `exclusive`, `value` / `defaultValue` / `onChange(value)` (`string \| null` when exclusive, else `string[]`), `orientation`, `color`, `size`, `disabled` |
 
 Same markup and CSS as `@owlky/html` (specs: `specs/components/`).

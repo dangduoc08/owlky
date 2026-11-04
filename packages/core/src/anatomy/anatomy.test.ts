@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  accordionAttributes,
+  alertAttributes,
+  ariaSort,
   buttonAttributes,
   buttonColors,
   buttonGroupAttributes,
@@ -17,6 +20,9 @@ import {
   orientations,
   sortableAttributes,
   sortableLayouts,
+  tableAttributes,
+  tableCellAttributes,
+  tableSortLabelAttributes,
   toggleButtonAttributes,
   toggleButtonColors,
   toggleButtonSizes,
@@ -78,6 +84,101 @@ describe("buttonAttributes", () => {
       "data-ok-loading": "",
       "data-ok-loading-position": "center",
     });
+  });
+});
+
+describe("accordionAttributes", () => {
+  it("emits the variant explicitly and flags only when enabled", () => {
+    expect(accordionAttributes()).toEqual({
+      "data-ok-accordion": "",
+      "data-ok-variant": "default",
+    });
+    expect(
+      accordionAttributes({ variant: "soft", disableGutters: true, disabled: true }),
+    ).toMatchObject({
+      "data-ok-variant": "soft",
+      "data-ok-disable-gutters": "",
+      "data-ok-disabled": "",
+    });
+    expect(accordionAttributes({ variant: "x" as never })["data-ok-variant"]).toBe("default");
+  });
+});
+
+describe("table attributes", () => {
+  it("table: explicit size and padding, sticky header only when enabled", () => {
+    expect(tableAttributes()).toEqual({
+      "data-ok-table": "",
+      "data-ok-size": "medium",
+      "data-ok-padding": "normal",
+    });
+    expect(
+      tableAttributes({ size: "small", padding: "checkbox", stickyHeader: true }),
+    ).toMatchObject({
+      "data-ok-size": "small",
+      "data-ok-padding": "checkbox",
+      "data-ok-sticky-header": "",
+    });
+    expect(tableAttributes({ size: '"><img>' as never })["data-ok-size"]).toBe("medium");
+  });
+
+  it("cells: only valid overrides; inherit adds nothing", () => {
+    expect(tableCellAttributes()).toEqual({});
+    expect(tableCellAttributes({ align: "inherit" })).toEqual({});
+    expect(tableCellAttributes({ align: "right", padding: "none", size: "small" })).toEqual({
+      "data-ok-align": "right",
+      "data-ok-padding": "none",
+      "data-ok-size": "small",
+    });
+    expect(tableCellAttributes({ align: "x" as never, padding: "y" as never })).toEqual({});
+  });
+
+  it("sort label and aria-sort", () => {
+    expect(tableSortLabelAttributes()).toEqual({
+      "data-ok-table-sort-label": "",
+      "data-ok-direction": "asc",
+    });
+    expect(
+      tableSortLabelAttributes({ active: true, direction: "desc", hideSortIcon: true }),
+    ).toMatchObject({
+      "data-ok-active": "",
+      "data-ok-direction": "desc",
+      "data-ok-hide-sort-icon": "",
+    });
+    expect([ariaSort("asc"), ariaSort("desc"), ariaSort(false), ariaSort(undefined)]).toEqual([
+      "ascending",
+      "descending",
+      undefined,
+      undefined,
+    ]);
+  });
+});
+
+describe("alertAttributes", () => {
+  it("defaults to success; the color follows the severity unless set", () => {
+    expect(alertAttributes()).toEqual({
+      "data-ok-alert": "",
+      "data-ok-severity": "success",
+      "data-ok-variant": "standard",
+      "data-ok-color": "success",
+    });
+    expect(alertAttributes({ severity: "error", variant: "filled" })).toMatchObject({
+      "data-ok-severity": "error",
+      "data-ok-variant": "filled",
+      "data-ok-color": "error",
+    });
+    expect(alertAttributes({ severity: "info", color: "warning" })["data-ok-color"]).toBe(
+      "warning",
+    );
+  });
+
+  it("rejects unknown values (untrusted input)", () => {
+    expect(alertAttributes({ severity: "x" as never, color: "y" as never })).toMatchObject({
+      "data-ok-severity": "success",
+      "data-ok-color": "success",
+    });
+    expect(alertAttributes({ severity: "info", color: "y" as never })["data-ok-color"]).toBe(
+      "info",
+    );
   });
 });
 

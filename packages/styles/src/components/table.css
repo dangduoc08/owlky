@@ -1,0 +1,294 @@
+/*
+ * Table — spec: specs/components/table.md
+ *
+ * Anatomy:   [data-ok-table-container] › table[data-ok-table] › thead / tbody / tfoot › tr › th / td
+ *            th › [data-ok-table-sort-label] › [data-ok-table-sort-icon]
+ *            tr[data-ok-table-detail] (collapsible row) · [data-ok-table-pagination]
+ * Modifiers: table: data-ok-size = medium | small, data-ok-padding = normal | checkbox | none,
+ *            data-ok-sticky-header · cell: data-ok-align, data-ok-padding, data-ok-size ·
+ *            row: data-ok-hover, data-ok-selected · sort label: data-ok-active, data-ok-direction,
+ *            data-ok-hide-sort-icon
+ *
+ * Cells are matched through child combinators so a table nested in a detail row keeps its own
+ * settings. Single :where() selectors in @layer components (zero specificity); translucent colors
+ * use channels, never color-mix() (AGENTS.md).
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-ok-table-container]) {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    overflow: auto;
+  }
+
+  :where([data-ok-table-container]:focus-visible) {
+    outline: 2px solid var(--ok-text-primary);
+    outline-offset: -2px;
+  }
+
+  :where([data-ok-table]) {
+    --_ok-pad-y: calc(var(--ok-spacing) * 4);
+    --_ok-pad-x: calc(var(--ok-spacing) * 4);
+
+    width: 100%;
+    border-collapse: collapse;
+    border-spacing: 0;
+    color: var(--ok-text-primary);
+    font-family: var(--ok-font-family);
+    font-size: var(--ok-typography-body2-font-size);
+    font-weight: var(--ok-typography-body2-font-weight);
+    line-height: var(--ok-typography-body2-line-height);
+  }
+
+  /* Sizes: dense = 6px block padding. */
+  :where([data-ok-table][data-ok-size="small"]) {
+    --_ok-pad-y: calc(var(--ok-spacing) * 1.5);
+  }
+
+  :where([data-ok-table] > * > tr > :is(th, td)) {
+    box-sizing: border-box;
+    padding: var(--_ok-pad-y) var(--_ok-pad-x);
+    border-bottom: 1px dashed var(--ok-divider);
+    text-align: start;
+    vertical-align: middle;
+  }
+
+  :where([data-ok-table] > tbody > tr > th) {
+    font-weight: inherit;
+  }
+
+  /* Header: neutral band, secondary text, 56px tall at the medium size. */
+  :where([data-ok-table] > thead > tr > th) {
+    border-bottom: 0;
+    background-color: var(--ok-bg-neutral);
+    color: var(--ok-text-secondary);
+    font-weight: var(--ok-typography-subtitle2-font-weight);
+    line-height: calc(var(--ok-spacing) * 6);
+  }
+
+  :where([data-ok-table] > tfoot > tr > :is(th, td)) {
+    color: var(--ok-text-secondary);
+    font-size: var(--ok-typography-caption-font-size);
+    line-height: var(--ok-typography-caption-line-height);
+  }
+
+  /* Cell overrides. */
+  :where([data-ok-table] > * > tr > [data-ok-size="small"]) {
+    padding-block: calc(var(--ok-spacing) * 1.5);
+  }
+
+  :where([data-ok-table] > * > tr > [data-ok-size="medium"]) {
+    padding-block: calc(var(--ok-spacing) * 4);
+  }
+
+  :where([data-ok-table] > * > tr > [data-ok-align="left"]) {
+    text-align: left;
+  }
+
+  :where([data-ok-table] > * > tr > [data-ok-align="center"]) {
+    text-align: center;
+  }
+
+  :where([data-ok-table] > * > tr > [data-ok-align="right"]) {
+    text-align: right;
+  }
+
+  :where([data-ok-table] > * > tr > [data-ok-align="justify"]) {
+    text-align: justify;
+  }
+
+  /* Padding: table-wide, then per cell (a cell's own value wins: it comes later). */
+  :where([data-ok-table][data-ok-padding="checkbox"] > * > tr > :is(th, td)),
+  :where([data-ok-table] > * > tr > [data-ok-padding="checkbox"]) {
+    width: calc(var(--ok-spacing) * 12);
+    padding-block: 0;
+    padding-inline: calc(var(--ok-spacing) * 2) 0;
+  }
+
+  :where([data-ok-table][data-ok-padding="none"] > * > tr > :is(th, td)),
+  :where([data-ok-table] > * > tr > [data-ok-padding="none"]) {
+    padding: 0;
+  }
+
+  :where([data-ok-table] > * > tr > [data-ok-padding="normal"]) {
+    width: auto;
+    padding: var(--_ok-pad-y) var(--_ok-pad-x);
+  }
+
+  /* Sticky header (the container sets the height that scrolls). */
+  :where([data-ok-table][data-ok-sticky-header] > thead > tr > th) {
+    position: sticky;
+    z-index: 2;
+    top: 0;
+    background-color: var(--ok-bg-paper);
+  }
+
+  /* A second header row (grouping) sticks below the first one. */
+  :where([data-ok-table][data-ok-sticky-header] > thead > tr + tr > th) {
+    top: calc(var(--_ok-pad-y) * 2 + var(--ok-spacing) * 6);
+  }
+
+  /* Rows */
+  :where([data-ok-table] > tbody > tr) {
+    transition: background-color var(--ok-duration-shortest) var(--ok-easing-standard);
+  }
+
+  :where([data-ok-table] > tbody > tr[data-ok-selected]) {
+    background-color: rgb(var(--ok-palette-primary-main-channel) / 0.08);
+  }
+
+  @media (hover: hover) {
+    :where([data-ok-table] > tbody > tr[data-ok-hover]:hover) {
+      background-color: var(--ok-action-hover);
+    }
+
+    :where([data-ok-table] > tbody > tr[data-ok-hover][data-ok-selected]:hover) {
+      background-color: rgb(var(--ok-palette-primary-main-channel) / 0.12);
+    }
+  }
+
+  /* Collapsible detail row: hidden until its expand button opens it. */
+  :where([data-ok-table] > tbody > tr[data-ok-table-detail] > td) {
+    background-color: var(--ok-bg-neutral);
+  }
+
+  :where([data-ok-table] > tbody > tr[data-ok-table-detail][hidden]) {
+    display: none;
+  }
+
+  :where([data-ok-table-expand] svg) {
+    transition: transform var(--ok-duration-shorter) var(--ok-easing-standard);
+  }
+
+  :where([data-ok-table-expand][aria-expanded="true"] svg) {
+    transform: rotate(180deg);
+  }
+
+  /* Sort label: a button with the column name and an arrow (down = descending). */
+  :where([data-ok-table-sort-label]) {
+    display: inline-flex;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: var(--ok-radius-xs);
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: inherit;
+    cursor: pointer;
+  }
+
+  :where([data-ok-align="right"] > [data-ok-table-sort-label]) {
+    flex-direction: row-reverse;
+  }
+
+  :where([data-ok-table-sort-icon]) {
+    display: inline-flex;
+    flex: none;
+    width: calc(var(--ok-spacing) * 4.5);
+    height: calc(var(--ok-spacing) * 4.5);
+    margin-inline: calc(var(--ok-spacing) * 1);
+    opacity: 0;
+    transition-property: opacity, transform;
+    transition-duration: var(--ok-duration-shorter);
+    transition-timing-function: var(--ok-easing-standard);
+  }
+
+  :where([data-ok-table-sort-icon] > svg) {
+    width: 100%;
+    height: 100%;
+  }
+
+  :where([data-ok-table-sort-label][data-ok-direction="asc"] [data-ok-table-sort-icon]) {
+    transform: rotate(180deg);
+  }
+
+  :where([data-ok-table-sort-label][data-ok-active]) {
+    color: var(--ok-text-primary);
+  }
+
+  :where([data-ok-table-sort-label][data-ok-active] [data-ok-table-sort-icon]) {
+    opacity: 1;
+  }
+
+  :where([data-ok-table-sort-label]:focus-visible) {
+    outline: 2px solid var(--ok-text-primary);
+    outline-offset: 2px;
+  }
+
+  :where([data-ok-table-sort-label]:not([data-ok-active]):focus-visible [data-ok-table-sort-icon]) {
+    opacity: 0.5;
+  }
+
+  @media (hover: hover) {
+    :where([data-ok-table-sort-label]:hover) {
+      color: var(--ok-text-primary);
+    }
+
+    :where([data-ok-table-sort-label]:not([data-ok-active]):hover [data-ok-table-sort-icon]) {
+      opacity: 0.5;
+    }
+  }
+
+  :where(
+    [data-ok-table-sort-label][data-ok-hide-sort-icon]:not([data-ok-active])
+      [data-ok-table-sort-icon]
+  ) {
+    display: none;
+  }
+
+  /* Pagination: rows-per-page select, "1–5 of 12", previous / next; wraps on small screens. */
+  :where([data-ok-table-pagination]) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: calc(var(--ok-spacing) * 2) calc(var(--ok-spacing) * 5);
+    box-sizing: border-box;
+    min-height: calc(var(--ok-spacing) * 16);
+    padding: calc(var(--ok-spacing) * 2);
+    color: var(--ok-text-primary);
+    font-family: var(--ok-font-family);
+    font-size: var(--ok-typography-body2-font-size);
+    line-height: var(--ok-typography-body2-line-height);
+  }
+
+  :where([data-ok-table-pagination-rows]) {
+    display: inline-flex;
+    align-items: center;
+    gap: calc(var(--ok-spacing) * 2);
+  }
+
+  /* Native select until a Select component exists (docs/roadmap.md → Pending integrations). */
+  :where([data-ok-table-pagination-rows] > select) {
+    min-height: calc(var(--ok-spacing) * 8);
+    padding: 0 calc(var(--ok-spacing) * 1);
+    border: 0;
+    border-radius: var(--ok-radius-sm);
+    background-color: transparent;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+  }
+
+  :where([data-ok-table-pagination-rows] > select:focus-visible) {
+    outline: 2px solid var(--ok-text-primary);
+    outline-offset: 0;
+  }
+
+  :where([data-ok-table-pagination-actions]) {
+    display: inline-flex;
+    gap: calc(var(--ok-spacing) * 1);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :where([data-ok-table] > tbody > tr),
+    :where([data-ok-table-expand] svg),
+    :where([data-ok-table-sort-icon]) {
+      transition: none;
+    }
+  }
+}

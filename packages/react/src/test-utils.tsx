@@ -10,6 +10,7 @@ export const CONTRAST_EXEMPT = [
   '[data-ok-button][data-ok-color]:not([data-ok-color="inherit"]):not([data-ok-variant="soft"])',
   '[data-ok-fab]:not([data-ok-variant="soft"])',
   '[data-ok-toggle-button][aria-pressed="true"]:not([data-ok-color="standard"])',
+  '[data-ok-alert]:not([data-ok-variant="standard"])',
   "[data-swatch]",
 ];
 

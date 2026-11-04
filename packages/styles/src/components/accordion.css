@@ -1,0 +1,216 @@
+/*
+ * Accordion — spec: specs/components/accordion.md
+ *
+ * Anatomy:  details[data-ok-accordion] › summary[data-ok-accordion-summary]
+ *             (… + [data-ok-accordion-icon]) › [data-ok-accordion-details] + [data-ok-accordion-actions]?
+ * Modifiers: data-ok-variant = default | outlined | soft, data-ok-disable-gutters, data-ok-disabled
+ * States:    [open], :focus-visible on the summary, :hover (hover-capable devices)
+ *
+ * Single :where() selectors in @layer components (zero specificity). Translucent colors use
+ * channels, never color-mix() (AGENTS.md).
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-ok-accordion]) {
+    --_ok-gutter: calc(var(--ok-spacing) * 4);
+
+    box-sizing: border-box;
+    border-top: 1px solid var(--ok-divider);
+    color: var(--ok-text-primary);
+    font-family: var(--ok-font-family);
+    transition-property: background-color, box-shadow, margin, border-radius;
+    transition-duration: var(--ok-duration-short);
+    transition-timing-function: var(--ok-easing-standard);
+  }
+
+  :where([data-ok-accordion]:first-child) {
+    border-top-color: transparent;
+  }
+
+  /* Default: the open item lifts into a card. */
+  :where([data-ok-accordion][open]) {
+    margin: var(--_ok-gutter) 0;
+    border-top-color: transparent;
+    border-radius: var(--ok-radius-md);
+    background-color: var(--ok-bg-paper);
+    box-shadow: var(--ok-shadow-z8);
+  }
+
+  :where([data-ok-accordion][open] + [data-ok-accordion]) {
+    border-top-color: transparent;
+  }
+
+  :where([data-ok-accordion][data-ok-disable-gutters]) {
+    --_ok-gutter: 0;
+  }
+
+  :where([data-ok-accordion-summary]) {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--ok-spacing) * 4);
+    min-height: calc(var(--ok-spacing) * 14);
+    box-sizing: border-box;
+    padding: calc(var(--ok-spacing) * 4) calc(var(--ok-spacing) * 2) calc(var(--ok-spacing) * 4)
+      calc(var(--ok-spacing) * 4);
+    border-radius: inherit;
+    font-size: var(--ok-typography-subtitle1-font-size);
+    font-weight: var(--ok-typography-subtitle1-font-weight);
+    line-height: var(--ok-typography-subtitle1-line-height);
+    list-style: none;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  :where([data-ok-accordion-summary])::-webkit-details-marker {
+    display: none;
+  }
+
+  /* Headings inside the summary keep the summary's type scale. */
+  :where([data-ok-accordion-summary] > :is(h1, h2, h3, h4, h5, h6)) {
+    margin: 0;
+    font: inherit;
+  }
+
+  :where([data-ok-accordion-icon]) {
+    display: inline-flex;
+    flex-shrink: 0;
+    margin-inline-start: auto;
+    transition: transform var(--ok-duration-short) var(--ok-easing-standard);
+  }
+
+  :where([data-ok-accordion-icon] > svg) {
+    width: calc(var(--ok-spacing) * 5);
+    height: calc(var(--ok-spacing) * 5);
+  }
+
+  :where([data-ok-accordion][open] > [data-ok-accordion-summary] [data-ok-accordion-icon]) {
+    transform: rotate(180deg);
+  }
+
+  /* The default plus loses its vertical stroke: a minus. */
+  :where([data-ok-accordion-plus] > :last-child) {
+    transform-box: fill-box;
+    transform-origin: center;
+    transition: transform var(--ok-duration-short) var(--ok-easing-standard);
+  }
+
+  :where(
+    [data-ok-accordion][open] > [data-ok-accordion-summary] [data-ok-accordion-plus] > :last-child
+  ) {
+    transform: scaleY(0);
+  }
+
+  :where([data-ok-accordion-summary]:focus-visible) {
+    outline: 2px solid var(--ok-text-primary);
+    outline-offset: -2px;
+  }
+
+  :where([data-ok-accordion-details]) {
+    padding: 0 calc(var(--ok-spacing) * 4) calc(var(--ok-spacing) * 4);
+    color: var(--ok-text-secondary);
+    font-size: var(--ok-typography-body2-font-size);
+    line-height: var(--ok-typography-body2-line-height);
+  }
+
+  :where([data-ok-accordion-actions]) {
+    display: flex;
+    justify-content: flex-end;
+    gap: calc(var(--ok-spacing) * 2);
+    padding: 0 calc(var(--ok-spacing) * 4) calc(var(--ok-spacing) * 4);
+  }
+
+  /* Outlined: one bordered list. */
+  :where([data-ok-accordion][data-ok-variant="outlined"]) {
+    margin: 0;
+    border: 1px solid var(--ok-divider);
+    border-radius: 0;
+    background-color: transparent;
+    box-shadow: none;
+  }
+
+  :where(
+    [data-ok-accordion][data-ok-variant="outlined"]
+      + [data-ok-accordion][data-ok-variant="outlined"]
+  ) {
+    border-top-color: transparent;
+  }
+
+  :where([data-ok-accordion][data-ok-variant="outlined"]:first-child) {
+    border-top-color: var(--ok-divider);
+    border-start-start-radius: var(--ok-radius-md);
+    border-start-end-radius: var(--ok-radius-md);
+  }
+
+  :where([data-ok-accordion][data-ok-variant="outlined"]:last-child) {
+    border-end-start-radius: var(--ok-radius-md);
+    border-end-end-radius: var(--ok-radius-md);
+  }
+
+  /* Soft: separate filled items. */
+  :where([data-ok-accordion][data-ok-variant="soft"]) {
+    margin: 0 0 calc(var(--ok-spacing) * 2);
+    border: 0;
+    border-radius: var(--ok-radius-xl);
+    background-color: rgb(var(--ok-palette-grey-500-channel) / 0.08);
+    box-shadow: none;
+  }
+
+  :where([data-ok-accordion][data-ok-variant="soft"][open]) {
+    background-color: rgb(var(--ok-palette-grey-500-channel) / 0.16);
+  }
+
+  /* Secondary text on the 16 % tint is below AA (ADR-0014): soft content uses the primary text. */
+  :where([data-ok-accordion][data-ok-variant="soft"] > [data-ok-accordion-details]) {
+    color: var(--ok-text-primary);
+  }
+
+  @media (hover: hover) {
+    :where([data-ok-accordion][data-ok-variant="soft"]:hover) {
+      background-color: rgb(var(--ok-palette-grey-500-channel) / 0.16);
+    }
+  }
+
+  /* Disabled: not interactive with a pointer; the summary also leaves the tab order (markup). */
+  :where([data-ok-accordion][data-ok-disabled]) {
+    color: var(--ok-text-disabled);
+  }
+
+  :where([data-ok-accordion][data-ok-disabled] > [data-ok-accordion-summary]) {
+    cursor: default;
+    pointer-events: none;
+  }
+
+  :where([data-ok-accordion][data-ok-disabled] [data-ok-accordion-details]) {
+    color: var(--ok-text-disabled);
+  }
+
+  /* Height animation where supported (progressive enhancement). */
+  @supports (interpolate-size: allow-keywords) {
+    :where([data-ok-accordion]) {
+      interpolate-size: allow-keywords;
+    }
+
+    :where([data-ok-accordion])::details-content {
+      height: 0;
+      overflow: clip;
+      transition:
+        height var(--ok-duration-short) var(--ok-easing-standard),
+        content-visibility var(--ok-duration-short) allow-discrete;
+    }
+
+    :where([data-ok-accordion][open])::details-content {
+      height: auto;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :where([data-ok-accordion], [data-ok-accordion-icon], [data-ok-accordion-plus] > :last-child) {
+      transition: none;
+    }
+
+    :where([data-ok-accordion])::details-content {
+      transition: none;
+    }
+  }
+}

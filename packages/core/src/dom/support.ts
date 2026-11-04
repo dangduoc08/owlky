@@ -10,6 +10,8 @@ export interface Supports {
   readonly popover: boolean;
   /** The `inert` attribute. */
   readonly inert: boolean;
+  /** Exclusive `<details name>` groups (one open at a time). */
+  readonly detailsName: boolean;
 }
 
 const hasDom = () => typeof window !== "undefined" && typeof document !== "undefined";
@@ -27,5 +29,10 @@ export const supports: Supports = {
   },
   get inert() {
     return hasDom() && "inert" in HTMLElement.prototype;
+  },
+  get detailsName() {
+    return (
+      hasDom() && typeof HTMLDetailsElement === "function" && "name" in HTMLDetailsElement.prototype
+    );
   },
 };

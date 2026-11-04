@@ -7,12 +7,16 @@
  * Or import "@owlky/html/auto" to register every component and start.
  */
 
+export type { AccordionInstance } from "./components/accordion/accordion.js";
+export type { AlertInstance } from "./components/alert/alert.js";
 export type {
   DrawerCloseReason,
   DrawerInstance,
 } from "./components/drawer/drawer.js";
 export { components } from "./components/index.js";
 export type { SortableInstance } from "./components/sortable/sortable.js";
+export type { TableInstance } from "./components/table/table.js";
+export type { TablePaginationInstance } from "./components/table-pagination/table-pagination.js";
 export type { ToggleButtonInstance } from "./components/toggle-button/toggle-button.js";
 export type { ToggleGroupInstance } from "./components/toggle-group/toggle-group.js";
 export { defineComponent, readBooleanOption } from "./runtime/define.js";

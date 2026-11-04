@@ -123,9 +123,19 @@ and small-screen tests pick up new stories automatically from Storybook's `index
 - Interactive DOM behavior that moves nodes must expect focus loss: moving the focused element
   blurs it (Firefox fires `focusout` during the move; Safari doesn't focus buttons on click).
   `createSortableController` holds focus across owner updates and ignores press-related focusouts.
-- Parity normalization skips `<template>` (HTML-only markup such as Sortable's new-item template).
+- `<details>` components (Accordion): React prevents the summary's native toggle and sets `open`
+  from state; toggles the browser makes itself (find-in-page, `<details name>`) are reported via
+  `onToggle` and reverted after render when refused. `toggle` events fire on a later task — tests
+  wait (`settle()` / a `toggle` listener) before asserting.
+- Theme-dependent colors without new tokens: `light-dark()` inside `@supports (color: light-dark(#000, #fff))`
+  with the light value as the base declaration (Baseline lacks it; Biome rejects duplicate
+  properties). It follows the scope's `color-scheme`, so nested themes work (Alert).
+- Parity normalization skips `<template>` (HTML-only markup such as Sortable's new-item template)
+  and `[hidden]` elements (rows the HTML runtime pages out; React renders one page); `<select>` is
+  compared by `:value` (React sets `<option>` selection as a property).
 - Examples with state can't be expanded by `jsxSource()`: pass the Code panel source to
-  `reactGroupsStory(groups, code)` (see Sortable).
+  `reactGroupsStory(groups, code)`. Prefer one demo file per story imported with `?raw` (Table)
+  over a hand-written copy (Sortable).
 - General rule for any part the library doesn't have yet (scrollbar, list, progress, divider,
   typography, backdrop, …): use a native feature or story-only demo markup, never a library
   stand-in, and list it in `docs/roadmap.md` → "Pending integrations", so the later component can
@@ -134,6 +144,10 @@ and small-screen tests pick up new stories automatically from Storybook's `index
   reference px values by dividing by 4.
 - HTML behavior-only folders (e.g. `toggle-group`, whose markup lives in `toggle-button/examples`)
   have no `examples/`; the html build skips them. Snippet tests share helpers in `html/src/test-utils.ts`.
+- Scrollable containers in snippets (`section[aria-label][tabindex=0]`, Table) need Biome's
+  `noNoninteractiveTabindex` off for `examples/**` (biome.json override).
+- One runtime definition per folder (`components.test.ts`): a second definition of the same
+  component (e.g. `table-pagination`) gets its own behavior-only folder.
 - `<div role="group">` is intentional for button / toggle groups (not form fields): Biome's
   `useSemanticElements` is off for snippets and suppressed inline in React.
 - React group props reach children by `cloneElement` (ButtonGroup, server-safe) or context

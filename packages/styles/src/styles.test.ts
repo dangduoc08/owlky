@@ -39,7 +39,7 @@ describe("styles source", () => {
         .filter((s) => s && !s.startsWith("@") && !/^(from|to|\d+%)$/.test(s));
       for (const selectorList of selectors) {
         for (const selector of splitSelectorList(selectorList.replace(/\s+/g, " "))) {
-          // One :where(...) wrapping everything; only ::backdrop may follow it.
+          // One :where(...) wrapping everything; only a few pseudo-elements may follow it.
           expect(selector.startsWith(":where("), `${file}: "${selector}"`).toBe(true);
           let depth = 0;
           let end = -1;
@@ -50,7 +50,10 @@ describe("styles source", () => {
               break;
             }
           }
-          expect(["", "::backdrop"], `${file}: "${selector}"`).toContain(selector.slice(end + 1));
+          expect(
+            ["", "::backdrop", "::details-content", "::-webkit-details-marker"],
+            `${file}: "${selector}"`,
+          ).toContain(selector.slice(end + 1));
         }
       }
     },

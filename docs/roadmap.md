@@ -48,6 +48,24 @@ Core `createSortableController()`: Pointer Events dragging (mouse, touch, pen), 
 two-tap moves (WCAG 2.1.1 / 2.5.7), live announcements; remove buttons built in, "Add item" is app
 logic (HTML: `<template data-ok-sortable-template>`). No new tokens.
 
+## ✅ Components — Accordion & Alert (2026-11-05)
+Created with `/component` from the reference "Accordion" (stories: Simple, Controlled, Custom
+styles) and "Alert" pages (stories: Standard, Filled, Outlined, Description, Actions). Accordion is
+a native `<details>` (keyboard and find-in-page built in); `name` gives one-open-at-a-time with core
+`closeOtherDetails()` as the fallback; extras beyond MUI: `variant` (`default` · `outlined` ·
+`soft`) and `name`. Alert: `severity` / `variant` / `color`, close button (React `onClose`, HTML
+runtime `ok:alert:close` → `hidden`), standard tones follow the theme's `color-scheme` with
+`light-dark()` (light tones without it). No new tokens.
+
+## ✅ Components — Table (2026-11-05)
+Created with `/component` from the reference "Table" page (stories: Basic, Sorting & selecting,
+Grouping & fixed header, Collapsible). Native `<table>` parts mapped from MUI (`Table`,
+`TableHead/Body/Footer`, `TableRow`, `TableCell`, `TableContainer`, `TableSortLabel`,
+`TablePagination`) plus `TableExpandButton` / `TableDetailRow` for collapsible rows. React leaves
+data to the app (helpers in core: `compareCellValues`, `nextSortDirection`, `pageRange`,
+`selectAllState`); the HTML runtime (`table`, `table-pagination`) sorts, selects and pages the rows
+in the DOM (approved extension beyond MUI). No new tokens.
+
 ## Pending integrations
 Places that use a native feature, demo markup or a small built-in part until the component exists
 — any component, not only these. When that component is built, integrate these in the same review
@@ -55,10 +73,14 @@ Places that use a native feature, demo markup or a small built-in part until the
 
 | Waiting for | Where | Today |
 |---|---|---|
-| Scrollbar | `sortable.css` (vertical, horizontal), `drawer.css` (`[data-ok-drawer-content]`) | native scrolling (`overflow: auto`), OS scrollbar |
+| Scrollbar | `sortable.css` (vertical, horizontal), `drawer.css` (`[data-ok-drawer-content]`), `table.css` (`[data-ok-table-container]`) | native scrolling (`overflow: auto`), OS scrollbar |
 | List | Drawer stories (mailbox menu) | demo `<nav><ul><button>` styled in `.storybook/preview.css` |
 | Typography (display text) | Sortable stories (card numbers) | demo `<span>` styled in `.storybook/preview.css` |
 | Progress | Button loading: `[data-ok-button-spinner]` in `button.css` (library) | own spinner; keep the attribute as public anatomy and share Progress's styles / tokens |
+| Typography (heading / secondary text) | Accordion summaries (plain text, no secondary line from the reference) | summary text styled by `accordion.css` |
+| Checkbox | Table selection column (`data-ok-table-select`, `data-ok-table-select-all`) | native `<input type="checkbox">`, sized in `.storybook/preview.css`; keep the attributes on the input |
+| Select | `TablePagination` rows per page (library markup) | native `<select>` styled in `table.css`; the API (`rowsPerPageOptions`) stays |
+| Switch | Table "Dense" toggle from the reference | not shown: the stories' `size` Control covers it |
 | Divider | Drawer stories (mailbox menu) | demo `<hr>` styled in `.storybook/preview.css` |
 | Backdrop | Drawer: native `::backdrop` | share `--ok-backdrop` with a future Backdrop component |
 
@@ -71,13 +93,13 @@ ButtonGroup / ToggleButton / ToggleButtonGroup `fullWidth`, IconButton `edge` + 
 `standard`; Drawer `closeOnEscape` → `disableEscapeKeyDown`, `closeOnBackdropClick` removed (refuse
 with the reason). Defaults: ButtonGroup `variant="outlined"`.
 
-**Backlog (deferred):** Sortable auto-scroll while dragging near an edge; "Move to top / bottom"
+**Backlog (deferred):** Table stories "Pagination with API" and "Table pagination with API" (need Pagination and TextField / Select components); Table toolbar (title, selected count, filter). Sortable auto-scroll while dragging near an edge; "Move to top / bottom"
 keyboard actions (pragmatic-drag-and-drop accessibility guidance).
 
 ## Next — components (awaiting the owner's go-ahead)
 Order to be confirmed. Candidate sequence, each in React + HTML with parity tests:
 1. Form controls: Input, Textarea, Checkbox, Radio/RadioGroup (+ restore empty export globs)
-2. Display: Badge, Avatar, Card, Accordion
+2. Display: Badge, Avatar, Card
 3. Overlays & navigation: Tooltip, Dropdown, Tabs, Select (popover controller + fallback)
 4. Feedback & 1.0: Toast, accessibility audit, docs polish
 

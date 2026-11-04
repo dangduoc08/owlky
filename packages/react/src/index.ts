@@ -1,4 +1,7 @@
 export type {
+  AccordionVariant,
+  AlertSeverity,
+  AlertVariant,
   ButtonLoadingPosition,
   ButtonSize,
   ButtonVariant,
@@ -13,13 +16,28 @@ export type {
   IconButtonEdge,
   IconButtonSize,
   Orientation,
+  PageRange,
+  PaginationAction,
   PaletteColorName,
   SortableLayout,
   SortableMessages,
+  TableAlign,
+  TablePadding,
+  TableSize,
+  TableSortDirection,
   ToggleButtonColor,
   ToggleButtonSize,
   ToggleGroupValue,
 } from "@owlky/core";
+export {
+  Accordion,
+  AccordionActions,
+  AccordionDetails,
+  type AccordionProps,
+  AccordionSummary,
+  type AccordionSummaryProps,
+} from "./accordion/accordion.js";
+export { Alert, type AlertProps, AlertTitle } from "./alert/alert.js";
 export {
   Button,
   type ButtonAsButtonProps,
@@ -38,6 +56,28 @@ export {
 export { Fab, type FabAsButtonProps, type FabAsLinkProps, type FabProps } from "./fab/fab.js";
 export { IconButton, type IconButtonProps } from "./icon-button/icon-button.js";
 export { arrayMove, Sortable, type SortableProps } from "./sortable/sortable.js";
+export {
+  type RowsPerPageOption,
+  Table,
+  TableBody,
+  TableCell,
+  type TableCellProps,
+  TableContainer,
+  type TableContainerProps,
+  TableDetailRow,
+  type TableDetailRowProps,
+  TableExpandButton,
+  type TableExpandButtonProps,
+  TableFooter,
+  TableHead,
+  TablePagination,
+  type TablePaginationProps,
+  type TableProps,
+  TableRow,
+  type TableRowProps,
+  TableSortLabel,
+  type TableSortLabelProps,
+} from "./table/table.js";
 export {
   ToggleButton,
   ToggleButtonGroup,
