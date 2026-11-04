@@ -1,32 +1,101 @@
 import { paletteColorNames } from "@minimal-tailwind/tokens";
 import { CodeBlock } from "../shared/code-block.js";
+import { IconifyGlyph, type IconSetPrefix, iconSet } from "./iconify.js";
 import { Icon, iconNames } from "./icons.js";
 
-const SOURCES = [
-  ["Iconify — 200,000+ open-source icons", "https://icon-sets.iconify.design"],
-  ["Material Symbols", "https://fonts.google.com/icons"],
-] as const;
-
-/** Sample icons, plus recommended open-source sets. No icon set is bundled. */
-export function IconSets() {
+function Credit({ prefix }: { prefix: IconSetPrefix }) {
+  const set = iconSet(prefix);
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap gap-6 text-text-primary">
-        {iconNames.map((name) => (
-          <Icon key={name} name={name} width={24} height={24} />
+    <p className="m-0 text-caption text-text-secondary">
+      <a href={set.url} target="_blank" rel="noreferrer" className="text-primary-text underline">
+        {set.name}
+      </a>{" "}
+      by {set.author} · {set.license} · <code>{prefix}:*</code>
+    </p>
+  );
+}
+
+function Gallery({ prefix, size = 24 }: { prefix: IconSetPrefix; size?: number }) {
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="flex flex-wrap gap-4 text-text-secondary">
+        {iconSet(prefix).names.map((name) => (
+          <IconifyGlyph key={name} icon={`${prefix}:${name}`} size={size} />
         ))}
       </div>
-      <ul className="m-0 flex list-none flex-col gap-1 p-0 text-body2">
-        {SOURCES.map(([label, href]) => (
-          <li key={href}>
-            <a href={href} target="_blank" rel="noreferrer" className="text-primary-text">
-              {label}
-            </a>
-          </li>
-        ))}
-      </ul>
+      <Credit prefix={prefix} />
     </div>
   );
+}
+
+/** Iconify icons used across the docs: Solar (main set) and Eva (small UI glyphs). */
+export function IconifyIcons() {
+  return (
+    <div className="flex flex-col gap-8">
+      <Gallery prefix="solar" />
+      <Gallery prefix="eva" />
+      <p className="m-0 text-body2">
+        Browse every set on{" "}
+        <a
+          href="https://icon-sets.iconify.design"
+          target="_blank"
+          rel="noreferrer"
+          className="text-primary-text underline"
+        >
+          Iconify icon sets
+        </a>
+        .
+      </p>
+    </div>
+  );
+}
+
+/** Material Symbols, Google's icon font and SVG set. */
+export function MaterialIcons() {
+  return (
+    <p className="m-0 text-body2">
+      <a
+        href="https://fonts.google.com/icons"
+        target="_blank"
+        rel="noreferrer"
+        className="text-primary-text underline"
+      >
+        Material Symbols on Google Fonts
+      </a>
+    </p>
+  );
+}
+
+/** Simple stroke icons drawn for these docs (24 × 24, `currentColor`). */
+export function LocalIcons() {
+  return (
+    <div className="flex flex-wrap gap-6 text-text-primary">
+      {iconNames.map((name) => (
+        <span key={name} role="img" aria-label={name} title={name} className="inline-flex">
+          <Icon name={name} width={24} height={24} />
+        </span>
+      ))}
+    </div>
+  );
+}
+
+/** Brand marks keep their colors; monochrome ones follow the text color. */
+export function SocialIcons() {
+  return (
+    <div className="flex flex-col gap-4 text-text-primary">
+      <Gallery prefix="logos" size={20} />
+    </div>
+  );
+}
+
+/** File-type icons. */
+export function FileIcons() {
+  return <Gallery prefix="vscode-icons" size={32} />;
+}
+
+/** Circle flags for every two-letter country code. */
+export function FlagIcons() {
+  return <Gallery prefix="circle-flags" size={24} />;
 }
 
 const SIZES = [

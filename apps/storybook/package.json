@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "storybook dev -p 6006",
     "build": "storybook build -o storybook-static --quiet",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "icons": "node scripts/icons.mjs"
   },
   "dependencies": {
     "@minimal-tailwind/core": "workspace:*",
@@ -20,6 +21,12 @@
   "devDependencies": {
     "@fontsource-variable/public-sans": "5.3.0",
     "@fontsource/barlow": "5.3.0",
+    "@iconify-json/circle-flags": "1.2.12",
+    "@iconify-json/eva": "1.2.3",
+    "@iconify-json/logos": "1.2.17",
+    "@iconify-json/solar": "1.2.13",
+    "@iconify-json/vscode-icons": "1.2.92",
+    "@iconify/react": "6.0.3",
     "@storybook/addon-a11y": "10.6.5",
     "@storybook/addon-docs": "10.6.5",
     "@storybook/addon-themes": "10.6.5",

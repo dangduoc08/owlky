@@ -13,7 +13,8 @@
       "!**/test-results",
       "!**/playwright-report",
       "!**/*.snap",
-      "!**/*.md"
+      "!**/*.md",
+      "!apps/storybook/src/foundations/icons/icon-data.json"
     ]
   },
   "formatter": {

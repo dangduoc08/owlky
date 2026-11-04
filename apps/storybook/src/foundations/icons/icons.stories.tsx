@@ -1,5 +1,15 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { IconColors, IconSets, IconSizes, IconUsage } from "./icon-demos.js";
+import {
+  FileIcons,
+  FlagIcons,
+  IconColors,
+  IconifyIcons,
+  IconSizes,
+  IconUsage,
+  LocalIcons,
+  MaterialIcons,
+  SocialIcons,
+} from "./icon-demos.js";
 
 const meta = {
   title: "Foundations/Icons",
@@ -9,7 +19,7 @@ const meta = {
       canvas: { sourceState: "none" },
       description: {
         component:
-          "The library ships no icon set: components accept any SVG. Icons are sized in px on a 24 × 24 grid and colored with `currentColor`.",
+          "The library ships no icon set: components accept any SVG. These docs use open-source sets from Iconify (bundled offline, Storybook only). Icons are sized in px and colored with `currentColor`.",
       },
     },
   },
@@ -18,8 +28,23 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** Sample icons and recommended open-source sets. */
-export const IconSetsStory: Story = { name: "Icon sets", render: () => <IconSets /> };
+/** Material Symbols (not bundled). */
+export const Material: Story = { name: "Material icons", render: () => <MaterialIcons /> };
+
+/** Solar and Eva, from Iconify. */
+export const Iconify: Story = { name: "Iconify icons", render: () => <IconifyIcons /> };
+
+/** Stroke icons drawn for these docs. */
+export const Local: Story = { name: "Local icons", render: () => <LocalIcons /> };
+
+/** Social brand marks (SVG Logos). */
+export const Social: Story = { name: "Social icons", render: () => <SocialIcons /> };
+
+/** File-type icons (VSCode Icons). */
+export const Files: Story = { name: "File icons", render: () => <FileIcons /> };
+
+/** Country flags (Circle Flags). */
+export const Flags: Story = { name: "Flag icons", render: () => <FlagIcons /> };
 
 /** Recommended sizes. */
 export const Sizes: Story = { render: () => <IconSizes /> };
