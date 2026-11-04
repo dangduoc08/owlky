@@ -76,6 +76,10 @@ describe("drawer snippet", () => {
       await settle();
       await userEvent.click($(`[data-ok-drawer-open="drawer-${anchor}"]`));
       const content = $(`#drawer-${anchor} [data-ok-drawer-content]`);
+      // The slide-in can stall in headless WebKit on Linux (CI): jump to its end state, which is
+      // what this test checks. Reading the style first makes sure the transition exists.
+      getComputedStyle(content).transform;
+      for (const animation of content.getAnimations()) animation.finish();
       await vi.waitFor(() => expect(getComputedStyle(content).transform).toBe("none"));
       const box = content.getBoundingClientRect();
       const { innerWidth: w, innerHeight: h } = window;
