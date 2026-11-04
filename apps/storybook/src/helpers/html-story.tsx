@@ -1,7 +1,7 @@
 import type { StoryObj } from "@storybook/react-vite";
 
 /**
- * Renders a canonical HTML snippet from @minimal-tailwind/html exactly as a user would paste it.
+ * Renders a canonical HTML snippet from @owlky/html exactly as a user would paste it.
  * The HTML runtime (started in preview.tsx) mounts its components automatically via
  * MutationObserver — the story never calls any JavaScript, just like a static page.
  */

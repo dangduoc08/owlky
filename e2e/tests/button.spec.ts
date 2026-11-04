@@ -4,7 +4,7 @@ import { implementations, openStory, storyId } from "./helpers.js";
 /** Counts click events on the element matching `selector` (registered in the page). */
 async function trackClicks(page: Page, name: string) {
   await page.evaluate((label) => {
-    const target = [...document.querySelectorAll("[data-mt-button]")].find(
+    const target = [...document.querySelectorAll("[data-ok-button]")].find(
       (element) => element.textContent?.trim() === label,
     );
     (window as unknown as { clicks: number }).clicks = 0;

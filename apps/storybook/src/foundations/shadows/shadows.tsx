@@ -1,9 +1,4 @@
-import {
-  defaultTheme,
-  paletteColorNames,
-  type ShadowName,
-  shadowNames,
-} from "@minimal-tailwind/tokens";
+import { defaultTheme, paletteColorNames, type ShadowName, shadowNames } from "@owlky/tokens";
 import type { CSSProperties } from "react";
 
 const capitalize = (value: string) => value.charAt(0).toUpperCase() + value.slice(1);
@@ -34,7 +29,7 @@ function ShadowTile({
 
 const GRID = "grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-4";
 
-/** System elevations 1–24 (`--mt-elevation-*`). */
+/** System elevations 1–24 (`--ok-elevation-*`). */
 export function SystemShadows() {
   return (
     <div className={GRID}>
@@ -43,7 +38,7 @@ export function SystemShadows() {
           // biome-ignore lint/suspicious/noArrayIndexKey: elevations are a fixed, ordered scale.
           key={index}
           label={`z${index + 1}`}
-          variable={`--mt-elevation-${index + 1}`}
+          variable={`--ok-elevation-${index + 1}`}
         />
       ))}
     </div>
@@ -59,7 +54,7 @@ const CUSTOM_ORDER: ShadowName[] = [
   "dropdown",
 ];
 
-/** Extended shadows used by components (`--mt-shadow-*`). */
+/** Extended shadows used by components (`--ok-shadow-*`). */
 export function CustomShadows() {
   return (
     <div className={GRID}>
@@ -69,14 +64,14 @@ export function CustomShadows() {
           label={
             name.startsWith("z") ? name : capitalize(name.replace(/([A-Z])/g, " $1").toLowerCase())
           }
-          variable={`--mt-shadow-${name.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}`}
+          variable={`--ok-shadow-${name.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}`}
         />
       ))}
     </div>
   );
 }
 
-/** Colored shadows for filled surfaces (`--mt-shadow-<color>`). */
+/** Colored shadows for filled surfaces (`--ok-shadow-<color>`). */
 export function ColorShadows() {
   return (
     <div className={GRID}>
@@ -84,17 +79,17 @@ export function ColorShadows() {
         <ShadowTile
           key={`${name}-filled`}
           label={capitalize(name)}
-          variable={`--mt-shadow-${name}`}
+          variable={`--ok-shadow-${name}`}
           style={{
-            backgroundColor: `var(--mt-palette-${name}-main)`,
-            color: `var(--mt-palette-${name}-contrast-text)`,
+            backgroundColor: `var(--ok-palette-${name}-main)`,
+            color: `var(--ok-palette-${name}-contrast-text)`,
           }}
         />,
         <ShadowTile
           key={`${name}-paper`}
           label={capitalize(name)}
-          variable={`--mt-shadow-${name}`}
-          style={{ color: `var(--mt-palette-${name}-text)` }}
+          variable={`--ok-shadow-${name}`}
+          style={{ color: `var(--ok-palette-${name}-text)` }}
         />,
       ])}
     </div>

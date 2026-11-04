@@ -1,5 +1,5 @@
-# @minimal-tailwind/core
+# @owlky/core
 
-Framework-free behavior and anatomy shared by `@minimal-tailwind/react` and
-`@minimal-tailwind/html`: focus utilities, overlay layer stack, scroll lock,
-feature detection and `data-mt-*` attribute maps. You normally don't install this directly.
+Framework-free behavior and anatomy shared by `@owlky/react` and
+`@owlky/html`: focus utilities, overlay layer stack, scroll lock,
+feature detection and `data-ok-*` attribute maps. You normally don't install this directly.

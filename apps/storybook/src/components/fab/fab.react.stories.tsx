@@ -1,4 +1,4 @@
-import { Fab } from "@minimal-tailwind/react";
+import { Fab } from "@owlky/react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { reactGroupsStory, type StoryControls } from "../../helpers/groups.js";
 import { animateGroups, FAB_CONTROLS, fabGroups } from "./fab-examples.js";

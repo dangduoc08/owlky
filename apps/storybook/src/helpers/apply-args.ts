@@ -1,4 +1,4 @@
-import * as library from "@minimal-tailwind/react";
+import * as library from "@owlky/react";
 import { cloneElement, Fragment, isValidElement, type ReactElement, type ReactNode } from "react";
 
 /*

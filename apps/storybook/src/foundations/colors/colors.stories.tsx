@@ -12,7 +12,7 @@ const meta = {
       canvas: { sourceState: "none" },
       description: {
         component:
-          "Palette tokens from `@minimal-tailwind/tokens`, available as `--mt-palette-<color>-<shade>` CSS variables and Tailwind colors (`bg-primary`, `text-primary-dark`, `bg-grey-200`…). Click a swatch to copy its hex value.",
+          "Palette tokens from `@owlky/tokens`, available as `--ok-palette-<color>-<shade>` CSS variables and Tailwind colors (`bg-primary`, `text-primary-dark`, `bg-grey-200`…). Click a swatch to copy its hex value.",
       },
     },
   },

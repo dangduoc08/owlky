@@ -14,16 +14,16 @@ afterEach(() => {
 });
 
 const button = (value: string, pressed = false, extra = "") =>
-  `<button type="button" data-mt-toggle-button data-mt-color="standard" data-mt-size="md" value="${value}" aria-pressed="${pressed}" aria-label="${value}" ${extra}></button>`;
+  `<button type="button" data-ok-toggle-button data-ok-color="standard" data-ok-size="md" value="${value}" aria-pressed="${pressed}" aria-label="${value}" ${extra}></button>`;
 
 function setup(exclusive: boolean, inner: string) {
   const host = mount(
-    `<div role="group" data-mt-toggle-group data-mt-orientation="horizontal" ${exclusive ? "data-mt-exclusive" : ""} aria-label="g">${inner}</div>`,
+    `<div role="group" data-ok-toggle-group data-ok-orientation="horizontal" ${exclusive ? "data-ok-exclusive" : ""} aria-label="g">${inner}</div>`,
   );
   runtime = createRuntime()
     .register(...components)
     .start();
-  const group = host.querySelector("[data-mt-toggle-group]") as HTMLElement;
+  const group = host.querySelector("[data-ok-toggle-group]") as HTMLElement;
   const instance = runtime.get<ToggleGroupInstance>(group, "toggle-group") as ToggleGroupInstance;
   const byValue = (value: string) => host.querySelector(`[value="${value}"]`) as HTMLButtonElement;
   const pressed = () =>
@@ -38,7 +38,7 @@ describe("toggle group runtime", () => {
       button("left", true) + button("center") + button("right"),
     );
     const details: unknown[] = [];
-    group.addEventListener("mt:toggle-group:change", (event) => {
+    group.addEventListener("ok:toggle-group:change", (event) => {
       const { value, previous, button: source } = (event as CustomEvent).detail;
       details.push([value, previous, source.getAttribute("value")]);
     });
@@ -69,7 +69,7 @@ describe("toggle group runtime", () => {
       button("a", true) + button("b") + button("c", false, "disabled"),
     );
     const listener = vi.fn((event: Event) => event.preventDefault());
-    group.addEventListener("mt:toggle-group:change", listener);
+    group.addEventListener("ok:toggle-group:change", listener);
     await userEvent.click(byValue("b"));
     expect(instance.toggle(byValue("c"))).toBe(false);
     expect(instance.value).toBe("a");
@@ -79,7 +79,7 @@ describe("toggle group runtime", () => {
   it("setValue presses exactly the given values without events; foreign buttons are ignored", () => {
     const { group, instance, pressed } = setup(false, button("x") + button("y") + button("z"));
     const listener = vi.fn();
-    group.addEventListener("mt:toggle-group:change", listener);
+    group.addEventListener("ok:toggle-group:change", listener);
     instance.setValue(["x", "z"]);
     expect(pressed()).toEqual(["x", "z"]);
     instance.setValue(null);
@@ -91,7 +91,7 @@ describe("toggle group runtime", () => {
   it("a nested group owns its own buttons", async () => {
     const { instance, byValue } = setup(
       true,
-      `${button("outer")}<div role="group" data-mt-toggle-group data-mt-exclusive aria-label="inner">${button("inner")}</div>`,
+      `${button("outer")}<div role="group" data-ok-toggle-group data-ok-exclusive aria-label="inner">${button("inner")}</div>`,
     );
     await userEvent.click(byValue("inner"));
     expect(instance.value).toBeNull();
@@ -100,19 +100,19 @@ describe("toggle group runtime", () => {
 
   it("buttons without a value act as the empty value", async () => {
     const host = mount(
-      '<div role="group" data-mt-toggle-group data-mt-exclusive aria-label="g"><button type="button" data-mt-toggle-button aria-label="n"></button></div>',
+      '<div role="group" data-ok-toggle-group data-ok-exclusive aria-label="g"><button type="button" data-ok-toggle-button aria-label="n"></button></div>',
     );
     runtime = createRuntime()
       .register(...components)
       .start();
-    const group = host.querySelector("[data-mt-toggle-group]") as HTMLElement;
+    const group = host.querySelector("[data-ok-toggle-group]") as HTMLElement;
     await userEvent.click(host.querySelector("button") as HTMLButtonElement);
     expect(runtime.get<ToggleGroupInstance>(group, "toggle-group")?.value).toBe("");
   });
 
   it("vertical groups stack their buttons", () => {
     const host = mount(
-      `<div role="group" data-mt-toggle-group data-mt-orientation="vertical" aria-label="g">${button("a")}${button("b")}</div>`,
+      `<div role="group" data-ok-toggle-group data-ok-orientation="vertical" aria-label="g">${button("a")}${button("b")}</div>`,
     );
     expect(getComputedStyle(host.firstElementChild as Element).flexDirection).toBe("column");
     const [a, b] = host.querySelectorAll("button") as unknown as HTMLElement[];

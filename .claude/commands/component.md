@@ -5,7 +5,7 @@ description: Create or update a component from a reference URL (e.g. a Minimal U
 
 # Mission
 
-Turn a reference component page into a **Minimal Tailwind component** — or bring an existing one
+Turn a reference component page into a **Owlky component** — or bring an existing one
 in line with it: same *content* (variants, colors, sizes, states, behavior), built with this
 project's architecture, tokens and conventions — responsive at every viewport, fully tested, and
 passing the security checklist.
@@ -71,7 +71,7 @@ project. Never copy the reference's source code, branding or assets.
 
 4. **Map the reference to tokens.**
    - Every color, radius, shadow, font, spacing, breakpoint and duration must map to an existing
-     `--mt-*` token. Build a table *reference value → token*.
+     `--ok-*` token. Build a table *reference value → token*.
    - A value with no token is a **foundation gap**: propose adding the token (foundations first,
      ADR-0011) instead of hard-coding it.
    - Contrast (ADR-0014): brand colors follow the reference (white on `main` fills, `main` text
@@ -89,7 +89,7 @@ project. Never copy the reference's source code, branding or assets.
    - the **React ↔ HTML option table**: each option's React prop, HTML attribute / state /
      event / instance method per the ADR-0015 mapping, default and kind (`style` · `behavior` ·
      `state`) — this becomes the component's option schema in `core/src/options/`;
-   - the draft spec (anatomy with `data-mt-*` attributes, options table HTML ↔ React prop ↔
+   - the draft spec (anatomy with `data-ok-*` attributes, options table HTML ↔ React prop ↔
      default, states, keyboard, ARIA, events, **responsive behavior per breakpoint**) — following
      the template in `specs/README.md`;
    - the pattern: CSS-only / native control / runtime behavior (core controller);
@@ -118,7 +118,7 @@ project. Never copy the reference's source code, branding or assets.
      Scrollbar), with the planned change per dependent and its API impact (normally additive);
    - **Update mode:** the gap table and the planned change for each gap; the **public API
      impact** — none / additive (new option, value, story) / **breaking** (renamed or removed
-     prop, `data-mt-*` attribute or value, `--mt-*` variable, event, changed default or DOM
+     prop, `data-ok-*` attribute or value, `--ok-*` variable, event, changed default or DOM
      structure) — with a migration note for every breaking item; the resulting changeset level
      (patch / minor / major); the visual baselines expected to change.
    Stop and ask for approval. Do not write code or add dependencies before the user approves.
@@ -143,13 +143,13 @@ project. Never copy the reference's source code, branding or assets.
       in `anatomy/anatomy.ts` built from it; behavior controller in
       `src/<name>/` if interactive (reports intent, owns no state; native + fallback paths)
    3. `packages/styles/src/components/<name>.css` — single `:where()` selectors in
-      `@layer components`, order base → sizes → variants → hover → focus → disabled, `--mt-*`
+      `@layer components`, order base → sizes → variants → hover → focus → disabled, `--ok-*`
       tokens only, `@media (hover: hover)` for hover, `prefers-reduced-motion`; **mobile-first**:
       base rules for the smallest viewport, `min-width` media queries at token breakpoints
       (600 / 900 / 1200px) for larger ones; intrinsic sizing (`min-width: 0`, wrapping, no fixed
       widths that can overflow)
    4. `packages/react/src/<name>/` — component(s) + tests (+ `"use client"` only with hooks;
-      interactive roots render `data-mt-runtime="off"`)
+      interactive roots render `data-ok-runtime="off"`)
    5. `packages/html/src/components/<name>/examples/*.html` — canonical snippets; plus
       `<name>.ts` (`defineComponent`) + tests and one line in `components/index.ts` if it needs JS
    6. `apps/storybook/src/components/<name>/` — `<name>.react.stories.tsx` and
@@ -291,13 +291,13 @@ statements ≥ 95 %, branches ≥ 95 %, functions 100 %, lines ≥ 95 %. Public 
 | Area | Must be tested | Where |
 |---|---|---|
 | Anatomy | `<name>Attributes()` defaults and every option value | core unit |
-| Options | every prop / `data-mt-*` value, including defaults and invalid values (fall back to default) | react + html unit |
+| Options | every prop / `data-ok-*` value, including defaults and invalid values (fall back to default) | react + html unit |
 | States | hover, focus-visible, active, disabled, `aria-disabled`, loading/selected/open etc. | unit + e2e |
 | Controlled / uncontrolled | both modes, callbacks fired once per change, controlled refusal | react unit |
 | Keyboard | every row of the spec's keyboard table | unit (3 browsers) + e2e |
 | Focus | entry, order, trap/return where specified, never lost to `body` | unit + e2e |
 | ARIA | roles, names, descriptions, states (`aria-expanded`, `aria-selected`…) | unit (Testing Library roles) |
-| Events / API | every `mt:<name>:<event>` (order, `detail`, cancelable) and instance method | html unit |
+| Events / API | every `ok:<name>:<event>` (order, `detail`, cancelable) and instance method | html unit |
 | Lifecycle | init idempotent, inserted later (observer), removed (cleanup), `stop()`, React unmount, StrictMode | unit |
 | Platform paths | native **and** fallback (`forceFallback`) for every native API used | core unit |
 | Coexistence | React + HTML on one page, two runtime copies | html unit + e2e |
@@ -320,7 +320,7 @@ Run each check; every item ends as ✅ pass, ❌ fixed, or N/A (with reason). Ev
 | S1 | DOM XSS sinks | No `innerHTML`, `outerHTML`, `insertAdjacentHTML`, `document.write`, `eval`, `new Function`, string `setTimeout`/`setInterval`, `createContextualFragment` in library code; build nodes with `createElement` / `textContent` | check S1 below is empty |
 | S2 | React raw HTML | No `dangerouslySetInnerHTML` in packages (Storybook helpers only) | check S2 below is empty |
 | S3 | Dangerous URLs | Never build URLs from attributes/props; links pass consumer `href` through untouched; no `javascript:` in snippets; `target="_blank"` always with `rel="noopener noreferrer"` | check S3 below is empty |
-| S4 | Untrusted attribute input | Every `data-mt-*` value read by the runtime is validated against an allowlist (unknown → default); ids resolved with `getElementById`; any selector built from input uses `CSS.escape` | unit tests with malicious values (`"><img onerror>`, `../`, very long strings) — no throw, no injection |
+| S4 | Untrusted attribute input | Every `data-ok-*` value read by the runtime is validated against an allowlist (unknown → default); ids resolved with `getElementById`; any selector built from input uses `CSS.escape` | unit tests with malicious values (`"><img onerror>`, `../`, very long strings) — no throw, no injection |
 | S5 | Prototype pollution | Option/theme merges skip `__proto__`, `constructor`, `prototype`; never `Object.assign` untrusted objects onto shared objects | unit test merging `JSON.parse('{"__proto__":{"x":1}}')` leaves `({}).x` undefined |
 | S6 | CSP / Trusted Types | Works under `script-src 'self'; style-src 'self'; require-trusted-types-for 'script'`: no inline handlers or `<script>` in snippets, no `style` attribute *strings* set by JS (CSSOM properties are fine), no Trusted Types sink usage | e2e page with that CSP; fail on any `securitypolicyviolation` event |
 | S7 | Global state | No new `window` properties or `Symbol.for` slots (ADR-0007); nothing written to `localStorage`/cookies | check S7 below lists only the ADR-0007 slots; plain-HTML globals test |
@@ -372,7 +372,7 @@ pnpm audit --audit-level=high
 |---|---|---|---|
 | Critical | Exploitable injection or secret exposure in shipped code | DOM XSS sink fed by props/attributes, committed secret, `javascript:` URL built by the library | Fix before hand-off; stop and tell the user immediately |
 | High | Exploitable under realistic consumer usage, or a high/critical advisory | Unsanitized SVG/HTML from props, `on*` attribute injection, CSP/Trusted Types breakage, `pnpm audit` high | Fix before hand-off |
-| Medium | Weakens defenses or needs unusual conditions | Prototype pollution in option merges, `target="_blank"` without `rel`, unvalidated `data-mt-*` values | Fix, or the user explicitly accepts it |
+| Medium | Weakens defenses or needs unusual conditions | Prototype pollution in option merges, `target="_blank"` without `rel`, unvalidated `data-ok-*` values | Fix, or the user explicitly accepts it |
 | Low | Hardening / hygiene | Verbose logging, missing `autocomplete`, debug-only globals | Fix or list as follow-up |
 
 ---

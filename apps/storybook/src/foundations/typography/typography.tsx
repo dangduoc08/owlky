@@ -3,7 +3,7 @@ import {
   type PaletteColorName,
   paletteColorNames,
   type TypographyVariant,
-} from "@minimal-tailwind/tokens";
+} from "@owlky/tokens";
 import type { CSSProperties } from "react";
 import { CodeBlock } from "../shared/code-block.js";
 
@@ -16,8 +16,8 @@ export function variantDefinition(variant: TypographyVariant): string {
   const json: Record<string, unknown> = {
     fontFamily:
       style.fontFamily === "secondary"
-        ? "var(--mt-font-family-secondary)"
-        : "var(--mt-font-family)",
+        ? "var(--ok-font-family-secondary)"
+        : "var(--ok-font-family)",
     fontWeight: style.fontWeight,
     fontSize: withPx(style.fontSize),
     lineHeight: Number(Number(style.lineHeight).toFixed(2)),
@@ -34,11 +34,11 @@ export function variantDefinition(variant: TypographyVariant): string {
 /** Inline style rendering a variant from its CSS variables (so it is responsive). */
 export const variantStyle = (variant: TypographyVariant): CSSProperties => ({
   margin: 0,
-  fontFamily: `var(--mt-typography-${variant}-font-family)`,
-  fontSize: `var(--mt-typography-${variant}-font-size)`,
-  fontWeight: `var(--mt-typography-${variant}-font-weight)`,
-  lineHeight: `var(--mt-typography-${variant}-line-height)`,
-  textTransform: `var(--mt-typography-${variant}-text-transform)` as CSSProperties["textTransform"],
+  fontFamily: `var(--ok-typography-${variant}-font-family)`,
+  fontSize: `var(--ok-typography-${variant}-font-size)`,
+  fontWeight: `var(--ok-typography-${variant}-font-weight)`,
+  lineHeight: `var(--ok-typography-${variant}-line-height)`,
+  textTransform: `var(--ok-typography-${variant}-text-transform)` as CSSProperties["textTransform"],
 });
 
 export interface TypographySampleProps {
@@ -68,16 +68,16 @@ const LOREM =
   "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
 
 const TEXT_COLORS = [
-  ["Text primary", "--mt-text-primary"],
-  ["Text secondary", "--mt-text-secondary"],
-  ["Text disabled", "--mt-text-disabled"],
+  ["Text primary", "--ok-text-primary"],
+  ["Text secondary", "--ok-text-secondary"],
+  ["Text disabled", "--ok-text-disabled"],
 ] as const;
 
 function ColorParagraph({ title, variable }: { title: string; variable: string }) {
   return (
     <div
       style={{ color: `var(${variable})` }}
-      data-demo-disabled={variable === "--mt-text-disabled" || undefined}
+      data-demo-disabled={variable === "--ok-text-disabled" || undefined}
     >
       <h3 className="m-0 mb-1 text-subtitle1">{title}</h3>
       <p className="m-0 mb-1 text-body2">{LOREM}</p>
@@ -100,7 +100,7 @@ export function TextColors() {
           <ColorParagraph
             key={name}
             title={name.charAt(0).toUpperCase() + name.slice(1)}
-            variable={`--mt-palette-${name}-text`}
+            variable={`--ok-palette-${name}-text`}
           />
         ))}
       </div>

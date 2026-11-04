@@ -21,7 +21,7 @@ describe("sharedState", () => {
   it("is visible to another library copy through Symbol.for", () => {
     const state = sharedState("test-visible", 1, () => ({ ok: true }));
     const raw = (globalThis as unknown as Record<symbol, unknown>)[
-      Symbol.for("minimal-tailwind.test-visible@1")
+      Symbol.for("owlky.test-visible@1")
     ];
     expect(raw).toBe(state);
   });

@@ -1,10 +1,10 @@
 /*
- * @minimal-tailwind/html — side-effect free entry. Nothing runs on import.
+ * @owlky/html — side-effect free entry. Nothing runs on import.
  *
- *   import { components, getRuntime } from "@minimal-tailwind/html";
+ *   import { components, getRuntime } from "@owlky/html";
  *   getRuntime().register(...components).start();
  *
- * Or import "@minimal-tailwind/html/auto" to register every component and start.
+ * Or import "@owlky/html/auto" to register every component and start.
  */
 
 export type {

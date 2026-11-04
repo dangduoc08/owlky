@@ -23,13 +23,13 @@ components on top of them.
 - Foundations are documented in Storybook under **Foundations/** using the reference only for
   *content*. Presentation follows Storybook defaults: one story per section (sidebar sub-items),
   an autodocs page per foundation, Controls for adjustable demos. Values come from the tokens,
-  shown with our variable names (`--mt-*`).
+  shown with our variable names (`--ok-*`).
 - Where the reference conflicts with WCAG 2.2 AA, AA wins — superseded for brand colors by
   ADR-0014 (reference look); AA still applies to neutral text.
 - Tokens follow the reference where it differs from the first version: responsive type sizes
-  (min-width 600 / 900 / 1200px, emitted as media-query overrides of the same `--mt-typography-*`
+  (min-width 600 / 900 / 1200px, emitted as media-query overrides of the same `--ok-typography-*`
   variables), a display font (Barlow) for h1–h3, h5 = 18→19px, h6 = 17→18px at weight 600,
-  breakpoints, and 24 system elevations (`--mt-elevation-1…24`).
+  breakpoints, and 24 system elevations (`--ok-elevation-1…24`).
 - The Icons page keeps the reference's structure but not its assets: no logo, icon packs, flags
   or illustrations are reproduced (they are the reference product's own assets). The library
   bundles no icon set; the page documents sizes, colors and accessible SVG usage.
@@ -39,4 +39,4 @@ components on top of them.
 ## Consequences
 - ADRs 0004–0006 cite Dialog as their example; the decisions still hold, the example lives in
   git history.
-- `@minimal-tailwind/react` currently exports only types.
+- `@owlky/react` currently exports only types.

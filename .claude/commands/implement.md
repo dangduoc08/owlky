@@ -27,7 +27,7 @@ Always balance correctness, accessibility, and simplicity.
    - **Upgrade**: it exists but is incomplete, inaccessible, lacks parity or coverage → improve in place.
 
 4. **Design before writing** (one short block, shown to the user):
-   - **Spec**: anatomy tree with every `data-mt-*` attribute; options table (HTML attribute ↔ React prop ↔ default); states; keyboard map; events/instance API.
+   - **Spec**: anatomy tree with every `data-ok-*` attribute; options table (HTML attribute ↔ React prop ↔ default); states; keyboard map; events/instance API.
    - **Pattern**: CSS-only / native control / runtime behavior. Runtime behavior goes in a `core` controller that reports intent (`onDismiss`-style) and never decides state by itself.
    - **Accessibility invariants**: role, accessible name/description, focus entry/exit/return, keyboard, contrast, reduced motion.
    - **Lifecycle contract**: every listener/observer/timer bound to the instance `AbortSignal`; behavior on removal while active; idempotent init.
@@ -39,7 +39,7 @@ Always balance correctness, accessibility, and simplicity.
    1. `specs/components/<name>.md`
    2. `packages/core` — anatomy function in `anatomy/anatomy.ts`; behavior in `src/<name>/`; export from `src/index.ts`
    3. `packages/styles/src/components/<name>.css` (+ import in `src/index.css`)
-   4. `packages/react/src/<name>/<name>.tsx` (+ export; `"use client"` only if it uses hooks; interactive roots render `data-mt-runtime="off"`)
+   4. `packages/react/src/<name>/<name>.tsx` (+ export; `"use client"` only if it uses hooks; interactive roots render `data-ok-runtime="off"`)
    5. `packages/html/src/components/<name>/examples/*.html`; if it needs JS: `<name>.ts` with `defineComponent` + one line in `src/components/index.ts`
    6. `apps/storybook/src/components/<name>/` — `.react.stories.tsx`, `.html.stories.tsx` (**identical story names**), built with `reactGroupsStory()` / `snippetStory(…, htmlSetup())` (Code panel with imports; no docs page)
    7. `e2e/tests` — parity pairs + interaction spec run for both implementations
@@ -48,7 +48,7 @@ Always balance correctness, accessibility, and simplicity.
 
 6. **Security & robustness pass** — check and fix:
    - **DOM injection**: no `innerHTML`, `insertAdjacentHTML`, `outerHTML`, `eval`, `new Function` or `dangerouslySetInnerHTML` in library code; build nodes with `createElement`/`textContent`.
-   - **Untrusted attribute input**: values read from `data-mt-*` are validated (unknown values → default), ids looked up with `getElementById`, never interpolated into selectors without escaping (`CSS.escape`).
+   - **Untrusted attribute input**: values read from `data-ok-*` are validated (unknown values → default), ids looked up with `getElementById`, never interpolated into selectors without escaping (`CSS.escape`).
    - **Event hygiene**: no `stopPropagation`; delegated handlers only through the runtime; handler errors cannot break other components.
    - **Leaks / double init**: listeners use the instance signal; observers disconnect; timers cleared; React effects clean up and survive StrictMode.
    - **Global state**: no new `window` properties or `Symbol.for` slots (ADR-0007).
@@ -151,7 +151,7 @@ Report in **two versions — English first, then Vietnamese**.
 ## Rules
 
 - Never implement only one side: React and HTML ship together, or the task is not done.
-- Never break public API (exports, props, `data-mt-*`, `--mt-*`, events, runtime API) without flagging first.
+- Never break public API (exports, props, `data-ok-*`, `--ok-*`, events, runtime API) without flagging first.
 - Never change an approved architecture decision without a new ADR approved by the user.
 - Do not add features, options or abstractions beyond the stated task.
 - Do not add comments unless the WHY is non-obvious (platform quirk, invariant, workaround).

@@ -8,7 +8,7 @@ const run = (command, args) => execFileSync(command, args, { stdio: "inherit" })
 
 for (const name of packages) {
   const dir = `packages/${name}`;
-  console.log(`\n▶ @minimal-tailwind/${name}`);
+  console.log(`\n▶ @owlky/${name}`);
   run("pnpm", ["exec", "publint", dir, "--strict"]);
 
   // attw only understands JS/TS modules: skip asset exports (CSS, the IIFE bundle, JSON, globs).

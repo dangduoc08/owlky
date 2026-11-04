@@ -2,7 +2,7 @@
  * Writes src/foundations/icons/icon-data.json: the subset of Iconify collections used by the
  * Icons foundation page. The full collections are megabytes each, so stories load only this
  * file (offline — no request to the Iconify API). Edit SETS, then run `pnpm --filter
- * @minimal-tailwind/storybook icons`.
+ * @owlky/storybook icons`.
  */
 import { readFileSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";

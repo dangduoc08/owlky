@@ -3,10 +3,10 @@
  * attributes), the HTML runtime (attributes → options), Storybook Controls and parity tests.
  *
  * Kinds:
- * - `style`    enum written as `data-mt-<option>="<value>"` (unknown values → default)
- * - `flag`     boolean written as a presence attribute (`data-mt-full-width`)
+ * - `style`    enum written as `data-ok-<option>="<value>"` (unknown values → default)
+ * - `flag`     boolean written as a presence attribute (`data-ok-full-width`)
  * - `native`   boolean native attribute (`disabled`)
- * - `behavior` boolean read by the runtime on every action; `data-mt-<option>="false"` turns it off
+ * - `behavior` boolean read by the runtime on every action; `data-ok-<option>="false"` turns it off
  * - `state`    state kept in the DOM (`open`, `aria-pressed`); documented, changed through the API
  */
 
@@ -20,7 +20,7 @@ export interface OptionBase {
 
 export interface StyleOption<V extends string = string> extends OptionBase {
   readonly kind: "style";
-  readonly attr: `data-mt-${string}`;
+  readonly attr: `data-ok-${string}`;
   readonly values: readonly V[];
   /** Written explicitly when no (valid) value is given — unless the option is `optional`. */
   readonly default: V;
@@ -30,7 +30,7 @@ export interface StyleOption<V extends string = string> extends OptionBase {
 
 export interface FlagOption extends OptionBase {
   readonly kind: "flag";
-  readonly attr: `data-mt-${string}`;
+  readonly attr: `data-ok-${string}`;
 }
 
 export interface NativeOption extends OptionBase {
@@ -40,7 +40,7 @@ export interface NativeOption extends OptionBase {
 
 export interface BehaviorOption extends OptionBase {
   readonly kind: "behavior";
-  readonly attr: `data-mt-${string}`;
+  readonly attr: `data-ok-${string}`;
   readonly default: boolean;
 }
 
@@ -55,18 +55,18 @@ export interface StateOption extends OptionBase {
 export type OptionSpec = StyleOption | FlagOption | NativeOption | BehaviorOption | StateOption;
 
 export interface OptionSchema<O extends Record<string, OptionSpec> = Record<string, OptionSpec>> {
-  /** Component name (`mt:<name>:<event>`, `runtime.get(el, name)`). */
+  /** Component name (`ok:<name>:<event>`, `runtime.get(el, name)`). */
   readonly name: string;
-  /** Root marker attribute, e.g. `data-mt-button`. */
-  readonly root: `data-mt-${string}`;
+  /** Root marker attribute, e.g. `data-ok-button`. */
+  readonly root: `data-ok-${string}`;
   readonly options: O;
 }
 
-export type DataAttributes = { [key: `data-mt-${string}`]: string };
+export type DataAttributes = { [key: `data-ok-${string}`]: string };
 
 /** Pure: lets bundlers drop unused schemas. */
 export const style = /* @__NO_SIDE_EFFECTS__ */ <const V extends string>(
-  attr: `data-mt-${string}`,
+  attr: `data-ok-${string}`,
   values: readonly V[],
   defaultValue: V,
   description: string,
@@ -82,7 +82,7 @@ export const style = /* @__NO_SIDE_EFFECTS__ */ <const V extends string>(
 
 /** Pure: lets bundlers drop unused schemas. */
 export const flag = /* @__NO_SIDE_EFFECTS__ */ (
-  attr: `data-mt-${string}`,
+  attr: `data-ok-${string}`,
   description: string,
   extra: Pick<OptionBase, "children" | "when"> = {},
 ): FlagOption => ({ kind: "flag", attr, description, ...extra });
@@ -96,7 +96,7 @@ export const native = /* @__NO_SIDE_EFFECTS__ */ (
 
 /** Pure: lets bundlers drop unused schemas. */
 export const behavior = /* @__NO_SIDE_EFFECTS__ */ (
-  attr: `data-mt-${string}`,
+  attr: `data-ok-${string}`,
   defaultValue: boolean,
   description: string,
 ): BehaviorOption => ({ kind: "behavior", attr, default: defaultValue, description });
@@ -118,7 +118,7 @@ export const defineOptions = /* @__NO_SIDE_EFFECTS__ */ <
   const O extends Record<string, OptionSpec>,
 >(
   name: string,
-  root: `data-mt-${string}`,
+  root: `data-ok-${string}`,
   options: O,
 ): OptionSchema<O> => ({ name, root, options });
 

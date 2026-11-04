@@ -2,7 +2,7 @@
 import { writeFile } from "node:fs/promises";
 import { defaultTheme, themeToCss, themeToCssVariables } from "../dist/index.js";
 
-const banner = "/* @minimal-tailwind/tokens — generated, do not edit. */\n";
+const banner = "/* @owlky/tokens — generated, do not edit. */\n";
 
 await writeFile(new URL("../dist/tokens.css", import.meta.url), banner + themeToCss(defaultTheme));
 await writeFile(

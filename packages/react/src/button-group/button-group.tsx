@@ -4,7 +4,7 @@ import {
   buttonGroupAttributes,
   type ColorName,
   type Orientation,
-} from "@minimal-tailwind/core";
+} from "@owlky/core";
 import {
   Children,
   cloneElement,

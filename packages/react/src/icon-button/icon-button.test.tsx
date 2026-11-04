@@ -1,4 +1,4 @@
-import { iconButtonColors, iconButtonSizes } from "@minimal-tailwind/core";
+import { iconButtonColors, iconButtonSizes } from "@owlky/core";
 import { render, screen } from "@testing-library/react";
 import { createRef } from "react";
 import { renderToString } from "react-dom/server";
@@ -24,13 +24,13 @@ describe("IconButton", () => {
     );
     const button = screen.getByRole("button", { name: "Settings" });
     expect(button.getAttribute("type")).toBe("button");
-    expect(button.dataset).toMatchObject({ mtIconButton: "", mtColor: "default", mtSize: "md" });
-    expect(button.hasAttribute("data-mt-animate")).toBe(false);
+    expect(button.dataset).toMatchObject({ okIconButton: "", okColor: "default", okSize: "md" });
+    expect(button.hasAttribute("data-ok-animate")).toBe(false);
   });
 
   it.each(iconButtonColors)("color %s", (color) => {
     render(<IconButton aria-label="x" color={color} />);
-    expect(screen.getByRole("button").dataset["mtColor"]).toBe(color);
+    expect(screen.getByRole("button").dataset["okColor"]).toBe(color);
   });
 
   it.each([
@@ -64,7 +64,7 @@ describe("IconButton", () => {
       />,
     );
     const button = screen.getByRole("button");
-    expect(button.dataset).toMatchObject({ mtColor: "default", mtSize: "md", mtAnimate: "" });
+    expect(button.dataset).toMatchObject({ okColor: "default", okSize: "md", okAnimate: "" });
     expect(button.getAttribute("type")).toBe("submit");
     expect(button.className).toBe("custom");
     expect(ref.current).toBe(button);
@@ -121,7 +121,7 @@ describe("IconButton", () => {
       </>,
     );
     const start = screen.getByRole("button", { name: "start" });
-    expect(start.dataset["mtEdge"]).toBe("start");
+    expect(start.dataset["okEdge"]).toBe("start");
     expect(css(start).marginLeft).toBe("-8px");
     expect(css(screen.getByRole("button", { name: "end" })).marginRight).toBe("-5px");
     expect(start.hasAttribute("aria-busy")).toBe(false);
@@ -129,7 +129,7 @@ describe("IconButton", () => {
     expect(busy.disabled).toBe(true);
     expect(busy.getAttribute("aria-busy")).toBe("true");
     expect(
-      busy.querySelector("[data-mt-icon-button-loader] [data-mt-button-spinner]"),
+      busy.querySelector("[data-ok-icon-button-loader] [data-ok-button-spinner]"),
     ).not.toBeNull();
     expect(css(busy.querySelector("svg") as Element).visibility).toBe("hidden");
     expect(screen.getByRole("button", { name: "text" }).textContent).toBe("…");

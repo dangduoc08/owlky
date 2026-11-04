@@ -4,7 +4,7 @@ import { htmlGroupsStory, type StoryControls } from "../../helpers/groups.js";
 /** Group title ↔ snippet file suffix, in story order. */
 export type GroupFiles = readonly (readonly [title: string, file: string])[];
 
-const CDN = "https://cdn.jsdelivr.net/npm/@minimal-tailwind/html@0/dist";
+const CDN = "https://cdn.jsdelivr.net/npm/@owlky/html@0/dist";
 
 /**
  * What a page needs before pasting the snippets, shown at the top of every HTML story's code.
@@ -14,12 +14,12 @@ export function htmlSetup(css: string[], runtime = false): string {
   const files = ["tokens.css", ...css.map((file) => `components/${file}`)].join(" + ");
   const lines = [
     "<!-- Once per page (CDN): -->",
-    `<link rel="stylesheet" href="${CDN}/minimal-tailwind.css">`,
+    `<link rel="stylesheet" href="${CDN}/owlky.css">`,
   ];
-  if (runtime) lines.push(`<script src="${CDN}/minimal-tailwind.js" defer></script>`);
+  if (runtime) lines.push(`<script src="${CDN}/owlky.js" defer></script>`);
   lines.push(
-    `<!-- npm: import "@minimal-tailwind/styles/minimal-tailwind.css" (or ${files} from @minimal-tailwind/styles)${
-      runtime ? ' and import "@minimal-tailwind/html/auto"' : "; no JavaScript needed"
+    `<!-- npm: import "@owlky/styles/owlky.css" (or ${files} from @owlky/styles)${
+      runtime ? ' and import "@owlky/html/auto"' : "; no JavaScript needed"
     }. -->`,
   );
   return lines.join("\n");

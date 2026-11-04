@@ -1,4 +1,4 @@
-import type { Supports } from "@minimal-tailwind/core";
+import type { Supports } from "@owlky/core";
 
 /** Anything a component instance returns from `setup`. */
 export interface ComponentInstance {
@@ -15,7 +15,7 @@ export interface SetupContext {
   readonly signal: AbortSignal;
   readonly runtime: Runtime;
   /**
-   * Dispatches a bubbling `mt:<component>:<type>` CustomEvent on the element.
+   * Dispatches a bubbling `ok:<component>:<type>` CustomEvent on the element.
    * Returns `false` if a listener called `preventDefault()` on a cancelable event.
    */
   emit(type: string, detail?: unknown, options?: EmitOptions): boolean;
@@ -34,7 +34,7 @@ export interface DelegatedHandler {
 }
 
 export interface ComponentDefinition<I extends ComponentInstance = ComponentInstance> {
-  /** Unique, lowercase name. Events are named `mt:<name>:<type>`. */
+  /** Unique, lowercase name. Events are named `ok:<name>:<type>`. */
   readonly name: string;
   /** Root selector. Every match is mounted automatically. */
   readonly selector: string;

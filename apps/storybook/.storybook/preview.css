@@ -1,6 +1,6 @@
 /*
  * Storybook is set up like a typical Tailwind v4 consumer: Tailwind (preflight + utilities for
- * story layout), the Minimal Tailwind theme, then the component CSS. This continuously verifies
+ * story layout), the Owlky theme, then the component CSS. This continuously verifies
  * that library layers interact correctly with Tailwind's preflight and utilities.
  */
 @import "tailwindcss";
@@ -27,104 +27,104 @@
 
 .sb-group-title {
   margin: 0 0 0.75rem;
-  color: var(--mt-text-secondary);
-  font-size: var(--mt-typography-overline-font-size);
-  font-weight: var(--mt-typography-overline-font-weight);
-  line-height: var(--mt-typography-overline-line-height);
+  color: var(--ok-text-secondary);
+  font-size: var(--ok-typography-overline-font-size);
+  font-weight: var(--ok-typography-overline-font-weight);
+  line-height: var(--ok-typography-overline-line-height);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
 /* Demo surfaces: a theme scope inside a row gets its own paper background. */
-.sb-row > [data-mt-theme] {
+.sb-row > [data-ok-theme] {
   padding: 0.75rem;
-  border-radius: var(--mt-radius-lg);
-  background-color: var(--mt-bg-paper);
-  box-shadow: var(--mt-shadow-card);
+  border-radius: var(--ok-radius-lg);
+  background-color: var(--ok-bg-paper);
+  box-shadow: var(--ok-shadow-card);
 }
 
 /* Drawer demo content (stories only; a List component will replace it). */
-[data-mt-drawer-content] > nav {
+[data-ok-drawer-content] > nav {
   min-inline-size: 250px;
-  padding-block: calc(var(--mt-spacing) * 2);
+  padding-block: calc(var(--ok-spacing) * 2);
 }
 
-[data-mt-drawer-content] > nav ul {
+[data-ok-drawer-content] > nav ul {
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-[data-mt-drawer-content] > nav hr {
-  margin: calc(var(--mt-spacing) * 2) 0;
+[data-ok-drawer-content] > nav hr {
+  margin: calc(var(--ok-spacing) * 2) 0;
   border: 0;
-  border-top: 1px solid var(--mt-divider);
+  border-top: 1px solid var(--ok-divider);
 }
 
-[data-mt-drawer-content] > nav button {
+[data-ok-drawer-content] > nav button {
   display: flex;
   align-items: center;
-  gap: calc(var(--mt-spacing) * 4);
+  gap: calc(var(--ok-spacing) * 4);
   box-sizing: border-box;
   width: 100%;
-  min-height: calc(var(--mt-spacing) * 11);
-  padding: calc(var(--mt-spacing) * 2) calc(var(--mt-spacing) * 5);
+  min-height: calc(var(--ok-spacing) * 11);
+  padding: calc(var(--ok-spacing) * 2) calc(var(--ok-spacing) * 5);
   border: 0;
   background: transparent;
-  color: var(--mt-text-primary);
+  color: var(--ok-text-primary);
   font: inherit;
-  font-size: var(--mt-font-size-md);
-  font-weight: var(--mt-font-weight-semibold);
+  font-size: var(--ok-font-size-md);
+  font-weight: var(--ok-font-weight-semibold);
   text-align: start;
   cursor: pointer;
 }
 
-[data-mt-drawer-content] > nav button:hover {
-  background-color: var(--mt-action-hover);
+[data-ok-drawer-content] > nav button:hover {
+  background-color: var(--ok-action-hover);
 }
 
-[data-mt-drawer-content] > nav button:focus-visible {
-  outline: 2px solid var(--mt-text-primary);
+[data-ok-drawer-content] > nav button:focus-visible {
+  outline: 2px solid var(--ok-text-primary);
   outline-offset: -2px;
 }
 
-[data-mt-drawer-content] > nav svg {
+[data-ok-drawer-content] > nav svg {
   flex-shrink: 0;
-  width: calc(var(--mt-spacing) * 6);
-  height: calc(var(--mt-spacing) * 6);
+  width: calc(var(--ok-spacing) * 6);
+  height: calc(var(--ok-spacing) * 6);
 }
 
 /* Sortable demo content (stories only): the reference's big card numbers. */
-[data-mt-sortable-item] > span {
-  color: var(--mt-text-secondary);
-  font-family: var(--mt-typography-h2-font-family);
-  font-size: var(--mt-typography-h2-font-size);
-  font-weight: var(--mt-typography-h2-font-weight);
-  line-height: var(--mt-typography-h2-line-height);
+[data-ok-sortable-item] > span {
+  color: var(--ok-text-secondary);
+  font-family: var(--ok-typography-h2-font-family);
+  font-size: var(--ok-typography-h2-font-size);
+  font-weight: var(--ok-typography-h2-font-weight);
+  line-height: var(--ok-typography-h2-line-height);
 }
 
 /* Sortable stories: the "Add item" button above the list, like the reference. */
-.sb-row:has(> [data-mt-sortable]) {
+.sb-row:has(> [data-ok-sortable]) {
   flex-direction: column;
   align-items: flex-end;
 }
 
-.sb-row > [data-mt-sortable][data-mt-layout="vertical"] {
+.sb-row > [data-ok-sortable][data-ok-layout="vertical"] {
   align-self: center;
 }
 
 /* Docked drawer stories: a small app frame (drawer + page area). */
-.sb-row > div:has(> [data-mt-drawer]) {
+.sb-row > div:has(> [data-ok-drawer]) {
   display: flex;
   width: 100%;
-  height: calc(var(--mt-spacing) * 70);
+  height: calc(var(--ok-spacing) * 70);
   overflow: hidden;
-  border: 1px dashed var(--mt-divider);
-  border-radius: var(--mt-radius-lg);
+  border: 1px dashed var(--ok-divider);
+  border-radius: var(--ok-radius-lg);
 }
 
-.sb-row > div:has(> [data-mt-drawer]) > div {
+.sb-row > div:has(> [data-ok-drawer]) > div {
   flex: 1;
-  padding: calc(var(--mt-spacing) * 5);
-  color: var(--mt-text-secondary);
+  padding: calc(var(--ok-spacing) * 5);
+  color: var(--ok-text-secondary);
 }

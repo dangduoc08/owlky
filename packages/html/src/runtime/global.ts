@@ -1,4 +1,4 @@
-import { supports } from "@minimal-tailwind/core";
+import { supports } from "@owlky/core";
 import { createRuntime } from "./runtime.js";
 import type { Runtime } from "./types.js";
 import { PROTOCOL, VERSION } from "./version.js";
@@ -7,7 +7,7 @@ import { PROTOCOL, VERSION } from "./version.js";
  * The page-wide runtime slot (ADR-0007). Deliberately unversioned so every copy — any version —
  * can see who owns the page. Its shape must never change: `{ protocol, version, runtime }`.
  */
-const RUNTIME_SLOT = Symbol.for("minimal-tailwind.runtime");
+const RUNTIME_SLOT = Symbol.for("owlky.runtime");
 
 interface RuntimeSlot {
   readonly protocol: number;
@@ -63,7 +63,7 @@ export function getRuntime(): Runtime {
     if (slot.version !== VERSION && !reported.shared) {
       reported.shared = true;
       console.warn(
-        `[minimal-tailwind] Runtime ${VERSION} found runtime ${slot.version} already active; sharing it. Load one copy of the library to avoid surprises.`,
+        `[owlky] Runtime ${VERSION} found runtime ${slot.version} already active; sharing it. Load one copy of the library to avoid surprises.`,
       );
     }
     return slot.runtime;
@@ -71,7 +71,7 @@ export function getRuntime(): Runtime {
   if (!reported.conflict) {
     reported.conflict = true;
     console.error(
-      `[minimal-tailwind] Runtime ${VERSION} (protocol ${PROTOCOL}) is disabled: runtime ${slot.version} (protocol ${slot.protocol}) already manages this page. Load a single version of @minimal-tailwind/html.`,
+      `[owlky] Runtime ${VERSION} (protocol ${PROTOCOL}) is disabled: runtime ${slot.version} (protocol ${slot.protocol}) already manages this page. Load a single version of @owlky/html.`,
     );
   }
   return createInactiveRuntime();

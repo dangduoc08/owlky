@@ -12,11 +12,11 @@ depending on the other's runtime, and consumers must install only what they use.
 A pnpm workspace with five published packages and three private workspaces:
 
 ```
-@minimal-tailwind/tokens   design tokens (TS source of truth → CSS vars, JSON)
-@minimal-tailwind/styles   prebuilt CSS for all components + Tailwind v4 theme      ← tokens
-@minimal-tailwind/core     framework-free behavior + anatomy, shared by both        ← tokens (types)
-@minimal-tailwind/react    React components                                         ← core
-@minimal-tailwind/html     HTML Core Runtime + snippets + CDN bundle                ← core
+@owlky/tokens   design tokens (TS source of truth → CSS vars, JSON)
+@owlky/styles   prebuilt CSS for all components + Tailwind v4 theme      ← tokens
+@owlky/core     framework-free behavior + anatomy, shared by both        ← tokens (types)
+@owlky/react    React components                                         ← core
+@owlky/html     HTML Core Runtime + snippets + CDN bundle                ← core
 apps/storybook (private)   docs for both implementations side by side
 e2e (private)              Playwright: parity, a11y, themes, plain HTML, visual
 examples/* (private)       consumer examples built from dist

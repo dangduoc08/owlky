@@ -7,7 +7,7 @@
 - **ESM only**, TypeScript declarations next to every module. `tsc` emits one file per source
   module (best tree-shaking, keeps `"use client"` per module, no bundler for npm output).
 - The only bundled artifact is the HTML IIFE (`vite build`), targeting the ADR-0006 baseline.
-- CSS is compiled by `@tailwindcss/cli` (ADR-0003). `@minimal-tailwind/html` also ships the full
+- CSS is compiled by `@tailwindcss/cli` (ADR-0003). `@owlky/html` also ships the full
   stylesheet and the snippets, so CDN users need a single package path.
 - `sideEffects`: `false` for core/react; CSS and `html/auto` are listed explicitly.
 - React and React DOM are **peer** dependencies `^18.3.0 || ^19.0.0` (components use

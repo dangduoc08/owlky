@@ -4,7 +4,7 @@ import {
   type ButtonVariant,
   buttonAttributes,
   type ColorName,
-} from "@minimal-tailwind/core";
+} from "@owlky/core";
 import {
   type AnchorHTMLAttributes,
   type ButtonHTMLAttributes,
@@ -52,7 +52,7 @@ export type ButtonProps = ButtonAsButtonProps | ButtonAsLinkProps;
 
 /**
  * Button — spec: specs/components/button.md. A native `<button type="button">`, or an `<a>` when
- * `href` is set. The markup matches the `@minimal-tailwind/html` snippets exactly.
+ * `href` is set. The markup matches the `@owlky/html` snippets exactly.
  */
 export const Button = forwardRef<HTMLButtonElement | HTMLAnchorElement, ButtonProps>(
   function Button(props, ref) {
@@ -83,18 +83,18 @@ export const Button = forwardRef<HTMLButtonElement | HTMLAnchorElement, ButtonPr
     const content = (
       <>
         {startIcon != null && (
-          <span data-mt-button-icon="start" aria-hidden="true">
+          <span data-ok-button-icon="start" aria-hidden="true">
             {startIcon}
           </span>
         )}
         {loading && (
-          <span data-mt-button-loader="" aria-hidden="true">
-            {loadingIndicator ?? <span data-mt-button-spinner="" />}
+          <span data-ok-button-loader="" aria-hidden="true">
+            {loadingIndicator ?? <span data-ok-button-spinner="" />}
           </span>
         )}
-        <span data-mt-button-label="">{children}</span>
+        <span data-ok-button-label="">{children}</span>
         {endIcon != null && (
-          <span data-mt-button-icon="end" aria-hidden="true">
+          <span data-ok-button-icon="end" aria-hidden="true">
             {endIcon}
           </span>
         )}

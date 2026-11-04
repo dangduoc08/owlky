@@ -1,166 +1,166 @@
 /*
- * Minimal Tailwind — Tailwind CSS v4 theme.
+ * Owlky — Tailwind CSS v4 theme.
  *
- * For projects that use Tailwind themselves. It maps the --mt-* design tokens to Tailwind theme
+ * For projects that use Tailwind themselves. It maps the --ok-* design tokens to Tailwind theme
  * keys so utilities (`bg-primary`, `text-text-secondary`, `shadow-z8`, `rounded-xl`, `text-h4`)
  * match the components and follow light/dark mode and theme customization automatically.
  *
  *   @import "tailwindcss";
- *   @import "@minimal-tailwind/styles/theme.css";
+ *   @import "@owlky/styles/theme.css";
  *
- * The tokens themselves (the --mt-* variables) come from minimal-tailwind.css or tokens.css.
+ * The tokens themselves (the --ok-* variables) come from owlky.css or tokens.css.
  */
 
-@custom-variant dark (&:where([data-mt-theme="dark"], [data-mt-theme="dark"] *, .dark, .dark *));
+@custom-variant dark (&:where([data-ok-theme="dark"], [data-ok-theme="dark"] *, .dark, .dark *));
 
 @theme inline {
-  --font-sans: var(--mt-font-family);
-  --font-mono: var(--mt-font-family-mono);
-  --font-display: var(--mt-font-family-secondary);
-  --spacing: var(--mt-spacing);
+  --font-sans: var(--ok-font-family);
+  --font-mono: var(--ok-font-family-mono);
+  --font-display: var(--ok-font-family-secondary);
+  --spacing: var(--ok-spacing);
 
-  --color-primary: var(--mt-palette-primary-main);
-  --color-primary-lighter: var(--mt-palette-primary-lighter);
-  --color-primary-light: var(--mt-palette-primary-light);
-  --color-primary-dark: var(--mt-palette-primary-dark);
-  --color-primary-darker: var(--mt-palette-primary-darker);
-  --color-primary-contrast: var(--mt-palette-primary-contrast-text);
-  --color-primary-text: var(--mt-palette-primary-text);
+  --color-primary: var(--ok-palette-primary-main);
+  --color-primary-lighter: var(--ok-palette-primary-lighter);
+  --color-primary-light: var(--ok-palette-primary-light);
+  --color-primary-dark: var(--ok-palette-primary-dark);
+  --color-primary-darker: var(--ok-palette-primary-darker);
+  --color-primary-contrast: var(--ok-palette-primary-contrast-text);
+  --color-primary-text: var(--ok-palette-primary-text);
 
-  --color-secondary: var(--mt-palette-secondary-main);
-  --color-secondary-lighter: var(--mt-palette-secondary-lighter);
-  --color-secondary-light: var(--mt-palette-secondary-light);
-  --color-secondary-dark: var(--mt-palette-secondary-dark);
-  --color-secondary-darker: var(--mt-palette-secondary-darker);
-  --color-secondary-contrast: var(--mt-palette-secondary-contrast-text);
-  --color-secondary-text: var(--mt-palette-secondary-text);
+  --color-secondary: var(--ok-palette-secondary-main);
+  --color-secondary-lighter: var(--ok-palette-secondary-lighter);
+  --color-secondary-light: var(--ok-palette-secondary-light);
+  --color-secondary-dark: var(--ok-palette-secondary-dark);
+  --color-secondary-darker: var(--ok-palette-secondary-darker);
+  --color-secondary-contrast: var(--ok-palette-secondary-contrast-text);
+  --color-secondary-text: var(--ok-palette-secondary-text);
 
-  --color-info: var(--mt-palette-info-main);
-  --color-info-lighter: var(--mt-palette-info-lighter);
-  --color-info-light: var(--mt-palette-info-light);
-  --color-info-dark: var(--mt-palette-info-dark);
-  --color-info-darker: var(--mt-palette-info-darker);
-  --color-info-contrast: var(--mt-palette-info-contrast-text);
-  --color-info-text: var(--mt-palette-info-text);
+  --color-info: var(--ok-palette-info-main);
+  --color-info-lighter: var(--ok-palette-info-lighter);
+  --color-info-light: var(--ok-palette-info-light);
+  --color-info-dark: var(--ok-palette-info-dark);
+  --color-info-darker: var(--ok-palette-info-darker);
+  --color-info-contrast: var(--ok-palette-info-contrast-text);
+  --color-info-text: var(--ok-palette-info-text);
 
-  --color-success: var(--mt-palette-success-main);
-  --color-success-lighter: var(--mt-palette-success-lighter);
-  --color-success-light: var(--mt-palette-success-light);
-  --color-success-dark: var(--mt-palette-success-dark);
-  --color-success-darker: var(--mt-palette-success-darker);
-  --color-success-contrast: var(--mt-palette-success-contrast-text);
-  --color-success-text: var(--mt-palette-success-text);
+  --color-success: var(--ok-palette-success-main);
+  --color-success-lighter: var(--ok-palette-success-lighter);
+  --color-success-light: var(--ok-palette-success-light);
+  --color-success-dark: var(--ok-palette-success-dark);
+  --color-success-darker: var(--ok-palette-success-darker);
+  --color-success-contrast: var(--ok-palette-success-contrast-text);
+  --color-success-text: var(--ok-palette-success-text);
 
-  --color-warning: var(--mt-palette-warning-main);
-  --color-warning-lighter: var(--mt-palette-warning-lighter);
-  --color-warning-light: var(--mt-palette-warning-light);
-  --color-warning-dark: var(--mt-palette-warning-dark);
-  --color-warning-darker: var(--mt-palette-warning-darker);
-  --color-warning-contrast: var(--mt-palette-warning-contrast-text);
-  --color-warning-text: var(--mt-palette-warning-text);
+  --color-warning: var(--ok-palette-warning-main);
+  --color-warning-lighter: var(--ok-palette-warning-lighter);
+  --color-warning-light: var(--ok-palette-warning-light);
+  --color-warning-dark: var(--ok-palette-warning-dark);
+  --color-warning-darker: var(--ok-palette-warning-darker);
+  --color-warning-contrast: var(--ok-palette-warning-contrast-text);
+  --color-warning-text: var(--ok-palette-warning-text);
 
-  --color-error: var(--mt-palette-error-main);
-  --color-error-lighter: var(--mt-palette-error-lighter);
-  --color-error-light: var(--mt-palette-error-light);
-  --color-error-dark: var(--mt-palette-error-dark);
-  --color-error-darker: var(--mt-palette-error-darker);
-  --color-error-contrast: var(--mt-palette-error-contrast-text);
-  --color-error-text: var(--mt-palette-error-text);
+  --color-error: var(--ok-palette-error-main);
+  --color-error-lighter: var(--ok-palette-error-lighter);
+  --color-error-light: var(--ok-palette-error-light);
+  --color-error-dark: var(--ok-palette-error-dark);
+  --color-error-darker: var(--ok-palette-error-darker);
+  --color-error-contrast: var(--ok-palette-error-contrast-text);
+  --color-error-text: var(--ok-palette-error-text);
 
-  --color-grey-50: var(--mt-palette-grey-50);
-  --color-grey-100: var(--mt-palette-grey-100);
-  --color-grey-200: var(--mt-palette-grey-200);
-  --color-grey-300: var(--mt-palette-grey-300);
-  --color-grey-400: var(--mt-palette-grey-400);
-  --color-grey-500: var(--mt-palette-grey-500);
-  --color-grey-600: var(--mt-palette-grey-600);
-  --color-grey-700: var(--mt-palette-grey-700);
-  --color-grey-800: var(--mt-palette-grey-800);
-  --color-grey-900: var(--mt-palette-grey-900);
+  --color-grey-50: var(--ok-palette-grey-50);
+  --color-grey-100: var(--ok-palette-grey-100);
+  --color-grey-200: var(--ok-palette-grey-200);
+  --color-grey-300: var(--ok-palette-grey-300);
+  --color-grey-400: var(--ok-palette-grey-400);
+  --color-grey-500: var(--ok-palette-grey-500);
+  --color-grey-600: var(--ok-palette-grey-600);
+  --color-grey-700: var(--ok-palette-grey-700);
+  --color-grey-800: var(--ok-palette-grey-800);
+  --color-grey-900: var(--ok-palette-grey-900);
 
-  --color-text-primary: var(--mt-text-primary);
-  --color-text-secondary: var(--mt-text-secondary);
-  --color-text-disabled: var(--mt-text-disabled);
-  --color-background: var(--mt-bg-default);
-  --color-paper: var(--mt-bg-paper);
-  --color-neutral: var(--mt-bg-neutral);
-  --color-divider: var(--mt-divider);
+  --color-text-primary: var(--ok-text-primary);
+  --color-text-secondary: var(--ok-text-secondary);
+  --color-text-disabled: var(--ok-text-disabled);
+  --color-background: var(--ok-bg-default);
+  --color-paper: var(--ok-bg-paper);
+  --color-neutral: var(--ok-bg-neutral);
+  --color-divider: var(--ok-divider);
 
-  --radius-xs: var(--mt-radius-xs);
-  --radius-sm: var(--mt-radius-sm);
-  --radius-md: var(--mt-radius-md);
-  --radius-lg: var(--mt-radius-lg);
-  --radius-xl: var(--mt-radius-xl);
-  --radius-2xl: var(--mt-radius-2xl);
+  --radius-xs: var(--ok-radius-xs);
+  --radius-sm: var(--ok-radius-sm);
+  --radius-md: var(--ok-radius-md);
+  --radius-lg: var(--ok-radius-lg);
+  --radius-xl: var(--ok-radius-xl);
+  --radius-2xl: var(--ok-radius-2xl);
 
-  --shadow-z1: var(--mt-shadow-z1);
-  --shadow-z4: var(--mt-shadow-z4);
-  --shadow-z8: var(--mt-shadow-z8);
-  --shadow-z12: var(--mt-shadow-z12);
-  --shadow-z16: var(--mt-shadow-z16);
-  --shadow-z20: var(--mt-shadow-z20);
-  --shadow-z24: var(--mt-shadow-z24);
-  --shadow-card: var(--mt-shadow-card);
-  --shadow-dropdown: var(--mt-shadow-dropdown);
-  --shadow-dialog: var(--mt-shadow-dialog);
-  --shadow-dialog-start: var(--mt-shadow-dialog-start);
-  --shadow-elevation-1: var(--mt-elevation-1);
-  --shadow-elevation-2: var(--mt-elevation-2);
-  --shadow-elevation-3: var(--mt-elevation-3);
-  --shadow-elevation-4: var(--mt-elevation-4);
-  --shadow-elevation-5: var(--mt-elevation-5);
-  --shadow-elevation-6: var(--mt-elevation-6);
-  --shadow-elevation-7: var(--mt-elevation-7);
-  --shadow-elevation-8: var(--mt-elevation-8);
-  --shadow-elevation-9: var(--mt-elevation-9);
-  --shadow-elevation-10: var(--mt-elevation-10);
-  --shadow-elevation-11: var(--mt-elevation-11);
-  --shadow-elevation-12: var(--mt-elevation-12);
-  --shadow-elevation-13: var(--mt-elevation-13);
-  --shadow-elevation-14: var(--mt-elevation-14);
-  --shadow-elevation-15: var(--mt-elevation-15);
-  --shadow-elevation-16: var(--mt-elevation-16);
-  --shadow-elevation-17: var(--mt-elevation-17);
-  --shadow-elevation-18: var(--mt-elevation-18);
-  --shadow-elevation-19: var(--mt-elevation-19);
-  --shadow-elevation-20: var(--mt-elevation-20);
-  --shadow-elevation-21: var(--mt-elevation-21);
-  --shadow-elevation-22: var(--mt-elevation-22);
-  --shadow-elevation-23: var(--mt-elevation-23);
-  --shadow-elevation-24: var(--mt-elevation-24);
+  --shadow-z1: var(--ok-shadow-z1);
+  --shadow-z4: var(--ok-shadow-z4);
+  --shadow-z8: var(--ok-shadow-z8);
+  --shadow-z12: var(--ok-shadow-z12);
+  --shadow-z16: var(--ok-shadow-z16);
+  --shadow-z20: var(--ok-shadow-z20);
+  --shadow-z24: var(--ok-shadow-z24);
+  --shadow-card: var(--ok-shadow-card);
+  --shadow-dropdown: var(--ok-shadow-dropdown);
+  --shadow-dialog: var(--ok-shadow-dialog);
+  --shadow-dialog-start: var(--ok-shadow-dialog-start);
+  --shadow-elevation-1: var(--ok-elevation-1);
+  --shadow-elevation-2: var(--ok-elevation-2);
+  --shadow-elevation-3: var(--ok-elevation-3);
+  --shadow-elevation-4: var(--ok-elevation-4);
+  --shadow-elevation-5: var(--ok-elevation-5);
+  --shadow-elevation-6: var(--ok-elevation-6);
+  --shadow-elevation-7: var(--ok-elevation-7);
+  --shadow-elevation-8: var(--ok-elevation-8);
+  --shadow-elevation-9: var(--ok-elevation-9);
+  --shadow-elevation-10: var(--ok-elevation-10);
+  --shadow-elevation-11: var(--ok-elevation-11);
+  --shadow-elevation-12: var(--ok-elevation-12);
+  --shadow-elevation-13: var(--ok-elevation-13);
+  --shadow-elevation-14: var(--ok-elevation-14);
+  --shadow-elevation-15: var(--ok-elevation-15);
+  --shadow-elevation-16: var(--ok-elevation-16);
+  --shadow-elevation-17: var(--ok-elevation-17);
+  --shadow-elevation-18: var(--ok-elevation-18);
+  --shadow-elevation-19: var(--ok-elevation-19);
+  --shadow-elevation-20: var(--ok-elevation-20);
+  --shadow-elevation-21: var(--ok-elevation-21);
+  --shadow-elevation-22: var(--ok-elevation-22);
+  --shadow-elevation-23: var(--ok-elevation-23);
+  --shadow-elevation-24: var(--ok-elevation-24);
 
-  --text-h1: var(--mt-typography-h1-font-size);
-  --text-h1--line-height: var(--mt-typography-h1-line-height);
-  --text-h1--font-weight: var(--mt-typography-h1-font-weight);
-  --text-h2: var(--mt-typography-h2-font-size);
-  --text-h2--line-height: var(--mt-typography-h2-line-height);
-  --text-h2--font-weight: var(--mt-typography-h2-font-weight);
-  --text-h3: var(--mt-typography-h3-font-size);
-  --text-h3--line-height: var(--mt-typography-h3-line-height);
-  --text-h3--font-weight: var(--mt-typography-h3-font-weight);
-  --text-h4: var(--mt-typography-h4-font-size);
-  --text-h4--line-height: var(--mt-typography-h4-line-height);
-  --text-h4--font-weight: var(--mt-typography-h4-font-weight);
-  --text-h5: var(--mt-typography-h5-font-size);
-  --text-h5--line-height: var(--mt-typography-h5-line-height);
-  --text-h5--font-weight: var(--mt-typography-h5-font-weight);
-  --text-h6: var(--mt-typography-h6-font-size);
-  --text-h6--line-height: var(--mt-typography-h6-line-height);
-  --text-h6--font-weight: var(--mt-typography-h6-font-weight);
-  --text-subtitle1: var(--mt-typography-subtitle1-font-size);
-  --text-subtitle1--line-height: var(--mt-typography-subtitle1-line-height);
-  --text-subtitle1--font-weight: var(--mt-typography-subtitle1-font-weight);
-  --text-subtitle2: var(--mt-typography-subtitle2-font-size);
-  --text-subtitle2--line-height: var(--mt-typography-subtitle2-line-height);
-  --text-subtitle2--font-weight: var(--mt-typography-subtitle2-font-weight);
-  --text-body1: var(--mt-typography-body1-font-size);
-  --text-body1--line-height: var(--mt-typography-body1-line-height);
-  --text-body2: var(--mt-typography-body2-font-size);
-  --text-body2--line-height: var(--mt-typography-body2-line-height);
-  --text-caption: var(--mt-typography-caption-font-size);
-  --text-caption--line-height: var(--mt-typography-caption-line-height);
+  --text-h1: var(--ok-typography-h1-font-size);
+  --text-h1--line-height: var(--ok-typography-h1-line-height);
+  --text-h1--font-weight: var(--ok-typography-h1-font-weight);
+  --text-h2: var(--ok-typography-h2-font-size);
+  --text-h2--line-height: var(--ok-typography-h2-line-height);
+  --text-h2--font-weight: var(--ok-typography-h2-font-weight);
+  --text-h3: var(--ok-typography-h3-font-size);
+  --text-h3--line-height: var(--ok-typography-h3-line-height);
+  --text-h3--font-weight: var(--ok-typography-h3-font-weight);
+  --text-h4: var(--ok-typography-h4-font-size);
+  --text-h4--line-height: var(--ok-typography-h4-line-height);
+  --text-h4--font-weight: var(--ok-typography-h4-font-weight);
+  --text-h5: var(--ok-typography-h5-font-size);
+  --text-h5--line-height: var(--ok-typography-h5-line-height);
+  --text-h5--font-weight: var(--ok-typography-h5-font-weight);
+  --text-h6: var(--ok-typography-h6-font-size);
+  --text-h6--line-height: var(--ok-typography-h6-line-height);
+  --text-h6--font-weight: var(--ok-typography-h6-font-weight);
+  --text-subtitle1: var(--ok-typography-subtitle1-font-size);
+  --text-subtitle1--line-height: var(--ok-typography-subtitle1-line-height);
+  --text-subtitle1--font-weight: var(--ok-typography-subtitle1-font-weight);
+  --text-subtitle2: var(--ok-typography-subtitle2-font-size);
+  --text-subtitle2--line-height: var(--ok-typography-subtitle2-line-height);
+  --text-subtitle2--font-weight: var(--ok-typography-subtitle2-font-weight);
+  --text-body1: var(--ok-typography-body1-font-size);
+  --text-body1--line-height: var(--ok-typography-body1-line-height);
+  --text-body2: var(--ok-typography-body2-font-size);
+  --text-body2--line-height: var(--ok-typography-body2-line-height);
+  --text-caption: var(--ok-typography-caption-font-size);
+  --text-caption--line-height: var(--ok-typography-caption-line-height);
 
-  --ease-standard: var(--mt-easing-standard);
-  --ease-decelerate: var(--mt-easing-decelerate);
-  --ease-accelerate: var(--mt-easing-accelerate);
+  --ease-standard: var(--ok-easing-standard);
+  --ease-decelerate: var(--ok-easing-decelerate);
+  --ease-accelerate: var(--ok-easing-accelerate);
 }

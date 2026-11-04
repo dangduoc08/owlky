@@ -1,33 +1,33 @@
-import { createSortableController } from "@minimal-tailwind/core";
+import { createSortableController } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
 import type { ComponentInstance } from "../../runtime/types.js";
 
 export interface SortableInstance extends ComponentInstance {
-  /** Moves an item. Returns `false` if out of range or `mt:sortable:move` was prevented. */
+  /** Moves an item. Returns `false` if out of range or `ok:sortable:move` was prevented. */
   move(from: number, to: number): boolean;
-  /** Removes an item. Returns `false` if out of range or `mt:sortable:remove` was prevented. */
+  /** Removes an item. Returns `false` if out of range or `ok:sortable:remove` was prevented. */
   remove(index: number): boolean;
-  /** Appends a clone of `template[data-mt-sortable-template]`; returns it (or `null`). */
+  /** Appends a clone of `template[data-ok-sortable-template]`; returns it (or `null`). */
   add(): HTMLElement | null;
 }
 
-const ITEM = "[data-mt-sortable-item]";
+const ITEM = "[data-ok-sortable-item]";
 
 /**
  * Sortable — spec: specs/components/sortable.md
  *
- * Markup:  <ul data-mt-sortable data-mt-layout="grid" aria-label="…">
- *            <li data-mt-sortable-item> … <div data-mt-sortable-actions>
- *              <button data-mt-sortable-remove aria-label="Remove …">? <button data-mt-sortable-handle …>
- *            <template data-mt-sortable-template>…</template>?
- *          <button data-mt-sortable-add="<list id>">
- * Events:  mt:sortable:move (cancelable, detail: { from, to, item }),
- *          mt:sortable:remove (cancelable, detail: { index, item }),
- *          mt:sortable:add (detail: { item, index }) after a template clone is inserted.
+ * Markup:  <ul data-ok-sortable data-ok-layout="grid" aria-label="…">
+ *            <li data-ok-sortable-item> … <div data-ok-sortable-actions>
+ *              <button data-ok-sortable-remove aria-label="Remove …">? <button data-ok-sortable-handle …>
+ *            <template data-ok-sortable-template>…</template>?
+ *          <button data-ok-sortable-add="<list id>">
+ * Events:  ok:sortable:move (cancelable, detail: { from, to, item }),
+ *          ok:sortable:remove (cancelable, detail: { index, item }),
+ *          ok:sortable:add (detail: { item, index }) after a template clone is inserted.
  */
 export const sortable = defineComponent<SortableInstance>({
   name: "sortable",
-  selector: "[data-mt-sortable]",
+  selector: "[data-ok-sortable]",
 
   setup(list, { emit }) {
     const items = () =>
@@ -52,7 +52,7 @@ export const sortable = defineComponent<SortableInstance>({
       },
       add() {
         const template = list.querySelector<HTMLTemplateElement>(
-          ":scope > template[data-mt-sortable-template]",
+          ":scope > template[data-ok-sortable-template]",
         );
         const clone = template?.content.firstElementChild?.cloneNode(true);
         if (!(clone instanceof HTMLElement)) return null;
@@ -72,16 +72,13 @@ export const sortable = defineComponent<SortableInstance>({
   delegate: [
     {
       event: "click",
-      selector: "[data-mt-sortable-add]",
+      selector: "[data-ok-sortable-add]",
       handle(trigger, event, runtime) {
-        const id = trigger.getAttribute("data-mt-sortable-add") as string;
+        const id = trigger.getAttribute("data-ok-sortable-add") as string;
         const list = (trigger.getRootNode() as Document | ShadowRoot).getElementById(id);
         const instance = runtime.getOrCreate<SortableInstance>(list, "sortable");
         if (!instance) {
-          console.warn(
-            `[minimal-tailwind] No sortable list with id "${id}" for this trigger.`,
-            trigger,
-          );
+          console.warn(`[owlky] No sortable list with id "${id}" for this trigger.`, trigger);
           return;
         }
         event.preventDefault();

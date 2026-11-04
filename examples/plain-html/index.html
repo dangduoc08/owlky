@@ -3,20 +3,20 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Minimal Tailwind — plain HTML example</title>
+    <title>Owlky — plain HTML example</title>
     <!--
       Real projects use the CDN:
-        https://cdn.jsdelivr.net/npm/@minimal-tailwind/html@0/dist/minimal-tailwind.css
-        https://cdn.jsdelivr.net/npm/@minimal-tailwind/html@0/dist/minimal-tailwind.js
+        https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css
+        https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js
       This example points at the local build (run `pnpm build` first) so CI tests what we publish.
     -->
-    <link rel="stylesheet" href="../../packages/html/dist/minimal-tailwind.css" />
+    <link rel="stylesheet" href="../../packages/html/dist/owlky.css" />
     <link rel="stylesheet" href="../../packages/styles/dist/base.css" />
-    <script src="../../packages/html/dist/minimal-tailwind.js" defer></script>
+    <script src="../../packages/html/dist/owlky.js" defer></script>
     <style>
       main { max-width: 56rem; margin: 0 auto; padding: 2rem 1rem; display: grid; gap: 1.5rem; }
       h1 { margin: 0; }
-      .palette { display: grid; grid-template-columns: repeat(5, 1fr); border-radius: var(--mt-radius-xl); overflow: hidden; box-shadow: var(--mt-shadow-card); }
+      .palette { display: grid; grid-template-columns: repeat(5, 1fr); border-radius: var(--ok-radius-xl); overflow: hidden; box-shadow: var(--ok-shadow-card); }
       .palette div { height: 4rem; }
     </style>
   </head>
@@ -29,11 +29,11 @@
       </header>
 
       <section aria-label="Primary palette" class="palette">
-        <div style="background: var(--mt-palette-primary-lighter)"></div>
-        <div style="background: var(--mt-palette-primary-light)"></div>
-        <div id="primary-main" style="background: var(--mt-palette-primary-main)"></div>
-        <div style="background: var(--mt-palette-primary-dark)"></div>
-        <div style="background: var(--mt-palette-primary-darker)"></div>
+        <div style="background: var(--ok-palette-primary-lighter)"></div>
+        <div style="background: var(--ok-palette-primary-light)"></div>
+        <div id="primary-main" style="background: var(--ok-palette-primary-main)"></div>
+        <div style="background: var(--ok-palette-primary-dark)"></div>
+        <div style="background: var(--ok-palette-primary-darker)"></div>
       </section>
     </main>
 
@@ -43,7 +43,7 @@
       toggle.addEventListener("click", () => {
         const dark = toggle.getAttribute("aria-pressed") !== "true";
         toggle.setAttribute("aria-pressed", String(dark));
-        document.documentElement.dataset.mtTheme = dark ? "dark" : "light";
+        document.documentElement.dataset.okTheme = dark ? "dark" : "light";
       });
     </script>
   </body>

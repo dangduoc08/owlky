@@ -1,4 +1,4 @@
-export type { ColorName, PaletteColorName } from "@minimal-tailwind/tokens";
+export type { ColorName, PaletteColorName } from "@owlky/tokens";
 export {
   type ButtonAnatomyOptions,
   type ButtonLoadingPosition,

@@ -13,7 +13,7 @@ import {
   typographyVariants,
 } from "./types.js";
 
-export type CssVariables = Record<`--mt-${string}`, string>;
+export type CssVariables = Record<`--ok-${string}`, string>;
 
 export interface ThemeCssVariables {
   /** Scheme-independent variables, declared on `:root`. */
@@ -24,12 +24,12 @@ export interface ThemeCssVariables {
 
 /** Component color bindings. Non-inheriting, so a colored parent never leaks into children. */
 export const colorBindingVariables = [
-  "--mt-c-main",
-  "--mt-c-channel",
-  "--mt-c-hover",
-  "--mt-c-contrast",
-  "--mt-c-text",
-  "--mt-c-shadow",
+  "--ok-c-main",
+  "--ok-c-channel",
+  "--ok-c-hover",
+  "--ok-c-contrast",
+  "--ok-c-text",
+  "--ok-c-shadow",
 ] as const;
 
 /** `#00A76F` → `0 167 111`, for `rgb(var(--…-channel) / <alpha>)`. */
@@ -50,53 +50,53 @@ function rootVariables(theme: Theme): CssVariables {
   for (const name of paletteColorNames) {
     const color: PaletteColor = theme.palette[name];
     for (const [shade, value] of Object.entries(color)) {
-      vars[`--mt-palette-${name}-${kebab(shade)}`] = value;
-      vars[`--mt-palette-${name}-${kebab(shade)}-channel`] = channel(value);
+      vars[`--ok-palette-${name}-${kebab(shade)}`] = value;
+      vars[`--ok-palette-${name}-${kebab(shade)}-channel`] = channel(value);
     }
-    vars[`--mt-shadow-${name}`] = shadow([theme.colorShadow], `var(--mt-palette-${name}-main)`);
+    vars[`--ok-shadow-${name}`] = shadow([theme.colorShadow], `var(--ok-palette-${name}-main)`);
   }
   for (const shade of greyShades) {
-    vars[`--mt-palette-grey-${shade}`] = theme.grey[shade];
-    vars[`--mt-palette-grey-${shade}-channel`] = channel(theme.grey[shade]);
+    vars[`--ok-palette-grey-${shade}`] = theme.grey[shade];
+    vars[`--ok-palette-grey-${shade}-channel`] = channel(theme.grey[shade]);
   }
-  vars["--mt-palette-common-white"] = theme.common.white;
-  vars["--mt-palette-common-white-channel"] = channel(theme.common.white);
-  vars["--mt-palette-common-black"] = theme.common.black;
-  vars["--mt-palette-common-black-channel"] = channel(theme.common.black);
+  vars["--ok-palette-common-white"] = theme.common.white;
+  vars["--ok-palette-common-white-channel"] = channel(theme.common.white);
+  vars["--ok-palette-common-black"] = theme.common.black;
+  vars["--ok-palette-common-black-channel"] = channel(theme.common.black);
 
   const { typography } = theme;
-  vars["--mt-font-family"] = typography.fontFamily;
-  vars["--mt-font-family-secondary"] = typography.fontFamilySecondary;
-  vars["--mt-font-family-mono"] = typography.fontFamilyMono;
+  vars["--ok-font-family"] = typography.fontFamily;
+  vars["--ok-font-family-secondary"] = typography.fontFamilySecondary;
+  vars["--ok-font-family-mono"] = typography.fontFamilyMono;
   for (const [name, weight] of Object.entries(typography.fontWeight)) {
-    vars[`--mt-font-weight-${name}`] = String(weight);
+    vars[`--ok-font-weight-${name}`] = String(weight);
   }
   for (const [name, size] of Object.entries(typography.fontSize)) {
-    vars[`--mt-font-size-${name}`] = size;
+    vars[`--ok-font-size-${name}`] = size;
   }
   for (const variant of typographyVariants) {
     const style = typography.variants[variant];
-    vars[`--mt-typography-${variant}-font-family`] =
+    vars[`--ok-typography-${variant}-font-family`] =
       style.fontFamily === "secondary"
-        ? "var(--mt-font-family-secondary)"
-        : "var(--mt-font-family)";
-    vars[`--mt-typography-${variant}-font-size`] = style.fontSize;
-    vars[`--mt-typography-${variant}-line-height`] = style.lineHeight;
-    vars[`--mt-typography-${variant}-font-weight`] = String(style.fontWeight);
-    vars[`--mt-typography-${variant}-text-transform`] = style.textTransform ?? "none";
+        ? "var(--ok-font-family-secondary)"
+        : "var(--ok-font-family)";
+    vars[`--ok-typography-${variant}-font-size`] = style.fontSize;
+    vars[`--ok-typography-${variant}-line-height`] = style.lineHeight;
+    vars[`--ok-typography-${variant}-font-weight`] = String(style.fontWeight);
+    vars[`--ok-typography-${variant}-text-transform`] = style.textTransform ?? "none";
   }
 
-  for (const name of radiusNames) vars[`--mt-radius-${name}`] = theme.radius[name];
-  vars["--mt-spacing"] = theme.spacing;
+  for (const name of radiusNames) vars[`--ok-radius-${name}`] = theme.radius[name];
+  vars["--ok-spacing"] = theme.spacing;
   for (const name of breakpointNames) {
-    vars[`--mt-breakpoint-${name}`] = `${theme.breakpoints[name]}px`;
+    vars[`--ok-breakpoint-${name}`] = `${theme.breakpoints[name]}px`;
   }
-  for (const [name, value] of Object.entries(theme.zIndex)) vars[`--mt-z-${name}`] = String(value);
+  for (const [name, value] of Object.entries(theme.zIndex)) vars[`--ok-z-${name}`] = String(value);
   for (const [name, value] of Object.entries(theme.motion.duration)) {
-    vars[`--mt-duration-${name}`] = value;
+    vars[`--ok-duration-${name}`] = value;
   }
   for (const [name, value] of Object.entries(theme.motion.easing)) {
-    vars[`--mt-easing-${name}`] = value;
+    vars[`--ok-easing-${name}`] = value;
   }
   return vars;
 }
@@ -104,31 +104,31 @@ function rootVariables(theme: Theme): CssVariables {
 function schemeVariables(scheme: ColorScheme, theme: Theme): CssVariables {
   const vars: CssVariables = {};
   for (const name of paletteColorNames)
-    vars[`--mt-palette-${name}-text`] = scheme.paletteText[name];
-  vars["--mt-text-primary"] = scheme.text.primary;
-  vars["--mt-text-secondary"] = scheme.text.secondary;
-  vars["--mt-text-disabled"] = scheme.text.disabled;
-  vars["--mt-bg-default"] = scheme.background.default;
-  vars["--mt-bg-paper"] = scheme.background.paper;
-  vars["--mt-bg-neutral"] = scheme.background.neutral;
-  vars["--mt-inherit-main"] = scheme.inherit.main;
-  vars["--mt-inherit-hover"] = scheme.inherit.hover;
-  vars["--mt-inherit-contrast"] = scheme.inherit.contrast;
-  vars["--mt-divider"] = scheme.divider;
-  vars["--mt-action-hover"] = scheme.action.hover;
-  vars["--mt-action-selected"] = scheme.action.selected;
-  vars["--mt-action-focus"] = scheme.action.focus;
-  vars["--mt-action-disabled"] = scheme.action.disabled;
-  vars["--mt-action-disabled-bg"] = scheme.action.disabledBackground;
-  vars["--mt-backdrop"] = scheme.backdrop;
+    vars[`--ok-palette-${name}-text`] = scheme.paletteText[name];
+  vars["--ok-text-primary"] = scheme.text.primary;
+  vars["--ok-text-secondary"] = scheme.text.secondary;
+  vars["--ok-text-disabled"] = scheme.text.disabled;
+  vars["--ok-bg-default"] = scheme.background.default;
+  vars["--ok-bg-paper"] = scheme.background.paper;
+  vars["--ok-bg-neutral"] = scheme.background.neutral;
+  vars["--ok-inherit-main"] = scheme.inherit.main;
+  vars["--ok-inherit-hover"] = scheme.inherit.hover;
+  vars["--ok-inherit-contrast"] = scheme.inherit.contrast;
+  vars["--ok-divider"] = scheme.divider;
+  vars["--ok-action-hover"] = scheme.action.hover;
+  vars["--ok-action-selected"] = scheme.action.selected;
+  vars["--ok-action-focus"] = scheme.action.focus;
+  vars["--ok-action-disabled"] = scheme.action.disabled;
+  vars["--ok-action-disabled-bg"] = scheme.action.disabledBackground;
+  vars["--ok-backdrop"] = scheme.backdrop;
   // Shadows are re-declared per scheme: a custom property referencing another one is resolved
-  // where it is declared, so nested `data-mt-theme` scopes need their own copy.
-  vars["--mt-shadow-color"] = scheme.shadowColor;
+  // where it is declared, so nested `data-ok-theme` scopes need their own copy.
+  vars["--ok-shadow-color"] = scheme.shadowColor;
   for (const name of shadowNames) {
-    vars[`--mt-shadow-${kebab(name)}`] = shadow(theme.shadows[name], "var(--mt-shadow-color)");
+    vars[`--ok-shadow-${kebab(name)}`] = shadow(theme.shadows[name], "var(--ok-shadow-color)");
   }
   theme.elevation.forEach((layers, index) => {
-    vars[`--mt-elevation-${index + 1}`] = shadow(layers, "var(--mt-shadow-color)");
+    vars[`--ok-elevation-${index + 1}`] = shadow(layers, "var(--ok-shadow-color)");
   });
   return vars;
 }
@@ -149,7 +149,7 @@ export function responsiveTypographyVariables(theme: Theme): [minWidth: number, 
     const vars: CssVariables = {};
     for (const variant of typographyVariants) {
       const size = theme.typography.variants[variant].responsiveFontSize?.[breakpoint];
-      if (size) vars[`--mt-typography-${variant}-font-size`] = size;
+      if (size) vars[`--ok-typography-${variant}-font-size`] = size;
     }
     if (Object.keys(vars).length > 0) result.push([theme.breakpoints[breakpoint], vars]);
   }
@@ -163,11 +163,11 @@ const block = (selector: string, vars: CssVariables, extra = "") =>
 
 export const LAYER_ORDER = "@layer theme, base, components, utilities;";
 
-export const DARK_SELECTOR = '[data-mt-theme="dark"], .dark';
-export const LIGHT_SELECTOR = '[data-mt-theme="light"]';
+export const DARK_SELECTOR = '[data-ok-theme="dark"], .dark';
+export const LIGHT_SELECTOR = '[data-ok-theme="light"]';
 
 export interface ThemeCssOptions {
-  /** Emit the `[data-mt-color]` bindings and their `@property` registrations. Default `true`. */
+  /** Emit the `[data-ok-color]` bindings and their `@property` registrations. Default `true`. */
   colorBindings?: boolean;
 }
 
@@ -176,10 +176,10 @@ export interface ThemeCssOptions {
  * overrides them. The layer order statement keeps library layers in Tailwind's order even when
  * this file loads before Tailwind (see ADR-0003).
  */
-/** Shadow variables: identical text in every scheme, resolved against `--mt-shadow-color`. */
+/** Shadow variables: identical text in every scheme, resolved against `--ok-shadow-color`. */
 const isShadowVariable = (name: string) =>
-  name.startsWith("--mt-elevation-") ||
-  (name.startsWith("--mt-shadow-") && name !== "--mt-shadow-color");
+  name.startsWith("--ok-elevation-") ||
+  (name.startsWith("--ok-shadow-") && name !== "--ok-shadow-color");
 
 function splitShadows(vars: CssVariables): [scheme: CssVariables, shadows: CssVariables] {
   const scheme: CssVariables = {};
@@ -190,27 +190,27 @@ function splitShadows(vars: CssVariables): [scheme: CssVariables, shadows: CssVa
   return [scheme, shadows];
 }
 
-/** `--mt-c-*` values for one component color. */
+/** `--ok-c-*` values for one component color. */
 function colorBinding(name: (typeof componentColorNames)[number]): CssVariables {
   if (name === "black" || name === "white") {
-    const self = `--mt-palette-common-${name}`;
-    const other = `--mt-palette-common-${name === "black" ? "white" : "black"}`;
+    const self = `--ok-palette-common-${name}`;
+    const other = `--ok-palette-common-${name === "black" ? "white" : "black"}`;
     return {
-      "--mt-c-main": `var(${self})`,
-      "--mt-c-channel": `var(${self}-channel)`,
-      "--mt-c-hover": `rgb(var(${self}-channel) / 0.72)`,
-      "--mt-c-contrast": `var(${other})`,
-      "--mt-c-text": `var(${self})`,
-      "--mt-c-shadow": "var(--mt-shadow-z8)",
+      "--ok-c-main": `var(${self})`,
+      "--ok-c-channel": `var(${self}-channel)`,
+      "--ok-c-hover": `rgb(var(${self}-channel) / 0.72)`,
+      "--ok-c-contrast": `var(${other})`,
+      "--ok-c-text": `var(${self})`,
+      "--ok-c-shadow": "var(--ok-shadow-z8)",
     };
   }
   return {
-    "--mt-c-main": `var(--mt-palette-${name}-main)`,
-    "--mt-c-channel": `var(--mt-palette-${name}-main-channel)`,
-    "--mt-c-hover": `var(--mt-palette-${name}-dark)`,
-    "--mt-c-contrast": `var(--mt-palette-${name}-contrast-text)`,
-    "--mt-c-text": `var(--mt-palette-${name}-text)`,
-    "--mt-c-shadow": `var(--mt-shadow-${name})`,
+    "--ok-c-main": `var(--ok-palette-${name}-main)`,
+    "--ok-c-channel": `var(--ok-palette-${name}-main-channel)`,
+    "--ok-c-hover": `var(--ok-palette-${name}-dark)`,
+    "--ok-c-contrast": `var(--ok-palette-${name}-contrast-text)`,
+    "--ok-c-text": `var(--ok-palette-${name}-text)`,
+    "--ok-c-shadow": `var(--ok-shadow-${name})`,
   };
 }
 
@@ -225,14 +225,14 @@ export function themeToCss(theme: Theme, options: ThemeCssOptions = {}): string 
     block(":root", root),
     block(DARK_SELECTOR, darkScheme, "    color-scheme: dark;\n"),
     // `:where(:root)` has zero specificity, so a dark scope on the root element still wins,
-    // while an explicit `data-mt-theme="light"` (declared after dark) wins over `.dark`.
+    // while an explicit `data-ok-theme="light"` (declared after dark) wins over `.dark`.
     block(`:where(:root), ${LIGHT_SELECTOR}`, lightScheme, "    color-scheme: light;\n"),
     "  @media (prefers-color-scheme: dark) {",
-    block('[data-mt-theme="system"]', darkScheme, "    color-scheme: dark;\n").replace(/^/gm, "  "),
+    block('[data-ok-theme="system"]', darkScheme, "    color-scheme: dark;\n").replace(/^/gm, "  "),
     "  }",
     // Declared once on every theme scope: a custom property referencing another one is resolved
-    // where it is declared, so each scope computes its shadows from its own --mt-shadow-color.
-    block(":root, [data-mt-theme], .dark", shadows),
+    // where it is declared, so each scope computes its shadows from its own --ok-shadow-color.
+    block(":root, [data-ok-theme], .dark", shadows),
     ...responsiveTypographyVariables(theme).flatMap(([minWidth, vars]) => [
       `  @media (min-width: ${minWidth}px) {`,
       block(":root", vars).replace(/^/gm, "  "),
@@ -241,7 +241,7 @@ export function themeToCss(theme: Theme, options: ThemeCssOptions = {}): string 
   ];
   if (options.colorBindings !== false) {
     for (const name of componentColorNames) {
-      parts.push(block(`[data-mt-color="${name}"]`, colorBinding(name)));
+      parts.push(block(`[data-ok-color="${name}"]`, colorBinding(name)));
     }
   }
   parts.push("}");

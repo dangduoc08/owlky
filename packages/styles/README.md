@@ -1,14 +1,14 @@
-# @minimal-tailwind/styles
+# @owlky/styles
 
-Prebuilt CSS for [Minimal Tailwind](../../README.md). No Tailwind needed to consume it.
+Prebuilt CSS for [Owlky](../../README.md). No Tailwind needed to consume it.
 
 | Import                                                       | Contents                                                 |
 | ------------------------------------------------------------ | -------------------------------------------------------- |
-| `@minimal-tailwind/styles/minimal-tailwind.css` (`.min.css`) | tokens + all components                                  |
-| `@minimal-tailwind/styles/components/<name>.css` | one component (also load `tokens.css`), e.g. `button.css` |
-| `@minimal-tailwind/styles/tokens.css`                        | `--mt-*` design tokens, light/dark                       |
-| `@minimal-tailwind/styles/base.css`                          | optional page base (font, colors)                        |
-| `@minimal-tailwind/styles/theme.css`                         | Tailwind v4 theme mapping (`bg-primary`, `text-h1`, `font-display`, `shadow-z8`, `shadow-elevation-<n>`, …) |
+| `@owlky/styles/owlky.css` (`.min.css`) | tokens + all components                                  |
+| `@owlky/styles/components/<name>.css` | one component (also load `tokens.css`), e.g. `button.css` |
+| `@owlky/styles/tokens.css`                        | `--ok-*` design tokens, light/dark                       |
+| `@owlky/styles/base.css`                          | optional page base (font, colors)                        |
+| `@owlky/styles/theme.css`                         | Tailwind v4 theme mapping (`bg-primary`, `text-h1`, `font-display`, `shadow-z8`, `shadow-elevation-<n>`, …) |
 
 All component rules are zero-specificity (`:where`) in `@layer components`, so your classes,
 utilities and plain CSS always win.

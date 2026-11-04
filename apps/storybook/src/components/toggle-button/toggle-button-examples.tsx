@@ -1,10 +1,10 @@
-import { toggleButtonOptions } from "@minimal-tailwind/core";
+import { toggleButtonOptions } from "@owlky/core";
 import {
   ToggleButton,
   type ToggleButtonColor,
   ToggleButtonGroup,
   type ToggleButtonSize,
-} from "@minimal-tailwind/react";
+} from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
 import { DemoIcon } from "../shared/demo-icon.js";
 import type { GroupFiles } from "../shared/snippets.js";

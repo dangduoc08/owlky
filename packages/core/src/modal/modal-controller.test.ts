@@ -18,8 +18,8 @@ const createModalController = (element: HTMLElement, options?: ModalControllerOp
 
 const markup = `
   <button id="trigger">Open</button>
-  <dialog id="dlg" data-mt-dialog>
-    <div data-mt-dialog-content>
+  <dialog id="dlg" data-ok-dialog>
+    <div data-ok-dialog-content>
       <h2>Title</h2>
       <input id="first" aria-label="First" />
       <input id="last" aria-label="Last" />
@@ -34,7 +34,7 @@ function setup(options: ModalControllerOptions = {}) {
   const onDismiss = vi.fn();
   const controller = createModalController(dialog, {
     onDismiss,
-    contentSelector: "[data-mt-dialog-content]",
+    contentSelector: "[data-ok-dialog-content]",
     ...options,
   });
   return { dialog, trigger, controller, onDismiss };
@@ -57,7 +57,7 @@ describe.each([
     expect(controller.isOpen).toBe(true);
     expect(controller.isFallback).toBe(forceFallback);
     expect(dialog.hasAttribute("open")).toBe(true);
-    expect(dialog.hasAttribute("data-mt-fallback")).toBe(forceFallback);
+    expect(dialog.hasAttribute("data-ok-fallback")).toBe(forceFallback);
     expect(document.activeElement?.id).toBe("first");
     expect(isScrollLocked()).toBe(true);
     expect(layerStack.isTop(dialog)).toBe(true);
@@ -126,7 +126,7 @@ describe.each([
   it("only the topmost of two stacked dialogs handles Escape", async () => {
     const first = setup({ forceFallback });
     const host = mount(
-      `<dialog data-mt-dialog><div data-mt-dialog-content><button>Inner</button></div></dialog>`,
+      `<dialog data-ok-dialog><div data-ok-dialog-content><button>Inner</button></div></dialog>`,
     );
     const innerDismiss = vi.fn();
     const inner = createModalController(host.querySelector("dialog") as HTMLElement, {
@@ -160,7 +160,7 @@ describe.each([
 describe("createModalController (native only)", () => {
   it("syncs when the browser closes the dialog itself (form method=dialog)", async () => {
     mount(`
-      <dialog id="f" data-mt-dialog><div data-mt-dialog-content>
+      <dialog id="f" data-ok-dialog><div data-ok-dialog-content>
         <form method="dialog"><button id="submit">OK</button></form>
       </div></dialog>`);
     const onExternalClose = vi.fn();
@@ -202,7 +202,7 @@ describe("createModalController options and edge cases", () => {
     expect(onDismiss).not.toHaveBeenCalled();
     expect(next).toHaveBeenCalledWith("escape");
     expect(controller.isFallback).toBe(true);
-    expect(dialog.hasAttribute("data-mt-fallback")).toBe(true);
+    expect(dialog.hasAttribute("data-ok-fallback")).toBe(true);
   });
 
   it("without a content selector the dialog itself is the content", () => {
@@ -236,7 +236,7 @@ describe("createModalController options and edge cases", () => {
   it("ignores cancel/close events from nested dialogs", () => {
     const { dialog, controller, onDismiss } = setup();
     const inner = document.createElement("dialog");
-    dialog.querySelector("[data-mt-dialog-content]")?.append(inner);
+    dialog.querySelector("[data-ok-dialog-content]")?.append(inner);
     controller.open();
     inner.dispatchEvent(new Event("cancel", { bubbles: true, cancelable: true }));
     inner.dispatchEvent(new Event("close", { bubbles: true }));

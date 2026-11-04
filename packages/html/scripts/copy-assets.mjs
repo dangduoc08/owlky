@@ -7,9 +7,9 @@ import { fileURLToPath } from "node:url";
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const require = createRequire(import.meta.url);
-const stylesDist = dirname(require.resolve("@minimal-tailwind/styles/minimal-tailwind.css"));
+const stylesDist = dirname(require.resolve("@owlky/styles/owlky.css"));
 
-for (const file of ["minimal-tailwind.css", "minimal-tailwind.min.css"]) {
+for (const file of ["owlky.css", "owlky.min.css"]) {
   await cp(join(stylesDist, file), join(root, "dist", file));
 }
 

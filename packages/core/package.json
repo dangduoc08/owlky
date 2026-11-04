@@ -1,7 +1,7 @@
 {
-  "name": "@minimal-tailwind/core",
+  "name": "@owlky/core",
   "version": "0.0.0",
-  "description": "Framework-free behavior and anatomy shared by the Minimal Tailwind React and HTML implementations.",
+  "description": "Framework-free behavior and anatomy shared by the Owlky React and HTML implementations.",
   "license": "MIT",
   "type": "module",
   "sideEffects": false,
@@ -20,7 +20,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@minimal-tailwind/tokens": "workspace:*"
+    "@owlky/tokens": "workspace:*"
   },
   "publishConfig": {
     "access": "public",
@@ -28,7 +28,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/OWNER/minimal-tailwind.git",
+    "url": "git+https://github.com/OWNER/owlky.git",
     "directory": "packages/core"
   },
   "keywords": [

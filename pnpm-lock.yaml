@@ -205,19 +205,19 @@ importers:
 
   apps/storybook:
     dependencies:
-      '@minimal-tailwind/core':
+      '@owlky/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@minimal-tailwind/html':
+      '@owlky/html':
         specifier: workspace:*
         version: link:../../packages/html
-      '@minimal-tailwind/react':
+      '@owlky/react':
         specifier: workspace:*
         version: link:../../packages/react
-      '@minimal-tailwind/styles':
+      '@owlky/styles':
         specifier: workspace:*
         version: link:../../packages/styles
-      '@minimal-tailwind/tokens':
+      '@owlky/tokens':
         specifier: workspace:*
         version: link:../../packages/tokens
       react:
@@ -287,10 +287,10 @@ importers:
       '@axe-core/playwright':
         specifier: 4.14.0
         version: 4.14.0(playwright-core@1.64.1)
-      '@minimal-tailwind/core':
+      '@owlky/core':
         specifier: workspace:*
         version: link:../packages/core
-      '@minimal-tailwind/tokens':
+      '@owlky/tokens':
         specifier: workspace:*
         version: link:../packages/tokens
       '@playwright/test':
@@ -299,17 +299,17 @@ importers:
 
   packages/core:
     dependencies:
-      '@minimal-tailwind/tokens':
+      '@owlky/tokens':
         specifier: workspace:*
         version: link:../tokens
 
   packages/html:
     dependencies:
-      '@minimal-tailwind/core':
+      '@owlky/core':
         specifier: workspace:*
         version: link:../core
     devDependencies:
-      '@minimal-tailwind/styles':
+      '@owlky/styles':
         specifier: workspace:*
         version: link:../styles
       vite:
@@ -318,11 +318,11 @@ importers:
 
   packages/react:
     dependencies:
-      '@minimal-tailwind/core':
+      '@owlky/core':
         specifier: workspace:*
         version: link:../core
     devDependencies:
-      '@minimal-tailwind/styles':
+      '@owlky/styles':
         specifier: workspace:*
         version: link:../styles
       '@testing-library/react':
@@ -343,7 +343,7 @@ importers:
 
   packages/styles:
     dependencies:
-      '@minimal-tailwind/tokens':
+      '@owlky/tokens':
         specifier: workspace:*
         version: link:../tokens
     devDependencies:

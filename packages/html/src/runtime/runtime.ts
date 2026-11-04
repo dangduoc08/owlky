@@ -1,4 +1,4 @@
-import { supports } from "@minimal-tailwind/core";
+import { supports } from "@owlky/core";
 import type {
   ComponentDefinition,
   ComponentInstance,
@@ -9,9 +9,9 @@ import type {
 import { PROTOCOL, VERSION } from "./version.js";
 
 /** Subtrees marked with this attribute are owned by another implementation (e.g. React). */
-export const RUNTIME_OFF_SELECTOR = '[data-mt-runtime="off"]';
+export const RUNTIME_OFF_SELECTOR = '[data-ok-runtime="off"]';
 
-const LOG_PREFIX = "[minimal-tailwind]";
+const LOG_PREFIX = "[owlky]";
 
 interface Mounted {
   instance: ComponentInstance;
@@ -50,7 +50,7 @@ export function createRuntime(): Runtime {
       runtime,
       emit(type, detail, options = {}) {
         return element.dispatchEvent(
-          new CustomEvent(`mt:${definition.name}:${type}`, {
+          new CustomEvent(`ok:${definition.name}:${type}`, {
             bubbles: true,
             cancelable: options.cancelable === true,
             detail,

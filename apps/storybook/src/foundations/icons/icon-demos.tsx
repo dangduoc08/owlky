@@ -1,4 +1,4 @@
-import { paletteColorNames } from "@minimal-tailwind/tokens";
+import { paletteColorNames } from "@owlky/tokens";
 import { CodeBlock } from "../shared/code-block.js";
 import { IconifyGlyph, type IconSetPrefix, iconSet } from "./iconify.js";
 import { Icon, iconNames } from "./icons.js";
@@ -127,9 +127,9 @@ export function IconSizes() {
 /** Icons use `currentColor`, so they follow the text color of their container. */
 export function IconColors() {
   const colors = [
-    ["text-primary", "--mt-text-primary"],
-    ["text-secondary", "--mt-text-secondary"],
-    ...paletteColorNames.map((name) => [name, `--mt-palette-${name}-text`] as const),
+    ["text-primary", "--ok-text-primary"],
+    ["text-secondary", "--ok-text-secondary"],
+    ...paletteColorNames.map((name) => [name, `--ok-palette-${name}-text`] as const),
   ] as const;
   return (
     <div className="flex flex-wrap gap-6">

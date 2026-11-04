@@ -2,18 +2,18 @@ import { Meta } from "@storybook/addon-docs/blocks";
 
 <Meta title="Introduction" />
 
-# Minimal Tailwind
+# Owlky
 
 Every component ships twice — **React** and **pure HTML** — with the same markup, the same CSS
 and the same behavior. Toggle light/dark with the theme button in the toolbar.
 
 | Package | Use it for |
 |---|---|
-| `@minimal-tailwind/react` | React 18.3+ / 19 apps |
-| `@minimal-tailwind/html` | Any HTML page: copy-paste snippets + `minimal-tailwind.js` |
-| `@minimal-tailwind/styles` | Prebuilt CSS (no Tailwind needed) and a Tailwind v4 theme |
-| `@minimal-tailwind/tokens` | Design tokens as TypeScript / CSS variables, `createTheme()` |
-| `@minimal-tailwind/core` | Shared framework-free behavior (used by both implementations) |
+| `@owlky/react` | React 18.3+ / 19 apps |
+| `@owlky/html` | Any HTML page: copy-paste snippets + `owlky.js` |
+| `@owlky/styles` | Prebuilt CSS (no Tailwind needed) and a Tailwind v4 theme |
+| `@owlky/tokens` | Design tokens as TypeScript / CSS variables, `createTheme()` |
+| `@owlky/core` | Shared framework-free behavior (used by both implementations) |
 
 ## Status
 
@@ -23,16 +23,16 @@ React and HTML together (see `docs/roadmap.md`).
 
 ## Theming
 
-Everything is a CSS variable (`--mt-*`). Override any of them — globally or on a subtree:
+Everything is a CSS variable (`--ok-*`). Override any of them — globally or on a subtree:
 
 ```css
 :root {
-  --mt-palette-primary-main: #2065d1;
-  --mt-palette-primary-dark: #103996;
-  --mt-palette-primary-contrast-text: #ffffff;
-  --mt-radius-md: 10px;
+  --ok-palette-primary-main: #2065d1;
+  --ok-palette-primary-dark: #103996;
+  --ok-palette-primary-contrast-text: #ffffff;
+  --ok-radius-md: 10px;
 }
 ```
 
-Dark mode: `data-mt-theme="dark"` (or `class="dark"`) on `<html>` or any container;
-`data-mt-theme="system"` follows the OS.
+Dark mode: `data-ok-theme="dark"` (or `class="dark"`) on `<html>` or any container;
+`data-ok-theme="system"` follows the OS.

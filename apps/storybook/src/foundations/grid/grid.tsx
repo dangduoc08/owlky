@@ -11,7 +11,7 @@ function Item({ children, className = "" }: { children: number; className?: stri
 }
 
 export interface SpacingDemoProps {
-  /** Spacing step: n × 8px, i.e. `calc(var(--mt-spacing) * 2n)`. */
+  /** Spacing step: n × 8px, i.e. `calc(var(--ok-spacing) * 2n)`. */
   spacing: 0 | 1 | 2 | 3 | 4 | 5;
 }
 
@@ -21,7 +21,7 @@ export function SpacingDemo({ spacing }: SpacingDemoProps) {
     <div
       data-testid="spacing-demo"
       className="flex flex-wrap justify-center"
-      style={{ gap: `calc(var(--mt-spacing) * ${spacing * 2})` }}
+      style={{ gap: `calc(var(--ok-spacing) * ${spacing * 2})` }}
     >
       {ITEMS.map((item) => (
         <Item key={item} className="w-12">

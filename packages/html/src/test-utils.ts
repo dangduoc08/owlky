@@ -15,15 +15,15 @@ export const settle = () => new Promise<void>((resolve) => setTimeout(resolve, 0
 export function resetPage(): void {
   document.body.replaceChildren();
   document.documentElement.removeAttribute("style");
-  delete (globalThis as unknown as Record<symbol, unknown>)[Symbol.for("minimal-tailwind.runtime")];
-  delete (globalThis as { MinimalTailwind?: unknown }).MinimalTailwind;
+  delete (globalThis as unknown as Record<symbol, unknown>)[Symbol.for("owlky.runtime")];
+  delete (globalThis as { Owlky?: unknown }).Owlky;
 }
 
 /** Brand-colored text follows the reference look (ADR-0014): exempt from `color-contrast` only. */
 const CONTRAST_EXEMPT = [
-  '[data-mt-button][data-mt-color]:not([data-mt-color="inherit"]):not([data-mt-variant="soft"])',
-  '[data-mt-fab]:not([data-mt-variant="soft"])',
-  '[data-mt-toggle-button][aria-pressed="true"]:not([data-mt-color="standard"])',
+  '[data-ok-button][data-ok-color]:not([data-ok-color="inherit"]):not([data-ok-variant="soft"])',
+  '[data-ok-fab]:not([data-ok-variant="soft"])',
+  '[data-ok-toggle-button][aria-pressed="true"]:not([data-ok-color="standard"])',
 ];
 const TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 

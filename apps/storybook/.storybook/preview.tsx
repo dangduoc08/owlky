@@ -2,12 +2,12 @@ import "@fontsource-variable/public-sans";
 import "@fontsource/barlow/700.css";
 import "@fontsource/barlow/800.css";
 import "./preview.css";
-import { components, getRuntime } from "@minimal-tailwind/html";
+import { components, getRuntime } from "@owlky/html";
 import { withThemeByDataAttribute } from "@storybook/addon-themes";
 import type { Preview } from "@storybook/react-vite";
 
 // The real HTML runtime runs in every story (started explicitly, as an npm user would). React
-// components opt out via data-mt-runtime="off", so both implementations coexist on one page.
+// components opt out via data-ok-runtime="off", so both implementations coexist on one page.
 getRuntime()
   .register(...components)
   .start();
@@ -17,7 +17,7 @@ const preview: Preview = {
     withThemeByDataAttribute({
       themes: { light: "light", dark: "dark" },
       defaultTheme: "light",
-      attributeName: "data-mt-theme",
+      attributeName: "data-ok-theme",
       parentSelector: "html",
     }),
   ],

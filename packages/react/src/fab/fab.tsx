@@ -1,9 +1,4 @@
-import {
-  type FabColor,
-  type FabSize,
-  type FabVariant,
-  fabAttributes,
-} from "@minimal-tailwind/core";
+import { type FabColor, type FabSize, type FabVariant, fabAttributes } from "@owlky/core";
 import { type AnchorHTMLAttributes, type ButtonHTMLAttributes, forwardRef, type Ref } from "react";
 
 interface FabOwnProps {

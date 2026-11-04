@@ -24,14 +24,14 @@ and HTML could drift apart.
 
    | React | HTML |
    |---|---|
-   | style prop (enum) | `data-mt-<option>` attribute (unknown values → default) |
+   | style prop (enum) | `data-ok-<option>` attribute (unknown values → default) |
    | boolean prop | presence attribute or native attribute (`disabled`) |
-   | behavior option | `data-mt-*`, re-read by the runtime on every action |
+   | behavior option | `data-ok-*`, re-read by the runtime on every action |
    | controlled state (`open`, `value`) | native / ARIA state in the DOM + instance methods |
-   | default state (`defaultOpen`) | initial state written in the markup (`data-mt-open`, `aria-pressed`) |
-   | callback | `mt:<component>:<event>` CustomEvent; `before…` events are cancelable (= controlled refusal) |
-   | ReactNode slot | child element with a part attribute (`data-mt-<component>-<part>`) |
-   | render function | your markup, or `<template data-mt-<component>-template>` |
+   | default state (`defaultOpen`) | initial state written in the markup (`data-ok-open`, `aria-pressed`) |
+   | callback | `ok:<component>:<event>` CustomEvent; `before…` events are cancelable (= controlled refusal) |
+   | ReactNode slot | child element with a part attribute (`data-ok-<component>-<part>`) |
+   | render function | your markup, or `<template data-ok-<component>-template>` |
    | ref / imperative API | the element + `runtime.get(element, "<component>")` |
 4. **One option schema per component in `core`** (`src/options/`): name, attribute, allowed values
    or type, default, kind (`style` · `behavior` · `state`) and related event. It drives React

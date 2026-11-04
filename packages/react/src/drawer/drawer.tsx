@@ -7,7 +7,7 @@ import {
   type DrawerVariant,
   drawerAttributes,
   type ModalController,
-} from "@minimal-tailwind/core";
+} from "@owlky/core";
 import {
   type ComponentPropsWithoutRef,
   createContext,
@@ -39,7 +39,7 @@ const DrawerContext = createContext<DrawerContextValue | null>(null);
 
 function useDrawerContext(component: string): DrawerContextValue {
   const context = useContext(DrawerContext);
-  if (!context) throw new Error(`[minimal-tailwind] <${component}> must be used inside <Drawer>.`);
+  if (!context) throw new Error(`[owlky] <${component}> must be used inside <Drawer>.`);
   return context;
 }
 
@@ -123,7 +123,7 @@ export interface DrawerContentProps extends ComponentPropsWithoutRef<"dialog"> {
 }
 
 /**
- * The panel: a modal `<dialog data-mt-drawer>` (temporary) or a docked `<aside>` (persistent,
+ * The panel: a modal `<dialog data-ok-drawer>` (temporary) or a docked `<aside>` (persistent,
  * permanent), with the content paper. Always rendered, so its markup is SSR-safe and matches the
  * HTML implementation. Name it with `aria-label` or `aria-labelledby`.
  */
@@ -138,14 +138,14 @@ export const DrawerContent = forwardRef<HTMLDialogElement | HTMLElement, DrawerC
     const controllerRef = useRef<ModalController | null>(null);
     const temporary = variant === "temporary";
     const attributes = drawerAttributes({ anchor, variant, hideBackdrop, disableEscapeKeyDown });
-    const content = <div data-mt-drawer-content="">{children}</div>;
+    const content = <div data-ok-drawer-content="">{children}</div>;
 
     // Effects run in declaration order: create the controller, sync options, then open/close.
     useEffect(() => {
       if (!temporary) return;
       const element = elementRef.current as HTMLDialogElement;
       const controller = createModalController(element, {
-        contentSelector: "[data-mt-drawer-content]",
+        contentSelector: "[data-ok-drawer-content]",
       });
       controllerRef.current = controller;
       return () => {
@@ -156,7 +156,7 @@ export const DrawerContent = forwardRef<HTMLDialogElement | HTMLElement, DrawerC
 
     useEffect(() => {
       controllerRef.current?.setOptions({
-        contentSelector: "[data-mt-drawer-content]",
+        contentSelector: "[data-ok-drawer-content]",
         closeOnEscape: disableEscapeKeyDown !== true,
         onDismiss: (reason) => setOpen(false, reason),
         onExternalClose: () => setOpen(false, "close"),
@@ -177,7 +177,7 @@ export const DrawerContent = forwardRef<HTMLDialogElement | HTMLElement, DrawerC
           ref={ref as Ref<HTMLElement>}
           id={id}
           {...attributes}
-          data-mt-runtime="off"
+          data-ok-runtime="off"
           hidden={!open}
           {...rest}
         >
@@ -186,7 +186,7 @@ export const DrawerContent = forwardRef<HTMLDialogElement | HTMLElement, DrawerC
       );
     }
     return (
-      <dialog ref={ref} {...attributes} data-mt-runtime="off" {...props}>
+      <dialog ref={ref} {...attributes} data-ok-runtime="off" {...props}>
         {content}
       </dialog>
     );

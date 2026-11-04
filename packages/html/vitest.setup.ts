@@ -1,2 +1,2 @@
-// Tests run against the same prebuilt CSS consumers get (build @minimal-tailwind/styles first).
-import "@minimal-tailwind/styles/minimal-tailwind.css";
+// Tests run against the same prebuilt CSS consumers get (build @owlky/styles first).
+import "@owlky/styles/owlky.css";

@@ -10,11 +10,11 @@ HTML side without an equivalent.
 
 ## Decision
 
-`@minimal-tailwind/core` holds everything both implementations share, with no framework and no
+`@owlky/core` holds everything both implementations share, with no framework and no
 side effects on import:
 
 - **Anatomy:** `buttonAttributes()`, `switchAttributes()`, `dialogAttributes()` map options to the
-  `data-mt-*` attributes. React spreads them; HTML snippets are written to match (verified by the
+  `data-ok-*` attributes. React spreads them; HTML snippets are written to match (verified by the
   e2e anatomy parity test).
 - **Behavior controllers:** e.g. `createDialogController(element, options)` — the _only_
   implementation of dialog behavior. React drives it from effects; the HTML runtime from a

@@ -1,4 +1,4 @@
-import { DrawerContent } from "@minimal-tailwind/react";
+import { DrawerContent } from "@owlky/react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { reactGroupsStory } from "../../helpers/groups.js";
 import { anchorGroups, DRAWER_CONTROLS, variantGroups } from "./drawer-examples.js";

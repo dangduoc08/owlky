@@ -10,8 +10,8 @@ export default defineConfig({
     lib: {
       entry: "src/cdn.ts",
       formats: ["iife"],
-      name: "MinimalTailwindBundle",
-      fileName: () => "minimal-tailwind.js",
+      name: "OwlkyBundle",
+      fileName: () => "owlky.js",
     },
   },
 });

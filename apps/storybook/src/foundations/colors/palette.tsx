@@ -4,7 +4,7 @@ import {
   greyShades,
   hexToRgb,
   type PaletteColorName,
-} from "@minimal-tailwind/tokens";
+} from "@owlky/tokens";
 import { useEffect, useRef, useState } from "react";
 
 export type PaletteName = PaletteColorName | "grey";
@@ -30,18 +30,18 @@ function swatches(palette: PaletteName): Swatch[] {
     return greyShades.map((shade) => ({
       name: String(shade),
       hex: defaultTheme.grey[shade],
-      variable: `--mt-palette-grey-${shade}`,
+      variable: `--ok-palette-grey-${shade}`,
     }));
   }
   return SHADES.map((shade) => ({
     name: capitalize(shade),
     hex: defaultTheme.palette[palette][shade],
-    variable: `--mt-palette-${palette}-${shade}`,
+    variable: `--ok-palette-${palette}-${shade}`,
   }));
 }
 
 export interface PaletteProps {
-  /** Palette to show. Values come from `@minimal-tailwind/tokens`. */
+  /** Palette to show. Values come from `@owlky/tokens`. */
   palette: PaletteName;
 }
 

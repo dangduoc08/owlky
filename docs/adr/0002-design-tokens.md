@@ -10,9 +10,9 @@ consumers must be able to theme without touching library source.
 ## Decision
 
 - Tokens are typed TypeScript objects (`packages/tokens/src/default-theme.ts`). A build step emits
-  `tokens.css` (every value as a `--mt-*` variable) and `tokens.json`.
-- Light/dark: scheme-dependent values are re-declared for `[data-mt-theme="dark"]`, `.dark`,
-  `[data-mt-theme="light"]` (nested light) and `[data-mt-theme="system"]` + `prefers-color-scheme`.
+  `tokens.css` (every value as a `--ok-*` variable) and `tokens.json`.
+- Light/dark: scheme-dependent values are re-declared for `[data-ok-theme="dark"]`, `.dark`,
+  `[data-ok-theme="light"]` (nested light) and `[data-ok-theme="system"]` + `prefers-color-scheme`.
   Derived values (shadows) are re-declared per scheme because a custom property that references
   another is resolved where it is declared.
 - Variables live in `@layer theme`; any unlayered consumer CSS overrides them.
@@ -21,7 +21,7 @@ consumers must be able to theme without touching library source.
   text on `main`, palette text on paper/default/16 % tint, primary/secondary text, in both schemes.
   As a result some `contrastText` values are dark (#141A21) where the Minimal reference uses white
   (white on `#00A76F` is 3.1:1). Brands that accept the trade-off can override
-  `--mt-palette-primary-contrast-text`.
+  `--ok-palette-primary-contrast-text`.
 - `paletteText` (per scheme) is the AA-safe tone used for outlined/soft/text variants.
 
 ## Consequences

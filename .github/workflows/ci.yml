@@ -63,10 +63,10 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: pnpm storybook:build
-      - run: pnpm --filter @minimal-tailwind/e2e exec playwright test --grep-invert @visual --project ${{ matrix.project }}
+      - run: pnpm --filter @owlky/e2e exec playwright test --grep-invert @visual --project ${{ matrix.project }}
       # Visual regression runs once baselines are committed (generated in Docker: pnpm test:visual:update).
       - if: matrix.project == 'chromium' && hashFiles('e2e/tests/__screenshots__/**') != ''
-        run: pnpm --filter @minimal-tailwind/e2e exec playwright test --grep @visual --project chromium
+        run: pnpm --filter @owlky/e2e exec playwright test --grep @visual --project chromium
       - if: failure()
         uses: actions/upload-artifact@v4
         with:

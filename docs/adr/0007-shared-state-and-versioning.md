@@ -14,13 +14,13 @@ must stay minimal.
 
 | Key (`Symbol.for`)               | Contents                                                | Why it must be shared                                           |
 | -------------------------------- | ------------------------------------------------------- | --------------------------------------------------------------- |
-| `minimal-tailwind.runtime`       | `{ protocol, version, runtime }` (shape frozen forever) | One runtime per page: no duplicate listeners/instances          |
-| `minimal-tailwind.layer-stack@1` | `{ layers: Element[] }`                                 | Escape/backdrop only for the topmost overlay, across all copies |
-| `minimal-tailwind.scroll-lock@1` | `{ count, saved }`                                      | Nested/parallel overlays must not unlock the page early         |
+| `owlky.runtime`       | `{ protocol, version, runtime }` (shape frozen forever) | One runtime per page: no duplicate listeners/instances          |
+| `owlky.layer-stack@1` | `{ layers: Element[] }`                                 | Escape/backdrop only for the topmost overlay, across all copies |
+| `owlky.scroll-lock@1` | `{ count, saved }`                                      | Nested/parallel overlays must not unlock the page early         |
 
 Everything else is module- or instance-scoped: the instance registry lives inside the runtime;
 ids use a per-copy random prefix (no shared counter); warnings are per-copy flags. The only
-`window` property is `MinimalTailwind`, set by the CDN bundle.
+`window` property is `Owlky`, set by the CDN bundle.
 
 Shared-state keys embed a **protocol number**. Changing a shape bumps it, so incompatible copies
 use separate state instead of corrupting each other (they stop coordinating, they don't crash).

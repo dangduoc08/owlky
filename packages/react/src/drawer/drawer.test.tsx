@@ -1,4 +1,4 @@
-import { isScrollLocked } from "@minimal-tailwind/core";
+import { isScrollLocked } from "@owlky/core";
 import { render, screen } from "@testing-library/react";
 import { StrictMode, useState } from "react";
 import { renderToString } from "react-dom/server";
@@ -64,7 +64,7 @@ describe("Docked drawers", () => {
     );
     const aside = screen.getByLabelText("Nav", { selector: "aside" });
     const trigger = screen.getByRole("button", { name: "Menu" });
-    expect(aside.dataset).toMatchObject({ mtVariant: "persistent", mtAnchor: "right" });
+    expect(aside.dataset).toMatchObject({ okVariant: "persistent", okAnchor: "right" });
     expect(aside.hidden).toBe(true);
     expect(trigger.getAttribute("aria-controls")).toBe(aside.id);
     expect(trigger.getAttribute("aria-expanded")).toBe("false");
@@ -98,9 +98,9 @@ describe("Drawer anatomy", () => {
   it("renders a closed, named drawer with explicit defaults and a trigger", () => {
     render(<Example anchor={"x" as never} />);
     expect(dialog().open).toBe(false);
-    expect(dialog().dataset).toMatchObject({ mtDrawer: "", mtAnchor: "left", mtRuntime: "off" });
+    expect(dialog().dataset).toMatchObject({ okDrawer: "", okAnchor: "left", okRuntime: "off" });
     expect(dialog().getAttribute("aria-label")).toBe("Menu");
-    expect(dialog().querySelector(":scope > [data-mt-drawer-content]")).not.toBeNull();
+    expect(dialog().querySelector(":scope > [data-ok-drawer-content]")).not.toBeNull();
     expect(screen.getByRole("button", { name: "Open" }).getAttribute("aria-haspopup")).toBe(
       "dialog",
     );
@@ -194,7 +194,7 @@ describe("Drawer behavior", () => {
 
   it("disableEscapeKeyDown ignores Escape; hideBackdrop keeps the drawer modal", async () => {
     render(<Example defaultOpen disableEscapeKeyDown hideBackdrop />);
-    expect(dialog().dataset).toMatchObject({ mtDisableEscapeKeyDown: "", mtHideBackdrop: "" });
+    expect(dialog().dataset).toMatchObject({ okDisableEscapeKeyDown: "", okHideBackdrop: "" });
     await userEvent.keyboard("{Escape}");
     expect(dialog().open).toBe(true);
     expect(getComputedStyle(dialog(), "::backdrop").backgroundColor).toBe("rgba(0, 0, 0, 0)");
@@ -274,7 +274,7 @@ describe("Drawer behavior", () => {
     ["top", / 0px 16px 32px -4px/],
   ] as const)("%s drawers use their shadow token", (anchor, shadow) => {
     render(<Example defaultOpen anchor={anchor} />);
-    const content = dialog().querySelector("[data-mt-drawer-content]") as HTMLElement;
+    const content = dialog().querySelector("[data-ok-drawer-content]") as HTMLElement;
     expect(getComputedStyle(content).boxShadow).toMatch(shadow);
   });
 });

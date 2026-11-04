@@ -1,4 +1,4 @@
-import { ToggleButton } from "@minimal-tailwind/react";
+import { ToggleButton } from "@owlky/react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { reactGroupsStory, type StoryControls } from "../../helpers/groups.js";
 import { TOGGLE_CONTROLS, toggleStories } from "./toggle-button-examples.js";

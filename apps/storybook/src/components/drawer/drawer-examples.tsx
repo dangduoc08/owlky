@@ -1,5 +1,5 @@
-import { drawerOptions } from "@minimal-tailwind/core";
-import { Drawer, type DrawerAnchor, DrawerContent, DrawerTrigger } from "@minimal-tailwind/react";
+import { drawerOptions } from "@owlky/core";
+import { Drawer, type DrawerAnchor, DrawerContent, DrawerTrigger } from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
 import { DemoIcon } from "../shared/demo-icon.js";
 import type { GroupFiles } from "../shared/snippets.js";

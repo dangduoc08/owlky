@@ -1,4 +1,4 @@
-import { defaultTheme, greyShades, hexToRgb, paletteColorNames } from "@minimal-tailwind/tokens";
+import { defaultTheme, greyShades, hexToRgb, paletteColorNames } from "@owlky/tokens";
 import { expect, test } from "@playwright/test";
 import { openStory } from "./helpers.js";
 
@@ -8,14 +8,14 @@ const palettes = [
     story: color === "error" ? "error-palette" : color,
     swatches: SHADES.map((shade) => ({
       hex: defaultTheme.palette[color][shade],
-      variable: `--mt-palette-${color}-${shade}`,
+      variable: `--ok-palette-${color}-${shade}`,
     })),
   })),
   {
     story: "grey",
     swatches: greyShades.map((shade) => ({
       hex: defaultTheme.grey[shade],
-      variable: `--mt-palette-grey-${shade}`,
+      variable: `--ok-palette-grey-${shade}`,
     })),
   },
 ];

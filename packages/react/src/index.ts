@@ -19,7 +19,7 @@ export type {
   ToggleButtonColor,
   ToggleButtonSize,
   ToggleGroupValue,
-} from "@minimal-tailwind/core";
+} from "@owlky/core";
 export {
   Button,
   type ButtonAsButtonProps,

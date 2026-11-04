@@ -20,7 +20,7 @@ async function open(page: Page, label: string, tap: boolean) {
 /** Paper box, viewport and the first menu item's size, for layout and parity checks. */
 function measure(page: Page, label: string) {
   return drawerFor(page, label).evaluate((dialog) => {
-    const paper = dialog.querySelector("[data-mt-drawer-content]") as HTMLElement;
+    const paper = dialog.querySelector("[data-ok-drawer-content]") as HTMLElement;
     const box = paper.getBoundingClientRect();
     const item = (paper.querySelector("button") as HTMLElement).getBoundingClientRect();
     return {
@@ -73,7 +73,7 @@ for (const impl of implementations) {
         await page.keyboard.press("Tab");
         const behind = await page.evaluate(
           () =>
-            document.activeElement?.closest("[data-mt-drawer]") === null &&
+            document.activeElement?.closest("[data-ok-drawer]") === null &&
             document.activeElement !== document.body,
         );
         expect(behind).toBe(false);

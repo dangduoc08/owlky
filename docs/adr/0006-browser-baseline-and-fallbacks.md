@@ -24,19 +24,19 @@ behavior is not guaranteed.
 ### Feature detection
 
 `core/src/dom/support.ts` exposes `supports.dialog`, `supports.popover`, `supports.inert`
-(lazy, SSR-safe). The runtime re-exports it as `MinimalTailwind.supports`.
+(lazy, SSR-safe). The runtime re-exports it as `Owlky.supports`.
 
 ### Fallbacks
 
 | Feature                                    | Native path                                             | Fallback (automatic)                                                                                                                             | Status                                                                      |
 | ------------------------------------------ | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------- |
-| Modal dialog                               | `showModal()`: top layer, inert page, Escape → `cancel` | `open` + `data-mt-fallback` + `aria-modal`, siblings `inert` (or `aria-hidden`), manual Tab trap and Escape, CSS paints the backdrop and z-index | Implemented and tested (`forceFallback` runs the full suite in both modes)  |
+| Modal dialog                               | `showModal()`: top layer, inert page, Escape → `cancel` | `open` + `data-ok-fallback` + `aria-modal`, siblings `inert` (or `aria-hidden`), manual Tab trap and Escape, CSS paints the backdrop and z-index | Implemented and tested (`forceFallback` runs the full suite in both modes)  |
 | `inert`                                    | `inert` attribute                                       | `aria-hidden="true"` on outside content                                                                                                          | Implemented                                                                 |
-| Popover (Tooltip, Dropdown, Select, Toast) | `popover` + `showPopover()`                             | `hidden` toggling + fixed positioning + `--mt-z-*` + manual light-dismiss                                                                        | To build with the first popover component (Phase 5), same pattern as dialog |
+| Popover (Tooltip, Dropdown, Select, Toast) | `popover` + `showPopover()`                             | `hidden` toggling + fixed positioning + `--ok-z-*` + manual light-dismiss                                                                        | To build with the first popover component (Phase 5), same pattern as dialog |
 | CSS `@property`                            | non-inheriting color bindings                           | Tailwind's emitted reset layer                                                                                                                   | Automatic                                                                   |
 | `checkVisibility()`                        | used for focusability                                   | `getClientRects()`                                                                                                                               | Implemented                                                                 |
 
-Fallback mode is visible (`data-mt-fallback` attribute, `controller.isFallback`), never silent.
+Fallback mode is visible (`data-ok-fallback` attribute, `controller.isFallback`), never silent.
 Platform differences that are _correct_ behavior are documented, not "fixed": e.g. a native modal
 may hand Tab focus to browser UI; Safari doesn't focus buttons on click (so triggers pass
 themselves explicitly for focus return).

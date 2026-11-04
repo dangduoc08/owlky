@@ -1,12 +1,12 @@
 /*
  * Drawer — spec: specs/components/drawer.md
  *
- * Anatomy:  dialog[data-mt-drawer]          transparent, full-viewport layout container
- *             › div[data-mt-drawer-content] the visible paper
- * Modifiers: data-mt-anchor = left (default) | right | top | bottom
- *            data-mt-variant = temporary (default: modal <dialog>) | persistent | permanent
- *            (docked: an <aside> in the page flow, closed with `hidden`), data-mt-hide-backdrop
- * States:    [open]; [data-mt-fallback] when the browser lacks showModal() (ADR-0006).
+ * Anatomy:  dialog[data-ok-drawer]          transparent, full-viewport layout container
+ *             › div[data-ok-drawer-content] the visible paper
+ * Modifiers: data-ok-anchor = left (default) | right | top | bottom
+ *            data-ok-variant = temporary (default: modal <dialog>) | persistent | permanent
+ *            (docked: an <aside> in the page flow, closed with `hidden`), data-ok-hide-backdrop
+ * States:    [open]; [data-ok-fallback] when the browser lacks showModal() (ADR-0006).
  *
  * A click whose target is the <dialog> itself is a click outside the paper (backdrop click).
  * Single :where() selectors in @layer components (zero specificity); `::backdrop` is the only
@@ -15,9 +15,9 @@
 @reference "../theme.css";
 
 @layer components {
-  :where([data-mt-drawer]) {
+  :where([data-ok-drawer]) {
     /* Room left for the backdrop, so a tap outside can always close the drawer. */
-    --_mt-max: calc(100% - var(--mt-spacing) * 14);
+    --_ok-max: calc(100% - var(--ok-spacing) * 14);
 
     box-sizing: border-box;
     position: fixed;
@@ -30,84 +30,84 @@
     padding: 0;
     border: 0;
     background: transparent;
-    color: var(--mt-text-primary);
-    font-family: var(--mt-font-family);
+    color: var(--ok-text-primary);
+    font-family: var(--ok-font-family);
     overflow: hidden;
   }
 
   /* The UA hides closed dialogs (display: none); only lay out open ones. */
-  :where([data-mt-drawer][open]) {
+  :where([data-ok-drawer][open]) {
     display: flex;
     flex-direction: row;
   }
 
   :where(
-    [data-mt-drawer][data-mt-anchor="top"][open],
-    [data-mt-drawer][data-mt-anchor="bottom"][open]
+    [data-ok-drawer][data-ok-anchor="top"][open],
+    [data-ok-drawer][data-ok-anchor="bottom"][open]
   ) {
     flex-direction: column;
   }
 
-  :where([data-mt-drawer])::backdrop {
-    background-color: var(--mt-backdrop);
+  :where([data-ok-drawer])::backdrop {
+    background-color: var(--ok-backdrop);
   }
 
   /* Fallback path: no ::backdrop or top layer, so the container paints the backdrop itself. */
-  :where([data-mt-drawer][data-mt-fallback]) {
-    z-index: var(--mt-z-modal);
-    background-color: var(--mt-backdrop);
+  :where([data-ok-drawer][data-ok-fallback]) {
+    z-index: var(--ok-z-modal);
+    background-color: var(--ok-backdrop);
   }
 
-  :where([data-mt-drawer-content]) {
+  :where([data-ok-drawer-content]) {
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
     height: 100%;
-    max-width: var(--_mt-max);
+    max-width: var(--_ok-max);
     margin-right: auto;
     overflow: auto;
     overscroll-behavior: contain;
-    background-color: var(--mt-bg-paper);
-    box-shadow: var(--mt-shadow-dialog-start);
+    background-color: var(--ok-bg-paper);
+    box-shadow: var(--ok-shadow-dialog-start);
     outline: none;
-    transition: transform var(--mt-duration-short) var(--mt-easing-decelerate);
+    transition: transform var(--ok-duration-short) var(--ok-easing-decelerate);
   }
 
-  :where([data-mt-drawer][data-mt-anchor="right"] > [data-mt-drawer-content]) {
+  :where([data-ok-drawer][data-ok-anchor="right"] > [data-ok-drawer-content]) {
     margin-right: 0;
     margin-left: auto;
-    box-shadow: var(--mt-shadow-dialog);
+    box-shadow: var(--ok-shadow-dialog);
   }
 
   :where(
-    [data-mt-drawer][data-mt-anchor="top"] > [data-mt-drawer-content],
-    [data-mt-drawer][data-mt-anchor="bottom"] > [data-mt-drawer-content]
+    [data-ok-drawer][data-ok-anchor="top"] > [data-ok-drawer-content],
+    [data-ok-drawer][data-ok-anchor="bottom"] > [data-ok-drawer-content]
   ) {
     width: 100%;
     max-width: none;
     height: auto;
-    max-height: var(--_mt-max);
+    max-height: var(--_ok-max);
     margin: 0 0 auto;
-    box-shadow: var(--mt-shadow-z16);
+    box-shadow: var(--ok-shadow-z16);
   }
 
-  :where([data-mt-drawer][data-mt-anchor="bottom"] > [data-mt-drawer-content]) {
+  :where([data-ok-drawer][data-ok-anchor="bottom"] > [data-ok-drawer-content]) {
     margin: auto 0 0;
   }
 
-  :where([data-mt-drawer][data-mt-hide-backdrop])::backdrop {
+  :where([data-ok-drawer][data-ok-hide-backdrop])::backdrop {
     background-color: transparent;
   }
 
-  :where([data-mt-drawer][data-mt-hide-backdrop][data-mt-fallback]) {
+  :where([data-ok-drawer][data-ok-hide-backdrop][data-ok-fallback]) {
     background-color: transparent;
   }
 
   /* Docked (persistent / permanent): part of the page layout — no backdrop, no shadow, a divider
      on the inner edge. Place it in a flex row (left / right) or column (top / bottom). */
   :where(
-    [data-mt-drawer][data-mt-variant="persistent"],
-    [data-mt-drawer][data-mt-variant="permanent"]
+    [data-ok-drawer][data-ok-variant="persistent"],
+    [data-ok-drawer][data-ok-variant="permanent"]
   ) {
     position: relative;
     inset: auto;
@@ -118,15 +118,15 @@
   }
 
   :where(
-    [data-mt-drawer][data-mt-variant="persistent"]:not([hidden]),
-    [data-mt-drawer][data-mt-variant="permanent"]:not([hidden])
+    [data-ok-drawer][data-ok-variant="persistent"]:not([hidden]),
+    [data-ok-drawer][data-ok-variant="permanent"]:not([hidden])
   ) {
     display: flex;
   }
 
   :where(
-    [data-mt-drawer][data-mt-variant="persistent"] > [data-mt-drawer-content],
-    [data-mt-drawer][data-mt-variant="permanent"] > [data-mt-drawer-content]
+    [data-ok-drawer][data-ok-variant="persistent"] > [data-ok-drawer-content],
+    [data-ok-drawer][data-ok-variant="permanent"] > [data-ok-drawer-content]
   ) {
     width: 100%;
     max-width: none;
@@ -134,97 +134,97 @@
     max-height: none;
     margin: 0;
     box-shadow: none;
-    border-right: 1px solid var(--mt-divider);
+    border-right: 1px solid var(--ok-divider);
   }
 
   :where(
-    [data-mt-drawer][data-mt-variant="persistent"][data-mt-anchor="right"]
-      > [data-mt-drawer-content],
-    [data-mt-drawer][data-mt-variant="permanent"][data-mt-anchor="right"] > [data-mt-drawer-content]
+    [data-ok-drawer][data-ok-variant="persistent"][data-ok-anchor="right"]
+      > [data-ok-drawer-content],
+    [data-ok-drawer][data-ok-variant="permanent"][data-ok-anchor="right"] > [data-ok-drawer-content]
   ) {
     border-right: 0;
-    border-left: 1px solid var(--mt-divider);
+    border-left: 1px solid var(--ok-divider);
   }
 
   :where(
-    [data-mt-drawer][data-mt-variant="persistent"][data-mt-anchor="top"] > [data-mt-drawer-content],
-    [data-mt-drawer][data-mt-variant="permanent"][data-mt-anchor="top"] > [data-mt-drawer-content]
+    [data-ok-drawer][data-ok-variant="persistent"][data-ok-anchor="top"] > [data-ok-drawer-content],
+    [data-ok-drawer][data-ok-variant="permanent"][data-ok-anchor="top"] > [data-ok-drawer-content]
   ) {
     border-right: 0;
-    border-bottom: 1px solid var(--mt-divider);
+    border-bottom: 1px solid var(--ok-divider);
   }
 
   :where(
-    [data-mt-drawer][data-mt-variant="persistent"][data-mt-anchor="bottom"]
-      > [data-mt-drawer-content],
-    [data-mt-drawer][data-mt-variant="permanent"][data-mt-anchor="bottom"]
-      > [data-mt-drawer-content]
+    [data-ok-drawer][data-ok-variant="persistent"][data-ok-anchor="bottom"]
+      > [data-ok-drawer-content],
+    [data-ok-drawer][data-ok-variant="permanent"][data-ok-anchor="bottom"]
+      > [data-ok-drawer-content]
   ) {
     border-right: 0;
-    border-top: 1px solid var(--mt-divider);
+    border-top: 1px solid var(--ok-divider);
   }
 
   /* Enter: slide in from the anchored edge, fade the backdrop in. */
   @starting-style {
-    :where([data-mt-drawer][open] > [data-mt-drawer-content]) {
+    :where([data-ok-drawer][open] > [data-ok-drawer-content]) {
       transform: translateX(-100%);
     }
 
-    :where([data-mt-drawer][data-mt-anchor="right"][open] > [data-mt-drawer-content]) {
+    :where([data-ok-drawer][data-ok-anchor="right"][open] > [data-ok-drawer-content]) {
       transform: translateX(100%);
     }
 
-    :where([data-mt-drawer][data-mt-anchor="top"][open] > [data-mt-drawer-content]) {
+    :where([data-ok-drawer][data-ok-anchor="top"][open] > [data-ok-drawer-content]) {
       transform: translateY(-100%);
     }
 
-    :where([data-mt-drawer][data-mt-anchor="bottom"][open] > [data-mt-drawer-content]) {
+    :where([data-ok-drawer][data-ok-anchor="bottom"][open] > [data-ok-drawer-content]) {
       transform: translateY(100%);
     }
 
-    :where([data-mt-drawer][open])::backdrop {
+    :where([data-ok-drawer][open])::backdrop {
       opacity: 0;
     }
 
     /* A persistent drawer slides in when it is shown. */
     :where(
-        [data-mt-drawer][data-mt-variant="persistent"]:not([hidden]) > [data-mt-drawer-content]
+        [data-ok-drawer][data-ok-variant="persistent"]:not([hidden]) > [data-ok-drawer-content]
       ) {
       transform: translateX(-100%);
     }
 
     :where(
-        [data-mt-drawer][data-mt-variant="persistent"][data-mt-anchor="right"]:not([hidden])
-          > [data-mt-drawer-content]
+        [data-ok-drawer][data-ok-variant="persistent"][data-ok-anchor="right"]:not([hidden])
+          > [data-ok-drawer-content]
       ) {
       transform: translateX(100%);
     }
 
     :where(
-        [data-mt-drawer][data-mt-variant="persistent"][data-mt-anchor="top"]:not([hidden])
-          > [data-mt-drawer-content]
+        [data-ok-drawer][data-ok-variant="persistent"][data-ok-anchor="top"]:not([hidden])
+          > [data-ok-drawer-content]
       ) {
       transform: translateY(-100%);
     }
 
     :where(
-        [data-mt-drawer][data-mt-variant="persistent"][data-mt-anchor="bottom"]:not([hidden])
-          > [data-mt-drawer-content]
+        [data-ok-drawer][data-ok-variant="persistent"][data-ok-anchor="bottom"]:not([hidden])
+          > [data-ok-drawer-content]
       ) {
       transform: translateY(100%);
     }
   }
 
-  :where([data-mt-drawer])::backdrop {
-    transition: opacity var(--mt-duration-short) var(--mt-easing-standard);
+  :where([data-ok-drawer])::backdrop {
+    transition: opacity var(--ok-duration-short) var(--ok-easing-standard);
   }
 
   @media (prefers-reduced-motion: reduce) {
-    :where([data-mt-drawer-content]) {
+    :where([data-ok-drawer-content]) {
       transition: none;
     }
 
-    :where([data-mt-drawer])::backdrop {
+    :where([data-ok-drawer])::backdrop {
       transition: none;
     }
   }

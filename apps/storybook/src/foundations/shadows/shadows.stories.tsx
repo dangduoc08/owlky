@@ -11,7 +11,7 @@ const meta = {
       canvas: { sourceState: "none" },
       description: {
         component:
-          "Shadow tokens from `@minimal-tailwind/tokens`, tinted per theme. Use the CSS variables or Tailwind `shadow-elevation-<n>`, `shadow-z<n>`, `shadow-card`, `shadow-dropdown`, `shadow-dialog`, `shadow-dialog-start`.",
+          "Shadow tokens from `@owlky/tokens`, tinted per theme. Use the CSS variables or Tailwind `shadow-elevation-<n>`, `shadow-z<n>`, `shadow-card`, `shadow-dropdown`, `shadow-dialog`, `shadow-dialog-start`.",
       },
     },
   },
@@ -20,11 +20,11 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** Default elevations 1–24: `--mt-elevation-<n>`. */
+/** Default elevations 1–24: `--ok-elevation-<n>`. */
 export const System: Story = { render: () => <SystemShadows /> };
 
-/** Extended shadows used across the components: `--mt-shadow-*`. */
+/** Extended shadows used across the components: `--ok-shadow-*`. */
 export const Custom: Story = { render: () => <CustomShadows /> };
 
-/** Colored shadows for filled surfaces: `--mt-shadow-<color>`. */
+/** Colored shadows for filled surfaces: `--ok-shadow-<color>`. */
 export const Colors: Story = { render: () => <ColorShadows /> };

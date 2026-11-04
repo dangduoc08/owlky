@@ -10,7 +10,7 @@ import {
   toggleButtonAttributes,
   toggleGroupAttributes,
   toSelection,
-} from "@minimal-tailwind/core";
+} from "@owlky/core";
 import {
   type ButtonHTMLAttributes,
   createContext,
@@ -95,7 +95,7 @@ export const ToggleButton = forwardRef<HTMLButtonElement, ToggleButtonProps>(fun
         size: size ?? group?.size,
         fullWidth,
       })}
-      data-mt-runtime={group === null ? "off" : undefined}
+      data-ok-runtime={group === null ? "off" : undefined}
       {...props}
       value={value}
       aria-pressed={pressed}
@@ -165,7 +165,7 @@ export const ToggleButtonGroup = forwardRef<HTMLDivElement, ToggleButtonGroupPro
       <div
         ref={ref}
         role="group"
-        data-mt-runtime="off"
+        data-ok-runtime="off"
         {...toggleGroupAttributes({ orientation, exclusive, fullWidth })}
         {...props}
       >

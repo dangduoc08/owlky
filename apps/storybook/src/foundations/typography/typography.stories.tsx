@@ -1,4 +1,4 @@
-import { typographyVariants } from "@minimal-tailwind/tokens";
+import { typographyVariants } from "@owlky/tokens";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { UsageDocs } from "../../helpers/docs-pages.js";
 import { TextColors, TypographySample } from "./typography.js";
@@ -13,7 +13,7 @@ const meta = {
       canvas: { sourceState: "none" },
       description: {
         component:
-          "Typography tokens from `@minimal-tailwind/tokens` as `--mt-typography-<variant>-font-family|font-size|font-weight|line-height|text-transform` CSS variables, and Tailwind `text-<variant>` utilities. Font sizes of h1–h6 grow at 600 / 900 / 1200px; h1–h3 use the display font (Barlow).",
+          "Typography tokens from `@owlky/tokens` as `--ok-typography-<variant>-font-family|font-size|font-weight|line-height|text-transform` CSS variables, and Tailwind `text-<variant>` utilities. Font sizes of h1–h6 grow at 600 / 900 / 1200px; h1–h3 use the display font (Barlow).",
       },
     },
   },

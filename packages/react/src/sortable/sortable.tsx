@@ -8,7 +8,7 @@ import {
   type SortableLayout,
   type SortableMessages,
   sortableAttributes,
-} from "@minimal-tailwind/core";
+} from "@owlky/core";
 import {
   type ComponentPropsWithoutRef,
   forwardRef,
@@ -102,18 +102,18 @@ function SortableInner<T>(
   });
 
   return (
-    <ul ref={ref} {...sortableAttributes({ layout })} data-mt-runtime="off" {...props}>
+    <ul ref={ref} {...sortableAttributes({ layout })} data-ok-runtime="off" {...props}>
       {items.map((item, index) => {
         const label = getItemLabel ? getItemLabel(item, index) : `Item ${index + 1}`;
         return (
-          <li key={getKey(item)} data-mt-sortable-item="">
+          <li key={getKey(item)} data-ok-sortable-item="">
             {renderItem(item, index)}
-            <div data-mt-sortable-actions="">
+            <div data-ok-sortable-actions="">
               {onRemove && (
                 <button
                   type="button"
                   {...iconButtonAttributes({ size: "sm" })}
-                  data-mt-sortable-remove=""
+                  data-ok-sortable-remove=""
                   aria-label={`Remove ${label}`}
                 >
                   <RemoveIcon />
@@ -122,7 +122,7 @@ function SortableInner<T>(
               <button
                 type="button"
                 {...iconButtonAttributes({ size: "sm" })}
-                data-mt-sortable-handle=""
+                data-ok-sortable-handle=""
                 aria-label={`Reorder ${label}`}
                 aria-pressed="false"
               >

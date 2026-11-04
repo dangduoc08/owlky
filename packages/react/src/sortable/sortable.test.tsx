@@ -41,9 +41,9 @@ describe("Sortable anatomy", () => {
     render(<Numbers ref={ref} layout={"x" as never} />);
     const list = screen.getByRole("list", { name: "Numbers" });
     expect(ref.current).toBe(list);
-    expect(list.dataset).toMatchObject({ mtSortable: "", mtLayout: "grid", mtRuntime: "off" });
+    expect(list.dataset).toMatchObject({ okSortable: "", okLayout: "grid", okRuntime: "off" });
     expect(handle(1).getAttribute("aria-pressed")).toBe("false");
-    expect(handle(1).dataset).toMatchObject({ mtIconButton: "", mtColor: "default", mtSize: "sm" });
+    expect(handle(1).dataset).toMatchObject({ okIconButton: "", okColor: "default", okSize: "sm" });
     expect(screen.getByRole("button", { name: "Remove item 1" })).toBeTruthy();
   });
 
@@ -117,7 +117,7 @@ describe("Sortable behavior", () => {
     );
     screen.getByRole("button", { name: "Reorder Item 1" }).focus();
     await userEvent.keyboard(" ");
-    expect(document.querySelector("[data-mt-sortable-announcer]")?.textContent).toBe("Pris.");
+    expect(document.querySelector("[data-ok-sortable-announcer]")?.textContent).toBe("Pris.");
     await userEvent.keyboard("{ArrowRight}");
     expect(onReorder).toHaveBeenCalledWith([2, 1, 3]);
     expect(order()).toBe("1,2,3");

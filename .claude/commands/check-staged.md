@@ -37,19 +37,19 @@ Stash unstaged work first so the working tree is clean and the diff is unambiguo
    If the diff touches `packages/styles`, `packages/html/src/components/*/examples`, any React/HTML component, `apps/storybook` or `e2e`, also run:
    ```
    pnpm storybook:build
-   pnpm --filter @minimal-tailwind/e2e exec playwright test --grep-invert @visual --project chromium
+   pnpm --filter @owlky/e2e exec playwright test --grep-invert @visual --project chromium
    ```
    If `package.json` exports or `files` changed, also run `pnpm check:packages`.
 
 5. **Analyse the diff for impact.** For each changed file, examine:
    - **Logic changes** — Does observable behavior change (open/close, focus, keyboard, events, rendering)?
-   - **Public surface** — Added/removed/renamed exports, React props, `data-mt-*` attributes, `--mt-*` CSS variables, `mt:<component>:<event>` events or their `detail`, runtime API methods, package `exports`.
+   - **Public surface** — Added/removed/renamed exports, React props, `data-ok-*` attributes, `--ok-*` CSS variables, `ok:<component>:<event>` events or their `detail`, runtime API methods, package `exports`.
    - **React ↔ HTML parity** — Was only one implementation changed? Do snippets in `packages/html/src/components/*/examples`, React output, the spec in `specs/components/` and the parity pairs in `e2e/tests/parity.spec.ts` (once restored, ADR-0011) still agree?
    - **Accessibility** — Roles, accessible names, `aria-*`, focus order/return, keyboard support, color contrast (token changes must keep `tokens.test.ts` green).
    - **Framework boundary** — Any React import in `tokens|styles|core|html`, or `html` import in `react` (ADR-0008)?
    - **Runtime lifecycle** — New listeners/observers/timers without the instance `signal` or cleanup; anything that can initialize twice or leak after removal (ADR-0005).
    - **Global state** — New `window` properties or `Symbol.for` slots; changed shape of a shared slot without a protocol bump (ADR-0007).
-   - **CSS** — Selectors outside a single `:where()`, rules outside `@layer components`, hard-coded values instead of `--mt-*`, `--tw-*` leakage, ordering mistakes (base → sizes → variants → hover → focus → disabled).
+   - **CSS** — Selectors outside a single `:where()`, rules outside `@layer components`, hard-coded values instead of `--ok-*`, `--tw-*` leakage, ordering mistakes (base → sizes → variants → hover → focus → disabled).
    - **Browser support** — Use of APIs outside the baseline (Chrome/Edge 114, Firefox 128, Safari 17) without feature detection and fallback (ADR-0006).
    - **Size** — Bundle or CSS growth reported by `check:size`.
    - **Security** — `innerHTML`/`insertAdjacentHTML`/`eval`/`new Function` with non-constant input, `dangerouslySetInnerHTML` outside Storybook, new dependencies or install scripts (`allowBuilds`).

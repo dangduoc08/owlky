@@ -1,4 +1,4 @@
-import type { OptionSchema } from "@minimal-tailwind/core";
+import type { OptionSchema } from "@owlky/core";
 import type { StoryObj } from "@storybook/react-vite";
 import { type ReactNode, useLayoutEffect, useRef } from "react";
 import { applyArgs } from "./apply-args.js";
@@ -103,7 +103,7 @@ function HtmlGroups({
 
 export interface HtmlGroup {
   title: string;
-  /** A canonical snippet from @minimal-tailwind/html, rendered exactly as users paste it. */
+  /** A canonical snippet from @owlky/html, rendered exactly as users paste it. */
   html: string;
 }
 

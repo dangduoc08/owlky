@@ -18,7 +18,7 @@ export async function openStory(
     `/apps/storybook/storybook-static/iframe.html?id=${id}&viewMode=story&globals=theme:${theme};a11y.manual:!true${args ? `&args=${args}` : ""}`,
   );
   await page.locator("#storybook-root > *").first().waitFor();
-  await page.waitForFunction((t) => document.documentElement.dataset["mtTheme"] === t, theme);
+  await page.waitForFunction((t) => document.documentElement.dataset["okTheme"] === t, theme);
   // Let the HTML runtime's MutationObserver flush (it mounts on a microtask).
   await page.evaluate(() => new Promise((r) => setTimeout(r, 0)));
 }
@@ -45,7 +45,7 @@ export interface NormalizedNode {
 
 /**
  * Serializes the story DOM into a structure that must be identical for both implementations:
- * tags, data-mt-* / ARIA / type attributes, live form state and text. Generated ids, React's
+ * tags, data-ok-* / ARIA / type attributes, live form state and text. Generated ids, React's
  * runtime opt-out and HTML-only behavior hooks are normalized away.
  */
 export function normalizeStory(page: Page): Promise<NormalizedNode> {
@@ -55,14 +55,14 @@ export function normalizeStory(page: Page): Promise<NormalizedNode> {
       "style",
       "id",
       "checked",
-      "data-mt-runtime",
+      "data-ok-runtime",
       // HTML runtime hooks and options; React expresses these as event handlers and props.
-      "data-mt-dialog-open",
-      "data-mt-dialog-close",
-      "data-mt-open",
-      "data-mt-drawer-open",
-      "data-mt-drawer-close",
-      "data-mt-sortable-add",
+      "data-ok-dialog-open",
+      "data-ok-dialog-close",
+      "data-ok-open",
+      "data-ok-drawer-open",
+      "data-ok-drawer-close",
+      "data-ok-sortable-add",
     ]);
     const REFERENCES = new Set(["aria-labelledby", "aria-describedby", "aria-controls", "for"]);
 
@@ -125,8 +125,8 @@ export function storyIds(prefix: string): string[] {
  * text buttons, fabs, pressed colored toggles and swatches are exempt from `color-contrast` only.
  */
 export const CONTRAST_EXEMPT = [
-  '[data-mt-button][data-mt-color]:not([data-mt-color="inherit"]):not([data-mt-variant="soft"])',
-  '[data-mt-fab]:not([data-mt-variant="soft"])',
-  '[data-mt-toggle-button][aria-pressed="true"]:not([data-mt-color="standard"])',
+  '[data-ok-button][data-ok-color]:not([data-ok-color="inherit"]):not([data-ok-variant="soft"])',
+  '[data-ok-fab]:not([data-ok-variant="soft"])',
+  '[data-ok-toggle-button][aria-pressed="true"]:not([data-ok-color="standard"])',
   "[data-swatch]",
 ];

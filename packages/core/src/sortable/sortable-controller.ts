@@ -4,9 +4,9 @@
  * the DOM, so owners that update asynchronously work too.
  */
 
-const ITEM = "[data-mt-sortable-item]";
-const HANDLE = "[data-mt-sortable-handle]";
-const REMOVE = "[data-mt-sortable-remove]";
+const ITEM = "[data-ok-sortable-item]";
+const HANDLE = "[data-ok-sortable-handle]";
+const REMOVE = "[data-ok-sortable-remove]";
 /** Pointer travel (px) before a press on the handle becomes a drag; shorter presses are clicks. */
 const DRAG_THRESHOLD = 4;
 
@@ -59,7 +59,7 @@ function announcer(doc: Document): HTMLElement {
   let region = announcers.get(doc);
   if (!region?.isConnected) {
     region = doc.createElement("div");
-    region.setAttribute("data-mt-sortable-announcer", "");
+    region.setAttribute("data-ok-sortable-announcer", "");
     region.setAttribute("aria-live", "polite");
     region.setAttribute("aria-atomic", "true");
     doc.body.append(region);
@@ -156,7 +156,7 @@ export function createSortableController(
   function grab(item: HTMLElement) {
     grabbed = item;
     grabStart = indexOf(item);
-    item.setAttribute("data-mt-grabbed", "");
+    item.setAttribute("data-ok-grabbed", "");
     handleOf(item)?.setAttribute("aria-pressed", "true");
     message("grabbed", grabStart + 1);
   }
@@ -164,7 +164,7 @@ export function createSortableController(
   function release() {
     const item = grabbed;
     if (!item) return null;
-    item.removeAttribute("data-mt-grabbed");
+    item.removeAttribute("data-ok-grabbed");
     handleOf(item)?.setAttribute("aria-pressed", "false");
     grabbed = null;
     grabStart = -1;
@@ -197,8 +197,8 @@ export function createSortableController(
 
   function endDrag(state: Drag) {
     state.item.style.transform = "";
-    state.item.removeAttribute("data-mt-dragging");
-    list.removeAttribute("data-mt-dragging");
+    state.item.removeAttribute("data-ok-dragging");
+    list.removeAttribute("data-ok-dragging");
     drag = null;
   }
 
@@ -250,8 +250,8 @@ export function createSortableController(
         if (Math.hypot(state.x - state.startX, state.y - state.startY) < DRAG_THRESHOLD) return;
         state.active = true;
         release();
-        state.item.setAttribute("data-mt-dragging", "");
-        list.setAttribute("data-mt-dragging", "");
+        state.item.setAttribute("data-ok-dragging", "");
+        list.setAttribute("data-ok-dragging", "");
         message("grabbed", state.startIndex + 1);
       }
       follow(state);
@@ -358,7 +358,7 @@ export function createSortableController(
         cancelGrab();
         return;
       }
-      const layout = list.getAttribute("data-mt-layout");
+      const layout = list.getAttribute("data-ok-layout");
       const row = layout === "grid" || layout === null ? columns() : 1;
       const deltas: Record<string, number> =
         layout === "vertical"

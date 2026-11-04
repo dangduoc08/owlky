@@ -7,7 +7,7 @@ description: Refactor the code in $ARGUMENTS for clarity and TypeScript/React/CS
 
 Refactor code for clarity and idiom compliance.
 
-**Logic must not change.** Public API must not change: exports, React props, `data-mt-*` anatomy, `--mt-*` variables, `mt:*` events and their `detail`, runtime API, snippet markup, rendered DOM.
+**Logic must not change.** Public API must not change: exports, React props, `data-ok-*` anatomy, `--ok-*` variables, `ok:*` events and their `detail`, runtime API, snippet markup, rendered DOM.
 
 Only structure, naming, and style are in scope.
 
@@ -23,7 +23,7 @@ Only structure, naming, and style are in scope.
    pnpm test
    ```
    If the target affects rendered output (styles, React components, snippets), also run
-   `pnpm storybook:build && pnpm --filter @minimal-tailwind/e2e exec playwright test --grep-invert @visual --project chromium`.
+   `pnpm storybook:build && pnpm --filter @owlky/e2e exec playwright test --grep-invert @visual --project chromium`.
    If anything fails before you start, stop and report — do not proceed.
 
 3. **Check if the file should be split** before analysing individual issues:
@@ -36,7 +36,7 @@ Only structure, naming, and style are in scope.
    **Naming**
    - Names that are too long, too short or misleading; booleans that don't read as predicates (`isOpen`, `hasTitle`).
    - Acronyms consistent within a name (`getElementById`, `ariaId`, not mixed).
-   - Repository conventions (AGENTS.md): kebab-case files, `data-mt-<component>-<part>`, `--_mt-*` for private CSS variables, `mt:<component>:<event>`.
+   - Repository conventions (AGENTS.md): kebab-case files, `data-ok-<component>-<part>`, `--_ok-*` for private CSS variables, `ok:<component>:<event>`.
 
    **Structure (TypeScript)**
    - Nested conditions that flatten with early returns; `else` after `return`.
@@ -53,7 +53,7 @@ Only structure, naming, and style are in scope.
 
    **CSS**
    - Every selector a single `:where(...)`; order base → sizes → variants → hover → focus → disabled.
-   - Hard-coded values that should be `--mt-*` tokens; duplicated declarations that belong in the component's base rule or a private `--_mt-*` variable.
+   - Hard-coded values that should be `--ok-*` tokens; duplicated declarations that belong in the component's base rule or a private `--_ok-*` variable.
    - `@apply` only for utilities that compile to plain declarations (no `--tw-*`).
 
 5. **Apply** changes one file at a time, running `pnpm test` after each file (and the e2e parity run if rendered output could be affected). If any test fails, revert that specific change and note it.

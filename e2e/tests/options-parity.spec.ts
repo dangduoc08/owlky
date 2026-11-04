@@ -1,4 +1,4 @@
-import { type OptionSpec, optionSchemas } from "@minimal-tailwind/core";
+import { type OptionSpec, optionSchemas } from "@owlky/core";
 import { expect, test } from "@playwright/test";
 import { normalizeStory, openStory, storyId } from "./helpers.js";
 

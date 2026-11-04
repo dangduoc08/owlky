@@ -1,5 +1,5 @@
-import { fabOptions } from "@minimal-tailwind/core";
-import { Fab, type FabColor, type FabVariant } from "@minimal-tailwind/react";
+import { fabOptions } from "@owlky/core";
+import { Fab, type FabColor, type FabVariant } from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
 import { MailIcon } from "../button/button-examples.js";
 import type { GroupFiles } from "../shared/snippets.js";

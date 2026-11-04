@@ -1,5 +1,5 @@
 import { addCollection, Icon, type IconifyJSON } from "@iconify/react/offline";
-// Generated subset (`pnpm --filter @minimal-tailwind/storybook icons`): offline, no Iconify API.
+// Generated subset (`pnpm --filter @owlky/storybook icons`): offline, no Iconify API.
 import data from "./icon-data.json" with { type: "json" };
 
 for (const collection of data.collections) addCollection(collection as IconifyJSON);

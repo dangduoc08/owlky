@@ -1,4 +1,4 @@
-import { createModalController, drawerOptions, readStyle } from "@minimal-tailwind/core";
+import { createModalController, drawerOptions, readStyle } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
 import type { ComponentInstance } from "../../runtime/types.js";
 
@@ -6,9 +6,9 @@ export type DrawerCloseReason = "escape" | "backdrop" | "trigger" | "api" | "nat
 
 export interface DrawerInstance extends ComponentInstance {
   readonly isOpen: boolean;
-  /** Opens the drawer. Returns `false` if `mt:drawer:beforeopen` was prevented. */
+  /** Opens the drawer. Returns `false` if `ok:drawer:beforeopen` was prevented. */
   open(trigger?: HTMLElement | null): boolean;
-  /** Closes the drawer. Returns `false` if `mt:drawer:beforeclose` was prevented or it is permanent. */
+  /** Closes the drawer. Returns `false` if `ok:drawer:beforeclose` was prevented or it is permanent. */
   close(reason?: DrawerCloseReason): boolean;
   toggle(trigger?: HTMLElement | null): boolean;
 }
@@ -22,25 +22,25 @@ const { variant, disableEscapeKeyDown } = drawerOptions.options;
 /**
  * Drawer — spec: specs/components/drawer.md
  *
- * Markup:   temporary: <dialog id="x" data-mt-drawer data-mt-anchor="left" aria-label="…">
- *           docked:    <aside id="x" data-mt-drawer data-mt-variant="persistent|permanent" … hidden?>
- *             <div data-mt-drawer-content>…</div>
- * Triggers: [data-mt-drawer-open="x"] (opens; toggles a persistent drawer, kept in aria-expanded),
- *           [data-mt-drawer-close] (inside) or [data-mt-drawer-close="x"]
- * Options:  data-mt-variant (read at mount), data-mt-disable-escape-key-down, data-mt-hide-backdrop
- *           (CSS), data-mt-open (open on load)
- * Events:   mt:drawer:beforeopen (cancelable), mt:drawer:open,
- *           mt:drawer:beforeclose (cancelable, detail.reason), mt:drawer:close (detail.reason)
+ * Markup:   temporary: <dialog id="x" data-ok-drawer data-ok-anchor="left" aria-label="…">
+ *           docked:    <aside id="x" data-ok-drawer data-ok-variant="persistent|permanent" … hidden?>
+ *             <div data-ok-drawer-content>…</div>
+ * Triggers: [data-ok-drawer-open="x"] (opens; toggles a persistent drawer, kept in aria-expanded),
+ *           [data-ok-drawer-close] (inside) or [data-ok-drawer-close="x"]
+ * Options:  data-ok-variant (read at mount), data-ok-disable-escape-key-down, data-ok-hide-backdrop
+ *           (CSS), data-ok-open (open on load)
+ * Events:   ok:drawer:beforeopen (cancelable), ok:drawer:open,
+ *           ok:drawer:beforeclose (cancelable, detail.reason), ok:drawer:close (detail.reason)
  */
 export const drawer = defineComponent<DrawerInstance>({
   name: "drawer",
-  selector: "[data-mt-drawer]",
+  selector: "[data-ok-drawer]",
 
   setup(element, { emit }) {
     const kind = readStyle(element, variant);
-    // Options are re-read on every open, so data-mt-* changes made while closed take effect.
+    // Options are re-read on every open, so data-ok-* changes made while closed take effect.
     const options = () => ({
-      contentSelector: "[data-mt-drawer-content]",
+      contentSelector: "[data-ok-drawer-content]",
       closeOnEscape: !element.hasAttribute(disableEscapeKeyDown.attr),
       onDismiss: (reason: DrawerCloseReason) => instance.close(reason),
       onExternalClose: () => emit("close", { reason: "native" }),
@@ -52,7 +52,7 @@ export const drawer = defineComponent<DrawerInstance>({
       if (controller || !element.id) return;
       const root = element.getRootNode() as Document | ShadowRoot;
       for (const trigger of root.querySelectorAll(
-        `[data-mt-drawer-open="${CSS.escape(element.id)}"]`,
+        `[data-ok-drawer-open="${CSS.escape(element.id)}"]`,
       )) {
         trigger.setAttribute("aria-expanded", String(instance.isOpen));
         trigger.setAttribute("aria-controls", element.id);
@@ -97,7 +97,7 @@ export const drawer = defineComponent<DrawerInstance>({
     };
 
     if (kind === "permanent") element.hidden = false;
-    if (element.hasAttribute("data-mt-open")) instance.open();
+    if (element.hasAttribute("data-ok-open")) instance.open();
     syncTriggers();
     return instance;
   },
@@ -105,13 +105,13 @@ export const drawer = defineComponent<DrawerInstance>({
   delegate: [
     {
       event: "click",
-      selector: "[data-mt-drawer-open]",
+      selector: "[data-ok-drawer-open]",
       handle(trigger, event, runtime) {
-        const id = trigger.getAttribute("data-mt-drawer-open") as string;
+        const id = trigger.getAttribute("data-ok-drawer-open") as string;
         const target = byId(trigger, id);
         const instance = runtime.getOrCreate<DrawerInstance>(target, "drawer");
         if (!instance) {
-          console.warn(`[minimal-tailwind] No drawer with id "${id}" for this trigger.`, trigger);
+          console.warn(`[owlky] No drawer with id "${id}" for this trigger.`, trigger);
           return;
         }
         event.preventDefault();
@@ -123,10 +123,10 @@ export const drawer = defineComponent<DrawerInstance>({
     },
     {
       event: "click",
-      selector: "[data-mt-drawer-close]",
+      selector: "[data-ok-drawer-close]",
       handle(trigger, event, runtime) {
-        const id = trigger.getAttribute("data-mt-drawer-close");
-        const target = id ? byId(trigger, id) : trigger.closest("[data-mt-drawer]");
+        const id = trigger.getAttribute("data-ok-drawer-close");
+        const target = id ? byId(trigger, id) : trigger.closest("[data-ok-drawer]");
         const instance = runtime.get<DrawerInstance>(target, "drawer");
         if (!instance) return;
         event.preventDefault();

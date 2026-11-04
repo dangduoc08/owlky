@@ -5,12 +5,12 @@ Read this first (humans and AI agents). Architecture: `docs/architecture.md`. De
 ## Ground rules
 
 1. **Two implementations, one contract.** Every component has a spec in `specs/components/`. React
-   and HTML must render the same `data-mt-*` anatomy and behave the same. Change the spec first.
+   and HTML must render the same `data-ok-*` anatomy and behave the same. Change the spec first.
 2. **Never cross the boundary.** `tokens`, `styles`, `core`, `html` must not import React;
    `react` must not import `html` (ADR-0008 — lint + `pnpm check:boundaries` enforce it).
 3. **Behavior lives in `core` once.** If React and HTML both need it, it goes in a core controller
    that reports intent (`onDismiss`) instead of mutating state on its own.
-4. **CSS:** only `:where(...)` selectors inside `@layer components`; `--mt-*` tokens for every
+4. **CSS:** only `:where(...)` selectors inside `@layer components`; `--ok-*` tokens for every
    value; `@apply` only for utilities that compile to plain declarations (no `--tw-*`).
 5. **Native first.** `<dialog>`, `popover`, native inputs. Feature-detect via `supports` and
    implement the documented fallback (ADR-0006).
@@ -23,13 +23,13 @@ Read this first (humans and AI agents). Architecture: `docs/architecture.md`. De
 
 | Thing                 | Convention                            | Example                        |
 | --------------------- | ------------------------------------- | ------------------------------ |
-| Root / part attribute | `data-mt-<component>[-<part>]`        | `data-mt-dialog-title`         |
-| Modifier              | `data-mt-variant/color/size/…`        | `data-mt-size="sm"`            |
-| HTML trigger          | `data-mt-<component>-<action>="<id>"` | `data-mt-dialog-open="x"`      |
-| HTML option           | `data-mt-<option>`                    | `data-mt-disable-escape-key-down` |
-| Event                 | `mt:<component>:<event>`              | `mt:dialog:beforeclose`        |
-| Public CSS variable   | `--mt-<group>-<name>`                 | `--mt-palette-primary-main`    |
-| Private CSS variable  | `--_mt-<name>` (component-internal)   | `--_mt-main`                   |
+| Root / part attribute | `data-ok-<component>[-<part>]`        | `data-ok-dialog-title`         |
+| Modifier              | `data-ok-variant/color/size/…`        | `data-ok-size="sm"`            |
+| HTML trigger          | `data-ok-<component>-<action>="<id>"` | `data-ok-dialog-open="x"`      |
+| HTML option           | `data-ok-<option>`                    | `data-ok-disable-escape-key-down` |
+| Event                 | `ok:<component>:<event>`              | `ok:dialog:beforeclose`        |
+| Public CSS variable   | `--ok-<group>-<name>`                 | `--ok-palette-primary-main`    |
+| Private CSS variable  | `--_ok-<name>` (component-internal)   | `--_ok-main`                   |
 | Files                 | kebab-case; one component per folder  | `dialog-controller.ts`         |
 
 ## Adding a component (checklist)
@@ -43,7 +43,7 @@ Read this first (humans and AI agents). Architecture: `docs/architecture.md`. De
 3. `styles/src/components/<name>.css` + `@import` in `styles/src/index.css`. (First component
    only: restore the `"./components/*": "./dist/components/*"` export in `styles/package.json`.)
 4. `react/src/<name>/<name>.tsx` + `<name>.test.tsx` (behavior + axe), export from `react/src/index.ts`.
-   Interactive roots render `data-mt-runtime="off"`; files with hooks start with `"use client"`.
+   Interactive roots render `data-ok-runtime="off"`; files with hooks start with `"use client"`.
 5. `html/src/components/<name>/examples/*.html` (canonical snippets; first component only: restore
    the `"./snippets/*": "./dist/snippets/*"` export in `html/package.json`). If it needs JS:
    `<name>.ts` (`defineComponent`) + tests, one line in `html/src/components/index.ts`.
@@ -66,7 +66,7 @@ Read this first (humans and AI agents). Architecture: `docs/architecture.md`. De
 autodocs page (`UsageDocs` in `helpers/docs-pages.tsx`: description only, never the stories
 again). Components have no docs pages (see checklist step 6). MDX has no GFM: use lists, not tables. Use Storybook's default layout and Controls for anything adjustable; don't build
 page chrome (headers, tables of contents, custom navigation). Read every value from
-`@minimal-tailwind/tokens` or `--mt-*` variables — never hard-code a token value. The reference
+`@owlky/tokens` or `--ok-*` variables — never hard-code a token value. The reference
 site is for content only; brand colors follow it, neutral text must meet WCAG AA (ADR-0014). E2E a11y, visual
 and small-screen tests pick up new stories automatically from Storybook's `index.json`.
 
@@ -130,7 +130,7 @@ and small-screen tests pick up new stories automatically from Storybook's `index
   typography, backdrop, …): use a native feature or story-only demo markup, never a library
   stand-in, and list it in `docs/roadmap.md` → "Pending integrations", so the later component can
   integrate it without breaking DOM or API.
-- `--mt-spacing` is **4px** (Tailwind scale): `calc(var(--mt-spacing) * 9)` = 36px. Convert
+- `--ok-spacing` is **4px** (Tailwind scale): `calc(var(--ok-spacing) * 9)` = 36px. Convert
   reference px values by dividing by 4.
 - HTML behavior-only folders (e.g. `toggle-group`, whose markup lives in `toggle-button/examples`)
   have no `examples/`; the html build skips them. Snippet tests share helpers in `html/src/test-utils.ts`.
@@ -140,5 +140,5 @@ and small-screen tests pick up new stories automatically from Storybook's `index
   (ToggleButtonGroup, needs state): only **direct** child elements get ButtonGroup props.
 - Foundations › Icons uses Iconify **offline** (`@iconify/react/offline`, Storybook dev deps only)
   with a generated subset, `icon-data.json`: edit `SETS` in `apps/storybook/scripts/icons.mjs`
-  and run `pnpm --filter @minimal-tailwind/storybook icons`. Never import a full
+  and run `pnpm --filter @owlky/storybook icons`. Never import a full
   `@iconify-json/*/icons.json` (megabytes). Credit each set's author and license (Solar is CC BY 4.0).

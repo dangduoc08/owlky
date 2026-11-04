@@ -18,7 +18,7 @@ threshold).
   `paletteText` (soft) on surfaces and tints.
 - Tests exempt brand-colored elements from axe `color-contrast` **only** (every other rule still
   runs): colored contained / outlined / text buttons and `[data-swatch]`.
-- Teams that need strict AA override `--mt-palette-*-contrast-text` and `--mt-palette-*-text`
+- Teams that need strict AA override `--ok-palette-*-contrast-text` and `--ok-palette-*-text`
   (packages/tokens/README.md).
 
 ## Consequences

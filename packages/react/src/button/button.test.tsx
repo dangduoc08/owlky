@@ -1,4 +1,4 @@
-import { buttonColors, buttonSizes, buttonVariants } from "@minimal-tailwind/core";
+import { buttonColors, buttonSizes, buttonVariants } from "@owlky/core";
 import { render, screen } from "@testing-library/react";
 import { createRef } from "react";
 import { renderToString } from "react-dom/server";
@@ -21,28 +21,28 @@ describe("Button anatomy", () => {
     const button = screen.getByRole("button", { name: "Save" });
     expect(button.getAttribute("type")).toBe("button");
     expect(button.dataset).toMatchObject({
-      mtButton: "",
-      mtVariant: "text",
-      mtColor: "inherit",
-      mtSize: "md",
+      okButton: "",
+      okVariant: "text",
+      okColor: "inherit",
+      okSize: "md",
     });
-    expect(button.querySelector("[data-mt-button-label]")?.textContent).toBe("Save");
+    expect(button.querySelector("[data-ok-button-label]")?.textContent).toBe("Save");
     expect(button.hasAttribute("aria-busy")).toBe(false);
   });
 
   it.each(buttonVariants)("variant %s", (variant) => {
     render(<Button variant={variant}>x</Button>);
-    expect(screen.getByRole("button").dataset["mtVariant"]).toBe(variant);
+    expect(screen.getByRole("button").dataset["okVariant"]).toBe(variant);
   });
 
   it.each(buttonColors)("color %s", (color) => {
     render(<Button color={color}>x</Button>);
-    expect(screen.getByRole("button").dataset["mtColor"]).toBe(color);
+    expect(screen.getByRole("button").dataset["okColor"]).toBe(color);
   });
 
   it.each(buttonSizes)("size %s", (size) => {
     render(<Button size={size}>x</Button>);
-    expect(screen.getByRole("button").dataset["mtSize"]).toBe(size);
+    expect(screen.getByRole("button").dataset["okSize"]).toBe(size);
   });
 
   it("falls back to defaults for invalid values", () => {
@@ -52,9 +52,9 @@ describe("Button anatomy", () => {
       </Button>,
     );
     expect(screen.getByRole("button").dataset).toMatchObject({
-      mtVariant: "text",
-      mtColor: "inherit",
-      mtSize: "md",
+      okVariant: "text",
+      okColor: "inherit",
+      okSize: "md",
     });
   });
 
@@ -65,7 +65,7 @@ describe("Button anatomy", () => {
       </Button>,
     );
     const button = screen.getByRole("button", { name: "Save" });
-    expect(button.dataset["mtFullWidth"]).toBe("");
+    expect(button.dataset["okFullWidth"]).toBe("");
     expect(button.getAttribute("type")).toBe("submit");
     expect(button.className).toBe("custom");
     expect(button.title).toBe("Save it");
@@ -78,8 +78,8 @@ describe("Button anatomy", () => {
       </Button>,
     );
     const button = screen.getByRole("button", { name: "Send" });
-    const icons = button.querySelectorAll("[data-mt-button-icon]");
-    expect([...icons].map((icon) => icon.getAttribute("data-mt-button-icon"))).toEqual([
+    const icons = button.querySelectorAll("[data-ok-button-icon]");
+    expect([...icons].map((icon) => icon.getAttribute("data-ok-button-icon"))).toEqual([
       "start",
       "end",
     ]);
@@ -135,10 +135,10 @@ describe("Button behavior", () => {
     const button = screen.getByRole("button", { name: "Submit" }) as HTMLButtonElement;
     expect(button.disabled).toBe(true);
     expect(button.getAttribute("aria-busy")).toBe("true");
-    expect(button.dataset).toMatchObject({ mtLoading: "", mtLoadingPosition: "center" });
-    const loader = button.querySelector("[data-mt-button-loader]");
+    expect(button.dataset).toMatchObject({ okLoading: "", okLoadingPosition: "center" });
+    const loader = button.querySelector("[data-ok-button-loader]");
     expect(loader?.getAttribute("aria-hidden")).toBe("true");
-    expect(loader?.querySelector("[data-mt-button-spinner]")).not.toBeNull();
+    expect(loader?.querySelector("[data-ok-button-spinner]")).not.toBeNull();
     await userEvent.click(button, { force: true });
     expect(onClick).not.toHaveBeenCalled();
   });
@@ -150,8 +150,8 @@ describe("Button behavior", () => {
       </Button>,
     );
     const button = screen.getByRole("button", { name: "Fetch data" });
-    expect(button.querySelector("[data-mt-button-loader]")?.textContent).toBe("Loading…");
-    expect(button.querySelector("[data-mt-button-spinner]")).toBeNull();
+    expect(button.querySelector("[data-ok-button-loader]")?.textContent).toBe("Loading…");
+    expect(button.querySelector("[data-ok-button-spinner]")).toBeNull();
   });
 
   it("loading start/end replaces the matching icon", () => {
@@ -167,11 +167,11 @@ describe("Button behavior", () => {
     );
     const start = screen.getByRole("button", { name: "Start" });
     const end = screen.getByRole("button", { name: "End" });
-    expect(start.dataset["mtLoadingPosition"]).toBe("start");
-    expect(css(start.querySelector('[data-mt-button-icon="start"]') as Element).display).toBe(
+    expect(start.dataset["okLoadingPosition"]).toBe("start");
+    expect(css(start.querySelector('[data-ok-button-icon="start"]') as Element).display).toBe(
       "none",
     );
-    expect(css(end.querySelector('[data-mt-button-icon="end"]') as Element).display).toBe("none");
+    expect(css(end.querySelector('[data-ok-button-icon="end"]') as Element).display).toBe("none");
   });
 
   it("renders a link when href is set, and an inert link when disabled or loading", () => {
@@ -265,7 +265,7 @@ describe("Button styles (shipped CSS)", () => {
       </Button>,
     );
     const button = screen.getByRole("button");
-    expect(button.dataset["mtDisableElevation"]).toBe("");
+    expect(button.dataset["okDisableElevation"]).toBe("");
     await userEvent.hover(button);
     await vi.waitFor(() => expect(css(button).backgroundColor).toBe("rgb(0, 120, 103)"));
     expect(css(button).boxShadow).toBe("none");

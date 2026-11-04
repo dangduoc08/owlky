@@ -1,10 +1,10 @@
 /*
  * Fab — spec: specs/components/fab.md
  *
- * Anatomy:  button[data-mt-fab] › svg [+ label text when extended]
- * Modifiers: data-mt-variant = contained (default) | outlined | soft
- *            data-mt-color   = default (default) | inherit | primary … error | black | white
- *            data-mt-size    = md (default) | sm | lg,  data-mt-extended, data-mt-animate
+ * Anatomy:  button[data-ok-fab] › svg [+ label text when extended]
+ * Modifiers: data-ok-variant = contained (default) | outlined | soft
+ *            data-ok-color   = default (default) | inherit | primary … error | black | white
+ *            data-ok-size    = md (default) | sm | lg,  data-ok-extended, data-ok-animate
  * States:    :hover (hover-capable devices), :active, :focus-visible, :disabled
  *
  * Single :where() selectors in @layer components (zero specificity). Order: base → colors →
@@ -13,162 +13,162 @@
 @reference "../theme.css";
 
 @layer components {
-  :where([data-mt-fab]) {
-    --_mt-main: var(--mt-c-main, var(--mt-palette-grey-300));
-    --_mt-hover: var(--mt-c-hover, var(--mt-palette-grey-400));
-    --_mt-contrast: var(--mt-c-contrast, var(--mt-palette-grey-800));
-    --_mt-outline-color: var(--mt-c-main, var(--mt-text-secondary));
-    --_mt-text: var(--mt-c-text, var(--mt-text-primary));
-    --_mt-channel: var(--mt-c-channel, var(--mt-palette-grey-500-channel));
-    --_mt-shadow: var(--mt-c-shadow, var(--mt-shadow-z8));
-    --_mt-outline-alpha: 0.48;
-    --_mt-size: calc(var(--mt-spacing) * 12);
-    --_mt-padding-x: calc(var(--mt-spacing) * 3);
-    --_mt-font-size: var(--mt-font-size-md);
-    --_mt-icon-size: calc(var(--mt-spacing) * 6);
+  :where([data-ok-fab]) {
+    --_ok-main: var(--ok-c-main, var(--ok-palette-grey-300));
+    --_ok-hover: var(--ok-c-hover, var(--ok-palette-grey-400));
+    --_ok-contrast: var(--ok-c-contrast, var(--ok-palette-grey-800));
+    --_ok-outline-color: var(--ok-c-main, var(--ok-text-secondary));
+    --_ok-text: var(--ok-c-text, var(--ok-text-primary));
+    --_ok-channel: var(--ok-c-channel, var(--ok-palette-grey-500-channel));
+    --_ok-shadow: var(--ok-c-shadow, var(--ok-shadow-z8));
+    --_ok-outline-alpha: 0.48;
+    --_ok-size: calc(var(--ok-spacing) * 12);
+    --_ok-padding-x: calc(var(--ok-spacing) * 3);
+    --_ok-font-size: var(--ok-font-size-md);
+    --_ok-icon-size: calc(var(--ok-spacing) * 6);
 
     display: inline-flex;
     flex-shrink: 0;
     align-items: center;
     justify-content: center;
-    gap: calc(var(--mt-spacing) * 2);
+    gap: calc(var(--ok-spacing) * 2);
     box-sizing: border-box;
-    width: var(--_mt-size);
-    min-width: var(--_mt-size);
-    height: var(--_mt-size);
+    width: var(--_ok-size);
+    min-width: var(--_ok-size);
+    height: var(--_ok-size);
     margin: 0;
     padding: 0;
     border: 1px solid transparent;
-    border-radius: var(--mt-radius-full);
-    background-color: var(--_mt-main);
-    box-shadow: var(--_mt-shadow);
-    color: var(--_mt-contrast);
-    font-family: var(--mt-font-family);
-    font-size: var(--_mt-font-size);
-    font-weight: var(--mt-typography-button-font-weight);
-    line-height: var(--mt-typography-button-line-height);
+    border-radius: var(--ok-radius-full);
+    background-color: var(--_ok-main);
+    box-shadow: var(--_ok-shadow);
+    color: var(--_ok-contrast);
+    font-family: var(--ok-font-family);
+    font-size: var(--_ok-font-size);
+    font-weight: var(--ok-typography-button-font-weight);
+    line-height: var(--ok-typography-button-line-height);
     text-decoration: none;
     white-space: nowrap;
     cursor: pointer;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
     transition-property: background-color, border-color, box-shadow, color, transform;
-    transition-duration: var(--mt-duration-short);
-    transition-timing-function: var(--mt-easing-standard);
+    transition-duration: var(--ok-duration-short);
+    transition-timing-function: var(--ok-easing-standard);
   }
 
-  :where([data-mt-fab] > svg, [data-mt-fab] > img) {
+  :where([data-ok-fab] > svg, [data-ok-fab] > img) {
     flex-shrink: 0;
-    width: var(--_mt-icon-size);
-    height: var(--_mt-icon-size);
+    width: var(--_ok-icon-size);
+    height: var(--_ok-icon-size);
   }
 
   /* Colors without a palette binding */
-  :where([data-mt-fab][data-mt-color="default"], [data-mt-fab][data-mt-color="inherit"]) {
-    --_mt-outline-alpha: 0.32;
+  :where([data-ok-fab][data-ok-color="default"], [data-ok-fab][data-ok-color="inherit"]) {
+    --_ok-outline-alpha: 0.32;
   }
 
-  :where([data-mt-fab][data-mt-color="inherit"]) {
-    --_mt-main: var(--mt-inherit-main);
-    --_mt-hover: var(--mt-inherit-hover);
-    --_mt-contrast: var(--mt-inherit-contrast);
-    --_mt-outline-color: var(--mt-text-primary);
+  :where([data-ok-fab][data-ok-color="inherit"]) {
+    --_ok-main: var(--ok-inherit-main);
+    --_ok-hover: var(--ok-inherit-hover);
+    --_ok-contrast: var(--ok-inherit-contrast);
+    --_ok-outline-color: var(--ok-text-primary);
   }
 
   /* Sizes */
-  :where([data-mt-fab][data-mt-size="sm"]) {
-    --_mt-size: calc(var(--mt-spacing) * 10);
-    --_mt-padding-x: calc(var(--mt-spacing) * 2);
-    --_mt-font-size: var(--mt-font-size-sm);
-    --_mt-icon-size: calc(var(--mt-spacing) * 5);
+  :where([data-ok-fab][data-ok-size="sm"]) {
+    --_ok-size: calc(var(--ok-spacing) * 10);
+    --_ok-padding-x: calc(var(--ok-spacing) * 2);
+    --_ok-font-size: var(--ok-font-size-sm);
+    --_ok-icon-size: calc(var(--ok-spacing) * 5);
   }
 
-  :where([data-mt-fab][data-mt-size="lg"]) {
-    --_mt-size: calc(var(--mt-spacing) * 14);
-    --_mt-padding-x: calc(var(--mt-spacing) * 4);
-    --_mt-font-size: var(--mt-font-size-lg);
+  :where([data-ok-fab][data-ok-size="lg"]) {
+    --_ok-size: calc(var(--ok-spacing) * 14);
+    --_ok-padding-x: calc(var(--ok-spacing) * 4);
+    --_ok-font-size: var(--ok-font-size-lg);
   }
 
   /* Extended: pill with icon + label, a step lower than the round fab. */
-  :where([data-mt-fab][data-mt-extended]) {
-    --_mt-size: calc(var(--mt-spacing) * 10);
-    --_mt-icon-size: calc(var(--mt-spacing) * 5);
+  :where([data-ok-fab][data-ok-extended]) {
+    --_ok-size: calc(var(--ok-spacing) * 10);
+    --_ok-icon-size: calc(var(--ok-spacing) * 5);
 
     width: auto;
-    padding: 0 var(--_mt-padding-x);
+    padding: 0 var(--_ok-padding-x);
   }
 
-  :where([data-mt-fab][data-mt-extended][data-mt-size="sm"]) {
-    --_mt-size: calc(var(--mt-spacing) * 9);
+  :where([data-ok-fab][data-ok-extended][data-ok-size="sm"]) {
+    --_ok-size: calc(var(--ok-spacing) * 9);
   }
 
-  :where([data-mt-fab][data-mt-extended][data-mt-size="lg"]) {
-    --_mt-size: calc(var(--mt-spacing) * 12);
+  :where([data-ok-fab][data-ok-extended][data-ok-size="lg"]) {
+    --_ok-size: calc(var(--ok-spacing) * 12);
   }
 
   /* Variants */
-  :where([data-mt-fab][data-mt-variant="outlined"]) {
-    border-color: rgb(var(--_mt-channel) / var(--_mt-outline-alpha));
+  :where([data-ok-fab][data-ok-variant="outlined"]) {
+    border-color: rgb(var(--_ok-channel) / var(--_ok-outline-alpha));
     background-color: transparent;
     box-shadow: none;
-    color: var(--_mt-outline-color);
+    color: var(--_ok-outline-color);
   }
 
-  :where([data-mt-fab][data-mt-variant="soft"]) {
-    background-color: rgb(var(--_mt-channel) / 0.16);
+  :where([data-ok-fab][data-ok-variant="soft"]) {
+    background-color: rgb(var(--_ok-channel) / 0.16);
     box-shadow: none;
-    color: var(--_mt-text);
+    color: var(--_ok-text);
   }
 
   /* Hover — only on devices that can hover. */
   @media (hover: hover) {
-    :where([data-mt-fab]:hover) {
-      background-color: var(--_mt-hover);
+    :where([data-ok-fab]:hover) {
+      background-color: var(--_ok-hover);
       box-shadow: none;
     }
 
-    :where([data-mt-fab][data-mt-variant="outlined"]:hover) {
-      background-color: rgb(var(--_mt-channel) / 0.08);
+    :where([data-ok-fab][data-ok-variant="outlined"]:hover) {
+      background-color: rgb(var(--_ok-channel) / 0.08);
     }
 
-    :where([data-mt-fab][data-mt-variant="soft"]:hover) {
-      background-color: rgb(var(--_mt-channel) / 0.32);
+    :where([data-ok-fab][data-ok-variant="soft"]:hover) {
+      background-color: rgb(var(--_ok-channel) / 0.32);
     }
 
-    :where([data-mt-fab][data-mt-animate]:hover) {
+    :where([data-ok-fab][data-ok-animate]:hover) {
       transform: scale(1.09);
     }
   }
 
-  :where([data-mt-fab][data-mt-animate]:active) {
+  :where([data-ok-fab][data-ok-animate]:active) {
     transform: scale(0.97);
   }
 
-  :where([data-mt-fab]:focus-visible) {
-    outline: 2px solid var(--_mt-outline-color);
+  :where([data-ok-fab]:focus-visible) {
+    outline: 2px solid var(--_ok-outline-color);
     outline-offset: 2px;
   }
 
   /* Disabled — after hover, so it wins. */
-  :where([data-mt-fab]:is(:disabled, [aria-disabled="true"])) {
-    background-color: var(--mt-action-disabled-bg);
+  :where([data-ok-fab]:is(:disabled, [aria-disabled="true"])) {
+    background-color: var(--ok-action-disabled-bg);
     box-shadow: none;
-    color: var(--mt-action-disabled);
+    color: var(--ok-action-disabled);
     cursor: not-allowed;
     transform: none;
   }
 
-  :where([data-mt-fab][data-mt-variant="outlined"]:is(:disabled, [aria-disabled="true"])) {
-    border-color: var(--mt-action-disabled-bg);
+  :where([data-ok-fab][data-ok-variant="outlined"]:is(:disabled, [aria-disabled="true"])) {
+    border-color: var(--ok-action-disabled-bg);
     background-color: transparent;
   }
 
   @media (prefers-reduced-motion: reduce) {
-    :where([data-mt-fab]) {
+    :where([data-ok-fab]) {
       transition: none;
     }
 
-    :where([data-mt-fab][data-mt-animate]) {
+    :where([data-ok-fab][data-ok-animate]) {
       transform: none;
     }
   }

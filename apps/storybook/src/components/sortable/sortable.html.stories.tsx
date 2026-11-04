@@ -12,23 +12,23 @@ const snippets = import.meta.glob(
 function numberNewItem(event: Event) {
   const { item } = (event as CustomEvent<{ item: HTMLElement }>).detail;
   const list = item.parentElement as HTMLElement;
-  const numbers = [...list.querySelectorAll(":scope > [data-mt-sortable-item] > span")].map(
+  const numbers = [...list.querySelectorAll(":scope > [data-ok-sortable-item] > span")].map(
     (span) => Number(span.textContent),
   );
   const next = Math.max(0, ...numbers) + 1;
   (item.querySelector("span") as HTMLElement).textContent = String(next);
   item
-    .querySelector("[data-mt-sortable-remove]")
+    .querySelector("[data-ok-sortable-remove]")
     ?.setAttribute("aria-label", `Remove item ${next}`);
   item
-    .querySelector("[data-mt-sortable-handle]")
+    .querySelector("[data-ok-sortable-handle]")
     ?.setAttribute("aria-label", `Reorder item ${next}`);
 }
 
 const withNumbering: Decorator = (Story) => {
   useEffect(() => {
-    document.addEventListener("mt:sortable:add", numberNewItem);
-    return () => document.removeEventListener("mt:sortable:add", numberNewItem);
+    document.addEventListener("ok:sortable:add", numberNewItem);
+    return () => document.removeEventListener("ok:sortable:add", numberNewItem);
   }, []);
   return <Story />;
 };
@@ -36,14 +36,14 @@ const withNumbering: Decorator = (Story) => {
 const SETUP = `${htmlSetup(["button.css", "icon-button.css", "sortable.css"], true)}
 <script>
   // New items come from the <template>: fill their content when they are added.
-  document.addEventListener("mt:sortable:add", (event) => {
+  document.addEventListener("ok:sortable:add", (event) => {
     const { item } = event.detail;
-    const numbers = [...item.parentElement.querySelectorAll(":scope > [data-mt-sortable-item] > span")]
+    const numbers = [...item.parentElement.querySelectorAll(":scope > [data-ok-sortable-item] > span")]
       .map((span) => Number(span.textContent));
     const next = Math.max(0, ...numbers) + 1;
     item.querySelector("span").textContent = next;
-    item.querySelector("[data-mt-sortable-remove]").ariaLabel = \`Remove item \${next}\`;
-    item.querySelector("[data-mt-sortable-handle]").ariaLabel = \`Reorder item \${next}\`;
+    item.querySelector("[data-ok-sortable-remove]").ariaLabel = \`Remove item \${next}\`;
+    item.querySelector("[data-ok-sortable-handle]").ariaLabel = \`Reorder item \${next}\`;
   });
 </script>`;
 

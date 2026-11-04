@@ -1,5 +1,5 @@
-import { sortableOptions } from "@minimal-tailwind/core";
-import { Button, Sortable, type SortableLayout } from "@minimal-tailwind/react";
+import { sortableOptions } from "@owlky/core";
+import { Button, Sortable, type SortableLayout } from "@owlky/react";
 import { useState } from "react";
 import type { ReactGroup } from "../../helpers/groups.js";
 import { DemoIcon } from "../shared/demo-icon.js";
@@ -58,8 +58,8 @@ export const sortableGroups = (layout: SortableLayout, title: string): ReactGrou
 export const sortableCode = (
   layout: SortableLayout,
   title: string,
-) => `import "@minimal-tailwind/styles/minimal-tailwind.css";
-import { Button, Sortable } from "@minimal-tailwind/react";
+) => `import "@owlky/styles/owlky.css";
+import { Button, Sortable } from "@owlky/react";
 import { useState } from "react";
 // PlusIcon: your own decorative SVG icon (aria-hidden="true").
 

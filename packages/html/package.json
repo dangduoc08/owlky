@@ -1,12 +1,12 @@
 {
-  "name": "@minimal-tailwind/html",
+  "name": "@owlky/html",
   "version": "0.0.0",
-  "description": "Framework-free Minimal Tailwind components: copy-paste HTML snippets plus a tiny shared runtime that wires up behavior through data-mt-* attributes.",
+  "description": "Framework-free Owlky components: copy-paste HTML snippets plus a tiny shared runtime that wires up behavior through data-ok-* attributes.",
   "license": "MIT",
   "type": "module",
   "sideEffects": [
     "./dist/esm/auto.js",
-    "./dist/minimal-tailwind.js",
+    "./dist/owlky.js",
     "**/*.css"
   ],
   "files": [
@@ -21,23 +21,23 @@
       "types": "./dist/esm/auto.d.ts",
       "import": "./dist/esm/auto.js"
     },
-    "./minimal-tailwind.js": "./dist/minimal-tailwind.js",
-    "./minimal-tailwind.css": "./dist/minimal-tailwind.css",
-    "./minimal-tailwind.min.css": "./dist/minimal-tailwind.min.css",
+    "./owlky.js": "./dist/owlky.js",
+    "./owlky.css": "./dist/owlky.css",
+    "./owlky.min.css": "./dist/owlky.min.css",
     "./snippets/*": "./dist/snippets/*",
     "./package.json": "./package.json"
   },
-  "unpkg": "./dist/minimal-tailwind.js",
-  "jsdelivr": "./dist/minimal-tailwind.js",
+  "unpkg": "./dist/owlky.js",
+  "jsdelivr": "./dist/owlky.js",
   "scripts": {
     "build": "rm -rf dist && tsc -p tsconfig.build.json && vite build && node scripts/copy-assets.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@minimal-tailwind/core": "workspace:*"
+    "@owlky/core": "workspace:*"
   },
   "devDependencies": {
-    "@minimal-tailwind/styles": "workspace:*",
+    "@owlky/styles": "workspace:*",
     "vite": "8.3.5"
   },
   "publishConfig": {
@@ -46,7 +46,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/OWNER/minimal-tailwind.git",
+    "url": "git+https://github.com/OWNER/owlky.git",
     "directory": "packages/html"
   },
   "keywords": [

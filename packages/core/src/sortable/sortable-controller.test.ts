@@ -16,24 +16,24 @@ afterEach(() => {
 
 // Layout only (no package CSS in core tests): fixed-size items, dragged item ignores the pointer.
 const STYLE = `<style>
-  [data-mt-sortable] { display: grid; grid-template-columns: repeat(var(--cols), 100px); gap: 10px; margin: 0; padding: 0; list-style: none; }
-  [data-mt-sortable-item] { height: 60px; position: relative; }
-  [data-mt-dragging] [data-mt-dragging] { pointer-events: none; }
+  [data-ok-sortable] { display: grid; grid-template-columns: repeat(var(--cols), 100px); gap: 10px; margin: 0; padding: 0; list-style: none; }
+  [data-ok-sortable-item] { height: 60px; position: relative; }
+  [data-ok-dragging] [data-ok-dragging] { pointer-events: none; }
 </style>`;
 
 function setup(layout = "grid", cols = 3, count = 6, options: SortableControllerOptions = {}) {
   const items = Array.from(
     { length: count },
     (_, i) =>
-      `<li data-mt-sortable-item data-id="${i + 1}"><span>${i + 1}</span>
-        <button type="button" data-mt-sortable-remove aria-label="Remove ${i + 1}">x</button>
-        <button type="button" data-mt-sortable-handle aria-pressed="false" aria-label="Reorder ${i + 1}">h</button>
+      `<li data-ok-sortable-item data-id="${i + 1}"><span>${i + 1}</span>
+        <button type="button" data-ok-sortable-remove aria-label="Remove ${i + 1}">x</button>
+        <button type="button" data-ok-sortable-handle aria-pressed="false" aria-label="Reorder ${i + 1}">h</button>
       </li>`,
   ).join("");
   mount(
-    `${STYLE}<button type="button" id="before">before</button><ul data-mt-sortable data-mt-layout="${layout}" style="--cols:${cols}">${items}</ul><button type="button" id="after">after</button>`,
+    `${STYLE}<button type="button" id="before">before</button><ul data-ok-sortable data-ok-layout="${layout}" style="--cols:${cols}">${items}</ul><button type="button" id="after">after</button>`,
   );
-  const list = document.querySelector("[data-mt-sortable]") as HTMLElement;
+  const list = document.querySelector("[data-ok-sortable]") as HTMLElement;
   // A synchronous DOM owner, like the HTML runtime.
   const onMove = vi.fn((from: number, to: number) => {
     const all = [...list.children];
@@ -46,8 +46,8 @@ function setup(layout = "grid", cols = 3, count = 6, options: SortableController
   const order = () =>
     [...list.children].map((item) => (item as HTMLElement).dataset["id"]).join(",");
   const handle = (id: number) =>
-    list.querySelector(`[data-id="${id}"] [data-mt-sortable-handle]`) as HTMLButtonElement;
-  const announced = () => document.querySelector("[data-mt-sortable-announcer]")?.textContent ?? "";
+    list.querySelector(`[data-id="${id}"] [data-ok-sortable-handle]`) as HTMLButtonElement;
+  const announced = () => document.querySelector("[data-ok-sortable-announcer]")?.textContent ?? "";
   return { list, controller, onMove, onRemove, order, handle, announced };
 }
 
@@ -189,7 +189,7 @@ describe("pointer dragging", () => {
     pointer(handle(1), "pointerdown", x, y);
     pointer(handle(1), "pointermove", x + 2, y);
     pointer(handle(1), "pointerup", x + 2, y);
-    expect(list.hasAttribute("data-mt-dragging")).toBe(false);
+    expect(list.hasAttribute("data-ok-dragging")).toBe(false);
     handle(1).click();
     expect(handle(1).getAttribute("aria-pressed")).toBe("true"); // the click grabbed it
     handle(1).click();
@@ -197,14 +197,14 @@ describe("pointer dragging", () => {
     const item1 = list.querySelector('[data-id="1"]') as HTMLElement;
     pointer(handle(1), "pointerdown", x, y);
     pointer(handle(1), "pointermove", x + 20, y);
-    expect(item1.hasAttribute("data-mt-dragging")).toBe(true);
+    expect(item1.hasAttribute("data-ok-dragging")).toBe(true);
     expect(announced()).toMatch(/Grabbed/);
     const [tx, ty] = center(list.querySelector('[data-id="3"]') as Element);
     pointer(handle(1), "pointermove", tx, ty);
     expect(order()).toBe("2,3,1,4,5,6");
     expect(item1.style.transform).toMatch(/translate/);
     pointer(handle(1), "pointerup", tx, ty);
-    expect(item1.hasAttribute("data-mt-dragging")).toBe(false);
+    expect(item1.hasAttribute("data-ok-dragging")).toBe(false);
     expect(item1.style.transform).toBe("");
     expect(announced()).toBe("Dropped at position 3 of 6.");
     handle(1).click(); // the click after a drag is swallowed
@@ -239,7 +239,7 @@ describe("pointer dragging", () => {
     pointer(handle(1), "pointermove", x + 50, y, { pointerId: 9 });
     pointer(handle(1), "pointerup", x + 50, y, { pointerId: 9 });
     pointer(handle(1), "pointercancel", x + 50, y, { pointerId: 9 });
-    expect(list.hasAttribute("data-mt-dragging")).toBe(false);
+    expect(list.hasAttribute("data-ok-dragging")).toBe(false);
     pointer(handle(1), "pointercancel", x, y);
     pointer(handle(1), "pointermove", x + 50, y);
     pointer(handle(1), "pointerup", x + 50, y);
@@ -264,25 +264,25 @@ describe("lifecycle and options", () => {
     controller.destroy();
     controller.destroy();
     expect(controller.grabbed).toBe(-1);
-    expect(list.hasAttribute("data-mt-dragging")).toBe(false);
+    expect(list.hasAttribute("data-ok-dragging")).toBe(false);
     handle(3).click();
     expect(handle(3).getAttribute("aria-pressed")).toBe("false");
   });
 
   it("works without callbacks and recreates the announcer if it was removed", async () => {
     mount(
-      `${STYLE}<ul data-mt-sortable style="--cols:2"><li data-mt-sortable-item><button type="button" data-mt-sortable-handle aria-label="h1">h</button></li><li data-mt-sortable-item><button type="button" data-mt-sortable-handle aria-label="h2">h</button></li></ul>`,
+      `${STYLE}<ul data-ok-sortable style="--cols:2"><li data-ok-sortable-item><button type="button" data-ok-sortable-handle aria-label="h1">h</button></li><li data-ok-sortable-item><button type="button" data-ok-sortable-handle aria-label="h2">h</button></li></ul>`,
     );
-    const list = document.querySelector("[data-mt-sortable]") as HTMLElement;
+    const list = document.querySelector("[data-ok-sortable]") as HTMLElement;
     const controller = createSortableController(list);
     controllers.push(controller);
-    document.querySelector("[data-mt-sortable-announcer]")?.remove();
+    document.querySelector("[data-ok-sortable-announcer]")?.remove();
     const first = list.querySelector("button") as HTMLButtonElement;
     first.focus();
     await userEvent.keyboard(" ");
-    expect(document.querySelector("[data-mt-sortable-announcer]")?.textContent).toMatch(/Grabbed/);
-    await userEvent.keyboard("{ArrowDown}"); // grid without data-mt-layout: rows by columns
-    expect(document.querySelector("[data-mt-sortable-announcer]")?.textContent).toMatch(/Moved/);
+    expect(document.querySelector("[data-ok-sortable-announcer]")?.textContent).toMatch(/Grabbed/);
+    await userEvent.keyboard("{ArrowDown}"); // grid without data-ok-layout: rows by columns
+    expect(document.querySelector("[data-ok-sortable-announcer]")?.textContent).toMatch(/Moved/);
     await userEvent.click(list.querySelectorAll("button")[1] as HTMLElement); // moves (no owner)
     expect(controller.grabbed).toBe(-1);
   });

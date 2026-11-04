@@ -3,7 +3,7 @@ import {
   type IconButtonEdge,
   type IconButtonSize,
   iconButtonAttributes,
-} from "@minimal-tailwind/core";
+} from "@owlky/core";
 import { type ButtonHTMLAttributes, forwardRef, type ReactNode } from "react";
 
 export interface IconButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "color"> {
@@ -50,8 +50,8 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(functio
       aria-busy={loading ? true : props["aria-busy"]}
     >
       {loading && (
-        <span data-mt-icon-button-loader="" aria-hidden="true">
-          {loadingIndicator ?? <span data-mt-button-spinner="" />}
+        <span data-ok-icon-button-loader="" aria-hidden="true">
+          {loadingIndicator ?? <span data-ok-button-spinner="" />}
         </span>
       )}
       {children}

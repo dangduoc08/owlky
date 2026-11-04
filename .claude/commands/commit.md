@@ -32,7 +32,7 @@ If $ARGUMENTS is provided, use it as the commit message directly.
    - Scope: the package or area — `tokens`, `styles`, `core`, `react`, `html`, `storybook`, `e2e`, `docs`, `ci`, `deps`, or a component name (`dialog`, `button`) when the change spans packages for one component.
    - Description: imperative mood, lowercase, no period, max 72 chars.
    - Add a body only if the *why* is not obvious (e.g. a fallback for a browser quirk, an ADR it implements).
-   - Breaking change to public API (exports, `data-mt-*` anatomy, `--mt-*` variables, `mt:*` events, runtime protocol): add `!` after the scope and a `BREAKING CHANGE:` body line.
+   - Breaking change to public API (exports, `data-ok-*` anatomy, `--ok-*` variables, `ok:*` events, runtime protocol): add `!` after the scope and a `BREAKING CHANGE:` body line.
 
 6. Show the proposed commit plan (groups + messages) and ask for confirmation before committing. If there are multiple commits, show them in order.
 

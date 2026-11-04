@@ -1,12 +1,12 @@
-# Minimal Tailwind
+# Owlky
 
 Accessible UI components inspired by the Minimal dashboard design language — shipped as **React
 components** and as **framework-free HTML** with identical markup, styles and behavior.
 
-- **Two implementations, one design system.** Same `data-mt-*` anatomy, same prebuilt CSS, same
+- **Two implementations, one design system.** Same `data-ok-*` anatomy, same prebuilt CSS, same
   behavior core. React ↔ HTML parity is tested down to the pixel.
 - **No Tailwind required to consume.** CSS is prebuilt; Tailwind v4 users get a matching theme.
-- **Themeable** through `--mt-*` CSS variables; light, dark, system and nested themes.
+- **Themeable** through `--ok-*` CSS variables; light, dark, system and nested themes.
 - **Accessible:** keyboard and focus management on every component; neutral text is AA-tested;
   brand colors follow the reference look (opt-in strict AA, see `packages/tokens/README.md`).
 - **Small:** the HTML runtime bundle is ~2 kB gzip; all CSS (tokens) ~4.6 kB gzip.
@@ -21,10 +21,10 @@ components** and as **framework-free HTML** with identical markup, styles and be
 ### Plain HTML (no build step)
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@minimal-tailwind/html@0/dist/minimal-tailwind.css">
-<script src="https://cdn.jsdelivr.net/npm/@minimal-tailwind/html@0/dist/minimal-tailwind.js" defer></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css">
+<script src="https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js" defer></script>
 
-<div style="background: var(--mt-palette-primary-main); color: var(--mt-palette-primary-contrast-text)">
+<div style="background: var(--ok-palette-primary-main); color: var(--ok-palette-primary-contrast-text)">
   Primary
 </div>
 ```
@@ -32,34 +32,34 @@ components** and as **framework-free HTML** with identical markup, styles and be
 ### React / npm
 
 ```sh
-pnpm add @minimal-tailwind/styles
+pnpm add @owlky/styles
 ```
 
 ```ts
-import "@minimal-tailwind/styles/minimal-tailwind.css";
+import "@owlky/styles/owlky.css";
 ```
 
 ### With Tailwind CSS v4
 
 ```css
 @import "tailwindcss";
-@import "@minimal-tailwind/styles/minimal-tailwind.css";
-@import "@minimal-tailwind/styles/theme.css"; /* bg-primary, text-text-secondary, shadow-z8, … */
+@import "@owlky/styles/owlky.css";
+@import "@owlky/styles/theme.css"; /* bg-primary, text-text-secondary, shadow-z8, … */
 ```
 
 ### Theming
 
 ```css
 :root {
-  --mt-palette-primary-main: #2065d1;
-  --mt-palette-primary-dark: #103996;
-  --mt-palette-primary-contrast-text: #fff;
+  --ok-palette-primary-main: #2065d1;
+  --ok-palette-primary-dark: #103996;
+  --ok-palette-primary-contrast-text: #fff;
 }
 ```
 
-Dark mode: `<html data-mt-theme="dark">` (or `class="dark"`, or `"system"`). Any element can set
-its own `data-mt-theme`. Generate a full theme in JS with `createTheme()` + `themeToCss()` from
-`@minimal-tailwind/tokens`. Load the fonts yourself — Public Sans (text) and Barlow 700/800 (h1–h3), e.g. from
+Dark mode: `<html data-ok-theme="dark">` (or `class="dark"`, or `"system"`). Any element can set
+its own `data-ok-theme`. Generate a full theme in JS with `createTheme()` + `themeToCss()` from
+`@owlky/tokens`. Load the fonts yourself — Public Sans (text) and Barlow 700/800 (h1–h3), e.g. from
 Fontsource or Google Fonts; the stacks fall back to system fonts.
 
 **Browser support:** Chrome/Edge 114+, Firefox 128+, Safari 17+ ([ADR-0006](docs/adr/0006-browser-baseline-and-fallbacks.md)).
@@ -68,11 +68,11 @@ Fontsource or Google Fonts; the stacks fall back to system fonts.
 
 | Package                                       |                                                          |
 | --------------------------------------------- | -------------------------------------------------------- |
-| [`@minimal-tailwind/react`](packages/react)   | React components                                         |
-| [`@minimal-tailwind/html`](packages/html)     | HTML Core Runtime, snippets, CDN bundle                  |
-| [`@minimal-tailwind/styles`](packages/styles) | Prebuilt CSS, Tailwind v4 theme                          |
-| [`@minimal-tailwind/tokens`](packages/tokens) | Design tokens, `createTheme()`                           |
-| [`@minimal-tailwind/core`](packages/core)     | Shared framework-free behavior (internal building block) |
+| [`@owlky/react`](packages/react)   | React components                                         |
+| [`@owlky/html`](packages/html)     | HTML Core Runtime, snippets, CDN bundle                  |
+| [`@owlky/styles`](packages/styles) | Prebuilt CSS, Tailwind v4 theme                          |
+| [`@owlky/tokens`](packages/tokens) | Design tokens, `createTheme()`                           |
+| [`@owlky/core`](packages/core)     | Shared framework-free behavior (internal building block) |
 
 ## Develop
 

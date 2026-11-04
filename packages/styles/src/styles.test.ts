@@ -1,6 +1,6 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { colorBindingVariables, defaultTheme, themeToCssVariables } from "@minimal-tailwind/tokens";
+import { colorBindingVariables, defaultTheme, themeToCssVariables } from "@owlky/tokens";
 import { describe, expect, it } from "vitest";
 
 const src = join(import.meta.dirname);
@@ -62,7 +62,7 @@ describe("styles source", () => {
   });
 
   it.each(["theme.css", ...components.map((f) => `components/${f}`)])(
-    "%s references only --mt-* tokens that exist",
+    "%s references only --ok-* tokens that exist",
     (file) => {
       const { root, light } = themeToCssVariables(defaultTheme);
       const known = new Set([
@@ -70,7 +70,7 @@ describe("styles source", () => {
         ...Object.keys(light),
         ...colorBindingVariables,
       ]);
-      const used = [...read(file).matchAll(/var\((--mt-[a-z0-9-]+)/g)].map((m) => m[1]);
+      const used = [...read(file).matchAll(/var\((--ok-[a-z0-9-]+)/g)].map((m) => m[1]);
       for (const name of used) expect(known.has(name as string), `${file}: ${name}`).toBe(true);
     },
   );

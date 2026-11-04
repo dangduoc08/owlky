@@ -1,5 +1,5 @@
 {
-  "name": "@minimal-tailwind/storybook",
+  "name": "@owlky/storybook",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -10,11 +10,11 @@
     "icons": "node scripts/icons.mjs"
   },
   "dependencies": {
-    "@minimal-tailwind/core": "workspace:*",
-    "@minimal-tailwind/html": "workspace:*",
-    "@minimal-tailwind/react": "workspace:*",
-    "@minimal-tailwind/styles": "workspace:*",
-    "@minimal-tailwind/tokens": "workspace:*",
+    "@owlky/core": "workspace:*",
+    "@owlky/html": "workspace:*",
+    "@owlky/react": "workspace:*",
+    "@owlky/styles": "workspace:*",
+    "@owlky/tokens": "workspace:*",
     "react": "19.3.1",
     "react-dom": "19.3.1"
   },

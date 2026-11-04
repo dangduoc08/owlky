@@ -1,8 +1,8 @@
 /*
- * Full bundle entry: tokens + every component. Compiled to dist/minimal-tailwind.css.
+ * Full bundle entry: tokens + every component. Compiled to dist/owlky.css.
  * Every file in ./components must be imported here (enforced by styles.test.ts).
  */
-@import "@minimal-tailwind/tokens/tokens.css";
+@import "@owlky/tokens/tokens.css";
 @import "./components/button.css";
 @import "./components/button-group.css";
 @import "./components/icon-button.css";

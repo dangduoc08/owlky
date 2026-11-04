@@ -7,9 +7,9 @@ import { expect } from "vitest";
  * are still checked.
  */
 export const CONTRAST_EXEMPT = [
-  '[data-mt-button][data-mt-color]:not([data-mt-color="inherit"]):not([data-mt-variant="soft"])',
-  '[data-mt-fab]:not([data-mt-variant="soft"])',
-  '[data-mt-toggle-button][aria-pressed="true"]:not([data-mt-color="standard"])',
+  '[data-ok-button][data-ok-color]:not([data-ok-color="inherit"]):not([data-ok-variant="soft"])',
+  '[data-ok-fab]:not([data-ok-variant="soft"])',
+  '[data-ok-toggle-button][aria-pressed="true"]:not([data-ok-color="standard"])',
   "[data-swatch]",
 ];
 

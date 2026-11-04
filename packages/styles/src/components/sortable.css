@@ -1,12 +1,12 @@
 /*
  * Sortable — spec: specs/components/sortable.md
  *
- * Anatomy:  ul[data-mt-sortable] › li[data-mt-sortable-item] › … + div[data-mt-sortable-actions]
- *             › button[data-mt-sortable-remove]? + button[data-mt-sortable-handle]
+ * Anatomy:  ul[data-ok-sortable] › li[data-ok-sortable-item] › … + div[data-ok-sortable-actions]
+ *             › button[data-ok-sortable-remove]? + button[data-ok-sortable-handle]
  *           (handles and remove buttons are Icon buttons: icon-button.css)
- *           div[data-mt-sortable-announcer]   live region, created by the controller
- * Modifiers: data-mt-layout = grid (default) | vertical | horizontal
- * States:    [data-mt-dragging] on the list and the dragged item, [data-mt-grabbed] on an item
+ *           div[data-ok-sortable-announcer]   live region, created by the controller
+ * Modifiers: data-ok-layout = grid (default) | vertical | horizontal
+ * States:    [data-ok-dragging] on the list and the dragged item, [data-ok-grabbed] on an item
  *
  * Single :where() selectors in @layer components (zero specificity). Translucent colors use
  * channels, never color-mix() (AGENTS.md).
@@ -14,12 +14,12 @@
 @reference "../theme.css";
 
 @layer components {
-  :where([data-mt-sortable]) {
-    --_mt-frame: 1px dashed rgb(var(--mt-palette-grey-500-channel) / 0.16);
+  :where([data-ok-sortable]) {
+    --_ok-frame: 1px dashed rgb(var(--ok-palette-grey-500-channel) / 0.16);
 
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, calc(var(--mt-spacing) * 40)), 1fr));
-    gap: calc(var(--mt-spacing) * 5);
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, calc(var(--ok-spacing) * 40)), 1fr));
+    gap: calc(var(--ok-spacing) * 5);
     box-sizing: border-box;
     width: 100%;
     min-width: 0;
@@ -29,104 +29,104 @@
     list-style: none;
   }
 
-  :where([data-mt-sortable][data-mt-layout="vertical"]) {
+  :where([data-ok-sortable][data-ok-layout="vertical"]) {
     display: flex;
     flex-direction: column;
-    width: min(100%, calc(var(--mt-spacing) * 120));
-    max-height: calc(var(--mt-spacing) * 140);
-    padding: calc(var(--mt-spacing) * 5);
-    border: var(--_mt-frame);
-    border-radius: var(--mt-radius-lg);
+    width: min(100%, calc(var(--ok-spacing) * 120));
+    max-height: calc(var(--ok-spacing) * 140);
+    padding: calc(var(--ok-spacing) * 5);
+    border: var(--_ok-frame);
+    border-radius: var(--ok-radius-lg);
     overflow: auto;
   }
 
-  :where([data-mt-sortable][data-mt-layout="horizontal"]) {
+  :where([data-ok-sortable][data-ok-layout="horizontal"]) {
     display: flex;
     flex-direction: row;
-    padding: calc(var(--mt-spacing) * 5);
-    border: var(--_mt-frame);
-    border-radius: var(--mt-radius-lg);
+    padding: calc(var(--ok-spacing) * 5);
+    border: var(--_ok-frame);
+    border-radius: var(--ok-radius-lg);
     overflow: auto;
   }
 
-  :where([data-mt-sortable-item]) {
+  :where([data-ok-sortable-item]) {
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
     box-sizing: border-box;
     min-width: 0;
-    padding: calc(var(--mt-spacing) * 10);
-    border: 1px solid rgb(var(--mt-palette-grey-500-channel) / 0.16);
-    border-radius: var(--mt-radius-lg);
-    background-color: rgb(var(--mt-palette-grey-500-channel) / 0.04);
-    transition: box-shadow var(--mt-duration-short) var(--mt-easing-standard);
+    padding: calc(var(--ok-spacing) * 10);
+    border: 1px solid rgb(var(--ok-palette-grey-500-channel) / 0.16);
+    border-radius: var(--ok-radius-lg);
+    background-color: rgb(var(--ok-palette-grey-500-channel) / 0.04);
+    transition: box-shadow var(--ok-duration-short) var(--ok-easing-standard);
   }
 
-  :where([data-mt-sortable][data-mt-layout="vertical"] > [data-mt-sortable-item]) {
+  :where([data-ok-sortable][data-ok-layout="vertical"] > [data-ok-sortable-item]) {
     flex-shrink: 0;
-    padding: calc(var(--mt-spacing) * 6) calc(var(--mt-spacing) * 10);
+    padding: calc(var(--ok-spacing) * 6) calc(var(--ok-spacing) * 10);
   }
 
-  :where([data-mt-sortable][data-mt-layout="horizontal"] > [data-mt-sortable-item]) {
-    flex: 0 0 calc(var(--mt-spacing) * 36);
-    padding: calc(var(--mt-spacing) * 10) calc(var(--mt-spacing) * 4);
+  :where([data-ok-sortable][data-ok-layout="horizontal"] > [data-ok-sortable-item]) {
+    flex: 0 0 calc(var(--ok-spacing) * 36);
+    padding: calc(var(--ok-spacing) * 10) calc(var(--ok-spacing) * 4);
   }
 
-  :where([data-mt-sortable-actions]) {
+  :where([data-ok-sortable-actions]) {
     position: absolute;
-    top: calc(var(--mt-spacing) * 2);
-    right: calc(var(--mt-spacing) * 2);
+    top: calc(var(--ok-spacing) * 2);
+    right: calc(var(--ok-spacing) * 2);
     display: flex;
     align-items: center;
   }
 
-  :where([data-mt-sortable-handle]) {
+  :where([data-ok-sortable-handle]) {
     cursor: grab;
     touch-action: none;
   }
 
   /* Remove buttons appear on item hover or keyboard focus; always on touch screens. */
-  :where([data-mt-sortable-remove]) {
+  :where([data-ok-sortable-remove]) {
     opacity: 0;
-    transition: opacity var(--mt-duration-shorter) var(--mt-easing-standard);
+    transition: opacity var(--ok-duration-shorter) var(--ok-easing-standard);
   }
 
   :where(
-    [data-mt-sortable-item]:hover [data-mt-sortable-remove],
-    [data-mt-sortable-item]:focus-within [data-mt-sortable-remove]
+    [data-ok-sortable-item]:hover [data-ok-sortable-remove],
+    [data-ok-sortable-item]:focus-within [data-ok-sortable-remove]
   ) {
     opacity: 1;
   }
 
   @media (hover: none) {
-    :where([data-mt-sortable-remove]) {
+    :where([data-ok-sortable-remove]) {
       opacity: 1;
     }
   }
 
   /* Grabbed with the keyboard or a tap. */
-  :where([data-mt-sortable-item][data-mt-grabbed]) {
-    outline: 2px solid var(--mt-text-secondary);
+  :where([data-ok-sortable-item][data-ok-grabbed]) {
+    outline: 2px solid var(--ok-text-secondary);
     outline-offset: 2px;
-    box-shadow: var(--mt-shadow-z8);
+    box-shadow: var(--ok-shadow-z8);
   }
 
   /* Dragged: follows the pointer above the others; the pointer sees the items underneath. */
-  :where([data-mt-sortable-item][data-mt-dragging]) {
+  :where([data-ok-sortable-item][data-ok-dragging]) {
     z-index: 1;
-    box-shadow: var(--mt-shadow-z16);
-    background-color: var(--mt-bg-paper);
+    box-shadow: var(--ok-shadow-z16);
+    background-color: var(--ok-bg-paper);
     pointer-events: none;
     transition: none;
   }
 
-  :where([data-mt-sortable][data-mt-dragging]) {
+  :where([data-ok-sortable][data-ok-dragging]) {
     cursor: grabbing;
     user-select: none;
   }
 
-  :where([data-mt-sortable-announcer]) {
+  :where([data-ok-sortable-announcer]) {
     position: absolute;
     width: 1px;
     height: 1px;
@@ -139,7 +139,7 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    :where([data-mt-sortable-item], [data-mt-sortable-remove]) {
+    :where([data-ok-sortable-item], [data-ok-sortable-remove]) {
       transition: none;
     }
   }

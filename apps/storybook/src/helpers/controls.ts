@@ -1,4 +1,4 @@
-import type { OptionSchema, OptionSpec } from "@minimal-tailwind/core";
+import type { OptionSchema, OptionSpec } from "@owlky/core";
 import type { ArgTypes } from "@storybook/react-vite";
 
 /*

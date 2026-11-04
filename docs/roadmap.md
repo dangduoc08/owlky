@@ -23,7 +23,7 @@ section, autodocs page, Controls), generated from the tokens:
 |---|---|---|
 | Colors | One story per palette: Hex / Rgb / Var, click to copy | `getContrastText`, `contrastRatio`, `hexToRgb` |
 | Typography | One story per variant with its definition, text colors | Responsive sizes (600/900/1200px), display font Barlow for h1–h3, h5/h6 values, breakpoints |
-| Shadows | System elevations 1–24, extended shadows, colored shadows | `--mt-elevation-1…24` |
+| Shadows | System elevations 1–24, extended shadows, colored shadows | `--ok-elevation-1…24` |
 | Grid | Spacing (0–40px) and column (1–12) stories driven by Controls | — |
 | Icons | Icon sets, sizes, colors, usage | — (no icon set bundled; reference logo/illustrations not reproduced) |
 
@@ -39,14 +39,14 @@ runtime `toggle-button` / `toggle-group`, React state). No new tokens.
 ## ✅ Components — Drawer (2026-11-04)
 Created with `/component` from the reference "Drawer" page (story: Anchor — left / right / top /
 bottom). Native `<dialog>` + core `createModalController()` (restored from the removed Dialog,
-shared by future modals). Token added: `--mt-shadow-dialog-start`. Demo menu content is styled in
+shared by future modals). Token added: `--ok-shadow-dialog-start`. Demo menu content is styled in
 the Storybook preview until a List component exists.
 
 ## ✅ Components — Sortable (2026-11-04)
 Created with `/component` from the reference "Dnd" page (stories: Grid, Vertical, Horizontal).
 Core `createSortableController()`: Pointer Events dragging (mouse, touch, pen), keyboard and
 two-tap moves (WCAG 2.1.1 / 2.5.7), live announcements; remove buttons built in, "Add item" is app
-logic (HTML: `<template data-mt-sortable-template>`). No new tokens.
+logic (HTML: `<template data-ok-sortable-template>`). No new tokens.
 
 ## Pending integrations
 Places that use a native feature, demo markup or a small built-in part until the component exists
@@ -55,12 +55,12 @@ Places that use a native feature, demo markup or a small built-in part until the
 
 | Waiting for | Where | Today |
 |---|---|---|
-| Scrollbar | `sortable.css` (vertical, horizontal), `drawer.css` (`[data-mt-drawer-content]`) | native scrolling (`overflow: auto`), OS scrollbar |
+| Scrollbar | `sortable.css` (vertical, horizontal), `drawer.css` (`[data-ok-drawer-content]`) | native scrolling (`overflow: auto`), OS scrollbar |
 | List | Drawer stories (mailbox menu) | demo `<nav><ul><button>` styled in `.storybook/preview.css` |
 | Typography (display text) | Sortable stories (card numbers) | demo `<span>` styled in `.storybook/preview.css` |
-| Progress | Button loading: `[data-mt-button-spinner]` in `button.css` (library) | own spinner; keep the attribute as public anatomy and share Progress's styles / tokens |
+| Progress | Button loading: `[data-ok-button-spinner]` in `button.css` (library) | own spinner; keep the attribute as public anatomy and share Progress's styles / tokens |
 | Divider | Drawer stories (mailbox menu) | demo `<hr>` styled in `.storybook/preview.css` |
-| Backdrop | Drawer: native `::backdrop` | share `--mt-backdrop` with a future Backdrop component |
+| Backdrop | Drawer: native `::backdrop` | share `--ok-backdrop` with a future Backdrop component |
 
 ## ✅ Upstream API review (ADR-0015, 2026-11-04)
 Components checked against their upstream API (MUI). Rule from the owner: what the Minimals page
@@ -81,5 +81,5 @@ Order to be confirmed. Candidate sequence, each in React + HTML with parity test
 3. Overlays & navigation: Tooltip, Dropdown, Tabs, Select (popover controller + fallback)
 4. Feedback & 1.0: Toast, accessibility audit, docs polish
 
-**Before publishing 0.1.0 (needs the owner):** npm org `@minimal-tailwind`, GitHub repo (replace
+**Before publishing 0.1.0 (needs the owner):** npm org `@owlky`, GitHub repo (replace
 `OWNER`), npm trusted publishing, visual baselines in Docker (`pnpm test:visual:update`).

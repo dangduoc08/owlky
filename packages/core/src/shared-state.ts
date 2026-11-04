@@ -10,7 +10,7 @@
  * instead of corrupting each other.
  */
 export function sharedState<T extends object>(key: string, protocol: number, create: () => T): T {
-  const symbol = Symbol.for(`minimal-tailwind.${key}@${protocol}`);
+  const symbol = Symbol.for(`owlky.${key}@${protocol}`);
   const store = globalThis as unknown as Record<symbol, T | undefined>;
   let state = store[symbol];
   if (state === undefined) {

@@ -30,7 +30,7 @@ afterEach(() => {
 });
 
 const order = (id = "sortable-grid") =>
-  [...$(`#${id}`).querySelectorAll(":scope > [data-mt-sortable-item] > span")]
+  [...$(`#${id}`).querySelectorAll(":scope > [data-ok-sortable-item] > span")]
     .map((span) => span.textContent)
     .join(",");
 const instance = (id = "sortable-grid") =>
@@ -47,11 +47,11 @@ describe("sortable snippets", () => {
       const host = mount(html);
       expectNamedButtons(host);
       expectCspSafe(host, html);
-      const list = host.querySelector("[data-mt-sortable]") as HTMLElement;
-      expect(list.dataset["mtLayout"]).toBe(layout);
+      const list = host.querySelector("[data-ok-sortable]") as HTMLElement;
+      expect(list.dataset["okLayout"]).toBe(layout);
       expect(list.getAttribute("aria-label")).toBeTruthy();
-      expect(list.querySelectorAll(":scope > [data-mt-sortable-item]")).toHaveLength(12);
-      expect(list.querySelector(":scope > template[data-mt-sortable-template]")).not.toBeNull();
+      expect(list.querySelectorAll(":scope > [data-ok-sortable-item]")).toHaveLength(12);
+      expect(list.querySelector(":scope > template[data-ok-sortable-template]")).not.toBeNull();
       await expectNoAxeViolations(host);
     },
   );
@@ -62,7 +62,7 @@ describe("sortable runtime", () => {
     mount(grid);
     await settle();
     const moves: unknown[] = [];
-    $("#sortable-grid").addEventListener("mt:sortable:move", (event) => {
+    $("#sortable-grid").addEventListener("ok:sortable:move", (event) => {
       const { from, to, item } = (event as CustomEvent).detail;
       moves.push([from, to, item.textContent.trim().split(/\s/)[0]]);
     });
@@ -74,7 +74,7 @@ describe("sortable runtime", () => {
     expect(instance().move(2, 0)).toBe(true); // backwards through the API
     expect(order().startsWith("3,2,1")).toBe(true);
     moves.length = 0;
-    $("#sortable-grid").addEventListener("mt:sortable:move", (event) => event.preventDefault());
+    $("#sortable-grid").addEventListener("ok:sortable:move", (event) => event.preventDefault());
     await userEvent.keyboard("{ArrowRight}");
     expect(order().startsWith("3,2,1")).toBe(true);
   });
@@ -83,24 +83,24 @@ describe("sortable runtime", () => {
     mount(grid);
     await settle();
     const added = vi.fn();
-    $("#sortable-grid").addEventListener("mt:sortable:add", added);
+    $("#sortable-grid").addEventListener("ok:sortable:add", added);
     await userEvent.click($('[aria-label="Remove item 2"]'));
     expect(order()).toBe("1,3,4,5,6,7,8,9,10,11,12");
-    $("#sortable-grid").addEventListener("mt:sortable:remove", (event) => event.preventDefault(), {
+    $("#sortable-grid").addEventListener("ok:sortable:remove", (event) => event.preventDefault(), {
       once: true,
     });
     expect(instance().remove(0)).toBe(false);
-    await userEvent.click($("[data-mt-sortable-add]"));
+    await userEvent.click($("[data-ok-sortable-add]"));
     expect(added).toHaveBeenCalledOnce();
     const { item, index } = (added.mock.lastCall as [CustomEvent])[0].detail;
     expect(index).toBe(11);
-    expect(item.matches("[data-mt-sortable-item]")).toBe(true);
+    expect(item.matches("[data-ok-sortable-item]")).toBe(true);
     expect($("#sortable-grid").lastElementChild?.localName).toBe("template");
   });
 
   it("instance API validates indexes; add without a template returns null", async () => {
     mount(
-      '<ul id="bare" data-mt-sortable aria-label="Bare"><li data-mt-sortable-item><span>1</span></li></ul><button type="button" data-mt-sortable-add="bare">Add</button><button type="button" data-mt-sortable-add="missing">Add</button>',
+      '<ul id="bare" data-ok-sortable aria-label="Bare"><li data-ok-sortable-item><span>1</span></li></ul><button type="button" data-ok-sortable-add="bare">Add</button><button type="button" data-ok-sortable-add="missing">Add</button>',
     );
     await settle();
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
@@ -111,15 +111,15 @@ describe("sortable runtime", () => {
     expect(bare.remove(3)).toBe(false);
     expect(bare.add()).toBeNull();
     const empty = document.createElement("template");
-    empty.setAttribute("data-mt-sortable-template", "");
+    empty.setAttribute("data-ok-sortable-template", "");
     $("#bare").append(empty);
     expect(bare.add()).toBeNull();
-    (document.querySelectorAll("[data-mt-sortable-add]")[1] as HTMLElement).click();
+    (document.querySelectorAll("[data-ok-sortable-add]")[1] as HTMLElement).click();
     expect(warn).toHaveBeenCalledOnce();
   });
 
   it("is destroyed with the runtime and ignores React-owned lists", async () => {
-    mount(`<div data-mt-runtime="off">${vertical}</div>`);
+    mount(`<div data-ok-runtime="off">${vertical}</div>`);
     await settle();
     expect(runtime.get($("#sortable-vertical"), "sortable")).toBeUndefined();
     runtime.stop();

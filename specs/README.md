@@ -11,7 +11,7 @@ Template (copy for a new component):
 
 ## Purpose
 
-## Anatomy            element tree with data-mt-* attributes (identical in React and HTML)
+## Anatomy            element tree with data-ok-* attributes (identical in React and HTML)
 
 ## Options            attribute ↔ React prop ↔ default
 

@@ -1,4 +1,4 @@
-import { isScrollLocked } from "@minimal-tailwind/core";
+import { isScrollLocked } from "@owlky/core";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { userEvent } from "vitest/browser";
 import { createRuntime } from "../../runtime/runtime.js";
@@ -31,7 +31,7 @@ afterEach(() => {
 function record(element: Element) {
   const events: string[] = [];
   for (const type of ["beforeopen", "open", "beforeclose", "close"]) {
-    element.addEventListener(`mt:drawer:${type}`, (event) => {
+    element.addEventListener(`ok:drawer:${type}`, (event) => {
       const reason = (event as CustomEvent<{ reason?: string }>).detail?.reason;
       events.push(reason ? `${type}:${reason}` : type);
     });
@@ -40,22 +40,22 @@ function record(element: Element) {
 }
 
 const SIMPLE = (attrs = "") => `
-  <button type="button" id="trigger" data-mt-drawer-open="d" aria-haspopup="dialog">Open</button>
-  <dialog id="d" data-mt-drawer data-mt-anchor="left" aria-label="Menu" ${attrs}>
-    <div data-mt-drawer-content>
+  <button type="button" id="trigger" data-ok-drawer-open="d" aria-haspopup="dialog">Open</button>
+  <dialog id="d" data-ok-drawer data-ok-anchor="left" aria-label="Menu" ${attrs}>
+    <div data-ok-drawer-content>
       <button type="button" id="inside">Inside</button>
-      <button type="button" id="close" data-mt-drawer-close>Close</button>
+      <button type="button" id="close" data-ok-drawer-close>Close</button>
     </div>
   </dialog>
-  <button type="button" id="outside-close" data-mt-drawer-close="d">Close from outside</button>`;
+  <button type="button" id="outside-close" data-ok-drawer-close="d">Close from outside</button>`;
 
 describe("drawer snippet", () => {
   it("has a named trigger and a named drawer per anchor, CSP-safe", () => {
     const host = mount(anchors);
     expectNamedButtons(host);
     expectCspSafe(host, anchors);
-    const drawers = host.querySelectorAll<HTMLElement>("[data-mt-drawer]");
-    expect([...drawers].map((d) => d.dataset["mtAnchor"])).toEqual([
+    const drawers = host.querySelectorAll<HTMLElement>("[data-ok-drawer]");
+    expect([...drawers].map((d) => d.dataset["okAnchor"])).toEqual([
       "left",
       "right",
       "top",
@@ -64,7 +64,7 @@ describe("drawer snippet", () => {
     for (const d of drawers) {
       expect(d.getAttribute("aria-label")).toBeTruthy();
       expect(
-        host.querySelector(`[data-mt-drawer-open="${d.id}"]`)?.getAttribute("aria-haspopup"),
+        host.querySelector(`[data-ok-drawer-open="${d.id}"]`)?.getAttribute("aria-haspopup"),
       ).toBe("dialog");
     }
   });
@@ -74,8 +74,8 @@ describe("drawer snippet", () => {
     async (anchor) => {
       mount(anchors);
       await settle();
-      await userEvent.click($(`[data-mt-drawer-open="drawer-${anchor}"]`));
-      const content = $(`#drawer-${anchor} [data-mt-drawer-content]`);
+      await userEvent.click($(`[data-ok-drawer-open="drawer-${anchor}"]`));
+      const content = $(`#drawer-${anchor} [data-ok-drawer-content]`);
       await vi.waitFor(() => expect(getComputedStyle(content).transform).toBe("none"));
       const box = content.getBoundingClientRect();
       const { innerWidth: w, innerHeight: h } = window;
@@ -138,8 +138,8 @@ describe("drawer runtime", () => {
     expect(instance.isOpen).toBe(false);
   });
 
-  it("honors data-mt-disable-escape-key-down; data-mt-hide-backdrop keeps it modal", async () => {
-    mount(SIMPLE("data-mt-disable-escape-key-down data-mt-hide-backdrop"));
+  it("honors data-ok-disable-escape-key-down; data-ok-hide-backdrop keeps it modal", async () => {
+    mount(SIMPLE("data-ok-disable-escape-key-down data-ok-hide-backdrop"));
     await settle();
     await userEvent.click($("#trigger"));
     await userEvent.keyboard("{Escape}");
@@ -150,8 +150,8 @@ describe("drawer runtime", () => {
   });
 
   it("persistent drawers toggle from their trigger and keep aria-expanded in sync", async () => {
-    mount(`<button type="button" id="t" data-mt-drawer-open="p">Menu</button>
-      <aside id="p" data-mt-drawer data-mt-variant="persistent" aria-label="Nav" hidden><div data-mt-drawer-content><button type="button" data-mt-drawer-close>Close</button></div></aside>`);
+    mount(`<button type="button" id="t" data-ok-drawer-open="p">Menu</button>
+      <aside id="p" data-ok-drawer data-ok-variant="persistent" aria-label="Nav" hidden><div data-ok-drawer-content><button type="button" data-ok-drawer-close>Close</button></div></aside>`);
     await settle();
     const aside = $("#p");
     const events = record(aside);
@@ -165,7 +165,7 @@ describe("drawer runtime", () => {
     expect(aside.hidden).toBe(true);
     const instance = runtime.get<DrawerInstance>(aside, "drawer") as DrawerInstance;
     instance.open();
-    await userEvent.click(aside.querySelector("[data-mt-drawer-close]") as HTMLElement);
+    await userEvent.click(aside.querySelector("[data-ok-drawer-close]") as HTMLElement);
     expect(aside.hidden).toBe(true);
     expect(events).toEqual([
       "beforeopen",
@@ -180,8 +180,8 @@ describe("drawer runtime", () => {
   });
 
   it("permanent drawers are always shown and can't be closed; ids are optional", async () => {
-    mount(`<aside id="perm" data-mt-drawer data-mt-variant="permanent" aria-label="Side" hidden><div data-mt-drawer-content>x</div></aside>
-      <aside data-mt-drawer data-mt-variant="persistent" aria-label="No id" data-mt-open hidden><div data-mt-drawer-content>y</div></aside>`);
+    mount(`<aside id="perm" data-ok-drawer data-ok-variant="permanent" aria-label="Side" hidden><div data-ok-drawer-content>x</div></aside>
+      <aside data-ok-drawer data-ok-variant="persistent" aria-label="No id" data-ok-open hidden><div data-ok-drawer-content>y</div></aside>`);
     await settle();
     const perm = $("#perm");
     expect(perm.hidden).toBe(false);
@@ -196,21 +196,21 @@ describe("drawer runtime", () => {
     const element = $("#d");
     const instance = runtime.get<DrawerInstance>(element, "drawer") as DrawerInstance;
     const block = (event: Event) => event.preventDefault();
-    element.addEventListener("mt:drawer:beforeopen", block);
+    element.addEventListener("ok:drawer:beforeopen", block);
     expect(instance.open()).toBe(false);
-    element.removeEventListener("mt:drawer:beforeopen", block);
+    element.removeEventListener("ok:drawer:beforeopen", block);
     expect(instance.toggle()).toBe(true);
     expect(instance.open()).toBe(true);
-    element.addEventListener("mt:drawer:beforeclose", block);
+    element.addEventListener("ok:drawer:beforeclose", block);
     expect(instance.close()).toBe(false);
-    element.removeEventListener("mt:drawer:beforeclose", block);
+    element.removeEventListener("ok:drawer:beforeclose", block);
     expect(instance.toggle()).toBe(true);
     expect(instance.isOpen).toBe(false);
     expect(instance.close()).toBe(true);
   });
 
-  it("opens on load with data-mt-open and cleans up when removed while open", async () => {
-    mount(SIMPLE("data-mt-open"));
+  it("opens on load with data-ok-open and cleans up when removed while open", async () => {
+    mount(SIMPLE("data-ok-open"));
     await settle();
     expect($<HTMLDialogElement>("#d").open).toBe(true);
     expect(isScrollLocked()).toBe(true);
@@ -222,8 +222,8 @@ describe("drawer runtime", () => {
   it("warns about triggers without a drawer and ignores React-owned drawers", async () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     mount(
-      `<button type="button" id="orphan" data-mt-drawer-open="missing">x</button>
-       <div data-mt-runtime="off">${SIMPLE().replaceAll('id="', 'id="r-').replace('data-mt-drawer-open="d"', 'data-mt-drawer-open="r-d"')}</div>`,
+      `<button type="button" id="orphan" data-ok-drawer-open="missing">x</button>
+       <div data-ok-runtime="off">${SIMPLE().replaceAll('id="', 'id="r-').replace('data-ok-drawer-open="d"', 'data-ok-drawer-open="r-d"')}</div>`,
     );
     await settle();
     $("#orphan").click();
@@ -234,7 +234,7 @@ describe("drawer runtime", () => {
 
   it("close triggers for unknown drawers do nothing; drawers work inside a shadow root", async () => {
     const host = mount(
-      `<button type="button" id="stray" data-mt-drawer-close="nope">x</button><div id="shadow-host"></div>`,
+      `<button type="button" id="stray" data-ok-drawer-close="nope">x</button><div id="shadow-host"></div>`,
     );
     $("#stray").click();
     const shadow = (host.querySelector("#shadow-host") as HTMLElement).attachShadow({

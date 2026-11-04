@@ -17,13 +17,13 @@ async function measure(page: Page) {
     const problems: string[] = [];
     const doc = document.documentElement;
     if (doc.scrollWidth > window.innerWidth) problems.push(`page overflows: ${doc.scrollWidth}px`);
-    const buttons = [...document.querySelectorAll<HTMLElement>("[data-mt-button]")];
+    const buttons = [...document.querySelectorAll<HTMLElement>("[data-ok-button]")];
     const boxes = buttons.map((button) => button.getBoundingClientRect());
     const measures = buttons.map((button, i) => {
       const box = boxes[i] as DOMRect;
-      const label = button.querySelector<HTMLElement>("[data-mt-button-label]");
+      const label = button.querySelector<HTMLElement>("[data-ok-button-label]");
       const name = label?.textContent?.trim() ?? "";
-      const size = button.dataset["mtSize"] ?? "md";
+      const size = button.dataset["okSize"] ?? "md";
       if (button.scrollWidth > button.clientWidth + 1)
         problems.push(`${name}: clipped horizontally`);
       if (Math.abs(box.height - (heights[size] ?? 0)) > 0.5) {

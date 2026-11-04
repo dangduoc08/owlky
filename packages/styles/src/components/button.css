@@ -1,15 +1,15 @@
 /*
  * Button — spec: specs/components/button.md
  *
- * Anatomy:  (button|a)[data-mt-button]
- *             › [data-mt-button-icon="start"]?  › [data-mt-button-loader]?  › [data-mt-button-label]
- *             › [data-mt-button-icon="end"]?
- * Modifiers: data-mt-variant = text (default) | contained | outlined | soft
- *            data-mt-color   = inherit (default) | primary | secondary | info | success | warning
+ * Anatomy:  (button|a)[data-ok-button]
+ *             › [data-ok-button-icon="start"]?  › [data-ok-button-loader]?  › [data-ok-button-label]
+ *             › [data-ok-button-icon="end"]?
+ * Modifiers: data-ok-variant = text (default) | contained | outlined | soft
+ *            data-ok-color   = inherit (default) | primary | secondary | info | success | warning
  *                              | error | black | white
- *            data-mt-size    = md (default) | sm | lg | xl
- *            data-mt-full-width, data-mt-disable-elevation,
- *            data-mt-loading + data-mt-loading-position = center | start | end
+ *            data-ok-size    = md (default) | sm | lg | xl
+ *            data-ok-full-width, data-ok-disable-elevation,
+ *            data-ok-loading + data-ok-loading-position = center | start | end
  * States:    :hover (hover-capable devices), :focus-visible, :disabled, [aria-disabled="true"]
  *
  * Every selector is a single :where() (zero specificity) inside @layer components, so rules apply
@@ -20,38 +20,38 @@
 @reference "../theme.css";
 
 @layer components {
-  :where([data-mt-button]) {
-    --_mt-main: var(--mt-c-main, var(--mt-inherit-main));
-    --_mt-hover: var(--mt-c-hover, var(--mt-inherit-hover));
-    --_mt-contrast: var(--mt-c-contrast, var(--mt-inherit-contrast));
-    --_mt-text: var(--mt-c-text, var(--mt-text-primary));
-    --_mt-shadow: var(--mt-c-shadow, var(--mt-shadow-z8));
-    --_mt-channel: var(--mt-c-channel, var(--mt-palette-grey-500-channel));
-    --_mt-outline-alpha: 0.32;
-    --_mt-height: calc(var(--mt-spacing) * 9);
-    --_mt-padding-x: calc(var(--mt-spacing) * 3);
-    --_mt-font-size: var(--mt-font-size-md);
-    --_mt-icon-size: calc(var(--mt-spacing) * 5);
+  :where([data-ok-button]) {
+    --_ok-main: var(--ok-c-main, var(--ok-inherit-main));
+    --_ok-hover: var(--ok-c-hover, var(--ok-inherit-hover));
+    --_ok-contrast: var(--ok-c-contrast, var(--ok-inherit-contrast));
+    --_ok-text: var(--ok-c-text, var(--ok-text-primary));
+    --_ok-shadow: var(--ok-c-shadow, var(--ok-shadow-z8));
+    --_ok-channel: var(--ok-c-channel, var(--ok-palette-grey-500-channel));
+    --_ok-outline-alpha: 0.32;
+    --_ok-height: calc(var(--ok-spacing) * 9);
+    --_ok-padding-x: calc(var(--ok-spacing) * 3);
+    --_ok-font-size: var(--ok-font-size-md);
+    --_ok-icon-size: calc(var(--ok-spacing) * 5);
 
     position: relative;
     display: inline-flex;
     flex-shrink: 0;
     align-items: center;
     justify-content: center;
-    gap: calc(var(--mt-spacing) * 2);
+    gap: calc(var(--ok-spacing) * 2);
     box-sizing: border-box;
-    min-width: calc(var(--mt-spacing) * 16);
-    min-height: var(--_mt-height);
+    min-width: calc(var(--ok-spacing) * 16);
+    min-height: var(--_ok-height);
     margin: 0;
-    padding: 0 var(--_mt-padding-x);
+    padding: 0 var(--_ok-padding-x);
     border: 1px solid transparent;
-    border-radius: var(--mt-radius-md);
+    border-radius: var(--ok-radius-md);
     background-color: transparent;
-    color: var(--_mt-main);
-    font-family: var(--mt-font-family);
-    font-size: var(--_mt-font-size);
-    font-weight: var(--mt-typography-button-font-weight);
-    line-height: var(--mt-typography-button-line-height);
+    color: var(--_ok-main);
+    font-family: var(--ok-font-family);
+    font-size: var(--_ok-font-size);
+    font-weight: var(--ok-typography-button-font-weight);
+    line-height: var(--ok-typography-button-line-height);
     text-decoration: none;
     vertical-align: middle;
     white-space: nowrap;
@@ -59,190 +59,190 @@
     user-select: none;
     -webkit-tap-highlight-color: transparent;
     transition-property: background-color, border-color, box-shadow, color;
-    transition-duration: var(--mt-duration-short);
-    transition-timing-function: var(--mt-easing-standard);
+    transition-duration: var(--ok-duration-short);
+    transition-timing-function: var(--ok-easing-standard);
   }
 
   /* Parts — visual order: start icon, loader (start), label, loader (end), end icon. */
-  :where([data-mt-button-icon]) {
+  :where([data-ok-button-icon]) {
     display: inline-flex;
     flex-shrink: 0;
     order: 1;
   }
 
-  :where([data-mt-button-icon="start"]) {
-    margin-inline-start: calc(var(--mt-spacing) * -1);
+  :where([data-ok-button-icon="start"]) {
+    margin-inline-start: calc(var(--ok-spacing) * -1);
   }
 
-  :where([data-mt-button-icon="end"]) {
+  :where([data-ok-button-icon="end"]) {
     order: 5;
-    margin-inline-end: calc(var(--mt-spacing) * -1);
+    margin-inline-end: calc(var(--ok-spacing) * -1);
   }
 
-  :where([data-mt-button-icon] > svg, [data-mt-button-icon] > img) {
-    width: var(--_mt-icon-size);
-    height: var(--_mt-icon-size);
+  :where([data-ok-button-icon] > svg, [data-ok-button-icon] > img) {
+    width: var(--_ok-icon-size);
+    height: var(--_ok-icon-size);
   }
 
-  :where([data-mt-button-label]) {
+  :where([data-ok-button-label]) {
     order: 3;
   }
 
-  :where([data-mt-button-loader]) {
+  :where([data-ok-button-loader]) {
     display: none;
     align-items: center;
     justify-content: center;
     order: 2;
   }
 
-  :where([data-mt-button-spinner]) {
+  :where([data-ok-button-spinner]) {
     box-sizing: border-box;
-    width: calc(var(--mt-spacing) * 4);
-    height: calc(var(--mt-spacing) * 4);
+    width: calc(var(--ok-spacing) * 4);
+    height: calc(var(--ok-spacing) * 4);
     border: 2px solid currentColor;
     border-inline-end-color: transparent;
-    border-radius: var(--mt-radius-full);
+    border-radius: var(--ok-radius-full);
     animation: mt-button-spin 0.8s linear infinite;
   }
 
   /* Sizes */
-  :where([data-mt-button][data-mt-size="sm"]) {
-    --_mt-height: calc(var(--mt-spacing) * 7.5);
-    --_mt-padding-x: calc(var(--mt-spacing) * 2);
-    --_mt-font-size: var(--mt-font-size-sm);
+  :where([data-ok-button][data-ok-size="sm"]) {
+    --_ok-height: calc(var(--ok-spacing) * 7.5);
+    --_ok-padding-x: calc(var(--ok-spacing) * 2);
+    --_ok-font-size: var(--ok-font-size-sm);
   }
 
-  :where([data-mt-button][data-mt-size="lg"]) {
-    --_mt-height: calc(var(--mt-spacing) * 12);
-    --_mt-padding-x: calc(var(--mt-spacing) * 4);
-    --_mt-font-size: var(--mt-font-size-lg);
+  :where([data-ok-button][data-ok-size="lg"]) {
+    --_ok-height: calc(var(--ok-spacing) * 12);
+    --_ok-padding-x: calc(var(--ok-spacing) * 4);
+    --_ok-font-size: var(--ok-font-size-lg);
   }
 
-  :where([data-mt-button][data-mt-size="xl"]) {
-    --_mt-height: calc(var(--mt-spacing) * 14);
-    --_mt-padding-x: calc(var(--mt-spacing) * 4);
-    --_mt-font-size: var(--mt-font-size-lg);
+  :where([data-ok-button][data-ok-size="xl"]) {
+    --_ok-height: calc(var(--ok-spacing) * 14);
+    --_ok-padding-x: calc(var(--ok-spacing) * 4);
+    --_ok-font-size: var(--ok-font-size-lg);
   }
 
-  :where([data-mt-button][data-mt-full-width]) {
+  :where([data-ok-button][data-ok-full-width]) {
     width: 100%;
   }
 
   /* Variants */
-  :where([data-mt-button][data-mt-color]:not([data-mt-color="inherit"])) {
-    --_mt-outline-alpha: 0.48;
+  :where([data-ok-button][data-ok-color]:not([data-ok-color="inherit"])) {
+    --_ok-outline-alpha: 0.48;
   }
 
-  :where([data-mt-button][data-mt-variant="text"]) {
-    --_mt-padding-x: calc(var(--mt-spacing) * 2);
+  :where([data-ok-button][data-ok-variant="text"]) {
+    --_ok-padding-x: calc(var(--ok-spacing) * 2);
   }
 
-  :where([data-mt-button][data-mt-variant="text"][data-mt-size="sm"]) {
-    --_mt-padding-x: var(--mt-spacing);
+  :where([data-ok-button][data-ok-variant="text"][data-ok-size="sm"]) {
+    --_ok-padding-x: var(--ok-spacing);
   }
 
   :where(
-    [data-mt-button][data-mt-variant="text"][data-mt-size="lg"],
-    [data-mt-button][data-mt-variant="text"][data-mt-size="xl"]
+    [data-ok-button][data-ok-variant="text"][data-ok-size="lg"],
+    [data-ok-button][data-ok-variant="text"][data-ok-size="xl"]
   ) {
-    --_mt-padding-x: calc(var(--mt-spacing) * 3);
+    --_ok-padding-x: calc(var(--ok-spacing) * 3);
   }
 
-  :where([data-mt-button][data-mt-variant="contained"]) {
-    background-color: var(--_mt-main);
-    color: var(--_mt-contrast);
+  :where([data-ok-button][data-ok-variant="contained"]) {
+    background-color: var(--_ok-main);
+    color: var(--_ok-contrast);
   }
 
-  :where([data-mt-button][data-mt-variant="outlined"]) {
-    border-color: rgb(var(--_mt-channel) / var(--_mt-outline-alpha));
+  :where([data-ok-button][data-ok-variant="outlined"]) {
+    border-color: rgb(var(--_ok-channel) / var(--_ok-outline-alpha));
   }
 
-  :where([data-mt-button][data-mt-variant="soft"]) {
-    background-color: rgb(var(--_mt-channel) / 0.16);
-    color: var(--_mt-text);
+  :where([data-ok-button][data-ok-variant="soft"]) {
+    background-color: rgb(var(--_ok-channel) / 0.16);
+    color: var(--_ok-text);
   }
 
   /* Hover — only on devices that can hover, so touch taps don't leave a stuck state. */
   @media (hover: hover) {
-    :where([data-mt-button]:hover) {
-      background-color: rgb(var(--_mt-channel) / 0.08);
+    :where([data-ok-button]:hover) {
+      background-color: rgb(var(--_ok-channel) / 0.08);
     }
 
-    :where([data-mt-button][data-mt-variant="contained"]:hover) {
-      background-color: var(--_mt-hover);
-      box-shadow: var(--_mt-shadow);
+    :where([data-ok-button][data-ok-variant="contained"]:hover) {
+      background-color: var(--_ok-hover);
+      box-shadow: var(--_ok-shadow);
     }
 
-    :where([data-mt-button][data-mt-disable-elevation]:hover) {
+    :where([data-ok-button][data-ok-disable-elevation]:hover) {
       box-shadow: none;
     }
 
-    :where([data-mt-button][data-mt-variant="outlined"]:hover) {
+    :where([data-ok-button][data-ok-variant="outlined"]:hover) {
       border-color: currentColor;
       box-shadow: 0 0 0 0.75px currentColor;
     }
 
-    :where([data-mt-button][data-mt-variant="soft"]:hover) {
-      background-color: rgb(var(--_mt-channel) / 0.32);
+    :where([data-ok-button][data-ok-variant="soft"]:hover) {
+      background-color: rgb(var(--_ok-channel) / 0.32);
     }
   }
 
-  :where([data-mt-button]:focus-visible) {
-    outline: 2px solid var(--_mt-main);
+  :where([data-ok-button]:focus-visible) {
+    outline: 2px solid var(--_ok-main);
     outline-offset: 2px;
   }
 
   /* Disabled (also used while loading) — after hover, so it wins. */
-  :where([data-mt-button]:is(:disabled, [aria-disabled="true"])) {
+  :where([data-ok-button]:is(:disabled, [aria-disabled="true"])) {
     background-color: transparent;
     box-shadow: none;
-    color: var(--mt-action-disabled);
+    color: var(--ok-action-disabled);
     cursor: not-allowed;
   }
 
   :where(
-    [data-mt-button][data-mt-variant="contained"]:is(:disabled, [aria-disabled="true"]),
-    [data-mt-button][data-mt-variant="soft"]:is(:disabled, [aria-disabled="true"])
+    [data-ok-button][data-ok-variant="contained"]:is(:disabled, [aria-disabled="true"]),
+    [data-ok-button][data-ok-variant="soft"]:is(:disabled, [aria-disabled="true"])
   ) {
-    background-color: var(--mt-action-disabled-bg);
+    background-color: var(--ok-action-disabled-bg);
   }
 
-  :where([data-mt-button][data-mt-variant="outlined"]:is(:disabled, [aria-disabled="true"])) {
-    border-color: var(--mt-action-disabled-bg);
+  :where([data-ok-button][data-ok-variant="outlined"]:is(:disabled, [aria-disabled="true"])) {
+    border-color: var(--ok-action-disabled-bg);
   }
 
   /* Loading */
-  :where([data-mt-button][data-mt-loading]) {
+  :where([data-ok-button][data-ok-loading]) {
     cursor: progress;
   }
 
-  :where([data-mt-button][data-mt-loading] [data-mt-button-loader]) {
+  :where([data-ok-button][data-ok-loading] [data-ok-button-loader]) {
     display: inline-flex;
   }
 
-  :where([data-mt-button][data-mt-loading-position="center"] [data-mt-button-loader]) {
+  :where([data-ok-button][data-ok-loading-position="center"] [data-ok-button-loader]) {
     position: absolute;
     inset: 0;
   }
 
   /* Center: keep the width and the accessible name; only hide the content visually. */
-  :where([data-mt-button][data-mt-loading-position="center"] [data-mt-button-label]) {
+  :where([data-ok-button][data-ok-loading-position="center"] [data-ok-button-label]) {
     color: transparent;
   }
 
-  :where([data-mt-button][data-mt-loading-position="center"] [data-mt-button-icon]) {
+  :where([data-ok-button][data-ok-loading-position="center"] [data-ok-button-icon]) {
     visibility: hidden;
   }
 
-  :where([data-mt-button][data-mt-loading-position="start"] [data-mt-button-icon="start"]) {
+  :where([data-ok-button][data-ok-loading-position="start"] [data-ok-button-icon="start"]) {
     display: none;
   }
 
-  :where([data-mt-button][data-mt-loading-position="end"] [data-mt-button-loader]) {
+  :where([data-ok-button][data-ok-loading-position="end"] [data-ok-button-loader]) {
     order: 4;
   }
 
-  :where([data-mt-button][data-mt-loading-position="end"] [data-mt-button-icon="end"]) {
+  :where([data-ok-button][data-ok-loading-position="end"] [data-ok-button-icon="end"]) {
     display: none;
   }
 
@@ -253,11 +253,11 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    :where([data-mt-button]) {
+    :where([data-ok-button]) {
       transition: none;
     }
 
-    :where([data-mt-button-spinner]) {
+    :where([data-ok-button-spinner]) {
       animation-duration: 2.4s;
     }
   }

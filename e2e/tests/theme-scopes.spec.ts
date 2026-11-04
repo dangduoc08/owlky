@@ -16,11 +16,11 @@ async function tokensOf(page: Page, setup: string) {
     const style = getComputedStyle(target);
     const read = (name: string) => style.getPropertyValue(name).trim();
     const result = {
-      text: read("--mt-text-primary").toUpperCase(),
-      paper: read("--mt-bg-paper").toUpperCase(),
-      z8: read("--mt-shadow-z8").toUpperCase(),
-      elevation: read("--mt-elevation-1").toUpperCase(),
-      card: read("--mt-shadow-card").toUpperCase(),
+      text: read("--ok-text-primary").toUpperCase(),
+      paper: read("--ok-bg-paper").toUpperCase(),
+      z8: read("--ok-shadow-z8").toUpperCase(),
+      elevation: read("--ok-elevation-1").toUpperCase(),
+      card: read("--ok-shadow-card").toUpperCase(),
     };
     host.remove();
     return result;
@@ -44,36 +44,36 @@ test.describe("theme scopes (shipped CSS)", () => {
     expectScheme(await tokensOf(page, '<div id="probe"></div>'), LIGHT);
   });
 
-  test("data-mt-theme=dark and .dark on the root", async ({ page }) => {
-    await page.evaluate(() => document.documentElement.setAttribute("data-mt-theme", "dark"));
+  test("data-ok-theme=dark and .dark on the root", async ({ page }) => {
+    await page.evaluate(() => document.documentElement.setAttribute("data-ok-theme", "dark"));
     expectScheme(await tokensOf(page, '<div id="probe"></div>'), DARK);
     await page.evaluate(() => {
-      document.documentElement.removeAttribute("data-mt-theme");
+      document.documentElement.removeAttribute("data-ok-theme");
       document.documentElement.classList.add("dark");
     });
     expectScheme(await tokensOf(page, '<div id="probe"></div>'), DARK);
   });
 
   test("nested scopes override their ancestors", async ({ page }) => {
-    expectScheme(await tokensOf(page, '<div data-mt-theme="dark"><p id="probe"></p></div>'), DARK);
+    expectScheme(await tokensOf(page, '<div data-ok-theme="dark"><p id="probe"></p></div>'), DARK);
     expectScheme(await tokensOf(page, '<div class="dark"><p id="probe"></p></div>'), DARK);
-    await page.evaluate(() => document.documentElement.setAttribute("data-mt-theme", "dark"));
+    await page.evaluate(() => document.documentElement.setAttribute("data-ok-theme", "dark"));
     expectScheme(
-      await tokensOf(page, '<div data-mt-theme="light"><p id="probe"></p></div>'),
+      await tokensOf(page, '<div data-ok-theme="light"><p id="probe"></p></div>'),
       LIGHT,
     );
     expectScheme(
       await tokensOf(
         page,
-        '<div data-mt-theme="light"><div data-mt-theme="dark"><p id="probe"></p></div></div>',
+        '<div data-ok-theme="light"><div data-ok-theme="dark"><p id="probe"></p></div></div>',
       ),
       DARK,
     );
   });
 
-  test("an explicit data-mt-theme=light wins over .dark on the same element", async ({ page }) => {
+  test("an explicit data-ok-theme=light wins over .dark on the same element", async ({ page }) => {
     expectScheme(
-      await tokensOf(page, '<div id="probe" class="dark" data-mt-theme="light"></div>'),
+      await tokensOf(page, '<div id="probe" class="dark" data-ok-theme="light"></div>'),
       LIGHT,
     );
   });
@@ -81,12 +81,12 @@ test.describe("theme scopes (shipped CSS)", () => {
   test("system follows prefers-color-scheme", async ({ page }) => {
     await page.emulateMedia({ colorScheme: "dark" });
     expectScheme(
-      await tokensOf(page, '<div data-mt-theme="system"><p id="probe"></p></div>'),
+      await tokensOf(page, '<div data-ok-theme="system"><p id="probe"></p></div>'),
       DARK,
     );
     await page.emulateMedia({ colorScheme: "light" });
     expectScheme(
-      await tokensOf(page, '<div data-mt-theme="system"><p id="probe"></p></div>'),
+      await tokensOf(page, '<div data-ok-theme="system"><p id="probe"></p></div>'),
       LIGHT,
     );
   });
@@ -107,14 +107,14 @@ test.describe("theme scopes (shipped CSS)", () => {
         },
         [name, html],
       );
-    expect(await read("--mt-typography-h1-font-size")).toBe("4rem");
+    expect(await read("--ok-typography-h1-font-size")).toBe("4rem");
     await page.setViewportSize({ width: 375, height: 800 });
-    expect(await read("--mt-typography-h1-font-size")).toBe("2.5rem");
-    expect(await read("--mt-c-main", '<div data-mt-color="primary"><p id="probe"></p></div>')).toBe(
+    expect(await read("--ok-typography-h1-font-size")).toBe("2.5rem");
+    expect(await read("--ok-c-main", '<div data-ok-color="primary"><p id="probe"></p></div>')).toBe(
       "",
     );
     expect(
-      (await read("--mt-c-main", '<div id="probe" data-mt-color="primary"></div>')).toUpperCase(),
+      (await read("--ok-c-main", '<div id="probe" data-ok-color="primary"></div>')).toUpperCase(),
     ).toBe("#00A76F");
   });
 });

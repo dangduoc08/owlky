@@ -7,7 +7,7 @@
 - `tokens`, `styles`, `core`, `html` never depend on React; `react` never depends on `html`.
   What they share is tokens, CSS, specifications and `core` — never each other's runtime.
 - React components work with no HTML runtime on the page; the HTML runtime works with no React.
-- When both are present, React roots carry `data-mt-runtime="off"` and the runtime ignores them
+- When both are present, React roots carry `data-ok-runtime="off"` and the runtime ignores them
   (e2e: "React and the HTML runtime coexist").
 
 ### Enforcement (CI fails on violation)

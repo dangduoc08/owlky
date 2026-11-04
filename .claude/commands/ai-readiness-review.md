@@ -40,7 +40,7 @@ Simulate at least these, and add others that fit:
 - Add a story + HTML docs page for an existing component
 - Reduce the CDN bundle size
 - Raise the browser baseline
-- Rename a `data-mt-*` attribute (breaking change) and release it
+- Rename a `data-ok-*` attribute (breaking change) and release it
 - Write tests for a new core controller (native + fallback)
 - Prepare and publish a release (changesets, CI, npm provenance)
 - Review a pull request that touches `packages/html/src/runtime`

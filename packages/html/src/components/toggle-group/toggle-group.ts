@@ -4,12 +4,12 @@ import {
   type ToggleGroupValue,
   toggleGroupOptions,
   toSelection,
-} from "@minimal-tailwind/core";
+} from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
 import type { ComponentInstance } from "../../runtime/types.js";
 
 export interface ToggleGroupInstance extends ComponentInstance {
-  /** `string | null` with `data-mt-exclusive`, `string[]` otherwise. */
+  /** `string | null` with `data-ok-exclusive`, `string[]` otherwise. */
   readonly value: ToggleGroupValue;
   /** Presses exactly the buttons whose `value` is in `value`, without emitting events. */
   setValue(value: ToggleGroupValue): void;
@@ -20,21 +20,21 @@ export interface ToggleGroupInstance extends ComponentInstance {
 /**
  * Toggle group — spec: specs/components/toggle-button.md
  *
- * Markup:  <div role="group" data-mt-toggle-group [data-mt-exclusive]>
- *            <button type="button" data-mt-toggle-button value="left" aria-pressed="true">…
- * Events:  mt:toggle-group:change (cancelable, detail: { value, previous, button })
+ * Markup:  <div role="group" data-ok-toggle-group [data-ok-exclusive]>
+ *            <button type="button" data-ok-toggle-button value="left" aria-pressed="true">…
+ * Events:  ok:toggle-group:change (cancelable, detail: { value, previous, button })
  * Selection rules come from core (`nextToggleSelection`), shared with React.
  */
 export const toggleGroup = defineComponent<ToggleGroupInstance>({
   name: "toggle-group",
-  selector: "[data-mt-toggle-group]",
+  selector: "[data-ok-toggle-group]",
 
   setup(element, { emit }) {
     const exclusive = () => element.hasAttribute(toggleGroupOptions.options.exclusive.attr);
     /** Own buttons only: a nested group keeps its own buttons. */
     const buttons = () =>
-      [...element.querySelectorAll<HTMLElement>("[data-mt-toggle-button]")].filter(
-        (button) => button.closest("[data-mt-toggle-group]") === element,
+      [...element.querySelectorAll<HTMLElement>("[data-ok-toggle-button]")].filter(
+        (button) => button.closest("[data-ok-toggle-group]") === element,
       );
     const buttonValue = (button: Element) => button.getAttribute("value") ?? "";
     const selection = () =>

@@ -1,4 +1,4 @@
-import { type ColorName, componentColorNames, paletteColorNames } from "@minimal-tailwind/tokens";
+import { type ColorName, componentColorNames, paletteColorNames } from "@owlky/tokens";
 import {
   type DataAttributes,
   defineOptions,
@@ -33,20 +33,20 @@ export type ButtonVariant = (typeof buttonVariants)[number];
 export type ButtonSize = (typeof buttonSizes)[number];
 export type ButtonLoadingPosition = (typeof buttonLoadingPositions)[number];
 
-export const buttonOptions = defineOptions("button", "data-mt-button", {
-  variant: style("data-mt-variant", buttonVariants, "text", "Visual style."),
+export const buttonOptions = defineOptions("button", "data-ok-button", {
+  variant: style("data-ok-variant", buttonVariants, "text", "Visual style."),
   color: style(
-    "data-mt-color",
+    "data-ok-color",
     buttonColors,
     "inherit",
     "`inherit` (neutral), palette, `black` / `white`.",
   ),
-  size: style("data-mt-size", buttonSizes, "md", "Height: 30 / 36 / 48 / 56px."),
-  fullWidth: flag("data-mt-full-width", "Stretch to the container width."),
-  disableElevation: flag("data-mt-disable-elevation", "No shadow on contained buttons."),
-  loading: flag("data-mt-loading", "Loader + `disabled` + `aria-busy` (adds the loader part)."),
+  size: style("data-ok-size", buttonSizes, "md", "Height: 30 / 36 / 48 / 56px."),
+  fullWidth: flag("data-ok-full-width", "Stretch to the container width."),
+  disableElevation: flag("data-ok-disable-elevation", "No shadow on contained buttons."),
+  loading: flag("data-ok-loading", "Loader + `disabled` + `aria-busy` (adds the loader part)."),
   loadingPosition: style(
-    "data-mt-loading-position",
+    "data-ok-loading-position",
     buttonLoadingPositions,
     "center",
     "Where the loader goes while loading.",
@@ -65,7 +65,7 @@ export interface ButtonAnatomyOptions {
   loadingPosition?: ButtonLoadingPosition | undefined;
 }
 
-/** `data-mt-*` attributes of a button root (also used on `<a>` for link buttons). */
+/** `data-ok-*` attributes of a button root (also used on `<a>` for link buttons). */
 export const buttonAttributes = (options: ButtonAnatomyOptions = {}): DataAttributes =>
   optionAttributes(buttonOptions, { ...options });
 
@@ -84,23 +84,23 @@ export type IconButtonColor = (typeof iconButtonColors)[number];
 export type IconButtonSize = (typeof iconButtonSizes)[number];
 export type IconButtonEdge = (typeof iconButtonEdges)[number];
 
-export const iconButtonOptions = defineOptions("icon-button", "data-mt-icon-button", {
+export const iconButtonOptions = defineOptions("icon-button", "data-ok-icon-button", {
   color: style(
-    "data-mt-color",
+    "data-ok-color",
     iconButtonColors,
     "default",
     "`default` (secondary text), `inherit`, palette.",
   ),
-  size: style("data-mt-size", iconButtonSizes, "md", "28 / 36 / 48px (icon 18 / 20 / 24)."),
+  size: style("data-ok-size", iconButtonSizes, "md", "28 / 36 / 48px (icon 18 / 20 / 24)."),
   edge: style(
-    "data-mt-edge",
+    "data-ok-edge",
     iconButtonEdges,
     "start",
     "Negative margin to align the icon with that edge (absent by default).",
     { optional: true },
   ),
-  animate: flag("data-mt-animate", "Scale up on hover, down while pressed."),
-  loading: flag("data-mt-loading", "Loader instead of the icon + `disabled` + `aria-busy`."),
+  animate: flag("data-ok-animate", "Scale up on hover, down while pressed."),
+  loading: flag("data-ok-loading", "Loader instead of the icon + `disabled` + `aria-busy`."),
   disabled: native("disabled", "Native `disabled`."),
 });
 
@@ -112,7 +112,7 @@ export interface IconButtonAnatomyOptions {
   loading?: boolean | undefined;
 }
 
-/** `data-mt-*` attributes of an icon button root. */
+/** `data-ok-*` attributes of an icon button root. */
 export const iconButtonAttributes = (options: IconButtonAnatomyOptions = {}): DataAttributes =>
   optionAttributes(iconButtonOptions, { ...options });
 
@@ -124,17 +124,17 @@ export type FabVariant = (typeof fabVariants)[number];
 export type FabColor = IconButtonColor;
 export type FabSize = IconButtonSize;
 
-export const fabOptions = defineOptions("fab", "data-mt-fab", {
-  variant: style("data-mt-variant", fabVariants, "contained", "Visual style."),
+export const fabOptions = defineOptions("fab", "data-ok-fab", {
+  variant: style("data-ok-variant", fabVariants, "contained", "Visual style."),
   color: style(
-    "data-mt-color",
+    "data-ok-color",
     fabColors,
     "default",
     "`default` (grey), `inherit` (dark), palette.",
   ),
-  size: style("data-mt-size", fabSizes, "md", "Round 40 / 48 / 56px; extended 36 / 40 / 48px."),
-  extended: flag("data-mt-extended", "Pill with an icon and a label."),
-  animate: flag("data-mt-animate", "Scale up on hover, down while pressed."),
+  size: style("data-ok-size", fabSizes, "md", "Round 40 / 48 / 56px; extended 36 / 40 / 48px."),
+  extended: flag("data-ok-extended", "Pill with an icon and a label."),
+  animate: flag("data-ok-animate", "Scale up on hover, down while pressed."),
   disabled: native("disabled", "Native `disabled`."),
 });
 
@@ -146,7 +146,7 @@ export interface FabAnatomyOptions {
   animate?: boolean | undefined;
 }
 
-/** `data-mt-*` attributes of a fab root. */
+/** `data-ok-*` attributes of a fab root. */
 export const fabAttributes = (options: FabAnatomyOptions = {}): DataAttributes =>
   optionAttributes(fabOptions, { ...options });
 
@@ -155,29 +155,29 @@ export const fabAttributes = (options: FabAnatomyOptions = {}): DataAttributes =
 export const orientations = ["horizontal", "vertical"] as const;
 export type Orientation = (typeof orientations)[number];
 
-const BUTTON_CHILD = ":scope > [data-mt-button]";
+const BUTTON_CHILD = ":scope > [data-ok-button]";
 
-export const buttonGroupOptions = defineOptions("button-group", "data-mt-button-group", {
-  orientation: style("data-mt-orientation", orientations, "horizontal", "Row or column."),
-  fullWidth: flag("data-mt-full-width", "Stretch to the container width; buttons share it."),
-  variant: style("data-mt-variant", buttonVariants, "outlined", "Passed to every button.", {
+export const buttonGroupOptions = defineOptions("button-group", "data-ok-button-group", {
+  orientation: style("data-ok-orientation", orientations, "horizontal", "Row or column."),
+  fullWidth: flag("data-ok-full-width", "Stretch to the container width; buttons share it."),
+  variant: style("data-ok-variant", buttonVariants, "outlined", "Passed to every button.", {
     children: BUTTON_CHILD,
   }),
-  color: style("data-mt-color", buttonColors, "inherit", "Passed to every button.", {
+  color: style("data-ok-color", buttonColors, "inherit", "Passed to every button.", {
     children: BUTTON_CHILD,
   }),
-  size: style("data-mt-size", buttonSizes, "md", "Passed to every button.", {
+  size: style("data-ok-size", buttonSizes, "md", "Passed to every button.", {
     children: BUTTON_CHILD,
   }),
   disableElevation: flag(
-    "data-mt-disable-elevation",
+    "data-ok-disable-elevation",
     "Passed to every button (on by default in a group, as in the reference).",
     { children: BUTTON_CHILD },
   ),
   disabled: native("disabled", "Passed to every button.", { children: BUTTON_CHILD }),
 });
 
-/** `data-mt-*` attributes of a button group root (`role="group"` is set by the markup). */
+/** `data-ok-*` attributes of a button group root (`role="group"` is set by the markup). */
 export const buttonGroupAttributes = (
   options: { orientation?: Orientation | undefined; fullWidth?: boolean | undefined } = {},
 ): DataAttributes => optionAttributes(buttonGroupOptions, { ...options });
@@ -190,15 +190,15 @@ export const toggleButtonSizes = ["sm", "md", "lg"] as const;
 export type ToggleButtonColor = (typeof toggleButtonColors)[number];
 export type ToggleButtonSize = (typeof toggleButtonSizes)[number];
 
-export const toggleButtonOptions = defineOptions("toggle-button", "data-mt-toggle-button", {
-  color: style("data-mt-color", toggleButtonColors, "standard", "Color of the pressed state."),
+export const toggleButtonOptions = defineOptions("toggle-button", "data-ok-toggle-button", {
+  color: style("data-ok-color", toggleButtonColors, "standard", "Color of the pressed state."),
   size: style(
-    "data-mt-size",
+    "data-ok-size",
     toggleButtonSizes,
     "md",
     "Standalone 40 / 48 / 56px; in a group 30 / 38 / 46px.",
   ),
-  fullWidth: flag("data-mt-full-width", "Stretch to the container width."),
+  fullWidth: flag("data-ok-full-width", "Stretch to the container width."),
   disabled: native("disabled", "Native `disabled`: never toggles."),
   selected: state("aria-pressed", "Pressed state (`selected` / `defaultSelected`).", "change"),
 });
@@ -209,20 +209,20 @@ export interface ToggleButtonAnatomyOptions {
   fullWidth?: boolean | undefined;
 }
 
-/** `data-mt-*` attributes of a toggle button (`aria-pressed` is set by the owner). */
+/** `data-ok-*` attributes of a toggle button (`aria-pressed` is set by the owner). */
 export const toggleButtonAttributes = (options: ToggleButtonAnatomyOptions = {}): DataAttributes =>
   optionAttributes(toggleButtonOptions, { ...options });
 
-const TOGGLE_CHILD = "[data-mt-toggle-button]";
+const TOGGLE_CHILD = "[data-ok-toggle-button]";
 
-export const toggleGroupOptions = defineOptions("toggle-group", "data-mt-toggle-group", {
-  orientation: style("data-mt-orientation", orientations, "horizontal", "Row or column."),
-  exclusive: flag("data-mt-exclusive", "At most one pressed button."),
-  fullWidth: flag("data-mt-full-width", "Stretch to the container width; buttons share it."),
-  color: style("data-mt-color", toggleButtonColors, "standard", "Passed to every button.", {
+export const toggleGroupOptions = defineOptions("toggle-group", "data-ok-toggle-group", {
+  orientation: style("data-ok-orientation", orientations, "horizontal", "Row or column."),
+  exclusive: flag("data-ok-exclusive", "At most one pressed button."),
+  fullWidth: flag("data-ok-full-width", "Stretch to the container width; buttons share it."),
+  color: style("data-ok-color", toggleButtonColors, "standard", "Passed to every button.", {
     children: TOGGLE_CHILD,
   }),
-  size: style("data-mt-size", toggleButtonSizes, "md", "Passed to every button.", {
+  size: style("data-ok-size", toggleButtonSizes, "md", "Passed to every button.", {
     children: TOGGLE_CHILD,
   }),
   disabled: native("disabled", "Passed to every button.", { children: TOGGLE_CHILD }),
@@ -235,7 +235,7 @@ export interface ToggleGroupAnatomyOptions {
   fullWidth?: boolean | undefined;
 }
 
-/** `data-mt-*` attributes of a toggle group root (`role="group"` is set by the markup). */
+/** `data-ok-*` attributes of a toggle group root (`role="group"` is set by the markup). */
 export const toggleGroupAttributes = (options: ToggleGroupAnatomyOptions = {}): DataAttributes =>
   optionAttributes(toggleGroupOptions, { ...options });
 
@@ -248,30 +248,30 @@ export type DrawerVariant = (typeof drawerVariants)[number];
 /** Why the drawer asks to close: Escape, a backdrop click, or a close trigger / the API. */
 export type DrawerCloseReason = "escape" | "backdrop" | "close";
 
-export const drawerOptions = defineOptions("drawer", "data-mt-drawer", {
-  anchor: style("data-mt-anchor", drawerAnchors, "left", "Edge the drawer is attached to."),
+export const drawerOptions = defineOptions("drawer", "data-ok-drawer", {
+  anchor: style("data-ok-anchor", drawerAnchors, "left", "Edge the drawer is attached to."),
   variant: style(
-    "data-mt-variant",
+    "data-ok-variant",
     drawerVariants,
     "temporary",
     "`temporary`: modal `<dialog>`; `persistent`: docked `<aside>` that opens and closes; `permanent`: docked, always shown.",
   ),
   hideBackdrop: flag(
-    "data-mt-hide-backdrop",
+    "data-ok-hide-backdrop",
     "Temporary only: transparent backdrop (still modal).",
   ),
   disableEscapeKeyDown: flag(
-    "data-mt-disable-escape-key-down",
+    "data-ok-disable-escape-key-down",
     "Temporary only: Escape doesn't request close.",
   ),
   open: state(
     "open | hidden",
-    "Open state (`open` / `defaultOpen`; HTML initial: `data-mt-open`).",
+    "Open state (`open` / `defaultOpen`; HTML initial: `data-ok-open`).",
     "close",
   ),
 });
 
-/** `data-mt-*` attributes of a drawer root (`<dialog>` when temporary, `<aside>` when docked). */
+/** `data-ok-*` attributes of a drawer root (`<dialog>` when temporary, `<aside>` when docked). */
 export const drawerAttributes = (
   options: {
     anchor?: DrawerAnchor | undefined;
@@ -286,17 +286,17 @@ export const drawerAttributes = (
 export const sortableLayouts = ["grid", "vertical", "horizontal"] as const;
 export type SortableLayout = (typeof sortableLayouts)[number];
 
-export const sortableOptions = defineOptions("sortable", "data-mt-sortable", {
+export const sortableOptions = defineOptions("sortable", "data-ok-sortable", {
   layout: style(
-    "data-mt-layout",
+    "data-ok-layout",
     sortableLayouts,
     "grid",
     "Grid, one column or one scrolling row.",
   ),
-  items: state("data-mt-sortable-item", "Item order (`items` + `onReorder`).", "move"),
+  items: state("data-ok-sortable-item", "Item order (`items` + `onReorder`).", "move"),
 });
 
-/** `data-mt-*` attributes of a sortable list. */
+/** `data-ok-*` attributes of a sortable list. */
 export const sortableAttributes = (
   options: { layout?: SortableLayout | undefined } = {},
 ): DataAttributes => optionAttributes(sortableOptions, { ...options });

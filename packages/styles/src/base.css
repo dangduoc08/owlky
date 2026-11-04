@@ -7,11 +7,11 @@
 @layer base {
   :where(body) {
     margin: 0;
-    font-family: var(--mt-font-family);
-    font-size: var(--mt-typography-body1-font-size);
-    line-height: var(--mt-typography-body1-line-height);
-    color: var(--mt-text-primary);
-    background-color: var(--mt-bg-default);
+    font-family: var(--ok-font-family);
+    font-size: var(--ok-typography-body1-font-size);
+    line-height: var(--ok-typography-body1-line-height);
+    color: var(--ok-text-primary);
+    background-color: var(--ok-bg-default);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }

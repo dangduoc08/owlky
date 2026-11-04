@@ -1,14 +1,14 @@
-# @minimal-tailwind/react
+# @owlky/react
 
-Accessible React components for [Minimal Tailwind](../../README.md). React 18.3+ / 19.
+Accessible React components for [Owlky](../../README.md). React 18.3+ / 19.
 
 ```sh
-pnpm add @minimal-tailwind/react @minimal-tailwind/styles
+pnpm add @owlky/react @owlky/styles
 ```
 
 ```tsx
-import "@minimal-tailwind/styles/minimal-tailwind.css";
-import { Button, ButtonGroup, Fab, IconButton, ToggleButton, ToggleButtonGroup } from "@minimal-tailwind/react";
+import "@owlky/styles/owlky.css";
+import { Button, ButtonGroup, Fab, IconButton, ToggleButton, ToggleButtonGroup } from "@owlky/react";
 
 <Button variant="contained" color="primary">Save</Button>
 <Button variant="outlined" startIcon={<MailIcon />}>Send</Button>
@@ -34,4 +34,4 @@ import { Button, ButtonGroup, Fab, IconButton, ToggleButton, ToggleButtonGroup }
 | `Sortable` | `items`, `getKey`, `renderItem`, `onReorder(items)` (controlled), `onRemove(item, index)` (renders remove buttons), `getItemLabel`, `layout` (`grid` · `vertical` · `horizontal`), `messages`; helper `arrayMove` |
 | `ToggleButtonGroup` | `exclusive`, `value` / `defaultValue` / `onChange(value)` (`string \| null` when exclusive, else `string[]`), `orientation`, `color`, `size`, `disabled` |
 
-Same markup and CSS as `@minimal-tailwind/html` (specs: `specs/components/`).
+Same markup and CSS as `@owlky/html` (specs: `specs/components/`).

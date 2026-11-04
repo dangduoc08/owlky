@@ -1,8 +1,8 @@
 # CLAUDE.md
 
-Minimal Tailwind: an accessible UI component library inspired by the Minimal dashboard design
+Owlky: an accessible UI component library inspired by the Minimal dashboard design
 language. Every component ships twice — **React** and **framework-free HTML** — with identical
-`data-mt-*` markup, one prebuilt stylesheet and one shared behavior core.
+`data-ok-*` markup, one prebuilt stylesheet and one shared behavior core.
 
 Conventions, naming and the add-a-component checklist are in AGENTS.md (imported below). This
 file covers project status, workflow and orientation.
@@ -19,7 +19,7 @@ file covers project status, workflow and orientation.
 
 Full plan: `docs/roadmap.md`. Not published yet.
 
-**Blocked on the user before publishing 0.1.0:** npm org `@minimal-tailwind`, GitHub repo
+**Blocked on the user before publishing 0.1.0:** npm org `@owlky` (ADR-0016), GitHub repo
 (replace `OWNER` in every `packages/*/package.json`), `NPM_TOKEN` secret or npm trusted
 publishing, visual baselines via `pnpm test:visual:update` (Docker only).
 
@@ -87,7 +87,7 @@ pnpm check                                  # everything CI runs
 
 ## Key decisions (details in docs/adr/)
 
-- Styling via `data-mt-*` attributes; zero-specificity `:where()` selectors in `@layer components`;
+- Styling via `data-ok-*` attributes; zero-specificity `:where()` selectors in `@layer components`;
   no `--tw-*` in dist (ADR-0003).
 - Behavior implemented once in `core` controllers that report intent (`onDismiss`) (ADR-0004).
 - HTML runtime: registry + document-level delegation + MutationObserver, idempotent (ADR-0005).

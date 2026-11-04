@@ -90,7 +90,7 @@
                   "react": "Framework independence (ADR-0008): this package must not import React.",
                   "react-dom": "Framework independence (ADR-0008): this package must not import React DOM.",
                   "react/jsx-runtime": "Framework independence (ADR-0008): this package must not use JSX.",
-                  "@minimal-tailwind/react": "Framework independence (ADR-0008): HTML/core must not depend on the React package."
+                  "@owlky/react": "Framework independence (ADR-0008): HTML/core must not depend on the React package."
                 }
               }
             }
@@ -107,7 +107,7 @@
               "level": "error",
               "options": {
                 "paths": {
-                  "@minimal-tailwind/html": "Framework independence (ADR-0008): React must not depend on the HTML runtime."
+                  "@owlky/html": "Framework independence (ADR-0008): React must not depend on the HTML runtime."
                 }
               }
             }

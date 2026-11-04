@@ -9,14 +9,14 @@ Components need translucent tints of their color (8 / 16 / 32 / 48 %). Written a
 (verified while building Button; ADR-0003 compiles component CSS with Tailwind).
 
 ## Decision
-- Tokens expose an RGB channel for every color: `--mt-palette-<color>-<shade>-channel`,
-  `--mt-palette-grey-<n>-channel`, `--mt-palette-common-white|black-channel` (e.g. `0 167 111`).
-- Color bindings add `--mt-c-channel` (non-inheriting, like the other `--mt-c-*`), including the
+- Tokens expose an RGB channel for every color: `--ok-palette-<color>-<shade>-channel`,
+  `--ok-palette-grey-<n>-channel`, `--ok-palette-common-white|black-channel` (e.g. `0 167 111`).
+- Color bindings add `--ok-c-channel` (non-inheriting, like the other `--ok-c-*`), including the
   new `black` / `white` component colors.
 - Component CSS writes translucent colors as `rgb(var(--…-channel) / α)`, which the compiler
   leaves untouched. `color-mix()` stays allowed in `tokens.css` (concatenated, not compiled) and is
   forbidden in `packages/styles/src/components/*` (enforced by `styles.test.ts`).
-- A font-size scale (`--mt-font-size-xs…xl`) covers component text that isn't a typography
+- A font-size scale (`--ok-font-size-xs…xl`) covers component text that isn't a typography
   variant (button sizes).
 
 ## Consequences

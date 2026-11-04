@@ -7,7 +7,7 @@ ADR that supersedes the old one — don't rewrite history.
 | ---------------------------------------------- | ------------------------------------------------------------------------- | -------- |
 | [0001](0001-monorepo-and-packages.md)          | Monorepo with five packages and strict boundaries                         | Accepted |
 | [0002](0002-design-tokens.md)                  | TypeScript tokens → CSS variables, AA-checked                             | Accepted |
-| [0003](0003-styling-architecture.md)           | `data-mt-*` anatomy, zero-specificity CSS in cascade layers, prebuilt CSS | Accepted |
+| [0003](0003-styling-architecture.md)           | `data-ok-*` anatomy, zero-specificity CSS in cascade layers, prebuilt CSS | Accepted |
 | [0004](0004-shared-core.md)                    | Shared framework-free core for behavior and anatomy                       | Accepted |
 | [0005](0005-html-runtime.md)                   | HTML Core Runtime: registry, delegation, lifecycle, idempotency           | Accepted |
 | [0006](0006-browser-baseline-and-fallbacks.md) | Browser baseline and native-API fallbacks                                 | Accepted |
@@ -20,5 +20,6 @@ ADR that supersedes the old one — don't rewrite history.
 | [0013](0013-translucent-colors-via-channels.md) | Translucent colors via RGB channel tokens (no `color-mix()` in components) | Accepted |
 | [0014](0014-brand-colors-follow-reference.md) | Brand colors follow the reference look (white on fills, `main` text) | Accepted |
 | [0015](0015-component-api-and-option-schema.md) | Component API from the upstream component; one option schema for React and HTML | Accepted |
+| [0016](0016-rename-to-owlky.md) | Rename the library to Owlky (`ok` namespace) | Accepted |
 
 Template: **Context** (why decide) · **Decision** (what) · **Consequences** (trade-offs, follow-ups).

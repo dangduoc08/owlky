@@ -1,4 +1,4 @@
-import { iconButtonColors, iconButtonSizes } from "@minimal-tailwind/core";
+import { iconButtonColors, iconButtonSizes } from "@owlky/core";
 import { afterEach, describe, expect, it } from "vitest";
 import {
   expectCspSafe,
@@ -20,9 +20,9 @@ describe("icon button snippets", () => {
   it.each(snippets)("%s: valid anatomy", (_, html) => {
     const host = mount(html);
     expectNamedButtons(host);
-    for (const button of host.querySelectorAll<HTMLElement>("[data-mt-icon-button]")) {
-      expect(iconButtonColors).toContain(button.dataset["mtColor"]);
-      expect(iconButtonSizes).toContain(button.dataset["mtSize"]);
+    for (const button of host.querySelectorAll<HTMLElement>("[data-ok-icon-button]")) {
+      expect(iconButtonColors).toContain(button.dataset["okColor"]);
+      expect(iconButtonSizes).toContain(button.dataset["okSize"]);
       expect(button.getAttribute("aria-label")).toBeTruthy();
     }
   });
@@ -37,8 +37,8 @@ describe("icon button snippets", () => {
 describe("icon button CSS without JavaScript", () => {
   it("sizes the button and its icon; unknown values fall back to the defaults", () => {
     const host = mount(
-      '<button type="button" data-mt-icon-button data-mt-size="lg" aria-label="a"><svg aria-hidden="true" viewBox="0 0 24 24"></svg></button>' +
-        '<button type="button" data-mt-icon-button data-mt-size="huge" data-mt-color="nope" aria-label="b"></button>',
+      '<button type="button" data-ok-icon-button data-ok-size="lg" aria-label="a"><svg aria-hidden="true" viewBox="0 0 24 24"></svg></button>' +
+        '<button type="button" data-ok-icon-button data-ok-size="huge" data-ok-color="nope" aria-label="b"></button>',
     );
     const [large, fallback] = host.querySelectorAll("button") as unknown as HTMLElement[];
     expect((large as HTMLElement).getBoundingClientRect().height).toBe(48);

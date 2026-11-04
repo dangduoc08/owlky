@@ -21,7 +21,7 @@ describe("ButtonGroup", () => {
       </ButtonGroup>,
     );
     const group = screen.getByRole("group", { name: "Actions" });
-    expect(group.dataset).toMatchObject({ mtButtonGroup: "", mtOrientation: "horizontal" });
+    expect(group.dataset).toMatchObject({ okButtonGroup: "", okOrientation: "horizontal" });
     expect(ref.current).toBe(group);
   });
 
@@ -44,11 +44,11 @@ describe("ButtonGroup", () => {
     );
     const one = screen.getByRole("button", { name: "One" }) as HTMLButtonElement;
     const two = screen.getByRole("button", { name: "Two" }) as HTMLButtonElement;
-    expect(one.dataset).toMatchObject({ mtVariant: "contained", mtColor: "primary", mtSize: "lg" });
+    expect(one.dataset).toMatchObject({ okVariant: "contained", okColor: "primary", okSize: "lg" });
     expect(one.disabled).toBe(true);
-    expect(two.dataset["mtColor"]).toBe("error");
+    expect(two.dataset["okColor"]).toBe("error");
     expect(two.disabled).toBe(false);
-    expect(screen.getByRole("group").dataset["mtOrientation"]).toBe("horizontal");
+    expect(screen.getByRole("group").dataset["okOrientation"]).toBe("horizontal");
     expect(screen.getByRole("group").textContent).toContain("plain text");
   });
 
@@ -60,9 +60,9 @@ describe("ButtonGroup", () => {
     );
     // Group defaults: outlined (MUI), no elevation (reference).
     expect(screen.getByRole("button").dataset).toMatchObject({
-      mtVariant: "outlined",
-      mtSize: "md",
-      mtDisableElevation: "",
+      okVariant: "outlined",
+      okSize: "md",
+      okDisableElevation: "",
     });
   });
 
@@ -98,7 +98,7 @@ describe("ButtonGroup", () => {
     expect(screen.getByRole("group").getBoundingClientRect().width).toBe(600);
     const a = screen.getByRole("button", { name: "A" });
     expect(a.getBoundingClientRect().width).toBe(300);
-    expect(a.hasAttribute("data-mt-disable-elevation")).toBe(false);
+    expect(a.hasAttribute("data-ok-disable-elevation")).toBe(false);
   });
 
   it("stacks vertically with separators below", () => {

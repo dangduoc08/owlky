@@ -28,38 +28,38 @@ const HOSTILE = '"><img src=x onerror=alert(1)>' as never;
 describe("buttonAttributes", () => {
   it("emits explicit defaults", () => {
     expect(buttonAttributes()).toEqual({
-      "data-mt-button": "",
-      "data-mt-variant": "text",
-      "data-mt-color": "inherit",
-      "data-mt-size": "md",
+      "data-ok-button": "",
+      "data-ok-variant": "text",
+      "data-ok-color": "inherit",
+      "data-ok-size": "md",
     });
   });
 
   it.each(buttonVariants)("maps variant %s", (variant) => {
-    expect(buttonAttributes({ variant })["data-mt-variant"]).toBe(variant);
+    expect(buttonAttributes({ variant })["data-ok-variant"]).toBe(variant);
   });
 
   it.each(buttonColors)("maps color %s", (color) => {
-    expect(buttonAttributes({ color })["data-mt-color"]).toBe(color);
+    expect(buttonAttributes({ color })["data-ok-color"]).toBe(color);
   });
 
   it.each(buttonSizes)("maps size %s", (size) => {
-    expect(buttonAttributes({ size })["data-mt-size"]).toBe(size);
+    expect(buttonAttributes({ size })["data-ok-size"]).toBe(size);
   });
 
   it("adds full width and loading attributes only when enabled", () => {
     expect(buttonAttributes({ fullWidth: true, loading: true })).toMatchObject({
-      "data-mt-full-width": "",
-      "data-mt-loading": "",
-      "data-mt-loading-position": "center",
+      "data-ok-full-width": "",
+      "data-ok-loading": "",
+      "data-ok-loading-position": "center",
     });
     expect(
-      buttonAttributes({ loading: true, loadingPosition: "end" })["data-mt-loading-position"],
+      buttonAttributes({ loading: true, loadingPosition: "end" })["data-ok-loading-position"],
     ).toBe("end");
     const off = buttonAttributes({ fullWidth: false, loading: false, loadingPosition: "end" });
-    expect(off).not.toHaveProperty("data-mt-full-width");
-    expect(off).not.toHaveProperty("data-mt-loading");
-    expect(off).not.toHaveProperty("data-mt-loading-position");
+    expect(off).not.toHaveProperty("data-ok-full-width");
+    expect(off).not.toHaveProperty("data-ok-loading");
+    expect(off).not.toHaveProperty("data-ok-loading-position");
   });
 
   it("falls back to defaults for values outside the allowed lists (untrusted input)", () => {
@@ -71,12 +71,12 @@ describe("buttonAttributes", () => {
       loadingPosition: "javascript:alert(1)" as never,
     });
     expect(hostile).toEqual({
-      "data-mt-button": "",
-      "data-mt-variant": "text",
-      "data-mt-color": "inherit",
-      "data-mt-size": "md",
-      "data-mt-loading": "",
-      "data-mt-loading-position": "center",
+      "data-ok-button": "",
+      "data-ok-variant": "text",
+      "data-ok-color": "inherit",
+      "data-ok-size": "md",
+      "data-ok-loading": "",
+      "data-ok-loading-position": "center",
     });
   });
 });
@@ -84,23 +84,23 @@ describe("buttonAttributes", () => {
 describe("iconButtonAttributes", () => {
   it("emits explicit defaults", () => {
     expect(iconButtonAttributes()).toEqual({
-      "data-mt-icon-button": "",
-      "data-mt-color": "default",
-      "data-mt-size": "md",
+      "data-ok-icon-button": "",
+      "data-ok-color": "default",
+      "data-ok-size": "md",
     });
   });
 
   it.each(iconButtonColors)("maps color %s", (color) => {
-    expect(iconButtonAttributes({ color })["data-mt-color"]).toBe(color);
+    expect(iconButtonAttributes({ color })["data-ok-color"]).toBe(color);
   });
 
   it.each(iconButtonSizes)("maps size %s", (size) => {
-    expect(iconButtonAttributes({ size })["data-mt-size"]).toBe(size);
+    expect(iconButtonAttributes({ size })["data-ok-size"]).toBe(size);
   });
 
   it("adds animate only when enabled and rejects unknown values", () => {
-    expect(iconButtonAttributes({ animate: true })).toHaveProperty("data-mt-animate", "");
-    expect(iconButtonAttributes({ animate: false })).not.toHaveProperty("data-mt-animate");
+    expect(iconButtonAttributes({ animate: true })).toHaveProperty("data-ok-animate", "");
+    expect(iconButtonAttributes({ animate: false })).not.toHaveProperty("data-ok-animate");
     expect(iconButtonAttributes({ color: HOSTILE, size: HOSTILE })).toEqual(iconButtonAttributes());
   });
 });
@@ -108,33 +108,33 @@ describe("iconButtonAttributes", () => {
 describe("fabAttributes", () => {
   it("emits explicit defaults", () => {
     expect(fabAttributes()).toEqual({
-      "data-mt-fab": "",
-      "data-mt-variant": "contained",
-      "data-mt-color": "default",
-      "data-mt-size": "md",
+      "data-ok-fab": "",
+      "data-ok-variant": "contained",
+      "data-ok-color": "default",
+      "data-ok-size": "md",
     });
   });
 
   it.each(fabVariants)("maps variant %s", (variant) => {
-    expect(fabAttributes({ variant })["data-mt-variant"]).toBe(variant);
+    expect(fabAttributes({ variant })["data-ok-variant"]).toBe(variant);
   });
 
   it.each(fabColors)("maps color %s", (color) => {
-    expect(fabAttributes({ color })["data-mt-color"]).toBe(color);
+    expect(fabAttributes({ color })["data-ok-color"]).toBe(color);
   });
 
   it.each(fabSizes)("maps size %s", (size) => {
-    expect(fabAttributes({ size })["data-mt-size"]).toBe(size);
+    expect(fabAttributes({ size })["data-ok-size"]).toBe(size);
   });
 
   it("adds extended / animate only when enabled and rejects unknown values", () => {
     expect(fabAttributes({ extended: true, animate: true })).toMatchObject({
-      "data-mt-extended": "",
-      "data-mt-animate": "",
+      "data-ok-extended": "",
+      "data-ok-animate": "",
     });
     const off = fabAttributes({ extended: false, animate: false });
-    expect(off).not.toHaveProperty("data-mt-extended");
-    expect(off).not.toHaveProperty("data-mt-animate");
+    expect(off).not.toHaveProperty("data-ok-extended");
+    expect(off).not.toHaveProperty("data-ok-animate");
     expect(fabAttributes({ variant: HOSTILE, color: HOSTILE, size: HOSTILE })).toEqual(
       fabAttributes(),
     );
@@ -143,97 +143,97 @@ describe("fabAttributes", () => {
 
 describe("group attributes", () => {
   it.each(orientations)("maps orientation %s", (orientation) => {
-    expect(buttonGroupAttributes({ orientation })["data-mt-orientation"]).toBe(orientation);
-    expect(toggleGroupAttributes({ orientation })["data-mt-orientation"]).toBe(orientation);
+    expect(buttonGroupAttributes({ orientation })["data-ok-orientation"]).toBe(orientation);
+    expect(toggleGroupAttributes({ orientation })["data-ok-orientation"]).toBe(orientation);
   });
 
   it("emits explicit defaults and rejects unknown values", () => {
     expect(buttonGroupAttributes({ orientation: HOSTILE })).toEqual({
-      "data-mt-button-group": "",
-      "data-mt-orientation": "horizontal",
+      "data-ok-button-group": "",
+      "data-ok-orientation": "horizontal",
     });
     expect(toggleGroupAttributes()).toEqual({
-      "data-mt-toggle-group": "",
-      "data-mt-orientation": "horizontal",
+      "data-ok-toggle-group": "",
+      "data-ok-orientation": "horizontal",
     });
-    expect(toggleGroupAttributes({ exclusive: true })).toHaveProperty("data-mt-exclusive", "");
-    expect(toggleGroupAttributes({ exclusive: false })).not.toHaveProperty("data-mt-exclusive");
+    expect(toggleGroupAttributes({ exclusive: true })).toHaveProperty("data-ok-exclusive", "");
+    expect(toggleGroupAttributes({ exclusive: false })).not.toHaveProperty("data-ok-exclusive");
   });
 });
 
 describe("toggleButtonAttributes", () => {
   it("emits explicit defaults and rejects unknown values", () => {
     const defaults = {
-      "data-mt-toggle-button": "",
-      "data-mt-color": "standard",
-      "data-mt-size": "md",
+      "data-ok-toggle-button": "",
+      "data-ok-color": "standard",
+      "data-ok-size": "md",
     };
     expect(toggleButtonAttributes()).toEqual(defaults);
     expect(toggleButtonAttributes({ color: "black" as never, size: HOSTILE })).toEqual(defaults);
   });
 
   it.each(toggleButtonColors)("maps color %s", (color) => {
-    expect(toggleButtonAttributes({ color })["data-mt-color"]).toBe(color);
+    expect(toggleButtonAttributes({ color })["data-ok-color"]).toBe(color);
   });
 
   it.each(toggleButtonSizes)("maps size %s", (size) => {
-    expect(toggleButtonAttributes({ size })["data-mt-size"]).toBe(size);
+    expect(toggleButtonAttributes({ size })["data-ok-size"]).toBe(size);
   });
 });
 
 describe("drawerAttributes", () => {
   it("emits explicit defaults and rejects unknown values", () => {
     const defaults = {
-      "data-mt-drawer": "",
-      "data-mt-anchor": "left",
-      "data-mt-variant": "temporary",
+      "data-ok-drawer": "",
+      "data-ok-anchor": "left",
+      "data-ok-variant": "temporary",
     };
     expect(drawerAttributes()).toEqual(defaults);
     expect(drawerAttributes({ anchor: HOSTILE })).toEqual(defaults);
   });
 
   it.each(drawerAnchors)("maps anchor %s", (anchor) => {
-    expect(drawerAttributes({ anchor })["data-mt-anchor"]).toBe(anchor);
+    expect(drawerAttributes({ anchor })["data-ok-anchor"]).toBe(anchor);
   });
 });
 
 describe("sortableAttributes", () => {
   it("emits explicit defaults and rejects unknown values", () => {
-    const defaults = { "data-mt-sortable": "", "data-mt-layout": "grid" };
+    const defaults = { "data-ok-sortable": "", "data-ok-layout": "grid" };
     expect(sortableAttributes()).toEqual(defaults);
     expect(sortableAttributes({ layout: HOSTILE })).toEqual(defaults);
   });
 
   it.each(sortableLayouts)("maps layout %s", (layout) => {
-    expect(sortableAttributes({ layout })["data-mt-layout"]).toBe(layout);
+    expect(sortableAttributes({ layout })["data-ok-layout"]).toBe(layout);
   });
 });
 
 describe("options added in the upstream API review", () => {
   it("button and toggle flags; optional icon button edge", () => {
     expect(buttonAttributes({ disableElevation: true })).toHaveProperty(
-      "data-mt-disable-elevation",
+      "data-ok-disable-elevation",
       "",
     );
-    expect(toggleButtonAttributes({ fullWidth: true })).toHaveProperty("data-mt-full-width", "");
-    expect(toggleGroupAttributes({ fullWidth: true })).toHaveProperty("data-mt-full-width", "");
-    expect(buttonGroupAttributes({ fullWidth: true })).toHaveProperty("data-mt-full-width", "");
+    expect(toggleButtonAttributes({ fullWidth: true })).toHaveProperty("data-ok-full-width", "");
+    expect(toggleGroupAttributes({ fullWidth: true })).toHaveProperty("data-ok-full-width", "");
+    expect(buttonGroupAttributes({ fullWidth: true })).toHaveProperty("data-ok-full-width", "");
     expect(iconButtonAttributes({ edge: "end", loading: true })).toMatchObject({
-      "data-mt-edge": "end",
-      "data-mt-loading": "",
+      "data-ok-edge": "end",
+      "data-ok-loading": "",
     });
-    expect(iconButtonAttributes({ edge: HOSTILE })).not.toHaveProperty("data-mt-edge");
+    expect(iconButtonAttributes({ edge: HOSTILE })).not.toHaveProperty("data-ok-edge");
   });
 
   it("drawer variants and flags", () => {
     expect(
       drawerAttributes({ variant: "permanent", hideBackdrop: true, disableEscapeKeyDown: true }),
     ).toEqual({
-      "data-mt-drawer": "",
-      "data-mt-anchor": "left",
-      "data-mt-variant": "permanent",
-      "data-mt-hide-backdrop": "",
-      "data-mt-disable-escape-key-down": "",
+      "data-ok-drawer": "",
+      "data-ok-anchor": "left",
+      "data-ok-variant": "permanent",
+      "data-ok-hide-backdrop": "",
+      "data-ok-disable-escape-key-down": "",
     });
   });
 });

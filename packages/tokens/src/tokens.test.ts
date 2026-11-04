@@ -69,25 +69,25 @@ describe("themeToCss", () => {
 
   it("emits light, dark, system and nested-light scopes", () => {
     expect(css).toContain(":root {");
-    expect(css).toContain('[data-mt-theme="dark"], .dark {');
-    expect(css).toContain('[data-mt-theme="light"] {');
-    expect(css).toMatch(/@media \(prefers-color-scheme: dark\) \{\s+\[data-mt-theme="system"\]/);
+    expect(css).toContain('[data-ok-theme="dark"], .dark {');
+    expect(css).toContain('[data-ok-theme="light"] {');
+    expect(css).toMatch(/@media \(prefers-color-scheme: dark\) \{\s+\[data-ok-theme="system"\]/);
   });
 
   it("registers color bindings as non-inheriting", () => {
-    expect(css).toContain('[data-mt-color="primary"] {');
-    expect(css).toMatch(/@property --mt-c-main \{\s+syntax: "\*";\s+inherits: false;/);
+    expect(css).toContain('[data-ok-color="primary"] {');
+    expect(css).toMatch(/@property --ok-c-main \{\s+syntax: "\*";\s+inherits: false;/);
   });
 
   it("declares each scheme once and every shadow once", () => {
     const count = (needle: string) => css.split(needle).length - 1;
-    expect(count("--mt-text-primary:")).toBe(3); // light, dark, system
-    expect(count("--mt-elevation-24:")).toBe(1);
-    expect(count("--mt-shadow-card:")).toBe(1);
-    expect(css).toContain(':where(:root), [data-mt-theme="light"] {');
-    expect(css).toContain(":root, [data-mt-theme], .dark {");
-    expect(css.indexOf('[data-mt-theme="dark"], .dark {')).toBeLessThan(
-      css.indexOf(':where(:root), [data-mt-theme="light"] {'),
+    expect(count("--ok-text-primary:")).toBe(3); // light, dark, system
+    expect(count("--ok-elevation-24:")).toBe(1);
+    expect(count("--ok-shadow-card:")).toBe(1);
+    expect(css).toContain(':where(:root), [data-ok-theme="light"] {');
+    expect(css).toContain(":root, [data-ok-theme], .dark {");
+    expect(css.indexOf('[data-ok-theme="dark"], .dark {')).toBeLessThan(
+      css.indexOf(':where(:root), [data-ok-theme="light"] {'),
     );
   });
 
@@ -95,10 +95,10 @@ describe("themeToCss", () => {
     expect(themeToCss(defaultTheme, { colorBindings: false })).not.toContain("@property");
   });
 
-  it("prefixes every variable with --mt-", () => {
+  it("prefixes every variable with --ok-", () => {
     const { root, light, dark } = themeToCssVariables(defaultTheme);
     for (const key of Object.keys({ ...root, ...light, ...dark })) {
-      expect(key).toMatch(/^--mt-[a-z0-9-]+$/);
+      expect(key).toMatch(/^--ok-[a-z0-9-]+$/);
     }
   });
 
@@ -112,58 +112,58 @@ describe("typography and elevation", () => {
   it("emits responsive font sizes as min-width overrides, smallest first", () => {
     const css = themeToCss(defaultTheme);
     expect(css).toMatch(
-      /@media \(min-width: 600px\) \{\s+:root \{[^}]*--mt-typography-h1-font-size: 3\.25rem;/,
+      /@media \(min-width: 600px\) \{\s+:root \{[^}]*--ok-typography-h1-font-size: 3\.25rem;/,
     );
     expect(css).toMatch(
-      /@media \(min-width: 1200px\) \{\s+:root \{[^}]*--mt-typography-h1-font-size: 4rem;/,
+      /@media \(min-width: 1200px\) \{\s+:root \{[^}]*--ok-typography-h1-font-size: 4rem;/,
     );
     expect(css.indexOf("min-width: 600px")).toBeLessThan(css.indexOf("min-width: 900px"));
   });
 
   it("uses the display font for h1–h3 only", () => {
     const { root } = themeToCssVariables(defaultTheme);
-    expect(root["--mt-typography-h1-font-family"]).toBe("var(--mt-font-family-secondary)");
-    expect(root["--mt-typography-h3-font-family"]).toBe("var(--mt-font-family-secondary)");
-    expect(root["--mt-typography-h4-font-family"]).toBe("var(--mt-font-family)");
+    expect(root["--ok-typography-h1-font-family"]).toBe("var(--ok-font-family-secondary)");
+    expect(root["--ok-typography-h3-font-family"]).toBe("var(--ok-font-family-secondary)");
+    expect(root["--ok-typography-h4-font-family"]).toBe("var(--ok-font-family)");
   });
 
   it("defines 24 three-layer system elevations per scheme", () => {
     const { light, dark } = themeToCssVariables(defaultTheme);
     expect(defaultTheme.elevation).toHaveLength(24);
-    expect(light["--mt-elevation-1"]).toBe(
-      "0px 2px 1px -1px color-mix(in srgb, var(--mt-shadow-color) 20%, transparent), " +
-        "0px 1px 1px 0px color-mix(in srgb, var(--mt-shadow-color) 14%, transparent), " +
-        "0px 1px 3px 0px color-mix(in srgb, var(--mt-shadow-color) 12%, transparent)",
+    expect(light["--ok-elevation-1"]).toBe(
+      "0px 2px 1px -1px color-mix(in srgb, var(--ok-shadow-color) 20%, transparent), " +
+        "0px 1px 1px 0px color-mix(in srgb, var(--ok-shadow-color) 14%, transparent), " +
+        "0px 1px 3px 0px color-mix(in srgb, var(--ok-shadow-color) 12%, transparent)",
     );
-    expect(dark["--mt-elevation-24"]).toBeDefined();
+    expect(dark["--ok-elevation-24"]).toBeDefined();
   });
 });
 
 describe("button foundations", () => {
   it("exposes an RGB channel for every palette, grey and common color", () => {
     const { root } = themeToCssVariables(defaultTheme);
-    expect(root["--mt-palette-primary-main-channel"]).toBe("0 167 111");
-    expect(root["--mt-palette-error-dark-channel"]).toBe("183 29 24");
-    expect(root["--mt-palette-grey-500-channel"]).toBe("145 158 171");
-    expect(root["--mt-palette-common-black-channel"]).toBe("0 0 0");
-    expect(root["--mt-palette-common-white-channel"]).toBe("255 255 255");
+    expect(root["--ok-palette-primary-main-channel"]).toBe("0 167 111");
+    expect(root["--ok-palette-error-dark-channel"]).toBe("183 29 24");
+    expect(root["--ok-palette-grey-500-channel"]).toBe("145 158 171");
+    expect(root["--ok-palette-common-black-channel"]).toBe("0 0 0");
+    expect(root["--ok-palette-common-white-channel"]).toBe("255 255 255");
   });
 
   it("exposes a font-size scale", () => {
     const { root } = themeToCssVariables(defaultTheme);
-    expect(root["--mt-font-size-sm"]).toBe("0.8125rem");
-    expect(root["--mt-font-size-lg"]).toBe("0.9375rem");
+    expect(root["--ok-font-size-sm"]).toBe("0.8125rem");
+    expect(root["--ok-font-size-lg"]).toBe("0.9375rem");
   });
 
   it("binds every component color, including black and white, with a channel", () => {
     const css = themeToCss(defaultTheme);
     for (const name of componentColorNames) {
-      expect(css).toContain(`[data-mt-color="${name}"] {`);
+      expect(css).toContain(`[data-ok-color="${name}"] {`);
     }
     expect(css).toMatch(
-      /\[data-mt-color="black"\] \{[^}]*--mt-c-channel: var\(--mt-palette-common-black-channel\);/,
+      /\[data-ok-color="black"\] \{[^}]*--ok-c-channel: var\(--ok-palette-common-black-channel\);/,
     );
-    expect(css).toMatch(/@property --mt-c-channel \{\s+syntax: "\*";\s+inherits: false;/);
+    expect(css).toMatch(/@property --ok-c-channel \{\s+syntax: "\*";\s+inherits: false;/);
   });
 
   it("black and white contained colors meet AA", () => {

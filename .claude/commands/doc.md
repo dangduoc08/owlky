@@ -13,7 +13,7 @@ npm users (package README) and component users (spec, Storybook docs for React a
 ## Steps
 
 1. **Resolve the target.**
-   $ARGUMENTS may be a package (`react`, `packages/html`, `@minimal-tailwind/styles`) or a component (`dialog`, `button`). Resolve it to exactly one target. If ambiguous, ask instead of guessing.
+   $ARGUMENTS may be a package (`react`, `packages/html`, `@owlky/styles`) or a component (`dialog`, `button`). Resolve it to exactly one target. If ambiguous, ask instead of guessing.
    - **Package** → output is `packages/<name>/README.md`.
    - **Component** → output is `specs/components/<name>.md` (components have no Storybook docs page; usage lives in each story's Code panel via `htmlSetup()` / `jsxSource()`).
 
@@ -21,7 +21,7 @@ npm users (package README) and component users (spec, Storybook docs for React a
    - Component docs: follow the Dialog spec from git history — `git show bd5fb2d:specs/components/dialog.md` — for structure and level of detail (ADR-0011).
    - Foundation docs: follow `apps/storybook/src/foundations/colors/` (page component + story).
    - Package README structure:
-     - `# @minimal-tailwind/<name>` + one-line description
+     - `# @owlky/<name>` + one-line description
      - Install
      - Usage — one complete, realistic example of the most common use
      - API — every export: signature, parameters, return value / props with type, default, required
@@ -51,10 +51,10 @@ npm users (package README) and component users (spec, Storybook docs for React a
 9. **Write** the documentation.
 
 10. **Verify completeness and validity.**
-    - Every export / prop / `data-mt-*` attribute / event / keyboard interaction found in step 3 is documented.
+    - Every export / prop / `data-ok-*` attribute / event / keyboard interaction found in step 3 is documented.
     - Every rule from step 5 appears.
     - HTML examples are copy-paste valid (same markup as the snippets); TypeScript examples type-check against the current API.
-    - For component docs: `pnpm --filter @minimal-tailwind/storybook build` succeeds.
+    - For component docs: `pnpm --filter @owlky/storybook build` succeeds.
 
 ---
 
@@ -62,7 +62,7 @@ npm users (package README) and component users (spec, Storybook docs for React a
 
 - Never modify source code, tests or snippets — output is documentation only (`README.md`, `specs/**`, foundation story `docs.description` strings).
 - Every documented prop/field states its TypeScript type and default.
-- Every example uses real exported identifiers and real `data-mt-*` attributes.
+- Every example uses real exported identifiers and real `data-ok-*` attributes.
 - Do not document internal (non-exported) identifiers.
 - Do not add any Claude-related signature, attribution or generated-by note.
 - Docs are written in English (repository convention).

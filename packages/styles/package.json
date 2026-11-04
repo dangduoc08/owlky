@@ -1,17 +1,17 @@
 {
-  "name": "@minimal-tailwind/styles",
+  "name": "@owlky/styles",
   "version": "0.0.0",
   "type": "module",
   "license": "MIT",
   "dependencies": {
-    "@minimal-tailwind/tokens": "workspace:*"
+    "@owlky/tokens": "workspace:*"
   },
   "devDependencies": {
     "@tailwindcss/cli": "4.3.4",
     "tailwindcss": "4.3.4",
     "@types/node": "^22.19.0"
   },
-  "description": "Prebuilt, framework-free CSS for Minimal Tailwind components, plus a Tailwind CSS v4 theme.",
+  "description": "Prebuilt, framework-free CSS for Owlky components, plus a Tailwind CSS v4 theme.",
   "sideEffects": [
     "**/*.css"
   ],
@@ -19,8 +19,8 @@
     "dist"
   ],
   "exports": {
-    "./minimal-tailwind.css": "./dist/minimal-tailwind.css",
-    "./minimal-tailwind.min.css": "./dist/minimal-tailwind.min.css",
+    "./owlky.css": "./dist/owlky.css",
+    "./owlky.min.css": "./dist/owlky.min.css",
     "./tokens.css": "./dist/tokens.css",
     "./base.css": "./dist/base.css",
     "./theme.css": "./dist/theme.css",
@@ -37,7 +37,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/OWNER/minimal-tailwind.git",
+    "url": "git+https://github.com/OWNER/owlky.git",
     "directory": "packages/styles"
   },
   "keywords": [

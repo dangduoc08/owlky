@@ -1,4 +1,4 @@
-import { toggleButtonColors } from "@minimal-tailwind/core";
+import { toggleButtonColors } from "@owlky/core";
 import { render, screen } from "@testing-library/react";
 import { StrictMode, useState } from "react";
 import { renderToString } from "react-dom/server";
@@ -27,16 +27,16 @@ describe("ToggleButton (standalone)", () => {
     expect(button.getAttribute("type")).toBe("button");
     expect(button.getAttribute("aria-pressed")).toBe("false");
     expect(button.dataset).toMatchObject({
-      mtToggleButton: "",
-      mtColor: "standard",
-      mtSize: "md",
-      mtRuntime: "off",
+      okToggleButton: "",
+      okColor: "standard",
+      okSize: "md",
+      okRuntime: "off",
     });
   });
 
   it.each(toggleButtonColors)("color %s", (color) => {
     render(<ToggleButton aria-label="x" color={color} />);
-    expect(screen.getByRole("button").dataset["mtColor"]).toBe(color);
+    expect(screen.getByRole("button").dataset["okColor"]).toBe(color);
   });
 
   it.each([
@@ -124,14 +124,14 @@ describe("ToggleButtonGroup", () => {
     render(<Alignment color="info" size="lg" orientation={"x" as never} />);
     const group = screen.getByRole("group", { name: "Alignment" });
     expect(group.dataset).toMatchObject({
-      mtToggleGroup: "",
-      mtOrientation: "horizontal",
-      mtRuntime: "off",
+      okToggleGroup: "",
+      okOrientation: "horizontal",
+      okRuntime: "off",
     });
-    expect(group.hasAttribute("data-mt-exclusive")).toBe(false);
+    expect(group.hasAttribute("data-ok-exclusive")).toBe(false);
     const left = screen.getByRole("button", { name: "Left" });
-    expect(left.dataset).toMatchObject({ mtColor: "info", mtSize: "lg" });
-    expect(left.hasAttribute("data-mt-runtime")).toBe(false);
+    expect(left.dataset).toMatchObject({ okColor: "info", okSize: "lg" });
+    expect(left.hasAttribute("data-ok-runtime")).toBe(false);
     expect(left.getAttribute("value")).toBe("left");
     expect(left.getBoundingClientRect().height).toBe(46);
   });
@@ -139,7 +139,7 @@ describe("ToggleButtonGroup", () => {
   it("exclusive: one pressed value, cleared when pressed again", async () => {
     const onChange = vi.fn();
     render(<Alignment exclusive defaultValue="left" onChange={onChange} />);
-    expect(screen.getByRole("group").dataset["mtExclusive"]).toBe("");
+    expect(screen.getByRole("group").dataset["okExclusive"]).toBe("");
     expect(pressed("Left")).toBe("true");
     await userEvent.click(screen.getByRole("button", { name: "Center" }));
     expect([pressed("Left"), pressed("Center")]).toEqual(["false", "true"]);

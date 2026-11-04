@@ -48,7 +48,7 @@ export interface ModalController {
  * Modal behavior on top of a `<dialog>` element, shared by modal components (Drawer; Dialog).
  *
  * Native path: `showModal()` (top layer, inert page, Escape → `cancel` event).
- * Fallback path (no `showModal`): `open` attribute + `data-mt-fallback`, siblings made inert,
+ * Fallback path (no `showModal`): `open` attribute + `data-ok-fallback`, siblings made inert,
  * Tab trapped and Escape handled manually. Both paths share focus, scroll-lock, stacking and
  * backdrop logic, so behavior is identical.
  */
@@ -79,7 +79,7 @@ export function createModalController(
     releaseInert = null;
     if (fallback) {
       element.removeAttribute("open");
-      element.removeAttribute("data-mt-fallback");
+      element.removeAttribute("data-ok-fallback");
       element.removeAttribute("aria-modal");
     }
     const target = returnFocus;
@@ -159,7 +159,7 @@ export function createModalController(
 
     open(returnFocusTo) {
       if (isOpen || signal.aborted) return;
-      if (!element.isConnected) throw new Error("[minimal-tailwind] Cannot open a detached modal.");
+      if (!element.isConnected) throw new Error("[owlky] Cannot open a detached modal.");
       const active = doc.activeElement;
       returnFocus = returnFocusTo ?? (active instanceof HTMLElement ? active : null);
 
@@ -169,7 +169,7 @@ export function createModalController(
         nativeDialog.showModal();
       } else {
         element.setAttribute("open", "");
-        element.setAttribute("data-mt-fallback", "");
+        element.setAttribute("data-ok-fallback", "");
         element.setAttribute("aria-modal", "true");
         if (!element.hasAttribute("role")) element.setAttribute("role", "dialog");
         releaseInert = inertOutside(element);

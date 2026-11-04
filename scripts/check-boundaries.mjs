@@ -3,13 +3,13 @@
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 
-const REACT = ["react", "react-dom", "@minimal-tailwind/react"];
+const REACT = ["react", "react-dom", "@owlky/react"];
 const rules = {
   tokens: REACT,
   styles: REACT,
   core: REACT,
   html: REACT,
-  react: ["@minimal-tailwind/html"],
+  react: ["@owlky/html"],
 };
 
 async function* files(dir) {

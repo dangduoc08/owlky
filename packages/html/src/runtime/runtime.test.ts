@@ -26,7 +26,7 @@ function probe(name = "probe") {
   const clicks: Element[] = [];
   const definition = defineComponent({
     name,
-    selector: `[data-mt-${name}]`,
+    selector: `[data-ok-${name}]`,
     setup(element, { signal }) {
       setups.push(element);
       element.addEventListener("mt-ping", () => element.setAttribute("data-pinged", ""), {
@@ -35,7 +35,7 @@ function probe(name = "probe") {
       return { destroy: () => destroys.push(element) };
     },
     delegate: [
-      { event: "click", selector: `[data-mt-${name}-trigger]`, handle: (t) => clicks.push(t) },
+      { event: "click", selector: `[data-ok-${name}-trigger]`, handle: (t) => clicks.push(t) },
     ],
   });
   return { definition, setups, destroys, clicks };
@@ -43,7 +43,7 @@ function probe(name = "probe") {
 
 describe("lifecycle", () => {
   it("mounts existing elements on start and never twice", () => {
-    mount(`<div data-mt-probe></div><div data-mt-probe></div>`);
+    mount(`<div data-ok-probe></div><div data-ok-probe></div>`);
     const p = probe();
     const runtime = newRuntime().register(p.definition).start();
     runtime.start();
@@ -55,13 +55,13 @@ describe("lifecycle", () => {
   it("mounts dynamically inserted elements automatically", async () => {
     const p = probe();
     newRuntime().register(p.definition).start();
-    const host = mount(`<section><div data-mt-probe></div></section>`);
+    const host = mount(`<section><div data-ok-probe></div></section>`);
     await settle();
-    expect(p.setups).toEqual([host.querySelector("[data-mt-probe]")]);
+    expect(p.setups).toEqual([host.querySelector("[data-ok-probe]")]);
   });
 
   it("destroys removed elements and aborts their listeners", async () => {
-    const host = mount(`<div data-mt-probe></div>`);
+    const host = mount(`<div data-ok-probe></div>`);
     const element = host.firstElementChild as HTMLElement;
     const p = probe();
     const runtime = newRuntime().register(p.definition).start();
@@ -74,7 +74,7 @@ describe("lifecycle", () => {
   });
 
   it("keeps the instance when an element is moved within one task", async () => {
-    const host = mount(`<div data-mt-probe></div><aside></aside>`);
+    const host = mount(`<div data-ok-probe></div><aside></aside>`);
     const element = host.firstElementChild as HTMLElement;
     const p = probe();
     newRuntime().register(p.definition).start();
@@ -85,7 +85,7 @@ describe("lifecycle", () => {
   });
 
   it("sweeps disconnected instances on init() when observation is off", () => {
-    const host = mount(`<div data-mt-probe></div>`);
+    const host = mount(`<div data-ok-probe></div>`);
     const p = probe();
     const runtime = newRuntime().register(p.definition).start({ observe: false });
     host.remove();
@@ -94,8 +94,8 @@ describe("lifecycle", () => {
   });
 
   it("destroy(root) tears down only that subtree", () => {
-    const a = mount(`<div data-mt-probe></div>`);
-    mount(`<div data-mt-probe></div>`);
+    const a = mount(`<div data-ok-probe></div>`);
+    mount(`<div data-ok-probe></div>`);
     const p = probe();
     const runtime = newRuntime().register(p.definition).start();
     runtime.destroy(a);
@@ -103,14 +103,14 @@ describe("lifecycle", () => {
   });
 
   it("stop() removes listeners and instances; start() restores them", async () => {
-    const host = mount(`<div data-mt-probe><button data-mt-probe-trigger>x</button></div>`);
+    const host = mount(`<div data-ok-probe><button data-ok-probe-trigger>x</button></div>`);
     const p = probe();
     const runtime = newRuntime().register(p.definition).start();
     runtime.stop();
     expect(p.destroys).toHaveLength(1);
     host.querySelector("button")?.click();
     expect(p.clicks).toHaveLength(0);
-    mount(`<div data-mt-probe></div>`);
+    mount(`<div data-ok-probe></div>`);
     await settle();
     expect(p.setups).toHaveLength(1);
 
@@ -121,7 +121,7 @@ describe("lifecycle", () => {
   });
 
   it("mounts elements of a component registered after start", () => {
-    mount(`<div data-mt-late></div>`);
+    mount(`<div data-ok-late></div>`);
     const p = probe("late");
     newRuntime().start().register(p.definition);
     expect(p.setups).toHaveLength(1);
@@ -129,10 +129,10 @@ describe("lifecycle", () => {
 
   it("isolates a failing setup from other components", () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
-    mount(`<div data-mt-broken></div><div data-mt-probe></div>`);
+    mount(`<div data-ok-broken></div><div data-ok-probe></div>`);
     const broken = defineComponent({
       name: "broken",
-      selector: "[data-mt-broken]",
+      selector: "[data-ok-broken]",
       setup() {
         throw new Error("boom");
       },
@@ -147,29 +147,29 @@ describe("lifecycle", () => {
 describe("delegation", () => {
   it("uses one listener per event type, however many components and instances", () => {
     const spy = vi.spyOn(document, "addEventListener");
-    mount(`<div data-mt-a></div><div data-mt-b></div>`.repeat(5));
+    mount(`<div data-ok-a></div><div data-ok-b></div>`.repeat(5));
     newRuntime().register(probe("a").definition, probe("b").definition).start();
     expect(spy.mock.calls.filter(([type]) => type === "click")).toHaveLength(1);
   });
 
   it("dispatches to the closest matching element", () => {
-    const host = mount(`<div data-mt-probe-trigger id="t"><span>label</span></div>`);
+    const host = mount(`<div data-ok-probe-trigger id="t"><span>label</span></div>`);
     const p = probe();
     newRuntime().register(p.definition).start();
     host.querySelector("span")?.click();
     expect(p.clicks.map((e) => e.id)).toEqual(["t"]);
   });
 
-  it("ignores subtrees owned by another implementation (data-mt-runtime=off)", async () => {
+  it("ignores subtrees owned by another implementation (data-ok-runtime=off)", async () => {
     const host = mount(`
-      <div data-mt-runtime="off">
-        <div data-mt-probe></div>
-        <button data-mt-probe-trigger>x</button>
+      <div data-ok-runtime="off">
+        <div data-ok-probe></div>
+        <button data-ok-probe-trigger>x</button>
       </div>`);
     const p = probe();
     newRuntime().register(p.definition).start();
     host.querySelector("button")?.click();
-    mount(`<div data-mt-probe></div>`, host.firstElementChild as HTMLElement);
+    mount(`<div data-ok-probe></div>`, host.firstElementChild as HTMLElement);
     await settle();
     expect(p.setups).toHaveLength(0);
     expect(p.clicks).toHaveLength(0);
@@ -178,7 +178,7 @@ describe("delegation", () => {
   it("works inside a connected shadow root", async () => {
     const hostElement = mount("").appendChild(document.createElement("div"));
     const shadow = hostElement.attachShadow({ mode: "open" });
-    shadow.innerHTML = `<div data-mt-probe><button data-mt-probe-trigger>x</button></div>`;
+    shadow.innerHTML = `<div data-ok-probe><button data-ok-probe-trigger>x</button></div>`;
     const p = probe();
     const runtime = newRuntime().register(p.definition).start();
     runtime.connect(shadow);
@@ -197,7 +197,7 @@ describe("page-wide singleton (getRuntime)", () => {
   });
 
   it("does not duplicate instances or listeners when loaded twice", () => {
-    mount(`<div data-mt-probe><button data-mt-probe-trigger>x</button></div>`);
+    mount(`<div data-ok-probe><button data-ok-probe-trigger>x</button></div>`);
     const first = probe();
     const second = probe();
     const runtime = getRuntime().register(first.definition).start();
@@ -214,7 +214,7 @@ describe("page-wide singleton (getRuntime)", () => {
     vi.spyOn(console, "warn").mockImplementation(() => {});
     const owner = createRuntime();
     runtimes.push(owner);
-    Object.defineProperty(globalThis, Symbol.for("minimal-tailwind.runtime"), {
+    Object.defineProperty(globalThis, Symbol.for("owlky.runtime"), {
       value: { protocol: PROTOCOL, version: "0.0.0-other", runtime: owner },
       configurable: true,
     });
@@ -225,11 +225,11 @@ describe("page-wide singleton (getRuntime)", () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
     const owner = createRuntime();
     runtimes.push(owner);
-    Object.defineProperty(globalThis, Symbol.for("minimal-tailwind.runtime"), {
+    Object.defineProperty(globalThis, Symbol.for("owlky.runtime"), {
       value: { protocol: PROTOCOL + 1, version: "99.0.0", runtime: owner },
       configurable: true,
     });
-    mount(`<div data-mt-probe></div>`);
+    mount(`<div data-ok-probe></div>`);
     const p = probe();
     const inactive = getRuntime().register(p.definition).start();
     expect(inactive).not.toBe(owner);

@@ -35,7 +35,7 @@ Read all of it.
 
 Evaluate each independently.
 
-**Coverage** — Every package, component, export, React prop, `data-mt-*` attribute, `--mt-*` variable group, `mt:*` event, runtime API method, script and CI job documented? Lifecycle, fallbacks, extension points (adding a component, a token, a variant) covered?
+**Coverage** — Every package, component, export, React prop, `data-ok-*` attribute, `--ok-*` variable group, `ok:*` event, runtime API method, script and CI job documented? Lifecycle, fallbacks, extension points (adding a component, a token, a variant) covered?
 
 **Correctness** — Docs contradicting code: wrong commands, paths, versions, defaults, attribute names, event reasons, phase status, size numbers, browser baseline.
 

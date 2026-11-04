@@ -9,7 +9,7 @@ export const paletteColorNames = [
 
 export type PaletteColorName = (typeof paletteColorNames)[number];
 
-/** Colors a component can take through `data-mt-color` (bound to `--mt-c-*`). */
+/** Colors a component can take through `data-ok-color` (bound to `--ok-c-*`). */
 export const componentColorNames = [...paletteColorNames, "black", "white"] as const;
 export type ComponentColorName = (typeof componentColorNames)[number];
 

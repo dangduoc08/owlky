@@ -1,11 +1,11 @@
 /*
  * Toggle button — spec: specs/components/toggle-button.md
  *
- * Anatomy:  div[role="group"][data-mt-toggle-group] › button[data-mt-toggle-button][aria-pressed]…
- *           or a standalone button[data-mt-toggle-button][aria-pressed]
- * Modifiers: data-mt-color = standard (default) | primary … error, data-mt-full-width
- *            data-mt-size  = md (default) | sm | lg
- *            group: data-mt-orientation = horizontal (default) | vertical, data-mt-exclusive
+ * Anatomy:  div[role="group"][data-ok-toggle-group] › button[data-ok-toggle-button][aria-pressed]…
+ *           or a standalone button[data-ok-toggle-button][aria-pressed]
+ * Modifiers: data-ok-color = standard (default) | primary … error, data-ok-full-width
+ *            data-ok-size  = md (default) | sm | lg
+ *            group: data-ok-orientation = horizontal (default) | vertical, data-ok-exclusive
  * States:    [aria-pressed="true"], :hover (hover-capable devices), :focus-visible, :disabled
  *
  * Single :where() selectors in @layer components (zero specificity). Translucent colors use
@@ -14,143 +14,143 @@
 @reference "../theme.css";
 
 @layer components {
-  :where([data-mt-toggle-button]) {
-    --_mt-main: var(--mt-c-main, var(--mt-text-primary));
-    --_mt-selected-bg: rgb(var(--mt-c-channel, var(--mt-palette-grey-500-channel)) / 0.08);
-    --_mt-hover-bg: rgb(var(--mt-c-channel, var(--mt-palette-grey-500-channel)) / 0.08);
-    --_mt-size: calc(var(--mt-spacing) * 12);
-    --_mt-font-size: var(--mt-font-size-md);
+  :where([data-ok-toggle-button]) {
+    --_ok-main: var(--ok-c-main, var(--ok-text-primary));
+    --_ok-selected-bg: rgb(var(--ok-c-channel, var(--ok-palette-grey-500-channel)) / 0.08);
+    --_ok-hover-bg: rgb(var(--ok-c-channel, var(--ok-palette-grey-500-channel)) / 0.08);
+    --_ok-size: calc(var(--ok-spacing) * 12);
+    --_ok-font-size: var(--ok-font-size-md);
 
     display: inline-flex;
     flex-shrink: 0;
     align-items: center;
     justify-content: center;
-    gap: calc(var(--mt-spacing) * 2);
+    gap: calc(var(--ok-spacing) * 2);
     box-sizing: border-box;
-    min-width: var(--_mt-size);
-    height: var(--_mt-size);
+    min-width: var(--_ok-size);
+    height: var(--_ok-size);
     margin: 0;
-    padding: 0 calc(var(--mt-spacing) * 2.5);
-    border: 1px solid rgb(var(--mt-palette-grey-500-channel) / 0.2);
-    border-radius: var(--mt-radius-md);
+    padding: 0 calc(var(--ok-spacing) * 2.5);
+    border: 1px solid rgb(var(--ok-palette-grey-500-channel) / 0.2);
+    border-radius: var(--ok-radius-md);
     background-color: transparent;
-    color: var(--mt-text-secondary);
-    font-family: var(--mt-font-family);
-    font-size: var(--_mt-font-size);
-    font-weight: var(--mt-font-weight-semibold);
-    line-height: var(--mt-typography-button-line-height);
+    color: var(--ok-text-secondary);
+    font-family: var(--ok-font-family);
+    font-size: var(--_ok-font-size);
+    font-weight: var(--ok-font-weight-semibold);
+    line-height: var(--ok-typography-button-line-height);
     white-space: nowrap;
     cursor: pointer;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
     transition-property: background-color, border-color, color;
-    transition-duration: var(--mt-duration-short);
-    transition-timing-function: var(--mt-easing-standard);
+    transition-duration: var(--ok-duration-short);
+    transition-timing-function: var(--ok-easing-standard);
   }
 
-  :where([data-mt-toggle-button] > svg, [data-mt-toggle-button] > img) {
+  :where([data-ok-toggle-button] > svg, [data-ok-toggle-button] > img) {
     flex-shrink: 0;
-    width: calc(var(--mt-spacing) * 5);
-    height: calc(var(--mt-spacing) * 5);
+    width: calc(var(--ok-spacing) * 5);
+    height: calc(var(--ok-spacing) * 5);
   }
 
   /* Neutral selection uses the action tokens (no palette binding for standard). */
-  :where([data-mt-toggle-button][data-mt-color="standard"]) {
-    --_mt-selected-bg: var(--mt-action-selected);
-    --_mt-hover-bg: var(--mt-action-hover);
+  :where([data-ok-toggle-button][data-ok-color="standard"]) {
+    --_ok-selected-bg: var(--ok-action-selected);
+    --_ok-hover-bg: var(--ok-action-hover);
   }
 
   /* Sizes (standalone) */
-  :where([data-mt-toggle-button][data-mt-size="sm"]) {
-    --_mt-size: calc(var(--mt-spacing) * 10);
-    --_mt-font-size: var(--mt-font-size-sm);
+  :where([data-ok-toggle-button][data-ok-size="sm"]) {
+    --_ok-size: calc(var(--ok-spacing) * 10);
+    --_ok-font-size: var(--ok-font-size-sm);
   }
 
-  :where([data-mt-toggle-button][data-mt-size="lg"]) {
-    --_mt-size: calc(var(--mt-spacing) * 14);
-    --_mt-font-size: var(--mt-font-size-lg);
+  :where([data-ok-toggle-button][data-ok-size="lg"]) {
+    --_ok-size: calc(var(--ok-spacing) * 14);
+    --_ok-font-size: var(--ok-font-size-lg);
   }
 
   /* Group: one bordered container; buttons lose their border and shrink by the frame (10px). */
-  :where([data-mt-toggle-group]) {
+  :where([data-ok-toggle-group]) {
     display: inline-flex;
     flex-direction: row;
-    gap: var(--mt-spacing);
+    gap: var(--ok-spacing);
     box-sizing: border-box;
-    padding: var(--mt-spacing);
-    border: 1px solid rgb(var(--mt-palette-grey-500-channel) / 0.16);
-    border-radius: var(--mt-radius-md);
+    padding: var(--ok-spacing);
+    border: 1px solid rgb(var(--ok-palette-grey-500-channel) / 0.16);
+    border-radius: var(--ok-radius-md);
     vertical-align: middle;
   }
 
-  :where([data-mt-toggle-group][data-mt-orientation="vertical"]) {
+  :where([data-ok-toggle-group][data-ok-orientation="vertical"]) {
     flex-direction: column;
   }
 
-  :where([data-mt-toggle-button][data-mt-full-width]) {
+  :where([data-ok-toggle-button][data-ok-full-width]) {
     width: 100%;
   }
 
-  :where([data-mt-toggle-group][data-mt-full-width]) {
+  :where([data-ok-toggle-group][data-ok-full-width]) {
     display: flex;
     width: 100%;
   }
 
-  :where([data-mt-toggle-group][data-mt-full-width] > [data-mt-toggle-button]) {
+  :where([data-ok-toggle-group][data-ok-full-width] > [data-ok-toggle-button]) {
     flex: 1 1 0;
   }
 
-  :where([data-mt-toggle-group] > [data-mt-toggle-button]) {
-    --_mt-size: calc(var(--mt-spacing) * 9.5);
+  :where([data-ok-toggle-group] > [data-ok-toggle-button]) {
+    --_ok-size: calc(var(--ok-spacing) * 9.5);
 
-    padding: 0 calc(var(--mt-spacing) * 1.75);
+    padding: 0 calc(var(--ok-spacing) * 1.75);
     border: 0;
   }
 
-  :where([data-mt-toggle-group] > [data-mt-toggle-button][data-mt-size="sm"]) {
-    --_mt-size: calc(var(--mt-spacing) * 7.5);
+  :where([data-ok-toggle-group] > [data-ok-toggle-button][data-ok-size="sm"]) {
+    --_ok-size: calc(var(--ok-spacing) * 7.5);
 
-    padding: 0 calc(var(--mt-spacing) * 0.75);
+    padding: 0 calc(var(--ok-spacing) * 0.75);
   }
 
-  :where([data-mt-toggle-group] > [data-mt-toggle-button][data-mt-size="lg"]) {
-    --_mt-size: calc(var(--mt-spacing) * 11.5);
+  :where([data-ok-toggle-group] > [data-ok-toggle-button][data-ok-size="lg"]) {
+    --_ok-size: calc(var(--ok-spacing) * 11.5);
 
-    padding: 0 calc(var(--mt-spacing) * 2.75);
+    padding: 0 calc(var(--ok-spacing) * 2.75);
   }
 
   /* Pressed */
-  :where([data-mt-toggle-button][aria-pressed="true"]) {
+  :where([data-ok-toggle-button][aria-pressed="true"]) {
     border-color: currentColor;
-    background-color: var(--_mt-selected-bg);
-    color: var(--_mt-main);
+    background-color: var(--_ok-selected-bg);
+    color: var(--_ok-main);
   }
 
   @media (hover: hover) {
-    :where([data-mt-toggle-button]:hover) {
-      background-color: var(--_mt-hover-bg);
+    :where([data-ok-toggle-button]:hover) {
+      background-color: var(--_ok-hover-bg);
     }
   }
 
-  :where([data-mt-toggle-button]:focus-visible) {
-    outline: 2px solid var(--_mt-main);
+  :where([data-ok-toggle-button]:focus-visible) {
+    outline: 2px solid var(--_ok-main);
     outline-offset: 2px;
   }
 
   /* Disabled — after hover, so it wins. */
-  :where([data-mt-toggle-button]:disabled) {
-    border-color: var(--mt-action-disabled-bg);
+  :where([data-ok-toggle-button]:disabled) {
+    border-color: var(--ok-action-disabled-bg);
     background-color: transparent;
-    color: var(--mt-action-disabled);
+    color: var(--ok-action-disabled);
     cursor: not-allowed;
   }
 
-  :where([data-mt-toggle-button][aria-pressed="true"]:disabled) {
-    background-color: var(--mt-action-disabled-bg);
+  :where([data-ok-toggle-button][aria-pressed="true"]:disabled) {
+    background-color: var(--ok-action-disabled-bg);
   }
 
   @media (prefers-reduced-motion: reduce) {
-    :where([data-mt-toggle-button]) {
+    :where([data-ok-toggle-button]) {
       transition: none;
     }
   }

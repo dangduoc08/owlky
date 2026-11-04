@@ -1,10 +1,10 @@
 /*
  * Icon button — spec: specs/components/icon-button.md
  *
- * Anatomy:  button[data-mt-icon-button] › svg | img
- * Modifiers: data-mt-color = default (default) | inherit | primary … error | black | white
- *            data-mt-size  = md (default) | sm | lg,  data-mt-edge = start | end (optional),
- *            data-mt-animate, data-mt-loading › [data-mt-icon-button-loader] › [data-mt-button-spinner]
+ * Anatomy:  button[data-ok-icon-button] › svg | img
+ * Modifiers: data-ok-color = default (default) | inherit | primary … error | black | white
+ *            data-ok-size  = md (default) | sm | lg,  data-ok-edge = start | end (optional),
+ *            data-ok-animate, data-ok-loading › [data-ok-icon-button-loader] › [data-ok-button-spinner]
  * States:    :hover (hover-capable devices), :active, :focus-visible, :disabled
  *
  * Single :where() selectors in @layer components (zero specificity). Translucent colors use
@@ -13,11 +13,11 @@
 @reference "../theme.css";
 
 @layer components {
-  :where([data-mt-icon-button]) {
-    --_mt-main: var(--mt-c-main, var(--mt-text-secondary));
-    --_mt-hover-bg: rgb(var(--mt-c-channel, var(--mt-palette-grey-500-channel)) / 0.08);
-    --_mt-size: calc(var(--mt-spacing) * 9);
-    --_mt-icon-size: calc(var(--mt-spacing) * 5);
+  :where([data-ok-icon-button]) {
+    --_ok-main: var(--ok-c-main, var(--ok-text-secondary));
+    --_ok-hover-bg: rgb(var(--ok-c-channel, var(--ok-palette-grey-500-channel)) / 0.08);
+    --_ok-size: calc(var(--ok-spacing) * 9);
+    --_ok-icon-size: calc(var(--ok-spacing) * 5);
 
     position: relative;
     display: inline-flex;
@@ -25,38 +25,38 @@
     align-items: center;
     justify-content: center;
     box-sizing: border-box;
-    width: var(--_mt-size);
-    height: var(--_mt-size);
+    width: var(--_ok-size);
+    height: var(--_ok-size);
     margin: 0;
     padding: 0;
     border: 0;
-    border-radius: var(--mt-radius-full);
+    border-radius: var(--ok-radius-full);
     background-color: transparent;
-    color: var(--_mt-main);
+    color: var(--_ok-main);
     cursor: pointer;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
     transition-property: background-color, color, transform;
-    transition-duration: var(--mt-duration-short);
-    transition-timing-function: var(--mt-easing-standard);
+    transition-duration: var(--ok-duration-short);
+    transition-timing-function: var(--ok-easing-standard);
   }
 
-  :where([data-mt-icon-button] > svg, [data-mt-icon-button] > img) {
-    width: var(--_mt-icon-size);
-    height: var(--_mt-icon-size);
+  :where([data-ok-icon-button] > svg, [data-ok-icon-button] > img) {
+    width: var(--_ok-icon-size);
+    height: var(--_ok-icon-size);
   }
 
   /* Edge: pulls the button out by its padding so the icon lines up with the container edge. */
-  :where([data-mt-icon-button][data-mt-edge="start"]) {
-    margin-inline-start: calc((var(--_mt-size) - var(--_mt-icon-size)) / -2);
+  :where([data-ok-icon-button][data-ok-edge="start"]) {
+    margin-inline-start: calc((var(--_ok-size) - var(--_ok-icon-size)) / -2);
   }
 
-  :where([data-mt-icon-button][data-mt-edge="end"]) {
-    margin-inline-end: calc((var(--_mt-size) - var(--_mt-icon-size)) / -2);
+  :where([data-ok-icon-button][data-ok-edge="end"]) {
+    margin-inline-end: calc((var(--_ok-size) - var(--_ok-icon-size)) / -2);
   }
 
   /* Loading: the loader replaces the icon (the button stays named by its aria-label). */
-  :where([data-mt-icon-button-loader]) {
+  :where([data-ok-icon-button-loader]) {
     position: absolute;
     inset: 0;
     display: flex;
@@ -65,58 +65,58 @@
   }
 
   :where(
-    [data-mt-icon-button][data-mt-loading] > svg,
-    [data-mt-icon-button][data-mt-loading] > img
+    [data-ok-icon-button][data-ok-loading] > svg,
+    [data-ok-icon-button][data-ok-loading] > img
   ) {
     visibility: hidden;
   }
 
-  :where([data-mt-icon-button][data-mt-color="inherit"]) {
-    --_mt-main: var(--mt-text-primary);
+  :where([data-ok-icon-button][data-ok-color="inherit"]) {
+    --_ok-main: var(--ok-text-primary);
   }
 
-  :where([data-mt-icon-button][data-mt-size="sm"]) {
-    --_mt-size: calc(var(--mt-spacing) * 7);
-    --_mt-icon-size: calc(var(--mt-spacing) * 4.5);
+  :where([data-ok-icon-button][data-ok-size="sm"]) {
+    --_ok-size: calc(var(--ok-spacing) * 7);
+    --_ok-icon-size: calc(var(--ok-spacing) * 4.5);
   }
 
-  :where([data-mt-icon-button][data-mt-size="lg"]) {
-    --_mt-size: calc(var(--mt-spacing) * 12);
-    --_mt-icon-size: calc(var(--mt-spacing) * 6);
+  :where([data-ok-icon-button][data-ok-size="lg"]) {
+    --_ok-size: calc(var(--ok-spacing) * 12);
+    --_ok-icon-size: calc(var(--ok-spacing) * 6);
   }
 
   @media (hover: hover) {
-    :where([data-mt-icon-button]:hover) {
-      background-color: var(--_mt-hover-bg);
+    :where([data-ok-icon-button]:hover) {
+      background-color: var(--_ok-hover-bg);
     }
 
-    :where([data-mt-icon-button][data-mt-animate]:hover) {
+    :where([data-ok-icon-button][data-ok-animate]:hover) {
       transform: scale(1.09);
     }
   }
 
-  :where([data-mt-icon-button][data-mt-animate]:active) {
+  :where([data-ok-icon-button][data-ok-animate]:active) {
     transform: scale(0.97);
   }
 
-  :where([data-mt-icon-button]:focus-visible) {
-    outline: 2px solid var(--_mt-main);
+  :where([data-ok-icon-button]:focus-visible) {
+    outline: 2px solid var(--_ok-main);
     outline-offset: 2px;
   }
 
-  :where([data-mt-icon-button]:disabled) {
+  :where([data-ok-icon-button]:disabled) {
     background-color: transparent;
-    color: var(--mt-action-disabled);
+    color: var(--ok-action-disabled);
     cursor: not-allowed;
     transform: none;
   }
 
   @media (prefers-reduced-motion: reduce) {
-    :where([data-mt-icon-button]) {
+    :where([data-ok-icon-button]) {
       transition: none;
     }
 
-    :where([data-mt-icon-button][data-mt-animate]) {
+    :where([data-ok-icon-button][data-ok-animate]) {
       transform: none;
     }
   }

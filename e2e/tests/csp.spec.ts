@@ -11,9 +11,7 @@ test("no CSP or Trusted Types violations", async ({ page }) => {
     });
   });
   await page.goto("/examples/csp/index.html");
-  await page.waitForFunction(() =>
-    Boolean((window as unknown as { MinimalTailwind?: unknown }).MinimalTailwind),
-  );
+  await page.waitForFunction(() => Boolean((window as unknown as { Owlky?: unknown }).Owlky));
   await expect(page.getByRole("button", { name: "Primary" })).toHaveCSS(
     "background-color",
     "rgb(0, 167, 111)",

@@ -19,11 +19,11 @@ describe("component registry", () => {
     expect(components.map((c) => c.name).sort()).toEqual(withBehavior.sort());
   });
 
-  it("uses only data-mt-* hooks that match the component naming convention", () => {
+  it("uses only data-ok-* hooks that match the component naming convention", () => {
     for (const [path, html] of Object.entries(snippets) as [string, string][]) {
       const attributes = [...html.matchAll(/\s(data-[a-z-]+)/g)].map((m) => m[1]);
       for (const attribute of attributes) {
-        expect(attribute, `${path} uses ${attribute}`).toMatch(/^data-mt-[a-z-]+$/);
+        expect(attribute, `${path} uses ${attribute}`).toMatch(/^data-ok-[a-z-]+$/);
       }
     }
   });

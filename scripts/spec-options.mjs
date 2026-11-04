@@ -28,7 +28,7 @@ function html(schema, spec) {
     case "behavior":
       return `${code(`${spec.attr}="false"`)} turns it off`;
     default:
-      return `${code(spec.attr)}${spec.event ? ` · event ${code(`mt:${schema.name}:${spec.event}`)}` : ""}`;
+      return `${code(spec.attr)}${spec.event ? ` · event ${code(`ok:${schema.name}:${spec.event}`)}` : ""}`;
   }
 }
 

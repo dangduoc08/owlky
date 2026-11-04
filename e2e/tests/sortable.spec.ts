@@ -6,7 +6,7 @@ const STORIES = ["grid", "vertical", "horizontal"] as const;
 
 const order = (page: Page) =>
   page
-    .locator("[data-mt-sortable] > [data-mt-sortable-item] > span")
+    .locator("[data-ok-sortable] > [data-ok-sortable-item] > span")
     .evaluateAll((spans) => spans.map((span) => span.textContent).join(","));
 const handle = (page: Page, n: number) =>
   page.getByRole("button", { name: `Reorder item ${n}`, exact: true });
@@ -17,14 +17,14 @@ for (const impl of implementations) {
       test.skip(isMobile, "Covered by taps on touch devices.");
       await openStory(page, storyId(impl, "sortable", "grid"));
       const from = await handle(page, 1).boundingBox();
-      const to = await page.locator("[data-mt-sortable-item]").nth(2).boundingBox();
+      const to = await page.locator("[data-ok-sortable-item]").nth(2).boundingBox();
       if (!from || !to) throw new Error("no boxes");
       await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
       await page.mouse.down();
       await page.mouse.move(to.x + to.width / 2, to.y + to.height / 2, { steps: 12 });
-      await expect(page.locator("[data-mt-dragging]").first()).toBeAttached();
+      await expect(page.locator("[data-ok-dragging]").first()).toBeAttached();
       await page.mouse.up();
-      await expect(page.locator("[data-mt-dragging]")).toHaveCount(0);
+      await expect(page.locator("[data-ok-dragging]")).toHaveCount(0);
       expect((await order(page)).startsWith("2,3,1,4")).toBe(true);
     });
 
@@ -36,7 +36,7 @@ for (const impl of implementations) {
       await page.keyboard.press("ArrowDown");
       await page.keyboard.press("Space");
       expect((await order(page)).startsWith("2,3,1,4")).toBe(true);
-      await expect(page.locator("[data-mt-sortable-announcer]")).toHaveText(
+      await expect(page.locator("[data-ok-sortable-announcer]")).toHaveText(
         /Dropped at position 3 of 12/,
       );
       await expect(handle(page, 1)).toBeFocused();
@@ -50,11 +50,11 @@ for (const impl of implementations) {
       await press(handle(page, 1));
       expect((await order(page)).startsWith("3,1,2,4")).toBe(true);
       const remove = page.getByRole("button", { name: "Remove item 2", exact: true });
-      if (!isMobile) await page.locator("[data-mt-sortable-item]").nth(2).hover();
+      if (!isMobile) await page.locator("[data-ok-sortable-item]").nth(2).hover();
       await press(remove);
       await expect(remove).toHaveCount(0);
       await press(page.getByRole("button", { name: "Add item" }));
-      await expect(page.locator("[data-mt-sortable-item]")).toHaveCount(12);
+      await expect(page.locator("[data-ok-sortable-item]")).toHaveCount(12);
       expect((await order(page)).endsWith(",13")).toBe(true);
       await expect(handle(page, 13)).toBeAttached();
     });
@@ -80,9 +80,9 @@ for (const viewport of viewports) {
           await openStory(page, storyId(impl, "sortable", story));
           await page.evaluate(() => document.fonts.ready);
           const m = await page.evaluate(() => {
-            const list = document.querySelector("[data-mt-sortable]") as HTMLElement;
+            const list = document.querySelector("[data-ok-sortable]") as HTMLElement;
             const box = list.getBoundingClientRect();
-            const items = [...list.querySelectorAll<HTMLElement>("[data-mt-sortable-item]")].map(
+            const items = [...list.querySelectorAll<HTMLElement>("[data-ok-sortable-item]")].map(
               (item) => {
                 const r = item.getBoundingClientRect();
                 return [Math.round(r.width), Math.round(r.height)];

@@ -1,4 +1,4 @@
-import { fabColors, fabVariants } from "@minimal-tailwind/core";
+import { fabColors, fabVariants } from "@owlky/core";
 import { render, screen } from "@testing-library/react";
 import { createRef } from "react";
 import { renderToString } from "react-dom/server";
@@ -25,21 +25,21 @@ describe("Fab", () => {
     const fab = screen.getByRole("button", { name: "Add" });
     expect(fab.getAttribute("type")).toBe("button");
     expect(fab.dataset).toMatchObject({
-      mtFab: "",
-      mtVariant: "contained",
-      mtColor: "default",
-      mtSize: "md",
+      okFab: "",
+      okVariant: "contained",
+      okColor: "default",
+      okSize: "md",
     });
   });
 
   it.each(fabVariants)("variant %s", (variant) => {
     render(<Fab aria-label="x" variant={variant} />);
-    expect(screen.getByRole("button").dataset["mtVariant"]).toBe(variant);
+    expect(screen.getByRole("button").dataset["okVariant"]).toBe(variant);
   });
 
   it.each(fabColors)("color %s", (color) => {
     render(<Fab aria-label="x" color={color} />);
-    expect(screen.getByRole("button").dataset["mtColor"]).toBe(color);
+    expect(screen.getByRole("button").dataset["okColor"]).toBe(color);
   });
 
   it.each([
@@ -78,11 +78,11 @@ describe("Fab", () => {
     );
     const fab = screen.getByRole("button");
     expect(fab.dataset).toMatchObject({
-      mtVariant: "contained",
-      mtColor: "default",
-      mtSize: "md",
-      mtExtended: "",
-      mtAnimate: "",
+      okVariant: "contained",
+      okColor: "default",
+      okSize: "md",
+      okExtended: "",
+      okAnimate: "",
     });
     expect(fab.title).toBe("t");
     expect(ref.current).toBe(fab);

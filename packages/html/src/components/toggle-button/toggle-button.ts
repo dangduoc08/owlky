@@ -6,7 +6,7 @@ export interface ToggleButtonInstance extends ComponentInstance {
   readonly pressed: boolean;
   /** Sets the pressed state without emitting events. */
   setPressed(pressed: boolean): void;
-  /** Flips the state. Returns `false` if disabled or `mt:toggle-button:change` was prevented. */
+  /** Flips the state. Returns `false` if disabled or `ok:toggle-button:change` was prevented. */
   toggle(): boolean;
 }
 
@@ -15,13 +15,13 @@ const isDisabled = (element: Element) => (element as HTMLButtonElement).disabled
 /**
  * Toggle button — spec: specs/components/toggle-button.md
  *
- * Markup:  <button type="button" data-mt-toggle-button aria-pressed="false">…</button>
- *          (inside [data-mt-toggle-group] the group owns the selection)
- * Events:  mt:toggle-button:change (cancelable, detail.pressed) — standalone buttons only
+ * Markup:  <button type="button" data-ok-toggle-button aria-pressed="false">…</button>
+ *          (inside [data-ok-toggle-group] the group owns the selection)
+ * Events:  ok:toggle-button:change (cancelable, detail.pressed) — standalone buttons only
  */
 export const toggleButton = defineComponent<ToggleButtonInstance>({
   name: "toggle-button",
-  selector: "[data-mt-toggle-button]",
+  selector: "[data-ok-toggle-button]",
 
   setup(element, { emit }) {
     if (element.getAttribute("aria-pressed") !== "true")
@@ -47,10 +47,10 @@ export const toggleButton = defineComponent<ToggleButtonInstance>({
   delegate: [
     {
       event: "click",
-      selector: "[data-mt-toggle-button]",
+      selector: "[data-ok-toggle-button]",
       // Disabled buttons never fire click; toggle() re-checks for programmatic calls.
       handle(button, _event, runtime) {
-        const group = button.closest("[data-mt-toggle-group]");
+        const group = button.closest("[data-ok-toggle-group]");
         if (group) runtime.getOrCreate<ToggleGroupInstance>(group, "toggle-group")?.toggle(button);
         else runtime.getOrCreate<ToggleButtonInstance>(button, "toggle-button")?.toggle();
       },

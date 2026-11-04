@@ -11,7 +11,7 @@ const meta = {
       canvas: { sourceState: "none" },
       description: {
         component:
-          "Spacing is a multiple of `--mt-spacing` (4px; Tailwind `gap-2` = 8px). Layouts use 12 equal columns. Change the values in the Controls panel.",
+          "Spacing is a multiple of `--ok-spacing` (4px; Tailwind `gap-2` = 8px). Layouts use 12 equal columns. Change the values in the Controls panel.",
       },
     },
   },

@@ -1,5 +1,5 @@
-import { iconButtonOptions } from "@minimal-tailwind/core";
-import { IconButton, type IconButtonColor } from "@minimal-tailwind/react";
+import { iconButtonOptions } from "@owlky/core";
+import { IconButton, type IconButtonColor } from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
 import { MailIcon } from "../button/button-examples.js";
 import type { GroupFiles } from "../shared/snippets.js";

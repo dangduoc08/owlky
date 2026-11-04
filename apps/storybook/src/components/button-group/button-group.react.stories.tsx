@@ -1,4 +1,4 @@
-import { ButtonGroup } from "@minimal-tailwind/react";
+import { ButtonGroup } from "@owlky/react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { reactGroupsStory, type StoryControls } from "../../helpers/groups.js";
 import {

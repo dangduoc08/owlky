@@ -36,7 +36,7 @@ Do not create new documentation locations unless an existing one cannot hold the
 
 1. **Discover the repository from code, not docs.** Read `package.json` scripts, `pnpm-workspace.yaml`, each package's `package.json` exports and `src/index.ts`, `core` controllers, the HTML runtime, component CSS headers, snippets, Storybook config, e2e specs, CI workflows.
 
-2. **Detect changes** since the knowledge base was last accurate: `git log`, `git diff`, new/removed packages, components, exports, `data-mt-*` attributes, `--mt-*` variables, events, scripts, dependencies and versions, ADR-relevant behavior. If only one area changed, update only that area.
+2. **Detect changes** since the knowledge base was last accurate: `git log`, `git diff`, new/removed packages, components, exports, `data-ok-*` attributes, `--ok-*` variables, events, scripts, dependencies and versions, ADR-relevant behavior. If only one area changed, update only that area.
 
 3. **Validate the existing knowledge base.** Look for stale facts (versions, commands, file paths, status, sizes), broken links, contradictions between documents, obsolete APIs, and the same concept explained in two places.
 

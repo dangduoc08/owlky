@@ -1,4 +1,4 @@
-import { toggleButtonColors, toggleButtonSizes } from "@minimal-tailwind/core";
+import { toggleButtonColors, toggleButtonSizes } from "@owlky/core";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { userEvent } from "vitest/browser";
 import { createRuntime } from "../../runtime/runtime.js";
@@ -32,7 +32,7 @@ afterEach(() => {
 });
 
 const BUTTON =
-  '<button type="button" data-mt-toggle-button data-mt-color="primary" data-mt-size="md"';
+  '<button type="button" data-ok-toggle-button data-ok-color="primary" data-ok-size="md"';
 
 describe("toggle button snippets", () => {
   it("covers every story group", () => expect(snippets).toHaveLength(8));
@@ -40,14 +40,14 @@ describe("toggle button snippets", () => {
   it.each(snippets)("%s: valid anatomy", (_, html) => {
     const host = mount(html);
     expectNamedButtons(host);
-    for (const button of host.querySelectorAll<HTMLElement>("[data-mt-toggle-button]")) {
-      expect(toggleButtonColors).toContain(button.dataset["mtColor"]);
-      expect(toggleButtonSizes).toContain(button.dataset["mtSize"]);
+    for (const button of host.querySelectorAll<HTMLElement>("[data-ok-toggle-button]")) {
+      expect(toggleButtonColors).toContain(button.dataset["okColor"]);
+      expect(toggleButtonSizes).toContain(button.dataset["okSize"]);
       expect(["true", "false"]).toContain(button.getAttribute("aria-pressed"));
-      const group = button.closest("[data-mt-toggle-group]");
+      const group = button.closest("[data-ok-toggle-group]");
       if (group) expect(button.getAttribute("value")).toBeTruthy();
     }
-    for (const group of host.querySelectorAll("[data-mt-toggle-group]")) {
+    for (const group of host.querySelectorAll("[data-ok-toggle-group]")) {
       expect(group.getAttribute("role")).toBe("group");
       expect(group.getAttribute("aria-label")).toBeTruthy();
     }
@@ -66,7 +66,7 @@ describe("standalone toggle button runtime", () => {
     start();
     const button = host.querySelector("button") as HTMLButtonElement;
     const events: boolean[] = [];
-    button.addEventListener("mt:toggle-button:change", (event) => {
+    button.addEventListener("ok:toggle-button:change", (event) => {
       const { detail, cancelable } = event as CustomEvent<{ pressed: boolean }>;
       expect(cancelable).toBe(true);
       events.push(detail.pressed);
@@ -84,7 +84,7 @@ describe("standalone toggle button runtime", () => {
     const host = mount(`${BUTTON} aria-label="x" aria-pressed="true"></button>`);
     start();
     const button = host.querySelector("button") as HTMLButtonElement;
-    button.addEventListener("mt:toggle-button:change", (event) => event.preventDefault());
+    button.addEventListener("ok:toggle-button:change", (event) => event.preventDefault());
     await userEvent.click(button);
     expect(button.getAttribute("aria-pressed")).toBe("true");
   });
@@ -94,7 +94,7 @@ describe("standalone toggle button runtime", () => {
     start();
     const button = host.querySelector("button") as HTMLButtonElement;
     const listener = vi.fn();
-    button.addEventListener("mt:toggle-button:change", listener);
+    button.addEventListener("ok:toggle-button:change", listener);
     const instance = runtime?.get<ToggleButtonInstance>(button, "toggle-button");
     expect(button.getAttribute("aria-pressed")).toBe("false"); // normalized on mount
     expect(instance?.toggle()).toBe(false);
@@ -107,7 +107,7 @@ describe("standalone toggle button runtime", () => {
   it("mounts buttons inserted later and ignores React-owned subtrees", async () => {
     start();
     const host = mount(
-      `${BUTTON} aria-label="html"></button><div data-mt-runtime="off">${BUTTON} aria-label="react" aria-pressed="false"></button></div>`,
+      `${BUTTON} aria-label="html"></button><div data-ok-runtime="off">${BUTTON} aria-label="react" aria-pressed="false"></button></div>`,
     );
     await settle();
     const [html, react] = host.querySelectorAll("button") as unknown as HTMLButtonElement[];
@@ -128,7 +128,7 @@ describe("standalone toggle button runtime", () => {
 describe("toggle button inside a group without the group definition", () => {
   it("leaves the selection to the (missing) group", () => {
     const host = mount(
-      `<div role="group" data-mt-toggle-group aria-label="g">${BUTTON} value="a" aria-label="a" aria-pressed="false"></button></div>`,
+      `<div role="group" data-ok-toggle-group aria-label="g">${BUTTON} value="a" aria-label="a" aria-pressed="false"></button></div>`,
     );
     runtime = createRuntime().register(toggleButton).start();
     (host.querySelector("button") as HTMLButtonElement).click();
@@ -139,8 +139,8 @@ describe("toggle button inside a group without the group definition", () => {
 describe("toggle button CSS without JavaScript", () => {
   it("styles standalone sizes and the pressed state", () => {
     const host = mount(
-      `${BUTTON} data-mt-size="lg" aria-label="a" aria-pressed="true"></button>`.replace(
-        'data-mt-size="md" ',
+      `${BUTTON} data-ok-size="lg" aria-label="a" aria-pressed="true"></button>`.replace(
+        'data-ok-size="md" ',
         "",
       ),
     );

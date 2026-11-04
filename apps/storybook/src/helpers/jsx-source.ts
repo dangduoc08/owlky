@@ -1,4 +1,4 @@
-import * as library from "@minimal-tailwind/react";
+import * as library from "@owlky/react";
 import { Fragment, isValidElement, type ReactElement, type ReactNode } from "react";
 
 /*
@@ -81,8 +81,8 @@ export function jsxSource(groups: SourceGroup[]): string {
   const icons = [...used].filter((name) => name.endsWith("Icon")).sort();
   const library = [...used].filter((name) => !name.endsWith("Icon")).sort();
   const lines = [
-    'import "@minimal-tailwind/styles/minimal-tailwind.css";',
-    `import { ${library.join(", ")} } from "@minimal-tailwind/react";`,
+    'import "@owlky/styles/owlky.css";',
+    `import { ${library.join(", ")} } from "@owlky/react";`,
   ];
   if (icons.length > 0) {
     lines.push(`// ${icons.join(", ")}: your own decorative SVG icons (aria-hidden="true").`);

@@ -2,5 +2,5 @@ import { addons } from "storybook/manager-api";
 import { create } from "storybook/theming";
 
 addons.setConfig({
-  theme: create({ base: "light", brandTitle: "Minimal Tailwind", colorSecondary: "#00A76F" }),
+  theme: create({ base: "light", brandTitle: "Owlky", colorSecondary: "#00A76F" }),
 });

@@ -1,5 +1,5 @@
-import { buttonGroupOptions } from "@minimal-tailwind/core";
-import { Button, ButtonGroup, type ButtonVariant, type ColorName } from "@minimal-tailwind/react";
+import { buttonGroupOptions } from "@owlky/core";
+import { Button, ButtonGroup, type ButtonVariant, type ColorName } from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
 import type { GroupFiles } from "../shared/snippets.js";
 
@@ -36,12 +36,12 @@ export function buttonGroupGroups(variant: ButtonVariant): ReactGroup[] {
       title: "Black & white",
       content: (
         <>
-          <div data-mt-theme="light">
+          <div data-ok-theme="light">
             <ButtonGroup variant={variant} color="black" aria-label="Black">
               {buttons()}
             </ButtonGroup>
           </div>
-          <div data-mt-theme="dark">
+          <div data-ok-theme="dark">
             <ButtonGroup variant={variant} color="white" aria-label="White">
               {buttons()}
             </ButtonGroup>

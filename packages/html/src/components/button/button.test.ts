@@ -20,21 +20,21 @@ describe("button snippets", () => {
 
   it.each(entries)("%s: valid anatomy", (_, html) => {
     const host = mount(html);
-    const roots = host.querySelectorAll<HTMLElement>("[data-mt-button]");
+    const roots = host.querySelectorAll<HTMLElement>("[data-ok-button]");
     expect(roots.length).toBeGreaterThan(0);
     for (const root of roots) {
-      expect(root.querySelectorAll(":scope > [data-mt-button-label]")).toHaveLength(1);
-      for (const name of ["mtVariant", "mtColor", "mtSize"])
+      expect(root.querySelectorAll(":scope > [data-ok-button-label]")).toHaveLength(1);
+      for (const name of ["okVariant", "okColor", "okSize"])
         expect(root.dataset[name]).toBeTruthy();
       if (root instanceof HTMLButtonElement) expect(root.getAttribute("type")).toBe("button");
       else expect(root.getAttribute("href")).toBe("/docs");
-      for (const icon of root.querySelectorAll("[data-mt-button-icon]")) {
+      for (const icon of root.querySelectorAll("[data-ok-button-icon]")) {
         expect(icon.getAttribute("aria-hidden")).toBe("true");
       }
-      if (root.hasAttribute("data-mt-loading")) {
+      if (root.hasAttribute("data-ok-loading")) {
         expect((root as HTMLButtonElement).disabled).toBe(true);
         expect(root.getAttribute("aria-busy")).toBe("true");
-        expect(root.querySelector("[data-mt-button-loader]")?.getAttribute("aria-hidden")).toBe(
+        expect(root.querySelector("[data-ok-button-loader]")?.getAttribute("aria-hidden")).toBe(
           "true",
         );
       }
@@ -61,9 +61,9 @@ describe("button CSS without JavaScript", () => {
   it("styles contained, outlined and soft from the tokens", () => {
     const host = mount(
       [
-        '<button type="button" data-mt-button data-mt-variant="contained" data-mt-color="primary"><span data-mt-button-label>a</span></button>',
-        '<button type="button" data-mt-button data-mt-variant="outlined" data-mt-color="error"><span data-mt-button-label>b</span></button>',
-        '<button type="button" data-mt-button data-mt-variant="soft" data-mt-color="inherit"><span data-mt-button-label>c</span></button>',
+        '<button type="button" data-ok-button data-ok-variant="contained" data-ok-color="primary"><span data-ok-button-label>a</span></button>',
+        '<button type="button" data-ok-button data-ok-variant="outlined" data-ok-color="error"><span data-ok-button-label>b</span></button>',
+        '<button type="button" data-ok-button data-ok-variant="soft" data-ok-color="inherit"><span data-ok-button-label>c</span></button>',
       ].join(""),
     );
     const [contained, outlined, soft] = host.querySelectorAll("button") as unknown as HTMLElement[];
@@ -74,8 +74,8 @@ describe("button CSS without JavaScript", () => {
 
   it("treats unknown or missing modifier values as the defaults", () => {
     const host = mount(
-      '<button type="button" data-mt-button data-mt-variant="bogus" data-mt-color="nope" data-mt-size="huge"><span data-mt-button-label>x</span></button>' +
-        '<button type="button" data-mt-button><span data-mt-button-label>y</span></button>',
+      '<button type="button" data-ok-button data-ok-variant="bogus" data-ok-color="nope" data-ok-size="huge"><span data-ok-button-label>x</span></button>' +
+        '<button type="button" data-ok-button><span data-ok-button-label>y</span></button>',
     );
     for (const button of host.querySelectorAll("button")) {
       expect(css(button).backgroundColor).toBe("rgba(0, 0, 0, 0)");
@@ -86,7 +86,7 @@ describe("button CSS without JavaScript", () => {
 
   it("disabled buttons don't activate", () => {
     const host = mount(
-      '<button type="button" data-mt-button disabled><span data-mt-button-label>x</span></button>',
+      '<button type="button" data-ok-button disabled><span data-ok-button-label>x</span></button>',
     );
     let clicks = 0;
     const button = host.querySelector("button") as HTMLButtonElement;

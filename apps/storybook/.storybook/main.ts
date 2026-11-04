@@ -17,10 +17,10 @@ const config: StorybookConfig = {
         // Stories run against package *sources* for instant feedback. Published output is
         // verified separately (examples/, check:packages, e2e plain-html test).
         alias: [
-          { find: /^@minimal-tailwind\/core$/, replacement: pkg("core/src/index.ts") },
-          { find: /^@minimal-tailwind\/react$/, replacement: pkg("react/src/index.ts") },
-          { find: /^@minimal-tailwind\/html$/, replacement: pkg("html/src/index.ts") },
-          { find: /^@minimal-tailwind\/html\/auto$/, replacement: pkg("html/src/auto.ts") },
+          { find: /^@owlky\/core$/, replacement: pkg("core/src/index.ts") },
+          { find: /^@owlky\/react$/, replacement: pkg("react/src/index.ts") },
+          { find: /^@owlky\/html$/, replacement: pkg("html/src/index.ts") },
+          { find: /^@owlky\/html\/auto$/, replacement: pkg("html/src/auto.ts") },
           { find: /^@snippets\//, replacement: `${pkg("html/src/components")}/` },
         ],
       },

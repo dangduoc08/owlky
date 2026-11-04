@@ -33,7 +33,7 @@ Size and runtime-cost reductions are the top priority, without changing public A
    **Bytes**
    - Code in the CDN bundle or the runtime that is not needed (dead branches, duplicated helpers, verbose error strings that could be shared).
    - Imports that defeat tree-shaking (barrels with side effects, `sideEffects` misconfiguration, top-level work at import time).
-   - CSS: duplicated declarations across variants, rules that could move to the base rule or a private `--_mt-*` variable, unused selectors.
+   - CSS: duplicated declarations across variants, rules that could move to the base rule or a private `--_ok-*` variable, unused selectors.
 
    **Main thread / rendering**
    - Layout thrashing: reads (`getBoundingClientRect`, `offsetWidth`, `getComputedStyle`) interleaved with writes; batch reads before writes.
@@ -56,7 +56,7 @@ Size and runtime-cost reductions are the top priority, without changing public A
    - [ ] Init is idempotent (same element × component mounted once; React StrictMode safe).
    - [ ] Every listener uses the instance `signal`; observers disconnect; timers are cleared.
    - [ ] Removal while active releases scroll lock, layer stack and focus traps.
-   - [ ] Behavior is correct with two library copies on the page and with React + HTML together (`data-mt-runtime="off"`).
+   - [ ] Behavior is correct with two library copies on the page and with React + HTML together (`data-ok-runtime="off"`).
    - [ ] No new `window` properties or `Symbol.for` slots.
 
 6. **Apply** changes one at a time. After each change:
@@ -66,7 +66,7 @@ Size and runtime-cost reductions are the top priority, without changing public A
    - Prefer platform/built-in APIs over manual equivalents.
    - Leak, correctness and security fixes are always applied.
 
-7. **Lint & verify:** `pnpm lint`, `pnpm typecheck`, `pnpm check:boundaries`, and — if rendered output could change — `pnpm storybook:build && pnpm --filter @minimal-tailwind/e2e exec playwright test --grep-invert @visual --project chromium` (parity must stay green).
+7. **Lint & verify:** `pnpm lint`, `pnpm typecheck`, `pnpm check:boundaries`, and — if rendered output could change — `pnpm storybook:build && pnpm --filter @owlky/e2e exec playwright test --grep-invert @visual --project chromium` (parity must stay green).
 
 8. **Report** in two versions — English first, then Vietnamese.
 
@@ -105,7 +105,7 @@ Size and runtime-cost reductions are the top priority, without changing public A
 
 ## Rules
 
-- Never change public API (exports, props, `data-mt-*`, `--mt-*`, events, runtime API) or rendered DOM.
+- Never change public API (exports, props, `data-ok-*`, `--ok-*`, events, runtime API) or rendered DOM.
 - Never weaken accessibility for size or speed.
 - Do not add features, options or abstractions beyond the task.
 - Do not add comments to the code unless they explain a non-obvious WHY.
