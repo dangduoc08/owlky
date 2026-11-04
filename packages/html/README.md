@@ -3,8 +3,10 @@
 Framework-free [Minimal Tailwind](../../README.md) components: copy-paste HTML snippets plus a
 ~2 kB (gzip) Core Runtime that wires behavior up through `data-mt-*` attributes.
 
-Components: **Button** (CSS only — no JavaScript needed). Snippets ship in
-`@minimal-tailwind/html/snippets/button/<variant>-<group>.html` and in Storybook (HTML/Button).
+Components: **Button**, **Icon button**, **Fab**, **Button group** (CSS only — no JavaScript
+needed) and **Toggle button** (runtime: `toggle-button` + `toggle-group`, events
+`mt:toggle-button:change` / `mt:toggle-group:change`). Snippets ship in
+`@minimal-tailwind/html/snippets/<component>/<story>-<group>.html` and in Storybook (HTML/…).
 
 ## CDN — include once per page
 

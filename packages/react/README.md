@@ -8,16 +8,28 @@ pnpm add @minimal-tailwind/react @minimal-tailwind/styles
 
 ```tsx
 import "@minimal-tailwind/styles/minimal-tailwind.css";
-import { Button } from "@minimal-tailwind/react";
+import { Button, ButtonGroup, Fab, IconButton, ToggleButton, ToggleButtonGroup } from "@minimal-tailwind/react";
 
 <Button variant="contained" color="primary">Save</Button>
 <Button variant="outlined" startIcon={<MailIcon />}>Send</Button>
 <Button variant="soft" loading loadingPosition="start" startIcon={<MailIcon />}>Saving</Button>
 <Button href="/docs">Documentation</Button>
+<IconButton color="primary" aria-label="Mail"><MailIcon /></IconButton>
+<Fab color="primary" extended><MailIcon />Navigate</Fab>
+<ButtonGroup variant="outlined" aria-label="Pages"><Button>One</Button><Button>Two</Button></ButtonGroup>
+<ToggleButtonGroup exclusive defaultValue="left" aria-label="Alignment">
+  <ToggleButton value="left" aria-label="Left"><AlignLeftIcon /></ToggleButton>
+  <ToggleButton value="right" aria-label="Right"><AlignRightIcon /></ToggleButton>
+</ToggleButtonGroup>
 ```
 
 | Component | Props |
 |---|---|
 | `Button` | `variant` (`contained` · `outlined` · `text` · `soft`), `color` (`inherit` · palette · `black` · `white`), `size` (`sm` · `md` · `lg` · `xl`), `fullWidth`, `startIcon`, `endIcon`, `loading`, `loadingPosition`, `loadingIndicator`, `href` (renders `<a>`), plus native button / anchor props |
+| `IconButton` | `color` (`default` · `inherit` · palette · `black` · `white`), `size` (`sm` · `md` · `lg`), `animate`; needs `aria-label` |
+| `Fab` | `variant` (`contained` · `outlined` · `soft`), `color` (as IconButton), `size` (`sm` · `md` · `lg`), `extended`, `animate` |
+| `ButtonGroup` | `orientation` (`horizontal` · `vertical`); `variant`, `color`, `size`, `disabled` are copied to direct child Buttons (a child prop wins) |
+| `ToggleButton` | `value`, `color` (`inherit` · palette), `size`, standalone `selected` / `defaultSelected` / `onChange(selected)` |
+| `ToggleButtonGroup` | `exclusive`, `value` / `defaultValue` / `onChange(value)` (`string \| null` when exclusive, else `string[]`), `orientation`, `color`, `size`, `disabled` |
 
-Same markup and CSS as `@minimal-tailwind/html` (spec: `specs/components/button.md`).
+Same markup and CSS as `@minimal-tailwind/html` (specs: `specs/components/`).

@@ -96,13 +96,21 @@ and small-screen tests pick up new stories automatically from Storybook's `index
   alpha** (opaque colors). `tokens.css` is concatenated, not compiled; component CSS must use
   `rgb(var(--…-channel) / α)` instead of `color-mix()` (ADR-0013, enforced by `styles.test.ts`).
 - Brand-colored text is exempt from axe `color-contrast` only, via `CONTRAST_EXEMPT`
-  (react `test-utils.tsx`, e2e `helpers.ts`, html button test) — ADR-0014. Extend that list for
+  (react `test-utils.tsx`, e2e `helpers.ts`, html `test-utils.ts`) — ADR-0014. Extend that list for
   new brand-colored parts instead of disabling the rule.
 - Infinite CSS animations (spinners) never fire `animation.finished`: test helpers that wait for
   animations must skip them (`expectNoAxeViolations` filters `endTime === Infinity`).
 - Biome 2 lints the HTML snippets too: decorative `<svg>` needs `aria-hidden="true"` itself (not
   only on its wrapper), and demo links need a real `href` and descriptive text.
 - Add each new component's files to `coverage.thresholds` in `vitest.config.ts`.
+- `--mt-spacing` is **4px** (Tailwind scale): `calc(var(--mt-spacing) * 9)` = 36px. Convert
+  reference px values by dividing by 4.
+- HTML behavior-only folders (e.g. `toggle-group`, whose markup lives in `toggle-button/examples`)
+  have no `examples/`; the html build skips them. Snippet tests share helpers in `html/src/test-utils.ts`.
+- `<div role="group">` is intentional for button / toggle groups (not form fields): Biome's
+  `useSemanticElements` is off for snippets and suppressed inline in React.
+- React group props reach children by `cloneElement` (ButtonGroup, server-safe) or context
+  (ToggleButtonGroup, needs state): only **direct** child elements get ButtonGroup props.
 - Foundations › Icons uses Iconify **offline** (`@iconify/react/offline`, Storybook dev deps only)
   with a generated subset, `icon-data.json`: edit `SETS` in `apps/storybook/scripts/icons.mjs`
   and run `pnpm --filter @minimal-tailwind/storybook icons`. Never import a full

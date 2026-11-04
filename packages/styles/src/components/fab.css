@@ -1,0 +1,174 @@
+/*
+ * Fab — spec: specs/components/fab.md
+ *
+ * Anatomy:  button[data-mt-fab] › svg [+ label text when extended]
+ * Modifiers: data-mt-variant = contained (default) | outlined | soft
+ *            data-mt-color   = default (default) | inherit | primary … error | black | white
+ *            data-mt-size    = md (default) | sm | lg,  data-mt-extended, data-mt-animate
+ * States:    :hover (hover-capable devices), :active, :focus-visible, :disabled
+ *
+ * Single :where() selectors in @layer components (zero specificity). Order: base → colors →
+ * sizes → variants → hover → focus → disabled. Translucent colors use channels (AGENTS.md).
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-mt-fab]) {
+    --_mt-main: var(--mt-c-main, var(--mt-palette-grey-300));
+    --_mt-hover: var(--mt-c-hover, var(--mt-palette-grey-400));
+    --_mt-contrast: var(--mt-c-contrast, var(--mt-palette-grey-800));
+    --_mt-outline-color: var(--mt-c-main, var(--mt-text-secondary));
+    --_mt-text: var(--mt-c-text, var(--mt-text-primary));
+    --_mt-channel: var(--mt-c-channel, var(--mt-palette-grey-500-channel));
+    --_mt-shadow: var(--mt-c-shadow, var(--mt-shadow-z8));
+    --_mt-outline-alpha: 0.48;
+    --_mt-size: calc(var(--mt-spacing) * 12);
+    --_mt-padding-x: calc(var(--mt-spacing) * 3);
+    --_mt-font-size: var(--mt-font-size-md);
+    --_mt-icon-size: calc(var(--mt-spacing) * 6);
+
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    gap: calc(var(--mt-spacing) * 2);
+    box-sizing: border-box;
+    width: var(--_mt-size);
+    min-width: var(--_mt-size);
+    height: var(--_mt-size);
+    margin: 0;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: var(--mt-radius-full);
+    background-color: var(--_mt-main);
+    box-shadow: var(--_mt-shadow);
+    color: var(--_mt-contrast);
+    font-family: var(--mt-font-family);
+    font-size: var(--_mt-font-size);
+    font-weight: var(--mt-typography-button-font-weight);
+    line-height: var(--mt-typography-button-line-height);
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition-property: background-color, border-color, box-shadow, color, transform;
+    transition-duration: var(--mt-duration-short);
+    transition-timing-function: var(--mt-easing-standard);
+  }
+
+  :where([data-mt-fab] > svg, [data-mt-fab] > img) {
+    flex-shrink: 0;
+    width: var(--_mt-icon-size);
+    height: var(--_mt-icon-size);
+  }
+
+  /* Colors without a palette binding */
+  :where([data-mt-fab][data-mt-color="default"], [data-mt-fab][data-mt-color="inherit"]) {
+    --_mt-outline-alpha: 0.32;
+  }
+
+  :where([data-mt-fab][data-mt-color="inherit"]) {
+    --_mt-main: var(--mt-inherit-main);
+    --_mt-hover: var(--mt-inherit-hover);
+    --_mt-contrast: var(--mt-inherit-contrast);
+    --_mt-outline-color: var(--mt-text-primary);
+  }
+
+  /* Sizes */
+  :where([data-mt-fab][data-mt-size="sm"]) {
+    --_mt-size: calc(var(--mt-spacing) * 10);
+    --_mt-padding-x: calc(var(--mt-spacing) * 2);
+    --_mt-font-size: var(--mt-font-size-sm);
+    --_mt-icon-size: calc(var(--mt-spacing) * 5);
+  }
+
+  :where([data-mt-fab][data-mt-size="lg"]) {
+    --_mt-size: calc(var(--mt-spacing) * 14);
+    --_mt-padding-x: calc(var(--mt-spacing) * 4);
+    --_mt-font-size: var(--mt-font-size-lg);
+  }
+
+  /* Extended: pill with icon + label, a step lower than the round fab. */
+  :where([data-mt-fab][data-mt-extended]) {
+    --_mt-size: calc(var(--mt-spacing) * 10);
+    --_mt-icon-size: calc(var(--mt-spacing) * 5);
+
+    width: auto;
+    padding: 0 var(--_mt-padding-x);
+  }
+
+  :where([data-mt-fab][data-mt-extended][data-mt-size="sm"]) {
+    --_mt-size: calc(var(--mt-spacing) * 9);
+  }
+
+  :where([data-mt-fab][data-mt-extended][data-mt-size="lg"]) {
+    --_mt-size: calc(var(--mt-spacing) * 12);
+  }
+
+  /* Variants */
+  :where([data-mt-fab][data-mt-variant="outlined"]) {
+    border-color: rgb(var(--_mt-channel) / var(--_mt-outline-alpha));
+    background-color: transparent;
+    box-shadow: none;
+    color: var(--_mt-outline-color);
+  }
+
+  :where([data-mt-fab][data-mt-variant="soft"]) {
+    background-color: rgb(var(--_mt-channel) / 0.16);
+    box-shadow: none;
+    color: var(--_mt-text);
+  }
+
+  /* Hover — only on devices that can hover. */
+  @media (hover: hover) {
+    :where([data-mt-fab]:hover) {
+      background-color: var(--_mt-hover);
+      box-shadow: none;
+    }
+
+    :where([data-mt-fab][data-mt-variant="outlined"]:hover) {
+      background-color: rgb(var(--_mt-channel) / 0.08);
+    }
+
+    :where([data-mt-fab][data-mt-variant="soft"]:hover) {
+      background-color: rgb(var(--_mt-channel) / 0.32);
+    }
+
+    :where([data-mt-fab][data-mt-animate]:hover) {
+      transform: scale(1.09);
+    }
+  }
+
+  :where([data-mt-fab][data-mt-animate]:active) {
+    transform: scale(0.97);
+  }
+
+  :where([data-mt-fab]:focus-visible) {
+    outline: 2px solid var(--_mt-outline-color);
+    outline-offset: 2px;
+  }
+
+  /* Disabled — after hover, so it wins. */
+  :where([data-mt-fab]:disabled) {
+    background-color: var(--mt-action-disabled-bg);
+    box-shadow: none;
+    color: var(--mt-action-disabled);
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  :where([data-mt-fab][data-mt-variant="outlined"]:disabled) {
+    border-color: var(--mt-action-disabled-bg);
+    background-color: transparent;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :where([data-mt-fab]) {
+      transition: none;
+    }
+
+    :where([data-mt-fab][data-mt-animate]) {
+      transform: none;
+    }
+  }
+}

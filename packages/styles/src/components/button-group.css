@@ -1,0 +1,149 @@
+/*
+ * Button group — spec: specs/components/button-group.md
+ *
+ * Anatomy:  div[role="group"][data-mt-button-group] › [data-mt-button]…
+ * Modifiers: data-mt-orientation = horizontal (default) | vertical
+ *
+ * The group only joins its Buttons (see button.css for their look): outer corners rounded, a 1px
+ * separator between buttons, shared borders for outlined buttons, no hover shadow. Loaded after
+ * button.css; every selector is a single :where() in @layer components, so source order decides.
+ * Translucent colors use channels, never color-mix() (AGENTS.md).
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-mt-button-group]) {
+    display: inline-flex;
+    flex-direction: row;
+    vertical-align: middle;
+    border-radius: var(--mt-radius-md);
+  }
+
+  :where([data-mt-button-group][data-mt-orientation="vertical"]) {
+    flex-direction: column;
+  }
+
+  :where([data-mt-button-group] > [data-mt-button]) {
+    /* Separator: palette `dark` for colored buttons, neutral grey otherwise. */
+    --_mt-group-channel: var(--mt-palette-grey-500-channel);
+    --_mt-separator-alpha: 0.32;
+    --_mt-separator: rgb(var(--_mt-group-channel) / var(--_mt-separator-alpha));
+
+    min-width: calc(var(--mt-spacing) * 10);
+    box-shadow: none;
+  }
+
+  :where([data-mt-button-group] > [data-mt-color="primary"]) {
+    --_mt-group-channel: var(--mt-palette-primary-dark-channel);
+  }
+
+  :where([data-mt-button-group] > [data-mt-color="secondary"]) {
+    --_mt-group-channel: var(--mt-palette-secondary-dark-channel);
+  }
+
+  :where([data-mt-button-group] > [data-mt-color="info"]) {
+    --_mt-group-channel: var(--mt-palette-info-dark-channel);
+  }
+
+  :where([data-mt-button-group] > [data-mt-color="success"]) {
+    --_mt-group-channel: var(--mt-palette-success-dark-channel);
+  }
+
+  :where([data-mt-button-group] > [data-mt-color="warning"]) {
+    --_mt-group-channel: var(--mt-palette-warning-dark-channel);
+  }
+
+  :where([data-mt-button-group] > [data-mt-color="error"]) {
+    --_mt-group-channel: var(--mt-palette-error-dark-channel);
+  }
+
+  :where(
+    [data-mt-button-group]
+      > [data-mt-color]:not(
+        [data-mt-color="inherit"],
+        [data-mt-color="black"],
+        [data-mt-color="white"]
+      )
+  ) {
+    --_mt-separator-alpha: 0.48;
+  }
+
+  :where([data-mt-button-group] > [data-mt-variant="text"]) {
+    --_mt-separator: rgb(var(--_mt-channel) / var(--_mt-outline-alpha));
+  }
+
+  :where([data-mt-button-group] > [data-mt-variant="soft"]) {
+    --_mt-separator: rgb(var(--_mt-group-channel) / 0.24);
+  }
+
+  :where([data-mt-button-group] > [data-mt-variant="soft"][data-mt-color="black"]) {
+    --_mt-group-channel: var(--mt-palette-common-black-channel);
+  }
+
+  :where([data-mt-button-group] > [data-mt-variant="soft"][data-mt-color="white"]) {
+    --_mt-group-channel: var(--mt-palette-common-white-channel);
+  }
+
+  :where([data-mt-button-group] > [data-mt-button]:is(:disabled, [aria-disabled="true"])) {
+    --_mt-separator: var(--mt-action-disabled-bg);
+  }
+
+  /* Horizontal: square inner corners, separator on the inline end. */
+  :where(
+    [data-mt-button-group]:not([data-mt-orientation="vertical"])
+      > [data-mt-button]:not(:first-child)
+  ) {
+    border-start-start-radius: 0;
+    border-end-start-radius: 0;
+  }
+
+  :where(
+    [data-mt-button-group]:not([data-mt-orientation="vertical"]) > [data-mt-button]:not(:last-child)
+  ) {
+    border-start-end-radius: 0;
+    border-end-end-radius: 0;
+    border-inline-end-color: var(--_mt-separator);
+  }
+
+  /* Vertical: square inner corners, separator on the block end. */
+  :where(
+    [data-mt-button-group][data-mt-orientation="vertical"] > [data-mt-button]:not(:first-child)
+  ) {
+    border-start-start-radius: 0;
+    border-start-end-radius: 0;
+  }
+
+  :where(
+    [data-mt-button-group][data-mt-orientation="vertical"] > [data-mt-button]:not(:last-child)
+  ) {
+    border-end-start-radius: 0;
+    border-end-end-radius: 0;
+    border-block-end-color: var(--_mt-separator);
+  }
+
+  /* Outlined buttons share one border: the next button draws it. */
+  :where(
+    [data-mt-button-group]:not([data-mt-orientation="vertical"])
+      > [data-mt-variant="outlined"]:not(:last-child)
+  ) {
+    border-inline-end-color: transparent;
+  }
+
+  :where(
+    [data-mt-button-group][data-mt-orientation="vertical"]
+      > [data-mt-variant="outlined"]:not(:last-child)
+  ) {
+    border-block-end-color: transparent;
+  }
+
+  @media (hover: hover) {
+    :where([data-mt-button-group] > [data-mt-button]:hover) {
+      box-shadow: none;
+    }
+  }
+
+  /* Keep the focus outline above the neighbouring buttons. */
+  :where([data-mt-button-group] > [data-mt-button]:focus-visible) {
+    z-index: 1;
+  }
+}

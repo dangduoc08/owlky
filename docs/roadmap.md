@@ -32,7 +32,9 @@ Created with `/component` from the reference "Buttons" page: 4 variants × 9 col
 icons, loading (center / start / end), link buttons. Tokens added: RGB channels, font-size scale,
 black/white bindings (ADR-0013). Coverage tooling (`pnpm test:coverage`), responsive matrix,
 strict-CSP check and visual baselines at 5 viewports were introduced with it.
-Follow-ups from the same reference page: Icon button, Fab, Button group, Toggle button.
+Follow-ups from the same reference page, added in the same review (Update mode): **Icon button**,
+**Fab**, **Button group** (CSS only) and **Toggle button** (core `nextToggleSelection()`, HTML
+runtime `toggle-button` / `toggle-group`, React state). No new tokens.
 
 ## Next — components (awaiting the owner's go-ahead)
 Order to be confirmed. Candidate sequence, each in React + HTML with parity tests:

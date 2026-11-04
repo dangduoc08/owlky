@@ -4,3 +4,7 @@
  */
 @import "@minimal-tailwind/tokens/tokens.css";
 @import "./components/button.css";
+@import "./components/button-group.css";
+@import "./components/icon-button.css";
+@import "./components/fab.css";
+@import "./components/toggle-button.css";

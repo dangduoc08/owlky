@@ -1,0 +1,50 @@
+import { Canvas, Meta } from "@storybook/addon-docs/blocks";
+import * as Stories from "./icon-button.html.stories";
+
+<Meta of={Stories} />
+
+# Icon button — HTML
+
+Copy-paste markup. **No JavaScript required.**
+
+| | |
+|---|---|
+| CSS | `minimal-tailwind.css` — or `tokens.css` + `components/icon-button.css` |
+| JavaScript | None |
+| Snippets | `@minimal-tailwind/html/snippets/icon-button/<story>-group.html` |
+
+## Base
+
+<Canvas of={Stories.Base} sourceState="shown" />
+
+## Colors
+
+<Canvas of={Stories.Colors} />
+
+## Sizes
+
+<Canvas of={Stories.Sizes} />
+
+## With animate
+
+<Canvas of={Stories.WithAnimate} />
+
+## Anatomy
+
+```html
+<button type="button" data-mt-icon-button data-mt-color="primary" data-mt-size="md" aria-label="Mail">
+  <svg aria-hidden="true" …></svg>
+</button>
+```
+
+| Attribute | Values | Default |
+|---|---|---|
+| `data-mt-icon-button` | — (required) | |
+| `data-mt-color` | `default` · `inherit` · `primary` · `secondary` · `info` · `success` · `warning` · `error` · `black` · `white` | `default` |
+| `data-mt-size` | `sm` (28px) · `md` (36px) · `lg` (48px) | `md` |
+| `data-mt-animate` | — (boolean): scale on hover / press | off |
+
+## Accessibility
+
+Name every icon button with `aria-label` (the icon is `aria-hidden`). Spec:
+`specs/components/icon-button.md`.

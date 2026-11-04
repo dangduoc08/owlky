@@ -134,6 +134,16 @@
           }
         }
       }
+    },
+    {
+      "includes": ["packages/html/src/components/*/examples/**"],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "useSemanticElements": "off"
+          }
+        }
+      }
     }
   ]
 }

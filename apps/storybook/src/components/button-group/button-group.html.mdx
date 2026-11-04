@@ -1,0 +1,53 @@
+import { Canvas, Meta } from "@storybook/addon-docs/blocks";
+import * as Stories from "./button-group.html.stories";
+
+<Meta of={Stories} />
+
+# Button group — HTML
+
+Copy-paste markup. **No JavaScript required.**
+
+| | |
+|---|---|
+| CSS | `minimal-tailwind.css` — or `tokens.css` + `components/button.css` + `components/button-group.css` |
+| JavaScript | None |
+| Snippets | `@minimal-tailwind/html/snippets/button-group/<story>-<group>.html` |
+
+## Contained
+
+<Canvas of={Stories.Contained} sourceState="shown" />
+
+## Outlined
+
+<Canvas of={Stories.Outlined} />
+
+## Text
+
+<Canvas of={Stories.Text} />
+
+## Soft
+
+<Canvas of={Stories.Soft} />
+
+## Sizes
+
+<Canvas of={Stories.Sizes} />
+
+## Orientation
+
+<Canvas of={Stories.Orientation} />
+
+## Anatomy
+
+```html
+<div role="group" data-mt-button-group data-mt-orientation="horizontal" aria-label="Pages">
+  <button type="button" data-mt-button data-mt-variant="outlined" data-mt-color="primary" data-mt-size="md">
+    <span data-mt-button-label>One</span>
+  </button>
+  …
+</div>
+```
+
+The group only joins its buttons; write `data-mt-variant` / `data-mt-color` / `data-mt-size` (and
+`disabled`) on every button. `data-mt-orientation`: `horizontal` (default) · `vertical`. Spec:
+`specs/components/button-group.md`.

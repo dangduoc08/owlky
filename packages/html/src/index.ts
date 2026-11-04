@@ -7,6 +7,8 @@
  * Or import "@minimal-tailwind/html/auto" to register every component and start.
  */
 export { components } from "./components/index.js";
+export type { ToggleButtonInstance } from "./components/toggle-button/toggle-button.js";
+export type { ToggleGroupInstance } from "./components/toggle-group/toggle-group.js";
 export { defineComponent, readBooleanOption } from "./runtime/define.js";
 export { getRuntime } from "./runtime/global.js";
 export { createRuntime, RUNTIME_OFF_SELECTOR } from "./runtime/runtime.js";

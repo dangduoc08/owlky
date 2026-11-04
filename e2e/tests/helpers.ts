@@ -103,9 +103,11 @@ export function storyIds(prefix: string): string[] {
 
 /**
  * Brand-colored text follows the reference look, not AA (ADR-0014): colored contained / outlined /
- * text buttons and swatches are exempt from `color-contrast` only.
+ * text buttons, fabs, pressed colored toggles and swatches are exempt from `color-contrast` only.
  */
 export const CONTRAST_EXEMPT = [
   '[data-mt-button][data-mt-color]:not([data-mt-color="inherit"]):not([data-mt-variant="soft"])',
+  '[data-mt-fab]:not([data-mt-variant="soft"])',
+  '[data-mt-toggle-button][aria-pressed="true"]:not([data-mt-color="inherit"])',
   "[data-swatch]",
 ];

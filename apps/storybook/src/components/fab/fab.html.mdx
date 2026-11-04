@@ -1,0 +1,56 @@
+import { Canvas, Meta } from "@storybook/addon-docs/blocks";
+import * as Stories from "./fab.html.stories";
+
+<Meta of={Stories} />
+
+# Fab — HTML
+
+Copy-paste markup. **No JavaScript required.**
+
+| | |
+|---|---|
+| CSS | `minimal-tailwind.css` — or `tokens.css` + `components/fab.css` |
+| JavaScript | None |
+| Snippets | `@minimal-tailwind/html/snippets/fab/<variant>-<group>.html` |
+
+## Default
+
+<Canvas of={Stories.Default} sourceState="shown" />
+
+## Outlined
+
+<Canvas of={Stories.Outlined} />
+
+## Soft
+
+<Canvas of={Stories.Soft} />
+
+## With animate
+
+<Canvas of={Stories.WithAnimate} />
+
+## Anatomy
+
+```html
+<!-- Round: name it with aria-label -->
+<button type="button" data-mt-fab data-mt-variant="contained" data-mt-color="primary" data-mt-size="md" aria-label="Add">
+  <svg aria-hidden="true" …></svg>
+</button>
+
+<!-- Extended: named by its label -->
+<button type="button" data-mt-fab data-mt-variant="contained" data-mt-color="primary" data-mt-size="md" data-mt-extended>
+  <svg aria-hidden="true" …></svg>
+  Navigate
+</button>
+```
+
+| Attribute | Values | Default |
+|---|---|---|
+| `data-mt-fab` | — (required) | |
+| `data-mt-variant` | `contained` · `outlined` · `soft` | `contained` |
+| `data-mt-color` | `default` · `inherit` · palette · `black` · `white` | `default` |
+| `data-mt-size` | round `sm` 40 · `md` 48 · `lg` 56; extended 36 · 40 · 48 | `md` |
+| `data-mt-extended` | — (boolean) | off |
+| `data-mt-animate` | — (boolean) | off |
+
+Position the fab yourself (e.g. `position: fixed`). Spec: `specs/components/fab.md`.

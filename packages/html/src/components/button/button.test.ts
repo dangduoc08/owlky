@@ -1,6 +1,5 @@
-import axe from "axe-core";
 import { afterEach, describe, expect, it } from "vitest";
-import { mount, resetPage } from "../../test-utils.js";
+import { expectNoAxeViolations, mount, resetPage } from "../../test-utils.js";
 
 // Browser-mode test: snippets are loaded with Vite glob imports (no Node fs).
 const snippets = import.meta.glob("./examples/*.html", {
@@ -54,24 +53,7 @@ describe("button snippets", () => {
   });
 
   it.each(entries)("%s: no axe violations", async (_, html) => {
-    const host = mount(html);
-    // Brand-colored text follows the reference look (ADR-0014): exempt from color-contrast only.
-    const exempt = [
-      '[data-mt-button][data-mt-color]:not([data-mt-color="inherit"]):not([data-mt-variant="soft"])',
-    ];
-    const tags = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
-    const all = await axe.run(host, {
-      runOnly: { type: "tag", values: tags },
-      rules: { "color-contrast": { enabled: false } },
-    });
-    const contrast = await axe.run(
-      { include: [host], exclude: exempt.map((selector) => [selector]) },
-      { runOnly: { type: "rule", values: ["color-contrast"] } },
-    );
-    const violations = [...all.violations, ...contrast.violations];
-    expect(violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target).join(", ")}`)).toEqual(
-      [],
-    );
+    await expectNoAxeViolations(mount(html));
   });
 });
 

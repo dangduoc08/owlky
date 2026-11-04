@@ -1,4 +1,5 @@
 // Copies the shared stylesheet and the canonical snippets into dist, so CDN users need one package.
+import { existsSync } from "node:fs";
 import { cp, mkdir, readdir } from "node:fs/promises";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
@@ -16,6 +17,8 @@ const components = join(root, "src", "components");
 for (const entry of await readdir(components, { withFileTypes: true })) {
   if (!entry.isDirectory()) continue;
   const examples = join(components, entry.name, "examples");
+  // Behavior-only folders (e.g. toggle-group, whose markup ships with toggle-button) have none.
+  if (!existsSync(examples)) continue;
   await mkdir(join(root, "dist", "snippets", entry.name), { recursive: true });
   await cp(examples, join(root, "dist", "snippets", entry.name), { recursive: true });
 }
