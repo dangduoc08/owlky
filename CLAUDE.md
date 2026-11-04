@@ -11,15 +11,13 @@ file covers project status, workflow and orientation.
 
 | Phase | Scope | State |
 |---|---|---|
-| 0 Foundation | pnpm workspace, TS 7 strict, Biome, Vitest browser mode, Playwright, Storybook 10, Changesets, CI | ✅ done |
-| 1 Tokens & theming | tokens → CSS vars, light/dark/system/nested, `createTheme()`, AA contrast tests, Tailwind v4 theme | ✅ done |
-| 2 Pattern components | Button (CSS-only), Switch (native control), Dialog (core controller + HTML runtime) | ✅ done, awaiting review |
-| 3 Forms | Input, Textarea, Checkbox, Radio/RadioGroup | next — needs approval |
-| 4 Display | Badge, Avatar, Card, Accordion | planned |
-| 5 Overlays | Tooltip, Dropdown, Tabs, Select (+ popover fallback, `@floating-ui/dom`) | planned |
-| 6 Feedback, 1.0 | Toast, a11y audit, docs polish | planned |
+| 0 Foundation tooling | pnpm workspace, TS 7 strict, Biome, Vitest browser mode, Playwright, Storybook 10, Changesets, CI | ✅ done |
+| 1 Tokens & theming | tokens → CSS vars, light/dark/system/nested, `createTheme()`, AA contrast tests, Tailwind v4 theme, HTML runtime | ✅ done |
+| 2 Pattern components | Button, Switch, Dialog | ↩ removed (ADR-0011); reference at commit `bd5fb2d` |
+| 2' Foundations | Tokens + Storybook › Foundations (Colors, Typography, Shadows, Grid, Icons): one story per section, default Storybook UI | ✅ done, awaiting review |
+| Next | Components, React + HTML | waiting for the user's go-ahead — the user asked for foundations only |
 
-Full plan: `docs/roadmap.md`. Nothing has been committed or published yet.
+Full plan: `docs/roadmap.md`. Not published yet.
 
 **Blocked on the user before publishing 0.1.0:** npm org `@minimal-tailwind`, GitHub repo
 (replace `OWNER` in every `packages/*/package.json`), npm trusted publishing, visual baselines
@@ -48,7 +46,7 @@ packages/styles   prebuilt CSS (components in @layer components) + Tailwind v4 t
 packages/core     framework-free behavior + anatomy, shared by react and html
 packages/react    React components
 packages/html     HTML Core Runtime, snippets (src/components/*/examples), CDN IIFE bundle
-apps/storybook    React + HTML stories side by side, HTML docs pages (.mdx)
+apps/storybook    Foundations pages (src/foundations/*) + React/HTML component stories
 e2e               Playwright: parity, interactions, themes, a11y, plain-HTML, visual
 examples          plain-html consumer example (uses dist)
 specs/components  component contracts — update before code

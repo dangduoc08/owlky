@@ -44,7 +44,7 @@ Stash unstaged work first so the working tree is clean and the diff is unambiguo
 5. **Analyse the diff for impact.** For each changed file, examine:
    - **Logic changes** — Does observable behavior change (open/close, focus, keyboard, events, rendering)?
    - **Public surface** — Added/removed/renamed exports, React props, `data-mt-*` attributes, `--mt-*` CSS variables, `mt:<component>:<event>` events or their `detail`, runtime API methods, package `exports`.
-   - **React ↔ HTML parity** — Was only one implementation changed? Do snippets in `packages/html/src/components/*/examples`, React output, the spec in `specs/components/` and the parity pairs in `e2e/tests/parity.spec.ts` still agree?
+   - **React ↔ HTML parity** — Was only one implementation changed? Do snippets in `packages/html/src/components/*/examples`, React output, the spec in `specs/components/` and the parity pairs in `e2e/tests/parity.spec.ts` (once restored, ADR-0011) still agree?
    - **Accessibility** — Roles, accessible names, `aria-*`, focus order/return, keyboard support, color contrast (token changes must keep `tokens.test.ts` green).
    - **Framework boundary** — Any React import in `tokens|styles|core|html`, or `html` import in `react` (ADR-0008)?
    - **Runtime lifecycle** — New listeners/observers/timers without the instance `signal` or cleanup; anything that can initialize twice or leak after removal (ADR-0005).

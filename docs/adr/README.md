@@ -15,5 +15,6 @@ ADR that supersedes the old one — don't rewrite history.
 | [0008](0008-framework-independence.md)         | Framework independence, enforced                                          | Accepted |
 | [0009](0009-build-and-publishing.md)           | Build, distribution and publishing                                        | Accepted |
 | [0010](0010-testing-strategy.md)               | Testing strategy                                                          | Accepted |
+| [0011](0011-foundations-first.md)             | Foundations first; sample components removed (references in git)        | Accepted |
 
 Template: **Context** (why decide) · **Decision** (what) · **Consequences** (trade-offs, follow-ups).

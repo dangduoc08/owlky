@@ -18,7 +18,8 @@ npm users (package README) and component users (spec, Storybook docs for React a
    - **Component** → outputs are `specs/components/<name>.md`, `apps/storybook/src/components/<name>/<name>.html.mdx`, and the `parameters.docs.description.component` text in `<name>.react.stories.tsx`.
 
 2. **Read the structure references.**
-   - Component docs: follow `specs/components/dialog.md` (spec) and `apps/storybook/src/components/dialog/dialog.html.mdx` (HTML page) exactly — they are the reference for structure and level of detail.
+   - Component docs: follow the Dialog docs from git history exactly — `git show bd5fb2d:specs/components/dialog.md` (spec) and `git show bd5fb2d:apps/storybook/src/components/dialog/dialog.html.mdx` (HTML page) — they are the reference for structure and level of detail (ADR-0011).
+   - Foundation docs: follow `apps/storybook/src/foundations/colors/` (page component + story).
    - Package README structure:
      - `# @minimal-tailwind/<name>` + one-line description
      - Install

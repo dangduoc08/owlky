@@ -1,6 +1,8 @@
 # Component specifications
 
 The contract both implementations follow. Write or update the spec **before** code.
+Specs live in `specs/components/<name>.md` (the folder is created with the first spec; the
+previous Button/Switch/Dialog specs are at commit `bd5fb2d`, ADR-0011).
 
 Template (copy for a new component):
 

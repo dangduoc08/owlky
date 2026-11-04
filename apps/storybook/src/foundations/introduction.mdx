@@ -15,24 +15,11 @@ and the same behavior. Toggle light/dark with the theme button in the toolbar.
 | `@minimal-tailwind/tokens` | Design tokens as TypeScript / CSS variables, `createTheme()` |
 | `@minimal-tailwind/core` | Shared framework-free behavior (used by both implementations) |
 
-## HTML in two steps
+## Status
 
-```html
-<!-- 1. Once per page -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@minimal-tailwind/html@0/dist/minimal-tailwind.css">
-<script src="https://cdn.jsdelivr.net/npm/@minimal-tailwind/html@0/dist/minimal-tailwind.js" defer></script>
-
-<!-- 2. Paste any snippet from the HTML/* pages -->
-```
-
-## React
-
-```tsx
-import "@minimal-tailwind/styles/minimal-tailwind.css";
-import { Button } from "@minimal-tailwind/react";
-
-<Button variant="contained" color="primary">Save</Button>
-```
+Foundations first: **Colors, Typography, Shadows, Grid and Icons** are documented under
+*Foundations* (one story per section). Components are built on top of them, one at a time, in
+React and HTML together (see `docs/roadmap.md`).
 
 ## Theming
 

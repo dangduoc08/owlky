@@ -16,7 +16,7 @@ Always balance correctness, accessibility, and simplicity.
 1. **Read context first.**
    - `CLAUDE.md` (status, workflow), `AGENTS.md` (conventions + add-a-component checklist), `docs/roadmap.md`.
    - The relevant spec in `specs/components/`, ADRs it touches, and the target file(s) fully.
-   - An existing component of the same pattern as reference: CSS-only → Button, native control → Switch, runtime behavior → Dialog.
+   - The pattern reference for the component type (ADR-0011, kept in git history at commit `bd5fb2d`): CSS-only → Button, native control → Switch, runtime behavior → Dialog. Read them with `git show bd5fb2d:<path>` (paths listed in ADR-0011).
 
 2. **Gate check.**
    - If the work belongs to a roadmap phase that has not been approved, or changes an approved decision (ADR), **stop**: present a short proposal (numbered decisions) and wait for approval.

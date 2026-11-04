@@ -73,7 +73,7 @@ Every finding: severity (Critical / High / Medium / Low / Informational) and con
 8. Top risks for future agents
 9. Missing documentation
 10. Outdated documentation
-11. Recommended actions, in priority order (concrete: "update `specs/components/dialog.md` options table", "add gotcha to AGENTS.md" — do not write the docs)
+11. Recommended actions, in priority order (concrete: "update `specs/components/<name>.md` options table", "add gotcha to AGENTS.md" — do not write the docs)
 12. Scores
 
 Write the report in English, then a Vietnamese version under a `---` divider.

@@ -37,15 +37,27 @@ Read this first (humans and AI agents). Architecture: `docs/architecture.md`. De
 1. `specs/components/<name>.md` (template in `specs/README.md`).
 2. `core/src/anatomy/anatomy.ts`: `<name>Attributes()`; behavior → `core/src/<name>/` + tests
    (native **and** fallback paths), exported from `core/src/index.ts`.
-3. `styles/src/components/<name>.css` + `@import` in `styles/src/index.css`.
+3. `styles/src/components/<name>.css` + `@import` in `styles/src/index.css`. (First component
+   only: restore the `"./components/*": "./dist/components/*"` export in `styles/package.json`.)
 4. `react/src/<name>/<name>.tsx` + `<name>.test.tsx` (behavior + axe), export from `react/src/index.ts`.
    Interactive roots render `data-mt-runtime="off"`; files with hooks start with `"use client"`.
-5. `html/src/components/<name>/examples/*.html` (canonical snippets). If it needs JS:
+5. `html/src/components/<name>/examples/*.html` (canonical snippets; first component only: restore
+   the `"./snippets/*": "./dist/snippets/*"` export in `html/package.json`). If it needs JS:
    `<name>.ts` (`defineComponent`) + tests, one line in `html/src/components/index.ts`.
 6. Storybook: `apps/storybook/src/components/<name>/` — `<name>.react.stories.tsx`,
    `<name>.html.stories.tsx` (**same story names**), `<name>.html.mdx` docs.
-7. E2E: add pairs to `e2e/tests/parity.spec.ts`; interaction spec for both implementations.
+7. E2E: add pairs to `e2e/tests/parity.spec.ts` (first component: restore it with
+   `git show bd5fb2d:e2e/tests/parity.spec.ts`); interaction spec for both implementations.
 8. `pnpm changeset`, then `pnpm check`.
+
+## Foundations in Storybook
+`apps/storybook/src/foundations/<name>/` — presentational components (`<name>.tsx`) and
+`<name>.stories.tsx` with **one story per section** (they become the sidebar sub-items) plus the
+autodocs page. Use Storybook's default layout and Controls for anything adjustable; don't build
+page chrome (headers, tables of contents, custom navigation). Read every value from
+`@minimal-tailwind/tokens` or `--mt-*` variables — never hard-code a token value. The reference
+site is for content only; where it conflicts with WCAG AA, AA wins (ADR-0011). E2E a11y, visual
+and small-screen tests pick up new stories automatically from Storybook's `index.json`.
 
 ## Commands
 
@@ -60,3 +72,21 @@ Read this first (humans and AI agents). Architecture: `docs/architecture.md`. De
 - Native modal dialogs may move Tab focus to browser UI; assert "never reaches the page behind".
 - Storybook aliases packages to `src`; `sideEffects` doesn't list sources, so start the runtime
   explicitly there (as `preview.tsx` does) rather than relying on side-effect imports.
+- Story ids come from export names: `H1` → `…--h-1`, `Subtitle1` → `…--subtitle-1`. Set `name`
+  for the sidebar label. Never export a story named after a global (`Error`): use
+  `ErrorPalette` + `name: "Error"`.
+- E2E opens stories with `a11y.manual:!true` (see `openStory`): Storybook's a11y addon would
+  otherwise run axe in the same frame and collide with `@axe-core/playwright`.
+- Engines serialize computed values differently: `color-mix()` shadows are `rgba(…)` or
+  `color(srgb …)`; WebKit drops quotes around font names. Assert with regexes on the stable part.
+- Horizontally scrollable areas must be keyboard-focusable (axe `scrollable-region-focusable`):
+  use `CodeBlock` (`section[aria-label][tabindex=0]`) in Storybook.
+- Text on arbitrary colors: pick from white/**pure black** (`getContrastText(hex, ["#FFFFFF",
+  "#000000"])`) — the better of the two always reaches ≥ 4.58:1; near-black does not.
+- publint rejects `exports` globs that match no files; `styles/components/*` and
+  `html/snippets/*` are restored with the first component (checklist steps 3 and 5).
+- Biome is configured to skip Markdown (`!**/*.md`): its formatter breaks command frontmatter.
+- Tailwind's compiler rewrites `color-mix()` in custom properties into an `@supports` pair whose
+  fallback **drops the alpha** (opaque colors). `tokens.css` is therefore concatenated, not
+  compiled (`styles/scripts/build.mjs`). Component CSS *is* compiled: check its dist output, and
+  prefer referencing token variables over writing `color-mix()` in component sources.

@@ -8,9 +8,12 @@ components** and as **framework-free HTML** with identical markup, styles and be
 - **No Tailwind required to consume.** CSS is prebuilt; Tailwind v4 users get a matching theme.
 - **Themeable** through `--mt-*` CSS variables; light, dark, system and nested themes.
 - **Accessible:** WCAG 2.2 AA contrast is unit-tested; keyboard and focus management on every component.
-- **Small:** the complete HTML runtime + components bundle is ~4 kB gzip.
+- **Small:** the HTML runtime bundle is ~2 kB gzip; all CSS (tokens) ~4.6 kB gzip.
 
-> Status: `0.x`, pre-release. Components: Button, Switch, Dialog. See [the roadmap](docs/roadmap.md).
+> Status: `0.x`, pre-release — **foundations first**. Available now: design tokens (colors,
+> typography, radius, shadows, motion) as CSS variables, light/dark theming, the Tailwind v4 theme
+> and the HTML Core Runtime. Components follow on top of the foundations. See
+> [the roadmap](docs/roadmap.md).
 
 ## Use it
 
@@ -20,40 +23,19 @@ components** and as **framework-free HTML** with identical markup, styles and be
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@minimal-tailwind/html@0/dist/minimal-tailwind.css">
 <script src="https://cdn.jsdelivr.net/npm/@minimal-tailwind/html@0/dist/minimal-tailwind.js" defer></script>
 
-<button type="button" data-mt-button data-mt-variant="contained" data-mt-color="primary"
-        aria-haspopup="dialog" data-mt-dialog-open="hello">Open</button>
-
-<dialog id="hello" data-mt-dialog aria-labelledby="hello-title">
-  <div data-mt-dialog-content>
-    <h2 id="hello-title" data-mt-dialog-title>Hello</h2>
-    <div data-mt-dialog-actions>
-      <button type="button" data-mt-button data-mt-dialog-close>Close</button>
-    </div>
-  </div>
-</dialog>
+<div style="background: var(--mt-palette-primary-main); color: var(--mt-palette-primary-contrast-text)">
+  Primary
+</div>
 ```
 
-Snippets for every component and variant are in Storybook (HTML/*) and in
-`@minimal-tailwind/html/dist/snippets/`. CSS-only components (Button, Switch) need no script.
-
-### React
+### React / npm
 
 ```sh
-pnpm add @minimal-tailwind/react @minimal-tailwind/styles
+pnpm add @minimal-tailwind/styles
 ```
-
-```tsx
-import "@minimal-tailwind/styles/minimal-tailwind.css";
-import { Button, Dialog, DialogContent, DialogTitle, DialogTrigger } from "@minimal-tailwind/react";
-```
-
-React 18.3+ and 19 are supported. Server-component friendly (`"use client"` only where needed).
-
-### npm without a framework
 
 ```ts
 import "@minimal-tailwind/styles/minimal-tailwind.css";
-import "@minimal-tailwind/html/auto"; // or: getRuntime().register(dialog).start()
 ```
 
 ### With Tailwind CSS v4
@@ -76,8 +58,8 @@ import "@minimal-tailwind/html/auto"; // or: getRuntime().register(dialog).start
 
 Dark mode: `<html data-mt-theme="dark">` (or `class="dark"`, or `"system"`). Any element can set
 its own `data-mt-theme`. Generate a full theme in JS with `createTheme()` + `themeToCss()` from
-`@minimal-tailwind/tokens`. Load the font yourself (e.g. Public Sans from Fontsource or Google
-Fonts); the stack falls back to system fonts.
+`@minimal-tailwind/tokens`. Load the fonts yourself — Public Sans (text) and Barlow 700/800 (h1–h3), e.g. from
+Fontsource or Google Fonts; the stacks fall back to system fonts.
 
 **Browser support:** Chrome/Edge 114+, Firefox 128+, Safari 17+ ([ADR-0006](docs/adr/0006-browser-baseline-and-fallbacks.md)).
 
