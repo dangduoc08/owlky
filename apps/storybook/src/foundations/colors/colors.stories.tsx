@@ -12,7 +12,7 @@ const meta = {
       canvas: { sourceState: "none" },
       description: {
         component:
-          "Palette tokens from `@owlky/tokens`, available as `--ok-palette-<color>-<shade>` CSS variables and Tailwind colors (`bg-primary`, `text-primary-dark`, `bg-grey-200`…). Click a swatch to copy its hex value.",
+          "Palette tokens from `@owlky/tokens`, available as `--ok-palette-<color>-<shade>` CSS variables and Tailwind colors (`bg-primary`, `text-primary-dark`, `bg-grey-200`…). Click a swatch to copy its hex value. Primary follows the toolbar's Preset (`data-ok-preset`).",
       },
     },
   },
@@ -27,7 +27,11 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Primary: Story = { args: { palette: "primary" } };
+/** Follows the toolbar's "Preset" (theme settings, ADR-0017). */
+export const Primary: Story = {
+  args: { palette: "primary" },
+  render: (args, { globals }) => <Palette {...args} preset={globals["preset"]} />,
+};
 export const Secondary: Story = { args: { palette: "secondary" } };
 export const Info: Story = { args: { palette: "info" } };
 export const Success: Story = { args: { palette: "success" } };

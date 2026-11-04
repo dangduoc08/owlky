@@ -1,5 +1,12 @@
 import { hexToRgb } from "./color.js";
 import {
+  fontFamilyPresetNames,
+  fontFamilyPresets,
+  paletteTextFor,
+  primaryPresetNames,
+  primaryPresets,
+} from "./presets.js";
+import {
   breakpointNames,
   type ColorScheme,
   componentColorNames,
@@ -13,7 +20,8 @@ import {
   typographyVariants,
 } from "./types.js";
 
-export type CssVariables = Record<`--ok-${string}`, string>;
+/** Public `--ok-*` and private `--_ok-*` (theme plumbing) custom properties. */
+export type CssVariables = Record<`--ok-${string}` | `--_ok-${string}`, string>;
 
 export interface ThemeCssVariables {
   /** Scheme-independent variables, declared on `:root`. */
@@ -55,6 +63,8 @@ function rootVariables(theme: Theme): CssVariables {
     }
     vars[`--ok-shadow-${name}`] = shadow([theme.colorShadow], `var(--ok-palette-${name}-main)`);
   }
+  vars["--_ok-primary-text-light"] = theme.schemes.light.paletteText.primary;
+  vars["--_ok-primary-text-dark"] = theme.schemes.dark.paletteText.primary;
   for (const shade of greyShades) {
     vars[`--ok-palette-grey-${shade}`] = theme.grey[shade];
     vars[`--ok-palette-grey-${shade}-channel`] = channel(theme.grey[shade]);
@@ -101,10 +111,14 @@ function rootVariables(theme: Theme): CssVariables {
   return vars;
 }
 
-function schemeVariables(scheme: ColorScheme, theme: Theme): CssVariables {
+function schemeVariables(scheme: ColorScheme, theme: Theme, dark: boolean): CssVariables {
   const vars: CssVariables = {};
   for (const name of paletteColorNames)
     vars[`--ok-palette-${name}-text`] = scheme.paletteText[name];
+  // Presets (ADR-0017) change the primary text tone: the scheme picks its tone from the nearest
+  // preset scope, and `--_ok-dark` lets a preset scope pick from the nearest scheme scope.
+  vars["--ok-palette-primary-text"] = `var(--_ok-primary-text-${dark ? "dark" : "light"})`;
+  vars["--_ok-dark"] = dark ? "1" : "0";
   vars["--ok-text-primary"] = scheme.text.primary;
   vars["--ok-text-secondary"] = scheme.text.secondary;
   vars["--ok-text-disabled"] = scheme.text.disabled;
@@ -136,8 +150,8 @@ function schemeVariables(scheme: ColorScheme, theme: Theme): CssVariables {
 export function themeToCssVariables(theme: Theme): ThemeCssVariables {
   return {
     root: rootVariables(theme),
-    light: schemeVariables(theme.schemes.light, theme),
-    dark: schemeVariables(theme.schemes.dark, theme),
+    light: schemeVariables(theme.schemes.light, theme, false),
+    dark: schemeVariables(theme.schemes.dark, theme, true),
   };
 }
 
@@ -169,6 +183,8 @@ export const LIGHT_SELECTOR = '[data-ok-theme="light"]';
 export interface ThemeCssOptions {
   /** Emit the `[data-ok-color]` bindings and their `@property` registrations. Default `true`. */
   colorBindings?: boolean;
+  /** Emit the `[data-ok-preset]` / `[data-ok-font]` scopes (ADR-0017). Default `true`. */
+  presets?: boolean;
 }
 
 /**
@@ -214,6 +230,34 @@ function colorBinding(name: (typeof componentColorNames)[number]): CssVariables 
   };
 }
 
+/** Variables of a primary preset scope (`[data-ok-preset]`, ADR-0017). */
+export function primaryPresetVariables(color: PaletteColor, theme: Theme): CssVariables {
+  const vars: CssVariables = {};
+  for (const [shade, value] of Object.entries(color)) {
+    vars[`--ok-palette-primary-${kebab(shade)}`] = value;
+    vars[`--ok-palette-primary-${kebab(shade)}-channel`] = channel(value);
+  }
+  vars["--ok-shadow-primary"] = shadow([theme.colorShadow], "var(--ok-palette-primary-main)");
+  const light = paletteTextFor(color, theme.schemes.light, false);
+  const dark = paletteTextFor(color, theme.schemes.dark, true);
+  vars["--_ok-primary-text-light"] = light;
+  vars["--_ok-primary-text-dark"] = dark;
+  // 0 % / 100 % of the dark tone: exactly one of the two, per the nearest scheme scope.
+  vars["--ok-palette-primary-text"] =
+    "color-mix(in srgb, var(--_ok-primary-text-dark) calc(var(--_ok-dark) * 100%), var(--_ok-primary-text-light))";
+  return vars;
+}
+
+/** Variables of a font preset scope (`[data-ok-font]`): every variant on the main family follows. */
+export function fontPresetVariables(family: string, theme: Theme): CssVariables {
+  const vars: CssVariables = { "--ok-font-family": family };
+  for (const variant of typographyVariants) {
+    if (theme.typography.variants[variant].fontFamily !== "secondary")
+      vars[`--ok-typography-${variant}-font-family`] = "var(--ok-font-family)";
+  }
+  return vars;
+}
+
 export function themeToCss(theme: Theme, options: ThemeCssOptions = {}): string {
   const { root, light, dark } = themeToCssVariables(theme);
   const [lightScheme, shadows] = splitShadows(light);
@@ -239,6 +283,18 @@ export function themeToCss(theme: Theme, options: ThemeCssOptions = {}): string 
       "  }",
     ]),
   ];
+  if (options.presets !== false) {
+    for (const name of primaryPresetNames) {
+      parts.push(
+        block(`[data-ok-preset="${name}"]`, primaryPresetVariables(primaryPresets[name], theme)),
+      );
+    }
+    for (const name of fontFamilyPresetNames) {
+      parts.push(
+        block(`[data-ok-font="${name}"]`, fontPresetVariables(fontFamilyPresets[name], theme)),
+      );
+    }
+  }
   if (options.colorBindings !== false) {
     for (const name of componentColorNames) {
       parts.push(block(`[data-ok-color="${name}"]`, colorBinding(name)));

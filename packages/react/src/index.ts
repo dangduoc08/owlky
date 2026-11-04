@@ -30,6 +30,16 @@ export type {
   ToggleGroupValue,
 } from "@owlky/core";
 export {
+  applyThemeSettings,
+  defaultThemeSettings,
+  normalizeThemeSettings,
+  readThemeSettings,
+  resetThemeSettings,
+  THEME_SETTINGS_KEY,
+  type ThemeSettings,
+  type ThemeSettingsOptions,
+} from "@owlky/core";
+export {
   Accordion,
   AccordionActions,
   AccordionDetails,

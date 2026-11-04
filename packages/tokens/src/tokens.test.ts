@@ -95,10 +95,10 @@ describe("themeToCss", () => {
     expect(themeToCss(defaultTheme, { colorBindings: false })).not.toContain("@property");
   });
 
-  it("prefixes every variable with --ok-", () => {
+  it("prefixes every variable with --ok- (public) or --_ok- (private plumbing)", () => {
     const { root, light, dark } = themeToCssVariables(defaultTheme);
     for (const key of Object.keys({ ...root, ...light, ...dark })) {
-      expect(key).toMatch(/^--ok-[a-z0-9-]+$/);
+      expect(key).toMatch(/^--_?ok-[a-z0-9-]+$/);
     }
   });
 

@@ -1,4 +1,10 @@
-export type { ColorName, PaletteColorName } from "@owlky/tokens";
+export type {
+  ColorName,
+  FontFamilyPreset,
+  PaletteColorName,
+  PrimaryPreset,
+} from "@owlky/tokens";
+export { fontFamilyPresetNames, fontSizeRange, primaryPresetNames } from "@owlky/tokens";
 export { closeOtherDetails } from "./accordion/exclusive.js";
 export {
   type AccordionAnatomyOptions,
@@ -130,6 +136,19 @@ export {
   pageRange,
   selectAllState,
 } from "./table/table.js";
+export {
+  applyThemeSettings,
+  defaultThemeSettings,
+  normalizeThemeSettings,
+  readThemeSettings,
+  resetThemeSettings,
+  THEME_SETTINGS_KEY,
+  type ThemeMode,
+  type ThemeSettings,
+  type ThemeSettingsOptions,
+  type ThemeSettingsStorage,
+  themeModes,
+} from "./theme/theme-settings.js";
 export {
   fromSelection,
   nextToggleSelection,

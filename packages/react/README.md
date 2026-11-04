@@ -23,6 +23,9 @@ import { Button, ButtonGroup, Fab, IconButton, ToggleButton, ToggleButtonGroup }
 </ToggleButtonGroup>
 ```
 
+Theme settings (ADR-0017): `applyThemeSettings`, `readThemeSettings`, `resetThemeSettings` are
+re-exported from `@owlky/core` (call them from an effect or an event handler).
+
 | Component | Props |
 |---|---|
 | `Accordion` / `AccordionSummary` / `AccordionDetails` / `AccordionActions` | `Accordion` (a `<details>`): `expanded` / `defaultExpanded` / `onChange(expanded)`, `variant` (`default` · `outlined` · `soft`), `disableGutters`, `disabled`, `name` (one open at a time); `AccordionSummary`: `expandIcon` (`null` hides it) |

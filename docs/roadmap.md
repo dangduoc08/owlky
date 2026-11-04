@@ -66,6 +66,14 @@ data to the app (helpers in core: `compareCellValues`, `nextSortDirection`, `pag
 `selectAllState`); the HTML runtime (`table`, `table-pagination`) sorts, selects and pages the rows
 in the DOM (approved extension beyond MUI). No new tokens.
 
+## ✅ Theme settings (ADR-0017, 2026-11-05)
+From the reference's Settings drawer: primary color presets (default, cyan, purple, blue, orange,
+red) via `data-ok-preset`, font families (Public Sans, Inter, DM Sans, Nunito Sans) via
+`data-ok-font`, root font size 12–20px; scopes nest with `data-ok-theme`. Helper
+`applyThemeSettings` in core (validates; stores only with an app-provided storage). Storybook
+toolbar: Preset, Font, Size; Foundations › Settings. Backlog: contrast setting, right-to-left
+(logical-property audit), a SettingsDrawer component (needs Switch and Slider).
+
 ## Pending integrations
 Places that use a native feature, demo markup or a small built-in part until the component exists
 — any component, not only these. When that component is built, integrate these in the same review

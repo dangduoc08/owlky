@@ -1,7 +1,16 @@
 import "@fontsource-variable/public-sans";
+import "@fontsource-variable/inter";
+import "@fontsource-variable/dm-sans";
+import "@fontsource-variable/nunito-sans";
 import "@fontsource/barlow/700.css";
 import "@fontsource/barlow/800.css";
 import "./preview.css";
+import {
+  applyThemeSettings,
+  fontFamilyPresetNames,
+  fontSizeRange,
+  primaryPresetNames,
+} from "@owlky/core";
 import { components, getRuntime } from "@owlky/html";
 import { withThemeByDataAttribute } from "@storybook/addon-themes";
 import type { Preview } from "@storybook/react-vite";
@@ -12,8 +21,61 @@ getRuntime()
   .register(...components)
   .start();
 
+const label = (value: string) =>
+  value.replace(
+    /(^|-)([a-z])/g,
+    (_, dash: string, c: string) => `${dash ? " " : ""}${c.toUpperCase()}`,
+  );
+const sizes = Array.from(
+  { length: fontSizeRange.max - fontSizeRange.min + 1 },
+  (_, i) => fontSizeRange.min + i,
+);
+
 const preview: Preview = {
+  // Theme settings (ADR-0017) next to the theme switcher: applied to <html> like an app would.
+  globalTypes: {
+    preset: {
+      description: "Primary color preset (data-ok-preset)",
+      toolbar: {
+        title: "Preset",
+        icon: "paintbrush",
+        items: primaryPresetNames.map((value) => ({ value, title: label(value) })),
+        dynamicTitle: true,
+      },
+    },
+    font: {
+      description: "Font family (data-ok-font)",
+      toolbar: {
+        title: "Font",
+        icon: "paragraph",
+        items: fontFamilyPresetNames.map((value) => ({ value, title: label(value) })),
+        dynamicTitle: true,
+      },
+    },
+    fontSize: {
+      description: "Root font size (rem scale)",
+      toolbar: {
+        title: "Size",
+        icon: "zoom",
+        items: sizes.map((value) => ({ value: String(value), title: `${value}px` })),
+        dynamicTitle: true,
+      },
+    },
+  },
+  initialGlobals: {
+    preset: "default",
+    font: "public-sans",
+    fontSize: String(fontSizeRange.default),
+  },
   decorators: [
+    (Story, { globals }) => {
+      applyThemeSettings({
+        preset: globals["preset"],
+        font: globals["font"],
+        fontSize: Number(globals["fontSize"]),
+      });
+      return <Story />;
+    },
     withThemeByDataAttribute({
       themes: { light: "light", dark: "dark" },
       defaultTheme: "light",
@@ -34,7 +96,7 @@ const preview: Preview = {
         order: [
           "Introduction",
           "Foundations",
-          ["Colors", "Typography", "Shadows", "Grid", "Icons"],
+          ["Colors", "Typography", "Shadows", "Grid", "Icons", "Settings"],
           "React",
           "HTML",
         ],

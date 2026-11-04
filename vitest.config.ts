@@ -22,6 +22,7 @@ export default defineConfig({
         "packages/core/src/options/**": COMPONENT_THRESHOLDS,
         "packages/core/src/sortable/**": COMPONENT_THRESHOLDS,
         "packages/core/src/table/**": COMPONENT_THRESHOLDS,
+        "packages/core/src/theme/**": COMPONENT_THRESHOLDS,
         "packages/core/src/toggle/**": COMPONENT_THRESHOLDS,
         "packages/react/src/accordion/**": COMPONENT_THRESHOLDS,
         "packages/react/src/alert/**": COMPONENT_THRESHOLDS,

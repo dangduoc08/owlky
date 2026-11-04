@@ -21,5 +21,6 @@ ADR that supersedes the old one — don't rewrite history.
 | [0014](0014-brand-colors-follow-reference.md) | Brand colors follow the reference look (white on fills, `main` text) | Accepted |
 | [0015](0015-component-api-and-option-schema.md) | Component API from the upstream component; one option schema for React and HTML | Accepted |
 | [0016](0016-rename-to-owlky.md) | Rename the library to Owlky (`ok` namespace) | Accepted |
+| [0017](0017-theme-presets.md) | Theme presets through data attributes (color, font, root size) | Accepted |
 
 Template: **Context** (why decide) · **Decision** (what) · **Consequences** (trade-offs, follow-ups).

@@ -14,7 +14,8 @@ file covers project status, workflow and orientation.
 | 0 Foundation tooling | pnpm workspace, TS 7 strict, Biome, Vitest browser mode, Playwright, Storybook 10, Changesets, CI | ✅ done |
 | 1 Tokens & theming | tokens → CSS vars, light/dark/system/nested, `createTheme()`, AA contrast tests, Tailwind v4 theme, HTML runtime | ✅ done |
 | 2 Pattern components | Button, Switch, Dialog | ↩ removed (ADR-0011); reference at commit `bd5fb2d` |
-| 2' Foundations | Tokens + Storybook › Foundations (Colors, Typography, Shadows, Grid, Icons): one story per section, default Storybook UI | ✅ done, awaiting review |
+| 2' Foundations | Tokens + Storybook › Foundations (Colors, Typography, Shadows, Grid, Icons, Settings): one story per section, default Storybook UI | ✅ done, awaiting review |
+| Theme settings | Presets (`data-ok-preset`), fonts (`data-ok-font`), root font size, `applyThemeSettings` (ADR-0017) | ✅ done, awaiting review |
 | Components | Button, Icon button, Fab, Button group, Toggle button, Drawer, Sortable, Accordion, Alert, Table ✅ (via `/component`) | awaiting review |
 
 Full plan: `docs/roadmap.md`. Not published yet.
@@ -98,6 +99,8 @@ pnpm check                                  # everything CI runs
   text are AA-tested.
 - Component API comes from the upstream component (MUI…), mapped prop by prop; one option schema
   per component in `core` drives React, HTML, Controls and parity (ADR-0015).
+- Theme settings are data attributes: `data-ok-preset`, `data-ok-font` (nest like `data-ok-theme`);
+  font size = root `font-size` (ADR-0017).
 
 ## Local environment notes
 

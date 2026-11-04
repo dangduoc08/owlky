@@ -127,6 +127,12 @@ and small-screen tests pick up new stories automatically from Storybook's `index
   from state; toggles the browser makes itself (find-in-page, `<details name>`) are reported via
   `onToggle` and reverted after render when refused. `toggle` events fire on a later task — tests
   wait (`settle()` / a `toggle` listener) before asserting.
+- A custom property that references another one is resolved where it is declared: anything derived
+  from the primary palette (`--ok-shadow-primary`, the `-text` tone) must be redeclared in each
+  `[data-ok-preset]` scope. The primary text tone goes through `--_ok-primary-text-light|dark` and
+  `--_ok-dark` so preset and scheme scopes nest in both directions (ADR-0017).
+- `tokens` and `styles` tests run in Node (no DOM): put computed-style checks of the theme CSS in
+  `core` (browser), e.g. `core/src/theme/theme-settings.test.ts`.
 - Theme-dependent colors without new tokens: `light-dark()` inside `@supports (color: light-dark(#000, #fff))`
   with the light value as the base declaration (Baseline lacks it; Biome rejects duplicate
   properties). It follows the scope's `color-scheme`, so nested themes work (Alert).

@@ -7,6 +7,16 @@
  * Or import "@owlky/html/auto" to register every component and start.
  */
 
+export {
+  applyThemeSettings,
+  defaultThemeSettings,
+  normalizeThemeSettings,
+  readThemeSettings,
+  resetThemeSettings,
+  THEME_SETTINGS_KEY,
+  type ThemeSettings,
+  type ThemeSettingsOptions,
+} from "@owlky/core";
 export type { AccordionInstance } from "./components/accordion/accordion.js";
 export type { AlertInstance } from "./components/alert/alert.js";
 export type {

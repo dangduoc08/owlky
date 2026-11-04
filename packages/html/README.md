@@ -14,6 +14,10 @@ DOM; events `ok:table:sort|select|expand`, `ok:table-pagination:change`; paginat
 `ok:toggle-button:change` / `ok:toggle-group:change`). Snippets ship in
 `@owlky/html/snippets/<component>/<story>-<group>.html` and in Storybook (HTML/Button/…).
 
+Theme settings (ADR-0017): put `data-ok-preset` / `data-ok-font` on `<html>` (or any element) and
+set the root `font-size`; or import `applyThemeSettings` from `@owlky/html` (ESM). The CDN global
+stays the runtime only (ADR-0007).
+
 ## CDN — include once per page
 
 ```html

@@ -29,12 +29,17 @@ const css = themeToCss(
 
 Themes: `data-ok-theme="light|dark|system"` (or `.dark`) on any element.
 
+Presets (ADR-0017), on any element, nesting with themes: `data-ok-preset="cyan|purple|blue|orange|red"`
+(primary palette; `default` resets) and `data-ok-font="inter|dm-sans|nunito-sans"` (`public-sans`
+resets; load the fonts yourself). Font size: the root `font-size` (12–20px), every size is in rem.
+
 ## API
 
 | Export | Purpose |
 |---|---|
 | `defaultTheme`, `createTheme(overrides)` | The default theme; deep-merge a partial theme (arrays replaced) |
-| `themeToCss(theme, { colorBindings })`, `themeToCssVariables(theme)`, `responsiveTypographyVariables(theme)` | Serialize a theme to CSS / variable maps |
+| `primaryPresets`, `primaryPresetNames`, `fontFamilyPresets`, `fontFamilyPresetNames`, `fontSizeRange`, `paletteTextFor(color, scheme, dark)` | Theme settings data (ADR-0017) and the AA text-tone chooser |
+| `themeToCss(theme, { colorBindings, presets })`, `primaryPresetVariables`, `fontPresetVariables`, `themeToCssVariables(theme)`, `responsiveTypographyVariables(theme)` | Serialize a theme to CSS / variable maps |
 | `hexToRgb`, `relativeLuminance`, `contrastRatio`, `getContrastText(background, candidates?)` | WCAG 2.2 color math for theme authors |
 | `componentColorNames`, `paletteColorNames`, `greyShades`, `typographyVariants`, `shadowNames`, `radiusNames`, `breakpointNames` | Name lists (and their types) |
 

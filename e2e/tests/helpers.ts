@@ -11,11 +11,13 @@ export async function openStory(
   theme: "light" | "dark" = "light",
   /** Storybook URL args, e.g. `size:lg;disabled:!true`. */
   args = "",
+  /** Extra Storybook globals, e.g. `preset:cyan;fontSize:20` (ADR-0017 toolbar). */
+  globals = "",
 ) {
   // Components animate color changes; reduced motion (honored by the CSS) makes reads instant.
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto(
-    `/apps/storybook/storybook-static/iframe.html?id=${id}&viewMode=story&globals=theme:${theme};a11y.manual:!true${args ? `&args=${args}` : ""}`,
+    `/apps/storybook/storybook-static/iframe.html?id=${id}&viewMode=story&globals=theme:${theme};a11y.manual:!true${globals ? `;${globals}` : ""}${args ? `&args=${args}` : ""}`,
   );
   await page.locator("#storybook-root > *").first().waitFor();
   await page.waitForFunction((t) => document.documentElement.dataset["okTheme"] === t, theme);

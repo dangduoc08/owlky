@@ -10,8 +10,10 @@ export {
   type CssVariables,
   colorBindingVariables,
   DARK_SELECTOR,
+  fontPresetVariables,
   LAYER_ORDER,
   LIGHT_SELECTOR,
+  primaryPresetVariables,
   responsiveTypographyVariables,
   type ThemeCssOptions,
   type ThemeCssVariables,
@@ -19,4 +21,14 @@ export {
   themeToCssVariables,
 } from "./css.js";
 export { defaultTheme } from "./default-theme.js";
+export {
+  type FontFamilyPreset,
+  fontFamilyPresetNames,
+  fontFamilyPresets,
+  fontSizeRange,
+  type PrimaryPreset,
+  paletteTextFor,
+  primaryPresetNames,
+  primaryPresets,
+} from "./presets.js";
 export * from "./types.js";
