@@ -1,0 +1,40 @@
+{
+  "name": "@minimal-tailwind/core",
+  "version": "0.0.0",
+  "description": "Framework-free behavior and anatomy shared by the Minimal Tailwind React and HTML implementations.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "rm -rf dist && tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@minimal-tailwind/tokens": "workspace:*"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OWNER/minimal-tailwind.git",
+    "directory": "packages/core"
+  },
+  "keywords": [
+    "accessibility",
+    "focus-trap",
+    "dialog",
+    "headless"
+  ]
+}
