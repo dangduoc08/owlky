@@ -12,7 +12,8 @@
       "!**/storybook-static",
       "!**/test-results",
       "!**/playwright-report",
-      "!**/*.snap"
+      "!**/*.snap",
+      "!**/*.md"
     ]
   },
   "formatter": {
