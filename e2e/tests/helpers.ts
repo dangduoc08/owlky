@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import type { Page } from "@playwright/test";
 
 export type Implementation = "react" | "html";
@@ -85,4 +86,17 @@ export function normalizeStory(page: Page): Promise<NormalizedNode> {
     if (!root) throw new Error("Story did not render");
     return walk(root);
   });
+}
+
+/** Story ids from the built Storybook index (run `pnpm storybook:build` first). */
+export function storyIds(prefix: string): string[] {
+  const index = JSON.parse(
+    readFileSync(
+      new URL("../../apps/storybook/storybook-static/index.json", import.meta.url),
+      "utf8",
+    ),
+  ) as { entries: Record<string, { id: string; type: string }> };
+  return Object.values(index.entries)
+    .filter((entry) => entry.type === "story" && entry.id.startsWith(prefix))
+    .map((entry) => entry.id);
 }

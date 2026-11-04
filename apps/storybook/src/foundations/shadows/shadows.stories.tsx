@@ -1,0 +1,28 @@
+import type { Meta, StoryObj } from "@storybook/react-vite";
+import { ColorShadows, CustomShadows, SystemShadows } from "./shadows.js";
+
+const meta = {
+  title: "Foundations/Shadows",
+  tags: ["autodocs"],
+  parameters: {
+    docs: {
+      canvas: { sourceState: "none" },
+      description: {
+        component:
+          "Shadow tokens from `@minimal-tailwind/tokens`, tinted per theme. Use the CSS variables or Tailwind `shadow-elevation-<n>`, `shadow-z<n>`, `shadow-card`, `shadow-dropdown`, `shadow-dialog`.",
+      },
+    },
+  },
+} satisfies Meta;
+
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+/** Default elevations 1–24: `--mt-elevation-<n>`. */
+export const System: Story = { render: () => <SystemShadows /> };
+
+/** Extended shadows used across the components: `--mt-shadow-*`. */
+export const Custom: Story = { render: () => <CustomShadows /> };
+
+/** Colored shadows for filled surfaces: `--mt-shadow-<color>`. */
+export const Colors: Story = { render: () => <ColorShadows /> };

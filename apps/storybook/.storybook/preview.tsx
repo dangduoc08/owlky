@@ -1,3 +1,6 @@
+import "@fontsource-variable/public-sans";
+import "@fontsource/barlow/700.css";
+import "@fontsource/barlow/800.css";
 import "./preview.css";
 import { components, getRuntime } from "@minimal-tailwind/html";
 import { withThemeByDataAttribute } from "@storybook/addon-themes";
@@ -23,7 +26,15 @@ const preview: Preview = {
     backgrounds: { disable: true },
     a11y: { test: "error" },
     options: {
-      storySort: { order: ["Introduction", "Foundations", "React", "HTML"] },
+      storySort: {
+        order: [
+          "Introduction",
+          "Foundations",
+          ["Colors", "Typography", "Shadows", "Grid", "Icons"],
+          "React",
+          "HTML",
+        ],
+      },
     },
   },
 };
