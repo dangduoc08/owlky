@@ -1,5 +1,16 @@
 export type { ColorName, PaletteColorName } from "@minimal-tailwind/tokens";
-export type { DataAttributes } from "./anatomy/anatomy.js";
+export {
+  type ButtonAnatomyOptions,
+  type ButtonLoadingPosition,
+  type ButtonSize,
+  type ButtonVariant,
+  buttonAttributes,
+  buttonColors,
+  buttonLoadingPositions,
+  buttonSizes,
+  buttonVariants,
+  type DataAttributes,
+} from "./anatomy/anatomy.js";
 export { focusInitial, getTabbables, isFocusable, trapTab } from "./dom/focus.js";
 export { createId } from "./dom/id.js";
 export { type Supports, supports } from "./dom/support.js";

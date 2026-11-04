@@ -67,8 +67,10 @@ project. Never copy the reference's source code, branding or assets.
      `--mt-*` token. Build a table *reference value → token*.
    - A value with no token is a **foundation gap**: propose adding the token (foundations first,
      ADR-0011) instead of hard-coding it.
-   - Contrast: every text/background pair must meet WCAG 2.2 AA. Where the reference fails AA,
-     **AA wins** (e.g. dark text on `#00A76F`; `getContrastText(hex, ["#FFFFFF", "#000000"])`).
+   - Contrast (ADR-0014): brand colors follow the reference (white on `main` fills, `main` text
+     for outlined / text, MUI's 3:1 rule for swatches); neutral text and soft tones must meet
+     WCAG 2.2 AA. Mark brand-colored demo elements that are exempt from `color-contrast` the
+     same way as Button (`CONTRAST_EXEMPT` in the test helpers) — never disable axe wholesale.
 
 5. **Propose, then wait for approval** (review-gated workflow). Show the mode, then:
    - the draft spec (anatomy with `data-mt-*` attributes, options table HTML ↔ React prop ↔
@@ -503,7 +505,8 @@ Unit: N/N (3 trình duyệt) · E2E: N/N (4 project) · Visual: N/N (hoặc pend
   illustrations, icon packs or brand text. Use our own markup, tokens and inline SVG icons.
 - Never ship one implementation alone: React and HTML land together with parity tests.
 - Never hard-code a design value: map it to a token, or propose a new token first.
-- WCAG 2.2 AA always wins over visual fidelity; list every such deviation in the report.
+- Contrast follows ADR-0014: reference look for brand colors, WCAG 2.2 AA for neutral text and
+  soft tones; list every remaining deviation from the reference in the report.
 - Responsive is not optional: the component passes every row of the viewport matrix in both
   implementations, with matching results between React and HTML.
 - Visual baselines are updated only after the user approves the listed changes, and only from

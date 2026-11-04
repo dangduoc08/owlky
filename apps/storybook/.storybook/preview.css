@@ -16,3 +16,27 @@
   align-items: center;
   gap: 0.75rem;
 }
+
+/* Story layout for grouped examples (see src/helpers/groups.tsx). */
+.sb-groups {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.sb-group-title {
+  margin: 0 0 0.75rem;
+  color: var(--mt-text-secondary);
+  font-size: var(--mt-typography-overline-font-size);
+  font-weight: var(--mt-typography-overline-font-weight);
+  line-height: var(--mt-typography-overline-line-height);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Demo surfaces: a theme scope inside a row gets its own paper background. */
+.sb-row > [data-mt-theme] {
+  padding: 0.75rem;
+  border-radius: var(--mt-radius-lg);
+  background-color: var(--mt-bg-paper);
+  box-shadow: var(--mt-shadow-card);
+}

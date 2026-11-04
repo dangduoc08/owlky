@@ -24,6 +24,7 @@
     "./minimal-tailwind.js": "./dist/minimal-tailwind.js",
     "./minimal-tailwind.css": "./dist/minimal-tailwind.css",
     "./minimal-tailwind.min.css": "./dist/minimal-tailwind.min.css",
+    "./snippets/*": "./dist/snippets/*",
     "./package.json": "./package.json"
   },
   "unpkg": "./dist/minimal-tailwind.js",

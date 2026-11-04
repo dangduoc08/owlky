@@ -1,6 +1,6 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { defaultTheme, themeToCssVariables } from "@minimal-tailwind/tokens";
+import { colorBindingVariables, defaultTheme, themeToCssVariables } from "@minimal-tailwind/tokens";
 import { describe, expect, it } from "vitest";
 
 const src = join(import.meta.dirname);
@@ -56,6 +56,11 @@ describe("styles source", () => {
     },
   );
 
+  it.each(components)("%s: no color-mix() (Tailwind rewrites it with opaque fallbacks)", (file) => {
+    const css = read(`components/${file}`).replace(/\/\*[\s\S]*?\*\//g, "");
+    expect(css).not.toContain("color-mix(");
+  });
+
   it.each(["theme.css", ...components.map((f) => `components/${f}`)])(
     "%s references only --mt-* tokens that exist",
     (file) => {
@@ -63,11 +68,7 @@ describe("styles source", () => {
       const known = new Set([
         ...Object.keys(root),
         ...Object.keys(light),
-        "--mt-c-main",
-        "--mt-c-hover",
-        "--mt-c-contrast",
-        "--mt-c-text",
-        "--mt-c-shadow",
+        ...colorBindingVariables,
       ]);
       const used = [...read(file).matchAll(/var\((--mt-[a-z0-9-]+)/g)].map((m) => m[1]);
       for (const name of used) expect(known.has(name as string), `${file}: ${name}`).toBe(true);

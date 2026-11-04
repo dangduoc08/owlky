@@ -24,6 +24,7 @@
     "./tokens.css": "./dist/tokens.css",
     "./base.css": "./dist/base.css",
     "./theme.css": "./dist/theme.css",
+    "./components/*": "./dist/components/*",
     "./package.json": "./package.json"
   },
   "scripts": {

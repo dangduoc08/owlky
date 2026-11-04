@@ -27,6 +27,13 @@ section, autodocs page, Controls), generated from the tokens:
 | Grid | Spacing (0–40px) and column (1–12) stories driven by Controls | — |
 | Icons | Icon sets, sizes, colors, usage | — (no icon set bundled; reference logo/illustrations not reproduced) |
 
+## ✅ Components — Button (first component, 2026-11-04)
+Created with `/component` from the reference "Buttons" page: 4 variants × 9 colors × 4 sizes,
+icons, loading (center / start / end), link buttons. Tokens added: RGB channels, font-size scale,
+black/white bindings (ADR-0013). Coverage tooling (`pnpm test:coverage`), responsive matrix,
+strict-CSP check and visual baselines at 5 viewports were introduced with it.
+Follow-ups from the same reference page: Icon button, Fab, Button group, Toggle button.
+
 ## Next — components (awaiting the owner's go-ahead)
 Order to be confirmed. Candidate sequence, each in React + HTML with parity tests:
 1. Form controls: Input, Textarea, Checkbox, Radio/RadioGroup (+ restore empty export globs)

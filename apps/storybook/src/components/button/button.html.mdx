@@ -1,0 +1,76 @@
+import { Canvas, Meta } from "@storybook/addon-docs/blocks";
+import * as Stories from "./button.html.stories";
+
+<Meta of={Stories} />
+
+# Button — HTML
+
+Copy-paste markup. **No JavaScript required** — Button is HTML + CSS only.
+
+| | |
+|---|---|
+| CSS | `minimal-tailwind.css` — or `tokens.css` + `components/button.css` |
+| JavaScript | None |
+| Snippets | `@minimal-tailwind/html/snippets/button/<variant>-<group>.html` |
+
+## Contained
+
+<Canvas of={Stories.Contained} sourceState="shown" />
+
+## Outlined
+
+<Canvas of={Stories.Outlined} />
+
+## Text
+
+<Canvas of={Stories.Text} />
+
+## Soft
+
+<Canvas of={Stories.Soft} />
+
+## Anatomy
+
+```html
+<button type="button" data-mt-button data-mt-variant="contained" data-mt-color="primary" data-mt-size="md">
+  <span data-mt-button-icon="start" aria-hidden="true"><svg aria-hidden="true" …></svg></span>
+  <span data-mt-button-label>Save</span>
+</button>
+```
+
+| Attribute | Values | Default |
+|---|---|---|
+| `data-mt-button` | — (required) | |
+| `data-mt-variant` | `contained` · `outlined` · `text` · `soft` | `text` |
+| `data-mt-color` | `inherit` · `primary` · `secondary` · `info` · `success` · `warning` · `error` · `black` · `white` | `inherit` |
+| `data-mt-size` | `sm` (30px) · `md` (36px) · `lg` (48px) · `xl` (56px) | `md` |
+| `data-mt-full-width` | — (boolean) | off |
+| `data-mt-button-label` | wraps the text (required) | |
+| `data-mt-button-icon` | `start` · `end`, on a decorative icon wrapper | |
+
+Unknown or missing values render as the defaults.
+
+## Loading
+
+Add `data-mt-loading`, `data-mt-loading-position` (`center` · `start` · `end`), `aria-busy="true"`
+and `disabled`, plus a loader before the label:
+
+```html
+<button type="button" data-mt-button data-mt-variant="contained" data-mt-size="md"
+        data-mt-loading data-mt-loading-position="center" aria-busy="true" disabled>
+  <span data-mt-button-loader aria-hidden="true"><span data-mt-button-spinner></span></span>
+  <span data-mt-button-label>Submit</span>
+</button>
+```
+
+The label stays in the accessibility tree (it's only made transparent), so the button keeps its
+name. Replace the spinner with text (e.g. `Loading…`) inside the loader if you prefer.
+
+## Accessibility
+
+- Use `<button type="button">` for actions and `<a href>` for navigation; both keep native keyboard support.
+- Icon wrappers and the loader are `aria-hidden`; icon-only buttons need an `aria-label`.
+- Loading uses `disabled`, so the button leaves the tab order until it finishes — move focus
+  deliberately if the action replaces the content.
+- `black` / `white` are for light / dark surfaces respectively.
+- Focus shows a 2px outline; all colors meet WCAG 2.2 AA in light and dark themes.

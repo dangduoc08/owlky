@@ -3,8 +3,8 @@
 Framework-free [Minimal Tailwind](../../README.md) components: copy-paste HTML snippets plus a
 ~2 kB (gzip) Core Runtime that wires behavior up through `data-mt-*` attributes.
 
-> Status: foundations first (ADR-0011). The runtime and the stylesheet ship today; component
-> snippets are added with each component.
+Components: **Button** (CSS only — no JavaScript needed). Snippets ship in
+`@minimal-tailwind/html/snippets/button/<variant>-<group>.html` and in Storybook (HTML/Button).
 
 ## CDN — include once per page
 

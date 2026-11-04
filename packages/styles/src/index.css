@@ -3,3 +3,4 @@
  * Every file in ./components must be imported here (enforced by styles.test.ts).
  */
 @import "@minimal-tailwind/tokens/tokens.css";
+@import "./components/button.css";

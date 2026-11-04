@@ -1,16 +1,34 @@
 import axe from "axe-core";
 import { expect } from "vitest";
 
+/**
+ * Brand-colored text follows the reference look, not AA (ADR-0014): colored contained / outlined
+ * / text buttons and swatches are exempt from `color-contrast` only. Soft buttons and neutral text
+ * are still checked.
+ */
+export const CONTRAST_EXEMPT = [
+  '[data-mt-button][data-mt-color]:not([data-mt-color="inherit"]):not([data-mt-variant="soft"])',
+  "[data-swatch]",
+];
+
+const TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
+
 /** Asserts that axe finds no WCAG violations inside `container`. */
 export async function expectNoAxeViolations(container: Element = document.body): Promise<void> {
-  // Mid-animation opacity lowers measured contrast; scan the settled UI.
-  await Promise.all(
-    document.getAnimations().map((animation) => animation.finished.catch(() => {})),
-  );
-  const result = await axe.run(container, {
-    runOnly: { type: "tag", values: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"] },
+  // Mid-animation opacity lowers measured contrast, so scan the settled UI. Infinite animations
+  // (spinners) never finish: only finite ones are awaited.
+  const finite = document
+    .getAnimations()
+    .filter((a) => a.effect?.getComputedTiming().endTime !== Number.POSITIVE_INFINITY);
+  await Promise.all(finite.map((animation) => animation.finished.catch(() => {})));
+  const all = await axe.run(container, {
+    runOnly: { type: "tag", values: TAGS },
+    rules: { "color-contrast": { enabled: false } },
   });
-  expect(
-    result.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target).join(", ")}`),
-  ).toEqual([]);
+  const contrast = await axe.run(
+    { include: [container], exclude: CONTRAST_EXEMPT.map((selector) => [selector]) },
+    { runOnly: { type: "rule", values: ["color-contrast"] } },
+  );
+  const violations = [...all.violations, ...contrast.violations];
+  expect(violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target).join(", ")}`)).toEqual([]);
 }

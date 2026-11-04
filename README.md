@@ -7,7 +7,8 @@ components** and as **framework-free HTML** with identical markup, styles and be
   behavior core. React ↔ HTML parity is tested down to the pixel.
 - **No Tailwind required to consume.** CSS is prebuilt; Tailwind v4 users get a matching theme.
 - **Themeable** through `--mt-*` CSS variables; light, dark, system and nested themes.
-- **Accessible:** WCAG 2.2 AA contrast is unit-tested; keyboard and focus management on every component.
+- **Accessible:** keyboard and focus management on every component; neutral text is AA-tested;
+  brand colors follow the reference look (opt-in strict AA, see `packages/tokens/README.md`).
 - **Small:** the HTML runtime bundle is ~2 kB gzip; all CSS (tokens) ~4.6 kB gzip.
 
 > Status: `0.x`, pre-release — **foundations first**. Available now: design tokens (colors,

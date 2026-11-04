@@ -20,6 +20,7 @@ function ShadowTile({
   return (
     <div
       data-shadow={variable}
+      data-swatch={style ? "" : undefined}
       className="grid h-30 place-items-center gap-1 rounded-md bg-paper text-center"
       style={{ boxShadow: `var(${variable})`, ...style }}
     >

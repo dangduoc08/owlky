@@ -15,7 +15,7 @@ file covers project status, workflow and orientation.
 | 1 Tokens & theming | tokens → CSS vars, light/dark/system/nested, `createTheme()`, AA contrast tests, Tailwind v4 theme, HTML runtime | ✅ done |
 | 2 Pattern components | Button, Switch, Dialog | ↩ removed (ADR-0011); reference at commit `bd5fb2d` |
 | 2' Foundations | Tokens + Storybook › Foundations (Colors, Typography, Shadows, Grid, Icons): one story per section, default Storybook UI | ✅ done, awaiting review |
-| Next | Components, React + HTML | waiting for the user's go-ahead — the user asked for foundations only |
+| Components | Button ✅ (first, via `/component`) | awaiting review; follow-ups: Icon button, Fab, Button group, Toggle button |
 
 Full plan: `docs/roadmap.md`. Not published yet.
 
@@ -94,7 +94,8 @@ pnpm check                                  # everything CI runs
 - Baseline Chrome/Edge 114, Firefox 128, Safari 17; feature detection + visible fallbacks (ADR-0006).
 - Only three `Symbol.for` globals; runtime protocol/version policy (ADR-0007).
 - React ⟷ HTML never import each other; enforced by lint + scripts (ADR-0008).
-- Contrast is tested: some filled colors use dark text to meet AA (ADR-0002).
+- Brand colors follow the reference (white on fills, `main` text; ADR-0014); neutral and soft
+  text are AA-tested.
 
 ## Local environment notes
 

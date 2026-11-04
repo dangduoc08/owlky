@@ -56,7 +56,7 @@ Read this first (humans and AI agents). Architecture: `docs/architecture.md`. De
 autodocs page. Use Storybook's default layout and Controls for anything adjustable; don't build
 page chrome (headers, tables of contents, custom navigation). Read every value from
 `@minimal-tailwind/tokens` or `--mt-*` variables — never hard-code a token value. The reference
-site is for content only; where it conflicts with WCAG AA, AA wins (ADR-0011). E2E a11y, visual
+site is for content only; brand colors follow it, neutral text must meet WCAG AA (ADR-0014). E2E a11y, visual
 and small-screen tests pick up new stories automatically from Storybook's `index.json`.
 
 ## Commands
@@ -90,7 +90,18 @@ and small-screen tests pick up new stories automatically from Storybook's `index
   fix for glob/minimatch advisories; upstream still pins glob 13). Remove it once
   `@storybook/react-vite` resolves a fixed version — check with `pnpm audit` after upgrades.
   Security fixes may use releases younger than 14 days (Renovate `vulnerabilityAlerts`).
-- Tailwind's compiler rewrites `color-mix()` in custom properties into an `@supports` pair whose
-  fallback **drops the alpha** (opaque colors). `tokens.css` is therefore concatenated, not
-  compiled (`styles/scripts/build.mjs`). Component CSS *is* compiled: check its dist output, and
-  prefer referencing token variables over writing `color-mix()` in component sources.
+- Tailwind's compiler rewrites `color-mix()` into an `@supports` pair whose fallback **drops the
+  alpha** (opaque colors). `tokens.css` is concatenated, not compiled; component CSS must use
+  `rgb(var(--…-channel) / α)` instead of `color-mix()` (ADR-0013, enforced by `styles.test.ts`).
+- Brand-colored text is exempt from axe `color-contrast` only, via `CONTRAST_EXEMPT`
+  (react `test-utils.tsx`, e2e `helpers.ts`, html button test) — ADR-0014. Extend that list for
+  new brand-colored parts instead of disabling the rule.
+- Infinite CSS animations (spinners) never fire `animation.finished`: test helpers that wait for
+  animations must skip them (`expectNoAxeViolations` filters `endTime === Infinity`).
+- Biome 2 lints the HTML snippets too: decorative `<svg>` needs `aria-hidden="true"` itself (not
+  only on its wrapper), and demo links need a real `href` and descriptive text.
+- Add each new component's files to `coverage.thresholds` in `vitest.config.ts`.
+- Foundations › Icons uses Iconify **offline** (`@iconify/react/offline`, Storybook dev deps only)
+  with a generated subset, `icon-data.json`: edit `SETS` in `apps/storybook/scripts/icons.mjs`
+  and run `pnpm --filter @minimal-tailwind/storybook icons`. Never import a full
+  `@iconify-json/*/icons.json` (megabytes). Credit each set's author and license (Solar is CC BY 4.0).

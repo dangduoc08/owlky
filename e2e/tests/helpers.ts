@@ -100,3 +100,12 @@ export function storyIds(prefix: string): string[] {
     .filter((entry) => entry.type === "story" && entry.id.startsWith(prefix))
     .map((entry) => entry.id);
 }
+
+/**
+ * Brand-colored text follows the reference look, not AA (ADR-0014): colored contained / outlined /
+ * text buttons and swatches are exempt from `color-contrast` only.
+ */
+export const CONTRAST_EXEMPT = [
+  '[data-mt-button][data-mt-color]:not([data-mt-color="inherit"]):not([data-mt-variant="soft"])',
+  "[data-swatch]",
+];

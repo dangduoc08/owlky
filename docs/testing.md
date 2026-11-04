@@ -11,6 +11,12 @@
 
 First run: `pnpm exec playwright install chromium firefox webkit`.
 
+Also: `pnpm test:coverage` (v8 coverage, thresholds per component file in `vitest.config.ts`);
+`e2e/tests/<name>.responsive.spec.ts` runs the viewport matrix from `e2e/tests/viewports.ts`
+(375, 430, 768, 1280, 1440); `e2e/tests/csp.spec.ts` loads `examples/csp/` under a strict
+CSP + Trusted Types and fails on any violation; visual baselines cover every story × theme ×
+viewport.
+
 Writing tests:
 - Behavior lives in `core` → test it there in both native and fallback mode (`forceFallback`).
 - React/HTML tests assert user-visible behavior (roles, focus, keyboard), not implementation.

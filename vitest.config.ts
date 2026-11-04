@@ -1,10 +1,24 @@
 import { defineConfig } from "vitest/config";
 
 // Each package owns its Vitest project (environment: node or real browser).
+const COMPONENT_THRESHOLDS = { statements: 95, branches: 95, functions: 100, lines: 95 };
+
 export default defineConfig({
   test: {
     projects: ["packages/*"],
     // Packages may have no tests while their first component is being built.
     passWithNoTests: true,
+    coverage: {
+      provider: "v8",
+      include: ["packages/*/src/**/*.{ts,tsx}"],
+      exclude: ["**/*.test.{ts,tsx}", "**/test-utils.{ts,tsx}", "packages/html/src/cdn.ts"],
+      reporter: ["text-summary", "text"],
+      // Component floor (see .claude/commands/component.md → Coverage matrix). Add each new
+      // component's files here.
+      thresholds: {
+        "packages/core/src/anatomy/**": COMPONENT_THRESHOLDS,
+        "packages/react/src/button/**": COMPONENT_THRESHOLDS,
+      },
+    },
   },
 });

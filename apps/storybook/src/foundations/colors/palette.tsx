@@ -1,6 +1,6 @@
 import {
+  contrastRatio,
   defaultTheme,
-  getContrastText,
   greyShades,
   hexToRgb,
   type PaletteColorName,
@@ -16,8 +16,12 @@ interface Swatch {
 }
 
 const SHADES = ["lighter", "light", "main", "dark", "darker"] as const;
-// Pure black: whichever of white/black contrasts more with a color always reaches ≥ 4.58:1 (AA).
-const TEXT_CANDIDATES = ["#FFFFFF", "#000000"];
+/**
+ * Swatch text, as in the reference (MUI `getContrastText`): white when it reaches 3:1, otherwise
+ * 87 % black. Brand swatches are exempt from the AA text check by design (ADR-0014).
+ */
+const swatchText = (hex: string) =>
+  contrastRatio("#FFFFFF", hex) >= 3 ? "#FFFFFF" : "rgba(0, 0, 0, 0.87)";
 
 const capitalize = (value: string) => value.charAt(0).toUpperCase() + value.slice(1);
 
@@ -79,11 +83,12 @@ export function Palette({ palette }: PaletteProps) {
               key={swatch.variable}
               type="button"
               onClick={() => copy(swatch.hex)}
+              data-swatch=""
               aria-describedby="copy-hint"
               className="flex cursor-pointer flex-col px-4 py-6 text-left hover:opacity-80 focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-current"
               style={{
                 backgroundColor: `var(${swatch.variable})`,
-                color: getContrastText(swatch.hex, TEXT_CANDIDATES),
+                color: swatchText(swatch.hex),
               }}
             >
               <span className="mb-4 text-subtitle2">
