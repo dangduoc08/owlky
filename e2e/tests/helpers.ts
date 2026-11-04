@@ -65,6 +65,13 @@ export function normalizeStory(page: Page): Promise<NormalizedNode> {
       "data-ok-drawer-open",
       "data-ok-drawer-close",
       "data-ok-sortable-add",
+      // HTML runtime state and options (React keeps them in props / state).
+      "data-ok-count",
+      "data-ok-page",
+      "data-ok-sibling-count",
+      "data-ok-boundary-count",
+      "data-ok-label-page",
+      "data-ok-label-current",
       // React sets <option> selection as a property (compared through the select's :value).
       "selected",
     ]);
@@ -146,5 +153,6 @@ export const CONTRAST_EXEMPT = [
   '[data-ok-fab]:not([data-ok-variant="soft"])',
   '[data-ok-toggle-button][aria-pressed="true"]:not([data-ok-color="standard"])',
   '[data-ok-alert]:not([data-ok-variant="standard"])',
+  '[data-ok-pagination]:not([data-ok-color="standard"]):not([data-ok-variant="soft"]) [aria-current="page"]',
   "[data-swatch]",
 ];

@@ -7,7 +7,9 @@ Components: **Accordion** (native `<details>`; runtime: `accordion`, events
 `ok:accordion:beforetoggle|toggle`, `name` fallback) **Alert** (runtime: `alert`, close button
 `data-ok-alert-close`, event `ok:alert:close`) **Button**, **Icon button**, **Fab**, **Button group** (CSS only — no JavaScript
 needed) **Drawer** (runtime: `drawer`, triggers `data-ok-drawer-open="<id>"` / `data-ok-drawer-close`,
-events `ok:drawer:beforeopen|open|beforeclose|close`) **Table** (runtime: `table` + `table-pagination` — sorts, selects, pages and expands rows in the
+events `ok:drawer:beforeopen|open|beforeclose|close`) **Pagination** (runtime: `pagination`; `data-ok-count`, `data-ok-page`, `data-ok-sibling-count`,
+`data-ok-boundary-count`, label templates `data-ok-label-page|current`; event `ok:pagination:change`)
+**Table** (runtime: `table` + `table-pagination` — sorts, selects, pages and expands rows in the
 DOM; events `ok:table:sort|select|expand`, `ok:table-pagination:change`; pagination linked with
 `data-ok-table-pagination="<table id>"`) **Sortable** (runtime: `sortable`, events `ok:sortable:move|remove|add`, add trigger
 `data-ok-sortable-add="<list id>"` + `<template data-ok-sortable-template>`) and **Toggle button** (runtime: `toggle-button` + `toggle-group`, events

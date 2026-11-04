@@ -18,6 +18,11 @@ export type {
   Orientation,
   PageRange,
   PaginationAction,
+  PaginationColor,
+  PaginationItemType,
+  PaginationShape,
+  PaginationSize,
+  PaginationVariant,
   PaletteColorName,
   SortableLayout,
   SortableMessages,
@@ -65,6 +70,14 @@ export {
 } from "./drawer/drawer.js";
 export { Fab, type FabAsButtonProps, type FabAsLinkProps, type FabProps } from "./fab/fab.js";
 export { IconButton, type IconButtonProps } from "./icon-button/icon-button.js";
+export {
+  Pagination,
+  type PaginationIcons,
+  PaginationItem,
+  type PaginationItemProps,
+  type PaginationProps,
+  type PaginationRenderItemParams,
+} from "./pagination/pagination.js";
 export { arrayMove, Sortable, type SortableProps } from "./sortable/sortable.js";
 export {
   type RowsPerPageOption,

@@ -24,6 +24,7 @@ export type {
   DrawerInstance,
 } from "./components/drawer/drawer.js";
 export { components } from "./components/index.js";
+export type { PaginationInstance } from "./components/pagination/pagination.js";
 export type { SortableInstance } from "./components/sortable/sortable.js";
 export type { TableInstance } from "./components/table/table.js";
 export type { TablePaginationInstance } from "./components/table-pagination/table-pagination.js";

@@ -66,6 +66,14 @@ data to the app (helpers in core: `compareCellValues`, `nextSortDirection`, `pag
 `selectAllState`); the HTML runtime (`table`, `table-pagination`) sorts, selects and pages the rows
 in the DOM (approved extension beyond MUI). No new tokens.
 
+## ✅ Components — Pagination (2026-11-05)
+Created with `/component` from the reference "Pagination" page (stories: Shapes, Variants, Sizes,
+Buttons, Ranges, Custom icons, Table). MUI `Pagination` / `PaginationItem`; `usePagination` →
+core `paginationItems()` shared by React and the HTML runtime (`pagination`, rebuilds the page
+items with DOM APIs, keeps focus). Extras from the reference: `soft` variant and every palette
+color; `size` uses `sm | md | lg` like the button family; HTML label templates
+(`data-ok-label-page`, `data-ok-label-current`). No new tokens.
+
 ## ✅ Theme settings (ADR-0017, 2026-11-05)
 From the reference's Settings drawer: primary color presets (default, cyan, purple, blue, orange,
 red) via `data-ok-preset`, font families (Public Sans, Inter, DM Sans, Nunito Sans) via
@@ -101,7 +109,7 @@ ButtonGroup / ToggleButton / ToggleButtonGroup `fullWidth`, IconButton `edge` + 
 `standard`; Drawer `closeOnEscape` → `disableEscapeKeyDown`, `closeOnBackdropClick` removed (refuse
 with the reason). Defaults: ButtonGroup `variant="outlined"`.
 
-**Backlog (deferred):** Table stories "Pagination with API" and "Table pagination with API" (need Pagination and TextField / Select components); Table toolbar (title, selected count, filter). Sortable auto-scroll while dragging near an edge; "Move to top / bottom"
+**Backlog (deferred):** Table stories "Pagination with API" (Pagination now exists: needs demo data only) and "Table pagination with API" (needs TextField / Select); Pagination story "Items" (card grid + items-per-page Select); Table toolbar (title, selected count, filter). Sortable auto-scroll while dragging near an edge; "Move to top / bottom"
 keyboard actions (pragmatic-drag-and-drop accessibility guidance).
 
 ## Next — components (awaiting the owner's go-ahead)

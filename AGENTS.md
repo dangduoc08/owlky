@@ -133,6 +133,10 @@ and small-screen tests pick up new stories automatically from Storybook's `index
   `--_ok-dark` so preset and scheme scopes nest in both directions (ADR-0017).
 - `tokens` and `styles` tests run in Node (no DOM): put computed-style checks of the theme CSS in
   `core` (browser), e.g. `core/src/theme/theme-settings.test.ts`.
+- `--ok-c-*` color bindings don't inherit (`@property … inherits: false`) and WebKit ignores an
+  explicit `inherit` on them: a group whose items need the root's color (Pagination) reads the
+  palette per `[data-ok-color]` on the items instead. Parity can't catch it (same CSS on both
+  sides): assert computed colors per engine.
 - Theme-dependent colors without new tokens: `light-dark()` inside `@supports (color: light-dark(#000, #fff))`
   with the light value as the base declaration (Baseline lacks it; Biome rejects duplicate
   properties). It follows the scope's `color-scheme`, so nested themes work (Alert).

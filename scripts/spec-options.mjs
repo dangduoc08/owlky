@@ -16,6 +16,7 @@ const SPECS = {
   drawer: "drawer.md",
   sortable: "sortable.md",
   table: "table.md",
+  pagination: "pagination.md",
   "table-sort-label": "table.md",
 };
 

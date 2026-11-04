@@ -25,6 +25,7 @@ const CONTRAST_EXEMPT = [
   '[data-ok-fab]:not([data-ok-variant="soft"])',
   '[data-ok-toggle-button][aria-pressed="true"]:not([data-ok-color="standard"])',
   '[data-ok-alert]:not([data-ok-variant="standard"])',
+  '[data-ok-pagination]:not([data-ok-color="standard"]):not([data-ok-variant="soft"]) [aria-current="page"]',
 ];
 const TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 

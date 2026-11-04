@@ -61,6 +61,17 @@ export {
   type Orientation,
   optionSchemas,
   orientations,
+  type PaginationAnatomyOptions,
+  type PaginationColor,
+  type PaginationShape,
+  type PaginationSize,
+  type PaginationVariant,
+  paginationAttributes,
+  paginationColors,
+  paginationOptions,
+  paginationShapes,
+  paginationSizes,
+  paginationVariants,
   type SortableLayout,
   sortableAttributes,
   sortableLayouts,
@@ -116,6 +127,13 @@ export {
 export { inertOutside } from "./overlay/inert-outside.js";
 export { layerStack } from "./overlay/layer-stack.js";
 export { isScrollLocked, lockScroll } from "./overlay/scroll-lock.js";
+export {
+  defaultPaginationItemLabel,
+  type PaginationItemData,
+  type PaginationItemType,
+  type PaginationRangeOptions,
+  paginationItems,
+} from "./pagination/pagination.js";
 export { sharedState } from "./shared-state.js";
 export {
   arrayMove,

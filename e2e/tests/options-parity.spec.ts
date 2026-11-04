@@ -23,6 +23,7 @@ const CASES: [
   ["drawer", "anchor", "drawer", ["hideBackdrop", "disableEscapeKeyDown"]],
   ["sortable", "grid", "sortable", ["layout"]],
   ["table", "basic", "table", ["size", "stickyHeader"]],
+  ["pagination", "ranges", "pagination", ["variant", "color", "shape", "size", "disabled"]],
 ];
 
 /** A non-default value for the option, in Storybook's URL args syntax. */
