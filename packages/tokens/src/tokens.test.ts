@@ -147,6 +147,20 @@ describe("createTheme", () => {
     expect(defaultTheme.palette.primary.main).toBe("#00A76F");
   });
 
+  it("ignores prototype keys in overrides (no prototype pollution)", () => {
+    const hostile = JSON.parse(
+      '{"__proto__":{"polluted":1},"constructor":{"prototype":{"polluted":2}},"palette":{"__proto__":{"x":3},"primary":{"main":"#0055FF"}}}',
+    );
+    const theme = createTheme(hostile);
+    expect(Object.getPrototypeOf(theme)).toBe(Object.prototype);
+    expect(Object.getPrototypeOf(theme.palette)).toBe(Object.prototype);
+    expect((theme as unknown as Record<string, unknown>)["polluted"]).toBeUndefined();
+    expect((theme.palette as unknown as Record<string, unknown>)["x"]).toBeUndefined();
+    expect(({} as Record<string, unknown>)["polluted"]).toBeUndefined();
+    expect(Object.hasOwn(theme, "constructor")).toBe(false);
+    expect(theme.palette.primary.main).toBe("#0055FF");
+  });
+
   it("replaces arrays instead of merging them", () => {
     const layer = { x: 0, y: 2, blur: 4, spread: 0, alpha: 10 };
     expect(createTheme({ shadows: { z1: [layer] } }).shadows.z1).toEqual([layer]);
