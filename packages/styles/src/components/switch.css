@@ -1,0 +1,113 @@
+/*
+ * Switch — spec: specs/components/switch.md
+ *
+ * Anatomy:
+ *   label[data-mt-switch]
+ *     input[type="checkbox"][role="switch"][data-mt-switch-input]
+ *     span[data-mt-switch-track] > span[data-mt-switch-thumb]
+ *     span[data-mt-switch-label]?
+ * Modifiers: data-mt-color = primary (default) | secondary | info | success | warning | error
+ *            data-mt-size  = md (default) | sm
+ * States:    native :checked, :disabled, :focus-visible on the input.
+ *
+ * The real checkbox sits invisibly over the whole label, so it receives clicks, keyboard focus
+ * and form submission natively — no JavaScript needed.
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-mt-switch]) {
+    --_mt-main: var(--mt-c-main, var(--mt-palette-primary-main));
+    --_mt-track-width: 2.0625rem;
+    --_mt-track-height: 1.25rem;
+    --_mt-thumb-size: 0.875rem;
+    --_mt-thumb-offset: 3px;
+
+    @apply relative inline-flex items-center gap-2 align-middle;
+    box-sizing: border-box;
+    color: var(--mt-text-primary);
+    font-family: var(--mt-font-family);
+    font-size: var(--mt-typography-body2-font-size);
+    line-height: var(--mt-typography-body2-line-height);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  :where([data-mt-switch][data-mt-size="sm"]) {
+    --_mt-track-width: 1.625rem;
+    --_mt-track-height: 1rem;
+    --_mt-thumb-size: 0.625rem;
+  }
+
+  :where([data-mt-switch-input]) {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: inherit;
+  }
+
+  :where([data-mt-switch-track]) {
+    position: relative;
+    box-sizing: border-box;
+    flex-shrink: 0;
+    width: var(--_mt-track-width);
+    height: var(--_mt-track-height);
+    border-radius: var(--mt-radius-full);
+    background-color: color-mix(in srgb, var(--mt-palette-grey-500) 48%, transparent);
+    transition: background-color var(--mt-duration-shorter) var(--mt-easing-standard);
+  }
+
+  :where([data-mt-switch-thumb]) {
+    position: absolute;
+    top: var(--_mt-thumb-offset);
+    left: var(--_mt-thumb-offset);
+    width: var(--_mt-thumb-size);
+    height: var(--_mt-thumb-size);
+    border-radius: var(--mt-radius-full);
+    background-color: var(--mt-palette-common-white);
+    box-shadow: var(--mt-shadow-z1);
+    transition: transform var(--mt-duration-shorter) var(--mt-easing-standard);
+  }
+
+  :where([data-mt-switch-input]:checked + [data-mt-switch-track]) {
+    background-color: var(--_mt-main);
+  }
+
+  :where([data-mt-switch-input]:checked + [data-mt-switch-track] > [data-mt-switch-thumb]) {
+    transform: translateX(
+      calc(var(--_mt-track-width) - var(--_mt-thumb-size) - var(--_mt-thumb-offset) * 2)
+    );
+  }
+
+  :where(
+    [data-mt-switch-input]:checked + [data-mt-switch-track] > [data-mt-switch-thumb]:dir(rtl)
+  ) {
+    transform: translateX(
+      calc((var(--_mt-track-width) - var(--_mt-thumb-size) - var(--_mt-thumb-offset) * 2) * -1)
+    );
+  }
+
+  :where([data-mt-switch-input]:focus-visible + [data-mt-switch-track]) {
+    outline: 2px solid var(--_mt-main);
+    outline-offset: 2px;
+  }
+
+  :where([data-mt-switch]:has([data-mt-switch-input]:disabled)) {
+    color: var(--mt-text-disabled);
+    cursor: not-allowed;
+  }
+
+  :where([data-mt-switch-input]:disabled + [data-mt-switch-track]) {
+    opacity: 0.48;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :where([data-mt-switch-track], [data-mt-switch-thumb]) {
+      transition: none;
+    }
+  }
+}

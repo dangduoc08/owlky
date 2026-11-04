@@ -1,0 +1,18 @@
+/*
+ * Optional document base styles: font, text and background colors that follow the theme.
+ * Components do not need this file; it only styles the page around them.
+ */
+@layer theme, base, components, utilities;
+
+@layer base {
+  :where(body) {
+    margin: 0;
+    font-family: var(--mt-font-family);
+    font-size: var(--mt-typography-body1-font-size);
+    line-height: var(--mt-typography-body1-line-height);
+    color: var(--mt-text-primary);
+    background-color: var(--mt-bg-default);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}

@@ -1,0 +1,144 @@
+/*
+ * Button — spec: specs/components/button.md
+ *
+ * Anatomy:  [data-mt-button]  >  [data-mt-button-icon="start|end"]?
+ * Modifiers: data-mt-variant = text (default) | contained | outlined | soft
+ *            data-mt-color   = inherit (default) | primary | secondary | info | success | warning | error
+ *            data-mt-size    = md (default) | sm | lg
+ *            data-mt-full-width
+ * States:    :hover, :focus-visible, :disabled, [aria-disabled="true"]
+ *
+ * All selectors are wrapped in :where() (zero specificity) inside @layer components, so rules
+ * apply in source order and any consumer style wins. Keep the order: base → sizes → variants →
+ * hover → focus → disabled.
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-mt-button]) {
+    --_mt-main: var(--mt-c-main, var(--mt-inherit-main));
+    --_mt-hover: var(--mt-c-hover, var(--mt-inherit-hover));
+    --_mt-contrast: var(--mt-c-contrast, var(--mt-inherit-contrast));
+    --_mt-text: var(--mt-c-text, var(--mt-text-primary));
+    --_mt-shadow: var(--mt-c-shadow, var(--mt-shadow-z8));
+    --_mt-height: 2.25rem;
+    --_mt-padding-x: calc(var(--mt-spacing) * 3);
+    --_mt-font-size: var(--mt-typography-button-font-size);
+    --_mt-icon-size: 1.25rem;
+
+    @apply relative inline-flex shrink-0 items-center justify-center gap-2 align-middle;
+    box-sizing: border-box;
+    min-width: 4rem;
+    min-height: var(--_mt-height);
+    margin: 0;
+    padding: 0 var(--_mt-padding-x);
+    border: 1px solid transparent;
+    border-radius: var(--mt-radius-md);
+    background-color: transparent;
+    color: var(--_mt-text);
+    font-family: var(--mt-font-family);
+    font-size: var(--_mt-font-size);
+    font-weight: var(--mt-typography-button-font-weight);
+    line-height: var(--mt-typography-button-line-height);
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition-property: background-color, border-color, box-shadow, color;
+    transition-duration: var(--mt-duration-short);
+    transition-timing-function: var(--mt-easing-standard);
+  }
+
+  :where([data-mt-button-icon]) {
+    @apply inline-flex shrink-0 items-center justify-center;
+  }
+
+  :where([data-mt-button-icon] > svg, [data-mt-button-icon] > img) {
+    width: var(--_mt-icon-size);
+    height: var(--_mt-icon-size);
+  }
+
+  /* Sizes */
+  :where([data-mt-button][data-mt-size="sm"]) {
+    --_mt-height: 1.875rem;
+    --_mt-padding-x: calc(var(--mt-spacing) * 2);
+    --_mt-font-size: 0.8125rem;
+    --_mt-icon-size: 1.125rem;
+  }
+
+  :where([data-mt-button][data-mt-size="lg"]) {
+    --_mt-height: 3rem;
+    --_mt-padding-x: calc(var(--mt-spacing) * 4);
+    --_mt-font-size: 0.9375rem;
+    --_mt-icon-size: 1.375rem;
+  }
+
+  :where([data-mt-button][data-mt-full-width]) {
+    width: 100%;
+  }
+
+  /* Variants */
+  :where([data-mt-button][data-mt-variant="contained"]) {
+    background-color: var(--_mt-main);
+    color: var(--_mt-contrast);
+  }
+
+  :where([data-mt-button][data-mt-variant="outlined"]) {
+    border-color: color-mix(in srgb, var(--_mt-main) 32%, transparent);
+  }
+
+  :where([data-mt-button][data-mt-variant="soft"]) {
+    background-color: color-mix(in srgb, var(--_mt-main) 16%, transparent);
+  }
+
+  /* Hover — only on devices that can hover, so touch taps don't leave a stuck state. */
+  @media (hover: hover) {
+    :where([data-mt-button]:hover) {
+      background-color: color-mix(in srgb, var(--_mt-main) 8%, transparent);
+    }
+
+    :where([data-mt-button][data-mt-variant="contained"]:hover) {
+      background-color: var(--_mt-hover);
+      box-shadow: var(--_mt-shadow);
+    }
+
+    :where([data-mt-button][data-mt-variant="outlined"]:hover) {
+      border-color: currentColor;
+    }
+
+    :where([data-mt-button][data-mt-variant="soft"]:hover) {
+      background-color: color-mix(in srgb, var(--_mt-main) 32%, transparent);
+    }
+  }
+
+  :where([data-mt-button]:focus-visible) {
+    outline: 2px solid var(--_mt-text);
+    outline-offset: 2px;
+  }
+
+  /* Disabled — last, so it overrides hover. */
+  :where([data-mt-button]:disabled, [data-mt-button][aria-disabled="true"]) {
+    color: var(--mt-action-disabled);
+    background-color: transparent;
+    box-shadow: none;
+    cursor: not-allowed;
+  }
+
+  :where(
+    [data-mt-button][data-mt-variant="contained"]:is(:disabled, [aria-disabled="true"]),
+    [data-mt-button][data-mt-variant="soft"]:is(:disabled, [aria-disabled="true"])
+  ) {
+    background-color: var(--mt-action-disabled-bg);
+  }
+
+  :where([data-mt-button][data-mt-variant="outlined"]:is(:disabled, [aria-disabled="true"])) {
+    border-color: var(--mt-action-disabled-bg);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :where([data-mt-button]) {
+      transition: none;
+    }
+  }
+}
