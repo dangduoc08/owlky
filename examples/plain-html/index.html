@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Minimal Tailwind — plain HTML example</title>
+    <!--
+      Real projects use the CDN:
+        https://cdn.jsdelivr.net/npm/@minimal-tailwind/html@0/dist/minimal-tailwind.css
+        https://cdn.jsdelivr.net/npm/@minimal-tailwind/html@0/dist/minimal-tailwind.js
+      This example points at the local build (run `pnpm build` first) so CI tests what we publish.
+    -->
+    <link rel="stylesheet" href="../../packages/html/dist/minimal-tailwind.css" />
+    <link rel="stylesheet" href="../../packages/styles/dist/base.css" />
+    <script src="../../packages/html/dist/minimal-tailwind.js" defer></script>
+    <style>
+      main { max-width: 56rem; margin: 0 auto; padding: 2rem 1rem; display: grid; gap: 2rem; }
+      section { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; }
+      h1 { margin: 0; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>Plain HTML</h1>
+        <p>No framework. One stylesheet, one script, copy-pasted snippets.</p>
+        <label data-mt-switch data-mt-color="primary" data-mt-size="md">
+          <input id="theme-toggle" type="checkbox" role="switch" data-mt-switch-input />
+          <span data-mt-switch-track aria-hidden="true"><span data-mt-switch-thumb></span></span>
+          <span data-mt-switch-label>Dark mode</span>
+        </label>
+      </header>
+
+      <section aria-label="Buttons">
+        <button type="button" data-mt-button data-mt-variant="contained" data-mt-color="inherit" data-mt-size="md">Contained</button>
+        <button type="button" data-mt-button data-mt-variant="outlined" data-mt-color="inherit" data-mt-size="md">Outlined</button>
+        <button type="button" data-mt-button data-mt-variant="soft" data-mt-color="primary" data-mt-size="md">Soft</button>
+        <button type="button" data-mt-button data-mt-variant="contained" data-mt-color="primary" data-mt-size="md">Primary</button>
+      </section>
+
+      <section aria-label="Dialog">
+        <button type="button" data-mt-button data-mt-variant="contained" data-mt-color="inherit" data-mt-size="md" aria-haspopup="dialog" data-mt-dialog-open="confirm-dialog">Open dialog</button>
+
+        <dialog id="confirm-dialog" data-mt-dialog data-mt-size="xs" aria-labelledby="confirm-dialog-title" aria-describedby="confirm-dialog-description">
+          <div data-mt-dialog-content>
+            <h2 id="confirm-dialog-title" data-mt-dialog-title>Delete project?</h2>
+            <div data-mt-dialog-body>
+              <p id="confirm-dialog-description">This permanently deletes the project and its files. You can't undo this.</p>
+            </div>
+            <div data-mt-dialog-actions>
+              <button type="button" data-mt-button data-mt-variant="outlined" data-mt-color="inherit" data-mt-size="md" data-mt-dialog-close>Cancel</button>
+              <button type="button" data-mt-button data-mt-variant="contained" data-mt-color="error" data-mt-size="md" data-mt-dialog-close>Delete</button>
+            </div>
+          </div>
+        </dialog>
+      </section>
+    </main>
+
+    <script>
+      // Page code (not library code): a theme toggle.
+      document.getElementById("theme-toggle").addEventListener("change", (event) => {
+        document.documentElement.dataset.mtTheme = event.target.checked ? "dark" : "light";
+      });
+    </script>
+  </body>
+</html>
