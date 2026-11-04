@@ -67,6 +67,8 @@ and small-screen tests pick up new stories automatically from Storybook's `index
 ## Gotchas
 
 - Tests load the **built** CSS: run `pnpm build` after changing styles or tokens.
+- Typecheck also needs a build: workspace packages resolve each other's types from `dist`
+  (a clean checkout fails with TS2307). CI and `pnpm check` build before `pnpm typecheck`.
 - WebKit on macOS doesn't Tab to buttons or focus buttons/checkboxes on click — use inputs for
   Tab tests and pass triggers explicitly for focus return.
 - Native modal dialogs may move Tab focus to browser UI; assert "never reaches the page behind".

@@ -4,10 +4,12 @@ import { CONTRAST_EXEMPT, openStory, storyIds } from "./helpers.js";
 
 const stories = storyIds("");
 
+// Declared before any fixture, so other projects never launch a browser for these tests.
+test.skip(({ browserName }) => browserName !== "chromium", "axe results are engine-independent.");
+
 for (const theme of ["light", "dark"] as const) {
   for (const id of stories) {
-    test(`${id} (${theme}) has no WCAG 2.2 AA violations`, async ({ page, browserName }) => {
-      test.skip(browserName !== "chromium", "axe results are engine-independent.");
+    test(`${id} (${theme}) has no WCAG 2.2 AA violations`, async ({ page }) => {
       await openStory(page, id, theme);
       // Brand-colored text follows the reference look (ADR-0014): exempt from color-contrast
       // only; every other rule, soft buttons and neutral text are still checked.
