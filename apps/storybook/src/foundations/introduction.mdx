@@ -1,0 +1,51 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="Introduction" />
+
+# Minimal Tailwind
+
+Every component ships twice — **React** and **pure HTML** — with the same markup, the same CSS
+and the same behavior. Toggle light/dark with the theme button in the toolbar.
+
+| Package | Use it for |
+|---|---|
+| `@minimal-tailwind/react` | React 18.3+ / 19 apps |
+| `@minimal-tailwind/html` | Any HTML page: copy-paste snippets + `minimal-tailwind.js` |
+| `@minimal-tailwind/styles` | Prebuilt CSS (no Tailwind needed) and a Tailwind v4 theme |
+| `@minimal-tailwind/tokens` | Design tokens as TypeScript / CSS variables, `createTheme()` |
+| `@minimal-tailwind/core` | Shared framework-free behavior (used by both implementations) |
+
+## HTML in two steps
+
+```html
+<!-- 1. Once per page -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@minimal-tailwind/html@0/dist/minimal-tailwind.css">
+<script src="https://cdn.jsdelivr.net/npm/@minimal-tailwind/html@0/dist/minimal-tailwind.js" defer></script>
+
+<!-- 2. Paste any snippet from the HTML/* pages -->
+```
+
+## React
+
+```tsx
+import "@minimal-tailwind/styles/minimal-tailwind.css";
+import { Button } from "@minimal-tailwind/react";
+
+<Button variant="contained" color="primary">Save</Button>
+```
+
+## Theming
+
+Everything is a CSS variable (`--mt-*`). Override any of them — globally or on a subtree:
+
+```css
+:root {
+  --mt-palette-primary-main: #2065d1;
+  --mt-palette-primary-dark: #103996;
+  --mt-palette-primary-contrast-text: #ffffff;
+  --mt-radius-md: 10px;
+}
+```
+
+Dark mode: `data-mt-theme="dark"` (or `class="dark"`) on `<html>` or any container;
+`data-mt-theme="system"` follows the OS.

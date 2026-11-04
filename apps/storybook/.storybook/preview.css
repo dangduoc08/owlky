@@ -1,0 +1,18 @@
+/*
+ * Storybook is set up like a typical Tailwind v4 consumer: Tailwind (preflight + utilities for
+ * story layout), the Minimal Tailwind theme, then the component CSS. This continuously verifies
+ * that library layers interact correctly with Tailwind's preflight and utilities.
+ */
+@import "tailwindcss";
+@import "../../../packages/styles/src/theme.css";
+@import "../../../packages/styles/src/index.css";
+@import "../../../packages/styles/src/base.css";
+
+@source "../src";
+
+.sb-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
