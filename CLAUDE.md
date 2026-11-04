@@ -20,8 +20,11 @@ file covers project status, workflow and orientation.
 Full plan: `docs/roadmap.md`. Not published yet.
 
 **Blocked on the user before publishing 0.1.0:** npm org `@minimal-tailwind`, GitHub repo
-(replace `OWNER` in every `packages/*/package.json`), npm trusted publishing, visual baselines
-via `pnpm test:visual:update` (Docker only).
+(replace `OWNER` in every `packages/*/package.json`), `NPM_TOKEN` secret or npm trusted
+publishing, visual baselines via `pnpm test:visual:update` (Docker only).
+
+**Releasing:** CI only on `main`; publish = push tag `release/v<version>` on a `main` commit
+whose packages already carry that version (ADR-0012).
 
 ## Workflow with the user
 
@@ -71,6 +74,7 @@ pnpm check                                  # everything CI runs
 
 | Command | Use |
 |---|---|
+| `/component <url> [name]` | Create or update a component from a reference page: capture, propose (gap table + API impact on update), then build it the project's way (React + HTML) with viewport matrix, visual regression, coverage and security checklist |
 | `/implement <component or file>` | Build/upgrade a feature in React + HTML with tests, parity, docs |
 | `/refactor <file>` | Clarity only — no logic, API or DOM change |
 | `/optimize <file>` | Bytes, main-thread work, leaks — measured before/after |
