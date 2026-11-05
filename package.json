@@ -18,6 +18,7 @@
     "test:e2e": "pnpm --filter @owlky/e2e run test",
     "test:visual": "pnpm test:visual:docker",
     "storybook": "pnpm build && pnpm --filter @owlky/storybook run dev",
+    "storybook:network": "pnpm storybook --host 0.0.0.0",
     "storybook:build": "pnpm --filter @owlky/storybook run build",
     "check:packages": "node scripts/check-packages.mjs",
     "check:boundaries": "node scripts/check-boundaries.mjs",

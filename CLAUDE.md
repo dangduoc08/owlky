@@ -66,6 +66,7 @@ pnpm build                                  # required before tests (they load b
 pnpm test                                   # unit/component, Chromium
 VITEST_BROWSERS=chromium,firefox,webkit pnpm test
 pnpm storybook                              # http://localhost:6006
+pnpm storybook:network                      # same, reachable from other devices (LAN, Tailscale; WSL: mirrored networking)
 pnpm storybook:build && pnpm test:e2e       # Chromium, Firefox, WebKit, mobile
 pnpm lint:fix
 pnpm check                                  # everything CI runs
