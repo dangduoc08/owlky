@@ -9,7 +9,7 @@ import {
   primaryPresetNames,
 } from "@owlky/tokens";
 import { type ReactNode, useEffect, useRef, useState } from "react";
-import { capitalize, Dot, GuideDocs, Preview } from "../shared/guide.js";
+import { capitalize, Dot, GuideDocs, Preview } from "../../helpers/guide.js";
 import { colorsDocsSections, SHADES } from "./colors-docs-examples.js";
 
 /** Every palette as a strip of its five shades, the main shade larger. */

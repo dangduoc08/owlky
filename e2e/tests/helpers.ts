@@ -4,7 +4,10 @@ import type { Page } from "@playwright/test";
 export type Implementation = "react" | "html";
 export const implementations: Implementation[] = ["react", "html"];
 
-/** Opens one story in the bare Storybook iframe (no manager UI). */
+/**
+ * Opens one story in the bare Storybook iframe (no manager UI). Component stories render the
+ * framework chosen in the toolbar (ADR-0018): their ids carry it as `<story id>@<framework>`.
+ */
 export async function openStory(
   page: Page,
   id: string,
@@ -16,8 +19,17 @@ export async function openStory(
 ) {
   // Components animate color changes; reduced motion (honored by the CSS) makes reads instant.
   await page.emulateMedia({ reducedMotion: "reduce" });
+  const [story, framework] = id.split("@");
+  const all = [
+    `theme:${theme}`,
+    "a11y.manual:!true",
+    framework && `framework:${framework}`,
+    globals,
+  ]
+    .filter(Boolean)
+    .join(";");
   await page.goto(
-    `/apps/storybook/storybook-static/iframe.html?id=${id}&viewMode=story&globals=theme:${theme};a11y.manual:!true${globals ? `;${globals}` : ""}${args ? `&args=${args}` : ""}`,
+    `/apps/storybook/storybook-static/iframe.html?id=${story}&viewMode=story&globals=${all}${args ? `&args=${args}` : ""}`,
   );
   await page.locator("#storybook-root > *").first().waitFor();
   await page.waitForFunction((t) => document.documentElement.dataset["okTheme"] === t, theme);
@@ -25,7 +37,7 @@ export async function openStory(
   await page.evaluate(() => new Promise((r) => setTimeout(r, 0)));
 }
 
-/** Storybook folder of each component (sidebar `<Impl>/<Folder>/<Component>`), if nested. */
+/** Storybook folder of each component (sidebar `Components/<Folder>/<Component>`), if nested. */
 const FOLDERS: Record<string, string> = {
   button: "button",
   "icon-button": "button",
@@ -34,9 +46,10 @@ const FOLDERS: Record<string, string> = {
   "toggle-button": "button",
 };
 
+/** A component story rendered by one framework: `components-<folder>-<component>--<story>@<impl>`. */
 export const storyId = (impl: Implementation, component: string, story: string) => {
   const folder = FOLDERS[component];
-  return `${impl}-${folder ? `${folder}-` : ""}${component}--${story}`;
+  return `components-${folder ? `${folder}-` : ""}${component}--${story}@${impl}`;
 };
 
 export interface NormalizedNode {
@@ -133,7 +146,10 @@ export function normalizeStory(page: Page): Promise<NormalizedNode> {
   });
 }
 
-/** Story ids from the built Storybook index (run `pnpm storybook:build` first). */
+/**
+ * Story ids from the built Storybook index (run `pnpm storybook:build` first). Component stories
+ * come once per framework (`…@react`, `…@html`), so every check still covers both.
+ */
 export function storyIds(prefix: string): string[] {
   const index = JSON.parse(
     readFileSync(
@@ -143,7 +159,11 @@ export function storyIds(prefix: string): string[] {
   ) as { entries: Record<string, { id: string; type: string }> };
   return Object.values(index.entries)
     .filter((entry) => entry.type === "story" && entry.id.startsWith(prefix))
-    .map((entry) => entry.id);
+    .flatMap((entry) =>
+      entry.id.startsWith("components-")
+        ? implementations.map((impl) => `${entry.id}@${impl}`)
+        : [entry.id],
+    );
 }
 
 /**

@@ -41,7 +41,7 @@ Always balance correctness, accessibility, and simplicity.
    3. `packages/styles/src/components/<name>.css` (+ import in `src/index.css`)
    4. `packages/react/src/<name>/<name>.tsx` (+ export; `"use client"` only if it uses hooks; interactive roots render `data-ok-runtime="off"`)
    5. `packages/html/src/components/<name>/examples/*.html`; if it needs JS: `<name>.ts` with `defineComponent` + one line in `src/components/index.ts`
-   6. `apps/storybook/src/components/<name>/` — `.react.stories.tsx`, `.html.stories.tsx` (**identical story names**), built with `reactGroupsStory()` / `snippetStory(…, htmlSetup())` (Code panel with imports; no docs page)
+   6. `apps/storybook/src/components/<name>/<name>.stories.tsx` — one story per section, `frameworkStory({ html: snippetStory(…, htmlSetup()), react: reactGroupsStory(…) })` (ADR-0018; Code panel follows the toolbar's Framework; no docs page)
    7. `e2e/tests` — parity pairs + interaction spec run for both implementations
 
    Keep public APIs stable. Do not add features, abstractions or options beyond what was asked. Prefer the platform over new dependencies.

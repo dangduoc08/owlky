@@ -3,7 +3,14 @@ import { defaultTheme, fontFamilyPresetNames, typographyVariants } from "@owlky/
 const { breakpoints } = defaultTheme;
 
 import { useEffect, useRef, useState } from "react";
-import { Caption, CDN, codeList, GuideDocs, type GuideSection, Preview } from "../shared/guide.js";
+import {
+  Caption,
+  CDN,
+  codeList,
+  GuideDocs,
+  type GuideSection,
+  Preview,
+} from "../../helpers/guide.js";
 
 const v = (variant: string, property: string) => `var(--ok-typography-${variant}-${property})`;
 const styleOf = (variant: string) => ({

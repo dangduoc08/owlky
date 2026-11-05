@@ -1,5 +1,5 @@
 import { Alert, Button, Pagination } from "@owlky/react";
-import { Caption, CDN, type GuideSection, GuideSections, Preview } from "./shared/guide.js";
+import { Caption, CDN, type GuideSection, GuideSections, Preview } from "../helpers/guide.js";
 
 export const introductionSections: GuideSection[] = [
   {
@@ -94,7 +94,8 @@ For dark mode, set \`data-ok-theme="dark"\` on the \`<html>\` element or on any 
     id: "storybook",
     title: "Find your way around",
     body: `- **Foundations** explains the design tokens: colors, typography, shadows, spacing, icons and theme settings. Each page is a guide with live examples.
-- The **component sections** list every component, once per way of using it. Each story shows one example: open the **Code** panel to copy its source, with the imports you need.
+- **Components** lists every component. Each story shows one example. Choose plain HTML or a framework with the **Framework** menu in the toolbar: the example and its source switch together.
+- Open the **Code** panel to copy an example's source, with the imports you need.
 - Use the **Controls** panel to change a component's options, and the toolbar to switch the theme, primary color, font and text size for every story.`,
   },
   {

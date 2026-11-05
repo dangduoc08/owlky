@@ -8,12 +8,15 @@ import "./preview.css";
 import { applyThemeSettings, fontFamilyPresetNames, fontSizeRange } from "@owlky/core";
 import { components, getRuntime } from "@owlky/html";
 import type { Preview } from "@storybook/react-vite";
+import { trackFrameworkGlobal } from "../src/helpers/framework-global.js";
+import { DEFAULT_FRAMEWORK } from "../src/helpers/groups.js";
 
 // The real HTML runtime runs in every story (started explicitly, as an npm user would). React
 // components opt out via data-ok-runtime="off", so both implementations coexist on one page.
 getRuntime()
   .register(...components)
   .start();
+trackFrameworkGlobal();
 
 const label = (value: string) =>
   value.replace(
@@ -25,6 +28,7 @@ const preview: Preview = {
   // Theme and theme settings (ADR-0017), applied to <html> like an app would. Toolbar: Theme,
   // Preset and Font size are custom tools (.storybook/toolbar.tsx); Font is a default menu.
   globalTypes: {
+    framework: { description: "Implementation shown by component stories (ADR-0018)" },
     theme: { description: "Color scheme (data-ok-theme)" },
     preset: { description: "Primary color preset (data-ok-preset)" },
     font: {
@@ -39,6 +43,7 @@ const preview: Preview = {
     fontSize: { description: "Root font size (rem scale)" },
   },
   initialGlobals: {
+    framework: DEFAULT_FRAMEWORK,
     theme: "light",
     preset: "default",
     font: "public-sans",
@@ -68,7 +73,7 @@ const preview: Preview = {
       // a component's stories keep their file order (the reference page's sections).
       // Self-contained: Storybook serializes this function.
       storySort: (a, b) => {
-        const sections = ["Introduction", "Foundations", "React", "HTML"];
+        const sections = ["Introduction", "Foundations", "Components"];
         const foundations = ["Colors", "Typography", "Shadows", "Grid", "Icons", "Settings"];
         const [sectionA = "", nameA = ""] = a.title.split("/");
         const [sectionB = "", nameB = ""] = b.title.split("/");

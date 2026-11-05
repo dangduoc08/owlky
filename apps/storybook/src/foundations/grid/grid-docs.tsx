@@ -1,5 +1,5 @@
 import { defaultTheme } from "@owlky/tokens";
-import { Caption, CDN, GuideDocs, type GuideSection, Preview } from "../shared/guide.js";
+import { Caption, CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 
 const { breakpoints } = defaultTheme;
 

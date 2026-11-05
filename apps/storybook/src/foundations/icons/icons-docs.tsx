@@ -1,5 +1,5 @@
 import { Button, IconButton } from "@owlky/react";
-import { Caption, GuideDocs, type GuideSection, Preview } from "../shared/guide.js";
+import { Caption, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 
 const MAIL_PATHS = `<rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3 7 9 6 9-6" />`;
 const SVG_ATTRS = `viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"`;

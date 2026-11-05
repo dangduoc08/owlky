@@ -163,8 +163,9 @@ project. Never copy the reference's source code, branding or assets.
       interactive roots render `data-ok-runtime="off"`)
    5. `packages/html/src/components/<name>/examples/*.html` — canonical snippets; plus
       `<name>.ts` (`defineComponent`) + tests and one line in `components/index.ts` if it needs JS
-   6. `apps/storybook/src/components/<name>/` — `<name>.react.stories.tsx` and
-      `<name>.html.stories.tsx` with **identical story names = the reference sections**, default
+   6. `apps/storybook/src/components/<name>/<name>.stories.tsx` (title `Components/<Name>`) —
+      **one story per reference section**, each `frameworkStory({ html, react })` (ADR-0018), plus the
+      **docs page** `<name>-docs.tsx` (ADR-0019, model: Button) listed in `GUIDES` / `OPTION_TABLES`, default
       Storybook UI (no custom page chrome), no docs page or Playground: stories built with
       `reactGroupsStory()` / `snippetStory(…, htmlSetup())` so the Code panel shows the source,
       the imports and a copy button; both stories get the same Controls from the option schema

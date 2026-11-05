@@ -1,5 +1,14 @@
 import { Description, Markdown, Source, Subtitle, Title } from "@storybook/addon-docs/blocks";
-import { type KeyboardEvent, type ReactNode, useId, useRef, useState } from "react";
+import {
+  type KeyboardEvent,
+  type ReactNode,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
+import { frameworkGlobal } from "./framework-global.js";
 
 /*
  * Usage guides for the Introduction and Foundations docs pages: each section is prose (Markdown,
@@ -173,7 +182,10 @@ export function GuideSections({
   sections: GuideSection[];
   previews?: Record<string, () => ReactNode>;
 }) {
-  const [impl, setImpl] = useState<Impl>("html");
+  // Starts from (and follows) the toolbar's Framework menu; a tab click changes this page only.
+  const framework = useSyncExternalStore(frameworkGlobal.subscribe, frameworkGlobal.get);
+  const [impl, setImpl] = useState<Impl>(framework);
+  useEffect(() => setImpl(framework), [framework]);
   return (
     <>
       {sections.map((section) => (

@@ -13,7 +13,7 @@ import {
   GuideDocs,
   type GuideSection,
   Preview,
-} from "../shared/guide.js";
+} from "../../helpers/guide.js";
 
 const fontLabel = (name: string) => name.split("-").map(capitalize).join(" ");
 

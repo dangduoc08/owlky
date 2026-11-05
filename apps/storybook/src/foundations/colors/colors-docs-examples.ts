@@ -1,5 +1,5 @@
 import { componentColorNames, greyShades, paletteColorNames } from "@owlky/tokens";
-import { CDN, codeList, type GuideSection } from "../shared/guide.js";
+import { CDN, codeList, type GuideSection } from "../../helpers/guide.js";
 
 /*
  * Content of the Colors docs page: prose (Markdown) and HTML / React examples. Every `--ok-*`

@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import AxeBuilder from "@axe-core/playwright";
+import { optionSchemas } from "@owlky/core";
 import { defaultTheme, shadowNames, typographyVariants } from "@owlky/tokens";
 import { expect, test } from "@playwright/test";
 import { CONTRAST_EXEMPT, openStory, storyIds } from "./helpers.js";
@@ -108,7 +109,48 @@ const GUIDES = [
   ["foundations-grid--docs", "Accessibility"],
   ["foundations-icons--docs", "Accessibility"],
   ["foundations-settings--docs", "Accessibility"],
+  ["components-accordion--docs", "Accessibility"],
+  ["components-alert--docs", "Accessibility"],
+  ["components-button-button--docs", "Accessibility"],
+  ["components-button-button-group--docs", "Accessibility"],
+  ["components-button-fab--docs", "Accessibility"],
+  ["components-button-icon-button--docs", "Accessibility"],
+  ["components-button-toggle-button--docs", "Accessibility"],
+  ["components-drawer--docs", "Accessibility"],
+  ["components-pagination--docs", "Accessibility"],
+  ["components-scrollbar--docs", "Accessibility"],
+  ["components-sortable--docs", "Accessibility"],
+  ["components-table--docs", "Accessibility"],
 ] as const;
+
+/** Component docs pages and their option schema: the Options table lists every option. */
+const OPTION_TABLES: [string, (keyof typeof optionSchemas)[]][] = [
+  ["components-accordion--docs", ["accordion"]],
+  ["components-alert--docs", ["alert"]],
+  ["components-button-button--docs", ["button"]],
+  ["components-button-button-group--docs", ["button-group"]],
+  ["components-button-fab--docs", ["fab"]],
+  ["components-button-icon-button--docs", ["icon-button"]],
+  ["components-button-toggle-button--docs", ["toggle-button", "toggle-group"]],
+  ["components-drawer--docs", ["drawer"]],
+  ["components-pagination--docs", ["pagination"]],
+  ["components-scrollbar--docs", ["scrollbar"]],
+  ["components-sortable--docs", ["sortable"]],
+  ["components-table--docs", ["table", "table-sort-label"]],
+];
+
+for (const [id, schemaNames] of OPTION_TABLES) {
+  test(`${id}: the Options table lists every schema option`, async ({ page, browserName }) => {
+    test.skip(browserName !== "chromium", "Content check runs once.");
+    await page.goto(`/apps/storybook/storybook-static/iframe.html?id=${id}&viewMode=docs`);
+    const rows = page.locator("[data-docs-option]");
+    await expect(rows.first()).toBeVisible();
+    const keys = await rows.evaluateAll((all) =>
+      all.map((row) => row.getAttribute("data-docs-option")),
+    );
+    expect(keys).toEqual(schemaNames.flatMap((name) => Object.keys(optionSchemas[name].options)));
+  });
+}
 
 const THEME_CSS = readFileSync(
   new URL("../../packages/styles/src/theme.css", import.meta.url),

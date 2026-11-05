@@ -8,7 +8,7 @@ const STORIES = [
   storyId("react", "button", "contained"),
   storyId("html", "button", "soft"),
   storyId("html", "toggle-button", "colors"),
-  "react-table--sorting-selecting",
+  storyId("react", "table", "sorting-selecting"),
   "foundations-settings--presets",
 ];
 
@@ -64,9 +64,9 @@ test.describe("theme settings (ADR-0017)", () => {
     test(`font size ${fontSize}px: no page overflow at 375px`, async ({ page }) => {
       await page.setViewportSize({ width: 375, height: 812 });
       for (const id of [
-        "react-table--basic",
-        "react-alert--actions",
-        "html-button-button-group--sizes",
+        storyId("react", "table", "basic"),
+        storyId("react", "alert", "actions"),
+        storyId("html", "button-group", "sizes"),
       ]) {
         await openStory(page, id, "light", "", `fontSize:${fontSize}`);
         const overflow = await page.evaluate(

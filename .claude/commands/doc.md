@@ -15,7 +15,7 @@ npm users (package README) and component users (spec, Storybook docs for React a
 1. **Resolve the target.**
    $ARGUMENTS may be a package (`react`, `packages/html`, `@owlky/styles`) or a component (`dialog`, `button`). Resolve it to exactly one target. If ambiguous, ask instead of guessing.
    - **Package** → output is `packages/<name>/README.md`.
-   - **Component** → output is `specs/components/<name>.md` (components have no Storybook docs page; usage lives in each story's Code panel via `htmlSetup()` / `jsxSource()`).
+   - **Component** → output is `specs/components/<name>.md` (maintainer contract) **and** its Storybook docs page `apps/storybook/src/components/<name>/<name>-docs.tsx` (ADR-0019, model: Button), attached in `<name>.stories.tsx` and listed in `GUIDES` / `OPTION_TABLES` (`e2e/tests/foundations.spec.ts`). "all components" = every folder in `specs/components/`.
 
 2. **Read the structure references.**
    - Component docs: follow the Dialog spec from git history — `git show bd5fb2d:specs/components/dialog.md` — for structure and level of detail (ADR-0011).
@@ -54,14 +54,14 @@ npm users (package README) and component users (spec, Storybook docs for React a
     - Every export / prop / `data-ok-*` attribute / event / keyboard interaction found in step 3 is documented.
     - Every rule from step 5 appears.
     - HTML examples are copy-paste valid (same markup as the snippets); TypeScript examples type-check against the current API.
-    - For component docs: `pnpm --filter @owlky/storybook build` succeeds.
+    - For component docs: `pnpm storybook:build` succeeds and `pnpm exec playwright test tests/foundations.spec.ts` (in `e2e/`) passes for the page.
 
 ---
 
 ## Rules
 
 - Write user-facing docs per AGENTS.md → "Writing documentation".
-- Never modify source code, tests or snippets — output is documentation only (`README.md`, `specs/**`, foundation story `docs.description` strings).
+- Never modify library source code, tests or snippets — output is documentation only (`README.md`, `specs/**`, docs pages `*-docs.tsx` and their `GUIDES` / `OPTION_TABLES` entries, story `docs` parameters).
 - Every documented prop/field states its TypeScript type and default.
 - Every example uses real exported identifiers and real `data-ok-*` attributes.
 - Do not document internal (non-exported) identifiers.

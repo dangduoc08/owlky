@@ -47,12 +47,19 @@ Read this first (humans and AI agents). Architecture: `docs/architecture.md`. De
 5. `html/src/components/<name>/examples/*.html` (canonical snippets; first component only: restore
    the `"./snippets/*": "./dist/snippets/*"` export in `html/package.json`). If it needs JS:
    `<name>.ts` (`defineComponent`) + tests, one line in `html/src/components/index.ts`.
-6. Storybook: `apps/storybook/src/components/<name>/` — `<name>.react.stories.tsx`,
-   `<name>.html.stories.tsx` (**same story names**). No docs page and no Playground: build stories
-   with `reactGroupsStory()` / `snippetStory(…, htmlSetup(css, runtime))`, so each story's
-   **Code** panel shows the source with what to import, plus a copy button.
+6. Storybook: `apps/storybook/src/components/<name>/<name>.stories.tsx`, title
+   `Components/<Name>` — **one story per reference section, every framework in it** (ADR-0018):
+   `frameworkStory({ html: snippetStory(…, htmlSetup(css, runtime)), react: reactGroupsStory(…) })`.
+   The toolbar's Framework menu picks the rendering; the **Code** panel shows that framework's
+   source with what to import, plus a copy button. No Playground.
+   **Docs page** (ADR-0019): `components/<name>/<name>-docs.tsx` with `GuideDocs`
+   (`helpers/guide.tsx`) and `OptionsTable` / `PropsTable` / `KeyboardTable`
+   (`helpers/guide-tables.tsx`), attached with `tags: ["autodocs"]` +
+   `parameters.docs.page`; sections Overview → usage → Options → Content and behavior → Events and
+   methods → Keyboard → Accessibility. Add it to `GUIDES` and `OPTION_TABLES` in
+   `e2e/tests/foundations.spec.ts`. Model: Button.
    Controls come from the option schema (ADR-0015): export `<NAME>_CONTROLS = { schema, keys }`
-   from the examples file and pass it to both stories — React `reactGroupsStory(groups,
+   from the examples file and pass it to both — React `reactGroupsStory(groups,
    { ...CONTROLS, target })`, HTML `snippetStory(…, setup, CONTROLS)`. Only options that change
    every example at once; defaults keep the examples identical. Add the component to
    `e2e/tests/options-parity.spec.ts`.
@@ -150,9 +157,13 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
 - Biome 2 lints the HTML snippets too: decorative `<svg>` needs `aria-hidden="true"` itself (not
   only on its wrapper), and demo links need a real `href` and descriptive text.
 - Add each new component's files to `coverage.thresholds` in `vitest.config.ts`.
-- Components from one reference page share a Storybook folder: titles `React/Button/<Name>` and
-  `HTML/Button/<Name>` (ids `react-button-<name>--…`). Register the folder in `FOLDERS`
-  (`e2e/tests/helpers.ts`) so `storyId()` keeps working; source folders stay one per component.
+- Components from one reference page share a Storybook folder: title `Components/Button/<Name>`
+  (id `components-button-<name>--…`). Register the folder in `FOLDERS` (`e2e/tests/helpers.ts`) so
+  `storyId()` keeps working; source folders stay one per component.
+- E2E ids of component stories carry the framework (ADR-0018): `storyId("react", "table",
+  "basic")` → `components-table--basic@react`; `openStory()` sets `globals=framework:react`.
+  `storyIds()` returns every component story once per framework. Snippet setups list every CSS
+  file the markup needs (e.g. `scrollbar.css` for tables, drawers and sortable lists).
 - Modal components use core `createModalController(element, { contentSelector })` (native
   `<dialog>` + fallback). Test React modal behavior through the built core: core's own tests must
   cover the controller (React tests don't count toward `core/src` coverage).

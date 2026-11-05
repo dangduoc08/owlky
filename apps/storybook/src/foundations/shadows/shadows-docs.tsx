@@ -8,7 +8,7 @@ import {
   GuideDocs,
   type GuideSection,
   Preview,
-} from "../shared/guide.js";
+} from "../../helpers/guide.js";
 
 export const shadowsSections: GuideSection[] = [
   {

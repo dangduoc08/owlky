@@ -50,7 +50,7 @@ packages/styles   prebuilt CSS (components in @layer components) + Tailwind v4 t
 packages/core     framework-free behavior + anatomy, shared by react and html
 packages/react    React components
 packages/html     HTML Core Runtime, snippets (src/components/*/examples), CDN IIFE bundle
-apps/storybook    Foundations pages (src/foundations/*) + React/HTML component stories
+apps/storybook    Foundations guides (src/foundations/*) + component stories (one per section, Framework toolbar, ADR-0018)
 e2e               Playwright: parity, interactions, themes, a11y, plain-HTML, visual
 examples          plain-html consumer example (uses dist)
 specs/components  component contracts — update before code
@@ -100,6 +100,8 @@ pnpm check                                  # everything CI runs
   text are AA-tested.
 - Component API comes from the upstream component (MUI…), mapped prop by prop; one option schema
   per component in `core` drives React, HTML, Controls and parity (ADR-0015).
+- Storybook: one story per component section; the toolbar's Framework menu picks HTML or React (ADR-0018).
+- Every component has a Storybook usage guide page (Docs), built like the Foundations guides; `/doc <component>` refreshes spec + page (ADR-0019).
 - Theme settings are data attributes: `data-ok-preset`, `data-ok-font` (nest like `data-ok-theme`);
   font size = root `font-size` (ADR-0017).
 

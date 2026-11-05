@@ -137,3 +137,46 @@ export function htmlGroupsStory(
     },
   };
 }
+
+/** Ways to use a component; the toolbar's Framework menu picks one (global `framework`, ADR-0018). */
+export type Framework = "html" | "react";
+export const DEFAULT_FRAMEWORK: Framework = "react";
+
+/** The framework a `framework` global names, or the default. */
+export const toFramework = (value: unknown): Framework =>
+  value === "html" || value === "react" ? value : DEFAULT_FRAMEWORK;
+
+const frameworkOf = (globals: Record<string, unknown>): Framework =>
+  toFramework(globals["framework"]);
+
+const sourceOf = (story: StoryObj) =>
+  (story.parameters?.["docs"] as { source?: { code?: string } } | undefined)?.source?.code ?? "";
+
+/**
+ * One story for every framework (ADR-0018): renders the implementation chosen in the toolbar,
+ * with the same Controls, and shows that implementation's source in the Code panel.
+ */
+export function frameworkStory(stories: Record<Framework, StoryObj>): StoryObj {
+  const { html, react } = stories;
+  return {
+    ...(html.name !== undefined || react.name !== undefined
+      ? { name: react.name ?? html.name }
+      : {}),
+    render: (args, context) => {
+      const story = stories[frameworkOf(context.globals)];
+      return story.render?.(args, context) as ReturnType<NonNullable<StoryObj["render"]>>;
+    },
+    argTypes: { ...html.argTypes, ...react.argTypes },
+    parameters: {
+      docs: {
+        source: {
+          language: "tsx",
+          // No static `code`: Storybook applies `transform` (with the current globals) only to a
+          // derived source.
+          transform: (_code: string, context: { globals: Record<string, unknown> }) =>
+            sourceOf(stories[frameworkOf(context.globals)]),
+        },
+      },
+    },
+  };
+}

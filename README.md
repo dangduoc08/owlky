@@ -116,8 +116,9 @@ The Storybook site is the main documentation:
 - **Introduction** explains how Owlky works and how to install it.
 - **Foundations** is a guide to the design tokens: colors, typography, shadows, spacing, icons and
   theme settings, with live examples.
-- The **component sections** show every component. Open a story's **Code** panel to copy its
-  source, with the imports you need.
+- **Components** shows every component. Choose plain HTML or a framework with the **Framework**
+  menu in the toolbar, then open a story's **Code** panel to copy its source, with the imports you
+  need.
 
 Run it locally with `pnpm storybook`.
 
