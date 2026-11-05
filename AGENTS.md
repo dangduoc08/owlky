@@ -63,12 +63,48 @@ Read this first (humans and AI agents). Architecture: `docs/architecture.md`. De
 ## Foundations in Storybook
 `apps/storybook/src/foundations/<name>/` — presentational components (`<name>.tsx`) and
 `<name>.stories.tsx` with **one story per section** (they become the sidebar sub-items) plus the
-autodocs page (`UsageDocs` in `helpers/docs-pages.tsx`: description only, never the stories
-again). Components have no docs pages (see checklist step 6). MDX has no GFM: use lists, not tables. Use Storybook's default layout and Controls for anything adjustable; don't build
+autodocs page — a **usage guide** that never renders the stories again: what the tokens are,
+their names, and how to use them in **HTML and React** (CSS variables, component options,
+Tailwind, JavaScript, themes, accessibility). Each page: `<name>-docs.tsx` with its sections and
+live previews, built with `foundations/shared/guide.tsx` (`GuideDocs`: prose in `Markdown`, a
+preview, one code block with HTML | React tabs). The Introduction (MDX) uses `GuideSections`.
+`e2e/tests/foundations.spec.ts` (`GUIDES`) checks that every `--ok-*` variable and token utility in
+the examples exists, axe in light and dark, and phone width — add new guide pages there. Components have no docs pages (see checklist step 6). MDX has no GFM: use lists, not tables. Use Storybook's default layout and Controls for anything adjustable; don't build
 page chrome (headers, tables of contents, custom navigation). Read every value from
 `@owlky/tokens` or `--ok-*` variables — never hard-code a token value. The reference
 site is for content only; brand colors follow it, neutral text must meet WCAG AA (ADR-0014). E2E a11y, visual
 and small-screen tests pick up new stories automatically from Storybook's `index.json`.
+
+## Writing documentation
+
+User-facing docs (Storybook docs pages, package READMEs) follow standard technical English, in
+the style of the Google and Microsoft developer documentation guides. Model: Foundations › Colors.
+
+- **Reader:** a developer new to Owlky. Address them as "you"; use present tense and active voice.
+- **Headings:** sentence case. Task sections start with a verb ("Use colors in CSS", "Switch
+  themes and presets"); reference sections are nouns ("Palette", "Token reference").
+- **Sentences:** short, complete, one idea each. No fragments ("Values: …"), no em dashes or
+  semicolons to chain ideas, no "simply", "just" or "easy".
+- **Words:** "for example" / "such as", not "e.g." / "i.e."; no internal terms (the reference
+  site, ADR numbers, `--_ok-*` private variables, test details).
+- **UI names:** bold and exact, with where to find them ("the **Preset** menu in the toolbar").
+- **Advice:** say why ("…unlike some `color-mix()` fallbacks that drop the transparency").
+- **Lists:** parallel items; definitions as "**Label:** sentence".
+- **Code:** HTML and React tabs show the same idea, as complete snippets (React: a component);
+  comments explain where or why, in sentence case.
+- **Numbers:** exact and with units ("a contrast ratio of at least 4.5:1"). Figures that change
+  (bundle sizes) are rounded ("about 10 kB") and checked with `pnpm check:size` first.
+- **Framework-agnostic:** describe Owlky as one design system, used in plain HTML or through
+  framework packages. Name a framework only in examples, install steps and package lists ("such
+  as `@owlky/react`"), never in the product description: more frameworks will follow.
+- **Overviews** (Introduction, README): benefits first, as bold lead-in sentences ("**Accessible
+  by default.** …"), then how it works, get started, customization, where to find things, browser
+  support and accessibility. The README mirrors the Introduction; GitHub Markdown allows tables,
+  Storybook MDX doesn't.
+- **Code in guides:** Storybook's `Source` block (highlighting and a Copy button) inside the
+  HTML | React tabs of `foundations/shared/guide.tsx`; previews that are columns must not wrap.
+
+Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine there.
 
 ## Commands
 

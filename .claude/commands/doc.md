@@ -60,6 +60,7 @@ npm users (package README) and component users (spec, Storybook docs for React a
 
 ## Rules
 
+- Write user-facing docs per AGENTS.md → "Writing documentation".
 - Never modify source code, tests or snippets — output is documentation only (`README.md`, `specs/**`, foundation story `docs.description` strings).
 - Every documented prop/field states its TypeScript type and default.
 - Every example uses real exported identifiers and real `data-ok-*` attributes.

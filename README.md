@@ -1,106 +1,169 @@
 # Owlky
 
-Accessible UI components inspired by the Minimal dashboard design language — shipped as **React
-components** and as **framework-free HTML** with identical markup, styles and behavior.
+Accessible, themeable UI components built on one design system, ready for any way you build for
+the web.
 
-- **Two implementations, one design system.** Same `data-ok-*` anatomy, same prebuilt CSS, same
-  behavior core. React ↔ HTML parity is tested down to the pixel.
-- **No Tailwind required to consume.** CSS is prebuilt; Tailwind v4 users get a matching theme.
-- **Themeable** through `--ok-*` CSS variables; light, dark, system and nested themes.
-- **Accessible:** keyboard and focus management on every component; neutral text is AA-tested;
-  brand colors follow the reference look (opt-in strict AA, see `packages/tokens/README.md`).
-- **Small:** the HTML runtime bundle is ~2 kB gzip; all CSS (tokens) ~4.6 kB gzip.
+Owlky is a UI component library for dashboards and web apps. It gives your product a polished,
+consistent interface without locking you into one way of building it.
 
-> Status: `0.x`, pre-release — **foundations first**. Available now: design tokens (colors,
-> typography, radius, shadows, motion) as CSS variables, light/dark theming, the Tailwind v4 theme
-> and the HTML Core Runtime. Components follow on top of the foundations. See
-> [the roadmap](docs/roadmap.md).
+- **One design system everywhere.** Every component has a single markup structure, a single
+  stylesheet and a single set of design tokens. Use it in plain HTML or through a framework
+  package, and it looks and behaves the same.
+- **Accessible by default.** Components follow the WAI-ARIA patterns, work with the keyboard and
+  meet WCAG 2.2 level AA.
+- **Easy to theme.** Every color, size and shadow is a CSS variable. Switch to dark mode, change
+  the primary color or bring your own brand with a few lines of CSS.
+- **Built on the platform.** Components use native elements, such as `<button>` and `<dialog>`,
+  so browser features like form submission, find-in-page and focus handling keep working.
+- **Small.** The complete stylesheet and the script for interactive components are each about
+  10 kB, gzipped.
 
-## Use it
+> **Status:** Owlky is in pre-release (`0.x`) and not published to npm yet. The design tokens,
+> theming and the first components are ready: Accordion, Alert, Button and the button family,
+> Drawer, Pagination, Scrollbar, Sortable and Table. More components follow in a planned order;
+> see [the roadmap](docs/roadmap.md).
 
-### Plain HTML (no build step)
+## How it works
+
+Owlky is built in layers, so the same component can be used in many environments:
+
+- **Markup and styles.** Each component is HTML with `data-ok-*` attributes, styled by one prebuilt
+  stylesheet. This layer works on any page.
+- **Behavior.** Interactive components, such as dialogs and tables, share one behavior core. On a
+  plain HTML page, a small script connects it to your markup.
+- **Framework packages.** A framework package renders the same markup and uses the same behavior
+  core, with the API you expect from your framework.
+
+Because every layer is shared, you can move between environments, or mix them on one page, without
+visual differences.
+
+## Get started
+
+### On a plain HTML page
+
+Add the stylesheet and the script to the `<head>` of every page, then copy a component's markup:
 
 ```html
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css">
 <script src="https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js" defer></script>
 
-<div style="background: var(--ok-palette-primary-main); color: var(--ok-palette-primary-contrast-text)">
-  Primary
-</div>
+<button type="button" data-ok-button data-ok-variant="contained" data-ok-color="primary" data-ok-size="md">
+  <span data-ok-button-label>Get started</span>
+</button>
 ```
 
-### React / npm
+### With a framework
+
+Install the framework package and the stylesheet. For example, with React:
 
 ```sh
-pnpm add @owlky/styles
+npm install @owlky/react @owlky/styles
 ```
 
-```ts
+```tsx
+// In your app's entry file
 import "@owlky/styles/owlky.css";
+
+// In a component
+import { Button } from "@owlky/react";
+
+export function GetStarted() {
+  return (
+    <Button variant="contained" color="primary">
+      Get started
+    </Button>
+  );
+}
 ```
 
 ### With Tailwind CSS v4
 
+Import the Owlky theme after Tailwind. Every Owlky token then becomes a utility class, such as
+`bg-primary`, `text-text-secondary` or `shadow-card`:
+
 ```css
 @import "tailwindcss";
 @import "@owlky/styles/owlky.css";
-@import "@owlky/styles/theme.css"; /* bg-primary, text-text-secondary, shadow-z8, … */
+@import "@owlky/styles/theme.css";
 ```
 
-### Theming
+## Make it yours
+
+Every design value is a CSS variable that starts with `--ok-`. To change one, set it in your own
+CSS, for the whole page or for one part of it. Your values always win, because Owlky's own rules
+have zero specificity.
 
 ```css
 :root {
   --ok-palette-primary-main: #2065d1;
   --ok-palette-primary-dark: #103996;
-  --ok-palette-primary-contrast-text: #fff;
+  --ok-palette-primary-contrast-text: #ffffff;
+  --ok-radius-md: 10px;
 }
 ```
 
-Dark mode: `<html data-ok-theme="dark">` (or `class="dark"`, or `"system"`). Any element can set
-its own `data-ok-theme`. Generate a full theme in JS with `createTheme()` + `themeToCss()` from
-`@owlky/tokens`. Load the fonts yourself — Public Sans (text) and Barlow 700/800 (h1–h3), e.g. from
-Fontsource or Google Fonts; the stacks fall back to system fonts.
+For dark mode, set `data-ok-theme="dark"` on the `<html>` element or on any container. Use
+`system` to follow the operating system. To let users choose the theme, primary color, font and
+text size, use `applyThemeSettings()`.
 
-**Browser support:** Chrome/Edge 114+, Firefox 128+, Safari 17+ ([ADR-0006](docs/adr/0006-browser-baseline-and-fallbacks.md)).
+Owlky doesn't bundle fonts. Load Public Sans for text and Barlow (weights 700 and 800) for display
+headings, for example from Fontsource. Without them, the text falls back to system fonts.
+
+## Documentation
+
+The Storybook site is the main documentation:
+
+- **Introduction** explains how Owlky works and how to install it.
+- **Foundations** is a guide to the design tokens: colors, typography, shadows, spacing, icons and
+  theme settings, with live examples.
+- The **component sections** show every component. Open a story's **Code** panel to copy its
+  source, with the imports you need.
+
+Run it locally with `pnpm storybook`.
 
 ## Packages
 
-| Package                                       |                                                          |
-| --------------------------------------------- | -------------------------------------------------------- |
-| [`@owlky/react`](packages/react)   | React components                                         |
-| [`@owlky/html`](packages/html)     | HTML Core Runtime, snippets, CDN bundle                  |
-| [`@owlky/styles`](packages/styles) | Prebuilt CSS, Tailwind v4 theme                          |
-| [`@owlky/tokens`](packages/tokens) | Design tokens, `createTheme()`                           |
-| [`@owlky/core`](packages/core)     | Shared framework-free behavior (internal building block) |
+| Package | Contents |
+| --- | --- |
+| [`@owlky/styles`](packages/styles) | The prebuilt stylesheet and the Tailwind CSS v4 theme |
+| [`@owlky/tokens`](packages/tokens) | Design tokens as CSS variables and JavaScript values, `createTheme()` |
+| [`@owlky/html`](packages/html) | HTML snippets and the behavior script, also from a CDN |
+| [`@owlky/react`](packages/react) | React components (the first framework package) |
+| [`@owlky/core`](packages/core) | The shared behavior core, included by the other packages |
 
-## Develop
+## Browser support
 
-Requirements: Node 22.12+, pnpm 12.
+Owlky supports Chrome and Edge 114 and later, Firefox 128 and later, and Safari 17 and later. When
+a browser lacks a newer feature, Owlky detects it and uses a fallback that still works.
+
+## Contribute
+
+You need Node.js 22.12 or later and pnpm 12.
 
 ```sh
 pnpm install
 pnpm exec playwright install chromium firefox webkit
-pnpm build            # all packages
-pnpm storybook        # http://localhost:6006
-pnpm test             # unit + component tests (real browser)
-pnpm storybook:build && pnpm test:e2e
-pnpm check            # everything CI runs
+pnpm build                              # build every package
+pnpm storybook                          # open http://localhost:6006
+pnpm test                               # unit and component tests, in a real browser
+pnpm storybook:build && pnpm test:e2e   # end-to-end tests
+pnpm check                              # everything CI runs
 ```
 
-| Doc                                          |                                            |
-| -------------------------------------------- | ------------------------------------------ |
-| [docs/architecture.md](docs/architecture.md) | How the pieces fit                         |
-| [docs/adr/](docs/adr/README.md)              | Decisions and their reasons                |
-| [docs/roadmap.md](docs/roadmap.md)           | Implementation plan                        |
-| [docs/testing.md](docs/testing.md)           | Test layers and commands                   |
-| [specs/](specs/README.md)                    | Component contracts                        |
-| [AGENTS.md](AGENTS.md)                       | Conventions for contributors and AI agents |
+| Document | What it covers |
+| --- | --- |
+| [AGENTS.md](AGENTS.md) | Conventions for contributors and AI agents |
+| [docs/architecture.md](docs/architecture.md) | How the packages fit together |
+| [docs/adr/](docs/adr/README.md) | Architecture decisions and their reasons |
+| [docs/roadmap.md](docs/roadmap.md) | What is built and what comes next |
+| [docs/testing.md](docs/testing.md) | Test layers and commands |
+| [specs/](specs/README.md) | Component contracts |
 
-Releases use Changesets: `pnpm changeset` in your PR. Pushing to `main` only runs CI; publishing
-happens when a `release/v<version>` tag is pushed on a `main` commit — see
-[ADR-0012](docs/adr/0012-release-by-tag.md) for the procedure.
+Releases use Changesets: run `pnpm changeset` in your pull request. Pushing to `main` only runs CI.
+To publish, push a `release/v<version>` tag on a `main` commit; see
+[ADR-0012](docs/adr/0012-release-by-tag.md).
 
 ## License
 
-MIT. Visual language inspired by the Minimal dashboard; no code or assets from it are used.
+MIT. The visual language is inspired by the Minimal dashboard design; Owlky uses none of its code or
+assets.
