@@ -12,19 +12,20 @@ MUI); the HTML runtime sorts, selects and pages the rows already in the DOM.
 
 ## Anatomy
 ```
-section[data-ok-table-container][tabindex=0][aria-label]   scrolls (set a max-height for a sticky header)
-  table[data-ok-table][data-ok-size][data-ok-padding][data-ok-sticky-header]?[id]   React: + data-ok-runtime="off"
-    thead › tr › th[scope=col][aria-sort]?[data-ok-align]?[data-ok-padding]?
-      button[type=button][data-ok-table-sort-label][data-ok-direction][data-ok-active]?[data-ok-hide-sort-icon]?
-        … label, span[data-ok-table-sort-icon][aria-hidden=true] › svg (arrow down; rotated when ascending)
-      input[type=checkbox][data-ok-table-select-all][aria-label]          selection column (native checkbox)
-    tbody
-      tr[data-ok-hover]?[data-ok-selected]?
-        td | th[scope=row] [data-ok-align]?[data-ok-padding]?[data-ok-size]?
-        input[type=checkbox][data-ok-table-select][aria-label]            in a selection cell
-        button[data-ok-icon-button][data-ok-table-expand=<detail id>][aria-expanded][aria-controls][aria-label]
-      tr[data-ok-table-detail][id][hidden]? › td[colspan]                 detail row of the row above
-    tfoot? › tr › td
+section[data-ok-table-container]                          holds the table (overflow: visible with a Scrollbar)
+  section[data-ok-scrollbar][aria-label][tabindex=0]       scrolls — the Scrollbar component (set a max-height for a sticky header)
+    table[data-ok-table][data-ok-size][data-ok-padding][data-ok-sticky-header]?[id]   React: + data-ok-runtime="off"
+      thead › tr › th[scope=col][aria-sort]?[data-ok-align]?[data-ok-padding]?
+        button[type=button][data-ok-table-sort-label][data-ok-direction][data-ok-active]?[data-ok-hide-sort-icon]?
+          … label, span[data-ok-table-sort-icon][aria-hidden=true] › svg (arrow down; rotated when ascending)
+        input[type=checkbox][data-ok-table-select-all][aria-label]          selection column (native checkbox)
+      tbody
+        tr[data-ok-hover]?[data-ok-selected]?
+          td | th[scope=row] [data-ok-align]?[data-ok-padding]?[data-ok-size]?
+          input[type=checkbox][data-ok-table-select][aria-label]            in a selection cell
+          button[data-ok-icon-button][data-ok-table-expand=<detail id>][aria-expanded][aria-controls][aria-label]
+        tr[data-ok-table-detail][id][hidden]? › td[colspan]                 detail row of the row above
+      tfoot? › tr › td
 div[data-ok-table-pagination=<table id>]                                   React: value "" + data-ok-runtime="off"
   label[data-ok-table-pagination-rows] › "Rows per page:" select          (only with 2+ options)
   span[data-ok-table-pagination-displayed][aria-live=polite] "1–5 of 12"
@@ -103,11 +104,12 @@ Pagination (`TablePagination` ↔ HTML): `count` (`-1` = unknown) ↔ number of 
 
 ## Keyboard
 Sort labels, checkboxes, expand and page buttons are native buttons / inputs (Tab, Enter / Space).
-The container is focusable when it scrolls (arrow keys scroll it).
+The Scrollbar inside the container is the focusable scroll region (arrow keys scroll it).
 
 ## Accessibility
 - `aria-sort` on the sorted header cell; checkboxes and icon buttons need names (`aria-label`).
-- Name the container (`aria-label`): it is a focusable region.
+- Name the Scrollbar (`aria-label`): it is the focusable region; the container stays unnamed and
+  unfocusable. Without a Scrollbar, name the container instead: it scrolls natively (as before).
 - The displayed-rows label is `aria-live="polite"`.
 - Header text (`--ok-text-secondary` on `--ok-bg-neutral`) meets AA in both schemes.
 

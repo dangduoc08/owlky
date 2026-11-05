@@ -20,6 +20,9 @@ ul[data-ok-sortable][data-ok-layout][aria-label]                React: + data-ok
 [add trigger] button[data-ok-sortable-add="<list id>"]          HTML only
 div[data-ok-sortable-announcer][aria-live="polite"]             created once per document (visually hidden)
 ```
+Scrolling (vertical / horizontal): wrap the list in a Scrollbar — `section[data-ok-scrollbar] ›
+ul[data-ok-sortable]`. The Scrollbar then scrolls and carries the dashed frame; the list grows
+freely (`:has(> [data-ok-sortable])`). A list without a Scrollbar still scrolls itself (as before).
 Handles and remove buttons are Icon buttons (`default`, `sm`), so they share its CSS.
 
 ## Options

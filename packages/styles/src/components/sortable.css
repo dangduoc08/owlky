@@ -49,6 +49,34 @@
     overflow: auto;
   }
 
+  /* In a Scrollbar: the Scrollbar scrolls and carries the frame; the list grows freely. */
+  :where([data-ok-scrollbar]:has(> [data-ok-sortable][data-ok-layout="vertical"])) {
+    width: min(100%, calc(var(--ok-spacing) * 120));
+    max-height: calc(var(--ok-spacing) * 140);
+    border: 1px dashed rgb(var(--ok-palette-grey-500-channel) / 0.16);
+    border-radius: var(--ok-radius-lg);
+  }
+
+  :where([data-ok-scrollbar]:has(> [data-ok-sortable][data-ok-layout="horizontal"])) {
+    border: 1px dashed rgb(var(--ok-palette-grey-500-channel) / 0.16);
+    border-radius: var(--ok-radius-lg);
+  }
+
+  :where([data-ok-scrollbar] > [data-ok-sortable]) {
+    max-height: none;
+    border: 0;
+    overflow: visible;
+  }
+
+  :where([data-ok-scrollbar] > [data-ok-sortable][data-ok-layout="vertical"]) {
+    width: 100%;
+  }
+
+  :where([data-ok-scrollbar] > [data-ok-sortable][data-ok-layout="horizontal"]) {
+    width: max-content;
+    min-width: 100%;
+  }
+
   :where([data-ok-sortable-item]) {
     position: relative;
     display: flex;

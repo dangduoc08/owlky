@@ -1,0 +1,86 @@
+/*
+ * Scrollbar — spec: specs/components/scrollbar.md
+ *
+ * Anatomy:  section[data-ok-scrollbar][aria-label][tabindex=0] — the scroll area itself
+ * Modifier: data-ok-auto-hide="false" keeps the thumb visible
+ *
+ * Native scrollbars, styled: `scrollbar-width` / `scrollbar-color` where supported, otherwise
+ * `::-webkit-scrollbar` (Safari, Chrome < 121; ADR-0006). Other components scroll by wrapping
+ * their content in a Scrollbar (Table, Drawer, Sortable).
+ * Single :where() selectors in @layer components (zero specificity).
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-ok-scrollbar]) {
+    box-sizing: border-box;
+    min-width: 0;
+    min-height: 0;
+    overflow: auto;
+  }
+
+  :where([data-ok-scrollbar]:focus-visible) {
+    outline: 2px solid var(--ok-text-primary);
+    outline-offset: -2px;
+  }
+
+  /* Thumb: the disabled text tone at 48 % — grey 500 (light), grey 600 (dark). */
+  :where([data-ok-scrollbar]) {
+    --_ok-scrollbar-thumb: rgb(var(--ok-palette-grey-500-channel) / 0.48);
+    --_ok-scrollbar-now: transparent;
+  }
+
+  @supports (color: light-dark(#000, #fff)) {
+    :where([data-ok-scrollbar]) {
+      --_ok-scrollbar-thumb: light-dark(
+        rgb(var(--ok-palette-grey-500-channel) / 0.48),
+        rgb(var(--ok-palette-grey-600-channel) / 0.48)
+      );
+    }
+  }
+
+  /* Auto-hide: visible on hover and while focus is inside (keyboard scrolling). */
+  :where([data-ok-scrollbar]:focus-within, [data-ok-scrollbar][data-ok-auto-hide="false"]) {
+    --_ok-scrollbar-now: var(--_ok-scrollbar-thumb);
+  }
+
+  @media (hover: hover) {
+    :where([data-ok-scrollbar]:hover) {
+      --_ok-scrollbar-now: var(--_ok-scrollbar-thumb);
+    }
+  }
+
+  /* No hover on touch screens: always visible. */
+  @media (hover: none) {
+    :where([data-ok-scrollbar]) {
+      --_ok-scrollbar-now: var(--_ok-scrollbar-thumb);
+    }
+  }
+
+  @supports (scrollbar-color: auto) {
+    :where([data-ok-scrollbar]) {
+      scrollbar-width: thin;
+      scrollbar-color: var(--_ok-scrollbar-now) transparent;
+    }
+  }
+
+  /* Fallback: 11px track, 7px rounded thumb (2px inset), like the reference. */
+  :where([data-ok-scrollbar])::-webkit-scrollbar {
+    width: calc(var(--ok-spacing) * 2.75);
+    height: calc(var(--ok-spacing) * 2.75);
+    background-color: transparent;
+  }
+
+  :where([data-ok-scrollbar])::-webkit-scrollbar-thumb {
+    min-width: calc(var(--ok-spacing) * 2.5);
+    min-height: calc(var(--ok-spacing) * 2.5);
+    border: calc(var(--ok-spacing) * 0.5) solid transparent;
+    border-radius: var(--ok-radius-full);
+    background-color: var(--_ok-scrollbar-now);
+    background-clip: padding-box;
+  }
+
+  :where([data-ok-scrollbar])::-webkit-scrollbar-corner {
+    background-color: transparent;
+  }
+}

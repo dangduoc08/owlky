@@ -3,6 +3,7 @@ import { useState } from "react";
 import { renderToString } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { userEvent } from "vitest/browser";
+import { Scrollbar } from "../scrollbar/scrollbar.js";
 import { expectNoAxeViolations } from "../test-utils.js";
 import {
   Table,
@@ -249,5 +250,28 @@ describe("TablePagination", () => {
     );
     expect(within(container).getAllByRole("button").length).toBeGreaterThan(3);
     await expectNoAxeViolations();
+  });
+});
+
+describe("TableContainer with a Scrollbar", () => {
+  it("the Scrollbar is the only scrolling, focusable region", () => {
+    render(
+      <TableContainer data-testid="container">
+        <Scrollbar aria-label="Desserts">
+          <Table>
+            <TableBody>
+              <TableRow>
+                <TableCell>Eclair</TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </Scrollbar>
+      </TableContainer>,
+    );
+    const container = screen.getByTestId("container");
+    expect(container.hasAttribute("tabindex")).toBe(false);
+    expect(getComputedStyle(container).overflow).toBe("visible");
+    expect(screen.getAllByRole("region")).toHaveLength(1);
+    expect(screen.getByRole("region", { name: "Desserts" }).dataset["okScrollbar"]).toBe("");
   });
 });

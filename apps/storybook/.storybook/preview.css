@@ -43,25 +43,25 @@
   box-shadow: var(--ok-shadow-card);
 }
 
-/* Drawer demo content (stories only; a List component will replace it). */
-[data-ok-drawer-content] > nav {
+/* Drawer demo content in a Scrollbar (stories only; a List component will replace it). */
+[data-ok-drawer-content] > [data-ok-scrollbar] > nav {
   min-inline-size: 250px;
   padding-block: calc(var(--ok-spacing) * 2);
 }
 
-[data-ok-drawer-content] > nav ul {
+[data-ok-drawer-content] > [data-ok-scrollbar] > nav ul {
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-[data-ok-drawer-content] > nav hr {
+[data-ok-drawer-content] > [data-ok-scrollbar] > nav hr {
   margin: calc(var(--ok-spacing) * 2) 0;
   border: 0;
   border-top: 1px solid var(--ok-divider);
 }
 
-[data-ok-drawer-content] > nav button {
+[data-ok-drawer-content] > [data-ok-scrollbar] > nav button {
   display: flex;
   align-items: center;
   gap: calc(var(--ok-spacing) * 4);
@@ -79,16 +79,16 @@
   cursor: pointer;
 }
 
-[data-ok-drawer-content] > nav button:hover {
+[data-ok-drawer-content] > [data-ok-scrollbar] > nav button:hover {
   background-color: var(--ok-action-hover);
 }
 
-[data-ok-drawer-content] > nav button:focus-visible {
+[data-ok-drawer-content] > [data-ok-scrollbar] > nav button:focus-visible {
   outline: 2px solid var(--ok-text-primary);
   outline-offset: -2px;
 }
 
-[data-ok-drawer-content] > nav svg {
+[data-ok-drawer-content] > [data-ok-scrollbar] > nav svg {
   flex-shrink: 0;
   width: calc(var(--ok-spacing) * 6);
   height: calc(var(--ok-spacing) * 6);
@@ -104,7 +104,7 @@
 }
 
 /* Sortable stories: the "Add item" button above the list, like the reference. */
-.sb-row:has(> [data-ok-sortable]) {
+.sb-row:has(> [data-ok-scrollbar] > [data-ok-sortable]) {
   flex-direction: column;
   align-items: flex-end;
 }
@@ -116,13 +116,13 @@
   gap: 0;
 }
 
-/* Like the reference demos: wide tables keep their columns and scroll inside the container. */
-.sb-row > [data-ok-table-container] > [data-ok-table] {
+/* Like the reference demos: wide tables keep their columns and scroll inside the Scrollbar. */
+.sb-row > [data-ok-table-container] > [data-ok-scrollbar] > [data-ok-table] {
   min-width: 40rem;
 }
 
-/* Fixed header demo: the app limits the container's height. */
-.sb-row > [data-ok-table-container]:has(> [data-ok-sticky-header]) {
+/* Fixed header demo: the app limits the Scrollbar's height. */
+.sb-row > [data-ok-table-container] > [data-ok-scrollbar]:has(> [data-ok-sticky-header]) {
   max-height: 27.5rem;
 }
 
@@ -145,7 +145,7 @@
   gap: 0;
 }
 
-.sb-row > [data-ok-sortable][data-ok-layout="vertical"] {
+.sb-row > [data-ok-scrollbar]:has(> [data-ok-sortable][data-ok-layout="vertical"]) {
   align-self: center;
 }
 
@@ -163,4 +163,92 @@
   flex: 1;
   padding: calc(var(--ok-spacing) * 5);
   color: var(--ok-text-secondary);
+}
+
+/* Scrollbar stories (demo only): the reference's frame, wide text and page layout. */
+.sb-row:has(> [data-ok-scrollbar], > .sb-layout) {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.sb-row > [data-ok-scrollbar] {
+  height: 20rem;
+  padding: 1.5rem 0.5rem 1.5rem 1.5rem;
+  border-radius: var(--ok-radius-lg);
+  background-color: rgb(var(--ok-palette-grey-500-channel) / 0.04);
+}
+
+[data-ok-scrollbar] > p {
+  margin: 0 0 1rem;
+}
+
+[data-ok-scrollbar] > .sb-wide {
+  width: 160%;
+}
+
+.sb-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  overflow: hidden;
+  border: 1px solid var(--ok-divider);
+  border-radius: var(--ok-radius-lg);
+  background-color: rgb(var(--ok-palette-grey-500-channel) / 0.04);
+  font-size: var(--ok-typography-subtitle2-font-size);
+  font-weight: var(--ok-typography-subtitle2-font-weight);
+}
+
+.sb-layout > :is(.sb-layout-top, .sb-layout-left, .sb-layout-right, .sb-layout-bottom) {
+  padding: 1rem 1.5rem;
+}
+
+.sb-layout-top {
+  background-color: var(--ok-palette-grey-800);
+  color: var(--ok-palette-common-white);
+}
+
+.sb-layout-bottom {
+  border-top: 1px solid var(--ok-divider);
+}
+
+.sb-layout-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background-color: var(--ok-bg-neutral);
+}
+
+.sb-layout-main > [data-ok-alert] {
+  border-radius: 0;
+}
+
+.sb-layout-main > [data-ok-scrollbar] {
+  height: 16rem;
+  padding: 1.5rem;
+  font-weight: normal;
+}
+
+.sb-layout-main > [data-ok-scrollbar] > h4 {
+  margin: 0 0 1rem;
+  font-size: var(--ok-typography-h6-font-size);
+  font-weight: var(--ok-typography-h6-font-weight);
+  line-height: var(--ok-typography-h6-line-height);
+}
+
+@media (min-width: 900px) {
+  .sb-layout {
+    grid-template-columns: 10rem minmax(0, 1fr) 10rem;
+  }
+
+  .sb-layout-top,
+  .sb-layout-bottom {
+    grid-column: 1 / -1;
+  }
+
+  .sb-layout > :is(.sb-layout-left, .sb-layout-right) {
+    padding: 1.5rem;
+  }
+
+  .sb-layout-main > [data-ok-scrollbar] {
+    height: 25rem;
+  }
 }

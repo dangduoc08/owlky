@@ -1,5 +1,5 @@
 import { drawerOptions } from "@owlky/core";
-import { Drawer, type DrawerAnchor, DrawerContent, DrawerTrigger } from "@owlky/react";
+import { Drawer, type DrawerAnchor, DrawerContent, DrawerTrigger, Scrollbar } from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
 import { DemoIcon } from "../shared/demo-icon.js";
 import type { GroupFiles } from "../shared/snippets.js";
@@ -29,11 +29,13 @@ function MenuList({ items }: { items: string[] }) {
 /** Demo content (styled by the Storybook preview only; a List component will replace it). */
 function Mailbox({ label = "Mailbox" }: { label?: string }) {
   return (
-    <nav aria-label={label}>
-      <MenuList items={["Inbox", "Starred", "Send email", "Drafts"]} />
-      <hr />
-      <MenuList items={["All mail", "Trash", "Spam"]} />
-    </nav>
+    <Scrollbar>
+      <nav aria-label={label}>
+        <MenuList items={["Inbox", "Starred", "Send email", "Drafts"]} />
+        <hr />
+        <MenuList items={["All mail", "Trash", "Spam"]} />
+      </nav>
+    </Scrollbar>
   );
 }
 

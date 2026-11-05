@@ -73,6 +73,8 @@ export {
   paginationSizes,
   paginationVariants,
   type SortableLayout,
+  scrollbarAttributes,
+  scrollbarOptions,
   sortableAttributes,
   sortableLayouts,
   sortableOptions,

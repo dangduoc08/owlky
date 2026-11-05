@@ -17,6 +17,7 @@ const SPECS = {
   sortable: "sortable.md",
   table: "table.md",
   pagination: "pagination.md",
+  scrollbar: "scrollbar.md",
   "table-sort-label": "table.md",
 };
 

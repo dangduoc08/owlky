@@ -33,6 +33,7 @@ export default defineConfig({
         "packages/react/src/fab/**": COMPONENT_THRESHOLDS,
         "packages/react/src/icon-button/**": COMPONENT_THRESHOLDS,
         "packages/react/src/pagination/**": COMPONENT_THRESHOLDS,
+        "packages/react/src/scrollbar/**": COMPONENT_THRESHOLDS,
         "packages/react/src/sortable/**": COMPONENT_THRESHOLDS,
         "packages/react/src/table/**": COMPONENT_THRESHOLDS,
         "packages/react/src/toggle-button/**": COMPONENT_THRESHOLDS,

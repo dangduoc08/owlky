@@ -1,0 +1,6 @@
+[
+  "Scroll areas keep long content inside a fixed frame while the rest of the page stays where it is. The thumb follows the theme, stays thin, and appears when the pointer rests on the area or when the keyboard focus is inside it.",
+  "Every scroll area is a named region that can take focus, so keyboard users reach it with Tab and scroll it with the arrow keys, Page Up and Page Down, Home and End. Screen readers announce its name before the content.",
+  "The browser does the scrolling itself: momentum on touch screens, smooth wheel scrolling, find-in-page and scroll anchoring all keep working. Only the look of the bar changes, and it falls back to the native bar where styling is not supported.",
+  "Wide content scrolls sideways the same way. Tables, drawers and sortable lists in this library use the same thumb, so every scroll area on a page looks and behaves alike."
+]

@@ -53,6 +53,9 @@ const pairs: [component: string, story: string][] = [
   ["table", "grouping-fixed-header"],
   ["table", "collapsible"],
   ["table", "pagination-with-api"],
+  ["scrollbar", "vertical"],
+  ["scrollbar", "horizontal"],
+  ["scrollbar", "layout"],
   ["sortable", "vertical"],
   ["sortable", "horizontal"],
 ];

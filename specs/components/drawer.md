@@ -13,6 +13,9 @@ dialog[data-ok-drawer][data-ok-anchor][aria-label | aria-labelledby]   React: + 
   div[data-ok-drawer-content]                                the paper; any content
     … HTML close: [data-ok-drawer-close] (inside) or [data-ok-drawer-close="<id>"]
 ```
+Scrolling content: put it in a Scrollbar inside the content — `[data-ok-drawer-content] ›
+section[data-ok-scrollbar]`; the Scrollbar fills the panel and scrolls (the panel stops scrolling).
+The dialog then focuses the Scrollbar first on open (it is the first focusable element).
 The `<dialog>` is a transparent full-viewport container; the content is the paper. A click whose
 target is the `<dialog>` itself is a backdrop click.
 

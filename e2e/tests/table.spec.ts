@@ -126,7 +126,7 @@ for (const impl of implementations) {
             if (document.documentElement.scrollWidth > window.innerWidth)
               out.push("page overflows");
             for (const el of document.querySelectorAll<HTMLElement>(
-              "#storybook-root [data-ok-table-container], #storybook-root [data-ok-table-pagination]",
+              "#storybook-root [data-ok-table-container], #storybook-root [data-ok-scrollbar], #storybook-root [data-ok-table-pagination]",
             )) {
               const box = el.getBoundingClientRect();
               if (box.right > window.innerWidth + 0.5) out.push(`${el.localName} beyond viewport`);

@@ -24,6 +24,7 @@ const CASES: [
   ["sortable", "grid", "sortable", ["layout"]],
   ["table", "basic", "table", ["size", "stickyHeader"]],
   ["pagination", "ranges", "pagination", ["variant", "color", "shape", "size", "disabled"]],
+  ["scrollbar", "vertical", "scrollbar", ["autoHide"]],
 ];
 
 /** A non-default value for the option, in Storybook's URL args syntax. */

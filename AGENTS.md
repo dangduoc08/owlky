@@ -154,6 +154,14 @@ and small-screen tests pick up new stories automatically from Storybook's `index
   stories (`docs/roadmap.md` → "Pending integrations" is the only list; grep the roadmap and specs
   for its name too). Example: Table "Pagination with API" — React slices rows for `page`, HTML
   links `nav[data-ok-pagination="<table id>"][data-ok-rows-per-page]` to the table.
+- Scroll areas use the **Scrollbar component by composition**, never by adding other components to
+  `scrollbar.css`: `TableContainer › Scrollbar › Table`, `DrawerContent › Scrollbar`, `Scrollbar ›
+  Sortable`. The wrapping component's CSS adapts with `:has(> [data-ok-scrollbar])` (stop its own
+  scrolling, move a frame onto the Scrollbar). The Scrollbar is focusable, so a native `<dialog>`
+  focuses it first. Scrollbars are native: Chrome ≥ 121 ignores `::-webkit-scrollbar` once
+  `scrollbar-color` is set, so the standard path sits in `@supports (scrollbar-color: auto)`. Test
+  the thumb through a probe with `color: var(--_ok-scrollbar-now)`; Playwright's headless Firefox
+  reports `scrollbar-width: none` everywhere.
 - `--ok-spacing` is **4px** (Tailwind scale): `calc(var(--ok-spacing) * 9)` = 36px. Convert
   reference px values by dividing by 4.
 - HTML behavior-only folders (e.g. `toggle-group`, whose markup lives in `toggle-button/examples`)

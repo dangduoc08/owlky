@@ -78,6 +78,7 @@ export {
   type PaginationProps,
   type PaginationRenderItemParams,
 } from "./pagination/pagination.js";
+export { Scrollbar, type ScrollbarProps } from "./scrollbar/scrollbar.js";
 export { arrayMove, Sortable, type SortableProps } from "./sortable/sortable.js";
 export {
   type RowsPerPageOption,

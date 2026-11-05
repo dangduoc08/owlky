@@ -9,7 +9,7 @@ Components: **Accordion** (native `<details>`; runtime: `accordion`, events
 needed) **Drawer** (runtime: `drawer`, triggers `data-ok-drawer-open="<id>"` / `data-ok-drawer-close`,
 events `ok:drawer:beforeopen|open|beforeclose|close`) **Pagination** (runtime: `pagination`; `data-ok-count`, `data-ok-page`, `data-ok-sibling-count`,
 `data-ok-boundary-count`, label templates `data-ok-label-page|current`; event `ok:pagination:change`)
-**Table** (runtime: `table` + `table-pagination` — sorts, selects, pages and expands rows in the
+**Scrollbar** (CSS only: `section[data-ok-scrollbar][aria-label][tabindex=0]`, `data-ok-auto-hide="false"`; wrap a table, drawer content or a sortable list in it) **Table** (runtime: `table` + `table-pagination` — sorts, selects, pages and expands rows in the
 DOM; events `ok:table:sort|select|expand`, `ok:table-pagination:change`; pagination linked with
 `data-ok-table-pagination="<table id>"`) **Sortable** (runtime: `sortable`, events `ok:sortable:move|remove|add`, add trigger
 `data-ok-sortable-add="<list id>"` + `<template data-ok-sortable-template>`) and **Toggle button** (runtime: `toggle-button` + `toggle-group`, events

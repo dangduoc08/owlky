@@ -65,10 +65,14 @@ describe("table snippets", () => {
   it.each(snippets)("%s: valid anatomy", (_, html) => {
     const host = mount(html);
     expectNamedButtons(host);
-    for (const container of host.querySelectorAll("[data-ok-table-container]")) {
+    for (const container of host.querySelectorAll<HTMLElement>("[data-ok-table-container]")) {
       expect(container.localName).toBe("section");
-      expect(container.getAttribute("aria-label")).toBeTruthy();
-      expect(container.getAttribute("tabindex")).toBe("0");
+      expect(container.hasAttribute("tabindex")).toBe(false);
+      expect(getComputedStyle(container).overflow).toBe("visible");
+      const scroller = container.querySelector(":scope > [data-ok-scrollbar]");
+      expect(scroller?.getAttribute("aria-label")).toBeTruthy();
+      expect(scroller?.getAttribute("tabindex")).toBe("0");
+      expect(scroller?.querySelector(":scope > [data-ok-table]")).not.toBeNull();
     }
     for (const element of host.querySelectorAll<HTMLElement>("[data-ok-table]")) {
       expect(element.localName).toBe("table");

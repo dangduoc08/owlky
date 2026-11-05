@@ -5,6 +5,7 @@ import {
   type TableSortDirection,
 } from "@owlky/core";
 import {
+  Scrollbar,
   Table,
   TableBody,
   TableCell,
@@ -78,60 +79,62 @@ export function SortingDemo() {
 
   return (
     <>
-      <TableContainer aria-label="Desserts">
-        <Table id="desserts-sort">
-          <TableHead>
-            <TableRow>
-              <TableCell padding="checkbox">
-                <SelectAll
-                  selected={selected.length}
-                  total={data.desserts.length}
-                  onChange={(checked) =>
-                    setSelected(checked ? data.desserts.map((d) => d.name) : [])
-                  }
-                />
-              </TableCell>
-              {COLUMNS.map((column) => (
-                <TableCell
-                  key={column.id}
-                  align={column.numeric ? "right" : undefined}
-                  sortDirection={orderBy === column.id ? order : false}
-                >
-                  <TableSortLabel
-                    active={orderBy === column.id}
-                    direction={orderBy === column.id ? order : "asc"}
-                    onClick={() => sortBy(column.id)}
-                  >
-                    {column.label}
-                  </TableSortLabel>
+      <TableContainer>
+        <Scrollbar aria-label="Desserts">
+          <Table id="desserts-sort">
+            <TableHead>
+              <TableRow>
+                <TableCell padding="checkbox">
+                  <SelectAll
+                    selected={selected.length}
+                    total={data.desserts.length}
+                    onChange={(checked) =>
+                      setSelected(checked ? data.desserts.map((d) => d.name) : [])
+                    }
+                  />
                 </TableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {rows.map((row) => {
-              const isSelected = selected.includes(row.name);
-              return (
-                <TableRow key={row.name} hover selected={isSelected}>
-                  <TableCell padding="checkbox">
-                    <input
-                      type="checkbox"
-                      data-ok-table-select=""
-                      aria-label={`Select ${row.name}`}
-                      checked={isSelected}
-                      onChange={() => toggle(row.name)}
-                    />
+                {COLUMNS.map((column) => (
+                  <TableCell
+                    key={column.id}
+                    align={column.numeric ? "right" : undefined}
+                    sortDirection={orderBy === column.id ? order : false}
+                  >
+                    <TableSortLabel
+                      active={orderBy === column.id}
+                      direction={orderBy === column.id ? order : "asc"}
+                      onClick={() => sortBy(column.id)}
+                    >
+                      {column.label}
+                    </TableSortLabel>
                   </TableCell>
-                  <TableCell>{row.name}</TableCell>
-                  <TableCell align="right">{row.calories}</TableCell>
-                  <TableCell align="right">{row.fat}</TableCell>
-                  <TableCell align="right">{row.carbs}</TableCell>
-                  <TableCell align="right">{row.protein}</TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
+                ))}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {rows.map((row) => {
+                const isSelected = selected.includes(row.name);
+                return (
+                  <TableRow key={row.name} hover selected={isSelected}>
+                    <TableCell padding="checkbox">
+                      <input
+                        type="checkbox"
+                        data-ok-table-select=""
+                        aria-label={`Select ${row.name}`}
+                        checked={isSelected}
+                        onChange={() => toggle(row.name)}
+                      />
+                    </TableCell>
+                    <TableCell>{row.name}</TableCell>
+                    <TableCell align="right">{row.calories}</TableCell>
+                    <TableCell align="right">{row.fat}</TableCell>
+                    <TableCell align="right">{row.carbs}</TableCell>
+                    <TableCell align="right">{row.protein}</TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </Scrollbar>
       </TableContainer>
       <TablePagination
         count={data.desserts.length}

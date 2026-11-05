@@ -45,7 +45,8 @@ for (const impl of implementations) {
     }) => {
       for (const label of ANCHORS) {
         const { trigger, drawer } = await open(page, label, isMobile);
-        await expect(drawer.getByRole("button", { name: "Inbox" })).toBeFocused();
+        // The dialog focuses its first focusable element: the content's Scrollbar region.
+        await expect(drawer.getByRole("region", { name: "scrollable content" })).toBeFocused();
         const { box, viewport } = await measure(page, label);
         const [w, h] = viewport as [number, number];
         if (label === "Left") expect([box[0], box[1], box[3]]).toEqual([0, 0, h]);

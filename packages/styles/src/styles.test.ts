@@ -51,7 +51,15 @@ describe("styles source", () => {
             }
           }
           expect(
-            ["", "::backdrop", "::details-content", "::-webkit-details-marker"],
+            [
+              "",
+              "::backdrop",
+              "::details-content",
+              "::-webkit-details-marker",
+              "::-webkit-scrollbar",
+              "::-webkit-scrollbar-thumb",
+              "::-webkit-scrollbar-corner",
+            ],
             `${file}: "${selector}"`,
           ).toContain(selector.slice(end + 1));
         }

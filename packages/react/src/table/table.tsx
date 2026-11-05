@@ -53,16 +53,20 @@ export const Table = forwardRef<HTMLTableElement, TableProps>(function Table(
 });
 
 export interface TableContainerProps extends ComponentPropsWithoutRef<"section"> {
-  /** Name of the scrollable region (or `aria-labelledby`). */
+  /** Name of the scrollable region (or `aria-labelledby`); omit it when a `Scrollbar` inside scrolls. */
   "aria-label"?: string | undefined;
 }
 
-/** Scrolls a wide (or height-limited) table; a named, focusable region for keyboard scrolling. */
+/**
+ * Holds a table. Wrap the table in a `Scrollbar` (the named, focusable scroll region), or name
+ * the container itself (`aria-label`) to let it scroll natively.
+ */
 export const TableContainer = forwardRef<HTMLElement, TableContainerProps>(
   function TableContainer(props, ref) {
+    const named = props["aria-label"] !== undefined || props["aria-labelledby"] !== undefined;
     return (
       // biome-ignore lint/a11y/noNoninteractiveTabindex: a scrollable region must be keyboard-focusable (axe scrollable-region-focusable).
-      <section ref={ref} data-ok-table-container="" tabIndex={0} {...props} />
+      <section ref={ref} data-ok-table-container="" tabIndex={named ? 0 : undefined} {...props} />
     );
   },
 );

@@ -219,6 +219,15 @@
     transition: opacity var(--ok-duration-short) var(--ok-easing-standard);
   }
 
+  /* Content in a Scrollbar: the Scrollbar fills the panel and scrolls. */
+  :where([data-ok-drawer-content]:has(> [data-ok-scrollbar])) {
+    overflow: hidden;
+  }
+
+  :where([data-ok-drawer-content] > [data-ok-scrollbar]) {
+    flex: 1 1 auto;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     :where([data-ok-drawer-content]) {
       transition: none;

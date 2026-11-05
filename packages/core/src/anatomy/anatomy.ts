@@ -1,5 +1,6 @@
 import { type ColorName, componentColorNames, paletteColorNames } from "@owlky/tokens";
 import {
+  behavior,
   type DataAttributes,
   defineOptions,
   flag,
@@ -447,6 +448,24 @@ export const tableSortLabelAttributes = (
 export const ariaSort = (direction: TableSortDirection | false | undefined) =>
   direction === "asc" ? "ascending" : direction === "desc" ? "descending" : undefined;
 
+// --- Scrollbar --------------------------------------------------------------------------------
+
+export const scrollbarOptions = defineOptions("scrollbar", "data-ok-scrollbar", {
+  autoHide: behavior(
+    "data-ok-auto-hide",
+    true,
+    "The thumb shows on hover and focus only; `false` keeps it visible.",
+  ),
+});
+
+/** `data-ok-*` attributes of a scroll area (`autoHide` is written only when turned off). */
+export const scrollbarAttributes = (
+  options: { autoHide?: boolean | undefined } = {},
+): DataAttributes => ({
+  ...optionAttributes(scrollbarOptions),
+  ...(options.autoHide === false ? { [scrollbarOptions.options.autoHide.attr]: "false" } : {}),
+});
+
 // --- Pagination -------------------------------------------------------------------------------
 
 export const paginationVariants = ["text", "outlined", "soft"] as const;
@@ -502,5 +521,6 @@ export const optionSchemas = {
   sortable: sortableOptions,
   table: tableOptions,
   pagination: paginationOptions,
+  scrollbar: scrollbarOptions,
   "table-sort-label": tableSortLabelOptions,
 } as const;

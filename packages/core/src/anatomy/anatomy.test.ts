@@ -18,6 +18,7 @@ import {
   iconButtonColors,
   iconButtonSizes,
   orientations,
+  scrollbarAttributes,
   sortableAttributes,
   sortableLayouts,
   tableAttributes,
@@ -336,5 +337,17 @@ describe("options added in the upstream API review", () => {
       "data-ok-hide-backdrop": "",
       "data-ok-disable-escape-key-down": "",
     });
+  });
+});
+
+describe("scrollbarAttributes", () => {
+  it("auto-hides by default; only `autoHide: false` writes the attribute", () => {
+    expect(scrollbarAttributes()).toEqual({ "data-ok-scrollbar": "" });
+    expect(scrollbarAttributes({ autoHide: true })).toEqual({ "data-ok-scrollbar": "" });
+    expect(scrollbarAttributes({ autoHide: false })).toEqual({
+      "data-ok-scrollbar": "",
+      "data-ok-auto-hide": "false",
+    });
+    expect(scrollbarAttributes({ autoHide: HOSTILE })).toEqual({ "data-ok-scrollbar": "" });
   });
 });

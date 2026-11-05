@@ -5,7 +5,7 @@ and a review before the next starts.
 
 ## Overview
 Every page of the reference's component menu (`https://minimals.cc/components/…`) and where it
-stands. ✅ = built (13); *wave N* = planned, see "Next — components"; *not planned* = a pattern
+stands. ✅ = built (14); *wave N* = planned, see "Next — components"; *not planned* = a pattern
 or app-level page. *Section* = the heading below with the details. Update this table with each
 component and each `/integrate` run.
 
@@ -65,7 +65,7 @@ component and each `/integrate` run.
 | Extra | Navigation bar | not planned | — | Next |
 | Extra | Organization chart | wave 7 (ADR) | — | Next |
 | Extra | Scroll progress | not planned | — | Next |
-| Extra | Scrollbar | wave 1 | — | Next |
+| Extra | Scrollbar | ✅ | Scrollbar | Scrollbar |
 | Extra | Snackbar | wave 4 | — | Next |
 | Extra | Upload | wave 7 (ADR) | — | Next |
 | Extra | Utilities | not planned | — | Next |
@@ -142,6 +142,15 @@ items with DOM APIs, keeps focus). Extras from the reference: `soft` variant and
 color; `size` uses `sm | md | lg` like the button family; HTML label templates
 (`data-ok-label-page`, `data-ok-label-current`). No new tokens.
 
+## ✅ Components — Scrollbar (2026-11-05)
+Created with `/component` from the reference "Scrollbar" page (stories: Vertical, Horizontal,
+Layout). Upstream simplebar mapped to **native** scrollbars, CSS only: `scrollbar-width` /
+`scrollbar-color` with a `::-webkit-scrollbar` fallback; `autoHide` (thumb on hover / focus).
+Integrated in the same review, by composition like the reference (`TableContainer › Scrollbar ›
+Table`): all Table stories, Drawer content and Sortable lists now scroll in a Scrollbar; their CSS
+adapts with `:has(> [data-ok-scrollbar])`, and the old markup keeps working (additive). An
+unnamed `TableContainer` is no longer focusable. No new tokens.
+
 ## ✅ Theme settings (ADR-0017, 2026-11-05)
 From the reference's Settings drawer: primary color presets (default, cyan, purple, blue, orange,
 red) via `data-ok-preset`, font families (Public Sans, Inter, DM Sans, Nunito Sans) via
@@ -158,11 +167,11 @@ integrate these in the same review (additive: no DOM or API change) and remove t
 
 | Waiting for | Where | Today |
 |---|---|---|
-| Scrollbar | `sortable.css` (vertical, horizontal), `drawer.css` (`[data-ok-drawer-content]`), `table.css` (`[data-ok-table-container]`) | native scrolling (`overflow: auto`), OS scrollbar |
 | List | Drawer stories (mailbox menu) | demo `<nav><ul><button>` styled in `.storybook/preview.css` |
 | Typography (display text) | Sortable stories (card numbers) | demo `<span>` styled in `.storybook/preview.css` |
 | Progress | Button loading: `[data-ok-button-spinner]` in `button.css` (library) | own spinner; keep the attribute as public anatomy and share Progress's styles / tokens |
 | Typography (heading / secondary text) | Accordion summaries (plain text, no secondary line from the reference) | summary text styled by `accordion.css` |
+| Typography (heading) | Scrollbar "Layout" story heading | demo `<h4>` styled in `.storybook/preview.css` |
 | Checkbox | Table selection column (`data-ok-table-select`, `data-ok-table-select-all`) | native `<input type="checkbox">`, sized in `.storybook/preview.css`; keep the attributes on the input |
 | Select | `TablePagination` rows per page (library markup) | native `<select>` styled in `table.css`; the API (`rowsPerPageOptions`) stays |
 | Select | Pagination story "Items" (card grid + items-per-page Select) | story deferred |
@@ -190,7 +199,7 @@ Dependency-first: leaf components before the ones built from them, the ones that
 
 | Wave | Components | Unlocks (existing components) |
 |---|---|---|
-| 1 Leaves | Scrollbar, Progress, Checkbox, Switch | Sortable / Drawer / Table scrolling; Button loading; Table selection; Table "Dense" |
+| 1 Leaves | ~~Scrollbar~~ ✅, Progress, Checkbox, Switch | ~~Sortable / Drawer / Table scrolling~~ ✅; Button loading; Table selection; Table "Dense" |
 | 2 Form | Text field (Input, Textarea, native Select), Radio button (+ restore empty export globs) | TablePagination rows per page; Table "Table pagination with API"; Pagination "Items" |
 | 3 Display | Avatar, Badge, Chip, Label, Divider, then List | Drawer menu (List, Divider) |
 | 4 Overlays | Popover (positioning controller + fallback in core), then Tooltip, Menu, Dialog (+ Backdrop), Snackbar | Drawer backdrop; Icon button tooltips |

@@ -1,5 +1,5 @@
 import { sortableOptions } from "@owlky/core";
-import { Button, Sortable, type SortableLayout } from "@owlky/react";
+import { Button, Scrollbar, Sortable, type SortableLayout } from "@owlky/react";
 import { useState } from "react";
 import type { ReactGroup } from "../../helpers/groups.js";
 import { DemoIcon } from "../shared/demo-icon.js";
@@ -27,18 +27,22 @@ export function SortableDemo({
       >
         Add item
       </Button>
-      <Sortable
-        aria-label={`${title} items`}
-        layout={layout}
-        items={items}
-        getKey={(n) => n}
-        getItemLabel={(n) => `item ${n}`}
-        renderItem={(n) => <span>{n}</span>}
-        onReorder={setItems}
-        onRemove={
-          removable ? (n) => setItems((current) => current.filter((item) => item !== n)) : undefined
-        }
-      />
+      <Scrollbar>
+        <Sortable
+          aria-label={`${title} items`}
+          layout={layout}
+          items={items}
+          getKey={(n) => n}
+          getItemLabel={(n) => `item ${n}`}
+          renderItem={(n) => <span>{n}</span>}
+          onReorder={setItems}
+          onRemove={
+            removable
+              ? (n) => setItems((current) => current.filter((item) => item !== n))
+              : undefined
+          }
+        />
+      </Scrollbar>
     </>
   );
 }
@@ -59,7 +63,7 @@ export const sortableCode = (
   layout: SortableLayout,
   title: string,
 ) => `import "@owlky/styles/owlky.css";
-import { Button, Sortable } from "@owlky/react";
+import { Button, Scrollbar, Sortable } from "@owlky/react";
 import { useState } from "react";
 // PlusIcon: your own decorative SVG icon (aria-hidden="true").
 
@@ -74,16 +78,18 @@ export function ${title}Example() {
       >
         Add item
       </Button>
-      <Sortable
-        aria-label="${title} items"
-        layout="${layout}"
-        items={items}
-        getKey={(n) => n}
-        getItemLabel={(n) => \`item \${n}\`}
-        renderItem={(n) => <span>{n}</span>}
-        onReorder={setItems}
-        onRemove={(n) => setItems((current) => current.filter((item) => item !== n))}
-      />
+      <Scrollbar>
+        <Sortable
+          aria-label="${title} items"
+          layout="${layout}"
+          items={items}
+          getKey={(n) => n}
+          getItemLabel={(n) => \`item \${n}\`}
+          renderItem={(n) => <span>{n}</span>}
+          onReorder={setItems}
+          onRemove={(n) => setItems((current) => current.filter((item) => item !== n))}
+        />
+      </Scrollbar>
     </>
   );
 }
