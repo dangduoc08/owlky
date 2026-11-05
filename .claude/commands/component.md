@@ -112,10 +112,14 @@ project. Never copy the reference's source code, branding or assets.
      the reference builds from a component we don't have yet, and how it is covered meanwhile —
      native platform feature or story-only demo markup, never a home-made stand-in in the library
      (a later component must integrate without DOM or API changes); add each to
-     `docs/roadmap.md` → "Pending integrations";
-   - **integrations this component unlocks:** the rows of "Pending integrations" waiting for it
-     (and a search of existing components for the same pattern, e.g. `overflow: auto` for a
-     Scrollbar), with the planned change per dependent and its API impact (normally additive);
+     `docs/roadmap.md` → "Pending integrations" — so are reference sections / stories deferred
+     because a component is missing (never only a backlog line);
+   - **integrations this component unlocks:** the rows of "Pending integrations" waiting for it,
+     plus `grep -rn "<Name>" docs/roadmap.md specs/` for anything else that names it as missing
+     (backlog lines, deferred stories), plus a search of existing components for the same pattern
+     (e.g. `overflow: auto` for a Scrollbar) — with the planned change per dependent and its API
+     impact (normally additive). These are part of this component's scope, built in the same
+     review: never just reword a "needs <Name>" note into "<Name> now exists";
    - **Update mode:** the gap table and the planned change for each gap; the **public API
      impact** — none / additive (new option, value, story) / **breaking** (renamed or removed
      prop, `data-ok-*` attribute or value, `--ok-*` variable, event, changed default or DOM
@@ -200,7 +204,8 @@ project. Never copy the reference's source code, branding or assets.
     fix the unintended ones, keep and report the intentional ones.
 
 12. **Document & hand off.** Update `docs/roadmap.md` (status and "Pending integrations": add new
-    stand-ins, remove the rows this component closed) / `CLAUDE.md` status, package READMEs if
+    stand-ins and deferred stories, remove the rows this component closed — a row it unlocked but
+    didn't close is a bug in this review) / `CLAUDE.md` status, package READMEs if
     exports changed, `AGENTS.md` gotchas for anything new you learned, and remind the user to add
     a changeset (`pnpm changeset`) at the level from step 5 — Update mode with breaking changes
     also lists the migration notes for the changeset and the `!` / `BREAKING CHANGE:` commit

@@ -59,7 +59,7 @@ runtime `ok:alert:close` → `hidden`), standard tones follow the theme's `color
 
 ## ✅ Components — Table (2026-11-05)
 Created with `/component` from the reference "Table" page (stories: Basic, Sorting & selecting,
-Grouping & fixed header, Collapsible). Native `<table>` parts mapped from MUI (`Table`,
+Grouping & fixed header, Collapsible, Pagination with API — added with Pagination). Native `<table>` parts mapped from MUI (`Table`,
 `TableHead/Body/Footer`, `TableRow`, `TableCell`, `TableContainer`, `TableSortLabel`,
 `TablePagination`) plus `TableExpandButton` / `TableDetailRow` for collapsible rows. React leaves
 data to the app (helpers in core: `compareCellValues`, `nextSortDirection`, `pageRange`,
@@ -83,9 +83,10 @@ toolbar: Preset, Font, Size; Foundations › Settings. Backlog: contrast setting
 (logical-property audit), a SettingsDrawer component (needs Switch and Slider).
 
 ## Pending integrations
-Places that use a native feature, demo markup or a small built-in part until the component exists
-— any component, not only these. When that component is built, integrate these in the same review
-(additive: no DOM or API change).
+Everything waiting for a component that doesn't exist yet — stand-ins (native feature, demo
+markup, a small built-in part) **and** stories or features deferred until then. This table is the
+only list of such waits: never record one only in a backlog. When that component is built,
+integrate these in the same review (additive: no DOM or API change) and remove the rows.
 
 | Waiting for | Where | Today |
 |---|---|---|
@@ -96,6 +97,8 @@ Places that use a native feature, demo markup or a small built-in part until the
 | Typography (heading / secondary text) | Accordion summaries (plain text, no secondary line from the reference) | summary text styled by `accordion.css` |
 | Checkbox | Table selection column (`data-ok-table-select`, `data-ok-table-select-all`) | native `<input type="checkbox">`, sized in `.storybook/preview.css`; keep the attributes on the input |
 | Select | `TablePagination` rows per page (library markup) | native `<select>` styled in `table.css`; the API (`rowsPerPageOptions`) stays |
+| Select | Pagination story "Items" (card grid + items-per-page Select) | story deferred |
+| TextField, Select | Table story "Table pagination with API" | story deferred |
 | Switch | Table "Dense" toggle from the reference | not shown: the stories' `size` Control covers it |
 | Divider | Drawer stories (mailbox menu) | demo `<hr>` styled in `.storybook/preview.css` |
 | Backdrop | Drawer: native `::backdrop` | share `--ok-backdrop` with a future Backdrop component |
@@ -109,7 +112,7 @@ ButtonGroup / ToggleButton / ToggleButtonGroup `fullWidth`, IconButton `edge` + 
 `standard`; Drawer `closeOnEscape` → `disableEscapeKeyDown`, `closeOnBackdropClick` removed (refuse
 with the reason). Defaults: ButtonGroup `variant="outlined"`.
 
-**Backlog (deferred):** Table stories "Pagination with API" (Pagination now exists: needs demo data only) and "Table pagination with API" (needs TextField / Select); Pagination story "Items" (card grid + items-per-page Select); Table toolbar (title, selected count, filter). Sortable auto-scroll while dragging near an edge; "Move to top / bottom"
+**Backlog (deferred):** Table toolbar (title, selected count, filter). Sortable auto-scroll while dragging near an edge; "Move to top / bottom"
 keyboard actions (pragmatic-drag-and-drop accessibility guidance).
 
 ## Next — components (awaiting the owner's go-ahead)

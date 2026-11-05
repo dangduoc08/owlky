@@ -150,6 +150,10 @@ and small-screen tests pick up new stories automatically from Storybook's `index
   typography, backdrop, …): use a native feature or story-only demo markup, never a library
   stand-in, and list it in `docs/roadmap.md` → "Pending integrations", so the later component can
   integrate it without breaking DOM or API.
+- A new component closes **every** wait on it in the same review: stand-ins *and* deferred
+  stories (`docs/roadmap.md` → "Pending integrations" is the only list; grep the roadmap and specs
+  for its name too). Example: Table "Pagination with API" — React slices rows for `page`, HTML
+  links `nav[data-ok-pagination="<table id>"][data-ok-rows-per-page]` to the table.
 - `--ok-spacing` is **4px** (Tailwind scale): `calc(var(--ok-spacing) * 9)` = 36px. Convert
   reference px values by dividing by 4.
 - HTML behavior-only folders (e.g. `toggle-group`, whose markup lives in `toggle-button/examples`)
