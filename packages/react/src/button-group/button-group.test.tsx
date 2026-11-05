@@ -1,10 +1,10 @@
 import { render, screen } from "@testing-library/react";
 import { createRef } from "react";
 import { renderToString } from "react-dom/server";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { userEvent } from "vitest/browser";
 import { Button } from "../button/button.js";
-import { expectNoAxeViolations } from "../test-utils.js";
+import { expectNoAxeViolations, settled } from "../test-utils.js";
 import { ButtonGroup } from "./button-group.js";
 
 const css = (element: Element) => getComputedStyle(element);
@@ -153,7 +153,8 @@ describe("ButtonGroup", () => {
     expect(right("Off")).toMatch(/^(rgba\(145, 158, 171|color\(srgb 0\.5686)/);
     const neutral = screen.getByRole("button", { name: "Neutral" });
     await userEvent.hover(neutral);
-    await vi.waitFor(() => expect(css(neutral).backgroundColor).toBe("rgb(69, 79, 91)"));
+    await settled(neutral);
+    expect(css(neutral).backgroundColor).toBe("rgb(69, 79, 91)");
     expect(css(neutral).boxShadow).toBe("none");
   });
 

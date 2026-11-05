@@ -4,7 +4,7 @@ import { createRef } from "react";
 import { renderToString } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { userEvent } from "vitest/browser";
-import { expectNoAxeViolations } from "../test-utils.js";
+import { expectNoAxeViolations, settled } from "../test-utils.js";
 import { IconButton } from "./icon-button.js";
 
 const Icon = () => (
@@ -87,8 +87,9 @@ describe("IconButton", () => {
     render(<IconButton aria-label="x" color="primary" animate />);
     const button = screen.getByRole("button");
     await userEvent.hover(button);
-    await vi.waitFor(() => expect(css(button).backgroundColor).toBe("rgba(0, 167, 111, 0.08)"));
-    await vi.waitFor(() => expect(css(button).transform).not.toBe("none"));
+    await settled(button);
+    expect(css(button).backgroundColor).toBe("rgba(0, 167, 111, 0.08)");
+    expect(css(button).transform).not.toBe("none");
   });
 
   it("activates natively and not when disabled", async () => {

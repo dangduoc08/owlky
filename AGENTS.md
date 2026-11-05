@@ -152,6 +152,10 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
 - Brand-colored text is exempt from axe `color-contrast` only, via `CONTRAST_EXEMPT`
   (react `test-utils.tsx`, e2e `helpers.ts`, html `test-utils.ts`) — ADR-0014. Extend that list for
   new brand-colored parts instead of disabling the rule.
+- Computed styles after an interaction (hover colors, shadows, transforms) are read **after**
+  `await settled(element)` (react `test-utils.tsx`): it waits for the element's transitions to
+  finish. Never poll with `vi.waitFor` — its 1s timeout is too short on CI runners (WebKit), which
+  made CI fail intermittently. Animations a test only needs at their end state can be `finish()`ed.
 - Infinite CSS animations (spinners) never fire `animation.finished`: test helpers that wait for
   animations must skip them (`expectNoAxeViolations` filters `endTime === Infinity`).
 - Biome 2 lints the HTML snippets too: decorative `<svg>` needs `aria-hidden="true"` itself (not

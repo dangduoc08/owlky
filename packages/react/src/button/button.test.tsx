@@ -4,7 +4,7 @@ import { createRef } from "react";
 import { renderToString } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { userEvent } from "vitest/browser";
-import { expectNoAxeViolations } from "../test-utils.js";
+import { expectNoAxeViolations, settled } from "../test-utils.js";
 import { Button } from "./button.js";
 
 const Icon = () => (
@@ -255,7 +255,8 @@ describe("Button styles (shipped CSS)", () => {
     );
     const button = screen.getByRole("button");
     await userEvent.hover(button);
-    await vi.waitFor(() => expect(css(button).backgroundColor).toBe("rgb(0, 120, 103)"));
+    await settled(button);
+    expect(css(button).backgroundColor).toBe("rgb(0, 120, 103)");
   });
 
   it("disableElevation drops the hover shadow of contained buttons", async () => {
@@ -267,7 +268,8 @@ describe("Button styles (shipped CSS)", () => {
     const button = screen.getByRole("button");
     expect(button.dataset["okDisableElevation"]).toBe("");
     await userEvent.hover(button);
-    await vi.waitFor(() => expect(css(button).backgroundColor).toBe("rgb(0, 120, 103)"));
+    await settled(button);
+    expect(css(button).backgroundColor).toBe("rgb(0, 120, 103)");
     expect(css(button).boxShadow).toBe("none");
   });
 

@@ -4,7 +4,7 @@ import { createRef } from "react";
 import { renderToString } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { userEvent } from "vitest/browser";
-import { expectNoAxeViolations } from "../test-utils.js";
+import { expectNoAxeViolations, settled } from "../test-utils.js";
 import { Fab } from "./fab.js";
 
 const Icon = () => (
@@ -115,10 +115,9 @@ describe("Fab", () => {
     render(<Fab aria-label="x" color="primary" />);
     const fab = screen.getByRole("button");
     await userEvent.hover(fab);
-    await vi.waitFor(() => {
-      expect(css(fab).backgroundColor).toBe("rgb(0, 120, 103)");
-      expect(css(fab).boxShadow).toBe("none");
-    });
+    await settled(fab);
+    expect(css(fab).backgroundColor).toBe("rgb(0, 120, 103)");
+    expect(css(fab).boxShadow).toBe("none");
   });
 
   it("disabled: no activation, no shadow", async () => {

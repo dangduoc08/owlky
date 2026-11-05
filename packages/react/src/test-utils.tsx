@@ -17,6 +17,19 @@ export const CONTRAST_EXEMPT = [
 
 const TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 
+/**
+ * Waits until the element's CSS transitions and animations (hover colors, shadows) have finished,
+ * so computed styles are final. Polling with a timeout is flaky on slow CI runners.
+ */
+export async function settled(element: Element): Promise<void> {
+  // Reading a style flushes it, which starts the transitions of the new state.
+  getComputedStyle(element).backgroundColor;
+  const running = element
+    .getAnimations({ subtree: true })
+    .filter((a) => a.effect?.getComputedTiming().endTime !== Number.POSITIVE_INFINITY);
+  await Promise.all(running.map((animation) => animation.finished.catch(() => {})));
+}
+
 /** Asserts that axe finds no WCAG violations inside `container`. */
 export async function expectNoAxeViolations(container: Element = document.body): Promise<void> {
   // Mid-animation opacity lowers measured contrast, so scan the settled UI. Infinite animations
