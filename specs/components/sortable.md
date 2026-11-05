@@ -84,12 +84,15 @@ name (`aria-label`).
 HTML: `ok:sortable:move` (cancelable, `detail: { from, to, item }`), `ok:sortable:remove`
 (cancelable, `detail: { index, item }`), `ok:sortable:add` (after a template clone is inserted,
 `detail: { item, index }` — fill its content here). Instance: `move(from, to)`, `remove(index)`.
-React: `onReorder`, `onRemove`; helper `arrayMove(items, from, to)`.
+React: `onReorder`, `onRemove`; helper `arrayMove(items, from, to)`; `messages?:
+Partial<SortableMessages>` localizes the announcements (`grabbed`, `moved`, `dropped`, `cancelled`,
+`removed`, each `(position, total) => string`; defaults from `defaultSortableMessages`).
 
 ## Responsive
-Grid columns follow the width (one column at 320px). Vertical and horizontal frames scroll inside
-themselves; the page never scrolls horizontally.
+Grid columns follow the width (one column at 320px). Vertical and horizontal lists scroll inside the
+Scrollbar around them (which carries the frame); the page never scrolls horizontally.
 
 ## Parity notes
-"Add item" is app logic: React adds to `items`; HTML clones `template[data-ok-sortable-template]`
-on `[data-ok-sortable-add]` and emits `ok:sortable:add`.
+- "Add item" is app logic: React adds to `items`; HTML clones `template[data-ok-sortable-template]`
+  on `[data-ok-sortable-add]` and emits `ok:sortable:add`.
+- Announcements: React accepts `messages`; the HTML runtime uses the English defaults.

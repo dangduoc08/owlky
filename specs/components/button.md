@@ -78,6 +78,14 @@ Native: `Enter` / `Space` activate a button; `Enter` follows a link.
   for outlined / text; soft uses the AA `-text` tone. `black` / `white` are for light / dark
   surfaces.
 
+## Events / API
+None: CSS only, no runtime. React forwards `ref` (`HTMLButtonElement`, or `HTMLAnchorElement` with
+`href`) and every native button / link prop.
+
+## Parity notes
+None: React renders the snippet markup (`jsxSource` examples and HTML snippets are compared by the
+parity e2e tests, per option in `options-parity.spec.ts`).
+
 ## Differences from the reference (intentional)
 Visible focus outline (the reference has none); loader `aria-hidden` + `aria-busy` (the reference
 nests a `progressbar` inside the button, where it is presentational); "Link" is a real `<a href>`;

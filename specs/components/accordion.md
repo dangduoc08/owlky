@@ -65,3 +65,9 @@ HTML: `ok:accordion:beforetoggle` (cancelable), `ok:accordion:toggle` (`detail.o
 
 ## Responsive
 Full width of its container at every breakpoint; long titles wrap.
+
+## Parity notes
+Same `<details>` markup. React controls `open` from state: it prevents the summary's native toggle,
+and toggles the browser makes itself (find-in-page, `<details name>`) are reported through
+`onToggle` and reverted after render when refused. The HTML runtime lets the native toggle happen
+and reports it (`ok:accordion:beforetoggle` / `ok:accordion:toggle`).

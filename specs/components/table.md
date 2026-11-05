@@ -86,8 +86,9 @@ Pagination (`TablePagination` ↔ HTML): `count` (`-1` = unknown) ↔ number of 
 
 ## Behavior
 - React: data is the app's (sort, select, page in state; `compareCellValues`, `nextSortDirection`,
-  `pageRange`, `selectAllState` from `@owlky/core` help). `TableExpandButton` / `TableDetailRow`
-  take `expanded` / `open` from the app.
+  `pageRange`, `selectAllState` from `@owlky/core` help). `TableExpandButton` (`expanded`,
+  `controls` = the detail row's `id`, `aria-label`) and `TableDetailRow` (`id`, `open`,
+  `colSpan: number` — required, the number of columns to span) take their state from the app.
 - HTML runtime (`table`, `table-pagination`):
   - sort label click → cancelable `ok:table:sort` `{ column, direction }` → rows (with their detail
     rows) reordered by `data-ok-sort-value` or the cell text (numbers numerically), `aria-sort` and
@@ -122,3 +123,10 @@ The Scrollbar inside the container is the focusable scroll region (arrow keys sc
 ## Responsive
 Mobile first: the container scrolls horizontally when the table is wider than the screen (the page
 never overflows); pagination wraps onto two lines below ~420px. No breakpoint changes otherwise.
+
+## Parity notes
+- Data: React renders the rows the app gives it (one page); the HTML runtime sorts, selects and
+  pages the rows already in the DOM, hiding the others (`hidden`). Parity compares visible rows.
+- `data-ok-table-pagination` holds the table `id` in HTML and is empty in React (the app links them).
+- Scrolling: both wrap the table in a Scrollbar inside the container (`TableContainer › Scrollbar ›
+  Table`); a named container without a Scrollbar still scrolls itself.

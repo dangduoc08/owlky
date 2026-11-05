@@ -45,6 +45,10 @@ Native: `Enter` / `Space` activate.
 Round fabs need `aria-label`; extended fabs are named by their label. Icons are `aria-hidden`.
 Colors follow the reference (ADR-0014); fabs are exempt from axe `color-contrast` except soft.
 
+## Events / API
+None: CSS only, no runtime. React forwards `ref` (`HTMLButtonElement`, or `HTMLAnchorElement` with
+`href`) and every native button / link prop.
+
 ## Responsive
 Same size at every breakpoint; labels don't wrap.
 

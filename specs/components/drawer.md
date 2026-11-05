@@ -47,7 +47,8 @@ drawer and the page area in a flex row (left / right) or column (top / bottom).
 - `left` / `right`: full height, width from the content, at most `100% - 56px`; shadow
   `--ok-shadow-dialog-start` (left) / `--ok-shadow-dialog` (right).
 - `top` / `bottom`: full width, height from the content, at most `100% - 56px`; shadow
-  `--ok-shadow-z16`. Content scrolls inside the paper when it is taller.
+  `--ok-shadow-z16`. Taller content scrolls inside the Scrollbar placed in the paper (without one,
+  the paper itself scrolls).
 - Opening slides the paper in from its edge and fades the backdrop (`--ok-duration-short`,
   `--ok-easing-decelerate`) where `@starting-style` is supported; closing is immediate.
   `prefers-reduced-motion` disables both.

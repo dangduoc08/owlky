@@ -46,6 +46,10 @@ the markup; the runtime handles `[data-ok-alert-close]`.
 CSS only, except the close button: the HTML runtime emits `ok:alert:close` (cancelable) and then
 hides the alert (`hidden`). React calls `onClose`; you stop rendering the alert.
 
+## Keyboard
+The alert itself is not focusable. Its close button and actions are native buttons: `Tab` reaches
+them, `Enter` / `Space` activates them.
+
 ## Accessibility
 `role="alert"` by default (announced on insertion — use `role="status"` for non-urgent messages).
 Icons are `aria-hidden`; the close button is named by `closeText`. Filled and outlined colors follow
@@ -56,3 +60,7 @@ HTML: `ok:alert:close` (cancelable); instance `close()`. React: `onClose`.
 
 ## Responsive
 Full width; the message wraps, actions stay at the end.
+
+## Parity notes
+Closing differs by design: React reports `onClose` and the app removes the alert; the HTML runtime
+hides it (`hidden`) after `ok:alert:close` unless the event is prevented.

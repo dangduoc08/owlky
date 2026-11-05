@@ -10,6 +10,8 @@ An action shown only as an icon (toolbar, card actions). For text actions use Bu
 ```
 button[type="button"][data-ok-icon-button][data-ok-color][data-ok-size][data-ok-animate]?[aria-label]
   svg[aria-hidden="true"]            (any decorative SVG or img)
+  span[data-ok-icon-button-loader][aria-hidden="true"]   only while loading (data-ok-loading)
+    span[data-ok-button-spinner]     default loader (React: `loadingIndicator` replaces it)
 ```
 
 ## Options
@@ -31,6 +33,9 @@ Also required: an accessible name (`aria-label` or `aria-labelledby`).
 `default` = secondary text color, `inherit` = primary text color, palette colors = `main`.
 Unknown values fall back to the defaults (`iconButtonAttributes()` and CSS).
 
+React only: `loadingIndicator?: ReactNode` (default: the spinner) replaces the loader while
+`loading`; in HTML, put your own loader inside `[data-ok-icon-button-loader]`.
+
 ## States
 `:hover` (hover-capable devices: background `channel` 8 %, `--ok-action-hover` for default /
 inherit), `:focus-visible` (2px outline), `:disabled` (`--ok-action-disabled`), `:active` (animate).
@@ -45,6 +50,9 @@ Native: `Enter` / `Space` activate.
 ## Accessibility
 Name from `aria-label` (or `aria-labelledby`); the icon is `aria-hidden`. Every size is
 ≥ 24×24 CSS px (WCAG 2.5.8).
+
+## Events / API
+None: CSS only, no runtime. React forwards `ref` (`HTMLButtonElement`) and every native button prop.
 
 ## Responsive
 Same size at every breakpoint.

@@ -85,3 +85,10 @@ Native buttons: Tab / Shift+Tab move between items, Enter / Space activate.
 
 ## Responsive
 Mobile first: items keep their size (≥ 24px targets) and wrap; the page never overflows.
+
+## Parity notes
+- Labels: React builds them with `getItemAriaLabel`; HTML uses the `data-ok-label-page` and
+  `data-ok-label-current` templates. Defaults are identical.
+- HTML only: `data-ok-pagination="<table id>"` pages a table's rows (see Behavior); in React the app
+  slices its rows for `page`.
+- React only: `renderItem` + `PaginationItem` (links, custom items).

@@ -46,6 +46,10 @@ Native: `Tab` moves through the buttons; `Enter` / `Space` activate.
 ## Accessibility
 `role="group"`; give it an `aria-label` when the buttons need a shared context.
 
+## Events / API
+None: CSS only, no runtime. React forwards `ref` (`HTMLDivElement`); group props reach **direct**
+child elements only (`cloneElement`).
+
 ## Responsive
 The group doesn't wrap: use `vertical` (or fewer buttons) on narrow screens.
 
