@@ -65,7 +65,6 @@ export const TableContainer = forwardRef<HTMLElement, TableContainerProps>(
   function TableContainer(props, ref) {
     const named = props["aria-label"] !== undefined || props["aria-labelledby"] !== undefined;
     return (
-      // biome-ignore lint/a11y/noNoninteractiveTabindex: a scrollable region must be keyboard-focusable (axe scrollable-region-focusable).
       <section ref={ref} data-ok-table-container="" tabIndex={named ? 0 : undefined} {...props} />
     );
   },
