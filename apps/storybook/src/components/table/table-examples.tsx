@@ -4,6 +4,7 @@ import type { ReactGroup } from "../../helpers/groups.js";
 import type { GroupFiles } from "../shared/snippets.js";
 import { CollapsibleDemo } from "./collapsible-demo.js";
 import { GroupingDemo } from "./grouping-demo.js";
+import { PaginationDemo } from "./pagination-demo.js";
 import { SortingDemo } from "./sorting-demo.js";
 import data from "./table-data.json" with { type: "json" };
 
@@ -49,6 +50,9 @@ export const sortingGroups: ReactGroup[] = [
 ];
 export const groupingGroups: ReactGroup[] = [
   { title: "Grouping & fixed header", content: <GroupingDemo /> },
+];
+export const paginationGroups: ReactGroup[] = [
+  { title: "Pagination with API", content: <PaginationDemo /> },
 ];
 export const collapsibleGroups: ReactGroup[] = [
   { title: "Collapsible", content: <CollapsibleDemo /> },

@@ -1,6 +1,7 @@
 import { type PaginationItemData, paginationItems } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
 import type { ComponentInstance } from "../../runtime/types.js";
+import { byId, groupsOf, showGroup } from "../table/table.js";
 
 export interface PaginationInstance extends ComponentInstance {
   /** Current page (1-based). */
@@ -32,6 +33,8 @@ const fill = (template: string, page: number) => template.split("{page}").join(S
  * Options: data-ok-sibling-count, data-ok-boundary-count, data-ok-disabled,
  *          data-ok-label-page ("Go to page {page}"), data-ok-label-current ("page {page}");
  *          first / previous / next / last = the buttons present in the markup
+ * Table:   data-ok-pagination="<table id>" without data-ok-count pages that table's rows
+ *          (data-ok-rows-per-page, default 10); the count follows the rows.
  * Events:  ok:pagination:change (cancelable, detail.page)
  */
 export const pagination = defineComponent<PaginationInstance>({
@@ -47,7 +50,20 @@ export const pagination = defineComponent<PaginationInstance>({
       if (li) navItems.set(type, li);
     }
 
-    const count = () => whole(element, "data-ok-count", 1, 0);
+    const owner = () => {
+      const id = element.getAttribute("data-ok-pagination");
+      const found = id ? byId(element, id) : null;
+      return found instanceof HTMLTableElement && !element.hasAttribute("data-ok-count")
+        ? found
+        : null;
+    };
+    const rowsPerPage = () => whole(element, "data-ok-rows-per-page", 10, 1);
+    const count = () => {
+      const tableElement = owner();
+      return tableElement
+        ? Math.ceil(groupsOf(tableElement).length / rowsPerPage())
+        : whole(element, "data-ok-count", 1, 0);
+    };
     const clamp = (page: number) => Math.min(Math.max(page, 1), Math.max(count(), 1));
     let page = clamp(whole(element, "data-ok-page", 1, 1));
 
@@ -80,7 +96,17 @@ export const pagination = defineComponent<PaginationInstance>({
       return li;
     };
 
+    const pageRows = () => {
+      const tableElement = owner();
+      if (!tableElement) return;
+      const rows = rowsPerPage();
+      groupsOf(tableElement).forEach((group, index) => {
+        showGroup(tableElement, group, index >= (page - 1) * rows && index < page * rows);
+      });
+    };
+
     const render = () => {
+      pageRows();
       if (!list) return;
       const disabled = element.hasAttribute("data-ok-disabled");
       const items = paginationItems({

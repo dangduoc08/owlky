@@ -257,4 +257,30 @@ describe("pagination runtime", () => {
     expect(spy).not.toHaveBeenCalled();
     expect(components).toContain(pagination);
   });
+
+  it("pages the rows of a linked table and follows its sorting", async () => {
+    const rows = [5, 1, 4, 2, 3].map((n) => `<tr><td>${n}</td></tr>`).join("");
+    const host = mount(`
+      <table id="t" data-ok-table><thead><tr><th scope="col"><button type="button" data-ok-table-sort-label data-ok-direction="asc">N</button></th></tr></thead><tbody>${rows}</tbody></table>
+      ${nav('data-ok-rows-per-page="2"').replace("data-ok-pagination", 'data-ok-pagination="t"')}
+      ${nav('data-ok-count="2"').replace("data-ok-pagination", 'data-ok-pagination="missing"')}`);
+    start();
+    const visible = () =>
+      [...host.querySelectorAll<HTMLTableRowElement>("tbody > tr")]
+        .filter((row) => !row.hidden)
+        .map((row) => row.textContent);
+    const linked = instanceOf(host);
+    expect(linked.count).toBe(3);
+    expect(visible()).toEqual(["5", "1"]);
+    await userEvent.click(host.querySelector('[aria-label="Go to page 3"]') as HTMLElement);
+    expect(visible()).toEqual(["3"]);
+    await userEvent.click(host.querySelector("[data-ok-table-sort-label]") as HTMLElement);
+    expect(visible()).toEqual(["5"]);
+    for (const row of host.querySelectorAll("tbody > tr")) row.remove();
+    linked.refresh();
+    expect(linked.count).toBe(0);
+    expect(
+      runtime?.get<PaginationInstance>(host.querySelector("[data-ok-count]"), "pagination")?.count,
+    ).toBe(2);
+  });
 });

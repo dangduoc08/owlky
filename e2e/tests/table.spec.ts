@@ -55,6 +55,30 @@ for (const impl of implementations) {
       expect(await all.evaluate((el) => (el as HTMLInputElement).indeterminate)).toBe(true);
     });
 
+    test("pagination with API pages the rows", async ({ page, isMobile }) => {
+      await openStory(page, storyId(impl, "table", "pagination-with-api"));
+      const first = () =>
+        page
+          .locator("#storybook-root [data-ok-table] > tbody > tr:visible > td:first-child")
+          .allTextContents();
+      expect(await first()).toEqual([
+        "Frozen yoghurt",
+        "Ice cream sandwich",
+        "Eclair",
+        "Cupcake",
+        "Gingerbread",
+      ]);
+      await press(page, "Go to page 3", isMobile);
+      expect(await first()).toEqual(["Marshmallow", "Nougat"]);
+      await expect(page.getByRole("button", { name: "page 3" })).toHaveAttribute(
+        "aria-current",
+        "page",
+      );
+      await expect(page.getByRole("button", { name: "Go to next page" })).toBeDisabled();
+      await press(page, "Go to previous page", isMobile);
+      expect((await first())[0]).toBe("Donut");
+    });
+
     test("collapsible rows open and close", async ({ page, isMobile }) => {
       await openStory(page, storyId(impl, "table", "collapsible"));
       const button = page.getByRole("button", { name: "Purchase history of Eclair" });

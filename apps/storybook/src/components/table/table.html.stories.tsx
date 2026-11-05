@@ -36,3 +36,13 @@ export const Collapsible: StoryObj = snippetStory(
   files("Collapsible"),
   setup,
 );
+
+export const PaginationWithApi: StoryObj = {
+  ...snippetStory(
+    snippets,
+    "pagination",
+    files("Pagination with API"),
+    htmlSetup(["table.css", "pagination.css"], true),
+  ),
+  name: "Pagination with API",
+};

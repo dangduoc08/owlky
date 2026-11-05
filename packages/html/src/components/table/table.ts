@@ -78,12 +78,10 @@ export const table = defineComponent<TableInstance>({
 
     const refreshPagination = () => {
       if (!tableElement.id) return;
-      for (const pagination of rootOf(tableElement).querySelectorAll(
-        `[data-ok-table-pagination="${CSS.escape(tableElement.id)}"]`,
-      ))
-        runtime
-          .get<ComponentInstance & { refresh(): void }>(pagination, "table-pagination")
-          ?.refresh();
+      const id = CSS.escape(tableElement.id);
+      for (const name of ["table-pagination", "pagination"])
+        for (const pagination of rootOf(tableElement).querySelectorAll(`[data-ok-${name}="${id}"]`))
+          runtime.get<ComponentInstance & { refresh(): void }>(pagination, name)?.refresh();
     };
 
     const instance: TableInstance = {

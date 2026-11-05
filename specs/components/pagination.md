@@ -16,6 +16,9 @@ nav[data-ok-pagination][aria-label][data-ok-variant][data-ok-color][data-ok-shap
     li › button[type=button][data-ok-pagination-item][data-ok-type=page][value=<n>][aria-label][aria-current=page]?[disabled]? › n
     li › span[data-ok-pagination-ellipsis][aria-hidden=true] › …
 ```
+Paging a table (HTML): `data-ok-pagination="<table id>"` + `data-ok-rows-per-page` (default 10)
+without `data-ok-count`. React has no equivalent prop: the app slices its rows for `page`.
+
 `PaginationItem` with `href` renders `a[data-ok-pagination-item]` (links; React).
 
 ## Options
@@ -62,6 +65,9 @@ Values from attributes are validated: non-integers and out-of-range values fall 
   page items and ellipses are rebuilt (DOM APIs, no HTML strings), the buttons' disabled states
   and `data-ok-page` updated; focus stays on the clicked button (or the new current page).
   Instance: `page`, `count`, `setPage(page)`, `refresh()`.
+- Linked to a table (`data-ok-pagination="<table id>"`, no `data-ok-count`): `count` = row groups
+  ÷ `data-ok-rows-per-page`; row groups outside the page get `hidden` (open detail rows follow
+  their row); the table's `sort()` refreshes it.
 
 ## Keyboard
 Native buttons: Tab / Shift+Tab move between items, Enter / Space activate.

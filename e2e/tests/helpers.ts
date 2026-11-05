@@ -72,6 +72,7 @@ export function normalizeStory(page: Page): Promise<NormalizedNode> {
       "data-ok-boundary-count",
       "data-ok-label-page",
       "data-ok-label-current",
+      "data-ok-rows-per-page",
       // React sets <option> selection as a property (compared through the select's :value).
       "selected",
     ]);
@@ -81,6 +82,7 @@ export function normalizeStory(page: Page): Promise<NormalizedNode> {
       "aria-controls",
       "for",
       "data-ok-table-pagination",
+      "data-ok-pagination",
       "data-ok-table-expand",
     ]);
 

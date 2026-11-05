@@ -1,7 +1,7 @@
 # Table
 
 Reference: Minimal "Table" page (sections Basic, Sorting & selecting, Grouping & fixed header,
-Collapsible). Upstream: MUI `Table`, `TableHead` / `TableBody` / `TableFooter`, `TableRow`,
+Collapsible, Pagination with API). Upstream: MUI `Table`, `TableHead` / `TableBody` / `TableFooter`, `TableRow`,
 `TableCell`, `TableContainer`, `TableSortLabel`, `TablePagination` (ADR-0015).
 
 ## Purpose
@@ -96,6 +96,9 @@ Pagination (`TablePagination` ↔ HTML): `count` (`-1` = unknown) ↔ number of 
   - pagination → cancelable `ok:table-pagination:change` `{ page, rowsPerPage }` → rows outside the
     page get `hidden`, the label and buttons are updated. With `data-ok-count` (server-side) rows
     aren't touched: the app replaces them.
+- With `Pagination` (story "Pagination with API"): React slices the rows for `page`; in HTML
+  `nav[data-ok-pagination="<table id>"][data-ok-rows-per-page]` pages the rows the same way (see
+  specs/components/pagination.md). Sorting refreshes either kind of pagination.
 
 ## Keyboard
 Sort labels, checkboxes, expand and page buttons are native buttons / inputs (Tab, Enter / Space).

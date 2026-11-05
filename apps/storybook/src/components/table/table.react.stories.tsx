@@ -3,11 +3,13 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { reactGroupsStory } from "../../helpers/groups.js";
 import collapsibleCode from "./collapsible-demo.tsx?raw";
 import groupingCode from "./grouping-demo.tsx?raw";
+import paginationCode from "./pagination-demo.tsx?raw";
 import sortingCode from "./sorting-demo.tsx?raw";
 import {
   basicGroups,
   collapsibleGroups,
   groupingGroups,
+  paginationGroups,
   sortingGroups,
   TABLE_CONTROLS,
 } from "./table-examples.js";
@@ -32,3 +34,8 @@ export const Collapsible: StoryObj = reactGroupsStory(
   undefined,
   collapsibleCode,
 );
+
+export const PaginationWithApi: StoryObj = {
+  ...reactGroupsStory(paginationGroups, undefined, paginationCode),
+  name: "Pagination with API",
+};

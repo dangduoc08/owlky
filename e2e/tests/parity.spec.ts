@@ -52,6 +52,7 @@ const pairs: [component: string, story: string][] = [
   ["table", "sorting-selecting"],
   ["table", "grouping-fixed-header"],
   ["table", "collapsible"],
+  ["table", "pagination-with-api"],
   ["sortable", "vertical"],
   ["sortable", "horizontal"],
 ];
