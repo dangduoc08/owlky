@@ -34,9 +34,9 @@ If $ARGUMENTS is provided, use it as the commit message directly.
    - Add a body only if the *why* is not obvious (e.g. a fallback for a browser quirk, an ADR it implements).
    - Breaking change to public API (exports, `data-ok-*` anatomy, `--ok-*` variables, `ok:*` events, runtime protocol): add `!` after the scope and a `BREAKING CHANGE:` body line.
 
-6. Show the proposed commit plan (groups + messages) and ask for confirmation before committing. If there are multiple commits, show them in order.
+6. Show the commit plan (groups + messages, in order), then commit right away — invoking `/commit` is the approval. Stop and ask only for the changeset warning in step 2 or when the grouping is genuinely ambiguous.
 
-7. On confirmation, for each group in order:
+7. For each group in order:
    a. Unstage everything: `git restore --staged .` (on a repository with no commits yet use `git rm --cached -r -q .` instead)
    b. Stage only the files in this group: `git add <file1> <file2> ...`
    c. Run: `git commit -m "<message>"`

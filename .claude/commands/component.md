@@ -33,6 +33,7 @@ project. Never copy the reference's source code, branding or assets.
      `packages/html/src/components/<name>/` or `<name>Attributes` in
      `packages/core/src/anatomy/anatomy.ts`; otherwise *Create*. State the mode and the slices
      found. If only some slices exist, it's an Update that also completes the missing slices.
+     In Update mode compare the URL with the spec's `Reference URL:` line; if they differ, say so.
 
 2. **Read the project rules first.** `CLAUDE.md` (status, workflow), `AGENTS.md` (conventions,
    checklist, gotchas), the ADRs it touches (0003 styling, 0004 core, 0005 runtime, 0006
@@ -114,7 +115,9 @@ project. Never copy the reference's source code, branding or assets.
      (a later component must integrate without DOM or API changes); add each to
      `docs/roadmap.md` → "Pending integrations" — so are reference sections / stories deferred
      because a component is missing (never only a backlog line);
-   - **integrations this component unlocks:** the rows of "Pending integrations" waiting for it,
+   - **integrations this component unlocks:** (capture each dependent's section from the
+     `Reference URL:` of its spec — never build it from a backlog name alone) the rows of
+     "Pending integrations" waiting for it,
      plus `grep -rn "<Name>" docs/roadmap.md specs/` for anything else that names it as missing
      (backlog lines, deferred stories), plus a search of existing components for the same pattern
      (e.g. `overflow: auto` for a Scrollbar) — with the planned change per dependent and its API
@@ -142,7 +145,8 @@ project. Never copy the reference's source code, branding or assets.
    every slice below. **Update** edits the existing slices in place — spec first, then every
    slice the approved gaps touch, always React **and** HTML together — keeping existing names,
    defaults and DOM unless a breaking change was approved; add the missing slices if any:
-   1. `specs/components/<name>.md` (the approved spec)
+   1. `specs/components/<name>.md` (the approved spec), with `Reference URL: <url>` under the
+      `Reference:` line
    2. `packages/core` — the option schema in `src/options/` (ADR-0015) and `<name>Attributes()`
       in `anatomy/anatomy.ts` built from it; behavior controller in
       `src/<name>/` if interactive (reports intent, owns no state; native + fallback paths)
@@ -203,9 +207,9 @@ project. Never copy the reference's source code, branding or assets.
     viewport, light and dark) next to the reference capture. List remaining visual differences:
     fix the unintended ones, keep and report the intentional ones.
 
-12. **Document & hand off.** Update `docs/roadmap.md` (status and "Pending integrations": add new
+12. **Document & hand off.** Update `docs/roadmap.md` (the "Overview" row → ✅, status and "Pending integrations": add new
     stand-ins and deferred stories, remove the rows this component closed — a row it unlocked but
-    didn't close is a bug in this review) / `CLAUDE.md` status, package READMEs if
+    didn't close is a bug in this review; if any remain, tell the user to run `/integrate <name>`) / `CLAUDE.md` status, package READMEs if
     exports changed, `AGENTS.md` gotchas for anything new you learned, and remind the user to add
     a changeset (`pnpm changeset`) at the level from step 5 — Update mode with breaking changes
     also lists the migration notes for the changeset and the `!` / `BREAKING CHANGE:` commit
