@@ -5,14 +5,8 @@ import "@fontsource-variable/nunito-sans";
 import "@fontsource/barlow/700.css";
 import "@fontsource/barlow/800.css";
 import "./preview.css";
-import {
-  applyThemeSettings,
-  fontFamilyPresetNames,
-  fontSizeRange,
-  primaryPresetNames,
-} from "@owlky/core";
+import { applyThemeSettings, fontFamilyPresetNames, fontSizeRange } from "@owlky/core";
 import { components, getRuntime } from "@owlky/html";
-import { withThemeByDataAttribute } from "@storybook/addon-themes";
 import type { Preview } from "@storybook/react-vite";
 
 // The real HTML runtime runs in every story (started explicitly, as an npm user would). React
@@ -26,23 +20,13 @@ const label = (value: string) =>
     /(^|-)([a-z])/g,
     (_, dash: string, c: string) => `${dash ? " " : ""}${c.toUpperCase()}`,
   );
-const sizes = Array.from(
-  { length: fontSizeRange.max - fontSizeRange.min + 1 },
-  (_, i) => fontSizeRange.min + i,
-);
 
 const preview: Preview = {
-  // Theme settings (ADR-0017) next to the theme switcher: applied to <html> like an app would.
+  // Theme and theme settings (ADR-0017), applied to <html> like an app would. Toolbar: Theme,
+  // Preset and Font size are custom tools (.storybook/toolbar.tsx); Font is a default menu.
   globalTypes: {
-    preset: {
-      description: "Primary color preset (data-ok-preset)",
-      toolbar: {
-        title: "Preset",
-        icon: "paintbrush",
-        items: primaryPresetNames.map((value) => ({ value, title: label(value) })),
-        dynamicTitle: true,
-      },
-    },
+    theme: { description: "Color scheme (data-ok-theme)" },
+    preset: { description: "Primary color preset (data-ok-preset)" },
     font: {
       description: "Font family (data-ok-font)",
       toolbar: {
@@ -52,23 +36,17 @@ const preview: Preview = {
         dynamicTitle: true,
       },
     },
-    fontSize: {
-      description: "Root font size (rem scale)",
-      toolbar: {
-        title: "Size",
-        icon: "zoom",
-        items: sizes.map((value) => ({ value: String(value), title: `${value}px` })),
-        dynamicTitle: true,
-      },
-    },
+    fontSize: { description: "Root font size (rem scale)" },
   },
   initialGlobals: {
+    theme: "light",
     preset: "default",
     font: "public-sans",
     fontSize: String(fontSizeRange.default),
   },
   decorators: [
     (Story, { globals }) => {
+      document.documentElement.dataset["okTheme"] = globals["theme"] === "dark" ? "dark" : "light";
       applyThemeSettings({
         preset: globals["preset"],
         font: globals["font"],
@@ -76,12 +54,6 @@ const preview: Preview = {
       });
       return <Story />;
     },
-    withThemeByDataAttribute({
-      themes: { light: "light", dark: "dark" },
-      defaultTheme: "light",
-      attributeName: "data-ok-theme",
-      parentSelector: "html",
-    }),
   ],
   parameters: {
     layout: "padded",
@@ -92,14 +64,19 @@ const preview: Preview = {
     // Controls show each prop's description and type, not only its control.
     controls: { expanded: true },
     options: {
-      storySort: {
-        order: [
-          "Introduction",
-          "Foundations",
-          ["Colors", "Typography", "Shadows", "Grid", "Icons", "Settings"],
-          "React",
-          "HTML",
-        ],
+      // Sections in a fixed order; components (and the ones grouped in a folder) alphabetically;
+      // a component's stories keep their file order (the reference page's sections).
+      // Self-contained: Storybook serializes this function.
+      storySort: (a, b) => {
+        const sections = ["Introduction", "Foundations", "React", "HTML"];
+        const foundations = ["Colors", "Typography", "Shadows", "Grid", "Icons", "Settings"];
+        const [sectionA = "", nameA = ""] = a.title.split("/");
+        const [sectionB = "", nameB = ""] = b.title.split("/");
+        const bySection = sections.indexOf(sectionA) - sections.indexOf(sectionB);
+        if (bySection !== 0) return bySection;
+        if (sectionA === "Foundations")
+          return foundations.indexOf(nameA) - foundations.indexOf(nameB);
+        return a.title.localeCompare(b.title, "en", { sensitivity: "base" });
       },
     },
   },
