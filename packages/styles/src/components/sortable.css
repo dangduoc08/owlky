@@ -50,6 +50,11 @@
   }
 
   /* In a Scrollbar: the Scrollbar scrolls and carries the frame; the list grows freely. */
+  :where([data-ok-scrollbar]:has(> [data-ok-sortable])) {
+    width: 100%;
+    max-width: 100%;
+  }
+
   :where([data-ok-scrollbar]:has(> [data-ok-sortable][data-ok-layout="vertical"])) {
     width: min(100%, calc(var(--ok-spacing) * 120));
     max-height: calc(var(--ok-spacing) * 140);
