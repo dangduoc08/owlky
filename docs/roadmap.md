@@ -3,6 +3,74 @@
 Each phase ends with green CI (lint, types, unit ×3 browsers, e2e ×4 projects, package checks)
 and a review before the next starts.
 
+## Overview
+Every page of the reference's component menu (`https://minimals.cc/components/…`) and where it
+stands. ✅ = built (13); *wave N* = planned, see "Next — components"; *not planned* = a pattern
+or app-level page. *Section* = the heading below with the details. Update this table with each
+component and each `/integrate` run.
+
+| Group | Reference page | Status | Owlky | Section |
+|---|---|---|---|---|
+| Foundation | Colors | ✅ | Foundations › Colors | Phase 2' |
+| Foundation | Typography | ✅ | Foundations › Typography | Phase 2' |
+| Foundation | Shadows | ✅ | Foundations › Shadows | Phase 2' |
+| Foundation | Grid | ✅ | Foundations › Grid | Phase 2' |
+| Foundation | Icons | ✅ | Foundations › Icons | Phase 2' |
+| Foundation | (Settings drawer) | ✅ | Foundations › Settings, `applyThemeSettings` | Theme settings |
+| MUI | Accordion | ✅ | Accordion | Accordion & Alert |
+| MUI | Alert | ✅ | Alert | Accordion & Alert |
+| MUI | Autocomplete | wave 6 | — | Next |
+| MUI | Avatar | wave 3 | — | Next |
+| MUI | Badge | wave 3 | — | Next |
+| MUI | Breadcrumbs | wave 5 | — | Next |
+| MUI | Buttons | ✅ | Button, IconButton, Fab, ButtonGroup, ToggleButton(Group) | Button |
+| MUI | Checkbox | wave 1 | — | Next |
+| MUI | Chip | wave 3 | — | Next |
+| MUI | Dialog | wave 4 | — | Next |
+| MUI | Drawer | ✅ | Drawer | Drawer |
+| MUI | List | wave 3 | — | Next |
+| MUI | Menu | wave 4 | — | Next |
+| MUI | Pagination | ✅ | Pagination, PaginationItem | Pagination |
+| MUI | Popover | wave 4 | — | Next |
+| MUI | Progress | wave 1 | — | Next |
+| MUI | Radio button | wave 2 | — | Next |
+| MUI | Rating | wave 6 | — | Next |
+| MUI | Slider | wave 6 | — | Next |
+| MUI | Stepper | wave 5 | — | Next |
+| MUI | Switch | wave 1 | — | Next |
+| MUI | Table | ✅ | Table parts, TablePagination, TableExpandButton / TableDetailRow | Table |
+| MUI | Tabs | wave 5 | — | Next |
+| MUI | Text field | wave 2 | — | Next |
+| MUI | Timeline | wave 6 | — | Next |
+| MUI | Tooltip | wave 4 | — | Next |
+| MUI | Transfer list | wave 6 | — | Next |
+| MUI X | Data grid | wave 7 (ADR) | — | Next |
+| MUI X | Date pickers | wave 7 (ADR) | — | Next |
+| MUI X | Tree view | wave 6 | — | Next |
+| Extra | Animate | not planned | — | Next |
+| Extra | Carousel | wave 7 (ADR) | — | Next |
+| Extra | Chart | wave 7 (ADR) | — | Next |
+| Extra | Dnd | ✅ | Sortable | Sortable |
+| Extra | Editor | wave 7 (ADR) | — | Next |
+| Extra | Form validation | not planned | — | Next |
+| Extra | Form wizard | not planned | — | Next |
+| Extra | Image | wave 7 (ADR) | — | Next |
+| Extra | Label | wave 3 | — | Next |
+| Extra | Layout | not planned | — | Next |
+| Extra | Lightbox | wave 7 (ADR) | — | Next |
+| Extra | Map | wave 7 (ADR) | — | Next |
+| Extra | Markdown | wave 7 (ADR) | — | Next |
+| Extra | Mega menu | not planned | — | Next |
+| Extra | Multi-language | not planned | — | Next |
+| Extra | Navigation bar | not planned | — | Next |
+| Extra | Organization chart | wave 7 (ADR) | — | Next |
+| Extra | Scroll progress | not planned | — | Next |
+| Extra | Scrollbar | wave 1 | — | Next |
+| Extra | Snackbar | wave 4 | — | Next |
+| Extra | Upload | wave 7 (ADR) | — | Next |
+| Extra | Utilities | not planned | — | Next |
+| Extra | Walktour | wave 7 (ADR) | — | Next |
+
 ## ✅ Phase 0 — Foundation tooling
 pnpm workspace, strict TypeScript 7, Biome (incl. boundary import rules), Vitest browser mode,
 Playwright, Storybook 10, Changesets (fixed), CI and release workflows, ADRs, `AGENTS.md`.
@@ -115,12 +183,25 @@ with the reason). Defaults: ButtonGroup `variant="outlined"`.
 **Backlog (deferred):** Table toolbar (title, selected count, filter). Sortable auto-scroll while dragging near an edge; "Move to top / bottom"
 keyboard actions (pragmatic-drag-and-drop accessibility guidance).
 
-## Next — components (awaiting the owner's go-ahead)
-Order to be confirmed. Candidate sequence, each in React + HTML with parity tests:
-1. Form controls: Input, Textarea, Checkbox, Radio/RadioGroup (+ restore empty export globs)
-2. Display: Badge, Avatar, Card
-3. Overlays & navigation: Tooltip, Dropdown, Tabs, Select (popover controller + fallback)
-4. Feedback & 1.0: Toast, accessibility audit, docs polish
+## Next — components (order approved 2026-11-05)
+Dependency-first: leaf components before the ones built from them, the ones that close the most
+"Pending integrations" first. Each in React + HTML with parity tests, from its reference page
+(`https://minimals.cc/components/…`); after each wave run `/integrate <name>` for the *Unlocks*.
+
+| Wave | Components | Unlocks (existing components) |
+|---|---|---|
+| 1 Leaves | Scrollbar, Progress, Checkbox, Switch | Sortable / Drawer / Table scrolling; Button loading; Table selection; Table "Dense" |
+| 2 Form | Text field (Input, Textarea, native Select), Radio button (+ restore empty export globs) | TablePagination rows per page; Table "Table pagination with API"; Pagination "Items" |
+| 3 Display | Avatar, Badge, Chip, Label, Divider, then List | Drawer menu (List, Divider) |
+| 4 Overlays | Popover (positioning controller + fallback in core), then Tooltip, Menu, Dialog (+ Backdrop), Snackbar | Drawer backdrop; Icon button tooltips |
+| 5 Navigation | Tabs, Breadcrumbs, Stepper | — |
+| 6 Composites | Rating, Slider, Timeline, Transfer list, Autocomplete, Tree view | — |
+| 7 Needs an ADR | Data grid, Date pickers, Chart, Map, Editor, Carousel, Lightbox, Markdown, Organization chart, Upload, Image, Walktour | — |
+
+Not planned as components (patterns or app-level pages of the reference): Animate, Layout,
+Utilities, Multi-language, Navigation bar, Mega menu, Scroll progress, Form validation, Form wizard.
+Typography (display / heading text) has no reference page of its own: build it with wave 3.
+Feedback & 1.0 after the waves: accessibility audit, docs polish.
 
 **Before publishing 0.1.0 (needs the owner):** npm org `@owlky`, GitHub repo (replace
 `OWNER`), npm trusted publishing, visual baselines in Docker (`pnpm test:visual:update`).
