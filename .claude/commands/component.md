@@ -122,7 +122,10 @@ project. Never copy the reference's source code, branding or assets.
      (backlog lines, deferred stories), plus a search of existing components for the same pattern
      (e.g. `overflow: auto` for a Scrollbar) — with the planned change per dependent and its API
      impact (normally additive). These are part of this component's scope, built in the same
-     review: never just reword a "needs <Name>" note into "<Name> now exists";
+     review: never just reword a "needs <Name>" note into "<Name> now exists". Integrate **by
+     composition visible in the dependents' code** (their stories, examples and snippets use the
+     new component as the reference does; their CSS adapts with `:has(> [data-ok-<name>])`) —
+     never by adding the dependents' selectors to this component's CSS;
    - **Update mode:** the gap table and the planned change for each gap; the **public API
      impact** — none / additive (new option, value, story) / **breaking** (renamed or removed
      prop, `data-ok-*` attribute or value, `--ok-*` variable, event, changed default or DOM

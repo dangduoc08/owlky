@@ -98,6 +98,12 @@ Pending integrations closed: N · still open: N (reason each)
 
 ## Rules
 
+- **Integrate by composition, visible in code**: the dependents' stories, React examples and HTML
+  snippets use the new component the way the reference composes them (e.g. `TableContainer ›
+  Scrollbar › Table`); the dependent's CSS adapts with `:has(> [data-ok-<new>])`. Never add the
+  dependents' selectors to the new component's stylesheet — that hides the integration and
+  inverts the dependency.
+
 - Review-gated: report → approval → implement. Never implement unapproved items.
 - Re-fetch the reference from the spec's `Reference URL:`; never guess a URL or a section.
 - Additive by default; breaking changes only with an explicit, per-item yes.
