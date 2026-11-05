@@ -2,6 +2,7 @@
 
 Reference: Minimal UI kit "Alert" page — Standard, Filled, Outlined, Description, Actions (content
 only). Upstream: MUI Alert (ADR-0015). Created with `/component`.
+Reference URL: https://minimals.cc/components/mui/alert
 
 ## Purpose
 A short, important message with a severity.

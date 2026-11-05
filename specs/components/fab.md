@@ -1,6 +1,7 @@
 # Fab
 
 Reference: Minimal UI kit "Buttons" page, section "Fab button" (content only). Created with `/component`.
+Reference URL: https://minimals.cc/components/mui/buttons
 
 ## Purpose
 A floating action button: the primary action of a screen, round (icon) or extended (icon + label).

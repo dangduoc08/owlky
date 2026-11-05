@@ -1,6 +1,7 @@
 # Button group
 
 Reference: Minimal UI kit "Buttons" page, section "Button group" (content only). Created with `/component`.
+Reference URL: https://minimals.cc/components/mui/buttons
 
 ## Purpose
 Joins related Buttons into one control (segmented actions).

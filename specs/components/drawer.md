@@ -1,6 +1,7 @@
 # Drawer
 
 Reference: Minimal UI kit "Drawer" page, section "Anchor" (content only). Created with `/component`.
+Reference URL: https://minimals.cc/components/mui/drawer
 
 ## Purpose
 A modal panel that slides in from an edge of the screen (navigation, filters, details).

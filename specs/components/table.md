@@ -3,6 +3,7 @@
 Reference: Minimal "Table" page (sections Basic, Sorting & selecting, Grouping & fixed header,
 Collapsible, Pagination with API). Upstream: MUI `Table`, `TableHead` / `TableBody` / `TableFooter`, `TableRow`,
 `TableCell`, `TableContainer`, `TableSortLabel`, `TablePagination` (ADR-0015).
+Reference URL: https://minimals.cc/components/mui/table
 
 ## Purpose
 Native `<table>` markup with the Minimal look, plus the interactive parts tables need: sortable

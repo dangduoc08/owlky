@@ -2,6 +2,7 @@
 
 Reference: Minimal UI kit "Accordion" page — Simple, Controlled, Custom styles (content only).
 Upstream: MUI Accordion (ADR-0015). Created with `/component`.
+Reference URL: https://minimals.cc/components/mui/accordion
 
 ## Purpose
 Sections that expand and collapse in place (FAQ, settings groups).

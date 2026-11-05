@@ -1,6 +1,7 @@
 # Button
 
 Reference: Minimal UI kit "Buttons" page (content only). Created with `/component`.
+Reference URL: https://minimals.cc/components/mui/buttons
 
 ## Purpose
 Trigger an action (`<button>`) or navigate (`<a href>`) with the button styling.

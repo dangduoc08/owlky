@@ -2,6 +2,7 @@
 
 Reference: Minimal UI kit "Dnd" page, sections "Grid", "Vertical", "Horizontal" (content only).
 Created with `/component`.
+Reference URL: https://minimals.cc/components/extra/dnd
 
 ## Purpose
 A list whose items the user reorders — by dragging, by keyboard, or by two taps — and optionally

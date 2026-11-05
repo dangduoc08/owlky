@@ -1,6 +1,7 @@
 # Icon button
 
 Reference: Minimal UI kit "Buttons" page, section "Icon button" (content only). Created with `/component`.
+Reference URL: https://minimals.cc/components/mui/buttons
 
 ## Purpose
 An action shown only as an icon (toolbar, card actions). For text actions use Button.

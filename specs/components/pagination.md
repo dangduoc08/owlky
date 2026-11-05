@@ -2,6 +2,7 @@
 
 Reference: Minimal "Pagination" page (sections Shapes, Variants, Sizes, Buttons, Ranges, Custom
 icons, Table). Upstream: MUI `Pagination` / `PaginationItem` / `usePagination` (ADR-0015).
+Reference URL: https://minimals.cc/components/mui/pagination
 
 ## Purpose
 Page numbers with previous / next (optional first / last) buttons and ellipses for long ranges.

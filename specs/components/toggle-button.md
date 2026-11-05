@@ -1,6 +1,7 @@
 # Toggle button
 
 Reference: Minimal UI kit "Buttons" page, section "Toggle button" (content only). Created with `/component`.
+Reference URL: https://minimals.cc/components/mui/buttons
 
 ## Purpose
 A button that stays pressed (format text, choose a view). Standalone, or in a group with
