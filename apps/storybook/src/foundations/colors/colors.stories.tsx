@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { UsageDocs } from "../../helpers/docs-pages.js";
+import { ColorsDocs } from "./colors-docs.js";
 import { Palette } from "./palette.js";
 
 const meta = {
@@ -8,11 +8,11 @@ const meta = {
   tags: ["autodocs"],
   parameters: {
     docs: {
-      page: UsageDocs,
+      page: ColorsDocs,
       canvas: { sourceState: "none" },
       description: {
         component:
-          "Palette tokens from `@owlky/tokens`, available as `--ok-palette-<color>-<shade>` CSS variables and Tailwind colors (`bg-primary`, `text-primary-dark`, `bg-grey-200`…). Click a swatch to copy its hex value. Primary follows the toolbar's Preset (`data-ok-preset`).",
+          "Owlky's colors are CSS custom properties. Use them in your own styles, set them on components, or apply them as Tailwind CSS utilities, in both HTML and React.",
       },
     },
   },

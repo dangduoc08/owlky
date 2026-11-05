@@ -1,38 +1,10 @@
 import { Meta } from "@storybook/addon-docs/blocks";
+import { IntroductionGuide } from "./introduction-guide";
 
 <Meta title="Introduction" />
 
 # Owlky
 
-Every component ships twice — **React** and **pure HTML** — with the same markup, the same CSS
-and the same behavior. Toggle light/dark with the theme button in the toolbar.
+Accessible, themeable UI components built on one design system, ready for any way you build for the web.
 
-| Package | Use it for |
-|---|---|
-| `@owlky/react` | React 18.3+ / 19 apps |
-| `@owlky/html` | Any HTML page: copy-paste snippets + `owlky.js` |
-| `@owlky/styles` | Prebuilt CSS (no Tailwind needed) and a Tailwind v4 theme |
-| `@owlky/tokens` | Design tokens as TypeScript / CSS variables, `createTheme()` |
-| `@owlky/core` | Shared framework-free behavior (used by both implementations) |
-
-## Status
-
-Foundations first: **Colors, Typography, Shadows, Grid and Icons** are documented under
-*Foundations* (one story per section). Components are built on top of them, one at a time, in
-React and HTML together (see `docs/roadmap.md`).
-
-## Theming
-
-Everything is a CSS variable (`--ok-*`). Override any of them — globally or on a subtree:
-
-```css
-:root {
-  --ok-palette-primary-main: #2065d1;
-  --ok-palette-primary-dark: #103996;
-  --ok-palette-primary-contrast-text: #ffffff;
-  --ok-radius-md: 10px;
-}
-```
-
-Dark mode: `data-ok-theme="dark"` (or `class="dark"`) on `<html>` or any container;
-`data-ok-theme="system"` follows the OS.
+<IntroductionGuide />

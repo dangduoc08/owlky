@@ -1,7 +1,7 @@
 import { typographyVariants } from "@owlky/tokens";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { UsageDocs } from "../../helpers/docs-pages.js";
 import { TextColors, TypographySample } from "./typography.js";
+import { TypographyDocs } from "./typography-docs.js";
 
 const meta = {
   title: "Foundations/Typography",
@@ -9,11 +9,11 @@ const meta = {
   tags: ["autodocs"],
   parameters: {
     docs: {
-      page: UsageDocs,
+      page: TypographyDocs,
       canvas: { sourceState: "none" },
       description: {
         component:
-          "Typography tokens from `@owlky/tokens` as `--ok-typography-<variant>-font-family|font-size|font-weight|line-height|text-transform` CSS variables, and Tailwind `text-<variant>` utilities. Font sizes of h1–h6 grow at 600 / 900 / 1200px; h1–h3 use the display font (Barlow).",
+          "Owlky's text styles. Apply them with CSS variables or Tailwind CSS utilities, in both HTML and React. Headings scale with the screen width, and every size follows the user's font size.",
       },
     },
   },

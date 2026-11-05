@@ -1,6 +1,8 @@
+import { readFileSync } from "node:fs";
+import AxeBuilder from "@axe-core/playwright";
 import { defaultTheme, shadowNames, typographyVariants } from "@owlky/tokens";
 import { expect, test } from "@playwright/test";
-import { openStory, storyIds } from "./helpers.js";
+import { CONTRAST_EXEMPT, openStory, storyIds } from "./helpers.js";
 
 /** Storybook id of an export name: "H1" → "h-1", "Subtitle1" → "subtitle-1". */
 const typographyStory = (variant: string) =>
@@ -94,5 +96,97 @@ for (const id of storyIds("foundations-")) {
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
       375,
     );
+  });
+}
+
+/** Docs pages with a usage guide: id and the last section's heading (rendered = page ready). */
+const GUIDES = [
+  ["introduction--docs", "Accessibility"],
+  ["foundations-colors--docs", "Accessibility"],
+  ["foundations-typography--docs", "Accessibility"],
+  ["foundations-shadows--docs", "Accessibility"],
+  ["foundations-grid--docs", "Accessibility"],
+  ["foundations-icons--docs", "Accessibility"],
+  ["foundations-settings--docs", "Accessibility"],
+] as const;
+
+const THEME_CSS = readFileSync(
+  new URL("../../packages/styles/src/theme.css", import.meta.url),
+  "utf8",
+);
+/** Tailwind utilities that come from the Owlky theme: their token must exist in theme.css. */
+const TOKEN_UTILITY = /^(bg|text|border|shadow|font)-([a-z]+(?:-[a-z0-9]+)*)$/;
+const NAMESPACES: Record<string, string[]> = {
+  bg: ["color"],
+  text: ["color", "text"],
+  border: ["color"],
+  shadow: ["shadow"],
+  font: ["font"],
+};
+const LAYOUT_WORDS = new Set(["solid", "dashed", "0", "2", "l", "b", "semibold", "bold", "mono"]);
+
+for (const [id, lastHeading] of GUIDES) {
+  test.describe(`Docs guide ${id}`, () => {
+    const openDocs = async (page: import("@playwright/test").Page, theme = "light") => {
+      await page.goto(
+        `/apps/storybook/storybook-static/iframe.html?id=${id}&viewMode=docs&globals=theme:${theme};a11y.manual:!true`,
+      );
+      await expect(page.getByRole("heading", { name: lastHeading })).toBeVisible();
+    };
+
+    test("every token and Tailwind token class in the examples exists", async ({
+      page,
+      browserName,
+    }) => {
+      test.skip(browserName !== "chromium", "Content check runs once.");
+      await openDocs(page);
+      const code = (
+        await page.locator("[data-docs-code] pre, .sb-docs-guide code").allTextContents()
+      ).join("\n");
+      const variables = [...new Set(code.match(/--ok-[a-z0-9-]*[a-z0-9]\b(?!-)/g) ?? [])];
+      const missing = await page.evaluate(
+        (names) =>
+          names.filter(
+            (name) => getComputedStyle(document.documentElement).getPropertyValue(name) === "",
+          ),
+        variables,
+      );
+      expect(missing).toEqual([]);
+      const classes = [...code.matchAll(/class(?:Name)?="([^"]*)"/g)].flatMap((m) =>
+        (m[1] as string).split(/\s+/).map((c) => c.split(":").at(-1) as string),
+      );
+      const unknown = classes.filter((name) => {
+        const match = TOKEN_UTILITY.exec(name);
+        if (!match || LAYOUT_WORDS.has(match[2] as string)) return false;
+        return !(NAMESPACES[match[1] as string] ?? []).some((ns) =>
+          THEME_CSS.includes(`--${ns}-${match[2]}:`),
+        );
+      });
+      expect(unknown).toEqual([]);
+    });
+
+    for (const theme of ["light", "dark"] as const) {
+      test(`has no WCAG 2.2 AA violations (${theme})`, async ({ page, browserName }) => {
+        test.skip(browserName !== "chromium", "axe results are engine-independent.");
+        await openDocs(page, theme);
+        // Brand-colored examples follow the reference (ADR-0014); demo pairs that show a failing
+        // combination on purpose are marked data-demo-disabled.
+        let axe = new AxeBuilder({ page })
+          .include("#storybook-docs")
+          .exclude("[data-demo-disabled]")
+          .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"]);
+        for (const selector of CONTRAST_EXEMPT) axe = axe.exclude(selector);
+        const results = await axe.analyze();
+        expect(results.violations.map((v) => `${v.id}: ${v.help} (${v.nodes.length})`)).toEqual([]);
+      });
+    }
+
+    test("fits a phone without horizontal page scrolling", async ({ page }) => {
+      await page.setViewportSize({ width: 375, height: 812 });
+      await openDocs(page);
+      expect(
+        await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
+      ).toBe(true);
+    });
   });
 }

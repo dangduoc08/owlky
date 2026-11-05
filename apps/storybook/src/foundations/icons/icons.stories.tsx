@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { UsageDocs } from "../../helpers/docs-pages.js";
 import {
   FileIcons,
   FlagIcons,
@@ -11,17 +10,18 @@ import {
   MaterialIcons,
   SocialIcons,
 } from "./icon-demos.js";
+import { IconsDocs } from "./icons-docs.js";
 
 const meta = {
   title: "Foundations/Icons",
   tags: ["autodocs"],
   parameters: {
     docs: {
-      page: UsageDocs,
+      page: IconsDocs,
       canvas: { sourceState: "none" },
       description: {
         component:
-          "The library ships no icon set: components accept any SVG. These docs use open-source sets from Iconify (bundled offline, Storybook only). Icons are sized in px and colored with `currentColor`.",
+          "Owlky works with any SVG icon. Learn how to add icons to components, choose their size and color, and make them accessible, in both HTML and React.",
       },
     },
   },

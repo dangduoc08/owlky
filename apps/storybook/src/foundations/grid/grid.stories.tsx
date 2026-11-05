@@ -1,17 +1,17 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { UsageDocs } from "../../helpers/docs-pages.js";
 import { ColumnDemo, SpacingDemo } from "./grid.js";
+import { GridDocs } from "./grid-docs.js";
 
 const meta = {
   title: "Foundations/Grid",
   tags: ["autodocs"],
   parameters: {
     docs: {
-      page: UsageDocs,
+      page: GridDocs,
       canvas: { sourceState: "none" },
       description: {
         component:
-          "Spacing is a multiple of `--ok-spacing` (4px; Tailwind `gap-2` = 8px). Layouts use 12 equal columns. Change the values in the Controls panel.",
+          "Spacing, breakpoints and columns. Every space is a multiple of one unit, and layouts use a 12-column grid, in both HTML and React.",
       },
     },
   },
