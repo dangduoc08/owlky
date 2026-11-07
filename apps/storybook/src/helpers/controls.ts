@@ -21,6 +21,17 @@ function inputType(spec: OptionSpec): InputType {
       table: { type: { summary: spec.values.map((value) => `"${value}"`).join(" | ") } },
     };
   }
+  if (spec.kind === "number") {
+    return {
+      control: { type: "number", ...(spec.min !== undefined ? { min: spec.min } : {}) },
+      // `type` lets Storybook turn URL args back into numbers.
+      type: { name: "number", required: false },
+      description: spec.description,
+      table: {
+        type: { summary: spec.units ? `number | ${spec.units.join(" | ")} length` : "number" },
+      },
+    };
+  }
   return {
     control: { type: "boolean" },
     description: spec.description,
@@ -65,6 +76,9 @@ function write(element: Element, spec: OptionSpec, value: unknown) {
       break;
     case "flag":
       element.toggleAttribute(spec.attr, value === true);
+      break;
+    case "number":
+      element.setAttribute(spec.attr, String(value));
       break;
     case "behavior":
       if (value === false) element.setAttribute(spec.attr, "false");

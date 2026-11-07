@@ -53,6 +53,7 @@ describe("styles source", () => {
           expect(
             [
               "",
+              "::before",
               "::backdrop",
               "::details-content",
               "::-webkit-details-marker",

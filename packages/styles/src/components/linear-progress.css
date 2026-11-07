@@ -1,0 +1,194 @@
+/*
+ * Linear progress — spec: specs/components/linear-progress.md
+ *
+ * Anatomy:   span[data-ok-linear-progress][role=progressbar]
+ *              › span[data-ok-linear-progress-dashed]?          (buffer)
+ *              › span[data-ok-linear-progress-bar="1"]
+ *              › span[data-ok-linear-progress-bar="2"]?         (indeterminate, query, buffer)
+ * Modifiers: data-ok-variant = indeterminate (default) | determinate | buffer | query
+ *            data-ok-color   = primary (default) | secondary | info | success | warning | error
+ *                              | inherit (text color)
+ * Private:   --_ok-progress-value, --_ok-progress-buffer (0–1, set through CSSOM by React and the
+ *            HTML runtime from value / valueBuffer)
+ *
+ * Every part paints with currentColor; translucent parts use opacity (24 % track and buffer bar,
+ * 48 % dots), so `inherit` works without channels. The loop timings (2.1s, 3s) and their curves
+ * are animation choreography, not tokens. Left-to-right only (right-to-left is on the backlog).
+ * Single :where() selectors in @layer components (zero specificity).
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-ok-linear-progress]) {
+    --_ok-main: var(--ok-c-main, var(--ok-palette-primary-main));
+
+    position: relative;
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    height: var(--ok-spacing);
+    overflow: hidden;
+    border-radius: var(--ok-radius-full);
+    color: var(--_ok-main);
+  }
+
+  :where([data-ok-linear-progress][data-ok-color="inherit"]) {
+    color: inherit;
+  }
+
+  /* Track */
+  :where([data-ok-linear-progress])::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: currentColor;
+    opacity: 0.24;
+  }
+
+  :where([data-ok-linear-progress-bar]) {
+    position: absolute;
+    inset-block: 0;
+    left: 0;
+    width: 100%;
+    border-radius: inherit;
+    background-color: currentColor;
+    transform-origin: left;
+    transition: transform var(--ok-duration-shorter) linear;
+  }
+
+  /* Determinate and buffer: bar 1 shows the value, bar 2 (buffer) how far loading has got. */
+  :where(
+    [data-ok-linear-progress][data-ok-variant="determinate"] [data-ok-linear-progress-bar="1"],
+    [data-ok-linear-progress][data-ok-variant="buffer"] [data-ok-linear-progress-bar="1"]
+  ) {
+    transform: translateX(calc((var(--_ok-progress-value, 0) - 1) * 100%));
+    transition-duration: var(--ok-duration-standard);
+  }
+
+  :where([data-ok-linear-progress][data-ok-variant="buffer"] [data-ok-linear-progress-bar="2"]) {
+    opacity: 0.24;
+    transform: translateX(calc((var(--_ok-progress-buffer, 0) - 1) * 100%));
+    transition-duration: var(--ok-duration-standard);
+  }
+
+  /* Buffer: dots instead of the track, drifting toward the start. */
+  :where([data-ok-linear-progress][data-ok-variant="buffer"])::before {
+    content: none;
+  }
+
+  :where([data-ok-linear-progress-dashed]) {
+    position: absolute;
+    inset: 0;
+    animation: ok-linear-progress-dashed 3s linear infinite;
+  }
+
+  :where([data-ok-linear-progress-dashed])::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(currentColor 0%, currentColor 16%, transparent 42%);
+    background-position: 0 50%;
+    background-size: calc(var(--ok-spacing) * 2.5) calc(var(--ok-spacing) * 2.5);
+    opacity: 0.48;
+    animation: inherit;
+    animation-name: ok-linear-progress-dots;
+  }
+
+  /* Indeterminate and query: two bars sweep across; query runs from the end. */
+  :where(
+    [data-ok-linear-progress][data-ok-variant="indeterminate"] [data-ok-linear-progress-bar],
+    [data-ok-linear-progress][data-ok-variant="query"] [data-ok-linear-progress-bar]
+  ) {
+    width: auto;
+    transition: none;
+  }
+
+  :where(
+    [data-ok-linear-progress][data-ok-variant="indeterminate"] [data-ok-linear-progress-bar="1"],
+    [data-ok-linear-progress][data-ok-variant="query"] [data-ok-linear-progress-bar="1"]
+  ) {
+    animation: ok-linear-progress-bar-1 2.1s cubic-bezier(0.65, 0.815, 0.735, 0.395) infinite;
+  }
+
+  :where(
+    [data-ok-linear-progress][data-ok-variant="indeterminate"] [data-ok-linear-progress-bar="2"],
+    [data-ok-linear-progress][data-ok-variant="query"] [data-ok-linear-progress-bar="2"]
+  ) {
+    animation: ok-linear-progress-bar-2 2.1s cubic-bezier(0.165, 0.84, 0.44, 1) 1.15s infinite;
+  }
+
+  :where([data-ok-linear-progress][data-ok-variant="query"]) {
+    transform: rotate(180deg);
+  }
+
+  @keyframes ok-linear-progress-bar-1 {
+    0% {
+      left: -35%;
+      right: 100%;
+    }
+
+    60% {
+      left: 100%;
+      right: -90%;
+    }
+
+    100% {
+      left: 100%;
+      right: -90%;
+    }
+  }
+
+  @keyframes ok-linear-progress-bar-2 {
+    0% {
+      left: -200%;
+      right: 100%;
+    }
+
+    60% {
+      left: 107%;
+      right: -8%;
+    }
+
+    100% {
+      left: 107%;
+      right: -8%;
+    }
+  }
+
+  @keyframes ok-linear-progress-dashed {
+    0% {
+      opacity: 1;
+    }
+
+    60% {
+      opacity: 0;
+    }
+
+    100% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes ok-linear-progress-dots {
+    to {
+      background-position: calc(var(--ok-spacing) * -50) 50%;
+    }
+  }
+
+  /* Reduced motion: the bars sweep at half speed; the dots stay still; values don't ease. */
+  @media (prefers-reduced-motion: reduce) {
+    :where([data-ok-linear-progress-bar]) {
+      animation-duration: 4.2s;
+      transition: none;
+    }
+
+    :where([data-ok-linear-progress-bar="2"]) {
+      animation-delay: 2.3s;
+    }
+
+    :where([data-ok-linear-progress-dashed]) {
+      animation: none;
+    }
+  }
+}

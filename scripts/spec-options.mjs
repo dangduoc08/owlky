@@ -19,6 +19,8 @@ const SPECS = {
   pagination: "pagination.md",
   scrollbar: "scrollbar.md",
   "table-sort-label": "table.md",
+  "circular-progress": "circular-progress.md",
+  "linear-progress": "linear-progress.md",
 };
 
 const code = (value) => `\`${value}\``;
@@ -31,6 +33,8 @@ function html(schema, spec) {
     case "flag":
     case "native":
       return `${code(spec.attr)}${where}`;
+    case "number":
+      return code(`${spec.attr}="…"`);
     case "behavior":
       return `${code(`${spec.attr}="false"`)} turns it off`;
     default:
@@ -38,13 +42,18 @@ function html(schema, spec) {
   }
 }
 
-const values = (spec) =>
-  spec.kind === "style" ? spec.values.map(code).join(" ") : spec.kind === "state" ? "—" : "boolean";
+function values(spec) {
+  if (spec.kind === "style") return spec.values.map(code).join(" ");
+  if (spec.kind === "number")
+    return spec.units ? `number (px) or ${spec.units.map(code).join(" ")} length` : "number";
+  return spec.kind === "state" ? "—" : "boolean";
+}
 
 function fallback(spec) {
   if (spec.kind === "style") return spec.optional ? "—" : code(spec.default);
   if (spec.kind === "behavior") return spec.default ? "on" : "off";
   if (spec.kind === "state") return "—";
+  if (spec.kind === "number") return spec.default === undefined ? "—" : code(spec.default);
   return "off";
 }
 

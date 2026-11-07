@@ -16,6 +16,17 @@ test("no CSP or Trusted Types violations", async ({ page }) => {
     "background-color",
     "rgb(0, 167, 111)",
   );
+  // The progress runtime writes its custom properties through CSSOM, which the CSP allows.
+  await expect(page.getByRole("progressbar", { name: "Upload" })).toHaveCSS("width", "48px");
+  await expect
+    .poll(() =>
+      page
+        .getByRole("progressbar", { name: "Video" })
+        .evaluate((element) =>
+          (element as HTMLElement).style.getPropertyValue("--_ok-progress-buffer"),
+        ),
+    )
+    .toBe("0.4");
   expect(
     await page.evaluate(() => (window as unknown as { violations: string[] }).violations),
   ).toEqual([]);

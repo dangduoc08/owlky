@@ -5,6 +5,7 @@ import {
   iconButtonAttributes,
 } from "@owlky/core";
 import { type ButtonHTMLAttributes, forwardRef, type ReactNode } from "react";
+import { CircularProgress } from "../circular-progress/circular-progress.js";
 
 export interface IconButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "color"> {
   /** `default` (secondary text), `inherit` (text color) or a palette color. Default `"default"`. */
@@ -51,7 +52,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(functio
     >
       {loading && (
         <span data-ok-icon-button-loader="" aria-hidden="true">
-          {loadingIndicator ?? <span data-ok-button-spinner="" />}
+          {loadingIndicator ?? <CircularProgress color="inherit" data-ok-button-spinner="" />}
         </span>
       )}
       {children}

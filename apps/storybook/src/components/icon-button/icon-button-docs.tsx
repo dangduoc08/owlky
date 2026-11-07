@@ -54,7 +54,7 @@ export function DeleteAction() {
     body: "Set `loading` while the action runs. The icon is replaced by a spinner, the button is disabled and it tells assistive technology that it's busy.",
     html: `<button type="button" data-ok-icon-button data-ok-color="primary" data-ok-size="md" data-ok-loading aria-busy="true" disabled aria-label="Send">
   ${iconMarkup("mail")}
-  <span data-ok-icon-button-loader aria-hidden="true"><span data-ok-button-spinner></span></span>
+  <span data-ok-icon-button-loader aria-hidden="true"><span role="progressbar" data-ok-circular-progress data-ok-variant="indeterminate" data-ok-color="inherit" data-ok-button-spinner><svg data-ok-circular-progress-svg aria-hidden="true" viewBox="22 22 44 44"><circle data-ok-circular-progress-circle cx="44" cy="44" r="20.2" stroke-width="3.6" /></svg></span></span>
 </button>`,
     react: `<IconButton color="primary" loading aria-label="Send">
   <MailIcon />

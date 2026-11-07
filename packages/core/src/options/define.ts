@@ -8,6 +8,9 @@
  * - `native`   boolean native attribute (`disabled`)
  * - `behavior` boolean read by the runtime on every action; `data-ok-<option>="false"` turns it off
  * - `state`    state kept in the DOM (`open`, `aria-pressed`); documented, changed through the API
+ * - `number`   number (or CSS length) written as `<attr>="<value>"` when given and valid; ARIA
+ *              attributes (`aria-valuenow`) are written by the component, `data-ok-*` ones by
+ *              `optionAttributes`; invalid values → default
  */
 
 export interface OptionBase {
@@ -52,7 +55,24 @@ export interface StateOption extends OptionBase {
   readonly event?: string | undefined;
 }
 
-export type OptionSpec = StyleOption | FlagOption | NativeOption | BehaviorOption | StateOption;
+export interface NumberOption extends OptionBase {
+  readonly kind: "number";
+  readonly attr: string;
+  /** Used when the value is absent or invalid; `undefined` = no value. */
+  readonly default: number | undefined;
+  /** Smallest valid value (inclusive); smaller values are invalid. */
+  readonly min?: number | undefined;
+  /** CSS length units accepted besides a plain number (= px), e.g. `["px", "rem", "em"]`. */
+  readonly units?: readonly string[] | undefined;
+}
+
+export type OptionSpec =
+  | StyleOption
+  | FlagOption
+  | NativeOption
+  | BehaviorOption
+  | StateOption
+  | NumberOption;
 
 export interface OptionSchema<O extends Record<string, OptionSpec> = Record<string, OptionSpec>> {
   /** Component name (`ok:<name>:<event>`, `runtime.get(el, name)`). */
@@ -114,6 +134,14 @@ export const state = /* @__NO_SIDE_EFFECTS__ */ (
 });
 
 /** Pure: lets bundlers drop unused schemas. */
+export const number = /* @__NO_SIDE_EFFECTS__ */ (
+  attr: string,
+  defaultValue: number | undefined,
+  description: string,
+  extra: { min?: number; units?: readonly string[] } = {},
+): NumberOption => ({ kind: "number", attr, default: defaultValue, description, ...extra });
+
+/** Pure: lets bundlers drop unused schemas. */
 export const defineOptions = /* @__NO_SIDE_EFFECTS__ */ <
   const O extends Record<string, OptionSpec>,
 >(
@@ -126,9 +154,34 @@ export const defineOptions = /* @__NO_SIDE_EFFECTS__ */ <
 export const pick = <T extends string>(values: readonly T[], value: unknown, fallback: T): T =>
   values.includes(value as T) ? (value as T) : fallback;
 
+const NUMBER = /^[-+]?(?:\d+\.?\d*|\.\d+)$/;
+
+/**
+ * A valid value of a `number` option, or `undefined`: a finite number (or numeric string) at
+ * least `min`, or — with `units` — a non-negative length such as `"3rem"` (returned as written).
+ * Anything else (NaN, `"1e999"`, `"calc(…)"`, markup) is invalid.
+ */
+export function parseNumber(spec: NumberOption, value: unknown): number | string | undefined {
+  let parsed: number;
+  if (typeof value === "number") parsed = value;
+  else if (typeof value === "string" && value.length <= 32) {
+    const text = value.trim();
+    const unit = spec.units?.find((u) => text.endsWith(u) && NUMBER.test(text.slice(0, -u.length)));
+    if (unit !== undefined) {
+      const amount = Number(text.slice(0, -unit.length));
+      return Number.isFinite(amount) && amount >= 0 ? `${amount}${unit}` : undefined;
+    }
+    if (!NUMBER.test(text)) return undefined;
+    parsed = Number(text);
+  } else return undefined;
+  if (!Number.isFinite(parsed) || (spec.min !== undefined && parsed < spec.min)) return undefined;
+  return parsed;
+}
+
 /**
  * Root attributes for the given option values: every `style` option is written (explicit
- * defaults), every `flag` that is on, honoring `when`. Options written on children are skipped.
+ * defaults), every `flag` that is on and every valid `data-ok-*` number, honoring `when`. Options
+ * written on children are skipped.
  */
 export function optionAttributes(
   schema: OptionSchema,
@@ -143,6 +196,10 @@ export function optionAttributes(
       else if (spec.values.includes(values[key] as string))
         attributes[spec.attr] = values[key] as string;
     } else if (spec.kind === "flag" && values[key] === true) attributes[spec.attr] = "";
+    else if (spec.kind === "number" && spec.attr.startsWith("data-ok-")) {
+      const value = parseNumber(spec, values[key]);
+      if (value !== undefined) attributes[spec.attr as `data-ok-${string}`] = String(value);
+    }
   }
   return attributes;
 }
@@ -151,6 +208,11 @@ export function optionAttributes(
 export function readBehavior(element: Element, spec: BehaviorOption): boolean {
   const value = element.getAttribute(spec.attr);
   return value === null ? spec.default : value !== "false";
+}
+
+/** HTML: reads a `number` option — absent or invalid → default. */
+export function readNumber(element: Element, spec: NumberOption): number | string | undefined {
+  return parseNumber(spec, element.getAttribute(spec.attr)) ?? spec.default;
 }
 
 /** HTML: reads a `style` option through its allowlist. */

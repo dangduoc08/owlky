@@ -67,6 +67,8 @@ function htmlOf(schema: OptionSchema, spec: OptionSpec): ReactNode {
           {where}
         </>
       );
+    case "number":
+      return <Code>{`${spec.attr}="…"`}</Code>;
     case "behavior":
       return (
         <>
@@ -96,6 +98,8 @@ function valuesOf(spec: OptionSpec): ReactNode {
         <Code>{value}</Code>
       </span>
     ));
+  if (spec.kind === "number")
+    return spec.units ? `Number (px) or a length in ${spec.units.join(", ")}` : "Number";
   return spec.kind === "state" ? "State" : "Boolean";
 }
 
@@ -103,6 +107,8 @@ function defaultOf(spec: OptionSpec): ReactNode {
   if (spec.kind === "style") return spec.optional ? "None" : <Code>{spec.default}</Code>;
   if (spec.kind === "behavior") return spec.default ? "On" : "Off";
   if (spec.kind === "state") return "None";
+  if (spec.kind === "number")
+    return spec.default === undefined ? "None" : <Code>{spec.default}</Code>;
   return "Off";
 }
 

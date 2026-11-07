@@ -229,3 +229,17 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
   with a generated subset, `icon-data.json`: edit `SETS` in `apps/storybook/scripts/icons.mjs`
   and run `pnpm --filter @owlky/storybook icons`. Never import a full
   `@iconify-json/*/icons.json` (megabytes). Credit each set's author and license (Solar is CC BY 4.0).
+- Numeric options (Progress `value`, `size`, `thickness`) use the schema's `number` kind
+  (`number(attr, default, description, { min, units })`, `parseNumber` / `readNumber`): invalid →
+  default. `optionAttributes` writes only `data-ok-*` numbers; ARIA ones (`aria-valuenow`) are
+  written by the component because they depend on the variant. Storybook needs `type: number`
+  on the argType to turn URL args back into numbers (done in `controls.ts`).
+- Values that CSS can't read from attributes (progress fractions, custom sizes): React passes
+  private `--_ok-*` properties in `style`; the HTML runtime writes the same ones through CSSOM
+  (`runtime/style.ts` `syncCustomProperties`) from an own `MutationObserver` with
+  `attributeFilter`. Snippets never carry a `style` attribute (strict CSP). Parity ignores `style`.
+- Button / IconButton loaders are a `CircularProgress` (`data-ok-button-spinner` on its root,
+  sized by `button.css` through `--_ok-progress-size`): no runtime needed for an indeterminate,
+  default-size progress. Tests that pick "the first `svg`" of a loading button now hit the loader.
+- `styles.test.ts` lists the pseudo-elements allowed after `:where(…)`; `::before` is allowed
+  (Progress tracks). Keyframe selectors must be one per block (`60%, 100%` fails the check).

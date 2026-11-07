@@ -12,7 +12,7 @@ const snippets = import.meta.glob(
   { query: "?raw", import: "default", eager: true },
 ) as Record<string, string>;
 
-const SETUP = htmlSetup(["button.css"]);
+const SETUP = htmlSetup(["circular-progress.css", "button.css"]);
 
 const story = (variant: string) =>
   snippetStory(snippets, variant, GROUP_FILES, SETUP, BUTTON_CONTROLS);

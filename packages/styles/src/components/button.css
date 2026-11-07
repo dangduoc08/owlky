@@ -10,6 +10,8 @@
  *            data-ok-size    = md (default) | sm | lg | xl
  *            data-ok-full-width, data-ok-disable-elevation,
  *            data-ok-loading + data-ok-loading-position = center | start | end
+ * Loader:    [data-ok-button-loader] › [data-ok-circular-progress][data-ok-button-spinner]
+ *            (circular-progress.css), sized here
  * States:    :hover (hover-capable devices), :focus-visible, :disabled, [aria-disabled="true"]
  *
  * Every selector is a single :where() (zero specificity) inside @layer components, so rules apply
@@ -95,7 +97,13 @@
     order: 2;
   }
 
+  /* The loader: a CircularProgress (color inherit) marked data-ok-button-spinner, 16px. */
   :where([data-ok-button-spinner]) {
+    --_ok-progress-size: calc(var(--ok-spacing) * 4);
+  }
+
+  /* Earlier markup: an empty data-ok-button-spinner span, drawn as a ring (still supported). */
+  :where([data-ok-button-spinner]:not([data-ok-circular-progress])) {
     box-sizing: border-box;
     width: calc(var(--ok-spacing) * 4);
     height: calc(var(--ok-spacing) * 4);
@@ -257,7 +265,7 @@
       transition: none;
     }
 
-    :where([data-ok-button-spinner]) {
+    :where([data-ok-button-spinner]:not([data-ok-circular-progress])) {
       animation-duration: 2.4s;
     }
   }

@@ -44,6 +44,8 @@ const FOLDERS: Record<string, string> = {
   fab: "button",
   "button-group": "button",
   "toggle-button": "button",
+  "circular-progress": "progress",
+  "linear-progress": "progress",
 };
 
 /** A component story rendered by one framework: `components-<folder>-<component>--<story>@<impl>`. */

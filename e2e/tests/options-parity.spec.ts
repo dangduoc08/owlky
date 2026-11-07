@@ -25,6 +25,13 @@ const CASES: [
   ["table", "basic", "table", ["size", "stickyHeader"]],
   ["pagination", "ranges", "pagination", ["variant", "color", "shape", "size", "disabled"]],
   ["scrollbar", "vertical", "scrollbar", ["autoHide"]],
+  [
+    "circular-progress",
+    "determinate",
+    "circular-progress",
+    ["thickness", "enableTrackSlot", "disableShrink"],
+  ],
+  ["linear-progress", "buffer", "linear-progress", ["value", "valueBuffer"]],
 ];
 
 /** A non-default value for the option, in Storybook's URL args syntax. */
@@ -35,6 +42,7 @@ function testValue(spec: OptionSpec): string {
       : (spec.values.find((v) => v !== spec.default) as string);
   }
   if (spec.kind === "behavior") return spec.default ? "!false" : "!true";
+  if (spec.kind === "number") return String((spec.default ?? 30) + 20);
   return "!true";
 }
 

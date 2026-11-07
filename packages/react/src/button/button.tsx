@@ -12,6 +12,7 @@ import {
   type ReactNode,
   type Ref,
 } from "react";
+import { CircularProgress } from "../circular-progress/circular-progress.js";
 
 export interface ButtonOwnProps {
   /** Visual style. Default `"text"`. */
@@ -89,7 +90,7 @@ export const Button = forwardRef<HTMLButtonElement | HTMLAnchorElement, ButtonPr
         )}
         {loading && (
           <span data-ok-button-loader="" aria-hidden="true">
-            {loadingIndicator ?? <span data-ok-button-spinner="" />}
+            {loadingIndicator ?? <CircularProgress color="inherit" data-ok-button-spinner="" />}
           </span>
         )}
         <span data-ok-button-label="">{children}</span>

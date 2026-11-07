@@ -5,7 +5,7 @@ and a review before the next starts.
 
 ## Overview
 Every page of the reference's component menu (`https://minimals.cc/components/…`) and where it
-stands. ✅ = built (14); *wave N* = planned, see "Next — components"; *not planned* = a pattern
+stands. ✅ = built (15); *wave N* = planned, see "Next — components"; *not planned* = a pattern
 or app-level page. *Section* = the heading below with the details. Update this table with each
 component and each `/integrate` run.
 
@@ -32,7 +32,7 @@ component and each `/integrate` run.
 | MUI | Menu | wave 4 | — | Next |
 | MUI | Pagination | ✅ | Pagination, PaginationItem | Pagination |
 | MUI | Popover | wave 4 | — | Next |
-| MUI | Progress | wave 1 | — | Next |
+| MUI | Progress | ✅ | CircularProgress, LinearProgress | Progress |
 | MUI | Radio button | wave 2 | — | Next |
 | MUI | Rating | wave 6 | — | Next |
 | MUI | Slider | wave 6 | — | Next |
@@ -151,6 +151,16 @@ Table`): all Table stories, Drawer content and Sortable lists now scroll in a Sc
 adapts with `:has(> [data-ok-scrollbar])`, and the old markup keeps working (additive). An
 unnamed `TableContainer` is no longer focusable. No new tokens.
 
+## ✅ Components — Progress (2026-11-07)
+CircularProgress (indeterminate / determinate, 7 colors incl. `inherit`, `size` in px or a
+`px` / `rem` / `em` length, `thickness`, `disableShrink`, `enableTrackSlot`) and LinearProgress
+(indeterminate / determinate / buffer / query, `valueBuffer`), API from MUI. CSS for the look;
+the HTML runtime turns values, size and thickness into private custom properties through CSSOM
+(strict CSP). New `number` option kind in the schemas (Controls, docs tables, spec tables).
+Button / IconButton loaders are now a CircularProgress (`data-ok-button-spinner` kept; an empty
+spinner span still renders). No new tokens.
+**Backlog:** right-to-left linear progress; a value label part (needs Typography).
+
 ## ✅ Theme settings (ADR-0017, 2026-11-05)
 From the reference's Settings drawer: primary color presets (default, cyan, purple, blue, orange,
 red) via `data-ok-preset`, font families (Public Sans, Inter, DM Sans, Nunito Sans) via
@@ -169,7 +179,6 @@ integrate these in the same review (additive: no DOM or API change) and remove t
 |---|---|---|
 | List | Drawer stories (mailbox menu) | demo `<nav><ul><button>` styled in `.storybook/preview.css` |
 | Typography (display text) | Sortable stories (card numbers) | demo `<span>` styled in `.storybook/preview.css` |
-| Progress | Button loading: `[data-ok-button-spinner]` in `button.css` (library) | own spinner; keep the attribute as public anatomy and share Progress's styles / tokens |
 | Typography (heading / secondary text) | Accordion summaries (plain text, no secondary line from the reference) | summary text styled by `accordion.css` |
 | Typography (heading) | Scrollbar "Layout" story heading | demo `<h4>` styled in `.storybook/preview.css` |
 | Checkbox | Table selection column (`data-ok-table-select`, `data-ok-table-select-all`) | native `<input type="checkbox">`, sized in `.storybook/preview.css`; keep the attributes on the input |
@@ -199,7 +208,7 @@ Dependency-first: leaf components before the ones built from them, the ones that
 
 | Wave | Components | Unlocks (existing components) |
 |---|---|---|
-| 1 Leaves | ~~Scrollbar~~ ✅, Progress, Checkbox, Switch | ~~Sortable / Drawer / Table scrolling~~ ✅; Button loading; Table selection; Table "Dense" |
+| 1 Leaves | ~~Scrollbar~~ ✅, ~~Progress~~ ✅, Checkbox, Switch | ~~Sortable / Drawer / Table scrolling~~ ✅; ~~Button loading~~ ✅; Table selection; Table "Dense" |
 | 2 Form | Text field (Input, Textarea, native Select), Radio button (+ restore empty export globs) | TablePagination rows per page; Table "Table pagination with API"; Pagination "Items" |
 | 3 Display | Avatar, Badge, Chip, Label, Divider, then List | Drawer menu (List, Divider) |
 | 4 Overlays | Popover (positioning controller + fallback in core), then Tooltip, Menu, Dialog (+ Backdrop), Snackbar | Drawer backdrop; Icon button tooltips |

@@ -11,7 +11,7 @@ An action shown only as an icon (toolbar, card actions). For text actions use Bu
 button[type="button"][data-ok-icon-button][data-ok-color][data-ok-size][data-ok-animate]?[aria-label]
   svg[aria-hidden="true"]            (any decorative SVG or img)
   span[data-ok-icon-button-loader][aria-hidden="true"]   only while loading (data-ok-loading)
-    span[data-ok-button-spinner]     default loader (React: `loadingIndicator` replaces it)
+    span[data-ok-circular-progress][data-ok-color="inherit"][data-ok-button-spinner]   default loader: a CircularProgress (React: `loadingIndicator` replaces it)
 ```
 
 ## Options

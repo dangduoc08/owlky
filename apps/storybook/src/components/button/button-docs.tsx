@@ -104,7 +104,7 @@ ${htmlButton('data-ok-variant="contained" data-ok-color="primary" data-ok-size="
     body: "Set `loading` while an action runs, such as a form submission. The button shows a spinner, is disabled and tells assistive technology that it's busy. With `loadingPosition`, the spinner replaces the start or end icon instead of covering the label.",
     html: `<button type="button" data-ok-button data-ok-variant="contained" data-ok-color="primary" data-ok-size="md" data-ok-loading data-ok-loading-position="start" aria-busy="true" disabled>
   <span data-ok-button-icon="start" aria-hidden="true">${MAIL_SVG}</span>
-  <span data-ok-button-loader aria-hidden="true"><span data-ok-button-spinner></span></span>
+  <span data-ok-button-loader aria-hidden="true"><span role="progressbar" data-ok-circular-progress data-ok-variant="indeterminate" data-ok-color="inherit" data-ok-button-spinner><svg data-ok-circular-progress-svg aria-hidden="true" viewBox="22 22 44 44"><circle data-ok-circular-progress-circle cx="44" cy="44" r="20.2" stroke-width="3.6" /></svg></span></span>
   <span data-ok-button-label>Sending</span>
 </button>`,
     react: `<Button

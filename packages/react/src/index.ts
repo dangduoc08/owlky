@@ -5,6 +5,7 @@ export type {
   ButtonLoadingPosition,
   ButtonSize,
   ButtonVariant,
+  CircularProgressVariant,
   ColorName,
   DrawerAnchor,
   DrawerCloseReason,
@@ -15,6 +16,7 @@ export type {
   IconButtonColor,
   IconButtonEdge,
   IconButtonSize,
+  LinearProgressVariant,
   Orientation,
   PageRange,
   PaginationAction,
@@ -24,6 +26,7 @@ export type {
   PaginationSize,
   PaginationVariant,
   PaletteColorName,
+  ProgressColor,
   SortableLayout,
   SortableMessages,
   TableAlign,
@@ -61,6 +64,10 @@ export {
 } from "./button/button.js";
 export { ButtonGroup, type ButtonGroupProps } from "./button-group/button-group.js";
 export {
+  CircularProgress,
+  type CircularProgressProps,
+} from "./circular-progress/circular-progress.js";
+export {
   Drawer,
   DrawerClose,
   DrawerContent,
@@ -70,6 +77,7 @@ export {
 } from "./drawer/drawer.js";
 export { Fab, type FabAsButtonProps, type FabAsLinkProps, type FabProps } from "./fab/fab.js";
 export { IconButton, type IconButtonProps } from "./icon-button/icon-button.js";
+export { LinearProgress, type LinearProgressProps } from "./linear-progress/linear-progress.js";
 export {
   Pagination,
   type PaginationIcons,

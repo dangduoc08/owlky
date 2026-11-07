@@ -132,7 +132,10 @@ describe("IconButton", () => {
     expect(
       busy.querySelector("[data-ok-icon-button-loader] [data-ok-button-spinner]"),
     ).not.toBeNull();
-    expect(css(busy.querySelector("svg") as Element).visibility).toBe("hidden");
+    expect(css(busy.querySelector(":scope > svg") as Element).visibility).toBe("hidden");
+    expect(css(busy.querySelector("[data-ok-button-spinner]") as Element).visibility).toBe(
+      "visible",
+    );
     expect(screen.getByRole("button", { name: "text" }).textContent).toBe("…");
   });
 

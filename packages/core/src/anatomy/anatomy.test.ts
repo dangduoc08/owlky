@@ -8,6 +8,8 @@ import {
   buttonGroupAttributes,
   buttonSizes,
   buttonVariants,
+  circularProgressAttributes,
+  circularProgressVariants,
   drawerAnchors,
   drawerAttributes,
   fabAttributes,
@@ -17,7 +19,11 @@ import {
   iconButtonAttributes,
   iconButtonColors,
   iconButtonSizes,
+  linearProgressAttributes,
+  linearProgressOptions,
+  linearProgressVariants,
   orientations,
+  progressColors,
   scrollbarAttributes,
   sortableAttributes,
   sortableLayouts,
@@ -349,5 +355,88 @@ describe("scrollbarAttributes", () => {
       "data-ok-auto-hide": "false",
     });
     expect(scrollbarAttributes({ autoHide: HOSTILE })).toEqual({ "data-ok-scrollbar": "" });
+  });
+});
+
+describe("circularProgressAttributes", () => {
+  it("emits explicit defaults; size and thickness only when given", () => {
+    expect(circularProgressAttributes()).toEqual({
+      "data-ok-circular-progress": "",
+      "data-ok-variant": "indeterminate",
+      "data-ok-color": "primary",
+    });
+  });
+
+  it.each(circularProgressVariants)("maps variant %s", (variant) => {
+    expect(circularProgressAttributes({ variant })["data-ok-variant"]).toBe(variant);
+  });
+
+  it.each(progressColors)("maps color %s", (color) => {
+    expect(circularProgressAttributes({ color })["data-ok-color"]).toBe(color);
+  });
+
+  it("writes valid sizes, thickness and flags", () => {
+    expect(
+      circularProgressAttributes({
+        size: 48,
+        thickness: 5,
+        disableShrink: true,
+        enableTrackSlot: true,
+      }),
+    ).toEqual({
+      "data-ok-circular-progress": "",
+      "data-ok-variant": "indeterminate",
+      "data-ok-color": "primary",
+      "data-ok-size": "48",
+      "data-ok-thickness": "5",
+      "data-ok-disable-shrink": "",
+      "data-ok-track-slot": "",
+    });
+    expect(circularProgressAttributes({ size: "3rem" })["data-ok-size"]).toBe("3rem");
+  });
+
+  it("drops invalid values", () => {
+    const attributes = circularProgressAttributes({
+      variant: HOSTILE,
+      color: HOSTILE,
+      size: HOSTILE,
+      thickness: -1,
+      disableShrink: HOSTILE,
+    });
+    expect(attributes).toEqual({
+      "data-ok-circular-progress": "",
+      "data-ok-variant": "indeterminate",
+      "data-ok-color": "primary",
+    });
+    expect(circularProgressAttributes({ size: "calc(1px + 2px)" })).not.toHaveProperty(
+      "data-ok-size",
+    );
+    expect(circularProgressAttributes({ size: Number.NaN })).not.toHaveProperty("data-ok-size");
+  });
+});
+
+describe("linearProgressAttributes", () => {
+  it("emits explicit defaults", () => {
+    expect(linearProgressAttributes()).toEqual({
+      "data-ok-linear-progress": "",
+      "data-ok-variant": "indeterminate",
+      "data-ok-color": "primary",
+    });
+  });
+
+  it.each(linearProgressVariants)("maps variant %s", (variant) => {
+    expect(linearProgressAttributes({ variant })["data-ok-variant"]).toBe(variant);
+  });
+
+  it.each(progressColors)("maps color %s", (color) => {
+    expect(linearProgressAttributes({ color })["data-ok-color"]).toBe(color);
+  });
+
+  it("value attributes are ARIA (written by the component) except the buffer", () => {
+    expect(linearProgressOptions.options.value.attr).toBe("aria-valuenow");
+    expect(linearProgressOptions.options.valueBuffer.attr).toBe("data-ok-value-buffer");
+    expect(linearProgressAttributes({ variant: HOSTILE, color: HOSTILE })).toEqual(
+      linearProgressAttributes(),
+    );
   });
 });

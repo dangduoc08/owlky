@@ -138,7 +138,11 @@ describe("Button behavior", () => {
     expect(button.dataset).toMatchObject({ okLoading: "", okLoadingPosition: "center" });
     const loader = button.querySelector("[data-ok-button-loader]");
     expect(loader?.getAttribute("aria-hidden")).toBe("true");
-    expect(loader?.querySelector("[data-ok-button-spinner]")).not.toBeNull();
+    const spinner = loader?.querySelector("[data-ok-button-spinner]") as HTMLElement;
+    // The loader is a CircularProgress in the button's text color, 16px (Progress integration).
+    expect(spinner.matches('[data-ok-circular-progress][data-ok-color="inherit"]')).toBe(true);
+    expect(getComputedStyle(spinner).width).toBe("16px");
+    expect(getComputedStyle(spinner).color).toBe(getComputedStyle(button).color);
     await userEvent.click(button, { force: true });
     expect(onClick).not.toHaveBeenCalled();
   });

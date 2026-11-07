@@ -4,6 +4,8 @@
  */
 @import "@owlky/tokens/tokens.css";
 @import "./components/accordion.css";
+@import "./components/circular-progress.css";
+@import "./components/linear-progress.css";
 @import "./components/button.css";
 @import "./components/button-group.css";
 @import "./components/icon-button.css";

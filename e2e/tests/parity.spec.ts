@@ -58,6 +58,13 @@ const pairs: [component: string, story: string][] = [
   ["scrollbar", "layout"],
   ["sortable", "vertical"],
   ["sortable", "horizontal"],
+  ["circular-progress", "indeterminate"],
+  ["circular-progress", "determinate"],
+  ["circular-progress", "sizes"],
+  ["linear-progress", "indeterminate"],
+  ["linear-progress", "determinate"],
+  ["linear-progress", "buffer"],
+  ["linear-progress", "query"],
 ];
 
 for (const [component, story] of pairs) {

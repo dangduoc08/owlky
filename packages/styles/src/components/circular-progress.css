@@ -1,0 +1,123 @@
+/*
+ * Circular progress — spec: specs/components/circular-progress.md
+ *
+ * Anatomy:   span[data-ok-circular-progress][role=progressbar]
+ *              › svg[data-ok-circular-progress-svg][viewBox="22 22 44 44"]
+ *                › circle[data-ok-circular-progress-circle]
+ * Modifiers: data-ok-variant = indeterminate (default) | determinate
+ *            data-ok-color   = primary (default) | secondary | info | success | warning | error
+ *                              | inherit (text color)
+ *            data-ok-disable-shrink, data-ok-track-slot
+ * Private:   --_ok-progress-size, -thickness, -dasharray, -dashoffset (set through CSSOM by React
+ *            and the HTML runtime from size / thickness / value)
+ *
+ * Every part paints with currentColor; the track is a ring (::before) at 24 % of it. The loop
+ * timings (1.4s) are animation choreography, not tokens (like Button's spinner).
+ * Single :where() selectors in @layer components (zero specificity).
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-ok-circular-progress]) {
+    --_ok-main: var(--ok-c-main, var(--ok-palette-primary-main));
+
+    position: relative;
+    display: inline-block;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    width: var(--_ok-progress-size, calc(var(--ok-spacing) * 10));
+    height: var(--_ok-progress-size, calc(var(--ok-spacing) * 10));
+    color: var(--_ok-main);
+    line-height: 1;
+    vertical-align: middle;
+    animation: ok-circular-progress-rotate 1.4s linear infinite;
+  }
+
+  :where([data-ok-circular-progress][data-ok-color="inherit"]) {
+    color: inherit;
+  }
+
+  :where([data-ok-circular-progress-svg]) {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  :where([data-ok-circular-progress-circle]) {
+    fill: none;
+    stroke: currentColor;
+    stroke-dasharray: 80px, 200px;
+    stroke-dashoffset: 0;
+    animation: ok-circular-progress-dash 1.4s ease-in-out infinite;
+  }
+
+  /* Track: a ring as wide as the stroke (thickness / 44 of the size). */
+  :where([data-ok-circular-progress][data-ok-track-slot])::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border: calc(
+        var(--_ok-progress-size, calc(var(--ok-spacing) * 10)) *
+        var(--_ok-progress-thickness, 3.6) /
+        44
+      )
+      solid currentColor;
+    border-radius: var(--ok-radius-full);
+    opacity: 0.24;
+  }
+
+  /* Determinate: the arc starts at 12 o'clock and grows clockwise. */
+  :where([data-ok-circular-progress][data-ok-variant="determinate"]) {
+    transform: rotate(-90deg);
+    animation: none;
+  }
+
+  :where(
+    [data-ok-circular-progress][data-ok-variant="determinate"] [data-ok-circular-progress-circle]
+  ) {
+    /* Until the value is known (HTML before the runtime runs): no arc. */
+    stroke-dasharray: var(--_ok-progress-dasharray, 0 200px);
+    stroke-dashoffset: var(--_ok-progress-dashoffset, 0);
+    animation: none;
+    transition: stroke-dashoffset var(--ok-duration-standard) var(--ok-easing-standard);
+  }
+
+  :where([data-ok-circular-progress][data-ok-disable-shrink] [data-ok-circular-progress-circle]) {
+    animation: none;
+  }
+
+  @keyframes ok-circular-progress-rotate {
+    to {
+      transform: rotate(1turn);
+    }
+  }
+
+  @keyframes ok-circular-progress-dash {
+    0% {
+      stroke-dasharray: 1px, 200px;
+      stroke-dashoffset: 0;
+    }
+
+    50% {
+      stroke-dasharray: 100px, 200px;
+      stroke-dashoffset: -15px;
+    }
+
+    100% {
+      stroke-dasharray: 100px, 200px;
+      stroke-dashoffset: -125px;
+    }
+  }
+
+  /* Reduced motion: a fixed arc that spins slowly (activity stays visible); no value easing. */
+  @media (prefers-reduced-motion: reduce) {
+    :where([data-ok-circular-progress]) {
+      animation-duration: 2.8s;
+    }
+
+    :where([data-ok-circular-progress-circle]) {
+      animation: none;
+      transition: none;
+    }
+  }
+}
