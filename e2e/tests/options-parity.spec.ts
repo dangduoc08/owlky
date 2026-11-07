@@ -40,6 +40,7 @@ const CASES: [
   ["chip", "filled", "chip", ["size", "disabled"]],
   ["divider", "variants", "divider", ["variant"]],
   ["list", "simple", "list", ["dense", "disablePadding"]],
+  ["tooltip", "simple", "tooltip", ["arrow"]],
   [
     "text-field",
     "outlined",

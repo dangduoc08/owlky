@@ -79,6 +79,11 @@ export function normalizeStory(page: Page): Promise<NormalizedNode> {
       "data-ok-open",
       "data-ok-drawer-open",
       "data-ok-drawer-close",
+      "data-ok-popover-open",
+      "data-ok-popover-hover",
+      "data-ok-toast-open",
+      "data-ok-toaster-position",
+      "data-ok-current-placement",
       "data-ok-sortable-add",
       // HTML runtime state and options (React keeps them in props / state).
       "data-ok-count",

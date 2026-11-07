@@ -323,3 +323,104 @@
 .sb-row > div:has(> [data-ok-divider] > [data-ok-divider-text]) > p {
   padding: 0.5rem 0;
 }
+
+/* Popover demos (story-only; a Typography component will replace the headings and text). */
+[data-ok-popover] > div:not([data-ok-popover-arrow]) {
+  box-sizing: border-box;
+  max-width: 17.5rem;
+  padding: calc(var(--ok-spacing) * 4);
+}
+
+[data-ok-popover] > div > h6 {
+  margin: 0 0 calc(var(--ok-spacing) * 2);
+  font-size: var(--ok-typography-subtitle1-font-size);
+  font-weight: var(--ok-typography-subtitle1-font-weight);
+  line-height: var(--ok-typography-subtitle1-line-height);
+}
+
+[data-ok-popover] > div > :where(p) {
+  margin: 0;
+  color: var(--ok-text-secondary);
+  font-size: var(--ok-typography-body2-font-size);
+  line-height: var(--ok-typography-body2-line-height);
+}
+
+/* Popover "Custom arrow": one row of buttons per side. */
+.sb-row:has(> div > [aria-controls^="popover-arrow-"]) {
+  flex-direction: column;
+  align-items: center;
+  gap: 2.5rem;
+  /* Room above and below, so each popover opens on its own side instead of flipping. */
+  padding-block: 10rem;
+}
+
+.sb-row > div:not([popover]):has(> [aria-controls^="popover-"]) {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+}
+
+/* Tooltip "Variable width" demos (MUI's sx in the reference). */
+#tooltip-width-custom {
+  max-width: 31.25rem;
+}
+
+#tooltip-width-none {
+  max-width: none;
+  white-space: nowrap;
+}
+
+.sb-row > div:has(> [data-ok-tooltip]) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+/* Menu "Max height": 4.5 items tall, 20 characters wide. */
+#menu-long {
+  width: 20ch;
+  max-height: calc(var(--ok-spacing) * 54);
+}
+
+/* Menu "Selected": the setting row. */
+.sb-row > [data-ok-list]:has([aria-haspopup="menu"]) {
+  width: 100%;
+  max-width: 22.5rem;
+  border-radius: var(--ok-radius-md);
+  background-color: var(--ok-bg-paper);
+}
+
+/* Dialog demos: the selection text and the full-screen toolbar (story-only). */
+.sb-row > div:has(> [data-ok-dialog]) {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.sb-row > div:has(> [data-ok-dialog]) > :where(p) {
+  margin: 0;
+  color: var(--ok-text-primary);
+  font-size: var(--ok-typography-subtitle1-font-size);
+  font-weight: var(--ok-typography-subtitle1-font-weight);
+}
+
+[data-ok-dialog][data-ok-full-screen] header {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--ok-spacing) * 4);
+  padding: calc(var(--ok-spacing) * 2) calc(var(--ok-spacing) * 4);
+  background-color: var(--ok-bg-neutral);
+}
+
+[data-ok-dialog][data-ok-full-screen] header > [data-ok-dialog-title] {
+  flex: 1;
+  padding: 0;
+}
+
+[data-ok-dialog-paper] > [data-ok-list] {
+  padding-bottom: calc(var(--ok-spacing) * 2);
+}

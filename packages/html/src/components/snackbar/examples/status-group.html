@@ -1,0 +1,71 @@
+<button type="button" data-ok-button data-ok-variant="contained" data-ok-color="info" data-ok-size="md" data-ok-toast-open="toast-info">
+  <span data-ok-button-label>Info</span>
+</button>
+<button type="button" data-ok-button data-ok-variant="contained" data-ok-color="success" data-ok-size="md" data-ok-toast-open="toast-success">
+  <span data-ok-button-label>Success</span>
+</button>
+<button type="button" data-ok-button data-ok-variant="contained" data-ok-color="warning" data-ok-size="md" data-ok-toast-open="toast-warning">
+  <span data-ok-button-label>Warning</span>
+</button>
+<button type="button" data-ok-button data-ok-variant="contained" data-ok-color="error" data-ok-size="md" data-ok-toast-open="toast-error">
+  <span data-ok-button-label>Error</span>
+</button>
+<button type="button" data-ok-button data-ok-variant="outlined" data-ok-color="inherit" data-ok-size="md" data-ok-toast-open="toast-promise">
+  <span data-ok-button-label>Promise</span>
+</button>
+<section data-ok-toaster data-ok-position="top-right" data-ok-close-button aria-label="Notifications">
+  <ol data-ok-toaster-list aria-live="polite"></ol>
+</section>
+<template id="toast-info">
+  <li data-ok-toast data-ok-type="info">
+    <span data-ok-toast-icon aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20m1 15h-2v-6h2zm0-8h-2V7h2z" fill="currentColor" /></svg></span>
+    <div data-ok-toast-content>
+      <div data-ok-toast-title>Arrive 10 minutes early</div>
+    </div>
+    <button type="button" data-ok-toast-close aria-label="Close"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2" /></svg></button>
+  </li>
+</template>
+<template id="toast-success">
+  <li data-ok-toast data-ok-type="success">
+    <span data-ok-toast-icon aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20m-1.4 14.2-4.3-4.3 1.4-1.4 2.9 2.9 6-6 1.4 1.4z" fill="currentColor" /></svg></span>
+    <div data-ok-toast-content>
+      <div data-ok-toast-title>Event has been created</div>
+    </div>
+    <button type="button" data-ok-toast-close aria-label="Close"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2" /></svg></button>
+  </li>
+</template>
+<template id="toast-warning">
+  <li data-ok-toast data-ok-type="warning">
+    <span data-ok-toast-icon aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 2.5 1.5 21h21zM13 18h-2v-2h2zm0-4h-2V9h2z" fill="currentColor" /></svg></span>
+    <div data-ok-toast-content>
+      <div data-ok-toast-title>Events can&#39;t start before 8 AM</div>
+    </div>
+    <button type="button" data-ok-toast-close aria-label="Close"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2" /></svg></button>
+  </li>
+</template>
+<template id="toast-error">
+  <li data-ok-toast data-ok-type="error">
+    <span data-ok-toast-icon aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M15.7 2H8.3L3 7.3v7.4L8.3 20h7.4l5.3-5.3V7.3zM13 16h-2v-2h2zm0-4h-2V7h2z" fill="currentColor" /></svg></span>
+    <div data-ok-toast-content>
+      <div data-ok-toast-title>Event has not been created</div>
+    </div>
+    <button type="button" data-ok-toast-close aria-label="Close"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2" /></svg></button>
+  </li>
+</template>
+<template id="toast-promise">
+  <li data-ok-toast data-ok-type="loading" data-ok-duration="2000" data-ok-then="toast-promise-success">
+    <span data-ok-toast-icon aria-hidden="true"><span data-ok-circular-progress data-ok-variant="indeterminate" data-ok-color="inherit" role="progressbar" aria-label="Loading"><svg data-ok-circular-progress-svg viewBox="22 22 44 44" aria-hidden="true"><circle data-ok-circular-progress-circle cx="44" cy="44" r="20.2" stroke-width="3.6" /></svg></span></span>
+    <div data-ok-toast-content>
+      <div data-ok-toast-title>Loading…</div>
+    </div>
+  </li>
+</template>
+<template id="toast-promise-success">
+  <li data-ok-toast data-ok-type="success">
+    <span data-ok-toast-icon aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20m-1.4 14.2-4.3-4.3 1.4-1.4 2.9 2.9 6-6 1.4 1.4z" fill="currentColor" /></svg></span>
+    <div data-ok-toast-content>
+      <div data-ok-toast-title>Loading succeeded</div>
+    </div>
+    <button type="button" data-ok-toast-close aria-label="Close"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2" /></svg></button>
+  </li>
+</template>

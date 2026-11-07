@@ -20,6 +20,8 @@ import {
   chipVariants,
   circularProgressAttributes,
   circularProgressVariants,
+  dialogAttributes,
+  dialogMaxWidths,
   dividerAttributes,
   dividerTextAligns,
   dividerVariants,
@@ -46,7 +48,11 @@ import {
   listItemTextAttributes,
   listSubheaderAttributes,
   listSubheaderColors,
+  menuAttributes,
+  menuItemAttributes,
   orientations,
+  popoverAttributes,
+  popoverPlacements,
   progressColors,
   radioAttributes,
   radioGroupAttributes,
@@ -62,10 +68,12 @@ import {
   textFieldAttributes,
   textFieldMargins,
   textFieldVariants,
+  toasterAttributes,
   toggleButtonAttributes,
   toggleButtonColors,
   toggleButtonSizes,
   toggleGroupAttributes,
+  tooltipAttributes,
 } from "./anatomy.js";
 
 const HOSTILE = '"><img src=x onerror=alert(1)>' as never;
@@ -788,6 +796,87 @@ describe("list attributes", () => {
       "data-ok-disable-gutters": "",
       "data-ok-disable-sticky": "",
       "data-ok-inset": "",
+    });
+  });
+});
+
+describe("overlay attributes", () => {
+  it.each(popoverPlacements)("popover / tooltip placement %s", (placement) => {
+    expect(popoverAttributes({ placement })["data-ok-placement"]).toBe(placement);
+    expect(tooltipAttributes({ placement })["data-ok-placement"]).toBe(placement);
+  });
+  it("popover and tooltip defaults, flags, numbers; hostile values dropped", () => {
+    expect(popoverAttributes()).toEqual({ "data-ok-popover": "", "data-ok-placement": "bottom" });
+    expect(
+      popoverAttributes({ arrow: true, disableEscapeKeyDown: true, placement: HOSTILE }),
+    ).toEqual({
+      "data-ok-popover": "",
+      "data-ok-placement": "bottom",
+      "data-ok-arrow": "",
+      "data-ok-disable-escape-key-down": "",
+    });
+    expect(tooltipAttributes({ enterDelay: 500, leaveDelay: HOSTILE, arrow: true })).toEqual({
+      "data-ok-tooltip": "",
+      "data-ok-placement": "bottom",
+      "data-ok-arrow": "",
+      "data-ok-enter-delay": "500",
+    });
+  });
+  it("menu and menu item", () => {
+    expect(menuAttributes()).toEqual({ "data-ok-menu": "" });
+    expect(menuAttributes({ dense: true })["data-ok-dense"]).toBe("");
+    expect(
+      menuItemAttributes({ selected: true, dense: true, divider: true, disableGutters: true }),
+    ).toEqual({
+      "data-ok-menu-item": "",
+      "data-ok-selected": "",
+      "data-ok-dense": "",
+      "data-ok-show-divider": "",
+      "data-ok-disable-gutters": "",
+    });
+  });
+  it.each(dialogMaxWidths)("dialog maxWidth %s", (maxWidth) => {
+    expect(dialogAttributes({ maxWidth })["data-ok-max-width"]).toBe(maxWidth);
+  });
+  it("dialog defaults and flags", () => {
+    expect(dialogAttributes()).toEqual({
+      "data-ok-dialog": "",
+      "data-ok-max-width": "sm",
+      "data-ok-scroll": "paper",
+    });
+    expect(
+      dialogAttributes({
+        fullWidth: true,
+        fullScreen: true,
+        scroll: "body",
+        hideBackdrop: true,
+        disableEscapeKeyDown: true,
+        maxWidth: HOSTILE,
+      }),
+    ).toEqual({
+      "data-ok-dialog": "",
+      "data-ok-max-width": "sm",
+      "data-ok-full-width": "",
+      "data-ok-full-screen": "",
+      "data-ok-scroll": "body",
+      "data-ok-hide-backdrop": "",
+      "data-ok-disable-escape-key-down": "",
+    });
+  });
+  it("toaster", () => {
+    expect(toasterAttributes()).toEqual({ "data-ok-toaster": "", "data-ok-position": "top-right" });
+    expect(
+      toasterAttributes({
+        position: "bottom-center",
+        duration: 2000,
+        visibleToasts: 0,
+        closeButton: true,
+      }),
+    ).toEqual({
+      "data-ok-toaster": "",
+      "data-ok-position": "bottom-center",
+      "data-ok-duration": "2000",
+      "data-ok-close-button": "",
     });
   });
 });

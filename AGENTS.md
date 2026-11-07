@@ -277,3 +277,16 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
 - Snippets that mirror React examples exactly can be generated: bundle the examples with esbuild
   (aliases to the packages' `dist`), `renderToStaticMarkup`, drop `data-ok-runtime="off"`, then
   pretty-print (watch for parsers that lowercase `viewBox`).
+- Anchored overlays (Popover, Menu, Tooltip) use core `createPopoverController`: `popover="manual"`
+  (top layer) or `data-ok-fallback`; CSS shows them only with `data-ok-open` (author `display` beats
+  the UA popover rule, so closed popovers need the explicit `display: none`). Position goes through
+  CSSOM (`--_ok-popover-x|y|arrow`), the flipped side in `data-ok-current-placement` (parity ignores it).
+  The arrow span is always rendered; `data-ok-arrow` shows it (so the Controls toggle keeps parity).
+- Story CSS that targets `.sb-row > div:has(> [aria-labelledby])`-style hooks also matches overlay
+  roots that sit in the row (a popover is a `div` with a labelled `ul`): scope demo rules to the
+  component (`:has(> [data-ok-tooltip])`, `:not([popover])`).
+- Overlay stories need state in React: one `?raw` demo per story (no Controls); generate the HTML
+  snippet from the closed render and add the HTML triggers (`data-ok-popover-open`,
+  `data-ok-dialog-open` / `-close`). Toast templates (`<template>`) are skipped by parity.
+- Pointer-driven tests near fixed overlays (toasters) must keep the pointer off them: hovering a
+  toaster pauses its timers.

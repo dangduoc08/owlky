@@ -141,7 +141,8 @@
         "rules": {
           "a11y": {
             "useSemanticElements": "off",
-            "noNoninteractiveTabindex": "off"
+            "noNoninteractiveTabindex": "off",
+            "noNoninteractiveElementToInteractiveRole": "off"
           }
         }
       }

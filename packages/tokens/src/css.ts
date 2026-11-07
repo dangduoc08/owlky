@@ -124,6 +124,8 @@ function schemeVariables(scheme: ColorScheme, theme: Theme, dark: boolean): CssV
   vars["--ok-text-disabled"] = scheme.text.disabled;
   vars["--ok-bg-default"] = scheme.background.default;
   vars["--ok-bg-paper"] = scheme.background.paper;
+  // Translucent paper (popovers, menus): `rgb(var(--ok-bg-paper-channel) / 0.9)`.
+  vars["--ok-bg-paper-channel"] = channel(scheme.background.paper);
   vars["--ok-bg-neutral"] = scheme.background.neutral;
   vars["--ok-inherit-main"] = scheme.inherit.main;
   vars["--ok-inherit-hover"] = scheme.inherit.hover;

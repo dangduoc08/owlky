@@ -1,0 +1,134 @@
+/*
+ * Tooltip — spec: specs/components/tooltip.md
+ *
+ * Anatomy:   div[data-ok-tooltip][role=tooltip][popover=manual][id]
+ *              › span[data-ok-tooltip-arrow][aria-hidden]?   (with data-ok-arrow)
+ *              › text
+ *            The trigger points at it: aria-describedby (labelled control) or aria-labelledby
+ *            (icon-only control: the tooltip is its name).
+ * Modifiers: data-ok-placement = bottom (default) | top | left | right, each -start / -end
+ *            data-ok-arrow, data-ok-transition = grow (default) | fade | zoom
+ * States:    [data-ok-open], [data-ok-current-placement], [data-ok-fallback] (core popover
+ *            controller, see popover.css). Private: --_ok-popover-x / -y / -arrow.
+ *
+ * Single :where() selectors in @layer components.
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-ok-tooltip]) {
+    --_ok-arrow-size: calc(var(--ok-spacing) * 2.5);
+    --_ok-tooltip-bg: var(--ok-palette-grey-800);
+
+    position: fixed;
+    inset: auto;
+    top: var(--_ok-popover-y, 0);
+    left: var(--_ok-popover-x, 0);
+    z-index: var(--ok-z-tooltip);
+    box-sizing: border-box;
+    max-width: calc(var(--ok-spacing) * 75);
+    margin: 0;
+    padding: var(--ok-spacing) calc(var(--ok-spacing) * 2);
+    overflow: visible;
+    border: 0;
+    border-radius: var(--ok-radius-sm);
+    background-color: var(--_ok-tooltip-bg);
+    color: var(--ok-palette-common-white);
+    font-family: var(--ok-font-family);
+    font-size: calc(var(--ok-font-size-xs) - 0.0625rem);
+    font-weight: var(--ok-font-weight-medium);
+    line-height: 1.5;
+    overflow-wrap: break-word;
+  }
+
+  @supports (color: light-dark(#000, #fff)) {
+    :where([data-ok-tooltip]) {
+      --_ok-tooltip-bg: light-dark(var(--ok-palette-grey-800), var(--ok-palette-grey-700));
+    }
+  }
+
+  :where([data-ok-tooltip]:not([data-ok-open])) {
+    display: none;
+  }
+
+  :where([data-ok-tooltip][data-ok-open]) {
+    display: block;
+    animation: ok-tooltip-grow var(--ok-duration-shortest) var(--ok-easing-decelerate);
+  }
+
+  :where([data-ok-tooltip][data-ok-transition="fade"][data-ok-open]) {
+    animation-name: ok-tooltip-fade;
+  }
+
+  :where([data-ok-tooltip][data-ok-transition="zoom"][data-ok-open]) {
+    animation-name: ok-tooltip-zoom;
+  }
+
+  :where([data-ok-tooltip-arrow]) {
+    position: absolute;
+    width: var(--_ok-arrow-size);
+    height: var(--_ok-arrow-size);
+    background-color: var(--_ok-tooltip-bg);
+    transform: rotate(45deg);
+    pointer-events: none;
+  }
+
+  :where([data-ok-tooltip]:not([data-ok-arrow]) > [data-ok-tooltip-arrow]) {
+    display: none;
+  }
+
+  :where(
+    [data-ok-tooltip][data-ok-current-placement^="bottom"] > [data-ok-tooltip-arrow],
+    [data-ok-tooltip][data-ok-current-placement^="top"] > [data-ok-tooltip-arrow]
+  ) {
+    left: calc(var(--_ok-popover-arrow, 50%) - var(--_ok-arrow-size) / 2);
+  }
+
+  :where([data-ok-tooltip][data-ok-current-placement^="bottom"] > [data-ok-tooltip-arrow]) {
+    top: calc(var(--_ok-arrow-size) / -2);
+  }
+
+  :where([data-ok-tooltip][data-ok-current-placement^="top"] > [data-ok-tooltip-arrow]) {
+    bottom: calc(var(--_ok-arrow-size) / -2);
+  }
+
+  :where(
+    [data-ok-tooltip][data-ok-current-placement^="left"] > [data-ok-tooltip-arrow],
+    [data-ok-tooltip][data-ok-current-placement^="right"] > [data-ok-tooltip-arrow]
+  ) {
+    top: calc(var(--_ok-popover-arrow, 50%) - var(--_ok-arrow-size) / 2);
+  }
+
+  :where([data-ok-tooltip][data-ok-current-placement^="right"] > [data-ok-tooltip-arrow]) {
+    left: calc(var(--_ok-arrow-size) / -2);
+  }
+
+  :where([data-ok-tooltip][data-ok-current-placement^="left"] > [data-ok-tooltip-arrow]) {
+    right: calc(var(--_ok-arrow-size) / -2);
+  }
+
+  @keyframes ok-tooltip-grow {
+    from {
+      opacity: 0;
+      transform: scale(0.75);
+    }
+  }
+
+  @keyframes ok-tooltip-fade {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes ok-tooltip-zoom {
+    from {
+      transform: scale(0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :where([data-ok-tooltip][data-ok-open]) {
+      animation: none;
+    }
+  }
+}

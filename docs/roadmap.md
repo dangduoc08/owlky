@@ -26,13 +26,13 @@ component and each `/integrate` run.
 | MUI | Buttons | ✅ | Button, IconButton, Fab, ButtonGroup, ToggleButton(Group) | Button |
 | MUI | Checkbox | ✅ | Checkbox, FormControlLabel | Checkbox & Switch |
 | MUI | Chip | ✅ | Chip | Avatar, Badge, Chip & Label |
-| MUI | Dialog | wave 4 | — | Next |
+| MUI | Dialog | ✅ | Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions | Popover, Tooltip, Menu, Dialog & Snackbar |
 | MUI | Drawer | ✅ | Drawer | Drawer |
 | MUI (no Minimals page; mui.com) | Divider | ✅ | Divider | Divider |
 | MUI | List | ✅ | List, ListItem, ListItemButton, ListItemIcon, ListItemAvatar, ListItemText, ListSubheader, ListItemExpandIcon | List |
-| MUI | Menu | wave 4 | — | Next |
+| MUI | Menu | ✅ | Menu, MenuItem | Popover, Tooltip, Menu, Dialog & Snackbar |
 | MUI | Pagination | ✅ | Pagination, PaginationItem | Pagination |
-| MUI | Popover | wave 4 | — | Next |
+| MUI | Popover | ✅ | Popover | Popover, Tooltip, Menu, Dialog & Snackbar |
 | MUI | Progress | ✅ | CircularProgress, LinearProgress | Progress |
 | MUI | Radio button | ✅ | Radio, RadioGroup | Text field & Radio |
 | MUI | Rating | wave 6 | — | Next |
@@ -43,7 +43,7 @@ component and each `/integrate` run.
 | MUI | Tabs | wave 5 | — | Next |
 | MUI | Text field | ✅ | TextField, InputAdornment (native select) | Text field & Radio |
 | MUI | Timeline | wave 6 | — | Next |
-| MUI | Tooltip | wave 4 | — | Next |
+| MUI | Tooltip | ✅ | Tooltip | Popover, Tooltip, Menu, Dialog & Snackbar |
 | MUI | Transfer list | wave 6 | — | Next |
 | MUI X | Data grid | wave 7 (ADR) | — | Next |
 | MUI X | Date pickers | wave 7 (ADR) | — | Next |
@@ -67,7 +67,7 @@ component and each `/integrate` run.
 | Extra | Organization chart | wave 7 (ADR) | — | Next |
 | Extra | Scroll progress | not planned | — | Next |
 | Extra | Scrollbar | ✅ | Scrollbar | Scrollbar |
-| Extra | Snackbar | wave 4 | — | Next |
+| Extra (Sonner) | Snackbar | ✅ | Toaster, toast() | Popover, Tooltip, Menu, Dialog & Snackbar |
 | Extra | Upload | wave 7 (ADR) | — | Next |
 | Extra | Utilities | not planned | — | Next |
 | Extra | Walktour | wave 7 (ADR) | — | Next |
@@ -151,6 +151,17 @@ Table`): all Table stories, Drawer content and Sortable lists now scroll in a Sc
 adapts with `:has(> [data-ok-scrollbar])`, and the old markup keeps working (additive). An
 unnamed `TableContainer` is no longer focusable. No new tokens.
 
+## ✅ Components — Popover, Tooltip, Menu, Dialog & Snackbar (2026-11-07)
+Wave 4 (overlays), created with `/component` from the reference pages. Core: anchored positioning
+(`computePosition`: 12 placements, flip, shift, arrow offset) and `createPopoverController`
+(Popover API `popover="manual"` + fallback `data-ok-fallback`, Escape / outside press as intent,
+focus in and back, layer stack) shared by Popover, Menu and Tooltip; `createHoverIntent` (tooltip
+timing, 100 ms grace to reach the tooltip); menu keyboard helpers (arrows, Home / End, typeahead);
+toast store / API / timer (Sonner). Dialog reuses `createModalController`. HTML runtimes: `popover`
+(click and hover triggers), `menu`, `tooltip`, `dialog`, `toaster` (templates, `data-ok-then`).
+One placement vocabulary replaces MUI's `anchorOrigin` / `transformOrigin`. Token added:
+`--ok-bg-paper-channel` (translucent paper). No new runtime dependency.
+
 ## ✅ Components — List (2026-11-07)
 Created with `/component` from the reference "List" page (stories: Simple, Nested, Folder,
 Selected, Controls, Switch). `ul[data-ok-list]` with items, row buttons (`button` / `a`), icon,
@@ -230,13 +241,15 @@ integrate these in the same review (additive: no DOM or API change) and remove t
 | Typography (display text) | Sortable stories (card numbers) | demo `<span>` styled in `.storybook/preview.css` |
 | Typography (heading / secondary text) | Accordion summaries (plain text, no secondary line from the reference) | summary text styled by `accordion.css` |
 | Typography (heading) | Scrollbar "Layout" story heading | demo `<h4>` styled in `.storybook/preview.css` |
-| Select (listbox; needs Menu / Popover) | `TablePagination` rows per page (library markup) | native `<select>` styled in `table.css`; the API (`rowsPerPageOptions`) stays. TextField's native select doesn't match MUI's InputBase select here |
-| Select (listbox; needs Menu / Popover) | Pagination story "Items" (card grid + items-per-page Select) | story deferred: the reference uses MUI's listbox Select |
-| Select (listbox; needs Menu / Popover) | Table story "Table pagination with API" (search TextField + category Select) | story deferred until the listbox Select; TextField exists |
-| Select (listbox; needs Menu / Popover) | TextField `select` (non-native) | native `<select>` only (`select` prop) |
+| Select (listbox, built on Menu) | `TablePagination` rows per page (library markup) | native `<select>` styled in `table.css`; the API (`rowsPerPageOptions`) stays. TextField's native select doesn't match MUI's InputBase select here |
+| Select (listbox, built on Menu) | Pagination story "Items" (card grid + items-per-page Select) | story deferred: the reference uses MUI's listbox Select |
+| Select (listbox, built on Menu) | Table story "Table pagination with API" (search TextField + category Select) | story deferred until the listbox Select; TextField exists |
+| Select (listbox, built on Menu) | TextField `select` (non-native) | native `<select>` only (`select` prop) |
 | FormLabel | Radio story "Colors" (group label) | story-only `<span id>` styled in `.storybook/preview.css` |
 | Collapse (transition) | List nested lists | open / close at once (`hidden`); a Collapse component can animate the height later without a DOM change |
-| Backdrop | Drawer: native `::backdrop` | share `--ok-backdrop` with a future Backdrop component |
+| Backdrop | Drawer and Dialog: native `::backdrop` | share `--ok-backdrop` with a future Backdrop component |
+| Typography (headings, body text) | Popover and Dialog stories (popover text, "Selected:" line, full-screen toolbar title) | demo `h6` / `p` / `header` styled in `.storybook/preview.css` |
+| Collapse / Slide (transitions) | Dialog story "Transitions" (the reference slides the dialog in) | the dialog's one opening animation (fade + scale) |
 
 ## ✅ Upstream API review (ADR-0015, 2026-11-04)
 Components checked against their upstream API (MUI). Rule from the owner: what the Minimals page
@@ -260,7 +273,7 @@ Dependency-first: leaf components before the ones built from them, the ones that
 | 1 Leaves | ~~Scrollbar~~ ✅, ~~Progress~~ ✅, ~~Checkbox~~ ✅, ~~Switch~~ ✅ | ~~Sortable / Drawer / Table scrolling~~ ✅; ~~Button loading~~ ✅; ~~Table selection~~ ✅; ~~Table "Dense"~~ ✅ |
 | 2 Form | ~~Text field (Input, Textarea, native Select)~~ ✅, ~~Radio button~~ ✅ | TablePagination rows per page, Table "Table pagination with API", Pagination "Items": wait for the listbox Select (wave 4) |
 | 3 Display | ~~Avatar~~ ✅, ~~Badge~~ ✅, ~~Chip~~ ✅, ~~Label~~ ✅, ~~Divider~~ ✅, ~~List~~ ✅ | ~~Drawer menu~~ ✅ |
-| 4 Overlays | Popover (positioning controller + fallback in core), then Tooltip, Menu, Dialog (+ Backdrop), Snackbar | Drawer backdrop; Icon button tooltips |
+| 4 Overlays | ~~Popover~~ ✅, ~~Tooltip~~ ✅, ~~Menu~~ ✅, ~~Dialog~~ ✅, ~~Snackbar~~ ✅; Backdrop later | Drawer backdrop (waits for Backdrop); icon button tooltips: nothing to change (MUI uses native `title` there; Tooltip wraps any IconButton) |
 | 5 Navigation | Tabs, Breadcrumbs, Stepper | — |
 | 6 Composites | Rating, Slider, Timeline, Transfer list, Autocomplete, Tree view | — |
 | 7 Needs an ADR | Data grid, Date pickers, Chart, Map, Editor, Carousel, Lightbox, Markdown, Organization chart, Upload, Image, Walktour | — |

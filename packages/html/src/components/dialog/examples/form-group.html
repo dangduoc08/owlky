@@ -1,0 +1,30 @@
+<button type="button" data-ok-button data-ok-variant="outlined" data-ok-color="warning" data-ok-size="md" aria-haspopup="dialog" aria-expanded="false" aria-controls="dialog-form" data-ok-dialog-open="dialog-form">
+  <span data-ok-button-label>Form dialog</span>
+</button>
+<dialog data-ok-dialog data-ok-max-width="sm" data-ok-scroll="paper" aria-labelledby="dialog-form-title" id="dialog-form">
+  <div data-ok-dialog-paper>
+    <h2 id="dialog-form-title" data-ok-dialog-title>Subscribe</h2>
+    <div data-ok-dialog-content>
+      <p data-ok-dialog-content-text>Enter your email address to get our newsletter once a month.</p>
+      <div data-ok-text-field data-ok-variant="outlined" data-ok-size="medium" data-ok-color="default" data-ok-full-width data-ok-margin="none">
+        <label data-ok-text-field-label for="dialog-form-email">Email address</label>
+        <div data-ok-text-field-control>
+          <input id="dialog-form-email" data-ok-text-field-input type="email" placeholder=" ">
+          <fieldset data-ok-text-field-outline aria-hidden="true">
+            <legend>
+              <span>Email address</span>
+            </legend>
+          </fieldset>
+        </div>
+      </div>
+    </div>
+    <div data-ok-dialog-actions>
+      <button type="button" data-ok-button data-ok-variant="outlined" data-ok-color="inherit" data-ok-size="md" data-ok-dialog-close>
+        <span data-ok-button-label>Cancel</span>
+      </button>
+      <button type="button" data-ok-button data-ok-variant="contained" data-ok-color="inherit" data-ok-size="md" data-ok-dialog-close>
+        <span data-ok-button-label>Subscribe</span>
+      </button>
+    </div>
+  </div>
+</dialog>

@@ -1,0 +1,95 @@
+/*
+ * Menu — spec: specs/components/menu.md
+ *
+ * Anatomy:   div[data-ok-popover] (the paper, see popover.css)
+ *              › ul[data-ok-menu][role=menu][aria-labelledby]
+ *                  › li[data-ok-menu-item][role=menuitem][tabindex=-1]
+ * Modifiers: menu      data-ok-dense
+ *            item      data-ok-selected (+ aria-current), data-ok-dense, data-ok-show-divider,
+ *                      data-ok-disable-gutters; aria-disabled="true"
+ * States:    :hover (hover-capable devices), :focus (the item the keyboard is on)
+ *
+ * Single :where() selectors in @layer components.
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-ok-menu]) {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    outline: none;
+    list-style: none;
+  }
+
+  :where([data-ok-menu-item]) {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--ok-spacing) * 4);
+    box-sizing: border-box;
+    min-height: calc(var(--ok-spacing) * 8.5);
+    padding: calc(var(--ok-spacing) * 1.5) calc(var(--ok-spacing) * 2);
+    border-radius: var(--ok-radius-sm);
+    color: var(--ok-text-primary);
+    font-size: var(--ok-typography-body2-font-size);
+    line-height: var(--ok-typography-body2-line-height);
+    white-space: nowrap;
+    cursor: pointer;
+    outline: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  :where([data-ok-menu-item]:not(:last-child)) {
+    margin-bottom: var(--ok-spacing);
+  }
+
+  :where([data-ok-menu-item] > svg) {
+    flex-shrink: 0;
+    width: calc(var(--ok-spacing) * 5);
+    height: calc(var(--ok-spacing) * 5);
+  }
+
+  :where([data-ok-menu][data-ok-dense] > [data-ok-menu-item], [data-ok-menu-item][data-ok-dense]) {
+    min-height: calc(var(--ok-spacing) * 8);
+    padding-block: var(--ok-spacing);
+  }
+
+  :where([data-ok-menu-item][data-ok-disable-gutters]) {
+    padding-inline: 0;
+  }
+
+  :where([data-ok-menu-item][data-ok-show-divider]) {
+    margin-bottom: calc(var(--ok-spacing) * 2);
+    border-bottom: 1px solid var(--ok-divider);
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+
+  :where([data-ok-menu-item][data-ok-selected]) {
+    background-color: var(--ok-action-hover);
+    font-weight: var(--ok-font-weight-semibold);
+  }
+
+  @media (hover: hover) {
+    :where([data-ok-menu-item]:hover) {
+      background-color: var(--ok-action-hover);
+    }
+  }
+
+  :where([data-ok-menu-item]:focus) {
+    background-color: var(--ok-action-focus);
+  }
+
+  :where([data-ok-menu-item]:focus-visible) {
+    outline: 2px solid var(--ok-text-primary);
+    outline-offset: -2px;
+  }
+
+  :where([data-ok-menu-item][aria-disabled="true"]) {
+    background-color: transparent;
+    opacity: 0.48;
+    cursor: default;
+    pointer-events: none;
+  }
+}

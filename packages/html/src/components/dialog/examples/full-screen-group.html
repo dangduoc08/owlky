@@ -1,0 +1,34 @@
+<button type="button" data-ok-button data-ok-variant="outlined" data-ok-color="error" data-ok-size="md" aria-haspopup="dialog" aria-expanded="false" aria-controls="dialog-full-screen" data-ok-dialog-open="dialog-full-screen">
+  <span data-ok-button-label>Open full-screen dialog</span>
+</button>
+<dialog data-ok-dialog data-ok-max-width="sm" data-ok-full-screen data-ok-scroll="paper" aria-labelledby="dialog-full-screen-title" id="dialog-full-screen">
+  <div data-ok-dialog-paper>
+    <header>
+      <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="md" aria-label="Close" data-ok-dialog-close>
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18" /><path d="M6 6l12 12" /></svg>
+      </button>
+      <h2 id="dialog-full-screen-title" data-ok-dialog-title>Sound</h2>
+      <button type="button" data-ok-button data-ok-variant="contained" data-ok-color="inherit" data-ok-size="md" data-ok-dialog-close>
+        <span data-ok-button-label>Save</span>
+      </button>
+    </header>
+    <ul data-ok-list aria-label="Sound settings">
+      <li data-ok-list-item data-ok-disable-padding data-ok-show-divider>
+        <button type="button" data-ok-list-item-button>
+          <span data-ok-list-item-text>
+            <span data-ok-list-item-text-primary>Phone ringtone</span>
+            <span data-ok-list-item-text-secondary>Aurora</span>
+          </span>
+        </button>
+      </li>
+      <li data-ok-list-item data-ok-disable-padding>
+        <button type="button" data-ok-list-item-button>
+          <span data-ok-list-item-text>
+            <span data-ok-list-item-text-primary>Default notification ringtone</span>
+            <span data-ok-list-item-text-secondary>Chime</span>
+          </span>
+        </button>
+      </li>
+    </ul>
+  </div>
+</dialog>

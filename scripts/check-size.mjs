@@ -3,7 +3,9 @@ import { readFile } from "node:fs/promises";
 import { gzipSync } from "node:zlib";
 
 const budgets = [
-  ["packages/html/dist/owlky.js", 15_000, "HTML runtime + all components (IIFE)"],
+  // 22 kB since the overlays (popover, menu, tooltip, dialog, toaster and the core positioning);
+  // The CDN bundle carries every component; the npm ESM build (`@owlky/html`) is tree-shaken.
+  ["packages/html/dist/owlky.js", 22_000, "HTML runtime + all components (IIFE)"],
   ["packages/html/dist/esm/runtime/runtime.js", 3_000, "HTML core runtime"],
   // 20 kB since the form, display and list components; per-component files
   // (`@owlky/styles/components/*`) let apps load only what they use.

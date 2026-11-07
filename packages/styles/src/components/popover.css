@@ -1,0 +1,164 @@
+/*
+ * Popover — spec: specs/components/popover.md (also the paper of Menu)
+ *
+ * Anatomy:   div[data-ok-popover][popover=manual][role=dialog]?
+ *              › span[data-ok-popover-arrow][aria-hidden]?   (with data-ok-arrow)
+ *              › content
+ * Modifiers: data-ok-placement = bottom (default) | top | left | right, each -start / -end
+ *            data-ok-arrow, data-ok-disable-escape-key-down (behavior)
+ * States:    [data-ok-open] (written by the core popover controller, both paths);
+ *            [data-ok-current-placement] (the side used after a flip); [data-ok-fallback]
+ *            without the Popover API (ADR-0006): fixed + z-index instead of the top layer.
+ * Private:   --_ok-popover-x / -y / -arrow / -w / -h (px, set through CSSOM by the controller)
+ *
+ * Translucent paper with a blur and two soft color glows (info top-right, error bottom-left).
+ * Single :where() selectors in @layer components.
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-ok-popover]) {
+    --_ok-arrow-size: calc(var(--ok-spacing) * 6);
+    --_ok-popover-bg: rgb(var(--ok-bg-paper-channel) / 0.9);
+    --_ok-popover-blur: blur(calc(var(--ok-spacing) * 5));
+    /* The glow layer reaches past the paper by the arrow size on every side, so the arrow (outside
+       the paper) can show the same glow. Size from the controller (--_ok-popover-w|h, px). */
+    --_ok-glow-ext: var(--_ok-arrow-size);
+    --_ok-glow-width: calc(var(--_ok-popover-w, 100%) + var(--_ok-glow-ext) * 2);
+    --_ok-glow-height: calc(var(--_ok-popover-h, 100%) + var(--_ok-glow-ext) * 2);
+    --_ok-popover-glow:
+      radial-gradient(
+        circle at calc(100% - var(--_ok-glow-ext)) var(--_ok-glow-ext),
+        rgb(var(--ok-palette-info-main-channel) / 0.12),
+        transparent 40%
+      ),
+      radial-gradient(
+        circle at var(--_ok-glow-ext) calc(100% - var(--_ok-glow-ext)),
+        rgb(var(--ok-palette-error-main-channel) / 0.12),
+        transparent 40%
+      );
+
+    position: fixed;
+    inset: auto;
+    top: var(--_ok-popover-y, 0);
+    left: var(--_ok-popover-x, 0);
+    z-index: var(--ok-z-dropdown);
+    box-sizing: border-box;
+    max-width: calc(100% - var(--ok-spacing) * 8);
+    max-height: calc(100% - var(--ok-spacing) * 8);
+    margin: 0;
+    padding: var(--ok-spacing);
+    overflow: visible;
+    border: 0;
+    border-radius: calc(var(--ok-radius-md) * 1.25);
+    background-color: var(--_ok-popover-bg);
+    background-image: var(--_ok-popover-glow);
+    background-repeat: no-repeat;
+    background-size: var(--_ok-glow-width) var(--_ok-glow-height);
+    background-position: calc(-1 * var(--_ok-glow-ext)) calc(-1 * var(--_ok-glow-ext));
+    box-shadow: var(--ok-shadow-dropdown);
+    color: var(--ok-text-primary);
+    font-family: var(--ok-font-family);
+    -webkit-backdrop-filter: var(--_ok-popover-blur);
+    backdrop-filter: var(--_ok-popover-blur);
+  }
+
+  /* Without an arrow, long content scrolls inside the paper (an arrow must stay unclipped). */
+  :where([data-ok-popover]:not([data-ok-arrow])) {
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+
+  /* Author `display` rules beat the UA popover rules, so visibility follows data-ok-open. */
+  :where([data-ok-popover]:not([data-ok-open])) {
+    display: none;
+  }
+
+  :where([data-ok-popover][data-ok-open]) {
+    display: block;
+    animation: ok-popover-in var(--ok-duration-shorter) var(--ok-easing-decelerate);
+  }
+
+  :where([data-ok-popover])::backdrop {
+    background: transparent;
+  }
+
+  /* Arrow: a triangle (clip-path, not a turned square, so its background stays upright) painted
+     exactly like the paper: the same translucent color, blur and color glows, aligned to the paper
+     through the glow layer's coordinates. It sits on the edge that faces the anchor. */
+  :where([data-ok-popover-arrow]) {
+    --_ok-arrow-x: 0px;
+    --_ok-arrow-y: 0px;
+
+    position: absolute;
+    width: var(--_ok-arrow-size);
+    height: var(--_ok-arrow-size);
+    background-color: var(--_ok-popover-bg);
+    background-image: var(--_ok-popover-glow);
+    background-repeat: no-repeat;
+    background-size: var(--_ok-glow-width) var(--_ok-glow-height);
+    background-position: calc(-1 * var(--_ok-glow-ext) - var(--_ok-arrow-x))
+      calc(-1 * var(--_ok-glow-ext) - var(--_ok-arrow-y));
+    -webkit-backdrop-filter: var(--_ok-popover-blur);
+    backdrop-filter: var(--_ok-popover-blur);
+    pointer-events: none;
+  }
+
+  :where([data-ok-popover]:not([data-ok-arrow]) > [data-ok-popover-arrow]) {
+    display: none;
+  }
+
+  /* Arrow on the top edge (the popover is below its anchor). */
+  :where([data-ok-popover][data-ok-current-placement^="bottom"] > [data-ok-popover-arrow]) {
+    --_ok-arrow-x: calc(var(--_ok-popover-arrow, 50%) - var(--_ok-arrow-size) / 2);
+    --_ok-arrow-y: calc(var(--_ok-arrow-size) / -2);
+
+    height: calc(var(--_ok-arrow-size) / 2);
+    clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  }
+
+  /* Arrow on the bottom edge (the popover is above its anchor). */
+  :where([data-ok-popover][data-ok-current-placement^="top"] > [data-ok-popover-arrow]) {
+    --_ok-arrow-x: calc(var(--_ok-popover-arrow, 50%) - var(--_ok-arrow-size) / 2);
+    --_ok-arrow-y: var(--_ok-popover-h, 100%);
+
+    height: calc(var(--_ok-arrow-size) / 2);
+    clip-path: polygon(0 0, 100% 0, 50% 100%);
+  }
+
+  /* Arrow on the left edge (the popover is right of its anchor). */
+  :where([data-ok-popover][data-ok-current-placement^="right"] > [data-ok-popover-arrow]) {
+    --_ok-arrow-x: calc(var(--_ok-arrow-size) / -2);
+    --_ok-arrow-y: calc(var(--_ok-popover-arrow, 50%) - var(--_ok-arrow-size) / 2);
+
+    width: calc(var(--_ok-arrow-size) / 2);
+    clip-path: polygon(0 50%, 100% 0, 100% 100%);
+  }
+
+  /* Arrow on the right edge (the popover is left of its anchor). */
+  :where([data-ok-popover][data-ok-current-placement^="left"] > [data-ok-popover-arrow]) {
+    --_ok-arrow-x: var(--_ok-popover-w, 100%);
+    --_ok-arrow-y: calc(var(--_ok-popover-arrow, 50%) - var(--_ok-arrow-size) / 2);
+
+    width: calc(var(--_ok-arrow-size) / 2);
+    clip-path: polygon(0 0, 100% 50%, 0 100%);
+  }
+
+  :where([data-ok-popover][data-ok-current-placement] > [data-ok-popover-arrow]) {
+    top: var(--_ok-arrow-y);
+    left: var(--_ok-arrow-x);
+  }
+
+  @keyframes ok-popover-in {
+    from {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :where([data-ok-popover][data-ok-open]) {
+      animation: none;
+    }
+  }
+}

@@ -1,0 +1,280 @@
+/*
+ * Snackbar (toaster + toasts) — spec: specs/components/snackbar.md
+ *
+ * Anatomy:   section[data-ok-toaster][data-ok-position][aria-label]     fixed region
+ *              › ol[data-ok-toaster-list][aria-live=polite]
+ *                  › li[data-ok-toast][data-ok-type]
+ *                      › span[data-ok-toast-icon][aria-hidden]?             (typed toasts)
+ *                      › div[data-ok-toast-content]
+ *                          › div[data-ok-toast-title] + div[data-ok-toast-description]?
+ *                      › button[data-ok-toast-cancel]? + button[data-ok-toast-action]?
+ *                        (or div[data-ok-toast-actions] with your own buttons)
+ *                      › button[data-ok-toast-close][aria-label]?
+ * Modifiers: toaster data-ok-position = top-right (default) | top-left | top-center |
+ *            bottom-left | bottom-center | bottom-right, data-ok-close-button
+ *            toast   data-ok-type = default | info | success | warning | error | loading,
+ *                    data-ok-custom (your own content in the frame)
+ *
+ * Default toasts are inverted (dark on light pages, light on dark ones); typed toasts are paper
+ * with a tinted icon box. Single :where() selectors in @layer components.
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-ok-toaster]) {
+    position: fixed;
+    top: calc(var(--ok-spacing) * 4);
+    right: calc(var(--ok-spacing) * 4);
+    z-index: var(--ok-z-toast);
+    box-sizing: border-box;
+    width: min(calc(var(--ok-spacing) * 75), calc(100% - var(--ok-spacing) * 8));
+    margin: 0;
+    padding: 0;
+    color: var(--ok-text-primary);
+    font-family: var(--ok-font-family);
+    pointer-events: none;
+  }
+
+  :where([data-ok-toaster][data-ok-position^="bottom"]) {
+    top: auto;
+    bottom: calc(var(--ok-spacing) * 4);
+  }
+
+  :where([data-ok-toaster][data-ok-position$="left"]) {
+    right: auto;
+    left: calc(var(--ok-spacing) * 4);
+  }
+
+  :where([data-ok-toaster][data-ok-position$="center"]) {
+    right: auto;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  :where([data-ok-toaster-list]) {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--ok-spacing) * 3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* Bottom: the newest toast sits nearest to the edge. */
+  :where([data-ok-toaster][data-ok-position^="bottom"] > [data-ok-toaster-list]) {
+    flex-direction: column-reverse;
+  }
+
+  /* Toast */
+  :where([data-ok-toast]) {
+    --_ok-toast-bg: var(--ok-palette-grey-800);
+    --_ok-toast-color: var(--ok-palette-common-white);
+    --_ok-toast-muted: var(--ok-palette-grey-500);
+
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: calc(var(--ok-spacing) * 3);
+    box-sizing: border-box;
+    min-height: calc(var(--ok-spacing) * 13);
+    padding: calc(var(--ok-spacing) * 2) calc(var(--ok-spacing) * 2) calc(var(--ok-spacing) * 2)
+      calc(var(--ok-spacing) * 3);
+    border-radius: var(--ok-radius-lg);
+    background-color: var(--_ok-toast-bg);
+    box-shadow: var(--ok-shadow-z8);
+    color: var(--_ok-toast-color);
+    font-size: var(--ok-font-size-sm);
+    line-height: calc(var(--ok-spacing) * 5);
+    pointer-events: auto;
+    animation: ok-toast-in var(--ok-duration-short) var(--ok-easing-decelerate);
+  }
+
+  @supports (color: light-dark(#000, #fff)) {
+    :where([data-ok-toast]) {
+      --_ok-toast-bg: light-dark(var(--ok-palette-grey-800), var(--ok-palette-common-white));
+      --_ok-toast-color: light-dark(var(--ok-palette-common-white), var(--ok-palette-grey-800));
+      --_ok-toast-muted: light-dark(var(--ok-palette-grey-500), var(--ok-palette-grey-600));
+    }
+  }
+
+  :where([data-ok-toaster][data-ok-position^="bottom"] [data-ok-toast]) {
+    animation-name: ok-toast-in-bottom;
+  }
+
+  /* Typed toasts: paper with a tinted icon box. */
+  :where([data-ok-toast]:not([data-ok-type="default"])) {
+    --_ok-toast-bg: var(--ok-bg-paper);
+    --_ok-toast-color: var(--ok-text-primary);
+    --_ok-toast-muted: var(--ok-text-secondary);
+
+    padding: var(--ok-spacing) calc(var(--ok-spacing) * 2) var(--ok-spacing) var(--ok-spacing);
+  }
+
+  :where([data-ok-toast][data-ok-type="info"]) {
+    --_ok-toast-channel: var(--ok-palette-info-main-channel);
+    --_ok-toast-main: var(--ok-palette-info-main);
+  }
+
+  :where([data-ok-toast][data-ok-type="success"]) {
+    --_ok-toast-channel: var(--ok-palette-success-main-channel);
+    --_ok-toast-main: var(--ok-palette-success-main);
+  }
+
+  :where([data-ok-toast][data-ok-type="warning"]) {
+    --_ok-toast-channel: var(--ok-palette-warning-main-channel);
+    --_ok-toast-main: var(--ok-palette-warning-main);
+  }
+
+  :where([data-ok-toast][data-ok-type="error"]) {
+    --_ok-toast-channel: var(--ok-palette-error-main-channel);
+    --_ok-toast-main: var(--ok-palette-error-main);
+  }
+
+  :where([data-ok-toast][data-ok-type="loading"]) {
+    --_ok-toast-channel: var(--ok-palette-grey-500-channel);
+    --_ok-toast-main: var(--ok-text-secondary);
+  }
+
+  :where([data-ok-toast-icon]) {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: calc(var(--ok-spacing) * 12);
+    height: calc(var(--ok-spacing) * 12);
+    border-radius: var(--ok-radius-lg);
+    background-color: rgb(var(--_ok-toast-channel, var(--ok-palette-grey-500-channel)) / 0.08);
+    color: var(--_ok-toast-main, currentColor);
+  }
+
+  :where([data-ok-toast][data-ok-type="default"] > [data-ok-toast-icon]) {
+    width: auto;
+    height: auto;
+    background: none;
+  }
+
+  :where([data-ok-toast-icon] > svg) {
+    width: calc(var(--ok-spacing) * 6);
+    height: calc(var(--ok-spacing) * 6);
+  }
+
+  :where([data-ok-toast-icon] > [data-ok-circular-progress]) {
+    --_ok-progress-size: calc(var(--ok-spacing) * 5);
+  }
+
+  :where([data-ok-toast-content]) {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: calc(var(--ok-spacing) * 0.5);
+    min-width: 0;
+  }
+
+  :where([data-ok-toast-title]) {
+    font-weight: var(--ok-font-weight-medium);
+  }
+
+  :where([data-ok-toast-description]) {
+    color: var(--_ok-toast-muted);
+  }
+
+  /* Your own action content, such as two Buttons. */
+  :where([data-ok-toast-actions]) {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: var(--ok-spacing);
+  }
+
+  /* Buttons */
+  :where([data-ok-toast-action], [data-ok-toast-cancel]) {
+    flex-shrink: 0;
+    box-sizing: border-box;
+    min-width: calc(var(--ok-spacing) * 6);
+    min-height: calc(var(--ok-spacing) * 6);
+    margin: 0;
+    padding: 0 calc(var(--ok-spacing) * 2);
+    border: 1px solid rgb(var(--ok-palette-grey-500-channel) / 0.32);
+    border-radius: var(--ok-radius-sm);
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-size: var(--ok-font-size-xs);
+    font-weight: var(--ok-font-weight-bold);
+    cursor: pointer;
+  }
+
+  :where([data-ok-toast-cancel]) {
+    border-color: transparent;
+    color: var(--_ok-toast-muted);
+  }
+
+  :where([data-ok-toast-close]) {
+    position: absolute;
+    top: calc(var(--ok-spacing) * -1.5);
+    left: calc(var(--ok-spacing) * -1.5);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    width: calc(var(--ok-spacing) * 6);
+    height: calc(var(--ok-spacing) * 6);
+    margin: 0;
+    padding: 0;
+    border: 1px solid var(--ok-divider);
+    border-radius: var(--ok-radius-full);
+    background-color: var(--ok-bg-paper);
+    color: var(--ok-text-primary);
+    cursor: pointer;
+  }
+
+  :where([data-ok-toast-close] > svg) {
+    width: calc(var(--ok-spacing) * 3);
+    height: calc(var(--ok-spacing) * 3);
+  }
+
+  /* With a pointer the close button shows on hover or focus; on touch screens it always shows. */
+  @media (hover: hover) {
+    :where([data-ok-toast]:not(:hover):not(:focus-within) > [data-ok-toast-close]) {
+      opacity: 0;
+    }
+
+    :where([data-ok-toast-action]:hover, [data-ok-toast-cancel]:hover) {
+      background-color: var(--ok-action-hover);
+    }
+  }
+
+  :where(
+    [data-ok-toast-action]:focus-visible,
+    [data-ok-toast-cancel]:focus-visible,
+    [data-ok-toast-close]:focus-visible
+  ) {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+
+  :where([data-ok-toast]:focus-visible) {
+    outline: 2px solid var(--ok-text-primary);
+    outline-offset: 2px;
+  }
+
+  @keyframes ok-toast-in {
+    from {
+      opacity: 0;
+      transform: translateY(-50%);
+    }
+  }
+
+  @keyframes ok-toast-in-bottom {
+    from {
+      opacity: 0;
+      transform: translateY(50%);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :where([data-ok-toast]) {
+      animation: none;
+    }
+  }
+}

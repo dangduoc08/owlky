@@ -1,0 +1,158 @@
+import { dialogMaxWidths } from "@owlky/core";
+import { render, screen } from "@testing-library/react";
+import { createRef, useState } from "react";
+import { renderToString } from "react-dom/server";
+import { describe, expect, it, vi } from "vitest";
+import { userEvent } from "vitest/browser";
+import { expectNoAxeViolations } from "../test-utils.js";
+import {
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  type DialogProps,
+  DialogTitle,
+} from "./dialog.js";
+
+function Demo({
+  onChange,
+  ...props
+}: Partial<DialogProps> & { onChange?: (open: boolean, reason?: string) => void }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <button type="button" onClick={() => setOpen(true)}>
+        Open
+      </button>
+      <Dialog
+        open={open}
+        onOpenChange={(next, reason) => {
+          onChange?.(next, reason);
+          setOpen(next);
+        }}
+        {...props}
+      >
+        <DialogTitle>Share your location?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>Apps can use it.</DialogContentText>
+          <input aria-label="Name" />
+        </DialogContent>
+        <DialogActions>
+          <button type="button" onClick={() => setOpen(false)}>
+            Close
+          </button>
+        </DialogActions>
+      </Dialog>
+    </>
+  );
+}
+
+describe("Dialog", () => {
+  it("renders a closed dialog named by its title, with the paper inside", () => {
+    render(<Demo />);
+    const dialog = document.querySelector("dialog") as HTMLDialogElement;
+    expect(dialog.open).toBe(false);
+    expect(dialog.dataset).toMatchObject({
+      okDialog: "",
+      okMaxWidth: "sm",
+      okScroll: "paper",
+      okRuntime: "off",
+    });
+    const title = dialog.querySelector("[data-ok-dialog-title]") as HTMLElement;
+    expect(dialog.getAttribute("aria-labelledby")).toBe(title.id);
+    expect(dialog.querySelector(":scope > [data-ok-dialog-paper]")).not.toBeNull();
+  });
+
+  it("opens modally, focuses the first field, sizes the paper; Escape and the backdrop close", async () => {
+    const onChange = vi.fn();
+    render(<Demo onChange={onChange} />);
+    const trigger = screen.getByRole("button", { name: "Open" });
+    await userEvent.click(trigger);
+    const dialog = screen.getByRole("dialog", { name: "Share your location?" });
+    expect((dialog as HTMLDialogElement).open).toBe(true);
+    expect(document.activeElement?.getAttribute("aria-label")).toBe("Name");
+    const paper = dialog.querySelector("[data-ok-dialog-paper]") as HTMLElement;
+    expect(getComputedStyle(paper).borderRadius).toBe("16px");
+    const text = dialog.querySelector("[data-ok-dialog-content-text]") as HTMLElement;
+    expect(getComputedStyle(text).color).toBe("rgb(99, 115, 129)");
+    const title = dialog.querySelector("[data-ok-dialog-title]") as HTMLElement;
+    expect(getComputedStyle(title).padding).toBe("24px");
+    await expectNoAxeViolations();
+    await userEvent.keyboard("{Escape}");
+    expect(onChange).toHaveBeenLastCalledWith(false, "escape");
+    expect((dialog as HTMLDialogElement).open).toBe(false);
+    await userEvent.click(trigger);
+    await userEvent.click(dialog, { position: { x: 4, y: 4 } });
+    expect(onChange).toHaveBeenLastCalledWith(false, "backdrop");
+    await userEvent.click(trigger);
+    await userEvent.click(screen.getByRole("button", { name: "Close" }));
+    expect((dialog as HTMLDialogElement).open).toBe(false);
+  });
+
+  it.each(dialogMaxWidths)("maxWidth %s", (maxWidth) => {
+    render(<Demo maxWidth={maxWidth} />);
+    expect(document.querySelector("dialog")?.dataset["okMaxWidth"]).toBe(maxWidth);
+  });
+
+  it("flags, disableEscapeKeyDown, a native close, aria-label instead of a title", async () => {
+    const onChange = vi.fn();
+    render(
+      <Demo
+        onChange={onChange}
+        fullWidth
+        fullScreen
+        scroll="body"
+        hideBackdrop
+        disableEscapeKeyDown
+        paperProps={{ className: "paper" }}
+      />,
+    );
+    const dialog = document.querySelector("dialog") as HTMLDialogElement;
+    expect(dialog.dataset).toMatchObject({
+      okFullWidth: "",
+      okFullScreen: "",
+      okScroll: "body",
+      okHideBackdrop: "",
+      okDisableEscapeKeyDown: "",
+    });
+    expect(dialog.querySelector(".paper")).not.toBeNull();
+    await userEvent.click(screen.getByRole("button", { name: "Open" }));
+    await userEvent.keyboard("{Escape}");
+    expect(dialog.open).toBe(true);
+    dialog.close();
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(onChange).toHaveBeenLastCalledWith(false, "close");
+    render(
+      <Dialog open={false} aria-label="Named">
+        x
+      </Dialog>,
+    );
+    const named = document.querySelector('dialog[aria-label="Named"]') as HTMLDialogElement;
+    expect(named.hasAttribute("aria-labelledby")).toBe(false);
+  });
+
+  it("parts: dividers, disableSpacing, own title id, refs; server render", () => {
+    const ref = createRef<HTMLDialogElement>();
+    render(
+      <Dialog ref={ref} open={false}>
+        <DialogTitle id="own">T</DialogTitle>
+        <DialogContent dividers>c</DialogContent>
+        <DialogActions disableSpacing>a</DialogActions>
+      </Dialog>,
+    );
+    expect(ref.current?.localName).toBe("dialog");
+    expect(
+      document.querySelector("[data-ok-dialog-content]")?.hasAttribute("data-ok-dividers"),
+    ).toBe(true);
+    expect(
+      document.querySelector("[data-ok-dialog-actions]")?.hasAttribute("data-ok-disable-spacing"),
+    ).toBe(true);
+    expect(document.getElementById("own")).not.toBeNull();
+    const html = renderToString(
+      <Dialog open={false}>
+        <DialogTitle>S</DialogTitle>
+      </Dialog>,
+    );
+    expect(html).toContain("data-ok-dialog-paper");
+  });
+});

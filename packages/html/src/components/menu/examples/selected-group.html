@@ -1,0 +1,19 @@
+<ul data-ok-list aria-label="Device settings">
+  <li data-ok-list-item data-ok-disable-padding>
+    <button type="button" data-ok-list-item-button id="menu-selected-button" aria-haspopup="menu" aria-expanded="false" aria-controls="menu-selected" data-ok-popover-open="menu-selected">
+      <span data-ok-list-item-text>
+        <span data-ok-list-item-text-primary>When device is locked</span>
+        <span data-ok-list-item-text-secondary>Show all notification content</span>
+      </span>
+    </button>
+  </li>
+</ul>
+<div popover="manual" data-ok-popover data-ok-placement="bottom-start" id="menu-selected">
+  <span data-ok-popover-arrow aria-hidden="true"></span>
+  <ul role="menu" data-ok-menu aria-labelledby="menu-selected-button">
+    <li role="menuitem" tabindex="-1" data-ok-menu-item aria-disabled="true">Choose what to show</li>
+    <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-selected>Show all notification content</li>
+    <li role="menuitem" tabindex="-1" data-ok-menu-item>Hide sensitive notification content</li>
+    <li role="menuitem" tabindex="-1" data-ok-menu-item>Hide all notification content</li>
+  </ul>
+</div>

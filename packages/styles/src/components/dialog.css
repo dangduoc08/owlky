@@ -1,0 +1,211 @@
+/*
+ * Dialog — spec: specs/components/dialog.md
+ *
+ * Anatomy:   dialog[data-ok-dialog][aria-labelledby]      transparent, full-viewport container
+ *              › div[data-ok-dialog-paper]                 the visible paper
+ *                  › h2[data-ok-dialog-title][id]
+ *                  › div[data-ok-dialog-content][data-ok-dividers]?
+ *                      › p[data-ok-dialog-content-text]?
+ *                  › div[data-ok-dialog-actions][data-ok-disable-spacing]?
+ * Modifiers: data-ok-max-width = sm (default) | xs | md | lg | xl | none, data-ok-full-width,
+ *            data-ok-full-screen, data-ok-scroll = paper (default) | body, data-ok-hide-backdrop
+ * States:    [open]; [data-ok-fallback] without showModal() (ADR-0006).
+ *
+ * A click whose target is the <dialog> itself is a click outside the paper (backdrop click).
+ * Single :where() selectors in @layer components; `::backdrop` is the only pseudo-element.
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-ok-dialog]) {
+    --_ok-dialog-margin: calc(var(--ok-spacing) * 4);
+    --_ok-dialog-max: calc(var(--ok-spacing) * 150);
+
+    box-sizing: border-box;
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--ok-text-primary);
+    font-family: var(--ok-font-family);
+    overflow: hidden;
+  }
+
+  :where([data-ok-dialog][open]) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  :where([data-ok-dialog])::backdrop {
+    background-color: var(--ok-backdrop);
+  }
+
+  :where([data-ok-dialog][data-ok-fallback]) {
+    z-index: var(--ok-z-modal);
+    background-color: var(--ok-backdrop);
+  }
+
+  :where([data-ok-dialog][data-ok-hide-backdrop])::backdrop {
+    background-color: transparent;
+  }
+
+  :where([data-ok-dialog][data-ok-hide-backdrop][data-ok-fallback]) {
+    background-color: transparent;
+  }
+
+  :where([data-ok-dialog-paper]) {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    max-width: min(var(--_ok-dialog-max), calc(100% - var(--_ok-dialog-margin) * 2));
+    max-height: calc(100% - var(--_ok-dialog-margin) * 2);
+    margin: var(--_ok-dialog-margin);
+    overflow-y: auto;
+    border-radius: var(--ok-radius-xl);
+    background-color: var(--ok-bg-paper);
+    box-shadow: var(--ok-shadow-dialog);
+    outline: none;
+    animation: ok-dialog-in var(--ok-duration-short) var(--ok-easing-decelerate);
+  }
+
+  :where([data-ok-dialog][data-ok-max-width="xs"]) {
+    --_ok-dialog-max: calc(var(--ok-spacing) * 111);
+  }
+
+  :where([data-ok-dialog][data-ok-max-width="md"]) {
+    --_ok-dialog-max: var(--ok-breakpoint-md);
+  }
+
+  :where([data-ok-dialog][data-ok-max-width="lg"]) {
+    --_ok-dialog-max: var(--ok-breakpoint-lg);
+  }
+
+  :where([data-ok-dialog][data-ok-max-width="xl"]) {
+    --_ok-dialog-max: var(--ok-breakpoint-xl);
+  }
+
+  :where([data-ok-dialog][data-ok-max-width="none"]) {
+    --_ok-dialog-max: 100%;
+  }
+
+  :where([data-ok-dialog][data-ok-full-width] > [data-ok-dialog-paper]) {
+    width: calc(100% - var(--_ok-dialog-margin) * 2);
+  }
+
+  :where([data-ok-dialog][data-ok-full-screen] > [data-ok-dialog-paper]) {
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    max-height: none;
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  /* Scroll = body: the dialog scrolls, the paper takes its full height. */
+  :where([data-ok-dialog][data-ok-scroll="body"]) {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  :where([data-ok-dialog][data-ok-scroll="body"][open]) {
+    align-items: flex-start;
+  }
+
+  :where([data-ok-dialog][data-ok-scroll="body"] > [data-ok-dialog-paper]) {
+    max-height: none;
+    overflow-y: visible;
+  }
+
+  /* Title, content, actions */
+  :where([data-ok-dialog-title]) {
+    flex: 0 0 auto;
+    margin: 0;
+    padding: calc(var(--ok-spacing) * 6);
+    font-size: var(--ok-typography-h6-font-size);
+    font-weight: var(--ok-typography-h6-font-weight);
+    line-height: var(--ok-typography-h6-line-height);
+  }
+
+  :where([data-ok-dialog-content]) {
+    flex: 1 1 auto;
+    padding: 0 calc(var(--ok-spacing) * 6);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  :where([data-ok-dialog][data-ok-scroll="body"] [data-ok-dialog-content]) {
+    overflow-y: visible;
+  }
+
+  :where([data-ok-dialog-content][data-ok-dividers]) {
+    padding-block: calc(var(--ok-spacing) * 4);
+    border-block: 1px solid var(--ok-divider);
+  }
+
+  :where([data-ok-dialog-title] + [data-ok-dialog-content]) {
+    padding-top: 0;
+  }
+
+  :where([data-ok-dialog-title] + [data-ok-dialog-content][data-ok-dividers]) {
+    padding-top: calc(var(--ok-spacing) * 4);
+  }
+
+  :where([data-ok-dialog-content]:focus-visible) {
+    outline: 2px solid var(--ok-text-primary);
+    outline-offset: -2px;
+  }
+
+  :where([data-ok-dialog-content-text]) {
+    margin: 0 0 calc(var(--ok-spacing) * 4);
+    color: var(--ok-text-secondary);
+    font-size: var(--ok-typography-body1-font-size);
+    line-height: var(--ok-typography-body1-line-height);
+  }
+
+  :where([data-ok-dialog-content-text]:last-child) {
+    margin-bottom: 0;
+  }
+
+  :where([data-ok-dialog-actions]) {
+    display: flex;
+    flex: 0 0 auto;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: calc(var(--ok-spacing) * 3);
+    padding: calc(var(--ok-spacing) * 6);
+  }
+
+  :where([data-ok-dialog-actions][data-ok-disable-spacing]) {
+    gap: 0;
+  }
+
+  @keyframes ok-dialog-in {
+    from {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+  }
+
+  /* From the sm breakpoint (600px): 32px around the paper (16px on phones). */
+  @media (min-width: 600px) {
+    :where([data-ok-dialog]) {
+      --_ok-dialog-margin: calc(var(--ok-spacing) * 8);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :where([data-ok-dialog-paper]) {
+      animation: none;
+    }
+  }
+}

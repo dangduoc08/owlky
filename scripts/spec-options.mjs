@@ -38,6 +38,12 @@ const SPECS = {
   "list-item-button": "list.md",
   "list-item-text": "list.md",
   "list-subheader": "list.md",
+  popover: "popover.md",
+  tooltip: "tooltip.md",
+  menu: "menu.md",
+  "menu-item": "menu.md",
+  dialog: "dialog.md",
+  toaster: "snackbar.md",
 };
 
 const code = (value) => `\`${value}\``;

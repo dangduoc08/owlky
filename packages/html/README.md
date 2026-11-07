@@ -20,6 +20,13 @@ and **Form control label** (CSS only: native checkbox with `role="switch"`;
 **List** (CSS only: `ul[data-ok-list]` › `li[data-ok-list-item]` › `button|a[data-ok-list-item-button]`, icon, avatar,
 text, subheader, `data-ok-list-item-secondary-action`; runtime `list` opens / closes nested lists from
 `aria-expanded` + `aria-controls`, event `ok:list:toggle`)
+**Popover** (runtime `popover`: `div[data-ok-popover][popover=manual]`, triggers `data-ok-popover-open` /
+`data-ok-popover-hover`; events `ok:popover:beforeopen|open|beforeclose|close`) **Menu** (runtime `menu`:
+`ul[data-ok-menu][role=menu]` in a popover, keyboard navigation, event `ok:menu:select`) **Tooltip**
+(runtime `tooltip`: `div[data-ok-tooltip][role=tooltip]`, found from `aria-labelledby` / `aria-describedby`)
+**Dialog** (runtime `dialog`: `dialog[data-ok-dialog]`, triggers `data-ok-dialog-open` / `data-ok-dialog-close`,
+events `ok:dialog:*`) **Snackbar** (runtime `toaster`: `section[data-ok-toaster]`, `<template>` toasts shown by
+`data-ok-toast-open`, instance `show()` / `promise()` / `dismiss()`, events `ok:toaster:*`)
 **Radio** (CSS only: `div[role=radiogroup][data-ok-radio-group]` › `span[data-ok-radio]` › native radio)
 **Text field** (CSS only, plus runtime `text-field` for `data-ok-min-rows` / `data-ok-max-rows` and the
 `data-ok-text-field-reveal` password button; inputs keep a `placeholder`, " " when none)

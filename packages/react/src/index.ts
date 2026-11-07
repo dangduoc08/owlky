@@ -16,6 +16,9 @@ export type {
   ChipVariant,
   CircularProgressVariant,
   ColorName,
+  DialogCloseReason,
+  DialogMaxWidth,
+  DialogScroll,
   DividerTextAlign,
   DividerVariant,
   DrawerAnchor,
@@ -41,6 +44,8 @@ export type {
   PaginationSize,
   PaginationVariant,
   PaletteColorName,
+  Placement,
+  PopoverDismissReason,
   ProgressColor,
   SelectionControlColor,
   SelectionControlSize,
@@ -53,9 +58,14 @@ export type {
   TableSortDirection,
   TextFieldMargin,
   TextFieldVariant,
+  ToastId,
+  ToastOptions,
+  ToastPosition,
+  ToastType,
   ToggleButtonColor,
   ToggleButtonSize,
   ToggleGroupValue,
+  TooltipTransition,
 } from "@owlky/core";
 export {
   applyThemeSettings,
@@ -96,6 +106,16 @@ export {
   CircularProgress,
   type CircularProgressProps,
 } from "./circular-progress/circular-progress.js";
+export {
+  Dialog,
+  DialogActions,
+  type DialogActionsProps,
+  DialogContent,
+  type DialogContentProps,
+  DialogContentText,
+  type DialogProps,
+  DialogTitle,
+} from "./dialog/dialog.js";
 export { Divider, type DividerProps } from "./divider/divider.js";
 export {
   Drawer,
@@ -131,6 +151,13 @@ export {
   type ListSubheaderProps,
 } from "./list/list.js";
 export {
+  Menu,
+  type MenuCloseReason,
+  MenuItem,
+  type MenuItemProps,
+  type MenuProps,
+} from "./menu/menu.js";
+export {
   Pagination,
   type PaginationIcons,
   PaginationItem,
@@ -138,6 +165,7 @@ export {
   type PaginationProps,
   type PaginationRenderItemParams,
 } from "./pagination/pagination.js";
+export { Popover, type PopoverAnchor, type PopoverProps } from "./popover/popover.js";
 export {
   Radio,
   RadioGroup,
@@ -145,6 +173,13 @@ export {
   type RadioProps,
 } from "./radio/radio.js";
 export { Scrollbar, type ScrollbarProps } from "./scrollbar/scrollbar.js";
+export {
+  TOAST_ICONS,
+  Toaster,
+  type ToasterProps,
+  toast,
+  toastStore,
+} from "./snackbar/snackbar.js";
 export { arrayMove, Sortable, type SortableProps } from "./sortable/sortable.js";
 export { Switch, type SwitchProps } from "./switch/switch.js";
 export {
@@ -182,3 +217,4 @@ export {
   type ToggleButtonGroupProps,
   type ToggleButtonProps,
 } from "./toggle-button/toggle-button.js";
+export { Tooltip, type TooltipProps } from "./tooltip/tooltip.js";
