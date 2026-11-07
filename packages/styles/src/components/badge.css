@@ -1,0 +1,175 @@
+/*
+ * Badge — spec: specs/components/badge.md
+ *
+ * Anatomy:   span[data-ok-badge] › (the anchor: icon, avatar, text…) › span[data-ok-badge-badge]
+ * Modifiers: data-ok-variant    = standard (default) | dot | online | always | busy | offline | invisible
+ *            data-ok-color      = default (grey) | primary | secondary | info | success | warning | error
+ *            data-ok-overlap    = rectangular (default) | circular
+ *            data-ok-vertical   = top (default) | bottom; data-ok-horizontal = right (default) | left
+ *            data-ok-invisible  (shrinks away)
+ *
+ * The badge's center sits on the anchor's corner (circular: 14% in, on the circle's edge).
+ * Single :where() selectors in @layer components.
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-ok-badge]) {
+    --_ok-main: var(--ok-palette-grey-300);
+    --_ok-fg: var(--ok-text-primary);
+    --_ok-inset: 0%;
+    --_ok-top: var(--_ok-inset);
+    --_ok-bottom: auto;
+    --_ok-right: var(--_ok-inset);
+    --_ok-left: auto;
+    --_ok-tx: 50%;
+    --_ok-ty: -50%;
+    --_ok-origin: 100% 0%;
+    --_ok-scale: 1;
+
+    position: relative;
+    display: inline-flex;
+    flex-shrink: 0;
+    vertical-align: middle;
+  }
+
+  :where([data-ok-badge][data-ok-color]:not([data-ok-color="default"])) {
+    --_ok-main: var(--ok-c-main, var(--ok-palette-grey-300));
+    --_ok-fg: var(--ok-c-contrast, var(--ok-text-primary));
+  }
+
+  :where([data-ok-badge][data-ok-overlap="circular"]) {
+    --_ok-inset: 14%;
+  }
+
+  :where([data-ok-badge][data-ok-vertical="bottom"]) {
+    --_ok-top: auto;
+    --_ok-bottom: var(--_ok-inset);
+    --_ok-ty: 50%;
+    --_ok-origin: 100% 100%;
+  }
+
+  :where([data-ok-badge][data-ok-horizontal="left"]) {
+    --_ok-right: auto;
+    --_ok-left: var(--_ok-inset);
+    --_ok-tx: -50%;
+  }
+
+  :where([data-ok-badge][data-ok-horizontal="left"][data-ok-vertical="top"]) {
+    --_ok-origin: 0% 0%;
+  }
+
+  :where([data-ok-badge][data-ok-horizontal="left"][data-ok-vertical="bottom"]) {
+    --_ok-origin: 0% 100%;
+  }
+
+  :where([data-ok-badge][data-ok-invisible]) {
+    --_ok-scale: 0;
+  }
+
+  :where([data-ok-badge-badge]) {
+    position: absolute;
+    top: var(--_ok-top);
+    right: var(--_ok-right);
+    bottom: var(--_ok-bottom);
+    left: var(--_ok-left);
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    min-width: calc(var(--ok-spacing) * 5);
+    height: calc(var(--ok-spacing) * 5);
+    padding: 0 calc(var(--ok-spacing) * 1.5);
+    border-radius: var(--ok-radius-full);
+    background-color: var(--_ok-main);
+    color: var(--_ok-fg);
+    font-family: var(--ok-font-family);
+    font-size: var(--ok-font-size-xs);
+    font-weight: var(--ok-font-weight-medium);
+    line-height: 1;
+    white-space: nowrap;
+    transform: scale(var(--_ok-scale)) translate(var(--_ok-tx), var(--_ok-ty));
+    transform-origin: var(--_ok-origin);
+    transition: transform var(--ok-duration-shorter) var(--ok-easing-standard);
+  }
+
+  /* An avatar as the badge (for example a team mate on a project): no pill around it. */
+  :where([data-ok-badge-badge]:has(> [data-ok-avatar])) {
+    min-width: 0;
+    height: auto;
+    padding: 0;
+    background-color: transparent;
+  }
+
+  :where([data-ok-badge-badge] > [data-ok-avatar]) {
+    border: 2px solid var(--ok-bg-paper);
+  }
+
+  /* Dot and presence statuses: no content. */
+  :where([data-ok-badge][data-ok-variant="dot"] > [data-ok-badge-badge]) {
+    min-width: calc(var(--ok-spacing) * 2);
+    height: calc(var(--ok-spacing) * 2);
+    padding: 0;
+  }
+
+  :where(
+    [data-ok-badge][data-ok-variant="online"] > [data-ok-badge-badge],
+    [data-ok-badge][data-ok-variant="always"] > [data-ok-badge-badge],
+    [data-ok-badge][data-ok-variant="busy"] > [data-ok-badge-badge],
+    [data-ok-badge][data-ok-variant="offline"] > [data-ok-badge-badge]
+  ) {
+    min-width: calc(var(--ok-spacing) * 2.5);
+    height: calc(var(--ok-spacing) * 2.5);
+    padding: 0;
+    box-shadow: 0 0 0 2px var(--ok-bg-paper);
+  }
+
+  :where([data-ok-badge][data-ok-variant="online"] > [data-ok-badge-badge]) {
+    background-color: var(--ok-palette-success-main);
+  }
+
+  :where([data-ok-badge][data-ok-variant="always"] > [data-ok-badge-badge]) {
+    background-color: var(--ok-palette-warning-main);
+  }
+
+  :where([data-ok-badge][data-ok-variant="busy"] > [data-ok-badge-badge]) {
+    background-color: var(--ok-palette-error-main);
+  }
+
+  :where([data-ok-badge][data-ok-variant="offline"] > [data-ok-badge-badge]) {
+    background-color: var(--ok-bg-paper);
+    box-shadow:
+      0 0 0 2px var(--ok-bg-paper),
+      inset 0 0 0 2px var(--ok-text-disabled);
+  }
+
+  /* Busy: a bar; always: a clock hand. */
+  :where([data-ok-badge][data-ok-variant="busy"] > [data-ok-badge-badge])::before {
+    content: "";
+    width: calc(var(--ok-spacing) * 1.5);
+    height: 2px;
+    border-radius: var(--ok-radius-full);
+    background-color: var(--ok-palette-common-white);
+  }
+
+  :where([data-ok-badge][data-ok-variant="always"] > [data-ok-badge-badge])::before {
+    content: "";
+    box-sizing: border-box;
+    width: 4px;
+    height: 4px;
+    margin: -2px 0 0 1px;
+    border-bottom: 1.5px solid var(--ok-palette-common-white);
+    border-left: 1.5px solid var(--ok-palette-common-white);
+  }
+
+  :where([data-ok-badge][data-ok-variant="invisible"] > [data-ok-badge-badge]) {
+    display: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :where([data-ok-badge-badge]) {
+      transition: none;
+    }
+  }
+}

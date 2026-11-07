@@ -26,6 +26,15 @@ const CONTRAST_EXEMPT = [
   '[data-ok-toggle-button][aria-pressed="true"]:not([data-ok-color="standard"])',
   '[data-ok-alert]:not([data-ok-variant="standard"])',
   '[data-ok-pagination]:not([data-ok-color="standard"]):not([data-ok-variant="soft"]) [aria-current="page"]',
+  '[data-ok-avatar]:not([data-ok-color="default"])',
+  '[data-ok-badge]:not([data-ok-color="default"]) > [data-ok-badge-badge]',
+  '[data-ok-chip]:not([data-ok-color="default"]):not([data-ok-variant="soft"])',
+  '[data-ok-chip][data-ok-color="white"]',
+  '[data-ok-label][data-ok-variant="filled"]:not([data-ok-color="default"])',
+  '[data-ok-label][data-ok-variant="outlined"]:not([data-ok-color="default"])',
+  '[data-ok-label][data-ok-color="white"]',
+  '[data-ok-chip][data-ok-color="black"]',
+  '[data-ok-label][data-ok-color="black"]',
 ];
 const TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 

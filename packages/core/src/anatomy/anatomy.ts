@@ -799,6 +799,173 @@ export interface TextFieldAnatomyOptions {
 export const textFieldAttributes = (options: TextFieldAnatomyOptions = {}): DataAttributes =>
   optionAttributes(textFieldOptions, { ...options });
 
+// --- Avatar, AvatarGroup -----------------------------------------------------------------------
+
+export const avatarVariants = ["circular", "rounded", "square"] as const;
+export const avatarColors = ["default", ...paletteColorNames] as const;
+export const avatarGroupSpacings = ["medium", "small"] as const;
+export type AvatarVariant = (typeof avatarVariants)[number];
+export type AvatarColor = (typeof avatarColors)[number];
+export type AvatarGroupSpacing = (typeof avatarGroupSpacings)[number];
+
+export const avatarOptions = defineOptions("avatar", "data-ok-avatar", {
+  variant: style("data-ok-variant", avatarVariants, "circular", "Circle, 12px corners or square."),
+  color: style("data-ok-color", avatarColors, "default", "Background for letters and icons."),
+  size: number("data-ok-size", 40, "Width and height: a number in px, or a CSS length.", {
+    min: 0,
+    units: ["px", "rem", "em"],
+  }),
+});
+
+export interface AvatarAnatomyOptions {
+  variant?: AvatarVariant | undefined;
+  color?: AvatarColor | undefined;
+  size?: number | string | undefined;
+}
+
+/** `data-ok-*` attributes of an avatar (`size` only when given). */
+export const avatarAttributes = (options: AvatarAnatomyOptions = {}): DataAttributes =>
+  optionAttributes(avatarOptions, { ...options });
+
+export const avatarGroupOptions = defineOptions("avatar-group", "data-ok-avatar-group", {
+  spacing: style("data-ok-spacing", avatarGroupSpacings, "medium", "Overlap: 8 / 16px."),
+});
+
+/** `data-ok-*` attributes of an avatar group. */
+export const avatarGroupAttributes = (
+  options: { spacing?: AvatarGroupSpacing | undefined } = {},
+): DataAttributes => optionAttributes(avatarGroupOptions, { ...options });
+
+// --- Badge ------------------------------------------------------------------------------------
+
+export const badgeVariants = [
+  "standard",
+  "dot",
+  "online",
+  "always",
+  "busy",
+  "offline",
+  "invisible",
+] as const;
+export const badgeOverlaps = ["rectangular", "circular"] as const;
+export const badgeVerticals = ["top", "bottom"] as const;
+export const badgeHorizontals = ["right", "left"] as const;
+export type BadgeVariant = (typeof badgeVariants)[number];
+export type BadgeColor = (typeof avatarColors)[number];
+export type BadgeOverlap = (typeof badgeOverlaps)[number];
+export interface BadgeAnchorOrigin {
+  vertical: (typeof badgeVerticals)[number];
+  horizontal: (typeof badgeHorizontals)[number];
+}
+
+export const badgeOptions = defineOptions("badge", "data-ok-badge", {
+  variant: style(
+    "data-ok-variant",
+    badgeVariants,
+    "standard",
+    "A count, a dot, or a presence status (`online` `always` `busy` `offline` `invisible`).",
+  ),
+  color: style("data-ok-color", avatarColors, "default", "Badge color (standard and dot)."),
+  overlap: style(
+    "data-ok-overlap",
+    badgeOverlaps,
+    "rectangular",
+    "Shape it sits on: `circular` moves it in, onto the circle's edge.",
+  ),
+  vertical: style("data-ok-vertical", badgeVerticals, "top", "React: `anchorOrigin.vertical`."),
+  horizontal: style(
+    "data-ok-horizontal",
+    badgeHorizontals,
+    "right",
+    "React: `anchorOrigin.horizontal`.",
+  ),
+  invisible: flag("data-ok-invisible", "Hides the badge (it shrinks away)."),
+});
+
+export interface BadgeAnatomyOptions {
+  variant?: BadgeVariant | undefined;
+  color?: BadgeColor | undefined;
+  overlap?: BadgeOverlap | undefined;
+  anchorOrigin?: Partial<BadgeAnchorOrigin> | undefined;
+  invisible?: boolean | undefined;
+}
+
+/** `data-ok-*` attributes of a badge's wrapper. */
+export const badgeAttributes = (options: BadgeAnatomyOptions = {}): DataAttributes =>
+  optionAttributes(badgeOptions, {
+    ...options,
+    vertical: options.anchorOrigin?.vertical,
+    horizontal: options.anchorOrigin?.horizontal,
+  });
+
+/** What a standard badge shows: hidden for 0 (unless `showZero`), capped at `max` ("99+"). */
+export function badgeContent(
+  content: unknown,
+  options: { max?: number | undefined; showZero?: boolean | undefined } = {},
+): { content: unknown; invisible: boolean } {
+  const max = typeof options.max === "number" && Number.isFinite(options.max) ? options.max : 99;
+  if (typeof content === "number") {
+    if (content === 0 && options.showZero !== true) return { content, invisible: true };
+    return { content: content > max ? `${max}+` : content, invisible: false };
+  }
+  return { content, invisible: content === undefined || content === null || content === "" };
+}
+
+// --- Chip -------------------------------------------------------------------------------------
+
+export const chipVariants = ["filled", "outlined", "soft"] as const;
+export const chipColors = ["default", ...componentColorNames] as const;
+export type ChipVariant = (typeof chipVariants)[number];
+export type ChipColor = (typeof chipColors)[number];
+
+export const chipOptions = defineOptions("chip", "data-ok-chip", {
+  variant: style("data-ok-variant", chipVariants, "filled", "Fill, outline or tint."),
+  color: style(
+    "data-ok-color",
+    chipColors,
+    "default",
+    "`default` (neutral), palette, `black` / `white`.",
+  ),
+  size: style("data-ok-size", selectionControlSizes, "medium", "Height 32 / 24px."),
+  disabled: native("disabled", "Native `disabled` on the chip's buttons.", {
+    children: ":scope > button",
+  }),
+});
+
+export interface ChipAnatomyOptions {
+  variant?: ChipVariant | undefined;
+  color?: ChipColor | undefined;
+  size?: SelectionControlSize | undefined;
+}
+
+/** `data-ok-*` attributes of a chip's root. */
+export const chipAttributes = (options: ChipAnatomyOptions = {}): DataAttributes =>
+  optionAttributes(chipOptions, { ...options });
+
+// --- Label ------------------------------------------------------------------------------------
+
+export const labelVariants = ["filled", "outlined", "soft", "inverted"] as const;
+export type LabelVariant = (typeof labelVariants)[number];
+
+export const labelOptions = defineOptions("label", "data-ok-label", {
+  variant: style("data-ok-variant", labelVariants, "soft", "Fill, outline, tint or inverted tint."),
+  color: style(
+    "data-ok-color",
+    chipColors,
+    "default",
+    "`default` (neutral), palette, `black` / `white`.",
+  ),
+});
+
+export interface LabelAnatomyOptions {
+  variant?: LabelVariant | undefined;
+  color?: ChipColor | undefined;
+}
+
+/** `data-ok-*` attributes of a label. */
+export const labelAttributes = (options: LabelAnatomyOptions = {}): DataAttributes =>
+  optionAttributes(labelOptions, { ...options });
+
 /** Every component's option schema, for tooling (Storybook Controls, parity tests, docs). */
 export const optionSchemas = {
   accordion: accordionOptions,
@@ -822,5 +989,10 @@ export const optionSchemas = {
   radio: radioOptions,
   "radio-group": radioGroupOptions,
   "text-field": textFieldOptions,
+  avatar: avatarOptions,
+  "avatar-group": avatarGroupOptions,
+  badge: badgeOptions,
+  chip: chipOptions,
+  label: labelOptions,
   "table-sort-label": tableSortLabelOptions,
 } as const;

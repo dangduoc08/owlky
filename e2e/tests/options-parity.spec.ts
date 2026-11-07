@@ -35,6 +35,9 @@ const CASES: [
   ["checkbox", "colors", "checkbox", ["color", "size", "disabled"]],
   ["switch", "colors", "switch", ["color", "size", "disabled"]],
   ["radio", "colors", "radio", ["color", "size", "disabled"]],
+  ["avatar", "letter", "avatar", ["variant"]],
+  ["badge", "standard", "badge", ["overlap", "invisible"]],
+  ["chip", "filled", "chip", ["size", "disabled"]],
   [
     "text-field",
     "outlined",

@@ -2,9 +2,18 @@ export type {
   AccordionVariant,
   AlertSeverity,
   AlertVariant,
+  AvatarColor,
+  AvatarGroupSpacing,
+  AvatarVariant,
+  BadgeAnchorOrigin,
+  BadgeColor,
+  BadgeOverlap,
+  BadgeVariant,
   ButtonLoadingPosition,
   ButtonSize,
   ButtonVariant,
+  ChipColor,
+  ChipVariant,
   CircularProgressVariant,
   ColorName,
   DrawerAnchor,
@@ -17,6 +26,7 @@ export type {
   IconButtonEdge,
   IconButtonSize,
   LabelPlacement,
+  LabelVariant,
   LinearProgressVariant,
   Orientation,
   PageRange,
@@ -63,6 +73,13 @@ export {
 } from "./accordion/accordion.js";
 export { Alert, type AlertProps, AlertTitle } from "./alert/alert.js";
 export {
+  Avatar,
+  AvatarGroup,
+  type AvatarGroupProps,
+  type AvatarProps,
+} from "./avatar/avatar.js";
+export { Badge, type BadgeProps } from "./badge/badge.js";
+export {
   Button,
   type ButtonAsButtonProps,
   type ButtonAsLinkProps,
@@ -70,6 +87,7 @@ export {
 } from "./button/button.js";
 export { ButtonGroup, type ButtonGroupProps } from "./button-group/button-group.js";
 export { Checkbox, type CheckboxProps } from "./checkbox/checkbox.js";
+export { Chip, type ChipProps } from "./chip/chip.js";
 export {
   CircularProgress,
   type CircularProgressProps,
@@ -88,6 +106,7 @@ export {
   type FormControlLabelProps,
 } from "./form-control-label/form-control-label.js";
 export { IconButton, type IconButtonProps } from "./icon-button/icon-button.js";
+export { Label, type LabelProps } from "./label/label.js";
 export { LinearProgress, type LinearProgressProps } from "./linear-progress/linear-progress.js";
 export {
   Pagination,

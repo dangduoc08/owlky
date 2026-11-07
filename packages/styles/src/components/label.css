@@ -1,0 +1,110 @@
+/*
+ * Label — spec: specs/components/label.md
+ *
+ * Anatomy:   span[data-ok-label] › span[data-ok-label-icon="start"]? › text › span[data-ok-label-icon="end"]?
+ * Modifiers: data-ok-variant = soft (default) | filled | outlined | inverted
+ *            data-ok-color   = default | primary | secondary | info | success | warning | error | black | white
+ *
+ * A small status tag, not interactive. Soft text uses the AA "text" tone; inverted pairs the
+ * palette's lighter and darker tones. Single :where() selectors in @layer components.
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-ok-label]) {
+    --_ok-main: var(--ok-c-main, var(--ok-text-primary));
+    --_ok-contrast: var(--ok-c-contrast, var(--ok-bg-paper));
+    --_ok-channel: var(--ok-c-channel, var(--ok-palette-grey-500-channel));
+    --_ok-text: var(--ok-c-text, var(--ok-text-primary));
+    --_ok-lighter: rgb(var(--_ok-channel) / 0.24);
+    --_ok-darker: var(--_ok-text);
+
+    display: inline-flex;
+    flex-shrink: 0;
+    gap: calc(var(--ok-spacing) * 1.5);
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    min-width: calc(var(--ok-spacing) * 6);
+    height: calc(var(--ok-spacing) * 6);
+    padding: 0 calc(var(--ok-spacing) * 1.5);
+    border-radius: var(--ok-radius-sm);
+    background-color: rgb(var(--_ok-channel) / 0.16);
+    color: var(--_ok-text);
+    font-family: var(--ok-font-family);
+    font-size: var(--ok-font-size-xs);
+    font-weight: var(--ok-font-weight-bold);
+    line-height: 1.5;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: default;
+  }
+
+  :where([data-ok-label][data-ok-variant="filled"]) {
+    background-color: var(--_ok-main);
+    color: var(--_ok-contrast);
+  }
+
+  :where([data-ok-label][data-ok-variant="outlined"]) {
+    border: 2px solid var(--_ok-main);
+    background-color: transparent;
+    color: var(--_ok-main);
+  }
+
+  :where([data-ok-label][data-ok-variant="inverted"]) {
+    background-color: var(--_ok-lighter);
+    color: var(--_ok-darker);
+  }
+
+  :where([data-ok-label][data-ok-color="default"]) {
+    --_ok-lighter: var(--ok-palette-grey-300);
+  }
+
+  @supports (color: light-dark(#000, #fff)) {
+    :where([data-ok-label][data-ok-color="default"]) {
+      --_ok-lighter: light-dark(var(--ok-palette-grey-300), var(--ok-palette-grey-700));
+    }
+  }
+
+  :where([data-ok-label][data-ok-color="primary"]) {
+    --_ok-lighter: var(--ok-palette-primary-lighter);
+    --_ok-darker: var(--ok-palette-primary-darker);
+  }
+
+  :where([data-ok-label][data-ok-color="secondary"]) {
+    --_ok-lighter: var(--ok-palette-secondary-lighter);
+    --_ok-darker: var(--ok-palette-secondary-darker);
+  }
+
+  :where([data-ok-label][data-ok-color="info"]) {
+    --_ok-lighter: var(--ok-palette-info-lighter);
+    --_ok-darker: var(--ok-palette-info-darker);
+  }
+
+  :where([data-ok-label][data-ok-color="success"]) {
+    --_ok-lighter: var(--ok-palette-success-lighter);
+    --_ok-darker: var(--ok-palette-success-darker);
+  }
+
+  :where([data-ok-label][data-ok-color="warning"]) {
+    --_ok-lighter: var(--ok-palette-warning-lighter);
+    --_ok-darker: var(--ok-palette-warning-darker);
+  }
+
+  :where([data-ok-label][data-ok-color="error"]) {
+    --_ok-lighter: var(--ok-palette-error-lighter);
+    --_ok-darker: var(--ok-palette-error-darker);
+  }
+
+  :where([data-ok-label-icon]) {
+    display: flex;
+    flex-shrink: 0;
+    width: calc(var(--ok-spacing) * 4);
+    height: calc(var(--ok-spacing) * 4);
+  }
+
+  :where([data-ok-label-icon] > svg) {
+    width: 100%;
+    height: 100%;
+  }
+}

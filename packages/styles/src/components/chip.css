@@ -1,0 +1,240 @@
+/*
+ * Chip — spec: specs/components/chip.md
+ *
+ * Anatomy:   span[data-ok-chip]
+ *              › (button[type=button] | span)[data-ok-chip-action]   (clickable chips: a button)
+ *                  › span[data-ok-avatar]? | span[data-ok-chip-icon]? › span[data-ok-chip-label]
+ *              › button[type=button][data-ok-chip-delete][aria-label]? › svg
+ * Modifiers: data-ok-variant = filled (default) | outlined | soft
+ *            data-ok-color   = default | primary | secondary | info | success | warning | error | black | white
+ *            data-ok-size    = medium (default) | small
+ * States:    the buttons' :hover, :focus-visible, :disabled (via :has())
+ *
+ * Single :where() selectors in @layer components. Translucent colors use
+ * rgb(var(--…-channel) / α), never color-mix() (AGENTS.md).
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-ok-chip]) {
+    --_ok-main: var(--ok-c-main, var(--ok-text-primary));
+    --_ok-contrast: var(--ok-c-contrast, var(--ok-bg-paper));
+    --_ok-channel: var(--ok-c-channel, var(--ok-palette-grey-500-channel));
+    --_ok-dark: var(--ok-c-hover, var(--ok-palette-grey-700));
+    --_ok-text: var(--ok-c-text, var(--ok-text-primary));
+    --_ok-height: calc(var(--ok-spacing) * 8);
+    --_ok-pad: calc(var(--ok-spacing) * 3);
+    --_ok-media: calc(var(--ok-spacing) * 6);
+    --_ok-media-start: calc(var(--ok-spacing) * 1.25);
+    --_ok-media-end: calc(var(--ok-spacing) * -1.5);
+    --_ok-delete: calc(var(--ok-spacing) * 5.5);
+
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    box-sizing: border-box;
+    max-width: 100%;
+    height: var(--_ok-height);
+    border-radius: calc(var(--ok-radius-md) * 1.25);
+    background-color: var(--_ok-main);
+    color: var(--_ok-contrast);
+    font-family: var(--ok-font-family);
+    font-size: var(--ok-font-size-sm);
+    font-weight: var(--ok-font-weight-medium);
+    line-height: 1.5;
+    white-space: nowrap;
+    vertical-align: middle;
+    transition: background-color var(--ok-duration-shorter) var(--ok-easing-standard);
+  }
+
+  @supports (color: light-dark(#000, #fff)) {
+    :where([data-ok-chip][data-ok-color="default"]) {
+      --_ok-dark: light-dark(var(--ok-palette-grey-700), var(--ok-palette-grey-400));
+    }
+  }
+
+  :where([data-ok-chip-action]) {
+    display: inline-flex;
+    align-items: center;
+    align-self: stretch;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: inherit;
+    outline: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    cursor: default;
+  }
+
+  :where(button[data-ok-chip-action]) {
+    cursor: pointer;
+  }
+
+  :where([data-ok-chip-label]) {
+    min-width: 0;
+    padding-inline: var(--_ok-pad);
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Avatar or icon before the label */
+  :where([data-ok-chip-action] > [data-ok-avatar], [data-ok-chip-action] > [data-ok-chip-icon]) {
+    --_ok-avatar-size: var(--_ok-media);
+
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: var(--_ok-media);
+    height: var(--_ok-media);
+    margin-inline: var(--_ok-media-start) var(--_ok-media-end);
+    font-size: var(--ok-font-size-xs);
+  }
+
+  :where([data-ok-chip-action] > [data-ok-avatar]) {
+    --_ok-bg: var(--_ok-dark);
+    --_ok-fg: var(--_ok-contrast);
+  }
+
+  :where([data-ok-chip][data-ok-color="default"] [data-ok-chip-action] > [data-ok-avatar]) {
+    --_ok-bg: var(--ok-palette-grey-300);
+    --_ok-fg: var(--ok-palette-grey-700);
+  }
+
+  :where([data-ok-chip-icon] > svg) {
+    width: 75%;
+    height: 75%;
+  }
+
+  /* Delete button: 24px target around a 22px icon. */
+  :where([data-ok-chip-delete]) {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    width: calc(var(--ok-spacing) * 6);
+    height: calc(var(--ok-spacing) * 6);
+    margin-inline: calc(var(--ok-spacing) * -1.75) calc(var(--ok-spacing) * 1);
+    padding: 0;
+    border: 0;
+    border-radius: var(--ok-radius-full);
+    background: none;
+    color: inherit;
+    opacity: 0.48;
+    cursor: pointer;
+    transition: opacity var(--ok-duration-shorter) var(--ok-easing-standard);
+  }
+
+  :where([data-ok-chip-delete] > svg) {
+    width: var(--_ok-delete);
+    height: var(--_ok-delete);
+  }
+
+  /* Sizes */
+  :where([data-ok-chip][data-ok-size="small"]) {
+    --_ok-height: calc(var(--ok-spacing) * 6);
+    --_ok-pad: calc(var(--ok-spacing) * 2);
+    --_ok-media: calc(var(--ok-spacing) * 4.5);
+    --_ok-media-start: var(--ok-spacing);
+    --_ok-media-end: calc(var(--ok-spacing) * -1);
+    --_ok-delete: calc(var(--ok-spacing) * 4);
+
+    border-radius: var(--ok-radius-md);
+  }
+
+  /* Variants */
+  :where([data-ok-chip][data-ok-variant="outlined"]) {
+    --_ok-pad: calc(var(--ok-spacing) * 3 - 1px);
+
+    border: 1px solid var(--_ok-main);
+    background-color: transparent;
+    color: var(--_ok-main);
+  }
+
+  :where([data-ok-chip][data-ok-variant="outlined"][data-ok-size="small"]) {
+    --_ok-pad: calc(var(--ok-spacing) * 2 - 1px);
+  }
+
+  :where([data-ok-chip][data-ok-variant="outlined"][data-ok-color="default"]) {
+    border-color: rgb(var(--ok-palette-grey-500-channel) / 0.32);
+    color: var(--ok-text-primary);
+  }
+
+  :where([data-ok-chip][data-ok-variant="outlined"] [data-ok-chip-action] > [data-ok-avatar]),
+  :where([data-ok-chip][data-ok-variant="soft"] [data-ok-chip-action] > [data-ok-avatar]) {
+    --_ok-bg: var(--_ok-main);
+    --_ok-fg: var(--_ok-contrast);
+  }
+
+  :where([data-ok-chip][data-ok-variant="soft"]) {
+    background-color: rgb(var(--_ok-channel) / 0.16);
+    color: var(--_ok-text);
+  }
+
+  /* Hover (clickable chips) */
+  @media (hover: hover) {
+    :where([data-ok-chip]:has(> button[data-ok-chip-action]:enabled:hover)) {
+      background-color: var(--_ok-dark);
+    }
+
+    :where(
+        [data-ok-chip][data-ok-variant="outlined"]:has(> button[data-ok-chip-action]:enabled:hover)
+      ) {
+      background-color: rgb(var(--_ok-channel) / 0.08);
+    }
+
+    :where(
+        [data-ok-chip][data-ok-variant="soft"]:has(> button[data-ok-chip-action]:enabled:hover)
+      ) {
+      background-color: rgb(var(--_ok-channel) / 0.32);
+    }
+
+    :where([data-ok-chip-delete]:enabled:hover) {
+      opacity: 0.8;
+    }
+  }
+
+  /* Focus */
+  :where([data-ok-chip]:has(> button[data-ok-chip-action]:focus-visible)) {
+    outline: 2px solid var(--ok-text-primary);
+    outline-offset: 2px;
+  }
+
+  :where([data-ok-chip-delete]:focus-visible) {
+    outline: 2px solid currentColor;
+    outline-offset: 0;
+    opacity: 1;
+  }
+
+  /* Disabled */
+  :where([data-ok-chip]:has(> button:disabled)) {
+    --_ok-dark: var(--ok-action-disabled-bg);
+
+    background-color: var(--ok-action-disabled-bg);
+    color: var(--ok-action-disabled);
+  }
+
+  :where([data-ok-chip][data-ok-variant="outlined"]:has(> button:disabled)) {
+    border-color: var(--ok-action-disabled-bg);
+    background-color: transparent;
+  }
+
+  :where([data-ok-chip]:has(> button:disabled) [data-ok-chip-action] > [data-ok-avatar]) {
+    --_ok-bg: var(--ok-action-disabled-bg);
+    --_ok-fg: var(--ok-action-disabled);
+  }
+
+  :where([data-ok-chip] > button:disabled) {
+    cursor: default;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :where([data-ok-chip], [data-ok-chip-delete]) {
+      transition: none;
+    }
+  }
+}

@@ -13,6 +13,9 @@ events `ok:drawer:beforeopen|open|beforeclose|close`) **Pagination** (runtime: `
 step; a checkbox with `aria-controls="<ids>"` checks / clears those and shows mixed) **Switch**
 and **Form control label** (CSS only: native checkbox with `role="switch"`;
 `label[data-ok-form-control-label][data-ok-label-placement]`)
+**Avatar** (runtime `avatar`: `data-ok-size`, broken images fall back to the alt's letter; group:
+`data-ok-avatar-group`, surplus `data-ok-avatar-surplus`) **Badge** and **Label** (CSS only) **Chip**
+(runtime `chip`: delete button / Backspace → cancelable `ok:chip:delete`, then hidden)
 **Radio** (CSS only: `div[role=radiogroup][data-ok-radio-group]` › `span[data-ok-radio]` › native radio)
 **Text field** (CSS only, plus runtime `text-field` for `data-ok-min-rows` / `data-ok-max-rows` and the
 `data-ok-text-field-reveal` password button; inputs keep a `placeholder`, " " when none)

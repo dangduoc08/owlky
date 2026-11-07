@@ -5,7 +5,7 @@ and a review before the next starts.
 
 ## Overview
 Every page of the reference's component menu (`https://minimals.cc/components/…`) and where it
-stands. ✅ = built (19); *wave N* = planned, see "Next — components"; *not planned* = a pattern
+stands. ✅ = built (23); *wave N* = planned, see "Next — components"; *not planned* = a pattern
 or app-level page. *Section* = the heading below with the details. Update this table with each
 component and each `/integrate` run.
 
@@ -20,12 +20,12 @@ component and each `/integrate` run.
 | MUI | Accordion | ✅ | Accordion | Accordion & Alert |
 | MUI | Alert | ✅ | Alert | Accordion & Alert |
 | MUI | Autocomplete | wave 6 | — | Next |
-| MUI | Avatar | wave 3 | — | Next |
-| MUI | Badge | wave 3 | — | Next |
+| MUI | Avatar | ✅ | Avatar, AvatarGroup | Avatar, Badge, Chip & Label |
+| MUI | Badge | ✅ | Badge | Avatar, Badge, Chip & Label |
 | MUI | Breadcrumbs | wave 5 | — | Next |
 | MUI | Buttons | ✅ | Button, IconButton, Fab, ButtonGroup, ToggleButton(Group) | Button |
 | MUI | Checkbox | ✅ | Checkbox, FormControlLabel | Checkbox & Switch |
-| MUI | Chip | wave 3 | — | Next |
+| MUI | Chip | ✅ | Chip | Avatar, Badge, Chip & Label |
 | MUI | Dialog | wave 4 | — | Next |
 | MUI | Drawer | ✅ | Drawer | Drawer |
 | MUI | List | wave 3 | — | Next |
@@ -55,7 +55,7 @@ component and each `/integrate` run.
 | Extra | Form validation | not planned | — | Next |
 | Extra | Form wizard | not planned | — | Next |
 | Extra | Image | wave 7 (ADR) | — | Next |
-| Extra | Label | wave 3 | — | Next |
+| Extra | Label | ✅ | Label | Avatar, Badge, Chip & Label |
 | Extra | Layout | not planned | — | Next |
 | Extra | Lightbox | wave 7 (ADR) | — | Next |
 | Extra | Map | wave 7 (ADR) | — | Next |
@@ -151,6 +151,17 @@ Table`): all Table stories, Drawer content and Sortable lists now scroll in a Sc
 adapts with `:has(> [data-ok-scrollbar])`, and the old markup keeps working (additive). An
 unnamed `TableContainer` is no longer focusable. No new tokens.
 
+## ✅ Components — Avatar, Badge, Chip & Label (2026-11-07)
+Avatar (image with a letter / icon fallback, `variant`, `color`, `size` in px or a length) and
+AvatarGroup (`max`, `total`, `renderSurplus`, `spacing`); Badge (standard, dot and the reference's
+presence statuses, `overlap`, `anchorOrigin`, `max`, `showZero`, `invisible`); Chip (filled /
+outlined / soft, every color incl. black / white, avatar or icon, clickable button, separate named
+delete button, Backspace / Delete); Label (soft / filled / outlined / inverted, icons). HTML
+runtimes: `avatar` (size, image fallback) and `chip` (`ok:chip:delete`). Storybook gets
+`staticDirs` for original demo portraits. Differences: grey avatars use grey-700 letters (AA),
+chips and the chip delete button get visible focus and 24px targets, `deleteLabel` names it.
+**Backlog:** AvatarGroup numeric `spacing`.
+
 ## ✅ Components — Text field & Radio (2026-11-07)
 TextField (outlined / filled / standard, medium / small, `color` (focus), floating label with a notched outline,
 error, helper text, `InputAdornment`, `required`, `margin`, `shrink`, native `select`, multiline
@@ -233,7 +244,7 @@ Dependency-first: leaf components before the ones built from them, the ones that
 |---|---|---|
 | 1 Leaves | ~~Scrollbar~~ ✅, ~~Progress~~ ✅, ~~Checkbox~~ ✅, ~~Switch~~ ✅ | ~~Sortable / Drawer / Table scrolling~~ ✅; ~~Button loading~~ ✅; ~~Table selection~~ ✅; ~~Table "Dense"~~ ✅ |
 | 2 Form | ~~Text field (Input, Textarea, native Select)~~ ✅, ~~Radio button~~ ✅ | TablePagination rows per page, Table "Table pagination with API", Pagination "Items": wait for the listbox Select (wave 4) |
-| 3 Display | Avatar, Badge, Chip, Label, Divider, then List | Drawer menu (List, Divider) |
+| 3 Display | ~~Avatar~~ ✅, ~~Badge~~ ✅, ~~Chip~~ ✅, ~~Label~~ ✅, Divider, then List | Drawer menu (List, Divider) |
 | 4 Overlays | Popover (positioning controller + fallback in core), then Tooltip, Menu, Dialog (+ Backdrop), Snackbar | Drawer backdrop; Icon button tooltips |
 | 5 Navigation | Tabs, Breadcrumbs, Stepper | — |
 | 6 Composites | Rating, Slider, Timeline, Transfer list, Autocomplete, Tree view | — |

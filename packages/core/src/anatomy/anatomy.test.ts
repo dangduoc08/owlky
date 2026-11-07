@@ -3,12 +3,21 @@ import {
   accordionAttributes,
   alertAttributes,
   ariaSort,
+  avatarAttributes,
+  avatarGroupAttributes,
+  avatarVariants,
+  badgeAttributes,
+  badgeContent,
+  badgeVariants,
   buttonAttributes,
   buttonColors,
   buttonGroupAttributes,
   buttonSizes,
   buttonVariants,
   checkboxAttributes,
+  chipAttributes,
+  chipColors,
+  chipVariants,
   circularProgressAttributes,
   circularProgressVariants,
   drawerAnchors,
@@ -21,7 +30,9 @@ import {
   iconButtonAttributes,
   iconButtonColors,
   iconButtonSizes,
+  labelAttributes,
   labelPlacements,
+  labelVariants,
   linearProgressAttributes,
   linearProgressOptions,
   linearProgressVariants,
@@ -570,5 +581,102 @@ describe("radioAttributes / radioGroupAttributes / textFieldAttributes", () => {
       "data-ok-color": "error",
       "data-ok-size": "small",
     });
+  });
+});
+
+describe("avatar, badge, chip and label attributes", () => {
+  it("emit explicit defaults", () => {
+    expect(avatarAttributes()).toEqual({
+      "data-ok-avatar": "",
+      "data-ok-variant": "circular",
+      "data-ok-color": "default",
+    });
+    expect(avatarGroupAttributes()).toEqual({
+      "data-ok-avatar-group": "",
+      "data-ok-spacing": "medium",
+    });
+    expect(badgeAttributes()).toEqual({
+      "data-ok-badge": "",
+      "data-ok-variant": "standard",
+      "data-ok-color": "default",
+      "data-ok-overlap": "rectangular",
+      "data-ok-vertical": "top",
+      "data-ok-horizontal": "right",
+    });
+    expect(chipAttributes()).toEqual({
+      "data-ok-chip": "",
+      "data-ok-variant": "filled",
+      "data-ok-color": "default",
+      "data-ok-size": "medium",
+    });
+    expect(labelAttributes()).toEqual({
+      "data-ok-label": "",
+      "data-ok-variant": "soft",
+      "data-ok-color": "default",
+    });
+  });
+
+  it.each(avatarVariants)("avatar variant %s", (variant) => {
+    expect(avatarAttributes({ variant })["data-ok-variant"]).toBe(variant);
+  });
+  it.each(badgeVariants)("badge variant %s", (variant) => {
+    expect(badgeAttributes({ variant })["data-ok-variant"]).toBe(variant);
+  });
+  it.each(chipColors)("chip and label color %s", (color) => {
+    expect(chipAttributes({ color })["data-ok-color"]).toBe(color);
+    expect(labelAttributes({ color })["data-ok-color"]).toBe(color);
+  });
+  it.each(labelVariants)("label variant %s", (variant) => {
+    expect(labelAttributes({ variant })["data-ok-variant"]).toBe(variant);
+  });
+  it.each(chipVariants)("chip variant %s", (variant) => {
+    expect(chipAttributes({ variant })["data-ok-variant"]).toBe(variant);
+  });
+
+  it("maps sizes, anchors, flags and drops invalid values", () => {
+    expect(avatarAttributes({ size: 56, color: "error", variant: "rounded" })).toMatchObject({
+      "data-ok-size": "56",
+      "data-ok-color": "error",
+    });
+    expect(avatarAttributes({ size: "3rem" })["data-ok-size"]).toBe("3rem");
+    expect(avatarGroupAttributes({ spacing: "small" })["data-ok-spacing"]).toBe("small");
+    expect(
+      badgeAttributes({
+        overlap: "circular",
+        anchorOrigin: { vertical: "bottom", horizontal: "left" },
+        invisible: true,
+      }),
+    ).toMatchObject({
+      "data-ok-overlap": "circular",
+      "data-ok-vertical": "bottom",
+      "data-ok-horizontal": "left",
+      "data-ok-invisible": "",
+    });
+    expect(avatarAttributes({ variant: HOSTILE, color: HOSTILE, size: HOSTILE })).toEqual(
+      avatarAttributes(),
+    );
+    expect(badgeAttributes({ variant: HOSTILE, anchorOrigin: HOSTILE })).toEqual(badgeAttributes());
+    expect(chipAttributes({ variant: HOSTILE, size: HOSTILE })).toEqual(chipAttributes());
+    expect(labelAttributes({ variant: HOSTILE, color: HOSTILE })).toEqual(labelAttributes());
+    expect(avatarGroupAttributes({ spacing: HOSTILE })).toEqual(avatarGroupAttributes());
+  });
+});
+
+describe("badgeContent", () => {
+  it("caps numbers at max, hides 0 unless showZero", () => {
+    expect(badgeContent(4)).toEqual({ content: 4, invisible: false });
+    expect(badgeContent(100)).toEqual({ content: "99+", invisible: false });
+    expect(badgeContent(1000, { max: 999 })).toEqual({ content: "999+", invisible: false });
+    expect(badgeContent(99, { max: 99 })).toEqual({ content: 99, invisible: false });
+    expect(badgeContent(0)).toEqual({ content: 0, invisible: true });
+    expect(badgeContent(0, { showZero: true })).toEqual({ content: 0, invisible: false });
+    expect(badgeContent(150, { max: Number.NaN })).toEqual({ content: "99+", invisible: false });
+  });
+
+  it("other content shows as given; empty content hides", () => {
+    expect(badgeContent("New")).toEqual({ content: "New", invisible: false });
+    expect(badgeContent(undefined)).toEqual({ content: undefined, invisible: true });
+    expect(badgeContent("")).toEqual({ content: "", invisible: true });
+    expect(badgeContent(null)).toEqual({ content: null, invisible: true });
   });
 });

@@ -27,6 +27,11 @@ const SPECS = {
   radio: "radio.md",
   "radio-group": "radio.md",
   "text-field": "text-field.md",
+  avatar: "avatar.md",
+  "avatar-group": "avatar.md",
+  badge: "badge.md",
+  chip: "chip.md",
+  label: "label.md",
 };
 
 const code = (value) => `\`${value}\``;

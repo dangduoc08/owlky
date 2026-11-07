@@ -262,3 +262,11 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
   call them as plain functions): keep story examples stateless, or pass a `?raw` demo with `code`
   and no Controls (Checkbox "Indeterminate"). Text field stories render the password button
   without state; the docs page shows the stateful pattern.
+- Story images (Avatar portraits) are original SVGs in `apps/storybook/public/avatars/`
+  (`staticDirs`), referenced **relatively** (`avatars/avatar-1.svg`) so they work under the e2e
+  server's sub-path. HTML snippet tests rewrite those `src`s to an inline pixel (`local()` in the
+  avatar / badge / chip tests): Vitest doesn't serve Storybook's static folder.
+- Components composed inside others restyle their child through the parent's CSS, never the
+  child's (`[data-ok-chip-action] > [data-ok-avatar]` in `chip.css`, `[data-ok-badge-badge] >
+  [data-ok-avatar]` in `badge.css`); a private variable the child reads (`--_ok-avatar-size`,
+  `--_ok-bg`) is the hook.
