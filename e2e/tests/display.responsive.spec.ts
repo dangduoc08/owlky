@@ -12,6 +12,9 @@ const STORIES: [component: string, story: string][] = [
   ["chip", "soft"],
   ["label", "filled"],
   ["label", "with-icon"],
+  ["divider", "variants"],
+  ["divider", "with-children"],
+  ["divider", "icon-grouping"],
 ];
 
 interface Box {
@@ -27,7 +30,7 @@ function measure(page: Page) {
       problems.push(`page overflows: ${document.documentElement.scrollWidth}px`);
     const parts = [
       ...document.querySelectorAll<HTMLElement>(
-        "[data-ok-avatar], [data-ok-badge], [data-ok-chip], [data-ok-label]",
+        "[data-ok-avatar], [data-ok-badge], [data-ok-chip], [data-ok-label], [data-ok-divider]",
       ),
     ];
     for (const [i, part] of parts.entries()) {

@@ -1,0 +1,321 @@
+/*
+ * List — spec: specs/components/list.md
+ *
+ * Anatomy:   ul[data-ok-list]
+ *              › li[data-ok-list-subheader]?
+ *              › li[data-ok-list-item]
+ *                  › (button | a)[data-ok-list-item-button]?            (clickable row)
+ *                      › span[data-ok-list-item-icon] | span[data-ok-list-item-avatar]
+ *                      › span[data-ok-list-item-text]
+ *                          › span[data-ok-list-item-text-primary] + span[data-ok-list-item-text-secondary]?
+ *                      › span[data-ok-list-item-expand-icon]?           (nested lists)
+ *                  › span[data-ok-list-item-secondary-action]?           (end action)
+ *                  › ul[data-ok-list][id]?                               (nested, `hidden` when closed)
+ * Modifiers: list    data-ok-dense, data-ok-disable-padding
+ *            item    data-ok-align-items = flex-start, data-ok-dense, data-ok-disable-gutters,
+ *                    data-ok-disable-padding, data-ok-show-divider
+ *            button  the item's modifiers but -padding, data-ok-selected; :disabled / aria-disabled
+ *            text    data-ok-inset
+ *            subheader data-ok-color = default | primary | inherit, data-ok-disable-gutters,
+ *                    data-ok-disable-sticky, data-ok-inset
+ *
+ * Single :where() selectors in @layer components (zero specificity).
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-ok-list]) {
+    position: relative;
+    box-sizing: border-box;
+    margin: 0;
+    padding: calc(var(--ok-spacing) * 2) 0;
+    color: var(--ok-text-primary);
+    font-family: var(--ok-font-family);
+    list-style: none;
+  }
+
+  /* An author `display` would beat the user-agent `[hidden]` rule. */
+  :where([data-ok-list][hidden]) {
+    display: none;
+  }
+
+  :where(
+    [data-ok-list][data-ok-disable-padding],
+    [data-ok-list]:has(> [data-ok-list-subheader]:first-child)
+  ) {
+    padding-top: 0;
+  }
+
+  :where([data-ok-list][data-ok-disable-padding]) {
+    padding-bottom: 0;
+  }
+
+  /* Item */
+  :where([data-ok-list-item]) {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    box-sizing: border-box;
+    width: 100%;
+    padding: calc(var(--ok-spacing) * 2) calc(var(--ok-spacing) * 4);
+    text-align: start;
+  }
+
+  /* Clickable row, end action or nested list: the item only holds them. */
+  :where([data-ok-list-item][data-ok-disable-padding]) {
+    padding: 0;
+  }
+
+  /* Button */
+  :where([data-ok-list-item-button]) {
+    position: relative;
+    display: flex;
+    flex: 1 1 auto;
+    align-items: center;
+    box-sizing: border-box;
+    min-width: 0;
+    margin: 0;
+    padding: calc(var(--ok-spacing) * 2) calc(var(--ok-spacing) * 4);
+    border: 0;
+    border-radius: 0;
+    background-color: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: start;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color var(--ok-duration-shortest) var(--ok-easing-standard);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  :where(
+    [data-ok-list][data-ok-dense] [data-ok-list-item],
+    [data-ok-list][data-ok-dense] [data-ok-list-item-button],
+    [data-ok-list-item][data-ok-dense],
+    [data-ok-list-item-button][data-ok-dense]
+  ) {
+    padding-block: var(--ok-spacing);
+  }
+
+  :where([data-ok-list][data-ok-dense] [data-ok-list-item][data-ok-disable-padding]) {
+    padding: 0;
+  }
+
+  :where(
+    [data-ok-list-item][data-ok-disable-gutters],
+    [data-ok-list-item-button][data-ok-disable-gutters]
+  ) {
+    padding-inline: 0;
+  }
+
+  /* Room for the end action: on the item, or on its button (which then spans the whole row). */
+  :where(
+    [data-ok-list-item]:not([data-ok-disable-padding]):has(> [data-ok-list-item-secondary-action])
+  ) {
+    padding-inline-end: calc(var(--ok-spacing) * 12);
+  }
+
+  /* Nested list: a full row below the item's button; its rows start 32px in. */
+  :where([data-ok-list-item] > [data-ok-list]) {
+    flex-basis: 100%;
+  }
+
+  :where(
+    [data-ok-list-item] > [data-ok-list] > [data-ok-list-item] > [data-ok-list-item-button],
+    [data-ok-list-item] > [data-ok-list] > [data-ok-list-item]:not([data-ok-disable-padding])
+  ) {
+    padding-inline-start: calc(var(--ok-spacing) * 8);
+  }
+
+  :where(
+    [data-ok-list-item]:has(> [data-ok-list-item-secondary-action]) > [data-ok-list-item-button]
+  ) {
+    padding-inline-end: calc(var(--ok-spacing) * 12);
+  }
+
+  :where(
+    [data-ok-list-item][data-ok-show-divider],
+    [data-ok-list-item-button][data-ok-show-divider]
+  ) {
+    border-bottom: 1px solid var(--ok-divider);
+    background-clip: padding-box;
+  }
+
+  :where(
+    [data-ok-list-item][data-ok-align-items="flex-start"],
+    [data-ok-list-item-button][data-ok-align-items="flex-start"]
+  ) {
+    align-items: flex-start;
+  }
+
+  :where([data-ok-list-item-button][data-ok-selected]) {
+    background-color: rgb(var(--ok-palette-primary-main-channel) / 0.08);
+  }
+
+  @media (hover: hover) {
+    :where([data-ok-list-item-button]:hover) {
+      background-color: var(--ok-action-hover);
+    }
+
+    :where([data-ok-list-item-button][data-ok-selected]:hover) {
+      background-color: rgb(var(--ok-palette-primary-main-channel) / 0.16);
+    }
+  }
+
+  :where([data-ok-list-item-button]:focus-visible) {
+    outline: 2px solid var(--ok-text-primary);
+    outline-offset: -2px;
+    background-color: var(--ok-action-focus);
+  }
+
+  :where([data-ok-list-item-button][data-ok-selected]:focus-visible) {
+    background-color: rgb(var(--ok-palette-primary-main-channel) / 0.2);
+  }
+
+  :where([data-ok-list-item-button]:is(:disabled, [aria-disabled="true"])) {
+    background-color: transparent;
+    opacity: 0.48;
+    cursor: not-allowed;
+  }
+
+  /* Icon and avatar */
+  :where([data-ok-list-item-icon], [data-ok-list-item-avatar]) {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    margin-inline-end: calc(var(--ok-spacing) * 4);
+    color: inherit;
+  }
+
+  :where([data-ok-list-item-icon] > svg, [data-ok-list-item-expand-icon] > svg) {
+    width: calc(var(--ok-spacing) * 6);
+    height: calc(var(--ok-spacing) * 6);
+  }
+
+  :where(
+    [data-ok-align-items="flex-start"] > [data-ok-list-item-icon],
+    [data-ok-align-items="flex-start"] > [data-ok-list-item-avatar]
+  ) {
+    margin-top: calc(var(--ok-spacing) * 2);
+  }
+
+  /* A checkbox at the start of a row: its box lines up with the other rows' icons, its target
+     overlaps the row's padding, and the text follows 12px after the box. */
+  :where([data-ok-list-item-icon]:has(> [data-ok-checkbox])) {
+    margin-inline-end: var(--ok-spacing);
+  }
+
+  :where([data-ok-list-item-icon] > [data-ok-checkbox]) {
+    margin-block: calc(var(--ok-spacing) * -1);
+    margin-inline-start: calc(var(--ok-spacing) * -2);
+  }
+
+  /* A switch at the end of a row overlaps the row's padding, so the row stays 40px high. */
+  :where([data-ok-list-item] > [data-ok-switch]) {
+    margin-block: calc(var(--ok-spacing) * -2);
+  }
+
+  /* Text */
+  :where([data-ok-list-item-text]) {
+    display: block;
+    flex: 1 1 auto;
+    min-width: 0;
+    margin: 0;
+    font-size: var(--ok-typography-body1-font-size);
+    line-height: var(--ok-typography-body1-line-height);
+  }
+
+  :where([data-ok-list-item-text][data-ok-inset]) {
+    padding-inline-start: calc(var(--ok-spacing) * 10);
+  }
+
+  :where([data-ok-list-item-text-primary]) {
+    display: block;
+    font-size: var(--ok-typography-subtitle2-font-size);
+    font-weight: var(--ok-typography-subtitle2-font-weight);
+    line-height: var(--ok-typography-subtitle2-line-height);
+  }
+
+  :where([data-ok-list-item-text-secondary]) {
+    display: block;
+    color: var(--ok-text-secondary);
+    font-size: var(--ok-typography-body2-font-size);
+    font-weight: var(--ok-typography-body2-font-weight);
+    line-height: var(--ok-typography-body2-line-height);
+  }
+
+  /* On a selected (tinted) row the secondary line darkens to keep 4.5:1 in the light scheme. */
+  :where([data-ok-list-item-button][data-ok-selected] [data-ok-list-item-text-secondary]) {
+    color: var(--ok-palette-grey-700);
+  }
+
+  @supports (color: light-dark(#000, #fff)) {
+    :where([data-ok-list-item-button][data-ok-selected] [data-ok-list-item-text-secondary]) {
+      color: light-dark(var(--ok-palette-grey-700), var(--ok-text-secondary));
+    }
+  }
+
+  /* Expand icon of a nested list's button: points down when closed, up when open. */
+  :where([data-ok-list-item-expand-icon]) {
+    display: inline-flex;
+    flex-shrink: 0;
+    margin-inline-start: auto;
+    transition: transform var(--ok-duration-shorter) var(--ok-easing-standard);
+  }
+
+  :where([aria-expanded="true"] > [data-ok-list-item-expand-icon]) {
+    transform: rotate(180deg);
+  }
+
+  /* End action, such as an icon button */
+  :where([data-ok-list-item-secondary-action]) {
+    position: absolute;
+    top: 50%;
+    right: calc(var(--ok-spacing) * 4);
+    display: inline-flex;
+    align-items: center;
+    transform: translateY(-50%);
+  }
+
+  /* Subheader */
+  :where([data-ok-list-subheader]) {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    box-sizing: border-box;
+    padding-inline: calc(var(--ok-spacing) * 4);
+    background-color: var(--ok-bg-paper);
+    color: var(--ok-text-secondary);
+    font-size: var(--ok-typography-body2-font-size);
+    font-weight: var(--ok-font-weight-medium);
+    line-height: calc(var(--ok-spacing) * 12);
+    list-style: none;
+  }
+
+  :where([data-ok-list-subheader][data-ok-color="primary"]) {
+    color: var(--ok-palette-primary-main);
+  }
+
+  :where([data-ok-list-subheader][data-ok-color="inherit"]) {
+    color: inherit;
+  }
+
+  :where([data-ok-list-subheader][data-ok-disable-gutters]) {
+    padding-inline: 0;
+  }
+
+  :where([data-ok-list-subheader][data-ok-inset]) {
+    padding-inline-start: calc(var(--ok-spacing) * 14);
+  }
+
+  :where([data-ok-list-subheader][data-ok-disable-sticky]) {
+    position: static;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :where([data-ok-list-item-button], [data-ok-list-item-expand-icon]) {
+      transition: none;
+    }
+  }
+}

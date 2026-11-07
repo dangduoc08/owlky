@@ -5,37 +5,79 @@
   <div data-ok-drawer-content>
     <section data-ok-scrollbar aria-label="scrollable content" tabindex="0">
       <nav aria-label="Mailbox">
-        <ul>
-          <li>
-            <button type="button">
-              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>Inbox</button>
+        <ul data-ok-list>
+          <li data-ok-list-item data-ok-disable-padding>
+            <button type="button" data-ok-list-item-button>
+              <span data-ok-list-item-icon>
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>
+              </span>
+              <span data-ok-list-item-text>
+                <span data-ok-list-item-text-primary>Inbox</span>
+              </span>
+            </button>
           </li>
-          <li>
-            <button type="button">
-              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>Starred</button>
+          <li data-ok-list-item data-ok-disable-padding>
+            <button type="button" data-ok-list-item-button>
+              <span data-ok-list-item-icon>
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>
+              </span>
+              <span data-ok-list-item-text>
+                <span data-ok-list-item-text-primary>Starred</span>
+              </span>
+            </button>
           </li>
-          <li>
-            <button type="button">
-              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>Send email</button>
+          <li data-ok-list-item data-ok-disable-padding>
+            <button type="button" data-ok-list-item-button>
+              <span data-ok-list-item-icon>
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>
+              </span>
+              <span data-ok-list-item-text>
+                <span data-ok-list-item-text-primary>Send email</span>
+              </span>
+            </button>
           </li>
-          <li>
-            <button type="button">
-              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>Drafts</button>
+          <li data-ok-list-item data-ok-disable-padding>
+            <button type="button" data-ok-list-item-button>
+              <span data-ok-list-item-icon>
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>
+              </span>
+              <span data-ok-list-item-text>
+                <span data-ok-list-item-text-primary>Drafts</span>
+              </span>
+            </button>
           </li>
         </ul>
-        <hr>
-        <ul>
-          <li>
-            <button type="button">
-              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>All mail</button>
+        <hr data-ok-divider data-ok-variant="fullWidth" data-ok-orientation="horizontal">
+        <ul data-ok-list>
+          <li data-ok-list-item data-ok-disable-padding>
+            <button type="button" data-ok-list-item-button>
+              <span data-ok-list-item-icon>
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>
+              </span>
+              <span data-ok-list-item-text>
+                <span data-ok-list-item-text-primary>All mail</span>
+              </span>
+            </button>
           </li>
-          <li>
-            <button type="button">
-              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>Trash</button>
+          <li data-ok-list-item data-ok-disable-padding>
+            <button type="button" data-ok-list-item-button>
+              <span data-ok-list-item-icon>
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>
+              </span>
+              <span data-ok-list-item-text>
+                <span data-ok-list-item-text-primary>Trash</span>
+              </span>
+            </button>
           </li>
-          <li>
-            <button type="button">
-              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>Spam</button>
+          <li data-ok-list-item data-ok-disable-padding>
+            <button type="button" data-ok-list-item-button>
+              <span data-ok-list-item-icon>
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>
+              </span>
+              <span data-ok-list-item-text>
+                <span data-ok-list-item-text-primary>Spam</span>
+              </span>
+            </button>
           </li>
         </ul>
       </nav>
@@ -49,37 +91,79 @@
   <div data-ok-drawer-content>
     <section data-ok-scrollbar aria-label="scrollable content" tabindex="0">
       <nav aria-label="Mailbox">
-        <ul>
-          <li>
-            <button type="button">
-              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>Inbox</button>
+        <ul data-ok-list>
+          <li data-ok-list-item data-ok-disable-padding>
+            <button type="button" data-ok-list-item-button>
+              <span data-ok-list-item-icon>
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>
+              </span>
+              <span data-ok-list-item-text>
+                <span data-ok-list-item-text-primary>Inbox</span>
+              </span>
+            </button>
           </li>
-          <li>
-            <button type="button">
-              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>Starred</button>
+          <li data-ok-list-item data-ok-disable-padding>
+            <button type="button" data-ok-list-item-button>
+              <span data-ok-list-item-icon>
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>
+              </span>
+              <span data-ok-list-item-text>
+                <span data-ok-list-item-text-primary>Starred</span>
+              </span>
+            </button>
           </li>
-          <li>
-            <button type="button">
-              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>Send email</button>
+          <li data-ok-list-item data-ok-disable-padding>
+            <button type="button" data-ok-list-item-button>
+              <span data-ok-list-item-icon>
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>
+              </span>
+              <span data-ok-list-item-text>
+                <span data-ok-list-item-text-primary>Send email</span>
+              </span>
+            </button>
           </li>
-          <li>
-            <button type="button">
-              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>Drafts</button>
+          <li data-ok-list-item data-ok-disable-padding>
+            <button type="button" data-ok-list-item-button>
+              <span data-ok-list-item-icon>
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>
+              </span>
+              <span data-ok-list-item-text>
+                <span data-ok-list-item-text-primary>Drafts</span>
+              </span>
+            </button>
           </li>
         </ul>
-        <hr>
-        <ul>
-          <li>
-            <button type="button">
-              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>All mail</button>
+        <hr data-ok-divider data-ok-variant="fullWidth" data-ok-orientation="horizontal">
+        <ul data-ok-list>
+          <li data-ok-list-item data-ok-disable-padding>
+            <button type="button" data-ok-list-item-button>
+              <span data-ok-list-item-icon>
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>
+              </span>
+              <span data-ok-list-item-text>
+                <span data-ok-list-item-text-primary>All mail</span>
+              </span>
+            </button>
           </li>
-          <li>
-            <button type="button">
-              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>Trash</button>
+          <li data-ok-list-item data-ok-disable-padding>
+            <button type="button" data-ok-list-item-button>
+              <span data-ok-list-item-icon>
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>
+              </span>
+              <span data-ok-list-item-text>
+                <span data-ok-list-item-text-primary>Trash</span>
+              </span>
+            </button>
           </li>
-          <li>
-            <button type="button">
-              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>Spam</button>
+          <li data-ok-list-item data-ok-disable-padding>
+            <button type="button" data-ok-list-item-button>
+              <span data-ok-list-item-icon>
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>
+              </span>
+              <span data-ok-list-item-text>
+                <span data-ok-list-item-text-primary>Spam</span>
+              </span>
+            </button>
           </li>
         </ul>
       </nav>
@@ -93,37 +177,79 @@
   <div data-ok-drawer-content>
     <section data-ok-scrollbar aria-label="scrollable content" tabindex="0">
       <nav aria-label="Mailbox">
-        <ul>
-          <li>
-            <button type="button">
-              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>Inbox</button>
+        <ul data-ok-list>
+          <li data-ok-list-item data-ok-disable-padding>
+            <button type="button" data-ok-list-item-button>
+              <span data-ok-list-item-icon>
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>
+              </span>
+              <span data-ok-list-item-text>
+                <span data-ok-list-item-text-primary>Inbox</span>
+              </span>
+            </button>
           </li>
-          <li>
-            <button type="button">
-              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>Starred</button>
+          <li data-ok-list-item data-ok-disable-padding>
+            <button type="button" data-ok-list-item-button>
+              <span data-ok-list-item-icon>
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>
+              </span>
+              <span data-ok-list-item-text>
+                <span data-ok-list-item-text-primary>Starred</span>
+              </span>
+            </button>
           </li>
-          <li>
-            <button type="button">
-              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>Send email</button>
+          <li data-ok-list-item data-ok-disable-padding>
+            <button type="button" data-ok-list-item-button>
+              <span data-ok-list-item-icon>
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>
+              </span>
+              <span data-ok-list-item-text>
+                <span data-ok-list-item-text-primary>Send email</span>
+              </span>
+            </button>
           </li>
-          <li>
-            <button type="button">
-              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>Drafts</button>
+          <li data-ok-list-item data-ok-disable-padding>
+            <button type="button" data-ok-list-item-button>
+              <span data-ok-list-item-icon>
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>
+              </span>
+              <span data-ok-list-item-text>
+                <span data-ok-list-item-text-primary>Drafts</span>
+              </span>
+            </button>
           </li>
         </ul>
-        <hr>
-        <ul>
-          <li>
-            <button type="button">
-              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>All mail</button>
+        <hr data-ok-divider data-ok-variant="fullWidth" data-ok-orientation="horizontal">
+        <ul data-ok-list>
+          <li data-ok-list-item data-ok-disable-padding>
+            <button type="button" data-ok-list-item-button>
+              <span data-ok-list-item-icon>
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>
+              </span>
+              <span data-ok-list-item-text>
+                <span data-ok-list-item-text-primary>All mail</span>
+              </span>
+            </button>
           </li>
-          <li>
-            <button type="button">
-              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>Trash</button>
+          <li data-ok-list-item data-ok-disable-padding>
+            <button type="button" data-ok-list-item-button>
+              <span data-ok-list-item-icon>
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>
+              </span>
+              <span data-ok-list-item-text>
+                <span data-ok-list-item-text-primary>Trash</span>
+              </span>
+            </button>
           </li>
-          <li>
-            <button type="button">
-              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>Spam</button>
+          <li data-ok-list-item data-ok-disable-padding>
+            <button type="button" data-ok-list-item-button>
+              <span data-ok-list-item-icon>
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>
+              </span>
+              <span data-ok-list-item-text>
+                <span data-ok-list-item-text-primary>Spam</span>
+              </span>
+            </button>
           </li>
         </ul>
       </nav>
@@ -137,37 +263,79 @@
   <div data-ok-drawer-content>
     <section data-ok-scrollbar aria-label="scrollable content" tabindex="0">
       <nav aria-label="Mailbox">
-        <ul>
-          <li>
-            <button type="button">
-              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>Inbox</button>
+        <ul data-ok-list>
+          <li data-ok-list-item data-ok-disable-padding>
+            <button type="button" data-ok-list-item-button>
+              <span data-ok-list-item-icon>
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>
+              </span>
+              <span data-ok-list-item-text>
+                <span data-ok-list-item-text-primary>Inbox</span>
+              </span>
+            </button>
           </li>
-          <li>
-            <button type="button">
-              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>Starred</button>
+          <li data-ok-list-item data-ok-disable-padding>
+            <button type="button" data-ok-list-item-button>
+              <span data-ok-list-item-icon>
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>
+              </span>
+              <span data-ok-list-item-text>
+                <span data-ok-list-item-text-primary>Starred</span>
+              </span>
+            </button>
           </li>
-          <li>
-            <button type="button">
-              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>Send email</button>
+          <li data-ok-list-item data-ok-disable-padding>
+            <button type="button" data-ok-list-item-button>
+              <span data-ok-list-item-icon>
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>
+              </span>
+              <span data-ok-list-item-text>
+                <span data-ok-list-item-text-primary>Send email</span>
+              </span>
+            </button>
           </li>
-          <li>
-            <button type="button">
-              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>Drafts</button>
+          <li data-ok-list-item data-ok-disable-padding>
+            <button type="button" data-ok-list-item-button>
+              <span data-ok-list-item-icon>
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>
+              </span>
+              <span data-ok-list-item-text>
+                <span data-ok-list-item-text-primary>Drafts</span>
+              </span>
+            </button>
           </li>
         </ul>
-        <hr>
-        <ul>
-          <li>
-            <button type="button">
-              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>All mail</button>
+        <hr data-ok-divider data-ok-variant="fullWidth" data-ok-orientation="horizontal">
+        <ul data-ok-list>
+          <li data-ok-list-item data-ok-disable-padding>
+            <button type="button" data-ok-list-item-button>
+              <span data-ok-list-item-icon>
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>
+              </span>
+              <span data-ok-list-item-text>
+                <span data-ok-list-item-text-primary>All mail</span>
+              </span>
+            </button>
           </li>
-          <li>
-            <button type="button">
-              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>Trash</button>
+          <li data-ok-list-item data-ok-disable-padding>
+            <button type="button" data-ok-list-item-button>
+              <span data-ok-list-item-icon>
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>
+              </span>
+              <span data-ok-list-item-text>
+                <span data-ok-list-item-text-primary>Trash</span>
+              </span>
+            </button>
           </li>
-          <li>
-            <button type="button">
-              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>Spam</button>
+          <li data-ok-list-item data-ok-disable-padding>
+            <button type="button" data-ok-list-item-button>
+              <span data-ok-list-item-icon>
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>
+              </span>
+              <span data-ok-list-item-text>
+                <span data-ok-list-item-text-primary>Spam</span>
+              </span>
+            </button>
           </li>
         </ul>
       </nav>

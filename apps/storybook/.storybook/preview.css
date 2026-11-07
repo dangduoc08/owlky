@@ -43,55 +43,9 @@
   box-shadow: var(--ok-shadow-card);
 }
 
-/* Drawer demo content in a Scrollbar (stories only; a List component will replace it). */
+/* Drawer demo content in a Scrollbar (stories only): the mailbox menu's width. */
 [data-ok-drawer-content] > [data-ok-scrollbar] > nav {
   min-inline-size: 250px;
-  padding-block: calc(var(--ok-spacing) * 2);
-}
-
-[data-ok-drawer-content] > [data-ok-scrollbar] > nav ul {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-[data-ok-drawer-content] > [data-ok-scrollbar] > nav hr {
-  margin: calc(var(--ok-spacing) * 2) 0;
-  border: 0;
-  border-top: 1px solid var(--ok-divider);
-}
-
-[data-ok-drawer-content] > [data-ok-scrollbar] > nav button {
-  display: flex;
-  align-items: center;
-  gap: calc(var(--ok-spacing) * 4);
-  box-sizing: border-box;
-  width: 100%;
-  min-height: calc(var(--ok-spacing) * 11);
-  padding: calc(var(--ok-spacing) * 2) calc(var(--ok-spacing) * 5);
-  border: 0;
-  background: transparent;
-  color: var(--ok-text-primary);
-  font: inherit;
-  font-size: var(--ok-font-size-md);
-  font-weight: var(--ok-font-weight-semibold);
-  text-align: start;
-  cursor: pointer;
-}
-
-[data-ok-drawer-content] > [data-ok-scrollbar] > nav button:hover {
-  background-color: var(--ok-action-hover);
-}
-
-[data-ok-drawer-content] > [data-ok-scrollbar] > nav button:focus-visible {
-  outline: 2px solid var(--ok-text-primary);
-  outline-offset: -2px;
-}
-
-[data-ok-drawer-content] > [data-ok-scrollbar] > nav svg {
-  flex-shrink: 0;
-  width: calc(var(--ok-spacing) * 6);
-  height: calc(var(--ok-spacing) * 6);
 }
 
 /* Sortable demo content (stories only): the reference's big card numbers. */
@@ -316,4 +270,56 @@
 .sb-row:has(> [data-ok-badge]) {
   gap: 2rem;
   padding-block: 0.75rem;
+}
+
+/* List demos (story-only): a paper panel, like the reference's demo cards. */
+.sb-row > div:has(> [data-ok-list]),
+.sb-row > div:has(> nav > [data-ok-list]) {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 22.5rem;
+  border-radius: var(--ok-radius-md);
+  background-color: var(--ok-bg-paper);
+  box-shadow: var(--ok-shadow-card);
+}
+
+/* Divider demos (story-only): a bordered panel, rows of words, a toolbar. */
+.sb-row > div:has(> [data-ok-divider]):not(:has(> nav)) {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 22.5rem;
+  border: 1px solid var(--ok-divider);
+  border-radius: var(--ok-radius-md);
+  color: var(--ok-text-primary);
+  font-family: var(--ok-font-family);
+  font-size: var(--ok-typography-body2-font-size);
+}
+
+.sb-row > div:has(> [data-ok-divider]) > p {
+  margin: 0;
+  padding: 0.75rem 1rem;
+}
+
+.sb-row > div:has(> span + [data-ok-divider]),
+.sb-row > div[role="toolbar"] {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: auto;
+  height: 3rem;
+  padding: 0 1rem;
+}
+
+.sb-row > div[role="toolbar"] {
+  gap: 0.25rem;
+  padding: 0 0.25rem;
+}
+
+.sb-row > div:has(> [data-ok-divider] > [data-ok-divider-text]) {
+  max-width: 45rem;
+  border: 0;
+}
+
+.sb-row > div:has(> [data-ok-divider] > [data-ok-divider-text]) > p {
+  padding: 0.5rem 0;
 }

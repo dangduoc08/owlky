@@ -5,7 +5,7 @@ and a review before the next starts.
 
 ## Overview
 Every page of the reference's component menu (`https://minimals.cc/components/…`) and where it
-stands. ✅ = built (23); *wave N* = planned, see "Next — components"; *not planned* = a pattern
+stands. ✅ = built (24); *wave N* = planned, see "Next — components"; *not planned* = a pattern
 or app-level page. *Section* = the heading below with the details. Update this table with each
 component and each `/integrate` run.
 
@@ -28,7 +28,8 @@ component and each `/integrate` run.
 | MUI | Chip | ✅ | Chip | Avatar, Badge, Chip & Label |
 | MUI | Dialog | wave 4 | — | Next |
 | MUI | Drawer | ✅ | Drawer | Drawer |
-| MUI | List | wave 3 | — | Next |
+| MUI (no Minimals page; mui.com) | Divider | ✅ | Divider | Divider |
+| MUI | List | ✅ | List, ListItem, ListItemButton, ListItemIcon, ListItemAvatar, ListItemText, ListSubheader, ListItemExpandIcon | List |
 | MUI | Menu | wave 4 | — | Next |
 | MUI | Pagination | ✅ | Pagination, PaginationItem | Pagination |
 | MUI | Popover | wave 4 | — | Next |
@@ -107,8 +108,7 @@ runtime `toggle-button` / `toggle-group`, React state). No new tokens.
 ## ✅ Components — Drawer (2026-11-04)
 Created with `/component` from the reference "Drawer" page (story: Anchor — left / right / top /
 bottom). Native `<dialog>` + core `createModalController()` (restored from the removed Dialog,
-shared by future modals). Token added: `--ok-shadow-dialog-start`. Demo menu content is styled in
-the Storybook preview until a List component exists.
+shared by future modals). Token added: `--ok-shadow-dialog-start`. The demo menu is a List.
 
 ## ✅ Components — Sortable (2026-11-04)
 Created with `/component` from the reference "Dnd" page (stories: Grid, Vertical, Horizontal).
@@ -150,6 +150,22 @@ Integrated in the same review, by composition like the reference (`TableContaine
 Table`): all Table stories, Drawer content and Sortable lists now scroll in a Scrollbar; their CSS
 adapts with `:has(> [data-ok-scrollbar])`, and the old markup keeps working (additive). An
 unnamed `TableContainer` is no longer focusable. No new tokens.
+
+## ✅ Components — List (2026-11-07)
+Created with `/component` from the reference "List" page (stories: Simple, Nested, Folder,
+Selected, Controls, Switch). `ul[data-ok-list]` with items, row buttons (`button` / `a`), icon,
+avatar, two-line text, subheader, end action and nested lists; CSS only, plus the HTML runtime
+`list` that opens / closes nested lists (`aria-expanded` + `aria-controls`, `ok:list:toggle`).
+Beyond upstream: `ListItemExpandIcon` (the chevron turns with `aria-expanded`). Controls are
+labelled by the row text instead of sitting in a row button (a control in a button is invalid).
+Integrated in the same review: the Drawer stories' mailbox menu and Divider "Variants" (rows in a
+List, dividers in their own `li`). CSS budget raised to 20 kB. No new tokens.
+
+## ✅ Components — Divider (2026-11-07)
+From MUI's Divider page (Minimals has none; its Drawer uses MUI's Divider): `hr` or, with text,
+`div role="separator"`; `variant` (fullWidth / inset / middle), `orientation`, `flexItem`,
+`textAlign`, `absolute`. CSS only. Integrated: the Drawer stories' mailbox menu uses Divider
+instead of a demo `<hr>`. "Variants" shows List rows since List exists.
 
 ## ✅ Components — Avatar, Badge, Chip & Label (2026-11-07)
 Avatar (image with a letter / icon fallback, `variant`, `color`, `size` in px or a length) and
@@ -211,7 +227,6 @@ integrate these in the same review (additive: no DOM or API change) and remove t
 
 | Waiting for | Where | Today |
 |---|---|---|
-| List | Drawer stories (mailbox menu) | demo `<nav><ul><button>` styled in `.storybook/preview.css` |
 | Typography (display text) | Sortable stories (card numbers) | demo `<span>` styled in `.storybook/preview.css` |
 | Typography (heading / secondary text) | Accordion summaries (plain text, no secondary line from the reference) | summary text styled by `accordion.css` |
 | Typography (heading) | Scrollbar "Layout" story heading | demo `<h4>` styled in `.storybook/preview.css` |
@@ -220,7 +235,7 @@ integrate these in the same review (additive: no DOM or API change) and remove t
 | Select (listbox; needs Menu / Popover) | Table story "Table pagination with API" (search TextField + category Select) | story deferred until the listbox Select; TextField exists |
 | Select (listbox; needs Menu / Popover) | TextField `select` (non-native) | native `<select>` only (`select` prop) |
 | FormLabel | Radio story "Colors" (group label) | story-only `<span id>` styled in `.storybook/preview.css` |
-| Divider | Drawer stories (mailbox menu) | demo `<hr>` styled in `.storybook/preview.css` |
+| Collapse (transition) | List nested lists | open / close at once (`hidden`); a Collapse component can animate the height later without a DOM change |
 | Backdrop | Drawer: native `::backdrop` | share `--ok-backdrop` with a future Backdrop component |
 
 ## ✅ Upstream API review (ADR-0015, 2026-11-04)
@@ -244,7 +259,7 @@ Dependency-first: leaf components before the ones built from them, the ones that
 |---|---|---|
 | 1 Leaves | ~~Scrollbar~~ ✅, ~~Progress~~ ✅, ~~Checkbox~~ ✅, ~~Switch~~ ✅ | ~~Sortable / Drawer / Table scrolling~~ ✅; ~~Button loading~~ ✅; ~~Table selection~~ ✅; ~~Table "Dense"~~ ✅ |
 | 2 Form | ~~Text field (Input, Textarea, native Select)~~ ✅, ~~Radio button~~ ✅ | TablePagination rows per page, Table "Table pagination with API", Pagination "Items": wait for the listbox Select (wave 4) |
-| 3 Display | ~~Avatar~~ ✅, ~~Badge~~ ✅, ~~Chip~~ ✅, ~~Label~~ ✅, Divider, then List | Drawer menu (List, Divider) |
+| 3 Display | ~~Avatar~~ ✅, ~~Badge~~ ✅, ~~Chip~~ ✅, ~~Label~~ ✅, ~~Divider~~ ✅, ~~List~~ ✅ | ~~Drawer menu~~ ✅ |
 | 4 Overlays | Popover (positioning controller + fallback in core), then Tooltip, Menu, Dialog (+ Backdrop), Snackbar | Drawer backdrop; Icon button tooltips |
 | 5 Navigation | Tabs, Breadcrumbs, Stepper | — |
 | 6 Composites | Rating, Slider, Timeline, Transfer list, Autocomplete, Tree view | — |

@@ -32,6 +32,12 @@ const SPECS = {
   badge: "badge.md",
   chip: "chip.md",
   label: "label.md",
+  divider: "divider.md",
+  list: "list.md",
+  "list-item": "list.md",
+  "list-item-button": "list.md",
+  "list-item-text": "list.md",
+  "list-subheader": "list.md",
 };
 
 const code = (value) => `\`${value}\``;

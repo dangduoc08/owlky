@@ -38,6 +38,8 @@ const CASES: [
   ["avatar", "letter", "avatar", ["variant"]],
   ["badge", "standard", "badge", ["overlap", "invisible"]],
   ["chip", "filled", "chip", ["size", "disabled"]],
+  ["divider", "variants", "divider", ["variant"]],
+  ["list", "simple", "list", ["dense", "disablePadding"]],
   [
     "text-field",
     "outlined",

@@ -1,0 +1,50 @@
+<div>
+  <ul data-ok-list aria-labelledby="list-nested-subheader">
+    <li data-ok-list-subheader data-ok-color="default" id="list-nested-subheader">Nested list items</li>
+    <li data-ok-list-item data-ok-disable-padding>
+      <button type="button" data-ok-list-item-button>
+        <span data-ok-list-item-icon>
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3 10 14" /><path d="M21 3l-6.5 18-4-7.5L3 9.5z" /></svg>
+        </span>
+        <span data-ok-list-item-text>
+          <span data-ok-list-item-text-primary>Sent mail</span>
+        </span>
+      </button>
+    </li>
+    <li data-ok-list-item data-ok-disable-padding>
+      <button type="button" data-ok-list-item-button>
+        <span data-ok-list-item-icon>
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16v12H4z" /><path d="m4 7 8 6 8-6" /></svg>
+        </span>
+        <span data-ok-list-item-text>
+          <span data-ok-list-item-text-primary>Drafts</span>
+        </span>
+      </button>
+    </li>
+    <li data-ok-list-item data-ok-disable-padding>
+      <button type="button" data-ok-list-item-button aria-expanded="true" aria-controls="list-nested-inbox">
+        <span data-ok-list-item-icon>
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" /></svg>
+        </span>
+        <span data-ok-list-item-text>
+          <span data-ok-list-item-text-primary>Inbox</span>
+        </span>
+        <span data-ok-list-item-expand-icon aria-hidden="true">
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" /></svg>
+        </span>
+      </button>
+      <ul data-ok-list data-ok-disable-padding id="list-nested-inbox">
+        <li data-ok-list-item data-ok-disable-padding>
+          <button type="button" data-ok-list-item-button>
+            <span data-ok-list-item-icon>
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z" /></svg>
+            </span>
+            <span data-ok-list-item-text>
+              <span data-ok-list-item-text-primary>Starred</span>
+            </span>
+          </button>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>

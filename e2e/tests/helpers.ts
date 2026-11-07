@@ -190,4 +190,5 @@ export const CONTRAST_EXEMPT = [
   '[data-ok-chip][data-ok-color="black"]',
   '[data-ok-label][data-ok-color="black"]',
   "[data-swatch]",
+  '[data-ok-list-subheader][data-ok-color="primary"]',
 ];

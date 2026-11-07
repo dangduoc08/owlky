@@ -20,6 +20,9 @@ import {
   chipVariants,
   circularProgressAttributes,
   circularProgressVariants,
+  dividerAttributes,
+  dividerTextAligns,
+  dividerVariants,
   drawerAnchors,
   drawerAttributes,
   fabAttributes,
@@ -36,6 +39,13 @@ import {
   linearProgressAttributes,
   linearProgressOptions,
   linearProgressVariants,
+  listAttributes,
+  listItemAlignments,
+  listItemAttributes,
+  listItemButtonAttributes,
+  listItemTextAttributes,
+  listSubheaderAttributes,
+  listSubheaderColors,
   orientations,
   progressColors,
   radioAttributes,
@@ -678,5 +688,106 @@ describe("badgeContent", () => {
     expect(badgeContent(undefined)).toEqual({ content: undefined, invisible: true });
     expect(badgeContent("")).toEqual({ content: "", invisible: true });
     expect(badgeContent(null)).toEqual({ content: null, invisible: true });
+  });
+});
+
+describe("dividerAttributes", () => {
+  it("emits explicit defaults; textAlign only when given", () => {
+    expect(dividerAttributes()).toEqual({
+      "data-ok-divider": "",
+      "data-ok-variant": "fullWidth",
+      "data-ok-orientation": "horizontal",
+    });
+  });
+  it.each(dividerVariants)("variant %s", (variant) => {
+    expect(dividerAttributes({ variant })["data-ok-variant"]).toBe(variant);
+  });
+  it.each(dividerTextAligns)("textAlign %s", (textAlign) => {
+    expect(dividerAttributes({ textAlign })["data-ok-text-align"]).toBe(textAlign);
+  });
+  it("flags and invalid values", () => {
+    expect(
+      dividerAttributes({ orientation: "vertical", flexItem: true, absolute: true }),
+    ).toMatchObject({
+      "data-ok-orientation": "vertical",
+      "data-ok-flex-item": "",
+      "data-ok-absolute": "",
+    });
+    expect(
+      dividerAttributes({
+        variant: HOSTILE,
+        orientation: HOSTILE,
+        textAlign: HOSTILE,
+        flexItem: HOSTILE,
+      }),
+    ).toEqual(dividerAttributes());
+  });
+});
+
+describe("list attributes", () => {
+  it("list: root marker and flags", () => {
+    expect(listAttributes()).toEqual({ "data-ok-list": "" });
+    expect(listAttributes({ dense: true, disablePadding: true })).toEqual({
+      "data-ok-list": "",
+      "data-ok-dense": "",
+      "data-ok-disable-padding": "",
+    });
+    expect(listAttributes({ dense: HOSTILE })).toEqual(listAttributes());
+  });
+  it.each(listItemAlignments)("item alignItems %s (only when given)", (alignItems) => {
+    expect(listItemAttributes({ alignItems })["data-ok-align-items"]).toBe(alignItems);
+    expect(listItemButtonAttributes({ alignItems })["data-ok-align-items"]).toBe(alignItems);
+  });
+  it("item and button flags; hostile values dropped", () => {
+    expect(listItemAttributes()).toEqual({ "data-ok-list-item": "" });
+    expect(
+      listItemAttributes({
+        dense: true,
+        disableGutters: true,
+        disablePadding: true,
+        divider: true,
+      }),
+    ).toEqual({
+      "data-ok-list-item": "",
+      "data-ok-dense": "",
+      "data-ok-disable-gutters": "",
+      "data-ok-disable-padding": "",
+      "data-ok-show-divider": "",
+    });
+    expect(listItemButtonAttributes({ selected: true, divider: true })).toEqual({
+      "data-ok-list-item-button": "",
+      "data-ok-show-divider": "",
+      "data-ok-selected": "",
+    });
+    expect(listItemButtonAttributes({ alignItems: HOSTILE, selected: HOSTILE })).toEqual({
+      "data-ok-list-item-button": "",
+    });
+  });
+  it("text inset", () => {
+    expect(listItemTextAttributes()).toEqual({ "data-ok-list-item-text": "" });
+    expect(listItemTextAttributes({ inset: true })["data-ok-inset"]).toBe("");
+  });
+  it.each(listSubheaderColors)("subheader color %s", (color) => {
+    expect(listSubheaderAttributes({ color })["data-ok-color"]).toBe(color);
+  });
+  it("subheader defaults and flags", () => {
+    expect(listSubheaderAttributes()).toEqual({
+      "data-ok-list-subheader": "",
+      "data-ok-color": "default",
+    });
+    expect(
+      listSubheaderAttributes({
+        disableGutters: true,
+        disableSticky: true,
+        inset: true,
+        color: HOSTILE,
+      }),
+    ).toEqual({
+      "data-ok-list-subheader": "",
+      "data-ok-color": "default",
+      "data-ok-disable-gutters": "",
+      "data-ok-disable-sticky": "",
+      "data-ok-inset": "",
+    });
   });
 });

@@ -1,5 +1,17 @@
 import { drawerOptions } from "@owlky/core";
-import { Drawer, type DrawerAnchor, DrawerContent, DrawerTrigger, Scrollbar } from "@owlky/react";
+import {
+  Divider,
+  Drawer,
+  type DrawerAnchor,
+  DrawerContent,
+  DrawerTrigger,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Scrollbar,
+} from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
 import { DemoIcon } from "../shared/demo-icon.js";
 import type { GroupFiles } from "../shared/snippets.js";
@@ -13,26 +25,28 @@ const ANCHORS: [DrawerAnchor, string][] = [
 
 function MenuList({ items }: { items: string[] }) {
   return (
-    <ul>
+    <List>
       {items.map((item) => (
-        <li key={item}>
-          <button type="button">
-            <DemoIcon name="inbox" />
-            {item}
-          </button>
-        </li>
+        <ListItem key={item} disablePadding>
+          <ListItemButton>
+            <ListItemIcon>
+              <DemoIcon name="inbox" />
+            </ListItemIcon>
+            <ListItemText primary={item} />
+          </ListItemButton>
+        </ListItem>
       ))}
-    </ul>
+    </List>
   );
 }
 
-/** Demo content (styled by the Storybook preview only; a List component will replace it). */
+/** Drawer content: a mailbox menu in a scroll area (the nav width is story-only demo layout). */
 function Mailbox({ label = "Mailbox" }: { label?: string }) {
   return (
     <Scrollbar>
       <nav aria-label={label}>
         <MenuList items={["Inbox", "Starred", "Send email", "Drafts"]} />
-        <hr />
+        <Divider />
         <MenuList items={["All mail", "Trash", "Spam"]} />
       </nav>
     </Scrollbar>

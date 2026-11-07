@@ -102,6 +102,17 @@ const pairs: [component: string, story: string][] = [
   ["label", "soft"],
   ["label", "inverted"],
   ["label", "with-icon"],
+  ["divider", "variants"],
+  ["divider", "orientation"],
+  ["divider", "flex-item"],
+  ["divider", "with-children"],
+  ["divider", "icon-grouping"],
+  ["list", "simple"],
+  ["list", "nested"],
+  ["list", "folder"],
+  ["list", "selected"],
+  ["list", "controls"],
+  ["list", "switch"],
 ];
 
 for (const [component, story] of pairs) {

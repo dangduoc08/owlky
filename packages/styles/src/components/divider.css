@@ -1,0 +1,110 @@
+/*
+ * Divider — spec: specs/components/divider.md
+ *
+ * Anatomy:   hr[data-ok-divider]                                   (a line; native separator)
+ *            div[role=separator][data-ok-divider] › span[data-ok-divider-text]   (a line with text)
+ * Modifiers: data-ok-variant     = fullWidth (default) | inset | middle
+ *            data-ok-orientation = horizontal (default) | vertical (+ aria-orientation)
+ *            data-ok-text-align  = center (default) | left | right   (with text)
+ *            data-ok-flex-item, data-ok-absolute
+ *
+ * A 1px `--ok-divider` line. Single :where() selectors in @layer components.
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-ok-divider]) {
+    flex-shrink: 0;
+    box-sizing: border-box;
+    height: 0;
+    margin: 0;
+    border: 0;
+    border-bottom: 1px solid var(--ok-divider);
+    background: none;
+  }
+
+  :where([data-ok-divider][data-ok-variant="inset"]) {
+    margin-inline-start: calc(var(--ok-spacing) * 18);
+  }
+
+  :where([data-ok-divider][data-ok-variant="middle"]) {
+    margin-inline: calc(var(--ok-spacing) * 4);
+  }
+
+  /* Vertical */
+  :where([data-ok-divider][data-ok-orientation="vertical"]) {
+    width: 0;
+    height: 100%;
+    border-bottom: 0;
+    border-inline-end: 1px solid var(--ok-divider);
+  }
+
+  :where([data-ok-divider][data-ok-orientation="vertical"][data-ok-variant="middle"]) {
+    margin-block: calc(var(--ok-spacing) * 2);
+    margin-inline: 0;
+  }
+
+  :where([data-ok-divider][data-ok-flex-item]) {
+    align-self: stretch;
+    height: auto;
+  }
+
+  :where([data-ok-divider][data-ok-absolute]) {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+  }
+
+  /* With text: two lines around the text. */
+  :where([data-ok-divider]:has(> [data-ok-divider-text])) {
+    display: flex;
+    align-items: center;
+    height: auto;
+    border: 0;
+    color: var(--ok-text-secondary);
+    font-family: var(--ok-font-family);
+    font-size: var(--ok-typography-body2-font-size);
+    line-height: var(--ok-typography-body2-line-height);
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  :where([data-ok-divider]:has(> [data-ok-divider-text]))::before,
+  :where([data-ok-divider]:has(> [data-ok-divider-text]))::after {
+    content: "";
+    flex: 1 1 0;
+    min-width: 0;
+    border-top: 1px solid var(--ok-divider);
+  }
+
+  :where([data-ok-divider-text]) {
+    display: inline-flex;
+    align-items: center;
+    padding-inline: calc(var(--ok-spacing) * 2.5);
+  }
+
+  :where([data-ok-divider][data-ok-text-align="left"]:has(> [data-ok-divider-text]))::before {
+    flex: 0 0 10%;
+  }
+
+  :where([data-ok-divider][data-ok-text-align="right"]:has(> [data-ok-divider-text]))::after {
+    flex: 0 0 10%;
+  }
+
+  :where([data-ok-divider][data-ok-orientation="vertical"]:has(> [data-ok-divider-text])) {
+    flex-direction: column;
+    width: auto;
+  }
+
+  :where([data-ok-divider][data-ok-orientation="vertical"]:has(> [data-ok-divider-text]))::before,
+  :where([data-ok-divider][data-ok-orientation="vertical"]:has(> [data-ok-divider-text]))::after {
+    border-top: 0;
+    border-inline-start: 1px solid var(--ok-divider);
+  }
+
+  :where([data-ok-divider][data-ok-orientation="vertical"] > [data-ok-divider-text]) {
+    padding-block: calc(var(--ok-spacing) * 2.5);
+    padding-inline: 0;
+  }
+}

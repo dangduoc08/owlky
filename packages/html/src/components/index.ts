@@ -12,6 +12,7 @@ import { chip } from "./chip/chip.js";
 import { circularProgress } from "./circular-progress/circular-progress.js";
 import { drawer } from "./drawer/drawer.js";
 import { linearProgress } from "./linear-progress/linear-progress.js";
+import { list } from "./list/list.js";
 import { pagination } from "./pagination/pagination.js";
 import { sortable } from "./sortable/sortable.js";
 import { table } from "./table/table.js";
@@ -29,6 +30,7 @@ export const components: readonly ComponentDefinition[] = [
   circularProgress as ComponentDefinition,
   drawer as ComponentDefinition,
   linearProgress as ComponentDefinition,
+  list as ComponentDefinition,
   pagination as ComponentDefinition,
   sortable as ComponentDefinition,
   table as ComponentDefinition,

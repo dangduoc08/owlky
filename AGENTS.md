@@ -270,3 +270,10 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
   child's (`[data-ok-chip-action] > [data-ok-avatar]` in `chip.css`, `[data-ok-badge-badge] >
   [data-ok-avatar]` in `badge.css`); a private variable the child reads (`--_ok-avatar-size`,
   `--_ok-bg`) is the hook.
+- A `ul` may only hold `li` (axe `list` flags `hr`, `li[role=separator]` and `li[role=none]`): a
+  Divider between List rows sits in a plain `<li>`; between lists it sits outside them. Controls in
+  list rows are never inside a `ListItemButton` (nested interactive): label them with the row text
+  (`<label for>` in `ListItemText`, or `aria-labelledby`).
+- Snippets that mirror React examples exactly can be generated: bundle the examples with esbuild
+  (aliases to the packages' `dist`), `renderToStaticMarkup`, drop `data-ok-runtime="off"`, then
+  pretty-print (watch for parsers that lowercase `viewBox`).

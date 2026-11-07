@@ -16,6 +16,8 @@ export type {
   ChipVariant,
   CircularProgressVariant,
   ColorName,
+  DividerTextAlign,
+  DividerVariant,
   DrawerAnchor,
   DrawerCloseReason,
   DrawerVariant,
@@ -28,6 +30,8 @@ export type {
   LabelPlacement,
   LabelVariant,
   LinearProgressVariant,
+  ListItemAlignment,
+  ListSubheaderColor,
   Orientation,
   PageRange,
   PaginationAction,
@@ -92,6 +96,7 @@ export {
   CircularProgress,
   type CircularProgressProps,
 } from "./circular-progress/circular-progress.js";
+export { Divider, type DividerProps } from "./divider/divider.js";
 export {
   Drawer,
   DrawerClose,
@@ -108,6 +113,23 @@ export {
 export { IconButton, type IconButtonProps } from "./icon-button/icon-button.js";
 export { Label, type LabelProps } from "./label/label.js";
 export { LinearProgress, type LinearProgressProps } from "./linear-progress/linear-progress.js";
+export {
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemButton,
+  type ListItemButtonAsButtonProps,
+  type ListItemButtonAsLinkProps,
+  type ListItemButtonProps,
+  ListItemExpandIcon,
+  ListItemIcon,
+  type ListItemProps,
+  ListItemText,
+  type ListItemTextProps,
+  type ListProps,
+  ListSubheader,
+  type ListSubheaderProps,
+} from "./list/list.js";
 export {
   Pagination,
   type PaginationIcons,

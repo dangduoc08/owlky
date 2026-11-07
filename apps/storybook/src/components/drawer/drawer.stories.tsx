@@ -36,7 +36,7 @@ export const Anchor: StoryObj = frameworkStory({
     snippets,
     "anchor",
     ANCHOR_FILES,
-    htmlSetup(["button.css", "scrollbar.css", "drawer.css"], true),
+    htmlSetup(["button.css", "scrollbar.css", "list.css", "divider.css", "drawer.css"], true),
     DRAWER_CONTROLS,
   ),
   react: reactGroupsStory(anchorGroups, {
@@ -51,7 +51,7 @@ export const Variants: StoryObj = frameworkStory({
       snippets,
       "variants",
       VARIANT_FILES,
-      htmlSetup(["button.css", "scrollbar.css", "drawer.css"], true),
+      htmlSetup(["button.css", "scrollbar.css", "list.css", "divider.css", "drawer.css"], true),
     ),
     name: "Persistent & permanent",
   },

@@ -16,6 +16,10 @@ and **Form control label** (CSS only: native checkbox with `role="switch"`;
 **Avatar** (runtime `avatar`: `data-ok-size`, broken images fall back to the alt's letter; group:
 `data-ok-avatar-group`, surplus `data-ok-avatar-surplus`) **Badge** and **Label** (CSS only) **Chip**
 (runtime `chip`: delete button / Backspace → cancelable `ok:chip:delete`, then hidden)
+**Divider** (CSS only: `hr[data-ok-divider]`, with text `div[role=separator][data-ok-divider] › span[data-ok-divider-text]`)
+**List** (CSS only: `ul[data-ok-list]` › `li[data-ok-list-item]` › `button|a[data-ok-list-item-button]`, icon, avatar,
+text, subheader, `data-ok-list-item-secondary-action`; runtime `list` opens / closes nested lists from
+`aria-expanded` + `aria-controls`, event `ok:list:toggle`)
 **Radio** (CSS only: `div[role=radiogroup][data-ok-radio-group]` › `span[data-ok-radio]` › native radio)
 **Text field** (CSS only, plus runtime `text-field` for `data-ok-min-rows` / `data-ok-max-rows` and the
 `data-ok-text-field-reveal` password button; inputs keep a `placeholder`, " " when none)

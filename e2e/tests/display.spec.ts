@@ -53,6 +53,23 @@ for (const impl of implementations) {
       await expect(page.getByRole("button", { name: "Deletable" }).first()).toHaveCount(0);
     });
 
+    test("dividers are separators: 1px lines, text between two lines", async ({ page }) => {
+      await openStory(page, storyId(impl, "divider", "with-children"));
+      const separators = page.getByRole("separator");
+      await expect(separators).toHaveCount(4);
+      await expect(separators.first()).toHaveText("Center");
+      await openStory(page, storyId(impl, "divider", "icon-grouping"));
+      const line = page.locator("[data-ok-divider]");
+      expect(
+        await line.evaluate((el) => [
+          el.getBoundingClientRect().width,
+          el.getAttribute("aria-orientation"),
+        ]),
+      ).toEqual([1, "vertical"]);
+      await openStory(page, storyId(impl, "drawer", "variants"));
+      await expect(page.locator("nav [data-ok-divider]").first()).toBeAttached();
+    });
+
     test("labels are 24px tags", async ({ page }) => {
       await openStory(page, storyId(impl, "label", "soft"));
       const heights = await page

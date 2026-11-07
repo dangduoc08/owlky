@@ -5,9 +5,9 @@ import { gzipSync } from "node:zlib";
 const budgets = [
   ["packages/html/dist/owlky.js", 15_000, "HTML runtime + all components (IIFE)"],
   ["packages/html/dist/esm/runtime/runtime.js", 3_000, "HTML core runtime"],
-  // 16 kB since the form controls (text field, checkbox, radio, switch); per-component files
+  // 20 kB since the form, display and list components; per-component files
   // (`@owlky/styles/components/*`) let apps load only what they use.
-  ["packages/styles/dist/owlky.min.css", 16_000, "All CSS (tokens + components)"],
+  ["packages/styles/dist/owlky.min.css", 20_000, "All CSS (tokens + components)"],
 ];
 
 let failed = false;
