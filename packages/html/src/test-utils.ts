@@ -31,6 +31,12 @@ const TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 
 /** Asserts that axe finds no WCAG 2.2 AA violations inside `host`. */
 export async function expectNoAxeViolations(host: Element): Promise<void> {
+  // Mid-transition colors lower measured contrast (slow CI runners): scan the settled UI.
+  // Infinite animations (spinners) never finish, so only finite ones are awaited.
+  const finite = document
+    .getAnimations()
+    .filter((a) => a.effect?.getComputedTiming().endTime !== Number.POSITIVE_INFINITY);
+  await Promise.all(finite.map((animation) => animation.finished.catch(() => {})));
   const all = await axe.run(host, {
     runOnly: { type: "tag", values: TAGS },
     rules: { "color-contrast": { enabled: false } },
