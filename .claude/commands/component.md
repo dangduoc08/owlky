@@ -114,6 +114,12 @@ project. Never copy the reference's source code, branding or assets.
        used (see [Visual regression](#visual-regression)); Chromatic or any other paid service or
        new dependency may only be *proposed* here, never added without approval;
    - the stories (one per reference section) and the files to be created (Create) or changed (Update);
+   - **Storybook MCP lookups** (optional, `storybook` server in `.mcp.json`, needs `pnpm storybook`
+     running; if it isn't reachable, skip this and rely on the searches below): `docs-list` for the
+     components that already exist (reuse them before proposing a stand-in);
+     `stories-find-by-component` on an existing component's React file for the stories that render
+     it. Lookups only: the spec, the option schema, `docs/roadmap.md` and the HTML snippets aren't in
+     the MCP manifest, so the greps below still run;
    - **reuse and stand-ins:** which existing components / core helpers this one reuses; every part
      the reference builds from a component we don't have yet, and how it is covered meanwhile —
      native platform feature or story-only demo markup, never a home-made stand-in in the library

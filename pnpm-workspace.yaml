@@ -10,3 +10,7 @@ overrides:
   # Security fix (GHSA: glob AbortSignal bypass, minimatch ReDoS). Storybook's docgen plugin
   # still pins glob ^13 upstream; remove once @storybook/react-vite ships a fixed version.
   "@joshwooding/vite-plugin-react-docgen-typescript>glob": "14.0.3"
+  # Release age (dev deps ≥ 14 days): @storybook/addon-mcp 10.6.3 resolves tmcp 1.20.1 and
+  # @tmcp/adapter-valibot 0.1.7 (both 2026-10-26). Remove both lines after 2026-11-09.
+  "@storybook/addon-mcp>tmcp": "1.20.0"
+  "@storybook/addon-mcp>@tmcp/adapter-valibot": "0.1.6"

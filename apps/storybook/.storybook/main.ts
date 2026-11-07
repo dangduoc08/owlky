@@ -5,7 +5,9 @@ const pkg = (path: string) => fileURLToPath(new URL(`../../../packages/${path}`,
 
 const config: StorybookConfig = {
   stories: ["../src/**/*.mdx", "../src/**/*.stories.@(ts|tsx)"],
-  addons: ["@storybook/addon-docs", "@storybook/addon-a11y"],
+  addons: ["@storybook/addon-docs", "@storybook/addon-a11y", "@storybook/addon-mcp"],
+  // Storybook MCP (dev server, http://localhost:6006/mcp): the manifest feeds its docs tools.
+  features: { componentsManifest: true },
   // Story-only assets (Avatar demo portraits), referenced relatively: `avatars/avatar-1.svg`.
   staticDirs: ["../public"],
   framework: { name: "@storybook/react-vite", options: {} },

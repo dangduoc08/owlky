@@ -31,7 +31,12 @@ This command orchestrates; it doesn't duplicate `/component`. Capture and implem
    - stand-in patterns in existing code, e.g. `overflow: auto` (Scrollbar), `<select>` (Select),
      `<input type="checkbox">` (Checkbox), `<hr>` (Divider), own spinners (Progress), demo markup
      in `apps/storybook/.storybook/preview.css`;
-   - a wait recorded only outside "Pending integrations" is itself a finding: report it.
+   - a wait recorded only outside "Pending integrations" is itself a finding: report it;
+   - optional, when the Storybook MCP server (`storybook` in `.mcp.json`) answers — it needs
+     `pnpm storybook` running; otherwise skip: `stories-find-by-component` on
+     `packages/react/src/<name>/<name>.tsx` lists the stories that already render `<Name>`, and
+     `docs-list` the existing components. Use them to cross-check the dependents above, never
+     instead of the greps (the roadmap, specs and HTML snippets aren't in the MCP manifest).
    Keep only waits whose component **exists now**. No waits → report "nothing to integrate" and stop.
 
 4. **Re-capture each dependent from its reference.** For every dependent component, read the
@@ -69,7 +74,7 @@ Reply in the user's language (Vietnamese); file names, code and identifiers stay
 ```
 ## Integrations: <component | all>
 
-Sources: Pending integrations N rows · grep N hits · code stand-ins N · Reference URLs fetched N
+Sources: Pending integrations N rows · grep N hits · code stand-ins N · Reference URLs fetched N · Storybook MCP: used (N stories) | skipped (not running)
 
 ### (a) Unlocked integrations
 | # | Dependent | Waiting for | Today | Change (from the reference) | API impact | Tests / stories | Changeset |

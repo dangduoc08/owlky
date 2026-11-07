@@ -106,6 +106,20 @@ pnpm check                                  # everything CI runs
 - Theme settings are data attributes: `data-ok-preset`, `data-ok-font` (nest like `data-ok-theme`);
   font size = root `font-size` (ADR-0017).
 
+## Storybook MCP
+
+`@storybook/addon-mcp` serves an MCP server from the dev server (`pnpm storybook` →
+`http://localhost:6006/mcp`, registered in `.mcp.json` as `storybook`; restart a running
+Storybook after installing). Use it to look things up, not as a contract:
+
+- `docs-list`: every component and docs page with its id; `stories-find-by-component`: which
+  stories render a file (the dependents to re-check in `/integrate`); `docs-show-story`, `stories-preview`.
+- `docs-show` lists a component's stories but no props: story metas don't set `component`
+  (ADR-0018 keeps Controls on the option schema). Props and attributes come from the spec and
+  the option schema in `core/src/anatomy/anatomy.ts`, which stay the source of truth (the
+  server's own advice to trust only its docs doesn't apply here).
+- React only: the HTML implementation isn't in the manifest. No `test-run` (no `@storybook/addon-vitest`).
+
 ## Local environment notes
 
 - pnpm 12 is a native binary corepack can't run: it is installed with `npm i -g pnpm` and
