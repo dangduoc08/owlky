@@ -14,6 +14,7 @@ import { pagination } from "./pagination/pagination.js";
 import { sortable } from "./sortable/sortable.js";
 import { table } from "./table/table.js";
 import { tablePagination } from "./table-pagination/table-pagination.js";
+import { textField } from "./text-field/text-field.js";
 import { toggleButton } from "./toggle-button/toggle-button.js";
 import { toggleGroup } from "./toggle-group/toggle-group.js";
 
@@ -28,6 +29,7 @@ export const components: readonly ComponentDefinition[] = [
   sortable as ComponentDefinition,
   table as ComponentDefinition,
   tablePagination as ComponentDefinition,
+  textField as ComponentDefinition,
   toggleButton as ComponentDefinition,
   toggleGroup as ComponentDefinition,
 ];

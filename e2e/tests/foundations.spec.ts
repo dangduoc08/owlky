@@ -121,10 +121,12 @@ const GUIDES = [
   ["components-pagination--docs", "Accessibility"],
   ["components-progress-circular-progress--docs", "Accessibility"],
   ["components-progress-linear-progress--docs", "Accessibility"],
+  ["components-radio--docs", "Accessibility"],
   ["components-scrollbar--docs", "Accessibility"],
   ["components-sortable--docs", "Accessibility"],
   ["components-switch--docs", "Accessibility"],
   ["components-table--docs", "Accessibility"],
+  ["components-text-field--docs", "Accessibility"],
 ] as const;
 
 /** Component docs pages and their option schema: the Options table lists every option. */
@@ -141,10 +143,12 @@ const OPTION_TABLES: [string, (keyof typeof optionSchemas)[]][] = [
   ["components-pagination--docs", ["pagination"]],
   ["components-progress-circular-progress--docs", ["circular-progress"]],
   ["components-progress-linear-progress--docs", ["linear-progress"]],
+  ["components-radio--docs", ["radio", "radio-group", "form-control-label"]],
   ["components-scrollbar--docs", ["scrollbar"]],
   ["components-sortable--docs", ["sortable"]],
   ["components-switch--docs", ["switch", "form-control-label"]],
   ["components-table--docs", ["table", "table-sort-label"]],
+  ["components-text-field--docs", ["text-field"]],
 ];
 
 for (const [id, schemaNames] of OPTION_TABLES) {

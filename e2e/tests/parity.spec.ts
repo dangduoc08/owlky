@@ -75,6 +75,13 @@ const pairs: [component: string, story: string][] = [
   ["switch", "sizes"],
   ["switch", "placements"],
   ["switch", "colors"],
+  ["radio", "basic"],
+  ["radio", "sizes"],
+  ["radio", "placement"],
+  ["radio", "colors"],
+  ["text-field", "outlined"],
+  ["text-field", "filled"],
+  ["text-field", "standard"],
 ];
 
 for (const [component, story] of pairs) {

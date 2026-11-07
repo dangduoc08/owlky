@@ -702,6 +702,103 @@ export const formControlLabelAttributes = (
   options: FormControlLabelAnatomyOptions = {},
 ): DataAttributes => optionAttributes(formControlLabelOptions, { ...options });
 
+// --- Radio, RadioGroup -----------------------------------------------------------------------
+
+export const radioOptions = defineOptions("radio", "data-ok-radio", {
+  color: style(
+    "data-ok-color",
+    selectionControlColors,
+    "primary",
+    "Color when selected (`default` = text color).",
+  ),
+  size: style("data-ok-size", selectionControlSizes, "medium", "Target 40 / 36px, icon 24 / 20px."),
+  disabled: native("disabled", "Native `disabled` on the input.", { children: CONTROL_INPUT }),
+  checked: state("checked", "Native `checked` (in a group: the group's `value`).", "change"),
+});
+
+export interface RadioAnatomyOptions {
+  color?: SelectionControlColor | undefined;
+  size?: SelectionControlSize | undefined;
+}
+
+/** `data-ok-*` attributes of a radio's root span. */
+export const radioAttributes = (options: RadioAnatomyOptions = {}): DataAttributes =>
+  optionAttributes(radioOptions, { ...options });
+
+export const radioGroupOptions = defineOptions("radio-group", "data-ok-radio-group", {
+  row: flag("data-ok-row", "Radios side by side instead of a column."),
+  value: state(
+    "checked",
+    "Selected radio (`value` / `defaultValue` + `onChange(value)`; HTML: the checked input).",
+    "change",
+  ),
+});
+
+/** `data-ok-*` attributes of a radio group. */
+export const radioGroupAttributes = (options: { row?: boolean | undefined } = {}): DataAttributes =>
+  optionAttributes(radioGroupOptions, { ...options });
+
+// --- TextField --------------------------------------------------------------------------------
+
+export const textFieldVariants = ["outlined", "filled", "standard"] as const;
+export const textFieldMargins = ["none", "dense", "normal"] as const;
+export type TextFieldVariant = (typeof textFieldVariants)[number];
+export type TextFieldMargin = (typeof textFieldMargins)[number];
+
+const FIELD_INPUT = ":scope > [data-ok-text-field-control] > [data-ok-text-field-input]";
+
+export const textFieldOptions = defineOptions("text-field", "data-ok-text-field", {
+  variant: style(
+    "data-ok-variant",
+    textFieldVariants,
+    "outlined",
+    "Outline, tinted fill or underline.",
+  ),
+  size: style("data-ok-size", selectionControlSizes, "medium", "Height 56 / 40px (outlined)."),
+  color: style(
+    "data-ok-color",
+    selectionControlColors,
+    "default",
+    "Focus color (`default` = text color, as on the reference; MUI's default is `primary`).",
+  ),
+  error: flag("data-ok-error", "Error colors; the input gets `aria-invalid`."),
+  fullWidth: flag("data-ok-full-width", "Stretch to the container width."),
+  margin: style(
+    "data-ok-margin",
+    textFieldMargins,
+    "none",
+    "Vertical margin: 0, 8 / 4px or 16 / 8px.",
+  ),
+  shrink: flag("data-ok-shrink", "Keep the label above the value even when empty."),
+  minRows: number("data-ok-min-rows", undefined, "Multiline: rows shown at least.", { min: 1 }),
+  maxRows: number("data-ok-max-rows", undefined, "Multiline: rows before it scrolls.", { min: 1 }),
+  disabled: native("disabled", "Native `disabled` on the input.", { children: FIELD_INPUT }),
+  required: native("required", "Native `required`; the label gets an asterisk.", {
+    children: FIELD_INPUT,
+  }),
+  value: state(
+    "value",
+    "The input's value (`value` / `defaultValue` + `onChange(value)`).",
+    "input",
+  ),
+});
+
+export interface TextFieldAnatomyOptions {
+  variant?: TextFieldVariant | undefined;
+  size?: SelectionControlSize | undefined;
+  color?: SelectionControlColor | undefined;
+  error?: boolean | undefined;
+  fullWidth?: boolean | undefined;
+  margin?: TextFieldMargin | undefined;
+  shrink?: boolean | undefined;
+  minRows?: number | undefined;
+  maxRows?: number | undefined;
+}
+
+/** `data-ok-*` attributes of a text field's root. */
+export const textFieldAttributes = (options: TextFieldAnatomyOptions = {}): DataAttributes =>
+  optionAttributes(textFieldOptions, { ...options });
+
 /** Every component's option schema, for tooling (Storybook Controls, parity tests, docs). */
 export const optionSchemas = {
   accordion: accordionOptions,
@@ -722,5 +819,8 @@ export const optionSchemas = {
   checkbox: checkboxOptions,
   switch: switchOptions,
   "form-control-label": formControlLabelOptions,
+  radio: radioOptions,
+  "radio-group": radioGroupOptions,
+  "text-field": textFieldOptions,
   "table-sort-label": tableSortLabelOptions,
 } as const;

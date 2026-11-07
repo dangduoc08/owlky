@@ -34,6 +34,13 @@ const CASES: [
   ["linear-progress", "buffer", "linear-progress", ["value", "valueBuffer"]],
   ["checkbox", "colors", "checkbox", ["color", "size", "disabled"]],
   ["switch", "colors", "switch", ["color", "size", "disabled"]],
+  ["radio", "colors", "radio", ["color", "size", "disabled"]],
+  [
+    "text-field",
+    "outlined",
+    "text-field",
+    ["size", "color", "error", "margin", "shrink", "disabled"],
+  ],
 ];
 
 /** A non-default value for the option, in Storybook's URL args syntax. */

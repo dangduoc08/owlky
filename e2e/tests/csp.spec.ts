@@ -31,6 +31,14 @@ test("no CSP or Trusted Types violations", async ({ page }) => {
     "indeterminate",
     true,
   );
+  await expect
+    .poll(() =>
+      page
+        .locator("[data-ok-text-field]")
+        .evaluate((element) => (element as HTMLElement).style.getPropertyValue("--_ok-max-rows")),
+    )
+    .toBe("3");
+  await page.getByRole("textbox", { name: "Notes" }).fill("Hello");
   await page.getByRole("switch", { name: "Wi-Fi" }).click();
   await expect(page.getByRole("switch", { name: "Wi-Fi" })).not.toBeChecked();
   expect(

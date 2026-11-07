@@ -37,6 +37,8 @@ export type {
   TablePadding,
   TableSize,
   TableSortDirection,
+  TextFieldMargin,
+  TextFieldVariant,
   ToggleButtonColor,
   ToggleButtonSize,
   ToggleGroupValue,
@@ -95,6 +97,12 @@ export {
   type PaginationProps,
   type PaginationRenderItemParams,
 } from "./pagination/pagination.js";
+export {
+  Radio,
+  RadioGroup,
+  type RadioGroupProps,
+  type RadioProps,
+} from "./radio/radio.js";
 export { Scrollbar, type ScrollbarProps } from "./scrollbar/scrollbar.js";
 export { arrayMove, Sortable, type SortableProps } from "./sortable/sortable.js";
 export { Switch, type SwitchProps } from "./switch/switch.js";
@@ -120,6 +128,13 @@ export {
   TableSortLabel,
   type TableSortLabelProps,
 } from "./table/table.js";
+export {
+  InputAdornment,
+  type InputAdornmentProps,
+  TextField,
+  type TextFieldElement,
+  type TextFieldProps,
+} from "./text-field/text-field.js";
 export {
   ToggleButton,
   ToggleButtonGroup,

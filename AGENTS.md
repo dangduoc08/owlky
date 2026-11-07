@@ -252,3 +252,13 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
   Checkbox root, so React and HTML markup match.
 - `FormControlLabel`'s control is a **prop**: Storybook's `applyArgs` walks `control` too, so
   story Controls reach controls inside labels.
+- TextField's floating label is CSS only: the root floats it on `:focus-within`,
+  `[data-ok-shrink]`, a start adornment, a select, or `:not(:placeholder-shown)` — so inputs and
+  textareas **always** carry a `placeholder` (`" "` when there's none to show; React adds it).
+  Label position, scale and the outline's notch come from private variables set on the root
+  (`--_ok-label-*`, `--_ok-legend-max`), so variants and sizes only change numbers. The outlined
+  notch repeats the label in `fieldset › legend › span` (aria-hidden).
+- Stories can't hold state inside helper components that `applyArgs` / `jsxSource` expand (they
+  call them as plain functions): keep story examples stateless, or pass a `?raw` demo with `code`
+  and no Controls (Checkbox "Indeterminate"). Text field stories render the password button
+  without state; the docs page shows the stateful pattern.

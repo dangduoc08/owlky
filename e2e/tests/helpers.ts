@@ -89,6 +89,7 @@ export function normalizeStory(page: Page): Promise<NormalizedNode> {
       "data-ok-label-current",
       "data-ok-rows-per-page",
       "data-ok-table-dense",
+      "data-ok-text-field-reveal",
       // React sets <option> selection as a property (compared through the select's :value).
       "selected",
     ]);

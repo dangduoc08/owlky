@@ -281,3 +281,22 @@
   flex-wrap: wrap;
   margin-inline-start: 1.5rem;
 }
+
+/* Text field demos: one field per line, like the reference columns. */
+.sb-row:has(> [data-ok-text-field]) {
+  gap: 1.5rem;
+}
+
+/* Radio demos: a column group sits under its label. */
+.sb-row:has(> [data-ok-radio-group]:not([data-ok-row])) {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+/* Story-only group label until a FormLabel component exists (docs/roadmap.md). */
+#radio-colors-label {
+  color: var(--ok-text-secondary);
+  font-size: var(--ok-typography-body2-font-size);
+  line-height: var(--ok-typography-body2-line-height);
+}

@@ -1,0 +1,531 @@
+/*
+ * Text field — spec: specs/components/text-field.md
+ *
+ * Anatomy:   div[data-ok-text-field]
+ *              › label[data-ok-text-field-label][for]? (› span[data-ok-text-field-asterisk]?)
+ *              › div[data-ok-text-field-control]
+ *                  › span[data-ok-text-field-adornment="start"]?
+ *                  › (input | textarea | select)[data-ok-text-field-input]
+ *                  › svg[data-ok-text-field-select-icon]?                 (select)
+ *                  › span[data-ok-text-field-adornment="end"]?
+ *                  › fieldset[data-ok-text-field-outline] › legend › span (outlined; the label again)
+ *              › div[data-ok-text-field-helper]?
+ * Modifiers: data-ok-variant = outlined (default) | filled | standard
+ *            data-ok-size    = medium (default) | small
+ *            data-ok-color   = default (text color) | primary | secondary | info | success | warning
+ *                              | error (focus color)
+ *            data-ok-margin  = none (default) | dense | normal
+ *            data-ok-error, data-ok-full-width, data-ok-shrink, data-ok-min-rows, data-ok-max-rows
+ * States:    :focus-within, :disabled / :placeholder-shown of the input (via :has())
+ *
+ * The label floats up when the field has focus or a value, when it starts with an adornment, for
+ * selects and with data-ok-shrink. "Has a value" is `:not(:placeholder-shown)`, so inputs and
+ * textareas always carry a placeholder (a single space when there is none to show). The outline's
+ * notch is a legend with the label text (MUI's technique), so it works on any background.
+ * Single :where() selectors in @layer components (zero specificity). Translucent colors use
+ * rgb(var(--…-channel) / α), never color-mix() (AGENTS.md).
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-ok-text-field]) {
+    --_ok-pad: calc(var(--ok-spacing) * 4) calc(var(--ok-spacing) * 3.5);
+    --_ok-pad-x: calc(var(--ok-spacing) * 3.5);
+    --_ok-label-x: calc(var(--ok-spacing) * 3.5);
+    --_ok-label-rest: calc(var(--ok-spacing) * 4);
+    --_ok-label-up: calc(var(--ok-spacing) * -2.25);
+    --_ok-label-y: var(--_ok-label-rest);
+    --_ok-label-scale: 1;
+    --_ok-label-size: var(--ok-font-size-lg);
+    --_ok-label-weight: var(--ok-font-weight-regular);
+    --_ok-label-max-rest: calc(100% - var(--ok-spacing) * 6);
+    --_ok-label-max: var(--_ok-label-max-rest);
+    --_ok-legend-max: 0.01px;
+    --_ok-placeholder: 0;
+    --_ok-border: rgb(var(--ok-palette-grey-500-channel) / 0.2);
+    --_ok-border-width: 1px;
+    --_ok-tint: rgb(var(--ok-palette-grey-500-channel) / 0.08);
+    --_ok-tint-hover: rgb(var(--ok-palette-grey-500-channel) / 0.16);
+    --_ok-line: rgb(var(--ok-palette-grey-500-channel) / 0.32);
+    --_ok-accent: var(--ok-text-primary);
+    --_ok-accent-text: var(--ok-text-primary);
+
+    position: relative;
+    display: inline-flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    vertical-align: top;
+    font-family: var(--ok-font-family);
+  }
+
+  /* Focus color: the palette's main tone for lines, its AA "text" tone for the label. */
+  :where([data-ok-text-field][data-ok-color]:not([data-ok-color="default"])) {
+    --_ok-accent: var(--ok-c-main, var(--ok-text-primary));
+    --_ok-accent-text: var(--ok-c-text, var(--ok-text-primary));
+  }
+
+  :where([data-ok-text-field][data-ok-full-width]) {
+    width: 100%;
+  }
+
+  :where([data-ok-text-field][data-ok-margin="dense"]) {
+    margin-block: calc(var(--ok-spacing) * 2) var(--ok-spacing);
+  }
+
+  :where([data-ok-text-field][data-ok-margin="normal"]) {
+    margin-block: calc(var(--ok-spacing) * 4) calc(var(--ok-spacing) * 2);
+  }
+
+  /* Label */
+  :where([data-ok-text-field-label]) {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    max-width: var(--_ok-label-max);
+    overflow: hidden;
+    color: var(--ok-text-secondary);
+    font-size: var(--_ok-label-size);
+    font-weight: var(--_ok-label-weight);
+    line-height: calc(var(--ok-spacing) * 6);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transform: translate(var(--_ok-label-x), var(--_ok-label-y)) scale(var(--_ok-label-scale));
+    transform-origin: top left;
+    pointer-events: none;
+    transition:
+      color var(--ok-duration-shorter) var(--ok-easing-decelerate),
+      transform var(--ok-duration-shorter) var(--ok-easing-decelerate),
+      max-width var(--ok-duration-shorter) var(--ok-easing-decelerate);
+  }
+
+  /* Control: the box around the input (outline, fill or underline). */
+  :where([data-ok-text-field-control]) {
+    position: relative;
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    min-width: 0;
+    border-radius: var(--ok-radius-md);
+    color: var(--ok-text-primary);
+    font-size: var(--ok-font-size-lg);
+    line-height: calc(var(--ok-spacing) * 6);
+    cursor: text;
+  }
+
+  :where([data-ok-text-field-input]) {
+    flex: 1 1 auto;
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+    padding: var(--_ok-pad);
+    border: 0;
+    border-radius: inherit;
+    outline: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    letter-spacing: inherit;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  :where([data-ok-text-field-input])::placeholder {
+    color: var(--ok-text-disabled);
+    opacity: var(--_ok-placeholder);
+    transition: opacity var(--ok-duration-shorter) var(--ok-easing-standard);
+  }
+
+  /* Floating: the label moves up, the outline opens its notch, the placeholder shows. */
+  :where(
+    [data-ok-text-field]:focus-within,
+    [data-ok-text-field][data-ok-shrink],
+    [data-ok-text-field]:has(> [data-ok-text-field-control] > input:not(:placeholder-shown)),
+    [data-ok-text-field]:has(> [data-ok-text-field-control] > textarea:not(:placeholder-shown)),
+    [data-ok-text-field]:has(> [data-ok-text-field-control] > select),
+    [data-ok-text-field]:has(
+      > [data-ok-text-field-control] > [data-ok-text-field-adornment="start"]
+    )
+  ) {
+    --_ok-label-y: var(--_ok-label-up);
+    --_ok-label-scale: 0.75;
+    --_ok-label-size: var(--ok-font-size-xl);
+    --_ok-label-weight: var(--ok-font-weight-semibold);
+    --_ok-label-max: calc(133% - var(--ok-spacing) * 8);
+    --_ok-legend-max: 100%;
+    --_ok-placeholder: 1;
+  }
+
+  /* Without a label the placeholder is always visible. */
+  :where([data-ok-text-field]:not(:has(> [data-ok-text-field-label]))) {
+    --_ok-placeholder: 1;
+  }
+
+  /* Adornments */
+  :where([data-ok-text-field-adornment]) {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    max-height: 2em;
+    color: var(--ok-text-secondary);
+    font-size: var(--ok-font-size-md);
+    font-weight: var(--ok-font-weight-semibold);
+    line-height: 1.5714;
+    white-space: nowrap;
+  }
+
+  :where([data-ok-text-field-adornment] > svg) {
+    flex-shrink: 0;
+    width: calc(var(--ok-spacing) * 6);
+    height: calc(var(--ok-spacing) * 6);
+  }
+
+  :where([data-ok-text-field-adornment="start"]) {
+    margin-inline-end: calc(var(--ok-spacing) * 2);
+  }
+
+  :where([data-ok-text-field-adornment="end"]) {
+    margin-inline-start: calc(var(--ok-spacing) * 2);
+  }
+
+  :where([data-ok-text-field-control]:has(> [data-ok-text-field-adornment="start"])) {
+    padding-inline-start: var(--_ok-pad-x);
+  }
+
+  :where([data-ok-text-field-control]:has(> [data-ok-text-field-adornment="end"])) {
+    padding-inline-end: var(--_ok-pad-x);
+  }
+
+  :where([data-ok-text-field-adornment="start"] ~ [data-ok-text-field-input]) {
+    padding-inline-start: 0;
+  }
+
+  :where([data-ok-text-field-input]:has(~ [data-ok-text-field-adornment="end"])) {
+    padding-inline-end: 0;
+  }
+
+  /* Select (native): no arrow of the browser's, ours instead. */
+  :where(select[data-ok-text-field-input]) {
+    padding-inline-end: calc(var(--ok-spacing) * 8);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+    appearance: none;
+  }
+
+  :where([data-ok-text-field-input] > option) {
+    background-color: var(--ok-bg-paper);
+    color: var(--ok-text-primary);
+  }
+
+  :where([data-ok-text-field-select-icon]) {
+    position: absolute;
+    top: 50%;
+    right: calc(var(--ok-spacing) * 1.75);
+    width: calc(var(--ok-spacing) * 5);
+    height: calc(var(--ok-spacing) * 5);
+    color: var(--ok-text-secondary);
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+
+  /* Multiline */
+  :where([data-ok-text-field-control]:has(> textarea)) {
+    padding: var(--_ok-pad);
+  }
+
+  :where(textarea[data-ok-text-field-input]) {
+    padding: 0;
+    overflow: auto;
+    resize: none;
+  }
+
+  /* Rows that grow with the content, between minRows and maxRows (fallback: `rows`, scrolls). */
+  @supports (field-sizing: content) {
+    :where(
+        [data-ok-text-field][data-ok-min-rows] textarea[data-ok-text-field-input],
+        [data-ok-text-field][data-ok-max-rows] textarea[data-ok-text-field-input]
+      ) {
+      field-sizing: content;
+      min-height: calc(var(--_ok-min-rows, 1) * 1lh);
+    }
+  }
+
+  :where([data-ok-text-field][data-ok-max-rows] textarea[data-ok-text-field-input]) {
+    max-height: calc(var(--_ok-max-rows, 1) * 1lh);
+  }
+
+  /* Helper text */
+  :where([data-ok-text-field-helper]) {
+    display: flex;
+    gap: var(--ok-spacing);
+    align-items: center;
+    margin: calc(var(--ok-spacing) * 1.5) calc(var(--ok-spacing) * 3) 0;
+    color: var(--ok-text-secondary);
+    font-size: var(--ok-typography-caption-font-size);
+    line-height: var(--ok-typography-caption-line-height);
+  }
+
+  :where([data-ok-text-field-helper] > svg) {
+    flex-shrink: 0;
+    width: calc(var(--ok-spacing) * 4);
+    height: calc(var(--ok-spacing) * 4);
+  }
+
+  /* Outlined */
+  :where([data-ok-text-field][data-ok-size="small"]) {
+    --_ok-pad: calc(var(--ok-spacing) * 2) calc(var(--ok-spacing) * 3.5);
+    --_ok-label-rest: calc(var(--ok-spacing) * 2);
+  }
+
+  :where([data-ok-text-field-outline]) {
+    position: absolute;
+    inset: calc(var(--ok-spacing) * -1.25) 0 0;
+    min-width: 0;
+    margin: 0;
+    padding: 0 calc(var(--ok-spacing) * 2);
+    overflow: hidden;
+    border: var(--_ok-border-width) solid var(--_ok-border);
+    border-radius: inherit;
+    text-align: left;
+    pointer-events: none;
+  }
+
+  :where([data-ok-text-field-outline] > legend) {
+    display: block;
+    float: none;
+    width: auto;
+    max-width: var(--_ok-legend-max);
+    height: calc(var(--ok-spacing) * 2.75);
+    padding: 0;
+    overflow: hidden;
+    visibility: hidden;
+    font-size: var(--ok-font-size-xs);
+    font-weight: var(--ok-font-weight-semibold);
+    white-space: nowrap;
+    transition: max-width var(--ok-duration-shortest) var(--ok-easing-decelerate);
+  }
+
+  :where([data-ok-text-field-outline] > legend > span) {
+    display: inline-block;
+    padding-inline: calc(var(--ok-spacing) * 1.25);
+    opacity: 0;
+    visibility: visible;
+  }
+
+  /* Filled */
+  :where([data-ok-text-field][data-ok-variant="filled"]) {
+    --_ok-pad: calc(var(--ok-spacing) * 6) calc(var(--ok-spacing) * 3) calc(var(--ok-spacing) * 2);
+    --_ok-pad-x: calc(var(--ok-spacing) * 3);
+    --_ok-label-x: calc(var(--ok-spacing) * 3);
+    --_ok-label-up: calc(var(--ok-spacing) * 1.5);
+  }
+
+  :where([data-ok-text-field][data-ok-variant="filled"][data-ok-size="small"]) {
+    --_ok-pad: calc(var(--ok-spacing) * 5) calc(var(--ok-spacing) * 3) var(--ok-spacing);
+    --_ok-label-rest: calc(var(--ok-spacing) * 3);
+    --_ok-label-up: var(--ok-spacing);
+  }
+
+  :where([data-ok-text-field][data-ok-variant="filled"]:not(:has(> [data-ok-text-field-label]))) {
+    --_ok-pad: calc(var(--ok-spacing) * 4) calc(var(--ok-spacing) * 3);
+  }
+
+  :where(
+    [data-ok-text-field][data-ok-variant="filled"][data-ok-size="small"]:not(
+      :has(> [data-ok-text-field-label])
+    )
+  ) {
+    --_ok-pad: calc(var(--ok-spacing) * 2) calc(var(--ok-spacing) * 3);
+  }
+
+  /* On the tint, the secondary text tone falls just under 4.5:1 in light themes: one step darker. */
+  :where([data-ok-text-field][data-ok-variant="filled"] > [data-ok-text-field-label]) {
+    color: var(--ok-palette-grey-700);
+  }
+
+  @supports (color: light-dark(#000, #fff)) {
+    :where([data-ok-text-field][data-ok-variant="filled"] > [data-ok-text-field-label]) {
+      color: light-dark(var(--ok-palette-grey-700), var(--ok-text-secondary));
+    }
+  }
+
+  :where([data-ok-text-field][data-ok-variant="filled"] > [data-ok-text-field-control]) {
+    background-color: var(--_ok-tint);
+    transition: background-color var(--ok-duration-shorter) var(--ok-easing-standard);
+  }
+
+  :where(
+    [data-ok-text-field][data-ok-variant="filled"]:has(> [data-ok-text-field-label])
+      [data-ok-text-field-adornment="start"]
+  ) {
+    margin-block-start: calc(var(--ok-spacing) * 4);
+  }
+
+  /* Standard */
+  :where([data-ok-text-field][data-ok-variant="standard"]) {
+    --_ok-pad: var(--ok-spacing) 0;
+    --_ok-pad-x: 0;
+    --_ok-label-x: 0px;
+    --_ok-label-rest: calc(var(--ok-spacing) * 5);
+    --_ok-label-up: calc(var(--ok-spacing) * -0.375);
+    --_ok-label-max-rest: 100%;
+  }
+
+  :where([data-ok-text-field][data-ok-variant="standard"][data-ok-size="small"]) {
+    --_ok-pad: calc(var(--ok-spacing) * 0.5) 0;
+    --_ok-label-rest: calc(var(--ok-spacing) * 4.5);
+  }
+
+  :where([data-ok-text-field][data-ok-variant="standard"] > [data-ok-text-field-control]) {
+    border-radius: 0;
+  }
+
+  :where(
+    [data-ok-text-field][data-ok-variant="standard"]:has(> [data-ok-text-field-label])
+      > [data-ok-text-field-control]
+  ) {
+    margin-block-start: calc(var(--ok-spacing) * 4);
+  }
+
+  :where([data-ok-text-field][data-ok-variant="standard"] > [data-ok-text-field-control])::before {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    border-bottom: 1px solid var(--_ok-line);
+    pointer-events: none;
+    transition: border-color var(--ok-duration-shorter) var(--ok-easing-standard);
+  }
+
+  :where([data-ok-text-field][data-ok-variant="standard"] > [data-ok-text-field-control])::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    border-bottom: 2px solid var(--_ok-accent);
+    transform: scaleX(0);
+    pointer-events: none;
+    transition: transform var(--ok-duration-shorter) var(--ok-easing-decelerate);
+  }
+
+  :where([data-ok-text-field][data-ok-variant="standard"] [data-ok-text-field-select-icon]) {
+    right: 0;
+  }
+
+  :where([data-ok-text-field][data-ok-variant="standard"] select[data-ok-text-field-input]) {
+    padding-inline-end: calc(var(--ok-spacing) * 6);
+  }
+
+  /* Hover (pointer devices, enabled fields) */
+  @media (hover: hover) {
+    /* Not while focused: the focus color wins. */
+    :where([data-ok-text-field-control]:hover:not(:has(> :disabled)):not(:focus-within)) {
+      --_ok-border: var(--ok-text-primary);
+      --_ok-tint: var(--_ok-tint-hover);
+      --_ok-line: var(--ok-text-primary);
+    }
+
+    :where(
+        [data-ok-text-field][data-ok-variant="standard"]
+          > [data-ok-text-field-control]:hover:not(:has(> :disabled))
+      )::before {
+      border-bottom-width: 2px;
+    }
+  }
+
+  /* Focus */
+  :where([data-ok-text-field]:focus-within) {
+    --_ok-border: var(--_ok-accent);
+    --_ok-border-width: 2px;
+    --_ok-tint: var(--_ok-tint-hover);
+  }
+
+  :where([data-ok-text-field]:focus-within > [data-ok-text-field-label]) {
+    color: var(--_ok-accent-text);
+  }
+
+  /* Filled shows focus with a ring too (the reference only darkens the fill; WCAG 2.4.7). */
+  :where(
+    [data-ok-text-field][data-ok-variant="filled"]:focus-within > [data-ok-text-field-control]
+  ) {
+    box-shadow: inset 0 0 0 2px var(--_ok-accent);
+  }
+
+  :where(
+    [data-ok-text-field][data-ok-variant="standard"]:focus-within > [data-ok-text-field-control]
+  )::after {
+    transform: scaleX(1);
+  }
+
+  /* Error: the brand color for lines and fills, the AA "text" tone for text. */
+  :where([data-ok-text-field][data-ok-error]) {
+    --_ok-accent: var(--ok-palette-error-main);
+    --_ok-border: var(--ok-palette-error-main);
+    --_ok-line: var(--ok-palette-error-main);
+    --_ok-tint: rgb(var(--ok-palette-error-main-channel) / 0.08);
+    --_ok-tint-hover: rgb(var(--ok-palette-error-main-channel) / 0.16);
+  }
+
+  :where(
+    [data-ok-text-field][data-ok-error] > [data-ok-text-field-label],
+    [data-ok-text-field][data-ok-error] > [data-ok-text-field-helper]
+  ) {
+    color: var(--ok-palette-error-text);
+  }
+
+  :where([data-ok-text-field][data-ok-error] > [data-ok-text-field-control]:hover) {
+    --_ok-border: var(--ok-palette-error-main);
+    --_ok-line: var(--ok-palette-error-main);
+  }
+
+  /* Disabled (the helper text keeps its AA color: it isn't part of the disabled input) */
+  :where([data-ok-text-field]:has(> [data-ok-text-field-control] > :disabled)) {
+    --_ok-tint: rgb(var(--ok-palette-grey-500-channel) / 0.24);
+  }
+
+  :where(
+    [data-ok-text-field]:has(> [data-ok-text-field-control] > :disabled)
+      > [data-ok-text-field-label],
+    [data-ok-text-field-control]:has(> :disabled) [data-ok-text-field-select-icon]
+  ) {
+    color: var(--ok-text-disabled);
+  }
+
+  :where([data-ok-text-field-control]:has(> :disabled)) {
+    cursor: default;
+  }
+
+  :where([data-ok-text-field-input]:disabled) {
+    color: var(--ok-text-disabled);
+    -webkit-text-fill-color: var(--ok-text-disabled);
+    cursor: default;
+    opacity: 1;
+  }
+
+  :where(
+    [data-ok-text-field][data-ok-variant="standard"] > [data-ok-text-field-control]:has(> :disabled)
+  )::before {
+    border-bottom-style: dotted;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :where(
+        [data-ok-text-field-label],
+        [data-ok-text-field-control],
+        [data-ok-text-field-input],
+        [data-ok-text-field-outline] > legend
+      ) {
+      transition: none;
+    }
+
+    :where([data-ok-text-field-control])::after {
+      transition: none;
+    }
+  }
+}

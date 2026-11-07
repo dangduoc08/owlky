@@ -24,6 +24,9 @@ const SPECS = {
   checkbox: "checkbox.md",
   switch: "switch.md",
   "form-control-label": "form-control-label.md",
+  radio: "radio.md",
+  "radio-group": "radio.md",
+  "text-field": "text-field.md",
 };
 
 const code = (value) => `\`${value}\``;

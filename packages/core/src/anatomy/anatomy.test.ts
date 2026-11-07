@@ -27,6 +27,8 @@ import {
   linearProgressVariants,
   orientations,
   progressColors,
+  radioAttributes,
+  radioGroupAttributes,
   scrollbarAttributes,
   selectionControlColors,
   selectionControlSizes,
@@ -36,6 +38,9 @@ import {
   tableAttributes,
   tableCellAttributes,
   tableSortLabelAttributes,
+  textFieldAttributes,
+  textFieldMargins,
+  textFieldVariants,
   toggleButtonAttributes,
   toggleButtonColors,
   toggleButtonSizes,
@@ -496,5 +501,74 @@ describe("checkboxAttributes / switchAttributes / formControlLabelAttributes", (
     expect(formControlLabelAttributes({ labelPlacement: HOSTILE, required: HOSTILE })).toEqual(
       formControlLabelAttributes(),
     );
+  });
+});
+
+describe("radioAttributes / radioGroupAttributes / textFieldAttributes", () => {
+  it("emit explicit defaults", () => {
+    expect(radioAttributes()).toEqual({
+      "data-ok-radio": "",
+      "data-ok-color": "primary",
+      "data-ok-size": "medium",
+    });
+    expect(radioGroupAttributes()).toEqual({ "data-ok-radio-group": "" });
+    expect(radioGroupAttributes({ row: true })).toEqual({
+      "data-ok-radio-group": "",
+      "data-ok-row": "",
+    });
+    expect(textFieldAttributes()).toEqual({
+      "data-ok-text-field": "",
+      "data-ok-variant": "outlined",
+      "data-ok-size": "medium",
+      "data-ok-color": "default",
+      "data-ok-margin": "none",
+    });
+    expect(textFieldAttributes({ color: "secondary" })["data-ok-color"]).toBe("secondary");
+  });
+
+  it.each(textFieldVariants)("maps variant %s", (variant) => {
+    expect(textFieldAttributes({ variant })["data-ok-variant"]).toBe(variant);
+  });
+
+  it.each(textFieldMargins)("maps margin %s", (margin) => {
+    expect(textFieldAttributes({ margin })["data-ok-margin"]).toBe(margin);
+  });
+
+  it("flags, rows and invalid values", () => {
+    expect(
+      textFieldAttributes({
+        size: "small",
+        error: true,
+        fullWidth: true,
+        shrink: true,
+        minRows: 2,
+        maxRows: 4,
+      }),
+    ).toEqual({
+      "data-ok-text-field": "",
+      "data-ok-variant": "outlined",
+      "data-ok-size": "small",
+      "data-ok-color": "default",
+      "data-ok-margin": "none",
+      "data-ok-error": "",
+      "data-ok-full-width": "",
+      "data-ok-shrink": "",
+      "data-ok-min-rows": "2",
+      "data-ok-max-rows": "4",
+    });
+    expect(
+      textFieldAttributes({
+        variant: HOSTILE,
+        color: HOSTILE,
+        margin: HOSTILE,
+        minRows: 0,
+        maxRows: HOSTILE,
+      }),
+    ).toEqual(textFieldAttributes());
+    expect(radioAttributes({ color: HOSTILE, size: HOSTILE })).toEqual(radioAttributes());
+    expect(radioAttributes({ color: "error", size: "small" })).toMatchObject({
+      "data-ok-color": "error",
+      "data-ok-size": "small",
+    });
   });
 });

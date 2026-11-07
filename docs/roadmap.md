@@ -5,7 +5,7 @@ and a review before the next starts.
 
 ## Overview
 Every page of the reference's component menu (`https://minimals.cc/components/…`) and where it
-stands. ✅ = built (17); *wave N* = planned, see "Next — components"; *not planned* = a pattern
+stands. ✅ = built (19); *wave N* = planned, see "Next — components"; *not planned* = a pattern
 or app-level page. *Section* = the heading below with the details. Update this table with each
 component and each `/integrate` run.
 
@@ -33,14 +33,14 @@ component and each `/integrate` run.
 | MUI | Pagination | ✅ | Pagination, PaginationItem | Pagination |
 | MUI | Popover | wave 4 | — | Next |
 | MUI | Progress | ✅ | CircularProgress, LinearProgress | Progress |
-| MUI | Radio button | wave 2 | — | Next |
+| MUI | Radio button | ✅ | Radio, RadioGroup | Text field & Radio |
 | MUI | Rating | wave 6 | — | Next |
 | MUI | Slider | wave 6 | — | Next |
 | MUI | Stepper | wave 5 | — | Next |
 | MUI | Switch | ✅ | Switch, FormControlLabel | Checkbox & Switch |
 | MUI | Table | ✅ | Table parts, TablePagination, TableExpandButton / TableDetailRow | Table |
 | MUI | Tabs | wave 5 | — | Next |
-| MUI | Text field | wave 2 | — | Next |
+| MUI | Text field | ✅ | TextField, InputAdornment (native select) | Text field & Radio |
 | MUI | Timeline | wave 6 | — | Next |
 | MUI | Tooltip | wave 4 | — | Next |
 | MUI | Transfer list | wave 6 | — | Next |
@@ -151,6 +151,17 @@ Table`): all Table stories, Drawer content and Sortable lists now scroll in a Sc
 adapts with `:has(> [data-ok-scrollbar])`, and the old markup keeps working (additive). An
 unnamed `TableContainer` is no longer focusable. No new tokens.
 
+## ✅ Components — Text field & Radio (2026-11-07)
+TextField (outlined / filled / standard, medium / small, `color` (focus), floating label with a notched outline,
+error, helper text, `InputAdornment`, `required`, `margin`, `shrink`, native `select`, multiline
+with `rows` or growing `minRows` / `maxRows`), API from MUI; `ref` and input props go to the input.
+Radio and RadioGroup (colors incl. `default`, sizes, `row`; native radios, CSS only). HTML runtime
+`text-field`: growing-row custom properties and a `data-ok-text-field-reveal` password button.
+Differences: resting label `text-secondary` and disabled helper text `text-secondary` (AA), error
+text in the AA error tone, a focus ring on filled fields. CSS budget raised to 16 kB gzip.
+**Backlog:** non-native `select` (listbox, wave 4), FormLabel /
+FormHelperText / FormControl as separate components.
+
 ## ✅ Components — Checkbox & Switch (2026-11-07)
 Checkbox (colors incl. `default`, `medium` / `small`, `indeterminate`, custom icons) and Switch
 (colors, sizes, `edge`), both native checkboxes (`role="switch"`), API from MUI; `ref` and input
@@ -193,9 +204,11 @@ integrate these in the same review (additive: no DOM or API change) and remove t
 | Typography (display text) | Sortable stories (card numbers) | demo `<span>` styled in `.storybook/preview.css` |
 | Typography (heading / secondary text) | Accordion summaries (plain text, no secondary line from the reference) | summary text styled by `accordion.css` |
 | Typography (heading) | Scrollbar "Layout" story heading | demo `<h4>` styled in `.storybook/preview.css` |
-| Select | `TablePagination` rows per page (library markup) | native `<select>` styled in `table.css`; the API (`rowsPerPageOptions`) stays |
-| Select | Pagination story "Items" (card grid + items-per-page Select) | story deferred |
-| TextField, Select | Table story "Table pagination with API" | story deferred |
+| Select (listbox; needs Menu / Popover) | `TablePagination` rows per page (library markup) | native `<select>` styled in `table.css`; the API (`rowsPerPageOptions`) stays. TextField's native select doesn't match MUI's InputBase select here |
+| Select (listbox; needs Menu / Popover) | Pagination story "Items" (card grid + items-per-page Select) | story deferred: the reference uses MUI's listbox Select |
+| Select (listbox; needs Menu / Popover) | Table story "Table pagination with API" (search TextField + category Select) | story deferred until the listbox Select; TextField exists |
+| Select (listbox; needs Menu / Popover) | TextField `select` (non-native) | native `<select>` only (`select` prop) |
+| FormLabel | Radio story "Colors" (group label) | story-only `<span id>` styled in `.storybook/preview.css` |
 | Divider | Drawer stories (mailbox menu) | demo `<hr>` styled in `.storybook/preview.css` |
 | Backdrop | Drawer: native `::backdrop` | share `--ok-backdrop` with a future Backdrop component |
 
@@ -219,7 +232,7 @@ Dependency-first: leaf components before the ones built from them, the ones that
 | Wave | Components | Unlocks (existing components) |
 |---|---|---|
 | 1 Leaves | ~~Scrollbar~~ ✅, ~~Progress~~ ✅, ~~Checkbox~~ ✅, ~~Switch~~ ✅ | ~~Sortable / Drawer / Table scrolling~~ ✅; ~~Button loading~~ ✅; ~~Table selection~~ ✅; ~~Table "Dense"~~ ✅ |
-| 2 Form | Text field (Input, Textarea, native Select), Radio button (+ restore empty export globs) | TablePagination rows per page; Table "Table pagination with API"; Pagination "Items" |
+| 2 Form | ~~Text field (Input, Textarea, native Select)~~ ✅, ~~Radio button~~ ✅ | TablePagination rows per page, Table "Table pagination with API", Pagination "Items": wait for the listbox Select (wave 4) |
 | 3 Display | Avatar, Badge, Chip, Label, Divider, then List | Drawer menu (List, Divider) |
 | 4 Overlays | Popover (positioning controller + fallback in core), then Tooltip, Menu, Dialog (+ Backdrop), Snackbar | Drawer backdrop; Icon button tooltips |
 | 5 Navigation | Tabs, Breadcrumbs, Stepper | — |
@@ -229,7 +242,7 @@ Dependency-first: leaf components before the ones built from them, the ones that
 Not planned as components (patterns or app-level pages of the reference): Animate, Layout,
 Utilities, Multi-language, Navigation bar, Mega menu, Scroll progress, Form validation, Form wizard.
 Typography (display / heading text) has no reference page of its own: build it with wave 3.
-Feedback & 1.0 after the waves: accessibility audit, docs polish.
+Feedback & 1.0 after the waves: accessibility audit, docs polish, and an upstream API audit of every component (prop by prop against MUI, a mapping table in each spec; e.g. Drawer `elevation`, `transitionDuration` are missing).
 
 **Before publishing 0.1.0 (needs the owner):** npm org `@owlky`, GitHub repo (replace
 `OWNER`), npm trusted publishing, visual baselines in Docker (`pnpm test:visual:update`).
