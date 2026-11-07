@@ -10,6 +10,7 @@ const CASES: [component: string, story: string, trigger: string, surface: string
   ["dialog", "max-width", "xl", "#dialog-width-xl [data-ok-dialog-paper]"],
   ["dialog", "scrolling-content", "Scroll=paper", "#dialog-scroll-paper [data-ok-dialog-paper]"],
   ["snackbar", "default", "Message", "[data-ok-toast]"],
+  ["backdrop", "example", "Show backdrop", "#backdrop-example"],
 ];
 
 async function measure(page: Page, surface: string) {

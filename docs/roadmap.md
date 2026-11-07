@@ -5,7 +5,7 @@ and a review before the next starts.
 
 ## Overview
 Every page of the reference's component menu (`https://minimals.cc/components/…`) and where it
-stands. ✅ = built (24); *wave N* = planned, see "Next — components"; *not planned* = a pattern
+stands. ✅ = built (25); *wave N* = planned, see "Next — components"; *not planned* = a pattern
 or app-level page. *Section* = the heading below with the details. Update this table with each
 component and each `/integrate` run.
 
@@ -29,6 +29,7 @@ component and each `/integrate` run.
 | MUI | Dialog | ✅ | Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions | Popover, Tooltip, Menu, Dialog & Snackbar |
 | MUI | Drawer | ✅ | Drawer | Drawer |
 | MUI (no Minimals page; mui.com) | Divider | ✅ | Divider | Divider |
+| MUI (no Minimals page; mui.com) | Backdrop | ✅ | Backdrop | Backdrop |
 | MUI | List | ✅ | List, ListItem, ListItemButton, ListItemIcon, ListItemAvatar, ListItemText, ListSubheader, ListItemExpandIcon | List |
 | MUI | Menu | ✅ | Menu, MenuItem | Popover, Tooltip, Menu, Dialog & Snackbar |
 | MUI | Pagination | ✅ | Pagination, PaginationItem | Pagination |
@@ -162,6 +163,17 @@ toast store / API / timer (Sonner). Dialog reuses `createModalController`. HTML 
 One placement vocabulary replaces MUI's `anchorOrigin` / `transformOrigin`. Token added:
 `--ok-bg-paper-channel` (translucent paper). No new runtime dependency.
 
+## ✅ Components — Backdrop (2026-11-07)
+Wave 4's last overlay, created with `/component` from MUI's page (Minimals has none). A fixed `div`
+over the viewport (`--ok-backdrop`, `--ok-z-modal`, white content), CSS-only display: closed it
+stays in the DOM with `visibility: hidden`, so the fade-out (opacity + a `visibility` step) plays.
+HTML runtime `backdrop`: triggers `data-ok-backdrop-open` / `-close` (also on the backdrop itself:
+a click anywhere closes it), `ok:backdrop:*` events, `open()` / `close()`. React renders from
+`open`; `onClick` is the consumer's. No core controller, no new token. Closes the "Backdrop"
+pending integration without a DOM change: Dialog and Drawer keep the native `::backdrop` (top
+layer), painted with the same token. Accepted deviation: white on the light backdrop over a white
+page is 2.97:1 (docs: text goes on a paper). Deferred: `transitionDuration` (1.0 API audit).
+
 ## ✅ Components — List (2026-11-07)
 Created with `/component` from the reference "List" page (stories: Simple, Nested, Folder,
 Selected, Controls, Switch). `ul[data-ok-list]` with items, row buttons (`button` / `a`), icon,
@@ -247,7 +259,6 @@ integrate these in the same review (additive: no DOM or API change) and remove t
 | Select (listbox, built on Menu) | TextField `select` (non-native) | native `<select>` only (`select` prop) |
 | FormLabel | Radio story "Colors" (group label) | story-only `<span id>` styled in `.storybook/preview.css` |
 | Collapse (transition) | List nested lists | open / close at once (`hidden`); a Collapse component can animate the height later without a DOM change |
-| Backdrop | Drawer and Dialog: native `::backdrop` | share `--ok-backdrop` with a future Backdrop component |
 | Typography (headings, body text) | Popover and Dialog stories (popover text, "Selected:" line, full-screen toolbar title) | demo `h6` / `p` / `header` styled in `.storybook/preview.css` |
 | Collapse / Slide (transitions) | Dialog story "Transitions" (the reference slides the dialog in) | the dialog's one opening animation (fade + scale) |
 
@@ -273,7 +284,7 @@ Dependency-first: leaf components before the ones built from them, the ones that
 | 1 Leaves | ~~Scrollbar~~ ✅, ~~Progress~~ ✅, ~~Checkbox~~ ✅, ~~Switch~~ ✅ | ~~Sortable / Drawer / Table scrolling~~ ✅; ~~Button loading~~ ✅; ~~Table selection~~ ✅; ~~Table "Dense"~~ ✅ |
 | 2 Form | ~~Text field (Input, Textarea, native Select)~~ ✅, ~~Radio button~~ ✅ | TablePagination rows per page, Table "Table pagination with API", Pagination "Items": wait for the listbox Select (wave 4) |
 | 3 Display | ~~Avatar~~ ✅, ~~Badge~~ ✅, ~~Chip~~ ✅, ~~Label~~ ✅, ~~Divider~~ ✅, ~~List~~ ✅ | ~~Drawer menu~~ ✅ |
-| 4 Overlays | ~~Popover~~ ✅, ~~Tooltip~~ ✅, ~~Menu~~ ✅, ~~Dialog~~ ✅, ~~Snackbar~~ ✅; Backdrop later | Drawer backdrop (waits for Backdrop); icon button tooltips: nothing to change (MUI uses native `title` there; Tooltip wraps any IconButton) |
+| 4 Overlays | ~~Popover~~ ✅, ~~Tooltip~~ ✅, ~~Menu~~ ✅, ~~Dialog~~ ✅, ~~Snackbar~~ ✅, ~~Backdrop~~ ✅ | ~~Drawer / Dialog backdrop~~ ✅ (native `::backdrop`, same token); icon button tooltips: nothing to change (MUI uses native `title` there; Tooltip wraps any IconButton) |
 | 5 Navigation | Tabs, Breadcrumbs, Stepper | — |
 | 6 Composites | Rating, Slider, Timeline, Transfer list, Autocomplete, Tree view | — |
 | 7 Needs an ADR | Data grid, Date pickers, Chart, Map, Editor, Carousel, Lightbox, Markdown, Organization chart, Upload, Image, Walktour | — |
@@ -281,7 +292,7 @@ Dependency-first: leaf components before the ones built from them, the ones that
 Not planned as components (patterns or app-level pages of the reference): Animate, Layout,
 Utilities, Multi-language, Navigation bar, Mega menu, Scroll progress, Form validation, Form wizard.
 Typography (display / heading text) has no reference page of its own: build it with wave 3.
-Feedback & 1.0 after the waves: accessibility audit, docs polish, and an upstream API audit of every component (prop by prop against MUI, a mapping table in each spec; e.g. Drawer `elevation`, `transitionDuration` are missing).
+Feedback & 1.0 after the waves: accessibility audit, docs polish, and an upstream API audit of every component (prop by prop against MUI, a mapping table in each spec; e.g. Drawer `elevation`, `transitionDuration` are missing; Backdrop `transitionDuration`).
 
 **Before publishing 0.1.0 (needs the owner):** npm org `@owlky`, GitHub repo (replace
 `OWNER`), npm trusted publishing, visual baselines in Docker (`pnpm test:visual:update`).

@@ -1285,6 +1285,28 @@ export interface DialogAnatomyOptions {
 export const dialogAttributes = (options: DialogAnatomyOptions = {}): DataAttributes =>
   optionAttributes(dialogOptions, { ...options });
 
+// --- Backdrop ---------------------------------------------------------------------------------
+
+export const backdropOptions = defineOptions("backdrop", "data-ok-backdrop", {
+  invisible: flag(
+    "data-ok-invisible",
+    "Transparent: blocks clicks without dimming the page (for example, behind a custom menu).",
+  ),
+  open: state(
+    "data-ok-open",
+    "Open state (`open`; HTML: `data-ok-open`, a trigger or `open()`).",
+    "close",
+  ),
+});
+
+export interface BackdropAnatomyOptions {
+  invisible?: boolean | undefined;
+}
+
+/** `data-ok-*` attributes of a backdrop (`data-ok-open` is the state, written by the caller). */
+export const backdropAttributes = (options: BackdropAnatomyOptions = {}): DataAttributes =>
+  optionAttributes(backdropOptions, { ...options });
+
 // --- Snackbar (toaster) -----------------------------------------------------------------------
 
 export const toasterOptions = defineOptions("toaster", "data-ok-toaster", {
@@ -1363,6 +1385,7 @@ export const optionSchemas = {
   menu: menuOptions,
   "menu-item": menuItemOptions,
   dialog: dialogOptions,
+  backdrop: backdropOptions,
   toaster: toasterOptions,
   "table-sort-label": tableSortLabelOptions,
 } as const;

@@ -134,6 +134,7 @@ const pairs: [component: string, story: string][] = [
   ["snackbar", "status"],
   ["snackbar", "custom"],
   ["snackbar", "anchor-origin"],
+  ["backdrop", "example"],
 ];
 
 for (const [component, story] of pairs) {

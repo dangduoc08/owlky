@@ -42,7 +42,8 @@ trap, no scroll lock; their trigger toggles and carries `aria-expanded` + `aria-
 drawer and the page area in a flex row (left / right) or column (top / bottom).
 
 ## Layout and tokens
-- Paper `--ok-bg-paper`, text `--ok-text-primary`; backdrop `--ok-backdrop`; stacking `--ok-z-modal`
+- Paper `--ok-bg-paper`, text `--ok-text-primary`; backdrop: native `::backdrop` with `--ok-backdrop` (shared with the Backdrop component, which can't
+  sit in the top layer; `hideBackdrop` matches its `invisible`); stacking `--ok-z-modal`
   (fallback path).
 - `left` / `right`: full height, width from the content, at most `100% - 56px`; shadow
   `--ok-shadow-dialog-start` (left) / `--ok-shadow-dialog` (right).

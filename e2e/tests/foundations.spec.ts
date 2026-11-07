@@ -126,6 +126,7 @@ const GUIDES = [
   ["components-list--docs", "Accessibility"],
   ["components-snackbar--docs", "Accessibility"],
   ["components-dialog--docs", "Accessibility"],
+  ["components-backdrop--docs", "Accessibility"],
   ["components-menu--docs", "Accessibility"],
   ["components-tooltip--docs", "Accessibility"],
   ["components-popover--docs", "Accessibility"],
@@ -160,6 +161,7 @@ const OPTION_TABLES: [string, (keyof typeof optionSchemas)[]][] = [
   ["components-tooltip--docs", ["tooltip"]],
   ["components-menu--docs", ["menu", "menu-item", "popover"]],
   ["components-dialog--docs", ["dialog"]],
+  ["components-backdrop--docs", ["backdrop"]],
   ["components-snackbar--docs", ["toaster"]],
   [
     "components-list--docs",

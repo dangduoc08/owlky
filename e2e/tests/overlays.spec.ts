@@ -155,6 +155,39 @@ for (const impl of implementations) {
         "bottom-center",
       );
     });
+    test("backdrop: covers the page, keeps focus on the trigger, a click anywhere closes it", async ({
+      page,
+    }) => {
+      await openStory(page, storyId(impl, "backdrop", "example"));
+      const trigger = page.getByRole("button", { name: "Show backdrop" });
+      const backdrop = page.locator("#backdrop-example");
+      await expect(backdrop).toBeHidden();
+      await trigger.focus();
+      await page.keyboard.press("Enter");
+      await expect(backdrop).toBeVisible();
+      await expect(page.getByRole("progressbar", { name: "Loading" })).toBeVisible();
+      await expect(trigger).toBeFocused();
+      await backdrop.evaluate((el) => Promise.all(el.getAnimations().map((a) => a.finished)));
+      const cover = await backdrop.evaluate((el) => {
+        const box = el.getBoundingClientRect();
+        const progress = el.querySelector("[role=progressbar]")?.getBoundingClientRect();
+        // The backdrop is on top of the trigger: it catches the click.
+        const hit = document.elementFromPoint(window.innerWidth / 2, 10);
+        return {
+          full: box.width === window.innerWidth && box.height === window.innerHeight,
+          centered:
+            Math.abs((progress?.left ?? 0) + (progress?.width ?? 0) / 2 - window.innerWidth / 2) <
+            1,
+          onTop: hit === el || el.contains(hit),
+        };
+      });
+      expect(cover).toEqual({ full: true, centered: true, onTop: true });
+      // A pointer press on a non-focusable layer blurs the trigger (as on the page itself), so
+      // only check that focus isn't left inside the hidden backdrop.
+      await page.mouse.click(20, 20);
+      await expect(backdrop).toBeHidden();
+      expect(await backdrop.evaluate((el) => el.contains(document.activeElement))).toBe(false);
+    });
   });
 }
 
@@ -173,6 +206,11 @@ test.describe("overlays touch", () => {
       await page.getByRole("button", { name: "Open menu" }).tap();
       await page.getByRole("menuitem", { name: "Logout" }).tap();
       await expect.poll(() => isOpen(page, "#menu-simple")).toBe(false);
+      await openStory(page, storyId(impl, "backdrop", "example"));
+      await page.getByRole("button", { name: "Show backdrop" }).tap();
+      expect(await isOpen(page, "#backdrop-example")).toBe(true);
+      await page.touchscreen.tap(5, 600);
+      await expect.poll(() => isOpen(page, "#backdrop-example")).toBe(false);
     });
   }
 });

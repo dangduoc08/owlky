@@ -92,6 +92,7 @@ export {
   type AvatarGroupProps,
   type AvatarProps,
 } from "./avatar/avatar.js";
+export { Backdrop, type BackdropProps } from "./backdrop/backdrop.js";
 export { Badge, type BadgeProps } from "./badge/badge.js";
 export {
   Button,

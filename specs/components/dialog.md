@@ -40,7 +40,8 @@ names the dialog automatically (`aria-labelledby`, unless `aria-label` is given)
 `onOpenChange`; `PaperProps` → `paperProps`; `maxWidth={false}` → `"none"`. Deferred:
 `TransitionComponent` (one opening animation; the reference's Slide), `keepMounted` (always
 mounted). Not applicable: `slots`, `slotProps`, `sx`, `BackdropComponent` (native `::backdrop`,
-`--ok-backdrop`), `disablePortal` (top layer).
+`--ok-backdrop`, the Backdrop component's token: a DOM Backdrop can't sit between a top-layer
+`<dialog>` and its `::backdrop`), `disablePortal` (top layer).
 
 ## Layout and tokens
 Paper: radius `--ok-radius-xl`, `--ok-shadow-dialog`, `--ok-bg-paper`, margin 16px (32px from

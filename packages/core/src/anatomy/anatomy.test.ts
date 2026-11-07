@@ -6,6 +6,7 @@ import {
   avatarAttributes,
   avatarGroupAttributes,
   avatarVariants,
+  backdropAttributes,
   badgeAttributes,
   badgeContent,
   badgeVariants,
@@ -862,6 +863,14 @@ describe("overlay attributes", () => {
       "data-ok-hide-backdrop": "",
       "data-ok-disable-escape-key-down": "",
     });
+  });
+  it("backdrop defaults and invisible", () => {
+    expect(backdropAttributes()).toEqual({ "data-ok-backdrop": "" });
+    expect(backdropAttributes({ invisible: true })).toEqual({
+      "data-ok-backdrop": "",
+      "data-ok-invisible": "",
+    });
+    expect(backdropAttributes({ invisible: HOSTILE as never })).toEqual({ "data-ok-backdrop": "" });
   });
   it("toaster", () => {
     expect(toasterAttributes()).toEqual({ "data-ok-toaster": "", "data-ok-position": "top-right" });

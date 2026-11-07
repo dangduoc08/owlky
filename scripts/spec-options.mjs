@@ -43,6 +43,7 @@ const SPECS = {
   menu: "menu.md",
   "menu-item": "menu.md",
   dialog: "dialog.md",
+  backdrop: "backdrop.md",
   toaster: "snackbar.md",
 };
 

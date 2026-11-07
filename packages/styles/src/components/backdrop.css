@@ -1,0 +1,51 @@
+/*
+ * Backdrop — spec: specs/components/backdrop.md
+ *
+ * Anatomy:   div[data-ok-backdrop] › children (centered)
+ * Modifiers: data-ok-invisible (transparent)
+ * States:    data-ok-open (shown). Closed backdrops stay in the DOM, hidden with `visibility`
+ *            so they leave the accessibility tree and don't catch clicks.
+ *
+ * The fade goes through `visibility` too: it turns visible at once when opening and turns
+ * hidden at the end of the fade-out.
+ * Single :where() selectors in @layer components.
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-ok-backdrop]) {
+    position: fixed;
+    inset: 0;
+    z-index: var(--ok-z-modal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--ok-backdrop);
+    color: var(--ok-palette-common-white);
+    font-family: var(--ok-font-family);
+    -webkit-tap-highlight-color: transparent;
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity var(--ok-duration-shorter) var(--ok-easing-standard),
+      visibility 0s linear var(--ok-duration-shorter);
+  }
+
+  :where([data-ok-backdrop][data-ok-open]) {
+    opacity: 1;
+    visibility: visible;
+    transition:
+      opacity var(--ok-duration-short) var(--ok-easing-standard),
+      visibility 0s;
+  }
+
+  :where([data-ok-backdrop][data-ok-invisible]) {
+    background-color: transparent;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :where([data-ok-backdrop]) {
+      transition: none;
+    }
+  }
+}

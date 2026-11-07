@@ -7,6 +7,7 @@ import type { ComponentDefinition } from "../runtime/types.js";
 import { accordion } from "./accordion/accordion.js";
 import { alert } from "./alert/alert.js";
 import { avatar } from "./avatar/avatar.js";
+import { backdrop } from "./backdrop/backdrop.js";
 import { checkbox } from "./checkbox/checkbox.js";
 import { chip } from "./chip/chip.js";
 import { circularProgress } from "./circular-progress/circular-progress.js";
@@ -32,6 +33,7 @@ export const components: readonly ComponentDefinition[] = [
   popover as ComponentDefinition,
   menu as ComponentDefinition,
   dialog as ComponentDefinition,
+  backdrop as ComponentDefinition,
   accordion as ComponentDefinition,
   alert as ComponentDefinition,
   avatar as ComponentDefinition,
