@@ -10,6 +10,11 @@ in line with it: same *content* (variants, colors, sizes, states, behavior), bui
 project's architecture, tokens and conventions — responsive at every viewport, fully tested, and
 passing the security checklist.
 
+**Language with the user:** everything you ask the user — the step 5 proposal and its approval
+request, breaking-change confirmations, visual-baseline approvals, accepted security findings
+and any other question — is written in **Vietnamese** (code, identifiers, file names, table
+column values such as prop names and tokens stay as they are). Repository files stay in English.
+
 The command runs in one of two modes, detected in step 1:
 
 | Mode | When | Goal |
@@ -131,7 +136,8 @@ project. Never copy the reference's source code, branding or assets.
      prop, `data-ok-*` attribute or value, `--ok-*` variable, event, changed default or DOM
      structure) — with a migration note for every breaking item; the resulting changeset level
      (patch / minor / major); the visual baselines expected to change.
-   Stop and ask for approval. Do not write code or add dependencies before the user approves.
+   Stop and ask for approval **in Vietnamese** (the whole proposal is written in Vietnamese). Do
+   not write code or add dependencies before the user approves.
    Breaking changes need an explicit yes, item by item.
 
 6. **First component only** (Create mode, when `packages/styles/src/components/` has no `.css` yet):
@@ -543,6 +549,8 @@ Unit: N/N (3 trình duyệt) · E2E: N/N (4 project) · Visual: N/N (hoặc pend
 
 ## Rules
 
+- Proposals, approval requests and questions to the user are in Vietnamese; repository files,
+  code and commit messages stay in English.
 - The reference is for content only: never copy its source code, class names, logo,
   illustrations, icon packs or brand text. Use our own markup, tokens and inline SVG icons.
 - Never ship one implementation alone: React and HTML land together with parity tests.
