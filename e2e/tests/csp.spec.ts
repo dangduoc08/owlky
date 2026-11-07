@@ -27,6 +27,12 @@ test("no CSP or Trusted Types violations", async ({ page }) => {
         ),
     )
     .toBe("0.4");
+  await expect(page.getByRole("checkbox", { name: "Mixed" })).toHaveJSProperty(
+    "indeterminate",
+    true,
+  );
+  await page.getByRole("switch", { name: "Wi-Fi" }).click();
+  await expect(page.getByRole("switch", { name: "Wi-Fi" })).not.toBeChecked();
   expect(
     await page.evaluate(() => (window as unknown as { violations: string[] }).violations),
   ).toEqual([]);

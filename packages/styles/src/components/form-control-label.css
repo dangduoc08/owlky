@@ -1,0 +1,59 @@
+/*
+ * Form control label — spec: specs/components/form-control-label.md
+ *
+ * Anatomy:   label[data-ok-form-control-label]
+ *              › (a control: [data-ok-checkbox] | [data-ok-switch])
+ *              › span[data-ok-form-control-label-text] (› span[data-ok-form-control-label-asterisk]?)
+ * Modifiers: data-ok-label-placement = end (default) | start | top | bottom; data-ok-required
+ * States:    the control's input :disabled → disabled text
+ *
+ * The -11px margin lines the control's icon up with the content edge.
+ * Single :where() selectors in @layer components (zero specificity).
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-ok-form-control-label]) {
+    display: inline-flex;
+    align-items: center;
+    margin-inline: calc(var(--ok-spacing) * -2.75) calc(var(--ok-spacing) * 4);
+    color: var(--ok-text-primary);
+    font-family: var(--ok-font-family);
+    font-size: var(--ok-typography-body2-font-size);
+    font-weight: var(--ok-typography-body2-font-weight);
+    line-height: var(--ok-typography-body2-line-height);
+    vertical-align: middle;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  :where([data-ok-form-control-label][data-ok-label-placement="start"]) {
+    flex-direction: row-reverse;
+    margin-inline: calc(var(--ok-spacing) * 4) calc(var(--ok-spacing) * -2.75);
+  }
+
+  :where([data-ok-form-control-label][data-ok-label-placement="top"]) {
+    flex-direction: column-reverse;
+    margin-inline: calc(var(--ok-spacing) * 4);
+  }
+
+  :where([data-ok-form-control-label][data-ok-label-placement="bottom"]) {
+    flex-direction: column;
+    margin-inline: calc(var(--ok-spacing) * 4);
+  }
+
+  :where([data-ok-form-control-label-text]) {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  :where([data-ok-form-control-label-asterisk]) {
+    margin-inline-start: 0.25ch;
+  }
+
+  /* Disabled */
+  :where([data-ok-form-control-label]:has(input:disabled)) {
+    color: var(--ok-text-disabled);
+    cursor: default;
+  }
+}

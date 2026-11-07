@@ -160,6 +160,19 @@ export const table = defineComponent<TableInstance>({
       },
     },
     {
+      // A switch (or checkbox) outside the table turns dense rows on and off.
+      event: "change",
+      selector: "input[data-ok-table-dense]",
+      handle(input) {
+        const target = byId(input, input.getAttribute("data-ok-table-dense") as string);
+        if (!(target instanceof HTMLTableElement) || !target.hasAttribute("data-ok-table")) return;
+        target.setAttribute(
+          "data-ok-size",
+          (input as HTMLInputElement).checked ? "small" : "medium",
+        );
+      },
+    },
+    {
       event: "change",
       selector: "[data-ok-table-select], [data-ok-table-select-all]",
       handle(input) {
@@ -191,6 +204,10 @@ function syncSelection(owner: HTMLTableElement): HTMLTableRowElement[] {
   for (const all of own(owner, "[data-ok-table-select-all]")) {
     all.checked = state.checked;
     all.indeterminate = state.indeterminate;
+    // Inside a Checkbox, the root shows the dash (same markup as React's `indeterminate`).
+    all
+      .closest("[data-ok-checkbox]")
+      ?.toggleAttribute("data-ok-indeterminate", state.indeterminate);
   }
   return selected;
 }

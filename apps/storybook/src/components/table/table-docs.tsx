@@ -95,17 +95,17 @@ export function Orders({ orders }) {
     title: "Sort and select rows",
     body: `Put a \`TableSortLabel\` in a header cell to make the column sortable. In React, keep the column and direction in state and sort your data; \`compareCellValues\` and \`nextSortDirection\` from \`@owlky/core\` help. In HTML, the script sorts the rows when a label is pressed.
 
-For selection, add a column of checkboxes with \`data-ok-table-select\` and one \`data-ok-table-select-all\` in the header. Selected rows are highlighted. Try sorting and selecting below.`,
+For selection, add a column of small **Checkbox** components: put \`data-ok-table-select\` on each row's input and \`data-ok-table-select-all\` on the header's input. Selected rows are highlighted. To offer dense rows, add a **Switch** under the table; in HTML, give its input \`data-ok-table-dense\` with the table's id. Try sorting and selecting below.`,
     html: `<table id="desserts" data-ok-table data-ok-size="medium" data-ok-padding="normal">
   <thead>
     <tr>
-      <th scope="col" data-ok-padding="checkbox"><input type="checkbox" data-ok-table-select-all aria-label="Select all desserts"></th>
+      <th scope="col" data-ok-padding="checkbox"><span data-ok-checkbox data-ok-color="primary" data-ok-size="small"><input type="checkbox" data-ok-checkbox-input data-ok-table-select-all aria-label="Select all desserts"><!-- the three icon spans of a Checkbox --></span></th>
       <th scope="col" aria-sort="ascending"><button type="button" data-ok-table-sort-label data-ok-direction="asc" data-ok-active>Dessert${ARROW}</button></th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td data-ok-padding="checkbox"><input type="checkbox" data-ok-table-select aria-label="Select Eclair"></td>
+      <td data-ok-padding="checkbox"><span data-ok-checkbox data-ok-color="primary" data-ok-size="small"><input type="checkbox" data-ok-checkbox-input data-ok-table-select aria-label="Select Eclair"><!-- the three icon spans of a Checkbox --></span></td>
       <td>Eclair</td>
     </tr>
   </tbody>

@@ -9,6 +9,10 @@ Components: **Accordion** (native `<details>`; runtime: `accordion`, events
 needed) **Drawer** (runtime: `drawer`, triggers `data-ok-drawer-open="<id>"` / `data-ok-drawer-close`,
 events `ok:drawer:beforeopen|open|beforeclose|close`) **Pagination** (runtime: `pagination`; `data-ok-count`, `data-ok-page`, `data-ok-sibling-count`,
 `data-ok-boundary-count`, label templates `data-ok-label-page|current`; event `ok:pagination:change`)
+**Checkbox** (runtime: `checkbox` — keeps `data-ok-indeterminate` and the input's mixed state in
+step; a checkbox with `aria-controls="<ids>"` checks / clears those and shows mixed) **Switch**
+and **Form control label** (CSS only: native checkbox with `role="switch"`;
+`label[data-ok-form-control-label][data-ok-label-placement]`)
 **Circular progress** / **Linear progress** (runtime: `circular-progress`, `linear-progress` —
 draws `aria-valuenow` / `-valuemin` / `-valuemax`, `data-ok-size`, `data-ok-thickness`,
 `data-ok-value-buffer` and redraws when they change; indeterminate needs no JavaScript)

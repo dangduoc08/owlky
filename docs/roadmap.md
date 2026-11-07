@@ -5,7 +5,7 @@ and a review before the next starts.
 
 ## Overview
 Every page of the reference's component menu (`https://minimals.cc/components/…`) and where it
-stands. ✅ = built (15); *wave N* = planned, see "Next — components"; *not planned* = a pattern
+stands. ✅ = built (17); *wave N* = planned, see "Next — components"; *not planned* = a pattern
 or app-level page. *Section* = the heading below with the details. Update this table with each
 component and each `/integrate` run.
 
@@ -24,7 +24,7 @@ component and each `/integrate` run.
 | MUI | Badge | wave 3 | — | Next |
 | MUI | Breadcrumbs | wave 5 | — | Next |
 | MUI | Buttons | ✅ | Button, IconButton, Fab, ButtonGroup, ToggleButton(Group) | Button |
-| MUI | Checkbox | wave 1 | — | Next |
+| MUI | Checkbox | ✅ | Checkbox, FormControlLabel | Checkbox & Switch |
 | MUI | Chip | wave 3 | — | Next |
 | MUI | Dialog | wave 4 | — | Next |
 | MUI | Drawer | ✅ | Drawer | Drawer |
@@ -37,7 +37,7 @@ component and each `/integrate` run.
 | MUI | Rating | wave 6 | — | Next |
 | MUI | Slider | wave 6 | — | Next |
 | MUI | Stepper | wave 5 | — | Next |
-| MUI | Switch | wave 1 | — | Next |
+| MUI | Switch | ✅ | Switch, FormControlLabel | Checkbox & Switch |
 | MUI | Table | ✅ | Table parts, TablePagination, TableExpandButton / TableDetailRow | Table |
 | MUI | Tabs | wave 5 | — | Next |
 | MUI | Text field | wave 2 | — | Next |
@@ -151,6 +151,18 @@ Table`): all Table stories, Drawer content and Sortable lists now scroll in a Sc
 adapts with `:has(> [data-ok-scrollbar])`, and the old markup keeps working (additive). An
 unnamed `TableContainer` is no longer focusable. No new tokens.
 
+## ✅ Components — Checkbox & Switch (2026-11-07)
+Checkbox (colors incl. `default`, `medium` / `small`, `indeterminate`, custom icons) and Switch
+(colors, sizes, `edge`), both native checkboxes (`role="switch"`), API from MUI; `ref` and input
+props go to the `<input>`. FormControlLabel (`labelPlacement` end / start / top / bottom,
+`required`, props passed to the control). HTML runtime `checkbox`: mixed state in step, and
+parents with `aria-controls` (WAI-ARIA mixed checkbox); Switch is CSS only. Visible focus rings
+(the reference has none). Integrated: Table selection uses small Checkboxes (select-all shows
+mixed), the "Sorting & selecting" story has the reference's "Dense" Switch
+(`data-ok-table-dense="<table id>"` in HTML). No new tokens.
+**Backlog:** Switch `icon` / `checkedIcon` (thumb content); FormGroup, FormControl, FormLabel,
+FormHelperText (wave 2, with Text field).
+
 ## ✅ Components — Progress (2026-11-07)
 CircularProgress (indeterminate / determinate, 7 colors incl. `inherit`, `size` in px or a
 `px` / `rem` / `em` length, `thickness`, `disableShrink`, `enableTrackSlot`) and LinearProgress
@@ -181,11 +193,9 @@ integrate these in the same review (additive: no DOM or API change) and remove t
 | Typography (display text) | Sortable stories (card numbers) | demo `<span>` styled in `.storybook/preview.css` |
 | Typography (heading / secondary text) | Accordion summaries (plain text, no secondary line from the reference) | summary text styled by `accordion.css` |
 | Typography (heading) | Scrollbar "Layout" story heading | demo `<h4>` styled in `.storybook/preview.css` |
-| Checkbox | Table selection column (`data-ok-table-select`, `data-ok-table-select-all`) | native `<input type="checkbox">`, sized in `.storybook/preview.css`; keep the attributes on the input |
 | Select | `TablePagination` rows per page (library markup) | native `<select>` styled in `table.css`; the API (`rowsPerPageOptions`) stays |
 | Select | Pagination story "Items" (card grid + items-per-page Select) | story deferred |
 | TextField, Select | Table story "Table pagination with API" | story deferred |
-| Switch | Table "Dense" toggle from the reference | not shown: the stories' `size` Control covers it |
 | Divider | Drawer stories (mailbox menu) | demo `<hr>` styled in `.storybook/preview.css` |
 | Backdrop | Drawer: native `::backdrop` | share `--ok-backdrop` with a future Backdrop component |
 
@@ -208,7 +218,7 @@ Dependency-first: leaf components before the ones built from them, the ones that
 
 | Wave | Components | Unlocks (existing components) |
 |---|---|---|
-| 1 Leaves | ~~Scrollbar~~ ✅, ~~Progress~~ ✅, Checkbox, Switch | ~~Sortable / Drawer / Table scrolling~~ ✅; ~~Button loading~~ ✅; Table selection; Table "Dense" |
+| 1 Leaves | ~~Scrollbar~~ ✅, ~~Progress~~ ✅, ~~Checkbox~~ ✅, ~~Switch~~ ✅ | ~~Sortable / Drawer / Table scrolling~~ ✅; ~~Button loading~~ ✅; ~~Table selection~~ ✅; ~~Table "Dense"~~ ✅ |
 | 2 Form | Text field (Input, Textarea, native Select), Radio button (+ restore empty export globs) | TablePagination rows per page; Table "Table pagination with API"; Pagination "Items" |
 | 3 Display | Avatar, Badge, Chip, Label, Divider, then List | Drawer menu (List, Divider) |
 | 4 Overlays | Popover (positioning controller + fallback in core), then Tooltip, Menu, Dialog (+ Backdrop), Snackbar | Drawer backdrop; Icon button tooltips |

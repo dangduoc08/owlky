@@ -1,0 +1,146 @@
+/*
+ * Checkbox — spec: specs/components/checkbox.md
+ *
+ * Anatomy:   span[data-ok-checkbox]
+ *              › input[type=checkbox][data-ok-checkbox-input]        (the control; covers the target)
+ *              › span[data-ok-checkbox-icon="unchecked" | "checked" | "indeterminate"][aria-hidden]
+ * Modifiers: data-ok-color = primary (default) | default | secondary | info | success | warning | error
+ *            data-ok-size  = medium (default) | small
+ *            data-ok-indeterminate (mixed; the input's `indeterminate` also counts)
+ * States:    read from the input with :has(): :checked, :indeterminate, :disabled, :focus-visible
+ *
+ * Native input, visually replaced by the icons (they follow currentColor; custom icons too).
+ * Single :where() selectors in @layer components (zero specificity). Translucent colors use
+ * rgb(var(--…-channel) / α), never color-mix() (AGENTS.md).
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-ok-checkbox]) {
+    --_ok-main: var(--ok-c-main, var(--ok-palette-primary-main));
+    --_ok-hover: rgb(var(--ok-c-channel, var(--ok-palette-primary-main-channel)) / 0.08);
+    --_ok-mark: var(--ok-palette-common-white);
+    --_ok-icon: calc(var(--ok-spacing) * 6);
+
+    position: relative;
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    width: calc(var(--ok-spacing) * 10);
+    height: calc(var(--ok-spacing) * 10);
+    border-radius: var(--ok-radius-full);
+    color: var(--ok-text-secondary);
+    vertical-align: middle;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color var(--ok-duration-shortest) var(--ok-easing-standard);
+  }
+
+  :where([data-ok-checkbox-input]) {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    cursor: pointer;
+    opacity: 0;
+  }
+
+  :where([data-ok-checkbox-icon]) {
+    display: none;
+    width: var(--_ok-icon);
+    height: var(--_ok-icon);
+  }
+
+  :where([data-ok-checkbox-icon] > svg) {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  :where([data-ok-checkbox-mark]) {
+    fill: none;
+    stroke: var(--_ok-mark);
+  }
+
+  /* Which icon shows: unchecked → checked → indeterminate (wins). */
+  :where([data-ok-checkbox-icon="unchecked"]) {
+    display: block;
+  }
+
+  :where([data-ok-checkbox]:has(> input:checked) > [data-ok-checkbox-icon="unchecked"]) {
+    display: none;
+  }
+
+  :where([data-ok-checkbox]:has(> input:checked) > [data-ok-checkbox-icon="checked"]) {
+    display: block;
+  }
+
+  :where(
+    [data-ok-checkbox][data-ok-indeterminate] > [data-ok-checkbox-icon],
+    [data-ok-checkbox]:has(> input:indeterminate) > [data-ok-checkbox-icon]
+  ) {
+    display: none;
+  }
+
+  :where(
+    [data-ok-checkbox][data-ok-indeterminate] > [data-ok-checkbox-icon="indeterminate"],
+    [data-ok-checkbox]:has(> input:indeterminate) > [data-ok-checkbox-icon="indeterminate"]
+  ) {
+    display: block;
+  }
+
+  /* Sizes */
+  :where([data-ok-checkbox][data-ok-size="small"]) {
+    --_ok-icon: calc(var(--ok-spacing) * 5);
+
+    width: calc(var(--ok-spacing) * 9);
+    height: calc(var(--ok-spacing) * 9);
+  }
+
+  /* Colors: `default` is the text color, with a mark in the page background. */
+  :where([data-ok-checkbox][data-ok-color="default"]) {
+    --_ok-main: var(--ok-text-primary);
+    --_ok-hover: var(--ok-action-hover);
+    --_ok-mark: var(--ok-bg-default);
+  }
+
+  :where(
+    [data-ok-checkbox]:has(> input:checked),
+    [data-ok-checkbox][data-ok-indeterminate],
+    [data-ok-checkbox]:has(> input:indeterminate)
+  ) {
+    color: var(--_ok-main);
+  }
+
+  /* Hover */
+  @media (hover: hover) {
+    :where([data-ok-checkbox]:has(> input:enabled):hover) {
+      background-color: var(--_ok-hover);
+    }
+  }
+
+  /* Focus: a ring inside the target (the reference has none; WCAG 2.4.7). */
+  :where([data-ok-checkbox]:has(> input:focus-visible)) {
+    outline: 2px solid currentColor;
+    outline-offset: -2px;
+  }
+
+  /* Disabled */
+  :where([data-ok-checkbox]:has(> input:disabled)) {
+    color: var(--ok-action-disabled);
+  }
+
+  :where([data-ok-checkbox-input]:disabled) {
+    cursor: default;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :where([data-ok-checkbox]) {
+      transition: none;
+    }
+  }
+}

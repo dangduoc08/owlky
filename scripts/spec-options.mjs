@@ -21,6 +21,9 @@ const SPECS = {
   "table-sort-label": "table.md",
   "circular-progress": "circular-progress.md",
   "linear-progress": "linear-progress.md",
+  checkbox: "checkbox.md",
+  switch: "switch.md",
+  "form-control-label": "form-control-label.md",
 };
 
 const code = (value) => `\`${value}\``;

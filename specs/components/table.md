@@ -18,11 +18,11 @@ section[data-ok-table-container]                          holds the table (overf
       thead › tr › th[scope=col][aria-sort]?[data-ok-align]?[data-ok-padding]?
         button[type=button][data-ok-table-sort-label][data-ok-direction][data-ok-active]?[data-ok-hide-sort-icon]?
           … label, span[data-ok-table-sort-icon][aria-hidden=true] › svg (arrow down; rotated when ascending)
-        input[type=checkbox][data-ok-table-select-all][aria-label]          selection column (native checkbox)
+        span[data-ok-checkbox][data-ok-size="small"] › input[type=checkbox][data-ok-checkbox-input][data-ok-table-select-all][aria-label]   selection column (a Checkbox; a bare input still works)
       tbody
         tr[data-ok-hover]?[data-ok-selected]?
           td | th[scope=row] [data-ok-align]?[data-ok-padding]?[data-ok-size]?
-          input[type=checkbox][data-ok-table-select][aria-label]            in a selection cell
+          span[data-ok-checkbox][data-ok-size="small"] › input[…][data-ok-table-select][aria-label]   in a selection cell
           button[data-ok-icon-button][data-ok-table-expand=<detail id>][aria-expanded][aria-controls][aria-label]
         tr[data-ok-table-detail][id][hidden]? › td[colspan]                 detail row of the row above
       tfoot? › tr › td
@@ -95,6 +95,8 @@ Pagination (`TablePagination` ↔ HTML): `count` (`-1` = unknown) ↔ number of 
     the labels updated, pagination refreshed;
   - row checkbox → `data-ok-selected` on its row, the select-all checkbox updated (checked /
     indeterminate); select-all → every row (all pages); then `ok:table:select` `{ rows }`;
+  - `input[data-ok-table-dense="<table id>"]` (a Switch under the table, story "Sorting &
+    selecting") → the table's `data-ok-size` becomes `small` when checked, `medium` otherwise;
   - expand button → cancelable `ok:table:expand` `{ row, expanded }` → `hidden` and `aria-expanded`;
   - pagination → cancelable `ok:table-pagination:change` `{ page, rowsPerPage }` → rows outside the
     page get `hidden`, the label and buttons are updated. With `data-ok-count` (server-side) rows

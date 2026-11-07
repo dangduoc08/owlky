@@ -6,6 +6,7 @@
 import type { ComponentDefinition } from "../runtime/types.js";
 import { accordion } from "./accordion/accordion.js";
 import { alert } from "./alert/alert.js";
+import { checkbox } from "./checkbox/checkbox.js";
 import { circularProgress } from "./circular-progress/circular-progress.js";
 import { drawer } from "./drawer/drawer.js";
 import { linearProgress } from "./linear-progress/linear-progress.js";
@@ -19,6 +20,7 @@ import { toggleGroup } from "./toggle-group/toggle-group.js";
 export const components: readonly ComponentDefinition[] = [
   accordion as ComponentDefinition,
   alert as ComponentDefinition,
+  checkbox as ComponentDefinition,
   circularProgress as ComponentDefinition,
   drawer as ComponentDefinition,
   linearProgress as ComponentDefinition,

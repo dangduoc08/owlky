@@ -1,0 +1,153 @@
+/*
+ * Switch — spec: specs/components/switch.md
+ *
+ * Anatomy:   span[data-ok-switch]
+ *              › input[type=checkbox][role=switch][data-ok-switch-input]   (the control; covers the target)
+ *              › span[data-ok-switch-track][aria-hidden]
+ *              › span[data-ok-switch-thumb][aria-hidden]
+ * Modifiers: data-ok-color = primary (default) | default | secondary | info | success | warning | error
+ *            data-ok-size  = medium (default) | small
+ *            data-ok-edge  = start | end (negative margin)
+ * States:    read from the input with :has(): :checked, :disabled, :focus-visible
+ *
+ * CSS only. Single :where() selectors in @layer components (zero specificity). Translucent colors
+ * use rgb(var(--…-channel) / α), never color-mix() (AGENTS.md).
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-ok-switch]) {
+    --_ok-main: var(--ok-c-main, var(--ok-palette-primary-main));
+    --_ok-halo-on: rgb(var(--ok-c-channel, var(--ok-palette-primary-main-channel)) / 0.08);
+    --_ok-halo: var(--ok-action-hover);
+    --_ok-track-w: calc(var(--ok-spacing) * 8.5);
+    --_ok-track-h: calc(var(--ok-spacing) * 5);
+    --_ok-thumb: calc(var(--ok-spacing) * 3.5);
+    --_ok-inset: calc(var(--ok-spacing) * 0.75);
+    --_ok-pad-x: calc(var(--ok-spacing) * 3);
+    --_ok-pad-y: calc(var(--ok-spacing) * 2.25);
+    --_ok-thumb-bg: var(--ok-palette-common-white);
+
+    position: relative;
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    box-sizing: content-box;
+    width: var(--_ok-track-w);
+    height: var(--_ok-track-h);
+    padding: var(--_ok-pad-y) var(--_ok-pad-x);
+    vertical-align: middle;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  :where([data-ok-switch-input]) {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    cursor: pointer;
+    opacity: 0;
+  }
+
+  :where([data-ok-switch-track]) {
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    border-radius: var(--ok-radius-full);
+    background-color: rgb(var(--ok-palette-grey-500-channel) / 0.48);
+    transition:
+      background-color var(--ok-duration-shortest) var(--ok-easing-standard),
+      opacity var(--ok-duration-shortest) var(--ok-easing-standard);
+  }
+
+  :where([data-ok-switch-thumb]) {
+    position: absolute;
+    top: 50%;
+    left: calc(var(--_ok-pad-x) + var(--_ok-inset));
+    width: var(--_ok-thumb);
+    height: var(--_ok-thumb);
+    border-radius: var(--ok-radius-full);
+    background-color: var(--_ok-thumb-bg);
+    box-shadow: var(--ok-shadow-z1);
+    transform: translateY(-50%);
+    transition:
+      transform var(--ok-duration-shortest) var(--ok-easing-standard),
+      box-shadow var(--ok-duration-shortest) var(--ok-easing-standard);
+  }
+
+  /* Sizes */
+  :where([data-ok-switch][data-ok-size="small"]) {
+    --_ok-track-w: calc(var(--ok-spacing) * 6.5);
+    --_ok-track-h: calc(var(--ok-spacing) * 4);
+    --_ok-thumb: calc(var(--ok-spacing) * 2.5);
+    --_ok-pad-x: calc(var(--ok-spacing) * 1.75);
+    --_ok-pad-y: var(--ok-spacing);
+  }
+
+  :where([data-ok-switch][data-ok-edge="start"]) {
+    margin-inline-start: calc(var(--ok-spacing) * -2);
+  }
+
+  :where([data-ok-switch][data-ok-edge="end"]) {
+    margin-inline-end: calc(var(--ok-spacing) * -2);
+  }
+
+  /* Colors: `default` is the text color; its thumb stays visible on a light track in dark themes. */
+  :where([data-ok-switch][data-ok-color="default"]) {
+    --_ok-main: var(--ok-text-primary);
+    --_ok-halo-on: var(--ok-action-hover);
+  }
+
+  @supports (color: light-dark(#000, #fff)) {
+    :where([data-ok-switch][data-ok-color="default"]:has(> input:checked)) {
+      --_ok-thumb-bg: light-dark(var(--ok-palette-common-white), var(--ok-palette-grey-800));
+    }
+  }
+
+  /* On */
+  :where([data-ok-switch]:has(> input:checked)) {
+    --_ok-halo: var(--_ok-halo-on);
+  }
+
+  :where([data-ok-switch]:has(> input:checked) > [data-ok-switch-track]) {
+    background-color: var(--_ok-main);
+  }
+
+  :where([data-ok-switch]:has(> input:checked) > [data-ok-switch-thumb]) {
+    transform: translate(calc(var(--_ok-track-w) - var(--_ok-thumb) - 2 * var(--_ok-inset)), -50%);
+  }
+
+  /* Hover: a halo around the thumb. */
+  @media (hover: hover) {
+    :where([data-ok-switch]:has(> input:enabled):hover > [data-ok-switch-thumb]) {
+      box-shadow:
+        var(--ok-shadow-z1),
+        0 0 0 calc(var(--ok-spacing) * 2.25) var(--_ok-halo);
+    }
+  }
+
+  /* Focus: a ring around the track (the reference has none; WCAG 2.4.7). */
+  :where([data-ok-switch]:has(> input:focus-visible) > [data-ok-switch-track]) {
+    outline: 2px solid var(--ok-text-primary);
+    outline-offset: 2px;
+  }
+
+  /* Disabled */
+  :where([data-ok-switch]:has(> input:disabled) > [data-ok-switch-track]) {
+    opacity: 0.48;
+  }
+
+  :where([data-ok-switch-input]:disabled) {
+    cursor: default;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :where([data-ok-switch-track], [data-ok-switch-thumb]) {
+      transition: none;
+    }
+  }
+}

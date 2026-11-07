@@ -32,6 +32,8 @@ const CASES: [
     ["thickness", "enableTrackSlot", "disableShrink"],
   ],
   ["linear-progress", "buffer", "linear-progress", ["value", "valueBuffer"]],
+  ["checkbox", "colors", "checkbox", ["color", "size", "disabled"]],
+  ["switch", "colors", "switch", ["color", "size", "disabled"]],
 ];
 
 /** A non-default value for the option, in Storybook's URL args syntax. */

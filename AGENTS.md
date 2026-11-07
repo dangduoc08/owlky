@@ -243,3 +243,12 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
   default-size progress. Tests that pick "the first `svg`" of a loading button now hit the loader.
 - `styles.test.ts` lists the pseudo-elements allowed after `:where(…)`; `::before` is allowed
   (Progress tracks). Keyframe selectors must be one per block (`60%, 100%` fails the check).
+- Selection controls (Checkbox, Switch) are a root span + a native `<input>` that covers the
+  target (opacity 0) + decorative parts; CSS reads the state with `:has(> input:checked |
+  :indeterminate | :disabled | :focus-visible)`. React `ref` and rest props go to the **input**
+  (`className` / `style` to the root). `input.indeterminate` is a property only: React sets it in
+  an effect every render, the HTML `checkbox` runtime mirrors `data-ok-indeterminate`. Code that
+  sets a mixed state itself (Table's select-all) also toggles `data-ok-indeterminate` on the
+  Checkbox root, so React and HTML markup match.
+- `FormControlLabel`'s control is a **prop**: Storybook's `applyArgs` walks `control` too, so
+  story Controls reach controls inside labels.

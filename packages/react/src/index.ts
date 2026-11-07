@@ -16,6 +16,7 @@ export type {
   IconButtonColor,
   IconButtonEdge,
   IconButtonSize,
+  LabelPlacement,
   LinearProgressVariant,
   Orientation,
   PageRange,
@@ -27,8 +28,11 @@ export type {
   PaginationVariant,
   PaletteColorName,
   ProgressColor,
+  SelectionControlColor,
+  SelectionControlSize,
   SortableLayout,
   SortableMessages,
+  SwitchEdge,
   TableAlign,
   TablePadding,
   TableSize,
@@ -63,6 +67,7 @@ export {
   type ButtonProps,
 } from "./button/button.js";
 export { ButtonGroup, type ButtonGroupProps } from "./button-group/button-group.js";
+export { Checkbox, type CheckboxProps } from "./checkbox/checkbox.js";
 export {
   CircularProgress,
   type CircularProgressProps,
@@ -76,6 +81,10 @@ export {
   DrawerTrigger,
 } from "./drawer/drawer.js";
 export { Fab, type FabAsButtonProps, type FabAsLinkProps, type FabProps } from "./fab/fab.js";
+export {
+  FormControlLabel,
+  type FormControlLabelProps,
+} from "./form-control-label/form-control-label.js";
 export { IconButton, type IconButtonProps } from "./icon-button/icon-button.js";
 export { LinearProgress, type LinearProgressProps } from "./linear-progress/linear-progress.js";
 export {
@@ -88,6 +97,7 @@ export {
 } from "./pagination/pagination.js";
 export { Scrollbar, type ScrollbarProps } from "./scrollbar/scrollbar.js";
 export { arrayMove, Sortable, type SortableProps } from "./sortable/sortable.js";
+export { Switch, type SwitchProps } from "./switch/switch.js";
 export {
   type RowsPerPageOption,
   Table,

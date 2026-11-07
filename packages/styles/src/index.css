@@ -4,7 +4,9 @@
  */
 @import "@owlky/tokens/tokens.css";
 @import "./components/accordion.css";
+@import "./components/checkbox.css";
 @import "./components/circular-progress.css";
+@import "./components/form-control-label.css";
 @import "./components/linear-progress.css";
 @import "./components/button.css";
 @import "./components/button-group.css";
@@ -17,3 +19,4 @@
 @import "./components/drawer.css";
 @import "./components/sortable.css";
 @import "./components/scrollbar.css";
+@import "./components/switch.css";

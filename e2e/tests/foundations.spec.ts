@@ -112,6 +112,7 @@ const GUIDES = [
   ["components-accordion--docs", "Accessibility"],
   ["components-alert--docs", "Accessibility"],
   ["components-button-button--docs", "Accessibility"],
+  ["components-checkbox--docs", "Accessibility"],
   ["components-button-button-group--docs", "Accessibility"],
   ["components-button-fab--docs", "Accessibility"],
   ["components-button-icon-button--docs", "Accessibility"],
@@ -122,6 +123,7 @@ const GUIDES = [
   ["components-progress-linear-progress--docs", "Accessibility"],
   ["components-scrollbar--docs", "Accessibility"],
   ["components-sortable--docs", "Accessibility"],
+  ["components-switch--docs", "Accessibility"],
   ["components-table--docs", "Accessibility"],
 ] as const;
 
@@ -130,6 +132,7 @@ const OPTION_TABLES: [string, (keyof typeof optionSchemas)[]][] = [
   ["components-accordion--docs", ["accordion"]],
   ["components-alert--docs", ["alert"]],
   ["components-button-button--docs", ["button"]],
+  ["components-checkbox--docs", ["checkbox", "form-control-label"]],
   ["components-button-button-group--docs", ["button-group"]],
   ["components-button-fab--docs", ["fab"]],
   ["components-button-icon-button--docs", ["icon-button"]],
@@ -140,6 +143,7 @@ const OPTION_TABLES: [string, (keyof typeof optionSchemas)[]][] = [
   ["components-progress-linear-progress--docs", ["linear-progress"]],
   ["components-scrollbar--docs", ["scrollbar"]],
   ["components-sortable--docs", ["sortable"]],
+  ["components-switch--docs", ["switch", "form-control-label"]],
   ["components-table--docs", ["table", "table-sort-label"]],
 ];
 

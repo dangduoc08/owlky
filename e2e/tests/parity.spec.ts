@@ -65,6 +65,16 @@ const pairs: [component: string, story: string][] = [
   ["linear-progress", "determinate"],
   ["linear-progress", "buffer"],
   ["linear-progress", "query"],
+  ["checkbox", "basic"],
+  ["checkbox", "sizes"],
+  ["checkbox", "custom-icons"],
+  ["checkbox", "placement"],
+  ["checkbox", "colors"],
+  ["checkbox", "indeterminate"],
+  ["switch", "basic"],
+  ["switch", "sizes"],
+  ["switch", "placements"],
+  ["switch", "colors"],
 ];
 
 for (const [component, story] of pairs) {

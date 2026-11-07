@@ -126,13 +126,10 @@
   max-height: 27.5rem;
 }
 
-/* Story-only: native checkboxes in tables until a Checkbox component exists. */
-[data-ok-table-select],
-[data-ok-table-select-all] {
-  width: 1.125rem;
-  height: 1.125rem;
-  margin: 0.75rem;
-  accent-color: var(--ok-palette-primary-main);
+/* The table's "Dense" switch sits under the pagination, at the start. */
+.sb-row:has(> [data-ok-table-container]) > [data-ok-form-control-label] {
+  align-self: flex-start;
+  margin-block-start: 0.5rem;
 }
 
 /* Accordions and alerts stack at full width, as on the reference page. */
@@ -263,4 +260,24 @@
   display: inline;
   white-space: normal;
   overflow-wrap: anywhere;
+}
+
+/* Checkbox and switch demos: long label lists (colors) stack, like the reference. */
+.sb-row:has(> [data-ok-form-control-label]:nth-child(5)) {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+}
+
+/* Indeterminate demo: the parent, then its children indented on one row. */
+.sb-row:has(> [data-ok-form-control-label] input[aria-controls]) {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+}
+
+.sb-row:has(> [data-ok-form-control-label] input[aria-controls]) > div {
+  display: flex;
+  flex-wrap: wrap;
+  margin-inline-start: 1.5rem;
 }

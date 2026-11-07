@@ -31,7 +31,10 @@ function walk(node: ReactNode, target: unknown, args: Props): ReactNode {
   }
   const children = element.props["children"] as ReactNode;
   const mapped = children === undefined ? undefined : walk(children, target, args);
-  const extra = element.type === target ? args : {};
+  const extra: Props = element.type === target ? { ...args } : {};
+  // A FormControlLabel's control is a prop, not a child.
+  const control = element.props["control"];
+  if (isValidElement(control)) extra["control"] = walk(control, target, args);
   return mapped === undefined ? cloneElement(element, extra) : cloneElement(element, extra, mapped);
 }
 

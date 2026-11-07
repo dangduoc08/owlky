@@ -8,6 +8,7 @@ import {
   buttonGroupAttributes,
   buttonSizes,
   buttonVariants,
+  checkboxAttributes,
   circularProgressAttributes,
   circularProgressVariants,
   drawerAnchors,
@@ -16,17 +17,22 @@ import {
   fabColors,
   fabSizes,
   fabVariants,
+  formControlLabelAttributes,
   iconButtonAttributes,
   iconButtonColors,
   iconButtonSizes,
+  labelPlacements,
   linearProgressAttributes,
   linearProgressOptions,
   linearProgressVariants,
   orientations,
   progressColors,
   scrollbarAttributes,
+  selectionControlColors,
+  selectionControlSizes,
   sortableAttributes,
   sortableLayouts,
+  switchAttributes,
   tableAttributes,
   tableCellAttributes,
   tableSortLabelAttributes,
@@ -437,6 +443,58 @@ describe("linearProgressAttributes", () => {
     expect(linearProgressOptions.options.valueBuffer.attr).toBe("data-ok-value-buffer");
     expect(linearProgressAttributes({ variant: HOSTILE, color: HOSTILE })).toEqual(
       linearProgressAttributes(),
+    );
+  });
+});
+
+describe("checkboxAttributes / switchAttributes / formControlLabelAttributes", () => {
+  it("emit explicit defaults", () => {
+    expect(checkboxAttributes()).toEqual({
+      "data-ok-checkbox": "",
+      "data-ok-color": "primary",
+      "data-ok-size": "medium",
+    });
+    expect(switchAttributes()).toEqual({
+      "data-ok-switch": "",
+      "data-ok-color": "primary",
+      "data-ok-size": "medium",
+    });
+    expect(formControlLabelAttributes()).toEqual({
+      "data-ok-form-control-label": "",
+      "data-ok-label-placement": "end",
+    });
+  });
+
+  it.each(selectionControlColors)("maps color %s", (color) => {
+    expect(checkboxAttributes({ color })["data-ok-color"]).toBe(color);
+    expect(switchAttributes({ color })["data-ok-color"]).toBe(color);
+  });
+
+  it.each(selectionControlSizes)("maps size %s", (size) => {
+    expect(checkboxAttributes({ size })["data-ok-size"]).toBe(size);
+    expect(switchAttributes({ size })["data-ok-size"]).toBe(size);
+  });
+
+  it.each(labelPlacements)("maps label placement %s", (labelPlacement) => {
+    expect(formControlLabelAttributes({ labelPlacement })["data-ok-label-placement"]).toBe(
+      labelPlacement,
+    );
+  });
+
+  it("flags and the optional edge", () => {
+    expect(checkboxAttributes({ indeterminate: true })).toHaveProperty("data-ok-indeterminate", "");
+    expect(formControlLabelAttributes({ required: true })).toHaveProperty("data-ok-required", "");
+    expect(switchAttributes({ edge: "end" })["data-ok-edge"]).toBe("end");
+    expect(switchAttributes({ edge: false })).not.toHaveProperty("data-ok-edge");
+  });
+
+  it("drops invalid values", () => {
+    expect(checkboxAttributes({ color: HOSTILE, size: HOSTILE, indeterminate: HOSTILE })).toEqual(
+      checkboxAttributes(),
+    );
+    expect(switchAttributes({ color: HOSTILE, edge: HOSTILE })).toEqual(switchAttributes());
+    expect(formControlLabelAttributes({ labelPlacement: HOSTILE, required: HOSTILE })).toEqual(
+      formControlLabelAttributes(),
     );
   });
 });

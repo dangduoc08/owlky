@@ -5,7 +5,10 @@ import {
   type TableSortDirection,
 } from "@owlky/core";
 import {
+  Checkbox,
+  FormControlLabel,
   Scrollbar,
+  Switch,
   Table,
   TableBody,
   TableCell,
@@ -15,7 +18,7 @@ import {
   TableRow,
   TableSortLabel,
 } from "@owlky/react";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import data from "./table-data.json" with { type: "json" };
 
 type Dessert = (typeof data.desserts)[number];
@@ -28,7 +31,7 @@ const COLUMNS: { id: keyof Dessert; label: string; numeric: boolean }[] = [
   { id: "protein", label: "Protein (g)", numeric: true },
 ];
 
-/** Native checkbox (a Checkbox component will replace it); `indeterminate` is a DOM property. */
+/** The header checkbox: checked, clear or mixed from the selected rows. */
 function SelectAll({
   selected,
   total,
@@ -38,19 +41,15 @@ function SelectAll({
   total: number;
   onChange: (checked: boolean) => void;
 }) {
-  const ref = useRef<HTMLInputElement>(null);
   const { checked, indeterminate } = selectAllState(selected, total);
-  useEffect(() => {
-    if (ref.current) ref.current.indeterminate = indeterminate;
-  }, [indeterminate]);
   return (
-    <input
-      ref={ref}
-      type="checkbox"
+    <Checkbox
+      size="small"
       data-ok-table-select-all=""
       aria-label="Select all desserts"
       checked={checked}
-      onChange={(event) => onChange(event.currentTarget.checked)}
+      indeterminate={indeterminate}
+      onChange={onChange}
     />
   );
 }
@@ -61,6 +60,7 @@ export function SortingDemo() {
   const [selected, setSelected] = useState<string[]>(["Eclair"]);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [dense, setDense] = useState(false);
 
   const sign = order === "asc" ? 1 : -1;
   const sorted = [...data.desserts].sort(
@@ -81,7 +81,7 @@ export function SortingDemo() {
     <>
       <TableContainer>
         <Scrollbar aria-label="Desserts">
-          <Table id="desserts-sort">
+          <Table id="desserts-sort" size={dense ? "small" : "medium"}>
             <TableHead>
               <TableRow>
                 <TableCell padding="checkbox">
@@ -116,8 +116,8 @@ export function SortingDemo() {
                 return (
                   <TableRow key={row.name} hover selected={isSelected}>
                     <TableCell padding="checkbox">
-                      <input
-                        type="checkbox"
+                      <Checkbox
+                        size="small"
                         data-ok-table-select=""
                         aria-label={`Select ${row.name}`}
                         checked={isSelected}
@@ -147,6 +147,8 @@ export function SortingDemo() {
           setPage(0);
         }}
       />
+      {/* HTML: the switch's input carries data-ok-table-dense="desserts-sort". */}
+      <FormControlLabel control={<Switch checked={dense} onChange={setDense} />} label="Dense" />
     </>
   );
 }

@@ -200,6 +200,42 @@ describe("table runtime: selection and expand", () => {
     expect(events).toEqual([2, 3, 0, 3]);
   });
 
+  it("a Checkbox's input works as a selection checkbox; select-all shows mixed", async () => {
+    const wrap = (input: string) =>
+      `<span data-ok-checkbox data-ok-color="primary" data-ok-size="small"><input type="checkbox" data-ok-checkbox-input ${input}><span data-ok-checkbox-icon="unchecked" aria-hidden="true"></span><span data-ok-checkbox-icon="checked" aria-hidden="true"></span><span data-ok-checkbox-icon="indeterminate" aria-hidden="true"></span></span>`;
+    const host = mount(
+      TABLE.replace(/<input type="checkbox" (data-ok-table-select[^>]*)>/g, (_, attrs: string) =>
+        wrap(attrs),
+      ),
+    );
+    start();
+    const all = host.querySelector("[data-ok-table-select-all]") as HTMLInputElement;
+    expect(all.closest("[data-ok-checkbox]")?.hasAttribute("data-ok-indeterminate")).toBe(true);
+    expect(all.indeterminate).toBe(true);
+    const icon = all.parentElement?.querySelector("[data-ok-checkbox-icon='indeterminate']");
+    expect(getComputedStyle(icon as Element).display).toBe("block");
+    await userEvent.click(host.querySelector('[aria-label="Alpha"]') as HTMLElement);
+    await userEvent.click(host.querySelector('[aria-label="Gamma"]') as HTMLElement);
+    expect(all.checked).toBe(true);
+    expect(all.indeterminate).toBe(false);
+    expect(all.closest("[data-ok-checkbox]")?.hasAttribute("data-ok-indeterminate")).toBe(false);
+  });
+
+  it("a switch with data-ok-table-dense toggles the table's size", async () => {
+    const host = mount(
+      `${TABLE}<input type="checkbox" role="switch" data-ok-table-dense="t" aria-label="Dense"><input type="checkbox" data-ok-table-dense="nope" aria-label="Broken"><div id="plain"></div><input type="checkbox" data-ok-table-dense="plain" aria-label="Not a table">`,
+    );
+    start();
+    const table = host.querySelector("table") as HTMLTableElement;
+    await userEvent.click(host.querySelector('[aria-label="Dense"]') as HTMLElement);
+    expect(table.dataset["okSize"]).toBe("small");
+    await userEvent.click(host.querySelector('[aria-label="Dense"]') as HTMLElement);
+    expect(table.dataset["okSize"]).toBe("medium");
+    await userEvent.click(host.querySelector('[aria-label="Broken"]') as HTMLElement);
+    await userEvent.click(host.querySelector('[aria-label="Not a table"]') as HTMLElement);
+    expect(table.dataset["okSize"]).toBe("medium");
+  });
+
   it("ignores checkboxes outside a table and nested tables' own checkboxes", async () => {
     const host = mount(
       `<input type="checkbox" data-ok-table-select aria-label="Loose">${TABLE.replace(
