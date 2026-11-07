@@ -45,15 +45,29 @@ function measure(page: Page) {
         if (root.offsetWidth !== size || root.offsetHeight !== size)
           problems.push(`#${i}: ${root.offsetWidth}×${root.offsetHeight} ≠ ${size}`);
       }
+      // Layout boxes, not getBoundingClientRect(): spinning indeterminate circles grow their
+      // bounding box while rotated, which made neighbours look like they overlap.
+      const layout = (el: HTMLElement) => {
+        const r = el.getBoundingClientRect();
+        const cx = r.left + r.width / 2;
+        const cy = r.top + r.height / 2;
+        return {
+          left: cx - el.offsetWidth / 2,
+          right: cx + el.offsetWidth / 2,
+          top: cy - el.offsetHeight / 2,
+          bottom: cy + el.offsetHeight / 2,
+        };
+      };
+      const own = layout(root);
       for (let j = 0; j < i; j++) {
-        const other = roots[j]?.getBoundingClientRect() as DOMRect;
+        const other = layout(roots[j] as HTMLElement);
         const overlaps =
-          box.left < other.right - 0.5 &&
-          other.left < box.right - 0.5 &&
-          box.top < other.bottom - 0.5 &&
-          other.top < box.bottom - 0.5;
+          own.left < other.right - 0.5 &&
+          other.left < own.right - 0.5 &&
+          own.top < other.bottom - 0.5 &&
+          other.top < own.bottom - 0.5;
         if (overlaps && !linear) problems.push(`#${i}: overlaps #${j}`);
-        if (linear && Math.abs(box.top - other.top) < 1) problems.push(`#${i}: bars share a row`);
+        if (linear && Math.abs(own.top - other.top) < 1) problems.push(`#${i}: bars share a row`);
       }
       return {
         width: Math.round(root.offsetWidth),

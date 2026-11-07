@@ -29,7 +29,8 @@ for (const impl of implementations) {
       await button.focus();
       await page.keyboard.press("Enter");
       await page.keyboard.press("Space");
-      expect(await clicks()).toBe(3);
+      // Space activates on keyup: the click can land a frame later on slow (mobile) runners.
+      await expect.poll(clicks).toBe(3);
     });
 
     test("disabled and loading buttons can't be activated or focused", async ({ page }) => {
