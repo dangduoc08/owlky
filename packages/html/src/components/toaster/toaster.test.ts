@@ -42,7 +42,9 @@ const titles = (host: HTMLElement) =>
 
 describe("toaster runtime", () => {
   it("a trigger shows a copy of its template, newest first; close removes it", async () => {
-    const host = mount(markup('data-ok-duration="5000"'));
+    // At the bottom: at the top-right, the first toast covers the next trigger in the 414px
+    // viewport and Firefox waits until it times out before clicking.
+    const host = mount(markup('data-ok-duration="5000"').replace("top-right", "bottom-right"));
     start();
     const shown: string[] = [];
     const dismissed: string[] = [];
@@ -54,7 +56,7 @@ describe("toaster runtime", () => {
     await userEvent.click(host.querySelector("#b4") as HTMLElement);
     expect(titles(host)).toEqual(["Deleted", "Saved"]);
     expect(host.querySelector("[data-ok-toaster]")?.getAttribute("data-ok-position")).toBe(
-      "top-right",
+      "bottom-right",
     );
     await userEvent.click(list(host).querySelector("[data-ok-toast-close]") as HTMLElement);
     expect(titles(host)).toEqual(["Deleted"]);
