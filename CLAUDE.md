@@ -76,8 +76,8 @@ pnpm check                                  # everything CI runs
 
 | Command | Use |
 |---|---|
-| `/component <url> [name]` | Create or update a component from a reference page: capture, propose (gap table + API impact on update), then build it the project's way (React + HTML) with viewport matrix, visual regression, coverage and security checklist |
-| `/integrate [component]` | Backward-compatible updates: find every wait on a component that now exists, re-capture dependents from their spec's Reference URL, report (unlocked vs other gaps), then implement the approved items via `/component` Update |
+| `/component <url> [name] \| <name> …` | Create or update a component from a reference page: capture, propose (gap table + API impact on update), then build it the project's way (React + HTML) with viewport matrix, visual regression, coverage and security checklist. A name alone updates that component from its spec's `Reference URL:`. Several targets: parallel agents, one git worktree and branch each (max 3 at a time), merged one by one |
+| `/integrate [component \| url …]` | Backward-compatible updates: find every wait on a component that now exists, re-capture dependents from their spec's Reference URL, report (unlocked vs other gaps), then implement the approved items via `/component` Update. URLs resolve through the specs' `Reference URL:`. Several components: one parallel agent per dependent (max 3) |
 | `/implement <component or file>` | Build/upgrade a feature in React + HTML with tests, parity, docs |
 | `/refactor <file>` | Clarity only — no logic, API or DOM change |
 | `/optimize <file>` | Bytes, main-thread work, leaks — measured before/after |

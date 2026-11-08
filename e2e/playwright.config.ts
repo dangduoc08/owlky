@@ -1,6 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
-const PORT = 4321;
+// `PORT` lets parallel worktrees (Multi-URL mode) each serve their own build.
+const PORT = Number(process.env["PORT"] ?? 4321);
 
 /**
  * E2E runs against the *built* Storybook (pnpm storybook:build) and the plain-HTML example

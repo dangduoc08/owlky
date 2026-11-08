@@ -413,3 +413,9 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
   button. Picker stories use fixed dates (May 2025) so "today" never shows; React tests pass
   `today`, HTML tests fake `Date` (`vi.useFakeTimers({ toFake: ["Date"] })`). Never export a story
   named `Date` (a global): `DateStory` with `name: "Date"`.
+- Parallel work: never run two `/component` / `/integrate` sessions (or two `pnpm build` /
+  `pnpm test:e2e`) in the same working tree — builds wipe each other's `dist/` and
+  `storybook-static/`, e2e servers share port 4321, and staging part of a shared file while
+  another session edits it put lines in the wrong places (commit 7d2e745, repaired in 6eeb0d6).
+  Use the commands' multi-URL / multi-component mode: one git worktree and branch per agent, e2e on
+  its own port (`PORT=4322 pnpm test:e2e`), merged one by one by the orchestrator.

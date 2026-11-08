@@ -1,6 +1,6 @@
 ---
 name: component
-description: Create or update a component from a reference URL (e.g. a Minimal UI kit component page) — capture what the reference shows, then build it, or bring the existing component in line with it, the project's way in React + HTML with tokens, parity tests, full test coverage, responsive and visual regression checks, a security checklist and Storybook docs. $ARGUMENTS is the URL, optionally followed by the component name.
+description: Create or update a component from a reference URL (e.g. a Minimal UI kit component page) — capture what the reference shows, then build it, or bring the existing component in line with it, the project's way in React + HTML with tokens, parity tests, full test coverage, responsive and visual regression checks, a security checklist and Storybook docs. $ARGUMENTS is the URL, optionally followed by the component name, or an existing component's name (its spec's Reference URL is used); several run in parallel agents (Multi-URL mode).
 ---
 
 # Mission
@@ -10,8 +10,19 @@ in line with it: same *content* (variants, colors, sizes, states, behavior), bui
 project's architecture, tokens and conventions — responsive at every viewport, fully tested, and
 passing the security checklist.
 
-**Language with the user:** everything you ask the user — the step 5 proposal and its approval
-request, breaking-change confirmations, visual-baseline approvals, accepted security findings
+**Auto-approval (standing user instruction):** every approval this command asks for — the step 5
+plan, options beyond the reference, new tokens, dev dependencies, coverage tooling, breaking
+changes, visual baselines, accepted Low/Medium security findings — is **granted for your
+recommended option**. Don't stop to ask: pick the recommendation, record it in the proposal and
+the report as *auto-approved*, and carry on. Ask only when there is no sensible recommendation
+(for example, the URL is missing or the name is genuinely ambiguous), when something costs money
+or needs an account (Chromatic or any paid service), when the upstream component already has an
+**HTML version** (see [Upstream HTML version](#upstream-html-version) — always ask), or when
+CLAUDE.md requires asking (starting Docker Desktop, committing, pushing, publishing). Critical
+and High security findings still block hand-off until fixed.
+
+**Language with the user:** everything you show or ask the user — the step 5 proposal,
+breaking-change notes, visual-baseline changes, accepted security findings
 and any other question — is written in **Vietnamese** (code, identifiers, file names, table
 column values such as prop names and tokens stay as they are). Repository files stay in English.
 
@@ -30,7 +41,17 @@ project. Never copy the reference's source code, branding or assets.
 ## Steps
 
 1. **Parse the arguments.**
-   - $ARGUMENTS = `<url> [component-name]`. If the URL is missing or not `http(s)`, ask for it and stop.
+   - $ARGUMENTS = `<url> [component-name]`, or `<component-name>` alone for an existing component.
+     If neither a URL nor a known name is given, ask for the URL and stop.
+   - **Name alone → URL** (a word that isn't `http(s)` and doesn't follow a URL): read the
+     `Reference URL:` line of `specs/components/<name>.md` and run in **Update** mode with that
+     URL and name. Only that component is updated, even when its page gave several (`fab` uses the
+     Buttons page but leaves Button alone). No spec or no `Reference URL:` line → ask for the URL
+     and stop (in Multi-URL mode: report it and continue with the others).
+   - **Two or more targets** — URLs (each optionally followed by its name) and / or names of
+     existing components, e.g. `<url1> <url2> carousel tabs`: resolve names to URLs as above,
+     remove duplicates, show the target list, then switch to [Multi-URL mode](#multi-url-mode-parallel-agents). This session then
+     orchestrates and never builds a component itself.
    - Derive the name from the last path segment when not given (`/components/mui/buttons` →
      `button`): singular, kebab-case. If the name is ambiguous, ask.
    - **Detect the mode.** *Update* if any slice exists — `specs/components/<name>.md`,
@@ -69,6 +90,12 @@ project. Never copy the reference's source code, branding or assets.
    and the features the Minimals demo doesn't show (e.g. Drawer `variant`, `hideBackdrop`). Record
    behavior and API only — never copy source code.
 
+   **Check for an upstream HTML version.** Look for a framework-free implementation of the
+   component: an HTML / vanilla JS / Web Component / CSS-only tab or snippet on the reference or
+   upstream demo page, or a framework-agnostic upstream package (e.g. a vanilla JS core,
+   custom elements). Record what it is, its URL and its license. If one exists, step 5 must ask
+   the user how to build the HTML side ([Upstream HTML version](#upstream-html-version)).
+
    **Update mode — also capture the current component** with the same script against the built
    Storybook (`pnpm build && pnpm storybook:build`, served by `e2e/serve.mjs`) for both
    implementations, and read its spec, CSS, React/HTML sources and tests. Build a **gap table**:
@@ -85,13 +112,18 @@ project. Never copy the reference's source code, branding or assets.
      WCAG 2.2 AA. Mark brand-colored demo elements that are exempt from `color-contrast` the
      same way as Button (`CONTRAST_EXEMPT` in the test helpers) — never disable axe wholesale.
 
-5. **Propose, then wait for approval** (review-gated workflow). Show the mode, then:
+5. **Propose, then proceed (auto-approved)**. Show the mode, then:
+   - **upstream HTML version** (from step 3): *none*, or what exists (URL, license). If one
+     exists, this is the **one question that isn't auto-approved**: ask it with
+     `AskUserQuestion` as described in [Upstream HTML version](#upstream-html-version), and wait
+     for the answer before step 7. Everything else in the plan stays auto-approved;
    - the **API mapping table** (ADR-0015): every upstream prop → *kept* (same name) · *renamed*
      (reason) · *deferred* (backlog row in `docs/roadmap.md`) · *not applicable* (reason: `sx`,
      `classes`, `slotProps`, `component`, transition / ripple props…). Callbacks keep this
      project's value-first shape (`onOpenChange(open, reason?)`, `onChange(value)`);
    - **options beyond the reference:** every option found neither on the reference page nor
-     upstream, with its reason (accessibility, security, HTML parity) — each needs approval;
+     upstream, with its reason (accessibility, security, HTML parity) — include only those you
+     recommend (they are auto-approved);
    - the **React ↔ HTML option table**: each option's React prop, HTML attribute / state /
      event / instance method per the ADR-0015 mapping, default and kind (`style` · `behavior` ·
      `state`) — this becomes the component's option schema in `core/src/options/`;
@@ -112,7 +144,8 @@ project. Never copy the reference's source code, branding or assets.
      - visual regression: report whether Chromatic (`chromatic`, `@chromatic-com/storybook`) or
        Storybook Visual Tests are configured. If not, the existing Playwright `@visual` suite is
        used (see [Visual regression](#visual-regression)); Chromatic or any other paid service or
-       new dependency may only be *proposed* here, never added without approval;
+       new dependency that costs money or needs an account may only be *proposed* here, never
+       added without the user's yes (free dev dependencies you recommend are auto-approved);
    - the stories (one per reference section) and the files to be created (Create) or changed (Update);
    - **Storybook MCP lookups** (optional, `storybook` server in `.mcp.json`, needs `pnpm storybook`
      running; if it isn't reachable, skip this and rely on the searches below): `docs-list` for the
@@ -142,9 +175,10 @@ project. Never copy the reference's source code, branding or assets.
      prop, `data-ok-*` attribute or value, `--ok-*` variable, event, changed default or DOM
      structure) — with a migration note for every breaking item; the resulting changeset level
      (patch / minor / major); the visual baselines expected to change.
-   Stop and ask for approval **in Vietnamese** (the whole proposal is written in Vietnamese). Do
-   not write code or add dependencies before the user approves.
-   Breaking changes need an explicit yes, item by item.
+   Write the whole proposal **in Vietnamese**, mark each decision with your recommendation as
+   *auto-approved*, then continue straight to implementation without waiting for a reply.
+   Prefer additive options over breaking changes; a breaking change you still recommend is
+   auto-approved but listed item by item with its migration note and a major changeset.
 
 6. **First component only** (Create mode, when `packages/styles/src/components/` has no `.css` yet):
    - restore the export globs: `"./components/*": "./dist/components/*"` in
@@ -161,7 +195,8 @@ project. Never copy the reference's source code, branding or assets.
    slice the approved gaps touch, always React **and** HTML together — keeping existing names,
    defaults and DOM unless a breaking change was approved; add the missing slices if any:
    1. `specs/components/<name>.md` (the approved spec), with `Reference URL: <url>` under the
-      `Reference:` line
+      `Reference:` line (and `HTML source: built from <url> | written by us` when the upstream
+      has an HTML version)
    2. `packages/core` — the option schema in `src/options/` (ADR-0015) and `<name>Attributes()`
       in `anatomy/anatomy.ts` built from it; behavior controller in
       `src/<name>/` if interactive (reports intent, owns no state; native + fallback paths)
@@ -174,7 +209,9 @@ project. Never copy the reference's source code, branding or assets.
    4. `packages/react/src/<name>/` — component(s) + tests (+ `"use client"` only with hooks;
       interactive roots render `data-ok-runtime="off"`)
    5. `packages/html/src/components/<name>/examples/*.html` — canonical snippets; plus
-      `<name>.ts` (`defineComponent`) + tests and one line in `components/index.ts` if it needs JS
+      `<name>.ts` (`defineComponent`) + tests and one line in `components/index.ts` if it needs JS.
+      If the upstream has an HTML version, follow the approach the user chose in step 5
+      (*build from it* or *write our own*); never pick one yourself
    6. `apps/storybook/src/components/<name>/<name>.stories.tsx` (title `Components/<Name>`) —
       **one story per reference section**, each `frameworkStory({ html, react })` (ADR-0018), plus the
       **docs page** `<name>-docs.tsx` (ADR-0019, model: Button) listed in `GUIDES` / `OPTION_TABLES`, default
@@ -202,7 +239,7 @@ project. Never copy the reference's source code, branding or assets.
    [Security checklist](#security-checklist), run its check, and fix every failure. Record each
    finding with its [severity](#severity) — Critical and High must be fixed before hand-off;
    Medium and Low are fixed or explicitly accepted by the user. Items that don't apply are marked
-   N/A with a reason. Never add a security tool or dependency without approval.
+   N/A with a reason. Add a security tool or dev dependency only when you recommend it (auto-approved, listed in the report).
 
 10. **Verify** — all must pass (every command below exists today, except where marked):
     ```
@@ -298,11 +335,11 @@ story in the same run (`parity.spec.ts`). Don't add baseline screenshots anywher
 4. **Review:** on failure, inspect the expected/actual/diff images in `e2e/test-results/` and
    classify each diff as *unintended* (fix the code) or *intentional* (new story, deliberate
    design change).
-5. **Approval:** list every intentional change (story, theme, width, reason) in the report and
-   ask the user to approve before running `pnpm test:visual:update`. New stories' first
-   baselines also need approval.
-6. **Baseline status** per story is one of: ✅ matches · 🆕 new (awaiting approval) ·
-   ⚠️ changed (awaiting approval) · ❌ unintended diff · ⏸ pending (Docker unavailable — CI).
+5. **Approval (auto-approved):** list every intentional change (story, theme, width, reason) in
+   the report, then run `pnpm test:visual:update` (in Docker) without asking. New stories' first
+   baselines are auto-approved too. Unintended diffs are never approved: fix the code.
+6. **Baseline status** per story is one of: ✅ matches · 🆕 new (auto-approved) ·
+   ⚠️ changed (auto-approved) · ❌ unintended diff · ⏸ pending (Docker unavailable — CI).
 
 ---
 
@@ -441,9 +478,10 @@ Changeset level: patch | minor | major · Migration notes: …
 Tool: Playwright `@visual` (Docker) | Chromatic | Storybook Visual Tests
 | Story | Theme | Viewports | Baseline status (✅ / 🆕 / ⚠️ / ❌ / ⏸) |
 |-------|-------|-----------|----------------------------------------|
-Intentional changes awaiting approval: …
+Intentional changes (auto-approved, baselines updated): …
 
 ### React ↔ HTML parity
+Upstream HTML version: none | <url> — built from it | written by us (user's choice)
 | Story | Anatomy | Pixels (light / dark) |
 |-------|---------|-----------------------|
 
@@ -517,6 +555,7 @@ Công cụ: Playwright `@visual` (Docker) | Chromatic | Storybook Visual Tests
 Thay đổi có chủ đích đang chờ duyệt: …
 
 ### Parity React ↔ HTML
+Bản HTML của upstream: không có | <url> — build từ bản đó | tự viết (người dùng chọn)
 | Story | Anatomy | Pixel (sáng / tối) |
 |-------|---------|--------------------|
 
@@ -553,9 +592,102 @@ Unit: N/N (3 trình duyệt) · E2E: N/N (4 project) · Visual: N/N (hoặc pend
 
 ---
 
+## Multi-URL mode (parallel agents)
+
+`/component <url1> [name1] <url2> [name2] …` builds several components at once: this session is
+the **orchestrator**, each URL gets its own **subagent in its own git worktree** (`Agent` tool,
+`isolation: "worktree"`), and the results are merged one by one. Never run two components in the
+same working tree: parallel builds wipe each other's `dist/` and `storybook-static/`, share the
+e2e port, and partial staging of shared files corrupted commits (the 7d2e745 incident).
+
+**Standing approval:** invoking this mode is the user's approval for each agent to **commit on its
+own branch** (`component/<name>`) and for the orchestrator to **merge those branches into the
+current branch locally**. Never push, never publish, never `--no-verify`.
+
+### O1 — Plan (orchestrator, before any agent starts)
+1. **Clean base.** Agents' worktrees start from `HEAD`: uncommitted work in the main tree is
+   invisible to them. Run `git status`; if it isn't clean, list what the agents won't see and ask
+   whether to continue (or commit first through `/commit`).
+2. **Parse** every URL and name (step 1 rules), detect Create / Update per component.
+3. **Quick capture** of each page title and upstream link only (no full capture): note any
+   upstream that has an **HTML version** and ask the user **once, for all of them** (the agents run
+   in the background and can't ask). Record the answers in each agent's prompt.
+4. **Order and waves.** At most **3 agents at a time** (each runs 3-browser unit tests and 4-project
+   e2e; more agents slow the machine down and crash browsers). Dependencies first: if component B
+   composes A (or A's spec / "Pending integrations" says B waits for A), A runs in an earlier wave
+   and B's worktree starts after A is merged. Extra URLs queue: start the next one when an agent
+   finishes.
+5. **Reserve shared numbers and names** so agents don't collide: one ADR number each (next free
+   in `docs/adr/`, in URL order), e2e port `4321 + n` (agent n = 1, 2, 3…), branch
+   `component/<name>`. Proposed new `--ok-*` tokens are reported, not merged by agents on their
+   own if two agents propose the same name (the orchestrator unifies them at merge).
+6. Show the plan **in Vietnamese** (table: wave, URL, name, mode, ADR, port, branch, upstream
+   HTML decision) and continue at once (auto-approved, like step 5).
+
+### O2 — Agent prompt (one per URL)
+Spawn with `subagent_type` omitted (general-purpose) and `isolation: "worktree"`; agents run in
+the background and the orchestrator is notified when each finishes (never poll, never predict a
+result). The prompt must be self-contained (the agent starts without this conversation):
+- "Run the `/component` command for `<url> <name>`: read `.claude/commands/component.md` and follow
+  steps 1–12 in this worktree (Create or Update), with the auto-approvals it grants."
+- Setup: `pnpm install --frozen-lockfile` then `pnpm build`; Node from `~/.nvm` if `node` isn't on
+  `PATH`; the scratchpad path for capture scripts.
+- Reserved values: ADR number, **e2e port** (`PORT=<port> pnpm test:e2e …`; the Playwright config
+  reads `PORT`), branch name, the user's upstream-HTML decision.
+- Scope rules: touch only this component's files plus the minimal lines in shared files (anatomy
+  registry, index exports, `styles/src/index.css`, `vitest.config.ts` thresholds, `GUIDES`,
+  `OPTION_TABLES`, parity pairs, `roadmap.md` rows, `AGENTS.md` gotchas, `check-size.mjs`
+  budgets with their reason). No formatting-only edits of shared files.
+- Visual baselines: skip (Docker); report them as pending.
+- Finish: `pnpm check` green (or the failures listed with their cause), then **commit** on branch
+  `component/<name>` with a Conventional Commit (`feat(<name>): …`, no Claude trailers) and a
+  changeset file (`.changeset/<name>.md`, minor). Reply with the English half of the Report
+  Format, the branch name and the commit hash.
+
+### O3 — Merge (orchestrator, one branch at a time)
+For each finished agent, in dependency order:
+1. `git merge --no-ff component/<name>`; resolve conflicts in shared files by **keeping both
+   sides** (registries, exports, imports sorted, roadmap rows, budgets: the larger value with both
+   reasons). Never drop another component's lines.
+2. `pnpm install` (lockfile changes), `pnpm build`, `pnpm lint`, `pnpm typecheck`,
+   `pnpm check:specs`, `pnpm check:size`, and the merged component's unit tests. Fix merge
+   mistakes in a follow-up commit (`fix(<name>): …`); never amend.
+3. Remove the worktree and the branch once merged (`git worktree remove`, `git branch -d`).
+
+### O4 — After the last merge
+1. `pnpm storybook:build && pnpm test:e2e` once on the merged result (default port), plus
+   `VITEST_BROWSERS=chromium,firefox,webkit pnpm test`.
+2. Run `/integrate <name>` for each new component whose spec or roadmap rows unlock dependents
+   (it may itself run in Multi-component mode).
+3. Report **in Vietnamese, then English**: one summary table (component, mode, branch, commit,
+   tests, e2e, size, open items), each agent's report condensed, merge conflicts and how they
+   were resolved, visual baselines pending (Docker), and anything left for the user.
+
+## Upstream HTML version
+
+When step 3 finds a framework-free version of the upstream component, ask the user (in
+Vietnamese, with `AskUserQuestion`) before writing the HTML implementation. Show what you found
+(URL, what it covers, license, how far its markup and behavior are from our spec), then offer:
+
+| Option | Meaning |
+|---|---|
+| **Build from it** | Use the upstream HTML version as the base of our HTML side: map its markup to the `data-ok-*` anatomy, port its behavior (keyboard, ARIA, focus) into the core controller and the HTML runtime, and keep only what our conventions allow (no class names, no `innerHTML`, tokens only). Copy code only if its license allows it, with attribution; depending on the upstream package at runtime is a new dependency and needs an ADR first |
+| **Write our own** | Write the HTML snippets and runtime from our spec as usual; the upstream HTML version is only a behavior reference, like the rest of the reference |
+
+Put your recommendation first (with the reason: coverage, license, size, distance from our
+anatomy), but don't proceed on it: wait for the answer. Record the choice in the spec (a
+`HTML source:` line under `Reference URL:`) and in the report. In Update mode, ask only when the
+HTML side changes and the spec has no `HTML source:` line yet; otherwise keep the recorded choice.
+
+---
+
 ## Rules
 
-- Proposals, approval requests and questions to the user are in Vietnamese; repository files,
+- Approvals are automatic for your recommended option (see *Auto-approval* at the top); ask the
+  user only for paid services or accounts, actions CLAUDE.md reserves (Docker Desktop, commit,
+  push, publish), an upstream HTML version (build from it or write our own — never decide it
+  yourself), or when no sensible recommendation exists.
+- Proposals, reports and questions to the user are in Vietnamese; repository files,
   code and commit messages stay in English.
 - The reference is for content only: never copy its source code, class names, logo,
   illustrations, icon packs or brand text. Use our own markup, tokens and inline SVG icons.
@@ -565,16 +697,17 @@ Unit: N/N (3 trình duyệt) · E2E: N/N (4 project) · Visual: N/N (hoặc pend
   soft tones; list every remaining deviation from the reference in the report.
 - Responsive is not optional: the component passes every row of the viewport matrix in both
   implementations, with matching results between React and HTML.
-- Visual baselines are updated only after the user approves the listed changes, and only from
+- Visual baselines are updated only for listed intentional changes (auto-approved), and only from
   the Playwright Docker image.
 - Never invent a script or claim a test runs without verifying the project configuration; never
-  add Chromatic, a paid service, or a new testing/security dependency without approval.
+  add Chromatic or another paid service without the user's yes; a free testing/security dev
+  dependency you recommend is auto-approved (pinned, ≥ 2 weeks old, listed in the report).
 - Coverage thresholds are a floor; never exclude code or weaken assertions to reach them.
 - Every security checklist item ends as pass, fixed or N/A with a reason — never skipped;
   Critical and High findings block hand-off.
-- Wait for the user's approval of the plan (step 5) before writing code or adding dependencies.
-- Update mode keeps the public API stable: a breaking change needs explicit, item-by-item
-  approval, a migration note and a major changeset; never silently rename, remove or change a
+- Show the plan (step 5) before writing code; it is auto-approved, so don't wait for a reply.
+- Update mode keeps the public API stable: prefer additive changes; a recommended breaking change
+  is auto-approved but listed item by item with a migration note and a major changeset; never silently rename, remove or change a
   default.
 - Follow the approved architecture (ADRs); a needed change means a new ADR, proposed first.
 - Do not add options or features the reference doesn't show unless the spec needs them for
