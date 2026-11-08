@@ -13,44 +13,60 @@ import {
   type GridColumn,
   type GridColumnVisibilityModel,
   type GridColumnWidths,
+  type GridCsvOptions,
   type GridDataSource,
   type GridDataSourceCache,
   type GridDensity,
+  type GridEditStartReason,
   type GridFilterItem,
   type GridFilterModel,
+  type GridFilterOperator,
   type GridLabels,
   type GridNavigation,
   type GridPinnedColumns,
+  type GridRowWindow,
   type GridSortModel,
+  type GridState,
   type GridViewport,
   gridAlign,
   gridAriaSort,
+  gridColSpans,
   gridColumnTemplate,
   gridDefaultLabels,
   gridDensities,
+  gridDensityFactor,
+  gridDisplayedRows,
   gridEditInputType,
   gridEditText,
+  gridExportColumns,
   gridFilterOperators,
   gridHeaderAlign,
   gridOperatorNeedsValue,
   gridPinSide,
   gridQuickFilterValues,
+  gridRowOffsets,
+  gridRowSpans,
   gridRowWindow,
+  gridRowWindowOf,
   gridSelectAllState,
   gridToCsv,
   isGridFilterable,
   isGridHideable,
   isGridResizable,
   isGridSortable,
+  measureGridColumn,
   moveGridColumn,
   nextGridSort,
   orderGridColumns,
   parseGridEditValue,
   pinGridColumn,
+  prepareGridPrint,
   printGridContent,
+  pruneGridSelection,
+  sanitizeGridState,
+  selectGridRow,
   sortGridRows,
   syncGridPinning,
-  toggleGridRow,
   toggleGridRows,
   visibleGridColumns,
 } from "@owlky/core";
@@ -58,10 +74,12 @@ import {
   type CSSProperties,
   forwardRef,
   type HTMLAttributes,
+  type KeyboardEvent,
   type MouseEvent,
   type ReactElement,
   type ReactNode,
   type Ref,
+  type RefObject,
   useEffect,
   useId,
   useLayoutEffect,
@@ -80,6 +98,8 @@ import { Popover } from "../popover/popover.js";
 import { Switch } from "../switch/switch.js";
 import { TablePagination } from "../table/table.js";
 import { InputAdornment, TextField } from "../text-field/text-field.js";
+import { Tooltip } from "../tooltip/tooltip.js";
+import { useMergedRefs } from "../utils/refs.js";
 import { useControllableState } from "../utils/use-controllable-state.js";
 
 export interface GridRenderCellParams<R> {
@@ -91,6 +111,30 @@ export interface GridRenderCellParams<R> {
   formattedValue: string;
 }
 
+export interface GridCellParams<R> {
+  id: string;
+  field: string;
+  row: R;
+  value: unknown;
+}
+
+export interface GridRowParams<R> {
+  id: string;
+  row: R;
+  /** Position on the current page. */
+  indexRelativeToCurrentPage: number;
+  isFirstVisible: boolean;
+  isLastVisible: boolean;
+}
+
+export interface GridPreProcessEditCellProps<R> {
+  id: string;
+  row: R;
+  /** The value being typed (after `valueParser`). */
+  props: { value: unknown };
+  hasChanged: boolean;
+}
+
 /** A column (MUI X `GridColDef`). */
 export interface GridColDef<R = Record<string, unknown>> extends GridColumn {
   /** The raw value of a row for this column (default: `row[field]`). */
@@ -99,29 +143,85 @@ export interface GridColDef<R = Record<string, unknown>> extends GridColumn {
   valueFormatter?: ((value: unknown, row: R) => string) | undefined;
   /** Custom cell content (the text still drives search and export). */
   renderCell?: ((params: GridRenderCellParams<R>) => ReactNode) | undefined;
+  /** Custom header content (the header name still labels the column). */
+  renderHeader?: ((params: { field: string; colDef: GridColDef<R> }) => ReactNode) | undefined;
+  /** Columns a cell spans (a number, or per cell). */
+  colSpan?: number | ((params: GridCellParams<R>) => number) | undefined;
+  /** The edited text as a value (default: by the column type). */
+  valueParser?: ((value: string, row: R) => unknown) | undefined;
+  /** The row with an edited value (default: `{ ...row, [field]: value }`). */
+  valueSetter?: ((value: unknown, row: R) => R) | undefined;
+  /** Checks an edited value: `{ error: true | "message" }` keeps the cell open. */
+  preProcessEditCellProps?:
+    | ((params: GridPreProcessEditCellProps<R>) => { error?: boolean | string | undefined })
+    | undefined;
+  /** Operators of the filter panel for this column (they replace the type's operators). */
+  filterOperators?: readonly GridFilterOperator<R>[] | undefined;
+  /** `null`: the quick filter skips this column. */
+  getApplyQuickFilterFn?: null | undefined;
 }
+
+/** Print export options (MUI X `printOptions`). */
+export interface GridPrintOptions {
+  /** Default true. */
+  hideToolbar?: boolean | undefined;
+  /** Default true. */
+  hideFooter?: boolean | undefined;
+  /** Fields to print (default: the shown columns). */
+  fields?: readonly string[] | undefined;
+  /** Hidden columns too. */
+  allColumns?: boolean | undefined;
+  /** Print the selection checkboxes. Default false. */
+  includeCheckboxes?: boolean | undefined;
+  /** The document title (default: the grid's label). */
+  fileName?: string | undefined;
+}
+
+/** The grid's methods (MUI X `apiRef`), the same as the HTML runtime's instance. */
+export interface GridApi<R> {
+  getRow(id: string): R | undefined;
+  getSortModel(): GridSortModel;
+  setSortModel(model: GridSortModel): void;
+  getFilterModel(): GridFilterModel;
+  setFilterModel(model: GridFilterModel): void;
+  getRowSelectionModel(): string[];
+  setRowSelectionModel(ids: readonly string[]): void;
+  setColumnVisibilityModel(model: GridColumnVisibilityModel): void;
+  setColumnOrder(fields: readonly string[]): void;
+  setPinnedColumns(model: GridPinnedColumns): void;
+  setColumnWidth(field: string, width: number): void;
+  setPaginationModel(model: GridPaginationModel): void;
+  setDensity(density: GridDensity): void;
+  /** Fits columns to their content (default: every resizable column). */
+  autosizeColumns(options?: GridAutosizeOptions): void;
+  /** Scrolls a row (index on the current page) and / or a column (shown index) into view. */
+  scrollToIndexes(indexes: { rowIndex?: number; colIndex?: number }): void;
+  exportState(): GridState;
+  /** Applies a saved state (unknown keys and values are dropped). */
+  restoreState(state: unknown): void;
+  getDataAsCsv(options?: GridCsvOptions): string;
+  exportDataAsCsv(options?: GridCsvOptions): void;
+  exportDataAsPrint(options?: GridPrintOptions): void;
+}
+
+export interface GridAutosizeOptions {
+  /** Fields to fit (default: every resizable column). */
+  columns?: readonly string[] | undefined;
+  /** Count the header text. Default true. */
+  includeHeaders?: boolean | undefined;
+}
+
+/** A ref for `apiRef` (MUI X `useGridApiRef`). */
+export const useGridApiRef = <R = Record<string, unknown>>(): RefObject<GridApi<R> | null> =>
+  useRef<GridApi<R> | null>(null);
 
 export interface GridPaginationModel {
   page: number;
   pageSize: number;
 }
 
-export interface GridInitialState {
-  sorting?: { sortModel?: GridSortModel } | undefined;
-  filter?: { filterModel?: GridFilterModel } | undefined;
-  pagination?: { paginationModel?: Partial<GridPaginationModel> } | undefined;
-  columns?:
-    | {
-        columnVisibilityModel?: GridColumnVisibilityModel;
-        /** Column order (fields). */
-        orderedFields?: string[];
-        /** Widths set by resizing, px. */
-        dimensions?: Record<string, { width: number }>;
-      }
-    | undefined;
-  pinnedColumns?: GridPinnedColumns | undefined;
-  density?: GridDensity | undefined;
-}
+/** The state a grid starts with (the shape `exportState()` returns). */
+export type GridInitialState = GridState;
 
 export interface DataGridProps<R>
   extends Omit<HTMLAttributes<HTMLDivElement>, "children" | "onChange"> {
@@ -197,7 +297,67 @@ export interface DataGridProps<R>
   /** Responses kept per request; `null` turns caching off. Default: a cache of 50. */
   dataSourceCache?: GridDataSourceCache<R> | null | undefined;
   onDataSourceError?: ((error: unknown) => void) | undefined;
+  /** One row at a time (no select all). */
+  disableMultipleRowSelection?: boolean | undefined;
+  isRowSelectable?: ((params: { id: string; row: R }) => boolean) | undefined;
+  keepNonExistentRowsSelected?: boolean | undefined;
+  /** Select all selects the current page only. */
+  checkboxSelectionVisibleOnly?: boolean | undefined;
+  autosizeOnMount?: boolean | undefined;
+  autosizeOptions?: GridAutosizeOptions | undefined;
+  /** Neighbouring cells with the same value merge (per column). */
+  rowSpanning?: boolean | undefined;
+  /** Row height, px, before the density factor. Default 52. */
+  rowHeight?: number | undefined;
+  /** A row's height: px, or `"auto"` (the content decides); `null`: the default. */
+  getRowHeight?:
+    | ((params: { id: string; model: R; densityFactor: number }) => number | "auto" | null)
+    | undefined;
+  /** The height to assume for `"auto"` rows before they are measured. */
+  getEstimatedRowHeight?: ((params: { id: string; model: R }) => number) | undefined;
+  getRowClassName?: ((params: GridRowParams<R>) => string) | undefined;
+  getCellClassName?: ((params: GridCellParams<R>) => string) | undefined;
+  /** Space above and below a row, px. */
+  getRowSpacing?:
+    | ((params: GridRowParams<R>) => { top?: number | undefined; bottom?: number | undefined })
+    | undefined;
+  onRowClick?: ((params: GridRowParams<R>, event: MouseEvent<HTMLElement>) => void) | undefined;
+  onRowDoubleClick?:
+    | ((params: GridRowParams<R>, event: MouseEvent<HTMLElement>) => void)
+    | undefined;
+  onCellClick?: ((params: GridCellParams<R>, event: MouseEvent<HTMLElement>) => void) | undefined;
+  onCellDoubleClick?:
+    | ((params: GridCellParams<R>, event: MouseEvent<HTMLElement>) => void)
+    | undefined;
+  onCellKeyDown?:
+    | ((params: GridCellParams<R>, event: KeyboardEvent<HTMLElement>) => void)
+    | undefined;
+  onColumnHeaderClick?:
+    | ((params: { field: string; colDef: GridColDef<R> }, event: MouseEvent<HTMLElement>) => void)
+    | undefined;
+  /** Receives the grid's methods. */
+  apiRef?: RefObject<GridApi<R> | null> | undefined;
+  isCellEditable?: ((params: GridCellParams<R>) => boolean) | undefined;
+  onCellEditStart?: ((params: GridCellParams<R>, reason: GridEditStartReason) => void) | undefined;
+  onCellEditStop?: ((params: GridCellParams<R>, reason: GridEditStopReason) => void) | undefined;
+  onRowEditStart?:
+    | ((params: { id: string; row: R }, reason: GridEditStartReason) => void)
+    | undefined;
+  onRowEditStop?:
+    | ((params: { id: string; row: R }, reason: GridEditStopReason) => void)
+    | undefined;
+  /** Search words: all must match (`and`, default) or any (`or`). */
+  quickFilterLogicOperator?: "and" | "or" | undefined;
+  quickFilterExcludeHiddenColumns?: boolean | undefined;
+  /** Searches and filters ignore accents. */
+  ignoreDiacritics?: boolean | undefined;
+  csvOptions?: GridCsvOptions | undefined;
+  printOptions?: GridPrintOptions | undefined;
+  /** Toolbar buttons with text (default) or icons with tooltips. */
+  toolbarVariant?: "labeled" | "icon" | undefined;
 }
+
+export type GridEditStopReason = "enterKeyDown" | "escapeKeyDown" | "cellFocusOut";
 
 const SortIcon = () => (
   <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
@@ -327,6 +487,37 @@ function DataGridInner<R>(
     dataSource,
     dataSourceCache,
     onDataSourceError,
+    disableMultipleRowSelection,
+    isRowSelectable,
+    keepNonExistentRowsSelected,
+    checkboxSelectionVisibleOnly,
+    autosizeOnMount,
+    autosizeOptions,
+    rowSpanning,
+    rowHeight,
+    getRowHeight,
+    getEstimatedRowHeight,
+    getRowClassName,
+    getCellClassName,
+    getRowSpacing,
+    onRowClick: onRowClickProp,
+    onRowDoubleClick,
+    onCellClick,
+    onCellDoubleClick,
+    onCellKeyDown,
+    onColumnHeaderClick,
+    apiRef,
+    isCellEditable,
+    onCellEditStart,
+    onCellEditStop,
+    onRowEditStart,
+    onRowEditStop,
+    quickFilterLogicOperator = "and",
+    quickFilterExcludeHiddenColumns,
+    ignoreDiacritics,
+    csvOptions,
+    printOptions,
+    toolbarVariant = "labeled",
     "aria-label": ariaLabel,
     "aria-labelledby": ariaLabelledby,
     ...props
@@ -338,6 +529,8 @@ function DataGridInner<R>(
   // Parts are named after the grid's id, so pages (and snippets) get readable ids.
   const id = props.id ?? generated;
   const gridRef = useRef<HTMLDivElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const mergedRef = useMergedRefs<HTMLDivElement>(rootRef, ref);
   const navigation = useRef<GridNavigation | null>(null);
   const [selection, setSelection] = useControllableState<readonly string[]>({
     value: rowSelectionModel,
@@ -388,8 +581,17 @@ function DataGridInner<R>(
       Object.entries(initialState?.columns?.dimensions ?? {}).map(([f, d]) => [f, d.width]),
     ),
   );
-  const [editing, setEditing] = useState<{ rowId: string; field: string | null } | null>(null);
+  const [editing, setEditing] = useState<{
+    rowId: string;
+    field: string | null;
+    /** The field whose input takes the focus. */
+    focus: string;
+    /** A typed character started the edit (the caret goes after it). */
+    typed: boolean;
+  } | null>(null);
   const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<Record<string, string | true>>({});
+  const initialDrafts = useRef<Record<string, string>>({});
   const [overrides, setOverrides] = useState<ReadonlyMap<string, R>>(new Map());
   const refocus = useRef<{ rowId: string; field: string } | null>(null);
   // New rows from the parent replace the edits shown so far.
@@ -416,21 +618,36 @@ function DataGridInner<R>(
   };
   const view = base.map((row) => overrides.get(String(getRowId(row))) ?? row);
   const ordered = orderGridColumns(columns, order);
-  const shown = visibleGridColumns(arrangeGridColumns(ordered, pinned), visibility);
+  // While printing (every row and the printed columns render, then the page prints).
+  const [printing, setPrinting] = useState<GridPrintOptions | null>(null);
+  const shown = visibleGridColumns(
+    arrangeGridColumns(ordered, pinned),
+    printing?.allColumns ? {} : visibility,
+  );
   const leftPinned = shown.some((c) => gridPinSide(pinned, c.field) === "left");
   const editable = (column: GridColDef<R>) =>
     !!column.editable && !column.valueGetter && column.type !== "actions";
+  const columnOf = (field: string) => columns.find((c) => c.field === field) as GridColDef<R>;
+  const operators = Object.fromEntries(
+    columns.flatMap((c) => (c.filterOperators ? [[c.field, c.filterOperators]] : [])),
+  ) as Record<string, readonly GridFilterOperator<R>[]>;
+  const searchColumns = (quickFilterExcludeHiddenColumns ? shown : columns).map((c) =>
+    c.getApplyQuickFilterFn === null ? { ...c, searchable: false } : c,
+  );
   const filtered = server.filter
     ? view
     : filterGridRows(
         view,
         filterModel,
         columns,
-        (row, field) => {
-          const column = columns.find((c) => c.field === field) as GridColDef<R>;
-          return rawValue(column, row);
+        (row, field) => rawValue(columnOf(field), row),
+        (row, field) => textOf(columnOf(field), row),
+        {
+          ignoreDiacritics,
+          quickFilterLogicOperator,
+          quickFilterColumns: searchColumns,
+          operators,
         },
-        (row, field) => textOf(columns.find((c) => c.field === field) as GridColDef<R>, row),
       );
   const sorted = server.sort
     ? filtered
@@ -445,29 +662,84 @@ function DataGridInner<R>(
   // Rows of the page: all of them with server pagination or without a footer.
   const pageStart = server.page || hideFooter ? 0 : page * pagination.pageSize;
   const pageEnd = server.page || hideFooter ? sorted.length : pageStart + pagination.pageSize;
-  const onPage = (index: number) => index >= pageStart && index < pageEnd;
+  const onPage = (index: number) => !!printing || (index >= pageStart && index < pageEnd);
   const pageRows = sorted.slice(pageStart, pageEnd);
+  const idOf = (row: R) => String(getRowId(row));
+  const factor = gridDensityFactor(density);
+  // Rows of their own height (or spacing) need per-row offsets for the window.
+  const rowParams = (row: R, i: number): GridRowParams<R> => ({
+    id: idOf(row),
+    row,
+    indexRelativeToCurrentPage: i,
+    isFirstVisible: i === 0,
+    isLastVisible: i === pageRows.length - 1,
+  });
+  const heightOf = (row: R) => getRowHeight?.({ id: idOf(row), model: row, densityFactor: factor });
+  const spacingOf = (row: R, i: number) => getRowSpacing?.(rowParams(row, i)) ?? {};
+  const variable = !!getRowHeight || !!getRowSpacing;
+  const baseHeight = Math.round((rowHeight ?? 52) * factor);
+  const measured = useRef(new Map<string, number>());
+  const [, remeasured] = useState(0);
   // Virtualization starts once the grid is measured: the first render (and SSR) shows every row,
   // rows of other pages `hidden` (as the HTML runtime does).
-  const virtual = !disableVirtualization && !!viewport?.scrolls && viewport.rowHeight > 0;
-  const range = virtual
-    ? gridRowWindow(
-        pageRows.length,
-        (viewport as GridViewport).rowHeight,
-        (viewport as GridViewport).offset,
-        (viewport as GridViewport).viewport,
-      )
+  const virtual =
+    !disableVirtualization && !printing && !!viewport?.scrolls && viewport.rowHeight > 0;
+  let range: GridRowWindow | null = null;
+  let offsets: number[] | null = null;
+  if (virtual) {
+    const vp = viewport as GridViewport;
+    if (variable) {
+      const heights = pageRows.map((row, i) => {
+        const own = heightOf(row);
+        const space = spacingOf(row, i);
+        const box =
+          measured.current.get(idOf(row)) ??
+          (typeof own === "number"
+            ? own + 1
+            : (getEstimatedRowHeight?.({ id: idOf(row), model: row }) ?? baseHeight) + 1);
+        return box + (space.top ?? 0) + (space.bottom ?? 0);
+      });
+      offsets = gridRowOffsets(heights);
+      range = gridRowWindowOf(offsets, vp.offset, vp.viewport);
+    } else range = gridRowWindow(pageRows.length, vp.rowHeight, vp.offset, vp.viewport);
+  }
+  // Row spans (on the page): cells merge with the rows below; the window starts at a span's top.
+  const spanFields = shown.filter((c) => c.type !== "actions").map((c) => c.field);
+  const spans = rowSpanning
+    ? gridRowSpans(pageRows, spanFields, (row, field) => textOf(columnOf(field), row))
     : null;
+  if (range && spans && range.start > 0) {
+    const start = spans.origin[range.start] as number;
+    const before = offsets
+      ? (offsets[start] as number)
+      : start * (viewport as GridViewport).rowHeight;
+    range = { ...range, start, before };
+  }
   const rendered = range
     ? pageRows
-        .slice(range.start, range.end)
-        .map((row, i) => ({ row, index: pageStart + range.start + i }))
+        .slice((range as GridRowWindow).start, (range as GridRowWindow).end)
+        .map((row, i) => ({ row, index: pageStart + (range as GridRowWindow).start + i }))
     : sorted.map((row, index) => ({ row, index }));
   const busy = !!loading || sourceLoading;
   // Rows of a server page sit after the rows of the pages before it.
   const rowOffset = server.page ? page * pagination.pageSize : 0;
-  const allIds = sorted.map((row) => String(getRowId(row)));
+  const multiple = !disableMultipleRowSelection;
+  const selectable = (row: R) => isRowSelectable?.({ id: idOf(row), row }) ?? true;
+  // Select all: the selectable rows of every page (or of this page only).
+  const allIds = (checkboxSelectionVisibleOnly ? pageRows : sorted).filter(selectable).map(idOf);
   const selectAll = gridSelectAllState(allIds, selection);
+  // Rows that went away leave the selection (unless kept); not on mount.
+  const mounted = useRef(false);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: runs when the rows change.
+  useEffect(() => {
+    if (!mounted.current) {
+      mounted.current = true;
+      return;
+    }
+    if (keepNonExistentRowsSelected) return;
+    const kept = pruneGridSelection(selection, base.map(idOf));
+    if (kept.length !== selection.length) setSelection(kept);
+  }, [base]);
   const colOffset = checkboxSelection ? 2 : 1;
 
   useEffect(() => {
@@ -478,10 +750,12 @@ function DataGridInner<R>(
         openMenu.current(field, header.querySelector("[data-ok-data-grid-menu-button]")),
       onToggleRow: (row) => toggleRow.current(row.getAttribute("data-ok-row-id") as string),
       onSelectAll: () => selectEvery.current(),
-      onEdit: (cell) =>
+      onEdit: (cell, reason, key) =>
         startEdit.current(
           cell.closest('[role="row"]')?.getAttribute("data-ok-row-id") as string,
           cell.getAttribute("data-ok-field") as string,
+          reason,
+          key,
         ),
       onResizeKey: (field, delta) => {
         const header = grid.querySelector<HTMLElement>(
@@ -499,9 +773,25 @@ function DataGridInner<R>(
       onResize: (field, width, done) => resizeTo.current(field, width, done),
       onMove: (field, target) => moveTo.current(field, target),
       canReorder: () => reorderable.current,
+      onAutosize: (field) => autosize.current({ columns: [field] }),
     });
     return () => handle.destroy();
   }, []);
+  // Rows of their own height: measure the rendered ones; new heights move the window.
+  useLayoutEffect(() => {
+    if (!variable) return;
+    let changed = false;
+    for (const row of (gridRef.current as HTMLDivElement).querySelectorAll<HTMLElement>(
+      '[data-ok-data-grid-body] > [role="row"]:not([hidden])',
+    )) {
+      const rowId = row.getAttribute("data-ok-row-id") as string;
+      if (row.offsetHeight && measured.current.get(rowId) !== row.offsetHeight) {
+        measured.current.set(rowId, row.offsetHeight);
+        changed = true;
+      }
+    }
+    if (changed && virtual) remeasured((n) => n + 1);
+  });
   // Sticky offsets of pinned columns, after every layout.
   useLayoutEffect(() => syncGridPinning(gridRef.current as HTMLDivElement));
   const scrollEnd = useRef<() => void>(undefined as never);
@@ -570,9 +860,16 @@ function DataGridInner<R>(
     };
   }, [dataSource, cache, request, onDataSourceError]);
   useEffect(() => {
-    if (editing)
-      gridRef.current?.querySelector<HTMLElement>("[data-ok-data-grid-edit-input]")?.focus();
-    else if (refocus.current) {
+    if (editing) {
+      const grid = gridRef.current as HTMLDivElement;
+      const input =
+        grid.querySelector<HTMLInputElement>(
+          `[data-ok-field="${CSS.escape(editing.focus)}"] > [data-ok-data-grid-edit-input]`,
+        ) ?? grid.querySelector<HTMLInputElement>("[data-ok-data-grid-edit-input]");
+      input?.focus();
+      if (editing.typed && input?.type === "text")
+        input.setSelectionRange(input.value.length, input.value.length);
+    } else if (refocus.current) {
       const { rowId, field } = refocus.current;
       refocus.current = null;
       gridRef.current
@@ -593,11 +890,13 @@ function DataGridInner<R>(
   const toggleRow = useRef<(id: string) => void>(undefined as never);
   toggleRow.current = (rowId) => {
     // Only rows with aria-selected (checkbox selection) reach here.
-    setSelection(toggleGridRow(selection, rowId));
+    const row = view.find((r) => idOf(r) === rowId);
+    if (row && !selectable(row)) return;
+    setSelection(selectGridRow(selection, rowId, multiple));
   };
   const selectEvery = useRef<() => void>(undefined as never);
   selectEvery.current = () => {
-    if (checkboxSelection) setSelection(toggleGridRows(selection, allIds));
+    if (checkboxSelection && multiple) setSelection(toggleGridRows(selection, allIds));
   };
   const openMenu = useRef<(field: string, button: Element | null) => void>(undefined as never);
   openMenu.current = (field, button) => {
@@ -616,37 +915,233 @@ function DataGridInner<R>(
     setWidths((current) => ({ ...current, [field]: next }));
     if (done) onColumnWidthChange?.(field, next);
   };
+  const autosize = useRef<(options?: GridAutosizeOptions) => void>(undefined as never);
+  autosize.current = (overrides = {}) => {
+    const options = { ...autosizeOptions, ...overrides };
+    const grid = gridRef.current as HTMLDivElement;
+    const fields = options.columns ?? shown.filter(isGridResizable).map((c) => c.field);
+    const next: GridColumnWidths = {};
+    for (const field of fields) {
+      const column = columns.find((c) => c.field === field);
+      if (column) next[field] = clampGridWidth(column, measureGridColumn(grid, field, options));
+    }
+    setWidths((current) => ({ ...current, ...next }));
+    for (const [field, width] of Object.entries(next)) onColumnWidthChange?.(field, width);
+  };
+  // biome-ignore lint/correctness/useExhaustiveDependencies: once, after the first layout.
+  useLayoutEffect(() => {
+    if (!autosizeOnMount) return;
+    autosize.current();
+    // Again once web fonts are in: text widths change with the font.
+    let live = true;
+    document.fonts?.ready.then(() => {
+      if (live) autosize.current();
+    });
+    return () => {
+      live = false;
+    };
+  }, []);
   const reorderable = useRef(true);
   reorderable.current = !disableColumnReorder;
   const fields = ordered.map((c) => c.field);
   const moveTo = useRef<(field: string, target: string) => void>(undefined as never);
   moveTo.current = (field, target) => setOrder(moveGridColumn(fields, field, { to: target }));
 
-  const startEdit = useRef<(rowId: string, field: string) => void>(undefined as never);
-  startEdit.current = (rowId, field) => {
+  const cellParams = (column: GridColDef<R>, row: R): GridCellParams<R> => ({
+    id: idOf(row),
+    field: column.field,
+    row,
+    value: rawValue(column, row),
+  });
+  const cellEditable = (column: GridColDef<R>, row: R) =>
+    editable(column) && (isCellEditable?.(cellParams(column, row)) ?? true);
+  const parse = (column: GridColDef<R>, text: string, row: R) =>
+    column.valueParser ? column.valueParser(text, row) : parseGridEditValue(text, column.type);
+  const startEdit = useRef<
+    (rowId: string, field: string, reason: GridEditStartReason, key?: string) => void
+  >(undefined as never);
+  startEdit.current = (rowId, field, reason, key) => {
     const column = columns.find((c) => c.field === field);
-    if (!column || !editable(column)) return;
-    const row = view.find((r) => String(getRowId(r)) === rowId) as R;
-    const targets = editMode === "row" ? shown.filter(editable) : [column];
-    setDrafts(
-      Object.fromEntries(targets.map((c) => [c.field, gridEditText(rawValue(c, row), c.type)])),
+    const row = view.find((r) => idOf(r) === rowId);
+    if (!column || !row || !cellEditable(column, row)) return;
+    const targets = editMode === "row" ? shown.filter((c) => cellEditable(c, row)) : [column];
+    const start = Object.fromEntries(
+      targets.map((c) => [c.field, gridEditText(rawValue(c, row), c.type)]),
     );
-    setEditing({ rowId, field: editMode === "row" ? null : field });
+    initialDrafts.current = start;
+    // A typed character replaces the value (text-like fields only).
+    const typed = key !== undefined && !["boolean", "singleSelect"].includes(column.type ?? "");
+    setDrafts(typed ? { ...start, [field]: key as string } : start);
+    setErrors({});
+    // The typed character is checked like any change.
+    if (typed) check(column, key as string, row);
+    setEditing({ rowId, field: editMode === "row" ? null : field, focus: field, typed });
+    if (editMode === "row") onRowEditStart?.({ id: rowId, row }, reason);
+    else onCellEditStart?.(cellParams(column, row), reason);
   };
-  const stopEdit = (commit: boolean, field: string) => {
+  /** Runs a column's check on an edited text and keeps its error. */
+  const check = (column: GridColDef<R>, text: string, row: R) => {
+    if (!column.preProcessEditCellProps) return;
+    const { error } = column.preProcessEditCellProps({
+      id: idOf(row),
+      row,
+      props: { value: parse(column, text, row) },
+      hasChanged: text !== initialDrafts.current[column.field],
+    });
+    setErrors((current) => {
+      const next = { ...current };
+      if (error) next[column.field] = error;
+      else delete next[column.field];
+      return next;
+    });
+  };
+  const changeDraft = (column: GridColDef<R>, text: string) => {
+    setDrafts((current) => ({ ...current, [column.field]: text }));
+    const row = view.find((r) => idOf(r) === editing?.rowId);
+    if (row) check(column, text, row);
+  };
+  const stopEdit = (commit: boolean, field: string, reason: GridEditStopReason) => {
     if (!editing) return;
+    // A value with an error keeps the cell open (Escape still cancels).
+    if (commit && Object.keys(errors).length > 0) return;
     const { rowId } = editing;
     refocus.current = { rowId, field };
     setEditing(null);
+    setErrors({});
+    const oldRow = view.find((r) => idOf(r) === rowId) as R;
+    if (editMode === "row") onRowEditStop?.({ id: rowId, row: oldRow }, reason);
+    else onCellEditStop?.(cellParams(columnOf(field), oldRow), reason);
     if (!commit) return;
-    const oldRow = view.find((r) => String(getRowId(r)) === rowId) as R;
-    const newRow = { ...oldRow } as Record<string, unknown>;
-    for (const [f, text] of Object.entries(drafts))
-      newRow[f] = parseGridEditValue(text, columns.find((c) => c.field === f)?.type);
-    Promise.resolve(processRowUpdate ? processRowUpdate(newRow as R, oldRow) : (newRow as R))
+    let newRow = { ...oldRow } as R;
+    for (const [f, text] of Object.entries(drafts)) {
+      const column = columnOf(f);
+      const value = parse(column, text, oldRow);
+      newRow = column.valueSetter
+        ? column.valueSetter(value, newRow)
+        : ({ ...newRow, [f]: value } as R);
+    }
+    Promise.resolve(processRowUpdate ? processRowUpdate(newRow, oldRow) : newRow)
       .then((result) => setOverrides((current) => new Map(current).set(rowId, result)))
       .catch((error: unknown) => onProcessRowUpdateError?.(error));
   };
+
+  const getCsv = (options: GridCsvOptions = csvOptions ?? {}) =>
+    gridToCsv(
+      gridExportColumns(columns, shown, options),
+      sorted,
+      (row, field) => textOf(columnOf(field), row),
+      options,
+    );
+  const exportCsv = (options: GridCsvOptions = csvOptions ?? {}) =>
+    downloadCsv(options.fileName ?? exportFileName, getCsv(options));
+  const print = (options: GridPrintOptions = printOptions ?? {}) => setPrinting({ ...options });
+  useEffect(() => {
+    if (!printing) return;
+    const options = printing;
+    const keep = options.fields ? new Set(options.fields) : null;
+    const printed = shown.filter((c) => c.type !== "actions" && (!keep || keep.has(c.field)));
+    const boxes = !!checkboxSelection && !!options.includeCheckboxes;
+    printGridContent(
+      rootRef.current as HTMLElement,
+      options.fileName ?? ariaLabel ?? exportFileName,
+      (copy) =>
+        prepareGridPrint(
+          copy,
+          options,
+          printed.map((c) => c.field),
+          gridColumnTemplate(printed, boxes, widths),
+        ),
+    );
+    setPrinting(null);
+  });
+  const exportState = (): GridState => ({
+    sorting: { sortModel },
+    filter: { filterModel },
+    pagination: { paginationModel: { page: pagination.page, pageSize: pagination.pageSize } },
+    columns: {
+      columnVisibilityModel: { ...visibility },
+      orderedFields: fields,
+      dimensions: Object.fromEntries(Object.entries(widths).map(([f, width]) => [f, { width }])),
+    },
+    pinnedColumns: pinned,
+    density,
+  });
+  const restoreState = (input: unknown) => {
+    const state = sanitizeGridState(input);
+    if (state.sorting?.sortModel) setSortModel(state.sorting.sortModel);
+    if (state.filter?.filterModel) {
+      setFilterModel(state.filter.filterModel);
+      setQuickText((state.filter.filterModel.quickFilterValues ?? []).join(" "));
+    }
+    const paging = state.pagination?.paginationModel;
+    if (paging) setPagination({ ...pagination, ...paging });
+    if (state.columns?.columnVisibilityModel) setVisibility(state.columns.columnVisibilityModel);
+    if (state.columns?.orderedFields) setOrder(state.columns.orderedFields);
+    const dimensions = state.columns?.dimensions;
+    if (dimensions)
+      setWidths(Object.fromEntries(Object.entries(dimensions).map(([f, d]) => [f, d.width])));
+    if (state.pinnedColumns) setPinned(state.pinnedColumns);
+    if (state.density) setDensity(state.density);
+  };
+  const scrollToIndexes = ({ rowIndex, colIndex }: { rowIndex?: number; colIndex?: number }) => {
+    const grid = gridRef.current as HTMLDivElement;
+    if (rowIndex !== undefined && rowIndex >= 0 && rowIndex < pageRows.length) {
+      const step = viewport?.rowHeight || baseHeight + 1;
+      const top = offsets ? (offsets[rowIndex] as number) : rowIndex * step;
+      const height = offsets ? (offsets[rowIndex + 1] as number) - top : step;
+      const header = grid.querySelector<HTMLElement>("[data-ok-data-grid-header]") as HTMLElement;
+      const visible = grid.clientHeight - header.offsetHeight;
+      if (top < grid.scrollTop) grid.scrollTop = top;
+      else if (top + height > grid.scrollTop + visible) grid.scrollTop = top + height - visible;
+    }
+    const column = colIndex === undefined ? undefined : shown[colIndex];
+    if (column) {
+      const cell = grid.querySelector<HTMLElement>(
+        `[role="columnheader"][data-ok-field="${CSS.escape(column.field)}"]`,
+      ) as HTMLElement;
+      const left = cell.offsetLeft;
+      if (left < grid.scrollLeft) grid.scrollLeft = left;
+      else if (left + cell.offsetWidth > grid.scrollLeft + grid.clientWidth)
+        grid.scrollLeft = left + cell.offsetWidth - grid.clientWidth;
+    }
+  };
+  const api: GridApi<R> = {
+    getRow: (rowId) => view.find((r) => idOf(r) === rowId),
+    getSortModel: () => sortModel,
+    setSortModel,
+    getFilterModel: () => filterModel,
+    setFilterModel,
+    getRowSelectionModel: () => [...selection],
+    setRowSelectionModel: (ids) => setSelection([...ids]),
+    setColumnVisibilityModel: setVisibility,
+    setColumnOrder: (next) => setOrder([...next]),
+    setPinnedColumns: setPinned,
+    setColumnWidth: (field, width) => resizeTo.current(field, width, true),
+    setPaginationModel: setPagination,
+    setDensity,
+    autosizeColumns: (options) => autosize.current(options),
+    scrollToIndexes,
+    exportState,
+    restoreState,
+    getDataAsCsv: getCsv,
+    exportDataAsCsv: exportCsv,
+    exportDataAsPrint: print,
+  };
+  useLayoutEffect(() => {
+    if (!apiRef) return;
+    apiRef.current = api;
+    return () => {
+      apiRef.current = null;
+    };
+  });
+  /** Operators of a column's filter: its own, else its type's. */
+  const operatorsOf = (column: GridColDef<R> | undefined) =>
+    column?.filterOperators
+      ? column.filterOperators.map((o) => ({ value: o.value, label: o.label ?? o.value }))
+      : gridFilterOperators(column?.type).map((value) => ({
+          value,
+          label: labels.filterOperator[value] ?? value,
+        }));
 
   const open = (which: Panel) => (event: MouseEvent<HTMLElement>) => {
     setAnchor(event.currentTarget);
@@ -662,7 +1157,7 @@ function DataGridInner<R>(
   };
   const newItem = (): GridFilterItem => ({
     field: columns.find(isGridFilterable)?.field ?? "",
-    operator: gridFilterOperators(columns.find(isGridFilterable)?.type)[0] as string,
+    operator: operatorsOf(columns.find(isGridFilterable))[0]?.value as string,
   });
   // The panel always shows a row: with no items, an empty one (applied once edited).
   const filterItems: GridFilterItem[] = filterModel.items.length ? filterModel.items : [newItem()];
@@ -673,10 +1168,11 @@ function DataGridInner<R>(
   const setFilterItem = (index: number, item: GridFilterItem) =>
     setFilterItems(filterItems.map((current, i) => (i === index ? item : current)));
 
-  const onRowClick = (rowId: string) => (event: MouseEvent<HTMLElement>) => {
+  const onRowClick = (row: R, i: number) => (event: MouseEvent<HTMLElement>) => {
+    onRowClickProp?.(rowParams(row, i), event);
     if (!checkboxSelection || disableRowSelectionOnClick) return;
     if ((event.target as Element).closest("button, a, input, label, select, textarea")) return;
-    setSelection(toggleGridRow(selection, rowId));
+    toggleRow.current(idOf(row));
   };
 
   const menuColumn = columns.find((c) => c.field === menuField);
@@ -698,7 +1194,7 @@ function DataGridInner<R>(
         ),
       );
     else if (action === "filter") {
-      setFilterItems([{ field, operator: gridFilterOperators(menuColumn?.type)[0] as string }]);
+      setFilterItems([{ field, operator: operatorsOf(menuColumn)[0]?.value as string }]);
       // The panels open next to their toolbar buttons (the menu offers them only with the toolbar).
       setAnchor(document.querySelector<HTMLElement>(`[aria-controls="${id}-filters"]`));
       setPanel("filters");
@@ -708,6 +1204,31 @@ function DataGridInner<R>(
     }
   };
 
+  /** A toolbar button: text with an icon, or an icon with a tooltip (`toolbarVariant`). */
+  const toolbarButton = (
+    which: Exclude<Panel, null>,
+    label: string,
+    icon: ReactNode,
+    popup: "dialog" | "menu",
+  ) => {
+    const common = {
+      "aria-haspopup": popup,
+      "aria-expanded": panel === which,
+      "aria-controls": `${id}-${which}`,
+      onClick: open(which),
+    } as const;
+    return toolbarVariant === "icon" ? (
+      <Tooltip title={label} id={`${id}-${which}-tooltip`}>
+        <IconButton size="sm" {...common}>
+          {icon}
+        </IconButton>
+      </Tooltip>
+    ) : (
+      <Button size="sm" variant="text" startIcon={icon} {...common}>
+        {label}
+      </Button>
+    );
+  };
   const toolbar = showToolbar && (
     <div data-ok-data-grid-toolbar="">
       <div data-ok-data-grid-quick-filter="">
@@ -727,56 +1248,13 @@ function DataGridInner<R>(
         />
       </div>
       <div data-ok-data-grid-toolbar-actions="">
-        {!disableColumnSelector && (
-          <Button
-            size="sm"
-            variant="text"
-            startIcon={<ColumnsIcon />}
-            aria-haspopup="dialog"
-            aria-expanded={panel === "columns"}
-            aria-controls={`${id}-columns`}
-            onClick={open("columns")}
-          >
-            {labels.toolbarColumns}
-          </Button>
-        )}
-        {!disableColumnFilter && (
-          <Button
-            size="sm"
-            variant="text"
-            startIcon={<FilterIcon />}
-            aria-haspopup="dialog"
-            aria-expanded={panel === "filters"}
-            aria-controls={`${id}-filters`}
-            onClick={open("filters")}
-          >
-            {labels.toolbarFilters}
-          </Button>
-        )}
-        {!disableDensitySelector && (
-          <Button
-            size="sm"
-            variant="text"
-            startIcon={<DensityIcon />}
-            aria-haspopup="menu"
-            aria-expanded={panel === "density"}
-            aria-controls={`${id}-density`}
-            onClick={open("density")}
-          >
-            {labels.toolbarDensity}
-          </Button>
-        )}
-        <Button
-          size="sm"
-          variant="text"
-          startIcon={<ExportIcon />}
-          aria-haspopup="menu"
-          aria-expanded={panel === "export"}
-          aria-controls={`${id}-export`}
-          onClick={open("export")}
-        >
-          {labels.toolbarExport}
-        </Button>
+        {!disableColumnSelector &&
+          toolbarButton("columns", labels.toolbarColumns, <ColumnsIcon />, "dialog")}
+        {!disableColumnFilter &&
+          toolbarButton("filters", labels.toolbarFilters, <FilterIcon />, "dialog")}
+        {!disableDensitySelector &&
+          toolbarButton("density", labels.toolbarDensity, <DensityIcon />, "menu")}
+        {toolbarButton("export", labels.toolbarExport, <ExportIcon />, "menu")}
       </div>
       {!disableColumnSelector && (
         <Popover
@@ -854,9 +1332,8 @@ function DataGridInner<R>(
                     onChange={(field) =>
                       setFilterItem(index, {
                         field,
-                        operator: gridFilterOperators(
-                          columns.find((c) => c.field === field)?.type,
-                        )[0] as string,
+                        operator: operatorsOf(columns.find((c) => c.field === field))[0]
+                          ?.value as string,
                       })
                     }
                   >
@@ -874,9 +1351,9 @@ function DataGridInner<R>(
                     value={item.operator}
                     onChange={(operator) => setFilterItem(index, { ...item, operator })}
                   >
-                    {gridFilterOperators(column?.type).map((operator) => (
-                      <option key={operator} value={operator}>
-                        {labels.filterOperator[operator] ?? operator}
+                    {operatorsOf(column).map((operator) => (
+                      <option key={operator.value} value={operator.value}>
+                        {operator.label}
                       </option>
                     ))}
                   </TextField>
@@ -885,8 +1362,10 @@ function DataGridInner<R>(
                     size="small"
                     label={labels.filterPanelInputLabel}
                     placeholder={labels.filterPanelInputPlaceholder}
-                    disabled={!gridOperatorNeedsValue(item.operator)}
-                    value={item.value ?? ""}
+                    disabled={!gridOperatorNeedsValue(item.operator, column?.filterOperators)}
+                    value={
+                      typeof item.value === "string" ? item.value : (item.value ?? []).join(", ")
+                    }
                     onChange={(value) => setFilterItem(index, { ...item, value })}
                   />
                 </div>
@@ -944,12 +1423,7 @@ function DataGridInner<R>(
           data-ok-data-grid-export="csv"
           onClick={() => {
             closePanel();
-            downloadCsv(
-              exportFileName,
-              gridToCsv(shown, sorted, (row, field) =>
-                textOf(columns.find((c) => c.field === field) as GridColDef<R>, row),
-              ),
-            );
+            exportCsv();
           }}
         >
           {labels.toolbarExportCSV}
@@ -958,7 +1432,7 @@ function DataGridInner<R>(
           data-ok-data-grid-export="print"
           onClick={() => {
             closePanel();
-            printGridContent(gridRef.current as HTMLElement, ariaLabel ?? exportFileName);
+            print();
           }}
         >
           {labels.toolbarExportPrint}
@@ -969,7 +1443,7 @@ function DataGridInner<R>(
 
   return (
     <div
-      ref={ref}
+      ref={mergedRef}
       {...dataGridAttributes({
         density,
         checkboxSelection,
@@ -989,9 +1463,24 @@ function DataGridInner<R>(
         loading: busy,
         loadingVariant,
         scrollEndThreshold: scrollEndThreshold === 80 ? undefined : scrollEndThreshold,
+        disableMultipleRowSelection,
+        keepNonExistentRowsSelected,
+        checkboxSelectionVisibleOnly,
+        autosizeOnMount,
+        rowSpanning,
+        rowHeight,
+        toolbarVariant,
+        quickFilterLogicOperator,
+        quickFilterExcludeHiddenColumns,
+        ignoreDiacritics,
       })}
       data-ok-runtime="off"
       {...props}
+      style={
+        rowHeight === undefined
+          ? props.style
+          : ({ "--_ok-data-grid-row-height": `${baseHeight}px`, ...props.style } as CSSProperties)
+      }
     >
       {toolbar}
       <div
@@ -1002,7 +1491,7 @@ function DataGridInner<R>(
         aria-labelledby={ariaLabelledby}
         aria-rowcount={total + 1}
         aria-colcount={shown.length + (checkboxSelection ? 1 : 0)}
-        {...(checkboxSelection ? { "aria-multiselectable": true } : {})}
+        {...(checkboxSelection && multiple ? { "aria-multiselectable": true } : {})}
         {...(busy ? { "aria-busy": true } : {})}
         style={
           {
@@ -1019,22 +1508,25 @@ function DataGridInner<R>(
                 data-ok-field={GRID_CHECKBOX_FIELD}
                 data-ok-data-grid-checkbox=""
                 {...(leftPinned ? { "data-ok-pinned": "left" } : {})}
+                {...(multiple ? {} : { "aria-label": labels.checkboxSelectionHeaderName })}
                 tabIndex={-1}
               >
-                <Checkbox
-                  size="small"
-                  tabIndex={-1}
-                  aria-label={labels.checkboxSelectionSelectAllRows}
-                  checked={selectAll === "all"}
-                  indeterminate={selectAll === "some"}
-                  onChange={() => setSelection(toggleGridRows(selection, allIds))}
-                />
+                {multiple && (
+                  <Checkbox
+                    size="small"
+                    tabIndex={-1}
+                    aria-label={labels.checkboxSelectionSelectAllRows}
+                    checked={selectAll === "all"}
+                    indeterminate={selectAll === "some"}
+                    onChange={() => setSelection(toggleGridRows(selection, allIds))}
+                  />
+                )}
               </div>
             )}
             {shown.map((column, index) => {
               const sortable = !disableColumnSorting && isGridSortable(column);
               const name = column.headerName ?? column.field;
-              return (
+              const header = (
                 <div
                   key={column.field}
                   role="columnheader"
@@ -1047,6 +1539,12 @@ function DataGridInner<R>(
                     ? { "data-ok-min-width": column.minWidth }
                     : {})}
                   {...(column.flex !== undefined ? { "data-ok-flex": column.flex } : {})}
+                  {...(column.maxWidth !== undefined
+                    ? { "data-ok-max-width": column.maxWidth }
+                    : {})}
+                  {...(column.getApplyQuickFilterFn === null
+                    ? { "data-ok-searchable": "false" }
+                    : {})}
                   {...(column.hideable === false ? { "data-ok-hideable": "false" } : {})}
                   {...(column.filterable === false ? { "data-ok-filterable": "false" } : {})}
                   {...(column.resizable === false ? { "data-ok-resizable": "false" } : {})}
@@ -1063,10 +1561,15 @@ function DataGridInner<R>(
                     // A press that resized or moved the column doesn't sort it.
                     if (event.currentTarget.hasAttribute("data-ok-just-dragged")) return;
                     if ((event.target as Element).closest("button")) return;
+                    onColumnHeaderClick?.({ field: column.field, colDef: column }, event);
                     sortBy.current(column.field, event.shiftKey);
                   }}
                 >
-                  <span data-ok-data-grid-header-title="">{name}</span>
+                  <span data-ok-data-grid-header-title="">
+                    {column.renderHeader
+                      ? column.renderHeader({ field: column.field, colDef: column })
+                      : name}
+                  </span>
                   {sortable && (
                     <span data-ok-data-grid-sort-icon="">
                       <SortIcon />
@@ -1077,7 +1580,7 @@ function DataGridInner<R>(
                       size="sm"
                       data-ok-data-grid-menu-button=""
                       tabIndex={-1}
-                      aria-label={`${name} column menu`}
+                      aria-label={`${name} ${labels.columnHeaderMenuLabel}`}
                       aria-haspopup="menu"
                       aria-expanded={menuField === column.field && menuAnchor !== null}
                       aria-controls={`${id}-column-menu`}
@@ -1090,6 +1593,19 @@ function DataGridInner<R>(
                     <span data-ok-data-grid-resize="" aria-hidden="true" />
                   )}
                 </div>
+              );
+              // A description shows as the header's tooltip (and describes it).
+              return column.description ? (
+                <Tooltip
+                  key={column.field}
+                  title={column.description}
+                  describeChild
+                  id={`${id}-${column.field}-description`}
+                >
+                  {header}
+                </Tooltip>
+              ) : (
+                header
               );
             })}
           </div>
@@ -1107,8 +1623,33 @@ function DataGridInner<R>(
           }
         >
           {rendered.map(({ row, index }) => {
-            const rowId = String(getRowId(row));
+            const rowId = idOf(row);
             const selected = selection.includes(rowId);
+            // Position on the page (spans, spacing and row params are per page).
+            const i = index - pageStart;
+            const params = rowParams(row, i);
+            const ownHeight = heightOf(row);
+            const space = spacingOf(row, i);
+            const rowStyle = {
+              ...(typeof ownHeight === "number"
+                ? { "--_ok-data-grid-row-height": `${ownHeight}px` }
+                : {}),
+              ...(space.top !== undefined
+                ? { "--_ok-data-grid-spacing-top": `${space.top}px` }
+                : {}),
+              ...(space.bottom !== undefined
+                ? { "--_ok-data-grid-spacing-bottom": `${space.bottom}px` }
+                : {}),
+            };
+            const rowSpans = spans?.cells[i];
+            const colSpans = shown.some((c) => c.colSpan !== undefined)
+              ? gridColSpans(shown.length, (k) => {
+                  const column = shown[k] as GridColDef<R>;
+                  return typeof column.colSpan === "function"
+                    ? column.colSpan(cellParams(column, row))
+                    : (column.colSpan ?? 1);
+                })
+              : null;
             return (
               <div
                 key={rowId}
@@ -1116,11 +1657,22 @@ function DataGridInner<R>(
                 aria-rowindex={index + 2 + rowOffset}
                 hidden={!onPage(index) || undefined}
                 data-ok-row-id={rowId}
+                className={getRowClassName?.(params) || undefined}
+                {...(ownHeight === "auto" || typeof ownHeight === "number"
+                  ? { "data-ok-row-height": String(ownHeight) }
+                  : {})}
+                {...(space.top !== undefined ? { "data-ok-spacing-top": space.top } : {})}
+                {...(space.bottom !== undefined ? { "data-ok-spacing-bottom": space.bottom } : {})}
                 {...(checkboxSelection ? { "aria-selected": selected } : {})}
+                {...(checkboxSelection && !selectable(row)
+                  ? { "data-ok-selectable": "false" }
+                  : {})}
                 {...(editing?.rowId === rowId && editing.field === null
                   ? { "data-ok-editing": "" }
                   : {})}
-                onClick={onRowClick(rowId)}
+                style={Object.keys(rowStyle).length ? (rowStyle as CSSProperties) : undefined}
+                onClick={onRowClick(row, i)}
+                onDoubleClick={(event) => onRowDoubleClick?.(params, event)}
               >
                 {checkboxSelection && (
                   <div
@@ -1136,7 +1688,8 @@ function DataGridInner<R>(
                       tabIndex={-1}
                       aria-label={labels.checkboxSelectionSelectRow}
                       checked={selected}
-                      onChange={() => setSelection(toggleGridRow(selection, rowId))}
+                      disabled={!selectable(row)}
+                      onChange={() => toggleRow.current(rowId)}
                     />
                   </div>
                 )}
@@ -1153,14 +1706,27 @@ function DataGridInner<R>(
                   const name = column.headerName ?? column.field;
                   const inEdit =
                     editing?.rowId === rowId &&
-                    (editing.field === null ? editable(column) : editing.field === column.field);
+                    (editing.field === null
+                      ? column.field in drafts
+                      : editing.field === column.field);
                   const draft = drafts[column.field] ?? "";
-                  const setDraft = (next: string) =>
-                    setDrafts((current) => ({ ...current, [column.field]: next }));
+                  const setDraft = (next: string) => changeDraft(column, next);
+                  const error = inEdit ? errors[column.field] : undefined;
+                  const errorId = `${id}-${rowId}-${column.field}-error`;
+                  const invalid = error
+                    ? {
+                        "aria-invalid": true,
+                        ...(typeof error === "string" ? { "aria-describedby": errorId } : {}),
+                      }
+                    : {};
                   const editKeys = (event: { key: string; preventDefault(): void }) => {
                     if (event.key === "Enter" || event.key === "Escape") {
                       event.preventDefault();
-                      stopEdit(event.key === "Enter", column.field);
+                      stopEdit(
+                        event.key === "Enter",
+                        column.field,
+                        event.key === "Enter" ? "enterKeyDown" : "escapeKeyDown",
+                      );
                     }
                   };
                   const editBlur = (event: {
@@ -1171,12 +1737,13 @@ function DataGridInner<R>(
                     const scope =
                       editMode === "row" ? event.currentTarget.closest('[role="row"]') : null;
                     if (!scope?.contains(event.relatedTarget as Node | null))
-                      stopEdit(true, column.field);
+                      stopEdit(true, column.field, "cellFocusOut");
                   };
                   const editor = !inEdit ? null : column.type === "singleSelect" ? (
                     <select
                       data-ok-data-grid-edit-input=""
                       aria-label={`${labels.editLabel} ${name}`}
+                      {...invalid}
                       value={draft}
                       onChange={(event) => setDraft(event.target.value)}
                       onKeyDown={editKeys}
@@ -1203,12 +1770,16 @@ function DataGridInner<R>(
                       data-ok-data-grid-edit-input=""
                       type={gridEditInputType(column.type)}
                       aria-label={`${labels.editLabel} ${name}`}
+                      {...invalid}
                       value={draft}
                       onChange={(event) => setDraft(event.target.value)}
                       onKeyDown={editKeys}
                       onBlur={editBlur}
                     />
                   );
+                  const colSpan = colSpans?.[c];
+                  const rowSpan = rowSpans?.get(column.field);
+                  const params = cellParams(column, row);
                   return (
                     <div
                       key={column.field}
@@ -1216,6 +1787,28 @@ function DataGridInner<R>(
                       aria-colindex={c + colOffset}
                       data-ok-field={column.field}
                       data-ok-align={gridAlign(column)}
+                      className={getCellClassName?.(params) || undefined}
+                      {...(colSpan && colSpan.span > 1 ? { "aria-colspan": colSpan.span } : {})}
+                      {...(rowSpan && rowSpan.span > 1 ? { "aria-rowspan": rowSpan.span } : {})}
+                      {...(colSpan?.covered || rowSpan?.covered
+                        ? { "data-ok-covered": "", "aria-hidden": true }
+                        : {})}
+                      hidden={colSpan?.covered || undefined}
+                      {...(editable(column) && !cellEditable(column, row)
+                        ? { "data-ok-editable": "false" }
+                        : {})}
+                      style={
+                        (colSpan && colSpan.span > 1) || (rowSpan && rowSpan.span > 1)
+                          ? ({
+                              ...(colSpan && colSpan.span > 1
+                                ? { "--_ok-data-grid-colspan": colSpan.span }
+                                : {}),
+                              ...(rowSpan && rowSpan.span > 1
+                                ? { "--_ok-data-grid-rowspan": rowSpan.span }
+                                : {}),
+                            } as CSSProperties)
+                          : undefined
+                      }
                       {...(raw !== text || typeof value !== "string"
                         ? { "data-ok-value": raw }
                         : {})}
@@ -1225,9 +1818,19 @@ function DataGridInner<R>(
                         : {})}
                       {...(inEdit ? { "data-ok-editing": "" } : {})}
                       tabIndex={-1}
-                      onDoubleClick={() => startEdit.current(rowId, column.field)}
+                      onClick={(event) => onCellClick?.(params, event)}
+                      onDoubleClick={(event) => {
+                        onCellDoubleClick?.(params, event);
+                        startEdit.current(rowId, column.field, "cellDoubleClick");
+                      }}
+                      onKeyDown={(event) => onCellKeyDown?.(params, event)}
                     >
                       {editor ?? (column.renderCell ? custom : text)}
+                      {typeof error === "string" && (
+                        <span data-ok-data-grid-edit-error="" id={errorId} role="alert">
+                          {error}
+                        </span>
+                      )}
                     </div>
                   );
                 })}
@@ -1370,6 +1973,13 @@ function DataGridInner<R>(
             rowsPerPageOptions={pageSizeOptions}
             onPageChange={(next) => setPagination({ ...pagination, page: next })}
             onRowsPerPageChange={(pageSize) => setPagination({ page: 0, pageSize })}
+            labelRowsPerPage={labels.paginationRowsPerPage}
+            {...(localeText?.paginationDisplayedRows
+              ? {
+                  labelDisplayedRows: (range: { from: number; to: number; count: number }) =>
+                    gridDisplayedRows(labels.paginationDisplayedRows, range),
+                }
+              : {})}
           />
         </div>
       )}

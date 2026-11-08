@@ -11,7 +11,9 @@
  * Modifiers: data-ok-density = compact | standard (default) | comfortable; cells: data-ok-align,
  *            data-ok-pinned = left | right (sticky, --_ok-data-grid-pin offset), data-ok-editing
  * States:    row aria-selected, header aria-sort, column menu open (data-ok-open on its button)
- * Private:   --_ok-data-grid-columns (column tracks, written by the owner)
+ * Private:   --_ok-data-grid-columns (column tracks, written by the owner); per row
+ *            --_ok-data-grid-row-height, --_ok-data-grid-spacing-top|bottom; per cell
+ *            --_ok-data-grid-colspan, --_ok-data-grid-rowspan (spans, from the owner)
  *
  * Rows are CSS grids sharing one template, so headers and cells line up. Text cells truncate with
  * an ellipsis; cells holding elements lay them out in a row.
@@ -164,8 +166,11 @@
     justify-content: center;
   }
 
-  /* Separators between header cells. */
-  :where([data-ok-data-grid-main] [role="columnheader"]:not(:last-child)::after) {
+  /* Separators between header cells (a header's tooltip may follow the last one). */
+  :where(
+    [data-ok-data-grid-main]
+      [role="columnheader"]:not(:nth-last-child(1 of [role="columnheader"]))::after
+  ) {
     position: absolute;
     inset-block: 30%;
     inset-inline-end: 0;
@@ -323,12 +328,13 @@
     );
   }
 
+  /* Left pins hold the start of the row, right pins its end (sides swap right to left). */
   :where([data-ok-data-grid-main] [data-ok-pinned="left"]) {
-    left: var(--_ok-data-grid-pin, 0);
+    inset-inline-start: var(--_ok-data-grid-pin, 0);
   }
 
   :where([data-ok-data-grid-main] [data-ok-pinned="right"]) {
-    right: var(--_ok-data-grid-pin, 0);
+    inset-inline-end: var(--_ok-data-grid-pin, 0);
   }
 
   :where([data-ok-data-grid-header] [data-ok-pinned]) {
@@ -343,6 +349,20 @@
 
   :where([data-ok-data-grid-main] :not([data-ok-pinned="right"]) + [data-ok-pinned="right"]) {
     box-shadow: -1px 0 0 var(--ok-divider);
+  }
+
+  :where(
+    [dir="rtl"]
+      [data-ok-data-grid-main]
+      [data-ok-pinned="left"]:not(:has(+ [data-ok-pinned="left"]))
+  ) {
+    box-shadow: -1px 0 0 var(--ok-divider);
+  }
+
+  :where(
+    [dir="rtl"] [data-ok-data-grid-main] :not([data-ok-pinned="right"]) + [data-ok-pinned="right"]
+  ) {
+    box-shadow: 1px 0 0 var(--ok-divider);
   }
 
   /* Resize handle: the header's end edge; a line shows on hover and while dragging. */
@@ -404,6 +424,94 @@
 
   :where([data-ok-data-grid-panel] > [data-ok-data-grid-filter-add]) {
     align-self: flex-start;
+  }
+
+  /* Validation: the field and a message under the cell. */
+  :where([data-ok-data-grid-main] [role="gridcell"][data-ok-editing]) {
+    position: relative;
+    overflow: visible;
+  }
+
+  :where([data-ok-data-grid-edit-input][aria-invalid="true"]) {
+    outline-color: var(--ok-palette-error-main);
+  }
+
+  :where([data-ok-data-grid-edit-error]) {
+    position: absolute;
+    top: 100%;
+    inset-inline-start: 0;
+    z-index: 3;
+    width: max-content;
+    max-width: calc(var(--ok-spacing) * 75);
+    padding: calc(var(--ok-spacing) * 1) calc(var(--ok-spacing) * 2);
+    border-radius: var(--ok-radius-sm);
+    background-color: var(--ok-palette-error-dark);
+    color: var(--ok-palette-error-contrast-text);
+    font-size: var(--ok-typography-caption-font-size);
+    font-weight: var(--ok-typography-caption-font-weight);
+    line-height: var(--ok-typography-caption-line-height);
+    text-align: start;
+    white-space: normal;
+  }
+
+  :where([data-ok-data-grid-edit-error][hidden]) {
+    display: none;
+  }
+
+  /* Column spans: the cell takes the next columns' place (they are hidden). */
+  :where([data-ok-data-grid-main] [role="gridcell"][aria-colspan]) {
+    grid-column: span var(--_ok-data-grid-colspan, 1);
+  }
+
+  /* Row spans: the first cell grows over the next rows, whose cells keep their place unseen. */
+  :where([data-ok-data-grid-main] [role="gridcell"][aria-rowspan]) {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    align-self: start;
+    height: calc(
+      var(--_ok-data-grid-row-height) *
+      var(--_ok-data-grid-rowspan, 1) +
+      (var(--_ok-data-grid-rowspan, 1) - 1) *
+      1px
+    );
+    background-color: var(--ok-bg-paper);
+    background-image: linear-gradient(
+      var(--_ok-data-grid-row-bg, transparent),
+      var(--_ok-data-grid-row-bg, transparent)
+    );
+    line-height: inherit;
+  }
+
+  /* The row keeps its height: the spanning cell overflows onto the rows below. */
+  :where([data-ok-data-grid-body] > [role="row"]:has(> [aria-rowspan])) {
+    grid-template-rows: var(--_ok-data-grid-row-height);
+  }
+
+  :where([data-ok-data-grid-main] [role="gridcell"][data-ok-covered]) {
+    visibility: hidden;
+  }
+
+  /* Row heights: a fixed height per row, or "auto" (text wraps; the row grows). */
+  :where([data-ok-data-grid-body] > [role="row"]) {
+    margin-block: var(--_ok-data-grid-spacing-top, 0px) var(--_ok-data-grid-spacing-bottom, 0px);
+  }
+
+  :where([data-ok-data-grid-body] > [role="row"][data-ok-row-height="auto"] > [role="gridcell"]) {
+    display: flex;
+    align-items: center;
+    height: auto;
+    min-height: var(--_ok-data-grid-row-height);
+    padding-block: calc(var(--ok-spacing) * 2);
+    line-height: var(--ok-typography-body2-line-height);
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  /* Icon toolbar: icon buttons with tooltips, close together. */
+  :where([data-ok-data-grid][data-ok-toolbar-variant="icon"] [data-ok-data-grid-toolbar-actions]) {
+    gap: calc(var(--ok-spacing) * 0.5);
   }
 
   /* Virtualization: spacers stand for the rows that aren't rendered (owner-measured px). */

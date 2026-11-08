@@ -2205,9 +2205,62 @@ export const dataGridOptions = defineOptions("data-grid", "data-ok-data-grid", {
     "Distance from the end of the rows (px) that reports the scroll end.",
     { min: 0 },
   ),
+  disableMultipleRowSelection: flag(
+    "data-ok-disable-multiple-row-selection",
+    "One row at a time: selecting a row clears the others (no select all).",
+  ),
+  keepNonExistentRowsSelected: flag(
+    "data-ok-keep-non-existent-rows-selected",
+    "Selected ids stay selected when their rows go away (server pages, new data).",
+  ),
+  checkboxSelectionVisibleOnly: flag(
+    "data-ok-checkbox-selection-visible-only",
+    "Select all selects the rows of the current page only.",
+  ),
+  autosizeOnMount: flag(
+    "data-ok-autosize-on-mount",
+    "Columns fit their content once the grid shows (resizable, non-flex columns).",
+  ),
+  rowSpanning: flag(
+    "data-ok-row-spanning",
+    "Neighbouring cells of a column with the same value merge into one tall cell.",
+  ),
+  rowHeight: number("data-ok-row-height", undefined, "Row height (px) before density.", {
+    min: 1,
+  }),
+  toolbarVariant: style(
+    "data-ok-toolbar-variant",
+    ["labeled", "icon"],
+    "labeled",
+    "Toolbar buttons with text, or icons with tooltips.",
+  ),
+  quickFilterLogicOperator: style(
+    "data-ok-quick-filter-logic-operator",
+    ["and", "or"],
+    "and",
+    "Search words: every one must match (`and`), or any one (`or`).",
+  ),
+  quickFilterExcludeHiddenColumns: flag(
+    "data-ok-quick-filter-exclude-hidden-columns",
+    "The search skips hidden columns.",
+  ),
+  ignoreDiacritics: flag(
+    "data-ok-ignore-diacritics",
+    'Searches and filters ignore accents: "ha noi" finds "Hà Nội".',
+  ),
 });
 
 export interface DataGridAnatomyOptions {
+  disableMultipleRowSelection?: boolean | undefined;
+  keepNonExistentRowsSelected?: boolean | undefined;
+  checkboxSelectionVisibleOnly?: boolean | undefined;
+  autosizeOnMount?: boolean | undefined;
+  rowSpanning?: boolean | undefined;
+  rowHeight?: number | undefined;
+  toolbarVariant?: "labeled" | "icon" | undefined;
+  quickFilterLogicOperator?: "and" | "or" | undefined;
+  quickFilterExcludeHiddenColumns?: boolean | undefined;
+  ignoreDiacritics?: boolean | undefined;
   density?: GridDensity | undefined;
   checkboxSelection?: boolean | undefined;
   disableRowSelectionOnClick?: boolean | undefined;

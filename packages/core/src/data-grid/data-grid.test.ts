@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  clampGridWidth,
   csvField,
   filterGridRows,
   type GridColumn,
@@ -7,7 +8,10 @@ import {
   gridAriaSort,
   gridColumnTemplate,
   gridCompare,
+  gridExportColumns,
   gridFilterOperators,
+  gridFilterValues,
+  gridFoldText,
   gridHeaderAlign,
   gridOperatorNeedsValue,
   gridQuickFilterValues,
@@ -19,6 +23,8 @@ import {
   isGridSortable,
   matchesGridFilter,
   nextGridSort,
+  pruneGridSelection,
+  selectGridRow,
   sortGridRows,
   toggleGridRow,
   toggleGridRows,
@@ -354,5 +360,138 @@ describe("data grid selection and export", () => {
     const csv = gridToCsv(columns, [rows[0] as Row], text);
     expect(csv.startsWith("﻿Name,age,joined,admin,team\r\n")).toBe(true);
     expect(csv.endsWith("Ana,30,2026-01-02,true,red")).toBe(true);
+  });
+});
+
+describe("phase 4", () => {
+  it("isAnyOf: text, numbers, single select; lists and comma text", () => {
+    expect(gridFilterValues(" a, b ,,c")).toEqual(["a", "b", "c"]);
+    expect(gridFilterValues(["x", " y "])).toEqual(["x", "y"]);
+    expect(gridFilterValues(undefined)).toEqual([]);
+    const anyOf = (field: string, v: string | string[]) =>
+      ids(
+        filterGridRows(
+          rows,
+          { items: [{ field, operator: "isAnyOf", value: v }] },
+          columns,
+          value,
+          text,
+        ),
+      );
+    expect(anyOf("name", "ana, BAO")).toEqual(["1", "2", "4"]);
+    expect(anyOf("age", ["9", "30"])).toEqual(["1", "2", "4"]);
+    expect(anyOf("team", ["blue"])).toEqual(["2"]);
+    expect(anyOf("name", [])).toEqual(["1", "2", "3", "4"]);
+    expect(gridFilterOperators("string")).toContain("isAnyOf");
+    expect(gridFilterOperators("date")).not.toContain("isAnyOf");
+  });
+
+  it("ignores accents when asked", () => {
+    expect(gridFoldText("Đà Nẵng", true)).toBe("da nang");
+    expect(gridFoldText("Đà", false)).toBe("đà");
+    const places: Row[] = [
+      { id: "a", name: "Hà Nội" },
+      { id: "b", name: "Huế" },
+    ];
+    const cols: GridColumn[] = [{ field: "name" }];
+    const find = (words: string[], ignoreDiacritics: boolean) =>
+      ids(
+        filterGridRows(places, { items: [], quickFilterValues: words }, cols, value, text, {
+          ignoreDiacritics,
+        }),
+      );
+    expect(find(["ha", "noi"], true)).toEqual(["a"]);
+    expect(find(["ha", "noi"], false)).toEqual([]);
+    expect(
+      matchesGridFilter(
+        "Huế",
+        "Huế",
+        { field: "name", operator: "equals", value: "hue" },
+        "string",
+        true,
+      ),
+    ).toBe(true);
+  });
+
+  it("quick filter: or, searched columns, unsearchable columns", () => {
+    const words = (quickFilterValues: string[], options = {}) =>
+      ids(filterGridRows(rows, { items: [], quickFilterValues }, columns, value, text, options));
+    expect(words(["chloe", "bao"])).toEqual([]);
+    expect(words(["chloe", "bao"], { quickFilterLogicOperator: "or" })).toEqual(["2", "3"]);
+    expect(words(["blue"], { quickFilterColumns: [columns[0] as GridColumn] })).toEqual([]);
+    expect(
+      words(["blue"], {
+        quickFilterColumns: columns.map((c) =>
+          c.field === "team" ? { ...c, searchable: false } : c,
+        ),
+      }),
+    ).toEqual([]);
+  });
+
+  it("custom operators replace the type's; null tests filter nothing", () => {
+    const operators = {
+      age: [
+        {
+          value: "between",
+          getApplyFilterFn: (item: { value?: unknown }) => {
+            const [low, high] = gridFilterValues(item.value as string).map(Number);
+            return low === undefined || high === undefined
+              ? null
+              : (v: unknown) => Number(v) >= low && Number(v) <= high;
+          },
+        },
+        { value: "any", requiresValue: false, getApplyFilterFn: () => () => true },
+      ],
+    };
+    const by = (v: string) =>
+      ids(
+        filterGridRows(
+          rows,
+          { items: [{ field: "age", operator: "between", value: v }] },
+          columns,
+          value,
+          text,
+          {
+            operators,
+          },
+        ),
+      );
+    expect(by("5, 10")).toEqual(["2"]);
+    expect(by("5")).toEqual(["1", "2", "3", "4"]);
+    expect(gridOperatorNeedsValue("any", operators.age)).toBe(false);
+    expect(gridOperatorNeedsValue("between", operators.age)).toBe(true);
+    expect(gridOperatorNeedsValue("isEmpty")).toBe(false);
+  });
+
+  it("single selection, pruning, max widths", () => {
+    expect(selectGridRow(["a"], "b", false)).toEqual(["b"]);
+    expect(selectGridRow(["b"], "b", false)).toEqual([]);
+    expect(selectGridRow(["a"], "b")).toEqual(["a", "b"]);
+    expect(pruneGridSelection(["a", "x", "b"], ["a", "b", "c"])).toEqual(["a", "b"]);
+    expect(clampGridWidth({ field: "a", maxWidth: 120 }, 500)).toBe(120);
+    expect(clampGridWidth({ field: "a", maxWidth: 120 }, 10)).toBe(50);
+  });
+
+  it("CSV options: delimiter, headers, BOM, fields and hidden columns", () => {
+    const shown = columns.slice(0, 2);
+    expect(gridExportColumns(columns, shown).map((c) => c.field)).toEqual(["name", "age"]);
+    expect(gridExportColumns(columns, shown, { allColumns: true }).map((c) => c.field)).toEqual([
+      "name",
+      "age",
+      "joined",
+      "admin",
+      "team",
+    ]);
+    expect(
+      gridExportColumns(columns, shown, { fields: ["team", "name", "nope"] }).map((c) => c.field),
+    ).toEqual(["team", "name"]);
+    const csv = gridToCsv(shown, rows.slice(0, 2), text, {
+      delimiter: ";",
+      includeHeaders: false,
+      utf8WithBom: false,
+    });
+    expect(csv).toBe("Ana;30\r\nbao;9");
+    expect(csvField("a;b", ";")).toBe('"a;b"');
+    expect(csvField("a;b")).toBe("a;b");
   });
 });

@@ -20,11 +20,20 @@ export interface GridNavigationOptions {
   onToggleRow(row: HTMLElement): void;
   /** Ctrl / Cmd + A: select every row. */
   onSelectAll(): void;
-  /** Enter or F2 on a body cell: start editing it. */
-  onEdit?(cell: HTMLElement): void;
+  /**
+   * Enter, F2 or a printable key on a body cell: start editing it (`key`: the typed character,
+   * which replaces the value).
+   */
+  onEdit?(cell: HTMLElement, reason: GridEditStartReason, key?: string): void;
   /** Alt + Left / Right on a header: make the column narrower / wider by `delta` px. */
   onResizeKey?(field: string, delta: number): void;
 }
+
+export type GridEditStartReason =
+  | "cellDoubleClick"
+  | "enterKeyDown"
+  | "f2KeyDown"
+  | "printableKeyDown";
 
 export interface GridNavigation {
   /** Keeps exactly one tab stop after the owner re-rendered or re-paged rows. */
@@ -36,8 +45,16 @@ const visibleRows = (grid: HTMLElement) =>
   [...grid.querySelectorAll<HTMLElement>('[role="row"]')].filter(
     (row) => !row.hidden && !row.closest("[hidden]"),
   );
+/** Cells that take focus: shown, and not covered by a row span. */
 const cellsOf = (row: HTMLElement) =>
-  [...row.querySelectorAll<HTMLElement>(CELL)].filter((cell) => !cell.hidden);
+  [...row.querySelectorAll<HTMLElement>(CELL)].filter(
+    (cell) => !cell.hidden && !cell.hasAttribute("data-ok-covered"),
+  );
+/** Columns a cell occupies: its `aria-colindex` and `aria-colspan`. */
+const columnsOf = (cell: HTMLElement) => {
+  const start = Number(cell.getAttribute("aria-colindex")) || 0;
+  return [start, start + (Number(cell.getAttribute("aria-colspan")) || 1) - 1] as const;
+};
 
 /** The element that holds focus for a cell: its first control, else the cell itself. */
 export const gridFocusTarget = (cell: HTMLElement): HTMLElement =>
@@ -153,14 +170,30 @@ export function createGridNavigation(
         (event.key === "ArrowLeft" || event.key === "ArrowRight")
       ) {
         event.preventDefault();
-        options.onResizeKey?.(field, event.key === "ArrowLeft" ? -10 : 10);
+        // Right to left, the edge to drag is on the left: Left makes the column wider.
+        const wider = (event.key === "ArrowRight") !== (getComputedStyle(grid).direction === "rtl");
+        options.onResizeKey?.(field, wider ? 10 : -10);
         return;
       }
       if (!header && (event.key === "Enter" || event.key === "F2") && target === cell) {
         if (options.onEdit) {
           event.preventDefault();
-          options.onEdit(cell);
+          options.onEdit(cell, event.key === "F2" ? "f2KeyDown" : "enterKeyDown");
         }
+        return;
+      }
+      // Typing a character on a cell starts editing with it (Space selects rows).
+      if (
+        !header &&
+        target === cell &&
+        event.key.length === 1 &&
+        event.key !== " " &&
+        !ctrl &&
+        !event.altKey &&
+        options.onEdit
+      ) {
+        event.preventDefault();
+        options.onEdit(cell, "printableKeyDown", event.key);
         return;
       }
       if (!header && event.key === " " && target === cell) {
@@ -175,9 +208,17 @@ export function createGridNavigation(
       const body = grid.querySelector<HTMLElement>("[data-ok-data-grid-body]");
       const height = (rows[rows.length - 1] as HTMLElement).offsetHeight || 52;
       const page = Math.max(Math.floor((body?.clientHeight ?? 0) / height), 1);
+      // Right to left, Left moves to the next cell.
+      const rtl = getComputedStyle(grid).direction === "rtl";
+      const key =
+        rtl && event.key === "ArrowLeft"
+          ? "ArrowRight"
+          : rtl && event.key === "ArrowRight"
+            ? "ArrowLeft"
+            : event.key;
       const next = moveGridCell(
         { row, col },
-        event.key,
+        key,
         {
           rows: rows.length,
           cols: (r) => cellsOf(rows[r] as HTMLElement).length,
@@ -187,7 +228,25 @@ export function createGridNavigation(
       );
       if (!next) return;
       event.preventDefault();
-      const destination = cellsOf(rows[next.row] as HTMLElement)[next.col] as HTMLElement;
+      let destination = cellsOf(rows[next.row] as HTMLElement)[next.col] as HTMLElement;
+      // Up and down keep the column, past spans: the cell of that column, or the next row's.
+      const vertical = ["ArrowUp", "ArrowDown", "PageUp", "PageDown"].includes(key);
+      if (vertical && next.row !== row && cell.hasAttribute("aria-colindex")) {
+        const column = columnsOf(cell)[0];
+        const step = next.row > row ? 1 : -1;
+        // No cell of the column further on (a span reaches the edge): stay.
+        destination = cell;
+        for (let r = next.row; r >= 0 && r < rows.length; r += step) {
+          const found = cellsOf(rows[r] as HTMLElement).find((c) => {
+            const [from, to] = columnsOf(c);
+            return from <= column && column <= to;
+          });
+          if (found) {
+            destination = found;
+            break;
+          }
+        }
+      }
       setStop(destination);
       gridFocusTarget(destination).focus();
       destination.scrollIntoView?.({ block: "nearest", inline: "nearest" });

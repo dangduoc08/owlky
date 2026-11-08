@@ -11,6 +11,7 @@ import {
 import type { ReactGroup } from "../../helpers/groups.js";
 import { DemoIcon } from "../shared/demo-icon.js";
 import type { GroupFiles } from "../shared/snippets.js";
+import { layoutGroups, validationGroups } from "./layout-examples.js";
 
 const FIRST = ["Ana", "Bao", "Chloe", "Diego", "Elif", "Farid", "Grace", "Hugo", "Ines", "Jonas"];
 const LAST = [
@@ -325,6 +326,7 @@ export const dataGridStories: Record<string, ReactGroup[]> = {
           columns={basicColumns}
           checkboxSelection
           showToolbar
+          toolbarVariant="icon"
           exportFileName="people"
           initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
         />
@@ -350,12 +352,19 @@ export const dataGridStories: Record<string, ReactGroup[]> = {
       ),
     },
   ],
+  layout: layoutGroups,
+  validation: validationGroups,
 };
 
 export const DATA_GRID_FILES: Record<string, GroupFiles> = {
   advanced: [["Advanced", "group"]],
   basic: [["Basic", "group"]],
   custom: [["Custom", "group"]],
+  layout: [
+    ["Spanning cells", "spans"],
+    ["Row height and selection", "tasks"],
+  ],
+  validation: [["Editing and validation", "group"]],
 };
 
 /** Story Controls shared by the React and HTML stories (ADR-0015). */

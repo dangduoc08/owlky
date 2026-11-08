@@ -191,6 +191,135 @@ export function Customers() {
 </div>`,
   },
   {
+    id: "selection",
+    title: "Choose how rows are selected",
+    body: 'With `checkboxSelection`, people select rows with checkboxes, a click on the row, Space and Ctrl + A. Set `disableMultipleRowSelection` to allow one row at a time: selecting a row clears the others, and the header has no **Select all** checkbox. To keep some rows from being selected, return `false` from `isRowSelectable` in React, or put `data-ok-selectable="false"` on the row in HTML. Their checkbox is disabled. `checkboxSelectionVisibleOnly` makes **Select all** select the current page only. When rows go away, their ids leave the selection, unless you set `keepNonExistentRowsSelected`. Use it with server pagination, where the rows of other pages aren\'t loaded.',
+    html: `<div data-ok-data-grid data-ok-checkbox-selection data-ok-disable-multiple-row-selection>
+  …
+  <div role="row" data-ok-row-id="t-2" data-ok-selectable="false" aria-selected="false">…</div>
+</div>`,
+    react: `<DataGrid
+  aria-label="Tasks"
+  rows={tasks}
+  columns={columns}
+  checkboxSelection
+  disableMultipleRowSelection
+  isRowSelectable={({ row }) => row.status !== "Done"}
+/>`,
+  },
+  {
+    id: "spans",
+    title: "Span cells and size rows",
+    body: 'A cell can cover the next columns with `colSpan` on its column: a number, or a function of the cell, such as a total that spans three columns. With `rowSpanning`, neighbouring cells of a column with the same text merge into one tall cell. Rows are 52 pixels tall by default. Change it with `rowHeight`; the density still scales it. In React, `getRowHeight` sets the height of each row: a number, or `"auto"` to let long text wrap and the row grow. `getRowSpacing` adds space above and below rows. In HTML, put `data-ok-row-height` and `data-ok-spacing-top` / `data-ok-spacing-bottom` on the rows. Columns can fit their content: double-click the edge of a header, set `autosizeOnMount`, or call `autosizeColumns()`.',
+    html: `<!-- A cell that spans the next two columns hides them -->
+<div role="gridcell" aria-colindex="1" aria-colspan="3" data-ok-field="region">Total</div>
+<div role="gridcell" aria-colindex="2" data-ok-field="team" hidden data-ok-covered></div>
+
+<!-- Rows that grow with their text -->
+<div role="row" data-ok-row-id="t-3" data-ok-row-height="auto">…</div>`,
+    react: `<DataGrid
+  aria-label="Budget"
+  rows={lines}
+  columns={[
+    { field: "region", headerName: "Region", colSpan: ({ row }) => (row.id === "total" ? 3 : 1) },
+    { field: "team", headerName: "Team" },
+    { field: "item", headerName: "Item" },
+    { field: "amount", headerName: "Amount", type: "number" },
+  ]}
+  rowSpanning
+  getRowHeight={({ model }) => (model.notes.length > 40 ? "auto" : null)}
+/>`,
+  },
+  {
+    id: "api",
+    title: "React to clicks and use the grid's methods",
+    body: "React has `onRowClick`, `onRowDoubleClick`, `onCellClick`, `onCellDoubleClick`, `onCellKeyDown` and `onColumnHeaderClick`. In HTML, the same events fire on the grid as `ok:data-grid:rowclick`, `ok:data-grid:cellclick` and so on. The grid's methods are the same in both versions: pass a ref from `useGridApiRef()` as `apiRef` in React, or call `runtime.get(element, \"data-grid\")` in HTML. For example, `exportState()` returns the sort, filters, page, columns and density, and `restoreState()` applies them again. `restoreState()` checks what it receives, so a state from storage or a URL can't change anything else.",
+    html: `<script type="module">
+  const element = document.getElementById("people");
+  const grid = window.Owlky.get(element, "data-grid");
+  // Save the state as people change it, and restore it on the next visit
+  grid.restoreState(JSON.parse(localStorage.getItem("people-grid") ?? "{}"));
+  element.addEventListener("ok:data-grid:sort", () =>
+    queueMicrotask(() => localStorage.setItem("people-grid", JSON.stringify(grid.exportState()))),
+  );
+</script>`,
+    react: `function People() {
+  const apiRef = useGridApiRef();
+  return (
+    <>
+      <Button onClick={() => apiRef.current?.autosizeColumns()}>Fit columns</Button>
+      <DataGrid aria-label="People" rows={rows} columns={columns} apiRef={apiRef} />
+    </>
+  );
+}`,
+  },
+  {
+    id: "validation",
+    title: "Check edited values",
+    body: "Check a value while people type it, and keep the cell open until it's valid. In React, return `{ error }` from the column's `preProcessEditCellProps`: `true` marks the field as invalid, and a text also shows as a message under the cell. In HTML, listen to `ok:data-grid:validate` and set `event.detail.error`. Enter and leaving the cell keep it open while the value has an error. Escape cancels. `isCellEditable` in React, or `data-ok-editable=\"false\"` on a cell in HTML, makes single cells read-only. Typing a character on an editable cell starts editing with that character.",
+    html: `<script type="module">
+  const element = document.getElementById("products");
+  element.addEventListener("ok:data-grid:validate", (event) => {
+    const { field, value } = event.detail;
+    if (field === "price" && !(Number(value) > 0)) event.detail.error = "Enter a price above 0";
+  });
+</script>`,
+    react: `const columns = [
+  {
+    field: "price",
+    headerName: "Price",
+    type: "number",
+    editable: true,
+    preProcessEditCellProps: ({ props }) => ({
+      error: Number(props.value) > 0 ? undefined : "Enter a price above 0",
+    }),
+  },
+];`,
+  },
+  {
+    id: "filter-options",
+    title: "Tune filtering and search",
+    body: 'The **is any of** operator keeps rows whose value is one of several values: type them separated by commas. A column\'s `filterOperators` replaces the operators of its type, for example with a range. Each operator returns a test for a value. In HTML, set them with `setFilterOperators(field, operators)`. Set `ignoreDiacritics` so that searches and filters ignore accents: "ha noi" finds "Hà Nội". `quickFilterLogicOperator="or"` keeps rows that match any word instead of every word. `quickFilterExcludeHiddenColumns` leaves hidden columns out of the search. To leave one column out, set its `getApplyQuickFilterFn` to `null` in React, or `data-ok-searchable="false"` on its header in HTML.',
+    html: `<div data-ok-data-grid data-ok-ignore-diacritics data-ok-quick-filter-logic-operator="or">…</div>`,
+    react: `<DataGrid
+  aria-label="Places"
+  rows={places}
+  columns={columns}
+  ignoreDiacritics
+  quickFilterLogicOperator="or"
+/>`,
+  },
+  {
+    id: "export-options",
+    title: "Export and print",
+    body: "**Download as CSV** exports the filtered, sorted rows of every page and the shown columns. `csvOptions` changes the delimiter, the columns (`fields`, `allColumns`), the header line and the file name. **Print** prints every filtered row on its own page, without the toolbar, footer and checkboxes. `printOptions` keeps them or picks the columns. In HTML, pass the same options to `exportCsv(options)` and `print(options)`. Values in an HTML column can be formatted with `data-ok-format` on its header (`number`, `currency`, `percent`, `date` or `datetime`) and `Intl` options in `data-ok-format-options`, or with `setValueFormatter(field, format)`.",
+    html: `<div role="columnheader" data-ok-field="price" data-ok-format="currency" data-ok-format-options='{"currency":"EUR"}'>…</div>
+<script type="module">
+  const grid = window.Owlky.get(document.getElementById("products"), "data-grid");
+  grid.exportCsv({ delimiter: ";", fileName: "products" });
+</script>`,
+    react: `<DataGrid
+  aria-label="Products"
+  rows={rows}
+  columns={columns}
+  showToolbar
+  csvOptions={{ delimiter: ";", fileName: "products" }}
+  printOptions={{ hideFooter: false }}
+/>`,
+  },
+  {
+    id: "languages",
+    title: "Translate the grid and lay it out right to left",
+    body: 'Locale packs translate every label: `enUS`, `viVN`, `frFR`, `deDE`, `esES`, `jaJP` and `zhCN`. Import the one you need. Pass it as `localeText` in React. In HTML, write the toolbar and menus in your language, and call `setLocaleText(pack)` for the text the grid writes itself, such as filter operators, empty states and the page range. With `dir="rtl"` on the page or a parent, the grid lays out right to left: columns pinned to the left stay at the start, which is the right side. The arrow keys follow the reading order. Set `toolbarVariant="icon"` to show the toolbar as icon buttons with tooltips.',
+    html: `<script type="module">
+  import { viVN } from "@owlky/core";
+  window.Owlky.get(document.getElementById("people"), "data-grid").setLocaleText(viVN);
+</script>`,
+    react: `import { viVN } from "@owlky/core";
+
+<DataGrid aria-label="Danh sách" rows={rows} columns={columns} localeText={viVN} />`,
+  },
+  {
     id: "options",
     title: "Options",
     body: "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default.",
@@ -206,6 +335,8 @@ export function Customers() {
     body: `- **\`ok:data-grid:sort\`**, **\`ok:data-grid:filter\`**, **\`ok:data-grid:selection\`**, **\`ok:data-grid:columns\`**, **\`ok:data-grid:density\`**, **\`ok:data-grid:order\`** and **\`ok:data-grid:pinned\`** fire on the grid with the new model in \`detail.model\`. They're cancelable.
 - **\`ok:data-grid:resize\`** reports \`detail.field\` and \`detail.width\`. **\`ok:data-grid:edit\`** reports \`detail.id\` and the edited values in \`detail.row\`, and is cancelable.
 - **Instance:** \`runtime.get(element, "data-grid")\` returns \`{ sortModel, filterModel, selection, columnVisibilityModel, columnOrder, pinnedColumns, columnWidths }\` with a setter for each (\`setSortModel(model)\`, \`setColumnWidth(field, width)\` and so on; setters fire no events), \`toCsv()\`, \`exportCsv()\`, \`setRows(rows)\` and \`setDataSource(source)\` (\`null\` stops it).
+- **\`ok:data-grid:rowclick\`**, **\`ok:data-grid:rowdoubleclick\`**, **\`ok:data-grid:cellclick\`**, **\`ok:data-grid:celldoubleclick\`** and **\`ok:data-grid:columnheaderclick\`** report the row id, the field and the value. **\`ok:data-grid:editstart\`** and **\`ok:data-grid:editstop\`** report the cell and the reason. **\`ok:data-grid:validate\`** asks for an error in \`detail.error\`.
+- **More methods:** \`print(options)\`, \`autosizeColumns(options)\`, \`scrollToIndexes({ rowIndex, colIndex })\`, \`exportState()\`, \`restoreState(state)\`, \`setFilterOperators(field, operators)\`, \`setValueFormatter(field, format)\` and \`setLocaleText(labels)\`. \`toCsv\` and \`exportCsv\` take CSV options.
 - **\`ok:data-grid:scrollend\`** reports \`detail.visibleRowsCount\` when people scroll to the end of the rows. **\`ok:data-grid:datasourceerror\`** reports \`detail.error\` when a data source fails.`,
   },
   {
@@ -220,6 +351,9 @@ export function Customers() {
 - Sortable headers carry \`aria-sort\`, selected rows \`aria-selected\`, and the grid tells its full row and column count.
 - Buttons and checkboxes inside cells take part in the arrow-key navigation. Name them, such as "Edit Ana Silva".
 - The menu button of each column appears on hover and focus, and always on touch screens.
+- Merged cells report their span with \`aria-colspan\` and \`aria-rowspan\`. The cells they cover are hidden from assistive technologies, and the arrow keys skip them.
+- An invalid edit sets \`aria-invalid\` on the field, and its message is announced and linked to the field with \`aria-describedby\`.
+- Header descriptions describe their header. With the icon toolbar, each button is named by its tooltip.
 - While rows load, the grid sets \`aria-busy\` and the loading overlay is a \`status\` named "Loading". The grid keeps the full row count and each row's index, also when only some rows are in the page.`,
   },
 ];
@@ -315,6 +449,66 @@ const PREVIEWS = {
           description: "Rows built from data in HTML, as text.",
         },
         {
+          react: "isRowSelectable",
+          html: "data-ok-selectable on rows",
+          type: "({ id, row }) => boolean",
+          description: "Rows that can be selected.",
+        },
+        {
+          react: "colSpan (column) · getRowHeight · getRowSpacing",
+          html: "aria-colspan · data-ok-row-height · data-ok-spacing-*",
+          type: "number · px | auto · { top, bottom }",
+          description: "Cells that span columns, row heights and space between rows.",
+        },
+        {
+          react: "description · renderHeader (column)",
+          html: "a Tooltip on the header",
+          type: "string · () => ReactNode",
+          description: "The header's tooltip and custom header content.",
+        },
+        {
+          react: "getRowClassName · getCellClassName",
+          html: "class in the markup",
+          type: "(params) => string",
+          description: "Classes for your own styles.",
+        },
+        {
+          react: "onRowClick · onCellClick · onColumnHeaderClick …",
+          html: "ok:data-grid:rowclick · cellclick · columnheaderclick …",
+          type: "(params, event) => void",
+          description: "Clicks, double clicks and keys on rows, cells and headers.",
+        },
+        {
+          react: "apiRef · useGridApiRef()",
+          html: 'runtime.get(element, "data-grid")',
+          type: "GridApi",
+          description: "Methods: models, autosize, scrolling, state, CSV and print.",
+        },
+        {
+          react: "isCellEditable · preProcessEditCellProps · valueParser · valueSetter",
+          html: "data-ok-editable · ok:data-grid:validate",
+          type: "functions",
+          description: "Read-only cells, checks while typing, and how edits become values.",
+        },
+        {
+          react: "onCellEditStart · onCellEditStop · onRowEditStart · onRowEditStop",
+          html: "ok:data-grid:editstart · editstop",
+          type: "(params, reason) => void",
+          description: "Editing started or stopped, and why.",
+        },
+        {
+          react: "filterOperators · getApplyQuickFilterFn (column)",
+          html: "setFilterOperators() · data-ok-searchable",
+          type: "GridFilterOperator[] · null",
+          description: "A column's filter operators, or leaving it out of the search.",
+        },
+        {
+          react: "csvOptions · printOptions",
+          html: "exportCsv(options) · print(options)",
+          type: "object",
+          description: "Delimiter, columns, header line, file name; printed parts.",
+        },
+        {
           react: "showToolbar · localeText · exportFileName",
           html: "the toolbar markup",
           type: "—",
@@ -337,6 +531,8 @@ const PREVIEWS = {
         ["Ctrl + A", "Selects or clears every row"],
         ["Alt + Left / Alt + Right on a header", "Makes the column narrower / wider by 10 pixels"],
         ["Enter or F2 on an editable cell", "Edits the cell (Enter saves, Escape cancels)"],
+        ["A character on an editable cell", "Edits the cell, starting with that character"],
+        ["Left / Right, right to left", "Move in the reading order"],
       ]}
     />
   ),

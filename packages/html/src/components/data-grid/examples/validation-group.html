@@ -1,0 +1,209 @@
+<div data-ok-data-grid data-ok-density="standard" data-ok-edit-mode="cell" data-ok-sorting-mode="client" data-ok-filter-mode="client" data-ok-pagination-mode="client" data-ok-loading-variant="linear-progress" data-ok-toolbar-variant="labeled" data-ok-quick-filter-logic-operator="and" data-ok-ignore-diacritics id="grid-products" class="sb-grid-wide">
+  <div data-ok-data-grid-toolbar>
+    <div data-ok-data-grid-quick-filter>
+      <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-full-width data-ok-margin="none">
+        <div data-ok-text-field-control>
+          <span data-ok-text-field-adornment="start"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M10 3a7 7 0 015.6 11.2l4.6 4.6-1.4 1.4-4.6-4.6A7 7 0 1110 3zm0 2a5 5 0 100 10 5 5 0 000-10z" /></svg></span>
+          <input aria-label="Search" id="grid-products-search" data-ok-text-field-input placeholder="Search…" value="">
+          <fieldset data-ok-text-field-outline aria-hidden="true"></fieldset>
+        </div>
+      </div>
+    </div>
+    <div data-ok-data-grid-toolbar-actions>
+      <button type="button" data-ok-button data-ok-variant="text" data-ok-color="inherit" data-ok-size="sm" aria-haspopup="dialog" aria-expanded="false" aria-controls="grid-products-columns" data-ok-popover-open="grid-products-columns"><span data-ok-button-icon="start" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M4 5h4v14H4zm6 0h4v14h-4zm6 0h4v14h-4z" /></svg></span><span data-ok-button-label>Columns</span></button>
+      <button type="button" data-ok-button data-ok-variant="text" data-ok-color="inherit" data-ok-size="sm" aria-haspopup="dialog" aria-expanded="false" aria-controls="grid-products-filters" data-ok-popover-open="grid-products-filters"><span data-ok-button-icon="start" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M3 5h18l-7 8v6l-4 2v-8z" /></svg></span><span data-ok-button-label>Filters</span></button>
+      <button type="button" data-ok-button data-ok-variant="text" data-ok-color="inherit" data-ok-size="sm" aria-haspopup="menu" aria-expanded="false" aria-controls="grid-products-density" data-ok-popover-open="grid-products-density"><span data-ok-button-icon="start" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M3 5h18v2H3zm0 6h18v2H3zm0 6h18v2H3z" /></svg></span><span data-ok-button-label>Density</span></button>
+      <button type="button" data-ok-button data-ok-variant="text" data-ok-color="inherit" data-ok-size="sm" aria-haspopup="menu" aria-expanded="false" aria-controls="grid-products-export" data-ok-popover-open="grid-products-export"><span data-ok-button-icon="start" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M11 3h2v9l3-3 1.4 1.4L12 15.8l-5.4-5.4L8 9l3 3zM5 18h14v2H5z" /></svg></span><span data-ok-button-label>Export</span></button>
+    </div>
+    <div popover="manual" data-ok-popover data-ok-placement="bottom-end" id="grid-products-columns">
+      <span data-ok-popover-arrow aria-hidden="true"></span>
+      <div data-ok-data-grid-panel role="group" aria-label="Columns">
+        <label data-ok-form-control-label data-ok-label-placement="end">
+          <span data-ok-switch data-ok-color="primary" data-ok-size="small">
+            <input type="checkbox" role="switch" data-ok-switch-input data-ok-field="name" checked>
+            <span data-ok-switch-track aria-hidden="true"></span>
+            <span data-ok-switch-thumb aria-hidden="true"></span>
+          </span>
+          <span data-ok-form-control-label-text>Product</span>
+        </label>
+        <label data-ok-form-control-label data-ok-label-placement="end">
+          <span data-ok-switch data-ok-color="primary" data-ok-size="small">
+            <input type="checkbox" role="switch" data-ok-switch-input data-ok-field="category" checked>
+            <span data-ok-switch-track aria-hidden="true"></span>
+            <span data-ok-switch-thumb aria-hidden="true"></span>
+          </span>
+          <span data-ok-form-control-label-text>Category</span>
+        </label>
+        <label data-ok-form-control-label data-ok-label-placement="end">
+          <span data-ok-switch data-ok-color="primary" data-ok-size="small">
+            <input type="checkbox" role="switch" data-ok-switch-input data-ok-field="price" checked>
+            <span data-ok-switch-track aria-hidden="true"></span>
+            <span data-ok-switch-thumb aria-hidden="true"></span>
+          </span>
+          <span data-ok-form-control-label-text>Price</span>
+        </label>
+        <label data-ok-form-control-label data-ok-label-placement="end">
+          <span data-ok-switch data-ok-color="primary" data-ok-size="small">
+            <input type="checkbox" role="switch" data-ok-switch-input data-ok-field="stock" checked>
+            <span data-ok-switch-track aria-hidden="true"></span>
+            <span data-ok-switch-thumb aria-hidden="true"></span>
+          </span>
+          <span data-ok-form-control-label-text>Stock</span>
+        </label>
+      </div>
+    </div>
+    <div popover="manual" data-ok-popover data-ok-placement="bottom-end" id="grid-products-filters">
+      <span data-ok-popover-arrow aria-hidden="true"></span>
+      <div data-ok-data-grid-panel role="group" aria-label="Filters">
+        <div data-ok-data-grid-filter>
+          <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-filter-remove aria-label="Remove filter"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M6.4 5 12 10.6 17.6 5 19 6.4 13.4 12 19 17.6 17.6 19 12 13.4 6.4 19 5 17.6 10.6 12 5 6.4z" /></svg></button>
+          <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none">
+            <label data-ok-text-field-label for="grid-products-filter-field">Columns</label>
+            <div data-ok-text-field-control>
+              <select id="grid-products-filter-field" data-ok-text-field-input>
+                <option value="name" selected>Product</option>
+                <option value="category">Category</option>
+                <option value="price">Price</option>
+                <option value="stock">Stock</option>
+              </select>
+              <svg data-ok-text-field-select-icon aria-hidden="true" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+              <fieldset data-ok-text-field-outline aria-hidden="true">
+                <legend><span>Columns</span></legend>
+              </fieldset>
+            </div>
+          </div>
+          <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none">
+            <label data-ok-text-field-label for="grid-products-filter-operator">Operator</label>
+            <div data-ok-text-field-control>
+              <select id="grid-products-filter-operator" data-ok-text-field-input>
+                <option value="contains" selected>contains</option>
+                <option value="doesNotContain">does not contain</option>
+                <option value="equals">equals</option>
+                <option value="startsWith">starts with</option>
+                <option value="endsWith">ends with</option>
+                <option value="isEmpty">is empty</option>
+                <option value="isNotEmpty">is not empty</option>
+                <option value="isAnyOf">is any of</option>
+              </select>
+              <svg data-ok-text-field-select-icon aria-hidden="true" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+              <fieldset data-ok-text-field-outline aria-hidden="true">
+                <legend><span>Operator</span></legend>
+              </fieldset>
+            </div>
+          </div>
+          <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none">
+            <label data-ok-text-field-label for="grid-products-filter-value">Value</label>
+            <div data-ok-text-field-control>
+              <input id="grid-products-filter-value" data-ok-text-field-input placeholder="Filter value" value="">
+              <fieldset data-ok-text-field-outline aria-hidden="true">
+                <legend><span>Value</span></legend>
+              </fieldset>
+            </div>
+          </div>
+        </div>
+        <button type="button" data-ok-button data-ok-variant="text" data-ok-color="inherit" data-ok-size="sm" data-ok-data-grid-filter-add><span data-ok-button-icon="start" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z" /></svg></span><span data-ok-button-label>Add filter</span></button>
+      </div>
+    </div>
+    <div popover="manual" data-ok-popover data-ok-placement="bottom-end" id="grid-products-density">
+      <span data-ok-popover-arrow aria-hidden="true"></span>
+      <ul role="menu" data-ok-menu>
+        <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-density="compact">Compact</li>
+        <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-selected data-ok-density="standard">Standard</li>
+        <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-density="comfortable">Comfortable</li>
+      </ul>
+    </div>
+    <div popover="manual" data-ok-popover data-ok-placement="bottom-end" id="grid-products-export">
+      <span data-ok-popover-arrow aria-hidden="true"></span>
+      <ul role="menu" data-ok-menu>
+        <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-export="csv">Download as CSV</li>
+        <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-export="print">Print</li>
+      </ul>
+    </div>
+  </div>
+  <div role="grid" data-ok-data-grid-main aria-label="Products" aria-rowcount="7" aria-colcount="4">
+    <div role="rowgroup" data-ok-data-grid-header>
+      <div role="row" aria-rowindex="1">
+        <div role="columnheader" aria-colindex="1" data-ok-field="name" data-ok-type="string" data-ok-align="left" data-ok-width="180" data-ok-editable aria-sort="none" tabindex="-1">
+          <span data-ok-data-grid-header-title>Product</span>
+          <span data-ok-data-grid-sort-icon><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 4l-6 6h4v10h4V10h4z" /></svg></span>
+          <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-menu-button tabindex="-1" aria-label="Product column menu" aria-haspopup="menu" aria-expanded="false" aria-controls="grid-products-column-menu"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg></button>
+          <span data-ok-data-grid-resize aria-hidden="true"></span>
+        </div>
+        <div role="columnheader" aria-colindex="2" data-ok-field="category" data-ok-type="singleSelect" data-ok-align="left" data-ok-width="150" data-ok-editable data-ok-value-options="[&quot;Furniture&quot;,&quot;Lighting&quot;,&quot;Garden&quot;,&quot;Tools&quot;,&quot;Archived&quot;]" aria-sort="none" tabindex="-1">
+          <span data-ok-data-grid-header-title>Category</span>
+          <span data-ok-data-grid-sort-icon><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 4l-6 6h4v10h4V10h4z" /></svg></span>
+          <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-menu-button tabindex="-1" aria-label="Category column menu" aria-haspopup="menu" aria-expanded="false" aria-controls="grid-products-column-menu"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg></button>
+          <span data-ok-data-grid-resize aria-hidden="true"></span>
+        </div>
+        <div role="columnheader" aria-colindex="3" data-ok-field="price" data-ok-type="number" data-ok-align="right" data-ok-width="130" data-ok-editable aria-sort="none" tabindex="-1">
+          <span data-ok-data-grid-header-title>Price</span>
+          <span data-ok-data-grid-sort-icon><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 4l-6 6h4v10h4V10h4z" /></svg></span>
+          <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-menu-button tabindex="-1" aria-label="Price column menu" aria-haspopup="menu" aria-expanded="false" aria-controls="grid-products-column-menu"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg></button>
+          <span data-ok-data-grid-resize aria-hidden="true"></span>
+        </div>
+        <div role="columnheader" aria-colindex="4" data-ok-field="stock" data-ok-type="number" data-ok-align="right" data-ok-width="110" data-ok-editable aria-sort="none" tabindex="-1">
+          <span data-ok-data-grid-header-title>Stock</span>
+          <span data-ok-data-grid-sort-icon><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 4l-6 6h4v10h4V10h4z" /></svg></span>
+          <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-menu-button tabindex="-1" aria-label="Stock column menu" aria-haspopup="menu" aria-expanded="false" aria-controls="grid-products-column-menu"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg></button>
+          <span data-ok-data-grid-resize aria-hidden="true"></span>
+        </div>
+      </div>
+    </div>
+    <div role="rowgroup" data-ok-data-grid-body>
+      <div role="row" aria-rowindex="2" data-ok-row-id="p-1">
+        <div role="gridcell" aria-colindex="1" data-ok-field="name" data-ok-align="left" tabindex="-1">Café table</div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="category" data-ok-align="left" tabindex="-1">Furniture</div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="price" data-ok-align="right" data-ok-value="129" tabindex="-1">USD 129.00</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="stock" data-ok-align="right" data-ok-value="12" tabindex="-1">12</div>
+      </div>
+      <div role="row" aria-rowindex="3" data-ok-row-id="p-2">
+        <div role="gridcell" aria-colindex="1" data-ok-field="name" data-ok-align="left" tabindex="-1">Crème lamp</div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="category" data-ok-align="left" tabindex="-1">Lighting</div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="price" data-ok-align="right" data-ok-value="49.5" tabindex="-1">USD 49.50</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="stock" data-ok-align="right" data-ok-value="40" tabindex="-1">40</div>
+      </div>
+      <div role="row" aria-rowindex="4" data-ok-row-id="p-3">
+        <div role="gridcell" aria-colindex="1" data-ok-field="name" data-ok-align="left" tabindex="-1">Garden chair</div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="category" data-ok-align="left" tabindex="-1">Garden</div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="price" data-ok-align="right" data-ok-value="35" tabindex="-1">USD 35.00</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="stock" data-ok-align="right" data-ok-value="0" tabindex="-1">0</div>
+      </div>
+      <div role="row" aria-rowindex="5" data-ok-row-id="p-4">
+        <div role="gridcell" aria-colindex="1" data-ok-field="name" data-ok-align="left" tabindex="-1">Hand trowel</div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="category" data-ok-align="left" tabindex="-1">Tools</div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="price" data-ok-align="right" data-ok-value="12.9" tabindex="-1">USD 12.90</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="stock" data-ok-align="right" data-ok-value="88" tabindex="-1">88</div>
+      </div>
+      <div role="row" aria-rowindex="6" data-ok-row-id="p-5">
+        <div role="gridcell" aria-colindex="1" data-ok-field="name" data-ok-align="left" tabindex="-1">Rattan basket</div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="category" data-ok-align="left" tabindex="-1">Archived</div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="price" data-ok-align="right" data-ok-value="22" tabindex="-1">USD 22.00</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="stock" data-ok-align="right" data-ok-editable="false" data-ok-value="3" tabindex="-1">3</div>
+      </div>
+      <div role="row" aria-rowindex="7" data-ok-row-id="p-6">
+        <div role="gridcell" aria-colindex="1" data-ok-field="name" data-ok-align="left" tabindex="-1">Façade light</div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="category" data-ok-align="left" tabindex="-1">Lighting</div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="price" data-ok-align="right" data-ok-value="79" tabindex="-1">USD 79.00</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="stock" data-ok-align="right" data-ok-value="15" tabindex="-1">15</div>
+      </div>
+    </div>
+  </div>
+  <div data-ok-data-grid-loading data-ok-variant="linear-progress" role="status" aria-label="Loading" hidden><span role="progressbar" data-ok-linear-progress data-ok-variant="indeterminate" data-ok-color="primary" aria-label="Loading"><span data-ok-linear-progress-bar="1"></span><span data-ok-linear-progress-bar="2"></span></span></div>
+  <div data-ok-data-grid-overlay role="status" hidden></div>
+  <div popover="manual" data-ok-popover data-ok-placement="bottom-start" id="grid-products-column-menu">
+    <span data-ok-popover-arrow aria-hidden="true"></span>
+    <ul role="menu" data-ok-menu>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item aria-disabled="true" data-ok-data-grid-action="asc">Sort by ASC</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item aria-disabled="true" data-ok-data-grid-action="desc">Sort by DESC</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item aria-disabled="true" data-ok-data-grid-action="unsort">Unsort</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item aria-disabled="true" data-ok-data-grid-action="left">Move left</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="right">Move right</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="pin-left">Pin to left</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="pin-right">Pin to right</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item aria-disabled="true" data-ok-data-grid-action="unpin">Unpin</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item aria-disabled="true" data-ok-data-grid-action="filter">Filter</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item aria-disabled="true" data-ok-data-grid-action="hide">Hide column</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="columns">Manage columns</li>
+    </ul>
+  </div>
+</div>

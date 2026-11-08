@@ -3,12 +3,14 @@ import { readFile } from "node:fs/promises";
 import { gzipSync } from "node:zlib";
 
 const budgets = [
-  // 44 kB since the data grid's phase 2 (filters, resizing, reordering, pinning, editing, print);
+  // 52 kB since the data grid's phase 4 (spans, row heights, autosizing, validation, events, state,
+  // formats, print and CSV options; about 49 kB); 44 kB after its phase 2 (filters, resizing,
+  // reordering, pinning, editing, print);
   // 40 kB after its phase 1 (grid engine, keyboard navigation, runtime; ADR-0020); 34 kB after
   // Motion (trigger, count-up and five runtimes, the 62 variant names); 31 kB after
   // the composite inputs, 24 kB after the navigation components, 22 kB after the overlays. The CDN bundle carries every component; the npm ESM build
   // (`@owlky/html`) is tree-shaken.
-  ["packages/html/dist/owlky.js", 44_000, "HTML runtime + all components (IIFE)"],
+  ["packages/html/dist/owlky.js", 52_000, "HTML runtime + all components (IIFE)"],
   ["packages/html/dist/esm/runtime/runtime.js", 3_000, "HTML core runtime"],
   // 28 kB since the data grid (phase 1); 27 kB after Motion (entrance, loop, draw and border
   // keyframes); 25 kB after the composite

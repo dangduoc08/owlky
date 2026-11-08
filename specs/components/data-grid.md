@@ -2,7 +2,8 @@
 
 Reference: Minimal UI kit "Data grid" page, sections Basic and Custom (content only). Upstream:
 MUI X Data Grid, every tier (Community, Pro, Premium) — the owner's request; built in phases
-(ADR-0020). This spec covers phases 1 to 3. Created with `/component`; phases 2 and 3 by Update.
+(ADR-0020, phases per ADR-0021). This spec covers phases 1 to 4. Created with `/component`;
+phases 2 to 4 by Update.
 Reference URL: https://minimals.cc/components/mui/data-grid
 
 ## Purpose
@@ -19,6 +20,7 @@ div[data-ok-data-grid][data-ok-density][data-ok-checkbox-selection]?[data-ok-dis
     div[data-ok-data-grid-quick-filter] › TextField (search)
     div[data-ok-data-grid-toolbar-actions] › Button × (Columns, Filters, Density, Export)
          [aria-haspopup][aria-controls="<id>-columns|filters|density|export"] (HTML: data-ok-popover-open)
+         (toolbarVariant="icon": IconButton[aria-labelledby] + Tooltip#<id>-<panel>-tooltip)
     Popover#<id>-columns › div[data-ok-data-grid-panel][role=group] › FormControlLabel(Switch[data-ok-field])…
     Popover#<id>-filters › div[data-ok-data-grid-panel][role=group]
          › div[data-ok-data-grid-filter]… › IconButton[data-ok-data-grid-filter-remove],
@@ -32,16 +34,23 @@ div[data-ok-data-grid][data-ok-density][data-ok-checkbox-selection]?[data-ok-dis
     div[role=rowgroup][data-ok-data-grid-header] › div[role=row][aria-rowindex=1]
       div[role=columnheader][data-ok-field=__check__][data-ok-data-grid-checkbox] › Checkbox (select all)
       div[role=columnheader][aria-colindex][data-ok-field][data-ok-type][data-ok-align][aria-sort]?
-         [data-ok-width|min-width|flex]?[data-ok-hideable=false]?[data-ok-filterable=false]?
+         [data-ok-width|min-width|max-width|flex]?[data-ok-hideable=false]?[data-ok-filterable=false]?
+         [data-ok-searchable=false]?[aria-describedby → Tooltip#<id>-<field>-description]?
+         [data-ok-format=number|currency|percent|date|datetime][data-ok-format-options='{…}']? (HTML only)
          [data-ok-resizable=false]?[data-ok-editable]?[data-ok-value-options='["…"]']?[data-ok-pinned]?[hidden]?
         span[data-ok-data-grid-header-title] · span[data-ok-data-grid-sort-icon] · IconButton[data-ok-data-grid-menu-button]
         · span[data-ok-data-grid-resize][aria-hidden]                         (resizable)
     div[role=rowgroup][data-ok-data-grid-body]   (--_ok-data-grid-before|after: spacers of the row window)
       div[role=row][aria-rowindex][data-ok-row-id][aria-selected]?[data-ok-editing]?[hidden]?
+         [data-ok-selectable=false]?[data-ok-row-height=<px>|auto]?[data-ok-spacing-top|bottom=<px>]?
+         [class]? (getRowClassName)
         (hidden: other pages / filtered out; data-ok-editing: row edit mode)
         div[role=gridcell][data-ok-data-grid-checkbox] › Checkbox
         div[role=gridcell][aria-colindex][data-ok-field][data-ok-align][data-ok-value]?[data-ok-text]?
-           [data-ok-pinned]?[data-ok-editing]?[hidden]?   (editing: input|select[data-ok-data-grid-edit-input])
+           [data-ok-pinned]?[data-ok-editing]?[hidden]?   (editing: input|select[data-ok-data-grid-edit-input]
+           [aria-invalid]? + span[data-ok-data-grid-edit-error][role=alert]?)
+           [aria-colspan]? (covered cells: [hidden][data-ok-covered]) [aria-rowspan]? (covered:
+           [data-ok-covered][aria-hidden=true], kept in place) [data-ok-editable=false]? [class]?
   template[data-ok-data-grid-row]                (HTML only: one row, copied by setRows / data sources)
   template[data-ok-data-grid-cell="<field>"]?    (HTML only: cell content, [data-ok-data-grid-value] slots)
   div[data-ok-data-grid-loading][data-ok-variant][role=status][aria-label=Loading][hidden]?
@@ -77,6 +86,16 @@ Root: `data-ok-data-grid`. Unknown values fall back to the default.
 | `loading` | `data-ok-loading` | flag | boolean | off | Data is loading: an overlay shows progress. |
 | `loadingVariant` | `data-ok-loading-variant="…"` | style | `linear-progress` `circular-progress` `skeleton` | `linear-progress` | How loading shows: a bar, a spinner or placeholder rows. |
 | `scrollEndThreshold` | `data-ok-scroll-end-threshold="…"` | number | number | `80` | Distance from the end of the rows (px) that reports the scroll end. |
+| `disableMultipleRowSelection` | `data-ok-disable-multiple-row-selection` | flag | boolean | off | One row at a time: selecting a row clears the others (no select all). |
+| `keepNonExistentRowsSelected` | `data-ok-keep-non-existent-rows-selected` | flag | boolean | off | Selected ids stay selected when their rows go away (server pages, new data). |
+| `checkboxSelectionVisibleOnly` | `data-ok-checkbox-selection-visible-only` | flag | boolean | off | Select all selects the rows of the current page only. |
+| `autosizeOnMount` | `data-ok-autosize-on-mount` | flag | boolean | off | Columns fit their content once the grid shows (resizable, non-flex columns). |
+| `rowSpanning` | `data-ok-row-spanning` | flag | boolean | off | Neighbouring cells of a column with the same value merge into one tall cell. |
+| `rowHeight` | `data-ok-row-height="…"` | number | number | — | Row height (px) before density. |
+| `toolbarVariant` | `data-ok-toolbar-variant="…"` | style | `labeled` `icon` | `labeled` | Toolbar buttons with text, or icons with tooltips. |
+| `quickFilterLogicOperator` | `data-ok-quick-filter-logic-operator="…"` | style | `and` `or` | `and` | Search words: every one must match (`and`), or any one (`or`). |
+| `quickFilterExcludeHiddenColumns` | `data-ok-quick-filter-exclude-hidden-columns` | flag | boolean | off | The search skips hidden columns. |
+| `ignoreDiacritics` | `data-ok-ignore-diacritics` | flag | boolean | off | Searches and filters ignore accents: "ha noi" finds "Hà Nội". |
 <!-- /options:data-grid -->
 
 React props (MUI X names): `rows`, `columns` (`GridColDef`: `field`, `headerName`, `type`
@@ -99,11 +118,24 @@ string | number | date | dateTime | boolean | singleSelect | actions, `width` (1
 `paginationMode` (client | server), `rowCount`, `loading`, `loadingVariant` (`slotProps.loadingOverlay.variant`),
 `onRowsScrollEnd({ visibleRowsCount })`, `scrollEndThreshold` (80), `dataSource` (`getRows(params)`
 → `{ rows, rowCount? }`; implies every server mode), `dataSourceCache` (default: 50 requests per
-source; `null` disables), `onDataSourceError(error)`. Beyond MUI X (accessibility): Alt + Left / Right resizes, column menu
+source; `null` disables), `onDataSourceError(error)`. Phase 4: `disableMultipleRowSelection`, `isRowSelectable`,
+`keepNonExistentRowsSelected`, `checkboxSelectionVisibleOnly`, `autosizeOnMount`, `autosizeOptions`
+(`columns`, `includeHeaders`), column `colSpan` (number or per cell), `rowSpanning`, column
+`description`, `renderHeader`, `maxWidth`, `rowHeight`, `getRowHeight` (px, `"auto"`, null),
+`getEstimatedRowHeight`, `getRowClassName`, `getCellClassName`, `getRowSpacing`, `onRowClick`,
+`onRowDoubleClick`, `onCellClick`, `onCellDoubleClick`, `onCellKeyDown`, `onColumnHeaderClick`,
+`apiRef` / `useGridApiRef()` (`GridApi`: get/set models, `autosizeColumns`, `scrollToIndexes`,
+`exportState`, `restoreState`, `getDataAsCsv`, `exportDataAsCsv`, `exportDataAsPrint`),
+`isCellEditable`, column `valueParser` / `valueSetter` / `preProcessEditCellProps` (`{ error }`),
+`onCellEditStart` / `onCellEditStop` / `onRowEditStart` / `onRowEditStop` (reasons), `isAnyOf`,
+column `filterOperators`, `getApplyQuickFilterFn: null`, `quickFilterLogicOperator`,
+`quickFilterExcludeHiddenColumns`, `ignoreDiacritics`, `csvOptions`, `printOptions`, locale packs
+(`enUS`, `viVN`, `frFR`, `deDE`, `esES`, `jaJP`, `zhCN` from core), right-to-left layout. Beyond MUI
+X: `toolbarVariant` (labeled | icon: the reference's icon-only toolbar). Beyond MUI X (accessibility): Alt + Left / Right resizes, column menu
 Move left / Move right. Renamed: `rowSelectionModel` is an id array (MUI v8:
-`{ type, ids }`). Later phases: see ADR-0020 (tree data, master-detail, row reordering / pinning,
+`{ type, ids }`). Later phases: see ADR-0021 (tree data, master-detail, row reordering / pinning,
 column groups, row grouping, aggregation, pivoting, Excel, clipboard, cell selection, header
-filters; column virtualization, lazy loading of row chunks). Not applicable: `slots`, `slotProps`, `sx`, `classes`, license keys.
+filters, column virtualization, lazy loading of row chunks). Not applicable: `slots`, `slotProps`, `sx`, `classes`, license keys.
 
 ## Layout and tokens
 Rows 52px (`--ok-spacing` × 13; compact 36px, comfortable 68px), header 56px (× 14) on
@@ -147,6 +179,26 @@ count. Data source: asked on mount and on every sort, filter and page change (`{
 filterModel, paginationModel }`); responses are cached per request; a stale response is dropped;
 loading shows meanwhile. HTML rows from data: `setRows(rows)` copies the row template and sets each
 cell's text (or fills the cell template's value slots); never markup.
+Phase 4. Selection: `disableMultipleRowSelection` selects one row at a time (no select all,
+`aria-multiselectable` off; the header checkbox cell is named "Checkbox selection"); unselectable
+rows have a disabled checkbox and ignore clicks; `checkboxSelectionVisibleOnly` limits select all to
+the page; new rows drop the ids that went away unless `keepNonExistentRowsSelected` (not on mount).
+Autosize: each rendered cell (and header, + 64px for its icons) measured at `width: max-content`,
+clamped to min / max width; on mount again after `document.fonts.ready`; double click on a resize
+handle. Spans: `colSpan` hides the covered cells (`grid-column: span`); `rowSpanning` merges
+neighbouring cells of a column with the same text on the page (the first cell overflows the rows
+below; the row keeps its height; the window starts at a span's first row); arrows up / down keep the
+column and pass covered cells. Row heights: per-row px or `auto` (text wraps, measured after
+render; the window uses per-row offsets), spacing as margins; `rowHeight` × density factor (0.7, 1,
+1.3). Editing: `isCellEditable` / `data-ok-editable="false"`; a printable key on a focused editable
+cell opens it with that character; `preProcessEditCellProps` (HTML: `ok:data-grid:validate`, a
+listener sets `detail.error`) marks the field `aria-invalid` and shows the message; Enter and
+leaving keep the cell open while it has an error, Escape cancels. Filters: `isAnyOf` takes a list
+(the panel's field takes values separated by commas); custom operators replace the type's;
+`ignoreDiacritics` folds accents (and đ). Export: CSV options; Print prints every filtered, sorted
+row of every page (the toolbar, footer and checkboxes only when asked). Right to left: from
+`direction`; left pins sit at the start (inline-start), Left / Right and Alt + Left / Right follow
+the reading order, dragging a resize handle left widens.
 
 ## Keyboard
 | Key | Action |
@@ -161,6 +213,8 @@ cell's text (or fills the cell template's value slots); never markup.
 | Ctrl / Cmd + A | Select / clear every row |
 | Alt + ← / → (header) | Narrower / wider by 10px |
 | Enter / F2 (editable cell) | Edit; in the field: Enter commits, Escape cancels |
+| A character (editable cell) | Edit, starting with that character |
+| Right to left | Left / Right and Alt + Left / Right follow the reading order |
 
 ## Accessibility
 `role=grid` named by `aria-label` / `aria-labelledby` (never the root), counts and indexes,
@@ -176,7 +230,14 @@ columnVisibilityModel, columnOrder, pinnedColumns, columnWidths, setSortModel, s
 setSelection, setColumnVisibilityModel, setColumnOrder, setPinnedColumns, setColumnWidth,
 toCsv(), exportCsv() }`.
 `ok:data-grid:scrollend` (`{ visibleRowsCount }`), `ok:data-grid:datasourceerror` (`{ error }`);
-instance `setRows(rows)`, `setDataSource(source | null)`.
+instance `setRows(rows)`, `setDataSource(source | null)`. Phase 4: `ok:data-grid:rowclick` /
+`rowdoubleclick` (`{ id }`), `cellclick` / `celldoubleclick` (`{ id, field, value }`),
+`columnheaderclick` (`{ field }`), `editstart` / `editstop` (`{ id, field?, reason }`), `validate`
+(`{ id, field, value, error? }`: set `error`); instance `print(options)`, `autosizeColumns(options)`,
+`scrollToIndexes({ rowIndex, colIndex })`, `exportState()`, `restoreState(state)`,
+`setFilterOperators(field, operators)`, `setValueFormatter(field, fn | null)`,
+`setLocaleText(labels)` (the text the runtime writes; the markup is written in the page's
+language), `toCsv(options)` / `exportCsv(options)`.
 Attributes: `data-ok-label-no-rows`, `data-ok-label-no-results`, `data-ok-export-file-name`.
 
 ## Responsive
@@ -188,3 +249,8 @@ React renders every filtered row (other pages `hidden`) and writes the template 
 the HTML runtime writes it through CSSOM and keeps filtered-out rows `hidden` (parity skips hidden
 rows and `style`). `data-ok-count` on the pagination is HTML-only (ignored). With virtualization
 both render the same window (same measure). Row templates are HTML-only (`<template>` is skipped).
+Phase 4: functions (`getRowHeight`, `isRowSelectable`, `colSpan`, `isCellEditable`, class names)
+are React-only; React writes their result as attributes that HTML reads (`data-ok-row-height`,
+`data-ok-selectable`, `aria-colspan`, `data-ok-editable`, `class`). HTML computes row spans itself.
+`data-ok-format` and `setValueFormatter` are HTML-only (React has `valueFormatter`). The filter
+value field is a text field in both (`isAnyOf`: values separated by commas).

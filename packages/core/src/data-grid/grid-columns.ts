@@ -11,6 +11,8 @@ export interface GridColumnControlsOptions {
   onMove(field: string, target: string): void;
   /** Reordering allowed now (read on each drag). */
   canReorder(): boolean;
+  /** Double click on a resize handle: fit the column to its content. */
+  onAutosize?(field: string): void;
 }
 
 export interface GridColumnControls {
@@ -40,6 +42,8 @@ export function createGridColumnControls(
       const handle = target.closest("[data-ok-data-grid-resize]");
       const startX = event.clientX;
       const startWidth = header.getBoundingClientRect().width;
+      // Right to left, the handle is on the left edge: dragging left widens.
+      const sign = getComputedStyle(header).direction === "rtl" ? -1 : 1;
       let dragging = false;
       if (!handle && (target.closest("button, input") || !options.canReorder())) return;
       if (handle) event.preventDefault();
@@ -49,7 +53,7 @@ export function createGridColumnControls(
         // Synthetic events (tests) have no active pointer.
       }
       const move = (e: PointerEvent) => {
-        const dx = e.clientX - startX;
+        const dx = (e.clientX - startX) * sign;
         if (handle) {
           options.onResize(field, startWidth + dx, false);
           return;
@@ -62,7 +66,7 @@ export function createGridColumnControls(
         doc.removeEventListener("pointermove", move);
         doc.removeEventListener("pointerup", up);
         if (handle) {
-          options.onResize(field, startWidth + (e.clientX - startX), true);
+          options.onResize(field, startWidth + (e.clientX - startX) * sign, true);
           // The release ends on the header: its click must not sort.
           header.setAttribute("data-ok-just-dragged", "");
         } else if (dragging) {
@@ -80,6 +84,16 @@ export function createGridColumnControls(
     { signal },
   );
 
+  grid.addEventListener(
+    "dblclick",
+    (event) => {
+      const handle = (event.target as Element).closest("[data-ok-data-grid-resize]");
+      const field = handle?.closest(HEADER)?.getAttribute("data-ok-field");
+      if (field) options.onAutosize?.(field);
+    },
+    { signal },
+  );
+
   return {
     destroy() {
       abort.abort();
@@ -91,7 +105,12 @@ export function createGridColumnControls(
  * Prints `content` alone: a hidden iframe gets clones of the page's stylesheets and of the
  * content (no markup strings), prints, then goes away.
  */
-export function printGridContent(content: HTMLElement, title: string): void {
+export function printGridContent(
+  content: HTMLElement,
+  title: string,
+  /** Changes the copy before printing (parts left out, rows added). */
+  prepare?: (copy: HTMLElement) => void,
+): void {
   const doc = content.ownerDocument;
   const frame = doc.createElement("iframe");
   frame.setAttribute("aria-hidden", "true");
@@ -109,9 +128,54 @@ export function printGridContent(content: HTMLElement, title: string): void {
     const value = doc.documentElement.getAttribute(attribute);
     if (value !== null) target.documentElement.setAttribute(attribute, value);
   }
-  target.body.append(target.importNode(content, true));
+  const copy = target.importNode(content, true);
+  target.body.append(copy);
+  prepare?.(copy);
   const view = frame.contentWindow as Window;
   view.addEventListener("afterprint", () => frame.remove(), { once: true });
   view.focus();
   view.print();
+}
+
+export interface GridPrintLayout {
+  /** Default true. */
+  hideToolbar?: boolean | undefined;
+  /** Default true. */
+  hideFooter?: boolean | undefined;
+  /** Include the selection checkboxes. Default false. */
+  includeCheckboxes?: boolean | undefined;
+}
+
+/**
+ * Readies a print copy of a grid root: drops the toolbar and footer (unless kept), overlays,
+ * menus and column controls; keeps the cells of `fields` (shown, even if hidden on screen) and
+ * the checkbox column when asked; lets every row show (no fixed height, no window spacers).
+ * `template` gives the column tracks of the printed fields.
+ */
+export function prepareGridPrint(
+  copy: HTMLElement,
+  layout: GridPrintLayout,
+  fields: readonly string[],
+  template: string,
+): void {
+  if (layout.hideToolbar !== false) copy.querySelector("[data-ok-data-grid-toolbar]")?.remove();
+  if (layout.hideFooter !== false) copy.querySelector("[data-ok-data-grid-footer]")?.remove();
+  for (const part of copy.querySelectorAll(
+    "[popover], [data-ok-data-grid-loading], [data-ok-data-grid-overlay][hidden], template, [data-ok-data-grid-menu-button], [data-ok-data-grid-resize]",
+  ))
+    part.remove();
+  const keep = new Set(fields);
+  for (const cell of copy.querySelectorAll<HTMLElement>('[role="grid"] [data-ok-field]')) {
+    const field = cell.getAttribute("data-ok-field") as string;
+    const kept = field === "__check__" ? !!layout.includeCheckboxes : keep.has(field);
+    if (!kept) cell.remove();
+    else if (!cell.hasAttribute("data-ok-covered")) cell.hidden = false;
+  }
+  copy.style.setProperty("height", "auto");
+  const main = copy.querySelector<HTMLElement>('[role="grid"]');
+  main?.style.setProperty("--_ok-data-grid-columns", template);
+  main?.style.setProperty("overflow", "visible");
+  const body = copy.querySelector<HTMLElement>("[data-ok-data-grid-body]");
+  body?.style.removeProperty("--_ok-data-grid-before");
+  body?.style.removeProperty("--_ok-data-grid-after");
 }

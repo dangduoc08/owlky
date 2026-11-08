@@ -16,7 +16,7 @@ import {
   pinGridColumn,
   syncGridPinning,
 } from "./data-grid.js";
-import { createGridColumnControls, printGridContent } from "./grid-columns.js";
+import { createGridColumnControls, prepareGridPrint, printGridContent } from "./grid-columns.js";
 
 afterEach(() => {
   cleanupDom();
@@ -218,6 +218,28 @@ describe("createGridColumnControls", () => {
     expect(onMove).toHaveBeenCalledTimes(1);
     handle.destroy();
   });
+
+  it("double click on a resize handle autosizes; right to left, dragging left widens", () => {
+    const grid = mount(GRID).firstElementChild as HTMLElement;
+    const onAutosize = vi.fn();
+    const onResize = vi.fn();
+    createGridColumnControls(grid, {
+      onResize,
+      onMove: vi.fn(),
+      canReorder: () => true,
+      onAutosize,
+    });
+    const handle = grid.querySelector("[data-ok-data-grid-resize]") as HTMLElement;
+    handle.dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
+    (grid.querySelector('[data-ok-field="b"]') as HTMLElement).dispatchEvent(
+      new MouseEvent("dblclick", { bubbles: true }),
+    );
+    expect(onAutosize.mock.calls).toEqual([["a"]]);
+    grid.setAttribute("dir", "rtl");
+    pointer(handle, "pointerdown", 100);
+    pointer(handle, "pointerup", 70);
+    expect(onResize.mock.calls[0]).toEqual(["a", expect.closeTo(130, 0), true]);
+  });
 });
 
 describe("printGridContent", () => {
@@ -252,5 +274,82 @@ describe("printGridContent", () => {
     expect(document.querySelector("iframe")).toBeNull();
     style.remove();
     document.documentElement.removeAttribute("data-ok-theme");
+  });
+});
+
+describe("prepareGridPrint", () => {
+  const ROOT = `<div data-ok-data-grid style="height: 300px">
+    <div data-ok-data-grid-toolbar>tools</div>
+    <div role="grid" style="overflow: auto"><div data-ok-data-grid-header><div role="row">
+      <div role="columnheader" data-ok-field="__check__"></div>
+      <div role="columnheader" data-ok-field="a">A<button data-ok-data-grid-menu-button></button><span data-ok-data-grid-resize></span></div>
+      <div role="columnheader" data-ok-field="b" hidden>B</div>
+      <div role="columnheader" data-ok-field="c">C</div>
+    </div></div>
+    <div data-ok-data-grid-body style="--_ok-data-grid-before: 10px; --_ok-data-grid-after: 20px"><div role="row">
+      <div role="gridcell" data-ok-field="__check__"></div>
+      <div role="gridcell" data-ok-field="a" aria-colspan="2">1</div>
+      <div role="gridcell" data-ok-field="b" hidden data-ok-covered>2</div>
+      <div role="gridcell" data-ok-field="c">3</div>
+    </div></div></div>
+    <div data-ok-data-grid-loading hidden></div><div data-ok-data-grid-overlay hidden></div>
+    <div popover>menu</div><template></template>
+    <div data-ok-data-grid-footer>pages</div>
+  </div>`;
+
+  it("keeps the printed fields, drops controls, toolbar and footer, and lets rows grow", () => {
+    const copy = mount(ROOT).firstElementChild as HTMLElement;
+    prepareGridPrint(copy, {}, ["a", "b"], "10px 20px");
+    expect(
+      copy.querySelector("[data-ok-data-grid-toolbar], [data-ok-data-grid-footer]"),
+    ).toBeNull();
+    expect(
+      copy.querySelectorAll("[popover], template, button, [data-ok-data-grid-resize]"),
+    ).toHaveLength(0);
+    expect(copy.querySelectorAll('[data-ok-field="__check__"], [data-ok-field="c"]')).toHaveLength(
+      0,
+    );
+    // A hidden column prints; a cell covered by a span stays hidden.
+    expect(
+      (copy.querySelector('[role="columnheader"][data-ok-field="b"]') as HTMLElement).hidden,
+    ).toBe(false);
+    expect((copy.querySelector('[role="gridcell"][data-ok-field="b"]') as HTMLElement).hidden).toBe(
+      true,
+    );
+    expect(copy.style.height).toBe("auto");
+    const main = copy.querySelector<HTMLElement>('[role="grid"]') as HTMLElement;
+    expect(main.style.getPropertyValue("--_ok-data-grid-columns")).toBe("10px 20px");
+    expect(main.style.overflow).toBe("visible");
+    const body = copy.querySelector<HTMLElement>("[data-ok-data-grid-body]") as HTMLElement;
+    expect(body.style.getPropertyValue("--_ok-data-grid-before")).toBe("");
+  });
+
+  it("keeps the toolbar, footer and checkboxes when asked", () => {
+    const copy = mount(ROOT).firstElementChild as HTMLElement;
+    prepareGridPrint(
+      copy,
+      { hideToolbar: false, hideFooter: false, includeCheckboxes: true },
+      ["c"],
+      "1fr",
+    );
+    expect(copy.querySelector("[data-ok-data-grid-toolbar]")).not.toBeNull();
+    expect(copy.querySelector("[data-ok-data-grid-footer]")).not.toBeNull();
+    expect(copy.querySelectorAll('[data-ok-field="__check__"]')).toHaveLength(2);
+    const bare = mount("<div></div>").firstElementChild as HTMLElement;
+    prepareGridPrint(bare, {}, [], "");
+    expect(bare.style.height).toBe("auto");
+  });
+
+  it("printGridContent hands the copy to prepare", () => {
+    const content = mount("<div>Rows<b>x</b></div>").firstElementChild as HTMLElement;
+    const append = document.body.append.bind(document.body);
+    vi.spyOn(document.body, "append").mockImplementation((...nodes) => {
+      append(...nodes);
+      for (const node of nodes)
+        if (node instanceof HTMLIFrameElement) (node.contentWindow as Window).print = vi.fn();
+    });
+    printGridContent(content, "T", (copy) => copy.querySelector("b")?.remove());
+    expect(document.querySelector("iframe")?.contentDocument?.body.textContent).toBe("Rows");
+    document.querySelector("iframe")?.remove();
   });
 });

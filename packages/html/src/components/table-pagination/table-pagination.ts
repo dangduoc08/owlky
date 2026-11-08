@@ -67,7 +67,16 @@ export const tablePagination = defineComponent<TablePaginationInstance>({
       const total = count();
       page = Math.min(page, Number.isFinite(last()) ? last() : page);
       const label = element.querySelector("[data-ok-table-pagination-displayed]");
-      if (label) label.textContent = defaultLabelDisplayedRows(pageRange(page, rows, total));
+      // `data-ok-label-displayed-rows`: a pattern with {from}, {to} and {count} (other languages).
+      const range = pageRange(page, rows, total);
+      const pattern = element.getAttribute("data-ok-label-displayed-rows");
+      if (label)
+        label.textContent = pattern
+          ? pattern
+              .replaceAll("{from}", String(range.from))
+              .replaceAll("{to}", String(range.to))
+              .replaceAll("{count}", String(range.count))
+          : defaultLabelDisplayedRows(range);
       for (const action of ACTIONS) {
         const button = element.querySelector<HTMLButtonElement>(
           `[data-ok-table-pagination-action="${action}"]`,

@@ -867,6 +867,11 @@
   height: 520px;
 }
 
+/* Data grids that grow with their rows, full width. */
+.sb-grid-wide {
+  width: 100%;
+}
+
 .sb-grid-ellipsis {
   min-width: 0;
   overflow: hidden;

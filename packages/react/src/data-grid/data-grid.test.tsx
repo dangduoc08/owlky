@@ -1,11 +1,11 @@
-import type { GridDataSource, GridGetRowsParams } from "@owlky/core";
+import { type GridDataSource, type GridGetRowsParams, viVN } from "@owlky/core";
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
-import { createRef } from "react";
+import { createRef, useEffect } from "react";
 import { renderToString } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { userEvent } from "vitest/browser";
 import { expectNoAxeViolations } from "../test-utils.js";
-import { DataGrid, type GridColDef } from "./data-grid.js";
+import { DataGrid, type GridApi, type GridColDef, useGridApiRef } from "./data-grid.js";
 
 interface Row {
   id: number;
@@ -41,6 +41,24 @@ const COLUMNS: GridColDef<Row>[] = [
 ];
 
 afterEach(() => vi.restoreAllMocks());
+
+/** A grid that hands out its API (`useGridApiRef`). */
+let latestApi: GridApi<Row> | null = null;
+function ApiGrid() {
+  const apiRef = useGridApiRef<Row>();
+  useEffect(() => {
+    latestApi = apiRef.current;
+  });
+  return (
+    <DataGrid
+      aria-labelledby="t"
+      rows={ROWS}
+      columns={COLUMNS}
+      apiRef={apiRef}
+      exportFileName="people"
+    />
+  );
+}
 
 const grid = () => screen.getByRole("grid");
 const header = (name: RegExp | string) => screen.getByRole("columnheader", { name });
@@ -1052,6 +1070,840 @@ describe("DataGrid", () => {
         await settle();
       });
       expect(names()).toEqual(["P101", "P102"]);
+    });
+  });
+
+  describe("phase 4", () => {
+    const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
+    const rowEl = (id: string) =>
+      grid().querySelector<HTMLElement>(`[data-ok-row-id="${id}"]`) as HTMLElement;
+    const cellAt = (id: string, field: string) =>
+      rowEl(id).querySelector<HTMLElement>(`[data-ok-field="${field}"]`) as HTMLElement;
+    interface Line {
+      id: string;
+      group: string;
+      item: string;
+      amount: number;
+      note: string;
+    }
+    const LINES: Line[] = [
+      { id: "a", group: "G1", item: "x", amount: 1, note: "short" },
+      { id: "b", group: "G1", item: "y", amount: 2, note: "a long note that wraps" },
+      { id: "c", group: "G2", item: "z", amount: 3, note: "short" },
+      { id: "t", group: "Total", item: "", amount: 6, note: "" },
+    ];
+    const LINE_COLUMNS: GridColDef<Line>[] = [
+      { field: "group", headerName: "Group", colSpan: ({ row }) => (row.id === "t" ? 2 : 1) },
+      { field: "item", headerName: "Item", description: "What was bought" },
+      { field: "amount", headerName: "Amount", type: "number", maxWidth: 200 },
+      { field: "note", headerName: "Note", getApplyQuickFilterFn: null },
+    ];
+
+    it("single selection, unselectable rows, select all on the page, pruning", async () => {
+      const onRowSelectionModelChange = vi.fn();
+      const { rerender } = render(
+        <DataGrid
+          aria-label="People"
+          rows={ROWS}
+          columns={COLUMNS}
+          checkboxSelection
+          disableMultipleRowSelection
+          isRowSelectable={({ row }) => row.id !== 2}
+          onRowSelectionModelChange={onRowSelectionModelChange}
+        />,
+      );
+      expect(grid().hasAttribute("aria-multiselectable")).toBe(false);
+      const head = grid().querySelector('[role="columnheader"][data-ok-data-grid-checkbox]');
+      expect(head?.querySelector("input")).toBeNull();
+      expect(head?.getAttribute("aria-label")).toBe("Checkbox selection");
+      await userEvent.click(cellAt("1", "name"));
+      await userEvent.click(cellAt("3", "name"));
+      expect(onRowSelectionModelChange).toHaveBeenLastCalledWith(["3"]);
+      await userEvent.click(cellAt("3", "name"));
+      expect(onRowSelectionModelChange).toHaveBeenLastCalledWith([]);
+      expect(rowEl("2").getAttribute("data-ok-selectable")).toBe("false");
+      expect((rowEl("2").querySelector("input") as HTMLInputElement).disabled).toBe(true);
+      const calls = onRowSelectionModelChange.mock.calls.length;
+      await userEvent.click(cellAt("2", "name"));
+      cellAt("1", "name").focus();
+      fireEvent.keyDown(cellAt("1", "name"), { key: "a", ctrlKey: true });
+      expect(onRowSelectionModelChange).toHaveBeenCalledTimes(calls);
+
+      // Select all: this page's selectable rows; selections of removed rows go away.
+      rerender(
+        <DataGrid
+          aria-label="People"
+          rows={ROWS}
+          columns={COLUMNS}
+          checkboxSelection
+          checkboxSelectionVisibleOnly
+          isRowSelectable={({ row }) => row.id !== 2}
+          initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
+          pageSizeOptions={[2, 5]}
+          onRowSelectionModelChange={onRowSelectionModelChange}
+        />,
+      );
+      await userEvent.selectOptions(screen.getByRole("combobox", { name: /Rows per page/ }), "2");
+      await userEvent.click(screen.getByRole("checkbox", { name: "Select all rows" }));
+      expect(onRowSelectionModelChange).toHaveBeenLastCalledWith(["1"]);
+      rerender(
+        <DataGrid
+          aria-label="People"
+          rows={ROWS.slice(1)}
+          columns={COLUMNS}
+          checkboxSelection
+          onRowSelectionModelChange={onRowSelectionModelChange}
+        />,
+      );
+      await act(settle);
+      expect(onRowSelectionModelChange).toHaveBeenLastCalledWith([]);
+    });
+
+    it("keepNonExistentRowsSelected keeps ids of rows that went away", async () => {
+      const onRowSelectionModelChange = vi.fn();
+      const props = {
+        "aria-label": "People",
+        columns: COLUMNS,
+        checkboxSelection: true,
+        keepNonExistentRowsSelected: true,
+        onRowSelectionModelChange,
+      };
+      const { rerender } = render(<DataGrid {...props} rows={ROWS} />);
+      await userEvent.click(cellAt("1", "name"));
+      rerender(<DataGrid {...props} rows={ROWS.slice(1)} />);
+      await act(settle);
+      expect(onRowSelectionModelChange).toHaveBeenCalledTimes(1);
+    });
+
+    it("column and row spans, descriptions, custom headers and classes", () => {
+      render(
+        <DataGrid
+          id="s"
+          aria-label="Lines"
+          rows={LINES}
+          columns={[
+            ...LINE_COLUMNS.slice(0, 3),
+            { ...(LINE_COLUMNS[3] as GridColDef<Line>), renderHeader: () => <b>Notes</b> },
+          ]}
+          rowSpanning
+          getRowClassName={({ row }) => (row.id === "t" ? "total" : "")}
+          getCellClassName={({ field }) => (field === "amount" ? "money" : "")}
+          hideFooter
+        />,
+      );
+      const total = cellAt("t", "group");
+      expect(total.getAttribute("aria-colspan")).toBe("2");
+      expect(total.style.getPropertyValue("--_ok-data-grid-colspan")).toBe("2");
+      expect(cellAt("t", "item").hidden).toBe(true);
+      const g1 = cellAt("a", "group");
+      expect(g1.getAttribute("aria-rowspan")).toBe("2");
+      expect(g1.style.getPropertyValue("--_ok-data-grid-rowspan")).toBe("2");
+      expect(cellAt("b", "group").hasAttribute("data-ok-covered")).toBe(true);
+      expect(cellAt("b", "group").getAttribute("aria-hidden")).toBe("true");
+      expect(rowEl("t").className).toBe("total");
+      expect(rowEl("a").className).toBe("");
+      expect(cellAt("a", "amount").className).toBe("money");
+      const item = header(/Item/);
+      expect(item.getAttribute("aria-describedby")).toBe("s-item-description");
+      expect(document.getElementById("s-item-description")?.textContent).toContain(
+        "What was bought",
+      );
+      expect(header(/Notes/).querySelector("b")?.textContent).toBe("Notes");
+      expect(header(/Amount/).getAttribute("data-ok-max-width")).toBe("200");
+      expect(header(/Notes/).getAttribute("data-ok-searchable")).toBe("false");
+    });
+
+    it("row heights, spacing and the grid's row height", () => {
+      render(
+        <DataGrid
+          aria-label="Lines"
+          rows={LINES}
+          columns={LINE_COLUMNS}
+          rowHeight={40}
+          density="compact"
+          getRowHeight={({ model }) =>
+            model.note.length > 10 ? "auto" : model.id === "c" ? 70 : null
+          }
+          getRowSpacing={({ isFirstVisible }) => ({ top: isFirstVisible ? 0 : 4, bottom: 4 })}
+          hideFooter
+        />,
+      );
+      const root = grid().closest("[data-ok-data-grid]") as HTMLElement;
+      expect(root.getAttribute("data-ok-row-height")).toBe("40");
+      expect(root.style.getPropertyValue("--_ok-data-grid-row-height")).toBe("28px");
+      expect(rowEl("b").getAttribute("data-ok-row-height")).toBe("auto");
+      expect(rowEl("c").getAttribute("data-ok-row-height")).toBe("70");
+      expect(rowEl("c").style.getPropertyValue("--_ok-data-grid-row-height")).toBe("70px");
+      expect(rowEl("a").hasAttribute("data-ok-row-height")).toBe(false);
+      expect(rowEl("a").getAttribute("data-ok-spacing-top")).toBe("0");
+      expect(rowEl("b").style.getPropertyValue("--_ok-data-grid-spacing-top")).toBe("4px");
+      expect(cellAt("c", "note").getBoundingClientRect().height).toBe(70);
+    });
+
+    it("virtualizes rows of their own height in a bounded grid", async () => {
+      const many = Array.from({ length: 400 }, (_, i) => ({
+        id: `r${i}`,
+        group: `g${i}`,
+        item: "i",
+        amount: i,
+        note: "n",
+      }));
+      render(
+        <DataGrid
+          aria-label="Lines"
+          rows={many}
+          columns={LINE_COLUMNS}
+          getRowHeight={({ model }) => (model.amount % 2 ? 80 : 40)}
+          getEstimatedRowHeight={() => 50}
+          hideFooter
+          style={{ height: 400 }}
+        />,
+      );
+      await act(settle);
+      const count = grid().querySelectorAll('[data-ok-data-grid-body] > [role="row"]').length;
+      expect(count).toBeGreaterThan(3);
+      expect(count).toBeLessThan(30);
+      await act(async () => {
+        grid().scrollTop = 61 * 200;
+        fireEvent.scroll(grid());
+        await settle();
+      });
+      const first = Number(
+        grid()
+          .querySelector('[data-ok-data-grid-body] > [role="row"]')
+          ?.getAttribute("aria-rowindex"),
+      );
+      expect(first).toBeGreaterThan(150);
+      expect(first).toBeLessThan(250);
+    });
+
+    it("click, double click, key and header events", async () => {
+      const spies = {
+        onRowClick: vi.fn(),
+        onRowDoubleClick: vi.fn(),
+        onCellClick: vi.fn(),
+        onCellDoubleClick: vi.fn(),
+        onCellKeyDown: vi.fn(),
+        onColumnHeaderClick: vi.fn(),
+      };
+      render(<DataGrid aria-label="People" rows={ROWS} columns={COLUMNS} {...spies} />);
+      await userEvent.click(cellAt("1", "age"));
+      expect(spies.onRowClick.mock.calls[0]?.[0]).toMatchObject({
+        id: "1",
+        indexRelativeToCurrentPage: 0,
+        isFirstVisible: true,
+      });
+      expect(spies.onCellClick.mock.calls[0]?.[0]).toMatchObject({
+        id: "1",
+        field: "age",
+        value: 30,
+      });
+      await userEvent.dblClick(cellAt("2", "name"));
+      expect(spies.onRowDoubleClick.mock.calls[0]?.[0]).toMatchObject({ id: "2" });
+      expect(spies.onCellDoubleClick.mock.calls[0]?.[0]).toMatchObject({ field: "name" });
+      fireEvent.keyDown(cellAt("1", "age"), { key: "ArrowDown" });
+      expect(spies.onCellKeyDown.mock.calls[0]?.[0]).toMatchObject({ id: "1", field: "age" });
+      await userEvent.click(header(/Name/));
+      expect(spies.onColumnHeaderClick.mock.calls[0]?.[0]).toMatchObject({ field: "name" });
+    });
+
+    it("apiRef: models, state, scrolling, CSV, autosize", async () => {
+      const apiRef = { current: null } as { current: GridApi<Row> | null };
+      const onColumnWidthChange = vi.fn();
+      const onSortModelChange = vi.fn();
+      const { unmount } = render(
+        <DataGrid
+          aria-label="People"
+          rows={ROWS}
+          columns={COLUMNS}
+          apiRef={apiRef}
+          onColumnWidthChange={onColumnWidthChange}
+          onSortModelChange={onSortModelChange}
+          csvOptions={{ delimiter: ";" }}
+          style={{ height: 150 }}
+        />,
+      );
+      const api = apiRef.current as GridApi<Row>;
+      expect(api.getRow("2")?.name).toBe("Bao");
+      act(() => api.setSortModel([{ field: "age", sort: "desc" }]));
+      expect(onSortModelChange).toHaveBeenCalledWith([{ field: "age", sort: "desc" }]);
+      expect(names()[0]).toBe("Diego");
+      act(() => {
+        api.setFilterModel({ items: [], quickFilterValues: ["a"] });
+        api.setRowSelectionModel(["1"]);
+        api.setColumnVisibilityModel({ label: false });
+        api.setColumnOrder(["age", "name"]);
+        api.setPinnedColumns({ left: ["age"] });
+        api.setColumnWidth("name", 222);
+        api.setPaginationModel({ page: 0, pageSize: 5 });
+        api.setDensity("compact");
+      });
+      expect((apiRef.current as GridApi<Row>).getFilterModel().quickFilterValues).toEqual(["a"]);
+      expect((apiRef.current as GridApi<Row>).getRowSelectionModel()).toEqual(["1"]);
+      const state = (apiRef.current as GridApi<Row>).exportState();
+      expect(state).toMatchObject({
+        sorting: { sortModel: [{ field: "age", sort: "desc" }] },
+        columns: {
+          columnVisibilityModel: { label: false },
+          dimensions: { name: { width: 222 } },
+        },
+        pinnedColumns: { left: ["age"] },
+        density: "compact",
+      });
+      // Columns in their new order; rows as searched and sorted.
+      expect((apiRef.current as GridApi<Row>).getDataAsCsv()).toContain("Age;Name");
+      expect(
+        (apiRef.current as GridApi<Row>).getDataAsCsv({ fields: ["age"], utf8WithBom: false }),
+      ).toBe("Age\r\n30\r\n9");
+      const createObjectURL = vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:x");
+      vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
+      vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
+      (apiRef.current as GridApi<Row>).exportDataAsCsv({ fileName: "x" });
+      expect(createObjectURL).toHaveBeenCalled();
+
+      act(() =>
+        (apiRef.current as GridApi<Row>).restoreState({
+          sorting: { sortModel: [] },
+          filter: { filterModel: { items: [], quickFilterValues: [] } },
+          pagination: { paginationModel: { page: 0 } },
+          columns: {
+            columnVisibilityModel: {},
+            orderedFields: [],
+            dimensions: { age: { width: 99 } },
+          },
+          pinnedColumns: {},
+          density: "standard",
+          __proto__: { bad: true },
+        }),
+      );
+      expect(names()[0]).toBe("Ana");
+      expect(grid().closest("[data-ok-data-grid]")?.getAttribute("data-ok-density")).toBe(
+        "standard",
+      );
+
+      act(() => (apiRef.current as GridApi<Row>).scrollToIndexes({ rowIndex: 3, colIndex: 3 }));
+      expect(grid().scrollTop).toBeGreaterThan(0);
+      act(() => (apiRef.current as GridApi<Row>).scrollToIndexes({ rowIndex: 0 }));
+      expect(grid().scrollTop).toBe(0);
+
+      act(() => (apiRef.current as GridApi<Row>).autosizeColumns({ columns: ["age"] }));
+      expect(onColumnWidthChange).toHaveBeenLastCalledWith("age", expect.any(Number));
+      fireEvent.doubleClick(header(/Name/).querySelector("[data-ok-data-grid-resize]") as Element);
+      expect(onColumnWidthChange).toHaveBeenLastCalledWith("name", expect.any(Number));
+      unmount();
+      expect(apiRef.current).toBeNull();
+    });
+
+    it("autosizes on mount (again once fonts are ready)", async () => {
+      const onColumnWidthChange = vi.fn();
+      render(
+        <DataGrid
+          aria-label="People"
+          rows={ROWS}
+          columns={COLUMNS}
+          autosizeOnMount
+          autosizeOptions={{ includeHeaders: false }}
+          onColumnWidthChange={onColumnWidthChange}
+        />,
+      );
+      expect(onColumnWidthChange).toHaveBeenCalledWith("name", expect.any(Number));
+      await act(() => document.fonts.ready);
+      await act(settle);
+      expect(onColumnWidthChange.mock.calls.length).toBeGreaterThan(4);
+    });
+
+    it("prints every filtered row of every page, without the toolbar and footer", async () => {
+      const print = vi.fn();
+      let copy = "";
+      const append = document.body.append.bind(document.body);
+      vi.spyOn(document.body, "append").mockImplementation((...nodes) => {
+        append(...nodes);
+        for (const node of nodes)
+          if (node instanceof HTMLIFrameElement)
+            (node.contentWindow as Window).print = () => {
+              copy = (node.contentDocument as Document).body.innerHTML;
+              print();
+            };
+      });
+      const apiRef = { current: null } as { current: GridApi<Row> | null };
+      render(
+        <DataGrid
+          aria-label="People"
+          rows={ROWS}
+          columns={COLUMNS}
+          apiRef={apiRef}
+          checkboxSelection
+          showToolbar
+          pageSizeOptions={[2]}
+          initialState={{ pagination: { paginationModel: { pageSize: 2 } } }}
+          printOptions={{ fields: ["name"], includeCheckboxes: true }}
+        />,
+      );
+      act(() => (apiRef.current as GridApi<Row>).exportDataAsPrint());
+      await act(settle);
+      expect(print).toHaveBeenCalled();
+      expect(copy).not.toContain("data-ok-data-grid-toolbar");
+      expect(copy).not.toContain("data-ok-data-grid-footer");
+      expect(copy).toContain("Diego");
+      expect(copy).not.toContain('data-ok-field="age"');
+      expect(copy).toContain('data-ok-field="__check__"');
+      // The grid itself is back to its page.
+      expect(names()).toHaveLength(2);
+      document.querySelector("iframe")?.remove();
+      act(() =>
+        (apiRef.current as GridApi<Row>).exportDataAsPrint({
+          allColumns: true,
+          hideToolbar: false,
+        }),
+      );
+      await act(settle);
+      expect(copy).toContain("data-ok-data-grid-toolbar");
+      document.querySelector("iframe")?.remove();
+    });
+
+    it("editing: per cell, typing, validation, parser and setter, start and stop events", async () => {
+      interface Item {
+        id: number;
+        name: string;
+        qty: number;
+        locked: boolean;
+        meta: { tag: string };
+      }
+      const items: Item[] = [
+        { id: 1, name: "Bolt", qty: 4, locked: false, meta: { tag: "a" } },
+        { id: 2, name: "Nut", qty: 9, locked: true, meta: { tag: "b" } },
+      ];
+      const onCellEditStart = vi.fn();
+      const onCellEditStop = vi.fn();
+      const processRowUpdate = vi.fn((row: Item) => row);
+      const columns: GridColDef<Item>[] = [
+        {
+          field: "name",
+          headerName: "Name",
+          editable: true,
+          preProcessEditCellProps: ({ props }) => ({
+            error: String(props.value).length < 2 ? "Too short" : undefined,
+          }),
+        },
+        {
+          field: "qty",
+          headerName: "Qty",
+          type: "number",
+          editable: true,
+          valueParser: (value) => Number(value) * 10,
+          preProcessEditCellProps: ({ props }) => ({ error: Number(props.value) > 1000 }),
+        },
+        {
+          field: "tag",
+          headerName: "Tag",
+          editable: true,
+          valueGetter: (row) => row.meta.tag,
+        },
+      ];
+      render(
+        <DataGrid
+          id="e"
+          aria-label="Items"
+          rows={items}
+          columns={columns}
+          isCellEditable={({ row }) => !row.locked}
+          onCellEditStart={onCellEditStart}
+          onCellEditStop={onCellEditStop}
+          processRowUpdate={processRowUpdate}
+        />,
+      );
+      expect(cellAt("2", "name").getAttribute("data-ok-editable")).toBe("false");
+      await userEvent.dblClick(cellAt("2", "name"));
+      expect(screen.queryByRole("textbox", { name: "Edit Name" })).toBeNull();
+
+      // Typing on a focused cell edits with that character.
+      cellAt("1", "name").focus();
+      await userEvent.keyboard("Z");
+      await act(settle);
+      const input = screen.getByRole("textbox", { name: "Edit Name" }) as HTMLInputElement;
+      expect(input.value).toBe("Z");
+      expect(onCellEditStart).toHaveBeenLastCalledWith(
+        expect.objectContaining({ id: "1", field: "name" }),
+        "printableKeyDown",
+      );
+      expect(input.getAttribute("aria-invalid")).toBe("true");
+      const error = document.getElementById(input.getAttribute("aria-describedby") as string);
+      expect(error?.textContent).toBe("Too short");
+      expect(error?.getAttribute("role")).toBe("alert");
+      // Enter keeps the cell open while the value has an error.
+      await userEvent.keyboard("{Enter}");
+      expect(screen.getByRole("textbox", { name: "Edit Name" })).toBeTruthy();
+      await userEvent.keyboard("ed{Enter}");
+      await act(settle);
+      expect(onCellEditStop).toHaveBeenLastCalledWith(
+        expect.objectContaining({ field: "name" }),
+        "enterKeyDown",
+      );
+      expect(processRowUpdate).toHaveBeenLastCalledWith(
+        expect.objectContaining({ name: "Zed" }),
+        expect.anything(),
+      );
+
+      // A parser turns the text into the value; an error without a message only marks the field.
+      await userEvent.dblClick(cellAt("1", "qty"));
+      const qty = screen.getByRole("spinbutton", { name: "Edit Qty" });
+      await userEvent.clear(qty);
+      await userEvent.type(qty, "500");
+      expect(qty.getAttribute("aria-invalid")).toBe("true");
+      expect(qty.hasAttribute("aria-describedby")).toBe(false);
+      await userEvent.keyboard("{Escape}");
+      expect(onCellEditStop).toHaveBeenLastCalledWith(expect.anything(), "escapeKeyDown");
+      await userEvent.dblClick(cellAt("1", "qty"));
+      await userEvent.clear(screen.getByRole("spinbutton", { name: "Edit Qty" }));
+      await userEvent.type(screen.getByRole("spinbutton", { name: "Edit Qty" }), "3{Enter}");
+      await act(settle);
+      expect(processRowUpdate).toHaveBeenLastCalledWith(
+        expect.objectContaining({ qty: 30 }),
+        expect.anything(),
+      );
+    });
+
+    it("editing rows: start and stop events; setters build the row", async () => {
+      interface Item {
+        id: number;
+        name: string;
+        meta: { tag: string };
+      }
+      const onRowEditStart = vi.fn();
+      const onRowEditStop = vi.fn();
+      const processRowUpdate = vi.fn((row: Item) => row);
+      render(
+        <DataGrid
+          aria-label="Items"
+          rows={[{ id: 1, name: "Bolt", meta: { tag: "a" } }]}
+          columns={[
+            { field: "name", headerName: "Name", editable: true },
+            {
+              field: "tag",
+              headerName: "Tag",
+              editable: true,
+              valueSetter: (value, row) => ({ ...row, meta: { tag: String(value) } }),
+            },
+          ]}
+          getRowId={(row) => row.id}
+          editMode="row"
+          onRowEditStart={onRowEditStart}
+          onRowEditStop={onRowEditStop}
+          processRowUpdate={processRowUpdate}
+        />,
+      );
+      cellAt("1", "tag").focus();
+      fireEvent.keyDown(cellAt("1", "tag"), { key: "Enter" });
+      await act(settle);
+      expect(onRowEditStart).toHaveBeenCalledWith(
+        expect.objectContaining({ id: "1" }),
+        "enterKeyDown",
+      );
+      expect(document.activeElement).toBe(screen.getByRole("textbox", { name: "Edit Tag" }));
+      await userEvent.clear(screen.getByRole("textbox", { name: "Edit Tag" }));
+      await userEvent.type(screen.getByRole("textbox", { name: "Edit Tag" }), "q{Enter}");
+      await act(settle);
+      expect(onRowEditStop).toHaveBeenCalledWith(
+        expect.objectContaining({ id: "1" }),
+        "enterKeyDown",
+      );
+      expect(processRowUpdate.mock.calls[0]?.[0]).toMatchObject({ meta: { tag: "q" } });
+    });
+
+    it("filters: isAnyOf, custom operators, search options and accents", async () => {
+      const onFilterModelChange = vi.fn();
+      const { rerender } = render(
+        <DataGrid
+          id="f"
+          aria-label="People"
+          rows={ROWS}
+          columns={[
+            ...COLUMNS.slice(0, 1),
+            {
+              ...(COLUMNS[1] as GridColDef<Row>),
+              filterOperators: [
+                {
+                  value: "atLeast",
+                  label: "at least",
+                  getApplyFilterFn: (item) =>
+                    item.value ? (value) => Number(value) >= Number(item.value) : null,
+                },
+                {
+                  value: "known",
+                  label: "known",
+                  requiresValue: false,
+                  getApplyFilterFn: () => (v) => v !== null,
+                },
+              ],
+            },
+          ]}
+          showToolbar
+          onFilterModelChange={onFilterModelChange}
+        />,
+      );
+      await userEvent.click(screen.getByRole("button", { name: "Filters" }));
+      const panel = screen.getByRole("group", { name: "Filters" });
+      await userEvent.selectOptions(within(panel).getByLabelText("Operator"), "isAnyOf");
+      await userEvent.type(within(panel).getByLabelText("Value"), "ana, bao");
+      expect(names()).toEqual(["Ana", "Bao"]);
+      await userEvent.selectOptions(within(panel).getByLabelText("Columns"), "age");
+      const operators = within(panel).getByLabelText("Operator") as HTMLSelectElement;
+      expect([...operators.options].map((o) => o.textContent)).toEqual(["at least", "known"]);
+      await userEvent.type(within(panel).getByLabelText("Value"), "30");
+      expect(names()).toEqual(["Ana", "Diego"]);
+      await userEvent.selectOptions(operators, "known");
+      expect((within(panel).getByLabelText("Value") as HTMLInputElement).disabled).toBe(true);
+      expect(names()).toEqual(["Ana", "Bao", "Diego"]);
+
+      const accents = [
+        { id: 1, name: "Hà Nội", age: 1 },
+        { id: 2, name: "Huế", age: 2 },
+      ];
+      rerender(
+        <DataGrid
+          aria-label="Places"
+          rows={accents}
+          columns={COLUMNS.slice(0, 2)}
+          ignoreDiacritics
+          quickFilterLogicOperator="or"
+          filterModel={{ items: [], quickFilterValues: ["noi", "hue"] }}
+        />,
+      );
+      expect(names()).toEqual(["Hà Nội", "Huế"]);
+      rerender(
+        <DataGrid
+          aria-label="Places"
+          rows={accents}
+          columns={COLUMNS.slice(0, 2)}
+          quickFilterExcludeHiddenColumns
+          columnVisibilityModel={{ name: false }}
+          filterModel={{ items: [], quickFilterValues: ["hue"] }}
+        />,
+      );
+      expect(grid().querySelectorAll('[data-ok-data-grid-body] > [role="row"]')).toHaveLength(0);
+    });
+
+    it("icon toolbar, locale text, axe", async () => {
+      render(
+        <DataGrid
+          id="l"
+          aria-label="People"
+          rows={ROWS}
+          columns={COLUMNS}
+          showToolbar
+          toolbarVariant="icon"
+          localeText={viVN}
+        />,
+      );
+      const root = grid().closest("[data-ok-data-grid]") as HTMLElement;
+      expect(root.getAttribute("data-ok-toolbar-variant")).toBe("icon");
+      const columnsButton = screen.getByRole("button", { name: "Cột" });
+      expect(columnsButton.hasAttribute("data-ok-icon-button")).toBe(true);
+      expect(columnsButton.getAttribute("aria-labelledby")).toBe("l-columns-tooltip");
+      expect(
+        grid().querySelector("[data-ok-data-grid-menu-button]")?.getAttribute("aria-label"),
+      ).toBe("Name menu cột");
+      expect(screen.getByText("Số hàng mỗi trang:")).toBeTruthy();
+      expect(screen.getByText("1–4 trên 4")).toBeTruthy();
+      await expectNoAxeViolations();
+    });
+
+    it("SSR and axe of spans and validation errors", async () => {
+      const html = renderToString(
+        <DataGrid aria-label="Lines" rows={LINES} columns={LINE_COLUMNS} rowSpanning />,
+      );
+      expect(html).toContain('aria-rowspan="2"');
+      render(
+        <DataGrid aria-label="Lines" rows={LINES} columns={LINE_COLUMNS} rowSpanning hideFooter />,
+      );
+      await expectNoAxeViolations();
+    });
+  });
+
+  describe("phase 4 edges", () => {
+    const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
+    interface Big {
+      id: number;
+      city: string;
+      text: string;
+    }
+    const big = (n: number): Big[] =>
+      Array.from({ length: n }, (_, i) => ({ id: i, city: "Lima", text: `row ${i}` }));
+    const BIG_COLUMNS: GridColDef<Big>[] = [
+      { field: "city", headerName: "City", width: 300 },
+      { field: "text", headerName: "Text", width: 400 },
+    ];
+    const scrollTo = async (top: number) => {
+      await act(async () => {
+        grid().scrollTop = top;
+        fireEvent.scroll(grid());
+        await settle();
+      });
+    };
+
+    it("row spans in the window, auto rows, scrolling to indexes (uniform and per row)", async () => {
+      for (const auto of [false, true]) {
+        const apiRef = { current: null } as { current: GridApi<Big> | null };
+        const { unmount } = render(
+          <DataGrid
+            aria-label="Big"
+            rows={big(200)}
+            columns={BIG_COLUMNS}
+            rowSpanning
+            hideFooter
+            apiRef={apiRef}
+            style={{ height: 300, width: 300 }}
+            {...(auto
+              ? {
+                  getRowHeight: ({ model }: { model: Big }) => (model.id % 2 ? "auto" : null),
+                  getEstimatedRowHeight: () => 40,
+                }
+              : {})}
+          />,
+        );
+        await act(settle);
+        await scrollTo(4000);
+        await act(settle);
+        // Every city is the same: the window starts at the span's first row.
+        expect(
+          grid()
+            .querySelector('[data-ok-data-grid-body] > [role="row"]')
+            ?.getAttribute("aria-rowindex"),
+        ).toBe("2");
+        const api = apiRef.current as GridApi<Big>;
+        act(() => api.scrollToIndexes({ rowIndex: 150 }));
+        expect(grid().scrollTop).toBeGreaterThan(4000);
+        act(() => api.scrollToIndexes({ rowIndex: 1 }));
+        expect(grid().scrollTop).toBeLessThan(200);
+        grid().scrollLeft = 300;
+        act(() => api.scrollToIndexes({ colIndex: 0 }));
+        expect(grid().scrollLeft).toBe(0);
+        act(() => api.scrollToIndexes({ colIndex: 1 }));
+        expect(grid().scrollLeft).toBeGreaterThan(0);
+        act(() => api.scrollToIndexes({ colIndex: 0 }));
+        act(() => api.scrollToIndexes({ rowIndex: 999, colIndex: 9 }));
+        unmount();
+      }
+    });
+
+    it("measures auto rows that scroll into view", async () => {
+      const props = {
+        "aria-label": "Big",
+        columns: BIG_COLUMNS,
+        hideFooter: true,
+        getRowHeight: () => "auto" as const,
+        getEstimatedRowHeight: () => 30,
+        style: { height: 300 },
+      };
+      const { rerender } = render(<DataGrid {...props} rows={big(50)} />);
+      await act(settle);
+      // New rows arrive while the grid is windowed: they are measured as they show.
+      rerender(<DataGrid {...props} rows={big(200)} />);
+      await act(settle);
+      await scrollTo(3000);
+      await act(settle);
+      const first = Number(
+        grid()
+          .querySelector('[data-ok-data-grid-body] > [role="row"]')
+          ?.getAttribute("aria-rowindex"),
+      );
+      expect(first).toBeGreaterThan(20);
+    });
+
+    it("useGridApiRef; partial states; defaults of CSV and print", async () => {
+      const print = vi.fn();
+      const append = document.body.append.bind(document.body);
+      vi.spyOn(document.body, "append").mockImplementation((...nodes) => {
+        append(...nodes);
+        for (const node of nodes)
+          if (node instanceof HTMLIFrameElement) (node.contentWindow as Window).print = print;
+      });
+      render(<ApiGrid />);
+      const grid = latestApi as unknown as GridApi<Row>;
+      act(() => grid.restoreState({}));
+      act(() => grid.restoreState({ filter: { filterModel: { items: [] } } }));
+      expect(grid.getSortModel()).toEqual([]);
+      expect(grid.getDataAsCsv()).toContain("Name,Age");
+      act(() => grid.exportDataAsPrint());
+      await act(settle);
+      expect(document.querySelector("iframe")?.contentDocument?.title).toBe("people");
+      document.querySelector("iframe")?.remove();
+      act(() => grid.autosizeColumns({ columns: ["nope"] }));
+    });
+
+    it("operator labels fall back to values; select edits without options; typed numbers", async () => {
+      render(
+        <DataGrid
+          id="o"
+          aria-label="Items"
+          rows={[{ id: 1, kind: "a", qty: 2 }]}
+          columns={[
+            {
+              field: "kind",
+              headerName: "Kind",
+              type: "singleSelect",
+              editable: true,
+              filterOperators: [{ value: "same", getApplyFilterFn: () => null }],
+            },
+            { field: "qty", headerName: "Qty", type: "number", editable: true },
+          ]}
+          showToolbar
+        />,
+      );
+      await userEvent.click(screen.getByRole("button", { name: "Filters" }));
+      const panel = screen.getByRole("group", { name: "Filters" });
+      expect(within(panel).getByRole("option", { name: "same" })).toBeTruthy();
+      const kind = grid().querySelector<HTMLElement>(
+        '[data-ok-row-id="1"] [data-ok-field="kind"]',
+      ) as HTMLElement;
+      await userEvent.keyboard("{Escape}");
+      fireEvent.doubleClick(kind);
+      await act(settle);
+      expect(kind.querySelector("select")?.querySelectorAll("option")).toHaveLength(0);
+      await userEvent.keyboard("{Escape}");
+      const qty = grid().querySelector<HTMLElement>(
+        '[data-ok-row-id="1"] [data-ok-field="qty"]',
+      ) as HTMLElement;
+      qty.focus();
+      await userEvent.keyboard("7");
+      await act(settle);
+      expect((qty.querySelector("input") as HTMLInputElement).value).toBe("7");
+      await userEvent.keyboard("{Enter}");
+    });
+
+    it("a data source error after a newer request is ignored", async () => {
+      const onDataSourceError = vi.fn();
+      let fail: (reason: unknown) => void = () => {};
+      const slow: GridDataSource<Row> = {
+        getRows: () =>
+          new Promise((_, reject) => {
+            fail = reject;
+          }),
+      };
+      const fast: GridDataSource<Row> = { getRows: () => Promise.resolve({ rows: ROWS }) };
+      const { rerender } = render(
+        <DataGrid
+          aria-label="People"
+          rows={[]}
+          columns={COLUMNS}
+          dataSource={slow}
+          onDataSourceError={onDataSourceError}
+        />,
+      );
+      rerender(
+        <DataGrid
+          aria-label="People"
+          rows={[]}
+          columns={COLUMNS}
+          dataSource={fast}
+          onDataSourceError={onDataSourceError}
+        />,
+      );
+      await act(async () => {
+        fail(new Error("late"));
+        await settle();
+      });
+      expect(onDataSourceError).not.toHaveBeenCalled();
     });
   });
 });

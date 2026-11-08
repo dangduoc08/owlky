@@ -1328,6 +1328,8 @@ describe("overlay attributes", () => {
       "data-ok-filter-mode": "client",
       "data-ok-pagination-mode": "client",
       "data-ok-loading-variant": "linear-progress",
+      "data-ok-toolbar-variant": "labeled",
+      "data-ok-quick-filter-logic-operator": "and",
     });
     expect(
       dataGridAttributes({
@@ -1350,6 +1352,8 @@ describe("overlay attributes", () => {
       "data-ok-filter-mode": "client",
       "data-ok-pagination-mode": "client",
       "data-ok-loading-variant": "linear-progress",
+      "data-ok-toolbar-variant": "labeled",
+      "data-ok-quick-filter-logic-operator": "and",
       "data-ok-disable-multiple-columns-filtering": "",
       "data-ok-disable-column-resize": "",
       "data-ok-disable-column-reorder": "",
@@ -1360,5 +1364,30 @@ describe("overlay attributes", () => {
       "data-ok-disable-multiple-columns-sorting": "",
     });
     expect(dataGridAttributes({ density: HOSTILE })["data-ok-density"]).toBe("standard");
+    expect(
+      dataGridAttributes({
+        disableMultipleRowSelection: true,
+        keepNonExistentRowsSelected: true,
+        checkboxSelectionVisibleOnly: true,
+        autosizeOnMount: true,
+        rowSpanning: true,
+        rowHeight: 40,
+        toolbarVariant: "icon",
+        quickFilterLogicOperator: "or",
+        quickFilterExcludeHiddenColumns: true,
+        ignoreDiacritics: true,
+      }),
+    ).toMatchObject({
+      "data-ok-disable-multiple-row-selection": "",
+      "data-ok-keep-non-existent-rows-selected": "",
+      "data-ok-checkbox-selection-visible-only": "",
+      "data-ok-autosize-on-mount": "",
+      "data-ok-row-spanning": "",
+      "data-ok-row-height": "40",
+      "data-ok-toolbar-variant": "icon",
+      "data-ok-quick-filter-logic-operator": "or",
+      "data-ok-quick-filter-exclude-hidden-columns": "",
+      "data-ok-ignore-diacritics": "",
+    });
   });
 });

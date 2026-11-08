@@ -46,7 +46,7 @@ component and each `/integrate` run.
 | MUI | Timeline | ✅ | Timeline and its parts | Rating, Slider, Timeline, Transfer list, Tree view & Autocomplete |
 | MUI | Tooltip | ✅ | Tooltip | Popover, Tooltip, Menu, Dialog & Snackbar |
 | MUI | Transfer list | ✅ | TransferList | Rating, Slider, Timeline, Transfer list, Tree view & Autocomplete |
-| MUI X | Data grid | ✅ phases 1–3 of 6 (ADR-0020, ADR-0021) | DataGrid | Data grid |
+| MUI X | Data grid | ✅ phases 1–4 of 6 (ADR-0020, ADR-0021) | DataGrid | Data grid |
 | MUI X | Date pickers | wave 7 (ADR) | — | Next |
 | MUI X | Tree view | ✅ | SimpleTreeView, TreeItem, RichTreeView | Rating, Slider, Timeline, Transfer list, Tree view & Autocomplete |
 | Extra | Animate | ✅ beta | Motion, MotionGroup, MotionText, CountUp, MotionBorder; Dialog `transition` | Motion |
@@ -338,8 +338,8 @@ reference's Basic toolbar is icon-only), original data and names, clicking a row
 | 1 | Columns (types, width / flex / min width, alignment, formatters, custom cells), sorting with multi-sort (Pro), quick filter, filter panel (one filter), pagination, checkbox selection, column visibility, density, CSV export, column menu, keyboard navigation, toolbar | ✅ 2026-11-08 |
 | 2 | Multi filters and logic operators (Pro), column resizing and reordering (Pro), column pinning (Pro), cell and row editing, print export | ✅ 2026-11-08 |
 | 3 | Row virtualization; server-side sorting, filtering and pagination (`sortingMode` / `filterMode` / `paginationMode="server"`, `rowCount`); infinite loading, `dataSource` with cache (Pro); `loading` overlay and skeleton rows; HTML: a JavaScript rows API with row templates | ✅ 2026-11-08 |
-| 4 | Community and API completeness. **Selection:** single-row selection (`disableMultipleRowSelection`), `isRowSelectable`, `keepNonExistentRowsSelected`, `checkboxSelectionVisibleOnly`. **Columns:** autosizing (`autosizeColumns`, double-click the resize edge), `colSpan` and `rowSpanning`, header `description` tooltips, `renderHeader`. **Rows:** `getRowHeight` and `"auto"` heights, `getRowClassName` / `getCellClassName`, `getRowSpacing`. **Editing:** validation with error states (`preProcessEditCellProps`), `valueParser` / `valueSetter`, start editing by typing, `onCellEditStart` / `onCellEditStop` / `onRowEditStop`, `isCellEditable`. **Filtering:** `isAnyOf`, custom operators, quick filter options (`quickFilterLogicOperator`, searched columns). **Events and API:** `onRowClick`, `onCellClick`, `onCellDoubleClick`, `onColumnHeaderClick`…, `apiRef`, `exportState` / `restoreState`. **Export:** CSV options (delimiter, fields, all rows or filtered), print options, printing every filtered row. **Look and language:** the reference's icon-only toolbar, locale packs, right-to-left layout. **HTML:** value formatters for edited and `setRows` cells | next (`/component` Update; may split into 4a / 4b) |
-| 5 | Tree data (data source loading per level), master-detail panels, row reordering by drag, row pinning (top / bottom), column groups (multi-level headers), list view; column virtualization (`columnBufferPx`), lazy loading of row chunks (`lazyLoading`, `rowsLoadingMode`), `dataSource.updateRow`, cache time to live, `rowBufferPx` as an option (Pro) | — |
+| 4 | Community and API completeness. **Selection:** single-row selection (`disableMultipleRowSelection`), `isRowSelectable`, `keepNonExistentRowsSelected`, `checkboxSelectionVisibleOnly`. **Columns:** autosizing (`autosizeColumns`, double-click the resize edge), `colSpan` and `rowSpanning`, header `description` tooltips, `renderHeader`. **Rows:** `getRowHeight` and `"auto"` heights, `getRowClassName` / `getCellClassName`, `getRowSpacing`. **Editing:** validation with error states (`preProcessEditCellProps`), `valueParser` / `valueSetter`, start editing by typing, `onCellEditStart` / `onCellEditStop` / `onRowEditStop`, `isCellEditable`. **Filtering:** `isAnyOf`, custom operators, quick filter options (`quickFilterLogicOperator`, searched columns). **Events and API:** `onRowClick`, `onCellClick`, `onCellDoubleClick`, `onColumnHeaderClick`…, `apiRef`, `exportState` / `restoreState`. **Export:** CSV options (delimiter, fields, all rows or filtered), print options, printing every filtered row. **Look and language:** the reference's icon-only toolbar, locale packs, right-to-left layout. **HTML:** value formatters for edited and `setRows` cells | ✅ 2026-11-08 |
+| 5 | Tree data (data source loading per level), master-detail panels, row reordering by drag, row pinning (top / bottom), column groups (multi-level headers), list view; column virtualization (`columnBufferPx`), lazy loading of row chunks (`lazyLoading`, `rowsLoadingMode`), `dataSource.updateRow`, cache time to live, `rowBufferPx` as an option (Pro); from phase 4: `isAnyOf` values as chips (Autocomplete) instead of comma-separated text, HTML attributes for CSV and print options | next (`/component` Update) |
 | 6 | Row grouping (also through the data source), aggregation (sum, average, min / max, count), pivoting, Excel (.xlsx) export, clipboard copy and paste, cell range selection, header filters (Premium); charts integration and AI assistant once a Chart component exists | — |
 
 Phase 2 (story: Advanced): filter rows combined with and / or, column resizing (drag the header
@@ -356,6 +356,21 @@ with three overlay variants (LinearProgress, CircularProgress, skeleton rows), `
 (HTML `ok:data-grid:scrollend`), `dataSource` with a per-source cache (HTML `setDataSource`), and
 HTML `setRows(rows)` from `<template data-ok-data-grid-row>` / `data-ok-data-grid-cell` (text only).
 Column virtualization and lazy loading of row chunks moved to phase 5.
+
+Phase 4 (stories: Layout, Validation; Basic now uses the icon toolbar): single-row selection,
+unselectable rows, select all on the page, kept or pruned selections; column autosizing (double
+click, on mount, `autosizeColumns`); `colSpan` and `rowSpanning`; header descriptions (Tooltip) and
+`renderHeader`; row heights (`rowHeight`, `getRowHeight` with `"auto"`, per-row offsets in the
+window), row spacing, row and cell classes; click, double click, key and header events; `apiRef`
+(`useGridApiRef`) with the HTML instance's methods plus `exportState` / `restoreState` (sanitized
+input), `scrollToIndexes`; edit validation (`preProcessEditCellProps`, HTML `ok:data-grid:validate`),
+`valueParser` / `valueSetter`, typing to edit, edit start / stop events, `isCellEditable`;
+`isAnyOf`, custom filter operators, quick filter options, `ignoreDiacritics`; CSV and print options
+(print: every filtered row); the icon toolbar (`toolbarVariant`, beyond MUI X), locale packs
+(`enUS`, `viVN`, `frFR`, `deDE`, `esES`, `jaJP`, `zhCN`), right-to-left layout; HTML value formats
+(`data-ok-format`, `setValueFormatter`). Differences from the plan: `isAnyOf` values are typed
+separated by commas in both versions (chips in phase 5); CSV and print options are method options
+in HTML (attributes in phase 5).
 
 The former backlog is folded into phases 4–6 (ADR-0021, 2026-11-08). New MUI X features go into a
 phase, or into "Pending integrations" below when they need a missing component.

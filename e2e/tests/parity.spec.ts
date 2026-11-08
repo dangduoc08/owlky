@@ -11,6 +11,8 @@ const pairs: [component: string, story: string][] = [
   ["datagrid", "advanced"],
   ["datagrid", "large"],
   ["datagrid", "server"],
+  ["datagrid", "layout"],
+  ["datagrid", "validation"],
   ["motion", "in-view"],
   ["motion", "text"],
   ["motion", "scroll"],

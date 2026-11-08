@@ -40,8 +40,14 @@ export interface GridColumn {
   valueOptions?: readonly string[] | undefined;
   /** Default true (MUI X: resizing is free since v7). */
   resizable?: boolean | undefined;
-  /** Cells can be edited (double click, Enter or F2). */
+  /** Cells can be edited (double click, Enter, F2 or typing). */
   editable?: boolean | undefined;
+  /** px; the largest width resizing and autosizing give (default: none). */
+  maxWidth?: number | undefined;
+  /** Shown as the header's tooltip and description. */
+  description?: string | undefined;
+  /** The quick filter searches this column (default true for filterable columns). */
+  searchable?: boolean | undefined;
 }
 
 export type GridSortDirection = "asc" | "desc";
@@ -54,14 +60,39 @@ export type GridSortModel = GridSortItem[];
 export interface GridFilterItem {
   field: string;
   operator: string;
-  value?: string | undefined;
+  /** Text; a list for `isAnyOf`. */
+  value?: string | readonly string[] | undefined;
 }
 export interface GridFilterModel {
   items: GridFilterItem[];
   /** How the items combine (MUI X Pro): every one (`and`, default) or any one (`or`). */
   logicOperator?: "and" | "or" | undefined;
-  /** Words typed in the quick filter: every word must match some column. */
+  /** Words typed in the quick filter: every word (or, with `or`, any word) must match a column. */
   quickFilterValues?: string[] | undefined;
+}
+
+/** A filter operator of a column (MUI X `GridFilterOperator`): it replaces the type's operators. */
+export interface GridFilterOperator<R = unknown> {
+  value: string;
+  label?: string | undefined;
+  /** Default true. */
+  requiresValue?: boolean | undefined;
+  /** A test for one item (`null`: the item filters nothing, for example without a value). */
+  getApplyFilterFn(
+    item: GridFilterItem,
+    column: GridColumn,
+  ): ((value: unknown, row: R) => boolean) | null;
+}
+
+export interface GridFilterOptions<R = unknown> {
+  /** Accents don't count: "ha noi" finds "Hà Nội". */
+  ignoreDiacritics?: boolean | undefined;
+  /** How quick filter words combine. Default `and`. */
+  quickFilterLogicOperator?: "and" | "or" | undefined;
+  /** Columns the quick filter searches (default: filterable, searchable ones). */
+  quickFilterColumns?: readonly GridColumn[] | undefined;
+  /** Custom operators per field. */
+  operators?: Readonly<Record<string, readonly GridFilterOperator<R>[]>> | undefined;
 }
 
 export const gridDensities = ["compact", "standard", "comfortable"] as const;
@@ -105,9 +136,12 @@ export function gridColumnTemplate(
 
 export type GridColumnWidths = Record<string, number>;
 
-/** A resized width: whole pixels, at least the column's `minWidth` (50). */
+/** A resized width: whole pixels, at least the column's `minWidth` (50), at most its `maxWidth`. */
 export const clampGridWidth = (column: GridColumn, width: number): number =>
-  Math.max(Math.round(Number.isFinite(width) ? width : 0), positive(column.minWidth, 50));
+  Math.min(
+    Math.max(Math.round(Number.isFinite(width) ? width : 0), positive(column.minWidth, 50)),
+    positive(column.maxWidth, Number.POSITIVE_INFINITY),
+  );
 
 /** Default true; `disableColumnResize` on the grid turns every column off. */
 export const isGridResizable = (column: GridColumn) => column.resizable ?? true;
@@ -327,11 +361,12 @@ export function sortGridRows<R>(
 
 /** Operators per column type (MUI X names). */
 export function gridFilterOperators(type: GridColumnType = "string"): string[] {
-  if (type === "number") return ["=", "!=", ">", ">=", "<", "<=", "isEmpty", "isNotEmpty"];
+  if (type === "number")
+    return ["=", "!=", ">", ">=", "<", "<=", "isEmpty", "isNotEmpty", "isAnyOf"];
   if (type === "date" || type === "dateTime")
     return ["is", "not", "after", "onOrAfter", "before", "onOrBefore", "isEmpty", "isNotEmpty"];
   if (type === "boolean") return ["is"];
-  if (type === "singleSelect") return ["is", "not", "isEmpty", "isNotEmpty"];
+  if (type === "singleSelect") return ["is", "not", "isEmpty", "isNotEmpty", "isAnyOf"];
   return [
     "contains",
     "doesNotContain",
@@ -340,12 +375,36 @@ export function gridFilterOperators(type: GridColumnType = "string"): string[] {
     "endsWith",
     "isEmpty",
     "isNotEmpty",
+    "isAnyOf",
   ];
 }
 
-/** Operators that need no value. */
-export const gridOperatorNeedsValue = (operator: string) =>
-  operator !== "isEmpty" && operator !== "isNotEmpty";
+/** Operators that need no value (custom operators say so with `requiresValue: false`). */
+export const gridOperatorNeedsValue = (
+  operator: string,
+  custom?: readonly GridFilterOperator<never>[],
+) => {
+  const own = custom?.find((o) => o.value === operator);
+  if (own) return own.requiresValue !== false;
+  return operator !== "isEmpty" && operator !== "isNotEmpty";
+};
+
+/** A filter value as a list (`isAnyOf`): arrays as they are, text split at commas. */
+export const gridFilterValues = (value: GridFilterItem["value"]): string[] =>
+  (typeof value === "string" ? value.split(",") : [...(value ?? [])])
+    .map((v) => v.trim())
+    .filter(Boolean);
+
+/** Lower case, and without accents when asked ("Đà Nẵng" → "da nang"). */
+export const gridFoldText = (text: string, ignoreDiacritics = false): string => {
+  const lower = text.toLocaleLowerCase();
+  return ignoreDiacritics
+    ? lower
+        .normalize("NFD")
+        .replace(/\p{Diacritic}/gu, "")
+        .replaceAll("đ", "d")
+    : lower;
+};
 
 /** Whether a row's value / text passes a filter item (an item without a value passes). */
 export function matchesGridFilter(
@@ -353,11 +412,23 @@ export function matchesGridFilter(
   text: string,
   item: GridFilterItem,
   type: GridColumnType = "string",
+  ignoreDiacritics = false,
 ): boolean {
   const empty = gridSortValue(raw, type) === null;
   if (item.operator === "isEmpty") return empty;
   if (item.operator === "isNotEmpty") return !empty;
-  if (item.value === undefined || item.value === "") return true;
+  const fold = (t: string) => gridFoldText(t, ignoreDiacritics);
+  if (item.operator === "isAnyOf") {
+    const choices = gridFilterValues(item.value);
+    if (choices.length === 0) return true;
+    if (type === "number") {
+      const x = gridSortValue(raw, type);
+      return choices.some((choice) => gridSortValue(choice, type) === x);
+    }
+    const own = fold(type === "singleSelect" ? String(raw ?? "") : text);
+    return choices.some((choice) => fold(choice) === own);
+  }
+  if (typeof item.value !== "string" || item.value === "") return true;
   if (type === "boolean") return gridSortValue(raw, type) === (item.value === "true" ? 1 : 0);
   if (type === "number" || type === "date" || type === "dateTime") {
     const x = gridSortValue(raw, type);
@@ -389,8 +460,8 @@ export function matchesGridFilter(
         return true;
     }
   }
-  const haystack = (type === "singleSelect" ? String(raw ?? "") : text).toLocaleLowerCase();
-  const needle = item.value.toLocaleLowerCase();
+  const haystack = fold(type === "singleSelect" ? String(raw ?? "") : text);
+  const needle = fold(item.value);
   switch (item.operator) {
     case "contains":
       return haystack.includes(needle);
@@ -410,35 +481,61 @@ export function matchesGridFilter(
   }
 }
 
-/** Rows kept by the filter items (all must pass) and the quick filter words (each must match). */
+/**
+ * Rows kept by the filter items (all must pass, or any with `or`) and the quick filter words (each
+ * must match a searched column, or any word with `quickFilterLogicOperator: "or"`).
+ */
 export function filterGridRows<R>(
   rows: readonly R[],
   model: GridFilterModel,
   columns: readonly GridColumn[],
   value: Read<R>,
   text: (row: R, field: string) => string,
+  options: GridFilterOptions<R> = {},
 ): R[] {
+  const ignore = !!options.ignoreDiacritics;
   const items = model.items.filter((item) => columns.some((c) => c.field === item.field));
   const words = (model.quickFilterValues ?? [])
-    .map((w) => w.trim().toLocaleLowerCase())
+    .map((w) => gridFoldText(w.trim(), ignore))
     .filter(Boolean);
-  const searchable = columns.filter(isGridFilterable);
+  const searched = (options.quickFilterColumns ?? columns).filter(
+    (c) => isGridFilterable(c) && c.searchable !== false,
+  );
   if (items.length === 0 && words.length === 0) return [...rows];
-  const passes = (row: R, item: GridFilterItem) => {
+  // Custom operators: one test per item, built once (`null`: the item filters nothing).
+  const tests = items.map((item) => {
     const column = columns.find((c) => c.field === item.field) as GridColumn;
-    return matchesGridFilter(value(row, item.field), text(row, item.field), item, column.type);
+    const custom = options.operators?.[item.field]?.find((o) => o.value === item.operator);
+    if (!custom) return null;
+    const test = custom.getApplyFilterFn(item, column);
+    return test ? (row: R) => test(value(row, item.field), row) : () => true;
+  });
+  const passes = (row: R, index: number) => {
+    const test = tests[index];
+    if (test) return test(row);
+    const item = items[index] as GridFilterItem;
+    const column = columns.find((c) => c.field === item.field) as GridColumn;
+    return matchesGridFilter(
+      value(row, item.field),
+      text(row, item.field),
+      item,
+      column.type,
+      ignore,
+    );
   };
+  const indexes = items.map((_, i) => i);
   return rows.filter((row) => {
     if (items.length > 0) {
       const kept =
         model.logicOperator === "or"
-          ? items.some((item) => passes(row, item))
-          : items.every((item) => passes(row, item));
+          ? indexes.some((i) => passes(row, i))
+          : indexes.every((i) => passes(row, i));
       if (!kept) return false;
     }
-    return words.every((word) =>
-      searchable.some((column) => text(row, column.field).toLocaleLowerCase().includes(word)),
-    );
+    if (words.length === 0) return true;
+    const found = (word: string) =>
+      searched.some((column) => gridFoldText(text(row, column.field), ignore).includes(word));
+    return options.quickFilterLogicOperator === "or" ? words.some(found) : words.every(found);
   });
 }
 
@@ -459,6 +556,22 @@ export function gridSelectAllState(
 export const toggleGridRow = (selected: readonly string[], id: string): string[] =>
   selected.includes(id) ? selected.filter((s) => s !== id) : [...selected, id];
 
+/** Toggles one row; without `multiple` the row replaces the selection (or clears it). */
+export const selectGridRow = (
+  selected: readonly string[],
+  id: string,
+  multiple = true,
+): string[] => (multiple ? toggleGridRow(selected, id) : selected.includes(id) ? [] : [id]);
+
+/** Ids still among the rows (selection without `keepNonExistentRowsSelected`). */
+export const pruneGridSelection = (
+  selected: readonly string[],
+  ids: readonly string[],
+): string[] => {
+  const present = new Set(ids);
+  return selected.filter((id) => present.has(id));
+};
+
 /** Toggles every row of `ids`: all selected → none of them, else all of them. */
 export function toggleGridRows(selected: readonly string[], ids: readonly string[]): string[] {
   if (gridSelectAllState(ids, selected) === "all") return selected.filter((s) => !ids.includes(s));
@@ -469,9 +582,40 @@ export function toggleGridRows(selected: readonly string[], ids: readonly string
  * One CSV field: quoted when needed, and neutralized against spreadsheet formulas (a leading `=`,
  * `+`, `-`, `@`, tab or carriage return gets a `'`): exported data may come from users.
  */
-export function csvField(text: string): string {
+export function csvField(text: string, delimiter = ","): string {
   const safe = /^[=+\-@\t\r]/.test(text) ? `'${text}` : text;
-  return /[",\r\n]/.test(safe) || safe !== text ? `"${safe.replaceAll('"', '""')}"` : safe;
+  const quote = /["\r\n]/.test(safe) || safe.includes(delimiter) || safe !== text;
+  return quote ? `"${safe.replaceAll('"', '""')}"` : safe;
+}
+
+/** CSV export options (MUI X `csvOptions`). */
+export interface GridCsvOptions {
+  /** Default ",". */
+  delimiter?: string | undefined;
+  /** File name without `.csv`. */
+  fileName?: string | undefined;
+  /** Default true. */
+  includeHeaders?: boolean | undefined;
+  /** Default true. */
+  utf8WithBom?: boolean | undefined;
+  /** Fields to export, in this order (default: the shown columns). */
+  fields?: readonly string[] | undefined;
+  /** Hidden columns too. Default false. */
+  allColumns?: boolean | undefined;
+}
+
+/** The columns an export (CSV, print) includes: `fields` in order, else shown or all columns. */
+export function gridExportColumns<C extends GridColumn>(
+  columns: readonly C[],
+  shown: readonly C[],
+  options: { fields?: readonly string[] | undefined; allColumns?: boolean | undefined } = {},
+): C[] {
+  const picked = options.fields
+    ? options.fields.flatMap((f) => columns.filter((c) => c.field === f))
+    : options.allColumns
+      ? [...columns]
+      : [...shown];
+  return picked.filter((column) => !isActions(column));
 }
 
 /** CSV of the columns (header names) and rows (their text), CRLF lines, with a UTF-8 BOM. */
@@ -479,13 +623,18 @@ export function gridToCsv<R>(
   columns: readonly GridColumn[],
   rows: readonly R[],
   text: (row: R, field: string) => string,
+  options: GridCsvOptions = {},
 ): string {
+  const delimiter = options.delimiter || ",";
   const exported = columns.filter((column) => !isActions(column));
+  const line = (cells: string[]) => cells.map((cell) => csvField(cell, delimiter)).join(delimiter);
   const lines = [
-    exported.map((column) => csvField(column.headerName ?? column.field)).join(","),
-    ...rows.map((row) => exported.map((column) => csvField(text(row, column.field))).join(",")),
+    ...(options.includeHeaders === false
+      ? []
+      : [line(exported.map((column) => column.headerName ?? column.field))]),
+    ...rows.map((row) => line(exported.map((column) => text(row, column.field)))),
   ];
-  return `﻿${lines.join("\r\n")}`;
+  return `${options.utf8WithBom === false ? "" : "\uFEFF"}${lines.join("\r\n")}`;
 }
 
 /** Default labels (MUI X locale text keys). */
@@ -530,6 +679,11 @@ export const gridDefaultLabels = {
   noRowsLabel: "No rows",
   loadingLabel: "Loading",
   noResultsOverlayLabel: "No results found.",
+  /** After the header name in its menu button's label ("Name column menu"). */
+  columnHeaderMenuLabel: "column menu",
+  paginationRowsPerPage: "Rows per page:",
+  /** `{from}`, `{to}` and `{count}` are replaced. */
+  paginationDisplayedRows: "{from}–{to} of {count}",
   filterOperator: {
     contains: "contains",
     doesNotContain: "does not contain",
@@ -544,6 +698,7 @@ export const gridDefaultLabels = {
     onOrAfter: "is on or after",
     before: "is before",
     onOrBefore: "is on or before",
+    isAnyOf: "is any of",
     "=": "=",
     "!=": "!=",
     ">": ">",

@@ -68,3 +68,39 @@ grid.setDataSource({
     return response.json(); // { rows, rowCount }
   },
 });`;
+
+/** Editing and validation (HTML): the price format and the checks React gets from its columns. */
+export function validationScript(row: HTMLElement) {
+  const { element, api } = gridIn(row);
+  const grid = api as unknown as {
+    setValueFormatter(field: string, format: ((value: unknown) => string) | null): void;
+  };
+  grid.setValueFormatter("price", (value) => `USD ${Number(value).toFixed(2)}`);
+  const check = (event: Event) => {
+    const detail = (event as CustomEvent<{ field: string; value: unknown; error?: string }>).detail;
+    if (detail.field === "name" && String(detail.value ?? "").trim() === "")
+      detail.error = "Enter a name";
+    if (detail.field === "price" && !(Number(detail.value) > 0))
+      detail.error = "Enter a price above 0";
+  };
+  element.addEventListener("ok:data-grid:validate", check);
+  return () => {
+    element.removeEventListener("ok:data-grid:validate", check);
+    grid.setValueFormatter("price", null);
+  };
+}
+
+export const VALIDATION_SCRIPT_SOURCE = `import { getRuntime } from "@owlky/html";
+
+const element = document.getElementById("grid-products");
+const grid = getRuntime().get(element, "data-grid");
+
+// Edited prices show as currency
+grid.setValueFormatter("price", (value) => \`USD \${Number(value).toFixed(2)}\`);
+
+// A listener sets detail.error: the cell stays open and shows the message
+element.addEventListener("ok:data-grid:validate", (event) => {
+  const { field, value } = event.detail;
+  if (field === "name" && String(value ?? "").trim() === "") event.detail.error = "Enter a name";
+  if (field === "price" && !(Number(value) > 0)) event.detail.error = "Enter a price above 0";
+});`;

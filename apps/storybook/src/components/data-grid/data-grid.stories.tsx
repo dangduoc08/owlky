@@ -9,6 +9,8 @@ import {
   largeScript,
   SERVER_SCRIPT_SOURCE,
   serverScript,
+  VALIDATION_SCRIPT_SOURCE,
+  validationScript,
 } from "./data-grid-scripts.js";
 import { LargeDemo } from "./large-demo.js";
 import largeSource from "./large-demo.tsx?raw";
@@ -37,6 +39,7 @@ const SETUP = htmlSetup(
     "label.css",
     "rating.css",
     "linear-progress.css",
+    "tooltip.css",
     "data-grid.css",
   ],
   true,
@@ -67,6 +70,23 @@ export default meta;
 export const Basic: StoryObj = story("basic");
 export const Custom: StoryObj = story("custom");
 export const Advanced: StoryObj = story("advanced");
+export const Layout: StoryObj = { ...story("layout"), name: "Layout" };
+export const Validation: StoryObj = {
+  ...frameworkStory({
+    html: snippetStory(
+      snippets,
+      "validation",
+      DATA_GRID_FILES["validation"] ?? [],
+      SETUP,
+      DATA_GRID_CONTROLS,
+      {
+        group: { script: validationScript, scriptSource: VALIDATION_SCRIPT_SOURCE },
+      },
+    ),
+    react: reactGroupsStory(dataGridStories["validation"] ?? [], controls),
+  }),
+  name: "Validation",
+};
 export const Large: StoryObj = {
   ...frameworkStory({
     html: snippetStory(snippets, "large", [["Large dataset", "group"]], SETUP, undefined, {

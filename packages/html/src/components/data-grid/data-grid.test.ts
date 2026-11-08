@@ -1,4 +1,4 @@
-import type { GridGetRowsParams } from "@owlky/core";
+import { type GridGetRowsParams, viVN } from "@owlky/core";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { userEvent } from "vitest/browser";
 import { createRuntime } from "../../runtime/runtime.js";
@@ -47,7 +47,7 @@ const header = (host: Element, field: string) =>
   host.querySelector<HTMLElement>(`[role="columnheader"][data-ok-field="${field}"]`) as HTMLElement;
 
 describe("data grid snippets", () => {
-  it("covers every story group", () => expect(snippets).toHaveLength(5));
+  it("covers every story group", () => expect(snippets).toHaveLength(8));
 
   // Grids whose rows come from JavaScript (setRows, data sources) ship no rows.
   const scripted = (path: string) => /(large|server)-group/.test(path);
@@ -69,7 +69,24 @@ describe("data grid snippets", () => {
     },
   );
 
-  it.each(snippets.filter(([path]) => !scripted(path)))(
+  // Layout and validation grids: their own rows, no pages.
+  const unpaged = (path: string) => /(layout|validation)-/.test(path);
+
+  it.each(snippets.filter(([path]) => unpaged(path)))(
+    "%s: CSP-safe; no axe violations once running",
+    async (_, html) => {
+      const host = mount(html);
+      expectCspSafe(host, html);
+      start();
+      await settle();
+      expect(
+        host.querySelectorAll('[data-ok-data-grid-body] > [role="row"]').length,
+      ).toBeGreaterThan(3);
+      await expectNoAxeViolations(host);
+    },
+  );
+
+  it.each(snippets.filter(([path]) => !scripted(path) && !unpaged(path)))(
     "%s: CSP-safe anatomy; no axe violations once running",
     async (_, html) => {
       const host = mount(html);
@@ -915,5 +932,608 @@ describe("data grid runtime, phase 3", () => {
     header(host, "firstName").click();
     await settle();
     expect(visible(host)).toEqual(["P1", "P2", "P3"]);
+  });
+});
+
+describe("data grid runtime, phase 4", () => {
+  const SPANS = snippets.find(([path]) => path.endsWith("layout-spans.html"))?.[1] as string;
+  const TASKS = snippets.find(([path]) => path.endsWith("layout-tasks.html"))?.[1] as string;
+  const PRODUCTS = snippets.find(([path]) => path.endsWith("validation-group.html"))?.[1] as string;
+  const LARGE = snippets.find(([path]) => path.endsWith("large-group.html"))?.[1] as string;
+  const open = (html: string, before?: (root: HTMLElement) => void) => {
+    const host = mount(html);
+    const root = host.querySelector<HTMLElement>("[data-ok-data-grid]") as HTMLElement;
+    before?.(root);
+    // One runtime per test: a second grid joins it.
+    if (!runtime) start();
+    const instance = runtime?.getOrCreate<DataGridInstance>(root, "data-grid") as DataGridInstance;
+    const grid = root.querySelector<HTMLElement>('[role="grid"]') as HTMLElement;
+    const row = (id: string) =>
+      root.querySelector<HTMLElement>(`[data-ok-row-id="${id}"]`) as HTMLElement;
+    const cell = (id: string, field: string) =>
+      row(id).querySelector<HTMLElement>(`[data-ok-field="${field}"]`) as HTMLElement;
+    const events: [string, unknown][] = [];
+    for (const name of [
+      "rowclick",
+      "rowdoubleclick",
+      "cellclick",
+      "celldoubleclick",
+      "columnheaderclick",
+      "editstart",
+      "editstop",
+      "selection",
+      "resize",
+    ])
+      root.addEventListener(`ok:data-grid:${name}`, (e) =>
+        events.push([name, (e as CustomEvent).detail]),
+      );
+    return { host, root, instance, grid, row, cell, events };
+  };
+  const key = (target: Element, k: string, init: KeyboardEventInit = {}) =>
+    target.dispatchEvent(
+      new KeyboardEvent("keydown", { key: k, bubbles: true, cancelable: true, ...init }),
+    );
+
+  it("single selection; unselectable rows; select all on the page; pruning on new rows", async () => {
+    const { host, root, instance, row, cell, events } = open(TASKS);
+    expect(root.querySelector('[role="grid"]')?.hasAttribute("aria-multiselectable")).toBe(false);
+    cell("t-1", "owner").click();
+    cell("t-3", "owner").click();
+    expect(instance.selection).toEqual(["t-3"]);
+    cell("t-3", "owner").click();
+    expect(instance.selection).toEqual([]);
+    expect((row("t-2").querySelector("input") as HTMLInputElement).disabled).toBe(true);
+    cell("t-2", "owner").click();
+    expect(instance.selection).toEqual([]);
+    key(cell("t-1", "owner"), "a", { ctrlKey: true });
+    expect(events.filter(([n]) => n === "selection")).toHaveLength(3);
+    // Multiple again: select all covers the selectable rows (of this page only, when asked).
+    root.removeAttribute("data-ok-disable-multiple-row-selection");
+    await settle();
+    expect(root.querySelector('[role="grid"]')?.getAttribute("aria-multiselectable")).toBe("true");
+    key(cell("t-1", "owner"), "a", { ctrlKey: true });
+    expect(instance.selection).toEqual(["t-1", "t-3", "t-4", "t-5"]);
+    expect(host).toBeTruthy();
+
+    const basic = open(BASIC, (r) => r.setAttribute("data-ok-checkbox-selection-visible-only", ""));
+    const all = basic.root.querySelector<HTMLInputElement>(
+      '[role="columnheader"] input[type="checkbox"]',
+    ) as HTMLInputElement;
+    all.click();
+    expect(basic.instance.selection).toHaveLength(10);
+  });
+
+  it("new rows prune the selection unless kept", () => {
+    const LARGE_ROWS = (n: number) =>
+      Array.from({ length: n }, (_, i) => ({
+        id: `c-${i}`,
+        firstName: "A",
+        lastName: "B",
+        age: i,
+        city: "C",
+      }));
+    const pruned = open(LARGE);
+    pruned.instance.setRows(LARGE_ROWS(3));
+    pruned.instance.setSelection(["c-1", "c-2"]);
+    pruned.instance.setRows(LARGE_ROWS(2));
+    expect(pruned.instance.selection).toEqual(["c-1"]);
+    const kept = open(LARGE, (r) => r.setAttribute("data-ok-keep-non-existent-rows-selected", ""));
+    kept.instance.setRows(LARGE_ROWS(3));
+    kept.instance.setSelection(["c-1", "c-2"]);
+    kept.instance.setRows(LARGE_ROWS(2));
+    expect(kept.instance.selection).toEqual(["c-1", "c-2"]);
+  });
+
+  it("column spans from the markup; row spans computed (and cleared)", async () => {
+    const { root, cell, instance } = open(SPANS);
+    expect(cell("total", "region").style.getPropertyValue("--_ok-data-grid-colspan")).toBe("3");
+    expect(cell("total", "team").hidden).toBe(true);
+    expect(cell("b-1", "region").getAttribute("aria-rowspan")).toBe("4");
+    expect(cell("b-1", "region").style.getPropertyValue("--_ok-data-grid-rowspan")).toBe("4");
+    expect(cell("b-2", "region").hasAttribute("data-ok-covered")).toBe(true);
+    expect(cell("b-1", "team").getAttribute("aria-rowspan")).toBe("2");
+    // Hiding a column keeps covered cells hidden.
+    instance.setColumnVisibilityModel({ item: false });
+    expect(cell("total", "team").hidden).toBe(true);
+    root.removeAttribute("data-ok-row-spanning");
+    instance.setSortModel([]);
+    expect(cell("b-1", "region").hasAttribute("aria-rowspan")).toBe(false);
+    expect(cell("b-2", "region").hasAttribute("data-ok-covered")).toBe(false);
+    await expectNoAxeViolations(root.parentElement as HTMLElement);
+  });
+
+  it("row heights, spacing and the grid's row height (with the density)", async () => {
+    const { root, row } = open(TASKS, (r) => {
+      r.setAttribute("data-ok-row-height", "40");
+      const first = r.querySelector('[data-ok-row-id="t-2"]') as HTMLElement;
+      first.setAttribute("data-ok-row-height", "70");
+      first.setAttribute("data-ok-spacing-top", "4");
+      first.setAttribute("data-ok-spacing-bottom", "6");
+    });
+    expect(root.style.getPropertyValue("--_ok-data-grid-row-height")).toBe("40px");
+    root.setAttribute("data-ok-density", "compact");
+    await settle();
+    expect(root.style.getPropertyValue("--_ok-data-grid-row-height")).toBe("28px");
+    expect(row("t-2").style.getPropertyValue("--_ok-data-grid-row-height")).toBe("70px");
+    expect(row("t-2").style.getPropertyValue("--_ok-data-grid-spacing-top")).toBe("4px");
+    expect(row("t-2").getBoundingClientRect().height).toBe(71);
+    expect(row("t-1").getAttribute("data-ok-row-height")).toBe("auto");
+    root.removeAttribute("data-ok-row-height");
+    await settle();
+    expect(root.style.getPropertyValue("--_ok-data-grid-row-height")).toBe("");
+  });
+
+  it("virtualizes rows of their own height", async () => {
+    const { root, instance, grid } = open(LARGE, (r) => {
+      r.style.height = "400px";
+      const template = r.querySelector("template") as HTMLTemplateElement;
+      (template.content.firstElementChild as HTMLElement).setAttribute("data-ok-row-height", "80");
+    });
+    instance.setRows(
+      Array.from({ length: 300 }, (_, i) => ({
+        id: `c-${i}`,
+        firstName: "A",
+        lastName: "B",
+        age: i,
+        city: "C",
+      })),
+    );
+    await settle();
+    const rendered = () => root.querySelectorAll('[data-ok-data-grid-body] > [role="row"]');
+    expect(rendered().length).toBeLessThan(15);
+    grid.scrollTop = 81 * 100;
+    grid.dispatchEvent(new Event("scroll"));
+    await settle();
+    const first = Number(rendered()[0]?.getAttribute("aria-rowindex"));
+    expect(first).toBeGreaterThan(90);
+    expect(first).toBeLessThan(110);
+    instance.scrollToIndexes({ rowIndex: 0 });
+    expect(grid.scrollTop).toBe(0);
+    instance.scrollToIndexes({ rowIndex: 50, colIndex: 4 });
+    expect(grid.scrollTop).toBeGreaterThan(0);
+    instance.scrollToIndexes({ rowIndex: 999 });
+  });
+
+  it("click, double click and header events", () => {
+    const { cell, events, root } = open(PRODUCTS);
+    cell("p-1", "stock").click();
+    cell("p-1", "stock").dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
+    (root.querySelector('[role="columnheader"][data-ok-field="price"]') as HTMLElement).click();
+    expect(events.map(([n]) => n)).toEqual([
+      "rowclick",
+      "cellclick",
+      "rowdoubleclick",
+      "celldoubleclick",
+      "editstart",
+      "columnheaderclick",
+    ]);
+    expect(events[1]?.[1]).toEqual({ id: "p-1", field: "stock", value: "12" });
+    expect(events[4]?.[1]).toEqual({ id: "p-1", field: "stock", reason: "cellDoubleClick" });
+  });
+
+  it("editing: locked cells, typing, validation, formats, start and stop events", async () => {
+    const { cell, events, instance, root } = open(PRODUCTS);
+    root.addEventListener("ok:data-grid:validate", (e) => {
+      const detail = (e as CustomEvent<{ field: string; value: unknown; error?: unknown }>).detail;
+      if (detail.field === "price" && !(Number(detail.value) > 0)) detail.error = "Above 0";
+      if (detail.field === "stock" && Number(detail.value) > 999) detail.error = true;
+    });
+    cell("p-5", "stock").dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
+    expect(cell("p-5", "stock").querySelector("input")).toBeNull();
+
+    instance.setValueFormatter("price", (v) => `€${v}`);
+    cell("p-1", "price").focus();
+    key(cell("p-1", "price"), "0");
+    const input = cell("p-1", "price").querySelector("input") as HTMLInputElement;
+    expect(input.value).toBe("0");
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    expect(input.getAttribute("aria-invalid")).toBe("true");
+    const message = cell("p-1", "price").querySelector("[data-ok-data-grid-edit-error]");
+    expect(message?.textContent).toBe("Above 0");
+    expect(input.getAttribute("aria-describedby")).toBe(message?.id);
+    key(input, "Enter");
+    expect(cell("p-1", "price").querySelector("input")).toBe(input);
+    input.value = "15";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    expect(cell("p-1", "price").querySelector("[data-ok-data-grid-edit-error]")).toBeNull();
+    key(input, "Enter");
+    expect(cell("p-1", "price").textContent).toBe("€15");
+    expect(events.filter(([n]) => n.startsWith("edit"))).toEqual([
+      ["editstart", { id: "p-1", field: "price", reason: "printableKeyDown" }],
+      ["editstop", { id: "p-1", field: "price", reason: "enterKeyDown" }],
+    ]);
+
+    // An error without a message marks the field only; Escape still cancels.
+    cell("p-2", "stock").dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
+    const stock = cell("p-2", "stock").querySelector("input") as HTMLInputElement;
+    stock.value = "5000";
+    stock.dispatchEvent(new Event("input", { bubbles: true }));
+    expect(stock.getAttribute("aria-invalid")).toBe("true");
+    expect(stock.hasAttribute("aria-describedby")).toBe(false);
+    key(stock, "Escape");
+    expect(cell("p-2", "stock").textContent).toBe("40");
+    expect(events.at(-1)).toEqual([
+      "editstop",
+      { id: "p-2", field: "stock", reason: "escapeKeyDown" },
+    ]);
+
+    // data-ok-format on a header formats edited values (locale from the page).
+    instance.setValueFormatter("price", null);
+    const priceHeader = root.querySelector(
+      '[role="columnheader"][data-ok-field="price"]',
+    ) as HTMLElement;
+    priceHeader.setAttribute("data-ok-format", "currency");
+    priceHeader.setAttribute("data-ok-format-options", '{"currency":"EUR"}');
+    document.documentElement.lang = "en-US";
+    cell("p-3", "price").dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
+    const price = cell("p-3", "price").querySelector("input") as HTMLInputElement;
+    price.value = "7";
+    key(price, "Enter");
+    expect(cell("p-3", "price").textContent).toBe("€7.00");
+    document.documentElement.removeAttribute("lang");
+
+    // Row editing: one start and stop for the row.
+    root.setAttribute("data-ok-edit-mode", "row");
+    cell("p-4", "name").focus();
+    key(cell("p-4", "name"), "Enter");
+    expect(events.at(-1)).toEqual(["editstart", { id: "p-4", reason: "enterKeyDown" }]);
+    key(cell("p-4", "name").querySelector("input") as HTMLInputElement, "Enter");
+    expect(events.at(-1)).toEqual(["editstop", { id: "p-4", reason: "enterKeyDown" }]);
+  });
+
+  it("setRows formats with data-ok-format and formatters", () => {
+    const { root, instance, cell } = open(LARGE, (r) => {
+      const age = r.querySelector('[role="columnheader"][data-ok-field="age"]') as HTMLElement;
+      age.setAttribute("data-ok-format", "number");
+      age.setAttribute("data-ok-format-options", '{"minimumFractionDigits":1}');
+    });
+    instance.setValueFormatter("city", (v) => String(v).toUpperCase());
+    instance.setRows([{ id: "x", firstName: "A", lastName: "B", age: 1200, city: "lima" }]);
+    expect(cell("x", "age").textContent).toMatch(/1.200.0/);
+    expect(cell("x", "age").getAttribute("data-ok-value")).toBe("1200");
+    expect(cell("x", "city").textContent).toBe("LIMA");
+    expect(cell("x", "city").getAttribute("data-ok-value")).toBe("lima");
+    expect(root).toBeTruthy();
+  });
+
+  it("filters: isAnyOf, custom operators, search options and accents", () => {
+    const { root, instance, host } = open(BASIC);
+    const panel = document.getElementById("grid-basic-filters") as HTMLElement;
+    const [field, operator] = [...panel.querySelectorAll("select")] as HTMLSelectElement[];
+    const input = panel.querySelector("input") as HTMLInputElement;
+    (field as HTMLSelectElement).value = "firstName";
+    (field as HTMLSelectElement).dispatchEvent(new Event("change", { bubbles: true }));
+    (operator as HTMLSelectElement).value = "isAnyOf";
+    operator?.dispatchEvent(new Event("change", { bubbles: true }));
+    input.value = "ana, bao";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    expect(new Set(visible(host))).toEqual(new Set(["Ana", "Bao"]));
+
+    instance.setFilterOperators("age", [
+      {
+        value: "atLeast",
+        label: "at least",
+        getApplyFilterFn: (item) => (item.value ? (v) => Number(v) >= Number(item.value) : null),
+      },
+      { value: "any", requiresValue: false, getApplyFilterFn: () => () => true },
+    ]);
+    (field as HTMLSelectElement).value = "age";
+    field?.dispatchEvent(new Event("change", { bubbles: true }));
+    expect([...(operator as HTMLSelectElement).options].map((o) => o.textContent)).toEqual([
+      "at least",
+      "any",
+    ]);
+    input.value = "50";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    expect(instance.filterModel.items[0]).toEqual({
+      field: "age",
+      operator: "atLeast",
+      value: "50",
+    });
+    expect(root.querySelector('[data-ok-data-grid-body] > [role="row"]')).not.toBeNull();
+    (operator as HTMLSelectElement).value = "any";
+    operator?.dispatchEvent(new Event("change", { bubbles: true }));
+    expect(input.disabled).toBe(true);
+
+    // Search: or, accents, hidden columns.
+    instance.setFilterModel({ items: [], quickFilterValues: ["ana", "bao"] });
+    expect(visible(host)).toHaveLength(0);
+    root.setAttribute("data-ok-quick-filter-logic-operator", "or");
+    instance.setFilterModel({ items: [], quickFilterValues: ["ana", "bao"] });
+    expect(visible(host).length).toBeGreaterThan(1);
+    root.setAttribute("data-ok-ignore-diacritics", "");
+    instance.setFilterModel({ items: [], quickFilterValues: ["ánà"] });
+    expect(visible(host).length).toBeGreaterThan(0);
+    root.setAttribute("data-ok-quick-filter-exclude-hidden-columns", "");
+    instance.setColumnVisibilityModel({ firstName: false, fullName: false });
+    instance.setFilterModel({ items: [], quickFilterValues: ["ana"] });
+    expect(visible(host, "lastName")).toHaveLength(0);
+  });
+
+  it("autosize: instance, double click, on mount", async () => {
+    const { instance, events, root } = open(BASIC);
+    instance.autosizeColumns({ columns: ["firstName"], includeHeaders: false });
+    expect(events.at(-1)?.[0]).toBe("resize");
+    expect(instance.columnWidths["firstName"]).toBeGreaterThan(30);
+    const handle = root.querySelector(
+      '[role="columnheader"][data-ok-field="lastName"] [data-ok-data-grid-resize]',
+    ) as HTMLElement;
+    handle.dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
+    expect(instance.columnWidths["lastName"]).toBeGreaterThan(30);
+    const mounted = open(TASKS);
+    expect(Object.keys(mounted.instance.columnWidths).length).toBeGreaterThan(2);
+    await document.fonts.ready;
+    await settle();
+  });
+
+  it("state, CSV options and print", async () => {
+    const { instance, root, host } = open(BASIC);
+    instance.setSortModel([{ field: "age", sort: "desc" }]);
+    instance.setColumnWidth("firstName", 210);
+    const state = instance.exportState();
+    expect(state).toMatchObject({
+      sorting: { sortModel: [{ field: "age", sort: "desc" }] },
+      pagination: { paginationModel: { page: 0, pageSize: 10 } },
+      columns: { dimensions: { firstName: { width: 210 } } },
+      density: "standard",
+    });
+    instance.restoreState({
+      sorting: { sortModel: [] },
+      filter: { filterModel: { items: [] } },
+      pagination: { paginationModel: { page: 1, pageSize: 5 } },
+      columns: {
+        columnVisibilityModel: { age: false },
+        orderedFields: ["lastName"],
+        dimensions: {},
+      },
+      pinnedColumns: { left: ["lastName"] },
+      density: "compact",
+      constructor: { bad: 1 },
+    });
+    expect(root.getAttribute("data-ok-density")).toBe("compact");
+    expect(instance.columnOrder[0]).toBe("lastName");
+    expect(instance.pinnedColumns.left).toEqual(["lastName"]);
+    expect(header(host, "age").hidden).toBe(true);
+    expect(host.querySelector("[data-ok-table-pagination-displayed]")?.textContent).toBe(
+      "6–10 of 20",
+    );
+    instance.restoreState("nope");
+
+    expect(
+      instance
+        .toCsv({ fields: ["age", "id"], delimiter: ";", utf8WithBom: false })
+        .split("\r\n")[0],
+    ).toBe("Age;ID");
+    const createObjectURL = vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:x");
+    vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
+    let name = "";
+    vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(function (
+      this: HTMLAnchorElement,
+    ) {
+      name = this.download;
+    });
+    instance.exportCsv({ fileName: "people-2026" });
+    expect(createObjectURL).toHaveBeenCalled();
+    expect(name).toBe("people-2026.csv");
+
+    let copy = "";
+    const append = document.body.append.bind(document.body);
+    vi.spyOn(document.body, "append").mockImplementation((...nodes) => {
+      append(...nodes);
+      for (const node of nodes)
+        if (node instanceof HTMLIFrameElement)
+          (node.contentWindow as Window).print = () => {
+            copy = (node.contentDocument as Document).body.innerHTML;
+          };
+    });
+    instance.print({ fields: ["firstName"], allColumns: true, fileName: "People" });
+    // Every row of every page; no toolbar, footer or other columns.
+    expect(copy.match(/role="row"/g)).toHaveLength(21);
+    expect(copy).not.toContain("data-ok-data-grid-toolbar");
+    expect(copy).not.toContain('data-ok-field="lastName"');
+    document.querySelector("iframe")?.remove();
+    instance.print();
+    expect(copy).toContain('data-ok-field="lastName"');
+    document.querySelector("iframe")?.remove();
+  });
+
+  it("setLocaleText: operators, overlays and the pagination range", async () => {
+    const { instance, host } = open(BASIC);
+    instance.setLocaleText(viVN);
+    const operator = document.querySelectorAll<HTMLSelectElement>("#grid-basic-filters select")[1];
+    expect(operator?.options[0]?.textContent).toBe("chứa");
+    expect(host.querySelector("[data-ok-table-pagination-displayed]")?.textContent).toBe(
+      "1–10 trên 20",
+    );
+    instance.setFilterModel({ items: [], quickFilterValues: ["zzzz"] });
+    expect(host.querySelector("[data-ok-data-grid-overlay]")?.textContent).toBe(
+      "Không tìm thấy kết quả.",
+    );
+    instance.setLocaleText({});
+    expect(host.querySelector("[data-ok-table-pagination-displayed]")?.textContent).toMatch(/of/);
+  });
+
+  it("header tooltips move with their headers; right to left keys", () => {
+    const { root, instance } = open(TASKS, (r) => r.setAttribute("dir", "rtl"));
+    instance.setColumnOrder(["status", "title"]);
+    const headerRow = root.querySelector('[data-ok-data-grid-header] [role="row"]') as HTMLElement;
+    const status = headerRow.querySelector('[data-ok-field="status"]') as HTMLElement;
+    expect(status.nextElementSibling?.id).toBe(status.getAttribute("aria-describedby"));
+    const first = root.querySelector(
+      '[data-ok-row-id="t-1"] [data-ok-field="owner"]',
+    ) as HTMLElement;
+    first.focus();
+    key(first, "ArrowLeft");
+    expect(document.activeElement?.getAttribute("data-ok-field")).not.toBe("owner");
+  });
+});
+
+describe("data grid runtime, phase 4 edges", () => {
+  const find = (name: string) => snippets.find(([path]) => path.endsWith(name))?.[1] as string;
+  const LARGE = find("large-group.html");
+  const ADVANCED = find("advanced-group.html");
+  const TASKS = find("layout-tasks.html");
+  const PRODUCTS = find("validation-group.html");
+  const open = (html: string, before?: (root: HTMLElement) => void) => {
+    const host = mount(html);
+    const root = host.querySelector<HTMLElement>("[data-ok-data-grid]") as HTMLElement;
+    before?.(root);
+    if (!runtime) start();
+    const instance = runtime?.getOrCreate<DataGridInstance>(root, "data-grid") as DataGridInstance;
+    const grid = root.querySelector<HTMLElement>('[role="grid"]') as HTMLElement;
+    const cell = (id: string, field: string) =>
+      root.querySelector<HTMLElement>(
+        `[data-ok-row-id="${id}"] [data-ok-field="${field}"]`,
+      ) as HTMLElement;
+    return { host, root, instance, grid, cell };
+  };
+  const key = (target: Element, k: string) =>
+    target.dispatchEvent(new KeyboardEvent("keydown", { key: k, bubbles: true, cancelable: true }));
+  const customers = (n: number) =>
+    Array.from({ length: n }, (_, i) => ({
+      id: `c-${i}`,
+      firstName: "A",
+      lastName: "B",
+      age: i,
+      city: "Lima",
+    }));
+  const scroll = async (grid: HTMLElement, top: number) => {
+    grid.scrollTop = top;
+    grid.dispatchEvent(new Event("scroll"));
+    await settle();
+  };
+
+  it("auto rows, row spans in the window (uniform and per-row heights), scrolling to indexes", async () => {
+    for (const height of ["auto", ""]) {
+      const { root, instance, grid } = open(LARGE, (r) => {
+        r.style.height = "300px";
+        r.style.width = "300px";
+        r.setAttribute("data-ok-row-spanning", "");
+        const row = (r.querySelector("template") as HTMLTemplateElement).content
+          .firstElementChild as HTMLElement;
+        if (height) row.setAttribute("data-ok-row-height", height);
+      });
+      instance.setRows(customers(200));
+      await settle();
+      await scroll(grid, 4000);
+      // Every city is the same: the window starts at the span's first row.
+      const first = root.querySelector('[data-ok-data-grid-body] > [role="row"]');
+      expect(first?.getAttribute("aria-rowindex")).toBe("2");
+      instance.scrollToIndexes({ rowIndex: 150 });
+      expect(grid.scrollTop).toBeGreaterThan(4000);
+      instance.scrollToIndexes({ rowIndex: 1 });
+      expect(grid.scrollTop).toBeLessThan(200);
+      grid.scrollLeft = 400;
+      instance.scrollToIndexes({ colIndex: 0 });
+      expect(grid.scrollLeft).toBe(0);
+      instance.scrollToIndexes({ colIndex: 4 });
+      expect(grid.scrollLeft).toBeGreaterThan(0);
+      instance.scrollToIndexes({ colIndex: 1 });
+      runtime?.stop();
+      runtime = undefined;
+      resetPage();
+    }
+  });
+
+  it("templates with checkboxes; data sources without pages; stale errors", async () => {
+    const { root, instance } = open(BASIC, (r) => {
+      const template = document.createElement("template");
+      template.setAttribute("data-ok-data-grid-row", "");
+      const row = (
+        r.querySelector('[data-ok-data-grid-body] > [role="row"]') as HTMLElement
+      ).cloneNode(true) as HTMLElement;
+      const second = row.querySelector('[role="gridcell"][aria-colindex="2"]') as HTMLElement;
+      second.setAttribute("aria-colspan", "x");
+      template.content.append(row);
+      r.append(template);
+    });
+    instance.setRows([{ id: "n", firstName: "New" }]);
+    expect(root.querySelectorAll('[data-ok-data-grid-body] > [role="row"]')).toHaveLength(1);
+
+    const large = open(LARGE);
+    const errors: unknown[] = [];
+    large.root.addEventListener("ok:data-grid:datasourceerror", (e) => errors.push(e));
+    let fail: (reason: unknown) => void = () => {};
+    const getRows = vi.fn(
+      () =>
+        new Promise<never>((_, reject) => {
+          fail = reject;
+        }),
+    );
+    large.instance.setDataSource({ getRows });
+    expect(getRows).toHaveBeenCalledWith(
+      expect.objectContaining({ paginationModel: { page: 0, pageSize: 0 } }),
+    );
+    large.instance.setDataSource({ getRows: () => Promise.resolve({ rows: [] }) });
+    fail(new Error("late"));
+    await settle();
+    expect(errors).toHaveLength(0);
+    expect(large.instance.exportState().pagination?.paginationModel?.pageSize).toBe(-1);
+  });
+
+  it("editing edges: typed checkboxes and selects, grids without an id, formats without options", async () => {
+    const adv = open(ADVANCED);
+    const remote = adv.root.querySelector(
+      '[data-ok-data-grid-body] [data-ok-field="remote"]',
+    ) as HTMLElement;
+    remote.focus();
+    key(remote, "x");
+    expect(remote.querySelector("input")?.type).toBe("checkbox");
+    key(remote.querySelector("input") as Element, "Escape");
+    const team = adv.root.querySelector(
+      '[data-ok-data-grid-body] [data-ok-field="team"]',
+    ) as HTMLElement;
+    team.focus();
+    key(team, "x");
+    expect(team.querySelector("select")).not.toBeNull();
+    key(team.querySelector("select") as Element, "Escape");
+    runtime?.stop();
+    runtime = undefined;
+    resetPage();
+
+    const { root, cell } = open(PRODUCTS, (r) => {
+      r.removeAttribute("id");
+      const price = r.querySelector('[role="columnheader"][data-ok-field="price"]') as HTMLElement;
+      price.setAttribute("data-ok-format", "number");
+    });
+    root.addEventListener("ok:data-grid:validate", (e) => {
+      (e as CustomEvent<{ error?: string }>).detail.error = "No";
+    });
+    cell("p-1", "price").dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
+    const input = cell("p-1", "price").querySelector("input") as HTMLInputElement;
+    input.value = "3";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    expect(input.getAttribute("aria-describedby")).toBe("grid-p-1-price-error");
+    key(input, "Escape");
+  });
+
+  it("state edges, labels without operators, operators for the current field, autosize after stop", async () => {
+    const { instance, root } = open(BASIC);
+    instance.restoreState({ pagination: { paginationModel: { pageSize: 5 } } });
+    expect(instance.exportState().pagination?.paginationModel).toEqual({ page: 0, pageSize: 5 });
+    instance.restoreState({
+      pagination: { paginationModel: { page: 1 } },
+      columns: { dimensions: { firstName: { width: 150 } } },
+      pinnedColumns: { right: ["age"] },
+    });
+    expect(instance.columnWidths).toEqual({ firstName: 150 });
+    expect(instance.exportState().pinnedColumns).toEqual({ left: [], right: ["age"] });
+    instance.setLocaleText({ filterOperator: {} });
+    const operator = document.querySelectorAll<HTMLSelectElement>("#grid-basic-filters select")[1];
+    expect(operator?.options[0]?.textContent).toBe("contains");
+    const field = document.querySelectorAll<HTMLSelectElement>("#grid-basic-filters select")[0];
+    instance.setFilterOperators(field?.value as string, [
+      { value: "x", getApplyFilterFn: () => null },
+    ]);
+    expect(operator?.options[0]?.textContent).toBe("x");
+    instance.autosizeColumns({ columns: ["nope"] });
+    expect(root).toBeTruthy();
+
+    const tasks = open(TASKS);
+    expect(tasks.instance).toBeTruthy();
+    runtime?.stop();
+    runtime = undefined;
+    await document.fonts.ready;
+    await settle();
   });
 });

@@ -153,6 +153,72 @@ describe("createGridNavigation", () => {
     ).toBe(false);
   });
 
+  it("typing a character edits; right to left swaps the arrows and Alt + arrows", () => {
+    const host = mount(GRID);
+    const grid = host.querySelector<HTMLElement>("#g") as HTMLElement;
+    const onEdit = vi.fn();
+    const onResizeKey = vi.fn();
+    createGridNavigation(grid, {
+      onSort: vi.fn(),
+      onColumnMenu: vi.fn(),
+      onToggleRow: vi.fn(),
+      onSelectAll: vi.fn(),
+      onEdit,
+      onResizeKey,
+    });
+    const cell = grid.querySelectorAll<HTMLElement>('[role="gridcell"]')[1] as HTMLElement;
+    press(cell, "F2");
+    press(cell, "x");
+    // Modified keys, long key names and Space don't start editing.
+    press(cell, "x", { ctrlKey: true });
+    press(cell, "x", { altKey: true });
+    press(cell, "Tab");
+    expect(onEdit.mock.calls).toEqual([
+      [cell, "f2KeyDown"],
+      [cell, "printableKeyDown", "x"],
+    ]);
+    grid.setAttribute("dir", "rtl");
+    cell.focus();
+    press(cell, "ArrowLeft");
+    expect(document.activeElement?.textContent).toBe("Edit 1");
+    press(document.activeElement as Element, "ArrowRight");
+    expect(document.activeElement).toBe(cell);
+    const header = grid.querySelector<HTMLElement>('[data-ok-field="name"]') as HTMLElement;
+    press(header, "ArrowLeft", { altKey: true });
+    expect(onResizeKey).toHaveBeenCalledWith("name", 10);
+  });
+
+  it("up and down keep the column across spans; covered cells are skipped", () => {
+    const host = mount(`<div role="grid" id="s">
+      <div role="row"><div role="gridcell" aria-colindex="1" tabindex="-1">a1</div><div role="gridcell" aria-colindex="2" tabindex="-1">b1</div></div>
+      <div role="row"><div role="gridcell" aria-colindex="1" aria-colspan="2" tabindex="-1">ab2</div><div role="gridcell" aria-colindex="2" hidden tabindex="-1">x</div></div>
+      <div role="row"><div role="gridcell" aria-colindex="1" aria-rowspan="2" tabindex="-1">a3</div><div role="gridcell" aria-colindex="2" tabindex="-1">b3</div></div>
+      <div role="row"><div role="gridcell" aria-colindex="1" data-ok-covered tabindex="-1">a4</div><div role="gridcell" aria-colindex="2" tabindex="-1">b4</div></div>
+    </div>`);
+    const grid = host.querySelector<HTMLElement>("#s") as HTMLElement;
+    createGridNavigation(grid, {
+      onSort: vi.fn(),
+      onColumnMenu: vi.fn(),
+      onToggleRow: vi.fn(),
+      onSelectAll: vi.fn(),
+    });
+    const at = (text: string) =>
+      [...grid.querySelectorAll<HTMLElement>('[role="gridcell"]')].find(
+        (c) => c.textContent === text,
+      ) as HTMLElement;
+    at("b1").focus();
+    press(at("b1"), "ArrowDown");
+    expect(document.activeElement?.textContent).toBe("ab2");
+    press(at("ab2"), "ArrowDown");
+    expect(document.activeElement?.textContent).toBe("a3");
+    press(at("b4"), "ArrowUp");
+    expect(document.activeElement?.textContent).toBe("b3");
+    at("a3").focus();
+    press(at("a3"), "ArrowDown");
+    // The row below has no cell in column 1 (covered): the column stays, the row is passed.
+    expect(document.activeElement?.textContent).toBe("a3");
+  });
+
   it("sync restores a tab stop after re-rendering; destroy stops listening", () => {
     const { grid, nav, spies } = setup();
     const name = grid.querySelectorAll<HTMLElement>('[role="gridcell"]')[1] as HTMLElement;

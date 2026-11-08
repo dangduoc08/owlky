@@ -357,3 +357,14 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
   Story HTML that needs a script uses `HtmlGroup.script` / `scriptSource` (`snippetStory(…, scripts)`);
   rows passed to `setRows` must fit `Record<string, unknown>`, so demo row types are type
   aliases, not interfaces.
+- Data grid phase 4: React-only functions (`getRowHeight`, `isRowSelectable`, `colSpan`,
+  `isCellEditable`, class names) write their result as attributes the HTML runtime reads
+  (`data-ok-row-height`, `data-ok-selectable`, `aria-colspan` + hidden covered cells,
+  `data-ok-editable`, `class`); HTML computes row spans itself. A row with a row-spanning cell
+  fixes its track (`grid-template-rows`) or the tall cell would stretch it. Autosizing measures
+  cells at `width: max-content` and runs again after `document.fonts.ready` (Firefox measured
+  before the web font and broke pixel parity). The runtime moves header cells when it lays out
+  columns: a header's Tooltip (a sibling) must move with it. HTML tests that mount two grids
+  start one runtime only (a second `start()` leaks a runtime that also sets up later grids).
+  `TablePagination.setRowsPerPage` fires its change event synchronously (the grid's listener
+  resets the page): read the target page before calling it.

@@ -12,40 +12,60 @@ import {
   type GridColumnType,
   type GridColumnVisibilityModel,
   type GridColumnWidths,
+  type GridCsvOptions,
   type GridDataSource,
   type GridDensity,
+  type GridEditStartReason,
   type GridFilterModel,
+  type GridFilterOperator,
+  type GridFormat,
+  type GridLabels,
   type GridPinnedColumns,
+  type GridPrintLayout,
+  type GridRowWindow,
   type GridSortModel,
+  type GridState,
   type GridViewport,
   gridAriaSort,
   gridColumnTemplate,
   gridColumnTypes,
   gridDefaultLabels,
   gridDensities,
+  gridDensityFactor,
   gridEditInputType,
   gridEditText,
+  gridExportColumns,
   gridFilterOperators,
+  gridFormats,
+  gridFormatValue,
   gridOperatorNeedsValue,
   gridPinSide,
   gridQuickFilterValues,
+  gridRowOffsets,
+  gridRowSpans,
   gridRowWindow,
+  gridRowWindowOf,
   gridSelectAllState,
   gridToCsv,
   isGridResizable,
   isGridSortable,
+  measureGridColumn,
   moveGridColumn,
   nextGridSort,
   orderGridColumns,
   parseGridEditValue,
+  parseGridFormatOptions,
   pick,
   pinGridColumn,
+  prepareGridPrint,
   printGridContent,
+  pruneGridSelection,
   readNumber,
   readStyle,
+  sanitizeGridState,
+  selectGridRow,
   sortGridRows,
   syncGridPinning,
-  toggleGridRow,
   toggleGridRows,
   visibleGridColumns,
 } from "@owlky/core";
@@ -72,10 +92,25 @@ export interface DataGridInstance extends ComponentInstance {
   setFilterModel(model: GridFilterModel): void;
   setSelection(ids: readonly string[]): void;
   setColumnVisibilityModel(model: GridColumnVisibilityModel): void;
-  /** The CSV of the filtered, sorted rows and shown columns. */
-  toCsv(): string;
-  /** Downloads the CSV (`data-ok-export-file-name`, default "data"). */
-  exportCsv(): void;
+  /** The CSV of the filtered, sorted rows and shown columns (or the columns of `options`). */
+  toCsv(options?: GridCsvOptions): string;
+  /** Downloads the CSV (`options.fileName`, else `data-ok-export-file-name`, default "data"). */
+  exportCsv(options?: GridCsvOptions): void;
+  /** Prints every filtered row (toolbar and footer left out unless asked). */
+  print(options?: GridPrintOptions): void;
+  /** Fits columns to their content (default: every resizable shown column). */
+  autosizeColumns(options?: { columns?: readonly string[]; includeHeaders?: boolean }): void;
+  /** Scrolls a row (index on the current page) and / or a column (shown index) into view. */
+  scrollToIndexes(indexes: { rowIndex?: number; colIndex?: number }): void;
+  exportState(): GridState;
+  /** Applies a saved state (unknown keys and values are dropped). */
+  restoreState(state: unknown): void;
+  /** Operators of a column's filter (they replace the type's operators). */
+  setFilterOperators(field: string, operators: readonly GridFilterOperator<HTMLElement>[]): void;
+  /** The text of a column's values in `setRows` and after editing (`null`: back to the default). */
+  setValueFormatter(field: string, format: ((value: unknown) => string) | null): void;
+  /** Labels of the text the runtime writes (a locale pack, such as `viVN`). */
+  setLocaleText(labels: Partial<GridLabels>): void;
   /**
    * Replaces the rows with data: each row is a copy of `<template data-ok-data-grid-row>`, its
    * cells filled as text (or from `<template data-ok-data-grid-cell="<field>">`, whose
@@ -103,9 +138,27 @@ const {
   rowCount: rowCountOption,
   loading: loadingOption,
   scrollEndThreshold,
+  disableMultipleRowSelection,
+  keepNonExistentRowsSelected,
+  checkboxSelectionVisibleOnly,
+  autosizeOnMount,
+  rowSpanning,
+  rowHeight: rowHeightOption,
+  quickFilterLogicOperator,
+  quickFilterExcludeHiddenColumns,
+  ignoreDiacritics,
 } = dataGridOptions.options;
 
 type DataRow = Record<string, unknown>;
+
+export interface GridPrintOptions extends GridPrintLayout {
+  /** Fields to print (default: the shown columns). */
+  fields?: readonly string[] | undefined;
+  /** Hidden columns too. */
+  allColumns?: boolean | undefined;
+  /** The document title (default: the grid's label). */
+  fileName?: string | undefined;
+}
 const ROW = '[role="row"][data-ok-row-id]';
 const INTERACTIVE = "button, a, input, label, select, textarea";
 
@@ -173,6 +226,8 @@ export const dataGrid = defineComponent<DataGridInstance>({
       width: numberAttr(header, "data-ok-width"),
       minWidth: numberAttr(header, "data-ok-min-width"),
       flex: numberAttr(header, "data-ok-flex"),
+      maxWidth: numberAttr(header, "data-ok-max-width"),
+      searchable: header.getAttribute("data-ok-searchable") !== "false",
       sortable: header.hasAttribute("aria-sort"),
       hideable: header.getAttribute("data-ok-hideable") !== "false",
       filterable: header.getAttribute("data-ok-filterable") !== "false",
@@ -180,6 +235,27 @@ export const dataGrid = defineComponent<DataGridInstance>({
       editable: header.hasAttribute("data-ok-editable"),
       valueOptions: stringList(header.getAttribute("data-ok-value-options")),
     }));
+    // Text the runtime writes (setLocaleText), custom operators and value formatters.
+    let labels: GridLabels = gridDefaultLabels;
+    const operators: Record<string, readonly GridFilterOperator<HTMLElement>[]> = {};
+    const formatters = new Map<string, (value: unknown) => string>();
+    /** A value as the column shows it: its formatter, its `data-ok-format`, or plain text. */
+    const formatted = (field: string, raw: unknown) => {
+      const own = formatters.get(field);
+      if (own) return own(raw);
+      const header = headerRow.querySelector(
+        `[role="columnheader"][data-ok-field="${CSS.escape(field)}"]`,
+      );
+      const format = header?.getAttribute("data-ok-format");
+      if (format && gridFormats.includes(format as GridFormat))
+        return gridFormatValue(
+          raw,
+          format as GridFormat,
+          parseGridFormatOptions(header?.getAttribute("data-ok-format-options") ?? null),
+          document.documentElement.lang || undefined,
+        );
+      return raw === null || raw === undefined ? "" : String(raw);
+    };
     // Every row lives here; only the rows to show are in the page (pages, filters, the window).
     let rowEls = [...body.querySelectorAll<HTMLElement>(ROW)];
     const rows = () => rowEls;
@@ -196,6 +272,24 @@ export const dataGrid = defineComponent<DataGridInstance>({
         : text(row, field);
     };
     const idOf = (row: HTMLElement) => row.getAttribute("data-ok-row-id") as string;
+    const multiple = () => !element.hasAttribute(disableMultipleRowSelection.attr);
+    const selectable = (row: HTMLElement) => row.getAttribute("data-ok-selectable") !== "false";
+    /** Rows "select all" covers: selectable, filtered (or on this page only). */
+    const allRows = () =>
+      (element.hasAttribute(checkboxSelectionVisibleOnly.attr) ? pageList : filtered).filter(
+        selectable,
+      );
+    const toggle = (row: HTMLElement) => {
+      if (selectable(row)) select(selectGridRow(selection, idOf(row), multiple()));
+    };
+    const filterOptions = () => ({
+      ignoreDiacritics: element.hasAttribute(ignoreDiacritics.attr),
+      quickFilterLogicOperator: readStyle(element, quickFilterLogicOperator) as "and" | "or",
+      quickFilterColumns: element.hasAttribute(quickFilterExcludeHiddenColumns.attr)
+        ? visibleGridColumns(columns, visibility)
+        : columns,
+      operators,
+    });
 
     let sortModel: GridSortModel = headers()
       .filter(
@@ -245,14 +339,16 @@ export const dataGrid = defineComponent<DataGridInstance>({
       onSort: (field, multi) => sortBy(field, multi),
       onColumnMenu: (field, header) =>
         openColumnMenu(field, header.querySelector("[data-ok-data-grid-menu-button]")),
-      onToggleRow: (row) => select(toggleGridRow(selection, idOf(row))),
+      onToggleRow: (row) => toggle(row),
       onSelectAll: () => {
-        if (checkbox) select(toggleGridRows(selection, filtered.map(idOf)));
+        if (checkbox && multiple()) select(toggleGridRows(selection, allRows().map(idOf)));
       },
-      onEdit: (cell) =>
+      onEdit: (cell, reason, key) =>
         startEdit(
           cell.closest<HTMLElement>(ROW) as HTMLElement,
           cell.getAttribute("data-ok-field") as string,
+          reason,
+          key,
         ),
       onResizeKey: (field, delta) =>
         resize(field, (headerOf(field) as HTMLElement).getBoundingClientRect().width + delta, true),
@@ -262,6 +358,21 @@ export const dataGrid = defineComponent<DataGridInstance>({
         `[role="columnheader"][data-ok-field="${CSS.escape(field)}"]`,
       );
 
+    /** Per-row heights and spacing, and column spans, from attributes into CSSOM. */
+    const styleRows = () => {
+      for (const row of rows()) {
+        const own = Number(row.getAttribute("data-ok-row-height"));
+        if (own > 0) row.style.setProperty("--_ok-data-grid-row-height", `${own}px`);
+        for (const side of ["top", "bottom"] as const)
+          if (row.hasAttribute(`data-ok-spacing-${side}`))
+            row.style.setProperty(`--_ok-data-grid-spacing-${side}`, `${spacingOf(row, side)}px`);
+        for (const cell of row.querySelectorAll<HTMLElement>("[aria-colspan]"))
+          cell.style.setProperty(
+            "--_ok-data-grid-colspan",
+            String(Number(cell.getAttribute("aria-colspan")) || 1),
+          );
+      }
+    };
     /** Columns: order (cells moved), pinning, template, hidden cells, column indexes. */
     const layout = () => {
       const arranged = arrangeGridColumns(orderGridColumns(columns, order), pinned);
@@ -279,7 +390,15 @@ export const dataGrid = defineComponent<DataGridInstance>({
           const cell = row.querySelector<HTMLElement>(
             `:scope > [data-ok-field="${CSS.escape(column.field)}"]`,
           );
-          if (cell) row.append(cell);
+          if (!cell) continue;
+          row.append(cell);
+          // A header's tooltip (its description) moves with it.
+          for (const ref of (cell.getAttribute("aria-describedby") ?? "").split(/\s+/)) {
+            const tip = ref
+              ? row.querySelector(`:scope > [role="tooltip"]#${CSS.escape(ref)}`)
+              : null;
+            if (tip) row.append(tip);
+          }
         }
         for (const cell of row.querySelectorAll<HTMLElement>(":scope > [data-ok-field]")) {
           const field = cell.getAttribute("data-ok-field") as string;
@@ -293,7 +412,8 @@ export const dataGrid = defineComponent<DataGridInstance>({
           else cell.removeAttribute("data-ok-pinned");
           if (field === GRID_CHECKBOX_FIELD) continue;
           const index = shown.findIndex((c) => c.field === field);
-          cell.hidden = index < 0;
+          // Cells covered by a column span stay hidden.
+          cell.hidden = index < 0 || (cell.hasAttribute("data-ok-covered") && cell.hidden);
           if (index >= 0) cell.setAttribute("aria-colindex", String(index + offset));
         }
       }
@@ -306,6 +426,7 @@ export const dataGrid = defineComponent<DataGridInstance>({
 
     /** Rows: filter, sort, page (client modes), then draw the window; selection marks, overlays. */
     let pageList: HTMLElement[] = [];
+    let sortedList: HTMLElement[] = [];
     let total = 0;
     let viewport: GridViewport | null = null;
     let spacers: string[] = [];
@@ -317,7 +438,7 @@ export const dataGrid = defineComponent<DataGridInstance>({
       const all = rows();
       filtered = serverSide(filterMode)
         ? all
-        : filterGridRows(all, filterModel, columns, value, text);
+        : filterGridRows(all, filterModel, columns, value, text, filterOptions());
       const sorted = serverSide(sortingMode)
         ? filtered
         : sortGridRows(filtered, sortModel, columns, value);
@@ -335,6 +456,7 @@ export const dataGrid = defineComponent<DataGridInstance>({
       pager()?.refresh();
       const pageStart = paged ? page * pageSize : 0;
       pageList = paged ? sorted.slice(pageStart, pageStart + pageSize) : sorted;
+      sortedList = sorted;
       // Rows of a server page sit after the rows of the pages before it.
       const rowOffset = serverPage && Number.isFinite(pageSize) ? page * pageSize : 0;
       sorted.forEach((row, index) => {
@@ -354,19 +476,83 @@ export const dataGrid = defineComponent<DataGridInstance>({
       navigation.sync();
     };
     /** Puts the rows of the window (or the whole page) in the body, moving as few as possible. */
+    const measured = new WeakMap<HTMLElement, number>();
+    const spacingOf = (row: HTMLElement, side: "top" | "bottom") =>
+      Number(row.getAttribute(`data-ok-spacing-${side}`)) || 0;
+    /** Rows with their own height or spacing (offsets per row). */
+    const variable = () =>
+      rows().some(
+        (row) =>
+          row.hasAttribute("data-ok-row-height") ||
+          row.hasAttribute("data-ok-spacing-top") ||
+          row.hasAttribute("data-ok-spacing-bottom"),
+      );
+    const baseHeight = () => {
+      const density = pick(gridDensities, element.getAttribute(densityOption.attr), "standard");
+      return Math.round(
+        ((readNumber(element, rowHeightOption) as number) || 52) * gridDensityFactor(density),
+      );
+    };
+    const heights = () =>
+      pageList.map((row) => {
+        const own = Number(row.getAttribute("data-ok-row-height"));
+        const box = measured.get(row) ?? (own > 0 ? own : baseHeight()) + 1;
+        return box + spacingOf(row, "top") + spacingOf(row, "bottom");
+      });
+    let offsets: number[] | null = null;
+    /** Row spans of the page (`rowSpanning`), recomputed on draw. */
+    const spanRows = () => {
+      for (const cell of body.querySelectorAll<HTMLElement>(
+        "[aria-rowspan], [data-ok-covered]:not([hidden])",
+      )) {
+        cell.removeAttribute("aria-rowspan");
+        cell.removeAttribute("data-ok-covered");
+        cell.removeAttribute("aria-hidden");
+        cell.style.removeProperty("--_ok-data-grid-rowspan");
+      }
+      if (!element.hasAttribute(rowSpanning.attr)) return null;
+      const fields = visibleGridColumns(columns, visibility)
+        .filter((c) => c.type !== "actions")
+        .map((c) => c.field);
+      return gridRowSpans(pageList, fields, text);
+    };
+    let drawing = false;
     const draw = () => {
       const vp = viewport as GridViewport;
       const virtual =
         !element.hasAttribute(disableVirtualization.attr) && !!vp?.scrolls && vp.rowHeight > 0;
-      const range = virtual
-        ? gridRowWindow(pageList.length, vp.rowHeight, vp.offset, vp.viewport)
+      offsets = virtual && variable() ? gridRowOffsets(heights()) : null;
+      let range: GridRowWindow = virtual
+        ? offsets
+          ? gridRowWindowOf(offsets, vp.offset, vp.viewport)
+          : gridRowWindow(pageList.length, vp.rowHeight, vp.offset, vp.viewport)
         : { start: 0, end: pageList.length, before: 0, after: 0 };
+      const spans = spanRows();
+      if (spans && range.start > 0) {
+        const start = spans.origin[range.start] as number;
+        range = {
+          ...range,
+          start,
+          before: offsets ? (offsets[start] as number) : start * vp.rowHeight,
+        };
+      }
       const shownRows = pageList.slice(range.start, range.end);
       const keep = new Set(shownRows);
       for (const row of [...body.children]) if (!keep.has(row as HTMLElement)) row.remove();
       shownRows.forEach((row, index) => {
         row.hidden = false;
         if (body.children[index] !== row) body.insertBefore(row, body.children[index] ?? null);
+        const cells = spans?.cells[range.start + index];
+        for (const [field, span] of cells ?? []) {
+          const cell = cellOf(row, field) as HTMLElement;
+          if (span.covered) {
+            cell.setAttribute("data-ok-covered", "");
+            cell.setAttribute("aria-hidden", "true");
+          } else {
+            cell.setAttribute("aria-rowspan", String(span.span));
+            cell.style.setProperty("--_ok-data-grid-rowspan", String(span.span));
+          }
+        }
       });
       spacers = syncCustomProperties(
         body,
@@ -379,6 +565,20 @@ export const dataGrid = defineComponent<DataGridInstance>({
         spacers,
       );
       syncGridPinning(main);
+      // Rows of their own height: measure them; new heights move the window (once).
+      if (offsets && !drawing) {
+        let changed = false;
+        for (const row of shownRows)
+          if (row.offsetHeight && measured.get(row) !== row.offsetHeight) {
+            measured.set(row, row.offsetHeight);
+            changed = true;
+          }
+        if (changed) {
+          drawing = true;
+          draw();
+          drawing = false;
+        }
+      }
     };
     const loadingOverlay = element.querySelector<HTMLElement>("[data-ok-data-grid-loading]");
     const syncOverlays = (count: number) => {
@@ -392,9 +592,8 @@ export const dataGrid = defineComponent<DataGridInstance>({
         visible || busy
           ? ""
           : count === 0
-            ? (element.getAttribute("data-ok-label-no-rows") ?? gridDefaultLabels.noRowsLabel)
-            : (element.getAttribute("data-ok-label-no-results") ??
-              gridDefaultLabels.noResultsOverlayLabel);
+            ? (element.getAttribute("data-ok-label-no-rows") ?? labels.noRowsLabel)
+            : (element.getAttribute("data-ok-label-no-results") ?? labels.noResultsOverlayLabel);
     };
 
     // Virtualization and the end of the rows (infinite loading).
@@ -428,7 +627,7 @@ export const dataGrid = defineComponent<DataGridInstance>({
           const field = cell.getAttribute("data-ok-field") as string;
           if (field === GRID_CHECKBOX_FIELD) continue;
           const raw = item[field];
-          const shownText = raw === null || raw === undefined ? "" : String(raw);
+          const shownText = formatted(field, raw);
           const cellTemplate = element.querySelector<HTMLTemplateElement>(
             `template[data-ok-data-grid-cell="${CSS.escape(field)}"]`,
           );
@@ -438,10 +637,15 @@ export const dataGrid = defineComponent<DataGridInstance>({
               slot.textContent = shownText;
             cell.setAttribute("data-ok-text", shownText);
           } else cell.textContent = shownText;
-          if (typeof raw !== "string") cell.setAttribute("data-ok-value", shownText);
+          const rawText = raw === null || raw === undefined ? "" : String(raw);
+          if (typeof raw !== "string" || rawText !== shownText)
+            cell.setAttribute("data-ok-value", rawText);
         }
         return row;
       });
+      if (!element.hasAttribute(keepNonExistentRowsSelected.attr))
+        selection = pruneGridSelection(selection, rowEls.map(idOf));
+      styleRows();
       layout();
       apply();
       scrollWatcher.measure();
@@ -491,16 +695,18 @@ export const dataGrid = defineComponent<DataGridInstance>({
       for (const row of rows()) {
         const on = selection.includes(idOf(row));
         row.setAttribute("aria-selected", String(on));
-        (
-          row.querySelector(
-            '[data-ok-data-grid-checkbox] input[type="checkbox"]',
-          ) as HTMLInputElement
-        ).checked = on;
+        const box = row.querySelector(
+          '[data-ok-data-grid-checkbox] input[type="checkbox"]',
+        ) as HTMLInputElement;
+        box.checked = on;
+        box.disabled = !selectable(row);
       }
-      const all = headerRow.querySelector(
+      const all = headerRow.querySelector<HTMLInputElement>(
         '[data-ok-data-grid-checkbox] input[type="checkbox"]',
-      ) as HTMLInputElement;
-      const state = gridSelectAllState(filtered.map(idOf), selection);
+      );
+      // One row at a time: no "select all".
+      if (!all) return;
+      const state = gridSelectAllState(allRows().map(idOf), selection);
       all.checked = state === "all";
       all.indeterminate = state === "some";
       (all.closest("[data-ok-checkbox]") as Element).toggleAttribute(
@@ -561,14 +767,22 @@ export const dataGrid = defineComponent<DataGridInstance>({
     };
     const fillOperators = (operatorSelect: HTMLSelectElement, field: string) => {
       const type = columns.find((c) => c.field === field)?.type;
+      const choices = operators[field]
+        ? operators[field].map((o) => ({ value: o.value, label: o.label ?? o.value }))
+        : gridFilterOperators(type).map((o) => ({
+            value: o,
+            label: labels.filterOperator[o] ?? o,
+          }));
+      const current = operatorSelect.value;
       operatorSelect.replaceChildren(
-        ...gridFilterOperators(type).map((operator) => {
+        ...choices.map((choice) => {
           const option = document.createElement("option");
-          option.value = operator;
-          option.textContent = gridDefaultLabels.filterOperator[operator] as string;
+          option.value = choice.value;
+          option.textContent = choice.label;
           return option;
         }),
       );
+      if (choices.some((c) => c.value === current)) operatorSelect.value = current;
     };
     const readFilters = (): GridFilterModel => {
       const rowsNow = filterRows();
@@ -577,7 +791,7 @@ export const dataGrid = defineComponent<DataGridInstance>({
         ...filterModel,
         items: rowsNow.map((row) => {
           const { field, operator, input } = partsOf(row);
-          input.disabled = !gridOperatorNeedsValue(operator.value);
+          input.disabled = !gridOperatorNeedsValue(operator.value, operators[field.value]);
           return { field: field.value, operator: operator.value, value: input.value };
         }),
         logicOperator: logic === "or" ? "or" : logic === "and" ? "and" : filterModel.logicOperator,
@@ -609,15 +823,13 @@ export const dataGrid = defineComponent<DataGridInstance>({
       select.id = `${id}-filter-logic`;
       logicBox.querySelector("label")?.setAttribute("for", select.id);
       for (const label of logicBox.querySelectorAll("label, legend > span"))
-        label.textContent = gridDefaultLabels.filterPanelLogicOperator;
+        label.textContent = labels.filterPanelLogicOperator;
       select.replaceChildren(
         ...(["and", "or"] as const).map((value) => {
           const option = document.createElement("option");
           option.value = value;
           option.textContent =
-            value === "and"
-              ? gridDefaultLabels.filterPanelOperatorAnd
-              : gridDefaultLabels.filterPanelOperatorOr;
+            value === "and" ? labels.filterPanelOperatorAnd : labels.filterPanelOperatorOr;
           return option;
         }),
       );
@@ -713,20 +925,54 @@ export const dataGrid = defineComponent<DataGridInstance>({
       },
       { signal },
     );
-    const toCsv = () =>
+    const shownColumns = () =>
+      visibleGridColumns(arrangeGridColumns(orderGridColumns(columns, order), pinned), visibility);
+    const toCsv = (options: GridCsvOptions = {}) =>
       gridToCsv(
-        visibleGridColumns(columns, visibility),
+        gridExportColumns(columns, shownColumns(), options),
         sortGridRows(
-          filterGridRows(rows(), filterModel, columns, value, text),
+          filterGridRows(rows(), filterModel, columns, value, text, filterOptions()),
           sortModel,
           columns,
           value,
         ),
         text,
+        options,
       );
-    const exportCsv = () =>
-      download(element.getAttribute("data-ok-export-file-name") ?? "data", toCsv());
-    const print = () => printGridContent(main, main.getAttribute("aria-label") ?? "");
+    const exportCsv = (options: GridCsvOptions = {}) =>
+      download(
+        options.fileName ?? element.getAttribute("data-ok-export-file-name") ?? "data",
+        toCsv(options),
+      );
+    const print = (options: GridPrintOptions = {}) => {
+      const keep = options.fields ? new Set(options.fields) : null;
+      const base = options.allColumns
+        ? arrangeGridColumns(orderGridColumns(columns, order), pinned)
+        : shownColumns();
+      const printed = base.filter((c) => c.type !== "actions" && (!keep || keep.has(c.field)));
+      const boxes = checkbox && !!options.includeCheckboxes;
+      printGridContent(
+        element,
+        options.fileName ?? main.getAttribute("aria-label") ?? "",
+        (copy) => {
+          // Every filtered, sorted row (all pages), not only the rows on screen.
+          const copyBody = copy.querySelector("[data-ok-data-grid-body]") as HTMLElement;
+          copyBody.replaceChildren(
+            ...sortedList.map((row) => {
+              const clone = copy.ownerDocument.importNode(row, true);
+              clone.hidden = false;
+              return clone;
+            }),
+          );
+          prepareGridPrint(
+            copy,
+            options,
+            printed.map((c) => c.field),
+            gridColumnTemplate(printed, boxes, widths),
+          );
+        },
+      );
+    };
     byId("export")?.addEventListener(
       "ok:menu:select",
       (event) => {
@@ -763,7 +1009,25 @@ export const dataGrid = defineComponent<DataGridInstance>({
       onResize: resize,
       onMove: (field, target) => setOrder(moveGridColumn(arrangedFields(), field, { to: target })),
       canReorder: () => !element.hasAttribute(disableColumnReorder.attr),
+      onAutosize: (field) => autosize({ columns: [field] }),
     });
+    const autosize = (options: { columns?: readonly string[]; includeHeaders?: boolean } = {}) => {
+      const fields =
+        options.columns ??
+        shownColumns()
+          .filter(isGridResizable)
+          .map((c) => c.field);
+      for (const field of fields) {
+        const column = columns.find((c) => c.field === field);
+        if (!column) continue;
+        widths = {
+          ...widths,
+          [field]: clampGridWidth(column, measureGridColumn(main, field, options)),
+        };
+        emit("resize", { field, width: widths[field] });
+      }
+      layout();
+    };
 
     // Editing: inputs replace the cell content; Enter commits, Escape cancels.
     interface Edit {
@@ -774,13 +1038,22 @@ export const dataGrid = defineComponent<DataGridInstance>({
     }
     let edits: Edit[] = [];
     let editRow: HTMLElement | null = null;
-    const startEdit = (row: HTMLElement, field: string) => {
+    const errors = new Map<string, string | true>();
+    const cellEditable = (row: HTMLElement, column: GridColumn) =>
+      !!column.editable && cellOf(row, column.field)?.getAttribute("data-ok-editable") !== "false";
+    const startEdit = (
+      row: HTMLElement,
+      field: string,
+      reason: GridEditStartReason = "cellDoubleClick",
+      key?: string,
+    ) => {
       const column = columns.find((c) => c.field === field);
-      if (edits.length || !column?.editable) return;
+      if (edits.length || !column || !cellEditable(row, column)) return;
       const rowMode = element.getAttribute(editMode.attr) === "row";
       const targets = rowMode
-        ? visibleGridColumns(columns, visibility).filter((c) => c.editable)
+        ? visibleGridColumns(columns, visibility).filter((c) => cellEditable(row, c))
         : [column];
+      errors.clear();
       editRow = row;
       if (rowMode) row.setAttribute("data-ok-editing", "");
       edits = targets.map((c) => {
@@ -803,29 +1076,87 @@ export const dataGrid = defineComponent<DataGridInstance>({
           if (c.type === "boolean") input.checked = start === "true";
           else input.value = start;
         }
+        // A typed character replaces the value (text-like fields only).
+        if (key !== undefined && c.field === field && input instanceof HTMLInputElement)
+          if (input.type !== "checkbox") input.value = key;
         input.setAttribute("data-ok-data-grid-edit-input", "");
-        input.setAttribute("aria-label", `${gridDefaultLabels.editLabel} ${name}`);
+        input.setAttribute("aria-label", `${labels.editLabel} ${name}`);
         const content = [...cell.childNodes];
         cell.replaceChildren(input);
         cell.setAttribute("data-ok-editing", "");
         return { cell, column: c, input, content };
       });
-      (edits[0] as Edit).input.focus();
+      // The started cell is always among the edits (shown and editable).
+      const first = edits.find((e) => e.column.field === field) as Edit;
+      first.input.focus();
+      if (
+        key !== undefined &&
+        first.input instanceof HTMLInputElement &&
+        first.input.type === "text"
+      )
+        first.input.setSelectionRange(first.input.value.length, first.input.value.length);
+      emit("editstart", rowMode ? { id: idOf(row), reason } : { id: idOf(row), field, reason });
     };
-    const stopEdit = (commit: boolean, focusField?: string) => {
+    const editText = (input: HTMLInputElement | HTMLSelectElement) =>
+      input instanceof HTMLInputElement && input.type === "checkbox"
+        ? String(input.checked)
+        : input.value;
+    /** `ok:data-grid:validate`: a listener sets `detail.error` (true or a message). */
+    const validate = (edit: Edit) => {
+      const detail: { id: string; field: string; value: unknown; error?: string | boolean } = {
+        id: idOf(editRow as HTMLElement),
+        field: edit.column.field,
+        value: parseGridEditValue(editText(edit.input), edit.column.type),
+      };
+      emit("validate", detail);
+      const message = edit.cell.querySelector<HTMLElement>("[data-ok-data-grid-edit-error]");
+      if (detail.error) {
+        errors.set(edit.column.field, detail.error === true ? true : String(detail.error));
+        edit.input.setAttribute("aria-invalid", "true");
+      } else {
+        errors.delete(edit.column.field);
+        edit.input.removeAttribute("aria-invalid");
+      }
+      const text = typeof detail.error === "string" ? detail.error : "";
+      if (!text) {
+        message?.remove();
+        edit.input.removeAttribute("aria-describedby");
+        return;
+      }
+      const errorId = `${id || "grid"}-${idOf(editRow as HTMLElement)}-${edit.column.field}-error`;
+      const span = message ?? document.createElement("span");
+      span.setAttribute("data-ok-data-grid-edit-error", "");
+      span.setAttribute("role", "alert");
+      span.id = errorId;
+      span.textContent = text;
+      if (!message) edit.cell.append(span);
+      edit.input.setAttribute("aria-describedby", errorId);
+    };
+    const stopEdit = (
+      commit: boolean,
+      focusField?: string,
+      reason: "enterKeyDown" | "escapeKeyDown" | "cellFocusOut" = "cellFocusOut",
+    ) => {
+      // A value with an error keeps the cell open (Escape still cancels).
+      if (commit && errors.size > 0) return;
       const done = edits;
       const row = editRow as HTMLElement;
+      errors.clear();
       edits = [];
       editRow = null;
       row.removeAttribute("data-ok-editing");
       const values = Object.fromEntries(
-        done.map(({ column, input }) => {
-          const textValue =
-            input instanceof HTMLInputElement && input.type === "checkbox"
-              ? String(input.checked)
-              : input.value;
-          return [column.field, parseGridEditValue(textValue, column.type)];
-        }),
+        done.map(({ column, input }) => [
+          column.field,
+          parseGridEditValue(editText(input), column.type),
+        ]),
+      );
+      const rowMode = element.getAttribute(editMode.attr) === "row";
+      emit(
+        "editstop",
+        rowMode
+          ? { id: idOf(row), reason }
+          : { id: idOf(row), field: (done[0] as Edit).column.field, reason },
       );
       const accepted = commit && emit("edit", { id: idOf(row), row: values }, { cancelable: true });
       for (const { cell, column, content } of done) {
@@ -835,10 +1166,9 @@ export const dataGrid = defineComponent<DataGridInstance>({
           continue;
         }
         const next = values[column.field];
-        const shownText = next === null || next === undefined ? "" : String(next);
-        cell.replaceChildren(shownText);
+        cell.replaceChildren(formatted(column.field, next));
         cell.removeAttribute("data-ok-text");
-        cell.setAttribute("data-ok-value", shownText);
+        cell.setAttribute("data-ok-value", next === null || next === undefined ? "" : String(next));
       }
       // Re-sorting moves rows, which drops the focus: apply first, then focus the cell.
       if (accepted) apply();
@@ -848,11 +1178,20 @@ export const dataGrid = defineComponent<DataGridInstance>({
       "dblclick",
       (event) => {
         const cell = (event.target as Element).closest<HTMLElement>('[role="gridcell"]');
-        if (cell)
-          startEdit(
-            cell.closest<HTMLElement>(ROW) as HTMLElement,
-            cell.getAttribute("data-ok-field") as string,
-          );
+        const row = cell?.closest<HTMLElement>(ROW);
+        if (!cell || !row) return;
+        const field = cell.getAttribute("data-ok-field") as string;
+        emit("rowdoubleclick", { id: idOf(row) });
+        emit("celldoubleclick", { id: idOf(row), field, value: value(row, field) });
+        startEdit(row, field, "cellDoubleClick");
+      },
+      { signal },
+    );
+    main.addEventListener(
+      "input",
+      (event) => {
+        const edit = edits.find((e) => e.input === event.target);
+        if (edit) validate(edit);
       },
       { signal },
     );
@@ -865,6 +1204,7 @@ export const dataGrid = defineComponent<DataGridInstance>({
         stopEdit(
           event.key === "Enter",
           (input.closest("[data-ok-field]") as Element).getAttribute("data-ok-field") as string,
+          event.key === "Enter" ? "enterKeyDown" : "escapeKeyDown",
         );
       },
       { signal },
@@ -983,17 +1323,23 @@ export const dataGrid = defineComponent<DataGridInstance>({
         if (header && main.contains(header) && !target.closest(INTERACTIVE)) {
           // A press that resized or moved the column doesn't sort it.
           if (header.hasAttribute("data-ok-just-dragged")) return;
-          sortBy(header.getAttribute("data-ok-field") as string, (event as MouseEvent).shiftKey);
+          const field = header.getAttribute("data-ok-field") as string;
+          emit("columnheaderclick", { field });
+          sortBy(field, (event as MouseEvent).shiftKey);
           return;
         }
         const row = target.closest<HTMLElement>(ROW);
+        if (!row || !main.contains(row)) return;
+        emit("rowclick", { id: idOf(row) });
+        const cell = target.closest<HTMLElement>('[role="gridcell"]');
+        const field = cell?.getAttribute("data-ok-field");
+        if (field) emit("cellclick", { id: idOf(row), field, value: value(row, field) });
         if (
-          row &&
           checkbox &&
           !element.hasAttribute(disableRowSelectionOnClick.attr) &&
           !target.closest(INTERACTIVE)
         )
-          select(toggleGridRow(selection, idOf(row)));
+          toggle(row);
       },
       { signal },
     );
@@ -1005,9 +1351,8 @@ export const dataGrid = defineComponent<DataGridInstance>({
         );
         if (!box) return;
         const row = box.closest<HTMLElement>(ROW);
-        select(
-          row ? toggleGridRow(selection, idOf(row)) : toggleGridRows(selection, filtered.map(idOf)),
-        );
+        if (row) toggle(row);
+        else select(toggleGridRows(selection, allRows().map(idOf)));
         mark();
       },
       { signal },
@@ -1050,8 +1395,21 @@ export const dataGrid = defineComponent<DataGridInstance>({
         '[data-ok-data-grid-action="pin-left"], [data-ok-data-grid-action="pin-right"], [data-ok-data-grid-action="unpin"]',
       );
       off(disableMultipleColumnsFiltering.attr, "[data-ok-data-grid-filter-add]");
+      if (checkbox) {
+        if (multiple()) main.setAttribute("aria-multiselectable", "true");
+        else main.removeAttribute("aria-multiselectable");
+      }
+      // A row height of the grid (with the density factor), through CSSOM.
+      rootVars = syncCustomProperties(
+        element,
+        element.hasAttribute(rowHeightOption.attr)
+          ? { "--_ok-data-grid-row-height": `${baseHeight()}px` }
+          : {},
+        rootVars,
+      );
       syncOverlays(rows().length);
     };
+    let rootVars: string[] = [];
     const options = new MutationObserver(reflect);
     options.observe(element, {
       attributes: true,
@@ -1063,14 +1421,24 @@ export const dataGrid = defineComponent<DataGridInstance>({
         disableColumnPinning.attr,
         disableMultipleColumnsFiltering.attr,
         loadingOption.attr,
+        disableMultipleRowSelection.attr,
+        rowHeightOption.attr,
       ],
     });
 
     for (const row of filterRows()) fillOperators(partsOf(row).operator, partsOf(row).field.value);
+    styleRows();
     layout();
     apply();
     reflect();
     scrollWatcher.measure();
+    if (element.hasAttribute(autosizeOnMount.attr)) {
+      autosize();
+      // Again once web fonts are in: text widths change with the font.
+      document.fonts?.ready.then(() => {
+        if (!signal.aborted) autosize();
+      });
+    }
 
     return {
       get sortModel() {
@@ -1124,6 +1492,90 @@ export const dataGrid = defineComponent<DataGridInstance>({
       },
       toCsv,
       exportCsv,
+      print,
+      autosizeColumns: autosize,
+      scrollToIndexes({ rowIndex, colIndex }) {
+        if (rowIndex !== undefined && rowIndex >= 0 && rowIndex < pageList.length) {
+          const step = viewport?.rowHeight || baseHeight() + 1;
+          const top = offsets ? (offsets[rowIndex] as number) : rowIndex * step;
+          const height = offsets ? (offsets[rowIndex + 1] as number) - top : step;
+          const header = main.querySelector<HTMLElement>(
+            "[data-ok-data-grid-header]",
+          ) as HTMLElement;
+          const visible = main.clientHeight - header.offsetHeight;
+          if (top < main.scrollTop) main.scrollTop = top;
+          else if (top + height > main.scrollTop + visible) main.scrollTop = top + height - visible;
+        }
+        const column = colIndex === undefined ? undefined : shownColumns()[colIndex];
+        const cell = column ? headerOf(column.field) : null;
+        if (cell) {
+          const left = cell.offsetLeft;
+          if (left < main.scrollLeft) main.scrollLeft = left;
+          else if (left + cell.offsetWidth > main.scrollLeft + main.clientWidth)
+            main.scrollLeft = left + cell.offsetWidth - main.clientWidth;
+        }
+      },
+      exportState: () => ({
+        sorting: { sortModel: [...sortModel] },
+        filter: { filterModel },
+        pagination: {
+          paginationModel: { page, pageSize: Number.isFinite(pageSize) ? pageSize : -1 },
+        },
+        columns: {
+          columnVisibilityModel: { ...visibility },
+          orderedFields: arrangedFields(),
+          dimensions: Object.fromEntries(
+            Object.entries(widths).map(([f, width]) => [f, { width }]),
+          ),
+        },
+        pinnedColumns: { left: [...(pinned.left ?? [])], right: [...(pinned.right ?? [])] },
+        density: pick(gridDensities, element.getAttribute(densityOption.attr), "standard"),
+      }),
+      restoreState(input) {
+        const state = sanitizeGridState(input);
+        if (state.sorting?.sortModel) sortModel = state.sorting.sortModel;
+        if (state.filter?.filterModel) filterModel = state.filter.filterModel;
+        const paging = state.pagination?.paginationModel;
+        if (paging) {
+          // The pagination reports each change (resetting the page): set the target after.
+          const target = paging.page ?? page;
+          if (paging.pageSize !== undefined) {
+            pageSize = paging.pageSize;
+            pager()?.setRowsPerPage(pageSize);
+          }
+          page = target;
+          pager()?.setPage(target);
+        }
+        if (state.columns?.columnVisibilityModel) visibility = state.columns.columnVisibilityModel;
+        if (state.columns?.orderedFields) order = state.columns.orderedFields;
+        const dimensions = state.columns?.dimensions;
+        if (dimensions)
+          widths = Object.fromEntries(Object.entries(dimensions).map(([f, d]) => [f, d.width]));
+        if (state.pinnedColumns) pinned = state.pinnedColumns;
+        if (state.density) element.setAttribute(densityOption.attr, state.density);
+        layout();
+        refresh();
+      },
+      setFilterOperators(field, list) {
+        operators[field] = list;
+        for (const row of filterRows())
+          if (partsOf(row).field.value === field) fillOperators(partsOf(row).operator, field);
+        apply();
+      },
+      setValueFormatter(field, format) {
+        if (format) formatters.set(field, format);
+        else formatters.delete(field);
+      },
+      setLocaleText(next) {
+        labels = { ...gridDefaultLabels, ...next };
+        for (const row of filterRows())
+          fillOperators(partsOf(row).operator, partsOf(row).field.value);
+        if (next.paginationDisplayedRows)
+          pagination?.setAttribute("data-ok-label-displayed-rows", next.paginationDisplayedRows);
+        else pagination?.removeAttribute("data-ok-label-displayed-rows");
+        pager()?.refresh();
+        syncOverlays(rows().length);
+      },
       setRows(data) {
         buildRows(data);
       },
@@ -1140,6 +1592,7 @@ export const dataGrid = defineComponent<DataGridInstance>({
         columnControls.destroy();
         navigation.destroy();
         syncCustomProperties(main, {}, written);
+        syncCustomProperties(element, {}, rootVars);
       },
     };
   },
