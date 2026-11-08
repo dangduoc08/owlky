@@ -51,7 +51,7 @@ component and each `/integrate` run.
 | MUI X | Tree view | ✅ | SimpleTreeView, TreeItem, RichTreeView | Rating, Slider, Timeline, Transfer list, Tree view & Autocomplete |
 | Extra | Animate | ✅ beta | Motion, MotionGroup, MotionText, CountUp, MotionBorder; Dialog `transition` | Motion |
 | Extra | Carousel | wave 7 (ADR) | — | Next |
-| Extra | Chart | wave 7 (ADR) | — | Next |
+| Extra | Chart | ✅ phase 1 of 4 (ADR-0024) | Chart | Chart |
 | Extra | Dnd | ✅ | Sortable | Sortable |
 | Extra | Editor | ✅ (ADR-0023, Tiptap) | Editor | Editor |
 | Extra | Form validation | not planned | — | Next |
@@ -441,6 +441,21 @@ Popover + TextField + Button (link and image forms). No new tokens.
 **Backlog (deferred):** Tiptap `extensions` / `editorProps` pass-through, bubble menu, tables,
 mentions, task lists, a form `name` (hidden input with the HTML), character count.
 
+## Chart (ADR-0024) — written by us, in four phases
+Created with `/component` from the reference "Chart" page. ApexCharts' framework-free core isn't
+MIT, so the owner chose our own engine (2026-11-08): one SVG layout in core (`renderChart`), drawn by
+React and by the HTML runtime from a data table. Colors are palette names; no new tokens.
+
+| Phase | Scope (reference sections) | Status |
+|---|---|---|
+| 1 | Engine, legend, tooltip, keyboard, data table; Line, Area, Column single / multiple / stacked / negative, Bar, Mixed, Scatter | ✅ 2026-11-08 |
+| 2 | Pie, Donut, Radial bar, Radar, Semi circle gauge, Stroked gauge; data labels | next (`/component` Update) |
+| 3 | BoxPlot, Heatmap, Treemap | — |
+| 4 | Beyond the reference: animations (reduced motion), zoom and pan, annotations, brush, export (SVG, PNG, CSV), candlestick, range bar, timeline, polar area, a JavaScript data API | — |
+
+**Backlog (deferred to the phases above):** `dataLabels` (phase 2), `options.chart.animations` and
+`updateSeries` (phase 4; HTML updates today by editing the table).
+
 ## ✅ Upstream API review (ADR-0015, 2026-11-04)
 Components checked against their upstream API (MUI). Rule from the owner: what the Minimals page
 shows wins, otherwise the upstream component. Added: Button / ButtonGroup `disableElevation`,
@@ -466,7 +481,7 @@ Dependency-first: leaf components before the ones built from them, the ones that
 | 4 Overlays | ~~Popover~~ ✅, ~~Tooltip~~ ✅, ~~Menu~~ ✅, ~~Dialog~~ ✅, ~~Snackbar~~ ✅, ~~Backdrop~~ ✅ | ~~Drawer / Dialog backdrop~~ ✅ (native `::backdrop`, same token); icon button tooltips: nothing to change (MUI uses native `title` there; Tooltip wraps any IconButton) |
 | 5 Navigation | ~~Tabs~~ ✅, ~~Breadcrumbs~~ ✅, ~~Stepper~~ ✅ | — (nothing waited for them) |
 | 6 Composites | ~~Rating~~ ✅, ~~Slider~~ ✅, ~~Timeline~~ ✅, ~~Transfer list~~ ✅, ~~Autocomplete~~ ✅, ~~Tree view~~ ✅ | — (nothing waited for them; Slider unblocks the SettingsDrawer backlog of Theme settings) |
-| 7 Needs an ADR | ~~Data grid~~ (ADR-0020, phases below), ~~Date pickers~~ (ADR-0022, phase 1 ✅), Chart, Map, ~~Editor~~ (ADR-0023) ✅, Carousel, Lightbox, Markdown, Organization chart, Upload, Image, Walktour | — |
+| 7 Needs an ADR | ~~Data grid~~ (ADR-0020, phases below), ~~Date pickers~~ (ADR-0022, phase 1 ✅), ~~Chart~~ (ADR-0024, phase 1 ✅), Map, ~~Editor~~ (ADR-0023) ✅, Carousel, Lightbox, Markdown, Organization chart, Upload, Image, Walktour | — |
 
 Not planned as components (patterns or app-level pages of the reference): Layout,
 Utilities, Multi-language, Navigation bar, Mega menu, Scroll progress, Form validation, Form wizard.

@@ -136,6 +136,17 @@
       }
     },
     {
+      "includes": ["packages/react/src/chart/**"],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "useSemanticElements": "off",
+            "noNoninteractiveTabindex": "off"
+          }
+        }
+      }
+    },
+    {
       "includes": ["packages/react/src/date-calendar/**", "packages/react/src/date-field/**"],
       "linter": {
         "rules": {

@@ -4,6 +4,18 @@ import {
   type PaletteColorName,
   paletteColorNames,
 } from "@owlky/tokens";
+import {
+  type ChartCurve,
+  type ChartFill,
+  type ChartLegend,
+  type ChartType,
+  type ChartXType,
+  chartCurves,
+  chartFills,
+  chartLegends,
+  chartTypes,
+  chartXTypes,
+} from "../chart/chart-model.js";
 import { type GridDensity, gridDensities } from "../data-grid/data-grid.js";
 import {
   behavior,
@@ -2465,6 +2477,89 @@ export type EditorAnatomyOptions = { fullItem?: boolean | undefined; error?: boo
 export const editorAttributes = (options: EditorAnatomyOptions = {}): DataAttributes =>
   optionAttributes(editorOptions, { ...options });
 
+// --- Chart (ADR-0024) ---------------------------------------------------------------------------
+
+export const chartOptions = defineOptions("chart", "data-ok-chart", {
+  type: style(
+    "data-ok-type",
+    chartTypes,
+    "line",
+    "Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`) or `scatter`. Series may override it (mixed charts).",
+  ),
+  xType: style(
+    "data-ok-x-type",
+    chartXTypes,
+    "category",
+    "X axis: `category` labels, `datetime` (ISO 8601 dates) or `numeric` values (scatter).",
+  ),
+  curve: style(
+    "data-ok-curve",
+    chartCurves,
+    "smooth",
+    "Line shape: `smooth`, `straight` or `stepline`.",
+  ),
+  legend: style(
+    "data-ok-legend",
+    chartLegends,
+    "top",
+    "Legend position: `top`, `right`, `bottom` or `none` (never shown for a single series).",
+  ),
+  fill: style(
+    "data-ok-fill",
+    chartFills,
+    "gradient",
+    "Area fill: a fading `gradient` or a `solid` tint.",
+  ),
+  stacked: flag("data-ok-stacked", "Stacks the series on each other (bars, lines, areas)."),
+  horizontal: flag("data-ok-horizontal", "Bars run left to right, categories down the side."),
+  height: number("data-ok-height", 320, "Height of the plot in px.", { min: 40 }),
+  markerSize: number(
+    "data-ok-marker-size",
+    undefined,
+    "Marker radius of line and area points in px (default none; scatter points 5).",
+    { min: 0 },
+  ),
+  columnWidth: number("data-ok-column-width", 40, "Column width in % of a category.", { min: 1 }),
+  barHeight: number("data-ok-bar-height", 40, "Horizontal bar thickness in % of a category.", {
+    min: 1,
+  }),
+  yMin: number(
+    "data-ok-y-min",
+    undefined,
+    "Lowest value on the value axis (default from the data).",
+  ),
+  yMax: number(
+    "data-ok-y-max",
+    undefined,
+    "Highest value on the value axis (default from the data).",
+  ),
+  hiddenSeries: state(
+    "aria-pressed",
+    'Indexes of the series hidden through the legend (`aria-pressed="false"` on their buttons).',
+    "toggle",
+  ),
+});
+
+export interface ChartAnatomyOptions {
+  type?: ChartType | undefined;
+  xType?: ChartXType | undefined;
+  curve?: ChartCurve | undefined;
+  legend?: ChartLegend | undefined;
+  fill?: ChartFill | undefined;
+  stacked?: boolean | undefined;
+  horizontal?: boolean | undefined;
+  height?: number | undefined;
+  markerSize?: number | undefined;
+  columnWidth?: number | undefined;
+  barHeight?: number | undefined;
+  yMin?: number | undefined;
+  yMax?: number | undefined;
+}
+
+/** `data-ok-*` attributes of a chart root (numbers only when given). */
+export const chartAttributes = (options: ChartAnatomyOptions = {}): DataAttributes =>
+  optionAttributes(chartOptions, { ...options });
+
 export const optionSchemas = {
   accordion: accordionOptions,
   alert: alertOptions,
@@ -2531,4 +2626,5 @@ export const optionSchemas = {
   "date-calendar": dateCalendarOptions,
   "date-picker": datePickerOptions,
   editor: editorOptions,
+  chart: chartOptions,
 } as const;

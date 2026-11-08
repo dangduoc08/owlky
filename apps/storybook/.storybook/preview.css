@@ -1031,3 +1031,10 @@
   width: 100%;
   max-width: 342px;
 }
+
+/* Chart: fills the story row and the docs preview (charts take the width of their container). */
+.sb-row > [data-ok-chart],
+.sb-unstyled > [data-ok-chart] {
+  flex: 1 1 100%;
+  min-width: 0;
+}

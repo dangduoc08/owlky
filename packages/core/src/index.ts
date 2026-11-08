@@ -64,6 +64,7 @@ export {
   buttonOptions,
   buttonSizes,
   buttonVariants,
+  type ChartAnatomyOptions,
   type CheckboxAnatomyOptions,
   type ChipAnatomyOptions,
   type ChipColor,
@@ -71,6 +72,8 @@ export {
   type CircularProgressAnatomyOptions,
   type CircularProgressVariant,
   type CountUpAnatomyOptions,
+  chartAttributes,
+  chartOptions,
   checkboxAttributes,
   checkboxOptions,
   chipAttributes,
@@ -382,6 +385,7 @@ export {
   type BreadcrumbsCollapseOptions,
   breadcrumbsCollapse,
 } from "./breadcrumbs/breadcrumbs.js";
+export * from "./chart/index.js";
 export {
   arrangeGridColumns,
   clampGridWidth,

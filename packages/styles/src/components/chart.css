@@ -1,0 +1,458 @@
+/*
+ * Chart — spec: specs/components/chart.md (ADR-0024)
+ *
+ * Anatomy:  figure[data-ok-chart][data-ok-type][data-ok-x-type][data-ok-curve][data-ok-legend][data-ok-fill]
+ *             [data-ok-stacked]? [data-ok-horizontal]? [data-ok-ready]? (set once the chart is drawn)
+ *             div[data-ok-chart-legend]                       (absent: one series, legend "none")
+ *               button[data-ok-chart-legend-item][data-ok-color][aria-pressed]
+ *                 span[data-ok-chart-legend-marker] + text
+ *             div[data-ok-chart-plot][role="group"][tabindex="0"]
+ *               svg[data-ok-chart-svg][aria-hidden="true"]
+ *                 defs › linearGradient[data-ok-color] › stop[data-ok-chart-stop]
+ *                 g[data-ok-chart-grid] › line[data-ok-chart-grid-line]
+ *                 text[data-ok-chart-axis-title]
+ *                 g[data-ok-chart-axis="x|y"] › text[data-ok-chart-tick][data-ok-major]?
+ *                 g[data-ok-chart-crosshair] › rect[data-ok-chart-band] | line[data-ok-chart-crosshair-line]
+ *                 g[data-ok-chart-series-group] › g[data-ok-chart-series][data-ok-type][data-ok-color]
+ *                   path[data-ok-chart-area | data-ok-chart-line | data-ok-chart-bar] · circle[data-ok-chart-marker]
+ *                 g[data-ok-chart-active] › circle[data-ok-chart-active-marker]
+ *               div[data-ok-chart-tooltip][role="status"] (hidden unless a value is active)
+ *                 div[data-ok-chart-tooltip-title] + div[data-ok-chart-tooltip-rows]
+ *                   div[data-ok-chart-tooltip-row] › span[data-ok-chart-tooltip-marker][data-ok-color] + span + span[data-ok-chart-tooltip-value]
+ *             table[data-ok-chart-data]                       (the data; visually hidden once drawn)
+ * Colors:   data-ok-color = <palette> | <palette>-<lighter|light|main|dark|darker> on series,
+ *           points, gradients, legend items and tooltip markers → --_ok-chart-c.
+ *
+ * SVG geometry comes from the shared layout (core); this file only paints it. Single :where()
+ * selectors in @layer components (zero specificity).
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-ok-chart]) {
+    --_ok-chart-c: var(--ok-palette-primary-dark);
+
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: calc(var(--ok-spacing) * 2);
+    min-width: 0;
+    margin: 0;
+    color: var(--ok-text-primary);
+    font-family: var(--ok-font-family);
+    font-size: var(--ok-font-size-xs);
+  }
+
+  :where([data-ok-chart] [data-ok-color="primary"]) {
+    --_ok-chart-c: var(--ok-palette-primary-main);
+  }
+
+  :where([data-ok-chart] [data-ok-color="primary-lighter"]) {
+    --_ok-chart-c: var(--ok-palette-primary-lighter);
+  }
+
+  :where([data-ok-chart] [data-ok-color="primary-light"]) {
+    --_ok-chart-c: var(--ok-palette-primary-light);
+  }
+
+  :where([data-ok-chart] [data-ok-color="primary-main"]) {
+    --_ok-chart-c: var(--ok-palette-primary-main);
+  }
+
+  :where([data-ok-chart] [data-ok-color="primary-dark"]) {
+    --_ok-chart-c: var(--ok-palette-primary-dark);
+  }
+
+  :where([data-ok-chart] [data-ok-color="primary-darker"]) {
+    --_ok-chart-c: var(--ok-palette-primary-darker);
+  }
+
+  :where([data-ok-chart] [data-ok-color="secondary"]) {
+    --_ok-chart-c: var(--ok-palette-secondary-main);
+  }
+
+  :where([data-ok-chart] [data-ok-color="secondary-lighter"]) {
+    --_ok-chart-c: var(--ok-palette-secondary-lighter);
+  }
+
+  :where([data-ok-chart] [data-ok-color="secondary-light"]) {
+    --_ok-chart-c: var(--ok-palette-secondary-light);
+  }
+
+  :where([data-ok-chart] [data-ok-color="secondary-main"]) {
+    --_ok-chart-c: var(--ok-palette-secondary-main);
+  }
+
+  :where([data-ok-chart] [data-ok-color="secondary-dark"]) {
+    --_ok-chart-c: var(--ok-palette-secondary-dark);
+  }
+
+  :where([data-ok-chart] [data-ok-color="secondary-darker"]) {
+    --_ok-chart-c: var(--ok-palette-secondary-darker);
+  }
+
+  :where([data-ok-chart] [data-ok-color="info"]) {
+    --_ok-chart-c: var(--ok-palette-info-main);
+  }
+
+  :where([data-ok-chart] [data-ok-color="info-lighter"]) {
+    --_ok-chart-c: var(--ok-palette-info-lighter);
+  }
+
+  :where([data-ok-chart] [data-ok-color="info-light"]) {
+    --_ok-chart-c: var(--ok-palette-info-light);
+  }
+
+  :where([data-ok-chart] [data-ok-color="info-main"]) {
+    --_ok-chart-c: var(--ok-palette-info-main);
+  }
+
+  :where([data-ok-chart] [data-ok-color="info-dark"]) {
+    --_ok-chart-c: var(--ok-palette-info-dark);
+  }
+
+  :where([data-ok-chart] [data-ok-color="info-darker"]) {
+    --_ok-chart-c: var(--ok-palette-info-darker);
+  }
+
+  :where([data-ok-chart] [data-ok-color="success"]) {
+    --_ok-chart-c: var(--ok-palette-success-main);
+  }
+
+  :where([data-ok-chart] [data-ok-color="success-lighter"]) {
+    --_ok-chart-c: var(--ok-palette-success-lighter);
+  }
+
+  :where([data-ok-chart] [data-ok-color="success-light"]) {
+    --_ok-chart-c: var(--ok-palette-success-light);
+  }
+
+  :where([data-ok-chart] [data-ok-color="success-main"]) {
+    --_ok-chart-c: var(--ok-palette-success-main);
+  }
+
+  :where([data-ok-chart] [data-ok-color="success-dark"]) {
+    --_ok-chart-c: var(--ok-palette-success-dark);
+  }
+
+  :where([data-ok-chart] [data-ok-color="success-darker"]) {
+    --_ok-chart-c: var(--ok-palette-success-darker);
+  }
+
+  :where([data-ok-chart] [data-ok-color="warning"]) {
+    --_ok-chart-c: var(--ok-palette-warning-main);
+  }
+
+  :where([data-ok-chart] [data-ok-color="warning-lighter"]) {
+    --_ok-chart-c: var(--ok-palette-warning-lighter);
+  }
+
+  :where([data-ok-chart] [data-ok-color="warning-light"]) {
+    --_ok-chart-c: var(--ok-palette-warning-light);
+  }
+
+  :where([data-ok-chart] [data-ok-color="warning-main"]) {
+    --_ok-chart-c: var(--ok-palette-warning-main);
+  }
+
+  :where([data-ok-chart] [data-ok-color="warning-dark"]) {
+    --_ok-chart-c: var(--ok-palette-warning-dark);
+  }
+
+  :where([data-ok-chart] [data-ok-color="warning-darker"]) {
+    --_ok-chart-c: var(--ok-palette-warning-darker);
+  }
+
+  :where([data-ok-chart] [data-ok-color="error"]) {
+    --_ok-chart-c: var(--ok-palette-error-main);
+  }
+
+  :where([data-ok-chart] [data-ok-color="error-lighter"]) {
+    --_ok-chart-c: var(--ok-palette-error-lighter);
+  }
+
+  :where([data-ok-chart] [data-ok-color="error-light"]) {
+    --_ok-chart-c: var(--ok-palette-error-light);
+  }
+
+  :where([data-ok-chart] [data-ok-color="error-main"]) {
+    --_ok-chart-c: var(--ok-palette-error-main);
+  }
+
+  :where([data-ok-chart] [data-ok-color="error-dark"]) {
+    --_ok-chart-c: var(--ok-palette-error-dark);
+  }
+
+  :where([data-ok-chart] [data-ok-color="error-darker"]) {
+    --_ok-chart-c: var(--ok-palette-error-darker);
+  }
+
+  /* Legend: buttons that show and hide their series. */
+  :where([data-ok-chart-legend]) {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: var(--ok-spacing) calc(var(--ok-spacing) * 2);
+    min-width: 0;
+  }
+
+  :where([data-ok-chart][data-ok-legend="bottom"] > [data-ok-chart-legend]) {
+    order: 1;
+    justify-content: center;
+  }
+
+  /* Right legends sit below the plot on phones and beside it from 600px. */
+  :where([data-ok-chart][data-ok-legend="right"] > [data-ok-chart-legend]) {
+    order: 1;
+    justify-content: center;
+  }
+
+  @media (min-width: 600px) {
+    :where([data-ok-chart][data-ok-legend="right"]:has(> [data-ok-chart-legend])) {
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: start;
+    }
+
+    :where([data-ok-chart][data-ok-legend="right"] > [data-ok-chart-legend]) {
+      flex-direction: column;
+      flex-wrap: nowrap;
+      align-items: flex-start;
+      padding-block-start: calc(var(--ok-spacing) * 2);
+    }
+
+    :where([data-ok-chart][data-ok-legend="right"] > [data-ok-chart-data]) {
+      grid-column: 1 / -1;
+    }
+  }
+
+  :where([data-ok-chart-legend-item]) {
+    display: inline-flex;
+    align-items: center;
+    gap: calc(var(--ok-spacing) * 1.5);
+    min-height: calc(var(--ok-spacing) * 6);
+    margin: 0;
+    padding: 0 var(--ok-spacing);
+    border: 0;
+    border-radius: var(--ok-radius-sm);
+    background: none;
+    color: var(--ok-text-primary);
+    font: inherit;
+    font-size: var(--ok-font-size-sm);
+    font-weight: var(--ok-font-weight-medium);
+    line-height: 1.5;
+    white-space: nowrap;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  :where([data-ok-chart-legend-marker]) {
+    flex-shrink: 0;
+    box-sizing: border-box;
+    width: calc(var(--ok-spacing) * 3);
+    height: calc(var(--ok-spacing) * 3);
+    border: 2px solid var(--_ok-chart-c);
+    border-radius: var(--ok-radius-full);
+    background-color: var(--_ok-chart-c);
+  }
+
+  /* A hidden series: hollow marker, secondary text (still AA). */
+  :where([data-ok-chart-legend-item][aria-pressed="false"]) {
+    color: var(--ok-text-secondary);
+    text-decoration: line-through;
+  }
+
+  :where([data-ok-chart-legend-item][aria-pressed="false"] > [data-ok-chart-legend-marker]) {
+    background-color: transparent;
+  }
+
+  @media (hover: hover) {
+    :where([data-ok-chart-legend-item]:hover) {
+      background-color: var(--ok-action-hover);
+    }
+  }
+
+  :where([data-ok-chart-legend-item]:focus-visible, [data-ok-chart-plot]:focus-visible) {
+    outline: 2px solid var(--ok-palette-primary-main);
+    outline-offset: 2px;
+  }
+
+  /* Plot: the SVG fills the width; the tooltip is placed inside it. */
+  :where([data-ok-chart-plot]) {
+    position: relative;
+    min-width: 0;
+    border-radius: var(--ok-radius-sm);
+    touch-action: pan-y;
+  }
+
+  :where([data-ok-chart-svg]) {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+    user-select: none;
+  }
+
+  :where([data-ok-chart-grid-line]) {
+    stroke: var(--ok-divider);
+    stroke-dasharray: 3;
+    shape-rendering: crispEdges;
+  }
+
+  :where([data-ok-chart-tick], [data-ok-chart-axis-title]) {
+    fill: var(--ok-text-secondary);
+    font-size: var(--ok-font-size-xs);
+  }
+
+  :where([data-ok-chart-tick][data-ok-major], [data-ok-chart-axis-title]) {
+    font-weight: var(--ok-font-weight-semibold);
+  }
+
+  :where([data-ok-chart-line]) {
+    fill: none;
+    stroke: var(--_ok-chart-c);
+    stroke-width: 2.5px;
+    stroke-linejoin: round;
+  }
+
+  :where([data-ok-chart-area]) {
+    stroke: none;
+  }
+
+  /* Solid areas (gradient areas carry their own fill). */
+  :where([data-ok-chart-area]:not([fill])) {
+    fill: var(--_ok-chart-c);
+    fill-opacity: 0.24;
+  }
+
+  :where([data-ok-chart-stop]) {
+    stop-color: var(--_ok-chart-c);
+  }
+
+  :where([data-ok-chart-bar]) {
+    fill: var(--_ok-chart-c);
+  }
+
+  :where([data-ok-chart-marker], [data-ok-chart-active-marker]) {
+    fill: var(--_ok-chart-c);
+    stroke: var(--ok-bg-paper);
+    stroke-width: 2px;
+  }
+
+  :where([data-ok-chart-series][data-ok-type="scatter"] > [data-ok-chart-marker]) {
+    stroke-width: 1px;
+  }
+
+  :where([data-ok-chart-active-marker]) {
+    stroke-width: 3px;
+  }
+
+  :where([data-ok-chart-band]) {
+    fill: rgb(var(--ok-palette-grey-500-channel) / 0.12);
+  }
+
+  :where([data-ok-chart-crosshair-line]) {
+    stroke: var(--ok-text-disabled);
+    stroke-dasharray: 3;
+  }
+
+  /* Tooltip: paper card beside the active value; never takes the pointer. */
+  :where([data-ok-chart-tooltip]) {
+    position: absolute;
+    top: var(--_ok-chart-tip-y, 0);
+    left: var(--_ok-chart-tip-x, 0);
+    z-index: 1;
+    min-width: calc(var(--ok-spacing) * 30);
+    overflow: hidden;
+    border-radius: var(--ok-radius-md);
+    background-color: var(--ok-bg-paper);
+    box-shadow: var(--ok-shadow-dropdown);
+    color: var(--ok-text-primary);
+    font-size: var(--ok-font-size-xs);
+    line-height: 1.5;
+    pointer-events: none;
+  }
+
+  :where([data-ok-chart-tooltip][hidden]) {
+    display: none;
+  }
+
+  :where([data-ok-chart-tooltip-title]) {
+    padding: var(--ok-spacing) calc(var(--ok-spacing) * 3);
+    background-color: rgb(var(--ok-palette-grey-500-channel) / 0.08);
+    color: var(--ok-text-secondary);
+    font-weight: var(--ok-font-weight-semibold);
+    text-align: center;
+  }
+
+  :where([data-ok-chart-tooltip-rows]) {
+    display: grid;
+    gap: var(--ok-spacing);
+    padding: calc(var(--ok-spacing) * 2) calc(var(--ok-spacing) * 3);
+  }
+
+  :where([data-ok-chart-tooltip-row]) {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--ok-spacing) * 2);
+    white-space: nowrap;
+  }
+
+  :where([data-ok-chart-tooltip-marker]) {
+    flex-shrink: 0;
+    width: calc(var(--ok-spacing) * 3);
+    height: calc(var(--ok-spacing) * 3);
+    border-radius: var(--ok-radius-full);
+    background-color: var(--_ok-chart-c);
+  }
+
+  :where([data-ok-chart-tooltip-value]) {
+    margin-inline-start: auto;
+    font-weight: var(--ok-font-weight-semibold);
+  }
+
+  /* Data table: readable without JavaScript, visually hidden once the chart is drawn. */
+  :where([data-ok-chart-data]) {
+    border-collapse: collapse;
+    font-size: var(--ok-font-size-sm);
+  }
+
+  :where([data-ok-chart-data] :is(th, td)) {
+    padding: var(--ok-spacing) calc(var(--ok-spacing) * 2);
+    border-bottom: 1px solid var(--ok-divider);
+    text-align: end;
+  }
+
+  :where([data-ok-chart-data] :is(thead th, tbody th)) {
+    text-align: start;
+  }
+
+  :where([data-ok-chart-data] caption) {
+    padding-block-end: var(--ok-spacing);
+    font-weight: var(--ok-font-weight-semibold);
+    text-align: start;
+  }
+
+  /* Tables grow to their content: a fixed layout keeps the hidden table 1px wide. */
+  :where([data-ok-chart][data-ok-ready] > [data-ok-chart-data]) {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    table-layout: fixed;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    border: 0;
+    white-space: nowrap;
+  }
+
+  /* Captions and cells are at least one word wide: let hidden text break anywhere. */
+  :where([data-ok-chart][data-ok-ready] > [data-ok-chart-data] :is(caption, th, td)) {
+    padding: 0;
+    border: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+}

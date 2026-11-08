@@ -39,6 +39,21 @@ test("no CSP or Trusted Types violations", async ({ page }) => {
         .evaluate((element) => (element as HTMLElement).style.getPropertyValue("--_ok-max-rows")),
     )
     .toBe("3");
+  // The chart builds its SVG with createElementNS and places the tooltip through CSSOM.
+  const chart = page.getByRole("group", { name: "Visits" });
+  await expect(chart.locator("[data-ok-chart-area]")).toHaveCount(2);
+  await chart.focus();
+  await page.keyboard.press("End");
+  await expect(chart.getByRole("status")).toContainText("Wed");
+  await expect
+    .poll(() =>
+      chart
+        .getByRole("status")
+        .evaluate((element) =>
+          (element as HTMLElement).style.getPropertyValue("--_ok-chart-tip-x"),
+        ),
+    )
+    .toMatch(/^\d+px$/);
   // The date calendar rebuilds months with DOM methods and patches days in place.
   const calendar = page.locator("#dc-basic");
   await calendar.getByRole("button", { name: "Next month" }).click();

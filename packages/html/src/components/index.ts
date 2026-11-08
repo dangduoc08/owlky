@@ -10,6 +10,7 @@ import { autocomplete } from "./autocomplete/autocomplete.js";
 import { avatar } from "./avatar/avatar.js";
 import { backdrop } from "./backdrop/backdrop.js";
 import { breadcrumbs } from "./breadcrumbs/breadcrumbs.js";
+import { chart } from "./chart/chart.js";
 import { checkbox } from "./checkbox/checkbox.js";
 import { chip } from "./chip/chip.js";
 import { circularProgress } from "./circular-progress/circular-progress.js";
@@ -57,6 +58,7 @@ export const components: readonly ComponentDefinition[] = [
   accordion as ComponentDefinition,
   alert as ComponentDefinition,
   avatar as ComponentDefinition,
+  chart as ComponentDefinition,
   checkbox as ComponentDefinition,
   chip as ComponentDefinition,
   circularProgress as ComponentDefinition,

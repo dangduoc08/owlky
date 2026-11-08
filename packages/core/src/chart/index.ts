@@ -1,0 +1,59 @@
+/** Chart engine (ADR-0024): data model, scales, layout, interaction and formatting. */
+
+export {
+  CHART_DEFAULT_WIDTH,
+  type ChartLegendItem,
+  type ChartRender,
+  type ChartRenderInput,
+  chartIdPrefix,
+  renderChart,
+} from "./chart.js";
+export {
+  type ChartActive,
+  type ChartTooltip,
+  type ChartTooltipRow,
+  chartActiveAt,
+  chartActiveNodes,
+  chartTooltip,
+  nextChartActive,
+  placeChartTooltip,
+  sameChartActive,
+} from "./chart-active.js";
+export { type ChartFormat, type ChartFormatOptions, chartFormat } from "./chart-format.js";
+export {
+  type ChartLayout,
+  type ChartLayoutOptions,
+  type ChartMark,
+  type ChartNode,
+  type ChartNodeTag,
+  type ChartSlot,
+  chartTextWidth,
+  layoutChart,
+} from "./chart-layout.js";
+export {
+  type ChartColor,
+  type ChartCurve,
+  type ChartData,
+  type ChartDataSeries,
+  type ChartFill,
+  type ChartLegend,
+  type ChartPoint,
+  type ChartPointInput,
+  type ChartSeries,
+  type ChartTableCell,
+  type ChartTableModel,
+  type ChartType,
+  type ChartXType,
+  chartColors,
+  chartCurves,
+  chartData,
+  chartDefaultColors,
+  chartFills,
+  chartLegends,
+  chartShades,
+  chartTable,
+  chartTypes,
+  chartXTypes,
+  parseChartNumber,
+  readChartTable,
+} from "./chart-model.js";

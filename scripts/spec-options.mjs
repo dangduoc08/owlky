@@ -56,6 +56,7 @@ const SPECS = {
   "timeline-item": "timeline.md",
   "timeline-dot": "timeline.md",
   rating: "rating.md",
+  chart: "chart.md",
   slider: "slider.md",
   "transfer-list": "transfer-list.md",
   "tree-view": "tree-view.md",

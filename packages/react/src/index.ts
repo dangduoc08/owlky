@@ -13,6 +13,15 @@ export type {
   ButtonLoadingPosition,
   ButtonSize,
   ButtonVariant,
+  ChartActive,
+  ChartColor,
+  ChartCurve,
+  ChartFill,
+  ChartLegend,
+  ChartPointInput,
+  ChartSeries,
+  ChartType,
+  ChartXType,
   ChipColor,
   ChipVariant,
   CircularProgressVariant,
@@ -131,6 +140,7 @@ export {
   type ButtonProps,
 } from "./button/button.js";
 export { ButtonGroup, type ButtonGroupProps } from "./button-group/button-group.js";
+export { Chart, type ChartProps } from "./chart/chart.js";
 export { Checkbox, type CheckboxProps } from "./checkbox/checkbox.js";
 export { Chip, type ChipProps } from "./chip/chip.js";
 export {

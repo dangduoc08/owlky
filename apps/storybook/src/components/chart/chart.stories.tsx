@@ -1,0 +1,53 @@
+import { Chart } from "@owlky/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
+import { frameworkStory, reactGroupsStory, type StoryControls } from "../../helpers/groups.js";
+import { htmlSetup, snippetStory } from "../shared/snippets.js";
+import { chartExamples } from "./chart-data.js";
+import { ChartDocs } from "./chart-docs.js";
+import { CHART_CONTROLS, CHART_FILES, chartCode, chartStories } from "./chart-examples.js";
+
+const controls: StoryControls = { ...CHART_CONTROLS, target: Chart };
+
+const snippets = import.meta.glob(
+  "../../../../../packages/html/src/components/chart/examples/*.html",
+  { query: "?raw", import: "default", eager: true },
+) as Record<string, string>;
+
+const SETUP = htmlSetup(["chart.css"], true);
+
+const story = (name: string): StoryObj => ({
+  ...frameworkStory({
+    html: snippetStory(snippets, name, CHART_FILES[name] ?? [], SETUP, CHART_CONTROLS),
+    react: reactGroupsStory(
+      chartStories[name] ?? [],
+      controls,
+      chartExamples[name] ? chartCode(chartExamples[name]) : undefined,
+    ),
+  }),
+  name: chartExamples[name]?.title ?? name,
+});
+
+const meta = {
+  title: "Components/Chart",
+  tags: ["autodocs"],
+  parameters: {
+    docs: {
+      page: ChartDocs,
+      description: {
+        component:
+          "Charts show values as lines, areas, columns, bars or points, with a legend, a tooltip and the data as a table.",
+      },
+    },
+  },
+} satisfies Meta;
+export default meta;
+
+export const Line: StoryObj = story("line");
+export const Area: StoryObj = story("area");
+export const ColumnSingle: StoryObj = story("column-single");
+export const ColumnMultiple: StoryObj = story("column-multiple");
+export const ColumnStacked: StoryObj = story("column-stacked");
+export const ColumnNegative: StoryObj = story("column-negative");
+export const Bar: StoryObj = story("bar");
+export const Mixed: StoryObj = story("mixed");
+export const Scatter: StoryObj = story("scatter");

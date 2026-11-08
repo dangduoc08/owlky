@@ -44,6 +44,7 @@ const CASES: [
   ["tabs", "custom", "tabs", ["centered", "selectionFollowsFocus"]],
   ["timeline", "right", "timeline", ["position"]],
   ["rating", "controlled", "rating", ["size", "color"]],
+  ["chart", "column-multiple", "chart", ["curve", "legend"]],
   ["slider", "temperature", "slider", ["size", "color", "disabled"]],
   ["transfer-list", "simple", "transfer-list", ["disabled"]],
   ["tree-view", "simple", "tree-view", ["variant", "expansionTrigger"]],

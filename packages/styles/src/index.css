@@ -39,6 +39,7 @@
 @import "./components/stepper.css";
 @import "./components/timeline.css";
 @import "./components/rating.css";
+@import "./components/chart.css";
 @import "./components/slider.css";
 @import "./components/transfer-list.css";
 @import "./components/tree-view.css";

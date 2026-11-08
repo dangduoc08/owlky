@@ -3,6 +3,8 @@ import { readFile } from "node:fs/promises";
 import { gzipSync } from "node:zlib";
 
 const budgets = [
+  // 75 kB since the Chart (phase 1 of ADR-0024: scales, layout, legend, tooltip, runtime; about
+  // 9.5 kB minified). CSS stays within 33 kB (the chart adds about 1.7 kB).
   // 65 kB since the date pickers' phase 1 (ADR-0022: date engine, sectioned field, calendar,
   // five runtimes, English and Vietnamese texts; about 13 kB).
   // 52 kB since the data grid's phase 4 (spans, row heights, autosizing, validation, events, state,
@@ -12,7 +14,7 @@ const budgets = [
   // Motion (trigger, count-up and five runtimes, the 62 variant names); 31 kB after
   // the composite inputs, 24 kB after the navigation components, 22 kB after the overlays. The CDN bundle carries every component; the npm ESM build
   // (`@owlky/html`) is tree-shaken.
-  ["packages/html/dist/owlky.js", 65_000, "HTML runtime + all components (IIFE)"],
+  ["packages/html/dist/owlky.js", 75_000, "HTML runtime + all components (IIFE)"],
   ["packages/html/dist/esm/runtime/runtime.js", 3_000, "HTML core runtime"],
   // The Editor is opt-in (ADR-0023): Tiptap, ProseMirror and its starter kit are about 125 kB of
   // it; owlky.js stays free of them.

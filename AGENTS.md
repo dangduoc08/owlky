@@ -380,6 +380,17 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
   Escape as handled, so don't gate on `defaultPrevented`. Forms in popovers need `noValidate`
   (`type="url"` validation blocks `submit` silently) and no `method="dialog"` (outside a
   `<dialog>`, Chrome fires no `submit`).
+- Chart (ADR-0024): core `renderChart` lays out a tree of SVG nodes (`ChartNode`); React maps
+  attribute names to camelCase, the HTML runtime uses `createElementNS` + `setAttribute`. Text widths
+  are **estimated** per glyph class (`chartTextWidth`), never measured, so server, React and HTML
+  agree: when a label is clipped (responsive spec), fix the glyph classes, not one renderer. Parity
+  skips `<svg>`: `e2e/tests/chart.spec.ts` compares the SVG trees. HTML data is the chart's
+  `<table data-ok-chart-data>` (visually hidden once `data-ok-ready`; tables ignore `width`, so the
+  hidden table also needs `table-layout: fixed` and breakable text, or its caption keeps it a word
+  wide). Snippets are generated from `apps/storybook/src/components/chart/chart-data.ts` (plain data,
+  type-only imports: Node runs it with type stripping): `pnpm build && node
+  apps/storybook/scripts/chart-snippets.mjs`. Repeated x values in scatter tables get one
+  row per point.
 - Date pickers (ADR-0022): field sections are `contenteditable` spinbuttons whose text only the owner
   writes — core `createFieldController` cancels `beforeinput` and restores IME text. Browsers keep
   the selection inside the focused editable section, so select-all is `data-ok-all-selected` on the
