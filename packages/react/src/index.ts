@@ -2,6 +2,7 @@ export type {
   AccordionVariant,
   AlertSeverity,
   AlertVariant,
+  AutocompleteOption,
   AvatarColor,
   AvatarGroupSpacing,
   AvatarVariant,
@@ -35,6 +36,8 @@ export type {
   LinearProgressVariant,
   ListItemAlignment,
   ListSubheaderColor,
+  MobileStepperPosition,
+  MobileStepperVariant,
   Orientation,
   PageRange,
   PaginationAction,
@@ -47,17 +50,29 @@ export type {
   Placement,
   PopoverDismissReason,
   ProgressColor,
+  RatingSize,
   SelectionControlColor,
   SelectionControlSize,
+  SliderColor,
+  SliderMark,
+  SliderSize,
+  SliderValueLabelDisplay,
   SortableLayout,
   SortableMessages,
+  StepperVariant,
   SwitchEdge,
+  TabIconPosition,
   TableAlign,
   TablePadding,
   TableSize,
   TableSortDirection,
+  TabsColor,
+  TabsVariant,
   TextFieldMargin,
   TextFieldVariant,
+  TimelineDotColor,
+  TimelineDotVariant,
+  TimelinePosition,
   ToastId,
   ToastOptions,
   ToastPosition,
@@ -66,6 +81,9 @@ export type {
   ToggleButtonSize,
   ToggleGroupValue,
   TooltipTransition,
+  TransferListVariant,
+  TreeViewExpansionTrigger,
+  TreeViewVariant,
 } from "@owlky/core";
 export {
   applyThemeSettings,
@@ -86,6 +104,7 @@ export {
   type AccordionSummaryProps,
 } from "./accordion/accordion.js";
 export { Alert, type AlertProps, AlertTitle } from "./alert/alert.js";
+export { Autocomplete, type AutocompleteProps } from "./autocomplete/autocomplete.js";
 export {
   Avatar,
   AvatarGroup,
@@ -94,6 +113,11 @@ export {
 } from "./avatar/avatar.js";
 export { Backdrop, type BackdropProps } from "./backdrop/backdrop.js";
 export { Badge, type BadgeProps } from "./badge/badge.js";
+export {
+  Breadcrumbs,
+  BreadcrumbsDot,
+  type BreadcrumbsProps,
+} from "./breadcrumbs/breadcrumbs.js";
 export {
   Button,
   type ButtonAsButtonProps,
@@ -173,7 +197,9 @@ export {
   type RadioGroupProps,
   type RadioProps,
 } from "./radio/radio.js";
+export { Rating, type RatingProps, StarIcon } from "./rating/rating.js";
 export { Scrollbar, type ScrollbarProps } from "./scrollbar/scrollbar.js";
+export { Slider, type SliderProps } from "./slider/slider.js";
 export {
   TOAST_ICONS,
   Toaster,
@@ -182,6 +208,19 @@ export {
   toastStore,
 } from "./snackbar/snackbar.js";
 export { arrayMove, Sortable, type SortableProps } from "./sortable/sortable.js";
+export {
+  MobileStepper,
+  type MobileStepperProps,
+  Step,
+  StepConnector,
+  StepContent,
+  type StepContentProps,
+  StepLabel,
+  type StepLabelProps,
+  type StepProps,
+  Stepper,
+  type StepperProps,
+} from "./stepper/stepper.js";
 export { Switch, type SwitchProps } from "./switch/switch.js";
 export {
   type RowsPerPageOption,
@@ -206,6 +245,14 @@ export {
   type TableSortLabelProps,
 } from "./table/table.js";
 export {
+  Tab,
+  TabPanel,
+  type TabPanelProps,
+  type TabProps,
+  Tabs,
+  type TabsProps,
+} from "./tabs/tabs.js";
+export {
   InputAdornment,
   type InputAdornmentProps,
   TextField,
@@ -213,9 +260,35 @@ export {
   type TextFieldProps,
 } from "./text-field/text-field.js";
 export {
+  Timeline,
+  TimelineConnector,
+  TimelineContent,
+  TimelineDot,
+  type TimelineDotProps,
+  TimelineItem,
+  type TimelineItemProps,
+  TimelineOppositeContent,
+  type TimelineProps,
+  TimelineSeparator,
+} from "./timeline/timeline.js";
+export {
   ToggleButton,
   ToggleButtonGroup,
   type ToggleButtonGroupProps,
   type ToggleButtonProps,
 } from "./toggle-button/toggle-button.js";
 export { Tooltip, type TooltipProps } from "./tooltip/tooltip.js";
+export {
+  TransferList,
+  type TransferListItem,
+  type TransferListProps,
+} from "./transfer-list/transfer-list.js";
+export {
+  RichTreeView,
+  type RichTreeViewProps,
+  SimpleTreeView,
+  type SimpleTreeViewProps,
+  TreeItem,
+  type TreeItemProps,
+  type TreeViewBaseItem,
+} from "./tree-view/tree-view.js";

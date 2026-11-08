@@ -1,0 +1,149 @@
+/*
+ * Timeline — spec: specs/components/timeline.md
+ *
+ * Anatomy:  ul[data-ok-timeline][data-ok-position]
+ *             li[data-ok-timeline-item][data-ok-position]?
+ *               div[data-ok-timeline-opposite-content]?
+ *               div[data-ok-timeline-separator]
+ *                 span[data-ok-timeline-dot][data-ok-variant][data-ok-color] › svg?
+ *                 span[data-ok-timeline-connector]?
+ *               div[data-ok-timeline-content]
+ * Modifiers: data-ok-position = right (default) | left | alternate | alternate-reverse
+ *            (an item may override with right | left);
+ *            dot data-ok-variant = filled | outlined, data-ok-color = grey | inherit | palette
+ *
+ * CSS only. Single :where() selectors in @layer components (zero specificity).
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-ok-timeline]) {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding: calc(var(--ok-spacing) * 1.5) calc(var(--ok-spacing) * 4);
+    color: var(--ok-text-primary);
+    font-family: var(--ok-font-family);
+    list-style: none;
+  }
+
+  :where([data-ok-timeline-item]) {
+    --_ok-side: row;
+    --_ok-content-align: left;
+    --_ok-opposite-align: right;
+
+    position: relative;
+    display: flex;
+    flex-direction: var(--_ok-side);
+    min-height: calc(var(--ok-spacing) * 17.5);
+    list-style: none;
+  }
+
+  /* Without opposite content the content still takes one half (MUI). */
+  :where([data-ok-timeline-item]:not(:has(> [data-ok-timeline-opposite-content])))::before {
+    content: "";
+    flex: 1;
+    padding: calc(var(--ok-spacing) * 1.5) calc(var(--ok-spacing) * 4);
+  }
+
+  /* Sides: left reverses the row; alternate flips every second item. */
+  :where(
+    [data-ok-timeline][data-ok-position="left"] > [data-ok-timeline-item]:not([data-ok-position]),
+    [data-ok-timeline][data-ok-position="alternate"]
+      > [data-ok-timeline-item]:not([data-ok-position]):nth-of-type(even),
+    [data-ok-timeline][data-ok-position="alternate-reverse"]
+      > [data-ok-timeline-item]:not([data-ok-position]):nth-of-type(odd),
+    [data-ok-timeline-item][data-ok-position="left"]
+  ) {
+    --_ok-side: row-reverse;
+    --_ok-content-align: right;
+    --_ok-opposite-align: left;
+  }
+
+  :where([data-ok-timeline-separator]) {
+    display: flex;
+    flex: 0;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  :where([data-ok-timeline-content], [data-ok-timeline-opposite-content]) {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    padding: calc(var(--ok-spacing) * 1.5) calc(var(--ok-spacing) * 4);
+    font-size: var(--ok-typography-body1-font-size);
+    line-height: var(--ok-typography-body1-line-height);
+    overflow-wrap: anywhere;
+  }
+
+  :where([data-ok-timeline-content]) {
+    text-align: var(--_ok-content-align);
+  }
+
+  :where([data-ok-timeline-opposite-content]) {
+    text-align: var(--_ok-opposite-align);
+  }
+
+  /* Dot */
+  :where([data-ok-timeline-dot]) {
+    --_ok-dot: var(--ok-palette-grey-400);
+
+    display: flex;
+    align-self: baseline;
+    box-sizing: border-box;
+    margin: calc(var(--ok-spacing) * 2.875) 0;
+    padding: var(--ok-spacing);
+    border: 2px solid transparent;
+    border-radius: var(--ok-radius-full);
+    background-color: var(--_ok-dot);
+    color: var(--ok-palette-common-white);
+  }
+
+  :where([data-ok-timeline-dot] > svg) {
+    width: calc(var(--ok-spacing) * 6);
+    height: calc(var(--ok-spacing) * 6);
+  }
+
+  :where([data-ok-timeline-dot][data-ok-color="inherit"]) {
+    --_ok-dot: var(--ok-text-primary);
+
+    color: var(--ok-bg-paper);
+  }
+
+  :where([data-ok-timeline-dot][data-ok-color="primary"]) {
+    --_ok-dot: var(--ok-palette-primary-main);
+  }
+
+  :where([data-ok-timeline-dot][data-ok-color="secondary"]) {
+    --_ok-dot: var(--ok-palette-secondary-main);
+  }
+
+  :where([data-ok-timeline-dot][data-ok-color="info"]) {
+    --_ok-dot: var(--ok-palette-info-main);
+  }
+
+  :where([data-ok-timeline-dot][data-ok-color="success"]) {
+    --_ok-dot: var(--ok-palette-success-main);
+  }
+
+  :where([data-ok-timeline-dot][data-ok-color="warning"]) {
+    --_ok-dot: var(--ok-palette-warning-main);
+  }
+
+  :where([data-ok-timeline-dot][data-ok-color="error"]) {
+    --_ok-dot: var(--ok-palette-error-main);
+  }
+
+  :where([data-ok-timeline-dot][data-ok-variant="outlined"]) {
+    border-color: var(--_ok-dot);
+    background-color: transparent;
+    color: var(--_ok-dot);
+  }
+
+  :where([data-ok-timeline-connector]) {
+    flex-grow: 1;
+    width: 2px;
+    background-color: var(--ok-divider);
+  }
+}

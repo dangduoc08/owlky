@@ -6,8 +6,10 @@
 import type { ComponentDefinition } from "../runtime/types.js";
 import { accordion } from "./accordion/accordion.js";
 import { alert } from "./alert/alert.js";
+import { autocomplete } from "./autocomplete/autocomplete.js";
 import { avatar } from "./avatar/avatar.js";
 import { backdrop } from "./backdrop/backdrop.js";
+import { breadcrumbs } from "./breadcrumbs/breadcrumbs.js";
 import { checkbox } from "./checkbox/checkbox.js";
 import { chip } from "./chip/chip.js";
 import { circularProgress } from "./circular-progress/circular-progress.js";
@@ -16,16 +18,23 @@ import { drawer } from "./drawer/drawer.js";
 import { linearProgress } from "./linear-progress/linear-progress.js";
 import { list } from "./list/list.js";
 import { menu } from "./menu/menu.js";
+import { mobileStepper } from "./mobile-stepper/mobile-stepper.js";
 import { pagination } from "./pagination/pagination.js";
 import { popover } from "./popover/popover.js";
+import { rating } from "./rating/rating.js";
+import { slider } from "./slider/slider.js";
 import { sortable } from "./sortable/sortable.js";
+import { stepper } from "./stepper/stepper.js";
 import { table } from "./table/table.js";
 import { tablePagination } from "./table-pagination/table-pagination.js";
+import { tabs } from "./tabs/tabs.js";
 import { textField } from "./text-field/text-field.js";
 import { toaster } from "./toaster/toaster.js";
 import { toggleButton } from "./toggle-button/toggle-button.js";
 import { toggleGroup } from "./toggle-group/toggle-group.js";
 import { tooltip } from "./tooltip/tooltip.js";
+import { transferList } from "./transfer-list/transfer-list.js";
+import { treeView } from "./tree-view/tree-view.js";
 
 export const components: readonly ComponentDefinition[] = [
   tooltip as ComponentDefinition,
@@ -50,4 +59,13 @@ export const components: readonly ComponentDefinition[] = [
   textField as ComponentDefinition,
   toggleButton as ComponentDefinition,
   toggleGroup as ComponentDefinition,
+  tabs as ComponentDefinition,
+  breadcrumbs as ComponentDefinition,
+  stepper as ComponentDefinition,
+  mobileStepper as ComponentDefinition,
+  rating as ComponentDefinition,
+  slider as ComponentDefinition,
+  transferList as ComponentDefinition,
+  treeView as ComponentDefinition,
+  autocomplete as ComponentDefinition,
 ];

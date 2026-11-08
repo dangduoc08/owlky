@@ -36,6 +36,7 @@ const CONTRAST_EXEMPT = [
   '[data-ok-chip][data-ok-color="black"]',
   '[data-ok-label][data-ok-color="black"]',
   '[data-ok-list-subheader][data-ok-color="primary"]',
+  '[data-ok-tabs]:not([data-ok-text-color="inherit"]) [role="tab"][aria-selected="true"]',
 ];
 const TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 

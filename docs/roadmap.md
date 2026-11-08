@@ -5,7 +5,7 @@ and a review before the next starts.
 
 ## Overview
 Every page of the reference's component menu (`https://minimals.cc/components/…`) and where it
-stands. ✅ = built (25); *wave N* = planned, see "Next — components"; *not planned* = a pattern
+stands. ✅ = built (34); *wave N* = planned, see "Next — components"; *not planned* = a pattern
 or app-level page. *Section* = the heading below with the details. Update this table with each
 component and each `/integrate` run.
 
@@ -19,10 +19,10 @@ component and each `/integrate` run.
 | Foundation | (Settings drawer) | ✅ | Foundations › Settings, `applyThemeSettings` | Theme settings |
 | MUI | Accordion | ✅ | Accordion | Accordion & Alert |
 | MUI | Alert | ✅ | Alert | Accordion & Alert |
-| MUI | Autocomplete | wave 6 | — | Next |
+| MUI | Autocomplete | ✅ | Autocomplete | Rating, Slider, Timeline, Transfer list, Tree view & Autocomplete |
 | MUI | Avatar | ✅ | Avatar, AvatarGroup | Avatar, Badge, Chip & Label |
 | MUI | Badge | ✅ | Badge | Avatar, Badge, Chip & Label |
-| MUI | Breadcrumbs | wave 5 | — | Next |
+| MUI | Breadcrumbs | ✅ | Breadcrumbs, BreadcrumbsDot | Tabs, Breadcrumbs & Stepper |
 | MUI | Buttons | ✅ | Button, IconButton, Fab, ButtonGroup, ToggleButton(Group) | Button |
 | MUI | Checkbox | ✅ | Checkbox, FormControlLabel | Checkbox & Switch |
 | MUI | Chip | ✅ | Chip | Avatar, Badge, Chip & Label |
@@ -36,19 +36,19 @@ component and each `/integrate` run.
 | MUI | Popover | ✅ | Popover | Popover, Tooltip, Menu, Dialog & Snackbar |
 | MUI | Progress | ✅ | CircularProgress, LinearProgress | Progress |
 | MUI | Radio button | ✅ | Radio, RadioGroup | Text field & Radio |
-| MUI | Rating | wave 6 | — | Next |
-| MUI | Slider | wave 6 | — | Next |
-| MUI | Stepper | wave 5 | — | Next |
+| MUI | Rating | ✅ | Rating | Rating, Slider, Timeline, Transfer list, Tree view & Autocomplete |
+| MUI | Slider | ✅ | Slider | Rating, Slider, Timeline, Transfer list, Tree view & Autocomplete |
+| MUI | Stepper | ✅ | Stepper, Step, StepLabel, StepConnector, StepContent, MobileStepper | Tabs, Breadcrumbs & Stepper |
 | MUI | Switch | ✅ | Switch, FormControlLabel | Checkbox & Switch |
 | MUI | Table | ✅ | Table parts, TablePagination, TableExpandButton / TableDetailRow | Table |
-| MUI | Tabs | wave 5 | — | Next |
+| MUI | Tabs | ✅ | Tabs, Tab, TabPanel | Tabs, Breadcrumbs & Stepper |
 | MUI | Text field | ✅ | TextField, InputAdornment (native select) | Text field & Radio |
-| MUI | Timeline | wave 6 | — | Next |
+| MUI | Timeline | ✅ | Timeline and its parts | Rating, Slider, Timeline, Transfer list, Tree view & Autocomplete |
 | MUI | Tooltip | ✅ | Tooltip | Popover, Tooltip, Menu, Dialog & Snackbar |
-| MUI | Transfer list | wave 6 | — | Next |
+| MUI | Transfer list | ✅ | TransferList | Rating, Slider, Timeline, Transfer list, Tree view & Autocomplete |
 | MUI X | Data grid | wave 7 (ADR) | — | Next |
 | MUI X | Date pickers | wave 7 (ADR) | — | Next |
-| MUI X | Tree view | wave 6 | — | Next |
+| MUI X | Tree view | ✅ | SimpleTreeView, TreeItem, RichTreeView | Rating, Slider, Timeline, Transfer list, Tree view & Autocomplete |
 | Extra | Animate | not planned | — | Next |
 | Extra | Carousel | wave 7 (ADR) | — | Next |
 | Extra | Chart | wave 7 (ADR) | — | Next |
@@ -163,6 +163,50 @@ toast store / API / timer (Sonner). Dialog reuses `createModalController`. HTML 
 One placement vocabulary replaces MUI's `anchorOrigin` / `transformOrigin`. Token added:
 `--ok-bg-paper-channel` (translucent paper). No new runtime dependency.
 
+## ✅ Components — Rating, Slider, Timeline, Transfer list, Tree view & Autocomplete (2026-11-08)
+Wave 6 (composites), created with `/component` from the reference pages. **Timeline** (stories:
+Left, Right, Alternating, Filled, Outlined, Opposite, Customized): MUI Lab parts, CSS only.
+**Rating** (stories: Controlled, Read only, Disabled, Custom, Ten stars, Hover feedback, Half
+ratings, Sizes): native radio group per value with an "Empty" radio; core `ratingValues` /
+`nextRating`; HTML runtime `rating` (`ok:rating:change` / `active`); beyond MUI: `color` and the
+reference's `xSmall` / `xxSmall` sizes. **Slider** (stories: Volume, Disabled, Temperature, Sizes,
+Small steps, Custom marks, Restricted values, Range, Vertical, Colors): native range inputs as
+thumbs, core `createSliderController` (pointer, keyboard, swap / `disableSwap`), positions in
+CSSOM. **Transfer list** (stories: Simple, Enhanced): composed of Scrollbar, List, Checkbox and
+Button; core `transferMove`; HTML runtime `transfer-list`. **Tree view** (stories: Simple, Rich,
+Custom icons, Checkbox, Custom styling): `SimpleTreeView` / `TreeItem` / `RichTreeView`, core
+`createTreeController` (WAI-ARIA tree keyboard, typeahead, range selection); beyond MUI X:
+`variant="lines"` (the reference's custom styling). **Autocomplete** (stories: Playground,
+Country): a combobox composed of TextField, Chip, IconButton and Popover; core
+`createComboboxController` and `filterOptions`; HTML runtime `autocomplete` (chips from a
+`<template>`). Option parsing now accepts exponents (`1e-5`). Size budgets raised: CDN bundle
+31 kB, all CSS 25 kB gzip (about 30 and 24 kB now). Differences: slider mark labels use secondary
+text (AA), Autocomplete chips are soft, country flags show the country code on a Label (no image
+assets), focus rings on every control. No new token, no new runtime dependency.
+**Backlog:** Slider `scale`, `shiftStep`; Tree view `selectionPropagation`, drag and drop, lazy
+loading, `apiRef`, label editing; Autocomplete `groupBy`, `loading`, `autoSelect`,
+`blurOnSelect`, `clearOnEscape`, `includeInputInList`, `selectOnFocus`, virtualization.
+
+## ✅ Components — Tabs, Breadcrumbs & Stepper (2026-11-07)
+Wave 5 (navigation), created with `/component` from the reference pages. **Tabs** (stories: Text,
+Icon, Colors, Scrollable, Vertical, Custom): MUI `Tabs` / `Tab` + Lab `TabPanel`; core
+`createTabsController` (WAI-ARIA keyboard with manual activation or `selectionFollowsFocus`, a
+sliding indicator measured into CSSOM, scroll buttons and scroll-into-view) shared by React and the
+HTML runtime `tabs` (applies the selection and the panels' `hidden`). Beyond MUI: `segmented` (the
+reference's Custom section), `inherit` text / indicator colors (the reference default). **Breadcrumbs**
+(stories: Text, With icon, Customized): `nav › ol`, separators in their own `aria-hidden` `li`,
+`BreadcrumbsDot`; `maxItems` collapsing with core `breadcrumbsCollapse` (React state, HTML runtime
+`breadcrumbs`). **Stepper** (stories: Horizontal linear, Linear alternative label, Vertical linear,
+Customized, Mobile): MUI Stepper parts and MobileStepper; core `stepState`; beyond MUI: Stepper
+`variant` (`dot`, `circle`: the reference's customized steppers) and MobileStepper `getStepLabel`;
+HTML runtimes `stepper` (states from `data-ok-active-step`, Back / Next / Reset triggers, panels)
+and `mobile-stepper`. Token added: `--ok-z-mobile-stepper` (1000). Size budgets raised: CDN bundle 24 kB, all CSS 22 kB gzip (about 23 and 21 kB now). Differences: not-reached step
+icons use grey-600 (white numbers at AA), breadcrumb items are 24px tall (WCAG 2.5.8), tabs and
+links get focus rings. Nothing was waiting for these components.
+**Backlog:** Stepper `nonLinear` + `StepButton`, Step `expanded`, StepContent transition,
+MobileStepper `LinearProgressProps`; Tabs `action` (imperative re-measure) and RTL scroll audit
+(with the right-to-left backlog of Theme settings).
+
 ## ✅ Components — Backdrop (2026-11-07)
 Wave 4's last overlay, created with `/component` from MUI's page (Minimals has none). A fixed `div`
 over the viewport (`--ok-backdrop`, `--ok-z-modal`, white content), CSS-only display: closed it
@@ -259,8 +303,14 @@ integrate these in the same review (additive: no DOM or API change) and remove t
 | Select (listbox, built on Menu) | TextField `select` (non-native) | native `<select>` only (`select` prop) |
 | FormLabel | Radio story "Colors" (group label) | story-only `<span id>` styled in `.storybook/preview.css` |
 | Collapse (transition) | List nested lists | open / close at once (`hidden`); a Collapse component can animate the height later without a DOM change |
+| Collapse (transition) | Stepper `StepContent` (vertical) | shown / hidden at once by CSS on the active step; MUI collapses it |
+| Link (Typography) | Breadcrumbs items | native `a` / `span[aria-current]` styled by `breadcrumbs.css` (inherit color, hover underline); a Link component can go inside items without a DOM change |
+| Typography (headings, body text) | Breadcrumbs story "Customized" (page heading `h4`, paragraph) and Stepper stories (step panels, mobile card `h6` / `p`) | demo markup styled in `.storybook/preview.css` |
 | Typography (headings, body text) | Popover and Dialog stories (popover text, "Selected:" line, full-screen toolbar title) | demo `h6` / `p` / `header` styled in `.storybook/preview.css` |
 | Collapse / Slide (transitions) | Dialog story "Transitions" (the reference slides the dialog in) | the dialog's one opening animation (fade + scale) |
+| Typography + Paper (card) | Timeline story "Customized" (cards with a title and text) | demo `.sb-timeline-card` styled in `.storybook/preview.css` |
+| Typography (body text) | Autocomplete stories (output lines under the fields) | demo `p` styled in `.storybook/preview.css` |
+| Collapse (transition) | Tree view groups | open / close at once (`hidden`); MUI X collapses them |
 
 ## ✅ Upstream API review (ADR-0015, 2026-11-04)
 Components checked against their upstream API (MUI). Rule from the owner: what the Minimals page
@@ -285,8 +335,8 @@ Dependency-first: leaf components before the ones built from them, the ones that
 | 2 Form | ~~Text field (Input, Textarea, native Select)~~ ✅, ~~Radio button~~ ✅ | TablePagination rows per page, Table "Table pagination with API", Pagination "Items": wait for the listbox Select (wave 4) |
 | 3 Display | ~~Avatar~~ ✅, ~~Badge~~ ✅, ~~Chip~~ ✅, ~~Label~~ ✅, ~~Divider~~ ✅, ~~List~~ ✅ | ~~Drawer menu~~ ✅ |
 | 4 Overlays | ~~Popover~~ ✅, ~~Tooltip~~ ✅, ~~Menu~~ ✅, ~~Dialog~~ ✅, ~~Snackbar~~ ✅, ~~Backdrop~~ ✅ | ~~Drawer / Dialog backdrop~~ ✅ (native `::backdrop`, same token); icon button tooltips: nothing to change (MUI uses native `title` there; Tooltip wraps any IconButton) |
-| 5 Navigation | Tabs, Breadcrumbs, Stepper | — |
-| 6 Composites | Rating, Slider, Timeline, Transfer list, Autocomplete, Tree view | — |
+| 5 Navigation | ~~Tabs~~ ✅, ~~Breadcrumbs~~ ✅, ~~Stepper~~ ✅ | — (nothing waited for them) |
+| 6 Composites | ~~Rating~~ ✅, ~~Slider~~ ✅, ~~Timeline~~ ✅, ~~Transfer list~~ ✅, ~~Autocomplete~~ ✅, ~~Tree view~~ ✅ | — (nothing waited for them; Slider unblocks the SettingsDrawer backlog of Theme settings) |
 | 7 Needs an ADR | Data grid, Date pickers, Chart, Map, Editor, Carousel, Lightbox, Markdown, Organization chart, Upload, Image, Walktour | — |
 
 Not planned as components (patterns or app-level pages of the reference): Animate, Layout,

@@ -1,0 +1,15 @@
+<div class="sb-tabs-demo">
+  <div data-ok-tabs data-ok-variant="standard" data-ok-orientation="horizontal" data-ok-text-color="inherit" data-ok-indicator-color="inherit" data-ok-scroll-buttons="auto">
+    <div data-ok-tabs-scroller>
+      <div role="tablist" data-ok-tabs-list aria-label="Text">
+        <button type="button" role="tab" data-ok-tab id="tabs-text-tab-one" aria-controls="tabs-text-panel-one" value="one" aria-selected="true" tabindex="0"><span data-ok-tab-label>Item one</span></button>
+        <button type="button" role="tab" data-ok-tab id="tabs-text-tab-two" aria-controls="tabs-text-panel-two" value="two" aria-selected="false" tabindex="-1"><span data-ok-tab-label>Item two</span></button>
+        <button type="button" role="tab" data-ok-tab id="tabs-text-tab-three" aria-controls="tabs-text-panel-three" disabled value="three" aria-selected="false" tabindex="-1"><span data-ok-tab-label>Item three</span></button>
+      </div>
+      <span data-ok-tabs-indicator></span>
+    </div>
+  </div>
+  <div role="tabpanel" data-ok-tab-panel tabindex="0" id="tabs-text-panel-one" aria-labelledby="tabs-text-tab-one">Item one</div>
+  <div role="tabpanel" data-ok-tab-panel tabindex="0" id="tabs-text-panel-two" aria-labelledby="tabs-text-tab-two" hidden>Item two</div>
+  <div role="tabpanel" data-ok-tab-panel tabindex="0" id="tabs-text-panel-three" aria-labelledby="tabs-text-tab-three" hidden>Item three</div>
+</div>

@@ -3,13 +3,16 @@ import { readFile } from "node:fs/promises";
 import { gzipSync } from "node:zlib";
 
 const budgets = [
-  // 22 kB since the overlays (popover, menu, tooltip, dialog, toaster and the core positioning);
-  // The CDN bundle carries every component; the npm ESM build (`@owlky/html`) is tree-shaken.
-  ["packages/html/dist/owlky.js", 22_000, "HTML runtime + all components (IIFE)"],
+  // 31 kB since the composite inputs (slider and tree controllers, autocomplete, rating, transfer
+  // list runtimes); 24 kB after the navigation components, 22 kB after the overlays. The CDN bundle carries every component; the npm ESM build
+  // (`@owlky/html`) is tree-shaken.
+  ["packages/html/dist/owlky.js", 31_000, "HTML runtime + all components (IIFE)"],
   ["packages/html/dist/esm/runtime/runtime.js", 3_000, "HTML core runtime"],
-  // 20 kB since the form, display and list components; per-component files
-  // (`@owlky/styles/components/*`) let apps load only what they use.
-  ["packages/styles/dist/owlky.min.css", 20_000, "All CSS (tokens + components)"],
+  // 25 kB since the composite inputs (rating, slider, timeline, transfer list, tree view,
+  // autocomplete); 22 kB after the navigation components, 20 kB after the form, display and list
+  // components. Per-component files (`@owlky/styles/components/*`) let apps
+  // load only what they use.
+  ["packages/styles/dist/owlky.min.css", 25_000, "All CSS (tokens + components)"],
 ];
 
 let failed = false;

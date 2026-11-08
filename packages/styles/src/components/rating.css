@@ -1,0 +1,187 @@
+/*
+ * Rating — spec: specs/components/rating.md
+ *
+ * Anatomy:  span[data-ok-rating][data-ok-size][data-ok-color] (role="radiogroup" | role="img" read-only)
+ *             span[data-ok-rating-item]                         (one per whole value)
+ *               label[data-ok-rating-icon][data-ok-value][data-ok-fraction]?[data-ok-filled]?[data-ok-hover]?
+ *                 svg | span[data-ok-rating-icon-filled] + span[data-ok-rating-icon-empty]
+ *                 span[data-ok-rating-label-text]               (visually hidden, "2 Stars")
+ *               input[type="radio"][data-ok-rating-input]       (visually hidden)
+ *             label[data-ok-rating-empty] + input[value=""]     (visually hidden "Empty")
+ *           Read-only: span[data-ok-rating-icon] instead of label + input.
+ * Modifiers: data-ok-size = medium (default) | xxSmall | xSmall | small | large,
+ *            data-ok-color = warning (default) | palette, data-ok-highlight-selected-only,
+ *            data-ok-read-only, data-ok-disabled
+ * States:    data-ok-filled (owner), data-ok-hover (pointer), input:focus-visible
+ *
+ * Single :where() selectors in @layer components (zero specificity).
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-ok-rating]) {
+    --_ok-rating-size: calc(var(--ok-spacing) * 6);
+    --_ok-rating-color: var(--ok-palette-warning-main);
+
+    position: relative;
+    display: inline-flex;
+    color: var(--_ok-rating-color);
+    font-size: var(--_ok-rating-size);
+    line-height: 1;
+    text-align: left;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  :where([data-ok-rating][data-ok-size="xxSmall"]) {
+    --_ok-rating-size: calc(var(--ok-spacing) * 3);
+  }
+
+  :where([data-ok-rating][data-ok-size="xSmall"]) {
+    --_ok-rating-size: calc(var(--ok-spacing) * 4);
+  }
+
+  :where([data-ok-rating][data-ok-size="small"]) {
+    --_ok-rating-size: calc(var(--ok-spacing) * 5);
+  }
+
+  :where([data-ok-rating][data-ok-size="large"]) {
+    --_ok-rating-size: calc(var(--ok-spacing) * 7);
+  }
+
+  :where([data-ok-rating][data-ok-color="primary"]) {
+    --_ok-rating-color: var(--ok-palette-primary-main);
+  }
+
+  :where([data-ok-rating][data-ok-color="secondary"]) {
+    --_ok-rating-color: var(--ok-palette-secondary-main);
+  }
+
+  :where([data-ok-rating][data-ok-color="info"]) {
+    --_ok-rating-color: var(--ok-palette-info-main);
+  }
+
+  :where([data-ok-rating][data-ok-color="success"]) {
+    --_ok-rating-color: var(--ok-palette-success-main);
+  }
+
+  :where([data-ok-rating][data-ok-color="error"]) {
+    --_ok-rating-color: var(--ok-palette-error-main);
+  }
+
+  :where([data-ok-rating-item]) {
+    position: relative;
+    display: inline-flex;
+  }
+
+  /* Icon: empty unless the owner marks it filled. */
+  :where([data-ok-rating-icon]) {
+    display: flex;
+    flex-shrink: 0;
+    width: var(--_ok-rating-size);
+    height: var(--_ok-rating-size);
+    color: rgb(var(--ok-palette-grey-500-channel) / 0.48);
+    cursor: pointer;
+    transition: transform var(--ok-duration-shortest) var(--ok-easing-standard);
+  }
+
+  :where([data-ok-rating-icon] svg) {
+    flex-shrink: 0;
+    width: var(--_ok-rating-size);
+    height: var(--_ok-rating-size);
+  }
+
+  /* Solid icons take the color; line icons (fill="none") keep their stroke. */
+  :where([data-ok-rating-icon] svg:not([fill="none"])) {
+    fill: currentColor;
+  }
+
+  :where([data-ok-rating-icon][data-ok-filled]) {
+    color: var(--_ok-rating-color);
+  }
+
+  /* Different filled and empty icons */
+  :where([data-ok-rating-icon] > [data-ok-rating-icon-filled]) {
+    display: none;
+  }
+
+  :where([data-ok-rating-icon][data-ok-filled] > [data-ok-rating-icon-filled]) {
+    display: flex;
+  }
+
+  :where([data-ok-rating-icon][data-ok-filled] > [data-ok-rating-icon-empty]) {
+    display: none;
+  }
+
+  /* Fractions (precision 0.5 / 0.25): a clipped icon over the whole one. */
+  :where([data-ok-rating-icon][data-ok-fraction]) {
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+  }
+
+  :where([data-ok-rating-icon][data-ok-fraction="0.25"]) {
+    width: calc(var(--_ok-rating-size) * 0.25);
+  }
+
+  :where([data-ok-rating-icon][data-ok-fraction="0.5"]) {
+    width: calc(var(--_ok-rating-size) * 0.5);
+  }
+
+  :where([data-ok-rating-icon][data-ok-fraction="0.75"]) {
+    width: calc(var(--_ok-rating-size) * 0.75);
+  }
+
+  /* An empty fraction stays transparent: the whole icon below already shows the empty state. */
+  :where(
+    [data-ok-rating-icon][data-ok-fraction]:not([data-ok-filled])
+      > :not([data-ok-rating-label-text])
+  ) {
+    visibility: hidden;
+  }
+
+  @media (hover: hover) {
+    :where([data-ok-rating-icon][data-ok-hover]) {
+      transform: scale(1.2);
+    }
+  }
+
+  /* Visually hidden inputs and texts (they keep the native radio group behavior). */
+  :where([data-ok-rating-input], [data-ok-rating-label-text], [data-ok-rating-empty]) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    border: 0;
+    white-space: nowrap;
+  }
+
+  :where([data-ok-rating-input]) {
+    opacity: 0;
+  }
+
+  :where([data-ok-rating-icon]:has(+ [data-ok-rating-input]:focus-visible)) {
+    outline: 2px solid var(--ok-text-primary);
+    outline-offset: 1px;
+    border-radius: var(--ok-radius-xs);
+  }
+
+  :where([data-ok-rating][data-ok-read-only] [data-ok-rating-icon]) {
+    cursor: default;
+  }
+
+  :where([data-ok-rating][data-ok-disabled]) {
+    opacity: 0.48;
+    pointer-events: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :where([data-ok-rating-icon]) {
+      transition: none;
+    }
+  }
+}

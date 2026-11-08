@@ -362,7 +362,7 @@ export const defaultTheme: Theme = {
   },
   elevation: elevationLayers(),
   colorShadow: { x: 0, y: 8, blur: 16, spread: 0, alpha: 24 },
-  zIndex: { dropdown: 1200, modal: 1300, toast: 1400, tooltip: 1500 },
+  zIndex: { mobileStepper: 1000, dropdown: 1200, modal: 1300, toast: 1400, tooltip: 1500 },
   motion: {
     duration: { shortest: "150ms", shorter: "200ms", short: "250ms", standard: "300ms" },
     easing: {

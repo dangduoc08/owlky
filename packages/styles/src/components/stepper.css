@@ -1,0 +1,443 @@
+/*
+ * Stepper — spec: specs/components/stepper.md
+ *
+ * Anatomy:  ol[data-ok-stepper][data-ok-active-step]
+ *             li[data-ok-step][data-ok-active | data-ok-completed | data-ok-disabled][aria-current]?
+ *               div[data-ok-step-connector][aria-hidden="true"] › span[data-ok-step-connector-line]
+ *               span[data-ok-step-label][data-ok-error]?
+ *                 span[data-ok-step-icon][data-ok-custom]?[aria-hidden="true"]
+ *                   span[data-ok-step-icon-text] · svg[data-ok-step-icon-check] · svg[data-ok-step-icon-error]
+ *                   (or the custom icon)
+ *                 span[data-ok-step-label-text]
+ *                   span[data-ok-step-label-title] · span[data-ok-step-label-optional]?
+ *               div[data-ok-step-content]?                                (vertical)
+ *           div[data-ok-mobile-stepper][data-ok-steps][data-ok-active-step]
+ *             button · span[data-ok-mobile-stepper-text] | span[data-ok-mobile-stepper-dots] |
+ *             [data-ok-linear-progress][data-ok-mobile-stepper-progress] · button
+ * Modifiers: data-ok-orientation = horizontal (default) | vertical, data-ok-alternative-label,
+ *            data-ok-variant = standard (default) | dot | circle;
+ *            mobile: data-ok-variant = dots (default) | text | progress,
+ *            data-ok-position = bottom (default) | top | static
+ *
+ * Single :where() selectors in @layer components (zero specificity).
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-ok-stepper]) {
+    --_ok-step-icon-size: calc(var(--ok-spacing) * 6);
+    --_ok-step-line: 1px;
+    --_ok-step-line-color: var(--ok-divider);
+    --_ok-step-line-done: var(--ok-divider);
+    --_ok-step-icon-idle: var(--ok-palette-grey-600);
+    --_ok-step-icon-done: var(--ok-palette-primary-main);
+
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    color: var(--ok-text-primary);
+    font-family: var(--ok-font-family);
+    list-style: none;
+  }
+
+  /* Step */
+  :where([data-ok-step]) {
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    min-width: 0;
+    padding-inline: calc(var(--ok-spacing) * 2);
+  }
+
+  :where([data-ok-step]:has(> [data-ok-step-connector])) {
+    flex: 1 1 auto;
+    padding-inline-start: 0;
+  }
+
+  /* Connector: a line from the previous step to this one. */
+  :where([data-ok-step-connector]) {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin-inline-end: calc(var(--ok-spacing) * 2);
+  }
+
+  :where([data-ok-step-connector-line]) {
+    display: block;
+    border-top: var(--_ok-step-line) solid var(--_ok-step-line-color);
+    border-radius: 1px;
+  }
+
+  :where([data-ok-step]:is([data-ok-active], [data-ok-completed]) > [data-ok-step-connector]) {
+    --_ok-step-line-color: var(--_ok-step-line-done);
+  }
+
+  /* Label */
+  /* Labels may shrink: on narrow screens titles wrap inside their step. */
+  :where([data-ok-step-label]) {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+  }
+
+  :where([data-ok-step-icon]) {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    width: var(--_ok-step-icon-size);
+    height: var(--_ok-step-icon-size);
+    margin-inline-end: calc(var(--ok-spacing) * 2);
+    border-radius: var(--ok-radius-full);
+    background-color: var(--_ok-step-icon-idle);
+    color: var(--ok-palette-common-white);
+    font-size: var(--ok-font-size-xs);
+    line-height: 1;
+  }
+
+  :where([data-ok-step-icon] > svg) {
+    display: none;
+    width: 66%;
+    height: 66%;
+  }
+
+  :where([data-ok-step]:is([data-ok-active], [data-ok-completed]) [data-ok-step-icon]) {
+    background-color: var(--_ok-step-icon-done);
+    color: var(--ok-palette-primary-contrast-text);
+  }
+
+  :where([data-ok-step][data-ok-completed] [data-ok-step-icon] > [data-ok-step-icon-check]) {
+    display: block;
+  }
+
+  :where([data-ok-step][data-ok-completed] [data-ok-step-icon] > [data-ok-step-icon-text]) {
+    display: none;
+  }
+
+  :where([data-ok-step-label][data-ok-error] > [data-ok-step-icon]) {
+    background-color: var(--ok-palette-error-main);
+    color: var(--ok-palette-error-contrast-text);
+  }
+
+  :where([data-ok-step-label][data-ok-error] > [data-ok-step-icon] > [data-ok-step-icon-error]) {
+    display: block;
+  }
+
+  :where(
+    [data-ok-step-label][data-ok-error]
+      > [data-ok-step-icon]
+      > :is([data-ok-step-icon-text], [data-ok-step-icon-check])
+  ) {
+    display: none;
+  }
+
+  /* A custom icon (any node) replaces the numbered circle. */
+  :where([data-ok-step-icon][data-ok-custom]) {
+    background-color: transparent;
+    color: var(--_ok-step-icon-idle);
+  }
+
+  :where([data-ok-step-icon][data-ok-custom] > svg) {
+    display: block;
+    width: calc(var(--ok-spacing) * 6);
+    height: calc(var(--ok-spacing) * 6);
+  }
+
+  :where(
+    [data-ok-step]:is([data-ok-active], [data-ok-completed]) [data-ok-step-icon][data-ok-custom]
+  ) {
+    background-color: transparent;
+    color: var(--_ok-step-icon-done);
+  }
+
+  :where([data-ok-step-label-text]) {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  :where([data-ok-step-label-title]) {
+    /* A word breaks only when it can't fit on its own line (narrow horizontal steppers). */
+    overflow-wrap: anywhere;
+    color: var(--ok-text-secondary);
+    font-size: var(--ok-typography-body2-font-size);
+    font-weight: var(--ok-font-weight-regular);
+    line-height: var(--ok-typography-body2-line-height);
+  }
+
+  :where([data-ok-step]:is([data-ok-active], [data-ok-completed]) [data-ok-step-label-title]) {
+    color: var(--ok-text-primary);
+    font-weight: var(--ok-font-weight-medium);
+  }
+
+  :where([data-ok-step-label][data-ok-error] [data-ok-step-label-title]) {
+    color: var(--ok-palette-error-text);
+  }
+
+  :where([data-ok-step-label-optional]) {
+    overflow-wrap: anywhere;
+    color: var(--ok-text-secondary);
+    font-size: var(--ok-typography-caption-font-size);
+    line-height: var(--ok-typography-caption-line-height);
+  }
+
+  :where([data-ok-step-label][data-ok-error] [data-ok-step-label-optional]) {
+    color: var(--ok-palette-error-text);
+  }
+
+  /* Alternative label: icons in a row, labels centered below, steps share the width. */
+  :where([data-ok-stepper][data-ok-alternative-label][data-ok-orientation="horizontal"]) {
+    align-items: flex-start;
+  }
+
+  :where(
+    [data-ok-stepper][data-ok-alternative-label][data-ok-orientation="horizontal"] > [data-ok-step]
+  ) {
+    position: relative;
+    flex: 1 1 0;
+    padding-inline: calc(var(--ok-spacing) * 2);
+  }
+
+  :where(
+    [data-ok-stepper][data-ok-alternative-label][data-ok-orientation="horizontal"]
+      [data-ok-step-label]
+  ) {
+    flex: 1 1 auto;
+    flex-direction: column;
+    text-align: center;
+  }
+
+  :where(
+    [data-ok-stepper][data-ok-alternative-label][data-ok-orientation="horizontal"]
+      [data-ok-step-icon]
+  ) {
+    margin-inline-end: 0;
+  }
+
+  :where(
+    [data-ok-stepper][data-ok-alternative-label][data-ok-orientation="horizontal"]
+      [data-ok-step-label-text]
+  ) {
+    align-items: center;
+    margin-top: calc(var(--ok-spacing) * 4);
+  }
+
+  :where(
+    [data-ok-stepper][data-ok-alternative-label][data-ok-orientation="horizontal"]
+      [data-ok-step-connector]
+  ) {
+    position: absolute;
+    top: calc(var(--_ok-step-icon-size) / 2 - var(--_ok-step-line) / 2);
+    right: calc(50% + var(--_ok-step-icon-size) / 2 + var(--ok-spacing) * 2);
+    left: calc(-50% + var(--_ok-step-icon-size) / 2 + var(--ok-spacing) * 2);
+    min-width: 0;
+    margin: 0;
+  }
+
+  /* Vertical */
+  :where([data-ok-stepper][data-ok-orientation="vertical"]) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  :where([data-ok-stepper][data-ok-orientation="vertical"] > [data-ok-step]) {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0;
+  }
+
+  :where([data-ok-stepper][data-ok-orientation="vertical"] [data-ok-step-connector]) {
+    min-width: 0;
+    margin: 0;
+    margin-inline-start: calc(var(--_ok-step-icon-size) / 2);
+  }
+
+  :where([data-ok-stepper][data-ok-orientation="vertical"] [data-ok-step-connector-line]) {
+    min-height: calc(var(--ok-spacing) * 6);
+    border-top: 0;
+    border-inline-start: var(--_ok-step-line) solid var(--_ok-step-line-color);
+  }
+
+  :where([data-ok-stepper][data-ok-orientation="vertical"] [data-ok-step-label]) {
+    padding-block: calc(var(--ok-spacing) * 2);
+  }
+
+  :where([data-ok-step-content]) {
+    margin-inline-start: calc(var(--_ok-step-icon-size) / 2);
+    padding-inline: calc(var(--ok-spacing) * 5) calc(var(--ok-spacing) * 2);
+    border-inline-start: var(--_ok-step-line) solid var(--_ok-step-line-color);
+  }
+
+  :where([data-ok-step]:last-child > [data-ok-step-content]) {
+    border-inline-start-color: transparent;
+  }
+
+  :where([data-ok-step]:not([data-ok-active]) > [data-ok-step-content]) {
+    display: none;
+  }
+
+  /* Dot: small dots, thicker lines; the active and completed lines take the primary color. */
+  :where([data-ok-stepper][data-ok-variant="dot"]) {
+    --_ok-step-icon-size: calc(var(--ok-spacing) * 5.5);
+    --_ok-step-line: 3px;
+    --_ok-step-line-done: var(--ok-palette-primary-main);
+  }
+
+  :where([data-ok-stepper][data-ok-variant="dot"] [data-ok-step-icon]) {
+    background-color: transparent;
+    color: var(--_ok-step-icon-idle);
+  }
+
+  :where([data-ok-stepper][data-ok-variant="dot"] [data-ok-step-icon])::before {
+    content: "";
+    width: calc(var(--ok-spacing) * 2);
+    height: calc(var(--ok-spacing) * 2);
+    border-radius: var(--ok-radius-full);
+    background-color: currentColor;
+  }
+
+  :where([data-ok-stepper][data-ok-variant="dot"] [data-ok-step-icon] > [data-ok-step-icon-text]) {
+    display: none;
+  }
+
+  :where(
+    [data-ok-stepper][data-ok-variant="dot"]
+      [data-ok-step]:is([data-ok-active], [data-ok-completed])
+      [data-ok-step-icon]
+  ) {
+    background-color: transparent;
+    color: var(--_ok-step-icon-done);
+  }
+
+  :where(
+    [data-ok-stepper][data-ok-variant="dot"] [data-ok-step][data-ok-completed] [data-ok-step-icon]
+  )::before {
+    display: none;
+  }
+
+  :where([data-ok-stepper][data-ok-variant="dot"] [data-ok-step-icon] > svg) {
+    width: 80%;
+    height: 80%;
+  }
+
+  /* Circle: large icon circles; active and completed ones (and their lines) get a gradient. */
+  :where([data-ok-stepper][data-ok-variant="circle"]) {
+    --_ok-step-icon-size: calc(var(--ok-spacing) * 12.5);
+    --_ok-step-line: 3px;
+    --_ok-step-gradient: linear-gradient(
+      136deg,
+      var(--ok-palette-warning-main),
+      var(--ok-palette-error-main)
+    );
+  }
+
+  :where([data-ok-stepper][data-ok-variant="circle"] [data-ok-step-icon]) {
+    background-color: rgb(var(--ok-palette-grey-500-channel) / 0.24);
+    color: var(--ok-text-secondary);
+    font-size: var(--ok-font-size-md);
+  }
+
+  :where([data-ok-stepper][data-ok-variant="circle"] [data-ok-step-icon] > svg) {
+    width: calc(var(--ok-spacing) * 6);
+    height: calc(var(--ok-spacing) * 6);
+  }
+
+  :where(
+    [data-ok-stepper][data-ok-variant="circle"]
+      [data-ok-step]:is([data-ok-active], [data-ok-completed])
+      [data-ok-step-icon]
+  ) {
+    background-image: var(--_ok-step-gradient);
+    color: var(--ok-palette-common-white);
+  }
+
+  :where(
+    [data-ok-stepper][data-ok-variant="circle"] [data-ok-step][data-ok-active] [data-ok-step-icon]
+  ) {
+    box-shadow: var(--ok-shadow-z8);
+  }
+
+  :where(
+    [data-ok-stepper][data-ok-variant="circle"]
+      [data-ok-step]:is([data-ok-active], [data-ok-completed])
+      > [data-ok-step-connector]
+      > [data-ok-step-connector-line]
+  ) {
+    border-top-color: transparent;
+    background-image: var(--_ok-step-gradient);
+    background-origin: border-box;
+  }
+
+  :where(
+    [data-ok-stepper][data-ok-variant="circle"][data-ok-orientation="vertical"]
+      [data-ok-step]:is([data-ok-active], [data-ok-completed])
+      > [data-ok-step-connector]
+      > [data-ok-step-connector-line]
+  ) {
+    border-inline-start-color: transparent;
+  }
+
+  /* Mobile stepper */
+  :where([data-ok-mobile-stepper]) {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: calc(var(--ok-spacing) * 2);
+    box-sizing: border-box;
+    padding: calc(var(--ok-spacing) * 2);
+    background-color: var(--ok-bg-paper);
+    color: var(--ok-text-primary);
+    font-family: var(--ok-font-family);
+    font-size: var(--ok-typography-body2-font-size);
+    line-height: var(--ok-typography-body2-line-height);
+  }
+
+  :where([data-ok-mobile-stepper][data-ok-position="bottom"]) {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: var(--ok-z-mobile-stepper);
+  }
+
+  :where([data-ok-mobile-stepper][data-ok-position="top"]) {
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: var(--ok-z-mobile-stepper);
+  }
+
+  :where([data-ok-mobile-stepper-dots]) {
+    display: flex;
+    flex-direction: row;
+  }
+
+  :where([data-ok-mobile-stepper-dot]) {
+    width: calc(var(--ok-spacing) * 2);
+    height: calc(var(--ok-spacing) * 2);
+    margin: 0 calc(var(--ok-spacing) * 0.5);
+    border-radius: var(--ok-radius-full);
+    background-color: rgb(var(--ok-palette-grey-500-channel) / 0.8);
+  }
+
+  :where([data-ok-mobile-stepper-dot][data-ok-active]) {
+    background-color: var(--ok-palette-primary-main);
+  }
+
+  :where([data-ok-mobile-stepper-progress]) {
+    width: 50%;
+  }
+
+  :where([data-ok-mobile-stepper-text]) {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  /* Hidden step panels (HTML runtime): author `display` would beat the UA `[hidden]` rule. */
+  :where([data-ok-stepper-panel][hidden], [data-ok-mobile-stepper-panel][hidden]) {
+    display: none;
+  }
+}

@@ -37,7 +37,25 @@ draws `aria-valuenow` / `-valuemin` / `-valuemax`, `data-ok-size`, `data-ok-thic
 DOM; events `ok:table:sort|select|expand`, `ok:table-pagination:change`; pagination linked with
 `data-ok-table-pagination="<table id>"`) **Sortable** (runtime: `sortable`, events `ok:sortable:move|remove|add`, add trigger
 `data-ok-sortable-add="<list id>"` + `<template data-ok-sortable-template>`) and **Toggle button** (runtime: `toggle-button` + `toggle-group`, events
-`ok:toggle-button:change` / `ok:toggle-group:change`). Snippets ship in
+`ok:toggle-button:change` / `ok:toggle-group:change`)
+**Tabs** (runtime `tabs`: `div[data-ok-tabs]` › scroller › `[role=tablist]` › `button[role=tab]` + indicator;
+arrow keys, scroll buttons, panels via `aria-controls`; event `ok:tabs:change`) **Breadcrumbs** (runtime
+`breadcrumbs`: `nav[data-ok-breadcrumbs]` › `ol` › items and `aria-hidden` separators; `data-ok-max-items`
+collapses long trails, event `ok:breadcrumbs:expand`) **Stepper** (runtime `stepper`: `ol[data-ok-stepper]`
+states from `data-ok-active-step`, triggers `data-ok-stepper-next|back|reset="<id>"`, panels
+`data-ok-stepper-panel`, event `ok:stepper:change`; runtime `mobile-stepper`: text / dots / progress,
+event `ok:mobile-stepper:change`)
+**Timeline** (CSS only: `ul[data-ok-timeline]` › items › separator, dot, connector, content)
+**Rating** (runtime `rating`: a radio per value plus an "Empty" radio; a second click clears; events
+`ok:rating:change` (cancelable) and `ok:rating:active`) **Slider** (runtime `slider`: native range
+inputs as thumbs, `data-ok-min|max|step`, marks, value labels from `data-ok-label-value`; events
+`ok:slider:change` (cancelable) and `ok:slider:commit`) **Transfer list** (runtime `transfer-list`:
+two checkbox lists and move buttons; event `ok:transfer-list:change` (cancelable)) **Tree view**
+(runtime `tree-view`: `ul[role=tree]` › `li[role=treeitem]`; WAI-ARIA keyboard and typeahead; events
+`ok:tree-view:expand` and `ok:tree-view:select` (cancelable)) **Autocomplete** (runtime
+`autocomplete`: a TextField combobox with a Popover listbox; chips from
+`<template data-ok-autocomplete-tag>`; events `ok:autocomplete:change` (cancelable),
+`ok:autocomplete:open|close`). Snippets ship in
 `@owlky/html/snippets/<component>/<story>-<group>.html` and in Storybook (HTML/Button/…).
 
 Theme settings (ADR-0017): put `data-ok-preset` / `data-ok-font` on `<html>` (or any element) and

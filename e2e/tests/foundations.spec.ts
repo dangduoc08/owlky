@@ -139,6 +139,15 @@ const GUIDES = [
   ["components-switch--docs", "Accessibility"],
   ["components-table--docs", "Accessibility"],
   ["components-text-field--docs", "Accessibility"],
+  ["components-tabs--docs", "Accessibility"],
+  ["components-breadcrumbs--docs", "Accessibility"],
+  ["components-stepper--docs", "Accessibility"],
+  ["components-timeline--docs", "Accessibility"],
+  ["components-rating--docs", "Accessibility"],
+  ["components-slider--docs", "Accessibility"],
+  ["components-transfer-list--docs", "Accessibility"],
+  ["components-tree-view--docs", "Accessibility"],
+  ["components-autocomplete--docs", "Accessibility"],
 ] as const;
 
 /** Component docs pages and their option schema: the Options table lists every option. */
@@ -176,6 +185,15 @@ const OPTION_TABLES: [string, (keyof typeof optionSchemas)[]][] = [
   ["components-switch--docs", ["switch", "form-control-label"]],
   ["components-table--docs", ["table", "table-sort-label"]],
   ["components-text-field--docs", ["text-field"]],
+  ["components-tabs--docs", ["tabs", "tab"]],
+  ["components-breadcrumbs--docs", ["breadcrumbs"]],
+  ["components-stepper--docs", ["stepper", "step", "step-label", "mobile-stepper"]],
+  ["components-timeline--docs", ["timeline", "timeline-item", "timeline-dot"]],
+  ["components-rating--docs", ["rating"]],
+  ["components-slider--docs", ["slider"]],
+  ["components-transfer-list--docs", ["transfer-list"]],
+  ["components-tree-view--docs", ["tree-view"]],
+  ["components-autocomplete--docs", ["autocomplete"]],
 ];
 
 for (const [id, schemaNames] of OPTION_TABLES) {

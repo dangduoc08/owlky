@@ -35,6 +35,316 @@
   letter-spacing: 0.05em;
 }
 
+/* Tabs demos (story-only): narrow boxes that make the tabs scroll, panels in a bordered box. */
+.sb-tabs-narrow {
+  width: 100%;
+  max-width: 320px;
+}
+
+.sb-tabs-wide {
+  width: 100%;
+}
+
+.sb-tabs-demo {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 560px;
+  gap: calc(var(--ok-spacing) * 4);
+}
+
+.sb-tabs-demo-vertical {
+  flex-direction: row;
+  gap: 0;
+  min-height: 240px;
+}
+
+.sb-tabs-demo-vertical > [data-ok-tabs] {
+  flex: 0 0 auto;
+  width: 160px;
+}
+
+.sb-tabs-demo > [data-ok-tab-panel] {
+  flex: 1 1 auto;
+  padding: calc(var(--ok-spacing) * 3) calc(var(--ok-spacing) * 4);
+  border: 1px solid var(--ok-divider);
+  border-radius: var(--ok-radius-md);
+  color: var(--ok-text-primary);
+  font-size: var(--ok-typography-body2-font-size);
+}
+
+.sb-tabs-demo-vertical > [data-ok-tab-panel] {
+  border-radius: 0 var(--ok-radius-md) var(--ok-radius-md) 0;
+}
+
+/* Breadcrumbs "Page heading" demo (story-only): title row, action and links. */
+.sb-page-heading {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--ok-spacing) * 4);
+  width: 100%;
+  max-width: 720px;
+}
+
+.sb-page-heading-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(var(--ok-spacing) * 4);
+}
+
+.sb-page-heading h4 {
+  display: flex;
+  align-items: center;
+  gap: var(--ok-spacing);
+  margin: 0;
+  color: var(--ok-text-primary);
+  font-family: var(--ok-typography-h4-font-family);
+  font-size: var(--ok-typography-h4-font-size);
+  font-weight: var(--ok-typography-h4-font-weight);
+  line-height: var(--ok-typography-h4-line-height);
+}
+
+.sb-page-heading h4 > a {
+  display: inline-flex;
+  min-width: 24px;
+  min-height: 24px;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+}
+
+.sb-page-heading h4 > a > svg {
+  width: 20px;
+  height: 20px;
+}
+
+.sb-page-heading > p {
+  margin: 0;
+  color: var(--ok-text-secondary);
+  font-size: var(--ok-typography-body2-font-size);
+}
+
+.sb-page-heading > p > a {
+  color: var(--ok-palette-primary-text);
+}
+
+/* Stepper demos (story-only): the step text in a neutral box, Back / Next below. */
+.sb-stepper-demo {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--ok-spacing) * 6);
+  width: 100%;
+}
+
+.sb-stepper-panel {
+  padding: calc(var(--ok-spacing) * 6);
+  border-radius: var(--ok-radius-md);
+  background-color: var(--ok-bg-neutral);
+  color: var(--ok-text-primary);
+  font-size: var(--ok-typography-body2-font-size);
+}
+
+.sb-stepper-panel p,
+[data-ok-step-content] > p {
+  margin: 0;
+}
+
+.sb-stepper-panel [data-ok-button] {
+  margin-top: calc(var(--ok-spacing) * 3);
+}
+
+.sb-stepper-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: calc(var(--ok-spacing) * 2);
+}
+
+[data-ok-step-content] {
+  color: var(--ok-text-primary);
+  font-size: var(--ok-typography-body2-font-size);
+}
+
+[data-ok-step-content] > .sb-stepper-actions {
+  justify-content: flex-start;
+  margin-block: calc(var(--ok-spacing) * 3) calc(var(--ok-spacing) * 2);
+}
+
+/* Mobile stepper demo (story-only): a card with its text above the stepper. */
+.sb-mobile-card {
+  width: 100%;
+  max-width: 340px;
+  overflow: hidden;
+  border-radius: var(--ok-radius-lg);
+  background-color: var(--ok-bg-paper);
+  box-shadow: var(--ok-shadow-card);
+}
+
+.sb-mobile-card-body {
+  min-height: 140px;
+  padding: calc(var(--ok-spacing) * 6) calc(var(--ok-spacing) * 6) 0;
+}
+
+.sb-mobile-card-body[hidden] {
+  display: none;
+}
+
+.sb-mobile-card-body h6 {
+  margin: 0 0 calc(var(--ok-spacing) * 2);
+  color: var(--ok-text-primary);
+  font-size: var(--ok-typography-subtitle1-font-size);
+  font-weight: var(--ok-typography-subtitle1-font-weight);
+}
+
+.sb-mobile-card-body p {
+  margin: 0;
+  color: var(--ok-text-secondary);
+  font-size: var(--ok-typography-body2-font-size);
+}
+
+.sb-mobile-card > [data-ok-mobile-stepper] {
+  border-top: 1px dashed var(--ok-divider);
+}
+
+/* Timeline "Customized" cards (story-only): a tinted paper with a title and a note. */
+.sb-timeline-card {
+  display: inline-block;
+  padding: calc(var(--ok-spacing) * 6);
+  border-radius: var(--ok-radius-md);
+  background-color: rgb(var(--ok-palette-grey-500-channel) / 0.12);
+}
+
+.sb-timeline-card > h6 {
+  margin: 0;
+  font-size: var(--ok-typography-subtitle2-font-size);
+  font-weight: var(--ok-typography-subtitle2-font-weight);
+}
+
+.sb-timeline-card > p {
+  margin: 0;
+  color: var(--ok-text-primary);
+  font-size: var(--ok-typography-body2-font-size);
+}
+
+.sb-row:has(> [data-ok-timeline]) > [data-ok-timeline] {
+  width: 100%;
+}
+
+/* Rating "Hover feedback" (story-only): the label next to the icons. */
+.sb-rating-feedback {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--ok-spacing) * 4);
+  color: var(--ok-text-primary);
+  font-size: var(--ok-typography-body2-font-size);
+}
+
+/* Slider demos (story-only): volume icons, a fixed height for vertical sliders, the range output. */
+.sb-row:has(> [data-ok-slider]),
+.sb-row:has(> .sb-slider-range) {
+  flex-direction: column;
+  align-items: stretch;
+  /* Room for the end mark labels, which are centered on the rail's ends. */
+  padding-inline: calc(var(--ok-spacing) * 6);
+}
+
+.sb-slider-volume {
+  display: flex;
+  flex: 1 1 100%;
+  align-items: center;
+  gap: calc(var(--ok-spacing) * 4);
+  color: var(--ok-text-secondary);
+}
+
+.sb-row > .sb-slider-volume > svg {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+}
+
+.sb-slider-vertical {
+  display: flex;
+  gap: calc(var(--ok-spacing) * 16);
+  height: 240px;
+  padding-block: calc(var(--ok-spacing) * 2);
+}
+
+.sb-slider-range {
+  display: flex;
+  flex: 1 1 100%;
+  flex-direction: column;
+  gap: calc(var(--ok-spacing) * 4);
+  padding-top: calc(var(--ok-spacing) * 8);
+}
+
+.sb-slider-range > p {
+  align-self: center;
+  margin: 0;
+  padding: calc(var(--ok-spacing) * 2) calc(var(--ok-spacing) * 4);
+  border-radius: var(--ok-radius-md);
+  background-color: var(--ok-bg-neutral);
+  color: var(--ok-text-primary);
+  font-size: var(--ok-typography-body2-font-size);
+}
+
+/* Autocomplete demos (story-only): a column width, value outputs beside the fields. */
+.sb-autocomplete {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--ok-spacing) * 4);
+  width: 100%;
+  max-width: 340px;
+}
+
+.sb-autocomplete > p {
+  margin: 0;
+  color: var(--ok-text-secondary);
+  font-size: var(--ok-typography-body2-font-size);
+}
+
+.sb-autocomplete-outputs,
+.sb-autocomplete-variants {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--ok-spacing) * 4);
+  width: 100%;
+  max-width: 640px;
+}
+
+.sb-autocomplete-output {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: calc(var(--ok-spacing) * 2);
+}
+
+@media (min-width: 600px) {
+  .sb-autocomplete-output {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    align-items: center;
+  }
+
+  .sb-autocomplete-variants {
+    flex-direction: row;
+  }
+}
+
+.sb-autocomplete-output > output {
+  padding: calc(var(--ok-spacing) * 2) calc(var(--ok-spacing) * 3);
+  border-radius: var(--ok-radius-md);
+  background-color: var(--ok-bg-neutral);
+  color: var(--ok-text-secondary);
+  font-size: var(--ok-typography-caption-font-size);
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.sb-autocomplete-output > output > code {
+  display: block;
+  color: var(--ok-text-primary);
+  font-weight: var(--ok-font-weight-semibold);
+}
+
 /* Demo surfaces: a theme scope inside a row gets its own paper background. */
 .sb-row > [data-ok-theme] {
   padding: 0.75rem;

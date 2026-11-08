@@ -290,3 +290,28 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
   `data-ok-dialog-open` / `-close`). Toast templates (`<template>`) are skipped by parity.
 - Pointer-driven tests near fixed overlays (toasters) must keep the pointer off them: hovering a
   toaster pauses its timers.
+- Any part with an author `display` that the runtime hides with `hidden` (collapsed breadcrumbs,
+  stepper panels) needs an explicit `[hidden] { display: none }` rule: author CSS beats the UA one.
+- WebKit lays out a sentence split into several text nodes differently (sub-pixel): in React demos
+  keep each run of text in one node (`{" and the "}`, not `and the{" "}`) or pixel parity fails.
+- Snippets generated from React must drop `style` attributes (LinearProgress writes private
+  properties; the HTML runtime sets them through CSSOM).
+- Controllers that measure layout (Tabs indicator) write `--_ok-*` through CSSOM and set a flag
+  (`data-ok-ready`) after the first measure, so transitions only run between real positions.
+  Both implementations share the controller, so its attributes need no parity exception.
+- Token names are kebab-case: camelCase keys in `zIndex` (`mobileStepper`) become
+  `--ok-z-mobile-stepper` in `css.ts`.
+- Browsers sanitize `input.value` on range inputs (snapped to `step`, clamped to `min` / `max`), so
+  Slider keeps its values in memory and only writes them; numeric options accept exponents
+  (`1e-5`) because tiny steps serialize that way.
+- WebKit forwards a label click to its radio with `detail === 0` (like Space): "a pointer click
+  clears" logic (Rating) tracks `pointerdown` / `keydown` instead of reading `detail`. WebKit also
+  doesn't wrap arrow keys in a radio group and drops `:focus-visible` when they move focus (native
+  radios too): Tab in before asserting a focus ring, and reach the last radio going forward.
+- Rating fractions overlap: unfilled fraction icons are hidden (not dimmed), except their label
+  text, so translucent halves don't stack into a darker star.
+- Autocomplete opens on the input's `mousedown`: focus shows every chip (`limitTags`), which moves
+  the input before the click. The HTML runtime clones chips from `<template
+  data-ok-autocomplete-tag>` and guards its tag rendering against re-entry (removing a focused chip
+  fires `focusout`). Listbox options are focusless (`aria-activedescendant`), so
+  `useFocusableInteractive` is off for snippets and suppressed inline in React.

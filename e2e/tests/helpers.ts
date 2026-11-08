@@ -97,6 +97,16 @@ export function normalizeStory(page: Page): Promise<NormalizedNode> {
       "data-ok-rows-per-page",
       "data-ok-table-dense",
       "data-ok-text-field-reveal",
+      "data-ok-stepper-next",
+      "data-ok-stepper-back",
+      "data-ok-stepper-reset",
+      "data-ok-stepper-panel",
+      "data-ok-stepper-panel-step",
+      "data-ok-mobile-stepper-next",
+      "data-ok-mobile-stepper-back",
+      "data-ok-mobile-stepper-panel",
+      "data-ok-label-step",
+      "data-ok-expand-text",
       // React sets <option> selection as a property (compared through the select's :value).
       "selected",
     ]);
@@ -198,4 +208,5 @@ export const CONTRAST_EXEMPT = [
   '[data-ok-label][data-ok-color="black"]',
   "[data-swatch]",
   '[data-ok-list-subheader][data-ok-color="primary"]',
+  '[data-ok-tabs]:not([data-ok-text-color="inherit"]) [role="tab"][aria-selected="true"]',
 ];

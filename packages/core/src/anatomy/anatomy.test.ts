@@ -3,6 +3,7 @@ import {
   accordionAttributes,
   alertAttributes,
   ariaSort,
+  autocompleteAttributes,
   avatarAttributes,
   avatarGroupAttributes,
   avatarVariants,
@@ -10,6 +11,7 @@ import {
   badgeAttributes,
   badgeContent,
   badgeVariants,
+  breadcrumbsAttributes,
   buttonAttributes,
   buttonColors,
   buttonGroupAttributes,
@@ -51,30 +53,43 @@ import {
   listSubheaderColors,
   menuAttributes,
   menuItemAttributes,
+  mobileStepperAttributes,
   orientations,
   popoverAttributes,
   popoverPlacements,
   progressColors,
   radioAttributes,
   radioGroupAttributes,
+  ratingAttributes,
   scrollbarAttributes,
   selectionControlColors,
   selectionControlSizes,
+  sliderAttributes,
   sortableAttributes,
   sortableLayouts,
+  stepAttributes,
+  stepLabelAttributes,
+  stepperAttributes,
   switchAttributes,
+  tabAttributes,
   tableAttributes,
   tableCellAttributes,
   tableSortLabelAttributes,
+  tabsAttributes,
   textFieldAttributes,
   textFieldMargins,
   textFieldVariants,
+  timelineAttributes,
+  timelineDotAttributes,
+  timelineItemAttributes,
   toasterAttributes,
   toggleButtonAttributes,
   toggleButtonColors,
   toggleButtonSizes,
   toggleGroupAttributes,
   tooltipAttributes,
+  transferListAttributes,
+  treeViewAttributes,
 } from "./anatomy.js";
 
 const HOSTILE = '"><img src=x onerror=alert(1)>' as never;
@@ -886,6 +901,292 @@ describe("overlay attributes", () => {
       "data-ok-position": "bottom-center",
       "data-ok-duration": "2000",
       "data-ok-close-button": "",
+    });
+  });
+  it("tabs: explicit defaults, every option, hostile values fall back", () => {
+    const defaults = {
+      "data-ok-tabs": "",
+      "data-ok-variant": "standard",
+      "data-ok-orientation": "horizontal",
+      "data-ok-text-color": "inherit",
+      "data-ok-indicator-color": "inherit",
+      "data-ok-scroll-buttons": "auto",
+    };
+    expect(tabsAttributes()).toEqual(defaults);
+    expect(
+      tabsAttributes({
+        variant: "scrollable",
+        orientation: "vertical",
+        textColor: "primary",
+        indicatorColor: "secondary",
+        scrollButtons: "false",
+        centered: true,
+        allowScrollButtonsMobile: true,
+        visibleScrollbar: true,
+        segmented: true,
+        selectionFollowsFocus: true,
+      }),
+    ).toEqual({
+      "data-ok-tabs": "",
+      "data-ok-variant": "scrollable",
+      "data-ok-orientation": "vertical",
+      "data-ok-text-color": "primary",
+      "data-ok-indicator-color": "secondary",
+      "data-ok-scroll-buttons": "false",
+      "data-ok-centered": "",
+      "data-ok-allow-scroll-buttons-mobile": "",
+      "data-ok-visible-scrollbar": "",
+      "data-ok-segmented": "",
+      "data-ok-selection-follows-focus": "",
+    });
+    expect(
+      tabsAttributes({
+        variant: HOSTILE,
+        orientation: HOSTILE,
+        textColor: HOSTILE,
+        indicatorColor: HOSTILE,
+        scrollButtons: HOSTILE,
+        segmented: HOSTILE,
+      }),
+    ).toEqual(defaults);
+  });
+  it("tab: icon position only when given, wrapped", () => {
+    expect(tabAttributes()).toEqual({ "data-ok-tab": "" });
+    expect(tabAttributes({ iconPosition: "start", wrapped: true })).toEqual({
+      "data-ok-tab": "",
+      "data-ok-icon-position": "start",
+      "data-ok-wrapped": "",
+    });
+    expect(tabAttributes({ iconPosition: HOSTILE })).toEqual({ "data-ok-tab": "" });
+  });
+  it("breadcrumbs: collapse numbers only when valid", () => {
+    expect(breadcrumbsAttributes()).toEqual({ "data-ok-breadcrumbs": "" });
+    expect(
+      breadcrumbsAttributes({ maxItems: 3, itemsBeforeCollapse: 0, itemsAfterCollapse: 2 }),
+    ).toEqual({
+      "data-ok-breadcrumbs": "",
+      "data-ok-max-items": "3",
+      "data-ok-items-before-collapse": "0",
+      "data-ok-items-after-collapse": "2",
+    });
+    expect(
+      breadcrumbsAttributes({ maxItems: 0, itemsBeforeCollapse: -1, itemsAfterCollapse: HOSTILE }),
+    ).toEqual({ "data-ok-breadcrumbs": "" });
+  });
+  it("stepper, step and step label", () => {
+    expect(stepperAttributes()).toEqual({
+      "data-ok-stepper": "",
+      "data-ok-orientation": "horizontal",
+      "data-ok-variant": "standard",
+    });
+    expect(
+      stepperAttributes({
+        orientation: "vertical",
+        alternativeLabel: true,
+        variant: "circle",
+        activeStep: 2,
+      }),
+    ).toEqual({
+      "data-ok-stepper": "",
+      "data-ok-orientation": "vertical",
+      "data-ok-alternative-label": "",
+      "data-ok-variant": "circle",
+      "data-ok-active-step": "2",
+    });
+    expect(stepperAttributes({ variant: HOSTILE, activeStep: -1 })).toEqual({
+      "data-ok-stepper": "",
+      "data-ok-orientation": "horizontal",
+      "data-ok-variant": "standard",
+    });
+    expect(stepAttributes()).toEqual({ "data-ok-step": "" });
+    expect(stepAttributes({ active: true, completed: true, disabled: true })).toEqual({
+      "data-ok-step": "",
+      "data-ok-active": "",
+      "data-ok-completed": "",
+      "data-ok-disabled": "",
+    });
+    expect(stepLabelAttributes()).toEqual({ "data-ok-step-label": "" });
+    expect(stepLabelAttributes({ error: true })).toEqual({
+      "data-ok-step-label": "",
+      "data-ok-error": "",
+    });
+  });
+  it("mobile stepper", () => {
+    expect(mobileStepperAttributes()).toEqual({
+      "data-ok-mobile-stepper": "",
+      "data-ok-variant": "dots",
+      "data-ok-position": "bottom",
+    });
+    expect(
+      mobileStepperAttributes({ variant: "text", position: "static", steps: 3, activeStep: 1 }),
+    ).toEqual({
+      "data-ok-mobile-stepper": "",
+      "data-ok-variant": "text",
+      "data-ok-position": "static",
+      "data-ok-steps": "3",
+      "data-ok-active-step": "1",
+    });
+    expect(mobileStepperAttributes({ variant: HOSTILE, position: HOSTILE, steps: 0 })).toEqual({
+      "data-ok-mobile-stepper": "",
+      "data-ok-variant": "dots",
+      "data-ok-position": "bottom",
+    });
+  });
+  it("timeline, item and dot", () => {
+    expect(timelineAttributes()).toEqual({ "data-ok-timeline": "", "data-ok-position": "right" });
+    expect(timelineAttributes({ position: "alternate-reverse" })["data-ok-position"]).toBe(
+      "alternate-reverse",
+    );
+    expect(timelineAttributes({ position: HOSTILE })["data-ok-position"]).toBe("right");
+    expect(timelineItemAttributes()).toEqual({ "data-ok-timeline-item": "" });
+    expect(timelineItemAttributes({ position: "left" })).toEqual({
+      "data-ok-timeline-item": "",
+      "data-ok-position": "left",
+    });
+    expect(timelineDotAttributes()).toEqual({
+      "data-ok-timeline-dot": "",
+      "data-ok-variant": "filled",
+      "data-ok-color": "grey",
+    });
+    expect(timelineDotAttributes({ variant: "outlined", color: "error" })).toMatchObject({
+      "data-ok-variant": "outlined",
+      "data-ok-color": "error",
+    });
+    expect(timelineDotAttributes({ variant: HOSTILE, color: HOSTILE })).toMatchObject({
+      "data-ok-variant": "filled",
+      "data-ok-color": "grey",
+    });
+  });
+  it("rating", () => {
+    expect(ratingAttributes()).toEqual({
+      "data-ok-rating": "",
+      "data-ok-size": "medium",
+      "data-ok-color": "warning",
+    });
+    expect(
+      ratingAttributes({
+        size: "xxSmall",
+        color: "info",
+        highlightSelectedOnly: true,
+        readOnly: true,
+        disabled: true,
+      }),
+    ).toEqual({
+      "data-ok-rating": "",
+      "data-ok-size": "xxSmall",
+      "data-ok-color": "info",
+      "data-ok-highlight-selected-only": "",
+      "data-ok-read-only": "",
+      "data-ok-disabled": "",
+    });
+    expect(ratingAttributes({ size: HOSTILE, color: HOSTILE })).toMatchObject({
+      "data-ok-size": "medium",
+      "data-ok-color": "warning",
+    });
+  });
+  it("slider", () => {
+    const defaults = {
+      "data-ok-slider": "",
+      "data-ok-color": "primary",
+      "data-ok-size": "medium",
+      "data-ok-orientation": "horizontal",
+      "data-ok-track": "normal",
+      "data-ok-value-label-display": "off",
+    };
+    expect(sliderAttributes()).toEqual(defaults);
+    expect(
+      sliderAttributes({
+        color: "inherit",
+        size: "small",
+        orientation: "vertical",
+        track: "inverted",
+        valueLabelDisplay: "auto",
+        disabled: true,
+        disableSwap: true,
+        min: -10,
+        max: 10,
+        step: 0,
+      }),
+    ).toEqual({
+      "data-ok-slider": "",
+      "data-ok-color": "inherit",
+      "data-ok-size": "small",
+      "data-ok-orientation": "vertical",
+      "data-ok-track": "inverted",
+      "data-ok-value-label-display": "auto",
+      "data-ok-disabled": "",
+      "data-ok-disable-swap": "",
+      "data-ok-min": "-10",
+      "data-ok-max": "10",
+      "data-ok-step": "0",
+    });
+    expect(sliderAttributes({ color: HOSTILE, track: HOSTILE, step: -1, min: HOSTILE })).toEqual(
+      defaults,
+    );
+  });
+  it("transfer list", () => {
+    expect(transferListAttributes()).toEqual({
+      "data-ok-transfer-list": "",
+      "data-ok-variant": "simple",
+    });
+    expect(transferListAttributes({ variant: "enhanced", disabled: true })).toEqual({
+      "data-ok-transfer-list": "",
+      "data-ok-variant": "enhanced",
+      "data-ok-disabled": "",
+    });
+    expect(transferListAttributes({ variant: HOSTILE })["data-ok-variant"]).toBe("simple");
+  });
+  it("tree view", () => {
+    expect(treeViewAttributes()).toEqual({
+      "data-ok-tree-view": "",
+      "data-ok-variant": "standard",
+      "data-ok-expansion-trigger": "content",
+    });
+    expect(
+      treeViewAttributes({
+        variant: "lines",
+        expansionTrigger: "iconContainer",
+        multiSelect: true,
+        checkboxSelection: true,
+        disableSelection: true,
+      }),
+    ).toEqual({
+      "data-ok-tree-view": "",
+      "data-ok-variant": "lines",
+      "data-ok-expansion-trigger": "iconContainer",
+      "data-ok-multi-select": "",
+      "data-ok-checkbox-selection": "",
+      "data-ok-disable-selection": "",
+    });
+    expect(treeViewAttributes({ variant: HOSTILE, expansionTrigger: HOSTILE })).toMatchObject({
+      "data-ok-variant": "standard",
+      "data-ok-expansion-trigger": "content",
+    });
+  });
+  it("autocomplete", () => {
+    expect(autocompleteAttributes()).toEqual({ "data-ok-autocomplete": "" });
+    expect(
+      autocompleteAttributes({
+        multiple: true,
+        freeSolo: true,
+        disableCloseOnSelect: true,
+        disableClearable: true,
+        openOnFocus: true,
+        autoHighlight: true,
+        limitTags: 2,
+      }),
+    ).toEqual({
+      "data-ok-autocomplete": "",
+      "data-ok-multiple": "",
+      "data-ok-free-solo": "",
+      "data-ok-disable-close-on-select": "",
+      "data-ok-disable-clearable": "",
+      "data-ok-open-on-focus": "",
+      "data-ok-auto-highlight": "",
+      "data-ok-limit-tags": "2",
+    });
+    expect(autocompleteAttributes({ limitTags: -1, multiple: HOSTILE })).toEqual({
+      "data-ok-autocomplete": "",
     });
   });
 });

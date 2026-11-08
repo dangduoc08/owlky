@@ -1,0 +1,377 @@
+/*
+ * Tabs — spec: specs/components/tabs.md
+ *
+ * Anatomy:  div[data-ok-tabs]
+ *             div[data-ok-tabs-scroll-button="start"]?  (scrollable)
+ *             div[data-ok-tabs-scroller]
+ *               div[role="tablist"][data-ok-tabs-list]
+ *                 button[role="tab"][data-ok-tab][data-ok-icon-position]?[aria-selected]
+ *                   svg? span[data-ok-tab-label]?
+ *               span[data-ok-tabs-indicator]
+ *             div[data-ok-tabs-scroll-button="end"]?
+ *           div[role="tabpanel"][data-ok-tab-panel]
+ * Modifiers: data-ok-variant = standard (default) | scrollable | fullWidth
+ *            data-ok-orientation = horizontal (default) | vertical
+ *            data-ok-text-color / data-ok-indicator-color = inherit (default) | primary | secondary
+ *            data-ok-scroll-buttons = auto (default) | true | false, data-ok-allow-scroll-buttons-mobile
+ *            data-ok-centered, data-ok-visible-scrollbar, data-ok-segmented
+ * States:    [aria-selected="true"], :focus-visible, :disabled; written by the controller:
+ *            data-ok-can-scroll-start / -end (root), data-ok-ready (indicator), and the
+ *            indicator's position in --_ok-tabs-indicator-start / -size (CSSOM).
+ *
+ * Single :where() selectors in @layer components (zero specificity).
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-ok-tabs]) {
+    --_ok-tabs-selected: var(--ok-text-primary);
+    --_ok-tabs-indicator: var(--ok-text-primary);
+    --_ok-tabs-gap: calc(var(--ok-spacing) * 10);
+
+    display: flex;
+    min-width: 0;
+    min-height: calc(var(--ok-spacing) * 12);
+    overflow: hidden;
+    color: var(--ok-text-primary);
+    font-family: var(--ok-font-family);
+  }
+
+  :where([data-ok-tabs][data-ok-orientation="vertical"]) {
+    flex-direction: column;
+  }
+
+  :where([data-ok-tabs][data-ok-text-color="primary"]) {
+    --_ok-tabs-selected: var(--ok-palette-primary-main);
+  }
+
+  :where([data-ok-tabs][data-ok-text-color="secondary"]) {
+    --_ok-tabs-selected: var(--ok-palette-secondary-main);
+  }
+
+  :where([data-ok-tabs][data-ok-indicator-color="primary"]) {
+    --_ok-tabs-indicator: var(--ok-palette-primary-main);
+  }
+
+  :where([data-ok-tabs][data-ok-indicator-color="secondary"]) {
+    --_ok-tabs-indicator: var(--ok-palette-secondary-main);
+  }
+
+  /* The scroller positions the indicator and scrolls (scrollable) or clips (standard). */
+  :where([data-ok-tabs-scroller]) {
+    position: relative;
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  :where([data-ok-tabs][data-ok-variant="scrollable"] > [data-ok-tabs-scroller]) {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  :where(
+    [data-ok-tabs][data-ok-variant="scrollable"] > [data-ok-tabs-scroller]
+  )::-webkit-scrollbar {
+    display: none;
+  }
+
+  :where(
+    [data-ok-tabs][data-ok-variant="scrollable"][data-ok-orientation="vertical"]
+      > [data-ok-tabs-scroller]
+  ) {
+    overflow: hidden auto;
+  }
+
+  :where(
+    [data-ok-tabs][data-ok-variant="scrollable"][data-ok-visible-scrollbar]
+      > [data-ok-tabs-scroller]
+  ) {
+    scrollbar-width: auto;
+  }
+
+  :where(
+    [data-ok-tabs][data-ok-variant="scrollable"][data-ok-visible-scrollbar]
+      > [data-ok-tabs-scroller]
+  )::-webkit-scrollbar {
+    display: initial;
+  }
+
+  :where([data-ok-tabs-list]) {
+    display: flex;
+    gap: var(--_ok-tabs-gap);
+    min-height: 100%;
+  }
+
+  :where([data-ok-tabs][data-ok-orientation="vertical"] [data-ok-tabs-list]) {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  :where([data-ok-tabs][data-ok-centered] [data-ok-tabs-list]) {
+    justify-content: center;
+  }
+
+  :where([data-ok-tabs][data-ok-variant="fullWidth"] [data-ok-tabs-list]) {
+    gap: 0;
+  }
+
+  /* Tab */
+  :where([data-ok-tab]) {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    flex-shrink: 0;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    min-width: calc(var(--ok-spacing) * 12);
+    max-width: 360px;
+    min-height: calc(var(--ok-spacing) * 12);
+    margin: 0;
+    padding: calc(var(--ok-spacing) * 3) 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--ok-text-secondary);
+    font-family: inherit;
+    font-size: var(--ok-typography-subtitle2-font-size);
+    font-weight: var(--ok-font-weight-medium);
+    line-height: var(--ok-typography-subtitle2-line-height);
+    text-align: center;
+    white-space: normal;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: color var(--ok-duration-short) var(--ok-easing-standard);
+  }
+
+  :where([data-ok-tabs][data-ok-variant="fullWidth"] [data-ok-tab]) {
+    flex: 1 1 0;
+    max-width: none;
+  }
+
+  :where([data-ok-tab] > svg, [data-ok-tab] > img) {
+    flex-shrink: 0;
+    width: calc(var(--ok-spacing) * 6);
+    height: calc(var(--ok-spacing) * 6);
+  }
+
+  /* Icon and label */
+  :where([data-ok-tab][data-ok-icon-position]) {
+    min-height: calc(var(--ok-spacing) * 18);
+    padding-block: calc(var(--ok-spacing) * 2.25);
+  }
+
+  :where([data-ok-tab][data-ok-icon-position="top"] > svg) {
+    margin-bottom: calc(var(--ok-spacing) * 1.5);
+  }
+
+  :where([data-ok-tab][data-ok-icon-position="bottom"]) {
+    flex-direction: column-reverse;
+  }
+
+  :where([data-ok-tab][data-ok-icon-position="bottom"] > svg) {
+    margin-top: calc(var(--ok-spacing) * 1.5);
+  }
+
+  :where([data-ok-tab][data-ok-icon-position="start"]) {
+    flex-direction: row;
+    min-height: calc(var(--ok-spacing) * 12);
+  }
+
+  :where([data-ok-tab][data-ok-icon-position="start"] > svg) {
+    margin-inline-end: calc(var(--ok-spacing) * 2);
+  }
+
+  :where([data-ok-tab][data-ok-icon-position="end"]) {
+    flex-direction: row-reverse;
+    min-height: calc(var(--ok-spacing) * 12);
+  }
+
+  :where([data-ok-tab][data-ok-icon-position="end"] > svg) {
+    margin-inline-start: calc(var(--ok-spacing) * 2);
+  }
+
+  :where([data-ok-tab]:not([data-ok-wrapped])) {
+    white-space: nowrap;
+  }
+
+  :where([data-ok-tab][data-ok-wrapped]) {
+    max-width: 264px;
+    font-size: var(--ok-font-size-sm);
+    line-height: 1.5;
+  }
+
+  :where([data-ok-tab][aria-selected="true"]) {
+    color: var(--_ok-tabs-selected);
+    font-weight: var(--ok-font-weight-semibold);
+  }
+
+  :where([data-ok-tab]:focus-visible) {
+    outline: 2px solid var(--ok-text-primary);
+    outline-offset: -2px;
+    border-radius: var(--ok-radius-xs);
+  }
+
+  :where([data-ok-tab]:disabled) {
+    cursor: default;
+    opacity: 0.48;
+  }
+
+  /* Indicator: a line under (vertical: beside) the selected tab, placed by the controller. */
+  :where([data-ok-tabs-indicator]) {
+    position: absolute;
+    bottom: 0;
+    left: var(--_ok-tabs-indicator-start, 0);
+    width: var(--_ok-tabs-indicator-size, 0);
+    height: 2px;
+    background-color: var(--_ok-tabs-indicator);
+    pointer-events: none;
+  }
+
+  :where([data-ok-tabs][data-ok-orientation="vertical"] [data-ok-tabs-indicator]) {
+    top: var(--_ok-tabs-indicator-start, 0);
+    right: 0;
+    bottom: auto;
+    left: auto;
+    width: 2px;
+    height: var(--_ok-tabs-indicator-size, 0);
+  }
+
+  :where([data-ok-tabs-indicator][data-ok-ready]) {
+    transition-property: left, top, width, height;
+    transition-duration: var(--ok-duration-standard);
+    transition-timing-function: var(--ok-easing-standard);
+  }
+
+  /* Segmented: a filled bar; the indicator is a raised pill behind the selected tab. */
+  :where([data-ok-tabs][data-ok-segmented]) {
+    --_ok-tabs-gap: 0;
+
+    border-radius: var(--ok-radius-md);
+    background-color: var(--ok-bg-neutral);
+  }
+
+  :where([data-ok-tabs][data-ok-segmented] [data-ok-tabs-list]) {
+    padding: 0 calc(var(--ok-spacing) * 2);
+  }
+
+  :where([data-ok-tabs][data-ok-segmented][data-ok-orientation="vertical"] [data-ok-tabs-list]) {
+    padding: calc(var(--ok-spacing) * 2) 0;
+  }
+
+  :where([data-ok-tabs][data-ok-segmented] [data-ok-tab]) {
+    min-height: calc(var(--ok-spacing) * 13);
+    padding-inline: calc(var(--ok-spacing) * 4);
+  }
+
+  :where([data-ok-tabs][data-ok-segmented] [data-ok-tabs-indicator]) {
+    top: 0;
+    height: auto;
+    background-color: transparent;
+  }
+
+  :where(
+    [data-ok-tabs][data-ok-segmented][data-ok-orientation="vertical"] [data-ok-tabs-indicator]
+  ) {
+    top: var(--_ok-tabs-indicator-start, 0);
+    right: auto;
+    left: 0;
+    width: 100%;
+    height: var(--_ok-tabs-indicator-size, 0);
+  }
+
+  :where([data-ok-tabs][data-ok-segmented] [data-ok-tabs-indicator])::after {
+    content: "";
+    position: absolute;
+    inset: calc(var(--ok-spacing) * 1.5) 0;
+    border-radius: var(--ok-radius-md);
+    background-color: var(--ok-bg-paper);
+    box-shadow: var(--ok-shadow-z1);
+  }
+
+  :where(
+    [data-ok-tabs][data-ok-segmented][data-ok-orientation="vertical"] [data-ok-tabs-indicator]
+  )::after {
+    inset: 0 calc(var(--ok-spacing) * 2);
+  }
+
+  /* Scroll buttons (scrollable): hidden at an edge, and with `auto` when nothing overflows. */
+  :where([data-ok-tabs-scroll-button]) {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: calc(var(--ok-spacing) * 10);
+    color: inherit;
+    cursor: pointer;
+    opacity: 0.8;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  :where([data-ok-tabs-scroll-button] > svg) {
+    width: calc(var(--ok-spacing) * 5);
+    height: calc(var(--ok-spacing) * 5);
+  }
+
+  :where([data-ok-tabs][data-ok-orientation="vertical"] > [data-ok-tabs-scroll-button]) {
+    width: 100%;
+    height: calc(var(--ok-spacing) * 10);
+  }
+
+  :where([data-ok-tabs][data-ok-orientation="vertical"] > [data-ok-tabs-scroll-button] > svg) {
+    rotate: 90deg;
+  }
+
+  :where([data-ok-tabs]:not([data-ok-can-scroll-start]) > [data-ok-tabs-scroll-button="start"]) {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  :where([data-ok-tabs]:not([data-ok-can-scroll-end]) > [data-ok-tabs-scroll-button="end"]) {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  :where(
+    [data-ok-tabs][data-ok-scroll-buttons="auto"]:not(
+        [data-ok-can-scroll-start],
+        [data-ok-can-scroll-end]
+      )
+      > [data-ok-tabs-scroll-button]
+  ) {
+    display: none;
+  }
+
+  :where(
+    [data-ok-tabs][data-ok-scroll-buttons="false"] > [data-ok-tabs-scroll-button],
+    [data-ok-tabs]:not([data-ok-variant="scrollable"]) > [data-ok-tabs-scroll-button]
+  ) {
+    display: none;
+  }
+
+  /* `auto` keeps phones clean: swiping scrolls the tabs below 600px. */
+  @media (max-width: 599.98px) {
+    :where(
+        [data-ok-tabs][data-ok-scroll-buttons="auto"]:not([data-ok-allow-scroll-buttons-mobile])
+          > [data-ok-tabs-scroll-button]
+      ) {
+      display: none;
+    }
+  }
+
+  /* Panel */
+  :where([data-ok-tab-panel]:focus-visible) {
+    outline: 2px solid var(--ok-text-primary);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :where([data-ok-tab], [data-ok-tabs-indicator]) {
+      transition: none;
+    }
+  }
+}

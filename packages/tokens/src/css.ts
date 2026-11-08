@@ -101,7 +101,9 @@ function rootVariables(theme: Theme): CssVariables {
   for (const name of breakpointNames) {
     vars[`--ok-breakpoint-${name}`] = `${theme.breakpoints[name]}px`;
   }
-  for (const [name, value] of Object.entries(theme.zIndex)) vars[`--ok-z-${name}`] = String(value);
+  for (const [name, value] of Object.entries(theme.zIndex)) {
+    vars[`--ok-z-${name.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}`] = String(value);
+  }
   for (const [name, value] of Object.entries(theme.motion.duration)) {
     vars[`--ok-duration-${name}`] = value;
   }

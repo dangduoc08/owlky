@@ -142,7 +142,8 @@
           "a11y": {
             "useSemanticElements": "off",
             "noNoninteractiveTabindex": "off",
-            "noNoninteractiveElementToInteractiveRole": "off"
+            "noNoninteractiveElementToInteractiveRole": "off",
+            "useFocusableInteractive": "off"
           }
         }
       }

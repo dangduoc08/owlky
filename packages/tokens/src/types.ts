@@ -146,7 +146,13 @@ export interface Theme {
   elevation: ShadowLayer[][];
   /** Shadow under filled (contained) components, tinted with their palette color. */
   colorShadow: ShadowLayer;
-  zIndex: { dropdown: number; modal: number; toast: number; tooltip: number };
+  zIndex: {
+    mobileStepper: number;
+    dropdown: number;
+    modal: number;
+    toast: number;
+    tooltip: number;
+  };
   motion: {
     duration: { shortest: string; shorter: string; short: string; standard: string };
     easing: { standard: string; decelerate: string; accelerate: string };

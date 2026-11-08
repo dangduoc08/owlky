@@ -1,0 +1,134 @@
+/*
+ * Transfer list — spec: specs/components/transfer-list.md
+ *
+ * Anatomy:  div[data-ok-transfer-list][data-ok-variant]
+ *             section[data-ok-transfer-list-panel][data-ok-side="left|right"]
+ *               div[data-ok-transfer-list-header]?                       (enhanced)
+ *                 span[data-ok-checkbox] (select all) · span[data-ok-transfer-list-title] · span[data-ok-transfer-list-count]
+ *               section[data-ok-scrollbar][aria-label][tabindex=0] › ul[data-ok-list]
+ *                 li[data-ok-list-item][data-ok-value] › label[data-ok-transfer-list-option] › span[data-ok-checkbox] + text
+ *             div[data-ok-transfer-list-actions] › button[data-ok-button][data-ok-transfer-list-move]
+ * Composition: Scrollbar, List, Checkbox and Button keep their own CSS; this file lays them out.
+ * Mobile first: panels stacked (arrows turned down / up), side by side from 600px.
+ * Single :where() selectors in @layer components (zero specificity).
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-ok-transfer-list]) {
+    display: flex;
+    max-width: 100%;
+    flex-direction: column;
+    align-items: center;
+    gap: calc(var(--ok-spacing) * 4);
+    color: var(--ok-text-primary);
+    font-family: var(--ok-font-family);
+  }
+
+  :where([data-ok-transfer-list-panel]) {
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    width: calc(var(--ok-spacing) * 55);
+    max-width: 100%;
+    overflow: hidden;
+    border-radius: var(--ok-radius-xl);
+    background-color: var(--ok-bg-paper);
+    box-shadow: var(--ok-shadow-card);
+  }
+
+  :where([data-ok-transfer-list-panel] > [data-ok-scrollbar]) {
+    height: calc(var(--ok-spacing) * 50);
+  }
+
+  :where([data-ok-transfer-list-panel] [data-ok-list]) {
+    padding: calc(var(--ok-spacing) * 2) 0;
+  }
+
+  :where([data-ok-transfer-list-option]) {
+    display: flex;
+    align-items: center;
+    gap: var(--ok-spacing);
+    box-sizing: border-box;
+    width: 100%;
+    min-height: calc(var(--ok-spacing) * 11);
+    padding: var(--ok-spacing) calc(var(--ok-spacing) * 2);
+    font-size: var(--ok-typography-subtitle2-font-size);
+    font-weight: var(--ok-typography-subtitle2-font-weight);
+    line-height: var(--ok-typography-subtitle2-line-height);
+    cursor: pointer;
+    overflow-wrap: anywhere;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* The 40px checkbox sits in the 44px row like the reference's 36px one (target stays 40px). */
+  :where([data-ok-transfer-list-option] > [data-ok-checkbox]) {
+    margin-block: calc(var(--ok-spacing) * -0.5);
+  }
+
+  @media (hover: hover) {
+    :where([data-ok-transfer-list-option]:hover) {
+      background-color: var(--ok-action-hover);
+    }
+  }
+
+  /* Enhanced header: select-all, title, count, a divider below. */
+  :where([data-ok-transfer-list-header]) {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    column-gap: var(--ok-spacing);
+    align-items: center;
+    padding: calc(var(--ok-spacing) * 2) calc(var(--ok-spacing) * 2);
+    border-bottom: 1px solid var(--ok-divider);
+  }
+
+  :where([data-ok-transfer-list-header] > [data-ok-checkbox]) {
+    grid-row: span 2;
+  }
+
+  :where([data-ok-transfer-list-title]) {
+    font-size: var(--ok-typography-subtitle2-font-size);
+    font-weight: var(--ok-typography-subtitle2-font-weight);
+    line-height: var(--ok-typography-subtitle2-line-height);
+  }
+
+  :where([data-ok-transfer-list-count]) {
+    color: var(--ok-text-secondary);
+    font-size: var(--ok-typography-caption-font-size);
+    line-height: var(--ok-typography-caption-line-height);
+  }
+
+  /* Move buttons: a row below 600px (arrows turned to the stacked panels), a column above. */
+  :where([data-ok-transfer-list-actions]) {
+    display: flex;
+    flex-direction: row;
+    gap: calc(var(--ok-spacing) * 2);
+  }
+
+  :where([data-ok-transfer-list-actions] [data-ok-button] svg) {
+    width: calc(var(--ok-spacing) * 4);
+    height: calc(var(--ok-spacing) * 4);
+    rotate: 90deg;
+  }
+
+  @media (min-width: 600px) {
+    :where([data-ok-transfer-list]) {
+      flex-direction: row;
+      justify-content: center;
+      gap: calc(var(--ok-spacing) * 6);
+    }
+
+    :where([data-ok-transfer-list-actions]) {
+      flex-direction: column;
+    }
+
+    :where([data-ok-transfer-list-actions] [data-ok-button] svg) {
+      rotate: none;
+    }
+  }
+
+  :where([data-ok-transfer-list][data-ok-disabled] [data-ok-transfer-list-option]) {
+    cursor: default;
+    opacity: 0.48;
+  }
+}

@@ -121,6 +121,12 @@ describe("number options", () => {
     expect(parseNumber(spec, input)).toBeUndefined();
   });
 
+  it("accepts finite exponents (tiny slider steps)", () => {
+    expect(parseNumber(demo.options.now, "-5e-8")).toBe(-5e-8);
+    expect(parseNumber(demo.options.now, "1E3")).toBe(1000);
+    expect(parseNumber(demo.options.now, "1e")).toBeUndefined();
+  });
+
   it("no unit list: plain numbers only, any sign without min", () => {
     expect(parseNumber(demo.options.now, "-5")).toBe(-5);
     expect(parseNumber(demo.options.now, "5px")).toBeUndefined();

@@ -1,4 +1,9 @@
-import { type ColorName, componentColorNames, paletteColorNames } from "@owlky/tokens";
+import {
+  type ColorName,
+  componentColorNames,
+  type PaletteColorName,
+  paletteColorNames,
+} from "@owlky/tokens";
 import {
   behavior,
   type DataAttributes,
@@ -1346,6 +1351,484 @@ export interface ToasterAnatomyOptions {
 export const toasterAttributes = (options: ToasterAnatomyOptions = {}): DataAttributes =>
   optionAttributes(toasterOptions, { ...options });
 
+// --- Tabs ---------------------------------------------------------------------------------------
+
+export const tabsVariants = ["standard", "scrollable", "fullWidth"] as const;
+export const tabsColors = ["inherit", "primary", "secondary"] as const;
+export const tabsScrollButtons = ["auto", "true", "false"] as const;
+export const tabIconPositions = ["top", "bottom", "start", "end"] as const;
+
+export type TabsVariant = (typeof tabsVariants)[number];
+export type TabsColor = (typeof tabsColors)[number];
+export type TabsScrollButtons = (typeof tabsScrollButtons)[number];
+export type TabIconPosition = (typeof tabIconPositions)[number];
+
+export const tabsOptions = defineOptions("tabs", "data-ok-tabs", {
+  variant: style(
+    "data-ok-variant",
+    tabsVariants,
+    "standard",
+    "`scrollable` scrolls the tabs (with scroll buttons); `fullWidth` shares the width.",
+  ),
+  orientation: style(
+    "data-ok-orientation",
+    orientations,
+    "horizontal",
+    "A row of tabs, or a column (also `aria-orientation`).",
+  ),
+  textColor: style(
+    "data-ok-text-color",
+    tabsColors,
+    "inherit",
+    "Text color of the selected tab (`inherit`: the text color).",
+  ),
+  indicatorColor: style(
+    "data-ok-indicator-color",
+    tabsColors,
+    "inherit",
+    "Color of the selection line (`inherit`: the text color).",
+  ),
+  scrollButtons: style(
+    "data-ok-scroll-buttons",
+    tabsScrollButtons,
+    "auto",
+    "Scrollable: `auto` shows them on overflow from 600px; `true` always; `false` never.",
+  ),
+  centered: flag("data-ok-centered", "Center the tabs (standard variant)."),
+  allowScrollButtonsMobile: flag(
+    "data-ok-allow-scroll-buttons-mobile",
+    "Scrollable: show the scroll buttons below 600px too.",
+  ),
+  visibleScrollbar: flag("data-ok-visible-scrollbar", "Scrollable: show the scrollbar."),
+  segmented: flag(
+    "data-ok-segmented",
+    "A filled bar where the selected tab is a raised pill (instead of a line).",
+  ),
+  selectionFollowsFocus: flag(
+    "data-ok-selection-follows-focus",
+    "Arrow keys select the tab they move to (otherwise Enter / Space selects).",
+  ),
+  value: state("aria-selected", "Selected tab (`value` / `defaultValue`).", "change"),
+});
+
+export interface TabsAnatomyOptions {
+  variant?: TabsVariant | undefined;
+  orientation?: Orientation | undefined;
+  textColor?: TabsColor | undefined;
+  indicatorColor?: TabsColor | undefined;
+  scrollButtons?: TabsScrollButtons | undefined;
+  centered?: boolean | undefined;
+  allowScrollButtonsMobile?: boolean | undefined;
+  visibleScrollbar?: boolean | undefined;
+  segmented?: boolean | undefined;
+  selectionFollowsFocus?: boolean | undefined;
+}
+
+/** `data-ok-*` attributes of a tabs root (the tab list carries `role="tablist"`). */
+export const tabsAttributes = (options: TabsAnatomyOptions = {}): DataAttributes =>
+  optionAttributes(tabsOptions, { ...options });
+
+export const tabOptions = defineOptions("tab", "data-ok-tab", {
+  iconPosition: style(
+    "data-ok-icon-position",
+    tabIconPositions,
+    "top",
+    "With an icon and a label: where the icon goes.",
+    { optional: true },
+  ),
+  wrapped: flag("data-ok-wrapped", "Long labels wrap onto two lines."),
+  disabled: native("disabled", "Native `disabled`: can't be selected or focused."),
+});
+
+export interface TabAnatomyOptions {
+  iconPosition?: TabIconPosition | undefined;
+  wrapped?: boolean | undefined;
+}
+
+/** `data-ok-*` attributes of a tab (`role="tab"`, `aria-selected` and `tabindex` by the owner). */
+export const tabAttributes = (options: TabAnatomyOptions = {}): DataAttributes =>
+  optionAttributes(tabOptions, { ...options });
+
+// --- Breadcrumbs --------------------------------------------------------------------------------
+
+export const breadcrumbsOptions = defineOptions("breadcrumbs", "data-ok-breadcrumbs", {
+  maxItems: number("data-ok-max-items", 8, "More items than this collapse into an expand button.", {
+    min: 1,
+  }),
+  itemsBeforeCollapse: number(
+    "data-ok-items-before-collapse",
+    1,
+    "Collapsed: items shown before the expand button.",
+    { min: 0 },
+  ),
+  itemsAfterCollapse: number(
+    "data-ok-items-after-collapse",
+    1,
+    "Collapsed: items shown after the expand button.",
+    { min: 0 },
+  ),
+});
+
+export interface BreadcrumbsAnatomyOptions {
+  maxItems?: number | undefined;
+  itemsBeforeCollapse?: number | undefined;
+  itemsAfterCollapse?: number | undefined;
+}
+
+/** `data-ok-*` attributes of a breadcrumbs `nav`. */
+export const breadcrumbsAttributes = (options: BreadcrumbsAnatomyOptions = {}): DataAttributes =>
+  optionAttributes(breadcrumbsOptions, { ...options });
+
+// --- Stepper ------------------------------------------------------------------------------------
+
+export const stepperVariants = ["standard", "dot", "circle"] as const;
+export const mobileStepperVariants = ["text", "dots", "progress"] as const;
+export const mobileStepperPositions = ["bottom", "top", "static"] as const;
+
+export type StepperVariant = (typeof stepperVariants)[number];
+export type MobileStepperVariant = (typeof mobileStepperVariants)[number];
+export type MobileStepperPosition = (typeof mobileStepperPositions)[number];
+
+export const stepperOptions = defineOptions("stepper", "data-ok-stepper", {
+  orientation: style("data-ok-orientation", orientations, "horizontal", "Row or column of steps."),
+  alternativeLabel: flag(
+    "data-ok-alternative-label",
+    "Horizontal: labels below the icons, steps share the width.",
+  ),
+  variant: style(
+    "data-ok-variant",
+    stepperVariants,
+    "standard",
+    "`standard` numbered icons; `dot` small dots; `circle` large icon circles. Thicker lines with `dot` / `circle`.",
+  ),
+  activeStep: number(
+    "data-ok-active-step",
+    0,
+    "Index of the current step; earlier steps are completed.",
+    { min: 0 },
+  ),
+});
+
+export interface StepperAnatomyOptions {
+  orientation?: Orientation | undefined;
+  alternativeLabel?: boolean | undefined;
+  variant?: StepperVariant | undefined;
+  activeStep?: number | undefined;
+}
+
+/** `data-ok-*` attributes of a stepper (`ol`). */
+export const stepperAttributes = (options: StepperAnatomyOptions = {}): DataAttributes =>
+  optionAttributes(stepperOptions, { ...options });
+
+export const stepOptions = defineOptions("step", "data-ok-step", {
+  active: flag("data-ok-active", 'The current step (`aria-current="step"` on its label).'),
+  completed: flag("data-ok-completed", "Done: the icon shows a check."),
+  disabled: flag("data-ok-disabled", "Not reached yet (dimmed)."),
+});
+
+export interface StepAnatomyOptions {
+  active?: boolean | undefined;
+  completed?: boolean | undefined;
+  disabled?: boolean | undefined;
+}
+
+/** `data-ok-*` attributes of a step (`li`); written by the stepper (React) or the runtime (HTML). */
+export const stepAttributes = (options: StepAnatomyOptions = {}): DataAttributes =>
+  optionAttributes(stepOptions, { ...options });
+
+export const stepLabelOptions = defineOptions("step-label", "data-ok-step-label", {
+  error: flag("data-ok-error", "The step failed: error color and icon."),
+});
+
+/** `data-ok-*` attributes of a step label. */
+export const stepLabelAttributes = (
+  options: { error?: boolean | undefined } = {},
+): DataAttributes => optionAttributes(stepLabelOptions, { ...options });
+
+export const mobileStepperOptions = defineOptions("mobile-stepper", "data-ok-mobile-stepper", {
+  variant: style(
+    "data-ok-variant",
+    mobileStepperVariants,
+    "dots",
+    "How progress shows: `text` (2 / 3), `dots`, or a `progress` bar.",
+  ),
+  position: style(
+    "data-ok-position",
+    mobileStepperPositions,
+    "bottom",
+    "`bottom` / `top`: fixed to the viewport edge; `static`: in the flow.",
+  ),
+  steps: number("data-ok-steps", undefined, "Number of steps.", { min: 1 }),
+  activeStep: number("data-ok-active-step", 0, "Index of the current step.", { min: 0 }),
+});
+
+export interface MobileStepperAnatomyOptions {
+  variant?: MobileStepperVariant | undefined;
+  position?: MobileStepperPosition | undefined;
+  steps?: number | undefined;
+  activeStep?: number | undefined;
+}
+
+/** `data-ok-*` attributes of a mobile stepper. */
+export const mobileStepperAttributes = (
+  options: MobileStepperAnatomyOptions = {},
+): DataAttributes => optionAttributes(mobileStepperOptions, { ...options });
+
+// --- Timeline -----------------------------------------------------------------------------------
+
+export const timelinePositions = ["right", "left", "alternate", "alternate-reverse"] as const;
+export const timelineDotVariants = ["filled", "outlined"] as const;
+export const timelineDotColors = ["grey", "inherit", ...paletteColorNames] as const;
+
+export type TimelinePosition = (typeof timelinePositions)[number];
+export type TimelineDotVariant = (typeof timelineDotVariants)[number];
+export type TimelineDotColor = (typeof timelineDotColors)[number];
+
+export const timelineOptions = defineOptions("timeline", "data-ok-timeline", {
+  position: style(
+    "data-ok-position",
+    timelinePositions,
+    "right",
+    "Side of the content: `right`, `left`, or alternating from item to item.",
+  ),
+});
+
+export interface TimelineAnatomyOptions {
+  position?: TimelinePosition | undefined;
+}
+
+/** `data-ok-*` attributes of a timeline (`ul`). */
+export const timelineAttributes = (options: TimelineAnatomyOptions = {}): DataAttributes =>
+  optionAttributes(timelineOptions, { ...options });
+
+export const timelineItemOptions = defineOptions("timeline-item", "data-ok-timeline-item", {
+  position: style(
+    "data-ok-position",
+    ["right", "left"] as const,
+    "right",
+    "Overrides the timeline's side for this item.",
+    { optional: true },
+  ),
+});
+
+/** `data-ok-*` attributes of a timeline item (`li`). */
+export const timelineItemAttributes = (
+  options: { position?: "right" | "left" | undefined } = {},
+): DataAttributes => optionAttributes(timelineItemOptions, { ...options });
+
+export const timelineDotOptions = defineOptions("timeline-dot", "data-ok-timeline-dot", {
+  variant: style("data-ok-variant", timelineDotVariants, "filled", "A filled dot, or a ring."),
+  color: style(
+    "data-ok-color",
+    timelineDotColors,
+    "grey",
+    "`grey` (default), `inherit` (text color) or a palette color.",
+  ),
+});
+
+export interface TimelineDotAnatomyOptions {
+  variant?: TimelineDotVariant | undefined;
+  color?: TimelineDotColor | undefined;
+}
+
+/** `data-ok-*` attributes of a timeline dot. */
+export const timelineDotAttributes = (options: TimelineDotAnatomyOptions = {}): DataAttributes =>
+  optionAttributes(timelineDotOptions, { ...options });
+
+// --- Rating -------------------------------------------------------------------------------------
+
+export const ratingSizes = ["xxSmall", "xSmall", "small", "medium", "large"] as const;
+export type RatingSize = (typeof ratingSizes)[number];
+
+export const ratingOptions = defineOptions("rating", "data-ok-rating", {
+  size: style("data-ok-size", ratingSizes, "medium", "Icon size: 12 / 16 / 20 / 24 / 28px."),
+  color: style("data-ok-color", paletteColorNames, "warning", "Color of the filled icons."),
+  highlightSelectedOnly: flag(
+    "data-ok-highlight-selected-only",
+    "Only the selected icon is filled (icons that differ per value).",
+  ),
+  readOnly: flag("data-ok-read-only", 'Shows the value without inputs (`role="img"`).'),
+  disabled: flag("data-ok-disabled", "Can't be changed (inputs disabled, dimmed)."),
+  value: state("checked", "Selected value (`value` / `defaultValue`).", "change"),
+});
+
+export interface RatingAnatomyOptions {
+  size?: RatingSize | undefined;
+  color?: PaletteColorName | undefined;
+  highlightSelectedOnly?: boolean | undefined;
+  readOnly?: boolean | undefined;
+  disabled?: boolean | undefined;
+}
+
+/** `data-ok-*` attributes of a rating. */
+export const ratingAttributes = (options: RatingAnatomyOptions = {}): DataAttributes =>
+  optionAttributes(ratingOptions, { ...options });
+
+// --- Slider -------------------------------------------------------------------------------------
+
+export const sliderColors = ["inherit", ...paletteColorNames] as const;
+export const sliderSizes = ["medium", "small"] as const;
+export const sliderTracks = ["normal", "inverted", "false"] as const;
+export const sliderValueLabelDisplays = ["off", "auto", "on"] as const;
+
+export type SliderColor = (typeof sliderColors)[number];
+export type SliderSize = (typeof sliderSizes)[number];
+export type SliderTrack = (typeof sliderTracks)[number];
+export type SliderValueLabelDisplay = (typeof sliderValueLabelDisplays)[number];
+
+export const sliderOptions = defineOptions("slider", "data-ok-slider", {
+  color: style("data-ok-color", sliderColors, "primary", "Palette color, or `inherit` (text)."),
+  size: style("data-ok-size", sliderSizes, "medium", "Rail 10 / 6px, thumb 20 / 16px."),
+  orientation: style(
+    "data-ok-orientation",
+    orientations,
+    "horizontal",
+    "A horizontal or a vertical slider (vertical fills its container's height).",
+  ),
+  track: style(
+    "data-ok-track",
+    sliderTracks,
+    "normal",
+    "`normal` fills up to the value, `inverted` from the value, `false` draws no track.",
+  ),
+  valueLabelDisplay: style(
+    "data-ok-value-label-display",
+    sliderValueLabelDisplays,
+    "off",
+    "Value bubble above the thumb: never, on hover / focus / drag (`auto`), or always.",
+  ),
+  disabled: flag("data-ok-disabled", "Can't be changed (inputs disabled, grey)."),
+  disableSwap: flag("data-ok-disable-swap", "Range: thumbs can't cross each other."),
+  min: number("data-ok-min", 0, "Lowest value."),
+  max: number("data-ok-max", 100, "Highest value."),
+  step: number("data-ok-step", 1, "Step between values (HTML `marks`: only the marks).", {
+    min: 0,
+  }),
+  value: state("value", "Value of each thumb (`value` / `defaultValue`).", "change"),
+});
+
+export interface SliderAnatomyOptions {
+  color?: SliderColor | undefined;
+  size?: SliderSize | undefined;
+  orientation?: Orientation | undefined;
+  track?: SliderTrack | undefined;
+  valueLabelDisplay?: SliderValueLabelDisplay | undefined;
+  disabled?: boolean | undefined;
+  disableSwap?: boolean | undefined;
+  min?: number | undefined;
+  max?: number | undefined;
+  step?: number | undefined;
+}
+
+/** `data-ok-*` attributes of a slider root. */
+export const sliderAttributes = (options: SliderAnatomyOptions = {}): DataAttributes =>
+  optionAttributes(sliderOptions, { ...options });
+
+// --- Transfer list ------------------------------------------------------------------------------
+
+export const transferListVariants = ["simple", "enhanced"] as const;
+export type TransferListVariant = (typeof transferListVariants)[number];
+
+export const transferListOptions = defineOptions("transfer-list", "data-ok-transfer-list", {
+  variant: style(
+    "data-ok-variant",
+    transferListVariants,
+    "simple",
+    "`simple`: four move buttons; `enhanced`: titled lists with select-all and counts.",
+  ),
+  disabled: flag("data-ok-disabled", "Nothing can be selected or moved."),
+  value: state("checked", "Items on each side (`left` / `right`).", "change"),
+});
+
+export interface TransferListAnatomyOptions {
+  variant?: TransferListVariant | undefined;
+  disabled?: boolean | undefined;
+}
+
+/** `data-ok-*` attributes of a transfer list. */
+export const transferListAttributes = (options: TransferListAnatomyOptions = {}): DataAttributes =>
+  optionAttributes(transferListOptions, { ...options });
+
+// --- Tree view ----------------------------------------------------------------------------------
+
+export const treeViewVariants = ["standard", "lines"] as const;
+export const treeViewExpansionTriggers = ["content", "iconContainer"] as const;
+export type TreeViewVariant = (typeof treeViewVariants)[number];
+export type TreeViewExpansionTrigger = (typeof treeViewExpansionTriggers)[number];
+
+export const treeViewOptions = defineOptions("tree-view", "data-ok-tree-view", {
+  variant: style(
+    "data-ok-variant",
+    treeViewVariants,
+    "standard",
+    "`lines` draws dashed guides beside children and round expand icons.",
+  ),
+  expansionTrigger: style(
+    "data-ok-expansion-trigger",
+    treeViewExpansionTriggers,
+    "content",
+    "What expands an item on click: the whole row, or only its icon.",
+  ),
+  multiSelect: flag(
+    "data-ok-multi-select",
+    "Several items can be selected (`aria-multiselectable`).",
+  ),
+  checkboxSelection: flag(
+    "data-ok-checkbox-selection",
+    "Each item shows a checkbox for its selection.",
+  ),
+  disableSelection: flag("data-ok-disable-selection", "Items can't be selected (only expanded)."),
+  expanded: state("aria-expanded", "Expanded items (`expandedItems`).", "expand"),
+  selected: state("aria-selected", "Selected items (`selectedItems`).", "select"),
+});
+
+export interface TreeViewAnatomyOptions {
+  variant?: TreeViewVariant | undefined;
+  expansionTrigger?: TreeViewExpansionTrigger | undefined;
+  multiSelect?: boolean | undefined;
+  checkboxSelection?: boolean | undefined;
+  disableSelection?: boolean | undefined;
+}
+
+/** `data-ok-*` attributes of a tree view (`ul[role=tree]`). */
+export const treeViewAttributes = (options: TreeViewAnatomyOptions = {}): DataAttributes =>
+  optionAttributes(treeViewOptions, { ...options });
+
+// --- Autocomplete -------------------------------------------------------------------------------
+
+export const autocompleteOptions = defineOptions("autocomplete", "data-ok-autocomplete", {
+  multiple: flag("data-ok-multiple", "Several values, shown as chips in the field."),
+  freeSolo: flag("data-ok-free-solo", "Any text is a value (Enter commits it)."),
+  disableCloseOnSelect: flag(
+    "data-ok-disable-close-on-select",
+    "The list stays open after a pick (multiple select with checkboxes).",
+  ),
+  disableClearable: flag("data-ok-disable-clearable", "No clear button."),
+  openOnFocus: flag("data-ok-open-on-focus", "The list opens when the field gets focus."),
+  autoHighlight: flag("data-ok-auto-highlight", "The first option is highlighted while typing."),
+  limitTags: number(
+    "data-ok-limit-tags",
+    undefined,
+    'Multiple: chips shown when the field isn\'t focused (the rest as "+3").',
+    { min: 0 },
+  ),
+  value: state("aria-selected", "Chosen option(s) (`value` / `defaultValue`).", "change"),
+});
+
+export interface AutocompleteAnatomyOptions {
+  multiple?: boolean | undefined;
+  freeSolo?: boolean | undefined;
+  disableCloseOnSelect?: boolean | undefined;
+  disableClearable?: boolean | undefined;
+  openOnFocus?: boolean | undefined;
+  autoHighlight?: boolean | undefined;
+  limitTags?: number | undefined;
+}
+
+/** `data-ok-*` attributes of an autocomplete root. */
+export const autocompleteAttributes = (options: AutocompleteAnatomyOptions = {}): DataAttributes =>
+  optionAttributes(autocompleteOptions, { ...options });
+
 /** Every component's option schema, for tooling (Storybook Controls, parity tests, docs). */
 export const optionSchemas = {
   accordion: accordionOptions,
@@ -1388,4 +1871,19 @@ export const optionSchemas = {
   backdrop: backdropOptions,
   toaster: toasterOptions,
   "table-sort-label": tableSortLabelOptions,
+  tabs: tabsOptions,
+  tab: tabOptions,
+  breadcrumbs: breadcrumbsOptions,
+  stepper: stepperOptions,
+  step: stepOptions,
+  "step-label": stepLabelOptions,
+  "mobile-stepper": mobileStepperOptions,
+  timeline: timelineOptions,
+  "timeline-item": timelineItemOptions,
+  "timeline-dot": timelineDotOptions,
+  rating: ratingOptions,
+  slider: sliderOptions,
+  "transfer-list": transferListOptions,
+  "tree-view": treeViewOptions,
+  autocomplete: autocompleteOptions,
 } as const;

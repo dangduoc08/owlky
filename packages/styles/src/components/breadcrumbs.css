@@ -1,0 +1,136 @@
+/*
+ * Breadcrumbs — spec: specs/components/breadcrumbs.md
+ *
+ * Anatomy:  nav[data-ok-breadcrumbs][aria-label]
+ *             ol[data-ok-breadcrumbs-list]
+ *               li[data-ok-breadcrumbs-item] › a | span[aria-current="page"]   (svg? text)
+ *               li[data-ok-breadcrumbs-separator][aria-hidden="true"] › "/" | span[data-ok-breadcrumbs-dot]
+ *               li[data-ok-breadcrumbs-item][data-ok-breadcrumbs-collapsed]
+ *                 › button[data-ok-breadcrumbs-expand][aria-label] › svg      (collapsed)
+ * Options:  data-ok-max-items, data-ok-items-before-collapse, data-ok-items-after-collapse
+ *           (read by the runtime; collapsed items are `hidden`).
+ * States:   a:hover (hover-capable devices), :focus-visible, [aria-current="page"]
+ *
+ * Single :where() selectors in @layer components (zero specificity).
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-ok-breadcrumbs]) {
+    color: var(--ok-text-secondary);
+    font-family: var(--ok-font-family);
+    font-size: var(--ok-typography-body2-font-size);
+    line-height: var(--ok-typography-body2-line-height);
+  }
+
+  :where([data-ok-breadcrumbs-list]) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--ok-spacing) calc(var(--ok-spacing) * 4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  :where([data-ok-breadcrumbs-item]) {
+    display: flex;
+    min-width: 0;
+  }
+
+  :where([data-ok-breadcrumbs-item] > a, [data-ok-breadcrumbs-item] > span) {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--ok-spacing);
+    min-width: 0;
+    /* 24px tall targets (WCAG 2.5.8), also when the trail wraps. */
+    min-height: calc(var(--ok-spacing) * 6);
+    color: inherit;
+    text-decoration: none;
+    overflow-wrap: anywhere;
+  }
+
+  :where([data-ok-breadcrumbs-item] > a) {
+    border-radius: var(--ok-radius-xs);
+  }
+
+  :where([data-ok-breadcrumbs-item] svg) {
+    flex-shrink: 0;
+    width: calc(var(--ok-spacing) * 5);
+    height: calc(var(--ok-spacing) * 5);
+  }
+
+  :where([data-ok-breadcrumbs-item] > [aria-current="page"]) {
+    color: var(--ok-text-primary);
+  }
+
+  @media (hover: hover) {
+    :where([data-ok-breadcrumbs-item] > a:hover) {
+      text-decoration: underline;
+    }
+  }
+
+  :where([data-ok-breadcrumbs-item] > a:focus-visible) {
+    outline: 2px solid var(--ok-text-primary);
+    outline-offset: 2px;
+  }
+
+  :where([data-ok-breadcrumbs-separator]) {
+    display: flex;
+    align-items: center;
+    user-select: none;
+  }
+
+  /* Collapsed items: author `display` would beat the UA `[hidden]` rule. */
+  :where([data-ok-breadcrumbs-item][hidden], [data-ok-breadcrumbs-separator][hidden]) {
+    display: none;
+  }
+
+  :where([data-ok-breadcrumbs-dot]) {
+    width: var(--ok-spacing);
+    height: var(--ok-spacing);
+    border-radius: var(--ok-radius-full);
+    background-color: var(--ok-palette-grey-500);
+  }
+
+  /* The expand button of a collapsed trail */
+  :where([data-ok-breadcrumbs-expand]) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    min-width: calc(var(--ok-spacing) * 8);
+    height: calc(var(--ok-spacing) * 6);
+    margin: 0;
+    padding: 0 var(--ok-spacing);
+    border: 0;
+    border-radius: var(--ok-radius-xs);
+    background-color: var(--ok-action-hover);
+    color: var(--ok-text-primary);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color var(--ok-duration-shorter) var(--ok-easing-standard);
+  }
+
+  :where([data-ok-breadcrumbs-expand] > svg) {
+    width: calc(var(--ok-spacing) * 5);
+    height: calc(var(--ok-spacing) * 5);
+  }
+
+  @media (hover: hover) {
+    :where([data-ok-breadcrumbs-expand]:hover) {
+      background-color: var(--ok-action-selected);
+    }
+  }
+
+  :where([data-ok-breadcrumbs-expand]:focus-visible) {
+    outline: 2px solid var(--ok-text-primary);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :where([data-ok-breadcrumbs-expand]) {
+      transition: none;
+    }
+  }
+}

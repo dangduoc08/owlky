@@ -1,0 +1,250 @@
+/*
+ * Tree view — spec: specs/components/tree-view.md
+ *
+ * Anatomy:  ul[data-ok-tree-view][role="tree"][data-ok-variant][data-ok-expansion-trigger]
+ *             li[role="treeitem"][data-ok-tree-item][data-ok-item-id][aria-expanded]?[aria-selected]?[aria-disabled]?
+ *               div[data-ok-tree-item-content]
+ *                 span[data-ok-tree-item-icon] › svg (expand / collapse / end icon)
+ *                 span[data-ok-tree-item-checkbox]? › span[data-ok-checkbox]   (checkbox selection)
+ *                 span[data-ok-tree-item-label]
+ *               ul[role="group"][data-ok-tree-item-group][hidden]?
+ * Indentation: 12px per level on the row (rows stay full width), up to 8 levels.
+ * Single :where() selectors in @layer components (zero specificity).
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-ok-tree-view], [data-ok-tree-item-group]) {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  :where([data-ok-tree-view]) {
+    --_ok-tree-indent: calc(var(--ok-spacing) * 3);
+
+    color: var(--ok-text-primary);
+    font-family: var(--ok-font-family);
+  }
+
+  :where([data-ok-tree-item]) {
+    outline: none;
+  }
+
+  :where([data-ok-tree-item-group][hidden]) {
+    display: none;
+  }
+
+  :where([data-ok-tree-item-content]) {
+    --_ok-tree-depth: 0;
+
+    display: flex;
+    align-items: center;
+    gap: calc(var(--ok-spacing) * 2);
+    box-sizing: border-box;
+    min-height: calc(var(--ok-spacing) * 7.5);
+    padding: var(--ok-spacing) calc(var(--ok-spacing) * 2);
+    padding-inline-start: calc(
+      var(--ok-spacing) *
+      2 +
+      var(--_ok-tree-indent) *
+      var(--_ok-tree-depth)
+    );
+    border-radius: var(--ok-radius-md);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Depth: each group level adds one indent (rows keep the full width for their highlight). */
+  :where([data-ok-tree-item-group] [data-ok-tree-item-content]) {
+    --_ok-tree-depth: 1;
+  }
+
+  :where([data-ok-tree-item-group] [data-ok-tree-item-group] [data-ok-tree-item-content]) {
+    --_ok-tree-depth: 2;
+  }
+
+  :where(
+    [data-ok-tree-item-group]
+      [data-ok-tree-item-group]
+      [data-ok-tree-item-group]
+      [data-ok-tree-item-content]
+  ) {
+    --_ok-tree-depth: 3;
+  }
+
+  :where(
+    [data-ok-tree-item-group]
+      [data-ok-tree-item-group]
+      [data-ok-tree-item-group]
+      [data-ok-tree-item-group]
+      [data-ok-tree-item-content]
+  ) {
+    --_ok-tree-depth: 4;
+  }
+
+  :where(
+    [data-ok-tree-item-group]
+      [data-ok-tree-item-group]
+      [data-ok-tree-item-group]
+      [data-ok-tree-item-group]
+      [data-ok-tree-item-group]
+      [data-ok-tree-item-content]
+  ) {
+    --_ok-tree-depth: 5;
+  }
+
+  :where(
+    [data-ok-tree-item-group]
+      [data-ok-tree-item-group]
+      [data-ok-tree-item-group]
+      [data-ok-tree-item-group]
+      [data-ok-tree-item-group]
+      [data-ok-tree-item-group]
+      [data-ok-tree-item-content]
+  ) {
+    --_ok-tree-depth: 6;
+  }
+
+  :where([data-ok-tree-item-icon]) {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: calc(var(--ok-spacing) * 4.5);
+    height: calc(var(--ok-spacing) * 4.5);
+  }
+
+  :where([data-ok-tree-item-icon] svg) {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  :where(
+    [data-ok-tree-item-icon] > [data-ok-tree-expand-icon],
+    [data-ok-tree-item-icon] > [data-ok-tree-collapse-icon]
+  ) {
+    width: 100%;
+    height: 100%;
+  }
+
+  /* The default chevron turns when the item opens. */
+  :where([data-ok-tree-item-icon] > [data-ok-tree-chevron]) {
+    transition: rotate var(--ok-duration-shortest) var(--ok-easing-standard);
+  }
+
+  :where(
+    [data-ok-tree-item][aria-expanded="true"] > [data-ok-tree-item-content] [data-ok-tree-chevron]
+  ) {
+    rotate: 90deg;
+  }
+
+  /* Custom icons: the expand / collapse pair shows one at a time. */
+  :where([data-ok-tree-item-icon] > [data-ok-tree-collapse-icon]) {
+    display: none;
+  }
+
+  :where(
+    [data-ok-tree-item][aria-expanded="true"]
+      > [data-ok-tree-item-content]
+      [data-ok-tree-collapse-icon]
+  ) {
+    display: block;
+  }
+
+  :where(
+    [data-ok-tree-item][aria-expanded="true"]
+      > [data-ok-tree-item-content]
+      [data-ok-tree-expand-icon]
+  ) {
+    display: none;
+  }
+
+  :where([data-ok-tree-item-checkbox]) {
+    display: flex;
+    flex-shrink: 0;
+  }
+
+  :where([data-ok-tree-item-label]) {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: var(--ok-typography-body2-font-size);
+    line-height: var(--ok-typography-body2-line-height);
+    overflow-wrap: anywhere;
+  }
+
+  /* States */
+  @media (hover: hover) {
+    :where([data-ok-tree-item-content]:hover) {
+      background-color: var(--ok-action-hover);
+    }
+  }
+
+  :where([data-ok-tree-item]:focus-visible > [data-ok-tree-item-content]) {
+    outline: 2px solid var(--ok-text-primary);
+    outline-offset: -2px;
+    background-color: var(--ok-action-focus);
+  }
+
+  :where([data-ok-tree-item][aria-selected="true"] > [data-ok-tree-item-content]) {
+    background-color: rgb(var(--ok-palette-primary-main-channel) / 0.08);
+  }
+
+  :where(
+    [data-ok-tree-view][data-ok-checkbox-selection]
+      [data-ok-tree-item][aria-selected="true"]
+      > [data-ok-tree-item-content]
+  ) {
+    background-color: transparent;
+  }
+
+  :where([data-ok-tree-item][aria-disabled="true"] > [data-ok-tree-item-content]) {
+    cursor: default;
+    opacity: 0.48;
+  }
+
+  /* Lines: dashed guides beside each group, round tinted expand icons, compact rows. */
+  :where([data-ok-tree-view][data-ok-variant="lines"] [data-ok-tree-item-group]) {
+    margin-inline-start: calc(var(--ok-spacing) * 4.25);
+    padding-inline-start: calc(var(--ok-spacing) * 2);
+    border-inline-start: 1px dashed rgb(var(--ok-palette-grey-500-channel) / 0.4);
+  }
+
+  :where([data-ok-tree-view][data-ok-variant="lines"] [data-ok-tree-item-content]) {
+    --_ok-tree-depth: 0;
+
+    margin: 1px 0;
+    border-radius: var(--ok-radius-xs);
+  }
+
+  :where([data-ok-tree-view][data-ok-variant="lines"] [data-ok-tree-item-label]) {
+    font-size: var(--ok-font-size-sm);
+    font-weight: var(--ok-font-weight-medium);
+  }
+
+  :where(
+    [data-ok-tree-view][data-ok-variant="lines"]
+      [aria-expanded]
+      > [data-ok-tree-item-content]
+      > [data-ok-tree-item-icon]
+  ) {
+    border-radius: var(--ok-radius-full);
+    background-color: rgb(var(--ok-palette-primary-main-channel) / 0.25);
+    color: var(--ok-palette-primary-text);
+  }
+
+  :where(
+    [data-ok-tree-view][data-ok-variant="lines"]
+      [data-ok-tree-item][aria-selected="true"]
+      > [data-ok-tree-item-content]
+  ) {
+    background-color: rgb(var(--ok-palette-primary-main-channel) / 0.2);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :where([data-ok-tree-item-icon] > [data-ok-tree-chevron]) {
+      transition: none;
+    }
+  }
+}

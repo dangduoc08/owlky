@@ -45,6 +45,21 @@ const SPECS = {
   dialog: "dialog.md",
   backdrop: "backdrop.md",
   toaster: "snackbar.md",
+  tabs: "tabs.md",
+  tab: "tabs.md",
+  breadcrumbs: "breadcrumbs.md",
+  stepper: "stepper.md",
+  step: "stepper.md",
+  "step-label": "stepper.md",
+  "mobile-stepper": "stepper.md",
+  timeline: "timeline.md",
+  "timeline-item": "timeline.md",
+  "timeline-dot": "timeline.md",
+  rating: "rating.md",
+  slider: "slider.md",
+  "transfer-list": "transfer-list.md",
+  "tree-view": "tree-view.md",
+  autocomplete: "autocomplete.md",
 };
 
 const code = (value) => `\`${value}\``;

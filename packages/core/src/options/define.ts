@@ -154,12 +154,13 @@ export const defineOptions = /* @__NO_SIDE_EFFECTS__ */ <
 export const pick = <T extends string>(values: readonly T[], value: unknown, fallback: T): T =>
   values.includes(value as T) ? (value as T) : fallback;
 
-const NUMBER = /^[-+]?(?:\d+\.?\d*|\.\d+)$/;
+/** A decimal number, with an optional exponent (`5e-8`: the String() of tiny steps). */
+const NUMBER = /^[-+]?(?:\d+\.?\d*|\.\d+)(?:e[-+]?\d+)?$/i;
 
 /**
  * A valid value of a `number` option, or `undefined`: a finite number (or numeric string) at
- * least `min`, or — with `units` — a non-negative length such as `"3rem"` (returned as written).
- * Anything else (NaN, `"1e999"`, `"calc(…)"`, markup) is invalid.
+ * least `min` (exponents allowed: `"5e-8"`), or — with `units` — a non-negative length such as
+ * `"3rem"` (returned as written). Anything else (NaN, `"1e999"`, `"calc(…)"`, markup) is invalid.
  */
 export function parseNumber(spec: NumberOption, value: unknown): number | string | undefined {
   let parsed: number;

@@ -1,0 +1,183 @@
+/*
+ * Autocomplete — spec: specs/components/autocomplete.md
+ *
+ * Anatomy:  div[data-ok-autocomplete][data-ok-open]?[data-ok-multiple]?…
+ *             div[data-ok-text-field] (TextField)
+ *               div[data-ok-text-field-control]
+ *                 span[data-ok-text-field-adornment="start"]? › span[data-ok-chip]… · span[data-ok-autocomplete-more]?
+ *                 input[data-ok-text-field-input][role="combobox"][aria-expanded][aria-controls][aria-activedescendant]?
+ *                 span[data-ok-text-field-adornment="end"] › button[data-ok-autocomplete-clear]? · button[data-ok-autocomplete-toggle]
+ *             template[data-ok-autocomplete-tag]?                     (HTML: the chip of a new value)
+ *             div[data-ok-popover][data-ok-autocomplete-paper]       (Popover) › ul[role="listbox"]
+ *               li[role="option"][data-ok-value][aria-selected][aria-disabled]?[data-ok-focused]?
+ *               div[data-ok-autocomplete-no-options]
+ * Composition: TextField, Chip, IconButton and Popover keep their CSS; this file adapts them
+ * (wrapping chips, small end buttons, the listbox paper's width) and draws the options.
+ * Single :where() selectors in @layer components (zero specificity).
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-ok-autocomplete]) {
+    display: block;
+    min-width: 0;
+    font-family: var(--ok-font-family);
+  }
+
+  /* Chips wrap with the input inside the field. */
+  :where([data-ok-autocomplete] [data-ok-text-field-control]) {
+    flex-wrap: wrap;
+    row-gap: var(--ok-spacing);
+  }
+
+  :where([data-ok-autocomplete] [data-ok-text-field-adornment="start"]) {
+    display: contents;
+  }
+
+  :where([data-ok-autocomplete] [data-ok-text-field-adornment="start"] > [data-ok-chip]) {
+    max-width: calc(100% - var(--ok-spacing) * 2);
+    margin: calc(var(--ok-spacing) * 0.75);
+  }
+
+  :where([data-ok-autocomplete] [data-ok-text-field-input]) {
+    flex: 1 1 calc(var(--ok-spacing) * 8);
+    min-width: calc(var(--ok-spacing) * 8);
+  }
+
+  :where([data-ok-autocomplete-more]) {
+    align-self: center;
+    margin: 0 var(--ok-spacing);
+    color: var(--ok-text-secondary);
+    font-size: var(--ok-typography-body2-font-size);
+  }
+
+  /* End buttons: compact icon buttons; the clear one shows on hover or focus, with a value. */
+  /* End buttons stay on the first line at the right, whatever the chips wrap to. */
+  :where([data-ok-autocomplete] [data-ok-text-field-control]) {
+    position: relative;
+    padding-inline-end: calc(var(--ok-spacing) * 16);
+  }
+
+  :where([data-ok-autocomplete][data-ok-free-solo] [data-ok-text-field-control]) {
+    padding-inline-end: calc(var(--ok-spacing) * 9);
+  }
+
+  :where([data-ok-autocomplete] [data-ok-text-field-adornment="end"]) {
+    position: absolute;
+    top: 50%;
+    right: calc(var(--ok-spacing) * 2);
+    gap: 0;
+    margin: 0;
+    translate: 0 -50%;
+  }
+
+  /* Multiple: centered on the first line (fields are 56px, small ones 40px). */
+  :where([data-ok-autocomplete][data-ok-multiple] [data-ok-text-field-adornment="end"]) {
+    top: calc(var(--ok-spacing) * 7);
+  }
+
+  :where(
+    [data-ok-autocomplete][data-ok-multiple]
+      [data-ok-text-field][data-ok-size="small"]
+      [data-ok-text-field-adornment="end"]
+  ) {
+    top: calc(var(--ok-spacing) * 5);
+  }
+
+  :where([data-ok-autocomplete-clear], [data-ok-autocomplete-toggle]) {
+    width: calc(var(--ok-spacing) * 7);
+    height: calc(var(--ok-spacing) * 7);
+    padding: var(--ok-spacing);
+  }
+
+  :where([data-ok-autocomplete-clear] svg) {
+    width: calc(var(--ok-spacing) * 4.5);
+    height: calc(var(--ok-spacing) * 4.5);
+  }
+
+  :where([data-ok-autocomplete]:not(:hover, :focus-within) [data-ok-autocomplete-clear]) {
+    visibility: hidden;
+  }
+
+  :where([data-ok-autocomplete-toggle] svg) {
+    transition: rotate var(--ok-duration-shortest) var(--ok-easing-standard);
+  }
+
+  :where([data-ok-autocomplete][data-ok-open] [data-ok-autocomplete-toggle] svg) {
+    rotate: 180deg;
+  }
+
+  /* Listbox paper: as wide as the field (--_ok-autocomplete-width, CSSOM). */
+  :where([data-ok-autocomplete-paper]) {
+    box-sizing: border-box;
+    width: var(--_ok-autocomplete-width, auto);
+    min-width: calc(var(--ok-spacing) * 40);
+  }
+
+  :where([data-ok-autocomplete-paper] > [role="listbox"]) {
+    max-height: calc(var(--ok-spacing) * 90);
+    margin: 0;
+    padding: 0;
+    overflow: auto;
+    list-style: none;
+  }
+
+  :where([data-ok-autocomplete-paper] [role="option"]) {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--ok-spacing) * 2);
+    box-sizing: border-box;
+    min-height: calc(var(--ok-spacing) * 8.5);
+    margin-bottom: var(--ok-spacing);
+    padding: calc(var(--ok-spacing) * 1.5) calc(var(--ok-spacing) * 2);
+    border-radius: var(--ok-radius-sm);
+    color: var(--ok-text-primary);
+    font-size: var(--ok-typography-body2-font-size);
+    line-height: var(--ok-typography-body2-line-height);
+    cursor: pointer;
+    overflow-wrap: anywhere;
+  }
+
+  :where([data-ok-autocomplete-paper] [role="option"]:last-of-type) {
+    margin-bottom: 0;
+  }
+
+  :where([data-ok-autocomplete-paper] [role="option"][hidden]) {
+    display: none;
+  }
+
+  :where([data-ok-autocomplete-paper] [role="option"][aria-selected="true"]) {
+    background-color: var(--ok-action-selected);
+  }
+
+  :where([data-ok-autocomplete-paper] [role="option"][data-ok-focused]) {
+    background-color: var(--ok-action-focus);
+  }
+
+  :where([data-ok-autocomplete-paper] [role="option"][aria-disabled="true"]) {
+    cursor: default;
+    opacity: 0.48;
+  }
+
+  /* Checkbox options: the checkbox mirrors the selection. */
+  :where([data-ok-autocomplete-paper] [role="option"] > [data-ok-checkbox]) {
+    margin: calc(var(--ok-spacing) * -2) 0;
+    pointer-events: none;
+  }
+
+  :where([data-ok-autocomplete-no-options]) {
+    padding: calc(var(--ok-spacing) * 3.5) calc(var(--ok-spacing) * 4);
+    color: var(--ok-text-secondary);
+    font-size: var(--ok-typography-body2-font-size);
+  }
+
+  :where([data-ok-autocomplete-no-options][hidden]) {
+    display: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :where([data-ok-autocomplete-toggle] svg) {
+      transition: none;
+    }
+  }
+}

@@ -34,3 +34,12 @@
 @import "./components/scrollbar.css";
 @import "./components/switch.css";
 @import "./components/text-field.css";
+@import "./components/tabs.css";
+@import "./components/breadcrumbs.css";
+@import "./components/stepper.css";
+@import "./components/timeline.css";
+@import "./components/rating.css";
+@import "./components/slider.css";
+@import "./components/transfer-list.css";
+@import "./components/tree-view.css";
+@import "./components/autocomplete.css";
