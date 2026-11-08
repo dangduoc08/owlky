@@ -1,6 +1,6 @@
 # ADR-0020: Data grid — one grid engine in core, every MUI X tier, built in phases
 
-**Status:** Accepted (2026-11-08)
+**Status:** Accepted (2026-11-08). Decision 5 (the phase table) superseded by ADR-0021 (six phases).
 
 ## Context
 The reference's "Data grid" page shows MUI X Data Grid (Basic and Custom sections): a toolbar
