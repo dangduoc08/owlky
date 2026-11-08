@@ -74,6 +74,7 @@ re-exported from `@owlky/core` (call them from an effect or an event handler).
 | `CountUp` | `end`, `start`, `decimals`, `duration`, `prefix`, `suffix`, trigger props |
 | `MotionBorder` | `shape` (`rounded` · `circle`), `color` (`multi` · palette), `width`, `duration`, `paused` |
 | `Dialog` `transition` | A Motion entrance for the paper (`slideInUp`, `zoomIn`…) |
+| `DataGrid` | `rows`, `columns` (`GridColDef`: `field`, `headerName`, `type`, `width` / `flex` / `minWidth`, `align`, `valueGetter`, `valueFormatter`, `renderCell`, `sortable` / `filterable` / `hideable`), `getRowId`, `checkboxSelection`, `rowSelectionModel`, `sortModel`, `filterModel`, `paginationModel` / `pageSizeOptions`, `columnVisibilityModel`, `density` (each with `on…Change`), `initialState`, `showToolbar`, `disable…` flags, `localeText`, `exportFileName` |
 | `ToggleButtonGroup` | `exclusive`, `value` / `defaultValue` / `onChange(value)` (`string \| null` when exclusive, else `string[]`), `orientation`, `color`, `size`, `disabled` |
 
 Same markup and CSS as `@owlky/html` (specs: `specs/components/`).

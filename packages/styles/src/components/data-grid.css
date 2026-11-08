@@ -1,0 +1,312 @@
+/*
+ * Data grid — spec: specs/components/data-grid.md (ADR-0020)
+ *
+ * Anatomy:   div[data-ok-data-grid]
+ *              › div[data-ok-data-grid-toolbar] (quick filter, buttons; panels and menus are Popovers)
+ *              › div[role=grid][data-ok-data-grid-main] (scrolls; --_ok-data-grid-columns)
+ *                  › div[role=rowgroup][data-ok-data-grid-header] › div[role=row] › div[role=columnheader]
+ *                  › div[role=rowgroup][data-ok-data-grid-body] › div[role=row] › div[role=gridcell]
+ *              › div[data-ok-data-grid-overlay] (no rows / no results)
+ *              › div[data-ok-data-grid-footer] › TablePagination
+ * Modifiers: data-ok-density = compact | standard (default) | comfortable; cells: data-ok-align
+ * States:    row aria-selected, header aria-sort, column menu open (data-ok-open on its button)
+ * Private:   --_ok-data-grid-columns (column tracks, written by the owner)
+ *
+ * Rows are CSS grids sharing one template, so headers and cells line up. Text cells truncate with
+ * an ellipsis; cells holding elements lay them out in a row.
+ * Single :where() selectors in @layer components.
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-ok-data-grid]) {
+    --_ok-data-grid-row-height: calc(var(--ok-spacing) * 13);
+    --_ok-data-grid-header-height: calc(var(--ok-spacing) * 14);
+    --_ok-data-grid-pad: calc(var(--ok-spacing) * 2.5);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    min-width: 0;
+    color: var(--ok-text-primary);
+    font-family: var(--ok-font-family);
+    font-size: var(--ok-typography-body2-font-size);
+    font-weight: var(--ok-typography-body2-font-weight);
+    line-height: var(--ok-typography-body2-line-height);
+  }
+
+  :where([data-ok-data-grid][data-ok-density="compact"]) {
+    --_ok-data-grid-row-height: calc(var(--ok-spacing) * 9);
+    --_ok-data-grid-header-height: calc(var(--ok-spacing) * 10);
+  }
+
+  :where([data-ok-data-grid][data-ok-density="comfortable"]) {
+    --_ok-data-grid-row-height: calc(var(--ok-spacing) * 17);
+    --_ok-data-grid-header-height: calc(var(--ok-spacing) * 18);
+  }
+
+  /* Toolbar: quick filter, then the buttons at the end; wraps on small screens. */
+  :where([data-ok-data-grid-toolbar]) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: calc(var(--ok-spacing) * 2);
+    padding: calc(var(--ok-spacing) * 4) calc(var(--ok-spacing) * 4) calc(var(--ok-spacing) * 3);
+  }
+
+  :where([data-ok-data-grid-toolbar] > [data-ok-data-grid-quick-filter]) {
+    flex: 1 1 calc(var(--ok-spacing) * 60);
+    max-width: calc(var(--ok-spacing) * 60);
+    margin-inline-end: auto;
+  }
+
+  :where([data-ok-data-grid-toolbar-actions]) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: calc(var(--ok-spacing) * 1);
+  }
+
+  /* The scroll area: its height comes from the root (flex) or the content. */
+  :where([data-ok-data-grid-main]) {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+    outline: none;
+    overscroll-behavior-x: contain;
+  }
+
+  :where([data-ok-data-grid-header]) {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    min-width: fit-content;
+    background-color: var(--ok-bg-neutral);
+    color: var(--ok-text-secondary);
+    font-weight: var(--ok-typography-subtitle2-font-weight);
+  }
+
+  :where([data-ok-data-grid-body]) {
+    min-width: fit-content;
+  }
+
+  :where([data-ok-data-grid-main] [role="row"]) {
+    display: grid;
+    grid-template-columns: var(--_ok-data-grid-columns, auto);
+    min-width: fit-content;
+  }
+
+  :where([data-ok-data-grid-body] > [role="row"]) {
+    border-bottom: 1px dashed var(--ok-divider);
+    transition: background-color var(--ok-duration-shortest) var(--ok-easing-standard);
+  }
+
+  :where([data-ok-data-grid-body] > [role="row"][hidden]) {
+    display: none;
+  }
+
+  /* Cells: text truncates; element content sits in a row. */
+  :where([data-ok-data-grid-main] :is([role="columnheader"], [role="gridcell"])) {
+    box-sizing: border-box;
+    min-width: 0;
+    padding-inline: var(--_ok-data-grid-pad);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    outline: none;
+  }
+
+  :where([data-ok-data-grid-main] [role="gridcell"]) {
+    height: var(--_ok-data-grid-row-height);
+    line-height: var(--_ok-data-grid-row-height);
+  }
+
+  :where([data-ok-data-grid-main] [role="gridcell"]:has(> *)) {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--ok-spacing) * 2);
+    line-height: inherit;
+  }
+
+  :where([data-ok-data-grid-main] :is([role="columnheader"], [role="gridcell"])[hidden]) {
+    display: none;
+  }
+
+  :where([data-ok-data-grid-main] [role="gridcell"][data-ok-align="right"]) {
+    justify-content: flex-end;
+    text-align: right;
+  }
+
+  :where([data-ok-data-grid-main] [role="gridcell"][data-ok-align="center"]) {
+    justify-content: center;
+    text-align: center;
+  }
+
+  :where([data-ok-data-grid-main] [role="columnheader"]) {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: calc(var(--ok-spacing) * 1);
+    height: var(--_ok-data-grid-header-height);
+    cursor: default;
+  }
+
+  :where([data-ok-data-grid-main] [role="columnheader"][aria-sort]) {
+    cursor: pointer;
+  }
+
+  :where([data-ok-data-grid-main] [role="columnheader"][data-ok-align="right"]) {
+    flex-direction: row-reverse;
+  }
+
+  :where([data-ok-data-grid-main] [role="columnheader"][data-ok-align="center"]) {
+    justify-content: center;
+  }
+
+  /* Separators between header cells. */
+  :where([data-ok-data-grid-main] [role="columnheader"]:not(:last-child)::after) {
+    position: absolute;
+    inset-block: 30%;
+    inset-inline-end: 0;
+    width: 1px;
+    background-color: var(--ok-divider);
+    content: "";
+  }
+
+  :where([data-ok-data-grid-header-title]) {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Checkbox column: centered, no padding. */
+  :where([data-ok-data-grid-main] [data-ok-data-grid-checkbox]) {
+    justify-content: center;
+    padding-inline: 0;
+  }
+
+  /* Sort arrow: shown when sorted; turned for descending. */
+  :where([data-ok-data-grid-sort-icon]) {
+    display: none;
+    flex: none;
+    width: calc(var(--ok-spacing) * 4.5);
+    height: calc(var(--ok-spacing) * 4.5);
+    color: var(--ok-text-primary);
+    opacity: 0;
+    transition:
+      opacity var(--ok-duration-shortest) var(--ok-easing-standard),
+      transform var(--ok-duration-shortest) var(--ok-easing-standard);
+  }
+
+  :where([data-ok-data-grid-sort-icon] > svg) {
+    width: 100%;
+    height: 100%;
+  }
+
+  :where(
+    [aria-sort="ascending"] > [data-ok-data-grid-sort-icon],
+    [aria-sort="descending"] > [data-ok-data-grid-sort-icon]
+  ) {
+    display: inline-flex;
+    opacity: 1;
+  }
+
+  :where([aria-sort="descending"] > [data-ok-data-grid-sort-icon]) {
+    transform: rotate(180deg);
+  }
+
+  /* Column menu button: on hover and focus (always with touch), or while its menu is open. */
+  :where([data-ok-data-grid-menu-button]) {
+    display: none;
+    flex: none;
+    margin-inline-start: auto;
+  }
+
+  :where([role="columnheader"][data-ok-align="right"] > [data-ok-data-grid-menu-button]) {
+    margin-inline: 0 auto;
+  }
+
+  :where(
+    [role="columnheader"]:focus-within > [data-ok-data-grid-menu-button],
+    [data-ok-data-grid-menu-button][aria-expanded="true"]
+  ) {
+    display: inline-flex;
+  }
+
+  @media (hover: hover) {
+    :where([role="columnheader"]:hover > [data-ok-data-grid-menu-button]) {
+      display: inline-flex;
+    }
+
+    :where([role="columnheader"][aria-sort="none"]:hover > [data-ok-data-grid-sort-icon]) {
+      display: inline-flex;
+      opacity: 0.5;
+    }
+
+    :where([data-ok-data-grid-body] > [role="row"]:hover) {
+      background-color: var(--ok-action-hover);
+    }
+  }
+
+  @media (hover: none) {
+    :where([data-ok-data-grid-menu-button]) {
+      display: inline-flex;
+    }
+  }
+
+  :where([data-ok-data-grid-body] > [role="row"][aria-selected="true"]) {
+    background-color: rgb(var(--ok-palette-primary-main-channel) / 0.08);
+  }
+
+  @media (hover: hover) {
+    :where([data-ok-data-grid-body] > [role="row"][aria-selected="true"]:hover) {
+      background-color: rgb(var(--ok-palette-primary-main-channel) / 0.12);
+    }
+  }
+
+  /* Focus: the focused cell gets an inset ring. */
+  :where([data-ok-data-grid-main] :is([role="columnheader"], [role="gridcell"]):focus-visible) {
+    outline: 2px solid var(--ok-palette-primary-main);
+    outline-offset: -2px;
+  }
+
+  :where([data-ok-data-grid-overlay]) {
+    display: grid;
+    place-items: center;
+    min-height: calc(var(--ok-spacing) * 30);
+    color: var(--ok-text-secondary);
+  }
+
+  :where([data-ok-data-grid-overlay][hidden]) {
+    display: none;
+  }
+
+  :where([data-ok-data-grid-footer]) {
+    display: flex;
+    justify-content: flex-end;
+    border-top: 1px dashed var(--ok-divider);
+  }
+
+  /* Panels (columns, filters) inside their Popover. */
+  :where([data-ok-data-grid-panel]) {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--ok-spacing) * 2);
+    box-sizing: border-box;
+    max-width: calc(100vw - var(--ok-spacing) * 8);
+    padding: calc(var(--ok-spacing) * 4);
+  }
+
+  :where([data-ok-data-grid-panel] > [data-ok-data-grid-filter]) {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(calc(var(--ok-spacing) * 36), 1fr));
+    gap: calc(var(--ok-spacing) * 2);
+    width: min(calc(var(--ok-spacing) * 140), calc(100vw - var(--ok-spacing) * 16));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :where([data-ok-data-grid-body] > [role="row"], [data-ok-data-grid-sort-icon]) {
+      transition: none;
+    }
+  }
+}

@@ -47,9 +47,10 @@ export const tablePagination = defineComponent<TablePaginationInstance>({
       const found = byId(element, element.getAttribute("data-ok-table-pagination") as string);
       return found instanceof HTMLTableElement ? found : null;
     };
-    const server = element.hasAttribute("data-ok-count");
+    // Read on every render: an owner (such as a data grid) may set the count after this setup.
+    const server = () => element.hasAttribute("data-ok-count");
     const count = () =>
-      server
+      server()
         ? Number(element.getAttribute("data-ok-count")) || 0
         : (() => {
             const tableElement = owner();
@@ -76,7 +77,7 @@ export const tablePagination = defineComponent<TablePaginationInstance>({
             action === "first" || action === "previous" ? page <= 0 : page >= last();
       }
       const tableElement = owner();
-      if (server || !tableElement) return;
+      if (server() || !tableElement) return;
       groupsOf(tableElement).forEach((group, index) => {
         showGroup(
           tableElement,

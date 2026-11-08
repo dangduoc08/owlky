@@ -24,6 +24,7 @@ import {
   circularProgressAttributes,
   circularProgressVariants,
   countUpAttributes,
+  dataGridAttributes,
   dialogAttributes,
   dialogMaxWidths,
   dividerAttributes,
@@ -1316,5 +1317,29 @@ describe("overlay attributes", () => {
       "data-ok-shape": "rounded",
       "data-ok-color": "multi",
     });
+  });
+
+  it("data grid", () => {
+    expect(dataGridAttributes()).toEqual({
+      "data-ok-data-grid": "",
+      "data-ok-density": "standard",
+    });
+    expect(
+      dataGridAttributes({
+        density: "compact",
+        checkboxSelection: true,
+        disableRowSelectionOnClick: true,
+        disableColumnMenu: true,
+        disableMultipleColumnsSorting: true,
+      }),
+    ).toEqual({
+      "data-ok-data-grid": "",
+      "data-ok-density": "compact",
+      "data-ok-checkbox-selection": "",
+      "data-ok-disable-row-selection-on-click": "",
+      "data-ok-disable-column-menu": "",
+      "data-ok-disable-multiple-columns-sorting": "",
+    });
+    expect(dataGridAttributes({ density: HOSTILE })["data-ok-density"]).toBe("standard");
   });
 });

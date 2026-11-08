@@ -4,6 +4,7 @@ import {
   type PaletteColorName,
   paletteColorNames,
 } from "@owlky/tokens";
+import { type GridDensity, gridDensities } from "../data-grid/data-grid.js";
 import {
   behavior,
   type DataAttributes,
@@ -2133,6 +2134,42 @@ export interface MotionBorderAnatomyOptions {
 export const motionBorderAttributes = (options: MotionBorderAnatomyOptions = {}): DataAttributes =>
   optionAttributes(motionBorderOptions, { ...options });
 
+// --- Data grid (ADR-0020) ---------------------------------------------------------------------
+
+export const dataGridOptions = defineOptions("data-grid", "data-ok-data-grid", {
+  density: style(
+    "data-ok-density",
+    gridDensities,
+    "standard",
+    "Row height: `compact` 36px, `standard` 52px, `comfortable` 67px.",
+  ),
+  checkboxSelection: flag(
+    "data-ok-checkbox-selection",
+    "A first column of checkboxes selects rows.",
+  ),
+  disableRowSelectionOnClick: flag(
+    "data-ok-disable-row-selection-on-click",
+    "Clicking a row doesn't select it (only its checkbox does).",
+  ),
+  disableColumnMenu: flag("data-ok-disable-column-menu", "No column menu in the headers."),
+  disableMultipleColumnsSorting: flag(
+    "data-ok-disable-multiple-columns-sorting",
+    "Shift doesn't add columns to the sort.",
+  ),
+});
+
+export interface DataGridAnatomyOptions {
+  density?: GridDensity | undefined;
+  checkboxSelection?: boolean | undefined;
+  disableRowSelectionOnClick?: boolean | undefined;
+  disableColumnMenu?: boolean | undefined;
+  disableMultipleColumnsSorting?: boolean | undefined;
+}
+
+/** `data-ok-*` attributes of a data grid root. */
+export const dataGridAttributes = (options: DataGridAnatomyOptions = {}): DataAttributes =>
+  optionAttributes(dataGridOptions, { ...options });
+
 /** Every component's option schema, for tooling (Storybook Controls, parity tests, docs). */
 export const optionSchemas = {
   accordion: accordionOptions,
@@ -2195,4 +2232,5 @@ export const optionSchemas = {
   "motion-text": motionTextOptions,
   "count-up": countUpOptions,
   "motion-border": motionBorderOptions,
+  "data-grid": dataGridOptions,
 } as const;

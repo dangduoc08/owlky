@@ -14,6 +14,7 @@ import { checkbox } from "./checkbox/checkbox.js";
 import { chip } from "./chip/chip.js";
 import { circularProgress } from "./circular-progress/circular-progress.js";
 import { countUp } from "./count-up/count-up.js";
+import { dataGrid } from "./data-grid/data-grid.js";
 import { dialog } from "./dialog/dialog.js";
 import { drawer } from "./drawer/drawer.js";
 import { linearProgress } from "./linear-progress/linear-progress.js";
@@ -78,4 +79,5 @@ export const components: readonly ComponentDefinition[] = [
   motionText as ComponentDefinition,
   countUp as ComponentDefinition,
   motionBorder as ComponentDefinition,
+  dataGrid as ComponentDefinition,
 ];

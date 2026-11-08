@@ -149,6 +149,7 @@ const GUIDES = [
   ["components-tree-view--docs", "Accessibility"],
   ["components-autocomplete--docs", "Accessibility"],
   ["components-motion--docs", "Accessibility"],
+  ["components-datagrid--docs", "Accessibility"],
 ] as const;
 
 /** Component docs pages and their option schema: the Options table lists every option. */
@@ -199,6 +200,7 @@ const OPTION_TABLES: [string, (keyof typeof optionSchemas)[]][] = [
     "components-motion--docs",
     ["motion", "motion-group", "motion-text", "count-up", "motion-border"],
   ],
+  ["components-datagrid--docs", ["data-grid"]],
 ];
 
 for (const [id, schemaNames] of OPTION_TABLES) {

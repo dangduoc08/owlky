@@ -327,3 +327,16 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
 - Docs guides and stories with live Motion previews: open them with reduced motion (the e2e helpers
   do) or axe measures text mid-fade. `finish()` can't end infinite animations: skip loops.
 - React 19 inserts `<link rel="preload">` hints next to `<img>`: parity normalization skips `link`.
+- Data grid (ADR-0020): the grid is `div`s with ARIA grid roles, so `packages/react/src/data-grid/**`
+  turns off Biome's `useSemanticElements`, `useFocusableInteractive` (rows aren't focusable, cells
+  are) and `useKeyWithClickEvents` (the navigation controller handles keys). Every cell and control
+  inside renders `tabindex="-1"`; core `createGridNavigation` moves the one `tabindex="0"` and
+  needs `sync()` after renders. React renders every filtered row (other pages `hidden`) so snippets
+  carry all the data; HTML cells keep raw values in `data-ok-value` and custom-cell text in
+  `data-ok-text`.
+- A popover's width is `fit-content`, measured where it was last placed: Storybook demo CSS that
+  caps popover content (`[data-ok-popover] > div`) must exclude component panels.
+- TablePagination re-reads `data-ok-count` on every render: an owner (the data grid) may set it
+  after the pagination's own setup.
+- Generated snippets: keep inline label content on one line (`data-ok-table-pagination-rows`):
+  Firefox measures a sentence split across text runs a fraction of a pixel differently.

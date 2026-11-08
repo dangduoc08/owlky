@@ -24,5 +24,6 @@ ADR that supersedes the old one — don't rewrite history.
 | [0017](0017-theme-presets.md) | Theme presets through data attributes (color, font, root size) | Accepted |
 | [0018](0018-one-story-per-component.md) | One story per component, framework chosen in the toolbar | Accepted |
 | [0019](0019-component-docs-pages.md) | A usage guide page for every component | Accepted |
+| [0020](0020-data-grid.md) | Data grid: one grid engine in core, every MUI X tier, built in phases | Accepted |
 
 Template: **Context** (why decide) · **Decision** (what) · **Consequences** (trade-offs, follow-ups).

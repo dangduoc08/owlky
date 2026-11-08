@@ -41,6 +41,8 @@ export const STORIES: [component: string, story: string][] = [
     "avatar-story",
     "border",
   ].map((s) => ["motion", s] as [string, string]),
+  ["datagrid", "basic"],
+  ["datagrid", "custom"],
 ];
 
 interface Box {
@@ -49,7 +51,7 @@ interface Box {
 }
 
 const PARTS =
-  "[data-ok-timeline-item], [data-ok-timeline-content], [data-ok-rating], [data-ok-slider], [data-ok-transfer-list-panel], [data-ok-tree-item-content], [data-ok-autocomplete], [data-ok-motion], [data-ok-motion-text], [data-ok-count-up], [data-ok-motion-border]";
+  "[data-ok-timeline-item], [data-ok-timeline-content], [data-ok-rating], [data-ok-slider], [data-ok-transfer-list-panel], [data-ok-tree-item-content], [data-ok-autocomplete], [data-ok-motion], [data-ok-motion-text], [data-ok-count-up], [data-ok-motion-border], [data-ok-data-grid], [data-ok-data-grid-toolbar]";
 const TARGETS = "[data-ok-slider-thumb]";
 
 function measure(page: Page) {
@@ -58,8 +60,9 @@ function measure(page: Page) {
       const problems: string[] = [];
       if (document.documentElement.scrollWidth > window.innerWidth)
         problems.push(`page overflows: ${document.documentElement.scrollWidth}px`);
+      // Parts inside a data grid's scroll area may sit beyond the viewport: the grid scrolls.
       const found = [...document.querySelectorAll<HTMLElement>(parts)].filter(
-        (p) => p.getClientRects().length > 0,
+        (p) => p.getClientRects().length > 0 && !p.closest("[data-ok-data-grid-main]"),
       );
       for (const [i, part] of found.entries()) {
         const box = part.getBoundingClientRect();

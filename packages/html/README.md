@@ -59,7 +59,10 @@ two checkbox lists and move buttons; event `ok:transfer-list:change` (cancelable
 `data-ok-motion data-ok-variant="fadeInUp"` plays when scrolled into view, on mount or on
 `data-ok-in`; the runtime writes `data-ok-state`, so without it nothing is hidden; event
 `ok:motion:end`, `replay()`; `count-up` counts `data-ok-count-up-value` to `data-ok-end`;
-`motion-border` writes the width and speed of a turning gradient border). Snippets ship in
+`motion-border` writes the width and speed of a turning gradient border) **Data grid** (runtime
+`data-grid`: an ARIA grid whose rows are in the markup; sorts by moving rows, filters, searches and
+pages with `hidden`, selects, hides columns, sets the density and exports CSV; events
+`ok:data-grid:sort|filter|selection|columns|density`, cancelable). Snippets ship in
 `@owlky/html/snippets/<component>/<story>-<group>.html` and in Storybook (HTML/Button/…).
 
 Theme settings (ADR-0017): put `data-ok-preset` / `data-ok-font` on `<html>` (or any element) and

@@ -138,6 +138,14 @@ export {
 } from "./circular-progress/circular-progress.js";
 export { CountUp, type CountUpProps } from "./count-up/count-up.js";
 export {
+  DataGrid,
+  type DataGridProps,
+  type GridColDef,
+  type GridInitialState,
+  type GridPaginationModel,
+  type GridRenderCellParams,
+} from "./data-grid/data-grid.js";
+export {
   Dialog,
   DialogActions,
   type DialogActionsProps,

@@ -136,6 +136,18 @@
       }
     },
     {
+      "includes": ["packages/react/src/data-grid/**"],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "useSemanticElements": "off",
+            "useFocusableInteractive": "off",
+            "useKeyWithClickEvents": "off"
+          }
+        }
+      }
+    },
+    {
       "includes": ["packages/html/src/components/*/examples/**"],
       "linter": {
         "rules": {

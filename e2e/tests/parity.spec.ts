@@ -6,6 +6,8 @@ import { normalizeStory, openStory, storyId } from "./helpers.js";
  * anatomy and the same pixels. This is the contract that lets both share one stylesheet.
  */
 const pairs: [component: string, story: string][] = [
+  ["datagrid", "basic"],
+  ["datagrid", "custom"],
   ["motion", "in-view"],
   ["motion", "text"],
   ["motion", "scroll"],

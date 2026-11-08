@@ -635,7 +635,7 @@
 }
 
 /* Popover demos (story-only; a Typography component will replace the headings and text). */
-[data-ok-popover] > div:not([data-ok-popover-arrow]) {
+[data-ok-popover] > div:not([data-ok-popover-arrow], [data-ok-data-grid-panel]) {
   box-sizing: border-box;
   max-width: 17.5rem;
   padding: calc(var(--ok-spacing) * 4);
@@ -859,4 +859,47 @@
   font-size: var(--ok-typography-h2-font-size);
   font-weight: var(--ok-typography-h2-font-weight);
   line-height: var(--ok-typography-h2-line-height);
+}
+
+/* Data grid demos (story-only): the grid height and custom cell content. */
+.sb-grid {
+  width: 100%;
+  height: 520px;
+}
+
+.sb-grid-ellipsis {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sb-grid-date {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: var(--ok-typography-body2-line-height);
+}
+
+.sb-grid-date > :last-child {
+  color: var(--ok-text-secondary);
+  font-size: var(--ok-typography-caption-font-size);
+}
+
+.sb-grid-check {
+  display: inline-flex;
+  width: 20px;
+  height: 20px;
+  color: var(--ok-palette-success-main);
+}
+
+.sb-grid-progress {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: calc(var(--ok-spacing) * 2);
+  min-width: 0;
+}
+
+.sb-grid-progress > [data-ok-linear-progress] {
+  flex: 1;
 }

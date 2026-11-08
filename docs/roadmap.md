@@ -46,10 +46,10 @@ component and each `/integrate` run.
 | MUI | Timeline | ✅ | Timeline and its parts | Rating, Slider, Timeline, Transfer list, Tree view & Autocomplete |
 | MUI | Tooltip | ✅ | Tooltip | Popover, Tooltip, Menu, Dialog & Snackbar |
 | MUI | Transfer list | ✅ | TransferList | Rating, Slider, Timeline, Transfer list, Tree view & Autocomplete |
-| MUI X | Data grid | wave 7 (ADR) | — | Next |
+| MUI X | Data grid | ✅ phase 1 of 5 (ADR-0020) | DataGrid | Data grid |
 | MUI X | Date pickers | wave 7 (ADR) | — | Next |
 | MUI X | Tree view | ✅ | SimpleTreeView, TreeItem, RichTreeView | Rating, Slider, Timeline, Transfer list, Tree view & Autocomplete |
-| Extra | Animate | ✅ | Motion, MotionGroup, MotionText, CountUp, MotionBorder; Dialog `transition` | Motion |
+| Extra | Animate | ✅ beta | Motion, MotionGroup, MotionText, CountUp, MotionBorder; Dialog `transition` | Motion |
 | Extra | Carousel | wave 7 (ADR) | — | Next |
 | Extra | Chart | wave 7 (ADR) | — | Next |
 | Extra | Dnd | ✅ | Sortable | Sortable |
@@ -163,7 +163,7 @@ toast store / API / timer (Sonner). Dialog reuses `createModalController`. HTML 
 One placement vocabulary replaces MUI's `anchorOrigin` / `transformOrigin`. Token added:
 `--ok-bg-paper-channel` (translucent paper). No new runtime dependency.
 
-## ✅ Components — Motion (Animate, 2026-11-08)
+## ✅ Components — Motion (Animate, 2026-11-08) — beta
 Created with `/component` from the reference "Animate" page (stories: In view, Text, Scroll,
 Dialog, Background, Tap & hover, Path, Count up, Logo, Avatar, Border). Named Motion because
 `data-ok-animate` is the IconButton / Fab hover flag. Framer Motion's ideas without the dependency:
@@ -178,8 +178,25 @@ motion shows end states at once. Tokens added: `--ok-duration-enter` (640ms),
 story Transitions": Dialog `transition` (a Motion entrance on the paper). Size budgets raised: CDN
 bundle 34 kB, all CSS 27 kB gzip (about 33 and 26 kB now). Differences: an original owl mark
 instead of the reference's logo, an original SVG image, no variant picker (Storybook Controls).
-**Backlog:** Motion `component` (renders a `div`), spring physics and custom keyframes, Dialog exit
-transitions and `keepMounted`, scroll-linked progress (Scroll progress page).
+**Beta (owner's decision, 2026-11-08):** this CSS-keyframe Motion is the interim version. Its API
+(`variant`, `trigger`, `in`, `once`, `amount`, `duration`, `delay`, `distance`, `paused`, `stagger`,
+the HTML attributes and `ok:motion:end`) should survive the full version below; mark it beta in
+docs and the changeset until then.
+**Backlog:** Motion `component` (renders a `div`), Dialog `keepMounted`.
+
+### Next — Motion, full version (self-written, needs an ADR)
+Framer Motion's features without the dependency, still one core for React and HTML, nothing hidden
+without JavaScript, reduced motion honored, timings from `--ok-*` tokens. Each phase is one review;
+measure `pnpm check:size` (rough estimate: 6–10 kB gzip more in the CDN bundle for all of it).
+
+| Phase | Scope | How |
+|---|---|---|
+| 0 | ADR: from CSS keyframes to a Web Animations API engine in core | supersedes the CSS-only playback; keeps the beta API |
+| 1 Engine | `animate(element, keyframes, options)`, spring easing, interruption from the current value, exit before removal (React keeps the node until the exit ends; HTML `remove()` waits) | WAAPI; springs precomputed into `linear()` easing (fallback curve where unsupported); Dialog exit transitions |
+| 2 Scroll | Scroll-linked progress, the reference's "Scroll progress" page | `animation-timeline: scroll()/view()` where supported, JS fallback (Firefox) |
+| 3 Gestures | Drag with inertia and constraints, spring hover / tap | Pointer Events (as Slider and Sortable) |
+| 4 Layout | Layout animations (FLIP), shared values (`useMotionValue`-like store, React hooks, HTML callbacks) | measure before / after, transform back; size and scroll corrections |
+| Later / maybe | Shared-element transitions across routes (`layoutId`) | evaluate View Transitions first |
 
 ## ✅ Components — Rating, Slider, Timeline, Transfer list, Tree view & Autocomplete (2026-11-08)
 Wave 6 (composites), created with `/component` from the reference pages. **Timeline** (stories:
@@ -304,6 +321,26 @@ red) via `data-ok-preset`, font families (Public Sans, Inter, DM Sans, Nunito Sa
 toolbar: Preset, Font, Size; Foundations › Settings. Backlog: contrast setting, right-to-left
 (logical-property audit), a SettingsDrawer component (needs Switch and Slider).
 
+## Data grid (ADR-0020) — every MUI X tier, in phases
+The owner asked for every MUI X Data Grid feature, Community, Pro and Premium alike (2026-11-08).
+One grid engine in core, ARIA grid on `div`s with CSS grid columns, HTML data in the markup.
+Phase 1 (stories: Basic, Custom): DataGrid with typed columns (width / flex / min width, value
+getters and formatters, custom cells), sorting (Shift: multi), quick filter, a one-item filter panel,
+TablePagination footer, checkbox selection, columns panel, density menu, CSV export (formula-safe),
+column menu and ARIA grid keyboard navigation; HTML runtime `data-grid` (rows moved / hidden).
+Reuses TextField, Button, IconButton, Menu, Popover, Switch, FormControlLabel, Checkbox and
+TablePagination; no new token, no dependency. Size budgets raised: CDN bundle 40 kB, all CSS 28 kB
+gzip (about 38 and 27 kB now). Differences: labeled toolbar buttons in both sections (the
+reference's Basic toolbar is icon-only), original data and names, clicking a row toggles it.
+
+| Phase | Scope (MUI X tier) | State |
+|---|---|---|
+| 1 | Columns (types, width / flex / min width, alignment, formatters, custom cells), sorting with multi-sort (Pro), quick filter, filter panel (one filter), pagination, checkbox selection, column visibility, density, CSV export, column menu, keyboard navigation, toolbar | ✅ 2026-11-08 |
+| 2 | Multi filters and logic operators (Pro), column resizing and reordering (Pro), column pinning (Pro), cell and row editing, print export | next (`/component` Update) |
+| 3 | Row and column virtualization, infinite and lazy loading, server-side data source (Pro) | — |
+| 4 | Tree data, master-detail, row reordering, row pinning, column groups (Pro) | — |
+| 5 | Row grouping, aggregation, pivoting, Excel export, clipboard, cell selection, header filters (Premium) | — |
+
 ## Pending integrations
 Everything waiting for a component that doesn't exist yet — stand-ins (native feature, demo
 markup, a small built-in part) **and** stories or features deferred until then. This table is the
@@ -355,7 +392,7 @@ Dependency-first: leaf components before the ones built from them, the ones that
 | 4 Overlays | ~~Popover~~ ✅, ~~Tooltip~~ ✅, ~~Menu~~ ✅, ~~Dialog~~ ✅, ~~Snackbar~~ ✅, ~~Backdrop~~ ✅ | ~~Drawer / Dialog backdrop~~ ✅ (native `::backdrop`, same token); icon button tooltips: nothing to change (MUI uses native `title` there; Tooltip wraps any IconButton) |
 | 5 Navigation | ~~Tabs~~ ✅, ~~Breadcrumbs~~ ✅, ~~Stepper~~ ✅ | — (nothing waited for them) |
 | 6 Composites | ~~Rating~~ ✅, ~~Slider~~ ✅, ~~Timeline~~ ✅, ~~Transfer list~~ ✅, ~~Autocomplete~~ ✅, ~~Tree view~~ ✅ | — (nothing waited for them; Slider unblocks the SettingsDrawer backlog of Theme settings) |
-| 7 Needs an ADR | Data grid, Date pickers, Chart, Map, Editor, Carousel, Lightbox, Markdown, Organization chart, Upload, Image, Walktour | — |
+| 7 Needs an ADR | ~~Data grid~~ (ADR-0020, phases below), Date pickers, Chart, Map, Editor, Carousel, Lightbox, Markdown, Organization chart, Upload, Image, Walktour | — |
 
 Not planned as components (patterns or app-level pages of the reference): Layout,
 Utilities, Multi-language, Navigation bar, Mega menu, Scroll progress, Form validation, Form wizard.
