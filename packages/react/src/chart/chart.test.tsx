@@ -650,4 +650,153 @@ describe("Chart", () => {
       expect(html).toContain("28.4%");
     });
   });
+
+  describe("phase 3: more types, sparklines and live data", () => {
+    const BOXES = [
+      { name: "Scores", data: [{ y: [54, 66, 69, 75, 88] }, { y: [31, 39, 45, 51, 59] }] },
+    ];
+
+    it("box plot: colored boxes, a two-row table, five tooltip rows", async () => {
+      renderChart({
+        type: "boxPlot",
+        categories: ["2015", "2016"],
+        series: BOXES,
+        boxUpperColor: "info",
+        boxLowerColor: "error",
+      });
+      expect(root().dataset).toMatchObject({ okBoxUpperColor: "info", okBoxLowerColor: "error" });
+      const svg = plot().querySelector("svg") as SVGSVGElement;
+      expect(css(svg.querySelector("[data-ok-chart-box='upper']") as Element).fill).toBe(
+        "rgb(0, 184, 217)",
+      );
+      const table = screen.getByRole("table");
+      const heads = table.querySelectorAll("thead tr");
+      expect(heads).toHaveLength(2);
+      expect(heads[0]?.querySelector("[colspan='5']")?.getAttribute("scope")).toBe("colgroup");
+      expect(heads[1]?.textContent).toBe("MinimumQ1MedianQ3Maximum");
+      hoverAt(300, 100);
+      expect(tooltip().querySelectorAll("[data-ok-chart-tooltip-row]")).toHaveLength(5);
+      await expectNoAxeViolations();
+    });
+
+    it("heatmap and treemap: cells, the arrow keys move between them", async () => {
+      renderChart({
+        type: "heatmap",
+        legend: "none",
+        categories: ["a", "b"],
+        series: [
+          { name: "M1", data: [1, 2] },
+          { name: "M2", data: [3, 4] },
+        ],
+      });
+      plot().focus();
+      await userEvent.keyboard("{End}");
+      expect(tooltip().textContent).toContain("M1");
+      await userEvent.keyboard("{ArrowUp}");
+      expect(tooltip().textContent).toContain("M24");
+      expect(document.querySelectorAll("[data-ok-chart-active-cell]")).toHaveLength(1);
+      await expectNoAxeViolations();
+    });
+
+    it("treemap: names, tags and a table row per category", async () => {
+      renderChart({
+        type: "treemap",
+        categories: undefined,
+        series: [
+          {
+            name: "Desktops",
+            data: [
+              { x: "ABC", y: 10 },
+              { x: "DEF", y: 60 },
+            ],
+          },
+          { name: "Mobile", data: [{ x: "WXYZ", y: 51 }] },
+        ],
+      });
+      expect(document.querySelectorAll("[data-ok-chart-cell]")).toHaveLength(3);
+      expect(document.querySelectorAll("[data-ok-chart-tag-label]")).toHaveLength(2);
+      expect(screen.getAllByRole("rowheader").map((th) => th.textContent)).toEqual([
+        "ABC",
+        "DEF",
+        "WXYZ",
+      ]);
+      await expectNoAxeViolations();
+    });
+
+    it("sparkline: no axes or legend, the container's height, at least `height`", () => {
+      render(
+        <div style={{ width: 200, height: 90 }}>
+          <Chart label="Sales" sparkline height={30} categories={MONTHS} series={TWO} />
+        </div>,
+      );
+      expect(screen.queryAllByRole("button")).toHaveLength(0);
+      expect(document.querySelector("[data-ok-chart-axis]")).toBeNull();
+      expect(plot().style.getPropertyValue("--_ok-chart-height")).toBe("30px");
+      const svg = plot().querySelector("svg") as SVGSVGElement;
+      expect(svg.getAttribute("height")).toBe("90");
+      expect(svg.getAttribute("width")).toBe("200");
+    });
+
+    it("sparkline without a height or a sized container: 40px", () => {
+      render(
+        <div style={{ width: 200 }}>
+          <Chart label="Sales" sparkline type="bar" categories={MONTHS} series={TWO} />
+        </div>,
+      );
+      expect(plot().style.getPropertyValue("--_ok-chart-height")).toBe("");
+      expect(plot().querySelector("svg")?.getAttribute("height")).toBe("40");
+    });
+
+    it("live updates keep the active category and the hidden series; the table follows", () => {
+      const { rerender } = render(
+        <div style={{ width: 600 }}>
+          <Chart label="Sales" categories={MONTHS} series={TWO} defaultHiddenSeries={[1]} />
+        </div>,
+      );
+      hoverAt(590, 100);
+      expect(tooltip().querySelector("[data-ok-chart-tooltip-title]")?.textContent).toBe("Apr");
+      const svg = plot().querySelector("svg") as SVGSVGElement;
+      const line = svg.querySelector("[data-ok-chart-line]");
+      rerender(
+        <div style={{ width: 600 }}>
+          <Chart
+            label="Sales"
+            categories={["Feb", "Mar", "Apr", "May"]}
+            series={[
+              { name: "Series A", data: [40, 28, 64, 99] },
+              { name: "Series B", data: [32, 45, 34, 12] },
+            ]}
+            defaultHiddenSeries={[1]}
+          />
+        </div>,
+      );
+      // Same position, new values; the same SVG elements (React reconciles them).
+      expect(tooltip().textContent).toBe("MaySeries A99");
+      expect(svg.querySelector("[data-ok-chart-line]")).toBe(line);
+      expect(screen.getByRole("button", { name: "Series B" })).toHaveAttribute(
+        "aria-pressed",
+        "false",
+      );
+      expect(screen.getAllByRole("rowheader").at(-1)?.textContent).toBe("May");
+    });
+
+    it("bubble, range area, funnel and slope render on the server", () => {
+      for (const [type, series] of [
+        ["bubble", [{ name: "A", data: [[1, 2, 3]] }]],
+        ["rangeArea", [{ name: "A", data: [{ y: [1, 2] }] }]],
+        ["funnel", [{ name: "A", data: [3, 2] }]],
+        ["slope", [{ name: "A", data: [3, 2] }]],
+      ] as const) {
+        const html = renderToString(
+          <Chart label="Sales" type={type} categories={["a", "b"]} series={series as never} />,
+        );
+        expect(html).toContain(`data-ok-type="${type}"`);
+      }
+      const bubble = renderToString(
+        <Chart label="B" type="bubble" series={[{ name: "A", data: [[1, 2, 3]] }]} />,
+      );
+      expect(bubble).toContain('data-ok-x-type="numeric"');
+      expect(bubble).toContain("data-ok-chart-bubble");
+    });
+  });
 });

@@ -1,3 +1,4 @@
+import { layoutHeatmap, layoutTreemap } from "./chart-cells.js";
 import { type ChartFormat, type ChartFormatOptions, chartFormat } from "./chart-format.js";
 import { type ChartLayout, layoutChart } from "./chart-layout.js";
 import {
@@ -15,6 +16,7 @@ import {
   isCircularChart,
 } from "./chart-model.js";
 import { layoutCircular, layoutRadar } from "./chart-polar.js";
+import { layoutFunnel, layoutSlope } from "./chart-shapes.js";
 
 /** Everything a chart is drawn from (React props or the HTML root's attributes and table). */
 export interface ChartRenderInput extends ChartFormatOptions {
@@ -41,6 +43,11 @@ export interface ChartRenderInput extends ChartFormatOptions {
   readonly trackWidth?: number | undefined;
   readonly total?: number | undefined;
   readonly totalLabel?: string | undefined;
+  /** No axes, grid or legend: the plot fills the SVG (cards, table cells). */
+  readonly sparkline?: boolean | undefined;
+  /** Box plots: colors of the boxes above and below the median. */
+  readonly boxUpperColor?: ChartColor | undefined;
+  readonly boxLowerColor?: ChartColor | undefined;
   /** Header of the data table's first column. Default "Category", "Date" or "X". */
   readonly xLabel?: string | undefined;
   /** Indexes of the series hidden through the legend (categories for circular charts). */
@@ -85,12 +92,16 @@ export function renderChart(input: ChartRenderInput): ChartRender {
   });
   const hidden = new Set(input.hidden ?? []);
   const circular = isCircularChart(data.type);
-  const layoutOf =
-    data.type === "radar"
-      ? (d: ChartData, o: Parameters<typeof layoutChart>[1]) => layoutRadar(d, o, format)
-      : circular
-        ? (d: ChartData, o: Parameters<typeof layoutChart>[1]) => layoutCircular(d, o, format)
-        : layoutChart;
+  type Layout = (d: ChartData, o: Parameters<typeof layoutChart>[1]) => ChartLayout;
+  const layouts: Partial<Record<ChartType, Layout>> = {
+    radar: (d, o) => layoutRadar(d, o, format),
+    heatmap: (d, o) => layoutHeatmap(d, o, format),
+    treemap: (d, o) => layoutTreemap(d, o, format),
+    funnel: (d, o) => layoutFunnel(d, o, format),
+    slope: (d, o) => layoutSlope(d, o, format),
+  };
+  const layoutOf: Layout =
+    layouts[data.type] ?? (circular ? (d, o) => layoutCircular(d, o, format) : layoutChart);
   const layout = layoutOf(data, {
     width: input.width,
     height: input.height,
@@ -114,6 +125,9 @@ export function renderChart(input: ChartRenderInput): ChartRender {
     trackWidth: input.trackWidth,
     total: input.total,
     totalLabel: input.totalLabel,
+    sparkline: input.sparkline,
+    boxUpperColor: input.boxUpperColor,
+    boxLowerColor: input.boxLowerColor,
   });
   // Circular charts list their categories (slices, rings); the others their series.
   const items: ChartLegendItem[] = circular
@@ -130,7 +144,7 @@ export function renderChart(input: ChartRenderInput): ChartRender {
         color: series.color,
         hidden: hidden.has(index),
       }));
-  const legend = input.legend === "none" || items.length < 2 ? null : items;
+  const legend = input.legend === "none" || input.sparkline || items.length < 2 ? null : items;
   const xLabel =
     input.xLabel ??
     (data.xType === "datetime" ? "Date" : data.xType === "numeric" ? "X" : "Category");
@@ -138,6 +152,7 @@ export function renderChart(input: ChartRenderInput): ChartRender {
     xLabel,
     formatX: (x) => format.title(x),
     formatValue: (value, series) => format.value(value, series),
+    formatNumber: format.number,
     seriesTypes: data.series.some((series) => series.type !== data.type),
   });
   return { data, format, layout, legend, table };

@@ -17,6 +17,16 @@ const STORIES = [
   "radar",
   "semi-circle-gauge",
   "stroked-gauge",
+  "box-plot",
+  "heatmap",
+  "treemap",
+  "bubble",
+  "range-area",
+  "funnel",
+  "pyramid",
+  "slope",
+  "sparklines",
+  "live-data",
 ];
 
 /** The SVG as plain data (gradient ids normalized): parity doesn't walk into SVG. */
@@ -181,6 +191,84 @@ for (const impl of implementations) {
       const table = page.getByRole("table", { name: "Net profit by country" });
       await expect(table.getByRole("rowheader")).toHaveCount(10);
       await expect(table.getByRole("cell").last()).toHaveText("1,370");
+    });
+  });
+}
+
+test("chart live-data: after the same clicks, React and HTML draw the same SVG and table", async ({
+  page,
+  browserName,
+}) => {
+  test.skip(browserName !== "chromium", "Structure is browser-independent.");
+  const after = async (impl: "react" | "html") => {
+    await openStory(page, storyId(impl, "chart", "live-data"));
+    const add = page.getByRole("button", { name: "Add a point" });
+    for (let i = 0; i < 3; i++) await add.click();
+    const rows = page.getByRole("table").locator("tbody tr");
+    await expect(rows).toHaveCount(12);
+    await expect(rows.last().locator("th")).toHaveText("10:01:10");
+    return { svg: await svgTree(page), first: await rows.first().textContent() };
+  };
+  const react = await after("react");
+  const html = await after("html");
+  expect(html).toEqual(react);
+  expect(react.first).toBe("10:00:1559");
+});
+
+for (const impl of implementations) {
+  test.describe(`chart phase 3 (${impl})`, () => {
+    test("live data: the tooltip stays on its category and shows the new value", async ({
+      page,
+    }) => {
+      await openStory(page, storyId(impl, "chart", "live-data"));
+      await plot(page).focus();
+      await page.keyboard.press("End");
+      const title = tooltip(page).locator("[data-ok-chart-tooltip-title]");
+      await expect(title).toHaveText("10:00:55");
+      await page.getByRole("button", { name: "Add a point" }).click();
+      await plot(page).focus();
+      await page.keyboard.press("End");
+      await expect(title).toHaveText("10:01:00");
+      await page.getByRole("button", { name: "Reset" }).click();
+      await expect(page.getByRole("table").locator("tbody tr").last().locator("th")).toHaveText(
+        "10:00:55",
+      );
+    });
+
+    test("heatmap: arrows move between cells, Escape hides", async ({ page }) => {
+      await openStory(page, storyId(impl, "chart", "heatmap"));
+      await plot(page).focus();
+      await page.keyboard.press("Home");
+      await expect(tooltip(page)).toContainText("Metric 6");
+      await page.keyboard.press("ArrowRight");
+      await expect(tooltip(page).locator("[data-ok-chart-tooltip-title]")).toHaveText("10:30");
+      await page.keyboard.press("ArrowDown");
+      await expect(tooltip(page)).toContainText("Metric 5");
+      await expect(page.locator("[data-ok-chart-active-cell]")).toHaveCount(1);
+      await page.keyboard.press("Escape");
+      await expect(tooltip(page)).toBeHidden();
+    });
+
+    test("treemap: a tap or a click on a cell shows its value", async ({ page }) => {
+      await openStory(page, storyId(impl, "chart", "treemap"));
+      const cell = page.locator("[data-ok-chart-cell]").first();
+      await cell.click();
+      await expect(tooltip(page)).toBeVisible();
+      await expect(page.locator("[data-ok-chart-active-cell]")).toHaveCount(1);
+    });
+
+    test("box plot: the tooltip lists the five values", async ({ page }) => {
+      await openStory(page, storyId(impl, "chart", "box-plot"));
+      await plot(page).focus();
+      await page.keyboard.press("Home");
+      await expect(tooltip(page).locator("[data-ok-chart-tooltip-row]")).toHaveText([
+        "Minimum54",
+        "Q166",
+        "Median69",
+        "Q375",
+        "Maximum88",
+      ]);
+      await expect(page.getByRole("table").locator("thead tr")).toHaveCount(2);
     });
   });
 }

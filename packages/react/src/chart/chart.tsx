@@ -22,6 +22,7 @@ import {
   sameChartActive,
 } from "@owlky/core";
 import {
+  type CSSProperties,
   createElement,
   forwardRef,
   type HTMLAttributes,
@@ -67,8 +68,17 @@ export interface ChartProps extends Omit<HTMLAttributes<HTMLElement>, "children"
   markerSize?: number | undefined;
   /** Column width in % of a category. Default 40. */
   columnWidth?: number | undefined;
-  /** Horizontal bar thickness in % of a category. Default 40. */
+  /** Horizontal bar thickness in % of a category. Default 40 (funnels 80). */
   barHeight?: number | undefined;
+  /**
+   * No axes, grid or legend: the chart fills its container (cards, table cells). Its height is the
+   * container's, at least `height` (default 40px).
+   */
+  sparkline?: boolean | undefined;
+  /** Box plots: color of the box above the median (default the series color). */
+  boxUpperColor?: ChartColor | undefined;
+  /** Box plots: color of the box below the median (default a lighter tone of the series color). */
+  boxLowerColor?: ChartColor | undefined;
   yMin?: number | undefined;
   /** Highest value on the value axis; radial bars: the value of a full ring (default 100). */
   yMax?: number | undefined;
@@ -111,6 +121,8 @@ export interface ChartProps extends Omit<HTMLAttributes<HTMLElement>, "children"
 }
 
 const NO_HIDDEN: readonly number[] = [];
+/** Least height of a sparkline without `height` (the CSS default of `--_ok-chart-height`). */
+const SPARKLINE_HEIGHT = 40;
 const PRESERVED = /^(data-|aria-)/;
 const camel = (name: string) =>
   PRESERVED.test(name) ? name : name.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase());
@@ -159,6 +171,9 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     trackWidth,
     totalLabel,
     total,
+    sparkline,
+    boxUpperColor,
+    boxLowerColor,
     yTitle,
     valuePrefix,
     valueSuffix,
@@ -176,7 +191,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
 ) {
   const attributes = chartAttributes({
     type,
-    xType: xType ?? (type === "scatter" ? "numeric" : "category"),
+    xType: xType ?? (type === "scatter" || type === "bubble" ? "numeric" : "category"),
     curve,
     legend,
     fill,
@@ -194,12 +209,21 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     dashArray,
     trackWidth,
     total,
+    sparkline,
+    boxUpperColor,
+    boxLowerColor,
   });
-  const svgHeight = Number(attributes["data-ok-height"] ?? 320);
+  const isSparkline = attributes["data-ok-sparkline"] !== undefined;
+  const givenHeight = attributes["data-ok-height"];
   const id = useId();
   const plotRef = useRef<HTMLDivElement>(null);
   const tipRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(CHART_DEFAULT_WIDTH);
+  // Sparklines take their container's height (measured), at least `height`.
+  const [measuredHeight, setMeasuredHeight] = useState(0);
+  const svgHeight = isSparkline
+    ? measuredHeight || Number(givenHeight ?? SPARKLINE_HEIGHT)
+    : Number(givenHeight ?? 320);
   const [active, setActiveState] = useState<ChartActive | null>(null);
   const [hidden, setHidden] = useControllableState<readonly number[]>({
     value: hiddenSeries,
@@ -217,7 +241,9 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     attributes[name] === undefined ? undefined : Number(attributes[name]);
   const validMarkerSize = number("data-ok-marker-size");
   const validColumnWidth = number("data-ok-column-width") ?? 40;
-  const validBarHeight = number("data-ok-bar-height") ?? 40;
+  const validBarHeight = number("data-ok-bar-height");
+  const validUpper = attributes["data-ok-box-upper-color"] as ChartColor | undefined;
+  const validLower = attributes["data-ok-box-lower-color"] as ChartColor | undefined;
   const validYMin = number("data-ok-y-min");
   const validYMax = number("data-ok-y-max");
   const validStartAngle = number("data-ok-start-angle");
@@ -251,6 +277,9 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         trackWidth: validTrackWidth,
         total: validTotal,
         totalLabel,
+        sparkline: isSparkline,
+        boxUpperColor: validUpper,
+        boxLowerColor: validLower,
         yTitle,
         valuePrefix,
         valueSuffix,
@@ -286,6 +315,9 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       validTrackWidth,
       validTotal,
       totalLabel,
+      isSparkline,
+      validUpper,
+      validLower,
       yTitle,
       valuePrefix,
       valueSuffix,
@@ -313,17 +345,19 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
   };
 
   // Draw at the measured width (the first render uses the default, scaled by the viewBox).
+  // Sparklines also take the plot's height (their SVG is out of flow, so no feedback loop).
   useLayoutEffect(() => {
     const plot = plotRef.current as HTMLDivElement;
     const measure = () => {
       const next = Math.round(plot.clientWidth);
       if (next > 0) setWidth(next);
+      if (isSparkline) setMeasuredHeight(Math.round(plot.clientHeight));
     };
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(plot);
     return () => observer.disconnect();
-  }, []);
+  }, [isSparkline]);
 
   // A redraw (resize, hidden series) can remove the active item.
   const tooltip = chartTooltip(render.data, layout, render.format, active);
@@ -419,6 +453,12 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         aria-roledescription="chart"
         aria-label={label}
         tabIndex={0}
+        // Sparklines: the least height (CSSOM in HTML; parity ignores `style`).
+        style={
+          isSparkline && givenHeight !== undefined
+            ? ({ "--_ok-chart-height": `${givenHeight}px` } as CSSProperties)
+            : undefined
+        }
         onPointerMove={point}
         onPointerDown={point}
         onPointerLeave={(event) => {
@@ -465,12 +505,28 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         <thead>
           <tr>
             {render.table.head.map((cell, index) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: columns are positional
-              <th key={index} scope="col" {...cell.attrs}>
+              <th
+                // biome-ignore lint/suspicious/noArrayIndexKey: columns are positional
+                key={index}
+                scope={cell.colSpan ? "colgroup" : "col"}
+                colSpan={cell.colSpan}
+                rowSpan={cell.rowSpan}
+                {...cell.attrs}
+              >
                 {cell.text}
               </th>
             ))}
           </tr>
+          {render.table.parts.length > 0 && (
+            <tr>
+              {render.table.parts.map((cell, index) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: columns are positional
+                <th key={index} scope="col" {...cell.attrs}>
+                  {cell.text}
+                </th>
+              ))}
+            </tr>
+          )}
         </thead>
         <tbody>
           {render.table.rows.map((row, index) => (

@@ -18,6 +18,16 @@ const STORIES = [
   "radar",
   "semi-circle-gauge",
   "stroked-gauge",
+  "box-plot",
+  "heatmap",
+  "treemap",
+  "bubble",
+  "range-area",
+  "funnel",
+  "pyramid",
+  "slope",
+  "sparklines",
+  "live-data",
 ];
 
 interface Measure {
@@ -109,7 +119,9 @@ for (const viewport of viewports) {
         for (const impl of implementations) {
           const page = await context.newPage();
           await openStory(page, storyId(impl, "chart", story));
-          await expect(page.locator("[data-ok-chart][data-ok-ready]")).toHaveCount(1);
+          await expect(page.locator("[data-ok-chart][data-ok-ready]")).toHaveCount(
+            story === "sparklines" ? 3 : 1,
+          );
           const { problems, result } = await measure(page);
           expect(problems, `${impl} ${story}`).toEqual([]);
           results[impl] = result;

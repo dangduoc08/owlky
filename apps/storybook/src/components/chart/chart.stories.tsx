@@ -5,6 +5,8 @@ import { htmlSetup, snippetStory } from "../shared/snippets.js";
 import { chartExamples } from "./chart-data.js";
 import { ChartDocs } from "./chart-docs.js";
 import { CHART_CONTROLS, CHART_FILES, chartCode, chartStories } from "./chart-examples.js";
+import liveSource from "./chart-live.tsx?raw";
+import { LIVE_SCRIPT_SOURCE, liveScript } from "./chart-scripts.js";
 
 const controls: StoryControls = { ...CHART_CONTROLS, target: Chart };
 
@@ -14,6 +16,7 @@ const snippets = import.meta.glob(
 ) as Record<string, string>;
 
 const SETUP = htmlSetup(["chart.css"], true);
+const SETUP_BUTTON = htmlSetup(["chart.css", "button.css"], true);
 
 const story = (name: string): StoryObj => ({
   ...frameworkStory({
@@ -27,6 +30,17 @@ const story = (name: string): StoryObj => ({
   name: chartExamples[name]?.title ?? name,
 });
 
+/** Live data: a stateful React demo and an HTML page script (no Controls). */
+const liveStory = (name: string): StoryObj => ({
+  ...frameworkStory({
+    html: snippetStory(snippets, name, CHART_FILES[name] ?? [], SETUP_BUTTON, undefined, {
+      group: { script: liveScript, scriptSource: LIVE_SCRIPT_SOURCE },
+    }),
+    react: reactGroupsStory(chartStories[name] ?? [], undefined, liveSource),
+  }),
+  name: chartExamples[name]?.title ?? name,
+});
+
 const meta = {
   title: "Components/Chart",
   tags: ["autodocs"],
@@ -35,7 +49,7 @@ const meta = {
       page: ChartDocs,
       description: {
         component:
-          "Charts show values as lines, areas, columns, bars, points, slices, rings or radars, with a legend, a tooltip and the data as a table.",
+          "Charts show values as lines, areas, columns, bars, points, slices, rings, radars, box plots, cells, bubbles, funnels or slopes, with a legend, a tooltip and the data as a table.",
       },
     },
   },
@@ -57,3 +71,13 @@ export const RadialBar: StoryObj = story("radial-bar");
 export const Radar: StoryObj = story("radar");
 export const SemiCircleGauge: StoryObj = story("semi-circle-gauge");
 export const StrokedGauge: StoryObj = story("stroked-gauge");
+export const BoxPlot: StoryObj = story("box-plot");
+export const Heatmap: StoryObj = story("heatmap");
+export const Treemap: StoryObj = story("treemap");
+export const Bubble: StoryObj = story("bubble");
+export const RangeArea: StoryObj = story("range-area");
+export const Funnel: StoryObj = story("funnel");
+export const Pyramid: StoryObj = story("pyramid");
+export const Slope: StoryObj = story("slope");
+export const Sparklines: StoryObj = story("sparklines");
+export const LiveData: StoryObj = liveStory("live-data");

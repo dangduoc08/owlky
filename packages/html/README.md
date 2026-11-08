@@ -70,9 +70,9 @@ values are ISO 8601 (`data-ok-value`); `data-ok-locale` on any ancestor; events
 (cancelable); `setShortcuts`, `setShouldDisableDate`, `setLocaleText`; time and date time fields
 and pickers with `data-ok-value-type="time" | "date-time"`, runtimes `time-clock`,
 `digital-clock`, `multi-section-digital-clock` with `ok:<name>:change`, `setShouldDisableTime`) **Chart** (runtime `chart`: draws an SVG
-line, area, bar, scatter, pie, donut, radial bar or radar chart from its `<table data-ok-chart-data>`, which stays visible without
+line, area, bar, scatter, pie, donut, radial bar, radar, box plot, heatmap, treemap, bubble, range area, funnel, slope chart or sparkline from its `<table data-ok-chart-data>`, which stays visible without
 JavaScript; legend buttons toggle series; events `ok:chart:toggle` (cancelable) and
-`ok:chart:active`; `setHiddenSeries`, `setActive`, `setFormatters`, `refresh()`). Snippets ship in
+`ok:chart:active`; `setHiddenSeries`, `setActive`, `setFormatters`, `refresh()`, `updateSeries(series, categories?)` and `appendData(data, { categories, limit })` for live data, which rewrite the table in place). Snippets ship in
 `@owlky/html/snippets/<component>/<story>-<group>.html` and in Storybook (HTML/Button/…).
 
 Theme settings (ADR-0017): put `data-ok-preset` / `data-ok-font` on `<html>` (or any element) and

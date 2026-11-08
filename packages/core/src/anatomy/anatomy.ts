@@ -5,11 +5,13 @@ import {
   paletteColorNames,
 } from "@owlky/tokens";
 import {
+  type ChartColor,
   type ChartCurve,
   type ChartFill,
   type ChartLegend,
   type ChartType,
   type ChartXType,
+  chartColors,
   chartCurves,
   chartFills,
   chartLegends,
@@ -2677,7 +2679,7 @@ export const chartOptions = defineOptions("chart", "data-ok-chart", {
     "data-ok-type",
     chartTypes,
     "line",
-    "Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar` or `radar`. Series may override it in line, area, bar and scatter charts (mixed charts).",
+    "Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel` or `slope`. Series may override it in line, area, bar, scatter, box plot, bubble and range area charts (mixed charts).",
   ),
   xType: style(
     "data-ok-x-type",
@@ -2705,7 +2707,9 @@ export const chartOptions = defineOptions("chart", "data-ok-chart", {
   ),
   stacked: flag("data-ok-stacked", "Stacks the series on each other (bars, lines, areas)."),
   horizontal: flag("data-ok-horizontal", "Bars run left to right, categories down the side."),
-  height: number("data-ok-height", 320, "Height of the plot in px.", { min: 40 }),
+  height: number("data-ok-height", 320, "Height of the plot in px (at least 40, sparklines 8).", {
+    min: 8,
+  }),
   markerSize: number(
     "data-ok-marker-size",
     undefined,
@@ -2713,9 +2717,12 @@ export const chartOptions = defineOptions("chart", "data-ok-chart", {
     { min: 0 },
   ),
   columnWidth: number("data-ok-column-width", 40, "Column width in % of a category.", { min: 1 }),
-  barHeight: number("data-ok-bar-height", 40, "Horizontal bar thickness in % of a category.", {
-    min: 1,
-  }),
+  barHeight: number(
+    "data-ok-bar-height",
+    undefined,
+    "Horizontal bar thickness in % of a category (default 40; funnels 80).",
+    { min: 1 },
+  ),
   yMin: number(
     "data-ok-y-min",
     undefined,
@@ -2754,6 +2761,24 @@ export const chartOptions = defineOptions("chart", "data-ok-chart", {
     undefined,
     "Donut and radial bar center: the total shown under `totalLabel` (default the sum; radial bars the average).",
   ),
+  sparkline: flag(
+    "data-ok-sparkline",
+    "No axes, grid or legend: the chart fills its container (cards, table cells). Its height is the container's, at least `height` (default 40px).",
+  ),
+  boxUpperColor: style(
+    "data-ok-box-upper-color",
+    chartColors,
+    "primary",
+    "Box plots: color of the box above the median (default the series color).",
+    { optional: true },
+  ),
+  boxLowerColor: style(
+    "data-ok-box-lower-color",
+    chartColors,
+    "primary",
+    "Box plots: color of the box below the median (default a lighter tone of the series color).",
+    { optional: true },
+  ),
   hiddenSeries: state(
     "aria-pressed",
     'Indexes of the series hidden through the legend (`aria-pressed="false"` on their buttons); categories in pie, donut and radial bar charts.',
@@ -2781,6 +2806,9 @@ export interface ChartAnatomyOptions {
   dashArray?: number | undefined;
   trackWidth?: number | undefined;
   total?: number | undefined;
+  sparkline?: boolean | undefined;
+  boxUpperColor?: ChartColor | undefined;
+  boxLowerColor?: ChartColor | undefined;
 }
 
 /** `data-ok-*` attributes of a chart root (numbers only when given). */

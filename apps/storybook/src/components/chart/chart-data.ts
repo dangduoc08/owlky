@@ -10,6 +10,8 @@ export interface ChartExample {
   /** Story group title (the reference section). */
   readonly title: string;
   readonly props: ChartProps;
+  /** More charts in the same group (sparklines). */
+  readonly more?: readonly ChartProps[];
 }
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep"];
@@ -88,6 +90,29 @@ const SCATTER_C: [number, number][] = [
   [31.2, 8.2],
   [33.4, 2.8],
 ];
+
+/** Heatmap rows (series, the first at the bottom) and columns. */
+const TIMES = ["10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "01:00"];
+const METRICS: [string, number[]][] = [
+  ["Metric 1", [62, 88, 51, 63, 21, 27, 2]],
+  ["Metric 2", [54, 44, 42, 10, 13, 27, 21]],
+  ["Metric 3", [46, 33, 22, 79, 19, 9, 29]],
+  ["Metric 4", [32, 41, 28, 24, 12, 31, 12]],
+  ["Metric 5", [24, 28, 25, 15, 32, 35, 40]],
+  ["Metric 6", [27, 46, 28, 35, 18, 37, 49]],
+];
+
+/** Live data: a value for each step, the same in React, HTML and the tests. */
+export const liveValue = (step: number) =>
+  Math.round(48 + 18 * Math.sin(step / 2) + 9 * Math.cos(step * 1.3));
+/** Live data: the time label of each step (one every five seconds from 10:00:00). */
+export const liveLabel = (step: number) => {
+  const seconds = step * 5;
+  return `10:${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
+};
+/** Live data: how many points the chart keeps. */
+export const LIVE_POINTS = 12;
+const LIVE_STEPS = Array.from({ length: LIVE_POINTS }, (_, step) => step);
 
 /** Slices of the pie and donut examples. */
 const SLICES = ["Series A", "Series B", "Series C", "Series D"];
@@ -320,6 +345,244 @@ export const chartExamples: Record<string, ChartExample> = {
       colors: ["error"],
       categories: ["Median ratio"],
       series: [{ name: "Ratio", data: [75] }],
+    },
+  },
+  "box-plot": {
+    title: "BoxPlot",
+    props: {
+      label: "Yearly spread of scores",
+      type: "boxPlot",
+      columnWidth: 50,
+      boxUpperColor: "info",
+      boxLowerColor: "error",
+      categories: [
+        "Jan 2015",
+        "Jan 2016",
+        "Jan 2017",
+        "Jan 2018",
+        "Jan 2019",
+        "Jan 2020",
+        "Jan 2021",
+      ],
+      series: [
+        {
+          name: "Scores",
+          data: [
+            [54, 66, 69, 75, 88],
+            [43, 65, 69, 76, 81],
+            [31, 39, 45, 51, 59],
+            [39, 46, 55, 65, 71],
+            [29, 31, 35, 39, 44],
+            [41, 49, 58, 61, 67],
+            [54, 59, 66, 71, 88],
+          ].map((y) => ({ y })),
+        },
+      ],
+    },
+  },
+  heatmap: {
+    title: "Heatmap",
+    props: {
+      label: "Metrics every half hour",
+      type: "heatmap",
+      legend: "none",
+      colors: ["primary", "warning", "info", "success", "error", "info-dark"],
+      categories: TIMES,
+      series: METRICS.map(([name, data]) => ({ name, data })),
+    },
+  },
+  treemap: {
+    title: "Treemap",
+    props: {
+      label: "Visits by page and device",
+      type: "treemap",
+      colors: ["primary", "warning"],
+      xLabel: "Page",
+      series: [
+        {
+          name: "Desktops",
+          data: [
+            { x: "ABC", y: 10 },
+            { x: "DEF", y: 60 },
+            { x: "XYZ", y: 41 },
+          ],
+        },
+        {
+          name: "Mobile",
+          data: [
+            { x: "ABCD", y: 10 },
+            { x: "DEFG", y: 20 },
+            { x: "WXYZ", y: 51 },
+            { x: "PQR", y: 30 },
+            { x: "MNO", y: 20 },
+            { x: "CDE", y: 30 },
+          ],
+        },
+      ],
+    },
+  },
+  bubble: {
+    title: "Bubble",
+    props: {
+      label: "Requests, latency and errors by service",
+      type: "bubble",
+      colors: ["primary", "warning", "info"],
+      xLabel: "Requests per second",
+      series: [
+        {
+          name: "Gateway",
+          data: [
+            [12, 38, 14],
+            [24, 46, 22],
+            [36, 52, 9],
+            [48, 61, 30],
+          ],
+        },
+        {
+          name: "Search",
+          data: [
+            [8, 72, 18],
+            [20, 66, 6],
+            [32, 80, 26],
+            [44, 74, 12],
+          ],
+        },
+        {
+          name: "Billing",
+          data: [
+            [16, 22, 8],
+            [28, 30, 16],
+            [40, 26, 4],
+            [52, 34, 20],
+          ],
+        },
+      ],
+    },
+  },
+  "range-area": {
+    title: "Range area",
+    props: {
+      label: "Daily response time range and average",
+      type: "rangeArea",
+      valueSuffix: " ms",
+      colors: ["info", "info-dark"],
+      categories: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+      series: [
+        {
+          name: "Range",
+          data: [
+            [120, 210],
+            [110, 240],
+            [140, 260],
+            [130, 220],
+            [150, 290],
+            [90, 170],
+            [80, 160],
+          ].map((y) => ({ y })),
+        },
+        { name: "Average", type: "line", data: [160, 172, 196, 171, 214, 128, 118] },
+      ],
+    },
+  },
+  funnel: {
+    title: "Funnel",
+    props: {
+      label: "Recruitment funnel",
+      type: "funnel",
+      dataLabels: true,
+      colors: ["primary"],
+      categories: [
+        "Sourced",
+        "Screened",
+        "Assessed",
+        "HR interview",
+        "Technical",
+        "Verified",
+        "Offered",
+        "Hired",
+      ],
+      series: [{ name: "Candidates", data: [1380, 1100, 990, 880, 740, 548, 330, 200] }],
+    },
+  },
+  pyramid: {
+    title: "Pyramid",
+    props: {
+      label: "Servings per food group",
+      type: "funnel",
+      dataLabels: true,
+      categories: ["Sweets", "Oils", "Meat", "Dairy", "Fruits", "Vegetables", "Grains"],
+      series: [
+        {
+          name: "Servings",
+          data: [
+            { y: 100, color: "error" },
+            { y: 200, color: "warning" },
+            { y: 300, color: "secondary" },
+            { y: 400, color: "info" },
+            { y: 500, color: "success" },
+            { y: 600, color: "primary" },
+            { y: 700, color: "primary-dark" },
+          ],
+        },
+      ],
+    },
+  },
+  slope: {
+    title: "Slope",
+    props: {
+      label: "Build time per team, 2025 and 2026",
+      type: "slope",
+      valueSuffix: " min",
+      colors: ["primary", "warning", "info", "error"],
+      categories: ["2025", "2026"],
+      series: [
+        { name: "Web", data: [43, 28] },
+        { name: "Mobile", data: [36, 41] },
+        { name: "API", data: [22, 18] },
+        { name: "Data", data: [58, 34] },
+      ],
+    },
+  },
+  sparklines: {
+    title: "Sparklines",
+    props: {
+      label: "Visits this week",
+      type: "area",
+      sparkline: true,
+      height: 48,
+      categories: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+      series: [{ name: "Visits", data: [22, 8, 35, 50, 82, 84, 77] }],
+    },
+    more: [
+      {
+        label: "Errors this week",
+        type: "bar",
+        sparkline: true,
+        height: 48,
+        colors: ["error"],
+        categories: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+        series: [{ name: "Errors", data: [12, 5, 9, 14, 3, 7, 10] }],
+      },
+      {
+        label: "Latency this week",
+        type: "line",
+        sparkline: true,
+        height: 48,
+        valueSuffix: " ms",
+        colors: ["info"],
+        categories: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+        series: [{ name: "Latency", data: [180, 164, 210, 172, 158, 149, 166] }],
+      },
+    ],
+  },
+  "live-data": {
+    title: "Live data",
+    props: {
+      label: "Requests per second",
+      type: "area",
+      height: 240,
+      categories: LIVE_STEPS.map(liveLabel),
+      series: [{ name: "Requests", data: LIVE_STEPS.map(liveValue) }],
     },
   },
 };
