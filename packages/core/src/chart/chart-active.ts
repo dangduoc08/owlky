@@ -1,7 +1,9 @@
 import type { ChartFormat } from "./chart-format.js";
-import type { ChartArc, ChartLayout, ChartNode } from "./chart-layout.js";
-import type { ChartColor, ChartData } from "./chart-model.js";
+import type { ChartArc, ChartLayout, ChartMark, ChartNode, ChartRect } from "./chart-layout.js";
+import { type ChartColor, type ChartData, type ChartPart, chartPartLabels } from "./chart-model.js";
 import { polarPoint, slicePath } from "./chart-polar.js";
+
+const BOX: readonly ChartPart[] = ["min", "q1", "median", "q3", "max"];
 
 /*
  * Chart interaction (ADR-0024): which category or point is active for a pointer position or a
@@ -41,6 +43,14 @@ const turn = (a: number, b: number) => {
 /** Pointer position in SVG px → the active item, or `null` outside the plot. */
 export function chartActiveAt(layout: ChartLayout, x: number, y: number): ChartActive | null {
   const { plot } = layout;
+  if (layout.mode === "cell") {
+    // The cell under the pointer (heatmap, treemap).
+    const mark = layout.marks.findIndex(({ cell }) => {
+      const c = cell as ChartRect;
+      return x >= c.x && x <= c.x + c.width && y >= c.y && y <= c.y + c.height;
+    });
+    return mark < 0 ? null : { kind: "mark", mark };
+  }
   if (layout.mode === "slice") {
     // The slice (or ring) under the pointer, with 8px of slack around its radii.
     for (const mark of layout.marks) {
@@ -74,11 +84,12 @@ export function chartActiveAt(layout: ChartLayout, x: number, y: number): ChartA
     return null;
   }
   if (layout.mode === "point") {
+    // The nearest point within 24px, or inside its bubble.
     let best = -1;
-    let distance = 24 * 24;
+    let distance = Number.POSITIVE_INFINITY;
     layout.marks.forEach((mark, index) => {
       const d = (mark.px - x) ** 2 + (mark.py - y) ** 2;
-      if (d <= distance) {
+      if (d <= Math.max(24, (mark.r ?? 0) + 4) ** 2 && d <= distance) {
         distance = d;
         best = index;
       }
@@ -99,6 +110,47 @@ const order = (layout: ChartLayout) =>
     .map((mark, index) => ({ mark, index }))
     .sort((a, b) => a.mark.px - b.mark.px || a.mark.py - b.mark.py);
 
+/**
+ * Cells (heatmap, treemap): an arrow moves to the nearest cell in its direction (centers
+ * compared, the cross distance weighs double); Home / End go to the top-left / bottom-right one.
+ */
+function nextCell(
+  layout: ChartLayout,
+  active: ChartActive | null,
+  key: string,
+): ChartActive | null {
+  const { marks } = layout;
+  if (marks.length === 0) return null;
+  const reading = marks
+    .map((mark, index) => ({ mark, index }))
+    .sort((a, b) => a.mark.py - b.mark.py || a.mark.px - b.mark.px);
+  const from = active?.kind === "mark" ? marks[active.mark] : undefined;
+  if (key === "End") return { kind: "mark", mark: (reading.at(-1) as (typeof reading)[0]).index };
+  if (key === "Home" || !from)
+    return { kind: "mark", mark: (reading[0] as (typeof reading)[0]).index };
+  const [dx, dy] =
+    key === "ArrowRight"
+      ? [1, 0]
+      : key === "ArrowLeft"
+        ? [-1, 0]
+        : key === "ArrowDown"
+          ? [0, 1]
+          : [0, -1];
+  let best = (active as { mark: number }).mark;
+  let score = Number.POSITIVE_INFINITY;
+  marks.forEach((mark, index) => {
+    const along = (mark.px - from.px) * dx + (mark.py - from.py) * dy;
+    if (along <= 0.5) return;
+    const across = Math.abs((mark.px - from.px) * dy + (mark.py - from.py) * dx);
+    const s = along + across * 2;
+    if (s < score) {
+      score = s;
+      best = index;
+    }
+  });
+  return { kind: "mark", mark: best };
+}
+
 /** The item a key moves to (arrows, Home, End); `undefined` when the key isn't a chart key. */
 export function nextChartActive(
   layout: ChartLayout,
@@ -108,6 +160,7 @@ export function nextChartActive(
   const forward = key === "ArrowRight" || key === "ArrowDown";
   const backward = key === "ArrowLeft" || key === "ArrowUp";
   if (!forward && !backward && key !== "Home" && key !== "End") return undefined;
+  if (layout.mode === "cell") return nextCell(layout, active, key);
   if (layout.mode === "point") {
     const sorted = order(layout);
     if (sorted.length === 0) return null;
@@ -139,6 +192,9 @@ export function nextChartActive(
   return { kind: "index", index: (layout.slots[next] as (typeof layout.slots)[number]).index };
 }
 
+/** Series types drawn as blocks: the band highlights them, no hover marker. */
+const BLOCKS: readonly string[] = ["bar", "boxPlot", "funnel"];
+
 const circle = (cx: number, cy: number, r: number, color: ChartColor): ChartNode => ({
   tag: "circle",
   attrs: {
@@ -162,9 +218,29 @@ export function chartActiveNodes(
   const { plot } = layout;
   if (active.kind === "mark") {
     const mark = layout.marks[active.mark];
-    return mark
-      ? { under: [], over: [circle(mark.px, mark.py, layout.activeRadius, mark.color)] }
-      : { under: [], over: [] };
+    if (!mark) return { under: [], over: [] };
+    if (mark.cell) {
+      // An outline around the cell (heatmap, treemap).
+      const { x, y, width, height } = mark.cell;
+      return {
+        under: [],
+        over: [
+          {
+            tag: "rect",
+            attrs: {
+              x: String(x + 1),
+              y: String(y + 1),
+              width: String(Math.max(0, Math.round((width - 2) * 100) / 100)),
+              height: String(Math.max(0, Math.round((height - 2) * 100) / 100)),
+              rx: mark.type === "treemap" ? "4" : "2",
+              "data-ok-chart-active-cell": "",
+            },
+          },
+        ],
+      };
+    }
+    const r = mark.r !== undefined ? mark.r + 2 : layout.activeRadius;
+    return { under: [], over: [circle(mark.px, mark.py, r, mark.color)] };
   }
   const slot = layout.slots.find((entry) => entry.index === active.index);
   if (!slot) return { under: [], over: [] };
@@ -233,7 +309,7 @@ export function chartActiveNodes(
   const over =
     layout.activeRadius > 0
       ? layout.marks
-          .filter((mark) => mark.index === active.index && mark.type !== "bar")
+          .filter((mark) => mark.index === active.index && !BLOCKS.includes(mark.type))
           .map((mark) => circle(mark.px, mark.py, layout.activeRadius, mark.color))
       : [];
   return { under, over };
@@ -261,15 +337,44 @@ export function chartTooltip(
   active: ChartActive | null,
 ): ChartTooltip | null {
   if (!active) return null;
+  const xOf = (index: number) =>
+    data.xType === "numeric"
+      ? index
+      : data.xType === "datetime"
+        ? (data.categories[index] as number)
+        : (data.categories[index] ?? String(index + 1));
+  /** Rows of a mark: one value, a range (low – high), five box values or a value and a size. */
+  const rowsOf = (mark: ChartMark, color: ChartColor): ChartTooltipRow[] => {
+    const series = data.series[mark.series] as (typeof data.series)[number];
+    const value = (v: number) => format.value(v, mark.series);
+    const { range } = mark;
+    if (range && range.length === 5) {
+      const several = data.series.filter((s) => s.type === "boxPlot").length > 1;
+      return BOX.map((part, i) => ({
+        name: several ? `${series.name} (${chartPartLabels[part]})` : chartPartLabels[part],
+        value: value(range[i] as number),
+        color,
+      }));
+    }
+    const rows = [
+      {
+        name: series.name,
+        value: range
+          ? `${value(range[0] as number)} – ${value(range[1] as number)}`
+          : value(mark.value),
+        color,
+      },
+    ];
+    if (mark.z !== undefined)
+      rows.push({ name: chartPartLabels.z, value: format.number(mark.z), color });
+    return rows;
+  };
   if (active.kind === "mark") {
     const mark = layout.marks[active.mark];
-    const series = mark && data.series[mark.series];
-    if (!mark || !series) return null;
+    if (!mark) return null;
     return {
-      title: format.title(mark.x),
-      rows: [
-        { name: series.name, value: format.value(mark.value, mark.series), color: mark.color },
-      ],
+      title: format.title(xOf(mark.x)),
+      rows: rowsOf(mark, mark.color),
       x: mark.px,
       y: mark.py,
     };
@@ -298,11 +403,15 @@ export function chartTooltip(
       y: mark.py,
     };
   }
-  const rows = marks.map((mark) => ({
-    name: (data.series[mark.series] as (typeof data.series)[number]).name,
-    value: format.value(mark.value, mark.series),
-    color: (data.series[mark.series] as (typeof data.series)[number]).color,
-  }));
+  const rows = marks.flatMap((mark) =>
+    rowsOf(
+      mark,
+      // Funnel bars and boxes have their own colors; other index charts list their series' colors.
+      mark.type === "funnel" || mark.type === "boxPlot"
+        ? mark.color
+        : (data.series[mark.series] as (typeof data.series)[number]).color,
+    ),
+  );
   if (layout.polar) {
     // Radar: beside the outermost value of the category.
     const { cx, cy } = layout.polar;

@@ -13,7 +13,7 @@ export const chartSections: GuideSection[] = [
   {
     id: "overview",
     title: "Overview",
-    body: "A chart shows values as lines, areas, columns, bars, points, slices, rings or a radar. In HTML, you write the data as a table. The runtime reads the table and draws the chart as SVG next to it, with a legend and a tooltip. The table stays in the page, visually hidden, so screen readers can read every value. Without JavaScript, the table stays visible. In React, you pass the data as props, and the component renders the same chart and table.",
+    body: "A chart shows values as lines, areas, columns, bars, points, slices, rings, a radar, box plots, cells, bubbles, funnels or slopes, at full size or as a sparkline. In HTML, you write the data as a table. The runtime reads the table and draws the chart as SVG next to it, with a legend and a tooltip. The table stays in the page, visually hidden, so screen readers can read every value. Without JavaScript, the table stays visible. In React, you pass the data as props, and the component renders the same chart and table.",
     html: `<!-- Load once per page: the styles and the runtime -->
 <link rel="stylesheet" href="${CDN}/owlky.css">
 <script src="${CDN}/owlky.js" defer></script>
@@ -59,8 +59,12 @@ export function MonthlySales() {
 - **\`pie\` and \`donut\`:** one slice per category, sized by its share of the total. See "Show parts of a whole".
 - **\`radialBar\`:** one ring per category, filled to its value. With one category, it is a gauge. See "Show progress as rings and gauges".
 - **\`radar\`:** one axis per category around a center, and one shape per series.
+- **\`boxPlot\` and \`rangeArea\`:** the spread of values in each category. See "Show ranges and distributions".
+- **\`heatmap\` and \`treemap\`:** values as shaded cells. See "Show values as cells".
+- **\`bubble\`:** points placed by two numbers and sized by a third.
+- **\`funnel\` and \`slope\`:** stages that narrow, or the change between a few categories. See "Show stages and changes".
 
-To mix types in line, area, bar and scatter charts, give a series its own \`type\`. In HTML, set \`data-ok-type\` on the column header of the series.`,
+To mix types in line, area, bar, scatter, box plot, bubble and range area charts, give a series its own \`type\`. In HTML, set \`data-ok-type\` on the column header of the series.`,
     html: `<figure data-ok-chart data-ok-type="bar" data-ok-x-type="category" data-ok-curve="smooth"
   data-ok-legend="top" data-ok-fill="gradient" data-ok-y-title="Points">
   <table data-ok-chart-data>
@@ -195,6 +199,140 @@ export function MedianRatio() {
 }`,
   },
   {
+    id: "ranges",
+    title: "Show ranges and distributions",
+    body: `Some charts need several values for each point. In React, pass them as an array in \`y\`. In HTML, give each value its own column under a second header row. The series header spans its columns, and each value header names its part in \`data-ok-part\`.
+
+- **Box plots:** five values per category: the minimum, the first quartile, the median, the third quartile and the maximum (\`min\`, \`q1\`, \`median\`, \`q3\`, \`max\`). \`boxUpperColor\` and \`boxLowerColor\` color the boxes above and below the median.
+- **Range areas:** a low and a high value (\`low\`, \`high\`). Add a \`line\` series for an average.
+- **Bubbles:** a value and a size (\`y\`, \`z\`). In React, pass \`[x, y, size]\`. The area of a bubble follows its size.
+
+The tooltip lists every value, and screen readers read each cell with its series and part, such as "Scores, Q1".`,
+    html: `<figure data-ok-chart data-ok-type="boxPlot" data-ok-x-type="category" data-ok-curve="smooth"
+  data-ok-legend="top" data-ok-fill="gradient" data-ok-box-upper-color="info" data-ok-box-lower-color="error">
+  <table data-ok-chart-data>
+    <caption>Build times</caption>
+    <thead>
+      <tr><th scope="col" rowspan="2">Week</th><th scope="colgroup" colspan="5">Minutes</th></tr>
+      <tr>
+        <th scope="col" data-ok-part="min">Minimum</th><th scope="col" data-ok-part="q1">Q1</th>
+        <th scope="col" data-ok-part="median">Median</th><th scope="col" data-ok-part="q3">Q3</th>
+        <th scope="col" data-ok-part="max">Maximum</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><th scope="row">Week 1</th><td>4</td><td>6</td><td>7</td><td>9</td><td>14</td></tr>
+      <!-- One row per week -->
+    </tbody>
+  </table>
+</figure>`,
+    react: `import { Chart } from "@owlky/react";
+
+export function BuildTimes() {
+  return (
+    <Chart
+      label="Build times"
+      type="boxPlot"
+      boxUpperColor="info"
+      boxLowerColor="error"
+      categories={["Week 1", "Week 2", "Week 3"]}
+      series={[
+        {
+          name: "Minutes",
+          data: [{ y: [4, 6, 7, 9, 14] }, { y: [3, 5, 6, 8, 11] }, { y: [5, 7, 9, 10, 16] }],
+        },
+      ]}
+    />
+  );
+}`,
+  },
+  {
+    id: "cells",
+    title: "Show values as cells",
+    body: `Heatmaps and treemaps draw each value as a cell in the color of its series. A larger value gets a stronger shade, so the colors still follow the theme. Selecting a cell, or moving to it with the arrow keys, shows its value.
+
+- **Heatmaps:** one row per series and one column per category, such as metrics over time. The first series is the bottom row.
+- **Treemaps:** one group per series, with one rectangle per category sized by its value. Each series lists its own categories: in React, give each point an \`x\` name. In HTML, write one row per category and leave the cells of the other series empty. Names print in the cells that fit them.`,
+    html: `<figure data-ok-chart data-ok-type="treemap" data-ok-x-type="category" data-ok-curve="smooth"
+  data-ok-legend="top" data-ok-fill="gradient">
+  <table data-ok-chart-data>
+    <caption>Visits by page and device</caption>
+    <thead>
+      <tr><th scope="col">Page</th><th scope="col">Desktops</th><th scope="col">Mobile</th></tr>
+    </thead>
+    <tbody>
+      <tr><th scope="row">Home</th><td>60</td><td></td></tr>
+      <tr><th scope="row">Docs</th><td></td><td>51</td></tr>
+    </tbody>
+  </table>
+</figure>`,
+    react: `<Chart
+  label="Visits by page and device"
+  type="treemap"
+  series={[
+    { name: "Desktops", data: [{ x: "Home", y: 60 }, { x: "Pricing", y: 41 }] },
+    { name: "Mobile", data: [{ x: "Docs", y: 51 }, { x: "Blog", y: 30 }] },
+  ]}
+/>`,
+  },
+  {
+    id: "stages",
+    title: "Show stages and changes",
+    body: `- **Funnels:** \`funnel\` draws the first series as bars centered on one axis, each as long as its share of the largest value, such as the stages of a sign-up flow. For a pyramid, order the values from the smallest to the largest. \`barHeight\` sets the thickness (80% by default).
+- **Slopes:** \`slope\` joins each series' values across a few categories, usually two, such as before and after. The values print beside the first and last points, and the scale fits the data.`,
+    html: `<figure data-ok-chart data-ok-type="funnel" … data-ok-data-labels>`,
+    react: `<Chart label="Sign-ups" type="funnel" dataLabels categories={steps} series={[{ name: "People", data: [1380, 990, 548, 200] }]} />`,
+  },
+  {
+    id: "sparklines",
+    title: "Fit charts in cards and table cells",
+    body: "Set `sparkline` (`data-ok-sparkline` in HTML) to draw a chart without axes, grid or legend, such as a trend in a dashboard card or a table cell. A sparkline fills its container: give the container a height, or set `height` for the least height (40px by default). The tooltip, the keyboard and the data table still work.",
+    html: `<div class="card-trend">
+  <figure data-ok-chart data-ok-type="area" data-ok-x-type="category" data-ok-curve="smooth"
+    data-ok-legend="top" data-ok-fill="gradient" data-ok-sparkline data-ok-height="48">
+    <table data-ok-chart-data>…</table>
+  </figure>
+</div>`,
+    react: `<Chart label="Visits this week" type="area" sparkline height={48} categories={days} series={visits} />`,
+  },
+  {
+    id: "live",
+    title: "Update data live",
+    body: `Charts redraw only what changed, so they can follow live data, such as requests per second.
+
+- **React:** pass new \`series\` and \`categories\` arrays. To keep a sliding window, drop the oldest points yourself.
+- **HTML:** call \`updateSeries(series, categories)\` to replace the data, or \`appendData([{ data: [value] }], { categories: [label], limit })\` to add points to each series in order. \`limit\` keeps the last points only. The runtime rewrites the data table to match, so screen readers read the same values.
+
+Updates keep the hidden series and the category under the pointer or the keyboard, so the tooltip shows the new value.`,
+    html: `<script type="module">
+  import { getRuntime } from "@owlky/html";
+
+  const chart = getRuntime().get(document.querySelector("#requests"), "chart");
+  // Add the newest value and keep the last 12.
+  function onData(time, requests) {
+    chart.appendData([{ data: [requests] }], { categories: [time], limit: 12 });
+  }
+</script>`,
+    react: `import { Chart } from "@owlky/react";
+import { useEffect, useState } from "react";
+
+export function Requests({ source }) {
+  const [points, setPoints] = useState([]);
+  useEffect(
+    () => source.subscribe((point) => setPoints((current) => [...current, point].slice(-12))),
+    [source],
+  );
+  return (
+    <Chart
+      label="Requests per second"
+      type="area"
+      categories={points.map((point) => point.time)}
+      series={[{ name: "Requests", data: points.map((point) => point.value) }]}
+    />
+  );
+}`,
+  },
+  {
     id: "labels",
     title: "Print values on the chart",
     body: "Set `dataLabels` (`data-ok-data-labels` in HTML) to print values on the chart: percentages on pie and donut slices, values inside columns and bars, and values above the points of lines, areas and radars. A label is left out where it doesn't fit, such as on a short column. The tooltip and the data table still show every value.",
@@ -238,13 +376,13 @@ export function MedianRatio() {
     title: "Events and methods",
     body: `- **\`ok:chart:toggle\`** (cancelable) fires when a legend button is selected, with \`detail.index\`, \`detail.hidden\` and \`detail.hiddenSeries\`. Call \`preventDefault()\` to keep the series as it is.
 - **\`ok:chart:active\`** fires with \`detail.active\`: the category (\`{ kind: "index", index }\`) or point (\`{ kind: "mark", mark }\`) under the pointer or the keyboard, or \`null\`.
-- **Instance:** \`runtime.get(element, "chart")\` returns \`{ hiddenSeries, setHiddenSeries(list), active, setActive(active), setFormatters(formatters), refresh() }\`. The methods don't fire events. The chart redraws by itself when the table or an option changes.
+- **Instance:** \`runtime.get(element, "chart")\` returns \`{ hiddenSeries, setHiddenSeries(list), active, setActive(active), setFormatters(formatters), refresh(), updateSeries(series, categories), appendData(data, options) }\`. The methods don't fire events. The chart redraws by itself when the table or an option changes. See "Update data live".
 - **React:** \`onHiddenSeriesChange(hidden)\` and \`onActiveChange(active)\`; controlled with \`hiddenSeries\`, uncontrolled with \`defaultHiddenSeries\`.`,
   },
   {
     id: "keyboard",
     title: "Keyboard",
-    body: "The plot is one tab stop. When it gets focus from the keyboard, the tooltip shows the first category. The arrow keys move through the categories, through the slices or rings of circular charts, or through the points of a scatter chart. Hidden slices are skipped.",
+    body: "The plot is one tab stop. When it gets focus from the keyboard, the tooltip shows the first category. The arrow keys move through the categories, through the slices or rings of circular charts, or through the points of a scatter chart. Hidden slices are skipped. In heatmaps and treemaps, each arrow key moves to the nearest cell in its direction.",
   },
   {
     id: "accessibility",
@@ -307,6 +445,62 @@ const PREVIEWS = {
       />
     </Preview>
   ),
+  ranges: () => (
+    <Preview>
+      <Chart
+        label="Build times"
+        type="boxPlot"
+        height={240}
+        boxUpperColor="info"
+        boxLowerColor="error"
+        categories={["Week 1", "Week 2", "Week 3"]}
+        series={[
+          {
+            name: "Minutes",
+            data: [{ y: [4, 6, 7, 9, 14] }, { y: [3, 5, 6, 8, 11] }, { y: [5, 7, 9, 10, 16] }],
+          },
+        ]}
+      />
+    </Preview>
+  ),
+  cells: () => (
+    <Preview>
+      <Chart
+        label="Visits by page and device"
+        type="treemap"
+        height={240}
+        colors={["primary", "warning"]}
+        series={[
+          {
+            name: "Desktops",
+            data: [
+              { x: "Home", y: 60 },
+              { x: "Pricing", y: 41 },
+            ],
+          },
+          {
+            name: "Mobile",
+            data: [
+              { x: "Docs", y: 51 },
+              { x: "Blog", y: 30 },
+            ],
+          },
+        ]}
+      />
+    </Preview>
+  ),
+  sparklines: () => (
+    <Preview>
+      <Chart
+        label="Visits this week"
+        type="area"
+        sparkline
+        height={48}
+        categories={["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]}
+        series={[{ name: "Visits", data: [22, 8, 35, 50, 82, 84, 77] }]}
+      />
+    </Preview>
+  ),
   labels: () => (
     <Preview>
       <Chart
@@ -348,7 +542,7 @@ const PREVIEWS = {
           html: "table columns",
           type: "{ name, data, type?, color? }[]",
           description:
-            "The series. Values are numbers, `null` (a gap), `[x, y]` pairs or `{ x, y, color }`. Pie, donut and radial bar charts draw the first series.",
+            "The series. Values are numbers, `null` (a gap), `[x, y]` pairs, `[x, y, size]` (bubbles) or `{ x, y, color }`. Box plots take five values in `y`, range areas two. Pie, donut, radial bar and funnel charts draw the first series.",
         },
         {
           react: "categories",
@@ -411,6 +605,7 @@ const PREVIEWS = {
         ["Tab", "Moves focus to the plot and shows the first category."],
         ["Right arrow / Down arrow", "Shows the next category or point."],
         ["Left arrow / Up arrow", "Shows the previous category or point."],
+        ["Arrow keys (heatmap, treemap)", "Shows the nearest cell in the arrow's direction."],
         ["Home / End", "Shows the first or last category or point."],
         ["Escape", "Hides the tooltip."],
       ]}

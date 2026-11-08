@@ -16,6 +16,13 @@ export const chartTypes = [
   "donut",
   "radialBar",
   "radar",
+  "boxPlot",
+  "heatmap",
+  "treemap",
+  "bubble",
+  "rangeArea",
+  "funnel",
+  "slope",
 ] as const;
 /** Charts of one series whose categories are slices or rings (legend items are categories). */
 export const chartCircularTypes = ["pie", "donut", "radialBar"] as const;
@@ -36,9 +43,45 @@ export type ChartCircularType = (typeof chartCircularTypes)[number];
 /** Whether a chart type draws slices or rings (pie, donut, radial bar). */
 export const isCircularChart = (type: ChartType): type is ChartCircularType =>
   chartCircularTypes.includes(type as ChartCircularType);
-/** Whether a chart type is drawn around a center (circular charts and radar): no mixed types. */
+/** Whether a chart type is drawn around a center (circular charts and radar). */
 export const isPolarChart = (type: ChartType): boolean => type === "radar" || isCircularChart(type);
+const wholeTypes: readonly ChartType[] = [
+  "radar",
+  ...chartCircularTypes,
+  "heatmap",
+  "treemap",
+  "funnel",
+  "slope",
+];
+/** Whether a chart type draws every series the same way (no mixed charts). */
+export const isWholeChart = (type: ChartType): boolean => wholeTypes.includes(type);
 type Shade = (typeof chartShades)[number];
+
+/**
+ * Values of a point beyond `y`, by series type (phase 3): box plots have five, range areas two,
+ * bubbles a size. Data tables give each part its own column (`th[data-ok-part]`).
+ */
+export type ChartPart = "min" | "q1" | "median" | "q3" | "max" | "low" | "high" | "y" | "z";
+export const chartParts = (type: ChartType): readonly ChartPart[] =>
+  type === "boxPlot"
+    ? ["min", "q1", "median", "q3", "max"]
+    : type === "rangeArea"
+      ? ["low", "high"]
+      : type === "bubble"
+        ? ["y", "z"]
+        : [];
+/** Default text of each part (table headers and tooltip rows). */
+export const chartPartLabels: Readonly<Record<ChartPart, string>> = {
+  min: "Minimum",
+  q1: "Q1",
+  median: "Median",
+  q3: "Q3",
+  max: "Maximum",
+  low: "Low",
+  high: "High",
+  y: "Value",
+  z: "Size",
+};
 
 /** A palette color (`main`) or one of its shades: `"info"`, `"primary-dark"`. */
 export type ChartColor = Palette | `${Palette}-${Shade}`;
@@ -62,14 +105,19 @@ export const chartDefaultColors: readonly ChartColor[] = [
   "info-darker",
 ];
 
-/** A point: a value, `null` (a gap), an `[x, y]` pair or `{ x, y, color }`. */
+/**
+ * A point: a value, `null` (a gap), an `[x, y]` pair, an `[x, y, z]` triple (bubbles) or
+ * `{ x, y, z, color }`. Box plots take five values in `y` (minimum, Q1, median, Q3, maximum),
+ * range areas two (low, high). Without `categories`, a text `x` names the point's category.
+ */
 export type ChartPointInput =
   | number
   | null
-  | readonly [x: number | string | Date, y: number | null]
+  | readonly [x: number | string | Date, y: number | readonly number[] | null, z?: number]
   | {
       readonly x?: number | string | Date;
-      readonly y: number | null;
+      readonly y: number | readonly number[] | null;
+      readonly z?: number | undefined;
       readonly color?: ChartColor | undefined;
     };
 
@@ -84,8 +132,13 @@ export interface ChartSeries {
 export interface ChartPoint {
   /** Position on the x axis: the category index (category / datetime) or the x value (numeric). */
   readonly x: number;
+  /** The value (box plots: the median; range areas: the high value). */
   readonly y: number | null;
   readonly color?: ChartColor | undefined;
+  /** Every value of a box plot (five, ascending) or a range area (low, high). */
+  readonly range?: readonly number[] | undefined;
+  /** Bubble size. */
+  readonly z?: number | undefined;
 }
 
 export interface ChartDataSeries {
@@ -104,6 +157,13 @@ export interface ChartData {
 }
 
 const isColor = (value: unknown): value is ChartColor => chartColors.includes(value as ChartColor);
+
+/** The lighter tone of a color (radial bar gradients, the lower half of box plots). */
+export function lighterTone(color: ChartColor): ChartColor {
+  const [name, shade = "main"] = color.split("-") as [string, string | undefined];
+  const index = chartShades.indexOf(shade as Shade);
+  return `${name}-${chartShades[Math.max(0, index - 1)]}` as ChartColor;
+}
 
 /** A finite number from a number or numeric text ("1,234.5", "-12%"); otherwise `null`. */
 export function parseChartNumber(value: unknown): number | null {
@@ -137,7 +197,11 @@ export function chartData(input: {
   colors?: readonly ChartColor[] | undefined;
 }): ChartData {
   const type = pick(chartTypes, input.type, "line");
-  const xType = pick(chartXTypes, input.xType, type === "scatter" ? "numeric" : "category");
+  const xType = pick(
+    chartXTypes,
+    input.xType,
+    type === "scatter" || type === "bubble" ? "numeric" : "category",
+  );
   const palette = (input.colors ?? []).filter(isColor);
   const categories: (string | number)[] = [];
   if (xType === "category")
@@ -148,45 +212,68 @@ export function chartData(input: {
       if (time !== undefined) categories.push(time);
     }
   }
-  const polar = isPolarChart(type);
+  const whole = isWholeChart(type);
   const circular = isCircularChart(type);
+  /** A point's own x on a category or date axis: its category, found or added (no `categories`). */
+  const categoryOf = (raw: unknown, position: number): number | undefined => {
+    if (input.categories !== undefined || raw === undefined) return position;
+    const key = xType === "datetime" ? toTimestamp(raw) : String(raw);
+    if (key === undefined) return undefined;
+    if (!categories.includes(key)) categories.push(key);
+    return categories.indexOf(key);
+  };
   const series = input.series.map((entry, index): ChartDataSeries => {
+    // Whole charts draw every series the same way, and mixed charts can't use whole types.
+    const own = pick(chartTypes, entry.type, type);
+    const seriesType = whole || isWholeChart(own) ? type : own;
+    const parts = seriesType === "bubble" ? 0 : chartParts(seriesType).length;
     const points: ChartPoint[] = [];
     entry.data.forEach((raw, position) => {
       let x: number | undefined = xType === "numeric" ? undefined : position;
-      let y: number | null;
+      let rawY: unknown = raw;
+      let rawZ: unknown;
       let color: ChartColor | undefined;
       if (Array.isArray(raw)) {
-        const [rx, ry] = raw as readonly [unknown, unknown];
-        if (xType === "numeric") x = numericX(rx);
-        else if (xType === "datetime" && input.categories === undefined) {
-          const time = toTimestamp(rx);
-          if (time !== undefined) {
-            if (!categories.includes(time)) categories.push(time);
-            x = categories.indexOf(time);
-          } else x = undefined;
-        }
-        y = parseChartNumber(ry);
+        const [rx, ry, rz] = raw as readonly [unknown, unknown, unknown];
+        x = xType === "numeric" ? numericX(rx) : categoryOf(rx, position);
+        rawY = ry;
+        rawZ = rz;
       } else if (raw !== null && typeof raw === "object") {
-        const point = raw as { x?: unknown; y?: unknown; color?: unknown };
-        if (xType === "numeric") x = numericX(point.x);
-        y = parseChartNumber(point.y);
+        const point = raw as { x?: unknown; y?: unknown; z?: unknown; color?: unknown };
+        x = xType === "numeric" ? numericX(point.x) : categoryOf(point.x, position);
+        rawY = point.y;
+        rawZ = point.z;
         if (isColor(point.color)) color = point.color;
-      } else y = parseChartNumber(raw);
+      }
       if (x === undefined) return;
+      let y: number | null;
+      let range: number[] | undefined;
+      if (parts > 0) {
+        // Box plots and range areas: every value or none, sorted (a box is never inside out).
+        const values = Array.isArray(rawY) ? rawY.map(parseChartNumber) : [];
+        if (values.length === parts && values.every((value) => value !== null))
+          range = (values as number[]).sort((a, b) => a - b);
+        y = range ? (range[parts === 5 ? 2 : 1] as number) : null;
+      } else y = Array.isArray(rawY) ? null : parseChartNumber(rawY);
+      const z = seriesType === "bubble" ? parseChartNumber(rawZ) : null;
       // Circular charts color each slice (ring): its own color, `colors` or the default order.
       if (circular && !color)
         color =
           palette[position] ??
           (chartDefaultColors[position % chartDefaultColors.length] as ChartColor);
-      points.push(color ? { x, y, color } : { x, y });
+      points.push({
+        x,
+        y,
+        ...(color ? { color } : {}),
+        ...(range ? { range } : {}),
+        ...(z !== null ? { z } : {}),
+      });
     });
     const fallback =
       palette[index] ?? (chartDefaultColors[index % chartDefaultColors.length] as ChartColor);
     return {
       name: String(entry.name),
-      // Polar charts draw every series the same way (no mixed types).
-      type: polar ? type : pick(chartTypes, entry.type, type),
+      type: seriesType,
       color: isColor(entry.color) ? entry.color : fallback,
       points,
     };
@@ -198,12 +285,21 @@ export function chartData(input: {
 
 export interface ChartTableCell {
   readonly text: string;
-  /** `data-ok-*` attributes of the cell (series type / color, raw x value, point color). */
+  /** `data-ok-*` attributes of the cell (series type / color, raw x value, point color, part). */
   readonly attrs: Readonly<Record<string, string>>;
+  /** Header cells: a series of several values spans their columns. */
+  readonly colSpan?: number | undefined;
+  /** Header cells: spans both header rows (tables with a second header row). */
+  readonly rowSpan?: number | undefined;
 }
 
 export interface ChartTableModel {
   readonly head: readonly ChartTableCell[];
+  /**
+   * The second header row: one cell per value of the series that have several (box plots,
+   * range areas, bubbles). Empty when every series has one value (one header row).
+   */
+  readonly parts: readonly ChartTableCell[];
   readonly rows: readonly {
     readonly header: ChartTableCell;
     readonly cells: readonly ChartTableCell[];
@@ -217,8 +313,9 @@ const isoDate = (time: number) => {
 
 /**
  * The data table React renders and HTML authors write: one row per x value, one column per
- * series. `formatX` / `formatValue` give the visible text; raw values that differ from the text
- * go into `data-ok-value`.
+ * series (one per value for box plots, range areas and bubbles, under a second header row).
+ * `formatX` / `formatValue` give the visible text; raw values that differ from the text go into
+ * `data-ok-value`.
  */
 export function chartTable(
   data: ChartData,
@@ -226,20 +323,40 @@ export function chartTable(
     xLabel: string;
     formatX: (x: string | number) => string;
     formatValue: (value: number, series: number) => string;
+    /** Bubble sizes (default `String`). */
+    formatNumber?: ((value: number) => string) | undefined;
     /** Series types written on the column headers (`true` for mixed charts). */
     seriesTypes?: boolean;
   },
 ): ChartTableModel {
+  const partsOf = data.series.map((series) => chartParts(series.type));
+  const two = partsOf.some((parts) => parts.length > 0);
   const head: ChartTableCell[] = [
-    { text: options.xLabel, attrs: {} },
-    ...data.series.map((series) => ({
-      text: series.name,
-      attrs: {
-        ...(options.seriesTypes ? { "data-ok-type": series.type } : {}),
-        "data-ok-color": series.color,
-      },
-    })),
+    { text: options.xLabel, attrs: {}, ...(two ? { rowSpan: 2 } : {}) },
+    ...data.series.map((series, index) => {
+      const count = (partsOf[index] as readonly ChartPart[]).length;
+      return {
+        text: series.name,
+        attrs: {
+          ...(options.seriesTypes ? { "data-ok-type": series.type } : {}),
+          "data-ok-color": series.color,
+        },
+        ...(count > 0 ? { colSpan: count } : two ? { rowSpan: 2 } : {}),
+      };
+    }),
   ];
+  const parts: ChartTableCell[] = partsOf.flatMap((list) =>
+    list.map((part) => ({ text: chartPartLabels[part], attrs: { "data-ok-part": part } })),
+  );
+  const formatNumber = options.formatNumber ?? String;
+  const cell = (value: number, text: string, color?: ChartColor): ChartTableCell => ({
+    text,
+    attrs: {
+      ...(text !== String(value) ? { "data-ok-value": String(value) } : {}),
+      ...(color ? { "data-ok-color": color } : {}),
+    },
+  });
+  const empty: ChartTableCell = { text: "", attrs: {} };
   // One row per x value; an x that holds several points of a series (scatter) gets one row per
   // point, so no value is lost: row `k` of an x holds the k-th point of each series.
   const xs: number[] =
@@ -261,33 +378,40 @@ export function chartTable(
     const at = data.series.map((series) => series.points.filter((p) => p.x === x));
     const count = Math.max(1, ...at.map((points) => points.length));
     for (let k = 0; k < count; k++) {
-      const cells = at.map((points, index) => {
+      const cells = at.flatMap((points, index): ChartTableCell[] => {
         const point = points[k];
-        if (!point || point.y === null) return { text: "", attrs: {} };
-        const value = options.formatValue(point.y, index);
-        return {
-          text: value,
-          attrs: {
-            ...(value !== String(point.y) ? { "data-ok-value": String(point.y) } : {}),
-            ...(point.color ? { "data-ok-color": point.color } : {}),
-          },
-        };
+        const list = partsOf[index] as readonly ChartPart[];
+        const width = Math.max(1, list.length);
+        if (!point || point.y === null) return Array.from({ length: width }, () => empty);
+        if (point.range)
+          return point.range.map((value, i) =>
+            cell(value, options.formatValue(value, index), i === 0 ? point.color : undefined),
+          );
+        const main = cell(point.y, options.formatValue(point.y, index), point.color);
+        if (list.length === 0) return [main];
+        // Bubbles: the value, then the size.
+        return [main, point.z === undefined ? empty : cell(point.z, formatNumber(point.z))];
       });
       rows.push({ header: { text, attrs }, cells });
     }
   }
-  return { head, rows };
+  return { head, parts, rows };
 }
 
-/** Reads series and categories from a chart data table (HTML). Missing cells are gaps. */
+/**
+ * Reads series and categories from a chart data table (HTML). Missing cells are gaps. A second
+ * header row names the values of series that have several (`th[data-ok-part]` under a header
+ * spanning them).
+ */
 export function readChartTable(
   table: HTMLTableElement,
   xType: ChartXType,
 ): { series: ChartSeries[]; categories: (string | number)[] } {
-  const headRow = table.tHead?.rows[0] ?? table.rows[0];
+  const headRows = table.tHead ? [...table.tHead.rows] : [...table.rows].slice(0, 1);
+  const headRow = headRows[0];
   if (!headRow) return { series: [], categories: [] };
-  const headers = [...headRow.cells].slice(1);
-  const bodyRows = [...table.rows].filter((row) => row !== headRow);
+  const partCells = [...(headRows[1]?.cells ?? [])];
+  const bodyRows = [...table.rows].filter((row) => !headRows.includes(row));
   const raw = (cell: Element | undefined) => cell?.getAttribute("data-ok-value") ?? cellText(cell);
   const categories: (string | number)[] = [];
   const xs: unknown[] = [];
@@ -300,14 +424,37 @@ export function readChartTable(
     }
     xs.push(raw(first));
   }
-  const series = headers.map((header, column): ChartSeries => {
+  let column = 1;
+  let next = 0;
+  const series = [...headRow.cells].slice(1).map((header): ChartSeries => {
+    // A header over a second header row spans the columns of its values.
+    const spans = partCells.length > 0 && header.rowSpan < 2;
+    const parts = spans
+      ? partCells.slice(next, next + header.colSpan).map((c) => c.getAttribute("data-ok-part"))
+      : [];
+    if (spans) next += header.colSpan;
+    const first = column;
+    column += spans ? header.colSpan : 1;
     const data: ChartPointInput[] = bodyRows.map((row, index) => {
-      const cell = row.cells[column + 1];
-      const text = raw(cell);
-      const y = text === "" ? null : parseChartNumber(text);
+      const cell = row.cells[first];
+      const value = (at: number) => {
+        const text = raw(row.cells[at]);
+        return text === "" ? null : parseChartNumber(text);
+      };
       const color = cell?.getAttribute("data-ok-color");
-      if (xType === "numeric") return [xs[index] as string, y];
-      return isColor(color) ? { y, color } : y;
+      let y: number | number[] | null;
+      let z: number | null = null;
+      if (parts.includes("z")) {
+        y = value(first + parts.indexOf("y"));
+        z = value(first + parts.indexOf("z"));
+      } else if (parts.length > 0) {
+        const values = parts.map((_, i) => value(first + i));
+        y = values.every((v) => v !== null) ? (values as number[]) : null;
+      } else y = value(first);
+      if (xType === "numeric")
+        return z === null ? [xs[index] as string, y] : [xs[index] as string, y, z];
+      if (!Array.isArray(y) && z === null && !isColor(color)) return y;
+      return { y, ...(z !== null ? { z } : {}), ...(isColor(color) ? { color } : {}) };
     });
     const type = header.getAttribute("data-ok-type");
     const color = header.getAttribute("data-ok-color");

@@ -16,7 +16,7 @@ updates early, while ADR-0024 left the JavaScript data API (`updateSeries`) to p
 |---|---|
 | 1 ✅ | Engine, legend, tooltip, keyboard, data table; Line, Area, Column single / multiple / stacked / negative, Bar, Mixed, Scatter |
 | 2 ✅ | Pie, Donut, Radial bar, Radar, Semi circle gauge, Stroked gauge; data labels |
-| 3 | BoxPlot, Heatmap, Treemap (reference); Bubble, Range area, Funnel / pyramid, Slope; Sparklines (no axes, sized by their container); a JavaScript data API (`updateSeries`, appending points) in React and HTML |
+| 3 ✅ | BoxPlot, Heatmap, Treemap (reference); Bubble, Range area, Funnel / pyramid, Slope; Sparklines (no axes, sized by their container); a JavaScript data API (`updateSeries`, appending points) in React and HTML |
 | 4 | Synchronized charts (shared tooltip and zoom), zoom and pan, brush, annotations, animations (honoring reduced motion), export (SVG, PNG, CSV), Candlestick, Range bar, Timeline, Polar area; data label formatters and styles, donut hole size, a legend with values |
 
 ## Consequences

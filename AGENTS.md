@@ -408,6 +408,17 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
   carries `data-ok-color` per cell. Slots may skip hidden slices: look them up by `index`, never
   `slots[index]`. CSS beats SVG presentation attributes even at zero specificity: square caps of
   dashed rings come from `[data-ok-dashed]` on the series group, not a `stroke-linecap` attribute.
+  Phase 3 (ADR-0029): heatmap / treemap in `chart-cells.ts`, funnel / slope in `chart-shapes.ts`;
+  box plots, range areas, bubbles and sparklines stay in `layoutChart`. Cell shades are a
+  `fill-opacity` attribute, so never set `fill-opacity` on `[data-ok-chart-cell]` in CSS (it would
+  beat the attribute). Several values per point → a second `<thead>` row (`th[data-ok-part]`;
+  React `colSpan` / `rowSpan`, the generator `colspan` / `rowspan`). The HTML runtime patches the
+  SVG in place and reads its size from the `ResizeObserver` (`box`): tests that waited for
+  `childList` on the `<svg>` must watch the subtree; tests that resize synchronously read the
+  plot's size until the observer first reports. `updateSeries` / `appendData` rewrite the table and
+  `takeRecords()` their own mutations; `data-ok-ready` is set before measuring, so a sparkline's
+  plot is measured with the table already out of the flow. Full-page Playwright screenshots drop
+  the hover tooltip (the viewport resize): capture the viewport when checking tooltips.
 - Date pickers (ADR-0022): field sections are `contenteditable` spinbuttons whose text only the owner
   writes — core `createFieldController` cancels `beforeinput` and restores IME text. Browsers keep
   the selection inside the focused editable section, so select-all is `data-ok-all-selected` on the

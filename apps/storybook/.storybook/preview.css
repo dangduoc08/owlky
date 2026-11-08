@@ -1069,3 +1069,15 @@
   flex: 1 1 100%;
   min-width: 0;
 }
+
+/* Chart "Sparklines": three small charts side by side, wrapping on phones. */
+.sb-row > [data-ok-chart][data-ok-sparkline] {
+  flex: 1 1 10rem;
+}
+
+/* Chart "Live data" (story-only): the buttons under the chart. */
+.sb-chart-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--ok-spacing) * 2);
+}

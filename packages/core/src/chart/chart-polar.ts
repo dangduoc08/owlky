@@ -13,7 +13,10 @@ import {
   node,
   r2,
 } from "./chart-layout.js";
-import { type ChartColor, type ChartData, chartShades } from "./chart-model.js";
+import { type ChartColor, type ChartData, lighterTone } from "./chart-model.js";
+
+export { lighterTone };
+
 import { niceScale, scaleLinear, stepDecimals } from "./chart-scale.js";
 
 /*
@@ -75,13 +78,6 @@ export function arcPath(cx: number, cy: number, r: number, a0: number, a1: numbe
     return `${start}${arc(cx, cy, r, a0, mid)}${arc(cx, cy, r, mid, a0 + 359.99)}`;
   }
   return `${start}${arc(cx, cy, r, a0, a1)}`;
-}
-
-/** The lighter tone of a color, for the start of radial bar gradients. */
-export function lighterTone(color: ChartColor): ChartColor {
-  const [name, shade = "main"] = color.split("-") as [string, string | undefined];
-  const index = chartShades.indexOf(shade as (typeof chartShades)[number]);
-  return `${name}-${chartShades[Math.max(0, index - 1)]}` as ChartColor;
 }
 
 /** Start and end angles: `end` after `start`, at most one turn. */

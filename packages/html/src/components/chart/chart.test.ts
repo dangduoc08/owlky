@@ -85,8 +85,16 @@ const mutated = (target: Node, options: MutationObserverInit) =>
     }).observe(target, options);
   });
 
+/** Any change in the drawing (redraws patch the SVG in place). */
+const DEEP: MutationObserverInit = {
+  childList: true,
+  subtree: true,
+  attributes: true,
+  characterData: true,
+};
+
 describe("chart snippets", () => {
-  it("covers every story", () => expect(snippets).toHaveLength(15));
+  it("covers every story", () => expect(snippets).toHaveLength(25));
 
   it.each(snippets)(
     "%s: a figure with a data table, CSP-safe; readable without JavaScript",
@@ -345,11 +353,11 @@ describe("chart runtime", () => {
     start();
     const { root, svg } = parts(host);
     const cell = root.querySelector("tbody td") as HTMLElement;
-    let redraw = mutated(svg, { childList: true });
+    let redraw = mutated(svg, DEEP);
     cell.textContent = "500";
     await redraw;
     expect(svg.querySelector("[data-ok-chart-axis='y'] text:last-child")?.textContent).toBe("500");
-    redraw = mutated(svg, { childList: true });
+    redraw = mutated(svg, DEEP);
     root.setAttribute("data-ok-type", "bar");
     await redraw;
     expect(svg.querySelectorAll("[data-ok-chart-bar]").length).toBeGreaterThan(0);
@@ -514,5 +522,166 @@ describe("chart runtime: polar charts (phase 2)", () => {
     expect(svg.querySelector("[data-ok-chart-center-label]")?.textContent).toBe(
       "Used of 24 Mb / 50 Mb",
     );
+  });
+});
+
+describe("chart runtime: phase 3", () => {
+  const rows = (root: Element) =>
+    [...root.querySelectorAll("tbody tr")].map((tr) =>
+      [...tr.children].map((cell) => cell.textContent).join(" "),
+    );
+
+  it("box plot: two-row table read back, colors from attributes; hostile colors fall back", () => {
+    const host = sized(
+      snippet("box-plot").replace(
+        'data-ok-box-lower-color="error"',
+        `data-ok-box-lower-color='${HOSTILE}'`,
+      ),
+    );
+    start();
+    const { svg, plot, tip } = parts(host);
+    expect(svg.querySelectorAll("[data-ok-chart-box='upper'][data-ok-color='info']")).toHaveLength(
+      7,
+    );
+    // An invalid lower color falls back to a lighter tone of the series color.
+    expect(svg.querySelector("[data-ok-chart-box='lower']")?.getAttribute("data-ok-color")).toBe(
+      "primary-main",
+    );
+    hoverAt(plot, 300, 150);
+    expect(tip.querySelectorAll("[data-ok-chart-tooltip-row]")).toHaveLength(5);
+    expect(host.querySelector("img")).toBeNull();
+  });
+
+  it("heatmap and treemap: cells, keyboard between them", async () => {
+    const host = sized(snippet("heatmap"));
+    start();
+    const { svg, plot, tip } = parts(host);
+    expect(svg.querySelectorAll("[data-ok-chart-cell]")).toHaveLength(42);
+    plot.focus();
+    await userEvent.keyboard("{Home}");
+    await userEvent.keyboard("{ArrowDown}");
+    expect(tip.textContent).toBe("10:00Metric 524");
+    expect(svg.querySelectorAll("[data-ok-chart-active-cell]")).toHaveLength(1);
+    resetPage();
+    runtime?.stop();
+    const tree = sized(snippet("treemap"));
+    start();
+    expect(parts(tree).svg.querySelectorAll("[data-ok-chart-tag-label]")).toHaveLength(2);
+  });
+
+  it("sparklines: the container's height, at least data-ok-height (CSSOM)", async () => {
+    const host = sized(`<div>${snippet("sparklines")}</div>`);
+    const box = host.firstElementChild as HTMLElement;
+    box.style.height = "80px";
+    const root = box.querySelector("[data-ok-chart]") as HTMLElement;
+    root.style.width = "240px";
+    start();
+    const { plot, svg } = parts(box);
+    expect(plot.style.getPropertyValue("--_ok-chart-height")).toBe("48px");
+    expect(svg.getAttribute("height")).toBe("80");
+    expect(host.querySelector("[data-ok-chart-legend]")).toBeNull();
+    // A taller container: the next resize redraws at its height.
+    const redraw = mutated(svg, { attributes: true, attributeFilter: ["height"] });
+    box.style.height = "100px";
+    await redraw;
+    expect(svg.getAttribute("height")).toBe("100");
+    // Without data-ok-height: the CSS default (40px) and no custom property.
+    root.removeAttribute("data-ok-height");
+    box.style.height = "";
+    instance(box).refresh();
+    expect(plot.style.getPropertyValue("--_ok-chart-height")).toBe("");
+  });
+
+  it("updateSeries rewrites the table in place, keeps the active category and hidden series", () => {
+    const host = sized(LINE);
+    start();
+    const { root, plot, tip } = parts(host);
+    const chart = instance(host);
+    chart.setHiddenSeries([1]);
+    hoverAt(plot, 590, 100);
+    expect(tip.querySelector("[data-ok-chart-tooltip-title]")?.textContent).toBe("Apr");
+    const firstRow = root.querySelector("tbody tr");
+    chart.updateSeries(
+      [
+        { name: "Series A", data: [1, 2, 3, 99] },
+        { name: "Series B", data: [4, 5, 6, 7] },
+      ],
+      ["Feb", "Mar", "Apr", "May"],
+    );
+    expect(tip.textContent).toBe("MaySeries A99");
+    expect(chart.hiddenSeries).toEqual([1]);
+    expect(rows(root)).toEqual(["Feb 1 4", "Mar 2 5", "Apr 3 6", "May 99 7"]);
+    // The author's first header stays; rows are reused.
+    expect(root.querySelector("thead th")?.textContent).toBe("Month");
+    expect(root.querySelector("tbody tr")).toBe(firstRow);
+    // Without categories: the current ones; fewer rows.
+    chart.updateSeries([{ name: "Only", data: [5, 6] }]);
+    expect(rows(root)).toEqual(["Feb 5", "Mar 6", "Apr ", "May "]);
+    expect(root.querySelectorAll("thead th")).toHaveLength(2);
+  });
+
+  it("appendData slides a window; table edits make the table the source again", async () => {
+    const host = sized(LINE);
+    start();
+    const { root, svg } = parts(host);
+    const chart = instance(host);
+    const line = svg.querySelector("[data-ok-chart-line]");
+    chart.appendData([{ data: [70] }, { data: [71] }], { categories: ["May"], limit: 4 });
+    expect(rows(root)).toEqual(["Feb 40 32", "Mar 28 45", "Apr 64 34", "May 70 71"]);
+    // The drawing is patched: the same line element.
+    expect(svg.querySelector("[data-ok-chart-line]")).toBe(line);
+    chart.appendData([{ data: [1] }], { categories: ["Jun"], limit: 0 });
+    expect(rows(root).at(-1)).toBe("Jun 1 ");
+    chart.appendData([]);
+    expect(rows(root)).toHaveLength(5);
+    const redraw = mutated(svg, DEEP);
+    (root.querySelector("tbody td") as HTMLElement).textContent = "500";
+    await redraw;
+    expect(svg.querySelector("[data-ok-chart-axis='y'] text:last-child")?.textContent).toBe("500");
+    chart.appendData([{ data: [2] }, { data: [3] }], { categories: ["Jul"] });
+    expect(rows(root)[0]).toBe("Feb 500 32");
+  });
+
+  it("multi-value tables round-trip: range areas and bubbles", () => {
+    const host = sized(snippet("range-area"));
+    start();
+    const chart = instance(host);
+    const { root } = parts(host);
+    const before = rows(root);
+    chart.appendData([{ data: [{ y: [100, 200] }] }, { data: [150] }], { categories: ["Mon"] });
+    expect(rows(root).at(-1)).toBe("Mon 100 ms 200 ms 150 ms");
+    expect(root.querySelectorAll("thead tr")).toHaveLength(2);
+    chart.refresh();
+    expect(rows(root).slice(0, before.length)).toEqual(before);
+    resetPage();
+    runtime?.stop();
+    const bubbles = sized(snippet("bubble"));
+    start();
+    const { svg } = parts(bubbles);
+    expect(svg.querySelectorAll("[data-ok-chart-bubble]")).toHaveLength(12);
+    instance(bubbles).updateSeries([{ name: "Gateway", data: [[1, 2, 3]] }]);
+    expect(svg.querySelectorAll("[data-ok-chart-bubble]")).toHaveLength(1);
+    expect(rows(parts(bubbles).root)).toEqual(["1 2 3"]);
+  });
+
+  it("a table without a head or body is created; rows lose stray cells", () => {
+    const host = sized(
+      `<figure data-ok-chart data-ok-type="bar"><table data-ok-chart-data><caption>T</caption><tr><td>X</td><td>A</td></tr></table></figure>`,
+    );
+    start();
+    const { root } = parts(host);
+    instance(host).updateSeries([{ name: "A", data: [1] }], ["a"]);
+    expect(root.querySelector("thead tr")?.textContent).toBe("XA");
+    expect(rows(root)).toEqual(["a 1"]);
+    instance(host).updateSeries([{ name: "B", data: [{ y: [1, 2] }], type: "rangeArea" }], ["b"]);
+    expect(rows(root)).toEqual(["b 1 2"]);
+    expect(root.querySelector("tbody th")?.getAttribute("scope")).toBe("row");
+    // A header cell in a value position becomes a data cell.
+    const body = root.querySelector("tbody") as HTMLTableSectionElement;
+    ((body.rows[0] as HTMLTableRowElement).cells[1] as HTMLElement).replaceWith(
+      document.createElement("th"),
+    );
+    instance(host).updateSeries([{ name: "A", data: [3] }], ["c"]);
+    expect([...(body.rows[0]?.cells ?? [])].map((c) => c.localName)).toEqual(["th", "td"]);
   });
 });

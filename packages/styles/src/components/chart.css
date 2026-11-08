@@ -21,6 +21,11 @@
  *               Polar charts (phase 2): path[data-ok-chart-slice] (pie, donut),
  *                 path[data-ok-chart-track] + path[data-ok-chart-radial] (radial bar),
  *                 path | line[data-ok-chart-web] (radar grid), path[data-ok-chart-active-slice]
+ *               Phase 3: line[data-ok-chart-whisker] + rect[data-ok-chart-box="upper|lower"] (box plot),
+ *                 circle[data-ok-chart-bubble], rect[data-ok-chart-cell][fill-opacity] (heatmap,
+ *                 treemap) + text[data-ok-chart-cell-label] + rect[data-ok-chart-tag] +
+ *                 text[data-ok-chart-tag-label], rect[data-ok-chart-active-cell];
+ *                 [data-ok-sparkline] roots: no axes or legend, the plot fills the container
  *               div[data-ok-chart-tooltip][role="status"] (hidden unless a value is active)
  *                 div[data-ok-chart-tooltip-title] + div[data-ok-chart-tooltip-rows]
  *                   div[data-ok-chart-tooltip-row] › span[data-ok-chart-tooltip-marker][data-ok-color] + span + span[data-ok-chart-tooltip-value]
@@ -434,6 +439,81 @@
     fill: var(--ok-text-primary);
     font-size: calc(var(--ok-font-size-xl) * 1.25);
     font-weight: var(--ok-font-weight-bold);
+  }
+
+  /* Box plots (phase 3): two boxes split at the median, grey whiskers. */
+  :where([data-ok-chart-box]) {
+    fill: var(--_ok-chart-c);
+  }
+
+  :where([data-ok-chart-whisker]) {
+    stroke: var(--ok-text-disabled);
+    stroke-width: 2px;
+  }
+
+  /* Range areas: a solid band with thin edges. */
+  :where([data-ok-chart-series][data-ok-type="rangeArea"] > [data-ok-chart-line]) {
+    stroke-width: 1.5px;
+  }
+
+  /* Bubbles: translucent, so overlaps stay readable. */
+  :where([data-ok-chart-bubble]) {
+    fill: var(--_ok-chart-c);
+    fill-opacity: 0.72;
+    stroke: var(--ok-bg-paper);
+    stroke-width: 1px;
+  }
+
+  /* Heatmap and treemap cells: the shade comes from the drawing (fill-opacity). */
+  :where([data-ok-chart-cell]) {
+    fill: var(--_ok-chart-c);
+  }
+
+  :where([data-ok-chart-active-cell]) {
+    fill: none;
+    stroke: var(--ok-text-primary);
+    stroke-width: 2px;
+    pointer-events: none;
+  }
+
+  :where([data-ok-chart-cell-label]) {
+    fill: var(--ok-text-primary);
+    font-size: var(--ok-font-size-md);
+    font-weight: var(--ok-font-weight-semibold);
+    pointer-events: none;
+  }
+
+  :where([data-ok-chart-cell-label="inside"]) {
+    fill: var(--ok-palette-common-white);
+  }
+
+  /* Treemap groups: a dark tag with the series name. */
+  :where([data-ok-chart-tag]) {
+    fill: rgb(var(--ok-palette-grey-800-channel) / 0.8);
+  }
+
+  :where([data-ok-chart-tag-label]) {
+    fill: var(--ok-palette-common-white);
+    font-size: var(--ok-font-size-xs);
+    pointer-events: none;
+  }
+
+  /* Sparklines: the plot fills the container (at least --_ok-chart-height), the SVG fills it. */
+  :where([data-ok-chart][data-ok-sparkline]) {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  :where([data-ok-sparkline] > [data-ok-chart-plot]) {
+    flex: 1 1 auto;
+    min-height: var(--_ok-chart-height, calc(var(--ok-spacing) * 10));
+  }
+
+  :where([data-ok-sparkline] > [data-ok-chart-plot] > [data-ok-chart-svg]) {
+    position: absolute;
+    inset: 0;
+    height: 100%;
   }
 
   /* Tooltip: paper card beside the active value; never takes the pointer. */

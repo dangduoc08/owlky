@@ -1,11 +1,12 @@
 import type { ChartFormat } from "./chart-format.js";
-import type {
-  ChartColor,
-  ChartCurve,
-  ChartData,
-  ChartDataSeries,
-  ChartFill,
-  ChartType,
+import {
+  type ChartColor,
+  type ChartCurve,
+  type ChartData,
+  type ChartDataSeries,
+  type ChartFill,
+  type ChartType,
+  lighterTone,
 } from "./chart-model.js";
 import {
   type DateLabel,
@@ -75,6 +76,20 @@ export interface ChartLayoutOptions {
   readonly totalLabel?: string | undefined;
   /** Donut and radial bar center: the total shown (default the sum; radial bars the average). */
   readonly total?: number | undefined;
+  /** No axes, grid or legend: the plot fills the SVG (charts in cards and table cells). */
+  readonly sparkline?: boolean | undefined;
+  /** Box plots: the box above the median (default the series color). */
+  readonly boxUpperColor?: ChartColor | undefined;
+  /** Box plots: the box below the median (default a lighter tone of the series color). */
+  readonly boxLowerColor?: ChartColor | undefined;
+}
+
+/** A rectangle in SVG px (heatmap and treemap cells). */
+export interface ChartRect {
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
 }
 
 /** A slice or ring of a circular chart: angles in degrees clockwise from 12 o'clock. */
@@ -101,6 +116,13 @@ export interface ChartMark {
   readonly color: ChartColor;
   /** Circular charts: the area that activates the mark (a slice, or a ring's whole track). */
   readonly arc?: ChartArc | undefined;
+  /** Box plots (five values) and range areas (low, high): every value of the point. */
+  readonly range?: readonly number[] | undefined;
+  /** Bubbles: the size value and the drawn radius. */
+  readonly z?: number | undefined;
+  readonly r?: number | undefined;
+  /** Heatmaps and treemaps: the cell that activates the mark. */
+  readonly cell?: ChartRect | undefined;
 }
 
 export interface ChartSlot {
@@ -119,10 +141,11 @@ export interface ChartLayout {
     readonly height: number;
   };
   /**
-   * `index`: one tooltip per category; `point`: one per point (scatter); `slice`: one per slice
-   * or ring (pie, donut, radial bar).
+   * `index`: one tooltip per category; `point`: one per point (scatter, bubble); `slice`: one per
+   * slice or ring (pie, donut, radial bar); `cell`: one per cell (heatmap, treemap; arrow keys
+   * move in their direction).
    */
-  readonly mode: "index" | "point" | "slice";
+  readonly mode: "index" | "point" | "slice" | "cell";
   /** Radar: center and radius; slots are categories and `pos` their angle in degrees. */
   readonly polar?: { readonly cx: number; readonly cy: number; readonly r: number } | undefined;
   readonly horizontal: boolean;
@@ -175,8 +198,16 @@ export const node = (
   ...(text !== undefined ? { text } : {}),
 });
 
-/** A value printed on the chart: `inside` a filled shape (white) or `outside` above a point. */
-export const dataLabel = (x: number, y: number, text: string, place: "inside" | "outside") =>
+/**
+ * A value printed on the chart: `inside` a filled shape (white), `outside` above a point, or
+ * `plain` on a faint cell (primary text).
+ */
+export const dataLabel = (
+  x: number,
+  y: number,
+  text: string,
+  place: "inside" | "outside" | "plain",
+) =>
   node(
     "text",
     {
@@ -261,7 +292,7 @@ const STEPS: Record<DateUnit | "index", readonly number[]> = {
 };
 
 /** Which categories get a label so that labels `width` px wide never overlap. */
-function shownLabels(
+export function shownLabels(
   count: number,
   spacing: number,
   width: number,
@@ -276,12 +307,19 @@ function shownLabels(
   return (index) => index < count && key(index) % step === 0;
 }
 
+/** A scale from `min` to `max` without ticks (sparklines); a flat range opens upward. */
+const flatScale = (min: number, max: number) => {
+  const lo = Math.min(min, max);
+  const hi = Math.max(min, max);
+  return { min: lo, max: hi > lo ? hi : lo + 1, step: 1, ticks: [] as number[] };
+};
+
 // --- Layout -----------------------------------------------------------------------------------
 
 /** Lays out a chart. `width` and `height` are the SVG size in px. */
 export function layoutChart(data: ChartData, options: ChartLayoutOptions): ChartLayout {
   const width = Math.max(40, Math.round(options.width));
-  const height = Math.max(40, Math.round(options.height));
+  const height = Math.max(options.sparkline ? 8 : 40, Math.round(options.height));
   const { format } = options;
   const hidden = new Set(options.hidden ?? []);
   const visible = data.series
@@ -292,9 +330,13 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
     options.horizontal === true && visible.every(({ series }) => typeOf(series) === "bar");
   const numeric = data.xType === "numeric";
   const mode =
-    data.series.length > 0 && data.series.every((s) => s.type === "scatter") ? "point" : "index";
-  const banded = !numeric && visible.some(({ series }) => typeOf(series) === "bar");
+    data.series.length > 0 && data.series.every((s) => s.type === "scatter" || s.type === "bubble")
+      ? "point"
+      : "index";
+  const banded =
+    !numeric && visible.some(({ series }) => series.type === "bar" || series.type === "boxPlot");
   const stacked = options.stacked === true;
+  const sparkline = options.sparkline === true;
   const count = numeric
     ? 0
     : Math.max(data.categories.length, ...data.series.map((s) => s.points.length), 0);
@@ -314,7 +356,11 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
         xhi = Math.max(xhi, point.x);
       }
       if (point.y === null) continue;
-      if (stacked && !numeric) {
+      if (point.range) {
+        // Box plots and range areas span their values (never stacked).
+        lo = Math.min(lo, point.range[0] as number);
+        hi = Math.max(hi, point.range[point.range.length - 1] as number);
+      } else if (stacked && !numeric) {
         const totals = point.y >= 0 ? pos : neg;
         const start = totals[point.x] as number;
         totals[point.x] = start + point.y;
@@ -331,25 +377,35 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
     lo = 0;
     hi = 1;
   }
-  lo = Math.min(lo, 0);
-  hi = Math.max(hi, 0);
+  // Values start at zero, except where box plots, range areas, bubbles or sparkline lines fit the
+  // scale to their data (bars and areas, filled from zero, keep it).
+  const fitted =
+    sparkline ||
+    visible.some(({ series }) => ["boxPlot", "rangeArea", "bubble"].includes(series.type));
+  const zeroBased = visible.some(({ series }) =>
+    fitted
+      ? series.type === "bar" || series.type === "area"
+      : ["line", "area", "bar", "scatter"].includes(series.type),
+  );
+  if (zeroBased || visible.length === 0) {
+    lo = Math.min(lo, 0);
+    hi = Math.max(hi, 0);
+  }
 
   const gap = 12;
-  const labelHeight = FONT + gap + 6;
-  const top = 10;
-  const yTitleSpace = options.yTitle ? FONT + 10 : 0;
+  const labelHeight = sparkline ? 0 : FONT + gap + 6;
+  const top = sparkline ? 0 : 10;
+  const yTitleSpace = options.yTitle && !sparkline ? FONT + 10 : 0;
 
   // Value axis ticks: about one per 48px of height (vertical) or 200px of width (horizontal).
+  // Sparklines have no ticks: their scale is the data's own range.
   const valueSpan = horizontal ? width : height - top - labelHeight;
-  const valueScale = niceScale(
-    lo,
-    hi,
-    Math.max(2, Math.round(valueSpan / (horizontal ? 200 : 48))),
-    {
-      min: options.yMin,
-      max: options.yMax,
-    },
-  );
+  const valueScale = sparkline
+    ? flatScale(options.yMin ?? lo, options.yMax ?? hi)
+    : niceScale(lo, hi, Math.max(2, Math.round(valueSpan / (horizontal ? 200 : 48))), {
+        min: options.yMin,
+        max: options.yMax,
+      });
   const decimals = stepDecimals(valueScale.step);
   const tickTexts = valueScale.ticks.map((tick) => format.tick(tick, decimals));
   const nodes: ChartNode[] = [];
@@ -395,7 +451,28 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
     ),
   );
 
-  if (horizontal) {
+  if (sparkline) {
+    // No axes: the plot fills the SVG, less room for line strokes and markers.
+    const pad = banded ? 1 : Math.max(3, (options.markerSize ?? 0) + 1);
+    plot = {
+      x: pad,
+      y: pad,
+      width: Math.max(10, width - pad * 2),
+      height: Math.max(10, height - pad * 2),
+    };
+    if (numeric) {
+      xMin = xlo === Number.POSITIVE_INFINITY ? 0 : xlo;
+      xMax = xhi === Number.NEGATIVE_INFINITY || xhi === xMin ? xMin + 1 : xhi;
+    }
+    const along = horizontal ? plot.height : plot.width;
+    band = banded ? along / Math.max(1, count) : count > 1 ? along / (count - 1) : along;
+    const start = horizontal ? plot.y : plot.x;
+    toCat = (index) =>
+      banded ? start + band * (index + 0.5) : count > 1 ? start + band * index : start + along / 2;
+    toValue = horizontal
+      ? (value) => scaleLinear(value, valueScale.min, valueScale.max, plot.x, plot.x + plot.width)
+      : (value) => scaleLinear(value, valueScale.min, valueScale.max, plot.y + plot.height, plot.y);
+  } else if (horizontal) {
     // Categories down the left, values along the bottom.
     const catWidth = Math.max(0, ...categoryLabels.map((label) => chartTextWidth(label.text)));
     const left = catWidth + 16 + yTitleSpace;
@@ -539,6 +616,16 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
       Math.min(100, Math.max(1, (horizontal ? options.barHeight : options.columnWidth) ?? 40))) /
     100;
   const markerSize = Math.max(0, options.markerSize ?? 0);
+  const boxSeries = visible
+    .filter(({ series }) => series.type === "boxPlot")
+    .map(({ index }) => index);
+  // Bubbles: the largest size gets a tenth of the plot's smaller side (at least 8px).
+  let zMax = 0;
+  for (const { series } of visible)
+    if (series.type === "bubble")
+      for (const point of series.points)
+        if (point.y !== null && point.z !== undefined) zMax = Math.max(zMax, Math.abs(point.z));
+  const bubbleMax = Math.max(8, Math.min(plot.width, plot.height) / 10);
 
   // Topmost / bottommost stacked bar per category: only stack ends are rounded.
   const ends = new Map<string, number>();
@@ -612,6 +699,154 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
         );
       }
       bars.push(node("g", seriesAttrs, children));
+      continue;
+    }
+    const posOf = (x: number) => (numeric ? toX(x) : toCat(x));
+    if (series.type === "boxPlot") {
+      // Whiskers from the minimum to Q1 and Q3 to the maximum, two boxes split at the median.
+      const slot = boxSeries.indexOf(index);
+      const size = groupSize / Math.max(1, boxSeries.length);
+      const upper = options.boxUpperColor ?? series.color;
+      const lower = options.boxLowerColor ?? lighterTone(series.color);
+      const children: ChartNode[] = [];
+      for (const point of series.points) {
+        if (!point.range) continue;
+        const [min, q1, median, q3, max] = point.range.map(toValue) as [
+          number,
+          number,
+          number,
+          number,
+          number,
+        ];
+        const a = posOf(point.x) - groupSize / 2 + slot * size;
+        const cx = a + size / 2;
+        const cap = size / 4;
+        marks.push({
+          series: index,
+          type: series.type,
+          index: point.x,
+          x: point.x,
+          value: point.y as number,
+          px: r2(cx),
+          py: r2(max),
+          color: upper,
+          range: point.range,
+        });
+        const whisker = (x1: number, y1: number, x2: number, y2: number) =>
+          node("line", {
+            x1: fmt(x1),
+            y1: fmt(y1),
+            x2: fmt(x2),
+            y2: fmt(y2),
+            "data-ok-chart-whisker": "",
+          });
+        const box = (y: number, h: number, part: string, color: ChartColor) =>
+          node("rect", {
+            x: fmt(a),
+            y: fmt(y),
+            width: fmt(size),
+            height: fmt(Math.max(0, h)),
+            "data-ok-chart-box": part,
+            "data-ok-color": color,
+          });
+        children.push(
+          whisker(cx, max, cx, q3),
+          whisker(cx, q1, cx, min),
+          whisker(cx - cap, max, cx + cap, max),
+          whisker(cx - cap, min, cx + cap, min),
+          box(q3, median - q3, "upper", upper),
+          box(median, q1 - median, "lower", lower),
+        );
+      }
+      bars.push(node("g", seriesAttrs, children));
+      continue;
+    }
+    if (series.type === "rangeArea") {
+      // A band between the low and high values, outlined at both edges; gaps break it.
+      const segments: { high: Pt; low: Pt }[][] = [];
+      let current: { high: Pt; low: Pt }[] = [];
+      for (const point of [...series.points].sort((a, b) => a.x - b.x)) {
+        if (!point.range) {
+          if (current.length) segments.push(current);
+          current = [];
+          continue;
+        }
+        const x = posOf(point.x);
+        const [low, high] = point.range as [number, number];
+        current.push({ high: [x, toValue(high)], low: [x, toValue(low)] });
+        marks.push({
+          series: index,
+          type: series.type,
+          index: point.x,
+          x: point.x,
+          value: high,
+          px: r2(x),
+          py: r2(toValue(high)),
+          color: series.color,
+          range: point.range,
+        });
+      }
+      if (current.length) segments.push(current);
+      const curve = options.curve ?? "smooth";
+      const children: ChartNode[] = [];
+      for (const segment of segments) {
+        const highs = segment.map((p) => p.high);
+        const lows = segment.map((p) => p.low).reverse();
+        children.push(
+          node("path", {
+            d: `${linePath(highs, curve)}L${linePath(lows, curve).slice(1)}Z`,
+            "data-ok-chart-area": "",
+          }),
+        );
+      }
+      for (const segment of segments)
+        for (const edge of ["high", "low"] as const)
+          children.push(
+            node("path", {
+              d: linePath(
+                segment.map((p) => p[edge]),
+                curve,
+              ),
+              "data-ok-chart-line": "",
+            }),
+          );
+      areas.push(node("g", seriesAttrs, children));
+      continue;
+    }
+    if (series.type === "bubble") {
+      // Radius by the square root of the size, so areas compare like the values.
+      const children: ChartNode[] = [];
+      for (const point of series.points) {
+        if (point.y === null) continue;
+        const px = posOf(point.x);
+        const py = toValue(point.y);
+        const r =
+          zMax > 0 && point.z !== undefined
+            ? Math.max(4, bubbleMax * Math.sqrt(Math.abs(point.z) / zMax))
+            : 4;
+        marks.push({
+          series: index,
+          type: series.type,
+          index: point.x,
+          x: point.x,
+          value: point.y,
+          px: r2(px),
+          py: r2(py),
+          color: point.color ?? series.color,
+          r: r2(r),
+          ...(point.z !== undefined ? { z: point.z } : {}),
+        });
+        children.push(
+          node("circle", {
+            cx: fmt(px),
+            cy: fmt(py),
+            r: fmt(r),
+            "data-ok-chart-bubble": "",
+            ...(point.color ? { "data-ok-color": point.color } : {}),
+          }),
+        );
+      }
+      scatters.push(node("g", seriesAttrs, children));
       continue;
     }
     const pts: { x: number; y: number }[] = series.points.filter(
@@ -724,8 +959,8 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
   }
 
   if (defs.length) nodes.push(node("defs", {}, defs));
-  nodes.push(node("g", { "data-ok-chart-grid": "" }, grid));
-  if (options.yTitle) {
+  if (!sparkline) nodes.push(node("g", { "data-ok-chart-grid": "" }, grid));
+  if (options.yTitle && !sparkline) {
     const x = FONT;
     const y = plot.y + plot.height / 2;
     nodes.push(
@@ -744,8 +979,10 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
       ),
     );
   }
-  nodes.push(node("g", { "data-ok-chart-axis": "x" }, axisX));
-  nodes.push(node("g", { "data-ok-chart-axis": "y" }, axisY));
+  if (!sparkline) {
+    nodes.push(node("g", { "data-ok-chart-axis": "x" }, axisX));
+    nodes.push(node("g", { "data-ok-chart-axis": "y" }, axisY));
+  }
   nodes.push(node("g", { "data-ok-chart-crosshair": "" }, []));
   nodes.push(
     node("g", { "data-ok-chart-series-group": "" }, [...areas, ...bars, ...lines, ...scatters]),
@@ -766,7 +1003,7 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
     activeRadius:
       mode === "point"
         ? (options.markerSize ?? 5) + 2
-        : visible.every(({ series }) => series.type === "bar")
+        : visible.every(({ series }) => series.type === "bar" || series.type === "boxPlot")
           ? 0
           : Math.max(markerSize + 2, 5),
     nodes,

@@ -1,15 +1,21 @@
 import {
   type ChartActive,
+  type ChartColor,
   type ChartCurve,
   type ChartFill,
   type ChartLegend,
   type ChartLegendItem,
   type ChartNode,
+  type ChartPointInput,
   type ChartRender,
+  type ChartSeries,
+  type ChartTableCell,
+  type ChartTableModel,
   type ChartType,
   type ChartXType,
   chartActiveAt,
   chartActiveNodes,
+  chartColors,
   chartIdPrefix,
   chartOptions,
   chartTooltip,
@@ -31,6 +37,16 @@ export interface ChartFormatters {
   label?: ((x: string | number) => string) | undefined;
 }
 
+/** New points per series (in series order), as ApexCharts' `appendData`. */
+export type ChartAppendData = readonly { readonly data: readonly ChartPointInput[] }[];
+
+export interface ChartAppendOptions {
+  /** Categories (or dates) of the new points, on category and date axes. */
+  readonly categories?: readonly (string | number | Date)[] | undefined;
+  /** Keeps only the last `limit` points of each series (a sliding window for live data). */
+  readonly limit?: number | undefined;
+}
+
 export interface ChartInstance extends ComponentInstance {
   /** Indexes of the series hidden through the legend. */
   readonly hiddenSeries: readonly number[];
@@ -44,6 +60,16 @@ export interface ChartInstance extends ComponentInstance {
   setFormatters(formatters: ChartFormatters): void;
   /** Reads the table and the options again and redraws (done automatically on changes). */
   refresh(): void;
+  /**
+   * Replaces the data (and the categories, when given): rewrites the data table in place and
+   * redraws once. The active item and hidden series stay (by position). No event.
+   */
+  updateSeries(
+    series: readonly ChartSeries[],
+    categories?: readonly (string | number | Date)[],
+  ): void;
+  /** Appends points to the series (and categories); `limit` drops the oldest. No event. */
+  appendData(data: ChartAppendData, options?: ChartAppendOptions): void;
 }
 
 const SVG = "http://www.w3.org/2000/svg";
@@ -71,6 +97,109 @@ function build(nodes: readonly ChartNode[]): SVGElement[] {
   });
 }
 
+/** Makes `element`'s attributes exactly `attrs` (only the differences are written). */
+function syncAttributes(element: Element, attrs: Readonly<Record<string, string>>) {
+  for (const { name } of [...element.attributes])
+    if (!Object.hasOwn(attrs, name)) element.removeAttribute(name);
+  for (const [name, value] of Object.entries(attrs))
+    if (element.getAttribute(name) !== value) element.setAttribute(name, value);
+}
+
+/**
+ * Updates `parent`'s children to match `nodes` in place: same-tag elements keep their identity
+ * and only changed attributes and texts are written, so live updates stay cheap (ADR-0029).
+ */
+function patch(parent: Element, nodes: readonly ChartNode[]) {
+  const children = parent.children;
+  nodes.forEach((node, index) => {
+    const element = children[index];
+    if (!element || element.localName !== node.tag) {
+      const fresh = build([node])[0] as SVGElement;
+      if (element) element.replaceWith(fresh);
+      else parent.append(fresh);
+      return;
+    }
+    syncAttributes(element, node.attrs);
+    if (node.text !== undefined) {
+      if (element.textContent !== node.text) element.textContent = node.text;
+    } else patch(element, node.children ?? []);
+  });
+  while (children.length > nodes.length) (parent.lastElementChild as Element).remove();
+}
+
+/** A table row with exactly `count` cells of `tag` (cells are reused). */
+function rowOf(parent: HTMLTableSectionElement, index: number, count: number, tag: "th" | "td") {
+  const row = parent.rows[index] ?? parent.insertRow();
+  while (row.cells.length > count) (row.lastElementChild as Element).remove();
+  while (row.cells.length < count) row.append(document.createElement(tag));
+  return row;
+}
+
+/** Writes a table cell: text, `data-ok-*` attributes, scope and spans (only what changed). */
+function writeCell(cell: HTMLTableCellElement, model: ChartTableCell, scope?: string) {
+  syncAttributes(cell, {
+    ...model.attrs,
+    ...(scope ? { scope } : {}),
+    ...(model.colSpan ? { colspan: String(model.colSpan) } : {}),
+    ...(model.rowSpan ? { rowspan: String(model.rowSpan) } : {}),
+  });
+  if (cell.textContent !== model.text) cell.textContent = model.text;
+}
+
+/** Makes the data table match a table model in place (the caption is kept). */
+function writeTable(table: HTMLTableElement, model: ChartTableModel) {
+  const head = table.tHead ?? table.createTHead();
+  const headRows = model.parts.length ? 2 : 1;
+  while (head.rows.length > headRows) (head.lastElementChild as Element).remove();
+  const top = rowOf(head, 0, model.head.length, "th");
+  model.head.forEach((cell, i) => {
+    writeCell(top.cells[i] as HTMLTableCellElement, cell, cell.colSpan ? "colgroup" : "col");
+  });
+  if (model.parts.length) {
+    const parts = rowOf(head, 1, model.parts.length, "th");
+    model.parts.forEach((cell, i) => {
+      writeCell(parts.cells[i] as HTMLTableCellElement, cell, "col");
+    });
+  }
+  const body = table.tBodies[0] ?? table.createTBody();
+  while (body.rows.length > model.rows.length) (body.lastElementChild as Element).remove();
+  model.rows.forEach((row, index) => {
+    const tr = rowOf(body, index, row.cells.length + 1, "td");
+    // The first cell is the row header.
+    let first = tr.cells[0] as HTMLTableCellElement;
+    if (first.localName !== "th") {
+      const th = document.createElement("th");
+      first.replaceWith(th);
+      first = th;
+    }
+    writeCell(first, row.header, "row");
+    row.cells.forEach((cell, i) => {
+      let td = tr.cells[i + 1] as HTMLTableCellElement;
+      if (td.localName !== "td") {
+        const fresh = document.createElement("td");
+        td.replaceWith(fresh);
+        td = fresh;
+      }
+      writeCell(td, cell);
+    });
+  });
+}
+
+/** A valid optional palette color attribute, or `undefined`. */
+const colorAttribute = (element: Element, name: string) => {
+  const value = element.getAttribute(name);
+  return chartColors.includes(value as ChartColor) ? (value as ChartColor) : undefined;
+};
+
+/** Least height of a sparkline without `data-ok-height` (the CSS default). */
+const SPARKLINE_HEIGHT = 40;
+
+interface ChartSource {
+  readonly series: readonly ChartSeries[];
+  readonly categories: readonly (string | number | Date)[];
+}
+const EMPTY: ChartSource = { series: [], categories: [] };
+
 let counter = 0;
 
 /**
@@ -83,8 +212,9 @@ let counter = 0;
  *            </table>
  *          </figure>
  * Behavior: draws the legend, the plot (SVG) and the tooltip from the table, at the plot's
- *          width; redraws when the table, the options or the size change. Without JavaScript the
- *          table stays visible.
+ *          width; redraws when the table, the options or the size change (patching the SVG in
+ *          place). `updateSeries` / `appendData` set the data from JavaScript and rewrite the table
+ *          to match (ADR-0029). Without JavaScript the table stays visible.
  * Events:  ok:chart:toggle (cancelable, detail `{ index, hidden, hiddenSeries }`),
  *          ok:chart:active (detail `{ active }`).
  */
@@ -99,6 +229,8 @@ export const chart = defineComponent<ChartInstance>({
     let formatters: ChartFormatters = {};
     let active: ChartActive | null = null;
     let render: ChartRender | undefined;
+    /** Data set through `updateSeries` / `appendData`; `undefined` while the table is the source. */
+    let source: ChartSource | undefined;
 
     const legend = element.querySelector<HTMLElement>(":scope > [data-ok-chart-legend]");
     let hidden: number[] = legend
@@ -124,7 +256,15 @@ export const chart = defineComponent<ChartInstance>({
     element.insertBefore(plot, table);
     created.push(plot);
 
-    const measured = () => Math.round(plot.clientWidth) || render?.layout.width || 640;
+    /**
+     * The plot's size as the ResizeObserver last reported it, so redraws never force a layout
+     * (live updates); read from the plot until the observer first reports.
+     */
+    let box: { width: number; height: number } | undefined;
+    const measured = () =>
+      (box ? box.width : Math.round(plot.clientWidth)) || render?.layout.width || 640;
+    /** Sparklines: the plot's height (their SVG is out of flow: no feedback loop). */
+    const measuredHeight = () => (box ? box.height : Math.round(plot.clientHeight));
 
     const drawLegend = (items: readonly ChartLegendItem[] | null) => {
       let box = element.querySelector<HTMLElement>(":scope > [data-ok-chart-legend]");
@@ -206,14 +346,22 @@ export const chart = defineComponent<ChartInstance>({
     };
 
     const draw = () => {
+      // First: the table leaves the flow before the plot is measured (sparklines fill the root).
+      element.setAttribute("data-ok-ready", "");
       const xType = readStyle(element, o.xType) as ChartXType;
-      const { series, categories } = table
-        ? readChartTable(table, xType)
-        : { series: [], categories: [] };
+      const { series, categories } = data();
       const label = table?.caption?.textContent?.trim() ?? "";
       if (label) plot.setAttribute("aria-label", label);
       else plot.removeAttribute("aria-label");
-      const height = Number(readNumber(element, o.height));
+      const sparkline = element.hasAttribute(o.sparkline.attr);
+      const given = readNumber(element, o.height) as number;
+      // Sparklines: the container's height, at least `data-ok-height` (CSSOM, strict CSP).
+      if (sparkline && element.hasAttribute(o.height.attr))
+        plot.style.setProperty("--_ok-chart-height", `${given}px`);
+      else plot.style.removeProperty("--_ok-chart-height");
+      const height = sparkline
+        ? measuredHeight() || (element.hasAttribute(o.height.attr) ? given : SPARKLINE_HEIGHT)
+        : given;
       render = renderChart({
         type: readStyle(element, o.type) as ChartType,
         xType,
@@ -226,7 +374,7 @@ export const chart = defineComponent<ChartInstance>({
         horizontal: element.hasAttribute(o.horizontal.attr),
         markerSize: readNumber(element, o.markerSize) as number | undefined,
         columnWidth: Number(readNumber(element, o.columnWidth)),
-        barHeight: Number(readNumber(element, o.barHeight)),
+        barHeight: readNumber(element, o.barHeight) as number | undefined,
         yMin: readNumber(element, o.yMin) as number | undefined,
         yMax: readNumber(element, o.yMax) as number | undefined,
         dataLabels: element.hasAttribute(o.dataLabels.attr),
@@ -236,6 +384,11 @@ export const chart = defineComponent<ChartInstance>({
         trackWidth: readNumber(element, o.trackWidth) as number | undefined,
         total: readNumber(element, o.total) as number | undefined,
         totalLabel: text(element, "data-ok-total-label"),
+        sparkline,
+        boxUpperColor: colorAttribute(element, o.boxUpperColor.attr),
+        boxLowerColor: colorAttribute(element, o.boxLowerColor.attr),
+        // Rewritten tables keep the author's first header.
+        xLabel: (table?.tHead ?? table)?.rows[0]?.cells[0]?.textContent?.trim() || undefined,
         yTitle: text(element, "data-ok-y-title"),
         valuePrefix: text(element, "data-ok-value-prefix"),
         valueSuffix: text(element, "data-ok-value-suffix"),
@@ -252,10 +405,18 @@ export const chart = defineComponent<ChartInstance>({
       svg.setAttribute("width", String(layout.width));
       svg.setAttribute("height", String(layout.height));
       svg.setAttribute("viewBox", `0 0 ${layout.width} ${layout.height}`);
-      svg.replaceChildren(...build(layout.nodes));
-      element.setAttribute("data-ok-ready", "");
+      patch(svg, layout.nodes);
+      if (source && table) {
+        // Data set through the API: the table (the accessible view) follows, in place.
+        writeTable(table, render.table);
+        changes.takeRecords();
+      }
       drawActive();
     };
+
+    /** The data: set through the API, or read from the table. */
+    const data = () =>
+      source ?? (table ? readChartTable(table, readStyle(element, o.xType) as ChartXType) : EMPTY);
 
     const setActive = (next: ChartActive | null, notify: boolean) => {
       if (sameChartActive(next, active)) return;
@@ -338,12 +499,22 @@ export const chart = defineComponent<ChartInstance>({
     );
 
     // Redraw on size, data and option changes (not on the runtime's own writes).
-    const resize = new ResizeObserver(() => {
-      if (render && measured() !== render.layout.width) draw();
+    const resize = new ResizeObserver((entries) => {
+      const rect = (entries[entries.length - 1] as ResizeObserverEntry).contentRect;
+      box = { width: Math.round(rect.width), height: Math.round(rect.height) };
+      if (!render) return;
+      const sparkline = element.hasAttribute(o.sparkline.attr);
+      if (
+        measured() !== render.layout.width ||
+        (sparkline && measuredHeight() > 0 && measuredHeight() !== render.layout.height)
+      )
+        draw();
     });
     resize.observe(plot);
-    const changes = new MutationObserver(() => {
-      active = null;
+    // The active item stays across data changes (by position), as in React.
+    const changes = new MutationObserver((records) => {
+      // An edit of the table makes it the data source again.
+      if (records.some((record) => record.target !== element)) source = undefined;
       draw();
     });
     changes.observe(element, { attributes: true, attributeFilter: OPTION_ATTRIBUTES });
@@ -377,7 +548,33 @@ export const chart = defineComponent<ChartInstance>({
         formatters = { ...next };
         draw();
       },
-      refresh: draw,
+      refresh() {
+        source = undefined;
+        draw();
+      },
+      updateSeries(series, categories) {
+        source = {
+          series: [...series],
+          categories: categories ? [...categories] : data().categories,
+        };
+        draw();
+      },
+      appendData(points, options = {}) {
+        const current = data();
+        const limit =
+          Number.isInteger(options.limit) && (options.limit as number) > 0
+            ? (options.limit as number)
+            : undefined;
+        const keep = <T>(list: readonly T[]) => (limit ? list.slice(-limit) : [...list]);
+        source = {
+          series: current.series.map((entry, index) => ({
+            ...entry,
+            data: keep([...entry.data, ...(points[index]?.data ?? [])]),
+          })),
+          categories: keep([...current.categories, ...(options.categories ?? [])]),
+        };
+        draw();
+      },
       destroy() {
         resize.disconnect();
         changes.disconnect();

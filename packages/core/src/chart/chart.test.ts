@@ -45,7 +45,7 @@ describe("chartAttributes", () => {
   it("rejects invalid values", () => {
     const attrs = chartAttributes({
       type: HOSTILE as never,
-      height: 10,
+      height: 5,
       columnWidth: 0,
       markerSize: -1,
     });
