@@ -1,15 +1,21 @@
 import {
   createFieldController,
+  type DateRange,
   defaultPickerFormat,
   type FormatSection,
+  formatIsoRange,
   isSamePickerValue,
   isValidDate,
   type PickerLocaleText,
   type PickerValidationError,
   parseFormat,
+  parseIsoRange,
   parsePickerValue,
   pickerValueIso,
   pickerViewsOf,
+  type RangeValidationError,
+  rangeError,
+  rangeFieldSections,
   sectionAria,
   sectionPlaceholder,
   sectionsToDate,
@@ -17,6 +23,7 @@ import {
   startOfDay,
   type TimeView,
   validatePickerValue,
+  validateRange,
 } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
 import type { ComponentInstance } from "../../runtime/types.js";
@@ -32,17 +39,27 @@ import {
   type TimeRuleFunctions,
   toPickerDate,
 } from "../date-calendar/picker-dom.js";
+import { toRange } from "../date-range-calendar/date-range-calendar.js";
 
 export interface DateFieldInstance extends ComponentInstance {
   /**
    * ISO value, or `null` when empty or partly filled: `YYYY-MM-DD`, `HH:mm:ss` (time fields) or
-   * `YYYY-MM-DDTHH:mm:ss` (date time fields).
+   * `YYYY-MM-DDTHH:mm:ss` (date time fields). Range fields (`data-ok-range`, ADR-0028): the ISO
+   * interval `start/end` (a partly filled side is empty).
    */
   readonly value: string | null;
-  /** Why the value is invalid, or `null`. */
-  readonly validationError: PickerValidationError | null;
-  /** Sets the value (ISO string, `Date` or `null`) without emitting events. Invalid input is ignored. */
-  setValue(value: string | Date | null): void;
+  /** Why the value is invalid, or `null`; range fields: `[start, end]` errors. */
+  readonly validationError:
+    | PickerValidationError
+    | null
+    | [RangeValidationError | null, RangeValidationError | null];
+  /**
+   * Sets the value (ISO string, `Date` or `null`; range fields: an ISO interval or a
+   * `[start, end]` pair) without emitting events. Invalid input is ignored.
+   */
+  setValue(value: string | Date | readonly (Date | string | null)[] | null): void;
+  /** Forces the error state (`true` / `false`), or follows the validation again (`null`). */
+  setError(error: boolean | null): void;
   /** Focuses a section (default: the first). */
   focus(section?: number): void;
   /** Days, months or years that can't be picked (functions have no attribute). */
@@ -98,26 +115,59 @@ export const dateField = defineComponent<DateFieldInstance>({
         readAmpm(element, locale),
         locale,
       );
-    const sections = parseFormat(format);
+    // Range fields: the format twice, joined by " – " (each section knows its side).
+    const isRange = element.hasAttribute("data-ok-range");
+    const { sections, count } = isRange
+      ? rangeFieldSections(format)
+      : { sections: parseFormat(format), count: 0 };
+    const sides = isRange ? 2 : 1;
+    const part = (side: number): [number, number] =>
+      isRange ? [side * count, side * count + count] : [0, sections.length];
     const spinbuttons = () => [...group.querySelectorAll<HTMLElement>('[role="spinbutton"]')];
     const isDisabled = () => hidden?.disabled === true;
     const isReadOnly = () => element.hasAttribute("data-ok-read-only");
     const today = () => startOfDay(new Date());
 
-    let value: Date | null = parsePickerValue(element.getAttribute("data-ok-value"), today());
-    let texts = sectionValues(value, sections, locale);
+    let forcedError: boolean | null = null;
+    /** One date, or the start and the end of a range field. */
+    const readSides = (text: string | null): (Date | null)[] =>
+      isRange ? (parseIsoRange(text, today()) ?? [null, null]) : [parsePickerValue(text, today())];
+    const textsOf = (list: (Date | null)[]) =>
+      list.flatMap((date, side) => {
+        const [from, to] = part(side);
+        return sectionValues(date, sections.slice(from, to), locale);
+      });
+    let values = readSides(element.getAttribute("data-ok-value"));
+    let texts = textsOf(values);
     let active = Math.max(
       spinbuttons().findIndex((s) => s.getAttribute("tabindex") === "0"),
       0,
     );
 
-    const reference = () => (isValidDate(value) ? value : today());
-    const validate = (date: Date | null) =>
-      validatePickerValue(date, type, {
-        ...readRules(element, functions),
-        ...(type === "date" ? {} : readTimeRules(element, timeFunctions, reference())),
-      });
-    const iso = (date: Date | null) => (isValidDate(date) ? pickerValueIso(date, type) : null);
+    const reference = (side = 0) => {
+      const own = values[side];
+      if (isValidDate(own)) return own;
+      return isValidDate(values[0]) ? values[0] : today();
+    };
+    const rules = () => ({
+      ...readRules(element, functions),
+      ...(type === "date" ? {} : readTimeRules(element, timeFunctions, reference())),
+    });
+    const validateAll = (list: (Date | null)[]) =>
+      isRange
+        ? validateRange(list as DateRange, type, rules())
+        : validatePickerValue(list[0] as Date | null, type, rules());
+    const errorOf = (list: (Date | null)[]) => {
+      const result = validateAll(list);
+      return Array.isArray(result) ? rangeError(result) : result;
+    };
+    const iso = (list: (Date | null)[]) => {
+      if (isRange) return formatIsoRange(list as DateRange, type) || null;
+      const date = list[0] as Date | null;
+      return isValidDate(date) ? pickerValueIso(date, type) : null;
+    };
+    const sameValues = (a: (Date | null)[], b: (Date | null)[]) =>
+      a.every((date, i) => isSamePickerValue(date, b[i] as Date | null));
     const placeholders = () => sections.map((s) => sectionPlaceholder(s, text));
 
     const render = () => {
@@ -125,7 +175,15 @@ export const dateField = defineComponent<DateFieldInstance>({
       spinbuttons().forEach((span, i) => {
         const shown = texts[i] || (marks[i] as string);
         if (span.textContent !== shown) span.textContent = shown;
-        const aria = sectionAria(i, texts, sections, locale, text);
+        const side = isRange && i >= count ? 1 : 0;
+        const [from, to] = part(side);
+        const aria = sectionAria(
+          i - from,
+          texts.slice(from, to),
+          sections.slice(from, to),
+          locale,
+          text,
+        );
         if (aria.now === undefined) span.removeAttribute("aria-valuenow");
         else span.setAttribute("aria-valuenow", String(aria.now));
         span.setAttribute("aria-valuemin", String(aria.min));
@@ -135,11 +193,11 @@ export const dateField = defineComponent<DateFieldInstance>({
       });
       const filled = texts.some((t) => t !== "");
       element.toggleAttribute("data-ok-shrink", filled);
-      const shown = iso(value);
+      const shown = iso(values);
       if (shown) element.setAttribute("data-ok-value", shown);
       else element.removeAttribute("data-ok-value");
       if (hidden) hidden.value = shown ?? "";
-      const error = validate(value) !== null;
+      const error = forcedError ?? errorOf(values) !== null;
       element.toggleAttribute("data-ok-error", error);
       if (error) group.setAttribute("aria-invalid", "true");
       else group.removeAttribute("aria-invalid");
@@ -148,19 +206,27 @@ export const dateField = defineComponent<DateFieldInstance>({
     };
 
     const commit = (next: string[]) => {
-      const date = sectionsToDate(next, sections, locale, reference());
-      if (isSamePickerValue(date, value)) {
+      const list = Array.from({ length: sides }, (_, side) => {
+        const [from, to] = part(side);
+        return sectionsToDate(
+          next.slice(from, to),
+          sections.slice(from, to),
+          locale,
+          reference(side),
+        );
+      });
+      if (sameValues(list, values)) {
         texts = next;
         render();
         return;
       }
-      const detail = { value: iso(date), validationError: validate(date) };
+      const detail = { value: iso(list), validationError: validateAll(list) };
       if (!emit("change", detail, { cancelable: true })) {
         render();
         return;
       }
       texts = next;
-      value = date;
+      values = list;
       render();
     };
 
@@ -194,16 +260,26 @@ export const dateField = defineComponent<DateFieldInstance>({
     render();
     return {
       get value() {
-        return iso(value);
+        return iso(values);
       },
       get validationError() {
-        return validate(value);
+        return validateAll(values);
       },
       setValue(next) {
-        const date = toPickerDate(next, reference());
-        if (date === undefined) return;
-        value = date;
-        texts = sectionValues(date, sections, locale);
+        if (isRange) {
+          const range = toRange(next, reference());
+          if (range === undefined) return;
+          values = range;
+        } else {
+          const date = Array.isArray(next) ? undefined : toPickerDate(next, reference());
+          if (date === undefined) return;
+          values = [date];
+        }
+        texts = textsOf(values);
+        render();
+      },
+      setError(error) {
+        forcedError = typeof error === "boolean" ? error : null;
         render();
       },
       focus(section = 0) {

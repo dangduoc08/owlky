@@ -182,6 +182,39 @@ export {
   StaticDatePicker,
   type StaticDatePickerProps,
 } from "./date-picker/date-picker.js";
+export {
+  type DateRange,
+  DateRangeCalendar,
+  type DateRangeCalendarProps,
+  type RangePosition,
+} from "./date-range-calendar/date-range-calendar.js";
+export {
+  MultiInputDateRangeField,
+  MultiInputDateTimeRangeField,
+  type MultiInputDateTimeRangeFieldProps,
+  type MultiInputRangeFieldProps,
+  MultiInputTimeRangeField,
+  type MultiInputTimeRangeFieldProps,
+  type RangeChangeContext,
+  type RangeErrors,
+  type RangeFieldProps,
+  type RangeTimeFieldProps,
+  SingleInputDateRangeField,
+  SingleInputDateTimeRangeField,
+  type SingleInputDateTimeRangeFieldProps,
+  type SingleInputRangeFieldProps,
+  SingleInputTimeRangeField,
+  type SingleInputTimeRangeFieldProps,
+} from "./date-range-field/date-range-field.js";
+export {
+  DateRangePicker,
+  type DateRangePickerProps,
+  DesktopDateRangePicker,
+  MobileDateRangePicker,
+  type RangeShortcut,
+  StaticDateRangePicker,
+  type StaticDateRangePickerProps,
+} from "./date-range-picker/date-range-picker.js";
 export { DateTimeField, type DateTimeFieldProps } from "./date-time-field/date-time-field.js";
 export {
   DateTimePicker,
@@ -191,6 +224,12 @@ export {
   StaticDateTimePicker,
   type StaticDateTimePickerProps,
 } from "./date-time-picker/date-time-picker.js";
+export {
+  DateTimeRangePicker,
+  type DateTimeRangePickerProps,
+  DesktopDateTimeRangePicker,
+  MobileDateTimeRangePicker,
+} from "./date-time-range-picker/date-time-range-picker.js";
 export {
   Dialog,
   DialogActions,
@@ -349,6 +388,12 @@ export {
   TimePicker,
   type TimePickerProps,
 } from "./time-picker/time-picker.js";
+export {
+  DesktopTimeRangePicker,
+  MobileTimeRangePicker,
+  TimeRangePicker,
+  type TimeRangePickerProps,
+} from "./time-range-picker/time-range-picker.js";
 export {
   Timeline,
   TimelineConnector,

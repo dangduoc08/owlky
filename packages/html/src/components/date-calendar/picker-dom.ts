@@ -23,6 +23,10 @@ export const readValueType = (element: Element): PickerValueType => {
   return value === "time" || value === "date-time" ? value : "date";
 };
 
+/** The runtime of a desktop clock: a single list or one column per view. */
+export const timeViewName = (element: Element): string =>
+  element.hasAttribute("data-ok-digital-clock") ? "digital-clock" : "multi-section-digital-clock";
+
 /** `data-ok-ampm="true" | "false"`, else the locale's clock. */
 export const readAmpm = (element: Element, locale: string): boolean => {
   const value = element.getAttribute("data-ok-ampm");

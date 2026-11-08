@@ -323,8 +323,6 @@ export const PickerField = forwardRef<HTMLDivElement, PickerFieldProps>(function
   const { locale, localeText, explicit } = usePickerLocalization(localeTextProp);
   const generated = useId();
   const id = idProp ?? generated;
-  const labelId = `${id}-label`;
-  const helperId = helperText != null ? `${id}-helper-text` : undefined;
   const ampm = resolveAmpm(ampmProp, locale);
   const format =
     formatProp ?? defaultPickerFormat(pickerViewsOf(views, valueType), valueType, ampm, locale);
@@ -396,22 +394,6 @@ export const PickerField = forwardRef<HTMLDivElement, PickerFieldProps>(function
 
   const reference = () =>
     isValidDate(current) ? current : (referenceDate ?? startOfDay(new Date()));
-  const placeholders = sections.map((s) => sectionPlaceholder(s, localeText));
-  const [active, setActive] = useState(0);
-
-  const groupRef = useRef<HTMLDivElement>(null);
-  const controllerRef = useRef<FieldController | null>(null);
-  const latest = useRef<{
-    sections: FormatSection[];
-    texts: string[];
-    placeholders: string[];
-    locale: string;
-    reference: () => Date;
-    disabled: boolean;
-    readOnly: boolean;
-    commit: (next: string[]) => void;
-    onSelectedSectionsChange: ((section: number | null) => void) | undefined;
-  }>(null as never);
   const commit = (next: string[]) => {
     setTexts(next);
     const date = sectionsToDate(next, sections, locale, reference());
@@ -420,17 +402,96 @@ export const PickerField = forwardRef<HTMLDivElement, PickerFieldProps>(function
     setCurrent(date);
     onChange?.(date, { validationError: validate(date) });
   };
-  latest.current = {
+  const { groupRef, controllerRef, active } = useSectionedField({
     sections,
     texts,
-    placeholders,
+    localeText,
     locale,
     reference,
     disabled,
     readOnly,
     commit,
+    autoFocus,
+    selectedSections,
     onSelectedSectionsChange,
-  };
+  });
+
+  const rootRef = useRef<HTMLDivElement>(null);
+  const mergedRef = useMergedRefs(ref, rootRef);
+
+  return (
+    <SectionedTextField
+      rootRef={mergedRef}
+      rootAttributes={{
+        ...dateFieldAttributes({
+          formatDensity,
+          clearable,
+          readOnly,
+          valueType: valueType === "date" ? undefined : valueType,
+        }),
+        ...ruleAttributes({ minDate, maxDate, disablePast, disableFuture }),
+        ...(valueType === "date" ? {} : timeRuleAttributes(timeProps)),
+        ...(isValidDate(current) ? { "data-ok-value": isoOf(current, valueType) } : {}),
+        ...(explicit ? { "data-ok-locale": locale } : {}),
+        "data-ok-format": format,
+      }}
+      className={className}
+      style={style}
+      rest={props}
+      id={id}
+      label={label}
+      required={required}
+      helperText={helperText}
+      invalid={errorProp ?? validationError !== null}
+      variant={variant}
+      size={size}
+      fullWidth={fullWidth}
+      formatDensity={formatDensity}
+      disabled={disabled}
+      readOnly={readOnly}
+      sections={sections}
+      texts={texts}
+      aria={(index) => sectionAria(index, texts, sections, locale, localeText)}
+      localeText={localeText}
+      groupRef={groupRef}
+      active={active}
+      hiddenValue={isValidDate(current) ? isoOf(current, valueType) : ""}
+      name={name}
+      inputRef={inputRef}
+      clearable={clearable}
+      onClear={() => {
+        commit(sections.map(() => ""));
+        onClear?.();
+        controllerRef.current?.focusSection(0);
+      }}
+      endAdornment={endAdornment}
+    />
+  );
+});
+
+/** What `useSectionedField` needs (internal: date, time, date time and range fields). */
+export interface SectionedFieldOptions {
+  sections: FormatSection[];
+  texts: string[];
+  localeText: PickerLocaleText;
+  locale: string;
+  reference: () => Date;
+  disabled: boolean;
+  readOnly: boolean;
+  /** New texts from a key, a paste or a clear. */
+  commit: (next: string[]) => void;
+  autoFocus?: boolean | undefined;
+  selectedSections?: number | null | undefined;
+  onSelectedSectionsChange?: ((section: number | null) => void) | undefined;
+}
+
+/** Core's field controller on the sections group, refreshed every render (internal). */
+export function useSectionedField(options: SectionedFieldOptions) {
+  const [active, setActive] = useState(0);
+  const groupRef = useRef<HTMLDivElement>(null);
+  const controllerRef = useRef<FieldController | null>(null);
+  const latest = useRef<SectionedFieldOptions>(options);
+  latest.current = options;
 
   useLayoutEffect(() => {
     const controller = createFieldController(groupRef.current as HTMLElement, {
@@ -439,7 +500,7 @@ export const PickerField = forwardRef<HTMLDivElement, PickerFieldProps>(function
         return {
           sections: s.sections,
           values: s.texts,
-          placeholders: s.placeholders,
+          placeholders: s.sections.map((section) => sectionPlaceholder(section, s.localeText)),
           locale: s.locale,
           reference: s.reference(),
           disabled: s.disabled,
@@ -461,6 +522,7 @@ export const PickerField = forwardRef<HTMLDivElement, PickerFieldProps>(function
     controllerRef.current?.sync();
   });
 
+  const { autoFocus, selectedSections } = options;
   useEffect(() => {
     if (autoFocus) controllerRef.current?.focusSection(0);
   }, [autoFocus]);
@@ -469,10 +531,73 @@ export const PickerField = forwardRef<HTMLDivElement, PickerFieldProps>(function
     if (typeof selectedSections === "number") controllerRef.current?.focusSection(selectedSections);
   }, [selectedSections]);
 
-  const rootRef = useRef<HTMLDivElement>(null);
-  const mergedRef = useMergedRefs(ref, rootRef);
+  return { groupRef, controllerRef, active };
+}
+
+/** The TextField of a sectioned field (internal): the same DOM for every field kind. */
+export function SectionedTextField({
+  rootRef,
+  rootAttributes,
+  className,
+  style,
+  rest,
+  id,
+  label,
+  required,
+  helperText,
+  invalid,
+  variant,
+  size,
+  fullWidth,
+  formatDensity,
+  disabled,
+  readOnly,
+  sections,
+  texts,
+  aria,
+  localeText,
+  groupRef,
+  active,
+  hiddenValue,
+  name,
+  inputRef,
+  clearable,
+  onClear,
+  endAdornment,
+}: {
+  rootRef: Ref<HTMLDivElement>;
+  rootAttributes: Record<string, string>;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
+  rest: HTMLAttributes<HTMLDivElement>;
+  id: string;
+  label?: ReactNode;
+  required?: boolean | undefined;
+  helperText?: ReactNode;
+  invalid: boolean;
+  variant?: TextFieldVariant | undefined;
+  size?: SelectionControlSize | undefined;
+  fullWidth?: boolean | undefined;
+  formatDensity?: "dense" | "spacious" | undefined;
+  disabled: boolean;
+  readOnly: boolean;
+  sections: readonly FormatSection[];
+  texts: readonly string[];
+  aria: (index: number) => { now?: number; min: number; max: number; valueText: string };
+  localeText: PickerLocaleText;
+  groupRef: Ref<HTMLDivElement>;
+  active: number;
+  hiddenValue: string;
+  name?: string | undefined;
+  inputRef?: Ref<HTMLInputElement> | undefined;
+  clearable?: boolean | undefined;
+  onClear: () => void;
+  endAdornment?: ReactNode;
+}) {
+  const labelId = `${id}-label`;
+  const helperId = helperText != null ? `${id}-helper-text` : undefined;
+  const placeholders = sections.map((s) => sectionPlaceholder(s, localeText));
   const filled = texts.some((text) => text !== "");
-  const invalid = errorProp ?? validationError !== null;
   const attributes = textFieldAttributes({
     variant,
     size,
@@ -488,23 +613,13 @@ export const PickerField = forwardRef<HTMLDivElement, PickerFieldProps>(function
 
   return (
     <div
-      ref={mergedRef}
+      ref={rootRef}
       {...attributes}
-      {...dateFieldAttributes({
-        formatDensity,
-        clearable,
-        readOnly,
-        valueType: valueType === "date" ? undefined : valueType,
-      })}
-      {...ruleAttributes({ minDate, maxDate, disablePast, disableFuture })}
-      {...(valueType === "date" ? {} : timeRuleAttributes(timeProps))}
-      {...(isValidDate(current) ? { "data-ok-value": isoOf(current, valueType) } : {})}
-      {...(explicit ? { "data-ok-locale": locale } : {})}
-      data-ok-format={format}
+      {...rootAttributes}
       data-ok-runtime="off"
       className={className}
-      style={style as CSSProperties | undefined}
-      {...props}
+      style={style}
+      {...rest}
     >
       {label != null && (
         // The group isn't labelable: `for` names it for tools; presses go through the label (no
@@ -531,7 +646,7 @@ export const PickerField = forwardRef<HTMLDivElement, PickerFieldProps>(function
           aria-disabled={disabled || undefined}
         >
           {sections.map((section, index) => {
-            const aria = sectionAria(index, texts, sections, locale, localeText);
+            const values = aria(index);
             return (
               // biome-ignore lint/suspicious/noArrayIndexKey: sections are positions in a fixed format.
               <span key={`${section.token}-${index}`} data-ok-date-field-section="">
@@ -545,10 +660,10 @@ export const PickerField = forwardRef<HTMLDivElement, PickerFieldProps>(function
                   data-ok-section={section.type}
                   role="spinbutton"
                   aria-label={sectionLabel(section, localeText)}
-                  aria-valuenow={aria.now}
-                  aria-valuemin={aria.min}
-                  aria-valuemax={aria.max}
-                  aria-valuetext={aria.valueText}
+                  aria-valuenow={values.now}
+                  aria-valuemin={values.min}
+                  aria-valuemax={values.max}
+                  aria-valuetext={values.valueText}
                   aria-readonly={readOnly || undefined}
                   aria-disabled={disabled || undefined}
                   tabIndex={disabled ? -1 : index === active ? 0 : -1}
@@ -574,7 +689,7 @@ export const PickerField = forwardRef<HTMLDivElement, PickerFieldProps>(function
           type="hidden"
           data-ok-date-field-input=""
           name={name}
-          value={isValidDate(current) ? isoOf(current, valueType) : ""}
+          value={hiddenValue}
           disabled={disabled}
         />
         {(clearable || endAdornment != null) && (
@@ -585,11 +700,7 @@ export const PickerField = forwardRef<HTMLDivElement, PickerFieldProps>(function
                 size="sm"
                 aria-label={localeText.fieldClearLabel}
                 hidden={!showClear || undefined}
-                onClick={() => {
-                  commit(sections.map(() => ""));
-                  onClear?.();
-                  controllerRef.current?.focusSection(0);
-                }}
+                onClick={onClear}
               >
                 <ClearIcon />
               </IconButton>
@@ -617,4 +728,4 @@ export const PickerField = forwardRef<HTMLDivElement, PickerFieldProps>(function
       )}
     </div>
   );
-});
+}

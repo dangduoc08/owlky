@@ -2,6 +2,8 @@ import {
   dateCalendarOptions,
   dateFieldOptions,
   datePickerOptions,
+  dateRangeCalendarOptions,
+  dateRangePickerOptions,
   digitalClockOptions,
   multiSectionDigitalClockOptions,
   timeClockOptions,
@@ -9,17 +11,21 @@ import {
 import {
   DateField,
   DatePicker,
+  DateRangePicker,
   LocalizationProvider,
   StaticDatePicker,
+  StaticDateRangePicker,
   StaticDateTimePicker,
   TimeField,
   TimePicker,
+  TimeRangePicker,
 } from "@owlky/react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
 
 const VALUE = new Date(2025, 4, 25);
 const TIME = new Date(2025, 4, 25, 9, 30);
+const RANGE: [Date, Date] = [new Date(2025, 4, 20), new Date(2025, 4, 25)];
 
 export const datePickerSections: GuideSection[] = [
   {
@@ -173,6 +179,96 @@ export function Alarm() {
 />`,
   },
   {
+    id: "range",
+    title: "Pick a date range",
+    body: `\`DateRangePicker\` edits a start and an end date. On devices with a mouse it opens two months side by side in a popover. On touch screens it opens a dialog with one month and a toolbar that shows both ends. The first pick sets the start, the second one sets the end, and a day before the start starts again. While you move the pointer, a dashed outline previews the range. Drag the start or the end to another day to move it, with a mouse or a finger. \`DesktopDateRangePicker\`, \`MobileDateRangePicker\` and \`StaticDateRangePicker\` always use one form, and \`DateRangeCalendar\` works on its own.
+
+- **\`multiInput\`:** two fields, the start and the end, instead of one. Each field's button opens the picker on its end.
+- **\`calendars\`:** the number of months in the popover, from 1 to 3. The dialog and the inline form show one month unless you set it.
+- **\`rangePosition\`:** the end the next pick edits, \`start\` or \`end\`. Read it with \`onRangePositionChange\`, or set it to edit one end.
+- **\`disableDragEditing\`** and **\`disableAutoMonthSwitching\`:** turn off dragging the ends, and the jump to the end's month after a new start.
+
+The value is a pair, \`[start, end]\`, and either side can be empty. An end before the start is invalid: both sides report \`invalidRange\`. In HTML, the value is an ISO 8601 interval, such as \`2025-05-20/2025-05-25\`, and the hidden input of a single field submits it.`,
+    html: `<!-- Copy the full markup from the "Range" story's code panel. Its root: -->
+<div data-ok-date-range-picker data-ok-picker-variant="responsive">
+  <div data-ok-text-field … data-ok-date-field data-ok-range data-ok-format="MM/DD/YYYY" data-ok-value="2025-05-20/2025-05-25">
+    …the start's and the end's sections, a hidden input and the open button…
+  </div>
+  …the popover with two months, the dialog with the toolbar and one month…
+</div>`,
+    react: `import { DateRangePicker, type DateRange } from "@owlky/react";
+import { useState } from "react";
+
+export function StayDates() {
+  const [stay, setStay] = useState<DateRange>([null, null]);
+  return (
+    <DateRangePicker
+      multiInput
+      startLabel="Check-in"
+      endLabel="Check-out"
+      disablePast
+      value={stay}
+      onChange={(value) => setStay(value)}
+    />
+  );
+}`,
+  },
+  {
+    id: "range-shortcuts",
+    title: "Filter a dashboard by date range",
+    body: `Range shortcuts set both ends with one press, such as **Last 7 days** or **Current month**. Each shortcut has a \`label\` and a \`getValue\` function that returns the range. Compute the dates when the function runs, so the shortcuts stay right on the next day. \`getValue\` receives \`isValid(range)\`, which tells whether a range passes the picker's rules. Shortcuts that return an invalid range are disabled. A shortcut accepts its range and closes the picker. In HTML, each chip carries its range in \`data-ok-value\`, or you set functions with \`setShortcuts()\` on the instance.`,
+    html: `<!-- Chips with fixed ranges; an empty interval ("/") resets the filter -->
+<ul data-ok-picker-shortcuts aria-label="Shortcuts">
+  <li><span data-ok-chip … data-ok-picker-shortcut data-ok-value="2025-05-19/2025-05-25">…Last 7 days…</span></li>
+  <li><span data-ok-chip … data-ok-picker-shortcut data-ok-value="/">…Reset…</span></li>
+</ul>
+
+<script type="module">
+  // Shortcuts computed from today, set on the picker's instance (Owlky is the CDN runtime).
+  const picker = Owlky.get(document.querySelector("#report [data-ok-date-range-picker]"), "date-range-picker");
+  const day = (offset) => { const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() + offset); return d; };
+  picker.setShortcuts([
+    { label: "Last 7 days", getValue: () => [day(-6), day(0)] },
+    { label: "Reset", getValue: () => [null, null] },
+  ]);
+</script>`,
+    react: `import { DateRangePicker, type RangeShortcut } from "@owlky/react";
+
+/** A day relative to today, at midnight. */
+const day = (offset: number) => {
+  const date = new Date();
+  date.setHours(0, 0, 0, 0);
+  date.setDate(date.getDate() + offset);
+  return date;
+};
+
+const SHORTCUTS: RangeShortcut[] = [
+  { label: "Last 7 days", getValue: () => [day(-6), day(0)] },
+  { label: "Last 30 days", getValue: () => [day(-29), day(0)] },
+  {
+    label: "This month",
+    getValue: () => {
+      const first = day(0);
+      first.setDate(1);
+      return [first, day(0)];
+    },
+  },
+  { label: "Reset", getValue: () => [null, null] },
+];
+
+export function ReportPeriod() {
+  return <DateRangePicker label="Report period" shortcuts={SHORTCUTS} disableFuture />;
+}`,
+  },
+  {
+    id: "time-range",
+    title: "Pick a time or date time range",
+    body: `\`TimeRangePicker\` edits a start and an end time, and \`DateTimeRangePicker\` a start and an end date with times. **Start** and **End** tabs pick the edited end. On devices with a mouse, the popover shows digital clocks, beside one month for date times. On touch screens, the dialog shows the analog clock, after the calendar for date times. Finishing the start's last view moves on to the end. **OK** accepts the range and **Cancel** restores the one from opening. The fields work on their own as \`SingleInputTimeRangeField\`, \`MultiInputTimeRangeField\`, \`SingleInputDateTimeRangeField\` and \`MultiInputDateTimeRangeField\`. In HTML, the value is an interval of ISO times, such as \`09:00:00/17:30:00\`.`,
+    react: `<TimeRangePicker label="Opening hours" minutesStep={15} timeSteps={{ minutes: 15 }} />
+<DateTimeRangePicker label="Event" disablePast />
+<MultiInputDateRangeField startLabel="From" endLabel="To" />`,
+  },
+  {
     id: "localization",
     title: "Translate and localize",
     body: `\`LocalizationProvider\` sets the locale of the pickers inside, with \`adapterLocale\`. The locale decides the field's section order, the month and weekday names and the first day of the week. Owlky includes English and Vietnamese texts. Pass \`localeText\` to translate other texts or change a few. In HTML, set \`data-ok-locale\` on the picker or on any ancestor, such as \`<html>\`.`,
@@ -207,13 +303,14 @@ export function VietnameseForm() {
 - **\`ok:date-picker:open\`** and **\`ok:date-picker:close\`** fire with \`detail.reason\`, such as \`button\`, \`escape\`, \`select\` or \`cancel\`.
 - **\`ok:date-field:change\`** and **\`ok:date-calendar:change\`** (cancelable) fire for a field or a calendar on its own. The calendar also fires \`viewchange\`, \`monthchange\` and \`yearchange\`.
 - **\`ok:time-clock:change\`**, **\`ok:digital-clock:change\`** and **\`ok:multi-section-digital-clock:change\`** (cancelable) fire for a clock on its own, with \`detail.value\` (an ISO time) and \`detail.selectionState\`: \`shallow\` while dragging the hand, \`partial\` when another view follows, \`finish\` on the last one. The analog clock also fires \`ok:time-clock:viewchange\`.
-- **Instance:** \`runtime.get(element, "date-picker")\` returns \`{ value, setValue(value), isOpen, open(), close(), setShortcuts(list), setShouldDisableDate(fn), setShouldDisableTime(fn), setLocaleText(text) }\`. \`setValue\` doesn't fire events.
-- **React:** \`onChange(value, { validationError })\`, \`onAccept(value)\`, \`onError(error, value)\`, \`onOpenChange(open, reason)\`, \`onViewChange(view)\`, \`onMonthChange(month)\` and \`onYearChange(year)\`. The clocks call \`onChange(value, selectionState)\`.`,
+- **\`ok:date-range-picker:change\`** fires with \`detail.value\` (an ISO interval or \`null\`) and \`detail.validationError\`, the \`[start, end]\` errors. It also fires \`accept\`, \`open\`, \`close\` and \`rangepositionchange\` (\`detail.rangePosition\`). **\`ok:date-range-calendar:change\`** and **\`ok:multi-input-range-field:change\`** (cancelable) fire for a range calendar or a multi input field on its own.
+- **Instance:** \`runtime.get(element, "date-picker")\` returns \`{ value, setValue(value), isOpen, open(), close(), setShortcuts(list), setShouldDisableDate(fn), setShouldDisableTime(fn), setLocaleText(text) }\`. \`setValue\` doesn't fire events. A range picker's instance (\`"date-range-picker"\`) adds \`rangePosition\`, \`setRangePosition(position)\` and \`open(position)\`; its \`setValue\` takes an ISO interval or a \`[start, end]\` pair.
+- **React:** \`onChange(value, { validationError })\`, \`onAccept(value)\`, \`onError(error, value)\`, \`onOpenChange(open, reason)\`, \`onViewChange(view)\`, \`onMonthChange(month)\` and \`onYearChange(year)\`. The clocks call \`onChange(value, selectionState)\`. Range pickers call \`onChange(range, { validationError: [start, end] })\`, \`onError(errors, range)\` and \`onRangePositionChange(position)\`.`,
   },
   {
     id: "keyboard",
     title: "Keyboard",
-    body: "The field is one tab stop. The calendar is one tab stop too: the arrow keys move through the days. The analog clock is one tab stop, and each digital clock column is one more.",
+    body: "The field is one tab stop. The calendar is one tab stop too: the arrow keys move through the days, also across the months of a range calendar. The analog clock is one tab stop, and each digital clock column is one more. A multi input range field has two tab stops, one per field.",
   },
   {
     id: "accessibility",
@@ -224,7 +321,9 @@ export function VietnameseForm() {
 - The popover and the dialog are named "Select date". Escape closes them and returns focus to the open button.
 - Days are 36px wide. The selected day uses white text on the primary color.
 - The analog clock is a list box named by its view and the time ("Select hours. Selected time is 09:30 AM"). Each number has a name, such as "9 hours". Focus stays on the list box while the arrow keys move the hand.
-- Each digital clock column is a list box named by its view ("Select minutes"). Time pickers' open buttons say the time ("Choose time, selected time is 09:30 AM"), and the date and time tabs are named "pick date" and "pick time".`,
+- Each digital clock column is a list box named by its view ("Select minutes"). Time pickers' open buttons say the time ("Choose time, selected time is 09:30 AM"), and the date and time tabs are named "pick date" and "pick time".
+- A range calendar's grids allow several selected days: every day of the range is selected, and the two ends are filled with the primary color. The open button of a single range field says the range ("Choose range, selected range is May 20, 2025 – May 25, 2025"). The dialog is named "Select date range".
+- Dragging the ends is an extra: the keyboard picks the start and the end with Enter, and the toolbar or the **Start** and **End** tabs choose the edited end.`,
   },
 ];
 
@@ -280,6 +379,48 @@ const PREVIEWS = {
       <StaticDateTimePicker id="docs-date-time" defaultValue={TIME} />
     </Preview>
   ),
+  range: () => (
+    <Preview>
+      <div className="sb-date-ranges">
+        <DateRangePicker id="docs-range" label="Stay" defaultValue={RANGE} />
+        <DateRangePicker
+          id="docs-range-multi"
+          multiInput
+          startLabel="Check-in"
+          endLabel="Check-out"
+          defaultValue={RANGE}
+        />
+      </div>
+    </Preview>
+  ),
+  "range-shortcuts": () => (
+    <Preview>
+      <StaticDateRangePicker
+        id="docs-range-shortcuts"
+        defaultValue={RANGE}
+        actions={[]}
+        shortcuts={[
+          {
+            label: "Week of 19 May",
+            getValue: () => [new Date(2025, 4, 19), new Date(2025, 4, 25)],
+          },
+          { label: "June 2025", getValue: () => [new Date(2025, 5, 1), new Date(2025, 5, 30)] },
+          { label: "Reset", getValue: () => [null, null] },
+        ]}
+      />
+    </Preview>
+  ),
+  "time-range": () => (
+    <Preview>
+      <div className="sb-date-pickers">
+        <TimeRangePicker
+          id="docs-time-range"
+          label="Opening hours"
+          defaultValue={[new Date(2025, 4, 25, 9), new Date(2025, 4, 25, 17, 30)]}
+        />
+      </div>
+    </Preview>
+  ),
   localization: () => (
     <Preview>
       <LocalizationProvider adapterLocale="vi-VN">
@@ -297,6 +438,8 @@ const PREVIEWS = {
       <OptionsTable schema={timeClockOptions} />
       <OptionsTable schema={digitalClockOptions} />
       <OptionsTable schema={multiSectionDigitalClockOptions} />
+      <OptionsTable schema={dateRangePickerOptions} />
+      <OptionsTable schema={dateRangeCalendarOptions} />
     </>
   ),
   props: () => (
@@ -376,6 +519,30 @@ const PREVIEWS = {
           description: "The field, as on a TextField.",
         },
         {
+          react: "value / defaultValue / onChange (range pickers)",
+          html: "data-ok-value (ISO interval) · ok:date-range-picker:change",
+          type: "[Date | null, Date | null] (HTML: start/end)",
+          description: "The range.",
+        },
+        {
+          react: "rangePosition / defaultRangePosition / onRangePositionChange",
+          html: "data-ok-range-position on the range calendar · rangepositionchange",
+          type: '"start" | "end"',
+          description: "The end the next pick edits.",
+        },
+        {
+          react: "multiInput / startLabel / endLabel",
+          html: "a multi input range field instead of a single one",
+          type: "boolean · ReactNode",
+          description: "Two fields, the start and the end.",
+        },
+        {
+          react: "shortcuts (range pickers)",
+          html: 'chips with data-ok-value="start/end" · setShortcuts(list)',
+          type: "{ label, getValue }[] returning [start, end]",
+          description: "Chips that set a range.",
+        },
+        {
           react: "localeText (also on LocalizationProvider)",
           html: "data-ok-locale · setLocaleText(text)",
           type: "Partial<PickerLocaleText>",
@@ -418,6 +585,10 @@ const PREVIEWS = {
         ["Enter (analog clock)", "Keeps the number and moves to the next view."],
         ["Up arrow / Down arrow (digital clock)", "Moves to the previous / next option."],
         ["Enter / Space (digital clock)", "Picks the focused option and moves to the next column."],
+        [
+          "Enter / Space (range calendar)",
+          "Picks the start, then the end. A day before the start starts the range again.",
+        ],
         ["Escape", "Closes the popover or the dialog."],
       ]}
     />

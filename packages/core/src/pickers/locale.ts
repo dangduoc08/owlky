@@ -138,6 +138,19 @@ export interface PickerLocaleText {
   /** Names of the date time picker's tabs. */
   dateTableLabel: string;
   timeTableLabel: string;
+  /** Range pickers (phase 3, ADR-0028): the two ends, as tabs and toolbar placeholders. */
+  start: string;
+  end: string;
+  /** Labels of the multi-input range fields. */
+  startDate: string;
+  startTime: string;
+  endDate: string;
+  endTime: string;
+  dateRangePickerToolbarTitle: string;
+  timeRangePickerToolbarTitle: string;
+  dateTimeRangePickerToolbarTitle: string;
+  /** Name of a range picker's open button: `value` is the formatted range, or `null`. */
+  openRangePickerDialogue: (value: string | null) => string;
 }
 
 export const pickersEnUS: PickerLocaleText = {
@@ -194,6 +207,17 @@ export const pickersEnUS: PickerLocaleText = {
   selectViewText: (view) => `Select ${view}`,
   dateTableLabel: "pick date",
   timeTableLabel: "pick time",
+  start: "Start",
+  end: "End",
+  startDate: "Start date",
+  startTime: "Start time",
+  endDate: "End date",
+  endTime: "End time",
+  dateRangePickerToolbarTitle: "Select date range",
+  timeRangePickerToolbarTitle: "Select time range",
+  dateTimeRangePickerToolbarTitle: "Select date time range",
+  openRangePickerDialogue: (value) =>
+    value ? `Choose range, selected range is ${value}` : "Choose range",
 };
 
 const VI_VIEWS: Record<ClockSectionView, string> = {
@@ -255,6 +279,17 @@ export const pickersViVN: PickerLocaleText = {
   selectViewText: (view) => `Chọn ${VI_VIEWS[view]}`,
   dateTableLabel: "chọn ngày",
   timeTableLabel: "chọn giờ",
+  start: "Bắt đầu",
+  end: "Kết thúc",
+  startDate: "Ngày bắt đầu",
+  startTime: "Giờ bắt đầu",
+  endDate: "Ngày kết thúc",
+  endTime: "Giờ kết thúc",
+  dateRangePickerToolbarTitle: "Chọn khoảng ngày",
+  timeRangePickerToolbarTitle: "Chọn khoảng giờ",
+  dateTimeRangePickerToolbarTitle: "Chọn khoảng ngày và giờ",
+  openRangePickerDialogue: (value) =>
+    value ? `Chọn khoảng, khoảng đã chọn là ${value}` : "Chọn khoảng",
 };
 
 /** Built-in texts for a locale (by language), English otherwise; `overrides` win. */

@@ -56,6 +56,12 @@ const CASES: [
     ["displayWeekNumber", "showDaysOutsideCurrentMonth", "disableHighlightToday", "yearsOrder"],
   ],
   ["date-pickers", "clocks", "time-clock", ["readOnly"]],
+  [
+    "date-pickers",
+    "range-calendars",
+    "date-range-calendar",
+    ["disableDragEditing", "disableAutoMonthSwitching", "disableHighlightToday"],
+  ],
   ["motion", "in-view", "motion", ["variant", "duration", "distance"]],
   ["motion", "text", "motion-text", ["variant", "duration", "stagger"]],
   ["motion", "background", "motion", ["paused", "duration"]],

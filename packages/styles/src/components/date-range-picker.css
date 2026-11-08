@@ -1,0 +1,128 @@
+/*
+ * Date range picker — spec: specs/components/date-picker.md (ADR-0028)
+ *
+ * Anatomy:   div[data-ok-date-range-picker][data-ok-picker-variant][data-ok-value-type]?[data-ok-open]?
+ *              › div[data-ok-text-field][data-ok-date-field][data-ok-range]          (single input)
+ *              | div[role=group][data-ok-multi-input-range-field]                    (multi input)
+ *                  › div[data-ok-date-field] + span[data-ok-multi-input-range-field-separator] + div[data-ok-date-field]
+ *              › div[data-ok-popover][data-ok-date-picker-paper] | dialog[data-ok-date-picker-dialog]
+ *              › div[data-ok-picker-layout]                                          (date-picker.css)
+ *                  › div[data-ok-picker-toolbar][data-ok-range-toolbar]? › … button[data-ok-picker-toolbar-button][data-ok-range-position]
+ *                  › div[data-ok-tabs][data-ok-picker-tabs][data-ok-picker-range-tabs]? (time and date time ranges)
+ *                  › div[data-ok-picker-content] › date range calendar? + clocks?
+ *
+ * The layout, toolbar, shortcuts and actions come from date-picker.css; this file adds the range
+ * toolbar, the multi input field and the date time range content. Mobile first: the multi input
+ * fields stack (as the reference's dialog); from 600px they sit in a row with a dash between.
+ * Single :where() selectors in @layer components (zero specificity).
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-ok-date-range-picker]) {
+    display: inline-flex;
+    flex-direction: column;
+    min-width: 0;
+    max-width: 100%;
+    vertical-align: top;
+  }
+
+  :where(
+    [data-ok-date-range-picker] > :is([data-ok-date-field], [data-ok-multi-input-range-field])
+  ) {
+    width: 100%;
+  }
+
+  /* Multi input field: the start and end fields. */
+  :where([data-ok-multi-input-range-field]) {
+    display: inline-flex;
+    flex-direction: column;
+    gap: calc(var(--ok-spacing) * 4);
+    box-sizing: border-box;
+    min-width: 0;
+    max-width: 100%;
+    vertical-align: top;
+  }
+
+  :where([data-ok-multi-input-range-field][data-ok-full-width]) {
+    display: flex;
+    width: 100%;
+  }
+
+  /* Fields never get narrower than their text (no clipped dates): the row wraps instead. */
+  :where([data-ok-multi-input-range-field] > [data-ok-date-field]) {
+    flex: 1 1 auto;
+  }
+
+  :where([data-ok-multi-input-range-field-separator]) {
+    display: none;
+    flex: none;
+    color: var(--ok-text-secondary);
+    font-size: var(--ok-typography-body1-font-size);
+    line-height: var(--ok-typography-body1-line-height);
+  }
+
+  :where([data-ok-multi-input-range-field-helper]) {
+    flex-basis: 100%;
+    margin-block-start: calc(var(--ok-spacing) * -2);
+  }
+
+  @media (min-width: 600px) {
+    :where([data-ok-multi-input-range-field]) {
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    :where([data-ok-multi-input-range-field-separator]) {
+      display: block;
+    }
+  }
+
+  /* Range toolbar: "May 20 – May 25", the edited end in the primary text color. */
+  :where([data-ok-range-toolbar] [data-ok-picker-toolbar-content]) {
+    flex-wrap: wrap;
+    gap: calc(var(--ok-spacing) * 1);
+  }
+
+  :where([data-ok-range-toolbar] [data-ok-picker-toolbar-button]) {
+    font-family: var(--ok-typography-h5-font-family);
+    font-size: var(--ok-typography-h5-font-size);
+    font-weight: var(--ok-typography-h5-font-weight);
+    line-height: var(--ok-typography-h5-line-height);
+  }
+
+  :where([data-ok-range-toolbar] [data-ok-picker-toolbar-separator]) {
+    font-size: var(--ok-typography-h5-font-size);
+    line-height: var(--ok-typography-h5-line-height);
+  }
+
+  /* Time ranges with shortcuts: the start / end tabs stay above the content. */
+  @media (min-width: 600px) {
+    :where([data-ok-picker-layout]:has(> [data-ok-picker-tabs]):has(> [data-ok-picker-shortcuts])) {
+      grid-template-areas: "toolbar toolbar" "tabs tabs" "shortcuts content" "actions actions";
+    }
+  }
+
+  /* Desktop date time ranges: one calendar beside the clock columns, as tall as the calendar. */
+  :where(
+    [data-ok-picker-content]
+      > [data-ok-date-range-calendar]
+      + :is([data-ok-multi-section-digital-clock], [data-ok-digital-clock])
+  ) {
+    border-inline-start: 1px solid var(--ok-divider);
+  }
+
+  :where(
+    [data-ok-picker-content]
+      > [data-ok-date-range-calendar]
+      + [data-ok-multi-section-digital-clock]
+      > [data-ok-digital-clock-section]
+  ) {
+    max-height: calc(var(--ok-spacing) * 84);
+  }
+
+  :where([data-ok-picker-content] > [data-ok-date-range-calendar][hidden]) {
+    display: none;
+  }
+}

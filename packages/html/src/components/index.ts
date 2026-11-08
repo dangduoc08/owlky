@@ -19,6 +19,8 @@ import { dataGrid } from "./data-grid/data-grid.js";
 import { dateCalendar } from "./date-calendar/date-calendar.js";
 import { dateField } from "./date-field/date-field.js";
 import { datePicker } from "./date-picker/date-picker.js";
+import { dateRangeCalendar } from "./date-range-calendar/date-range-calendar.js";
+import { dateRangePicker } from "./date-range-picker/date-range-picker.js";
 import { dialog } from "./dialog/dialog.js";
 import { digitalClock } from "./digital-clock/digital-clock.js";
 import { drawer } from "./drawer/drawer.js";
@@ -31,6 +33,7 @@ import { motion } from "./motion/motion.js";
 import { motionBorder } from "./motion-border/motion-border.js";
 import { motionGroup } from "./motion-group/motion-group.js";
 import { motionText } from "./motion-text/motion-text.js";
+import { multiInputRangeField } from "./multi-input-range-field/multi-input-range-field.js";
 import { multiSectionDigitalClock } from "./multi-section-digital-clock/multi-section-digital-clock.js";
 import { pagination } from "./pagination/pagination.js";
 import { popover } from "./popover/popover.js";
@@ -98,4 +101,7 @@ export const components: readonly ComponentDefinition[] = [
   digitalClock as ComponentDefinition,
   multiSectionDigitalClock as ComponentDefinition,
   datePicker as ComponentDefinition,
+  dateRangeCalendar as ComponentDefinition,
+  multiInputRangeField as ComponentDefinition,
+  dateRangePicker as ComponentDefinition,
 ];

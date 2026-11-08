@@ -429,6 +429,18 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
   `HH:mm:ss`; the picker merges it into its own date (and the calendar's day keeps the time).
   React and HTML tests of pickers run against core `dist`: new core helpers need core tests for
   `core/src/pickers/**` coverage.
+- Range pickers (ADR-0028): HTML values are ISO intervals `start/end` (`/` = empty). The single
+  input field is the DateField with `data-ok-range` (the format twice, sections carry `part`), and
+  React shares its TextField through `SectionedTextField` / `useSectionedField` in `date-field.tsx`:
+  regenerate every phase 1–2 snippet after touching them and expect no diff. A range calendar's own
+  picks update its `lastValue` ref first, or the "outside value moved" check undoes auto month
+  switching. The HTML range calendar emits `change` before `rangepositionchange`; the picker reads
+  the calendar's position in its microtask *before* its own render (which pushes the picker's
+  position back into the calendar). A drag ends with a click on the pressed day: owners call
+  `consumeClick()` first in their pick handler. Range bands are each day's `::before` behind a row
+  with `isolation: isolate` (a negative z-index would otherwise go under the paper). Every range
+  day always has its `::before` / `::after` (states only restyle them): adding a pseudo-element
+  to a button on hover rebuilds its box in Firefox, which then drops the press that follows.
 - Parallel work: never run two `/component` / `/integrate` sessions (or two `pnpm build` /
   `pnpm test:e2e`) in the same working tree — builds wipe each other's `dist/` and
   `storybook-static/`, e2e servers share port 4321, and staging part of a shared file while

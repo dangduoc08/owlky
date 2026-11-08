@@ -1,13 +1,16 @@
 # Date pickers
 
 Reference: Minimal UI kit "Date pickers" page (MUI X Date and Time Pickers), sections Date (Basic,
-Playground, Static mode), Time and Date & Time (Basic, Views playground, Static mode); section
-Range comes in phase 3 (ADR-0022) (content only). Upstream: MUI X `DatePicker`,
+Playground, Static mode), Time and Date & Time (Basic, Views playground, Static mode) and Range
+(Input, Calendar: a start / end dialog the reference builds itself and points to MUI X Pro for)
+(content only). Upstream: MUI X `DatePicker`,
 `DesktopDatePicker`, `MobileDatePicker`, `StaticDatePicker`, `DateField`, `DateCalendar`,
 `MonthCalendar`, `YearCalendar`, `LocalizationProvider`; `TimeField`, `TimeClock`, `DigitalClock`,
 `MultiSectionDigitalClock`, `TimePicker` (desktop, mobile, static), `DateTimeField`,
-`DateTimePicker` (desktop, mobile, static) (v9, ADR-0015). Created with `/component` (phase 1 of
-4); phase 2 (time and date time, ADR-0026) with `/component` Update.
+`DateTimePicker` (desktop, mobile, static); Pro: `DateRangeCalendar`, `DateRangePicker` (desktop,
+mobile, static), `TimeRangePicker`, `DateTimeRangePicker` (desktop, mobile), the single and multi
+input range fields of each value type (v9, ADR-0015). Created with `/component` (phase 1 of 4);
+phase 2 (time and date time, ADR-0026) and phase 3 (ranges, ADR-0028) with `/component` Update.
 Reference URL: https://minimals.cc/components/mui/date-pickers
 
 ## Purpose
@@ -16,9 +19,11 @@ popover (pointer devices), a dialog (touch) or inline. One engine in core (`core
 dates in local time, ISO 8601, formats split into sections, locale data from `Intl`, validation,
 the month grid, the time model (`time.ts`), and controllers that report intent
 (`createFieldController`, `createCalendarController`, `createTimeClockController`,
-`createDigitalClockController`). React keeps state in props / hooks; the HTML runtimes
-(`date-field`, `date-calendar`, `month-calendar`, `year-calendar`, `time-clock`, `digital-clock`,
-`multi-section-digital-clock`, `date-picker`) keep it in the DOM. Every MUI X tier is free
+`createDigitalClockController`, `createRangeDragController`; the range model in `range.ts`). React
+keeps state in props / hooks; the HTML runtimes (`date-field`, `date-calendar`, `month-calendar`,
+`year-calendar`, `time-clock`, `digital-clock`, `multi-section-digital-clock`, `date-picker`,
+`date-range-calendar`, `multi-input-range-field`, `date-range-picker`) keep it in the DOM. Range
+values are `[start, end]` pairs (React) and ISO 8601 intervals `start/end` (HTML, ADR-0028). Every MUI X tier is free
 (ADR-0022). Time and date time fields and pickers are the same anatomy with
 `data-ok-value-type="time" | "date-time"` (ADR-0026).
 
@@ -90,6 +95,34 @@ div[role=group][data-ok-multi-section-digital-clock][data-ok-ampm][data-ok-views
   ul[role=listbox][data-ok-digital-clock-section=hours|minutes|seconds|meridiem][aria-label]
     li[role=option][data-ok-digital-clock-item][data-ok-value][tabindex][aria-selected][aria-disabled]?
 ```
+Range components (ADR-0028):
+```
+div[id][data-ok-date-range-calendar][data-ok-calendars][data-ok-current-month-calendar-position]
+    [data-ok-range-position][data-ok-month][data-ok-value=start/end]?[data-ok-disable-drag-editing]?…
+  div[data-ok-date-range-calendar-month]                                   (1–3)
+    div[data-ok-date-range-calendar-header]
+      button[data-ok-icon-button][data-ok-date-calendar-prev]?             (first month)
+      div[data-ok-date-calendar-label][id=<id>-label-<n>][aria-live=polite]
+      button[data-ok-icon-button][data-ok-date-calendar-next]?             (last month)
+    div[role=grid][data-ok-day-calendar][aria-labelledby][aria-multiselectable=true]   (the day grid above)
+      … button[data-ok-picker-day][aria-selected][data-ok-range-start]?[data-ok-range-end]?[data-ok-in-range]?
+          [data-ok-preview-start]?[data-ok-preview-end]?[data-ok-in-preview]?
+div[data-ok-text-field][data-ok-date-field][data-ok-range][data-ok-value=start/end]?…   (single input range field:
+    the sections of both dates, " – " between them; input[type=hidden] carries the interval)
+div[role=group][data-ok-multi-input-range-field][data-ok-value-type]?[data-ok-value]?[data-ok-full-width]?
+  div[data-ok-date-field] (start) + span[data-ok-multi-input-range-field-separator][aria-hidden] + div[data-ok-date-field] (end)
+  div[data-ok-text-field-helper][data-ok-multi-input-range-field-helper]?
+div[data-ok-date-range-picker][data-ok-picker-variant][data-ok-calendars]?[data-ok-value-type]?[data-ok-open]?…
+  single input range field | multi input range field   (open buttons: button[data-ok-date-picker-open][data-ok-range-position]? )
+  popover / dialog / inline as the date picker, holding div[data-ok-picker-layout]:
+    div[data-ok-picker-toolbar][data-ok-range-toolbar]? › overline + div[data-ok-picker-toolbar-content] ›
+        span[data-ok-picker-toolbar-part] › (span[data-ok-picker-toolbar-separator])? button[data-ok-picker-toolbar-button][data-ok-range-position][aria-pressed]
+    div[data-ok-tabs][data-ok-picker-tabs][data-ok-picker-range-tabs]?     (time and date time ranges: Start / End)
+    ul[data-ok-picker-shortcuts]? › … span[data-ok-chip][data-ok-picker-shortcut][data-ok-value=start/end]
+    div[data-ok-picker-content] › date range calendar? + digital clock (desktop)? + time clock (mobile / static)?
+    div[data-ok-picker-actions]?
+```
+
 Time and date time pickers: `div[data-ok-date-picker][data-ok-value-type][data-ok-open-to]?` with a
 field `[data-ok-value-type]`; the toolbar is `span[data-ok-picker-toolbar-overline]` +
 `div[data-ok-picker-toolbar-content] › div[data-ok-picker-toolbar-date]? ›
@@ -146,6 +179,7 @@ Root: `data-ok-date-field`. Unknown values fall back to the default.
 | `clearable` | `data-ok-clearable` | flag | boolean | off | A clear button at the end of the field. |
 | `readOnly` | `data-ok-read-only` | flag | boolean | off | The value can't be changed (it can still be focused and copied). |
 | `valueType` | `data-ok-value-type="…"` | style | `date` `time` `date-time` | — | What the value holds (ADR-0026): `time` (TimeField, TimePicker family: ISO `HH:mm:ss`), `date-time` (DateTimeField, DateTimePicker family: ISO `YYYY-MM-DDTHH:mm:ss`); absent = a date. React: the component. |
+| `range` | `data-ok-range` | flag | boolean | off | Single input range field (ADR-0028): the start and the end in one field, the value an ISO 8601 interval `start/end`. React: the component (`SingleInputDateRangeField`, `SingleInputTimeRangeField`, `SingleInputDateTimeRangeField`). |
 | `value` | `data-ok-value` · event `ok:date-field:change` | state | — | — | Value as ISO 8601 (`value` / `defaultValue`). |
 <!-- /options:date-field -->
 
@@ -192,6 +226,41 @@ Root: `data-ok-multi-section-digital-clock`. Unknown values fall back to the def
 | `value` | `aria-selected` · event `ok:multi-section-digital-clock:change` | state | — | — | Selected time (`value` / `defaultValue`; HTML `data-ok-value`). |
 <!-- /options:multi-section-digital-clock -->
 
+<!-- options:date-range-picker (generated by `pnpm specs:options` from the schema in packages/core/src/anatomy/anatomy.ts) -->
+Root: `data-ok-date-range-picker`. Unknown values fall back to the default.
+
+| React | HTML | Kind | Values | Default | Description |
+|---|---|---|---|---|---|
+| `pickerVariant` | `data-ok-picker-variant="…"` | style | `responsive` `desktop` `mobile` `static` | `responsive` | `responsive` (desktop or mobile by `desktopModeMediaQuery`), `desktop` (popover), `mobile` (dialog), `static` (inline). React: the component (`DateRangePicker`, `DesktopDateRangePicker`, `MobileDateRangePicker`, `StaticDateRangePicker`, and the time and date time range families). |
+| `calendars` | `data-ok-calendars="…"` | style | `1` `2` `3` | — | Months shown in the desktop popover (the dialog and inline forms show one). |
+| `closeOnSelect` | `data-ok-close-on-select="false"` turns it off | behavior | boolean | on | Picking the end closes the picker. Default: on for desktop date ranges, off otherwise (absent attribute). |
+| `disableDragEditing` | `data-ok-disable-drag-editing` | flag | boolean | off | The range's start and end can't be dragged to other days. |
+| `valueType` | `data-ok-value-type="…"` | style | `date` `time` `date-time` | — | What the value holds (ADR-0026): `time` (TimeField, TimePicker family: ISO `HH:mm:ss`), `date-time` (DateTimeField, DateTimePicker family: ISO `YYYY-MM-DDTHH:mm:ss`); absent = a date. React: the component. |
+| `open` | `data-ok-open` · event `ok:date-range-picker:open` | state | — | — | Open state (`open` / `onOpenChange`). |
+<!-- /options:date-range-picker -->
+
+<!-- options:date-range-calendar (generated by `pnpm specs:options` from the schema in packages/core/src/anatomy/anatomy.ts) -->
+Root: `data-ok-date-range-calendar`. Unknown values fall back to the default.
+
+| React | HTML | Kind | Values | Default | Description |
+|---|---|---|---|---|---|
+| `calendars` | `data-ok-calendars="…"` | style | `1` `2` `3` | `2` | Months shown side by side (range pickers: 2 in the popover, 1 in the dialog and inline). |
+| `currentMonthCalendarPosition` | `data-ok-current-month-calendar-position="…"` | style | `1` `2` `3` | `1` | The calendar that shows the value's month (or this month) first. |
+| `disableDragEditing` | `data-ok-disable-drag-editing` | flag | boolean | off | The range's start and end can't be dragged to other days. |
+| `disableAutoMonthSwitching` | `data-ok-disable-auto-month-switching` | flag | boolean | off | Picking the start doesn't show the end's month. |
+| `disablePast` | `data-ok-disable-past` | flag | boolean | off | Days before today can't be picked. |
+| `disableFuture` | `data-ok-disable-future` | flag | boolean | off | Days after today can't be picked. |
+| `displayWeekNumber` | `data-ok-display-week-number` | flag | boolean | off | A week number column. |
+| `fixedWeekNumber` | `data-ok-fixed-week-number="…"` | number | number | — | Always show this many weeks (6 keeps the height the same every month). |
+| `showDaysOutsideCurrentMonth` | `data-ok-show-days-outside-current-month` | flag | boolean | off | Days of the previous and next months fill the first and last weeks (one calendar only). |
+| `disableHighlightToday` | `data-ok-disable-highlight-today` | flag | boolean | off | No ring around today. |
+| `readOnly` | `data-ok-read-only` | flag | boolean | off | Days can be browsed but not picked. |
+| `loading` | `data-ok-loading` | flag | boolean | off | Shows the loading text instead of the days. |
+| `reduceAnimations` | `data-ok-reduce-animations` | flag | boolean | off | No month transitions. |
+| `rangePosition` | `data-ok-range-position` · event `ok:date-range-calendar:rangepositionchange` | state | — | — | The end the next pick edits, `start` or `end` (`rangePosition` / `onRangePositionChange`). |
+| `value` | `data-ok-value` · event `ok:date-range-calendar:change` | state | — | — | Selected range as an ISO 8601 interval `start/end` (`value` / `defaultValue`). |
+<!-- /options:date-range-calendar -->
+
 Time attributes (strings, ADR-0026): `data-ok-value` on clocks (`HH:mm:ss`), `data-ok-min-time`,
 `data-ok-max-time` (ISO times), `data-ok-min-date-time`, `data-ok-max-date-time` (ISO date
 times), `data-ok-disable-ignoring-date-part-for-time-validation`, `data-ok-views` (`hours minutes
@@ -232,6 +301,21 @@ ancestor), `data-ok-disabled` (calendar). Invalid values fall back to the defaul
   `selectViewText`, `dateTableLabel`, `timeTableLabel`.
 - **Defaults (MUI v9, as the reference shows):** time and date time pickers don't close on a
   pick; their action bar is Cancel + OK (mobile and static date time: Cancel + Next / OK).
+- **Kept (phase 3, Pro):** `value` / `defaultValue` as `[start, end]`, `onChange(value, {
+  validationError: [start, end] })`, `onError`, `onAccept`, `calendars`,
+  `currentMonthCalendarPosition`, `rangePosition` / `defaultRangePosition` /
+  `onRangePositionChange`, `availableRangePositions` (DateRangeCalendar), `disableDragEditing`,
+  `disableAutoMonthSwitching`, range `shortcuts` (`getValue({ isValid })` returns a range); the
+  validation error `invalidRange`; `localeText` keys `start`, `end`, `startDate`, `startTime`,
+  `endDate`, `endTime`, `dateRangePickerToolbarTitle`, `timeRangePickerToolbarTitle`,
+  `dateTimeRangePickerToolbarTitle`.
+- **Renamed (phase 3):** `slots.field: MultiInput…RangeField` → `multiInput`;
+  `slotProps.textField` per end → `startLabel` / `endLabel`.
+- **Beyond MUI (phase 3):** ISO 8601 intervals in HTML (`data-ok-value`, the hidden input of a
+  single input field, shortcut chips); open buttons on range fields (MUI v8+ has them on single
+  input fields; multi input fields get one per end, each opening on its end); `openRangePickerDialogue`
+  names them; Start / End tabs on every form of time and date time ranges (MUI shows them on
+  touch screens; with one field, they choose the edited end on desktop too).
 - **Deferred:** `timezone`, `dateAdapter` / adapters, `viewRenderers`, layout slots (phase 4);
   `slotProps.tabs.hidden` (the tabs always show in the mobile and static date time forms).
 - **Not applicable:** `slots`, other `slotProps`, `sx`, `className` of parts, transitions,
@@ -260,6 +344,13 @@ semibold contrast text. Time toolbar: 16px padding, h3 time buttons and separato
 toolbars add the year (subtitle1) and the day (h4). A divider sits above the action bar when a
 digital clock shows.
 
+Range calendar (ADR-0028): months 320px wide side by side, `--ok-divider` between them, the
+month centered between the outer arrows; the range is a band behind the days in
+`rgb(primary / 0.12)` (the days' `::before`, rounded at the ends of each week and month), the
+start and the end filled like a selected day, a 1px dashed `--ok-text-disabled` outline over the
+hovered or dragged preview. Range toolbar: h5 ends with an en dash. Multi input field: the two
+TextFields stacked with a 16px gap, in a row with a dash from 600px.
+
 ## Responsive behavior
 Mobile first. Below 600px the layout is one column (toolbar, shortcuts as a wrapping row,
 calendar, actions); from 600px shortcuts sit in a column beside the calendar, and
@@ -268,14 +359,19 @@ mobile when they open (`(pointer: fine)` by default). The dialog paper never exc
 minus 32px; the calendar keeps 320px (fits 375px screens). Time pickers: from 600px a landscape
 toolbar stacks the date, the time and a row of AM / PM; date time pickers put the tabs above the
 content beside it. The desktop date time popover is the calendar plus the clock columns (about
-490px wide).
+490px wide). Range calendars wrap their months below each other when the space is narrower than
+the months (a popover is at most the screen minus 32px); the dialog shows one month. Multi input
+fields stack below 600px and never clip their text (the row wraps).
 
 ## States
 `data-ok-shrink` (field has text), `data-ok-error` / `aria-invalid` (validation),
 `data-ok-all-selected` (Ctrl / ⌘ + A), `data-ok-open` (picker), `aria-selected`,
 `aria-checked`, `data-ok-today`, `data-ok-outside`, `disabled`, `:focus-visible`. Clocks:
 `aria-selected` / `aria-disabled` on options, `aria-pressed` on AM / PM, `data-ok-selected` on the
-toolbar's open view, `data-ok-inner` / `data-ok-between` on the pointer, `data-ok-view`.
+toolbar's open view, `data-ok-inner` / `data-ok-between` on the pointer, `data-ok-view`. Ranges:
+`data-ok-range-start`, `data-ok-range-end`, `data-ok-in-range`, `data-ok-preview-*`,
+`data-ok-range-position`, `aria-pressed` on the toolbar ends, `data-ok-error` on both fields of an
+`invalidRange`.
 
 ## Behavior
 - **Field:** sections from the format; ←/→ move, ↑/↓ ±1 (empty: today's part), Page ±5, Home /
@@ -304,6 +400,22 @@ toolbar's open view, `data-ok-inner` / `data-ok-between` on the pointer, `data-o
   time adds the date / time tabs and moves to the hours after the day. They don't close on a pick
   unless `closeOnSelect`.
 
+- **Range calendar (ADR-0028):** the start position sets the start (a day after the end starts a
+  new range) and moves to the end; the end position sets the end (a day before the start starts a
+  new range) and reports `"finish"`. A hovered day (mouse) previews the range; pressing and
+  dragging the start or the end (mouse or touch, `touch-action: none` on the ends) moves it, past
+  the other end too (the ends swap); the click that ends a drag isn't a pick. After a new start,
+  the end's month shows unless `disableAutoMonthSwitching`. Keys move across the months.
+- **Range pickers:** desktop date ranges close when the end is picked (`closeOnSelect`); mobile
+  and static show the toolbar (its ends choose the edited end) and Cancel / OK. Time and date time
+  ranges show Start / End tabs; finishing the start's last view moves to the end, the end's last
+  view finishes (they never close on a pick by default). Date time ranges pick the day (keeping
+  the end's time) and then the time of the same end. Multi input fields open on the end of the
+  pressed button. Range shortcuts set, accept and close; an empty interval resets.
+- **Range validation:** each side's own error, or `invalidRange` on both when the end comes
+  before the start (dates by day, times and date times by the instant). Partly typed sides are
+  invalid dates.
+
 ## Keyboard
 | Key | Field | Calendar |
 |---|---|---|
@@ -329,7 +441,12 @@ Sections are spin buttons named by their part ("Month"), valued as text ("May");
 named by the label and marked `aria-invalid`. The open button names the selected date. The grid is
 named by its month; today has `aria-current="date"`; disabled days are `disabled`. Popover and
 dialog are named "Select date"; focus goes to the current day on open and back to the button on
-close. Brand-colored selections are exempt from `color-contrast` only (ADR-0014). The time clock
+close. Brand-colored selections are exempt from `color-contrast` only (ADR-0014). Range grids are
+`aria-multiselectable`: every day of the range is `aria-selected`; the band keeps the neutral text
+(AA). The single range field's open button names the range ("Choose range, selected range is May
+20, 2025 – May 25, 2025"); multi input buttons name their date; range dialogs are named "Select
+date range" / "Select time range" / "Select date time range". Dragging has a keyboard
+alternative (Enter on the start and on the end; the toolbar ends or the tabs pick the edited end). The time clock
 is a listbox named "Select hours. Selected time is 09:30 AM" whose options are named "9 hours";
 focus stays on the listbox (`aria-activedescendant`). Digital clock columns are listboxes named
 "Select hours"; the multi-section clock is a named group. Time pickers' open button names the
@@ -351,6 +468,18 @@ Phase 2: `ok:time-clock:change` (cancelable, `{ value: "HH:mm:ss", selectionStat
 setView, setShouldDisableTime, setLocaleText }`; digital clocks `{ value, setValue,
 setShouldDisableTime, setLocaleText }`; date-field and date-picker add `setShouldDisableTime`.
 Values are ISO by type (`HH:mm:ss`, `YYYY-MM-DDTHH:mm:ss`).
+Phase 3 (ADR-0028): `ok:date-range-picker:change` (`{ value: "start/end" | null, validationError:
+[start, end] }`), `:accept`, `:open` / `:close` (`{ reason }`), `:rangepositionchange`
+(`{ rangePosition }`); `ok:date-range-calendar:change` (cancelable, `{ value, selectionState }`),
+`:rangepositionchange`, `:monthchange`; `ok:multi-input-range-field:change` (cancelable; canceling
+cancels the field's change); range `ok:date-field:change` reports `validationError: [start, end]`.
+Instances: date-range-picker `{ value, setValue, rangePosition, setRangePosition, isOpen,
+open(position?), close, setShortcuts, setShouldDisableDate, setShouldDisableTime, setLocaleText }`;
+date-range-calendar `{ value, setValue, rangePosition, setRangePosition,
+setAvailableRangePositions, calendars, setCalendars, month, focus, setShouldDisable…,
+setDayOfWeekFormatter, setLocaleText }`; multi-input-range-field `{ value, validationError,
+setValue }`; date-field adds `setError(error | null)`. React: `onChange(range, { validationError
+})`, `onError(errors, range)`, `onRangePositionChange(position)`.
 
 ## Parity notes
 React renders `data-ok-runtime="off"`. The HTML runtime rebuilds other months with DOM methods and
@@ -358,3 +487,5 @@ patches the same month in place; snippets are generated from the React examples.
 picker renders the mobile actions and toolbar hidden while it is in its desktop form; responsive
 time and date time pickers also render both forms' views (digital clock, tabs, time clock) and
 hide the other form's. The clock pointer's angle is a private property (parity ignores `style`).
+Range snippets are generated from the React examples too; the HTML range calendar rebuilds its
+months with DOM methods and patches the same months in place.

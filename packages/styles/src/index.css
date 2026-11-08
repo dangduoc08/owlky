@@ -53,4 +53,6 @@
 @import "./components/date-picker.css";
 @import "./components/time-clock.css";
 @import "./components/digital-clock.css";
+@import "./components/date-range-calendar.css";
+@import "./components/date-range-picker.css";
 @import "./components/editor.css";

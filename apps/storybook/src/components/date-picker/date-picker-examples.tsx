@@ -1,26 +1,51 @@
-import { dateCalendarOptions, timeClockOptions } from "@owlky/core";
+import {
+  addDays,
+  addMonths,
+  dateCalendarOptions,
+  dateRangeCalendarOptions,
+  startOfMonth,
+  startOfWeek,
+  timeClockOptions,
+} from "@owlky/core";
 import {
   DateCalendar,
   DateField,
   DatePicker,
+  type DateRange,
+  DateRangeCalendar,
+  DateRangePicker,
   DateTimeField,
   DateTimePicker,
+  DateTimeRangePicker,
   DesktopDatePicker,
+  DesktopDateRangePicker,
   DesktopDateTimePicker,
   DesktopTimePicker,
   DigitalClock,
   LocalizationProvider,
   MobileDatePicker,
+  MobileDateRangePicker,
   MobileDateTimePicker,
+  MobileDateTimeRangePicker,
   MobileTimePicker,
+  MobileTimeRangePicker,
   MonthCalendar,
+  MultiInputDateRangeField,
+  MultiInputDateTimeRangeField,
+  MultiInputTimeRangeField,
   MultiSectionDigitalClock,
+  type RangeShortcut,
+  SingleInputDateRangeField,
+  SingleInputDateTimeRangeField,
+  SingleInputTimeRangeField,
   StaticDatePicker,
+  StaticDateRangePicker,
   StaticDateTimePicker,
   StaticTimePicker,
   TimeClock,
   TimeField,
   TimePicker,
+  TimeRangePicker,
   YearCalendar,
 } from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
@@ -37,6 +62,45 @@ const SHORTCUTS = [
   { label: "Christmas 2025", getValue: () => new Date(2025, 11, 25) },
   { label: "New Year 2026", getValue: () => new Date(2026, 0, 1) },
   { label: "Mid-year 2026", getValue: () => new Date(2026, 5, 30) },
+];
+
+/** The demos' range: 20 to 25 May 2025 (the reference shows a start of 20 May 2025). */
+const RANGE: DateRange = [new Date(2025, 4, 20), new Date(2025, 4, 25)];
+/** A working day, 09:00 AM to 05:30 PM. */
+const HOURS: DateRange = [at(9), at(17, 30)];
+/** A two-day event with times. */
+const EVENT: DateRange = [at(10), new Date(2025, 4, 27, 16)];
+
+/**
+ * Dashboard filter shortcuts, relative to the demos' "today" (Sunday 25 May 2025) so the stories
+ * never change. Real apps compute them from `new Date()` (see the docs page).
+ */
+const DEMO_TODAY = VALUE;
+const RANGE_SHORTCUTS: RangeShortcut[] = [
+  {
+    label: "This week",
+    getValue: () => [startOfWeek(DEMO_TODAY, 0), addDays(startOfWeek(DEMO_TODAY, 0), 6)],
+  },
+  {
+    label: "Last week",
+    getValue: () => [
+      addDays(startOfWeek(DEMO_TODAY, 0), -7),
+      addDays(startOfWeek(DEMO_TODAY, 0), -1),
+    ],
+  },
+  { label: "Last 7 days", getValue: () => [addDays(DEMO_TODAY, -6), DEMO_TODAY] },
+  {
+    label: "Current month",
+    getValue: () => [startOfMonth(DEMO_TODAY), addDays(startOfMonth(addMonths(DEMO_TODAY, 1)), -1)],
+  },
+  {
+    label: "Next month",
+    getValue: () => [
+      startOfMonth(addMonths(DEMO_TODAY, 1)),
+      addDays(startOfMonth(addMonths(DEMO_TODAY, 2)), -1),
+    ],
+  },
+  { label: "Reset", getValue: () => [null, null] },
 ];
 
 /**
@@ -357,6 +421,146 @@ export const datePickerStories: Record<string, ReactGroup[]> = {
       ),
     },
   ],
+  range: [
+    {
+      title: "Input",
+      content: (
+        <div className="sb-date-ranges">
+          <DateRangePicker id="dr-basic" label="Date range picker" defaultValue={RANGE} />
+          <DateRangePicker
+            id="dr-multi"
+            multiInput
+            startLabel="Start date"
+            endLabel="End date"
+            defaultValue={RANGE}
+          />
+          <MobileDateRangePicker
+            id="dr-mobile"
+            label="Mobile date range picker"
+            defaultValue={RANGE}
+          />
+        </div>
+      ),
+    },
+    {
+      title: "Calendar",
+      content: <DateRangeCalendar id="dr-calendar" defaultValue={RANGE} />,
+    },
+    {
+      title: "Static mode",
+      content: <StaticDateRangePicker id="dr-static" defaultValue={RANGE} />,
+    },
+  ],
+  "range-fields": [
+    {
+      title: "Single input",
+      content: (
+        <div className="sb-date-ranges">
+          <SingleInputDateRangeField id="rf-date" label="Date range" defaultValue={RANGE} />
+          <SingleInputTimeRangeField id="rf-time" label="Time range" defaultValue={HOURS} />
+          <SingleInputDateTimeRangeField
+            id="rf-date-time"
+            label="Date time range"
+            defaultValue={EVENT}
+            fullWidth
+          />
+        </div>
+      ),
+    },
+    {
+      title: "Multi input",
+      content: (
+        <div className="sb-date-ranges">
+          <MultiInputDateRangeField id="rf-multi-date" defaultValue={RANGE} />
+          <MultiInputTimeRangeField id="rf-multi-time" defaultValue={HOURS} />
+          <MultiInputDateTimeRangeField id="rf-multi-date-time" defaultValue={EVENT} fullWidth />
+        </div>
+      ),
+    },
+  ],
+  "range-calendars": [
+    {
+      title: "Three months and week numbers",
+      content: (
+        <DateRangeCalendar id="rc-three" calendars={3} displayWeekNumber defaultValue={RANGE} />
+      ),
+    },
+    {
+      title: "One month and days outside it",
+      content: (
+        <DateRangeCalendar
+          id="rc-one"
+          calendars={1}
+          showDaysOutsideCurrentMonth
+          fixedWeekNumber={6}
+          defaultValue={RANGE}
+        />
+      ),
+    },
+  ],
+  "time-ranges": [
+    {
+      title: "Time range",
+      content: (
+        <div className="sb-date-pickers">
+          <TimeRangePicker id="tr-basic" label="Time range picker" defaultValue={HOURS} />
+          <TimeRangePicker
+            id="tr-multi"
+            multiInput
+            startLabel="Opens"
+            endLabel="Closes"
+            defaultValue={HOURS}
+          />
+          <MobileTimeRangePicker
+            id="tr-mobile"
+            label="Mobile time range picker"
+            defaultValue={HOURS}
+          />
+        </div>
+      ),
+    },
+    {
+      title: "Date time range",
+      content: (
+        <div className="sb-date-ranges">
+          <DateTimeRangePicker id="dtr-basic" label="Date time range picker" defaultValue={EVENT} />
+          <MobileDateTimeRangePicker
+            id="dtr-mobile"
+            label="Mobile date time range picker"
+            defaultValue={EVENT}
+          />
+        </div>
+      ),
+    },
+  ],
+  "range-shortcuts": [
+    {
+      title: "Dashboard filter",
+      content: (
+        <StaticDateRangePicker
+          id="rs-filter"
+          shortcuts={RANGE_SHORTCUTS}
+          actions={[]}
+          calendars={2}
+          defaultValue={RANGE}
+        />
+      ),
+    },
+    {
+      title: "Filter field",
+      content: (
+        <div className="sb-date-pickers">
+          <DesktopDateRangePicker
+            id="rs-field"
+            label="Report period"
+            shortcuts={RANGE_SHORTCUTS}
+            clearable
+            defaultValue={RANGE}
+          />
+        </div>
+      ),
+    },
+  ],
   localization: [
     {
       title: "Vietnamese",
@@ -425,6 +629,27 @@ export const DATE_PICKER_FILES: Record<string, GroupFiles> = {
     ["Time limits and steps", "limits"],
     ["Skip disabled", "skip-disabled"],
   ],
+  range: [
+    ["Input", "input"],
+    ["Calendar", "calendar"],
+    ["Static mode", "static"],
+  ],
+  "range-fields": [
+    ["Single input", "single"],
+    ["Multi input", "multi"],
+  ],
+  "range-calendars": [
+    ["Three months and week numbers", "three"],
+    ["One month and days outside it", "one"],
+  ],
+  "time-ranges": [
+    ["Time range", "time"],
+    ["Date time range", "date-time"],
+  ],
+  "range-shortcuts": [
+    ["Dashboard filter", "filter"],
+    ["Filter field", "field"],
+  ],
   localization: [
     ["Vietnamese", "vietnamese"],
     ["Landscape", "landscape"],
@@ -441,4 +666,10 @@ export const TIME_CLOCK_CONTROLS = {
 export const DATE_CALENDAR_CONTROLS = {
   schema: dateCalendarOptions,
   keys: ["displayWeekNumber", "showDaysOutsideCurrentMonth", "disableHighlightToday", "yearsOrder"],
+} as const;
+
+/** Story Controls of the Range calendars story, shared by React and HTML (ADR-0015). */
+export const DATE_RANGE_CALENDAR_CONTROLS = {
+  schema: dateRangeCalendarOptions,
+  keys: ["disableDragEditing", "disableAutoMonthSwitching", "disableHighlightToday"],
 } as const;
