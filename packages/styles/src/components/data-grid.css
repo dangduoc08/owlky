@@ -79,10 +79,16 @@
     overscroll-behavior-x: contain;
   }
 
+  /*
+   * Stacking in the scroll area, lowest first: cell content (each cell isolates it), row-span
+   * cells 1, pinned cells 2, pinned rows and the aggregation footer 3, the cell being edited 4 (its
+   * error message overflows onto the rows below), the header 5 (column groups, headers, header
+   * filters). The loading layer (6) sits outside, over the scroll area's bottom edge.
+   */
   :where([data-ok-data-grid-header]) {
     position: sticky;
     top: 0;
-    z-index: 1;
+    z-index: 5;
     min-width: fit-content;
     background-color: var(--ok-bg-neutral);
     color: var(--ok-text-secondary);
@@ -120,6 +126,7 @@
   }
 
   :where([data-ok-data-grid-main] [role="gridcell"]) {
+    isolation: isolate;
     height: var(--_ok-data-grid-row-height);
     line-height: var(--_ok-data-grid-row-height);
   }
@@ -320,7 +327,7 @@
   /* Pinned columns stick to their side over the scrolling ones (offsets from the owner). */
   :where([data-ok-data-grid-main] [data-ok-pinned]) {
     position: sticky;
-    z-index: 1;
+    z-index: 2;
     background-color: var(--ok-bg-paper);
     background-image: linear-gradient(
       var(--_ok-data-grid-row-bg, transparent),
@@ -429,6 +436,7 @@
   /* Validation: the field and a message under the cell. */
   :where([data-ok-data-grid-main] [role="gridcell"][data-ok-editing]) {
     position: relative;
+    z-index: 4;
     overflow: visible;
   }
 
@@ -465,8 +473,6 @@
 
   /* Row spans: the first cell grows over the next rows, whose cells keep their place unseen. */
   :where([data-ok-data-grid-main] [role="gridcell"][aria-rowspan]) {
-    position: relative;
-    z-index: 1;
     display: flex;
     align-items: center;
     align-self: start;
@@ -482,6 +488,12 @@
       var(--_ok-data-grid-row-bg, transparent)
     );
     line-height: inherit;
+  }
+
+  /* Over the rows below; a pinned spanning cell stays sticky (and above, as pinned cells are). */
+  :where([data-ok-data-grid-main] [role="gridcell"][aria-rowspan]:not([data-ok-pinned])) {
+    position: relative;
+    z-index: 1;
   }
 
   /* The row keeps its height: the spanning cell overflows onto the rows below. */
@@ -522,7 +534,7 @@
   /* Loading: a bar at the bottom of the rows, a spinner, or placeholder lines. */
   :where([data-ok-data-grid-loading]) {
     position: relative;
-    z-index: 3;
+    z-index: 6;
     height: 0;
   }
 
@@ -644,7 +656,7 @@
   /* Pinned rows stay under the header or at the bottom while the others scroll. */
   :where([data-ok-data-grid-pinned-rows]) {
     position: sticky;
-    z-index: 1;
+    z-index: 3;
     min-width: fit-content;
     background-color: var(--ok-bg-paper);
   }

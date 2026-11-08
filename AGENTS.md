@@ -395,6 +395,13 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
   while typing (or it clears its sections): keep it as a draft until the date is whole.
   Column virtualization hides cells in the 414px test page: tests that count cells set
   `disableVirtualization`.
+- Data grid stacking (the scroll area isn't a stacking context): every body cell has `isolation:
+  isolate` (a Checkbox / Switch / Rating input's `z-index: 1` stays in its cell); row-span cells 1,
+  pinned cells 2, pinned rows and the aggregation footer 3, the editing cell 4 (its error overflows
+  downward), the header 5 (column groups, header filters), the loading layer 6. A new sticky or
+  positioned layer takes a slot in that order (comment at `[data-ok-data-grid-header]`).
+  `e2e/tests/data-grid.scroll.spec.ts` scrolls every story and checks `elementFromPoint` on header
+  and pinned-row cells.
 - Data grid date time filters (`dateTime` columns) use the DateTimePicker (same `[data-ok-date-picker]`
   root and `ok:date-picker:change` event, `data-ok-value-type="date-time"`); HTML filter panels copy
   `template[data-ok-data-grid-date-time]`; the value is `YYYY-MM-DDTHH:mm:ss` (local). A header

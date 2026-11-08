@@ -389,7 +389,10 @@ Attributes: `data-ok-label-no-rows`, `data-ok-label-no-results`, `data-ok-export
 
 ## Responsive
 The grid scrolls horizontally inside its main area (header sticky); the toolbar wraps; panels fit
-the viewport (filter fields wrap to one column).
+the viewport (filter fields wrap to one column). Stacking while scrolling, lowest first: cell content
+(each body cell isolates it), row-span cells, pinned cells, pinned rows and the aggregation footer,
+the cell being edited, the header (column groups, header filters); the loading layer sits above.
+`e2e/tests/data-grid.scroll.spec.ts` checks it for every story.
 
 ## Parity notes
 React renders every filtered row (other pages `hidden`) and writes the template through `style`;
