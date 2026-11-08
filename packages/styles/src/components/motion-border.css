@@ -1,0 +1,62 @@
+/*
+ * MotionBorder — spec: specs/components/motion.md
+ *
+ * Anatomy:   [data-ok-motion-border] › content (an avatar, a logo, a button, text…)
+ * Modifiers: data-ok-shape = rounded (default) | circle, data-ok-color = multi (default) | palette,
+ *            data-ok-paused
+ * Private:   --_ok-motion-border-width | -duration (owner: CSSOM / style),
+ *            --_ok-motion-border-fill (the area inside the border, default the paper color)
+ *
+ * A conic gradient turns behind a transparent border; the padding box is painted with the fill,
+ * so only the ring shows. The angle is a registered property so it animates.
+ * Single :where() selectors in @layer components.
+ */
+@reference "../theme.css";
+
+@property --_ok-motion-border-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@layer components {
+  :where([data-ok-motion-border]) {
+    --_ok-motion-border-colors:
+      var(--ok-palette-primary-main), var(--ok-palette-warning-main),
+      var(--ok-palette-secondary-main), var(--ok-palette-error-main), var(--ok-palette-primary-main);
+    box-sizing: border-box;
+    width: fit-content;
+    border: var(--_ok-motion-border-width, 2px) solid transparent;
+    border-radius: var(--ok-radius-lg);
+    background:
+      linear-gradient(var(--_ok-motion-border-fill, var(--ok-bg-paper)) 0 0) padding-box,
+      conic-gradient(from var(--_ok-motion-border-angle), var(--_ok-motion-border-colors))
+      border-box;
+    animation: ok-motion-border
+      var(--_ok-motion-border-duration, calc(var(--ok-duration-enter) * 8)) linear infinite;
+  }
+
+  :where([data-ok-motion-border][data-ok-shape="circle"]) {
+    border-radius: 50%;
+  }
+
+  :where([data-ok-motion-border][data-ok-color]:not([data-ok-color="multi"])) {
+    --_ok-motion-border-colors: transparent 0deg 200deg, var(--ok-c-main) 360deg;
+  }
+
+  :where([data-ok-motion-border][data-ok-paused]) {
+    animation-play-state: paused;
+  }
+
+  @keyframes ok-motion-border {
+    to {
+      --_ok-motion-border-angle: 360deg;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :where([data-ok-motion-border]) {
+      animation: none;
+    }
+  }
+}

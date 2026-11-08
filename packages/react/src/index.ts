@@ -20,6 +20,7 @@ export type {
   DialogCloseReason,
   DialogMaxWidth,
   DialogScroll,
+  DialogTransition,
   DividerTextAlign,
   DividerVariant,
   DrawerAnchor,
@@ -38,6 +39,10 @@ export type {
   ListSubheaderColor,
   MobileStepperPosition,
   MobileStepperVariant,
+  MotionBorderColor,
+  MotionBorderShape,
+  MotionTrigger,
+  MotionVariant,
   Orientation,
   PageRange,
   PaginationAction,
@@ -131,6 +136,7 @@ export {
   CircularProgress,
   type CircularProgressProps,
 } from "./circular-progress/circular-progress.js";
+export { CountUp, type CountUpProps } from "./count-up/count-up.js";
 export {
   Dialog,
   DialogActions,
@@ -182,6 +188,16 @@ export {
   type MenuItemProps,
   type MenuProps,
 } from "./menu/menu.js";
+export {
+  Motion,
+  MotionGroup,
+  type MotionGroupProps,
+  type MotionProps,
+  MotionText,
+  type MotionTextProps,
+  type MotionTriggerProps,
+} from "./motion/motion.js";
+export { MotionBorder, type MotionBorderProps } from "./motion-border/motion-border.js";
 export {
   Pagination,
   type PaginationIcons,

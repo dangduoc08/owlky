@@ -13,12 +13,17 @@ import { breadcrumbs } from "./breadcrumbs/breadcrumbs.js";
 import { checkbox } from "./checkbox/checkbox.js";
 import { chip } from "./chip/chip.js";
 import { circularProgress } from "./circular-progress/circular-progress.js";
+import { countUp } from "./count-up/count-up.js";
 import { dialog } from "./dialog/dialog.js";
 import { drawer } from "./drawer/drawer.js";
 import { linearProgress } from "./linear-progress/linear-progress.js";
 import { list } from "./list/list.js";
 import { menu } from "./menu/menu.js";
 import { mobileStepper } from "./mobile-stepper/mobile-stepper.js";
+import { motion } from "./motion/motion.js";
+import { motionBorder } from "./motion-border/motion-border.js";
+import { motionGroup } from "./motion-group/motion-group.js";
+import { motionText } from "./motion-text/motion-text.js";
 import { pagination } from "./pagination/pagination.js";
 import { popover } from "./popover/popover.js";
 import { rating } from "./rating/rating.js";
@@ -68,4 +73,9 @@ export const components: readonly ComponentDefinition[] = [
   transferList as ComponentDefinition,
   treeView as ComponentDefinition,
   autocomplete as ComponentDefinition,
+  motion as ComponentDefinition,
+  motionGroup as ComponentDefinition,
+  motionText as ComponentDefinition,
+  countUp as ComponentDefinition,
+  motionBorder as ComponentDefinition,
 ];

@@ -8,6 +8,7 @@ import {
   type DialogMaxWidth,
   type DialogScroll,
   DialogTitle,
+  type DialogTransition,
   IconButton,
   List,
   ListItem,
@@ -104,10 +105,12 @@ export function AlertDialogDemo({
   id = "dialog-alert",
   label = "Open alert dialog",
   color = "info",
+  transition,
 }: {
   id?: string;
   label?: string;
-  color?: "info" | "success";
+  color?: "info" | "success" | "warning" | "error";
+  transition?: DialogTransition;
 }) {
   const dialog = useDialog();
   const close = () => dialog.onOpenChange(false);
@@ -116,7 +119,7 @@ export function AlertDialogDemo({
       <Trigger id={id} color={color} {...dialog}>
         {label}
       </Trigger>
-      <Dialog id={id} open={dialog.open} onOpenChange={dialog.onOpenChange}>
+      <Dialog id={id} open={dialog.open} onOpenChange={dialog.onOpenChange} transition={transition}>
         <DialogTitle>Share your location?</DialogTitle>
         <DialogContent>
           <DialogContentText>
@@ -137,9 +140,16 @@ export function AlertDialogDemo({
   );
 }
 
-/** Transitions: the same dialog; it scales and fades in (reduced motion: no animation). */
+/** Transitions: the same dialog; the paper slides in from below (reduced motion: no animation). */
 export function TransitionsDialogDemo() {
-  return <AlertDialogDemo id="dialog-transitions" label="Transitions dialog" color="success" />;
+  return (
+    <AlertDialogDemo
+      id="dialog-transitions"
+      label="Transitions dialog"
+      color="success"
+      transition="slideInUp"
+    />
+  );
 }
 
 /** Form: a field and the actions that submit or cancel it. */

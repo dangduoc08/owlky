@@ -55,7 +55,11 @@ two checkbox lists and move buttons; event `ok:transfer-list:change` (cancelable
 `ok:tree-view:expand` and `ok:tree-view:select` (cancelable)) **Autocomplete** (runtime
 `autocomplete`: a TextField combobox with a Popover listbox; chips from
 `<template data-ok-autocomplete-tag>`; events `ok:autocomplete:change` (cancelable),
-`ok:autocomplete:open|close`). Snippets ship in
+`ok:autocomplete:open|close`) **Motion** (runtimes `motion`, `motion-group`, `motion-text`:
+`data-ok-motion data-ok-variant="fadeInUp"` plays when scrolled into view, on mount or on
+`data-ok-in`; the runtime writes `data-ok-state`, so without it nothing is hidden; event
+`ok:motion:end`, `replay()`; `count-up` counts `data-ok-count-up-value` to `data-ok-end`;
+`motion-border` writes the width and speed of a turning gradient border). Snippets ship in
 `@owlky/html/snippets/<component>/<story>-<group>.html` and in Storybook (HTML/Button/…).
 
 Theme settings (ADR-0017): put `data-ok-preset` / `data-ok-font` on `<html>` (or any element) and

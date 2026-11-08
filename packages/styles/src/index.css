@@ -43,3 +43,6 @@
 @import "./components/transfer-list.css";
 @import "./components/tree-view.css";
 @import "./components/autocomplete.css";
+@import "./components/motion.css";
+@import "./components/count-up.css";
+@import "./components/motion-border.css";

@@ -23,6 +23,7 @@ import {
   chipVariants,
   circularProgressAttributes,
   circularProgressVariants,
+  countUpAttributes,
   dialogAttributes,
   dialogMaxWidths,
   dividerAttributes,
@@ -54,6 +55,12 @@ import {
   menuAttributes,
   menuItemAttributes,
   mobileStepperAttributes,
+  motionAttributes,
+  motionBorderAttributes,
+  motionEntranceVariants,
+  motionGroupAttributes,
+  motionTextAttributes,
+  motionVariants,
   orientations,
   popoverAttributes,
   popoverPlacements,
@@ -1187,6 +1194,127 @@ describe("overlay attributes", () => {
     });
     expect(autocompleteAttributes({ limitTags: -1, multiple: HOSTILE })).toEqual({
       "data-ok-autocomplete": "",
+    });
+  });
+
+  it("motion defaults, every variant, invalid values", () => {
+    expect(motionAttributes()).toEqual({
+      "data-ok-motion": "",
+      "data-ok-variant": "fadeIn",
+      "data-ok-trigger": "inView",
+    });
+    expect(motionEntranceVariants).toHaveLength(48);
+    expect(motionVariants).toHaveLength(62);
+    for (const variant of motionVariants)
+      expect(motionAttributes({ variant })["data-ok-variant"]).toBe(variant);
+    expect(
+      motionAttributes({
+        variant: "zoomInLeft",
+        trigger: "manual",
+        once: false,
+        amount: 0.5,
+        delay: 100,
+        duration: 800,
+        distance: 40,
+        paused: true,
+      }),
+    ).toEqual({
+      "data-ok-motion": "",
+      "data-ok-variant": "zoomInLeft",
+      "data-ok-trigger": "manual",
+      "data-ok-once": "false",
+      "data-ok-amount": "0.5",
+      "data-ok-delay": "100",
+      "data-ok-duration": "800",
+      "data-ok-distance": "40",
+      "data-ok-paused": "",
+    });
+    expect(
+      motionAttributes({
+        variant: HOSTILE as never,
+        trigger: HOSTILE as never,
+        amount: -1,
+        duration: Number.NaN,
+      }),
+    ).toEqual({ "data-ok-motion": "", "data-ok-variant": "fadeIn", "data-ok-trigger": "inView" });
+  });
+
+  it("motion group and text", () => {
+    expect(motionGroupAttributes()).toEqual({
+      "data-ok-motion-group": "",
+      "data-ok-trigger": "inView",
+    });
+    expect(motionGroupAttributes({ stagger: 80, once: false, trigger: "mount" })).toEqual({
+      "data-ok-motion-group": "",
+      "data-ok-trigger": "mount",
+      "data-ok-stagger": "80",
+      "data-ok-once": "false",
+    });
+    expect(motionTextAttributes({ variant: "fadeInUp", stagger: 40 })).toEqual({
+      "data-ok-motion-text": "",
+      "data-ok-variant": "fadeInUp",
+      "data-ok-trigger": "inView",
+      "data-ok-stagger": "40",
+    });
+  });
+
+  it("dialog transition is written on the paper, not the root", () => {
+    expect(dialogAttributes({ maxWidth: "sm" })).not.toHaveProperty("data-ok-variant");
+  });
+
+  it("count up and motion border", () => {
+    expect(countUpAttributes({ end: 200 })).toEqual({
+      "data-ok-count-up": "",
+      "data-ok-end": "200",
+      "data-ok-trigger": "inView",
+    });
+    expect(
+      countUpAttributes({
+        start: -5,
+        end: 9.5,
+        decimals: 1,
+        duration: 500,
+        once: false,
+        trigger: "mount",
+      }),
+    ).toEqual({
+      "data-ok-count-up": "",
+      "data-ok-start": "-5",
+      "data-ok-end": "9.5",
+      "data-ok-decimals": "1",
+      "data-ok-duration": "500",
+      "data-ok-trigger": "mount",
+      "data-ok-once": "false",
+    });
+    expect(countUpAttributes({ end: Number.NaN, decimals: -1 })).toEqual({
+      "data-ok-count-up": "",
+      "data-ok-trigger": "inView",
+    });
+    expect(motionBorderAttributes()).toEqual({
+      "data-ok-motion-border": "",
+      "data-ok-shape": "rounded",
+      "data-ok-color": "multi",
+    });
+    expect(
+      motionBorderAttributes({
+        shape: "circle",
+        color: "error",
+        width: 3,
+        duration: 4000,
+        paused: true,
+      }),
+    ).toEqual({
+      "data-ok-motion-border": "",
+      "data-ok-shape": "circle",
+      "data-ok-color": "error",
+      "data-ok-width": "3",
+      "data-ok-duration": "4000",
+      "data-ok-paused": "",
+    });
+    expect(motionBorderAttributes({ shape: HOSTILE, color: HOSTILE, width: -1 })).toEqual({
+      "data-ok-motion-border": "",
+      "data-ok-shape": "rounded",
+      "data-ok-color": "multi",
     });
   });
 });

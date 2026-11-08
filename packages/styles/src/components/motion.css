@@ -1,0 +1,559 @@
+/*
+ * Motion — spec: specs/components/motion.md
+ *
+ * Anatomy:   [data-ok-motion] (any element; the animated box)
+ *            [data-ok-motion-group] › [data-ok-motion]… (staggered by --_ok-motion-index)
+ *            [data-ok-motion-text] › span (visually hidden text) + span[aria-hidden] › span (word)
+ *              › span[data-ok-motion-char]…
+ * Modifiers: data-ok-variant = <family><In|Out>[<direction>] (entrances / exits) |
+ *            kenburns* | pan* | color*x (loops) | draw (SVG strokes) | interactive (hover / press),
+ *            data-ok-paused
+ * States:    data-ok-state = initial | enter | exit (written by the owner). Without a state
+ *            (no JavaScript yet) nothing is hidden.
+ * Private:   --_ok-motion-duration | -delay | -distance | -stagger | -index (owner, CSSOM / style)
+ *
+ * One keyframe animates from the variant's start (custom properties set per family and
+ * direction) to the element's own style. In-variants play it forwards when entering; out-variants
+ * play it backwards, so their `initial` state is the element itself. The exit plays the other
+ * way, under another name so the animation restarts.
+ * Single :where() selectors in @layer components.
+ */
+@reference "../theme.css";
+
+/* The item's position in a group must not reach nested Motions. */
+@property --_ok-motion-index {
+  syntax: "*";
+  inherits: false;
+}
+
+@layer components {
+  :where([data-ok-motion], [data-ok-motion-text]) {
+    --_ok-motion-name: ok-motion;
+    --_ok-motion-exit-name: ok-motion-exit;
+    --_ok-motion-d: var(--_ok-motion-distance, calc(var(--ok-spacing) * 30));
+    --_ok-motion-x: 0px;
+    --_ok-motion-y: 0px;
+    --_ok-motion-sx: 1;
+    --_ok-motion-sy: 1;
+    --_ok-motion-rx: 0deg;
+    --_ok-motion-ry: 0deg;
+    --_ok-motion-r: 0deg;
+    --_ok-motion-o: 1;
+    --_ok-motion-in: normal;
+    --_ok-motion-out: reverse;
+    /* An entered in-variant drops the animation at its end (no leftover transform). */
+    --_ok-motion-in-fill: backwards;
+    --_ok-motion-out-fill: both;
+  }
+
+  /* Families. */
+  :where(:is([data-ok-motion], [data-ok-motion-text])[data-ok-variant^="slide"]) {
+    --_ok-motion-d: var(--_ok-motion-distance, calc(var(--ok-spacing) * 40));
+  }
+
+  :where(:is([data-ok-motion], [data-ok-motion-text])[data-ok-variant^="fade"]) {
+    --_ok-motion-o: 0;
+  }
+
+  :where(:is([data-ok-motion], [data-ok-motion-text])[data-ok-variant^="zoom"]) {
+    --_ok-motion-o: 0;
+    --_ok-motion-sx: 0;
+    --_ok-motion-sy: 0;
+  }
+
+  :where(
+    :is([data-ok-motion], [data-ok-motion-text])[data-ok-variant^="zoom"]:is(
+      [data-ok-variant$="Up"],
+      [data-ok-variant$="Down"],
+      [data-ok-variant$="Left"],
+      [data-ok-variant$="Right"]
+    )
+  ) {
+    --_ok-motion-sx: 0.5;
+    --_ok-motion-sy: 0.5;
+    --_ok-motion-d: var(--_ok-motion-distance, calc(var(--ok-spacing) * 90));
+  }
+
+  :where(:is([data-ok-motion], [data-ok-motion-text])[data-ok-variant^="bounce"]) {
+    --_ok-motion-name: ok-motion-bounce;
+    --_ok-motion-exit-name: ok-motion-bounce-exit;
+    --_ok-motion-o: 0;
+    --_ok-motion-sx: 0.3;
+    --_ok-motion-sy: 0.3;
+  }
+
+  :where(
+    :is([data-ok-motion], [data-ok-motion-text])[data-ok-variant^="bounce"]:is(
+      [data-ok-variant$="Up"],
+      [data-ok-variant$="Down"]
+    )
+  ) {
+    --_ok-motion-sx: 1;
+    --_ok-motion-sy: 2.5;
+    --_ok-motion-d: var(--_ok-motion-distance, calc(var(--ok-spacing) * 90));
+  }
+
+  :where(
+    :is([data-ok-motion], [data-ok-motion-text])[data-ok-variant^="bounce"]:is(
+      [data-ok-variant$="Left"],
+      [data-ok-variant$="Right"]
+    )
+  ) {
+    --_ok-motion-sx: 2.5;
+    --_ok-motion-sy: 1;
+    --_ok-motion-d: var(--_ok-motion-distance, calc(var(--ok-spacing) * 90));
+  }
+
+  :where(:is([data-ok-motion], [data-ok-motion-text])[data-ok-variant^="flip"]) {
+    --_ok-motion-name: ok-motion-flip;
+    --_ok-motion-exit-name: ok-motion-flip-exit;
+    --_ok-motion-o: 0;
+  }
+
+  :where(
+    :is([data-ok-motion], [data-ok-motion-text])[data-ok-variant^="flip"][data-ok-variant$="X"]
+  ) {
+    --_ok-motion-rx: -180deg;
+  }
+
+  :where(
+    :is([data-ok-motion], [data-ok-motion-text])[data-ok-variant^="flip"][data-ok-variant$="Y"]
+  ) {
+    --_ok-motion-ry: -180deg;
+  }
+
+  :where(:is([data-ok-motion], [data-ok-motion-text])[data-ok-variant^="scale"]) {
+    --_ok-motion-o: 0;
+  }
+
+  :where(
+    :is([data-ok-motion], [data-ok-motion-text])[data-ok-variant^="scale"][data-ok-variant$="X"]
+  ) {
+    --_ok-motion-sx: 0;
+  }
+
+  :where(
+    :is([data-ok-motion], [data-ok-motion-text])[data-ok-variant^="scale"][data-ok-variant$="Y"]
+  ) {
+    --_ok-motion-sy: 0;
+  }
+
+  :where(:is([data-ok-motion], [data-ok-motion-text])[data-ok-variant^="rotate"]) {
+    --_ok-motion-o: 0;
+    --_ok-motion-sx: 0;
+    --_ok-motion-sy: 0;
+    --_ok-motion-r: -360deg;
+  }
+
+  /* Directions: "Up" / "Down" name the movement, "Left" / "Right" the side. */
+  :where(
+    :is([data-ok-motion], [data-ok-motion-text])[data-ok-variant*="InUp"],
+    :is([data-ok-motion], [data-ok-motion-text])[data-ok-variant*="OutDown"]
+  ) {
+    --_ok-motion-y: var(--_ok-motion-d);
+  }
+
+  :where(
+    :is([data-ok-motion], [data-ok-motion-text])[data-ok-variant*="InDown"],
+    :is([data-ok-motion], [data-ok-motion-text])[data-ok-variant*="OutUp"]
+  ) {
+    --_ok-motion-y: calc(var(--_ok-motion-d) * -1);
+  }
+
+  :where(:is([data-ok-motion], [data-ok-motion-text])[data-ok-variant$="Left"]) {
+    --_ok-motion-x: calc(var(--_ok-motion-d) * -1);
+  }
+
+  :where(:is([data-ok-motion], [data-ok-motion-text])[data-ok-variant$="Right"]) {
+    --_ok-motion-x: var(--_ok-motion-d);
+  }
+
+  /* Exits play the entrance backwards. */
+  :where(:is([data-ok-motion], [data-ok-motion-text])[data-ok-variant*="Out"]) {
+    --_ok-motion-in: reverse;
+    --_ok-motion-out: normal;
+    --_ok-motion-in-fill: both;
+    --_ok-motion-out-fill: backwards;
+  }
+
+  /* Letters animate one by one; the visually hidden copy is what assistive technologies read. */
+  :where([data-ok-motion-char]) {
+    display: inline-block;
+  }
+
+  :where([data-ok-motion-text-word]) {
+    display: inline-block;
+    white-space: nowrap;
+  }
+
+  :where([data-ok-motion-text-label]) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* Entrance (paused at its start until `enter`) and exit. */
+  :where(
+    [data-ok-motion][data-ok-state],
+    [data-ok-motion-text][data-ok-state] [data-ok-motion-char]
+  ) {
+    animation: var(--_ok-motion-name) var(--_ok-motion-duration, var(--ok-duration-enter))
+      var(--ok-easing-expressive)
+      calc(
+        var(--_ok-motion-delay, 0ms) +
+        var(--_ok-motion-index, 0) *
+        var(--_ok-motion-stagger, 0ms)
+      )
+      var(--_ok-motion-in-fill) var(--_ok-motion-in) paused;
+  }
+
+  :where(
+    [data-ok-motion][data-ok-state="enter"],
+    [data-ok-motion-text][data-ok-state="enter"] [data-ok-motion-char]
+  ) {
+    animation-play-state: running;
+  }
+
+  :where(
+    [data-ok-motion][data-ok-state="exit"],
+    [data-ok-motion-text][data-ok-state="exit"] [data-ok-motion-char]
+  ) {
+    animation: var(--_ok-motion-exit-name) var(--ok-duration-exit) var(--ok-easing-expressive) 0s
+      var(--_ok-motion-out-fill) var(--_ok-motion-out);
+  }
+
+  /* Out-variants start as the element itself. */
+  :where(
+    :is([data-ok-motion], [data-ok-motion-text])[data-ok-variant*="Out"][data-ok-state="initial"],
+    [data-ok-motion-text][data-ok-variant*="Out"][data-ok-state="initial"] [data-ok-motion-char]
+  ) {
+    animation: none;
+  }
+
+  /* Loops (backgrounds): run while entered, pause otherwise. */
+  :where([data-ok-motion][data-ok-variant^="kenburns"]) {
+    --_ok-motion-loop: ok-motion-kenburns;
+    --_ok-motion-loop-easing: var(--ok-easing-decelerate);
+    transform-origin: 50% 0%;
+  }
+
+  :where([data-ok-motion][data-ok-variant="kenburnsTop"]) {
+    --_ok-motion-y: calc(var(--ok-spacing) * -4);
+  }
+
+  :where([data-ok-motion][data-ok-variant="kenburnsBottom"]) {
+    --_ok-motion-y: calc(var(--ok-spacing) * 4);
+    transform-origin: 50% 100%;
+  }
+
+  :where([data-ok-motion][data-ok-variant="kenburnsLeft"]) {
+    --_ok-motion-x: calc(var(--ok-spacing) * -5);
+    transform-origin: 0% 50%;
+  }
+
+  :where([data-ok-motion][data-ok-variant="kenburnsRight"]) {
+    --_ok-motion-x: calc(var(--ok-spacing) * 5);
+    transform-origin: 100% 50%;
+  }
+
+  :where([data-ok-motion][data-ok-variant^="pan"]) {
+    --_ok-motion-loop: ok-motion-pan;
+    --_ok-motion-loop-easing: linear;
+    --_ok-motion-from: 50% 0%;
+    --_ok-motion-to: 50% 100%;
+    background-size: 400% 400%;
+  }
+
+  :where([data-ok-motion][data-ok-variant="panBottom"]) {
+    --_ok-motion-from: 50% 100%;
+    --_ok-motion-to: 50% 0%;
+  }
+
+  :where([data-ok-motion][data-ok-variant="panLeft"]) {
+    --_ok-motion-from: 0% 50%;
+    --_ok-motion-to: 100% 50%;
+  }
+
+  :where([data-ok-motion][data-ok-variant="panRight"]) {
+    --_ok-motion-from: 100% 50%;
+    --_ok-motion-to: 0% 50%;
+  }
+
+  /* Color change: gradient text, the gradient N times as wide as the text. */
+  :where([data-ok-motion][data-ok-variant^="color"]) {
+    --_ok-motion-loop: ok-motion-pan;
+    --_ok-motion-loop-easing: linear;
+    --_ok-motion-from: 0% 50%;
+    --_ok-motion-to: 100% 50%;
+    background-image: linear-gradient(
+      90deg,
+      var(--ok-palette-primary-main),
+      var(--ok-palette-warning-main),
+      var(--ok-palette-secondary-main),
+      var(--ok-palette-error-main),
+      var(--ok-palette-primary-main)
+    );
+    /* The gradient spans the text, not the whole line. */
+    width: fit-content;
+    background-size: 200% auto;
+    background-clip: text;
+    color: transparent;
+  }
+
+  :where([data-ok-motion][data-ok-variant="color3x"]) {
+    background-size: 300% auto;
+  }
+
+  :where([data-ok-motion][data-ok-variant="color4x"]) {
+    background-size: 400% auto;
+  }
+
+  :where([data-ok-motion][data-ok-variant="color5x"]) {
+    background-size: 500% auto;
+  }
+
+  :where(
+    [data-ok-motion][data-ok-state]:is(
+      [data-ok-variant^="kenburns"],
+      [data-ok-variant^="pan"],
+      [data-ok-variant^="color"]
+    )
+  ) {
+    animation: var(--_ok-motion-loop) var(--_ok-motion-duration, calc(var(--ok-duration-enter) * 8))
+      var(--_ok-motion-loop-easing) var(--_ok-motion-delay, 0ms) infinite alternate both paused;
+  }
+
+  :where(
+    [data-ok-motion][data-ok-state="enter"]:is(
+      [data-ok-variant^="kenburns"],
+      [data-ok-variant^="pan"],
+      [data-ok-variant^="color"]
+    )
+  ) {
+    animation-play-state: running;
+  }
+
+  :where(
+    [data-ok-motion][data-ok-paused],
+    [data-ok-motion-text][data-ok-paused] [data-ok-motion-char]
+  ) {
+    animation-play-state: paused;
+  }
+
+  /* Draw: traces the strokes of an SVG (pathLength="1"), then fills it. */
+  :where(
+    [data-ok-motion][data-ok-variant="draw"][data-ok-state],
+    [data-ok-motion][data-ok-variant="interactive"][data-ok-state]
+  ) {
+    animation: none;
+  }
+
+  :where(
+    [data-ok-motion][data-ok-variant="draw"][data-ok-state]
+      :is(path, circle, ellipse, line, polyline, polygon, rect)
+  ) {
+    stroke-dasharray: 1;
+    animation: ok-motion-draw var(--_ok-motion-duration, calc(var(--ok-duration-enter) * 3))
+      var(--ok-easing-standard) var(--_ok-motion-delay, 0ms) backwards paused;
+  }
+
+  :where(
+    [data-ok-motion][data-ok-variant="draw"][data-ok-state="enter"]
+      :is(path, circle, ellipse, line, polyline, polygon, rect)
+  ) {
+    animation-play-state: running;
+  }
+
+  :where(
+    [data-ok-motion][data-ok-variant="draw"][data-ok-state="exit"]
+      :is(path, circle, ellipse, line, polyline, polygon, rect)
+  ) {
+    animation: ok-motion-draw-exit var(--ok-duration-exit) var(--ok-easing-standard) 0s both reverse;
+  }
+
+  /* Interactive: scales up on hover and down while pressed. */
+  :where([data-ok-motion][data-ok-variant="interactive"]) {
+    width: fit-content;
+    transition: transform var(--ok-duration-shorter) var(--ok-easing-standard);
+  }
+
+  @media (hover: hover) {
+    :where([data-ok-motion][data-ok-variant="interactive"]:hover) {
+      transform: scale(1.09);
+    }
+  }
+
+  :where([data-ok-motion][data-ok-variant="interactive"]:active) {
+    transform: scale(0.97);
+  }
+
+  @keyframes ok-motion {
+    from {
+      opacity: var(--_ok-motion-o);
+      transform: translate(var(--_ok-motion-x), var(--_ok-motion-y))
+        scale(var(--_ok-motion-sx), var(--_ok-motion-sy)) rotate(var(--_ok-motion-r));
+    }
+  }
+
+  @keyframes ok-motion-exit {
+    from {
+      opacity: var(--_ok-motion-o);
+      transform: translate(var(--_ok-motion-x), var(--_ok-motion-y))
+        scale(var(--_ok-motion-sx), var(--_ok-motion-sy)) rotate(var(--_ok-motion-r));
+    }
+  }
+  /* Flips turn in 3D, seen from 800px. */
+  @keyframes ok-motion-flip {
+    from {
+      opacity: var(--_ok-motion-o);
+      transform: perspective(800px) rotateX(var(--_ok-motion-rx)) rotateY(var(--_ok-motion-ry));
+    }
+  }
+
+  @keyframes ok-motion-flip-exit {
+    from {
+      opacity: var(--_ok-motion-o);
+      transform: perspective(800px) rotateX(var(--_ok-motion-rx)) rotateY(var(--_ok-motion-ry));
+    }
+  }
+
+  /* Bounce: overshoots past the end, then settles. */
+  @keyframes ok-motion-bounce {
+    from {
+      opacity: var(--_ok-motion-o);
+      transform: translate(var(--_ok-motion-x), var(--_ok-motion-y))
+        scale(var(--_ok-motion-sx), var(--_ok-motion-sy));
+    }
+
+    60% {
+      opacity: 1;
+      transform: translate(calc(var(--_ok-motion-x) * -0.033), calc(var(--_ok-motion-y) * -0.033))
+        scale(
+          calc(1 + (var(--_ok-motion-sx) - 1) * -0.15),
+          calc(1 + (var(--_ok-motion-sy) - 1) * -0.15)
+        );
+    }
+
+    75% {
+      transform: translate(calc(var(--_ok-motion-x) * 0.017), calc(var(--_ok-motion-y) * 0.017))
+        scale(
+          calc(1 + (var(--_ok-motion-sx) - 1) * 0.1),
+          calc(1 + (var(--_ok-motion-sy) - 1) * 0.1)
+        );
+    }
+
+    90% {
+      transform: translate(calc(var(--_ok-motion-x) * -0.006), calc(var(--_ok-motion-y) * -0.006))
+        scale(
+          calc(1 + (var(--_ok-motion-sx) - 1) * -0.03),
+          calc(1 + (var(--_ok-motion-sy) - 1) * -0.03)
+        );
+    }
+  }
+
+  @keyframes ok-motion-bounce-exit {
+    from {
+      opacity: var(--_ok-motion-o);
+      transform: translate(var(--_ok-motion-x), var(--_ok-motion-y))
+        scale(var(--_ok-motion-sx), var(--_ok-motion-sy));
+    }
+
+    60% {
+      opacity: 1;
+      transform: translate(calc(var(--_ok-motion-x) * -0.033), calc(var(--_ok-motion-y) * -0.033))
+        scale(
+          calc(1 + (var(--_ok-motion-sx) - 1) * -0.15),
+          calc(1 + (var(--_ok-motion-sy) - 1) * -0.15)
+        );
+    }
+
+    75% {
+      transform: translate(calc(var(--_ok-motion-x) * 0.017), calc(var(--_ok-motion-y) * 0.017))
+        scale(
+          calc(1 + (var(--_ok-motion-sx) - 1) * 0.1),
+          calc(1 + (var(--_ok-motion-sy) - 1) * 0.1)
+        );
+    }
+
+    90% {
+      transform: translate(calc(var(--_ok-motion-x) * -0.006), calc(var(--_ok-motion-y) * -0.006))
+        scale(
+          calc(1 + (var(--_ok-motion-sx) - 1) * -0.03),
+          calc(1 + (var(--_ok-motion-sy) - 1) * -0.03)
+        );
+    }
+  }
+
+  @keyframes ok-motion-kenburns {
+    to {
+      transform: translate(var(--_ok-motion-x), var(--_ok-motion-y)) scale(1.25);
+    }
+  }
+
+  @keyframes ok-motion-pan {
+    from {
+      background-position: var(--_ok-motion-from);
+    }
+
+    to {
+      background-position: var(--_ok-motion-to);
+    }
+  }
+
+  /* Reduced motion: entrances and exits jump to their end; loops don't run. */
+  @keyframes ok-motion-draw {
+    from {
+      stroke-dashoffset: 1;
+      fill-opacity: 0;
+    }
+
+    60% {
+      stroke-dashoffset: 0;
+      fill-opacity: 0;
+    }
+  }
+
+  @keyframes ok-motion-draw-exit {
+    from {
+      stroke-dashoffset: 1;
+      fill-opacity: 0;
+    }
+
+    60% {
+      stroke-dashoffset: 0;
+      fill-opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :where(
+        [data-ok-motion][data-ok-state],
+        [data-ok-motion-text][data-ok-state] [data-ok-motion-char],
+        [data-ok-motion][data-ok-variant="draw"][data-ok-state]
+          :is(path, circle, ellipse, line, polyline, polygon, rect)
+      ) {
+      animation-duration: 1ms;
+      animation-delay: 0s;
+    }
+
+    :where([data-ok-motion][data-ok-variant="interactive"]) {
+      transition: none;
+    }
+
+    :where(
+        [data-ok-motion][data-ok-state]:is(
+          [data-ok-variant^="kenburns"],
+          [data-ok-variant^="pan"],
+          [data-ok-variant^="color"]
+        )
+      ) {
+      animation: none;
+    }
+  }
+}

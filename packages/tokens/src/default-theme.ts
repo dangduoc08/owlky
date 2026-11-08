@@ -364,11 +364,20 @@ export const defaultTheme: Theme = {
   colorShadow: { x: 0, y: 8, blur: 16, spread: 0, alpha: 24 },
   zIndex: { mobileStepper: 1000, dropdown: 1200, modal: 1300, toast: 1400, tooltip: 1500 },
   motion: {
-    duration: { shortest: "150ms", shorter: "200ms", short: "250ms", standard: "300ms" },
+    // `enter` / `exit`: entrance and exit animations (Motion); the others: UI transitions.
+    duration: {
+      shortest: "150ms",
+      shorter: "200ms",
+      short: "250ms",
+      standard: "300ms",
+      exit: "480ms",
+      enter: "640ms",
+    },
     easing: {
       standard: "cubic-bezier(0.4, 0, 0.2, 1)",
       decelerate: "cubic-bezier(0, 0, 0.2, 1)",
       accelerate: "cubic-bezier(0.4, 0, 1, 1)",
+      expressive: "cubic-bezier(0.43, 0.13, 0.23, 0.96)",
     },
   },
 };

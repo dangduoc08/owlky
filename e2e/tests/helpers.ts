@@ -144,6 +144,8 @@ export function normalizeStory(page: Page): Promise<NormalizedNode> {
           } else if (
             child instanceof Element &&
             child.localName !== "template" &&
+            // React 19 adds <link rel="preload"> resource hints next to images.
+            child.localName !== "link" &&
             !child.hasAttribute("hidden")
           ) {
             // <template> holds HTML-only markup for new items (React renders them from state);

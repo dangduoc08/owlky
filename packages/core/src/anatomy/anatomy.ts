@@ -1253,6 +1253,35 @@ export type DialogScroll = (typeof dialogScrolls)[number];
 /** Why a dialog asks to close: Escape, a backdrop click, or a close trigger / the API. */
 export type DialogCloseReason = "escape" | "backdrop" | "close";
 
+/** Motion entrances a Dialog paper can play (the `transition` option). */
+const dialogTransitions = [
+  "slideInUp",
+  "slideInDown",
+  "slideInLeft",
+  "slideInRight",
+  "fadeIn",
+  "fadeInUp",
+  "fadeInDown",
+  "fadeInLeft",
+  "fadeInRight",
+  "zoomIn",
+  "zoomInUp",
+  "zoomInDown",
+  "zoomInLeft",
+  "zoomInRight",
+  "bounceIn",
+  "bounceInUp",
+  "bounceInDown",
+  "bounceInLeft",
+  "bounceInRight",
+  "flipInX",
+  "flipInY",
+  "scaleInX",
+  "scaleInY",
+  "rotateIn",
+] as const;
+export type DialogTransition = (typeof dialogTransitions)[number];
+
 export const dialogOptions = defineOptions("dialog", "data-ok-dialog", {
   maxWidth: style(
     "data-ok-max-width",
@@ -1270,6 +1299,13 @@ export const dialogOptions = defineOptions("dialog", "data-ok-dialog", {
   ),
   hideBackdrop: flag("data-ok-hide-backdrop", "Transparent backdrop (still modal)."),
   disableEscapeKeyDown: flag("data-ok-disable-escape-key-down", "Escape doesn't request close."),
+  transition: style(
+    "data-ok-variant",
+    dialogTransitions,
+    "fadeIn",
+    "Entrance of the paper: a Motion entrance (`slideInUp`, `zoomIn`…); without it, a short fade and scale.",
+    { optional: true, children: "[data-ok-dialog-paper]" },
+  ),
   open: state(
     "open",
     "Open state (`open` / `onOpenChange`; HTML: a trigger or `open()`).",
@@ -1829,6 +1865,274 @@ export interface AutocompleteAnatomyOptions {
 export const autocompleteAttributes = (options: AutocompleteAnatomyOptions = {}): DataAttributes =>
   optionAttributes(autocompleteOptions, { ...options });
 
+// --- Motion (Animate) -------------------------------------------------------------------------
+
+/** Entrance / exit animations: `<family><In|Out>[<direction>]` (the reference's 48). */
+export const motionEntranceVariants = [
+  "slideInUp",
+  "slideInDown",
+  "slideInLeft",
+  "slideInRight",
+  "slideOutUp",
+  "slideOutDown",
+  "slideOutLeft",
+  "slideOutRight",
+  "fadeIn",
+  "fadeInUp",
+  "fadeInDown",
+  "fadeInLeft",
+  "fadeInRight",
+  "fadeOut",
+  "fadeOutUp",
+  "fadeOutDown",
+  "fadeOutLeft",
+  "fadeOutRight",
+  "zoomIn",
+  "zoomInUp",
+  "zoomInDown",
+  "zoomInLeft",
+  "zoomInRight",
+  "zoomOut",
+  "zoomOutUp",
+  "zoomOutDown",
+  "zoomOutLeft",
+  "zoomOutRight",
+  "bounceIn",
+  "bounceInUp",
+  "bounceInDown",
+  "bounceInLeft",
+  "bounceInRight",
+  "bounceOut",
+  "bounceOutUp",
+  "bounceOutDown",
+  "bounceOutLeft",
+  "bounceOutRight",
+  "flipInX",
+  "flipInY",
+  "flipOutX",
+  "flipOutY",
+  "scaleInX",
+  "scaleInY",
+  "scaleOutX",
+  "scaleOutY",
+  "rotateIn",
+  "rotateOut",
+] as const;
+
+/** Looping background animations: Ken Burns (images), pan and color change (gradients). */
+export const motionBackgroundVariants = [
+  "kenburnsTop",
+  "kenburnsBottom",
+  "kenburnsLeft",
+  "kenburnsRight",
+  "panTop",
+  "panBottom",
+  "panLeft",
+  "panRight",
+  "color2x",
+  "color3x",
+  "color4x",
+  "color5x",
+] as const;
+
+/**
+ * Effects: `draw` traces the strokes of an SVG (paths with `pathLength="1"`) then fills it;
+ * `interactive` scales up on hover and down while pressed (the reference's "Tap & hover").
+ */
+export const motionEffectVariants = ["draw", "interactive"] as const;
+
+export const motionVariants = [
+  ...motionEntranceVariants,
+  ...motionBackgroundVariants,
+  ...motionEffectVariants,
+] as const;
+export type MotionVariant = (typeof motionVariants)[number];
+export const motionTriggers = ["inView", "mount", "manual"] as const;
+export type MotionTrigger = (typeof motionTriggers)[number];
+
+const motionTriggerOptions = {
+  trigger: style(
+    "data-ok-trigger",
+    motionTriggers,
+    "inView",
+    "`inView`: plays when the element scrolls into view; `mount`: right away; `manual`: follows `in`.",
+  ),
+  once: behavior(
+    "data-ok-once",
+    true,
+    "In view: plays only the first time; `false` also plays the exit when it leaves the view.",
+  ),
+  amount: number(
+    "data-ok-amount",
+    0.3,
+    "In view: the visible fraction (0 to 1) that starts the animation.",
+    { min: 0 },
+  ),
+  in: state(
+    "data-ok-in",
+    "Manual trigger: shown (`in`; HTML: the `data-ok-in` attribute). Turning it off plays the exit.",
+  ),
+  delay: number("data-ok-delay", undefined, "Wait before the entrance, in milliseconds.", {
+    min: 0,
+  }),
+};
+
+const motionLookOptions = {
+  variant: style(
+    "data-ok-variant",
+    motionVariants,
+    "fadeIn",
+    "Animation: entrances and exits (`fadeInUp`, `zoomOut`…) or looping backgrounds (`kenburnsTop`, `panLeft`, `color3x`…).",
+  ),
+  duration: number(
+    "data-ok-duration",
+    undefined,
+    "Entrance length in milliseconds (default 640; loops have their own).",
+    { min: 0 },
+  ),
+  distance: number(
+    "data-ok-distance",
+    undefined,
+    "How far directional variants travel, in pixels (default 160 for slides, 120 for fades).",
+    { min: 0 },
+  ),
+};
+
+export const motionOptions = defineOptions("motion", "data-ok-motion", {
+  ...motionLookOptions,
+  ...motionTriggerOptions,
+  paused: flag(
+    "data-ok-paused",
+    "Pauses the animation (looping variants need a pause control: WCAG 2.2.2).",
+  ),
+});
+
+export const motionGroupOptions = defineOptions("motion-group", "data-ok-motion-group", {
+  ...motionTriggerOptions,
+  stagger: number(
+    "data-ok-stagger",
+    50,
+    "Milliseconds between the entrances of the direct child Motions.",
+    { min: 0 },
+  ),
+});
+
+export const motionTextOptions = defineOptions("motion-text", "data-ok-motion-text", {
+  ...motionLookOptions,
+  ...motionTriggerOptions,
+  stagger: number("data-ok-stagger", 25, "Milliseconds between the entrances of the letters.", {
+    min: 0,
+  }),
+});
+
+export interface MotionTriggerAnatomyOptions {
+  trigger?: MotionTrigger | undefined;
+  once?: boolean | undefined;
+  amount?: number | undefined;
+  delay?: number | undefined;
+}
+
+export interface MotionAnatomyOptions extends MotionTriggerAnatomyOptions {
+  variant?: MotionVariant | undefined;
+  duration?: number | undefined;
+  distance?: number | undefined;
+  paused?: boolean | undefined;
+}
+
+const onceAttribute = (once: boolean | undefined, attr: string): DataAttributes =>
+  once === false ? { [attr]: "false" } : {};
+
+/** `data-ok-*` attributes of a Motion (the state, `data-ok-state`, is written by its owner). */
+export const motionAttributes = (options: MotionAnatomyOptions = {}): DataAttributes => ({
+  ...optionAttributes(motionOptions, { ...options }),
+  ...onceAttribute(options.once, motionOptions.options.once.attr),
+});
+
+/** `data-ok-*` attributes of a MotionGroup. */
+export const motionGroupAttributes = (
+  options: MotionTriggerAnatomyOptions & { stagger?: number | undefined } = {},
+): DataAttributes => ({
+  ...optionAttributes(motionGroupOptions, { ...options }),
+  ...onceAttribute(options.once, motionGroupOptions.options.once.attr),
+});
+
+/** `data-ok-*` attributes of a MotionText. */
+export const motionTextAttributes = (
+  options: Omit<MotionAnatomyOptions, "paused"> & { stagger?: number | undefined } = {},
+): DataAttributes => ({
+  ...optionAttributes(motionTextOptions, { ...options }),
+  ...onceAttribute(options.once, motionTextOptions.options.once.attr),
+});
+
+// --- CountUp and MotionBorder (Animate "Other") ----------------------------------------------
+
+export const countUpOptions = defineOptions("count-up", "data-ok-count-up", {
+  start: number("data-ok-start", 0, "First value shown.", {}),
+  end: number("data-ok-end", 0, "Value reached at the end (also what screen readers read)."),
+  decimals: number("data-ok-decimals", 0, "Digits after the decimal point.", { min: 0 }),
+  duration: number("data-ok-duration", 2000, "Length of the count, in milliseconds.", { min: 0 }),
+  trigger: motionTriggerOptions.trigger,
+  once: motionTriggerOptions.once,
+  amount: motionTriggerOptions.amount,
+  in: motionTriggerOptions.in,
+});
+
+export interface CountUpAnatomyOptions {
+  start?: number | undefined;
+  end?: number | undefined;
+  decimals?: number | undefined;
+  duration?: number | undefined;
+  trigger?: MotionTrigger | undefined;
+  once?: boolean | undefined;
+  amount?: number | undefined;
+}
+
+/** `data-ok-*` attributes of a CountUp. */
+export const countUpAttributes = (options: CountUpAnatomyOptions = {}): DataAttributes => ({
+  ...optionAttributes(countUpOptions, { ...options }),
+  ...onceAttribute(options.once, countUpOptions.options.once.attr),
+});
+
+export const motionBorderShapes = ["rounded", "circle"] as const;
+export type MotionBorderShape = (typeof motionBorderShapes)[number];
+export const motionBorderColors = ["multi", ...paletteColorNames] as const;
+export type MotionBorderColor = (typeof motionBorderColors)[number];
+
+export const motionBorderOptions = defineOptions("motion-border", "data-ok-motion-border", {
+  shape: style("data-ok-shape", motionBorderShapes, "rounded", "`rounded` corners or a `circle`."),
+  color: style(
+    "data-ok-color",
+    motionBorderColors,
+    "multi",
+    "`multi`: several brand colors; a palette color: that color sweeping around.",
+  ),
+  width: number("data-ok-width", 2, "Border width in pixels.", { min: 0 }),
+  duration: number(
+    "data-ok-duration",
+    undefined,
+    "One turn, in milliseconds (default about 5 s).",
+    {
+      min: 0,
+    },
+  ),
+  paused: flag(
+    "data-ok-paused",
+    "Stops the turning border (a looping animation needs a pause control: WCAG 2.2.2).",
+  ),
+});
+
+export interface MotionBorderAnatomyOptions {
+  shape?: MotionBorderShape | undefined;
+  color?: MotionBorderColor | undefined;
+  width?: number | undefined;
+  duration?: number | undefined;
+  paused?: boolean | undefined;
+}
+
+/** `data-ok-*` attributes of a MotionBorder (width and duration also go to private properties). */
+export const motionBorderAttributes = (options: MotionBorderAnatomyOptions = {}): DataAttributes =>
+  optionAttributes(motionBorderOptions, { ...options });
+
 /** Every component's option schema, for tooling (Storybook Controls, parity tests, docs). */
 export const optionSchemas = {
   accordion: accordionOptions,
@@ -1886,4 +2190,9 @@ export const optionSchemas = {
   "transfer-list": transferListOptions,
   "tree-view": treeViewOptions,
   autocomplete: autocompleteOptions,
+  motion: motionOptions,
+  "motion-group": motionGroupOptions,
+  "motion-text": motionTextOptions,
+  "count-up": countUpOptions,
+  "motion-border": motionBorderOptions,
 } as const;

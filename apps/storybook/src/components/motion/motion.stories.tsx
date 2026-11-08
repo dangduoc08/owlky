@@ -1,0 +1,115 @@
+import { CountUp, Motion, MotionBorder, MotionText } from "@owlky/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
+import { frameworkStory, reactGroupsStory, type StoryControls } from "../../helpers/groups.js";
+import { htmlSetup, snippetStory } from "../shared/snippets.js";
+import { MotionDialogDemo } from "./dialog-demo.js";
+import source from "./dialog-demo.tsx?raw";
+import { MotionDocs } from "./motion-docs.js";
+import {
+  COUNT_UP_CONTROLS,
+  MOTION_BORDER_CONTROLS,
+  MOTION_CONTROLS,
+  MOTION_DRAW_CONTROLS,
+  MOTION_FILES,
+  MOTION_LOOP_CONTROLS,
+  MOTION_TEXT_CONTROLS,
+  motionStories,
+  OTHER_FILES,
+  otherStories,
+} from "./motion-examples.js";
+
+const snippets = import.meta.glob(
+  "../../../../../packages/html/src/components/motion/examples/*.html",
+  { query: "?raw", import: "default", eager: true },
+) as Record<string, string>;
+
+const SETUP = htmlSetup(["motion.css"], true);
+const SCROLL_SETUP = htmlSetup(["scrollbar.css", "motion.css"], true);
+const DIALOG_SETUP = htmlSetup(["button.css", "dialog.css", "motion.css"], true);
+
+type Controls = typeof MOTION_CONTROLS | typeof MOTION_LOOP_CONTROLS | typeof MOTION_TEXT_CONTROLS;
+
+const story = (name: string, controls: Controls, setup = SETUP, label?: string): StoryObj => {
+  const react: StoryControls = {
+    ...controls,
+    target: controls === MOTION_TEXT_CONTROLS ? MotionText : Motion,
+  };
+  return {
+    ...frameworkStory({
+      html: snippetStory(snippets, name, MOTION_FILES[name] ?? [], setup, controls),
+      react: reactGroupsStory(motionStories[name] ?? [], react),
+    }),
+    ...(label ? { name: label } : {}),
+  };
+};
+
+const meta = {
+  title: "Components/Motion",
+  tags: ["autodocs"],
+  parameters: {
+    docs: {
+      page: MotionDocs,
+      description: {
+        component:
+          "Motion animates content in and out: when it scrolls into view, when the page loads or when you show it.",
+      },
+    },
+  },
+} satisfies Meta;
+export default meta;
+
+export const InView: StoryObj = story("in-view", MOTION_CONTROLS, SETUP, "In view");
+export const Text: StoryObj = story("text", MOTION_TEXT_CONTROLS);
+export const Scroll: StoryObj = story("scroll", MOTION_CONTROLS, SCROLL_SETUP);
+export const DialogStory: StoryObj = {
+  ...frameworkStory({
+    html: snippetStory(snippets, "dialog", [["Dialog", "group"]], DIALOG_SETUP),
+    react: reactGroupsStory(
+      [{ title: "Dialog", content: <MotionDialogDemo /> }],
+      undefined,
+      source,
+    ),
+  }),
+  name: "Dialog",
+};
+export const Background: StoryObj = story("background", MOTION_LOOP_CONTROLS);
+
+const other = (
+  name: string,
+  setup: string,
+  controls?: StoryControls & { target: unknown },
+  label?: string,
+): StoryObj => ({
+  ...frameworkStory({
+    html: snippetStory(snippets, name, OTHER_FILES[name] ?? [], setup, controls),
+    react: reactGroupsStory(otherStories[name] ?? [], controls),
+  }),
+  ...(label ? { name: label } : {}),
+});
+
+export const TapHover: StoryObj = other(
+  "tap-hover",
+  htmlSetup(["button.css", "icon-button.css", "fab.css", "motion.css"]),
+  undefined,
+  "Tap & hover",
+);
+export const Path: StoryObj = other("path", SETUP, { ...MOTION_DRAW_CONTROLS, target: Motion });
+export const CountUpStory: StoryObj = other(
+  "count-up",
+  htmlSetup(["count-up.css"], true),
+  { ...COUNT_UP_CONTROLS, target: CountUp },
+  "Count up",
+);
+const BORDER = { ...MOTION_BORDER_CONTROLS, target: MotionBorder };
+export const Logo: StoryObj = other("logo", htmlSetup(["motion-border.css"], true), BORDER);
+export const AvatarStory: StoryObj = other(
+  "avatar",
+  htmlSetup(["avatar.css", "motion-border.css"], true),
+  BORDER,
+  "Avatar",
+);
+export const Border: StoryObj = other(
+  "border",
+  htmlSetup(["button.css", "motion-border.css"], true),
+  BORDER,
+);

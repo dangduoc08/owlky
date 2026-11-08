@@ -27,6 +27,7 @@ const css = [
   "avatar.css",
   "text-field.css",
   "dialog.css",
+  "motion.css",
 ];
 
 const meta = {

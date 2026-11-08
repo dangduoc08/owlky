@@ -73,6 +73,10 @@
     background-color: var(--ok-bg-paper);
     box-shadow: var(--ok-shadow-dialog);
     outline: none;
+  }
+
+  /* A paper that is a Motion (the `transition` option) plays that entrance instead. */
+  :where([data-ok-dialog-paper]:not([data-ok-motion])) {
     animation: ok-dialog-in var(--ok-duration-short) var(--ok-easing-decelerate);
   }
 
@@ -204,7 +208,7 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    :where([data-ok-dialog-paper]) {
+    :where([data-ok-dialog-paper]:not([data-ok-motion])) {
       animation: none;
     }
   }

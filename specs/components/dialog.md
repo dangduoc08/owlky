@@ -31,15 +31,17 @@ Root: `data-ok-dialog`. Unknown values fall back to the default.
 | `scroll` | `data-ok-scroll="…"` | style | `paper` `body` | `paper` | `paper`: the content scrolls inside the dialog; `body`: the whole dialog scrolls. |
 | `hideBackdrop` | `data-ok-hide-backdrop` | flag | boolean | off | Transparent backdrop (still modal). |
 | `disableEscapeKeyDown` | `data-ok-disable-escape-key-down` | flag | boolean | off | Escape doesn't request close. |
+| `transition` | `data-ok-variant="…"` on each `[data-ok-dialog-paper]` | style | `slideInUp` `slideInDown` `slideInLeft` `slideInRight` `fadeIn` `fadeInUp` `fadeInDown` `fadeInLeft` `fadeInRight` `zoomIn` `zoomInUp` `zoomInDown` `zoomInLeft` `zoomInRight` `bounceIn` `bounceInUp` `bounceInDown` `bounceInLeft` `bounceInRight` `flipInX` `flipInY` `scaleInX` `scaleInY` `rotateIn` | — | Entrance of the paper: a Motion entrance (`slideInUp`, `zoomIn`…); without it, a short fade and scale. |
 | `open` | `open` · event `ok:dialog:close` | state | — | — | Open state (`open` / `onOpenChange`; HTML: a trigger or `open()`). |
 <!-- /options:dialog -->
 
 React: `open` / `onOpenChange(open, reason)` (escape | backdrop | close), `paperProps`; the title
 names the dialog automatically (`aria-labelledby`, unless `aria-label` is given). Parts:
 `DialogContent dividers`, `DialogActions disableSpacing`. Renamed: `onClose(event, reason)` →
-`onOpenChange`; `PaperProps` → `paperProps`; `maxWidth={false}` → `"none"`. Deferred:
-`TransitionComponent` (one opening animation; the reference's Slide), `keepMounted` (always
-mounted). Not applicable: `slots`, `slotProps`, `sx`, `BackdropComponent` (native `::backdrop`,
+`onOpenChange`; `PaperProps` → `paperProps`; `maxWidth={false}` → `"none"`;
+`TransitionComponent` → `transition` (a Motion entrance on the paper: `data-ok-motion`,
+`data-ok-variant`, `data-ok-trigger="mount"`; without it, the paper's own fade and scale).
+Deferred: `keepMounted` (always mounted), exit transitions. Not applicable: `slots`, `slotProps`, `sx`, `BackdropComponent` (native `::backdrop`,
 `--ok-backdrop`, the Backdrop component's token: a DOM Backdrop can't sit between a top-layer
 `<dialog>` and its `::backdrop`), `disablePortal` (top layer).
 

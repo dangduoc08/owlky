@@ -148,6 +148,7 @@ const GUIDES = [
   ["components-transfer-list--docs", "Accessibility"],
   ["components-tree-view--docs", "Accessibility"],
   ["components-autocomplete--docs", "Accessibility"],
+  ["components-motion--docs", "Accessibility"],
 ] as const;
 
 /** Component docs pages and their option schema: the Options table lists every option. */
@@ -194,6 +195,10 @@ const OPTION_TABLES: [string, (keyof typeof optionSchemas)[]][] = [
   ["components-transfer-list--docs", ["transfer-list"]],
   ["components-tree-view--docs", ["tree-view"]],
   ["components-autocomplete--docs", ["autocomplete"]],
+  [
+    "components-motion--docs",
+    ["motion", "motion-group", "motion-text", "count-up", "motion-border"],
+  ],
 ];
 
 for (const [id, schemaNames] of OPTION_TABLES) {
@@ -227,6 +232,8 @@ const LAYOUT_WORDS = new Set(["solid", "dashed", "0", "2", "l", "b", "semibold",
 for (const [id, lastHeading] of GUIDES) {
   test.describe(`Docs guide ${id}`, () => {
     const openDocs = async (page: import("@playwright/test").Page, theme = "light") => {
+      // Live previews animate (Motion): reduced motion shows their end state at once.
+      await page.emulateMedia({ reducedMotion: "reduce" });
       await page.goto(
         `/apps/storybook/storybook-static/iframe.html?id=${id}&viewMode=docs&globals=theme:${theme};a11y.manual:!true`,
       );
@@ -276,7 +283,12 @@ for (const [id, lastHeading] of GUIDES) {
           .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"]);
         for (const selector of CONTRAST_EXEMPT) axe = axe.exclude(selector);
         const results = await axe.analyze();
-        expect(results.violations.map((v) => `${v.id}: ${v.help} (${v.nodes.length})`)).toEqual([]);
+        expect(
+          results.violations.map(
+            (v) =>
+              `${v.id}: ${v.help} (${v.nodes.length}) ${v.nodes.map((n) => n.target).join(" | ")}`,
+          ),
+        ).toEqual([]);
       });
     }
 

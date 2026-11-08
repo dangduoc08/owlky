@@ -1,0 +1,28 @@
+/*
+ * CountUp — spec: specs/components/motion.md
+ *
+ * Anatomy:   span[data-ok-count-up] › span[data-ok-count-up-label] (visually hidden: the end
+ *            value, what assistive technologies read) + span[aria-hidden] › prefix,
+ *            span[data-ok-count-up-value], suffix
+ * The value is written by the owner (core `createCountUp`); digits keep their width.
+ * Single :where() selectors in @layer components.
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-ok-count-up]) {
+    font-variant-numeric: tabular-nums;
+  }
+
+  :where([data-ok-count-up-label]) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+}

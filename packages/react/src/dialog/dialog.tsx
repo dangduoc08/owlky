@@ -5,8 +5,10 @@ import {
   type DialogCloseReason,
   type DialogMaxWidth,
   type DialogScroll,
+  type DialogTransition,
   dialogAttributes,
   type ModalController,
+  motionAttributes,
 } from "@owlky/core";
 import {
   type ComponentPropsWithoutRef,
@@ -42,6 +44,11 @@ export interface DialogProps extends Omit<ComponentPropsWithoutRef<"dialog">, "o
   hideBackdrop?: boolean | undefined;
   /** Escape doesn't ask to close. */
   disableEscapeKeyDown?: boolean | undefined;
+  /**
+   * Entrance of the paper: a Motion entrance (`slideInUp`, `zoomIn`…). Without it, the paper fades
+   * and scales in briefly.
+   */
+  transition?: DialogTransition | undefined;
   /** Props of the paper (`className`, `style`, …). */
   paperProps?: HTMLAttributes<HTMLDivElement> | undefined;
 }
@@ -62,6 +69,7 @@ export const Dialog = forwardRef<HTMLDialogElement, DialogProps>(function Dialog
     scroll,
     hideBackdrop,
     disableEscapeKeyDown,
+    transition,
     paperProps,
     children,
     ...props
@@ -115,7 +123,16 @@ export const Dialog = forwardRef<HTMLDialogElement, DialogProps>(function Dialog
       {...props}
     >
       <TitleIdContext.Provider value={titleId}>
-        <div data-ok-dialog-paper="" {...paperProps}>
+        <div
+          data-ok-dialog-paper=""
+          {...(transition
+            ? {
+                ...motionAttributes({ variant: transition, trigger: "mount" }),
+                "data-ok-state": "enter",
+              }
+            : {})}
+          {...paperProps}
+        >
           {children}
         </div>
       </TitleIdContext.Provider>

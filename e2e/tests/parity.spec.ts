@@ -6,6 +6,17 @@ import { normalizeStory, openStory, storyId } from "./helpers.js";
  * anatomy and the same pixels. This is the contract that lets both share one stylesheet.
  */
 const pairs: [component: string, story: string][] = [
+  ["motion", "in-view"],
+  ["motion", "text"],
+  ["motion", "scroll"],
+  ["motion", "dialog-story"],
+  ["motion", "background"],
+  ["motion", "tap-hover"],
+  ["motion", "path"],
+  ["motion", "count-up-story"],
+  ["motion", "logo"],
+  ["motion", "avatar-story"],
+  ["motion", "border"],
   ["autocomplete", "playground"],
   ["autocomplete", "country"],
   ["transfer-list", "simple"],

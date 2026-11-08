@@ -315,3 +315,15 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
   data-ok-autocomplete-tag>` and guards its tag rendering against re-entry (removing a focused chip
   fires `focusout`). Listbox options are focusless (`aria-activedescendant`), so
   `useFocusableInteractive` is off for snippets and suppressed inline in React.
+- Motion (`data-ok-motion`, not `data-ok-animate`: that is the IconButton / Fab hover flag) plays
+  CSS keyframes whose start comes from custom properties set per variant family and direction;
+  exits play the same keyframe backwards under another name (`ok-motion-exit`) so the animation
+  restarts. Entered in-variants use `animation-fill-mode: backwards` and out-variants start with
+  `animation: none`: an interpolated `transform` at the end is a near-identity matrix, not `none`.
+  Snippets never carry `data-ok-state` (no JavaScript → nothing hidden); React renders `initial`.
+- Waiting for an asynchronous DOM change (IntersectionObserver, rAF counters) in unit tests: resolve
+  a promise from a `MutationObserver`, never `vi.waitFor`; and never inside React's `act()` (it
+  holds state updates until the scope ends, so the awaited change never comes).
+- Docs guides and stories with live Motion previews: open them with reduced motion (the e2e helpers
+  do) or axe measures text mid-fade. `finish()` can't end infinite animations: skip loops.
+- React 19 inserts `<link rel="preload">` hints next to `<img>`: parity normalization skips `link`.

@@ -48,6 +48,11 @@ const CASES: [
   ["transfer-list", "simple", "transfer-list", ["disabled"]],
   ["tree-view", "simple", "tree-view", ["variant", "expansionTrigger"]],
   ["autocomplete", "playground", "autocomplete", ["openOnFocus", "autoHighlight"]],
+  ["motion", "in-view", "motion", ["variant", "duration", "distance"]],
+  ["motion", "text", "motion-text", ["variant", "duration", "stagger"]],
+  ["motion", "background", "motion", ["paused", "duration"]],
+  ["motion", "count-up-story", "count-up", ["duration"]],
+  ["motion", "border", "motion-border", ["paused", "width", "duration"]],
   ["breadcrumbs", "text", "breadcrumbs", ["maxItems", "itemsBeforeCollapse", "itemsAfterCollapse"]],
   [
     "text-field",
@@ -74,7 +79,7 @@ for (const [component, story, schemaName, keys] of CASES) {
   for (const key of keys) {
     const spec = schema.options[key as keyof typeof schema.options] as OptionSpec;
     const args = `${key}:${testValue(spec)}`;
-    test(`${component}: option ${args} gives the same anatomy in React and HTML`, async ({
+    test(`${component} ${story}: option ${args} gives the same anatomy in React and HTML`, async ({
       page,
       browserName,
     }) => {

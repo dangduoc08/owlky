@@ -67,6 +67,13 @@ export function DiscardDraft() {
     react: `<DialogContent dividers tabIndex={0} aria-label="Terms">…</DialogContent>`,
   },
   {
+    id: "transition",
+    title: "Animate the entrance",
+    body: "By default, the paper fades and scales in briefly. Set `transition` to a Motion entrance, such as `slideInUp` or `zoomIn`, to play that animation instead. In HTML, the paper becomes a Motion that plays when the dialog opens, so the page also needs the Motion styles. With reduced motion, the dialog appears at once.",
+    html: `<div data-ok-dialog-paper data-ok-motion data-ok-variant="slideInUp" data-ok-trigger="mount">…</div>`,
+    react: `<Dialog open={open} onOpenChange={setOpen} transition="slideInUp">…</Dialog>`,
+  },
+  {
     id: "options",
     title: "Options",
     body: "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default.",

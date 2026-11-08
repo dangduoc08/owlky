@@ -154,8 +154,15 @@ export interface Theme {
     tooltip: number;
   };
   motion: {
-    duration: { shortest: string; shorter: string; short: string; standard: string };
-    easing: { standard: string; decelerate: string; accelerate: string };
+    duration: {
+      shortest: string;
+      shorter: string;
+      short: string;
+      standard: string;
+      exit: string;
+      enter: string;
+    };
+    easing: { standard: string; decelerate: string; accelerate: string; expressive: string };
   };
 }
 

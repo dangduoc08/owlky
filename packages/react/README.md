@@ -69,6 +69,11 @@ re-exported from `@owlky/core` (call them from an effect or an event handler).
 | `TransferList` | `items`, `left` / `right` / `defaultLeft` / `onChange(left, right)`, `variant` (`simple` · `enhanced`), `titles`, `buttonLabels`, `getCountLabel`, `disabled` |
 | `SimpleTreeView` / `TreeItem` / `RichTreeView` | `expandedItems` / `defaultExpandedItems` / `onExpandedItemsChange`, `selectedItems` / `defaultSelectedItems` / `onSelectedItemsChange`, `onItemExpansionToggle`, `multiSelect`, `checkboxSelection`, `disableSelection`, `expansionTrigger` (`content` · `iconContainer`), `variant` (`standard` · `lines`), `expandIcon` / `collapseIcon` / `endIcon`; TreeItem `itemId`, `label`, `disabled`; RichTreeView `items` |
 | `Autocomplete` | `options` (strings or `{ value, label, disabled }`), `value` / `defaultValue` / `onChange(value)`, `inputValue` / `onInputChange`, `open` / `onOpenChange(open, reason)`, `multiple`, `freeSolo`, `disableCloseOnSelect`, `disableClearable`, `openOnFocus`, `autoHighlight`, `limitTags`, `getLimitTagsText`, `filterOptions`, `renderOption`, `noOptionsText`, and the TextField props `label`, `placeholder`, `helperText`, `error`, `variant`, `size`, `disabled` |
+| `Motion` | `variant` (48 entrances and exits such as `fadeInUp`, loops `kenburns*` · `pan*` · `color2x`–`color5x`, `draw`, `interactive`), `trigger` (`inView` · `mount` · `manual`), `in`, `once`, `amount`, `duration`, `delay`, `distance`, `paused` |
+| `MotionGroup` / `MotionText` | Group: trigger props and `stagger` (direct child Motions in order); Text: a string `children` animated letter by letter, `variant`, trigger props, `stagger` |
+| `CountUp` | `end`, `start`, `decimals`, `duration`, `prefix`, `suffix`, trigger props |
+| `MotionBorder` | `shape` (`rounded` · `circle`), `color` (`multi` · palette), `width`, `duration`, `paused` |
+| `Dialog` `transition` | A Motion entrance for the paper (`slideInUp`, `zoomIn`…) |
 | `ToggleButtonGroup` | `exclusive`, `value` / `defaultValue` / `onChange(value)` (`string \| null` when exclusive, else `string[]`), `orientation`, `color`, `size`, `disabled` |
 
 Same markup and CSS as `@owlky/html` (specs: `specs/components/`).

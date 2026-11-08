@@ -11,7 +11,7 @@ export const introductionSections: GuideSection[] = [
 - **Accessible by default.** Components follow the WAI-ARIA patterns, work with the keyboard and meet WCAG 2.2 level AA.
 - **Easy to theme.** Every color, size and shadow is a CSS variable. Switch to dark mode, change the primary color or bring your own brand with a few lines of CSS.
 - **Built on the platform.** Components use native elements, such as \`<button>\` and \`<dialog>\`, so browser features like form submission, find-in-page and focus handling keep working.
-- **Small.** The complete stylesheet is about 24 kB, gzipped. The script for every interactive component is about 30 kB, and the npm packages let you load only what you use.`,
+- **Small.** The complete stylesheet is about 26 kB, gzipped. The script for every interactive component is about 33 kB, and the npm packages let you load only what you use.`,
   },
   {
     id: "how",

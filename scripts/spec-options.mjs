@@ -60,6 +60,11 @@ const SPECS = {
   "transfer-list": "transfer-list.md",
   "tree-view": "tree-view.md",
   autocomplete: "autocomplete.md",
+  motion: "motion.md",
+  "motion-group": "motion.md",
+  "motion-text": "motion.md",
+  "count-up": "motion.md",
+  "motion-border": "motion.md",
 };
 
 const code = (value) => `\`${value}\``;

@@ -28,6 +28,19 @@ export const STORIES: [component: string, story: string][] = [
   ),
   ["autocomplete", "playground"],
   ["autocomplete", "country"],
+  ...[
+    "in-view",
+    "text",
+    "scroll",
+    "dialog-story",
+    "background",
+    "tap-hover",
+    "path",
+    "count-up-story",
+    "logo",
+    "avatar-story",
+    "border",
+  ].map((s) => ["motion", s] as [string, string]),
 ];
 
 interface Box {
@@ -36,7 +49,7 @@ interface Box {
 }
 
 const PARTS =
-  "[data-ok-timeline-item], [data-ok-timeline-content], [data-ok-rating], [data-ok-slider], [data-ok-transfer-list-panel], [data-ok-tree-item-content], [data-ok-autocomplete]";
+  "[data-ok-timeline-item], [data-ok-timeline-content], [data-ok-rating], [data-ok-slider], [data-ok-transfer-list-panel], [data-ok-tree-item-content], [data-ok-autocomplete], [data-ok-motion], [data-ok-motion-text], [data-ok-count-up], [data-ok-motion-border]";
 const TARGETS = "[data-ok-slider-thumb]";
 
 function measure(page: Page) {

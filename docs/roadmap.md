@@ -5,7 +5,7 @@ and a review before the next starts.
 
 ## Overview
 Every page of the reference's component menu (`https://minimals.cc/components/…`) and where it
-stands. ✅ = built (34); *wave N* = planned, see "Next — components"; *not planned* = a pattern
+stands. ✅ = built (35); *wave N* = planned, see "Next — components"; *not planned* = a pattern
 or app-level page. *Section* = the heading below with the details. Update this table with each
 component and each `/integrate` run.
 
@@ -49,7 +49,7 @@ component and each `/integrate` run.
 | MUI X | Data grid | wave 7 (ADR) | — | Next |
 | MUI X | Date pickers | wave 7 (ADR) | — | Next |
 | MUI X | Tree view | ✅ | SimpleTreeView, TreeItem, RichTreeView | Rating, Slider, Timeline, Transfer list, Tree view & Autocomplete |
-| Extra | Animate | not planned | — | Next |
+| Extra | Animate | ✅ | Motion, MotionGroup, MotionText, CountUp, MotionBorder; Dialog `transition` | Motion |
 | Extra | Carousel | wave 7 (ADR) | — | Next |
 | Extra | Chart | wave 7 (ADR) | — | Next |
 | Extra | Dnd | ✅ | Sortable | Sortable |
@@ -162,6 +162,24 @@ toast store / API / timer (Sonner). Dialog reuses `createModalController`. HTML 
 (click and hover triggers), `menu`, `tooltip`, `dialog`, `toaster` (templates, `data-ok-then`).
 One placement vocabulary replaces MUI's `anchorOrigin` / `transformOrigin`. Token added:
 `--ok-bg-paper-channel` (translucent paper). No new runtime dependency.
+
+## ✅ Components — Motion (Animate, 2026-11-08)
+Created with `/component` from the reference "Animate" page (stories: In view, Text, Scroll,
+Dialog, Background, Tap & hover, Path, Count up, Logo, Avatar, Border). Named Motion because
+`data-ok-animate` is the IconButton / Fab hover flag. Framer Motion's ideas without the dependency:
+CSS keyframes driven by custom properties (one keyframe per family; exits play it backwards),
+`data-ok-state` written by the owner from core `createMotionTrigger` (mount, in view through
+IntersectionObserver, manual `in`). **Motion** (the reference's 48 entrances and exits, Ken Burns,
+pan and color loops, `draw`, `interactive`), **MotionGroup** (stagger), **MotionText** (letters,
+read whole), **CountUp** (core `createCountUp`), **MotionBorder** (a conic gradient on a registered
+angle). Beyond the reference: `paused` (WCAG 2.2.2). Without JavaScript nothing is hidden; reduced
+motion shows end states at once. Tokens added: `--ok-duration-enter` (640ms),
+`--ok-duration-exit` (480ms), `--ok-easing-expressive`. Closes the pending integration "Dialog
+story Transitions": Dialog `transition` (a Motion entrance on the paper). Size budgets raised: CDN
+bundle 34 kB, all CSS 27 kB gzip (about 33 and 26 kB now). Differences: an original owl mark
+instead of the reference's logo, an original SVG image, no variant picker (Storybook Controls).
+**Backlog:** Motion `component` (renders a `div`), spring physics and custom keyframes, Dialog exit
+transitions and `keepMounted`, scroll-linked progress (Scroll progress page).
 
 ## ✅ Components — Rating, Slider, Timeline, Transfer list, Tree view & Autocomplete (2026-11-08)
 Wave 6 (composites), created with `/component` from the reference pages. **Timeline** (stories:
@@ -307,7 +325,7 @@ integrate these in the same review (additive: no DOM or API change) and remove t
 | Link (Typography) | Breadcrumbs items | native `a` / `span[aria-current]` styled by `breadcrumbs.css` (inherit color, hover underline); a Link component can go inside items without a DOM change |
 | Typography (headings, body text) | Breadcrumbs story "Customized" (page heading `h4`, paragraph) and Stepper stories (step panels, mobile card `h6` / `p`) | demo markup styled in `.storybook/preview.css` |
 | Typography (headings, body text) | Popover and Dialog stories (popover text, "Selected:" line, full-screen toolbar title) | demo `h6` / `p` / `header` styled in `.storybook/preview.css` |
-| Collapse / Slide (transitions) | Dialog story "Transitions" (the reference slides the dialog in) | the dialog's one opening animation (fade + scale) |
+| Typography + Paper (card) | Motion stories (cards, headings, count-up numbers, the stage) | demo `.sb-motion-*` styled in `.storybook/preview.css` |
 | Typography + Paper (card) | Timeline story "Customized" (cards with a title and text) | demo `.sb-timeline-card` styled in `.storybook/preview.css` |
 | Typography (body text) | Autocomplete stories (output lines under the fields) | demo `p` styled in `.storybook/preview.css` |
 | Collapse (transition) | Tree view groups | open / close at once (`hidden`); MUI X collapses them |
@@ -339,7 +357,7 @@ Dependency-first: leaf components before the ones built from them, the ones that
 | 6 Composites | ~~Rating~~ ✅, ~~Slider~~ ✅, ~~Timeline~~ ✅, ~~Transfer list~~ ✅, ~~Autocomplete~~ ✅, ~~Tree view~~ ✅ | — (nothing waited for them; Slider unblocks the SettingsDrawer backlog of Theme settings) |
 | 7 Needs an ADR | Data grid, Date pickers, Chart, Map, Editor, Carousel, Lightbox, Markdown, Organization chart, Upload, Image, Walktour | — |
 
-Not planned as components (patterns or app-level pages of the reference): Animate, Layout,
+Not planned as components (patterns or app-level pages of the reference): Layout,
 Utilities, Multi-language, Navigation bar, Mega menu, Scroll progress, Form validation, Form wizard.
 Typography (display / heading text) has no reference page of its own: build it with wave 3.
 Feedback & 1.0 after the waves: accessibility audit, docs polish, and an upstream API audit of every component (prop by prop against MUI, a mapping table in each spec; e.g. Drawer `elevation`, `transitionDuration` are missing; Backdrop `transitionDuration`).
