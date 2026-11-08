@@ -99,8 +99,11 @@ div[data-ok-data-grid][data-ok-density][data-ok-checkbox-selection]?[data-ok-dis
         pivot: FormControlLabel(Switch[data-ok-data-grid-pivot-switch]),
           div[data-ok-data-grid-pivot-field][data-ok-field] › TextField select #<id>-pivot-<field> (none|rows|columns|values),
           TextField select #<id>-pivot-<field>-function
-        charts: TextField select #<id>-chart-type, #<id>-chart-dimension, FormControlLabel(Switch[data-ok-data-grid-chart-value])
-    div[data-ok-data-grid-chart][hidden]? › Chart#<id>-chart (HTML: figure › table[data-ok-chart-data], written by the grid)
+        charts: TextField select #<id>-chart-type, #<id>-chart-dimension, FormControlLabel(Switch[data-ok-data-grid-chart-value]),
+          FormControlLabel(Switch[data-ok-data-grid-chart-stacked][disabled]?), FormControlLabel(Switch[data-ok-data-grid-chart-item-label]),
+          TextField select #<id>-chart-legend (top|right|bottom|none)
+    div[data-ok-data-grid-chart][hidden]? › Chart#<id>-chart (HTML: figure › table[data-ok-chart-data]; the grid sets the
+      figure's option attributes and calls the Chart's `updateSeries`, or writes the table without the chart runtime)
     Popover#<id>-filters › template[data-ok-data-grid-date="<id>-filter-value"] › DatePicker (HTML only)
     Popover#<id>-filters › template[data-ok-data-grid-date-time="<id>-filter-value"] › DateTimePicker (HTML only)
   div[data-ok-data-grid-loading][data-ok-variant][role=status][aria-label=Loading][hidden]?
@@ -230,7 +233,18 @@ Deferred (roadmap): `rowGroupingColumnMode="multiple"`, `groupingValueGetter`, g
 (year / quarter of dates), the pivot panel's drag and drop (selects instead), header filter operator
 menus, the AI assistant (needs a language model service).
 Renamed: the charts integration is one `chartModel` and a chart inside the grid (MUI X: a renderer
-proxy and a context provider around the grid).
+proxy and a context provider around the grid). Its configuration is flat in the model (MUI X:
+`configuration`): kept `stacked`, `itemLabel` (`none` | `value`), `colors` (palette names, not MUI
+palettes), `height`, `showMark`, `seriesAxisLabel`, `showToolbar`; renamed `interpolation` → `curve`
+(`smooth` | `straight` | `stepline`), `legendPosition…` / `legendDirection` → `legend` (`top` |
+`right` | `bottom` | `none`), `skipAnimation` → `animations` (opt-in), `innerRadius` → type `donut`
++ `donutSize` (%), pie `startAngle` / `endAngle` kept. Not applicable (fixed by the Chart's design):
+`grid`, axis positions, `tickPlacement`, `tickLabelPlacement`, `seriesAxisReverse`,
+`categoriesAxisLabel`, `borderRadius`, gap ratios, `paddingAngle`, `cornerRadius`, `seriesGap`,
+`outerRadius`, `width`, tooltip placement / trigger, `onRender`. One dimension (MUI X: several, a
+grouped axis), one chart per grid (multiple renderer proxies: deferred). Beyond MUI X: `radar` and
+`scatter` types. While pivoting, a value field of the pivot stands for its pivot columns (MUI X sets
+them with `updateChartValuesData` once the columns exist).
 
 ## Layout and tokens
 Rows 52px (`--ok-spacing` × 13; compact 36px, comfortable 68px), header 56px (× 14) on
@@ -332,8 +346,16 @@ filters: one field per column (the type's first operator; booleans and singleSel
 a DatePicker, date times a DateTimePicker) sharing the filter model; Up / Down leave a field. Filter
 panel: `date` columns pick their value with a DatePicker, `dateTime` columns with a DateTimePicker
 (value `YYYY-MM-DDTHH:mm:ss`, local time). Charts: categories are the top-level groups (their values aggregated
-with the model's function, else `sum`) or the page's rows (`dimension` texts); series are number
-fields; type `column` / `bar` (horizontal) / `line` / `area`. Navigation ignores grids inside cells
+over the rows that pass the filters, with the model's function, else `sum`) or the page's rows
+(`dimension` texts); series are number fields (core `gridChartFields`; pivoted: the pivot columns of
+each value field, named by their keys, plus the value column when several are drawn); types
+`column` / `bar` (horizontal bars) / `line` / `area` / `pie` / `donut` (the first series, one slice
+per category, `colors` per slice) / `radar` / `scatter` (rows with a number dimension: `[x, y]`
+points on a numeric axis; otherwise one point per category). Core `gridChartOptions` maps the model
+to the Chart's options for both implementations; `stacked` needs a column, bar, line or area chart
+with two series (the panel's switch is disabled otherwise). Every change (rows, edits, filters,
+sorting, paging, grouping, aggregation, pivoting, the model) redraws through the Chart's update
+path: React passes new `series`, HTML calls `updateSeries` (the data table follows in place). Navigation ignores grids inside cells
 (a date picker's calendar) and leaves their tab stops alone.
 
 ## Keyboard
@@ -384,7 +406,8 @@ Phase 6: `ok:data-grid:rowgrouping | aggregation | cellselection | chart` (cance
 `ok:data-grid:pivot` (cancelable, `{ model, active }`), `ok:data-grid:clipboardcopy` (`{ data }`),
 `ok:data-grid:clipboardpaste` (cancelable, `{ data }`: the pasted cells); instance
 `rowGroupingModel`, `aggregationModel`, `pivotModel`, `pivotActive`, `cellSelectionModel`,
-`chartModel` with `set…` (no events), `toExcel(options)`, `exportExcel(options)`.
+`chartModel` with `set…` (no events; the chart panel's fields follow the model),
+`toExcel(options)`, `exportExcel(options)`.
 Attributes: `data-ok-label-no-rows`, `data-ok-label-no-results`, `data-ok-export-file-name`.
 
 ## Responsive
@@ -409,7 +432,8 @@ render `hidden`; column-virtualized cells are left out in React and `hidden` in 
 both).
 Phase 6: HTML builds group rows, the footer row and the pivot's headers itself from the rows in the
 markup (the markup's generated group rows are dropped and built again; tree data keeps its
-generated parents). The pivot story's HTML is the grid's data with `data-ok-pivot-active`.
+generated parents). The pivot story's HTML is the grid's data with `data-ok-pivot-active` (so is the
+Charts integration story's "Pivot chart", whose chart table and panel hold the pivoted chart).
 React-only: `aggregationFunctions` (custom functions), `getAggregationPosition`,
 `splitClipboardPastedText`, `clipboardCopyCellDelimiter`, `ignoreValueFormatterDuringExport`
 (HTML: tab-separated, formatted text). The chart's SVG is the Chart runtime's (parity skips `<svg>`).

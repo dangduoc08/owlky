@@ -27,6 +27,10 @@
               <option value="bar">Bar</option>
               <option value="line">Line</option>
               <option value="area">Area</option>
+              <option value="pie">Pie</option>
+              <option value="donut">Donut</option>
+              <option value="radar">Radar</option>
+              <option value="scatter">Scatter</option>
             </select>
             <svg data-ok-text-field-select-icon aria-hidden="true" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
             <fieldset data-ok-text-field-outline aria-hidden="true">
@@ -75,6 +79,37 @@
           </span>
           <span data-ok-form-control-label-text>Series: Revenue</span>
         </label>
+        <label data-ok-form-control-label data-ok-label-placement="end">
+          <span data-ok-switch data-ok-color="primary" data-ok-size="small">
+            <input type="checkbox" role="switch" data-ok-switch-input data-ok-data-grid-chart-stacked disabled>
+            <span data-ok-switch-track aria-hidden="true"></span>
+            <span data-ok-switch-thumb aria-hidden="true"></span>
+          </span>
+          <span data-ok-form-control-label-text>Stacked</span>
+        </label>
+        <label data-ok-form-control-label data-ok-label-placement="end">
+          <span data-ok-switch data-ok-color="primary" data-ok-size="small">
+            <input type="checkbox" role="switch" data-ok-switch-input data-ok-data-grid-chart-item-label>
+            <span data-ok-switch-track aria-hidden="true"></span>
+            <span data-ok-switch-thumb aria-hidden="true"></span>
+          </span>
+          <span data-ok-form-control-label-text>Show values</span>
+        </label>
+        <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none">
+          <label data-ok-text-field-label for="grid-charts-chart-legend">Legend</label>
+          <div data-ok-text-field-control>
+            <select id="grid-charts-chart-legend" data-ok-text-field-input>
+              <option value="top" selected>Top</option>
+              <option value="right">Right</option>
+              <option value="bottom">Bottom</option>
+              <option value="none">None</option>
+            </select>
+            <svg data-ok-text-field-select-icon aria-hidden="true" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            <fieldset data-ok-text-field-outline aria-hidden="true">
+              <legend><span>Legend</span></legend>
+            </fieldset>
+          </div>
+        </div>
       </div>
     </div>
     <div popover="manual" data-ok-popover data-ok-placement="bottom-end" id="grid-charts-columns">

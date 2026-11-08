@@ -915,6 +915,159 @@ describe("DataGrid charts integration and date filters", () => {
     expect((document.querySelector("[data-ok-data-grid-chart]") as HTMLElement).hidden).toBe(true);
   });
 
+  it("offers every chart type with stacking, value labels and a legend", async () => {
+    const onChart = vi.fn();
+    render(
+      <DataGrid
+        id="t"
+        aria-label="Sales"
+        disableVirtualization
+        rows={SALES}
+        columns={COLUMNS}
+        showToolbar
+        chartsIntegration
+        rowGroupingModel={["region"]}
+        initialState={{ chartsIntegration: { model: { values: ["units"] } } }}
+        onChartModelChange={onChart}
+        hideFooter
+      />,
+    );
+    const figure = () => document.querySelector("[data-ok-data-grid-chart] figure") as HTMLElement;
+    await userEvent.click(screen.getByRole("button", { name: "Chart" }));
+    const panel = document.getElementById("t-charts") as HTMLElement;
+    const type = within(panel).getByLabelText("Chart type") as HTMLSelectElement;
+    expect([...type.options].map((o) => o.textContent)).toEqual([
+      "Column",
+      "Bar",
+      "Line",
+      "Area",
+      "Pie",
+      "Donut",
+      "Radar",
+      "Scatter",
+    ]);
+    // Stacking needs two series of a stackable type.
+    const stacked = within(panel).getByRole("switch", { name: "Stacked" }) as HTMLInputElement;
+    expect(stacked.disabled).toBe(true);
+    fireEvent.click(within(panel).getByRole("switch", { name: "Series: Year" }));
+    expect(stacked.disabled).toBe(false);
+    fireEvent.click(stacked);
+    expect(onChart).toHaveBeenLastCalledWith({ values: ["units", "year"], stacked: true });
+    expect(figure().hasAttribute("data-ok-stacked")).toBe(true);
+    fireEvent.click(within(panel).getByRole("switch", { name: "Show values" }));
+    expect(onChart.mock.lastCall?.[0].itemLabel).toBe("value");
+    expect(figure().hasAttribute("data-ok-data-labels")).toBe(true);
+    fireEvent.change(within(panel).getByLabelText("Legend"), { target: { value: "right" } });
+    expect(figure().getAttribute("data-ok-legend")).toBe("right");
+    for (const [value, drawn] of [
+      ["pie", "pie"],
+      ["donut", "donut"],
+      ["radar", "radar"],
+      ["scatter", "scatter"],
+      ["column", "bar"],
+    ] as const) {
+      fireEvent.change(type, { target: { value } });
+      expect(figure().getAttribute("data-ok-type")).toBe(drawn);
+      expect(figure().hasAttribute("data-ok-stacked")).toBe(value === "column");
+      expect(stacked.disabled).toBe(value !== "column");
+    }
+    fireEvent.click(within(panel).getByRole("switch", { name: "Show values" }));
+    expect(onChart.mock.lastCall?.[0].itemLabel).toBe("none");
+    fireEvent.click(within(panel).getByRole("switch", { name: "Series: Year" }));
+    expect(onChart.mock.lastCall?.[0].values).toEqual(["units"]);
+    await expectNoAxeViolations(panel);
+  });
+
+  it("follows filters, rows and pivots, and draws scatter points of a number dimension", async () => {
+    const apiRef = createRef<GridApi<Sale> | null>() as { current: GridApi<Sale> | null };
+    const { rerender } = render(
+      <DataGrid
+        apiRef={apiRef}
+        aria-label="Sales"
+        disableVirtualization
+        rows={SALES}
+        columns={COLUMNS}
+        chartsIntegration
+        rowGroupingModel={["region"]}
+        chartModel={{ type: "pie", values: ["units"], colors: ["info", "error"] }}
+        hideFooter
+      />,
+    );
+    const body = () =>
+      [...(document.querySelector("[data-ok-data-grid-chart] tbody") as HTMLElement).children].map(
+        (r) => r.textContent,
+      );
+    const colors = () =>
+      [...document.querySelectorAll("[data-ok-data-grid-chart] tbody td")].map((td) =>
+        td.getAttribute("data-ok-color"),
+      );
+    expect(body()).toEqual(["North15", "South30", "East20"]);
+    expect(colors()).toEqual(["info", "error", "info"]);
+    // Groups aggregate the rows that pass the filters.
+    act(() =>
+      apiRef.current?.setFilterModel({
+        items: [{ field: "product", operator: "equals", value: "Tea" }],
+      }),
+    );
+    expect(body()).toEqual(["North10", "South30"]);
+    act(() => apiRef.current?.setFilterModel({ items: [] }));
+    // New rows redraw the chart (the Chart's update path: new series).
+    rerender(
+      <DataGrid
+        apiRef={apiRef}
+        aria-label="Sales"
+        disableVirtualization
+        rows={SALES.map((r) => (r.id === "2" ? { ...r, units: 31 } : r))}
+        columns={COLUMNS}
+        chartsIntegration
+        rowGroupingModel={["region"]}
+        chartModel={{ type: "pie", values: ["units"], colors: ["info", "error"] }}
+        hideFooter
+      />,
+    );
+    expect(body()).toEqual(["North15", "South31", "East20"]);
+    // Pivot: a value field stands for its pivot columns, one series per key.
+    rerender(
+      <DataGrid
+        aria-label="Sales"
+        disableVirtualization
+        rows={SALES}
+        columns={COLUMNS}
+        chartsIntegration
+        pivotActive
+        pivotModel={{
+          rows: [{ field: "region" }],
+          columns: [{ field: "year" }],
+          values: [{ field: "units", aggFunc: "sum" }],
+        }}
+        chartModel={{ values: ["units"], stacked: true, seriesAxisLabel: "Units" }}
+        hideFooter
+      />,
+    );
+    const figure = document.querySelector("[data-ok-data-grid-chart] figure") as HTMLElement;
+    expect(document.querySelector("[data-ok-data-grid-chart] thead")?.textContent).toBe(
+      "Category20242025",
+    );
+    expect(body()).toEqual(["North105", "South30", "East20"]);
+    expect(figure.hasAttribute("data-ok-stacked")).toBe(true);
+    expect(figure.getAttribute("data-ok-y-title")).toBe("Units");
+    // Rows with a number dimension: a scatter chart of [x, y] points.
+    rerender(
+      <DataGrid
+        aria-label="Sales"
+        disableVirtualization
+        rows={SALES}
+        columns={COLUMNS}
+        chartsIntegration
+        chartModel={{ type: "scatter", dimension: "year", values: ["units"] }}
+        hideFooter
+      />,
+    );
+    const scatter = document.querySelector("[data-ok-data-grid-chart] figure") as HTMLElement;
+    expect(scatter.getAttribute("data-ok-x-type")).toBe("numeric");
+    expect(scatter.querySelectorAll("[data-ok-chart-marker]")).toHaveLength(4);
+  });
+
   it("filters dates with a date picker in the filter panel", async () => {
     const onFilter = vi.fn();
     render(

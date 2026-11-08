@@ -3,6 +3,17 @@
  * tree parents (group nodes the owners render as rows), aggregation, pivoting and the charts
  * integration's data. Pure functions over rows the owner keeps.
  */
+
+import {
+  type ChartColor,
+  type ChartCurve,
+  type ChartLegend,
+  type ChartPointInput,
+  type ChartType,
+  chartColors,
+  chartCurves,
+  chartLegends,
+} from "../chart/chart-model.js";
 import {
   type GridColumn,
   type GridColumnType,
@@ -474,52 +485,208 @@ export function setGridPivotRole(
 
 /* ------------------------------------------------------------------ charts integration */
 
-export const gridChartTypes = ["column", "bar", "line", "area"] as const;
+/**
+ * Chart types of the charts integration: MUI X's (`column`, `bar`, `line`, `area`, `pie`; a pie
+ * with a hole is `donut`) and, beyond it, `radar` and `scatter` from the Chart component.
+ */
+export const gridChartTypes = [
+  "column",
+  "bar",
+  "line",
+  "area",
+  "pie",
+  "donut",
+  "radar",
+  "scatter",
+] as const;
 export type GridChartType = (typeof gridChartTypes)[number];
+/** Types that stack their series (MUI X `stacked`). */
+export const gridStackableChartTypes: readonly GridChartType[] = ["column", "bar", "line", "area"];
+/** Types that draw the first series only, one slice per category. */
+const SLICED: readonly GridChartType[] = ["pie", "donut"];
 
-/** What the grid's chart shows (MUI X charts integration). */
+/** What the grid's chart shows (MUI X charts integration: dimension, values, configuration). */
 export interface GridChartModel {
   /** Default `column`. */
   type?: GridChartType | undefined;
   /** The field whose texts are the categories (with row grouping: the top-level groups). */
   dimension?: string | null | undefined;
-  /** Number fields drawn as series. */
+  /**
+   * Number fields drawn as series. While the grid is pivoted, a value field of the pivot stands
+   * for its pivot columns (one series per column key); pivot column fields work too.
+   */
   values?: readonly string[] | undefined;
+  /** Column, bar, line and area charts stack their series (two series or more). */
+  stacked?: boolean | undefined;
+  /** `value` prints the values on the chart (MUI X `itemLabel`). Default `none`. */
+  itemLabel?: "none" | "value" | undefined;
+  /** Legend position (never shown for a single series). Default `top`. */
+  legend?: ChartLegend | undefined;
+  /** Series colors in order (pie and donut: slice colors): palette names or shades. */
+  colors?: readonly ChartColor[] | undefined;
+  /** Plot height in px. Default 320. */
+  height?: number | undefined;
+  /** Line, area and radar shape (MUI X `interpolation`). Default `smooth`. */
+  curve?: ChartCurve | undefined;
+  /** Markers on line, area and radar points (MUI X `showMark`). */
+  showMark?: boolean | undefined;
+  /** Title of the value axis (MUI X `seriesAxisLabel`). */
+  seriesAxisLabel?: string | undefined;
+  /** The Chart's toolbar with downloads (MUI X `showToolbar`). */
+  showToolbar?: boolean | undefined;
+  /** Series grow in and move to new values (MUI X: the opposite of `skipAnimation`). */
+  animations?: boolean | undefined;
+  /** Pie and donut: where the slices start, in degrees clockwise from 12 o'clock. */
+  startAngle?: number | undefined;
+  /** Pie and donut: where the slices end. */
+  endAngle?: number | undefined;
+  /** Donut hole in % of the radius (MUI X `innerRadius`). */
+  donutSize?: number | undefined;
+}
+
+/** A series of the grid's chart (an entry of the Chart component's `series`). */
+export interface GridChartSeries {
+  name: string;
+  data: ChartPointInput[];
+  color?: ChartColor | undefined;
 }
 
 export interface GridChartData {
   categories: string[];
-  series: { name: string; data: (number | null)[] }[];
+  series: GridChartSeries[];
+  /** `numeric`: a scatter chart of rows whose dimension is a number column (`[x, y]` points). */
+  xType?: "numeric" | undefined;
+}
+
+/** A column the chart can draw: a data column, or a pivot column (its value field and keys). */
+export type GridChartColumn = GridColumn & {
+  pivotValueField?: string | undefined;
+  pivotKeys?: readonly string[] | undefined;
+};
+
+/**
+ * The columns drawn as series, in the model's order: known fields of `columns`, and for pivot
+ * columns every column whose value field the model names.
+ */
+export function gridChartFields(
+  model: GridChartModel,
+  columns: readonly GridChartColumn[],
+): GridChartColumn[] {
+  const out: GridChartColumn[] = [];
+  for (const field of model.values ?? [])
+    for (const column of columns)
+      if ((column.field === field || column.pivotValueField === field) && !out.includes(column))
+        out.push(column);
+  return out;
 }
 
 /**
  * The chart's data: one category per item (a top-level group, or a shown row), one series per
- * value field (a group gives its aggregated value: the model's function, else the sum).
+ * value column (a group gives its aggregated value). Pivot columns are named by their keys (and
+ * their value column when several value columns are drawn). A scatter chart gets `[x, y]` points
+ * when `xOf` gives numbers (rows whose dimension is a number column).
  */
 export function gridChartData<T>(
   items: readonly T[],
   model: GridChartModel,
-  columns: readonly GridColumn[],
+  columns: readonly GridChartColumn[],
   categoryOf: (item: T) => string,
   valueAt: (item: T, field: string) => unknown,
+  xOf?: (item: T) => unknown,
 ): GridChartData {
-  const fields = (model.values ?? []).filter((f) => columns.some((c) => c.field === f));
+  const fields = gridChartFields(model, columns);
+  const numberOf = (value: unknown) => {
+    const n = gridSortValue(value, "number");
+    return typeof n === "number" && Number.isFinite(n) ? n : null;
+  };
+  const sources = new Set(fields.map((c) => c.pivotValueField ?? c.field));
+  const nameOf = (column: GridChartColumn) => {
+    const header = column.headerName ?? column.field;
+    if (!column.pivotKeys?.length) return header;
+    const keys = column.pivotKeys.join(" · ");
+    return sources.size > 1 ? `${keys} · ${header}` : keys;
+  };
+  const type = model.type ?? "column";
+  const colors = (model.colors ?? []).filter((c) => chartColors.includes(c));
+  const sliced = SLICED.includes(type);
+  const xs = type === "scatter" && xOf ? items.map((item) => numberOf(xOf(item))) : null;
   return {
     categories: items.map(categoryOf),
-    series: fields.map((field) => {
-      const column = columns.find((c) => c.field === field) as GridColumn;
-      return {
-        name: column.headerName ?? field,
-        data: items.map((item) => {
-          const n = gridSortValue(valueAt(item, field), "number");
-          return typeof n === "number" ? n : null;
-        }),
-      };
+    series: fields.map((column, index) => {
+      const values = items.map((item) => numberOf(valueAt(item, column.field)));
+      const data: ChartPointInput[] = xs
+        ? values.flatMap((y, i) => {
+            const x = xs[i] ?? null;
+            return x === null || y === null ? [] : [[x, y] as const];
+          })
+        : sliced && colors.length
+          ? values.map((y, i) => ({ y, color: colors[i % colors.length] as ChartColor }))
+          : values;
+      const color = !sliced && colors.length ? colors[index % colors.length] : undefined;
+      return { name: nameOf(column), data, ...(color ? { color } : {}) };
     }),
+    ...(xs ? { xType: "numeric" as const } : {}),
   };
 }
 
-/** A chart model from untrusted input. */
+/** The Chart component's options for a chart model (React props, HTML attributes). */
+export interface GridChartOptions {
+  type: ChartType;
+  xType: "category" | "numeric";
+  horizontal?: boolean;
+  stacked?: boolean;
+  dataLabels?: boolean;
+  legend?: ChartLegend;
+  height?: number;
+  curve?: ChartCurve;
+  markerSize?: number;
+  yTitle?: string;
+  toolbar?: boolean;
+  animations?: boolean;
+  startAngle?: number;
+  endAngle?: number;
+  donutSize?: number;
+}
+
+/** Whether the chart stacks its series: a stackable type, two series or more. */
+export const gridChartStacked = (model: GridChartModel, seriesCount: number): boolean =>
+  !!model.stacked && gridStackableChartTypes.includes(model.type ?? "column") && seriesCount > 1;
+
+/**
+ * The Chart component's options for a chart model: `column` / `bar` are vertical / horizontal
+ * bars; configuration the type doesn't use is left out (defaults are left out too).
+ */
+export function gridChartOptions(
+  model: GridChartModel,
+  data: GridChartData | null,
+): GridChartOptions {
+  const type = model.type ?? "column";
+  const sliced = SLICED.includes(type);
+  const options: GridChartOptions = {
+    type: type === "column" ? "bar" : type,
+    xType: data?.xType ?? "category",
+  };
+  if (type === "bar") options.horizontal = true;
+  if (gridChartStacked(model, data?.series.length ?? 0)) options.stacked = true;
+  if (model.itemLabel === "value") options.dataLabels = true;
+  if (model.legend && model.legend !== "top") options.legend = model.legend;
+  if (model.height !== undefined) options.height = model.height;
+  if (type === "line" || type === "area" || type === "radar") {
+    if (model.curve && model.curve !== "smooth") options.curve = model.curve;
+    if (model.showMark) options.markerSize = 4;
+  }
+  if (model.seriesAxisLabel && !sliced && type !== "radar") options.yTitle = model.seriesAxisLabel;
+  if (model.showToolbar) options.toolbar = true;
+  if (model.animations) options.animations = true;
+  if (sliced) {
+    if (model.startAngle !== undefined) options.startAngle = model.startAngle;
+    if (model.endAngle !== undefined) options.endAngle = model.endAngle;
+    if (type === "donut" && model.donutSize !== undefined) options.donutSize = model.donutSize;
+  }
+  return options;
+}
+
+/** A chart model from untrusted input: known keys, types and values only. */
 export function sanitizeGridChartModel(input: unknown): GridChartModel {
   if (typeof input !== "object" || input === null || Array.isArray(input)) return {};
   const value = input as Record<string, unknown>;
@@ -529,5 +696,21 @@ export function sanitizeGridChartModel(input: unknown): GridChartModel {
   if (typeof value["dimension"] === "string") out.dimension = value["dimension"];
   if (Array.isArray(value["values"]))
     out.values = value["values"].filter((v): v is string => typeof v === "string");
+  for (const key of ["stacked", "showMark", "showToolbar", "animations"] as const)
+    if (typeof value[key] === "boolean") out[key] = value[key];
+  if (value["itemLabel"] === "none" || value["itemLabel"] === "value")
+    out.itemLabel = value["itemLabel"];
+  if (chartLegends.includes(value["legend"] as ChartLegend))
+    out.legend = value["legend"] as ChartLegend;
+  if (Array.isArray(value["colors"]))
+    out.colors = value["colors"].filter((c): c is ChartColor =>
+      chartColors.includes(c as ChartColor),
+    );
+  if (chartCurves.includes(value["curve"] as ChartCurve)) out.curve = value["curve"] as ChartCurve;
+  if (typeof value["seriesAxisLabel"] === "string") out.seriesAxisLabel = value["seriesAxisLabel"];
+  for (const key of ["height", "startAngle", "endAngle", "donutSize"] as const) {
+    const n = value[key];
+    if (typeof n === "number" && Number.isFinite(n)) out[key] = n;
+  }
   return out;
 }

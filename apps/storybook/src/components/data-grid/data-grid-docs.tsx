@@ -465,7 +465,7 @@ export function Customers() {
   {
     id: "charts",
     title: "Chart the rows",
-    body: "With `chartsIntegration`, a chart follows the grid. `chartModel` sets its `type` (`column`, `bar`, `line` or `area`), its `dimension` (the field that names the categories) and its `values` (number fields drawn as series). When the rows are grouped, the chart shows the top-level groups with their aggregated values. Otherwise it shows the rows of the page. The **Chart** button in the toolbar opens a panel to change the type, the category and the series. In HTML, the chart is a Chart component inside the grid, and the grid writes its data table.",
+    body: "With `chartsIntegration`, a chart follows the grid. `chartModel` sets its `type`, its `dimension` (the field that names the categories) and its `values` (number fields drawn as series). The types are `column`, `bar`, `line`, `area`, `pie`, `donut`, `radar` and `scatter`. When the rows are grouped, the chart shows the top-level groups with the aggregated values of the rows that pass the filters. Otherwise it shows the rows of the page. A scatter chart of rows whose category is a number column places each row at that number. The **Chart** button in the toolbar opens a panel to change the type, the category, the series, the stacking, the value labels and the legend. In HTML, the chart is a Chart component inside the grid, and the grid updates it through the chart's `updateSeries()` method.",
     react: `<DataGrid
   aria-label="Sales"
   rows={sales}
@@ -475,6 +475,48 @@ export function Customers() {
   initialState={{
     rowGrouping: { model: ["product"] },
     chartsIntegration: { model: { type: "column", values: ["revenue"] } },
+  }}
+/>`,
+  },
+  {
+    id: "charts-configuration",
+    title: "Configure the chart",
+    body: `The chart model also holds the chart's configuration. Each setting applies only to the types that use it.
+
+- **\`stacked\`:** stacks the series of a column, bar, line or area chart. It needs two series or more.
+- **\`itemLabel\`:** \`"value"\` prints the values on the chart, such as the percentages on pie slices.
+- **\`legend\`:** places the legend at the \`top\`, \`right\` or \`bottom\`, or hides it with \`none\`. A chart with one series has no legend.
+- **\`colors\`:** palette names or shades, such as \`"info"\` or \`"primary-dark"\`, for the series in order. Pie and donut charts use them for the slices.
+- **\`height\`, \`curve\`, \`showMark\`, \`seriesAxisLabel\`, \`showToolbar\` and \`animations\`:** the plot height in pixels, the line shape, point markers, the value axis title, a toolbar with downloads and animated updates.
+- **\`startAngle\`, \`endAngle\` and \`donutSize\`:** the angles of pie and donut slices, and the size of the donut hole in percent.
+
+When the grid is pivoted, a value field of the pivot draws one series per pivot column, named by its keys. Grouping, filtering, pivoting and editing redraw the chart, so it always shows what the grid shows.`,
+    html: `<!-- The chart model is JSON. The instance's setChartModel(model) changes it from code. -->
+<div data-ok-data-grid data-ok-charts-integration data-ok-row-grouping-model='["product"]'
+  data-ok-chart-model='{"type":"donut","values":["units"],"itemLabel":"value","legend":"right"}'>
+  …
+  <div data-ok-data-grid-chart>
+    <figure data-ok-chart id="sales-chart">…</figure>
+  </div>
+</div>`,
+    react: `<DataGrid
+  aria-label="Revenue by region and product"
+  rows={sales}
+  columns={columns}
+  showToolbar
+  chartsIntegration
+  initialState={{
+    pivoting: {
+      active: true,
+      model: {
+        rows: [{ field: "region" }],
+        columns: [{ field: "product" }],
+        values: [{ field: "revenue", aggFunc: "sum" }],
+      },
+    },
+    chartsIntegration: {
+      model: { type: "column", values: ["revenue"], stacked: true, legend: "bottom" },
+    },
   }}
 />`,
   },

@@ -57,6 +57,8 @@ import {
   gridCellEdges,
   gridCellRange,
   gridChartData,
+  gridChartFields,
+  gridChartOptions,
   gridChartTypes,
   gridColSpans,
   gridColumnTemplate,
@@ -89,6 +91,7 @@ import {
   gridRowWindowOf,
   gridSelectAllState,
   gridSelectedBlock,
+  gridStackableChartTypes,
   gridToCsv,
   gridToTsv,
   gridToXlsx,
@@ -2361,12 +2364,12 @@ function DataGridInner<R>(
     </Popover>
   );
   // Charts integration: one chart of the top-level groups (aggregated) or of the page's rows.
+  // Pivoted grids chart their pivot columns: a value field stands for its columns.
   const chartType: GridChartType = chartModel.type ?? "column";
   const dataById = new Map(view.map((row) => [idOf(row), row]));
   const chartColumns = columnsProp.filter((c) => c.type !== "actions");
-  const valueFields = (chartModel.values ?? []).filter((f) =>
-    chartColumns.some((c) => c.field === f),
-  );
+  const chartCandidates = pivot ? columns : chartColumns;
+  const chartFields = gridChartFields(chartModel, chartCandidates);
   const dimension = chartColumns.some((c) => c.field === chartModel.dimension)
     ? (chartModel.dimension as string)
     : null;
@@ -2374,31 +2377,47 @@ function DataGridInner<R>(
     grouping.length > 0 && !serverTree
       ? sorted.filter((row): row is R & Group => isGroup(row) && row[GROUP].depth === 0)
       : null;
-  const chartData =
-    chartsIntegration && valueFields.length > 0 && (dimension || topGroups)
-      ? topGroups
-        ? gridChartData(
-            topGroups,
-            { values: valueFields },
-            chartColumns,
-            (row) => row[GROUP].key,
-            (row, field) =>
-              gridAggregate(
-                row[GROUP].leafIds.map((leaf) => dataById.get(leaf) as R),
-                { [field]: aggregationState[field] ?? "sum" },
-                columnsProp,
-                (r, f) => rawValue(sourceOf(f), r),
-                aggregationFunctions,
-              )[field],
-          )
-        : gridChartData(
-            pageRows.filter(isData),
-            { values: valueFields },
-            chartColumns,
-            (row) => textOf(sourceOf(dimension as string), row),
-            (row, field) => rawValue(sourceOf(field), row),
-          )
+  const chartShown = chartsIntegration && chartFields.length > 0 && !!(dimension || topGroups);
+  // Groups aggregate the rows that pass the filters (a pivot's rows are filtered already).
+  const chartPass =
+    chartShown && topGroups && !pivot && !server.filter
+      ? new Set(localFilter(orderedRows).map(idOf))
       : null;
+  const chartColumnOf = (field: string) =>
+    chartCandidates.find((c) => c.field === field) as GridColDef<R>;
+  const chartData = !chartShown
+    ? null
+    : topGroups
+      ? gridChartData(
+          topGroups,
+          chartModel,
+          chartCandidates,
+          (row) => row[GROUP].key,
+          (row, field) =>
+            gridAggregate(
+              row[GROUP].leafIds
+                .filter((leaf) => !chartPass || chartPass.has(leaf))
+                .map((leaf) => dataById.get(leaf) as R),
+              { [field]: aggregationModel[field] ?? aggregationState[field] ?? "sum" },
+              chartCandidates,
+              (r, f) => rawValue(chartColumnOf(f), r),
+              aggregationFunctions,
+            )[field],
+        )
+      : gridChartData(
+          pageRows.filter(isData),
+          chartModel,
+          chartCandidates,
+          (row) => textOf(sourceOf(dimension as string), row),
+          (row, field) => rawValue(chartColumnOf(field), row),
+          sourceOf(dimension as string).type === "number"
+            ? (row) => rawValue(sourceOf(dimension as string), row)
+            : undefined,
+        );
+  const chartOptions = gridChartOptions(chartModel, chartData);
+  const chartValues = chartModel.values ?? [];
+  const stackable =
+    gridStackableChartTypes.includes(chartType) && (chartData?.series.length ?? 0) > 1;
   const chartsPanel = (
     <Popover
       id={`${id}-charts`}
@@ -2456,19 +2475,62 @@ function DataGridInner<R>(
                 <Switch
                   size="small"
                   data-ok-data-grid-chart-value={column.field}
-                  checked={valueFields.includes(column.field)}
+                  checked={chartValues.includes(column.field)}
                   onChange={(on) =>
                     setChartModel({
                       ...chartModel,
                       values: on
-                        ? [...valueFields, column.field]
-                        : valueFields.filter((f) => f !== column.field),
+                        ? [...chartValues.filter((f) => f !== column.field), column.field]
+                        : chartValues.filter((f) => f !== column.field),
                     })
                   }
                 />
               }
             />
           ))}
+        <FormControlLabel
+          label={labels.chartsStacked}
+          control={
+            <Switch
+              size="small"
+              data-ok-data-grid-chart-stacked=""
+              checked={!!chartModel.stacked}
+              disabled={!stackable}
+              onChange={(on) => setChartModel({ ...chartModel, stacked: on })}
+            />
+          }
+        />
+        <FormControlLabel
+          label={labels.chartsItemLabel}
+          control={
+            <Switch
+              size="small"
+              data-ok-data-grid-chart-item-label=""
+              checked={chartModel.itemLabel === "value"}
+              onChange={(on) => setChartModel({ ...chartModel, itemLabel: on ? "value" : "none" })}
+            />
+          }
+        />
+        <TextField
+          id={`${id}-chart-legend`}
+          select
+          size="small"
+          label={labels.chartsLegend}
+          value={chartModel.legend ?? "top"}
+          onChange={(legend) =>
+            setChartModel({ ...chartModel, legend: legend as GridChartModel["legend"] })
+          }
+        >
+          {(["top", "right", "bottom", "none"] as const).map((legend) => (
+            <option key={legend} value={legend}>
+              {
+                labels[
+                  `chartLegend${legend.charAt(0).toUpperCase()}${legend.slice(1)}` as keyof GridLabels
+                ] as string
+              }
+            </option>
+          ))}
+        </TextField>
       </div>
     </Popover>
   );
@@ -3730,8 +3792,7 @@ function DataGridInner<R>(
           <Chart
             id={`${id}-chart`}
             label={labels.chartLabel}
-            type={chartType === "line" || chartType === "area" ? chartType : "bar"}
-            horizontal={chartType === "bar"}
+            {...chartOptions}
             categories={chartData?.categories ?? []}
             series={chartData?.series ?? []}
           />

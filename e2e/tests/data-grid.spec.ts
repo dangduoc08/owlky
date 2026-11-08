@@ -343,15 +343,23 @@ for (const impl of implementations) {
 
     test("charts integration follows the grid", async ({ page }) => {
       await openStory(page, storyId(impl, "datagrid", "charts"));
-      const table = page.locator("[data-ok-data-grid-chart] [data-ok-chart-data] tbody tr");
+      const grid = page.locator("#grid-charts");
+      const table = grid.locator("[data-ok-data-grid-chart] [data-ok-chart-data] tbody tr");
       await expect(table).toHaveCount(3);
-      await expect(page.locator("[data-ok-data-grid-chart] [data-ok-chart-svg]")).toBeVisible();
-      await page.getByRole("button", { name: "Chart" }).click();
-      await page.getByLabel("Chart type").selectOption("line");
-      await expect(page.locator("[data-ok-data-grid-chart] [data-ok-chart]")).toHaveAttribute(
-        "data-ok-type",
-        "line",
-      );
+      await expect(grid.locator("[data-ok-data-grid-chart] [data-ok-chart-svg]")).toBeVisible();
+      await grid.getByRole("button", { name: "Chart" }).click();
+      await page.locator("#grid-charts-chart-type").selectOption("line");
+      const figure = grid.locator("[data-ok-data-grid-chart] [data-ok-chart]");
+      await expect(figure).toHaveAttribute("data-ok-type", "line");
+      await page.locator("#grid-charts-chart-type").selectOption("pie");
+      await expect(figure.locator("[data-ok-chart-slice]")).toHaveCount(3);
+      // The pivot chart stacks one series per product; the donut prints its values.
+      const pivot = page.locator("#grid-charts-pivot [data-ok-data-grid-chart] [data-ok-chart]");
+      await expect(pivot).toHaveAttribute("data-ok-stacked", "");
+      await expect(pivot.locator("[data-ok-chart-legend-item]")).toHaveCount(3);
+      const donut = page.locator("#grid-charts-donut [data-ok-data-grid-chart] [data-ok-chart]");
+      await expect(donut.locator("[data-ok-chart-slice]")).toHaveCount(3);
+      await expect(donut.locator("[data-ok-chart-data-label]")).toHaveCount(3);
     });
   });
 }

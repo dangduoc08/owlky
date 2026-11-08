@@ -410,6 +410,16 @@ reports aggregates. Integration 2026-11-08 (`/integrate date-picker`): `dateTime
 with the DateTimePicker in the filter panel and the header filters (closes the Pending integration
 "DateTimePicker → Data grid filter values for `dateTime` columns"; the Cells story gained a
 `dateTime` column). Editing cells keeps native `date` / `datetime-local` inputs, as MUI X does.
+Integration 2026-11-08 (`/integrate chart`, Chart complete): the charts integration offers every
+MUI X chart type the Chart draws (`column`, `bar`, `line`, `area`, `pie`, and `donut` for a pie
+with a hole) plus `radar` and `scatter` (beyond MUI X), and MUI X's configuration as far as the
+Chart supports it (`stacked`, `itemLabel`, `legend`, `colors`, `height`, `curve`, `showMark`,
+`seriesAxisLabel`, `showToolbar`, `animations`, pie angles, `donutSize`; core `gridChartOptions`).
+Pivoted grids chart their pivot columns (one series per key), groups aggregate only the rows that
+pass the filters, and the HTML grid drives the chart through `updateSeries` instead of writing its
+table. The panel gained Stacked, Show values and Legend fields. The Charts integration story gained
+"Pivot chart" and "Donut chart". Deferred: several dimensions (a grouped axis) and several charts
+per grid.
 
 The former backlog is folded into phases 4–6 (ADR-0021, 2026-11-08). New MUI X features go into a
 phase, or into "Pending integrations" below when they need a missing component.

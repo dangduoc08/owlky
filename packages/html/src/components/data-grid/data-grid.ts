@@ -1,5 +1,8 @@
 import {
   arrangeGridColumns,
+  chartAttributes,
+  chartOptions,
+  chartTextAttributes,
   clampGridWidth,
   createGridCellSelection,
   createGridClipboard,
@@ -52,6 +55,8 @@ import {
   gridCellEdges,
   gridCellRange,
   gridChartData,
+  gridChartFields,
+  gridChartOptions,
   gridColumnTemplate,
   gridColumnTypes,
   gridColumnWindow,
@@ -83,6 +88,7 @@ import {
   gridRowWindowOf,
   gridSelectAllState,
   gridSelectedBlock,
+  gridStackableChartTypes,
   gridToCsv,
   gridToTsv,
   gridToXlsx,
@@ -126,6 +132,7 @@ import { defineComponent } from "../../runtime/define.js";
 import { syncCustomProperties } from "../../runtime/style.js";
 import type { ComponentInstance } from "../../runtime/types.js";
 import type { AutocompleteInstance } from "../autocomplete/autocomplete.js";
+import type { ChartInstance } from "../chart/chart.js";
 import type { DatePickerInstance } from "../date-picker/date-picker.js";
 import type { PopoverInstance } from "../popover/popover.js";
 import type { TablePaginationInstance } from "../table-pagination/table-pagination.js";
@@ -2298,18 +2305,52 @@ export const dataGrid = defineComponent<DataGridInstance>({
       apply();
     };
 
-    // Charts integration: the chart's data table follows the rows (or the top-level groups).
+    // Charts integration: the chart follows the rows (or the top-level groups; pivoted grids:
+    // their pivot columns) through the Chart's update path (`updateSeries`, option attributes).
     const chartRegion = element.querySelector<HTMLElement>("[data-ok-data-grid-chart]");
     let chartKey = "";
+    let chartSeriesCount = 0;
+    /** Panel fields show the model (it may come from `setChartModel` or `restoreState`). */
+    const syncChartPanel = () => {
+      const panel = byId("charts");
+      if (!panel) return;
+      const type = chartModel.type ?? "column";
+      const select = (suffix: string, value: string) => {
+        const field = panel.querySelector<HTMLSelectElement>(`#${CSS.escape(`${id}-${suffix}`)}`);
+        if (field && field.value !== value) field.value = value;
+      };
+      select("chart-type", type);
+      select(
+        "chart-dimension",
+        baseColumns.some((c) => c.field === chartModel.dimension && c.type !== "actions")
+          ? (chartModel.dimension as string)
+          : "",
+      );
+      select("chart-legend", chartModel.legend ?? "top");
+      for (const input of panel.querySelectorAll<HTMLInputElement>(
+        "[data-ok-data-grid-chart-value]",
+      ))
+        input.checked = (chartModel.values ?? []).includes(
+          input.getAttribute("data-ok-data-grid-chart-value") as string,
+        );
+      const stacked = panel.querySelector<HTMLInputElement>("[data-ok-data-grid-chart-stacked]");
+      if (stacked) {
+        stacked.checked = !!chartModel.stacked;
+        stacked.disabled = !(gridStackableChartTypes.includes(type) && chartSeriesCount > 1);
+      }
+      const labelsSwitch = panel.querySelector<HTMLInputElement>(
+        "[data-ok-data-grid-chart-item-label]",
+      );
+      if (labelsSwitch) labelsSwitch.checked = chartModel.itemLabel === "value";
+    };
     const syncChart = () => {
       const figure = chartRegion?.querySelector<HTMLElement>("[data-ok-chart]");
       const table = figure?.querySelector<HTMLTableElement>("[data-ok-chart-data]");
       if (!chartRegion || !figure || !table) return;
       const chartColumns = baseColumns.filter((c) => c.type !== "actions");
-      const valueFields = (chartModel.values ?? []).filter((f) =>
-        chartColumns.some((c) => c.field === f),
-      );
-      const dimension = chartColumns.find((c) => c.field === chartModel.dimension)?.field ?? null;
+      const candidates = pivot ? columns : chartColumns;
+      const fields = gridChartFields(chartModel, candidates);
+      const dimension = chartColumns.find((c) => c.field === chartModel.dimension);
       const top =
         grouping().length && !source
           ? sortedList.filter(
@@ -2317,44 +2358,68 @@ export const dataGrid = defineComponent<DataGridInstance>({
                 row.hasAttribute("data-ok-generated") && row.getAttribute("aria-level") === "1",
             )
           : null;
+      // Groups aggregate the rows that pass the filters (`filtered`: the data rows shown).
+      const pass = top ? new Set(filtered) : null;
+      const byRowId = top ? new Map(rowEls.map((row) => [idOf(row), row])) : null;
+      const aggregation = activeAggregation();
       const data =
-        valueFields.length && (dimension || top)
+        fields.length && (dimension || top)
           ? top
             ? gridChartData(
                 top,
-                { values: valueFields },
-                chartColumns,
+                chartModel,
+                candidates,
                 (row) => (groupNodes.get(idOf(row)) as GridGroupNode).key,
                 (row, field) =>
                   gridAggregate(
-                    (groupNodes.get(idOf(row)) as GridGroupNode).leafIds.map(
-                      (leaf) => rowEls.find((r) => idOf(r) === leaf) as HTMLElement,
-                    ),
-                    { [field]: aggregationModel[field] ?? "sum" },
-                    baseColumns,
-                    cellValue,
+                    (groupNodes.get(idOf(row)) as GridGroupNode).leafIds
+                      .map((leaf) => byRowId?.get(leaf) as HTMLElement)
+                      .filter((leaf) => leaf && pass?.has(leaf)),
+                    { [field]: aggregation[field] ?? aggregationModel[field] ?? "sum" },
+                    candidates,
+                    value,
                   )[field],
               )
             : gridChartData(
                 pageList.filter((row) => !row.hasAttribute("data-ok-generated")),
-                { values: valueFields },
-                chartColumns,
-                (row) => cellText(row, dimension as string),
-                cellValue,
+                chartModel,
+                candidates,
+                (row) => cellText(row, (dimension as GridColumn).field),
+                value,
+                dimension?.type === "number"
+                  ? (row) => cellValue(row, (dimension as GridColumn).field)
+                  : undefined,
               )
           : null;
       chartRegion.hidden = !data;
-      const type: GridChartType = chartModel.type ?? "column";
-      figure.setAttribute("data-ok-type", type === "line" || type === "area" ? type : "bar");
-      figure.toggleAttribute("data-ok-horizontal", type === "bar");
-      const key = JSON.stringify(data);
+      chartSeriesCount = data?.series.length ?? 0;
+      syncChartPanel();
+      const { yTitle, ...options } = gridChartOptions(chartModel, data);
+      const attributes: Record<string, string> = {
+        ...chartAttributes(options),
+        ...chartTextAttributes({ yTitle }),
+      };
+      for (const spec of Object.values(chartOptions.options))
+        if (spec.attr.startsWith("data-ok-") && !(spec.attr in attributes))
+          figure.removeAttribute(spec.attr);
+      if (!yTitle) figure.removeAttribute("data-ok-y-title");
+      for (const [name, attr] of Object.entries(attributes))
+        if (figure.getAttribute(name) !== attr) figure.setAttribute(name, attr);
+      const key = JSON.stringify([data, options.type, options.xType]);
       if (key === chartKey) return;
       chartKey = key;
+      const series = data?.series ?? [];
+      const categories = data?.categories ?? [];
+      const chart = runtime.getOrCreate<ChartInstance>(figure, "chart");
+      if (chart) {
+        chart.updateSeries(series, categories);
+        return;
+      }
+      // Without the chart runtime, the data table is the chart: write it.
       const { table: model } = renderChart({
-        type: type === "line" || type === "area" ? type : "bar",
-        xType: "category",
-        series: data?.series ?? [],
-        categories: data?.categories ?? [],
+        ...options,
+        series,
+        categories,
         width: 640,
         height: 320,
         idPrefix: "t",
@@ -2395,21 +2460,25 @@ export const dataGrid = defineComponent<DataGridInstance>({
       "change",
       (event) => {
         const target = event.target as HTMLInputElement;
-        const values = (chartModel.values ?? []).filter((f) =>
-          baseColumns.some((c) => c.field === f),
-        );
+        const values = chartModel.values ?? [];
         if (target.id === `${id}-chart-type`)
           setChart({ ...chartModel, type: target.value as GridChartType });
         else if (target.id === `${id}-chart-dimension`)
           setChart({ ...chartModel, dimension: target.value || null });
+        else if (target.id === `${id}-chart-legend`)
+          setChart({ ...chartModel, legend: target.value as GridChartModel["legend"] });
+        else if (target.hasAttribute("data-ok-data-grid-chart-stacked"))
+          setChart({ ...chartModel, stacked: target.checked });
+        else if (target.hasAttribute("data-ok-data-grid-chart-item-label"))
+          setChart({ ...chartModel, itemLabel: target.checked ? "value" : "none" });
         else {
           // The panel's other fields are the series switches.
           const field = target.getAttribute("data-ok-data-grid-chart-value") as string;
-          setChart({
-            ...chartModel,
-            values: target.checked ? [...values, field] : values.filter((f) => f !== field),
-          });
+          const others = values.filter((f) => f !== field);
+          setChart({ ...chartModel, values: target.checked ? [...others, field] : others });
         }
+        // A refused change (canceled event) puts the fields back.
+        syncChartPanel();
       },
       { signal },
     );

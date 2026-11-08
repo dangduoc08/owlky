@@ -7,6 +7,9 @@ import {
   gridAggregationFunctions,
   gridAggregationFunctionsFor,
   gridChartData,
+  gridChartFields,
+  gridChartOptions,
+  gridChartStacked,
   gridGroupComparator,
   gridGroupRowId,
   gridPivot,
@@ -370,9 +373,225 @@ describe("charts", () => {
     expect(sanitizeGridChartModel({ type: "line", dimension: "region", values: ["a", 1] })).toEqual(
       { type: "line", dimension: "region", values: ["a"] },
     );
-    expect(sanitizeGridChartModel({ type: "pie", dimension: 2, values: "a" })).toEqual({});
+    expect(sanitizeGridChartModel({ type: "gauge", dimension: 2, values: "a" })).toEqual({});
     expect(sanitizeGridChartModel([])).toEqual({});
     expect(sanitizeGridChartModel(null)).toEqual({});
+    expect(
+      sanitizeGridChartModel({
+        type: "donut",
+        stacked: true,
+        showMark: "yes",
+        showToolbar: false,
+        animations: true,
+        itemLabel: "value",
+        legend: "right",
+        colors: ["info", "nope", "error-dark", 3],
+        curve: "stepline",
+        seriesAxisLabel: "Revenue",
+        height: 240,
+        startAngle: -90,
+        endAngle: Number.NaN,
+        donutSize: "60",
+      }),
+    ).toEqual({
+      type: "donut",
+      stacked: true,
+      showToolbar: false,
+      animations: true,
+      itemLabel: "value",
+      legend: "right",
+      colors: ["info", "error-dark"],
+      curve: "stepline",
+      seriesAxisLabel: "Revenue",
+      height: 240,
+      startAngle: -90,
+    });
+    expect(sanitizeGridChartModel({ itemLabel: "all", legend: "left", curve: "x" })).toEqual({});
+  });
+
+  it("charts pivot columns for their value field, named by their keys", () => {
+    const pivot = gridPivot(
+      SALES,
+      COLUMNS,
+      {
+        rows: [{ field: "region" }],
+        columns: [{ field: "year" }],
+        values: [
+          { field: "amount", aggFunc: "sum" },
+          { field: "region", aggFunc: "size" },
+        ],
+      },
+      value,
+      text,
+    );
+    const fields = gridChartFields({ values: ["amount"] }, pivot.columns);
+    expect(fields.map((c) => c.field)).toEqual([
+      gridPivotField(["2024"], "amount", "sum"),
+      gridPivotField(["2025"], "amount", "sum"),
+    ]);
+    // A pivot column field picks that column only; unknown fields are dropped.
+    expect(
+      gridChartFields(
+        { values: [gridPivotField(["2025"], "region", "size"), "nope", "amount"] },
+        pivot.columns,
+      ).map((c) => c.field),
+    ).toEqual([
+      gridPivotField(["2025"], "region", "size"),
+      gridPivotField(["2024"], "amount", "sum"),
+      gridPivotField(["2025"], "amount", "sum"),
+    ]);
+    const groups = [
+      { key: "North", rows: [SALES[0], SALES[2], SALES[3]] as Sale[] },
+      { key: "South", rows: [SALES[1]] as Sale[] },
+    ];
+    const at = (group: (typeof groups)[number], field: string) =>
+      gridAggregate(
+        group.rows,
+        { [field]: pivot.aggregationModel[field] as string },
+        pivot.columns,
+        (r, f) => pivot.value(r, f),
+      )[field];
+    const one = gridChartData(groups, { values: ["amount"] }, pivot.columns, (g) => g.key, at);
+    expect(one.series).toEqual([
+      { name: "2024", data: [10, null] },
+      { name: "2025", data: [5, 20] },
+    ]);
+    const two = gridChartData(
+      groups,
+      { values: ["amount", "region"] },
+      pivot.columns,
+      (g) => g.key,
+      at,
+    );
+    expect(two.series.map((s) => s.name)).toEqual([
+      "2024 · Amount (sum)",
+      "2025 · Amount (sum)",
+      "2024 · Region (size)",
+      "2025 · Region (size)",
+    ]);
+  });
+
+  it("colors series or slices, and gives scatter charts [x, y] points", () => {
+    const rows = SALES.slice(0, 3);
+    const colored = gridChartData(
+      rows,
+      { values: ["amount", "year"], colors: ["info", "bad" as never] },
+      COLUMNS,
+      (r) => r.id,
+      value,
+    );
+    expect(colored.series.map((s) => s.color)).toEqual(["info", "info"]);
+    const pie = gridChartData(
+      rows,
+      { type: "pie", values: ["amount"], colors: ["info", "error"] },
+      COLUMNS,
+      (r) => r.id,
+      value,
+    );
+    expect(pie.series[0]).toEqual({
+      name: "Amount",
+      data: [
+        { y: 10, color: "info" },
+        { y: 20, color: "error" },
+        { y: 5, color: "info" },
+      ],
+    });
+    const scatter = gridChartData(
+      SALES,
+      { type: "scatter", values: ["amount"] },
+      COLUMNS,
+      (r) => r.year,
+      value,
+      (r) => r.year,
+    );
+    expect(scatter).toEqual({
+      categories: ["2024", "2025", "2025", "2025"],
+      series: [
+        {
+          name: "Amount",
+          data: [
+            [2024, 10],
+            [2025, 20],
+            [2025, 5],
+          ],
+        },
+      ],
+      xType: "numeric",
+    });
+    // Without x values, a scatter chart uses the categories.
+    expect(
+      gridChartData(SALES, { type: "scatter", values: ["amount"] }, COLUMNS, (r) => r.id, value)
+        .xType,
+    ).toBeUndefined();
+  });
+
+  it("maps the model to the Chart's options", () => {
+    const data = (n: number) => ({
+      categories: [],
+      series: Array.from({ length: n }, (_, i) => ({ name: String(i), data: [] })),
+    });
+    expect(gridChartOptions({}, null)).toEqual({ type: "bar", xType: "category" });
+    expect(gridChartOptions({ type: "bar", stacked: true }, data(2))).toEqual({
+      type: "bar",
+      xType: "category",
+      horizontal: true,
+      stacked: true,
+    });
+    expect(gridChartStacked({ type: "line", stacked: true }, 1)).toBe(false);
+    expect(gridChartStacked({ type: "pie", stacked: true }, 3)).toBe(false);
+    expect(
+      gridChartOptions(
+        {
+          type: "line",
+          curve: "straight",
+          showMark: true,
+          itemLabel: "value",
+          legend: "bottom",
+          height: 200,
+          seriesAxisLabel: "Revenue",
+          showToolbar: true,
+          animations: true,
+          startAngle: 10,
+        },
+        data(1),
+      ),
+    ).toEqual({
+      type: "line",
+      xType: "category",
+      curve: "straight",
+      markerSize: 4,
+      dataLabels: true,
+      legend: "bottom",
+      height: 200,
+      yTitle: "Revenue",
+      toolbar: true,
+      animations: true,
+    });
+    expect(
+      gridChartOptions(
+        {
+          type: "donut",
+          legend: "top",
+          curve: "straight",
+          seriesAxisLabel: "x",
+          startAngle: -90,
+          endAngle: 90,
+          donutSize: 60,
+        },
+        data(1),
+      ),
+    ).toEqual({ type: "donut", xType: "category", startAngle: -90, endAngle: 90, donutSize: 60 });
+    expect(gridChartOptions({ type: "pie", donutSize: 60 }, data(1))).toEqual({
+      type: "pie",
+      xType: "category",
+    });
+    expect(
+      gridChartOptions({ type: "radar", curve: "smooth", seriesAxisLabel: "x" }, null),
+    ).toEqual({ type: "radar", xType: "category" });
+    expect(gridChartOptions({ type: "scatter" }, { ...data(1), xType: "numeric" })).toEqual({
+      type: "scatter",
+      xType: "numeric",
+    });
   });
 });
 

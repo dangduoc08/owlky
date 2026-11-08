@@ -577,14 +577,34 @@ describe("data grid cell selection, clipboard and header filters (HTML)", () => 
   });
 });
 
+/** Each table row's cell texts, joined (the chart rewrites cells in place). */
+const rowTexts = (section: HTMLTableSectionElement) =>
+  [...section.rows].map((r) => [...r.cells].map((c) => c.textContent?.trim()).join(""));
+const chartParts = (host: Element) => {
+  const region = host.querySelector("[data-ok-data-grid-chart]") as HTMLElement;
+  const table = region.querySelector("table") as HTMLTableElement;
+  return {
+    region,
+    figure: region.querySelector("[data-ok-chart]") as HTMLElement,
+    head: () => rowTexts(table.tHead as HTMLTableSectionElement),
+    body: () => rowTexts(table.tBodies[0] as HTMLTableSectionElement),
+    colors: () =>
+      [...table.querySelectorAll("tbody td")].map((td) => td.getAttribute("data-ok-color")),
+  };
+};
+const change = (field: HTMLInputElement | HTMLSelectElement, value?: string) => {
+  if (value !== undefined) field.value = value;
+  else (field as HTMLInputElement).checked = !(field as HTMLInputElement).checked;
+  field.dispatchEvent(new Event("change", { bubbles: true }));
+};
+
 describe("data grid charts integration (HTML)", () => {
   it("writes the chart's table from the top-level groups and follows the panel", () => {
     const { host, root, instance } = setup("charts-group");
     const region = host.querySelector("[data-ok-data-grid-chart]") as HTMLElement;
     expect(region.hidden).toBe(false);
     const table = region.querySelector("table") as HTMLTableElement;
-    const body = () =>
-      [...(table.tBodies[0] as HTMLTableSectionElement).rows].map((r) => r.textContent);
+    const body = () => rowTexts(table.tBodies[0] as HTMLTableSectionElement);
     expect(body()).toEqual(["Tea2,497", "Juice2,592", "Coffee2,658"]);
     const onChart = vi.fn();
     root.addEventListener("ok:data-grid:chart", onChart);
@@ -603,7 +623,7 @@ describe("data grid charts integration (HTML)", () => {
     ) as HTMLInputElement;
     units.click();
     expect(onChart.mock.lastCall?.[0].detail.model.values).toEqual(["revenue", "units"]);
-    expect(table.tHead?.textContent).toBe("CategoryRevenueUnits");
+    expect(rowTexts(table.tHead as HTMLTableSectionElement)).toEqual(["CategoryRevenueUnits"]);
     units.click();
     instance.setRowGroupingModel([]);
     expect(region.hidden).toBe(true);
@@ -625,6 +645,137 @@ describe("data grid charts integration (HTML)", () => {
     expect(instance.exportState().chartsIntegration).toEqual({ model: { values: [] } });
     instance.setChartModel({});
     expect(region.hidden).toBe(true);
+  });
+});
+
+describe("data grid charts integration: every chart type (HTML)", () => {
+  it("offers every chart type with stacking, value labels and a legend", () => {
+    const { host, root, instance } = setup("charts-group");
+    const { figure } = chartParts(host);
+    const q = <E extends Element>(selector: string) => host.querySelector<E>(selector) as E;
+    const type = q<HTMLSelectElement>("#grid-charts-chart-type");
+    expect([...type.options].map((o) => o.value)).toEqual([
+      "column",
+      "bar",
+      "line",
+      "area",
+      "pie",
+      "donut",
+      "radar",
+      "scatter",
+    ]);
+    const stacked = q<HTMLInputElement>("[data-ok-data-grid-chart-stacked]");
+    expect(stacked.disabled).toBe(true);
+    change(q<HTMLInputElement>('[data-ok-data-grid-chart-value="units"]'));
+    expect(stacked.disabled).toBe(false);
+    change(stacked);
+    expect(instance.chartModel).toEqual({
+      type: "column",
+      values: ["revenue", "units"],
+      stacked: true,
+    });
+    expect(figure.hasAttribute("data-ok-stacked")).toBe(true);
+    change(q<HTMLInputElement>("[data-ok-data-grid-chart-item-label]"));
+    expect(instance.chartModel.itemLabel).toBe("value");
+    expect(figure.hasAttribute("data-ok-data-labels")).toBe(true);
+    change(q<HTMLSelectElement>("#grid-charts-chart-legend"), "right");
+    expect(figure.getAttribute("data-ok-legend")).toBe("right");
+    for (const [value, drawn] of [
+      ["pie", "pie"],
+      ["donut", "donut"],
+      ["radar", "radar"],
+      ["scatter", "scatter"],
+      ["column", "bar"],
+    ] as const) {
+      change(type, value);
+      expect(figure.getAttribute("data-ok-type")).toBe(drawn);
+      expect(figure.hasAttribute("data-ok-stacked")).toBe(value === "column");
+      expect(stacked.disabled).toBe(value !== "column");
+    }
+    change(q<HTMLInputElement>("[data-ok-data-grid-chart-item-label]"));
+    expect(instance.chartModel.itemLabel).toBe("none");
+    // The panel shows models set from JavaScript; a canceled change puts it back.
+    instance.setChartModel({ type: "line", values: ["revenue"], legend: "bottom", showMark: true });
+    expect(type.value).toBe("line");
+    expect(q<HTMLSelectElement>("#grid-charts-chart-legend").value).toBe("bottom");
+    expect(q<HTMLInputElement>('[data-ok-data-grid-chart-value="units"]').checked).toBe(false);
+    expect(figure.getAttribute("data-ok-marker-size")).toBe("4");
+    expect(figure.hasAttribute("data-ok-data-labels")).toBe(false);
+    root.addEventListener("ok:data-grid:chart", (event) => event.preventDefault(), { once: true });
+    change(type, "area");
+    expect(type.value).toBe("line");
+    expect(figure.getAttribute("data-ok-type")).toBe("line");
+  });
+
+  it("follows filters, grouping and pivots, and draws scatter points of a number dimension", () => {
+    const { host, instance } = setup("charts-group");
+    const chart = chartParts(host);
+    instance.setChartModel({ type: "pie", values: ["revenue"], colors: ["info", "error"] });
+    expect(chart.body()).toEqual(["Tea2,497", "Juice2,592", "Coffee2,658"]);
+    expect(chart.colors()).toEqual(["info", "error", "info"]);
+    // Groups aggregate the rows that pass the filters.
+    instance.setFilterModel({ items: [{ field: "region", operator: "equals", value: "North" }] });
+    expect(chart.body()).toEqual(["Tea510", "Juice842", "Coffee408"]);
+    instance.setFilterModel({ items: [] });
+    instance.setRowGroupingModel(["region"]);
+    expect(
+      chart
+        .body()
+        .map((r) => r.replace(/[\d,]/g, ""))
+        .sort(),
+    ).toEqual(["East", "North", "South", "West"]);
+    // Pivot: a value field stands for its pivot columns, one series per key.
+    instance.setChartModel({ values: ["revenue"], stacked: true, seriesAxisLabel: "Revenue" });
+    instance.setPivotModel({
+      rows: [{ field: "region" }],
+      columns: [{ field: "year" }],
+      values: [{ field: "revenue", aggFunc: "sum" }],
+    });
+    instance.setPivotActive(true);
+    expect(chart.head()).toEqual(["Category20242025"]);
+    expect(chart.figure.hasAttribute("data-ok-stacked")).toBe(true);
+    expect(chart.figure.getAttribute("data-ok-y-title")).toBe("Revenue");
+    instance.setPivotActive(false);
+    expect(chart.head()).toEqual(["CategoryRevenue"]);
+    expect(chart.figure.hasAttribute("data-ok-stacked")).toBe(false);
+    // Rows with a number dimension: a scatter chart of [x, y] points.
+    instance.setRowGroupingModel([]);
+    instance.setChartModel({ type: "scatter", dimension: "units", values: ["revenue"] });
+    expect(chart.figure.getAttribute("data-ok-x-type")).toBe("numeric");
+    expect(chart.body()).toHaveLength(24);
+    instance.setChartModel({ type: "radar", dimension: "product", values: ["revenue"] });
+    expect(chart.figure.getAttribute("data-ok-x-type")).toBe("category");
+  });
+
+  it("builds the pivot chart of its snippet", () => {
+    const { host } = setup("charts-pivot");
+    const chart = chartParts(host);
+    expect(chart.region.hidden).toBe(false);
+    expect(chart.head()).toEqual(["CategoryCoffeeJuiceTea"]);
+    expect(chart.body()).toHaveLength(4);
+    expect(chart.figure.getAttribute("data-ok-legend")).toBe("bottom");
+    expect(
+      (host.querySelector("[data-ok-data-grid-chart-stacked]") as HTMLInputElement).disabled,
+    ).toBe(false);
+  });
+
+  it("writes the data table itself without the chart runtime", () => {
+    const host = mount(snippets["charts-donut"] as string);
+    runtime = createRuntime()
+      .register(...components.filter((c) => c.name !== "chart"))
+      .start();
+    const root = host.querySelector("[data-ok-data-grid]") as HTMLElement;
+    const instance = runtime.get<DataGridInstance>(root, "data-grid") as DataGridInstance;
+    const chart = chartParts(host);
+    expect(chart.figure.getAttribute("data-ok-type")).toBe("donut");
+    instance.setChartModel({ type: "bar", values: ["units", "revenue"], colors: ["success"] });
+    expect(chart.head()).toEqual(["CategoryUnitsRevenue"]);
+    expect(chart.figure.hasAttribute("data-ok-horizontal")).toBe(true);
+    expect(
+      [...host.querySelectorAll("[data-ok-data-grid-chart] thead th[data-ok-color]")].map((th) =>
+        th.getAttribute("data-ok-color"),
+      ),
+    ).toEqual(["success", "success"]);
   });
 });
 
