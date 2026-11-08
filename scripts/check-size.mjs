@@ -12,12 +12,16 @@ const budgets = [
   // (`@owlky/html`) is tree-shaken.
   ["packages/html/dist/owlky.js", 52_000, "HTML runtime + all components (IIFE)"],
   ["packages/html/dist/esm/runtime/runtime.js", 3_000, "HTML core runtime"],
+  // The Editor is opt-in (ADR-0023): Tiptap, ProseMirror and its starter kit are about 125 kB of
+  // it; owlky.js stays free of them.
+  ["packages/html/dist/owlky-editor.js", 135_000, "Editor + Tiptap (IIFE, loaded after owlky.js)"],
+  // 30 kB since the Editor (content typography, code blocks, toolbar; about 1.7 kB).
   // 28 kB since the data grid (phase 1); 27 kB after Motion (entrance, loop, draw and border
   // keyframes); 25 kB after the composite
   // inputs, 22 kB after the navigation components, 20 kB after the form, display and list
   // components. Per-component files (`@owlky/styles/components/*`) let apps
   // load only what they use.
-  ["packages/styles/dist/owlky.min.css", 28_000, "All CSS (tokens + components)"],
+  ["packages/styles/dist/owlky.min.css", 30_000, "All CSS (tokens + components)"],
 ];
 
 let failed = false;

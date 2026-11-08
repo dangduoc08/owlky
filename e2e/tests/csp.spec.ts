@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { editorSelected } from "./helpers.js";
 
 /** S6: the shipped CSS, runtime bundle and snippets work under a strict CSP with Trusted Types. */
 test("no CSP or Trusted Types violations", async ({ page }) => {
@@ -40,6 +41,14 @@ test("no CSP or Trusted Types violations", async ({ page }) => {
     .toBe("3");
   await page.getByRole("textbox", { name: "Notes" }).fill("Hello");
   await page.getByRole("switch", { name: "Wi-Fi" }).click();
+  // The Editor (owlky-editor.js, Tiptap) mounts and edits without inline styles or HTML sinks.
+  const story = page.getByRole("textbox", { name: "Story" });
+  await expect(story).toHaveAttribute("contenteditable", "true");
+  await story.focus();
+  await story.locator("em").dblclick();
+  await editorSelected(story);
+  await page.getByRole("button", { name: "Bold" }).click();
+  await expect(story.locator("strong")).toHaveText("this");
   await expect(page.getByRole("switch", { name: "Wi-Fi" })).not.toBeChecked();
   expect(
     await page.evaluate(() => (window as unknown as { violations: string[] }).violations),

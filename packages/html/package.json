@@ -6,6 +6,8 @@
   "type": "module",
   "sideEffects": [
     "./dist/esm/auto.js",
+    "./dist/esm/editor.js",
+    "./dist/owlky-editor.js",
     "./dist/owlky.js",
     "**/*.css"
   ],
@@ -21,7 +23,12 @@
       "types": "./dist/esm/auto.d.ts",
       "import": "./dist/esm/auto.js"
     },
+    "./editor": {
+      "types": "./dist/esm/editor.d.ts",
+      "import": "./dist/esm/editor.js"
+    },
     "./owlky.js": "./dist/owlky.js",
+    "./owlky-editor.js": "./dist/owlky-editor.js",
     "./owlky.css": "./dist/owlky.css",
     "./owlky.min.css": "./dist/owlky.min.css",
     "./snippets/*": "./dist/snippets/*",
@@ -30,7 +37,7 @@
   "unpkg": "./dist/owlky.js",
   "jsdelivr": "./dist/owlky.js",
   "scripts": {
-    "build": "rm -rf dist && tsc -p tsconfig.build.json && vite build && node scripts/copy-assets.mjs",
+    "build": "rm -rf dist && tsc -p tsconfig.build.json && vite build && vite build --mode editor && node scripts/copy-assets.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {

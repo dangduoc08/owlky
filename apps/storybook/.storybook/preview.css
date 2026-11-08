@@ -980,3 +980,44 @@
 .sb-grid-progress > [data-ok-linear-progress] {
   flex: 1;
 }
+
+/* Editor story: the editor and its preview side by side from 900px. */
+.sb-editor-demo {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--ok-spacing) * 4);
+  width: 100%;
+}
+
+.sb-editor-columns {
+  display: grid;
+  gap: calc(var(--ok-spacing) * 6);
+  align-items: start;
+}
+
+@media (min-width: 900px) {
+  .sb-editor-columns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.sb-editor-preview {
+  min-width: 0;
+  border-radius: var(--ok-radius-xl);
+  background-color: var(--ok-bg-paper);
+  box-shadow: var(--ok-shadow-card);
+  overflow: hidden;
+}
+
+.sb-editor-preview > h3 {
+  margin: 0;
+  padding: calc(var(--ok-spacing) * 6);
+  font-size: var(--ok-typography-h6-font-size);
+  font-weight: var(--ok-typography-h6-font-weight);
+  line-height: var(--ok-typography-h6-line-height);
+}
+
+.sb-editor-preview > [data-ok-editor] {
+  border-width: 1px 0 0;
+  border-radius: 0;
+}

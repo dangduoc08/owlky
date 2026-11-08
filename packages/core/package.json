@@ -13,6 +13,10 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
+    "./editor": {
+      "types": "./dist/editor/index.d.ts",
+      "import": "./dist/editor/index.js"
+    },
     "./package.json": "./package.json"
   },
   "scripts": {
@@ -20,7 +24,14 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@owlky/tokens": "workspace:*"
+    "@owlky/tokens": "workspace:*",
+    "@tiptap/core": "3.32.0",
+    "@tiptap/extension-code-block": "3.32.0",
+    "@tiptap/extension-image": "3.32.0",
+    "@tiptap/extension-text-align": "3.32.0",
+    "@tiptap/extensions": "3.32.0",
+    "@tiptap/pm": "3.32.0",
+    "@tiptap/starter-kit": "3.32.0"
   },
   "publishConfig": {
     "access": "public",

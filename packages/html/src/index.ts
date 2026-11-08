@@ -23,6 +23,12 @@ export type {
   DrawerCloseReason,
   DrawerInstance,
 } from "./components/drawer/drawer.js";
+export {
+  type CreateEditorOptions,
+  createEditor,
+  type EditorInstance,
+  editor,
+} from "./components/editor/editor.js";
 export { components } from "./components/index.js";
 export type { PaginationInstance } from "./components/pagination/pagination.js";
 export type { SortableInstance } from "./components/sortable/sortable.js";

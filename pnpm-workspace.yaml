@@ -14,3 +14,10 @@ overrides:
   # @tmcp/adapter-valibot 0.1.7 (both 2026-10-26). Remove both lines after 2026-11-09.
   "@storybook/addon-mcp>tmcp": "1.20.0"
   "@storybook/addon-mcp>@tmcp/adapter-valibot": "0.1.6"
+  # Release age (deps ≥ 14 days): Tiptap 3.32.0 (Editor, ADR-0023) resolves ProseMirror releases
+  # from 2026-10-30 to 2026-11-04 (view and transform also through the other prosemirror-* packages).
+  # Remove these four lines after 2026-11-18.
+  "prosemirror-view": "1.42.8"
+  "prosemirror-transform": "1.12.4"
+  "@tiptap/pm>prosemirror-changeset": "2.4.4"
+  "@tiptap/pm>prosemirror-schema-list": "1.5.1"

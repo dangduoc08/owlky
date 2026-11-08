@@ -5,7 +5,7 @@ and a review before the next starts.
 
 ## Overview
 Every page of the reference's component menu (`https://minimals.cc/components/…`) and where it
-stands. ✅ = built (35); *wave N* = planned, see "Next — components"; *not planned* = a pattern
+stands. ✅ = built (36); *wave N* = planned, see "Next — components"; *not planned* = a pattern
 or app-level page. *Section* = the heading below with the details. Update this table with each
 component and each `/integrate` run.
 
@@ -53,7 +53,7 @@ component and each `/integrate` run.
 | Extra | Carousel | wave 7 (ADR) | — | Next |
 | Extra | Chart | wave 7 (ADR) | — | Next |
 | Extra | Dnd | ✅ | Sortable | Sortable |
-| Extra | Editor | wave 7 (ADR) | — | Next |
+| Extra | Editor | ✅ (ADR-0023, Tiptap) | Editor | Editor |
 | Extra | Form validation | not planned | — | Next |
 | Extra | Form wizard | not planned | — | Next |
 | Extra | Image | wave 7 (ADR) | — | Next |
@@ -388,6 +388,7 @@ integrate these in the same review (additive: no DOM or API change) and remove t
 
 | Waiting for | Where | Today |
 |---|---|---|
+| Markdown | Editor story "Preview" (the reference renders the HTML with its Markdown component) | a read-only Editor (`editable={false}`) |
 | Typography (display text) | Sortable stories (card numbers) | demo `<span>` styled in `.storybook/preview.css` |
 | Typography (heading / secondary text) | Accordion summaries (plain text, no secondary line from the reference) | summary text styled by `accordion.css` |
 | Typography (heading) | Scrollbar "Layout" story heading | demo `<h4>` styled in `.storybook/preview.css` |
@@ -407,6 +408,15 @@ integrate these in the same review (additive: no DOM or API change) and remove t
 | Typography + Paper (card) | Timeline story "Customized" (cards with a title and text) | demo `.sb-timeline-card` styled in `.storybook/preview.css` |
 | Typography (body text) | Autocomplete stories (output lines under the fields) | demo `p` styled in `.storybook/preview.css` |
 | Collapse (transition) | Tree view groups | open / close at once (`hidden`); MUI X collapses them |
+
+## ✅ Components — Editor (2026-11-08)
+Created with `/component` from the reference "Editor" page (one story: the editor, a "Full item"
+switch and a live preview). Built on Tiptap 3 (ADR-0023, the first runtime dependency): one core
+controller (`@owlky/core/editor`) for React and HTML, opt-in HTML entry (`@owlky/html/editor`,
+`owlky-editor.js`), lowlight-compatible `highlighter` for code blocks. Composes Menu (heading),
+Popover + TextField + Button (link and image forms). No new tokens.
+**Backlog (deferred):** Tiptap `extensions` / `editorProps` pass-through, bubble menu, tables,
+mentions, task lists, a form `name` (hidden input with the HTML), character count.
 
 ## ✅ Upstream API review (ADR-0015, 2026-11-04)
 Components checked against their upstream API (MUI). Rule from the owner: what the Minimals page
@@ -433,7 +443,7 @@ Dependency-first: leaf components before the ones built from them, the ones that
 | 4 Overlays | ~~Popover~~ ✅, ~~Tooltip~~ ✅, ~~Menu~~ ✅, ~~Dialog~~ ✅, ~~Snackbar~~ ✅, ~~Backdrop~~ ✅ | ~~Drawer / Dialog backdrop~~ ✅ (native `::backdrop`, same token); icon button tooltips: nothing to change (MUI uses native `title` there; Tooltip wraps any IconButton) |
 | 5 Navigation | ~~Tabs~~ ✅, ~~Breadcrumbs~~ ✅, ~~Stepper~~ ✅ | — (nothing waited for them) |
 | 6 Composites | ~~Rating~~ ✅, ~~Slider~~ ✅, ~~Timeline~~ ✅, ~~Transfer list~~ ✅, ~~Autocomplete~~ ✅, ~~Tree view~~ ✅ | — (nothing waited for them; Slider unblocks the SettingsDrawer backlog of Theme settings) |
-| 7 Needs an ADR | ~~Data grid~~ (ADR-0020, phases below), Date pickers, Chart, Map, Editor, Carousel, Lightbox, Markdown, Organization chart, Upload, Image, Walktour | — |
+| 7 Needs an ADR | ~~Data grid~~ (ADR-0020, phases below), Date pickers, Chart, Map, ~~Editor~~ (ADR-0023) ✅, Carousel, Lightbox, Markdown, Organization chart, Upload, Image, Walktour | — |
 
 Not planned as components (patterns or app-level pages of the reference): Layout,
 Utilities, Multi-language, Navigation bar, Mega menu, Scroll progress, Form validation, Form wizard.

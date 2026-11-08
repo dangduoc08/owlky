@@ -26,5 +26,6 @@ ADR that supersedes the old one — don't rewrite history.
 | [0019](0019-component-docs-pages.md) | A usage guide page for every component | Accepted |
 | [0020](0020-data-grid.md) | Data grid: one grid engine in core, every MUI X tier, built in phases | Accepted (phase table superseded by 0021) |
 | [0021](0021-data-grid-six-phases.md) | Data grid: the backlog folded into six phases | Accepted |
+| [0023](0023-editor-on-tiptap.md) | Editor: Tiptap as the first runtime dependency, behind its own entry points | Accepted |
 
 Template: **Context** (why decide) · **Decision** (what) · **Consequences** (trade-offs, follow-ups).

@@ -80,6 +80,13 @@ Then paste component snippets (Storybook HTML/* pages). Components
 inserted later (htmx, Turbo, `innerHTML`) are initialized automatically and cleaned up when
 removed. Loading the script twice is harmless.
 
+The **Editor** is a separate script, because its editing engine (Tiptap) adds about 125 kB gzip.
+Load it after `owlky.js` on pages that have an editor:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky-editor.js" defer></script>
+```
+
 ## npm
 
 ```ts
@@ -89,6 +96,11 @@ import "@owlky/html/auto"; // everything, started
 // or à la carte, side-effect free:
 import { components, getRuntime } from "@owlky/html";
 getRuntime().register(...components).start();
+
+// The Editor is opt-in: import "@owlky/html/editor", or register it with a code highlighter.
+import { createEditor } from "@owlky/html";
+import { common, createLowlight } from "lowlight";
+getRuntime().register(createEditor({ highlighter: createLowlight(common) })).start();
 ```
 
 ## Runtime API

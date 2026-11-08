@@ -11,7 +11,12 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       include: ["packages/*/src/**/*.{ts,tsx}"],
-      exclude: ["**/*.test.{ts,tsx}", "**/test-utils.{ts,tsx}", "packages/html/src/cdn.ts"],
+      exclude: [
+        "**/*.test.{ts,tsx}",
+        "**/test-utils.{ts,tsx}",
+        "packages/html/src/cdn.ts",
+        "packages/html/src/cdn-editor.ts",
+      ],
       reporter: ["text-summary", "text"],
       // Component floor (see .claude/commands/component.md → Coverage matrix). Add each new
       // component's files here.
@@ -39,6 +44,9 @@ export default defineConfig({
         "packages/core/src/autocomplete/**": COMPONENT_THRESHOLDS,
         "packages/core/src/motion/**": COMPONENT_THRESHOLDS,
         "packages/core/src/data-grid/**": COMPONENT_THRESHOLDS,
+        "packages/core/src/editor/**": COMPONENT_THRESHOLDS,
+        "packages/react/src/editor/**": COMPONENT_THRESHOLDS,
+        "packages/html/src/components/editor/**": COMPONENT_THRESHOLDS,
         "packages/react/src/accordion/**": COMPONENT_THRESHOLDS,
         "packages/react/src/alert/**": COMPONENT_THRESHOLDS,
         "packages/react/src/avatar/**": COMPONENT_THRESHOLDS,

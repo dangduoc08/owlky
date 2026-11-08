@@ -148,7 +148,7 @@
       }
     },
     {
-      "includes": ["packages/html/src/components/*/examples/**"],
+      "includes": ["packages/html/src/components/*/examples/**", "examples/csp/**"],
       "linter": {
         "rules": {
           "a11y": {

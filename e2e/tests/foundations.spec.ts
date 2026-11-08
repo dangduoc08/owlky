@@ -150,6 +150,7 @@ const GUIDES = [
   ["components-autocomplete--docs", "Accessibility"],
   ["components-motion--docs", "Accessibility"],
   ["components-datagrid--docs", "Accessibility"],
+  ["components-editor--docs", "Accessibility"],
 ] as const;
 
 /** Component docs pages and their option schema: the Options table lists every option. */
@@ -158,6 +159,7 @@ const OPTION_TABLES: [string, (keyof typeof optionSchemas)[]][] = [
   ["components-alert--docs", ["alert"]],
   ["components-avatar--docs", ["avatar", "avatar-group"]],
   ["components-badge--docs", ["badge"]],
+  ["components-editor--docs", ["editor"]],
   ["components-button-button--docs", ["button"]],
   ["components-checkbox--docs", ["checkbox", "form-control-label"]],
   ["components-chip--docs", ["chip"]],

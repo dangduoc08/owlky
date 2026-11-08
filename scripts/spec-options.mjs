@@ -66,6 +66,7 @@ const SPECS = {
   "count-up": "motion.md",
   "motion-border": "motion.md",
   "data-grid": "data-grid.md",
+  editor: "editor.md",
 };
 
 const code = (value) => `\`${value}\``;

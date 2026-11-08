@@ -201,11 +201,19 @@ const pairs: [component: string, story: string][] = [
   ["snackbar", "custom"],
   ["snackbar", "anchor-origin"],
   ["backdrop", "example"],
+  ["editor", "basic"],
 ];
 
 /** Stories whose rows load after the first render (scripts, data sources): wait for them. */
 const LOADS = new Set(["datagrid/large", "datagrid/server"]);
 async function loaded(page: Page, key: string) {
+  if (key === "editor/basic") {
+    // The HTML story registers the editor in its page script: wait for both editors to mount.
+    await expect(page.locator('[data-ok-editor-content][contenteditable="true"]')).toHaveCount(1);
+    await expect(page.locator('[data-ok-editor-content][contenteditable="false"]')).toHaveCount(1);
+    await expect(page.locator(".hljs-keyword").first()).toBeVisible();
+    return;
+  }
   if (!LOADS.has(key)) return;
   const grid = page.getByRole("grid");
   await expect(grid.locator('[data-ok-data-grid-body] > [role="row"]').first()).toBeVisible();

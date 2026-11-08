@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import type { Page } from "@playwright/test";
+import { expect, type Locator, type Page } from "@playwright/test";
 
 export type Implementation = "react" | "html";
 export const implementations: Implementation[] = ["react", "html"];
@@ -211,4 +211,18 @@ export const CONTRAST_EXEMPT = [
   "[data-swatch]",
   '[data-ok-list-subheader][data-ok-color="primary"]',
   '[data-ok-tabs]:not([data-ok-text-color="inherit"]) [role="tab"][aria-selected="true"]',
+  "[data-ok-editor-content] a",
 ];
+
+/** Waits until ProseMirror has read the DOM selection (WebKit reports it on a later task). */
+export async function editorSelected(textbox: Locator) {
+  await expect
+    .poll(() =>
+      textbox.evaluate(
+        (element) =>
+          (element as unknown as { editor: { state: { selection: { empty: boolean } } } }).editor
+            .state.selection.empty,
+      ),
+    )
+    .toBe(false);
+}

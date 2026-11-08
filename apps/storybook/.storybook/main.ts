@@ -22,9 +22,11 @@ const config: StorybookConfig = {
         // verified separately (examples/, check:packages, e2e plain-html test).
         alias: [
           { find: /^@owlky\/core$/, replacement: pkg("core/src/index.ts") },
+          { find: /^@owlky\/core\/editor$/, replacement: pkg("core/src/editor/index.ts") },
           { find: /^@owlky\/react$/, replacement: pkg("react/src/index.ts") },
           { find: /^@owlky\/html$/, replacement: pkg("html/src/index.ts") },
           { find: /^@owlky\/html\/auto$/, replacement: pkg("html/src/auto.ts") },
+          { find: /^@owlky\/html\/editor$/, replacement: pkg("html/src/editor.ts") },
           { find: /^@snippets\//, replacement: `${pkg("html/src/components")}/` },
         ],
       },

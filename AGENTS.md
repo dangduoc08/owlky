@@ -371,3 +371,12 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
   start one runtime only (a second `start()` leaks a runtime that also sets up later grids).
   `TablePagination.setRowsPerPage` fires its change event synchronously (the grid's listener
   resets the page): read the target page before calling it.
+- Editor (ADR-0023): Tiptap is reached only through `@owlky/core/editor` (Storybook aliases it)
+  and the opt-in HTML entries (`@owlky/html/editor`, `owlky-editor.js`): `editor` isn't in
+  `components` (`OPT_IN` in `components.test.ts`), so `owlky.js` stays free of ProseMirror. The
+  controller mounts on `[data-ok-editor-content]` itself (`element: { mount }`) with
+  `injectCSS: false` (Tiptap's `<style>` uses `innerHTML`). Tiptap's trailing node appends `<p></p>`
+  after a final heading / code block: expected values in tests include it. ProseMirror marks
+  Escape as handled, so don't gate on `defaultPrevented`. Forms in popovers need `noValidate`
+  (`type="url"` validation blocks `submit` silently) and no `method="dialog"` (outside a
+  `<dialog>`, Chrome fires no `submit`).

@@ -11,6 +11,7 @@
     <title>Owlky — strict CSP check</title>
     <link rel="stylesheet" href="../../packages/html/dist/owlky.css" />
     <script src="../../packages/html/dist/owlky.js" defer></script>
+    <script src="../../packages/html/dist/owlky-editor.js" defer></script>
   </head>
   <body>
     <main>
@@ -50,6 +51,29 @@
         <div data-ok-text-field-control>
           <textarea id="csp-notes" data-ok-text-field-input rows="1" placeholder=" "></textarea>
           <fieldset data-ok-text-field-outline aria-hidden="true"><legend><span>Notes</span></legend></fieldset>
+        </div>
+      </div>
+      <figure data-ok-chart data-ok-type="area" data-ok-x-type="category" data-ok-curve="smooth" data-ok-legend="top" data-ok-fill="gradient">
+        <table data-ok-chart-data>
+          <caption>Visits</caption>
+          <thead><tr><th scope="col">Day</th><th scope="col">Mobile</th><th scope="col">Desktop</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Mon</th><td>12</td><td>30</td></tr>
+            <tr><th scope="row">Tue</th><td>18</td><td>26</td></tr>
+            <tr><th scope="row">Wed</th><td>25</td><td>31</td></tr>
+          </tbody>
+        </table>
+      </figure>
+      <div data-ok-editor>
+        <div data-ok-editor-toolbar role="toolbar" aria-label="Formatting" aria-controls="csp-editor">
+          <div data-ok-editor-group>
+            <button type="button" data-ok-editor-action="bold" aria-label="Bold" aria-pressed="false" tabindex="-1">B</button>
+          </div>
+        </div>
+        <div data-ok-editor-body>
+          <div data-ok-editor-content id="csp-editor" role="textbox" aria-multiline="true" aria-label="Story">
+            <p>Edit <em>this</em> text.</p>
+          </div>
         </div>
       </div>
       <a href="/docs" data-ok-button data-ok-variant="text" data-ok-color="inherit" data-ok-size="md">

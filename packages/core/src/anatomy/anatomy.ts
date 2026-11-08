@@ -2296,6 +2296,40 @@ export const dataGridAttributes = (options: DataGridAnatomyOptions = {}): DataAt
   optionAttributes(dataGridOptions, { ...options });
 
 /** Every component's option schema, for tooling (Storybook Controls, parity tests, docs). */
+// --- Editor (ADR-0023) --------------------------------------------------------------------------
+
+export const editorOptions = defineOptions("editor", "data-ok-editor", {
+  fullItem: flag(
+    "data-ok-full-item",
+    "Every toolbar group: adds code, code block, blockquote, horizontal rule, undo and redo.",
+  ),
+  error: flag(
+    "data-ok-error",
+    "Error state: red border and helper text, `aria-invalid` on the textbox.",
+  ),
+  editable: behavior(
+    "data-ok-editable",
+    true,
+    "The content can be changed (`false`: read only, toolbar disabled).",
+  ),
+  fullscreen: state(
+    "data-ok-fullscreen",
+    "Fills the viewport (the toolbar's Fullscreen button, Escape leaves).",
+    "fullscreen",
+  ),
+  value: state(
+    "data-ok-editor-content",
+    "The content: markup inside the content element.",
+    "change",
+  ),
+});
+
+export type EditorAnatomyOptions = { fullItem?: boolean | undefined; error?: boolean | undefined };
+
+/** `data-ok-*` attributes of an editor root. */
+export const editorAttributes = (options: EditorAnatomyOptions = {}): DataAttributes =>
+  optionAttributes(editorOptions, { ...options });
+
 export const optionSchemas = {
   accordion: accordionOptions,
   alert: alertOptions,
@@ -2358,4 +2392,5 @@ export const optionSchemas = {
   "count-up": countUpOptions,
   "motion-border": motionBorderOptions,
   "data-grid": dataGridOptions,
+  editor: editorOptions,
 } as const;

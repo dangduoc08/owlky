@@ -32,6 +32,7 @@ import {
   dividerVariants,
   drawerAnchors,
   drawerAttributes,
+  editorAttributes,
   fabAttributes,
   fabColors,
   fabSizes,
@@ -1404,5 +1405,17 @@ describe("overlay attributes", () => {
       "data-ok-quick-filter-exclude-hidden-columns": "",
       "data-ok-ignore-diacritics": "",
     });
+  });
+});
+
+describe("editorAttributes", () => {
+  it("writes the root and the flags that are on", () => {
+    expect(editorAttributes()).toEqual({ "data-ok-editor": "" });
+    expect(editorAttributes({ fullItem: true, error: true })).toEqual({
+      "data-ok-editor": "",
+      "data-ok-full-item": "",
+      "data-ok-error": "",
+    });
+    expect(editorAttributes({ fullItem: false })).toEqual({ "data-ok-editor": "" });
   });
 });
