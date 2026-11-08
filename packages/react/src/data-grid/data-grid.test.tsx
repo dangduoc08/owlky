@@ -440,4 +440,311 @@ describe("DataGrid", () => {
     );
     await expectNoAxeViolations();
   });
+
+  describe("phase 2", () => {
+    interface Item {
+      id: number;
+      name: string;
+      qty: number;
+      kind: string;
+      ok: boolean;
+    }
+    const ITEMS: Item[] = [
+      { id: 1, name: "Bolt", qty: 4, kind: "metal", ok: true },
+      { id: 2, name: "Nut", qty: 9, kind: "metal", ok: false },
+      { id: 3, name: "Cork", qty: 2, kind: "wood", ok: true },
+    ];
+    const EDIT: GridColDef<Item>[] = [
+      { field: "name", headerName: "Name", editable: true, width: 120 },
+      { field: "qty", headerName: "Qty", type: "number", editable: true },
+      {
+        field: "kind",
+        headerName: "Kind",
+        type: "singleSelect",
+        valueOptions: ["metal", "wood"],
+        editable: true,
+      },
+      { field: "ok", headerName: "OK", type: "boolean", editable: true, resizable: false },
+      { field: "label", headerName: "Label", valueGetter: (row) => row.name, editable: true },
+    ];
+    const cellOf = (rowId: string, field: string) =>
+      grid().querySelector(`[data-ok-row-id="${rowId}"] [data-ok-field="${field}"]`) as HTMLElement;
+    const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
+
+    it("multi filters: add, logic and / or, remove", async () => {
+      const onFilterModelChange = vi.fn();
+      render(
+        <DataGrid
+          id="m"
+          aria-label="Items"
+          rows={ITEMS}
+          columns={EDIT}
+          showToolbar
+          onFilterModelChange={onFilterModelChange}
+        />,
+      );
+      await userEvent.click(screen.getByRole("button", { name: "Filters" }));
+      const panel = screen.getByRole("group", { name: "Filters" });
+      await userEvent.type(within(panel).getByLabelText("Value"), "o");
+      await userEvent.click(within(panel).getByRole("button", { name: "Add filter" }));
+      const second = panel.querySelectorAll("[data-ok-data-grid-filter]")[1] as HTMLElement;
+      await userEvent.selectOptions(within(second).getByLabelText("Columns"), "qty");
+      await userEvent.selectOptions(within(second).getByLabelText("Operator"), ">");
+      await userEvent.type(within(second).getByLabelText("Value"), "3");
+      // Name contains "o" and quantity above 3.
+      expect(names()).toEqual(["Bolt"]);
+      await userEvent.selectOptions(within(second).getByLabelText("Logic operator"), "or");
+      expect(names()).toEqual(["Bolt", "Nut", "Cork"]);
+      expect(onFilterModelChange).toHaveBeenLastCalledWith(
+        expect.objectContaining({ logicOperator: "or" }),
+      );
+      await userEvent.click(within(panel).getByRole("button", { name: "Add filter" }));
+      expect(
+        (
+          within(
+            panel.querySelectorAll("[data-ok-data-grid-filter]")[2] as HTMLElement,
+          ).getByLabelText("Logic operator") as HTMLSelectElement
+        ).disabled,
+      ).toBe(true);
+      for (const remove of within(panel)
+        .getAllByRole("button", { name: "Remove filter" })
+        .reverse())
+        await userEvent.click(remove);
+      expect(onFilterModelChange).toHaveBeenLastCalledWith(expect.objectContaining({ items: [] }));
+      expect(panel.querySelectorAll("[data-ok-data-grid-filter]")).toHaveLength(1);
+    });
+
+    it("resizing: handle drag, Alt + arrows; not for unresizable columns or when disabled", async () => {
+      const onColumnWidthChange = vi.fn();
+      const { rerender } = render(
+        <DataGrid
+          aria-label="Items"
+          rows={ITEMS}
+          columns={EDIT}
+          onColumnWidthChange={onColumnWidthChange}
+        />,
+      );
+      const handle = header(/^Name/).querySelector("[data-ok-data-grid-resize]") as HTMLElement;
+      expect(header(/^OK/).querySelector("[data-ok-data-grid-resize]")).toBeNull();
+      expect(header(/^OK/).getAttribute("data-ok-resizable")).toBe("false");
+      const x = handle.getBoundingClientRect().left;
+      act(() => {
+        handle.dispatchEvent(
+          new PointerEvent("pointerdown", { bubbles: true, clientX: x, button: 0 }),
+        );
+        document.dispatchEvent(new PointerEvent("pointermove", { bubbles: true, clientX: x + 30 }));
+        document.dispatchEvent(new PointerEvent("pointerup", { bubbles: true, clientX: x + 40 }));
+      });
+      expect(onColumnWidthChange).toHaveBeenCalledWith("name", 160);
+      expect(grid().style.getPropertyValue("--_ok-data-grid-columns").startsWith("160px")).toBe(
+        true,
+      );
+      fireEvent.click(header(/^Name/));
+      expect(header(/^Name/).getAttribute("aria-sort")).toBe("none");
+      act(() => header(/^Name/).focus());
+      await userEvent.keyboard("{Alt>}{ArrowLeft}{/Alt}");
+      expect(onColumnWidthChange).toHaveBeenLastCalledWith("name", 150);
+      act(() => header(/^OK/).focus());
+      await userEvent.keyboard("{Alt>}{ArrowRight}{/Alt}");
+      expect(onColumnWidthChange).toHaveBeenCalledTimes(2);
+      rerender(
+        <DataGrid
+          aria-label="Items"
+          rows={ITEMS}
+          columns={EDIT}
+          disableColumnResize
+          onColumnWidthChange={onColumnWidthChange}
+        />,
+      );
+      expect(grid().querySelector("[data-ok-data-grid-resize]")).toBeNull();
+    });
+
+    it("reordering by drag and by the column menu; pinning from the menu", async () => {
+      const onColumnOrderChange = vi.fn();
+      const onPinnedColumnsChange = vi.fn();
+      render(
+        <DataGrid
+          aria-label="Items"
+          rows={ITEMS}
+          columns={EDIT}
+          onColumnOrderChange={onColumnOrderChange}
+          onPinnedColumnsChange={onPinnedColumnsChange}
+          initialState={{ columns: { dimensions: { name: { width: 90 } } } }}
+        />,
+      );
+      expect(grid().style.getPropertyValue("--_ok-data-grid-columns").startsWith("90px")).toBe(
+        true,
+      );
+      const qty = header(/^Qty/);
+      const kindBox = header(/^Kind/).getBoundingClientRect();
+      act(() => {
+        qty.dispatchEvent(
+          new PointerEvent("pointerdown", {
+            bubbles: true,
+            clientX: qty.getBoundingClientRect().left + 5,
+            clientY: kindBox.top + 5,
+            button: 0,
+          }),
+        );
+        document.dispatchEvent(
+          new PointerEvent("pointermove", {
+            bubbles: true,
+            clientX: kindBox.left + 20,
+            clientY: kindBox.top + 5,
+          }),
+        );
+        document.dispatchEvent(
+          new PointerEvent("pointerup", {
+            bubbles: true,
+            clientX: kindBox.left + 20,
+            clientY: kindBox.top + 5,
+          }),
+        );
+      });
+      expect(onColumnOrderChange).toHaveBeenLastCalledWith(["name", "kind", "qty", "ok", "label"]);
+      const openMenu = async (name: RegExp, field: string) => {
+        await userEvent.hover(header(name));
+        await userEvent.click(screen.getByRole("button", { name: `${field} column menu` }));
+      };
+      await openMenu(/^Name/, "Name");
+      expect(
+        screen.getByRole("menuitem", { name: "Move left" }).getAttribute("aria-disabled"),
+      ).toBe("true");
+      await userEvent.click(screen.getByRole("menuitem", { name: "Move right" }));
+      expect(onColumnOrderChange).toHaveBeenLastCalledWith(["kind", "name", "qty", "ok", "label"]);
+      await openMenu(/^Label/, "Label");
+      expect(
+        screen.getByRole("menuitem", { name: "Move right" }).getAttribute("aria-disabled"),
+      ).toBe("true");
+      await userEvent.click(screen.getByRole("menuitem", { name: "Move left" }));
+      await openMenu(/^Qty/, "Qty");
+      expect(screen.getByRole("menuitem", { name: "Unpin" }).getAttribute("aria-disabled")).toBe(
+        "true",
+      );
+      await userEvent.click(screen.getByRole("menuitem", { name: "Pin to left" }));
+      expect(onPinnedColumnsChange).toHaveBeenLastCalledWith({ left: ["qty"], right: [] });
+      expect(header(/^Qty/).getAttribute("data-ok-pinned")).toBe("left");
+      expect(header(/^Qty/).style.getPropertyValue("--_ok-data-grid-pin")).toBe("0px");
+      expect(getComputedStyle(header(/^Qty/)).position).toBe("sticky");
+      await openMenu(/^OK/, "OK");
+      await userEvent.click(screen.getByRole("menuitem", { name: "Pin to right" }));
+      expect(header(/^OK/).getAttribute("data-ok-pinned")).toBe("right");
+      await openMenu(/^Qty/, "Qty");
+      await userEvent.click(screen.getByRole("menuitem", { name: "Unpin" }));
+      expect(header(/^Qty/).hasAttribute("data-ok-pinned")).toBe(false);
+    });
+
+    it("left pinning pins the checkbox column too; flags hide the menu items", () => {
+      render(
+        <DataGrid
+          aria-label="Items"
+          rows={ITEMS}
+          columns={EDIT}
+          checkboxSelection
+          pinnedColumns={{ left: ["qty"] }}
+          disableColumnReorder
+          disableColumnPinning
+        />,
+      );
+      expect(
+        grid()
+          .querySelector('[role="columnheader"][data-ok-field="__check__"]')
+          ?.getAttribute("data-ok-pinned"),
+      ).toBe("left");
+      expect(screen.getAllByRole("columnheader")[1]?.getAttribute("data-ok-field")).toBe("qty");
+    });
+
+    it("cell editing: double click / Enter / F2, Enter commits, Escape cancels, blur commits", async () => {
+      const processRowUpdate = vi.fn((row: Item) => ({ ...row, name: row.name.toUpperCase() }));
+      render(
+        <DataGrid
+          aria-label="Items"
+          rows={ITEMS}
+          columns={EDIT}
+          processRowUpdate={processRowUpdate}
+        />,
+      );
+      expect(header(/^Name/).hasAttribute("data-ok-editable")).toBe(true);
+      expect(header(/^Label/).hasAttribute("data-ok-editable")).toBe(false);
+      expect(header(/^Kind/).getAttribute("data-ok-value-options")).toBe('["metal","wood"]');
+      await userEvent.dblClick(cellOf("1", "name"));
+      const input = screen.getByRole("textbox", { name: "Edit Name" }) as HTMLInputElement;
+      expect(document.activeElement).toBe(input);
+      expect(cellOf("1", "name").hasAttribute("data-ok-editing")).toBe(true);
+      await userEvent.clear(input);
+      await userEvent.type(input, "screw{Enter}");
+      await act(settle);
+      expect(processRowUpdate).toHaveBeenCalledWith({ ...ITEMS[0], name: "screw" }, ITEMS[0]);
+      expect(cellOf("1", "name").textContent).toBe("SCREW");
+      expect(document.activeElement).toBe(cellOf("1", "name"));
+      act(() => cellOf("2", "qty").focus());
+      await userEvent.keyboard("{F2}");
+      await userEvent.keyboard("{Control>}a{/Control}12{Escape}");
+      expect(cellOf("2", "qty").textContent).toBe("9");
+      act(() => cellOf("2", "kind").focus());
+      await userEvent.keyboard("{Enter}");
+      await userEvent.selectOptions(screen.getByRole("combobox", { name: "Edit Kind" }), "wood");
+      act(() => cellOf("3", "name").focus());
+      await act(settle);
+      expect(cellOf("2", "kind").textContent).toBe("wood");
+      await userEvent.dblClick(cellOf("3", "ok"));
+      await userEvent.click(screen.getByRole("checkbox", { name: "Edit OK" }));
+      await userEvent.keyboard("{Enter}");
+      await act(settle);
+      expect(cellOf("3", "ok").textContent).toBe("false");
+      // Not editable: a computed column.
+      await userEvent.dblClick(cellOf("1", "label"));
+      expect(screen.queryByRole("textbox", { name: "Edit Label" })).toBeNull();
+    });
+
+    it("row editing: every editable cell; refused updates keep the row; new rows drop the edits", async () => {
+      const onProcessRowUpdateError = vi.fn();
+      const { rerender } = render(
+        <DataGrid
+          aria-label="Items"
+          rows={ITEMS}
+          columns={EDIT}
+          editMode="row"
+          processRowUpdate={() => Promise.reject(new Error("no"))}
+          onProcessRowUpdateError={onProcessRowUpdateError}
+        />,
+      );
+      await userEvent.dblClick(cellOf("1", "qty"));
+      expect(grid().querySelector('[data-ok-row-id="1"]')?.hasAttribute("data-ok-editing")).toBe(
+        true,
+      );
+      expect(screen.getAllByRole("textbox")).toHaveLength(1);
+      expect(screen.getByRole("spinbutton", { name: "Edit Qty" })).toBeTruthy();
+      await userEvent.tab();
+      expect(grid().querySelector("[data-ok-data-grid-edit-input]")).not.toBeNull();
+      await userEvent.keyboard("{Enter}");
+      await act(settle);
+      expect(onProcessRowUpdateError).toHaveBeenCalled();
+      expect(cellOf("1", "name").textContent).toBe("Bolt");
+      rerender(<DataGrid aria-label="Items" rows={ITEMS} columns={EDIT} editMode="row" />);
+      await userEvent.dblClick(cellOf("2", "name"));
+      await userEvent.type(screen.getByRole("textbox", { name: "Edit Name" }), "!{Enter}");
+      await act(settle);
+      expect(cellOf("2", "name").textContent).toBe("Nut!");
+      rerender(<DataGrid aria-label="Items" rows={[...ITEMS]} columns={EDIT} editMode="row" />);
+      await act(settle);
+      expect(cellOf("2", "name").textContent).toBe("Nut");
+    });
+
+    it("print exports the grid through a frame", async () => {
+      const print = vi.fn();
+      const append = document.body.append.bind(document.body);
+      vi.spyOn(document.body, "append").mockImplementation((...nodes) => {
+        append(...nodes);
+        for (const node of nodes)
+          if (node instanceof HTMLIFrameElement) (node.contentWindow as Window).print = print;
+      });
+      render(<DataGrid aria-label="Items" rows={ITEMS} columns={EDIT} showToolbar />);
+      await userEvent.click(screen.getByRole("button", { name: "Export" }));
+      await userEvent.click(screen.getByRole("menuitem", { name: "Print" }));
+      expect(print).toHaveBeenCalled();
+      expect(document.querySelector("iframe")?.contentDocument?.title).toBe("Items");
+      document.querySelector("iframe")?.remove();
+    });
+  });
 });

@@ -8,6 +8,7 @@ import { normalizeStory, openStory, storyId } from "./helpers.js";
 const pairs: [component: string, story: string][] = [
   ["datagrid", "basic"],
   ["datagrid", "custom"],
+  ["datagrid", "advanced"],
   ["motion", "in-view"],
   ["motion", "text"],
   ["motion", "scroll"],

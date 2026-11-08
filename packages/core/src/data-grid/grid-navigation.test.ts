@@ -112,6 +112,47 @@ describe("createGridNavigation", () => {
     expect(press(grid, "ArrowDown")).toBe(true);
   });
 
+  it("Enter / F2 on a cell edits; Alt + arrows on a header resize", () => {
+    const host = mount(GRID);
+    const grid = host.querySelector<HTMLElement>("#g") as HTMLElement;
+    const onEdit = vi.fn();
+    const onResizeKey = vi.fn();
+    createGridNavigation(grid, {
+      onSort: vi.fn(),
+      onColumnMenu: vi.fn(),
+      onToggleRow: vi.fn(),
+      onSelectAll: vi.fn(),
+      onEdit,
+      onResizeKey,
+    });
+    const cell = grid.querySelectorAll<HTMLElement>('[role="gridcell"]')[1] as HTMLElement;
+    press(cell, "Enter");
+    press(cell, "F2");
+    expect(onEdit).toHaveBeenCalledTimes(2);
+    const header = grid.querySelector<HTMLElement>('[data-ok-field="name"]') as HTMLElement;
+    press(header, "ArrowLeft", { altKey: true });
+    press(header, "ArrowRight", { altKey: true });
+    expect(onResizeKey.mock.calls).toEqual([
+      ["name", -10],
+      ["name", 10],
+    ]);
+    // Without the handlers: nothing happens.
+    const plain = mount(GRID).querySelector<HTMLElement>("#g") as HTMLElement;
+    createGridNavigation(plain, {
+      onSort: vi.fn(),
+      onColumnMenu: vi.fn(),
+      onToggleRow: vi.fn(),
+      onSelectAll: vi.fn(),
+    });
+    const other = plain.querySelectorAll<HTMLElement>('[role="gridcell"]')[1] as HTMLElement;
+    expect(press(other, "Enter")).toBe(true);
+    expect(
+      press(plain.querySelector('[data-ok-field="name"]') as Element, "ArrowLeft", {
+        altKey: true,
+      }),
+    ).toBe(false);
+  });
+
   it("sync restores a tab stop after re-rendering; destroy stops listening", () => {
     const { grid, nav, spies } = setup();
     const name = grid.querySelectorAll<HTMLElement>('[role="gridcell"]')[1] as HTMLElement;

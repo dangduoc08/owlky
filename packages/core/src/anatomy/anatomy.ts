@@ -2156,6 +2156,19 @@ export const dataGridOptions = defineOptions("data-grid", "data-ok-data-grid", {
     "data-ok-disable-multiple-columns-sorting",
     "Shift doesn't add columns to the sort.",
   ),
+  disableMultipleColumnsFiltering: flag(
+    "data-ok-disable-multiple-columns-filtering",
+    "The filter panel keeps one filter (no Add filter).",
+  ),
+  disableColumnResize: flag("data-ok-disable-column-resize", "Columns can't be resized."),
+  disableColumnReorder: flag("data-ok-disable-column-reorder", "Columns can't be moved."),
+  disableColumnPinning: flag("data-ok-disable-column-pinning", "Columns can't be pinned."),
+  editMode: style(
+    "data-ok-edit-mode",
+    ["cell", "row"],
+    "cell",
+    "Editable columns: edit one `cell` at a time, or every editable cell of a `row` together.",
+  ),
 });
 
 export interface DataGridAnatomyOptions {
@@ -2164,6 +2177,11 @@ export interface DataGridAnatomyOptions {
   disableRowSelectionOnClick?: boolean | undefined;
   disableColumnMenu?: boolean | undefined;
   disableMultipleColumnsSorting?: boolean | undefined;
+  disableMultipleColumnsFiltering?: boolean | undefined;
+  disableColumnResize?: boolean | undefined;
+  disableColumnReorder?: boolean | undefined;
+  disableColumnPinning?: boolean | undefined;
+  editMode?: "cell" | "row" | undefined;
 }
 
 /** `data-ok-*` attributes of a data grid root. */

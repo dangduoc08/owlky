@@ -38,6 +38,10 @@ export interface GridColumn {
   hideable?: boolean | undefined;
   /** `singleSelect`: the choices. */
   valueOptions?: readonly string[] | undefined;
+  /** Default true (MUI X: resizing is free since v7). */
+  resizable?: boolean | undefined;
+  /** Cells can be edited (double click, Enter or F2). */
+  editable?: boolean | undefined;
 }
 
 export type GridSortDirection = "asc" | "desc";
@@ -54,6 +58,8 @@ export interface GridFilterItem {
 }
 export interface GridFilterModel {
   items: GridFilterItem[];
+  /** How the items combine (MUI X Pro): every one (`and`, default) or any one (`or`). */
+  logicOperator?: "and" | "or" | undefined;
   /** Words typed in the quick filter: every word must match some column. */
   quickFilterValues?: string[] | undefined;
 }
@@ -80,15 +86,165 @@ const positive = (value: number | undefined, fallback: number) =>
   typeof value === "number" && Number.isFinite(value) && value > 0 ? value : fallback;
 
 /** One track per visible column (`--_ok-data-grid-columns`): px widths, or `minmax(min, Nfr)`. */
-export function gridColumnTemplate(columns: readonly GridColumn[], checkbox: boolean): string {
+export function gridColumnTemplate(
+  columns: readonly GridColumn[],
+  checkbox: boolean,
+  /** Widths set by resizing, px (they replace `width` and `flex`). */
+  widths: GridColumnWidths = {},
+): string {
   const tracks = columns.map((column) => {
     const min = positive(column.minWidth, 50);
+    const resized = widths[column.field];
+    if (resized !== undefined) return `${clampGridWidth(column, resized)}px`;
     if (column.flex !== undefined && positive(column.flex, 0) > 0)
       return `minmax(${min}px, ${positive(column.flex, 1)}fr)`;
     return `${Math.max(positive(column.width, 100), min)}px`;
   });
   return [...(checkbox ? [`${GRID_CHECKBOX_WIDTH}px`] : []), ...tracks].join(" ");
 }
+
+export type GridColumnWidths = Record<string, number>;
+
+/** A resized width: whole pixels, at least the column's `minWidth` (50). */
+export const clampGridWidth = (column: GridColumn, width: number): number =>
+  Math.max(Math.round(Number.isFinite(width) ? width : 0), positive(column.minWidth, 50));
+
+/** Default true; `disableColumnResize` on the grid turns every column off. */
+export const isGridResizable = (column: GridColumn) => column.resizable ?? true;
+
+/** Columns in `order` (fields); fields missing from it keep their place after the ordered ones. */
+export function orderGridColumns<C extends GridColumn>(
+  columns: readonly C[],
+  order: readonly string[] = [],
+): C[] {
+  const rank = (field: string) => {
+    const index = order.indexOf(field);
+    return index < 0 ? order.length : index;
+  };
+  return columns
+    .map((column, index) => ({ column, index }))
+    .sort((a, b) => rank(a.column.field) - rank(b.column.field) || a.index - b.index)
+    .map(({ column }) => column);
+}
+
+/** The field order after moving `field` by `delta` places (or before `to`, a field). */
+export function moveGridColumn(
+  fields: readonly string[],
+  field: string,
+  delta: number | { to: string },
+): string[] {
+  const from = fields.indexOf(field);
+  if (from < 0) return [...fields];
+  const rest = fields.filter((f) => f !== field);
+  const target =
+    typeof delta === "number"
+      ? Math.min(Math.max(from + delta, 0), rest.length)
+      : rest.indexOf(delta.to) < 0
+        ? from
+        : rest.indexOf(delta.to) + (fields.indexOf(delta.to) > from ? 1 : 0);
+  return [...rest.slice(0, target), field, ...rest.slice(target)];
+}
+
+export interface GridPinnedColumns {
+  left?: string[] | undefined;
+  right?: string[] | undefined;
+}
+
+/** Left-pinned columns first, right-pinned last (in the pinned order), the others between. */
+export function arrangeGridColumns<C extends GridColumn>(
+  columns: readonly C[],
+  pinned: GridPinnedColumns = {},
+): C[] {
+  const left = (pinned.left ?? []).flatMap((f) => columns.filter((c) => c.field === f));
+  const right = (pinned.right ?? []).flatMap((f) => columns.filter((c) => c.field === f));
+  const middle = columns.filter((c) => !left.includes(c) && !right.includes(c));
+  return [...left, ...middle, ...right];
+}
+
+/** Side a column is pinned to, if any. */
+export const gridPinSide = (
+  pinned: GridPinnedColumns = {},
+  field: string,
+): "left" | "right" | undefined =>
+  pinned.left?.includes(field) ? "left" : pinned.right?.includes(field) ? "right" : undefined;
+
+/** The pinned model after pinning `field` to `side` (or unpinning it with `null`). */
+export function pinGridColumn(
+  pinned: GridPinnedColumns,
+  field: string,
+  side: "left" | "right" | null,
+): GridPinnedColumns {
+  const left = (pinned.left ?? []).filter((f) => f !== field);
+  const right = (pinned.right ?? []).filter((f) => f !== field);
+  if (side === "left") left.push(field);
+  if (side === "right") right.unshift(field);
+  return { left, right };
+}
+
+/**
+ * Sticky offsets of pinned cells, measured from the header: every cell with `data-ok-pinned`
+ * gets `--_ok-data-grid-pin` (px from its side), written through CSSOM. Run after layout.
+ */
+export function syncGridPinning(grid: HTMLElement): void {
+  const header = grid.querySelector<HTMLElement>('[data-ok-data-grid-header] [role="row"]');
+  if (!header) return;
+  const cells = [...header.querySelectorAll<HTMLElement>('[role="columnheader"]')].filter(
+    (cell) => !cell.hidden,
+  );
+  const offsets = new Map<string, number>();
+  let left = 0;
+  for (const cell of cells.filter((c) => c.getAttribute("data-ok-pinned") === "left")) {
+    offsets.set(cell.getAttribute("data-ok-field") as string, left);
+    left += cell.offsetWidth;
+  }
+  let right = 0;
+  for (const cell of cells.filter((c) => c.getAttribute("data-ok-pinned") === "right").reverse()) {
+    offsets.set(cell.getAttribute("data-ok-field") as string, right);
+    right += cell.offsetWidth;
+  }
+  for (const cell of grid.querySelectorAll<HTMLElement>("[data-ok-pinned][data-ok-field]")) {
+    const offset = offsets.get(cell.getAttribute("data-ok-field") as string);
+    if (offset === undefined) cell.style.removeProperty("--_ok-data-grid-pin");
+    else cell.style.setProperty("--_ok-data-grid-pin", `${offset}px`);
+  }
+}
+
+/** A typed value from an edit field's text (`""` → null; invalid numbers / dates → null). */
+export function parseGridEditValue(text: string, type: GridColumnType = "string"): unknown {
+  if (type === "boolean") return text === "true";
+  if (text === "") return null;
+  if (type === "number") {
+    const n = Number(text);
+    return Number.isFinite(n) ? n : null;
+  }
+  if (type === "date" || type === "dateTime")
+    return Number.isNaN(new Date(text).getTime()) ? null : text;
+  return text;
+}
+
+/** The text an edit field starts with for a raw value. */
+export function gridEditText(value: unknown, type: GridColumnType = "string"): string {
+  if (value === null || value === undefined) return "";
+  if (type === "date" || type === "dateTime") {
+    const date = value instanceof Date ? value : new Date(String(value));
+    if (Number.isNaN(date.getTime())) return "";
+    const iso = date.toISOString();
+    return type === "date" ? iso.slice(0, 10) : iso.slice(0, 16);
+  }
+  return String(value);
+}
+
+/** The input type of an edit field. */
+export const gridEditInputType = (type: GridColumnType = "string"): string =>
+  type === "number"
+    ? "number"
+    : type === "date"
+      ? "date"
+      : type === "dateTime"
+        ? "datetime-local"
+        : type === "boolean"
+          ? "checkbox"
+          : "text";
 
 /** Columns shown by a visibility model (absent = shown). */
 export const visibleGridColumns = <C extends GridColumn>(
@@ -268,11 +424,17 @@ export function filterGridRows<R>(
     .filter(Boolean);
   const searchable = columns.filter(isGridFilterable);
   if (items.length === 0 && words.length === 0) return [...rows];
+  const passes = (row: R, item: GridFilterItem) => {
+    const column = columns.find((c) => c.field === item.field) as GridColumn;
+    return matchesGridFilter(value(row, item.field), text(row, item.field), item, column.type);
+  };
   return rows.filter((row) => {
-    for (const item of items) {
-      const column = columns.find((c) => c.field === item.field) as GridColumn;
-      if (!matchesGridFilter(value(row, item.field), text(row, item.field), item, column.type))
-        return false;
+    if (items.length > 0) {
+      const kept =
+        model.logicOperator === "or"
+          ? items.some((item) => passes(row, item))
+          : items.every((item) => passes(row, item));
+      if (!kept) return false;
     }
     return words.every((word) =>
       searchable.some((column) => text(row, column.field).toLocaleLowerCase().includes(word)),
@@ -345,6 +507,19 @@ export const gridDefaultLabels = {
   columnMenuFilter: "Filter",
   columnMenuHideColumn: "Hide column",
   columnMenuManageColumns: "Manage columns",
+  columnMenuMoveLeft: "Move left",
+  columnMenuMoveRight: "Move right",
+  pinToLeft: "Pin to left",
+  pinToRight: "Pin to right",
+  unpin: "Unpin",
+  columnResizeLabel: "Resize",
+  filterPanelAddFilter: "Add filter",
+  filterPanelRemoveFilter: "Remove filter",
+  filterPanelLogicOperator: "Logic operator",
+  filterPanelOperatorAnd: "And",
+  filterPanelOperatorOr: "Or",
+  toolbarExportPrint: "Print",
+  editLabel: "Edit",
   filterPanelColumns: "Columns",
   filterPanelOperator: "Operator",
   filterPanelInputLabel: "Value",

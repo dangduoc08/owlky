@@ -227,11 +227,92 @@ const customColumns: GridColDef<Member>[] = [
   },
 ];
 
+const TEAMS = ["Design", "Engineering", "Sales", "Support"] as const;
+
+export interface Employee extends Person {
+  team: (typeof TEAMS)[number];
+  remote: boolean;
+  salary: number;
+  email: string;
+}
+
+export const EMPLOYEES: Employee[] = PEOPLE.map((person, i) => ({
+  ...person,
+  team: TEAMS[i % 4] as Employee["team"],
+  remote: i % 3 !== 0,
+  salary: 42000 + ((i * 7919) % 50) * 1000,
+  email: `${person.firstName}.${person.lastName}${i}@example.com`.toLowerCase(),
+}));
+
+const advancedColumns: GridColDef<Employee>[] = [
+  { field: "firstName", headerName: "First name", width: 140, editable: true },
+  { field: "lastName", headerName: "Last name", width: 140, editable: true },
+  { field: "email", headerName: "Email", width: 260 },
+  { field: "age", headerName: "Age", type: "number", width: 90, editable: true },
+  {
+    field: "team",
+    headerName: "Team",
+    type: "singleSelect",
+    valueOptions: TEAMS,
+    width: 140,
+    editable: true,
+  },
+  {
+    field: "remote",
+    headerName: "Remote",
+    type: "boolean",
+    width: 110,
+    editable: true,
+    align: "center",
+  },
+  {
+    field: "salary",
+    headerName: "Salary",
+    type: "number",
+    width: 130,
+    editable: true,
+    valueFormatter: (value) => `USD ${Number(value).toLocaleString("en-US")}`,
+  },
+  {
+    field: "actions",
+    headerName: "Actions",
+    type: "actions",
+    width: 90,
+    hideable: false,
+    resizable: false,
+    renderCell: ({ row }) => (
+      <IconButton size="sm" tabIndex={-1} aria-label={`Delete ${row.firstName} ${row.lastName}`}>
+        <DemoIcon name="trash" />
+      </IconButton>
+    ),
+  },
+];
+
 /**
  * Story groups — the same examples as `packages/html/src/components/data-grid/examples/`. The
  * cell content helpers (`.sb-grid-*`) are story-only demo markup.
  */
 export const dataGridStories: Record<string, ReactGroup[]> = {
+  advanced: [
+    {
+      title: "Advanced",
+      content: (
+        <DataGrid
+          id="grid-advanced"
+          aria-label="Employees"
+          className="sb-grid"
+          rows={EMPLOYEES}
+          columns={advancedColumns}
+          showToolbar
+          exportFileName="employees"
+          initialState={{
+            pagination: { paginationModel: { pageSize: 10 } },
+            pinnedColumns: { left: ["firstName"], right: ["actions"] },
+          }}
+        />
+      ),
+    },
+  ],
   basic: [
     {
       title: "Basic",
@@ -272,6 +353,7 @@ export const dataGridStories: Record<string, ReactGroup[]> = {
 };
 
 export const DATA_GRID_FILES: Record<string, GroupFiles> = {
+  advanced: [["Advanced", "group"]],
   basic: [["Basic", "group"]],
   custom: [["Custom", "group"]],
 };
@@ -279,5 +361,5 @@ export const DATA_GRID_FILES: Record<string, GroupFiles> = {
 /** Story Controls shared by the React and HTML stories (ADR-0015). */
 export const DATA_GRID_CONTROLS = {
   schema: dataGridOptions,
-  keys: ["density", "disableColumnMenu"],
+  keys: ["density", "disableColumnMenu", "disableColumnResize", "editMode"],
 } as const;

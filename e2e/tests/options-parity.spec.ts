@@ -52,6 +52,7 @@ const CASES: [
   ["motion", "text", "motion-text", ["variant", "duration", "stagger"]],
   ["motion", "background", "motion", ["paused", "duration"]],
   ["datagrid", "basic", "data-grid", ["density", "disableColumnMenu"]],
+  ["datagrid", "advanced", "data-grid", ["disableColumnResize", "editMode"]],
   ["motion", "count-up-story", "count-up", ["duration"]],
   ["motion", "border", "motion-border", ["paused", "width", "duration"]],
   ["breadcrumbs", "text", "breadcrumbs", ["maxItems", "itemsBeforeCollapse", "itemsAfterCollapse"]],

@@ -56,3 +56,4 @@ export default meta;
 
 export const Basic: StoryObj = story("basic");
 export const Custom: StoryObj = story("custom");
+export const Advanced: StoryObj = story("advanced");

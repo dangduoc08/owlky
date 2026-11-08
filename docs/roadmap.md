@@ -46,7 +46,7 @@ component and each `/integrate` run.
 | MUI | Timeline | ✅ | Timeline and its parts | Rating, Slider, Timeline, Transfer list, Tree view & Autocomplete |
 | MUI | Tooltip | ✅ | Tooltip | Popover, Tooltip, Menu, Dialog & Snackbar |
 | MUI | Transfer list | ✅ | TransferList | Rating, Slider, Timeline, Transfer list, Tree view & Autocomplete |
-| MUI X | Data grid | ✅ phase 1 of 5 (ADR-0020) | DataGrid | Data grid |
+| MUI X | Data grid | ✅ phases 1–2 of 5 (ADR-0020) | DataGrid | Data grid |
 | MUI X | Date pickers | wave 7 (ADR) | — | Next |
 | MUI X | Tree view | ✅ | SimpleTreeView, TreeItem, RichTreeView | Rating, Slider, Timeline, Transfer list, Tree view & Autocomplete |
 | Extra | Animate | ✅ beta | Motion, MotionGroup, MotionText, CountUp, MotionBorder; Dialog `transition` | Motion |
@@ -336,10 +336,40 @@ reference's Basic toolbar is icon-only), original data and names, clicking a row
 | Phase | Scope (MUI X tier) | State |
 |---|---|---|
 | 1 | Columns (types, width / flex / min width, alignment, formatters, custom cells), sorting with multi-sort (Pro), quick filter, filter panel (one filter), pagination, checkbox selection, column visibility, density, CSV export, column menu, keyboard navigation, toolbar | ✅ 2026-11-08 |
-| 2 | Multi filters and logic operators (Pro), column resizing and reordering (Pro), column pinning (Pro), cell and row editing, print export | next (`/component` Update) |
-| 3 | Row and column virtualization, infinite and lazy loading, server-side data source (Pro) | — |
-| 4 | Tree data, master-detail, row reordering, row pinning, column groups (Pro) | — |
-| 5 | Row grouping, aggregation, pivoting, Excel export, clipboard, cell selection, header filters (Premium) | — |
+| 2 | Multi filters and logic operators (Pro), column resizing and reordering (Pro), column pinning (Pro), cell and row editing, print export | ✅ 2026-11-08 |
+| 3 | Row and column virtualization; server-side sorting, filtering and pagination (`sortingMode` / `filterMode` / `paginationMode="server"`, `rowCount`); infinite and lazy loading, `dataSource` with cache (Pro); `loading` overlay and skeleton rows; HTML: a JavaScript rows API with row templates | next (`/component` Update) |
+| 4 | Tree data, master-detail panels, row reordering by drag, row pinning (top / bottom), column groups (multi-level headers), list view (Pro) | — |
+| 5 | Row grouping, aggregation (sum, average, min / max, count), pivoting, Excel (.xlsx) export, clipboard copy and paste, cell range selection, header filters (Premium); charts integration and AI assistant once a Chart component exists | — |
+
+Phase 2 (story: Advanced): filter rows combined with and / or, column resizing (drag the header
+edge, or Alt + arrows), reordering (drag a header, or Move left / right in the column menu),
+pinning to either side (sticky cells, offsets measured by core `syncGridPinning`), cell and row
+editing with typed fields (`processRowUpdate`; HTML `ok:data-grid:edit`), print through a hidden
+frame. Beyond MUI X for keyboard users: Alt + arrows and the Move menu items. TablePagination,
+Popover and Menu are reused as in phase 1.
+
+**Backlog outside the phases** (MUI X features not planned yet; pick them into a phase when
+needed, 2026-11-08):
+- **Selection:** single-row selection without checkboxes (`disableMultipleRowSelection`),
+  `isRowSelectable`, `keepNonExistentRowsSelected`, `checkboxSelectionVisibleOnly`.
+- **Columns:** autosizing to the content (double-click the resize edge, `autosizeColumns`),
+  column and row spanning (`colSpan`, `rowSpanning`), `description` as a header tooltip,
+  `renderHeader`.
+- **Rows:** per-row and automatic heights (`getRowHeight`, `"auto"`), `getRowClassName` /
+  `getCellClassName`, `getRowSpacing`.
+- **Editing:** validation with error states (`preProcessEditCellProps`), `valueParser` /
+  `valueSetter`, start editing by typing a character, `onCellEditStart` / `onCellEditStop` /
+  `onRowEditStop`, `isCellEditable`.
+- **Filtering:** the `isAnyOf` operator, custom filter operators, date pickers in filter values
+  (needs Date pickers), quick filter options (`quickFilterLogicOperator`, searched columns).
+- **Events and API:** `onRowClick`, `onCellClick`, `onCellDoubleClick`, `onColumnHeaderClick`…;
+  `apiRef`; `exportState` / `restoreState`.
+- **Export:** CSV options (delimiter, fields, all rows vs. filtered), print options and printing
+  every filtered row (today: the rows on screen, current page only).
+- **Look and language:** the icon-only toolbar of the reference's Basic section, locale packs
+  (today: `localeText` only), right-to-left layout.
+- **HTML runtime:** edited cells show the raw value (React applies `valueFormatter`); no rows API
+  until phase 3.
 
 ## Pending integrations
 Everything waiting for a component that doesn't exist yet — stand-ins (native feature, demo

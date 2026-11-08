@@ -43,6 +43,7 @@ export const STORIES: [component: string, story: string][] = [
   ].map((s) => ["motion", s] as [string, string]),
   ["datagrid", "basic"],
   ["datagrid", "custom"],
+  ["datagrid", "advanced"],
 ];
 
 interface Box {

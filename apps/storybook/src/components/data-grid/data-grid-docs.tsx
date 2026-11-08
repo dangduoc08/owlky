@@ -37,7 +37,7 @@ export function People({ rows }: { rows: Person[] }) {
   {
     id: "toolbar",
     title: "Add a toolbar",
-    body: "`showToolbar` adds a search field and buttons that open the column list, the filter panel, the row height menu and the export menu. Search matches every word you type in any column. The filter panel keeps one filter: a column, an operator and a value. Each feature can be turned off, for example with `disableColumnFilter`.",
+    body: "`showToolbar` adds a search field and buttons that open the column list, the filter panel, the row height menu and the export menu. Search matches every word you type in any column. Export downloads a CSV file or prints the grid as shown. Each feature can be turned off, for example with `disableColumnFilter`.",
     html: `<div data-ok-data-grid-toolbar>…</div>`,
     react: `<DataGrid aria-label="People" rows={rows} columns={columns} showToolbar disableDensitySelector />`,
   },
@@ -49,6 +49,56 @@ export function People({ rows }: { rows: Person[] }) {
     react: `const [sortModel, setSortModel] = useState<GridSortModel>([{ field: "age", sort: "desc" }]);
 
 <DataGrid aria-label="People" rows={rows} columns={columns} sortModel={sortModel} onSortModelChange={setSortModel} />`,
+  },
+  {
+    id: "filters",
+    title: "Combine filters",
+    body: "**Add filter** in the filter panel adds another condition. From the second row, choose **And** (every condition must match, the default) or **Or** (any one is enough). The remove button deletes a condition. Set `disableMultipleColumnsFiltering` to keep a single condition.",
+    html: `<!-- The filter panel's Add filter button copies the first row, with an And / Or field. -->`,
+    react: `<DataGrid
+  aria-label="People"
+  rows={rows}
+  columns={columns}
+  filterModel={{
+    logicOperator: "or",
+    items: [
+      { field: "age", operator: "<", value: "20" },
+      { field: "age", operator: ">", value: "60" },
+    ],
+  }}
+/>`,
+  },
+  {
+    id: "layout",
+    title: "Resize, move and pin columns",
+    body: `- **Resize:** drag the end edge of a header, or press Alt + Left or Alt + Right on a focused header. A column never gets narrower than its \`minWidth\`. Set \`resizable: false\` on a column, or \`disableColumnResize\` on the grid, to turn it off.
+- **Move:** drag a header onto another one, or choose **Move left** or **Move right** in the column menu. \`columnOrder\` and \`onColumnOrderChange\` control the order.
+- **Pin:** choose **Pin to left** or **Pin to right** in the column menu. Pinned columns stay in view while the others scroll. Use \`pinnedColumns\` to pin columns from the start.`,
+    html: `<!-- Pinned cells carry data-ok-pinned; the script keeps their offsets. -->
+<div role="columnheader" data-ok-field="firstName" data-ok-pinned="left" tabindex="-1">…</div>`,
+    react: `<DataGrid
+  aria-label="Employees"
+  rows={rows}
+  columns={columns}
+  initialState={{ pinnedColumns: { left: ["firstName"], right: ["actions"] } }}
+/>`,
+  },
+  {
+    id: "editing",
+    title: "Edit cells and rows",
+    body: 'Set `editable` on a column to let people change its cells: double-click a cell, or press Enter or F2. The field matches the column type: text, a number, a date, a list for `singleSelect` or a checkbox for `boolean`. Enter saves, Escape cancels, and leaving the cell saves. With `editMode="row"`, every editable cell of the row opens together. In React, `processRowUpdate` receives the new row: return it, or return a changed row. Throw or reject to refuse it. In HTML, listen to `ok:data-grid:edit` and call `preventDefault()` to refuse.',
+    html: `<script>
+  // Refuse ages above 120
+  grid.addEventListener("ok:data-grid:edit", (event) => {
+    if (event.detail.row.age > 120) event.preventDefault();
+  });
+</script>`,
+    react: `<DataGrid
+  aria-label="Employees"
+  rows={rows}
+  columns={[{ field: "age", headerName: "Age", type: "number", editable: true }]}
+  processRowUpdate={async (row) => saveEmployee(row)}
+/>`,
   },
   {
     id: "options",
@@ -63,8 +113,9 @@ export function People({ rows }: { rows: Person[] }) {
   {
     id: "events",
     title: "Events and methods",
-    body: `- **\`ok:data-grid:sort\`**, **\`ok:data-grid:filter\`**, **\`ok:data-grid:selection\`**, **\`ok:data-grid:columns\`** and **\`ok:data-grid:density\`** fire on the grid with the new model in \`detail\`. They're cancelable.
-- **Instance:** \`runtime.get(element, "data-grid")\` returns \`{ sortModel, filterModel, selection, setSortModel(model), setFilterModel(model), setSelection(ids), exportCsv() }\`.`,
+    body: `- **\`ok:data-grid:sort\`**, **\`ok:data-grid:filter\`**, **\`ok:data-grid:selection\`**, **\`ok:data-grid:columns\`**, **\`ok:data-grid:density\`**, **\`ok:data-grid:order\`** and **\`ok:data-grid:pinned\`** fire on the grid with the new model in \`detail.model\`. They're cancelable.
+- **\`ok:data-grid:resize\`** reports \`detail.field\` and \`detail.width\`. **\`ok:data-grid:edit\`** reports \`detail.id\` and the edited values in \`detail.row\`, and is cancelable.
+- **Instance:** \`runtime.get(element, "data-grid")\` returns \`{ sortModel, filterModel, selection, columnVisibilityModel, columnOrder, pinnedColumns, columnWidths }\` with a setter for each (\`setSortModel(model)\`, \`setColumnWidth(field, width)\` and so on; setters fire no events), \`toCsv()\` and \`exportCsv()\`.`,
   },
   {
     id: "keyboard",
@@ -130,6 +181,30 @@ const PREVIEWS = {
           description: "Hidden columns are false.",
         },
         {
+          react: "columnOrder / onColumnOrderChange",
+          html: "header order · ok:data-grid:order",
+          type: "string[]",
+          description: "The order of the columns (fields).",
+        },
+        {
+          react: "pinnedColumns / onPinnedColumnsChange",
+          html: "data-ok-pinned · ok:data-grid:pinned",
+          type: "{ left, right }",
+          description: "Columns that stay in view at each side.",
+        },
+        {
+          react: "onColumnWidthChange · initialState.columns.dimensions",
+          html: "ok:data-grid:resize",
+          type: "(field, width) => void",
+          description: "Widths set by resizing, in pixels.",
+        },
+        {
+          react: "editMode · processRowUpdate · onProcessRowUpdateError",
+          html: "data-ok-edit-mode · ok:data-grid:edit",
+          type: "cell | row",
+          description: "How editable cells open, and how edits are saved or refused.",
+        },
+        {
           react: "showToolbar · localeText · exportFileName",
           html: "the toolbar markup",
           type: "—",
@@ -150,6 +225,8 @@ const PREVIEWS = {
         ["Ctrl + Enter on a header", "Opens the column menu"],
         ["Space on a row", "Selects or clears the row"],
         ["Ctrl + A", "Selects or clears every row"],
+        ["Alt + Left / Alt + Right on a header", "Makes the column narrower / wider by 10 pixels"],
+        ["Enter or F2 on an editable cell", "Edits the cell (Enter saves, Escape cancels)"],
       ]}
     />
   ),

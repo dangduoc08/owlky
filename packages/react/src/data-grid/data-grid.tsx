@@ -1,34 +1,49 @@
 "use client";
 
 import {
+  arrangeGridColumns,
+  clampGridWidth,
+  createGridColumnControls,
   createGridNavigation,
   dataGridAttributes,
   filterGridRows,
   GRID_CHECKBOX_FIELD,
   type GridColumn,
   type GridColumnVisibilityModel,
+  type GridColumnWidths,
   type GridDensity,
   type GridFilterItem,
   type GridFilterModel,
   type GridLabels,
   type GridNavigation,
+  type GridPinnedColumns,
   type GridSortModel,
   gridAlign,
   gridAriaSort,
   gridColumnTemplate,
   gridDefaultLabels,
   gridDensities,
+  gridEditInputType,
+  gridEditText,
   gridFilterOperators,
   gridHeaderAlign,
   gridOperatorNeedsValue,
+  gridPinSide,
   gridQuickFilterValues,
   gridSelectAllState,
   gridToCsv,
   isGridFilterable,
   isGridHideable,
+  isGridResizable,
   isGridSortable,
+  moveGridColumn,
   nextGridSort,
+  orderGridColumns,
+  parseGridEditValue,
+  pinGridColumn,
+  printGridContent,
   sortGridRows,
+  syncGridPinning,
   toggleGridRow,
   toggleGridRows,
   visibleGridColumns,
@@ -43,6 +58,7 @@ import {
   type Ref,
   useEffect,
   useId,
+  useLayoutEffect,
   useRef,
   useState,
 } from "react";
@@ -85,7 +101,16 @@ export interface GridInitialState {
   sorting?: { sortModel?: GridSortModel } | undefined;
   filter?: { filterModel?: GridFilterModel } | undefined;
   pagination?: { paginationModel?: Partial<GridPaginationModel> } | undefined;
-  columns?: { columnVisibilityModel?: GridColumnVisibilityModel } | undefined;
+  columns?:
+    | {
+        columnVisibilityModel?: GridColumnVisibilityModel;
+        /** Column order (fields). */
+        orderedFields?: string[];
+        /** Widths set by resizing, px. */
+        dimensions?: Record<string, { width: number }>;
+      }
+    | undefined;
+  pinnedColumns?: GridPinnedColumns | undefined;
   density?: GridDensity | undefined;
 }
 
@@ -125,6 +150,23 @@ export interface DataGridProps<R>
   localeText?: Partial<GridLabels> | undefined;
   /** Name of the CSV file (without `.csv`). Default "data". */
   exportFileName?: string | undefined;
+  /** The filter panel keeps one filter (no Add filter). */
+  disableMultipleColumnsFiltering?: boolean | undefined;
+  disableColumnResize?: boolean | undefined;
+  /** A column's width after resizing (on release, and for each keyboard step). */
+  onColumnWidthChange?: ((field: string, width: number) => void) | undefined;
+  disableColumnReorder?: boolean | undefined;
+  /** Column order (fields); missing fields follow in their place. */
+  columnOrder?: readonly string[] | undefined;
+  onColumnOrderChange?: ((fields: string[]) => void) | undefined;
+  disableColumnPinning?: boolean | undefined;
+  pinnedColumns?: GridPinnedColumns | undefined;
+  onPinnedColumnsChange?: ((model: GridPinnedColumns) => void) | undefined;
+  /** Editable columns: edit one `cell` (default) or every editable cell of a `row` together. */
+  editMode?: "cell" | "row" | undefined;
+  /** Called with the edited row; return (or resolve) the row to show. Reject to refuse it. */
+  processRowUpdate?: ((newRow: R, oldRow: R) => R | Promise<R>) | undefined;
+  onProcessRowUpdateError?: ((error: unknown) => void) | undefined;
 }
 
 const SortIcon = () => (
@@ -157,6 +199,16 @@ const DensityIcon = () => (
 const ExportIcon = () => (
   <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
     <path d="M11 3h2v9l3-3 1.4 1.4L12 15.8l-5.4-5.4L8 9l3 3zM5 18h14v2H5z" />
+  </svg>
+);
+const PlusIcon = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
+    <path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z" />
+  </svg>
+);
+const CloseIcon = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
+    <path d="M6.4 5 12 10.6 17.6 5 19 6.4 13.4 12 19 17.6 17.6 19 12 13.4 6.4 19 5 17.6 10.6 12 5 6.4z" />
   </svg>
 );
 const SearchIcon = () => (
@@ -221,6 +273,18 @@ function DataGridInner<R>(
     hideFooter,
     localeText,
     exportFileName = "data",
+    disableMultipleColumnsFiltering,
+    disableColumnResize,
+    onColumnWidthChange,
+    disableColumnReorder,
+    columnOrder,
+    onColumnOrderChange,
+    disableColumnPinning,
+    pinnedColumns: pinnedProp,
+    onPinnedColumnsChange,
+    editMode = "cell",
+    processRowUpdate,
+    onProcessRowUpdateError,
     "aria-label": ariaLabel,
     "aria-labelledby": ariaLabelledby,
     ...props
@@ -267,14 +331,41 @@ function DataGridInner<R>(
     defaultValue: initialState?.density ?? "standard",
     onChange: onDensityChange,
   });
+  const [order, setOrder] = useControllableState<readonly string[]>({
+    value: columnOrder,
+    defaultValue: initialState?.columns?.orderedFields ?? [],
+    onChange: (next) => onColumnOrderChange?.([...next]),
+  });
+  const [pinned, setPinned] = useControllableState<GridPinnedColumns>({
+    value: pinnedProp,
+    defaultValue: initialState?.pinnedColumns ?? {},
+    onChange: onPinnedColumnsChange,
+  });
+  const [widths, setWidths] = useState<GridColumnWidths>(() =>
+    Object.fromEntries(
+      Object.entries(initialState?.columns?.dimensions ?? {}).map(([f, d]) => [f, d.width]),
+    ),
+  );
+  const [editing, setEditing] = useState<{ rowId: string; field: string | null } | null>(null);
+  const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const [overrides, setOverrides] = useState<ReadonlyMap<string, R>>(new Map());
+  const refocus = useRef<{ rowId: string; field: string } | null>(null);
+  // New rows from the parent replace the edits shown so far.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: runs when `rows` changes.
+  useEffect(() => setOverrides(new Map()), [rows]);
   const [panel, setPanel] = useState<Panel>(null);
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
   const [menuField, setMenuField] = useState<string | null>(null);
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
 
-  const shown = visibleGridColumns(columns, visibility);
+  const view = rows.map((row) => overrides.get(String(getRowId(row))) ?? row);
+  const ordered = orderGridColumns(columns, order);
+  const shown = visibleGridColumns(arrangeGridColumns(ordered, pinned), visibility);
+  const leftPinned = shown.some((c) => gridPinSide(pinned, c.field) === "left");
+  const editable = (column: GridColDef<R>) =>
+    !!column.editable && !column.valueGetter && column.type !== "actions";
   const filtered = filterGridRows(
-    rows,
+    view,
     filterModel,
     columns,
     (row, field) => {
@@ -304,11 +395,45 @@ function DataGridInner<R>(
         openMenu.current(field, header.querySelector("[data-ok-data-grid-menu-button]")),
       onToggleRow: (row) => toggleRow.current(row.getAttribute("data-ok-row-id") as string),
       onSelectAll: () => selectEvery.current(),
+      onEdit: (cell) =>
+        startEdit.current(
+          cell.closest('[role="row"]')?.getAttribute("data-ok-row-id") as string,
+          cell.getAttribute("data-ok-field") as string,
+        ),
+      onResizeKey: (field, delta) => {
+        const header = grid.querySelector<HTMLElement>(
+          `[role="columnheader"][data-ok-field="${CSS.escape(field)}"]`,
+        ) as HTMLElement;
+        resizeTo.current(field, header.getBoundingClientRect().width + delta, true);
+      },
     });
     navigation.current = handle;
     return () => handle.destroy();
   }, []);
   useEffect(() => navigation.current?.sync());
+  useEffect(() => {
+    const handle = createGridColumnControls(gridRef.current as HTMLDivElement, {
+      onResize: (field, width, done) => resizeTo.current(field, width, done),
+      onMove: (field, target) => moveTo.current(field, target),
+      canReorder: () => reorderable.current,
+    });
+    return () => handle.destroy();
+  }, []);
+  // Sticky offsets of pinned columns, after every layout.
+  useLayoutEffect(() => syncGridPinning(gridRef.current as HTMLDivElement));
+  useEffect(() => {
+    if (editing)
+      gridRef.current?.querySelector<HTMLElement>("[data-ok-data-grid-edit-input]")?.focus();
+    else if (refocus.current) {
+      const { rowId, field } = refocus.current;
+      refocus.current = null;
+      gridRef.current
+        ?.querySelector<HTMLElement>(
+          `[data-ok-row-id="${CSS.escape(rowId)}"] [role="gridcell"][data-ok-field="${CSS.escape(field)}"]`,
+        )
+        ?.focus();
+    }
+  }, [editing]);
 
   // Latest handlers for the navigation controller (it lives as long as the grid).
   const sortBy = useRef<(field: string, multi: boolean) => void>(undefined as never);
@@ -333,6 +458,48 @@ function DataGridInner<R>(
     setMenuAnchor(button as HTMLElement);
   };
 
+  const resizeTo = useRef<(field: string, width: number, done: boolean) => void>(
+    undefined as never,
+  );
+  resizeTo.current = (field, width, done) => {
+    const column = columns.find((c) => c.field === field);
+    if (!column || disableColumnResize || !isGridResizable(column)) return;
+    const next = clampGridWidth(column, width);
+    setWidths((current) => ({ ...current, [field]: next }));
+    if (done) onColumnWidthChange?.(field, next);
+  };
+  const reorderable = useRef(true);
+  reorderable.current = !disableColumnReorder;
+  const fields = ordered.map((c) => c.field);
+  const moveTo = useRef<(field: string, target: string) => void>(undefined as never);
+  moveTo.current = (field, target) => setOrder(moveGridColumn(fields, field, { to: target }));
+
+  const startEdit = useRef<(rowId: string, field: string) => void>(undefined as never);
+  startEdit.current = (rowId, field) => {
+    const column = columns.find((c) => c.field === field);
+    if (!column || !editable(column)) return;
+    const row = view.find((r) => String(getRowId(r)) === rowId) as R;
+    const targets = editMode === "row" ? shown.filter(editable) : [column];
+    setDrafts(
+      Object.fromEntries(targets.map((c) => [c.field, gridEditText(rawValue(c, row), c.type)])),
+    );
+    setEditing({ rowId, field: editMode === "row" ? null : field });
+  };
+  const stopEdit = (commit: boolean, field: string) => {
+    if (!editing) return;
+    const { rowId } = editing;
+    refocus.current = { rowId, field };
+    setEditing(null);
+    if (!commit) return;
+    const oldRow = view.find((r) => String(getRowId(r)) === rowId) as R;
+    const newRow = { ...oldRow } as Record<string, unknown>;
+    for (const [f, text] of Object.entries(drafts))
+      newRow[f] = parseGridEditValue(text, columns.find((c) => c.field === f)?.type);
+    Promise.resolve(processRowUpdate ? processRowUpdate(newRow as R, oldRow) : (newRow as R))
+      .then((result) => setOverrides((current) => new Map(current).set(rowId, result)))
+      .catch((error: unknown) => onProcessRowUpdateError?.(error));
+  };
+
   const open = (which: Panel) => (event: MouseEvent<HTMLElement>) => {
     setAnchor(event.currentTarget);
     setPanel(which);
@@ -345,15 +512,18 @@ function DataGridInner<R>(
     setFilterModel({ ...filterModel, quickFilterValues: gridQuickFilterValues(text) });
     setPagination({ ...pagination, page: 0 });
   };
-  const filterItem: GridFilterItem = filterModel.items[0] ?? {
+  const newItem = (): GridFilterItem => ({
     field: columns.find(isGridFilterable)?.field ?? "",
     operator: gridFilterOperators(columns.find(isGridFilterable)?.type)[0] as string,
-  };
-  const setFilterItem = (item: GridFilterItem) => {
-    setFilterModel({ ...filterModel, items: [item] });
+  });
+  // The panel always shows a row: with no items, an empty one (applied once edited).
+  const filterItems: GridFilterItem[] = filterModel.items.length ? filterModel.items : [newItem()];
+  const setFilterItems = (items: GridFilterItem[]) => {
+    setFilterModel({ ...filterModel, items });
     setPagination({ ...pagination, page: 0 });
   };
-  const filterColumn = columns.find((c) => c.field === filterItem.field);
+  const setFilterItem = (index: number, item: GridFilterItem) =>
+    setFilterItems(filterItems.map((current, i) => (i === index ? item : current)));
 
   const onRowClick = (rowId: string) => (event: MouseEvent<HTMLElement>) => {
     if (!checkboxSelection || disableRowSelectionOnClick) return;
@@ -369,11 +539,18 @@ function DataGridInner<R>(
     if (action === "asc" || action === "desc") setSortModel([{ field, sort: action }]);
     else if (action === "unsort") setSortModel(sortModel.filter((s) => s.field !== field));
     else if (action === "hide") setVisibility({ ...visibility, [field]: false });
+    else if (action === "left" || action === "right")
+      setOrder(moveGridColumn(fields, field, action === "left" ? -1 : 1));
+    else if (action === "pin-left" || action === "pin-right" || action === "unpin")
+      setPinned(
+        pinGridColumn(
+          pinned,
+          field,
+          action === "unpin" ? null : action === "pin-left" ? "left" : "right",
+        ),
+      );
     else if (action === "filter") {
-      setFilterItem({
-        field,
-        operator: gridFilterOperators(menuColumn?.type)[0] as string,
-      });
+      setFilterItems([{ field, operator: gridFilterOperators(menuColumn?.type)[0] as string }]);
       // The panels open next to their toolbar buttons (the menu offers them only with the toolbar).
       setAnchor(document.querySelector<HTMLElement>(`[aria-controls="${id}-filters"]`));
       setPanel("filters");
@@ -490,52 +667,94 @@ function DataGridInner<R>(
           onOpenChange={(next) => !next && closePanel()}
         >
           <div data-ok-data-grid-panel="" role="group" aria-label={labels.toolbarFilters}>
-            <div data-ok-data-grid-filter="">
-              <TextField
-                id={`${id}-filter-field`}
-                select
-                size="small"
-                label={labels.filterPanelColumns}
-                value={filterItem.field}
-                onChange={(field) =>
-                  setFilterItem({
-                    field,
-                    operator: gridFilterOperators(
-                      columns.find((c) => c.field === field)?.type,
-                    )[0] as string,
-                  })
-                }
+            {filterItems.map((item, index) => {
+              const suffix = index === 0 ? "" : `-${index}`;
+              const column = columns.find((c) => c.field === item.field);
+              return (
+                // biome-ignore lint/suspicious/noArrayIndexKey: filter rows are positional.
+                <div key={index} data-ok-data-grid-filter="">
+                  <IconButton
+                    size="sm"
+                    data-ok-data-grid-filter-remove=""
+                    aria-label={labels.filterPanelRemoveFilter}
+                    onClick={() => setFilterItems(filterItems.filter((_, i) => i !== index))}
+                  >
+                    <CloseIcon />
+                  </IconButton>
+                  {index > 0 && (
+                    <TextField
+                      id={`${id}-filter-logic${suffix}`}
+                      select
+                      size="small"
+                      label={labels.filterPanelLogicOperator}
+                      disabled={index > 1}
+                      value={filterModel.logicOperator ?? "and"}
+                      onChange={(logic) =>
+                        setFilterModel({ ...filterModel, logicOperator: logic as "and" | "or" })
+                      }
+                    >
+                      <option value="and">{labels.filterPanelOperatorAnd}</option>
+                      <option value="or">{labels.filterPanelOperatorOr}</option>
+                    </TextField>
+                  )}
+                  <TextField
+                    id={`${id}-filter-field${suffix}`}
+                    select
+                    size="small"
+                    label={labels.filterPanelColumns}
+                    value={item.field}
+                    onChange={(field) =>
+                      setFilterItem(index, {
+                        field,
+                        operator: gridFilterOperators(
+                          columns.find((c) => c.field === field)?.type,
+                        )[0] as string,
+                      })
+                    }
+                  >
+                    {columns.filter(isGridFilterable).map((c) => (
+                      <option key={c.field} value={c.field}>
+                        {c.headerName ?? c.field}
+                      </option>
+                    ))}
+                  </TextField>
+                  <TextField
+                    id={`${id}-filter-operator${suffix}`}
+                    select
+                    size="small"
+                    label={labels.filterPanelOperator}
+                    value={item.operator}
+                    onChange={(operator) => setFilterItem(index, { ...item, operator })}
+                  >
+                    {gridFilterOperators(column?.type).map((operator) => (
+                      <option key={operator} value={operator}>
+                        {labels.filterOperator[operator] ?? operator}
+                      </option>
+                    ))}
+                  </TextField>
+                  <TextField
+                    id={`${id}-filter-value${suffix}`}
+                    size="small"
+                    label={labels.filterPanelInputLabel}
+                    placeholder={labels.filterPanelInputPlaceholder}
+                    disabled={!gridOperatorNeedsValue(item.operator)}
+                    value={item.value ?? ""}
+                    onChange={(value) => setFilterItem(index, { ...item, value })}
+                  />
+                </div>
+              );
+            })}
+            {!disableMultipleColumnsFiltering && (
+              <Button
+                size="sm"
+                variant="text"
+                data-ok-data-grid-filter-add=""
+                startIcon={<PlusIcon />}
+                onClick={() => setFilterItems([...filterItems, newItem()])}
               >
-                {columns.filter(isGridFilterable).map((column) => (
-                  <option key={column.field} value={column.field}>
-                    {column.headerName ?? column.field}
-                  </option>
-                ))}
-              </TextField>
-              <TextField
-                id={`${id}-filter-operator`}
-                select
-                size="small"
-                label={labels.filterPanelOperator}
-                value={filterItem.operator}
-                onChange={(operator) => setFilterItem({ ...filterItem, operator })}
-              >
-                {gridFilterOperators(filterColumn?.type).map((operator) => (
-                  <option key={operator} value={operator}>
-                    {labels.filterOperator[operator] ?? operator}
-                  </option>
-                ))}
-              </TextField>
-              <TextField
-                id={`${id}-filter-value`}
-                size="small"
-                label={labels.filterPanelInputLabel}
-                placeholder={labels.filterPanelInputPlaceholder}
-                disabled={!gridOperatorNeedsValue(filterItem.operator)}
-                value={filterItem.value ?? ""}
-                onChange={(value) => setFilterItem({ ...filterItem, value })}
-              />
-            </div>
+                {labels.filterPanelAddFilter}
+              </Button>
+            )}
           </div>
         </Popover>
       )}
@@ -587,6 +806,15 @@ function DataGridInner<R>(
         >
           {labels.toolbarExportCSV}
         </MenuItem>
+        <MenuItem
+          data-ok-data-grid-export="print"
+          onClick={() => {
+            closePanel();
+            printGridContent(gridRef.current as HTMLElement, ariaLabel ?? exportFileName);
+          }}
+        >
+          {labels.toolbarExportPrint}
+        </MenuItem>
       </Menu>
     </div>
   );
@@ -600,6 +828,11 @@ function DataGridInner<R>(
         disableRowSelectionOnClick,
         disableColumnMenu,
         disableMultipleColumnsSorting,
+        disableMultipleColumnsFiltering,
+        disableColumnResize,
+        disableColumnReorder,
+        disableColumnPinning,
+        editMode,
       })}
       data-ok-runtime="off"
       {...props}
@@ -616,7 +849,7 @@ function DataGridInner<R>(
         {...(checkboxSelection ? { "aria-multiselectable": true } : {})}
         style={
           {
-            "--_ok-data-grid-columns": gridColumnTemplate(shown, !!checkboxSelection),
+            "--_ok-data-grid-columns": gridColumnTemplate(shown, !!checkboxSelection, widths),
           } as CSSProperties
         }
       >
@@ -628,6 +861,7 @@ function DataGridInner<R>(
                 aria-colindex={1}
                 data-ok-field={GRID_CHECKBOX_FIELD}
                 data-ok-data-grid-checkbox=""
+                {...(leftPinned ? { "data-ok-pinned": "left" } : {})}
                 tabIndex={-1}
               >
                 <Checkbox
@@ -658,9 +892,19 @@ function DataGridInner<R>(
                   {...(column.flex !== undefined ? { "data-ok-flex": column.flex } : {})}
                   {...(column.hideable === false ? { "data-ok-hideable": "false" } : {})}
                   {...(column.filterable === false ? { "data-ok-filterable": "false" } : {})}
+                  {...(column.resizable === false ? { "data-ok-resizable": "false" } : {})}
+                  {...(editable(column) ? { "data-ok-editable": "" } : {})}
+                  {...(editable(column) && column.valueOptions
+                    ? { "data-ok-value-options": JSON.stringify(column.valueOptions) }
+                    : {})}
+                  {...(gridPinSide(pinned, column.field)
+                    ? { "data-ok-pinned": gridPinSide(pinned, column.field) }
+                    : {})}
                   {...(sortable ? { "aria-sort": gridAriaSort(sortModel, column) } : {})}
                   tabIndex={-1}
                   onClick={(event) => {
+                    // A press that resized or moved the column doesn't sort it.
+                    if (event.currentTarget.hasAttribute("data-ok-just-dragged")) return;
                     if ((event.target as Element).closest("button")) return;
                     sortBy.current(column.field, event.shiftKey);
                   }}
@@ -685,6 +929,9 @@ function DataGridInner<R>(
                       <MoreIcon />
                     </IconButton>
                   )}
+                  {!disableColumnResize && isGridResizable(column) && (
+                    <span data-ok-data-grid-resize="" aria-hidden="true" />
+                  )}
                 </div>
               );
             })}
@@ -702,6 +949,9 @@ function DataGridInner<R>(
                 hidden={!onPage(index) || undefined}
                 data-ok-row-id={rowId}
                 {...(checkboxSelection ? { "aria-selected": selected } : {})}
+                {...(editing?.rowId === rowId && editing.field === null
+                  ? { "data-ok-editing": "" }
+                  : {})}
                 onClick={onRowClick(rowId)}
               >
                 {checkboxSelection && (
@@ -710,6 +960,7 @@ function DataGridInner<R>(
                     aria-colindex={1}
                     data-ok-field={GRID_CHECKBOX_FIELD}
                     data-ok-data-grid-checkbox=""
+                    {...(leftPinned ? { "data-ok-pinned": "left" } : {})}
                     tabIndex={-1}
                   >
                     <Checkbox
@@ -731,6 +982,65 @@ function DataGridInner<R>(
                     formattedValue: text,
                   });
                   const raw = asText(value);
+                  const name = column.headerName ?? column.field;
+                  const inEdit =
+                    editing?.rowId === rowId &&
+                    (editing.field === null ? editable(column) : editing.field === column.field);
+                  const draft = drafts[column.field] ?? "";
+                  const setDraft = (next: string) =>
+                    setDrafts((current) => ({ ...current, [column.field]: next }));
+                  const editKeys = (event: { key: string; preventDefault(): void }) => {
+                    if (event.key === "Enter" || event.key === "Escape") {
+                      event.preventDefault();
+                      stopEdit(event.key === "Enter", column.field);
+                    }
+                  };
+                  const editBlur = (event: {
+                    relatedTarget: EventTarget | null;
+                    currentTarget: Element;
+                  }) => {
+                    // Row editing ends when the focus leaves the row.
+                    const scope =
+                      editMode === "row" ? event.currentTarget.closest('[role="row"]') : null;
+                    if (!scope?.contains(event.relatedTarget as Node | null))
+                      stopEdit(true, column.field);
+                  };
+                  const editor = !inEdit ? null : column.type === "singleSelect" ? (
+                    <select
+                      data-ok-data-grid-edit-input=""
+                      aria-label={`${labels.editLabel} ${name}`}
+                      value={draft}
+                      onChange={(event) => setDraft(event.target.value)}
+                      onKeyDown={editKeys}
+                      onBlur={editBlur}
+                    >
+                      {(column.valueOptions ?? []).map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  ) : column.type === "boolean" ? (
+                    <input
+                      data-ok-data-grid-edit-input=""
+                      type="checkbox"
+                      aria-label={`${labels.editLabel} ${name}`}
+                      checked={draft === "true"}
+                      onChange={(event) => setDraft(String(event.target.checked))}
+                      onKeyDown={editKeys}
+                      onBlur={editBlur}
+                    />
+                  ) : (
+                    <input
+                      data-ok-data-grid-edit-input=""
+                      type={gridEditInputType(column.type)}
+                      aria-label={`${labels.editLabel} ${name}`}
+                      value={draft}
+                      onChange={(event) => setDraft(event.target.value)}
+                      onKeyDown={editKeys}
+                      onBlur={editBlur}
+                    />
+                  );
                   return (
                     <div
                       key={column.field}
@@ -742,9 +1052,14 @@ function DataGridInner<R>(
                         ? { "data-ok-value": raw }
                         : {})}
                       {...(column.renderCell ? { "data-ok-text": text } : {})}
+                      {...(gridPinSide(pinned, column.field)
+                        ? { "data-ok-pinned": gridPinSide(pinned, column.field) }
+                        : {})}
+                      {...(inEdit ? { "data-ok-editing": "" } : {})}
                       tabIndex={-1}
+                      onDoubleClick={() => startEdit.current(rowId, column.field)}
                     >
-                      {column.renderCell ? custom : text}
+                      {editor ?? (column.renderCell ? custom : text)}
                     </div>
                   );
                 })}
@@ -789,6 +1104,51 @@ function DataGridInner<R>(
           >
             {labels.columnMenuUnsort}
           </MenuItem>
+          {!disableColumnReorder && (
+            <MenuItem
+              data-ok-data-grid-action="left"
+              disabled={fields.indexOf(menuField as string) <= 0}
+              onClick={() => menuAction("left")}
+            >
+              {labels.columnMenuMoveLeft}
+            </MenuItem>
+          )}
+          {!disableColumnReorder && (
+            <MenuItem
+              data-ok-data-grid-action="right"
+              disabled={fields.indexOf(menuField as string) >= fields.length - 1}
+              onClick={() => menuAction("right")}
+            >
+              {labels.columnMenuMoveRight}
+            </MenuItem>
+          )}
+          {!disableColumnPinning && (
+            <MenuItem
+              data-ok-data-grid-action="pin-left"
+              disabled={gridPinSide(pinned, menuField as string) === "left"}
+              onClick={() => menuAction("pin-left")}
+            >
+              {labels.pinToLeft}
+            </MenuItem>
+          )}
+          {!disableColumnPinning && (
+            <MenuItem
+              data-ok-data-grid-action="pin-right"
+              disabled={gridPinSide(pinned, menuField as string) === "right"}
+              onClick={() => menuAction("pin-right")}
+            >
+              {labels.pinToRight}
+            </MenuItem>
+          )}
+          {!disableColumnPinning && (
+            <MenuItem
+              data-ok-data-grid-action="unpin"
+              disabled={!gridPinSide(pinned, menuField as string)}
+              onClick={() => menuAction("unpin")}
+            >
+              {labels.unpin}
+            </MenuItem>
+          )}
           {showToolbar && !disableColumnFilter && (
             <MenuItem
               data-ok-data-grid-action="filter"

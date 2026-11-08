@@ -46,7 +46,7 @@ const header = (host: Element, field: string) =>
   host.querySelector<HTMLElement>(`[role="columnheader"][data-ok-field="${field}"]`) as HTMLElement;
 
 describe("data grid snippets", () => {
-  it("covers every story group", () => expect(snippets).toHaveLength(2));
+  it("covers every story group", () => expect(snippets).toHaveLength(3));
 
   it.each(snippets)("%s: CSP-safe anatomy; no axe violations once running", async (_, html) => {
     const host = mount(html);
@@ -341,5 +341,315 @@ describe("data grid runtime, minimal markup", () => {
     );
     await settle();
     expect(visible(host)).toHaveLength(20);
+  });
+});
+
+const ADVANCED = snippets.find(([path]) => path.endsWith("advanced-group.html"))?.[1] as string;
+
+describe("data grid runtime, phase 2", () => {
+  const setupAdvanced = () => {
+    const host = mount(ADVANCED);
+    start();
+    const root = host.querySelector<HTMLElement>("[data-ok-data-grid]") as HTMLElement;
+    const instance = runtime?.get<DataGridInstance>(root, "data-grid") as DataGridInstance;
+    return { host, root, instance };
+  };
+  const cellOf = (host: Element, rowId: string, field: string) =>
+    host.querySelector(
+      `[data-ok-row-id="${rowId}"] [role="gridcell"][data-ok-field="${field}"]`,
+    ) as HTMLElement;
+
+  it("reads pinned columns from the markup and keeps sticky offsets", () => {
+    const { host, instance } = setupAdvanced();
+    expect(instance.pinnedColumns).toEqual({ left: ["firstName"], right: ["actions"] });
+    expect(header(host, "firstName").style.getPropertyValue("--_ok-data-grid-pin")).toBe("0px");
+    expect(getComputedStyle(header(host, "actions")).position).toBe("sticky");
+  });
+
+  it("multi filters: add rows (with the logic field), or, remove", async () => {
+    const { host, root, instance } = setupAdvanced();
+    const panel = host.querySelector(`#${root.id}-filters`) as HTMLElement;
+    await userEvent.click(
+      host.querySelector(`[data-ok-popover-open="${root.id}-filters"]`) as HTMLElement,
+    );
+    await userEvent.selectOptions(panel.querySelector("select") as HTMLSelectElement, "age");
+    const rowsOf = () => [...panel.querySelectorAll<HTMLElement>("[data-ok-data-grid-filter]")];
+    await userEvent.selectOptions(
+      (rowsOf()[0] as HTMLElement).querySelectorAll("select")[1] as HTMLSelectElement,
+      "<",
+    );
+    await userEvent.type((rowsOf()[0] as HTMLElement).querySelector("input") as HTMLElement, "25");
+    await userEvent.click(panel.querySelector("[data-ok-data-grid-filter-add]") as HTMLElement);
+    const second = rowsOf()[1] as HTMLElement;
+    const [logic, field, operator] = second.querySelectorAll("select");
+    expect(logic?.id).toBe(`${root.id}-filter-logic-1`);
+    expect(second.querySelector("label")?.textContent).toBe("Logic operator");
+    expect(field?.id).toBe(`${root.id}-filter-field-1`);
+    await userEvent.selectOptions(field as HTMLSelectElement, "age");
+    await userEvent.selectOptions(operator as HTMLSelectElement, ">");
+    await userEvent.type(second.querySelector("input") as HTMLElement, "60");
+    await settle();
+    expect(visible(host, "age")).toEqual([]);
+    await userEvent.selectOptions(logic as HTMLSelectElement, "or");
+    await settle();
+    expect(instance.filterModel.logicOperator).toBe("or");
+    expect(visible(host, "age").length).toBeGreaterThan(0);
+    await userEvent.click(panel.querySelector("[data-ok-data-grid-filter-add]") as HTMLElement);
+    expect(
+      (
+        (rowsOf()[2] as HTMLElement).querySelector(
+          'select[id*="-filter-logic"]',
+        ) as HTMLSelectElement
+      ).disabled,
+    ).toBe(true);
+    await userEvent.click(
+      rowsOf()[0]?.querySelector("[data-ok-data-grid-filter-remove]") as HTMLElement,
+    );
+    expect(rowsOf()).toHaveLength(2);
+    expect(rowsOf()[0]?.querySelector('select[id*="-filter-logic"]')).toBeNull();
+    expect(rowsOf()[1]?.querySelector("select")?.id).toBe(`${root.id}-filter-logic-1`);
+    await userEvent.click(
+      rowsOf()[1]?.querySelector("[data-ok-data-grid-filter-remove]") as HTMLElement,
+    );
+    await userEvent.click(
+      rowsOf()[0]?.querySelector("[data-ok-data-grid-filter-remove]") as HTMLElement,
+    );
+    expect(rowsOf()).toHaveLength(1);
+    expect(instance.filterModel.items).toEqual([]);
+  });
+
+  it("resizing by handle and keyboard; reorder by drag and menu; pinning from the menu", async () => {
+    const { host, root, instance } = setupAdvanced();
+    const resized: unknown[] = [];
+    root.addEventListener("ok:data-grid:resize", (e) => resized.push((e as CustomEvent).detail));
+    const handle = header(host, "email").querySelector("[data-ok-data-grid-resize]") as HTMLElement;
+    const x = handle.getBoundingClientRect().left;
+    handle.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, clientX: x, button: 0 }));
+    document.dispatchEvent(new PointerEvent("pointerup", { bubbles: true, clientX: x - 40 }));
+    expect(resized).toEqual([{ field: "email", width: 220 }]);
+    expect(header(host, "actions").querySelector("[data-ok-data-grid-resize]")).toBeNull();
+    instance.setColumnWidth("actions", 300);
+    expect(instance.columnWidths).toEqual({ email: 220 });
+    header(host, "age").focus();
+    await userEvent.keyboard("{Alt>}{ArrowRight}{/Alt}");
+    expect(instance.columnWidths["age"]).toBe(100);
+    // Drag "age" onto "email" (scrolled back: the pinned column covers the start).
+    (host.querySelector('[role="grid"]') as HTMLElement).scrollLeft = 0;
+    const age = header(host, "age");
+    const email = header(host, "email").getBoundingClientRect();
+    age.dispatchEvent(
+      new PointerEvent("pointerdown", {
+        bubbles: true,
+        clientX: age.getBoundingClientRect().left + 5,
+        clientY: email.top + 5,
+        button: 0,
+      }),
+    );
+    document.dispatchEvent(
+      new PointerEvent("pointermove", {
+        bubbles: true,
+        clientX: email.left + 20,
+        clientY: email.top + 5,
+      }),
+    );
+    document.dispatchEvent(
+      new PointerEvent("pointerup", {
+        bubbles: true,
+        clientX: email.left + 20,
+        clientY: email.top + 5,
+      }),
+    );
+    expect(instance.columnOrder.slice(0, 4)).toEqual(["firstName", "lastName", "age", "email"]);
+    const firstCells = [
+      ...host.querySelectorAll('[data-ok-data-grid-body] > [role="row"] > [role="gridcell"]'),
+    ].slice(0, 4);
+    expect(firstCells.map((c) => c.getAttribute("data-ok-field"))).toEqual([
+      "firstName",
+      "lastName",
+      "age",
+      "email",
+    ]);
+    const menuOf = async (field: string) => {
+      await userEvent.hover(header(host, field));
+      await userEvent.click(
+        header(host, field).querySelector("[data-ok-data-grid-menu-button]") as HTMLElement,
+      );
+    };
+    const item = (action: string) =>
+      host.querySelector(
+        `#${root.id}-column-menu [data-ok-data-grid-action="${action}"]`,
+      ) as HTMLElement;
+    await menuOf("age");
+    await userEvent.click(item("right"));
+    expect(instance.columnOrder.slice(2, 4)).toEqual(["email", "age"]);
+    await menuOf("age");
+    await userEvent.click(item("left"));
+    await menuOf("team");
+    expect(item("unpin").getAttribute("aria-disabled")).toBe("true");
+    await userEvent.click(item("pin-left"));
+    expect(header(host, "team").getAttribute("data-ok-pinned")).toBe("left");
+    expect(instance.pinnedColumns.left).toEqual(["firstName", "team"]);
+    await menuOf("team");
+    await userEvent.click(item("pin-right"));
+    await menuOf("team");
+    await userEvent.click(item("unpin"));
+    expect(header(host, "team").hasAttribute("data-ok-pinned")).toBe(false);
+    instance.setColumnOrder(["email"]);
+    instance.setPinnedColumns({});
+    expect(header(host, "firstName").hasAttribute("data-ok-pinned")).toBe(false);
+    // Disabled options refuse.
+    root.setAttribute("data-ok-disable-column-resize", "");
+    instance.setColumnWidth("email", 400);
+    expect(instance.columnWidths["email"]).toBe(220);
+  });
+
+  it("cell editing: double click, Enter commits, Escape cancels, blur commits, refused edits restore", async () => {
+    const { host, root } = setupAdvanced();
+    const edits: unknown[] = [];
+    root.addEventListener("ok:data-grid:edit", (e) => edits.push((e as CustomEvent).detail));
+    await userEvent.dblClick(cellOf(host, "p-001", "firstName"));
+    const input = cellOf(host, "p-001", "firstName").querySelector("input") as HTMLInputElement;
+    expect(input.getAttribute("aria-label")).toBe("Edit First name");
+    expect(document.activeElement).toBe(input);
+    await userEvent.clear(input);
+    await userEvent.type(input, "Zed{Enter}");
+    expect(edits).toEqual([{ id: "p-001", row: { firstName: "Zed" } }]);
+    expect(cellOf(host, "p-001", "firstName").textContent).toBe("Zed");
+    expect(document.activeElement).toBe(cellOf(host, "p-001", "firstName"));
+    cellOf(host, "p-002", "age").focus();
+    await userEvent.keyboard("{F2}");
+    await userEvent.keyboard("{Control>}a{/Control}99{Escape}");
+    expect(cellOf(host, "p-002", "age").textContent).toBe("35");
+    await userEvent.dblClick(cellOf(host, "p-002", "team"));
+    await userEvent.selectOptions(
+      cellOf(host, "p-002", "team").querySelector("select") as HTMLSelectElement,
+      "Sales",
+    );
+    cellOf(host, "p-003", "email").focus();
+    expect(cellOf(host, "p-002", "team").textContent).toBe("Sales");
+    root.addEventListener("ok:data-grid:edit", (e) => e.preventDefault(), { once: true });
+    await userEvent.dblClick(cellOf(host, "p-003", "remote"));
+    await userEvent.click(cellOf(host, "p-003", "remote").querySelector("input") as HTMLElement);
+    await userEvent.keyboard("{Enter}");
+    expect(cellOf(host, "p-003", "remote").textContent).toBe("true");
+    // Not editable.
+    await userEvent.dblClick(cellOf(host, "p-001", "email"));
+    expect(cellOf(host, "p-001", "email").querySelector("input")).toBeNull();
+  });
+
+  it("row editing edits every editable cell; focus inside the row keeps it open", async () => {
+    const { host, root } = setupAdvanced();
+    root.setAttribute("data-ok-edit-mode", "row");
+    await userEvent.dblClick(cellOf(host, "p-004", "age"));
+    const row = host.querySelector('[data-ok-row-id="p-004"]') as HTMLElement;
+    expect(row.hasAttribute("data-ok-editing")).toBe(true);
+    expect(row.querySelectorAll("[data-ok-data-grid-edit-input]")).toHaveLength(6);
+    await userEvent.tab();
+    expect(row.querySelectorAll("[data-ok-data-grid-edit-input]")).toHaveLength(6);
+    await userEvent.keyboard("{Enter}");
+    expect(row.hasAttribute("data-ok-editing")).toBe(false);
+  });
+
+  it("print, value options from untrusted markup", async () => {
+    const print = vi.fn();
+    const append = document.body.append.bind(document.body);
+    vi.spyOn(document.body, "append").mockImplementation((...nodes) => {
+      append(...nodes);
+      for (const node of nodes)
+        if (node instanceof HTMLIFrameElement) (node.contentWindow as Window).print = print;
+    });
+    const host = mount(
+      ADVANCED.replace(/data-ok-value-options="[^"]*"/, 'data-ok-value-options="not json"'),
+    );
+    start();
+    const root = host.querySelector<HTMLElement>("[data-ok-data-grid]") as HTMLElement;
+    await userEvent.click(
+      host.querySelector(`[data-ok-popover-open="${root.id}-export"]`) as HTMLElement,
+    );
+    await userEvent.click(
+      host.querySelector(`#${root.id}-export [data-ok-data-grid-export="print"]`) as HTMLElement,
+    );
+    expect(print).toHaveBeenCalled();
+    document.querySelector("iframe")?.remove();
+    await userEvent.dblClick(cellOf(host, "p-001", "team"));
+    expect(cellOf(host, "p-001", "team").querySelectorAll("option")).toHaveLength(0);
+  });
+});
+
+describe("data grid runtime, phase 2 edges", () => {
+  it("pins the checkbox column with left pins; clicks after a resize don't sort; empty edits; outside clicks", async () => {
+    const host = mount(BASIC);
+    start();
+    const root = host.querySelector<HTMLElement>("[data-ok-data-grid]") as HTMLElement;
+    const instance = runtime?.get<DataGridInstance>(root, "data-grid") as DataGridInstance;
+    instance.setPinnedColumns({ left: ["age"] });
+    expect(
+      host
+        .querySelector('[role="columnheader"][data-ok-field="__check__"]')
+        ?.getAttribute("data-ok-pinned"),
+    ).toBe("left");
+    instance.setPinnedColumns({});
+    expect(instance.pinnedColumns).toEqual({ left: [], right: [] });
+    instance.setColumnWidth("age", 120);
+    expect(instance.columnWidths).toEqual({ age: 120 });
+    // A release that resized marks the header: its click doesn't sort.
+    const age = header(host, "age");
+    const handle = age.querySelector("[data-ok-data-grid-resize]") as HTMLElement;
+    handle.dispatchEvent(
+      new PointerEvent("pointerdown", { bubbles: true, clientX: 10, button: 0 }),
+    );
+    document.dispatchEvent(new PointerEvent("pointerup", { bubbles: true, clientX: 20 }));
+    age.click();
+    expect(age.getAttribute("aria-sort")).toBe("none");
+    // Double click outside cells; a click in the filter panel outside its buttons.
+    header(host, "firstName").dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
+    (host.querySelector(`#${root.id}-filters [data-ok-data-grid-panel]`) as HTMLElement).click();
+    expect(instance.filterModel.items).toEqual([]);
+  });
+
+  it("an emptied number shows nothing; print titles fall back to empty", async () => {
+    const print = vi.fn();
+    const append = document.body.append.bind(document.body);
+    vi.spyOn(document.body, "append").mockImplementation((...nodes) => {
+      append(...nodes);
+      for (const node of nodes)
+        if (node instanceof HTMLIFrameElement) (node.contentWindow as Window).print = print;
+    });
+    const host = mount(ADVANCED);
+    start();
+    const root = host.querySelector<HTMLElement>("[data-ok-data-grid]") as HTMLElement;
+    const cell = host.querySelector(
+      '[data-ok-row-id="p-001"] [data-ok-field="age"]',
+    ) as HTMLElement;
+    await userEvent.dblClick(cell);
+    await userEvent.clear(cell.querySelector("input") as HTMLElement);
+    await userEvent.keyboard("{Enter}");
+    expect(cell.textContent).toBe("");
+    host.querySelector('[role="grid"]')?.removeAttribute("aria-label");
+    await userEvent.click(
+      host.querySelector(`[data-ok-popover-open="${root.id}-export"]`) as HTMLElement,
+    );
+    await userEvent.click(
+      host.querySelector(`#${root.id}-export [data-ok-data-grid-export="print"]`) as HTMLElement,
+    );
+    expect(document.querySelector("iframe")?.contentDocument?.title).toBe("");
+    document.querySelector("iframe")?.remove();
+  });
+
+  it("turned-off features hide their parts", async () => {
+    const host = mount(ADVANCED);
+    start();
+    const root = host.querySelector<HTMLElement>("[data-ok-data-grid]") as HTMLElement;
+    for (const flag of ["resize", "reorder", "pinning"])
+      root.setAttribute(`data-ok-disable-column-${flag}`, "");
+    root.setAttribute("data-ok-disable-multiple-columns-filtering", "");
+    await settle();
+    const hidden = (selector: string) =>
+      [...host.querySelectorAll<HTMLElement>(selector)].every((part) => part.hidden);
+    expect(hidden("[data-ok-data-grid-resize]")).toBe(true);
+    expect(hidden('[data-ok-data-grid-action="left"], [data-ok-data-grid-action="pin-left"]')).toBe(
+      true,
+    );
+    expect(hidden("[data-ok-data-grid-filter-add]")).toBe(true);
   });
 });

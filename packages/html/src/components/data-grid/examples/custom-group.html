@@ -1,4 +1,4 @@
-<div data-ok-data-grid data-ok-density="standard" data-ok-checkbox-selection data-ok-disable-row-selection-on-click id="grid-custom" class="sb-grid">
+<div data-ok-data-grid data-ok-density="standard" data-ok-checkbox-selection data-ok-disable-row-selection-on-click data-ok-edit-mode="cell" id="grid-custom" class="sb-grid">
   <div data-ok-data-grid-toolbar>
     <div data-ok-data-grid-quick-filter>
       <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-full-width data-ok-margin="none">
@@ -80,6 +80,7 @@
       <span data-ok-popover-arrow aria-hidden="true"></span>
       <div data-ok-data-grid-panel role="group" aria-label="Filters">
         <div data-ok-data-grid-filter>
+          <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-filter-remove aria-label="Remove filter"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M6.4 5 12 10.6 17.6 5 19 6.4 13.4 12 19 17.6 17.6 19 12 13.4 6.4 19 5 17.6 10.6 12 5 6.4z" /></svg></button>
           <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none">
             <label data-ok-text-field-label for="grid-custom-filter-field">Columns</label>
             <div data-ok-text-field-control>
@@ -126,6 +127,7 @@
             </div>
           </div>
         </div>
+        <button type="button" data-ok-button data-ok-variant="text" data-ok-color="inherit" data-ok-size="sm" data-ok-data-grid-filter-add><span data-ok-button-icon="start" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z" /></svg></span><span data-ok-button-label>Add filter</span></button>
       </div>
     </div>
     <div popover="manual" data-ok-popover data-ok-placement="bottom-end" id="grid-custom-density">
@@ -140,6 +142,7 @@
       <span data-ok-popover-arrow aria-hidden="true"></span>
       <ul role="menu" data-ok-menu>
         <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-export="csv">Download as CSV</li>
+        <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-export="print">Print</li>
       </ul>
     </div>
   </div>
@@ -158,40 +161,48 @@
           <span data-ok-data-grid-header-title>Name</span>
           <span data-ok-data-grid-sort-icon><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 4l-6 6h4v10h4V10h4z" /></svg></span>
           <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-menu-button tabindex="-1" aria-label="Name column menu" aria-haspopup="menu" aria-expanded="false" aria-controls="grid-custom-column-menu"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg></button>
+          <span data-ok-data-grid-resize aria-hidden="true"></span>
         </div>
         <div role="columnheader" aria-colindex="3" data-ok-field="email" data-ok-type="string" data-ok-align="left" data-ok-min-width="200" data-ok-flex="1" aria-sort="none" tabindex="-1">
           <span data-ok-data-grid-header-title>Email</span>
           <span data-ok-data-grid-sort-icon><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 4l-6 6h4v10h4V10h4z" /></svg></span>
           <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-menu-button tabindex="-1" aria-label="Email column menu" aria-haspopup="menu" aria-expanded="false" aria-controls="grid-custom-column-menu"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg></button>
+          <span data-ok-data-grid-resize aria-hidden="true"></span>
         </div>
         <div role="columnheader" aria-colindex="4" data-ok-field="lastLogin" data-ok-type="dateTime" data-ok-align="right" data-ok-width="130" aria-sort="none" tabindex="-1">
           <span data-ok-data-grid-header-title>Last login</span>
           <span data-ok-data-grid-sort-icon><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 4l-6 6h4v10h4V10h4z" /></svg></span>
           <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-menu-button tabindex="-1" aria-label="Last login column menu" aria-haspopup="menu" aria-expanded="false" aria-controls="grid-custom-column-menu"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg></button>
+          <span data-ok-data-grid-resize aria-hidden="true"></span>
         </div>
         <div role="columnheader" aria-colindex="5" data-ok-field="rating" data-ok-type="number" data-ok-align="right" data-ok-width="150" aria-sort="none" tabindex="-1">
           <span data-ok-data-grid-header-title>Rating</span>
           <span data-ok-data-grid-sort-icon><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 4l-6 6h4v10h4V10h4z" /></svg></span>
           <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-menu-button tabindex="-1" aria-label="Rating column menu" aria-haspopup="menu" aria-expanded="false" aria-controls="grid-custom-column-menu"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg></button>
+          <span data-ok-data-grid-resize aria-hidden="true"></span>
         </div>
         <div role="columnheader" aria-colindex="6" data-ok-field="status" data-ok-type="singleSelect" data-ok-align="center" data-ok-width="110" aria-sort="none" tabindex="-1">
           <span data-ok-data-grid-header-title>Status</span>
           <span data-ok-data-grid-sort-icon><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 4l-6 6h4v10h4V10h4z" /></svg></span>
           <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-menu-button tabindex="-1" aria-label="Status column menu" aria-haspopup="menu" aria-expanded="false" aria-controls="grid-custom-column-menu"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg></button>
+          <span data-ok-data-grid-resize aria-hidden="true"></span>
         </div>
         <div role="columnheader" aria-colindex="7" data-ok-field="isAdmin" data-ok-type="boolean" data-ok-align="center" data-ok-width="90" aria-sort="none" tabindex="-1">
           <span data-ok-data-grid-header-title>Admin</span>
           <span data-ok-data-grid-sort-icon><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 4l-6 6h4v10h4V10h4z" /></svg></span>
           <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-menu-button tabindex="-1" aria-label="Admin column menu" aria-haspopup="menu" aria-expanded="false" aria-controls="grid-custom-column-menu"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg></button>
+          <span data-ok-data-grid-resize aria-hidden="true"></span>
         </div>
         <div role="columnheader" aria-colindex="8" data-ok-field="performance" data-ok-type="number" data-ok-align="right" data-ok-width="160" aria-sort="none" tabindex="-1">
           <span data-ok-data-grid-header-title>Performance</span>
           <span data-ok-data-grid-sort-icon><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 4l-6 6h4v10h4V10h4z" /></svg></span>
           <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-menu-button tabindex="-1" aria-label="Performance column menu" aria-haspopup="menu" aria-expanded="false" aria-controls="grid-custom-column-menu"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg></button>
+          <span data-ok-data-grid-resize aria-hidden="true"></span>
         </div>
         <div role="columnheader" aria-colindex="9" data-ok-field="actions" data-ok-type="actions" data-ok-align="left" data-ok-width="80" data-ok-hideable="false" tabindex="-1">
           <span data-ok-data-grid-header-title>Actions</span>
           <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-menu-button tabindex="-1" aria-label="Actions column menu" aria-haspopup="menu" aria-expanded="false" aria-controls="grid-custom-column-menu"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg></button>
+          <span data-ok-data-grid-resize aria-hidden="true"></span>
         </div>
       </div>
     </div>
@@ -605,6 +616,11 @@
       <li role="menuitem" tabindex="-1" data-ok-menu-item aria-disabled="true" data-ok-data-grid-action="asc">Sort by ASC</li>
       <li role="menuitem" tabindex="-1" data-ok-menu-item aria-disabled="true" data-ok-data-grid-action="desc">Sort by DESC</li>
       <li role="menuitem" tabindex="-1" data-ok-menu-item aria-disabled="true" data-ok-data-grid-action="unsort">Unsort</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item aria-disabled="true" data-ok-data-grid-action="left">Move left</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="right">Move right</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="pin-left">Pin to left</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="pin-right">Pin to right</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item aria-disabled="true" data-ok-data-grid-action="unpin">Unpin</li>
       <li role="menuitem" tabindex="-1" data-ok-menu-item aria-disabled="true" data-ok-data-grid-action="filter">Filter</li>
       <li role="menuitem" tabindex="-1" data-ok-menu-item aria-disabled="true" data-ok-data-grid-action="hide">Hide column</li>
       <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="columns">Manage columns</li>

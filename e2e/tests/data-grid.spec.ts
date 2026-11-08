@@ -80,5 +80,41 @@ for (const impl of implementations) {
       await page.getByRole("switch", { name: "Email" }).tap();
       await expect(page.getByRole("columnheader", { name: /^Email/ })).toHaveCount(0);
     });
+
+    test("advanced: resize, pin, edit and filter with two conditions", async ({
+      page,
+      isMobile,
+    }) => {
+      await openStory(page, storyId(impl, "datagrid", "advanced"));
+      const email = page.locator('[role="columnheader"][data-ok-field="email"]');
+      if (!isMobile) {
+        const handle = email.locator("[data-ok-data-grid-resize]");
+        const box = (await handle.boundingBox()) as { x: number; y: number };
+        await page.mouse.move(box.x + 4, box.y + 10);
+        await page.mouse.down();
+        await page.mouse.move(box.x - 56, box.y + 10, { steps: 4 });
+        await page.mouse.up();
+        expect(Math.round((await email.boundingBox())?.width ?? 0)).toBe(200);
+      }
+      await email.focus();
+      await page.keyboard.press("Control+Enter");
+      await page.getByRole("menuitem", { name: "Pin to left" }).click();
+      await expect(email).toHaveAttribute("data-ok-pinned", "left");
+      const age = page
+        .locator('[data-ok-data-grid-body] > [role="row"]:not([hidden])')
+        .first()
+        .locator('[data-ok-field="age"]');
+      // Enter on a focused cell edits it (double click does too, with a mouse).
+      await age.focus();
+      await page.keyboard.press("Enter");
+      await page.keyboard.press("Control+a");
+      await page.keyboard.type("77");
+      await page.keyboard.press("Enter");
+      await expect(age).toHaveText("77");
+      await page.getByRole("button", { name: "Filters" }).click();
+      await page.getByRole("button", { name: "Add filter" }).click();
+      await expect(page.locator("[data-ok-data-grid-filter]")).toHaveCount(2);
+      await expect(page.getByLabel("Logic operator")).toBeVisible();
+    });
   });
 }

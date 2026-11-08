@@ -8,7 +8,8 @@
  *                  › div[role=rowgroup][data-ok-data-grid-body] › div[role=row] › div[role=gridcell]
  *              › div[data-ok-data-grid-overlay] (no rows / no results)
  *              › div[data-ok-data-grid-footer] › TablePagination
- * Modifiers: data-ok-density = compact | standard (default) | comfortable; cells: data-ok-align
+ * Modifiers: data-ok-density = compact | standard (default) | comfortable; cells: data-ok-align,
+ *            data-ok-pinned = left | right (sticky, --_ok-data-grid-pin offset), data-ok-editing
  * States:    row aria-selected, header aria-sort, column menu open (data-ok-open on its button)
  * Private:   --_ok-data-grid-columns (column tracks, written by the owner)
  *
@@ -244,6 +245,7 @@
     }
 
     :where([data-ok-data-grid-body] > [role="row"]:hover) {
+      --_ok-data-grid-row-bg: var(--ok-action-hover);
       background-color: var(--ok-action-hover);
     }
   }
@@ -255,6 +257,7 @@
   }
 
   :where([data-ok-data-grid-body] > [role="row"][aria-selected="true"]) {
+    --_ok-data-grid-row-bg: rgb(var(--ok-palette-primary-main-channel) / 0.08);
     background-color: rgb(var(--ok-palette-primary-main-channel) / 0.08);
   }
 
@@ -299,9 +302,108 @@
 
   :where([data-ok-data-grid-panel] > [data-ok-data-grid-filter]) {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(calc(var(--ok-spacing) * 36), 1fr));
+    /* The remove button, then fields of at least 128px (auto-fit needs fixed tracks around it). */
+    grid-template-columns: calc(var(--ok-spacing) * 8) repeat(
+        auto-fit,
+        minmax(calc(var(--ok-spacing) * 32), 1fr)
+      );
+    align-items: center;
     gap: calc(var(--ok-spacing) * 2);
-    width: min(calc(var(--ok-spacing) * 140), calc(100vw - var(--ok-spacing) * 16));
+    width: min(calc(var(--ok-spacing) * 170), calc(100vw - var(--ok-spacing) * 16));
+  }
+
+  /* Pinned columns stick to their side over the scrolling ones (offsets from the owner). */
+  :where([data-ok-data-grid-main] [data-ok-pinned]) {
+    position: sticky;
+    z-index: 1;
+    background-color: var(--ok-bg-paper);
+    background-image: linear-gradient(
+      var(--_ok-data-grid-row-bg, transparent),
+      var(--_ok-data-grid-row-bg, transparent)
+    );
+  }
+
+  :where([data-ok-data-grid-main] [data-ok-pinned="left"]) {
+    left: var(--_ok-data-grid-pin, 0);
+  }
+
+  :where([data-ok-data-grid-main] [data-ok-pinned="right"]) {
+    right: var(--_ok-data-grid-pin, 0);
+  }
+
+  :where([data-ok-data-grid-header] [data-ok-pinned]) {
+    z-index: 2;
+    background-color: var(--ok-bg-neutral);
+  }
+
+  /* The edge between pinned and scrolling columns. */
+  :where([data-ok-data-grid-main] [data-ok-pinned="left"]:not(:has(+ [data-ok-pinned="left"]))) {
+    box-shadow: 1px 0 0 var(--ok-divider);
+  }
+
+  :where([data-ok-data-grid-main] :not([data-ok-pinned="right"]) + [data-ok-pinned="right"]) {
+    box-shadow: -1px 0 0 var(--ok-divider);
+  }
+
+  /* Resize handle: the header's end edge; a line shows on hover and while dragging. */
+  :where([data-ok-data-grid-resize]) {
+    position: absolute;
+    inset-block: 0;
+    inset-inline-end: 0;
+    z-index: 1;
+    width: calc(var(--ok-spacing) * 2);
+    cursor: col-resize;
+    touch-action: none;
+  }
+
+  :where([data-ok-data-grid-resize])::after {
+    position: absolute;
+    inset-block: 20%;
+    inset-inline-end: 0;
+    width: 2px;
+    background-color: var(--ok-palette-primary-main);
+    opacity: 0;
+    content: "";
+  }
+
+  @media (hover: hover) {
+    :where([data-ok-data-grid-resize]:hover)::after {
+      opacity: 1;
+    }
+  }
+
+  :where([data-ok-data-grid-main] [role="columnheader"][data-ok-dragging]) {
+    opacity: 0.48;
+  }
+
+  /* Editing: the field fills the cell. */
+  :where([data-ok-data-grid-main] [role="gridcell"][data-ok-editing]) {
+    padding: 0;
+  }
+
+  :where([data-ok-data-grid-edit-input]) {
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding-inline: var(--_ok-data-grid-pad);
+    border: 0;
+    background-color: var(--ok-bg-paper);
+    color: inherit;
+    font: inherit;
+    outline: 2px solid var(--ok-palette-primary-main);
+    outline-offset: -2px;
+  }
+
+  :where([data-ok-data-grid-edit-input][type="checkbox"]) {
+    width: calc(var(--ok-spacing) * 5);
+    height: calc(var(--ok-spacing) * 5);
+    margin-inline: auto;
+    accent-color: var(--ok-palette-primary-main);
+  }
+
+  :where([data-ok-data-grid-panel] > [data-ok-data-grid-filter-add]) {
+    align-self: flex-start;
   }
 
   @media (prefers-reduced-motion: reduce) {

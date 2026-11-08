@@ -2,7 +2,7 @@
 
 Reference: Minimal UI kit "Data grid" page, sections Basic and Custom (content only). Upstream:
 MUI X Data Grid, every tier (Community, Pro, Premium) — the owner's request; built in phases
-(ADR-0020). This spec covers phase 1. Created with `/component`.
+(ADR-0020). This spec covers phases 1 and 2. Created with `/component`; phase 2 by Update.
 Reference URL: https://minimals.cc/components/mui/data-grid
 
 ## Purpose
@@ -20,23 +20,30 @@ div[data-ok-data-grid][data-ok-density][data-ok-checkbox-selection]?[data-ok-dis
     div[data-ok-data-grid-toolbar-actions] › Button × (Columns, Filters, Density, Export)
          [aria-haspopup][aria-controls="<id>-columns|filters|density|export"] (HTML: data-ok-popover-open)
     Popover#<id>-columns › div[data-ok-data-grid-panel][role=group] › FormControlLabel(Switch[data-ok-field])…
-    Popover#<id>-filters › div[data-ok-data-grid-panel][role=group] › div[data-ok-data-grid-filter]
-         › TextField select (column), TextField select (operator), TextField (value)
+    Popover#<id>-filters › div[data-ok-data-grid-panel][role=group]
+         › div[data-ok-data-grid-filter]… › IconButton[data-ok-data-grid-filter-remove],
+           (rows 2+) TextField select #<id>-filter-logic-<n> (and / or; disabled after row 2),
+           TextField select (column), TextField select (operator), TextField (value)
+         › Button[data-ok-data-grid-filter-add]                              (not disableMultipleColumnsFiltering)
     Menu#<id>-density › MenuItem[data-ok-density][data-ok-selected]? ×3
-    Menu#<id>-export › MenuItem[data-ok-data-grid-export=csv]
+    Menu#<id>-export › MenuItem[data-ok-data-grid-export=csv|print]
   div[role=grid][data-ok-data-grid-main][aria-label][aria-rowcount][aria-colcount][aria-multiselectable]?
       (--_ok-data-grid-columns: one track per shown column)
     div[role=rowgroup][data-ok-data-grid-header] › div[role=row][aria-rowindex=1]
       div[role=columnheader][data-ok-field=__check__][data-ok-data-grid-checkbox] › Checkbox (select all)
       div[role=columnheader][aria-colindex][data-ok-field][data-ok-type][data-ok-align][aria-sort]?
-         [data-ok-width|min-width|flex]?[data-ok-hideable=false]?[data-ok-filterable=false]?[hidden]?
+         [data-ok-width|min-width|flex]?[data-ok-hideable=false]?[data-ok-filterable=false]?
+         [data-ok-resizable=false]?[data-ok-editable]?[data-ok-value-options='["…"]']?[data-ok-pinned]?[hidden]?
         span[data-ok-data-grid-header-title] · span[data-ok-data-grid-sort-icon] · IconButton[data-ok-data-grid-menu-button]
+        · span[data-ok-data-grid-resize][aria-hidden]                         (resizable)
     div[role=rowgroup][data-ok-data-grid-body]
-      div[role=row][aria-rowindex][data-ok-row-id][aria-selected]?[hidden]?   (hidden: other pages / filtered out)
+      div[role=row][aria-rowindex][data-ok-row-id][aria-selected]?[data-ok-editing]?[hidden]?
+        (hidden: other pages / filtered out; data-ok-editing: row edit mode)
         div[role=gridcell][data-ok-data-grid-checkbox] › Checkbox
-        div[role=gridcell][aria-colindex][data-ok-field][data-ok-align][data-ok-value]?[data-ok-text]?[hidden]?
+        div[role=gridcell][aria-colindex][data-ok-field][data-ok-align][data-ok-value]?[data-ok-text]?
+           [data-ok-pinned]?[data-ok-editing]?[hidden]?   (editing: input|select[data-ok-data-grid-edit-input])
   div[data-ok-data-grid-overlay][role=status][hidden]?   ("No rows" / "No results found.")
-  Menu#<id>-column-menu › MenuItem[data-ok-data-grid-action=asc|desc|unsort|filter|hide|columns]
+  Menu#<id>-column-menu › MenuItem[data-ok-data-grid-action=asc|desc|unsort|left|right|pin-left|pin-right|unpin|filter|hide|columns]
   div[data-ok-data-grid-footer] › TablePagination[data-ok-count]   (HTML: count written by the grid)
 ```
 Every cell, and every control inside one, renders `tabindex="-1"`; the navigation controller moves
@@ -53,6 +60,11 @@ Root: `data-ok-data-grid`. Unknown values fall back to the default.
 | `disableRowSelectionOnClick` | `data-ok-disable-row-selection-on-click` | flag | boolean | off | Clicking a row doesn't select it (only its checkbox does). |
 | `disableColumnMenu` | `data-ok-disable-column-menu` | flag | boolean | off | No column menu in the headers. |
 | `disableMultipleColumnsSorting` | `data-ok-disable-multiple-columns-sorting` | flag | boolean | off | Shift doesn't add columns to the sort. |
+| `disableMultipleColumnsFiltering` | `data-ok-disable-multiple-columns-filtering` | flag | boolean | off | The filter panel keeps one filter (no Add filter). |
+| `disableColumnResize` | `data-ok-disable-column-resize` | flag | boolean | off | Columns can't be resized. |
+| `disableColumnReorder` | `data-ok-disable-column-reorder` | flag | boolean | off | Columns can't be moved. |
+| `disableColumnPinning` | `data-ok-disable-column-pinning` | flag | boolean | off | Columns can't be pinned. |
+| `editMode` | `data-ok-edit-mode="…"` | style | `cell` `row` | `cell` | Editable columns: edit one `cell` at a time, or every editable cell of a `row` together. |
 <!-- /options:data-grid -->
 
 React props (MUI X names): `rows`, `columns` (`GridColDef`: `field`, `headerName`, `type`
@@ -64,9 +76,16 @@ string | number | date | dateTime | boolean | singleSelect | actions, `width` (1
 `onPaginationModelChange`, `pageSizeOptions` ([5, 10, 25]), `columnVisibilityModel` /
 `onColumnVisibilityModelChange`, `density` / `onDensityChange`, `initialState`, `showToolbar`,
 `disableColumnSorting`, `disableColumnFilter`, `disableColumnSelector`, `disableDensitySelector`,
-`hideFooter`, `localeText`, `exportFileName`. Renamed: `rowSelectionModel` is an id array (MUI v8:
-`{ type, ids }`). Later phases: see ADR-0020 (multi filters, resizing, reordering, pinning,
-editing, print, virtualization, server data, tree data, master-detail, row reordering / pinning,
+`hideFooter`, `localeText`, `exportFileName`. Phase 2: `filterModel.logicOperator`,
+`disableMultipleColumnsFiltering`, `resizable` (column), `disableColumnResize`,
+`onColumnWidthChange(field, width)`, `initialState.columns.dimensions`, `columnOrder` /
+`onColumnOrderChange(fields)` / `initialState.columns.orderedFields`, `disableColumnReorder`,
+`pinnedColumns` / `onPinnedColumnsChange` / `initialState.pinnedColumns`, `disableColumnPinning`,
+`editable` (column; not with `valueGetter` or `actions`), `editMode` (cell | row),
+`processRowUpdate(newRow, oldRow)` (value or promise; rejection keeps the row),
+`onProcessRowUpdateError`. Beyond MUI X (accessibility): Alt + Left / Right resizes, column menu
+Move left / Move right. Renamed: `rowSelectionModel` is an id array (MUI v8:
+`{ type, ids }`). Later phases: see ADR-0020 (virtualization, server data, tree data, master-detail, row reordering / pinning,
 column groups, row grouping, aggregation, pivoting, Excel, clipboard, cell selection, header
 filters). Not applicable: `slots`, `slotProps`, `sx`, `classes`, license keys.
 
@@ -90,7 +109,17 @@ row click (not on controls; off with `disableRowSelectionOnClick`), Space, Ctrl 
 menu: sort asc / desc, unsort, filter (opens the filter panel on that column), hide, manage
 columns (the last two need the toolbar). Columns panel: one switch per hideable column. Density
 menu. Export: CSV (BOM, CRLF, header names, shown non-action columns, filtered and sorted rows;
-`=`, `+`, `-`, `@`, tab and CR prefixed with `'`).
+`=`, `+`, `-`, `@`, tab and CR prefixed with `'`) and Print (core `printGridContent`: a hidden
+iframe with copies of the page's style sheets and of the grid as shown; no markup strings).
+Filters: rows combine with and (default) or or; removing the last row clears the filter.
+Resizing: drag the end edge of a header (core `createGridColumnControls`) or Alt + arrows
+(10px); widths at least `minWidth`; the release doesn't sort. Reordering: drag a header onto
+another, or Move left / right. Pinning: Pin to left / right, Unpin; pinned cells are sticky
+(`syncGridPinning` measures header widths into `--_ok-data-grid-pin`), the checkbox column joins
+the left side. Editing: double click, Enter or F2 on an editable cell; text / number / date /
+datetime-local inputs, a select for `singleSelect`, a checkbox for `boolean`; Enter commits, Escape
+cancels, leaving the cell (row mode: the row) commits; focus returns to the cell. HTML shows the
+committed value as text (no formatters) and fires `ok:data-grid:edit` (cancelable).
 
 ## Keyboard
 | Key | Action |
@@ -103,6 +132,8 @@ menu. Export: CSV (BOM, CRLF, header names, shown non-action columns, filtered a
 | Ctrl / Cmd + Enter (header) | Column menu |
 | Space (cell) | Toggle the row's selection |
 | Ctrl / Cmd + A | Select / clear every row |
+| Alt + ← / → (header) | Narrower / wider by 10px |
+| Enter / F2 (editable cell) | Edit; in the field: Enter commits, Escape cancels |
 
 ## Accessibility
 `role=grid` named by `aria-label` / `aria-labelledby` (never the root), counts and indexes,
@@ -111,9 +142,12 @@ menu. Export: CSV (BOM, CRLF, header names, shown non-action columns, filtered a
 "<header> column menu". The overlay is a `status`.
 
 ## Events / API
-HTML: `ok:data-grid:sort | filter | selection | columns | density` (cancelable, `{ model }`);
-instance `{ sortModel, filterModel, selection, columnVisibilityModel, setSortModel,
-setFilterModel, setSelection, setColumnVisibilityModel, toCsv(), exportCsv() }`.
+HTML: `ok:data-grid:sort | filter | selection | columns | density | order | pinned` (cancelable,
+`{ model }`), `ok:data-grid:resize` (`{ field, width }`), `ok:data-grid:edit` (cancelable,
+`{ id, row }`: the edited fields); instance `{ sortModel, filterModel, selection,
+columnVisibilityModel, columnOrder, pinnedColumns, columnWidths, setSortModel, setFilterModel,
+setSelection, setColumnVisibilityModel, setColumnOrder, setPinnedColumns, setColumnWidth,
+toCsv(), exportCsv() }`.
 Attributes: `data-ok-label-no-rows`, `data-ok-label-no-results`, `data-ok-export-file-name`.
 
 ## Responsive

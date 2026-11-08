@@ -340,3 +340,9 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
   after the pagination's own setup.
 - Generated snippets: keep inline label content on one line (`data-ok-table-pagination-rows`):
   Firefox measures a sentence split across text runs a fraction of a pixel differently.
+- Data grid phase 2: auto-fit grid tracks can't sit next to intrinsic tracks (`auto
+  repeat(auto-fit, …)` is invalid and the grid falls back to one column): give fixed tracks.
+  Moving rows or cells in the DOM drops the focus: re-sort before focusing (HTML editing).
+  Pinned cells need an opaque background, so row hover / selected colors go through
+  `--_ok-data-grid-row-bg`, painted over the paper. In Playwright's touch context `dblclick` hangs:
+  e2e edits with Enter on the focused cell.

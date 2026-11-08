@@ -1323,6 +1323,7 @@ describe("overlay attributes", () => {
     expect(dataGridAttributes()).toEqual({
       "data-ok-data-grid": "",
       "data-ok-density": "standard",
+      "data-ok-edit-mode": "cell",
     });
     expect(
       dataGridAttributes({
@@ -1331,10 +1332,20 @@ describe("overlay attributes", () => {
         disableRowSelectionOnClick: true,
         disableColumnMenu: true,
         disableMultipleColumnsSorting: true,
+        disableMultipleColumnsFiltering: true,
+        disableColumnResize: true,
+        disableColumnReorder: true,
+        disableColumnPinning: true,
+        editMode: "row",
       }),
     ).toEqual({
       "data-ok-data-grid": "",
       "data-ok-density": "compact",
+      "data-ok-edit-mode": "row",
+      "data-ok-disable-multiple-columns-filtering": "",
+      "data-ok-disable-column-resize": "",
+      "data-ok-disable-column-reorder": "",
+      "data-ok-disable-column-pinning": "",
       "data-ok-checkbox-selection": "",
       "data-ok-disable-row-selection-on-click": "",
       "data-ok-disable-column-menu": "",

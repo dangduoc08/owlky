@@ -20,6 +20,10 @@ export interface GridNavigationOptions {
   onToggleRow(row: HTMLElement): void;
   /** Ctrl / Cmd + A: select every row. */
   onSelectAll(): void;
+  /** Enter or F2 on a body cell: start editing it. */
+  onEdit?(cell: HTMLElement): void;
+  /** Alt + Left / Right on a header: make the column narrower / wider by `delta` px. */
+  onResizeKey?(field: string, delta: number): void;
 }
 
 export interface GridNavigation {
@@ -140,6 +144,23 @@ export function createGridNavigation(
         event.preventDefault();
         if (ctrl && event.key === "Enter") options.onColumnMenu(field, cell);
         else if (cell.hasAttribute("aria-sort")) options.onSort(field, event.shiftKey);
+        return;
+      }
+      if (
+        header &&
+        field &&
+        event.altKey &&
+        (event.key === "ArrowLeft" || event.key === "ArrowRight")
+      ) {
+        event.preventDefault();
+        options.onResizeKey?.(field, event.key === "ArrowLeft" ? -10 : 10);
+        return;
+      }
+      if (!header && (event.key === "Enter" || event.key === "F2") && target === cell) {
+        if (options.onEdit) {
+          event.preventDefault();
+          options.onEdit(cell);
+        }
         return;
       }
       if (!header && event.key === " " && target === cell) {
