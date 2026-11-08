@@ -48,6 +48,10 @@ export interface GridColumn {
   description?: string | undefined;
   /** The quick filter searches this column (default true for filterable columns). */
   searchable?: boolean | undefined;
+  /** Rows can be grouped by this column. Default true. */
+  groupable?: boolean | undefined;
+  /** The column can be aggregated. Default true. */
+  aggregable?: boolean | undefined;
 }
 
 export type GridSortDirection = "asc" | "desc";
@@ -224,9 +228,11 @@ export function syncGridPinning(grid: HTMLElement): void {
   const headerGroup = grid.querySelector<HTMLElement>("[data-ok-data-grid-header]");
   if (headerGroup)
     grid.style.setProperty("--_ok-data-grid-header-offset", `${headerGroup.offsetHeight}px`);
-  // The column headers' row: the last header row (column groups come first).
+  // The column headers' row: the last header row (column groups come first, filters after).
   const header = [
-    ...grid.querySelectorAll<HTMLElement>('[data-ok-data-grid-header] > [role="row"]'),
+    ...grid.querySelectorAll<HTMLElement>(
+      '[data-ok-data-grid-header] > [role="row"]:not([data-ok-data-grid-header-filters])',
+    ),
   ].at(-1);
   if (!header) return;
   const cells = [...header.querySelectorAll<HTMLElement>('[role="columnheader"]')].filter(
@@ -705,6 +711,38 @@ export const gridDefaultLabels = {
   rowReorderingHandle: "Drag or press Alt + arrows to move the row",
   /** `{position}` and `{count}` are replaced. */
   rowReorderingMoved: "Row moved to position {position} of {count}",
+  toolbarExportExcel: "Download as Excel",
+  toolbarPivot: "Pivot",
+  toolbarCharts: "Chart",
+  /** `{name}` is replaced by the header name. */
+  columnMenuGroupBy: "Group by {name}",
+  columnMenuUngroup: "Stop grouping by {name}",
+  aggregationMenuItemHeader: "Aggregation",
+  aggregationMenuItemNone: "none",
+  aggregationFunctionLabelSum: "sum",
+  aggregationFunctionLabelAvg: "avg",
+  aggregationFunctionLabelMin: "min",
+  aggregationFunctionLabelMax: "max",
+  aggregationFunctionLabelSize: "size",
+  pivotActive: "Pivot",
+  pivotRows: "Rows",
+  pivotColumns: "Columns",
+  pivotValues: "Values",
+  pivotNotUsed: "Not used",
+  pivotAggregation: "Function",
+  chartsType: "Chart type",
+  chartsDimension: "Category",
+  chartsValues: "Series",
+  chartsNone: "None",
+  chartTypeColumn: "Column",
+  chartTypeBar: "Bar",
+  chartTypeLine: "Line",
+  chartTypeArea: "Area",
+  chartLabel: "Chart of the data",
+  headerFilterLabel: "filter",
+  filterValueAny: "any",
+  filterValueTrue: "true",
+  filterValueFalse: "false",
   filterOperator: {
     contains: "contains",
     doesNotContain: "does not contain",

@@ -85,6 +85,8 @@ for (const impl of implementations) {
       page,
       isMobile,
     }) => {
+      // Two pinned columns fill a phone's width: the columns in between wouldn't render.
+      if (isMobile) await page.setViewportSize({ width: 1024, height: 900 });
       await openStory(page, storyId(impl, "datagrid", "advanced"));
       const email = page.locator('[role="columnheader"][data-ok-field="email"]');
       if (!isMobile) {
@@ -284,6 +286,71 @@ for (const impl of implementations) {
       ).toHaveAttribute("aria-rowindex", /^4\d\d\d|^5\d\d\d/);
       expect(await page.locator('[data-ok-data-grid-body] > [role="row"]').count()).toBeLessThan(
         40,
+      );
+    });
+
+    test("row grouping, aggregation and pivoting", async ({ page }) => {
+      await openStory(page, storyId(impl, "datagrid", "row-grouping"));
+      const north = page.locator('[data-ok-row-id="auto-generated-row-region/North"]').first();
+      await expect(north).toContainText("North(6)");
+      await north.locator("[data-ok-data-grid-tree-toggle]").click();
+      await expect(north).toHaveAttribute("aria-expanded", "true");
+      await expect(page.locator('[data-ok-parent="auto-generated-row-region/North"]')).toHaveCount(
+        6,
+      );
+      await expect(page.locator("[data-ok-data-grid-aggregation-row]")).toHaveCount(1);
+      // Tree data: generated parents.
+      await expect(
+        page.locator('[data-ok-row-id="auto-generated-row-Images/Photos"]'),
+      ).toContainText("Photos");
+
+      await openStory(page, storyId(impl, "datagrid", "pivoting"));
+      await expect(page.locator('[data-ok-data-grid-group-row] [role="columnheader"]')).toHaveText([
+        "2024",
+        "2025",
+      ]);
+      await page.getByRole("button", { name: "Pivot" }).click();
+      await page.getByRole("switch", { name: "Pivot" }).click();
+      await expect(page.getByRole("grid", { name: "Revenue by region and year" })).toBeVisible();
+    });
+
+    test("cell selection, clipboard and header filters", async ({ page, browserName, context }) => {
+      await openStory(page, storyId(impl, "datagrid", "cell-selection"));
+      const name = (id: string) => page.locator(`[data-ok-row-id="${id}"] [data-ok-field="name"]`);
+      await name("i-1").click();
+      await page.locator('[data-ok-row-id="i-2"] [data-ok-field="stock"]').click({
+        modifiers: ["Shift"],
+      });
+      await expect(name("i-2")).toHaveAttribute("aria-selected", "true");
+      await expect(page.locator('[role="gridcell"][aria-selected="true"]')).toHaveCount(6);
+      if (browserName === "chromium") {
+        // The browser's own copy: what the clipboard holds afterwards.
+        await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+        await page.keyboard.press("ControlOrMeta+c");
+        expect(await page.evaluate(() => navigator.clipboard.readText())).toMatch(
+          /^Kettle\tBrewing\t5\r?\nMug\tServing\t18$/,
+        );
+        await name("i-4").click();
+        await page.keyboard.press("ControlOrMeta+v");
+        await expect(name("i-4")).toHaveText("Kettle");
+      }
+      const filter = page.locator("#grid-cells-header-filter-name");
+      await filter.fill("teapot");
+      await expect(
+        page.locator('[data-ok-data-grid-body] > [role="row"]:not([hidden])'),
+      ).toHaveCount(1);
+    });
+
+    test("charts integration follows the grid", async ({ page }) => {
+      await openStory(page, storyId(impl, "datagrid", "charts"));
+      const table = page.locator("[data-ok-data-grid-chart] [data-ok-chart-data] tbody tr");
+      await expect(table).toHaveCount(3);
+      await expect(page.locator("[data-ok-data-grid-chart] [data-ok-chart-svg]")).toBeVisible();
+      await page.getByRole("button", { name: "Chart" }).click();
+      await page.getByLabel("Chart type").selectOption("line");
+      await expect(page.locator("[data-ok-data-grid-chart] [data-ok-chart]")).toHaveAttribute(
+        "data-ok-type",
+        "line",
       );
     });
   });

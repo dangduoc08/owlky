@@ -12,6 +12,14 @@ import type {
   GridSortModel,
 } from "./data-grid.js";
 import { gridDensities } from "./data-grid.js";
+import {
+  type GridAggregationModel,
+  type GridChartModel,
+  type GridPivotModel,
+  parseGridAggregationModel,
+  sanitizeGridChartModel,
+  sanitizeGridPivotModel,
+} from "./grid-premium.js";
 import type { GridRowWindow } from "./grid-virtual.js";
 import { GRID_ROW_BUFFER } from "./grid-virtual.js";
 
@@ -176,6 +184,11 @@ export interface GridState {
     | undefined;
   pinnedColumns?: GridPinnedColumns | undefined;
   density?: GridDensity | undefined;
+  /** Phase 6 (MUI X Premium). */
+  rowGrouping?: { model?: string[] | undefined } | undefined;
+  aggregation?: { model?: GridAggregationModel | undefined } | undefined;
+  pivoting?: { model?: GridPivotModel | undefined; active?: boolean | undefined } | undefined;
+  chartsIntegration?: { model?: GridChartModel | undefined } | undefined;
 }
 
 const UNSAFE = new Set(["__proto__", "constructor", "prototype"]);
@@ -276,6 +289,25 @@ export function sanitizeGridState(input: unknown): GridState {
   }
   if (gridDensities.includes(input["density"] as GridDensity))
     state.density = input["density"] as GridDensity;
+  const grouping = isRecord(input["rowGrouping"])
+    ? strings(input["rowGrouping"]["model"])
+    : undefined;
+  if (grouping) state.rowGrouping = { model: grouping.filter((f) => !UNSAFE.has(f)) };
+  if (isRecord(input["aggregation"]) && isRecord(input["aggregation"]["model"]))
+    state.aggregation = {
+      model: parseGridAggregationModel(JSON.stringify(input["aggregation"]["model"])),
+    };
+  if (isRecord(input["pivoting"])) {
+    const pivoting = input["pivoting"];
+    state.pivoting = {
+      ...(isRecord(pivoting["model"]) ? { model: sanitizeGridPivotModel(pivoting["model"]) } : {}),
+      ...(typeof pivoting["active"] === "boolean" ? { active: pivoting["active"] } : {}),
+    };
+  }
+  if (isRecord(input["chartsIntegration"]) && isRecord(input["chartsIntegration"]["model"]))
+    state.chartsIntegration = {
+      model: sanitizeGridChartModel(input["chartsIntegration"]["model"]),
+    };
   return state;
 }
 

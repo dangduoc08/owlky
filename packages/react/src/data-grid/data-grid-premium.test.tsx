@@ -1,0 +1,971 @@
+import { type GridDataSource, type GridGetRowsParams, gridCrc32 } from "@owlky/core";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
+import { createRef } from "react";
+import { renderToString } from "react-dom/server";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { userEvent } from "vitest/browser";
+import { expectNoAxeViolations } from "../test-utils.js";
+import { DataGrid, type GridApi, type GridColDef } from "./data-grid.js";
+
+interface Sale {
+  id: string;
+  region: string;
+  product: string;
+  year: number;
+  units: number;
+  date: string;
+}
+const SALES: Sale[] = [
+  { id: "1", region: "North", product: "Tea", year: 2024, units: 10, date: "2025-05-01" },
+  { id: "2", region: "South", product: "Tea", year: 2025, units: 30, date: "2025-05-02" },
+  { id: "3", region: "North", product: "Coffee", year: 2025, units: 5, date: "2025-05-03" },
+  { id: "4", region: "East", product: "Juice", year: 2024, units: 20, date: "2025-05-04" },
+];
+const COLUMNS: GridColDef<Sale>[] = [
+  { field: "region", headerName: "Region", width: 120 },
+  { field: "product", headerName: "Product", width: 120, editable: true },
+  { field: "year", headerName: "Year", type: "number", width: 90 },
+  { field: "units", headerName: "Units", type: "number", width: 90, editable: true },
+  { field: "date", headerName: "Date", type: "date", width: 210 },
+];
+
+afterEach(() => vi.restoreAllMocks());
+
+const grid = () => screen.getByRole("treegrid", { hidden: true }) as HTMLElement;
+const bodyRows = (root: ParentNode = document) => [
+  ...root.querySelectorAll<HTMLElement>('[data-ok-data-grid-body] > [role="row"]:not([hidden])'),
+];
+const texts = (root: ParentNode = document) =>
+  bodyRows(root).map((row) =>
+    [...row.querySelectorAll<HTMLElement>('[role="gridcell"]')].map((c) => c.textContent),
+  );
+const cell = (rowId: string, field: string) =>
+  document.querySelector<HTMLElement>(
+    `[data-ok-row-id="${rowId}"] [role="gridcell"][data-ok-field="${field}"]`,
+  ) as HTMLElement;
+const menuItem = (action: string) =>
+  document.querySelector<HTMLElement>(`[data-ok-data-grid-action="${action}"]`) as HTMLElement;
+const openMenu = (field: string) =>
+  fireEvent.click(
+    document.querySelector(
+      `[role="columnheader"][data-ok-field="${field}"] [data-ok-data-grid-menu-button]`,
+    ) as HTMLElement,
+  );
+
+describe("DataGrid row grouping and aggregation", () => {
+  it("groups rows, counts them, aggregates inline and in a footer row", async () => {
+    const onGrouping = vi.fn();
+    const onAggregation = vi.fn();
+    render(
+      <DataGrid
+        aria-label="Sales"
+        disableVirtualization
+        rows={SALES}
+        columns={COLUMNS}
+        initialState={{
+          rowGrouping: { model: ["region"] },
+          aggregation: { model: { units: "sum", year: "max", region: "size" } },
+        }}
+        onRowGroupingModelChange={onGrouping}
+        onAggregationModelChange={onAggregation}
+        groupingColDef={{ headerName: "Area" }}
+      />,
+    );
+    const g = grid();
+    expect(g.getAttribute("aria-rowcount")).toBe("5");
+    expect(g.closest("[data-ok-data-grid]")?.getAttribute("data-ok-row-grouping-model")).toBe(
+      '["region"]',
+    );
+    expect(texts()).toEqual([
+      ["North(2)", "2", "", "2025", "15", ""],
+      ["South(1)", "1", "", "2025", "30", ""],
+      ["East(1)", "1", "", "2024", "20", ""],
+    ]);
+    const header = g.querySelector('[role="columnheader"][data-ok-field="units"]') as HTMLElement;
+    expect(header.querySelector("[data-ok-data-grid-aggregation-label]")?.textContent).toBe("sum");
+    expect(
+      g.querySelector('[role="columnheader"][data-ok-field="__row_group_by_columns_group__"]')
+        ?.textContent,
+    ).toBe("Area");
+    const footer = g.querySelector("[data-ok-data-grid-aggregation-row]") as HTMLElement;
+    expect(footer.getAttribute("aria-rowindex")).toBe("5");
+    expect([...footer.querySelectorAll('[role="gridcell"]')].map((c) => c.textContent)).toEqual([
+      "",
+      "4",
+      "",
+      "2025",
+      "65",
+      "",
+    ]);
+    // Opening a group shows its rows (the group column stays empty for them).
+    const north = g.querySelector(
+      '[data-ok-row-id="auto-generated-row-region/North"]',
+    ) as HTMLElement;
+    expect(north.getAttribute("aria-expanded")).toBe("false");
+    fireEvent.click(north.querySelector("[data-ok-data-grid-tree-toggle]") as HTMLElement);
+    expect(north.getAttribute("aria-expanded")).toBe("true");
+    expect(texts().slice(1, 3)).toEqual([
+      ["", "North", "Tea", "2024", "10", "2025-05-01"],
+      ["", "North", "Coffee", "2025", "5", "2025-05-03"],
+    ]);
+    expect(bodyRows()[1]?.getAttribute("data-ok-parent")).toBe("auto-generated-row-region/North");
+    // Sorting by an aggregated field orders the groups by their values.
+    fireEvent.click(header);
+    expect(texts().map((r) => r[0])).toEqual(["North(2)", "", "", "East(1)", "South(1)"]);
+    fireEvent.click(header);
+    expect(texts().map((r) => r[0])).toEqual(["South(1)", "East(1)", "North(2)", "", ""]);
+    // Sorting by the grouped field orders the groups by name.
+    fireEvent.click(
+      g.querySelector('[role="columnheader"][data-ok-field="region"]') as HTMLElement,
+    );
+    expect(texts().map((r) => r[0])).toEqual(["East(1)", "North(2)", "", "", "South(1)"]);
+    // Column menu: stop grouping, group by another field, change functions.
+    openMenu("region");
+    expect(menuItem("group").textContent).toBe("Stop grouping by Region");
+    expect(menuItem("aggregate-size").hasAttribute("data-ok-selected")).toBe(true);
+    expect(menuItem("aggregate-sum").hidden).toBe(true);
+    expect(menuItem("aggregate-size").hidden).toBe(false);
+    fireEvent.click(menuItem("group"));
+    expect(onGrouping).toHaveBeenLastCalledWith([]);
+    expect(screen.getByRole("grid")).toBeTruthy();
+    openMenu("product");
+    expect(menuItem("group").textContent).toBe("Group by Product");
+    fireEvent.click(menuItem("group"));
+    expect(onGrouping).toHaveBeenLastCalledWith(["product"]);
+    openMenu("units");
+    expect(menuItem("aggregate-sum").hidden).toBe(false);
+    fireEvent.click(menuItem("aggregate-avg"));
+    expect(onAggregation).toHaveBeenLastCalledWith({ units: "avg", year: "max", region: "size" });
+    openMenu("units");
+    fireEvent.click(menuItem("aggregate-none"));
+    expect(onAggregation).toHaveBeenLastCalledWith({ year: "max", region: "size" });
+    await expectNoAxeViolations(document.body);
+  });
+
+  it("filters leaves (groups follow), scopes, positions and turned-off features", () => {
+    const { rerender } = render(
+      <DataGrid
+        aria-label="Sales"
+        disableVirtualization
+        rows={SALES}
+        columns={COLUMNS}
+        rowGroupingModel={["region", "product"]}
+        aggregationModel={{ units: "sum" }}
+        filterModel={{ items: [{ field: "product", operator: "equals", value: "tea" }] }}
+        defaultGroupingExpansionDepth={-1}
+        hideFooter
+      />,
+    );
+    // Counts and values follow the filter.
+    expect(texts().map((r) => [r[0], r[4]])).toEqual([
+      ["North(1)", "10"],
+      ["Tea(1)", "10"],
+      ["", "10"],
+      ["South(1)", "30"],
+      ["Tea(1)", "30"],
+      ["", "30"],
+    ]);
+    // Row groups nest their ids.
+    expect(bodyRows()[1]?.getAttribute("data-ok-row-id")).toBe(
+      "auto-generated-row-region/North/product/Tea",
+    );
+    expect(document.querySelector("[data-ok-data-grid-aggregation-row]")?.textContent).toContain(
+      "40",
+    );
+    rerender(
+      <DataGrid
+        aria-label="Sales"
+        disableVirtualization
+        rows={SALES}
+        columns={COLUMNS}
+        rowGroupingModel={["region"]}
+        aggregationModel={{ units: "sum", date: "sum" }}
+        aggregationRowsScope="all"
+        filterModel={{ items: [{ field: "product", operator: "equals", value: "tea" }] }}
+        getAggregationPosition={(group) => (group.isRoot ? null : "inline")}
+        hideFooter
+      />,
+    );
+    // Every row counts with scope "all"; date can't be summed; no footer.
+    expect(texts().map((r) => r[4])).toEqual(["15", "30"]);
+    expect(document.querySelector("[data-ok-data-grid-aggregation-row]")).toBeNull();
+    expect(
+      document.querySelector(
+        '[role="columnheader"][data-ok-field="date"] [data-ok-data-grid-aggregation-label]',
+      ),
+    ).toBeNull();
+    rerender(
+      <DataGrid
+        aria-label="Sales"
+        disableVirtualization
+        rows={SALES}
+        columns={COLUMNS}
+        rowGroupingModel={["region"]}
+        aggregationModel={{ units: "sum" }}
+        disableRowGrouping
+        disableAggregation
+        hideFooter
+      />,
+    );
+    expect(screen.getByRole("grid")).toBeTruthy();
+    expect(document.querySelector('[data-ok-data-grid-action="group"]')).toBeNull();
+    expect(document.querySelector('[data-ok-data-grid-action="aggregate-sum"]')).toBeNull();
+    rerender(
+      <DataGrid
+        aria-label="Sales"
+        disableVirtualization
+        rows={SALES}
+        columns={COLUMNS.map((c) => ({ ...c, aggregable: c.field !== "units" }))}
+        rowGroupingModel={["region"]}
+        aggregationModel={{ units: "sum" }}
+        getAggregationPosition={() => null}
+        hideFooter
+      />,
+    );
+    expect(texts().map((r) => r[4])).toEqual(["", "", ""]);
+  });
+
+  it("exports data rows (CSV, Excel), selects data rows only, formats aggregates", async () => {
+    const apiRef = createRef<GridApi<Sale> | null>() as { current: GridApi<Sale> | null };
+    render(
+      <DataGrid
+        aria-label="Sales"
+        disableVirtualization
+        rows={SALES}
+        columns={COLUMNS.map((c) =>
+          c.field === "units" ? { ...c, valueFormatter: (v) => `${v} u` } : c,
+        )}
+        apiRef={apiRef}
+        checkboxSelection
+        rowGroupingModel={["region"]}
+        aggregationModel={{ units: "sum", region: "size" }}
+        sortModel={[{ field: "units", sort: "asc" }]}
+        hideFooter
+      />,
+    );
+    expect(texts()[0]?.[5]).toBe("15 u");
+    // Counts are plain numbers; group rows have no checkbox.
+    expect(texts()[0]?.[2]).toBe("2");
+    expect(bodyRows()[0]?.querySelector('input[type="checkbox"]')).toBeNull();
+    const api = apiRef.current as GridApi<Sale>;
+    expect(api.getDataAsCsv().split("\r\n").length).toBe(5);
+    expect(api.getDataAsCsv()).toContain("North,Coffee,2025,5 u");
+    const xlsx = api.getDataAsExcel({ fields: ["region", "units"] });
+    expect([...xlsx.subarray(0, 4)]).toEqual([0x50, 0x4b, 0x03, 0x04]);
+    expect(gridCrc32(xlsx)).toBeGreaterThan(0);
+    // Select all selects the data rows.
+    fireEvent.click(screen.getByRole("checkbox", { name: "Select all rows" }));
+    expect((apiRef.current as GridApi<Sale>).getRowSelectionModel().sort()).toEqual([
+      "1",
+      "2",
+      "3",
+      "4",
+    ]);
+    const create = vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:x");
+    vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
+    const click = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
+    api.exportDataAsExcel({ fileName: "sales" });
+    expect((create.mock.calls[0] as [Blob])[0].type).toBe(
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    );
+    expect(click).toHaveBeenCalled();
+    expect(api.getRowGroupingModel()).toEqual(["region"]);
+    expect(api.getAggregationModel()).toEqual({ units: "sum", region: "size" });
+  });
+
+  it("exports to Excel from the toolbar and keeps the API in sync", async () => {
+    const apiRef = createRef<GridApi<Sale> | null>() as { current: GridApi<Sale> | null };
+    const create = vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:x");
+    vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
+    const click = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
+    render(
+      <DataGrid
+        aria-label="Sales"
+        disableVirtualization
+        rows={SALES}
+        columns={COLUMNS}
+        apiRef={apiRef}
+        showToolbar
+        excelOptions={{ fileName: "report", sheetName: "Sales" }}
+        hideFooter
+      />,
+    );
+    const root = document.querySelector("[data-ok-data-grid]") as HTMLElement;
+    expect(root.getAttribute("data-ok-excel-options")).toBe(
+      '{"fileName":"report","sheetName":"Sales"}',
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Export" }));
+    await userEvent.click(screen.getByRole("menuitem", { name: "Download as Excel" }));
+    expect(create).toHaveBeenCalledTimes(1);
+    expect(click.mock.instances[0]).toBeInstanceOf(HTMLAnchorElement);
+    expect((click.mock.instances[0] as unknown as HTMLAnchorElement).download).toBe("report.xlsx");
+    const api = apiRef.current as GridApi<Sale>;
+    act(() => api.setRowGroupingModel(["product"]));
+    expect(texts().map((r) => r[0])).toEqual(["Tea(2)", "Coffee(1)", "Juice(1)"]);
+    act(() => (apiRef.current as GridApi<Sale>).setAggregationModel({ units: "max" }));
+    expect(texts()[0]?.[4]).toBe("30");
+    const state = (apiRef.current as GridApi<Sale>).exportState();
+    expect(state.rowGrouping).toEqual({ model: ["product"] });
+    expect(state.aggregation).toEqual({ model: { units: "max" } });
+    act(() =>
+      (apiRef.current as GridApi<Sale>).restoreState({
+        rowGrouping: { model: [] },
+        aggregation: { model: { units: "min" } },
+      }),
+    );
+    expect(screen.getByRole("grid")).toBeTruthy();
+    expect(document.querySelector("[data-ok-data-grid-aggregation-row]")?.textContent).toContain(
+      "5",
+    );
+  });
+
+  it("tree data generates rows for missing parents", () => {
+    const files = [
+      { id: "a", path: ["Docs", "A.txt"], size: 2 },
+      { id: "b", path: ["Docs", "Deep", "B.txt"], size: 3 },
+      { id: "c", path: ["C.txt"], size: 1 },
+    ];
+    render(
+      <DataGrid
+        aria-label="Files"
+        disableVirtualization
+        rows={files}
+        columns={[{ field: "size", headerName: "Size", type: "number" }]}
+        treeData
+        getTreeDataPath={(row) => row.path}
+        defaultGroupingExpansionDepth={-1}
+        aggregationModel={{ size: "sum" }}
+        checkboxSelection
+        hideFooter
+      />,
+    );
+    expect(texts().map((r) => r.slice(1))).toEqual([
+      ["Docs(3)", "5"],
+      ["A.txt", "2"],
+      ["Deep(1)", "3"],
+      ["B.txt", "3"],
+      ["C.txt", "1"],
+    ]);
+    const docs = bodyRows()[0] as HTMLElement;
+    expect(docs.getAttribute("data-ok-row-id")).toBe("auto-generated-row-Docs");
+    expect(docs.hasAttribute("data-ok-generated")).toBe(true);
+    expect(bodyRows()[3]?.getAttribute("data-ok-parent")).toBe("auto-generated-row-Docs/Deep");
+    expect(document.querySelector("[data-ok-data-grid-aggregation-row]")?.textContent).toBe("6");
+    // Left on a child goes to its generated parent.
+    const child = bodyRows()[1]?.querySelector(
+      '[data-ok-field="__tree_data_group__"]',
+    ) as HTMLElement;
+    child.focus();
+    fireEvent.keyDown(child, { key: "ArrowLeft" });
+    expect(document.activeElement?.closest("[data-ok-row-id]")).toBe(docs);
+  });
+
+  it("server-side row grouping asks for the grouped fields and group keys", async () => {
+    const getRows = vi.fn(async (params: GridGetRowsParams) =>
+      params.groupKeys?.length
+        ? { rows: [{ id: "n1", region: "North", product: "Tea", year: 2024, units: 1, date: "" }] }
+        : { rows: [{ id: "g-north", region: "North", product: "", year: 0, units: 0, date: "" }] },
+    );
+    const source: GridDataSource<Sale> = {
+      getRows,
+      getGroupKey: (row) => row.region,
+      getChildrenCount: (row) => (row.id.startsWith("g-") ? 1 : 0),
+    };
+    render(
+      <DataGrid
+        aria-label="Sales"
+        disableVirtualization
+        rows={[]}
+        columns={COLUMNS}
+        dataSource={source}
+        rowGroupingModel={["region"]}
+      />,
+    );
+    await vi.waitUntil(() => document.querySelector('[data-ok-row-id="g-north"]'));
+    expect(getRows.mock.calls[0]?.[0]).toMatchObject({ groupKeys: [], groupFields: ["region"] });
+    fireEvent.click(
+      document.querySelector(
+        '[data-ok-row-id="g-north"] [data-ok-data-grid-tree-toggle]',
+      ) as HTMLElement,
+    );
+    await vi.waitUntil(() => document.querySelector('[data-ok-row-id="n1"]'));
+    expect(getRows.mock.calls.at(-1)?.[0]).toMatchObject({
+      groupKeys: ["North"],
+      groupFields: ["region"],
+    });
+    expect(
+      document.querySelector(
+        '[data-ok-row-id="g-north"] [data-ok-field="__row_group_by_columns_group__"]',
+      )?.textContent,
+    ).toBe("North");
+  });
+});
+
+describe("DataGrid pivoting", () => {
+  const model = {
+    rows: [{ field: "region" }],
+    columns: [{ field: "year" }],
+    values: [{ field: "units", aggFunc: "sum" }],
+  };
+
+  it("shows the pivot, edits it in the panel and turns it off", async () => {
+    const onModel = vi.fn();
+    const onActive = vi.fn();
+    const apiRef = createRef<GridApi<Sale> | null>() as { current: GridApi<Sale> | null };
+    render(
+      <DataGrid
+        id="p"
+        aria-label="Sales"
+        disableVirtualization
+        rows={SALES}
+        columns={COLUMNS}
+        apiRef={apiRef}
+        showToolbar
+        initialState={{ pivoting: { model, active: true } }}
+        onPivotModelChange={onModel}
+        onPivotActiveChange={onActive}
+        hideFooter
+      />,
+    );
+    const g = grid();
+    expect(
+      [...g.querySelectorAll('[data-ok-data-grid-group-row] [role="columnheader"]')].map(
+        (c) => c.textContent,
+      ),
+    ).toEqual(["2024", "2025"]);
+    const headers = [
+      ...g.querySelectorAll(
+        '[data-ok-data-grid-header] > [role="row"]:not([data-ok-data-grid-group-row]) [role="columnheader"]',
+      ),
+    ];
+    expect(headers.map((h) => h.textContent)).toEqual(["Group", "Units (sum)", "Units (sum)"]);
+    expect(headers[1]?.querySelector("[data-ok-data-grid-menu-button]")).toBeNull();
+    expect(texts()).toEqual([
+      ["North", "10", "5"],
+      ["South", "", "30"],
+      ["East", "20", ""],
+    ]);
+    expect(document.querySelector("[data-ok-data-grid-aggregation-row]")?.textContent).toBe("3035");
+    // Sorting a pivot column orders the groups by its values.
+    fireEvent.click(headers[2] as HTMLElement);
+    expect(texts().map((r) => r[0])).toEqual(["North", "South", "East"]);
+    // The panel: switch, roles and functions.
+    await userEvent.click(screen.getByRole("button", { name: "Pivot" }));
+    const panel = document.getElementById("p-pivot") as HTMLElement;
+    const product = within(panel).getByLabelText("Product") as HTMLSelectElement;
+    fireEvent.change(product, { target: { value: "columns" } });
+    expect(onModel).toHaveBeenLastCalledWith({
+      ...model,
+      columns: [{ field: "year" }, { field: "product" }],
+    });
+    const fn = panel.querySelector("#p-pivot-units-function") as HTMLSelectElement;
+    expect(fn.disabled).toBe(false);
+    fireEvent.change(fn, { target: { value: "max" } });
+    expect(onModel.mock.lastCall?.[0].values).toEqual([{ field: "units", aggFunc: "max" }]);
+    fireEvent.click(within(panel).getByRole("switch", { name: "Pivot" }));
+    expect(onActive).toHaveBeenLastCalledWith(false);
+    await userEvent.keyboard("{Escape}");
+    expect(panel.hasAttribute("data-ok-open")).toBe(false);
+    expect(screen.getByRole("grid")).toBeTruthy();
+    // Exports keep the data rows and columns.
+    act(() => (apiRef.current as GridApi<Sale>).setPivotActive(true));
+    expect((apiRef.current as GridApi<Sale>).getDataAsCsv().split("\r\n")[0]).toBe(
+      "﻿Region,Product,Year,Units,Date",
+    );
+    expect((apiRef.current as GridApi<Sale>).exportState().pivoting?.active).toBe(true);
+    act(() =>
+      (apiRef.current as GridApi<Sale>).setPivotModel({ rows: [], columns: [], values: [] }),
+    );
+    expect(texts()).toEqual([]);
+  });
+
+  it("pivots filtered rows; without the model there's no Pivot button", () => {
+    const { rerender } = render(
+      <DataGrid
+        aria-label="Sales"
+        disableVirtualization
+        rows={SALES}
+        columns={COLUMNS.map((c) =>
+          c.field === "units" ? { ...c, valueFormatter: (v) => `${v}!` } : c,
+        )}
+        showToolbar
+        pivotModel={{ ...model, values: [...model.values, { field: "units", aggFunc: "size" }] }}
+        pivotActive
+        filterModel={{ items: [{ field: "region", operator: "equals", value: "north" }] }}
+        hideFooter
+      />,
+    );
+    expect(texts()).toEqual([["North", "10!", "1", "5!", "1"]]);
+    rerender(
+      <DataGrid
+        aria-label="Sales"
+        disableVirtualization
+        rows={SALES}
+        columns={COLUMNS}
+        showToolbar
+        hideFooter
+      />,
+    );
+    expect(screen.queryByRole("button", { name: "Pivot" })).toBeNull();
+    rerender(
+      <DataGrid
+        aria-label="Sales"
+        disableVirtualization
+        rows={SALES}
+        columns={COLUMNS}
+        showToolbar
+        pivotActive
+        disablePivoting
+        pivotModel={model}
+        hideFooter
+      />,
+    );
+    expect(screen.queryByRole("button", { name: "Pivot" })).toBeNull();
+    expect(screen.getByRole("grid")).toBeTruthy();
+  });
+});
+
+const key = (target: Element, k: string, init: KeyboardEventInit = { ctrlKey: true }) =>
+  target.dispatchEvent(
+    new KeyboardEvent("keydown", { bubbles: true, cancelable: true, key: k, ...init }),
+  );
+/** Ctrl + C on `target`, then the browser's copy on the text area: the copied text. */
+const copy = (target: Element) => {
+  key(target, "c");
+  const transfer = new DataTransfer();
+  const event = new ClipboardEvent("copy", {
+    bubbles: true,
+    cancelable: true,
+    clipboardData: transfer,
+  });
+  const area = document.activeElement as HTMLTextAreaElement;
+  if (area.tagName !== "TEXTAREA") return null;
+  // Synthetic clipboard events can't always hold data (Firefox): watch what the grid writes.
+  const written = vi.spyOn(DataTransfer.prototype, "setData");
+  area.dispatchEvent(event);
+  const data = written.mock.lastCall?.[1] ?? null;
+  written.mockRestore();
+  return data;
+};
+const paste = (target: Element, text: string) => {
+  key(target, "v");
+  const transfer = new DataTransfer();
+  transfer.setData("text/plain", text);
+  const area = document.activeElement as HTMLElement;
+  const read = vi.spyOn(DataTransfer.prototype, "getData").mockReturnValue(text);
+  area.dispatchEvent(
+    new ClipboardEvent("paste", { bubbles: true, cancelable: true, clipboardData: transfer }),
+  );
+  read.mockRestore();
+  return area.tagName;
+};
+const pressed = (el: Element, init: PointerEventInit = {}) =>
+  act(() => {
+    el.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, button: 0, ...init }));
+  });
+
+describe("DataGrid cell selection and clipboard", () => {
+  it("selects ranges by press, Shift, Ctrl and keys, with edges", () => {
+    const onCells = vi.fn();
+    render(
+      <DataGrid
+        aria-label="Sales"
+        disableVirtualization
+        rows={SALES}
+        columns={COLUMNS}
+        cellSelection
+        onCellSelectionModelChange={onCells}
+        hideFooter
+      />,
+    );
+    pressed(cell("1", "region"));
+    expect(onCells).toHaveBeenLastCalledWith({ "1": { region: true } });
+    pressed(cell("2", "product"), { shiftKey: true });
+    expect(onCells).toHaveBeenLastCalledWith({
+      "1": { region: true, product: true },
+      "2": { region: true, product: true },
+    });
+    document.dispatchEvent(new PointerEvent("pointerup"));
+    expect(cell("1", "region").getAttribute("aria-selected")).toBe("true");
+    expect(cell("1", "region").getAttribute("data-ok-range-edge")).toBe("top left");
+    expect(cell("2", "product").getAttribute("data-ok-range-edge")).toBe("right bottom");
+    expect(cell("3", "region").hasAttribute("aria-selected")).toBe(false);
+    pressed(cell("4", "units"), { ctrlKey: true });
+    expect(onCells.mock.lastCall?.[0]["4"]).toEqual({ units: true });
+    pressed(cell("4", "units"), { ctrlKey: true });
+    expect(onCells.mock.lastCall?.[0]["4"]).toBeUndefined();
+    document.dispatchEvent(new PointerEvent("pointerup"));
+    // Shift + arrows extend from the focused cell; Ctrl + A selects every cell.
+    cell("3", "year").focus();
+    fireEvent.keyDown(cell("3", "year"), { key: "ArrowDown", shiftKey: true });
+    expect(onCells).toHaveBeenLastCalledWith({ "3": { year: true }, "4": { year: true } });
+    fireEvent.keyDown(document.activeElement as Element, { key: "a", ctrlKey: true });
+    expect(Object.keys(onCells.mock.lastCall?.[0])).toEqual(["1", "2", "3", "4"]);
+    expect(onCells.mock.lastCall?.[0]["4"]).toEqual({
+      region: true,
+      product: true,
+      year: true,
+      units: true,
+      date: true,
+    });
+  });
+
+  it("copies cells, selected rows or the focused cell", () => {
+    const onCopy = vi.fn();
+    const { rerender } = render(
+      <DataGrid
+        aria-label="Sales"
+        disableVirtualization
+        rows={SALES}
+        columns={COLUMNS}
+        cellSelectionModel={{ "1": { region: true, units: true }, "2": { units: true } }}
+        cellSelection
+        onClipboardCopy={onCopy}
+        hideFooter
+      />,
+    );
+    cell("2", "year").focus();
+    expect(copy(cell("2", "year"))).toBe("North\t10\r\n\t30");
+    expect(onCopy).toHaveBeenCalledWith("North\t10\r\n\t30");
+    expect(document.activeElement).toBe(cell("2", "year"));
+    rerender(
+      <DataGrid
+        aria-label="Sales"
+        disableVirtualization
+        rows={SALES}
+        columns={COLUMNS}
+        checkboxSelection
+        rowSelectionModel={["3"]}
+        clipboardCopyCellDelimiter=","
+        hideFooter
+      />,
+    );
+    expect(copy(cell("2", "year"))).toBe("North,Coffee,2025,5,2025-05-03");
+    rerender(
+      <DataGrid
+        aria-label="Sales"
+        disableVirtualization
+        rows={SALES}
+        columns={COLUMNS.map((c) =>
+          c.field === "units" ? { ...c, valueFormatter: (v) => `${v} u` } : c,
+        )}
+        ignoreValueFormatterDuringExport
+        rowSelectionModel={[]}
+        hideFooter
+      />,
+    );
+    cell("4", "units").focus();
+    expect(copy(cell("4", "units"))).toBe("20");
+    // A header has nothing to copy.
+    const header = document.querySelector(
+      '[role="columnheader"][data-ok-field="units"]',
+    ) as HTMLElement;
+    header.focus();
+    key(header, "c");
+    expect(document.activeElement).toBe(header);
+  });
+
+  it("pastes into editable cells from the focused cell or the selection", async () => {
+    const processRowUpdate = vi.fn((row: Sale) => row);
+    const onStart = vi.fn();
+    const onEnd = vi.fn();
+    const { rerender } = render(
+      <DataGrid
+        aria-label="Sales"
+        disableVirtualization
+        rows={SALES}
+        columns={COLUMNS}
+        processRowUpdate={processRowUpdate}
+        onClipboardPasteStart={onStart}
+        onClipboardPasteEnd={onEnd}
+        hideFooter
+      />,
+    );
+    cell("1", "product").focus();
+    expect(paste(cell("1", "product"), "Mint\tX\t7\nLime\t\t8\nMore\t\t9\nGone")).toBe("TEXTAREA");
+    await vi.waitUntil(() => onEnd.mock.calls.length > 0);
+    expect(onStart).toHaveBeenCalledWith({
+      data: [["Mint", "X", "7"], ["Lime", "", "8"], ["More", "", "9"], ["Gone"]],
+    });
+    // Year isn't editable; the pasted block stops at the last row.
+    expect(processRowUpdate.mock.calls.map((c) => [c[0].product, c[0].year, c[0].units])).toEqual([
+      ["Mint", 2024, 7],
+      ["Lime", 2025, 8],
+      ["More", 2025, 9],
+      ["Gone", 2024, 20],
+    ]);
+    expect(cell("1", "product").textContent).toBe("Mint");
+    // One value fills the selected cells; a custom splitter.
+    processRowUpdate.mockClear();
+    rerender(
+      <DataGrid
+        aria-label="Sales"
+        disableVirtualization
+        rows={SALES}
+        columns={COLUMNS}
+        cellSelection
+        cellSelectionModel={{ "2": { units: true }, "3": { units: true, year: true } }}
+        splitClipboardPastedText={(text) => [[text.toUpperCase()]]}
+        processRowUpdate={processRowUpdate}
+        hideFooter
+      />,
+    );
+    cell("2", "region").focus();
+    paste(cell("2", "region"), "42");
+    await vi.waitUntil(() => processRowUpdate.mock.calls.length === 2);
+    expect(processRowUpdate.mock.calls.map((c) => c[0].units)).toEqual([42, 42]);
+    // Turned off, or nowhere to paste: nothing happens.
+    processRowUpdate.mockClear();
+    rerender(
+      <DataGrid
+        aria-label="Sales"
+        disableVirtualization
+        rows={SALES}
+        columns={COLUMNS}
+        disableClipboardPaste
+        processRowUpdate={processRowUpdate}
+        hideFooter
+      />,
+    );
+    cell("2", "units").focus();
+    expect(paste(cell("2", "units"), "1")).not.toBe("TEXTAREA");
+    rerender(
+      <DataGrid
+        aria-label="Sales"
+        disableVirtualization
+        rows={SALES}
+        columns={COLUMNS}
+        processRowUpdate={processRowUpdate}
+        hideFooter
+      />,
+    );
+    const header = document.querySelector(
+      '[role="columnheader"][data-ok-field="units"]',
+    ) as HTMLElement;
+    header.focus();
+    paste(header, "1");
+    await new Promise((r) => setTimeout(r, 10));
+    expect(processRowUpdate).not.toHaveBeenCalled();
+  });
+});
+
+describe("DataGrid phase 6 API", () => {
+  it("reads and sets cell selection and chart models", () => {
+    const apiRef = createRef<GridApi<Sale> | null>() as { current: GridApi<Sale> | null };
+    render(
+      <DataGrid
+        aria-label="Sales"
+        disableVirtualization
+        rows={SALES}
+        columns={COLUMNS}
+        apiRef={apiRef}
+        cellSelection
+        chartsIntegration
+        hideFooter
+      />,
+    );
+    act(() => apiRef.current?.setCellSelectionModel({ "1": { units: true } }));
+    expect(apiRef.current?.getCellSelectionModel()).toEqual({ "1": { units: true } });
+    expect(cell("1", "units").getAttribute("aria-selected")).toBe("true");
+    act(() => apiRef.current?.setChartModel({ dimension: "region", values: ["units"] }));
+    expect((document.querySelector("[data-ok-data-grid-chart]") as HTMLElement).hidden).toBe(false);
+    expect(apiRef.current?.exportState().chartsIntegration).toEqual({
+      model: { dimension: "region", values: ["units"] },
+    });
+  });
+});
+
+describe("DataGrid header filters", () => {
+  it("filters through a row of fields under the headers", async () => {
+    const onFilter = vi.fn();
+    render(
+      <DataGrid
+        id="h"
+        aria-label="Sales"
+        disableVirtualization
+        rows={SALES.map((s, i) => ({ ...s, active: i % 2 === 0, kind: i % 2 ? "B" : "A" }))}
+        columns={[
+          ...COLUMNS,
+          { field: "active", headerName: "Active", type: "boolean" },
+          { field: "kind", headerName: "Kind", type: "singleSelect", valueOptions: ["A", "B"] },
+          { field: "x", headerName: "X", filterable: false },
+        ]}
+        headerFilters
+        onFilterModelChange={onFilter}
+        hideFooter
+      />,
+    );
+    const row = document.querySelector("[data-ok-data-grid-header-filters]") as HTMLElement;
+    expect(row.getAttribute("aria-rowindex")).toBe("2");
+    expect(screen.getByRole("grid").getAttribute("aria-rowcount")).toBe("6");
+    expect(bodyRows()[0]?.getAttribute("aria-rowindex")).toBe("3");
+    expect(row.querySelector('[data-ok-filter-field="x"]')?.getAttribute("role")).toBe(
+      "presentation",
+    );
+    const region = row.querySelector("#h-header-filter-region") as HTMLInputElement;
+    expect(region.labels?.[0]?.textContent).toBe("contains");
+    expect(region.closest('[role="columnheader"]')?.getAttribute("aria-label")).toBe(
+      "Region filter",
+    );
+    fireEvent.change(region, { target: { value: "nor" } });
+    expect(onFilter).toHaveBeenLastCalledWith({
+      items: [{ field: "region", operator: "contains", value: "nor" }],
+    });
+    expect(bodyRows()).toHaveLength(2);
+    const units = row.querySelector("#h-header-filter-units") as HTMLInputElement;
+    fireEvent.change(units, { target: { value: "10" } });
+    expect(bodyRows()).toHaveLength(1);
+    fireEvent.change(units, { target: { value: "" } });
+    fireEvent.change(region, { target: { value: "" } });
+    expect(onFilter).toHaveBeenLastCalledWith({ items: [] });
+    const active = row.querySelector("#h-header-filter-active") as HTMLSelectElement;
+    fireEvent.change(active, { target: { value: "true" } });
+    expect(bodyRows()).toHaveLength(2);
+    fireEvent.change(active, { target: { value: "" } });
+    const kind = row.querySelector("#h-header-filter-kind") as HTMLSelectElement;
+    expect([...kind.options].map((o) => o.text)).toEqual(["any", "A", "B"]);
+    fireEvent.change(kind, { target: { value: "B" } });
+    expect(bodyRows()).toHaveLength(2);
+    fireEvent.change(kind, { target: { value: "" } });
+    // Up / Down leave a field for the cells.
+    region.focus();
+    fireEvent.keyDown(region, { key: "ArrowDown" });
+    expect(document.activeElement?.closest("[data-ok-data-grid-body]")).not.toBeNull();
+    // Dates: a date picker.
+    const month = within(row).getByRole("spinbutton", { name: "Month" });
+    await userEvent.click(month);
+    await userEvent.keyboard("05032025");
+    expect(onFilter.mock.lastCall?.[0].items).toEqual([
+      { field: "date", operator: "is", value: "2025-05-03" },
+    ]);
+    expect(bodyRows()).toHaveLength(1);
+    await expectNoAxeViolations(document.body);
+  });
+});
+
+describe("DataGrid charts integration and date filters", () => {
+  it("charts the top-level groups or the page's rows", async () => {
+    const onChart = vi.fn();
+    const { rerender } = render(
+      <DataGrid
+        id="c"
+        aria-label="Sales"
+        disableVirtualization
+        rows={SALES}
+        columns={COLUMNS}
+        showToolbar
+        chartsIntegration
+        rowGroupingModel={["region"]}
+        initialState={{ chartsIntegration: { model: { values: ["units"] } } }}
+        onChartModelChange={onChart}
+        hideFooter
+      />,
+    );
+    const region = document.querySelector("[data-ok-data-grid-chart]") as HTMLElement;
+    expect(region.hidden).toBe(false);
+    const table = region.querySelector("table") as HTMLTableElement;
+    expect(
+      [...(table.tBodies[0] as HTMLTableSectionElement).rows].map((r) => r.textContent),
+    ).toEqual(["North15", "South30", "East20"]);
+    await userEvent.click(screen.getByRole("button", { name: "Chart" }));
+    const panel = document.getElementById("c-charts") as HTMLElement;
+    fireEvent.change(within(panel).getByLabelText("Chart type"), { target: { value: "bar" } });
+    expect(onChart).toHaveBeenLastCalledWith({ values: ["units"], type: "bar" });
+    expect(region.querySelector("figure")?.hasAttribute("data-ok-horizontal")).toBe(true);
+    fireEvent.change(within(panel).getByLabelText("Chart type"), { target: { value: "line" } });
+    expect(region.querySelector("figure")?.getAttribute("data-ok-type")).toBe("line");
+    fireEvent.click(within(panel).getByRole("switch", { name: "Series: Year" }));
+    expect(onChart.mock.lastCall?.[0].values).toEqual(["units", "year"]);
+    fireEvent.click(within(panel).getByRole("switch", { name: "Series: Units" }));
+    expect(onChart.mock.lastCall?.[0].values).toEqual(["year"]);
+    fireEvent.change(within(panel).getByLabelText("Category"), { target: { value: "product" } });
+    expect(onChart.mock.lastCall?.[0].dimension).toBe("product");
+    fireEvent.change(within(panel).getByLabelText("Category"), { target: { value: "" } });
+    expect(onChart.mock.lastCall?.[0].dimension).toBeNull();
+    await userEvent.keyboard("{Escape}");
+    expect(panel.hasAttribute("data-ok-open")).toBe(false);
+    // Without grouping: one category per row of the page (needs a dimension).
+    rerender(
+      <DataGrid
+        aria-label="Sales"
+        disableVirtualization
+        rows={SALES}
+        columns={COLUMNS}
+        chartsIntegration
+        chartModel={{ type: "area", dimension: "product", values: ["units", "nope"] }}
+        hideFooter
+      />,
+    );
+    expect(
+      [...(document.querySelector("[data-ok-data-grid-chart] tbody") as HTMLElement).children].map(
+        (r) => r.textContent,
+      ),
+    ).toEqual(["Tea10", "Tea30", "Coffee5", "Juice20"]);
+    rerender(
+      <DataGrid
+        aria-label="Sales"
+        disableVirtualization
+        rows={SALES}
+        columns={COLUMNS}
+        chartsIntegration
+        chartModel={{ dimension: "nope", values: ["units"] }}
+        hideFooter
+      />,
+    );
+    expect((document.querySelector("[data-ok-data-grid-chart]") as HTMLElement).hidden).toBe(true);
+  });
+
+  it("filters dates with a date picker in the filter panel", async () => {
+    const onFilter = vi.fn();
+    render(
+      <DataGrid
+        id="d"
+        aria-label="Sales"
+        disableVirtualization
+        rows={SALES}
+        columns={COLUMNS}
+        showToolbar
+        initialState={{
+          filter: {
+            filterModel: { items: [{ field: "date", operator: "after", value: "2025-05-02" }] },
+          },
+        }}
+        onFilterModelChange={onFilter}
+        hideFooter
+      />,
+    );
+    expect(bodyRows()).toHaveLength(2);
+    await userEvent.click(screen.getByRole("button", { name: "Filters" }));
+    const panel = document.getElementById("d-filters") as HTMLElement;
+    const month = within(panel).getByRole("spinbutton", { name: "Month" });
+    expect(month.textContent).toBe("05");
+    await userEvent.click(month);
+    await userEvent.keyboard("05012025");
+    expect(onFilter).toHaveBeenLastCalledWith({
+      items: [{ field: "date", operator: "after", value: "2025-05-01" }],
+    });
+    fireEvent.change(within(panel).getByLabelText("Operator"), { target: { value: "isEmpty" } });
+    expect(within(panel).queryByRole("spinbutton", { name: "Month" })).toBeNull();
+  });
+
+  it("renders on the server", () => {
+    expect(() =>
+      renderToString(
+        <DataGrid
+          aria-label="Sales"
+          disableVirtualization
+          rows={SALES}
+          columns={COLUMNS}
+          showToolbar
+          rowGroupingModel={["region"]}
+          aggregationModel={{ units: "sum" }}
+          headerFilters
+          cellSelection
+          chartsIntegration
+          chartModel={{ values: ["units"] }}
+          pivotModel={{ rows: [], columns: [], values: [] }}
+        />,
+      ),
+    ).not.toThrow();
+  });
+});

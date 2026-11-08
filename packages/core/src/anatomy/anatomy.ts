@@ -2306,9 +2306,50 @@ export const dataGridOptions = defineOptions("data-grid", "data-ok-data-grid", {
     "Least time between two lazy loading requests, ms.",
     { min: 0 },
   ),
+  disableRowGrouping: flag(
+    "data-ok-disable-row-grouping",
+    "Columns can't be grouped by (no Group by in the column menu).",
+  ),
+  disableAggregation: flag(
+    "data-ok-disable-aggregation",
+    "No aggregation (no Aggregation items in the column menu).",
+  ),
+  aggregationRowsScope: style(
+    "data-ok-aggregation-rows-scope",
+    ["filtered", "all"] as const,
+    "filtered",
+    "Rows aggregated: the `filtered` ones, or `all` of them.",
+  ),
+  disablePivoting: flag("data-ok-disable-pivoting", "No pivot button in the toolbar."),
+  pivotActive: flag(
+    "data-ok-pivot-active",
+    "The grid shows the pivot of its rows (`pivotModel`) instead of the rows.",
+  ),
+  cellSelection: flag(
+    "data-ok-cell-selection",
+    "Cells are selected in ranges: press, drag, Shift + click or Shift + arrows.",
+  ),
+  disableClipboardPaste: flag(
+    "data-ok-disable-clipboard-paste",
+    "Ctrl / Cmd + V doesn't paste into editable cells (copying still works).",
+  ),
+  headerFilters: flag("data-ok-header-filters", "A row of filter fields under the column headers."),
+  chartsIntegration: flag(
+    "data-ok-charts-integration",
+    "A chart of the grid's rows (or top-level groups) follows its filters, sorting and grouping.",
+  ),
 });
 
 export interface DataGridAnatomyOptions {
+  disableRowGrouping?: boolean | undefined;
+  disableAggregation?: boolean | undefined;
+  aggregationRowsScope?: "filtered" | "all" | undefined;
+  disablePivoting?: boolean | undefined;
+  pivotActive?: boolean | undefined;
+  cellSelection?: boolean | undefined;
+  disableClipboardPaste?: boolean | undefined;
+  headerFilters?: boolean | undefined;
+  chartsIntegration?: boolean | undefined;
   treeData?: boolean | undefined;
   defaultGroupingExpansionDepth?: number | undefined;
   rowReordering?: boolean | undefined;

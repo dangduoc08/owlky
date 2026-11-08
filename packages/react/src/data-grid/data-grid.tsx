@@ -3,6 +3,8 @@
 import {
   arrangeGridColumns,
   clampGridWidth,
+  createGridCellSelection,
+  createGridClipboard,
   createGridColumnControls,
   createGridDataSourceCache,
   createGridNavigation,
@@ -10,9 +12,18 @@ import {
   createGridScrollWatcher,
   dataGridAttributes,
   filterGridRows,
+  formatIsoDate,
+  GRID_AGGREGATION_ROOT_ID,
   GRID_CHECKBOX_FIELD,
   GRID_CHECKBOX_WIDTH,
+  GRID_GROUPING_FIELD,
   GRID_TREE_FIELD,
+  GRID_XLSX_TYPE,
+  type GridAggregationFunction,
+  type GridAggregationModel,
+  type GridCellSelectionModel,
+  type GridChartModel,
+  type GridChartType,
   type GridColumn,
   type GridColumnGroup,
   type GridColumnVisibilityModel,
@@ -22,20 +33,30 @@ import {
   type GridDataSourceCache,
   type GridDensity,
   type GridEditStartReason,
+  type GridExcelOptions,
   type GridFilterItem,
   type GridFilterModel,
   type GridFilterOperator,
+  type GridGroupNode,
   type GridLabels,
   type GridNavigation,
   type GridPinnedColumns,
+  type GridPivotModel,
   type GridRowWindow,
   type GridSortModel,
   type GridState,
   type GridTreeRow,
   type GridViewport,
+  gridAggregate,
+  gridAggregationFunctions,
+  gridAggregationFunctionsFor,
   gridAlign,
   gridAriaSort,
   gridCanMoveColumn,
+  gridCellEdges,
+  gridCellRange,
+  gridChartData,
+  gridChartTypes,
   gridColSpans,
   gridColumnTemplate,
   gridColumnWindow,
@@ -49,41 +70,55 @@ import {
   gridExportColumns,
   gridFilterOperators,
   gridFilterValues,
+  gridGroupComparator,
   gridGroupPaths,
   gridGroupRows,
   gridGroupsById,
   gridHeaderAlign,
   gridMissingRanges,
   gridOperatorNeedsValue,
-  gridParentsFromPaths,
   gridPinSide,
+  gridPivot,
+  gridPivotRole,
   gridQuickFilterValues,
+  gridRowGroups,
   gridRowOffsets,
   gridRowSpans,
   gridRowWindow,
   gridRowWindowOf,
   gridSelectAllState,
+  gridSelectedBlock,
   gridToCsv,
+  gridToTsv,
+  gridToXlsx,
+  gridTreeGroups,
   gridTreeRows,
+  isGridCellSelected,
   isGridFilterable,
   isGridHideable,
   isGridResizable,
   isGridSortable,
   measureGridColumn,
+  mergeGridCellSelection,
   moveGridColumn,
   moveGridRow,
   nextGridSort,
   orderGridColumns,
+  parseGridClipboard,
   parseGridEditValue,
+  parseGridExcelOptions,
   parseGridExportOptions,
+  parseIsoDate,
   pinGridColumn,
   prepareGridPrint,
   printGridContent,
   pruneGridSelection,
   sanitizeGridState,
   selectGridRow,
+  setGridPivotRole,
   sortGridRows,
   syncGridPinning,
+  toggleGridCell,
   toggleGridRows,
   visibleGridColumns,
 } from "@owlky/core";
@@ -107,8 +142,10 @@ import {
 } from "react";
 import { Autocomplete } from "../autocomplete/autocomplete.js";
 import { Button } from "../button/button.js";
+import { Chart } from "../chart/chart.js";
 import { Checkbox } from "../checkbox/checkbox.js";
 import { CircularProgress } from "../circular-progress/circular-progress.js";
+import { DatePicker } from "../date-picker/date-picker.js";
 import { FormControlLabel } from "../form-control-label/form-control-label.js";
 import { IconButton } from "../icon-button/icon-button.js";
 import { LinearProgress } from "../linear-progress/linear-progress.js";
@@ -178,7 +215,18 @@ export interface GridColDef<R = Record<string, unknown>> extends GridColumn {
   filterOperators?: readonly GridFilterOperator<R>[] | undefined;
   /** `null`: the quick filter skips this column. */
   getApplyQuickFilterFn?: null | undefined;
+  /** Rows can be grouped by this column. Default true. */
+  groupable?: boolean | undefined;
+  /** The column can be aggregated. Default true. */
+  aggregable?: boolean | undefined;
+  /** Aggregation functions offered for this column (default: those of its type). */
+  availableAggregationFunctions?: readonly string[] | undefined;
+  /** The column can be used in the pivot. Default true. */
+  pivotable?: boolean | undefined;
 }
+
+/** Where a group's aggregated values show: in its row, or (the root) in a footer row. */
+export type GridAggregationPosition = "inline" | "footer" | null;
 
 /** Print export options (MUI X `printOptions`). */
 export interface GridPrintOptions {
@@ -225,6 +273,18 @@ export interface GridApi<R> {
   setRowChildrenExpansion(id: string, expanded: boolean): void;
   /** Master-detail: opens or closes a row's detail panel. */
   toggleDetailPanel(id: string): void;
+  getRowGroupingModel(): string[];
+  setRowGroupingModel(model: readonly string[]): void;
+  getAggregationModel(): GridAggregationModel;
+  setAggregationModel(model: GridAggregationModel): void;
+  setPivotModel(model: GridPivotModel): void;
+  setPivotActive(active: boolean): void;
+  getCellSelectionModel(): GridCellSelectionModel;
+  setCellSelectionModel(model: GridCellSelectionModel): void;
+  setChartModel(model: GridChartModel): void;
+  /** The .xlsx file of the filtered, sorted rows (bytes). */
+  getDataAsExcel(options?: GridExcelOptions): Uint8Array;
+  exportDataAsExcel(options?: GridExcelOptions): void;
 }
 
 export interface GridAutosizeOptions {
@@ -423,6 +483,50 @@ export interface DataGridProps<R>
   lazyLoading?: boolean | undefined;
   /** Least time between two lazy loading requests, ms. Default 500. */
   lazyLoadingRequestThrottleMs?: number | undefined;
+  /** Fields the rows are grouped by, outermost first (MUI X Premium). */
+  rowGroupingModel?: readonly string[] | undefined;
+  onRowGroupingModelChange?: ((model: string[]) => void) | undefined;
+  disableRowGrouping?: boolean | undefined;
+  /** Field → aggregation function (`sum`, `avg`, `min`, `max`, `size` or your own). */
+  aggregationModel?: GridAggregationModel | undefined;
+  onAggregationModelChange?: ((model: GridAggregationModel) => void) | undefined;
+  disableAggregation?: boolean | undefined;
+  /** The functions offered (default: the built-in ones). */
+  aggregationFunctions?: Readonly<Record<string, GridAggregationFunction>> | undefined;
+  /** Rows aggregated: the filtered ones (default) or all. */
+  aggregationRowsScope?: "filtered" | "all" | undefined;
+  /** Where a group shows its values (default: groups inline, the root in a footer row). */
+  getAggregationPosition?:
+    | ((group: { id: string; depth: number; isRoot: boolean }) => GridAggregationPosition)
+    | undefined;
+  pivotModel?: GridPivotModel | undefined;
+  onPivotModelChange?: ((model: GridPivotModel) => void) | undefined;
+  /** Shows the pivot of the rows instead of the rows. */
+  pivotActive?: boolean | undefined;
+  onPivotActiveChange?: ((active: boolean) => void) | undefined;
+  disablePivoting?: boolean | undefined;
+  excelOptions?: GridExcelOptions | undefined;
+  /** Cells are selected in ranges (press, drag, Shift + click, Shift + arrows). */
+  cellSelection?: boolean | undefined;
+  cellSelectionModel?: GridCellSelectionModel | undefined;
+  onCellSelectionModelChange?: ((model: GridCellSelectionModel) => void) | undefined;
+  /** Ctrl / Cmd + V doesn't paste into editable cells. */
+  disableClipboardPaste?: boolean | undefined;
+  onClipboardCopy?: ((data: string) => void) | undefined;
+  onClipboardPasteStart?: ((params: { data: string[][] }) => void) | undefined;
+  onClipboardPasteEnd?: (() => void) | undefined;
+  /** Splits pasted text into cells (default: tab-separated lines). */
+  splitClipboardPastedText?: ((text: string) => string[][]) | undefined;
+  /** Default a tab. */
+  clipboardCopyCellDelimiter?: string | undefined;
+  /** Copies raw values instead of formatted text. */
+  ignoreValueFormatterDuringExport?: boolean | undefined;
+  /** A row of filter fields under the column headers. */
+  headerFilters?: boolean | undefined;
+  /** A chart of the rows (or top-level groups) under the grid. */
+  chartsIntegration?: boolean | undefined;
+  chartModel?: GridChartModel | undefined;
+  onChartModelChange?: ((model: GridChartModel) => void) | undefined;
 }
 
 export type GridEditStopReason = "enterKeyDown" | "escapeKeyDown" | "cellFocusOut";
@@ -491,6 +595,17 @@ const GripIcon = () => (
   </svg>
 );
 
+const PivotIcon = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
+    <path d="M3 3h18v4H3zm0 6h4v12H3zm6 0h12v12H9zm2 2v8h8v-8z" />
+  </svg>
+);
+const ChartIcon = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
+    <path d="M4 20V10h3v10zm6.5 0V4h3v16zM17 20v-7h3v7z" />
+  </svg>
+);
+
 const REORDER_FIELD = "__reorder__";
 const DETAIL_FIELD = "__detail_panel_toggle__";
 /** Lazy loading asks for rows in chunks of this many. */
@@ -502,8 +617,21 @@ const holeAt = <R,>(index: number) => ({ [HOLE]: index }) as unknown as R;
 const isHole = (row: unknown): row is Hole =>
   typeof row === "object" && row !== null && HOLE in row;
 
+/** Generated rows (row groups, missing tree parents): rendered by the grid, not data. */
+const GROUP = Symbol("group row");
+type Group = { [GROUP]: GridGroupNode };
+const asGroupRow = <R,>(node: GridGroupNode) => ({ [GROUP]: node }) as unknown as R;
+const isGroup = (row: unknown): row is Group =>
+  typeof row === "object" && row !== null && GROUP in row;
+/** Data rows only (not generated or placeholder rows). */
+const isData = (row: unknown) => !isGroup(row) && !isHole(row);
+
 const rawValue = <R,>(column: GridColDef<R>, row: R) =>
-  column.valueGetter ? column.valueGetter(row) : (row as Record<string, unknown>)[column.field];
+  !isData(row)
+    ? undefined
+    : column.valueGetter
+      ? column.valueGetter(row)
+      : (row as Record<string, unknown>)[column.field];
 const asText = (value: unknown) =>
   value === null || value === undefined
     ? ""
@@ -511,26 +639,35 @@ const asText = (value: unknown) =>
       ? value.toISOString()
       : String(value);
 const textOf = <R,>(column: GridColDef<R>, row: R) => {
+  if (!isData(row)) return "";
   const value = rawValue(column, row);
   return column.valueFormatter ? column.valueFormatter(value, row) : asText(value);
 };
 
-/** Starts a CSV download (a Blob link, revoked right after). */
-function downloadCsv(name: string, csv: string) {
-  const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+/** Starts a download (a Blob link, revoked right after). */
+function download(name: string, data: BlobPart, type: string) {
+  const url = URL.createObjectURL(new Blob([data], { type }));
   const link = document.createElement("a");
   link.href = url;
-  link.download = `${name}.csv`;
+  link.download = name;
   link.click();
   URL.revokeObjectURL(url);
 }
+const downloadCsv = (name: string, csv: string) =>
+  download(`${name}.csv`, csv, "text/csv;charset=utf-8");
 
-type Panel = "columns" | "filters" | "density" | "export" | null;
+/** `YYYY-MM-DD` of a picked date; "" while it isn't a whole, valid date. */
+const isoDay = (date: Date | null) =>
+  date && !Number.isNaN(date.getTime()) ? formatIsoDate(date) : "";
+
+const NO_PIVOT: GridPivotModel = { rows: [], columns: [], values: [] };
+
+type Panel = "columns" | "filters" | "density" | "export" | "pivot" | "charts" | null;
 
 function DataGridInner<R>(
   {
     rows,
-    columns,
+    columns: columnsProp,
     getRowId = (row: R) => (row as { id: string | number }).id,
     checkboxSelection,
     disableRowSelectionOnClick,
@@ -625,13 +762,42 @@ function DataGridInner<R>(
     rowReordering,
     onRowOrderChange,
     pinnedRows,
-    columnGroupingModel,
+    columnGroupingModel: columnGroupingProp,
     listView,
     listViewColumn,
     rowBufferPx = 150,
     columnBufferPx = 150,
     lazyLoading,
     lazyLoadingRequestThrottleMs = 500,
+    rowGroupingModel: groupingProp,
+    onRowGroupingModelChange,
+    disableRowGrouping,
+    aggregationModel: aggregationProp,
+    onAggregationModelChange,
+    disableAggregation,
+    aggregationFunctions = gridAggregationFunctions,
+    aggregationRowsScope = "filtered",
+    getAggregationPosition,
+    pivotModel: pivotProp,
+    onPivotModelChange,
+    pivotActive: pivotActiveProp,
+    onPivotActiveChange,
+    disablePivoting,
+    excelOptions,
+    cellSelection,
+    cellSelectionModel,
+    onCellSelectionModelChange,
+    disableClipboardPaste,
+    onClipboardCopy,
+    onClipboardPasteStart,
+    onClipboardPasteEnd,
+    splitClipboardPastedText,
+    clipboardCopyCellDelimiter = "\t",
+    ignoreValueFormatterDuringExport,
+    headerFilters,
+    chartsIntegration,
+    chartModel: chartProp,
+    onChartModelChange,
     "aria-label": ariaLabel,
     "aria-labelledby": ariaLabelledby,
     ...props
@@ -690,6 +856,36 @@ function DataGridInner<R>(
     defaultValue: initialState?.pinnedColumns ?? {},
     onChange: onPinnedColumnsChange,
   });
+  const [groupingModel, setGroupingModel] = useControllableState<readonly string[]>({
+    value: groupingProp,
+    defaultValue: initialState?.rowGrouping?.model ?? [],
+    onChange: (next) => onRowGroupingModelChange?.([...next]),
+  });
+  const [aggregationState, setAggregationModel] = useControllableState<GridAggregationModel>({
+    value: aggregationProp,
+    defaultValue: initialState?.aggregation?.model ?? {},
+    onChange: onAggregationModelChange,
+  });
+  const [pivotModel, setPivotModel] = useControllableState<GridPivotModel>({
+    value: pivotProp,
+    defaultValue: initialState?.pivoting?.model ?? NO_PIVOT,
+    onChange: onPivotModelChange,
+  });
+  const [pivotActive, setPivotActive] = useControllableState<boolean>({
+    value: pivotActiveProp,
+    defaultValue: initialState?.pivoting?.active ?? false,
+    onChange: onPivotActiveChange,
+  });
+  const [cellModel, setCellModel] = useControllableState<GridCellSelectionModel>({
+    value: cellSelectionModel,
+    defaultValue: {},
+    onChange: onCellSelectionModelChange,
+  });
+  const [chartModel, setChartModel] = useControllableState<GridChartModel>({
+    value: chartProp,
+    defaultValue: initialState?.chartsIntegration?.model ?? {},
+    onChange: onChartModelChange,
+  });
   const [widths, setWidths] = useState<GridColumnWidths>(() =>
     Object.fromEntries(
       Object.entries(initialState?.columns?.dimensions ?? {}).map(([f, d]) => [f, d.width]),
@@ -735,7 +931,9 @@ function DataGridInner<R>(
   // Server tree data: children loaded per parent id; parents whose children are loading.
   const [childRows, setChildRows] = useState<ReadonlyMap<string, readonly R[]>>(new Map());
   const [loadingChildren, setLoadingChildren] = useState<ReadonlySet<string>>(new Set());
-  const serverTree = !!treeData && !!dataSource;
+  const serverTree =
+    !!dataSource &&
+    (!!treeData || (!disableRowGrouping && !lazyLoading && groupingModel.length > 0));
   const base: readonly R[] = lazy
     ? [...lazyRows.values()]
     : dataSource
@@ -748,18 +946,89 @@ function DataGridInner<R>(
     filter: !!dataSource || filterMode === "server",
     page: !!dataSource || paginationMode === "server",
   };
-  const idOf = (row: R) => (isHole(row) ? `__loading__-${row[HOLE]}` : String(getRowId(row)));
+  const idOf = (row: R) =>
+    isHole(row) ? `__loading__-${row[HOLE]}` : isGroup(row) ? row[GROUP].id : String(getRowId(row));
   const view = base.map((row) => overrides.get(idOf(row)) ?? row);
   const rank = rowOrder ? new Map(rowOrder.map((rowId, i) => [rowId, i])) : null;
   const orderedRows = rank
     ? [...view].sort((a, b) => (rank.get(idOf(a)) ?? rank.size) - (rank.get(idOf(b)) ?? rank.size))
     : view;
+  // Phase 6. Pivoting: the filtered rows become groups of `rows` fields with one aggregated column
+  // per key of `columns` fields and value; the pivot's columns replace the columns.
+  const aggLabel = (fn: string) =>
+    (labels[
+      `aggregationFunctionLabel${fn.charAt(0).toUpperCase()}${fn.slice(1)}` as keyof GridLabels
+    ] as string | undefined) ?? fn;
+  const sourceOf = (field: string) => columnsProp.find((c) => c.field === field) as GridColDef<R>;
+  const pivotOn = !!pivotActive && !disablePivoting && !treeData && !lazy;
+  const pivotRows = pivotOn
+    ? server.filter
+      ? orderedRows
+      : filterGridRows(
+          orderedRows,
+          filterModel,
+          columnsProp,
+          (row, field) => rawValue(sourceOf(field), row),
+          (row, field) => textOf(sourceOf(field), row),
+          { ignoreDiacritics, quickFilterLogicOperator },
+        )
+    : [];
+  const pivot = pivotOn
+    ? gridPivot(
+        pivotRows,
+        columnsProp.filter((c) => c.pivotable !== false),
+        pivotModel,
+        (row, field) => rawValue(sourceOf(field), row),
+        (row, field) => textOf(sourceOf(field), row),
+        aggLabel,
+      )
+    : null;
+  const columns: readonly GridColDef<R>[] = pivot
+    ? pivot.columns.map((c) => {
+        const formatter = sourceOf(c.pivotValueField).valueFormatter;
+        return {
+          ...c,
+          valueGetter: (row: R) => pivot.value(row, c.field),
+          ...(formatter && pivot.aggregationModel[c.field] !== "size"
+            ? { valueFormatter: formatter }
+            : {}),
+        };
+      })
+    : columnsProp;
+  const columnGroupingModel = pivot
+    ? pivot.columnGroupingModel.length
+      ? pivot.columnGroupingModel
+      : undefined
+    : columnGroupingProp;
+  // Row grouping (not with tree data or lazy loading) and aggregation.
+  const grouping = pivot
+    ? pivot.rowGroupingModel
+    : treeData || disableRowGrouping || lazy
+      ? []
+      : groupingModel.filter((f) => columnsProp.some((c) => c.field === f));
+  const aggregationModel: GridAggregationModel = pivot
+    ? pivot.aggregationModel
+    : disableAggregation
+      ? {}
+      : aggregationState;
+  const aggregating = Object.keys(aggregationModel).length > 0;
+  const aggregationPosition = (group: { id: string; depth: number; isRoot: boolean }) =>
+    getAggregationPosition ? getAggregationPosition(group) : group.isRoot ? "footer" : "inline";
+  /** The functions a column offers, and the one it uses (when it offers it). */
+  const functionsOf = (column: GridColDef<R>) =>
+    gridAggregationFunctionsFor(column, aggregationFunctions, column.availableAggregationFunctions);
+  const aggregationOf = (column: GridColDef<R>) => {
+    const fn = aggregationModel[column.field];
+    return fn && functionsOf(column).includes(fn) ? fn : undefined;
+  };
+  const groupField = treeData ? GRID_TREE_FIELD : GRID_GROUPING_FIELD;
+  const treeLike = !!treeData || grouping.length > 0;
   const ordered = orderGridColumns(columns, order);
   // While printing (every row and the printed columns render, then the page prints).
   const [printing, setPrinting] = useState<GridPrintOptions | null>(null);
   const shown = visibleGridColumns(
     arrangeGridColumns(ordered, pinned),
-    printing?.allColumns ? {} : visibility,
+    printing?.allColumns || pivot ? {} : visibility,
   );
   const leftPinned = shown.some((c) => gridPinSide(pinned, c.field) === "left");
   const editable = (column: GridColDef<R>) =>
@@ -792,6 +1061,19 @@ function DataGridInner<R>(
   const serverParents = new Map<string, string>();
   for (const [parent, kids] of childRows)
     for (const kid of kids) serverParents.set(idOf(kid), parent);
+  const aggregates = new Map<string, Record<string, unknown>>();
+  /** Row grouping: each group's rows that pass the filter. */
+  const leafCounts = new Map<string, number>();
+  const aggregateRows = (list: readonly R[]) =>
+    gridAggregate(
+      list,
+      Object.fromEntries(
+        columns.flatMap((c) => (aggregationOf(c) ? [[c.field, aggregationOf(c) as string]] : [])),
+      ),
+      columns,
+      (row, field) => rawValue(columnOf(field), row),
+      aggregationFunctions,
+    );
   let filtered: readonly R[];
   let sorted: readonly R[];
   let tree: Map<string, GridTreeRow<R>> | null = null;
@@ -800,29 +1082,72 @@ function DataGridInner<R>(
     const count = sourced.rowCount ?? rowCount ?? 0;
     sorted = Array.from({ length: count }, (_, i) => lazyRows.get(i) ?? holeAt<R>(i));
     filtered = sorted;
-  } else if (treeData) {
-    const parents = serverTree
-      ? serverParents
-      : gridParentsFromPaths(orderedRows, idOf, getTreeDataPath ?? (() => []));
-    const byId = new Map(orderedRows.map((row) => [idOf(row), row]));
-    const pass = server.filter ? null : new Set(localFilter(orderedRows));
-    const place = server.sort ? null : new Map(localSort(orderedRows).map((row, i) => [row, i]));
+  } else if (treeLike) {
+    // Tree data (generated rows for missing parents) or row grouping (one row per group);
+    // the pivot shows its groups only.
+    const source = pivot ? pivotRows : orderedRows;
+    const nodes = serverTree
+      ? null
+      : treeData
+        ? gridTreeGroups(source, idOf, getTreeDataPath ?? (() => []))
+        : gridRowGroups(source, grouping, idOf, (row, field) => textOf(sourceOf(field), row));
+    const generated = (nodes?.groups ?? []).map((node) => asGroupRow<R>(node));
+    const items = pivot ? generated : [...generated, ...source];
+    const parents: ReadonlyMap<string, string | null> = nodes ? nodes.parentOf : serverParents;
+    const byId = new Map([...items, ...source].map((row) => [idOf(row), row]));
+    const passed = server.filter || pivot ? null : localFilter(source);
+    const pass = passed ? new Set(passed) : null;
+    const place = server.sort ? null : new Map(localSort(source).map((row, i) => [row, i]));
+    // Aggregated values of each group (and of every row for the footer).
+    if (aggregating) {
+      const scoped = (list: readonly R[]) =>
+        aggregationRowsScope === "all" || !pass ? list : list.filter((r) => pass.has(r));
+      for (const node of nodes?.groups ?? [])
+        if (aggregationPosition({ id: node.id, depth: node.depth, isRoot: false }) === "inline")
+          aggregates.set(
+            node.id,
+            aggregateRows(scoped(node.leafIds.map((leaf) => byId.get(leaf) as R))),
+          );
+    }
     const openOf = (rowId: string, depth: number) =>
       expansion.get(rowId) ??
       (isGroupExpandedByDefault
         ? isGroupExpandedByDefault({ id: rowId, depth, row: byId.get(rowId) as R })
         : gridExpandedByDepth(defaultGroupingExpansionDepth, depth));
+    for (const node of nodes?.groups ?? [])
+      leafCounts.set(
+        node.id,
+        pass
+          ? node.leafIds.filter((leaf) => pass.has(byId.get(leaf) as R)).length
+          : node.leafIds.length,
+      );
+    const firstPlace = new Map<string, number>();
+    for (const node of nodes?.groups ?? [])
+      firstPlace.set(
+        node.id,
+        Math.min(...node.leafIds.map((leaf) => place?.get(byId.get(leaf) as R) ?? 0)),
+      );
     const options = {
       idOf,
       parentOf: (row: R) => parents.get(idOf(row)) ?? null,
-      keep: pass ? (row: R) => pass.has(row) : undefined,
+      keep: pass ? (row: R) => !isGroup(row) && pass.has(row) : undefined,
       compare: place
-        ? (a: R, b: R) => (place.get(a) as number) - (place.get(b) as number)
+        ? gridGroupComparator<R>({
+            isGroup,
+            place: (row) => place.get(row) as number,
+            firstPlace: (row) => firstPlace.get(idOf(row)) as number,
+            keyOf: (row) => (row as Group)[GROUP].key,
+            aggregateOf: (row, field) => aggregates.get(idOf(row))?.[field],
+            sortModel,
+            columns,
+            groupFields: grouping,
+            aggregated: Object.keys(aggregationModel),
+          })
         : undefined,
     };
-    const list = gridTreeRows(orderedRows, { ...options, expanded: openOf });
+    const list = gridTreeRows(items, { ...options, expanded: openOf });
     // Every row renders (children of closed rows `hidden`), so the markup holds the whole tree.
-    const all = serverTree ? list : gridTreeRows(orderedRows, { ...options, expanded: () => true });
+    const all = serverTree ? list : gridTreeRows(items, { ...options, expanded: () => true });
     tree = new Map(
       all.map((node) => [
         node.id,
@@ -832,10 +1157,27 @@ function DataGridInner<R>(
     treeOrder = all.map((node) => node.row);
     sorted = list.map((node) => node.row);
     filtered = sorted;
+  } else if (pivot) {
+    // A pivot without row fields shows its totals only (the footer row).
+    filtered = [];
+    sorted = [];
   } else {
     filtered = server.filter ? orderedRows : localFilter(orderedRows);
     sorted = server.sort ? filtered : localSort(filtered);
   }
+  // The root's values show in a footer row (MUI X: a pinned bottom row).
+  const rootAggregates =
+    aggregating &&
+    !lazy &&
+    aggregationPosition({ id: GRID_AGGREGATION_ROOT_ID, depth: -1, isRoot: true }) === "footer"
+      ? aggregateRows(
+          pivot
+            ? pivotRows
+            : aggregationRowsScope === "all" || server.filter
+              ? orderedRows
+              : localFilter(orderedRows),
+        )
+      : null;
   const total = server.page
     ? ((dataSource ? sourced.rowCount : rowCount) ?? sorted.length)
     : sorted.length;
@@ -854,7 +1196,7 @@ function DataGridInner<R>(
     onChange: (next) => onDetailPanelExpandedRowIdsChange?.([...next]),
   });
   const detailOf = (row: R) =>
-    getDetailPanelContent && detailIds.includes(idOf(row))
+    getDetailPanelContent && isData(row) && detailIds.includes(idOf(row))
       ? getDetailPanelContent({ id: idOf(row), row })
       : null;
   const factor = gridDensityFactor(density);
@@ -866,8 +1208,10 @@ function DataGridInner<R>(
     isFirstVisible: i === 0,
     isLastVisible: i === pageRows.length - 1,
   });
-  const heightOf = (row: R) => getRowHeight?.({ id: idOf(row), model: row, densityFactor: factor });
-  const spacingOf = (row: R, i: number) => getRowSpacing?.(rowParams(row, i)) ?? {};
+  const heightOf = (row: R) =>
+    isGroup(row) ? undefined : getRowHeight?.({ id: idOf(row), model: row, densityFactor: factor });
+  const spacingOf = (row: R, i: number) =>
+    (isGroup(row) ? undefined : getRowSpacing?.(rowParams(row, i))) ?? {};
   const variable =
     !!getRowHeight || !!getRowSpacing || (!!getDetailPanelContent && detailIds.length > 0);
   const baseHeight = Math.round((rowHeight ?? 52) * factor);
@@ -931,10 +1275,17 @@ function DataGridInner<R>(
   // Rows of a server page sit after the rows of the pages before it.
   const rowOffset = server.page ? page * pagination.pageSize : 0;
   const multiple = !disableMultipleRowSelection;
-  const selectable = (row: R) =>
-    !isHole(row) && (isRowSelectable?.({ id: idOf(row), row }) ?? true);
+  const selectable = (row: R) => isData(row) && (isRowSelectable?.({ id: idOf(row), row }) ?? true);
   // Select all: the selectable rows of every page (or of this page only).
-  const allIds = (checkboxSelectionVisibleOnly ? pageRows : sorted).filter(selectable).map(idOf);
+  const allIds = (
+    checkboxSelectionVisibleOnly
+      ? pageRows
+      : grouping.length > 0 && !serverTree
+        ? localSort(server.filter ? orderedRows : localFilter(orderedRows))
+        : sorted
+  )
+    .filter(selectable)
+    .map(idOf);
   const selectAll = gridSelectAllState(allIds, selection);
   // Rows that went away leave the selection (unless kept); not on mount.
   const mounted = useRef(false);
@@ -953,7 +1304,7 @@ function DataGridInner<R>(
     ...(rowReordering ? [{ field: REORDER_FIELD, width: 50 }] : []),
     ...(checkboxSelection ? [{ field: GRID_CHECKBOX_FIELD, width: GRID_CHECKBOX_WIDTH }] : []),
     ...(getDetailPanelContent ? [{ field: DETAIL_FIELD, width: 50 }] : []),
-    ...(treeData ? [{ field: GRID_TREE_FIELD, width: groupingColDef?.width ?? 200 }] : []),
+    ...(treeLike ? [{ field: groupField, width: groupingColDef?.width ?? 200 }] : []),
   ];
   const colOffset = specials.length + 1;
   const colCount = specials.length + shown.length;
@@ -974,6 +1325,9 @@ function DataGridInner<R>(
       )
     : [];
   const headerLevels = groupRows.length;
+  // Header filters: a header row under the column headers.
+  const filterRow = headerFilters ? 1 : 0;
+  const footerRow = rootAggregates ? 1 : 0;
   const topRows = pinnedRows?.top ?? [];
   const bottomRows = pinnedRows?.bottom ?? [];
   // Column virtualization: only the scrolling columns in view (fixed widths, no spans or groups).
@@ -1094,11 +1448,11 @@ function DataGridInner<R>(
   });
   // Row reordering: the controller reports moves; the row keeps its focus.
   const [announcement, setAnnouncement] = useState("");
-  const firstRowIndex = headerLevels + topRows.length + 2;
+  const firstRowIndex = headerLevels + filterRow + topRows.length + 2;
   const canReorder = useRef(false);
   canReorder.current =
     !!rowReordering &&
-    !treeData &&
+    !treeLike &&
     !lazy &&
     sortModel.length === 0 &&
     filterModel.items.length === 0 &&
@@ -1154,7 +1508,12 @@ function DataGridInner<R>(
       }
       setLoadingChildren((current) => new Set(current).add(rowId));
       dataSource
-        .getRows({ sortModel, filterModel, groupKeys: keys })
+        .getRows({
+          sortModel,
+          filterModel,
+          groupKeys: keys,
+          ...(treeData ? {} : { groupFields: grouping }),
+        })
         .then((response) => setChildRows((current) => new Map(current).set(rowId, response.rows)))
         .catch((error: unknown) => onDataSourceError?.(error))
         .finally(() =>
@@ -1213,6 +1572,7 @@ function DataGridInner<R>(
     filterModel,
     paginationModel: { page: pagination.page, pageSize: pagination.pageSize },
     ...(serverTree ? { groupKeys: [] } : {}),
+    ...(serverTree && !treeData ? { groupFields: grouping } : {}),
   });
   // New top-level rows: children loaded before belong to the old ones.
   // biome-ignore lint/correctness/useExhaustiveDependencies: runs when the request changes.
@@ -1342,6 +1702,20 @@ function DataGridInner<R>(
   };
   const selectEvery = useRef<() => void>(undefined as never);
   selectEvery.current = () => {
+    // Cell selection: every cell of the page.
+    if (cellSelection) {
+      const last = cellRowIds.at(-1);
+      if (last)
+        setCellModel(
+          gridCellRange(
+            cellRowIds,
+            cellFields,
+            { id: cellRowIds[0] as string, field: cellFields[0] as string },
+            { id: last, field: cellFields.at(-1) as string },
+          ),
+        );
+      return;
+    }
     if (checkboxSelection && multiple) setSelection(toggleGridRows(selection, allIds));
   };
   const openMenu = useRef<(field: string, button: Element | null) => void>(undefined as never);
@@ -1469,6 +1843,10 @@ function DataGridInner<R>(
         ? column.valueSetter(value, newRow)
         : ({ ...newRow, [f]: value } as R);
     }
+    commitRow(rowId, oldRow, newRow);
+  };
+  /** An edited (or pasted) row: `processRowUpdate`, then the data source's `updateRow`. */
+  const commitRow = (rowId: string, oldRow: R, newRow: R) =>
     Promise.resolve(processRowUpdate ? processRowUpdate(newRow, oldRow) : newRow)
       .then((result) => {
         setOverrides((current) => new Map(current).set(rowId, result));
@@ -1485,14 +1863,178 @@ function DataGridInner<R>(
           });
       })
       .catch((error: unknown) => onProcessRowUpdateError?.(error));
-  };
 
+  // Cell selection: ranges over the page's data rows and the shown columns.
+  const cellRows = pageRows.filter(isData);
+  const cellRowIds = cellRows.map(idOf);
+  const cellFields = shown.map((c) => c.field);
+  const cellBase = useRef<GridCellSelectionModel>({});
+  const cellSelect = useRef<
+    (
+      anchor: { id: string; field: string },
+      focus: { id: string; field: string },
+      mode: "replace" | "add",
+    ) => void
+  >(undefined as never);
+  cellSelect.current = (anchor, focus, mode) => {
+    const range = gridCellRange(cellRowIds, cellFields, anchor, focus);
+    if (mode === "replace") return setCellModel(range);
+    // Ctrl / Cmd: a press toggles its cell, a drag adds its range to the selection before it.
+    if (anchor.id === focus.id && anchor.field === focus.field) {
+      cellBase.current = cellModel;
+      return setCellModel(toggleGridCell(cellModel, focus.id, focus.field));
+    }
+    setCellModel(mergeGridCellSelection(cellBase.current, range));
+  };
+  const cellOn = useRef(false);
+  cellOn.current = !!cellSelection;
+  // Clipboard: the selected cells, else the selected rows, else the focused cell.
+  const copyValue = (column: GridColDef<R>, row: R) =>
+    ignoreValueFormatterDuringExport ? asText(rawValue(column, row)) : textOf(column, row);
+  const copyText = (): string | null => {
+    const fields = shown.filter((c) => c.type !== "actions");
+    let block: string[][] | null = null;
+    const picked = cellSelection
+      ? gridSelectedBlock(
+          cellModel,
+          cellRowIds,
+          fields.map((c) => c.field),
+        )
+      : null;
+    if (picked?.ids.length)
+      block = picked.ids.map((rowId) =>
+        picked.fields.map((field) =>
+          isGridCellSelected(cellModel, rowId, field)
+            ? copyValue(columnOf(field), dataById.get(rowId) as R)
+            : "",
+        ),
+      );
+    const chosen = sorted.filter((row) => isData(row) && selection.includes(idOf(row)));
+    if (!block && chosen.length) block = chosen.map((row) => fields.map((c) => copyValue(c, row)));
+    if (!block) {
+      const cell = (document.activeElement as Element | null)?.closest(
+        '[data-ok-data-grid-body] [role="gridcell"][data-ok-field]',
+      );
+      const row = dataById.get(
+        cell?.closest("[data-ok-row-id]")?.getAttribute("data-ok-row-id") ?? "",
+      );
+      const column = columns.find((c) => c.field === cell?.getAttribute("data-ok-field"));
+      if (!row || !column) return null;
+      block = [[copyValue(column, row)]];
+    }
+    return gridToTsv(block, clipboardCopyCellDelimiter);
+  };
+  /** Pasted cells go into editable cells from the selection's corner (or the focused cell). */
+  const pasteText = (text: string) => {
+    const data = splitClipboardPastedText
+      ? splitClipboardPastedText(text)
+      : parseGridClipboard(text);
+    const picked = cellSelection ? gridSelectedBlock(cellModel, cellRowIds, cellFields) : null;
+    let top: number;
+    let left: number;
+    // One value fills every selected cell.
+    const fill = !!picked?.ids.length && data.length === 1 && data[0]?.length === 1;
+    if (picked?.ids.length) {
+      top = cellRowIds.indexOf(picked.ids[0] as string);
+      left = cellFields.indexOf(picked.fields[0] as string);
+    } else {
+      const cell = (document.activeElement as Element | null)?.closest(
+        '[data-ok-data-grid-body] [role="gridcell"][data-ok-field]',
+      );
+      top = cellRowIds.indexOf(
+        cell?.closest("[data-ok-row-id]")?.getAttribute("data-ok-row-id") ?? "",
+      );
+      left = cellFields.indexOf(cell?.getAttribute("data-ok-field") ?? "");
+      if (top < 0 || left < 0) return;
+    }
+    onClipboardPasteStart?.({ data });
+    const height = fill ? (picked as { ids: string[] }).ids.length : data.length;
+    const width = fill
+      ? (picked as { fields: string[] }).fields.length
+      : Math.max(...data.map((r) => r.length));
+    const updates: Promise<unknown>[] = [];
+    for (let r = 0; r < height; r++) {
+      const row = fill
+        ? (dataById.get((picked as { ids: string[] }).ids[r] as string) as R)
+        : cellRows[top + r];
+      if (!row) break;
+      let next = { ...row } as R;
+      let changed = false;
+      for (let c = 0; c < width; c++) {
+        const field = fill ? (picked as { fields: string[] }).fields[c] : cellFields[left + c];
+        const column = field ? columnOf(field) : undefined;
+        const typed = fill ? data[0]?.[0] : data[r]?.[c];
+        if (!column || typed === undefined || !cellEditable(column, row)) continue;
+        if (fill && !isGridCellSelected(cellModel, idOf(row), column.field)) continue;
+        const value = parse(column, typed, row);
+        next = column.valueSetter
+          ? column.valueSetter(value, next)
+          : ({ ...next, [column.field]: value } as R);
+        changed = true;
+      }
+      if (changed) updates.push(commitRow(idOf(row), row, next));
+    }
+    Promise.allSettled(updates).then(() => onClipboardPasteEnd?.());
+  };
+  const clipboard = useRef<{
+    copyText: () => string | null;
+    pasteText: (text: string) => void;
+    canPaste: () => boolean;
+  }>(null as never);
+  clipboard.current = {
+    copyText,
+    pasteText,
+    canPaste: () => !disableClipboardPaste && columns.some(editable),
+  };
+  const copied = useRef(onClipboardCopy);
+  copied.current = onClipboardCopy;
+  useEffect(() => {
+    const grid = gridRef.current as HTMLDivElement;
+    const cells = createGridCellSelection(grid, {
+      enabled: () => cellOn.current,
+      onSelect: (anchor, focus, mode) => cellSelect.current(anchor, focus, mode),
+    });
+    const handle = createGridClipboard(grid, {
+      copyText: () => clipboard.current.copyText(),
+      canPaste: () => clipboard.current.canPaste(),
+      onPaste: (text) => clipboard.current.pasteText(text),
+      onCopy: (text) => copied.current?.(text),
+    });
+    return () => {
+      cells.destroy();
+      handle.destroy();
+    };
+  }, []);
+
+  // Exports hold data rows (filtered, sorted): grouped and pivoted grids export their rows.
+  const exportRows = () =>
+    pivot
+      ? pivotRows
+      : grouping.length > 0
+        ? localSort(server.filter ? orderedRows : localFilter(orderedRows))
+        : sorted.filter(isData);
+  const exportBase = pivot ? columnsProp : columns;
+  const exportShown = pivot ? visibleGridColumns(columnsProp, visibility) : shown;
   const getCsv = (options: GridCsvOptions = csvOptions ?? {}) =>
     gridToCsv(
-      gridExportColumns(columns, shown, options),
-      sorted,
-      (row, field) => textOf(columnOf(field), row),
+      gridExportColumns(exportBase, exportShown, options),
+      exportRows(),
+      (row, field) => textOf(sourceOf(field), row),
       options,
+    );
+  const getExcel = (options: GridExcelOptions = excelOptions ?? {}) =>
+    gridToXlsx(
+      gridExportColumns(exportBase, exportShown, options),
+      exportRows(),
+      (row, field) => rawValue(sourceOf(field), row),
+      (row, field) => textOf(sourceOf(field), row),
+      options,
+    );
+  const exportExcel = (options: GridExcelOptions = excelOptions ?? {}) =>
+    download(
+      `${options.fileName ?? exportFileName}.xlsx`,
+      getExcel(options) as BlobPart,
+      GRID_XLSX_TYPE,
     );
   const exportCsv = (options: GridCsvOptions = csvOptions ?? {}) =>
     downloadCsv(options.fileName ?? exportFileName, getCsv(options));
@@ -1527,6 +2069,12 @@ function DataGridInner<R>(
     },
     pinnedColumns: pinned,
     density,
+    ...(groupingModel.length ? { rowGrouping: { model: [...groupingModel] } } : {}),
+    ...(Object.keys(aggregationState).length
+      ? { aggregation: { model: { ...aggregationState } } }
+      : {}),
+    ...(pivotAvailable ? { pivoting: { model: pivotModel, active: !!pivotActive } } : {}),
+    ...(chartsIntegration ? { chartsIntegration: { model: chartModel } } : {}),
   });
   const restoreState = (input: unknown) => {
     const state = sanitizeGridState(input);
@@ -1544,6 +2092,11 @@ function DataGridInner<R>(
       setWidths(Object.fromEntries(Object.entries(dimensions).map(([f, d]) => [f, d.width])));
     if (state.pinnedColumns) setPinned(state.pinnedColumns);
     if (state.density) setDensity(state.density);
+    if (state.rowGrouping?.model) setGroupingModel(state.rowGrouping.model);
+    if (state.aggregation?.model) setAggregationModel(state.aggregation.model);
+    if (state.pivoting?.model) setPivotModel(state.pivoting.model);
+    if (state.pivoting?.active !== undefined) setPivotActive(state.pivoting.active);
+    if (state.chartsIntegration?.model) setChartModel(state.chartsIntegration.model);
   };
   const scrollToIndexes = ({ rowIndex, colIndex }: { rowIndex?: number; colIndex?: number }) => {
     const grid = gridRef.current as HTMLDivElement;
@@ -1590,6 +2143,17 @@ function DataGridInner<R>(
     exportDataAsPrint: print,
     setRowChildrenExpansion: (rowId, expanded) => toggleExpansion.current(rowId, expanded),
     toggleDetailPanel: toggleDetail,
+    getRowGroupingModel: () => [...groupingModel],
+    setRowGroupingModel: (model) => setGroupingModel([...model]),
+    getAggregationModel: () => ({ ...aggregationState }),
+    setAggregationModel,
+    setPivotModel,
+    setPivotActive,
+    getCellSelectionModel: () => cellModel,
+    setCellSelectionModel: setCellModel,
+    setChartModel,
+    getDataAsExcel: getExcel,
+    exportDataAsExcel: exportExcel,
   };
   useLayoutEffect(() => {
     if (!apiRef) return;
@@ -1612,6 +2176,16 @@ function DataGridInner<R>(
     setPanel(which);
   };
   const closePanel = () => setPanel(null);
+  // Date filters: a partly typed date stays in its picker until it is whole.
+  const [pickerDrafts, setPickerDrafts] = useState<Record<string, Date>>({});
+  const pickerValue = (key: string, iso: string) => pickerDrafts[key] ?? parseIsoDate(iso);
+  const pickDate = (key: string, date: Date | null, apply: (iso: string) => void) => {
+    const drafts = { ...pickerDrafts };
+    if (date && Number.isNaN(date.getTime())) drafts[key] = date;
+    else delete drafts[key];
+    setPickerDrafts(drafts);
+    if (!(key in drafts)) apply(isoDay(date));
+  };
   // The typed text (with its spaces); the model keeps the words.
   const [quickText, setQuickText] = useState(() => (filterModel.quickFilterValues ?? []).join(" "));
   const setQuick = (text: string) => {
@@ -1620,8 +2194,8 @@ function DataGridInner<R>(
     setPagination({ ...pagination, page: 0 });
   };
   const newItem = (): GridFilterItem => ({
-    field: columns.find(isGridFilterable)?.field ?? "",
-    operator: operatorsOf(columns.find(isGridFilterable))[0]?.value as string,
+    field: columnsProp.find(isGridFilterable)?.field ?? "",
+    operator: operatorsOf(columnsProp.find(isGridFilterable))[0]?.value as string,
   });
   // The panel always shows a row: with no items, an empty one (applied once edited).
   const filterItems: GridFilterItem[] = filterModel.items.length ? filterModel.items : [newItem()];
@@ -1659,7 +2233,19 @@ function DataGridInner<R>(
           action === "unpin" ? null : action === "pin-left" ? "left" : "right",
         ),
       );
-    else if (action === "filter") {
+    else if (action === "group")
+      setGroupingModel(
+        groupingModel.includes(field)
+          ? groupingModel.filter((f) => f !== field)
+          : [...groupingModel, field],
+      );
+    else if (action.startsWith("aggregate-")) {
+      const fn = action.slice("aggregate-".length);
+      const next = { ...aggregationState };
+      if (fn === "none") delete next[field];
+      else next[field] = fn;
+      setAggregationModel(next);
+    } else if (action === "filter") {
       setFilterItems([{ field, operator: operatorsOf(menuColumn)[0]?.value as string }]);
       // The panels open next to their toolbar buttons (the menu offers them only with the toolbar).
       setAnchor(document.querySelector<HTMLElement>(`[aria-controls="${id}-filters"]`));
@@ -1670,6 +2256,208 @@ function DataGridInner<R>(
     }
   };
 
+  // Pivot panel: the switch, then each column's place (rows, columns, values) and function.
+  const pivotAvailable =
+    !disablePivoting &&
+    !treeData &&
+    (pivotProp !== undefined || pivotActiveProp !== undefined || !!initialState?.pivoting);
+  const pivotPanel = (
+    <Popover
+      id={`${id}-pivot`}
+      open={panel === "pivot"}
+      anchorEl={anchor}
+      placement="bottom-end"
+      onOpenChange={(next) => !next && closePanel()}
+    >
+      <div
+        data-ok-data-grid-panel=""
+        data-ok-data-grid-form-panel=""
+        role="group"
+        aria-label={labels.toolbarPivot}
+      >
+        <FormControlLabel
+          label={labels.pivotActive}
+          control={
+            <Switch
+              size="small"
+              data-ok-data-grid-pivot-switch=""
+              checked={pivotOn}
+              onChange={(on) => setPivotActive(on)}
+            />
+          }
+        />
+        {columnsProp
+          .filter((c) => c.pivotable !== false && c.type !== "actions")
+          .map((column) => {
+            const role = gridPivotRole(pivotModel, column.field);
+            const functions = gridAggregationFunctionsFor(column);
+            const fn =
+              pivotModel.values.find((v) => v.field === column.field)?.aggFunc ??
+              (functions[0] as string);
+            return (
+              <div key={column.field} data-ok-data-grid-pivot-field="" data-ok-field={column.field}>
+                <TextField
+                  id={`${id}-pivot-${column.field}`}
+                  select
+                  size="small"
+                  label={column.headerName ?? column.field}
+                  value={role}
+                  onChange={(next) =>
+                    setPivotModel(
+                      setGridPivotRole(
+                        pivotModel,
+                        column.field,
+                        next as "rows" | "columns" | "values" | "none",
+                        fn,
+                      ),
+                    )
+                  }
+                >
+                  <option value="none">{labels.pivotNotUsed}</option>
+                  <option value="rows">{labels.pivotRows}</option>
+                  <option value="columns">{labels.pivotColumns}</option>
+                  <option value="values">{labels.pivotValues}</option>
+                </TextField>
+                <TextField
+                  id={`${id}-pivot-${column.field}-function`}
+                  select
+                  size="small"
+                  label={labels.pivotAggregation}
+                  disabled={role !== "values"}
+                  value={fn}
+                  onChange={(next) =>
+                    setPivotModel({
+                      ...pivotModel,
+                      values: pivotModel.values.map((v) =>
+                        v.field === column.field ? { ...v, aggFunc: next } : v,
+                      ),
+                    })
+                  }
+                >
+                  {functions.map((f) => (
+                    <option key={f} value={f}>
+                      {aggLabel(f)}
+                    </option>
+                  ))}
+                </TextField>
+              </div>
+            );
+          })}
+      </div>
+    </Popover>
+  );
+  // Charts integration: one chart of the top-level groups (aggregated) or of the page's rows.
+  const chartType: GridChartType = chartModel.type ?? "column";
+  const dataById = new Map(view.map((row) => [idOf(row), row]));
+  const chartColumns = columnsProp.filter((c) => c.type !== "actions");
+  const valueFields = (chartModel.values ?? []).filter((f) =>
+    chartColumns.some((c) => c.field === f),
+  );
+  const dimension = chartColumns.some((c) => c.field === chartModel.dimension)
+    ? (chartModel.dimension as string)
+    : null;
+  const topGroups =
+    grouping.length > 0 && !serverTree
+      ? sorted.filter((row): row is R & Group => isGroup(row) && row[GROUP].depth === 0)
+      : null;
+  const chartData =
+    chartsIntegration && valueFields.length > 0 && (dimension || topGroups)
+      ? topGroups
+        ? gridChartData(
+            topGroups,
+            { values: valueFields },
+            chartColumns,
+            (row) => row[GROUP].key,
+            (row, field) =>
+              gridAggregate(
+                row[GROUP].leafIds.map((leaf) => dataById.get(leaf) as R),
+                { [field]: aggregationState[field] ?? "sum" },
+                columnsProp,
+                (r, f) => rawValue(sourceOf(f), r),
+                aggregationFunctions,
+              )[field],
+          )
+        : gridChartData(
+            pageRows.filter(isData),
+            { values: valueFields },
+            chartColumns,
+            (row) => textOf(sourceOf(dimension as string), row),
+            (row, field) => rawValue(sourceOf(field), row),
+          )
+      : null;
+  const chartsPanel = (
+    <Popover
+      id={`${id}-charts`}
+      open={panel === "charts"}
+      anchorEl={anchor}
+      placement="bottom-end"
+      onOpenChange={(next) => !next && closePanel()}
+    >
+      <div
+        data-ok-data-grid-panel=""
+        data-ok-data-grid-form-panel=""
+        role="group"
+        aria-label={labels.toolbarCharts}
+      >
+        <TextField
+          id={`${id}-chart-type`}
+          select
+          size="small"
+          label={labels.chartsType}
+          value={chartType}
+          onChange={(type) => setChartModel({ ...chartModel, type: type as GridChartType })}
+        >
+          {gridChartTypes.map((type) => (
+            <option key={type} value={type}>
+              {
+                labels[
+                  `chartType${type.charAt(0).toUpperCase()}${type.slice(1)}` as keyof GridLabels
+                ] as string
+              }
+            </option>
+          ))}
+        </TextField>
+        <TextField
+          id={`${id}-chart-dimension`}
+          select
+          size="small"
+          label={labels.chartsDimension}
+          value={dimension ?? ""}
+          onChange={(field) => setChartModel({ ...chartModel, dimension: field || null })}
+        >
+          <option value="">{labels.chartsNone}</option>
+          {chartColumns.map((c) => (
+            <option key={c.field} value={c.field}>
+              {c.headerName ?? c.field}
+            </option>
+          ))}
+        </TextField>
+        {chartColumns
+          .filter((c) => c.type === "number")
+          .map((column) => (
+            <FormControlLabel
+              key={column.field}
+              label={`${labels.chartsValues}: ${column.headerName ?? column.field}`}
+              control={
+                <Switch
+                  size="small"
+                  data-ok-data-grid-chart-value={column.field}
+                  checked={valueFields.includes(column.field)}
+                  onChange={(on) =>
+                    setChartModel({
+                      ...chartModel,
+                      values: on
+                        ? [...valueFields, column.field]
+                        : valueFields.filter((f) => f !== column.field),
+                    })
+                  }
+                />
+              }
+            />
+          ))}
+      </div>
+    </Popover>
+  );
   /** A toolbar button: text with an icon, or an icon with a tooltip (`toolbarVariant`). */
   const toolbarButton = (
     which: Exclude<Panel, null>,
@@ -1720,8 +2508,13 @@ function DataGridInner<R>(
           toolbarButton("filters", labels.toolbarFilters, <FilterIcon />, "dialog")}
         {!disableDensitySelector &&
           toolbarButton("density", labels.toolbarDensity, <DensityIcon />, "menu")}
+        {pivotAvailable && toolbarButton("pivot", labels.toolbarPivot, <PivotIcon />, "dialog")}
+        {chartsIntegration &&
+          toolbarButton("charts", labels.toolbarCharts, <ChartIcon />, "dialog")}
         {toolbarButton("export", labels.toolbarExport, <ExportIcon />, "menu")}
       </div>
+      {pivotAvailable && pivotPanel}
+      {chartsIntegration && chartsPanel}
       {!disableColumnSelector && (
         <Popover
           id={`${id}-columns`}
@@ -1731,7 +2524,7 @@ function DataGridInner<R>(
           onOpenChange={(next) => !next && closePanel()}
         >
           <div data-ok-data-grid-panel="" role="group" aria-label={labels.toolbarColumns}>
-            {columns.filter(isGridHideable).map((column) => (
+            {columnsProp.filter(isGridHideable).map((column) => (
               <FormControlLabel
                 key={column.field}
                 label={column.headerName ?? column.field}
@@ -1761,7 +2554,8 @@ function DataGridInner<R>(
           <div data-ok-data-grid-panel="" role="group" aria-label={labels.toolbarFilters}>
             {filterItems.map((item, index) => {
               const suffix = index === 0 ? "" : `-${index}`;
-              const column = columns.find((c) => c.field === item.field);
+              // Filters (and the columns panel) work on the data's columns, also in the pivot.
+              const column = columnsProp.find((c) => c.field === item.field);
               return (
                 // biome-ignore lint/suspicious/noArrayIndexKey: filter rows are positional.
                 <div key={index} data-ok-data-grid-filter="">
@@ -1798,12 +2592,12 @@ function DataGridInner<R>(
                     onChange={(field) =>
                       setFilterItem(index, {
                         field,
-                        operator: operatorsOf(columns.find((c) => c.field === field))[0]
+                        operator: operatorsOf(columnsProp.find((c) => c.field === field))[0]
                           ?.value as string,
                       })
                     }
                   >
-                    {columns.filter(isGridFilterable).map((c) => (
+                    {columnsProp.filter(isGridFilterable).map((c) => (
                       <option key={c.field} value={c.field}>
                         {c.headerName ?? c.field}
                       </option>
@@ -1834,6 +2628,23 @@ function DataGridInner<R>(
                       value={gridFilterValues(item.value)}
                       onChange={(value) =>
                         setFilterItem(index, { ...item, value: (value as string[] | null) ?? [] })
+                      }
+                    />
+                  ) : column?.type === "date" &&
+                    !column.filterOperators &&
+                    gridOperatorNeedsValue(item.operator) ? (
+                    <DatePicker
+                      id={`${id}-filter-value${suffix}`}
+                      size="small"
+                      label={labels.filterPanelInputLabel}
+                      value={pickerValue(
+                        `${id}-filter-value${suffix}`,
+                        typeof item.value === "string" ? item.value : "",
+                      )}
+                      onChange={(date) =>
+                        pickDate(`${id}-filter-value${suffix}`, date, (iso) =>
+                          setFilterItem(index, { ...item, value: iso }),
+                        )
                       }
                     />
                   ) : (
@@ -1918,13 +2729,133 @@ function DataGridInner<R>(
         >
           {labels.toolbarExportPrint}
         </MenuItem>
+        <MenuItem
+          data-ok-data-grid-export="excel"
+          onClick={() => {
+            closePanel();
+            exportExcel();
+          }}
+        >
+          {labels.toolbarExportExcel}
+        </MenuItem>
       </Menu>
     </div>
   );
 
+  /** Header filters: the first filter item of a field holds its value (the type's operator). */
+  const setHeaderFilter = (column: GridColDef<R>, value: string) => {
+    const index = filterModel.items.findIndex((item) => item.field === column.field);
+    const current = filterModel.items[index];
+    const item: GridFilterItem = {
+      field: column.field,
+      operator: current?.operator ?? (operatorsOf(column)[0]?.value as string),
+      value,
+    };
+    const items =
+      value === ""
+        ? filterModel.items.filter((_, i) => i !== index)
+        : index < 0
+          ? [...filterModel.items, item]
+          : filterModel.items.map((other, i) => (i === index ? item : other));
+    setFilterItems(items);
+  };
+  const headerFilterCell = (column: GridColDef<R>, c: number) => {
+    if (!renders(column)) return null;
+    const side = gridPinSide(pinned, column.field);
+    const start = colStart(column);
+    const place = {
+      "data-ok-filter-field": column.field,
+      ...(side ? { "data-ok-pinned": side, "data-ok-pin-field": column.field } : {}),
+      ...(start !== undefined
+        ? {
+            "data-ok-col-start": "",
+            style: { "--_ok-data-grid-col-start": start } as CSSProperties,
+          }
+        : {}),
+    };
+    if (disableColumnFilter || !isGridFilterable(column))
+      return (
+        <div key={column.field} {...place} role="presentation" data-ok-data-grid-group-filler="" />
+      );
+    const item = filterModel.items.find((i) => i.field === column.field);
+    const operator = item?.operator ?? (operatorsOf(column)[0]?.value as string);
+    const label = operatorsOf(column).find((o) => o.value === operator)?.label ?? operator;
+    const value = typeof item?.value === "string" ? item.value : (item?.value ?? []).join(", ");
+    const fieldId = `${id}-header-filter-${column.field}`;
+    const name = column.headerName ?? column.field;
+    const choices =
+      column.type === "boolean"
+        ? [
+            ["true", labels.filterValueTrue],
+            ["false", labels.filterValueFalse],
+          ]
+        : column.type === "singleSelect"
+          ? (column.valueOptions ?? []).map((o) => [o, o])
+          : null;
+    return (
+      <div
+        key={column.field}
+        {...place}
+        role="columnheader"
+        aria-colindex={c + colOffset}
+        aria-label={`${name} ${labels.headerFilterLabel}`}
+        data-ok-data-grid-header-filter=""
+        tabIndex={-1}
+      >
+        {choices ? (
+          <TextField
+            id={fieldId}
+            select
+            size="small"
+            label={label}
+            value={value}
+            onChange={(next) => setHeaderFilter(column, next)}
+          >
+            <option value="">{labels.filterValueAny}</option>
+            {choices.map(([v, text]) => (
+              <option key={v} value={v}>
+                {text}
+              </option>
+            ))}
+          </TextField>
+        ) : column.type === "date" ? (
+          <DatePicker
+            id={fieldId}
+            size="small"
+            label={label}
+            value={pickerValue(fieldId, value)}
+            onChange={(date) => pickDate(fieldId, date, (iso) => setHeaderFilter(column, iso))}
+          />
+        ) : (
+          <TextField
+            id={fieldId}
+            size="small"
+            label={label}
+            value={value}
+            onChange={(next) => setHeaderFilter(column, next)}
+          />
+        )}
+      </div>
+    );
+  };
+  const headerFilterRow = (
+    <div role="row" aria-rowindex={headerLevels + 2} data-ok-data-grid-header-filters="">
+      {specials.map((special) => (
+        <div
+          key={special.field}
+          role="presentation"
+          data-ok-data-grid-group-filler=""
+          data-ok-pin-field={special.field}
+          {...(leftPinned ? { "data-ok-pinned": "left" } : {})}
+        />
+      ))}
+      {shown.map(headerFilterCell)}
+    </div>
+  );
   /** One row: body rows (paged, windowed, with a detail panel), or pinned rows. */
   const renderRow = (row: R, index: number, place: "body" | "top" | "bottom") => {
     if (isHole(row)) return holeRow(index);
+    if (isGroup(row)) return renderGroupRow(row, index);
     const rowId = idOf(row);
     const selected = selection.includes(rowId);
     // Position on the page (spans, spacing and row params are per page).
@@ -1955,9 +2886,9 @@ function DataGridInner<R>(
       : null;
     const rowIndex =
       place === "top"
-        ? headerLevels + 2 + index
+        ? headerLevels + filterRow + 2 + index
         : place === "bottom"
-          ? headerLevels + topRows.length + total + 2 + index
+          ? headerLevels + filterRow + topRows.length + total + 2 + index
           : firstRowIndex + index + rowOffset;
     const detail = place === "body" ? detailOf(row) : null;
     const detailHeight =
@@ -2119,6 +3050,18 @@ function DataGridInner<R>(
                 ? { "data-ok-pinned": gridPinSide(pinned, column.field) }
                 : {})}
               {...(inEdit ? { "data-ok-editing": "" } : {})}
+              {...(cellSelection && isGridCellSelected(cellModel, rowId, column.field)
+                ? {
+                    "aria-selected": true,
+                    "data-ok-range-edge": gridCellEdges(
+                      cellModel,
+                      cellRowIds,
+                      cellFields,
+                      rowId,
+                      column.field,
+                    ),
+                  }
+                : {})}
               tabIndex={-1}
               onClick={(event) => onCellClick?.(params, event)}
               onDoubleClick={(event) => {
@@ -2189,6 +3132,87 @@ function DataGridInner<R>(
       </Fragment>
     );
   };
+  /** The text of an aggregated value (counts as numbers, the others through the formatter). */
+  const aggregateText = (column: GridColDef<R>, value: unknown) =>
+    value === null || value === undefined
+      ? ""
+      : aggregationModel[column.field] === "size" || !column.valueFormatter
+        ? asText(value)
+        : column.valueFormatter(value, {} as R);
+  /** A cell of a generated row: the column's aggregated value, if any. */
+  const valueCell = (column: GridColDef<R>, c: number, values: Record<string, unknown> | null) => {
+    if (!renders(column)) return null;
+    const start = colStart(column);
+    const side = gridPinSide(pinned, column.field);
+    return (
+      <div
+        key={column.field}
+        role="gridcell"
+        aria-colindex={c + colOffset}
+        data-ok-field={column.field}
+        data-ok-align={gridAlign(column)}
+        {...(side ? { "data-ok-pinned": side } : {})}
+        {...(start !== undefined
+          ? {
+              "data-ok-col-start": "",
+              style: { "--_ok-data-grid-col-start": start } as CSSProperties,
+            }
+          : {})}
+        hidden={listView || undefined}
+        tabIndex={-1}
+      >
+        {values && column.field in values ? aggregateText(column, values[column.field]) : ""}
+      </div>
+    );
+  };
+  /** A generated row: a group (row grouping, pivot) or a missing tree parent. */
+  const renderGroupRow = (row: R & Group, index: number) => {
+    const rowId = row[GROUP].id;
+    const node = tree?.get(rowId) as GridTreeRow<R>;
+    const parent = node.childrenCount > 0;
+    return (
+      <div
+        key={rowId}
+        role="row"
+        aria-rowindex={firstRowIndex + index + rowOffset}
+        hidden={!onPage(index) || undefined}
+        data-ok-row-id={rowId}
+        data-ok-generated=""
+        aria-level={node.depth + 1}
+        aria-posinset={node.posInSet}
+        aria-setsize={node.setSize}
+        {...(parent ? { "aria-expanded": node.expanded } : {})}
+        {...(node.parentId ? { "data-ok-parent": node.parentId } : {})}
+      >
+        {specials.map((special) =>
+          specialCell(special.field, row, "body", node, parent, node.expanded),
+        )}
+        {shown.map((column, c) => valueCell(column, c, aggregates.get(rowId) ?? null))}
+      </div>
+    );
+  };
+  /** The aggregation footer: the values of every (filtered) row. */
+  const footerRowElement = rootAggregates && (
+    <div
+      role="row"
+      aria-rowindex={headerLevels + filterRow + topRows.length + total + 2 + bottomRows.length}
+      data-ok-row-id={GRID_AGGREGATION_ROOT_ID}
+      data-ok-data-grid-aggregation-row=""
+    >
+      {specials.map((special) => (
+        <div
+          key={special.field}
+          role="gridcell"
+          aria-colindex={specialIndex(special.field)}
+          data-ok-field={special.field}
+          {...(leftPinned ? { "data-ok-pinned": "left" } : {})}
+          hidden={listView || undefined}
+          tabIndex={-1}
+        />
+      ))}
+      {shown.map((column, c) => valueCell(column, c, rootAggregates))}
+    </div>
+  );
   /** A row of a lazy grid that hasn't loaded: placeholder cells. */
   const holeRow = (index: number) => (
     <div
@@ -2242,7 +3266,7 @@ function DataGridInner<R>(
       hidden: listView || undefined,
       tabIndex: -1,
     } as const;
-    if (place !== "body") return <div {...common} />;
+    if (place !== "body" || (isGroup(row) && field !== groupField)) return <div {...common} />;
     if (field === REORDER_FIELD)
       return (
         <div {...common}>
@@ -2290,9 +3314,16 @@ function DataGridInner<R>(
         </div>
       );
     }
-    const label = getTreeDataPath?.(row).at(-1) ?? dataSource?.getGroupKey?.(row) ?? rowId;
+    const depth = { "--_ok-data-grid-depth": node?.depth ?? 0 } as CSSProperties;
+    // Row grouping: data rows leave the group column empty.
+    if (!treeData && !serverTree && !isGroup(row)) return <div {...common} style={depth} />;
+    const label = isGroup(row)
+      ? row[GROUP].key
+      : (getTreeDataPath?.(row).at(-1) ?? dataSource?.getGroupKey?.(row) ?? rowId);
+    const count =
+      isGroup(row) && !treeData ? (leafCounts.get(rowId) ?? 0) : (node?.descendantCount ?? 0);
     return (
-      <div {...common} style={{ "--_ok-data-grid-depth": node?.depth ?? 0 } as CSSProperties}>
+      <div {...common} style={depth}>
         {hasChildren ? (
           <IconButton
             size="sm"
@@ -2309,7 +3340,7 @@ function DataGridInner<R>(
         )}
         <span data-ok-data-grid-tree-label="">{label}</span>
         {hasChildren && !serverTree && !groupingColDef?.hideDescendantCount && (
-          <span data-ok-data-grid-tree-count="">({node?.descendantCount ?? 0})</span>
+          <span data-ok-data-grid-tree-count="">{`(${count})`}</span>
         )}
       </div>
     );
@@ -2343,9 +3374,13 @@ function DataGridInner<R>(
           )}
         </div>
       );
-    if (field === GRID_TREE_FIELD)
+    if (field === groupField)
       return (
-        <div {...common} data-ok-width={groupingColDef?.width ?? 200}>
+        <div
+          {...common}
+          data-ok-width={groupingColDef?.width ?? 200}
+          {...(groupingColDef?.hideDescendantCount ? { "data-ok-hide-descendant-count": "" } : {})}
+        >
           <span data-ok-data-grid-header-title="">
             {groupingColDef?.headerName ?? labels.treeDataGroupingHeaderName}
           </span>
@@ -2460,7 +3495,31 @@ function DataGridInner<R>(
         lazyLoading,
         lazyLoadingRequestThrottleMs:
           lazyLoadingRequestThrottleMs === 500 ? undefined : lazyLoadingRequestThrottleMs,
+        disableRowGrouping,
+        disableAggregation,
+        aggregationRowsScope,
+        disablePivoting,
+        pivotActive: pivotOn,
+        cellSelection,
+        disableClipboardPaste,
+        headerFilters,
+        chartsIntegration,
       })}
+      {...(groupingModel.length && !treeData
+        ? { "data-ok-row-grouping-model": JSON.stringify(groupingModel) }
+        : {})}
+      {...(Object.keys(aggregationState).length
+        ? { "data-ok-aggregation-model": JSON.stringify(aggregationState) }
+        : {})}
+      {...(pivotAvailable ? { "data-ok-pivot-model": JSON.stringify(pivotModel) } : {})}
+      {...(chartsIntegration ? { "data-ok-chart-model": JSON.stringify(chartModel) } : {})}
+      {...(excelOptions
+        ? {
+            "data-ok-excel-options": JSON.stringify(
+              parseGridExcelOptions(JSON.stringify(excelOptions)),
+            ),
+          }
+        : {})}
       {...(csvOptions
         ? {
             "data-ok-csv-options": JSON.stringify(
@@ -2487,11 +3546,13 @@ function DataGridInner<R>(
       {/* biome-ignore lint/a11y/useAriaPropsSupportedByRole: grid and treegrid both take a name. */}
       <div
         ref={gridRef}
-        role={treeData ? "treegrid" : "grid"}
+        role={treeLike ? "treegrid" : "grid"}
         data-ok-data-grid-main=""
         aria-label={ariaLabel}
         aria-labelledby={ariaLabelledby}
-        aria-rowcount={headerLevels + 1 + topRows.length + total + bottomRows.length}
+        aria-rowcount={
+          headerLevels + filterRow + 1 + topRows.length + total + bottomRows.length + footerRow
+        }
         aria-colcount={colCount}
         {...(checkboxSelection && multiple ? { "aria-multiselectable": true } : {})}
         {...(busy ? { "aria-busy": true } : {})}
@@ -2539,6 +3600,8 @@ function DataGridInner<R>(
                     ? { "data-ok-searchable": "false" }
                     : {})}
                   {...(column.hideable === false ? { "data-ok-hideable": "false" } : {})}
+                  {...(column.groupable === false ? { "data-ok-groupable": "false" } : {})}
+                  {...(column.aggregable === false ? { "data-ok-aggregable": "false" } : {})}
                   {...(column.filterable === false ? { "data-ok-filterable": "false" } : {})}
                   {...(column.resizable === false ? { "data-ok-resizable": "false" } : {})}
                   {...(editable(column) ? { "data-ok-editable": "" } : {})}
@@ -2563,12 +3626,17 @@ function DataGridInner<R>(
                       ? column.renderHeader({ field: column.field, colDef: column })
                       : name}
                   </span>
+                  {!pivot && aggregationOf(column) && (
+                    <span data-ok-data-grid-aggregation-label="">
+                      {aggLabel(aggregationOf(column) as string)}
+                    </span>
+                  )}
                   {sortable && (
                     <span data-ok-data-grid-sort-icon="">
                       <SortIcon />
                     </span>
                   )}
-                  {!disableColumnMenu && (
+                  {!disableColumnMenu && !pivot && (
                     <IconButton
                       size="sm"
                       data-ok-data-grid-menu-button=""
@@ -2602,6 +3670,7 @@ function DataGridInner<R>(
               );
             })}
           </div>
+          {headerFilters && headerFilterRow}
         </div>
         {topRows.length > 0 && (
           <div role="rowgroup" data-ok-data-grid-pinned-rows="top">
@@ -2622,12 +3691,25 @@ function DataGridInner<R>(
         >
           {rendered.map(({ row, index }) => renderRow(row, index, "body"))}
         </div>
-        {bottomRows.length > 0 && (
+        {(bottomRows.length > 0 || footerRowElement) && (
           <div role="rowgroup" data-ok-data-grid-pinned-rows="bottom">
             {bottomRows.map((row, index) => renderRow(row, index, "bottom"))}
+            {footerRowElement}
           </div>
         )}
       </div>
+      {chartsIntegration && (
+        <div data-ok-data-grid-chart="" hidden={!chartData || undefined}>
+          <Chart
+            id={`${id}-chart`}
+            label={labels.chartLabel}
+            type={chartType === "line" || chartType === "area" ? chartType : "bar"}
+            horizontal={chartType === "bar"}
+            categories={chartData?.categories ?? []}
+            series={chartData?.series ?? []}
+          />
+        </div>
+      )}
       {rowReordering && (
         <div data-ok-data-grid-live="" role="status">
           {announcement}
@@ -2733,6 +3815,39 @@ function DataGridInner<R>(
               {labels.unpin}
             </MenuItem>
           )}
+          {!disableRowGrouping && !treeData && (
+            <MenuItem
+              data-ok-data-grid-action="group"
+              disabled={
+                !menuColumn || menuColumn.groupable === false || menuColumn.type === "actions"
+              }
+              onClick={() => menuAction("group")}
+            >
+              {(groupingModel.includes(menuField as string)
+                ? labels.columnMenuUngroup
+                : labels.columnMenuGroupBy
+              )
+                .replace("{name}", menuColumn ? (menuColumn.headerName ?? menuColumn.field) : "")
+                .trim()}
+            </MenuItem>
+          )}
+          {!disableAggregation &&
+            ["none", ...Object.keys(aggregationFunctions)].map((fn) => (
+              <MenuItem
+                key={fn}
+                data-ok-data-grid-action={`aggregate-${fn}`}
+                hidden={
+                  !menuColumn ||
+                  !functionsOf(menuColumn).length ||
+                  (fn !== "none" && !functionsOf(menuColumn).includes(fn)) ||
+                  undefined
+                }
+                selected={!!menuColumn && (aggregationOf(menuColumn) ?? "none") === fn}
+                onClick={() => menuAction(`aggregate-${fn}`)}
+              >
+                {`${labels.aggregationMenuItemHeader}: ${fn === "none" ? labels.aggregationMenuItemNone : aggLabel(fn)}`}
+              </MenuItem>
+            ))}
           {showToolbar && !disableColumnFilter && (
             <MenuItem
               data-ok-data-grid-action="filter"

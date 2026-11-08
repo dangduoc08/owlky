@@ -1,4 +1,4 @@
-<div data-ok-data-grid data-ok-density="standard" data-ok-checkbox-selection data-ok-edit-mode="cell" data-ok-sorting-mode="client" data-ok-filter-mode="client" data-ok-pagination-mode="client" data-ok-loading-variant="linear-progress" data-ok-toolbar-variant="icon" data-ok-quick-filter-logic-operator="and" id="grid-basic" class="sb-grid">
+<div data-ok-data-grid data-ok-density="standard" data-ok-checkbox-selection data-ok-edit-mode="cell" data-ok-sorting-mode="client" data-ok-filter-mode="client" data-ok-pagination-mode="client" data-ok-loading-variant="linear-progress" data-ok-toolbar-variant="icon" data-ok-quick-filter-logic-operator="and" data-ok-aggregation-rows-scope="filtered" id="grid-basic" class="sb-grid">
   <div data-ok-data-grid-toolbar>
     <div data-ok-data-grid-quick-filter>
       <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-full-width data-ok-margin="none">
@@ -151,6 +151,7 @@
       <ul role="menu" data-ok-menu>
         <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-export="csv">Download as CSV</li>
         <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-export="print">Print</li>
+        <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-export="excel">Download as Excel</li>
       </ul>
     </div>
   </div>
@@ -598,6 +599,13 @@
       <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="pin-left">Pin to left</li>
       <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="pin-right">Pin to right</li>
       <li role="menuitem" tabindex="-1" data-ok-menu-item aria-disabled="true" data-ok-data-grid-action="unpin">Unpin</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item aria-disabled="true" data-ok-data-grid-action="group">Group by</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="aggregate-none" hidden>Aggregation: none</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="aggregate-sum" hidden>Aggregation: sum</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="aggregate-avg" hidden>Aggregation: avg</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="aggregate-min" hidden>Aggregation: min</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="aggregate-max" hidden>Aggregation: max</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="aggregate-size" hidden>Aggregation: size</li>
       <li role="menuitem" tabindex="-1" data-ok-menu-item aria-disabled="true" data-ok-data-grid-action="filter">Filter</li>
       <li role="menuitem" tabindex="-1" data-ok-menu-item aria-disabled="true" data-ok-data-grid-action="hide">Hide column</li>
       <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="columns">Manage columns</li>

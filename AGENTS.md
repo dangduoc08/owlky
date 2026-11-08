@@ -382,6 +382,19 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
   fixed-width grids: tests that reach every column of a wide grid in the 414px test page set
   `data-ok-disable-virtualization`. Never run two `pnpm test:e2e` at once (they broke `dist`
   builds mid-run).
+- Data grid phase 6: group rows, the aggregation footer and the pivot's headers are built by the
+  HTML runtime from the rows in the markup (DOM methods mirroring React's markup); the markup's
+  `[data-ok-generated]` rows are dropped at setup, except in tree data (generated parents are data
+  there). React's generated rows are marker objects (`GROUP` symbol): `rawValue` / `textOf` return
+  nothing for them, so user callbacks never see them. The pivot story's HTML is the grid's data
+  with `data-ok-pivot-active` (generator), not the pivot's render. A text area's `value` drops
+  `\r`: the clipboard relay copies its own text, not `area.value`. React state set from native
+  listeners (pointer, clipboard) flushes later: wrap test dispatches in `act()`. A DatePicker inside
+  a grid cell is a nested `role=grid`: grid navigation skips rows / cells that aren't its own and
+  leaves other tab stops alone. A controlled DatePicker must get back the invalid Date it reported
+  while typing (or it clears its sections): keep it as a draft until the date is whole.
+  Column virtualization hides cells in the 414px test page: tests that count cells set
+  `disableVirtualization`.
 - Editor (ADR-0023): Tiptap is reached only through `@owlky/core/editor` (Storybook aliases it)
   and the opt-in HTML entries (`@owlky/html/editor`, `owlky-editor.js`): `editor` isn't in
   `components` (`OPT_IN` in `components.test.ts`), so `owlky.js` stays free of ProseMirror. The

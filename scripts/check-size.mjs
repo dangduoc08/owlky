@@ -3,6 +3,9 @@ import { readFile } from "node:fs/promises";
 import { gzipSync } from "node:zlib";
 
 const budgets = [
+  // 105 kB since the data grid's phase 6 (row grouping, aggregation, pivoting, Excel export with
+  // its own ZIP writer, clipboard, cell selection, header filters, charts integration; about
+  // 12 kB), merged after both phase 2 merges below (99.8 kB).
   // 95 kB since the chart's phase 2 (pie, donut, radial bar, radar, gauges, data labels; about
   // 3.4 kB) and the date pickers' phase 2 (ADR-0026: time fields, clocks, time pickers; about 6.9 kB),
   // merged together (87.9 kB).
@@ -19,7 +22,7 @@ const budgets = [
   // Motion (trigger, count-up and five runtimes, the 62 variant names); 31 kB after
   // the composite inputs, 24 kB after the navigation components, 22 kB after the overlays. The CDN bundle carries every component; the npm ESM build
   // (`@owlky/html`) is tree-shaken.
-  ["packages/html/dist/owlky.js", 95_000, "HTML runtime + all components (IIFE)"],
+  ["packages/html/dist/owlky.js", 105_000, "HTML runtime + all components (IIFE)"],
   ["packages/html/dist/esm/runtime/runtime.js", 3_000, "HTML core runtime"],
   // The Editor is opt-in (ADR-0023): Tiptap, ProseMirror and its starter kit are about 125 kB of
   // it; owlky.js stays free of them.

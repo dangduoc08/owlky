@@ -6,6 +6,8 @@
  * the controller moves `tabindex="0"`.
  */
 
+import { GRID_GROUPING_FIELD } from "./grid-premium.js";
+
 const CELL = '[role="columnheader"], [role="gridcell"]';
 /** Controls that take focus instead of their cell (checkboxes, action buttons, links). */
 const INNER =
@@ -46,14 +48,18 @@ export interface GridNavigation {
   destroy(): void;
 }
 
+/** Rows and cells of this grid (not of a grid inside a cell, such as a date picker's calendar). */
+const ownedBy = (grid: HTMLElement, element: Element) =>
+  element.closest('[role="grid"], [role="treegrid"]') === grid;
 const visibleRows = (grid: HTMLElement) =>
   [...grid.querySelectorAll<HTMLElement>('[role="row"]')].filter(
-    (row) => !row.hidden && !row.closest("[hidden]"),
+    (row) => !row.hidden && !row.closest("[hidden]") && ownedBy(grid, row),
   );
 /** Cells that take focus: shown, and not covered by a row span. */
 const cellsOf = (row: HTMLElement) =>
   [...row.querySelectorAll<HTMLElement>(CELL)].filter(
-    (cell) => !cell.hidden && !cell.hasAttribute("data-ok-covered"),
+    (cell) =>
+      !cell.hidden && !cell.hasAttribute("data-ok-covered") && cell.closest('[role="row"]') === row,
   );
 /** Columns a cell occupies: its `aria-colindex` and `aria-colspan`. */
 const columnsOf = (cell: HTMLElement) => {
@@ -113,8 +119,12 @@ export function createGridNavigation(
   let active: HTMLElement | null = null;
 
   const setStop = (cell: HTMLElement) => {
-    for (const element of grid.querySelectorAll<HTMLElement>('[tabindex="0"]'))
-      element.setAttribute("tabindex", "-1");
+    // Only the grid's own stops: widgets inside cells (a date picker) keep theirs.
+    for (const element of grid.querySelectorAll<HTMLElement>('[tabindex="0"]')) {
+      const owner = element.closest<HTMLElement>(CELL);
+      if (owner && ownedBy(grid, owner) && gridFocusTarget(owner) === element)
+        element.setAttribute("tabindex", "-1");
+    }
     active = cell;
     gridFocusTarget(cell).setAttribute("tabindex", "0");
   };
@@ -140,7 +150,7 @@ export function createGridNavigation(
     "focusin",
     (event) => {
       const cell = (event.target as Element).closest<HTMLElement>(CELL);
-      if (cell && grid.contains(cell) && cell !== active) setStop(cell);
+      if (cell && grid.contains(cell) && ownedBy(grid, cell) && cell !== active) setStop(cell);
     },
     { signal },
   );
@@ -150,9 +160,13 @@ export function createGridNavigation(
     (event) => {
       const target = event.target as HTMLElement;
       const cell = target.closest<HTMLElement>(CELL);
-      if (!cell || !grid.contains(cell)) return;
+      if (!cell || !grid.contains(cell) || !ownedBy(grid, cell)) return;
       // Typing in a field inside a cell (editing, later phases) keeps its keys.
-      if (target.matches("input:not([type='checkbox']), select, textarea")) return;
+      // Header filter fields leave with Up / Down (their text needs Left / Right).
+      const filterField =
+        !!target.closest("[data-ok-data-grid-header-filter]") &&
+        (event.key === "ArrowUp" || event.key === "ArrowDown");
+      if (target.matches("input:not([type='checkbox']), select, textarea") && !filterField) return;
       const ctrl = event.ctrlKey || event.metaKey;
       const header = cell.getAttribute("role") === "columnheader";
       const field = cell.getAttribute("data-ok-field") ?? "";
@@ -225,7 +239,7 @@ export function createGridNavigation(
       const treeRow = cell.closest<HTMLElement>('[role="row"]');
       if (
         options.onToggleExpansion &&
-        field === GRID_TREE_FIELD &&
+        (field === GRID_TREE_FIELD || field === GRID_GROUPING_FIELD) &&
         !header &&
         treeRow &&
         (key === "ArrowRight" || key === "ArrowLeft")
@@ -244,7 +258,7 @@ export function createGridNavigation(
         const parentId = treeRow.getAttribute("data-ok-parent");
         const parent = parentId
           ? grid.querySelector<HTMLElement>(
-              `[role="row"][data-ok-row-id="${CSS.escape(parentId)}"] [data-ok-field="${GRID_TREE_FIELD}"]`,
+              `[role="row"][data-ok-row-id="${CSS.escape(parentId)}"] [data-ok-field="${field}"]`,
             )
           : null;
         if (key === "ArrowLeft" && parent) {
