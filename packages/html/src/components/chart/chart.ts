@@ -1,31 +1,51 @@
 import {
+  CHART_TEXT_ATTRIBUTES,
   type ChartActive,
   type ChartColor,
   type ChartCurve,
+  type ChartExportFormat,
   type ChartFill,
+  type ChartGestureMode,
   type ChartLegend,
   type ChartLegendItem,
+  type ChartLink,
+  type ChartLocaleText,
   type ChartNode,
+  type ChartPart,
   type ChartPointInput,
   type ChartRender,
   type ChartSeries,
   type ChartTableCell,
   type ChartTableModel,
+  type ChartTool,
+  type ChartToolItem,
   type ChartType,
   type ChartXType,
+  type ChartZoom,
+  type ChartZoomReason,
   chartActiveAt,
   chartActiveNodes,
   chartColors,
   chartIdPrefix,
   chartOptions,
+  chartToolbar,
+  chartToolLabels,
+  chartTools,
   chartTooltip,
+  chartZoomKey,
+  createChartGestures,
+  exportChart,
+  linkChart,
   nextChartActive,
+  parseChartColorRanges,
   placeChartTooltip,
+  readChartAnnotations,
   readChartTable,
   readNumber,
   readStyle,
   renderChart,
   sameChartActive,
+  zoomChartBy,
 } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
 import type { ComponentInstance } from "../../runtime/types.js";
@@ -35,6 +55,8 @@ export interface ChartFormatters {
   value?: ((value: number, series: number) => string) | undefined;
   /** Replaces the x text (axis labels, tooltip title). */
   label?: ((x: string | number) => string) | undefined;
+  /** Replaces the values printed on the chart (pie and donut labels get the percentage). */
+  dataLabel?: ((value: number, series: number, index: number) => string) | undefined;
 }
 
 /** New points per series (in series order), as ApexCharts' `appendData`. */
@@ -70,6 +92,14 @@ export interface ChartInstance extends ComponentInstance {
   ): void;
   /** Appends points to the series (and categories); `limit` drops the oldest. No event. */
   appendData(data: ChartAppendData, options?: ChartAppendOptions): void;
+  /** The visible window of the x axis (category indexes or x values), or `null`. */
+  readonly zoomRange: ChartZoom | null;
+  /** Zooms (`null`: the whole axis); its group and brush charts follow. No event. */
+  setZoomRange(range: ChartZoom | null): void;
+  /** Downloads the chart as SVG, PNG or CSV (only during a user gesture: rejects otherwise). */
+  exportChart(format: ChartExportFormat): Promise<void>;
+  /** Localized texts: tool names, the export error and part labels (tables carry their own). */
+  setLocaleText(text: ChartLocaleText): void;
 }
 
 const SVG = "http://www.w3.org/2000/svg";
@@ -79,11 +109,7 @@ const OPTION_ATTRIBUTES = [
   ...Object.values(o)
     .map((spec) => spec.attr)
     .filter((attr) => attr.startsWith("data-ok-")),
-  "data-ok-y-title",
-  "data-ok-total-label",
-  "data-ok-value-prefix",
-  "data-ok-value-suffix",
-  "data-ok-locale",
+  ...Object.values(CHART_TEXT_ATTRIBUTES),
 ];
 const text = (element: Element, name: string) => element.getAttribute(name) ?? undefined;
 /** Core nodes → SVG elements (attributes and text only: never markup). */
@@ -191,6 +217,30 @@ const colorAttribute = (element: Element, name: string) => {
   return chartColors.includes(value as ChartColor) ? (value as ChartColor) : undefined;
 };
 
+/** Makes `box`'s buttons match the toolbar items (in place: a pressed button keeps its focus). */
+function syncTools(box: HTMLElement, items: readonly ChartToolItem[]) {
+  const buttons = [...box.querySelectorAll<HTMLButtonElement>(":scope > [data-ok-chart-tool]")];
+  items.forEach((item, index) => {
+    let button = buttons[index];
+    if (!button || button.getAttribute("data-ok-chart-tool") !== item.tool) {
+      const fresh = document.createElement("button");
+      fresh.type = "button";
+      fresh.setAttribute("data-ok-chart-tool", item.tool);
+      if (button) button.replaceWith(fresh);
+      else box.insertBefore(fresh, box.querySelector(":scope > [data-ok-chart-status]"));
+      button = fresh;
+      if (item.icon) button.append(...build([item.icon]));
+      else button.textContent = item.text as string;
+    }
+    button.setAttribute("aria-label", item.label);
+    button.title = item.label;
+    if (item.pressed === undefined) button.removeAttribute("aria-pressed");
+    else button.setAttribute("aria-pressed", String(item.pressed));
+    button.disabled = item.disabled === true;
+  });
+  for (const extra of buttons.slice(items.length)) extra.remove();
+}
+
 /** Least height of a sparkline without `data-ok-height` (the CSS default). */
 const SPARKLINE_HEIGHT = 40;
 
@@ -231,6 +281,20 @@ export const chart = defineComponent<ChartInstance>({
     let render: ChartRender | undefined;
     /** Data set through `updateSeries` / `appendData`; `undefined` while the table is the source. */
     let source: ChartSource | undefined;
+    // Phase 4: texts, zoom (kept with the x axis it was set on), pan tool, drag and brush ranges.
+    let localeText: ChartLocaleText = {};
+    let partLabels: Partial<Record<ChartPart, string>> = {};
+    let zoomState: { range: ChartZoom | null; from: ChartZoom | null | undefined } = {
+      range: null,
+      from: undefined,
+    };
+    let pan = false;
+    let preview: ChartZoom | null = null;
+    let selection: ChartZoom | null = null;
+    let link: ChartLink | undefined;
+    let linkKey = "";
+    let drawnZoom = "";
+    const annotationsList = () => element.querySelector(":scope > [data-ok-chart-annotations]");
 
     const legend = element.querySelector<HTMLElement>(":scope > [data-ok-chart-legend]");
     let hidden: number[] = legend
@@ -292,10 +356,18 @@ export const chart = defineComponent<ChartInstance>({
         }
         button.setAttribute("data-ok-color", item.color);
         button.setAttribute("aria-pressed", String(!item.hidden));
-        const marker = document.createElement("span");
-        marker.setAttribute("data-ok-chart-legend-marker", "");
-        if (button.textContent !== item.name || !button.firstElementChild)
-          button.replaceChildren(marker, item.name);
+        if (button.textContent !== item.name + (item.value ?? "") || !button.firstElementChild) {
+          const marker = document.createElement("span");
+          marker.setAttribute("data-ok-chart-legend-marker", "");
+          const parts: (Node | string)[] = [marker, item.name];
+          if (item.value !== undefined) {
+            const value = document.createElement("span");
+            value.setAttribute("data-ok-chart-legend-value", "");
+            value.textContent = item.value;
+            parts.push(value);
+          }
+          button.replaceChildren(...parts);
+        }
       });
       for (const extra of buttons.slice(items.length)) extra.remove();
     };
@@ -349,7 +421,10 @@ export const chart = defineComponent<ChartInstance>({
       // First: the table leaves the flow before the plot is measured (sparklines fill the root).
       element.setAttribute("data-ok-ready", "");
       const xType = readStyle(element, o.xType) as ChartXType;
-      const { series, categories } = data();
+      const read = data();
+      const { series, categories } = read;
+      if ("partLabels" in read && read.partLabels) partLabels = read.partLabels;
+      const brushTarget = text(element, CHART_TEXT_ATTRIBUTES.brushTarget);
       const label = table?.caption?.textContent?.trim() ?? "";
       if (label) plot.setAttribute("aria-label", label);
       else plot.removeAttribute("aria-label");
@@ -387,6 +462,19 @@ export const chart = defineComponent<ChartInstance>({
         sparkline,
         boxUpperColor: colorAttribute(element, o.boxUpperColor.attr),
         boxLowerColor: colorAttribute(element, o.boxLowerColor.attr),
+        candleUpColor: colorAttribute(element, o.candleUpColor.attr),
+        candleDownColor: colorAttribute(element, o.candleDownColor.attr),
+        donutSize: readNumber(element, o.donutSize) as number | undefined,
+        dataLabelBackground: element.hasAttribute(o.dataLabelBackground.attr),
+        legendValues: element.hasAttribute(o.legendValues.attr),
+        dataLabelFormatter: formatters.dataLabel,
+        colorRanges: parseChartColorRanges(element.getAttribute(CHART_TEXT_ATTRIBUTES.colorRanges)),
+        annotations: readChartAnnotations(annotationsList()),
+        partLabels: { ...partLabels, ...localeText },
+        zoom: zoomState.range,
+        zoomFrom: zoomState.from,
+        selection: brushTarget ? selection : preview,
+        brush: brushTarget !== undefined,
         // Rewritten tables keep the author's first header.
         xLabel: (table?.tHead ?? table)?.rows[0]?.cells[0]?.textContent?.trim() || undefined,
         yTitle: text(element, "data-ok-y-title"),
@@ -401,6 +489,7 @@ export const chart = defineComponent<ChartInstance>({
         idPrefix: id,
       });
       const { layout } = render;
+      drawTools();
       drawLegend(render.legend);
       svg.setAttribute("width", String(layout.width));
       svg.setAttribute("height", String(layout.height));
@@ -412,21 +501,149 @@ export const chart = defineComponent<ChartInstance>({
         changes.takeRecords();
       }
       drawActive();
+      relink();
+      // A zoom that follows live data moved by itself: this chart's brushes redraw.
+      const zoomed = JSON.stringify(render.zoom);
+      if (zoomed !== drawnZoom) {
+        drawnZoom = zoomed;
+        link?.drawn(render.zoom);
+      }
     };
 
     /** The data: set through the API, or read from the table. */
     const data = () =>
-      source ?? (table ? readChartTable(table, readStyle(element, o.xType) as ChartXType) : EMPTY);
+      source ??
+      (table
+        ? readChartTable(
+            table,
+            readStyle(element, o.xType) as ChartXType,
+            readStyle(element, o.type) as ChartType,
+          )
+        : EMPTY);
+
+    /** Gestures and keys: zoomable charts zoom, brush charts move their selection. */
+    const mode = (): ChartGestureMode =>
+      element.hasAttribute(CHART_TEXT_ATTRIBUTES.brushTarget)
+        ? "brush"
+        : element.hasAttribute(o.zoom.attr) && render?.zoomable
+          ? pan
+            ? "pan"
+            : "zoom"
+          : "none";
+    const kind = () => ((render as ChartRender).data.xType === "numeric" ? "value" : "index");
+
+    /** Applies a zoom; the chart's own changes (`user`) are cancelable and reach its group. */
+    const setZoom = (range: ChartZoom | null, reason: ChartZoomReason, notify = true) => {
+      if (notify && !emit("zoom", { range, reason }, { cancelable: reason === "user" })) return;
+      zoomState = { range, from: (render as ChartRender).extent };
+      draw();
+      if (reason === "user") link?.zoomed(range);
+    };
+    /** Brush charts: a new selection zooms the target (or only redraws without one). */
+    const setBrush = (range: ChartZoom | null) => {
+      selection = range;
+      // Brush charts always have a link (their target may be missing: then nothing else moves).
+      (link as ChartLink).brush(range);
+      draw();
+    };
+    const currentRange = () => (mode() === "brush" ? selection : (render?.zoom ?? null));
+    const commitRange = (range: ChartZoom | null) =>
+      mode() === "brush" ? setBrush(range) : setZoom(range, "user");
+
+    /** Joins (again) the registry of linked charts when the id, group or brush target change. */
+    const relink = () => {
+      const id = element.id || undefined;
+      const group = text(element, CHART_TEXT_ATTRIBUTES.group);
+      const brushTarget = text(element, CHART_TEXT_ATTRIBUTES.brushTarget);
+      const key = JSON.stringify([id, group, brushTarget]);
+      if (key === linkKey) return;
+      linkKey = key;
+      link?.unlink();
+      link = undefined;
+      if (!id && !group && !brushTarget) return;
+      link = linkChart({
+        id,
+        group,
+        brushTarget,
+        zoom: () => render?.zoom ?? null,
+        showIndex: (index) => setActive(index === null ? null : { kind: "index", index }, false),
+        applyZoom: (range, reason) => setZoom(range, reason),
+        select: (range) => {
+          selection = range;
+          draw();
+        },
+      });
+    };
+
+    /** The toolbar (`data-ok-toolbar`): zoom buttons and downloads, plus a status for errors. */
+    const drawTools = () => {
+      let box = element.querySelector<HTMLElement>(":scope > [data-ok-chart-toolbar]");
+      if (!element.hasAttribute(o.toolbar.attr)) {
+        box?.remove();
+        return;
+      }
+      if (!box) {
+        box = document.createElement("div");
+        box.setAttribute("data-ok-chart-toolbar", "");
+        box.setAttribute("role", "group");
+        const status = document.createElement("span");
+        status.setAttribute("data-ok-chart-status", "");
+        status.setAttribute("role", "status");
+        box.append(status);
+        element.insertBefore(box, element.firstElementChild);
+        created.push(box);
+      }
+      box.setAttribute("aria-label", localeText.toolbar ?? chartToolLabels.toolbar);
+      const current = render as ChartRender;
+      syncTools(
+        box,
+        chartToolbar({
+          zoom: element.hasAttribute(o.zoom.attr) && current.zoomable,
+          zoomed: current.zoom !== null,
+          pan,
+          text: localeText,
+        }),
+      );
+    };
+
+    /** A toolbar button was pressed. */
+    const runTool = (tool: ChartTool) => {
+      const current = render as ChartRender;
+      if (tool === "pan") {
+        pan = !pan;
+        draw();
+      } else if (tool === "reset") setZoom(null, "user");
+      else if (tool === "zoomIn" || tool === "zoomOut")
+        setZoom(
+          zoomChartBy(current.zoom, current.extent, kind(), tool === "zoomIn" ? 0.5 : 2),
+          "user",
+        );
+      else {
+        // Tools are only pressed in the toolbar, which always holds the status.
+        const status = element.querySelector(
+          ":scope > [data-ok-chart-toolbar] > [data-ok-chart-status]",
+        ) as HTMLElement;
+        status.textContent = "";
+        exportChart(element, tool as ChartExportFormat).catch(() => {
+          status.textContent = localeText.exportFailed ?? chartToolLabels.exportFailed;
+        });
+      }
+    };
 
     const setActive = (next: ChartActive | null, notify: boolean) => {
       if (sameChartActive(next, active)) return;
       active = next;
       drawActive();
-      if (notify) emit("active", { active });
+      if (notify) {
+        emit("active", { active });
+        // The chart's own changes: its synchronized group shows the same category.
+        link?.shown(next?.kind === "index" ? next.index : null);
+      }
     };
 
     // Pointer moves and touches (a tap is a pointerdown) pick the nearest category or point.
     const point = (event: PointerEvent) => {
+      if (gestures.dragging) return;
       const layout = (render as ChartRender).layout;
       const box = plot.getBoundingClientRect();
       const scale = layout.width / (box.width || layout.width);
@@ -455,8 +672,27 @@ export const chart = defineComponent<ChartInstance>({
           if (active) {
             event.preventDefault();
             setActive(null, true);
+          } else if (mode() !== "none" && currentRange()) {
+            // A second Escape resets the zoom (or the brush selection).
+            event.preventDefault();
+            commitRange(null);
           }
           return;
+        }
+        if (mode() !== "none" && !event.altKey && !event.ctrlKey && !event.metaKey) {
+          const current = render as ChartRender;
+          const range = chartZoomKey(
+            event.key,
+            event.shiftKey,
+            currentRange(),
+            current.extent,
+            kind(),
+          );
+          if (range !== undefined) {
+            event.preventDefault();
+            commitRange(range);
+            return;
+          }
         }
         const next = nextChartActive((render as ChartRender).layout, active, event.key);
         if (next === undefined) return;
@@ -481,6 +717,12 @@ export const chart = defineComponent<ChartInstance>({
     element.addEventListener(
       "click",
       (event) => {
+        const tool = (event.target as Element).closest?.("[data-ok-chart-tool]");
+        if (tool && tool.parentElement?.parentElement === element) {
+          const name = tool.getAttribute("data-ok-chart-tool") as ChartTool;
+          if (chartTools.includes(name)) runTool(name);
+          return;
+        }
         const item = (event.target as Element).closest?.("[data-ok-chart-legend-item]");
         // Only this chart's own legend (not nested charts or look-alike buttons elsewhere).
         const box = element.querySelector(":scope > [data-ok-chart-legend]");
@@ -525,6 +767,28 @@ export const chart = defineComponent<ChartInstance>({
         characterData: true,
         attributes: true,
       });
+    // Annotations (phase 4): edits of the list redraw (the list itself is never rewritten).
+    const notes = annotationsList();
+    if (notes)
+      changes.observe(notes, {
+        childList: true,
+        subtree: true,
+        characterData: true,
+        attributes: true,
+      });
+
+    // Zoom, pan and brush gestures (core controller; it reports ranges, the chart applies them).
+    const gestures = createChartGestures(plot, {
+      layout: () => render?.layout,
+      mode,
+      range: currentRange,
+      extent: () => (render as ChartRender).extent,
+      preview: (range) => {
+        preview = range;
+        draw();
+      },
+      commit: commitRange,
+    });
 
     draw();
 
@@ -575,7 +839,22 @@ export const chart = defineComponent<ChartInstance>({
         };
         draw();
       },
+      get zoomRange() {
+        return render?.zoom ?? null;
+      },
+      setZoomRange(range) {
+        setZoom(range, "user", false);
+      },
+      exportChart(format) {
+        return exportChart(element, format);
+      },
+      setLocaleText(next) {
+        localeText = { ...next };
+        draw();
+      },
       destroy() {
+        gestures.destroy();
+        link?.unlink();
         resize.disconnect();
         changes.disconnect();
         for (const part of created) part.remove();

@@ -118,6 +118,29 @@ const LIVE_STEPS = Array.from({ length: LIVE_POINTS }, (_, step) => step);
 const SLICES = ["Series A", "Series B", "Series C", "Series D"];
 const SLICE_COLORS: ChartProps["colors"] = ["primary-dark", "warning", "info-dark", "error"];
 
+/** ISO dates, one a day from `start` (UTC). */
+const days = (start: string, count: number) =>
+  Array.from({ length: count }, (_, i) =>
+    new Date(Date.parse(`${start}T00:00:00Z`) + i * 86_400_000).toISOString().slice(0, 10),
+  );
+const DAYS_30 = days("2026-03-01", 30);
+const DAYS_90 = days("2026-01-01", 90);
+/** Candles (open, high, low, close) of a deterministic price walk. */
+const CANDLES: [number, number, number, number][] = DAYS_30.map((_, i) => {
+  const open = Math.round((120 + 12 * Math.sin(i / 4) + 4 * Math.cos(i * 1.7)) * 10) / 10;
+  const close = Math.round((open + 5 * Math.sin(i * 2.3)) * 10) / 10;
+  const high = Math.round((Math.max(open, close) + 2 + Math.abs(3 * Math.cos(i))) * 10) / 10;
+  const low = Math.round((Math.min(open, close) - 2 - Math.abs(3 * Math.sin(i))) * 10) / 10;
+  return [open, high, low, close];
+});
+/** Daily users: a slow wave with a weekly dip. */
+const users = (i: number) =>
+  Math.round(4000 + 900 * Math.sin(i / 9) + 300 * Math.cos(i / 2.3) - (i % 7 >= 5 ? 700 : 0));
+/** One label a minute from 10:00. */
+const MINUTES = Array.from({ length: 30 }, (_, i) => `10:${String(i).padStart(2, "0")}`);
+const wave = (i: number, base: number, amplitude: number) =>
+  Math.round(base + amplitude * Math.sin(i / 3) + (amplitude / 3) * Math.cos(i * 1.1));
+
 export const chartExamples: Record<string, ChartExample> = {
   line: {
     title: "Line",
@@ -583,6 +606,292 @@ export const chartExamples: Record<string, ChartExample> = {
       height: 240,
       categories: LIVE_STEPS.map(liveLabel),
       series: [{ name: "Requests", data: LIVE_STEPS.map(liveValue) }],
+    },
+  },
+  // Phase 4 (ADR-0027, ADR-0031): chart types and features beyond the reference.
+  candlestick: {
+    title: "Candlestick",
+    props: {
+      label: "Share price, last 30 days",
+      type: "candlestick",
+      xType: "datetime",
+      valuePrefix: "$",
+      categories: DAYS_30,
+      series: [{ name: "Price", data: CANDLES.map((y) => ({ y })) }],
+    },
+  },
+  "range-bar": {
+    title: "Range bar",
+    props: {
+      label: "Response time range per service",
+      type: "rangeBar",
+      valueSuffix: " ms",
+      colors: ["info", "warning"],
+      categories: ["Auth", "Search", "Checkout", "Profile", "Images"],
+      series: [
+        {
+          name: "Last week",
+          data: [
+            [42, 118],
+            [65, 240],
+            [90, 310],
+            [38, 96],
+            [120, 420],
+          ].map((y) => ({ y })),
+        },
+        {
+          name: "This week",
+          data: [
+            [40, 102],
+            [60, 198],
+            [84, 260],
+            [36, 90],
+            [96, 350],
+          ].map((y) => ({ y })),
+        },
+      ],
+    },
+  },
+  timeline: {
+    title: "Timeline",
+    props: {
+      label: "Release plan",
+      type: "timeline",
+      dataLabels: true,
+      series: [
+        {
+          name: "Release 4.0",
+          data: [
+            { x: "Design", y: ["2026-03-02", "2026-03-13"], color: "info" },
+            { x: "Build", y: ["2026-03-09", "2026-04-03"], color: "primary" },
+            { x: "Test", y: ["2026-03-30", "2026-04-17"], color: "warning" },
+            { x: "Docs", y: ["2026-04-06", "2026-04-17"], color: "success" },
+            { x: "Launch", y: ["2026-04-20", "2026-04-24"], color: "error" },
+          ],
+        },
+      ],
+    },
+  },
+  "polar-area": {
+    title: "Polar area",
+    props: {
+      label: "Incidents by area",
+      type: "polarArea",
+      legend: "bottom",
+      categories: ["API", "Web", "Mobile", "Data", "Infra", "Billing"],
+      colors: ["primary", "warning", "info", "error", "success", "info-dark"],
+      series: [{ name: "Incidents", data: [14, 23, 21, 17, 15, 10] }],
+    },
+  },
+  zoom: {
+    title: "Zoom and export",
+    props: {
+      label: "Daily active users",
+      type: "area",
+      xType: "datetime",
+      zoom: true,
+      toolbar: true,
+      categories: DAYS_90,
+      series: [{ name: "Users", data: DAYS_90.map((_, i) => users(i)) }],
+    },
+  },
+  synchronized: {
+    title: "Synchronized",
+    props: {
+      id: "sync-requests",
+      label: "Requests",
+      type: "line",
+      group: "service",
+      zoom: true,
+      height: 160,
+      colors: ["primary"],
+      categories: MINUTES,
+      series: [{ name: "Requests", data: MINUTES.map((_, i) => wave(i, 420, 80)) }],
+    },
+    more: [
+      {
+        id: "sync-errors",
+        label: "Errors",
+        type: "bar",
+        group: "service",
+        zoom: true,
+        height: 160,
+        colors: ["error"],
+        categories: MINUTES,
+        series: [{ name: "Errors", data: MINUTES.map((_, i) => Math.round(wave(i, 12, 9) / 3)) }],
+      },
+      {
+        id: "sync-latency",
+        label: "Latency",
+        type: "area",
+        group: "service",
+        zoom: true,
+        height: 160,
+        valueSuffix: " ms",
+        colors: ["info"],
+        categories: MINUTES,
+        series: [{ name: "Latency", data: MINUTES.map((_, i) => wave(i + 7, 180, 40)) }],
+      },
+    ],
+  },
+  brush: {
+    title: "Brush",
+    props: {
+      id: "brush-target",
+      label: "Builds per day",
+      type: "area",
+      xType: "datetime",
+      zoom: true,
+      categories: DAYS_90,
+      series: [{ name: "Builds", data: DAYS_90.map((_, i) => users(i + 11) / 40) }],
+    },
+    more: [
+      {
+        label: "Builds per day, overview",
+        type: "bar",
+        xType: "datetime",
+        brushTarget: "brush-target",
+        height: 120,
+        colors: ["info"],
+        categories: DAYS_90,
+        series: [{ name: "Builds", data: DAYS_90.map((_, i) => users(i + 11) / 40) }],
+      },
+    ],
+  },
+  annotations: {
+    title: "Annotations",
+    props: {
+      label: "Error rate around a deploy",
+      type: "line",
+      valueSuffix: "%",
+      markerSize: 4,
+      categories: MINUTES.slice(0, 16),
+      series: [
+        {
+          name: "Error rate",
+          data: [0.4, 0.5, 0.4, 0.6, 0.5, 2.8, 3.4, 1.9, 0.9, 0.6, 0.5, 0.4, 0.5, 0.4, 0.6, 0.5],
+        },
+      ],
+      annotations: [
+        { axis: "x", x: "10:04", label: "Deploy", color: "warning" },
+        { axis: "x", x: "10:07", x2: "10:09", label: "Recovery", color: "success" },
+        { axis: "y", y: 2, label: "Threshold", color: "error" },
+        { axis: "point", x: "10:06", y: 3.4, label: "Peak", color: "info" },
+      ],
+    },
+  },
+  "data-labels": {
+    title: "Data labels",
+    props: {
+      label: "Releases per month",
+      type: "line",
+      dataLabels: true,
+      dataLabelBackground: true,
+      markerSize: 4,
+      colors: ["primary", "warning"],
+      categories: MONTHS.slice(0, 6),
+      series: [
+        { name: "Web", data: [12, 18, 15, 22, 19, 26] },
+        { name: "Mobile", data: [6, 9, 11, 8, 13, 12] },
+      ],
+    },
+  },
+  "donut-legend": {
+    title: "Donut with values",
+    props: {
+      label: "Storage by type",
+      type: "donut",
+      legend: "right",
+      legendValues: true,
+      donutSize: 60,
+      totalLabel: "Total",
+      valueSuffix: " GB",
+      categories: ["Images", "Videos", "Documents", "Other"],
+      colors: ["primary", "warning", "info", "error"],
+      series: [{ name: "Storage", data: [48, 32, 12, 8] }],
+    },
+  },
+  "heatmap-ranges": {
+    title: "Heatmap color ranges",
+    props: {
+      label: "Temperature by hour",
+      type: "heatmap",
+      dataLabels: true,
+      legend: "none",
+      valueSuffix: "°",
+      colorRanges: [
+        { from: -10, to: 5, color: "info", name: "Cold" },
+        { from: 5.01, to: 20, color: "success", name: "Mild" },
+        { from: 20.01, to: 40, color: "error", name: "Hot" },
+      ],
+      categories: ["00", "04", "08", "12", "16", "20"],
+      series: [
+        { name: "Mon", data: [2, 4, 12, 22, 24, 14] },
+        { name: "Tue", data: [-3, 0, 9, 18, 21, 10] },
+        { name: "Wed", data: [5, 6, 14, 26, 28, 17] },
+        { name: "Thu", data: [7, 8, 16, 21, 19, 12] },
+      ],
+    },
+  },
+  "box-plot-horizontal": {
+    title: "Horizontal box plot",
+    props: {
+      label: "Build time per pipeline",
+      type: "boxPlot",
+      horizontal: true,
+      barHeight: 50,
+      valueSuffix: " min",
+      categories: ["Web", "Mobile", "API", "Data"],
+      series: [
+        {
+          name: "Build time",
+          data: [
+            [8, 11, 13, 16, 22],
+            [14, 18, 21, 25, 31],
+            [4, 6, 7, 9, 12],
+            [19, 24, 28, 33, 41],
+          ].map((y) => ({ y })),
+        },
+      ],
+    },
+  },
+  localized: {
+    title: "Localized labels",
+    props: {
+      label: "Thời gian phản hồi theo dịch vụ",
+      type: "boxPlot",
+      locale: "vi-VN",
+      xLabel: "Dịch vụ",
+      valueSuffix: " ms",
+      localeText: {
+        min: "Nhỏ nhất",
+        q1: "Tứ phân vị 1",
+        median: "Trung vị",
+        q3: "Tứ phân vị 3",
+        max: "Lớn nhất",
+      },
+      categories: ["Đăng nhập", "Tìm kiếm", "Thanh toán"],
+      series: [
+        {
+          name: "Phản hồi",
+          data: [
+            [42, 60, 72, 88, 118],
+            [65, 110, 140, 180, 240],
+            [90, 150, 190, 230, 310],
+          ].map((y) => ({ y })),
+        },
+      ],
+    },
+  },
+  animations: {
+    title: "Animations",
+    props: {
+      label: "Deploys per weekday",
+      type: "bar",
+      animations: true,
+      colors: ["primary"],
+      categories: ["Mon", "Tue", "Wed", "Thu", "Fri"],
+      series: [{ name: "Deploys", data: [14, 22, 19, 25, 9] }],
     },
   },
 };

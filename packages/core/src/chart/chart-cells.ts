@@ -35,6 +35,10 @@ const shader = (values: readonly number[], floor: number) => {
     max > min ? r2(floor + ((1 - floor) * (value - min)) / (max - min)) : 1;
 };
 
+/** The first color range holding `value` (phase 4: ranges paint at full strength). */
+const rangeOf = (options: ChartLayoutOptions, value: number) =>
+  options.colorRanges?.find((range) => value >= range.from && value <= range.to);
+
 /** White text on strong shades, primary text on faint ones (they show the paper through). */
 const tone = (opacity: number) => (opacity >= 0.6 ? "inside" : "plain");
 
@@ -142,8 +146,10 @@ export function layoutHeatmap(
         width: r2(cw),
         height: r2(ch),
       };
-      const opacity = shade(point.y);
-      cells.push(cellNode(cell, opacity, point.color, 2));
+      const ranged = rangeOf(options, point.y);
+      const own = point.color ?? ranged?.color;
+      const opacity = ranged ? 1 : shade(point.y);
+      cells.push(cellNode(cell, opacity, own, 2));
       marks.push({
         series: index,
         type: "heatmap",
@@ -152,11 +158,11 @@ export function layoutHeatmap(
         value: point.y,
         px: r2(cell.x + cw / 2),
         py: r2(cell.y + ch / 2),
-        color: point.color ?? series.color,
+        color: own ?? series.color,
         cell,
       });
       if (options.dataLabels) {
-        const text = format.value(point.y, index);
+        const text = format.dataLabel(point.y, index, point.x, format.value(point.y, index));
         if (chartTextWidth(text) + 4 <= cw - GAP && FONT + 4 <= ch - GAP)
           labels.push(dataLabel(cell.x + cw / 2, cell.y + ch / 2, text, tone(opacity)));
       }
@@ -293,8 +299,10 @@ export function layoutTreemap(
         width: r2(rect.width),
         height: r2(rect.height),
       };
-      const opacity = shade(point.y);
-      children.push(cellNode(cell, opacity, point.color, 4));
+      const ranged = rangeOf(options, point.y);
+      const own = point.color ?? ranged?.color;
+      const opacity = ranged ? 1 : shade(point.y);
+      children.push(cellNode(cell, opacity, own, 4));
       const cx = cell.x + cell.width / 2;
       const cy = cell.y + cell.height / 2;
       marks.push({
@@ -305,14 +313,16 @@ export function layoutTreemap(
         value: point.y,
         px: r2(cx),
         py: r2(cy),
-        color: point.color ?? series.color,
+        color: own ?? series.color,
         cell,
       });
       // The category name when it fits; with data labels, the value under it.
       const name = format.axis(data.categories[point.x] ?? String(point.x + 1)).text;
       const room = cell.width - GAP - 8;
       if (chartTextWidth(name, NAME_FONT) > room || NAME_FONT + 8 > cell.height - GAP) return;
-      const value = options.dataLabels ? format.value(point.y, index) : "";
+      const value = options.dataLabels
+        ? format.dataLabel(point.y, index, point.x, format.value(point.y, index))
+        : "";
       const both = value !== "" && chartTextWidth(value) <= room && cell.height - GAP >= 44;
       labels.push(
         node(

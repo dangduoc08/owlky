@@ -3,23 +3,42 @@
 import {
   CHART_DEFAULT_WIDTH,
   type ChartActive,
+  type ChartAnnotation,
   type ChartColor,
+  type ChartColorRange,
   type ChartCurve,
+  type ChartExportFormat,
   type ChartFill,
+  type ChartGestureMode,
+  type ChartGestures,
   type ChartLegend,
+  type ChartLink,
+  type ChartLocaleText,
   type ChartNode,
   type ChartSeries,
+  type ChartTool,
   type ChartType,
   type ChartXType,
+  type ChartZoom,
+  type ChartZoomReason,
   chartActiveAt,
   chartActiveNodes,
+  chartAnnotationItems,
   chartAttributes,
   chartIdPrefix,
+  chartTextAttributes,
+  chartToolbar,
+  chartToolLabels,
   chartTooltip,
+  chartZoomKey,
+  createChartGestures,
+  exportChart,
+  linkChart,
   nextChartActive,
   placeChartTooltip,
   renderChart,
   sameChartActive,
+  zoomChartBy,
 } from "@owlky/core";
 import {
   type CSSProperties,
@@ -29,12 +48,14 @@ import {
   type KeyboardEvent,
   type PointerEvent,
   type ReactNode,
+  useEffect,
   useId,
   useLayoutEffect,
   useMemo,
   useRef,
   useState,
 } from "react";
+import { useMergedRefs } from "../utils/refs.js";
 import { useControllableState } from "../utils/use-controllable-state.js";
 
 export interface ChartProps extends Omit<HTMLAttributes<HTMLElement>, "children"> {
@@ -118,6 +139,40 @@ export interface ChartProps extends Omit<HTMLAttributes<HTMLElement>, "children"
   onHiddenSeriesChange?: ((hidden: number[]) => void) | undefined;
   /** Called when the active category or point changes (pointer, touch or keyboard). */
   onActiveChange?: ((active: ChartActive | null) => void) | undefined;
+  /** Candlesticks: color of rising candles. Default `"success"`. */
+  candleUpColor?: ChartColor | undefined;
+  /** Candlesticks: color of falling candles. Default `"error"`. */
+  candleDownColor?: ChartColor | undefined;
+  /** Donut hole in % of the radius (10 to 95). Default 72. */
+  donutSize?: number | undefined;
+  /** Data labels above points sit on a badge. */
+  dataLabelBackground?: boolean | undefined;
+  /** Replaces the values printed on the chart (pie and donut labels get the percentage). */
+  dataLabelFormatter?: ((value: number, series: number, index: number) => string) | undefined;
+  /** Legend items show a value: the slice's or ring's, or the series' last one. */
+  legendValues?: boolean | undefined;
+  /** Heatmaps and treemaps: values in a range take its color. */
+  colorRanges?: readonly ChartColorRange[] | undefined;
+  /** Lines, bands and points with a label (vertical charts with an x axis). */
+  annotations?: readonly ChartAnnotation[] | undefined;
+  /** Zoom and pan the x axis (mouse, touch, Ctrl + wheel and keys). */
+  zoom?: boolean | undefined;
+  /** Controlled zoom: the visible window of the x axis (category indexes or x values), or `null`. */
+  zoomRange?: ChartZoom | null | undefined;
+  /** Uncontrolled initial zoom. */
+  defaultZoomRange?: ChartZoom | null | undefined;
+  /** Called with the new zoom: the chart's own gestures (`"user"`), its group or a brush. */
+  onZoomRangeChange?: ((range: ChartZoom | null, reason: ChartZoomReason) => void) | undefined;
+  /** Synchronized charts: charts of one group share the active category and the zoom. */
+  group?: string | undefined;
+  /** A brush chart: its selection zooms the chart with this `id`. */
+  brushTarget?: string | undefined;
+  /** A toolbar with zoom buttons (with `zoom`) and downloads (SVG, PNG, CSV). */
+  toolbar?: boolean | undefined;
+  /** Series grow in when first drawn and move to new values (never with reduced motion). */
+  animations?: boolean | undefined;
+  /** Localized texts: part labels ("Minimum", "Q1"…), tool names and the export error. */
+  localeText?: ChartLocaleText | undefined;
 }
 
 const NO_HIDDEN: readonly number[] = [];
@@ -185,6 +240,23 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     defaultHiddenSeries = NO_HIDDEN,
     onHiddenSeriesChange,
     onActiveChange,
+    candleUpColor,
+    candleDownColor,
+    donutSize,
+    dataLabelBackground,
+    dataLabelFormatter,
+    legendValues,
+    colorRanges,
+    annotations,
+    zoom,
+    zoomRange,
+    defaultZoomRange = null,
+    onZoomRangeChange,
+    group,
+    brushTarget,
+    toolbar,
+    animations,
+    localeText,
     ...rest
   },
   ref,
@@ -212,6 +284,14 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     sparkline,
     boxUpperColor,
     boxLowerColor,
+    candleUpColor,
+    candleDownColor,
+    donutSize,
+    dataLabelBackground,
+    legendValues,
+    zoom,
+    toolbar,
+    animations,
   });
   const isSparkline = attributes["data-ok-sparkline"] !== undefined;
   const givenHeight = attributes["data-ok-height"];
@@ -252,6 +332,23 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
   const validTrackWidth = number("data-ok-track-width");
   const validTotal = number("data-ok-total");
 
+  const validUpColor = attributes["data-ok-candle-up-color"] as ChartColor | undefined;
+  const validDownColor = attributes["data-ok-candle-down-color"] as ChartColor | undefined;
+  const validDonutSize = number("data-ok-donut-size");
+  const zoomOn = attributes["data-ok-zoom"] !== undefined;
+
+  // Zoom (phase 4): controlled, or kept with the x axis it was set on (so it follows live data).
+  const [innerZoom, setInnerZoom] = useState<{
+    range: ChartZoom | null;
+    from: ChartZoom | null | undefined;
+  }>(() => ({ range: defaultZoomRange, from: undefined }));
+  const zoomControlled = zoomRange !== undefined;
+  const [pan, setPan] = useState(false);
+  /** A drag being zoomed (zoom charts) or the target's zoom (brush charts). */
+  const [preview, setPreview] = useState<ChartZoom | null>(null);
+  const [selection, setSelection] = useState<ChartZoom | null>(null);
+  const [status, setStatus] = useState("");
+
   const render = useMemo(
     () =>
       renderChart({
@@ -280,6 +377,19 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         sparkline: isSparkline,
         boxUpperColor: validUpper,
         boxLowerColor: validLower,
+        candleUpColor: validUpColor,
+        candleDownColor: validDownColor,
+        donutSize: validDonutSize,
+        dataLabelBackground,
+        dataLabelFormatter,
+        legendValues,
+        colorRanges,
+        annotations,
+        partLabels: localeText,
+        zoom: zoomControlled ? zoomRange : innerZoom.range,
+        zoomFrom: zoomControlled ? undefined : innerZoom.from,
+        selection: brushTarget ? selection : preview,
+        brush: Boolean(brushTarget),
         yTitle,
         valuePrefix,
         valueSuffix,
@@ -318,6 +428,21 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       isSparkline,
       validUpper,
       validLower,
+      validUpColor,
+      validDownColor,
+      validDonutSize,
+      dataLabelBackground,
+      dataLabelFormatter,
+      legendValues,
+      colorRanges,
+      annotations,
+      localeText,
+      zoomControlled,
+      zoomRange,
+      innerZoom,
+      brushTarget,
+      selection,
+      preview,
       yTitle,
       valuePrefix,
       valueSuffix,
@@ -332,17 +457,114 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     ],
   );
   const { layout } = render;
+  const renderRef = useRef(render);
+  renderRef.current = render;
+  const kind = render.data.xType === "numeric" ? "value" : "index";
+  /** Gestures and keys: zoomable charts zoom, brush charts move their selection. */
+  const gestureMode: ChartGestureMode = brushTarget
+    ? "brush"
+    : zoomOn && render.zoomable
+      ? pan
+        ? "pan"
+        : "zoom"
+      : "none";
+  const modeRef = useRef(gestureMode);
+  modeRef.current = gestureMode;
+
+  const onZoomRef = useRef(onZoomRangeChange);
+  onZoomRef.current = onZoomRangeChange;
+  const linkRef = useRef<ChartLink | null>(null);
+  /** Applies a new zoom; the chart's own changes reach its group and brushes. */
+  const setZoom = (range: ChartZoom | null, reason: ChartZoomReason) => {
+    const current = renderRef.current;
+    if (!zoomControlled) setInnerZoom({ range, from: current.extent });
+    onZoomRef.current?.(range, reason);
+    if (reason === "user") linkRef.current?.zoomed(range);
+  };
+  const setZoomRef = useRef(setZoom);
+  setZoomRef.current = setZoom;
+  /** Brush charts: a new selection zooms the target (or only redraws without one). */
+  const setBrush = (range: ChartZoom | null) => {
+    setSelection(range);
+    linkRef.current?.brush(range);
+  };
+  const setBrushRef = useRef(setBrush);
+  setBrushRef.current = setBrush;
+  /** The range gestures and keys change: the zoom, or a brush chart's selection. */
+  const currentRange = () => (brushTarget ? selection : render.zoom);
+  const commitRange = (range: ChartZoom | null) =>
+    brushTarget ? setBrush(range) : setZoom(range, "user");
 
   const onActiveRef = useRef(onActiveChange);
   onActiveRef.current = onActiveChange;
   const activeRef = useRef(active);
   activeRef.current = active;
+  /** The chart's own changes (pointer, touch, keyboard): reported, and shown by its group. */
   const setActive = (next: ChartActive | null) => {
     if (sameChartActive(next, activeRef.current)) return;
     activeRef.current = next;
     setActiveState(next);
     onActiveRef.current?.(next);
+    linkRef.current?.shown(next?.kind === "index" ? next.index : null);
   };
+
+  const figureRef = useRef<HTMLElement>(null);
+  const mergedRef = useMergedRefs(ref, figureRef);
+  const elementId = rest.id;
+
+  // Synchronized groups and brush charts (phase 4): linked by `group`, `id` and `brushTarget`.
+  useEffect(() => {
+    if (!group && !brushTarget && !elementId) return;
+    const link = linkChart({
+      id: elementId,
+      group,
+      brushTarget,
+      zoom: () => renderRef.current.zoom,
+      showIndex: (index) => {
+        const next: ChartActive | null = index === null ? null : { kind: "index", index };
+        if (sameChartActive(next, activeRef.current)) return;
+        activeRef.current = next;
+        setActiveState(next);
+      },
+      applyZoom: (range, reason) => setZoomRef.current(range, reason),
+      select: (range) => setSelection(range),
+    });
+    linkRef.current = link;
+    return () => {
+      link.unlink();
+      linkRef.current = null;
+    };
+  }, [elementId, group, brushTarget]);
+
+  // A zoom that follows live data moves by itself: brushes of this chart redraw.
+  const drawnMin = render.zoom?.min;
+  const drawnMax = render.zoom?.max;
+  useEffect(() => {
+    linkRef.current?.drawn(
+      drawnMin === undefined ? null : { min: drawnMin, max: drawnMax as number },
+    );
+  }, [drawnMin, drawnMax]);
+
+  // Zoom, pan and brush gestures (core controller; it reads the latest render through refs).
+  const gesturesRef = useRef<ChartGestures | null>(null);
+  useEffect(() => {
+    const plot = plotRef.current as HTMLDivElement;
+    const gestures = createChartGestures(plot, {
+      layout: () => renderRef.current.layout,
+      mode: () => modeRef.current,
+      range: () => (modeRef.current === "brush" ? selectionRef.current : renderRef.current.zoom),
+      extent: () => renderRef.current.extent,
+      preview: (range) => setPreview(range),
+      commit: (range) =>
+        modeRef.current === "brush"
+          ? setBrushRef.current(range)
+          : setZoomRef.current(range, "user"),
+    });
+    gesturesRef.current = gestures;
+    return () => gestures.destroy();
+  }, []);
+  const selectionRef = useRef(selection);
+  selectionRef.current = selection;
 
   // Draw at the measured width (the first render uses the default, scaled by the viewBox).
   // Sparklines also take the plot's height (their SVG is out of flow, so no feedback loop).
@@ -359,7 +581,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     return () => observer.disconnect();
   }, [isSparkline]);
 
-  // A redraw (resize, hidden series) can remove the active item.
+  // A redraw (resize, hidden series, zoom) can remove the active item.
   const tooltip = chartTooltip(render.data, layout, render.format, active);
   const shown = tooltip && tooltip.rows.length > 0 ? tooltip : null;
 
@@ -379,6 +601,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
   });
 
   const point = (event: PointerEvent<HTMLDivElement>) => {
+    if (gesturesRef.current?.dragging) return;
     const box = event.currentTarget.getBoundingClientRect();
     const scale = layout.width / (box.width || layout.width);
     setActive(
@@ -390,8 +613,20 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       if (activeRef.current) {
         event.preventDefault();
         setActive(null);
+      } else if (gestureMode !== "none" && currentRange()) {
+        // A second Escape resets the zoom (or the brush selection).
+        event.preventDefault();
+        commitRange(null);
       }
       return;
+    }
+    if (gestureMode !== "none" && !event.altKey && !event.ctrlKey && !event.metaKey) {
+      const range = chartZoomKey(event.key, event.shiftKey, currentRange(), render.extent, kind);
+      if (range !== undefined) {
+        event.preventDefault();
+        commitRange(range);
+        return;
+      }
     }
     const next = nextChartActive(layout, activeRef.current, event.key);
     if (next === undefined) return;
@@ -415,19 +650,71 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     setHidden(next);
   };
 
+  const tools = toolbar
+    ? chartToolbar({
+        zoom: zoomOn && render.zoomable,
+        zoomed: render.zoom !== null,
+        pan,
+        text: localeText,
+      })
+    : [];
+  const runTool = (tool: ChartTool) => {
+    if (tool === "pan") setPan((on) => !on);
+    else if (tool === "reset") setZoom(null, "user");
+    else if (tool === "zoomIn" || tool === "zoomOut")
+      setZoom(zoomChartBy(render.zoom, render.extent, kind, tool === "zoomIn" ? 0.5 : 2), "user");
+    else {
+      setStatus("");
+      exportChart(figureRef.current as HTMLElement, tool as ChartExportFormat).catch(() =>
+        setStatus(localeText?.exportFailed ?? chartToolLabels.exportFailed),
+      );
+    }
+  };
+  const annotationItems = chartAnnotationItems(annotations ?? []);
+
   return (
     <figure
-      ref={ref}
+      ref={mergedRef}
       {...attributes}
-      {...(yTitle ? { "data-ok-y-title": yTitle } : {})}
-      {...(totalLabel ? { "data-ok-total-label": totalLabel } : {})}
-      {...(valuePrefix ? { "data-ok-value-prefix": valuePrefix } : {})}
-      {...(valueSuffix ? { "data-ok-value-suffix": valueSuffix } : {})}
-      {...(locale ? { "data-ok-locale": locale } : {})}
+      {...chartTextAttributes({
+        yTitle,
+        totalLabel,
+        valuePrefix,
+        valueSuffix,
+        locale,
+        group,
+        brushTarget,
+        colorRanges,
+      })}
       data-ok-ready=""
       data-ok-runtime="off"
       {...rest}
     >
+      {tools.length > 0 && (
+        <div
+          data-ok-chart-toolbar=""
+          role="group"
+          aria-label={localeText?.toolbar ?? chartToolLabels.toolbar}
+        >
+          {tools.map((item) => (
+            <button
+              key={item.tool}
+              type="button"
+              data-ok-chart-tool={item.tool}
+              aria-label={item.label}
+              title={item.label}
+              aria-pressed={item.pressed}
+              disabled={item.disabled}
+              onClick={() => runTool(item.tool)}
+            >
+              {item.icon ? toElements([item.icon]) : item.text}
+            </button>
+          ))}
+          <span data-ok-chart-status="" role="status">
+            {status}
+          </span>
+        </div>
+      )}
       {render.legend && (
         <div data-ok-chart-legend="">
           {render.legend.map((item) => (
@@ -441,6 +728,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
             >
               <span data-ok-chart-legend-marker="" />
               {item.name}
+              {item.value !== undefined && <span data-ok-chart-legend-value="">{item.value}</span>}
             </button>
           ))}
         </div>
@@ -545,6 +833,16 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
           ))}
         </tbody>
       </table>
+      {annotationItems.length > 0 && (
+        <ul data-ok-chart-annotations="">
+          {annotationItems.map((item, index) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: annotations are positional
+            <li key={index} {...item.attrs}>
+              {item.text}
+            </li>
+          ))}
+        </ul>
+      )}
     </figure>
   );
 });

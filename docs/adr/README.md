@@ -32,5 +32,6 @@ ADR that supersedes the old one — don't rewrite history.
 | [0026](0026-time-pickers.md) | Time pickers: one field and picker anatomy for every value type, clocks as listboxes | Accepted |
 | [0027](0027-chart-every-type.md) | Chart: every ApexCharts chart type; phases 3–4 rescoped for dashboards | Accepted |
 | [0029](0029-chart-phase-3-data-model.md) | Chart phase 3: several values per point, cell charts, sparklines, live updates | Accepted |
+| [0031](0031-chart-phase-4-interaction-and-links.md) | Chart phase 4: zoom as an x window, linked charts, annotations, export, last chart types | Accepted |
 
 Template: **Context** (why decide) · **Decision** (what) · **Consequences** (trade-offs, follow-ups).

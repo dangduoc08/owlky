@@ -23,9 +23,13 @@ export const chartTypes = [
   "rangeArea",
   "funnel",
   "slope",
+  "candlestick",
+  "rangeBar",
+  "timeline",
+  "polarArea",
 ] as const;
 /** Charts of one series whose categories are slices or rings (legend items are categories). */
-export const chartCircularTypes = ["pie", "donut", "radialBar"] as const;
+export const chartCircularTypes = ["pie", "donut", "radialBar", "polarArea"] as const;
 export const chartCurves = ["smooth", "straight", "stepline"] as const;
 export const chartLegends = ["top", "right", "bottom", "none"] as const;
 export const chartXTypes = ["category", "datetime", "numeric"] as const;
@@ -52,6 +56,8 @@ const wholeTypes: readonly ChartType[] = [
   "treemap",
   "funnel",
   "slope",
+  "rangeBar",
+  "timeline",
 ];
 /** Whether a chart type draws every series the same way (no mixed charts). */
 export const isWholeChart = (type: ChartType): boolean => wholeTypes.includes(type);
@@ -61,15 +67,46 @@ type Shade = (typeof chartShades)[number];
  * Values of a point beyond `y`, by series type (phase 3): box plots have five, range areas two,
  * bubbles a size. Data tables give each part its own column (`th[data-ok-part]`).
  */
-export type ChartPart = "min" | "q1" | "median" | "q3" | "max" | "low" | "high" | "y" | "z";
-export const chartParts = (type: ChartType): readonly ChartPart[] =>
-  type === "boxPlot"
-    ? ["min", "q1", "median", "q3", "max"]
-    : type === "rangeArea"
-      ? ["low", "high"]
-      : type === "bubble"
-        ? ["y", "z"]
-        : [];
+export type ChartPart =
+  | "min"
+  | "q1"
+  | "median"
+  | "q3"
+  | "max"
+  | "low"
+  | "high"
+  | "y"
+  | "z"
+  | "open"
+  | "close"
+  | "start"
+  | "end";
+const PARTS: Partial<Record<ChartType, readonly ChartPart[]>> = {
+  boxPlot: ["min", "q1", "median", "q3", "max"],
+  rangeArea: ["low", "high"],
+  bubble: ["y", "z"],
+  // Phase 4: candles keep ApexCharts' order (open, high, low, close); range bars start and end.
+  candlestick: ["open", "high", "low", "close"],
+  rangeBar: ["start", "end"],
+  timeline: ["start", "end"],
+};
+export const chartParts = (type: ChartType): readonly ChartPart[] => PARTS[type] ?? [];
+/** Every part name (an allowlist for labels read from tables and props). */
+export const chartPartNames: readonly ChartPart[] = [
+  "min",
+  "q1",
+  "median",
+  "q3",
+  "max",
+  "low",
+  "high",
+  "y",
+  "z",
+  "open",
+  "close",
+  "start",
+  "end",
+];
 /** Default text of each part (table headers and tooltip rows). */
 export const chartPartLabels: Readonly<Record<ChartPart, string>> = {
   min: "Minimum",
@@ -81,7 +118,14 @@ export const chartPartLabels: Readonly<Record<ChartPart, string>> = {
   high: "High",
   y: "Value",
   z: "Size",
+  open: "Open",
+  close: "Close",
+  start: "Start",
+  end: "End",
 };
+
+/** One value of a point that has several: a number, or a date (timelines: ISO 8601, ms or Date). */
+export type ChartRangeValue = number | string | Date;
 
 /** A palette color (`main`) or one of its shades: `"info"`, `"primary-dark"`. */
 export type ChartColor = Palette | `${Palette}-${Shade}`;
@@ -108,15 +152,16 @@ export const chartDefaultColors: readonly ChartColor[] = [
 /**
  * A point: a value, `null` (a gap), an `[x, y]` pair, an `[x, y, z]` triple (bubbles) or
  * `{ x, y, z, color }`. Box plots take five values in `y` (minimum, Q1, median, Q3, maximum),
- * range areas two (low, high). Without `categories`, a text `x` names the point's category.
+ * range areas and range bars two (low, high), candles four (open, high, low, close), timelines
+ * two dates (start, end). Without `categories`, a text `x` names the point's category.
  */
 export type ChartPointInput =
   | number
   | null
-  | readonly [x: number | string | Date, y: number | readonly number[] | null, z?: number]
+  | readonly [x: number | string | Date, y: number | readonly ChartRangeValue[] | null, z?: number]
   | {
       readonly x?: number | string | Date;
-      readonly y: number | readonly number[] | null;
+      readonly y: number | readonly ChartRangeValue[] | null;
       readonly z?: number | undefined;
       readonly color?: ChartColor | undefined;
     };
@@ -249,11 +294,17 @@ export function chartData(input: {
       let y: number | null;
       let range: number[] | undefined;
       if (parts > 0) {
-        // Box plots and range areas: every value or none, sorted (a box is never inside out).
-        const values = Array.isArray(rawY) ? rawY.map(parseChartNumber) : [];
+        // Box plots and ranges: every value or none, sorted (a box is never inside out); candles
+        // keep their order (y is the close). Timelines take dates.
+        const parse = (value: unknown) =>
+          seriesType === "timeline" ? (toTimestamp(value) ?? null) : parseChartNumber(value);
+        const values = Array.isArray(rawY) ? rawY.map(parse) : [];
         if (values.length === parts && values.every((value) => value !== null))
-          range = (values as number[]).sort((a, b) => a - b);
-        y = range ? (range[parts === 5 ? 2 : 1] as number) : null;
+          range =
+            seriesType === "candlestick"
+              ? (values as number[])
+              : (values as number[]).sort((a, b) => a - b);
+        y = range ? (range[parts === 5 ? 2 : parts === 4 ? 3 : 1] as number) : null;
       } else y = Array.isArray(rawY) ? null : parseChartNumber(rawY);
       const z = seriesType === "bubble" ? parseChartNumber(rawZ) : null;
       // Circular charts color each slice (ring): its own color, `colors` or the default order.
@@ -327,6 +378,8 @@ export function chartTable(
     formatNumber?: ((value: number) => string) | undefined;
     /** Series types written on the column headers (`true` for mixed charts). */
     seriesTypes?: boolean;
+    /** Header text of each part (default `chartPartLabels`). */
+    partLabels?: Readonly<Partial<Record<ChartPart, string>>> | undefined;
   },
 ): ChartTableModel {
   const partsOf = data.series.map((series) => chartParts(series.type));
@@ -346,13 +399,18 @@ export function chartTable(
     }),
   ];
   const parts: ChartTableCell[] = partsOf.flatMap((list) =>
-    list.map((part) => ({ text: chartPartLabels[part], attrs: { "data-ok-part": part } })),
+    list.map((part) => ({
+      text: options.partLabels?.[part] ?? chartPartLabels[part],
+      attrs: { "data-ok-part": part },
+    })),
   );
   const formatNumber = options.formatNumber ?? String;
+  // Timeline values are dates: their raw value is ISO 8601, as on date axes.
+  const raw = (value: number) => (data.type === "timeline" ? isoDate(value) : String(value));
   const cell = (value: number, text: string, color?: ChartColor): ChartTableCell => ({
     text,
     attrs: {
-      ...(text !== String(value) ? { "data-ok-value": String(value) } : {}),
+      ...(text !== raw(value) ? { "data-ok-value": raw(value) } : {}),
       ...(color ? { "data-ok-color": color } : {}),
     },
   });
@@ -406,11 +464,24 @@ export function chartTable(
 export function readChartTable(
   table: HTMLTableElement,
   xType: ChartXType,
-): { series: ChartSeries[]; categories: (string | number)[] } {
+  type?: ChartType,
+): {
+  series: ChartSeries[];
+  categories: (string | number)[];
+  /** The text of each part's header (localized labels, phase 4). */
+  partLabels?: Partial<Record<ChartPart, string>>;
+} {
   const headRows = table.tHead ? [...table.tHead.rows] : [...table.rows].slice(0, 1);
   const headRow = headRows[0];
   if (!headRow) return { series: [], categories: [] };
   const partCells = [...(headRows[1]?.cells ?? [])];
+  const partLabels: Partial<Record<ChartPart, string>> = {};
+  for (const cell of partCells) {
+    const part = cell.getAttribute("data-ok-part") as ChartPart;
+    const label = cellText(cell);
+    if (chartPartNames.includes(part) && label && !partLabels[part]) partLabels[part] = label;
+  }
+  const dates = type === "timeline";
   const bodyRows = [...table.rows].filter((row) => !headRows.includes(row));
   const raw = (cell: Element | undefined) => cell?.getAttribute("data-ok-value") ?? cellText(cell);
   const categories: (string | number)[] = [];
@@ -439,7 +510,8 @@ export function readChartTable(
       const cell = row.cells[first];
       const value = (at: number) => {
         const text = raw(row.cells[at]);
-        return text === "" ? null : parseChartNumber(text);
+        if (text === "") return null;
+        return dates ? (toTimestamp(text) ?? null) : parseChartNumber(text);
       };
       const color = cell?.getAttribute("data-ok-color");
       let y: number | number[] | null;
@@ -474,7 +546,8 @@ export function readChartTable(
     return {
       categories: categories.filter((_, index) => keep[index]),
       series: series.map((s) => ({ ...s, data: s.data.filter((_, index) => keep[index]) })),
+      partLabels,
     };
   }
-  return { series, categories };
+  return { series, categories, partLabels };
 }

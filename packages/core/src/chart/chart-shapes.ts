@@ -104,7 +104,7 @@ export function layoutFunnel(
       }),
     );
     if (options.dataLabels) {
-      const text = format.value(point.y, index);
+      const text = format.dataLabel(point.y, index, point.x, format.value(point.y, index));
       if (chartTextWidth(text) + 8 <= w && FONT + 2 <= thickness)
         labels.push(dataLabel(x + w / 2, cy, text, "inside"));
     }
@@ -165,7 +165,9 @@ export function layoutSlope(
       if (point.y === null) continue;
       lo = Math.min(lo, options.yMin ?? point.y);
       hi = Math.max(hi, options.yMax ?? point.y);
-      const text = chartTextWidth(format.value(point.y, index));
+      const text = chartTextWidth(
+        format.dataLabel(point.y, index, point.x, format.value(point.y, index)),
+      );
       if (point.x === 0) leftText = Math.max(leftText, text);
       if (point.x === count - 1) rightText = Math.max(rightText, text);
     }
@@ -251,7 +253,7 @@ export function layoutSlope(
           }),
         );
       // Values beside the first and last points, above the others.
-      const text = format.value(point.y, index);
+      const text = format.dataLabel(point.y, index, point.x, format.value(point.y, index));
       const first = point.x === 0;
       const last = point.x === count - 1 && count > 1;
       labels.push(

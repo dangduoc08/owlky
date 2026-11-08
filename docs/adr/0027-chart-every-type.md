@@ -1,6 +1,6 @@
 # ADR-0027: Chart — every ApexCharts chart type, phases 3 and 4 rescoped for dashboards
 
-**Status:** Accepted (2026-11-08). Supersedes decision 6 (the phase table) of ADR-0024 for phases 3
+**Status:** Accepted (2026-11-08); every phase done (phase 4: ADR-0031, Chart complete). Supersedes decision 6 (the phase table) of ADR-0024 for phases 3
 and 4; the rest of ADR-0024 stands.
 
 ## Context
@@ -17,7 +17,7 @@ updates early, while ADR-0024 left the JavaScript data API (`updateSeries`) to p
 | 1 ✅ | Engine, legend, tooltip, keyboard, data table; Line, Area, Column single / multiple / stacked / negative, Bar, Mixed, Scatter |
 | 2 ✅ | Pie, Donut, Radial bar, Radar, Semi circle gauge, Stroked gauge; data labels |
 | 3 ✅ | BoxPlot, Heatmap, Treemap (reference); Bubble, Range area, Funnel / pyramid, Slope; Sparklines (no axes, sized by their container); a JavaScript data API (`updateSeries`, appending points) in React and HTML |
-| 4 | Synchronized charts (shared tooltip and zoom), zoom and pan, brush, annotations, animations (honoring reduced motion), export (SVG, PNG, CSV), Candlestick, Range bar, Timeline, Polar area; data label formatters and styles, donut hole size, a legend with values |
+| 4 ✅ | Synchronized charts (shared tooltip and zoom), zoom and pan, brush, annotations, animations (honoring reduced motion), export (SVG, PNG, CSV), Candlestick, Range bar, Timeline, Polar area; data label formatters and styles, donut hole size, a legend with values (ADR-0031: also localized part labels, heatmap color ranges, horizontal box plots) |
 
 ## Consequences
 - After phase 4, Owlky draws every ApexCharts chart type with our own engine (no ApexCharts code).

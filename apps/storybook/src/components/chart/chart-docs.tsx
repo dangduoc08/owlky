@@ -333,9 +333,117 @@ export function Requests({ source }) {
 }`,
   },
   {
+    id: "zoom",
+    title: "Zoom, pan and export",
+    body: `Set \`zoom\` (\`data-ok-zoom\` in HTML) to let people zoom into the x axis of line, area, column, scatter, candlestick and other charts drawn from left to right. The value axis keeps its scale, so values stay comparable while you move.
+
+- **Mouse:** drag across the plot to zoom to that range. Hold Ctrl (or ⌘ on a Mac) and use the wheel to zoom around the pointer. A plain wheel still scrolls the page.
+- **Touch:** pinch with two fingers. On a zoomed chart, drag with one finger to pan. A tap still shows the tooltip.
+- **Keyboard:** \`+\` and \`-\` zoom, Shift with the Left or Right arrow pans, \`0\` resets. Escape hides the tooltip first, then resets the zoom.
+
+Set \`toolbar\` (\`data-ok-toolbar\`) to add buttons for zooming in and out, resetting, panning with the mouse, and downloading the chart as SVG, PNG or CSV. Downloads start only when someone selects a button or presses a key, and a failure is announced to screen readers. In React, \`zoomRange\` and \`onZoomRangeChange(range, reason)\` control the zoom. A zoom that reaches the newest point keeps following new points, so a live dashboard stays on its latest data.`,
+    html: `<figure data-ok-chart data-ok-type="area" data-ok-x-type="datetime" … data-ok-zoom data-ok-toolbar>
+  <table data-ok-chart-data>…</table>
+</figure>`,
+    react: `<Chart label="Daily active users" type="area" xType="datetime" zoom toolbar categories={days} series={users} />`,
+  },
+  {
+    id: "sync",
+    title: "Synchronize charts",
+    body: "Give charts the same `group` (`data-ok-group` in HTML) to synchronize them, such as requests, errors and latency of one service. Moving the pointer or the keyboard over one chart shows the same category in all of them, and zooming one zooms the others. Synchronized charts should share their categories.",
+    html: `<figure data-ok-chart data-ok-group="service" data-ok-zoom …>…</figure>
+<figure data-ok-chart data-ok-group="service" data-ok-type="bar" …>…</figure>`,
+    react: `<>
+  <Chart label="Requests" group="service" zoom categories={minutes} series={requests} />
+  <Chart label="Errors" group="service" type="bar" categories={minutes} series={errors} />
+</>`,
+  },
+  {
+    id: "brush",
+    title: "Brush a chart",
+    body: "A brush chart is a small overview that zooms another chart. Give the main chart an `id`, then set `brushTarget` (`data-ok-brush-target` in HTML) on the overview to that id. Drag across the overview to select a range, drag the selection to move it, or drag its handles to resize it. The keys of a zoomable chart work on the overview too. The selection follows the main chart when it zooms by itself.",
+    html: `<figure id="builds" data-ok-chart data-ok-type="area" …>…</figure>
+<figure data-ok-chart data-ok-type="bar" data-ok-brush-target="builds" data-ok-height="120" …>…</figure>`,
+    react: `<>
+  <Chart id="builds" label="Builds per day" type="area" categories={days} series={builds} />
+  <Chart label="Builds, overview" type="bar" brushTarget="builds" height={120} categories={days} series={builds} />
+</>`,
+  },
+  {
+    id: "annotations",
+    title: "Annotate charts",
+    body: `Annotations mark a moment, a range, a threshold or a point, such as a deploy or an incident. In React, pass \`annotations\`. In HTML, list them after the data table in \`ul[data-ok-chart-annotations]\`, one \`li\` each, with its label as text.
+
+- **\`x\`:** a vertical line at a category, a date or a number, or a band up to \`x2\`.
+- **\`y\`:** a horizontal line at a value, or a band up to \`y2\`.
+- **\`point\`:** a marker at \`x\` and \`y\`.
+
+Each annotation takes a \`color\` (\`info\` by default). The list stays readable by screen readers once the chart is drawn.`,
+    html: `<figure data-ok-chart …>
+  <table data-ok-chart-data>…</table>
+  <ul data-ok-chart-annotations>
+    <li data-ok-annotation="x" data-ok-x="10:04" data-ok-color="warning">Deploy</li>
+    <li data-ok-annotation="y" data-ok-y="2" data-ok-color="error">Threshold</li>
+  </ul>
+</figure>`,
+    react: `<Chart
+  label="Error rate"
+  categories={minutes}
+  series={errors}
+  annotations={[
+    { axis: "x", x: "10:04", label: "Deploy", color: "warning" },
+    { axis: "y", y: 2, label: "Threshold", color: "error" },
+  ]}
+/>`,
+  },
+  {
+    id: "finance",
+    title: "Show prices, ranges and plans",
+    body: `- **Candlesticks:** \`candlestick\` takes four values per point in \`y\`: open, high, low and close. Rising candles use \`candleUpColor\` (\`success\` by default), falling ones \`candleDownColor\` (\`error\`). Add a \`line\` series for an average.
+- **Range bars:** \`rangeBar\` takes a start and an end value per point, such as the fastest and slowest response of a service. Set \`horizontal\` to draw them from left to right.
+- **Timelines:** \`timeline\` draws tasks from their start date to their end date, one row per task. Give each point a text \`x\` (the task) and two dates in \`y\`. The axis shows minutes, hours, days, months or years, depending on the span.
+
+In the data table, each value gets its own column under a second header row, such as Open, High, Low and Close.`,
+    html: `<figure data-ok-chart data-ok-type="timeline" …>
+  <table data-ok-chart-data>
+    <caption>Release plan</caption>
+    <thead>
+      <tr><th scope="col" rowspan="2">Task</th><th scope="colgroup" colspan="2">Release</th></tr>
+      <tr><th scope="col" data-ok-part="start">Start</th><th scope="col" data-ok-part="end">End</th></tr>
+    </thead>
+    <tbody>
+      <tr><th scope="row">Design</th><td data-ok-value="2026-03-02">02 Mar 2026</td><td data-ok-value="2026-03-13">13 Mar 2026</td></tr>
+    </tbody>
+  </table>
+</figure>`,
+    react: `<Chart
+  label="Release plan"
+  type="timeline"
+  series={[{ name: "Release", data: [{ x: "Design", y: ["2026-03-02", "2026-03-13"] }] }]}
+/>`,
+  },
+  {
+    id: "animations",
+    title: "Animate charts",
+    body: "Set `animations` (`data-ok-animations` in HTML) to grow the series in when the chart first draws, and to move bars, points and lines to their new values when the data changes. Animations never play when the system asks for reduced motion. Live charts that update often read better without them.",
+    html: `<figure data-ok-chart data-ok-type="bar" data-ok-animations …>…</figure>`,
+    react: `<Chart label="Deploys per weekday" type="bar" animations categories={days} series={deploys} />`,
+  },
+  {
+    id: "localize",
+    title: "Localize texts",
+    body: "`locale` formats numbers and month names. The names of the values in tables and tooltips, such as Minimum or Open, come from the second header row of the HTML table. In React, pass them in `localeText`, together with the toolbar's button names and the download error. In HTML, call `setLocaleText(text)` on the instance for the toolbar.",
+    html: `<tr><th scope="col" data-ok-part="min">Nhỏ nhất</th>…</tr>
+<script type="module">
+  import { getRuntime } from "@owlky/html";
+  getRuntime().get(element, "chart").setLocaleText({ zoomIn: "Phóng to", svg: "Tải SVG" });
+</script>`,
+    react: `<Chart label="Thời gian phản hồi" type="boxPlot" locale="vi-VN" localeText={{ min: "Nhỏ nhất", median: "Trung vị", zoomIn: "Phóng to" }} series={series} />`,
+  },
+  {
     id: "labels",
     title: "Print values on the chart",
-    body: "Set `dataLabels` (`data-ok-data-labels` in HTML) to print values on the chart: percentages on pie and donut slices, values inside columns and bars, and values above the points of lines, areas and radars. A label is left out where it doesn't fit, such as on a short column. The tooltip and the data table still show every value.",
+    body: "Set `dataLabels` (`data-ok-data-labels` in HTML) to print values on the chart: percentages on pie and donut slices, values inside columns and bars, and values above the points of lines, areas and radars. A label is left out where it doesn't fit, such as on a short column. The tooltip and the data table still show every value. Set `dataLabelBackground` to put the labels above points on a badge, which keeps them readable over lines. For your own text, pass `dataLabelFormatter(value, series, index)` in React, or call `setFormatters({ dataLabel })` on the HTML instance. Pie and donut labels get the percentage.",
     html: `<figure data-ok-chart data-ok-type="pie" … data-ok-data-labels>`,
     react: `<Chart label="Share of visits" type="pie" dataLabels categories={devices} series={visits} />`,
   },
@@ -354,7 +462,7 @@ export function Requests({ source }) {
   {
     id: "legend",
     title: "Use the legend",
-    body: "The legend shows one button per series, or one per category in pie, donut and radial bar charts. Selecting a button hides its series and fits the axis to the series that are left. Select it again to show the series. `legend` places the legend at the `top` (the default), `right` or `bottom`, or hides it with `none`. Charts with one series have no legend. On screens narrower than 600px, a right legend moves below the chart.",
+    body: "The legend shows one button per series, or one per category in pie, donut and radial bar charts. Selecting a button hides its series and fits the axis to the series that are left. Select it again to show the series. `legend` places the legend at the `top` (the default), `right` or `bottom`, or hides it with `none`. Charts with one series have no legend. On screens narrower than 600px, a right legend moves below the chart. Set `legendValues` to show each item's value next to its name: the slice or ring value, or the last value of a series. `donutSize` sets the size of a donut's hole in percent of its radius (72 by default).",
   },
   {
     id: "size",
@@ -377,7 +485,9 @@ export function Requests({ source }) {
     body: `- **\`ok:chart:toggle\`** (cancelable) fires when a legend button is selected, with \`detail.index\`, \`detail.hidden\` and \`detail.hiddenSeries\`. Call \`preventDefault()\` to keep the series as it is.
 - **\`ok:chart:active\`** fires with \`detail.active\`: the category (\`{ kind: "index", index }\`) or point (\`{ kind: "mark", mark }\`) under the pointer or the keyboard, or \`null\`.
 - **Instance:** \`runtime.get(element, "chart")\` returns \`{ hiddenSeries, setHiddenSeries(list), active, setActive(active), setFormatters(formatters), refresh(), updateSeries(series, categories), appendData(data, options) }\`. The methods don't fire events. The chart redraws by itself when the table or an option changes. See "Update data live".
-- **React:** \`onHiddenSeriesChange(hidden)\` and \`onActiveChange(active)\`; controlled with \`hiddenSeries\`, uncontrolled with \`defaultHiddenSeries\`.`,
+- **\`ok:chart:zoom\`** fires when the zoom changes, with \`detail.range\` (\`{ min, max }\` or \`null\`) and \`detail.reason\`: \`user\` for the chart's own gestures, keys and buttons (cancelable), \`group\` or \`brush\` when a linked chart zoomed it.
+- **Phase 4 methods:** \`zoomRange\`, \`setZoomRange(range)\` (its group and brushes follow), \`exportChart("svg" | "png" | "csv")\` (a promise that rejects outside a user gesture) and \`setLocaleText(text)\`.
+- **React:** \`onHiddenSeriesChange(hidden)\` and \`onActiveChange(active)\`; controlled with \`hiddenSeries\`, uncontrolled with \`defaultHiddenSeries\`. The zoom: \`zoomRange\` / \`defaultZoomRange\` and \`onZoomRangeChange(range, reason)\`. To export from your own button, call \`exportChart(figure, format)\` from \`@owlky/core\` with the chart's \`ref\`.`,
   },
   {
     id: "keyboard",
@@ -526,6 +636,63 @@ const PREVIEWS = {
       />
     </Preview>
   ),
+  zoom: () => (
+    <Preview>
+      <Chart label="Sales, zoomable" type="area" zoom toolbar categories={MONTHS} series={SALES} />
+    </Preview>
+  ),
+  sync: () => (
+    <Preview>
+      <Chart
+        label="Online sales"
+        group="docs-sync"
+        height={160}
+        categories={MONTHS}
+        series={[SALES[0] as (typeof SALES)[0]]}
+      />
+      <Chart
+        label="In-store sales"
+        group="docs-sync"
+        type="bar"
+        height={160}
+        colors={["warning"]}
+        categories={MONTHS}
+        series={[SALES[1] as (typeof SALES)[0]]}
+      />
+    </Preview>
+  ),
+  annotations: () => (
+    <Preview>
+      <Chart
+        label="Sales with notes"
+        categories={MONTHS}
+        series={SALES}
+        annotations={[
+          { axis: "x", x: "Mar", label: "Campaign", color: "warning" },
+          { axis: "y", y: 60, label: "Goal", color: "success" },
+        ]}
+      />
+    </Preview>
+  ),
+  finance: () => (
+    <Preview>
+      <Chart
+        label="Release plan"
+        type="timeline"
+        height={200}
+        series={[
+          {
+            name: "Release",
+            data: [
+              { x: "Design", y: ["2026-03-02", "2026-03-13"], color: "info" },
+              { x: "Build", y: ["2026-03-09", "2026-04-03"] },
+              { x: "Test", y: ["2026-03-30", "2026-04-17"], color: "warning" },
+            ],
+          },
+        ]}
+      />
+    </Preview>
+  ),
   options: () => <OptionsTable schema={chartOptions} />,
   props: () => (
     <PropsTable
@@ -596,6 +763,43 @@ const PREVIEWS = {
           type: "function",
           description: "The category or point under the pointer or the keyboard.",
         },
+        {
+          react: "annotations",
+          html: "ul[data-ok-chart-annotations] › li",
+          type: "{ axis, x?, x2?, y?, y2?, label?, color? }[]",
+          description: "Lines, bands and points with a label.",
+        },
+        {
+          react: "colorRanges",
+          html: "data-ok-color-ranges",
+          type: "{ from, to, color, name? }[]",
+          description:
+            'Heatmaps and treemaps: values in a range take its color. HTML writes `"from to color name; …"`.',
+        },
+        {
+          react: "group / brushTarget",
+          html: "data-ok-group / data-ok-brush-target",
+          type: "string",
+          description: "Synchronized group name; the id of the chart a brush chart zooms.",
+        },
+        {
+          react: "zoomRange / defaultZoomRange / onZoomRangeChange",
+          html: "instance.zoomRange · setZoomRange · ok:chart:zoom",
+          type: "{ min, max } | null",
+          description: "The visible window of the x axis: category indexes, or x values.",
+        },
+        {
+          react: "dataLabelFormatter",
+          html: "instance.setFormatters({ dataLabel })",
+          type: "function",
+          description: "Custom text of the values printed on the chart.",
+        },
+        {
+          react: "localeText",
+          html: "part headers · instance.setLocaleText",
+          type: "object",
+          description: "Value names, toolbar button names and the download error.",
+        },
       ]}
     />
   ),
@@ -607,7 +811,10 @@ const PREVIEWS = {
         ["Left arrow / Up arrow", "Shows the previous category or point."],
         ["Arrow keys (heatmap, treemap)", "Shows the nearest cell in the arrow's direction."],
         ["Home / End", "Shows the first or last category or point."],
-        ["Escape", "Hides the tooltip."],
+        ["Escape", "Hides the tooltip. Pressed again, resets the zoom."],
+        ["+ / -", "Zooms in or out (charts with zoom, brush charts)."],
+        ["Shift + Left arrow / Right arrow", "Pans the zoomed range."],
+        ["0", "Resets the zoom."],
       ]}
     />
   ),

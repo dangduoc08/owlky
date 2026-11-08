@@ -593,10 +593,11 @@
     text-align: start;
   }
 
-  /* Tables grow to their content: a fixed layout keeps the hidden table 1px wide. */
+  /* Tables grow to their content: a fixed layout keeps the hidden table 1px wide, and anchored
+     at the bottom it grows upward, so a long table never makes the page scroll. */
   :where([data-ok-chart][data-ok-ready] > [data-ok-chart-data]) {
     position: absolute;
-    inset-block-start: 0;
+    inset-block-end: 0;
     inset-inline-start: 0;
     table-layout: fixed;
     width: 1px;
@@ -615,5 +616,190 @@
     border: 0;
     white-space: normal;
     overflow-wrap: anywhere;
+  }
+
+  /* Phase 4 (ADR-0031). Annotations are listed for assistive technologies, drawn in the SVG. */
+  :where([data-ok-chart][data-ok-ready] > [data-ok-chart-annotations], [data-ok-chart-status]) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* Toolbar: zoom buttons and downloads above the legend. */
+  :where([data-ok-chart-toolbar]) {
+    display: flex;
+    flex-wrap: wrap;
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+    gap: var(--ok-spacing);
+  }
+
+  :where([data-ok-chart-tool]) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: calc(var(--ok-spacing) * 8);
+    min-height: calc(var(--ok-spacing) * 8);
+    margin: 0;
+    padding: 0 var(--ok-spacing);
+    border: 1px solid var(--ok-divider);
+    border-radius: var(--ok-radius-sm);
+    background: none;
+    color: var(--ok-text-primary);
+    font: inherit;
+    font-size: var(--ok-font-size-xs);
+    font-weight: var(--ok-font-weight-semibold);
+    cursor: pointer;
+  }
+
+  :where([data-ok-chart-tool][aria-pressed="true"]) {
+    background-color: var(--ok-action-selected);
+    color: var(--ok-text-primary);
+  }
+
+  :where([data-ok-chart-tool]:disabled) {
+    color: var(--ok-text-disabled);
+    cursor: default;
+  }
+
+  @media (hover: hover) {
+    :where([data-ok-chart-tool]:not(:disabled):hover) {
+      background-color: var(--ok-action-hover);
+    }
+  }
+
+  :where([data-ok-chart-tool]:focus-visible) {
+    outline: 2px solid var(--ok-palette-primary-main);
+    outline-offset: 2px;
+  }
+
+  :where([data-ok-chart-tool-icon]) {
+    fill: none;
+    stroke: currentcolor;
+    stroke-width: 2px;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  :where([data-ok-chart-legend-value]) {
+    color: var(--ok-text-primary);
+    font-weight: var(--ok-font-weight-semibold);
+  }
+
+  /* Candlesticks, polar areas and data label badges. */
+  :where([data-ok-chart-candle]) {
+    fill: var(--_ok-chart-c);
+  }
+
+  :where([data-ok-chart-wick]) {
+    stroke: var(--_ok-chart-c);
+    stroke-width: 1.5px;
+  }
+
+  :where([data-ok-chart-series][data-ok-type="polarArea"] > [data-ok-chart-slice]) {
+    fill-opacity: 0.8;
+    stroke: var(--ok-bg-paper);
+    stroke-width: 2px;
+  }
+
+  :where([data-ok-chart-data-label-badge]) {
+    fill: var(--ok-bg-paper);
+    stroke: var(--ok-divider);
+  }
+
+  /* Annotations: a dashed line or a faint band, a tag with the label. */
+  :where([data-ok-chart-annotation-line]) {
+    stroke: var(--_ok-chart-c);
+    stroke-width: 1.5px;
+    stroke-dasharray: 4;
+  }
+
+  :where([data-ok-chart-annotation-band]) {
+    fill: var(--_ok-chart-c);
+    fill-opacity: 0.12;
+  }
+
+  :where([data-ok-chart-annotation-tag], [data-ok-chart-annotation-marker]) {
+    fill: var(--_ok-chart-c);
+  }
+
+  :where([data-ok-chart-annotation-marker]) {
+    stroke: var(--ok-bg-paper);
+    stroke-width: 2px;
+  }
+
+  :where([data-ok-chart-annotation-label]) {
+    fill: var(--ok-palette-common-white);
+    font-size: var(--ok-font-size-xs);
+    font-weight: var(--ok-font-weight-semibold);
+  }
+
+  :where([data-ok-chart-annotation-layer], [data-ok-chart-brush]) {
+    pointer-events: none;
+  }
+
+  /* Zoom and brush: a drag selects, the brush selection has handles. */
+  :where([data-ok-chart][data-ok-zoom] > [data-ok-chart-plot]) {
+    cursor: crosshair;
+  }
+
+  :where([data-ok-chart][data-ok-brush-target] > [data-ok-chart-plot]) {
+    cursor: ew-resize;
+  }
+
+  :where([data-ok-chart-selection]) {
+    fill: rgb(var(--ok-palette-primary-main-channel) / 0.12);
+    stroke: var(--ok-palette-primary-main);
+  }
+
+  :where([data-ok-chart-handle]) {
+    fill: var(--ok-bg-paper);
+    stroke: var(--ok-palette-primary-main);
+  }
+
+  /* Animations (opt-in): series reveal from the left, round charts grow; updates move. */
+  @media (prefers-reduced-motion: no-preference) {
+    :where([data-ok-chart][data-ok-animations] [data-ok-chart-series-group]) {
+      animation: ok-chart-reveal var(--ok-duration-enter) var(--ok-easing-decelerate) both;
+    }
+
+    :where(
+        [data-ok-chart][data-ok-animations]:is(
+            [data-ok-type="pie"],
+            [data-ok-type="donut"],
+            [data-ok-type="radialBar"],
+            [data-ok-type="polarArea"],
+            [data-ok-type="radar"]
+          )
+          [data-ok-chart-series-group]
+      ) {
+      transform-box: view-box;
+      transform-origin: center;
+      animation-name: ok-chart-grow;
+    }
+
+    :where([data-ok-chart][data-ok-animations] [data-ok-chart-series] > *) {
+      transition-property: d, x, y, width, height, cx, cy, r;
+      transition-duration: var(--ok-duration-standard);
+      transition-timing-function: var(--ok-easing-standard);
+    }
+  }
+
+  @keyframes ok-chart-reveal {
+    from {
+      clip-path: inset(0 100% 0 0);
+    }
+  }
+
+  @keyframes ok-chart-grow {
+    from {
+      opacity: 0;
+      transform: scale(0.6);
+    }
   }
 }

@@ -5,7 +5,11 @@ Area, Column single, Column multiple, Column stacked, Column negative, Bar, Mixe
 phase 2 adds Pie, Donut, Radial bar, Radar, Semi circle gauge and Stroked gauge (and data labels).
 Phase 3 (ADR-0027, ADR-0029) adds the reference's BoxPlot, Heatmap and Treemap, and ApexCharts types
 beyond it: Bubble, Range area, Funnel (and pyramid), Slope, Sparklines, plus a JavaScript data API
-(`updateSeries`, `appendData`). Upstream: ApexCharts (`react-apexcharts`, ADR-0015). Created with `/component`.
+(`updateSeries`, `appendData`). Phase 4 (ADR-0027, ADR-0031) completes the ApexCharts catalog:
+Candlestick, Range bar, Timeline, Polar area; zoom and pan, synchronized charts, brush charts,
+annotations, animations, export (SVG, PNG, CSV) and a toolbar; data label formatters and badges, a
+legend with values, the donut hole size, heatmap color ranges, horizontal box plots and localized
+texts. Upstream: ApexCharts (`react-apexcharts`, ADR-0015). Created with `/component`.
 Reference URL: https://minimals.cc/components/extra/chart
 HTML source: written by us (ApexCharts' framework-free core is not MIT: the owner chose to write our
 own, 2026-11-08; ADR-0024)
@@ -26,9 +30,14 @@ figure[data-ok-chart][data-ok-type][data-ok-x-type][data-ok-curve][data-ok-legen
       [data-ok-data-labels]?[data-ok-start-angle]?[data-ok-end-angle]?[data-ok-dash-array]?
       [data-ok-track-width]?[data-ok-total]?[data-ok-total-label]?
       [data-ok-ready]?                                   (set once the chart is drawn)
+  div[data-ok-chart-toolbar][role=group][aria-label]?   (toolbar; first child)
+    button[type=button][data-ok-chart-tool="zoomIn|zoomOut|reset|pan"][aria-label][title][aria-pressed]?[disabled]?
+      › svg[data-ok-chart-tool-icon][aria-hidden] › path       (zoom tools: with zoom on an x axis)
+    button[type=button][data-ok-chart-tool="svg|png|csv"][aria-label][title] › "SVG" | "PNG" | "CSV"
+    span[data-ok-chart-status][role=status]                 (visually hidden; announces failed downloads)
   div[data-ok-chart-legend]                              (absent: one series, legend "none")
     button[type=button][data-ok-chart-legend-item][data-ok-color][aria-pressed]
-      span[data-ok-chart-legend-marker] + text
+      span[data-ok-chart-legend-marker] + text + span[data-ok-chart-legend-value]? (legendValues)
   div[data-ok-chart-plot][role=group][aria-roledescription=chart][aria-label][tabindex=0]
     svg[data-ok-chart-svg][aria-hidden][focusable=false][width][height][viewBox]
       defs › linearGradient[id][data-ok-color] › stop[data-ok-chart-stop]×2   (gradient areas)
@@ -72,6 +81,17 @@ figure[data-ok-chart][data-ok-type][data-ok-x-type][data-ok-curve][data-ok-legen
                    labels › text[data-ok-chart-data-label=outside] (values beside the first / last points)
       active cell: g[data-ok-chart-active] › rect[data-ok-chart-active-cell] (heatmap, treemap)
       sparkline:   [data-ok-sparkline] roots draw no grid or axes groups and no legend
+    Phase 4 shapes and overlays (ADR-0031):
+      candlestick: g[data-ok-chart-series] › (line[data-ok-chart-wick][data-ok-color] + rect[data-ok-chart-candle="up|down"][data-ok-color])×n
+      rangeBar, timeline: g[data-ok-chart-series] › rect[data-ok-chart-bar][rx][data-ok-color]? (timelines: horizontal, a date axis)
+      polarArea:   g[data-ok-chart-grid] › path[data-ok-chart-web] (rings); g[data-ok-chart-series] › path[data-ok-chart-slice][data-ok-color];
+                   g[data-ok-chart-axis=y] › text[data-ok-chart-tick] (last, over the slices)
+      annotations: g[data-ok-chart-annotation-layer] (before the data labels) ›
+                     g[data-ok-chart-annotation="x|y|point"][data-ok-color] ›
+                       line[data-ok-chart-annotation-line] | rect[data-ok-chart-annotation-band] | circle[data-ok-chart-annotation-marker]
+                       + rect[data-ok-chart-annotation-tag] + text[data-ok-chart-annotation-label]
+      selection:   g[data-ok-chart-brush] (before the active group) › rect[data-ok-chart-selection] + rect[data-ok-chart-handle]×2 (brush charts)
+      badges:      g[data-ok-chart-data-labels] › (rect[data-ok-chart-data-label-badge] + text[data-ok-chart-data-label=outside])×n
     data labels may also be text[data-ok-chart-data-label="plain"] (primary text on faint cells)
     div[data-ok-chart-tooltip][role=status][hidden]?
       div[data-ok-chart-tooltip-title] + div[data-ok-chart-tooltip-rows]
@@ -84,6 +104,11 @@ figure[data-ok-chart][data-ok-type][data-ok-x-type][data-ok-curve][data-ok-legen
            th[scope=col][rowspan=2] (single-value series)
       tr › th[scope=col][data-ok-part="min|q1|median|q3|max|low|high|y|z"] (one per value)
     tbody › tr › th[scope=row][data-ok-value]? + td[data-ok-value]?[data-ok-color]? (one per x value)
+      Candles: th[data-ok-part="open|high|low|close"]; range bars and timelines: "start|end"
+      (timeline cells: the date as text, ISO 8601 in data-ok-value)
+  ul[data-ok-chart-annotations]?                         (after the table; visually hidden once drawn)
+    li[data-ok-annotation="x|y|point"][data-ok-x]?[data-ok-x2]?[data-ok-y]?[data-ok-y2]?[data-ok-color]? › label text
+Root text attributes (phase 4): [data-ok-group]? [data-ok-brush-target]? [data-ok-color-ranges]?
 ```
 Colors: `data-ok-color` = `<palette>` or `<palette>-<lighter|light|main|dark|darker>` (allowlist).
 Default series order: `primary-dark`, `warning`, `info`, `error`, `success`, `warning-dark`,
@@ -127,7 +152,7 @@ Root: `data-ok-chart`. Unknown values fall back to the default.
 
 | React | HTML | Kind | Values | Default | Description |
 |---|---|---|---|---|---|
-| `type` | `data-ok-type="…"` | style | `line` `area` `bar` `scatter` `pie` `donut` `radialBar` `radar` `boxPlot` `heatmap` `treemap` `bubble` `rangeArea` `funnel` `slope` | `line` | Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel` or `slope`. Series may override it in line, area, bar, scatter, box plot, bubble and range area charts (mixed charts). |
+| `type` | `data-ok-type="…"` | style | `line` `area` `bar` `scatter` `pie` `donut` `radialBar` `radar` `boxPlot` `heatmap` `treemap` `bubble` `rangeArea` `funnel` `slope` `candlestick` `rangeBar` `timeline` `polarArea` | `line` | Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline` or `polarArea`. Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts). |
 | `xType` | `data-ok-x-type="…"` | style | `category` `datetime` `numeric` | `category` | X axis: `category` labels, `datetime` (ISO 8601 dates) or `numeric` values (scatter). |
 | `curve` | `data-ok-curve="…"` | style | `smooth` `straight` `stepline` | `smooth` | Line shape: `smooth`, `straight` or `stepline`. |
 | `legend` | `data-ok-legend="…"` | style | `top` `right` `bottom` `none` | `top` | Legend position: `top`, `right`, `bottom` or `none` (never shown for a single series). |
@@ -149,12 +174,29 @@ Root: `data-ok-chart`. Unknown values fall back to the default.
 | `sparkline` | `data-ok-sparkline` | flag | boolean | off | No axes, grid or legend: the chart fills its container (cards, table cells). Its height is the container's, at least `height` (default 40px). |
 | `boxUpperColor` | `data-ok-box-upper-color="…"` | style | `primary` `primary-lighter` `primary-light` `primary-main` `primary-dark` `primary-darker` `secondary` `secondary-lighter` `secondary-light` `secondary-main` `secondary-dark` `secondary-darker` `info` `info-lighter` `info-light` `info-main` `info-dark` `info-darker` `success` `success-lighter` `success-light` `success-main` `success-dark` `success-darker` `warning` `warning-lighter` `warning-light` `warning-main` `warning-dark` `warning-darker` `error` `error-lighter` `error-light` `error-main` `error-dark` `error-darker` | — | Box plots: color of the box above the median (default the series color). |
 | `boxLowerColor` | `data-ok-box-lower-color="…"` | style | `primary` `primary-lighter` `primary-light` `primary-main` `primary-dark` `primary-darker` `secondary` `secondary-lighter` `secondary-light` `secondary-main` `secondary-dark` `secondary-darker` `info` `info-lighter` `info-light` `info-main` `info-dark` `info-darker` `success` `success-lighter` `success-light` `success-main` `success-dark` `success-darker` `warning` `warning-lighter` `warning-light` `warning-main` `warning-dark` `warning-darker` `error` `error-lighter` `error-light` `error-main` `error-dark` `error-darker` | — | Box plots: color of the box below the median (default a lighter tone of the series color). |
+| `candleUpColor` | `data-ok-candle-up-color="…"` | style | `primary` `primary-lighter` `primary-light` `primary-main` `primary-dark` `primary-darker` `secondary` `secondary-lighter` `secondary-light` `secondary-main` `secondary-dark` `secondary-darker` `info` `info-lighter` `info-light` `info-main` `info-dark` `info-darker` `success` `success-lighter` `success-light` `success-main` `success-dark` `success-darker` `warning` `warning-lighter` `warning-light` `warning-main` `warning-dark` `warning-darker` `error` `error-lighter` `error-light` `error-main` `error-dark` `error-darker` | — | Candlesticks: color of rising candles (default `success`). |
+| `candleDownColor` | `data-ok-candle-down-color="…"` | style | `primary` `primary-lighter` `primary-light` `primary-main` `primary-dark` `primary-darker` `secondary` `secondary-lighter` `secondary-light` `secondary-main` `secondary-dark` `secondary-darker` `info` `info-lighter` `info-light` `info-main` `info-dark` `info-darker` `success` `success-lighter` `success-light` `success-main` `success-dark` `success-darker` `warning` `warning-lighter` `warning-light` `warning-main` `warning-dark` `warning-darker` `error` `error-lighter` `error-light` `error-main` `error-dark` `error-darker` | — | Candlesticks: color of falling candles (default `error`). |
+| `donutSize` | `data-ok-donut-size="…"` | number | number | — | Donut hole in % of the radius (10 to 95; default 72). |
+| `dataLabelBackground` | `data-ok-data-label-background` | flag | boolean | off | Data labels above points sit on a badge (a paper box with a border). |
+| `legendValues` | `data-ok-legend-values` | flag | boolean | off | Legend items show a value: the slice's or ring's, or the series' last one. |
+| `zoom` | `data-ok-zoom` | flag | boolean | off | Zoom and pan the x axis: drag to select (mouse), pinch or drag (touch), Ctrl + wheel, keys `+` `-` `0` and Shift + arrows. |
+| `toolbar` | `data-ok-toolbar` | flag | boolean | off | A toolbar with zoom buttons (with `zoom`) and downloads (SVG, PNG, CSV). |
+| `animations` | `data-ok-animations` | flag | boolean | off | Series grow in when first drawn and move to new values on updates (never with reduced motion). |
 | `hiddenSeries` | `aria-pressed` · event `ok:chart:toggle` | state | — | — | Indexes of the series hidden through the legend (`aria-pressed="false"` on their buttons); categories in pie, donut and radial bar charts. |
+| `zoomRange` | `instance.zoomRange` · event `ok:chart:zoom` | state | — | — | The visible window of the x axis, `{ min, max }` (category indexes or x values), or `null`. |
 <!-- /options:chart -->
 
 Text attributes (React prop ↔ HTML attribute, written by React too): `yTitle` ↔
 `data-ok-y-title`, `valuePrefix` ↔ `data-ok-value-prefix`, `valueSuffix` ↔ `data-ok-value-suffix`,
-`locale` ↔ `data-ok-locale` (default `en-US`). Always set as text (`textContent`), never markup.
+`locale` ↔ `data-ok-locale` (default `en-US`), `group` ↔ `data-ok-group`, `brushTarget` ↔
+`data-ok-brush-target`, `colorRanges` ↔ `data-ok-color-ranges` (`"from to color [name]; …"`, core
+`chartTextAttributes` / `parseChartColorRanges`). Always set as text (`textContent`), never markup.
+
+Phase 4 content (ADR-0031): `annotations` (`{ axis: "x" | "y" | "point", x?, x2?, y?, y2?, label?,
+color? }[]`) ↔ `ul[data-ok-chart-annotations] › li` (x: a category label, an ISO date between date
+categories, or a number; invalid entries dropped); `dataLabelFormatter(value, series, index)` ↔
+`setFormatters({ dataLabel })` (pie / donut get the percentage); `localeText` (part labels, tool
+names, `toolbar`, `exportFailed`) ↔ the part headers of the table + `setLocaleText(text)`.
 
 `totalLabel` ↔ `data-ok-total-label` (donut / radial bar center; no total without it).
 
@@ -210,7 +252,27 @@ plots list the five values, range areas `low – high`, bubbles the value and a 
   an active item that no longer exists shows no tooltip. HTML API updates rewrite the data table in
   place (rows and cells reused; the caption and the first header's text kept), so the accessible
   view always matches the drawing.
-- No entry animation (phase 4 adds animations, with `prefers-reduced-motion`).
+- Animations (`animations`, opt-in): CSS only. On first draw the series group reveals from the
+  left (`clip-path`) or grows from the center (polar charts); later updates transition `d`, `x`,
+  `y`, `width`, `height`, `cx`, `cy`, `r` where the engine animates them (elements keep their
+  identity). Nothing moves under `prefers-reduced-motion: reduce`.
+- Zoom (`zoom`, vertical charts with an x axis: line, area, column, scatter, bubble, box plot,
+  candlestick, range area, range bar, mixed): a window of category indexes (whole numbers, at least
+  two categories) or x values (numeric axes); the value axis keeps the whole data's scale. Mouse drag
+  selects (a `selection` preview), Ctrl / ⌘ + wheel zooms around the pointer, touch drags pan a
+  zoomed chart, two fingers pinch, the pan tool makes every drag pan. Keys: `+` / `=`, `-`, `0`,
+  Shift + Left / Right. Escape hides the tooltip, then resets. Gestures: core
+  `createChartGestures` (reports ranges; owns no state). An uncontrolled zoom is kept with the axis
+  it was set on: a range that reached the last x value follows new points (live tails).
+- Groups (`group`): charts share the active category (by index) and the zoom; changes received from
+  the group fire no `ok:chart:active` and don't spread again. Brush charts (`brushTarget`): a
+  selection with handles over the whole axis (or the target's zoom); a drag inside moves it, its
+  edges resize it, elsewhere a new one is drawn; it zooms the target and its group. Links: core
+  `linkChart` (a module-scoped registry: React links with React, the HTML runtime with itself).
+- Export (`toolbar` buttons, `exportChart`): SVG (computed paints inlined, the paper as
+  background), PNG (that SVG on a 2× canvas), CSV (the data table: combined headers "Series
+  (Part)", raw `data-ok-value`s, a BOM; text starting with `= + - @` is prefixed with `'`). Only
+  during a user gesture (`navigator.userActivation`); failures are announced in the toolbar status.
 - Runtime needed: yes (`chart`). Without JavaScript the table stays visible.
 
 ## Responsive
@@ -227,7 +289,10 @@ plots list the five values, range areas `low – high`, bubbles the value and a 
 | Left / Up arrow | Previous category (or point) |
 | Arrows (heatmap, treemap) | The nearest cell in the arrow's direction |
 | Home / End | First / last (cells: top-left / bottom-right) |
-| Escape | Hides the tooltip |
+| Escape | Hides the tooltip; pressed again, resets the zoom (zoom and brush charts) |
+| `+` / `=`, `-` | Zoom in / out around the middle (zoom and brush charts) |
+| Shift + Left / Right | Pans the zoomed range by one category (a tenth on numeric axes) |
+| `0` | Resets the zoom |
 
 ## Accessibility
 - The plot is `role=group` + `aria-roledescription=chart`, named by `label` / the caption. The SVG is
@@ -245,17 +310,29 @@ plots list the five values, range areas `low – high`, bubbles the value and a 
 - Tables of several values per point use a second header row (`colgroup` / `col` scopes), so
   screen readers announce "Scores, Q1" for each cell.
 - Sparklines keep the tooltip, the keyboard and the data table; only the axes and legend go.
+- Phase 4: toolbar buttons are named (`aria-label`, localizable; downloads show the format as text,
+  which is part of the name), 32px targets, `aria-pressed` on the pan tool, `disabled` zoom-out /
+  reset while unzoomed; a visually hidden `role=status` announces failed downloads. Annotations are
+  a visually hidden list after the table. Zoom and brush work from the keyboard (no drag needed,
+  WCAG 2.5.7). Annotation tags and candles are brand colors in the `aria-hidden` SVG (ADR-0014).
+- Visually hidden tables are anchored at the bottom of the root and grow upward, so long tables never
+  add page scroll (they did before phase 4: the page grew by the table's height).
 
 ## Events / API
 - HTML: `ok:chart:toggle` (cancelable, detail `{ index, hidden, hiddenSeries }`),
-  `ok:chart:active` (detail `{ active: { kind: "index", index } | { kind: "mark", mark } | null }`).
+  `ok:chart:active` (detail `{ active: { kind: "index", index } | { kind: "mark", mark } | null }`),
+  `ok:chart:zoom` (detail `{ range: { min, max } | null, reason: "user" | "group" | "brush" }`;
+  cancelable for `user`).
 - Instance: `{ hiddenSeries, setHiddenSeries(list), active, setActive(active), setFormatters(f),
-  refresh(), updateSeries(series, categories?), appendData(data, { categories?, limit? }) }`;
+  refresh(), updateSeries(series, categories?), appendData(data, { categories?, limit? }),
+  zoomRange, setZoomRange(range), exportChart(format), setLocaleText(text) }`;
   methods emit no events. `updateSeries` replaces the data (the current categories unless given);
   `appendData([{ data: [...] }, …])` appends points per series in order, `categories` adds theirs,
   `limit` keeps the last n (a sliding window). `refresh()` reads the table again.
 - React: `onHiddenSeriesChange(hidden)`, `onActiveChange(active)`; `hiddenSeries` (controlled) /
-  `defaultHiddenSeries`; `ref` → the `figure`.
+  `defaultHiddenSeries`; `zoomRange` / `defaultZoomRange` / `onZoomRangeChange(range, reason)` (also
+  for group and brush changes, so controlled charts follow); `ref` → the `figure` (core
+  `exportChart(figure, format)` for your own buttons).
 
 ## API mapping (ADR-0015, upstream `react-apexcharts` + Minimal's `Chart` / `useChart`)
 | Upstream | Owlky |
@@ -266,16 +343,30 @@ plots list the five values, range areas `low – high`, bubbles the value and a 
 | `chart.sparkline.enabled` | renamed `sparkline` |
 | `plotOptions.boxPlot.colors.upper` / `.lower` | renamed `boxUpperColor`, `boxLowerColor` |
 | `plotOptions.bubble.zScaling` / `minBubbleRadius` / `maxBubbleRadius` / `minZ` / `maxZ` | not applicable: radius by √z from 4px to a tenth of the plot (fixed by the design) |
-| `plotOptions.heatmap.colorScale.ranges`, `.enableShades`, `.shadeIntensity`; `plotOptions.treemap.distributed`, `.enableShades` | shades always on; `distributed` → point `color`; color ranges deferred to phase 4 |
+| `plotOptions.heatmap.colorScale.ranges`, `.enableShades`, `.shadeIntensity`; `plotOptions.treemap.distributed`, `.enableShades` | `colorRanges` (heatmaps and treemaps; full strength); shades always on otherwise; `distributed` → point `color` |
+| `candlestick`, `plotOptions.candlestick.colors.upward` / `.downward` | kept `candlestick`; renamed `candleUpColor`, `candleDownColor` |
+| `rangeBar` (+ `plotOptions.bar.horizontal`) | kept; timelines (rangeBar + datetime) renamed `type="timeline"` |
+| `polarArea` | kept |
+| `chart.zoom.enabled` / `.type: "x"` / `allowMouseWheelZoom: "auto"` / `resetControl` | renamed `zoom` (x only; Ctrl + wheel; Escape and `0` reset); `zoom.type` y / xy, `autoScaleYaxis`, `zoomedArea`: not applicable (fixed by the design) |
+| `chart.toolbar.show` / `.tools` / `.export` | renamed `toolbar` (zoom tools with `zoom`, downloads always); custom tools: not applicable |
+| `chart.group`, `chart.id` | renamed `group`; the id is the element `id` |
+| `chart.brush.enabled` / `.target`, `chart.selection` | renamed `brushTarget` (the target's id); the selection is the target's zoom |
+| `annotations.xaxis` / `.yaxis` / `.points` (`x`, `x2`, `y`, `y2`, `label.text`, `borderColor`) | renamed `annotations` (`axis`, `x`, `x2`, `y`, `y2`, `label`, `color`); `addXaxisAnnotation`… : not applicable (React: new props; HTML: edit the list) |
+| `chart.animations.enabled` / `.dynamicAnimation` | renamed `animations` (entry + updates; reduced motion off) |
+| `dataLabels.formatter`, `dataLabels.background.enabled` | renamed `dataLabelFormatter` (HTML `setFormatters({ dataLabel })`), `dataLabelBackground` |
+| `legend.formatter` (series values) | renamed `legendValues` |
+| `exportToSVG` / `dataURI` / CSV export | renamed `exportChart(format)` (instance; core function for React) |
+| `zoomX(min, max)`, `resetSeries` (zoom) | renamed `setZoomRange(range)` |
 | `updateSeries(newSeries)`, `appendData(newData)` | kept (HTML instance; React: new props), plus `appendData` options `categories` and `limit`; `appendSeries`, `updateOptions`: not applicable (HTML: add a table column / set attributes) |
 | `toggleSeries`, `resetSeries` | renamed `setHiddenSeries(list)` |
 | `series: number[]` + `labels` (pie, donut, radialBar) | renamed: `series[0].data` + `categories` (one data model for every type) |
-| `options.dataLabels.enabled` | renamed `dataLabels` (formatter / style: deferred to phase 4) |
+| `options.dataLabels.enabled` | renamed `dataLabels` |
 | `options.plotOptions.pie.startAngle` / `.endAngle`, `options.plotOptions.radialBar.startAngle` / `.endAngle` | renamed `startAngle`, `endAngle` |
 | `options.plotOptions.pie.donut.labels.total.label` / `.formatter`, `options.plotOptions.radialBar.dataLabels.total` | renamed `totalLabel`, `total` |
 | `options.plotOptions.radialBar.track.strokeWidth` | renamed `trackWidth` (%) |
 | `options.stroke.dashArray` | renamed `dashArray` (lines, radar, radial bars) |
-| `options.plotOptions.pie.donut.size`, `.radialBar.hollow.size`, `.radar.polygons` | not applicable: fixed by the design (72 % hole, ring sizes from the radius, divider web) |
+| `options.plotOptions.pie.donut.size` | renamed `donutSize` (%, 10–95, default 72) |
+| `.radialBar.hollow.size`, `.radar.polygons` | not applicable: fixed by the design (ring sizes from the radius, divider web) |
 | `series` | kept |
 | `height` | kept (px) |
 | `width` | not applicable: the chart takes its container's width |
@@ -291,7 +382,6 @@ plots list the five values, range areas `low – high`, bubbles the value and a 
 | `options.yaxis.labels.formatter`, `options.tooltip.y.formatter` | renamed `valueFormatter` (+ `valuePrefix` / `valueSuffix`) |
 | `options.xaxis.labels.formatter` | renamed `labelFormatter` |
 | `options.chart.events.legendClick` / `dataPointMouseEnter` | `onHiddenSeriesChange`, `onActiveChange` |
-| `options.chart.animations`, `zoom`, `toolbar`, `annotations`, `brush`, `options.chart.id` | deferred to phase 4 |
 | `options.theme`, `options.chart.fontFamily`, `sx` | not applicable: tokens and `data-ok-theme` |
 
 ## Parity notes
@@ -303,5 +393,10 @@ plots list the five values, range areas `low – high`, bubbles the value and a 
 - Circular charts write `data-ok-color` on every value cell (slice colors), React and HTML alike.
 - Sparklines: React sets `--_ok-chart-height` in the plot's `style`, HTML through CSSOM (parity
   ignores `style`).
+- Phase 4 stories: Candlestick, Range bar, Timeline, Polar area, Zoom and export, Synchronized, Brush,
+  Annotations, Data labels, Donut with values, Heatmap color ranges, Horizontal box plot, Localized
+  labels, Animations. Synchronized and Brush charts carry fixed `id`s (the same in React and HTML).
+  The toolbar, legend values and the annotation list are rendered by React and built by the runtime
+  (the list is authored HTML); `zoomRange` is state (no attribute).
 - Story "Live data": React keeps the points in state, the HTML page script calls `appendData` /
   `updateSeries`; both start from the same data and add the same points, so they stay identical.

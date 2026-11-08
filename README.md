@@ -20,7 +20,7 @@ consistent interface without locking you into one way of building it.
 
 > **Status:** Owlky is in pre-release (`0.x`) and not published to npm yet. The design tokens,
 > theming and about 40 components are ready, from buttons and form controls to overlays,
-> navigation and a data grid. The data grid, date pickers and charts are being completed in
+> navigation and a data grid. The data grid and date pickers are being completed in
 > phases; see [the roadmap](docs/roadmap.md).
 
 ## How it works
