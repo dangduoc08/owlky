@@ -457,6 +457,13 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
   anchored at the root's bottom (`inset-block-end: 0`): anchored at the top, a long hidden table
   added its whole height to the page's scroll height. Weekly time ticks start on Mondays, so panning
   a date axis by one category can keep every label: e2e compares the drawn line instead.
+- Data grid charts integration: core `gridChartOptions(model, data)` is the only mapping from the
+  chart model to the Chart's options (React spreads it on `<Chart>`, HTML writes it with
+  `chartAttributes` and removes the other option attributes), and the HTML grid feeds data through
+  the chart instance's `updateSeries` (it writes the table itself only without the chart runtime).
+  The chart rewrites table cells in place, so tests read cell texts, not `tr.textContent`
+  (whitespace of the snippet stays). Snippets of pivoted examples hold the unpivoted rows +
+  `data-ok-pivot-active`, but the pivoted chart's table and panel (render React twice).
 - Date pickers (ADR-0022): field sections are `contenteditable` spinbuttons whose text only the owner
   writes — core `createFieldController` cancels `beforeinput` and restores IME text. Browsers keep
   the selection inside the focused editable section, so select-all is `data-ok-all-selected` on the

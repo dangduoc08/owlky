@@ -209,6 +209,56 @@ export const phase6Stories: Record<string, ReactGroup[]> = {
         />
       ),
     },
+    {
+      title: "Pivot chart",
+      content: (
+        <DataGrid
+          id="grid-charts-pivot"
+          aria-label="Revenue by region and product"
+          className="sb-grid-wide"
+          rows={SALES}
+          columns={salesColumns}
+          showToolbar
+          chartsIntegration
+          initialState={{
+            pivoting: {
+              active: true,
+              model: {
+                rows: [{ field: "region" }],
+                columns: [{ field: "product" }],
+                values: [{ field: "revenue", aggFunc: "sum" }],
+              },
+            },
+            chartsIntegration: {
+              model: { type: "column", values: ["revenue"], stacked: true, legend: "bottom" },
+            },
+          }}
+          hideFooter
+        />
+      ),
+    },
+    {
+      title: "Donut chart",
+      content: (
+        <DataGrid
+          id="grid-charts-donut"
+          aria-label="Units by product"
+          className="sb-grid-wide"
+          rows={SALES}
+          columns={salesColumns}
+          showToolbar
+          chartsIntegration
+          initialState={{
+            rowGrouping: { model: ["product"] },
+            aggregation: { model: { units: "sum" } },
+            chartsIntegration: {
+              model: { type: "donut", values: ["units"], itemLabel: "value", legend: "right" },
+            },
+          }}
+          hideFooter
+        />
+      ),
+    },
   ],
 };
 
@@ -219,5 +269,9 @@ export const PHASE6_FILES = {
   ],
   pivot: [["Pivoting", "group"]],
   cells: [["Cell selection, clipboard and header filters", "group"]],
-  charts: [["Charts integration", "group"]],
+  charts: [
+    ["Charts integration", "group"],
+    ["Pivot chart", "pivot"],
+    ["Donut chart", "donut"],
+  ],
 } as const;

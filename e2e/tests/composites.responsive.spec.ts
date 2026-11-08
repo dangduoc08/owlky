@@ -54,6 +54,7 @@ export const STORIES: [component: string, story: string][] = [
   ["datagrid", "column-groups"],
   ["datagrid", "list-view"],
   ["datagrid", "lazy-loading"],
+  ["datagrid", "charts"],
 ];
 
 interface Box {
