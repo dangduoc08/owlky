@@ -2098,6 +2098,8 @@ export const motionBorderShapes = ["rounded", "circle"] as const;
 export type MotionBorderShape = (typeof motionBorderShapes)[number];
 export const motionBorderColors = ["multi", "inherit", ...paletteColorNames] as const;
 export type MotionBorderColor = (typeof motionBorderColors)[number];
+export const motionBorderSecondaryColors = ["inherit", ...paletteColorNames] as const;
+export type MotionBorderSecondaryColor = (typeof motionBorderSecondaryColors)[number];
 
 export const motionBorderOptions = defineOptions("motion-border", "data-ok-motion-border", {
   shape: style("data-ok-shape", motionBorderShapes, "rounded", "`rounded` corners or a `circle`."),
@@ -2117,8 +2119,6 @@ export const motionBorderOptions = defineOptions("motion-border", "data-ok-motio
   width: number("data-ok-width", 2, "Border width in pixels.", { min: 0 }),
   duration: number(
     "data-ok-duration",
-export const motionBorderSecondaryColors = ["inherit", ...paletteColorNames] as const;
-export type MotionBorderSecondaryColor = (typeof motionBorderSecondaryColors)[number];
     undefined,
     "One turn, in milliseconds (default about 5 s).",
     {
@@ -2134,6 +2134,7 @@ export type MotionBorderSecondaryColor = (typeof motionBorderSecondaryColors)[nu
 export interface MotionBorderAnatomyOptions {
   shape?: MotionBorderShape | undefined;
   color?: MotionBorderColor | undefined;
+  secondaryColor?: MotionBorderSecondaryColor | undefined;
   width?: number | undefined;
   duration?: number | undefined;
   paused?: boolean | undefined;
@@ -2146,7 +2147,6 @@ export const motionBorderAttributes = (options: MotionBorderAnatomyOptions = {})
 // --- Data grid (ADR-0020) ---------------------------------------------------------------------
 
 export const dataGridOptions = defineOptions("data-grid", "data-ok-data-grid", {
-  secondaryColor?: MotionBorderSecondaryColor | undefined;
   density: style(
     "data-ok-density",
     gridDensities,
