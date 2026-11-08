@@ -20,9 +20,13 @@ viewport.
 Writing tests:
 - Behavior lives in `core` → test it there in both native and fallback mode (`forceFallback`).
 - React/HTML tests assert user-visible behavior (roles, focus, keyboard), not implementation.
-- New components get a parity entry in `e2e/tests/parity.spec.ts` with identically named React and
-  HTML stories. The file was removed with the sample components (ADR-0011): restore it with the
-  first component from `git show bd5fb2d:e2e/tests/parity.spec.ts`.
-- Foundations stories need no test registration: `a11y.spec.ts`, `visual.spec.ts` and the
-  small-screen check in `foundations.spec.ts` read every `foundations-*` story id from the built
-  Storybook `index.json` (`storyIds()` in `e2e/tests/helpers.ts`).
+- New components get a parity entry in `e2e/tests/parity.spec.ts` (the same story rendered as React
+  and as HTML, ids `components-<name>--<story>@react|@html`, ADR-0018) and an entry in
+  `options-parity.spec.ts` (each Controls option set to a non-default value gives the same DOM in
+  both, ADR-0015). Charts compare their SVG trees in `chart.spec.ts` (parity skips `<svg>`).
+- Stories need no test registration: `a11y.spec.ts` and `visual.spec.ts` read every story id from
+  the built Storybook `index.json` (`storyIds()` in `e2e/tests/helpers.ts`, once per framework for
+  component stories); `foundations.spec.ts` runs the small-screen check on `foundations-*` stories.
+  Docs pages are registered by hand (`GUIDES`, `OPTION_TABLES` in `foundations.spec.ts`).
+- Parallel worktrees: `PORT=4322 pnpm test:e2e` serves each build on its own port (default 4321).
+  Never run two e2e runs in one working tree.

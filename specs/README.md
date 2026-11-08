@@ -1,8 +1,8 @@
 # Component specifications
 
 The contract both implementations follow. Write or update the spec **before** code.
-Specs live in `specs/components/<name>.md` (the folder is created with the first spec; the
-previous Button/Switch/Dialog specs are at commit `bd5fb2d`, ADR-0011).
+Specs live in `specs/components/<name>.md`, one per component family (`motion.md` also covers
+CountUp and MotionBorder, `date-picker.md` the fields and calendars, `table.md` TablePagination).
 
 Template (copy for a new component):
 
@@ -16,7 +16,9 @@ Reference URL: <the exact URL given to `/component`>
 
 ## Anatomy            element tree with data-ok-* attributes (identical in React and HTML)
 
-## Options            attribute ↔ React prop ↔ default
+## Options            generated: <!-- options:<schema> --> … <!-- /options:<schema> -->
+                     (`pnpm specs:options`, AGENTS.md checklist step 1); props and
+                     attributes outside the schema below the markers
 
 ## States             native/ARIA attributes that drive styling
 

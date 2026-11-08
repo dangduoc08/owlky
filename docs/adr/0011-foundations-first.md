@@ -1,6 +1,7 @@
 # ADR-0011: Foundations first; sample components removed
 
-**Status:** Accepted (2026-11-04)
+**Status:** Accepted (2026-11-04) — "AA wins" superseded by ADR-0014; the Storybook layout by ADR-0018
+and ADR-0019
 
 ## Context
 Phase 2 shipped three pattern components (Button, Switch, Dialog) to prove the architecture.

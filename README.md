@@ -19,9 +19,9 @@ consistent interface without locking you into one way of building it.
   component is about 78 kB, and the npm packages let you load only what you use.
 
 > **Status:** Owlky is in pre-release (`0.x`) and not published to npm yet. The design tokens,
-> theming and the first components are ready: Accordion, Alert, Button and the button family,
-> Drawer, Pagination, Scrollbar, Sortable and Table. More components follow in a planned order;
-> see [the roadmap](docs/roadmap.md).
+> theming and about 40 components are ready, from buttons and form controls to overlays,
+> navigation and a data grid. The data grid, date pickers and charts are being completed in
+> phases; see [the roadmap](docs/roadmap.md).
 
 ## How it works
 

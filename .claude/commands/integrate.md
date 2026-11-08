@@ -1,6 +1,6 @@
 ---
 name: integrate
-description: Integrate newly available components into the existing ones (backward-compatible updates) — find every stand-in, deferred story or "needs <Name>" note waiting for a component that now exists, re-capture each dependent's section from its spec's Reference URL, report, then implement the approved items through /component's Update steps. $ARGUMENTS is optional component names or reference URLs (several run in parallel agents); without it every existing component is checked.
+description: Integrate newly available components into the existing ones (backward-compatible updates) — find every stand-in, deferred story or "needs <Name>" note waiting for a component that now exists, re-capture each dependent's section from its spec's Reference URL, report, then implement the approved items through /component's Update steps. $ARGUMENTS is optional component names or reference URLs (several run in parallel agents); without it every open wait on an existing component is found and integrated.
 ---
 
 # Mission
@@ -36,10 +36,14 @@ This command orchestrates; it doesn't duplicate `/component`. Capture and implem
      the URL → component list before step 2.
    - Given: integrate only what that component unlocks. If it doesn't exist yet (no
      `specs/components/<name>.md` and no `packages/react/src/<name>/`), say so and stop.
-   - Empty: every existing component (one per `specs/components/*.md`) is a candidate.
-   - **Two or more components** after resolving (`/integrate tabs chip popover`, or several URLs,
-     or a URL that maps to several specs): run steps 2–5 here for all of them
-     (one combined report), then implement in [Multi-component mode](#multi-component-mode-parallel-agents).
+   - **Empty (`/integrate` alone): discover and integrate everything.** Every existing component
+     (one per `specs/components/*.md`) is a candidate; step 3 keeps those with at least one open
+     wait. Don't ask which ones: the resulting components are the scope (list them before step 2,
+     with the waits found). One component with waits → continue here; two or more → as below.
+   - **Two or more components** after resolving (`/integrate tabs chip popover`, several URLs,
+     a URL that maps to several specs, or an empty `$ARGUMENTS` that found waits on several
+     components): run steps 2–5 here for all of them (one combined report), then implement in
+     [Multi-component mode](#multi-component-mode-parallel-agents).
 
 2. **Read the project rules.** `CLAUDE.md`, `AGENTS.md` (gotchas: "General rule for any part the
    library doesn't have yet", "A new component closes every wait on it"), `docs/roadmap.md`.
@@ -111,8 +115,8 @@ O2 agent prompt, O3 merge, O4 after the last merge), with these differences:
   at the level from the report, and reply with the "Integrations done" section for its items.
 - The orchestrator removes the closed rows from `docs/roadmap.md` → "Pending integrations" after
   the merges (one commit), so agents don't conflict on that table.
-- Invoking `/integrate` with several names is the approval for branch commits and local merges;
-  never push.
+- Invoking `/integrate` with several names, or with no argument, is the approval for branch
+  commits and local merges; never push.
 
 ## Report Format
 

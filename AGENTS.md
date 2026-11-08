@@ -30,7 +30,7 @@ Read this first (humans and AI agents). Architecture: `docs/architecture.md`. De
 | Event                 | `ok:<component>:<event>`              | `ok:dialog:beforeclose`        |
 | Public CSS variable   | `--ok-<group>-<name>`                 | `--ok-palette-primary-main`    |
 | Private CSS variable  | `--_ok-<name>` (component-internal)   | `--_ok-main`                   |
-| Files                 | kebab-case; one component per folder  | `dialog-controller.ts`         |
+| Files                 | kebab-case; one component per folder  | `modal-controller.ts`          |
 
 ## Adding a component (checklist)
 
@@ -73,10 +73,10 @@ Read this first (humans and AI agents). Architecture: `docs/architecture.md`. De
 autodocs page — a **usage guide** that never renders the stories again: what the tokens are,
 their names, and how to use them in **HTML and React** (CSS variables, component options,
 Tailwind, JavaScript, themes, accessibility). Each page: `<name>-docs.tsx` with its sections and
-live previews, built with `foundations/shared/guide.tsx` (`GuideDocs`: prose in `Markdown`, a
+live previews, built with `apps/storybook/src/helpers/guide.tsx` (`GuideDocs`: prose in `Markdown`, a
 preview, one code block with HTML | React tabs). The Introduction (MDX) uses `GuideSections`.
 `e2e/tests/foundations.spec.ts` (`GUIDES`) checks that every `--ok-*` variable and token utility in
-the examples exists, axe in light and dark, and phone width — add new guide pages there. Components have no docs pages (see checklist step 6). MDX has no GFM: use lists, not tables. Use Storybook's default layout and Controls for anything adjustable; don't build
+the examples exists, axe in light and dark, and phone width — add new guide pages there. Component docs pages use the same helpers (checklist step 6). MDX has no GFM: use lists, not tables. Use Storybook's default layout and Controls for anything adjustable; don't build
 page chrome (headers, tables of contents, custom navigation). Read every value from
 `@owlky/tokens` or `--ok-*` variables — never hard-code a token value. The reference
 site is for content only; brand colors follow it, neutral text must meet WCAG AA (ADR-0014). E2E a11y, visual
@@ -109,7 +109,7 @@ the style of the Google and Microsoft developer documentation guides. Model: Fou
   support and accessibility. The README mirrors the Introduction; GitHub Markdown allows tables,
   Storybook MDX doesn't.
 - **Code in guides:** Storybook's `Source` block (highlighting and a Copy button) inside the
-  HTML | React tabs of `foundations/shared/guide.tsx`; previews that are columns must not wrap.
+  HTML | React tabs of `helpers/guide.tsx`; previews that are columns must not wrap.
 
 Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine there.
 

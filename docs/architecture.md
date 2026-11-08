@@ -22,22 +22,25 @@ Decisions and their reasons are in [`adr/`](adr/README.md); this page is the map
 
 ## One component, end to end
 
-The removed Dialog (ADR-0011, `git show bd5fb2d:<path>`) is the reference for how a component
-spans the packages:
+Button is the model for how a component spans the packages:
 
 | Piece | Where | What |
 |---|---|---|
 | Spec | `specs/components/<name>.md` | Anatomy, options, keyboard, ARIA, events |
-| Anatomy | `core/src/anatomy/anatomy.ts` | `<name>Attributes(options)` |
+| Anatomy | `core/src/anatomy/anatomy.ts` | Option schema `<name>Options` (drives React props, HTML attributes, Controls, parity; ADR-0015) + `<name>Attributes(options)` |
 | Behavior | `core/src/<name>/` | Controller shared by React and HTML (reports intent, owns no state) |
 | Styles | `styles/src/components/<name>.css` | `:where([data-ok-<name>…])` in `@layer components` |
 | React | `react/src/<name>/<name>.tsx` | Component(s); state → controller |
 | HTML | `html/src/components/<name>/` | Definition (if it needs JS) + `examples/*.html` snippets |
-| Docs | `apps/storybook/src/components/<name>/` | React + HTML stories, HTML docs page |
+| Docs | `apps/storybook/src/components/<name>/` | One story per reference section, framework picked in the toolbar (ADR-0018); usage guide page `<name>-docs.tsx` (ADR-0019) |
 | E2E | `e2e/tests/*.spec.ts` | Same tests for both implementations + parity |
 
-Foundations (colors, typography, shadows, grid, icons) are documented in
+Foundations (colors, typography, shadows, grid, icons, settings) are documented in
 `apps/storybook/src/foundations/`, generated from `@owlky/tokens`.
+
+Third-party runtime code stays behind its own entry point so the default bundles never carry it:
+Tiptap is a `core` dependency reached only through `@owlky/core/editor` (ADR-0023). The Chart's
+SVG engine is our own code in `core/src/chart/` and ships in the default bundles (ADR-0024).
 
 ## Runtime lifecycle (HTML)
 
@@ -65,3 +68,4 @@ counter (ADR-0007). React and HTML overlays therefore stack and lock scroll corr
 | React                         | `@owlky/react` + `styles`             | `@owlky/styles/owlky.css`    | components                                                                        |
 | Tailwind v4 users             | + `@import "@owlky/styles/theme.css"` | utilities mapped to tokens                         | —                                                                                 |
 | Standalone CSS-only component | none                                             | `tokens.css` + `components/<name>.css`             | none                                                                              |
+| Editor (opt-in, ADR-0023)     | as above                                         | included in `owlky.css`                            | CDN: `owlky-editor.js` after `owlky.js`; npm: `import "@owlky/html/editor"` or `createEditor()`; React: `Editor` (tree-shaken) |

@@ -6,7 +6,7 @@ ADR that supersedes the old one — don't rewrite history.
 | #                                              | Decision                                                                  | Status   |
 | ---------------------------------------------- | ------------------------------------------------------------------------- | -------- |
 | [0001](0001-monorepo-and-packages.md)          | Monorepo with five packages and strict boundaries                         | Accepted |
-| [0002](0002-design-tokens.md)                  | TypeScript tokens → CSS variables, AA-checked                             | Accepted |
+| [0002](0002-design-tokens.md)                  | TypeScript tokens → CSS variables, AA-checked                             | Accepted (brand-color contrast rules superseded by 0014) |
 | [0003](0003-styling-architecture.md)           | `data-ok-*` anatomy, zero-specificity CSS in cascade layers, prebuilt CSS | Accepted |
 | [0004](0004-shared-core.md)                    | Shared framework-free core for behavior and anatomy                       | Accepted |
 | [0005](0005-html-runtime.md)                   | HTML Core Runtime: registry, delegation, lifecycle, idempotency           | Accepted |
@@ -15,7 +15,7 @@ ADR that supersedes the old one — don't rewrite history.
 | [0008](0008-framework-independence.md)         | Framework independence, enforced                                          | Accepted |
 | [0009](0009-build-and-publishing.md)           | Build, distribution and publishing                                        | Accepted (publishing trigger superseded by 0012) |
 | [0010](0010-testing-strategy.md)               | Testing strategy                                                          | Accepted |
-| [0011](0011-foundations-first.md)             | Foundations first; sample components removed (references in git)        | Accepted |
+| [0011](0011-foundations-first.md)             | Foundations first; sample components removed (references in git)        | Accepted ("AA wins" superseded by 0014, Storybook layout by 0018 and 0019) |
 | [0012](0012-release-by-tag.md)                | Release only from `release/v*` tags on main                              | Accepted |
 | [0013](0013-translucent-colors-via-channels.md) | Translucent colors via RGB channel tokens (no `color-mix()` in components) | Accepted |
 | [0014](0014-brand-colors-follow-reference.md) | Brand colors follow the reference look (white on fills, `main` text) | Accepted |
