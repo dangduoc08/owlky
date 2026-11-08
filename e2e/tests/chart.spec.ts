@@ -11,6 +11,12 @@ const STORIES = [
   "bar",
   "mixed",
   "scatter",
+  "pie",
+  "donut",
+  "radial-bar",
+  "radar",
+  "semi-circle-gauge",
+  "stroked-gauge",
 ];
 
 /** The SVG as plain data (gradient ids normalized): parity doesn't walk into SVG. */
@@ -136,6 +142,38 @@ for (const impl of implementations) {
       await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
       await expect(tooltip(page).locator("[data-ok-chart-tooltip-row]")).toHaveCount(1);
       await expect(page.locator("[data-ok-chart-active-marker]")).toHaveCount(1);
+    });
+
+    test("pie: a slice under the pointer or tap shows its value; the legend hides it", async ({
+      page,
+    }) => {
+      await openStory(page, storyId(impl, "chart", "pie"));
+      const box = (await plot(page).boundingBox()) as {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+      };
+      // Up and right of the center: the first slice.
+      await page.mouse.click(box.x + box.width / 2 + 30, box.y + box.height / 2 - 40);
+      await expect(tooltip(page).locator("[data-ok-chart-tooltip-title]")).toHaveText("Series A");
+      await expect(page.locator("[data-ok-chart-active-slice]")).toHaveCount(1);
+      await page.getByRole("button", { name: "Series B" }).click();
+      await expect(page.locator("[data-ok-chart-slice]")).toHaveCount(3);
+      await expect(page.getByRole("table").locator("tbody tr")).toHaveCount(4);
+    });
+
+    test("radar and gauges: keyboard reaches every category", async ({ page }) => {
+      await openStory(page, storyId(impl, "chart", "radar"));
+      await plot(page).focus();
+      await page.keyboard.press("End");
+      await expect(tooltip(page).locator("[data-ok-chart-tooltip-title]")).toHaveText("2016");
+      await expect(tooltip(page).locator("[data-ok-chart-tooltip-row]")).toHaveCount(3);
+      await openStory(page, storyId(impl, "chart", "semi-circle-gauge"));
+      await plot(page).focus();
+      await page.keyboard.press("Home");
+      await expect(tooltip(page)).toContainText("75%");
+      await expect(page.locator("[data-ok-chart-center-value]")).toHaveText("75%");
     });
 
     test("the data table is read by assistive technologies", async ({ page }) => {

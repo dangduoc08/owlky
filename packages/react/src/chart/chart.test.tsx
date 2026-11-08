@@ -484,4 +484,170 @@ describe("Chart", () => {
       document.documentElement.removeAttribute("data-ok-theme");
     }
   });
+
+  describe("phase 2: polar charts", () => {
+    const SLICES = ["Series A", "Series B", "Series C", "Series D"];
+    const VALUES = [{ name: "Value", data: [44, 55, 13, 43] }];
+
+    it("pie: slices with percentages, a legend of categories that hides slices", async () => {
+      const onHiddenSeriesChange = vi.fn();
+      renderChart({
+        type: "pie",
+        height: 240,
+        dataLabels: true,
+        categories: SLICES,
+        series: VALUES,
+        onHiddenSeriesChange,
+      });
+      const svg = plot().querySelector("svg") as SVGSVGElement;
+      const slices = svg.querySelectorAll("[data-ok-chart-slice]");
+      expect(slices).toHaveLength(4);
+      expect(css(slices[0] as Element).fill).toBe("rgb(0, 120, 103)");
+      const labels = [...svg.querySelectorAll("[data-ok-chart-data-label]")];
+      expect(labels.map((label) => label.textContent)).toEqual(["28.4%", "35.5%", "8.4%", "27.7%"]);
+      expect(css(labels[0] as Element).fill).toBe("rgb(255, 255, 255)");
+      expect(legendItems().map((b) => b.textContent)).toEqual(SLICES);
+      expect(css(root().querySelector("[data-ok-chart-legend]") as Element).justifyContent).toBe(
+        "center",
+      );
+      await userEvent.click(screen.getByRole("button", { name: "Series B" }));
+      expect(onHiddenSeriesChange).toHaveBeenCalledWith([1]);
+      expect(svg.querySelectorAll("[data-ok-chart-slice]")).toHaveLength(3);
+      // The table keeps every slice.
+      expect(screen.getByRole("table").querySelectorAll("tbody tr")).toHaveLength(4);
+      await expectNoAxeViolations();
+    });
+
+    it("pie: pointer over a slice shows a halo and its tooltip", () => {
+      const onActiveChange = vi.fn();
+      renderChart({ type: "pie", height: 240, categories: SLICES, series: VALUES, onActiveChange });
+      const width = plot().clientWidth;
+      // Up and right of the center: the first slice.
+      hoverAt(width / 2 + 30, 120 - 40);
+      expect(onActiveChange).toHaveBeenLastCalledWith({ kind: "index", index: 0 });
+      const halo = plot().querySelector("[data-ok-chart-active-slice]") as Element;
+      expect(halo).not.toBeNull();
+      expect(css(halo).fillOpacity).toBe("0.32");
+      expect(tooltip().querySelector("[data-ok-chart-tooltip-title]")?.textContent).toBe(
+        "Series A",
+      );
+      expect(tooltip().querySelector("[data-ok-chart-tooltip-row]")?.textContent).toBe("Value44");
+      hoverAt(2, 2);
+      expect(onActiveChange).toHaveBeenLastCalledWith(null);
+    });
+
+    it("donut: a hole and the total in the center; keyboard moves through slices", async () => {
+      renderChart({
+        type: "donut",
+        height: 240,
+        totalLabel: "Total",
+        categories: SLICES,
+        series: VALUES,
+        legend: "none",
+        defaultHiddenSeries: [2],
+      });
+      expect(root()).toHaveAttribute("data-ok-total-label", "Total");
+      const center = plot().querySelector("[data-ok-chart-center]") as Element;
+      expect(center.textContent).toBe("Total142");
+      expect(css(center.querySelector("[data-ok-chart-center-value]") as Element).fontWeight).toBe(
+        "700",
+      );
+      await userEvent.tab();
+      expect(tooltip().querySelector("[data-ok-chart-tooltip-title]")?.textContent).toBe(
+        "Series A",
+      );
+      await userEvent.keyboard("{ArrowRight}{ArrowRight}");
+      // Series C is hidden: skipped.
+      expect(tooltip().querySelector("[data-ok-chart-tooltip-title]")?.textContent).toBe(
+        "Series D",
+      );
+    });
+
+    it("radial bar: tracks, gradient bars, percentages and a total", async () => {
+      renderChart({
+        type: "radialBar",
+        legend: "bottom",
+        totalLabel: "Total",
+        total: 2324,
+        colors: ["secondary", "warning"],
+        categories: ["Apples", "Oranges"],
+        series: [{ name: "Share", data: [24, 50] }],
+      });
+      expect(root()).toHaveAttribute("data-ok-total", "2324");
+      const svg = plot().querySelector("svg") as SVGSVGElement;
+      const track = svg.querySelector("[data-ok-chart-track]") as Element;
+      expect(css(track).fill).toBe("none");
+      expect(css(track).strokeLinecap).toBe("round");
+      const bar = svg.querySelector("[data-ok-chart-radial]") as Element;
+      expect(bar.getAttribute("stroke")).toMatch(/^url\(#ok-chart-/);
+      const stops = [...svg.querySelectorAll("[data-ok-chart-stop]")].map(
+        (stop) => css(stop).stopColor,
+      );
+      expect(stops.slice(0, 2)).toEqual(["rgb(198, 132, 255)", "rgb(142, 51, 255)"]);
+      expect(plot().querySelector("[data-ok-chart-center]")?.textContent).toBe("Total2,324");
+      expect(screen.getByRole("table").querySelector("tbody td")?.textContent).toBe("24%");
+      await expectNoAxeViolations();
+    });
+
+    it("gauges: angles, dashes and a full-width track", () => {
+      renderChart({
+        type: "radialBar",
+        startAngle: -135,
+        endAngle: 135,
+        dashArray: 4,
+        trackWidth: 100,
+        colors: ["error"],
+        categories: ["Median ratio"],
+        series: [{ name: "Ratio", data: [75] }],
+      });
+      expect({ ...root().dataset }).toMatchObject({
+        okStartAngle: "-135",
+        okEndAngle: "135",
+        okDashArray: "4",
+        okTrackWidth: "100",
+      });
+      const bar = plot().querySelector("[data-ok-chart-radial]") as Element;
+      expect(css(bar).strokeDasharray).toBe("4px");
+      expect(css(bar).strokeLinecap).toBe("butt");
+      expect(plot().querySelector("[data-ok-chart-center]")?.textContent).toBe("75%Median ratio");
+      expect(legendItems()).toHaveLength(0);
+    });
+
+    it("radar: a web, a shape per series, a spoke and markers for the active category", async () => {
+      const onActiveChange = vi.fn();
+      renderChart({
+        type: "radar",
+        height: 280,
+        categories: ["2011", "2012", "2013", "2014", "2015", "2016"],
+        series: [
+          { name: "Series A", data: [80, 50, 30, 40, 100, 20] },
+          { name: "Series B", data: [20, 30, 40, 80, 20, 80] },
+        ],
+        onActiveChange,
+      });
+      const svg = plot().querySelector("svg") as SVGSVGElement;
+      expect(svg.querySelectorAll("line[data-ok-chart-web]")).toHaveLength(6);
+      const area = svg.querySelector("[data-ok-chart-area]") as Element;
+      expect(css(area).fillOpacity).toBe("0.48");
+      expect(css(svg.querySelector("[data-ok-chart-web]") as Element).fill).toBe("none");
+      const width = plot().clientWidth;
+      hoverAt(width / 2 + 2, 60);
+      expect(onActiveChange).toHaveBeenLastCalledWith({ kind: "index", index: 0 });
+      expect(svg.querySelector("[data-ok-chart-crosshair-line]")).not.toBeNull();
+      expect(svg.querySelectorAll("[data-ok-chart-active-marker]")).toHaveLength(2);
+      expect(tooltip().querySelector("[data-ok-chart-tooltip-title]")?.textContent).toBe("2011");
+      await expectNoAxeViolations();
+    });
+
+    it("data labels on columns and lines; renders on the server", () => {
+      renderChart({ type: "bar", dataLabels: true });
+      const labels = plot().querySelectorAll("[data-ok-chart-data-label='inside']");
+      expect(labels.length).toBeGreaterThan(0);
+      const html = renderToString(
+        <Chart label="Pie" type="pie" dataLabels categories={SLICES} series={VALUES} />,
+      );
+      expect(html).toContain("data-ok-chart-slice");
+      expect(html).toContain("28.4%");
+    });
+  });
 });

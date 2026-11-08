@@ -13,7 +13,7 @@ export const chartSections: GuideSection[] = [
   {
     id: "overview",
     title: "Overview",
-    body: "A chart shows values as lines, areas, columns, bars or points. In HTML, you write the data as a table. The runtime reads the table and draws the chart as SVG next to it, with a legend and a tooltip. The table stays in the page, visually hidden, so screen readers can read every value. Without JavaScript, the table stays visible. In React, you pass the data as props, and the component renders the same chart and table.",
+    body: "A chart shows values as lines, areas, columns, bars, points, slices, rings or a radar. In HTML, you write the data as a table. The runtime reads the table and draws the chart as SVG next to it, with a legend and a tooltip. The table stays in the page, visually hidden, so screen readers can read every value. Without JavaScript, the table stays visible. In React, you pass the data as props, and the component renders the same chart and table.",
     html: `<!-- Load once per page: the styles and the runtime -->
 <link rel="stylesheet" href="${CDN}/owlky.css">
 <script src="${CDN}/owlky.js" defer></script>
@@ -56,8 +56,11 @@ export function MonthlySales() {
 - **\`area\`:** a line with the area below it filled. \`fill\` sets a fading \`gradient\` (the default) or a \`solid\` tint.
 - **\`bar\`:** columns. Add \`horizontal\` for bars that run left to right, which suits long category names. \`columnWidth\` and \`barHeight\` set their thickness as a percentage of a category.
 - **\`scatter\`:** points placed by two numbers. The x axis is numeric.
+- **\`pie\` and \`donut\`:** one slice per category, sized by its share of the total. See "Show parts of a whole".
+- **\`radialBar\`:** one ring per category, filled to its value. With one category, it is a gauge. See "Show progress as rings and gauges".
+- **\`radar\`:** one axis per category around a center, and one shape per series.
 
-To mix types, give a series its own \`type\`. In HTML, set \`data-ok-type\` on the column header of the series.`,
+To mix types in line, area, bar and scatter charts, give a series its own \`type\`. In HTML, set \`data-ok-type\` on the column header of the series.`,
     html: `<figure data-ok-chart data-ok-type="bar" data-ok-x-type="category" data-ok-curve="smooth"
   data-ok-legend="top" data-ok-fill="gradient" data-ok-y-title="Points">
   <table data-ok-chart-data>
@@ -112,6 +115,93 @@ Cells may show formatted text, such as "12%". Put the raw number in \`data-ok-va
     react: `series={[{ name: "Cash flow", data: [{ y: 19.8, color: "success" }, { y: -41.2, color: "error" }] }]}`,
   },
   {
+    id: "circular",
+    title: "Show parts of a whole",
+    body: `Pie and donut charts draw the first series, one slice per category. The legend lists the categories, and selecting one hides its slice. The other slices then share the whole circle.
+
+- **Data labels:** set \`dataLabels\` to print the percentage of each slice on it. Slices too narrow for the text show none.
+- **Total:** set \`totalLabel\` on a donut to show the total in its hole, such as "Total". The total is the sum of the visible slices, unless you set \`total\`.
+- **Colors:** slices use the palette in order, or \`colors\`. In HTML, each cell carries its slice color in \`data-ok-color\`.`,
+    html: `<figure data-ok-chart data-ok-type="donut" data-ok-x-type="category" data-ok-curve="smooth"
+  data-ok-legend="top" data-ok-fill="gradient" data-ok-height="240" data-ok-total-label="Total">
+  <table data-ok-chart-data>
+    <caption>Visits by device</caption>
+    <thead>
+      <tr><th scope="col">Device</th><th scope="col">Visits</th></tr>
+    </thead>
+    <tbody>
+      <tr><th scope="row">Desktop</th><td data-ok-color="primary-dark">44</td></tr>
+      <tr><th scope="row">Mobile</th><td data-ok-color="warning">55</td></tr>
+      <tr><th scope="row">Tablet</th><td data-ok-color="info-dark">13</td></tr>
+    </tbody>
+  </table>
+</figure>`,
+    react: `import { Chart } from "@owlky/react";
+
+export function VisitsByDevice() {
+  return (
+    <Chart
+      label="Visits by device"
+      type="donut"
+      height={240}
+      totalLabel="Total"
+      xLabel="Device"
+      colors={["primary-dark", "warning", "info-dark"]}
+      categories={["Desktop", "Mobile", "Tablet"]}
+      series={[{ name: "Visits", data: [44, 55, 13] }]}
+    />
+  );
+}`,
+  },
+  {
+    id: "radial",
+    title: "Show progress as rings and gauges",
+    body: `Radial bar charts draw one ring per category on a grey track. Values are percentages: a ring is full at 100, or at \`yMax\` when you set it. Values print with a percent sign unless you set \`valueSuffix\`.
+
+- **Gauges:** with one category, the center shows the value and the category name. Set \`startAngle\` and \`endAngle\` in degrees, clockwise from 12 o'clock. For example, -90 and 90 draw a semicircle.
+- **Dashes:** \`dashArray\` splits the ring into dashes of that length in pixels. \`trackWidth\` sets the thickness of the track as a percentage of the ring (50 by default).
+- **Total:** with several rings, \`totalLabel\` shows a total in the center. It is the average of the rings, unless you set \`total\`.
+- **Fill:** rings fade from a lighter tone of their color. Set \`fill\` to \`solid\` for a single color.`,
+    html: `<figure data-ok-chart data-ok-type="radialBar" data-ok-x-type="category" data-ok-curve="smooth"
+  data-ok-legend="top" data-ok-fill="gradient" data-ok-height="260"
+  data-ok-start-angle="-135" data-ok-end-angle="135" data-ok-dash-array="4" data-ok-track-width="100">
+  <table data-ok-chart-data>
+    <caption>Median ratio</caption>
+    <thead>
+      <tr><th scope="col">Category</th><th scope="col">Ratio</th></tr>
+    </thead>
+    <tbody>
+      <tr><th scope="row">Median ratio</th><td data-ok-value="75" data-ok-color="error">75%</td></tr>
+    </tbody>
+  </table>
+</figure>`,
+    react: `import { Chart } from "@owlky/react";
+
+export function MedianRatio() {
+  return (
+    <Chart
+      label="Median ratio"
+      type="radialBar"
+      height={260}
+      startAngle={-135}
+      endAngle={135}
+      dashArray={4}
+      trackWidth={100}
+      colors={["error"]}
+      categories={["Median ratio"]}
+      series={[{ name: "Ratio", data: [75] }]}
+    />
+  );
+}`,
+  },
+  {
+    id: "labels",
+    title: "Print values on the chart",
+    body: "Set `dataLabels` (`data-ok-data-labels` in HTML) to print values on the chart: percentages on pie and donut slices, values inside columns and bars, and values above the points of lines, areas and radars. A label is left out where it doesn't fit, such as on a short column. The tooltip and the data table still show every value.",
+    html: `<figure data-ok-chart data-ok-type="pie" … data-ok-data-labels>`,
+    react: `<Chart label="Share of visits" type="pie" dataLabels categories={devices} series={visits} />`,
+  },
+  {
     id: "stacked",
     title: "Stack and compare series",
     body: "Set `stacked` to put the series of a category on top of each other, so the column shows their total. Without it, columns of several series stand side by side. Only the end of each column is rounded.",
@@ -126,7 +216,7 @@ Cells may show formatted text, such as "12%". Put the raw number in \`data-ok-va
   {
     id: "legend",
     title: "Use the legend",
-    body: "The legend shows one button per series. Selecting a button hides its series and fits the axis to the series that are left. Select it again to show the series. `legend` places the legend at the `top` (the default), `right` or `bottom`, or hides it with `none`. Charts with one series have no legend. On screens narrower than 600px, a right legend moves below the chart.",
+    body: "The legend shows one button per series, or one per category in pie, donut and radial bar charts. Selecting a button hides its series and fits the axis to the series that are left. Select it again to show the series. `legend` places the legend at the `top` (the default), `right` or `bottom`, or hides it with `none`. Charts with one series have no legend. On screens narrower than 600px, a right legend moves below the chart.",
   },
   {
     id: "size",
@@ -154,7 +244,7 @@ Cells may show formatted text, such as "12%". Put the raw number in \`data-ok-va
   {
     id: "keyboard",
     title: "Keyboard",
-    body: "The plot is one tab stop. When it gets focus from the keyboard, the tooltip shows the first category. The arrow keys move through the categories, or through the points of a scatter chart.",
+    body: "The plot is one tab stop. When it gets focus from the keyboard, the tooltip shows the first category. The arrow keys move through the categories, through the slices or rings of circular charts, or through the points of a scatter chart. Hidden slices are skipped.",
   },
   {
     id: "accessibility",
@@ -187,6 +277,49 @@ const PREVIEWS = {
       />
     </Preview>
   ),
+  circular: () => (
+    <Preview>
+      <Chart
+        label="Visits by device"
+        type="donut"
+        height={240}
+        totalLabel="Total"
+        xLabel="Device"
+        colors={["primary-dark", "warning", "info-dark"]}
+        categories={["Desktop", "Mobile", "Tablet"]}
+        series={[{ name: "Visits", data: [44, 55, 13] }]}
+      />
+    </Preview>
+  ),
+  radial: () => (
+    <Preview>
+      <Chart
+        label="Median ratio"
+        type="radialBar"
+        height={260}
+        startAngle={-135}
+        endAngle={135}
+        dashArray={4}
+        trackWidth={100}
+        colors={["error"]}
+        categories={["Median ratio"]}
+        series={[{ name: "Ratio", data: [75] }]}
+      />
+    </Preview>
+  ),
+  labels: () => (
+    <Preview>
+      <Chart
+        label="Share of visits"
+        type="pie"
+        height={240}
+        dataLabels
+        colors={["primary-dark", "warning", "info-dark"]}
+        categories={["Desktop", "Mobile", "Tablet"]}
+        series={[{ name: "Visits", data: [44, 55, 13] }]}
+      />
+    </Preview>
+  ),
   stacked: () => (
     <Preview>
       <Chart
@@ -215,7 +348,7 @@ const PREVIEWS = {
           html: "table columns",
           type: "{ name, data, type?, color? }[]",
           description:
-            "The series. Values are numbers, `null` (a gap), `[x, y]` pairs or `{ x, y, color }`.",
+            "The series. Values are numbers, `null` (a gap), `[x, y]` pairs or `{ x, y, color }`. Pie, donut and radial bar charts draw the first series.",
         },
         {
           react: "categories",
@@ -227,7 +360,8 @@ const PREVIEWS = {
           react: "colors",
           html: "data-ok-color on column headers",
           type: "ChartColor[]",
-          description: "Series colors in order, such as `info` or `primary-dark`.",
+          description:
+            "Series colors in order, such as `info` or `primary-dark`. In pie, donut and radial bar charts, the colors of the slices or rings (`data-ok-color` on their cells).",
         },
         {
           react: "yTitle / valuePrefix / valueSuffix / locale",
@@ -235,6 +369,12 @@ const PREVIEWS = {
           type: "string",
           description:
             "Value axis title, text around values, and the locale of numbers and months.",
+        },
+        {
+          react: "totalLabel",
+          html: "data-ok-total-label",
+          type: "string",
+          description: "Label of the total in the center of a donut or a radial bar chart.",
         },
         {
           react: "valueFormatter / labelFormatter",
@@ -253,7 +393,8 @@ const PREVIEWS = {
           react: "hiddenSeries / defaultHiddenSeries / onHiddenSeriesChange",
           html: "aria-pressed on legend buttons · ok:chart:toggle",
           type: "number[]",
-          description: "Indexes of the series hidden through the legend.",
+          description:
+            "Indexes of the series hidden through the legend (categories in pie, donut and radial bar charts).",
         },
         {
           react: "onActiveChange",

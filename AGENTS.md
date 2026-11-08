@@ -401,7 +401,13 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
   wide). Snippets are generated from `apps/storybook/src/components/chart/chart-data.ts` (plain data,
   type-only imports: Node runs it with type stripping): `pnpm build && node
   apps/storybook/scripts/chart-snippets.mjs`. Repeated x values in scatter tables get one
-  row per point.
+  row per point. Phase 2 (polar): `chart-polar.ts` lays out pie / donut / radial bar / radar
+  (`renderChart` dispatches; `layoutChart` stays cartesian). Circular charts draw the first series
+  with one slice or ring per category: legend items, `hiddenSeries` and keyboard slots are
+  categories, and `chartData` writes every slice color onto its point so the generated HTML table
+  carries `data-ok-color` per cell. Slots may skip hidden slices: look them up by `index`, never
+  `slots[index]`. CSS beats SVG presentation attributes even at zero specificity: square caps of
+  dashed rings come from `[data-ok-dashed]` on the series group, not a `stroke-linecap` attribute.
 - Date pickers (ADR-0022): field sections are `contenteditable` spinbuttons whose text only the owner
   writes — core `createFieldController` cancels `beforeinput` and restores IME text. Browsers keep
   the selection inside the focused editable section, so select-all is `data-ok-all-selected` on the

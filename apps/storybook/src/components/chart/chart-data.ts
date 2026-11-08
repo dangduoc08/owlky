@@ -89,6 +89,10 @@ const SCATTER_C: [number, number][] = [
   [33.4, 2.8],
 ];
 
+/** Slices of the pie and donut examples. */
+const SLICES = ["Series A", "Series B", "Series C", "Series D"];
+const SLICE_COLORS: ChartProps["colors"] = ["primary-dark", "warning", "info-dark", "error"];
+
 export const chartExamples: Record<string, ChartExample> = {
   line: {
     title: "Line",
@@ -234,6 +238,88 @@ export const chartExamples: Record<string, ChartExample> = {
         { name: "Series B", data: SCATTER_B },
         { name: "Series C", data: SCATTER_C },
       ],
+    },
+  },
+  pie: {
+    title: "Pie",
+    props: {
+      label: "Share of series A to D",
+      type: "pie",
+      height: 240,
+      dataLabels: true,
+      colors: SLICE_COLORS,
+      categories: SLICES,
+      series: [{ name: "Value", data: [44, 55, 13, 43] }],
+    },
+  },
+  donut: {
+    title: "Donut",
+    props: {
+      label: "Total of series A to D",
+      type: "donut",
+      height: 240,
+      totalLabel: "Total",
+      colors: SLICE_COLORS,
+      categories: SLICES,
+      series: [{ name: "Value", data: [44, 55, 13, 43] }],
+    },
+  },
+  "radial-bar": {
+    title: "Radial bar",
+    props: {
+      label: "Apples and oranges",
+      type: "radialBar",
+      height: 320,
+      legend: "bottom",
+      totalLabel: "Total",
+      total: 2324,
+      colors: ["secondary", "warning"],
+      categories: ["Apples", "Oranges"],
+      series: [{ name: "Share", data: [24, 50] }],
+    },
+  },
+  radar: {
+    title: "Radar",
+    props: {
+      label: "Yearly scores of series A, B and C",
+      type: "radar",
+      height: 280,
+      legend: "right",
+      colors: ["primary", "warning", "error"],
+      categories: ["2011", "2012", "2013", "2014", "2015", "2016"],
+      series: [
+        { name: "Series A", data: [80, 50, 30, 40, 100, 20] },
+        { name: "Series B", data: [20, 30, 40, 80, 20, 80] },
+        { name: "Series C", data: [44, 76, 78, 13, 43, 10] },
+      ],
+    },
+  },
+  "semi-circle-gauge": {
+    title: "Semi circle gauge",
+    props: {
+      label: "Storage used",
+      type: "radialBar",
+      height: 260,
+      startAngle: -90,
+      endAngle: 90,
+      colors: ["secondary"],
+      categories: ["Used of 24 Mb / 50 Mb"],
+      series: [{ name: "Storage", data: [75] }],
+    },
+  },
+  "stroked-gauge": {
+    title: "Stroked gauge",
+    props: {
+      label: "Median ratio",
+      type: "radialBar",
+      height: 260,
+      startAngle: -135,
+      endAngle: 135,
+      dashArray: 4,
+      trackWidth: 100,
+      colors: ["error"],
+      categories: ["Median ratio"],
+      series: [{ name: "Ratio", data: [75] }],
     },
   },
 };

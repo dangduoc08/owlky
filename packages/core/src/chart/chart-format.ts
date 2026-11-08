@@ -11,6 +11,8 @@ import {
 /** How a chart prints numbers and x values (built once per render by `chartFormat`). */
 export interface ChartFormat {
   readonly dateUnit: DateUnit;
+  /** A plain number in the chart's locale (no prefix, suffix or formatter). */
+  number(value: number): string;
   /** A value in the tooltip and the data table. */
   value(value: number, series: number): string;
   /** A value-axis tick (`decimals` from the tick step). */
@@ -56,6 +58,7 @@ export function chartFormat(data: ChartData, options: ChartFormatOptions = {}): 
   const safe = (text: unknown) => (typeof text === "string" ? text : String(text ?? ""));
   return {
     dateUnit: unit,
+    number: (value) => values.format(value),
     value: (value, series) =>
       custom ? safe(custom(value, series)) : `${prefix}${values.format(value)}${suffix}`,
     tick: (value, decimals) => {

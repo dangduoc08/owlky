@@ -21,6 +21,7 @@ export {
 } from "./chart-active.js";
 export { type ChartFormat, type ChartFormatOptions, chartFormat } from "./chart-format.js";
 export {
+  type ChartArc,
   type ChartLayout,
   type ChartLayoutOptions,
   type ChartMark,
@@ -31,6 +32,7 @@ export {
   layoutChart,
 } from "./chart-layout.js";
 export {
+  type ChartCircularType,
   type ChartColor,
   type ChartCurve,
   type ChartData,
@@ -44,6 +46,7 @@ export {
   type ChartTableModel,
   type ChartType,
   type ChartXType,
+  chartCircularTypes,
   chartColors,
   chartCurves,
   chartData,
@@ -54,6 +57,8 @@ export {
   chartTable,
   chartTypes,
   chartXTypes,
+  isCircularChart,
+  isPolarChart,
   parseChartNumber,
   readChartTable,
 } from "./chart-model.js";
