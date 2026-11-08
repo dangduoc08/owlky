@@ -16,7 +16,7 @@ consistent interface without locking you into one way of building it.
 - **Built on the platform.** Components use native elements, such as `<button>` and `<dialog>`,
   so browser features like form submission, find-in-page and focus handling keep working.
 - **Small.** The complete stylesheet is about 35 kB, gzipped. The script for every interactive
-  component is about 105 kB, and the npm packages let you load only what you use.
+  component is about 111 kB, and the npm packages let you load only what you use.
 
 > **Status:** Owlky is in pre-release (`0.x`) and not published to npm yet. The design tokens,
 > theming and about 40 components are ready, from buttons and form controls to overlays,

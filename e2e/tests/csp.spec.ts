@@ -77,6 +77,15 @@ test("no CSP or Trusted Types violations", async ({ page }) => {
     "aria-selected",
     "true",
   );
+  // The date range calendar picks a start and an end and draws the band with attributes.
+  const range = page.locator("#rc-one");
+  await range.locator('[data-ok-date="2025-05-10"]').click();
+  await range.locator('[data-ok-date="2025-05-12"]').click();
+  await expect(range).toHaveAttribute("data-ok-value", "2025-05-10/2025-05-12");
+  await expect(range.locator('[data-ok-date="2025-05-11"]')).toHaveAttribute(
+    "data-ok-in-range",
+    "",
+  );
   await page.getByRole("textbox", { name: "Notes" }).fill("Hello");
   await page.getByRole("switch", { name: "Wi-Fi" }).click();
   // The Editor (owlky-editor.js, Tiptap) mounts and edits without inline styles or HTML sinks.

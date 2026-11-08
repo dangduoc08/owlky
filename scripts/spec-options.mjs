@@ -73,6 +73,8 @@ const SPECS = {
   "time-clock": "date-picker.md",
   "digital-clock": "date-picker.md",
   "multi-section-digital-clock": "date-picker.md",
+  "date-range-picker": "date-picker.md",
+  "date-range-calendar": "date-picker.md",
   editor: "editor.md",
 };
 

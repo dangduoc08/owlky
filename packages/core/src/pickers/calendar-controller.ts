@@ -29,8 +29,9 @@ export interface CalendarControllerOptions {
   /** Day view (date calendars; month / year calendars on their own leave them out). */
   onFocusDate?(date: Date): void;
   onSelectDate?(date: Date): void;
-  onSelectMonth(month: number): void;
-  onSelectYear(year: number): void;
+  /** Month / year views (range calendars have only days and leave them out). */
+  onSelectMonth?(month: number): void;
+  onSelectYear?(year: number): void;
   /** Previous (-1) / next (1) month. */
   onMonthStep?(delta: -1 | 1): void;
   /** The header's view switch button. */
@@ -189,8 +190,8 @@ export function createCalendarController(
       } else {
         const value = Number(item.getAttribute("data-ok-value"));
         pending = true;
-        if (item.hasAttribute("data-ok-picker-month")) options.onSelectMonth(value);
-        else options.onSelectYear(value);
+        if (item.hasAttribute("data-ok-picker-month")) options.onSelectMonth?.(value);
+        else options.onSelectYear?.(value);
       }
     },
     { signal },

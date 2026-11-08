@@ -54,6 +54,7 @@ import {
   readTimeRules,
   readValueType,
   type TimeRuleFunctions,
+  timeViewName,
   toPickerDate,
 } from "../date-calendar/picker-dom.js";
 import type { DateFieldInstance } from "../date-field/date-field.js";
@@ -152,14 +153,7 @@ export const datePicker = defineComponent<DatePickerInstance>({
     const clock = () =>
       clockEl ? runtime.getOrCreate<TimeClockInstance>(clockEl, "time-clock") : undefined;
     const desk = () =>
-      deskEl
-        ? runtime.getOrCreate<DigitalClockInstance>(
-            deskEl,
-            deskEl.hasAttribute("data-ok-digital-clock")
-              ? "digital-clock"
-              : "multi-section-digital-clock",
-          )
-        : undefined;
+      deskEl ? runtime.getOrCreate<DigitalClockInstance>(deskEl, timeViewName(deskEl)) : undefined;
     const tabs = () => (tabsEl ? runtime.getOrCreate<TabsInstance>(tabsEl, "tabs") : undefined);
     const popover = () =>
       paper ? runtime.getOrCreate<PopoverInstance>(paper, "popover") : undefined;

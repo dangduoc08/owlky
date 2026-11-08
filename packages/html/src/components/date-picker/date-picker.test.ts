@@ -62,7 +62,8 @@ describe("date pickers (HTML)", () => {
       host.remove();
       expect(path).toMatch(/\.html$/);
     }
-  });
+    // Every snippet of the four picker phases: axe takes a while (longer with coverage).
+  }, 60_000);
 
   it("field: types a date, updates the hidden input and reports changes", async () => {
     mount(snippet("validation-states"));

@@ -39,6 +39,8 @@ export interface FormatSection {
   startSeparator: string;
   /** Text after the section. */
   endSeparator: string;
+  /** Range fields (ADR-0028): 0 for the start date's sections, 1 for the end's. */
+  part?: 0 | 1 | undefined;
 }
 
 /** Longest tokens first, so `MMMM` wins over `MM`. */

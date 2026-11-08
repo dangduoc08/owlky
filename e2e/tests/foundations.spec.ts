@@ -210,6 +210,8 @@ const OPTION_TABLES: [string, (keyof typeof optionSchemas)[]][] = [
       "time-clock",
       "digital-clock",
       "multi-section-digital-clock",
+      "date-range-picker",
+      "date-range-calendar",
     ],
   ],
   [

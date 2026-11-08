@@ -72,7 +72,15 @@ function bounds(
     case "month":
       return { min: 1, max: 12 };
     case "day": {
-      const parts = readParts(values, all, locale);
+      // Range fields (ADR-0028): a day's month is the one of its own date (`part`).
+      const own = all
+        .map((s, i) => [s, values[i]] as const)
+        .filter(([s]) => s.part === section.part);
+      const parts = readParts(
+        own.map(([, v]) => v as string),
+        own.map(([s]) => s),
+        locale,
+      );
       const month = parts.month;
       if (month === undefined) return { min: 1, max: 31 };
       return { min: 1, max: daysInMonth(parts.year ?? 2000, month) };

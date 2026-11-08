@@ -69,7 +69,12 @@ values are ISO 8601 (`data-ok-value`); `data-ok-locale` on any ancestor; events
 `ok:date-picker:change|accept|open|close`, `ok:date-field:change` and `ok:date-calendar:change`
 (cancelable); `setShortcuts`, `setShouldDisableDate`, `setLocaleText`; time and date time fields
 and pickers with `data-ok-value-type="time" | "date-time"`, runtimes `time-clock`,
-`digital-clock`, `multi-section-digital-clock` with `ok:<name>:change`, `setShouldDisableTime`) **Chart** (runtime `chart`: draws an SVG
+`digital-clock`, `multi-section-digital-clock` with `ok:<name>:change`, `setShouldDisableTime`;
+range pickers with runtimes `date-range-calendar`, `multi-input-range-field`, `date-range-picker`
+and single input range fields (`data-ok-range` on a date field): ISO 8601 intervals
+(`2025-05-20/2025-05-25`), `ok:date-range-picker:change|accept|open|close|rangepositionchange`,
+cancelable `ok:date-range-calendar:change` and `ok:multi-input-range-field:change`, drag editing,
+range shortcuts with `setShortcuts`) **Chart** (runtime `chart`: draws an SVG
 line, area, bar, scatter, pie, donut, radial bar, radar, box plot, heatmap, treemap, bubble, range area, funnel, slope chart or sparkline from its `<table data-ok-chart-data>`, which stays visible without
 JavaScript; legend buttons toggle series; events `ok:chart:toggle` (cancelable) and
 `ok:chart:active`; `setHiddenSeries`, `setActive`, `setFormatters`, `refresh()`, `updateSeries(series, categories?)` and `appendData(data, { categories, limit })` for live data, which rewrite the table in place). Snippets ship in

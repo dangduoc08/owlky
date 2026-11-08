@@ -147,7 +147,11 @@
       }
     },
     {
-      "includes": ["packages/react/src/date-calendar/**", "packages/react/src/date-field/**"],
+      "includes": [
+        "packages/react/src/date-calendar/**",
+        "packages/react/src/date-field/**",
+        "packages/react/src/date-range-calendar/**"
+      ],
       "linter": {
         "rules": {
           "a11y": {

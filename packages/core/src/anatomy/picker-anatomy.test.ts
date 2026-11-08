@@ -3,6 +3,8 @@ import {
   dateCalendarAttributes,
   dateFieldAttributes,
   datePickerAttributes,
+  dateRangeCalendarAttributes,
+  dateRangePickerAttributes,
   digitalClockAttributes,
   multiSectionDigitalClockAttributes,
   timeClockAttributes,
@@ -77,5 +79,52 @@ describe("clock anatomy (ADR-0026)", () => {
       "data-ok-multi-section-digital-clock": "",
       "data-ok-skip-disabled": "",
     });
+  });
+});
+
+describe("range picker anatomy (ADR-0028)", () => {
+  it("writes the defaults and every option, and drops hostile values", () => {
+    expect(dateRangeCalendarAttributes()).toEqual({
+      "data-ok-date-range-calendar": "",
+      "data-ok-calendars": "2",
+      "data-ok-current-month-calendar-position": "1",
+    });
+    expect(
+      dateRangeCalendarAttributes({
+        calendars: 3,
+        currentMonthCalendarPosition: 2,
+        disableDragEditing: true,
+        disableAutoMonthSwitching: true,
+        fixedWeekNumber: 6,
+      }),
+    ).toMatchObject({
+      "data-ok-calendars": "3",
+      "data-ok-current-month-calendar-position": "2",
+      "data-ok-disable-drag-editing": "",
+      "data-ok-disable-auto-month-switching": "",
+      "data-ok-fixed-week-number": "6",
+    });
+    expect(dateRangeCalendarAttributes({ calendars: HOSTILE as never })["data-ok-calendars"]).toBe(
+      "2",
+    );
+    expect(dateRangePickerAttributes()).toEqual({
+      "data-ok-date-range-picker": "",
+      "data-ok-picker-variant": "responsive",
+    });
+    expect(
+      dateRangePickerAttributes({
+        pickerVariant: "static",
+        calendars: 1,
+        disableDragEditing: true,
+        valueType: "time",
+      }),
+    ).toEqual({
+      "data-ok-date-range-picker": "",
+      "data-ok-picker-variant": "static",
+      "data-ok-calendars": "1",
+      "data-ok-disable-drag-editing": "",
+      "data-ok-value-type": "time",
+    });
+    expect(dateFieldAttributes({ range: true })["data-ok-range"]).toBe("");
   });
 });

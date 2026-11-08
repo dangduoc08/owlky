@@ -1,4 +1,4 @@
-import { DateCalendar, TimeClock } from "@owlky/react";
+import { DateCalendar, DateRangeCalendar, TimeClock } from "@owlky/react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { frameworkStory, reactGroupsStory, type StoryControls } from "../../helpers/groups.js";
 import { htmlSetup, snippetStory } from "../shared/snippets.js";
@@ -6,6 +6,7 @@ import { DatePickerDocs } from "./date-picker-docs.js";
 import {
   DATE_CALENDAR_CONTROLS,
   DATE_PICKER_FILES,
+  DATE_RANGE_CALENDAR_CONTROLS,
   datePickerStories,
   TIME_CLOCK_CONTROLS,
 } from "./date-picker-examples.js";
@@ -29,6 +30,8 @@ const SETUP = htmlSetup(
     "time-clock.css",
     "digital-clock.css",
     "tabs.css",
+    "date-range-calendar.css",
+    "date-range-picker.css",
   ],
   true,
 );
@@ -62,6 +65,20 @@ export const Time: StoryObj = story("time");
 
 /** The reference's Date & Time section. */
 export const DateTime: StoryObj = { ...story("date-time"), name: "Date & Time" };
+
+/** The reference's Range section (phase 3, ADR-0028): MUI X Pro's range pickers. */
+export const Range: StoryObj = story("range");
+
+export const RangeFields: StoryObj = { ...story("range-fields"), name: "Range fields" };
+
+export const RangeCalendars: StoryObj = {
+  ...story("range-calendars", { ...DATE_RANGE_CALENDAR_CONTROLS, target: DateRangeCalendar }),
+  name: "Range calendars",
+};
+
+export const TimeRanges: StoryObj = { ...story("time-ranges"), name: "Time ranges" };
+
+export const RangeShortcuts: StoryObj = { ...story("range-shortcuts"), name: "Range shortcuts" };
 
 export const Calendars: StoryObj = story("calendars", {
   ...DATE_CALENDAR_CONTROLS,

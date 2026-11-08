@@ -1,0 +1,210 @@
+/*
+ * Date range calendar — spec: specs/components/date-picker.md (ADR-0028)
+ *
+ * Anatomy:   div[data-ok-date-range-calendar][data-ok-calendars][data-ok-range-position]
+ *              › div[data-ok-date-range-calendar-month]…                  (one per month)
+ *                  › div[data-ok-date-range-calendar-header]
+ *                      › button[data-ok-date-calendar-prev]? (first month)
+ *                      › div[data-ok-date-calendar-label][id]
+ *                      › button[data-ok-date-calendar-next]? (last month)
+ *                  › div[role=grid][data-ok-day-calendar]                 (the DateCalendar's day grid)
+ * Day states: data-ok-range-start, data-ok-range-end, data-ok-in-range (a band behind the days),
+ *             data-ok-preview-start, data-ok-preview-end, data-ok-in-preview (a dashed outline)
+ * Modifiers:  data-ok-disable-drag-editing, data-ok-reduce-animations
+ *
+ * The day grid, the day buttons and their states come from date-calendar.css; this file adds the
+ * months side by side and the range band. Months wrap below each other when the space is too
+ * narrow (a 375px screen). Single :where() selectors in @layer components (zero specificity).
+ * Translucent colors use rgb(var(--…-channel) / α), never color-mix() (AGENTS.md).
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-ok-date-range-calendar]) {
+    --_ok-cell: calc(var(--ok-spacing) * 9);
+    --_ok-cell-gap: calc(var(--ok-spacing) * 0.5);
+    --_ok-band: rgb(var(--ok-palette-primary-main-channel) / 0.12);
+
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    box-sizing: border-box;
+    max-width: 100%;
+    color: var(--ok-text-primary);
+    font-family: var(--ok-font-family);
+  }
+
+  :where([data-ok-date-range-calendar-month]) {
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    width: calc(var(--ok-spacing) * 80);
+    max-width: 100%;
+    min-height: calc(var(--ok-spacing) * 84);
+  }
+
+  :where([data-ok-date-range-calendar-month]:not(:last-child)) {
+    border-inline-end: 1px solid var(--ok-divider);
+  }
+
+  /* MUI's arrow switcher: the month centered, the arrows on the outer months only. */
+  :where([data-ok-date-range-calendar-header]) {
+    display: grid;
+    grid-template-columns: calc(var(--ok-spacing) * 10) minmax(0, 1fr) calc(var(--ok-spacing) * 10);
+    align-items: center;
+    min-height: calc(var(--ok-spacing) * 10);
+    margin-block: calc(var(--ok-spacing) * 3) var(--ok-spacing);
+    padding-inline: calc(var(--ok-spacing) * 4);
+  }
+
+  :where([data-ok-date-range-calendar-header] > [data-ok-date-calendar-prev]) {
+    grid-column: 1;
+    justify-self: start;
+  }
+
+  :where([data-ok-date-range-calendar-header] > [data-ok-date-calendar-label]) {
+    grid-column: 2;
+    margin: 0;
+    text-align: center;
+  }
+
+  :where([data-ok-date-range-calendar-header] > [data-ok-date-calendar-next]) {
+    grid-column: 3;
+    justify-self: end;
+  }
+
+  /* Each row paints its own band behind the days (the band is the days' ::before). */
+  :where([data-ok-date-range-calendar] [role="rowgroup"] > [role="row"]) {
+    isolation: isolate;
+  }
+
+  /* Every day always has its band (::before) and its preview outline (::after): the states only
+     restyle them. Creating a pseudo-element on hover rebuilds the button's box in Firefox, which
+     then loses the press that follows. */
+  :where([data-ok-date-range-calendar] [data-ok-picker-day]) {
+    position: relative;
+  }
+
+  :where([data-ok-date-range-calendar] [data-ok-picker-day])::before {
+    position: absolute;
+    z-index: -1;
+    inset-block: 0;
+    inset-inline: calc(var(--_ok-cell-gap) * -1);
+    content: "";
+  }
+
+  :where([data-ok-date-range-calendar] [data-ok-picker-day])::after {
+    position: absolute;
+    inset-block: 0;
+    inset-inline: calc(var(--_ok-cell-gap) * -1);
+    border: 0 dashed var(--ok-text-disabled);
+    pointer-events: none;
+    content: "";
+  }
+
+  /* Days inside the range are on the band, not filled (only the two ends are). */
+  :where(
+    [data-ok-date-range-calendar]
+      [data-ok-picker-day][data-ok-in-range]:not([data-ok-range-start]):not([data-ok-range-end])
+  ) {
+    background-color: transparent;
+    color: var(--ok-text-primary);
+    font-weight: var(--ok-font-weight-regular);
+  }
+
+  :where([data-ok-date-range-calendar] [data-ok-picker-day][data-ok-in-range])::before {
+    background-color: var(--_ok-band);
+  }
+
+  :where([data-ok-date-range-calendar] [data-ok-picker-day][data-ok-range-start])::before {
+    inset-inline-start: 50%;
+  }
+
+  :where([data-ok-date-range-calendar] [data-ok-picker-day][data-ok-range-end])::before {
+    inset-inline-end: 50%;
+  }
+
+  :where(
+    [data-ok-date-range-calendar] [data-ok-picker-day][data-ok-range-start][data-ok-range-end]
+  )::before {
+    background-color: transparent;
+  }
+
+  /* The band ends round at the edges of a week and of the month. */
+  :where(
+    [data-ok-date-range-calendar]
+      [role="row"]
+      > [data-ok-in-range]:first-child:not([data-ok-range-start]),
+    [data-ok-date-range-calendar]
+      :is([role="rowheader"], [data-ok-day-filler])
+      + [data-ok-in-range]:not([data-ok-range-start])
+  )::before {
+    inset-inline-start: 0;
+    border-start-start-radius: var(--ok-radius-full);
+    border-end-start-radius: var(--ok-radius-full);
+  }
+
+  :where(
+    [data-ok-date-range-calendar]
+      [role="row"]
+      > [data-ok-in-range]:last-child:not([data-ok-range-end]),
+    [data-ok-date-range-calendar]
+      [data-ok-in-range]:not([data-ok-range-end]):has(+ [data-ok-day-filler])
+  )::before {
+    inset-inline-end: 0;
+    border-start-end-radius: var(--ok-radius-full);
+    border-end-end-radius: var(--ok-radius-full);
+  }
+
+  /* Preview (a hovered or dragged end): a dashed outline over the days it would cover. */
+  :where([data-ok-date-range-calendar] [data-ok-picker-day][data-ok-in-preview])::after {
+    border-block-width: 1px;
+  }
+
+  :where([data-ok-date-range-calendar] [data-ok-picker-day][data-ok-preview-start])::after {
+    inset-inline-start: 0;
+    border-inline-start-width: 1px;
+    border-start-start-radius: var(--ok-radius-full);
+    border-end-start-radius: var(--ok-radius-full);
+  }
+
+  :where([data-ok-date-range-calendar] [data-ok-picker-day][data-ok-preview-end])::after {
+    inset-inline-end: 0;
+    border-inline-end-width: 1px;
+    border-start-end-radius: var(--ok-radius-full);
+    border-end-end-radius: var(--ok-radius-full);
+  }
+
+  /* The ends can be dragged (also on touch screens: no scrolling from them). */
+  :where(
+    [data-ok-date-range-calendar]:not([data-ok-disable-drag-editing]):not([data-ok-read-only])
+      :is([data-ok-range-start], [data-ok-range-end]):not(:disabled)
+  ) {
+    cursor: grab;
+    touch-action: none;
+  }
+
+  @media (hover: hover) {
+    :where(
+        [data-ok-date-range-calendar]
+          [data-ok-picker-day][data-ok-in-range]:not([data-ok-range-start]):not(
+            [data-ok-range-end]
+          ):hover:not(:disabled)
+      ) {
+      background-color: var(--ok-action-hover);
+    }
+  }
+
+  :where(
+    [data-ok-date-range-calendar]
+      [data-ok-picker-day][data-ok-in-range]:not([data-ok-range-start]):not(
+        [data-ok-range-end]
+      ):focus-visible
+  ) {
+    background-color: transparent;
+  }
+
+  :where([data-ok-date-range-calendar][data-ok-reduce-animations] [role="rowgroup"]) {
+    animation: none;
+  }
+}

@@ -1052,6 +1052,17 @@
   max-width: 342px;
 }
 
+/* Range fields: a column wide enough for two date time fields in a row (from 600px); fields
+   keep their own width. */
+.sb-date-ranges {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: calc(var(--ok-spacing) * 6);
+  width: 100%;
+  max-width: 720px;
+}
+
 /* Static time pickers and clocks: a wrapping row (columns on phones), as on the reference. */
 .sb-date-pickers-static,
 .sb-date-pickers-row {

@@ -1,0 +1,430 @@
+<div class="sb-date-pickers">
+  <div data-ok-date-range-picker data-ok-picker-variant="responsive" data-ok-value-type="time">
+    <div data-ok-text-field data-ok-variant="outlined" data-ok-size="medium" data-ok-color="default" data-ok-margin="none" data-ok-shrink data-ok-date-field data-ok-format-density="dense" data-ok-value-type="time" data-ok-range data-ok-value="09:00:00/17:30:00" data-ok-format="hh:mm A">
+      <label data-ok-text-field-label id="tr-basic-label" for="tr-basic">Time range picker</label>
+      <div data-ok-text-field-control>
+        <div id="tr-basic" role="group" data-ok-text-field-input data-ok-date-field-sections aria-labelledby="tr-basic-label">
+          <span data-ok-date-field-section>
+            <span data-ok-date-field-content data-ok-section="hours" role="spinbutton" aria-label="Hours" aria-valuenow="9" aria-valuemin="1" aria-valuemax="12" aria-valuetext="09" tabindex="0" contenteditable="true" inputmode="numeric" spellcheck="false" autocapitalize="off" autocorrect="off" enterkeyhint="next">09</span>
+            <span data-ok-date-field-separator>:</span>
+          </span>
+          <span data-ok-date-field-section>
+            <span data-ok-date-field-content data-ok-section="minutes" role="spinbutton" aria-label="Minutes" aria-valuenow="0" aria-valuemin="0" aria-valuemax="59" aria-valuetext="00" tabindex="-1" contenteditable="true" inputmode="numeric" spellcheck="false" autocapitalize="off" autocorrect="off" enterkeyhint="next">00</span>
+            <span data-ok-date-field-separator> </span>
+          </span>
+          <span data-ok-date-field-section>
+            <span data-ok-date-field-content data-ok-section="meridiem" role="spinbutton" aria-label="Meridiem" aria-valuenow="0" aria-valuemin="0" aria-valuemax="1" aria-valuetext="AM" tabindex="-1" contenteditable="true" inputmode="text" spellcheck="false" autocapitalize="off" autocorrect="off" enterkeyhint="next">AM</span>
+            <span data-ok-date-field-separator> – </span>
+          </span>
+          <span data-ok-date-field-section>
+            <span data-ok-date-field-content data-ok-section="hours" role="spinbutton" aria-label="Hours" aria-valuenow="5" aria-valuemin="1" aria-valuemax="12" aria-valuetext="05" tabindex="-1" contenteditable="true" inputmode="numeric" spellcheck="false" autocapitalize="off" autocorrect="off" enterkeyhint="next">05</span>
+            <span data-ok-date-field-separator>:</span>
+          </span>
+          <span data-ok-date-field-section>
+            <span data-ok-date-field-content data-ok-section="minutes" role="spinbutton" aria-label="Minutes" aria-valuenow="30" aria-valuemin="0" aria-valuemax="59" aria-valuetext="30" tabindex="-1" contenteditable="true" inputmode="numeric" spellcheck="false" autocapitalize="off" autocorrect="off" enterkeyhint="next">30</span>
+            <span data-ok-date-field-separator> </span>
+          </span>
+          <span data-ok-date-field-section>
+            <span data-ok-date-field-content data-ok-section="meridiem" role="spinbutton" aria-label="Meridiem" aria-valuenow="1" aria-valuemin="0" aria-valuemax="1" aria-valuetext="PM" tabindex="-1" contenteditable="true" inputmode="text" spellcheck="false" autocapitalize="off" autocorrect="off" enterkeyhint="done">PM</span>
+          </span>
+        </div>
+        <input type="hidden" data-ok-date-field-input value="09:00:00/17:30:00">
+        <span data-ok-text-field-adornment="end">
+          <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="md" data-ok-edge="end" data-ok-date-picker-open aria-label="Choose range, selected range is 09:00 AM – 05:30 PM" aria-haspopup="dialog">
+            <svg aria-hidden="true" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20Zm0 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm0 2a1 1 0 0 1 1 1v4.59l2.7 2.7a1 1 0 0 1-1.4 1.42l-3-3A1 1 0 0 1 11 12V7a1 1 0 0 1 1-1Z"></path></svg>
+          </button>
+        </span>
+        <fieldset data-ok-text-field-outline aria-hidden="true">
+          <legend>
+            <span>Time range picker</span>
+          </legend>
+        </fieldset>
+      </div>
+    </div>
+    <div popover="manual" data-ok-popover data-ok-placement="bottom-start" data-ok-disable-auto-focus role="dialog" aria-label="Select time range" data-ok-date-picker-paper>
+      <span data-ok-popover-arrow aria-hidden="true"></span>
+      <div data-ok-picker-layout data-ok-orientation="portrait">
+        <div data-ok-picker-toolbar data-ok-range-toolbar hidden>
+          <span data-ok-picker-toolbar-overline id="tr-basic-toolbar">Select time range</span>
+          <div data-ok-picker-toolbar-content>
+            <span data-ok-picker-toolbar-part>
+              <button type="button" data-ok-picker-toolbar-button data-ok-range-position="start" data-ok-selected aria-pressed="true">09:00 AM</button>
+            </span>
+            <span data-ok-picker-toolbar-part>
+              <span data-ok-picker-toolbar-separator aria-hidden="true">–</span>
+              <button type="button" data-ok-picker-toolbar-button data-ok-range-position="end" aria-pressed="false">05:30 PM</button>
+            </span>
+          </div>
+        </div>
+        <div data-ok-tabs data-ok-variant="fullWidth" data-ok-orientation="horizontal" data-ok-text-color="inherit" data-ok-indicator-color="inherit" data-ok-scroll-buttons="auto" data-ok-picker-tabs data-ok-picker-range-tabs>
+          <div data-ok-tabs-scroller>
+            <div role="tablist" data-ok-tabs-list>
+              <button type="button" role="tab" data-ok-tab value="start" aria-selected="true" tabindex="0">
+                <span data-ok-tab-label>Start</span>
+              </button>
+              <button type="button" role="tab" data-ok-tab value="end" aria-selected="false" tabindex="-1">
+                <span data-ok-tab-label>End</span>
+              </button>
+            </div>
+            <span data-ok-tabs-indicator></span>
+          </div>
+        </div>
+        <div data-ok-picker-content>
+          <div role="group" data-ok-multi-section-digital-clock data-ok-ampm="true" data-ok-value="09:00:00" data-ok-views="hours minutes" data-ok-time-steps="1 5 5" id="tr-basic-digital-clock">
+            <ul role="listbox" data-ok-digital-clock-section="hours" aria-label="Select hours">
+              <li role="option" data-ok-digital-clock-item data-ok-value="12" tabindex="-1" aria-selected="false">12</li>
+              <li role="option" data-ok-digital-clock-item data-ok-value="1" tabindex="-1" aria-selected="false">01</li>
+              <li role="option" data-ok-digital-clock-item data-ok-value="2" tabindex="-1" aria-selected="false">02</li>
+              <li role="option" data-ok-digital-clock-item data-ok-value="3" tabindex="-1" aria-selected="false">03</li>
+              <li role="option" data-ok-digital-clock-item data-ok-value="4" tabindex="-1" aria-selected="false">04</li>
+              <li role="option" data-ok-digital-clock-item data-ok-value="5" tabindex="-1" aria-selected="false">05</li>
+              <li role="option" data-ok-digital-clock-item data-ok-value="6" tabindex="-1" aria-selected="false">06</li>
+              <li role="option" data-ok-digital-clock-item data-ok-value="7" tabindex="-1" aria-selected="false">07</li>
+              <li role="option" data-ok-digital-clock-item data-ok-value="8" tabindex="-1" aria-selected="false">08</li>
+              <li role="option" data-ok-digital-clock-item data-ok-value="9" tabindex="0" aria-selected="true">09</li>
+              <li role="option" data-ok-digital-clock-item data-ok-value="10" tabindex="-1" aria-selected="false">10</li>
+              <li role="option" data-ok-digital-clock-item data-ok-value="11" tabindex="-1" aria-selected="false">11</li>
+            </ul>
+            <ul role="listbox" data-ok-digital-clock-section="minutes" aria-label="Select minutes">
+              <li role="option" data-ok-digital-clock-item data-ok-value="0" tabindex="0" aria-selected="true">00</li>
+              <li role="option" data-ok-digital-clock-item data-ok-value="5" tabindex="-1" aria-selected="false">05</li>
+              <li role="option" data-ok-digital-clock-item data-ok-value="10" tabindex="-1" aria-selected="false">10</li>
+              <li role="option" data-ok-digital-clock-item data-ok-value="15" tabindex="-1" aria-selected="false">15</li>
+              <li role="option" data-ok-digital-clock-item data-ok-value="20" tabindex="-1" aria-selected="false">20</li>
+              <li role="option" data-ok-digital-clock-item data-ok-value="25" tabindex="-1" aria-selected="false">25</li>
+              <li role="option" data-ok-digital-clock-item data-ok-value="30" tabindex="-1" aria-selected="false">30</li>
+              <li role="option" data-ok-digital-clock-item data-ok-value="35" tabindex="-1" aria-selected="false">35</li>
+              <li role="option" data-ok-digital-clock-item data-ok-value="40" tabindex="-1" aria-selected="false">40</li>
+              <li role="option" data-ok-digital-clock-item data-ok-value="45" tabindex="-1" aria-selected="false">45</li>
+              <li role="option" data-ok-digital-clock-item data-ok-value="50" tabindex="-1" aria-selected="false">50</li>
+              <li role="option" data-ok-digital-clock-item data-ok-value="55" tabindex="-1" aria-selected="false">55</li>
+            </ul>
+            <ul role="listbox" data-ok-digital-clock-section="meridiem" aria-label="Select meridiem">
+              <li role="option" data-ok-digital-clock-item data-ok-value="0" tabindex="0" aria-selected="true">AM</li>
+              <li role="option" data-ok-digital-clock-item data-ok-value="1" tabindex="-1" aria-selected="false">PM</li>
+            </ul>
+          </div>
+          <div id="tr-basic-clock" data-ok-time-clock data-ok-ampm="true" data-ok-value="09:00:00" data-ok-view="hours" data-ok-views="hours minutes" hidden>
+            <div data-ok-time-clock-dial>
+              <span data-ok-time-clock-pin></span>
+              <span data-ok-time-clock-pointer></span>
+              <div role="listbox" data-ok-time-clock-options tabindex="0" aria-label="Select hours. Selected time is 09:00 AM" aria-activedescendant="tr-basic-clock-hours-9">
+                <span id="tr-basic-clock-hours-1" role="option" data-ok-time-clock-number data-ok-position="1" data-ok-value="1" aria-label="1 hours">1</span>
+                <span id="tr-basic-clock-hours-2" role="option" data-ok-time-clock-number data-ok-position="2" data-ok-value="2" aria-label="2 hours">2</span>
+                <span id="tr-basic-clock-hours-3" role="option" data-ok-time-clock-number data-ok-position="3" data-ok-value="3" aria-label="3 hours">3</span>
+                <span id="tr-basic-clock-hours-4" role="option" data-ok-time-clock-number data-ok-position="4" data-ok-value="4" aria-label="4 hours">4</span>
+                <span id="tr-basic-clock-hours-5" role="option" data-ok-time-clock-number data-ok-position="5" data-ok-value="5" aria-label="5 hours">5</span>
+                <span id="tr-basic-clock-hours-6" role="option" data-ok-time-clock-number data-ok-position="6" data-ok-value="6" aria-label="6 hours">6</span>
+                <span id="tr-basic-clock-hours-7" role="option" data-ok-time-clock-number data-ok-position="7" data-ok-value="7" aria-label="7 hours">7</span>
+                <span id="tr-basic-clock-hours-8" role="option" data-ok-time-clock-number data-ok-position="8" data-ok-value="8" aria-label="8 hours">8</span>
+                <span id="tr-basic-clock-hours-9" role="option" data-ok-time-clock-number data-ok-position="9" data-ok-value="9" aria-label="9 hours" aria-selected="true">9</span>
+                <span id="tr-basic-clock-hours-10" role="option" data-ok-time-clock-number data-ok-position="10" data-ok-value="10" aria-label="10 hours">10</span>
+                <span id="tr-basic-clock-hours-11" role="option" data-ok-time-clock-number data-ok-position="11" data-ok-value="11" aria-label="11 hours">11</span>
+                <span id="tr-basic-clock-hours-12" role="option" data-ok-time-clock-number data-ok-position="0" data-ok-value="12" aria-label="12 hours">12</span>
+              </div>
+            </div>
+            <div data-ok-time-clock-nav>
+              <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-time-clock-prev aria-label="Open previous view" title="Open previous view" disabled>
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"></path></svg>
+              </button>
+              <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-time-clock-next aria-label="Open next view" title="Open next view">
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"></path></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div data-ok-picker-actions>
+          <button type="button" data-ok-button data-ok-variant="text" data-ok-color="inherit" data-ok-size="md" data-ok-picker-action="cancel">
+            <span data-ok-button-label>Cancel</span>
+          </button>
+          <button type="button" data-ok-button data-ok-variant="contained" data-ok-color="inherit" data-ok-size="md" data-ok-picker-action="accept">
+            <span data-ok-button-label>OK</span>
+          </button>
+        </div>
+      </div>
+    </div>
+    <dialog data-ok-dialog data-ok-max-width="xs" data-ok-scroll="paper" aria-label="Select time range" data-ok-date-picker-dialog>
+      <div data-ok-dialog-paper></div>
+    </dialog>
+  </div>
+  <div data-ok-date-range-picker data-ok-picker-variant="responsive" data-ok-value-type="time">
+    <div role="group" data-ok-multi-input-range-field data-ok-value-type="time" data-ok-value="09:00:00/17:30:00">
+      <div data-ok-text-field data-ok-variant="outlined" data-ok-size="medium" data-ok-color="default" data-ok-margin="none" data-ok-shrink data-ok-date-field data-ok-format-density="dense" data-ok-value-type="time" data-ok-value="09:00:00" data-ok-format="hh:mm A">
+        <label data-ok-text-field-label id="tr-multi-start-label" for="tr-multi-start">Opens</label>
+        <div data-ok-text-field-control>
+          <div id="tr-multi-start" role="group" data-ok-text-field-input data-ok-date-field-sections aria-labelledby="tr-multi-start-label">
+            <span data-ok-date-field-section>
+              <span data-ok-date-field-content data-ok-section="hours" role="spinbutton" aria-label="Hours" aria-valuenow="9" aria-valuemin="1" aria-valuemax="12" aria-valuetext="09" tabindex="0" contenteditable="true" inputmode="numeric" spellcheck="false" autocapitalize="off" autocorrect="off" enterkeyhint="next">09</span>
+              <span data-ok-date-field-separator>:</span>
+            </span>
+            <span data-ok-date-field-section>
+              <span data-ok-date-field-content data-ok-section="minutes" role="spinbutton" aria-label="Minutes" aria-valuenow="0" aria-valuemin="0" aria-valuemax="59" aria-valuetext="00" tabindex="-1" contenteditable="true" inputmode="numeric" spellcheck="false" autocapitalize="off" autocorrect="off" enterkeyhint="next">00</span>
+              <span data-ok-date-field-separator> </span>
+            </span>
+            <span data-ok-date-field-section>
+              <span data-ok-date-field-content data-ok-section="meridiem" role="spinbutton" aria-label="Meridiem" aria-valuenow="0" aria-valuemin="0" aria-valuemax="1" aria-valuetext="AM" tabindex="-1" contenteditable="true" inputmode="text" spellcheck="false" autocapitalize="off" autocorrect="off" enterkeyhint="done">AM</span>
+            </span>
+          </div>
+          <input type="hidden" data-ok-date-field-input value="09:00:00">
+          <span data-ok-text-field-adornment="end">
+            <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="md" data-ok-edge="end" data-ok-date-picker-open data-ok-range-position="start" aria-label="Choose time, selected time is 09:00 AM" aria-haspopup="dialog">
+              <svg aria-hidden="true" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20Zm0 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm0 2a1 1 0 0 1 1 1v4.59l2.7 2.7a1 1 0 0 1-1.4 1.42l-3-3A1 1 0 0 1 11 12V7a1 1 0 0 1 1-1Z"></path></svg>
+            </button>
+          </span>
+          <fieldset data-ok-text-field-outline aria-hidden="true">
+            <legend>
+              <span>Opens</span>
+            </legend>
+          </fieldset>
+        </div>
+      </div>
+      <span data-ok-multi-input-range-field-separator aria-hidden="true">–</span>
+      <div data-ok-text-field data-ok-variant="outlined" data-ok-size="medium" data-ok-color="default" data-ok-margin="none" data-ok-shrink data-ok-date-field data-ok-format-density="dense" data-ok-value-type="time" data-ok-value="17:30:00" data-ok-format="hh:mm A">
+        <label data-ok-text-field-label id="tr-multi-end-label" for="tr-multi-end">Closes</label>
+        <div data-ok-text-field-control>
+          <div id="tr-multi-end" role="group" data-ok-text-field-input data-ok-date-field-sections aria-labelledby="tr-multi-end-label">
+            <span data-ok-date-field-section>
+              <span data-ok-date-field-content data-ok-section="hours" role="spinbutton" aria-label="Hours" aria-valuenow="5" aria-valuemin="1" aria-valuemax="12" aria-valuetext="05" tabindex="0" contenteditable="true" inputmode="numeric" spellcheck="false" autocapitalize="off" autocorrect="off" enterkeyhint="next">05</span>
+              <span data-ok-date-field-separator>:</span>
+            </span>
+            <span data-ok-date-field-section>
+              <span data-ok-date-field-content data-ok-section="minutes" role="spinbutton" aria-label="Minutes" aria-valuenow="30" aria-valuemin="0" aria-valuemax="59" aria-valuetext="30" tabindex="-1" contenteditable="true" inputmode="numeric" spellcheck="false" autocapitalize="off" autocorrect="off" enterkeyhint="next">30</span>
+              <span data-ok-date-field-separator> </span>
+            </span>
+            <span data-ok-date-field-section>
+              <span data-ok-date-field-content data-ok-section="meridiem" role="spinbutton" aria-label="Meridiem" aria-valuenow="1" aria-valuemin="0" aria-valuemax="1" aria-valuetext="PM" tabindex="-1" contenteditable="true" inputmode="text" spellcheck="false" autocapitalize="off" autocorrect="off" enterkeyhint="done">PM</span>
+            </span>
+          </div>
+          <input type="hidden" data-ok-date-field-input value="17:30:00">
+          <span data-ok-text-field-adornment="end">
+            <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="md" data-ok-edge="end" data-ok-date-picker-open data-ok-range-position="end" aria-label="Choose time, selected time is 05:30 PM" aria-haspopup="dialog">
+              <svg aria-hidden="true" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20Zm0 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm0 2a1 1 0 0 1 1 1v4.59l2.7 2.7a1 1 0 0 1-1.4 1.42l-3-3A1 1 0 0 1 11 12V7a1 1 0 0 1 1-1Z"></path></svg>
+            </button>
+          </span>
+          <fieldset data-ok-text-field-outline aria-hidden="true">
+            <legend>
+              <span>Closes</span>
+            </legend>
+          </fieldset>
+        </div>
+      </div>
+    </div>
+    <div popover="manual" data-ok-popover data-ok-placement="bottom-start" data-ok-disable-auto-focus role="dialog" aria-label="Select time range" data-ok-date-picker-paper>
+      <span data-ok-popover-arrow aria-hidden="true"></span>
+      <div data-ok-picker-layout data-ok-orientation="portrait">
+        <div data-ok-picker-toolbar data-ok-range-toolbar hidden>
+          <span data-ok-picker-toolbar-overline id="tr-multi-toolbar">Select time range</span>
+          <div data-ok-picker-toolbar-content>
+            <span data-ok-picker-toolbar-part>
+              <button type="button" data-ok-picker-toolbar-button data-ok-range-position="start" data-ok-selected aria-pressed="true">09:00 AM</button>
+            </span>
+            <span data-ok-picker-toolbar-part>
+              <span data-ok-picker-toolbar-separator aria-hidden="true">–</span>
+              <button type="button" data-ok-picker-toolbar-button data-ok-range-position="end" aria-pressed="false">05:30 PM</button>
+            </span>
+          </div>
+        </div>
+        <div data-ok-tabs data-ok-variant="fullWidth" data-ok-orientation="horizontal" data-ok-text-color="inherit" data-ok-indicator-color="inherit" data-ok-scroll-buttons="auto" data-ok-picker-tabs data-ok-picker-range-tabs>
+          <div data-ok-tabs-scroller>
+            <div role="tablist" data-ok-tabs-list>
+              <button type="button" role="tab" data-ok-tab value="start" aria-selected="true" tabindex="0">
+                <span data-ok-tab-label>Start</span>
+              </button>
+              <button type="button" role="tab" data-ok-tab value="end" aria-selected="false" tabindex="-1">
+                <span data-ok-tab-label>End</span>
+              </button>
+            </div>
+            <span data-ok-tabs-indicator></span>
+          </div>
+        </div>
+        <div data-ok-picker-content>
+          <div role="group" data-ok-multi-section-digital-clock data-ok-ampm="true" data-ok-value="09:00:00" data-ok-views="hours minutes" data-ok-time-steps="1 5 5" id="tr-multi-digital-clock">
+            <ul role="listbox" data-ok-digital-clock-section="hours" aria-label="Select hours">
+              <li role="option" data-ok-digital-clock-item data-ok-value="12" tabindex="-1" aria-selected="false">12</li>
+              <li role="option" data-ok-digital-clock-item data-ok-value="1" tabindex="-1" aria-selected="false">01</li>
+              <li role="option" data-ok-digital-clock-item data-ok-value="2" tabindex="-1" aria-selected="false">02</li>
+              <li role="option" data-ok-digital-clock-item data-ok-value="3" tabindex="-1" aria-selected="false">03</li>
+              <li role="option" data-ok-digital-clock-item data-ok-value="4" tabindex="-1" aria-selected="false">04</li>
+              <li role="option" data-ok-digital-clock-item data-ok-value="5" tabindex="-1" aria-selected="false">05</li>
+              <li role="option" data-ok-digital-clock-item data-ok-value="6" tabindex="-1" aria-selected="false">06</li>
+              <li role="option" data-ok-digital-clock-item data-ok-value="7" tabindex="-1" aria-selected="false">07</li>
+              <li role="option" data-ok-digital-clock-item data-ok-value="8" tabindex="-1" aria-selected="false">08</li>
+              <li role="option" data-ok-digital-clock-item data-ok-value="9" tabindex="0" aria-selected="true">09</li>
+              <li role="option" data-ok-digital-clock-item data-ok-value="10" tabindex="-1" aria-selected="false">10</li>
+              <li role="option" data-ok-digital-clock-item data-ok-value="11" tabindex="-1" aria-selected="false">11</li>
+            </ul>
+            <ul role="listbox" data-ok-digital-clock-section="minutes" aria-label="Select minutes">
+              <li role="option" data-ok-digital-clock-item data-ok-value="0" tabindex="0" aria-selected="true">00</li>
+              <li role="option" data-ok-digital-clock-item data-ok-value="5" tabindex="-1" aria-selected="false">05</li>
+              <li role="option" data-ok-digital-clock-item data-ok-value="10" tabindex="-1" aria-selected="false">10</li>
+              <li role="option" data-ok-digital-clock-item data-ok-value="15" tabindex="-1" aria-selected="false">15</li>
+              <li role="option" data-ok-digital-clock-item data-ok-value="20" tabindex="-1" aria-selected="false">20</li>
+              <li role="option" data-ok-digital-clock-item data-ok-value="25" tabindex="-1" aria-selected="false">25</li>
+              <li role="option" data-ok-digital-clock-item data-ok-value="30" tabindex="-1" aria-selected="false">30</li>
+              <li role="option" data-ok-digital-clock-item data-ok-value="35" tabindex="-1" aria-selected="false">35</li>
+              <li role="option" data-ok-digital-clock-item data-ok-value="40" tabindex="-1" aria-selected="false">40</li>
+              <li role="option" data-ok-digital-clock-item data-ok-value="45" tabindex="-1" aria-selected="false">45</li>
+              <li role="option" data-ok-digital-clock-item data-ok-value="50" tabindex="-1" aria-selected="false">50</li>
+              <li role="option" data-ok-digital-clock-item data-ok-value="55" tabindex="-1" aria-selected="false">55</li>
+            </ul>
+            <ul role="listbox" data-ok-digital-clock-section="meridiem" aria-label="Select meridiem">
+              <li role="option" data-ok-digital-clock-item data-ok-value="0" tabindex="0" aria-selected="true">AM</li>
+              <li role="option" data-ok-digital-clock-item data-ok-value="1" tabindex="-1" aria-selected="false">PM</li>
+            </ul>
+          </div>
+          <div id="tr-multi-clock" data-ok-time-clock data-ok-ampm="true" data-ok-value="09:00:00" data-ok-view="hours" data-ok-views="hours minutes" hidden>
+            <div data-ok-time-clock-dial>
+              <span data-ok-time-clock-pin></span>
+              <span data-ok-time-clock-pointer></span>
+              <div role="listbox" data-ok-time-clock-options tabindex="0" aria-label="Select hours. Selected time is 09:00 AM" aria-activedescendant="tr-multi-clock-hours-9">
+                <span id="tr-multi-clock-hours-1" role="option" data-ok-time-clock-number data-ok-position="1" data-ok-value="1" aria-label="1 hours">1</span>
+                <span id="tr-multi-clock-hours-2" role="option" data-ok-time-clock-number data-ok-position="2" data-ok-value="2" aria-label="2 hours">2</span>
+                <span id="tr-multi-clock-hours-3" role="option" data-ok-time-clock-number data-ok-position="3" data-ok-value="3" aria-label="3 hours">3</span>
+                <span id="tr-multi-clock-hours-4" role="option" data-ok-time-clock-number data-ok-position="4" data-ok-value="4" aria-label="4 hours">4</span>
+                <span id="tr-multi-clock-hours-5" role="option" data-ok-time-clock-number data-ok-position="5" data-ok-value="5" aria-label="5 hours">5</span>
+                <span id="tr-multi-clock-hours-6" role="option" data-ok-time-clock-number data-ok-position="6" data-ok-value="6" aria-label="6 hours">6</span>
+                <span id="tr-multi-clock-hours-7" role="option" data-ok-time-clock-number data-ok-position="7" data-ok-value="7" aria-label="7 hours">7</span>
+                <span id="tr-multi-clock-hours-8" role="option" data-ok-time-clock-number data-ok-position="8" data-ok-value="8" aria-label="8 hours">8</span>
+                <span id="tr-multi-clock-hours-9" role="option" data-ok-time-clock-number data-ok-position="9" data-ok-value="9" aria-label="9 hours" aria-selected="true">9</span>
+                <span id="tr-multi-clock-hours-10" role="option" data-ok-time-clock-number data-ok-position="10" data-ok-value="10" aria-label="10 hours">10</span>
+                <span id="tr-multi-clock-hours-11" role="option" data-ok-time-clock-number data-ok-position="11" data-ok-value="11" aria-label="11 hours">11</span>
+                <span id="tr-multi-clock-hours-12" role="option" data-ok-time-clock-number data-ok-position="0" data-ok-value="12" aria-label="12 hours">12</span>
+              </div>
+            </div>
+            <div data-ok-time-clock-nav>
+              <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-time-clock-prev aria-label="Open previous view" title="Open previous view" disabled>
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"></path></svg>
+              </button>
+              <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-time-clock-next aria-label="Open next view" title="Open next view">
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"></path></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div data-ok-picker-actions>
+          <button type="button" data-ok-button data-ok-variant="text" data-ok-color="inherit" data-ok-size="md" data-ok-picker-action="cancel">
+            <span data-ok-button-label>Cancel</span>
+          </button>
+          <button type="button" data-ok-button data-ok-variant="contained" data-ok-color="inherit" data-ok-size="md" data-ok-picker-action="accept">
+            <span data-ok-button-label>OK</span>
+          </button>
+        </div>
+      </div>
+    </div>
+    <dialog data-ok-dialog data-ok-max-width="xs" data-ok-scroll="paper" aria-label="Select time range" data-ok-date-picker-dialog>
+      <div data-ok-dialog-paper></div>
+    </dialog>
+  </div>
+  <div data-ok-date-range-picker data-ok-picker-variant="mobile" data-ok-value-type="time">
+    <div data-ok-text-field data-ok-variant="outlined" data-ok-size="medium" data-ok-color="default" data-ok-margin="none" data-ok-shrink data-ok-date-field data-ok-format-density="dense" data-ok-value-type="time" data-ok-range data-ok-value="09:00:00/17:30:00" data-ok-format="hh:mm A">
+      <label data-ok-text-field-label id="tr-mobile-label" for="tr-mobile">Mobile time range picker</label>
+      <div data-ok-text-field-control>
+        <div id="tr-mobile" role="group" data-ok-text-field-input data-ok-date-field-sections aria-labelledby="tr-mobile-label">
+          <span data-ok-date-field-section>
+            <span data-ok-date-field-content data-ok-section="hours" role="spinbutton" aria-label="Hours" aria-valuenow="9" aria-valuemin="1" aria-valuemax="12" aria-valuetext="09" tabindex="0" contenteditable="true" inputmode="numeric" spellcheck="false" autocapitalize="off" autocorrect="off" enterkeyhint="next">09</span>
+            <span data-ok-date-field-separator>:</span>
+          </span>
+          <span data-ok-date-field-section>
+            <span data-ok-date-field-content data-ok-section="minutes" role="spinbutton" aria-label="Minutes" aria-valuenow="0" aria-valuemin="0" aria-valuemax="59" aria-valuetext="00" tabindex="-1" contenteditable="true" inputmode="numeric" spellcheck="false" autocapitalize="off" autocorrect="off" enterkeyhint="next">00</span>
+            <span data-ok-date-field-separator> </span>
+          </span>
+          <span data-ok-date-field-section>
+            <span data-ok-date-field-content data-ok-section="meridiem" role="spinbutton" aria-label="Meridiem" aria-valuenow="0" aria-valuemin="0" aria-valuemax="1" aria-valuetext="AM" tabindex="-1" contenteditable="true" inputmode="text" spellcheck="false" autocapitalize="off" autocorrect="off" enterkeyhint="next">AM</span>
+            <span data-ok-date-field-separator> – </span>
+          </span>
+          <span data-ok-date-field-section>
+            <span data-ok-date-field-content data-ok-section="hours" role="spinbutton" aria-label="Hours" aria-valuenow="5" aria-valuemin="1" aria-valuemax="12" aria-valuetext="05" tabindex="-1" contenteditable="true" inputmode="numeric" spellcheck="false" autocapitalize="off" autocorrect="off" enterkeyhint="next">05</span>
+            <span data-ok-date-field-separator>:</span>
+          </span>
+          <span data-ok-date-field-section>
+            <span data-ok-date-field-content data-ok-section="minutes" role="spinbutton" aria-label="Minutes" aria-valuenow="30" aria-valuemin="0" aria-valuemax="59" aria-valuetext="30" tabindex="-1" contenteditable="true" inputmode="numeric" spellcheck="false" autocapitalize="off" autocorrect="off" enterkeyhint="next">30</span>
+            <span data-ok-date-field-separator> </span>
+          </span>
+          <span data-ok-date-field-section>
+            <span data-ok-date-field-content data-ok-section="meridiem" role="spinbutton" aria-label="Meridiem" aria-valuenow="1" aria-valuemin="0" aria-valuemax="1" aria-valuetext="PM" tabindex="-1" contenteditable="true" inputmode="text" spellcheck="false" autocapitalize="off" autocorrect="off" enterkeyhint="done">PM</span>
+          </span>
+        </div>
+        <input type="hidden" data-ok-date-field-input value="09:00:00/17:30:00">
+        <span data-ok-text-field-adornment="end">
+          <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="md" data-ok-edge="end" data-ok-date-picker-open aria-label="Choose range, selected range is 09:00 AM – 05:30 PM" aria-haspopup="dialog">
+            <svg aria-hidden="true" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20Zm0 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm0 2a1 1 0 0 1 1 1v4.59l2.7 2.7a1 1 0 0 1-1.4 1.42l-3-3A1 1 0 0 1 11 12V7a1 1 0 0 1 1-1Z"></path></svg>
+          </button>
+        </span>
+        <fieldset data-ok-text-field-outline aria-hidden="true">
+          <legend>
+            <span>Mobile time range picker</span>
+          </legend>
+        </fieldset>
+      </div>
+    </div>
+    <dialog data-ok-dialog data-ok-max-width="xs" data-ok-scroll="paper" aria-label="Select time range" data-ok-date-picker-dialog>
+      <div data-ok-dialog-paper>
+        <div data-ok-picker-layout data-ok-orientation="portrait">
+          <div data-ok-picker-toolbar data-ok-range-toolbar>
+            <span data-ok-picker-toolbar-overline id="tr-mobile-toolbar">Select time range</span>
+            <div data-ok-picker-toolbar-content>
+              <span data-ok-picker-toolbar-part>
+                <button type="button" data-ok-picker-toolbar-button data-ok-range-position="start" data-ok-selected aria-pressed="true">09:00 AM</button>
+              </span>
+              <span data-ok-picker-toolbar-part>
+                <span data-ok-picker-toolbar-separator aria-hidden="true">–</span>
+                <button type="button" data-ok-picker-toolbar-button data-ok-range-position="end" aria-pressed="false">05:30 PM</button>
+              </span>
+            </div>
+          </div>
+          <div data-ok-tabs data-ok-variant="fullWidth" data-ok-orientation="horizontal" data-ok-text-color="inherit" data-ok-indicator-color="inherit" data-ok-scroll-buttons="auto" data-ok-picker-tabs data-ok-picker-range-tabs>
+            <div data-ok-tabs-scroller>
+              <div role="tablist" data-ok-tabs-list>
+                <button type="button" role="tab" data-ok-tab value="start" aria-selected="true" tabindex="0">
+                  <span data-ok-tab-label>Start</span>
+                </button>
+                <button type="button" role="tab" data-ok-tab value="end" aria-selected="false" tabindex="-1">
+                  <span data-ok-tab-label>End</span>
+                </button>
+              </div>
+              <span data-ok-tabs-indicator></span>
+            </div>
+          </div>
+          <div data-ok-picker-content>
+            <div id="tr-mobile-clock" data-ok-time-clock data-ok-ampm="true" data-ok-value="09:00:00" data-ok-view="hours" data-ok-views="hours minutes">
+              <div data-ok-time-clock-dial>
+                <span data-ok-time-clock-pin></span>
+                <span data-ok-time-clock-pointer></span>
+                <div role="listbox" data-ok-time-clock-options tabindex="0" aria-label="Select hours. Selected time is 09:00 AM" aria-activedescendant="tr-mobile-clock-hours-9">
+                  <span id="tr-mobile-clock-hours-1" role="option" data-ok-time-clock-number data-ok-position="1" data-ok-value="1" aria-label="1 hours">1</span>
+                  <span id="tr-mobile-clock-hours-2" role="option" data-ok-time-clock-number data-ok-position="2" data-ok-value="2" aria-label="2 hours">2</span>
+                  <span id="tr-mobile-clock-hours-3" role="option" data-ok-time-clock-number data-ok-position="3" data-ok-value="3" aria-label="3 hours">3</span>
+                  <span id="tr-mobile-clock-hours-4" role="option" data-ok-time-clock-number data-ok-position="4" data-ok-value="4" aria-label="4 hours">4</span>
+                  <span id="tr-mobile-clock-hours-5" role="option" data-ok-time-clock-number data-ok-position="5" data-ok-value="5" aria-label="5 hours">5</span>
+                  <span id="tr-mobile-clock-hours-6" role="option" data-ok-time-clock-number data-ok-position="6" data-ok-value="6" aria-label="6 hours">6</span>
+                  <span id="tr-mobile-clock-hours-7" role="option" data-ok-time-clock-number data-ok-position="7" data-ok-value="7" aria-label="7 hours">7</span>
+                  <span id="tr-mobile-clock-hours-8" role="option" data-ok-time-clock-number data-ok-position="8" data-ok-value="8" aria-label="8 hours">8</span>
+                  <span id="tr-mobile-clock-hours-9" role="option" data-ok-time-clock-number data-ok-position="9" data-ok-value="9" aria-label="9 hours" aria-selected="true">9</span>
+                  <span id="tr-mobile-clock-hours-10" role="option" data-ok-time-clock-number data-ok-position="10" data-ok-value="10" aria-label="10 hours">10</span>
+                  <span id="tr-mobile-clock-hours-11" role="option" data-ok-time-clock-number data-ok-position="11" data-ok-value="11" aria-label="11 hours">11</span>
+                  <span id="tr-mobile-clock-hours-12" role="option" data-ok-time-clock-number data-ok-position="0" data-ok-value="12" aria-label="12 hours">12</span>
+                </div>
+              </div>
+              <div data-ok-time-clock-nav>
+                <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-time-clock-prev aria-label="Open previous view" title="Open previous view" disabled>
+                  <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"></path></svg>
+                </button>
+                <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-time-clock-next aria-label="Open next view" title="Open next view">
+                  <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"></path></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div data-ok-picker-actions>
+            <button type="button" data-ok-button data-ok-variant="text" data-ok-color="inherit" data-ok-size="md" data-ok-picker-action="cancel">
+              <span data-ok-button-label>Cancel</span>
+            </button>
+            <button type="button" data-ok-button data-ok-variant="contained" data-ok-color="inherit" data-ok-size="md" data-ok-picker-action="accept">
+              <span data-ok-button-label>OK</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </dialog>
+  </div>
+</div>

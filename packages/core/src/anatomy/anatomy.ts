@@ -2425,6 +2425,10 @@ export const dateFieldOptions = defineOptions("date-field", "data-ok-date-field"
     "The value can't be changed (it can still be focused and copied).",
   ),
   valueType: valueTypeOption,
+  range: flag(
+    "data-ok-range",
+    "Single input range field (ADR-0028): the start and the end in one field, the value an ISO 8601 interval `start/end`. React: the component (`SingleInputDateRangeField`, `SingleInputTimeRangeField`, `SingleInputDateTimeRangeField`).",
+  ),
   value: state("data-ok-value", "Value as ISO 8601 (`value` / `defaultValue`).", "change"),
 });
 
@@ -2433,6 +2437,7 @@ export interface DateFieldAnatomyOptions {
   clearable?: boolean | undefined;
   readOnly?: boolean | undefined;
   valueType?: (typeof pickerValueTypes)[number] | undefined;
+  range?: boolean | undefined;
 }
 
 /** `data-ok-*` attributes of a date field (on the TextField root). */
@@ -2636,6 +2641,139 @@ export interface MultiSectionDigitalClockAnatomyOptions {
 export const multiSectionDigitalClockAttributes = (
   options: MultiSectionDigitalClockAnatomyOptions = {},
 ): DataAttributes => optionAttributes(multiSectionDigitalClockOptions, { ...options });
+
+// Range pickers (ADR-0022 phase 3, ADR-0028).
+export const pickerCalendarCounts = ["1", "2", "3"] as const;
+
+export const dateRangeCalendarOptions = defineOptions(
+  "date-range-calendar",
+  "data-ok-date-range-calendar",
+  {
+    calendars: style(
+      "data-ok-calendars",
+      pickerCalendarCounts,
+      "2",
+      "Months shown side by side (range pickers: 2 in the popover, 1 in the dialog and inline).",
+    ),
+    currentMonthCalendarPosition: style(
+      "data-ok-current-month-calendar-position",
+      pickerCalendarCounts,
+      "1",
+      "The calendar that shows the value's month (or this month) first.",
+    ),
+    disableDragEditing: flag(
+      "data-ok-disable-drag-editing",
+      "The range's start and end can't be dragged to other days.",
+    ),
+    disableAutoMonthSwitching: flag(
+      "data-ok-disable-auto-month-switching",
+      "Picking the start doesn't show the end's month.",
+    ),
+    disablePast: flag("data-ok-disable-past", "Days before today can't be picked."),
+    disableFuture: flag("data-ok-disable-future", "Days after today can't be picked."),
+    displayWeekNumber: flag("data-ok-display-week-number", "A week number column."),
+    fixedWeekNumber: number(
+      "data-ok-fixed-week-number",
+      undefined,
+      "Always show this many weeks (6 keeps the height the same every month).",
+      { min: 1 },
+    ),
+    showDaysOutsideCurrentMonth: flag(
+      "data-ok-show-days-outside-current-month",
+      "Days of the previous and next months fill the first and last weeks (one calendar only).",
+    ),
+    disableHighlightToday: flag("data-ok-disable-highlight-today", "No ring around today."),
+    readOnly: flag("data-ok-read-only", "Days can be browsed but not picked."),
+    loading: flag("data-ok-loading", "Shows the loading text instead of the days."),
+    reduceAnimations: flag("data-ok-reduce-animations", "No month transitions."),
+    rangePosition: state(
+      "data-ok-range-position",
+      "The end the next pick edits, `start` or `end` (`rangePosition` / `onRangePositionChange`).",
+      "rangepositionchange",
+    ),
+    value: state(
+      "data-ok-value",
+      "Selected range as an ISO 8601 interval `start/end` (`value` / `defaultValue`).",
+      "change",
+    ),
+  },
+);
+
+export interface DateRangeCalendarAnatomyOptions {
+  calendars?: 1 | 2 | 3 | (typeof pickerCalendarCounts)[number] | undefined;
+  currentMonthCalendarPosition?: 1 | 2 | 3 | (typeof pickerCalendarCounts)[number] | undefined;
+  disableDragEditing?: boolean | undefined;
+  disableAutoMonthSwitching?: boolean | undefined;
+  disablePast?: boolean | undefined;
+  disableFuture?: boolean | undefined;
+  displayWeekNumber?: boolean | undefined;
+  fixedWeekNumber?: number | undefined;
+  showDaysOutsideCurrentMonth?: boolean | undefined;
+  disableHighlightToday?: boolean | undefined;
+  readOnly?: boolean | undefined;
+  loading?: boolean | undefined;
+  reduceAnimations?: boolean | undefined;
+}
+
+/** `data-ok-*` attributes of a date range calendar root. */
+export const dateRangeCalendarAttributes = (
+  options: DateRangeCalendarAnatomyOptions = {},
+): DataAttributes =>
+  optionAttributes(dateRangeCalendarOptions, {
+    ...options,
+    calendars: options.calendars === undefined ? undefined : String(options.calendars),
+    currentMonthCalendarPosition:
+      options.currentMonthCalendarPosition === undefined
+        ? undefined
+        : String(options.currentMonthCalendarPosition),
+  });
+
+export const dateRangePickerOptions = defineOptions(
+  "date-range-picker",
+  "data-ok-date-range-picker",
+  {
+    pickerVariant: style(
+      "data-ok-picker-variant",
+      pickerVariantValues,
+      "responsive",
+      "`responsive` (desktop or mobile by `desktopModeMediaQuery`), `desktop` (popover), `mobile` (dialog), `static` (inline). React: the component (`DateRangePicker`, `DesktopDateRangePicker`, `MobileDateRangePicker`, `StaticDateRangePicker`, and the time and date time range families).",
+    ),
+    calendars: style(
+      "data-ok-calendars",
+      pickerCalendarCounts,
+      "2",
+      "Months shown in the desktop popover (the dialog and inline forms show one).",
+      { optional: true },
+    ),
+    closeOnSelect: behavior(
+      "data-ok-close-on-select",
+      true,
+      "Picking the end closes the picker. Default: on for desktop date ranges, off otherwise (absent attribute).",
+    ),
+    disableDragEditing: flag(
+      "data-ok-disable-drag-editing",
+      "The range's start and end can't be dragged to other days.",
+    ),
+    valueType: valueTypeOption,
+    open: state("data-ok-open", "Open state (`open` / `onOpenChange`).", "open"),
+  },
+);
+
+export interface DateRangePickerAnatomyOptions {
+  pickerVariant?: (typeof pickerVariantValues)[number] | undefined;
+  calendars?: 1 | 2 | 3 | (typeof pickerCalendarCounts)[number] | undefined;
+  disableDragEditing?: boolean | undefined;
+  valueType?: (typeof pickerValueTypes)[number] | undefined;
+}
+
+/** `data-ok-*` attributes of a date range picker root. */
+export const dateRangePickerAttributes = (
+  options: DateRangePickerAnatomyOptions = {},
+): DataAttributes =>
+  optionAttributes(dateRangePickerOptions, {
+    ...options,
+    calendars: options.calendars === undefined ? undefined : String(options.calendars),
+  });
 
 /** Every component's option schema, for tooling (Storybook Controls, parity tests, docs). */
 // --- Editor (ADR-0023) --------------------------------------------------------------------------
@@ -2883,6 +3021,8 @@ export const optionSchemas = {
   "time-clock": timeClockOptions,
   "digital-clock": digitalClockOptions,
   "multi-section-digital-clock": multiSectionDigitalClockOptions,
+  "date-range-calendar": dateRangeCalendarOptions,
+  "date-range-picker": dateRangePickerOptions,
   editor: editorOptions,
   chart: chartOptions,
 } as const;

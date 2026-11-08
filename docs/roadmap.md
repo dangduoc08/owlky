@@ -47,7 +47,7 @@ component and each `/integrate` run.
 | MUI | Tooltip | ✅ | Tooltip | Popover, Tooltip, Menu, Dialog & Snackbar |
 | MUI | Transfer list | ✅ | TransferList | Rating, Slider, Timeline, Transfer list, Tree view & Autocomplete |
 | MUI X | Data grid | ✅ phases 1–6 of 6 (ADR-0020, ADR-0021) | DataGrid | Data grid |
-| MUI X | Date pickers | ✅ phases 1–2 of 4 (ADR-0022, ADR-0026) | DatePicker, DesktopDatePicker, MobileDatePicker, StaticDatePicker, DateField, DateCalendar, MonthCalendar, YearCalendar, LocalizationProvider; TimePicker, DateTimePicker (desktop, mobile, static), TimeField, DateTimeField, TimeClock, DigitalClock, MultiSectionDigitalClock | Date pickers |
+| MUI X | Date pickers | ✅ phases 1–3 of 4 (ADR-0022, ADR-0026, ADR-0028) | DatePicker, DesktopDatePicker, MobileDatePicker, StaticDatePicker, DateField, DateCalendar, MonthCalendar, YearCalendar, LocalizationProvider; TimePicker, DateTimePicker (desktop, mobile, static), TimeField, DateTimeField, TimeClock, DigitalClock, MultiSectionDigitalClock; DateRangeCalendar, DateRangePicker (desktop, mobile, static), TimeRangePicker, DateTimeRangePicker (desktop, mobile), single and multi input range fields (date, time, date time) | Date pickers |
 | MUI X | Tree view | ✅ | SimpleTreeView, TreeItem, RichTreeView | Rating, Slider, Timeline, Transfer list, Tree view & Autocomplete |
 | Extra | Animate | ✅ beta | Motion, MotionGroup, MotionText, CountUp, MotionBorder; Dialog `transition` | Motion |
 | Extra | Carousel | wave 7 (ADR) | — | Next |
@@ -436,13 +436,24 @@ times); time validation (`minTime`, `maxTime`, `minDateTime`, `maxDateTime`, `mi
 `createTimeClockController`, `createDigitalClockController`; HTML runtimes `time-clock`,
 `digital-clock`, `multi-section-digital-clock` (the `date-field` and `date-picker` runtimes serve
 every value type). Reuses Tabs as well; no new token, no dependency.
+Phase 3 (ADR-0028; stories: Range — the reference section — plus Range fields, Range calendars,
+Time ranges and Range shortcuts): DateRangeCalendar (one to three months, hover preview, drag
+editing of the ends with a mouse or a finger, auto month switching), the DateRangePicker family
+(two months in the desktop popover, toolbar and one month in the dialog and inline),
+TimeRangePicker and DateTimeRangePicker (Start / End tabs, digital clocks on desktop, the analog
+clock on touch screens), single and multi input range fields of each value type, range shortcuts
+for dashboard filters and `invalidRange` validation. Core `range.ts`,
+`createRangeDragController`; HTML runtimes `date-range-calendar`, `multi-input-range-field`,
+`date-range-picker` (single input fields are `date-field` with `data-ok-range`); values are ISO
+8601 intervals (`2025-05-20/2025-05-25`). No new token, no dependency; about 6.6 kB of the CDN
+bundle and 1 kB of the CSS (gzip).
 
 | Phase | Scope (MUI X tier) | State |
 |---|---|---|
 | 1 | Engine, LocalizationProvider; DateField, DateCalendar, MonthCalendar, YearCalendar, DatePicker (responsive, desktop, mobile, static); validation, toolbar, actions, shortcuts, week numbers, fixed weeks, outside days, loading, landscape, clearable fields (Community) | ✅ 2026-11-08 |
 | 2 | TimeField, TimeClock, DigitalClock, MultiSectionDigitalClock, TimePicker, DateTimeField, DateTimePicker (each responsive, desktop, mobile, static; tabs); time validation and steps (Community); reference sections Time, Date & Time | ✅ 2026-11-08 (ADR-0026) |
-| 3 | DateRangeCalendar, DateRangePicker, single- and multi-input range fields, TimeRangePicker, DateTimeRangePicker, range shortcuts, drag editing (Pro); reference section Range | next (`/component` Update) |
-| 4 | Time zones, `dateAdapter` (generic date types) and adapters for Day.js / date-fns / Luxon / Moment, other calendar systems, locale packs, right-to-left, view renderers and layout customization | — |
+| 3 | DateRangeCalendar, DateRangePicker, single- and multi-input range fields, TimeRangePicker, DateTimeRangePicker, range shortcuts, drag editing (Pro); reference section Range | ✅ 2026-11-08 (ADR-0028) |
+| 4 | Time zones, `dateAdapter` (generic date types) and adapters for Day.js / date-fns / Luxon / Moment, other calendar systems, locale packs, right-to-left, view renderers and layout customization | next (`/component` Update) |
 
 ## Pending integrations
 Everything waiting for a component that doesn't exist yet — stand-ins (native feature, demo
@@ -534,7 +545,7 @@ Dependency-first: leaf components before the ones built from them, the ones that
 | 4 Overlays | ~~Popover~~ ✅, ~~Tooltip~~ ✅, ~~Menu~~ ✅, ~~Dialog~~ ✅, ~~Snackbar~~ ✅, ~~Backdrop~~ ✅ | ~~Drawer / Dialog backdrop~~ ✅ (native `::backdrop`, same token); icon button tooltips: nothing to change (MUI uses native `title` there; Tooltip wraps any IconButton) |
 | 5 Navigation | ~~Tabs~~ ✅, ~~Breadcrumbs~~ ✅, ~~Stepper~~ ✅ | — (nothing waited for them) |
 | 6 Composites | ~~Rating~~ ✅, ~~Slider~~ ✅, ~~Timeline~~ ✅, ~~Transfer list~~ ✅, ~~Autocomplete~~ ✅, ~~Tree view~~ ✅ | — (nothing waited for them; Slider unblocks the SettingsDrawer backlog of Theme settings) |
-| 7 Needs an ADR | ~~Data grid~~ (ADR-0020, phases below), ~~Date pickers~~ (ADR-0022, phases 1–2 ✅), ~~Chart~~ (ADR-0024, ADR-0027, phases 1–3 ✅), Map, ~~Editor~~ (ADR-0023) ✅, Carousel, Lightbox, Markdown, Organization chart, Upload, Image, Walktour | — |
+| 7 Needs an ADR | ~~Data grid~~ (ADR-0020, phases below), ~~Date pickers~~ (ADR-0022, phases 1–3 ✅), ~~Chart~~ (ADR-0024, ADR-0027, phases 1–3 ✅), Map, ~~Editor~~ (ADR-0023) ✅, Carousel, Lightbox, Markdown, Organization chart, Upload, Image, Walktour | — |
 
 Not planned as components (patterns or app-level pages of the reference): Layout,
 Utilities, Multi-language, Navigation bar, Mega menu, Scroll progress, Form validation, Form wizard.

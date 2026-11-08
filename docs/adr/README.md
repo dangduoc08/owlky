@@ -31,6 +31,7 @@ ADR that supersedes the old one — don't rewrite history.
 | [0024](0024-chart.md) | Chart: one SVG chart engine in core, written by us, four phases | Accepted (phases 3–4 superseded by 0027) |
 | [0026](0026-time-pickers.md) | Time pickers: one field and picker anatomy for every value type, clocks as listboxes | Accepted |
 | [0027](0027-chart-every-type.md) | Chart: every ApexCharts chart type; phases 3–4 rescoped for dashboards | Accepted |
+| [0028](0028-range-pickers.md) | Range pickers: a range model in core, ISO intervals, one range calendar and runtime | Accepted |
 | [0029](0029-chart-phase-3-data-model.md) | Chart phase 3: several values per point, cell charts, sparklines, live updates | Accepted |
 
 Template: **Context** (why decide) · **Decision** (what) · **Consequences** (trade-offs, follow-ups).

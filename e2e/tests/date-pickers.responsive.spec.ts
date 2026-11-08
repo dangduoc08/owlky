@@ -13,10 +13,15 @@ const STORIES = [
   "time-validation",
   "shortcuts",
   "localization",
+  "range",
+  "range-fields",
+  "range-calendars",
+  "time-ranges",
+  "range-shortcuts",
 ];
 
 const PARTS =
-  "[data-ok-date-field], [data-ok-date-calendar], [data-ok-picker-layout], [data-ok-month-calendar], [data-ok-year-calendar], [data-ok-time-clock], [data-ok-multi-section-digital-clock], [data-ok-digital-clock]";
+  "[data-ok-date-field], [data-ok-date-calendar], [data-ok-picker-layout], [data-ok-month-calendar], [data-ok-year-calendar], [data-ok-time-clock], [data-ok-multi-section-digital-clock], [data-ok-digital-clock], [data-ok-date-range-calendar-month], [data-ok-multi-input-range-field]";
 const TARGETS =
   "[data-ok-picker-day], [data-ok-date-picker-open], [data-ok-picker-action], [data-ok-date-calendar-prev], [data-ok-date-calendar-next], [data-ok-time-clock-prev], [data-ok-time-clock-next], [data-ok-digital-clock-item], [data-ok-picker-toolbar-meridiem], [role=tab]";
 
@@ -84,6 +89,28 @@ for (const viewport of viewports) {
         // The calendar keeps its 320px.
         const calendar = await paper.locator("[data-ok-date-calendar]").boundingBox();
         expect(Math.round(calendar?.width ?? 0)).toBe(320);
+        await page.keyboard.press("Escape");
+      }
+    });
+
+    test("an open range picker stays inside the screen", async ({ page }) => {
+      for (const impl of implementations) {
+        await openStory(page, storyId(impl, "date-pickers", "range"));
+        const open = page.locator("[data-ok-date-picker-open]").first();
+        if (viewport.touch) await open.tap();
+        else await open.click();
+        const paper = page.locator(
+          "[data-ok-date-picker-paper][data-ok-open], dialog[open] > [data-ok-dialog-paper]",
+        );
+        await expect(paper).toBeVisible();
+        const box = await paper.boundingBox();
+        expect(box?.x ?? -1).toBeGreaterThanOrEqual(0);
+        expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(viewport.width);
+        // Two months in the popover (they stack on narrow screens), one in the dialog.
+        const months = paper.locator("[data-ok-date-range-calendar-month]");
+        expect(await months.count()).toBeGreaterThanOrEqual(1);
+        const month = await months.first().boundingBox();
+        expect(Math.round(month?.width ?? 0)).toBe(320);
         await page.keyboard.press("Escape");
       }
     });
