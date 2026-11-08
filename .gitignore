@@ -10,3 +10,6 @@ __screenshots__/
 .DS_Store
 *.log
 *.tgz
+
+# Agent worktrees (Multi-URL mode)
+.claude/worktrees/
