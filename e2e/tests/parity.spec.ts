@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, type Page, test } from "@playwright/test";
 import { normalizeStory, openStory, storyId } from "./helpers.js";
 
 /**
@@ -9,6 +9,8 @@ const pairs: [component: string, story: string][] = [
   ["datagrid", "basic"],
   ["datagrid", "custom"],
   ["datagrid", "advanced"],
+  ["datagrid", "large"],
+  ["datagrid", "server"],
   ["motion", "in-view"],
   ["motion", "text"],
   ["motion", "scroll"],
@@ -199,13 +201,24 @@ const pairs: [component: string, story: string][] = [
   ["backdrop", "example"],
 ];
 
+/** Stories whose rows load after the first render (scripts, data sources): wait for them. */
+const LOADS = new Set(["datagrid/large", "datagrid/server"]);
+async function loaded(page: Page, key: string) {
+  if (!LOADS.has(key)) return;
+  const grid = page.getByRole("grid");
+  await expect(grid.locator('[data-ok-data-grid-body] > [role="row"]').first()).toBeVisible();
+  await expect(grid).not.toHaveAttribute("aria-busy", "true");
+}
+
 for (const [component, story] of pairs) {
   test.describe(`${component} / ${story}`, () => {
     test("has identical anatomy in React and HTML", async ({ page, browserName }) => {
       test.skip(browserName !== "chromium", "Structure is browser-independent.");
       await openStory(page, storyId("react", component, story));
+      await loaded(page, `${component}/${story}`);
       const react = await normalizeStory(page);
       await openStory(page, storyId("html", component, story));
+      await loaded(page, `${component}/${story}`);
       const html = await normalizeStory(page);
       expect(react).toEqual(html);
     });
@@ -213,8 +226,10 @@ for (const [component, story] of pairs) {
     test("renders identical pixels in React and HTML", async ({ page }) => {
       for (const theme of ["light", "dark"] as const) {
         await openStory(page, storyId("react", component, story), theme);
+        await loaded(page, `${component}/${story}`);
         const react = await page.locator("#storybook-root").screenshot({ animations: "disabled" });
         await openStory(page, storyId("html", component, story), theme);
+        await loaded(page, `${component}/${story}`);
         const html = await page.locator("#storybook-root").screenshot({ animations: "disabled" });
         expect(html.equals(react), `${theme} theme screenshots differ`).toBe(true);
       }

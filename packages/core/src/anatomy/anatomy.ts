@@ -2169,6 +2169,42 @@ export const dataGridOptions = defineOptions("data-grid", "data-ok-data-grid", {
     "cell",
     "Editable columns: edit one `cell` at a time, or every editable cell of a `row` together.",
   ),
+  disableVirtualization: flag(
+    "data-ok-disable-virtualization",
+    "Render every row of the page, not only the visible ones.",
+  ),
+  sortingMode: style(
+    "data-ok-sorting-mode",
+    ["client", "server"],
+    "client",
+    "`server`: the grid reports the sort model and shows the rows as given.",
+  ),
+  filterMode: style(
+    "data-ok-filter-mode",
+    ["client", "server"],
+    "client",
+    "`server`: the grid reports the filter model and shows the rows as given.",
+  ),
+  paginationMode: style(
+    "data-ok-pagination-mode",
+    ["client", "server"],
+    "client",
+    "`server`: the rows are the current page; `rowCount` is the total.",
+  ),
+  rowCount: number("data-ok-row-count", undefined, "Total rows on the server.", { min: 0 }),
+  loading: flag("data-ok-loading", "Data is loading: an overlay shows progress."),
+  loadingVariant: style(
+    "data-ok-loading-variant",
+    ["linear-progress", "circular-progress", "skeleton"],
+    "linear-progress",
+    "How loading shows: a bar, a spinner or placeholder rows.",
+  ),
+  scrollEndThreshold: number(
+    "data-ok-scroll-end-threshold",
+    80,
+    "Distance from the end of the rows (px) that reports the scroll end.",
+    { min: 0 },
+  ),
 });
 
 export interface DataGridAnatomyOptions {
@@ -2182,6 +2218,14 @@ export interface DataGridAnatomyOptions {
   disableColumnReorder?: boolean | undefined;
   disableColumnPinning?: boolean | undefined;
   editMode?: "cell" | "row" | undefined;
+  disableVirtualization?: boolean | undefined;
+  sortingMode?: "client" | "server" | undefined;
+  filterMode?: "client" | "server" | undefined;
+  paginationMode?: "client" | "server" | undefined;
+  rowCount?: number | undefined;
+  loading?: boolean | undefined;
+  loadingVariant?: "linear-progress" | "circular-progress" | "skeleton" | undefined;
+  scrollEndThreshold?: number | undefined;
 }
 
 /** `data-ok-*` attributes of a data grid root. */

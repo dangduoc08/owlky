@@ -116,5 +116,38 @@ for (const impl of implementations) {
       await expect(page.locator("[data-ok-data-grid-filter]")).toHaveCount(2);
       await expect(page.getByLabel("Logic operator")).toBeVisible();
     });
+
+    test("large dataset: a bounded window of rows; more rows at the end", async ({ page }) => {
+      await openStory(page, storyId(impl, "datagrid", "large"));
+      const grid = page.getByRole("grid");
+      const rows = grid.locator('[data-ok-data-grid-body] > [role="row"]');
+      await expect(grid).toHaveAttribute("aria-rowcount", "201");
+      expect(await rows.count()).toBeLessThan(40);
+      await grid.evaluate((element) => {
+        element.scrollTop = element.scrollHeight;
+      });
+      await expect(grid).toHaveAttribute("aria-rowcount", "401");
+      expect(await rows.count()).toBeLessThan(40);
+      await expect(rows.last()).toHaveAttribute("aria-rowindex", /^2\d\d$/);
+    });
+
+    test("server side: sorts and pages through the data source", async ({ page }) => {
+      await openStory(page, storyId(impl, "datagrid", "server"));
+      const grid = page.getByRole("grid");
+      await expect(page.getByText("1–10 of 1000")).toBeVisible();
+      await expect(grid).not.toHaveAttribute("aria-busy", "true");
+      await page.getByRole("columnheader", { name: /^Age/ }).click();
+      await expect(grid).not.toHaveAttribute("aria-busy", "true");
+      await expect.poll(async () => (await visible(page, "age"))[0]).toBe("18");
+      await page.getByRole("button", { name: "Go to next page" }).click();
+      await expect(page.getByText("11–20 of 1000")).toBeVisible();
+      await expect(grid).not.toHaveAttribute("aria-busy", "true");
+      // Rows of page 2 follow the 10 rows of page 1 (short screens render fewer of them).
+      await expect(grid.locator('[data-ok-data-grid-body] > [role="row"]').first()).toHaveAttribute(
+        "aria-rowindex",
+        "12",
+      );
+      await expect(grid).toHaveAttribute("aria-rowcount", "1001");
+    });
   });
 }

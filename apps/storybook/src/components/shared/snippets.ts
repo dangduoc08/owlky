@@ -1,5 +1,5 @@
 import type { StoryObj } from "@storybook/react-vite";
-import { htmlGroupsStory, type StoryControls } from "../../helpers/groups.js";
+import { type HtmlGroup, htmlGroupsStory, type StoryControls } from "../../helpers/groups.js";
 
 /** Group title ↔ snippet file suffix, in story order. */
 export type GroupFiles = readonly (readonly [title: string, file: string])[];
@@ -35,6 +35,8 @@ export function snippetStory(
   groups: GroupFiles,
   setup: string,
   controls?: StoryControls,
+  /** Page scripts per file suffix (data loaded with JavaScript). */
+  scripts: Record<string, Pick<HtmlGroup, "script" | "scriptSource">> = {},
 ): StoryObj {
   return htmlGroupsStory(
     groups.map(([title, file]) => {
@@ -42,7 +44,7 @@ export function snippetStory(
         path.endsWith(`/${story}-${file}.html`),
       );
       if (!entry) throw new Error(`Missing snippet ${story}-${file}.html`);
-      return { title, html: entry[1] };
+      return { title, html: entry[1], ...scripts[file] };
     }),
     setup,
     controls,

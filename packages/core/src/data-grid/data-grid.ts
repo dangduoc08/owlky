@@ -528,6 +528,7 @@ export const gridDefaultLabels = {
   checkboxSelectionSelectAllRows: "Select all rows",
   checkboxSelectionSelectRow: "Select row",
   noRowsLabel: "No rows",
+  loadingLabel: "Loading",
   noResultsOverlayLabel: "No results found.",
   filterOperator: {
     contains: "contains",

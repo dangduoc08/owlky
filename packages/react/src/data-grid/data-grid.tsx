@@ -4,13 +4,17 @@ import {
   arrangeGridColumns,
   clampGridWidth,
   createGridColumnControls,
+  createGridDataSourceCache,
   createGridNavigation,
+  createGridScrollWatcher,
   dataGridAttributes,
   filterGridRows,
   GRID_CHECKBOX_FIELD,
   type GridColumn,
   type GridColumnVisibilityModel,
   type GridColumnWidths,
+  type GridDataSource,
+  type GridDataSourceCache,
   type GridDensity,
   type GridFilterItem,
   type GridFilterModel,
@@ -18,6 +22,7 @@ import {
   type GridNavigation,
   type GridPinnedColumns,
   type GridSortModel,
+  type GridViewport,
   gridAlign,
   gridAriaSort,
   gridColumnTemplate,
@@ -30,6 +35,7 @@ import {
   gridOperatorNeedsValue,
   gridPinSide,
   gridQuickFilterValues,
+  gridRowWindow,
   gridSelectAllState,
   gridToCsv,
   isGridFilterable,
@@ -59,13 +65,16 @@ import {
   useEffect,
   useId,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
 import { Button } from "../button/button.js";
 import { Checkbox } from "../checkbox/checkbox.js";
+import { CircularProgress } from "../circular-progress/circular-progress.js";
 import { FormControlLabel } from "../form-control-label/form-control-label.js";
 import { IconButton } from "../icon-button/icon-button.js";
+import { LinearProgress } from "../linear-progress/linear-progress.js";
 import { Menu, MenuItem } from "../menu/menu.js";
 import { Popover } from "../popover/popover.js";
 import { Switch } from "../switch/switch.js";
@@ -167,6 +176,27 @@ export interface DataGridProps<R>
   /** Called with the edited row; return (or resolve) the row to show. Reject to refuse it. */
   processRowUpdate?: ((newRow: R, oldRow: R) => R | Promise<R>) | undefined;
   onProcessRowUpdateError?: ((error: unknown) => void) | undefined;
+  /** Render every row of the page instead of the visible ones. */
+  disableVirtualization?: boolean | undefined;
+  /** `server`: report the model and show `rows` as given. Default `client`. */
+  sortingMode?: "client" | "server" | undefined;
+  filterMode?: "client" | "server" | undefined;
+  /** `server`: `rows` are the current page and `rowCount` the total. */
+  paginationMode?: "client" | "server" | undefined;
+  rowCount?: number | undefined;
+  /** Shows the loading overlay. */
+  loading?: boolean | undefined;
+  /** Default `linear-progress`. */
+  loadingVariant?: "linear-progress" | "circular-progress" | "skeleton" | undefined;
+  /** The rows were scrolled near their end (infinite loading). Called once per row count. */
+  onRowsScrollEnd?: ((params: { visibleRowsCount: number }) => void) | undefined;
+  /** Distance from the end that counts as the end, px. Default 80. */
+  scrollEndThreshold?: number | undefined;
+  /** Loads rows from a server for the current sort, filter and page (replaces `rows`). */
+  dataSource?: GridDataSource<R> | undefined;
+  /** Responses kept per request; `null` turns caching off. Default: a cache of 50. */
+  dataSourceCache?: GridDataSourceCache<R> | null | undefined;
+  onDataSourceError?: ((error: unknown) => void) | undefined;
 }
 
 const SortIcon = () => (
@@ -285,6 +315,18 @@ function DataGridInner<R>(
     editMode = "cell",
     processRowUpdate,
     onProcessRowUpdateError,
+    disableVirtualization,
+    sortingMode = "client",
+    filterMode = "client",
+    paginationMode = "client",
+    rowCount,
+    loading,
+    loadingVariant = "linear-progress",
+    onRowsScrollEnd,
+    scrollEndThreshold = 80,
+    dataSource,
+    dataSourceCache,
+    onDataSourceError,
     "aria-label": ariaLabel,
     "aria-labelledby": ariaLabelledby,
     ...props
@@ -358,31 +400,72 @@ function DataGridInner<R>(
   const [menuField, setMenuField] = useState<string | null>(null);
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
 
-  const view = rows.map((row) => overrides.get(String(getRowId(row))) ?? row);
+  const [viewport, setViewport] = useState<GridViewport | null>(null);
+  const [sourced, setSourced] = useState<{ rows: readonly R[]; rowCount?: number | undefined }>({
+    rows: [],
+  });
+  const [sourceLoading, setSourceLoading] = useState(false);
+  // One default cache per data source: a new source never sees the old one's rows.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: a new cache for each source.
+  const defaultCache = useMemo(() => createGridDataSourceCache<R>(), [dataSource]);
+  const base = dataSource ? sourced.rows : rows;
+  const server = {
+    sort: !!dataSource || sortingMode === "server",
+    filter: !!dataSource || filterMode === "server",
+    page: !!dataSource || paginationMode === "server",
+  };
+  const view = base.map((row) => overrides.get(String(getRowId(row))) ?? row);
   const ordered = orderGridColumns(columns, order);
   const shown = visibleGridColumns(arrangeGridColumns(ordered, pinned), visibility);
   const leftPinned = shown.some((c) => gridPinSide(pinned, c.field) === "left");
   const editable = (column: GridColDef<R>) =>
     !!column.editable && !column.valueGetter && column.type !== "actions";
-  const filtered = filterGridRows(
-    view,
-    filterModel,
-    columns,
-    (row, field) => {
-      const column = columns.find((c) => c.field === field) as GridColDef<R>;
-      return rawValue(column, row);
-    },
-    (row, field) => textOf(columns.find((c) => c.field === field) as GridColDef<R>, row),
-  );
-  const sorted = sortGridRows(filtered, sortModel, columns, (row, field) =>
-    rawValue(columns.find((c) => c.field === field) as GridColDef<R>, row),
-  );
-  const pageCount = Math.max(Math.ceil(sorted.length / pagination.pageSize), 1);
+  const filtered = server.filter
+    ? view
+    : filterGridRows(
+        view,
+        filterModel,
+        columns,
+        (row, field) => {
+          const column = columns.find((c) => c.field === field) as GridColDef<R>;
+          return rawValue(column, row);
+        },
+        (row, field) => textOf(columns.find((c) => c.field === field) as GridColDef<R>, row),
+      );
+  const sorted = server.sort
+    ? filtered
+    : sortGridRows(filtered, sortModel, columns, (row, field) =>
+        rawValue(columns.find((c) => c.field === field) as GridColDef<R>, row),
+      );
+  const total = server.page
+    ? ((dataSource ? sourced.rowCount : rowCount) ?? sorted.length)
+    : sorted.length;
+  const pageCount = Math.max(Math.ceil(total / pagination.pageSize), 1);
   const page = Math.min(pagination.page, pageCount - 1);
-  // Every filtered row is rendered; rows of other pages are `hidden` (as the HTML runtime does).
-  const onPage = (index: number) =>
-    hideFooter || (index >= page * pagination.pageSize && index < (page + 1) * pagination.pageSize);
-  const pageRows = sorted.filter((_, index) => onPage(index));
+  // Rows of the page: all of them with server pagination or without a footer.
+  const pageStart = server.page || hideFooter ? 0 : page * pagination.pageSize;
+  const pageEnd = server.page || hideFooter ? sorted.length : pageStart + pagination.pageSize;
+  const onPage = (index: number) => index >= pageStart && index < pageEnd;
+  const pageRows = sorted.slice(pageStart, pageEnd);
+  // Virtualization starts once the grid is measured: the first render (and SSR) shows every row,
+  // rows of other pages `hidden` (as the HTML runtime does).
+  const virtual = !disableVirtualization && !!viewport?.scrolls && viewport.rowHeight > 0;
+  const range = virtual
+    ? gridRowWindow(
+        pageRows.length,
+        (viewport as GridViewport).rowHeight,
+        (viewport as GridViewport).offset,
+        (viewport as GridViewport).viewport,
+      )
+    : null;
+  const rendered = range
+    ? pageRows
+        .slice(range.start, range.end)
+        .map((row, i) => ({ row, index: pageStart + range.start + i }))
+    : sorted.map((row, index) => ({ row, index }));
+  const busy = !!loading || sourceLoading;
+  // Rows of a server page sit after the rows of the pages before it.
+  const rowOffset = server.page ? page * pagination.pageSize : 0;
   const allIds = sorted.map((row) => String(getRowId(row)));
   const selectAll = gridSelectAllState(allIds, selection);
   const colOffset = checkboxSelection ? 2 : 1;
@@ -421,6 +504,71 @@ function DataGridInner<R>(
   }, []);
   // Sticky offsets of pinned columns, after every layout.
   useLayoutEffect(() => syncGridPinning(gridRef.current as HTMLDivElement));
+  const scrollEnd = useRef<() => void>(undefined as never);
+  const endCount = useRef(-1);
+  scrollEnd.current = () => {
+    if (!onRowsScrollEnd || endCount.current === sorted.length) return;
+    endCount.current = sorted.length;
+    onRowsScrollEnd({ visibleRowsCount: sorted.length });
+  };
+  const threshold = useRef(scrollEndThreshold);
+  threshold.current = scrollEndThreshold;
+  const watcher = useRef<ReturnType<typeof createGridScrollWatcher> | null>(null);
+  useEffect(() => {
+    const handle = createGridScrollWatcher(gridRef.current as HTMLDivElement, {
+      onChange: (next) =>
+        setViewport((current) =>
+          current &&
+          current.offset === next.offset &&
+          current.viewport === next.viewport &&
+          current.rowHeight === next.rowHeight &&
+          current.scrolls === next.scrolls
+            ? current
+            : next,
+        ),
+      onScrollEnd: () => scrollEnd.current(),
+      threshold: () => threshold.current,
+    });
+    watcher.current = handle;
+    handle.measure();
+    return () => handle.destroy();
+  }, []);
+  // A new density or new rows: measure the rows again.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: re-measures when these change.
+  useEffect(() => watcher.current?.measure(), [density, rendered.length > 0]);
+
+  const cache = dataSourceCache === undefined ? defaultCache : dataSourceCache;
+  const request = JSON.stringify({
+    sortModel,
+    filterModel,
+    paginationModel: { page: pagination.page, pageSize: pagination.pageSize },
+  });
+  useEffect(() => {
+    if (!dataSource) return;
+    const params = JSON.parse(request);
+    const cached = cache?.get(params);
+    if (cached) {
+      setSourced(cached);
+      return;
+    }
+    let current = true;
+    setSourceLoading(true);
+    dataSource
+      .getRows(params)
+      .then((response) => {
+        cache?.set(params, response);
+        if (current) setSourced(response);
+      })
+      .catch((error: unknown) => {
+        if (current) onDataSourceError?.(error);
+      })
+      .finally(() => {
+        if (current) setSourceLoading(false);
+      });
+    return () => {
+      current = false;
+    };
+  }, [dataSource, cache, request, onDataSourceError]);
   useEffect(() => {
     if (editing)
       gridRef.current?.querySelector<HTMLElement>("[data-ok-data-grid-edit-input]")?.focus();
@@ -833,6 +981,14 @@ function DataGridInner<R>(
         disableColumnReorder,
         disableColumnPinning,
         editMode,
+        disableVirtualization,
+        sortingMode,
+        filterMode,
+        paginationMode,
+        rowCount,
+        loading: busy,
+        loadingVariant,
+        scrollEndThreshold: scrollEndThreshold === 80 ? undefined : scrollEndThreshold,
       })}
       data-ok-runtime="off"
       {...props}
@@ -844,9 +1000,10 @@ function DataGridInner<R>(
         data-ok-data-grid-main=""
         aria-label={ariaLabel}
         aria-labelledby={ariaLabelledby}
-        aria-rowcount={sorted.length + 1}
+        aria-rowcount={total + 1}
         aria-colcount={shown.length + (checkboxSelection ? 1 : 0)}
         {...(checkboxSelection ? { "aria-multiselectable": true } : {})}
+        {...(busy ? { "aria-busy": true } : {})}
         style={
           {
             "--_ok-data-grid-columns": gridColumnTemplate(shown, !!checkboxSelection, widths),
@@ -937,15 +1094,26 @@ function DataGridInner<R>(
             })}
           </div>
         </div>
-        <div role="rowgroup" data-ok-data-grid-body="">
-          {sorted.map((row, index) => {
+        <div
+          role="rowgroup"
+          data-ok-data-grid-body=""
+          style={
+            range
+              ? ({
+                  "--_ok-data-grid-before": `${range.before}px`,
+                  "--_ok-data-grid-after": `${range.after}px`,
+                } as CSSProperties)
+              : undefined
+          }
+        >
+          {rendered.map(({ row, index }) => {
             const rowId = String(getRowId(row));
             const selected = selection.includes(rowId);
             return (
               <div
                 key={rowId}
                 role="row"
-                aria-rowindex={index + 2}
+                aria-rowindex={index + 2 + rowOffset}
                 hidden={!onPage(index) || undefined}
                 data-ok-row-id={rowId}
                 {...(checkboxSelection ? { "aria-selected": selected } : {})}
@@ -1068,10 +1236,29 @@ function DataGridInner<R>(
           })}
         </div>
       </div>
-      <div data-ok-data-grid-overlay="" role="status" hidden={pageRows.length > 0 || undefined}>
-        {pageRows.length > 0
+      <div
+        data-ok-data-grid-loading=""
+        data-ok-variant={loadingVariant}
+        role="status"
+        aria-label={labels.loadingLabel}
+        hidden={!busy || undefined}
+      >
+        {loadingVariant === "linear-progress" ? (
+          <LinearProgress aria-label={labels.loadingLabel} />
+        ) : loadingVariant === "circular-progress" ? (
+          <CircularProgress aria-label={labels.loadingLabel} />
+        ) : (
+          [0, 1, 2, 3, 4].map((line) => <span key={line} data-ok-data-grid-skeleton="" />)
+        )}
+      </div>
+      <div
+        data-ok-data-grid-overlay=""
+        role="status"
+        hidden={pageRows.length > 0 || busy || undefined}
+      >
+        {pageRows.length > 0 || busy
           ? null
-          : rows.length === 0
+          : base.length === 0
             ? labels.noRowsLabel
             : labels.noResultsOverlayLabel}
       </div>
@@ -1177,7 +1364,7 @@ function DataGridInner<R>(
       {!hideFooter && (
         <div data-ok-data-grid-footer="">
           <TablePagination
-            count={sorted.length}
+            count={total}
             page={page}
             rowsPerPage={pagination.pageSize}
             rowsPerPageOptions={pageSizeOptions}

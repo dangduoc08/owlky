@@ -46,7 +46,7 @@ component and each `/integrate` run.
 | MUI | Timeline | ✅ | Timeline and its parts | Rating, Slider, Timeline, Transfer list, Tree view & Autocomplete |
 | MUI | Tooltip | ✅ | Tooltip | Popover, Tooltip, Menu, Dialog & Snackbar |
 | MUI | Transfer list | ✅ | TransferList | Rating, Slider, Timeline, Transfer list, Tree view & Autocomplete |
-| MUI X | Data grid | ✅ phases 1–2 of 5 (ADR-0020) | DataGrid | Data grid |
+| MUI X | Data grid | ✅ phases 1–3 of 6 (ADR-0020, ADR-0021) | DataGrid | Data grid |
 | MUI X | Date pickers | wave 7 (ADR) | — | Next |
 | MUI X | Tree view | ✅ | SimpleTreeView, TreeItem, RichTreeView | Rating, Slider, Timeline, Transfer list, Tree view & Autocomplete |
 | Extra | Animate | ✅ beta | Motion, MotionGroup, MotionText, CountUp, MotionBorder; Dialog `transition` | Motion |
@@ -321,7 +321,7 @@ red) via `data-ok-preset`, font families (Public Sans, Inter, DM Sans, Nunito Sa
 toolbar: Preset, Font, Size; Foundations › Settings. Backlog: contrast setting, right-to-left
 (logical-property audit), a SettingsDrawer component (needs Switch and Slider).
 
-## Data grid (ADR-0020) — every MUI X tier, in phases
+## Data grid (ADR-0020, ADR-0021) — every MUI X tier, in six phases
 The owner asked for every MUI X Data Grid feature, Community, Pro and Premium alike (2026-11-08).
 One grid engine in core, ARIA grid on `div`s with CSS grid columns, HTML data in the markup.
 Phase 1 (stories: Basic, Custom): DataGrid with typed columns (width / flex / min width, value
@@ -337,9 +337,10 @@ reference's Basic toolbar is icon-only), original data and names, clicking a row
 |---|---|---|
 | 1 | Columns (types, width / flex / min width, alignment, formatters, custom cells), sorting with multi-sort (Pro), quick filter, filter panel (one filter), pagination, checkbox selection, column visibility, density, CSV export, column menu, keyboard navigation, toolbar | ✅ 2026-11-08 |
 | 2 | Multi filters and logic operators (Pro), column resizing and reordering (Pro), column pinning (Pro), cell and row editing, print export | ✅ 2026-11-08 |
-| 3 | Row and column virtualization; server-side sorting, filtering and pagination (`sortingMode` / `filterMode` / `paginationMode="server"`, `rowCount`); infinite and lazy loading, `dataSource` with cache (Pro); `loading` overlay and skeleton rows; HTML: a JavaScript rows API with row templates | next (`/component` Update) |
-| 4 | Tree data, master-detail panels, row reordering by drag, row pinning (top / bottom), column groups (multi-level headers), list view (Pro) | — |
-| 5 | Row grouping, aggregation (sum, average, min / max, count), pivoting, Excel (.xlsx) export, clipboard copy and paste, cell range selection, header filters (Premium); charts integration and AI assistant once a Chart component exists | — |
+| 3 | Row virtualization; server-side sorting, filtering and pagination (`sortingMode` / `filterMode` / `paginationMode="server"`, `rowCount`); infinite loading, `dataSource` with cache (Pro); `loading` overlay and skeleton rows; HTML: a JavaScript rows API with row templates | ✅ 2026-11-08 |
+| 4 | Community and API completeness. **Selection:** single-row selection (`disableMultipleRowSelection`), `isRowSelectable`, `keepNonExistentRowsSelected`, `checkboxSelectionVisibleOnly`. **Columns:** autosizing (`autosizeColumns`, double-click the resize edge), `colSpan` and `rowSpanning`, header `description` tooltips, `renderHeader`. **Rows:** `getRowHeight` and `"auto"` heights, `getRowClassName` / `getCellClassName`, `getRowSpacing`. **Editing:** validation with error states (`preProcessEditCellProps`), `valueParser` / `valueSetter`, start editing by typing, `onCellEditStart` / `onCellEditStop` / `onRowEditStop`, `isCellEditable`. **Filtering:** `isAnyOf`, custom operators, quick filter options (`quickFilterLogicOperator`, searched columns). **Events and API:** `onRowClick`, `onCellClick`, `onCellDoubleClick`, `onColumnHeaderClick`…, `apiRef`, `exportState` / `restoreState`. **Export:** CSV options (delimiter, fields, all rows or filtered), print options, printing every filtered row. **Look and language:** the reference's icon-only toolbar, locale packs, right-to-left layout. **HTML:** value formatters for edited and `setRows` cells | next (`/component` Update; may split into 4a / 4b) |
+| 5 | Tree data (data source loading per level), master-detail panels, row reordering by drag, row pinning (top / bottom), column groups (multi-level headers), list view; column virtualization (`columnBufferPx`), lazy loading of row chunks (`lazyLoading`, `rowsLoadingMode`), `dataSource.updateRow`, cache time to live, `rowBufferPx` as an option (Pro) | — |
+| 6 | Row grouping (also through the data source), aggregation (sum, average, min / max, count), pivoting, Excel (.xlsx) export, clipboard copy and paste, cell range selection, header filters (Premium); charts integration and AI assistant once a Chart component exists | — |
 
 Phase 2 (story: Advanced): filter rows combined with and / or, column resizing (drag the header
 edge, or Alt + arrows), reordering (drag a header, or Move left / right in the column menu),
@@ -348,28 +349,16 @@ editing with typed fields (`processRowUpdate`; HTML `ok:data-grid:edit`), print 
 frame. Beyond MUI X for keyboard users: Alt + arrows and the Move menu items. TablePagination,
 Popover and Menu are reused as in phase 1.
 
-**Backlog outside the phases** (MUI X features not planned yet; pick them into a phase when
-needed, 2026-11-08):
-- **Selection:** single-row selection without checkboxes (`disableMultipleRowSelection`),
-  `isRowSelectable`, `keepNonExistentRowsSelected`, `checkboxSelectionVisibleOnly`.
-- **Columns:** autosizing to the content (double-click the resize edge, `autosizeColumns`),
-  column and row spanning (`colSpan`, `rowSpanning`), `description` as a header tooltip,
-  `renderHeader`.
-- **Rows:** per-row and automatic heights (`getRowHeight`, `"auto"`), `getRowClassName` /
-  `getCellClassName`, `getRowSpacing`.
-- **Editing:** validation with error states (`preProcessEditCellProps`), `valueParser` /
-  `valueSetter`, start editing by typing a character, `onCellEditStart` / `onCellEditStop` /
-  `onRowEditStop`, `isCellEditable`.
-- **Filtering:** the `isAnyOf` operator, custom filter operators, date pickers in filter values
-  (needs Date pickers), quick filter options (`quickFilterLogicOperator`, searched columns).
-- **Events and API:** `onRowClick`, `onCellClick`, `onCellDoubleClick`, `onColumnHeaderClick`…;
-  `apiRef`; `exportState` / `restoreState`.
-- **Export:** CSV options (delimiter, fields, all rows vs. filtered), print options and printing
-  every filtered row (today: the rows on screen, current page only).
-- **Look and language:** the icon-only toolbar of the reference's Basic section, locale packs
-  (today: `localeText` only), right-to-left layout.
-- **HTML runtime:** edited cells show the raw value (React applies `valueFormatter`); no rows API
-  until phase 3.
+Phase 3 (stories: Large dataset, Server side): rows outside the visible area ± 150px leave the DOM
+once a bounded grid is measured (core `gridRowWindow`, `createGridScrollWatcher`; body padding
+stands for them; first render and SSR show every row), server modes with `rowCount`, `loading`
+with three overlay variants (LinearProgress, CircularProgress, skeleton rows), `onRowsScrollEnd`
+(HTML `ok:data-grid:scrollend`), `dataSource` with a per-source cache (HTML `setDataSource`), and
+HTML `setRows(rows)` from `<template data-ok-data-grid-row>` / `data-ok-data-grid-cell` (text only).
+Column virtualization and lazy loading of row chunks moved to phase 5.
+
+The former backlog is folded into phases 4–6 (ADR-0021, 2026-11-08). New MUI X features go into a
+phase, or into "Pending integrations" below when they need a missing component.
 
 ## Pending integrations
 Everything waiting for a component that doesn't exist yet — stand-ins (native feature, demo
@@ -382,6 +371,7 @@ integrate these in the same review (additive: no DOM or API change) and remove t
 | Typography (display text) | Sortable stories (card numbers) | demo `<span>` styled in `.storybook/preview.css` |
 | Typography (heading / secondary text) | Accordion summaries (plain text, no secondary line from the reference) | summary text styled by `accordion.css` |
 | Typography (heading) | Scrollbar "Layout" story heading | demo `<h4>` styled in `.storybook/preview.css` |
+| Date pickers | Data grid filter values for `date` / `dateTime` columns | a text field: people type the date (for example `2026-11-08`); editing cells already uses native `date` / `datetime-local` inputs |
 | Select (listbox, built on Menu) | `TablePagination` rows per page (library markup) | native `<select>` styled in `table.css`; the API (`rowsPerPageOptions`) stays. TextField's native select doesn't match MUI's InputBase select here |
 | Select (listbox, built on Menu) | Pagination story "Items" (card grid + items-per-page Select) | story deferred: the reference uses MUI's listbox Select |
 | Select (listbox, built on Menu) | Table story "Table pagination with API" (search TextField + category Select) | story deferred until the listbox Select; TextField exists |

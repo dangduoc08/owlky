@@ -428,6 +428,22 @@ export {
   gridFocusTarget,
   moveGridCell,
 } from "./data-grid/grid-navigation.js";
+export {
+  createGridDataSourceCache,
+  createGridScrollWatcher,
+  GRID_ROW_BUFFER,
+  type GridDataSource,
+  type GridDataSourceCache,
+  type GridGetRowsParams,
+  type GridGetRowsResponse,
+  type GridPaginationParams,
+  type GridRowWindow,
+  type GridScrollWatcher,
+  type GridScrollWatcherOptions,
+  type GridViewport,
+  gridRowWindow,
+  isNearGridScrollEnd,
+} from "./data-grid/grid-virtual.js";
 export { focusInitial, getTabbables, isFocusable, trapTab } from "./dom/focus.js";
 export { createId } from "./dom/id.js";
 export { type Supports, supports } from "./dom/support.js";

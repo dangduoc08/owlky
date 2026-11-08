@@ -1,3 +1,4 @@
+import type { GridDataSource, GridGetRowsParams } from "@owlky/core";
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { createRef } from "react";
 import { renderToString } from "react-dom/server";
@@ -745,6 +746,312 @@ describe("DataGrid", () => {
       expect(print).toHaveBeenCalled();
       expect(document.querySelector("iframe")?.contentDocument?.title).toBe("Items");
       document.querySelector("iframe")?.remove();
+    });
+  });
+
+  describe("phase 3", () => {
+    interface Big {
+      id: number;
+      name: string;
+      age: number;
+    }
+    const big = (count: number, from = 0): Big[] =>
+      Array.from({ length: count }, (_, i) => ({
+        id: from + i + 1,
+        name: `P${from + i + 1}`,
+        age: (i * 7) % 50,
+      }));
+    const BIG_COLUMNS: GridColDef<Big>[] = [
+      { field: "name", headerName: "Name", width: 120 },
+      { field: "age", headerName: "Age", type: "number", width: 90 },
+    ];
+    const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
+    const bodyRows = () => [...grid().querySelectorAll('[data-ok-data-grid-body] > [role="row"]')];
+    const scrollTo = async (top: number) => {
+      await act(async () => {
+        grid().scrollTop = top;
+        fireEvent.scroll(grid());
+        await settle();
+      });
+    };
+
+    it("virtualizes the rows of a bounded grid: window, spacers, indexes", async () => {
+      const { rerender } = render(
+        <DataGrid
+          aria-label="Big"
+          rows={big(1000)}
+          columns={BIG_COLUMNS}
+          hideFooter
+          style={{ height: 400 }}
+        />,
+      );
+      await act(settle);
+      expect(bodyRows().length).toBeGreaterThan(5);
+      expect(bodyRows().length).toBeLessThan(30);
+      expect(grid().getAttribute("aria-rowcount")).toBe("1001");
+      await scrollTo(52 * 500);
+      const indexes = bodyRows().map((row) => Number(row.getAttribute("aria-rowindex")));
+      expect(Math.min(...indexes)).toBeGreaterThan(400);
+      expect(Math.max(...indexes)).toBeLessThan(600);
+      const body = grid().querySelector<HTMLElement>("[data-ok-data-grid-body]") as HTMLElement;
+      expect(Number.parseFloat(getComputedStyle(body).paddingTop)).toBeGreaterThan(10_000);
+      expect(Number.parseFloat(getComputedStyle(body).paddingBottom)).toBeGreaterThan(10_000);
+
+      rerender(
+        <DataGrid
+          aria-label="Big"
+          rows={big(1000)}
+          columns={BIG_COLUMNS}
+          hideFooter
+          disableVirtualization
+          style={{ height: 400 }}
+        />,
+      );
+      await act(settle);
+      expect(bodyRows()).toHaveLength(1000);
+    });
+
+    it("doesn't virtualize a grid that grows with its rows; pages stay windowed", async () => {
+      const { unmount } = render(
+        <DataGrid aria-label="Big" rows={big(40)} columns={BIG_COLUMNS} hideFooter />,
+      );
+      await act(settle);
+      expect(bodyRows()).toHaveLength(40);
+      unmount();
+      render(
+        <DataGrid
+          aria-label="Big"
+          rows={big(300)}
+          columns={BIG_COLUMNS}
+          initialState={{ pagination: { paginationModel: { pageSize: 100 } } }}
+          pageSizeOptions={[100]}
+          style={{ height: 400 }}
+        />,
+      );
+      await act(settle);
+      // Only rows of the first page, and only its window.
+      expect(bodyRows().length).toBeLessThan(30);
+      expect(bodyRows().every((row) => Number(row.getAttribute("aria-rowindex")) <= 101)).toBe(
+        true,
+      );
+    });
+
+    it("server modes report models and show rows as given; rowCount drives the footer", async () => {
+      const onSortModelChange = vi.fn();
+      const onFilterModelChange = vi.fn();
+      const onPaginationModelChange = vi.fn();
+      render(
+        <DataGrid
+          aria-label="Server"
+          rows={big(10, 20).reverse()}
+          columns={BIG_COLUMNS}
+          sortingMode="server"
+          filterMode="server"
+          paginationMode="server"
+          rowCount={100}
+          filterModel={{ items: [{ field: "name", operator: "equals", value: "nobody" }] }}
+          initialState={{ pagination: { paginationModel: { pageSize: 10, page: 2 } } }}
+          pageSizeOptions={[10]}
+          onSortModelChange={onSortModelChange}
+          onFilterModelChange={onFilterModelChange}
+          onPaginationModelChange={onPaginationModelChange}
+        />,
+      );
+      const root = grid().closest("[data-ok-data-grid]") as HTMLElement;
+      expect(root.getAttribute("data-ok-sorting-mode")).toBe("server");
+      expect(root.getAttribute("data-ok-pagination-mode")).toBe("server");
+      expect(root.getAttribute("data-ok-row-count")).toBe("100");
+      expect(names()[0]).toBe("P30");
+      expect(names()).toHaveLength(10);
+      expect(screen.getByText("21–30 of 100")).toBeTruthy();
+      expect(grid().getAttribute("aria-rowcount")).toBe("101");
+      expect(bodyRows()[0]?.getAttribute("aria-rowindex")).toBe("22");
+      await userEvent.click(header(/Name/));
+      expect(onSortModelChange).toHaveBeenCalledWith([{ field: "name", sort: "asc" }]);
+      expect(names()[0]).toBe("P30");
+      await userEvent.click(screen.getByRole("button", { name: "Go to next page" }));
+      expect(onPaginationModelChange).toHaveBeenCalledWith({ page: 3, pageSize: 10 });
+    });
+
+    it("server pagination without rowCount counts the rows", () => {
+      render(
+        <DataGrid
+          aria-label="Server"
+          rows={big(4)}
+          columns={BIG_COLUMNS}
+          paginationMode="server"
+          pageSizeOptions={[10]}
+          initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
+        />,
+      );
+      expect(screen.getByText("1–4 of 4")).toBeTruthy();
+    });
+
+    it("loading: busy grid, overlay variants, no empty overlay", async () => {
+      const { rerender } = render(
+        <DataGrid aria-label="Load" rows={[]} columns={BIG_COLUMNS} loading />,
+      );
+      const loadingOverlay = () =>
+        document.querySelector<HTMLElement>("[data-ok-data-grid-loading]") as HTMLElement;
+      const empty = () =>
+        document.querySelector<HTMLElement>("[data-ok-data-grid-overlay]") as HTMLElement;
+      expect(grid().getAttribute("aria-busy")).toBe("true");
+      expect(loadingOverlay().hidden).toBe(false);
+      expect(loadingOverlay().getAttribute("data-ok-variant")).toBe("linear-progress");
+      expect(loadingOverlay().querySelector("[data-ok-linear-progress]")).not.toBeNull();
+      expect(empty().hidden).toBe(true);
+      expect(grid().closest("[data-ok-data-grid]")?.hasAttribute("data-ok-loading")).toBe(true);
+      rerender(
+        <DataGrid
+          aria-label="Load"
+          rows={[]}
+          columns={BIG_COLUMNS}
+          loading
+          loadingVariant="circular-progress"
+        />,
+      );
+      expect(loadingOverlay().querySelector("[data-ok-circular-progress]")).not.toBeNull();
+      rerender(
+        <DataGrid
+          aria-label="Load"
+          rows={[]}
+          columns={BIG_COLUMNS}
+          loading
+          loadingVariant="skeleton"
+        />,
+      );
+      expect(loadingOverlay().querySelectorAll("[data-ok-data-grid-skeleton]")).toHaveLength(5);
+      await expectNoAxeViolations();
+      rerender(<DataGrid aria-label="Load" rows={[]} columns={BIG_COLUMNS} />);
+      expect(grid().hasAttribute("aria-busy")).toBe(false);
+      expect(loadingOverlay().hidden).toBe(true);
+      expect(empty().hidden).toBe(false);
+    });
+
+    it("onRowsScrollEnd fires once per row count, with a threshold", async () => {
+      const onRowsScrollEnd = vi.fn();
+      const props = {
+        "aria-label": "Infinite",
+        columns: BIG_COLUMNS,
+        hideFooter: true,
+        style: { height: 300 },
+        onRowsScrollEnd,
+      };
+      const { rerender } = render(<DataGrid {...props} rows={big(50)} />);
+      await act(settle);
+      await scrollTo(100);
+      expect(onRowsScrollEnd).not.toHaveBeenCalled();
+      await scrollTo(100_000);
+      expect(onRowsScrollEnd).toHaveBeenCalledTimes(1);
+      expect(onRowsScrollEnd).toHaveBeenCalledWith({ visibleRowsCount: 50 });
+      await scrollTo(100_001);
+      expect(onRowsScrollEnd).toHaveBeenCalledTimes(1);
+      rerender(<DataGrid {...props} rows={big(80)} scrollEndThreshold={10_000} />);
+      await act(settle);
+      expect(
+        grid().closest("[data-ok-data-grid]")?.getAttribute("data-ok-scroll-end-threshold"),
+      ).toBe("10000");
+      await scrollTo(0);
+      expect(onRowsScrollEnd).toHaveBeenLastCalledWith({ visibleRowsCount: 80 });
+    });
+
+    it("dataSource: loads, asks again on sort, uses its cache, reports errors", async () => {
+      const all = big(30);
+      const getRows = vi.fn((params: GridGetRowsParams) => {
+        const sorted = params.sortModel[0]?.sort === "desc" ? [...all].reverse() : all;
+        const { page, pageSize } = params.paginationModel ?? { page: 0, pageSize: 30 };
+        return Promise.resolve({
+          rows: sorted.slice(page * pageSize, (page + 1) * pageSize),
+          rowCount: all.length,
+        });
+      });
+      const source: GridDataSource<Big> = { getRows };
+      const { rerender } = render(
+        <DataGrid
+          aria-label="Source"
+          rows={[]}
+          columns={BIG_COLUMNS}
+          dataSource={source}
+          pageSizeOptions={[10]}
+          initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
+        />,
+      );
+      expect(grid().getAttribute("aria-busy")).toBe("true");
+      await act(settle);
+      expect(grid().hasAttribute("aria-busy")).toBe(false);
+      expect(names()).toHaveLength(10);
+      expect(screen.getByText("1–10 of 30")).toBeTruthy();
+      expect(getRows).toHaveBeenCalledWith({
+        sortModel: [],
+        filterModel: { items: [] },
+        paginationModel: { page: 0, pageSize: 10 },
+      });
+      await userEvent.click(header(/Name/));
+      await act(settle);
+      await userEvent.click(header(/Name/));
+      await act(settle);
+      expect(names()[0]).toBe("P30");
+      const calls = getRows.mock.calls.length;
+      await userEvent.click(header(/Name/));
+      await act(settle);
+      // Unsorted again: served from the cache.
+      expect(getRows).toHaveBeenCalledTimes(calls);
+      expect(names()[0]).toBe("P1");
+
+      // Without a cache every change asks the source.
+      rerender(
+        <DataGrid
+          aria-label="Source"
+          rows={[]}
+          columns={BIG_COLUMNS}
+          dataSource={source}
+          dataSourceCache={null}
+          pageSizeOptions={[10]}
+          initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
+        />,
+      );
+      await act(settle);
+      expect(getRows).toHaveBeenCalledTimes(calls + 1);
+
+      const onDataSourceError = vi.fn();
+      const failing: GridDataSource<Big> = { getRows: () => Promise.reject(new Error("down")) };
+      rerender(
+        <DataGrid
+          aria-label="Source"
+          rows={[]}
+          columns={BIG_COLUMNS}
+          dataSource={failing}
+          onDataSourceError={onDataSourceError}
+        />,
+      );
+      await act(settle);
+      expect(onDataSourceError).toHaveBeenCalledWith(new Error("down"));
+      expect(grid().hasAttribute("aria-busy")).toBe(false);
+    });
+
+    it("dataSource: a stale response is dropped", async () => {
+      let resolveFirst: (value: { rows: Big[] }) => void = () => {};
+      const first: GridDataSource<Big> = {
+        getRows: () =>
+          new Promise((resolve) => {
+            resolveFirst = resolve;
+          }),
+      };
+      const second: GridDataSource<Big> = {
+        getRows: () => Promise.resolve({ rows: big(2, 100) }),
+      };
+      const { rerender } = render(
+        <DataGrid aria-label="Source" rows={[]} columns={BIG_COLUMNS} dataSource={first} />,
+      );
+      rerender(
+        <DataGrid aria-label="Source" rows={[]} columns={BIG_COLUMNS} dataSource={second} />,
+      );
+      await act(settle);
+      await act(async () => {
+        resolveFirst({ rows: big(5) });
+        await settle();
+      });
+      expect(names()).toEqual(["P101", "P102"]);
     });
   });
 });

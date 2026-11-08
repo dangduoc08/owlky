@@ -1324,6 +1324,10 @@ describe("overlay attributes", () => {
       "data-ok-data-grid": "",
       "data-ok-density": "standard",
       "data-ok-edit-mode": "cell",
+      "data-ok-sorting-mode": "client",
+      "data-ok-filter-mode": "client",
+      "data-ok-pagination-mode": "client",
+      "data-ok-loading-variant": "linear-progress",
     });
     expect(
       dataGridAttributes({
@@ -1342,6 +1346,10 @@ describe("overlay attributes", () => {
       "data-ok-data-grid": "",
       "data-ok-density": "compact",
       "data-ok-edit-mode": "row",
+      "data-ok-sorting-mode": "client",
+      "data-ok-filter-mode": "client",
+      "data-ok-pagination-mode": "client",
+      "data-ok-loading-variant": "linear-progress",
       "data-ok-disable-multiple-columns-filtering": "",
       "data-ok-disable-column-resize": "",
       "data-ok-disable-column-reorder": "",

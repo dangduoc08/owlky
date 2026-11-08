@@ -2,7 +2,9 @@ import {
   arrangeGridColumns,
   clampGridWidth,
   createGridColumnControls,
+  createGridDataSourceCache,
   createGridNavigation,
+  createGridScrollWatcher,
   dataGridOptions,
   filterGridRows,
   GRID_CHECKBOX_FIELD,
@@ -10,10 +12,12 @@ import {
   type GridColumnType,
   type GridColumnVisibilityModel,
   type GridColumnWidths,
+  type GridDataSource,
   type GridDensity,
   type GridFilterModel,
   type GridPinnedColumns,
   type GridSortModel,
+  type GridViewport,
   gridAriaSort,
   gridColumnTemplate,
   gridColumnTypes,
@@ -25,6 +29,7 @@ import {
   gridOperatorNeedsValue,
   gridPinSide,
   gridQuickFilterValues,
+  gridRowWindow,
   gridSelectAllState,
   gridToCsv,
   isGridResizable,
@@ -36,6 +41,8 @@ import {
   pick,
   pinGridColumn,
   printGridContent,
+  readNumber,
+  readStyle,
   sortGridRows,
   syncGridPinning,
   toggleGridRow,
@@ -69,6 +76,14 @@ export interface DataGridInstance extends ComponentInstance {
   toCsv(): string;
   /** Downloads the CSV (`data-ok-export-file-name`, default "data"). */
   exportCsv(): void;
+  /**
+   * Replaces the rows with data: each row is a copy of `<template data-ok-data-grid-row>`, its
+   * cells filled as text (or from `<template data-ok-data-grid-cell="<field>">`, whose
+   * `[data-ok-data-grid-value]` elements get the value). Needs `id` on each row.
+   */
+  setRows(rows: readonly DataRow[]): void;
+  /** Loads the rows from a server for the current sort, filter and page (`null`: stop). */
+  setDataSource(source: GridDataSource<DataRow> | null): void;
 }
 
 const {
@@ -81,7 +96,16 @@ const {
   disableColumnPinning,
   disableMultipleColumnsFiltering,
   editMode,
+  disableVirtualization,
+  sortingMode,
+  filterMode,
+  paginationMode,
+  rowCount: rowCountOption,
+  loading: loadingOption,
+  scrollEndThreshold,
 } = dataGridOptions.options;
+
+type DataRow = Record<string, unknown>;
 const ROW = '[role="row"][data-ok-row-id]';
 const INTERACTIVE = "button, a, input, label, select, textarea";
 
@@ -156,7 +180,9 @@ export const dataGrid = defineComponent<DataGridInstance>({
       editable: header.hasAttribute("data-ok-editable"),
       valueOptions: stringList(header.getAttribute("data-ok-value-options")),
     }));
-    const rows = () => [...body.querySelectorAll<HTMLElement>(ROW)];
+    // Every row lives here; only the rows to show are in the page (pages, filters, the window).
+    let rowEls = [...body.querySelectorAll<HTMLElement>(ROW)];
+    const rows = () => rowEls;
     const cellOf = (row: HTMLElement, field: string) =>
       row.querySelector<HTMLElement>(`[role="gridcell"][data-ok-field="${CSS.escape(field)}"]`);
     const text = (row: HTMLElement, field: string) => {
@@ -278,26 +304,43 @@ export const dataGrid = defineComponent<DataGridInstance>({
       syncGridPinning(main);
     };
 
-    /** Rows: filter, sort (moving rows), page, selection marks, overlay. */
+    /** Rows: filter, sort, page (client modes), then draw the window; selection marks, overlays. */
+    let pageList: HTMLElement[] = [];
+    let total = 0;
+    let viewport: GridViewport | null = null;
+    let spacers: string[] = [];
+    let source: GridDataSource<DataRow> | null = null;
+    let sourceCount: number | undefined;
+    const serverSide = (spec: typeof sortingMode) =>
+      source !== null || readStyle(element, spec) === "server";
     const apply = () => {
       const all = rows();
-      filtered = filterGridRows(all, filterModel, columns, value, text);
-      const sorted = sortGridRows(filtered, sortModel, columns, value);
-      const kept = new Set(sorted);
-      for (const row of [...sorted, ...all.filter((r) => !kept.has(r))]) body.append(row);
-      pagination?.setAttribute("data-ok-count", String(sorted.length));
-      const pages = Number.isFinite(pageSize)
-        ? Math.max(Math.ceil(sorted.length / pageSize), 1)
-        : 1;
+      filtered = serverSide(filterMode)
+        ? all
+        : filterGridRows(all, filterModel, columns, value, text);
+      const sorted = serverSide(sortingMode)
+        ? filtered
+        : sortGridRows(filtered, sortModel, columns, value);
+      const serverPage = serverSide(paginationMode);
+      total = serverPage
+        ? (sourceCount ??
+          (readNumber(element, rowCountOption) as number | undefined) ??
+          sorted.length)
+        : sorted.length;
+      pagination?.setAttribute("data-ok-count", String(total));
+      const paged = Number.isFinite(pageSize) && !serverPage;
+      // Server pages count too: the page stays within the server's rows.
+      const pages = Number.isFinite(pageSize) ? Math.max(Math.ceil(total / pageSize), 1) : 1;
       page = Math.min(page, pages - 1);
       pager()?.refresh();
+      const pageStart = paged ? page * pageSize : 0;
+      pageList = paged ? sorted.slice(pageStart, pageStart + pageSize) : sorted;
+      // Rows of a server page sit after the rows of the pages before it.
+      const rowOffset = serverPage && Number.isFinite(pageSize) ? page * pageSize : 0;
       sorted.forEach((row, index) => {
-        row.hidden =
-          Number.isFinite(pageSize) && (index < page * pageSize || index >= (page + 1) * pageSize);
-        row.setAttribute("aria-rowindex", String(index + 2));
+        row.setAttribute("aria-rowindex", String(index + 2 + rowOffset));
       });
-      for (const row of all) if (!kept.has(row)) row.hidden = true;
-      main.setAttribute("aria-rowcount", String(sorted.length + 1));
+      main.setAttribute("aria-rowcount", String(total + 1));
       for (const header of headers()) {
         const column = columns.find(
           (c) => c.field === header.getAttribute("data-ok-field"),
@@ -306,15 +349,140 @@ export const dataGrid = defineComponent<DataGridInstance>({
           header.setAttribute("aria-sort", gridAriaSort(sortModel, column) as string);
       }
       mark();
-      const visible = sorted.some((row) => !row.hidden);
-      overlay.hidden = visible;
-      overlay.textContent = visible
-        ? ""
-        : all.length === 0
-          ? (element.getAttribute("data-ok-label-no-rows") ?? gridDefaultLabels.noRowsLabel)
-          : (element.getAttribute("data-ok-label-no-results") ??
-            gridDefaultLabels.noResultsOverlayLabel);
+      draw();
+      syncOverlays(all.length);
       navigation.sync();
+    };
+    /** Puts the rows of the window (or the whole page) in the body, moving as few as possible. */
+    const draw = () => {
+      const vp = viewport as GridViewport;
+      const virtual =
+        !element.hasAttribute(disableVirtualization.attr) && !!vp?.scrolls && vp.rowHeight > 0;
+      const range = virtual
+        ? gridRowWindow(pageList.length, vp.rowHeight, vp.offset, vp.viewport)
+        : { start: 0, end: pageList.length, before: 0, after: 0 };
+      const shownRows = pageList.slice(range.start, range.end);
+      const keep = new Set(shownRows);
+      for (const row of [...body.children]) if (!keep.has(row as HTMLElement)) row.remove();
+      shownRows.forEach((row, index) => {
+        row.hidden = false;
+        if (body.children[index] !== row) body.insertBefore(row, body.children[index] ?? null);
+      });
+      spacers = syncCustomProperties(
+        body,
+        virtual
+          ? {
+              "--_ok-data-grid-before": `${range.before}px`,
+              "--_ok-data-grid-after": `${range.after}px`,
+            }
+          : {},
+        spacers,
+      );
+      syncGridPinning(main);
+    };
+    const loadingOverlay = element.querySelector<HTMLElement>("[data-ok-data-grid-loading]");
+    const syncOverlays = (count: number) => {
+      const busy = element.hasAttribute(loadingOption.attr);
+      if (loadingOverlay) loadingOverlay.hidden = !busy;
+      main.toggleAttribute("aria-busy", busy);
+      if (busy) main.setAttribute("aria-busy", "true");
+      const visible = pageList.length > 0;
+      overlay.hidden = visible || busy;
+      overlay.textContent =
+        visible || busy
+          ? ""
+          : count === 0
+            ? (element.getAttribute("data-ok-label-no-rows") ?? gridDefaultLabels.noRowsLabel)
+            : (element.getAttribute("data-ok-label-no-results") ??
+              gridDefaultLabels.noResultsOverlayLabel);
+    };
+
+    // Virtualization and the end of the rows (infinite loading).
+    let endCount = -1;
+    const scrollWatcher = createGridScrollWatcher(main, {
+      onChange: (next) => {
+        viewport = next;
+        draw();
+      },
+      onScrollEnd: () => {
+        if (endCount === total) return;
+        endCount = total;
+        emit("scrollend", { visibleRowsCount: total });
+      },
+      threshold: () => readNumber(element, scrollEndThreshold) as number,
+    });
+
+    // Rows from data (templates) and from a data source.
+    const rowTemplate = element.querySelector<HTMLTemplateElement>(
+      "template[data-ok-data-grid-row]",
+    );
+    const buildRows = (data: readonly DataRow[]) => {
+      // Without a row template only an empty list can be shown.
+      if (!rowTemplate && data.length) return;
+      rowEls = data.map((item) => {
+        const row = (
+          (rowTemplate as HTMLTemplateElement).content.firstElementChild as HTMLElement
+        ).cloneNode(true) as HTMLElement;
+        row.setAttribute("data-ok-row-id", String(item["id"]));
+        for (const cell of row.querySelectorAll<HTMLElement>('[role="gridcell"][data-ok-field]')) {
+          const field = cell.getAttribute("data-ok-field") as string;
+          if (field === GRID_CHECKBOX_FIELD) continue;
+          const raw = item[field];
+          const shownText = raw === null || raw === undefined ? "" : String(raw);
+          const cellTemplate = element.querySelector<HTMLTemplateElement>(
+            `template[data-ok-data-grid-cell="${CSS.escape(field)}"]`,
+          );
+          if (cellTemplate) {
+            cell.replaceChildren(cellTemplate.content.cloneNode(true));
+            for (const slot of cell.querySelectorAll("[data-ok-data-grid-value]"))
+              slot.textContent = shownText;
+            cell.setAttribute("data-ok-text", shownText);
+          } else cell.textContent = shownText;
+          if (typeof raw !== "string") cell.setAttribute("data-ok-value", shownText);
+        }
+        return row;
+      });
+      layout();
+      apply();
+      scrollWatcher.measure();
+    };
+    const sourceCache = createGridDataSourceCache<DataRow>();
+    let request = 0;
+    const load = () => {
+      const current = source as GridDataSource<DataRow>;
+      const params = {
+        sortModel,
+        filterModel,
+        paginationModel: { page, pageSize: Number.isFinite(pageSize) ? pageSize : 0 },
+      };
+      const cached = sourceCache.get(params);
+      const show = (response: { rows: DataRow[]; rowCount?: number | undefined }) => {
+        sourceCount = response.rowCount;
+        buildRows(response.rows);
+      };
+      if (cached) {
+        show(cached);
+        return;
+      }
+      const id = ++request;
+      element.setAttribute(loadingOption.attr, "");
+      current
+        .getRows(params)
+        .then((response) => {
+          sourceCache.set(params, response);
+          if (id === request) show(response);
+        })
+        .catch((error: unknown) => {
+          if (id === request) emit("datasourceerror", { error });
+        })
+        .finally(() => {
+          if (id === request) element.removeAttribute(loadingOption.attr);
+        });
+    };
+    /** After a sort, filter or page change: ask the data source, or apply locally. */
+    const refresh = () => {
+      if (source) load();
+      else apply();
     };
 
     /** Selection marks: rows, their checkboxes and "select all". */
@@ -356,7 +524,7 @@ export const dataGrid = defineComponent<DataGridInstance>({
       );
       change("sort", next, (model) => {
         sortModel = model;
-        apply();
+        refresh();
       });
     };
     const select = (ids: string[]) => {
@@ -370,7 +538,7 @@ export const dataGrid = defineComponent<DataGridInstance>({
         filterModel = next;
         page = 0;
         pager()?.setPage(0);
-        apply();
+        refresh();
       });
     const setVisibility = (model: GridColumnVisibilityModel) =>
       change("columns", model, (next) => {
@@ -759,7 +927,7 @@ export const dataGrid = defineComponent<DataGridInstance>({
         if (action === "asc" || action === "desc")
           change("sort", [{ field, sort: action }] as GridSortModel, (model) => {
             sortModel = model;
-            apply();
+            refresh();
           });
         else if (action === "unsort")
           change(
@@ -767,7 +935,7 @@ export const dataGrid = defineComponent<DataGridInstance>({
             sortModel.filter((s) => s.field !== field),
             (model) => {
               sortModel = model;
-              apply();
+              refresh();
             },
           );
         else if (action === "hide") setVisibility({ ...visibility, [field]: false });
@@ -851,7 +1019,7 @@ export const dataGrid = defineComponent<DataGridInstance>({
         page = detail.page;
         pageSize = detail.rowsPerPage === -1 ? Number.POSITIVE_INFINITY : detail.rowsPerPage;
         // The pagination applies its own page after this event.
-        queueMicrotask(apply);
+        queueMicrotask(refresh);
       },
       { signal },
     );
@@ -882,6 +1050,7 @@ export const dataGrid = defineComponent<DataGridInstance>({
         '[data-ok-data-grid-action="pin-left"], [data-ok-data-grid-action="pin-right"], [data-ok-data-grid-action="unpin"]',
       );
       off(disableMultipleColumnsFiltering.attr, "[data-ok-data-grid-filter-add]");
+      syncOverlays(rows().length);
     };
     const options = new MutationObserver(reflect);
     options.observe(element, {
@@ -893,13 +1062,15 @@ export const dataGrid = defineComponent<DataGridInstance>({
         disableColumnReorder.attr,
         disableColumnPinning.attr,
         disableMultipleColumnsFiltering.attr,
+        loadingOption.attr,
       ],
     });
 
     for (const row of filterRows()) fillOperators(partsOf(row).operator, partsOf(row).field.value);
-    reflect();
     layout();
     apply();
+    reflect();
+    scrollWatcher.measure();
 
     return {
       get sortModel() {
@@ -953,8 +1124,19 @@ export const dataGrid = defineComponent<DataGridInstance>({
       },
       toCsv,
       exportCsv,
+      setRows(data) {
+        buildRows(data);
+      },
+      setDataSource(next) {
+        source = next;
+        sourceCount = undefined;
+        sourceCache.clear();
+        if (next) load();
+        else apply();
+      },
       destroy() {
         options.disconnect();
+        scrollWatcher.destroy();
         columnControls.destroy();
         navigation.destroy();
         syncCustomProperties(main, {}, written);

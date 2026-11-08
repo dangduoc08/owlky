@@ -2,7 +2,7 @@
 
 Reference: Minimal UI kit "Data grid" page, sections Basic and Custom (content only). Upstream:
 MUI X Data Grid, every tier (Community, Pro, Premium) — the owner's request; built in phases
-(ADR-0020). This spec covers phases 1 and 2. Created with `/component`; phase 2 by Update.
+(ADR-0020). This spec covers phases 1 to 3. Created with `/component`; phases 2 and 3 by Update.
 Reference URL: https://minimals.cc/components/mui/data-grid
 
 ## Purpose
@@ -27,7 +27,7 @@ div[data-ok-data-grid][data-ok-density][data-ok-checkbox-selection]?[data-ok-dis
          › Button[data-ok-data-grid-filter-add]                              (not disableMultipleColumnsFiltering)
     Menu#<id>-density › MenuItem[data-ok-density][data-ok-selected]? ×3
     Menu#<id>-export › MenuItem[data-ok-data-grid-export=csv|print]
-  div[role=grid][data-ok-data-grid-main][aria-label][aria-rowcount][aria-colcount][aria-multiselectable]?
+  div[role=grid][data-ok-data-grid-main][aria-label][aria-rowcount][aria-colcount][aria-multiselectable]?[aria-busy]?
       (--_ok-data-grid-columns: one track per shown column)
     div[role=rowgroup][data-ok-data-grid-header] › div[role=row][aria-rowindex=1]
       div[role=columnheader][data-ok-field=__check__][data-ok-data-grid-checkbox] › Checkbox (select all)
@@ -36,13 +36,17 @@ div[data-ok-data-grid][data-ok-density][data-ok-checkbox-selection]?[data-ok-dis
          [data-ok-resizable=false]?[data-ok-editable]?[data-ok-value-options='["…"]']?[data-ok-pinned]?[hidden]?
         span[data-ok-data-grid-header-title] · span[data-ok-data-grid-sort-icon] · IconButton[data-ok-data-grid-menu-button]
         · span[data-ok-data-grid-resize][aria-hidden]                         (resizable)
-    div[role=rowgroup][data-ok-data-grid-body]
+    div[role=rowgroup][data-ok-data-grid-body]   (--_ok-data-grid-before|after: spacers of the row window)
       div[role=row][aria-rowindex][data-ok-row-id][aria-selected]?[data-ok-editing]?[hidden]?
         (hidden: other pages / filtered out; data-ok-editing: row edit mode)
         div[role=gridcell][data-ok-data-grid-checkbox] › Checkbox
         div[role=gridcell][aria-colindex][data-ok-field][data-ok-align][data-ok-value]?[data-ok-text]?
            [data-ok-pinned]?[data-ok-editing]?[hidden]?   (editing: input|select[data-ok-data-grid-edit-input])
-  div[data-ok-data-grid-overlay][role=status][hidden]?   ("No rows" / "No results found.")
+  template[data-ok-data-grid-row]                (HTML only: one row, copied by setRows / data sources)
+  template[data-ok-data-grid-cell="<field>"]?    (HTML only: cell content, [data-ok-data-grid-value] slots)
+  div[data-ok-data-grid-loading][data-ok-variant][role=status][aria-label=Loading][hidden]?
+    › LinearProgress | CircularProgress | span[data-ok-data-grid-skeleton] × 5
+  div[data-ok-data-grid-overlay][role=status][hidden]?   ("No rows" / "No results found."; hidden while loading)
   Menu#<id>-column-menu › MenuItem[data-ok-data-grid-action=asc|desc|unsort|left|right|pin-left|pin-right|unpin|filter|hide|columns]
   div[data-ok-data-grid-footer] › TablePagination[data-ok-count]   (HTML: count written by the grid)
 ```
@@ -65,6 +69,14 @@ Root: `data-ok-data-grid`. Unknown values fall back to the default.
 | `disableColumnReorder` | `data-ok-disable-column-reorder` | flag | boolean | off | Columns can't be moved. |
 | `disableColumnPinning` | `data-ok-disable-column-pinning` | flag | boolean | off | Columns can't be pinned. |
 | `editMode` | `data-ok-edit-mode="…"` | style | `cell` `row` | `cell` | Editable columns: edit one `cell` at a time, or every editable cell of a `row` together. |
+| `disableVirtualization` | `data-ok-disable-virtualization` | flag | boolean | off | Render every row of the page, not only the visible ones. |
+| `sortingMode` | `data-ok-sorting-mode="…"` | style | `client` `server` | `client` | `server`: the grid reports the sort model and shows the rows as given. |
+| `filterMode` | `data-ok-filter-mode="…"` | style | `client` `server` | `client` | `server`: the grid reports the filter model and shows the rows as given. |
+| `paginationMode` | `data-ok-pagination-mode="…"` | style | `client` `server` | `client` | `server`: the rows are the current page; `rowCount` is the total. |
+| `rowCount` | `data-ok-row-count="…"` | number | number | — | Total rows on the server. |
+| `loading` | `data-ok-loading` | flag | boolean | off | Data is loading: an overlay shows progress. |
+| `loadingVariant` | `data-ok-loading-variant="…"` | style | `linear-progress` `circular-progress` `skeleton` | `linear-progress` | How loading shows: a bar, a spinner or placeholder rows. |
+| `scrollEndThreshold` | `data-ok-scroll-end-threshold="…"` | number | number | `80` | Distance from the end of the rows (px) that reports the scroll end. |
 <!-- /options:data-grid -->
 
 React props (MUI X names): `rows`, `columns` (`GridColDef`: `field`, `headerName`, `type`
@@ -83,11 +95,15 @@ string | number | date | dateTime | boolean | singleSelect | actions, `width` (1
 `pinnedColumns` / `onPinnedColumnsChange` / `initialState.pinnedColumns`, `disableColumnPinning`,
 `editable` (column; not with `valueGetter` or `actions`), `editMode` (cell | row),
 `processRowUpdate(newRow, oldRow)` (value or promise; rejection keeps the row),
-`onProcessRowUpdateError`. Beyond MUI X (accessibility): Alt + Left / Right resizes, column menu
+`onProcessRowUpdateError`. Phase 3: `disableVirtualization`, `sortingMode` / `filterMode` /
+`paginationMode` (client | server), `rowCount`, `loading`, `loadingVariant` (`slotProps.loadingOverlay.variant`),
+`onRowsScrollEnd({ visibleRowsCount })`, `scrollEndThreshold` (80), `dataSource` (`getRows(params)`
+→ `{ rows, rowCount? }`; implies every server mode), `dataSourceCache` (default: 50 requests per
+source; `null` disables), `onDataSourceError(error)`. Beyond MUI X (accessibility): Alt + Left / Right resizes, column menu
 Move left / Move right. Renamed: `rowSelectionModel` is an id array (MUI v8:
-`{ type, ids }`). Later phases: see ADR-0020 (virtualization, server data, tree data, master-detail, row reordering / pinning,
+`{ type, ids }`). Later phases: see ADR-0020 (tree data, master-detail, row reordering / pinning,
 column groups, row grouping, aggregation, pivoting, Excel, clipboard, cell selection, header
-filters). Not applicable: `slots`, `slotProps`, `sx`, `classes`, license keys.
+filters; column virtualization, lazy loading of row chunks). Not applicable: `slots`, `slotProps`, `sx`, `classes`, license keys.
 
 ## Layout and tokens
 Rows 52px (`--ok-spacing` × 13; compact 36px, comfortable 68px), header 56px (× 14) on
@@ -120,6 +136,17 @@ the left side. Editing: double click, Enter or F2 on an editable cell; text / nu
 datetime-local inputs, a select for `singleSelect`, a checkbox for `boolean`; Enter commits, Escape
 cancels, leaving the cell (row mode: the row) commits; focus returns to the cell. HTML shows the
 committed value as text (no formatters) and fires `ok:data-grid:edit` (cancelable).
+Virtualization (on unless `disableVirtualization`): once the main area is measured and scrolls
+(bounded height), only the rows within the visible area ± 150px (`GRID_ROW_BUFFER`) are in the DOM;
+padding on the body stands for the rest. The first render and SSR show every row. Grids that grow
+with their rows don't virtualize. Server modes: the grid reports the model and shows the rows as
+given; `rowCount` (HTML `data-ok-row-count`) is the pagination total. Loading: `loading` (HTML
+`data-ok-loading`) shows the overlay and sets `aria-busy`. Infinite loading: within
+`scrollEndThreshold` px of the end, `onRowsScrollEnd` / `ok:data-grid:scrollend` fire once per row
+count. Data source: asked on mount and on every sort, filter and page change (`{ sortModel,
+filterModel, paginationModel }`); responses are cached per request; a stale response is dropped;
+loading shows meanwhile. HTML rows from data: `setRows(rows)` copies the row template and sets each
+cell's text (or fills the cell template's value slots); never markup.
 
 ## Keyboard
 | Key | Action |
@@ -148,6 +175,8 @@ HTML: `ok:data-grid:sort | filter | selection | columns | density | order | pinn
 columnVisibilityModel, columnOrder, pinnedColumns, columnWidths, setSortModel, setFilterModel,
 setSelection, setColumnVisibilityModel, setColumnOrder, setPinnedColumns, setColumnWidth,
 toCsv(), exportCsv() }`.
+`ok:data-grid:scrollend` (`{ visibleRowsCount }`), `ok:data-grid:datasourceerror` (`{ error }`);
+instance `setRows(rows)`, `setDataSource(source | null)`.
 Attributes: `data-ok-label-no-rows`, `data-ok-label-no-results`, `data-ok-export-file-name`.
 
 ## Responsive
@@ -157,4 +186,5 @@ the viewport (filter fields wrap to one column).
 ## Parity notes
 React renders every filtered row (other pages `hidden`) and writes the template through `style`;
 the HTML runtime writes it through CSSOM and keeps filtered-out rows `hidden` (parity skips hidden
-rows and `style`). `data-ok-count` on the pagination is HTML-only (ignored).
+rows and `style`). `data-ok-count` on the pagination is HTML-only (ignored). With virtualization
+both render the same window (same measure). Row templates are HTML-only (`<template>` is skipped).

@@ -44,6 +44,8 @@ export const STORIES: [component: string, story: string][] = [
   ["datagrid", "basic"],
   ["datagrid", "custom"],
   ["datagrid", "advanced"],
+  ["datagrid", "large"],
+  ["datagrid", "server"],
 ];
 
 interface Box {

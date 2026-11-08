@@ -1,3 +1,4 @@
+import type { GridGetRowsParams } from "@owlky/core";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { userEvent } from "vitest/browser";
 import { createRuntime } from "../../runtime/runtime.js";
@@ -46,21 +47,44 @@ const header = (host: Element, field: string) =>
   host.querySelector<HTMLElement>(`[role="columnheader"][data-ok-field="${field}"]`) as HTMLElement;
 
 describe("data grid snippets", () => {
-  it("covers every story group", () => expect(snippets).toHaveLength(3));
+  it("covers every story group", () => expect(snippets).toHaveLength(5));
 
-  it.each(snippets)("%s: CSP-safe anatomy; no axe violations once running", async (_, html) => {
-    const host = mount(html);
-    expectCspSafe(host, html);
-    const grid = host.querySelector('[role="grid"]') as Element;
-    expect(grid.getAttribute("aria-label")).not.toBe("");
-    expect(host.querySelectorAll('[data-ok-data-grid-body] > [role="row"]')).toHaveLength(20);
-    start();
-    await settle();
-    expect(
-      host.querySelectorAll('[data-ok-data-grid-body] > [role="row"]:not([hidden])'),
-    ).toHaveLength(10);
-    await expectNoAxeViolations(host);
-  });
+  // Grids whose rows come from JavaScript (setRows, data sources) ship no rows.
+  const scripted = (path: string) => /(large|server)-group/.test(path);
+
+  it.each(snippets.filter(([path]) => scripted(path)))(
+    "%s: CSP-safe shell with a row template; no axe violations with rows",
+    async (_, html) => {
+      const host = mount(html);
+      expectCspSafe(host, html);
+      expect(host.querySelectorAll('[data-ok-data-grid-body] > [role="row"]')).toHaveLength(0);
+      expect(host.querySelector("template[data-ok-data-grid-row]")).not.toBeNull();
+      start();
+      const root = host.querySelector("[data-ok-data-grid]") as HTMLElement;
+      const instance = runtime?.get<DataGridInstance>(root, "data-grid") as DataGridInstance;
+      instance.setRows([{ id: "c-1", firstName: "Ana", lastName: "Silva", age: 40, city: "Lima" }]);
+      await settle();
+      expect(host.querySelectorAll('[data-ok-data-grid-body] > [role="row"]')).toHaveLength(1);
+      await expectNoAxeViolations(host);
+    },
+  );
+
+  it.each(snippets.filter(([path]) => !scripted(path)))(
+    "%s: CSP-safe anatomy; no axe violations once running",
+    async (_, html) => {
+      const host = mount(html);
+      expectCspSafe(host, html);
+      const grid = host.querySelector('[role="grid"]') as Element;
+      expect(grid.getAttribute("aria-label")).not.toBe("");
+      expect(host.querySelectorAll('[data-ok-data-grid-body] > [role="row"]')).toHaveLength(20);
+      start();
+      await settle();
+      expect(
+        host.querySelectorAll('[data-ok-data-grid-body] > [role="row"]:not([hidden])'),
+      ).toHaveLength(10);
+      await expectNoAxeViolations(host);
+    },
+  );
 });
 
 describe("data grid runtime", () => {
@@ -295,8 +319,7 @@ describe("data grid runtime, minimal markup", () => {
     instance.setFilterModel({ items: [{ field: "n", operator: ">", value: "5" }] });
     const overlay = host.querySelector("[data-ok-data-grid-overlay]") as HTMLElement;
     expect(overlay.textContent).toBe("No results found.");
-    for (const row of host.querySelectorAll('[role="row"][data-ok-row-id]')) row.remove();
-    instance.setFilterModel({ items: [] });
+    instance.setRows([]);
     expect(overlay.textContent).toBe("Empty");
     root.removeAttribute("data-ok-label-no-rows");
     instance.setFilterModel({ items: [] });
@@ -651,5 +674,246 @@ describe("data grid runtime, phase 2 edges", () => {
       true,
     );
     expect(hidden("[data-ok-data-grid-filter-add]")).toBe(true);
+  });
+});
+
+describe("data grid runtime, phase 3", () => {
+  const LARGE = snippets.find(([path]) => path.endsWith("large-group.html"))?.[1] as string;
+  const SERVER = snippets.find(([path]) => path.endsWith("server-group.html"))?.[1] as string;
+  const people = (count: number, from = 0) =>
+    Array.from({ length: count }, (_, i) => ({
+      id: `c-${from + i + 1}`,
+      firstName: `P${from + i + 1}`,
+      lastName: "Doe",
+      age: (i * 7) % 50,
+      city: "Lima",
+    }));
+  const open = (html: string, height?: string) => {
+    const host = mount(html);
+    const root = host.querySelector<HTMLElement>("[data-ok-data-grid]") as HTMLElement;
+    if (height) root.style.height = height;
+    start();
+    const instance = runtime?.get<DataGridInstance>(root, "data-grid") as DataGridInstance;
+    const grid = root.querySelector<HTMLElement>('[role="grid"]') as HTMLElement;
+    const body = root.querySelector<HTMLElement>("[data-ok-data-grid-body]") as HTMLElement;
+    const rows = () => [...body.querySelectorAll<HTMLElement>(':scope > [role="row"]')];
+    const scrollTo = async (top: number) => {
+      grid.scrollTop = top;
+      grid.dispatchEvent(new Event("scroll"));
+      await settle();
+    };
+    return { host, root, instance, grid, body, rows, scrollTo };
+  };
+
+  it("setRows fills copies of the row template (text only), cell templates, raw values", async () => {
+    const { host, root, instance, rows } = open(SERVER);
+    const cell = document.createElement("template");
+    cell.setAttribute("data-ok-data-grid-cell", "city");
+    cell.innerHTML = '<b class="pin"></b><span data-ok-data-grid-value></span>';
+    root.append(cell);
+    instance.setRows([
+      { id: "a", firstName: "<img src=x onerror=alert(1)>", lastName: null, age: 7, city: "Hue" },
+    ]);
+    const row = rows()[0] as HTMLElement;
+    expect(row.getAttribute("data-ok-row-id")).toBe("a");
+    const first = row.querySelector('[data-ok-field="firstName"]') as HTMLElement;
+    expect(first.textContent).toBe("<img src=x onerror=alert(1)>");
+    expect(first.querySelector("img")).toBeNull();
+    expect(row.querySelector('[data-ok-field="lastName"]')?.textContent).toBe("");
+    expect(row.querySelector('[data-ok-field="age"]')?.getAttribute("data-ok-value")).toBe("7");
+    const city = row.querySelector('[data-ok-field="city"]') as HTMLElement;
+    expect(city.querySelector(".pin")).not.toBeNull();
+    expect(city.querySelector("[data-ok-data-grid-value]")?.textContent).toBe("Hue");
+    expect(city.getAttribute("data-ok-text")).toBe("Hue");
+    // Filtering and sorting read the new rows.
+    instance.setRows(people(25));
+    expect(rows()).toHaveLength(10);
+    expect(host.querySelector("[data-ok-table-pagination-displayed]")?.textContent).toBe(
+      "1–10 of 25",
+    );
+    header(host, "firstName").click();
+    header(host, "firstName").click();
+    await settle();
+    expect(visible(host)[0]).toBe("P25");
+    instance.setRows([]);
+    await settle();
+    const overlay = host.querySelector<HTMLElement>("[data-ok-data-grid-overlay]") as HTMLElement;
+    expect(overlay.hidden).toBe(false);
+    expect(overlay.textContent).toBe("No rows");
+    await expectNoAxeViolations(host);
+  });
+
+  it("setRows without a row template keeps the markup rows", () => {
+    const { host, instance } = setup();
+    instance.setRows(people(3));
+    expect(host.querySelectorAll('[data-ok-data-grid-body] > [role="row"]')).toHaveLength(10);
+  });
+
+  it("virtualizes a bounded grid: a window of rows, spacers; off with the flag", async () => {
+    const { root, instance, grid, body, rows, scrollTo } = open(LARGE, "400px");
+    instance.setRows(people(1000));
+    await settle();
+    expect(grid.getAttribute("aria-rowcount")).toBe("1001");
+    expect(rows().length).toBeGreaterThan(5);
+    expect(rows().length).toBeLessThan(30);
+    await scrollTo(52 * 500);
+    const indexes = rows().map((row) => Number(row.getAttribute("aria-rowindex")));
+    expect(Math.min(...indexes)).toBeGreaterThan(400);
+    expect(Math.max(...indexes)).toBeLessThan(600);
+    expect(Number.parseFloat(getComputedStyle(body).paddingTop)).toBeGreaterThan(10_000);
+    expect(body.style.getPropertyValue("--_ok-data-grid-after")).not.toBe("");
+    root.setAttribute("data-ok-disable-virtualization", "");
+    await scrollTo(52 * 500 + 10);
+    expect(rows()).toHaveLength(1000);
+    expect(body.style.getPropertyValue("--_ok-data-grid-before")).toBe("");
+  });
+
+  it("ok:data-grid:scrollend fires once per row count", async () => {
+    const { root, instance, scrollTo } = open(LARGE, "300px");
+    const ends: unknown[] = [];
+    root.addEventListener("ok:data-grid:scrollend", (e) => ends.push((e as CustomEvent).detail));
+    instance.setRows(people(50));
+    await settle();
+    await scrollTo(100);
+    expect(ends).toHaveLength(0);
+    await scrollTo(100_000);
+    await scrollTo(100_001);
+    expect(ends).toEqual([{ visibleRowsCount: 50 }]);
+    root.setAttribute("data-ok-scroll-end-threshold", "100000");
+    instance.setRows(people(80));
+    await scrollTo(0);
+    expect(ends).toEqual([{ visibleRowsCount: 50 }, { visibleRowsCount: 80 }]);
+  });
+
+  it("server modes: no local sort or filter; rowCount drives the pagination", async () => {
+    const host = mount(BASIC);
+    const root = host.querySelector<HTMLElement>("[data-ok-data-grid]") as HTMLElement;
+    root.setAttribute("data-ok-sorting-mode", "server");
+    root.setAttribute("data-ok-filter-mode", "server");
+    root.setAttribute("data-ok-pagination-mode", "server");
+    root.setAttribute("data-ok-row-count", "100");
+    start();
+    await settle();
+    const before = visible(host);
+    expect(before).toHaveLength(20);
+    expect(host.querySelector("[data-ok-table-pagination-displayed]")?.textContent).toMatch(
+      /of 100$/,
+    );
+    const sorts: unknown[] = [];
+    root.addEventListener("ok:data-grid:sort", (e) => sorts.push((e as CustomEvent).detail));
+    header(host, "firstName").click();
+    await settle();
+    expect(sorts).toHaveLength(1);
+    expect(visible(host)).toEqual(before);
+    root.removeAttribute("data-ok-row-count");
+    const instance = runtime?.get<DataGridInstance>(root, "data-grid") as DataGridInstance;
+    instance.setFilterModel({ items: [{ field: "firstName", operator: "equals", value: "x" }] });
+    await settle();
+    expect(visible(host)).toHaveLength(20);
+    expect(host.querySelector("[data-ok-table-pagination-displayed]")?.textContent).toMatch(
+      /of 20$/,
+    );
+  });
+
+  it("data-ok-loading: busy grid and overlay, no empty overlay", async () => {
+    const { host, root, grid } = open(SERVER);
+    const loading = host.querySelector<HTMLElement>("[data-ok-data-grid-loading]") as HTMLElement;
+    const empty = host.querySelector<HTMLElement>("[data-ok-data-grid-overlay]") as HTMLElement;
+    expect(loading.hidden).toBe(true);
+    expect(empty.hidden).toBe(false);
+    root.setAttribute("data-ok-loading", "");
+    await settle();
+    expect(grid.getAttribute("aria-busy")).toBe("true");
+    expect(loading.hidden).toBe(false);
+    expect(empty.hidden).toBe(true);
+    await expectNoAxeViolations(host);
+    root.removeAttribute("data-ok-loading");
+    await settle();
+    expect(grid.hasAttribute("aria-busy")).toBe(false);
+    expect(loading.hidden).toBe(true);
+  });
+
+  it("setDataSource: loads pages, asks again on sort, caches, reports errors, stops", async () => {
+    const { host, root, instance, grid } = open(SERVER);
+    const all = people(30);
+    const getRows = vi.fn((params: GridGetRowsParams) => {
+      const sorted = params.sortModel[0]?.sort === "desc" ? [...all].reverse() : all;
+      const { page, pageSize } = params.paginationModel ?? { page: 0, pageSize: 30 };
+      return Promise.resolve({
+        rows: sorted.slice(page * pageSize, (page + 1) * pageSize),
+        rowCount: all.length,
+      });
+    });
+    instance.setDataSource({ getRows });
+    expect(root.hasAttribute("data-ok-loading")).toBe(true);
+    await settle();
+    await settle();
+    expect(root.hasAttribute("data-ok-loading")).toBe(false);
+    expect(grid.hasAttribute("aria-busy")).toBe(false);
+    expect(getRows).toHaveBeenCalledWith({
+      sortModel: [],
+      filterModel: { items: [] },
+      paginationModel: { page: 0, pageSize: 10 },
+    });
+    expect(visible(host)).toHaveLength(10);
+    expect(host.querySelector("[data-ok-table-pagination-displayed]")?.textContent).toBe(
+      "1–10 of 30",
+    );
+    header(host, "firstName").click();
+    await settle();
+    header(host, "firstName").click();
+    await settle();
+    await settle();
+    expect(visible(host)[0]).toBe("P30");
+    const calls = getRows.mock.calls.length;
+    header(host, "firstName").click();
+    await settle();
+    expect(getRows).toHaveBeenCalledTimes(calls);
+    expect(visible(host)[0]).toBe("P1");
+    (host.querySelector('[aria-label="Go to next page"]') as HTMLElement).click();
+    await settle();
+    await settle();
+    expect(getRows).toHaveBeenLastCalledWith(
+      expect.objectContaining({ paginationModel: { page: 1, pageSize: 10 } }),
+    );
+    expect(visible(host)[0]).toBe("P11");
+    expect(grid.getAttribute("aria-rowcount")).toBe("31");
+    expect(
+      host.querySelector('[data-ok-data-grid-body] > [role="row"]')?.getAttribute("aria-rowindex"),
+    ).toBe("12");
+    // The page stays (it isn't clamped to the rows of one page).
+    instance.setRows(people(10, 10));
+    expect(host.querySelector("[data-ok-table-pagination-displayed]")?.textContent).toBe(
+      "11–20 of 30",
+    );
+
+    const errors: unknown[] = [];
+    root.addEventListener("ok:data-grid:datasourceerror", (e) =>
+      errors.push((e as CustomEvent).detail),
+    );
+    instance.setDataSource({ getRows: () => Promise.reject(new Error("down")) });
+    await settle();
+    expect(errors).toEqual([{ error: new Error("down") }]);
+    expect(root.hasAttribute("data-ok-loading")).toBe(false);
+
+    // A stale response is dropped.
+    let resolveFirst: (value: { rows: Record<string, unknown>[] }) => void = () => {};
+    instance.setDataSource({
+      getRows: () =>
+        new Promise((resolve) => {
+          resolveFirst = resolve;
+        }),
+    });
+    instance.setDataSource({ getRows: () => Promise.resolve({ rows: people(2, 100) }) });
+    await settle();
+    resolveFirst({ rows: people(5) });
+    await settle();
+    expect(visible(host)).toEqual(["P101", "P102"]);
+
+    instance.setDataSource(null);
+    instance.setRows(people(3));
+    header(host, "firstName").click();
+    await settle();
+    expect(visible(host)).toEqual(["P1", "P2", "P3"]);
   });
 });

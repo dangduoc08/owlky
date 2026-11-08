@@ -346,3 +346,14 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
   Pinned cells need an opaque background, so row hover / selected colors go through
   `--_ok-data-grid-row-bg`, painted over the paper. In Playwright's touch context `dblclick` hangs:
   e2e edits with Enter on the focused cell.
+- Data grid phase 3: rows virtualize only once a **bounded** main area is measured and scrolls
+  (`GridViewport.scrolls`); unbounded grids and the first render (SSR, snippets) show every row.
+  The HTML runtime keeps its rows in memory (`rowEls`): the body holds only the window, so never
+  query the body for "all rows". Tests and e2e on short screens see fewer rows: assert
+  `aria-rowindex` / `aria-rowcount`, not row counts. Server pages offset `aria-rowindex` by
+  `page × pageSize`. React's default data source cache is per source (`useMemo` on `dataSource`):
+  a shared cache would serve the old source's rows. Stories that load after mount (Large dataset,
+  Server side) are waited for in parity (`LOADS` in `parity.spec.ts`: a row and no `aria-busy`).
+  Story HTML that needs a script uses `HtmlGroup.script` / `scriptSource` (`snippetStory(…, scripts)`);
+  rows passed to `setRows` must fit `Record<string, unknown>`, so demo row types are type
+  aliases, not interfaces.

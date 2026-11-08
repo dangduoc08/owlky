@@ -406,9 +406,64 @@
     align-self: flex-start;
   }
 
+  /* Virtualization: spacers stand for the rows that aren't rendered (owner-measured px). */
+  :where([data-ok-data-grid-body]) {
+    padding-block: var(--_ok-data-grid-before, 0px) var(--_ok-data-grid-after, 0px);
+  }
+
+  /* Loading: a bar at the bottom of the rows, a spinner, or placeholder lines. */
+  :where([data-ok-data-grid-loading]) {
+    position: relative;
+    z-index: 3;
+    height: 0;
+  }
+
+  :where([data-ok-data-grid-loading][hidden]) {
+    display: none;
+  }
+
+  :where([data-ok-data-grid-loading] > [data-ok-linear-progress]) {
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+  }
+
+  :where([data-ok-data-grid-loading] > [data-ok-circular-progress]) {
+    position: absolute;
+    bottom: calc(var(--ok-spacing) * 4);
+    left: 50%;
+    translate: -50% 0;
+  }
+
+  :where([data-ok-data-grid-loading][data-ok-variant="skeleton"]) {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--ok-spacing) * 3);
+    height: auto;
+    padding: calc(var(--ok-spacing) * 4) var(--_ok-data-grid-pad);
+  }
+
+  :where([data-ok-data-grid-skeleton]) {
+    height: calc(var(--ok-spacing) * 4);
+    border-radius: var(--ok-radius-sm);
+    background-color: var(--ok-action-hover);
+    animation: ok-data-grid-pulse calc(var(--ok-duration-enter) * 2) var(--ok-easing-standard)
+      infinite alternate;
+  }
+
+  @keyframes ok-data-grid-pulse {
+    to {
+      opacity: 0.4;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     :where([data-ok-data-grid-body] > [role="row"], [data-ok-data-grid-sort-icon]) {
       transition: none;
+    }
+
+    :where([data-ok-data-grid-skeleton]) {
+      animation: none;
     }
   }
 }

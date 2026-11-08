@@ -4,6 +4,16 @@ import { frameworkStory, reactGroupsStory, type StoryControls } from "../../help
 import { htmlSetup, snippetStory } from "../shared/snippets.js";
 import { DataGridDocs } from "./data-grid-docs.js";
 import { DATA_GRID_CONTROLS, DATA_GRID_FILES, dataGridStories } from "./data-grid-examples.js";
+import {
+  LARGE_SCRIPT_SOURCE,
+  largeScript,
+  SERVER_SCRIPT_SOURCE,
+  serverScript,
+} from "./data-grid-scripts.js";
+import { LargeDemo } from "./large-demo.js";
+import largeSource from "./large-demo.tsx?raw";
+import { ServerDemo } from "./server-demo.js";
+import serverSource from "./server-demo.tsx?raw";
 
 const controls: StoryControls = { ...DATA_GRID_CONTROLS, target: DataGrid };
 
@@ -57,3 +67,29 @@ export default meta;
 export const Basic: StoryObj = story("basic");
 export const Custom: StoryObj = story("custom");
 export const Advanced: StoryObj = story("advanced");
+export const Large: StoryObj = {
+  ...frameworkStory({
+    html: snippetStory(snippets, "large", [["Large dataset", "group"]], SETUP, undefined, {
+      group: { script: largeScript, scriptSource: LARGE_SCRIPT_SOURCE },
+    }),
+    react: reactGroupsStory(
+      [{ title: "Large dataset", content: <LargeDemo /> }],
+      undefined,
+      largeSource,
+    ),
+  }),
+  name: "Large dataset",
+};
+export const Server: StoryObj = {
+  ...frameworkStory({
+    html: snippetStory(snippets, "server", [["Server side", "group"]], SETUP, undefined, {
+      group: { script: serverScript, scriptSource: SERVER_SCRIPT_SOURCE },
+    }),
+    react: reactGroupsStory(
+      [{ title: "Server side", content: <ServerDemo /> }],
+      undefined,
+      serverSource,
+    ),
+  }),
+  name: "Server side",
+};

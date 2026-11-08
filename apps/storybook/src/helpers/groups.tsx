@@ -1,6 +1,6 @@
 import type { OptionSchema } from "@owlky/core";
 import type { StoryObj } from "@storybook/react-vite";
-import { type ReactNode, useLayoutEffect, useRef } from "react";
+import { type ReactNode, useEffect, useLayoutEffect, useRef } from "react";
 import { applyArgs } from "./apply-args.js";
 import { applyHtmlArgs, schemaControls } from "./controls.js";
 import { jsxSource } from "./jsx-source.js";
@@ -30,7 +30,9 @@ export function Groups({ groups }: { groups: ReactGroup[] }) {
     <div className="sb-groups">
       {groups.map((group) => (
         <Group key={group.title} title={group.title}>
-          <div className="sb-row">{group.content}</div>
+          <div className="sb-row" data-sb-group-row="">
+            {group.content}
+          </div>
         </Group>
       ))}
     </div>
@@ -89,12 +91,31 @@ function HtmlGroups({
   useLayoutEffect(() => {
     if (controls && ref.current) applyHtmlArgs(ref.current, controls.schema, args);
   }, [controls, args]);
+  // Page scripts (data loaded with JavaScript) run once the runtime has mounted the snippets.
+  useEffect(() => {
+    const rows = [...(ref.current?.querySelectorAll<HTMLElement>("[data-sb-group-row]") ?? [])];
+    let stop: (() => void) | undefined;
+    const timer = setTimeout(() => {
+      const cleanups = groups.map((group, i) => group.script?.(rows[i] as HTMLElement));
+      stop = () => {
+        for (const cleanup of cleanups) cleanup?.();
+      };
+    }, 0);
+    return () => {
+      clearTimeout(timer);
+      stop?.();
+    };
+  }, [groups]);
   return (
     <div ref={ref} className="sb-groups">
       {groups.map((group) => (
         <Group key={group.title} title={group.title}>
-          {/* biome-ignore lint/security/noDangerouslySetInnerHtml: trusted, repository-owned snippet files. */}
-          <div className="sb-row" dangerouslySetInnerHTML={{ __html: group.html }} />
+          <div
+            className="sb-row"
+            data-sb-group-row=""
+            // biome-ignore lint/security/noDangerouslySetInnerHtml: trusted, repository-owned snippet files.
+            dangerouslySetInnerHTML={{ __html: group.html }}
+          />
         </Group>
       ))}
     </div>
@@ -105,6 +126,10 @@ export interface HtmlGroup {
   title: string;
   /** A canonical snippet from @owlky/html, rendered exactly as users paste it. */
   html: string;
+  /** Runs after the runtime mounted the snippet (data loaded with JavaScript); may return a cleanup. */
+  script?: ((row: HTMLElement) => (() => void) | undefined) | undefined;
+  /** The script as shown in the Code panel. */
+  scriptSource?: string | undefined;
 }
 
 /**
@@ -128,7 +153,14 @@ export function htmlGroupsStory(
           language: "html",
           code: [
             setup.trim(),
-            ...groups.map((group) => `<!-- ${group.title} -->\n${group.html.trim()}`),
+            ...groups.map(
+              (group) =>
+                `<!-- ${group.title} -->\n${group.html.trim()}${
+                  group.scriptSource
+                    ? `\n\n<script type="module">\n${group.scriptSource.trim()}\n</script>`
+                    : ""
+                }`,
+            ),
           ]
             .filter(Boolean)
             .join("\n\n"),
