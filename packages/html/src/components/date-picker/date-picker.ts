@@ -2,28 +2,44 @@ import {
   type DateView,
   datePickerOptions,
   defaultCloseOnSelect,
+  defaultDateTimePickerActions,
   defaultPickerActions,
+  defaultTimePickerActions,
   focusCalendar,
+  focusPickerView,
   formatAccessibleDate,
-  formatIsoDate,
+  formatDate,
+  formatTimeText,
+  hourUnit,
+  initialPickerView,
   initialView,
   invalidDate,
+  isTimeView,
   isValidDate,
+  nextPickerView,
   nextView,
   normalizeDateViews,
+  normalizeTimeViews,
   type PickerAction,
   type PickerLocaleText,
   type PickerOpenReason,
   type PickerShortcut,
+  type PickerView,
   parseIsoDate,
+  parseIsoTime,
   parsePickerActions,
+  parsePickerValue,
   pickerToolbarText,
+  pickerValueIso,
   readStyle,
   resolvePickerMode,
+  scrollDigitalClocks,
   setDateParts,
+  setTimeUnit,
   shortcutValue,
   startOfDay,
-  validateDate,
+  type TimeView,
+  validatePickerValue,
 } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
 import type { ComponentInstance } from "../../runtime/types.js";
@@ -31,17 +47,24 @@ import type { DateCalendarInstance } from "../date-calendar/date-calendar.js";
 import {
   asFunction,
   type RuleFunctions,
+  readAmpm,
   readLocale,
   readLocaleText,
   readRules,
-  toDate,
+  readTimeRules,
+  readValueType,
+  type TimeRuleFunctions,
+  toPickerDate,
 } from "../date-calendar/picker-dom.js";
 import type { DateFieldInstance } from "../date-field/date-field.js";
 import type { DialogInstance } from "../dialog/dialog.js";
+import type { DigitalClockInstance } from "../digital-clock/digital-clock.js";
 import type { PopoverInstance } from "../popover/popover.js";
+import type { TabsInstance } from "../tabs/tabs.js";
+import type { TimeClockInstance } from "../time-clock/time-clock.js";
 
 export interface DatePickerInstance extends ComponentInstance {
-  /** ISO date, or `null`. */
+  /** ISO value, or `null`: a date, a time (`HH:mm:ss`) or a date time, by `data-ok-value-type`. */
   readonly value: string | null;
   /** Sets the value (ISO string, `Date` or `null`) without events. */
   setValue(value: string | Date | null): void;
@@ -53,6 +76,8 @@ export interface DatePickerInstance extends ComponentInstance {
   setShouldDisableDate(fn: ((day: Date) => boolean) | null): void;
   setShouldDisableMonth(fn: ((month: Date) => boolean) | null): void;
   setShouldDisableYear(fn: ((year: Date) => boolean) | null): void;
+  /** Times that can't be picked (time and date time pickers). */
+  setShouldDisableTime(fn: ((value: Date, view: TimeView) => boolean) | null): void;
   setLocaleText(text: Partial<PickerLocaleText>): void;
 }
 
@@ -62,19 +87,26 @@ const {
   keepOpenDuringFieldFocus,
 } = datePickerOptions.options;
 
+const TIME_VIEWS = "[data-ok-digital-clock], [data-ok-multi-section-digital-clock]";
+const pad2 = (n: number) => String(n).padStart(2, "0");
+
 /**
- * Date picker — spec: specs/components/date-picker.md
+ * Date picker — spec: specs/components/date-picker.md. Also the time and date time pickers
+ * (`data-ok-value-type="time" | "date-time"`, ADR-0026).
  *
  * Markup:  <div data-ok-date-picker data-ok-picker-variant="responsive" data-ok-orientation="portrait"
- *               [data-ok-actions="cancel accept"] [data-ok-close-on-select="false"] [data-ok-desktop-mode-media-query]>
+ *               [data-ok-value-type="time"] [data-ok-actions="cancel accept"] [data-ok-close-on-select="false"]
+ *               [data-ok-desktop-mode-media-query] [data-ok-open-to]>
  *            …a date field whose end adornment holds button[data-ok-date-picker-open]…
  *            <div data-ok-popover data-ok-date-picker-paper popover="manual" role="dialog" …>   (desktop, responsive)
- *              <div data-ok-picker-layout>…toolbar, shortcuts, div[data-ok-picker-content] › date calendar, actions…</div>
+ *              <div data-ok-picker-layout>…toolbar, [tabs], shortcuts, div[data-ok-picker-content] ›
+ *                date calendar? digital clock? time clock?, actions…</div>
  *            </div>
  *            <dialog data-ok-dialog data-ok-date-picker-dialog …><div data-ok-dialog-paper></div></dialog>  (mobile, responsive)
  *          </div>
  * Behavior: the open button opens the layout in the popover (desktop) or moves it into the dialog
  *          (mobile, chosen by the media query); picks, actions and shortcuts follow MUI's lifecycle.
+ *          Responsive time pickers hold both forms' views and show one (`hidden`).
  * Events:  ok:date-picker:change (`{ value, validationError }`), ok:date-picker:accept (`{ value }`),
  *          ok:date-picker:open / close (`{ reason }`).
  */
@@ -84,10 +116,17 @@ export const datePicker = defineComponent<DatePickerInstance>({
 
   setup(element, { emit, signal, runtime }) {
     const variant = readStyle(element, variantSpec);
+    const type = readValueType(element);
+    const isDate = type === "date";
+    const isDateTime = type === "date-time";
     const isStatic = variant === "static";
     const fieldEl = element.querySelector<HTMLElement>(":scope > [data-ok-date-field]");
     const layout = element.querySelector<HTMLElement>("[data-ok-picker-layout]") as HTMLElement;
-    const calendarEl = layout.querySelector<HTMLElement>("[data-ok-date-calendar]") as HTMLElement;
+    const content = layout.querySelector<HTMLElement>(":scope > [data-ok-picker-content]");
+    const calendarEl = content?.querySelector<HTMLElement>(":scope > [data-ok-date-calendar]");
+    const clockEl = content?.querySelector<HTMLElement>(":scope > [data-ok-time-clock]") ?? null;
+    const deskEl = content?.querySelector<HTMLElement>(`:scope > :is(${TIME_VIEWS})`) ?? null;
+    const tabsEl = layout.querySelector<HTMLElement>(":scope > [data-ok-picker-tabs]");
     const paper = element.querySelector<HTMLElement>(":scope > [data-ok-date-picker-paper]");
     const dialogEl = element.querySelector<HTMLElement>(":scope > [data-ok-date-picker-dialog]");
     const dialogPaper = dialogEl?.querySelector<HTMLElement>("[data-ok-dialog-paper]") ?? null;
@@ -101,27 +140,64 @@ export const datePicker = defineComponent<DatePickerInstance>({
     let overrides: Partial<PickerLocaleText> | undefined;
     let text = readLocaleText(element);
     const functions: RuleFunctions = {};
+    const timeFunctions: TimeRuleFunctions = {};
     let shortcuts: readonly PickerShortcut[] | undefined;
 
     const field = () =>
       fieldEl ? runtime.getOrCreate<DateFieldInstance>(fieldEl, "date-field") : undefined;
     const calendar = () =>
-      runtime.getOrCreate<DateCalendarInstance>(
-        calendarEl,
-        "date-calendar",
-      ) as DateCalendarInstance;
+      calendarEl
+        ? runtime.getOrCreate<DateCalendarInstance>(calendarEl, "date-calendar")
+        : undefined;
+    const clock = () =>
+      clockEl ? runtime.getOrCreate<TimeClockInstance>(clockEl, "time-clock") : undefined;
+    const desk = () =>
+      deskEl
+        ? runtime.getOrCreate<DigitalClockInstance>(
+            deskEl,
+            deskEl.hasAttribute("data-ok-digital-clock")
+              ? "digital-clock"
+              : "multi-section-digital-clock",
+          )
+        : undefined;
+    const tabs = () => (tabsEl ? runtime.getOrCreate<TabsInstance>(tabsEl, "tabs") : undefined);
     const popover = () =>
       paper ? runtime.getOrCreate<PopoverInstance>(paper, "popover") : undefined;
     const dialog = () =>
       dialogEl ? runtime.getOrCreate<DialogInstance>(dialogEl, "dialog") : undefined;
-    const views = normalizeDateViews(calendarEl.getAttribute("data-ok-views")?.split(/\s+/));
-    const rules = () => readRules(calendarEl, functions);
-    const isDisabled = () => calendarEl.hasAttribute("data-ok-disabled");
-    const isReadOnly = () => fieldEl?.hasAttribute("data-ok-read-only") === true;
 
-    let value: Date | null = parseIsoDate(
-      fieldEl?.getAttribute("data-ok-value") ?? calendarEl.getAttribute("data-ok-value"),
+    const dateViews: DateView[] = calendarEl
+      ? normalizeDateViews(calendarEl.getAttribute("data-ok-views")?.split(/\s+/))
+      : [];
+    const timeViews: TimeView[] = isDate
+      ? []
+      : normalizeTimeViews(
+          (clockEl ?? deskEl)?.getAttribute("data-ok-views")?.split(/\s+/) ?? undefined,
+        );
+    const views: PickerView[] = [...dateViews, ...timeViews];
+    const timeSource = clockEl ?? deskEl ?? element;
+    const ampm = readAmpm(timeSource, locale);
+    const ruleSource = fieldEl ?? calendarEl ?? timeSource;
+    const today = () => startOfDay(new Date());
+    const isDisabled = () => (calendarEl ?? timeSource).hasAttribute("data-ok-disabled");
+    const isReadOnly = () =>
+      fieldEl?.hasAttribute("data-ok-read-only") === true ||
+      (!fieldEl && timeSource.hasAttribute("data-ok-read-only"));
+
+    let value: Date | null = parsePickerValue(
+      fieldEl?.getAttribute("data-ok-value") ??
+        calendarEl?.getAttribute("data-ok-value") ??
+        timeSource.getAttribute("data-ok-value"),
+      today(),
     );
+    // Static date time pickers have no field: the calendar holds the day, the clock the time.
+    if (!fieldEl && isDateTime && isValidDate(value) && timeSource !== element)
+      value = parseIsoTime(timeSource.getAttribute("data-ok-value"), value) ?? value;
+    const base = () => (isValidDate(value) ? value : today());
+    const rules = () => ({
+      ...readRules(ruleSource, functions),
+      ...(isDate ? {} : readTimeRules(fieldEl ?? timeSource, timeFunctions, base())),
+    });
     let open = false;
     let mode: "desktop" | "mobile" | "static" = isStatic
       ? "static"
@@ -130,54 +206,134 @@ export const datePicker = defineComponent<DatePickerInstance>({
         : "desktop";
     let valueOnOpen = value;
     let lastAccepted = value;
+    // Time and date time pickers keep their view here; date pickers ask the calendar.
+    let view: PickerView = isDate
+      ? "day"
+      : initialPickerView(views, type, element.getAttribute("data-ok-open-to"));
 
-    const iso = (date: Date | null) => (date && isValidDate(date) ? formatIsoDate(date) : null);
+    const iso = (date: Date | null) =>
+      date && isValidDate(date) ? pickerValueIso(date, type) : null;
     const actionsShown = (): PickerAction[] =>
-      parsePickerActions(element.getAttribute("data-ok-actions")) ?? defaultPickerActions(mode);
+      parsePickerActions(element.getAttribute("data-ok-actions")) ??
+      (isDate
+        ? defaultPickerActions(mode)
+        : isDateTime
+          ? defaultDateTimePickerActions(mode)
+          : defaultTimePickerActions());
     const closeOnSelect = () =>
       element.hasAttribute(closeSpec.attr)
         ? element.getAttribute(closeSpec.attr) !== "false"
-        : isStatic
+        : isStatic || !isDate
           ? false
           : defaultCloseOnSelect(mode);
 
+    const renderTimeToolbar = () => {
+      if (!toolbar) return;
+      const valid = isValidDate(value) ? value : null;
+      const empty = text.toolbarEmptyText;
+      for (const button of toolbar.querySelectorAll<HTMLButtonElement>(
+        "[data-ok-picker-toolbar-button]",
+      )) {
+        const target = button.getAttribute("data-ok-view") as PickerView;
+        button.toggleAttribute("data-ok-selected", target === view);
+        button.disabled = isDisabled();
+        let label = empty;
+        if (valid) {
+          if (target === "year") label = formatDate(valid, locale, { year: "numeric" });
+          else if (target === "hours") label = pad2(hourUnit(valid, ampm));
+          else if (target === "minutes") label = pad2(valid.getMinutes());
+          else if (target === "seconds") label = pad2(valid.getSeconds());
+          else label = formatDate(valid, locale, { month: "short", day: "numeric" });
+        }
+        if (button.textContent !== label) button.textContent = label;
+      }
+      const pm = base().getHours() >= 12;
+      toolbar
+        .querySelectorAll<HTMLButtonElement>("[data-ok-picker-toolbar-meridiem]")
+        .forEach((button, index) => {
+          button.setAttribute("aria-pressed", String(valid !== null && pm === (index === 1)));
+          button.disabled = isDisabled() || isReadOnly();
+        });
+    };
+
     const render = () => {
-      if (toolbar) toolbar.hidden = mode === "desktop";
-      if (toolbarTitle)
+      const desktopForm = mode === "desktop";
+      if (toolbar) toolbar.hidden = desktopForm;
+      if (isDate && toolbarTitle)
         toolbarTitle.textContent = pickerToolbarText(
           isValidDate(value) ? value : null,
           locale,
           text.toolbarEmptyText,
         );
+      if (!isDate) {
+        renderTimeToolbar();
+        if (tabsEl) {
+          tabsEl.hidden = desktopForm;
+          tabs()?.setValue(isTimeView(view) ? "time" : "date");
+        }
+        if (calendarEl) calendarEl.hidden = isDateTime && !desktopForm && isTimeView(view);
+        if (deskEl) deskEl.hidden = !desktopForm;
+        if (clockEl) {
+          clockEl.hidden = desktopForm || (isDateTime && !isTimeView(view));
+          if (isTimeView(view)) clock()?.setView(view);
+        }
+      }
       const shown = actionsShown();
       if (actionsBar) {
         actionsBar.hidden = shown.length === 0;
         for (const button of actionsBar.querySelectorAll<HTMLElement>("[data-ok-picker-action]")) {
           const action = button.getAttribute("data-ok-picker-action") as PickerAction;
           button.hidden = !shown.includes(action);
-          if (action === "nextOrAccept")
-            button.textContent = nextView(views, calendar().view)
-              ? text.nextStepButtonLabel
-              : text.okButtonLabel;
+          if (action === "nextOrAccept") {
+            const after = isDate
+              ? nextView(dateViews, calendar()?.view as DateView)
+              : nextPickerView(views, view);
+            // The Button keeps its label span (React renders one).
+            const label = button.querySelector("[data-ok-button-label]") ?? button;
+            label.textContent = after ? text.nextStepButtonLabel : text.okButtonLabel;
+          }
         }
       }
+      const valid = isValidDate(value) ? value : null;
       openButton?.setAttribute(
         "aria-label",
-        text.openDatePickerDialogue(
-          isValidDate(value) ? formatAccessibleDate(value, locale) : null,
-        ),
+        type === "time"
+          ? text.openTimePickerDialogue(
+              valid ? formatTimeText(valid, timeViews, ampm, locale) : null,
+            )
+          : text.openDatePickerDialogue(
+              valid
+                ? isDateTime
+                  ? `${formatAccessibleDate(valid, locale)} ${formatTimeText(valid, timeViews, ampm, locale)}`
+                  : formatAccessibleDate(valid, locale)
+                : null,
+            ),
       );
       element.toggleAttribute("data-ok-open", open);
     };
 
-    /** A new value from the field, the calendar, an action or a shortcut. */
-    const change = (next: Date | null, from?: "field" | "calendar") => {
+    const setView = (target: PickerView) => {
+      if (!views.includes(target)) return;
+      view = target;
+      if (!isTimeView(target)) calendar()?.setView(target);
+      render();
+    };
+
+    type Source = "field" | "calendar" | "clock" | "desk";
+    /** A new value from the field, the calendar, a clock, an action or a shortcut. */
+    const change = (next: Date | null, from?: Source) => {
       if (iso(next) === iso(value) && (next === null) === (value === null)) return;
       value = next;
+      const usable = next === null || isValidDate(next);
       // The field ignores invalid dates (it shows them already).
       if (from !== "field") field()?.setValue(next);
-      if (from !== "calendar" && (next === null || isValidDate(next))) calendar().setValue(next);
-      emit("change", { value: iso(next), validationError: validateDate(next, rules()) });
+      if (from !== "calendar" && usable) calendar()?.setValue(next);
+      if (from !== "clock" && usable) clock()?.setValue(next);
+      if (from !== "desk" && usable) desk()?.setValue(next);
+      emit("change", {
+        value: iso(next),
+        validationError: validatePickerValue(next, type, rules()),
+      });
       render();
     };
     const accept = (next: Date | null) => {
@@ -204,6 +360,16 @@ export const datePicker = defineComponent<DatePickerInstance>({
       else accept(value);
       close(reason);
     };
+    /** The last view of a part finished: accept and close when picks close the picker. */
+    const finish = (next: Date | null) => {
+      if (isStatic) {
+        if (element.getAttribute(closeSpec.attr) === "true") accept(next);
+        return;
+      }
+      if (!closeOnSelect()) return;
+      accept(next);
+      close("select");
+    };
     const openPicker = (reason: PickerOpenReason) => {
       if (open || isStatic || isDisabled() || isReadOnly()) return;
       mode = resolvePickerMode(
@@ -216,14 +382,20 @@ export const datePicker = defineComponent<DatePickerInstance>({
         dialogPaper.append(layout);
       if (mode === "desktop" && paper && layout.parentElement !== paper) paper.append(layout);
       valueOnOpen = value;
-      const first = calendarEl.getAttribute("data-ok-open-to") as DateView | null;
-      calendar().setView(initialView(views, first ?? undefined));
+      if (isDate) {
+        const first = calendarEl?.getAttribute("data-ok-open-to") as DateView | null;
+        calendar()?.setView(initialView(dateViews, first ?? undefined));
+      } else setView(initialPickerView(views, type, element.getAttribute("data-ok-open-to")));
       open = true;
       render();
       const anchor = fieldEl?.querySelector("[data-ok-text-field-control]");
       if (mode === "desktop") popover()?.open(anchor ?? element);
       else dialog()?.open(openButton);
-      focusCalendar(layout);
+      if (isDate) focusCalendar(layout);
+      else {
+        scrollDigitalClocks(layout);
+        focusPickerView(layout);
+      }
       emit("open", { reason });
     };
 
@@ -243,7 +415,7 @@ export const datePicker = defineComponent<DatePickerInstance>({
           close("clear");
           break;
         case "today": {
-          const now = startOfDay(new Date());
+          const now = today();
           const next =
             value && isValidDate(value)
               ? setDateParts(now, {
@@ -258,10 +430,14 @@ export const datePicker = defineComponent<DatePickerInstance>({
           break;
         }
         case "nextOrAccept": {
-          const after = nextView(views, calendar().view);
+          const after = isDate
+            ? nextView(dateViews, calendar()?.view as DateView)
+            : nextPickerView(views, view);
           if (after) {
-            calendar().setView(after);
-            render();
+            if (isDate) {
+              calendar()?.setView(after as DateView);
+              render();
+            } else setView(after);
           } else {
             accept(value);
             close("accept");
@@ -293,7 +469,7 @@ export const datePicker = defineComponent<DatePickerInstance>({
         ).detail;
         // A partly filled field reports `null` with "invalidDate": the value becomes an invalid
         // date (as in React), and the calendar stays where it is.
-        const date = parseIsoDate(detail.value);
+        const date = parsePickerValue(detail.value, base());
         change(date ?? (detail.validationError === "invalidDate" ? invalidDate() : null), "field");
       },
       { signal },
@@ -303,19 +479,73 @@ export const datePicker = defineComponent<DatePickerInstance>({
       (event) => {
         if (event.target !== calendarEl) return;
         const detail = (event as CustomEvent<{ value: string; selectionState: string }>).detail;
-        const date = parseIsoDate(detail.value);
-        if (!date) return;
+        const day = parseIsoDate(detail.value);
+        if (!day) return;
+        // Date time pickers keep the time of the value.
+        const date = isDate
+          ? day
+          : setDateParts(base(), {
+              year: day.getFullYear(),
+              month: day.getMonth(),
+              day: day.getDate(),
+            });
         // The calendar applies its own value after this event.
         queueMicrotask(() => {
           change(date, "calendar");
-          if (detail.selectionState !== "finish" || !closeOnSelect()) return;
-          accept(date);
-          close("select");
+          if (detail.selectionState !== "finish") return;
+          if (isDateTime && timeViews.length > 0) {
+            // Mobile and static forms go on to the time; desktop shows both.
+            if (mode !== "desktop") setView(timeViews[0] as TimeView);
+            return;
+          }
+          finish(date);
         });
       },
       { signal },
     );
-    element.addEventListener("ok:date-calendar:viewchange", () => render(), { signal });
+    element.addEventListener(
+      "ok:date-calendar:viewchange",
+      (event) => {
+        if (event.target !== calendarEl) return;
+        if (!isDate) view = (event as CustomEvent<{ view: DateView }>).detail.view;
+        render();
+      },
+      { signal },
+    );
+    const onTimeChange = (source: "clock" | "desk") => (event: Event) => {
+      if (event.target !== (source === "clock" ? clockEl : deskEl)) return;
+      const detail = (event as CustomEvent<{ value: string; selectionState: string }>).detail;
+      const date = parseIsoTime(detail.value, base());
+      if (!date) return;
+      change(date, source);
+      if (detail.selectionState === "finish") finish(date);
+    };
+    element.addEventListener("ok:time-clock:change", onTimeChange("clock"), { signal });
+    element.addEventListener("ok:digital-clock:change", onTimeChange("desk"), { signal });
+    element.addEventListener("ok:multi-section-digital-clock:change", onTimeChange("desk"), {
+      signal,
+    });
+    element.addEventListener(
+      "ok:time-clock:viewchange",
+      (event) => {
+        if (event.target !== clockEl) return;
+        view = (event as CustomEvent<{ view: TimeView }>).detail.view;
+        render();
+      },
+      { signal },
+    );
+    tabsEl?.addEventListener(
+      "ok:tabs:change",
+      (event) => {
+        const tab = (event as CustomEvent<{ value: string }>).detail.value;
+        const dateView: DateView = dateViews.includes("day")
+          ? "day"
+          : (dateViews.at(-1) as DateView);
+        // The tabs apply their own selection after this event.
+        queueMicrotask(() => setView(tab === "time" ? (timeViews[0] as TimeView) : dateView));
+      },
+      { signal },
+    );
     layout.addEventListener(
       "click",
       (event) => {
@@ -323,6 +553,17 @@ export const datePicker = defineComponent<DatePickerInstance>({
         const action = target.closest<HTMLButtonElement>("[data-ok-picker-action]");
         if (action && layout.contains(action)) {
           runAction(action.getAttribute("data-ok-picker-action") as PickerAction);
+          return;
+        }
+        const viewButton = target.closest("[data-ok-picker-toolbar-button]");
+        if (viewButton) {
+          setView(viewButton.getAttribute("data-ok-view") as PickerView);
+          return;
+        }
+        const meridiem = target.closest("[data-ok-picker-toolbar-meridiem]");
+        if (meridiem) {
+          const pm = meridiem.getAttribute("data-ok-picker-toolbar-meridiem") === "pm";
+          change(setTimeUnit(base(), "meridiem", pm ? 1 : 0, ampm));
           return;
         }
         const chip = target.closest("[data-ok-picker-shortcut]");
@@ -334,8 +575,8 @@ export const datePicker = defineComponent<DatePickerInstance>({
         const fromFunction = shortcuts?.[index];
         const next = fromFunction
           ? shortcutValue(fromFunction, rules())
-          : toDate(chip.getAttribute("data-ok-value"));
-        if (next === undefined || validateDate(next, rules()) !== null) return;
+          : toPickerDate(chip.getAttribute("data-ok-value"), base());
+        if (next === undefined || validatePickerValue(next, type, rules()) !== null) return;
         change(next);
         accept(next);
         close("shortcut");
@@ -371,19 +612,26 @@ export const datePicker = defineComponent<DatePickerInstance>({
       { signal },
     );
 
+    // Clocks only know a time (`HH:mm:ss`): give them the picker's day, which the rules need.
+    if (!isDate && isValidDate(value)) {
+      clock()?.setValue(value);
+      desk()?.setValue(value);
+    }
     render();
     return {
       get value() {
         return iso(value);
       },
       setValue(next) {
-        const date = toDate(next);
+        const date = toPickerDate(next, base());
         if (date === undefined) return;
         value = date;
         lastAccepted = date;
         valueOnOpen = date;
         field()?.setValue(date);
-        calendar().setValue(date);
+        calendar()?.setValue(date);
+        clock()?.setValue(date);
+        desk()?.setValue(date);
         render();
       },
       get isOpen() {
@@ -403,23 +651,31 @@ export const datePicker = defineComponent<DatePickerInstance>({
       setShouldDisableDate(fn) {
         functions.shouldDisableDate = asFunction(fn);
         field()?.setShouldDisableDate(fn);
-        calendar().setShouldDisableDate(fn);
+        calendar()?.setShouldDisableDate(fn);
       },
       setShouldDisableMonth(fn) {
         functions.shouldDisableMonth = asFunction(fn);
         field()?.setShouldDisableMonth(fn);
-        calendar().setShouldDisableMonth(fn);
+        calendar()?.setShouldDisableMonth(fn);
       },
       setShouldDisableYear(fn) {
         functions.shouldDisableYear = asFunction(fn);
         field()?.setShouldDisableYear(fn);
-        calendar().setShouldDisableYear(fn);
+        calendar()?.setShouldDisableYear(fn);
+      },
+      setShouldDisableTime(fn) {
+        timeFunctions.shouldDisableTime = asFunction(fn);
+        field()?.setShouldDisableTime(fn);
+        clock()?.setShouldDisableTime(fn);
+        desk()?.setShouldDisableTime(fn);
       },
       setLocaleText(next) {
         overrides = { ...overrides, ...next };
         text = readLocaleText(element, overrides);
         field()?.setLocaleText(next);
-        calendar().setLocaleText(next);
+        calendar()?.setLocaleText(next);
+        clock()?.setLocaleText(next);
+        desk()?.setLocaleText(next);
         render();
       },
       destroy() {

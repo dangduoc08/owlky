@@ -1,0 +1,271 @@
+/*
+ * Time clock — spec: specs/components/date-picker.md (ADR-0026)
+ *
+ * Anatomy:   div[data-ok-time-clock][data-ok-view][data-ok-ampm]
+ *              › div[data-ok-time-clock-dial]
+ *                  › span[data-ok-time-clock-pin]
+ *                  › span[data-ok-time-clock-pointer][data-ok-inner]?[data-ok-between]?   (--_ok-clock-angle)
+ *                  › div[role=listbox][data-ok-time-clock-options]
+ *                      › span[role=option][data-ok-time-clock-number][data-ok-position=0…11][data-ok-inner]?
+ *              › div[data-ok-time-clock-meridiems]? › button[data-ok-time-clock-meridiem=am|pm]
+ *              › div[data-ok-time-clock-nav] › button[data-ok-time-clock-prev|next]
+ *
+ * A 220px face (the reference's) inside a 320px view. Numbers sit on a ring of radius
+ * (220 − 36 − 2) / 2 = 91px (24-hour clocks: an inner ring at 65 %), placed by their position
+ * with sin() / cos(), so the markup needs no style attribute. The pointer's angle is the private
+ * --_ok-clock-angle (React style, HTML runtime CSSOM). Single :where() selectors in
+ * @layer components; translucent colors use rgb(var(--…-channel) / α) (AGENTS.md).
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-ok-time-clock]) {
+    --_ok-clock-size: calc(var(--ok-spacing) * 55);
+    --_ok-clock-number: calc(var(--ok-spacing) * 9);
+    --_ok-clock-radius: calc((var(--_ok-clock-size) - var(--_ok-clock-number) - 2px) / 2);
+
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-sizing: border-box;
+    width: calc(var(--ok-spacing) * 80);
+    max-width: 100%;
+    padding: calc(var(--ok-spacing) * 4) calc(var(--ok-spacing) * 4) calc(var(--ok-spacing) * 2);
+    color: var(--ok-text-primary);
+    font-family: var(--ok-font-family);
+  }
+
+  :where([data-ok-time-clock][hidden]) {
+    display: none;
+  }
+
+  :where([data-ok-time-clock-dial]) {
+    position: relative;
+    flex-shrink: 0;
+    width: var(--_ok-clock-size);
+    height: var(--_ok-clock-size);
+    margin-block-start: calc(var(--ok-spacing) * 4);
+    border-radius: var(--ok-radius-full);
+    background-color: var(--ok-bg-neutral);
+    /* The face follows drags; the page doesn't scroll under a finger on it. */
+    touch-action: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  :where([data-ok-time-clock-pin]) {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: calc(var(--ok-spacing) * 1.5);
+    height: calc(var(--ok-spacing) * 1.5);
+    border-radius: var(--ok-radius-full);
+    background-color: var(--ok-palette-primary-main);
+    translate: -50% -50%;
+  }
+
+  :where([data-ok-time-clock-pointer]) {
+    position: absolute;
+    bottom: 50%;
+    left: calc(50% - 1px);
+    width: 2px;
+    height: var(--_ok-clock-radius);
+    background-color: var(--ok-palette-primary-main);
+    transform-origin: center bottom;
+    rotate: var(--_ok-clock-angle, 0deg);
+    transition:
+      rotate var(--ok-duration-shorter) var(--ok-easing-standard),
+      height var(--ok-duration-shorter) var(--ok-easing-standard);
+  }
+
+  :where([data-ok-time-clock-pointer][hidden]) {
+    display: none;
+  }
+
+  :where([data-ok-time-clock-pointer][data-ok-inner]) {
+    height: calc(var(--_ok-clock-radius) * 0.65);
+  }
+
+  /* The thumb under the selected number. */
+  :where([data-ok-time-clock-pointer])::before {
+    position: absolute;
+    top: calc(var(--_ok-clock-number) / -2);
+    left: calc(1px - var(--_ok-clock-number) / 2);
+    box-sizing: border-box;
+    width: var(--_ok-clock-number);
+    height: var(--_ok-clock-number);
+    border-radius: var(--ok-radius-full);
+    background-color: var(--ok-palette-primary-main);
+    content: "";
+  }
+
+  /* Minutes between two numbers: a small ring instead. */
+  :where([data-ok-time-clock-pointer][data-ok-between])::before {
+    top: calc(var(--ok-spacing) * -1.5);
+    left: calc(1px - var(--ok-spacing) * 1.5);
+    width: calc(var(--ok-spacing) * 3);
+    height: calc(var(--ok-spacing) * 3);
+    border: 2px solid var(--ok-palette-primary-main);
+    background-color: var(--ok-palette-primary-contrast-text);
+  }
+
+  :where([data-ok-time-clock-options]) {
+    position: absolute;
+    inset: 0;
+    border-radius: var(--ok-radius-full);
+    outline: 0;
+    cursor: pointer;
+  }
+
+  :where(
+    [data-ok-time-clock-options][aria-disabled="true"],
+    [data-ok-time-clock][data-ok-read-only] [data-ok-time-clock-options]
+  ) {
+    cursor: default;
+  }
+
+  :where([data-ok-time-clock-options]:focus-visible) {
+    outline: 2px solid var(--ok-palette-primary-main);
+    outline-offset: 2px;
+  }
+
+  :where([data-ok-time-clock-number]) {
+    --_ok-clock-ring: var(--_ok-clock-radius);
+
+    position: absolute;
+    top: calc(50% - var(--_ok-clock-number) / 2);
+    left: calc(50% - var(--_ok-clock-number) / 2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--_ok-clock-number);
+    height: var(--_ok-clock-number);
+    border-radius: var(--ok-radius-full);
+    color: var(--ok-text-primary);
+    font-size: var(--ok-typography-body1-font-size);
+    line-height: 1;
+    pointer-events: none;
+    translate: calc(sin(var(--_ok-clock-slot, 0deg)) * var(--_ok-clock-ring))
+      calc(cos(var(--_ok-clock-slot, 0deg)) * var(--_ok-clock-ring) * -1);
+  }
+
+  :where([data-ok-time-clock-number][data-ok-inner]) {
+    --_ok-clock-ring: calc(var(--_ok-clock-radius) * 0.65);
+
+    font-size: var(--ok-typography-body2-font-size);
+  }
+
+  :where([data-ok-time-clock-number][data-ok-position="1"]) {
+    --_ok-clock-slot: 30deg;
+  }
+
+  :where([data-ok-time-clock-number][data-ok-position="2"]) {
+    --_ok-clock-slot: 60deg;
+  }
+
+  :where([data-ok-time-clock-number][data-ok-position="3"]) {
+    --_ok-clock-slot: 90deg;
+  }
+
+  :where([data-ok-time-clock-number][data-ok-position="4"]) {
+    --_ok-clock-slot: 120deg;
+  }
+
+  :where([data-ok-time-clock-number][data-ok-position="5"]) {
+    --_ok-clock-slot: 150deg;
+  }
+
+  :where([data-ok-time-clock-number][data-ok-position="6"]) {
+    --_ok-clock-slot: 180deg;
+  }
+
+  :where([data-ok-time-clock-number][data-ok-position="7"]) {
+    --_ok-clock-slot: 210deg;
+  }
+
+  :where([data-ok-time-clock-number][data-ok-position="8"]) {
+    --_ok-clock-slot: 240deg;
+  }
+
+  :where([data-ok-time-clock-number][data-ok-position="9"]) {
+    --_ok-clock-slot: 270deg;
+  }
+
+  :where([data-ok-time-clock-number][data-ok-position="10"]) {
+    --_ok-clock-slot: 300deg;
+  }
+
+  :where([data-ok-time-clock-number][data-ok-position="11"]) {
+    --_ok-clock-slot: 330deg;
+  }
+
+  :where([data-ok-time-clock-number][aria-selected="true"]) {
+    color: var(--ok-palette-primary-contrast-text);
+  }
+
+  :where([data-ok-time-clock-number][aria-disabled="true"]) {
+    color: var(--ok-text-disabled);
+  }
+
+  :where([data-ok-time-clock-meridiems]) {
+    display: flex;
+    justify-content: space-between;
+    width: var(--_ok-clock-size);
+    margin-block-start: calc(var(--ok-spacing) * -9);
+  }
+
+  :where([data-ok-time-clock-meridiem]) {
+    position: relative;
+    width: var(--_ok-clock-number);
+    height: var(--_ok-clock-number);
+    padding: 0;
+    border: 0;
+    border-radius: var(--ok-radius-full);
+    background-color: transparent;
+    color: var(--ok-text-primary);
+    font-family: inherit;
+    font-size: var(--ok-typography-caption-font-size);
+    font-weight: var(--ok-font-weight-semibold);
+    cursor: pointer;
+  }
+
+  :where([data-ok-time-clock-meridiem][aria-pressed="true"]) {
+    background-color: var(--ok-palette-primary-main);
+    color: var(--ok-palette-primary-contrast-text);
+  }
+
+  :where([data-ok-time-clock-meridiem]:disabled) {
+    color: var(--ok-text-disabled);
+    cursor: default;
+  }
+
+  :where([data-ok-time-clock-meridiem]:focus-visible) {
+    outline: 2px solid var(--ok-palette-primary-main);
+    outline-offset: 1px;
+  }
+
+  :where([data-ok-time-clock-nav]) {
+    position: absolute;
+    top: calc(var(--ok-spacing) * 3);
+    right: calc(var(--ok-spacing) * 3);
+    display: flex;
+    gap: calc(var(--ok-spacing) * 2);
+  }
+
+  @media (hover: hover) {
+    :where([data-ok-time-clock-meridiem]:hover:not(:disabled):not([aria-pressed="true"])) {
+      background-color: var(--ok-action-hover);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :where([data-ok-time-clock-pointer]) {
+      transition: none;
+    }
+  }
+
+  :where([data-ok-time-clock][data-ok-reduce-animations] [data-ok-time-clock-pointer]) {
+    transition: none;
+  }
+}

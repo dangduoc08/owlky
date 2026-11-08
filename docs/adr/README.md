@@ -29,5 +29,6 @@ ADR that supersedes the old one — don't rewrite history.
 | [0022](0022-pickers.md) | Pickers: one picker engine in core, every MUI X tier, four phases | Accepted |
 | [0023](0023-editor-on-tiptap.md) | Editor: Tiptap as the first runtime dependency, behind its own entry points | Accepted |
 | [0024](0024-chart.md) | Chart: one SVG chart engine in core, written by us, four phases | Accepted |
+| [0026](0026-time-pickers.md) | Time pickers: one field and picker anatomy for every value type, clocks as listboxes | Accepted |
 
 Template: **Context** (why decide) · **Decision** (what) · **Consequences** (trade-offs, follow-ups).

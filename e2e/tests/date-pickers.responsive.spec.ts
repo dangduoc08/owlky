@@ -3,12 +3,22 @@ import { implementations, openStory, storyId } from "./helpers.js";
 import { viewports } from "./viewports.js";
 
 /** Date pickers at every viewport, React and HTML (spec: specs/components/date-picker.md → Responsive). */
-const STORIES = ["date-story", "calendars", "validation", "shortcuts", "localization"];
+const STORIES = [
+  "date-story",
+  "time",
+  "date-time",
+  "calendars",
+  "clocks",
+  "validation",
+  "time-validation",
+  "shortcuts",
+  "localization",
+];
 
 const PARTS =
-  "[data-ok-date-field], [data-ok-date-calendar], [data-ok-picker-layout], [data-ok-month-calendar], [data-ok-year-calendar]";
+  "[data-ok-date-field], [data-ok-date-calendar], [data-ok-picker-layout], [data-ok-month-calendar], [data-ok-year-calendar], [data-ok-time-clock], [data-ok-multi-section-digital-clock], [data-ok-digital-clock]";
 const TARGETS =
-  "[data-ok-picker-day], [data-ok-date-picker-open], [data-ok-picker-action], [data-ok-date-calendar-prev], [data-ok-date-calendar-next]";
+  "[data-ok-picker-day], [data-ok-date-picker-open], [data-ok-picker-action], [data-ok-date-calendar-prev], [data-ok-date-calendar-next], [data-ok-time-clock-prev], [data-ok-time-clock-next], [data-ok-digital-clock-item], [data-ok-picker-toolbar-meridiem], [role=tab]";
 
 function measure(page: Page) {
   return page.evaluate(
@@ -76,6 +86,29 @@ for (const viewport of viewports) {
         expect(Math.round(calendar?.width ?? 0)).toBe(320);
         await page.keyboard.press("Escape");
       }
+    });
+
+    test("an open time or date time picker stays inside the screen", async ({ page }) => {
+      for (const impl of implementations)
+        for (const story of ["time", "date-time"]) {
+          await openStory(page, storyId(impl, "date-pickers", story));
+          const open = page.locator("[data-ok-date-picker-open]").first();
+          if (viewport.touch) await open.tap();
+          else await open.click();
+          const paper = page.locator(
+            "[data-ok-date-picker-paper][data-ok-open], dialog[open] > [data-ok-dialog-paper]",
+          );
+          await expect(paper).toBeVisible();
+          const box = await paper.boundingBox();
+          expect(box?.x ?? -1).toBeGreaterThanOrEqual(0);
+          expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(viewport.width);
+          // Desktop: digital clocks; touch: the analog clock (date time: after the calendar).
+          const views = paper.locator(
+            "[data-ok-multi-section-digital-clock]:not([hidden]), [data-ok-time-clock]:not([hidden]), [data-ok-date-calendar]:not([hidden])",
+          );
+          await expect(views.first()).toBeVisible();
+          await page.keyboard.press("Escape");
+        }
     });
   });
 }

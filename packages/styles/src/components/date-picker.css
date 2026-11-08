@@ -11,6 +11,13 @@
  *                  › ul[data-ok-picker-shortcuts]? › li › span[data-ok-chip] › button[data-ok-picker-shortcut]
  *                  › div[data-ok-picker-content] › div[data-ok-date-calendar]
  *                  › div[data-ok-picker-actions]? › button[data-ok-button][data-ok-picker-action]
+ *            Time and date time pickers (ADR-0026):
+ *                  › div[data-ok-picker-toolbar] › span[data-ok-picker-toolbar-overline]
+ *                      + div[data-ok-picker-toolbar-content] › div[data-ok-picker-toolbar-date]?
+ *                        + div[data-ok-picker-toolbar-time] › button[data-ok-picker-toolbar-button][data-ok-view]…
+ *                        + div[data-ok-picker-toolbar-ampm]? › button[data-ok-picker-toolbar-meridiem]
+ *                  › div[data-ok-tabs][data-ok-picker-tabs]?                  (date time; mobile / static)
+ *                  › div[data-ok-picker-content] › date calendar? + digital clock (desktop) + time clock (mobile / static)
  * Modifiers: data-ok-orientation = portrait (default) | landscape (from 600px)
  *
  * Mobile first: one column (toolbar, shortcuts as a wrapping row, calendar, actions). From 600px
@@ -118,6 +125,11 @@
     display: none;
   }
 
+  /* Date time pickers: the date / time tabs under the toolbar (ADR-0026). */
+  :where([data-ok-picker-layout]:has(> [data-ok-picker-tabs])) {
+    grid-template-areas: "toolbar" "tabs" "shortcuts" "content" "actions";
+  }
+
   @media (min-width: 600px) {
     :where([data-ok-picker-layout]:has(> [data-ok-picker-shortcuts])) {
       grid-template-columns: auto minmax(0, auto);
@@ -155,6 +167,171 @@
         [data-ok-picker-layout][data-ok-orientation="landscape"] [data-ok-picker-toolbar-title]
       ) {
       margin-block-start: calc(var(--ok-spacing) * 4);
+    }
+
+    :where([data-ok-picker-layout][data-ok-orientation="landscape"]:has(> [data-ok-picker-tabs])) {
+      grid-template-areas: "toolbar tabs" "toolbar content" "toolbar actions";
+    }
+  }
+
+  /* Time and date time pickers (ADR-0026) */
+  :where([data-ok-picker-tabs]) {
+    grid-area: tabs;
+  }
+
+  :where([data-ok-picker-tabs][hidden]) {
+    display: none;
+  }
+
+  :where([data-ok-picker-toolbar]:has(> [data-ok-picker-toolbar-content])) {
+    padding: calc(var(--ok-spacing) * 4);
+  }
+
+  :where([data-ok-picker-toolbar-content]) {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--ok-spacing) * 3);
+    box-sizing: border-box;
+    width: 100%;
+    margin-block-start: calc(var(--ok-spacing) * 2);
+  }
+
+  /* Date time: the date on the left, the time and AM / PM on the right. */
+  :where([data-ok-picker-toolbar-date]) {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-inline-end: auto;
+  }
+
+  :where([data-ok-picker-toolbar-time]) {
+    display: flex;
+    align-items: center;
+  }
+
+  :where([data-ok-picker-toolbar-part]) {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  :where([data-ok-picker-toolbar-button]) {
+    padding: 0;
+    border: 0;
+    border-radius: var(--ok-radius-xs);
+    background-color: transparent;
+    color: var(--ok-text-secondary);
+    font-family: var(--ok-typography-h3-font-family);
+    font-size: var(--ok-typography-h3-font-size);
+    font-weight: var(--ok-typography-h3-font-weight);
+    line-height: var(--ok-typography-h3-line-height);
+    cursor: pointer;
+  }
+
+  :where([data-ok-picker-toolbar-date] > [data-ok-picker-toolbar-button]) {
+    font-family: var(--ok-typography-h4-font-family);
+    font-size: var(--ok-typography-h4-font-size);
+    font-weight: var(--ok-typography-h4-font-weight);
+    line-height: var(--ok-typography-h4-line-height);
+  }
+
+  :where([data-ok-picker-toolbar-date] > [data-ok-picker-toolbar-button][data-ok-view="year"]) {
+    font-family: var(--ok-typography-subtitle1-font-family);
+    font-size: var(--ok-typography-subtitle1-font-size);
+    font-weight: var(--ok-font-weight-regular);
+    line-height: var(--ok-typography-subtitle1-line-height);
+  }
+
+  :where(
+    [data-ok-picker-toolbar-button][data-ok-selected],
+    [data-ok-picker-toolbar-meridiem][aria-pressed="true"]
+  ) {
+    color: var(--ok-text-primary);
+  }
+
+  :where([data-ok-picker-toolbar-separator]) {
+    margin-inline: calc(var(--ok-spacing) * 1);
+    color: var(--ok-text-secondary);
+    font-size: var(--ok-typography-h3-font-size);
+    font-weight: var(--ok-typography-h3-font-weight);
+    line-height: var(--ok-typography-h3-line-height);
+  }
+
+  :where([data-ok-picker-toolbar-ampm]) {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--ok-spacing) * 3);
+  }
+
+  :where([data-ok-picker-toolbar-meridiem]) {
+    padding: 0;
+    border: 0;
+    border-radius: var(--ok-radius-xs);
+    background-color: transparent;
+    color: var(--ok-text-secondary);
+    font-family: var(--ok-typography-subtitle1-font-family);
+    font-size: var(--ok-typography-subtitle1-font-size);
+    font-weight: var(--ok-typography-subtitle1-font-weight);
+    line-height: var(--ok-typography-subtitle1-line-height);
+    cursor: pointer;
+  }
+
+  :where([data-ok-picker-toolbar-button]:disabled, [data-ok-picker-toolbar-meridiem]:disabled) {
+    cursor: default;
+  }
+
+  :where(
+    [data-ok-picker-toolbar-button]:focus-visible,
+    [data-ok-picker-toolbar-meridiem]:focus-visible
+  ) {
+    outline: 2px solid var(--ok-palette-primary-main);
+    outline-offset: 2px;
+  }
+
+  /* Desktop date time: the calendar and the clock columns side by side, as tall as the calendar. */
+  :where(
+    [data-ok-picker-content] > [data-ok-date-calendar] + [data-ok-multi-section-digital-clock]
+  ) {
+    border-inline-start: 1px solid var(--ok-divider);
+  }
+
+  :where(
+    [data-ok-picker-content]
+      > [data-ok-date-calendar]
+      + [data-ok-multi-section-digital-clock]
+      > [data-ok-digital-clock-section]
+  ) {
+    max-height: calc(var(--ok-spacing) * 84);
+  }
+
+  /* Digital clocks put a divider above the action bar (desktop). */
+  :where(
+    [data-ok-picker-layout]:has(
+        > [data-ok-picker-content]
+          > :is([data-ok-digital-clock], [data-ok-multi-section-digital-clock]):not([hidden])
+      )
+      > [data-ok-picker-actions]
+  ) {
+    border-block-start: 1px solid var(--ok-divider);
+  }
+
+  /* After the base rules (same zero specificity): landscape time toolbars stack the date, the
+     time, then AM / PM in a row. */
+  @media (min-width: 600px) {
+    :where(
+        [data-ok-picker-layout][data-ok-orientation="landscape"] [data-ok-picker-toolbar-content]
+      ) {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: calc(var(--ok-spacing) * 2);
+    }
+
+    :where([data-ok-picker-layout][data-ok-orientation="landscape"] [data-ok-picker-toolbar-ampm]) {
+      flex-direction: row;
+      gap: calc(var(--ok-spacing) * 6);
+    }
+
+    :where([data-ok-picker-layout][data-ok-orientation="landscape"]:has(> [data-ok-picker-tabs])) {
+      grid-template-areas: "toolbar tabs" "toolbar content" "toolbar actions";
     }
   }
 }

@@ -1,4 +1,4 @@
-import { DateCalendar } from "@owlky/react";
+import { DateCalendar, TimeClock } from "@owlky/react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { frameworkStory, reactGroupsStory, type StoryControls } from "../../helpers/groups.js";
 import { htmlSetup, snippetStory } from "../shared/snippets.js";
@@ -7,6 +7,7 @@ import {
   DATE_CALENDAR_CONTROLS,
   DATE_PICKER_FILES,
   datePickerStories,
+  TIME_CLOCK_CONTROLS,
 } from "./date-picker-examples.js";
 
 const snippets = import.meta.glob(
@@ -25,6 +26,9 @@ const SETUP = htmlSetup(
     "chip.css",
     "popover.css",
     "dialog.css",
+    "time-clock.css",
+    "digital-clock.css",
+    "tabs.css",
   ],
   true,
 );
@@ -53,12 +57,22 @@ export default meta;
 /** `Date` is a global: the export is `DateStory`, the sidebar label "Date". */
 export const DateStory: StoryObj = { ...story("date"), name: "Date" };
 
+/** The reference's Time section (phase 2, ADR-0026). */
+export const Time: StoryObj = story("time");
+
+/** The reference's Date & Time section. */
+export const DateTime: StoryObj = { ...story("date-time"), name: "Date & Time" };
+
 export const Calendars: StoryObj = story("calendars", {
   ...DATE_CALENDAR_CONTROLS,
   target: DateCalendar,
 });
 
+export const Clocks: StoryObj = story("clocks", { ...TIME_CLOCK_CONTROLS, target: TimeClock });
+
 export const Validation: StoryObj = story("validation");
+
+export const TimeValidation: StoryObj = { ...story("time-validation"), name: "Time validation" };
 
 export const Shortcuts: StoryObj = story("shortcuts");
 

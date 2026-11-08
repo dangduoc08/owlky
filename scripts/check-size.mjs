@@ -21,6 +21,9 @@ const budgets = [
   // The Editor is opt-in (ADR-0023): Tiptap, ProseMirror and its starter kit are about 125 kB of
   // it; owlky.js stays free of them.
   ["packages/html/dist/owlky-editor.js", 135_000, "Editor + Tiptap (IIFE, loaded after owlky.js)"],
+  // 35 kB since the date pickers' phase 2 (ADR-0026: time clock, digital clocks, time toolbar,
+  // tabs layout; about 1.5 kB in the bundle). The JS runtimes of phase 2 (about 5 kB) fit the
+  // 85 kB above (84.4 kB now).
   // 33 kB since the date pickers' phase 1 (field sections, calendar, month / year views, layout;
   // about 2.5 kB).
   // 30 kB since the Editor (content typography, code blocks, toolbar; about 1.7 kB).
@@ -29,7 +32,7 @@ const budgets = [
   // inputs, 22 kB after the navigation components, 20 kB after the form, display and list
   // components. Per-component files (`@owlky/styles/components/*`) let apps
   // load only what they use.
-  ["packages/styles/dist/owlky.min.css", 33_000, "All CSS (tokens + components)"],
+  ["packages/styles/dist/owlky.min.css", 35_000, "All CSS (tokens + components)"],
 ];
 
 let failed = false;

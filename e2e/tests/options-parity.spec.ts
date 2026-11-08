@@ -55,6 +55,7 @@ const CASES: [
     "date-calendar",
     ["displayWeekNumber", "showDaysOutsideCurrentMonth", "disableHighlightToday", "yearsOrder"],
   ],
+  ["date-pickers", "clocks", "time-clock", ["readOnly"]],
   ["motion", "in-view", "motion", ["variant", "duration", "distance"]],
   ["motion", "text", "motion-text", ["variant", "duration", "stagger"]],
   ["motion", "background", "motion", ["paused", "duration"]],

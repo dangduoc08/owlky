@@ -413,6 +413,16 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
   button. Picker stories use fixed dates (May 2025) so "today" never shows; React tests pass
   `today`, HTML tests fake `Date` (`vi.useFakeTimers({ toFake: ["Date"] })`). Never export a story
   named `Date` (a global): `DateStory` with `name: "Date"`.
+- Time pickers (ADR-0026): time / date time fields and pickers are the date markup plus
+  `data-ok-value-type`; the `date-field` / `date-picker` runtimes branch on it, so check the phase 1
+  snippets still regenerate byte for byte after touching the shared React base (`PickerField`,
+  `PickerBase`). Clock numbers have `pointer-events: none` (the face takes presses): in e2e press
+  the dial at a position, not an option. The pointer is always rendered (`hidden` without a value)
+  so the runtime patches it in place. Responsive time pickers render the desktop and mobile views
+  and hide one, so the HTML layout can move between popover and dialog. HTML clock events carry
+  `HH:mm:ss`; the picker merges it into its own date (and the calendar's day keeps the time).
+  React and HTML tests of pickers run against core `dist`: new core helpers need core tests for
+  `core/src/pickers/**` coverage.
 - Parallel work: never run two `/component` / `/integrate` sessions (or two `pnpm build` /
   `pnpm test:e2e`) in the same working tree — builds wipe each other's `dist/` and
   `storybook-static/`, e2e servers share port 4321, and staging part of a shared file while

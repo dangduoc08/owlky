@@ -67,7 +67,9 @@ pages with `hidden`, selects, hides columns, sets the density and exports CSV; e
 with a hidden ISO input, a calendar rebuilt with DOM methods, a picker in a Popover or a Dialog;
 values are ISO 8601 (`data-ok-value`); `data-ok-locale` on any ancestor; events
 `ok:date-picker:change|accept|open|close`, `ok:date-field:change` and `ok:date-calendar:change`
-(cancelable); `setShortcuts`, `setShouldDisableDate`, `setLocaleText`). Snippets ship in
+(cancelable); `setShortcuts`, `setShouldDisableDate`, `setLocaleText`; time and date time fields
+and pickers with `data-ok-value-type="time" | "date-time"`, runtimes `time-clock`,
+`digital-clock`, `multi-section-digital-clock` with `ok:<name>:change`, `setShouldDisableTime`). Snippets ship in
 `@owlky/html/snippets/<component>/<story>-<group>.html` and in Storybook (HTML/Button/…).
 
 Theme settings (ADR-0017): put `data-ok-preset` / `data-ok-font` on `<html>` (or any element) and

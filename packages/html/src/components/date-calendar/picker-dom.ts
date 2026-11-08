@@ -1,16 +1,76 @@
 /**
- * Shared by the picker runtimes (date-field, date-calendar, month / year calendars, date-picker):
- * reading locale and rules from attributes, and building nodes without HTML strings.
+ * Shared by the picker runtimes (date-field, date-calendar, month / year calendars, clocks,
+ * date-picker): reading locale and rules from attributes, and building nodes without HTML strings.
  */
 import {
   type DateRules,
   DEFAULT_PICKER_LOCALE,
+  is12HourLocale,
   isValidDate,
   type PickerLocaleText,
+  type PickerValueType,
   parseIsoDate,
+  parsePickerValue,
   pickerLocaleText,
   safeLocale,
+  type TimeRules,
+  type TimeView,
 } from "@owlky/core";
+
+/** `data-ok-value-type` (ADR-0026): `time`, `date-time`, else `date`. */
+export const readValueType = (element: Element): PickerValueType => {
+  const value = element.getAttribute("data-ok-value-type");
+  return value === "time" || value === "date-time" ? value : "date";
+};
+
+/** `data-ok-ampm="true" | "false"`, else the locale's clock. */
+export const readAmpm = (element: Element, locale: string): boolean => {
+  const value = element.getAttribute("data-ok-ampm");
+  return value === "true" ? true : value === "false" ? false : is12HourLocale(locale);
+};
+
+/** Time functions set through instance methods. */
+export interface TimeRuleFunctions {
+  shouldDisableTime?: ((value: Date, view: TimeView) => boolean) | undefined;
+}
+
+/**
+ * Time rules from `data-ok-min-time`, `-max-time` (times take `reference`'s day),
+ * `-min-date-time`, `-max-date-time`, `-minutes-step`, `-disable-past`, `-disable-future` and
+ * `-disable-ignoring-date-part-for-time-validation`.
+ */
+export function readTimeRules(
+  element: Element,
+  functions: TimeRuleFunctions,
+  reference: Date,
+): TimeRules {
+  const time = (name: string) =>
+    parsePickerValue(element.getAttribute(name), reference) ?? undefined;
+  const step = Number(element.getAttribute("data-ok-minutes-step"));
+  return {
+    minTime: time("data-ok-min-time"),
+    maxTime: time("data-ok-max-time"),
+    minDateTime: parseIsoDate(element.getAttribute("data-ok-min-date-time")) ?? undefined,
+    maxDateTime: parseIsoDate(element.getAttribute("data-ok-max-date-time")) ?? undefined,
+    minutesStep: Number.isInteger(step) && step > 1 && step < 60 ? step : undefined,
+    disablePast: element.hasAttribute("data-ok-disable-past"),
+    disableFuture: element.hasAttribute("data-ok-disable-future"),
+    disableIgnoringDatePartForTimeValidation: element.hasAttribute(
+      "data-ok-disable-ignoring-date-part-for-time-validation",
+    ),
+    ...functions,
+  };
+}
+
+/**
+ * A value from an ISO date, time or date time string, a `Date` or `null` (times take `reference`'s
+ * day; anything else: `undefined` = invalid input).
+ */
+export function toPickerDate(value: unknown, reference: Date): Date | null | undefined {
+  if (value === null || value === "") return null;
+  if (value instanceof Date) return isValidDate(value) ? new Date(value.getTime()) : undefined;
+  return parsePickerValue(value, reference) ?? undefined;
+}
 
 /** The locale of the closest `data-ok-locale` (the element itself or an ancestor). */
 export const readLocale = (element: Element): string => {

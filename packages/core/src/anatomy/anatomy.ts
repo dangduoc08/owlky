@@ -2359,6 +2359,15 @@ export const pickerFormatDensities = ["dense", "spacious"] as const;
 export const pickerYearsOrders = ["asc", "desc"] as const;
 export const pickerPerRow = ["3", "4"] as const;
 export const pickerOpenToViews = ["year", "month", "day"] as const;
+export const pickerValueTypes = ["date", "time", "date-time"] as const;
+
+const valueTypeOption = style(
+  "data-ok-value-type",
+  pickerValueTypes,
+  "date",
+  "What the value holds (ADR-0026): `time` (TimeField, TimePicker family: ISO `HH:mm:ss`), `date-time` (DateTimeField, DateTimePicker family: ISO `YYYY-MM-DDTHH:mm:ss`); absent = a date. React: the component.",
+  { optional: true },
+);
 
 export const dateFieldOptions = defineOptions("date-field", "data-ok-date-field", {
   formatDensity: style(
@@ -2372,6 +2381,7 @@ export const dateFieldOptions = defineOptions("date-field", "data-ok-date-field"
     "data-ok-read-only",
     "The value can't be changed (it can still be focused and copied).",
   ),
+  valueType: valueTypeOption,
   value: state("data-ok-value", "Value as ISO 8601 (`value` / `defaultValue`).", "change"),
 });
 
@@ -2379,6 +2389,7 @@ export interface DateFieldAnatomyOptions {
   formatDensity?: (typeof pickerFormatDensities)[number] | undefined;
   clearable?: boolean | undefined;
   readOnly?: boolean | undefined;
+  valueType?: (typeof pickerValueTypes)[number] | undefined;
 }
 
 /** `data-ok-*` attributes of a date field (on the TextField root). */
@@ -2473,6 +2484,7 @@ export const datePickerOptions = defineOptions("date-picker", "data-ok-date-pick
     "data-ok-keep-open-during-field-focus",
     "Desktop: the popover stays open while the field has focus (typing doesn't close it).",
   ),
+  valueType: valueTypeOption,
   open: state("data-ok-open", "Open state (`open` / `onOpenChange`).", "open"),
 });
 
@@ -2480,11 +2492,107 @@ export interface DatePickerAnatomyOptions {
   pickerVariant?: (typeof pickerVariantValues)[number] | undefined;
   orientation?: (typeof pickerOrientationValues)[number] | undefined;
   keepOpenDuringFieldFocus?: boolean | undefined;
+  valueType?: (typeof pickerValueTypes)[number] | undefined;
 }
 
 /** `data-ok-*` attributes of a date picker root. */
 export const datePickerAttributes = (options: DatePickerAnatomyOptions = {}): DataAttributes =>
   optionAttributes(datePickerOptions, { ...options });
+
+// Time views (ADR-0022 phase 2, ADR-0026). `data-ok-ampm` is always written by React (its
+// default comes from the locale); HTML without it follows the locale too.
+const ampmOption = behavior(
+  "data-ok-ampm",
+  true,
+  "12-hour clock with AM / PM. Default: from the locale (en-US: on, vi-VN: off).",
+);
+const minutesStepOption = number("data-ok-minutes-step", 1, "Minutes must be a multiple of this.", {
+  min: 1,
+});
+const timeRuleFlags = {
+  disablePast: flag("data-ok-disable-past", "Times before now can't be picked."),
+  disableFuture: flag("data-ok-disable-future", "Times after now can't be picked."),
+  readOnly: flag("data-ok-read-only", "Times can be browsed but not picked."),
+};
+
+export const timeClockOptions = defineOptions("time-clock", "data-ok-time-clock", {
+  ampm: ampmOption,
+  ampmInClock: flag("data-ok-ampm-in-clock", "AM / PM buttons on the clock (12-hour clocks)."),
+  minutesStep: minutesStepOption,
+  ...timeRuleFlags,
+  value: state(
+    "aria-selected",
+    "Selected time (`value` / `defaultValue`; HTML `data-ok-value`).",
+    "change",
+  ),
+});
+
+export interface TimeClockAnatomyOptions {
+  ampmInClock?: boolean | undefined;
+  minutesStep?: number | undefined;
+  disablePast?: boolean | undefined;
+  disableFuture?: boolean | undefined;
+  readOnly?: boolean | undefined;
+}
+
+/** `data-ok-*` attributes of a time clock root (`data-ok-ampm` is written by the component). */
+export const timeClockAttributes = (options: TimeClockAnatomyOptions = {}): DataAttributes =>
+  optionAttributes(timeClockOptions, { ...options });
+
+export const digitalClockOptions = defineOptions("digital-clock", "data-ok-digital-clock", {
+  ampm: ampmOption,
+  timeStep: number("data-ok-time-step", 30, "Minutes between two options.", { min: 1 }),
+  skipDisabled: flag("data-ok-skip-disabled", "Options that can't be picked are left out."),
+  minutesStep: minutesStepOption,
+  ...timeRuleFlags,
+  value: state(
+    "aria-selected",
+    "Selected time (`value` / `defaultValue`; HTML `data-ok-value`).",
+    "change",
+  ),
+});
+
+export interface DigitalClockAnatomyOptions {
+  timeStep?: number | undefined;
+  skipDisabled?: boolean | undefined;
+  minutesStep?: number | undefined;
+  disablePast?: boolean | undefined;
+  disableFuture?: boolean | undefined;
+  readOnly?: boolean | undefined;
+}
+
+/** `data-ok-*` attributes of a digital clock root. */
+export const digitalClockAttributes = (options: DigitalClockAnatomyOptions = {}): DataAttributes =>
+  optionAttributes(digitalClockOptions, { ...options });
+
+export const multiSectionDigitalClockOptions = defineOptions(
+  "multi-section-digital-clock",
+  "data-ok-multi-section-digital-clock",
+  {
+    ampm: ampmOption,
+    skipDisabled: flag("data-ok-skip-disabled", "Options that can't be picked are left out."),
+    minutesStep: minutesStepOption,
+    ...timeRuleFlags,
+    value: state(
+      "aria-selected",
+      "Selected time (`value` / `defaultValue`; HTML `data-ok-value`).",
+      "change",
+    ),
+  },
+);
+
+export interface MultiSectionDigitalClockAnatomyOptions {
+  skipDisabled?: boolean | undefined;
+  minutesStep?: number | undefined;
+  disablePast?: boolean | undefined;
+  disableFuture?: boolean | undefined;
+  readOnly?: boolean | undefined;
+}
+
+/** `data-ok-*` attributes of a multi-section digital clock root. */
+export const multiSectionDigitalClockAttributes = (
+  options: MultiSectionDigitalClockAnatomyOptions = {},
+): DataAttributes => optionAttributes(multiSectionDigitalClockOptions, { ...options });
 
 /** Every component's option schema, for tooling (Storybook Controls, parity tests, docs). */
 // --- Editor (ADR-0023) --------------------------------------------------------------------------
@@ -2669,6 +2777,9 @@ export const optionSchemas = {
   "date-field": dateFieldOptions,
   "date-calendar": dateCalendarOptions,
   "date-picker": datePickerOptions,
+  "time-clock": timeClockOptions,
+  "digital-clock": digitalClockOptions,
+  "multi-section-digital-clock": multiSectionDigitalClockOptions,
   editor: editorOptions,
   chart: chartOptions,
 } as const;
