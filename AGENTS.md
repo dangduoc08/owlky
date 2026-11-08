@@ -444,6 +444,19 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
   `takeRecords()` their own mutations; `data-ok-ready` is set before measuring, so a sparkline's
   plot is measured with the table already out of the flow. Full-page Playwright screenshots drop
   the hover tooltip (the viewport resize): capture the viewport when checking tooltips.
+  Phase 4 (ADR-0031): zoom is a window of category indexes / x values passed to `layoutChart`
+  (`layout.x` / `layout.y` axis maps serve zoom, brushes and annotations; only vertical charts with
+  an x axis get them). Overlays (annotations, the selection, data label badges) are added to the
+  nodes in `renderChart`, not in the layouts. The SVG annotation group is
+  `g[data-ok-chart-annotation-layer]`; `[data-ok-chart-annotations]` is the authored `<ul>` only
+  (a shared name made `querySelector` find the SVG group first). Gestures live in core
+  `createChartGestures` (both owners attach it; their pointer tooltip skips while `dragging`), links
+  in `linkChart` (module-scoped: tests must `unlink()` what they link). Downloads check
+  `navigator.userActivation`: a test click shortly after a `userEvent` click still has transient
+  activation, so mock `userActivation` for the refused path. The visually hidden data table is
+  anchored at the root's bottom (`inset-block-end: 0`): anchored at the top, a long hidden table
+  added its whole height to the page's scroll height. Weekly time ticks start on Mondays, so panning
+  a date axis by one category can keep every label: e2e compares the drawn line instead.
 - Date pickers (ADR-0022): field sections are `contenteditable` spinbuttons whose text only the owner
   writes — core `createFieldController` cancels `beforeinput` and restores IME text. Browsers keep
   the selection inside the focused editable section, so select-all is `data-ok-all-selected` on the

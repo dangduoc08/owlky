@@ -8,7 +8,9 @@ import { fileURLToPath } from "node:url";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, "../../..");
-const { chartAttributes, renderChart } = await import(resolve(root, "packages/core/dist/index.js"));
+const { chartAnnotationItems, chartAttributes, chartTextAttributes, renderChart } = await import(
+  resolve(root, "packages/core/dist/index.js")
+);
 // Plain data with type-only imports: Node strips the types.
 const { chartExamples } = await import(resolve(here, "../src/components/chart/chart-data.ts"));
 const out = resolve(root, "packages/html/src/components/chart/examples");
@@ -32,19 +34,24 @@ const headerCell = (cell) =>
 /** One chart: the root's attributes and its data table. */
 function figure(props) {
   const rootAttributes = {
+    ...(props.id ? { id: props.id } : {}),
     ...chartAttributes({
       ...props,
       xType:
         props.xType ??
         (props.type === "scatter" || props.type === "bubble" ? "numeric" : "category"),
     }),
-    ...(props.yTitle ? { "data-ok-y-title": props.yTitle } : {}),
-    ...(props.totalLabel ? { "data-ok-total-label": props.totalLabel } : {}),
-    ...(props.valuePrefix ? { "data-ok-value-prefix": props.valuePrefix } : {}),
-    ...(props.valueSuffix ? { "data-ok-value-suffix": props.valueSuffix } : {}),
-    ...(props.locale ? { "data-ok-locale": props.locale } : {}),
+    ...chartTextAttributes(props),
   };
-  const { table } = renderChart({ ...props, width: 640, height: 320, idPrefix: "snippet" });
+  const { table } = renderChart({
+    ...props,
+    partLabels: props.localeText,
+    width: 640,
+    height: 320,
+    idPrefix: "snippet",
+  });
+  // Annotations (phase 4): one list item each, after the table.
+  const notes = chartAnnotationItems(props.annotations ?? []);
   return [
     `<figure${attributes(rootAttributes)}>`,
     "  <table data-ok-chart-data>",
@@ -66,6 +73,13 @@ function figure(props) {
     ),
     "    </tbody>",
     "  </table>",
+    ...(notes.length
+      ? [
+          "  <ul data-ok-chart-annotations>",
+          ...notes.map((item) => `    <li${attributes(item.attrs)}>${escapeHtml(item.text)}</li>`),
+          "  </ul>",
+        ]
+      : []),
     "</figure>",
   ];
 }

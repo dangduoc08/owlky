@@ -1,4 +1,4 @@
-import type { ChartData } from "./chart-model.js";
+import { type ChartData, type ChartPart, chartPartLabels } from "./chart-model.js";
 import {
   chartMonthNames,
   type DateLabel,
@@ -7,6 +7,7 @@ import {
   dateTooltipLabel,
   dateUnit,
 } from "./chart-scale.js";
+import { type TimeUnit, timeTickLabel, timeUnit, timeValueLabel } from "./chart-time.js";
 
 /** How a chart prints numbers and x values (built once per render by `chartFormat`). */
 export interface ChartFormat {
@@ -21,6 +22,13 @@ export interface ChartFormat {
   axis(x: string | number, decimals?: number): DateLabel;
   /** The tooltip title and the data table's row header. */
   title(x: string | number): string;
+  /** The label of a part of a point ("Minimum", "Open"; localized through `partLabels`). */
+  part(part: ChartPart): string;
+  /** A value printed on the chart: `dataLabelFormatter`, else `fallback` (the value's text). */
+  dataLabel(value: number, series: number, index: number, fallback: string): string;
+  /** Timelines: the unit of their time axis and a tick's label. */
+  readonly timeUnit: TimeUnit;
+  timeTick(time: number): { text: string; major: boolean };
 }
 
 export interface ChartFormatOptions {
@@ -34,6 +42,15 @@ export interface ChartFormatOptions {
   readonly valueFormatter?: ((value: number, series: number) => string) | undefined;
   /** Replaces the x text (axis labels, tooltip title and table). */
   readonly labelFormatter?: ((x: string | number) => string) | undefined;
+  /**
+   * Replaces the values printed on the chart (`index`: the category or point; pie and donut
+   * labels get the percentage).
+   */
+  readonly dataLabelFormatter?:
+    | ((value: number, series: number, index: number) => string)
+    | undefined;
+  /** Labels of the parts of a point (table headers, tooltip rows): "Minimum", "Q1"… */
+  readonly partLabels?: Readonly<Partial<Record<ChartPart, string>>> | undefined;
 }
 
 const numberFormat = (locale: string, options: Intl.NumberFormatOptions) => {
@@ -56,11 +73,28 @@ export function chartFormat(data: ChartData, options: ChartFormatOptions = {}): 
   const custom = options.valueFormatter;
   const label = options.labelFormatter;
   const safe = (text: unknown) => (typeof text === "string" ? text : String(text ?? ""));
+  // Timelines: values are dates; their unit follows the span of the data.
+  const timeline = data.type === "timeline";
+  const times = timeline
+    ? data.series.flatMap((series) => series.points.flatMap((point) => point.range ?? []))
+    : [];
+  const tUnit = times.length ? timeUnit(Math.min(...times), Math.max(...times)) : "day";
+  const timeMonths = timeline ? chartMonthNames(locale) : [];
+  const labelOf = options.dataLabelFormatter;
   return {
     dateUnit: unit,
+    timeUnit: tUnit,
     number: (value) => values.format(value),
     value: (value, series) =>
-      custom ? safe(custom(value, series)) : `${prefix}${values.format(value)}${suffix}`,
+      custom
+        ? safe(custom(value, series))
+        : timeline
+          ? timeValueLabel(value, tUnit, timeMonths)
+          : `${prefix}${values.format(value)}${suffix}`,
+    part: (part) => options.partLabels?.[part] ?? chartPartLabels[part],
+    dataLabel: (value, series, index, fallback) =>
+      labelOf ? safe(labelOf(value, series, index)) : fallback,
+    timeTick: (time) => timeTickLabel(time, tUnit, timeMonths),
     tick: (value, decimals) => {
       if (custom) return safe(custom(value, -1));
       let format = tickFormats.get(decimals);

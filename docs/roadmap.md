@@ -51,7 +51,7 @@ component and each `/integrate` run.
 | MUI X | Tree view | ✅ | SimpleTreeView, TreeItem, RichTreeView | Rating, Slider, Timeline, Transfer list, Tree view & Autocomplete |
 | Extra | Animate | ✅ beta | Motion, MotionGroup, MotionText, CountUp, MotionBorder; Dialog `transition` | Motion |
 | Extra | Carousel | wave 7 (ADR) | — | Next |
-| Extra | Chart | ✅ phase 3 of 4 (ADR-0024, ADR-0027, ADR-0029) | Chart | Chart |
+| Extra | Chart | ✅ complete, phases 1–4 (ADR-0024, ADR-0027, ADR-0029, ADR-0031) | Chart | Chart |
 | Extra | Dnd | ✅ | Sortable | Sortable |
 | Extra | Editor | ✅ (ADR-0023, Tiptap) | Editor | Editor |
 | Extra | Form validation | not planned | — | Next |
@@ -505,7 +505,7 @@ React and by the HTML runtime from a data table. Colors are palette names; no ne
 | 1 | Engine, legend, tooltip, keyboard, data table; Line, Area, Column single / multiple / stacked / negative, Bar, Mixed, Scatter | ✅ 2026-11-08 |
 | 2 | Pie, Donut, Radial bar, Radar, Semi circle gauge, Stroked gauge; data labels | ✅ 2026-11-08 |
 | 3 | BoxPlot, Heatmap, Treemap; Bubble, Range area, Funnel / pyramid, Slope; Sparklines; a JavaScript data API (`updateSeries`, `appendData`) (ADR-0027, ADR-0029) | ✅ 2026-11-08 |
-| 4 | Beyond the reference: synchronized charts, zoom and pan, brush, annotations, animations (reduced motion), export (SVG, PNG, CSV), candlestick, range bar, timeline, polar area; data label formatters, donut hole size, a legend with values (ADR-0027) | — |
+| 4 | Beyond the reference: synchronized charts, zoom and pan, brush, annotations, animations (reduced motion), export (SVG, PNG, CSV), candlestick, range bar, timeline, polar area; data label formatters, donut hole size, a legend with values; localized part labels, heatmap color ranges, horizontal box plots (ADR-0027, ADR-0031) | ✅ 2026-11-08 |
 
 Phase 2 added `dataLabels`, `startAngle` / `endAngle`, `dashArray`, `trackWidth`, `total` /
 `totalLabel`; pie, donut and radial bar charts draw the first series, one slice or ring per
@@ -517,10 +517,19 @@ second header row in the data table, `th[data-ok-part]`), and the HTML instance 
 `updateSeries` / `appendData` (the table follows in place; redraws patch the SVG). Stories: BoxPlot,
 Heatmap, Treemap (reference); Bubble, Range area, Funnel, Pyramid, Slope, Sparklines, Live data.
 
-**Backlog (deferred to the phases above):** `options.chart.animations` (phase 4); data label
-formatters and styles, a donut hole size and a legend with values (the reference's custom donut
-legend) (phase 4); heatmap color ranges (`colorScale.ranges`), horizontal box plots, localized part
-labels ("Minimum", "Q1", "Size") (phase 4).
+Phase 4 (ADR-0031) added the types `candlestick`, `rangeBar`, `timeline` and `polarArea`; the options
+`zoom`, `toolbar`, `animations`, `legendValues`, `dataLabelBackground`, `donutSize`,
+`candleUpColor` / `candleDownColor`; the props `group`, `brushTarget`, `annotations`, `colorRanges`,
+`dataLabelFormatter`, `localeText`, `zoomRange` / `defaultZoomRange` / `onZoomRangeChange`; the
+HTML instance members `zoomRange`, `setZoomRange`, `exportChart`, `setLocaleText` and the event
+`ok:chart:zoom`; horizontal box plots. Stories: Candlestick, Range bar, Timeline, Polar area, Zoom
+and export, Synchronized, Brush, Annotations, Data labels, Donut with values, Heatmap color ranges,
+Horizontal box plot, Localized labels, Animations. **Chart is complete:** every ApexCharts chart
+type and the features listed in ADR-0027 are built.
+
+**Not planned (by design, ADR-0031):** y / xy zoom and per-zoom y autoscaling, zooming horizontal,
+polar, cell, funnel and slope charts, links between React and HTML charts on one page, custom
+toolbar tools.
 
 ## ✅ Upstream API review (ADR-0015, 2026-11-04)
 Components checked against their upstream API (MUI). Rule from the owner: what the Minimals page
@@ -547,7 +556,7 @@ Dependency-first: leaf components before the ones built from them, the ones that
 | 4 Overlays | ~~Popover~~ ✅, ~~Tooltip~~ ✅, ~~Menu~~ ✅, ~~Dialog~~ ✅, ~~Snackbar~~ ✅, ~~Backdrop~~ ✅ | ~~Drawer / Dialog backdrop~~ ✅ (native `::backdrop`, same token); icon button tooltips: nothing to change (MUI uses native `title` there; Tooltip wraps any IconButton) |
 | 5 Navigation | ~~Tabs~~ ✅, ~~Breadcrumbs~~ ✅, ~~Stepper~~ ✅ | — (nothing waited for them) |
 | 6 Composites | ~~Rating~~ ✅, ~~Slider~~ ✅, ~~Timeline~~ ✅, ~~Transfer list~~ ✅, ~~Autocomplete~~ ✅, ~~Tree view~~ ✅ | — (nothing waited for them; Slider unblocks the SettingsDrawer backlog of Theme settings) |
-| 7 Needs an ADR | ~~Data grid~~ (ADR-0020, phases below), ~~Date pickers~~ (ADR-0022, phases 1–3 ✅), ~~Chart~~ (ADR-0024, ADR-0027, phases 1–3 ✅), Map, ~~Editor~~ (ADR-0023) ✅, Carousel, Lightbox, Markdown, Organization chart, Upload, Image, Walktour | — |
+| 7 Needs an ADR | ~~Data grid~~ (ADR-0020, phases below), ~~Date pickers~~ (ADR-0022, phases 1–3 ✅), ~~Chart~~ (ADR-0024, ADR-0027, ADR-0031, complete ✅), Map, ~~Editor~~ (ADR-0023) ✅, Carousel, Lightbox, Markdown, Organization chart, Upload, Image, Walktour | — |
 
 Not planned as components (patterns or app-level pages of the reference): Layout,
 Utilities, Multi-language, Navigation bar, Mega menu, Scroll progress, Form validation, Form wizard.

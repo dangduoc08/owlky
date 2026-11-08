@@ -147,6 +147,9 @@ export function layoutCircular(
   const labels: ChartNode[] = [];
   const defs: ChartNode[] = [];
   const center: ChartNode[] = [];
+  // Polar areas: value rings and their ticks.
+  const grid: ChartNode[] = [];
+  const ticks: ChartNode[] = [];
   const points = (series?.points ?? []).filter(
     (point): point is typeof point & { y: number } =>
       !hidden.has(point.x) && point.y !== null && point.y >= 0,
@@ -240,9 +243,87 @@ export function layoutCircular(
       const average = points.reduce((sum, point) => sum + point.y, 0) / n;
       center.push(...totalTexts(cx, cy, options, format, average));
     }
+  } else if (data.type === "polarArea") {
+    // Polar area (phase 4): equal angles, the radius grows with the value on rings of a nice scale.
+    const max = Math.max(0, ...points.map((point) => point.y));
+    const scale = niceScale(
+      0,
+      max > 0 ? max : 1,
+      Math.max(2, Math.min(6, Math.round(outer / 30))),
+      {
+        min: 0,
+        max: options.yMax,
+      },
+    );
+    const decimals = stepDecimals(scale.step);
+    const radius = (value: number) =>
+      Math.max(0, Math.min(outer, scaleLinear(value, 0, scale.max, 0, outer)));
+    const sweep = points.length ? (a1 - a0) / points.length : 0;
+    for (const tick of scale.ticks) {
+      const rr = radius(tick);
+      if (rr <= 0) continue;
+      grid.push(node("path", { d: holeRing(cx, cy, rr), "data-ok-chart-web": "" }));
+      ticks.push(
+        node(
+          "text",
+          {
+            x: fmt(cx + 4),
+            y: fmt(cy - rr),
+            dy: "0.71em",
+            "text-anchor": "start",
+            "data-ok-chart-tick": "",
+          },
+          undefined,
+          format.tick(tick, decimals),
+        ),
+      );
+    }
+    points.forEach((point, i) => {
+      const start = a0 + sweep * i;
+      const r = radius(point.y);
+      const mid = start + sweep / 2;
+      const [px, py] = polarPoint(cx, cy, Math.max(r * 0.6, 0), mid);
+      marks.push({
+        series: 0,
+        type: "polarArea",
+        index: point.x,
+        x: point.x,
+        value: point.y,
+        px: r2(px),
+        py: r2(py),
+        color: color(point),
+        arc: {
+          cx: r2(cx),
+          cy: r2(cy),
+          start: r2(start),
+          end: r2(start + sweep),
+          inner: 0,
+          outer: r2(r),
+        },
+      });
+      slots.push({ index: point.x, pos: point.x });
+      if (r > 0)
+        shapes.push(
+          node("path", {
+            d: slicePath(cx, cy, 0, r, start, start + sweep),
+            "data-ok-chart-slice": "",
+            "data-ok-color": color(point),
+          }),
+        );
+      if (options.dataLabels && r >= FONT * 2 && sweep >= 12)
+        labels.push(
+          dataLabel(
+            px,
+            py,
+            format.dataLabel(point.y, 0, point.x, format.value(point.y, 0)),
+            "inside",
+          ),
+        );
+    });
   } else {
     const donut = data.type === "donut";
-    const inner = donut ? outer * 0.72 : 0;
+    const hole = Math.min(95, Math.max(10, options.donutSize ?? 72));
+    const inner = donut ? (outer * hole) / 100 : 0;
     const total = points.reduce((sum, point) => sum + point.y, 0);
     const percent = new Intl.NumberFormat("en-US", {
       minimumFractionDigits: 1,
@@ -282,8 +363,11 @@ export function layoutCircular(
         }),
       );
       // Percentages on slices wide enough for them.
-      if (options.dataLabels && sweep >= 12)
-        labels.push(dataLabel(px, py, `${percent.format((point.y / total) * 100)}%`, "inside"));
+      if (options.dataLabels && sweep >= 12) {
+        const share = (point.y / total) * 100;
+        const text = format.dataLabel(share, 0, point.x, `${percent.format(share)}%`);
+        labels.push(dataLabel(px, py, text, "inside"));
+      }
       angle += sweep;
     }
     if (donut && options.totalLabel) center.push(...totalTexts(cx, cy, options, format, total));
@@ -291,6 +375,7 @@ export function layoutCircular(
 
   const nodes: ChartNode[] = [];
   if (defs.length) nodes.push(node("defs", {}, defs));
+  if (grid.length) nodes.push(node("g", { "data-ok-chart-grid": "" }, grid));
   nodes.push(
     ...groups(
       [
@@ -310,6 +395,7 @@ export function layoutCircular(
     ),
   );
   if (center.length) nodes.push(node("g", { "data-ok-chart-center": "" }, center));
+  if (ticks.length) nodes.push(node("g", { "data-ok-chart-axis": "y" }, ticks));
   return result(width, height, { mode: "slice", slots, marks, nodes, activeRadius: 0 });
 }
 
@@ -446,7 +532,14 @@ export function layoutRadar(
             color: series.color,
           });
           if (options.dataLabels)
-            labels.push(dataLabel(p[0], p[1] - 12, format.value(point.y, index), "outside"));
+            labels.push(
+              dataLabel(
+                p[0],
+                p[1] - 12,
+                format.dataLabel(point.y, index, point.x, format.value(point.y, index)),
+                "outside",
+              ),
+            );
         }
         return p;
       });

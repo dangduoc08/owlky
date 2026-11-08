@@ -1,9 +1,10 @@
 import type { ChartFormat } from "./chart-format.js";
 import type { ChartArc, ChartLayout, ChartMark, ChartNode, ChartRect } from "./chart-layout.js";
-import { type ChartColor, type ChartData, type ChartPart, chartPartLabels } from "./chart-model.js";
+import type { ChartColor, ChartData, ChartPart } from "./chart-model.js";
 import { polarPoint, slicePath } from "./chart-polar.js";
 
 const BOX: readonly ChartPart[] = ["min", "q1", "median", "q3", "max"];
+const CANDLE: readonly ChartPart[] = ["open", "high", "low", "close"];
 
 /*
  * Chart interaction (ADR-0024): which category or point is active for a pointer position or a
@@ -193,7 +194,16 @@ export function nextChartActive(
 }
 
 /** Series types drawn as blocks: the band highlights them, no hover marker. */
-const BLOCKS: readonly string[] = ["bar", "boxPlot", "funnel"];
+const BLOCKS: readonly string[] = [
+  "bar",
+  "boxPlot",
+  "funnel",
+  "candlestick",
+  "rangeBar",
+  "timeline",
+];
+/** Series types whose points have their own colors in the tooltip (not the series color). */
+const OWN_COLORS: readonly string[] = ["funnel", "boxPlot", "candlestick", "rangeBar", "timeline"];
 
 const circle = (cx: number, cy: number, r: number, color: ChartColor): ChartNode => ({
   tag: "circle",
@@ -248,7 +258,7 @@ export function chartActiveNodes(
   if (layout.mode === "slice") {
     // A wider copy of the slice behind it (a halo); rings show only the tooltip.
     const mark = layout.marks.find((entry) => entry.index === active.index);
-    if (mark?.type === "pie" || mark?.type === "donut") {
+    if (mark?.type === "pie" || mark?.type === "donut" || mark?.type === "polarArea") {
       const arc = mark.arc as ChartArc;
       under.push({
         tag: "path",
@@ -348,10 +358,12 @@ export function chartTooltip(
     const series = data.series[mark.series] as (typeof data.series)[number];
     const value = (v: number) => format.value(v, mark.series);
     const { range } = mark;
-    if (range && range.length === 5) {
-      const several = data.series.filter((s) => s.type === "boxPlot").length > 1;
-      return BOX.map((part, i) => ({
-        name: several ? `${series.name} (${chartPartLabels[part]})` : chartPartLabels[part],
+    if (range && (range.length === 5 || range.length === 4)) {
+      // Box plots list five values, candles four (open, high, low, close).
+      const parts = range.length === 5 ? BOX : CANDLE;
+      const several = data.series.filter((s) => s.type === series.type).length > 1;
+      return parts.map((part, i) => ({
+        name: several ? `${series.name} (${format.part(part)})` : format.part(part),
         value: value(range[i] as number),
         color,
       }));
@@ -366,7 +378,7 @@ export function chartTooltip(
       },
     ];
     if (mark.z !== undefined)
-      rows.push({ name: chartPartLabels.z, value: format.number(mark.z), color });
+      rows.push({ name: format.part("z"), value: format.number(mark.z), color });
     return rows;
   };
   if (active.kind === "mark") {
@@ -407,7 +419,7 @@ export function chartTooltip(
     rowsOf(
       mark,
       // Funnel bars and boxes have their own colors; other index charts list their series' colors.
-      mark.type === "funnel" || mark.type === "boxPlot"
+      OWN_COLORS.includes(mark.type)
         ? mark.color
         : (data.series[mark.series] as (typeof data.series)[number]).color,
     ),

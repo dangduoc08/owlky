@@ -27,6 +27,20 @@ const STORIES = [
   "slope",
   "sparklines",
   "live-data",
+  "candlestick",
+  "range-bar",
+  "timeline",
+  "polar-area",
+  "zoom",
+  "synchronized",
+  "brush",
+  "annotations",
+  "data-labels",
+  "donut-legend",
+  "heatmap-ranges",
+  "box-plot-horizontal",
+  "localized",
+  "animations",
 ];
 
 /** The SVG as plain data (gradient ids normalized): parity doesn't walk into SVG. */
@@ -269,6 +283,115 @@ for (const impl of implementations) {
         "Maximum88",
       ]);
       await expect(page.getByRole("table").locator("thead tr")).toHaveCount(2);
+    });
+  });
+}
+
+for (const impl of implementations) {
+  test.describe(`chart phase 4 (${impl})`, () => {
+    const ticks = (page: Page, nth = 0) =>
+      page.locator("[data-ok-chart]").nth(nth).locator("[data-ok-chart-axis='x'] text");
+
+    test("zoom: a drag (mouse) or the toolbar zooms, reset shows everything", async ({
+      page,
+      isMobile,
+    }) => {
+      await openStory(page, storyId(impl, "chart", "zoom"));
+      const before = await ticks(page).allTextContents();
+      if (!isMobile) {
+        const box = (await plot(page).boundingBox()) as { x: number; y: number; width: number };
+        await page.mouse.move(box.x + box.width * 0.3, box.y + 100);
+        await page.mouse.down();
+        await page.mouse.move(box.x + box.width * 0.5, box.y + 100, { steps: 4 });
+        await expect(page.locator("[data-ok-chart-selection]")).toHaveCount(1);
+        await page.mouse.up();
+      } else await page.getByRole("button", { name: "Zoom in" }).tap();
+      await expect(page.locator("[data-ok-chart-selection]")).toHaveCount(0);
+      await expect(ticks(page)).not.toHaveText(before);
+      await page.getByRole("button", { name: "Reset zoom" }).click();
+      await expect(ticks(page)).toHaveText(before);
+    });
+
+    test("zoom: keys zoom and pan; the download of a CSV starts on a click", async ({
+      page,
+      browserName,
+    }) => {
+      await openStory(page, storyId(impl, "chart", "zoom"));
+      const before = await ticks(page).allTextContents();
+      await plot(page).focus();
+      await page.keyboard.press("+");
+      await expect(ticks(page)).not.toHaveText(before);
+      // Panning by a day may keep the weekly labels: compare the drawn line.
+      const line = page.locator("[data-ok-chart-line]").first();
+      const zoomed = (await line.getAttribute("d")) as string;
+      await page.keyboard.press("Shift+ArrowRight");
+      await expect(line).not.toHaveAttribute("d", zoomed);
+      test.skip(browserName === "webkit", "WebKit's headless downloads are not reported.");
+      const download = page.waitForEvent("download");
+      await page.getByRole("button", { name: "Download CSV" }).click();
+      expect((await download).suggestedFilename()).toBe("daily-active-users.csv");
+    });
+
+    test("synchronized: the other charts show the same category and zoom", async ({ page }) => {
+      await openStory(page, storyId(impl, "chart", "synchronized"));
+      await plot(page).focus();
+      await page.keyboard.press("End");
+      await expect(page.locator("[data-ok-chart-tooltip-title]")).toHaveText([
+        "10:29",
+        "10:29",
+        "10:29",
+      ]);
+      const before = await ticks(page, 1).allTextContents();
+      await page.keyboard.press("+");
+      await expect(ticks(page, 1)).not.toHaveText(before);
+    });
+
+    test("brush: keys and drags on the overview zoom the main chart", async ({
+      page,
+      isMobile,
+    }) => {
+      await openStory(page, storyId(impl, "chart", "brush"));
+      const before = await ticks(page).allTextContents();
+      const overview = page.locator("[data-ok-chart-plot]").nth(1);
+      await overview.focus();
+      await page.keyboard.press("+");
+      await expect(ticks(page)).not.toHaveText(before);
+      const selection = page.locator("[data-ok-chart-selection]");
+      const x = await selection.getAttribute("x");
+      if (!isMobile) {
+        const box = (await selection.boundingBox()) as {
+          x: number;
+          y: number;
+          width: number;
+          height: number;
+        };
+        await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+        await page.mouse.down();
+        await page.mouse.move(box.x + box.width / 2 + 60, box.y + box.height / 2, { steps: 4 });
+        await page.mouse.up();
+        await expect(selection).not.toHaveAttribute("x", x as string);
+      }
+      await overview.focus();
+      await page.keyboard.press("0");
+      await expect(ticks(page)).toHaveText(before);
+    });
+
+    test("annotations: drawn and listed for assistive technologies", async ({ page }) => {
+      await openStory(page, storyId(impl, "chart", "annotations"));
+      const labels = ["Deploy", "Recovery", "Threshold", "Peak"];
+      await expect(page.locator("[data-ok-chart-annotation-label]")).toHaveText(labels);
+      await expect(page.getByRole("listitem")).toHaveText(labels);
+    });
+
+    test("candlestick and timeline: the tooltip lists every value", async ({ page }) => {
+      await openStory(page, storyId(impl, "chart", "candlestick"));
+      await plot(page).focus();
+      await page.keyboard.press("Home");
+      await expect(tooltip(page).locator("[data-ok-chart-tooltip-row]")).toHaveCount(4);
+      await openStory(page, storyId(impl, "chart", "timeline"));
+      await plot(page).focus();
+      await page.keyboard.press("Home");
+      await expect(tooltip(page)).toContainText("02 Mar 2026 – 13 Mar 2026");
     });
   });
 }

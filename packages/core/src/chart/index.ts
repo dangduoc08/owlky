@@ -19,9 +19,32 @@ export {
   placeChartTooltip,
   sameChartActive,
 } from "./chart-active.js";
+export {
+  type ChartAnnotation,
+  type ChartAnnotationAxis,
+  chartAnnotationItems,
+  chartAnnotations,
+  readChartAnnotations,
+} from "./chart-annotations.js";
+export {
+  type ChartExportFormat,
+  chartCsv,
+  chartExportFormats,
+  chartFileName,
+  chartSvgText,
+  exportChart,
+} from "./chart-export.js";
 export { type ChartFormat, type ChartFormatOptions, chartFormat } from "./chart-format.js";
 export {
+  type ChartGestureHost,
+  type ChartGestureMode,
+  type ChartGestures,
+  createChartGestures,
+} from "./chart-gestures.js";
+export {
   type ChartArc,
+  type ChartAxisMap,
+  type ChartColorRange,
   type ChartLayout,
   type ChartLayoutOptions,
   type ChartMark,
@@ -32,6 +55,7 @@ export {
   chartTextWidth,
   layoutChart,
 } from "./chart-layout.js";
+export { type ChartLink, type ChartLinkMember, linkChart } from "./chart-link.js";
 export {
   type ChartCircularType,
   type ChartColor,
@@ -43,6 +67,7 @@ export {
   type ChartPart,
   type ChartPoint,
   type ChartPointInput,
+  type ChartRangeValue,
   type ChartSeries,
   type ChartTableCell,
   type ChartTableModel,
@@ -56,6 +81,7 @@ export {
   chartFills,
   chartLegends,
   chartPartLabels,
+  chartPartNames,
   chartParts,
   chartShades,
   chartTable,
@@ -68,3 +94,29 @@ export {
   parseChartNumber,
   readChartTable,
 } from "./chart-model.js";
+export {
+  CHART_TEXT_ATTRIBUTES,
+  type ChartTextOptions,
+  chartColorRangesText,
+  chartTextAttributes,
+  parseChartColorRanges,
+} from "./chart-text.js";
+export {
+  type ChartLocaleText,
+  type ChartTool,
+  type ChartToolItem,
+  chartToolbar,
+  chartToolLabels,
+  chartTools,
+} from "./chart-toolbar.js";
+export {
+  type ChartZoom,
+  type ChartZoomReason,
+  chartZoomBetween,
+  chartZoomExtent,
+  chartZoomKey,
+  clampChartZoom,
+  followChartZoom,
+  panChart,
+  zoomChartBy,
+} from "./chart-zoom.js";

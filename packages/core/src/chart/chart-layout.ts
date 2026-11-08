@@ -16,6 +16,7 @@ import {
   stepDecimals,
   unitIndex,
 } from "./chart-scale.js";
+import { timeTicks } from "./chart-time.js";
 
 /*
  * Chart layout (ADR-0024): data + size → a tree of SVG nodes and the positions of every drawn
@@ -24,6 +25,7 @@ import {
  */
 
 export type ChartNodeTag =
+  | "svg"
   | "g"
   | "path"
   | "line"
@@ -82,6 +84,40 @@ export interface ChartLayoutOptions {
   readonly boxUpperColor?: ChartColor | undefined;
   /** Box plots: the box below the median (default a lighter tone of the series color). */
   readonly boxLowerColor?: ChartColor | undefined;
+  /** Candlesticks: rising and falling candles (default `success` and `error`). */
+  readonly candleUpColor?: ChartColor | undefined;
+  readonly candleDownColor?: ChartColor | undefined;
+  /** Donut hole in % of the radius. Default 72. */
+  readonly donutSize?: number | undefined;
+  /** Heatmaps and treemaps: values in a range take its color (full strength). */
+  readonly colorRanges?: readonly ChartColorRange[] | undefined;
+  /**
+   * The visible part of the x axis (vertical charts with an x axis): category indexes, or x
+   * values on numeric axes. The value axis keeps the whole data's scale.
+   */
+  readonly zoom?: { readonly min: number; readonly max: number } | null | undefined;
+}
+
+/** A heatmap / treemap color range: values from `from` to `to` (inclusive) take `color`. */
+export interface ChartColorRange {
+  readonly from: number;
+  readonly to: number;
+  readonly color: ChartColor;
+  readonly name?: string | undefined;
+}
+
+/**
+ * How an axis maps values to SVG px (`from` is the px of `min`, `to` of `max`). `index`: category
+ * indexes (centers of the first and last visible categories); `value`: numbers.
+ */
+export interface ChartAxisMap {
+  readonly kind: "index" | "value";
+  readonly min: number;
+  readonly max: number;
+  readonly from: number;
+  readonly to: number;
+  /** Banded categories (bars): the band width in px. */
+  readonly band?: number | undefined;
 }
 
 /** A rectangle in SVG px (heatmap and treemap cells). */
@@ -157,14 +193,18 @@ export interface ChartLayout {
   /** Radius of hover markers (0: none; bars only). */
   readonly activeRadius: number;
   readonly nodes: readonly ChartNode[];
+  /** Vertical charts with an x axis (phase 4): x values → px (zoom, brush, annotations). */
+  readonly x?: ChartAxisMap | undefined;
+  /** The value axis: values → px (annotations). */
+  readonly y?: ChartAxisMap | undefined;
 }
 
 export const FONT = 12;
-/** Glyph widths of the UI font in em, by class (narrow, wide, minus, digits, capitals, others). */
+/** Glyph widths of the UI font in em, by class (narrow, wide and currency signs, minus, digits, capitals, others). */
 const glyph = (c: string): number =>
   /[ .,:;'!|il1jtfI()[\]]/.test(c)
     ? 0.32
-    : /[%MWmw@]/.test(c)
+    : /[%MWmw@$€£¥]/.test(c)
       ? 0.9
       : c === "-"
         ? 0.45
@@ -316,6 +356,22 @@ const flatScale = (min: number, max: number) => {
 
 // --- Layout -----------------------------------------------------------------------------------
 
+/** Series types that `horizontal` turns (left to right). */
+const TURNABLE: readonly ChartType[] = ["bar", "boxPlot", "rangeBar"];
+/** Series types drawn in category bands. */
+const BANDED: readonly ChartType[] = ["bar", "boxPlot", "candlestick", "rangeBar", "timeline"];
+/** Series types that fit the value scale to their data (no zero baseline). */
+const FITTED: readonly ChartType[] = [
+  "boxPlot",
+  "rangeArea",
+  "bubble",
+  "candlestick",
+  "rangeBar",
+  "timeline",
+];
+export const clamp = (value: number, min: number, max: number) =>
+  Math.min(max, Math.max(min, value));
+
 /** Lays out a chart. `width` and `height` are the SVG size in px. */
 export function layoutChart(data: ChartData, options: ChartLayoutOptions): ChartLayout {
   const width = Math.max(40, Math.round(options.width));
@@ -326,20 +382,31 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
     .map((series, index) => ({ series, index }))
     .filter(({ index }) => !hidden.has(index));
   const typeOf = (s: ChartDataSeries): ChartType => s.type;
+  // Timelines are horizontal range bars; bars, box plots and range bars may turn horizontal.
+  const timeline = data.type === "timeline";
   const horizontal =
-    options.horizontal === true && visible.every(({ series }) => typeOf(series) === "bar");
+    timeline ||
+    (options.horizontal === true &&
+      visible.every(({ series }) => TURNABLE.includes(typeOf(series))));
   const numeric = data.xType === "numeric";
   const mode =
     data.series.length > 0 && data.series.every((s) => s.type === "scatter" || s.type === "bubble")
       ? "point"
       : "index";
-  const banded =
-    !numeric && visible.some(({ series }) => series.type === "bar" || series.type === "boxPlot");
+  const banded = !numeric && visible.some(({ series }) => BANDED.includes(series.type));
   const stacked = options.stacked === true;
   const sparkline = options.sparkline === true;
   const count = numeric
     ? 0
     : Math.max(data.categories.length, ...data.series.map((s) => s.points.length), 0);
+  // Zoom (phase 4): vertical charts show a window of their categories (or x values).
+  const zoom = horizontal ? undefined : (options.zoom ?? undefined);
+  const first = !numeric && zoom && count > 0 ? clamp(Math.round(zoom.min), 0, count - 1) : 0;
+  const last =
+    !numeric && zoom && count > 0 ? clamp(Math.round(zoom.max), first, count - 1) : count - 1;
+  const shown = Math.max(0, last - first + 1);
+  const inView = (x: number) =>
+    numeric ? !zoom || (x >= zoom.min && x <= zoom.max) : x >= first && x <= last;
 
   // Stacked values: running totals per category, positives and negatives apart.
   const pos = new Array<number>(count).fill(0);
@@ -357,9 +424,9 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
       }
       if (point.y === null) continue;
       if (point.range) {
-        // Box plots and range areas span their values (never stacked).
-        lo = Math.min(lo, point.range[0] as number);
-        hi = Math.max(hi, point.range[point.range.length - 1] as number);
+        // Box plots, ranges and candles span their values (never stacked).
+        lo = Math.min(lo, ...point.range);
+        hi = Math.max(hi, ...point.range);
       } else if (stacked && !numeric) {
         const totals = point.y >= 0 ? pos : neg;
         const start = totals[point.x] as number;
@@ -379,9 +446,7 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
   }
   // Values start at zero, except where box plots, range areas, bubbles or sparkline lines fit the
   // scale to their data (bars and areas, filled from zero, keep it).
-  const fitted =
-    sparkline ||
-    visible.some(({ series }) => ["boxPlot", "rangeArea", "bubble"].includes(series.type));
+  const fitted = sparkline || visible.some(({ series }) => FITTED.includes(series.type));
   const zeroBased = visible.some(({ series }) =>
     fitted
       ? series.type === "bar" || series.type === "area"
@@ -400,14 +465,28 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
   // Value axis ticks: about one per 48px of height (vertical) or 200px of width (horizontal).
   // Sparklines have no ticks: their scale is the data's own range.
   const valueSpan = horizontal ? width : height - top - labelHeight;
+  // Timelines: dates along the value axis, on whole minutes, hours, days, months or years.
+  const timeScale = () => {
+    const end = hi > lo ? hi : lo + 86_400_000;
+    return {
+      min: lo,
+      max: end,
+      step: 1,
+      ticks: timeTicks(lo, end, Math.max(2, Math.floor(valueSpan / 110)), format.timeUnit),
+    };
+  };
   const valueScale = sparkline
     ? flatScale(options.yMin ?? lo, options.yMax ?? hi)
-    : niceScale(lo, hi, Math.max(2, Math.round(valueSpan / (horizontal ? 200 : 48))), {
-        min: options.yMin,
-        max: options.yMax,
-      });
+    : timeline
+      ? timeScale()
+      : niceScale(lo, hi, Math.max(2, Math.round(valueSpan / (horizontal ? 200 : 48))), {
+          min: options.yMin,
+          max: options.yMax,
+        });
   const decimals = stepDecimals(valueScale.step);
-  const tickTexts = valueScale.ticks.map((tick) => format.tick(tick, decimals));
+  const tickTexts = valueScale.ticks.map((tick) =>
+    timeline ? format.timeTick(tick).text : format.tick(tick, decimals),
+  );
   const nodes: ChartNode[] = [];
   const marks: ChartMark[] = [];
   const slots: ChartSlot[] = [];
@@ -461,14 +540,18 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
       height: Math.max(10, height - pad * 2),
     };
     if (numeric) {
-      xMin = xlo === Number.POSITIVE_INFINITY ? 0 : xlo;
-      xMax = xhi === Number.NEGATIVE_INFINITY || xhi === xMin ? xMin + 1 : xhi;
+      xMin = zoom ? zoom.min : xlo === Number.POSITIVE_INFINITY ? 0 : xlo;
+      xMax = zoom ? zoom.max : xhi === Number.NEGATIVE_INFINITY || xhi === xMin ? xMin + 1 : xhi;
     }
     const along = horizontal ? plot.height : plot.width;
-    band = banded ? along / Math.max(1, count) : count > 1 ? along / (count - 1) : along;
+    band = banded ? along / Math.max(1, shown) : shown > 1 ? along / (shown - 1) : along;
     const start = horizontal ? plot.y : plot.x;
     toCat = (index) =>
-      banded ? start + band * (index + 0.5) : count > 1 ? start + band * index : start + along / 2;
+      banded
+        ? start + band * (index - first + 0.5)
+        : shown > 1
+          ? start + band * (index - first)
+          : start + along / 2;
     toValue = horizontal
       ? (value) => scaleLinear(value, valueScale.min, valueScale.max, plot.x, plot.x + plot.width)
       : (value) => scaleLinear(value, valueScale.min, valueScale.max, plot.y + plot.height, plot.y);
@@ -476,7 +559,7 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
     // Categories down the left, values along the bottom.
     const catWidth = Math.max(0, ...categoryLabels.map((label) => chartTextWidth(label.text)));
     const left = catWidth + 16 + yTitleSpace;
-    const right = Math.max(8, Math.ceil(chartTextWidth(tickTexts.at(-1) as string) / 2));
+    const right = Math.max(8, Math.ceil(chartTextWidth(tickTexts.at(-1) ?? "") / 2));
     plot = {
       x: left,
       y: top,
@@ -506,7 +589,7 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
           plot.y + plot.height + gap,
           "middle",
           tickTexts[i] as string,
-          false,
+          timeline && format.timeTick(tick).major,
           "0.71em",
         ),
       );
@@ -526,7 +609,10 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
         xlo = 0;
         xhi = 1;
       }
-      const xScale = niceScale(xlo, xhi, Math.max(2, Math.round((width - left) / 90)));
+      const xCount = Math.max(2, Math.round((width - left) / 90));
+      const xScale = zoom
+        ? niceScale(zoom.min, zoom.max, xCount, { min: zoom.min, max: zoom.max })
+        : niceScale(xlo, xhi, xCount);
       xTicks = [...xScale.ticks];
       xDecimals = stepDecimals(xScale.step);
       right = Math.max(8, Math.ceil(chartTextWidth(format.axis(xScale.max, xDecimals).text) / 2));
@@ -539,10 +625,10 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
       xMin = xScale.min;
       xMax = xScale.max;
     } else {
-      if (!banded && count > 1) {
+      if (!banded && shown > 1) {
         right = Math.max(
           8,
-          Math.ceil(chartTextWidth((categoryLabels[count - 1] as DateLabel).text) / 2),
+          Math.ceil(chartTextWidth((categoryLabels[last] as DateLabel).text) / 2),
         );
       }
       plot = {
@@ -553,17 +639,17 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
       };
     }
     band = banded
-      ? plot.width / Math.max(1, count)
-      : count > 1
-        ? plot.width / (count - 1)
+      ? plot.width / Math.max(1, shown)
+      : shown > 1
+        ? plot.width / (shown - 1)
         : plot.width;
     toValue = (value) =>
       scaleLinear(value, valueScale.min, valueScale.max, plot.y + plot.height, plot.y);
     toCat = (index) =>
       banded
-        ? plot.x + band * (index + 0.5)
-        : count > 1
-          ? plot.x + (plot.width * index) / (count - 1)
+        ? plot.x + band * (index - first + 0.5)
+        : shown > 1
+          ? plot.x + (plot.width * (index - first)) / (shown - 1)
           : plot.x + plot.width / 2;
     valueScale.ticks.forEach((tick, i) => {
       const y = fmt(toValue(tick));
@@ -585,12 +671,14 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
           tickNode(toX(tick), labelY, "middle", format.axis(tick, xDecimals).text, false, "0.71em"),
         );
     } else {
-      const widest = Math.max(0, ...categoryLabels.map((label) => chartTextWidth(label.text)));
+      const inWindow = categoryLabels.slice(first, last + 1);
+      const widest = Math.max(0, ...inWindow.map((label) => chartTextWidth(label.text)));
       const unit = data.xType === "datetime" ? format.dateUnit : "index";
       const key = (i: number) =>
         data.xType === "datetime" ? unitIndex(data.categories[i] as number, format.dateUnit) : i;
       const show = shownLabels(count, band, widest, unit, key);
-      categoryLabels.forEach((label, i) => {
+      inWindow.forEach((label, offset) => {
+        const i = first + offset;
         if (show(i))
           axisX.push(tickNode(toCat(i), labelY, "middle", label.text, label.major, "0.71em"));
       });
@@ -601,7 +689,7 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
   function toX(x: number): number {
     return scaleLinear(x, xMin, xMax, plot.x, plot.x + plot.width);
   }
-  for (let i = 0; i < count; i++) slots.push({ index: i, pos: r2(toCat(i)) });
+  for (let i = first; i <= last; i++) slots.push({ index: i, pos: r2(toCat(i)) });
 
   const base = toValue(Math.min(Math.max(0, valueScale.min), valueScale.max));
   const defs: ChartNode[] = [];
@@ -616,9 +704,19 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
       Math.min(100, Math.max(1, (horizontal ? options.barHeight : options.columnWidth) ?? 40))) /
     100;
   const markerSize = Math.max(0, options.markerSize ?? 0);
-  const boxSeries = visible
-    .filter(({ series }) => series.type === "boxPlot")
-    .map(({ index }) => index);
+  const indexesOf = (types: readonly ChartType[]) =>
+    visible.filter(({ series }) => types.includes(series.type)).map(({ index }) => index);
+  const boxSeries = indexesOf(["boxPlot"]);
+  const candleSeries = indexesOf(["candlestick"]);
+  const rangeSeries = indexesOf(["rangeBar", "timeline"]);
+  /** A rectangle across `[a, a + size]` between two value positions (either axis). */
+  const span = (a: number, size: number, v0: number, v1: number, least = 0) => {
+    const lo = Math.min(v0, v1);
+    const length = Math.max(least, Math.abs(v1 - v0));
+    return horizontal
+      ? { x: fmt(lo), y: fmt(a), width: fmt(length), height: fmt(size) }
+      : { x: fmt(a), y: fmt(lo), width: fmt(size), height: fmt(length) };
+  };
   // Bubbles: the largest size gets a tenth of the plot's smaller side (at least 8px).
   let zMax = 0;
   for (const { series } of visible)
@@ -645,6 +743,8 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
       "data-ok-color": series.color,
       "data-ok-index": String(index),
     };
+    // Zoomed charts draw the points in their window only.
+    const points = zoom ? series.points.filter((point) => inView(point.x)) : series.points;
     const stackedValue = (point: { x: number; y: number }) =>
       stacked && !numeric
         ? (stack.get(`${index}:${point.x}`) as readonly [number, number])[1]
@@ -654,7 +754,7 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
       const size = stacked ? groupSize : groupSize / Math.max(1, barSeries.length);
       const offset = stacked ? 0 : slot * size;
       const children: ChartNode[] = [];
-      for (const point of series.points) {
+      for (const point of points) {
         if (point.y === null) continue;
         const [from, to] = stacked
           ? (stack.get(`${index}:${point.x}`) as readonly [number, number])
@@ -677,7 +777,7 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
         if (from === to) continue;
         if (options.dataLabels) {
           // Inside the bar, only where the value fits.
-          const text = format.value(point.y, index);
+          const text = format.dataLabel(point.y, index, point.x, format.value(point.y, index));
           const length = Math.abs(end - start);
           const fits = horizontal
             ? length >= chartTextWidth(text) + 8 && size >= FONT + 2
@@ -709,7 +809,7 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
       const upper = options.boxUpperColor ?? series.color;
       const lower = options.boxLowerColor ?? lighterTone(series.color);
       const children: ChartNode[] = [];
-      for (const point of series.points) {
+      for (const point of points) {
         if (!point.range) continue;
         const [min, q1, median, q3, max] = point.range.map(toValue) as [
           number,
@@ -719,44 +819,148 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
           number,
         ];
         const a = posOf(point.x) - groupSize / 2 + slot * size;
-        const cx = a + size / 2;
+        const c = a + size / 2;
         const cap = size / 4;
+        // Horizontal box plots (phase 4): values along x, categories down the side.
+        const at = (across: number, value: number): Pt =>
+          horizontal ? [value, across] : [across, value];
+        const [px, py] = at(c, max);
         marks.push({
           series: index,
           type: series.type,
           index: point.x,
           x: point.x,
           value: point.y as number,
-          px: r2(cx),
-          py: r2(max),
+          px: r2(px),
+          py: r2(py),
           color: upper,
           range: point.range,
         });
-        const whisker = (x1: number, y1: number, x2: number, y2: number) =>
+        const whisker = (from: Pt, to: Pt) =>
           node("line", {
-            x1: fmt(x1),
-            y1: fmt(y1),
-            x2: fmt(x2),
-            y2: fmt(y2),
+            x1: fmt(from[0]),
+            y1: fmt(from[1]),
+            x2: fmt(to[0]),
+            y2: fmt(to[1]),
             "data-ok-chart-whisker": "",
           });
-        const box = (y: number, h: number, part: string, color: ChartColor) =>
+        children.push(
+          whisker(at(c, max), at(c, q3)),
+          whisker(at(c, q1), at(c, min)),
+          whisker(at(c - cap, max), at(c + cap, max)),
+          whisker(at(c - cap, min), at(c + cap, min)),
+          node("rect", {
+            ...span(a, size, q3, median),
+            "data-ok-chart-box": "upper",
+            "data-ok-color": upper,
+          }),
+          node("rect", {
+            ...span(a, size, median, q1),
+            "data-ok-chart-box": "lower",
+            "data-ok-color": lower,
+          }),
+        );
+      }
+      bars.push(node("g", seriesAttrs, children));
+      continue;
+    }
+    if (series.type === "candlestick") {
+      // A wick from the high to the low, a body from the open to the close (phase 4).
+      const slot = candleSeries.indexOf(index);
+      const size = groupSize / Math.max(1, candleSeries.length);
+      const children: ChartNode[] = [];
+      for (const point of points) {
+        if (!point.range) continue;
+        const [open, high, low, close] = point.range as [number, number, number, number];
+        const rising = close >= open;
+        const color =
+          point.color ??
+          (rising ? (options.candleUpColor ?? "success") : (options.candleDownColor ?? "error"));
+        const a = posOf(point.x) - groupSize / 2 + slot * size;
+        const c = a + size / 2;
+        marks.push({
+          series: index,
+          type: series.type,
+          index: point.x,
+          x: point.x,
+          value: close,
+          px: r2(c),
+          py: r2(toValue(high)),
+          color,
+          range: point.range,
+        });
+        const top = Math.min(toValue(open), toValue(close));
+        children.push(
+          node("line", {
+            x1: fmt(c),
+            y1: fmt(toValue(high)),
+            x2: fmt(c),
+            y2: fmt(toValue(low)),
+            "data-ok-chart-wick": "",
+            "data-ok-color": color,
+          }),
           node("rect", {
             x: fmt(a),
-            y: fmt(y),
+            y: fmt(top),
             width: fmt(size),
-            height: fmt(Math.max(0, h)),
-            "data-ok-chart-box": part,
+            // A candle that opens and closes alike (a doji) is still a line.
+            height: fmt(Math.max(1, Math.abs(toValue(open) - toValue(close)))),
+            "data-ok-chart-candle": rising ? "up" : "down",
             "data-ok-color": color,
-          });
-        children.push(
-          whisker(cx, max, cx, q3),
-          whisker(cx, q1, cx, min),
-          whisker(cx - cap, max, cx + cap, max),
-          whisker(cx - cap, min, cx + cap, min),
-          box(q3, median - q3, "upper", upper),
-          box(median, q1 - median, "lower", lower),
+          }),
         );
+      }
+      bars.push(node("g", seriesAttrs, children));
+      continue;
+    }
+    if (series.type === "rangeBar" || series.type === "timeline") {
+      // Bars from the start to the end value, rounded at both ends; timelines run left to right.
+      const slot = rangeSeries.indexOf(index);
+      const size = groupSize / Math.max(1, rangeSeries.length);
+      const children: ChartNode[] = [];
+      for (const point of points) {
+        if (!point.range) continue;
+        const [from, to] = point.range.map(toValue) as [number, number];
+        const a = posOf(point.x) - groupSize / 2 + slot * size;
+        const length = Math.abs(to - from);
+        const end = horizontal ? Math.max(from, to) : Math.min(from, to);
+        marks.push({
+          series: index,
+          type: series.type,
+          index: point.x,
+          x: point.x,
+          value: point.range[1] as number,
+          px: r2(horizontal ? end : a + size / 2),
+          py: r2(horizontal ? a + size / 2 : end),
+          color: point.color ?? series.color,
+          range: point.range,
+        });
+        children.push(
+          node("rect", {
+            ...span(a, size, from, to, 1),
+            rx: fmt(Math.min(4, size / 2, length / 2)),
+            "data-ok-chart-bar": "",
+            ...(point.color ? { "data-ok-color": point.color } : {}),
+          }),
+        );
+        if (options.dataLabels) {
+          const [s, e] = point.range as [number, number];
+          const text = format.dataLabel(
+            e - s,
+            index,
+            point.x,
+            `${format.value(s, index)} – ${format.value(e, index)}`,
+          );
+          const fits = horizontal
+            ? length >= chartTextWidth(text) + 8 && size >= FONT + 2
+            : length >= FONT + 6 && size >= chartTextWidth(text) + 4;
+          const mid = (from + to) / 2;
+          const across = a + size / 2;
+          if (fits)
+            labels.push(
+              dataLabel(horizontal ? mid : across, horizontal ? across : mid, text, "inside"),
+            );
+        }
       }
       bars.push(node("g", seriesAttrs, children));
       continue;
@@ -765,7 +969,7 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
       // A band between the low and high values, outlined at both edges; gaps break it.
       const segments: { high: Pt; low: Pt }[][] = [];
       let current: { high: Pt; low: Pt }[] = [];
-      for (const point of [...series.points].sort((a, b) => a.x - b.x)) {
+      for (const point of [...points].sort((a, b) => a.x - b.x)) {
         if (!point.range) {
           if (current.length) segments.push(current);
           current = [];
@@ -816,7 +1020,7 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
     if (series.type === "bubble") {
       // Radius by the square root of the size, so areas compare like the values.
       const children: ChartNode[] = [];
-      for (const point of series.points) {
+      for (const point of points) {
         if (point.y === null) continue;
         const px = posOf(point.x);
         const py = toValue(point.y);
@@ -849,7 +1053,7 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
       scatters.push(node("g", seriesAttrs, children));
       continue;
     }
-    const pts: { x: number; y: number }[] = series.points.filter(
+    const pts: { x: number; y: number }[] = points.filter(
       (p): p is { x: number; y: number } => p.y !== null,
     );
     const at = (point: { x: number; y: number }): Pt =>
@@ -868,7 +1072,12 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
       });
       if (options.dataLabels && series.type !== "scatter")
         labels.push(
-          dataLabel(px, Math.max(FONT / 2, py - 12), format.value(point.y, index), "outside"),
+          dataLabel(
+            px,
+            Math.max(FONT / 2, py - 12),
+            format.dataLabel(point.y, index, point.x, format.value(point.y, index)),
+            "outside",
+          ),
         );
     }
     if (series.type === "scatter") {
@@ -877,7 +1086,7 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
         node(
           "g",
           seriesAttrs,
-          series.points
+          points
             .filter((p) => p.y !== null)
             .map((p) => {
               const [px, py] = at(p as { x: number; y: number });
@@ -896,7 +1105,7 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
     // Lines break at gaps (null values).
     const segments: Pt[][] = [];
     let current: Pt[] = [];
-    const sorted = [...series.points].sort((a, b) => a.x - b.x);
+    const sorted = [...points].sort((a, b) => a.x - b.x);
     for (const point of sorted) {
       if (point.y === null) {
         if (current.length) segments.push(current);
@@ -1003,9 +1212,30 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
     activeRadius:
       mode === "point"
         ? (options.markerSize ?? 5) + 2
-        : visible.every(({ series }) => series.type === "bar" || series.type === "boxPlot")
+        : visible.every(({ series }) => BANDED.includes(series.type))
           ? 0
           : Math.max(markerSize + 2, 5),
     nodes,
+    ...(horizontal
+      ? {}
+      : {
+          x: numeric
+            ? { kind: "value", min: xMin, max: xMax, from: plot.x, to: plot.x + plot.width }
+            : {
+                kind: "index",
+                min: first,
+                max: Math.max(first, last),
+                from: r2(toCat(first)),
+                to: r2(toCat(Math.max(first, last))),
+                ...(banded ? { band: r2(band) } : {}),
+              },
+          y: {
+            kind: "value",
+            min: valueScale.min,
+            max: valueScale.max,
+            from: r2(plot.y + plot.height),
+            to: r2(plot.y),
+          },
+        }),
   };
 }

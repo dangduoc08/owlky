@@ -28,6 +28,20 @@ const STORIES = [
   "slope",
   "sparklines",
   "live-data",
+  "candlestick",
+  "range-bar",
+  "timeline",
+  "polar-area",
+  "zoom",
+  "synchronized",
+  "brush",
+  "annotations",
+  "data-labels",
+  "donut-legend",
+  "heatmap-ranges",
+  "box-plot-horizontal",
+  "localized",
+  "animations",
 ];
 
 interface Measure {
@@ -120,7 +134,7 @@ for (const viewport of viewports) {
           const page = await context.newPage();
           await openStory(page, storyId(impl, "chart", story));
           await expect(page.locator("[data-ok-chart][data-ok-ready]")).toHaveCount(
-            story === "sparklines" ? 3 : 1,
+            story === "sparklines" || story === "synchronized" ? 3 : story === "brush" ? 2 : 1,
           );
           const { problems, result } = await measure(page);
           expect(problems, `${impl} ${story}`).toEqual([]);

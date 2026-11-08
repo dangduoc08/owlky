@@ -2817,7 +2817,7 @@ export const chartOptions = defineOptions("chart", "data-ok-chart", {
     "data-ok-type",
     chartTypes,
     "line",
-    "Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel` or `slope`. Series may override it in line, area, bar, scatter, box plot, bubble and range area charts (mixed charts).",
+    "Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline` or `polarArea`. Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts).",
   ),
   xType: style(
     "data-ok-x-type",
@@ -2917,10 +2917,57 @@ export const chartOptions = defineOptions("chart", "data-ok-chart", {
     "Box plots: color of the box below the median (default a lighter tone of the series color).",
     { optional: true },
   ),
+  candleUpColor: style(
+    "data-ok-candle-up-color",
+    chartColors,
+    "success",
+    "Candlesticks: color of rising candles (default `success`).",
+    { optional: true },
+  ),
+  candleDownColor: style(
+    "data-ok-candle-down-color",
+    chartColors,
+    "error",
+    "Candlesticks: color of falling candles (default `error`).",
+    { optional: true },
+  ),
+  donutSize: number(
+    "data-ok-donut-size",
+    undefined,
+    "Donut hole in % of the radius (10 to 95; default 72).",
+    {
+      min: 10,
+    },
+  ),
+  dataLabelBackground: flag(
+    "data-ok-data-label-background",
+    "Data labels above points sit on a badge (a paper box with a border).",
+  ),
+  legendValues: flag(
+    "data-ok-legend-values",
+    "Legend items show a value: the slice's or ring's, or the series' last one.",
+  ),
+  zoom: flag(
+    "data-ok-zoom",
+    "Zoom and pan the x axis: drag to select (mouse), pinch or drag (touch), Ctrl + wheel, keys `+` `-` `0` and Shift + arrows.",
+  ),
+  toolbar: flag(
+    "data-ok-toolbar",
+    "A toolbar with zoom buttons (with `zoom`) and downloads (SVG, PNG, CSV).",
+  ),
+  animations: flag(
+    "data-ok-animations",
+    "Series grow in when first drawn and move to new values on updates (never with reduced motion).",
+  ),
   hiddenSeries: state(
     "aria-pressed",
     'Indexes of the series hidden through the legend (`aria-pressed="false"` on their buttons); categories in pie, donut and radial bar charts.',
     "toggle",
+  ),
+  zoomRange: state(
+    "instance.zoomRange",
+    "The visible window of the x axis, `{ min, max }` (category indexes or x values), or `null`.",
+    "zoom",
   ),
 });
 
@@ -2947,6 +2994,14 @@ export interface ChartAnatomyOptions {
   sparkline?: boolean | undefined;
   boxUpperColor?: ChartColor | undefined;
   boxLowerColor?: ChartColor | undefined;
+  candleUpColor?: ChartColor | undefined;
+  candleDownColor?: ChartColor | undefined;
+  donutSize?: number | undefined;
+  dataLabelBackground?: boolean | undefined;
+  legendValues?: boolean | undefined;
+  zoom?: boolean | undefined;
+  toolbar?: boolean | undefined;
+  animations?: boolean | undefined;
 }
 
 /** `data-ok-*` attributes of a chart root (numbers only when given). */
