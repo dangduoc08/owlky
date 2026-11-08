@@ -2528,7 +2528,7 @@ export const chartOptions = defineOptions("chart", "data-ok-chart", {
     "data-ok-type",
     chartTypes,
     "line",
-    "Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`) or `scatter`. Series may override it (mixed charts).",
+    "Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar` or `radar`. Series may override it in line, area, bar and scatter charts (mixed charts).",
   ),
   xType: style(
     "data-ok-x-type",
@@ -2575,11 +2575,39 @@ export const chartOptions = defineOptions("chart", "data-ok-chart", {
   yMax: number(
     "data-ok-y-max",
     undefined,
-    "Highest value on the value axis (default from the data).",
+    "Highest value on the value axis (default from the data); radial bars: the value of a full ring (default 100).",
+  ),
+  dataLabels: flag(
+    "data-ok-data-labels",
+    "Prints the values on the chart: percentages on pie and donut slices, values in bars and above points.",
+  ),
+  startAngle: number(
+    "data-ok-start-angle",
+    0,
+    "Pie, donut and radial bar: where the slices or rings start, in degrees clockwise from 12 o'clock.",
+  ),
+  endAngle: number(
+    "data-ok-end-angle",
+    360,
+    "Pie, donut and radial bar: where they end (at most one turn after `startAngle`).",
+  ),
+  dashArray: number(
+    "data-ok-dash-array",
+    undefined,
+    "Dash length of lines and radial bars in px (default solid).",
+    { min: 0 },
+  ),
+  trackWidth: number("data-ok-track-width", 50, "Radial bar track thickness in % of the bar.", {
+    min: 0,
+  }),
+  total: number(
+    "data-ok-total",
+    undefined,
+    "Donut and radial bar center: the total shown under `totalLabel` (default the sum; radial bars the average).",
   ),
   hiddenSeries: state(
     "aria-pressed",
-    'Indexes of the series hidden through the legend (`aria-pressed="false"` on their buttons).',
+    'Indexes of the series hidden through the legend (`aria-pressed="false"` on their buttons); categories in pie, donut and radial bar charts.',
     "toggle",
   ),
 });
@@ -2598,6 +2626,12 @@ export interface ChartAnatomyOptions {
   barHeight?: number | undefined;
   yMin?: number | undefined;
   yMax?: number | undefined;
+  dataLabels?: boolean | undefined;
+  startAngle?: number | undefined;
+  endAngle?: number | undefined;
+  dashArray?: number | undefined;
+  trackWidth?: number | undefined;
+  total?: number | undefined;
 }
 
 /** `data-ok-*` attributes of a chart root (numbers only when given). */

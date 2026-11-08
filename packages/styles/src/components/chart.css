@@ -15,7 +15,12 @@
  *                 g[data-ok-chart-crosshair] › rect[data-ok-chart-band] | line[data-ok-chart-crosshair-line]
  *                 g[data-ok-chart-series-group] › g[data-ok-chart-series][data-ok-type][data-ok-color]
  *                   path[data-ok-chart-area | data-ok-chart-line | data-ok-chart-bar] · circle[data-ok-chart-marker]
+ *                 g[data-ok-chart-data-labels] › text[data-ok-chart-data-label="inside|outside"]
  *                 g[data-ok-chart-active] › circle[data-ok-chart-active-marker]
+ *                 g[data-ok-chart-center] › text[data-ok-chart-center-label | data-ok-chart-center-value]
+ *               Polar charts (phase 2): path[data-ok-chart-slice] (pie, donut),
+ *                 path[data-ok-chart-track] + path[data-ok-chart-radial] (radial bar),
+ *                 path | line[data-ok-chart-web] (radar grid), path[data-ok-chart-active-slice]
  *               div[data-ok-chart-tooltip][role="status"] (hidden unless a value is active)
  *                 div[data-ok-chart-tooltip-title] + div[data-ok-chart-tooltip-rows]
  *                   div[data-ok-chart-tooltip-row] › span[data-ok-chart-tooltip-marker][data-ok-color] + span + span[data-ok-chart-tooltip-value]
@@ -201,6 +206,14 @@
     justify-content: center;
   }
 
+  /* Pie, donut and radial bar charts sit in the middle: so does a top legend. */
+  :where(
+    [data-ok-chart]:is([data-ok-type="pie"], [data-ok-type="donut"], [data-ok-type="radialBar"])
+      > [data-ok-chart-legend]
+  ) {
+    justify-content: center;
+  }
+
   /* Right legends sit below the plot on phones and beside it from 600px. */
   :where([data-ok-chart][data-ok-legend="right"] > [data-ok-chart-legend]) {
     order: 1;
@@ -353,6 +366,74 @@
   :where([data-ok-chart-crosshair-line]) {
     stroke: var(--ok-text-disabled);
     stroke-dasharray: 3;
+  }
+
+  /* Pie and donut slices; the active one gets a halo of its color behind it. */
+  :where([data-ok-chart-slice]) {
+    fill: var(--_ok-chart-c);
+  }
+
+  :where([data-ok-chart-active-slice]) {
+    fill: var(--_ok-chart-c);
+    fill-opacity: 0.32;
+  }
+
+  /* Radial bars: a grey track, the bar on it (a gradient unless the fill is solid); dashed bars
+     have square ends, track included. */
+  :where([data-ok-chart-track], [data-ok-chart-radial]) {
+    fill: none;
+    stroke-linecap: round;
+  }
+
+  :where([data-ok-chart-track]) {
+    stroke: rgb(var(--ok-palette-grey-500-channel) / 0.16);
+  }
+
+  :where([data-ok-chart-radial]:not([stroke])) {
+    stroke: var(--_ok-chart-c);
+  }
+
+  :where([data-ok-chart-series][data-ok-dashed] > *) {
+    stroke-linecap: butt;
+  }
+
+  /* Radar: the web of value rings and category axes. */
+  :where([data-ok-chart-web]) {
+    fill: none;
+    stroke: var(--ok-divider);
+  }
+
+  :where([data-ok-chart-series][data-ok-type="radar"] > [data-ok-chart-area]) {
+    fill-opacity: 0.48;
+  }
+
+  :where([data-ok-chart-series][data-ok-type="radar"] > [data-ok-chart-line]) {
+    stroke-width: 2px;
+  }
+
+  /* Values printed on the chart: white inside shapes, primary text above points. */
+  :where([data-ok-chart-data-label]) {
+    fill: var(--ok-text-primary);
+    font-size: var(--ok-font-size-xs);
+    font-weight: var(--ok-font-weight-semibold);
+    pointer-events: none;
+  }
+
+  :where([data-ok-chart-data-label="inside"]) {
+    fill: var(--ok-palette-common-white);
+  }
+
+  /* The center of donuts and radial bars: a label and a value. */
+  :where([data-ok-chart-center-label]) {
+    fill: var(--ok-text-secondary);
+    font-size: var(--ok-font-size-md);
+    font-weight: var(--ok-font-weight-semibold);
+  }
+
+  :where([data-ok-chart-center-value]) {
+    fill: var(--ok-text-primary);
+    font-size: calc(var(--ok-font-size-xl) * 1.25);
+    font-weight: var(--ok-font-weight-bold);
   }
 
   /* Tooltip: paper card beside the active value; never takes the pointer. */

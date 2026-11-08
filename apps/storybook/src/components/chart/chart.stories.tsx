@@ -35,7 +35,7 @@ const meta = {
       page: ChartDocs,
       description: {
         component:
-          "Charts show values as lines, areas, columns, bars or points, with a legend, a tooltip and the data as a table.",
+          "Charts show values as lines, areas, columns, bars, points, slices, rings or radars, with a legend, a tooltip and the data as a table.",
       },
     },
   },
@@ -51,3 +51,9 @@ export const ColumnNegative: StoryObj = story("column-negative");
 export const Bar: StoryObj = story("bar");
 export const Mixed: StoryObj = story("mixed");
 export const Scatter: StoryObj = story("scatter");
+export const Pie: StoryObj = story("pie");
+export const Donut: StoryObj = story("donut");
+export const RadialBar: StoryObj = story("radial-bar");
+export const Radar: StoryObj = story("radar");
+export const SemiCircleGauge: StoryObj = story("semi-circle-gauge");
+export const StrokedGauge: StoryObj = story("stroked-gauge");

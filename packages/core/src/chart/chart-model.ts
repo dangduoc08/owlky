@@ -7,7 +7,18 @@ import { toTimestamp } from "./chart-scale.js";
  * chart's data table. Both become the same `ChartData`, so layout and drawing are shared.
  */
 
-export const chartTypes = ["line", "area", "bar", "scatter"] as const;
+export const chartTypes = [
+  "line",
+  "area",
+  "bar",
+  "scatter",
+  "pie",
+  "donut",
+  "radialBar",
+  "radar",
+] as const;
+/** Charts of one series whose categories are slices or rings (legend items are categories). */
+export const chartCircularTypes = ["pie", "donut", "radialBar"] as const;
 export const chartCurves = ["smooth", "straight", "stepline"] as const;
 export const chartLegends = ["top", "right", "bottom", "none"] as const;
 export const chartXTypes = ["category", "datetime", "numeric"] as const;
@@ -20,6 +31,13 @@ export type ChartLegend = (typeof chartLegends)[number];
 export type ChartXType = (typeof chartXTypes)[number];
 export type ChartFill = (typeof chartFills)[number];
 type Palette = (typeof paletteColorNames)[number];
+export type ChartCircularType = (typeof chartCircularTypes)[number];
+
+/** Whether a chart type draws slices or rings (pie, donut, radial bar). */
+export const isCircularChart = (type: ChartType): type is ChartCircularType =>
+  chartCircularTypes.includes(type as ChartCircularType);
+/** Whether a chart type is drawn around a center (circular charts and radar): no mixed types. */
+export const isPolarChart = (type: ChartType): boolean => type === "radar" || isCircularChart(type);
 type Shade = (typeof chartShades)[number];
 
 /** A palette color (`main`) or one of its shades: `"info"`, `"primary-dark"`. */
@@ -130,6 +148,8 @@ export function chartData(input: {
       if (time !== undefined) categories.push(time);
     }
   }
+  const polar = isPolarChart(type);
+  const circular = isCircularChart(type);
   const series = input.series.map((entry, index): ChartDataSeries => {
     const points: ChartPoint[] = [];
     entry.data.forEach((raw, position) => {
@@ -154,13 +174,19 @@ export function chartData(input: {
         if (isColor(point.color)) color = point.color;
       } else y = parseChartNumber(raw);
       if (x === undefined) return;
+      // Circular charts color each slice (ring): its own color, `colors` or the default order.
+      if (circular && !color)
+        color =
+          palette[position] ??
+          (chartDefaultColors[position % chartDefaultColors.length] as ChartColor);
       points.push(color ? { x, y, color } : { x, y });
     });
     const fallback =
       palette[index] ?? (chartDefaultColors[index % chartDefaultColors.length] as ChartColor);
     return {
       name: String(entry.name),
-      type: pick(chartTypes, entry.type, type),
+      // Polar charts draw every series the same way (no mixed types).
+      type: polar ? type : pick(chartTypes, entry.type, type),
       color: isColor(entry.color) ? entry.color : fallback,
       points,
     };

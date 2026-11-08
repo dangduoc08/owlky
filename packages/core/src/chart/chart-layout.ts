@@ -60,8 +60,31 @@ export interface ChartLayoutOptions {
   readonly yMin?: number | undefined;
   readonly yMax?: number | undefined;
   readonly yTitle?: string | undefined;
-  /** Series hidden through the legend (by index). */
+  /** Series hidden through the legend (by index; categories for pie, donut and radial bar). */
   readonly hidden?: readonly number[] | undefined;
+  /** Prints values on the chart (percentages on pie and donut slices). */
+  readonly dataLabels?: boolean | undefined;
+  /** Circular charts: where the slices or rings start and end, in degrees clockwise from 12 o'clock. */
+  readonly startAngle?: number | undefined;
+  readonly endAngle?: number | undefined;
+  /** Dash length of lines and radial bars in px (default solid). */
+  readonly dashArray?: number | undefined;
+  /** Radial bar track thickness in % of the bar. Default 50. */
+  readonly trackWidth?: number | undefined;
+  /** Donut and radial bar center: the total's label ("Total"); shown only when given. */
+  readonly totalLabel?: string | undefined;
+  /** Donut and radial bar center: the total shown (default the sum; radial bars the average). */
+  readonly total?: number | undefined;
+}
+
+/** A slice or ring of a circular chart: angles in degrees clockwise from 12 o'clock. */
+export interface ChartArc {
+  readonly cx: number;
+  readonly cy: number;
+  readonly start: number;
+  readonly end: number;
+  readonly inner: number;
+  readonly outer: number;
 }
 
 /** A drawn value: what the tooltip and keyboard navigation point at. */
@@ -76,6 +99,8 @@ export interface ChartMark {
   readonly px: number;
   readonly py: number;
   readonly color: ChartColor;
+  /** Circular charts: the area that activates the mark (a slice, or a ring's whole track). */
+  readonly arc?: ChartArc | undefined;
 }
 
 export interface ChartSlot {
@@ -93,8 +118,13 @@ export interface ChartLayout {
     readonly width: number;
     readonly height: number;
   };
-  /** `index`: one tooltip per category; `point`: one per point (scatter). */
-  readonly mode: "index" | "point";
+  /**
+   * `index`: one tooltip per category; `point`: one per point (scatter); `slice`: one per slice
+   * or ring (pie, donut, radial bar).
+   */
+  readonly mode: "index" | "point" | "slice";
+  /** Radar: center and radius; slots are categories and `pos` their angle in degrees. */
+  readonly polar?: { readonly cx: number; readonly cy: number; readonly r: number } | undefined;
   readonly horizontal: boolean;
   /** Bars are drawn: categories are bands (the hover highlight covers the band). */
   readonly banded: boolean;
@@ -106,7 +136,7 @@ export interface ChartLayout {
   readonly nodes: readonly ChartNode[];
 }
 
-const FONT = 12;
+export const FONT = 12;
 /** Glyph widths of the UI font in em, by class (narrow, wide, minus, digits, capitals, others). */
 const glyph = (c: string): number =>
   /[ .,:;'!|il1jtfI()[\]]/.test(c)
@@ -131,9 +161,9 @@ export const chartTextWidth = (text: string, size = FONT): number => {
   return Math.ceil(em * size);
 };
 
-const r2 = (value: number) => Math.round(value * 100) / 100;
-const fmt = (value: number) => String(r2(value));
-const node = (
+export const r2 = (value: number) => Math.round(value * 100) / 100;
+export const fmt = (value: number) => String(r2(value));
+export const node = (
   tag: ChartNodeTag,
   attrs: Record<string, string>,
   children?: ChartNode[],
@@ -144,6 +174,21 @@ const node = (
   ...(children ? { children } : {}),
   ...(text !== undefined ? { text } : {}),
 });
+
+/** A value printed on the chart: `inside` a filled shape (white) or `outside` above a point. */
+export const dataLabel = (x: number, y: number, text: string, place: "inside" | "outside") =>
+  node(
+    "text",
+    {
+      x: fmt(x),
+      y: fmt(y),
+      dy: "0.35em",
+      "text-anchor": "middle",
+      "data-ok-chart-data-label": place,
+    },
+    undefined,
+    text,
+  );
 
 // --- Paths ----------------------------------------------------------------------------------
 
@@ -487,6 +532,7 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
   const bars: ChartNode[] = [];
   const lines: ChartNode[] = [];
   const scatters: ChartNode[] = [];
+  const labels: ChartNode[] = [];
   const barSeries = visible.filter(({ series }) => series.type === "bar").map(({ index }) => index);
   const groupSize =
     (band *
@@ -542,6 +588,21 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
           color,
         });
         if (from === to) continue;
+        if (options.dataLabels) {
+          // Inside the bar, only where the value fits.
+          const text = format.value(point.y, index);
+          const length = Math.abs(end - start);
+          const fits = horizontal
+            ? length >= chartTextWidth(text) + 8 && size >= FONT + 2
+            : length >= FONT + 6 && size >= chartTextWidth(text) + 4;
+          if (fits) {
+            const mid = (start + end) / 2;
+            const across = a + size / 2;
+            labels.push(
+              dataLabel(horizontal ? mid : across, horizontal ? across : mid, text, "inside"),
+            );
+          }
+        }
         children.push(
           node("path", {
             d: barPath(a, size, start, end, rounded ? 4 : 0, horizontal),
@@ -570,6 +631,10 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
         py: r2(py),
         color: series.color,
       });
+      if (options.dataLabels && series.type !== "scatter")
+        labels.push(
+          dataLabel(px, Math.max(FONT / 2, py - 12), format.value(point.y, index), "outside"),
+        );
     }
     if (series.type === "scatter") {
       const radius = options.markerSize ?? 5;
@@ -635,8 +700,11 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
         );
       }
     }
+    const dash = options.dashArray ? { "stroke-dasharray": fmt(options.dashArray) } : {};
     for (const segment of segments) {
-      children.push(node("path", { d: linePath(segment, curve), "data-ok-chart-line": "" }));
+      children.push(
+        node("path", { d: linePath(segment, curve), "data-ok-chart-line": "", ...dash }),
+      );
     }
     if (markerSize > 0) {
       for (const segment of segments) {
@@ -682,6 +750,7 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
   nodes.push(
     node("g", { "data-ok-chart-series-group": "" }, [...areas, ...bars, ...lines, ...scatters]),
   );
+  if (labels.length) nodes.push(node("g", { "data-ok-chart-data-labels": "" }, labels));
   nodes.push(node("g", { "data-ok-chart-active": "" }, []));
 
   return {

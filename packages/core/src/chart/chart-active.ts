@@ -1,6 +1,7 @@
 import type { ChartFormat } from "./chart-format.js";
-import type { ChartLayout, ChartNode } from "./chart-layout.js";
+import type { ChartArc, ChartLayout, ChartNode } from "./chart-layout.js";
 import type { ChartColor, ChartData } from "./chart-model.js";
+import { polarPoint, slicePath } from "./chart-polar.js";
 
 /*
  * Chart interaction (ADR-0024): which category or point is active for a pointer position or a
@@ -21,9 +22,48 @@ export function sameChartActive(a: ChartActive | null, b: ChartActive | null): b
     : b.kind === "mark" && a.mark === b.mark;
 }
 
+/** Angle of a point around a center in degrees, clockwise from 12 o'clock (0 to 360). */
+const angleAt = (cx: number, cy: number, x: number, y: number) =>
+  ((Math.atan2(x - cx, cy - y) * 180) / Math.PI + 360) % 360;
+
+/** Whether `angle` lies within an arc's angles (which may start below 0 or end past 360). */
+const within = (angle: number, arc: ChartArc) => {
+  const from = (((angle - arc.start) % 360) + 360) % 360;
+  return arc.end - arc.start >= 360 || from <= arc.end - arc.start;
+};
+
+/** Angular distance between two angles in degrees (0 to 180). */
+const turn = (a: number, b: number) => {
+  const d = Math.abs(a - b) % 360;
+  return d > 180 ? 360 - d : d;
+};
+
 /** Pointer position in SVG px → the active item, or `null` outside the plot. */
 export function chartActiveAt(layout: ChartLayout, x: number, y: number): ChartActive | null {
   const { plot } = layout;
+  if (layout.mode === "slice") {
+    // The slice (or ring) under the pointer, with 8px of slack around its radii.
+    for (const mark of layout.marks) {
+      const arc = mark.arc as ChartArc;
+      const distance = Math.hypot(x - arc.cx, y - arc.cy);
+      if (
+        distance >= arc.inner - 8 &&
+        distance <= arc.outer + 8 &&
+        within(angleAt(arc.cx, arc.cy, x, y), arc)
+      )
+        return { kind: "index", index: mark.index };
+    }
+    return null;
+  }
+  if (layout.polar) {
+    // Radar: the category axis nearest in angle, inside the web (plus room for its label).
+    const { cx, cy, r } = layout.polar;
+    if (layout.slots.length === 0 || Math.hypot(x - cx, y - cy) > r + 24) return null;
+    const angle = angleAt(cx, cy, x, y);
+    let best = layout.slots[0] as (typeof layout.slots)[number];
+    for (const slot of layout.slots) if (turn(slot.pos, angle) < turn(best.pos, angle)) best = slot;
+    return { kind: "index", index: best.index };
+  }
   const slack = 8;
   if (
     x < plot.x - slack ||
@@ -85,7 +125,9 @@ export function nextChartActive(
   }
   const count = layout.slots.length;
   if (count === 0) return null;
-  const at = active?.kind === "index" ? active.index : -1;
+  // Slots in order (hidden slices have none): move by position, report the category.
+  const at =
+    active?.kind === "index" ? layout.slots.findIndex((slot) => slot.index === active.index) : -1;
   const next =
     key === "Home"
       ? 0
@@ -94,7 +136,7 @@ export function nextChartActive(
         : at < 0
           ? 0
           : Math.min(count - 1, Math.max(0, at + (forward ? 1 : -1)));
-  return { kind: "index", index: next };
+  return { kind: "index", index: (layout.slots[next] as (typeof layout.slots)[number]).index };
 }
 
 const circle = (cx: number, cy: number, r: number, color: ChartColor): ChartNode => ({
@@ -124,10 +166,39 @@ export function chartActiveNodes(
       ? { under: [], over: [circle(mark.px, mark.py, layout.activeRadius, mark.color)] }
       : { under: [], over: [] };
   }
-  const slot = layout.slots[active.index];
+  const slot = layout.slots.find((entry) => entry.index === active.index);
   if (!slot) return { under: [], over: [] };
   const under: ChartNode[] = [];
-  if (layout.banded) {
+  if (layout.mode === "slice") {
+    // A wider copy of the slice behind it (a halo); rings show only the tooltip.
+    const mark = layout.marks.find((entry) => entry.index === active.index);
+    if (mark?.type === "pie" || mark?.type === "donut") {
+      const arc = mark.arc as ChartArc;
+      under.push({
+        tag: "path",
+        attrs: {
+          d: slicePath(arc.cx, arc.cy, arc.inner, arc.outer + 6, arc.start, arc.end),
+          "data-ok-chart-active-slice": "",
+          "data-ok-color": mark.color,
+        },
+      });
+    }
+    return { under, over: [] };
+  }
+  if (layout.polar) {
+    const { cx, cy, r } = layout.polar;
+    const [x2, y2] = polarPoint(cx, cy, r, slot.pos);
+    under.push({
+      tag: "line",
+      attrs: {
+        x1: String(cx),
+        y1: String(cy),
+        x2: String(Math.round(x2 * 100) / 100),
+        y2: String(Math.round(y2 * 100) / 100),
+        "data-ok-chart-crosshair-line": "",
+      },
+    });
+  } else if (layout.banded) {
     const half = layout.band / 2;
     under.push({
       tag: "rect",
@@ -203,18 +274,52 @@ export function chartTooltip(
       y: mark.py,
     };
   }
-  const slot = layout.slots[active.index];
+  const slot = layout.slots.find((entry) => entry.index === active.index);
   if (!slot) return null;
   const marks = layout.marks.filter((mark) => mark.index === active.index);
+  const x =
+    data.xType === "datetime"
+      ? (data.categories[active.index] as number)
+      : (data.categories[active.index] ?? String(active.index + 1));
+  if (layout.mode === "slice") {
+    // One slice or ring: its own color, pointing at its middle (bars: their end).
+    const mark = marks[0];
+    if (!mark) return null;
+    return {
+      title: format.title(x),
+      rows: [
+        {
+          name: (data.series[0] as (typeof data.series)[number]).name,
+          value: format.value(mark.value, 0),
+          color: mark.color,
+        },
+      ],
+      x: mark.px,
+      y: mark.py,
+    };
+  }
   const rows = marks.map((mark) => ({
     name: (data.series[mark.series] as (typeof data.series)[number]).name,
     value: format.value(mark.value, mark.series),
     color: (data.series[mark.series] as (typeof data.series)[number]).color,
   }));
-  const x =
-    data.xType === "datetime"
-      ? (data.categories[active.index] as number)
-      : (data.categories[active.index] ?? String(active.index + 1));
+  if (layout.polar) {
+    // Radar: beside the outermost value of the category.
+    const { cx, cy } = layout.polar;
+    const far = marks.reduce<(typeof marks)[number] | undefined>(
+      (best, mark) =>
+        !best || Math.hypot(mark.px - cx, mark.py - cy) > Math.hypot(best.px - cx, best.py - cy)
+          ? mark
+          : best,
+      undefined,
+    );
+    return {
+      title: format.title(x),
+      rows,
+      x: far ? far.px : cx,
+      y: far ? far.py : cy,
+    };
+  }
   const reach = marks.length
     ? layout.horizontal
       ? Math.max(...marks.map((m) => m.px))

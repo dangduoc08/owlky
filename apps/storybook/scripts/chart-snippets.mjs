@@ -32,6 +32,7 @@ for (const [story, { props }] of Object.entries(chartExamples)) {
       xType: props.xType ?? (props.type === "scatter" ? "numeric" : "category"),
     }),
     ...(props.yTitle ? { "data-ok-y-title": props.yTitle } : {}),
+    ...(props.totalLabel ? { "data-ok-total-label": props.totalLabel } : {}),
     ...(props.valuePrefix ? { "data-ok-value-prefix": props.valuePrefix } : {}),
     ...(props.valueSuffix ? { "data-ok-value-suffix": props.valueSuffix } : {}),
     ...(props.locale ? { "data-ok-locale": props.locale } : {}),

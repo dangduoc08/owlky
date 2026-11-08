@@ -86,7 +86,7 @@ const mutated = (target: Node, options: MutationObserverInit) =>
   });
 
 describe("chart snippets", () => {
-  it("covers every story", () => expect(snippets).toHaveLength(9));
+  it("covers every story", () => expect(snippets).toHaveLength(15));
 
   it.each(snippets)(
     "%s: a figure with a data table, CSP-safe; readable without JavaScript",
@@ -423,5 +423,96 @@ describe("chart runtime", () => {
       .start();
     expect(host.querySelectorAll("[data-ok-chart-plot]")).toHaveLength(1);
     expect(host.querySelectorAll("[data-ok-chart][data-ok-ready]")).toHaveLength(1);
+  });
+});
+
+describe("chart runtime: polar charts (phase 2)", () => {
+  it("pie: draws slices with percentages from the table; the legend hides categories", async () => {
+    const host = sized(snippet("pie"));
+    start();
+    const { root, svg, legend } = parts(host);
+    expect(svg.querySelectorAll("[data-ok-chart-slice]")).toHaveLength(4);
+    expect(
+      [...svg.querySelectorAll("[data-ok-chart-data-label]")].map((label) => label.textContent),
+    ).toEqual(["28.4%", "35.5%", "8.4%", "27.7%"]);
+    expect(legend.map((item) => item.textContent)).toEqual([
+      "Series A",
+      "Series B",
+      "Series C",
+      "Series D",
+    ]);
+    const toggles: unknown[] = [];
+    root.addEventListener("ok:chart:toggle", (event) =>
+      toggles.push((event as CustomEvent).detail),
+    );
+    await userEvent.click(legend[1] as HTMLButtonElement);
+    expect(toggles).toEqual([{ index: 1, hidden: true, hiddenSeries: [1] }]);
+    expect(svg.querySelectorAll("[data-ok-chart-slice]")).toHaveLength(3);
+    expect(instance(host).hiddenSeries).toEqual([1]);
+  });
+
+  it("pie: pointer and keyboard activate slices", () => {
+    const host = sized(snippet("pie"));
+    start();
+    const { plot, svg, tip } = parts(host);
+    hoverAt(plot, plot.clientWidth / 2 + 30, 80);
+    expect(instance(host).active).toEqual({ kind: "index", index: 0 });
+    expect(svg.querySelector("[data-ok-chart-active-slice]")).not.toBeNull();
+    expect(tip.querySelector("[data-ok-chart-tooltip-title]")?.textContent).toBe("Series A");
+    plot.dispatchEvent(new KeyboardEvent("keydown", { key: "End", bubbles: true }));
+    expect(instance(host).active).toEqual({ kind: "index", index: 3 });
+  });
+
+  it("donut and radial bar: totals and center labels from attributes", async () => {
+    const host = sized(`${snippet("donut")}${snippet("radial-bar")}${snippet("stroked-gauge")}`);
+    start();
+    const centers = [...host.querySelectorAll("[data-ok-chart-center]")].map((c) => c.textContent);
+    expect(centers).toEqual(["Total155", "Total2,324", "75%Median ratio"]);
+    const [donut, radial] = [...host.querySelectorAll<HTMLElement>("[data-ok-chart]")];
+    // Changing the total label redraws.
+    const redrawn = mutated(donut as HTMLElement, {
+      attributeFilter: ["data-ok-ready"],
+      subtree: true,
+      childList: true,
+    });
+    (donut as HTMLElement).setAttribute("data-ok-total-label", "Sum");
+    await redrawn;
+    await settle();
+    expect(donut?.querySelector("[data-ok-chart-center-label]")?.textContent).toBe("Sum");
+    expect(radial?.querySelectorAll("[data-ok-chart-track]")).toHaveLength(2);
+    const dashed = host.querySelectorAll("[data-ok-chart]")[2] as HTMLElement;
+    expect(dashed.querySelector("[data-ok-chart-radial]")?.getAttribute("stroke-dasharray")).toBe(
+      "4",
+    );
+    expect(dashed.querySelector("[data-ok-chart-legend]")).toBeNull();
+  });
+
+  it("radar: web, shapes and a tooltip per category", () => {
+    const host = sized(snippet("radar"));
+    start();
+    const { plot, svg, tip } = parts(host);
+    expect(svg.querySelectorAll("[data-ok-chart-series][data-ok-type='radar']")).toHaveLength(3);
+    expect(svg.querySelectorAll("line[data-ok-chart-web]")).toHaveLength(6);
+    plot.dispatchEvent(new KeyboardEvent("keydown", { key: "Home", bubbles: true }));
+    expect(tip.querySelector("[data-ok-chart-tooltip-title]")?.textContent).toBe("2011");
+    expect(tip.querySelectorAll("[data-ok-chart-tooltip-row]")).toHaveLength(3);
+  });
+
+  it("hostile option values fall back", () => {
+    const host = sized(
+      snippet("semi-circle-gauge")
+        .replace('data-ok-start-angle="-90"', `data-ok-start-angle='${HOSTILE}'`)
+        .replace("<figure", `<figure data-ok-dash-array="-4" data-ok-total-label='${HOSTILE}'`),
+    );
+    start();
+    const { svg } = parts(host);
+    expect(svg.querySelector("[data-ok-chart-radial]")?.hasAttribute("stroke-dasharray")).toBe(
+      false,
+    );
+    expect(host.querySelector("img")).toBeNull();
+    // An invalid start angle falls back to 0: the gauge runs from 12 o'clock to 3 o'clock.
+    expect(svg.querySelector("[data-ok-chart-center-label]")?.textContent).toBe(
+      "Used of 24 Mb / 50 Mb",
+    );
   });
 });

@@ -12,7 +12,9 @@ import {
   type ChartXType,
   chartData,
   chartTable,
+  isCircularChart,
 } from "./chart-model.js";
+import { layoutCircular, layoutRadar } from "./chart-polar.js";
 
 /** Everything a chart is drawn from (React props or the HTML root's attributes and table). */
 export interface ChartRenderInput extends ChartFormatOptions {
@@ -32,9 +34,16 @@ export interface ChartRenderInput extends ChartFormatOptions {
   readonly yMax?: number | undefined;
   readonly yTitle?: string | undefined;
   readonly legend?: ChartLegend | undefined;
+  readonly dataLabels?: boolean | undefined;
+  readonly startAngle?: number | undefined;
+  readonly endAngle?: number | undefined;
+  readonly dashArray?: number | undefined;
+  readonly trackWidth?: number | undefined;
+  readonly total?: number | undefined;
+  readonly totalLabel?: string | undefined;
   /** Header of the data table's first column. Default "Category", "Date" or "X". */
   readonly xLabel?: string | undefined;
-  /** Indexes of the series hidden through the legend. */
+  /** Indexes of the series hidden through the legend (categories for circular charts). */
   readonly hidden?: readonly number[] | undefined;
   /** SVG size in px. */
   readonly width: number;
@@ -69,9 +78,20 @@ export const chartIdPrefix = (raw: string): string =>
 /** Data, formatters, layout, legend and table for one render. */
 export function renderChart(input: ChartRenderInput): ChartRender {
   const data = chartData(input);
-  const format = chartFormat(data, input);
+  // Radial bars show percentages unless told otherwise.
+  const format = chartFormat(data, {
+    ...input,
+    valueSuffix: input.valueSuffix ?? (data.type === "radialBar" ? "%" : undefined),
+  });
   const hidden = new Set(input.hidden ?? []);
-  const layout = layoutChart(data, {
+  const circular = isCircularChart(data.type);
+  const layoutOf =
+    data.type === "radar"
+      ? (d: ChartData, o: Parameters<typeof layoutChart>[1]) => layoutRadar(d, o, format)
+      : circular
+        ? (d: ChartData, o: Parameters<typeof layoutChart>[1]) => layoutCircular(d, o, format)
+        : layoutChart;
+  const layout = layoutOf(data, {
     width: input.width,
     height: input.height,
     format,
@@ -87,16 +107,30 @@ export function renderChart(input: ChartRenderInput): ChartRender {
     yMax: input.yMax,
     yTitle: input.yTitle,
     hidden: [...hidden],
+    dataLabels: input.dataLabels,
+    startAngle: input.startAngle,
+    endAngle: input.endAngle,
+    dashArray: input.dashArray,
+    trackWidth: input.trackWidth,
+    total: input.total,
+    totalLabel: input.totalLabel,
   });
-  const legend =
-    input.legend === "none" || data.series.length < 2
-      ? null
-      : data.series.map((series, index) => ({
-          index,
-          name: series.name,
-          color: series.color,
-          hidden: hidden.has(index),
-        }));
+  // Circular charts list their categories (slices, rings); the others their series.
+  const items: ChartLegendItem[] = circular
+    ? (data.series[0]?.points ?? []).map((point) => ({
+        index: point.x,
+        name: format.title(data.categories[point.x] ?? String(point.x + 1)),
+        // `chartData` colors every point of a circular chart.
+        color: point.color as ChartColor,
+        hidden: hidden.has(point.x),
+      }))
+    : data.series.map((series, index) => ({
+        index,
+        name: series.name,
+        color: series.color,
+        hidden: hidden.has(index),
+      }));
+  const legend = input.legend === "none" || items.length < 2 ? null : items;
   const xLabel =
     input.xLabel ??
     (data.xType === "datetime" ? "Date" : data.xType === "numeric" ? "X" : "Category");

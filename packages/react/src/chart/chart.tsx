@@ -39,7 +39,11 @@ import { useControllableState } from "../utils/use-controllable-state.js";
 export interface ChartProps extends Omit<HTMLAttributes<HTMLElement>, "children"> {
   /** Accessible name of the chart and the caption of its data table. */
   label: string;
-  /** Default `"line"`: `area`, `bar` (columns; rows with `horizontal`) or `scatter`. */
+  /**
+   * Default `"line"`: `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`,
+   * `radialBar` or `radar`. Pie, donut and radial bar draw the first series, one slice or ring
+   * per category.
+   */
   type?: ChartType | undefined;
   /** Series: values per category, `[x, y]` pairs (scatter, dates) or `{ x, y, color }`. */
   series: readonly ChartSeries[];
@@ -66,7 +70,22 @@ export interface ChartProps extends Omit<HTMLAttributes<HTMLElement>, "children"
   /** Horizontal bar thickness in % of a category. Default 40. */
   barHeight?: number | undefined;
   yMin?: number | undefined;
+  /** Highest value on the value axis; radial bars: the value of a full ring (default 100). */
   yMax?: number | undefined;
+  /** Prints the values on the chart (percentages on pie and donut slices). */
+  dataLabels?: boolean | undefined;
+  /** Pie, donut and radial bar: start angle in degrees, clockwise from 12 o'clock. Default 0. */
+  startAngle?: number | undefined;
+  /** Pie, donut and radial bar: end angle in degrees. Default 360. */
+  endAngle?: number | undefined;
+  /** Dash length of lines and radial bars in px (default solid). */
+  dashArray?: number | undefined;
+  /** Radial bar track thickness in % of the bar. Default 50. */
+  trackWidth?: number | undefined;
+  /** Donut and radial bar center: the label of the total ("Total"); no total without it. */
+  totalLabel?: string | undefined;
+  /** Donut and radial bar center: the total (default the sum; radial bars the average). */
+  total?: number | undefined;
   /** Title of the value axis. */
   yTitle?: string | undefined;
   /** Text before every value ("$"). */
@@ -81,7 +100,7 @@ export interface ChartProps extends Omit<HTMLAttributes<HTMLElement>, "children"
   locale?: string | undefined;
   /** Header of the data table's first column. */
   xLabel?: string | undefined;
-  /** Controlled: indexes of the series hidden through the legend. */
+  /** Controlled: indexes of the series (pie, donut, radial bar: categories) hidden through the legend. */
   hiddenSeries?: readonly number[] | undefined;
   /** Uncontrolled initial hidden series. */
   defaultHiddenSeries?: readonly number[] | undefined;
@@ -133,6 +152,13 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     barHeight,
     yMin,
     yMax,
+    dataLabels,
+    startAngle,
+    endAngle,
+    dashArray,
+    trackWidth,
+    totalLabel,
+    total,
     yTitle,
     valuePrefix,
     valueSuffix,
@@ -162,6 +188,12 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     barHeight,
     yMin,
     yMax,
+    dataLabels,
+    startAngle,
+    endAngle,
+    dashArray,
+    trackWidth,
+    total,
   });
   const svgHeight = Number(attributes["data-ok-height"] ?? 320);
   const id = useId();
@@ -188,6 +220,11 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
   const validBarHeight = number("data-ok-bar-height") ?? 40;
   const validYMin = number("data-ok-y-min");
   const validYMax = number("data-ok-y-max");
+  const validStartAngle = number("data-ok-start-angle");
+  const validEndAngle = number("data-ok-end-angle");
+  const validDashArray = number("data-ok-dash-array");
+  const validTrackWidth = number("data-ok-track-width");
+  const validTotal = number("data-ok-total");
 
   const render = useMemo(
     () =>
@@ -207,6 +244,13 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         barHeight: validBarHeight,
         yMin: validYMin,
         yMax: validYMax,
+        dataLabels,
+        startAngle: validStartAngle,
+        endAngle: validEndAngle,
+        dashArray: validDashArray,
+        trackWidth: validTrackWidth,
+        total: validTotal,
+        totalLabel,
         yTitle,
         valuePrefix,
         valueSuffix,
@@ -235,6 +279,13 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       validBarHeight,
       validYMin,
       validYMax,
+      dataLabels,
+      validStartAngle,
+      validEndAngle,
+      validDashArray,
+      validTrackWidth,
+      validTotal,
+      totalLabel,
       yTitle,
       valuePrefix,
       valueSuffix,
@@ -335,6 +386,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       ref={ref}
       {...attributes}
       {...(yTitle ? { "data-ok-y-title": yTitle } : {})}
+      {...(totalLabel ? { "data-ok-total-label": totalLabel } : {})}
       {...(valuePrefix ? { "data-ok-value-prefix": valuePrefix } : {})}
       {...(valueSuffix ? { "data-ok-value-suffix": valueSuffix } : {})}
       {...(locale ? { "data-ok-locale": locale } : {})}

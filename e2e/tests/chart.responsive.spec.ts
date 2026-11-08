@@ -12,6 +12,12 @@ const STORIES = [
   "bar",
   "mixed",
   "scatter",
+  "pie",
+  "donut",
+  "radial-bar",
+  "radar",
+  "semi-circle-gauge",
+  "stroked-gauge",
 ];
 
 interface Measure {
