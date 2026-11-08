@@ -61,6 +61,7 @@ export interface Item {
   category: string;
   stock: number;
   restocked: string;
+  counted: string;
   active: boolean;
 }
 
@@ -71,6 +72,7 @@ export const ITEMS: Item[] = NAMES.map((name, i) => ({
   category: ["Brewing", "Serving", "Tools"][i % 3] as string,
   stock: 5 + ((i * 13) % 40),
   restocked: `2025-05-${String(1 + ((i * 4) % 28)).padStart(2, "0")}`,
+  counted: `2025-05-${String(2 + ((i * 3) % 27)).padStart(2, "0")}T${String(8 + ((i * 3) % 10)).padStart(2, "0")}:${String((i * 15) % 60).padStart(2, "0")}:00`,
   active: i % 3 !== 2,
 }));
 
@@ -86,6 +88,14 @@ const itemColumns: GridColDef<Item>[] = [
   },
   { field: "stock", headerName: "Stock", type: "number", width: 110, editable: true },
   { field: "restocked", headerName: "Restocked", type: "date", width: 210 },
+  {
+    field: "counted",
+    headerName: "Last counted",
+    type: "dateTime",
+    width: 280,
+    // "2025-05-02 08:00": the same text on the server and in every time zone.
+    valueFormatter: (value) => String(value).replace("T", " ").slice(0, 16),
+  },
   { field: "active", headerName: "Active", type: "boolean", width: 120 },
 ];
 

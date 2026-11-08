@@ -447,7 +447,7 @@ export function Customers() {
   {
     id: "header-filters",
     title: "Filter from the headers",
-    body: "`headerFilters` adds a row of fields under the column headers. Each field filters its column with the column type's first operator, and shows that operator as its label: text contains, a number equals, a date is. Booleans and choices get a list, and dates get a date picker. The fields and the filter panel share one filter model. Up and Down move from a field to the cells. Date filters in the filter panel use a date picker too.",
+    body: "`headerFilters` adds a row of fields under the column headers. Each field filters its column with the column type's first operator, and shows that operator as its label: text contains, a number equals, a date is. Booleans and choices get a list, dates get a date picker, and date times (`dateTime` columns) get a date time picker. The fields and the filter panel share one filter model. Up and Down move from a field to the cells. Date and date time filters in the filter panel use the same pickers.",
     react: `<DataGrid aria-label="Inventory" rows={items} columns={columns} headerFilters />`,
   },
   {

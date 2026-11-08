@@ -52,6 +52,14 @@
         </label>
         <label data-ok-form-control-label data-ok-label-placement="end">
           <span data-ok-switch data-ok-color="primary" data-ok-size="small">
+            <input type="checkbox" role="switch" data-ok-switch-input data-ok-field="counted" checked>
+            <span data-ok-switch-track aria-hidden="true"></span>
+            <span data-ok-switch-thumb aria-hidden="true"></span>
+          </span>
+          <span data-ok-form-control-label-text>Last counted</span>
+        </label>
+        <label data-ok-form-control-label data-ok-label-placement="end">
+          <span data-ok-switch data-ok-color="primary" data-ok-size="small">
             <input type="checkbox" role="switch" data-ok-switch-input data-ok-field="active" checked>
             <span data-ok-switch-track aria-hidden="true"></span>
             <span data-ok-switch-thumb aria-hidden="true"></span>
@@ -153,6 +161,174 @@
           </dialog>
         </div>
       </template>
+      <template data-ok-data-grid-date-time="grid-cells-filter-value">
+        <div data-ok-date-picker data-ok-picker-variant="responsive" data-ok-orientation="portrait" data-ok-value-type="date-time">
+          <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none" data-ok-date-field data-ok-format-density="dense" data-ok-value-type="date-time" data-ok-format="MM/DD/YYYY hh:mm A">
+            <label data-ok-text-field-label id="grid-cells-filter-value-label" for="grid-cells-filter-value">Value</label>
+            <div data-ok-text-field-control>
+              <div id="grid-cells-filter-value" role="group" data-ok-text-field-input data-ok-date-field-sections aria-labelledby="grid-cells-filter-value-label"><span data-ok-date-field-section><span data-ok-date-field-content data-ok-section="month" role="spinbutton" aria-label="Month" aria-valuemin="1" aria-valuemax="12" aria-valuetext="Empty" tabindex="0" contenteditable="true" inputmode="numeric" spellcheck="false" autocapitalize="off" autocorrect="off" enterkeyhint="next">MM</span><span data-ok-date-field-separator>/</span></span><span data-ok-date-field-section><span data-ok-date-field-content data-ok-section="day" role="spinbutton" aria-label="Day" aria-valuemin="1" aria-valuemax="31" aria-valuetext="Empty" tabindex="-1" contenteditable="true" inputmode="numeric" spellcheck="false" autocapitalize="off" autocorrect="off" enterkeyhint="next">DD</span><span data-ok-date-field-separator>/</span></span><span data-ok-date-field-section><span data-ok-date-field-content data-ok-section="year" role="spinbutton" aria-label="Year" aria-valuemin="0" aria-valuemax="9999" aria-valuetext="Empty" tabindex="-1" contenteditable="true" inputmode="numeric" spellcheck="false" autocapitalize="off" autocorrect="off" enterkeyhint="next">YYYY</span><span data-ok-date-field-separator> </span></span><span data-ok-date-field-section><span data-ok-date-field-content data-ok-section="hours" role="spinbutton" aria-label="Hours" aria-valuemin="1" aria-valuemax="12" aria-valuetext="Empty" tabindex="-1" contenteditable="true" inputmode="numeric" spellcheck="false" autocapitalize="off" autocorrect="off" enterkeyhint="next">hh</span><span data-ok-date-field-separator>:</span></span><span data-ok-date-field-section><span data-ok-date-field-content data-ok-section="minutes" role="spinbutton" aria-label="Minutes" aria-valuemin="0" aria-valuemax="59" aria-valuetext="Empty" tabindex="-1" contenteditable="true" inputmode="numeric" spellcheck="false" autocapitalize="off" autocorrect="off" enterkeyhint="next">mm</span><span data-ok-date-field-separator> </span></span><span data-ok-date-field-section><span data-ok-date-field-content data-ok-section="meridiem" role="spinbutton" aria-label="Meridiem" aria-valuemin="0" aria-valuemax="1" aria-valuetext="Empty" tabindex="-1" contenteditable="true" inputmode="text" spellcheck="false" autocapitalize="off" autocorrect="off" enterkeyhint="done">aa</span></span></div>
+              <input type="hidden" data-ok-date-field-input value="">
+              <span data-ok-text-field-adornment="end">
+                <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="md" data-ok-edge="end" data-ok-date-picker-open aria-label="Choose date" aria-haspopup="dialog"><svg aria-hidden="true" viewBox="0 0 24 24"><path fill="currentColor" d="M7 2a1 1 0 0 1 1 1v1h8V3a1 1 0 1 1 2 0v1h1a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3h1V3a1 1 0 0 1 1-1Zm13 8H4v9a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-9Zm-4 5a1 1 0 0 1 1 1v1a1 1 0 0 1-2 0v-1a1 1 0 0 1 1-1Z" /></svg></button>
+              </span>
+              <fieldset data-ok-text-field-outline aria-hidden="true">
+                <legend><span>Value</span></legend>
+              </fieldset>
+            </div>
+          </div>
+          <div popover="manual" data-ok-popover data-ok-placement="bottom-start" data-ok-disable-auto-focus role="dialog" aria-label="Select date &amp; time" data-ok-date-picker-paper>
+            <span data-ok-popover-arrow aria-hidden="true"></span>
+            <div data-ok-picker-layout data-ok-orientation="portrait">
+              <div data-ok-picker-toolbar hidden>
+                <span data-ok-picker-toolbar-overline id="grid-cells-filter-value-toolbar">Select date &amp; time</span>
+                <div data-ok-picker-toolbar-content>
+                  <div data-ok-picker-toolbar-date>
+                    <button type="button" data-ok-picker-toolbar-button data-ok-view="year" tabindex="-1">––</button>
+                    <button type="button" data-ok-picker-toolbar-button data-ok-view="day" data-ok-selected tabindex="-1">––</button>
+                  </div>
+                  <div data-ok-picker-toolbar-time>
+                    <span data-ok-picker-toolbar-part>
+                      <button type="button" data-ok-picker-toolbar-button data-ok-view="hours" tabindex="-1">––</button>
+                    </span>
+                    <span data-ok-picker-toolbar-part>
+                      <span data-ok-picker-toolbar-separator aria-hidden="true">:</span>
+                      <button type="button" data-ok-picker-toolbar-button data-ok-view="minutes" tabindex="-1">––</button>
+                    </span>
+                  </div>
+                  <div data-ok-picker-toolbar-ampm>
+                    <button type="button" data-ok-picker-toolbar-meridiem="am" aria-pressed="false">AM</button>
+                    <button type="button" data-ok-picker-toolbar-meridiem="pm" aria-pressed="false">PM</button>
+                  </div>
+                </div>
+              </div>
+              <div data-ok-tabs data-ok-variant="fullWidth" data-ok-orientation="horizontal" data-ok-text-color="inherit" data-ok-indicator-color="inherit" data-ok-scroll-buttons="auto" data-ok-picker-tabs hidden>
+                <div data-ok-tabs-scroller>
+                  <div role="tablist" data-ok-tabs-list>
+                    <button type="button" role="tab" data-ok-tab aria-label="pick date" value="date" aria-selected="true" tabindex="0"><svg aria-hidden="true" viewBox="0 0 24 24"><path fill="currentColor" d="M7 2a1 1 0 0 1 1 1v1h8V3a1 1 0 1 1 2 0v1h1a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3h1V3a1 1 0 0 1 1-1Zm13 8H4v9a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-9Zm-4 5a1 1 0 0 1 1 1v1a1 1 0 0 1-2 0v-1a1 1 0 0 1 1-1Z" /></svg></button>
+                    <button type="button" role="tab" data-ok-tab aria-label="pick time" value="time" aria-selected="false" tabindex="-1"><svg aria-hidden="true" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20Zm0 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm0 2a1 1 0 0 1 1 1v4.59l2.7 2.7a1 1 0 0 1-1.4 1.42l-3-3A1 1 0 0 1 11 12V7a1 1 0 0 1 1-1Z" /></svg></button>
+                  </div>
+                  <span data-ok-tabs-indicator></span>
+                </div>
+              </div>
+              <div data-ok-picker-content>
+                <div id="grid-cells-filter-value-calendar" data-ok-date-calendar data-ok-months-per-row="3" data-ok-years-per-row="4" data-ok-years-order="asc" data-ok-view="day" data-ok-views="year day" data-ok-month="2026-11">
+                  <div data-ok-date-calendar-header>
+                    <div data-ok-date-calendar-label id="grid-cells-filter-value-calendar-label" aria-live="polite">November 2026</div>
+                    <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-date-calendar-switch aria-label="calendar view is open, switch to year view"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6" /></svg></button>
+                    <div data-ok-date-calendar-nav>
+                      <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="md" data-ok-date-calendar-prev aria-label="Previous month" title="Previous month"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6" /></svg></button>
+                      <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="md" data-ok-date-calendar-next aria-label="Next month" title="Next month"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6" /></svg></button>
+                    </div>
+                  </div>
+                  <div role="grid" data-ok-day-calendar aria-labelledby="grid-cells-filter-value-calendar-label">
+                    <div role="row" data-ok-day-calendar-header><span role="columnheader" aria-label="Sunday">S</span><span role="columnheader" aria-label="Monday">M</span><span role="columnheader" aria-label="Tuesday">T</span><span role="columnheader" aria-label="Wednesday">W</span><span role="columnheader" aria-label="Thursday">T</span><span role="columnheader" aria-label="Friday">F</span><span role="columnheader" aria-label="Saturday">S</span></div>
+                    <div role="rowgroup">
+                      <div role="row" aria-rowindex="1">
+                        <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-01" aria-colindex="1" aria-selected="false" tabindex="-1">1</button>
+                        <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-02" aria-colindex="2" aria-selected="false" tabindex="-1">2</button>
+                        <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-03" aria-colindex="3" aria-selected="false" tabindex="-1">3</button>
+                        <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-04" aria-colindex="4" aria-selected="false" tabindex="-1">4</button>
+                        <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-05" aria-colindex="5" aria-selected="false" tabindex="-1">5</button>
+                        <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-06" aria-colindex="6" aria-selected="false" tabindex="-1">6</button>
+                        <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-07" aria-colindex="7" aria-selected="false" tabindex="-1">7</button>
+                      </div>
+                      <div role="row" aria-rowindex="2">
+                        <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-08" aria-colindex="1" aria-selected="false" aria-current="date" data-ok-today tabindex="0">8</button>
+                        <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-09" aria-colindex="2" aria-selected="false" tabindex="-1">9</button>
+                        <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-10" aria-colindex="3" aria-selected="false" tabindex="-1">10</button>
+                        <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-11" aria-colindex="4" aria-selected="false" tabindex="-1">11</button>
+                        <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-12" aria-colindex="5" aria-selected="false" tabindex="-1">12</button>
+                        <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-13" aria-colindex="6" aria-selected="false" tabindex="-1">13</button>
+                        <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-14" aria-colindex="7" aria-selected="false" tabindex="-1">14</button>
+                      </div>
+                      <div role="row" aria-rowindex="3">
+                        <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-15" aria-colindex="1" aria-selected="false" tabindex="-1">15</button>
+                        <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-16" aria-colindex="2" aria-selected="false" tabindex="-1">16</button>
+                        <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-17" aria-colindex="3" aria-selected="false" tabindex="-1">17</button>
+                        <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-18" aria-colindex="4" aria-selected="false" tabindex="-1">18</button>
+                        <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-19" aria-colindex="5" aria-selected="false" tabindex="-1">19</button>
+                        <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-20" aria-colindex="6" aria-selected="false" tabindex="-1">20</button>
+                        <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-21" aria-colindex="7" aria-selected="false" tabindex="-1">21</button>
+                      </div>
+                      <div role="row" aria-rowindex="4">
+                        <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-22" aria-colindex="1" aria-selected="false" tabindex="-1">22</button>
+                        <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-23" aria-colindex="2" aria-selected="false" tabindex="-1">23</button>
+                        <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-24" aria-colindex="3" aria-selected="false" tabindex="-1">24</button>
+                        <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-25" aria-colindex="4" aria-selected="false" tabindex="-1">25</button>
+                        <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-26" aria-colindex="5" aria-selected="false" tabindex="-1">26</button>
+                        <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-27" aria-colindex="6" aria-selected="false" tabindex="-1">27</button>
+                        <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-28" aria-colindex="7" aria-selected="false" tabindex="-1">28</button>
+                      </div>
+                      <div role="row" aria-rowindex="5">
+                        <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-29" aria-colindex="1" aria-selected="false" tabindex="-1">29</button>
+                        <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-30" aria-colindex="2" aria-selected="false" tabindex="-1">30</button>
+                        <span role="gridcell" data-ok-day-filler></span>
+                        <span role="gridcell" data-ok-day-filler></span>
+                        <span role="gridcell" data-ok-day-filler></span>
+                        <span role="gridcell" data-ok-day-filler></span>
+                        <span role="gridcell" data-ok-day-filler></span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div role="group" data-ok-multi-section-digital-clock data-ok-ampm="true" data-ok-views="hours minutes" data-ok-time-steps="1 5 5" id="grid-cells-filter-value-digital-clock">
+                  <ul role="listbox" data-ok-digital-clock-section="hours" aria-label="Select hours">
+                    <li role="option" data-ok-digital-clock-item data-ok-value="12" tabindex="0" aria-selected="false">12</li>
+                    <li role="option" data-ok-digital-clock-item data-ok-value="1" tabindex="-1" aria-selected="false">01</li>
+                    <li role="option" data-ok-digital-clock-item data-ok-value="2" tabindex="-1" aria-selected="false">02</li>
+                    <li role="option" data-ok-digital-clock-item data-ok-value="3" tabindex="-1" aria-selected="false">03</li>
+                    <li role="option" data-ok-digital-clock-item data-ok-value="4" tabindex="-1" aria-selected="false">04</li>
+                    <li role="option" data-ok-digital-clock-item data-ok-value="5" tabindex="-1" aria-selected="false">05</li>
+                    <li role="option" data-ok-digital-clock-item data-ok-value="6" tabindex="-1" aria-selected="false">06</li>
+                    <li role="option" data-ok-digital-clock-item data-ok-value="7" tabindex="-1" aria-selected="false">07</li>
+                    <li role="option" data-ok-digital-clock-item data-ok-value="8" tabindex="-1" aria-selected="false">08</li>
+                    <li role="option" data-ok-digital-clock-item data-ok-value="9" tabindex="-1" aria-selected="false">09</li>
+                    <li role="option" data-ok-digital-clock-item data-ok-value="10" tabindex="-1" aria-selected="false">10</li>
+                    <li role="option" data-ok-digital-clock-item data-ok-value="11" tabindex="-1" aria-selected="false">11</li>
+                  </ul>
+                  <ul role="listbox" data-ok-digital-clock-section="minutes" aria-label="Select minutes">
+                    <li role="option" data-ok-digital-clock-item data-ok-value="0" tabindex="0" aria-selected="false">00</li>
+                    <li role="option" data-ok-digital-clock-item data-ok-value="5" tabindex="-1" aria-selected="false">05</li>
+                    <li role="option" data-ok-digital-clock-item data-ok-value="10" tabindex="-1" aria-selected="false">10</li>
+                    <li role="option" data-ok-digital-clock-item data-ok-value="15" tabindex="-1" aria-selected="false">15</li>
+                    <li role="option" data-ok-digital-clock-item data-ok-value="20" tabindex="-1" aria-selected="false">20</li>
+                    <li role="option" data-ok-digital-clock-item data-ok-value="25" tabindex="-1" aria-selected="false">25</li>
+                    <li role="option" data-ok-digital-clock-item data-ok-value="30" tabindex="-1" aria-selected="false">30</li>
+                    <li role="option" data-ok-digital-clock-item data-ok-value="35" tabindex="-1" aria-selected="false">35</li>
+                    <li role="option" data-ok-digital-clock-item data-ok-value="40" tabindex="-1" aria-selected="false">40</li>
+                    <li role="option" data-ok-digital-clock-item data-ok-value="45" tabindex="-1" aria-selected="false">45</li>
+                    <li role="option" data-ok-digital-clock-item data-ok-value="50" tabindex="-1" aria-selected="false">50</li>
+                    <li role="option" data-ok-digital-clock-item data-ok-value="55" tabindex="-1" aria-selected="false">55</li>
+                  </ul>
+                  <ul role="listbox" data-ok-digital-clock-section="meridiem" aria-label="Select meridiem">
+                    <li role="option" data-ok-digital-clock-item data-ok-value="0" tabindex="0" aria-selected="false">AM</li>
+                    <li role="option" data-ok-digital-clock-item data-ok-value="1" tabindex="-1" aria-selected="false">PM</li>
+                  </ul>
+                </div>
+                <div id="grid-cells-filter-value-clock" data-ok-time-clock data-ok-ampm="true" data-ok-view="hours" data-ok-views="hours minutes" hidden>
+                  <div data-ok-time-clock-dial>
+                    <span data-ok-time-clock-pin></span>
+                    <span data-ok-time-clock-pointer hidden></span>
+                    <div role="listbox" data-ok-time-clock-options tabindex="0" aria-label="Select hours. No time selected"><span id="grid-cells-filter-value-clock-hours-1" role="option" data-ok-time-clock-number data-ok-position="1" data-ok-value="1" aria-label="1 hours">1</span><span id="grid-cells-filter-value-clock-hours-2" role="option" data-ok-time-clock-number data-ok-position="2" data-ok-value="2" aria-label="2 hours">2</span><span id="grid-cells-filter-value-clock-hours-3" role="option" data-ok-time-clock-number data-ok-position="3" data-ok-value="3" aria-label="3 hours">3</span><span id="grid-cells-filter-value-clock-hours-4" role="option" data-ok-time-clock-number data-ok-position="4" data-ok-value="4" aria-label="4 hours">4</span><span id="grid-cells-filter-value-clock-hours-5" role="option" data-ok-time-clock-number data-ok-position="5" data-ok-value="5" aria-label="5 hours">5</span><span id="grid-cells-filter-value-clock-hours-6" role="option" data-ok-time-clock-number data-ok-position="6" data-ok-value="6" aria-label="6 hours">6</span><span id="grid-cells-filter-value-clock-hours-7" role="option" data-ok-time-clock-number data-ok-position="7" data-ok-value="7" aria-label="7 hours">7</span><span id="grid-cells-filter-value-clock-hours-8" role="option" data-ok-time-clock-number data-ok-position="8" data-ok-value="8" aria-label="8 hours">8</span><span id="grid-cells-filter-value-clock-hours-9" role="option" data-ok-time-clock-number data-ok-position="9" data-ok-value="9" aria-label="9 hours">9</span><span id="grid-cells-filter-value-clock-hours-10" role="option" data-ok-time-clock-number data-ok-position="10" data-ok-value="10" aria-label="10 hours">10</span><span id="grid-cells-filter-value-clock-hours-11" role="option" data-ok-time-clock-number data-ok-position="11" data-ok-value="11" aria-label="11 hours">11</span><span id="grid-cells-filter-value-clock-hours-12" role="option" data-ok-time-clock-number data-ok-position="0" data-ok-value="12" aria-label="12 hours">12</span></div>
+                  </div>
+                  <div data-ok-time-clock-nav>
+                    <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-time-clock-prev aria-label="Open previous view" title="Open previous view" disabled><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6" /></svg></button>
+                    <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-time-clock-next aria-label="Open next view" title="Open next view"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6" /></svg></button>
+                  </div>
+                </div>
+              </div>
+              <div data-ok-picker-actions>
+                <button type="button" data-ok-button data-ok-variant="text" data-ok-color="inherit" data-ok-size="md" data-ok-picker-action="cancel"><span data-ok-button-label>Cancel</span></button>
+                <button type="button" data-ok-button data-ok-variant="contained" data-ok-color="inherit" data-ok-size="md" data-ok-picker-action="accept"><span data-ok-button-label>OK</span></button>
+                <button type="button" data-ok-button data-ok-variant="contained" data-ok-color="inherit" data-ok-size="md" data-ok-picker-action="nextOrAccept" hidden><span data-ok-button-label>Next</span></button>
+              </div>
+            </div>
+          </div>
+          <dialog data-ok-dialog data-ok-max-width="xs" data-ok-scroll="paper" aria-label="Select date &amp; time" data-ok-date-picker-dialog>
+            <div data-ok-dialog-paper></div>
+          </dialog>
+        </div>
+      </template>
       <template data-ok-data-grid-any-of="grid-cells-filter-value">
         <div data-ok-autocomplete data-ok-multiple data-ok-free-solo>
           <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-full-width data-ok-margin="none">
@@ -186,6 +362,7 @@
                 <option value="category">Category</option>
                 <option value="stock">Stock</option>
                 <option value="restocked">Restocked</option>
+                <option value="counted">Last counted</option>
                 <option value="active">Active</option>
               </select>
               <svg data-ok-text-field-select-icon aria-hidden="true" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
@@ -243,7 +420,7 @@
       </ul>
     </div>
   </div>
-  <div role="grid" data-ok-data-grid-main aria-label="Inventory" aria-rowcount="10" aria-colcount="5">
+  <div role="grid" data-ok-data-grid-main aria-label="Inventory" aria-rowcount="10" aria-colcount="6">
     <div role="rowgroup" data-ok-data-grid-header>
       <div role="row" aria-rowindex="1">
         <div role="columnheader" aria-colindex="1" data-ok-field="name" data-ok-type="string" data-ok-align="left" data-ok-width="140" data-ok-editable aria-sort="none" tabindex="-1">
@@ -270,7 +447,13 @@
           <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-menu-button tabindex="-1" aria-label="Restocked column menu" aria-haspopup="menu" aria-expanded="false" aria-controls="grid-cells-column-menu"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg></button>
           <span data-ok-data-grid-resize aria-hidden="true"></span>
         </div>
-        <div role="columnheader" aria-colindex="5" data-ok-field="active" data-ok-type="boolean" data-ok-align="left" data-ok-width="120" aria-sort="none" tabindex="-1">
+        <div role="columnheader" aria-colindex="5" data-ok-field="counted" data-ok-type="dateTime" data-ok-align="left" data-ok-width="280" aria-sort="none" tabindex="-1">
+          <span data-ok-data-grid-header-title>Last counted</span>
+          <span data-ok-data-grid-sort-icon><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 4l-6 6h4v10h4V10h4z" /></svg></span>
+          <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-menu-button tabindex="-1" aria-label="Last counted column menu" aria-haspopup="menu" aria-expanded="false" aria-controls="grid-cells-column-menu"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg></button>
+          <span data-ok-data-grid-resize aria-hidden="true"></span>
+        </div>
+        <div role="columnheader" aria-colindex="6" data-ok-field="active" data-ok-type="boolean" data-ok-align="left" data-ok-width="120" aria-sort="none" tabindex="-1">
           <span data-ok-data-grid-header-title>Active</span>
           <span data-ok-data-grid-sort-icon><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 4l-6 6h4v10h4V10h4z" /></svg></span>
           <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-menu-button tabindex="-1" aria-label="Active column menu" aria-haspopup="menu" aria-expanded="false" aria-controls="grid-cells-column-menu"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg></button>
@@ -409,7 +592,175 @@
             </dialog>
           </div>
         </div>
-        <div data-ok-filter-field="active" role="columnheader" aria-colindex="5" aria-label="Active filter" data-ok-data-grid-header-filter tabindex="-1">
+        <div data-ok-filter-field="counted" role="columnheader" aria-colindex="5" aria-label="Last counted filter" data-ok-data-grid-header-filter tabindex="-1">
+          <div data-ok-date-picker data-ok-picker-variant="responsive" data-ok-orientation="portrait" data-ok-value-type="date-time">
+            <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none" data-ok-date-field data-ok-format-density="dense" data-ok-value-type="date-time" data-ok-format="MM/DD/YYYY hh:mm A">
+              <label data-ok-text-field-label id="grid-cells-header-filter-counted-label" for="grid-cells-header-filter-counted">is</label>
+              <div data-ok-text-field-control>
+                <div id="grid-cells-header-filter-counted" role="group" data-ok-text-field-input data-ok-date-field-sections aria-labelledby="grid-cells-header-filter-counted-label"><span data-ok-date-field-section><span data-ok-date-field-content data-ok-section="month" role="spinbutton" aria-label="Month" aria-valuemin="1" aria-valuemax="12" aria-valuetext="Empty" tabindex="0" contenteditable="true" inputmode="numeric" spellcheck="false" autocapitalize="off" autocorrect="off" enterkeyhint="next">MM</span><span data-ok-date-field-separator>/</span></span><span data-ok-date-field-section><span data-ok-date-field-content data-ok-section="day" role="spinbutton" aria-label="Day" aria-valuemin="1" aria-valuemax="31" aria-valuetext="Empty" tabindex="-1" contenteditable="true" inputmode="numeric" spellcheck="false" autocapitalize="off" autocorrect="off" enterkeyhint="next">DD</span><span data-ok-date-field-separator>/</span></span><span data-ok-date-field-section><span data-ok-date-field-content data-ok-section="year" role="spinbutton" aria-label="Year" aria-valuemin="0" aria-valuemax="9999" aria-valuetext="Empty" tabindex="-1" contenteditable="true" inputmode="numeric" spellcheck="false" autocapitalize="off" autocorrect="off" enterkeyhint="next">YYYY</span><span data-ok-date-field-separator> </span></span><span data-ok-date-field-section><span data-ok-date-field-content data-ok-section="hours" role="spinbutton" aria-label="Hours" aria-valuemin="1" aria-valuemax="12" aria-valuetext="Empty" tabindex="-1" contenteditable="true" inputmode="numeric" spellcheck="false" autocapitalize="off" autocorrect="off" enterkeyhint="next">hh</span><span data-ok-date-field-separator>:</span></span><span data-ok-date-field-section><span data-ok-date-field-content data-ok-section="minutes" role="spinbutton" aria-label="Minutes" aria-valuemin="0" aria-valuemax="59" aria-valuetext="Empty" tabindex="-1" contenteditable="true" inputmode="numeric" spellcheck="false" autocapitalize="off" autocorrect="off" enterkeyhint="next">mm</span><span data-ok-date-field-separator> </span></span><span data-ok-date-field-section><span data-ok-date-field-content data-ok-section="meridiem" role="spinbutton" aria-label="Meridiem" aria-valuemin="0" aria-valuemax="1" aria-valuetext="Empty" tabindex="-1" contenteditable="true" inputmode="text" spellcheck="false" autocapitalize="off" autocorrect="off" enterkeyhint="done">aa</span></span></div>
+                <input type="hidden" data-ok-date-field-input value="">
+                <span data-ok-text-field-adornment="end">
+                  <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="md" data-ok-edge="end" data-ok-date-picker-open aria-label="Choose date" aria-haspopup="dialog"><svg aria-hidden="true" viewBox="0 0 24 24"><path fill="currentColor" d="M7 2a1 1 0 0 1 1 1v1h8V3a1 1 0 1 1 2 0v1h1a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3h1V3a1 1 0 0 1 1-1Zm13 8H4v9a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-9Zm-4 5a1 1 0 0 1 1 1v1a1 1 0 0 1-2 0v-1a1 1 0 0 1 1-1Z" /></svg></button>
+                </span>
+                <fieldset data-ok-text-field-outline aria-hidden="true">
+                  <legend><span>is</span></legend>
+                </fieldset>
+              </div>
+            </div>
+            <div popover="manual" data-ok-popover data-ok-placement="bottom-start" data-ok-disable-auto-focus role="dialog" aria-label="Select date &amp; time" data-ok-date-picker-paper>
+              <span data-ok-popover-arrow aria-hidden="true"></span>
+              <div data-ok-picker-layout data-ok-orientation="portrait">
+                <div data-ok-picker-toolbar hidden>
+                  <span data-ok-picker-toolbar-overline id="grid-cells-header-filter-counted-toolbar">Select date &amp; time</span>
+                  <div data-ok-picker-toolbar-content>
+                    <div data-ok-picker-toolbar-date>
+                      <button type="button" data-ok-picker-toolbar-button data-ok-view="year" tabindex="-1">––</button>
+                      <button type="button" data-ok-picker-toolbar-button data-ok-view="day" data-ok-selected tabindex="-1">––</button>
+                    </div>
+                    <div data-ok-picker-toolbar-time>
+                      <span data-ok-picker-toolbar-part>
+                        <button type="button" data-ok-picker-toolbar-button data-ok-view="hours" tabindex="-1">––</button>
+                      </span>
+                      <span data-ok-picker-toolbar-part>
+                        <span data-ok-picker-toolbar-separator aria-hidden="true">:</span>
+                        <button type="button" data-ok-picker-toolbar-button data-ok-view="minutes" tabindex="-1">––</button>
+                      </span>
+                    </div>
+                    <div data-ok-picker-toolbar-ampm>
+                      <button type="button" data-ok-picker-toolbar-meridiem="am" aria-pressed="false">AM</button>
+                      <button type="button" data-ok-picker-toolbar-meridiem="pm" aria-pressed="false">PM</button>
+                    </div>
+                  </div>
+                </div>
+                <div data-ok-tabs data-ok-variant="fullWidth" data-ok-orientation="horizontal" data-ok-text-color="inherit" data-ok-indicator-color="inherit" data-ok-scroll-buttons="auto" data-ok-picker-tabs hidden>
+                  <div data-ok-tabs-scroller>
+                    <div role="tablist" data-ok-tabs-list>
+                      <button type="button" role="tab" data-ok-tab aria-label="pick date" value="date" aria-selected="true" tabindex="0"><svg aria-hidden="true" viewBox="0 0 24 24"><path fill="currentColor" d="M7 2a1 1 0 0 1 1 1v1h8V3a1 1 0 1 1 2 0v1h1a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3h1V3a1 1 0 0 1 1-1Zm13 8H4v9a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-9Zm-4 5a1 1 0 0 1 1 1v1a1 1 0 0 1-2 0v-1a1 1 0 0 1 1-1Z" /></svg></button>
+                      <button type="button" role="tab" data-ok-tab aria-label="pick time" value="time" aria-selected="false" tabindex="-1"><svg aria-hidden="true" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20Zm0 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm0 2a1 1 0 0 1 1 1v4.59l2.7 2.7a1 1 0 0 1-1.4 1.42l-3-3A1 1 0 0 1 11 12V7a1 1 0 0 1 1-1Z" /></svg></button>
+                    </div>
+                    <span data-ok-tabs-indicator></span>
+                  </div>
+                </div>
+                <div data-ok-picker-content>
+                  <div id="grid-cells-header-filter-counted-calendar" data-ok-date-calendar data-ok-months-per-row="3" data-ok-years-per-row="4" data-ok-years-order="asc" data-ok-view="day" data-ok-views="year day" data-ok-month="2026-11">
+                    <div data-ok-date-calendar-header>
+                      <div data-ok-date-calendar-label id="grid-cells-header-filter-counted-calendar-label" aria-live="polite">November 2026</div>
+                      <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-date-calendar-switch aria-label="calendar view is open, switch to year view"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6" /></svg></button>
+                      <div data-ok-date-calendar-nav>
+                        <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="md" data-ok-date-calendar-prev aria-label="Previous month" title="Previous month"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6" /></svg></button>
+                        <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="md" data-ok-date-calendar-next aria-label="Next month" title="Next month"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6" /></svg></button>
+                      </div>
+                    </div>
+                    <div role="grid" data-ok-day-calendar aria-labelledby="grid-cells-header-filter-counted-calendar-label">
+                      <div role="row" data-ok-day-calendar-header><span role="columnheader" aria-label="Sunday">S</span><span role="columnheader" aria-label="Monday">M</span><span role="columnheader" aria-label="Tuesday">T</span><span role="columnheader" aria-label="Wednesday">W</span><span role="columnheader" aria-label="Thursday">T</span><span role="columnheader" aria-label="Friday">F</span><span role="columnheader" aria-label="Saturday">S</span></div>
+                      <div role="rowgroup">
+                        <div role="row" aria-rowindex="1">
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-01" aria-colindex="1" aria-selected="false" tabindex="-1">1</button>
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-02" aria-colindex="2" aria-selected="false" tabindex="-1">2</button>
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-03" aria-colindex="3" aria-selected="false" tabindex="-1">3</button>
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-04" aria-colindex="4" aria-selected="false" tabindex="-1">4</button>
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-05" aria-colindex="5" aria-selected="false" tabindex="-1">5</button>
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-06" aria-colindex="6" aria-selected="false" tabindex="-1">6</button>
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-07" aria-colindex="7" aria-selected="false" tabindex="-1">7</button>
+                        </div>
+                        <div role="row" aria-rowindex="2">
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-08" aria-colindex="1" aria-selected="false" aria-current="date" data-ok-today tabindex="0">8</button>
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-09" aria-colindex="2" aria-selected="false" tabindex="-1">9</button>
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-10" aria-colindex="3" aria-selected="false" tabindex="-1">10</button>
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-11" aria-colindex="4" aria-selected="false" tabindex="-1">11</button>
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-12" aria-colindex="5" aria-selected="false" tabindex="-1">12</button>
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-13" aria-colindex="6" aria-selected="false" tabindex="-1">13</button>
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-14" aria-colindex="7" aria-selected="false" tabindex="-1">14</button>
+                        </div>
+                        <div role="row" aria-rowindex="3">
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-15" aria-colindex="1" aria-selected="false" tabindex="-1">15</button>
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-16" aria-colindex="2" aria-selected="false" tabindex="-1">16</button>
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-17" aria-colindex="3" aria-selected="false" tabindex="-1">17</button>
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-18" aria-colindex="4" aria-selected="false" tabindex="-1">18</button>
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-19" aria-colindex="5" aria-selected="false" tabindex="-1">19</button>
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-20" aria-colindex="6" aria-selected="false" tabindex="-1">20</button>
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-21" aria-colindex="7" aria-selected="false" tabindex="-1">21</button>
+                        </div>
+                        <div role="row" aria-rowindex="4">
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-22" aria-colindex="1" aria-selected="false" tabindex="-1">22</button>
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-23" aria-colindex="2" aria-selected="false" tabindex="-1">23</button>
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-24" aria-colindex="3" aria-selected="false" tabindex="-1">24</button>
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-25" aria-colindex="4" aria-selected="false" tabindex="-1">25</button>
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-26" aria-colindex="5" aria-selected="false" tabindex="-1">26</button>
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-27" aria-colindex="6" aria-selected="false" tabindex="-1">27</button>
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-28" aria-colindex="7" aria-selected="false" tabindex="-1">28</button>
+                        </div>
+                        <div role="row" aria-rowindex="5">
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-29" aria-colindex="1" aria-selected="false" tabindex="-1">29</button>
+                          <button type="button" role="gridcell" data-ok-picker-day data-ok-date="2026-11-30" aria-colindex="2" aria-selected="false" tabindex="-1">30</button>
+                          <span role="gridcell" data-ok-day-filler></span>
+                          <span role="gridcell" data-ok-day-filler></span>
+                          <span role="gridcell" data-ok-day-filler></span>
+                          <span role="gridcell" data-ok-day-filler></span>
+                          <span role="gridcell" data-ok-day-filler></span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div role="group" data-ok-multi-section-digital-clock data-ok-ampm="true" data-ok-views="hours minutes" data-ok-time-steps="1 5 5" id="grid-cells-header-filter-counted-digital-clock">
+                    <ul role="listbox" data-ok-digital-clock-section="hours" aria-label="Select hours">
+                      <li role="option" data-ok-digital-clock-item data-ok-value="12" tabindex="0" aria-selected="false">12</li>
+                      <li role="option" data-ok-digital-clock-item data-ok-value="1" tabindex="-1" aria-selected="false">01</li>
+                      <li role="option" data-ok-digital-clock-item data-ok-value="2" tabindex="-1" aria-selected="false">02</li>
+                      <li role="option" data-ok-digital-clock-item data-ok-value="3" tabindex="-1" aria-selected="false">03</li>
+                      <li role="option" data-ok-digital-clock-item data-ok-value="4" tabindex="-1" aria-selected="false">04</li>
+                      <li role="option" data-ok-digital-clock-item data-ok-value="5" tabindex="-1" aria-selected="false">05</li>
+                      <li role="option" data-ok-digital-clock-item data-ok-value="6" tabindex="-1" aria-selected="false">06</li>
+                      <li role="option" data-ok-digital-clock-item data-ok-value="7" tabindex="-1" aria-selected="false">07</li>
+                      <li role="option" data-ok-digital-clock-item data-ok-value="8" tabindex="-1" aria-selected="false">08</li>
+                      <li role="option" data-ok-digital-clock-item data-ok-value="9" tabindex="-1" aria-selected="false">09</li>
+                      <li role="option" data-ok-digital-clock-item data-ok-value="10" tabindex="-1" aria-selected="false">10</li>
+                      <li role="option" data-ok-digital-clock-item data-ok-value="11" tabindex="-1" aria-selected="false">11</li>
+                    </ul>
+                    <ul role="listbox" data-ok-digital-clock-section="minutes" aria-label="Select minutes">
+                      <li role="option" data-ok-digital-clock-item data-ok-value="0" tabindex="0" aria-selected="false">00</li>
+                      <li role="option" data-ok-digital-clock-item data-ok-value="5" tabindex="-1" aria-selected="false">05</li>
+                      <li role="option" data-ok-digital-clock-item data-ok-value="10" tabindex="-1" aria-selected="false">10</li>
+                      <li role="option" data-ok-digital-clock-item data-ok-value="15" tabindex="-1" aria-selected="false">15</li>
+                      <li role="option" data-ok-digital-clock-item data-ok-value="20" tabindex="-1" aria-selected="false">20</li>
+                      <li role="option" data-ok-digital-clock-item data-ok-value="25" tabindex="-1" aria-selected="false">25</li>
+                      <li role="option" data-ok-digital-clock-item data-ok-value="30" tabindex="-1" aria-selected="false">30</li>
+                      <li role="option" data-ok-digital-clock-item data-ok-value="35" tabindex="-1" aria-selected="false">35</li>
+                      <li role="option" data-ok-digital-clock-item data-ok-value="40" tabindex="-1" aria-selected="false">40</li>
+                      <li role="option" data-ok-digital-clock-item data-ok-value="45" tabindex="-1" aria-selected="false">45</li>
+                      <li role="option" data-ok-digital-clock-item data-ok-value="50" tabindex="-1" aria-selected="false">50</li>
+                      <li role="option" data-ok-digital-clock-item data-ok-value="55" tabindex="-1" aria-selected="false">55</li>
+                    </ul>
+                    <ul role="listbox" data-ok-digital-clock-section="meridiem" aria-label="Select meridiem">
+                      <li role="option" data-ok-digital-clock-item data-ok-value="0" tabindex="0" aria-selected="false">AM</li>
+                      <li role="option" data-ok-digital-clock-item data-ok-value="1" tabindex="-1" aria-selected="false">PM</li>
+                    </ul>
+                  </div>
+                  <div id="grid-cells-header-filter-counted-clock" data-ok-time-clock data-ok-ampm="true" data-ok-view="hours" data-ok-views="hours minutes" hidden>
+                    <div data-ok-time-clock-dial>
+                      <span data-ok-time-clock-pin></span>
+                      <span data-ok-time-clock-pointer hidden></span>
+                      <div role="listbox" data-ok-time-clock-options tabindex="0" aria-label="Select hours. No time selected"><span id="grid-cells-header-filter-counted-clock-hours-1" role="option" data-ok-time-clock-number data-ok-position="1" data-ok-value="1" aria-label="1 hours">1</span><span id="grid-cells-header-filter-counted-clock-hours-2" role="option" data-ok-time-clock-number data-ok-position="2" data-ok-value="2" aria-label="2 hours">2</span><span id="grid-cells-header-filter-counted-clock-hours-3" role="option" data-ok-time-clock-number data-ok-position="3" data-ok-value="3" aria-label="3 hours">3</span><span id="grid-cells-header-filter-counted-clock-hours-4" role="option" data-ok-time-clock-number data-ok-position="4" data-ok-value="4" aria-label="4 hours">4</span><span id="grid-cells-header-filter-counted-clock-hours-5" role="option" data-ok-time-clock-number data-ok-position="5" data-ok-value="5" aria-label="5 hours">5</span><span id="grid-cells-header-filter-counted-clock-hours-6" role="option" data-ok-time-clock-number data-ok-position="6" data-ok-value="6" aria-label="6 hours">6</span><span id="grid-cells-header-filter-counted-clock-hours-7" role="option" data-ok-time-clock-number data-ok-position="7" data-ok-value="7" aria-label="7 hours">7</span><span id="grid-cells-header-filter-counted-clock-hours-8" role="option" data-ok-time-clock-number data-ok-position="8" data-ok-value="8" aria-label="8 hours">8</span><span id="grid-cells-header-filter-counted-clock-hours-9" role="option" data-ok-time-clock-number data-ok-position="9" data-ok-value="9" aria-label="9 hours">9</span><span id="grid-cells-header-filter-counted-clock-hours-10" role="option" data-ok-time-clock-number data-ok-position="10" data-ok-value="10" aria-label="10 hours">10</span><span id="grid-cells-header-filter-counted-clock-hours-11" role="option" data-ok-time-clock-number data-ok-position="11" data-ok-value="11" aria-label="11 hours">11</span><span id="grid-cells-header-filter-counted-clock-hours-12" role="option" data-ok-time-clock-number data-ok-position="0" data-ok-value="12" aria-label="12 hours">12</span></div>
+                    </div>
+                    <div data-ok-time-clock-nav>
+                      <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-time-clock-prev aria-label="Open previous view" title="Open previous view" disabled><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6" /></svg></button>
+                      <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-time-clock-next aria-label="Open next view" title="Open next view"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6" /></svg></button>
+                    </div>
+                  </div>
+                </div>
+                <div data-ok-picker-actions>
+                  <button type="button" data-ok-button data-ok-variant="text" data-ok-color="inherit" data-ok-size="md" data-ok-picker-action="cancel"><span data-ok-button-label>Cancel</span></button>
+                  <button type="button" data-ok-button data-ok-variant="contained" data-ok-color="inherit" data-ok-size="md" data-ok-picker-action="accept"><span data-ok-button-label>OK</span></button>
+                  <button type="button" data-ok-button data-ok-variant="contained" data-ok-color="inherit" data-ok-size="md" data-ok-picker-action="nextOrAccept" hidden><span data-ok-button-label>Next</span></button>
+                </div>
+              </div>
+            </div>
+            <dialog data-ok-dialog data-ok-max-width="xs" data-ok-scroll="paper" aria-label="Select date &amp; time" data-ok-date-picker-dialog>
+              <div data-ok-dialog-paper></div>
+            </dialog>
+          </div>
+        </div>
+        <div data-ok-filter-field="active" role="columnheader" aria-colindex="6" aria-label="Active filter" data-ok-data-grid-header-filter tabindex="-1">
           <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none">
             <label data-ok-text-field-label for="grid-cells-header-filter-active">is</label>
             <div data-ok-text-field-control>
@@ -433,56 +784,64 @@
         <div role="gridcell" aria-colindex="2" data-ok-field="category" data-ok-align="left" tabindex="-1">Brewing</div>
         <div role="gridcell" aria-colindex="3" data-ok-field="stock" data-ok-align="right" data-ok-value="5" tabindex="-1">5</div>
         <div role="gridcell" aria-colindex="4" data-ok-field="restocked" data-ok-align="left" tabindex="-1">2025-05-01</div>
-        <div role="gridcell" aria-colindex="5" data-ok-field="active" data-ok-align="left" data-ok-value="true" tabindex="-1">true</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="counted" data-ok-align="left" data-ok-value="2025-05-02T08:00:00" tabindex="-1">2025-05-02 08:00</div>
+        <div role="gridcell" aria-colindex="6" data-ok-field="active" data-ok-align="left" data-ok-value="true" tabindex="-1">true</div>
       </div>
       <div role="row" aria-rowindex="4" data-ok-row-id="i-2">
         <div role="gridcell" aria-colindex="1" data-ok-field="name" data-ok-align="left" tabindex="-1">Mug</div>
         <div role="gridcell" aria-colindex="2" data-ok-field="category" data-ok-align="left" tabindex="-1">Serving</div>
         <div role="gridcell" aria-colindex="3" data-ok-field="stock" data-ok-align="right" data-ok-value="18" tabindex="-1">18</div>
         <div role="gridcell" aria-colindex="4" data-ok-field="restocked" data-ok-align="left" tabindex="-1">2025-05-05</div>
-        <div role="gridcell" aria-colindex="5" data-ok-field="active" data-ok-align="left" data-ok-value="true" tabindex="-1">true</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="counted" data-ok-align="left" data-ok-value="2025-05-05T11:15:00" tabindex="-1">2025-05-05 11:15</div>
+        <div role="gridcell" aria-colindex="6" data-ok-field="active" data-ok-align="left" data-ok-value="true" tabindex="-1">true</div>
       </div>
       <div role="row" aria-rowindex="5" data-ok-row-id="i-3">
         <div role="gridcell" aria-colindex="1" data-ok-field="name" data-ok-align="left" tabindex="-1">Teapot</div>
         <div role="gridcell" aria-colindex="2" data-ok-field="category" data-ok-align="left" tabindex="-1">Tools</div>
         <div role="gridcell" aria-colindex="3" data-ok-field="stock" data-ok-align="right" data-ok-value="31" tabindex="-1">31</div>
         <div role="gridcell" aria-colindex="4" data-ok-field="restocked" data-ok-align="left" tabindex="-1">2025-05-09</div>
-        <div role="gridcell" aria-colindex="5" data-ok-field="active" data-ok-align="left" data-ok-value="false" tabindex="-1">false</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="counted" data-ok-align="left" data-ok-value="2025-05-08T14:30:00" tabindex="-1">2025-05-08 14:30</div>
+        <div role="gridcell" aria-colindex="6" data-ok-field="active" data-ok-align="left" data-ok-value="false" tabindex="-1">false</div>
       </div>
       <div role="row" aria-rowindex="6" data-ok-row-id="i-4">
         <div role="gridcell" aria-colindex="1" data-ok-field="name" data-ok-align="left" tabindex="-1">Grinder</div>
         <div role="gridcell" aria-colindex="2" data-ok-field="category" data-ok-align="left" tabindex="-1">Brewing</div>
         <div role="gridcell" aria-colindex="3" data-ok-field="stock" data-ok-align="right" data-ok-value="44" tabindex="-1">44</div>
         <div role="gridcell" aria-colindex="4" data-ok-field="restocked" data-ok-align="left" tabindex="-1">2025-05-13</div>
-        <div role="gridcell" aria-colindex="5" data-ok-field="active" data-ok-align="left" data-ok-value="true" tabindex="-1">true</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="counted" data-ok-align="left" data-ok-value="2025-05-11T17:45:00" tabindex="-1">2025-05-11 17:45</div>
+        <div role="gridcell" aria-colindex="6" data-ok-field="active" data-ok-align="left" data-ok-value="true" tabindex="-1">true</div>
       </div>
       <div role="row" aria-rowindex="7" data-ok-row-id="i-5">
         <div role="gridcell" aria-colindex="1" data-ok-field="name" data-ok-align="left" tabindex="-1">Filter</div>
         <div role="gridcell" aria-colindex="2" data-ok-field="category" data-ok-align="left" tabindex="-1">Serving</div>
         <div role="gridcell" aria-colindex="3" data-ok-field="stock" data-ok-align="right" data-ok-value="17" tabindex="-1">17</div>
         <div role="gridcell" aria-colindex="4" data-ok-field="restocked" data-ok-align="left" tabindex="-1">2025-05-17</div>
-        <div role="gridcell" aria-colindex="5" data-ok-field="active" data-ok-align="left" data-ok-value="true" tabindex="-1">true</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="counted" data-ok-align="left" data-ok-value="2025-05-14T10:00:00" tabindex="-1">2025-05-14 10:00</div>
+        <div role="gridcell" aria-colindex="6" data-ok-field="active" data-ok-align="left" data-ok-value="true" tabindex="-1">true</div>
       </div>
       <div role="row" aria-rowindex="8" data-ok-row-id="i-6">
         <div role="gridcell" aria-colindex="1" data-ok-field="name" data-ok-align="left" tabindex="-1">Scale</div>
         <div role="gridcell" aria-colindex="2" data-ok-field="category" data-ok-align="left" tabindex="-1">Tools</div>
         <div role="gridcell" aria-colindex="3" data-ok-field="stock" data-ok-align="right" data-ok-value="30" tabindex="-1">30</div>
         <div role="gridcell" aria-colindex="4" data-ok-field="restocked" data-ok-align="left" tabindex="-1">2025-05-21</div>
-        <div role="gridcell" aria-colindex="5" data-ok-field="active" data-ok-align="left" data-ok-value="false" tabindex="-1">false</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="counted" data-ok-align="left" data-ok-value="2025-05-17T13:15:00" tabindex="-1">2025-05-17 13:15</div>
+        <div role="gridcell" aria-colindex="6" data-ok-field="active" data-ok-align="left" data-ok-value="false" tabindex="-1">false</div>
       </div>
       <div role="row" aria-rowindex="9" data-ok-row-id="i-7">
         <div role="gridcell" aria-colindex="1" data-ok-field="name" data-ok-align="left" tabindex="-1">Tray</div>
         <div role="gridcell" aria-colindex="2" data-ok-field="category" data-ok-align="left" tabindex="-1">Brewing</div>
         <div role="gridcell" aria-colindex="3" data-ok-field="stock" data-ok-align="right" data-ok-value="43" tabindex="-1">43</div>
         <div role="gridcell" aria-colindex="4" data-ok-field="restocked" data-ok-align="left" tabindex="-1">2025-05-25</div>
-        <div role="gridcell" aria-colindex="5" data-ok-field="active" data-ok-align="left" data-ok-value="true" tabindex="-1">true</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="counted" data-ok-align="left" data-ok-value="2025-05-20T16:30:00" tabindex="-1">2025-05-20 16:30</div>
+        <div role="gridcell" aria-colindex="6" data-ok-field="active" data-ok-align="left" data-ok-value="true" tabindex="-1">true</div>
       </div>
       <div role="row" aria-rowindex="10" data-ok-row-id="i-8">
         <div role="gridcell" aria-colindex="1" data-ok-field="name" data-ok-align="left" tabindex="-1">Spoon</div>
         <div role="gridcell" aria-colindex="2" data-ok-field="category" data-ok-align="left" tabindex="-1">Serving</div>
         <div role="gridcell" aria-colindex="3" data-ok-field="stock" data-ok-align="right" data-ok-value="16" tabindex="-1">16</div>
         <div role="gridcell" aria-colindex="4" data-ok-field="restocked" data-ok-align="left" tabindex="-1">2025-05-01</div>
-        <div role="gridcell" aria-colindex="5" data-ok-field="active" data-ok-align="left" data-ok-value="true" tabindex="-1">true</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="counted" data-ok-align="left" data-ok-value="2025-05-23T09:45:00" tabindex="-1">2025-05-23 09:45</div>
+        <div role="gridcell" aria-colindex="6" data-ok-field="active" data-ok-align="left" data-ok-value="true" tabindex="-1">true</div>
       </div>
     </div>
   </div>

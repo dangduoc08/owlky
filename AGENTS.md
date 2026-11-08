@@ -395,6 +395,11 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
   while typing (or it clears its sections): keep it as a draft until the date is whole.
   Column virtualization hides cells in the 414px test page: tests that count cells set
   `disableVirtualization`.
+- Data grid date time filters (`dateTime` columns) use the DateTimePicker (same `[data-ok-date-picker]`
+  root and `ok:date-picker:change` event, `data-ok-value-type="date-time"`); HTML filter panels copy
+  `template[data-ok-data-grid-date-time]`; the value is `YYYY-MM-DDTHH:mm:ss` (local). A header
+  filter's DateTimePicker needs a column of about 280px or axe flags its squeezed sections
+  (`target-size`).
 - Editor (ADR-0023): Tiptap is reached only through `@owlky/core/editor` (Storybook aliases it)
   and the opt-in HTML entries (`@owlky/html/editor`, `owlky-editor.js`): `editor` isn't in
   `components` (`OPT_IN` in `components.test.ts`), so `owlky.js` stays free of ProseMirror. The

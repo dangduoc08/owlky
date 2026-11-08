@@ -519,6 +519,62 @@ describe("data grid cell selection, clipboard and header filters (HTML)", () => 
     expect(panel.querySelector("[data-ok-date-picker]")).toBeNull();
     expect(panel.querySelector<HTMLInputElement>("#grid-cells-filter-value")?.disabled).toBe(true);
   });
+
+  it("filters date times with a date time picker in the panel and the header filters", async () => {
+    const { host, instance } = setup("cells-group");
+    const header = host.querySelector(
+      '[data-ok-data-grid-header-filters] [data-ok-filter-field="counted"]',
+    ) as HTMLElement;
+    expect(header.querySelector("[data-ok-date-picker]")?.getAttribute("data-ok-value-type")).toBe(
+      "date-time",
+    );
+    await userEvent.click(
+      header.querySelector('[role="spinbutton"][aria-label="Month"]') as HTMLElement,
+    );
+    await userEvent.keyboard("050220250800a");
+    await settle();
+    expect(instance.filterModel.items).toEqual([
+      { field: "counted", operator: "is", value: "2025-05-02T08:00:00" },
+    ]);
+    expect(bodyRows(host).map((row) => row.getAttribute("data-ok-row-id"))).toEqual(["i-1"]);
+    instance.setFilterModel({ items: [] });
+    // The panel: a date column's picker gives way to a date time picker, then to the text field.
+    (host.querySelector('[data-ok-popover-open="grid-cells-filters"]') as HTMLElement).click();
+    await settle();
+    const panel = host.querySelector("#grid-cells-filters") as HTMLElement;
+    const field = panel.querySelector<HTMLSelectElement>(
+      "#grid-cells-filter-field",
+    ) as HTMLSelectElement;
+    const choose = (value: string) => {
+      field.value = value;
+      field.dispatchEvent(new Event("change", { bubbles: true }));
+    };
+    const picker = () => panel.querySelector<HTMLElement>("[data-ok-date-picker]");
+    choose("restocked");
+    expect(picker()?.hasAttribute("data-ok-value-type")).toBe(false);
+    choose("counted");
+    expect(picker()?.getAttribute("data-ok-value-type")).toBe("date-time");
+    expect(panel.querySelector("#grid-cells-filter-value")).not.toBeNull();
+    await settle();
+    const operator = panel.querySelector<HTMLSelectElement>(
+      "#grid-cells-filter-operator",
+    ) as HTMLSelectElement;
+    operator.value = "after";
+    operator.dispatchEvent(new Event("change", { bubbles: true }));
+    await userEvent.click(
+      picker()?.querySelector('[role="spinbutton"][aria-label="Month"]') as HTMLElement,
+    );
+    await userEvent.keyboard("052020250100p");
+    await settle();
+    expect(instance.filterModel.items[0]).toEqual({
+      field: "counted",
+      operator: "after",
+      value: "2025-05-20T13:00:00",
+    });
+    choose("name");
+    expect(picker()).toBeNull();
+    expect(panel.querySelector("#grid-cells-filter-value")?.tagName).toBe("INPUT");
+  });
 });
 
 describe("data grid charts integration (HTML)", () => {

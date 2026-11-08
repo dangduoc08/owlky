@@ -2424,7 +2424,7 @@ export const dataGrid = defineComponent<DataGridInstance>({
       const [field, operator] = [...row.querySelectorAll<HTMLSelectElement>("select")].filter(
         (select) => select !== logic,
       ) as [HTMLSelectElement, HTMLSelectElement];
-      // isAnyOf with chips: an Autocomplete takes the value field's place; dates: a DatePicker.
+      // isAnyOf with chips: an Autocomplete takes the value field's place; dates: a picker.
       const chips = row.querySelector<HTMLElement>("[data-ok-autocomplete]");
       const date = row.querySelector<HTMLElement>("[data-ok-date-picker]");
       const input = chips || date ? null : (row.querySelector("input") as HTMLInputElement);
@@ -2435,6 +2435,9 @@ export const dataGrid = defineComponent<DataGridInstance>({
     );
     const dateTemplate = filterPanel?.querySelector<HTMLTemplateElement>(
       "template[data-ok-data-grid-date]",
+    );
+    const dateTimeTemplate = filterPanel?.querySelector<HTMLTemplateElement>(
+      "template[data-ok-data-grid-date-time]",
     );
     /** The value field each filter row had before it showed chips or a date picker. */
     const valueBoxes = new WeakMap<HTMLElement, HTMLElement>();
@@ -2450,18 +2453,28 @@ export const dataGrid = defineComponent<DataGridInstance>({
           if (from && attr.value.includes(from)) attr.value = attr.value.replaceAll(from, to);
       return clone;
     };
-    /** isAnyOf shows chips, a date column a date picker, other operators the text field. */
+    /**
+     * isAnyOf shows chips, a date column a date picker, a date time column a date time picker,
+     * other operators the text field.
+     */
     const syncValueField = (row: HTMLElement) => {
       const { field, operator, input, chips, date } = partsOf(row);
       const own = !operators[field.value];
       const type = columns.find((c) => c.field === field.value)?.type;
+      const picker = type === "date" ? dateTemplate : type === "dateTime" ? dateTimeTemplate : null;
       const want =
         operator.value === "isAnyOf" && anyOfTemplate && own
           ? anyOfTemplate
-          : type === "date" && dateTemplate && own && gridOperatorNeedsValue(operator.value)
-            ? dateTemplate
+          : picker && own && gridOperatorNeedsValue(operator.value)
+            ? picker
             : null;
-      const now = chips ? anyOfTemplate : date ? dateTemplate : null;
+      const now = chips
+        ? anyOfTemplate
+        : date
+          ? date.getAttribute("data-ok-value-type") === "date-time"
+            ? dateTimeTemplate
+            : dateTemplate
+          : null;
       if (want === now) return;
       const box = (input?.closest<HTMLElement>("[data-ok-text-field]") ??
         chips ??
@@ -2473,7 +2486,8 @@ export const dataGrid = defineComponent<DataGridInstance>({
         ? fieldFrom(
             want,
             want.getAttribute("data-ok-data-grid-any-of") ??
-              (want.getAttribute("data-ok-data-grid-date") as string),
+              want.getAttribute("data-ok-data-grid-date") ??
+              (want.getAttribute("data-ok-data-grid-date-time") as string),
             valueId,
           )
         : valueBoxes.get(row);
