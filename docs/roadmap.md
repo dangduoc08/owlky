@@ -406,7 +406,10 @@ Deferred, with the reason: the **AI assistant** (MUI X `aiAssistant`) turns prom
 states through a language model service. Owlky has no backend and adds no paid service, and a
 prompt panel without a model behind it would be a stand-in: it waits for an owner-approved service
 (new ADR). Server-side aggregation (`dataSource.getAggregatedValue`) waits for a data source that
-reports aggregates.
+reports aggregates. Integration 2026-11-08 (`/integrate date-picker`): `dateTime` columns filter
+with the DateTimePicker in the filter panel and the header filters (closes the Pending integration
+"DateTimePicker → Data grid filter values for `dateTime` columns"; the Cells story gained a
+`dateTime` column). Editing cells keeps native `date` / `datetime-local` inputs, as MUI X does.
 
 The former backlog is folded into phases 4–6 (ADR-0021, 2026-11-08). New MUI X features go into a
 phase, or into "Pending integrations" below when they need a missing component.
@@ -467,7 +470,6 @@ integrate these in the same review (additive: no DOM or API change) and remove t
 | Typography (display text) | Sortable stories (card numbers) | demo `<span>` styled in `.storybook/preview.css` |
 | Typography (heading / secondary text) | Accordion summaries (plain text, no secondary line from the reference) | summary text styled by `accordion.css` |
 | Typography (heading) | Scrollbar "Layout" story heading | demo `<h4>` styled in `.storybook/preview.css` |
-| DateTimePicker (date pickers' phase 2) | Data grid filter values for `dateTime` columns (filter panel and header filters) | a text field: people type the date and time (for example `2026-11-08T09:30`); `date` columns use the DatePicker since the data grid's phase 6, editing cells uses native `date` / `datetime-local` inputs |
 | Select (listbox, built on Menu) | `TablePagination` rows per page (library markup) | native `<select>` styled in `table.css`; the API (`rowsPerPageOptions`) stays. TextField's native select doesn't match MUI's InputBase select here |
 | Select (listbox, built on Menu) | Pagination story "Items" (card grid + items-per-page Select) | story deferred: the reference uses MUI's listbox Select |
 | Select (listbox, built on Menu) | Table story "Table pagination with API" (search TextField + category Select) | story deferred until the listbox Select; TextField exists |

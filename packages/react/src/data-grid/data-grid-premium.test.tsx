@@ -948,6 +948,71 @@ describe("DataGrid charts integration and date filters", () => {
     expect(within(panel).queryByRole("spinbutton", { name: "Month" })).toBeNull();
   });
 
+  it("filters date times with a date time picker in the panel and the header filters", async () => {
+    type Timed = Sale & { at: string };
+    const onFilter = vi.fn();
+    const rows: Timed[] = SALES.map((s, i) => ({ ...s, at: `2025-05-0${i + 1}T09:30:00` }));
+    const columns: GridColDef<Timed>[] = [
+      { field: "region", headerName: "Region", width: 120 },
+      { field: "units", headerName: "Units", type: "number", width: 90 },
+      { field: "at", headerName: "At", type: "dateTime", width: 300 },
+    ];
+    render(
+      <DataGrid
+        id="t"
+        aria-label="Sales"
+        disableVirtualization
+        rows={rows}
+        columns={columns}
+        showToolbar
+        headerFilters
+        initialState={{
+          filter: {
+            filterModel: { items: [{ field: "at", operator: "after", value: "2025-05-02T09:30" }] },
+          },
+        }}
+        onFilterModelChange={onFilter}
+        hideFooter
+      />,
+    );
+    expect(bodyRows()).toHaveLength(2);
+    // Header filter: a date time picker showing the item's value.
+    const cell = document.querySelector(
+      '[data-ok-data-grid-header-filters] [data-ok-filter-field="at"]',
+    ) as HTMLElement;
+    const picker = cell.querySelector("[data-ok-date-picker]") as HTMLElement;
+    expect(picker.getAttribute("data-ok-value-type")).toBe("date-time");
+    expect(within(cell).getByRole("spinbutton", { name: "Hours" }).textContent).toBe("09");
+    await userEvent.click(screen.getByRole("button", { name: "Filters" }));
+    const panel = document.getElementById("t-filters") as HTMLElement;
+    const month = within(panel).getByRole("spinbutton", { name: "Month" });
+    expect(month.textContent).toBe("05");
+    expect(within(panel).getByRole("spinbutton", { name: "Minutes" }).textContent).toBe("30");
+    await userEvent.click(month);
+    await userEvent.keyboard("050320251000a");
+    expect(onFilter).toHaveBeenLastCalledWith({
+      items: [{ field: "at", operator: "after", value: "2025-05-03T10:00:00" }],
+    });
+    expect(bodyRows()).toHaveLength(1);
+    // No value for isEmpty; another column type brings the text field back.
+    fireEvent.change(within(panel).getByLabelText("Operator"), { target: { value: "isEmpty" } });
+    expect(within(panel).queryByRole("spinbutton", { name: "Month" })).toBeNull();
+    fireEvent.change(within(panel).getByLabelText("Operator"), { target: { value: "is" } });
+    fireEvent.change(within(panel).getByLabelText("Columns"), { target: { value: "region" } });
+    expect(within(panel).queryByRole("spinbutton", { name: "Month" })).toBeNull();
+    expect(panel.querySelector("#t-filter-value")?.tagName).toBe("INPUT");
+    await userEvent.keyboard("{Escape}");
+    // Header filter: a whole date time filters with its operator ("is").
+    await userEvent.click(within(cell).getByRole("spinbutton", { name: "Month" }));
+    await userEvent.keyboard("050420250930a");
+    expect(onFilter.mock.lastCall?.[0].items).toContainEqual({
+      field: "at",
+      operator: "is",
+      value: "2025-05-04T09:30:00",
+    });
+    await expectNoAxeViolations(document.body);
+  });
+
   it("renders on the server", () => {
     expect(() =>
       renderToString(

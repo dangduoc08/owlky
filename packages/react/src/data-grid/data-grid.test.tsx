@@ -2205,6 +2205,48 @@ describe("DataGrid", () => {
       expect(top?.hasAttribute("aria-selected")).toBe(false);
     });
 
+    it("keeps the header above pinned cells, pinned rows and controls while the body scrolls", () => {
+      const many = Array.from({ length: 30 }, (_, i) => ({ id: i + 1, name: `P${i}`, age: i }));
+      render(
+        <div style={{ display: "flex", height: 360, width: 320 }}>
+          <DataGrid
+            aria-label="People"
+            rows={many}
+            columns={COLUMNS}
+            checkboxSelection
+            disableVirtualization
+            pinnedColumns={{ left: ["name"], right: ["actions"] }}
+            pinnedRows={{ top: [{ id: 90, name: "Top", age: 1 }] }}
+            hideFooter
+          />
+        </div>,
+      );
+      const main = grid();
+      const header = main.querySelector("[data-ok-data-grid-header]") as HTMLElement;
+      const pinnedRows = main.querySelector("[data-ok-data-grid-pinned-rows]") as HTMLElement;
+      const z = (element: Element) => Number(getComputedStyle(element).zIndex);
+      const bodyPinned = main.querySelector(
+        '[data-ok-data-grid-body] [role="gridcell"][data-ok-pinned]',
+      ) as HTMLElement;
+      // Header > pinned rows > pinned body cells; every body cell isolates its controls.
+      expect(z(header)).toBeGreaterThan(z(pinnedRows));
+      expect(z(pinnedRows)).toBeGreaterThan(z(bodyPinned));
+      expect(getComputedStyle(bodyPinned).isolation).toBe("isolate");
+      main.scrollTo(main.scrollWidth, 200);
+      for (const cell of header.querySelectorAll<HTMLElement>('[role="columnheader"]')) {
+        const r = cell.getBoundingClientRect();
+        const box = main.getBoundingClientRect();
+        const x = Math.min(r.left + r.width / 2, box.left + main.clientWidth - 2);
+        if (x <= box.left) continue;
+        expect(header.contains(document.elementFromPoint(x, r.top + r.height / 2))).toBe(true);
+      }
+      const topCell = pinnedRows.querySelector('[role="gridcell"]') as HTMLElement;
+      const r = topCell.getBoundingClientRect();
+      expect(
+        pinnedRows.contains(document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2)),
+      ).toBe(true);
+    });
+
     it("column groups: header rows, spans, descriptions; moves stay in groups", async () => {
       const onColumnOrderChange = vi.fn();
       render(

@@ -13,6 +13,7 @@ import {
   dataGridAttributes,
   filterGridRows,
   formatIsoDate,
+  formatIsoDateTime,
   GRID_AGGREGATION_ROOT_ID,
   GRID_CHECKBOX_FIELD,
   GRID_CHECKBOX_WIDTH,
@@ -146,6 +147,7 @@ import { Chart } from "../chart/chart.js";
 import { Checkbox } from "../checkbox/checkbox.js";
 import { CircularProgress } from "../circular-progress/circular-progress.js";
 import { DatePicker } from "../date-picker/date-picker.js";
+import { DateTimePicker } from "../date-time-picker/date-time-picker.js";
 import { FormControlLabel } from "../form-control-label/form-control-label.js";
 import { IconButton } from "../icon-button/icon-button.js";
 import { LinearProgress } from "../linear-progress/linear-progress.js";
@@ -656,9 +658,16 @@ function download(name: string, data: BlobPart, type: string) {
 const downloadCsv = (name: string, csv: string) =>
   download(`${name}.csv`, csv, "text/csv;charset=utf-8");
 
-/** `YYYY-MM-DD` of a picked date; "" while it isn't a whole, valid date. */
-const isoDay = (date: Date | null) =>
-  date && !Number.isNaN(date.getTime()) ? formatIsoDate(date) : "";
+/**
+ * `YYYY-MM-DD` of a picked date (`YYYY-MM-DDTHH:mm:ss` for `dateTime` columns); "" while it isn't
+ * a whole, valid date.
+ */
+const isoValue = (date: Date | null, type: GridColDef["type"]) =>
+  date && !Number.isNaN(date.getTime())
+    ? type === "dateTime"
+      ? formatIsoDateTime(date)
+      : formatIsoDate(date)
+    : "";
 
 const NO_PIVOT: GridPivotModel = { rows: [], columns: [], values: [] };
 
@@ -2176,15 +2185,20 @@ function DataGridInner<R>(
     setPanel(which);
   };
   const closePanel = () => setPanel(null);
-  // Date filters: a partly typed date stays in its picker until it is whole.
+  // Date and date time filters: a partly typed value stays in its picker until it is whole.
   const [pickerDrafts, setPickerDrafts] = useState<Record<string, Date>>({});
   const pickerValue = (key: string, iso: string) => pickerDrafts[key] ?? parseIsoDate(iso);
-  const pickDate = (key: string, date: Date | null, apply: (iso: string) => void) => {
+  const pickDate = (
+    key: string,
+    date: Date | null,
+    type: GridColDef["type"],
+    apply: (iso: string) => void,
+  ) => {
     const drafts = { ...pickerDrafts };
     if (date && Number.isNaN(date.getTime())) drafts[key] = date;
     else delete drafts[key];
     setPickerDrafts(drafts);
-    if (!(key in drafts)) apply(isoDay(date));
+    if (!(key in drafts)) apply(isoValue(date, type));
   };
   // The typed text (with its spaces); the model keeps the words.
   const [quickText, setQuickText] = useState(() => (filterModel.quickFilterValues ?? []).join(" "));
@@ -2556,6 +2570,7 @@ function DataGridInner<R>(
               const suffix = index === 0 ? "" : `-${index}`;
               // Filters (and the columns panel) work on the data's columns, also in the pivot.
               const column = columnsProp.find((c) => c.field === item.field);
+              const Picker = column?.type === "dateTime" ? DateTimePicker : DatePicker;
               return (
                 // biome-ignore lint/suspicious/noArrayIndexKey: filter rows are positional.
                 <div key={index} data-ok-data-grid-filter="">
@@ -2630,10 +2645,10 @@ function DataGridInner<R>(
                         setFilterItem(index, { ...item, value: (value as string[] | null) ?? [] })
                       }
                     />
-                  ) : column?.type === "date" &&
+                  ) : (column?.type === "date" || column?.type === "dateTime") &&
                     !column.filterOperators &&
                     gridOperatorNeedsValue(item.operator) ? (
-                    <DatePicker
+                    <Picker
                       id={`${id}-filter-value${suffix}`}
                       size="small"
                       label={labels.filterPanelInputLabel}
@@ -2642,7 +2657,7 @@ function DataGridInner<R>(
                         typeof item.value === "string" ? item.value : "",
                       )}
                       onChange={(date) =>
-                        pickDate(`${id}-filter-value${suffix}`, date, (iso) =>
+                        pickDate(`${id}-filter-value${suffix}`, date, column.type, (iso) =>
                           setFilterItem(index, { ...item, value: iso }),
                         )
                       }
@@ -2824,7 +2839,19 @@ function DataGridInner<R>(
             size="small"
             label={label}
             value={pickerValue(fieldId, value)}
-            onChange={(date) => pickDate(fieldId, date, (iso) => setHeaderFilter(column, iso))}
+            onChange={(date) =>
+              pickDate(fieldId, date, column.type, (iso) => setHeaderFilter(column, iso))
+            }
+          />
+        ) : column.type === "dateTime" ? (
+          <DateTimePicker
+            id={fieldId}
+            size="small"
+            label={label}
+            value={pickerValue(fieldId, value)}
+            onChange={(date) =>
+              pickDate(fieldId, date, column.type, (iso) => setHeaderFilter(column, iso))
+            }
           />
         ) : (
           <TextField

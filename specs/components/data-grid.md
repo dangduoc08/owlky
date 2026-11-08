@@ -90,7 +90,7 @@ div[data-ok-data-grid][data-ok-density][data-ok-checkbox-selection]?[data-ok-dis
     header › div[role=row][data-ok-data-grid-header-filters][aria-rowindex] (headerFilters)
       › div[role=presentation][data-ok-data-grid-group-filler][data-ok-pin-field] (special columns)
       › div[role=columnheader][data-ok-data-grid-header-filter][data-ok-filter-field][aria-label="<name> filter"]
-        › TextField | TextField select | DatePicker (date) ; unfilterable: role=presentation filler
+        › TextField | TextField select | DatePicker (date) | DateTimePicker (dateTime) ; unfilterable: role=presentation filler
     cells with cellSelection: [aria-selected=true][data-ok-range-edge="top right bottom left"]?
     Menu#<id>-column-menu › MenuItem[data-ok-data-grid-action=group|aggregate-none|aggregate-<fn>][hidden]?[data-ok-selected]?
     Menu#<id>-export › MenuItem[data-ok-data-grid-export=excel]
@@ -102,6 +102,7 @@ div[data-ok-data-grid][data-ok-density][data-ok-checkbox-selection]?[data-ok-dis
         charts: TextField select #<id>-chart-type, #<id>-chart-dimension, FormControlLabel(Switch[data-ok-data-grid-chart-value])
     div[data-ok-data-grid-chart][hidden]? › Chart#<id>-chart (HTML: figure › table[data-ok-chart-data], written by the grid)
     Popover#<id>-filters › template[data-ok-data-grid-date="<id>-filter-value"] › DatePicker (HTML only)
+    Popover#<id>-filters › template[data-ok-data-grid-date-time="<id>-filter-value"] › DateTimePicker (HTML only)
   div[data-ok-data-grid-loading][data-ok-variant][role=status][aria-label=Loading][hidden]?
     › LinearProgress | CircularProgress | span[data-ok-data-grid-skeleton] × 5
   div[data-ok-data-grid-overlay][role=status][hidden]?   ("No rows" / "No results found."; hidden while loading)
@@ -227,7 +228,7 @@ filters, column virtualization, lazy loading of row chunks). Not applicable: `sl
 Deferred (roadmap): `rowGroupingColumnMode="multiple"`, `groupingValueGetter`, group footers
 (`getAggregationPosition` → `footer` for groups), server-side aggregation, `getPivotDerivedColumns`
 (year / quarter of dates), the pivot panel's drag and drop (selects instead), header filter operator
-menus, the AI assistant (needs a language model service), `dateTime` filter values (DateTimePicker).
+menus, the AI assistant (needs a language model service).
 Renamed: the charts integration is one `chartModel` and a chart inside the grid (MUI X: a renderer
 proxy and a context provider around the grid).
 
@@ -328,8 +329,9 @@ row goes through `processRowUpdate` (HTML: `ok:data-grid:edit`, cancelable); the
 selection: press, drag, Shift + press, Ctrl / Cmd + press (toggle) or drag (add), Shift + arrows,
 Ctrl / Cmd + A (every cell of the page); core `createGridCellSelection` reports intent. Header
 filters: one field per column (the type's first operator; booleans and singleSelect a select, dates
-a DatePicker) sharing the filter model; Up / Down leave a field. Filter panel: `date` columns pick
-their value with a DatePicker. Charts: categories are the top-level groups (their values aggregated
+a DatePicker, date times a DateTimePicker) sharing the filter model; Up / Down leave a field. Filter
+panel: `date` columns pick their value with a DatePicker, `dateTime` columns with a DateTimePicker
+(value `YYYY-MM-DDTHH:mm:ss`, local time). Charts: categories are the top-level groups (their values aggregated
 with the model's function, else `sum`) or the page's rows (`dimension` texts); series are number
 fields; type `column` / `bar` (horizontal) / `line` / `area`. Navigation ignores grids inside cells
 (a date picker's calendar) and leaves their tab stops alone.
@@ -387,7 +389,10 @@ Attributes: `data-ok-label-no-rows`, `data-ok-label-no-results`, `data-ok-export
 
 ## Responsive
 The grid scrolls horizontally inside its main area (header sticky); the toolbar wraps; panels fit
-the viewport (filter fields wrap to one column).
+the viewport (filter fields wrap to one column). Stacking while scrolling, lowest first: cell content
+(each body cell isolates it), row-span cells, pinned cells, pinned rows and the aggregation footer,
+the cell being edited, the header (column groups, header filters); the loading layer sits above.
+`e2e/tests/data-grid.scroll.spec.ts` checks it for every story.
 
 ## Parity notes
 React renders every filtered row (other pages `hidden`) and writes the template through `style`;
