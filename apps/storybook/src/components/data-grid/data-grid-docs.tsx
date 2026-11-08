@@ -322,7 +322,7 @@ export function Customers() {
   {
     id: "tree",
     title: "Show rows as a tree",
-    body: "Set `treeData` and return each row's path from `getTreeDataPath`: the names of its ancestors, then its own. Every parent in a path needs its own row. A group column shows the names with a button that opens and closes the children. Right and Left open and close a row when its group cell has the focus. `defaultGroupingExpansionDepth` sets how many levels are open at first. Filters keep the parents of the rows that match, and sorting orders rows among their siblings. In HTML, rows carry `aria-level` and `data-ok-parent`, and the grid fires `ok:data-grid:expand`. With a data source, `getChildrenCount` and `getGroupKey` let the grid load children when a row opens.",
+    body: "Set `treeData` and return each row's path from `getTreeDataPath`: the names of its ancestors, then its own. Parents that a path names without a row of their own get a generated row. A group column shows the names with a button that opens and closes the children. Right and Left open and close a row when its group cell has the focus. `defaultGroupingExpansionDepth` sets how many levels are open at first. Filters keep the parents of the rows that match, and sorting orders rows among their siblings. In HTML, rows carry `aria-level` and `data-ok-parent`, and the grid fires `ok:data-grid:expand`. With a data source, `getChildrenCount` and `getGroupKey` let the grid load children when a row opens.",
     html: `<div role="row" data-ok-row-id="m-2" data-ok-parent="m-1" aria-level="2" aria-expanded="false">…</div>`,
     react: `<DataGrid
   aria-label="Team"
@@ -392,6 +392,93 @@ export function Customers() {
     react: `<DataGrid aria-label="Customers" rows={[]} columns={columns} dataSource={customers} lazyLoading />`,
   },
   {
+    id: "grouping",
+    title: "Group rows and aggregate values",
+    body: "`rowGroupingModel` lists the fields that group the rows, outermost first. The grid adds a row for each group, with the group's name, its number of rows and a button that opens it. People group and ungroup columns from the column menu. `aggregationModel` gives fields a function: `sum`, `avg` (rounded to two decimals), `min`, `max` or `size` (the number of rows). Group rows show their values, and a footer row shows the values of every filtered row. The column menu offers the functions that fit each column's type, and the header names the function in use. Sorting an aggregated column orders the groups by their values. Sorting a grouped column orders them by name. With a data source, the grid passes `groupFields` and `groupKeys`, and the server returns the groups of each level. In HTML, the models are the attributes `data-ok-row-grouping-model` and `data-ok-aggregation-model` (JSON), and the grid builds the group rows from the rows in the markup. In tree data, the grid adds a row for each parent that a path names without a row of its own.",
+    html: `<div data-ok-data-grid id="sales"
+  data-ok-row-grouping-model='["region"]'
+  data-ok-aggregation-model='{"revenue":"sum"}'>…</div>`,
+    react: `<DataGrid
+  aria-label="Sales"
+  rows={sales}
+  columns={columns}
+  initialState={{
+    rowGrouping: { model: ["region"] },
+    aggregation: { model: { units: "sum", revenue: "sum" } },
+  }}
+/>`,
+  },
+  {
+    id: "pivot",
+    title: "Pivot the rows",
+    body: "A pivot summarizes the rows in a new table. `pivotModel` names the fields whose values become rows (`rows`), the fields whose values become columns (`columns`) and the fields to aggregate with their function (`values`). Set `pivotActive` to show it. The **Pivot** button in the toolbar opens a panel with a switch and, for each column, its place and function. Filters work on the rows before the pivot. Exports keep the rows and columns of the data. In HTML, put the model in `data-ok-pivot-model` and add `data-ok-pivot-active`. The grid builds the pivot from the rows in the markup and fires `ok:data-grid:pivot`, which you can cancel.",
+    html: `<div data-ok-data-grid id="sales" data-ok-pivot-active
+  data-ok-pivot-model='{"rows":[{"field":"region"}],"columns":[{"field":"year"}],"values":[{"field":"revenue","aggFunc":"sum"}]}'>…</div>`,
+    react: `<DataGrid
+  aria-label="Revenue by region and year"
+  rows={sales}
+  columns={columns}
+  showToolbar
+  initialState={{
+    pivoting: {
+      active: true,
+      model: {
+        rows: [{ field: "region" }],
+        columns: [{ field: "year" }],
+        values: [{ field: "revenue", aggFunc: "sum" }],
+      },
+    },
+  }}
+/>`,
+  },
+  {
+    id: "cells",
+    title: "Select cells and use the clipboard",
+    body: "With `cellSelection`, people select cells in ranges: press a cell and drag, press another cell with Shift, or hold Shift and use the arrow keys. Ctrl or Cmd adds a range, or toggles one cell. Ctrl + A selects every cell of the page. Ctrl + C copies the selected cells as tab-separated text, which spreadsheets read. Without selected cells it copies the selected rows, or the focused cell. Ctrl + V pastes text into editable cells, from the selection's first cell or the focused cell. One copied value fills every selected cell. Each pasted row goes through `processRowUpdate` (HTML: a cancelable `ok:data-grid:edit`). `disableClipboardPaste` turns pasting off. The grid uses the browser's own copy and paste for these keys, so it never asks for clipboard permissions.",
+    html: `<div data-ok-data-grid id="inventory" data-ok-cell-selection>…</div>`,
+    react: `<DataGrid
+  aria-label="Inventory"
+  rows={items}
+  columns={columns}
+  cellSelection
+  processRowUpdate={(row) => save(row)}
+/>`,
+  },
+  {
+    id: "header-filters",
+    title: "Filter from the headers",
+    body: "`headerFilters` adds a row of fields under the column headers. Each field filters its column with the column type's first operator, and shows that operator as its label: text contains, a number equals, a date is. Booleans and choices get a list, and dates get a date picker. The fields and the filter panel share one filter model. Up and Down move from a field to the cells. Date filters in the filter panel use a date picker too.",
+    react: `<DataGrid aria-label="Inventory" rows={items} columns={columns} headerFilters />`,
+  },
+  {
+    id: "export-excel",
+    title: "Export to Excel",
+    body: "The **Export** menu downloads the filtered, sorted rows as an Excel workbook. Numbers, booleans and dates keep their type, with a date format. Text is written as text, never as a formula, because exported data may come from users. `excelOptions` sets the file name, the sheet name, the fields and whether to include the headers. In React, `apiRef.current.getDataAsExcel()` returns the file's bytes. In HTML, use `toExcel()` and `exportExcel()`, or the attribute `data-ok-excel-options` (JSON).",
+    react: `<DataGrid
+  aria-label="Sales"
+  rows={sales}
+  columns={columns}
+  showToolbar
+  excelOptions={{ fileName: "sales", sheetName: "2025" }}
+/>`,
+  },
+  {
+    id: "charts",
+    title: "Chart the rows",
+    body: "With `chartsIntegration`, a chart follows the grid. `chartModel` sets its `type` (`column`, `bar`, `line` or `area`), its `dimension` (the field that names the categories) and its `values` (number fields drawn as series). When the rows are grouped, the chart shows the top-level groups with their aggregated values. Otherwise it shows the rows of the page. The **Chart** button in the toolbar opens a panel to change the type, the category and the series. In HTML, the chart is a Chart component inside the grid, and the grid writes its data table.",
+    react: `<DataGrid
+  aria-label="Sales"
+  rows={sales}
+  columns={columns}
+  showToolbar
+  chartsIntegration
+  initialState={{
+    rowGrouping: { model: ["product"] },
+    chartsIntegration: { model: { type: "column", values: ["revenue"] } },
+  }}
+/>`,
+  },
+  {
     id: "options",
     title: "Options",
     body: "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default.",
@@ -410,6 +497,7 @@ export function Customers() {
 - **\`ok:data-grid:rowclick\`**, **\`ok:data-grid:rowdoubleclick\`**, **\`ok:data-grid:cellclick\`**, **\`ok:data-grid:celldoubleclick\`** and **\`ok:data-grid:columnheaderclick\`** report the row id, the field and the value. **\`ok:data-grid:editstart\`** and **\`ok:data-grid:editstop\`** report the cell and the reason. **\`ok:data-grid:validate\`** asks for an error in \`detail.error\`.
 - **\`ok:data-grid:expand\`**, **\`ok:data-grid:detailpanel\`** and **\`ok:data-grid:roworder\`** report a row opening, a panel opening and a row moving. They're cancelable. \`setRowChildrenExpansion(id, open)\` and \`toggleDetailPanel(id)\` do the same from code.
 - **More methods:** \`print(options)\`, \`autosizeColumns(options)\`, \`scrollToIndexes({ rowIndex, colIndex })\`, \`exportState()\`, \`restoreState(state)\`, \`setFilterOperators(field, operators)\`, \`setValueFormatter(field, format)\` and \`setLocaleText(labels)\`. \`toCsv\` and \`exportCsv\` take CSV options.
+- **\`ok:data-grid:rowgrouping\`**, **\`ok:data-grid:aggregation\`**, **\`ok:data-grid:cellselection\`** and **\`ok:data-grid:chart\`** fire with the new model in \`detail.model\`. **\`ok:data-grid:pivot\`** reports \`detail.model\` and \`detail.active\`. They're cancelable. **\`ok:data-grid:clipboardcopy\`** reports the copied text in \`detail.data\`, and the cancelable **\`ok:data-grid:clipboardpaste\`** the pasted cells. The instance has \`rowGroupingModel\`, \`aggregationModel\`, \`pivotModel\`, \`pivotActive\`, \`cellSelectionModel\` and \`chartModel\` with their setters, \`toExcel(options)\` and \`exportExcel(options)\`.
 - **\`ok:data-grid:scrollend\`** reports \`detail.visibleRowsCount\` when people scroll to the end of the rows. **\`ok:data-grid:datasourceerror\`** reports \`detail.error\` when a data source fails.`,
   },
   {
@@ -427,6 +515,8 @@ export function Customers() {
 - Merged cells report their span with \`aria-colspan\` and \`aria-rowspan\`. The cells they cover are hidden from assistive technologies, and the arrow keys skip them.
 - An invalid edit sets \`aria-invalid\` on the field, and its message is announced and linked to the field with \`aria-describedby\`.
 - Header descriptions describe their header. With the icon toolbar, each button is named by its tooltip.
+- Group rows are tree rows: \`aria-level\`, \`aria-expanded\` and their position among their siblings. The grid is a \`treegrid\` while rows are grouped.
+- Selected cells carry \`aria-selected\`. Header filter cells are named after their column, such as "Name filter".
 - While rows load, the grid sets \`aria-busy\` and the loading overlay is a \`status\` named "Loading". The grid keeps the full row count and each row's index, also when only some rows are in the page.`,
   },
 ];
@@ -606,6 +696,30 @@ const PREVIEWS = {
           description: "Header groups, and the cell list view shows.",
         },
         {
+          react: "rowGroupingModel · aggregationModel · aggregationFunctions",
+          html: "data-ok-row-grouping-model · data-ok-aggregation-model",
+          type: "string[] · Record<string, string>",
+          description: "Fields that group the rows, and each field's function.",
+        },
+        {
+          react: "pivotModel · pivotActive",
+          html: "data-ok-pivot-model · data-ok-pivot-active",
+          type: "{ rows, columns, values } · boolean",
+          description: "The pivot, and whether it shows.",
+        },
+        {
+          react: "cellSelectionModel · onClipboardCopy · processRowUpdate",
+          html: "ok:data-grid:cellselection · clipboardcopy · edit",
+          type: "Record<id, Record<field, true>>",
+          description: "Selected cells, copied text and pasted rows.",
+        },
+        {
+          react: "chartModel · excelOptions",
+          html: "data-ok-chart-model · data-ok-excel-options",
+          type: "{ type, dimension, values } · GridExcelOptions",
+          description: "The chart of the rows, and the Excel file.",
+        },
+        {
           react: "showToolbar · localeText · exportFileName",
           html: "the toolbar markup",
           type: "—",
@@ -635,6 +749,9 @@ const PREVIEWS = {
           "Opens / closes the row (Left on a child: its parent)",
         ],
         ["Alt + Up / Alt + Down on a row handle", "Moves the row up / down"],
+        ["Shift + arrow keys (cell selection)", "Extends the selected range"],
+        ["Ctrl + C / Ctrl + V on a cell", "Copies the selection / pastes into editable cells"],
+        ["Up / Down in a header filter", "Moves to the cell above / below"],
       ]}
     />
   ),

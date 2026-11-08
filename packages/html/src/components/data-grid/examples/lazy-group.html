@@ -1,4 +1,4 @@
-<div data-ok-data-grid data-ok-density="standard" data-ok-edit-mode="cell" data-ok-sorting-mode="client" data-ok-filter-mode="client" data-ok-pagination-mode="client" data-ok-loading-variant="linear-progress" data-ok-toolbar-variant="labeled" data-ok-quick-filter-logic-operator="and" data-ok-lazy-loading id="grid-lazy" class="sb-grid">
+<div data-ok-data-grid data-ok-density="standard" data-ok-edit-mode="cell" data-ok-sorting-mode="client" data-ok-filter-mode="client" data-ok-pagination-mode="client" data-ok-loading-variant="linear-progress" data-ok-toolbar-variant="labeled" data-ok-quick-filter-logic-operator="and" data-ok-lazy-loading data-ok-aggregation-rows-scope="filtered" id="grid-lazy" class="sb-grid">
   <div role="grid" data-ok-data-grid-main aria-label="Customers, loaded as they scroll into view" aria-rowcount="1" aria-colcount="5">
     <div role="rowgroup" data-ok-data-grid-header>
       <div role="row" aria-rowindex="1">
@@ -49,6 +49,13 @@
       <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="pin-left">Pin to left</li>
       <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="pin-right">Pin to right</li>
       <li role="menuitem" tabindex="-1" data-ok-menu-item aria-disabled="true" data-ok-data-grid-action="unpin">Unpin</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item aria-disabled="true" data-ok-data-grid-action="group">Group by</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="aggregate-none" hidden>Aggregation: none</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="aggregate-sum" hidden>Aggregation: sum</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="aggregate-avg" hidden>Aggregation: avg</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="aggregate-min" hidden>Aggregation: min</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="aggregate-max" hidden>Aggregation: max</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="aggregate-size" hidden>Aggregation: size</li>
       <li role="menuitem" tabindex="-1" data-ok-menu-item aria-disabled="true" data-ok-data-grid-action="hide">Hide column</li>
     </ul>
   </div>

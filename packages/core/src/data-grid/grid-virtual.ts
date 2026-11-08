@@ -123,6 +123,8 @@ export interface GridGetRowsParams {
   end?: number | undefined;
   /** Tree data: the group keys of the parent whose children are asked for (top level: `[]`). */
   groupKeys?: string[] | undefined;
+  /** Row grouping: the grouped fields (the server returns the groups of the next level). */
+  groupFields?: string[] | undefined;
 }
 
 export interface GridGetRowsResponse<R> {

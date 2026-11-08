@@ -13,6 +13,7 @@ import { DemoIcon } from "../shared/demo-icon.js";
 import type { GroupFiles } from "../shared/snippets.js";
 import { layoutGroups, validationGroups } from "./layout-examples.js";
 import { PHASE5_FILES, phase5Stories } from "./phase5-examples.js";
+import { PHASE6_FILES, phase6Stories } from "./phase6-examples.js";
 
 const FIRST = ["Ana", "Bao", "Chloe", "Diego", "Elif", "Farid", "Grace", "Hugo", "Ines", "Jonas"];
 const LAST = [
@@ -356,6 +357,7 @@ export const dataGridStories: Record<string, ReactGroup[]> = {
   layout: layoutGroups,
   validation: validationGroups,
   ...phase5Stories,
+  ...phase6Stories,
 };
 
 export const DATA_GRID_FILES: Record<string, GroupFiles> = {
@@ -368,6 +370,7 @@ export const DATA_GRID_FILES: Record<string, GroupFiles> = {
   ],
   validation: [["Editing and validation", "group"]],
   ...PHASE5_FILES,
+  ...PHASE6_FILES,
 };
 
 /** Story Controls shared by the React and HTML stories (ADR-0015). */

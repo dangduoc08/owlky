@@ -1,6 +1,8 @@
 import {
   arrangeGridColumns,
   clampGridWidth,
+  createGridCellSelection,
+  createGridClipboard,
   createGridColumnControls,
   createGridDataSourceCache,
   createGridNavigation,
@@ -8,10 +10,18 @@ import {
   createGridScrollWatcher,
   dataGridOptions,
   filterGridRows,
+  GRID_AGGREGATION_ROOT_ID,
   GRID_CHECKBOX_FIELD,
   GRID_CHECKBOX_WIDTH,
+  GRID_GROUPING_FIELD,
   GRID_TREE_FIELD,
+  GRID_XLSX_TYPE,
+  type GridAggregationModel,
+  type GridCellSelectionModel,
+  type GridChartModel,
+  type GridChartType,
   type GridColumn,
+  type GridColumnGroup,
   type GridColumnType,
   type GridColumnVisibilityModel,
   type GridColumnWidths,
@@ -19,18 +29,29 @@ import {
   type GridDataSource,
   type GridDensity,
   type GridEditStartReason,
+  type GridExcelOptions,
   type GridFilterModel,
   type GridFilterOperator,
   type GridFormat,
+  type GridGroupNode,
   type GridLabels,
   type GridPinnedColumns,
+  type GridPivotColumn,
+  type GridPivotModel,
+  type GridPivotResult,
   type GridPrintLayout,
   type GridRowWindow,
   type GridSortModel,
   type GridState,
   type GridViewport,
+  gridAggregate,
+  gridAggregationFunctionsFor,
+  gridAlign,
   gridAriaSort,
   gridCanMoveColumn,
+  gridCellEdges,
+  gridCellRange,
+  gridChartData,
   gridColumnTemplate,
   gridColumnTypes,
   gridColumnWindow,
@@ -44,26 +65,41 @@ import {
   gridFilterOperators,
   gridFormats,
   gridFormatValue,
+  gridGroupComparator,
+  gridGroupPaths,
   gridGroupRows,
+  gridGroupsById,
+  gridHeaderAlign,
   gridMissingRanges,
   gridOperatorNeedsValue,
   gridPinSide,
+  gridPivot,
+  gridPivotRole,
   gridQuickFilterValues,
+  gridRowGroups,
   gridRowOffsets,
   gridRowSpans,
   gridRowWindow,
   gridRowWindowOf,
   gridSelectAllState,
+  gridSelectedBlock,
   gridToCsv,
+  gridToTsv,
+  gridToXlsx,
   gridTreeRows,
+  isGridCellSelected,
   isGridResizable,
   isGridSortable,
   measureGridColumn,
+  mergeGridCellSelection,
   moveGridColumn,
   moveGridRow,
   nextGridSort,
   orderGridColumns,
+  parseGridAggregationModel,
+  parseGridClipboard,
   parseGridEditValue,
+  parseGridExcelOptions,
   parseGridExportOptions,
   parseGridFormatOptions,
   pick,
@@ -73,10 +109,16 @@ import {
   pruneGridSelection,
   readNumber,
   readStyle,
+  renderChart,
+  sanitizeGridCellSelection,
+  sanitizeGridChartModel,
+  sanitizeGridPivotModel,
   sanitizeGridState,
   selectGridRow,
+  setGridPivotRole,
   sortGridRows,
   syncGridPinning,
+  toggleGridCell,
   toggleGridRows,
   visibleGridColumns,
 } from "@owlky/core";
@@ -84,6 +126,7 @@ import { defineComponent } from "../../runtime/define.js";
 import { syncCustomProperties } from "../../runtime/style.js";
 import type { ComponentInstance } from "../../runtime/types.js";
 import type { AutocompleteInstance } from "../autocomplete/autocomplete.js";
+import type { DatePickerInstance } from "../date-picker/date-picker.js";
 import type { PopoverInstance } from "../popover/popover.js";
 import type { TablePaginationInstance } from "../table-pagination/table-pagination.js";
 
@@ -135,6 +178,23 @@ export interface DataGridInstance extends ComponentInstance {
   setRows(rows: readonly DataRow[]): void;
   /** Loads the rows from a server for the current sort, filter and page (`null`: stop). */
   setDataSource(source: GridDataSource<DataRow> | null): void;
+  /** Phase 6 (MUI X Premium). These setters don't emit events. */
+  readonly rowGroupingModel: string[];
+  readonly aggregationModel: GridAggregationModel;
+  readonly pivotModel: GridPivotModel;
+  readonly pivotActive: boolean;
+  readonly cellSelectionModel: GridCellSelectionModel;
+  readonly chartModel: GridChartModel;
+  setRowGroupingModel(model: readonly string[]): void;
+  setAggregationModel(model: GridAggregationModel): void;
+  setPivotModel(model: GridPivotModel): void;
+  setPivotActive(active: boolean): void;
+  setCellSelectionModel(model: GridCellSelectionModel): void;
+  setChartModel(model: GridChartModel): void;
+  /** The .xlsx file of the filtered, sorted rows (bytes). */
+  toExcel(options?: GridExcelOptions): Uint8Array;
+  /** Downloads it (`options.fileName`, else `data-ok-export-file-name`, default "data"). */
+  exportExcel(options?: GridExcelOptions): void;
 }
 
 const {
@@ -171,6 +231,13 @@ const {
   quickFilterLogicOperator,
   quickFilterExcludeHiddenColumns,
   ignoreDiacritics,
+  disableRowGrouping,
+  disableAggregation,
+  aggregationRowsScope,
+  disablePivoting,
+  pivotActive: pivotActiveOption,
+  cellSelection: cellSelectionOption,
+  disableClipboardPaste,
 } = dataGridOptions.options;
 
 type DataRow = Record<string, unknown>;
@@ -192,6 +259,7 @@ const SPECIALS: Record<string, number> = {
   [GRID_CHECKBOX_FIELD]: GRID_CHECKBOX_WIDTH,
   [DETAIL_FIELD]: 50,
   [GRID_TREE_FIELD]: 200,
+  [GRID_GROUPING_FIELD]: 200,
 };
 const LAZY_CHUNK = 50;
 const INTERACTIVE = "button, a, input, label, select, textarea";
@@ -214,14 +282,39 @@ const numberAttr = (element: Element, name: string) => {
 };
 
 /** The download, through a Blob link revoked right after. */
-function download(name: string, csv: string) {
-  const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+function download(name: string, data: BlobPart, type = "text/csv;charset=utf-8") {
+  const url = URL.createObjectURL(new Blob([data], { type }));
   const link = document.createElement("a");
   link.href = url;
-  link.download = `${name}.csv`;
+  link.download = name;
   link.click();
   URL.revokeObjectURL(url);
 }
+
+const SVG = "http://www.w3.org/2000/svg";
+/** A decorative 24px icon (the React components' paths). */
+const icon = (d: string) => {
+  const svg = document.createElementNS(SVG, "svg");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("aria-hidden", "true");
+  svg.setAttribute("fill", "currentColor");
+  const path = document.createElementNS(SVG, "path");
+  path.setAttribute("d", d);
+  svg.append(path);
+  return svg;
+};
+const CHEVRON = "M9 6l6 6-6 6-1.4-1.4 4.6-4.6-4.6-4.6z";
+const SORT_ARROW = "M12 4l-6 6h4v10h4V10h4z";
+/** A JSON list of strings from an attribute (untrusted). */
+const fieldList = (json: string | null): string[] =>
+  (stringList(json) ?? []).filter((f) => !["__proto__", "constructor", "prototype"].includes(f));
+const parseJson = (json: string | null): unknown => {
+  try {
+    return JSON.parse(json ?? "null");
+  } catch {
+    return null;
+  }
+};
 
 /**
  * DataGrid — spec: specs/components/data-grid.md (ADR-0020, phase 1)
@@ -262,11 +355,11 @@ export const dataGrid = defineComponent<DataGridInstance>({
     const id = element.id;
     const byId = (suffix: string) => (id ? document.getElementById(`${id}-${suffix}`) : null);
     const checkbox = element.hasAttribute("data-ok-checkbox-selection");
-    const specialFields = [
-      ...headerRow.querySelectorAll<HTMLElement>('[role="columnheader"][data-ok-field]'),
-    ]
-      .map((header) => header.getAttribute("data-ok-field") as string)
-      .filter((field) => field in SPECIALS);
+    const readSpecials = () =>
+      [...headerRow.querySelectorAll<HTMLElement>('[role="columnheader"][data-ok-field]')]
+        .map((header) => header.getAttribute("data-ok-field") as string)
+        .filter((field) => field in SPECIALS);
+    let specialFields = readSpecials();
     const specialWidth = (field: string) =>
       numberAttr(
         headerRow.querySelector(`[data-ok-field="${CSS.escape(field)}"]`) as Element,
@@ -276,22 +369,32 @@ export const dataGrid = defineComponent<DataGridInstance>({
       [...headerRow.querySelectorAll<HTMLElement>('[role="columnheader"]')].filter(
         (header) => !((header.getAttribute("data-ok-field") ?? "") in SPECIALS),
       );
-    const columns: GridColumn[] = headers().map((header) => ({
-      field: header.getAttribute("data-ok-field") as string,
-      headerName: header.querySelector("[data-ok-data-grid-header-title]")?.textContent ?? "",
-      type: pick(gridColumnTypes, header.getAttribute("data-ok-type"), "string") as GridColumnType,
-      width: numberAttr(header, "data-ok-width"),
-      minWidth: numberAttr(header, "data-ok-min-width"),
-      flex: numberAttr(header, "data-ok-flex"),
-      maxWidth: numberAttr(header, "data-ok-max-width"),
-      searchable: header.getAttribute("data-ok-searchable") !== "false",
-      sortable: header.hasAttribute("aria-sort"),
-      hideable: header.getAttribute("data-ok-hideable") !== "false",
-      filterable: header.getAttribute("data-ok-filterable") !== "false",
-      resizable: header.getAttribute("data-ok-resizable") !== "false",
-      editable: header.hasAttribute("data-ok-editable"),
-      valueOptions: stringList(header.getAttribute("data-ok-value-options")),
-    }));
+    const readColumns = (): GridColumn[] =>
+      headers().map((header) => ({
+        field: header.getAttribute("data-ok-field") as string,
+        headerName: header.querySelector("[data-ok-data-grid-header-title]")?.textContent ?? "",
+        type: pick(
+          gridColumnTypes,
+          header.getAttribute("data-ok-type"),
+          "string",
+        ) as GridColumnType,
+        width: numberAttr(header, "data-ok-width"),
+        minWidth: numberAttr(header, "data-ok-min-width"),
+        flex: numberAttr(header, "data-ok-flex"),
+        maxWidth: numberAttr(header, "data-ok-max-width"),
+        searchable: header.getAttribute("data-ok-searchable") !== "false",
+        sortable: header.hasAttribute("aria-sort"),
+        hideable: header.getAttribute("data-ok-hideable") !== "false",
+        filterable: header.getAttribute("data-ok-filterable") !== "false",
+        resizable: header.getAttribute("data-ok-resizable") !== "false",
+        editable: header.hasAttribute("data-ok-editable"),
+        valueOptions: stringList(header.getAttribute("data-ok-value-options")),
+        groupable: header.getAttribute("data-ok-groupable") !== "false",
+        aggregable: header.getAttribute("data-ok-aggregable") !== "false",
+      }));
+    const baseColumns = readColumns();
+    /** The columns: the markup's, or the pivot's while it shows. */
+    let columns = baseColumns;
     // Text the runtime writes (setLocaleText), custom operators and value formatters.
     let labels: GridLabels = gridDefaultLabels;
     const operators: Record<string, readonly GridFilterOperator<HTMLElement>[]> = {};
@@ -314,29 +417,44 @@ export const dataGrid = defineComponent<DataGridInstance>({
       return raw === null || raw === undefined ? "" : String(raw);
     };
     // Column groups: each column's group chain (from the markup) and the groups' cells.
-    const groupPaths = new Map<string, string[]>();
+    let groupPaths = new Map<string, string[]>();
     for (const header of headers()) {
       const path = stringList(header.getAttribute("data-ok-group-path"));
       if (path?.length) groupPaths.set(header.getAttribute("data-ok-field") as string, path);
     }
     // Every row lives here; only the rows to show are in the page (pages, filters, the window).
-    let rowEls = [...body.querySelectorAll<HTMLElement>(ROW)];
+    // Row groups are the runtime's: the markup's copies are built again from the rows.
+    let rowEls = [...body.querySelectorAll<HTMLElement>(ROW)].filter((row) => {
+      const generated =
+        row.hasAttribute("data-ok-generated") && !element.hasAttribute(treeData.attr);
+      if (generated) row.remove();
+      return !generated;
+    });
     const rows = () => rowEls;
     const cellOf = (row: HTMLElement, field: string) =>
       row.querySelector<HTMLElement>(`[role="gridcell"][data-ok-field="${CSS.escape(field)}"]`);
-    const text = (row: HTMLElement, field: string) => {
+    const cellText = (row: HTMLElement, field: string) => {
       const cell = cellOf(row, field);
       return cell ? (cell.getAttribute("data-ok-text") ?? (cell.textContent as string).trim()) : "";
     };
-    const value = (row: HTMLElement, field: string) => {
+    const cellValue = (row: HTMLElement, field: string) => {
       const cell = cellOf(row, field);
       return cell?.hasAttribute("data-ok-value")
         ? cell.getAttribute("data-ok-value")
-        : text(row, field);
+        : cellText(row, field);
     };
+    // Pivot columns aren't cells: the pivot gives their values (and text) from the rows.
+    let pivot: GridPivotResult<HTMLElement> | null = null;
+    const value = (row: HTMLElement, field: string) =>
+      pivot && !baseColumns.some((c) => c.field === field)
+        ? pivot.value(row, field)
+        : cellValue(row, field);
+    // Texts are the cells' (filters and search run on the data, also in the pivot).
+    const text = cellText;
     const idOf = (row: HTMLElement) => row.getAttribute("data-ok-row-id") as string;
     const multiple = () => !element.hasAttribute(disableMultipleRowSelection.attr);
-    const selectable = (row: HTMLElement) => row.getAttribute("data-ok-selectable") !== "false";
+    const selectable = (row: HTMLElement) =>
+      row.getAttribute("data-ok-selectable") !== "false" && !row.hasAttribute("data-ok-generated");
     /** Rows "select all" covers: selectable, filtered (or on this page only). */
     const allRows = () =>
       (element.hasAttribute(checkboxSelectionVisibleOnly.attr) ? pageList : filtered).filter(
@@ -382,6 +500,192 @@ export const dataGrid = defineComponent<DataGridInstance>({
     let filtered: HTMLElement[] = [];
     let written: string[] = [];
 
+    // Phase 6 (MUI X Premium): models from the markup (JSON attributes, untrusted).
+    let rowGrouping = fieldList(element.getAttribute("data-ok-row-grouping-model"));
+    let aggregationModel = parseGridAggregationModel(
+      element.getAttribute("data-ok-aggregation-model"),
+    );
+    let pivotModel = sanitizeGridPivotModel(parseJson(element.getAttribute("data-ok-pivot-model")));
+    let cellModel: GridCellSelectionModel = {};
+    let chartModel = sanitizeGridChartModel(parseJson(element.getAttribute("data-ok-chart-model")));
+    const labelOf = (fn: string) =>
+      labels[
+        `aggregationFunctionLabel${fn.charAt(0).toUpperCase()}${fn.slice(1)}` as keyof GridLabels
+      ] as string;
+    const pivotOn = () =>
+      element.hasAttribute(pivotActiveOption.attr) &&
+      !element.hasAttribute(disablePivoting.attr) &&
+      !element.hasAttribute(treeData.attr);
+    /** Fields grouped by now (the pivot's rows while it shows). */
+    const grouping = () =>
+      pivot
+        ? pivot.rowGroupingModel
+        : element.hasAttribute(treeData.attr) || element.hasAttribute(disableRowGrouping.attr)
+          ? []
+          : rowGrouping.filter((f) => baseColumns.some((c) => c.field === f));
+    /** The aggregation in use: valid functions of known columns only. */
+    const activeAggregation = (): GridAggregationModel => {
+      const model = pivot
+        ? pivot.aggregationModel
+        : element.hasAttribute(disableAggregation.attr)
+          ? {}
+          : aggregationModel;
+      return Object.fromEntries(
+        Object.entries(model).filter(([field, fn]) => {
+          const column = columns.find((c) => c.field === field);
+          return !!column && gridAggregationFunctionsFor(column).includes(fn);
+        }),
+      );
+    };
+    // Generated rows: one element per group, kept while its group exists.
+    const groupEls = new Map<string, HTMLElement>();
+    const groupNodes = new Map<string, GridGroupNode>();
+    const aggregates = new Map<string, Record<string, unknown>>();
+    const leafCounts = new Map<string, number>();
+    const aggregateText = (field: string, raw: unknown) =>
+      raw === null || raw === undefined
+        ? ""
+        : activeAggregation()[field] === "size"
+          ? String(raw)
+          : formatted(
+              pivot
+                ? (pivot.columns.find((c) => c.field === field) as GridPivotColumn).pivotValueField
+                : field,
+              raw,
+            );
+    const gridCell = (field: string) => {
+      const cell = document.createElement("div");
+      cell.setAttribute("role", "gridcell");
+      cell.setAttribute("data-ok-field", field);
+      cell.tabIndex = -1;
+      return cell;
+    };
+    /** A generated row's cells: the special columns, then every column (layout hides some). */
+    const fillGroupRow = (row: HTMLElement) => {
+      const cells = specialFields.map((field, i) => {
+        const cell = gridCell(field);
+        cell.setAttribute("aria-colindex", String(i + 1));
+        return cell;
+      });
+      for (const column of columns) {
+        const cell = gridCell(column.field);
+        cell.setAttribute("data-ok-align", gridAlign(column));
+        cells.push(cell);
+      }
+      row.replaceChildren(...cells);
+      laidOut.delete(row);
+    };
+    /** The group column's content: toggle (or spacer), name and count. */
+    const groupLabel = (
+      cell: HTMLElement,
+      key: string,
+      count: number | null,
+      open: boolean | null,
+    ) => {
+      // The same parts are updated in place: the toggle may hold the focus.
+      const toggle = cell.querySelector(":scope > [data-ok-data-grid-tree-toggle]");
+      const label = cell.querySelector(":scope > [data-ok-data-grid-tree-label]");
+      const counter = cell.querySelector(":scope > [data-ok-data-grid-tree-count]");
+      if (label && !!toggle === (open !== null) && !!counter === (count !== null)) {
+        label.textContent = key;
+        if (counter) counter.textContent = `(${count})`;
+        return;
+      }
+      const parts: Node[] = [];
+      if (open === null) {
+        const spacer = document.createElement("span");
+        spacer.setAttribute("data-ok-data-grid-tree-spacer", "");
+        parts.push(spacer);
+      } else {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.setAttribute("data-ok-icon-button", "");
+        button.setAttribute("data-ok-color", "default");
+        button.setAttribute("data-ok-size", "sm");
+        button.tabIndex = -1;
+        button.setAttribute("data-ok-data-grid-tree-toggle", "");
+        button.append(icon(CHEVRON));
+        parts.push(button);
+      }
+      const name = document.createElement("span");
+      name.setAttribute("data-ok-data-grid-tree-label", "");
+      name.textContent = key;
+      parts.push(name);
+      if (count !== null) {
+        const counter = document.createElement("span");
+        counter.setAttribute("data-ok-data-grid-tree-count", "");
+        counter.textContent = `(${count})`;
+        parts.push(counter);
+      }
+      cell.replaceChildren(...parts);
+    };
+    const hideCount = () =>
+      !!headerRow.querySelector(
+        `:scope > [data-ok-field="${GRID_GROUPING_FIELD}"][data-ok-hide-descendant-count]`,
+      );
+    const groupElFor = (node: GridGroupNode) => {
+      let row = groupEls.get(node.id);
+      if (!row) {
+        row = document.createElement("div");
+        row.setAttribute("role", "row");
+        row.setAttribute("data-ok-row-id", node.id);
+        row.setAttribute("data-ok-generated", "");
+        groupEls.set(node.id, row);
+        fillGroupRow(row);
+      }
+      groupNodes.set(node.id, node);
+      return row;
+    };
+    /** The group column of every row (and the row template) while rows are grouped. */
+    const syncGroupColumn = (on: boolean) => {
+      const has = !!headerRow.querySelector(`:scope > [data-ok-field="${GRID_GROUPING_FIELD}"]`);
+      if (on === has) return;
+      const templateRow = element.querySelector<HTMLTemplateElement>(
+        "template[data-ok-data-grid-row]",
+      )?.content.firstElementChild as HTMLElement | null | undefined;
+      const targets = [...rowEls, ...pinnedRowEls(), ...(templateRow ? [templateRow] : [])];
+      if (!on) {
+        for (const row of [headerRow, ...targets])
+          row.querySelector(`:scope > [data-ok-field="${GRID_GROUPING_FIELD}"]`)?.remove();
+        for (const row of rowEls)
+          for (const attr of ["aria-level", "aria-posinset", "aria-setsize", "data-ok-parent"])
+            row.removeAttribute(attr);
+      } else {
+        const after = (row: HTMLElement) =>
+          [...row.querySelectorAll<HTMLElement>(":scope > [data-ok-field]")]
+            .filter((cell) => (cell.getAttribute("data-ok-field") as string) in SPECIALS)
+            .at(-1) ?? null;
+        const header = document.createElement("div");
+        header.setAttribute("role", "columnheader");
+        header.setAttribute("data-ok-field", GRID_GROUPING_FIELD);
+        header.tabIndex = -1;
+        header.setAttribute("data-ok-width", "200");
+        const title = document.createElement("span");
+        title.setAttribute("data-ok-data-grid-header-title", "");
+        title.textContent = labels.treeDataGroupingHeaderName;
+        header.append(title);
+        const place = (row: HTMLElement, cell: HTMLElement) => {
+          const last = after(row);
+          if (last) last.after(cell);
+          else row.prepend(cell);
+          cell.setAttribute(
+            "aria-colindex",
+            String(
+              [...row.querySelectorAll(":scope > [data-ok-field]")].filter(
+                (c) => (c.getAttribute("data-ok-field") as string) in SPECIALS,
+              ).length,
+            ),
+          );
+        };
+        place(headerRow, header);
+        for (const row of targets) place(row, gridCell(GRID_GROUPING_FIELD));
+      }
+      specialFields = readSpecials();
+      for (const row of groupEls.values()) fillGroupRow(row);
+      main.setAttribute("role", on || element.hasAttribute(treeData.attr) ? "treegrid" : "grid");
+      layout();
+    };
+
     const pagination = element.querySelector<HTMLElement>(
       "[data-ok-data-grid-footer] [data-ok-table-pagination]",
     );
@@ -404,6 +708,21 @@ export const dataGrid = defineComponent<DataGridInstance>({
         openColumnMenu(field, header.querySelector("[data-ok-data-grid-menu-button]")),
       onToggleRow: (row) => toggle(row),
       onSelectAll: () => {
+        // Cell selection: every cell of the page.
+        if (cellsOn()) {
+          const ids = pageIds();
+          const fields = shownFields();
+          if (ids.length)
+            setCells(
+              gridCellRange(
+                ids,
+                fields,
+                { id: ids[0] as string, field: fields[0] as string },
+                { id: ids.at(-1) as string, field: fields.at(-1) as string },
+              ),
+            );
+          return;
+        }
         if (checkbox && multiple()) select(toggleGridRows(selection, allRows().map(idOf)));
       },
       onToggleExpansion: (row, expanded) => toggleExpansion(row, expanded),
@@ -541,6 +860,7 @@ export const dataGrid = defineComponent<DataGridInstance>({
       groupLayout(shown, offset);
       layoutState = { arranged, shown, offset, leftPinned, list };
       layoutVersion++;
+      layoutFilterRow();
       // Rows out of the page are laid out when they're drawn (large and lazy grids).
       for (const row of [
         headerRow,
@@ -564,6 +884,39 @@ export const dataGrid = defineComponent<DataGridInstance>({
     };
     let layoutVersion = 0;
     const laidOut = new WeakMap<HTMLElement, number>();
+    /** The header filter row: one cell per column, in the columns' order, pinned with them. */
+    const layoutFilterRow = () => {
+      const row = filterRowEl();
+      if (!row) return;
+      const { arranged, shown, offset, leftPinned } = layoutState;
+      for (const filler of row.querySelectorAll<HTMLElement>(
+        ":scope > :not([data-ok-filter-field])",
+      ))
+        filler.toggleAttribute("data-ok-pinned", leftPinned);
+      for (const filler of row.querySelectorAll<HTMLElement>(
+        ":scope > [data-ok-pinned]:not([data-ok-filter-field])",
+      ))
+        filler.setAttribute("data-ok-pinned", "left");
+      for (const column of arranged) {
+        const cell = row.querySelector<HTMLElement>(
+          `:scope > [data-ok-filter-field="${CSS.escape(column.field)}"]`,
+        );
+        if (!cell) continue;
+        row.append(cell);
+        const index = shown.findIndex((c) => c.field === column.field);
+        cell.hidden = index < 0;
+        if (index >= 0 && cell.getAttribute("role") === "columnheader")
+          cell.setAttribute("aria-colindex", String(index + offset));
+        const side = gridPinSide(pinned, column.field);
+        if (side) {
+          cell.setAttribute("data-ok-pinned", side);
+          cell.setAttribute("data-ok-pin-field", column.field);
+        } else {
+          cell.removeAttribute("data-ok-pinned");
+          cell.removeAttribute("data-ok-pin-field");
+        }
+      }
+    };
     /** One row's cells: order, pinning, hidden columns and indexes (once per layout). */
     const layoutRow = (row: HTMLElement) => {
       if (laidOut.get(row) === layoutVersion) return;
@@ -677,10 +1030,13 @@ export const dataGrid = defineComponent<DataGridInstance>({
             : field === right[0]?.field
               ? first + visible.length + 1
               : undefined;
-      for (const row of [headerRow, ...shownRows, ...pinnedRowEls()])
+      const filters = filterRowEl();
+      for (const row of [headerRow, ...shownRows, ...pinnedRowEls(), ...(filters ? [filters] : [])])
         for (const column of shown) {
           const cell = row.querySelector<HTMLElement>(
-            `:scope > [data-ok-field="${CSS.escape(column.field)}"]`,
+            row === filters
+              ? `:scope > [data-ok-filter-field="${CSS.escape(column.field)}"]`
+              : `:scope > [data-ok-field="${CSS.escape(column.field)}"]`,
           );
           if (!cell) continue;
           if (out.has(column.field)) {
@@ -718,12 +1074,26 @@ export const dataGrid = defineComponent<DataGridInstance>({
       if (row.hasAttribute("aria-expanded"))
         expansion.set(idOf(row), row.getAttribute("aria-expanded") === "true");
     const isTree = () => element.hasAttribute(treeData.attr);
-    const firstRowIndex = () => groupRowEls().length + pinnedTop() + 2;
+    /** Row grouping through a data source: the server sends each level's groups. */
+    const serverGrouping = () =>
+      !!source &&
+      !isTree() &&
+      !element.hasAttribute(disableRowGrouping.attr) &&
+      rowGrouping.length > 0;
+    const groupFieldSelector = `[data-ok-field="${GRID_TREE_FIELD}"], [data-ok-field="${GRID_GROUPING_FIELD}"]`;
+    const filterRowEl = () =>
+      headerGroup.querySelector<HTMLElement>(":scope > [data-ok-data-grid-header-filters]");
+    const firstRowIndex = () => groupRowEls().length + (filterRowEl() ? 1 : 0) + pinnedTop() + 2;
+    /** The pivot's rows: the filtered data rows. */
+    const pivotRows = () =>
+      serverSide(filterMode)
+        ? rows()
+        : filterGridRows(rows(), filterModel, baseColumns, cellValue, cellText, filterOptions());
     const apply = () => {
       const all = rows();
       variableRows = hasOwnHeights();
       let sorted: HTMLElement[];
-      if (isTree()) {
+      if (isTree() || serverGrouping()) {
         const pass = serverSide(filterMode)
           ? null
           : new Set(filterGridRows(all, filterModel, columns, value, text, filterOptions()));
@@ -746,7 +1116,7 @@ export const dataGrid = defineComponent<DataGridInstance>({
           row.setAttribute("aria-posinset", String(node.posInSet));
           row.setAttribute("aria-setsize", String(node.setSize));
           row
-            .querySelector<HTMLElement>(`[data-ok-field="${GRID_TREE_FIELD}"]`)
+            .querySelector<HTMLElement>(groupFieldSelector)
             ?.style.setProperty("--_ok-data-grid-depth", String(node.depth));
           const toggle = row.querySelector<HTMLElement>("[data-ok-data-grid-tree-toggle]");
           // Server trees know children before they load (the toggle comes with the row).
@@ -768,6 +1138,104 @@ export const dataGrid = defineComponent<DataGridInstance>({
         }
         sorted = tree.map((node) => node.row);
         filtered = sorted;
+      } else if (pivot || grouping().length) {
+        // Row grouping (and the pivot, which shows its groups only).
+        const fields = grouping();
+        const source = pivot ? pivotRows() : all;
+        const nodes = gridRowGroups(source, fields, idOf, cellText);
+        const current = new Set(nodes.groups.map((g) => g.id));
+        for (const known of [...groupEls.keys()])
+          if (!current.has(known)) {
+            groupEls.delete(known);
+            groupNodes.delete(known);
+          }
+        const generated = nodes.groups.map(groupElFor);
+        const items = pivot ? generated : [...generated, ...source];
+        const passed =
+          serverSide(filterMode) || pivot
+            ? null
+            : filterGridRows(source, filterModel, columns, value, text, filterOptions());
+        const pass = passed ? new Set(passed) : null;
+        const place = serverSide(sortingMode)
+          ? null
+          : new Map(sortGridRows(source, sortModel, columns, value).map((row, i) => [row, i]));
+        const model = activeAggregation();
+        aggregates.clear();
+        leafCounts.clear();
+        const byRowId = new Map(source.map((row) => [idOf(row), row]));
+        const scoped = (list: HTMLElement[]) =>
+          readStyle(element, aggregationRowsScope) === "all" || !pass
+            ? list
+            : list.filter((row) => pass.has(row));
+        const firstPlace = new Map<string, number>();
+        for (const node of nodes.groups) {
+          const leaves = node.leafIds.map((leaf) => byRowId.get(leaf) as HTMLElement);
+          leafCounts.set(node.id, pass ? leaves.filter((r) => pass.has(r)).length : leaves.length);
+          if (Object.keys(model).length)
+            aggregates.set(node.id, gridAggregate(scoped(leaves), model, columns, value));
+          firstPlace.set(node.id, Math.min(...leaves.map((r) => place?.get(r) ?? 0)));
+        }
+        const generatedRow = (row: HTMLElement) => row.hasAttribute("data-ok-generated");
+        const depth = readNumber(element, defaultGroupingExpansionDepth) as number;
+        const tree = gridTreeRows(items, {
+          idOf,
+          parentOf: (row) => nodes.parentOf.get(idOf(row)) ?? null,
+          expanded: (rowId, level) => expansion.get(rowId) ?? gridExpandedByDepth(depth, level),
+          keep: pass ? (row) => !generatedRow(row) && pass.has(row) : undefined,
+          compare: place
+            ? gridGroupComparator<HTMLElement>({
+                isGroup: generatedRow,
+                place: (row) => place.get(row) as number,
+                firstPlace: (row) => firstPlace.get(idOf(row)) as number,
+                keyOf: (row) => (groupNodes.get(idOf(row)) as GridGroupNode).key,
+                aggregateOf: (row, field) => aggregates.get(idOf(row))?.[field],
+                sortModel,
+                columns,
+                groupFields: fields,
+                aggregated: Object.keys(model),
+              })
+            : undefined,
+        });
+        for (const node of tree) {
+          const row = node.row;
+          row.setAttribute("aria-level", String(node.depth + 1));
+          row.setAttribute("aria-posinset", String(node.posInSet));
+          row.setAttribute("aria-setsize", String(node.setSize));
+          if (node.parentId) row.setAttribute("data-ok-parent", node.parentId);
+          else row.removeAttribute("data-ok-parent");
+          const cell = row.querySelector<HTMLElement>(
+            `:scope > [data-ok-field="${GRID_GROUPING_FIELD}"]`,
+          );
+          cell?.style.setProperty("--_ok-data-grid-depth", String(node.depth));
+          if (!generatedRow(row)) continue;
+          const parent = node.childrenCount > 0;
+          if (parent) row.setAttribute("aria-expanded", String(node.expanded));
+          else row.removeAttribute("aria-expanded");
+          {
+            groupLabel(
+              cell as HTMLElement,
+              (groupNodes.get(node.id) as GridGroupNode).key,
+              parent && !hideCount() ? (leafCounts.get(node.id) as number) : null,
+              parent ? node.expanded : null,
+            );
+            const toggle = (cell as HTMLElement).querySelector("[data-ok-data-grid-tree-toggle]");
+            toggle?.setAttribute("aria-expanded", String(node.expanded));
+            toggle?.setAttribute(
+              "aria-label",
+              node.expanded ? labels.treeDataCollapse : labels.treeDataExpand,
+            );
+          }
+          const values = aggregates.get(node.id);
+          for (const column of columns) {
+            const target = cellOf(row, column.field);
+            (target as HTMLElement).textContent = aggregateText(
+              column.field,
+              values?.[column.field],
+            );
+          }
+        }
+        sorted = tree.map((node) => node.row);
+        filtered = pass ? source.filter((row) => pass.has(row)) : source;
       } else {
         filtered = serverSide(filterMode)
           ? all
@@ -798,6 +1266,24 @@ export const dataGrid = defineComponent<DataGridInstance>({
       sorted.forEach((row, index) => {
         row.setAttribute("aria-rowindex", String(index + first + rowOffset));
       });
+      bottomRowIndexes(first);
+      for (const header of headers()) {
+        const column = columns.find(
+          (c) => c.field === header.getAttribute("data-ok-field"),
+        ) as GridColumn;
+        if (isGridSortable(column) && header.hasAttribute("aria-sort"))
+          header.setAttribute("aria-sort", gridAriaSort(sortModel, column) as string);
+      }
+      syncAggregation(first);
+      mark();
+      draw();
+      syncOverlays(all.length);
+      syncHeaderFilters();
+      syncChart();
+      navigation.sync();
+    };
+    /** Pinned bottom rows (and the aggregation footer) come after every row. */
+    const bottomRowIndexes = (first: number) => {
       const bottom = [
         ...main.querySelectorAll<HTMLElement>(
           '[data-ok-data-grid-pinned-rows="bottom"] > [role="row"]',
@@ -807,17 +1293,76 @@ export const dataGrid = defineComponent<DataGridInstance>({
         row.setAttribute("aria-rowindex", String(first + total + index));
       });
       main.setAttribute("aria-rowcount", String(first - 1 + total + bottom.length));
+    };
+    /** Aggregation: the function's name in headers and the footer row of every filtered row. */
+    const syncAggregation = (first: number) => {
+      const model = activeAggregation();
       for (const header of headers()) {
-        const column = columns.find(
-          (c) => c.field === header.getAttribute("data-ok-field"),
-        ) as GridColumn;
-        if (isGridSortable(column) && header.hasAttribute("aria-sort"))
-          header.setAttribute("aria-sort", gridAriaSort(sortModel, column) as string);
+        const fn = pivot ? undefined : model[header.getAttribute("data-ok-field") as string];
+        let label = header.querySelector<HTMLElement>(
+          ":scope > [data-ok-data-grid-aggregation-label]",
+        );
+        if (!fn) {
+          label?.remove();
+          continue;
+        }
+        if (!label) {
+          label = document.createElement("span");
+          label.setAttribute("data-ok-data-grid-aggregation-label", "");
+          header.querySelector(":scope > [data-ok-data-grid-header-title]")?.after(label);
+        }
+        label.textContent = labelOf(fn);
       }
-      mark();
-      draw();
-      syncOverlays(all.length);
-      navigation.sync();
+      let footer = main.querySelector<HTMLElement>("[data-ok-data-grid-aggregation-row]");
+      if (!Object.keys(model).length || lazy()) {
+        const group = footer?.parentElement;
+        footer?.remove();
+        if (group && !group.children.length) group.remove();
+      } else {
+        if (!footer) {
+          footer = document.createElement("div");
+          footer.setAttribute("role", "row");
+          footer.setAttribute("data-ok-row-id", GRID_AGGREGATION_ROOT_ID);
+          footer.setAttribute("data-ok-data-grid-aggregation-row", "");
+          let group = main.querySelector<HTMLElement>('[data-ok-data-grid-pinned-rows="bottom"]');
+          if (!group) {
+            group = document.createElement("div");
+            group.setAttribute("role", "rowgroup");
+            group.setAttribute("data-ok-data-grid-pinned-rows", "bottom");
+            body.after(group);
+          }
+          group.append(footer);
+        }
+        if (
+          footer.querySelectorAll(":scope > [data-ok-field]").length !==
+          specialFields.length + columns.length
+        )
+          fillGroupRow(footer);
+        const rowsNow = pivot
+          ? pivotRows()
+          : readStyle(element, aggregationRowsScope) === "all" || serverSide(filterMode)
+            ? rows()
+            : filterGridRows(rows(), filterModel, columns, value, text, filterOptions());
+        const values = gridAggregate(rowsNow, model, columns, value);
+        for (const column of columns) {
+          const cell = cellOf(footer, column.field);
+          (cell as HTMLElement).textContent = aggregateText(column.field, values[column.field]);
+        }
+        layoutRow(footer);
+      }
+      bottomRowIndexes(first);
+    };
+    /** Header filters: each field shows the value of its column's first filter item. */
+    const syncHeaderFilters = () => {
+      for (const input of filterRowEl()?.querySelectorAll<HTMLInputElement | HTMLSelectElement>(
+        "[data-ok-data-grid-header-filter] > [data-ok-text-field] :is(input, select)",
+      ) ?? []) {
+        if (input.closest("[data-ok-date-picker]")) continue;
+        const field = input.closest("[data-ok-filter-field]")?.getAttribute("data-ok-filter-field");
+        const item = filterModel.items.find((i) => i.field === field);
+        const shown = typeof item?.value === "string" ? item.value : (item?.value ?? []).join(", ");
+        if (input.value !== shown) input.value = shown;
+      }
     };
     /** Puts the rows of the window (or the whole page) in the body, moving as few as possible. */
     const measured = new WeakMap<HTMLElement, number>();
@@ -1062,6 +1607,7 @@ export const dataGrid = defineComponent<DataGridInstance>({
         spacers,
       );
       windowColumns(shownRows);
+      markCells();
       syncGridPinning(main);
       // Rows of their own height: measure them (with their panels); new heights move the window.
       if (offsets && !drawing) {
@@ -1138,7 +1684,7 @@ export const dataGrid = defineComponent<DataGridInstance>({
         if (parent) row.setAttribute("data-ok-parent", parent);
         else row.removeAttribute("data-ok-parent");
         // Server tree data: the group key and a toggle when the row has children.
-        const treeCell = row.querySelector<HTMLElement>(`[data-ok-field="${GRID_TREE_FIELD}"]`);
+        const treeCell = row.querySelector<HTMLElement>(groupFieldSelector);
         if (treeCell && source) {
           const label = treeCell.querySelector("[data-ok-data-grid-tree-label]");
           if (label) label.textContent = source.getGroupKey?.(item) ?? String(item["id"]);
@@ -1186,6 +1732,7 @@ export const dataGrid = defineComponent<DataGridInstance>({
         sortModel,
         filterModel,
         paginationModel: { page, pageSize: Number.isFinite(pageSize) ? pageSize : 0 },
+        ...(serverGrouping() ? { groupKeys: [], groupFields: [...rowGrouping] } : {}),
       };
       const cached = sourceCache.get(params);
       const show = (response: { rows: DataRow[]; rowCount?: number | undefined }) => {
@@ -1213,7 +1760,7 @@ export const dataGrid = defineComponent<DataGridInstance>({
     };
     /** After a sort, filter or page change: ask the data source, or apply locally. */
     const refresh = () => {
-      if (source && isTree()) loadedChildren.clear();
+      if (source && (isTree() || serverGrouping())) loadedChildren.clear();
       if (source) load();
       else apply();
     };
@@ -1236,7 +1783,12 @@ export const dataGrid = defineComponent<DataGridInstance>({
         loadedChildren.add(rowId);
         row.setAttribute("aria-busy", "true");
         current
-          .getRows({ sortModel, filterModel, groupKeys: keys })
+          .getRows({
+            sortModel,
+            filterModel,
+            groupKeys: keys,
+            ...(serverGrouping() ? { groupFields: [...rowGrouping] } : {}),
+          })
           .then((response) => {
             if (source !== current) return;
             rowEls = [...rowEls, ...response.rows.map((item) => fillRow(item, rowId))];
@@ -1368,6 +1920,500 @@ export const dataGrid = defineComponent<DataGridInstance>({
         navigation.sync();
       });
 
+    // Phase 6: row grouping and aggregation models (cancelable events, as the others).
+    const setRowGrouping = (model: string[]) =>
+      change("rowgrouping", model, (next) => {
+        rowGrouping = next;
+        commitGrouping();
+      });
+    const commitGrouping = () => {
+      if (rowGrouping.length)
+        element.setAttribute("data-ok-row-grouping-model", JSON.stringify(rowGrouping));
+      else element.removeAttribute("data-ok-row-grouping-model");
+      syncGroupColumn(grouping().length > 0);
+      refresh();
+    };
+    const setAggregation = (model: GridAggregationModel) =>
+      change("aggregation", model, (next) => {
+        aggregationModel = next;
+        commitAggregation();
+      });
+    const commitAggregation = () => {
+      if (Object.keys(aggregationModel).length)
+        element.setAttribute("data-ok-aggregation-model", JSON.stringify(aggregationModel));
+      else element.removeAttribute("data-ok-aggregation-model");
+      apply();
+    };
+
+    // Pivoting: the pivot's columns and groups replace the markup's columns while it shows.
+    let baseHeader: Node[] | null = null;
+    let baseGroupRows: HTMLElement[] = [];
+    const baseGroupPaths = groupPaths;
+    const headerCell = (field: string, name: string) => {
+      const cell = document.createElement("div");
+      cell.setAttribute("role", "columnheader");
+      cell.setAttribute("data-ok-field", field);
+      cell.tabIndex = -1;
+      const title = document.createElement("span");
+      title.setAttribute("data-ok-data-grid-header-title", "");
+      title.textContent = name;
+      cell.append(title);
+      return cell;
+    };
+    const showPivot = () => {
+      pivotNow = pivotOn();
+      if (!pivotOn()) {
+        if (!pivot) return;
+        pivot = null;
+        columns = baseColumns;
+        groupPaths = baseGroupPaths;
+        for (const row of groupRowEls()) row.remove();
+        headerRow.before(...baseGroupRows);
+        headerRow.replaceChildren(...(baseHeader as Node[]));
+        baseHeader = null;
+      } else {
+        if (!pivot) {
+          baseHeader = [...headerRow.childNodes];
+          baseGroupRows = groupRowEls();
+          for (const row of baseGroupRows) row.remove();
+        }
+        pivot = gridPivot(
+          pivotRows(),
+          baseColumns.filter((c) => c.type !== "actions"),
+          pivotModel,
+          cellValue,
+          cellText,
+          labelOf,
+        );
+        const result = pivot;
+        columns = result.columns;
+        groupPaths = gridGroupPaths(result.columnGroupingModel);
+        // Specials stay (without the markup's group column), then the pivot's columns.
+        const specials = (baseHeader as Node[]).filter(
+          (node): node is HTMLElement =>
+            node instanceof HTMLElement &&
+            (node.getAttribute("data-ok-field") ?? "") in SPECIALS &&
+            node.getAttribute("data-ok-field") !== GRID_GROUPING_FIELD,
+        );
+        const cells: HTMLElement[] = specials.map((node) => node.cloneNode(true) as HTMLElement);
+        if (result.rowGroupingModel.length) {
+          const group = headerCell(GRID_GROUPING_FIELD, labels.treeDataGroupingHeaderName);
+          group.setAttribute("data-ok-width", "200");
+          cells.push(group);
+        }
+        cells.forEach((cell, i) => {
+          cell.setAttribute("aria-colindex", String(i + 1));
+        });
+        for (const column of result.columns) {
+          const cell = headerCell(column.field, column.headerName as string);
+          cell.setAttribute("data-ok-type", column.type ?? "string");
+          cell.setAttribute("data-ok-align", gridHeaderAlign(column));
+          cell.setAttribute("data-ok-width", String(column.width));
+          cell.setAttribute("data-ok-hideable", "false");
+          cell.setAttribute("aria-sort", "none");
+          const path = groupPaths.get(column.field);
+          if (path?.length) cell.setAttribute("data-ok-group-path", JSON.stringify(path));
+          const arrow = document.createElement("span");
+          arrow.setAttribute("data-ok-data-grid-sort-icon", "");
+          arrow.append(icon(SORT_ARROW));
+          cell.append(arrow);
+          if (!element.hasAttribute(disableColumnResize.attr)) {
+            const handle = document.createElement("span");
+            handle.setAttribute("data-ok-data-grid-resize", "");
+            handle.setAttribute("aria-hidden", "true");
+            cell.append(handle);
+          }
+          cells.push(cell);
+        }
+        headerRow.replaceChildren(...cells);
+        // Column groups: one header row per level, a cell per group (laid out by groupLayout).
+        for (const row of groupRowEls()) row.remove();
+        const levels = Math.max(0, ...[...groupPaths.values()].map((p) => p.length));
+        const byGroupId = gridGroupsById(result.columnGroupingModel);
+        for (let level = 0; level < levels; level++) {
+          const row = document.createElement("div");
+          row.setAttribute("role", "row");
+          row.setAttribute("aria-rowindex", String(level + 1));
+          row.setAttribute("data-ok-data-grid-group-row", "");
+          const ids = new Set([...groupPaths.values()].map((p) => p[level]).filter(Boolean));
+          for (const groupId of ids) {
+            const cell = headerCell(
+              "",
+              (byGroupId.get(groupId as string) as GridColumnGroup).headerName as string,
+            );
+            cell.removeAttribute("data-ok-field");
+            cell.setAttribute("data-ok-group-id", groupId as string);
+            row.append(cell);
+          }
+          headerRow.before(row);
+        }
+      }
+      headerRow.setAttribute("aria-rowindex", String(groupRowEls().length + 1));
+      filterRowEl()?.setAttribute("aria-rowindex", String(groupRowEls().length + 2));
+      specialFields = readSpecials();
+      for (const row of groupEls.values()) fillGroupRow(row);
+      const footer = main.querySelector<HTMLElement>("[data-ok-data-grid-aggregation-row]");
+      if (footer) fillGroupRow(footer);
+      main.setAttribute("role", grouping().length || isTree() ? "treegrid" : "grid");
+      syncPivotPanel();
+      layout();
+      apply();
+      navigation.sync();
+    };
+    const pivotPanel = byId("pivot");
+    /** The panel's fields follow the model (functions only for values). */
+    const syncPivotPanel = () => {
+      const toggle = pivotPanel?.querySelector<HTMLInputElement>(
+        "[data-ok-data-grid-pivot-switch]",
+      );
+      if (toggle) toggle.checked = pivotOn();
+      for (const box of pivotPanel?.querySelectorAll<HTMLElement>(
+        "[data-ok-data-grid-pivot-field]",
+      ) ?? []) {
+        const field = box.getAttribute("data-ok-field") as string;
+        const [role, fn] = [...box.querySelectorAll("select")] as [
+          HTMLSelectElement,
+          HTMLSelectElement,
+        ];
+        role.value = gridPivotRole(pivotModel, field);
+        fn.disabled = role.value !== "values";
+        const own = pivotModel.values.find((v) => v.field === field)?.aggFunc;
+        if (own) fn.value = own;
+      }
+    };
+    const setPivot = (model: GridPivotModel, active: boolean) => {
+      if (!emit("pivot", { model, active }, { cancelable: true })) {
+        syncPivotPanel();
+        return;
+      }
+      pivotModel = model;
+      element.setAttribute("data-ok-pivot-model", JSON.stringify(model));
+      if (active !== pivotOn()) element.toggleAttribute(pivotActiveOption.attr, active);
+      if (pivot || active) showPivot();
+    };
+    pivotPanel?.addEventListener(
+      "change",
+      (event) => {
+        const target = event.target as HTMLInputElement | HTMLSelectElement;
+        if (target.matches("[data-ok-data-grid-pivot-switch]")) {
+          setPivot(pivotModel, (target as HTMLInputElement).checked);
+          return;
+        }
+        // Every other field of the panel is a column's role or function.
+        const box = target.closest<HTMLElement>("[data-ok-data-grid-pivot-field]") as HTMLElement;
+        const field = box.getAttribute("data-ok-field") as string;
+        const [role, fn] = [...box.querySelectorAll("select")] as [
+          HTMLSelectElement,
+          HTMLSelectElement,
+        ];
+        setPivot(
+          target === role
+            ? setGridPivotRole(pivotModel, field, role.value as "rows", fn.value)
+            : {
+                ...pivotModel,
+                values: pivotModel.values.map((v) =>
+                  v.field === field ? { ...v, aggFunc: fn.value } : v,
+                ),
+              },
+          pivotOn(),
+        );
+      },
+      { signal },
+    );
+
+    // Header filters: a field's value is the first filter item of its column.
+    const operatorOf = (field: string) => {
+      const type = columns.find((c) => c.field === field)?.type;
+      return operators[field]?.[0]?.value ?? (gridFilterOperators(type)[0] as string);
+    };
+    const setHeaderFilter = (field: string, input: string) => {
+      const index = filterModel.items.findIndex((item) => item.field === field);
+      const current = filterModel.items[index];
+      const item = { field, operator: current?.operator ?? operatorOf(field), value: input };
+      setFilter({
+        ...filterModel,
+        items:
+          input === ""
+            ? filterModel.items.filter((_, i) => i !== index)
+            : index < 0
+              ? [...filterModel.items, item]
+              : filterModel.items.map((other, i) => (i === index ? item : other)),
+      });
+    };
+    const onHeaderFilter = (event: Event) => {
+      const target = event.target as HTMLInputElement;
+      if (target.closest("[data-ok-date-picker]")) return;
+      const cell = target.closest("[data-ok-filter-field]") as Element;
+      setHeaderFilter(cell.getAttribute("data-ok-filter-field") as string, target.value);
+    };
+    headerGroup.addEventListener(
+      "input",
+      (event) => {
+        if ((event.target as Element).closest("[data-ok-data-grid-header-filters]"))
+          onHeaderFilter(event);
+      },
+      { signal },
+    );
+    headerGroup.addEventListener(
+      "change",
+      (event) => {
+        const target = event.target as Element;
+        if (target.tagName === "SELECT" && target.closest("[data-ok-data-grid-header-filters]"))
+          onHeaderFilter(event);
+      },
+      { signal },
+    );
+    headerGroup.addEventListener(
+      "ok:date-picker:change",
+      (event) => {
+        const cell = (event.target as Element).closest("[data-ok-filter-field]") as Element;
+        const picked = (event as CustomEvent<{ value: string | null }>).detail.value;
+        setHeaderFilter(cell.getAttribute("data-ok-filter-field") as string, picked ?? "");
+      },
+      { signal },
+    );
+
+    // Cell selection: ranges over the page's data rows and the shown columns.
+    const pageIds = () =>
+      pageList.filter((row) => !row.hasAttribute("data-ok-generated")).map(idOf);
+    const shownFields = () => shownNow.map((c) => c.field);
+    const cellsOn = () => element.hasAttribute(cellSelectionOption.attr);
+    let cellBase: GridCellSelectionModel = {};
+    const setCells = (model: GridCellSelectionModel) =>
+      change("cellselection", model, (next) => {
+        cellModel = next;
+        markCells();
+      });
+    const markCells = () => {
+      for (const cell of body.querySelectorAll<HTMLElement>('[role="gridcell"][aria-selected]')) {
+        cell.removeAttribute("aria-selected");
+        cell.removeAttribute("data-ok-range-edge");
+      }
+      if (!cellsOn()) return;
+      const ids = pageIds();
+      const fields = shownFields();
+      for (const [rowId, cells] of Object.entries(cellModel)) {
+        const row = rowEls.find((r) => idOf(r) === rowId);
+        if (!row?.isConnected) continue;
+        for (const field of Object.keys(cells)) {
+          const cell = cellOf(row, field);
+          if (!cell || !isGridCellSelected(cellModel, rowId, field)) continue;
+          cell.setAttribute("aria-selected", "true");
+          cell.setAttribute(
+            "data-ok-range-edge",
+            gridCellEdges(cellModel, ids, fields, rowId, field),
+          );
+        }
+      }
+    };
+    const cellSelection = createGridCellSelection(main, {
+      enabled: cellsOn,
+      onSelect: (anchor, focus, mode) => {
+        const range = gridCellRange(pageIds(), shownFields(), anchor, focus);
+        if (mode === "replace") setCells(range);
+        else if (anchor.id === focus.id && anchor.field === focus.field) {
+          cellBase = cellModel;
+          setCells(toggleGridCell(cellModel, focus.id, focus.field));
+        } else setCells(mergeGridCellSelection(cellBase, range));
+      },
+    });
+
+    // Clipboard: the selected cells, else the selected rows, else the focused cell.
+    const focusedCell = () =>
+      (document.activeElement as Element | null)?.closest<HTMLElement>(
+        '[data-ok-data-grid-body] [role="gridcell"][data-ok-field]',
+      );
+    const clipboard = createGridClipboard(main, {
+      copyText: () => {
+        const fields = shownNow.filter((c) => c.type !== "actions").map((c) => c.field);
+        const picked = cellsOn() ? gridSelectedBlock(cellModel, pageIds(), fields) : null;
+        const byRow = (rowId: string) => rowEls.find((r) => idOf(r) === rowId) as HTMLElement;
+        let block: string[][] | null = picked?.ids.length
+          ? picked.ids.map((rowId) =>
+              picked.fields.map((f) =>
+                isGridCellSelected(cellModel, rowId, f) ? text(byRow(rowId), f) : "",
+              ),
+            )
+          : null;
+        const chosen = sortedList.filter(
+          (row) => !row.hasAttribute("data-ok-generated") && selection.includes(idOf(row)),
+        );
+        if (!block && chosen.length) block = chosen.map((row) => fields.map((f) => text(row, f)));
+        const cell = focusedCell();
+        const row = cell?.closest<HTMLElement>(ROW);
+        if (!block && cell && row && !row.hasAttribute("data-ok-generated"))
+          block = [[text(row, cell.getAttribute("data-ok-field") as string)]];
+        return block ? gridToTsv(block) : null;
+      },
+      canPaste: () =>
+        !element.hasAttribute(disableClipboardPaste.attr) && columns.some((c) => c.editable),
+      onCopy: (data) => emit("clipboardcopy", { data }),
+      onPaste: (pasted) => pasteCells(pasted),
+    });
+    const pasteCells = (pasted: string) => {
+      const data = parseGridClipboard(pasted);
+      const ids = pageIds();
+      const fields = shownFields();
+      const picked = cellsOn() ? gridSelectedBlock(cellModel, ids, fields) : null;
+      const fill = !!picked?.ids.length && data.length === 1 && data[0]?.length === 1;
+      let top = 0;
+      let left = 0;
+      if (picked?.ids.length) {
+        top = ids.indexOf(picked.ids[0] as string);
+        left = fields.indexOf(picked.fields[0] as string);
+      } else {
+        const cell = focusedCell();
+        top = ids.indexOf(cell?.closest(ROW)?.getAttribute("data-ok-row-id") ?? "");
+        left = fields.indexOf(cell?.getAttribute("data-ok-field") ?? "");
+        if (top < 0 || left < 0) return;
+      }
+      if (!emit("clipboardpaste", { data }, { cancelable: true })) return;
+      const rowIds = fill ? (picked as { ids: string[] }).ids : ids.slice(top, top + data.length);
+      rowIds.forEach((rowId, r) => {
+        const row = rowEls.find((el) => idOf(el) === rowId) as HTMLElement;
+        const targets = fill ? (picked as { fields: string[] }).fields : fields.slice(left);
+        const values: DataRow = {};
+        targets.forEach((field, c) => {
+          const column = columns.find((col) => col.field === field) as GridColumn;
+          const typed = fill ? data[0]?.[0] : data[r]?.[c];
+          if (typed === undefined || !cellEditable(row, column)) return;
+          if (fill && !isGridCellSelected(cellModel, rowId, field)) return;
+          values[field] = parseGridEditValue(typed, column.type);
+        });
+        if (
+          !Object.keys(values).length ||
+          !emit("edit", { id: rowId, row: values }, { cancelable: true })
+        )
+          return;
+        for (const [field, next] of Object.entries(values)) {
+          const cell = cellOf(row, field) as HTMLElement;
+          cell.replaceChildren(formatted(field, next));
+          cell.removeAttribute("data-ok-text");
+          cell.setAttribute(
+            "data-ok-value",
+            next === null || next === undefined ? "" : String(next),
+          );
+        }
+      });
+      apply();
+    };
+
+    // Charts integration: the chart's data table follows the rows (or the top-level groups).
+    const chartRegion = element.querySelector<HTMLElement>("[data-ok-data-grid-chart]");
+    let chartKey = "";
+    const syncChart = () => {
+      const figure = chartRegion?.querySelector<HTMLElement>("[data-ok-chart]");
+      const table = figure?.querySelector<HTMLTableElement>("[data-ok-chart-data]");
+      if (!chartRegion || !figure || !table) return;
+      const chartColumns = baseColumns.filter((c) => c.type !== "actions");
+      const valueFields = (chartModel.values ?? []).filter((f) =>
+        chartColumns.some((c) => c.field === f),
+      );
+      const dimension = chartColumns.find((c) => c.field === chartModel.dimension)?.field ?? null;
+      const top =
+        grouping().length && !source
+          ? sortedList.filter(
+              (row) =>
+                row.hasAttribute("data-ok-generated") && row.getAttribute("aria-level") === "1",
+            )
+          : null;
+      const data =
+        valueFields.length && (dimension || top)
+          ? top
+            ? gridChartData(
+                top,
+                { values: valueFields },
+                chartColumns,
+                (row) => (groupNodes.get(idOf(row)) as GridGroupNode).key,
+                (row, field) =>
+                  gridAggregate(
+                    (groupNodes.get(idOf(row)) as GridGroupNode).leafIds.map(
+                      (leaf) => rowEls.find((r) => idOf(r) === leaf) as HTMLElement,
+                    ),
+                    { [field]: aggregationModel[field] ?? "sum" },
+                    baseColumns,
+                    cellValue,
+                  )[field],
+              )
+            : gridChartData(
+                pageList.filter((row) => !row.hasAttribute("data-ok-generated")),
+                { values: valueFields },
+                chartColumns,
+                (row) => cellText(row, dimension as string),
+                cellValue,
+              )
+          : null;
+      chartRegion.hidden = !data;
+      const type: GridChartType = chartModel.type ?? "column";
+      figure.setAttribute("data-ok-type", type === "line" || type === "area" ? type : "bar");
+      figure.toggleAttribute("data-ok-horizontal", type === "bar");
+      const key = JSON.stringify(data);
+      if (key === chartKey) return;
+      chartKey = key;
+      const { table: model } = renderChart({
+        type: type === "line" || type === "area" ? type : "bar",
+        xType: "category",
+        series: data?.series ?? [],
+        categories: data?.categories ?? [],
+        width: 640,
+        height: 320,
+        idPrefix: "t",
+      });
+      const cellEl = (
+        tag: string,
+        cell: { text: string; attrs: Record<string, string> },
+        scope?: string,
+      ) => {
+        const node = document.createElement(tag);
+        if (scope) node.setAttribute("scope", scope);
+        for (const [name, attr] of Object.entries(cell.attrs))
+          if (name.startsWith("data-ok-")) node.setAttribute(name, attr);
+        node.textContent = cell.text;
+        return node;
+      };
+      const head = document.createElement("tr");
+      head.append(...model.head.map((cell) => cellEl("th", cell, "col")));
+      (table.tHead as HTMLTableSectionElement).replaceChildren(head);
+      (table.tBodies[0] as HTMLTableSectionElement).replaceChildren(
+        ...model.rows.map((row) => {
+          const tr = document.createElement("tr");
+          tr.append(
+            cellEl("th", row.header, "row"),
+            ...row.cells.map((cell) => cellEl("td", cell)),
+          );
+          return tr;
+        }),
+      );
+    };
+    const setChart = (model: GridChartModel) =>
+      change("chart", model, (next) => {
+        chartModel = next;
+        element.setAttribute("data-ok-chart-model", JSON.stringify(next));
+        syncChart();
+      });
+    byId("charts")?.addEventListener(
+      "change",
+      (event) => {
+        const target = event.target as HTMLInputElement;
+        const values = (chartModel.values ?? []).filter((f) =>
+          baseColumns.some((c) => c.field === f),
+        );
+        if (target.id === `${id}-chart-type`)
+          setChart({ ...chartModel, type: target.value as GridChartType });
+        else if (target.id === `${id}-chart-dimension`)
+          setChart({ ...chartModel, dimension: target.value || null });
+        else {
+          // The panel's other fields are the series switches.
+          const field = target.getAttribute("data-ok-data-grid-chart-value") as string;
+          setChart({
+            ...chartModel,
+            values: target.checked ? [...values, field] : values.filter((f) => f !== field),
+          });
+        }
+      },
+      { signal },
+    );
+
     // Filter panel: rows of (logic,) column, operator, value; Add filter clones the first row.
     const filterPanel = byId("filters");
     const filterRows = () => [
@@ -1378,52 +2424,62 @@ export const dataGrid = defineComponent<DataGridInstance>({
       const [field, operator] = [...row.querySelectorAll<HTMLSelectElement>("select")].filter(
         (select) => select !== logic,
       ) as [HTMLSelectElement, HTMLSelectElement];
-      // isAnyOf with chips: an Autocomplete takes the value field's place.
+      // isAnyOf with chips: an Autocomplete takes the value field's place; dates: a DatePicker.
       const chips = row.querySelector<HTMLElement>("[data-ok-autocomplete]");
-      const input = chips ? null : (row.querySelector("input") as HTMLInputElement);
-      return { logic, field, operator, input, chips };
+      const date = row.querySelector<HTMLElement>("[data-ok-date-picker]");
+      const input = chips || date ? null : (row.querySelector("input") as HTMLInputElement);
+      return { logic, field, operator, input, chips, date };
     };
     const anyOfTemplate = filterPanel?.querySelector<HTMLTemplateElement>(
       "template[data-ok-data-grid-any-of]",
     );
-    /** The value field each filter row had before it showed chips. */
+    const dateTemplate = filterPanel?.querySelector<HTMLTemplateElement>(
+      "template[data-ok-data-grid-date]",
+    );
+    /** The value field each filter row had before it showed chips or a date picker. */
     const valueBoxes = new WeakMap<HTMLElement, HTMLElement>();
     const chipValues = (chips: HTMLElement) => {
       const values = runtime.getOrCreate<AutocompleteInstance>(chips, "autocomplete")?.value;
       return Array.isArray(values) ? values : values ? [values] : [];
     };
-    /** isAnyOf shows chips (the Autocomplete template); other operators the text field. */
+    /** A copy of a template's field, its ids following this row's value field. */
+    const fieldFrom = (template: HTMLTemplateElement, from: string, to: string) => {
+      const clone = template.content.firstElementChild?.cloneNode(true) as HTMLElement;
+      for (const node of [clone, ...clone.querySelectorAll("*")])
+        for (const attr of [...node.attributes])
+          if (from && attr.value.includes(from)) attr.value = attr.value.replaceAll(from, to);
+      return clone;
+    };
+    /** isAnyOf shows chips, a date column a date picker, other operators the text field. */
     const syncValueField = (row: HTMLElement) => {
-      const { field, operator, input, chips } = partsOf(row);
-      const wantChips = operator.value === "isAnyOf" && !!anyOfTemplate && !operators[field.value];
-      if (wantChips && input) {
-        const box = input.closest<HTMLElement>("[data-ok-text-field]") as HTMLElement;
-        valueBoxes.set(row, box);
-        const clone = (anyOfTemplate as HTMLTemplateElement).content.firstElementChild?.cloneNode(
-          true,
-        ) as HTMLElement;
-        // The template's ids name the first row's field: follow this row's.
-        const from =
-          (anyOfTemplate as HTMLTemplateElement).getAttribute("data-ok-data-grid-any-of") || "";
-        for (const node of [clone, ...clone.querySelectorAll("*")])
-          for (const attr of [
-            "id",
-            "for",
-            "aria-controls",
-            "aria-labelledby",
-            "aria-describedby",
-          ]) {
-            const old = node.getAttribute(attr);
-            if (old && from) node.setAttribute(attr, old.replaceAll(from, input.id));
-          }
-        box.replaceWith(clone);
-      } else if (!wantChips && chips) {
-        const box = valueBoxes.get(row);
-        if (box) {
-          chips.replaceWith(box);
-          (box.querySelector("input") as HTMLInputElement).value = "";
-        }
-      }
+      const { field, operator, input, chips, date } = partsOf(row);
+      const own = !operators[field.value];
+      const type = columns.find((c) => c.field === field.value)?.type;
+      const want =
+        operator.value === "isAnyOf" && anyOfTemplate && own
+          ? anyOfTemplate
+          : type === "date" && dateTemplate && own && gridOperatorNeedsValue(operator.value)
+            ? dateTemplate
+            : null;
+      const now = chips ? anyOfTemplate : date ? dateTemplate : null;
+      if (want === now) return;
+      const box = (input?.closest<HTMLElement>("[data-ok-text-field]") ??
+        chips ??
+        date) as HTMLElement;
+      if (input) valueBoxes.set(row, box);
+      // The value field's id: the column field's, with "value" for "field".
+      const valueId = field.id.replace("-filter-field", "-filter-value");
+      const next = want
+        ? fieldFrom(
+            want,
+            want.getAttribute("data-ok-data-grid-any-of") ??
+              (want.getAttribute("data-ok-data-grid-date") as string),
+            valueId,
+          )
+        : valueBoxes.get(row);
+      if (!next) return;
+      box.replaceWith(next);
+      if (!want) (next.querySelector("input") as HTMLInputElement).value = "";
     };
     const fillOperators = (operatorSelect: HTMLSelectElement, field: string) => {
       const type = columns.find((c) => c.field === field)?.type;
@@ -1450,9 +2506,15 @@ export const dataGrid = defineComponent<DataGridInstance>({
       return {
         ...filterModel,
         items: rowsNow.map((row) => {
-          const { field, operator, input, chips } = partsOf(row);
+          const { field, operator, input, chips, date } = partsOf(row);
           if (chips)
             return { field: field.value, operator: operator.value, value: chipValues(chips) };
+          if (date)
+            return {
+              field: field.value,
+              operator: operator.value,
+              value: runtime.getOrCreate<DatePickerInstance>(date, "date-picker")?.value ?? "",
+            };
           (input as HTMLInputElement).disabled = !gridOperatorNeedsValue(
             operator.value,
             operators[field.value],
@@ -1478,9 +2540,11 @@ export const dataGrid = defineComponent<DataGridInstance>({
       field.selectedIndex = 0;
       fillOperators(operator, field.value);
       syncValueField(row);
-      const input = partsOf(row).input as HTMLInputElement;
-      input.value = "";
-      input.disabled = false;
+      const input = partsOf(row).input;
+      if (input) {
+        input.value = "";
+        input.disabled = false;
+      }
     };
     const addFilterRow = () => {
       const rowsNow = filterRows();
@@ -1489,7 +2553,9 @@ export const dataGrid = defineComponent<DataGridInstance>({
       // A copy of chips has no runtime: copy the plain value field instead.
       const firstBox = valueBoxes.get(first);
       if (firstBox)
-        row.querySelector("[data-ok-autocomplete]")?.replaceWith(firstBox.cloneNode(true));
+        row
+          .querySelector("[data-ok-autocomplete], [data-ok-date-picker]")
+          ?.replaceWith(firstBox.cloneNode(true));
       const index = rowsNow.length;
       // The first row has no logic field: add a copy of the column field with and / or.
       const fieldBox = partsOf(row).field.closest("[data-ok-text-field]") as HTMLElement;
@@ -1534,12 +2600,11 @@ export const dataGrid = defineComponent<DataGridInstance>({
       { signal },
     );
     filterPanel?.addEventListener("input", () => setFilter(readFilters()), { signal });
-    // Chips change after their event: read them once it has applied.
-    filterPanel?.addEventListener(
-      "ok:autocomplete:change",
-      () => queueMicrotask(() => setFilter(readFilters())),
-      { signal },
-    );
+    // Chips and date pickers change after their event: read them once it has applied.
+    for (const type of ["ok:autocomplete:change", "ok:date-picker:change"])
+      filterPanel?.addEventListener(type, () => queueMicrotask(() => setFilter(readFilters())), {
+        signal,
+      });
     filterPanel?.addEventListener(
       "click",
       (event) => {
@@ -1611,23 +2676,45 @@ export const dataGrid = defineComponent<DataGridInstance>({
       visibleGridColumns(arrangeGridColumns(orderGridColumns(columns, order), pinned), visibility);
     const csvDefaults = () =>
       parseGridExportOptions(element.getAttribute("data-ok-csv-options")) as GridCsvOptions;
+    // Exports hold the data rows (filtered, sorted) and columns, also while grouped or pivoted.
+    const exportRows = () =>
+      sortGridRows(
+        filterGridRows(rows(), filterModel, baseColumns, cellValue, cellText, filterOptions()),
+        sortModel,
+        baseColumns,
+        cellValue,
+      ).filter((row) => !row.hasAttribute("data-ok-generated"));
+    const exportShown = () =>
+      visibleGridColumns(
+        arrangeGridColumns(orderGridColumns(baseColumns, order), pinned),
+        visibility,
+      );
+    const fileName = (given: string | undefined) =>
+      given ?? element.getAttribute("data-ok-export-file-name") ?? "data";
     const toCsv = (given: GridCsvOptions = {}, options = { ...csvDefaults(), ...given }) =>
       gridToCsv(
-        gridExportColumns(columns, shownColumns(), options),
-        sortGridRows(
-          filterGridRows(rows(), filterModel, columns, value, text, filterOptions()),
-          sortModel,
-          columns,
-          value,
-        ),
-        text,
+        gridExportColumns(baseColumns, exportShown(), options),
+        exportRows(),
+        cellText,
         options,
       );
     const exportCsv = (given: GridCsvOptions = {}, options = { ...csvDefaults(), ...given }) =>
-      download(
-        options.fileName ?? element.getAttribute("data-ok-export-file-name") ?? "data",
-        toCsv(options),
+      download(`${fileName(options.fileName)}.csv`, toCsv(options));
+    const excelDefaults = () =>
+      parseGridExcelOptions(element.getAttribute("data-ok-excel-options"));
+    const toExcel = (given: GridExcelOptions = {}, options = { ...excelDefaults(), ...given }) =>
+      gridToXlsx(
+        gridExportColumns(baseColumns, exportShown(), options),
+        exportRows(),
+        cellValue,
+        cellText,
+        options,
       );
+    const exportExcel = (
+      given: GridExcelOptions = {},
+      options = { ...excelDefaults(), ...given },
+    ) =>
+      download(`${fileName(options.fileName)}.xlsx`, toExcel(options) as BlobPart, GRID_XLSX_TYPE);
     const print = (
       given: GridPrintOptions = {},
       options: GridPrintOptions = {
@@ -1670,7 +2757,9 @@ export const dataGrid = defineComponent<DataGridInstance>({
       "ok:menu:select",
       (event) => {
         const item = (event as CustomEvent<{ item: Element }>).detail.item;
-        if (item.getAttribute("data-ok-data-grid-export") === "print") print();
+        const kind = item.getAttribute("data-ok-data-grid-export");
+        if (kind === "print") print();
+        else if (kind === "excel") exportExcel();
         else exportCsv();
       },
       { signal },
@@ -1736,7 +2825,9 @@ export const dataGrid = defineComponent<DataGridInstance>({
     let editRow: HTMLElement | null = null;
     const errors = new Map<string, string | true>();
     const cellEditable = (row: HTMLElement, column: GridColumn) =>
-      !!column.editable && cellOf(row, column.field)?.getAttribute("data-ok-editable") !== "false";
+      !!column.editable &&
+      !row.hasAttribute("data-ok-generated") &&
+      cellOf(row, column.field)?.getAttribute("data-ok-editable") !== "false";
     const startEdit = (
       row: HTMLElement,
       field: string,
@@ -1971,6 +3062,24 @@ export const dataGrid = defineComponent<DataGridInstance>({
       disable("pin-left", gridPinSide(pinned, field) === "left");
       disable("pin-right", gridPinSide(pinned, field) === "right");
       disable("unpin", !gridPinSide(pinned, field));
+      // Row grouping and aggregation: the item names the column; functions follow its type.
+      const groupItem = columnMenu.querySelector('[data-ok-data-grid-action="group"]');
+      if (groupItem)
+        groupItem.textContent = (
+          rowGrouping.includes(field) ? labels.columnMenuUngroup : labels.columnMenuGroupBy
+        )
+          .replace("{name}", column.headerName || field)
+          .trim();
+      disable("group", column.groupable === false || column.type === "actions");
+      const functions = gridAggregationFunctionsFor(column);
+      const currentFn = activeAggregation()[field] ?? "none";
+      for (const item of columnMenu.querySelectorAll<HTMLElement>(
+        '[data-ok-data-grid-action^="aggregate-"]',
+      )) {
+        const fn = (item.getAttribute("data-ok-data-grid-action") as string).slice(10);
+        item.hidden = !functions.length || (fn !== "none" && !functions.includes(fn));
+        item.toggleAttribute("data-ok-selected", fn === currentFn);
+      }
       button.setAttribute("aria-expanded", "true");
       runtime.getOrCreate<PopoverInstance>(columnMenu, "popover")?.open(button);
     };
@@ -2003,7 +3112,19 @@ export const dataGrid = defineComponent<DataGridInstance>({
             },
           );
         else if (action === "hide") setVisibility({ ...visibility, [field]: false });
-        else if (action === "left" || action === "right") {
+        else if (action === "group")
+          setRowGrouping(
+            rowGrouping.includes(field)
+              ? rowGrouping.filter((f) => f !== field)
+              : [...rowGrouping, field],
+          );
+        else if (action?.startsWith("aggregate-")) {
+          const fn = action.slice(10);
+          const next = { ...aggregationModel };
+          if (fn === "none") delete next[field];
+          else next[field] = fn;
+          setAggregation(next);
+        } else if (action === "left" || action === "right") {
           const fieldsNow = arrangedFields();
           const neighbour = fieldsNow[fieldsNow.indexOf(field) + (action === "left" ? -1 : 1)];
           if (groupPaths.size && !gridCanMoveColumn(groupPaths, field, neighbour as string)) return;
@@ -2148,8 +3269,14 @@ export const dataGrid = defineComponent<DataGridInstance>({
     };
     let rootVars: string[] = [];
     let listNow = element.hasAttribute(listView.attr);
+    let pivotNow = pivotOn();
     const options = new MutationObserver(() => {
       reflect();
+      if (pivotOn() !== pivotNow) {
+        pivotNow = pivotOn();
+        showPivot();
+      }
+      markCells();
       // List view: column cells and headers hide, list cells show.
       if (element.hasAttribute(listView.attr) !== listNow) {
         listNow = !listNow;
@@ -2171,13 +3298,17 @@ export const dataGrid = defineComponent<DataGridInstance>({
         disableMultipleRowSelection.attr,
         rowHeightOption.attr,
         listView.attr,
+        pivotActiveOption.attr,
+        cellSelectionOption.attr,
       ],
     });
 
     for (const row of filterRows()) fillOperators(partsOf(row).operator, partsOf(row).field.value);
     styleRows();
+    syncGroupColumn(grouping().length > 0);
     layout();
-    apply();
+    if (pivotOn()) showPivot();
+    else apply();
     reflect();
     scrollWatcher.measure();
     if (element.hasAttribute(autosizeOnMount.attr)) {
@@ -2278,6 +3409,12 @@ export const dataGrid = defineComponent<DataGridInstance>({
         },
         pinnedColumns: { left: [...(pinned.left ?? [])], right: [...(pinned.right ?? [])] },
         density: pick(gridDensities, element.getAttribute(densityOption.attr), "standard"),
+        ...(rowGrouping.length ? { rowGrouping: { model: [...rowGrouping] } } : {}),
+        ...(Object.keys(aggregationModel).length
+          ? { aggregation: { model: { ...aggregationModel } } }
+          : {}),
+        ...(pivotPanel ? { pivoting: { model: pivotModel, active: pivotOn() } } : {}),
+        ...(chartRegion ? { chartsIntegration: { model: chartModel } } : {}),
       }),
       restoreState(input) {
         const state = sanitizeGridState(input);
@@ -2301,6 +3438,16 @@ export const dataGrid = defineComponent<DataGridInstance>({
           widths = Object.fromEntries(Object.entries(dimensions).map(([f, d]) => [f, d.width]));
         if (state.pinnedColumns) pinned = state.pinnedColumns;
         if (state.density) element.setAttribute(densityOption.attr, state.density);
+        if (state.aggregation?.model) aggregationModel = state.aggregation.model;
+        if (state.chartsIntegration?.model) chartModel = state.chartsIntegration.model;
+        if (state.pivoting?.model) pivotModel = state.pivoting.model;
+        if (state.pivoting?.active !== undefined)
+          element.toggleAttribute(pivotActiveOption.attr, state.pivoting.active);
+        if (state.rowGrouping?.model) {
+          rowGrouping = state.rowGrouping.model;
+          syncGroupColumn(grouping().length > 0);
+        }
+        if (state.pivoting) showPivot();
         layout();
         refresh();
       },
@@ -2345,7 +3492,54 @@ export const dataGrid = defineComponent<DataGridInstance>({
         if (next) load();
         else apply();
       },
+      get rowGroupingModel() {
+        return [...rowGrouping];
+      },
+      get aggregationModel() {
+        return { ...aggregationModel };
+      },
+      get pivotModel() {
+        return pivotModel;
+      },
+      get pivotActive() {
+        return pivotOn();
+      },
+      get cellSelectionModel() {
+        return cellModel;
+      },
+      get chartModel() {
+        return chartModel;
+      },
+      setRowGroupingModel(model) {
+        rowGrouping = [...model];
+        commitGrouping();
+      },
+      setAggregationModel(model) {
+        aggregationModel = parseGridAggregationModel(JSON.stringify(model));
+        commitAggregation();
+      },
+      setPivotModel(model) {
+        pivotModel = sanitizeGridPivotModel(model);
+        element.setAttribute("data-ok-pivot-model", JSON.stringify(pivotModel));
+        if (pivot) showPivot();
+      },
+      setPivotActive(active) {
+        element.toggleAttribute(pivotActiveOption.attr, active);
+        showPivot();
+      },
+      setCellSelectionModel(model) {
+        cellModel = sanitizeGridCellSelection(model);
+        markCells();
+      },
+      setChartModel(model) {
+        chartModel = sanitizeGridChartModel(model);
+        syncChart();
+      },
+      toExcel,
+      exportExcel,
       destroy() {
+        cellSelection.destroy();
+        clipboard.destroy();
         options.disconnect();
         scrollWatcher.destroy();
         columnControls.destroy();

@@ -47,6 +47,11 @@ const SETUP = htmlSetup(
     "autocomplete.css",
     "chip.css",
     "circular-progress.css",
+    "date-picker.css",
+    "date-calendar.css",
+    "date-field.css",
+    "dialog.css",
+    "chart.css",
     "data-grid.css",
   ],
   true,
@@ -139,3 +144,11 @@ export const LazyLoading: StoryObj = {
   }),
   name: "Lazy loading",
 };
+
+export const RowGrouping: StoryObj = { ...story("grouping"), name: "Row grouping" };
+export const Pivoting: StoryObj = { ...story("pivot"), name: "Pivoting" };
+export const CellSelection: StoryObj = {
+  ...story("cells"),
+  name: "Cell selection and clipboard",
+};
+export const Charts: StoryObj = { ...story("charts"), name: "Charts integration" };

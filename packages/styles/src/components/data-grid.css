@@ -566,7 +566,13 @@
   }
 
   /* Tree data: the group cell indents by depth; its toggle turns when open. */
-  :where([data-ok-data-grid-main] [role="gridcell"][data-ok-field="__tree_data_group__"]) {
+  :where(
+    [data-ok-data-grid-main]
+      [role="gridcell"]:is(
+        [data-ok-field="__tree_data_group__"],
+        [data-ok-field="__row_group_by_columns_group__"]
+      )
+  ) {
     display: flex;
     align-items: center;
     gap: calc(var(--ok-spacing) * 1);
@@ -713,6 +719,103 @@
   /* Column virtualization: the first shown scrolling column (and right pins) after a spacer. */
   :where([data-ok-data-grid-main] [data-ok-col-start]) {
     grid-column-start: var(--_ok-data-grid-col-start);
+  }
+
+  /* Phase 6. Row grouping: generated group rows; their aggregated values. */
+  :where([data-ok-data-grid-main] [role="row"][data-ok-generated]) {
+    font-weight: var(--ok-font-weight-semibold);
+  }
+
+  /* Aggregation: the footer row of totals, and the function's name under the header name. */
+  :where([data-ok-data-grid-pinned-rows] > [data-ok-data-grid-aggregation-row]) {
+    background-color: var(--ok-bg-neutral);
+    font-weight: var(--ok-font-weight-semibold);
+  }
+
+  :where([data-ok-data-grid-aggregation-label]) {
+    flex: none;
+    color: var(--ok-text-secondary);
+    font-size: var(--ok-typography-caption-font-size);
+    font-weight: var(--ok-font-weight-regular);
+  }
+
+  /* Cell selection: presses select cells, not text (Ctrl + C copies the cells). */
+  :where([data-ok-cell-selection] [data-ok-data-grid-body] [role="gridcell"]) {
+    user-select: none;
+  }
+
+  /* Cell selection: selected cells tint; a range's edges draw a line. */
+  :where([data-ok-data-grid-body] [role="gridcell"][aria-selected="true"]) {
+    --_ok-data-grid-edge: var(--ok-palette-primary-main);
+    box-shadow:
+      var(--_ok-data-grid-edge-top, 0 0 transparent),
+      var(--_ok-data-grid-edge-right, 0 0 transparent),
+      var(--_ok-data-grid-edge-bottom, 0 0 transparent),
+      var(--_ok-data-grid-edge-left, 0 0 transparent);
+    background-color: rgb(var(--ok-palette-primary-main-channel) / 0.08);
+  }
+
+  :where([role="gridcell"][data-ok-range-edge~="top"]) {
+    --_ok-data-grid-edge-top: inset 0 1px 0 var(--_ok-data-grid-edge);
+  }
+
+  :where([role="gridcell"][data-ok-range-edge~="right"]) {
+    --_ok-data-grid-edge-right: inset -1px 0 0 var(--_ok-data-grid-edge);
+  }
+
+  :where([role="gridcell"][data-ok-range-edge~="bottom"]) {
+    --_ok-data-grid-edge-bottom: inset 0 -1px 0 var(--_ok-data-grid-edge);
+  }
+
+  :where([role="gridcell"][data-ok-range-edge~="left"]) {
+    --_ok-data-grid-edge-left: inset 1px 0 0 var(--_ok-data-grid-edge);
+  }
+
+  /* Header filters: a row of small fields under the column headers. */
+  :where([data-ok-data-grid-header] > [data-ok-data-grid-header-filters]) {
+    --_ok-data-grid-header-height: calc(var(--ok-spacing) * 14);
+  }
+
+  :where([data-ok-data-grid-header-filters] > [role="columnheader"]) {
+    cursor: default;
+  }
+
+  :where([data-ok-data-grid-header-filters] > [role="columnheader"]::after) {
+    display: none;
+  }
+
+  :where([data-ok-data-grid-header-filters] > [role="columnheader"] > *) {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  /* Pivot and chart panels: a column of fields; a pivot line (role, function) wraps when narrow. */
+  :where([data-ok-data-grid-form-panel]) {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--ok-spacing) * 3);
+  }
+
+  :where([data-ok-data-grid-pivot-field]) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: calc(var(--ok-spacing) * 2);
+  }
+
+  :where([data-ok-data-grid-pivot-field] > [data-ok-text-field]) {
+    flex: 1 1 calc(var(--ok-spacing) * 32);
+    min-width: 0;
+  }
+
+  /* Charts integration: the chart under the rows. */
+  :where([data-ok-data-grid-chart]) {
+    padding: calc(var(--ok-spacing) * 4);
+    border-top: 1px dashed var(--ok-divider);
+  }
+
+  :where([data-ok-data-grid-chart][hidden]) {
+    display: none;
   }
 
   @media (prefers-reduced-motion: reduce) {

@@ -46,7 +46,7 @@ component and each `/integrate` run.
 | MUI | Timeline | ✅ | Timeline and its parts | Rating, Slider, Timeline, Transfer list, Tree view & Autocomplete |
 | MUI | Tooltip | ✅ | Tooltip | Popover, Tooltip, Menu, Dialog & Snackbar |
 | MUI | Transfer list | ✅ | TransferList | Rating, Slider, Timeline, Transfer list, Tree view & Autocomplete |
-| MUI X | Data grid | ✅ phases 1–5 of 6 (ADR-0020, ADR-0021) | DataGrid | Data grid |
+| MUI X | Data grid | ✅ phases 1–6 of 6 (ADR-0020, ADR-0021) | DataGrid | Data grid |
 | MUI X | Date pickers | ✅ phase 1 of 4 (ADR-0022) | DatePicker, DesktopDatePicker, MobileDatePicker, StaticDatePicker, DateField, DateCalendar, MonthCalendar, YearCalendar, LocalizationProvider | Date pickers |
 | MUI X | Tree view | ✅ | SimpleTreeView, TreeItem, RichTreeView | Rating, Slider, Timeline, Transfer list, Tree view & Autocomplete |
 | Extra | Animate | ✅ beta | Motion, MotionGroup, MotionText, CountUp, MotionBorder; Dialog `transition` | Motion |
@@ -345,7 +345,7 @@ reference's Basic toolbar is icon-only), original data and names, clicking a row
 | 3 | Row virtualization; server-side sorting, filtering and pagination (`sortingMode` / `filterMode` / `paginationMode="server"`, `rowCount`); infinite loading, `dataSource` with cache (Pro); `loading` overlay and skeleton rows; HTML: a JavaScript rows API with row templates | ✅ 2026-11-08 |
 | 4 | Community and API completeness. **Selection:** single-row selection (`disableMultipleRowSelection`), `isRowSelectable`, `keepNonExistentRowsSelected`, `checkboxSelectionVisibleOnly`. **Columns:** autosizing (`autosizeColumns`, double-click the resize edge), `colSpan` and `rowSpanning`, header `description` tooltips, `renderHeader`. **Rows:** `getRowHeight` and `"auto"` heights, `getRowClassName` / `getCellClassName`, `getRowSpacing`. **Editing:** validation with error states (`preProcessEditCellProps`), `valueParser` / `valueSetter`, start editing by typing, `onCellEditStart` / `onCellEditStop` / `onRowEditStop`, `isCellEditable`. **Filtering:** `isAnyOf`, custom operators, quick filter options (`quickFilterLogicOperator`, searched columns). **Events and API:** `onRowClick`, `onCellClick`, `onCellDoubleClick`, `onColumnHeaderClick`…, `apiRef`, `exportState` / `restoreState`. **Export:** CSV options (delimiter, fields, all rows or filtered), print options, printing every filtered row. **Look and language:** the reference's icon-only toolbar, locale packs, right-to-left layout. **HTML:** value formatters for edited and `setRows` cells | ✅ 2026-11-08 |
 | 5 | Tree data (data source loading per level), master-detail panels, row reordering by drag, row pinning (top / bottom), column groups (multi-level headers), list view; column virtualization (`columnBufferPx`), lazy loading of row chunks (`lazyLoading`, `rowsLoadingMode`), `dataSource.updateRow`, cache time to live, `rowBufferPx` as an option (Pro); from phase 4: `isAnyOf` values as chips (Autocomplete) instead of comma-separated text, HTML attributes for CSV and print options | ✅ 2026-11-08 |
-| 6 | Row grouping (also through the data source), aggregation (sum, average, min / max, count), pivoting, Excel (.xlsx) export, clipboard copy and paste, cell range selection, header filters (Premium); charts integration and AI assistant once a Chart component exists; from phase 5: generated parent rows for tree paths with missing parents | next (`/component` Update) |
+| 6 | Row grouping (also through the data source), aggregation (sum, average, min / max, count), pivoting, Excel (.xlsx) export, clipboard copy and paste, cell range selection, header filters (Premium); charts integration and AI assistant once a Chart component exists; from phase 5: generated parent rows for tree paths with missing parents | ✅ 2026-11-08 (AI assistant deferred, see below) |
 
 Phase 2 (story: Advanced): filter rows combined with and / or, column resizing (drag the header
 edge, or Alt + arrows), reordering (drag a header, or Move left / right in the column menu),
@@ -383,6 +383,30 @@ Alt + arrows, announced), pinned rows, column groups, list view, column virtuali
 row / column buffers, lazy loading in chunks, `dataSource.updateRow`, cache time to live,
 `isAnyOf` chips (Autocomplete), HTML CSV and print options as attributes. Every tree path needs a
 row for its parent (generated parents move to phase 6).
+
+Phase 6 (stories: Row grouping, Pivoting, Cell selection and clipboard, Charts integration; Tree
+data's missing parents in Row grouping): row grouping (column menu, nested groups, counts, sorting
+by key or aggregated value; through a data source with `groupFields` / `groupKeys`), aggregation
+(`sum`, `avg`, `min`, `max`, `size`; inline group values and a footer row; header labels),
+pivoting (rows, columns and values with functions; a panel with selects; column groups for the
+keys), Excel export written in core (a stored ZIP and SpreadsheetML: typed numbers, booleans and
+dates, no formulas; no dependency, so no ADR), clipboard copy and paste as tab-separated text
+(through the browser's own copy / paste on a short-lived text area: no permissions), cell range
+selection (press, drag, Shift, Ctrl / Cmd, Shift + arrows, Ctrl + A), header filters (a row of
+fields; dates with the DatePicker), charts integration (the Chart component of ADR-0024: column,
+bar, line and area from the top-level groups or the page's rows) and generated parent rows for tree
+paths. Closes the Pending integration "Date pickers → Data grid filter values for `date` columns"
+(filter panel and header filters use the DatePicker). The HTML runtime builds group rows, the
+footer and the pivot from the rows in the markup. CDN budget raised to 95 kB (phase 6 adds about
+12 kB). Differences from MUI X: one grouping column (`rowGroupingColumnMode="multiple"` deferred),
+group keys are cell texts (`groupingValueGetter` deferred), no group footers, the pivot panel uses
+selects instead of drag and drop and has no derived date columns, header filters use the column
+type's first operator (no operator menu), the chart sits inside the grid with one `chartModel`.
+Deferred, with the reason: the **AI assistant** (MUI X `aiAssistant`) turns prompts into grid
+states through a language model service. Owlky has no backend and adds no paid service, and a
+prompt panel without a model behind it would be a stand-in: it waits for an owner-approved service
+(new ADR). Server-side aggregation (`dataSource.getAggregatedValue`) waits for a data source that
+reports aggregates.
 
 The former backlog is folded into phases 4–6 (ADR-0021, 2026-11-08). New MUI X features go into a
 phase, or into "Pending integrations" below when they need a missing component.
@@ -422,7 +446,7 @@ integrate these in the same review (additive: no DOM or API change) and remove t
 | Typography (display text) | Sortable stories (card numbers) | demo `<span>` styled in `.storybook/preview.css` |
 | Typography (heading / secondary text) | Accordion summaries (plain text, no secondary line from the reference) | summary text styled by `accordion.css` |
 | Typography (heading) | Scrollbar "Layout" story heading | demo `<h4>` styled in `.storybook/preview.css` |
-| Date pickers (DatePicker ✅ phase 1; DateTimePicker in phase 2) | Data grid filter values for `date` / `dateTime` columns | a text field: people type the date (for example `2026-11-08`); editing cells already uses native `date` / `datetime-local` inputs. The `date` integration waits only for the data grid's phase 5 work in progress in the same files: run `/integrate date-picker` once it lands |
+| DateTimePicker (date pickers' phase 2) | Data grid filter values for `dateTime` columns (filter panel and header filters) | a text field: people type the date and time (for example `2026-11-08T09:30`); `date` columns use the DatePicker since the data grid's phase 6, editing cells uses native `date` / `datetime-local` inputs |
 | Select (listbox, built on Menu) | `TablePagination` rows per page (library markup) | native `<select>` styled in `table.css`; the API (`rowsPerPageOptions`) stays. TextField's native select doesn't match MUI's InputBase select here |
 | Select (listbox, built on Menu) | Pagination story "Items" (card grid + items-per-page Select) | story deferred: the reference uses MUI's listbox Select |
 | Select (listbox, built on Menu) | Table story "Table pagination with API" (search TextField + category Select) | story deferred until the listbox Select; TextField exists |
