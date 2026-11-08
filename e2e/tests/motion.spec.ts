@@ -91,9 +91,9 @@ for (const impl of implementations) {
     test("count up: reaches the end; screen readers read the end value", async ({ page }) => {
       await openStory(page, storyId(impl, "motion", "count-up-story"));
       const values = page.locator("[data-ok-count-up-value]");
-      await expect(values.first()).toHaveText("98");
-      await expect(values.last()).toHaveText("200");
-      await expect(page.locator("[data-ok-count-up-label]").last()).toHaveText("200k");
+      await expect(values.first()).toHaveText("500");
+      await expect(values.last()).toHaveText("500.14");
+      await expect(page.locator("[data-ok-count-up-label]").last()).toHaveText("500.14k");
     });
 
     test("border: turns, pauses with paused, stops with reduced motion", async ({ page }) => {
@@ -105,6 +105,20 @@ for (const impl of implementations) {
       await openStory(page, storyId(impl, "motion", "border"), "light", "paused:!true");
       await page.emulateMedia({ reducedMotion: "no-preference" });
       await expect(border).toHaveCSS("animation-play-state", "paused");
+    });
+
+    test("border: two lights over a track; edges and corners from CSS", async ({ page }) => {
+      await openStory(page, storyId(impl, "motion", "border"));
+      const tiles = page.locator(".sb-motion-tiles > [data-ok-motion-border]");
+      await expect(tiles).toHaveCount(12);
+      // Secondary (purple) and error (red-orange) lights, and the track's translucent stops.
+      const twoLights = await tiles.nth(2).evaluate((el) => getComputedStyle(el).backgroundImage);
+      expect(twoLights).toMatch(/rgb\(255, 86, 48\).*rgb\(142, 51, 255\)/);
+      expect(twoLights).toMatch(/0\.08\).*0\.24\)/);
+      const corner = tiles.nth(4);
+      await expect(corner).toHaveCSS("border-right-width", "0px");
+      await expect(corner).toHaveCSS("border-top-width", "4px");
+      await expect(corner).toHaveCSS("border-top-left-radius", "32px");
     });
   });
 }

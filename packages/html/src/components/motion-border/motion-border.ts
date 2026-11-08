@@ -8,9 +8,11 @@ const { width, duration } = motionBorderOptions.options;
  * MotionBorder — spec: specs/components/motion.md
  *
  * Markup:  <div data-ok-motion-border [data-ok-shape="circle"] [data-ok-color="primary"]
- *               [data-ok-width="3"] [data-ok-duration="4000"] [data-ok-paused]>…</div>
- * Behavior: CSS turns the border; the runtime only writes the width and the duration as private
- *          properties (CSSOM), again when those attributes change.
+ *               [data-ok-secondary-color="warning"] [data-ok-width="3"] [data-ok-duration="4000"]
+ *               [data-ok-paused]>…</div>
+ * Behavior: CSS turns the border (colors and lights come from the attributes); the runtime only
+ *          writes the width and the duration as private properties (CSSOM), again when those
+ *          attributes change.
  */
 export const motionBorder = defineComponent({
   name: "motion-border",

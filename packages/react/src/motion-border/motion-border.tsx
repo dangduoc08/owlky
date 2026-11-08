@@ -1,5 +1,6 @@
 import {
   type MotionBorderColor,
+  type MotionBorderSecondaryColor,
   type MotionBorderShape,
   motionBorderAttributes,
 } from "@owlky/core";
@@ -8,8 +9,13 @@ import { type CSSProperties, forwardRef, type HTMLAttributes, type ReactNode } f
 export interface MotionBorderProps extends HTMLAttributes<HTMLDivElement> {
   /** `rounded` (default) or `circle`. */
   shape?: MotionBorderShape | undefined;
-  /** `multi` (default): several brand colors; a palette color: that color sweeping around. */
+  /**
+   * `multi` (default): several brand colors all around; `inherit` (the text color) or a palette
+   * color: a light running along the border.
+   */
   color?: MotionBorderColor | undefined;
+  /** A second light in this color, starting on the opposite side (ignored with `multi`). */
+  secondaryColor?: MotionBorderSecondaryColor | undefined;
   /** Border width, px. Default 2. */
   width?: number | undefined;
   /** One turn, ms (default about 5 s). */
@@ -23,11 +29,12 @@ const valid = (value: number | undefined) =>
   typeof value === "number" && Number.isFinite(value) && value >= 0 ? value : undefined;
 
 /**
- * MotionBorder — spec: specs/components/motion.md. A gradient border that turns around its content
- * (the reference's "Logo", "Avatar" and "Border"). CSS only; reduced motion stops it.
+ * MotionBorder — spec: specs/components/motion.md. A gradient border, or one or two lights, turning
+ * around its content over a faint track. Per-side widths and per-corner radii come from CSS
+ * (`border-width`, `border-radius`). CSS only; reduced motion stops it.
  */
 export const MotionBorder = forwardRef<HTMLDivElement, MotionBorderProps>(function MotionBorder(
-  { shape, color, width, duration, paused, style, children, ...props },
+  { shape, color, secondaryColor, width, duration, paused, style, children, ...props },
   ref,
 ) {
   const px = valid(width);
@@ -35,7 +42,7 @@ export const MotionBorder = forwardRef<HTMLDivElement, MotionBorderProps>(functi
   return (
     <div
       ref={ref}
-      {...motionBorderAttributes({ shape, color, width, duration, paused })}
+      {...motionBorderAttributes({ shape, color, secondaryColor, width, duration, paused })}
       data-ok-runtime="off"
       style={
         {

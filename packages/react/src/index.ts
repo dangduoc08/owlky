@@ -40,6 +40,7 @@ export type {
   MobileStepperPosition,
   MobileStepperVariant,
   MotionBorderColor,
+  MotionBorderSecondaryColor,
   MotionBorderShape,
   MotionTrigger,
   MotionVariant,

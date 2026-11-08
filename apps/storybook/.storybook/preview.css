@@ -839,15 +839,87 @@
   padding: calc(var(--ok-spacing) * 3);
 }
 
-.sb-motion-box {
+/* Motion borders (story-only): tiles whose edges and corners come from CSS. */
+.sb-motion-tiles {
   display: grid;
-  place-items: center;
+  grid-template-columns: repeat(3, 96px);
+  gap: calc(var(--ok-spacing) * 6);
+}
+
+.sb-motion-tile {
   width: 96px;
-  height: 64px;
-  color: var(--ok-text-secondary);
-  font:
-    var(--ok-typography-caption-font-weight) var(--ok-typography-caption-font-size) /
-    var(--ok-typography-caption-line-height) var(--ok-font-family);
+  height: 96px;
+  border-radius: var(--ok-radius-xl);
+}
+
+.sb-motion-rounded {
+  border-radius: var(--ok-radius-xl);
+}
+
+.sb-motion-square {
+  border-radius: 0;
+}
+
+.sb-motion-edges-top-left {
+  border-right-width: 0;
+  border-bottom-width: 0;
+  border-radius: calc(var(--ok-spacing) * 8) 0 0 0;
+}
+
+.sb-motion-edges-top-right {
+  border-bottom-width: 0;
+  border-left-width: 0;
+  border-radius: 0 calc(var(--ok-spacing) * 8) 0 0;
+}
+
+.sb-motion-edges-bottom-right {
+  border-top-width: 0;
+  border-left-width: 0;
+  border-radius: 0 0 calc(var(--ok-spacing) * 8) 0;
+}
+
+.sb-motion-edges-bottom-left {
+  border-top-width: 0;
+  border-right-width: 0;
+  border-radius: 0 0 0 calc(var(--ok-spacing) * 8);
+}
+
+.sb-motion-corners-diagonal {
+  border-radius: 0 calc(var(--ok-spacing) * 8);
+}
+
+.sb-motion-corners-antidiagonal {
+  border-radius: calc(var(--ok-spacing) * 8) 0;
+}
+
+.sb-motion-corners-leaf {
+  border-radius: calc(var(--ok-spacing) * 8) calc(var(--ok-spacing) * 8) calc(var(--ok-spacing) * 8)
+    0;
+}
+
+.sb-motion-corners-drop {
+  border-radius: 0 calc(var(--ok-spacing) * 8) calc(var(--ok-spacing) * 8)
+    calc(var(--ok-spacing) * 8);
+}
+
+/* Avatars in turning borders: a small gap between the border and the picture. */
+.sb-motion-avatars {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--ok-spacing) * 6);
+  width: min(100%, 480px);
+}
+
+.sb-motion-avatar {
+  padding: var(--ok-spacing);
+}
+
+.sb-motion-avatar-rounded {
+  border-radius: var(--ok-radius-xl);
+}
+
+.sb-motion-avatar-square {
+  border-radius: 0;
 }
 
 .sb-motion-counts {

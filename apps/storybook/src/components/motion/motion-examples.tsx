@@ -9,6 +9,7 @@ import {
   Motion,
   MotionBorder,
   type MotionBorderColor,
+  type MotionBorderSecondaryColor,
   MotionGroup,
   MotionText,
   Scrollbar,
@@ -25,12 +26,32 @@ const SIZES = [
   ["md", "Medium"],
   ["lg", "Large"],
 ] as const;
-const BORDERS: MotionBorderColor[] = ["multi", "primary", "secondary", "info", "success", "error"];
-const AVATARS: [AvatarVariant, MotionBorderColor][] = [
-  ["circular", "multi"],
+type Light = [MotionBorderColor, MotionBorderSecondaryColor?];
+const AVATARS: [AvatarVariant, ...Light][] = [
+  ["circular", "secondary", "warning"],
   ["circular", "primary"],
-  ["rounded", "warning"],
-  ["square", "secondary"],
+  ["circular", "warning", "primary"],
+  ["square", "secondary", "info"],
+  ["square", "primary"],
+  ["square", "warning", "success"],
+  ["rounded", "info", "secondary"],
+  ["rounded", "primary", "warning"],
+  ["rounded", "error", "warning"],
+];
+/** Border tiles: lights, width and the story class that sets the edges and corners. */
+const TILES: [...Light, number, string][] = [
+  ["inherit", undefined, 2, "sb-motion-tile"],
+  ["primary", undefined, 4, "sb-motion-tile"],
+  ["secondary", "error", 4, "sb-motion-tile"],
+  ["primary", "warning", 4, "sb-motion-tile sb-motion-square"],
+  ["secondary", "error", 4, "sb-motion-tile sb-motion-edges-top-left"],
+  ["secondary", "error", 4, "sb-motion-tile sb-motion-edges-top-right"],
+  ["secondary", "error", 4, "sb-motion-tile sb-motion-edges-bottom-right"],
+  ["secondary", "error", 4, "sb-motion-tile sb-motion-edges-bottom-left"],
+  ["secondary", "error", 4, "sb-motion-tile sb-motion-corners-diagonal"],
+  ["secondary", "error", 4, "sb-motion-tile sb-motion-corners-antidiagonal"],
+  ["secondary", "error", 4, "sb-motion-tile sb-motion-corners-leaf"],
+  ["secondary", "error", 4, "sb-motion-tile sb-motion-corners-drop"],
 ];
 
 /**
@@ -189,8 +210,8 @@ export const otherStories: Record<string, ReactGroup[]> = {
       title: "Count up",
       content: (
         <div className="sb-motion-counts">
-          <CountUp end={98} suffix="%" />
-          <CountUp end={200} suffix="k" />
+          <CountUp end={500} suffix="+" />
+          <CountUp start={200} end={500.14} decimals={2} suffix="k" />
         </div>
       ),
     },
@@ -214,18 +235,19 @@ export const otherStories: Record<string, ReactGroup[]> = {
     {
       title: "Avatar",
       content: (
-        <div className="sb-row">
-          {AVATARS.map(([variant, color], index) => (
+        <div className="sb-motion-avatars">
+          {AVATARS.map(([variant, color, secondaryColor], index) => (
             <MotionBorder
-              key={`${variant}-${color}`}
+              key={`${variant}-${color}-${secondaryColor}`}
               shape={variant === "circular" ? "circle" : "rounded"}
               color={color}
-              width={3}
+              secondaryColor={secondaryColor}
+              className={`sb-motion-avatar sb-motion-avatar-${variant}`}
             >
               <Avatar
                 variant={variant}
-                size={72}
-                src={`avatars/avatar-${index + 1}.svg`}
+                size={108}
+                src={`avatars/avatar-${(index % 7) + 1}.svg`}
                 alt={`Team member ${index + 1}`}
               />
             </MotionBorder>
@@ -239,20 +261,31 @@ export const otherStories: Record<string, ReactGroup[]> = {
       title: "Border",
       content: (
         <div className="sb-motion-other">
-          <div className="sb-row">
-            {BORDERS.map((color) => (
-              <MotionBorder key={color} color={color} className="sb-motion-box">
-                {color === "multi" ? "Multi" : color.charAt(0).toUpperCase() + color.slice(1)}
-              </MotionBorder>
+          <div className="sb-motion-tiles">
+            {TILES.map(([color, secondaryColor, width, className]) => (
+              <MotionBorder
+                key={className + color + secondaryColor}
+                color={color}
+                secondaryColor={secondaryColor}
+                width={width}
+                className={className}
+              />
             ))}
           </div>
           <div className="sb-row">
-            <MotionBorder>
-              <Button variant="text">Text button</Button>
+            <MotionBorder color="secondary" secondaryColor="error" className="sb-motion-rounded">
+              <Button variant="text" color="inherit" size="lg">
+                Text button
+              </Button>
             </MotionBorder>
-            <MotionBorder color="primary">
-              <Button variant="soft" color="primary">
-                Soft button
+            <MotionBorder
+              color="primary"
+              secondaryColor="warning"
+              width={3}
+              className="sb-motion-rounded"
+            >
+              <Button variant="contained" color="inherit" size="lg">
+                Button
               </Button>
             </MotionBorder>
           </div>

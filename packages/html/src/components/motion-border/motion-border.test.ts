@@ -32,4 +32,23 @@ describe("motion-border runtime", () => {
     runtime.stop();
     expect((a as HTMLElement).style.getPropertyValue("--_ok-motion-border-width")).toBe("");
   });
+
+  it("reads the colors from the attributes, unknown second lights stay out", async () => {
+    const host = mount(
+      '<div data-ok-motion-border data-ok-color="secondary" data-ok-secondary-color="warning">A</div><div data-ok-motion-border data-ok-color="info" data-ok-secondary-color="&quot;&gt;&lt;img onerror&gt;">B</div>',
+    );
+    runtime = createRuntime()
+      .register(...components)
+      .start();
+    const [a, b] = host.querySelectorAll<HTMLElement>("[data-ok-motion-border]");
+    expect(getComputedStyle(a as Element).backgroundImage).toMatch(
+      /rgb\(255, 171, 0\).*rgb\(142, 51, 255\)/,
+    );
+    const hostile = getComputedStyle(b as Element).backgroundImage;
+    expect(hostile).toMatch(/conic-gradient\(.*rgb\(0, 184, 217\)/);
+    expect(hostile).not.toContain("onerror");
+    (a as HTMLElement).removeAttribute("data-ok-secondary-color");
+    await settle();
+    expect(getComputedStyle(a as Element).backgroundImage).not.toContain("rgb(255, 171, 0)");
+  });
 });

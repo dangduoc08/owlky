@@ -181,17 +181,33 @@ export function Users() {
   {
     id: "border",
     title: "Turn a border around content",
-    body: "MotionBorder draws a gradient border that turns around its content, such as a logo, an avatar or a button. `color` is `multi` (several brand colors) or a palette color that sweeps around. Set `shape` to `circle` for round content, `width` for the border width in pixels and `duration` for one turn. The inside is painted with the paper color, so put the border on a paper or a page background.",
-    html: `<div data-ok-motion-border data-ok-shape="circle" data-ok-color="primary">
+    body: `MotionBorder draws a moving border around its content, such as a logo, an avatar or a button.
+
+- **Color:** \`multi\` (the default) turns several brand colors all around. \`inherit\` (the text color) or a palette color runs one light along a faint track of the same color.
+- **Second light:** \`secondaryColor\` adds a light in another color that starts on the opposite side. It has no effect with \`multi\`.
+- **Shape and size:** set \`shape\` to \`circle\` for round content, \`width\` for the border width in pixels and \`duration\` for one turn.
+- **Edges and corners:** the border follows the element's CSS. Set \`border-width\` to \`0\` on a side to leave it out, and set \`border-radius\` per corner. Your rules win over the library's, because its selectors have zero specificity.
+
+The inside is painted with the paper color, so put the border on a paper or a page background.`,
+    html: `<div data-ok-motion-border data-ok-shape="circle" data-ok-color="primary" data-ok-secondary-color="warning">
   <img src="avatar.jpg" alt="Ana Silva" width="72" height="72">
-</div>`,
+</div>
+
+<!-- Top and left edges only, with a rounded top-left corner. In your stylesheet:
+  .corner { width: 96px; height: 96px; border-right-width: 0; border-bottom-width: 0; border-radius: 32px 0 0 0; } -->
+<div class="corner" data-ok-motion-border data-ok-color="secondary" data-ok-width="4"></div>`,
     react: `import { Avatar, MotionBorder } from "@owlky/react";
 
+// Top and left edges only, with a rounded top-left corner (in your CSS):
+// .corner { width: 96px; height: 96px; border-right-width: 0; border-bottom-width: 0; border-radius: 32px 0 0 0; }
 export function ActiveUser() {
   return (
-    <MotionBorder shape="circle" color="primary">
-      <Avatar src="avatar.jpg" alt="Ana Silva" size={72} />
-    </MotionBorder>
+    <>
+      <MotionBorder shape="circle" color="primary" secondaryColor="warning">
+        <Avatar src="avatar.jpg" alt="Ana Silva" size={72} />
+      </MotionBorder>
+      <MotionBorder className="corner" color="secondary" width={4} />
+    </>
   );
 }`,
   },
@@ -264,9 +280,14 @@ const PREVIEWS = {
   ),
   border: () => (
     <Preview>
-      <MotionBorder color="primary">
-        <span className="sb-motion-box">Primary</span>
-      </MotionBorder>
+      <div className="sb-row">
+        <MotionBorder color="primary" secondaryColor="warning" className="sb-motion-tile" />
+        <MotionBorder
+          color="secondary"
+          width={4}
+          className="sb-motion-tile sb-motion-edges-top-left"
+        />
+      </div>
     </Preview>
   ),
   options: () => (

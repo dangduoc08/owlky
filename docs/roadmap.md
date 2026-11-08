@@ -182,6 +182,11 @@ instead of the reference's logo, an original SVG image, no variant picker (Story
 (`variant`, `trigger`, `in`, `once`, `amount`, `duration`, `delay`, `distance`, `paused`, `stagger`,
 the HTML attributes and `ok:motion:end`) should survive the full version below; mark it beta in
 docs and the changeset until then.
+**Update (2026-11-08, `/component` Update):** MotionBorder follows the reference's border lights:
+one symmetric light (`inherit` or a palette color) over a faint track, `secondaryColor` (a second
+light half a turn away), per-side widths and per-corner radii from the root's CSS. Stories Border
+(12 tiles + buttons), Avatar (9) and Count up (`0 → 500+`, `200 → 500.14k`) follow the reference.
+Additive (minor). The Logo story's rings wait for phase 1 below ("Pending integrations").
 **Backlog:** Motion `component` (renders a `div`), Dialog `keepMounted`.
 
 ### Next — Motion, full version (self-written, needs an ADR)
@@ -405,6 +410,7 @@ integrate these in the same review (additive: no DOM or API change) and remove t
 ## ✅ Upstream API review (ADR-0015, 2026-11-04)
 Components checked against their upstream API (MUI). Rule from the owner: what the Minimals page
 shows wins, otherwise the upstream component. Added: Button / ButtonGroup `disableElevation`,
+| Motion full version, phase 1 (custom keyframes) | Motion story "Logo" (the reference's shape-morphing, turning rings and the turning gradient disc) | the logo inside MotionBorder rings; the story becomes the reference's once `animate(element, keyframes)` exists, without changing MotionBorder |
 ButtonGroup / ToggleButton / ToggleButtonGroup `fullWidth`, IconButton `edge` + `loading`, Fab
 `href`, Drawer `variant` (temporary / persistent / permanent), `hideBackdrop`,
 `disableEscapeKeyDown`, `onOpenChange(open, reason)`. Renamed: Toggle neutral color `inherit` →

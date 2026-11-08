@@ -2096,7 +2096,7 @@ export const countUpAttributes = (options: CountUpAnatomyOptions = {}): DataAttr
 
 export const motionBorderShapes = ["rounded", "circle"] as const;
 export type MotionBorderShape = (typeof motionBorderShapes)[number];
-export const motionBorderColors = ["multi", ...paletteColorNames] as const;
+export const motionBorderColors = ["multi", "inherit", ...paletteColorNames] as const;
 export type MotionBorderColor = (typeof motionBorderColors)[number];
 
 export const motionBorderOptions = defineOptions("motion-border", "data-ok-motion-border", {
@@ -2105,11 +2105,20 @@ export const motionBorderOptions = defineOptions("motion-border", "data-ok-motio
     "data-ok-color",
     motionBorderColors,
     "multi",
-    "`multi`: several brand colors; a palette color: that color sweeping around.",
+    "`multi`: several brand colors all around; `inherit` (the text color) or a palette color: a light running along the border.",
+  ),
+  secondaryColor: style(
+    "data-ok-secondary-color",
+    motionBorderSecondaryColors,
+    "inherit",
+    "A second light in this color, starting on the opposite side (not with `multi`; absent by default).",
+    { optional: true },
   ),
   width: number("data-ok-width", 2, "Border width in pixels.", { min: 0 }),
   duration: number(
     "data-ok-duration",
+export const motionBorderSecondaryColors = ["inherit", ...paletteColorNames] as const;
+export type MotionBorderSecondaryColor = (typeof motionBorderSecondaryColors)[number];
     undefined,
     "One turn, in milliseconds (default about 5 s).",
     {
@@ -2137,6 +2146,7 @@ export const motionBorderAttributes = (options: MotionBorderAnatomyOptions = {})
 // --- Data grid (ADR-0020) ---------------------------------------------------------------------
 
 export const dataGridOptions = defineOptions("data-grid", "data-ok-data-grid", {
+  secondaryColor?: MotionBorderSecondaryColor | undefined;
   density: style(
     "data-ok-density",
     gridDensities,

@@ -1300,6 +1300,7 @@ describe("overlay attributes", () => {
       motionBorderAttributes({
         shape: "circle",
         color: "error",
+        secondaryColor: "warning",
         width: 3,
         duration: 4000,
         paused: true,
@@ -1308,11 +1309,25 @@ describe("overlay attributes", () => {
       "data-ok-motion-border": "",
       "data-ok-shape": "circle",
       "data-ok-color": "error",
+      "data-ok-secondary-color": "warning",
       "data-ok-width": "3",
       "data-ok-duration": "4000",
       "data-ok-paused": "",
     });
-    expect(motionBorderAttributes({ shape: HOSTILE, color: HOSTILE, width: -1 })).toEqual({
+    expect(motionBorderAttributes({ color: "inherit", secondaryColor: "inherit" })).toEqual({
+      "data-ok-motion-border": "",
+      "data-ok-shape": "rounded",
+      "data-ok-color": "inherit",
+      "data-ok-secondary-color": "inherit",
+    });
+    expect(
+      motionBorderAttributes({
+        shape: HOSTILE,
+        color: HOSTILE,
+        secondaryColor: HOSTILE,
+        width: -1,
+      }),
+    ).toEqual({
       "data-ok-motion-border": "",
       "data-ok-shape": "rounded",
       "data-ok-color": "multi",

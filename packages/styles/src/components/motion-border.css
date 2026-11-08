@@ -2,13 +2,19 @@
  * MotionBorder — spec: specs/components/motion.md
  *
  * Anatomy:   [data-ok-motion-border] › content (an avatar, a logo, a button, text…)
- * Modifiers: data-ok-shape = rounded (default) | circle, data-ok-color = multi (default) | palette,
+ * Modifiers: data-ok-shape = rounded (default) | circle,
+ *            data-ok-color = multi (default) | inherit | palette,
+ *            data-ok-secondary-color = inherit | palette (a second light; not with multi),
  *            data-ok-paused
  * Private:   --_ok-motion-border-width | -duration (owner: CSSOM / style),
- *            --_ok-motion-border-fill (the area inside the border, default the paper color)
+ *            --_ok-motion-border-fill (the area inside the border, default the paper color),
+ *            --_ok-motion-border-light | -light-channel (first light),
+ *            --_ok-motion-border-light-2 | -light-2-channel (second light)
  *
- * A conic gradient turns behind a transparent border; the padding box is painted with the fill,
- * so only the ring shows. The angle is a registered property so it animates.
+ * Three background layers: the fill on the padding box, then a conic gradient (the lights) and a
+ * faint track on the border box, behind a transparent border. Per-side border widths and
+ * per-corner radii set by the author keep working (zero-specificity selectors). The angle is a
+ * registered property so it animates. Alpha through channels, never color-mix() (ADR-0013).
  * Single :where() selectors in @layer components.
  */
 @reference "../theme.css";
@@ -24,6 +30,14 @@
     --_ok-motion-border-colors:
       var(--ok-palette-primary-main), var(--ok-palette-warning-main),
       var(--ok-palette-secondary-main), var(--ok-palette-error-main), var(--ok-palette-primary-main);
+    --_ok-motion-border-track:
+      rgb(var(--ok-palette-grey-500-channel) / 8%) 50%,
+      rgb(var(--ok-palette-grey-500-channel) / 24%);
+    /* Private properties inherit: a nested MotionBorder must not pick up its owner's lights. */
+    --_ok-motion-border-light: initial;
+    --_ok-motion-border-light-channel: initial;
+    --_ok-motion-border-light-2: initial;
+    --_ok-motion-border-light-2-channel: initial;
     box-sizing: border-box;
     width: fit-content;
     border: var(--_ok-motion-border-width, 2px) solid transparent;
@@ -31,7 +45,8 @@
     background:
       linear-gradient(var(--_ok-motion-border-fill, var(--ok-bg-paper)) 0 0) padding-box,
       conic-gradient(from var(--_ok-motion-border-angle), var(--_ok-motion-border-colors))
-      border-box;
+      border-box,
+      linear-gradient(135deg, var(--_ok-motion-border-track)) border-box;
     animation: ok-motion-border
       var(--_ok-motion-border-duration, calc(var(--ok-duration-enter) * 8)) linear infinite;
   }
@@ -40,8 +55,79 @@
     border-radius: 50%;
   }
 
+  /* One light: a soft spot about a quarter turn long, over a faint track of the same color. */
   :where([data-ok-motion-border][data-ok-color]:not([data-ok-color="multi"])) {
-    --_ok-motion-border-colors: transparent 0deg 200deg, var(--ok-c-main) 360deg;
+    --_ok-motion-border-light: var(--ok-c-main);
+    --_ok-motion-border-light-channel: var(--ok-c-channel);
+    --_ok-motion-border-colors:
+      transparent 0deg 135deg, var(--_ok-motion-border-light, transparent) 180deg,
+      transparent 225deg 360deg;
+    --_ok-motion-border-track:
+      rgb(var(--_ok-motion-border-light-channel, var(--ok-palette-grey-500-channel)) / 8%) 50%,
+      rgb(var(--_ok-motion-border-light-channel, var(--ok-palette-grey-500-channel)) / 24%);
+  }
+
+  /* The text color has no channel: its track is the neutral grey. */
+  :where([data-ok-motion-border][data-ok-color="inherit"]) {
+    --_ok-motion-border-light: currentColor;
+    --_ok-motion-border-light-channel: var(--ok-palette-grey-500-channel);
+  }
+
+  :where([data-ok-motion-border][data-ok-secondary-color="inherit"]) {
+    --_ok-motion-border-light-2: currentColor;
+    --_ok-motion-border-light-2-channel: var(--ok-palette-grey-500-channel);
+  }
+
+  :where([data-ok-motion-border][data-ok-secondary-color="primary"]) {
+    --_ok-motion-border-light-2: var(--ok-palette-primary-main);
+    --_ok-motion-border-light-2-channel: var(--ok-palette-primary-main-channel);
+  }
+
+  :where([data-ok-motion-border][data-ok-secondary-color="secondary"]) {
+    --_ok-motion-border-light-2: var(--ok-palette-secondary-main);
+    --_ok-motion-border-light-2-channel: var(--ok-palette-secondary-main-channel);
+  }
+
+  :where([data-ok-motion-border][data-ok-secondary-color="info"]) {
+    --_ok-motion-border-light-2: var(--ok-palette-info-main);
+    --_ok-motion-border-light-2-channel: var(--ok-palette-info-main-channel);
+  }
+
+  :where([data-ok-motion-border][data-ok-secondary-color="success"]) {
+    --_ok-motion-border-light-2: var(--ok-palette-success-main);
+    --_ok-motion-border-light-2-channel: var(--ok-palette-success-main-channel);
+  }
+
+  :where([data-ok-motion-border][data-ok-secondary-color="warning"]) {
+    --_ok-motion-border-light-2: var(--ok-palette-warning-main);
+    --_ok-motion-border-light-2-channel: var(--ok-palette-warning-main-channel);
+  }
+
+  :where([data-ok-motion-border][data-ok-secondary-color="error"]) {
+    --_ok-motion-border-light-2: var(--ok-palette-error-main);
+    --_ok-motion-border-light-2-channel: var(--ok-palette-error-main-channel);
+  }
+
+  /*
+   * Two lights half a turn apart; the track fades from the first color to the second. An unknown
+   * secondary value leaves the second light transparent (one light).
+   */
+  :where(
+    [data-ok-motion-border][data-ok-color]:not([data-ok-color="multi"])[data-ok-secondary-color]
+  ) {
+    --_ok-motion-border-colors:
+      var(--_ok-motion-border-light-2, transparent) 0deg, transparent 45deg 135deg,
+      var(--_ok-motion-border-light, transparent) 180deg, transparent 225deg 315deg,
+      var(--_ok-motion-border-light-2, transparent) 360deg;
+    --_ok-motion-border-track:
+      rgb(var(--_ok-motion-border-light-channel, var(--ok-palette-grey-500-channel)) / 8%) 50%,
+      rgb(
+        var(
+          --_ok-motion-border-light-2-channel,
+          var(--_ok-motion-border-light-channel, var(--ok-palette-grey-500-channel))
+        ) /
+        24%
+      );
   }
 
   :where([data-ok-motion-border][data-ok-paused]) {
