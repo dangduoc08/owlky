@@ -26,6 +26,7 @@ import {
   monthsShowing,
   type PickerLocaleText,
   parseCalendarCount,
+  pickerCalendar,
   previewRange,
   type RangeCalendarCount,
   type RangeDragController,
@@ -49,10 +50,19 @@ import {
   useRef,
   useState,
 } from "react";
-import { PickerArrowIcon, type PickerSelectionState } from "../date-calendar/date-calendar.js";
+import {
+  calendarMonthAttribute,
+  type DateCalendarSlotProps,
+  type DateCalendarSlots,
+  PickerArrowIcon,
+  PickerDay,
+  type PickerDayOwnerState,
+  type PickerSelectionState,
+} from "../date-calendar/date-calendar.js";
 import { type DateValidationProps, dateRules, ruleAttributes } from "../date-field/date-field.js";
 import { IconButton } from "../icon-button/icon-button.js";
 import { usePickerLocalization } from "../localization-provider/localization-provider.js";
+import { usePickerDateConverter } from "../utils/picker-adapter.js";
 import { useMergedRefs } from "../utils/refs.js";
 import { useControllableState } from "../utils/use-controllable-state.js";
 
@@ -102,6 +112,10 @@ export interface DateRangeCalendarProps
   /** Focuses the current day on mount. */
   autoFocus?: boolean | undefined;
   localeText?: Partial<PickerLocaleText> | undefined;
+  /** Replaced parts: the day button and the arrow icons (phase 4). */
+  slots?: Omit<DateCalendarSlots, "switchViewIcon"> | undefined;
+  /** Props of the slots. */
+  slotProps?: DateCalendarSlotProps | undefined;
 }
 
 /** What the controllers read and call, refreshed every render. */
@@ -129,13 +143,14 @@ const validOf = (range: DateRange): DateRange => [
 
 /** The day that gets `tabindex="0"`: `preferred` when shown and enabled, else the first enabled one. */
 function focusAmong(months: Date[], preferred: Date, rules: DateRules): Date {
-  if (months.some((m) => isSameMonth(m, preferred)) && !isDateDisabled(preferred, rules))
+  const cal = rules.calendar;
+  if (months.some((m) => isSameMonth(m, preferred, cal)) && !isDateDisabled(preferred, rules))
     return preferred;
   for (const month of months) {
-    const found = closestEnabledDate(startOfMonth(month), rules);
-    if (found && isSameMonth(found, month)) return found;
+    const found = closestEnabledDate(startOfMonth(month, cal), rules);
+    if (found && isSameMonth(found, month, cal)) return found;
   }
-  return startOfMonth(months[0] as Date);
+  return startOfMonth(months[0] as Date, cal);
 }
 
 /**
@@ -180,12 +195,16 @@ export const DateRangeCalendar = forwardRef<HTMLDivElement, DateRangeCalendarPro
       shouldDisableDate,
       shouldDisableMonth,
       shouldDisableYear,
+      slots,
+      slotProps,
       id: idProp,
       ...props
     },
     ref,
   ) {
     const { locale, localeText, explicit } = usePickerLocalization(localeTextProp);
+    const cal = pickerCalendar(locale);
+    const converter = usePickerDateConverter();
     const generated = useId();
     const id = idProp ?? generated;
     const calendars = parseCalendarCount(calendarsProp, 2);
@@ -201,6 +220,7 @@ export const DateRangeCalendar = forwardRef<HTMLDivElement, DateRangeCalendarPro
         shouldDisableYear,
       }),
       today,
+      calendar: cal,
     };
 
     const [current, setCurrent] = useControllableState<DateRange>({
@@ -220,9 +240,9 @@ export const DateRangeCalendar = forwardRef<HTMLDivElement, DateRangeCalendarPro
       return base.getTime() < min.getTime() ? min : base.getTime() > max.getTime() ? max : base;
     };
     const [first, setFirst] = useState(() =>
-      initialRangeMonth(range, reference(), calendars, currentMonthCalendarPosition),
+      initialRangeMonth(range, reference(), calendars, currentMonthCalendarPosition, cal),
     );
-    const months = visibleMonths(first, calendars);
+    const months = visibleMonths(first, calendars, cal);
     const [focused, setFocused] = useState(() =>
       focusAmong(months, range[position === "end" ? 1 : 0] ?? range[0] ?? today, rules),
     );
@@ -230,12 +250,12 @@ export const DateRangeCalendar = forwardRef<HTMLDivElement, DateRangeCalendarPro
     const [dragging, setDragging] = useState<{ date: Date; position: RangePosition } | null>(null);
 
     const showFirst = (next: Date) => {
-      const month = startOfMonth(next);
-      if (isSameMonth(month, first)) return;
+      const month = startOfMonth(next, cal);
+      if (isSameMonth(month, first, cal)) return;
       setFirst(month);
       onMonthChange?.(month);
     };
-    const show = (date: Date) => showFirst(monthsShowing(date, first, calendars));
+    const show = (date: Date) => showFirst(monthsShowing(date, first, calendars, cal));
 
     // A new outside value whose edited end isn't shown moves the months to it: the start in the
     // first calendar, the end in the last one.
@@ -244,9 +264,11 @@ export const DateRangeCalendar = forwardRef<HTMLDivElement, DateRangeCalendarPro
       lastValue.current = range;
       const editsEnd = position === "end" && range[1] !== null;
       const target = editsEnd ? range[1] : (range[0] ?? range[1]);
-      if (target && !isSameMonth(monthsShowing(target, first, calendars), first)) {
+      if (target && !isSameMonth(monthsShowing(target, first, calendars, cal), first, cal)) {
         setFirst(
-          editsEnd ? addMonths(startOfMonth(target), -(calendars - 1)) : startOfMonth(target),
+          editsEnd
+            ? addMonths(startOfMonth(target, cal), -(calendars - 1), cal)
+            : startOfMonth(target, cal),
         );
         setFocused(target);
       }
@@ -256,8 +278,8 @@ export const DateRangeCalendar = forwardRef<HTMLDivElement, DateRangeCalendarPro
     if (lastCount.current !== calendars) {
       lastCount.current = calendars;
       const target = range[position === "end" ? 1 : 0] ?? range[0] ?? focused;
-      const next = monthsShowing(target, first, calendars);
-      if (!isSameMonth(next, first)) setFirst(next);
+      const next = monthsShowing(target, first, calendars, cal);
+      if (!isSameMonth(next, first, cal)) setFirst(next);
     }
 
     const allowed = (next: RangePosition) =>
@@ -308,9 +330,11 @@ export const DateRangeCalendar = forwardRef<HTMLDivElement, DateRangeCalendarPro
         );
       },
       onMonthStep: (delta) => {
-        const next = addMonths(first, delta);
+        const next = addMonths(first, delta, cal);
         showFirst(next);
-        setFocused(focusAmong(visibleMonths(next, calendars), addMonths(focused, delta), rules));
+        setFocused(
+          focusAmong(visibleMonths(next, calendars, cal), addMonths(focused, delta, cal), rules),
+        );
       },
       onPreview: (date) => setHovered(date),
       onDrag: (date, end) => setDragging({ date, position: end }),
@@ -381,6 +405,9 @@ export const DateRangeCalendar = forwardRef<HTMLDivElement, DateRangeCalendarPro
     const formatWeekday =
       dayOfWeekFormatter ?? ((date: Date) => defaultDayOfWeekFormatter(date, locale));
     const weekdayLong = new Intl.DateTimeFormat(locale, { weekday: "long" });
+    const Day = slots?.day ?? PickerDay;
+    const LeftIcon = slots?.leftArrowIcon;
+    const RightIcon = slots?.rightArrowIcon;
     const preview = dragging
       ? rangeAfterPick(range, dragging.date, dragging.position, true).range
       : previewRange(range, hovered, allowed(position));
@@ -406,7 +433,7 @@ export const DateRangeCalendar = forwardRef<HTMLDivElement, DateRangeCalendarPro
           reduceAnimations,
         })}
         data-ok-range-position={position}
-        data-ok-month={formatIsoDate(first).slice(0, 7)}
+        data-ok-month={calendarMonthAttribute(first, cal)}
         {...(formatIsoRange(range, "date")
           ? { "data-ok-value": formatIsoRange(range, "date") }
           : {})}
@@ -418,7 +445,7 @@ export const DateRangeCalendar = forwardRef<HTMLDivElement, DateRangeCalendarPro
       >
         {months.map((month, index) => {
           const labelId = `${id}-label-${index}`;
-          const weeks = calendarWeeks(month, weekStart, fixedWeekNumber);
+          const weeks = calendarWeeks(month, weekStart, fixedWeekNumber, cal);
           return (
             <div key={formatIsoDate(month)} data-ok-date-range-calendar-month="">
               <div data-ok-date-range-calendar-header="">
@@ -427,9 +454,9 @@ export const DateRangeCalendar = forwardRef<HTMLDivElement, DateRangeCalendarPro
                     data-ok-date-calendar-prev=""
                     aria-label={localeText.previousMonth}
                     title={localeText.previousMonth}
-                    disabled={disabled || month.getTime() <= startOfMonth(min).getTime()}
+                    disabled={disabled || month.getTime() <= startOfMonth(min, cal).getTime()}
                   >
-                    <PickerArrowIcon direction="left" />
+                    {LeftIcon ? <LeftIcon /> : <PickerArrowIcon direction="left" />}
                   </IconButton>
                 )}
                 <div data-ok-date-calendar-label="" id={labelId} aria-live="polite">
@@ -440,9 +467,9 @@ export const DateRangeCalendar = forwardRef<HTMLDivElement, DateRangeCalendarPro
                     data-ok-date-calendar-next=""
                     aria-label={localeText.nextMonth}
                     title={localeText.nextMonth}
-                    disabled={disabled || month.getTime() >= startOfMonth(max).getTime()}
+                    disabled={disabled || month.getTime() >= startOfMonth(max, cal).getTime()}
                   >
-                    <PickerArrowIcon direction="right" />
+                    {RightIcon ? <RightIcon /> : <PickerArrowIcon direction="right" />}
                   </IconButton>
                 )}
               </div>
@@ -502,10 +529,21 @@ export const DateRangeCalendar = forwardRef<HTMLDivElement, DateRangeCalendarPro
                               />
                             );
                           const state = rangeDayState(date, range, preview);
+                          const isToday = isSameDay(date, today);
+                          const owner: PickerDayOwnerState = {
+                            day: converter.fromEngine(date),
+                            selected: state.start || state.end || state.within,
+                            today: isToday,
+                            outsideCurrentMonth: outside,
+                            disabled: disabled || isDateDisabled(date, rules),
+                          };
+                          const extra =
+                            typeof slotProps?.day === "function"
+                              ? slotProps.day(owner)
+                              : slotProps?.day;
                           return (
-                            <button
+                            <Day
                               key={formatIsoDate(date)}
-                              type="button"
                               role="gridcell"
                               data-ok-picker-day=""
                               data-ok-date={formatIsoDate(date)}
@@ -519,11 +557,12 @@ export const DateRangeCalendar = forwardRef<HTMLDivElement, DateRangeCalendarPro
                                 : {})}
                               {...(outside ? { "data-ok-outside": "" } : {})}
                               {...rangeDayAttributes(state)}
-                              disabled={disabled || isDateDisabled(date, rules)}
+                              {...owner}
                               tabIndex={!outside && isSameDay(date, focusDay) ? 0 : -1}
+                              {...extra}
                             >
-                              {date.getDate()}
-                            </button>
+                              {extra?.children ?? cal.day(date)}
+                            </Day>
                           );
                         })}
                       </div>

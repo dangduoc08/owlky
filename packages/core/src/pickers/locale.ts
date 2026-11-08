@@ -3,6 +3,7 @@
  * week from a fixed table (the same in every browser: `Intl.Locale#getWeekInfo` isn't in
  * Firefox), and the picker texts (`localeText`) in English and Vietnamese.
  */
+import { intlLocale, pickerCalendar } from "./calendar-system.js";
 import type { DateView } from "./dates.js";
 import type { ClockSectionView, TimeView } from "./time.js";
 
@@ -48,25 +49,34 @@ export function firstDayOfWeek(locale: string): number {
 
 const UTC_DAY = (month: number, day: number) => new Date(Date.UTC(2023, month, day, 12));
 
-/** Month names from January: `long` ("January"), `short` ("Jan"). */
+/**
+ * Month names from the first month of the locale's calendar system: `long` ("January"),
+ * `short` ("Jan"); Persian calendars start with "Farvardin" (ADR-0030).
+ */
 export function monthNames(locale: string, width: "long" | "short"): string[] {
-  const format = new Intl.DateTimeFormat(locale, { month: width, timeZone: "UTC" });
+  const cal = pickerCalendar(locale);
+  if (cal.id !== "gregory") {
+    const format = new Intl.DateTimeFormat(intlLocale(locale), { month: width });
+    const year = cal.year(new Date(2023, 6, 1));
+    return Array.from({ length: 12 }, (_, month) => format.format(cal.make(year, month, 1)));
+  }
+  const format = new Intl.DateTimeFormat(intlLocale(locale), { month: width, timeZone: "UTC" });
   return Array.from({ length: 12 }, (_, month) => format.format(UTC_DAY(month, 1)));
 }
 
 /** Weekday names from Sunday: `long` ("Sunday"), `short` ("Sun"), `narrow` ("S"). */
 export function weekdayNames(locale: string, width: "long" | "short" | "narrow"): string[] {
-  const format = new Intl.DateTimeFormat(locale, { weekday: width, timeZone: "UTC" });
+  const format = new Intl.DateTimeFormat(intlLocale(locale), { weekday: width, timeZone: "UTC" });
   // 1 January 2023 was a Sunday.
   return Array.from({ length: 7 }, (_, day) => format.format(UTC_DAY(0, 1 + day)));
 }
 
-/** Formats a date with `Intl` options (local time). */
+/** Formats a date with `Intl` options (local time, the locale's picker calendar). */
 export const formatDate = (
   date: Date,
   locale: string,
   options: Intl.DateTimeFormatOptions,
-): string => new Intl.DateTimeFormat(locale, options).format(date);
+): string => new Intl.DateTimeFormat(intlLocale(locale), options).format(date);
 
 /**
  * Default weekday header: the locale's narrow name, uppercased ("S", "M" in English; "CN", "T2"

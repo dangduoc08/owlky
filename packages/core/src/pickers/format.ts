@@ -12,6 +12,7 @@
  * | `m` / `mm`, `s` / `ss` | minutes, seconds | 30 |
  * | `A` / `a` | meridiem | AM / am |
  */
+import { intlLocale, pickerCalendar } from "./calendar-system.js";
 import type { DateView } from "./dates.js";
 import { formatDate, monthNames, weekdayNames } from "./locale.js";
 
@@ -115,7 +116,7 @@ export const is12HourFormat = (sections: readonly FormatSection[]): boolean =>
  * `Intl.DateTimeFormat#formatToParts`.
  */
 export function localeDateFormat(locale: string): string {
-  const parts = new Intl.DateTimeFormat(locale, {
+  const parts = new Intl.DateTimeFormat(intlLocale(locale), {
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
@@ -125,10 +126,13 @@ export function localeDateFormat(locale: string): string {
       if (part.type === "year") return "YYYY";
       if (part.type === "month") return "MM";
       if (part.type === "day") return "DD";
+      // Other calendars name their era ("AP"): the field leaves it out.
+      if (part.type === "era") return "";
       // Literal text, with `[` / `]` escaped away (they never appear in Intl output).
       return escapeFormatLiteral(part.value);
     })
-    .join("");
+    .join("")
+    .trim();
 }
 
 /** Literal text for a format: ASCII letters (they could read as tokens) wrapped in `[…]`. */
@@ -147,19 +151,20 @@ export function defaultDateFormat(views: readonly DateView[], locale: string): s
 /** The text of one section for a date. */
 export function formatSection(date: Date, section: FormatSection, locale: string): string {
   const { token } = section;
+  const cal = pickerCalendar(locale);
   const digits = (value: number) =>
     section.pad > 0 ? String(value).padStart(section.pad, "0") : String(value);
   switch (section.type) {
     case "year":
       return token === "YY"
-        ? String(date.getFullYear() % 100).padStart(2, "0")
-        : String(date.getFullYear()).padStart(4, "0");
+        ? String(cal.year(date) % 100).padStart(2, "0")
+        : String(cal.year(date)).padStart(4, "0");
     case "month":
-      if (token === "MMMM") return monthNames(locale, "long")[date.getMonth()] as string;
-      if (token === "MMM") return monthNames(locale, "short")[date.getMonth()] as string;
-      return digits(date.getMonth() + 1);
+      if (token === "MMMM") return monthNames(locale, "long")[cal.month(date)] as string;
+      if (token === "MMM") return monthNames(locale, "short")[cal.month(date)] as string;
+      return digits(cal.month(date) + 1);
     case "day":
-      return digits(date.getDate());
+      return digits(cal.day(date));
     case "weekDay":
       return weekdayNames(locale, token === "dddd" ? "long" : "short")[date.getDay()] as string;
     case "hours": {

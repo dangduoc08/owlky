@@ -6,10 +6,12 @@
  * the shown months, the field's sections and the shortcuts.
  */
 import type { DateRules } from "./calendar.js";
+import { gregorianCalendar, type PickerCalendarSystem } from "./calendar-system.js";
 import {
   addMonths,
   dayDiff,
   isValidDate,
+  monthDiff,
   setDateParts,
   startOfDay,
   startOfMonth,
@@ -25,6 +27,7 @@ import {
   type TimeRules,
   validatePickerValue,
 } from "./time.js";
+import type { PickerTimezone } from "./timezone.js";
 
 /** A range value: start and end (`null` = empty, an invalid date = partly typed). */
 export type DateRange = [Date | null, Date | null];
@@ -61,13 +64,17 @@ export const parseRangePosition = (
  * A range from an ISO 8601 interval `start/end` (either side may be empty: `2025-05-20/`).
  * Times take `reference`'s day. `null` for anything else (no slash, a bad side, over 80 chars).
  */
-export function parseIsoRange(text: unknown, reference: Date): DateRange | null {
+export function parseIsoRange(
+  text: unknown,
+  reference: Date,
+  timezone: PickerTimezone = "system",
+): DateRange | null {
   if (typeof text !== "string" || text.length > 80) return null;
   const parts = text.split("/");
   if (parts.length !== 2) return null;
   const side = (part: string) => {
     if (part.trim() === "") return null;
-    return parsePickerValue(part, reference) ?? undefined;
+    return parsePickerValue(part, reference, timezone) ?? undefined;
   };
   const start = side(parts[0] as string);
   const end = side(parts[1] as string);
@@ -231,28 +238,37 @@ export function initialRangeMonth(
   today: Date,
   calendars: RangeCalendarCount,
   currentMonthCalendarPosition = 1,
+  cal: PickerCalendarSystem = gregorianCalendar,
 ): Date {
   const [start, end] = range;
   const base = valid(start) ? start : valid(end) ? end : today;
   const at = Math.min(Math.max(Math.trunc(currentMonthCalendarPosition) || 1, 1), calendars);
-  return startOfMonth(addMonths(startOfMonth(base), -(at - 1)));
+  return startOfMonth(addMonths(startOfMonth(base, cal), -(at - 1), cal), cal);
 }
 
 /** The months shown from `first`. */
-export const visibleMonths = (first: Date, calendars: RangeCalendarCount): Date[] =>
-  Array.from({ length: calendars }, (_, i) => addMonths(startOfMonth(first), i));
+export const visibleMonths = (
+  first: Date,
+  calendars: RangeCalendarCount,
+  cal: PickerCalendarSystem = gregorianCalendar,
+): Date[] =>
+  Array.from({ length: calendars }, (_, i) => addMonths(startOfMonth(first, cal), i, cal));
 
 /**
  * The first month that shows `date`: unchanged when `date` is visible; otherwise `date`'s month
  * goes to the first calendar (dates before) or the last one (dates after).
  */
-export function monthsShowing(date: Date, first: Date, calendars: RangeCalendarCount): Date {
-  const from = startOfMonth(first);
-  const target = startOfMonth(date);
-  const index =
-    (target.getFullYear() - from.getFullYear()) * 12 + target.getMonth() - from.getMonth();
+export function monthsShowing(
+  date: Date,
+  first: Date,
+  calendars: RangeCalendarCount,
+  cal: PickerCalendarSystem = gregorianCalendar,
+): Date {
+  const from = startOfMonth(first, cal);
+  const target = startOfMonth(date, cal);
+  const index = monthDiff(target, from, cal);
   if (index >= 0 && index < calendars) return from;
-  return index < 0 ? target : addMonths(target, -(calendars - 1));
+  return index < 0 ? target : addMonths(target, -(calendars - 1), cal);
 }
 
 /**

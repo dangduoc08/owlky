@@ -37,22 +37,26 @@ import {
   setDateParts,
   setTimeUnit,
   shortcutValue,
-  startOfDay,
   type TimeView,
   validatePickerValue,
 } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
 import type { ComponentInstance } from "../../runtime/types.js";
-import type { DateCalendarInstance } from "../date-calendar/date-calendar.js";
+import type { DateCalendarInstance, PickerDayRenderer } from "../date-calendar/date-calendar.js";
 import {
   asFunction,
+  type PickerDateApi,
+  pickerDateApi,
+  pickerToday,
   type RuleFunctions,
   readAmpm,
   readLocale,
   readLocaleText,
   readRules,
   readTimeRules,
+  readTimezone,
   readValueType,
+  relabelActions,
   type TimeRuleFunctions,
   timeViewName,
   toPickerDate,
@@ -64,7 +68,7 @@ import type { PopoverInstance } from "../popover/popover.js";
 import type { TabsInstance } from "../tabs/tabs.js";
 import type { TimeClockInstance } from "../time-clock/time-clock.js";
 
-export interface DatePickerInstance extends ComponentInstance {
+export interface DatePickerInstance extends ComponentInstance, PickerDateApi {
   /** ISO value, or `null`: a date, a time (`HH:mm:ss`) or a date time, by `data-ok-value-type`. */
   readonly value: string | null;
   /** Sets the value (ISO string, `Date` or `null`) without events. */
@@ -80,6 +84,8 @@ export interface DatePickerInstance extends ComponentInstance {
   /** Times that can't be picked (time and date time pickers). */
   setShouldDisableTime(fn: ((value: Date, view: TimeView) => boolean) | null): void;
   setLocaleText(text: Partial<PickerLocaleText>): void;
+  /** Decorates each day button of the calendar (phase 4); `null` removes the renderer. */
+  setDayRenderer(fn: PickerDayRenderer | null): void;
 }
 
 const {
@@ -172,7 +178,7 @@ export const datePicker = defineComponent<DatePickerInstance>({
     const timeSource = clockEl ?? deskEl ?? element;
     const ampm = readAmpm(timeSource, locale);
     const ruleSource = fieldEl ?? calendarEl ?? timeSource;
-    const today = () => startOfDay(new Date());
+    const today = () => pickerToday(element);
     const isDisabled = () => (calendarEl ?? timeSource).hasAttribute("data-ok-disabled");
     const isReadOnly = () =>
       fieldEl?.hasAttribute("data-ok-read-only") === true ||
@@ -266,9 +272,10 @@ export const datePicker = defineComponent<DatePickerInstance>({
           tabs()?.setValue(isTimeView(view) ? "time" : "date");
         }
         if (calendarEl) calendarEl.hidden = isDateTime && !desktopForm && isTimeView(view);
-        if (deskEl) deskEl.hidden = !desktopForm;
+        // Without the other form's clock (view renderers), one clock serves every form.
+        if (deskEl) deskEl.hidden = !desktopForm && clockEl !== null;
         if (clockEl) {
-          clockEl.hidden = desktopForm || (isDateTime && !isTimeView(view));
+          clockEl.hidden = (desktopForm && deskEl !== null) || (isDateTime && !isTimeView(view));
           if (isTimeView(view)) clock()?.setView(view);
         }
       }
@@ -463,7 +470,7 @@ export const datePicker = defineComponent<DatePickerInstance>({
         ).detail;
         // A partly filled field reports `null` with "invalidDate": the value becomes an invalid
         // date (as in React), and the calendar stays where it is.
-        const date = parsePickerValue(detail.value, base());
+        const date = parsePickerValue(detail.value, base(), readTimezone(element));
         change(date ?? (detail.validationError === "invalidDate" ? invalidDate() : null), "field");
       },
       { signal },
@@ -569,7 +576,7 @@ export const datePicker = defineComponent<DatePickerInstance>({
         const fromFunction = shortcuts?.[index];
         const next = fromFunction
           ? shortcutValue(fromFunction, rules())
-          : toPickerDate(chip.getAttribute("data-ok-value"), base());
+          : toPickerDate(chip.getAttribute("data-ok-value"), base(), readTimezone(element));
         if (next === undefined || validatePickerValue(next, type, rules()) !== null) return;
         change(next);
         accept(next);
@@ -612,12 +619,25 @@ export const datePicker = defineComponent<DatePickerInstance>({
       desk()?.setValue(value);
     }
     render();
-    return {
+    const dates = pickerDateApi(
+      element,
+      () => iso(value),
+      (next) => instance.setValue(next as Date | null),
+    );
+    const instance: DatePickerInstance = {
       get value() {
         return iso(value);
       },
+      get date() {
+        return dates.get();
+      },
+      setDate: dates.set,
+      setDateAdapter: dates.setAdapter,
+      setDayRenderer(fn) {
+        calendar()?.setDayRenderer(fn);
+      },
       setValue(next) {
-        const date = toPickerDate(next, base());
+        const date = toPickerDate(next, base(), readTimezone(element));
         if (date === undefined) return;
         value = date;
         lastAccepted = date;
@@ -670,6 +690,7 @@ export const datePicker = defineComponent<DatePickerInstance>({
         calendar()?.setLocaleText(next);
         clock()?.setLocaleText(next);
         desk()?.setLocaleText(next);
+        relabelActions(layout, text);
         render();
       },
       destroy() {
@@ -680,5 +701,6 @@ export const datePicker = defineComponent<DatePickerInstance>({
         }
       },
     };
+    return instance;
   },
 });

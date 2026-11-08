@@ -3,6 +3,7 @@
  * Pure rules for arrow keys, typing and reading a date back; the DOM side is
  * `createFieldController` (field-controller.ts).
  */
+import { pickerCalendar } from "./calendar-system.js";
 import { daysInMonth, invalidDate, isValidDate, setDateParts } from "./dates.js";
 import { type FormatSection, formatSection, is12HourFormat, meridiemNames } from "./format.js";
 import { monthNames, type PickerLocaleText, weekdayNames } from "./locale.js";
@@ -83,7 +84,7 @@ function bounds(
       );
       const month = parts.month;
       if (month === undefined) return { min: 1, max: 31 };
-      return { min: 1, max: daysInMonth(parts.year ?? 2000, month) };
+      return { min: 1, max: daysInMonth(parts.year ?? 2000, month, pickerCalendar(locale)) };
     }
     case "hours":
       return section.token.startsWith("h") ? { min: 1, max: 12 } : { min: 0, max: 23 };
@@ -278,23 +279,21 @@ export function sectionsToDate(
     )
   )
     return invalidDate();
-  const year = parts.year ?? reference.getFullYear();
-  const month = parts.month ?? reference.getMonth();
-  const day = parts.day ?? Math.min(reference.getDate(), daysInMonth(year, month));
-  if (day > daysInMonth(year, month)) return invalidDate();
+  const cal = pickerCalendar(locale);
+  const year = parts.year ?? cal.year(reference);
+  const month = parts.month ?? cal.month(reference);
+  const day = parts.day ?? Math.min(cal.day(reference), daysInMonth(year, month, cal));
+  if (day > daysInMonth(year, month, cal)) return invalidDate();
   let hours = parts.hours;
   if (hours !== undefined && is12HourFormat(editable)) {
     hours %= 12;
     if (parts.pm) hours += 12;
   }
-  return setDateParts(reference, {
-    year,
-    month,
-    day,
-    hours,
-    minutes: parts.minutes,
-    seconds: parts.seconds,
-  });
+  return setDateParts(
+    reference,
+    { year, month, day, hours, minutes: parts.minutes, seconds: parts.seconds },
+    cal,
+  );
 }
 
 /** `aria-valuenow`, `aria-valuemin` / `max` and `aria-valuetext` of a section. */

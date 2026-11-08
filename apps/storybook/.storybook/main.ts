@@ -23,6 +23,10 @@ const config: StorybookConfig = {
         alias: [
           { find: /^@owlky\/core$/, replacement: pkg("core/src/index.ts") },
           { find: /^@owlky\/core\/editor$/, replacement: pkg("core/src/editor/index.ts") },
+          {
+            find: /^@owlky\/core\/adapters\/(dayjs|date-fns|luxon|moment)$/,
+            replacement: `${pkg("core/src/adapters")}/$1.ts`,
+          },
           { find: /^@owlky\/react$/, replacement: pkg("react/src/index.ts") },
           { find: /^@owlky\/html$/, replacement: pkg("html/src/index.ts") },
           { find: /^@owlky\/html\/auto$/, replacement: pkg("html/src/auto.ts") },

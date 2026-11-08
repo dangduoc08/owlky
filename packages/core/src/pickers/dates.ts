@@ -1,7 +1,9 @@
 /**
  * Calendar math for the pickers (ADR-0022): native `Date` in local time, ISO 8601 in and out.
- * Every function returns a new `Date` and never mutates its argument.
+ * Every function returns a new `Date` and never mutates its argument. Year / month arithmetic
+ * takes an optional calendar system (phase 4, ADR-0030; Gregorian by default).
  */
+import { gregorianCalendar, type PickerCalendarSystem } from "./calendar-system.js";
 
 export const pickerViews = ["year", "month", "day"] as const;
 /** A date view of a calendar. */
@@ -17,7 +19,17 @@ export const isValidDate = (value: unknown): value is Date =>
 export const invalidDate = (): Date => new Date(Number.NaN);
 
 /** A local date at midnight; `year` can be below 100 (unlike `new Date(y, m, d)`). */
-export function makeDate(year: number, month: number, day: number): Date {
+export function makeDate(
+  year: number,
+  month: number,
+  day: number,
+  cal: PickerCalendarSystem = gregorianCalendar,
+): Date {
+  if (cal !== gregorianCalendar) {
+    // Other calendars: `day` may overflow like `Date` does.
+    const first = cal.make(year, month, 1);
+    return day === 1 ? first : addDays(first, day - 1);
+  }
   const date = new Date(2000, 0, 1);
   date.setFullYear(year, month, day);
   return date;
@@ -34,8 +46,22 @@ export function setDateParts(
     minutes?: number | undefined;
     seconds?: number | undefined;
   },
+  cal: PickerCalendarSystem = gregorianCalendar,
 ): Date {
   const next = new Date(date.getTime());
+  if (
+    cal !== gregorianCalendar &&
+    (parts.year !== undefined || parts.month !== undefined || parts.day !== undefined)
+  ) {
+    const day = makeDate(
+      parts.year ?? cal.year(date),
+      parts.month ?? cal.month(date),
+      parts.day ?? cal.day(date),
+      cal,
+    );
+    next.setFullYear(day.getFullYear(), day.getMonth(), day.getDate());
+    return setDateParts(next, { ...parts, year: undefined, month: undefined, day: undefined });
+  }
   next.setFullYear(
     parts.year ?? date.getFullYear(),
     parts.month ?? date.getMonth(),
@@ -53,10 +79,14 @@ export function setDateParts(
 export const startOfDay = (date: Date): Date =>
   makeDate(date.getFullYear(), date.getMonth(), date.getDate());
 
-export const startOfMonth = (date: Date): Date => makeDate(date.getFullYear(), date.getMonth(), 1);
+export const startOfMonth = (date: Date, cal: PickerCalendarSystem = gregorianCalendar): Date =>
+  makeDate(cal.year(date), cal.month(date), 1, cal);
 
-export const daysInMonth = (year: number, month: number): number =>
-  makeDate(year, month + 1, 0).getDate();
+export const daysInMonth = (
+  year: number,
+  month: number,
+  cal: PickerCalendarSystem = gregorianCalendar,
+): number => cal.daysInMonth(year, month);
 
 /** `date` plus `days` calendar days (keeps the time; safe across daylight saving changes). */
 export function addDays(date: Date, days: number): Date {
@@ -66,23 +96,45 @@ export function addDays(date: Date, days: number): Date {
 }
 
 /** `date` plus `months`, clamping the day (31 Jan + 1 month = 28 or 29 Feb). */
-export function addMonths(date: Date, months: number): Date {
-  const total = date.getFullYear() * 12 + date.getMonth() + months;
+export function addMonths(
+  date: Date,
+  months: number,
+  cal: PickerCalendarSystem = gregorianCalendar,
+): Date {
+  const total = cal.year(date) * 12 + cal.month(date) + months;
   const year = Math.floor(total / 12);
   const month = total - year * 12;
-  return setDateParts(date, {
-    year,
-    month,
-    day: Math.min(date.getDate(), daysInMonth(year, month)),
-  });
+  return setDateParts(
+    date,
+    { year, month, day: Math.min(cal.day(date), cal.daysInMonth(year, month)) },
+    cal,
+  );
 }
 
-export const addYears = (date: Date, years: number): Date => addMonths(date, years * 12);
+export const addYears = (
+  date: Date,
+  years: number,
+  cal: PickerCalendarSystem = gregorianCalendar,
+): Date => addMonths(date, years * 12, cal);
 
-export const isSameYear = (a: Date, b: Date): boolean => a.getFullYear() === b.getFullYear();
+export const isSameYear = (
+  a: Date,
+  b: Date,
+  cal: PickerCalendarSystem = gregorianCalendar,
+): boolean => cal.year(a) === cal.year(b);
 
-export const isSameMonth = (a: Date, b: Date): boolean =>
-  isSameYear(a, b) && a.getMonth() === b.getMonth();
+export const isSameMonth = (
+  a: Date,
+  b: Date,
+  cal: PickerCalendarSystem = gregorianCalendar,
+): boolean => isSameYear(a, b, cal) && cal.month(a) === cal.month(b);
+
+/** Months from `b`'s month to `a`'s (positive when `a` is later). */
+export const monthDiff = (
+  a: Date,
+  b: Date,
+  cal: PickerCalendarSystem = gregorianCalendar,
+): number => (cal.year(a) - cal.year(b)) * 12 + cal.month(a) - cal.month(b);
 
 export const isSameDay = (a: Date, b: Date): boolean =>
   isSameMonth(a, b) && a.getDate() === b.getDate();
@@ -175,4 +227,26 @@ export function parseIsoTime(text: unknown, reference: Date): Date | null {
 export const normalizeDateViews = (views: readonly unknown[] | undefined): DateView[] => {
   const list = pickerViews.filter((view) => views?.includes(view));
   return list.length > 0 ? list : ["year", "day"];
+};
+
+/**
+ * A shown month as text (`data-ok-month`, `monthchange`): `YYYY-MM` in the Gregorian calendar,
+ * else the ISO date of the month's first day (other calendars' months don't start on the 1st).
+ */
+export const formatCalendarMonth = (
+  month: Date,
+  cal: PickerCalendarSystem = gregorianCalendar,
+): string =>
+  cal === gregorianCalendar
+    ? formatIsoDate(month).slice(0, 7)
+    : formatIsoDate(startOfMonth(month, cal));
+
+/** The month of `formatCalendarMonth` text (`YYYY-MM` or an ISO date), or `null`. */
+export const parseCalendarMonth = (
+  text: unknown,
+  cal: PickerCalendarSystem = gregorianCalendar,
+): Date | null => {
+  if (typeof text !== "string") return null;
+  const date = parseIsoDate(/^\d{4}-\d{2}$/.test(text) ? `${text}-01` : text);
+  return date ? startOfMonth(date, cal) : null;
 };

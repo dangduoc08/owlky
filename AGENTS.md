@@ -465,6 +465,21 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
   with `isolation: isolate` (a negative z-index would otherwise go under the paper). Every range
   day always has its `::before` / `::after` (states only restyle them): adding a pseudo-element
   to a button on hover rebuilds its box in Firefox, which then drops the press that follows.
+- Pickers phase 4 (ADR-0030): the engine stays local-time `Date`; zones and adapters convert at
+  the edge. React's public pickers are `withPickerAdapter(Implementation)` in
+  `react/src/pickers/pickers.ts` (index exports those): implementations compose each other
+  **unwrapped**, and tests of a component file test the implementation (no zone conversion).
+  Importing an adapter entry widens `PickerValidDate` for the whole TypeScript program (tests
+  too): internal code casts converter results (`toEngine<Date | null>`). Calendar math takes the
+  system as an optional last argument (`startOfMonth(d, cal)`, `DateRules.calendar`); never call
+  `getFullYear()` / `getMonth()` / `getDate()` for what a calendar *shows* (`cal.year(d)`…), only to
+  copy Gregorian fields. `safeTimezone` keeps the name as written (engines canonicalize
+  `Asia/Ho_Chi_Minh` differently). `PickerDay` passes its attributes through in render order:
+  keep `{...owner}` before `tabIndex` or every disabled day reorders and the phase 1–3 snippets
+  change. Story snippets of class-only demo hooks: `components.test.ts` allows only `data-ok-*`
+  attributes in snippets (use a class, such as `.sb-day-dot`). The adapter tests load Day.js,
+  Luxon and Moment through Vite: list them in the package's `optimizeDeps.include` (with the
+  `.js` plugin paths) or the first run reloads mid-test.
 - Parallel work: never run two `/component` / `/integrate` sessions (or two `pnpm build` /
   `pnpm test:e2e`) in the same working tree — builds wipe each other's `dist/` and
   `storybook-static/`, e2e servers share port 4321, and staging part of a shared file while

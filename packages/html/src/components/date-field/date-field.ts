@@ -20,7 +20,6 @@ import {
   sectionPlaceholder,
   sectionsToDate,
   sectionValues,
-  startOfDay,
   type TimeView,
   validatePickerValue,
   validateRange,
@@ -29,19 +28,23 @@ import { defineComponent } from "../../runtime/define.js";
 import type { ComponentInstance } from "../../runtime/types.js";
 import {
   asFunction,
+  type PickerDateApi,
+  pickerDateApi,
+  pickerToday,
   type RuleFunctions,
   readAmpm,
   readLocale,
   readLocaleText,
   readRules,
   readTimeRules,
+  readTimezone,
   readValueType,
   type TimeRuleFunctions,
   toPickerDate,
 } from "../date-calendar/picker-dom.js";
 import { toRange } from "../date-range-calendar/date-range-calendar.js";
 
-export interface DateFieldInstance extends ComponentInstance {
+export interface DateFieldInstance extends ComponentInstance, PickerDateApi {
   /**
    * ISO value, or `null` when empty or partly filled: `YYYY-MM-DD`, `HH:mm:ss` (time fields) or
    * `YYYY-MM-DDTHH:mm:ss` (date time fields). Range fields (`data-ok-range`, ADR-0028): the ISO
@@ -126,12 +129,14 @@ export const dateField = defineComponent<DateFieldInstance>({
     const spinbuttons = () => [...group.querySelectorAll<HTMLElement>('[role="spinbutton"]')];
     const isDisabled = () => hidden?.disabled === true;
     const isReadOnly = () => element.hasAttribute("data-ok-read-only");
-    const today = () => startOfDay(new Date());
+    const today = () => pickerToday(element);
 
     let forcedError: boolean | null = null;
     /** One date, or the start and the end of a range field. */
     const readSides = (text: string | null): (Date | null)[] =>
-      isRange ? (parseIsoRange(text, today()) ?? [null, null]) : [parsePickerValue(text, today())];
+      isRange
+        ? (parseIsoRange(text, today(), readTimezone(element)) ?? [null, null])
+        : [parsePickerValue(text, today(), readTimezone(element))];
     const textsOf = (list: (Date | null)[]) =>
       list.flatMap((date, side) => {
         const [from, to] = part(side);
@@ -258,7 +263,18 @@ export const dateField = defineComponent<DateFieldInstance>({
     );
 
     render();
-    return {
+    const dates = pickerDateApi(
+      element,
+      () => instance.value,
+      (next) => instance.setValue(next as never),
+      isRange,
+    );
+    const instance: DateFieldInstance = {
+      get date() {
+        return dates.get();
+      },
+      setDate: dates.set,
+      setDateAdapter: dates.setAdapter,
       get value() {
         return iso(values);
       },
@@ -267,11 +283,13 @@ export const dateField = defineComponent<DateFieldInstance>({
       },
       setValue(next) {
         if (isRange) {
-          const range = toRange(next, reference());
+          const range = toRange(next, reference(), readTimezone(element));
           if (range === undefined) return;
           values = range;
         } else {
-          const date = Array.isArray(next) ? undefined : toPickerDate(next, reference());
+          const date = Array.isArray(next)
+            ? undefined
+            : toPickerDate(next, reference(), readTimezone(element));
           if (date === undefined) return;
           values = [date];
         }
@@ -313,5 +331,6 @@ export const dateField = defineComponent<DateFieldInstance>({
         controller.destroy();
       },
     };
+    return instance;
   },
 });

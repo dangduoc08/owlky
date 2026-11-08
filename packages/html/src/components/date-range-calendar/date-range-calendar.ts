@@ -12,6 +12,7 @@ import {
   dateRangeCalendarOptions,
   defaultDayOfWeekFormatter,
   firstDayOfWeek,
+  formatCalendarMonth,
   formatIsoDate,
   formatIsoRange,
   initialRangeMonth,
@@ -21,10 +22,12 @@ import {
   isValidDate,
   monthsShowing,
   type PickerLocaleText,
+  type PickerTimezone,
   parseCalendarCount,
-  parseIsoDate,
+  parseCalendarMonth,
   parseIsoRange,
   parseRangePosition,
+  pickerCalendar,
   previewRange,
   type RangeCalendarCount,
   type RangePosition,
@@ -32,27 +35,31 @@ import {
   rangeDayAttributes,
   rangeDayState,
   readNumber,
-  startOfDay,
   startOfMonth,
   visibleMonths,
   weekNumber,
 } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
 import type { ComponentInstance } from "../../runtime/types.js";
+import type { PickerDayRenderer } from "../date-calendar/date-calendar.js";
 import {
   ARROW_LEFT,
   ARROW_RIGHT,
   asFunction,
   h,
   morph,
+  type PickerDateApi,
+  pickerDateApi,
+  pickerToday,
   type RuleFunctions,
   readLocale,
   readLocaleText,
   readRules,
+  readTimezone,
   strokeIcon,
 } from "../date-calendar/picker-dom.js";
 
-export interface DateRangeCalendarInstance extends ComponentInstance {
+export interface DateRangeCalendarInstance extends ComponentInstance, PickerDateApi {
   /** The range as an ISO 8601 interval (`2025-05-20/2025-05-25`), or `null` when empty. */
   readonly value: string | null;
   /** Sets the range (ISO interval, `[start, end]` or `null`) and shows it, without events. */
@@ -74,20 +81,26 @@ export interface DateRangeCalendarInstance extends ComponentInstance {
   setShouldDisableYear(fn: ((year: Date) => boolean) | null): void;
   setDayOfWeekFormatter(fn: ((date: Date) => string) | null): void;
   setLocaleText(text: Partial<PickerLocaleText>): void;
+  /** Decorates each day button (phase 4); `null` removes the renderer. */
+  setDayRenderer(fn: PickerDayRenderer | null): void;
 }
 
 const o = dateRangeCalendarOptions.options;
 const EMPTY: DateRange = [null, null];
 
 /** A range from an ISO interval or a `[start, end]` pair (anything else: `undefined`). */
-export function toRange(value: unknown, reference: Date): DateRange | undefined {
+export function toRange(
+  value: unknown,
+  reference: Date,
+  timezone: PickerTimezone = "system",
+): DateRange | undefined {
   if (value === null || value === "") return EMPTY;
-  if (typeof value === "string") return parseIsoRange(value, reference) ?? undefined;
+  if (typeof value === "string") return parseIsoRange(value, reference, timezone) ?? undefined;
   if (!Array.isArray(value) || value.length !== 2) return undefined;
   const side = (v: unknown) => {
     if (v === null || v === "") return null;
     if (v instanceof Date) return isValidDate(v) ? new Date(v.getTime()) : undefined;
-    return parseIsoRange(`${String(v)}/`, reference)?.[0] ?? undefined;
+    return parseIsoRange(`${String(v)}/`, reference, timezone)?.[0] ?? undefined;
   };
   const start = side(value[0]);
   const end = side(value[1]);
@@ -116,6 +129,8 @@ export const dateRangeCalendar = defineComponent<DateRangeCalendarInstance>({
 
   setup(element, { emit }) {
     const locale = readLocale(element);
+    const cal = pickerCalendar(locale);
+    let dayRenderer: PickerDayRenderer | undefined;
     let overrides: Partial<PickerLocaleText> | undefined;
     let text = readLocaleText(element);
     const functions: RuleFunctions = {};
@@ -124,17 +139,18 @@ export const dateRangeCalendar = defineComponent<DateRangeCalendarInstance>({
     const has = (spec: { attr: string }) => element.hasAttribute(spec.attr);
     const id = element.id;
     const isDisabled = () => element.hasAttribute("data-ok-disabled");
-    const today = () => startOfDay(new Date());
+    const today = () => pickerToday(element);
     const rules = (): DateRules => ({ ...readRules(element, functions), today: today() });
 
     let calendars = parseCalendarCount(element.getAttribute(o.calendars.attr), 2);
-    let value: DateRange = parseIsoRange(element.getAttribute("data-ok-value"), today()) ?? EMPTY;
+    let value: DateRange =
+      parseIsoRange(element.getAttribute("data-ok-value"), today(), readTimezone(element)) ?? EMPTY;
     let position = parseRangePosition(element.getAttribute(o.rangePosition.attr));
     const clamp = (date: Date) => {
       const [min, max] = dateBounds(rules());
       return date.getTime() < min.getTime() ? min : date.getTime() > max.getTime() ? max : date;
     };
-    const shownMonth = parseIsoDate(`${element.getAttribute("data-ok-month")}-01`);
+    const shownMonth = parseCalendarMonth(element.getAttribute("data-ok-month"), cal);
     let first =
       shownMonth ??
       initialRangeMonth(
@@ -142,18 +158,19 @@ export const dateRangeCalendar = defineComponent<DateRangeCalendarInstance>({
         clamp(today()),
         calendars,
         Number(element.getAttribute(o.currentMonthCalendarPosition.attr) ?? 1),
+        cal,
       );
     const focusAmong = (months: Date[], preferred: Date) => {
-      if (months.some((m) => isSameMonth(m, preferred)) && !isDateDisabled(preferred, rules()))
+      if (months.some((m) => isSameMonth(m, preferred, cal)) && !isDateDisabled(preferred, rules()))
         return preferred;
       for (const month of months) {
-        const found = closestEnabledDate(startOfMonth(month), rules());
-        if (found && isSameMonth(found, month)) return found;
+        const found = closestEnabledDate(startOfMonth(month, cal), rules());
+        if (found && isSameMonth(found, month, cal)) return found;
       }
-      return startOfMonth(months[0] as Date);
+      return startOfMonth(months[0] as Date, cal);
     };
     let focused = focusAmong(
-      visibleMonths(first, calendars),
+      visibleMonths(first, calendars, cal),
       value[position === "end" ? 1 : 0] ?? value[0] ?? today(),
     );
     let hovered: Date | null = null;
@@ -186,6 +203,7 @@ export const dateRangeCalendar = defineComponent<DateRangeCalendarInstance>({
         month,
         weekStart,
         readNumber(element, o.fixedWeekNumber) as number | undefined,
+        cal,
       );
       const now = today();
       const outsideShown = has(o.showDaysOutsideCurrentMonth) && calendars === 1;
@@ -199,10 +217,10 @@ export const dateRangeCalendar = defineComponent<DateRangeCalendarInstance>({
         : previewRange(value, hovered, allowed(position));
       const prev = navButton("prev", text.previousMonth, ARROW_LEFT);
       (prev as HTMLButtonElement).disabled =
-        isDisabled() || month.getTime() <= startOfMonth(min).getTime();
+        isDisabled() || month.getTime() <= startOfMonth(min, cal).getTime();
       const next = navButton("next", text.nextMonth, ARROW_RIGHT);
       (next as HTMLButtonElement).disabled =
-        isDisabled() || month.getTime() >= startOfMonth(max).getTime();
+        isDisabled() || month.getTime() >= startOfMonth(max, cal).getTime();
       const header = h("div", { "data-ok-date-range-calendar-header": true }, [
         ...(index === 0 ? [prev] : []),
         h("div", { "data-ok-date-calendar-label": true, id: labelId, "aria-live": "polite" }, [
@@ -255,7 +273,7 @@ export const dateRangeCalendar = defineComponent<DateRangeCalendarInstance>({
                   if (outside && !outsideShown)
                     return h("span", { role: "gridcell", "data-ok-day-filler": true });
                   const state = rangeDayState(date, value, preview);
-                  return h(
+                  const button = h(
                     "button",
                     {
                       type: "button",
@@ -271,8 +289,14 @@ export const dateRangeCalendar = defineComponent<DateRangeCalendarInstance>({
                       disabled: isDisabled() || isDateDisabled(date, r),
                       tabindex: !outside && isSameDay(date, focusDay) ? 0 : -1,
                     },
-                    [String(date.getDate())],
+                    [String(cal.day(date))],
                   );
+                  try {
+                    dayRenderer?.(button as HTMLButtonElement, new Date(date.getTime()));
+                  } catch {
+                    // A failing renderer leaves the plain day.
+                  }
+                  return button;
                 }),
               ]),
             ),
@@ -293,10 +317,10 @@ export const dateRangeCalendar = defineComponent<DateRangeCalendarInstance>({
     // The snippet already shows the first months: the first render patches them in place.
     let lastRendered = `${formatIsoDate(first)}:${calendars}:${has(o.loading)}`;
     const render = () => {
-      const months = visibleMonths(first, calendars);
+      const months = visibleMonths(first, calendars, cal);
       element.setAttribute(o.calendars.attr, String(calendars));
       element.setAttribute(o.rangePosition.attr, position);
-      element.setAttribute("data-ok-month", formatIsoDate(first).slice(0, 7));
+      element.setAttribute("data-ok-month", formatCalendarMonth(first, cal));
       const iso = formatIsoRange(value, "date");
       if (iso) element.setAttribute("data-ok-value", iso);
       else element.removeAttribute("data-ok-value");
@@ -314,12 +338,12 @@ export const dateRangeCalendar = defineComponent<DateRangeCalendarInstance>({
     };
 
     const showFirst = (next: Date) => {
-      const month = startOfMonth(next);
-      if (isSameMonth(month, first)) return;
+      const month = startOfMonth(next, cal);
+      if (isSameMonth(month, first, cal)) return;
       first = month;
-      emit("monthchange", { month: formatIsoDate(month).slice(0, 7) });
+      emit("monthchange", { month: formatCalendarMonth(month, cal) });
     };
-    const show = (date: Date) => showFirst(monthsShowing(date, first, calendars));
+    const show = (date: Date) => showFirst(monthsShowing(date, first, calendars, cal));
     const setPosition = (next: RangePosition) => {
       if (next === position) return;
       position = next;
@@ -368,9 +392,9 @@ export const dateRangeCalendar = defineComponent<DateRangeCalendarInstance>({
         render();
       },
       onMonthStep: (delta) => {
-        const next = addMonths(first, delta);
+        const next = addMonths(first, delta, cal);
         showFirst(next);
-        focused = focusAmong(visibleMonths(next, calendars), addMonths(focused, delta));
+        focused = focusAmong(visibleMonths(next, calendars, cal), addMonths(focused, delta, cal));
         render();
       },
     });
@@ -403,20 +427,38 @@ export const dateRangeCalendar = defineComponent<DateRangeCalendarInstance>({
     });
 
     render();
-    return {
+    const dates = pickerDateApi(
+      element,
+      () => formatIsoRange(value, "date") || null,
+      (next) => instance.setValue(next as DateRange),
+      true,
+    );
+    const instance: DateRangeCalendarInstance = {
       get value() {
         return formatIsoRange(value, "date") || null;
       },
+      get date() {
+        return dates.get();
+      },
+      setDate: dates.set,
+      setDateAdapter: dates.setAdapter,
+      setDayRenderer(fn) {
+        dayRenderer = asFunction(fn);
+        lastRendered = "";
+        render();
+      },
       setValue(next) {
-        const range = toRange(next, today());
+        const range = toRange(next, today(), readTimezone(element));
         if (range === undefined) return;
         value = range;
         // A hidden edited end comes into view: the start in the first calendar, the end in the last.
         const editsEnd = position === "end" && range[1] !== null;
         const target = editsEnd ? range[1] : (range[0] ?? range[1]);
-        if (target && !isSameMonth(monthsShowing(target, first, calendars), first)) {
+        if (target && !isSameMonth(monthsShowing(target, first, calendars, cal), first, cal)) {
           showFirst(
-            editsEnd ? addMonths(startOfMonth(target), -(calendars - 1)) : startOfMonth(target),
+            editsEnd
+              ? addMonths(startOfMonth(target, cal), -(calendars - 1), cal)
+              : startOfMonth(target, cal),
           );
           focused = target;
         }
@@ -441,11 +483,11 @@ export const dateRangeCalendar = defineComponent<DateRangeCalendarInstance>({
         if (next === calendars) return;
         calendars = next;
         const target = value[position === "end" ? 1 : 0] ?? value[0] ?? focused;
-        first = monthsShowing(target, first, calendars);
+        first = monthsShowing(target, first, calendars, cal);
         render();
       },
       get month() {
-        return formatIsoDate(first).slice(0, 7);
+        return formatCalendarMonth(first, cal);
       },
       focus() {
         controller.focus();
@@ -477,5 +519,6 @@ export const dateRangeCalendar = defineComponent<DateRangeCalendarInstance>({
         drag.destroy();
       },
     };
+    return instance;
   },
 });

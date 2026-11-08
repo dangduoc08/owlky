@@ -6,13 +6,18 @@ import {
   dateRangePickerOptions,
   digitalClockOptions,
   multiSectionDigitalClockOptions,
+  pickersFaIR,
+  pickersFrFR,
   timeClockOptions,
 } from "@owlky/core";
 import {
   DateField,
   DatePicker,
   DateRangePicker,
+  DateTimePicker,
+  DesktopTimePicker,
   LocalizationProvider,
+  renderTimeViewClock,
   StaticDatePicker,
   StaticDateRangePicker,
   StaticDateTimePicker,
@@ -26,6 +31,7 @@ import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tab
 const VALUE = new Date(2025, 4, 25);
 const TIME = new Date(2025, 4, 25, 9, 30);
 const RANGE: [Date, Date] = [new Date(2025, 4, 20), new Date(2025, 4, 25)];
+const INSTANT = new Date(Date.UTC(2025, 4, 25, 13, 30));
 
 export const datePickerSections: GuideSection[] = [
   {
@@ -271,7 +277,7 @@ export function ReportPeriod() {
   {
     id: "localization",
     title: "Translate and localize",
-    body: `\`LocalizationProvider\` sets the locale of the pickers inside, with \`adapterLocale\`. The locale decides the field's section order, the month and weekday names and the first day of the week. Owlky includes English and Vietnamese texts. Pass \`localeText\` to translate other texts or change a few. In HTML, set \`data-ok-locale\` on the picker or on any ancestor, such as \`<html>\`.`,
+    body: `\`LocalizationProvider\` sets the locale of the pickers inside, with \`adapterLocale\`. The locale decides the field's section order, the month and weekday names and the first day of the week. English and Vietnamese texts follow the locale on their own. Locale packs translate the other texts: \`pickersFrFR\`, \`pickersDeDE\`, \`pickersEsES\`, \`pickersJaJP\`, \`pickersZhCN\`, \`pickersFaIR\` and \`pickersArSD\` from \`@owlky/core\`. Pass a pack, or a few texts of your own, as \`localeText\`. A page loads only the packs it imports. In HTML, set \`data-ok-locale\` on the picker or on any ancestor, such as \`<html>\`, and pass a pack to the instance's \`setLocaleText()\`.`,
     html: `<!-- Every picker inside uses Vietnamese names and the day/month/year order -->
 <section data-ok-locale="vi-VN">
   …date pickers…
@@ -283,6 +289,128 @@ export function VietnameseForm() {
     <LocalizationProvider adapterLocale="vi-VN" localeText={{ okButtonLabel: "Xong" }}>
       <DatePicker label="Ngày sinh" />
     </LocalizationProvider>
+  );
+}`,
+  },
+  {
+    id: "time-zones",
+    title: "Work in another time zone",
+    body: `By default, the pickers show values in the time zone of the computer. Set \`timezone\` to show and edit them in another one: \`"UTC"\` or an IANA name such as \`"America/New_York"\`. The field and the clocks then show the wall time of that zone, and \`onChange\` returns the instant. \`"default"\` uses the zone of the value when your date library keeps one, such as a Luxon \`DateTime\`, and \`"system"\` always uses the computer's zone. "Today" and \`disablePast\` follow the zone too. In HTML, set \`data-ok-timezone\` on the picker or on an ancestor. Values in the markup and in events are the zone's wall times. \`setValue()\` also takes ISO text with an offset, such as \`2025-05-25T13:30:00Z\`, and the instance's \`date\` returns the instant.`,
+    html: `<!-- Shows 09:30 AM: 13:30 UTC is 09:30 in New York in May -->
+<div data-ok-date-picker data-ok-value-type="date-time" data-ok-timezone="America/New_York" …>
+  …date time picker markup…
+</div>`,
+    react: `import { DateTimePicker } from "@owlky/react";
+
+export function Meeting() {
+  // 13:30 UTC, shown as the New York wall time
+  return (
+    <DateTimePicker
+      label="Meeting (New York)"
+      timezone="America/New_York"
+      defaultValue={new Date("2025-05-25T13:30:00Z")}
+      onChange={(instant) => console.log(instant?.toISOString())}
+    />
+  );
+}`,
+  },
+  {
+    id: "date-libraries",
+    title: "Use your date library",
+    body: `The pickers work with native \`Date\` objects. If your app uses Day.js, date-fns, Luxon or Moment, give \`LocalizationProvider\` a \`dateAdapter\`: the pickers then take and return that library's dates, in values, limits, callbacks and shortcuts. Each adapter is its own entry point and takes your copy of the library, so Owlky adds no dependency: \`createDayjsAdapter(dayjs)\` from \`@owlky/core/adapters/dayjs\`, \`createDateFnsAdapter({ TZDate })\`, \`createLuxonAdapter(DateTime)\` and \`createMomentAdapter(moment)\`. Importing an adapter also adds its date type to TypeScript's \`PickerValidDate\`. Time zones need the library's own zone support, such as Day.js's \`utc\` and \`timezone\` plugins. In HTML, the markup keeps ISO values. Call \`setDateAdapter(adapter)\` on an instance to read \`date\` and call \`setDate()\` with the library's dates.`,
+    html: `<script type="module">
+  import { getRuntime } from "@owlky/html";
+  import { createDayjsAdapter } from "@owlky/core/adapters/dayjs";
+  import dayjs from "dayjs";
+
+  const picker = getRuntime().get(document.getElementById("due"), "date-picker");
+  picker.setDateAdapter(createDayjsAdapter(dayjs));
+  picker.setDate(dayjs("2025-12-25"));
+  console.log(picker.date.format("D MMMM YYYY")); // a Day.js object
+</script>`,
+    react: `import { createDayjsAdapter } from "@owlky/core/adapters/dayjs";
+import { DatePicker, LocalizationProvider } from "@owlky/react";
+import dayjs, { type Dayjs } from "dayjs";
+
+const adapter = createDayjsAdapter(dayjs);
+
+export function DueDate() {
+  return (
+    <LocalizationProvider dateAdapter={adapter}>
+      <DatePicker
+        label="Due date"
+        defaultValue={dayjs("2025-05-25")}
+        onChange={(value) => console.log((value as Dayjs | null)?.format("YYYY-MM-DD"))}
+      />
+    </LocalizationProvider>
+  );
+}`,
+  },
+  {
+    id: "calendar-systems",
+    title: "Show another calendar system",
+    body: `Set \`calendar\` on \`LocalizationProvider\` to show the Persian (Jalali) calendar, a Hijri calendar or another calendar that the browser's \`Intl\` knows: \`"persian"\`, \`"islamic-umalqura"\`, \`"islamic-civil"\`, \`"islamic-tbla"\`, \`"buddhist"\` or \`"indian"\`. You can also name it in the locale, such as \`"fa-IR-u-ca-persian"\`, or let a Jalali or Hijri adapter bring it (\`createMomentAdapter(moment, { calendar: "persian" })\`). Months, years, day numbers and the field's sections follow the calendar. Values stay ISO 8601 dates, which are always Gregorian, so forms and APIs don't change. Without a calendar, the pickers use the Gregorian calendar, even for locales whose default is another one. In HTML, set \`data-ok-calendar\` or the locale's \`-u-ca-\` extension.`,
+    html: `<!-- The Persian calendar, in Persian, right to left -->
+<section data-ok-locale="fa-IR" data-ok-calendar="persian" dir="rtl">
+  …date pickers…
+</section>`,
+    react: `import { pickersFaIR } from "@owlky/core";
+import { DatePicker, LocalizationProvider } from "@owlky/react";
+
+export function PersianDate() {
+  return (
+    <LocalizationProvider adapterLocale="fa-IR" calendar="persian" localeText={pickersFaIR}>
+      <div dir="rtl">
+        <DatePicker label="تاریخ" />
+      </div>
+    </LocalizationProvider>
+  );
+}`,
+  },
+  {
+    id: "right-to-left",
+    title: "Lay out right to left",
+    body: "Put the pickers in an element with `dir=\"rtl\"`, or set it on `<html>`. The layout mirrors: the field's sections, the calendar's weekdays and the month arrows run from right to left. The Left arrow and Right arrow keys follow the reading direction, so the Left arrow moves to the next section and the next day. The analog clock keeps its face, as clocks do.",
+    html: `<html lang="ar" dir="rtl">
+  …date pickers…
+</html>`,
+    react: `<LocalizationProvider adapterLocale="ar" localeText={pickersArSD}>
+  <div dir="rtl">
+    <DateRangeCalendar />
+  </div>
+</LocalizationProvider>`,
+  },
+  {
+    id: "customization",
+    title: "Customize the layout and the views",
+    body: `Pickers take \`slots\` to replace their parts and \`slotProps\` to pass them props:
+- **Day:** \`slots.day\` renders each day. Render \`PickerDay\` with extra content, such as a dot for days with events. \`slotProps.day\` can be a function of the day's state. In HTML, call \`setDayRenderer((button, date) => …)\` on the calendar or the picker: it runs for each day the calendar builds, on every month.
+- **Toolbar, action bar and shortcuts:** \`slots.toolbar\`, \`slots.actionBar\` and \`slots.shortcuts\` replace them. Custom parts read and change the picker with \`usePickerContext()\`. \`slotProps.toolbar.hidden\` and \`slotProps.tabs.hidden\` leave the toolbar or the date and time tabs out. In HTML, write your own markup: buttons with \`data-ok-picker-action\` run that action, and the runtime keeps \`[data-ok-picker-toolbar-title]\` up to date.
+- **Layout:** \`slots.layout\` arranges the parts. Build it with \`PickerLayoutRoot\` and \`PickerLayoutContent\`, and pass \`rootRef\` on, so the picker can focus the views when it opens.
+- **View renderers:** \`viewRenderers\` choose what each view shows. \`renderTimeViewClock\` puts the analog clock on desktop too, and \`null\` leaves a view out. When every view is \`null\`, only the field remains. In HTML, put the clock you want in the markup: a picker without a digital clock uses the analog clock in every form.`,
+    react: `import { DateCalendar, DesktopTimePicker, PickerDay, renderTimeViewClock } from "@owlky/react";
+
+const events = new Set([2, 9, 16, 23, 30]);
+
+function EventDay(props) {
+  const marked = !props.outsideCurrentMonth && events.has(props.day.getDate());
+  return (
+    <PickerDay {...props}>
+      {props.children}
+      {marked && <span className="day-dot" aria-hidden="true" />}
+    </PickerDay>
+  );
+}
+
+export function Planner() {
+  return (
+    <>
+      <DateCalendar slots={{ day: EventDay }} />
+      <DesktopTimePicker
+        label="Alarm"
+        viewRenderers={{ hours: renderTimeViewClock, minutes: renderTimeViewClock }}
+      />
+    </>
   );
 }`,
   },
@@ -304,7 +432,7 @@ export function VietnameseForm() {
 - **\`ok:date-field:change\`** and **\`ok:date-calendar:change\`** (cancelable) fire for a field or a calendar on its own. The calendar also fires \`viewchange\`, \`monthchange\` and \`yearchange\`.
 - **\`ok:time-clock:change\`**, **\`ok:digital-clock:change\`** and **\`ok:multi-section-digital-clock:change\`** (cancelable) fire for a clock on its own, with \`detail.value\` (an ISO time) and \`detail.selectionState\`: \`shallow\` while dragging the hand, \`partial\` when another view follows, \`finish\` on the last one. The analog clock also fires \`ok:time-clock:viewchange\`.
 - **\`ok:date-range-picker:change\`** fires with \`detail.value\` (an ISO interval or \`null\`) and \`detail.validationError\`, the \`[start, end]\` errors. It also fires \`accept\`, \`open\`, \`close\` and \`rangepositionchange\` (\`detail.rangePosition\`). **\`ok:date-range-calendar:change\`** and **\`ok:multi-input-range-field:change\`** (cancelable) fire for a range calendar or a multi input field on its own.
-- **Instance:** \`runtime.get(element, "date-picker")\` returns \`{ value, setValue(value), isOpen, open(), close(), setShortcuts(list), setShouldDisableDate(fn), setShouldDisableTime(fn), setLocaleText(text) }\`. \`setValue\` doesn't fire events. A range picker's instance (\`"date-range-picker"\`) adds \`rangePosition\`, \`setRangePosition(position)\` and \`open(position)\`; its \`setValue\` takes an ISO interval or a \`[start, end]\` pair.
+- **Instance:** \`runtime.get(element, "date-picker")\` returns \`{ value, setValue(value), date, setDate(date), setDateAdapter(adapter), isOpen, open(), close(), setShortcuts(list), setShouldDisableDate(fn), setShouldDisableTime(fn), setDayRenderer(fn), setLocaleText(text) }\`. Every picker, field, calendar and clock instance has \`date\`, \`setDate\` and \`setDateAdapter\`. \`setValue\` doesn't fire events. A range picker's instance (\`"date-range-picker"\`) adds \`rangePosition\`, \`setRangePosition(position)\` and \`open(position)\`; its \`setValue\` takes an ISO interval or a \`[start, end]\` pair.
 - **React:** \`onChange(value, { validationError })\`, \`onAccept(value)\`, \`onError(error, value)\`, \`onOpenChange(open, reason)\`, \`onViewChange(view)\`, \`onMonthChange(month)\` and \`onYearChange(year)\`. The clocks call \`onChange(value, selectionState)\`. Range pickers call \`onChange(range, { validationError: [start, end] })\`, \`onError(errors, range)\` and \`onRangePositionChange(position)\`.`,
   },
   {
@@ -423,11 +551,51 @@ const PREVIEWS = {
   ),
   localization: () => (
     <Preview>
-      <LocalizationProvider adapterLocale="vi-VN">
-        <div className="sb-date-pickers">
+      <div className="sb-date-pickers">
+        <LocalizationProvider adapterLocale="vi-VN">
           <DatePicker id="docs-vi" label="Ngày sinh" defaultValue={VALUE} />
+        </LocalizationProvider>
+        <LocalizationProvider adapterLocale="fr-FR" localeText={pickersFrFR}>
+          <DatePicker id="docs-fr" label="Date de naissance" defaultValue={VALUE} />
+        </LocalizationProvider>
+      </div>
+    </Preview>
+  ),
+  "time-zones": () => (
+    <Preview>
+      <div className="sb-date-pickers">
+        <DateTimePicker
+          id="docs-tz"
+          label="Meeting (New York)"
+          timezone="America/New_York"
+          defaultValue={INSTANT}
+        />
+      </div>
+    </Preview>
+  ),
+  "calendar-systems": () => (
+    <Preview>
+      <LocalizationProvider
+        adapterLocale="fa-IR-u-nu-latn"
+        calendar="persian"
+        localeText={pickersFaIR}
+      >
+        <div dir="rtl" className="sb-date-pickers">
+          <DatePicker id="docs-persian" label="تاریخ" defaultValue={VALUE} />
         </div>
       </LocalizationProvider>
+    </Preview>
+  ),
+  customization: () => (
+    <Preview>
+      <div className="sb-date-pickers">
+        <DesktopTimePicker
+          id="docs-analog"
+          label="Alarm"
+          defaultValue={TIME}
+          viewRenderers={{ hours: renderTimeViewClock, minutes: renderTimeViewClock }}
+        />
+      </div>
     </Preview>
   ),
   options: () => (

@@ -54,8 +54,6 @@ import {
   useRef,
   useState,
 } from "react";
-import { Button } from "../button/button.js";
-import { Chip } from "../chip/chip.js";
 import { DateCalendar, type PickerSelectionState } from "../date-calendar/date-calendar.js";
 import {
   type DateTimeValidationProps,
@@ -73,8 +71,25 @@ import { MultiSectionDigitalClock } from "../multi-section-digital-clock/multi-s
 import { Popover } from "../popover/popover.js";
 import { Tab, Tabs } from "../tabs/tabs.js";
 import { TimeClock } from "../time-clock/time-clock.js";
+import { usePickerDateConverter } from "../utils/picker-adapter.js";
 import { useControllableState } from "../utils/use-controllable-state.js";
+import {
+  PickerActionBar,
+  PickerContext,
+  type PickerContextValue,
+  PickerLayout,
+  type PickerShortcutItem,
+  PickerShortcuts,
+  type PickerSlotProps,
+  type PickerSlots,
+} from "./picker-layout.js";
 import { ClockIcon, TimeToolbar } from "./picker-toolbar.js";
+import {
+  BUILT_IN_RENDERERS,
+  type PickerViewRenderer,
+  type PickerViewRendererProps,
+  type PickerViewRenderers,
+} from "./view-renderers.js";
 
 /** Calendar icon of the open button (decorative). */
 function CalendarIcon() {
@@ -164,6 +179,18 @@ export interface DatePickerProps
   localeText?: Partial<PickerLocaleText> | undefined;
   /** Id of the field (other ids derive from it). */
   id?: string | undefined;
+  /**
+   * Replaced parts (phase 4): `layout`, `toolbar`, `actionBar`, `shortcuts`, `day`, the arrow
+   * and open icons. Custom parts read the picker through `usePickerContext()`.
+   */
+  slots?: PickerSlots | undefined;
+  /** Props of the slots: `toolbar.hidden`, `tabs.hidden`, `day` (object or function), `layout`. */
+  slotProps?: PickerSlotProps | undefined;
+  /**
+   * What each view shows (`renderTimeViewClock`, a function of yours), or `null` to leave the
+   * view out; every view `null` leaves only the field.
+   */
+  viewRenderers?: PickerViewRenderers | undefined;
 }
 
 /** Time view props of time and date time pickers (MUI, ADR-0026). */
@@ -273,11 +300,15 @@ export const PickerBase = forwardRef<HTMLDivElement, PickerBaseProps>(function P
     shouldDisableDate,
     shouldDisableMonth,
     shouldDisableYear,
+    slots,
+    slotProps,
+    viewRenderers,
     ...props
   },
   ref,
 ) {
   const { locale, localeText, explicit } = usePickerLocalization(localeTextProp);
+  const converter = usePickerDateConverter();
   const generated = useId();
   const id = idProp ?? generated;
   const isDate = valueType === "date";
@@ -519,171 +550,266 @@ export const PickerBase = forwardRef<HTMLDivElement, PickerBaseProps>(function P
   };
   const hasDesktopClock = !isDate && pickerVariant !== "mobile" && pickerVariant !== "static";
   const hasTimeClock = !isDate && pickerVariant !== "desktop";
-  const calendar = dateViews.length > 0 && (
-    <DateCalendar
-      id={`${id}-calendar`}
-      value={valid}
-      onChange={onCalendarChange}
-      views={dateViews}
-      openTo={openTo && !isTimeView(openTo) ? openTo : undefined}
-      view={dateView}
-      onViewChange={setView}
-      referenceDate={referenceDate}
-      today={today}
-      displayWeekNumber={displayWeekNumber}
-      fixedWeekNumber={fixedWeekNumber}
-      showDaysOutsideCurrentMonth={showDaysOutsideCurrentMonth}
-      disableHighlightToday={disableHighlightToday}
-      dayOfWeekFormatter={dayOfWeekFormatter}
-      monthsPerRow={monthsPerRow}
-      yearsPerRow={yearsPerRow}
-      yearsOrder={yearsOrder}
-      loading={loading}
-      renderLoading={renderLoading}
-      reduceAnimations={reduceAnimations}
-      onMonthChange={onMonthChange}
-      onYearChange={onYearChange}
-      readOnly={readOnly}
-      disabled={disabled}
-      localeText={localeTextProp}
-      {...(isDateTime && !desktopForm && isTimeView(view) ? { hidden: true } : {})}
-      {...validation}
+  // View renderers: `null` leaves a view out; a function replaces the view's default.
+  const renderers = viewRenderers ?? {};
+  const shownDateViews = dateViews.filter((v) => renderers[v] !== null);
+  const shownTimeViews = timeViews.filter((v) => renderers[v] !== null);
+  const fieldOnly = shownDateViews.length === 0 && shownTimeViews.length === 0;
+  const calendarProps = {
+    id: `${id}-calendar`,
+    value: valid,
+    onChange: onCalendarChange,
+    views: dateViews,
+    openTo: openTo && !isTimeView(openTo) ? openTo : undefined,
+    view: dateView,
+    onViewChange: setView,
+    referenceDate,
+    today,
+    displayWeekNumber,
+    fixedWeekNumber,
+    showDaysOutsideCurrentMonth,
+    disableHighlightToday,
+    dayOfWeekFormatter,
+    monthsPerRow,
+    yearsPerRow,
+    yearsOrder,
+    loading,
+    renderLoading,
+    reduceAnimations,
+    onMonthChange,
+    onYearChange,
+    readOnly,
+    disabled,
+    localeText: localeTextProp,
+    ...(slots?.day || slots?.leftArrowIcon || slots?.rightArrowIcon || slots?.switchViewIcon
+      ? {
+          slots: {
+            day: slots.day,
+            leftArrowIcon: slots.leftArrowIcon,
+            rightArrowIcon: slots.rightArrowIcon,
+            switchViewIcon: slots.switchViewIcon,
+          },
+        }
+      : {}),
+    ...(slotProps?.day ? { slotProps: { day: slotProps.day } } : {}),
+    ...(isDateTime && !desktopForm && isTimeView(view) ? { hidden: true } : {}),
+    ...validation,
+  };
+  const dateHidden = isDateTime && !desktopForm && isTimeView(view);
+  const timeHidden = isDateTime && !desktopForm && !isTimeView(view);
+  const rendererProps = (kind: "date" | "time"): PickerViewRendererProps => ({
+    id,
+    hidden: kind === "date" ? dateHidden : timeHidden,
+    view: kind === "date" ? dateView : timeView,
+    views: kind === "date" ? dateViews : timeViews,
+    onViewChange: setView,
+    value: valid,
+    onChange: kind === "date" ? onCalendarChange : onTimeChange,
+    calendarProps,
+    clockProps,
+    timeSteps: steps,
+    skipDisabled,
+  });
+  // Built-in renderers hide themselves; other renderers get a wrapper that does.
+  const place = (renderer: PickerViewRenderer, kind: "date" | "time") =>
+    BUILT_IN_RENDERERS.has(renderer) ? (
+      renderer(rendererProps(kind))
+    ) : (
+      <div data-ok-picker-view="" hidden={(kind === "date" ? dateHidden : timeHidden) || undefined}>
+        {renderer(rendererProps(kind))}
+      </div>
+    );
+  const customDate = renderers[dateView];
+  const calendar =
+    shownDateViews.length === 0 ? null : customDate ? (
+      place(customDate, "date")
+    ) : (
+      <DateCalendar {...calendarProps} />
+    );
+  const customTime = shownTimeViews.length > 0 ? renderers[timeView] : undefined;
+  const clocks = customTime
+    ? place(customTime, "time")
+    : shownTimeViews.length > 0 && (
+        <>
+          {hasDesktopClock &&
+            (singleColumn ? (
+              <DigitalClock
+                id={`${id}-digital-clock`}
+                timeStep={steps.minutes * steps.hours}
+                skipDisabled={skipDisabled}
+                onChange={onTimeChange}
+                hidden={!desktopForm || undefined}
+                {...clockProps}
+              />
+            ) : (
+              <MultiSectionDigitalClock
+                id={`${id}-digital-clock`}
+                views={timeViews}
+                timeSteps={steps}
+                skipDisabled={skipDisabled}
+                onChange={onTimeChange}
+                hidden={!desktopForm || undefined}
+                {...clockProps}
+              />
+            ))}
+          {hasTimeClock && (
+            <TimeClock
+              id={`${id}-clock`}
+              views={timeViews}
+              view={timeView}
+              onViewChange={setView}
+              onChange={onTimeChange}
+              hidden={desktopForm || timeHidden || undefined}
+              {...clockProps}
+            />
+          )}
+        </>
+      );
+
+  const toolbarText = isDate
+    ? pickerToolbarText(valid, locale, localeText.toolbarEmptyText)
+    : valid
+      ? formatTimeText(valid, timeViews, ampm, locale)
+      : localeText.toolbarEmptyText;
+  const toolbarOff = slotProps?.toolbar?.hidden === true;
+  const CustomToolbar = slots?.toolbar;
+  const toolbar =
+    !showToolbar || toolbarOff ? null : CustomToolbar ? (
+      <CustomToolbar
+        {...slotProps?.toolbar}
+        value={converter.fromEngine(valid)}
+        view={view}
+        views={views}
+        onViewChange={setView}
+        hidden={toolbarHidden}
+        title={title}
+        text={toolbarText}
+        orientation={orientation ?? "portrait"}
+      />
+    ) : isDate ? (
+      <div data-ok-picker-toolbar="" hidden={toolbarHidden || undefined}>
+        <span data-ok-picker-toolbar-overline="" id={toolbarId}>
+          {localeText.datePickerToolbarTitle}
+        </span>
+        <span data-ok-picker-toolbar-title="">{toolbarText}</span>
+      </div>
+    ) : (
+      <TimeToolbar
+        id={id}
+        title={title}
+        value={valid}
+        base={base}
+        views={views}
+        view={view}
+        ampm={ampm}
+        withDate={isDateTime && dateViews.length > 0}
+        locale={locale}
+        localeText={localeText}
+        hidden={toolbarHidden}
+        disabled={disabled === true}
+        readOnly={readOnly === true}
+        onViewChange={setView}
+        onMeridiemChange={(next) => change(next)}
+      />
+    );
+  const tabs = isDateTime &&
+    showToolbar &&
+    slotProps?.tabs?.hidden !== true &&
+    shownDateViews.length > 0 &&
+    shownTimeViews.length > 0 && (
+      <Tabs
+        data-ok-picker-tabs=""
+        variant="fullWidth"
+        value={isTimeView(view) ? "time" : "date"}
+        onChange={(tab) => setView(tab === "time" ? (timeViews[0] as TimeView) : dateView)}
+        hidden={toolbarHidden || undefined}
+      >
+        <Tab value="date" icon={<CalendarIcon />} aria-label={localeText.dateTableLabel} />
+        <Tab value="time" icon={<ClockIcon />} aria-label={localeText.timeTableLabel} />
+      </Tabs>
+    );
+  const shortcutItems: PickerShortcutItem[] = (shortcuts ?? []).map((shortcut) => {
+    const target = shortcutValue(shortcut, rules);
+    const usable = target !== undefined && validatePickerValue(target, valueType, rules) === null;
+    return {
+      label: shortcut.label,
+      id: shortcut.id,
+      iso: target ? formatIsoDate(target) : null,
+      disabled: !usable || disabled === true || readOnly === true,
+    };
+  });
+  const applyShortcut = (index: number) => {
+    const next = shortcutValue(shortcuts?.[index] as PickerShortcut, rules);
+    if (next === undefined) return;
+    change(next);
+    accept(next);
+    close("shortcut");
+  };
+  const ShortcutsSlot = slots?.shortcuts ?? PickerShortcuts;
+  const shortcutsNode = shortcutItems.length > 0 && (
+    <ShortcutsSlot
+      items={shortcutItems}
+      onShortcut={applyShortcut}
+      label={localeText.shortcutsLabel}
     />
   );
-
-  const layout = (
-    <div ref={layoutRef} data-ok-picker-layout="" data-ok-orientation={orientation ?? "portrait"}>
-      {showToolbar &&
-        (isDate ? (
-          <div data-ok-picker-toolbar="" hidden={toolbarHidden || undefined}>
-            <span data-ok-picker-toolbar-overline="" id={toolbarId}>
-              {localeText.datePickerToolbarTitle}
-            </span>
-            <span data-ok-picker-toolbar-title="">
-              {pickerToolbarText(valid, locale, localeText.toolbarEmptyText)}
-            </span>
-          </div>
-        ) : (
-          <TimeToolbar
-            id={id}
-            title={title}
-            value={valid}
-            base={base}
-            views={views}
-            view={view}
-            ampm={ampm}
-            withDate={isDateTime && dateViews.length > 0}
-            locale={locale}
-            localeText={localeText}
-            hidden={toolbarHidden}
-            disabled={disabled === true}
-            readOnly={readOnly === true}
-            onViewChange={setView}
-            onMeridiemChange={(next) => change(next)}
-          />
-        ))}
-      {isDateTime && showToolbar && dateViews.length > 0 && timeViews.length > 0 && (
-        <Tabs
-          data-ok-picker-tabs=""
-          variant="fullWidth"
-          value={isTimeView(view) ? "time" : "date"}
-          onChange={(tab) => setView(tab === "time" ? (timeViews[0] as TimeView) : dateView)}
-          hidden={toolbarHidden || undefined}
-        >
-          <Tab value="date" icon={<CalendarIcon />} aria-label={localeText.dateTableLabel} />
-          <Tab value="time" icon={<ClockIcon />} aria-label={localeText.timeTableLabel} />
-        </Tabs>
-      )}
-      {shortcuts && shortcuts.length > 0 && (
-        <ul data-ok-picker-shortcuts="" aria-label={localeText.shortcutsLabel}>
-          {shortcuts.map((shortcut) => {
-            const target = shortcutValue(shortcut, rules);
-            const usable =
-              target !== undefined && validatePickerValue(target, valueType, rules) === null;
-            return (
-              <li key={shortcut.id ?? shortcut.label}>
-                <Chip
-                  label={shortcut.label}
-                  data-ok-picker-shortcut=""
-                  {...(target ? { "data-ok-value": formatIsoDate(target) } : {})}
-                  disabled={!usable || disabled || readOnly}
-                  onClick={() => {
-                    const next = shortcutValue(shortcut, rules);
-                    if (next === undefined) return;
-                    change(next);
-                    accept(next);
-                    close("shortcut");
-                  }}
-                />
-              </li>
-            );
-          })}
-        </ul>
-      )}
-      <div data-ok-picker-content="">
-        {calendar}
-        {hasDesktopClock &&
-          (singleColumn ? (
-            <DigitalClock
-              id={`${id}-digital-clock`}
-              timeStep={steps.minutes * steps.hours}
-              skipDisabled={skipDisabled}
-              onChange={onTimeChange}
-              hidden={!desktopForm || undefined}
-              {...clockProps}
-            />
-          ) : (
-            <MultiSectionDigitalClock
-              id={`${id}-digital-clock`}
-              views={timeViews}
-              timeSteps={steps}
-              skipDisabled={skipDisabled}
-              onChange={onTimeChange}
-              hidden={!desktopForm || undefined}
-              {...clockProps}
-            />
-          ))}
-        {hasTimeClock && (
-          <TimeClock
-            id={`${id}-clock`}
-            views={timeViews}
-            view={timeView}
-            onViewChange={setView}
-            onChange={onTimeChange}
-            hidden={desktopForm || (isDateTime && !isTimeView(view)) || undefined}
-            {...clockProps}
-          />
-        )}
-      </div>
-      {actionList.length > 0 && (
-        <div data-ok-picker-actions="" hidden={actionsShown.length === 0 || undefined}>
-          {actionList.map((action) => (
-            <Button
-              key={action}
-              data-ok-picker-action={action}
-              variant={action === "accept" || action === "nextOrAccept" ? "contained" : "text"}
-              color="inherit"
-              hidden={!actionsShown.includes(action) || undefined}
-              disabled={disabled || (readOnly && action !== "cancel")}
-              onClick={() => runAction(action)}
-            >
-              {action === "accept"
-                ? localeText.okButtonLabel
-                : action === "cancel"
-                  ? localeText.cancelButtonLabel
-                  : action === "clear"
-                    ? localeText.clearButtonLabel
-                    : action === "today"
-                      ? localeText.todayButtonLabel
-                      : nextPickerView(views, view)
-                        ? localeText.nextStepButtonLabel
-                        : localeText.okButtonLabel}
-            </Button>
-          ))}
-        </div>
-      )}
-    </div>
+  const ActionBarSlot = slots?.actionBar ?? PickerActionBar;
+  const hasNextStep = nextPickerView(views, view) !== null;
+  const actionBar = (
+    <ActionBarSlot
+      actions={actionList}
+      shownActions={actionsShown}
+      onAction={runAction}
+      disabled={disabled === true}
+      readOnly={readOnly === true}
+      localeText={localeText}
+      hasNextStep={hasNextStep}
+    />
   );
+  const Layout = slots?.layout ?? PickerLayout;
+  const layout = (
+    <Layout
+      toolbar={toolbar}
+      tabs={tabs || null}
+      shortcuts={shortcutsNode || null}
+      content={
+        <>
+          {calendar}
+          {clocks}
+        </>
+      }
+      actionBar={actionBar}
+      orientation={orientation ?? "portrait"}
+      rootRef={layoutRef}
+      {...slotProps?.layout}
+    />
+  );
+  const pickerContext: PickerContextValue = {
+    value: converter.fromEngine(valid),
+    setValue: (next, options) => {
+      const engine = converter.toEngine(next) as unknown as Date | null;
+      change(engine);
+      if (options?.accept) accept(engine);
+    },
+    open: open && !isStatic,
+    setOpen: (next) => (next ? openPicker("api") : close("api")),
+    view,
+    views,
+    setView,
+    variant: mode,
+    orientation: orientation ?? "portrait",
+    valueType,
+    disabled: disabled === true,
+    readOnly: readOnly === true,
+    locale,
+    localeText,
+    acceptValueChanges: () => runAction("accept"),
+    cancelValueChanges: () => runAction("cancel"),
+    clearValue: () => runAction("clear"),
+    setValueToToday: () => runAction("today"),
+    goToNextStep: () => runAction("nextOrAccept"),
+    hasNextStep,
+  };
 
   const openLabel =
     valueType === "time"
@@ -697,8 +823,9 @@ export const PickerBase = forwardRef<HTMLDivElement, PickerBaseProps>(function P
               : formatAccessibleDate(valid, locale)
             : null,
         );
-  const hasPopover = pickerVariant === "desktop" || pickerVariant === "responsive";
-  const hasDialog = pickerVariant === "mobile" || pickerVariant === "responsive";
+  const hasPopover = !fieldOnly && (pickerVariant === "desktop" || pickerVariant === "responsive");
+  const hasDialog = !fieldOnly && (pickerVariant === "mobile" || pickerVariant === "responsive");
+  const OpenIcon = slots?.openPickerIcon;
 
   return (
     <div
@@ -720,94 +847,104 @@ export const PickerBase = forwardRef<HTMLDivElement, PickerBaseProps>(function P
       data-ok-runtime="off"
       {...props}
     >
-      {!isStatic && (
-        <PickerField
-          ref={fieldRootRef}
-          valueType={valueType}
-          id={id}
-          value={current}
-          onChange={(next) => change(next)}
-          onError={onError}
-          format={format}
-          views={views}
-          ampm={ampmProp}
-          today={today}
-          formatDensity={formatDensity}
-          clearable={clearable}
-          onClear={onClear}
-          readOnly={readOnly}
-          disabled={disabled}
-          referenceDate={referenceDate}
-          autoFocus={autoFocus}
-          selectedSections={selectedSections}
-          onSelectedSectionsChange={onSelectedSectionsChange}
-          localeText={localeTextProp}
-          label={label}
-          helperText={helperText}
-          error={error}
-          variant={variant}
-          size={size}
-          fullWidth={fullWidth}
-          required={required}
-          name={name}
-          inputRef={inputRef}
-          {...validation}
-          {...(isDate ? {} : timeValidation)}
-          endAdornment={
-            <IconButton
-              ref={openButtonRef}
-              data-ok-date-picker-open=""
-              edge="end"
-              aria-label={openLabel}
-              aria-haspopup="dialog"
-              disabled={disabled || readOnly}
-              onClick={() => (open ? dismiss("button") : openPicker("button"))}
-            >
-              {valueType === "time" ? <ClockIcon /> : <CalendarIcon />}
-            </IconButton>
-          }
-          onFocus={(event) => {
-            // The open button toggles on its own click.
-            if ((event.target as Element).closest("[data-ok-date-picker-open]")) return;
-            if (open && mode === "desktop" && !keepOpenDuringFieldFocus) dismiss("clickaway");
-          }}
-        />
-      )}
-      {hasPopover && (
-        <Popover
-          open={open && mode === "desktop"}
-          anchorEl={anchor}
-          placement="bottom-start"
-          disableAutoFocus
-          role="dialog"
-          aria-label={title}
-          data-ok-date-picker-paper=""
-          onOpenChange={(_next, reason) => {
-            if (reason === "backdrop" && keepOpenDuringFieldFocus) {
-              // A press on the field keeps the picker open: check where focus went.
-              setTimeout(() => {
-                if (!fieldRootRef.current?.contains(document.activeElement)) dismiss("clickaway");
-              });
-              return;
+      <PickerContext.Provider value={pickerContext}>
+        {!isStatic && (
+          <PickerField
+            ref={fieldRootRef}
+            valueType={valueType}
+            id={id}
+            value={current}
+            onChange={(next) => change(next)}
+            onError={onError}
+            format={format}
+            views={views}
+            ampm={ampmProp}
+            today={today}
+            formatDensity={formatDensity}
+            clearable={clearable}
+            onClear={onClear}
+            readOnly={readOnly}
+            disabled={disabled}
+            referenceDate={referenceDate}
+            autoFocus={autoFocus}
+            selectedSections={selectedSections}
+            onSelectedSectionsChange={onSelectedSectionsChange}
+            localeText={localeTextProp}
+            label={label}
+            helperText={helperText}
+            error={error}
+            variant={variant}
+            size={size}
+            fullWidth={fullWidth}
+            required={required}
+            name={name}
+            inputRef={inputRef}
+            {...validation}
+            {...(isDate ? {} : timeValidation)}
+            endAdornment={
+              !fieldOnly && (
+                <IconButton
+                  ref={openButtonRef}
+                  data-ok-date-picker-open=""
+                  edge="end"
+                  aria-label={openLabel}
+                  aria-haspopup="dialog"
+                  disabled={disabled || readOnly}
+                  onClick={() => (open ? dismiss("button") : openPicker("button"))}
+                >
+                  {OpenIcon ? (
+                    <OpenIcon />
+                  ) : valueType === "time" ? (
+                    <ClockIcon />
+                  ) : (
+                    <CalendarIcon />
+                  )}
+                </IconButton>
+              )
             }
-            dismiss(reason === "escape" ? "escape" : "clickaway");
-          }}
-        >
-          {mode === "desktop" && layout}
-        </Popover>
-      )}
-      {hasDialog && (
-        <Dialog
-          open={open && mode === "mobile"}
-          aria-label={title}
-          data-ok-date-picker-dialog=""
-          maxWidth="xs"
-          onOpenChange={(_next, reason) => dismiss(reason === "escape" ? "escape" : "clickaway")}
-        >
-          {mode === "mobile" && layout}
-        </Dialog>
-      )}
-      {isStatic && layout}
+            onFocus={(event) => {
+              // The open button toggles on its own click.
+              if ((event.target as Element).closest("[data-ok-date-picker-open]")) return;
+              if (open && mode === "desktop" && !keepOpenDuringFieldFocus) dismiss("clickaway");
+            }}
+          />
+        )}
+        {hasPopover && (
+          <Popover
+            open={open && mode === "desktop"}
+            anchorEl={anchor}
+            placement="bottom-start"
+            disableAutoFocus
+            role="dialog"
+            aria-label={title}
+            data-ok-date-picker-paper=""
+            onOpenChange={(_next, reason) => {
+              if (reason === "backdrop" && keepOpenDuringFieldFocus) {
+                // A press on the field keeps the picker open: check where focus went.
+                setTimeout(() => {
+                  if (!fieldRootRef.current?.contains(document.activeElement)) dismiss("clickaway");
+                });
+                return;
+              }
+              dismiss(reason === "escape" ? "escape" : "clickaway");
+            }}
+          >
+            {mode === "desktop" && layout}
+          </Popover>
+        )}
+        {hasDialog && (
+          <Dialog
+            open={open && mode === "mobile"}
+            aria-label={title}
+            data-ok-date-picker-dialog=""
+            maxWidth="xs"
+            onOpenChange={(_next, reason) => dismiss(reason === "escape" ? "escape" : "clickaway")}
+          >
+            {mode === "mobile" && layout}
+          </Dialog>
+        )}
+        {isStatic && layout}
+      </PickerContext.Provider>
     </div>
   );
 });

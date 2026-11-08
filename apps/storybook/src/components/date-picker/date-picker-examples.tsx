@@ -3,11 +3,19 @@ import {
   addMonths,
   dateCalendarOptions,
   dateRangeCalendarOptions,
+  pickersArSD,
+  pickersDeDE,
+  pickersFaIR,
+  pickersFrFR,
+  pickersJaJP,
   startOfMonth,
   startOfWeek,
   timeClockOptions,
 } from "@owlky/core";
+import { createDayjsAdapter } from "@owlky/core/adapters/dayjs";
+import { createLuxonAdapter } from "@owlky/core/adapters/luxon";
 import {
+  Button,
   DateCalendar,
   DateField,
   DatePicker,
@@ -34,7 +42,15 @@ import {
   MultiInputDateTimeRangeField,
   MultiInputTimeRangeField,
   MultiSectionDigitalClock,
+  type PickerActionBarProps,
+  PickerDay,
+  type PickerDayProps,
+  PickerLayoutContent,
+  type PickerLayoutProps,
+  PickerLayoutRoot,
+  type PickerToolbarProps,
   type RangeShortcut,
+  renderTimeViewClock,
   SingleInputDateRangeField,
   SingleInputDateTimeRangeField,
   SingleInputTimeRangeField,
@@ -48,6 +64,8 @@ import {
   TimeRangePicker,
   YearCalendar,
 } from "@owlky/react";
+import dayjs from "dayjs";
+import { DateTime } from "luxon";
 import type { ReactGroup } from "../../helpers/groups.js";
 import type { GroupFiles } from "../shared/snippets.js";
 
@@ -102,6 +120,72 @@ const RANGE_SHORTCUTS: RangeShortcut[] = [
   },
   { label: "Reset", getValue: () => [null, null] },
 ];
+
+/** The time zones demo's instant: 13:30 UTC on 25 May 2025 (the same everywhere). */
+const INSTANT = new Date(Date.UTC(2025, 4, 25, 13, 30));
+/** Library adapters (phase 4): Owlky gets the library you already use. */
+const DAYJS = createDayjsAdapter(dayjs);
+const LUXON = createLuxonAdapter(DateTime);
+
+/** Days of the demo month with an event (custom days). */
+const EVENT_DAYS = new Set([2, 9, 16, 23, 30]);
+
+/** A custom day: a dot under the days with an event (`slots.day`). */
+function EventDay(props: PickerDayProps) {
+  const day = props.day as Date;
+  const marked = !props.outsideCurrentMonth && EVENT_DAYS.has(day.getDate());
+  return (
+    <PickerDay {...props}>
+      {props.children}
+      {marked && <span className="sb-day-dot" aria-hidden="true" />}
+    </PickerDay>
+  );
+}
+
+/** A custom toolbar: the title and the value as a sentence (`slots.toolbar`). */
+function SentenceToolbar({ text, hidden }: PickerToolbarProps) {
+  return (
+    <div data-ok-picker-toolbar="" className="sb-picker-toolbar" hidden={hidden || undefined}>
+      <span data-ok-picker-toolbar-overline="">Departure</span>
+      <span data-ok-picker-toolbar-title="">{text}</span>
+    </div>
+  );
+}
+
+/**
+ * A custom action bar: its own buttons, Clear in red (`slots.actionBar`). Buttons keep
+ * `data-ok-picker-action`, so the HTML runtime runs the same markup.
+ */
+function ColoredActions({ actions, shownActions, onAction, localeText }: PickerActionBarProps) {
+  const label = { clear: localeText.clearButtonLabel, today: localeText.todayButtonLabel };
+  return (
+    <div data-ok-picker-actions="">
+      {actions.map((action) => (
+        <Button
+          key={action}
+          data-ok-picker-action={action}
+          variant={action === "accept" ? "contained" : "outlined"}
+          color={action === "clear" ? "error" : "inherit"}
+          hidden={!shownActions.includes(action) || undefined}
+          onClick={() => onAction(action)}
+        >
+          {action === "clear" || action === "today" ? label[action] : localeText.okButtonLabel}
+        </Button>
+      ))}
+    </div>
+  );
+}
+
+/** A custom layout: the action bar above the calendar (`slots.layout`). */
+function ActionsOnTop({ toolbar, actionBar, content, orientation, rootRef }: PickerLayoutProps) {
+  return (
+    <PickerLayoutRoot rootRef={rootRef} orientation={orientation} className="sb-picker-actions-top">
+      {toolbar}
+      {actionBar}
+      <PickerLayoutContent>{content}</PickerLayoutContent>
+    </PickerLayoutRoot>
+  );
+}
 
 /**
  * Story groups — the same examples as `packages/html/src/components/date-picker/examples/`. The
@@ -561,6 +645,151 @@ export const datePickerStories: Record<string, ReactGroup[]> = {
       ),
     },
   ],
+  "time-zones": [
+    {
+      title: "Time zones",
+      content: (
+        <div className="sb-date-pickers">
+          <DateTimePicker id="tz-utc" label="UTC" timezone="UTC" defaultValue={INSTANT} />
+          <DateTimePicker
+            id="tz-ny"
+            label="New York"
+            timezone="America/New_York"
+            defaultValue={INSTANT}
+          />
+          <DateTimePicker
+            id="tz-hcm"
+            label="Ho Chi Minh City"
+            timezone="Asia/Ho_Chi_Minh"
+            defaultValue={INSTANT}
+          />
+        </div>
+      ),
+    },
+  ],
+  "date-libraries": [
+    {
+      title: "Day.js",
+      content: (
+        <LocalizationProvider dateAdapter={DAYJS}>
+          <div className="sb-date-pickers">
+            <DatePicker id="lib-dayjs" label="Day.js date" defaultValue={dayjs("2025-05-25")} />
+            <DateTimeField
+              id="lib-dayjs-time"
+              label="Day.js date and time"
+              defaultValue={dayjs("2025-05-25T09:30")}
+            />
+          </div>
+        </LocalizationProvider>
+      ),
+    },
+    {
+      title: "Luxon",
+      content: (
+        <LocalizationProvider dateAdapter={LUXON}>
+          <div className="sb-date-pickers">
+            <DateTimePicker
+              id="lib-luxon"
+              label="Paris (the value's zone)"
+              defaultValue={DateTime.fromISO("2025-05-25T09:30", { zone: "Europe/Paris" })}
+            />
+          </div>
+        </LocalizationProvider>
+      ),
+    },
+  ],
+  "calendar-systems": [
+    {
+      title: "Jalali",
+      content: (
+        <LocalizationProvider
+          adapterLocale="fa-IR-u-nu-latn"
+          calendar="persian"
+          localeText={pickersFaIR}
+        >
+          <div dir="rtl" className="sb-date-pickers-row">
+            <DatePicker id="cal-fa" label="تاریخ" defaultValue={VALUE} />
+            <DateCalendar id="cal-fa-month" defaultValue={VALUE} />
+          </div>
+        </LocalizationProvider>
+      ),
+    },
+    {
+      title: "Hijri",
+      content: (
+        <LocalizationProvider
+          adapterLocale="ar-SA-u-nu-latn"
+          calendar="islamic-umalqura"
+          localeText={pickersArSD}
+        >
+          <div dir="rtl" className="sb-date-pickers-row">
+            <DateCalendar id="cal-ar" defaultValue={VALUE} />
+          </div>
+        </LocalizationProvider>
+      ),
+    },
+    {
+      title: "Buddhist",
+      content: (
+        <LocalizationProvider adapterLocale="th-TH-u-nu-latn" calendar="buddhist">
+          <div className="sb-date-pickers">
+            <DateField id="cal-th" label="วันที่" defaultValue={VALUE} />
+          </div>
+        </LocalizationProvider>
+      ),
+    },
+  ],
+  "right-to-left": [
+    {
+      title: "Right to left",
+      content: (
+        <LocalizationProvider adapterLocale="ar-u-nu-latn" localeText={pickersArSD}>
+          <div dir="rtl" className="sb-date-pickers-row">
+            <DateRangeCalendar id="rtl-range" defaultValue={RANGE} />
+            <div className="sb-date-pickers">
+              <DateTimeField id="rtl-field" label="التاريخ والوقت" defaultValue={TIME} />
+            </div>
+          </div>
+        </LocalizationProvider>
+      ),
+    },
+  ],
+  customization: [
+    {
+      title: "Custom day",
+      content: <DateCalendar id="custom-day" defaultValue={VALUE} slots={{ day: EventDay }} />,
+    },
+    {
+      title: "Toolbar, action bar and layout",
+      content: (
+        <StaticDatePicker
+          id="custom-layout"
+          defaultValue={VALUE}
+          actions={["clear", "today", "accept"]}
+          slots={{ toolbar: SentenceToolbar, actionBar: ColoredActions, layout: ActionsOnTop }}
+        />
+      ),
+    },
+    {
+      title: "View renderers",
+      content: (
+        <div className="sb-date-pickers">
+          <DesktopTimePicker
+            id="custom-analog"
+            label="Analog clock on desktop"
+            defaultValue={TIME}
+            viewRenderers={{ hours: renderTimeViewClock, minutes: renderTimeViewClock }}
+          />
+          <DesktopDatePicker
+            id="custom-field-only"
+            label="Field only"
+            defaultValue={VALUE}
+            viewRenderers={{ year: null, day: null }}
+          />
+        </div>
+      ),
+    },
+  ],
   localization: [
     {
       title: "Vietnamese",
@@ -589,6 +818,22 @@ export const datePickerStories: Record<string, ReactGroup[]> = {
             defaultValue={VALUE}
           />
         </LocalizationProvider>
+      ),
+    },
+    {
+      title: "Locale packs",
+      content: (
+        <div className="sb-date-pickers">
+          <LocalizationProvider adapterLocale="fr-FR" localeText={pickersFrFR}>
+            <DatePicker id="dl-fr" label="Date (français)" defaultValue={VALUE} />
+          </LocalizationProvider>
+          <LocalizationProvider adapterLocale="de-DE" localeText={pickersDeDE}>
+            <TimePicker id="dl-de" label="Uhrzeit (Deutsch)" defaultValue={TIME} />
+          </LocalizationProvider>
+          <LocalizationProvider adapterLocale="ja-JP" localeText={pickersJaJP}>
+            <DateField id="dl-ja" label="日付 (日本語)" defaultValue={VALUE} />
+          </LocalizationProvider>
+        </div>
       ),
     },
   ],
@@ -653,6 +898,23 @@ export const DATE_PICKER_FILES: Record<string, GroupFiles> = {
   localization: [
     ["Vietnamese", "vietnamese"],
     ["Landscape", "landscape"],
+    ["Locale packs", "packs"],
+  ],
+  "time-zones": [["Time zones", "zones"]],
+  "date-libraries": [
+    ["Day.js", "dayjs"],
+    ["Luxon", "luxon"],
+  ],
+  "calendar-systems": [
+    ["Jalali", "jalali"],
+    ["Hijri", "hijri"],
+    ["Buddhist", "buddhist"],
+  ],
+  "right-to-left": [["Right to left", "rtl"]],
+  customization: [
+    ["Custom day", "day"],
+    ["Toolbar, action bar and layout", "layout"],
+    ["View renderers", "view-renderers"],
   ],
 };
 

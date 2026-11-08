@@ -4,21 +4,24 @@ import {
   invalidDate,
   isValidDate,
   type RangeValidationError,
-  startOfDay,
   validateRange,
 } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
 import type { ComponentInstance } from "../../runtime/types.js";
 import {
+  type PickerDateApi,
+  pickerDateApi,
+  pickerToday,
   readRules,
   readTimeRules,
+  readTimezone,
   readValueType,
   toPickerDate,
 } from "../date-calendar/picker-dom.js";
 import type { DateFieldInstance } from "../date-field/date-field.js";
 import { toRange } from "../date-range-calendar/date-range-calendar.js";
 
-export interface MultiInputRangeFieldInstance extends ComponentInstance {
+export interface MultiInputRangeFieldInstance extends ComponentInstance, PickerDateApi {
   /** The range as an ISO 8601 interval (`start/end`), or `null` when both fields are empty. */
   readonly value: string | null;
   /** `[start, end]` errors (`invalidRange` on both when the end comes first). */
@@ -52,9 +55,9 @@ export const multiInputRangeField = defineComponent<MultiInputRangeFieldInstance
     ].slice(0, 2) as [HTMLElement, HTMLElement];
     const fields = () =>
       fieldEls.map((el) => runtime.getOrCreate<DateFieldInstance>(el, "date-field"));
-    const today = () => startOfDay(new Date());
+    const today = () => pickerToday(element);
     const read = (el: HTMLElement) =>
-      toPickerDate(el.getAttribute("data-ok-value"), today()) ?? null;
+      toPickerDate(el.getAttribute("data-ok-value"), today(), readTimezone(element)) ?? null;
     let value: DateRange = [read(fieldEls[0]), read(fieldEls[1])];
 
     const validate = (range: DateRange) => {
@@ -85,7 +88,7 @@ export const multiInputRangeField = defineComponent<MultiInputRangeFieldInstance
           .detail;
         const reference = isValidDate(value[0]) ? value[0] : today();
         const date =
-          toPickerDate(detail.value, reference) ??
+          toPickerDate(detail.value, reference, readTimezone(element)) ??
           (detail.validationError === "invalidDate" ? invalidDate() : null);
         const next: DateRange = side === 0 ? [date, value[1]] : [value[0], date];
         const errors = validate(next);
@@ -107,7 +110,18 @@ export const multiInputRangeField = defineComponent<MultiInputRangeFieldInstance
     );
 
     render();
-    return {
+    const dates = pickerDateApi(
+      element,
+      () => instance.value,
+      (next) => instance.setValue(next as never),
+      true,
+    );
+    const instance: MultiInputRangeFieldInstance = {
+      get date() {
+        return dates.get();
+      },
+      setDate: dates.set,
+      setDateAdapter: dates.setAdapter,
       get value() {
         return formatIsoRange(value, type) || null;
       },
@@ -115,7 +129,7 @@ export const multiInputRangeField = defineComponent<MultiInputRangeFieldInstance
         return validate(value);
       },
       setValue(next) {
-        const range = toRange(next, today());
+        const range = toRange(next, today(), readTimezone(element));
         if (range === undefined) return;
         value = range;
         fields().forEach((field, side) => {
@@ -124,5 +138,6 @@ export const multiInputRangeField = defineComponent<MultiInputRangeFieldInstance
         render();
       },
     };
+    return instance;
   },
 });

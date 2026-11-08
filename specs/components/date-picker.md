@@ -10,7 +10,9 @@ Playground, Static mode), Time and Date & Time (Basic, Views playground, Static 
 `DateTimePicker` (desktop, mobile, static); Pro: `DateRangeCalendar`, `DateRangePicker` (desktop,
 mobile, static), `TimeRangePicker`, `DateTimeRangePicker` (desktop, mobile), the single and multi
 input range fields of each value type (v9, ADR-0015). Created with `/component` (phase 1 of 4);
-phase 2 (time and date time, ADR-0026) and phase 3 (ranges, ADR-0028) with `/component` Update.
+phase 2 (time and date time, ADR-0026), phase 3 (ranges, ADR-0028) and phase 4 (time zones, date
+adapters, calendar systems, locale packs, right to left, slots and view renderers, ADR-0030) with
+`/component` Update. Complete: every MUI X Community and Pro feature.
 Reference URL: https://minimals.cc/components/mui/date-pickers
 
 ## Purpose
@@ -122,6 +124,15 @@ div[data-ok-date-range-picker][data-ok-picker-variant][data-ok-calendars]?[data-
     div[data-ok-picker-content] › date range calendar? + digital clock (desktop)? + time clock (mobile / static)?
     div[data-ok-picker-actions]?
 ```
+
+Phase 4 (ADR-0030) adds no part: `data-ok-timezone` (`UTC` or an IANA name) and
+`data-ok-calendar` (`persian`, `islamic-umalqura`, `islamic-civil`, `islamic-tbla`, `buddhist`,
+`indian`) sit on any root or ancestor, as `data-ok-locale` does (the locale's `-u-ca-` extension
+names the calendar too). A view from a custom renderer is wrapped in `div[data-ok-picker-view]`
+(`hidden` in the other tab); the built-in renderers render their view directly. A picker whose
+views are all `null` has no open button, popover or dialog. Custom slots keep the hooks:
+`[data-ok-picker-actions] › [data-ok-picker-action]`, `[data-ok-picker-toolbar-title]`,
+`[data-ok-picker-shortcut][data-ok-value]`.
 
 Time and date time pickers: `div[data-ok-date-picker][data-ok-value-type][data-ok-open-to]?` with a
 field `[data-ok-value-type]`; the toolbar is `span[data-ok-picker-toolbar-overline]` +
@@ -267,6 +278,12 @@ times), `data-ok-disable-ignoring-date-part-for-time-validation`, `data-ok-views
 seconds`), `data-ok-view`, `data-ok-time-steps` (`"1 5 5"`: hours minutes seconds),
 `data-ok-open-to` (time and date time pickers). Fields and pickers also take `data-ok-minutes-step`.
 
+Phase 4 attributes (strings, not in the schema): `data-ok-timezone` (closest ancestor; values in
+the markup are that zone's wall times, ISO input may carry an offset), `data-ok-calendar`
+(closest ancestor; ignored when the locale names a calendar). `data-ok-month` is `YYYY-MM` in the
+Gregorian calendar, else the ISO date of the shown month's first day; month buttons' and year
+buttons' `data-ok-value` are the calendar's month index and year.
+
 Other attributes (strings, not in the schema): `data-ok-value`, `data-ok-min-date`,
 `data-ok-max-date` (ISO 8601), `data-ok-format` (Day.js tokens), `data-ok-views` (`year month
 day`), `data-ok-month` (`YYYY-MM`, the shown month), `data-ok-actions` (`clear today cancel
@@ -316,10 +333,31 @@ ancestor), `data-ok-disabled` (calendar). Invalid values fall back to the defaul
   input fields; multi input fields get one per end, each opening on its end); `openRangePickerDialogue`
   names them; Start / End tabs on every form of time and date time ranges (MUI shows them on
   touch screens; with one field, they choose the edited end on desktop too).
-- **Deferred:** `timezone`, `dateAdapter` / adapters, `viewRenderers`, layout slots (phase 4);
-  `slotProps.tabs.hidden` (the tabs always show in the mobile and static date time forms).
-- **Not applicable:** `slots`, other `slotProps`, `sx`, `className` of parts, transitions,
-  `disableOpenPicker` (deprecated), `enableAccessibleFieldDOMStructure` (always on).
+- **Kept (phase 4, ADR-0030):** `timezone` (`"default" | "system" | "UTC" |` IANA) on every
+  picker, field, calendar and clock; `LocalizationProvider` `dateAdapter`; `PickerValidDate`
+  (declaration merging); `viewRenderers` (`renderDateViewCalendar`, `renderTimeViewClock`,
+  `renderDigitalClockTimeView`, `renderMultiSectionDigitalClockTimeView`, `null`); `slots`
+  `layout`, `toolbar`, `actionBar`, `shortcuts`, `day`, `openPickerIcon`, `leftArrowIcon`,
+  `rightArrowIcon`, `switchViewIcon`; `slotProps` `toolbar.hidden`, `tabs.hidden`, `day` (object
+  or function of the owner state), `layout`; `usePickerContext()` (value, `setValue`, `open`,
+  `setOpen`, views, `acceptValueChanges`, `cancelValueChanges`, `clearValue`,
+  `setValueToToday`, `goToNextStep`; ranges add `rangePosition` / `setRangePosition`);
+  `PickersDay` → `PickerDay`, `PickersLayout` → `PickerLayout` (+ `PickerLayoutRoot`,
+  `PickerLayoutContent`), `PickersActionBar` → `PickerActionBar`, `PickersShortcuts` →
+  `PickerShortcuts`; locale packs (MUI X `xxXX` objects) as `pickersFrFR`, `pickersDeDE`,
+  `pickersEsES`, `pickersJaJP`, `pickersZhCN`, `pickersFaIR`, `pickersArSD`.
+- **Renamed (phase 4):** MUI X's adapter classes (`AdapterDayjs`…) → factories that take the
+  library (`createDayjsAdapter(dayjs)`, `createDateFnsAdapter({ TZDate })`,
+  `createLuxonAdapter(DateTime)`, `createMomentAdapter(moment)`); Jalali / Hijri adapters →
+  an adapter's `calendar` option, `LocalizationProvider calendar` or the locale's `-u-ca-`.
+- **Beyond MUI (phase 4):** calendar systems through `Intl` for any adapter (also Buddhist and
+  Indian); HTML `data-ok-timezone`, `data-ok-calendar`, instance `date` / `setDate` /
+  `setDateAdapter`, `setDayRenderer`; ISO input with offsets.
+- **Not applicable:** other `slots` (`textField`, `field`, `popper`, `dialog`, `desktopPaper`,
+  transitions: the TextField props, Popover and Dialog are ours), `sx`, `className` of parts,
+  `disableOpenPicker` (deprecated: `viewRenderers` with `null`), `enableAccessibleFieldDOMStructure`
+  (always on), `dateFormats` (`format` per picker). Range pickers take `viewRenderers` with
+  `null` only.
 
 ## Layout and tokens
 Field: a TextField (outlined 56px); sections are `inline-flex`, tabular numbers, the focused one
@@ -350,6 +388,8 @@ month centered between the outer arrows; the range is a band behind the days in
 start and the end filled like a selected day, a 1px dashed `--ok-text-disabled` outline over the
 hovered or dragged preview. Range toolbar: h5 ends with an en dash. Multi input field: the two
 TextFields stacked with a 16px gap, in a row with a dash from 600px.
+
+Phase 4 tokens: none new (the RTL arrows mirror with `scale: -1 1`; logical insets).
 
 ## Responsive behavior
 Mobile first. Below 600px the layout is one column (toolbar, shortcuts as a wrapping row,
@@ -415,6 +455,16 @@ toolbar's open view, `data-ok-inner` / `data-ok-between` on the pointer, `data-o
 - **Range validation:** each side's own error, or `invalidRange` on both when the end comes
   before the start (dates by day, times and date times by the instant). Partly typed sides are
   invalid dates.
+- **Time zones (ADR-0030):** values are converted at the component's edge: the field, the
+  calendar and the clocks show and edit the zone's wall time; callbacks get instants (in the
+  value's zone with an adapter). "Today" and "now" (`disablePast`, highlights) are the zone's.
+  `"default"` reads the value's zone, else the system's. A wall time the system zone skips moves
+  by the gap.
+- **Calendar systems:** months, years, day numbers and field sections follow the calendar;
+  values stay ISO (Gregorian). Without a calendar the pickers are Gregorian, also for locales
+  whose default isn't (`ar-SA`).
+- **Right to left:** ← / → follow the reading direction in fields (sections) and calendars
+  (days); month and clock arrows mirror; the clock face doesn't.
 
 ## Keyboard
 | Key | Field | Calendar |
@@ -468,6 +518,12 @@ Phase 2: `ok:time-clock:change` (cancelable, `{ value: "HH:mm:ss", selectionStat
 setView, setShouldDisableTime, setLocaleText }`; digital clocks `{ value, setValue,
 setShouldDisableTime, setLocaleText }`; date-field and date-picker add `setShouldDisableTime`.
 Values are ISO by type (`HH:mm:ss`, `YYYY-MM-DDTHH:mm:ss`).
+Phase 4 (ADR-0030): every picker, field, calendar and clock instance adds `date` (the adapter's
+dates, or `Date` instants; ranges `[start, end]`), `setDate(value)` and
+`setDateAdapter(adapter | null)`; date-calendar, date-range-calendar, date-picker and
+date-range-picker add `setDayRenderer((button, date) => void | null)` (runs on each built day,
+errors ignored); `setLocaleText` also relabels the action bar. `setValue` takes ISO text with an
+offset. React: `usePickerContext()` in custom slots, `usePickerDateConverter()`.
 Phase 3 (ADR-0028): `ok:date-range-picker:change` (`{ value: "start/end" | null, validationError:
 [start, end] }`), `:accept`, `:open` / `:close` (`{ reason }`), `:rangepositionchange`
 (`{ rangePosition }`); `ok:date-range-calendar:change` (cancelable, `{ value, selectionState }`),
@@ -488,4 +544,6 @@ picker renders the mobile actions and toolbar hidden while it is in its desktop 
 time and date time pickers also render both forms' views (digital clock, tabs, time clock) and
 hide the other form's. The clock pointer's angle is a private property (parity ignores `style`).
 Range snippets are generated from the React examples too; the HTML range calendar rebuilds its
-months with DOM methods and patches the same months in place.
+months with DOM methods and patches the same months in place. Phase 4 snippets too (custom days
+get their dots from the story's page script, `setDayRenderer`); React writes `data-ok-timezone`
+on zoned roots.

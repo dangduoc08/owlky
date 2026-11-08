@@ -17,6 +17,22 @@
       "types": "./dist/editor/index.d.ts",
       "import": "./dist/editor/index.js"
     },
+    "./adapters/dayjs": {
+      "types": "./dist/adapters/dayjs.d.ts",
+      "import": "./dist/adapters/dayjs.js"
+    },
+    "./adapters/date-fns": {
+      "types": "./dist/adapters/date-fns.d.ts",
+      "import": "./dist/adapters/date-fns.js"
+    },
+    "./adapters/luxon": {
+      "types": "./dist/adapters/luxon.d.ts",
+      "import": "./dist/adapters/luxon.js"
+    },
+    "./adapters/moment": {
+      "types": "./dist/adapters/moment.d.ts",
+      "import": "./dist/adapters/moment.js"
+    },
     "./package.json": "./package.json"
   },
   "scripts": {
@@ -33,6 +49,34 @@
     "@tiptap/pm": "3.32.0",
     "@tiptap/starter-kit": "3.32.0"
   },
+  "peerDependencies": {
+    "@date-fns/tz": "^1.2.0",
+    "date-fns": "^3.6.0 || ^4.0.0",
+    "dayjs": "^1.11.0",
+    "luxon": "^3.0.0",
+    "moment": "^2.29.0",
+    "moment-timezone": "^0.5.40 || ^0.6.0"
+  },
+  "peerDependenciesMeta": {
+    "@date-fns/tz": {
+      "optional": true
+    },
+    "date-fns": {
+      "optional": true
+    },
+    "dayjs": {
+      "optional": true
+    },
+    "luxon": {
+      "optional": true
+    },
+    "moment": {
+      "optional": true
+    },
+    "moment-timezone": {
+      "optional": true
+    }
+  },
   "publishConfig": {
     "access": "public",
     "provenance": true
@@ -47,5 +91,14 @@
     "focus-trap",
     "dialog",
     "headless"
-  ]
+  ],
+  "devDependencies": {
+    "@date-fns/tz": "1.5.0",
+    "@types/luxon": "3.7.6",
+    "date-fns": "4.4.0",
+    "dayjs": "1.11.23",
+    "luxon": "3.7.2",
+    "moment": "2.31.0",
+    "moment-timezone": "0.6.5"
+  }
 }

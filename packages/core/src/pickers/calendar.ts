@@ -2,6 +2,7 @@
  * Calendar model (ADR-0022): the weeks of a month, which dates / months / years can be picked,
  * and validation reasons (MUI's `onError` values).
  */
+import { gregorianCalendar, type PickerCalendarSystem } from "./calendar-system.js";
 import {
   addDays,
   type DateView,
@@ -9,6 +10,7 @@ import {
   isSameMonth,
   isValidDate,
   makeDate,
+  monthDiff,
   startOfDay,
   startOfMonth,
   startOfWeek,
@@ -29,7 +31,15 @@ export interface DateRules {
   shouldDisableYear?: ((year: Date) => boolean) | undefined;
   /** "Today" (tests and stories can pin it). Default: now. */
   today?: Date | undefined;
+  /** Calendar system of months and years (phase 4, ADR-0030). Default: Gregorian. */
+  calendar?: PickerCalendarSystem | undefined;
 }
+
+const calOf = (rules: DateRules): PickerCalendarSystem => rules.calendar ?? gregorianCalendar;
+
+/** The first day of a date's year in the rules' calendar. */
+const startOfYear = (date: Date, cal: PickerCalendarSystem): Date =>
+  makeDate(cal.year(date), 0, 1, cal);
 
 export type DateValidationError =
   | "invalidDate"
@@ -52,9 +62,10 @@ export function validateDate(value: Date | null, rules: DateRules): DateValidati
   if (value === null) return null;
   if (!isValidDate(value)) return "invalidDate";
   const day = startOfDay(value);
+  const cal = calOf(rules);
   if (rules.shouldDisableDate?.(day)) return "shouldDisableDate";
-  if (rules.shouldDisableMonth?.(startOfMonth(day))) return "shouldDisableMonth";
-  if (rules.shouldDisableYear?.(makeDate(day.getFullYear(), 0, 1))) return "shouldDisableYear";
+  if (rules.shouldDisableMonth?.(startOfMonth(day, cal))) return "shouldDisableMonth";
+  if (rules.shouldDisableYear?.(startOfYear(day, cal))) return "shouldDisableYear";
   if (rules.disableFuture && dayDiff(day, todayOf(rules)) > 0) return "disableFuture";
   if (rules.disablePast && dayDiff(day, todayOf(rules)) < 0) return "disablePast";
   if (dayDiff(day, lower(rules)) < 0) return "minDate";
@@ -78,27 +89,27 @@ export function dateBounds(rules: DateRules): [Date, Date] {
 
 /** A whole month can't be picked (outside the limits, or `shouldDisableMonth`). */
 export function isMonthDisabled(month: Date, rules: DateRules): boolean {
-  const first = startOfMonth(month);
+  const cal = calOf(rules);
+  const first = startOfMonth(month, cal);
   const [min, max] = dateBounds(rules);
-  if (first.getFullYear() * 12 + first.getMonth() < min.getFullYear() * 12 + min.getMonth())
-    return true;
-  if (first.getFullYear() * 12 + first.getMonth() > max.getFullYear() * 12 + max.getMonth())
-    return true;
-  if (rules.shouldDisableYear?.(makeDate(first.getFullYear(), 0, 1))) return true;
+  if (monthDiff(first, min, cal) < 0 || monthDiff(first, max, cal) > 0) return true;
+  if (rules.shouldDisableYear?.(startOfYear(first, cal))) return true;
   return rules.shouldDisableMonth?.(first) === true;
 }
 
-/** A whole year can't be picked (outside the limits, or `shouldDisableYear`). */
+/** A whole year (of the rules' calendar) can't be picked (outside the limits, or `shouldDisableYear`). */
 export function isYearDisabled(year: number, rules: DateRules): boolean {
+  const cal = calOf(rules);
   const [min, max] = dateBounds(rules);
-  if (year < min.getFullYear() || year > max.getFullYear()) return true;
-  return rules.shouldDisableYear?.(makeDate(year, 0, 1)) === true;
+  if (year < cal.year(min) || year > cal.year(max)) return true;
+  return rules.shouldDisableYear?.(makeDate(year, 0, 1, cal)) === true;
 }
 
 /** Years from the earliest to the latest limit (`desc`: newest first). */
 export function yearRange(rules: DateRules, order: "asc" | "desc" = "asc"): number[] {
-  const from = lower(rules).getFullYear();
-  const to = upper(rules).getFullYear();
+  const cal = calOf(rules);
+  const from = cal.year(lower(rules));
+  const to = cal.year(upper(rules));
   const years = Array.from({ length: Math.max(0, to - from + 1) }, (_, i) => from + i);
   return order === "desc" ? years.reverse() : years;
 }
@@ -117,19 +128,20 @@ export function calendarWeeks(
   month: Date,
   weekStart: number,
   fixedWeekNumber?: number | undefined,
+  cal: PickerCalendarSystem = gregorianCalendar,
 ): CalendarDay[][] {
-  const first = startOfMonth(month);
+  const first = startOfMonth(month, cal);
   const target = Math.min(Math.max(Math.trunc(fixedWeekNumber ?? 0), 0), 12);
   let cursor = startOfWeek(first, weekStart);
   const weeks: CalendarDay[][] = [];
   do {
     const week: CalendarDay[] = [];
     for (let i = 0; i < 7; i++) {
-      week.push({ date: cursor, outside: !isSameMonth(cursor, first) });
+      week.push({ date: cursor, outside: !isSameMonth(cursor, first, cal) });
       cursor = addDays(cursor, 1);
     }
     weeks.push(week);
-  } while (isSameMonth(cursor, first) || weeks.length < target);
+  } while (isSameMonth(cursor, first, cal) || weeks.length < target);
   return weeks;
 }
 
