@@ -2295,6 +2295,141 @@ export interface DataGridAnatomyOptions {
 export const dataGridAttributes = (options: DataGridAnatomyOptions = {}): DataAttributes =>
   optionAttributes(dataGridOptions, { ...options });
 
+// --- Date pickers (ADR-0022) -------------------------------------------------------------------
+
+export const pickerVariantValues = ["responsive", "desktop", "mobile", "static"] as const;
+export const pickerOrientationValues = ["portrait", "landscape"] as const;
+export const pickerFormatDensities = ["dense", "spacious"] as const;
+export const pickerYearsOrders = ["asc", "desc"] as const;
+export const pickerPerRow = ["3", "4"] as const;
+export const pickerOpenToViews = ["year", "month", "day"] as const;
+
+export const dateFieldOptions = defineOptions("date-field", "data-ok-date-field", {
+  formatDensity: style(
+    "data-ok-format-density",
+    pickerFormatDensities,
+    "dense",
+    "`spacious` puts spaces around the separators (`05 / 25 / 2025`).",
+  ),
+  clearable: flag("data-ok-clearable", "A clear button at the end of the field."),
+  readOnly: flag(
+    "data-ok-read-only",
+    "The value can't be changed (it can still be focused and copied).",
+  ),
+  value: state("data-ok-value", "Value as ISO 8601 (`value` / `defaultValue`).", "change"),
+});
+
+export interface DateFieldAnatomyOptions {
+  formatDensity?: (typeof pickerFormatDensities)[number] | undefined;
+  clearable?: boolean | undefined;
+  readOnly?: boolean | undefined;
+}
+
+/** `data-ok-*` attributes of a date field (on the TextField root). */
+export const dateFieldAttributes = (options: DateFieldAnatomyOptions = {}): DataAttributes =>
+  optionAttributes(dateFieldOptions, { ...options });
+
+export const dateCalendarOptions = defineOptions("date-calendar", "data-ok-date-calendar", {
+  openTo: style(
+    "data-ok-open-to",
+    pickerOpenToViews,
+    "day",
+    "The view shown first (one of `views`).",
+    {
+      optional: true,
+    },
+  ),
+  disablePast: flag("data-ok-disable-past", "Days before today can't be picked."),
+  disableFuture: flag("data-ok-disable-future", "Days after today can't be picked."),
+  displayWeekNumber: flag("data-ok-display-week-number", "A week number column."),
+  fixedWeekNumber: number(
+    "data-ok-fixed-week-number",
+    undefined,
+    "Always show this many weeks (6 keeps the height the same every month).",
+    { min: 1 },
+  ),
+  showDaysOutsideCurrentMonth: flag(
+    "data-ok-show-days-outside-current-month",
+    "Days of the previous and next months fill the first and last weeks.",
+  ),
+  disableHighlightToday: flag("data-ok-disable-highlight-today", "No ring around today."),
+  monthsPerRow: style(
+    "data-ok-months-per-row",
+    pickerPerRow,
+    "3",
+    "Months per row in the month view.",
+  ),
+  yearsPerRow: style("data-ok-years-per-row", pickerPerRow, "4", "Years per row in the year view."),
+  yearsOrder: style("data-ok-years-order", pickerYearsOrders, "asc", "Order of the year view."),
+  readOnly: flag("data-ok-read-only", "Days can be browsed but not picked."),
+  loading: flag("data-ok-loading", "Shows the loading text instead of the days (data on its way)."),
+  reduceAnimations: flag("data-ok-reduce-animations", "No month or view transitions."),
+  value: state(
+    "aria-selected",
+    "Selected day (`value` / `defaultValue`; HTML `data-ok-value`).",
+    "change",
+  ),
+});
+
+export interface DateCalendarAnatomyOptions {
+  openTo?: (typeof pickerOpenToViews)[number] | undefined;
+  disablePast?: boolean | undefined;
+  disableFuture?: boolean | undefined;
+  displayWeekNumber?: boolean | undefined;
+  fixedWeekNumber?: number | undefined;
+  showDaysOutsideCurrentMonth?: boolean | undefined;
+  disableHighlightToday?: boolean | undefined;
+  monthsPerRow?: 3 | 4 | (typeof pickerPerRow)[number] | undefined;
+  yearsPerRow?: 3 | 4 | (typeof pickerPerRow)[number] | undefined;
+  yearsOrder?: (typeof pickerYearsOrders)[number] | undefined;
+  readOnly?: boolean | undefined;
+  loading?: boolean | undefined;
+  reduceAnimations?: boolean | undefined;
+}
+
+/** `data-ok-*` attributes of a date calendar root. */
+export const dateCalendarAttributes = (options: DateCalendarAnatomyOptions = {}): DataAttributes =>
+  optionAttributes(dateCalendarOptions, {
+    ...options,
+    monthsPerRow: options.monthsPerRow === undefined ? undefined : String(options.monthsPerRow),
+    yearsPerRow: options.yearsPerRow === undefined ? undefined : String(options.yearsPerRow),
+  });
+
+export const datePickerOptions = defineOptions("date-picker", "data-ok-date-picker", {
+  pickerVariant: style(
+    "data-ok-picker-variant",
+    pickerVariantValues,
+    "responsive",
+    "`responsive` (desktop or mobile by `desktopModeMediaQuery`), `desktop` (popover), `mobile` (dialog), `static` (inline). React: the component (`DatePicker`, `DesktopDatePicker`, `MobileDatePicker`, `StaticDatePicker`).",
+  ),
+  orientation: style(
+    "data-ok-orientation",
+    pickerOrientationValues,
+    "portrait",
+    "`landscape` puts the toolbar beside the calendar (mobile and static).",
+  ),
+  closeOnSelect: behavior(
+    "data-ok-close-on-select",
+    true,
+    "Picking a day closes the picker. Default: on for desktop, off for mobile (absent attribute).",
+  ),
+  keepOpenDuringFieldFocus: flag(
+    "data-ok-keep-open-during-field-focus",
+    "Desktop: the popover stays open while the field has focus (typing doesn't close it).",
+  ),
+  open: state("data-ok-open", "Open state (`open` / `onOpenChange`).", "open"),
+});
+
+export interface DatePickerAnatomyOptions {
+  pickerVariant?: (typeof pickerVariantValues)[number] | undefined;
+  orientation?: (typeof pickerOrientationValues)[number] | undefined;
+  keepOpenDuringFieldFocus?: boolean | undefined;
+}
+
+/** `data-ok-*` attributes of a date picker root. */
+export const datePickerAttributes = (options: DatePickerAnatomyOptions = {}): DataAttributes =>
+  optionAttributes(datePickerOptions, { ...options });
+
 /** Every component's option schema, for tooling (Storybook Controls, parity tests, docs). */
 // --- Editor (ADR-0023) --------------------------------------------------------------------------
 
@@ -2392,5 +2527,8 @@ export const optionSchemas = {
   "count-up": countUpOptions,
   "motion-border": motionBorderOptions,
   "data-grid": dataGridOptions,
+  "date-field": dateFieldOptions,
+  "date-calendar": dateCalendarOptions,
+  "date-picker": datePickerOptions,
   editor: editorOptions,
 } as const;

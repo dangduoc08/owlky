@@ -1,0 +1,65 @@
+import { DateCalendar } from "@owlky/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
+import { frameworkStory, reactGroupsStory, type StoryControls } from "../../helpers/groups.js";
+import { htmlSetup, snippetStory } from "../shared/snippets.js";
+import { DatePickerDocs } from "./date-picker-docs.js";
+import {
+  DATE_CALENDAR_CONTROLS,
+  DATE_PICKER_FILES,
+  datePickerStories,
+} from "./date-picker-examples.js";
+
+const snippets = import.meta.glob(
+  "../../../../../packages/html/src/components/date-picker/examples/*.html",
+  { query: "?raw", import: "default", eager: true },
+) as Record<string, string>;
+
+const SETUP = htmlSetup(
+  [
+    "date-picker.css",
+    "date-calendar.css",
+    "date-field.css",
+    "text-field.css",
+    "icon-button.css",
+    "button.css",
+    "chip.css",
+    "popover.css",
+    "dialog.css",
+  ],
+  true,
+);
+
+const story = (name: string, controls?: StoryControls & { target?: unknown }) =>
+  frameworkStory({
+    html: snippetStory(snippets, name, DATE_PICKER_FILES[name] ?? [], SETUP, controls),
+    react: reactGroupsStory(datePickerStories[name] ?? [], controls),
+  });
+
+const meta = {
+  title: "Components/Date pickers",
+  tags: ["autodocs"],
+  parameters: {
+    docs: {
+      page: DatePickerDocs,
+      description: {
+        component:
+          "Date pickers let people type a date in a field or pick it from a calendar, in a popover, a dialog or inline.",
+      },
+    },
+  },
+} satisfies Meta;
+export default meta;
+
+/** `Date` is a global: the export is `DateStory`, the sidebar label "Date". */
+export const DateStory: StoryObj = { ...story("date"), name: "Date" };
+
+export const Calendars: StoryObj = story("calendars", {
+  ...DATE_CALENDAR_CONTROLS,
+  target: DateCalendar,
+});
+
+export const Validation: StoryObj = story("validation");
+
+export const Shortcuts: StoryObj = story("shortcuts");
+
+export const Localization: StoryObj = story("localization");

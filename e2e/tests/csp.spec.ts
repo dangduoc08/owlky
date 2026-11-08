@@ -39,6 +39,14 @@ test("no CSP or Trusted Types violations", async ({ page }) => {
         .evaluate((element) => (element as HTMLElement).style.getPropertyValue("--_ok-max-rows")),
     )
     .toBe("3");
+  // The date calendar rebuilds months with DOM methods and patches days in place.
+  const calendar = page.locator("#dc-basic");
+  await calendar.getByRole("button", { name: "Next month" }).click();
+  await calendar.locator('[data-ok-date="2025-06-12"]').click();
+  await expect(calendar.locator('[data-ok-date="2025-06-12"]')).toHaveAttribute(
+    "aria-selected",
+    "true",
+  );
   await page.getByRole("textbox", { name: "Notes" }).fill("Hello");
   await page.getByRole("switch", { name: "Wi-Fi" }).click();
   // The Editor (owlky-editor.js, Tiptap) mounts and edits without inline styles or HTML sinks.

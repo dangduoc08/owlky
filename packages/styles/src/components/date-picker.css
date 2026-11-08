@@ -1,0 +1,160 @@
+/*
+ * Date picker — spec: specs/components/date-picker.md
+ *
+ * Anatomy:   div[data-ok-date-picker][data-ok-picker-variant][data-ok-orientation][data-ok-open]?
+ *              › div[data-ok-text-field][data-ok-date-field]…                 (DateField; not static)
+ *              › div[data-ok-popover][data-ok-date-picker-paper]              (desktop / responsive)
+ *              › dialog[data-ok-dialog][data-ok-date-picker-dialog]           (mobile / responsive)
+ *                  › div[data-ok-dialog-paper]
+ *              › div[data-ok-picker-layout][data-ok-orientation]               (in one of them, or inline)
+ *                  › div[data-ok-picker-toolbar]? › span[data-ok-picker-toolbar-overline] + span[data-ok-picker-toolbar-title]
+ *                  › ul[data-ok-picker-shortcuts]? › li › span[data-ok-chip] › button[data-ok-picker-shortcut]
+ *                  › div[data-ok-picker-content] › div[data-ok-date-calendar]
+ *                  › div[data-ok-picker-actions]? › button[data-ok-button][data-ok-picker-action]
+ * Modifiers: data-ok-orientation = portrait (default) | landscape (from 600px)
+ *
+ * Mobile first: one column (toolbar, shortcuts as a wrapping row, calendar, actions). From 600px
+ * the shortcuts sit in a column beside the calendar, and a landscape layout puts the toolbar on
+ * the left. Single :where() selectors in @layer components (zero specificity). Translucent colors
+ * use rgb(var(--…-channel) / α), never color-mix() (AGENTS.md).
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-ok-date-picker]) {
+    display: inline-flex;
+    flex-direction: column;
+    min-width: 0;
+    max-width: 100%;
+    vertical-align: top;
+  }
+
+  :where([data-ok-date-picker] > [data-ok-date-field]) {
+    width: 100%;
+  }
+
+  /* Popover paper: no padding, the reference's 12px corners, the calendar decides the size. */
+  :where([data-ok-date-picker-paper]) {
+    padding: 0;
+    overflow: hidden;
+    border-radius: var(--ok-radius-lg);
+    background-color: var(--ok-bg-paper);
+    background-image: none;
+  }
+
+  /* Dialog paper (mobile): as wide as the layout, never wider than the screen. */
+  :where([data-ok-date-picker-dialog] > [data-ok-dialog-paper]) {
+    width: auto;
+    max-width: calc(100% - var(--ok-spacing) * 8);
+  }
+
+  :where([data-ok-picker-layout]) {
+    display: grid;
+    grid-template-columns: minmax(0, auto);
+    grid-template-areas: "toolbar" "shortcuts" "content" "actions";
+    box-sizing: border-box;
+    max-width: 100%;
+    background-color: var(--ok-bg-paper);
+    color: var(--ok-text-primary);
+    font-family: var(--ok-font-family);
+  }
+
+  :where([data-ok-picker-toolbar]) {
+    grid-area: toolbar;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: calc(var(--ok-spacing) * 4) calc(var(--ok-spacing) * 6);
+  }
+
+  :where([data-ok-picker-toolbar-overline]) {
+    color: var(--ok-text-secondary);
+    font-size: var(--ok-typography-overline-font-size);
+    font-weight: var(--ok-typography-overline-font-weight);
+    line-height: var(--ok-typography-overline-line-height);
+    text-transform: var(--ok-typography-overline-text-transform);
+  }
+
+  :where([data-ok-picker-toolbar-title]) {
+    margin-block-start: calc(var(--ok-spacing) * 2);
+    font-size: var(--ok-typography-h4-font-size);
+    font-weight: var(--ok-typography-h4-font-weight);
+    line-height: var(--ok-typography-h4-line-height);
+  }
+
+  :where([data-ok-picker-shortcuts]) {
+    grid-area: shortcuts;
+    display: flex;
+    flex-wrap: wrap;
+    gap: calc(var(--ok-spacing) * 2);
+    max-width: calc(var(--ok-spacing) * 80);
+    margin: 0;
+    padding: calc(var(--ok-spacing) * 2) calc(var(--ok-spacing) * 4);
+    list-style: none;
+  }
+
+  :where([data-ok-picker-content]) {
+    grid-area: content;
+    display: flex;
+    justify-content: center;
+    min-width: 0;
+  }
+
+  :where([data-ok-picker-actions]) {
+    grid-area: actions;
+    display: flex;
+    flex-wrap: wrap;
+    gap: calc(var(--ok-spacing) * 3);
+    justify-content: flex-end;
+    padding: calc(var(--ok-spacing) * 4);
+  }
+
+  :where(
+    [data-ok-picker-toolbar][hidden],
+    [data-ok-picker-actions][hidden],
+    [data-ok-picker-action][hidden]
+  ) {
+    display: none;
+  }
+
+  @media (min-width: 600px) {
+    :where([data-ok-picker-layout]:has(> [data-ok-picker-shortcuts])) {
+      grid-template-columns: auto minmax(0, auto);
+      grid-template-areas: "toolbar toolbar" "shortcuts content" "actions actions";
+    }
+
+    :where([data-ok-picker-layout]:has(> [data-ok-picker-shortcuts]) > [data-ok-picker-shortcuts]) {
+      flex-direction: column;
+      flex-wrap: nowrap;
+      align-items: flex-start;
+      max-width: none;
+      max-height: calc(var(--ok-spacing) * 84);
+      overflow-y: auto;
+      border-inline-end: 1px solid var(--ok-divider);
+    }
+
+    :where([data-ok-picker-layout][data-ok-orientation="landscape"]) {
+      grid-template-columns: auto minmax(0, auto);
+      grid-template-areas: "toolbar content" "toolbar actions";
+    }
+
+    :where(
+        [data-ok-picker-layout][data-ok-orientation="landscape"]:has(> [data-ok-picker-shortcuts])
+      ) {
+      grid-template-columns: auto auto minmax(0, auto);
+      grid-template-areas: "toolbar shortcuts content" "toolbar actions actions";
+    }
+
+    :where([data-ok-picker-layout][data-ok-orientation="landscape"] > [data-ok-picker-toolbar]) {
+      justify-content: flex-start;
+      max-width: calc(var(--ok-spacing) * 40);
+    }
+
+    :where(
+        [data-ok-picker-layout][data-ok-orientation="landscape"] [data-ok-picker-toolbar-title]
+      ) {
+      margin-block-start: calc(var(--ok-spacing) * 4);
+    }
+  }
+}

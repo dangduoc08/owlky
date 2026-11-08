@@ -1,0 +1,320 @@
+/*
+ * Date calendar — spec: specs/components/date-picker.md
+ *
+ * Anatomy:   div[data-ok-date-calendar][data-ok-view=day|month|year]
+ *              › div[data-ok-date-calendar-header]
+ *                  › div[data-ok-date-calendar-label][id][aria-live]
+ *                  › button[data-ok-icon-button][data-ok-date-calendar-switch]?
+ *                  › div[data-ok-date-calendar-nav] › button[data-ok-date-calendar-prev|next]   (day view)
+ *              › div[role=grid][data-ok-day-calendar]                                          (day view)
+ *                  › div[role=row][data-ok-day-calendar-header] › span[role=columnheader]…
+ *                  › div[role=rowgroup] › div[role=row] › (span[role=rowheader])? button[data-ok-picker-day] | span[data-ok-day-filler]
+ *              | div[role=radiogroup][data-ok-month-calendar] › button[role=radio][data-ok-picker-month]
+ *              | div[role=radiogroup][data-ok-year-calendar] › button[role=radio][data-ok-picker-year]
+ *              | div[data-ok-date-calendar-loading]
+ * Day states: aria-selected, data-ok-today, data-ok-outside, :disabled, :focus-visible
+ * Modifiers:  data-ok-months-per-row, data-ok-years-per-row (3 | 4), data-ok-reduce-animations
+ *
+ * 320px wide, days 36px with 2px gaps (rows 40px), six rows tall (240px) so the height doesn't
+ * jump between months. Single :where() selectors in @layer components (zero specificity).
+ * Translucent colors use rgb(var(--…-channel) / α), never color-mix() (AGENTS.md).
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-ok-date-calendar], [data-ok-month-calendar], [data-ok-year-calendar]) {
+    --_ok-cell: calc(var(--ok-spacing) * 9);
+    --_ok-cell-gap: calc(var(--ok-spacing) * 0.5);
+    --_ok-per-row: 3;
+
+    box-sizing: border-box;
+    color: var(--ok-text-primary);
+    font-family: var(--ok-font-family);
+  }
+
+  :where([data-ok-date-calendar]) {
+    display: flex;
+    flex-direction: column;
+    width: calc(var(--ok-spacing) * 80);
+    max-width: 100%;
+    height: calc(var(--ok-spacing) * 84);
+    overflow: hidden;
+  }
+
+  /* Header: "May 2025", the view switch and the month arrows. */
+  :where([data-ok-date-calendar-header]) {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    min-height: calc(var(--ok-spacing) * 7.5);
+    max-height: calc(var(--ok-spacing) * 10);
+    margin-block: calc(var(--ok-spacing) * 3) var(--ok-spacing);
+    padding-inline: calc(var(--ok-spacing) * 6) calc(var(--ok-spacing) * 3);
+  }
+
+  :where([data-ok-date-calendar-label]) {
+    margin-inline-end: calc(var(--ok-spacing) * 1.5);
+    font-size: var(--ok-font-size-xl);
+    font-weight: var(--ok-font-weight-medium);
+    line-height: 1.5;
+    white-space: nowrap;
+  }
+
+  :where([data-ok-date-calendar-switch] > svg) {
+    transition: transform var(--ok-duration-shorter) var(--ok-easing-standard);
+  }
+
+  :where([data-ok-date-calendar][data-ok-view="year"] [data-ok-date-calendar-switch] > svg) {
+    transform: rotate(180deg);
+  }
+
+  :where([data-ok-date-calendar-nav]) {
+    display: flex;
+    gap: calc(var(--ok-spacing) * 2);
+    margin-inline-start: auto;
+  }
+
+  :where([data-ok-date-calendar-nav][hidden]) {
+    display: none;
+  }
+
+  /* Day grid */
+  :where([data-ok-day-calendar]) {
+    display: flex;
+    flex-direction: column;
+  }
+
+  :where([data-ok-day-calendar] [role="row"]) {
+    display: flex;
+    justify-content: center;
+  }
+
+  :where([data-ok-day-calendar] [role="rowgroup"]) {
+    min-height: calc((var(--_ok-cell) + var(--_ok-cell-gap) * 2) * 6);
+    animation: ok-picker-fade var(--ok-duration-short) var(--ok-easing-decelerate);
+  }
+
+  :where([data-ok-day-calendar] [role="rowgroup"] > [role="row"]) {
+    margin-block: var(--_ok-cell-gap);
+  }
+
+  :where([data-ok-day-calendar-header] > *) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--_ok-cell);
+    height: calc(var(--ok-spacing) * 10);
+    margin-inline: var(--_ok-cell-gap);
+    color: var(--ok-text-secondary);
+    font-size: var(--ok-typography-caption-font-size);
+    line-height: var(--ok-typography-caption-line-height);
+  }
+
+  :where([data-ok-day-calendar] [role="rowheader"], [data-ok-day-filler]) {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: var(--_ok-cell);
+    height: var(--_ok-cell);
+    margin-inline: var(--_ok-cell-gap);
+    color: var(--ok-text-secondary);
+    font-size: var(--ok-typography-caption-font-size);
+  }
+
+  :where([data-ok-picker-day]) {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    width: var(--_ok-cell);
+    height: var(--_ok-cell);
+    margin: 0 var(--_ok-cell-gap);
+    padding: 0;
+    border: 0;
+    border-radius: var(--ok-radius-full);
+    outline: 0;
+    background-color: transparent;
+    color: var(--ok-text-primary);
+    font-family: inherit;
+    font-size: var(--ok-typography-caption-font-size);
+    font-weight: var(--ok-font-weight-regular);
+    line-height: 1;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color var(--ok-duration-shortest) var(--ok-easing-standard);
+  }
+
+  :where([data-ok-picker-day][data-ok-outside]) {
+    color: var(--ok-text-secondary);
+  }
+
+  :where([data-ok-picker-day][data-ok-today]:not([aria-selected="true"])) {
+    border: 1px solid var(--ok-text-secondary);
+  }
+
+  :where([data-ok-picker-day][aria-selected="true"]) {
+    background-color: var(--ok-palette-primary-main);
+    color: var(--ok-palette-primary-contrast-text);
+    font-weight: var(--ok-font-weight-medium);
+  }
+
+  :where([data-ok-picker-day]:disabled) {
+    color: var(--ok-text-disabled);
+    cursor: default;
+  }
+
+  :where([data-ok-picker-day][aria-selected="true"]:disabled) {
+    opacity: 0.6;
+  }
+
+  /* Month and year views */
+  :where([data-ok-month-calendar], [data-ok-year-calendar]) {
+    display: grid;
+    grid-template-columns: repeat(var(--_ok-per-row), minmax(0, 1fr));
+    align-content: start;
+    justify-items: center;
+    box-sizing: border-box;
+    width: calc(var(--ok-spacing) * 80);
+    max-width: 100%;
+    padding: var(--ok-spacing) calc(var(--ok-spacing) * 2);
+  }
+
+  :where([data-ok-month-calendar]) {
+    row-gap: calc(var(--ok-spacing) * 4);
+    padding-block: calc(var(--ok-spacing) * 2);
+  }
+
+  :where([data-ok-year-calendar]) {
+    --_ok-per-row: 4;
+
+    row-gap: calc(var(--ok-spacing) * 3);
+    max-height: calc(var(--ok-spacing) * 70);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  :where(
+    [data-ok-date-calendar] > [data-ok-month-calendar],
+    [data-ok-date-calendar] > [data-ok-year-calendar]
+  ) {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  :where(
+    [data-ok-date-calendar][data-ok-months-per-row="4"] [data-ok-month-calendar],
+    [data-ok-month-calendar][data-ok-months-per-row="4"]
+  ) {
+    --_ok-per-row: 4;
+  }
+
+  :where(
+    [data-ok-date-calendar][data-ok-years-per-row="3"] [data-ok-year-calendar],
+    [data-ok-year-calendar][data-ok-years-per-row="3"]
+  ) {
+    --_ok-per-row: 3;
+  }
+
+  :where([data-ok-picker-month], [data-ok-picker-year]) {
+    box-sizing: border-box;
+    width: calc(var(--ok-spacing) * 18);
+    height: var(--_ok-cell);
+    margin: 0;
+    padding: 1px calc(var(--ok-spacing) * 1.5);
+    border: 0;
+    border-radius: var(--ok-radius-full);
+    outline: 0;
+    background-color: transparent;
+    color: var(--ok-text-primary);
+    font-family: inherit;
+    font-size: var(--ok-font-size-xl);
+    font-weight: var(--ok-font-weight-semibold);
+    line-height: 1.5;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color var(--ok-duration-shortest) var(--ok-easing-standard);
+  }
+
+  :where([data-ok-picker-month][aria-checked="true"], [data-ok-picker-year][aria-checked="true"]) {
+    background-color: var(--ok-palette-primary-main);
+    color: var(--ok-palette-primary-contrast-text);
+  }
+
+  :where([data-ok-picker-month]:disabled, [data-ok-picker-year]:disabled) {
+    color: var(--ok-text-disabled);
+    cursor: default;
+  }
+
+  /* Hover and focus: the soft neutral for others, the darker brand tone for the selection. */
+  @media (hover: hover) {
+    :where(
+        [data-ok-picker-day]:hover:not(:disabled):not([aria-selected="true"]),
+        [data-ok-picker-month]:hover:not(:disabled):not([aria-checked="true"]),
+        [data-ok-picker-year]:hover:not(:disabled):not([aria-checked="true"])
+      ) {
+      background-color: var(--ok-action-hover);
+    }
+
+    :where(
+        [data-ok-picker-day][aria-selected="true"]:hover:not(:disabled),
+        [data-ok-picker-month][aria-checked="true"]:hover,
+        [data-ok-picker-year][aria-checked="true"]:hover
+      ) {
+      background-color: var(--ok-palette-primary-dark);
+    }
+  }
+
+  :where(
+    [data-ok-picker-day]:focus-visible,
+    [data-ok-picker-month]:focus-visible,
+    [data-ok-picker-year]:focus-visible
+  ) {
+    outline: 2px solid var(--ok-palette-primary-main);
+    outline-offset: 1px;
+  }
+
+  :where(
+    [data-ok-picker-day][aria-selected="true"]:focus-visible,
+    [data-ok-picker-month][aria-checked="true"]:focus-visible,
+    [data-ok-picker-year][aria-checked="true"]:focus-visible
+  ) {
+    background-color: var(--ok-palette-primary-dark);
+  }
+
+  :where([data-ok-date-calendar-loading]) {
+    display: flex;
+    flex: 1 1 auto;
+    align-items: center;
+    justify-content: center;
+    min-height: calc((var(--_ok-cell) + var(--_ok-cell-gap) * 2) * 6);
+    color: var(--ok-text-secondary);
+    font-size: var(--ok-typography-body2-font-size);
+  }
+
+  :where([data-ok-date-calendar][data-ok-reduce-animations] [role="rowgroup"]) {
+    animation: none;
+  }
+
+  @keyframes ok-picker-fade {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :where([data-ok-day-calendar] [role="rowgroup"]) {
+      animation: none;
+    }
+
+    :where(
+        [data-ok-picker-day],
+        [data-ok-picker-month],
+        [data-ok-picker-year],
+        [data-ok-date-calendar-switch] > svg
+      ) {
+      transition: none;
+    }
+  }
+}

@@ -380,3 +380,14 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
   Escape as handled, so don't gate on `defaultPrevented`. Forms in popovers need `noValidate`
   (`type="url"` validation blocks `submit` silently) and no `method="dialog"` (outside a
   `<dialog>`, Chrome fires no `submit`).
+- Date pickers (ADR-0022): field sections are `contenteditable` spinbuttons whose text only the owner
+  writes — core `createFieldController` cancels `beforeinput` and restores IME text. Browsers keep
+  the selection inside the focused editable section, so select-all is `data-ok-all-selected` on the
+  group (CSS paints it). The group isn't labelable: the label's `for` points at it and a press on
+  the label focuses a section. A field emits `ok:date-field:change` *before* it stores the value:
+  owners read `detail`, not the instance. HTML calendars rebuild a month with DOM methods but patch
+  the same month in place (`morph` in `date-calendar/picker-dom.ts`), or focus is lost on every key.
+  A Popover opened with `disableAutoFocus` doesn't restore focus: pickers put it back on the open
+  button. Picker stories use fixed dates (May 2025) so "today" never shows; React tests pass
+  `today`, HTML tests fake `Date` (`vi.useFakeTimers({ toFake: ["Date"] })`). Never export a story
+  named `Date` (a global): `DateStory` with `name: "Date"`.

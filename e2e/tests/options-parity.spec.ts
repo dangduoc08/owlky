@@ -48,6 +48,12 @@ const CASES: [
   ["transfer-list", "simple", "transfer-list", ["disabled"]],
   ["tree-view", "simple", "tree-view", ["variant", "expansionTrigger"]],
   ["autocomplete", "playground", "autocomplete", ["openOnFocus", "autoHighlight"]],
+  [
+    "date-pickers",
+    "calendars",
+    "date-calendar",
+    ["displayWeekNumber", "showDaysOutsideCurrentMonth", "disableHighlightToday", "yearsOrder"],
+  ],
   ["motion", "in-view", "motion", ["variant", "duration", "distance"]],
   ["motion", "text", "motion-text", ["variant", "duration", "stagger"]],
   ["motion", "background", "motion", ["paused", "duration"]],

@@ -15,12 +15,16 @@ import { chip } from "./chip/chip.js";
 import { circularProgress } from "./circular-progress/circular-progress.js";
 import { countUp } from "./count-up/count-up.js";
 import { dataGrid } from "./data-grid/data-grid.js";
+import { dateCalendar } from "./date-calendar/date-calendar.js";
+import { dateField } from "./date-field/date-field.js";
+import { datePicker } from "./date-picker/date-picker.js";
 import { dialog } from "./dialog/dialog.js";
 import { drawer } from "./drawer/drawer.js";
 import { linearProgress } from "./linear-progress/linear-progress.js";
 import { list } from "./list/list.js";
 import { menu } from "./menu/menu.js";
 import { mobileStepper } from "./mobile-stepper/mobile-stepper.js";
+import { monthCalendar } from "./month-calendar/month-calendar.js";
 import { motion } from "./motion/motion.js";
 import { motionBorder } from "./motion-border/motion-border.js";
 import { motionGroup } from "./motion-group/motion-group.js";
@@ -41,6 +45,7 @@ import { toggleGroup } from "./toggle-group/toggle-group.js";
 import { tooltip } from "./tooltip/tooltip.js";
 import { transferList } from "./transfer-list/transfer-list.js";
 import { treeView } from "./tree-view/tree-view.js";
+import { yearCalendar } from "./year-calendar/year-calendar.js";
 
 export const components: readonly ComponentDefinition[] = [
   tooltip as ComponentDefinition,
@@ -80,4 +85,9 @@ export const components: readonly ComponentDefinition[] = [
   countUp as ComponentDefinition,
   motionBorder as ComponentDefinition,
   dataGrid as ComponentDefinition,
+  dateField as ComponentDefinition,
+  dateCalendar as ComponentDefinition,
+  monthCalendar as ComponentDefinition,
+  yearCalendar as ComponentDefinition,
+  datePicker as ComponentDefinition,
 ];

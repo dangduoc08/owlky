@@ -1,0 +1,115 @@
+/*
+ * Date field — spec: specs/components/date-picker.md
+ *
+ * Anatomy:   div[data-ok-text-field][data-ok-date-field][data-ok-format-density][data-ok-shrink]?  (TextField)
+ *              › label[data-ok-text-field-label][id]?
+ *              › div[data-ok-text-field-control]
+ *                  › div[data-ok-text-field-input][data-ok-date-field-sections][role=group][data-ok-all-selected]?
+ *                      › span[data-ok-date-field-section]
+ *                          › span[data-ok-date-field-separator="start"]?
+ *                          › span[data-ok-date-field-content][role=spinbutton][contenteditable]
+ *                          › span[data-ok-date-field-separator]?
+ *                  › input[type=hidden][data-ok-date-field-input][disabled]?
+ *                  › span[data-ok-text-field-adornment="end"]? › button[data-ok-date-field-clear]? …
+ *              › div[data-ok-text-field-helper]?
+ * Modifiers: data-ok-format-density = dense (default) | spacious, data-ok-clearable, data-ok-read-only
+ * States:    :focus-within, data-ok-shrink (has a value), data-ok-all-selected, :disabled (hidden input)
+ *
+ * The field is a TextField: this file only styles the sections. The sections hide while the
+ * label rests in the box (no value, no focus), as the label would cover them.
+ * Single :where() selectors in @layer components (zero specificity). Translucent colors use
+ * rgb(var(--…-channel) / α), never color-mix() (AGENTS.md).
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-ok-date-field-sections]) {
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    white-space: nowrap;
+    cursor: text;
+    transition: opacity var(--ok-duration-shorter) var(--ok-easing-standard);
+  }
+
+  :where(
+    [data-ok-date-field]:has(> [data-ok-text-field-label]):not([data-ok-shrink]):not(:focus-within)
+      > [data-ok-text-field-control]
+      > [data-ok-date-field-sections]
+  ) {
+    opacity: 0;
+  }
+
+  :where([data-ok-date-field-section]) {
+    display: inline-flex;
+    flex-shrink: 0;
+  }
+
+  :where([data-ok-date-field-separator]) {
+    white-space: pre;
+  }
+
+  :where([data-ok-date-field-content]) {
+    border-radius: var(--ok-radius-xs);
+    outline: 0;
+    caret-color: transparent;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Empty sections show their placeholder ("MM") in the disabled text tone. */
+  :where([data-ok-date-field-content]:not([aria-valuenow])) {
+    color: var(--ok-text-disabled);
+  }
+
+  :where([data-ok-date-field-content])::selection {
+    background-color: rgb(var(--ok-palette-primary-main-channel) / 0.24);
+    color: var(--ok-text-primary);
+  }
+
+  :where([data-ok-date-field-content]:focus) {
+    background-color: rgb(var(--ok-palette-primary-main-channel) / 0.24);
+  }
+
+  :where([data-ok-date-field-sections][data-ok-all-selected] [data-ok-date-field-content]) {
+    background-color: rgb(var(--ok-palette-primary-main-channel) / 0.24);
+  }
+
+  :where(
+    [data-ok-text-field-control]:has(> [data-ok-date-field-input]:disabled)
+      > [data-ok-date-field-sections]
+  ) {
+    color: var(--ok-text-disabled);
+    cursor: default;
+  }
+
+  /* The clear button shows on hover and focus (MUI). */
+  :where([data-ok-date-field] [data-ok-date-field-clear]) {
+    opacity: 0;
+  }
+
+  :where(
+    [data-ok-date-field]:focus-within [data-ok-date-field-clear],
+    [data-ok-date-field] [data-ok-date-field-clear]:focus-visible
+  ) {
+    opacity: 1;
+  }
+
+  @media (hover: hover) {
+    :where([data-ok-date-field]:hover [data-ok-date-field-clear]) {
+      opacity: 1;
+    }
+  }
+
+  /* Touch screens have no hover: the clear button is always shown there. */
+  @media (hover: none) {
+    :where([data-ok-date-field] [data-ok-date-field-clear]) {
+      opacity: 1;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :where([data-ok-date-field-sections]) {
+      transition: none;
+    }
+  }
+}

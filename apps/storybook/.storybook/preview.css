@@ -635,7 +635,8 @@
 }
 
 /* Popover demos (story-only; a Typography component will replace the headings and text). */
-[data-ok-popover] > div:not([data-ok-popover-arrow], [data-ok-data-grid-panel]) {
+[data-ok-popover]
+  > div:not([data-ok-popover-arrow], [data-ok-data-grid-panel], [data-ok-picker-layout]) {
   box-sizing: border-box;
   max-width: 17.5rem;
   padding: calc(var(--ok-spacing) * 4);
@@ -1020,4 +1021,13 @@
 .sb-editor-preview > [data-ok-editor] {
   border-width: 1px 0 0;
   border-radius: 0;
+}
+
+/* Date pickers stories: a column of fields, as wide as the reference's cards. */
+.sb-date-pickers {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--ok-spacing) * 6);
+  width: 100%;
+  max-width: 342px;
 }

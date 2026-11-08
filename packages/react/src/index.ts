@@ -147,6 +147,29 @@ export {
   type GridRenderCellParams,
 } from "./data-grid/data-grid.js";
 export {
+  DateCalendar,
+  type DateCalendarProps,
+  MonthCalendar,
+  type MonthCalendarProps,
+  type PickerSelectionState,
+  YearCalendar,
+  type YearCalendarProps,
+} from "./date-calendar/date-calendar.js";
+export {
+  DateField,
+  type DateFieldProps,
+  type DateValidationProps,
+  type PickerChangeContext,
+} from "./date-field/date-field.js";
+export {
+  DatePicker,
+  type DatePickerProps,
+  DesktopDatePicker,
+  MobileDatePicker,
+  StaticDatePicker,
+  type StaticDatePickerProps,
+} from "./date-picker/date-picker.js";
+export {
   Dialog,
   DialogActions,
   type DialogActionsProps,
@@ -191,6 +214,10 @@ export {
   ListSubheader,
   type ListSubheaderProps,
 } from "./list/list.js";
+export {
+  LocalizationProvider,
+  type LocalizationProviderProps,
+} from "./localization-provider/localization-provider.js";
 export {
   Menu,
   type MenuCloseReason,

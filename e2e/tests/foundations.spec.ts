@@ -148,6 +148,7 @@ const GUIDES = [
   ["components-transfer-list--docs", "Accessibility"],
   ["components-tree-view--docs", "Accessibility"],
   ["components-autocomplete--docs", "Accessibility"],
+  ["components-date-pickers--docs", "Accessibility"],
   ["components-motion--docs", "Accessibility"],
   ["components-datagrid--docs", "Accessibility"],
   ["components-editor--docs", "Accessibility"],
@@ -198,6 +199,7 @@ const OPTION_TABLES: [string, (keyof typeof optionSchemas)[]][] = [
   ["components-transfer-list--docs", ["transfer-list"]],
   ["components-tree-view--docs", ["tree-view"]],
   ["components-autocomplete--docs", ["autocomplete"]],
+  ["components-date-pickers--docs", ["date-picker", "date-calendar", "date-field"]],
   [
     "components-motion--docs",
     ["motion", "motion-group", "motion-text", "count-up", "motion-border"],

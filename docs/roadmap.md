@@ -47,7 +47,7 @@ component and each `/integrate` run.
 | MUI | Tooltip | ✅ | Tooltip | Popover, Tooltip, Menu, Dialog & Snackbar |
 | MUI | Transfer list | ✅ | TransferList | Rating, Slider, Timeline, Transfer list, Tree view & Autocomplete |
 | MUI X | Data grid | ✅ phases 1–4 of 6 (ADR-0020, ADR-0021) | DataGrid | Data grid |
-| MUI X | Date pickers | wave 7 (ADR) | — | Next |
+| MUI X | Date pickers | ✅ phase 1 of 4 (ADR-0022) | DatePicker, DesktopDatePicker, MobileDatePicker, StaticDatePicker, DateField, DateCalendar, MonthCalendar, YearCalendar, LocalizationProvider | Date pickers |
 | MUI X | Tree view | ✅ | SimpleTreeView, TreeItem, RichTreeView | Rating, Slider, Timeline, Transfer list, Tree view & Autocomplete |
 | Extra | Animate | ✅ beta | Motion, MotionGroup, MotionText, CountUp, MotionBorder; Dialog `transition` | Motion |
 | Extra | Carousel | wave 7 (ADR) | — | Next |
@@ -380,6 +380,29 @@ in HTML (attributes in phase 5).
 The former backlog is folded into phases 4–6 (ADR-0021, 2026-11-08). New MUI X features go into a
 phase, or into "Pending integrations" below when they need a missing component.
 
+## Date pickers (ADR-0022) — every MUI X tier, in four phases
+The owner asked for every MUI X Date and Time Pickers feature, Community and Pro alike
+(2026-11-08). One picker engine in core (`core/src/pickers/`: dates in local time, ISO 8601,
+Day.js-style formats split into sections, locale data from `Intl`, validation, the month grid,
+`createFieldController`, `createCalendarController`); no date library. Phase 1 (stories: Date —
+the reference section — plus Calendars, Validation, Shortcuts and Localization): DateField
+(sectioned spinbutton field on a TextField, hidden ISO input), DateCalendar (day / month / year
+views, week numbers, fixed weeks, outside days, loading), MonthCalendar, YearCalendar, DatePicker
+(responsive: Popover on `(pointer: fine)`, Dialog otherwise), DesktopDatePicker, MobileDatePicker,
+StaticDatePicker (toolbar, landscape layout, action bar, shortcuts), LocalizationProvider (English
+and Vietnamese texts; `data-ok-locale` in HTML). HTML runtimes: `date-field`, `date-calendar`,
+`month-calendar`, `year-calendar`, `date-picker`. Reuses TextField, IconButton, Button, Chip,
+Popover and Dialog; no new token, no dependency. Size: about 13 kB of the CDN bundle and
+2.5 kB of the CSS (gzip; budgets raised by that much). Beyond MUI X: weekday headers use the locale's narrow names
+(Vietnamese "CN", "T2"… instead of "C", "T"), today has `aria-current="date"`.
+
+| Phase | Scope (MUI X tier) | State |
+|---|---|---|
+| 1 | Engine, LocalizationProvider; DateField, DateCalendar, MonthCalendar, YearCalendar, DatePicker (responsive, desktop, mobile, static); validation, toolbar, actions, shortcuts, week numbers, fixed weeks, outside days, loading, landscape, clearable fields (Community) | ✅ 2026-11-08 |
+| 2 | TimeField, TimeClock, DigitalClock, MultiSectionDigitalClock, TimePicker, DateTimeField, DateTimePicker (each responsive, desktop, mobile, static; tabs); time validation and steps (Community); reference sections Time, Date & Time | next (`/component` Update) |
+| 3 | DateRangeCalendar, DateRangePicker, single- and multi-input range fields, TimeRangePicker, DateTimeRangePicker, range shortcuts, drag editing (Pro); reference section Range | — |
+| 4 | Time zones, `dateAdapter` (generic date types) and adapters for Day.js / date-fns / Luxon / Moment, other calendar systems, locale packs, right-to-left, view renderers and layout customization | — |
+
 ## Pending integrations
 Everything waiting for a component that doesn't exist yet — stand-ins (native feature, demo
 markup, a small built-in part) **and** stories or features deferred until then. This table is the
@@ -392,7 +415,7 @@ integrate these in the same review (additive: no DOM or API change) and remove t
 | Typography (display text) | Sortable stories (card numbers) | demo `<span>` styled in `.storybook/preview.css` |
 | Typography (heading / secondary text) | Accordion summaries (plain text, no secondary line from the reference) | summary text styled by `accordion.css` |
 | Typography (heading) | Scrollbar "Layout" story heading | demo `<h4>` styled in `.storybook/preview.css` |
-| Date pickers | Data grid filter values for `date` / `dateTime` columns | a text field: people type the date (for example `2026-11-08`); editing cells already uses native `date` / `datetime-local` inputs |
+| Date pickers (DatePicker ✅ phase 1; DateTimePicker in phase 2) | Data grid filter values for `date` / `dateTime` columns | a text field: people type the date (for example `2026-11-08`); editing cells already uses native `date` / `datetime-local` inputs. The `date` integration waits only for the data grid's phase 5 work in progress in the same files: run `/integrate date-picker` once it lands |
 | Select (listbox, built on Menu) | `TablePagination` rows per page (library markup) | native `<select>` styled in `table.css`; the API (`rowsPerPageOptions`) stays. TextField's native select doesn't match MUI's InputBase select here |
 | Select (listbox, built on Menu) | Pagination story "Items" (card grid + items-per-page Select) | story deferred: the reference uses MUI's listbox Select |
 | Select (listbox, built on Menu) | Table story "Table pagination with API" (search TextField + category Select) | story deferred until the listbox Select; TextField exists |
@@ -443,7 +466,7 @@ Dependency-first: leaf components before the ones built from them, the ones that
 | 4 Overlays | ~~Popover~~ ✅, ~~Tooltip~~ ✅, ~~Menu~~ ✅, ~~Dialog~~ ✅, ~~Snackbar~~ ✅, ~~Backdrop~~ ✅ | ~~Drawer / Dialog backdrop~~ ✅ (native `::backdrop`, same token); icon button tooltips: nothing to change (MUI uses native `title` there; Tooltip wraps any IconButton) |
 | 5 Navigation | ~~Tabs~~ ✅, ~~Breadcrumbs~~ ✅, ~~Stepper~~ ✅ | — (nothing waited for them) |
 | 6 Composites | ~~Rating~~ ✅, ~~Slider~~ ✅, ~~Timeline~~ ✅, ~~Transfer list~~ ✅, ~~Autocomplete~~ ✅, ~~Tree view~~ ✅ | — (nothing waited for them; Slider unblocks the SettingsDrawer backlog of Theme settings) |
-| 7 Needs an ADR | ~~Data grid~~ (ADR-0020, phases below), Date pickers, Chart, Map, ~~Editor~~ (ADR-0023) ✅, Carousel, Lightbox, Markdown, Organization chart, Upload, Image, Walktour | — |
+| 7 Needs an ADR | ~~Data grid~~ (ADR-0020, phases below), ~~Date pickers~~ (ADR-0022, phase 1 ✅), Chart, Map, ~~Editor~~ (ADR-0023) ✅, Carousel, Lightbox, Markdown, Organization chart, Upload, Image, Walktour | — |
 
 Not planned as components (patterns or app-level pages of the reference): Layout,
 Utilities, Multi-language, Navigation bar, Mega menu, Scroll progress, Form validation, Form wizard.

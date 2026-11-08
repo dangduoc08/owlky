@@ -24,6 +24,9 @@ export const CONTRAST_EXEMPT = [
   "[data-swatch]",
   '[data-ok-list-subheader][data-ok-color="primary"]',
   '[data-ok-tabs]:not([data-ok-text-color="inherit"]) [role="tab"][aria-selected="true"]',
+  '[data-ok-picker-day][aria-selected="true"]',
+  '[data-ok-picker-month][aria-checked="true"]',
+  '[data-ok-picker-year][aria-checked="true"]',
   "[data-ok-editor-content] a",
 ];
 

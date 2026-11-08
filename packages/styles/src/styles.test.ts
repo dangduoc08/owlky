@@ -56,6 +56,7 @@ describe("styles source", () => {
               "::before",
               "::after",
               "::placeholder",
+              "::selection",
               "::backdrop",
               "::details-content",
               "::-webkit-details-marker",
