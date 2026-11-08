@@ -71,6 +71,88 @@ for (const impl of implementations) {
       await expect(calendar.getByRole("grid", { name: "May 2027" })).toBeVisible();
     });
 
+    test("desktop time picker: columns, a pick and OK", async ({ page, isMobile }) => {
+      test.skip(isMobile, "the touch project covers the mobile form");
+      await openStory(page, storyId(impl, "date-pickers", "time"));
+      const picker = page.locator("[data-ok-date-picker]").nth(1);
+      await picker.locator("[data-ok-date-picker-open]").click();
+      const paper = picker.locator("[data-ok-date-picker-paper]");
+      await expect(paper).toHaveAttribute("data-ok-open", "");
+      await expect(page.locator(":focus")).toHaveText("09");
+      await page.keyboard.press("ArrowDown");
+      await page.keyboard.press("Enter");
+      // Focus moves to the minutes column.
+      await expect(page.locator(":focus")).toHaveText("30");
+      await paper.getByRole("button", { name: "OK" }).click();
+      await expect(picker.locator("[data-ok-date-field]")).toHaveAttribute(
+        "data-ok-value",
+        "10:30:00",
+      );
+      await expect(page.locator(":focus")).toHaveAttribute("data-ok-date-picker-open", "");
+    });
+
+    test("mobile time picker: the clock face, the toolbar and Cancel (touch)", async ({
+      page,
+      isMobile,
+    }) => {
+      await openStory(page, storyId(impl, "date-pickers", "time"));
+      const picker = page.locator("[data-ok-date-picker]").nth(2);
+      const open = picker.locator("[data-ok-date-picker-open]");
+      if (isMobile) await open.tap();
+      else await open.click();
+      const dialog = picker.locator("dialog");
+      await expect(dialog).toBeVisible();
+      // The numbers let presses through to the face: press where 3 o'clock is.
+      const face = dialog.locator("[data-ok-time-clock-dial]");
+      const three = { x: 200, y: 110 };
+      if (isMobile) await face.tap({ position: three });
+      else await face.click({ position: three });
+      await expect(dialog.locator("[data-ok-time-clock]")).toHaveAttribute(
+        "data-ok-view",
+        "minutes",
+      );
+      await expect(
+        dialog.locator('[data-ok-picker-toolbar-button][data-ok-view="hours"]'),
+      ).toHaveText("03");
+      await dialog.getByRole("button", { name: "PM" }).click();
+      await dialog.getByRole("button", { name: "Cancel" }).click();
+      await expect(dialog).toBeHidden();
+      await expect(picker.locator("[data-ok-date-field]")).toHaveAttribute(
+        "data-ok-value",
+        "09:30:00",
+      );
+    });
+
+    test("static date time picker: tabs and Next", async ({ page }) => {
+      await openStory(page, storyId(impl, "date-pickers", "date-time"));
+      const picker = page.locator("[data-ok-date-picker][data-ok-picker-variant=static]").first();
+      await picker.getByRole("tab", { name: "pick time" }).click();
+      await expect(picker.locator("[data-ok-time-clock]")).toBeVisible();
+      await expect(picker.locator("[data-ok-date-calendar]")).toBeHidden();
+      await picker.getByRole("button", { name: "Next", exact: true }).click();
+      await expect(picker.locator("[data-ok-time-clock]")).toHaveAttribute(
+        "data-ok-view",
+        "minutes",
+      );
+      await expect(picker.getByRole("button", { name: "OK", exact: true })).toBeVisible();
+      await picker.getByRole("tab", { name: "pick date" }).click();
+      await expect(picker.locator("[data-ok-date-calendar]")).toBeVisible();
+    });
+
+    test("time clock: keys move the hand, Enter opens the minutes", async ({ page }) => {
+      await openStory(page, storyId(impl, "date-pickers", "clocks"));
+      const clock = page.locator("[data-ok-time-clock]");
+      await clock.getByRole("listbox").focus();
+      await page.keyboard.press("ArrowUp");
+      await expect(clock).toHaveAttribute("data-ok-value", "10:30:00");
+      await page.keyboard.press("Enter");
+      await expect(clock).toHaveAttribute("data-ok-view", "minutes");
+      await expect(clock.getByRole("listbox")).toHaveAttribute(
+        "aria-label",
+        "Select minutes. Selected time is 10:30 AM",
+      );
+    });
+
     test("static picker: shortcuts and actions", async ({ page }) => {
       await openStory(page, storyId(impl, "date-pickers", "shortcuts"));
       const picker = page.locator("[data-ok-date-picker]");

@@ -214,6 +214,9 @@ export const CONTRAST_EXEMPT = [
   '[data-ok-picker-day][aria-selected="true"]',
   '[data-ok-picker-month][aria-checked="true"]',
   '[data-ok-picker-year][aria-checked="true"]',
+  '[data-ok-digital-clock-item][aria-selected="true"]',
+  '[data-ok-time-clock-number][aria-selected="true"]',
+  '[data-ok-time-clock-meridiem][aria-pressed="true"]',
   "[data-ok-editor-content] a",
 ];
 

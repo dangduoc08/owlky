@@ -47,7 +47,7 @@ component and each `/integrate` run.
 | MUI | Tooltip | ✅ | Tooltip | Popover, Tooltip, Menu, Dialog & Snackbar |
 | MUI | Transfer list | ✅ | TransferList | Rating, Slider, Timeline, Transfer list, Tree view & Autocomplete |
 | MUI X | Data grid | ✅ phases 1–5 of 6 (ADR-0020, ADR-0021) | DataGrid | Data grid |
-| MUI X | Date pickers | ✅ phase 1 of 4 (ADR-0022) | DatePicker, DesktopDatePicker, MobileDatePicker, StaticDatePicker, DateField, DateCalendar, MonthCalendar, YearCalendar, LocalizationProvider | Date pickers |
+| MUI X | Date pickers | ✅ phases 1–2 of 4 (ADR-0022, ADR-0026) | DatePicker, DesktopDatePicker, MobileDatePicker, StaticDatePicker, DateField, DateCalendar, MonthCalendar, YearCalendar, LocalizationProvider; TimePicker, DateTimePicker (desktop, mobile, static), TimeField, DateTimeField, TimeClock, DigitalClock, MultiSectionDigitalClock | Date pickers |
 | MUI X | Tree view | ✅ | SimpleTreeView, TreeItem, RichTreeView | Rating, Slider, Timeline, Transfer list, Tree view & Autocomplete |
 | Extra | Animate | ✅ beta | Motion, MotionGroup, MotionText, CountUp, MotionBorder; Dialog `transition` | Motion |
 | Extra | Carousel | wave 7 (ADR) | — | Next |
@@ -402,12 +402,22 @@ and Vietnamese texts; `data-ok-locale` in HTML). HTML runtimes: `date-field`, `d
 Popover and Dialog; no new token, no dependency. Size: about 13 kB of the CDN bundle and
 2.5 kB of the CSS (gzip; budgets raised by that much). Beyond MUI X: weekday headers use the locale's narrow names
 (Vietnamese "CN", "T2"… instead of "C", "T"), today has `aria-current="date"`.
+Phase 2 (ADR-0026; stories: Time and Date & Time — the reference sections — plus Clocks and Time
+validation): TimeField and DateTimeField (the DateField anatomy with `data-ok-value-type`),
+TimeClock (an analog listbox clock: press, drag, keys), DigitalClock and MultiSectionDigitalClock
+(listboxes with roving focus), the TimePicker and DateTimePicker families (digital clocks in the
+desktop popover, toolbar + analog clock in the dialog and inline, date / time **Tabs** for date
+times); time validation (`minTime`, `maxTime`, `minDateTime`, `maxDateTime`, `minutesStep`,
+`shouldDisableTime`), `timeSteps`, `skipDisabled`, 12 / 24 hours from the locale. Core `time.ts`,
+`createTimeClockController`, `createDigitalClockController`; HTML runtimes `time-clock`,
+`digital-clock`, `multi-section-digital-clock` (the `date-field` and `date-picker` runtimes serve
+every value type). Reuses Tabs as well; no new token, no dependency.
 
 | Phase | Scope (MUI X tier) | State |
 |---|---|---|
 | 1 | Engine, LocalizationProvider; DateField, DateCalendar, MonthCalendar, YearCalendar, DatePicker (responsive, desktop, mobile, static); validation, toolbar, actions, shortcuts, week numbers, fixed weeks, outside days, loading, landscape, clearable fields (Community) | ✅ 2026-11-08 |
-| 2 | TimeField, TimeClock, DigitalClock, MultiSectionDigitalClock, TimePicker, DateTimeField, DateTimePicker (each responsive, desktop, mobile, static; tabs); time validation and steps (Community); reference sections Time, Date & Time | next (`/component` Update) |
-| 3 | DateRangeCalendar, DateRangePicker, single- and multi-input range fields, TimeRangePicker, DateTimeRangePicker, range shortcuts, drag editing (Pro); reference section Range | — |
+| 2 | TimeField, TimeClock, DigitalClock, MultiSectionDigitalClock, TimePicker, DateTimeField, DateTimePicker (each responsive, desktop, mobile, static; tabs); time validation and steps (Community); reference sections Time, Date & Time | ✅ 2026-11-08 (ADR-0026) |
+| 3 | DateRangeCalendar, DateRangePicker, single- and multi-input range fields, TimeRangePicker, DateTimeRangePicker, range shortcuts, drag editing (Pro); reference section Range | next (`/component` Update) |
 | 4 | Time zones, `dateAdapter` (generic date types) and adapters for Day.js / date-fns / Luxon / Moment, other calendar systems, locale packs, right-to-left, view renderers and layout customization | — |
 
 ## Pending integrations
@@ -493,7 +503,7 @@ Dependency-first: leaf components before the ones built from them, the ones that
 | 4 Overlays | ~~Popover~~ ✅, ~~Tooltip~~ ✅, ~~Menu~~ ✅, ~~Dialog~~ ✅, ~~Snackbar~~ ✅, ~~Backdrop~~ ✅ | ~~Drawer / Dialog backdrop~~ ✅ (native `::backdrop`, same token); icon button tooltips: nothing to change (MUI uses native `title` there; Tooltip wraps any IconButton) |
 | 5 Navigation | ~~Tabs~~ ✅, ~~Breadcrumbs~~ ✅, ~~Stepper~~ ✅ | — (nothing waited for them) |
 | 6 Composites | ~~Rating~~ ✅, ~~Slider~~ ✅, ~~Timeline~~ ✅, ~~Transfer list~~ ✅, ~~Autocomplete~~ ✅, ~~Tree view~~ ✅ | — (nothing waited for them; Slider unblocks the SettingsDrawer backlog of Theme settings) |
-| 7 Needs an ADR | ~~Data grid~~ (ADR-0020, phases below), ~~Date pickers~~ (ADR-0022, phase 1 ✅), ~~Chart~~ (ADR-0024, phases 1–2 ✅), Map, ~~Editor~~ (ADR-0023) ✅, Carousel, Lightbox, Markdown, Organization chart, Upload, Image, Walktour | — |
+| 7 Needs an ADR | ~~Data grid~~ (ADR-0020, phases below), ~~Date pickers~~ (ADR-0022, phases 1–2 ✅), ~~Chart~~ (ADR-0024, phases 1–2 ✅), Map, ~~Editor~~ (ADR-0023) ✅, Carousel, Lightbox, Markdown, Organization chart, Upload, Image, Walktour | — |
 
 Not planned as components (patterns or app-level pages of the reference): Layout,
 Utilities, Multi-language, Navigation bar, Mega menu, Scroll progress, Form validation, Form wizard.

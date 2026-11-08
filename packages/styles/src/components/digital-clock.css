@@ -1,0 +1,115 @@
+/*
+ * Digital clocks — spec: specs/components/date-picker.md (ADR-0026)
+ *
+ * Anatomy:   div[data-ok-digital-clock] › ul[role=listbox][data-ok-digital-clock-list]
+ *              › li[role=option][data-ok-digital-clock-item][aria-selected][aria-disabled]?
+ *            div[data-ok-multi-section-digital-clock]
+ *              › ul[role=listbox][data-ok-digital-clock-section=hours|minutes|seconds|meridiem]
+ *                  › li[role=option][data-ok-digital-clock-item]…
+ *
+ * Lists scroll at 232px (the reference's); columns are 56px wide with a divider between them;
+ * options are 48px pills (8px padding, 6px corners, body2), the selected one primary with
+ * semibold contrast text. Single :where() selectors in @layer components.
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-ok-digital-clock], [data-ok-multi-section-digital-clock]) {
+    box-sizing: border-box;
+    color: var(--ok-text-primary);
+    font-family: var(--ok-font-family);
+  }
+
+  :where([data-ok-multi-section-digital-clock]) {
+    display: flex;
+    max-width: 100%;
+  }
+
+  :where([data-ok-digital-clock][hidden], [data-ok-multi-section-digital-clock][hidden]) {
+    display: none;
+  }
+
+  :where([data-ok-digital-clock-list], [data-ok-digital-clock-section]) {
+    position: relative;
+    box-sizing: border-box;
+    max-height: calc(var(--ok-spacing) * 58);
+    margin: 0;
+    padding: calc(var(--ok-spacing) * 0.5) 0;
+    overflow-y: auto;
+    list-style: none;
+    outline: 0;
+    scrollbar-width: thin;
+  }
+
+  :where([data-ok-digital-clock-section]) {
+    width: calc(var(--ok-spacing) * 14);
+    flex-shrink: 0;
+  }
+
+  :where([data-ok-digital-clock-section] + [data-ok-digital-clock-section]) {
+    border-inline-start: 1px solid var(--ok-divider);
+  }
+
+  :where([data-ok-digital-clock-item]) {
+    box-sizing: border-box;
+    margin: calc(var(--ok-spacing) * 0.5) calc(var(--ok-spacing) * 1);
+    padding: calc(var(--ok-spacing) * 2);
+    border-radius: var(--ok-radius-sm);
+    outline: 0;
+    font-size: var(--ok-typography-body2-font-size);
+    line-height: var(--ok-typography-body2-line-height);
+    text-align: center;
+    white-space: nowrap;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color var(--ok-duration-shortest) var(--ok-easing-standard);
+  }
+
+  :where([data-ok-digital-clock-list] > [data-ok-digital-clock-item]) {
+    padding-inline: calc(var(--ok-spacing) * 4);
+  }
+
+  :where([data-ok-digital-clock-item][aria-selected="true"]) {
+    background-color: var(--ok-palette-primary-main);
+    color: var(--ok-palette-primary-contrast-text);
+    font-weight: var(--ok-font-weight-semibold);
+  }
+
+  :where([data-ok-digital-clock-item][aria-disabled="true"]) {
+    color: var(--ok-text-disabled);
+    cursor: default;
+  }
+
+  :where([data-ok-digital-clock-item][aria-selected="true"][aria-disabled="true"]) {
+    color: var(--ok-palette-primary-contrast-text);
+    opacity: 0.6;
+  }
+
+  :where([data-ok-digital-clock-item]:focus-visible) {
+    outline: 2px solid var(--ok-palette-primary-main);
+    outline-offset: -2px;
+  }
+
+  :where([data-ok-digital-clock-item][aria-selected="true"]:focus-visible) {
+    background-color: var(--ok-palette-primary-dark);
+    outline-color: var(--ok-palette-primary-dark);
+  }
+
+  @media (hover: hover) {
+    :where(
+        [data-ok-digital-clock-item]:hover:not([aria-disabled="true"]):not([aria-selected="true"])
+      ) {
+      background-color: var(--ok-action-hover);
+    }
+
+    :where([data-ok-digital-clock-item][aria-selected="true"]:hover:not([aria-disabled="true"])) {
+      background-color: var(--ok-palette-primary-dark);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :where([data-ok-digital-clock-item]) {
+      transition: none;
+    }
+  }
+}

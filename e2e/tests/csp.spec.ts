@@ -39,6 +39,21 @@ test("no CSP or Trusted Types violations", async ({ page }) => {
         .evaluate((element) => (element as HTMLElement).style.getPropertyValue("--_ok-max-rows")),
     )
     .toBe("3");
+  // The time clock rebuilds its numbers with DOM methods and turns the hand through CSSOM.
+  const clock = page.locator("#tc-basic");
+  await clock.getByRole("listbox").focus();
+  await page.keyboard.press("ArrowUp");
+  await page.keyboard.press("Enter");
+  await expect(clock).toHaveAttribute("data-ok-view", "minutes");
+  await expect
+    .poll(() =>
+      clock
+        .locator("[data-ok-time-clock-pointer]")
+        .evaluate((element) =>
+          (element as HTMLElement).style.getPropertyValue("--_ok-clock-angle"),
+        ),
+    )
+    .toBe("180deg");
   // The chart builds its SVG with createElementNS and places the tooltip through CSSOM.
   const chart = page.getByRole("group", { name: "Visits" });
   await expect(chart.locator("[data-ok-chart-area]")).toHaveCount(2);

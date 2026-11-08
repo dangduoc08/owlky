@@ -51,8 +51,11 @@ import { usePickerLocalization } from "../localization-provider/localization-pro
 import { useMergedRefs } from "../utils/refs.js";
 import { useControllableState } from "../utils/use-controllable-state.js";
 
-/** `"partial"`: a year or month was picked and another view follows; `"finish"`: the last view. */
-export type PickerSelectionState = "partial" | "finish";
+/**
+ * `"partial"`: a year or month (or an hour) was picked and another view follows; `"finish"`: the
+ * last view; `"shallow"`: a clock drag still in progress (time views, ADR-0026).
+ */
+export type PickerSelectionState = "shallow" | "partial" | "finish";
 
 const ICON = {
   fill: "none",

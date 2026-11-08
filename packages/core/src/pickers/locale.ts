@@ -4,6 +4,7 @@
  * Firefox), and the picker texts (`localeText`) in English and Vietnamese.
  */
 import type { DateView } from "./dates.js";
+import type { ClockSectionView, TimeView } from "./time.js";
 
 export const DEFAULT_PICKER_LOCALE = "en-US";
 
@@ -119,6 +120,24 @@ export interface PickerLocaleText {
   toolbarEmptyText: string;
   /** Loading text of the calendar. */
   loadingText: string;
+  /** Time pickers (phase 2). */
+  timePickerToolbarTitle: string;
+  dateTimePickerToolbarTitle: string;
+  /** Name of a time picker's open button: `value` is the formatted time, or `null`. */
+  openTimePickerDialogue: (value: string | null) => string;
+  /** The clock's previous / next view buttons. */
+  openPreviousView: string;
+  openNextView: string;
+  /** Name of the clock's listbox: `time` is the formatted value, or `null`. */
+  clockLabelText: (view: TimeView, time: string | null) => string;
+  hoursClockNumberText: (hours: string) => string;
+  minutesClockNumberText: (minutes: string) => string;
+  secondsClockNumberText: (seconds: string) => string;
+  /** Name of a digital clock column. */
+  selectViewText: (view: ClockSectionView) => string;
+  /** Names of the date time picker's tabs. */
+  dateTableLabel: string;
+  timeTableLabel: string;
 }
 
 export const pickersEnUS: PickerLocaleText = {
@@ -161,6 +180,27 @@ export const pickersEnUS: PickerLocaleText = {
   shortcutsLabel: "Shortcuts",
   toolbarEmptyText: "––",
   loadingText: "…",
+  timePickerToolbarTitle: "Select time",
+  dateTimePickerToolbarTitle: "Select date & time",
+  openTimePickerDialogue: (value) =>
+    value ? `Choose time, selected time is ${value}` : "Choose time",
+  openPreviousView: "Open previous view",
+  openNextView: "Open next view",
+  clockLabelText: (view, time) =>
+    `Select ${view}. ${time ? `Selected time is ${time}` : "No time selected"}`,
+  hoursClockNumberText: (hours) => `${hours} hours`,
+  minutesClockNumberText: (minutes) => `${minutes} minutes`,
+  secondsClockNumberText: (seconds) => `${seconds} seconds`,
+  selectViewText: (view) => `Select ${view}`,
+  dateTableLabel: "pick date",
+  timeTableLabel: "pick time",
+};
+
+const VI_VIEWS: Record<ClockSectionView, string> = {
+  hours: "giờ",
+  minutes: "phút",
+  seconds: "giây",
+  meridiem: "buổi",
 };
 
 export const pickersViVN: PickerLocaleText = {
@@ -202,6 +242,19 @@ export const pickersViVN: PickerLocaleText = {
   shortcutsLabel: "Lối tắt",
   toolbarEmptyText: "––",
   loadingText: "…",
+  timePickerToolbarTitle: "Chọn giờ",
+  dateTimePickerToolbarTitle: "Chọn ngày và giờ",
+  openTimePickerDialogue: (value) => (value ? `Chọn giờ, giờ đã chọn là ${value}` : "Chọn giờ"),
+  openPreviousView: "Mở chế độ xem trước",
+  openNextView: "Mở chế độ xem sau",
+  clockLabelText: (view, time) =>
+    `Chọn ${VI_VIEWS[view]}. ${time ? `Giờ đã chọn là ${time}` : "Chưa chọn giờ"}`,
+  hoursClockNumberText: (hours) => `${hours} giờ`,
+  minutesClockNumberText: (minutes) => `${minutes} phút`,
+  secondsClockNumberText: (seconds) => `${seconds} giây`,
+  selectViewText: (view) => `Chọn ${VI_VIEWS[view]}`,
+  dateTableLabel: "chọn ngày",
+  timeTableLabel: "chọn giờ",
 };
 
 /** Built-in texts for a locale (by language), English otherwise; `overrides` win. */

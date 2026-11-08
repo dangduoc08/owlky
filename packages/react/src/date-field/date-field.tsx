@@ -6,15 +6,22 @@ import {
   type DateValidationError,
   type DateView,
   dateFieldAttributes,
-  defaultDateFormat,
+  defaultPickerFormat,
   type FieldController,
   type FormatSection,
   formatIsoDate,
+  formatIsoDateTime,
+  formatIsoTime,
   isSamePickerValue,
   isValidDate,
-  normalizeDateViews,
   type PickerLocaleText,
+  type PickerValidationError,
+  type PickerValueType,
+  type PickerView,
   parseFormat,
+  pickerValueIso,
+  pickerViewsOf,
+  resolveAmpm,
   type SelectionControlSize,
   sectionAria,
   sectionLabel,
@@ -23,8 +30,10 @@ import {
   sectionValues,
   startOfDay,
   type TextFieldVariant,
+  type TimeRules,
+  type TimeView,
   textFieldAttributes,
-  validateDate,
+  validatePickerValue,
 } from "@owlky/core";
 import {
   type CSSProperties,
@@ -46,9 +55,78 @@ import { useMergedRefs } from "../utils/refs.js";
 import { useControllableState } from "../utils/use-controllable-state.js";
 
 /** Value change details: why the new value is invalid, or `null`. */
-export interface PickerChangeContext {
-  validationError: DateValidationError | null;
+export interface PickerChangeContext<E extends PickerValidationError = DateValidationError> {
+  validationError: E | null;
 }
+
+/** Time rules shared by time fields, clocks and pickers (MUI props, ADR-0026). */
+export interface TimeValidationProps {
+  /** Earliest valid time (only the time of day counts, unless `disableIgnoringDatePartForTimeValidation`). */
+  minTime?: Date | undefined;
+  /** Latest valid time. */
+  maxTime?: Date | undefined;
+  /** Minutes must be a multiple of this. Default 1. */
+  minutesStep?: number | undefined;
+  /** Times that can't be picked, per view. */
+  shouldDisableTime?: ((value: Date, view: TimeView) => boolean) | undefined;
+  /** `minTime` / `maxTime` compare the whole date. */
+  disableIgnoringDatePartForTimeValidation?: boolean | undefined;
+  /** Times before now are invalid. */
+  disablePast?: boolean | undefined;
+  /** Times after now are invalid. */
+  disableFuture?: boolean | undefined;
+}
+
+/** Date time rules (MUI props): the date and time rules plus whole date time limits. */
+export interface DateTimeValidationProps extends DateValidationProps, TimeValidationProps {
+  /** Earliest valid date and time. */
+  minDateTime?: Date | undefined;
+  /** Latest valid date and time. */
+  maxDateTime?: Date | undefined;
+}
+
+/** The time rules object core expects, from the props; `now` pins "now". */
+export const timeRules = (
+  props: TimeValidationProps & { minDateTime?: Date | undefined; maxDateTime?: Date | undefined },
+  now?: Date,
+): TimeRules => ({
+  minTime: props.minTime,
+  maxTime: props.maxTime,
+  minDateTime: props.minDateTime,
+  maxDateTime: props.maxDateTime,
+  minutesStep: props.minutesStep,
+  shouldDisableTime: props.shouldDisableTime,
+  disableIgnoringDatePartForTimeValidation: props.disableIgnoringDatePartForTimeValidation,
+  disablePast: props.disablePast,
+  disableFuture: props.disableFuture,
+  now,
+});
+
+/** HTML parity: the declarative time rules as attributes. */
+export const timeRuleAttributes = (
+  props: TimeValidationProps & { minDateTime?: Date | undefined; maxDateTime?: Date | undefined },
+): Record<string, string> => ({
+  ...(isValidDate(props.minTime) ? { "data-ok-min-time": formatIsoTime(props.minTime) } : {}),
+  ...(isValidDate(props.maxTime) ? { "data-ok-max-time": formatIsoTime(props.maxTime) } : {}),
+  ...(isValidDate(props.minDateTime)
+    ? { "data-ok-min-date-time": formatIsoDateTime(props.minDateTime) }
+    : {}),
+  ...(isValidDate(props.maxDateTime)
+    ? { "data-ok-max-date-time": formatIsoDateTime(props.maxDateTime) }
+    : {}),
+  ...(props.minutesStep !== undefined && props.minutesStep > 1
+    ? { "data-ok-minutes-step": String(Math.trunc(props.minutesStep)) }
+    : {}),
+  ...(props.disableIgnoringDatePartForTimeValidation
+    ? { "data-ok-disable-ignoring-date-part-for-time-validation": "" }
+    : {}),
+});
+
+/** What a picker's value holds (ADR-0026). */
+export type { PickerValueType };
+
+/** ISO 8601 text of a value. */
+export const isoOf = pickerValueIso;
 
 /** Date rules shared by fields, calendars and pickers (MUI props). */
 export interface DateValidationProps {
@@ -162,13 +240,46 @@ export interface DateFieldProps
 /** Display text of a section: its value, or its placeholder. */
 const display = (value: string | undefined, placeholder: string) => (value ? value : placeholder);
 
+/** Props of the field shared by DateField, TimeField and DateTimeField (internal). */
+export interface PickerFieldProps
+  extends Omit<DateFieldProps, "views" | "onChange" | "onError">,
+    DateTimeValidationProps {
+  valueType: PickerValueType;
+  views?: readonly PickerView[] | undefined;
+  /** 12-hour clock in the default format. Default: from the locale. */
+  ampm?: boolean | undefined;
+  /** "Now" for `disablePast` / `disableFuture` on times (tests and demos). */
+  today?: Date | undefined;
+  onChange?:
+    | ((value: Date | null, context: PickerChangeContext<PickerValidationError>) => void)
+    | undefined;
+  onError?: ((error: PickerValidationError | null, value: Date | null) => void) | undefined;
+}
+
 /**
  * DateField — spec: specs/components/date-picker.md. A TextField whose input is a group of
  * spinbutton sections (month, day, year…) edited with the keyboard; core's
  * `createFieldController` turns keys, typing and paste into new section texts.
  */
-export const DateField = forwardRef<HTMLDivElement, DateFieldProps>(function DateField(
+export const DateField = forwardRef<HTMLDivElement, DateFieldProps>(function DateField(props, ref) {
+  return (
+    <PickerField ref={ref} valueType="date" {...(props as Omit<PickerFieldProps, "valueType">)} />
+  );
+});
+
+/** The sectioned field of every value type (DateField, TimeField, DateTimeField). */
+export const PickerField = forwardRef<HTMLDivElement, PickerFieldProps>(function PickerField(
   {
+    valueType,
+    ampm: ampmProp,
+    today,
+    minTime,
+    maxTime,
+    minDateTime,
+    maxDateTime,
+    minutesStep,
+    shouldDisableTime,
+    disableIgnoringDatePartForTimeValidation,
     value,
     defaultValue = null,
     onChange,
@@ -214,17 +325,35 @@ export const DateField = forwardRef<HTMLDivElement, DateFieldProps>(function Dat
   const id = idProp ?? generated;
   const labelId = `${id}-label`;
   const helperId = helperText != null ? `${id}-helper-text` : undefined;
-  const format = formatProp ?? defaultDateFormat(normalizeDateViews(views), locale);
+  const ampm = resolveAmpm(ampmProp, locale);
+  const format =
+    formatProp ?? defaultPickerFormat(pickerViewsOf(views, valueType), valueType, ampm, locale);
   const sections = useMemo<FormatSection[]>(() => parseFormat(format), [format]);
-  const rules = dateRules({
-    minDate,
-    maxDate,
+  const timeProps = {
+    minTime,
+    maxTime,
+    minDateTime,
+    maxDateTime,
+    minutesStep,
+    shouldDisableTime,
+    disableIgnoringDatePartForTimeValidation,
     disablePast,
     disableFuture,
-    shouldDisableDate,
-    shouldDisableMonth,
-    shouldDisableYear,
-  });
+  };
+  const rules = {
+    ...dateRules({
+      minDate,
+      maxDate,
+      disablePast,
+      disableFuture,
+      shouldDisableDate,
+      shouldDisableMonth,
+      shouldDisableYear,
+    }),
+    ...timeRules(timeProps, today),
+    ...(today ? { today: startOfDay(today) } : {}),
+  };
+  const validate = (date: Date | null) => validatePickerValue(date, valueType, rules);
 
   const [current, setCurrent] = useControllableState<Date | null>({
     value,
@@ -257,8 +386,8 @@ export const DateField = forwardRef<HTMLDivElement, DateFieldProps>(function Dat
     }
   }
 
-  const validationError = validateDate(current, rules);
-  const lastError = useRef<DateValidationError | null>(validationError);
+  const validationError = validate(current);
+  const lastError = useRef<PickerValidationError | null>(validationError);
   useEffect(() => {
     if (lastError.current === validationError) return;
     lastError.current = validationError;
@@ -289,7 +418,7 @@ export const DateField = forwardRef<HTMLDivElement, DateFieldProps>(function Dat
     shown.current = { value: date, format, locale };
     if (isSamePickerValue(date, current)) return;
     setCurrent(date);
-    onChange?.(date, { validationError: validateDate(date, rules) });
+    onChange?.(date, { validationError: validate(date) });
   };
   latest.current = {
     sections,
@@ -361,9 +490,15 @@ export const DateField = forwardRef<HTMLDivElement, DateFieldProps>(function Dat
     <div
       ref={mergedRef}
       {...attributes}
-      {...dateFieldAttributes({ formatDensity, clearable, readOnly })}
+      {...dateFieldAttributes({
+        formatDensity,
+        clearable,
+        readOnly,
+        valueType: valueType === "date" ? undefined : valueType,
+      })}
       {...ruleAttributes({ minDate, maxDate, disablePast, disableFuture })}
-      {...(isValidDate(current) ? { "data-ok-value": formatIsoDate(current) } : {})}
+      {...(valueType === "date" ? {} : timeRuleAttributes(timeProps))}
+      {...(isValidDate(current) ? { "data-ok-value": isoOf(current, valueType) } : {})}
       {...(explicit ? { "data-ok-locale": locale } : {})}
       data-ok-format={format}
       data-ok-runtime="off"
@@ -439,7 +574,7 @@ export const DateField = forwardRef<HTMLDivElement, DateFieldProps>(function Dat
           type="hidden"
           data-ok-date-field-input=""
           name={name}
-          value={isValidDate(current) ? formatIsoDate(current) : ""}
+          value={isValidDate(current) ? isoOf(current, valueType) : ""}
           disabled={disabled}
         />
         {(clearable || endAdornment != null) && (

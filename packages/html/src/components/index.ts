@@ -20,6 +20,7 @@ import { dateCalendar } from "./date-calendar/date-calendar.js";
 import { dateField } from "./date-field/date-field.js";
 import { datePicker } from "./date-picker/date-picker.js";
 import { dialog } from "./dialog/dialog.js";
+import { digitalClock } from "./digital-clock/digital-clock.js";
 import { drawer } from "./drawer/drawer.js";
 import { linearProgress } from "./linear-progress/linear-progress.js";
 import { list } from "./list/list.js";
@@ -30,6 +31,7 @@ import { motion } from "./motion/motion.js";
 import { motionBorder } from "./motion-border/motion-border.js";
 import { motionGroup } from "./motion-group/motion-group.js";
 import { motionText } from "./motion-text/motion-text.js";
+import { multiSectionDigitalClock } from "./multi-section-digital-clock/multi-section-digital-clock.js";
 import { pagination } from "./pagination/pagination.js";
 import { popover } from "./popover/popover.js";
 import { rating } from "./rating/rating.js";
@@ -40,6 +42,7 @@ import { table } from "./table/table.js";
 import { tablePagination } from "./table-pagination/table-pagination.js";
 import { tabs } from "./tabs/tabs.js";
 import { textField } from "./text-field/text-field.js";
+import { timeClock } from "./time-clock/time-clock.js";
 import { toaster } from "./toaster/toaster.js";
 import { toggleButton } from "./toggle-button/toggle-button.js";
 import { toggleGroup } from "./toggle-group/toggle-group.js";
@@ -91,5 +94,8 @@ export const components: readonly ComponentDefinition[] = [
   dateCalendar as ComponentDefinition,
   monthCalendar as ComponentDefinition,
   yearCalendar as ComponentDefinition,
+  timeClock as ComponentDefinition,
+  digitalClock as ComponentDefinition,
+  multiSectionDigitalClock as ComponentDefinition,
   datePicker as ComponentDefinition,
 ];

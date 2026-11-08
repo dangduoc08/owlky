@@ -1052,6 +1052,17 @@
   max-width: 342px;
 }
 
+/* Static time pickers and clocks: a wrapping row (columns on phones), as on the reference. */
+.sb-date-pickers-static,
+.sb-date-pickers-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: center;
+  gap: calc(var(--ok-spacing) * 6);
+  max-width: 100%;
+}
+
 /* Chart: fills the story row and the docs preview (charts take the width of their container). */
 .sb-row > [data-ok-chart],
 .sb-unstyled > [data-ok-chart] {

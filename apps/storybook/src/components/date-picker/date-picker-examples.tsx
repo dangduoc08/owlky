@@ -1,13 +1,26 @@
-import { dateCalendarOptions } from "@owlky/core";
+import { dateCalendarOptions, timeClockOptions } from "@owlky/core";
 import {
   DateCalendar,
   DateField,
   DatePicker,
+  DateTimeField,
+  DateTimePicker,
   DesktopDatePicker,
+  DesktopDateTimePicker,
+  DesktopTimePicker,
+  DigitalClock,
   LocalizationProvider,
   MobileDatePicker,
+  MobileDateTimePicker,
+  MobileTimePicker,
   MonthCalendar,
+  MultiSectionDigitalClock,
   StaticDatePicker,
+  StaticDateTimePicker,
+  StaticTimePicker,
+  TimeClock,
+  TimeField,
+  TimePicker,
   YearCalendar,
 } from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
@@ -15,6 +28,9 @@ import type { GroupFiles } from "../shared/snippets.js";
 
 /** The demos' date: Sunday 25 May 2025 (fixed, so screenshots don't change every day). */
 const VALUE = new Date(2025, 4, 25);
+/** The demos' time: 09:30 on the same day. */
+const TIME = new Date(2025, 4, 25, 9, 30);
+const at = (hours: number, minutes = 0) => new Date(2025, 4, 25, hours, minutes);
 
 /** Shortcut chips with fixed dates (demo data). */
 const SHORTCUTS = [
@@ -148,6 +164,199 @@ export const datePickerStories: Record<string, ReactGroup[]> = {
       ),
     },
   ],
+  time: [
+    {
+      title: "Basic",
+      content: (
+        <div className="sb-date-pickers">
+          <TimePicker id="tp-basic" label="Time picker" defaultValue={TIME} />
+          <DesktopTimePicker id="tp-desktop" label="Desktop time picker" defaultValue={TIME} />
+          <MobileTimePicker id="tp-mobile" label="Mobile time picker" defaultValue={TIME} />
+          <TimeField id="tp-field" label="Time field" defaultValue={TIME} />
+        </div>
+      ),
+    },
+    {
+      title: "Views playground",
+      content: (
+        <div className="sb-date-pickers">
+          <TimePicker id="tp-12" label="12 hours" ampm defaultValue={TIME} />
+          <TimePicker id="tp-24" label="24 hours" ampm={false} defaultValue={TIME} />
+          <TimePicker
+            id="tp-hms"
+            label="Hours, minutes and seconds"
+            views={["hours", "minutes", "seconds"]}
+            defaultValue={TIME}
+          />
+          <TimePicker
+            id="tp-ms"
+            label="Minutes and seconds"
+            views={["minutes", "seconds"]}
+            defaultValue={TIME}
+          />
+          <TimePicker id="tp-h" label="Hours" views={["hours"]} defaultValue={TIME} />
+        </div>
+      ),
+    },
+    {
+      title: "Static mode",
+      content: (
+        <div className="sb-date-pickers-static">
+          <StaticTimePicker id="tp-static" defaultValue={TIME} />
+          <StaticTimePicker
+            id="tp-static-landscape"
+            orientation="landscape"
+            openTo="minutes"
+            defaultValue={TIME}
+          />
+        </div>
+      ),
+    },
+  ],
+  "date-time": [
+    {
+      title: "Basic",
+      content: (
+        <div className="sb-date-pickers">
+          <DateTimePicker id="dtp-basic" label="Date time picker" defaultValue={TIME} />
+          <DesktopDateTimePicker
+            id="dtp-desktop"
+            label="Desktop date time picker"
+            defaultValue={TIME}
+          />
+          <MobileDateTimePicker
+            id="dtp-mobile"
+            label="Mobile date time picker"
+            defaultValue={TIME}
+          />
+          <DateTimeField id="dtp-field" label="Date time field" defaultValue={TIME} />
+        </div>
+      ),
+    },
+    {
+      title: "Views playground",
+      content: (
+        <div className="sb-date-pickers">
+          <DateTimePicker
+            id="dtp-all"
+            label="Year, month, day, hours, minutes and seconds"
+            views={["year", "month", "day", "hours", "minutes", "seconds"]}
+            defaultValue={TIME}
+          />
+          <DateTimePicker
+            id="dtp-ydhms"
+            label="Year, day, hours, minutes, seconds"
+            views={["year", "day", "hours", "minutes", "seconds"]}
+            defaultValue={TIME}
+          />
+          <DateTimePicker
+            id="dtp-dh"
+            label="Day, hours"
+            views={["day", "hours"]}
+            defaultValue={TIME}
+          />
+          <DateTimePicker id="dtp-disabled" label="Disabled" disabled defaultValue={TIME} />
+          <DateTimePicker id="dtp-read-only" label="Read only" readOnly defaultValue={TIME} />
+          <DateTimePicker
+            id="dtp-error"
+            label="Error"
+            minDateTime={at(10)}
+            defaultValue={TIME}
+            helperText="Pick a time after 10:00 AM"
+          />
+        </div>
+      ),
+    },
+    {
+      title: "Static mode",
+      content: (
+        <div className="sb-date-pickers-static">
+          <StaticDateTimePicker id="dtp-static" defaultValue={TIME} />
+          <StaticDateTimePicker
+            id="dtp-static-landscape"
+            orientation="landscape"
+            defaultValue={TIME}
+          />
+        </div>
+      ),
+    },
+  ],
+  clocks: [
+    {
+      title: "Time clock",
+      content: <TimeClock id="tc-basic" defaultValue={TIME} />,
+    },
+    {
+      title: "Digital clocks",
+      content: (
+        <div className="sb-date-pickers-row">
+          <DigitalClock id="tc-digital" aria-label="Meeting time" defaultValue={TIME} />
+          <MultiSectionDigitalClock
+            id="tc-multi"
+            aria-label="Alarm"
+            views={["hours", "minutes", "seconds"]}
+            defaultValue={TIME}
+          />
+        </div>
+      ),
+    },
+  ],
+  "time-validation": [
+    {
+      title: "Time limits and steps",
+      content: (
+        <div className="sb-date-pickers">
+          <TimePicker
+            id="tv-limits"
+            label="Office hours"
+            minTime={at(9)}
+            maxTime={at(17, 30)}
+            defaultValue={at(18)}
+            helperText="Between 09:00 AM and 05:30 PM"
+          />
+          <TimePicker
+            id="tv-step"
+            label="Every quarter hour"
+            minutesStep={15}
+            timeSteps={{ minutes: 15 }}
+            defaultValue={TIME}
+          />
+          <DateTimePicker
+            id="tv-date-time"
+            label="From 25 May, 10:00 AM"
+            minDateTime={at(10)}
+            maxDateTime={new Date(2025, 5, 30, 18)}
+            defaultValue={at(11)}
+          />
+        </div>
+      ),
+    },
+    {
+      title: "Skip disabled",
+      content: (
+        <div className="sb-date-pickers-row">
+          <DigitalClock
+            id="tv-digital"
+            aria-label="Appointment"
+            minTime={at(9)}
+            maxTime={at(17)}
+            skipDisabled
+            defaultValue={TIME}
+          />
+          <MultiSectionDigitalClock
+            id="tv-multi"
+            aria-label="Shift start"
+            ampm={false}
+            minTime={at(8)}
+            maxTime={at(20)}
+            timeSteps={{ minutes: 15 }}
+            skipDisabled
+            defaultValue={TIME}
+          />
+        </div>
+      ),
+    },
+  ],
   localization: [
     {
       title: "Vietnamese",
@@ -198,11 +407,35 @@ export const DATE_PICKER_FILES: Record<string, GroupFiles> = {
     ["States", "states"],
   ],
   shortcuts: [["Shortcuts and actions", "actions"]],
+  time: [
+    ["Basic", "basic"],
+    ["Views playground", "playground"],
+    ["Static mode", "static"],
+  ],
+  "date-time": [
+    ["Basic", "basic"],
+    ["Views playground", "playground"],
+    ["Static mode", "static"],
+  ],
+  clocks: [
+    ["Time clock", "time-clock"],
+    ["Digital clocks", "digital"],
+  ],
+  "time-validation": [
+    ["Time limits and steps", "limits"],
+    ["Skip disabled", "skip-disabled"],
+  ],
   localization: [
     ["Vietnamese", "vietnamese"],
     ["Landscape", "landscape"],
   ],
 };
+
+/** Story Controls of the Clocks story (the time clock), shared by React and HTML (ADR-0015). */
+export const TIME_CLOCK_CONTROLS = {
+  schema: timeClockOptions,
+  keys: ["readOnly"],
+} as const;
 
 /** Story Controls of the Calendars story, shared by React and HTML (ADR-0015). */
 export const DATE_CALENDAR_CONTROLS = {

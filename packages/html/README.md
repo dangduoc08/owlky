@@ -67,8 +67,10 @@ pages with `hidden`, selects, hides columns, sets the density and exports CSV; e
 with a hidden ISO input, a calendar rebuilt with DOM methods, a picker in a Popover or a Dialog;
 values are ISO 8601 (`data-ok-value`); `data-ok-locale` on any ancestor; events
 `ok:date-picker:change|accept|open|close`, `ok:date-field:change` and `ok:date-calendar:change`
-(cancelable); `setShortcuts`, `setShouldDisableDate`, `setLocaleText`) **Chart** (runtime `chart`: draws an SVG
-line, area, bar or scatter chart from its `<table data-ok-chart-data>`, which stays visible without
+(cancelable); `setShortcuts`, `setShouldDisableDate`, `setLocaleText`; time and date time fields
+and pickers with `data-ok-value-type="time" | "date-time"`, runtimes `time-clock`,
+`digital-clock`, `multi-section-digital-clock` with `ok:<name>:change`, `setShouldDisableTime`) **Chart** (runtime `chart`: draws an SVG
+line, area, bar, scatter, pie, donut, radial bar or radar chart from its `<table data-ok-chart-data>`, which stays visible without
 JavaScript; legend buttons toggle series; events `ok:chart:toggle` (cancelable) and
 `ok:chart:active`; `setHiddenSeries`, `setActive`, `setFormatters`, `refresh()`). Snippets ship in
 `@owlky/html/snippets/<component>/<story>-<group>.html` and in Storybook (HTML/Button/…).

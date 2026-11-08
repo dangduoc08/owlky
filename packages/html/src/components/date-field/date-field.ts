@@ -1,38 +1,46 @@
 import {
   createFieldController,
-  type DateValidationError,
-  defaultDateFormat,
+  defaultPickerFormat,
   type FormatSection,
-  formatIsoDate,
   isSamePickerValue,
   isValidDate,
-  normalizeDateViews,
   type PickerLocaleText,
+  type PickerValidationError,
   parseFormat,
-  parseIsoDate,
+  parsePickerValue,
+  pickerValueIso,
+  pickerViewsOf,
   sectionAria,
   sectionPlaceholder,
   sectionsToDate,
   sectionValues,
   startOfDay,
-  validateDate,
+  type TimeView,
+  validatePickerValue,
 } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
 import type { ComponentInstance } from "../../runtime/types.js";
 import {
   asFunction,
   type RuleFunctions,
+  readAmpm,
   readLocale,
   readLocaleText,
   readRules,
-  toDate,
+  readTimeRules,
+  readValueType,
+  type TimeRuleFunctions,
+  toPickerDate,
 } from "../date-calendar/picker-dom.js";
 
 export interface DateFieldInstance extends ComponentInstance {
-  /** ISO date (`YYYY-MM-DD`), or `null` when empty or partly filled. */
+  /**
+   * ISO value, or `null` when empty or partly filled: `YYYY-MM-DD`, `HH:mm:ss` (time fields) or
+   * `YYYY-MM-DDTHH:mm:ss` (date time fields).
+   */
   readonly value: string | null;
   /** Why the value is invalid, or `null`. */
-  readonly validationError: DateValidationError | null;
+  readonly validationError: PickerValidationError | null;
   /** Sets the value (ISO string, `Date` or `null`) without emitting events. Invalid input is ignored. */
   setValue(value: string | Date | null): void;
   /** Focuses a section (default: the first). */
@@ -41,15 +49,19 @@ export interface DateFieldInstance extends ComponentInstance {
   setShouldDisableDate(fn: ((day: Date) => boolean) | null): void;
   setShouldDisableMonth(fn: ((month: Date) => boolean) | null): void;
   setShouldDisableYear(fn: ((year: Date) => boolean) | null): void;
+  /** Times that can't be picked (time and date time fields). */
+  setShouldDisableTime(fn: ((value: Date, view: TimeView) => boolean) | null): void;
   /** Text overrides (MUI `localeText` keys). */
   setLocaleText(text: Partial<PickerLocaleText>): void;
 }
 
 /**
- * Date field — spec: specs/components/date-picker.md
+ * Date field — spec: specs/components/date-picker.md. Also the time and date time fields
+ * (`data-ok-value-type="time" | "date-time"`, ADR-0026).
  *
  * Markup:  <div data-ok-text-field data-ok-variant="outlined" … data-ok-date-field data-ok-format="MM/DD/YYYY"
- *               [data-ok-value="2025-05-25"] [data-ok-min-date] [data-ok-max-date] [data-ok-disable-past] …>
+ *               [data-ok-value-type="time"] [data-ok-value="2025-05-25"] [data-ok-min-date] [data-ok-max-date]
+ *               [data-ok-min-time] [data-ok-max-time] [data-ok-disable-past] …>
  *            <label data-ok-text-field-label id="f-label">Date</label>
  *            <div data-ok-text-field-control>
  *              <div id="f" role="group" data-ok-text-field-input data-ok-date-field-sections aria-labelledby="f-label">
@@ -72,29 +84,40 @@ export const dateField = defineComponent<DateFieldInstance>({
     ) as HTMLElement;
     const hidden = element.querySelector<HTMLInputElement>("[data-ok-date-field-input]");
     const clear = element.querySelector<HTMLElement>("[data-ok-date-field-clear]");
+    const type = readValueType(element);
     const locale = readLocale(element);
     let overrides: Partial<PickerLocaleText> | undefined;
     let text = readLocaleText(element);
     const functions: RuleFunctions = {};
+    const timeFunctions: TimeRuleFunctions = {};
     const format =
       element.getAttribute("data-ok-format")?.slice(0, 256) ??
-      defaultDateFormat(
-        normalizeDateViews(element.getAttribute("data-ok-views")?.split(/\s+/)),
+      defaultPickerFormat(
+        pickerViewsOf(element.getAttribute("data-ok-views")?.split(/\s+/), type),
+        type,
+        readAmpm(element, locale),
         locale,
       );
     const sections = parseFormat(format);
     const spinbuttons = () => [...group.querySelectorAll<HTMLElement>('[role="spinbutton"]')];
     const isDisabled = () => hidden?.disabled === true;
     const isReadOnly = () => element.hasAttribute("data-ok-read-only");
+    const today = () => startOfDay(new Date());
 
-    let value: Date | null = parseIsoDate(element.getAttribute("data-ok-value"));
+    let value: Date | null = parsePickerValue(element.getAttribute("data-ok-value"), today());
     let texts = sectionValues(value, sections, locale);
     let active = Math.max(
       spinbuttons().findIndex((s) => s.getAttribute("tabindex") === "0"),
       0,
     );
 
-    const rules = () => readRules(element, functions);
+    const reference = () => (isValidDate(value) ? value : today());
+    const validate = (date: Date | null) =>
+      validatePickerValue(date, type, {
+        ...readRules(element, functions),
+        ...(type === "date" ? {} : readTimeRules(element, timeFunctions, reference())),
+      });
+    const iso = (date: Date | null) => (isValidDate(date) ? pickerValueIso(date, type) : null);
     const placeholders = () => sections.map((s) => sectionPlaceholder(s, text));
 
     const render = () => {
@@ -112,19 +135,17 @@ export const dateField = defineComponent<DateFieldInstance>({
       });
       const filled = texts.some((t) => t !== "");
       element.toggleAttribute("data-ok-shrink", filled);
-      const valid = isValidDate(value) ? value : null;
-      if (valid) element.setAttribute("data-ok-value", formatIsoDate(valid));
+      const shown = iso(value);
+      if (shown) element.setAttribute("data-ok-value", shown);
       else element.removeAttribute("data-ok-value");
-      if (hidden) hidden.value = valid ? formatIsoDate(valid) : "";
-      const error = validateDate(value, rules()) !== null;
+      if (hidden) hidden.value = shown ?? "";
+      const error = validate(value) !== null;
       element.toggleAttribute("data-ok-error", error);
       if (error) group.setAttribute("aria-invalid", "true");
       else group.removeAttribute("aria-invalid");
       if (clear) clear.hidden = !filled || isDisabled() || isReadOnly();
       controller.sync();
     };
-
-    const reference = () => (isValidDate(value) ? value : startOfDay(new Date()));
 
     const commit = (next: string[]) => {
       const date = sectionsToDate(next, sections, locale, reference());
@@ -133,8 +154,7 @@ export const dateField = defineComponent<DateFieldInstance>({
         render();
         return;
       }
-      const validationError = validateDate(date, rules());
-      const detail = { value: isValidDate(date) ? formatIsoDate(date) : null, validationError };
+      const detail = { value: iso(date), validationError: validate(date) };
       if (!emit("change", detail, { cancelable: true })) {
         render();
         return;
@@ -174,13 +194,13 @@ export const dateField = defineComponent<DateFieldInstance>({
     render();
     return {
       get value() {
-        return isValidDate(value) ? formatIsoDate(value) : null;
+        return iso(value);
       },
       get validationError() {
-        return validateDate(value, rules());
+        return validate(value);
       },
       setValue(next) {
-        const date = toDate(next);
+        const date = toPickerDate(next, reference());
         if (date === undefined) return;
         value = date;
         texts = sectionValues(date, sections, locale);
@@ -199,6 +219,10 @@ export const dateField = defineComponent<DateFieldInstance>({
       },
       setShouldDisableYear(fn) {
         functions.shouldDisableYear = asFunction(fn);
+        render();
+      },
+      setShouldDisableTime(fn) {
+        timeFunctions.shouldDisableTime = asFunction(fn);
         render();
       },
       setLocaleText(next) {

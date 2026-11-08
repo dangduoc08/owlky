@@ -201,7 +201,17 @@ const OPTION_TABLES: [string, (keyof typeof optionSchemas)[]][] = [
   ["components-transfer-list--docs", ["transfer-list"]],
   ["components-tree-view--docs", ["tree-view"]],
   ["components-autocomplete--docs", ["autocomplete"]],
-  ["components-date-pickers--docs", ["date-picker", "date-calendar", "date-field"]],
+  [
+    "components-date-pickers--docs",
+    [
+      "date-picker",
+      "date-calendar",
+      "date-field",
+      "time-clock",
+      "digital-clock",
+      "multi-section-digital-clock",
+    ],
+  ],
   [
     "components-motion--docs",
     ["motion", "motion-group", "motion-text", "count-up", "motion-border"],
