@@ -7,6 +7,20 @@ feature detection and `data-ok-*` attribute maps. You normally don't install thi
 Entry points: `@owlky/core` (everything above, side-effect free) and `@owlky/core/editor`
 (`createEditorController`, the only path to Tiptap; not re-exported from `@owlky/core`, ADR-0023).
 
+Date library adapters for the pickers (ADR-0030) are opt-in entry points that take your own copy
+of the library, so Owlky adds no dependency (the libraries are optional peer dependencies):
+
+| Entry point | Factory |
+|---|---|
+| `@owlky/core/adapters/dayjs` | `createDayjsAdapter(dayjs)` (zones with Day.js's `utc` and `timezone` plugins) |
+| `@owlky/core/adapters/date-fns` | `createDateFnsAdapter({ TZDate })` (`TZDate` from `@date-fns/tz` for zones) |
+| `@owlky/core/adapters/luxon` | `createLuxonAdapter(DateTime)` |
+| `@owlky/core/adapters/moment` | `createMomentAdapter(moment)` (zones with `moment-timezone`) |
+
+Each factory takes `{ calendar }` for Jalali or Hijri builds (`"persian"`, `"islamic-umalqura"`).
+Picker locale packs (`pickersFrFR`, `pickersDeDE`, `pickersEsES`, `pickersJaJP`, `pickersZhCN`,
+`pickersFaIR`, `pickersArSD`) are exported from `@owlky/core`.
+
 Theme settings (ADR-0017, re-exported by `@owlky/react` and `@owlky/html`):
 
 ```ts

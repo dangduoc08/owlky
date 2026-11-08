@@ -15,16 +15,20 @@ import { defineComponent } from "../../runtime/define.js";
 import type { ComponentInstance } from "../../runtime/types.js";
 import {
   asFunction,
+  type PickerDateApi,
+  pickerDateApi,
+  pickerToday,
   readAmpm,
   readLocale,
   readLocaleText,
   readTimeRules,
+  readTimezone,
   type TimeRuleFunctions,
   toPickerDate,
 } from "../date-calendar/picker-dom.js";
 import { renderOptionList } from "../digital-clock/digital-clock.js";
 
-export interface MultiSectionDigitalClockInstance extends ComponentInstance {
+export interface MultiSectionDigitalClockInstance extends ComponentInstance, PickerDateApi {
   /** ISO time (`HH:mm:ss`), or `null`. */
   readonly value: string | null;
   /** Sets the value (ISO time or date time, `Date` or `null`) without events. A `Date` keeps its day. */
@@ -62,8 +66,9 @@ export const multiSectionDigitalClock = defineComponent<MultiSectionDigitalClock
     const lists = () => [
       ...element.querySelectorAll<HTMLElement>("[data-ok-digital-clock-section]"),
     ];
-    let reference = startOfDay(new Date());
-    let value: Date | null = toPickerDate(element.getAttribute("data-ok-value"), reference) ?? null;
+    let reference = pickerToday(element);
+    let value: Date | null =
+      toPickerDate(element.getAttribute("data-ok-value"), reference, readTimezone(element)) ?? null;
     const base = () => (isValidDate(value) ? value : reference);
     const disabled = () => element.hasAttribute("data-ok-disabled");
     const readOnly = () => element.hasAttribute("data-ok-read-only");
@@ -113,12 +118,23 @@ export const multiSectionDigitalClock = defineComponent<MultiSectionDigitalClock
 
     render();
     controller.scrollToSelected();
-    return {
+    const dates = pickerDateApi(
+      element,
+      () => instance.value,
+      (next) => instance.setValue(next as never),
+      false,
+    );
+    const instance: MultiSectionDigitalClockInstance = {
+      get date() {
+        return dates.get();
+      },
+      setDate: dates.set,
+      setDateAdapter: dates.setAdapter,
       get value() {
         return isValidDate(value) ? formatIsoTime(value) : null;
       },
       setValue(input) {
-        const date = toPickerDate(input, reference);
+        const date = toPickerDate(input, reference, readTimezone(element));
         if (date === undefined) return;
         if (date) reference = startOfDay(date);
         value = date;
@@ -137,5 +153,6 @@ export const multiSectionDigitalClock = defineComponent<MultiSectionDigitalClock
         controller.destroy();
       },
     };
+    return instance;
   },
 });

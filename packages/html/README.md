@@ -74,7 +74,10 @@ range pickers with runtimes `date-range-calendar`, `multi-input-range-field`, `d
 and single input range fields (`data-ok-range` on a date field): ISO 8601 intervals
 (`2025-05-20/2025-05-25`), `ok:date-range-picker:change|accept|open|close|rangepositionchange`,
 cancelable `ok:date-range-calendar:change` and `ok:multi-input-range-field:change`, drag editing,
-range shortcuts with `setShortcuts`) **Chart** (runtime `chart`: draws an SVG
+range shortcuts with `setShortcuts`; phase 4: `data-ok-timezone` and `data-ok-calendar` on any
+ancestor, ISO input with offsets, `date` / `setDate` / `setDateAdapter(adapter)` on every picker
+instance for Day.js, date-fns, Luxon or Moment dates, `setDayRenderer` on calendars and pickers,
+locale packs through `setLocaleText`, right-to-left keys) **Chart** (runtime `chart`: draws an SVG
 line, area, bar, scatter, pie, donut, radial bar, radar, box plot, heatmap, treemap, bubble, range area, funnel, slope, candlestick, range bar, timeline or polar area chart or sparkline from its `<table data-ok-chart-data>`, which stays visible without
 JavaScript; legend buttons toggle series; events `ok:chart:toggle` (cancelable) and
 `ok:chart:active`; `setHiddenSeries`, `setActive`, `setFormatters`, `refresh()`, `updateSeries(series, categories?)` and `appendData(data, { categories, limit })` for live data, which rewrite the table in place; zoom and pan (`data-ok-zoom`, `ok:chart:zoom`, `zoomRange`, `setZoomRange`), a toolbar with SVG / PNG / CSV downloads (`data-ok-toolbar`, `exportChart`), synchronized groups (`data-ok-group`), brush charts (`data-ok-brush-target`), annotations in `ul[data-ok-chart-annotations]`, animations and `setLocaleText`). Snippets ship in

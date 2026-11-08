@@ -16,14 +16,18 @@ import {
   asFunction,
   h,
   morph,
+  type PickerDateApi,
+  pickerDateApi,
+  pickerToday,
   readAmpm,
   readLocale,
   readTimeRules,
+  readTimezone,
   type TimeRuleFunctions,
   toPickerDate,
 } from "../date-calendar/picker-dom.js";
 
-export interface DigitalClockInstance extends ComponentInstance {
+export interface DigitalClockInstance extends ComponentInstance, PickerDateApi {
   /** ISO time (`HH:mm:ss`), or `null`. */
   readonly value: string | null;
   /** Sets the value (ISO time or date time, `Date` or `null`) without events. A `Date` keeps its day. */
@@ -88,8 +92,9 @@ export const digitalClock = defineComponent<DigitalClockInstance>({
     const functions: TimeRuleFunctions = {};
     const ampm = readAmpm(element, locale);
     const list = element.querySelector<HTMLElement>("[data-ok-digital-clock-list]") as HTMLElement;
-    let reference = startOfDay(new Date());
-    let value: Date | null = toPickerDate(element.getAttribute("data-ok-value"), reference) ?? null;
+    let reference = pickerToday(element);
+    let value: Date | null =
+      toPickerDate(element.getAttribute("data-ok-value"), reference, readTimezone(element)) ?? null;
     const base = () => (isValidDate(value) ? value : reference);
     const disabled = () => element.hasAttribute("data-ok-disabled");
     const readOnly = () => element.hasAttribute("data-ok-read-only");
@@ -132,12 +137,23 @@ export const digitalClock = defineComponent<DigitalClockInstance>({
 
     render();
     controller.scrollToSelected();
-    return {
+    const dates = pickerDateApi(
+      element,
+      () => instance.value,
+      (next) => instance.setValue(next as never),
+      false,
+    );
+    const instance: DigitalClockInstance = {
+      get date() {
+        return dates.get();
+      },
+      setDate: dates.set,
+      setDateAdapter: dates.setAdapter,
       get value() {
         return isValidDate(value) ? formatIsoTime(value) : null;
       },
       setValue(input) {
-        const date = toPickerDate(input, reference);
+        const date = toPickerDate(input, reference, readTimezone(element));
         if (date === undefined) return;
         if (date) reference = startOfDay(date);
         value = date;
@@ -154,5 +170,6 @@ export const digitalClock = defineComponent<DigitalClockInstance>({
         controller.destroy();
       },
     };
+    return instance;
   },
 });

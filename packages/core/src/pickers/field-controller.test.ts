@@ -105,6 +105,18 @@ describe("createFieldController", () => {
     expect(state.values[2]).toBe("2025");
   });
 
+  it("flips ← / → in right-to-left fields (ADR-0030)", async () => {
+    const { group, spans } = setup();
+    group.dir = "rtl";
+    (spans[0] as HTMLElement).focus();
+    await userEvent.keyboard("{ArrowLeft}");
+    expect(focused()).toBe(spans[1]);
+    await userEvent.keyboard("{ArrowRight}");
+    expect(focused()).toBe(spans[0]);
+    await userEvent.keyboard("{Control>}a{/Control}{ArrowLeft}");
+    expect(focused()).toBe(spans[2]);
+  });
+
   it("clears a section, or every section after select-all", async () => {
     const { spans, state } = setup(undefined, ["05", "25", "2025"]);
     (spans[1] as HTMLElement).focus();

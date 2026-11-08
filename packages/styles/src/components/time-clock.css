@@ -248,7 +248,7 @@
   :where([data-ok-time-clock-nav]) {
     position: absolute;
     top: calc(var(--ok-spacing) * 3);
-    right: calc(var(--ok-spacing) * 3);
+    inset-inline-end: calc(var(--ok-spacing) * 3);
     display: flex;
     gap: calc(var(--ok-spacing) * 2);
   }

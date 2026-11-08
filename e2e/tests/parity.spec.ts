@@ -50,6 +50,11 @@ const pairs: [component: string, story: string][] = [
   ["date-pickers", "range-calendars"],
   ["date-pickers", "time-ranges"],
   ["date-pickers", "range-shortcuts"],
+  ["date-pickers", "time-zones"],
+  ["date-pickers", "date-libraries"],
+  ["date-pickers", "calendar-systems"],
+  ["date-pickers", "right-to-left"],
+  ["date-pickers", "customization"],
   ["transfer-list", "simple"],
   ["transfer-list", "enhanced"],
   ["tree-view", "simple"],
@@ -275,6 +280,11 @@ async function loaded(page: Page, key: string) {
     await expect(page.locator('[data-ok-editor-content][contenteditable="true"]')).toHaveCount(1);
     await expect(page.locator('[data-ok-editor-content][contenteditable="false"]')).toHaveCount(1);
     await expect(page.locator(".hljs-keyword").first()).toBeVisible();
+    return;
+  }
+  if (key === "date-pickers/customization") {
+    // The HTML story sets its day renderer in a page script: wait for the event dots.
+    await expect(page.locator(".sb-day-dot")).toHaveCount(5);
     return;
   }
   if (!LOADS.has(key)) return;

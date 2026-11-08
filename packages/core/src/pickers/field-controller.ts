@@ -173,12 +173,10 @@ export function createFieldController(
       if (key === "ArrowLeft" || key === "ArrowRight") {
         event.preventDefault();
         const list = spinbuttons();
-        const from = allSelected
-          ? key === "ArrowLeft"
-            ? 0
-            : list.length - 1
-          : Math.max(active, 0);
-        const to = allSelected ? from : from + (key === "ArrowLeft" ? -1 : 1);
+        // Right to left (ADR-0030): sections run from the right, so ← moves to the next one.
+        const back = (key === "ArrowLeft") !== (getComputedStyle(group).direction === "rtl");
+        const from = allSelected ? (back ? 0 : list.length - 1) : Math.max(active, 0);
+        const to = allSelected ? from : from + (back ? -1 : 1);
         focusSection(Math.min(Math.max(to, 0), list.length - 1));
         return;
       }

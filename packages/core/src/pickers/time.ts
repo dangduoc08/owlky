@@ -18,6 +18,7 @@ import {
   setDateParts,
 } from "./dates.js";
 import { defaultDateFormat, meridiemNames } from "./format.js";
+import { type PickerTimezone, parseIsoInZone } from "./timezone.js";
 
 export const timeViews = ["hours", "minutes", "seconds"] as const;
 /** A time view of a clock. */
@@ -523,10 +524,15 @@ export const pickerValueIso = (value: Date, type: PickerValueType): string =>
 
 /**
  * A value from ISO text: times (`HH:mm[:ss]`) take `reference`'s day; a full date and time is
- * accepted by every type. `null` for anything else.
+ * accepted by every type, also with an offset (`Z`, `+07:00`: the instant, shown as the wall time
+ * of `timezone`, phase 4). `null` for anything else.
  */
-export const parsePickerValue = (text: unknown, reference: Date): Date | null =>
-  parseIsoDate(text) ?? parseIsoTime(text, reference);
+export const parsePickerValue = (
+  text: unknown,
+  reference: Date,
+  timezone: PickerTimezone = "system",
+): Date | null =>
+  parseIsoInZone(text, timezone, (part) => parseIsoDate(part) ?? parseIsoTime(part, reference));
 
 /** The validation of a value type. */
 export function validatePickerValue(

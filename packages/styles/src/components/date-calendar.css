@@ -303,6 +303,17 @@
     }
   }
 
+  /* Right to left (ADR-0030): the month arrows point the way months run (the range calendar's
+     and the clock's too: they reuse these buttons' attributes). */
+  :where(
+    [dir="rtl"] [data-ok-date-calendar-prev] > svg,
+    [dir="rtl"] [data-ok-date-calendar-next] > svg,
+    [dir="rtl"] [data-ok-time-clock-prev] > svg,
+    [dir="rtl"] [data-ok-time-clock-next] > svg
+  ) {
+    scale: -1 1;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     :where([data-ok-day-calendar] [role="rowgroup"]) {
       animation: none;

@@ -11,6 +11,7 @@ import {
   dateCalendarOptions,
   defaultDayOfWeekFormatter,
   firstDayOfWeek,
+  formatCalendarMonth,
   formatIsoDate,
   initialView,
   isDateDisabled,
@@ -24,11 +25,12 @@ import {
   nextView,
   normalizeDateViews,
   type PickerLocaleText,
+  parseCalendarMonth,
   parseIsoDate,
+  pickerCalendar,
   readNumber,
   readStyle,
   setDateParts,
-  startOfDay,
   startOfMonth,
   weekNumber,
   yearRange,
@@ -41,6 +43,9 @@ import {
   asFunction,
   h,
   morph,
+  type PickerDateApi,
+  pickerDateApi,
+  pickerToday,
   type RuleFunctions,
   readLocale,
   readLocaleText,
@@ -49,7 +54,10 @@ import {
   toDate,
 } from "./picker-dom.js";
 
-export interface DateCalendarInstance extends ComponentInstance {
+/** Decorates a day button after it is built (phase 4: badges, highlights; MUI X `slots.day`). */
+export type PickerDayRenderer = (day: HTMLButtonElement, date: Date) => void;
+
+export interface DateCalendarInstance extends ComponentInstance, PickerDateApi {
   /** Selected day (ISO), or `null`. */
   readonly value: string | null;
   /** Sets the value (ISO string, `Date` or `null`) and shows its month, without events. */
@@ -65,6 +73,8 @@ export interface DateCalendarInstance extends ComponentInstance {
   setShouldDisableYear(fn: ((year: Date) => boolean) | null): void;
   /** Weekday header text (default: first letter of the short name). */
   setDayOfWeekFormatter(fn: ((date: Date) => string) | null): void;
+  /** Decorates each day button (phase 4); `null` removes the renderer. */
+  setDayRenderer(fn: PickerDayRenderer | null): void;
   setLocaleText(text: Partial<PickerLocaleText>): void;
 }
 
@@ -91,6 +101,8 @@ export const dateCalendar = defineComponent<DateCalendarInstance>({
 
   setup(element, { emit }) {
     const locale = readLocale(element);
+    const cal = pickerCalendar(locale);
+    let dayRenderer: PickerDayRenderer | undefined;
     let overrides: Partial<PickerLocaleText> | undefined;
     let text = readLocaleText(element);
     const functions: RuleFunctions = {};
@@ -108,7 +120,7 @@ export const dateCalendar = defineComponent<DateCalendarInstance>({
     const isDisabled = () => element.hasAttribute("data-ok-disabled");
     const rules = (): DateRules => ({
       ...readRules(element, functions),
-      today: startOfDay(new Date()),
+      today: pickerToday(element),
     });
 
     let value: Date | null = parseIsoDate(element.getAttribute("data-ok-value"));
@@ -117,21 +129,21 @@ export const dateCalendar = defineComponent<DateCalendarInstance>({
       viewAttr && views.includes(viewAttr)
         ? viewAttr
         : initialView(views, readStyle(element, o.openTo));
-    const initialMonth = parseIsoDate(`${element.getAttribute("data-ok-month")}-01`);
+    const initialMonth = parseCalendarMonth(element.getAttribute("data-ok-month"), cal);
     const clampToLimits = (date: Date) => {
       const [min, max] = dateBounds(rules());
       return date.getTime() < min.getTime() ? min : date.getTime() > max.getTime() ? max : date;
     };
-    let month = startOfMonth(initialMonth ?? clampToLimits(value ?? startOfDay(new Date())));
+    let month = startOfMonth(initialMonth ?? clampToLimits(value ?? pickerToday(element)), cal);
     const focusInMonth = (target: Date, preferred: Date | null) => {
-      if (preferred && isSameMonth(preferred, target) && !isDateDisabled(preferred, rules()))
+      if (preferred && isSameMonth(preferred, target, cal) && !isDateDisabled(preferred, rules()))
         return preferred;
-      const found = closestEnabledDate(startOfMonth(target), rules());
-      return found && isSameMonth(found, target) ? found : startOfMonth(target);
+      const found = closestEnabledDate(startOfMonth(target, cal), rules());
+      return found && isSameMonth(found, target, cal) ? found : startOfMonth(target, cal);
     };
-    let focused = focusInMonth(month, value ?? startOfDay(new Date()));
-    let focusedYear = (value ?? month).getFullYear();
-    let focusedMonth = (value ?? month).getMonth();
+    let focused = focusInMonth(month, value ?? pickerToday(element));
+    let focusedYear = cal.year(value ?? month);
+    let focusedMonth = cal.month(value ?? month);
 
     const perRow = (spec: typeof o.monthsPerRow) => Number(readStyle(element, spec)) as 3 | 4;
 
@@ -162,8 +174,9 @@ export const dateCalendar = defineComponent<DateCalendarInstance>({
         month,
         weekStart,
         readNumber(element, o.fixedWeekNumber) as number | undefined,
+        cal,
       );
-      const today = startOfDay(new Date());
+      const today = pickerToday(element);
       const showOutside = has(o.showDaysOutsideCurrentMonth);
       const weekNumbers = has(o.displayWeekNumber);
       const focusDay = focusInMonth(month, focused);
@@ -214,24 +227,28 @@ export const dateCalendar = defineComponent<DateCalendarInstance>({
                 ...week.map(({ date, outside }, col) =>
                   outside && !showOutside
                     ? h("span", { role: "gridcell", "data-ok-day-filler": true })
-                    : h(
-                        "button",
-                        {
-                          type: "button",
-                          role: "gridcell",
-                          "data-ok-picker-day": true,
-                          "data-ok-date": formatIsoDate(date),
-                          "aria-colindex": col + 1,
-                          "aria-selected": String(
-                            value !== null && isValidDate(value) && isSameDay(date, value),
-                          ),
-                          "aria-current": isSameDay(date, today) ? "date" : null,
-                          "data-ok-today": isSameDay(date, today) && !has(o.disableHighlightToday),
-                          "data-ok-outside": outside,
-                          disabled: isDisabled() || isDateDisabled(date, r),
-                          tabindex: !outside && isSameDay(date, focusDay) ? 0 : -1,
-                        },
-                        [String(date.getDate())],
+                    : decorate(
+                        h(
+                          "button",
+                          {
+                            type: "button",
+                            role: "gridcell",
+                            "data-ok-picker-day": true,
+                            "data-ok-date": formatIsoDate(date),
+                            "aria-colindex": col + 1,
+                            "aria-selected": String(
+                              value !== null && isValidDate(value) && isSameDay(date, value),
+                            ),
+                            "aria-current": isSameDay(date, today) ? "date" : null,
+                            "data-ok-today":
+                              isSameDay(date, today) && !has(o.disableHighlightToday),
+                            "data-ok-outside": outside,
+                            disabled: isDisabled() || isDateDisabled(date, r),
+                            tabindex: !outside && isSameDay(date, focusDay) ? 0 : -1,
+                          },
+                          [String(cal.day(date))],
+                        ),
+                        date,
                       ),
                 ),
               ]),
@@ -244,6 +261,18 @@ export const dateCalendar = defineComponent<DateCalendarInstance>({
       );
     };
 
+    /** The day renderer decorates a new button (then `morph` carries it over). */
+    const decorate = (button: HTMLElement, date: Date) => {
+      if (dayRenderer) {
+        try {
+          dayRenderer(button as HTMLButtonElement, new Date(date.getTime()));
+        } catch {
+          // A failing renderer leaves the plain day.
+        }
+      }
+      return button;
+    };
+
     const monthGroup = () =>
       h(
         "div",
@@ -251,7 +280,7 @@ export const dateCalendar = defineComponent<DateCalendarInstance>({
           role: "radiogroup",
           "data-ok-month-calendar": true,
           "data-ok-months-per-row": String(perRow(o.monthsPerRow)),
-          "data-ok-year": month.getFullYear(),
+          "data-ok-year": cal.year(month),
           "data-ok-value": value && isValidDate(value) ? formatIsoDate(value) : null,
           "aria-labelledby": labelId || null,
         },
@@ -266,11 +295,11 @@ export const dateCalendar = defineComponent<DateCalendarInstance>({
               "aria-checked": String(
                 value !== null &&
                   isValidDate(value) &&
-                  value.getFullYear() === month.getFullYear() &&
-                  value.getMonth() === m,
+                  cal.year(value) === cal.year(month) &&
+                  cal.month(value) === m,
               ),
               disabled:
-                isDisabled() || isMonthDisabled(makeDate(month.getFullYear(), m, 1), rules()),
+                isDisabled() || isMonthDisabled(makeDate(cal.year(month), m, 1, cal), rules()),
               tabindex: m === focusedMonth ? 0 : -1,
             },
             [name],
@@ -298,7 +327,7 @@ export const dateCalendar = defineComponent<DateCalendarInstance>({
               "data-ok-picker-year": true,
               "data-ok-value": year,
               "aria-checked": String(
-                value !== null && isValidDate(value) && value.getFullYear() === year,
+                value !== null && isValidDate(value) && cal.year(value) === year,
               ),
               disabled: isDisabled() || isYearDisabled(year, rules()),
               tabindex: year === focusedYear ? 0 : -1,
@@ -311,7 +340,7 @@ export const dateCalendar = defineComponent<DateCalendarInstance>({
     let lastRendered = `${view}:${formatIsoDate(month)}:${has(o.loading)}`;
     const render = () => {
       element.setAttribute("data-ok-view", view);
-      element.setAttribute("data-ok-month", formatIsoDate(month).slice(0, 7));
+      element.setAttribute("data-ok-month", formatCalendarMonth(month, cal));
       if (value && isValidDate(value)) element.setAttribute("data-ok-value", formatIsoDate(value));
       else element.removeAttribute("data-ok-value");
       label.textContent = calendarHeaderText(month, locale);
@@ -322,8 +351,10 @@ export const dateCalendar = defineComponent<DateCalendarInstance>({
         const [min, max] = dateBounds(rules());
         const prev = nav.querySelector<HTMLButtonElement>("[data-ok-date-calendar-prev]");
         const next = nav.querySelector<HTMLButtonElement>("[data-ok-date-calendar-next]");
-        if (prev) prev.disabled = isDisabled() || month.getTime() <= startOfMonth(min).getTime();
-        if (next) next.disabled = isDisabled() || month.getTime() >= startOfMonth(max).getTime();
+        if (prev)
+          prev.disabled = isDisabled() || month.getTime() <= startOfMonth(min, cal).getTime();
+        if (next)
+          next.disabled = isDisabled() || month.getTime() >= startOfMonth(max, cal).getTime();
       } else nav?.remove();
       const body = view === "day" ? dayGrid() : view === "month" ? monthGroup() : yearGroup();
       const old = element.querySelector(
@@ -339,12 +370,12 @@ export const dateCalendar = defineComponent<DateCalendarInstance>({
     };
 
     const showMonth = (next: Date) => {
-      const first = startOfMonth(next);
-      if (isSameMonth(first, month)) return;
-      const yearChanged = first.getFullYear() !== month.getFullYear();
+      const first = startOfMonth(next, cal);
+      if (isSameMonth(first, month, cal)) return;
+      const yearChanged = cal.year(first) !== cal.year(month);
       month = first;
-      if (yearChanged) emit("yearchange", { year: first.getFullYear() });
-      emit("monthchange", { month: formatIsoDate(first).slice(0, 7) });
+      if (yearChanged) emit("yearchange", { year: cal.year(first) });
+      emit("monthchange", { month: formatCalendarMonth(first, cal) });
     };
     const setView = (next: DateView | null) => {
       if (!next || next === view || !views.includes(next)) return;
@@ -388,10 +419,9 @@ export const dateCalendar = defineComponent<DateCalendarInstance>({
         render();
       },
       onSelectMonth: (m) => {
-        const year = month.getFullYear();
-        const day = value && isValidDate(value) ? value.getDate() : 1;
-        let next = makeDate(year, m, day);
-        if (next.getMonth() !== m) next = makeDate(year, m + 1, 0);
+        const year = cal.year(month);
+        const day = value && isValidDate(value) ? cal.day(value) : 1;
+        let next = makeDate(year, m, Math.min(day, cal.daysInMonth(year, m)), cal);
         next = withTime(next);
         if (isDateDisabled(next, rules())) next = withTime(focusInMonth(next, null));
         focusedMonth = m;
@@ -402,16 +432,16 @@ export const dateCalendar = defineComponent<DateCalendarInstance>({
         render();
       },
       onSelectYear: (year) => {
-        const base = value && isValidDate(value) ? value : clampToLimits(startOfDay(new Date()));
-        let next = makeDate(year, base.getMonth(), base.getDate());
-        if (next.getMonth() !== base.getMonth()) next = makeDate(year, base.getMonth() + 1, 0);
+        const base = value && isValidDate(value) ? value : clampToLimits(pickerToday(element));
+        const m = cal.month(base);
+        let next = makeDate(year, m, Math.min(cal.day(base), cal.daysInMonth(year, m)), cal);
         next = withTime(next);
         if (isDateDisabled(next, rules())) {
           const found = closestEnabledDate(next, rules());
-          if (found && found.getFullYear() === year) next = withTime(found);
+          if (found && cal.year(found) === year) next = withTime(found);
         }
         focusedYear = year;
-        focusedMonth = next.getMonth();
+        focusedMonth = cal.month(next);
         showMonth(next);
         focused = next;
         const after = nextView(views, "year");
@@ -419,16 +449,16 @@ export const dateCalendar = defineComponent<DateCalendarInstance>({
         render();
       },
       onMonthStep: (delta) => {
-        const next = addMonths(month, delta);
+        const next = addMonths(month, delta, cal);
         showMonth(next);
-        focused = focusInMonth(next, addMonths(focused, delta));
+        focused = focusInMonth(next, addMonths(focused, delta, cal));
         render();
       },
       onSwitchView: () => {
         if (view === "year")
           setView(views.includes("day") ? "day" : (views.find((v) => v !== "year") ?? null));
         else {
-          focusedYear = month.getFullYear();
+          focusedYear = cal.year(month);
           setView("year");
         }
         render();
@@ -444,9 +474,25 @@ export const dateCalendar = defineComponent<DateCalendarInstance>({
     });
 
     render();
-    return {
+    const dates = pickerDateApi(
+      element,
+      () => (value && isValidDate(value) ? formatIsoDate(value) : null),
+      (next) => instance.setValue(next as Date | null),
+    );
+    const instance: DateCalendarInstance = {
       get value() {
         return value && isValidDate(value) ? formatIsoDate(value) : null;
+      },
+      get date() {
+        return dates.get();
+      },
+      setDate: dates.set,
+      setDateAdapter: dates.setAdapter,
+      setDayRenderer(fn) {
+        dayRenderer = asFunction(fn);
+        // Rebuild the days (morph keeps unchanged nodes, so a removed decoration must go).
+        lastRendered = "";
+        render();
       },
       setValue(next) {
         const date = toDate(next);
@@ -455,8 +501,8 @@ export const dateCalendar = defineComponent<DateCalendarInstance>({
         if (date) {
           showMonth(date);
           focused = date;
-          focusedYear = date.getFullYear();
-          focusedMonth = date.getMonth();
+          focusedYear = cal.year(date);
+          focusedMonth = cal.month(date);
         }
         render();
       },
@@ -468,7 +514,7 @@ export const dateCalendar = defineComponent<DateCalendarInstance>({
         render();
       },
       get month() {
-        return formatIsoDate(month).slice(0, 7);
+        return formatCalendarMonth(month, cal);
       },
       focus() {
         controller.focus();
@@ -504,5 +550,6 @@ export const dateCalendar = defineComponent<DateCalendarInstance>({
         controller.destroy();
       },
     };
+    return instance;
   },
 });

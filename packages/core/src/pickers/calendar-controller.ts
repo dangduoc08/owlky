@@ -113,10 +113,14 @@ export function createCalendarController(
         next.setDate(next.getDate() + 6);
         break;
       case "PageUp":
-        next = event.shiftKey ? addYears(current, -1) : addMonths(current, -1);
+        next = event.shiftKey
+          ? addYears(current, -1, state.rules.calendar)
+          : addMonths(current, -1, state.rules.calendar);
         break;
       case "PageDown":
-        next = event.shiftKey ? addYears(current, 1) : addMonths(current, 1);
+        next = event.shiftKey
+          ? addYears(current, 1, state.rules.calendar)
+          : addMonths(current, 1, state.rules.calendar);
         break;
       default:
         return;

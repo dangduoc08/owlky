@@ -33,6 +33,7 @@ ADR that supersedes the old one — don't rewrite history.
 | [0027](0027-chart-every-type.md) | Chart: every ApexCharts chart type; phases 3–4 rescoped for dashboards | Accepted |
 | [0028](0028-range-pickers.md) | Range pickers: a range model in core, ISO intervals, one range calendar and runtime | Accepted |
 | [0029](0029-chart-phase-3-data-model.md) | Chart phase 3: several values per point, cell charts, sparklines, live updates | Accepted |
+| [0030](0030-picker-adapters-and-time-zones.md) | Pickers phase 4: date adapters as opt-in entries, zones and calendars at the edge | Accepted |
 | [0031](0031-chart-phase-4-interaction-and-links.md) | Chart phase 4: zoom as an x window, linked charts, annotations, export, last chart types | Accepted |
 
 Template: **Context** (why decide) · **Decision** (what) · **Consequences** (trade-offs, follow-ups).

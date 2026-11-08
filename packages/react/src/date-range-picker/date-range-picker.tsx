@@ -50,12 +50,21 @@ import {
   useRef,
   useState,
 } from "react";
-import { Button } from "../button/button.js";
-import { Chip } from "../chip/chip.js";
 import type { PickerSelectionState } from "../date-calendar/date-calendar.js";
 import { type DateTimeValidationProps, dateRules, timeRules } from "../date-field/date-field.js";
 import type { PickerTimeProps } from "../date-picker/date-picker.js";
+import {
+  PickerActionBar,
+  PickerContext,
+  type PickerContextValue,
+  PickerLayout,
+  type PickerShortcutItem,
+  PickerShortcuts,
+  type PickerSlotProps,
+  type PickerSlots,
+} from "../date-picker/picker-layout.js";
 import { ClockIcon } from "../date-picker/picker-toolbar.js";
+import type { PickerViewRenderers } from "../date-picker/view-renderers.js";
 import { DateRangeCalendar } from "../date-range-calendar/date-range-calendar.js";
 import {
   MultiInputRangeField,
@@ -71,6 +80,7 @@ import { MultiSectionDigitalClock } from "../multi-section-digital-clock/multi-s
 import { Popover } from "../popover/popover.js";
 import { Tab, Tabs } from "../tabs/tabs.js";
 import { TimeClock } from "../time-clock/time-clock.js";
+import { usePickerDateConverter } from "../utils/picker-adapter.js";
 import { useControllableState } from "../utils/use-controllable-state.js";
 
 export type { RangeShortcut };
@@ -169,6 +179,12 @@ export interface DateRangePickerProps
   localeText?: Partial<PickerLocaleText> | undefined;
   /** Id of the field (other ids derive from it). */
   id?: string | undefined;
+  /** Replaced parts (phase 4): `layout`, `toolbar`, `actionBar`, `shortcuts`, `day`, icons. */
+  slots?: Omit<PickerSlots<DateRange>, "switchViewIcon"> | undefined;
+  /** Props of the slots: `toolbar.hidden`, `tabs.hidden`, `day`, `layout`. */
+  slotProps?: PickerSlotProps | undefined;
+  /** `null` leaves a view out of the picker; every view `null` leaves only the field. */
+  viewRenderers?: Partial<Record<keyof PickerViewRenderers, null>> | undefined;
 }
 
 /** Every prop of the range picker family (internal): date, time and date time ranges. */
@@ -260,11 +276,15 @@ export const RangePickerBase = forwardRef<HTMLDivElement, RangePickerBaseProps>(
       shouldDisableDate,
       shouldDisableMonth,
       shouldDisableYear,
+      slots,
+      slotProps,
+      viewRenderers,
       ...props
     },
     ref,
   ) {
     const { locale, localeText, explicit } = usePickerLocalization(localeTextProp);
+    const converter = usePickerDateConverter();
     const generated = useId();
     const id = idProp ?? generated;
     const isDate = valueType === "date";
@@ -516,179 +536,238 @@ export const RangePickerBase = forwardRef<HTMLDivElement, RangePickerBaseProps>(
     const hasTimeClock = !isDate && pickerVariant !== "desktop";
     const shortcutsEnabled = !disabled && !readOnly;
 
-    const layout = (
-      <div ref={layoutRef} data-ok-picker-layout="" data-ok-orientation="portrait">
-        {showToolbar && (
-          <div data-ok-picker-toolbar="" data-ok-range-toolbar="" hidden={desktopForm || undefined}>
-            <span data-ok-picker-toolbar-overline="" id={`${id}-toolbar`}>
-              {title}
-            </span>
-            <div data-ok-picker-toolbar-content="">
-              {(["start", "end"] as const).map((end, index) => (
-                <span key={end} data-ok-picker-toolbar-part="">
-                  {index > 0 && (
-                    <span data-ok-picker-toolbar-separator="" aria-hidden="true">
-                      –
-                    </span>
+    // View renderers: `null` leaves views out; every view `null` leaves only the field.
+    const shownViews = views.filter((v) => viewRenderers?.[v] !== null);
+    const fieldOnly = shownViews.length === 0;
+    const showCalendar = valueType !== "time" && shownViews.some((v) => !isTimeView(v));
+    const showClocks = !isDate && shownViews.some((v) => isTimeView(v));
+    const CustomToolbar = slots?.toolbar;
+    const toolbar =
+      !showToolbar || slotProps?.toolbar?.hidden === true ? null : CustomToolbar ? (
+        <CustomToolbar
+          {...slotProps?.toolbar}
+          value={converter.fromEngine(valid)}
+          view={view}
+          views={views}
+          onViewChange={setView}
+          hidden={desktopForm}
+          title={title}
+          text={`${sideText(valid[0], localeText.start)} – ${sideText(valid[1], localeText.end)}`}
+          orientation="portrait"
+        />
+      ) : (
+        <div data-ok-picker-toolbar="" data-ok-range-toolbar="" hidden={desktopForm || undefined}>
+          <span data-ok-picker-toolbar-overline="" id={`${id}-toolbar`}>
+            {title}
+          </span>
+          <div data-ok-picker-toolbar-content="">
+            {(["start", "end"] as const).map((end, index) => (
+              <span key={end} data-ok-picker-toolbar-part="">
+                {index > 0 && (
+                  <span data-ok-picker-toolbar-separator="" aria-hidden="true">
+                    –
+                  </span>
+                )}
+                <button
+                  type="button"
+                  data-ok-picker-toolbar-button=""
+                  data-ok-range-position={end}
+                  {...(position === end ? { "data-ok-selected": "" } : {})}
+                  aria-pressed={position === end}
+                  disabled={disabled}
+                  onClick={() => {
+                    setPosition(end);
+                    setView(firstView);
+                  }}
+                >
+                  {sideText(
+                    valid[index] as Date | null,
+                    end === "start" ? localeText.start : localeText.end,
                   )}
-                  <button
-                    type="button"
-                    data-ok-picker-toolbar-button=""
-                    data-ok-range-position={end}
-                    {...(position === end ? { "data-ok-selected": "" } : {})}
-                    aria-pressed={position === end}
-                    disabled={disabled}
-                    onClick={() => {
-                      setPosition(end);
-                      setView(firstView);
-                    }}
-                  >
-                    {sideText(
-                      valid[index] as Date | null,
-                      end === "start" ? localeText.start : localeText.end,
-                    )}
-                  </button>
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-        {!isDate && (
-          <Tabs
-            data-ok-picker-tabs=""
-            data-ok-picker-range-tabs=""
-            variant="fullWidth"
-            value={position}
-            onChange={(tab) => {
-              setPosition(tab as RangePosition);
-              setView(firstView);
-            }}
-          >
-            <Tab value="start" label={localeText.start} />
-            <Tab value="end" label={localeText.end} />
-          </Tabs>
-        )}
-        {shortcuts && shortcuts.length > 0 && (
-          <ul data-ok-picker-shortcuts="" aria-label={localeText.shortcutsLabel}>
-            {shortcuts.map((shortcut) => {
-              const target = rangeShortcutValue(shortcut, valueType, rules);
-              const usable =
-                target !== undefined &&
-                rangeError(validateRange(target, valueType, rules)) === null;
-              const iso = target ? formatIsoRange(target, valueType) : "";
-              return (
-                <li key={shortcut.id ?? shortcut.label}>
-                  <Chip
-                    label={shortcut.label}
-                    data-ok-picker-shortcut=""
-                    {...(target ? { "data-ok-value": iso || "/" } : {})}
-                    disabled={!usable || !shortcutsEnabled}
-                    onClick={() => {
-                      // Chips without a usable range are disabled.
-                      const next = target as DateRange;
-                      change(next);
-                      accept(next);
-                      close("shortcut");
-                    }}
-                  />
-                </li>
-              );
-            })}
-          </ul>
-        )}
-        <div data-ok-picker-content="">
-          {!(valueType === "time") && (
-            <DateRangeCalendar
-              id={`${id}-calendar`}
-              value={valid}
-              onChange={onCalendarChange}
-              rangePosition={position}
-              onRangePositionChange={isDateTime ? undefined : setPosition}
-              availableRangePositions={isDateTime ? [position] : undefined}
-              calendars={calendarCount}
-              currentMonthCalendarPosition={currentMonthCalendarPosition}
-              disableDragEditing={disableDragEditing}
-              disableAutoMonthSwitching={disableAutoMonthSwitching}
-              referenceDate={referenceDate}
-              today={today}
-              displayWeekNumber={displayWeekNumber}
-              fixedWeekNumber={fixedWeekNumber}
-              showDaysOutsideCurrentMonth={showDaysOutsideCurrentMonth}
-              disableHighlightToday={disableHighlightToday}
-              dayOfWeekFormatter={dayOfWeekFormatter}
-              loading={loading}
-              renderLoading={renderLoading}
-              reduceAnimations={reduceAnimations}
-              onMonthChange={onMonthChange}
-              readOnly={readOnly}
-              disabled={disabled}
-              localeText={localeTextProp}
-              {...(isDateTime && !desktopForm && isTimeView(view) ? { hidden: true } : {})}
-              {...validation}
-            />
-          )}
-          {hasDesktopClock &&
-            (singleColumn ? (
-              <DigitalClock
-                id={`${id}-digital-clock`}
-                timeStep={steps.minutes * steps.hours}
-                skipDisabled={skipDisabled}
-                onChange={onTimeChange}
-                hidden={!desktopForm || undefined}
-                {...clockProps}
-              />
-            ) : (
-              <MultiSectionDigitalClock
-                id={`${id}-digital-clock`}
-                views={timeViews}
-                timeSteps={steps}
-                skipDisabled={skipDisabled}
-                onChange={onTimeChange}
-                hidden={!desktopForm || undefined}
-                {...clockProps}
-              />
+                </button>
+              </span>
             ))}
-          {hasTimeClock && (
-            <TimeClock
-              id={`${id}-clock`}
-              views={timeViews}
-              view={timeView}
-              onViewChange={setView}
-              onChange={onTimeChange}
-              hidden={desktopForm || (isDateTime && !isTimeView(view)) || undefined}
-              {...clockProps}
-            />
-          )}
+          </div>
         </div>
-        {actionList.length > 0 && (
-          <div data-ok-picker-actions="" hidden={actionsShown.length === 0 || undefined}>
-            {actionList.map((action) => (
-              <Button
-                key={action}
-                data-ok-picker-action={action}
-                variant={action === "accept" || action === "nextOrAccept" ? "contained" : "text"}
-                color="inherit"
-                hidden={!actionsShown.includes(action) || undefined}
-                disabled={disabled || (readOnly && action !== "cancel")}
-                onClick={() => runAction(action)}
-              >
-                {action === "accept"
-                  ? localeText.okButtonLabel
-                  : action === "cancel"
-                    ? localeText.cancelButtonLabel
-                    : action === "clear"
-                      ? localeText.clearButtonLabel
-                      : action === "today"
-                        ? localeText.todayButtonLabel
-                        : position === "start"
-                          ? localeText.nextStepButtonLabel
-                          : localeText.okButtonLabel}
-              </Button>
-            ))}
-          </div>
-        )}
-      </div>
+      );
+    const tabs =
+      !isDate && slotProps?.tabs?.hidden !== true ? (
+        <Tabs
+          data-ok-picker-tabs=""
+          data-ok-picker-range-tabs=""
+          variant="fullWidth"
+          value={position}
+          onChange={(tab) => {
+            setPosition(tab as RangePosition);
+            setView(firstView);
+          }}
+        >
+          <Tab value="start" label={localeText.start} />
+          <Tab value="end" label={localeText.end} />
+        </Tabs>
+      ) : null;
+    const shortcutTargets = (shortcuts ?? []).map((shortcut) =>
+      rangeShortcutValue(shortcut, valueType, rules),
     );
+    const shortcutItems: PickerShortcutItem[] = (shortcuts ?? []).map((shortcut, index) => {
+      const target = shortcutTargets[index];
+      const usable =
+        target !== undefined && rangeError(validateRange(target, valueType, rules)) === null;
+      const iso = target ? formatIsoRange(target, valueType) : "";
+      return {
+        label: shortcut.label,
+        id: shortcut.id,
+        iso: target ? iso || "/" : null,
+        disabled: !usable || !shortcutsEnabled,
+      };
+    });
+    const applyShortcut = (index: number) => {
+      const next = shortcutTargets[index];
+      if (next === undefined) return;
+      change(next);
+      accept(next);
+      close("shortcut");
+    };
+    const ShortcutsSlot = slots?.shortcuts ?? PickerShortcuts;
+    const ActionBarSlot = slots?.actionBar ?? PickerActionBar;
+    const Layout = slots?.layout ?? PickerLayout;
+    const layout = (
+      <Layout
+        toolbar={toolbar}
+        tabs={tabs}
+        shortcuts={
+          shortcutItems.length > 0 ? (
+            <ShortcutsSlot
+              items={shortcutItems}
+              onShortcut={applyShortcut}
+              label={localeText.shortcutsLabel}
+            />
+          ) : null
+        }
+        content={
+          <>
+            {showCalendar && (
+              <DateRangeCalendar
+                id={`${id}-calendar`}
+                value={valid}
+                onChange={onCalendarChange}
+                rangePosition={position}
+                onRangePositionChange={isDateTime ? undefined : setPosition}
+                availableRangePositions={isDateTime ? [position] : undefined}
+                calendars={calendarCount}
+                currentMonthCalendarPosition={currentMonthCalendarPosition}
+                disableDragEditing={disableDragEditing}
+                disableAutoMonthSwitching={disableAutoMonthSwitching}
+                referenceDate={referenceDate}
+                today={today}
+                displayWeekNumber={displayWeekNumber}
+                fixedWeekNumber={fixedWeekNumber}
+                showDaysOutsideCurrentMonth={showDaysOutsideCurrentMonth}
+                disableHighlightToday={disableHighlightToday}
+                dayOfWeekFormatter={dayOfWeekFormatter}
+                loading={loading}
+                renderLoading={renderLoading}
+                reduceAnimations={reduceAnimations}
+                onMonthChange={onMonthChange}
+                readOnly={readOnly}
+                disabled={disabled}
+                localeText={localeTextProp}
+                {...(isDateTime && !desktopForm && isTimeView(view) ? { hidden: true } : {})}
+                {...(slots?.day || slots?.leftArrowIcon || slots?.rightArrowIcon
+                  ? {
+                      slots: {
+                        day: slots.day,
+                        leftArrowIcon: slots.leftArrowIcon,
+                        rightArrowIcon: slots.rightArrowIcon,
+                      },
+                    }
+                  : {})}
+                {...(slotProps?.day ? { slotProps: { day: slotProps.day } } : {})}
+                {...validation}
+              />
+            )}
+            {showClocks && (
+              <>
+                {hasDesktopClock &&
+                  (singleColumn ? (
+                    <DigitalClock
+                      id={`${id}-digital-clock`}
+                      timeStep={steps.minutes * steps.hours}
+                      skipDisabled={skipDisabled}
+                      onChange={onTimeChange}
+                      hidden={!desktopForm || undefined}
+                      {...clockProps}
+                    />
+                  ) : (
+                    <MultiSectionDigitalClock
+                      id={`${id}-digital-clock`}
+                      views={timeViews}
+                      timeSteps={steps}
+                      skipDisabled={skipDisabled}
+                      onChange={onTimeChange}
+                      hidden={!desktopForm || undefined}
+                      {...clockProps}
+                    />
+                  ))}
+                {hasTimeClock && (
+                  <TimeClock
+                    id={`${id}-clock`}
+                    views={timeViews}
+                    view={timeView}
+                    onViewChange={setView}
+                    onChange={onTimeChange}
+                    hidden={desktopForm || (isDateTime && !isTimeView(view)) || undefined}
+                    {...clockProps}
+                  />
+                )}
+              </>
+            )}
+          </>
+        }
+        actionBar={
+          <ActionBarSlot
+            actions={actionList}
+            shownActions={actionsShown}
+            onAction={runAction}
+            disabled={disabled === true}
+            readOnly={readOnly === true}
+            localeText={localeText}
+            hasNextStep={position === "start"}
+          />
+        }
+        orientation="portrait"
+        rootRef={layoutRef}
+        {...slotProps?.layout}
+      />
+    );
+    const pickerContext: PickerContextValue<DateRange> = {
+      value: converter.fromEngine(valid),
+      setValue: (next, options) => {
+        const engine = converter.toEngine(next) as unknown as DateRange;
+        change(engine);
+        if (options?.accept) accept(engine);
+      },
+      open: open && !isStatic,
+      setOpen: (next) => (next ? openPicker("api", position) : close("api")),
+      view,
+      views,
+      setView,
+      variant: mode,
+      orientation: "portrait",
+      valueType,
+      disabled: disabled === true,
+      readOnly: readOnly === true,
+      locale,
+      localeText,
+      acceptValueChanges: () => runAction("accept"),
+      cancelValueChanges: () => runAction("cancel"),
+      clearValue: () => runAction("clear"),
+      setValueToToday: () => runAction("today"),
+      goToNextStep: () => runAction("nextOrAccept"),
+      hasNextStep: position === "start",
+      rangePosition: position,
+      setRangePosition: setPosition,
+    };
 
     const textOf = (date: Date) =>
       valueType === "time"
@@ -696,7 +775,9 @@ export const RangePickerBase = forwardRef<HTMLDivElement, RangePickerBaseProps>(
         : isDateTime
           ? `${formatAccessibleDate(date, locale)} ${formatTimeText(date, timeViews, ampm, locale)}`
           : formatAccessibleDate(date, locale);
+    const OpenIcon = slots?.openPickerIcon;
     const openButton = (side: 0 | 1 | null) => {
+      if (fieldOnly) return null;
       const at: RangePosition = side === 1 ? "end" : "start";
       const name =
         side === null
@@ -721,7 +802,7 @@ export const RangePickerBase = forwardRef<HTMLDivElement, RangePickerBaseProps>(
             else openPicker("button", at);
           }}
         >
-          {valueType === "time" ? <ClockIcon /> : <CalendarIcon />}
+          {OpenIcon ? <OpenIcon /> : valueType === "time" ? <ClockIcon /> : <CalendarIcon />}
         </IconButton>
       );
     };
@@ -753,8 +834,9 @@ export const RangePickerBase = forwardRef<HTMLDivElement, RangePickerBaseProps>(
         if (open && mode === "desktop" && !keepOpenDuringFieldFocus) dismiss("clickaway");
       },
     };
-    const hasPopover = pickerVariant === "desktop" || pickerVariant === "responsive";
-    const hasDialog = pickerVariant === "mobile" || pickerVariant === "responsive";
+    const hasPopover =
+      !fieldOnly && (pickerVariant === "desktop" || pickerVariant === "responsive");
+    const hasDialog = !fieldOnly && (pickerVariant === "mobile" || pickerVariant === "responsive");
 
     return (
       <div
@@ -778,68 +860,73 @@ export const RangePickerBase = forwardRef<HTMLDivElement, RangePickerBaseProps>(
         data-ok-runtime="off"
         {...props}
       >
-        {!isStatic &&
-          (multiInput ? (
-            <MultiInputRangeField
-              ref={fieldRootRef}
-              id={id}
-              startLabel={startLabel}
-              endLabel={endLabel}
-              adornments={[openButton(0), openButton(1)]}
-              onFieldFocus={(end) => {
-                if (open && mode === "desktop" && keepOpenDuringFieldFocus) setPosition(end);
+        <PickerContext.Provider value={pickerContext}>
+          {!isStatic &&
+            (multiInput ? (
+              <MultiInputRangeField
+                ref={fieldRootRef}
+                id={id}
+                startLabel={startLabel}
+                endLabel={endLabel}
+                adornments={[openButton(0), openButton(1)]}
+                onFieldFocus={(end) => {
+                  if (open && mode === "desktop" && keepOpenDuringFieldFocus) setPosition(end);
+                }}
+                {...fieldShared}
+              />
+            ) : (
+              <SingleInputRangeField
+                ref={fieldRootRef}
+                id={id}
+                label={label}
+                clearable={clearable}
+                onClear={onClear}
+                selectedSections={selectedSections}
+                onSelectedSectionsChange={onSelectedSectionsChange}
+                name={name}
+                inputRef={inputRef}
+                adornments={[openButton(null)]}
+                {...fieldShared}
+              />
+            ))}
+          {hasPopover && (
+            <Popover
+              open={open && mode === "desktop"}
+              anchorEl={anchor}
+              placement="bottom-start"
+              disableAutoFocus
+              role="dialog"
+              aria-label={title}
+              data-ok-date-picker-paper=""
+              onOpenChange={(_next, reason) => {
+                if (reason === "backdrop" && keepOpenDuringFieldFocus) {
+                  setTimeout(() => {
+                    if (!fieldRootRef.current?.contains(document.activeElement))
+                      dismiss("clickaway");
+                  });
+                  return;
+                }
+                dismiss(reason === "escape" ? "escape" : "clickaway");
               }}
-              {...fieldShared}
-            />
-          ) : (
-            <SingleInputRangeField
-              ref={fieldRootRef}
-              id={id}
-              label={label}
-              clearable={clearable}
-              onClear={onClear}
-              selectedSections={selectedSections}
-              onSelectedSectionsChange={onSelectedSectionsChange}
-              name={name}
-              inputRef={inputRef}
-              adornments={[openButton(null)]}
-              {...fieldShared}
-            />
-          ))}
-        {hasPopover && (
-          <Popover
-            open={open && mode === "desktop"}
-            anchorEl={anchor}
-            placement="bottom-start"
-            disableAutoFocus
-            role="dialog"
-            aria-label={title}
-            data-ok-date-picker-paper=""
-            onOpenChange={(_next, reason) => {
-              if (reason === "backdrop" && keepOpenDuringFieldFocus) {
-                setTimeout(() => {
-                  if (!fieldRootRef.current?.contains(document.activeElement)) dismiss("clickaway");
-                });
-                return;
+            >
+              {mode === "desktop" && layout}
+            </Popover>
+          )}
+          {hasDialog && (
+            <Dialog
+              open={open && mode === "mobile"}
+              aria-label={title}
+              data-ok-date-picker-dialog=""
+              maxWidth="xs"
+              onOpenChange={(_next, reason) =>
+                dismiss(reason === "escape" ? "escape" : "clickaway")
               }
-              dismiss(reason === "escape" ? "escape" : "clickaway");
-            }}
-          >
-            {mode === "desktop" && layout}
-          </Popover>
-        )}
-        {hasDialog && (
-          <Dialog
-            open={open && mode === "mobile"}
-            aria-label={title}
-            data-ok-date-picker-dialog=""
-            maxWidth="xs"
-            onOpenChange={(_next, reason) => dismiss(reason === "escape" ? "escape" : "clickaway")}
-          >
-            {mode === "mobile" && layout}
-          </Dialog>
-        )}
-        {isStatic && layout}
+            >
+              {mode === "mobile" && layout}
+            </Dialog>
+          )}
+          {isStatic && layout}
+        </PickerContext.Provider>
       </div>
     );
   },

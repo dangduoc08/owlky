@@ -14,6 +14,7 @@ import {
   dateCalendarAttributes,
   defaultDayOfWeekFormatter,
   firstDayOfWeek,
+  formatCalendarMonth,
   formatIsoDate,
   initialView,
   isDateDisabled,
@@ -26,7 +27,10 @@ import {
   monthNames,
   nextView,
   normalizeDateViews,
+  type PickerCalendarSystem,
   type PickerLocaleText,
+  type PickerValidDate,
+  pickerCalendar,
   setDateParts,
   startOfDay,
   startOfMonth,
@@ -34,6 +38,8 @@ import {
   yearRange,
 } from "@owlky/core";
 import {
+  type ButtonHTMLAttributes,
+  type ComponentType,
   type ForwardedRef,
   forwardRef,
   type HTMLAttributes,
@@ -48,6 +54,7 @@ import {
 import { type DateValidationProps, dateRules, ruleAttributes } from "../date-field/date-field.js";
 import { IconButton } from "../icon-button/icon-button.js";
 import { usePickerLocalization } from "../localization-provider/localization-provider.js";
+import { usePickerDateConverter } from "../utils/picker-adapter.js";
 import { useMergedRefs } from "../utils/refs.js";
 import { useControllableState } from "../utils/use-controllable-state.js";
 
@@ -78,6 +85,66 @@ export function PickerArrowIcon({ direction }: { direction: "left" | "right" | "
       <path d={d} />
     </svg>
   );
+}
+
+/** What a day of the calendar shows (the default `PickerDay`, or `slots.day`). */
+export interface PickerDayOwnerState {
+  /** The day (the date adapter's type). */
+  day: PickerValidDate;
+  selected: boolean;
+  /** Today (ringed unless `disableHighlightToday`). */
+  today: boolean;
+  /** A day of the previous or next month (`showDaysOutsideCurrentMonth`). */
+  outsideCurrentMonth: boolean;
+  disabled: boolean;
+}
+
+/**
+ * Props of a calendar day: the owner state plus the button's attributes (`data-ok-*`, ARIA,
+ * `tabIndex`), which a custom day passes on to `PickerDay`.
+ */
+export interface PickerDayProps
+  extends PickerDayOwnerState,
+    Omit<ButtonHTMLAttributes<HTMLButtonElement>, "disabled"> {
+  /** Content: the day number by default. */
+  children?: ReactNode;
+}
+
+/**
+ * PickerDay — the calendar's day button (MUI's `PickersDay`). Custom days (`slots.day`) render it
+ * with extra content or attributes, such as a badge.
+ */
+export function PickerDay({
+  day: _day,
+  selected: _selected,
+  today: _today,
+  outsideCurrentMonth: _outside,
+  children,
+  ...button
+}: PickerDayProps) {
+  return (
+    <button type="button" {...button}>
+      {children}
+    </button>
+  );
+}
+
+/** Calendar parts that can be replaced (MUI X `slots`, phase 4). */
+export interface DateCalendarSlots {
+  /** The day button: render `PickerDay` with extra content (badges, highlights). */
+  day?: ComponentType<PickerDayProps> | undefined;
+  /** Icons of the header (decorative). */
+  leftArrowIcon?: ComponentType | undefined;
+  rightArrowIcon?: ComponentType | undefined;
+  switchViewIcon?: ComponentType | undefined;
+}
+
+/** Props for the calendar's slots: an object, or a function of each day's owner state. */
+export interface DateCalendarSlotProps {
+  day?:
+    | Partial<PickerDayProps>
+    | ((ownerState: PickerDayOwnerState) => Partial<PickerDayProps>)
+    | undefined;
 }
 
 export interface DateCalendarProps
@@ -135,6 +202,10 @@ export interface DateCalendarProps
   autoFocus?: boolean | undefined;
   /** Text overrides. */
   localeText?: Partial<PickerLocaleText> | undefined;
+  /** Replaced parts: the day button and the header icons (phase 4). */
+  slots?: DateCalendarSlots | undefined;
+  /** Props of the slots. */
+  slotProps?: DateCalendarSlotProps | undefined;
 }
 
 interface Shared {
@@ -143,6 +214,7 @@ interface Shared {
   rules: DateRules;
   disabled: boolean;
   readOnly: boolean;
+  cal: PickerCalendarSystem;
 }
 
 /** The month view's buttons (also MonthCalendar). */
@@ -175,9 +247,11 @@ function MonthButtons({
       {...rootProps}
     >
       {names.map((name, month) => {
+        const { cal } = shared;
         const checked =
-          selected !== null && selected.getFullYear() === year && selected.getMonth() === month;
-        const disabled = shared.disabled || isMonthDisabled(makeDate(year, month, 1), shared.rules);
+          selected !== null && cal.year(selected) === year && cal.month(selected) === month;
+        const disabled =
+          shared.disabled || isMonthDisabled(makeDate(year, month, 1, cal), shared.rules);
         return (
           <button
             key={name}
@@ -232,7 +306,7 @@ function YearButtons({
           role="radio"
           data-ok-picker-year=""
           data-ok-value={year}
-          aria-checked={selected !== null && selected.getFullYear() === year}
+          aria-checked={selected !== null && shared.cal.year(selected) === year}
           disabled={shared.disabled || isYearDisabled(year, shared.rules)}
           tabIndex={year === focused ? 0 : -1}
         >
@@ -262,12 +336,20 @@ interface CalendarHandlers {
   onFocusYear(year: number): void;
 }
 
+/**
+ * `data-ok-month`: `YYYY-MM` (Gregorian), or the ISO date of the month's first day in other
+ * calendar systems (their months don't start on the 1st).
+ */
+export const calendarMonthAttribute = (month: Date, cal: PickerCalendarSystem): string =>
+  formatCalendarMonth(month, cal);
+
 /** The first enabled day of a month (or the month's first day). */
 const focusInMonth = (month: Date, preferred: Date | null, rules: DateRules) => {
-  if (preferred && isSameMonth(preferred, month) && !isDateDisabled(preferred, rules))
+  const cal = rules.calendar;
+  if (preferred && isSameMonth(preferred, month, cal) && !isDateDisabled(preferred, rules))
     return preferred;
-  const found = closestEnabledDate(startOfMonth(month), rules);
-  return found && isSameMonth(found, month) ? found : startOfMonth(month);
+  const found = closestEnabledDate(startOfMonth(month, cal), rules);
+  return found && isSameMonth(found, month, cal) ? found : startOfMonth(month, cal);
 };
 
 /**
@@ -309,12 +391,16 @@ export const DateCalendar = forwardRef<HTMLDivElement, DateCalendarProps>(functi
     shouldDisableDate,
     shouldDisableMonth,
     shouldDisableYear,
+    slots,
+    slotProps,
     id: idProp,
     ...props
   },
   ref,
 ) {
   const { locale, localeText, explicit } = usePickerLocalization(localeTextProp);
+  const cal = pickerCalendar(locale);
+  const converter = usePickerDateConverter();
   const generated = useId();
   const id = idProp ?? generated;
   const labelId = `${id}-label`;
@@ -331,8 +417,9 @@ export const DateCalendar = forwardRef<HTMLDivElement, DateCalendarProps>(functi
       shouldDisableYear,
     }),
     today,
+    calendar: cal,
   };
-  const shared: Shared = { locale, localeText, rules, disabled, readOnly };
+  const shared: Shared = { locale, localeText, rules, disabled, readOnly, cal };
 
   const [current, setCurrent] = useControllableState<Date | null>({
     value,
@@ -350,16 +437,15 @@ export const DateCalendar = forwardRef<HTMLDivElement, DateCalendarProps>(functi
     const base = selected ?? referenceDate ?? today;
     return base.getTime() < min.getTime() ? min : base.getTime() > max.getTime() ? max : base;
   };
-  const [month, setMonthState] = useState(() => startOfMonth(reference()));
+  const [month, setMonthState] = useState(() => startOfMonth(reference(), cal));
   const [focused, setFocused] = useState(() => focusInMonth(month, selected ?? today, rules));
-  const [focusedYear, setFocusedYear] = useState(() => (selected ?? reference()).getFullYear());
-  const [focusedMonth, setFocusedMonth] = useState(() => (selected ?? reference()).getMonth());
+  const [focusedYear, setFocusedYear] = useState(() => cal.year(selected ?? reference()));
+  const [focusedMonth, setFocusedMonth] = useState(() => cal.month(selected ?? reference()));
 
   const showMonth = (next: Date) => {
-    const first = startOfMonth(next);
-    if (isSameMonth(first, month)) return;
-    if (first.getFullYear() !== month.getFullYear())
-      onYearChange?.(makeDate(first.getFullYear(), 0, 1));
+    const first = startOfMonth(next, cal);
+    if (isSameMonth(first, month, cal)) return;
+    if (cal.year(first) !== cal.year(month)) onYearChange?.(makeDate(cal.year(first), 0, 1, cal));
     setMonthState(first);
     onMonthChange?.(first);
   };
@@ -368,8 +454,8 @@ export const DateCalendar = forwardRef<HTMLDivElement, DateCalendarProps>(functi
   const lastSelected = useRef(selected);
   if (lastSelected.current?.getTime() !== selected?.getTime()) {
     lastSelected.current = selected;
-    if (selected && !isSameMonth(selected, month)) {
-      setMonthState(startOfMonth(selected));
+    if (selected && !isSameMonth(selected, month, cal)) {
+      setMonthState(startOfMonth(selected, cal));
       setFocused(selected);
     }
   }
@@ -414,14 +500,14 @@ export const DateCalendar = forwardRef<HTMLDivElement, DateCalendarProps>(functi
       select(next, "finish");
     },
     onSelectMonth: (m) => {
-      const year = month.getFullYear();
-      const day = setDateParts(selected ?? reference(), { year, month: m, day: 1 });
-      const keep = selected ? Math.min(selected.getDate(), 28) : 1;
-      let next = withTime(setDateParts(day, { day: keep }));
+      const year = cal.year(month);
+      const day = setDateParts(selected ?? reference(), { year, month: m, day: 1 }, cal);
+      const keep = selected ? Math.min(cal.day(selected), 28) : 1;
+      let next = withTime(setDateParts(day, { day: keep }, cal));
       if (selected) {
         // Keep the day when the month has it.
-        const candidate = makeDate(year, m, selected.getDate());
-        if (candidate.getMonth() === m) next = withTime(candidate);
+        const candidate = makeDate(year, m, cal.day(selected), cal);
+        if (cal.month(candidate) === m) next = withTime(candidate);
       }
       if (isDateDisabled(next, rules)) next = withTime(focusInMonth(next, null, rules));
       setFocusedMonth(m);
@@ -433,15 +519,15 @@ export const DateCalendar = forwardRef<HTMLDivElement, DateCalendarProps>(functi
     },
     onSelectYear: (year) => {
       const base = selected ?? reference();
-      let next = withTime(setDateParts(base, { year, day: Math.min(base.getDate(), 28) }));
-      const sameDay = makeDate(year, base.getMonth(), base.getDate());
-      if (sameDay.getMonth() === base.getMonth()) next = withTime(sameDay);
+      let next = withTime(setDateParts(base, { year, day: Math.min(cal.day(base), 28) }, cal));
+      const sameDay = makeDate(year, cal.month(base), cal.day(base), cal);
+      if (cal.month(sameDay) === cal.month(base)) next = withTime(sameDay);
       if (isDateDisabled(next, rules)) {
         const found = closestEnabledDate(next, rules);
-        if (found && found.getFullYear() === year) next = withTime(found);
+        if (found && cal.year(found) === year) next = withTime(found);
       }
       setFocusedYear(year);
-      setFocusedMonth(next.getMonth());
+      setFocusedMonth(cal.month(next));
       showMonth(next);
       setFocused(next);
       const after = nextView(views, "year");
@@ -449,15 +535,15 @@ export const DateCalendar = forwardRef<HTMLDivElement, DateCalendarProps>(functi
       goTo(after);
     },
     onMonthStep: (delta) => {
-      const next = addMonths(month, delta);
+      const next = addMonths(month, delta, cal);
       showMonth(next);
-      setFocused(focusInMonth(next, addMonths(focused, delta), rules));
+      setFocused(focusInMonth(next, addMonths(focused, delta, cal), rules));
     },
     onSwitchView: () => {
       if (view === "year")
         goTo(views.includes("day") ? "day" : (views.find((v) => v !== "year") ?? null));
       else {
-        setFocusedYear(month.getFullYear());
+        setFocusedYear(cal.year(month));
         goTo("year");
       }
     },
@@ -502,11 +588,17 @@ export const DateCalendar = forwardRef<HTMLDivElement, DateCalendarProps>(functi
   }, [autoFocus]);
 
   const weekStart = firstDayOfWeek(locale);
-  const weeks = calendarWeeks(month, weekStart, fixedWeekNumber);
+  const weeks = calendarWeeks(month, weekStart, fixedWeekNumber, cal);
   const focusDay = focusInMonth(month, focused, rules);
   const [min, max] = dateBounds(rules);
-  const prevDisabled = disabled || startOfMonth(month).getTime() <= startOfMonth(min).getTime();
-  const nextDisabled = disabled || startOfMonth(month).getTime() >= startOfMonth(max).getTime();
+  const prevDisabled =
+    disabled || startOfMonth(month, cal).getTime() <= startOfMonth(min, cal).getTime();
+  const nextDisabled =
+    disabled || startOfMonth(month, cal).getTime() >= startOfMonth(max, cal).getTime();
+  const Day = slots?.day ?? PickerDay;
+  const LeftIcon = slots?.leftArrowIcon;
+  const RightIcon = slots?.rightArrowIcon;
+  const SwitchIcon = slots?.switchViewIcon;
   const canSwitch = views.includes("year") && views.length > 1;
   const formatWeekday =
     dayOfWeekFormatter ?? ((date: Date) => defaultDayOfWeekFormatter(date, locale));
@@ -533,7 +625,7 @@ export const DateCalendar = forwardRef<HTMLDivElement, DateCalendarProps>(functi
       })}
       data-ok-view={view}
       data-ok-views={views.join(" ")}
-      data-ok-month={formatIsoDate(month).slice(0, 7)}
+      data-ok-month={calendarMonthAttribute(month, cal)}
       {...(selected ? { "data-ok-value": formatIsoDate(selected) } : {})}
       {...ruleAttributes({ minDate, maxDate })}
       {...(explicit ? { "data-ok-locale": locale } : {})}
@@ -552,7 +644,7 @@ export const DateCalendar = forwardRef<HTMLDivElement, DateCalendarProps>(functi
             aria-label={localeText.calendarViewSwitchingButtonAriaLabel(view)}
             disabled={disabled}
           >
-            <PickerArrowIcon direction="down" />
+            {SwitchIcon ? <SwitchIcon /> : <PickerArrowIcon direction="down" />}
           </IconButton>
         )}
         {view === "day" && (
@@ -563,7 +655,7 @@ export const DateCalendar = forwardRef<HTMLDivElement, DateCalendarProps>(functi
               title={localeText.previousMonth}
               disabled={prevDisabled}
             >
-              <PickerArrowIcon direction="left" />
+              {LeftIcon ? <LeftIcon /> : <PickerArrowIcon direction="left" />}
             </IconButton>
             <IconButton
               data-ok-date-calendar-next=""
@@ -571,7 +663,7 @@ export const DateCalendar = forwardRef<HTMLDivElement, DateCalendarProps>(functi
               title={localeText.nextMonth}
               disabled={nextDisabled}
             >
-              <PickerArrowIcon direction="right" />
+              {RightIcon ? <RightIcon /> : <PickerArrowIcon direction="right" />}
             </IconButton>
           </div>
         )}
@@ -620,25 +712,33 @@ export const DateCalendar = forwardRef<HTMLDivElement, DateCalendarProps>(functi
                         <span key={formatIsoDate(date)} role="gridcell" data-ok-day-filler="" />
                       );
                     const isSelected = selected !== null && isSameDay(date, selected);
+                    const isToday = isSameDay(date, today);
+                    const owner: PickerDayOwnerState = {
+                      day: converter.fromEngine(date),
+                      selected: isSelected,
+                      today: isToday,
+                      outsideCurrentMonth: outside,
+                      disabled: disabled || isDateDisabled(date, rules),
+                    };
+                    const extra =
+                      typeof slotProps?.day === "function" ? slotProps.day(owner) : slotProps?.day;
                     return (
-                      <button
+                      <Day
                         key={formatIsoDate(date)}
-                        type="button"
                         role="gridcell"
                         data-ok-picker-day=""
                         data-ok-date={formatIsoDate(date)}
                         aria-colindex={col + 1}
                         aria-selected={isSelected}
-                        {...(isSameDay(date, today) ? { "aria-current": "date" as const } : {})}
-                        {...(isSameDay(date, today) && !disableHighlightToday
-                          ? { "data-ok-today": "" }
-                          : {})}
+                        {...(isToday ? { "aria-current": "date" as const } : {})}
+                        {...(isToday && !disableHighlightToday ? { "data-ok-today": "" } : {})}
                         {...(outside ? { "data-ok-outside": "" } : {})}
-                        disabled={disabled || isDateDisabled(date, rules)}
+                        {...owner}
                         tabIndex={!outside && isSameDay(date, focusDay) ? 0 : -1}
+                        {...extra}
                       >
-                        {date.getDate()}
-                      </button>
+                        {extra?.children ?? cal.day(date)}
+                      </Day>
                     );
                   })}
                 </div>
@@ -650,7 +750,7 @@ export const DateCalendar = forwardRef<HTMLDivElement, DateCalendarProps>(functi
       {view === "month" && (
         <MonthButtons
           shared={shared}
-          year={month.getFullYear()}
+          year={cal.year(month)}
           selected={selected}
           focused={focusedMonth}
           perRow={monthsPerRow}
@@ -704,8 +804,9 @@ function useListCalendar(
   ref: ForwardedRef<HTMLDivElement>,
 ) {
   const { locale, localeText } = usePickerLocalization();
+  const cal = pickerCalendar(locale);
   const today = startOfDay(props.today ?? new Date());
-  const rules: DateRules = { ...dateRules(props), today };
+  const rules: DateRules = { ...dateRules(props), today, calendar: cal };
   const [current, setCurrent] = useControllableState<Date | null>({
     value: props.value,
     defaultValue: props.defaultValue ?? null,
@@ -714,7 +815,7 @@ function useListCalendar(
   const selected = isValidDate(current) ? current : null;
   const base = selected ?? props.referenceDate ?? today;
   const [focusedValue, setFocusedValue] = useState(
-    kind === "month" ? base.getMonth() : base.getFullYear(),
+    kind === "month" ? cal.month(base) : cal.year(base),
   );
   const rootRef = useRef<HTMLDivElement>(null);
   const mergedRef = useMergedRefs(ref, rootRef);
@@ -735,8 +836,8 @@ function useListCalendar(
     pick: (v) => {
       const next =
         kind === "month"
-          ? setDateParts(base, { month: v, day: Math.min(base.getDate(), 28) })
-          : setDateParts(base, { year: v, day: Math.min(base.getDate(), 28) });
+          ? setDateParts(base, { month: v, day: Math.min(cal.day(base), 28) }, cal)
+          : setDateParts(base, { year: v, day: Math.min(cal.day(base), 28) }, cal);
       setFocusedValue(v);
       setCurrent(next);
       props.onChange?.(next);
@@ -774,6 +875,7 @@ function useListCalendar(
     rules,
     disabled: props.disabled === true,
     readOnly: props.readOnly === true,
+    cal,
   };
   return { shared, selected, base, focusedValue, mergedRef };
 }
@@ -809,7 +911,7 @@ export const MonthCalendar = forwardRef<HTMLDivElement, MonthCalendarProps>(func
   return (
     <MonthButtons
       shared={shared}
-      year={base.getFullYear()}
+      year={shared.cal.year(base)}
       selected={selected}
       focused={focusedValue}
       perRow={monthsPerRow}

@@ -30,22 +30,27 @@ import {
   readStyle,
   resolvePickerMode,
   scrollDigitalClocks,
-  startOfDay,
   type TimeView,
   validateRange,
   withDay,
 } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
 import type { ComponentInstance } from "../../runtime/types.js";
+import type { PickerDayRenderer } from "../date-calendar/date-calendar.js";
 import {
   asFunction,
+  type PickerDateApi,
+  pickerDateApi,
+  pickerToday,
   type RuleFunctions,
   readAmpm,
   readLocale,
   readLocaleText,
   readRules,
   readTimeRules,
+  readTimezone,
   readValueType,
+  relabelActions,
   type TimeRuleFunctions,
   timeViewName,
 } from "../date-calendar/picker-dom.js";
@@ -61,7 +66,7 @@ import type { PopoverInstance } from "../popover/popover.js";
 import type { TabsInstance } from "../tabs/tabs.js";
 import type { TimeClockInstance } from "../time-clock/time-clock.js";
 
-export interface DateRangePickerInstance extends ComponentInstance {
+export interface DateRangePickerInstance extends ComponentInstance, PickerDateApi {
   /** The range as an ISO 8601 interval (`start/end`, by `data-ok-value-type`), or `null`. */
   readonly value: string | null;
   /** Sets the range (ISO interval, `[start, end]` or `null`) without events. */
@@ -77,6 +82,8 @@ export interface DateRangePickerInstance extends ComponentInstance {
   setShouldDisableDate(fn: ((day: Date) => boolean) | null): void;
   setShouldDisableTime(fn: ((value: Date, view: TimeView) => boolean) | null): void;
   setLocaleText(text: Partial<PickerLocaleText>): void;
+  /** Decorates each day button of the calendar (phase 4); `null` removes the renderer. */
+  setDayRenderer(fn: PickerDayRenderer | null): void;
 }
 
 const o = dateRangePickerOptions.options;
@@ -164,7 +171,7 @@ export const dateRangePicker = defineComponent<DateRangePickerInstance>({
     const ruleSource = element.querySelector(
       "[data-ok-date-field], [data-ok-date-range-calendar]",
     ) as HTMLElement;
-    const today = () => startOfDay(new Date());
+    const today = () => pickerToday(element);
     const isDisabled = () =>
       openButtons.length > 0
         ? openButtons.every((button) => button.disabled)
@@ -251,9 +258,9 @@ export const dateRangePicker = defineComponent<DateRangePickerInstance>({
         if (isDateTime) cal.setAvailableRangePositions([position]);
         (calendarEl as HTMLElement).hidden = isDateTime && !desktopForm && isTimeView(view);
       }
-      if (deskEl) deskEl.hidden = !desktopForm;
+      if (deskEl) deskEl.hidden = !desktopForm && clockEl !== null;
       if (clockEl) {
-        clockEl.hidden = desktopForm || (isDateTime && !isTimeView(view));
+        clockEl.hidden = (desktopForm && deskEl !== null) || (isDateTime && !isTimeView(view));
         if (isTimeView(view)) clock()?.setView(view);
       }
       const edited = shown[sideOf(position)];
@@ -429,7 +436,7 @@ export const dateRangePicker = defineComponent<DateRangePickerInstance>({
 
     /** A field's range: partly typed sides become invalid dates (as in React). */
     const fromField = (detail: { value: string | null; validationError: unknown }) => {
-      const range = parseIsoRange(detail.value ?? "/", base()) as DateRange;
+      const range = parseIsoRange(detail.value ?? "/", base(), readTimezone(element)) as DateRange;
       // Range fields report `[start, end]` errors.
       const errors = detail.validationError as unknown[];
       return range.map(
@@ -486,7 +493,7 @@ export const dateRangePicker = defineComponent<DateRangePickerInstance>({
       (event) => {
         const detail = (event as CustomEvent<{ value: string; selectionState: string }>).detail;
         // A pick always sets the start: the interval isn't empty.
-        const days = parseIsoRange(detail.value, base()) as DateRange;
+        const days = parseIsoRange(detail.value, base(), readTimezone(element)) as DateRange;
         const shown = valid(value);
         const next = days.map((date, side) =>
           date ? withDay(date, shown[side] ?? shown[1 - side] ?? null, today(), type) : null,
@@ -577,7 +584,7 @@ export const dateRangePicker = defineComponent<DateRangePickerInstance>({
         const fromFunction = shortcuts?.[index];
         const next = fromFunction
           ? rangeShortcutValue(fromFunction, type, rules())
-          : toRange(chip.getAttribute("data-ok-value"), base());
+          : toRange(chip.getAttribute("data-ok-value"), base(), readTimezone(element));
         if (next === undefined || rangeError(validateRange(next, type, rules())) !== null) return;
         change(next);
         accept(next);
@@ -613,12 +620,23 @@ export const dateRangePicker = defineComponent<DateRangePickerInstance>({
     );
 
     render();
-    return {
+    const dates = pickerDateApi(
+      element,
+      () => instance.value,
+      (next) => instance.setValue(next as never),
+      true,
+    );
+    const instance: DateRangePickerInstance = {
+      get date() {
+        return dates.get();
+      },
+      setDate: dates.set,
+      setDateAdapter: dates.setAdapter,
       get value() {
         return iso(value);
       },
       setValue(next) {
-        const range = toRange(next, base());
+        const range = toRange(next, base(), readTimezone(element));
         if (range === undefined) return;
         value = range;
         lastAccepted = range;
@@ -661,6 +679,9 @@ export const dateRangePicker = defineComponent<DateRangePickerInstance>({
         clock()?.setShouldDisableTime(fn);
         desk()?.setShouldDisableTime(fn);
       },
+      setDayRenderer(fn) {
+        calendar()?.setDayRenderer(fn);
+      },
       setLocaleText(next) {
         overrides = { ...overrides, ...next };
         text = readLocaleText(element, overrides);
@@ -668,6 +689,7 @@ export const dateRangePicker = defineComponent<DateRangePickerInstance>({
         calendar()?.setLocaleText(next);
         clock()?.setLocaleText(next);
         desk()?.setLocaleText(next);
+        relabelActions(layout, text);
         render();
       },
       destroy() {
@@ -678,5 +700,6 @@ export const dateRangePicker = defineComponent<DateRangePickerInstance>({
         }
       },
     };
+    return instance;
   },
 });

@@ -1,6 +1,6 @@
 # ADR-0022: Pickers — one picker engine in core, every MUI X tier, built in four phases
 
-**Status:** Accepted (2026-11-08).
+**Status:** Accepted (2026-11-08). Complete: phases 1–4 done (ADR-0026, ADR-0028, ADR-0030).
 
 ## Context
 The reference's "Date pickers" page shows MUI X Date and Time Pickers (v9): date, time and date
@@ -44,7 +44,7 @@ native first, WCAG 2.2 AA.
    | 1 | Engine, `LocalizationProvider` (locale, `localeText` en / vi); DateField, DateCalendar (day / month / year views), MonthCalendar, YearCalendar, DatePicker (responsive, desktop, mobile, static); validation, toolbar, action bar, shortcuts, week numbers, fixed week count, days outside the month, loading, landscape layout, clearable fields (Community) |
    | 2 | TimeField, TimeClock, DigitalClock, MultiSectionDigitalClock, TimePicker, DateTimeField, DateTimePicker (each responsive, desktop, mobile, static, with tabs for date time); time validation and steps (Community) |
    | 3 | DateRangeCalendar, DateRangePicker, single- and multi-input range fields, TimeRangePicker, DateTimeRangePicker, range shortcuts, drag editing (Pro) |
-   | 4 | Time zones (UTC and IANA through `Intl`), `dateAdapter` (generic date types) and adapters for Day.js / date-fns / Luxon / Moment, other calendar systems through adapters, locale packs, right-to-left layout, view renderers and layout customization |
+   | 4 | Time zones (UTC and IANA through `Intl`), `dateAdapter` (generic date types) and adapters for Day.js / date-fns / Luxon / Moment, other calendar systems through adapters, locale packs, right-to-left layout, view renderers and layout customization ✅ (ADR-0030) |
 
 ## Consequences
 - Every phase ships React and HTML together; later phases extend the anatomy additively.
