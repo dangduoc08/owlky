@@ -28,6 +28,7 @@ ADR that supersedes the old one — don't rewrite history.
 | [0021](0021-data-grid-six-phases.md) | Data grid: the backlog folded into six phases | Accepted |
 | [0022](0022-pickers.md) | Pickers: one picker engine in core, every MUI X tier, four phases | Accepted |
 | [0023](0023-editor-on-tiptap.md) | Editor: Tiptap as the first runtime dependency, behind its own entry points | Accepted |
-| [0024](0024-chart.md) | Chart: one SVG chart engine in core, written by us, four phases | Accepted |
+| [0024](0024-chart.md) | Chart: one SVG chart engine in core, written by us, four phases | Accepted (phases 3–4 superseded by 0027) |
+| [0027](0027-chart-every-type.md) | Chart: every ApexCharts chart type; phases 3–4 rescoped for dashboards | Accepted |
 
 Template: **Context** (why decide) · **Decision** (what) · **Consequences** (trade-offs, follow-ups).

@@ -448,7 +448,7 @@ Popover + TextField + Button (link and image forms). No new tokens.
 **Backlog (deferred):** Tiptap `extensions` / `editorProps` pass-through, bubble menu, tables,
 mentions, task lists, a form `name` (hidden input with the HTML), character count.
 
-## Chart (ADR-0024) — written by us, in four phases
+## Chart (ADR-0024, ADR-0027) — written by us, every ApexCharts chart type in four phases
 Created with `/component` from the reference "Chart" page. ApexCharts' framework-free core isn't
 MIT, so the owner chose our own engine (2026-11-08): one SVG layout in core (`renderChart`), drawn by
 React and by the HTML runtime from a data table. Colors are palette names; no new tokens.
@@ -457,15 +457,15 @@ React and by the HTML runtime from a data table. Colors are palette names; no ne
 |---|---|---|
 | 1 | Engine, legend, tooltip, keyboard, data table; Line, Area, Column single / multiple / stacked / negative, Bar, Mixed, Scatter | ✅ 2026-11-08 |
 | 2 | Pie, Donut, Radial bar, Radar, Semi circle gauge, Stroked gauge; data labels | ✅ 2026-11-08 |
-| 3 | BoxPlot, Heatmap, Treemap | next (`/component` Update) |
-| 4 | Beyond the reference: animations (reduced motion), zoom and pan, annotations, brush, export (SVG, PNG, CSV), candlestick, range bar, timeline, polar area, a JavaScript data API | — |
+| 3 | BoxPlot, Heatmap, Treemap; Bubble, Range area, Funnel / pyramid, Slope; Sparklines; a JavaScript data API (`updateSeries`) (ADR-0027) | next (`/component` Update) |
+| 4 | Beyond the reference: synchronized charts, zoom and pan, brush, annotations, animations (reduced motion), export (SVG, PNG, CSV), candlestick, range bar, timeline, polar area; data label formatters, donut hole size, a legend with values (ADR-0027) | — |
 
 Phase 2 added `dataLabels`, `startAngle` / `endAngle`, `dashArray`, `trackWidth`, `total` /
 `totalLabel`; pie, donut and radial bar charts draw the first series, one slice or ring per
 category (the legend lists categories).
 
-**Backlog (deferred to the phases above):** `options.chart.animations` and `updateSeries` (phase 4;
-HTML updates today by editing the table); data label formatters and styles, a donut hole size and
+**Backlog (deferred to the phases above):** `updateSeries` (phase 3, ADR-0027; HTML updates today by
+editing the table), `options.chart.animations` (phase 4); data label formatters and styles, a donut hole size and
 a legend with values (the reference's custom donut legend) (phase 4).
 
 ## ✅ Upstream API review (ADR-0015, 2026-11-04)

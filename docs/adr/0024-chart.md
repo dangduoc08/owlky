@@ -1,6 +1,6 @@
 # ADR-0024: Chart — one SVG chart engine in core, written by us, built in four phases
 
-**Status:** Accepted (2026-11-08).
+**Status:** Accepted (2026-11-08). Phases 3 and 4 of decision 6 superseded by ADR-0027.
 
 ## Context
 The reference's "Chart" page shows 18 ApexCharts demos: line, area, five kinds of columns and bars,
