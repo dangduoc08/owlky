@@ -940,6 +940,26 @@
   height: 520px;
 }
 
+/* Data grid demo content: a detail panel and a list view card. */
+.sb-grid-detail > p {
+  margin: 0 0 var(--ok-spacing);
+}
+
+.sb-grid-detail > ul {
+  margin: 0;
+  padding-inline-start: calc(var(--ok-spacing) * 5);
+}
+
+.sb-grid-card {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--ok-spacing) * 0.5);
+}
+
+.sb-grid-card > span {
+  color: var(--ok-text-secondary);
+}
+
 /* Data grids that grow with their rows, full width. */
 .sb-grid-wide {
   width: 100%;

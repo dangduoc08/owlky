@@ -56,6 +56,8 @@ describe("createGridScrollWatcher", () => {
       viewport: 160,
       rowHeight: 50,
       scrolls: true,
+      left: 0,
+      width: expect.any(Number),
     });
     main.scrollTop = 300;
     main.dispatchEvent(new Event("scroll"));
@@ -64,6 +66,8 @@ describe("createGridScrollWatcher", () => {
       viewport: 160,
       rowHeight: 50,
       scrolls: true,
+      left: 0,
+      width: expect.any(Number),
     });
     expect(onScrollEnd).not.toHaveBeenCalled();
     main.scrollTop = main.scrollHeight;
@@ -106,6 +110,8 @@ describe("createGridScrollWatcher", () => {
       viewport: 100,
       rowHeight: 0,
       scrolls: false,
+      left: 0,
+      width: expect.any(Number),
     });
   });
 });

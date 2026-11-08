@@ -371,6 +371,17 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
   start one runtime only (a second `start()` leaks a runtime that also sets up later grids).
   `TablePagination.setRowsPerPage` fires its change event synchronously (the grid's listener
   resets the page): read the target page before calling it.
+- Data grid phase 5: the grid can be `role="treegrid"`: find it by `[data-ok-data-grid-main]`,
+  never `[role="grid"]` (runtime, tests). React renders every tree row (children of closed rows
+  `hidden`) so the HTML markup holds the whole tree; detail panels render only when open (HTML
+  keeps one `<template data-ok-data-grid-detail>` per row, made by the snippet generator). A row
+  with a panel is always a `Fragment` in React (switching the element type remounts the row). The
+  HTML runtime lays out a row's cells when it is drawn (`layoutRow`, versioned), not for every
+  row on each change: large and lazy grids stayed blocked for seconds otherwise. Lazy grids never
+  render every placeholder (first chunk before the first measure). Column virtualization is on for
+  fixed-width grids: tests that reach every column of a wide grid in the 414px test page set
+  `data-ok-disable-virtualization`. Never run two `pnpm test:e2e` at once (they broke `dist`
+  builds mid-run).
 - Editor (ADR-0023): Tiptap is reached only through `@owlky/core/editor` (Storybook aliases it)
   and the opt-in HTML entries (`@owlky/html/editor`, `owlky-editor.js`): `editor` isn't in
   `components` (`OPT_IN` in `components.test.ts`), so `owlky.js` stays free of ProseMirror. The

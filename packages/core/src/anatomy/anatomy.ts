@@ -2270,9 +2270,53 @@ export const dataGridOptions = defineOptions("data-grid", "data-ok-data-grid", {
     "data-ok-ignore-diacritics",
     'Searches and filters ignore accents: "ha noi" finds "Hà Nội".',
   ),
+  treeData: flag(
+    "data-ok-tree-data",
+    "Rows form a tree: a group column opens and closes their children.",
+  ),
+  defaultGroupingExpansionDepth: number(
+    "data-ok-default-grouping-expansion-depth",
+    0,
+    "Tree levels open at first (`-1`: all).",
+  ),
+  rowReordering: flag(
+    "data-ok-row-reordering",
+    "Rows move by dragging their handle, or Alt + Up / Down on it.",
+  ),
+  listView: flag("data-ok-list-view", "Each row shows as one cell (a card) instead of columns."),
+  rowBufferPx: number(
+    "data-ok-row-buffer-px",
+    150,
+    "Rows rendered above and below the visible ones, px.",
+    { min: 0 },
+  ),
+  columnBufferPx: number(
+    "data-ok-column-buffer-px",
+    150,
+    "Columns rendered left and right of the visible ones, px.",
+    { min: 0 },
+  ),
+  lazyLoading: flag(
+    "data-ok-lazy-loading",
+    "With a data source and a row count: rows load in chunks as they scroll into view.",
+  ),
+  lazyLoadingRequestThrottleMs: number(
+    "data-ok-lazy-loading-request-throttle-ms",
+    500,
+    "Least time between two lazy loading requests, ms.",
+    { min: 0 },
+  ),
 });
 
 export interface DataGridAnatomyOptions {
+  treeData?: boolean | undefined;
+  defaultGroupingExpansionDepth?: number | undefined;
+  rowReordering?: boolean | undefined;
+  listView?: boolean | undefined;
+  rowBufferPx?: number | undefined;
+  columnBufferPx?: number | undefined;
+  lazyLoading?: boolean | undefined;
+  lazyLoadingRequestThrottleMs?: number | undefined;
   disableMultipleRowSelection?: boolean | undefined;
   keepNonExistentRowsSelected?: boolean | undefined;
   checkboxSelectionVisibleOnly?: boolean | undefined;

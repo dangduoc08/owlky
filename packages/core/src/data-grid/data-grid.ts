@@ -220,7 +220,14 @@ export function pinGridColumn(
  * gets `--_ok-data-grid-pin` (px from its side), written through CSSOM. Run after layout.
  */
 export function syncGridPinning(grid: HTMLElement): void {
-  const header = grid.querySelector<HTMLElement>('[data-ok-data-grid-header] [role="row"]');
+  // Pinned top rows sit under the header (whatever its levels).
+  const headerGroup = grid.querySelector<HTMLElement>("[data-ok-data-grid-header]");
+  if (headerGroup)
+    grid.style.setProperty("--_ok-data-grid-header-offset", `${headerGroup.offsetHeight}px`);
+  // The column headers' row: the last header row (column groups come first).
+  const header = [
+    ...grid.querySelectorAll<HTMLElement>('[data-ok-data-grid-header] > [role="row"]'),
+  ].at(-1);
   if (!header) return;
   const cells = [...header.querySelectorAll<HTMLElement>('[role="columnheader"]')].filter(
     (cell) => !cell.hidden,
@@ -236,8 +243,12 @@ export function syncGridPinning(grid: HTMLElement): void {
     offsets.set(cell.getAttribute("data-ok-field") as string, right);
     right += cell.offsetWidth;
   }
-  for (const cell of grid.querySelectorAll<HTMLElement>("[data-ok-pinned][data-ok-field]")) {
-    const offset = offsets.get(cell.getAttribute("data-ok-field") as string);
+  // Cells name their column by `data-ok-field`; group headers by `data-ok-pin-field`.
+  for (const cell of grid.querySelectorAll<HTMLElement>(
+    "[data-ok-pinned][data-ok-field], [data-ok-pinned][data-ok-pin-field]",
+  )) {
+    const field = cell.getAttribute("data-ok-field") ?? cell.getAttribute("data-ok-pin-field");
+    const offset = offsets.get(field as string);
     if (offset === undefined) cell.style.removeProperty("--_ok-data-grid-pin");
     else cell.style.setProperty("--_ok-data-grid-pin", `${offset}px`);
   }
@@ -684,6 +695,16 @@ export const gridDefaultLabels = {
   paginationRowsPerPage: "Rows per page:",
   /** `{from}`, `{to}` and `{count}` are replaced. */
   paginationDisplayedRows: "{from}–{to} of {count}",
+  treeDataGroupingHeaderName: "Group",
+  treeDataExpand: "see children",
+  treeDataCollapse: "hide children",
+  detailPanelHeaderName: "Details",
+  expandDetailPanel: "Expand",
+  collapseDetailPanel: "Collapse",
+  rowReorderingHeaderName: "Row reordering",
+  rowReorderingHandle: "Drag or press Alt + arrows to move the row",
+  /** `{position}` and `{count}` are replaced. */
+  rowReorderingMoved: "Row moved to position {position} of {count}",
   filterOperator: {
     contains: "contains",
     doesNotContain: "does not contain",

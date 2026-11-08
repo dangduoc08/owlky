@@ -60,7 +60,7 @@ function ApiGrid() {
   );
 }
 
-const grid = () => screen.getByRole("grid");
+const grid = () => document.querySelector("[data-ok-data-grid-main]") as HTMLElement;
 const header = (name: RegExp | string) => screen.getByRole("columnheader", { name });
 const names = () =>
   [...grid().querySelectorAll('[data-ok-data-grid-body] > [role="row"]:not([hidden])')].map(
@@ -623,7 +623,7 @@ describe("DataGrid", () => {
       expect(onColumnOrderChange).toHaveBeenLastCalledWith(["name", "kind", "qty", "ok", "label"]);
       const openMenu = async (name: RegExp, field: string) => {
         await userEvent.hover(header(name));
-        await userEvent.click(screen.getByRole("button", { name: `${field} column menu` }));
+        fireEvent.click(screen.getByRole("button", { name: `${field} column menu` }));
       };
       await openMenu(/^Name/, "Name");
       expect(
@@ -1644,7 +1644,11 @@ describe("DataGrid", () => {
       await userEvent.click(screen.getByRole("button", { name: "Filters" }));
       const panel = screen.getByRole("group", { name: "Filters" });
       await userEvent.selectOptions(within(panel).getByLabelText("Operator"), "isAnyOf");
-      await userEvent.type(within(panel).getByLabelText("Value"), "ana, bao");
+      // Values as chips: type one, Enter, the next one.
+      await userEvent.type(
+        within(panel).getByRole("combobox", { name: "Value" }),
+        "ana{Enter}bao{Enter}",
+      );
       expect(names()).toEqual(["Ana", "Bao"]);
       await userEvent.selectOptions(within(panel).getByLabelText("Columns"), "age");
       const operators = within(panel).getByLabelText("Operator") as HTMLSelectElement;
@@ -1904,6 +1908,580 @@ describe("DataGrid", () => {
         await settle();
       });
       expect(onDataSourceError).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("phase 5", () => {
+    const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
+    const rowEl = (rowId: string) =>
+      grid().querySelector<HTMLElement>(`[role="row"][data-ok-row-id="${rowId}"]`) as HTMLElement;
+    interface Member {
+      id: string;
+      path: string[];
+      city: string;
+    }
+    const TEAM: Member[] = [
+      { id: "a", path: ["Ana"], city: "Lima" },
+      { id: "b", path: ["Ana", "Bao"], city: "Hue" },
+      { id: "c", path: ["Ana", "Bao", "Chloe"], city: "Lyon" },
+      { id: "d", path: ["Ana", "Diego"], city: "Lima" },
+      { id: "e", path: ["Elif"], city: "Izmir" },
+    ];
+    const TEAM_COLUMNS: GridColDef<Member>[] = [{ field: "city", headerName: "City", width: 120 }];
+
+    it("tree data: rows open and close; closed children stay in the markup, hidden", async () => {
+      const apiRef = { current: null } as { current: GridApi<Member> | null };
+      render(
+        <DataGrid
+          aria-label="Team"
+          rows={TEAM}
+          columns={TEAM_COLUMNS}
+          treeData
+          getTreeDataPath={(row) => row.path}
+          defaultGroupingExpansionDepth={1}
+          apiRef={apiRef}
+          hideFooter
+        />,
+      );
+      expect(grid().getAttribute("role")).toBe("treegrid");
+      expect(rowEl("a").getAttribute("aria-expanded")).toBe("true");
+      expect(rowEl("a").getAttribute("aria-level")).toBe("1");
+      expect(rowEl("b").getAttribute("aria-level")).toBe("2");
+      expect(rowEl("b").getAttribute("data-ok-parent")).toBe("a");
+      expect(rowEl("c").hidden).toBe(true);
+      expect(rowEl("a").querySelector("[data-ok-data-grid-tree-count]")?.textContent).toBe("(3)");
+      const toggle = rowEl("b").querySelector("[data-ok-data-grid-tree-toggle]") as HTMLElement;
+      expect(toggle.getAttribute("aria-label")).toBe("see children");
+      await userEvent.click(toggle);
+      expect(rowEl("c").hidden).toBe(false);
+      expect(rowEl("c").getAttribute("aria-level")).toBe("3");
+      // Keyboard: Left on an open row's group cell closes it.
+      const groupCell = rowEl("a").querySelector(
+        '[data-ok-field="__tree_data_group__"]',
+      ) as HTMLElement;
+      groupCell.focus();
+      fireEvent.keyDown(groupCell, { key: "ArrowLeft" });
+      expect(rowEl("b").hidden).toBe(true);
+      act(() => apiRef.current?.setRowChildrenExpansion("a", true));
+      expect(rowEl("b").hidden).toBe(false);
+      act(() => apiRef.current?.setRowChildrenExpansion("nope", true));
+      expect(header(/Group/)).toBeTruthy();
+    });
+
+    it("tree data: filters keep ancestors; siblings sort; default expansion and options", () => {
+      const { rerender } = render(
+        <DataGrid
+          aria-label="Team"
+          rows={TEAM}
+          columns={TEAM_COLUMNS}
+          treeData
+          getTreeDataPath={(row) => row.path}
+          defaultGroupingExpansionDepth={-1}
+          filterModel={{ items: [{ field: "city", operator: "equals", value: "Lyon" }] }}
+          groupingColDef={{ headerName: "Name", width: 180, hideDescendantCount: true }}
+          hideFooter
+        />,
+      );
+      const shown = () =>
+        [...grid().querySelectorAll('[data-ok-data-grid-body] > [role="row"]:not([hidden])')].map(
+          (r) => r.getAttribute("data-ok-row-id"),
+        );
+      expect(shown()).toEqual(["a", "b", "c"]);
+      expect(header(/Name/).getAttribute("data-ok-width")).toBe("180");
+      expect(grid().querySelector("[data-ok-data-grid-tree-count]")).toBeNull();
+      rerender(
+        <DataGrid
+          aria-label="Team"
+          rows={TEAM}
+          columns={TEAM_COLUMNS}
+          treeData
+          getTreeDataPath={(row) => row.path}
+          isGroupExpandedByDefault={({ id }) => id === "a"}
+          sortModel={[{ field: "city", sort: "desc" }]}
+          hideFooter
+        />,
+      );
+      expect(shown()).toEqual(["a", "d", "b", "e"]);
+    });
+
+    it("tree data from a server: children load when a row opens", async () => {
+      interface Folder {
+        id: string;
+        name: string;
+        size: number;
+        children: number;
+      }
+      const getRows = vi.fn((params: GridGetRowsParams) =>
+        Promise.resolve({
+          rows: params.groupKeys?.length
+            ? [{ id: "f-2", name: "Inside", size: 2, children: 0 }]
+            : [{ id: "f-1", name: "Root", size: 1, children: 1 }],
+        }),
+      );
+      const source: GridDataSource<Folder> = {
+        getRows,
+        getChildrenCount: (row) => row.children,
+        getGroupKey: (row) => row.name,
+      };
+      render(
+        <DataGrid
+          aria-label="Files"
+          rows={[]}
+          columns={[{ field: "size", headerName: "Size", type: "number" }]}
+          treeData
+          dataSource={source}
+          hideFooter
+        />,
+      );
+      await act(settle);
+      expect(rowEl("f-1").getAttribute("aria-expanded")).toBe("false");
+      expect(rowEl("f-1").textContent).toContain("Root");
+      await userEvent.click(
+        rowEl("f-1").querySelector("[data-ok-data-grid-tree-toggle]") as Element,
+      );
+      await act(settle);
+      expect(getRows).toHaveBeenLastCalledWith(expect.objectContaining({ groupKeys: ["Root"] }));
+      expect(rowEl("f-2").getAttribute("data-ok-parent")).toBe("f-1");
+      expect(rowEl("f-1").getAttribute("aria-expanded")).toBe("true");
+      // Closing and opening again reuses the loaded children.
+      await userEvent.click(
+        rowEl("f-1").querySelector("[data-ok-data-grid-tree-toggle]") as Element,
+      );
+      await userEvent.click(
+        rowEl("f-1").querySelector("[data-ok-data-grid-tree-toggle]") as Element,
+      );
+      expect(getRows).toHaveBeenCalledTimes(2);
+    });
+
+    it("tree data from a server: a failed children request reports the error", async () => {
+      const onDataSourceError = vi.fn();
+      const source: GridDataSource<{ id: string }> = {
+        getRows: (params) =>
+          params.groupKeys?.length
+            ? Promise.reject(new Error("no"))
+            : Promise.resolve({ rows: [{ id: "r" }] }),
+        getChildrenCount: () => 1,
+      };
+      render(
+        <DataGrid
+          aria-label="Files"
+          rows={[]}
+          columns={[{ field: "id", headerName: "Id" }]}
+          treeData
+          dataSource={source}
+          onDataSourceError={onDataSourceError}
+          hideFooter
+        />,
+      );
+      await act(settle);
+      await userEvent.click(rowEl("r").querySelector("[data-ok-data-grid-tree-toggle]") as Element);
+      await act(settle);
+      expect(onDataSourceError).toHaveBeenCalledWith(new Error("no"));
+    });
+
+    it("master-detail: panels open under their rows", async () => {
+      const onDetailPanelExpandedRowIdsChange = vi.fn();
+      const apiRef = { current: null } as { current: GridApi<Row> | null };
+      render(
+        <DataGrid
+          id="m"
+          aria-label="People"
+          rows={ROWS}
+          columns={COLUMNS}
+          apiRef={apiRef}
+          getDetailPanelContent={({ row }) => (row.id === 2 ? null : <p>{`About ${row.name}`}</p>)}
+          getDetailPanelHeight={({ row }) => (row.id === 1 ? 80 : "auto")}
+          onDetailPanelExpandedRowIdsChange={onDetailPanelExpandedRowIdsChange}
+        />,
+      );
+      expect(rowEl("2").querySelector("[data-ok-data-grid-detail-toggle]")).toBeNull();
+      const toggle = rowEl("1").querySelector("[data-ok-data-grid-detail-toggle]") as HTMLElement;
+      expect(toggle.getAttribute("aria-label")).toBe("Expand");
+      await userEvent.click(toggle);
+      expect(onDetailPanelExpandedRowIdsChange).toHaveBeenCalledWith(["1"]);
+      const panel = rowEl("1").nextElementSibling as HTMLElement;
+      expect(panel.getAttribute("data-ok-data-grid-detail")).toBe("");
+      expect(panel.id).toBe("m-1-detail");
+      expect(toggle.getAttribute("aria-controls")).toBe("m-1-detail");
+      expect(panel.style.getPropertyValue("--_ok-data-grid-detail-height")).toBe("80px");
+      expect(panel.textContent).toBe("About Ana");
+      act(() => apiRef.current?.toggleDetailPanel("3"));
+      expect(rowEl("3").nextElementSibling?.hasAttribute("data-ok-data-grid-detail")).toBe(true);
+      expect(rowEl("3").nextElementSibling?.hasAttribute("data-ok-detail-height")).toBe(false);
+      await userEvent.click(toggle);
+      expect(rowEl("1").nextElementSibling?.hasAttribute("data-ok-data-grid-detail")).toBe(false);
+      await expectNoAxeViolations();
+    });
+
+    it("master-detail with virtualization measures panels", async () => {
+      const many = Array.from({ length: 200 }, (_, i) => ({ id: i, name: `P${i}`, age: i }));
+      render(
+        <DataGrid
+          aria-label="Many"
+          rows={many}
+          columns={COLUMNS.slice(0, 2)}
+          getDetailPanelContent={({ row }) => <div style={{ height: 100 }}>{row.name}</div>}
+          detailPanelExpandedRowIds={["0", "5"]}
+          hideFooter
+          style={{ height: 300 }}
+        />,
+      );
+      await act(settle);
+      await act(async () => {
+        grid().scrollTop = 4000;
+        fireEvent.scroll(grid());
+        await settle();
+      });
+      const first = Number(
+        grid()
+          .querySelector('[data-ok-data-grid-body] > [role="row"]')
+          ?.getAttribute("aria-rowindex"),
+      );
+      expect(first).toBeGreaterThan(50);
+    });
+
+    it("row reordering: Alt + arrows on the handle; reported and announced; off while sorted", async () => {
+      const onRowOrderChange = vi.fn();
+      const { rerender } = render(
+        <DataGrid
+          aria-label="People"
+          rows={ROWS}
+          columns={COLUMNS}
+          rowReordering
+          onRowOrderChange={onRowOrderChange}
+        />,
+      );
+      const handle = rowEl("1").querySelector("[data-ok-data-grid-reorder-handle]") as HTMLElement;
+      expect(handle.getAttribute("aria-label")).toBe("Drag or press Alt + arrows to move the row");
+      handle.focus();
+      fireEvent.keyDown(handle, { key: "ArrowDown", altKey: true });
+      expect(names()).toEqual(["Bao", "Ana", "Chloe", "Diego"]);
+      expect(onRowOrderChange).toHaveBeenCalledWith({ row: ROWS[0], oldIndex: 0, targetIndex: 1 });
+      expect(document.querySelector("[data-ok-data-grid-live]")?.textContent).toBe(
+        "Row moved to position 2 of 4",
+      );
+      expect(document.activeElement).toBe(
+        rowEl("1").querySelector("[data-ok-data-grid-reorder-handle]"),
+      );
+      rerender(
+        <DataGrid
+          aria-label="People"
+          rows={ROWS}
+          columns={COLUMNS}
+          rowReordering
+          sortModel={[{ field: "name", sort: "asc" }]}
+          onRowOrderChange={onRowOrderChange}
+        />,
+      );
+      fireEvent.keyDown(rowEl("1").querySelector("[data-ok-data-grid-reorder-handle]") as Element, {
+        key: "ArrowDown",
+        altKey: true,
+      });
+      expect(onRowOrderChange).toHaveBeenCalledTimes(1);
+    });
+
+    it("pinned rows above and below; row indexes count them", () => {
+      render(
+        <DataGrid
+          aria-label="People"
+          rows={ROWS}
+          columns={COLUMNS}
+          checkboxSelection
+          pinnedRows={{
+            top: [{ id: 90, name: "Top", age: 1 }],
+            bottom: [{ id: 91, name: "End", age: 2 }],
+          }}
+        />,
+      );
+      const top = grid().querySelector('[data-ok-data-grid-pinned-rows="top"] > [role="row"]');
+      const bottom = grid().querySelector(
+        '[data-ok-data-grid-pinned-rows="bottom"] > [role="row"]',
+      );
+      expect(top?.getAttribute("aria-rowindex")).toBe("2");
+      expect(rowEl("1").getAttribute("aria-rowindex")).toBe("3");
+      expect(bottom?.getAttribute("aria-rowindex")).toBe("7");
+      expect(grid().getAttribute("aria-rowcount")).toBe("7");
+      expect(top?.querySelector("input")).toBeNull();
+      expect(top?.hasAttribute("aria-selected")).toBe(false);
+    });
+
+    it("column groups: header rows, spans, descriptions; moves stay in groups", async () => {
+      const onColumnOrderChange = vi.fn();
+      render(
+        <DataGrid
+          id="g"
+          aria-label="People"
+          rows={ROWS}
+          columns={COLUMNS}
+          checkboxSelection
+          onColumnOrderChange={onColumnOrderChange}
+          pinnedColumns={{ left: ["name", "age"] }}
+          columnGroupingModel={[
+            {
+              groupId: "who",
+              headerName: "Who",
+              description: "The person",
+              children: [{ field: "name" }, { field: "age" }],
+            },
+          ]}
+        />,
+      );
+      const groupRow = grid().querySelector("[data-ok-data-grid-group-row]") as HTMLElement;
+      expect(groupRow.getAttribute("aria-rowindex")).toBe("1");
+      const group = groupRow.querySelector('[data-ok-group-id="who"]') as HTMLElement;
+      expect(group.getAttribute("aria-colspan")).toBe("2");
+      expect(group.getAttribute("aria-colindex")).toBe("2");
+      expect(group.getAttribute("data-ok-pinned")).toBe("left");
+      expect(group.getAttribute("data-ok-pin-field")).toBe("name");
+      expect(group.getAttribute("aria-describedby")).toBe("g-who-0-description");
+      expect(groupRow.querySelectorAll("[data-ok-data-grid-group-filler]")).toHaveLength(3);
+      expect(header(/^Name/).getAttribute("data-ok-group-path")).toBe('["who"]');
+      expect(rowEl("1").getAttribute("aria-rowindex")).toBe("3");
+      // Moving "label" (no group) next to "age" (in a group) is refused.
+      fireEvent.click(header(/^Label/).querySelector("[data-ok-data-grid-menu-button]") as Element);
+      await userEvent.click(screen.getByRole("menuitem", { name: "Move left" }));
+      expect(onColumnOrderChange).not.toHaveBeenCalled();
+    });
+
+    it("list view: one cell per row, no headers", () => {
+      const { rerender } = render(
+        <DataGrid
+          aria-label="People"
+          rows={ROWS}
+          columns={COLUMNS}
+          listView
+          listViewColumn={{ field: "name", renderCell: ({ row }) => <b>{row.name}</b> }}
+        />,
+      );
+      expect((grid().querySelector("[data-ok-data-grid-header]") as HTMLElement).hidden).toBe(true);
+      const list = rowEl("1").querySelector("[data-ok-data-grid-list-cell]") as HTMLElement;
+      expect(list.hidden).toBe(false);
+      expect(list.querySelector("b")?.textContent).toBe("Ana");
+      expect((rowEl("1").querySelector('[data-ok-field="name"]') as HTMLElement).hidden).toBe(true);
+      rerender(
+        <DataGrid
+          aria-label="People"
+          rows={ROWS}
+          columns={COLUMNS}
+          listViewColumn={{ field: "name" }}
+        />,
+      );
+      expect(
+        (rowEl("1").querySelector("[data-ok-data-grid-list-cell]") as HTMLElement).hidden,
+      ).toBe(true);
+      expect(rowEl("1").querySelector("[data-ok-data-grid-list-cell]")?.textContent).toBe("Ana");
+    });
+
+    it("column virtualization: wide grids render the columns in view; spacer tracks", async () => {
+      const wide = Array.from({ length: 30 }, (_, i) => ({
+        field: `c${i}`,
+        headerName: `C${i}`,
+        width: 100,
+      }));
+      const row = Object.fromEntries([["id", 1], ...wide.map((c, i) => [c.field, i])]);
+      render(
+        <DataGrid
+          aria-label="Wide"
+          rows={[row]}
+          columns={wide}
+          pinnedColumns={{ left: ["c0"], right: ["c29"] }}
+          columnBufferPx={0}
+          hideFooter
+          style={{ width: 500 }}
+        />,
+      );
+      await act(settle);
+      const headersNow = () =>
+        [...grid().querySelectorAll('[role="columnheader"]')].map((h) =>
+          h.getAttribute("data-ok-field"),
+        );
+      expect(headersNow().length).toBeLessThan(10);
+      expect(headersNow()).toContain("c29");
+      const first = grid().querySelector('[role="columnheader"][data-ok-col-start]') as HTMLElement;
+      expect(first.getAttribute("data-ok-field")).toBe("c1");
+      expect(first.style.getPropertyValue("--_ok-data-grid-col-start")).toBe("3");
+      expect(grid().style.getPropertyValue("--_ok-data-grid-columns")).toMatch(/^100px 0px 100px/);
+      await act(async () => {
+        grid().scrollLeft = 1500;
+        fireEvent.scroll(grid());
+        await settle();
+      });
+      expect(headersNow()).toContain("c16");
+      expect(headersNow()).not.toContain("c1");
+    });
+
+    it("lazy loading: chunks in view load; placeholders; a new sort starts again", async () => {
+      const getRows = vi.fn((params: GridGetRowsParams) =>
+        Promise.resolve({
+          rows: Array.from({ length: (params.end ?? 0) - (params.start ?? 0) }, (_, i) => ({
+            id: (params.start ?? 0) + i,
+            name: `R${(params.start ?? 0) + i}`,
+            age: i,
+          })),
+          rowCount: 500,
+        }),
+      );
+      const onDataSourceError = vi.fn();
+      const props = {
+        "aria-label": "Lazy",
+        rows: [] as Row[],
+        columns: COLUMNS.slice(0, 2),
+        lazyLoading: true,
+        lazyLoadingRequestThrottleMs: 0,
+        hideFooter: true,
+        onDataSourceError,
+        style: { height: 300 },
+      };
+      const { rerender } = render(
+        <DataGrid {...props} dataSource={{ getRows }} rowBufferPx={50} />,
+      );
+      await act(settle);
+      await act(settle);
+      expect(getRows).toHaveBeenCalledWith(expect.objectContaining({ start: 0, end: 50 }));
+      expect(grid().getAttribute("aria-rowcount")).toBe("501");
+      expect(names()[0]).toBe("R0");
+      await act(async () => {
+        grid().scrollTop = 53 * 300;
+        fireEvent.scroll(grid());
+        await settle();
+      });
+      await act(settle);
+      await act(settle);
+      expect(getRows).toHaveBeenCalledWith(expect.objectContaining({ start: 250 }));
+      expect(grid().closest("[data-ok-data-grid]")?.getAttribute("data-ok-row-buffer-px")).toBe(
+        "50",
+      );
+      rerender(
+        <DataGrid
+          {...props}
+          dataSource={{ getRows }}
+          sortModel={[{ field: "name", sort: "desc" }]}
+        />,
+      );
+      await act(settle);
+      await act(settle);
+      expect(getRows).toHaveBeenLastCalledWith(
+        expect.objectContaining({ sortModel: [{ field: "name", sort: "desc" }] }),
+      );
+      rerender(
+        <DataGrid {...props} dataSource={{ getRows: () => Promise.reject(new Error("lazy")) }} />,
+      );
+      await act(settle);
+      await act(settle);
+      expect(onDataSourceError).toHaveBeenCalledWith(new Error("lazy"));
+      expect(
+        grid().querySelector("[data-ok-loading-row] [data-ok-data-grid-skeleton]"),
+      ).not.toBeNull();
+    });
+
+    it("special columns in placeholders and group rows; tree data without paths", async () => {
+      const { unmount } = render(
+        <DataGrid
+          aria-label="Lazy"
+          rows={[]}
+          columns={COLUMNS.slice(0, 2)}
+          checkboxSelection
+          lazyLoading
+          dataSource={{ getRows: () => new Promise<never>(() => {}) }}
+          rowCount={20}
+          hideFooter
+          style={{ height: 300 }}
+        />,
+      );
+      await act(settle);
+      expect(
+        grid().querySelector('[data-ok-loading-row] [data-ok-field="__check__"]'),
+      ).not.toBeNull();
+      unmount();
+      const grouped = render(
+        <DataGrid
+          aria-label="People"
+          rows={ROWS}
+          columns={COLUMNS}
+          checkboxSelection
+          columnGroupingModel={[
+            { groupId: "who", children: [{ field: "name" }, { field: "age" }] },
+          ]}
+        />,
+      );
+      const groupRow = grid().querySelector("[data-ok-data-grid-group-row]") as HTMLElement;
+      expect(groupRow.firstElementChild?.hasAttribute("data-ok-data-grid-group-filler")).toBe(true);
+      expect(groupRow.querySelector('[role="columnheader"]')?.hasAttribute("data-ok-pinned")).toBe(
+        false,
+      );
+      grouped.unmount();
+      render(<DataGrid aria-label="Team" rows={TEAM} columns={TEAM_COLUMNS} treeData hideFooter />);
+      expect(rowEl("a").getAttribute("aria-level")).toBe("1");
+      expect(rowEl("c").getAttribute("aria-level")).toBe("1");
+    });
+
+    it("data sources save edits (updateRow); a refused save brings the row back", async () => {
+      const onDataSourceError = vi.fn();
+      let fail = false;
+      const updateRow = vi.fn(({ updatedRow }: { updatedRow: Row }) =>
+        fail
+          ? Promise.reject(new Error("save"))
+          : Promise.resolve({ ...updatedRow, name: `${updatedRow.name}!` }),
+      );
+      render(
+        <DataGrid
+          aria-label="People"
+          rows={[]}
+          columns={[{ field: "name", headerName: "Name", editable: true }]}
+          dataSource={{ getRows: () => Promise.resolve({ rows: ROWS }), updateRow }}
+          onDataSourceError={onDataSourceError}
+        />,
+      );
+      await act(settle);
+      const cell = () => rowEl("1").querySelector('[data-ok-field="name"]') as HTMLElement;
+      await userEvent.dblClick(cell());
+      await userEvent.type(screen.getByRole("textbox", { name: "Edit Name" }), "x{Enter}");
+      await act(settle);
+      expect(updateRow).toHaveBeenCalledWith(
+        expect.objectContaining({ rowId: "1", previousRow: ROWS[0] }),
+      );
+      expect(cell().textContent).toBe("Anax!");
+      fail = true;
+      await userEvent.dblClick(cell());
+      await userEvent.type(screen.getByRole("textbox", { name: "Edit Name" }), "y{Enter}");
+      await act(settle);
+      await act(settle);
+      expect(onDataSourceError).toHaveBeenCalledWith(new Error("save"));
+    });
+
+    it("CSV and print options are written for HTML; SSR of the new parts", () => {
+      render(
+        <DataGrid
+          aria-label="People"
+          rows={ROWS}
+          columns={COLUMNS}
+          csvOptions={{ delimiter: ";", fileName: "x" }}
+          printOptions={{ hideFooter: false }}
+          defaultGroupingExpansionDepth={2}
+          columnBufferPx={10}
+          lazyLoadingRequestThrottleMs={20}
+        />,
+      );
+      const root = grid().closest("[data-ok-data-grid]") as HTMLElement;
+      expect(JSON.parse(root.getAttribute("data-ok-csv-options") as string)).toEqual({
+        delimiter: ";",
+        fileName: "x",
+      });
+      expect(root.getAttribute("data-ok-print-options")).toBe('{"hideFooter":false}');
+      expect(root.getAttribute("data-ok-column-buffer-px")).toBe("10");
+      const html = renderToString(
+        <DataGrid
+          aria-label="Team"
+          rows={TEAM}
+          columns={TEAM_COLUMNS}
+          treeData
+          getTreeDataPath={(row) => row.path}
+          rowReordering
+          getDetailPanelContent={() => "x"}
+          pinnedRows={{ top: [TEAM[0] as Member] }}
+        />,
+      );
+      expect(html).toContain('role="treegrid"');
     });
   });
 });

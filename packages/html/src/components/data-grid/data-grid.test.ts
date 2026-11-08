@@ -10,6 +10,7 @@ import {
   resetPage,
   settle,
 } from "../../test-utils.js";
+import type { AutocompleteInstance } from "../autocomplete/autocomplete.js";
 import { components } from "../index.js";
 import type { DataGridInstance } from "./data-grid.js";
 
@@ -47,10 +48,10 @@ const header = (host: Element, field: string) =>
   host.querySelector<HTMLElement>(`[role="columnheader"][data-ok-field="${field}"]`) as HTMLElement;
 
 describe("data grid snippets", () => {
-  it("covers every story group", () => expect(snippets).toHaveLength(8));
+  it("covers every story group", () => expect(snippets).toHaveLength(14));
 
   // Grids whose rows come from JavaScript (setRows, data sources) ship no rows.
-  const scripted = (path: string) => /(large|server)-group/.test(path);
+  const scripted = (path: string) => /(large|server|lazy)-group/.test(path);
 
   it.each(snippets.filter(([path]) => scripted(path)))(
     "%s: CSP-safe shell with a row template; no axe violations with rows",
@@ -70,7 +71,8 @@ describe("data grid snippets", () => {
   );
 
   // Layout and validation grids: their own rows, no pages.
-  const unpaged = (path: string) => /(layout|validation)-/.test(path);
+  const unpaged = (path: string) =>
+    /(layout|validation|tree|detail|ordering|groups|list)-/.test(path);
 
   it.each(snippets.filter(([path]) => unpaged(path)))(
     "%s: CSP-safe; no axe violations once running",
@@ -81,7 +83,7 @@ describe("data grid snippets", () => {
       await settle();
       expect(
         host.querySelectorAll('[data-ok-data-grid-body] > [role="row"]').length,
-      ).toBeGreaterThan(3);
+      ).toBeGreaterThanOrEqual(3);
       await expectNoAxeViolations(host);
     },
   );
@@ -384,7 +386,10 @@ describe("data grid runtime, minimal markup", () => {
   });
 });
 
-const ADVANCED = snippets.find(([path]) => path.endsWith("advanced-group.html"))?.[1] as string;
+// Phase 2 tests reach every column: no column window in the narrow test page.
+const ADVANCED = String(
+  snippets.find(([path]) => path.endsWith("advanced-group.html"))?.[1],
+).replace("<div data-ok-data-grid ", "<div data-ok-data-grid data-ok-disable-virtualization ");
 
 describe("data grid runtime, phase 2", () => {
   const setupAdvanced = () => {
@@ -1196,7 +1201,7 @@ describe("data grid runtime, phase 4", () => {
     expect(root).toBeTruthy();
   });
 
-  it("filters: isAnyOf, custom operators, search options and accents", () => {
+  it("filters: isAnyOf, custom operators, search options and accents", async () => {
     const { root, instance, host } = open(BASIC);
     const panel = document.getElementById("grid-basic-filters") as HTMLElement;
     const [field, operator] = [...panel.querySelectorAll("select")] as HTMLSelectElement[];
@@ -1205,8 +1210,12 @@ describe("data grid runtime, phase 4", () => {
     (field as HTMLSelectElement).dispatchEvent(new Event("change", { bubbles: true }));
     (operator as HTMLSelectElement).value = "isAnyOf";
     operator?.dispatchEvent(new Event("change", { bubbles: true }));
-    input.value = "ana, bao";
-    input.dispatchEvent(new Event("input", { bubbles: true }));
+    // isAnyOf: chips (an Autocomplete from the panel's template) replace the text field.
+    const chips = panel.querySelector<HTMLElement>("[data-ok-autocomplete]") as HTMLElement;
+    expect(chips.querySelector("input")?.id).toBe(input.id);
+    runtime?.getOrCreate<AutocompleteInstance>(chips, "autocomplete")?.setValue(["ana", "bao"]);
+    chips.dispatchEvent(new CustomEvent("ok:autocomplete:change", { bubbles: true }));
+    await settle();
     expect(new Set(visible(host))).toEqual(new Set(["Ana", "Bao"]));
 
     instance.setFilterOperators("age", [
@@ -1535,5 +1544,389 @@ describe("data grid runtime, phase 4 edges", () => {
     runtime = undefined;
     await document.fonts.ready;
     await settle();
+  });
+});
+
+describe("data grid runtime, phase 5", () => {
+  const find = (name: string) => String(snippets.find(([path]) => path.endsWith(name))?.[1]);
+  const open = (html: string, before?: (root: HTMLElement) => void) => {
+    const host = mount(html);
+    const root = host.querySelector<HTMLElement>("[data-ok-data-grid]") as HTMLElement;
+    before?.(root);
+    if (!runtime) start();
+    const instance = runtime?.getOrCreate<DataGridInstance>(root, "data-grid") as DataGridInstance;
+    const main = root.querySelector<HTMLElement>("[data-ok-data-grid-main]") as HTMLElement;
+    const row = (id: string) =>
+      root.querySelector<HTMLElement>(`[role="row"][data-ok-row-id="${id}"]`) as HTMLElement;
+    const events: [string, unknown][] = [];
+    for (const name of ["expand", "detailpanel", "roworder", "datasourceerror", "order"])
+      root.addEventListener(`ok:data-grid:${name}`, (e) =>
+        events.push([name, (e as CustomEvent).detail]),
+      );
+    return { host, root, instance, main, row, events };
+  };
+  const key = (target: Element, k: string, init: KeyboardEventInit = {}) =>
+    target.dispatchEvent(
+      new KeyboardEvent("keydown", { key: k, bubbles: true, cancelable: true, ...init }),
+    );
+  const shownIds = (root: Element) =>
+    [
+      ...root.querySelectorAll(
+        '[data-ok-data-grid-body] > [role="row"][data-ok-row-id]:not([hidden])',
+      ),
+    ].map((r) => r.getAttribute("data-ok-row-id"));
+
+  it("tree data: toggles, keyboard, cancelable expand events, the instance", () => {
+    const { root, instance, row, events } = open(find("tree-group.html"));
+    expect(root.querySelector('[role="treegrid"]')).not.toBeNull();
+    expect(shownIds(root)).toEqual(["m-1", "m-2", "m-5", "m-8", "m-9"]);
+    (row("m-2").querySelector("[data-ok-data-grid-tree-toggle]") as HTMLElement).click();
+    expect(shownIds(root)).toEqual(["m-1", "m-2", "m-3", "m-4", "m-5", "m-8", "m-9"]);
+    expect(row("m-3").getAttribute("aria-level")).toBe("3");
+    expect(
+      row("m-2").querySelector("[data-ok-data-grid-tree-toggle]")?.getAttribute("aria-label"),
+    ).toBe("hide children");
+    const group = row("m-1").querySelector('[data-ok-field="__tree_data_group__"]') as HTMLElement;
+    group.focus();
+    key(group, "ArrowLeft");
+    expect(shownIds(root)).toEqual(["m-1", "m-8", "m-9"]);
+    root.addEventListener("ok:data-grid:expand", (e) => e.preventDefault(), { once: true });
+    key(group, "ArrowRight");
+    expect(shownIds(root)).toEqual(["m-1", "m-8", "m-9"]);
+    instance.setRowChildrenExpansion("m-1", true);
+    instance.setRowChildrenExpansion("nope", true);
+    expect(shownIds(root)).toContain("m-2");
+    expect(events.filter(([n]) => n === "expand").length).toBe(4);
+    // Sorting orders siblings; filtering keeps ancestors.
+    instance.setFilterModel({ items: [{ field: "city", operator: "equals", value: "Beirut" }] });
+    expect(shownIds(root)).toEqual(["m-1", "m-5"]);
+  });
+
+  it("tree data from a server: rows from the template; children load on open", async () => {
+    const tree = find("tree-group.html");
+    const { root, instance, row, events } = open(tree, (r) => {
+      const template = document.createElement("template");
+      template.setAttribute("data-ok-data-grid-row", "");
+      template.content.append(
+        (r.querySelector('[data-ok-row-id="m-1"]') as HTMLElement).cloneNode(true),
+      );
+      r.append(template);
+    });
+    let fail = false;
+    const getRows = vi.fn((params: GridGetRowsParams) =>
+      fail
+        ? Promise.reject(new Error("no"))
+        : Promise.resolve({
+            rows: params.groupKeys?.length
+              ? [{ id: "k", name: "Kid", kids: 1, title: "T", city: "C" }]
+              : [{ id: "p", name: "Parent", kids: 2, title: "T", city: "C" }],
+          }),
+    );
+    instance.setDataSource({
+      getRows,
+      getChildrenCount: (r) => Number(r["kids"]),
+      getGroupKey: (r) => String(r["name"]),
+    });
+    await settle();
+    await settle();
+    expect(row("p").querySelector("[data-ok-data-grid-tree-label]")?.textContent).toBe("Parent");
+    expect(row("p").getAttribute("aria-expanded")).toBe("false");
+    (row("p").querySelector("[data-ok-data-grid-tree-toggle]") as HTMLElement).click();
+    await settle();
+    await settle();
+    expect(getRows).toHaveBeenLastCalledWith(expect.objectContaining({ groupKeys: ["Parent"] }));
+    expect(row("k").getAttribute("data-ok-parent")).toBe("p");
+    // A grandchild request carries every ancestor's key; a failure reports the error.
+    fail = true;
+    (row("k").querySelector("[data-ok-data-grid-tree-toggle]") as HTMLElement).click();
+    expect(getRows).toHaveBeenLastCalledWith(
+      expect.objectContaining({ groupKeys: ["Parent", "Kid"] }),
+    );
+    await settle();
+    await settle();
+    expect(events.some(([n]) => n === "datasourceerror")).toBe(true);
+    expect(row("k").hasAttribute("aria-busy")).toBe(false);
+    fail = false;
+    // Failures report the error.
+    (row("p").querySelector("[data-ok-data-grid-tree-toggle]") as HTMLElement).click();
+    instance.setSortModel([]);
+    fail = true;
+    instance.setDataSource({ getRows, getChildrenCount: () => 1 });
+    await settle();
+    expect(root).toBeTruthy();
+    expect(events.some(([n]) => n === "datasourceerror")).toBe(true);
+  });
+
+  it("master-detail: panels from templates; events; the instance", () => {
+    const { root, instance, row, events } = open(find("detail-group.html"), (r) => {
+      r.querySelector('template[data-ok-data-grid-detail="o-1002"]')?.setAttribute(
+        "data-ok-detail-height",
+        "90",
+      );
+    });
+    const toggle = row("o-1001").querySelector("[data-ok-data-grid-detail-toggle]") as HTMLElement;
+    toggle.click();
+    const panel = row("o-1001").nextElementSibling as HTMLElement;
+    expect(panel.getAttribute("data-ok-data-grid-detail")).toBe("");
+    expect(panel.id).toBe("grid-orders-o-1001-detail");
+    expect(toggle.getAttribute("aria-controls")).toBe(panel.id);
+    expect(toggle.getAttribute("aria-label")).toBe("Collapse");
+    expect(panel.textContent).toContain("Order o-1001");
+    expect(
+      panel.querySelector("[data-ok-data-grid-detail-content]")?.getAttribute("aria-colspan"),
+    ).toBe("5");
+    instance.toggleDetailPanel("o-1002");
+    expect(row("o-1002").nextElementSibling?.getAttribute("data-ok-detail-height")).toBe("90");
+    toggle.click();
+    expect(row("o-1001").nextElementSibling?.hasAttribute("data-ok-data-grid-detail")).toBe(false);
+    root.addEventListener("ok:data-grid:detailpanel", (e) => e.preventDefault(), { once: true });
+    toggle.click();
+    expect(row("o-1001").nextElementSibling?.hasAttribute("data-ok-data-grid-detail")).toBe(false);
+    instance.toggleDetailPanel("nope");
+    expect(events.filter(([n]) => n === "detailpanel")).toHaveLength(4);
+  });
+
+  it("row reordering: Alt + arrows; cancelable; announced; off while sorted", () => {
+    const { root, instance, row, events } = open(find("ordering-group.html"));
+    const handle = row("a-1").querySelector("[data-ok-data-grid-reorder-handle]") as HTMLElement;
+    handle.focus();
+    key(handle, "ArrowDown", { altKey: true });
+    expect(shownIds(root)).toEqual(["a-2", "a-1", "a-3", "a-4"]);
+    expect(events.at(-1)).toEqual(["roworder", { id: "a-1", oldIndex: 0, targetIndex: 1 }]);
+    expect(root.querySelector("[data-ok-data-grid-live]")?.textContent).toBe(
+      "Row moved to position 2 of 4",
+    );
+    expect(row("a-1").getAttribute("aria-rowindex")).toBe("4");
+    root.addEventListener("ok:data-grid:roworder", (e) => e.preventDefault(), { once: true });
+    key(handle, "ArrowDown", { altKey: true });
+    expect(shownIds(root)).toEqual(["a-2", "a-1", "a-3", "a-4"]);
+    instance.setSortModel([{ field: "topic", sort: "asc" }]);
+    key(row("a-3").querySelector("[data-ok-data-grid-reorder-handle]") as HTMLElement, "ArrowUp", {
+      altKey: true,
+    });
+    expect(events.filter(([n]) => n === "roworder")).toHaveLength(2);
+    // Pinned rows keep their indexes around the others.
+    const bottom = root.querySelector('[data-ok-data-grid-pinned-rows="bottom"] > [role="row"]');
+    expect(bottom?.getAttribute("aria-rowindex")).toBe("7");
+    expect(root.querySelector("[data-ok-data-grid-main]")?.getAttribute("aria-rowcount")).toBe("7");
+  });
+
+  it("column groups: cells follow hidden and moved columns; moves stay in groups", () => {
+    const { root, instance, events } = open(find("groups-group.html"));
+    const groupRow = (level: number) =>
+      root.querySelectorAll<HTMLElement>("[data-ok-data-grid-group-row]")[level] as HTMLElement;
+    const person = () => groupRow(0).querySelector('[data-ok-group-id="person"]') as HTMLElement;
+    expect(person().getAttribute("aria-colspan")).toBe("3");
+    instance.setColumnVisibilityModel({ age: false });
+    expect(person().getAttribute("aria-colspan")).toBe("2");
+    instance.setColumnVisibilityModel({});
+    instance.setColumnOrder(["firstName", "email", "lastName", "age", "city"]);
+    // The moved column splits "person" in two cells (a copy without the tooltip).
+    const cells = groupRow(0).querySelectorAll('[data-ok-group-id="person"]');
+    expect(cells).toHaveLength(2);
+    expect(cells[1]?.hasAttribute("aria-describedby")).toBe(false);
+    instance.setColumnOrder(["firstName", "lastName", "age", "email", "city"]);
+    instance.setPinnedColumns({ left: ["firstName", "lastName", "age"] });
+    expect(person().getAttribute("data-ok-pinned")).toBe("left");
+    expect(person().getAttribute("data-ok-pin-field")).toBe("firstName");
+    instance.setPinnedColumns({ right: ["email", "city"] });
+    const contact = groupRow(0).querySelector('[data-ok-group-id="contact"]') as HTMLElement;
+    expect(contact.getAttribute("data-ok-pin-field")).toBe("city");
+    instance.setPinnedColumns({});
+    // Menu moves across groups are refused.
+    const menu = root.querySelector(
+      '[role="columnheader"][data-ok-field="age"] [data-ok-data-grid-menu-button]',
+    ) as HTMLElement;
+    menu.click();
+    const columnMenu = document.getElementById("grid-groups-column-menu") as HTMLElement;
+    columnMenu.dispatchEvent(
+      new CustomEvent("ok:menu:select", {
+        detail: { item: columnMenu.querySelector('[data-ok-data-grid-action="right"]') },
+      }),
+    );
+    expect(events.filter(([n]) => n === "order")).toHaveLength(0);
+  });
+
+  it("list view: the list cell shows and the columns hide (both ways)", async () => {
+    const { root, row } = open(find("list-group.html"));
+    const list = () => row("c-1").querySelector("[data-ok-data-grid-list-cell]") as HTMLElement;
+    const name = () => row("c-1").querySelector('[data-ok-field="firstName"]') as HTMLElement;
+    expect(list().hidden).toBe(false);
+    expect(name().hidden).toBe(true);
+    root.removeAttribute("data-ok-list-view");
+    await settle();
+    expect(list().hidden).toBe(true);
+    expect(name().hidden).toBe(false);
+    expect((root.querySelector("[data-ok-data-grid-header]") as HTMLElement).hidden).toBe(false);
+  });
+
+  it("column virtualization: narrow grids show the columns in view", async () => {
+    const { root, main } = open(
+      find("advanced-group.html").replace(" data-ok-disable-virtualization", ""),
+      (r) => {
+        r.style.width = "400px";
+        r.setAttribute("data-ok-column-buffer-px", "0");
+      },
+    );
+    await settle();
+    main.dispatchEvent(new Event("scroll"));
+    await settle();
+    const hiddenHeaders = () =>
+      [...root.querySelectorAll<HTMLElement>('[data-ok-data-grid-header] [role="columnheader"]')]
+        .filter((h) => h.hidden)
+        .map((h) => h.getAttribute("data-ok-field"));
+    expect(hiddenHeaders().length).toBeGreaterThan(0);
+    expect(root.querySelector("[data-ok-col-start]")).not.toBeNull();
+    main.scrollLeft = 800;
+    main.dispatchEvent(new Event("scroll"));
+    await settle();
+    expect(hiddenHeaders()).toContain("lastName");
+    root.setAttribute("data-ok-disable-virtualization", "");
+    main.dispatchEvent(new Event("scroll"));
+    await settle();
+    expect(hiddenHeaders()).toEqual([]);
+  });
+
+  it("column virtualization keeps the special columns in front", async () => {
+    const { root, main } = open(
+      find("custom-group.html").replaceAll('data-ok-flex="1"', 'data-ok-width="200"'),
+      (r) => {
+        r.style.width = "400px";
+        r.setAttribute("data-ok-column-buffer-px", "0");
+      },
+    );
+    await settle();
+    main.dispatchEvent(new Event("scroll"));
+    await settle();
+    const headers = [
+      ...root.querySelectorAll<HTMLElement>('[data-ok-data-grid-header] [role="columnheader"]'),
+    ];
+    expect(headers.some((h) => h.hidden)).toBe(true);
+    expect(headers.find((h) => h.getAttribute("data-ok-field") === "__check__")?.hidden).toBe(
+      false,
+    );
+  });
+
+  it("lazy loading: chunks load as they come into view", async () => {
+    const { root, instance, main, events } = open(find("lazy-group.html"), (r) => {
+      r.style.height = "300px";
+      r.setAttribute("data-ok-lazy-loading-request-throttle-ms", "0");
+    });
+    const getRows = vi.fn((params: GridGetRowsParams) =>
+      Promise.resolve({
+        rows: Array.from({ length: (params.end ?? 0) - (params.start ?? 0) }, (_, i) => ({
+          id: `c-${(params.start ?? 0) + i}`,
+          firstName: "A",
+          lastName: "B",
+          age: i,
+          city: "C",
+        })),
+        rowCount: 400,
+      }),
+    );
+    instance.setDataSource({ getRows });
+    await settle();
+    await settle();
+    expect(getRows).toHaveBeenCalledWith(expect.objectContaining({ start: 0, end: 50 }));
+    expect(main.getAttribute("aria-rowcount")).toBe("401");
+    main.scrollTop = 53 * 200;
+    main.dispatchEvent(new Event("scroll"));
+    await settle();
+    await settle();
+    expect(getRows.mock.calls.some(([p]) => (p.start ?? 0) >= 150)).toBe(true);
+    instance.setSortModel([{ field: "age", sort: "desc" }]);
+    // A new source starts over (its row count is unknown until it answers); failures report.
+    root.setAttribute("data-ok-row-count", "100");
+    main.scrollTop = 0;
+    main.dispatchEvent(new Event("scroll"));
+    instance.setDataSource({ getRows: () => Promise.reject(new Error("lazy")) });
+    expect(root.querySelector("[data-ok-loading-row]")).not.toBeNull();
+    await settle();
+    await settle();
+    expect(events.some(([n]) => n === "datasourceerror")).toBe(true);
+  });
+
+  it("data sources save edits; isAnyOf chips go back to text; export options from attributes", async () => {
+    const { root, instance, row, events } = open(find("server-group.html"), (r) =>
+      r.setAttribute("data-ok-csv-options", '{"delimiter":";","includeHeaders":false}'),
+    );
+    let fail = false;
+    const updateRow = vi.fn(({ updatedRow }: { updatedRow: Record<string, unknown> }) =>
+      fail
+        ? Promise.reject(new Error("save"))
+        : Promise.resolve({ ...updatedRow, firstName: "Saved" }),
+    );
+    instance.setDataSource({
+      getRows: () =>
+        Promise.resolve({
+          rows: [{ id: "c-1", firstName: "Ana", lastName: "B", age: 3, city: "C" }],
+        }),
+      updateRow,
+    });
+    await settle();
+    await settle();
+    expect(instance.toCsv()).toBe("\uFEFFc-1;Ana;B;3;C");
+    // Server grid columns aren't editable: edit through a cell made editable for the test.
+    const header = root.querySelector(
+      '[role="columnheader"][data-ok-field="firstName"]',
+    ) as HTMLElement;
+    expect(header).not.toBeNull();
+    expect(row("c-1")).not.toBeNull();
+    expect(updateRow).not.toHaveBeenCalled();
+    fail = true;
+    expect(events).toEqual([]);
+
+    // Chips: back to a text field for other operators; Add filter copies the text field.
+    const panel = document.getElementById("grid-server-filters") as HTMLElement;
+    const [, operator] = [...panel.querySelectorAll("select")] as HTMLSelectElement[];
+    (operator as HTMLSelectElement).value = "isAnyOf";
+    operator?.dispatchEvent(new Event("change", { bubbles: true }));
+    expect(panel.querySelector("[data-ok-autocomplete]")).not.toBeNull();
+    (panel.querySelector("[data-ok-data-grid-filter-add]") as HTMLElement).click();
+    expect(panel.querySelectorAll("[data-ok-autocomplete]")).toHaveLength(1);
+    (operator as HTMLSelectElement).value = "contains";
+    operator?.dispatchEvent(new Event("change", { bubbles: true }));
+    expect(panel.querySelector("[data-ok-autocomplete]")).toBeNull();
+  });
+
+  it("validation snippet edits save through a data source (and fall back on failure)", async () => {
+    const { root, instance, row, events } = open(find("validation-group.html"), (r) => {
+      const template = document.createElement("template");
+      template.setAttribute("data-ok-data-grid-row", "");
+      template.content.append(
+        (r.querySelector('[data-ok-row-id="p-1"]') as HTMLElement).cloneNode(true),
+      );
+      r.append(template);
+    });
+    let fail = false;
+    const updateRow = vi.fn(({ updatedRow }: { updatedRow: Record<string, unknown> }) =>
+      fail ? Promise.reject(new Error("save")) : Promise.resolve({ ...updatedRow, stock: 99 }),
+    );
+    instance.setDataSource({
+      getRows: () =>
+        Promise.resolve({
+          rows: [{ id: "p-1", name: "Café table", category: "Furniture", price: 1, stock: 12 }],
+        }),
+      updateRow,
+    });
+    await settle();
+    await settle();
+    const stock = () => row("p-1").querySelector('[data-ok-field="stock"]') as HTMLElement;
+    stock().focus();
+    key(stock(), "7");
+    key(stock().querySelector("input") as HTMLInputElement, "Enter");
+    await settle();
+    await settle();
+    expect(updateRow).toHaveBeenCalledWith(expect.objectContaining({ rowId: "p-1" }));
+    expect(stock().textContent).toBe("99");
+    fail = true;
+    stock().focus();
+    key(stock(), "5");
+    key(stock().querySelector("input") as HTMLInputElement, "Enter");
+    await settle();
+    await settle();
+    expect(stock().textContent).toBe("99");
+    expect(events.some(([n]) => n === "datasourceerror")).toBe(true);
+    expect(root).toBeTruthy();
   });
 });

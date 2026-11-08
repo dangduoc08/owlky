@@ -6,7 +6,9 @@ import { DataGridDocs } from "./data-grid-docs.js";
 import { DATA_GRID_CONTROLS, DATA_GRID_FILES, dataGridStories } from "./data-grid-examples.js";
 import {
   LARGE_SCRIPT_SOURCE,
+  LAZY_SCRIPT_SOURCE,
   largeScript,
+  lazyScript,
   SERVER_SCRIPT_SOURCE,
   serverScript,
   VALIDATION_SCRIPT_SOURCE,
@@ -14,6 +16,8 @@ import {
 } from "./data-grid-scripts.js";
 import { LargeDemo } from "./large-demo.js";
 import largeSource from "./large-demo.tsx?raw";
+import { LazyDemo } from "./lazy-demo.js";
+import lazySource from "./lazy-demo.tsx?raw";
 import { ServerDemo } from "./server-demo.js";
 import serverSource from "./server-demo.tsx?raw";
 
@@ -40,6 +44,9 @@ const SETUP = htmlSetup(
     "rating.css",
     "linear-progress.css",
     "tooltip.css",
+    "autocomplete.css",
+    "chip.css",
+    "circular-progress.css",
     "data-grid.css",
   ],
   true,
@@ -112,4 +119,23 @@ export const Server: StoryObj = {
     ),
   }),
   name: "Server side",
+};
+
+export const TreeData: StoryObj = { ...story("tree"), name: "Tree data" };
+export const MasterDetail: StoryObj = { ...story("detail"), name: "Master detail" };
+export const Ordering: StoryObj = { ...story("ordering"), name: "Row ordering and pinning" };
+export const ColumnGroups: StoryObj = { ...story("groups"), name: "Column groups" };
+export const ListView: StoryObj = { ...story("list"), name: "List view" };
+export const LazyLoading: StoryObj = {
+  ...frameworkStory({
+    html: snippetStory(snippets, "lazy", [["Lazy loading", "group"]], SETUP, undefined, {
+      group: { script: lazyScript, scriptSource: LAZY_SCRIPT_SOURCE },
+    }),
+    react: reactGroupsStory(
+      [{ title: "Lazy loading", content: <LazyDemo /> }],
+      undefined,
+      lazySource,
+    ),
+  }),
+  name: "Lazy loading",
 };

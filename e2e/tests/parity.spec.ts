@@ -13,6 +13,12 @@ const pairs: [component: string, story: string][] = [
   ["datagrid", "server"],
   ["datagrid", "layout"],
   ["datagrid", "validation"],
+  ["datagrid", "tree-data"],
+  ["datagrid", "master-detail"],
+  ["datagrid", "ordering"],
+  ["datagrid", "column-groups"],
+  ["datagrid", "list-view"],
+  ["datagrid", "lazy-loading"],
   ["motion", "in-view"],
   ["motion", "text"],
   ["motion", "scroll"],
@@ -219,7 +225,7 @@ const pairs: [component: string, story: string][] = [
 ];
 
 /** Stories whose rows load after the first render (scripts, data sources): wait for them. */
-const LOADS = new Set(["datagrid/large", "datagrid/server"]);
+const LOADS = new Set(["datagrid/large", "datagrid/server", "datagrid/lazy-loading"]);
 async function loaded(page: Page, key: string) {
   if (key === "editor/basic") {
     // The HTML story registers the editor in its page script: wait for both editors to mount.

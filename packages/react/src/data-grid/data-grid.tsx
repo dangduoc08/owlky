@@ -6,11 +6,15 @@ import {
   createGridColumnControls,
   createGridDataSourceCache,
   createGridNavigation,
+  createGridRowReorder,
   createGridScrollWatcher,
   dataGridAttributes,
   filterGridRows,
   GRID_CHECKBOX_FIELD,
+  GRID_CHECKBOX_WIDTH,
+  GRID_TREE_FIELD,
   type GridColumn,
+  type GridColumnGroup,
   type GridColumnVisibilityModel,
   type GridColumnWidths,
   type GridCsvOptions,
@@ -27,21 +31,31 @@ import {
   type GridRowWindow,
   type GridSortModel,
   type GridState,
+  type GridTreeRow,
   type GridViewport,
   gridAlign,
   gridAriaSort,
+  gridCanMoveColumn,
   gridColSpans,
   gridColumnTemplate,
+  gridColumnWindow,
   gridDefaultLabels,
   gridDensities,
   gridDensityFactor,
   gridDisplayedRows,
   gridEditInputType,
   gridEditText,
+  gridExpandedByDepth,
   gridExportColumns,
   gridFilterOperators,
+  gridFilterValues,
+  gridGroupPaths,
+  gridGroupRows,
+  gridGroupsById,
   gridHeaderAlign,
+  gridMissingRanges,
   gridOperatorNeedsValue,
+  gridParentsFromPaths,
   gridPinSide,
   gridQuickFilterValues,
   gridRowOffsets,
@@ -50,15 +64,18 @@ import {
   gridRowWindowOf,
   gridSelectAllState,
   gridToCsv,
+  gridTreeRows,
   isGridFilterable,
   isGridHideable,
   isGridResizable,
   isGridSortable,
   measureGridColumn,
   moveGridColumn,
+  moveGridRow,
   nextGridSort,
   orderGridColumns,
   parseGridEditValue,
+  parseGridExportOptions,
   pinGridColumn,
   prepareGridPrint,
   printGridContent,
@@ -72,6 +89,7 @@ import {
 } from "@owlky/core";
 import {
   type CSSProperties,
+  Fragment,
   forwardRef,
   type HTMLAttributes,
   type KeyboardEvent,
@@ -87,6 +105,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { Autocomplete } from "../autocomplete/autocomplete.js";
 import { Button } from "../button/button.js";
 import { Checkbox } from "../checkbox/checkbox.js";
 import { CircularProgress } from "../circular-progress/circular-progress.js";
@@ -202,6 +221,10 @@ export interface GridApi<R> {
   getDataAsCsv(options?: GridCsvOptions): string;
   exportDataAsCsv(options?: GridCsvOptions): void;
   exportDataAsPrint(options?: GridPrintOptions): void;
+  /** Tree data: opens or closes a row's children. */
+  setRowChildrenExpansion(id: string, expanded: boolean): void;
+  /** Master-detail: opens or closes a row's detail panel. */
+  toggleDetailPanel(id: string): void;
 }
 
 export interface GridAutosizeOptions {
@@ -209,6 +232,15 @@ export interface GridAutosizeOptions {
   columns?: readonly string[] | undefined;
   /** Count the header text. Default true. */
   includeHeaders?: boolean | undefined;
+}
+
+export interface GridGroupingColDef {
+  /** Default "Group". */
+  headerName?: string | undefined;
+  /** px. Default 200. */
+  width?: number | undefined;
+  /** No "(n)" after group names. */
+  hideDescendantCount?: boolean | undefined;
 }
 
 /** A ref for `apiRef` (MUI X `useGridApiRef`). */
@@ -355,6 +387,42 @@ export interface DataGridProps<R>
   printOptions?: GridPrintOptions | undefined;
   /** Toolbar buttons with text (default) or icons with tooltips. */
   toolbarVariant?: "labeled" | "icon" | undefined;
+  /** Rows form a tree (`getTreeDataPath`, or a data source with `getChildrenCount`). */
+  treeData?: boolean | undefined;
+  /** A row's path in the tree: its ancestors' keys, then its own (MUI X). */
+  getTreeDataPath?: ((row: R) => readonly string[]) | undefined;
+  groupingColDef?: GridGroupingColDef | undefined;
+  /** Levels open at first (`-1`: all). Default 0. */
+  defaultGroupingExpansionDepth?: number | undefined;
+  isGroupExpandedByDefault?: ((node: { id: string; depth: number; row: R }) => boolean) | undefined;
+  /** A row's detail panel (`null`: none, no toggle). */
+  getDetailPanelContent?: ((params: { id: string; row: R }) => ReactNode) | undefined;
+  /** px, or `"auto"` (default): the content decides. */
+  getDetailPanelHeight?: ((params: { id: string; row: R }) => number | "auto") | undefined;
+  detailPanelExpandedRowIds?: readonly string[] | undefined;
+  onDetailPanelExpandedRowIdsChange?: ((ids: string[]) => void) | undefined;
+  /** Rows move by dragging their handle (or Alt + Up / Down on it). */
+  rowReordering?: boolean | undefined;
+  onRowOrderChange?:
+    | ((params: { row: R; oldIndex: number; targetIndex: number }) => void)
+    | undefined;
+  /** Rows kept above or below the others (not sorted, filtered or paged). */
+  pinnedRows?: { top?: readonly R[] | undefined; bottom?: readonly R[] | undefined } | undefined;
+  /** Header groups over the columns (multi-level headers). */
+  columnGroupingModel?: readonly GridColumnGroup[] | undefined;
+  /** Each row shows as one cell (`listViewColumn`). */
+  listView?: boolean | undefined;
+  listViewColumn?:
+    | { field: string; renderCell?: ((params: GridRenderCellParams<R>) => ReactNode) | undefined }
+    | undefined;
+  /** Rows rendered beyond the visible ones, px. Default 150. */
+  rowBufferPx?: number | undefined;
+  /** Columns rendered beyond the visible ones, px. Default 150. */
+  columnBufferPx?: number | undefined;
+  /** With `dataSource` and a row count: rows load in chunks as they scroll into view. */
+  lazyLoading?: boolean | undefined;
+  /** Least time between two lazy loading requests, ms. Default 500. */
+  lazyLoadingRequestThrottleMs?: number | undefined;
 }
 
 export type GridEditStopReason = "enterKeyDown" | "escapeKeyDown" | "cellFocusOut";
@@ -406,6 +474,33 @@ const SearchIcon = () => (
     <path d="M10 3a7 7 0 015.6 11.2l4.6 4.6-1.4 1.4-4.6-4.6A7 7 0 1110 3zm0 2a5 5 0 100 10 5 5 0 000-10z" />
   </svg>
 );
+
+const ChevronIcon = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
+    <path d="M9 6l6 6-6 6-1.4-1.4 4.6-4.6-4.6-4.6z" />
+  </svg>
+);
+const ExpandIcon = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
+    <path d="M7.4 8.6 12 13.2l4.6-4.6L18 10l-6 6-6-6z" />
+  </svg>
+);
+const GripIcon = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
+    <path d="M9 5h2v2H9zm4 0h2v2h-2zM9 11h2v2H9zm4 0h2v2h-2zm-4 6h2v2H9zm4 0h2v2h-2z" />
+  </svg>
+);
+
+const REORDER_FIELD = "__reorder__";
+const DETAIL_FIELD = "__detail_panel_toggle__";
+/** Lazy loading asks for rows in chunks of this many. */
+const LAZY_CHUNK = 50;
+/** Rows of a lazy grid that haven't loaded yet. */
+const HOLE = Symbol("row not loaded");
+type Hole = { [HOLE]: number };
+const holeAt = <R,>(index: number) => ({ [HOLE]: index }) as unknown as R;
+const isHole = (row: unknown): row is Hole =>
+  typeof row === "object" && row !== null && HOLE in row;
 
 const rawValue = <R,>(column: GridColDef<R>, row: R) =>
   column.valueGetter ? column.valueGetter(row) : (row as Record<string, unknown>)[column.field];
@@ -518,6 +613,25 @@ function DataGridInner<R>(
     csvOptions,
     printOptions,
     toolbarVariant = "labeled",
+    treeData,
+    getTreeDataPath,
+    groupingColDef,
+    defaultGroupingExpansionDepth = 0,
+    isGroupExpandedByDefault,
+    getDetailPanelContent,
+    getDetailPanelHeight,
+    detailPanelExpandedRowIds,
+    onDetailPanelExpandedRowIdsChange,
+    rowReordering,
+    onRowOrderChange,
+    pinnedRows,
+    columnGroupingModel,
+    listView,
+    listViewColumn,
+    rowBufferPx = 150,
+    columnBufferPx = 150,
+    lazyLoading,
+    lazyLoadingRequestThrottleMs = 500,
     "aria-label": ariaLabel,
     "aria-labelledby": ariaLabelledby,
     ...props
@@ -596,7 +710,12 @@ function DataGridInner<R>(
   const refocus = useRef<{ rowId: string; field: string } | null>(null);
   // New rows from the parent replace the edits shown so far.
   // biome-ignore lint/correctness/useExhaustiveDependencies: runs when `rows` changes.
-  useEffect(() => setOverrides(new Map()), [rows]);
+  useEffect(() => {
+    setOverrides(new Map());
+    setRowOrder(null);
+  }, [rows]);
+  // Row reordering: an order of ids set by moves (new rows from the parent reset it).
+  const [rowOrder, setRowOrder] = useState<readonly string[] | null>(null);
   const [panel, setPanel] = useState<Panel>(null);
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
   const [menuField, setMenuField] = useState<string | null>(null);
@@ -610,13 +729,31 @@ function DataGridInner<R>(
   // One default cache per data source: a new source never sees the old one's rows.
   // biome-ignore lint/correctness/useExhaustiveDependencies: a new cache for each source.
   const defaultCache = useMemo(() => createGridDataSourceCache<R>(), [dataSource]);
-  const base = dataSource ? sourced.rows : rows;
+  const lazy = !!lazyLoading && !!dataSource;
+  // Lazy loading: rows by index as they arrive; the others show as placeholders.
+  const [lazyRows, setLazyRows] = useState<ReadonlyMap<number, R>>(new Map());
+  // Server tree data: children loaded per parent id; parents whose children are loading.
+  const [childRows, setChildRows] = useState<ReadonlyMap<string, readonly R[]>>(new Map());
+  const [loadingChildren, setLoadingChildren] = useState<ReadonlySet<string>>(new Set());
+  const serverTree = !!treeData && !!dataSource;
+  const base: readonly R[] = lazy
+    ? [...lazyRows.values()]
+    : dataSource
+      ? serverTree
+        ? [...sourced.rows, ...[...childRows.values()].flat()]
+        : sourced.rows
+      : rows;
   const server = {
     sort: !!dataSource || sortingMode === "server",
     filter: !!dataSource || filterMode === "server",
     page: !!dataSource || paginationMode === "server",
   };
-  const view = base.map((row) => overrides.get(String(getRowId(row))) ?? row);
+  const idOf = (row: R) => (isHole(row) ? `__loading__-${row[HOLE]}` : String(getRowId(row)));
+  const view = base.map((row) => overrides.get(idOf(row)) ?? row);
+  const rank = rowOrder ? new Map(rowOrder.map((rowId, i) => [rowId, i])) : null;
+  const orderedRows = rank
+    ? [...view].sort((a, b) => (rank.get(idOf(a)) ?? rank.size) - (rank.get(idOf(b)) ?? rank.size))
+    : view;
   const ordered = orderGridColumns(columns, order);
   // While printing (every row and the printed columns render, then the page prints).
   const [printing, setPrinting] = useState<GridPrintOptions | null>(null);
@@ -634,37 +771,92 @@ function DataGridInner<R>(
   const searchColumns = (quickFilterExcludeHiddenColumns ? shown : columns).map((c) =>
     c.getApplyQuickFilterFn === null ? { ...c, searchable: false } : c,
   );
-  const filtered = server.filter
-    ? view
-    : filterGridRows(
-        view,
-        filterModel,
-        columns,
-        (row, field) => rawValue(columnOf(field), row),
-        (row, field) => textOf(columnOf(field), row),
-        {
-          ignoreDiacritics,
-          quickFilterLogicOperator,
-          quickFilterColumns: searchColumns,
-          operators,
-        },
-      );
-  const sorted = server.sort
-    ? filtered
-    : sortGridRows(filtered, sortModel, columns, (row, field) =>
-        rawValue(columns.find((c) => c.field === field) as GridColDef<R>, row),
-      );
+  const localFilter = (list: readonly R[]) =>
+    filterGridRows(
+      list,
+      filterModel,
+      columns,
+      (row, field) => rawValue(columnOf(field), row),
+      (row, field) => textOf(columnOf(field), row),
+      {
+        ignoreDiacritics,
+        quickFilterLogicOperator,
+        quickFilterColumns: searchColumns,
+        operators,
+      },
+    );
+  const localSort = (list: readonly R[]) =>
+    sortGridRows(list, sortModel, columns, (row, field) => rawValue(columnOf(field), row));
+  // Tree data: which rows are open (absent: the default depth).
+  const [expansion, setExpansion] = useState<ReadonlyMap<string, boolean>>(new Map());
+  const serverParents = new Map<string, string>();
+  for (const [parent, kids] of childRows)
+    for (const kid of kids) serverParents.set(idOf(kid), parent);
+  let filtered: readonly R[];
+  let sorted: readonly R[];
+  let tree: Map<string, GridTreeRow<R>> | null = null;
+  let treeOrder: readonly R[] | null = null;
+  if (lazy) {
+    const count = sourced.rowCount ?? rowCount ?? 0;
+    sorted = Array.from({ length: count }, (_, i) => lazyRows.get(i) ?? holeAt<R>(i));
+    filtered = sorted;
+  } else if (treeData) {
+    const parents = serverTree
+      ? serverParents
+      : gridParentsFromPaths(orderedRows, idOf, getTreeDataPath ?? (() => []));
+    const byId = new Map(orderedRows.map((row) => [idOf(row), row]));
+    const pass = server.filter ? null : new Set(localFilter(orderedRows));
+    const place = server.sort ? null : new Map(localSort(orderedRows).map((row, i) => [row, i]));
+    const openOf = (rowId: string, depth: number) =>
+      expansion.get(rowId) ??
+      (isGroupExpandedByDefault
+        ? isGroupExpandedByDefault({ id: rowId, depth, row: byId.get(rowId) as R })
+        : gridExpandedByDepth(defaultGroupingExpansionDepth, depth));
+    const options = {
+      idOf,
+      parentOf: (row: R) => parents.get(idOf(row)) ?? null,
+      keep: pass ? (row: R) => pass.has(row) : undefined,
+      compare: place
+        ? (a: R, b: R) => (place.get(a) as number) - (place.get(b) as number)
+        : undefined,
+    };
+    const list = gridTreeRows(orderedRows, { ...options, expanded: openOf });
+    // Every row renders (children of closed rows `hidden`), so the markup holds the whole tree.
+    const all = serverTree ? list : gridTreeRows(orderedRows, { ...options, expanded: () => true });
+    tree = new Map(
+      all.map((node) => [
+        node.id,
+        { ...node, expanded: node.childrenCount > 0 && openOf(node.id, node.depth) },
+      ]),
+    );
+    treeOrder = all.map((node) => node.row);
+    sorted = list.map((node) => node.row);
+    filtered = sorted;
+  } else {
+    filtered = server.filter ? orderedRows : localFilter(orderedRows);
+    sorted = server.sort ? filtered : localSort(filtered);
+  }
   const total = server.page
     ? ((dataSource ? sourced.rowCount : rowCount) ?? sorted.length)
     : sorted.length;
   const pageCount = Math.max(Math.ceil(total / pagination.pageSize), 1);
   const page = Math.min(pagination.page, pageCount - 1);
   // Rows of the page: all of them with server pagination or without a footer.
-  const pageStart = server.page || hideFooter ? 0 : page * pagination.pageSize;
-  const pageEnd = server.page || hideFooter ? sorted.length : pageStart + pagination.pageSize;
-  const onPage = (index: number) => !!printing || (index >= pageStart && index < pageEnd);
+  const unpaged = server.page || hideFooter || lazy;
+  const pageStart = unpaged ? 0 : page * pagination.pageSize;
+  const pageEnd = unpaged ? sorted.length : pageStart + pagination.pageSize;
+  const onPage = (index: number) =>
+    index >= 0 && (!!printing || (index >= pageStart && index < pageEnd));
   const pageRows = sorted.slice(pageStart, pageEnd);
-  const idOf = (row: R) => String(getRowId(row));
+  const [detailIds, setDetailIds] = useControllableState<readonly string[]>({
+    value: detailPanelExpandedRowIds,
+    defaultValue: [],
+    onChange: (next) => onDetailPanelExpandedRowIdsChange?.([...next]),
+  });
+  const detailOf = (row: R) =>
+    getDetailPanelContent && detailIds.includes(idOf(row))
+      ? getDetailPanelContent({ id: idOf(row), row })
+      : null;
   const factor = gridDensityFactor(density);
   // Rows of their own height (or spacing) need per-row offsets for the window.
   const rowParams = (row: R, i: number): GridRowParams<R> => ({
@@ -676,7 +868,8 @@ function DataGridInner<R>(
   });
   const heightOf = (row: R) => getRowHeight?.({ id: idOf(row), model: row, densityFactor: factor });
   const spacingOf = (row: R, i: number) => getRowSpacing?.(rowParams(row, i)) ?? {};
-  const variable = !!getRowHeight || !!getRowSpacing;
+  const variable =
+    !!getRowHeight || !!getRowSpacing || (!!getDetailPanelContent && detailIds.length > 0);
   const baseHeight = Math.round((rowHeight ?? 52) * factor);
   const measured = useRef(new Map<string, number>());
   const [, remeasured] = useState(0);
@@ -700,9 +893,18 @@ function DataGridInner<R>(
         return box + (space.top ?? 0) + (space.bottom ?? 0);
       });
       offsets = gridRowOffsets(heights);
-      range = gridRowWindowOf(offsets, vp.offset, vp.viewport);
-    } else range = gridRowWindow(pageRows.length, vp.rowHeight, vp.offset, vp.viewport);
+      range = gridRowWindowOf(offsets, vp.offset, vp.viewport, rowBufferPx);
+    } else
+      range = gridRowWindow(pageRows.length, vp.rowHeight, vp.offset, vp.viewport, rowBufferPx);
   }
+  // Lazy grids never render every row: before the first measure, the first chunk only.
+  if (!range && lazy && !printing && pageRows.length > LAZY_CHUNK)
+    range = {
+      start: 0,
+      end: LAZY_CHUNK,
+      before: 0,
+      after: (pageRows.length - LAZY_CHUNK) * (baseHeight + 1),
+    };
   // Row spans (on the page): cells merge with the rows below; the window starts at a span's top.
   const spanFields = shown.filter((c) => c.type !== "actions").map((c) => c.field);
   const spans = rowSpanning
@@ -719,12 +921,18 @@ function DataGridInner<R>(
     ? pageRows
         .slice((range as GridRowWindow).start, (range as GridRowWindow).end)
         .map((row, i) => ({ row, index: pageStart + (range as GridRowWindow).start + i }))
-    : sorted.map((row, index) => ({ row, index }));
+    : treeOrder
+      ? (() => {
+          const position = new Map(sorted.map((row, index) => [row, index]));
+          return treeOrder.map((row) => ({ row, index: position.get(row) ?? -1 }));
+        })()
+      : sorted.map((row, index) => ({ row, index }));
   const busy = !!loading || sourceLoading;
   // Rows of a server page sit after the rows of the pages before it.
   const rowOffset = server.page ? page * pagination.pageSize : 0;
   const multiple = !disableMultipleRowSelection;
-  const selectable = (row: R) => isRowSelectable?.({ id: idOf(row), row }) ?? true;
+  const selectable = (row: R) =>
+    !isHole(row) && (isRowSelectable?.({ id: idOf(row), row }) ?? true);
   // Select all: the selectable rows of every page (or of this page only).
   const allIds = (checkboxSelectionVisibleOnly ? pageRows : sorted).filter(selectable).map(idOf);
   const selectAll = gridSelectAllState(allIds, selection);
@@ -740,7 +948,92 @@ function DataGridInner<R>(
     const kept = pruneGridSelection(selection, base.map(idOf));
     if (kept.length !== selection.length) setSelection(kept);
   }, [base]);
-  const colOffset = checkboxSelection ? 2 : 1;
+  // Columns the grid adds before the others: reorder handle, checkbox, detail toggle, tree group.
+  const specials = [
+    ...(rowReordering ? [{ field: REORDER_FIELD, width: 50 }] : []),
+    ...(checkboxSelection ? [{ field: GRID_CHECKBOX_FIELD, width: GRID_CHECKBOX_WIDTH }] : []),
+    ...(getDetailPanelContent ? [{ field: DETAIL_FIELD, width: 50 }] : []),
+    ...(treeData ? [{ field: GRID_TREE_FIELD, width: groupingColDef?.width ?? 200 }] : []),
+  ];
+  const colOffset = specials.length + 1;
+  const colCount = specials.length + shown.length;
+  const specialIndex = (field: string) => specials.findIndex((c) => c.field === field) + 1;
+  // Column groups: header rows above the column headers.
+  const groupPaths = useMemo(
+    () => gridGroupPaths(columnGroupingModel ?? []),
+    [columnGroupingModel],
+  );
+  const groupsById = useMemo(
+    () => gridGroupsById(columnGroupingModel ?? []),
+    [columnGroupingModel],
+  );
+  const groupRows = columnGroupingModel
+    ? gridGroupRows(
+        shown.map((c) => c.field),
+        groupPaths,
+      )
+    : [];
+  const headerLevels = groupRows.length;
+  const topRows = pinnedRows?.top ?? [];
+  const bottomRows = pinnedRows?.bottom ?? [];
+  // Column virtualization: only the scrolling columns in view (fixed widths, no spans or groups).
+  const trackPx = (c: GridColDef<R>) =>
+    widths[c.field] !== undefined
+      ? clampGridWidth(c, widths[c.field] as number)
+      : Math.max(c.width ?? 100, c.minWidth ?? 50);
+  const leftCols = shown.filter((c) => gridPinSide(pinned, c.field) === "left");
+  const rightCols = shown.filter((c) => gridPinSide(pinned, c.field) === "right");
+  const middleCols = shown.filter((c) => !gridPinSide(pinned, c.field));
+  const fixedWidths = shown.every((c) => widths[c.field] !== undefined || !((c.flex ?? 0) > 0));
+  let colWindow: GridRowWindow | null = null;
+  if (
+    !disableVirtualization &&
+    !printing &&
+    viewport?.width &&
+    fixedWidths &&
+    !listView &&
+    headerLevels === 0 &&
+    !shown.some((c) => c.colSpan !== undefined) &&
+    middleCols.length > 0
+  ) {
+    const pinnedPx =
+      specials.reduce((sum, c) => sum + c.width, 0) +
+      [...leftCols, ...rightCols].reduce((sum, c) => sum + trackPx(c), 0);
+    const window = gridColumnWindow(
+      middleCols.map(trackPx),
+      viewport.left ?? 0,
+      viewport.width - pinnedPx,
+      columnBufferPx,
+    );
+    if (window.before > 0 || window.after > 0) colWindow = window;
+  }
+  const visibleMiddle = colWindow ? middleCols.slice(colWindow.start, colWindow.end) : middleCols;
+  const renders = (column: GridColDef<R>) =>
+    !colWindow || gridPinSide(pinned, column.field) !== undefined || visibleMiddle.includes(column);
+  const template = [
+    ...specials.map((c) => `${c.width}px`),
+    ...(colWindow
+      ? [
+          ...leftCols.map((c) => `${trackPx(c)}px`),
+          `${colWindow.before}px`,
+          ...visibleMiddle.map((c) => `${trackPx(c)}px`),
+          `${colWindow.after}px`,
+          ...rightCols.map((c) => `${trackPx(c)}px`),
+        ]
+      : [gridColumnTemplate(shown, false, widths)]),
+  ]
+    .filter(Boolean)
+    .join(" ");
+  /** With column virtualization, the cells after a spacer track say where they start. */
+  const colStart = (column: GridColDef<R>): number | undefined => {
+    if (!colWindow) return undefined;
+    const first = specials.length + leftCols.length + 2;
+    return column === visibleMiddle[0]
+      ? first
+      : column === rightCols[0]
+        ? first + visibleMiddle.length + 1
+        : undefined;
+  };
 
   useEffect(() => {
     const grid = gridRef.current as HTMLDivElement;
@@ -757,6 +1050,8 @@ function DataGridInner<R>(
           reason,
           key,
         ),
+      onToggleExpansion: (row, expanded) =>
+        toggleExpansion.current(row.getAttribute("data-ok-row-id") as string, expanded),
       onResizeKey: (field, delta) => {
         const header = grid.querySelector<HTMLElement>(
           `[role="columnheader"][data-ok-field="${CSS.escape(field)}"]`,
@@ -782,16 +1077,99 @@ function DataGridInner<R>(
     if (!variable) return;
     let changed = false;
     for (const row of (gridRef.current as HTMLDivElement).querySelectorAll<HTMLElement>(
-      '[data-ok-data-grid-body] > [role="row"]:not([hidden])',
+      '[data-ok-data-grid-body] > [role="row"][data-ok-row-id]:not([hidden])',
     )) {
       const rowId = row.getAttribute("data-ok-row-id") as string;
-      if (row.offsetHeight && measured.current.get(rowId) !== row.offsetHeight) {
-        measured.current.set(rowId, row.offsetHeight);
+      // A row's open detail panel counts with it.
+      const panel = row.nextElementSibling?.hasAttribute("data-ok-data-grid-detail")
+        ? (row.nextElementSibling as HTMLElement).offsetHeight
+        : 0;
+      const height = row.offsetHeight + panel;
+      if (row.offsetHeight && measured.current.get(rowId) !== height) {
+        measured.current.set(rowId, height);
         changed = true;
       }
     }
     if (changed && virtual) remeasured((n) => n + 1);
   });
+  // Row reordering: the controller reports moves; the row keeps its focus.
+  const [announcement, setAnnouncement] = useState("");
+  const firstRowIndex = headerLevels + topRows.length + 2;
+  const canReorder = useRef(false);
+  canReorder.current =
+    !!rowReordering &&
+    !treeData &&
+    !lazy &&
+    sortModel.length === 0 &&
+    filterModel.items.length === 0 &&
+    !filterModel.quickFilterValues?.length;
+  const refocusHandle = useRef<string | null>(null);
+  const reorderMove = useRef<(rowId: string, rowIndex: number) => void>(undefined as never);
+  reorderMove.current = (rowId, rowIndex) => {
+    const ids = sorted.map(idOf);
+    const oldIndex = ids.indexOf(rowId);
+    const targetIndex = Math.min(Math.max(rowIndex - firstRowIndex - rowOffset, 0), ids.length - 1);
+    if (oldIndex < 0 || oldIndex === targetIndex) return;
+    setRowOrder(moveGridRow(ids, rowId, targetIndex));
+    onRowOrderChange?.({ row: sorted[oldIndex] as R, oldIndex, targetIndex });
+    setAnnouncement(
+      labels.rowReorderingMoved
+        .replace("{position}", String(targetIndex + 1))
+        .replace("{count}", String(ids.length)),
+    );
+    refocusHandle.current = rowId;
+  };
+  useEffect(() => {
+    const handle = createGridRowReorder(gridRef.current as HTMLDivElement, {
+      canReorder: () => canReorder.current,
+      onMove: (rowId, rowIndex) => reorderMove.current(rowId, rowIndex),
+    });
+    return () => handle.destroy();
+  }, []);
+  useLayoutEffect(() => {
+    if (!refocusHandle.current) return;
+    const rowId = refocusHandle.current;
+    refocusHandle.current = null;
+    (gridRef.current as HTMLDivElement)
+      .querySelector<HTMLElement>(
+        `[data-ok-row-id="${CSS.escape(rowId)}"] [data-ok-data-grid-reorder-handle]`,
+      )
+      ?.focus();
+  });
+  // Tree data: open or close a row; server trees load the children the first time.
+  const toggleExpansion = useRef<(rowId: string, open?: boolean) => void>(undefined as never);
+  toggleExpansion.current = (rowId, open) => {
+    const node = tree?.get(rowId);
+    if (!node) return;
+    const current = serverTree ? expansion.get(rowId) === true : node.expanded;
+    const next = open ?? !current;
+    setExpansion(new Map(expansion).set(rowId, next));
+    if (serverTree && next && !childRows.has(rowId) && dataSource) {
+      // The group keys of the row and its ancestors.
+      const keys: string[] = [];
+      for (let row: R | undefined = node.row; row; ) {
+        keys.unshift(dataSource.getGroupKey?.(row) ?? idOf(row));
+        const parent = serverParents.get(idOf(row));
+        row = parent ? (tree?.get(parent)?.row as R | undefined) : undefined;
+      }
+      setLoadingChildren((current) => new Set(current).add(rowId));
+      dataSource
+        .getRows({ sortModel, filterModel, groupKeys: keys })
+        .then((response) => setChildRows((current) => new Map(current).set(rowId, response.rows)))
+        .catch((error: unknown) => onDataSourceError?.(error))
+        .finally(() =>
+          setLoadingChildren((current) => {
+            const next = new Set(current);
+            next.delete(rowId);
+            return next;
+          }),
+        );
+    }
+  };
+  const toggleDetail = (rowId: string) =>
+    setDetailIds(
+      detailIds.includes(rowId) ? detailIds.filter((d) => d !== rowId) : [...detailIds, rowId],
+    );
   // Sticky offsets of pinned columns, after every layout.
   useLayoutEffect(() => syncGridPinning(gridRef.current as HTMLDivElement));
   const scrollEnd = useRef<() => void>(undefined as never);
@@ -812,7 +1190,9 @@ function DataGridInner<R>(
           current.offset === next.offset &&
           current.viewport === next.viewport &&
           current.rowHeight === next.rowHeight &&
-          current.scrolls === next.scrolls
+          current.scrolls === next.scrolls &&
+          current.left === next.left &&
+          current.width === next.width
             ? current
             : next,
         ),
@@ -832,9 +1212,13 @@ function DataGridInner<R>(
     sortModel,
     filterModel,
     paginationModel: { page: pagination.page, pageSize: pagination.pageSize },
+    ...(serverTree ? { groupKeys: [] } : {}),
   });
+  // New top-level rows: children loaded before belong to the old ones.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: runs when the request changes.
+  useEffect(() => setChildRows(new Map()), [request, dataSource]);
   useEffect(() => {
-    if (!dataSource) return;
+    if (!dataSource || lazy) return;
     const params = JSON.parse(request);
     const cached = cache?.get(params);
     if (cached) {
@@ -858,7 +1242,69 @@ function DataGridInner<R>(
     return () => {
       current = false;
     };
-  }, [dataSource, cache, request, onDataSourceError]);
+  }, [dataSource, cache, request, onDataSourceError, lazy]);
+  // Lazy loading: ask for the chunks the window misses (throttled); a new sort or filter restarts.
+  const lazyKey = JSON.stringify({ sortModel, filterModel });
+  const lazyWindow = range ?? { start: 0, end: Math.min(total || LAZY_CHUNK, LAZY_CHUNK) };
+  const lazyState = useRef({ key: "", pending: new Set<string>(), last: 0 });
+  // A new data source: lazily loaded rows belonged to the old one.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: runs when the source changes.
+  useEffect(() => {
+    lazyState.current.key = "";
+    lazyState.current.pending.clear();
+    setLazyRows(new Map());
+  }, [dataSource]);
+  const lazyTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: asks for the rows the window misses.
+  useEffect(() => {
+    if (!lazy || !dataSource) return;
+    const state = lazyState.current;
+    if (state.key !== lazyKey) {
+      state.key = lazyKey;
+      state.pending.clear();
+      if (lazyRows.size) {
+        setLazyRows(new Map());
+        return;
+      }
+    }
+    const ranges = gridMissingRanges(
+      (i) => lazyRows.has(i),
+      lazyWindow,
+      LAZY_CHUNK,
+      total > 0 ? total : lazyWindow.end,
+    ).filter((r) => !state.pending.has(`${r.start}-${r.end}`));
+    if (!ranges.length) return;
+    const run = () => {
+      state.last = Date.now();
+      for (const r of ranges) {
+        const name = `${r.start}-${r.end}`;
+        state.pending.add(name);
+        setSourceLoading(true);
+        dataSource
+          .getRows({ sortModel, filterModel, start: r.start, end: r.end })
+          .then((response) => {
+            if (state.key !== lazyKey) return;
+            setLazyRows((current) => {
+              const next = new Map(current);
+              for (const [k, row] of response.rows.entries()) next.set(r.start + k, row);
+              return next;
+            });
+            if (response.rowCount !== undefined)
+              setSourced((current) => ({ ...current, rowCount: response.rowCount }));
+          })
+          .catch((error: unknown) => onDataSourceError?.(error))
+          .finally(() => {
+            state.pending.delete(name);
+            setSourceLoading(state.pending.size > 0);
+          });
+      }
+    };
+    const wait = lazyLoadingRequestThrottleMs - (Date.now() - state.last);
+    clearTimeout(lazyTimer.current);
+    if (wait > 0) lazyTimer.current = setTimeout(run, wait);
+    else run();
+    return () => clearTimeout(lazyTimer.current);
+  }, [lazy, lazyWindow.start, lazyWindow.end, lazyKey, total, lazyRows]);
   useEffect(() => {
     if (editing) {
       const grid = gridRef.current as HTMLDivElement;
@@ -945,7 +1391,10 @@ function DataGridInner<R>(
   reorderable.current = !disableColumnReorder;
   const fields = ordered.map((c) => c.field);
   const moveTo = useRef<(field: string, target: string) => void>(undefined as never);
-  moveTo.current = (field, target) => setOrder(moveGridColumn(fields, field, { to: target }));
+  moveTo.current = (field, target) => {
+    if (columnGroupingModel && !gridCanMoveColumn(groupPaths, field, target)) return;
+    setOrder(moveGridColumn(fields, field, { to: target }));
+  };
 
   const cellParams = (column: GridColDef<R>, row: R): GridCellParams<R> => ({
     id: idOf(row),
@@ -1021,7 +1470,20 @@ function DataGridInner<R>(
         : ({ ...newRow, [f]: value } as R);
     }
     Promise.resolve(processRowUpdate ? processRowUpdate(newRow, oldRow) : newRow)
-      .then((result) => setOverrides((current) => new Map(current).set(rowId, result)))
+      .then((result) => {
+        setOverrides((current) => new Map(current).set(rowId, result));
+        // A data source saves the row too; its answer is the row to show.
+        if (!dataSource?.updateRow) return;
+        Promise.resolve(dataSource.updateRow({ rowId, updatedRow: result, previousRow: oldRow }))
+          .then((saved) => {
+            setOverrides((current) => new Map(current).set(rowId, saved));
+            cache?.clear();
+          })
+          .catch((error: unknown) => {
+            setOverrides((current) => new Map(current).set(rowId, oldRow));
+            onDataSourceError?.(error);
+          });
+      })
       .catch((error: unknown) => onProcessRowUpdateError?.(error));
   };
 
@@ -1126,6 +1588,8 @@ function DataGridInner<R>(
     getDataAsCsv: getCsv,
     exportDataAsCsv: exportCsv,
     exportDataAsPrint: print,
+    setRowChildrenExpansion: (rowId, expanded) => toggleExpansion.current(rowId, expanded),
+    toggleDetailPanel: toggleDetail,
   };
   useLayoutEffect(() => {
     if (!apiRef) return;
@@ -1183,9 +1647,11 @@ function DataGridInner<R>(
     if (action === "asc" || action === "desc") setSortModel([{ field, sort: action }]);
     else if (action === "unsort") setSortModel(sortModel.filter((s) => s.field !== field));
     else if (action === "hide") setVisibility({ ...visibility, [field]: false });
-    else if (action === "left" || action === "right")
+    else if (action === "left" || action === "right") {
+      const neighbour = fields[fields.indexOf(field) + (action === "left" ? -1 : 1)] as string;
+      if (columnGroupingModel && !gridCanMoveColumn(groupPaths, field, neighbour)) return;
       setOrder(moveGridColumn(fields, field, action === "left" ? -1 : 1));
-    else if (action === "pin-left" || action === "pin-right" || action === "unpin")
+    } else if (action === "pin-left" || action === "pin-right" || action === "unpin")
       setPinned(
         pinGridColumn(
           pinned,
@@ -1357,17 +1823,32 @@ function DataGridInner<R>(
                       </option>
                     ))}
                   </TextField>
-                  <TextField
-                    id={`${id}-filter-value${suffix}`}
-                    size="small"
-                    label={labels.filterPanelInputLabel}
-                    placeholder={labels.filterPanelInputPlaceholder}
-                    disabled={!gridOperatorNeedsValue(item.operator, column?.filterOperators)}
-                    value={
-                      typeof item.value === "string" ? item.value : (item.value ?? []).join(", ")
-                    }
-                    onChange={(value) => setFilterItem(index, { ...item, value })}
-                  />
+                  {item.operator === "isAnyOf" && !column?.filterOperators ? (
+                    <Autocomplete
+                      id={`${id}-filter-value${suffix}`}
+                      size="small"
+                      label={labels.filterPanelInputLabel}
+                      multiple
+                      freeSolo
+                      options={column?.valueOptions ?? []}
+                      value={gridFilterValues(item.value)}
+                      onChange={(value) =>
+                        setFilterItem(index, { ...item, value: (value as string[] | null) ?? [] })
+                      }
+                    />
+                  ) : (
+                    <TextField
+                      id={`${id}-filter-value${suffix}`}
+                      size="small"
+                      label={labels.filterPanelInputLabel}
+                      placeholder={labels.filterPanelInputPlaceholder}
+                      disabled={!gridOperatorNeedsValue(item.operator, column?.filterOperators)}
+                      value={
+                        typeof item.value === "string" ? item.value : (item.value ?? []).join(", ")
+                      }
+                      onChange={(value) => setFilterItem(index, { ...item, value })}
+                    />
+                  )}
                 </div>
               );
             })}
@@ -1441,6 +1922,502 @@ function DataGridInner<R>(
     </div>
   );
 
+  /** One row: body rows (paged, windowed, with a detail panel), or pinned rows. */
+  const renderRow = (row: R, index: number, place: "body" | "top" | "bottom") => {
+    if (isHole(row)) return holeRow(index);
+    const rowId = idOf(row);
+    const selected = selection.includes(rowId);
+    // Position on the page (spans, spacing and row params are per page).
+    const i = place === "body" ? index - pageStart : index;
+    const params = rowParams(row, i);
+    const ownHeight = heightOf(row);
+    const space = spacingOf(row, i);
+    const rowStyle = {
+      ...(typeof ownHeight === "number" ? { "--_ok-data-grid-row-height": `${ownHeight}px` } : {}),
+      ...(space.top !== undefined ? { "--_ok-data-grid-spacing-top": `${space.top}px` } : {}),
+      ...(space.bottom !== undefined
+        ? { "--_ok-data-grid-spacing-bottom": `${space.bottom}px` }
+        : {}),
+    };
+    const rowSpans = place === "body" ? spans?.cells[i] : undefined;
+    const node = tree?.get(rowId);
+    const hasChildren = serverTree
+      ? (dataSource?.getChildrenCount?.(row) ?? 0) > 0
+      : (node?.childrenCount ?? 0) > 0;
+    const open = serverTree ? expansion.get(rowId) === true : !!node?.expanded;
+    const colSpans = shown.some((c) => c.colSpan !== undefined)
+      ? gridColSpans(shown.length, (k) => {
+          const column = shown[k] as GridColDef<R>;
+          return typeof column.colSpan === "function"
+            ? column.colSpan(cellParams(column, row))
+            : (column.colSpan ?? 1);
+        })
+      : null;
+    const rowIndex =
+      place === "top"
+        ? headerLevels + 2 + index
+        : place === "bottom"
+          ? headerLevels + topRows.length + total + 2 + index
+          : firstRowIndex + index + rowOffset;
+    const detail = place === "body" ? detailOf(row) : null;
+    const detailHeight =
+      detail != null ? (getDetailPanelHeight?.({ id: rowId, row }) ?? "auto") : "auto";
+    const rowElement = (
+      <div
+        key={rowId}
+        role="row"
+        aria-rowindex={rowIndex}
+        hidden={(place === "body" && !onPage(index)) || undefined}
+        data-ok-row-id={rowId}
+        {...(node
+          ? {
+              "aria-level": node.depth + 1,
+              "aria-posinset": node.posInSet,
+              "aria-setsize": node.setSize,
+              ...(hasChildren ? { "aria-expanded": open } : {}),
+              ...(node.parentId ? { "data-ok-parent": node.parentId } : {}),
+              ...(loadingChildren.has(rowId) ? { "aria-busy": true } : {}),
+            }
+          : {})}
+        className={getRowClassName?.(params) || undefined}
+        {...(ownHeight === "auto" || typeof ownHeight === "number"
+          ? { "data-ok-row-height": String(ownHeight) }
+          : {})}
+        {...(space.top !== undefined ? { "data-ok-spacing-top": space.top } : {})}
+        {...(space.bottom !== undefined ? { "data-ok-spacing-bottom": space.bottom } : {})}
+        {...(checkboxSelection && place === "body" ? { "aria-selected": selected } : {})}
+        {...(checkboxSelection && !selectable(row) ? { "data-ok-selectable": "false" } : {})}
+        {...(editing?.rowId === rowId && editing.field === null ? { "data-ok-editing": "" } : {})}
+        style={Object.keys(rowStyle).length ? (rowStyle as CSSProperties) : undefined}
+        onClick={onRowClick(row, i)}
+        onDoubleClick={(event) => onRowDoubleClick?.(params, event)}
+      >
+        {specials.map((special) => specialCell(special.field, row, place, node, hasChildren, open))}
+        {shown.map((column, c) => {
+          if (!renders(column)) return null;
+          const value = rawValue(column, row);
+          const text = textOf(column, row);
+          const custom = column.renderCell?.({
+            row,
+            field: column.field,
+            value,
+            formattedValue: text,
+          });
+          const raw = asText(value);
+          const name = column.headerName ?? column.field;
+          const inEdit =
+            editing?.rowId === rowId &&
+            (editing.field === null ? column.field in drafts : editing.field === column.field);
+          const draft = drafts[column.field] ?? "";
+          const setDraft = (next: string) => changeDraft(column, next);
+          const error = inEdit ? errors[column.field] : undefined;
+          const errorId = `${id}-${rowId}-${column.field}-error`;
+          const invalid = error
+            ? {
+                "aria-invalid": true,
+                ...(typeof error === "string" ? { "aria-describedby": errorId } : {}),
+              }
+            : {};
+          const editKeys = (event: { key: string; preventDefault(): void }) => {
+            if (event.key === "Enter" || event.key === "Escape") {
+              event.preventDefault();
+              stopEdit(
+                event.key === "Enter",
+                column.field,
+                event.key === "Enter" ? "enterKeyDown" : "escapeKeyDown",
+              );
+            }
+          };
+          const editBlur = (event: {
+            relatedTarget: EventTarget | null;
+            currentTarget: Element;
+          }) => {
+            // Row editing ends when the focus leaves the row.
+            const scope = editMode === "row" ? event.currentTarget.closest('[role="row"]') : null;
+            if (!scope?.contains(event.relatedTarget as Node | null))
+              stopEdit(true, column.field, "cellFocusOut");
+          };
+          const editor = !inEdit ? null : column.type === "singleSelect" ? (
+            <select
+              data-ok-data-grid-edit-input=""
+              aria-label={`${labels.editLabel} ${name}`}
+              {...invalid}
+              value={draft}
+              onChange={(event) => setDraft(event.target.value)}
+              onKeyDown={editKeys}
+              onBlur={editBlur}
+            >
+              {(column.valueOptions ?? []).map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          ) : column.type === "boolean" ? (
+            <input
+              data-ok-data-grid-edit-input=""
+              type="checkbox"
+              aria-label={`${labels.editLabel} ${name}`}
+              checked={draft === "true"}
+              onChange={(event) => setDraft(String(event.target.checked))}
+              onKeyDown={editKeys}
+              onBlur={editBlur}
+            />
+          ) : (
+            <input
+              data-ok-data-grid-edit-input=""
+              type={gridEditInputType(column.type)}
+              aria-label={`${labels.editLabel} ${name}`}
+              {...invalid}
+              value={draft}
+              onChange={(event) => setDraft(event.target.value)}
+              onKeyDown={editKeys}
+              onBlur={editBlur}
+            />
+          );
+          const colSpan = colSpans?.[c];
+          const rowSpan = rowSpans?.get(column.field);
+          const params = cellParams(column, row);
+          return (
+            <div
+              key={column.field}
+              role="gridcell"
+              aria-colindex={c + colOffset}
+              data-ok-field={column.field}
+              data-ok-align={gridAlign(column)}
+              className={getCellClassName?.(params) || undefined}
+              {...(colSpan && colSpan.span > 1 ? { "aria-colspan": colSpan.span } : {})}
+              {...(rowSpan && rowSpan.span > 1 ? { "aria-rowspan": rowSpan.span } : {})}
+              {...(colSpan?.covered || rowSpan?.covered
+                ? { "data-ok-covered": "", "aria-hidden": true }
+                : {})}
+              hidden={colSpan?.covered || listView || undefined}
+              {...(colStart(column) !== undefined ? { "data-ok-col-start": "" } : {})}
+              {...(editable(column) && !cellEditable(column, row)
+                ? { "data-ok-editable": "false" }
+                : {})}
+              style={
+                (colSpan && colSpan.span > 1) ||
+                (rowSpan && rowSpan.span > 1) ||
+                colStart(column) !== undefined
+                  ? ({
+                      ...(colSpan && colSpan.span > 1
+                        ? { "--_ok-data-grid-colspan": colSpan.span }
+                        : {}),
+                      ...(rowSpan && rowSpan.span > 1
+                        ? { "--_ok-data-grid-rowspan": rowSpan.span }
+                        : {}),
+                      ...(colStart(column) !== undefined
+                        ? { "--_ok-data-grid-col-start": colStart(column) }
+                        : {}),
+                    } as CSSProperties)
+                  : undefined
+              }
+              {...(raw !== text || typeof value !== "string" ? { "data-ok-value": raw } : {})}
+              {...(column.renderCell ? { "data-ok-text": text } : {})}
+              {...(gridPinSide(pinned, column.field)
+                ? { "data-ok-pinned": gridPinSide(pinned, column.field) }
+                : {})}
+              {...(inEdit ? { "data-ok-editing": "" } : {})}
+              tabIndex={-1}
+              onClick={(event) => onCellClick?.(params, event)}
+              onDoubleClick={(event) => {
+                onCellDoubleClick?.(params, event);
+                startEdit.current(rowId, column.field, "cellDoubleClick");
+              }}
+              onKeyDown={(event) => onCellKeyDown?.(params, event)}
+            >
+              {editor ?? (column.renderCell ? custom : text)}
+              {typeof error === "string" && (
+                <span data-ok-data-grid-edit-error="" id={errorId} role="alert">
+                  {error}
+                </span>
+              )}
+            </div>
+          );
+        })}
+        {listViewColumn && (
+          <div
+            role="gridcell"
+            aria-colindex={1}
+            aria-colspan={colCount}
+            data-ok-data-grid-list-cell=""
+            hidden={!listView || undefined}
+            tabIndex={-1}
+          >
+            {listViewColumn.renderCell
+              ? listViewColumn.renderCell({
+                  row,
+                  field: listViewColumn.field,
+                  value: rawValue(columnOf(listViewColumn.field), row),
+                  formattedValue: textOf(columnOf(listViewColumn.field), row),
+                })
+              : textOf(columnOf(listViewColumn.field), row)}
+          </div>
+        )}
+      </div>
+    );
+    // Always a fragment: opening a panel must not remount the row.
+    return (
+      <Fragment key={rowId}>
+        {rowElement}
+        {detail != null && (
+          <div
+            role="row"
+            data-ok-data-grid-detail=""
+            data-ok-detail-for={rowId}
+            id={`${id}-${rowId}-detail`}
+            hidden={!onPage(index) || undefined}
+            {...(typeof detailHeight === "number"
+              ? {
+                  "data-ok-detail-height": detailHeight,
+                  style: { "--_ok-data-grid-detail-height": `${detailHeight}px` } as CSSProperties,
+                }
+              : {})}
+          >
+            <div
+              role="gridcell"
+              aria-colindex={1}
+              aria-colspan={colCount}
+              data-ok-data-grid-detail-content=""
+              tabIndex={-1}
+            >
+              {detail}
+            </div>
+          </div>
+        )}
+      </Fragment>
+    );
+  };
+  /** A row of a lazy grid that hasn't loaded: placeholder cells. */
+  const holeRow = (index: number) => (
+    <div
+      key={`__loading__-${index}`}
+      role="row"
+      aria-rowindex={firstRowIndex + index}
+      data-ok-row-id={`__loading__-${index}`}
+      data-ok-loading-row=""
+    >
+      {specials.map((special) => (
+        <div
+          key={special.field}
+          role="gridcell"
+          aria-colindex={specialIndex(special.field)}
+          data-ok-field={special.field}
+          tabIndex={-1}
+        />
+      ))}
+      {shown.map((column, c) =>
+        renders(column) ? (
+          <div
+            key={column.field}
+            role="gridcell"
+            aria-colindex={c + colOffset}
+            data-ok-field={column.field}
+            data-ok-align={gridAlign(column)}
+            tabIndex={-1}
+          >
+            <span data-ok-data-grid-skeleton="" />
+          </div>
+        ) : null,
+      )}
+    </div>
+  );
+  /** The cells of the columns the grid adds (reorder handle, checkbox, detail toggle, tree group). */
+  const specialCell = (
+    field: string,
+    row: R,
+    place: "body" | "top" | "bottom",
+    node: GridTreeRow<R> | undefined,
+    hasChildren: boolean,
+    open: boolean,
+  ) => {
+    const rowId = idOf(row);
+    const common = {
+      key: field,
+      role: "gridcell",
+      "aria-colindex": specialIndex(field),
+      "data-ok-field": field,
+      ...(leftPinned ? { "data-ok-pinned": "left" } : {}),
+      hidden: listView || undefined,
+      tabIndex: -1,
+    } as const;
+    if (place !== "body") return <div {...common} />;
+    if (field === REORDER_FIELD)
+      return (
+        <div {...common}>
+          <IconButton
+            size="sm"
+            tabIndex={-1}
+            data-ok-data-grid-reorder-handle=""
+            aria-label={labels.rowReorderingHandle}
+          >
+            <GripIcon />
+          </IconButton>
+        </div>
+      );
+    if (field === GRID_CHECKBOX_FIELD)
+      return (
+        <div {...common} data-ok-data-grid-checkbox="">
+          <Checkbox
+            size="small"
+            tabIndex={-1}
+            aria-label={labels.checkboxSelectionSelectRow}
+            checked={selection.includes(rowId)}
+            disabled={!selectable(row)}
+            onChange={() => toggleRow.current(rowId)}
+          />
+        </div>
+      );
+    if (field === DETAIL_FIELD) {
+      const content = getDetailPanelContent?.({ id: rowId, row });
+      const shownPanel = detailIds.includes(rowId);
+      return (
+        <div {...common}>
+          {content != null && (
+            <IconButton
+              size="sm"
+              tabIndex={-1}
+              data-ok-data-grid-detail-toggle=""
+              aria-label={shownPanel ? labels.collapseDetailPanel : labels.expandDetailPanel}
+              aria-expanded={shownPanel}
+              {...(shownPanel ? { "aria-controls": `${id}-${rowId}-detail` } : {})}
+              onClick={() => toggleDetail(rowId)}
+            >
+              <ExpandIcon />
+            </IconButton>
+          )}
+        </div>
+      );
+    }
+    const label = getTreeDataPath?.(row).at(-1) ?? dataSource?.getGroupKey?.(row) ?? rowId;
+    return (
+      <div {...common} style={{ "--_ok-data-grid-depth": node?.depth ?? 0 } as CSSProperties}>
+        {hasChildren ? (
+          <IconButton
+            size="sm"
+            tabIndex={-1}
+            data-ok-data-grid-tree-toggle=""
+            aria-label={open ? labels.treeDataCollapse : labels.treeDataExpand}
+            aria-expanded={open}
+            onClick={() => toggleExpansion.current(rowId)}
+          >
+            <ChevronIcon />
+          </IconButton>
+        ) : (
+          <span data-ok-data-grid-tree-spacer="" />
+        )}
+        <span data-ok-data-grid-tree-label="">{label}</span>
+        {hasChildren && !serverTree && !groupingColDef?.hideDescendantCount && (
+          <span data-ok-data-grid-tree-count="">({node?.descendantCount ?? 0})</span>
+        )}
+      </div>
+    );
+  };
+  /** The headers of the columns the grid adds. */
+  const specialHeader = (field: string) => {
+    const common = {
+      key: field,
+      role: "columnheader",
+      "aria-colindex": specialIndex(field),
+      "data-ok-field": field,
+      ...(leftPinned ? { "data-ok-pinned": "left" } : {}),
+      tabIndex: -1,
+    } as const;
+    if (field === GRID_CHECKBOX_FIELD)
+      return (
+        <div
+          {...common}
+          data-ok-data-grid-checkbox=""
+          {...(multiple ? {} : { "aria-label": labels.checkboxSelectionHeaderName })}
+        >
+          {multiple && (
+            <Checkbox
+              size="small"
+              tabIndex={-1}
+              aria-label={labels.checkboxSelectionSelectAllRows}
+              checked={selectAll === "all"}
+              indeterminate={selectAll === "some"}
+              onChange={() => setSelection(toggleGridRows(selection, allIds))}
+            />
+          )}
+        </div>
+      );
+    if (field === GRID_TREE_FIELD)
+      return (
+        <div {...common} data-ok-width={groupingColDef?.width ?? 200}>
+          <span data-ok-data-grid-header-title="">
+            {groupingColDef?.headerName ?? labels.treeDataGroupingHeaderName}
+          </span>
+        </div>
+      );
+    return (
+      <div
+        {...common}
+        role="columnheader"
+        aria-label={
+          field === REORDER_FIELD ? labels.rowReorderingHeaderName : labels.detailPanelHeaderName
+        }
+      />
+    );
+  };
+  /** A header row of column groups (one level). */
+  const groupRow = (cells: ReturnType<typeof gridGroupRows>[number], level: number) => (
+    <div key={`group-${level}`} role="row" aria-rowindex={level + 1} data-ok-data-grid-group-row="">
+      {specials.map((special) => (
+        <div key={special.field} role="presentation" data-ok-data-grid-group-filler="" />
+      ))}
+      {cells.flatMap((cell) => {
+        if (cell.groupId === null)
+          return cell.fields.map((field) => (
+            <div key={field} role="presentation" data-ok-data-grid-group-filler="" />
+          ));
+        const group = groupsById.get(cell.groupId);
+        const sides = cell.fields.map((f) => gridPinSide(pinned, f));
+        const side = sides.every((x) => x === "left")
+          ? "left"
+          : sides.every((x) => x === "right")
+            ? "right"
+            : undefined;
+        const header = (
+          <div
+            key={`${cell.groupId}-${cell.start}`}
+            role="columnheader"
+            aria-colindex={cell.start + colOffset}
+            {...(cell.span > 1 ? { "aria-colspan": cell.span } : {})}
+            data-ok-group-id={cell.groupId}
+            {...(side
+              ? {
+                  "data-ok-pinned": side,
+                  "data-ok-pin-field": side === "left" ? cell.fields[0] : cell.fields.at(-1),
+                }
+              : {})}
+            tabIndex={-1}
+            style={
+              cell.span > 1
+                ? ({ "--_ok-data-grid-colspan": cell.span } as CSSProperties)
+                : undefined
+            }
+          >
+            <span data-ok-data-grid-header-title="">{group?.headerName ?? cell.groupId}</span>
+          </div>
+        );
+        return group?.description ? (
+          <Tooltip
+            key={`${cell.groupId}-${cell.start}`}
+            title={group.description}
+            describeChild
+            id={`${id}-${cell.groupId}-${cell.start}-description`}
+          >
+            {header}
+          </Tooltip>
+        ) : (
+          header
+        );
+      })}
+    </div>
+  );
+
   return (
     <div
       ref={mergedRef}
@@ -1473,7 +2450,31 @@ function DataGridInner<R>(
         quickFilterLogicOperator,
         quickFilterExcludeHiddenColumns,
         ignoreDiacritics,
+        treeData,
+        defaultGroupingExpansionDepth:
+          defaultGroupingExpansionDepth === 0 ? undefined : defaultGroupingExpansionDepth,
+        rowReordering,
+        listView,
+        rowBufferPx: rowBufferPx === 150 ? undefined : rowBufferPx,
+        columnBufferPx: columnBufferPx === 150 ? undefined : columnBufferPx,
+        lazyLoading,
+        lazyLoadingRequestThrottleMs:
+          lazyLoadingRequestThrottleMs === 500 ? undefined : lazyLoadingRequestThrottleMs,
       })}
+      {...(csvOptions
+        ? {
+            "data-ok-csv-options": JSON.stringify(
+              parseGridExportOptions(JSON.stringify(csvOptions)),
+            ),
+          }
+        : {})}
+      {...(printOptions
+        ? {
+            "data-ok-print-options": JSON.stringify(
+              parseGridExportOptions(JSON.stringify(printOptions)),
+            ),
+          }
+        : {})}
       data-ok-runtime="off"
       {...props}
       style={
@@ -1483,54 +2484,46 @@ function DataGridInner<R>(
       }
     >
       {toolbar}
+      {/* biome-ignore lint/a11y/useAriaPropsSupportedByRole: grid and treegrid both take a name. */}
       <div
         ref={gridRef}
-        role="grid"
+        role={treeData ? "treegrid" : "grid"}
         data-ok-data-grid-main=""
         aria-label={ariaLabel}
         aria-labelledby={ariaLabelledby}
-        aria-rowcount={total + 1}
-        aria-colcount={shown.length + (checkboxSelection ? 1 : 0)}
+        aria-rowcount={headerLevels + 1 + topRows.length + total + bottomRows.length}
+        aria-colcount={colCount}
         {...(checkboxSelection && multiple ? { "aria-multiselectable": true } : {})}
         {...(busy ? { "aria-busy": true } : {})}
         style={
           {
-            "--_ok-data-grid-columns": gridColumnTemplate(shown, !!checkboxSelection, widths),
+            "--_ok-data-grid-columns": template,
           } as CSSProperties
         }
       >
-        <div role="rowgroup" data-ok-data-grid-header="">
-          <div role="row" aria-rowindex={1}>
-            {checkboxSelection && (
-              <div
-                role="columnheader"
-                aria-colindex={1}
-                data-ok-field={GRID_CHECKBOX_FIELD}
-                data-ok-data-grid-checkbox=""
-                {...(leftPinned ? { "data-ok-pinned": "left" } : {})}
-                {...(multiple ? {} : { "aria-label": labels.checkboxSelectionHeaderName })}
-                tabIndex={-1}
-              >
-                {multiple && (
-                  <Checkbox
-                    size="small"
-                    tabIndex={-1}
-                    aria-label={labels.checkboxSelectionSelectAllRows}
-                    checked={selectAll === "all"}
-                    indeterminate={selectAll === "some"}
-                    onChange={() => setSelection(toggleGridRows(selection, allIds))}
-                  />
-                )}
-              </div>
-            )}
+        <div role="rowgroup" data-ok-data-grid-header="" hidden={listView || undefined}>
+          {groupRows.map(groupRow)}
+          <div role="row" aria-rowindex={headerLevels + 1}>
+            {specials.map((special) => specialHeader(special.field))}
             {shown.map((column, index) => {
+              if (!renders(column)) return null;
               const sortable = !disableColumnSorting && isGridSortable(column);
               const name = column.headerName ?? column.field;
+              const start = colStart(column);
               const header = (
                 <div
                   key={column.field}
                   role="columnheader"
                   aria-colindex={index + colOffset}
+                  {...(start !== undefined
+                    ? {
+                        "data-ok-col-start": "",
+                        style: { "--_ok-data-grid-col-start": start } as CSSProperties,
+                      }
+                    : {})}
+                  {...(groupPaths.get(column.field)?.length
+                    ? { "data-ok-group-path": JSON.stringify(groupPaths.get(column.field)) }
+                    : {})}
                   data-ok-field={column.field}
                   data-ok-type={column.type ?? "string"}
                   data-ok-align={gridHeaderAlign(column)}
@@ -1610,6 +2603,11 @@ function DataGridInner<R>(
             })}
           </div>
         </div>
+        {topRows.length > 0 && (
+          <div role="rowgroup" data-ok-data-grid-pinned-rows="top">
+            {topRows.map((row, index) => renderRow(row, index, "top"))}
+          </div>
+        )}
         <div
           role="rowgroup"
           data-ok-data-grid-body=""
@@ -1622,223 +2620,19 @@ function DataGridInner<R>(
               : undefined
           }
         >
-          {rendered.map(({ row, index }) => {
-            const rowId = idOf(row);
-            const selected = selection.includes(rowId);
-            // Position on the page (spans, spacing and row params are per page).
-            const i = index - pageStart;
-            const params = rowParams(row, i);
-            const ownHeight = heightOf(row);
-            const space = spacingOf(row, i);
-            const rowStyle = {
-              ...(typeof ownHeight === "number"
-                ? { "--_ok-data-grid-row-height": `${ownHeight}px` }
-                : {}),
-              ...(space.top !== undefined
-                ? { "--_ok-data-grid-spacing-top": `${space.top}px` }
-                : {}),
-              ...(space.bottom !== undefined
-                ? { "--_ok-data-grid-spacing-bottom": `${space.bottom}px` }
-                : {}),
-            };
-            const rowSpans = spans?.cells[i];
-            const colSpans = shown.some((c) => c.colSpan !== undefined)
-              ? gridColSpans(shown.length, (k) => {
-                  const column = shown[k] as GridColDef<R>;
-                  return typeof column.colSpan === "function"
-                    ? column.colSpan(cellParams(column, row))
-                    : (column.colSpan ?? 1);
-                })
-              : null;
-            return (
-              <div
-                key={rowId}
-                role="row"
-                aria-rowindex={index + 2 + rowOffset}
-                hidden={!onPage(index) || undefined}
-                data-ok-row-id={rowId}
-                className={getRowClassName?.(params) || undefined}
-                {...(ownHeight === "auto" || typeof ownHeight === "number"
-                  ? { "data-ok-row-height": String(ownHeight) }
-                  : {})}
-                {...(space.top !== undefined ? { "data-ok-spacing-top": space.top } : {})}
-                {...(space.bottom !== undefined ? { "data-ok-spacing-bottom": space.bottom } : {})}
-                {...(checkboxSelection ? { "aria-selected": selected } : {})}
-                {...(checkboxSelection && !selectable(row)
-                  ? { "data-ok-selectable": "false" }
-                  : {})}
-                {...(editing?.rowId === rowId && editing.field === null
-                  ? { "data-ok-editing": "" }
-                  : {})}
-                style={Object.keys(rowStyle).length ? (rowStyle as CSSProperties) : undefined}
-                onClick={onRowClick(row, i)}
-                onDoubleClick={(event) => onRowDoubleClick?.(params, event)}
-              >
-                {checkboxSelection && (
-                  <div
-                    role="gridcell"
-                    aria-colindex={1}
-                    data-ok-field={GRID_CHECKBOX_FIELD}
-                    data-ok-data-grid-checkbox=""
-                    {...(leftPinned ? { "data-ok-pinned": "left" } : {})}
-                    tabIndex={-1}
-                  >
-                    <Checkbox
-                      size="small"
-                      tabIndex={-1}
-                      aria-label={labels.checkboxSelectionSelectRow}
-                      checked={selected}
-                      disabled={!selectable(row)}
-                      onChange={() => toggleRow.current(rowId)}
-                    />
-                  </div>
-                )}
-                {shown.map((column, c) => {
-                  const value = rawValue(column, row);
-                  const text = textOf(column, row);
-                  const custom = column.renderCell?.({
-                    row,
-                    field: column.field,
-                    value,
-                    formattedValue: text,
-                  });
-                  const raw = asText(value);
-                  const name = column.headerName ?? column.field;
-                  const inEdit =
-                    editing?.rowId === rowId &&
-                    (editing.field === null
-                      ? column.field in drafts
-                      : editing.field === column.field);
-                  const draft = drafts[column.field] ?? "";
-                  const setDraft = (next: string) => changeDraft(column, next);
-                  const error = inEdit ? errors[column.field] : undefined;
-                  const errorId = `${id}-${rowId}-${column.field}-error`;
-                  const invalid = error
-                    ? {
-                        "aria-invalid": true,
-                        ...(typeof error === "string" ? { "aria-describedby": errorId } : {}),
-                      }
-                    : {};
-                  const editKeys = (event: { key: string; preventDefault(): void }) => {
-                    if (event.key === "Enter" || event.key === "Escape") {
-                      event.preventDefault();
-                      stopEdit(
-                        event.key === "Enter",
-                        column.field,
-                        event.key === "Enter" ? "enterKeyDown" : "escapeKeyDown",
-                      );
-                    }
-                  };
-                  const editBlur = (event: {
-                    relatedTarget: EventTarget | null;
-                    currentTarget: Element;
-                  }) => {
-                    // Row editing ends when the focus leaves the row.
-                    const scope =
-                      editMode === "row" ? event.currentTarget.closest('[role="row"]') : null;
-                    if (!scope?.contains(event.relatedTarget as Node | null))
-                      stopEdit(true, column.field, "cellFocusOut");
-                  };
-                  const editor = !inEdit ? null : column.type === "singleSelect" ? (
-                    <select
-                      data-ok-data-grid-edit-input=""
-                      aria-label={`${labels.editLabel} ${name}`}
-                      {...invalid}
-                      value={draft}
-                      onChange={(event) => setDraft(event.target.value)}
-                      onKeyDown={editKeys}
-                      onBlur={editBlur}
-                    >
-                      {(column.valueOptions ?? []).map((option) => (
-                        <option key={option} value={option}>
-                          {option}
-                        </option>
-                      ))}
-                    </select>
-                  ) : column.type === "boolean" ? (
-                    <input
-                      data-ok-data-grid-edit-input=""
-                      type="checkbox"
-                      aria-label={`${labels.editLabel} ${name}`}
-                      checked={draft === "true"}
-                      onChange={(event) => setDraft(String(event.target.checked))}
-                      onKeyDown={editKeys}
-                      onBlur={editBlur}
-                    />
-                  ) : (
-                    <input
-                      data-ok-data-grid-edit-input=""
-                      type={gridEditInputType(column.type)}
-                      aria-label={`${labels.editLabel} ${name}`}
-                      {...invalid}
-                      value={draft}
-                      onChange={(event) => setDraft(event.target.value)}
-                      onKeyDown={editKeys}
-                      onBlur={editBlur}
-                    />
-                  );
-                  const colSpan = colSpans?.[c];
-                  const rowSpan = rowSpans?.get(column.field);
-                  const params = cellParams(column, row);
-                  return (
-                    <div
-                      key={column.field}
-                      role="gridcell"
-                      aria-colindex={c + colOffset}
-                      data-ok-field={column.field}
-                      data-ok-align={gridAlign(column)}
-                      className={getCellClassName?.(params) || undefined}
-                      {...(colSpan && colSpan.span > 1 ? { "aria-colspan": colSpan.span } : {})}
-                      {...(rowSpan && rowSpan.span > 1 ? { "aria-rowspan": rowSpan.span } : {})}
-                      {...(colSpan?.covered || rowSpan?.covered
-                        ? { "data-ok-covered": "", "aria-hidden": true }
-                        : {})}
-                      hidden={colSpan?.covered || undefined}
-                      {...(editable(column) && !cellEditable(column, row)
-                        ? { "data-ok-editable": "false" }
-                        : {})}
-                      style={
-                        (colSpan && colSpan.span > 1) || (rowSpan && rowSpan.span > 1)
-                          ? ({
-                              ...(colSpan && colSpan.span > 1
-                                ? { "--_ok-data-grid-colspan": colSpan.span }
-                                : {}),
-                              ...(rowSpan && rowSpan.span > 1
-                                ? { "--_ok-data-grid-rowspan": rowSpan.span }
-                                : {}),
-                            } as CSSProperties)
-                          : undefined
-                      }
-                      {...(raw !== text || typeof value !== "string"
-                        ? { "data-ok-value": raw }
-                        : {})}
-                      {...(column.renderCell ? { "data-ok-text": text } : {})}
-                      {...(gridPinSide(pinned, column.field)
-                        ? { "data-ok-pinned": gridPinSide(pinned, column.field) }
-                        : {})}
-                      {...(inEdit ? { "data-ok-editing": "" } : {})}
-                      tabIndex={-1}
-                      onClick={(event) => onCellClick?.(params, event)}
-                      onDoubleClick={(event) => {
-                        onCellDoubleClick?.(params, event);
-                        startEdit.current(rowId, column.field, "cellDoubleClick");
-                      }}
-                      onKeyDown={(event) => onCellKeyDown?.(params, event)}
-                    >
-                      {editor ?? (column.renderCell ? custom : text)}
-                      {typeof error === "string" && (
-                        <span data-ok-data-grid-edit-error="" id={errorId} role="alert">
-                          {error}
-                        </span>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            );
-          })}
+          {rendered.map(({ row, index }) => renderRow(row, index, "body"))}
         </div>
+        {bottomRows.length > 0 && (
+          <div role="rowgroup" data-ok-data-grid-pinned-rows="bottom">
+            {bottomRows.map((row, index) => renderRow(row, index, "bottom"))}
+          </div>
+        )}
       </div>
+      {rowReordering && (
+        <div data-ok-data-grid-live="" role="status">
+          {announcement}
+        </div>
+      )}
       <div
         data-ok-data-grid-loading=""
         data-ok-variant={loadingVariant}

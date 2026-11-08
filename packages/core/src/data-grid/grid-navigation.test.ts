@@ -219,6 +219,40 @@ describe("createGridNavigation", () => {
     expect(document.activeElement?.textContent).toBe("a3");
   });
 
+  it("tree data: Right opens, Left closes or goes to the parent", () => {
+    const host = mount(`<div role="treegrid" id="t">
+      <div role="row" data-ok-row-id="p" aria-expanded="false"><div role="gridcell" data-ok-field="__tree_data_group__" tabindex="-1">P</div><div role="gridcell" tabindex="-1">p</div></div>
+      <div role="row" data-ok-row-id="o" aria-expanded="true"><div role="gridcell" data-ok-field="__tree_data_group__" tabindex="-1">O</div><div role="gridcell" tabindex="-1">o</div></div>
+      <div role="row" data-ok-row-id="c" data-ok-parent="o"><div role="gridcell" data-ok-field="__tree_data_group__" tabindex="-1">C</div><div role="gridcell" tabindex="-1">c</div></div>
+    </div>`);
+    const grid = host.querySelector<HTMLElement>("#t") as HTMLElement;
+    const onToggleExpansion = vi.fn();
+    createGridNavigation(grid, {
+      onSort: vi.fn(),
+      onColumnMenu: vi.fn(),
+      onToggleRow: vi.fn(),
+      onSelectAll: vi.fn(),
+      onToggleExpansion,
+    });
+    const cell = (id: string) =>
+      grid.querySelector<HTMLElement>(`[data-ok-row-id="${id}"] [data-ok-field]`) as HTMLElement;
+    press(cell("p"), "ArrowRight");
+    press(cell("o"), "ArrowLeft");
+    expect(
+      onToggleExpansion.mock.calls.map(([row, open]) => [row.getAttribute("data-ok-row-id"), open]),
+    ).toEqual([
+      ["p", true],
+      ["o", false],
+    ]);
+    cell("c").focus();
+    press(cell("c"), "ArrowLeft");
+    expect(document.activeElement).toBe(cell("o"));
+    // Elsewhere: the arrows move between cells.
+    press(cell("p"), "ArrowLeft");
+    press(cell("c"), "ArrowRight");
+    expect(document.activeElement?.textContent).toBe("c");
+  });
+
   it("sync restores a tab stop after re-rendering; destroy stops listening", () => {
     const { grid, nav, spies } = setup();
     const name = grid.querySelectorAll<HTMLElement>('[role="gridcell"]')[1] as HTMLElement;

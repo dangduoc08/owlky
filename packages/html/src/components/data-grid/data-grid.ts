@@ -4,10 +4,13 @@ import {
   createGridColumnControls,
   createGridDataSourceCache,
   createGridNavigation,
+  createGridRowReorder,
   createGridScrollWatcher,
   dataGridOptions,
   filterGridRows,
   GRID_CHECKBOX_FIELD,
+  GRID_CHECKBOX_WIDTH,
+  GRID_TREE_FIELD,
   type GridColumn,
   type GridColumnType,
   type GridColumnVisibilityModel,
@@ -27,17 +30,22 @@ import {
   type GridState,
   type GridViewport,
   gridAriaSort,
+  gridCanMoveColumn,
   gridColumnTemplate,
   gridColumnTypes,
+  gridColumnWindow,
   gridDefaultLabels,
   gridDensities,
   gridDensityFactor,
   gridEditInputType,
   gridEditText,
+  gridExpandedByDepth,
   gridExportColumns,
   gridFilterOperators,
   gridFormats,
   gridFormatValue,
+  gridGroupRows,
+  gridMissingRanges,
   gridOperatorNeedsValue,
   gridPinSide,
   gridQuickFilterValues,
@@ -47,13 +55,16 @@ import {
   gridRowWindowOf,
   gridSelectAllState,
   gridToCsv,
+  gridTreeRows,
   isGridResizable,
   isGridSortable,
   measureGridColumn,
   moveGridColumn,
+  moveGridRow,
   nextGridSort,
   orderGridColumns,
   parseGridEditValue,
+  parseGridExportOptions,
   parseGridFormatOptions,
   pick,
   pinGridColumn,
@@ -72,6 +83,7 @@ import {
 import { defineComponent } from "../../runtime/define.js";
 import { syncCustomProperties } from "../../runtime/style.js";
 import type { ComponentInstance } from "../../runtime/types.js";
+import type { AutocompleteInstance } from "../autocomplete/autocomplete.js";
 import type { PopoverInstance } from "../popover/popover.js";
 import type { TablePaginationInstance } from "../table-pagination/table-pagination.js";
 
@@ -109,6 +121,10 @@ export interface DataGridInstance extends ComponentInstance {
   setFilterOperators(field: string, operators: readonly GridFilterOperator<HTMLElement>[]): void;
   /** The text of a column's values in `setRows` and after editing (`null`: back to the default). */
   setValueFormatter(field: string, format: ((value: unknown) => string) | null): void;
+  /** Tree data: opens or closes a row's children. */
+  setRowChildrenExpansion(id: string, expanded: boolean): void;
+  /** Master-detail: opens or closes a row's detail panel. */
+  toggleDetailPanel(id: string): void;
   /** Labels of the text the runtime writes (a locale pack, such as `viVN`). */
   setLocaleText(labels: Partial<GridLabels>): void;
   /**
@@ -144,6 +160,14 @@ const {
   autosizeOnMount,
   rowSpanning,
   rowHeight: rowHeightOption,
+  treeData,
+  defaultGroupingExpansionDepth,
+  rowReordering,
+  listView,
+  rowBufferPx,
+  columnBufferPx,
+  lazyLoading,
+  lazyLoadingRequestThrottleMs,
   quickFilterLogicOperator,
   quickFilterExcludeHiddenColumns,
   ignoreDiacritics,
@@ -160,6 +184,16 @@ export interface GridPrintOptions extends GridPrintLayout {
   fileName?: string | undefined;
 }
 const ROW = '[role="row"][data-ok-row-id]';
+const REORDER_FIELD = "__reorder__";
+const DETAIL_FIELD = "__detail_panel_toggle__";
+/** Columns the grid adds before the others, with their widths (px). */
+const SPECIALS: Record<string, number> = {
+  [REORDER_FIELD]: 50,
+  [GRID_CHECKBOX_FIELD]: GRID_CHECKBOX_WIDTH,
+  [DETAIL_FIELD]: 50,
+  [GRID_TREE_FIELD]: 200,
+};
+const LAZY_CHUNK = 50;
 const INTERACTIVE = "button, a, input, label, select, textarea";
 
 /** `["a","b"]` → the strings; anything else → none (attribute input is untrusted). */
@@ -207,17 +241,40 @@ export const dataGrid = defineComponent<DataGridInstance>({
   selector: "[data-ok-data-grid]",
 
   setup(element, { emit, signal, runtime }) {
-    const main = element.querySelector<HTMLElement>('[role="grid"]') as HTMLElement;
+    // grid, or treegrid with tree data.
+    const main = element.querySelector<HTMLElement>("[data-ok-data-grid-main]") as HTMLElement;
     const body = main.querySelector<HTMLElement>("[data-ok-data-grid-body]") as HTMLElement;
-    const headerRow = main.querySelector<HTMLElement>(
-      '[data-ok-data-grid-header] [role="row"]',
+    const headerGroup = main.querySelector<HTMLElement>(
+      "[data-ok-data-grid-header]",
     ) as HTMLElement;
+    // The column headers' row comes after the column group rows.
+    const headerRow = headerGroup.querySelector<HTMLElement>(
+      ':scope > [role="row"]:not([data-ok-data-grid-group-row])',
+    ) as HTMLElement;
+    const pinnedRowEls = () => [
+      ...main.querySelectorAll<HTMLElement>('[data-ok-data-grid-pinned-rows] > [role="row"]'),
+    ];
+    const pinnedTop = () =>
+      main.querySelectorAll('[data-ok-data-grid-pinned-rows="top"] > [role="row"]').length;
+    const groupRowEls = () => [
+      ...headerGroup.querySelectorAll<HTMLElement>(":scope > [data-ok-data-grid-group-row]"),
+    ];
     const id = element.id;
     const byId = (suffix: string) => (id ? document.getElementById(`${id}-${suffix}`) : null);
     const checkbox = element.hasAttribute("data-ok-checkbox-selection");
+    const specialFields = [
+      ...headerRow.querySelectorAll<HTMLElement>('[role="columnheader"][data-ok-field]'),
+    ]
+      .map((header) => header.getAttribute("data-ok-field") as string)
+      .filter((field) => field in SPECIALS);
+    const specialWidth = (field: string) =>
+      numberAttr(
+        headerRow.querySelector(`[data-ok-field="${CSS.escape(field)}"]`) as Element,
+        "data-ok-width",
+      ) ?? (SPECIALS[field] as number);
     const headers = () =>
       [...headerRow.querySelectorAll<HTMLElement>('[role="columnheader"]')].filter(
-        (header) => header.getAttribute("data-ok-field") !== GRID_CHECKBOX_FIELD,
+        (header) => !((header.getAttribute("data-ok-field") ?? "") in SPECIALS),
       );
     const columns: GridColumn[] = headers().map((header) => ({
       field: header.getAttribute("data-ok-field") as string,
@@ -256,6 +313,12 @@ export const dataGrid = defineComponent<DataGridInstance>({
         );
       return raw === null || raw === undefined ? "" : String(raw);
     };
+    // Column groups: each column's group chain (from the markup) and the groups' cells.
+    const groupPaths = new Map<string, string[]>();
+    for (const header of headers()) {
+      const path = stringList(header.getAttribute("data-ok-group-path"));
+      if (path?.length) groupPaths.set(header.getAttribute("data-ok-field") as string, path);
+    }
     // Every row lives here; only the rows to show are in the page (pages, filters, the window).
     let rowEls = [...body.querySelectorAll<HTMLElement>(ROW)];
     const rows = () => rowEls;
@@ -343,6 +406,7 @@ export const dataGrid = defineComponent<DataGridInstance>({
       onSelectAll: () => {
         if (checkbox && multiple()) select(toggleGridRows(selection, allRows().map(idOf)));
       },
+      onToggleExpansion: (row, expanded) => toggleExpansion(row, expanded),
       onEdit: (cell, reason, key) =>
         startEdit(
           cell.closest<HTMLElement>(ROW) as HTMLElement,
@@ -359,8 +423,8 @@ export const dataGrid = defineComponent<DataGridInstance>({
       );
 
     /** Per-row heights and spacing, and column spans, from attributes into CSSOM. */
-    const styleRows = () => {
-      for (const row of rows()) {
+    const styleRows = (list: readonly HTMLElement[] = rows()) => {
+      for (const row of list) {
         const own = Number(row.getAttribute("data-ok-row-height"));
         if (own > 0) row.style.setProperty("--_ok-data-grid-row-height", `${own}px`);
         for (const side of ["top", "bottom"] as const)
@@ -374,18 +438,138 @@ export const dataGrid = defineComponent<DataGridInstance>({
       }
     };
     /** Columns: order (cells moved), pinning, template, hidden cells, column indexes. */
+    /** Column group rows: one cell per run of shown columns of a group (cells are reused). */
+    const groupLayout = (shown: GridColumn[], offset: number) => {
+      const groupRowsNow = groupRowEls();
+      if (!groupRowsNow.length) return;
+      const levels = gridGroupRows(
+        shown.map((c) => c.field),
+        groupPaths,
+      );
+      groupRowsNow.forEach((rowEl, level) => {
+        const pool = [
+          ...rowEl.querySelectorAll<HTMLElement>('[role="columnheader"][data-ok-group-id]'),
+        ];
+        const tips = new Map<HTMLElement, Element[]>();
+        for (const cell of pool)
+          tips.set(
+            cell,
+            (cell.getAttribute("aria-describedby") ?? "")
+              .split(/\s+/)
+              .flatMap((ref) =>
+                ref
+                  ? [...rowEl.querySelectorAll(`:scope > [role="tooltip"]#${CSS.escape(ref)}`)]
+                  : [],
+              ),
+          );
+        const used = new Set<HTMLElement>();
+        const filler = () => {
+          const div = document.createElement("div");
+          div.setAttribute("role", "presentation");
+          div.setAttribute("data-ok-data-grid-group-filler", "");
+          return div;
+        };
+        const parts: Element[] = specialFields.map(filler);
+        for (const cell of levels[level] ?? []) {
+          if (cell.groupId === null) {
+            parts.push(...cell.fields.map(filler));
+            continue;
+          }
+          let el = pool.find(
+            (c) => !used.has(c) && c.getAttribute("data-ok-group-id") === cell.groupId,
+          );
+          if (!el) {
+            const model = pool.find((c) => c.getAttribute("data-ok-group-id") === cell.groupId);
+            el = (model?.cloneNode(true) ?? document.createElement("div")) as HTMLElement;
+            el.removeAttribute("aria-describedby");
+          }
+          used.add(el);
+          el.setAttribute("aria-colindex", String(cell.start + offset));
+          if (cell.span > 1) {
+            el.setAttribute("aria-colspan", String(cell.span));
+            el.style.setProperty("--_ok-data-grid-colspan", String(cell.span));
+          } else {
+            el.removeAttribute("aria-colspan");
+            el.style.removeProperty("--_ok-data-grid-colspan");
+          }
+          const sides = cell.fields.map((f) => gridPinSide(pinned, f));
+          const side = sides.every((x) => x === "left")
+            ? "left"
+            : sides.every((x) => x === "right")
+              ? "right"
+              : undefined;
+          if (side) {
+            el.setAttribute("data-ok-pinned", side);
+            el.setAttribute(
+              "data-ok-pin-field",
+              (side === "left" ? cell.fields[0] : cell.fields.at(-1)) as string,
+            );
+          } else {
+            el.removeAttribute("data-ok-pinned");
+            el.removeAttribute("data-ok-pin-field");
+          }
+          parts.push(el, ...(tips.get(el) ?? []));
+        }
+        rowEl.replaceChildren(...parts);
+      });
+    };
+    let shownNow: GridColumn[] = [];
+    /** Cells hidden by list view (not by spans) and by the column window. */
+    const listHidden = new WeakSet<HTMLElement>();
+    const windowHidden = new WeakSet<HTMLElement>();
     const layout = () => {
       const arranged = arrangeGridColumns(orderGridColumns(columns, order), pinned);
       const shown = visibleGridColumns(arranged, visibility);
+      shownNow = shown;
+      const list = element.hasAttribute(listView.attr);
       written = syncCustomProperties(
         main,
-        { "--_ok-data-grid-columns": gridColumnTemplate(shown, checkbox, widths) },
+        {
+          "--_ok-data-grid-columns": [
+            ...specialFields.map((f) => `${specialWidth(f)}px`),
+            gridColumnTemplate(shown, false, widths),
+          ]
+            .filter(Boolean)
+            .join(" "),
+        },
         written,
       );
-      main.setAttribute("aria-colcount", String(shown.length + (checkbox ? 1 : 0)));
-      const offset = checkbox ? 2 : 1;
+      main.setAttribute("aria-colcount", String(shown.length + specialFields.length));
+      const offset = specialFields.length + 1;
       const leftPinned = shown.some((c) => gridPinSide(pinned, c.field) === "left");
-      for (const row of [headerRow, ...rows()]) {
+      headerGroup.hidden = list;
+      groupLayout(shown, offset);
+      layoutState = { arranged, shown, offset, leftPinned, list };
+      layoutVersion++;
+      // Rows out of the page are laid out when they're drawn (large and lazy grids).
+      for (const row of [
+        headerRow,
+        ...pinnedRowEls(),
+        ...[...body.children].filter((child): child is HTMLElement => child.matches(ROW)),
+      ])
+        layoutRow(row);
+      for (const input of byId("columns")?.querySelectorAll<HTMLInputElement>(
+        "input[data-ok-field]",
+      ) ?? [])
+        input.checked = visibility[input.getAttribute("data-ok-field") as string] !== false;
+      windowColumns([...body.children].filter((child): child is HTMLElement => child.matches(ROW)));
+      syncGridPinning(main);
+    };
+    let layoutState = {
+      arranged: [] as GridColumn[],
+      shown: [] as GridColumn[],
+      offset: 1,
+      leftPinned: false,
+      list: false,
+    };
+    let layoutVersion = 0;
+    const laidOut = new WeakMap<HTMLElement, number>();
+    /** One row's cells: order, pinning, hidden columns and indexes (once per layout). */
+    const layoutRow = (row: HTMLElement) => {
+      if (laidOut.get(row) === layoutVersion) return;
+      laidOut.set(row, layoutVersion);
+      const { arranged, shown, offset, leftPinned, list } = layoutState;
+      {
         for (const column of arranged) {
           const cell = row.querySelector<HTMLElement>(
             `:scope > [data-ok-field="${CSS.escape(column.field)}"]`,
@@ -402,31 +586,125 @@ export const dataGrid = defineComponent<DataGridInstance>({
         }
         for (const cell of row.querySelectorAll<HTMLElement>(":scope > [data-ok-field]")) {
           const field = cell.getAttribute("data-ok-field") as string;
-          const side =
-            field === GRID_CHECKBOX_FIELD
-              ? leftPinned
-                ? "left"
-                : undefined
-              : gridPinSide(pinned, field);
+          const special = field in SPECIALS;
+          const side = special ? (leftPinned ? "left" : undefined) : gridPinSide(pinned, field);
           if (side) cell.setAttribute("data-ok-pinned", side);
           else cell.removeAttribute("data-ok-pinned");
-          if (field === GRID_CHECKBOX_FIELD) continue;
+          if (special) {
+            if (row !== headerRow) cell.hidden = list;
+            continue;
+          }
           const index = shown.findIndex((c) => c.field === field);
-          // Cells covered by a column span stay hidden.
-          cell.hidden = index < 0 || (cell.hasAttribute("data-ok-covered") && cell.hidden);
+          // Cells covered by a column span stay hidden; list view shows the list cell only.
+          cell.hidden =
+            index < 0 ||
+            (cell.hasAttribute("data-ok-covered") && cell.hidden && !listHidden.has(cell)) ||
+            (list && row !== headerRow);
+          if (list && row !== headerRow) listHidden.add(cell);
+          else listHidden.delete(cell);
           if (index >= 0) cell.setAttribute("aria-colindex", String(index + offset));
         }
+        const listCell = row.querySelector<HTMLElement>(":scope > [data-ok-data-grid-list-cell]");
+        if (listCell) listCell.hidden = !list;
       }
-      for (const input of byId("columns")?.querySelectorAll<HTMLInputElement>(
-        "input[data-ok-field]",
-      ) ?? [])
-        input.checked = visibility[input.getAttribute("data-ok-field") as string] !== false;
-      syncGridPinning(main);
+    };
+    /**
+     * Column virtualization: only the scrolling columns in view keep their cells shown (fixed
+     * widths, no spans, groups or list view); spacer tracks stand for the others.
+     */
+    const windowColumns = (shownRows: HTMLElement[]) => {
+      const shown = shownNow;
+      const px = (c: GridColumn) =>
+        widths[c.field] !== undefined
+          ? clampGridWidth(c, widths[c.field] as number)
+          : Math.max(c.width ?? 100, c.minWidth ?? 50);
+      const left = shown.filter((c) => gridPinSide(pinned, c.field) === "left");
+      const right = shown.filter((c) => gridPinSide(pinned, c.field) === "right");
+      const middle = shown.filter((c) => !gridPinSide(pinned, c.field));
+      let win: GridRowWindow | null = null;
+      if (
+        !element.hasAttribute(disableVirtualization.attr) &&
+        viewport?.width &&
+        !element.hasAttribute(listView.attr) &&
+        !groupRowEls().length &&
+        shown.every((c) => widths[c.field] !== undefined || !((c.flex ?? 0) > 0)) &&
+        !body.querySelector(
+          '[role="gridcell"][aria-colspan]:not([data-ok-data-grid-list-cell]):not([data-ok-data-grid-detail-content])',
+        ) &&
+        middle.length
+      ) {
+        const pinnedPx =
+          specialFields.reduce((sum, f) => sum + specialWidth(f), 0) +
+          [...left, ...right].reduce((sum, c) => sum + px(c), 0);
+        const w = gridColumnWindow(
+          middle.map(px),
+          viewport.left ?? 0,
+          viewport.width - pinnedPx,
+          readNumber(element, columnBufferPx) as number,
+        );
+        if (w.before > 0 || w.after > 0) win = w;
+      }
+      const visible = win ? middle.slice(win.start, win.end) : middle;
+      const out = new Set(
+        win ? middle.filter((c) => !visible.includes(c)).map((c) => c.field) : [],
+      );
+      written = syncCustomProperties(
+        main,
+        {
+          "--_ok-data-grid-columns": [
+            ...specialFields.map((f) => `${specialWidth(f)}px`),
+            ...(win
+              ? [
+                  ...left.map((c) => `${px(c)}px`),
+                  `${win.before}px`,
+                  ...visible.map((c) => `${px(c)}px`),
+                  `${win.after}px`,
+                  ...right.map((c) => `${px(c)}px`),
+                ]
+              : [gridColumnTemplate(shown, false, widths)]),
+          ]
+            .filter(Boolean)
+            .join(" "),
+        },
+        written,
+      );
+      const first = specialFields.length + left.length + 2;
+      const startOf = (field: string) =>
+        !win
+          ? undefined
+          : field === visible[0]?.field
+            ? first
+            : field === right[0]?.field
+              ? first + visible.length + 1
+              : undefined;
+      for (const row of [headerRow, ...shownRows, ...pinnedRowEls()])
+        for (const column of shown) {
+          const cell = row.querySelector<HTMLElement>(
+            `:scope > [data-ok-field="${CSS.escape(column.field)}"]`,
+          );
+          if (!cell) continue;
+          if (out.has(column.field)) {
+            if (!cell.hidden) windowHidden.add(cell);
+            cell.hidden = true;
+          } else if (windowHidden.has(cell)) {
+            windowHidden.delete(cell);
+            cell.hidden = false;
+          }
+          const start = startOf(column.field);
+          if (start === undefined) {
+            cell.removeAttribute("data-ok-col-start");
+            cell.style.removeProperty("--_ok-data-grid-col-start");
+          } else {
+            cell.setAttribute("data-ok-col-start", "");
+            cell.style.setProperty("--_ok-data-grid-col-start", String(start));
+          }
+        }
     };
 
     /** Rows: filter, sort, page (client modes), then draw the window; selection marks, overlays. */
     let pageList: HTMLElement[] = [];
     let sortedList: HTMLElement[] = [];
+    let rowShift = 0;
     let total = 0;
     let viewport: GridViewport | null = null;
     let spacers: string[] = [];
@@ -434,14 +712,70 @@ export const dataGrid = defineComponent<DataGridInstance>({
     let sourceCount: number | undefined;
     const serverSide = (spec: typeof sortingMode) =>
       source !== null || readStyle(element, spec) === "server";
+    // Tree data: open rows (absent: the default depth).
+    const expansion = new Map<string, boolean>();
+    for (const row of rows())
+      if (row.hasAttribute("aria-expanded"))
+        expansion.set(idOf(row), row.getAttribute("aria-expanded") === "true");
+    const isTree = () => element.hasAttribute(treeData.attr);
+    const firstRowIndex = () => groupRowEls().length + pinnedTop() + 2;
     const apply = () => {
       const all = rows();
-      filtered = serverSide(filterMode)
-        ? all
-        : filterGridRows(all, filterModel, columns, value, text, filterOptions());
-      const sorted = serverSide(sortingMode)
-        ? filtered
-        : sortGridRows(filtered, sortModel, columns, value);
+      variableRows = hasOwnHeights();
+      let sorted: HTMLElement[];
+      if (isTree()) {
+        const pass = serverSide(filterMode)
+          ? null
+          : new Set(filterGridRows(all, filterModel, columns, value, text, filterOptions()));
+        const place = serverSide(sortingMode)
+          ? null
+          : new Map(sortGridRows(all, sortModel, columns, value).map((row, i) => [row, i]));
+        const depth = readNumber(element, defaultGroupingExpansionDepth) as number;
+        const tree = gridTreeRows(all, {
+          idOf,
+          parentOf: (row) => row.getAttribute("data-ok-parent"),
+          expanded: (rowId, level) => expansion.get(rowId) ?? gridExpandedByDepth(depth, level),
+          keep: pass ? (row) => pass.has(row) : undefined,
+          compare: place
+            ? (a, b) => (place.get(a) as number) - (place.get(b) as number)
+            : undefined,
+        });
+        for (const node of tree) {
+          const row = node.row;
+          row.setAttribute("aria-level", String(node.depth + 1));
+          row.setAttribute("aria-posinset", String(node.posInSet));
+          row.setAttribute("aria-setsize", String(node.setSize));
+          row
+            .querySelector<HTMLElement>(`[data-ok-field="${GRID_TREE_FIELD}"]`)
+            ?.style.setProperty("--_ok-data-grid-depth", String(node.depth));
+          const toggle = row.querySelector<HTMLElement>("[data-ok-data-grid-tree-toggle]");
+          // Server trees know children before they load (the toggle comes with the row).
+          const parent = node.childrenCount > 0 || (!!source && !!toggle);
+          if (parent)
+            row.setAttribute(
+              "aria-expanded",
+              String(source ? expansion.get(node.id) === true : node.expanded),
+            );
+          else row.removeAttribute("aria-expanded");
+          if (toggle) {
+            const open = row.getAttribute("aria-expanded") === "true";
+            toggle.setAttribute("aria-expanded", String(open));
+            toggle.setAttribute(
+              "aria-label",
+              open ? labels.treeDataCollapse : labels.treeDataExpand,
+            );
+          }
+        }
+        sorted = tree.map((node) => node.row);
+        filtered = sorted;
+      } else {
+        filtered = serverSide(filterMode)
+          ? all
+          : filterGridRows(all, filterModel, columns, value, text, filterOptions());
+        sorted = serverSide(sortingMode)
+          ? filtered
+          : sortGridRows(filtered, sortModel, columns, value);
+      }
       const serverPage = serverSide(paginationMode);
       total = serverPage
         ? (sourceCount ??
@@ -459,10 +793,20 @@ export const dataGrid = defineComponent<DataGridInstance>({
       sortedList = sorted;
       // Rows of a server page sit after the rows of the pages before it.
       const rowOffset = serverPage && Number.isFinite(pageSize) ? page * pageSize : 0;
+      rowShift = rowOffset;
+      const first = firstRowIndex();
       sorted.forEach((row, index) => {
-        row.setAttribute("aria-rowindex", String(index + 2 + rowOffset));
+        row.setAttribute("aria-rowindex", String(index + first + rowOffset));
       });
-      main.setAttribute("aria-rowcount", String(total + 1));
+      const bottom = [
+        ...main.querySelectorAll<HTMLElement>(
+          '[data-ok-data-grid-pinned-rows="bottom"] > [role="row"]',
+        ),
+      ];
+      bottom.forEach((row, index) => {
+        row.setAttribute("aria-rowindex", String(first + total + index));
+      });
+      main.setAttribute("aria-rowcount", String(first - 1 + total + bottom.length));
       for (const header of headers()) {
         const column = columns.find(
           (c) => c.field === header.getAttribute("data-ok-field"),
@@ -480,7 +824,9 @@ export const dataGrid = defineComponent<DataGridInstance>({
     const spacingOf = (row: HTMLElement, side: "top" | "bottom") =>
       Number(row.getAttribute(`data-ok-spacing-${side}`)) || 0;
     /** Rows with their own height or spacing (offsets per row). */
-    const variable = () =>
+    let variableRows = false;
+    const variable = () => detailOpen.size > 0 || variableRows;
+    const hasOwnHeights = () =>
       rows().some(
         (row) =>
           row.hasAttribute("data-ok-row-height") ||
@@ -516,6 +862,127 @@ export const dataGrid = defineComponent<DataGridInstance>({
         .map((c) => c.field);
       return gridRowSpans(pageList, fields, text);
     };
+    // Master-detail: open panels (from the markup) and the templates of the others.
+    const panels = new Map<string, HTMLElement>();
+    for (const panel of body.querySelectorAll<HTMLElement>(":scope > [data-ok-data-grid-detail]"))
+      panels.set(panel.getAttribute("data-ok-detail-for") as string, panel);
+    const detailOpen = new Set(panels.keys());
+    const panelFor = (rowId: string) => {
+      const known = panels.get(rowId);
+      if (known) return known;
+      const template = element.querySelector<HTMLTemplateElement>(
+        `template[data-ok-data-grid-detail="${CSS.escape(rowId)}"]`,
+      );
+      if (!template) return null;
+      const panel = document.createElement("div");
+      panel.setAttribute("role", "row");
+      panel.setAttribute("data-ok-data-grid-detail", "");
+      panel.setAttribute("data-ok-detail-for", rowId);
+      if (id) panel.id = `${id}-${rowId}-detail`;
+      const height = numberAttr(template, "data-ok-detail-height");
+      if (height) {
+        panel.setAttribute("data-ok-detail-height", String(height));
+        panel.style.setProperty("--_ok-data-grid-detail-height", `${height}px`);
+      }
+      const cell = document.createElement("div");
+      cell.setAttribute("role", "gridcell");
+      cell.setAttribute("aria-colindex", "1");
+      cell.setAttribute("aria-colspan", main.getAttribute("aria-colcount") ?? "1");
+      cell.setAttribute("data-ok-data-grid-detail-content", "");
+      cell.tabIndex = -1;
+      cell.append(template.content.cloneNode(true));
+      panel.append(cell);
+      panels.set(rowId, panel);
+      return panel;
+    };
+    // Lazy loading: rows by index as they arrive; the others are placeholder rows.
+    const lazy = () => source !== null && element.hasAttribute(lazyLoading.attr);
+    const lazyLoaded = new Map<number, HTMLElement>();
+    const lazyState = { key: "", pending: new Set<string>(), last: 0, timer: 0 as unknown };
+    const placeholder = (index: number) => {
+      const row = (
+        (rowTemplate as HTMLTemplateElement).content.firstElementChild as HTMLElement
+      ).cloneNode(true) as HTMLElement;
+      row.setAttribute("data-ok-row-id", `__loading__-${index}`);
+      row.setAttribute("data-ok-loading-row", "");
+      row.removeAttribute("aria-selected");
+      for (const cell of row.querySelectorAll<HTMLElement>(":scope > [data-ok-field]")) {
+        cell.removeAttribute("data-ok-value");
+        cell.removeAttribute("data-ok-text");
+        const field = cell.getAttribute("data-ok-field") as string;
+        if (field in SPECIALS) {
+          cell.replaceChildren();
+          continue;
+        }
+        const bar = document.createElement("span");
+        bar.setAttribute("data-ok-data-grid-skeleton", "");
+        cell.replaceChildren(bar);
+      }
+      return row;
+    };
+    const lazyRows = () => {
+      const count = sourceCount ?? (readNumber(element, rowCountOption) as number | undefined) ?? 0;
+      rowEls = Array.from({ length: count }, (_, i) => {
+        let row = lazyLoaded.get(i);
+        if (!row) {
+          row = placeholder(i);
+          lazyLoaded.set(-1 - i, row);
+        }
+        return lazyLoaded.get(i) ?? (lazyLoaded.get(-1 - i) as HTMLElement);
+      });
+    };
+    const lazyRequest = (range: { start: number; end: number }) => {
+      const current = source as GridDataSource<DataRow>;
+      const key = JSON.stringify({ sortModel, filterModel });
+      if (lazyState.key !== key) {
+        lazyState.key = key;
+        lazyState.pending.clear();
+        lazyLoaded.clear();
+      }
+      const loaded = (i: number) => lazyLoaded.has(i);
+      const ranges = gridMissingRanges(
+        loaded,
+        range,
+        LAZY_CHUNK,
+        total > 0 ? total : range.end,
+      ).filter((r) => !lazyState.pending.has(`${r.start}-${r.end}`));
+      if (!ranges.length) return;
+      const run = () => {
+        lazyState.last = Date.now();
+        for (const r of ranges) {
+          const name = `${r.start}-${r.end}`;
+          lazyState.pending.add(name);
+          element.setAttribute(loadingOption.attr, "");
+          current
+            .getRows({ sortModel, filterModel, start: r.start, end: r.end })
+            .then((response) => {
+              if (lazyState.key !== key || source !== current) return;
+              const fresh = response.rows.map((item, k) => {
+                const row = fillRow(item);
+                lazyLoaded.set(r.start + k, row);
+                return row;
+              });
+              if (response.rowCount !== undefined) sourceCount = response.rowCount;
+              lazyRows();
+              styleRows(fresh);
+              apply();
+              // The first rows give the row height: the window starts.
+              scrollWatcher.measure();
+            })
+            .catch((error: unknown) => emit("datasourceerror", { error }))
+            .finally(() => {
+              lazyState.pending.delete(name);
+              if (!lazyState.pending.size) element.removeAttribute(loadingOption.attr);
+            });
+        }
+      };
+      const wait =
+        (readNumber(element, lazyLoadingRequestThrottleMs) as number) -
+        (Date.now() - lazyState.last);
+      clearTimeout(lazyState.timer as number);
+      if (wait > 0) lazyState.timer = setTimeout(run, wait);
+      else run();
+    };
     let drawing = false;
     const draw = () => {
       const vp = viewport as GridViewport;
@@ -524,9 +991,28 @@ export const dataGrid = defineComponent<DataGridInstance>({
       offsets = virtual && variable() ? gridRowOffsets(heights()) : null;
       let range: GridRowWindow = virtual
         ? offsets
-          ? gridRowWindowOf(offsets, vp.offset, vp.viewport)
-          : gridRowWindow(pageList.length, vp.rowHeight, vp.offset, vp.viewport)
+          ? gridRowWindowOf(
+              offsets,
+              vp.offset,
+              vp.viewport,
+              readNumber(element, rowBufferPx) as number,
+            )
+          : gridRowWindow(
+              pageList.length,
+              vp.rowHeight,
+              vp.offset,
+              vp.viewport,
+              readNumber(element, rowBufferPx) as number,
+            )
         : { start: 0, end: pageList.length, before: 0, after: 0 };
+      // Lazy grids never draw every row: before the first measure, the first chunk only.
+      if (!virtual && lazy() && pageList.length > LAZY_CHUNK)
+        range = {
+          start: 0,
+          end: LAZY_CHUNK,
+          before: 0,
+          after: (pageList.length - LAZY_CHUNK) * (baseHeight() + 1),
+        };
       const spans = spanRows();
       if (spans && range.start > 0) {
         const start = spans.origin[range.start] as number;
@@ -537,11 +1023,22 @@ export const dataGrid = defineComponent<DataGridInstance>({
         };
       }
       const shownRows = pageList.slice(range.start, range.end);
-      const keep = new Set(shownRows);
-      for (const row of [...body.children]) if (!keep.has(row as HTMLElement)) row.remove();
+      for (const row of shownRows) layoutRow(row);
+      // Rows, each followed by its open detail panel.
+      const items: HTMLElement[] = [];
+      for (const row of shownRows) {
+        items.push(row);
+        const panel = detailOpen.has(idOf(row)) ? panelFor(idOf(row)) : null;
+        if (panel) items.push(panel);
+      }
+      const keep = new Set(items);
+      for (const child of [...body.children]) if (!keep.has(child as HTMLElement)) child.remove();
+      items.forEach((item, index) => {
+        item.hidden = false;
+        if (body.children[index] !== item) body.insertBefore(item, body.children[index] ?? null);
+      });
+      if (lazy()) lazyRequest(virtual ? range : { start: 0, end: LAZY_CHUNK });
       shownRows.forEach((row, index) => {
-        row.hidden = false;
-        if (body.children[index] !== row) body.insertBefore(row, body.children[index] ?? null);
         const cells = spans?.cells[range.start + index];
         for (const [field, span] of cells ?? []) {
           const cell = cellOf(row, field) as HTMLElement;
@@ -556,7 +1053,7 @@ export const dataGrid = defineComponent<DataGridInstance>({
       });
       spacers = syncCustomProperties(
         body,
-        virtual
+        virtual || range.after > 0
           ? {
               "--_ok-data-grid-before": `${range.before}px`,
               "--_ok-data-grid-after": `${range.after}px`,
@@ -564,15 +1061,21 @@ export const dataGrid = defineComponent<DataGridInstance>({
           : {},
         spacers,
       );
+      windowColumns(shownRows);
       syncGridPinning(main);
-      // Rows of their own height: measure them; new heights move the window (once).
+      // Rows of their own height: measure them (with their panels); new heights move the window.
       if (offsets && !drawing) {
         let changed = false;
-        for (const row of shownRows)
-          if (row.offsetHeight && measured.get(row) !== row.offsetHeight) {
-            measured.set(row, row.offsetHeight);
+        for (const row of shownRows) {
+          const next = row.nextElementSibling as HTMLElement | null;
+          const height =
+            row.offsetHeight +
+            (next?.hasAttribute("data-ok-data-grid-detail") ? next.offsetHeight : 0);
+          if (row.offsetHeight && measured.get(row) !== height) {
+            measured.set(row, height);
             changed = true;
           }
+        }
         if (changed) {
           drawing = true;
           draw();
@@ -618,14 +1121,39 @@ export const dataGrid = defineComponent<DataGridInstance>({
     const buildRows = (data: readonly DataRow[]) => {
       // Without a row template only an empty list can be shown.
       if (!rowTemplate && data.length) return;
-      rowEls = data.map((item) => {
+      rowEls = data.map((item) => fillRow(item));
+      if (!element.hasAttribute(keepNonExistentRowsSelected.attr))
+        selection = pruneGridSelection(selection, rowEls.map(idOf));
+      styleRows();
+      layout();
+      apply();
+      scrollWatcher.measure();
+    };
+    /** A row copied from the template, its cells filled as text (formatted). */
+    const fillRow = (item: DataRow, parent?: string) => {
+      {
         const row = (
           (rowTemplate as HTMLTemplateElement).content.firstElementChild as HTMLElement
         ).cloneNode(true) as HTMLElement;
+        if (parent) row.setAttribute("data-ok-parent", parent);
+        else row.removeAttribute("data-ok-parent");
+        // Server tree data: the group key and a toggle when the row has children.
+        const treeCell = row.querySelector<HTMLElement>(`[data-ok-field="${GRID_TREE_FIELD}"]`);
+        if (treeCell && source) {
+          const label = treeCell.querySelector("[data-ok-data-grid-tree-label]");
+          if (label) label.textContent = source.getGroupKey?.(item) ?? String(item["id"]);
+          treeCell.querySelector("[data-ok-data-grid-tree-count]")?.remove();
+          const toggle = treeCell.querySelector("[data-ok-data-grid-tree-toggle]");
+          if (toggle && !((source.getChildrenCount?.(item) ?? 0) > 0)) {
+            const spacer = document.createElement("span");
+            spacer.setAttribute("data-ok-data-grid-tree-spacer", "");
+            toggle.replaceWith(spacer);
+          }
+        }
         row.setAttribute("data-ok-row-id", String(item["id"]));
         for (const cell of row.querySelectorAll<HTMLElement>('[role="gridcell"][data-ok-field]')) {
           const field = cell.getAttribute("data-ok-field") as string;
-          if (field === GRID_CHECKBOX_FIELD) continue;
+          if (field in SPECIALS) continue;
           const raw = item[field];
           const shownText = formatted(field, raw);
           const cellTemplate = element.querySelector<HTMLTemplateElement>(
@@ -642,17 +1170,17 @@ export const dataGrid = defineComponent<DataGridInstance>({
             cell.setAttribute("data-ok-value", rawText);
         }
         return row;
-      });
-      if (!element.hasAttribute(keepNonExistentRowsSelected.attr))
-        selection = pruneGridSelection(selection, rowEls.map(idOf));
-      styleRows();
-      layout();
-      apply();
-      scrollWatcher.measure();
+      }
     };
     const sourceCache = createGridDataSourceCache<DataRow>();
     let request = 0;
     const load = () => {
+      if (lazy()) {
+        lazyRows();
+        layout();
+        apply();
+        return;
+      }
       const current = source as GridDataSource<DataRow>;
       const params = {
         sortModel,
@@ -685,9 +1213,96 @@ export const dataGrid = defineComponent<DataGridInstance>({
     };
     /** After a sort, filter or page change: ask the data source, or apply locally. */
     const refresh = () => {
+      if (source && isTree()) loadedChildren.clear();
       if (source) load();
       else apply();
     };
+
+    // Tree data: open or close a row (`ok:data-grid:expand`, cancelable); server trees load children.
+    const loadedChildren = new Set<string>();
+    const toggleExpansion = (row: HTMLElement, open?: boolean) => {
+      const rowId = idOf(row);
+      const next = open ?? row.getAttribute("aria-expanded") !== "true";
+      if (!emit("expand", { id: rowId, expanded: next }, { cancelable: true })) return;
+      expansion.set(rowId, next);
+      if (source && next && !loadedChildren.has(rowId)) {
+        const current = source;
+        const keys: string[] = [];
+        for (let at: HTMLElement | undefined = row; at; ) {
+          keys.unshift(at.querySelector("[data-ok-data-grid-tree-label]")?.textContent ?? idOf(at));
+          const parent = at.getAttribute("data-ok-parent");
+          at = parent ? rows().find((r) => idOf(r) === parent) : undefined;
+        }
+        loadedChildren.add(rowId);
+        row.setAttribute("aria-busy", "true");
+        current
+          .getRows({ sortModel, filterModel, groupKeys: keys })
+          .then((response) => {
+            if (source !== current) return;
+            rowEls = [...rowEls, ...response.rows.map((item) => fillRow(item, rowId))];
+            styleRows();
+            layout();
+            apply();
+          })
+          .catch((error: unknown) => {
+            loadedChildren.delete(rowId);
+            emit("datasourceerror", { error });
+          })
+          .finally(() => row.removeAttribute("aria-busy"));
+      }
+      apply();
+    };
+    // Master-detail: open or close a row's panel (`ok:data-grid:detailpanel`, cancelable).
+    const toggleDetail = (row: HTMLElement) => {
+      const rowId = idOf(row);
+      const next = !detailOpen.has(rowId);
+      if (!emit("detailpanel", { id: rowId, expanded: next }, { cancelable: true })) return;
+      if (next) detailOpen.add(rowId);
+      else detailOpen.delete(rowId);
+      const toggle = row.querySelector<HTMLElement>("[data-ok-data-grid-detail-toggle]");
+      if (toggle) {
+        toggle.setAttribute("aria-expanded", String(next));
+        toggle.setAttribute(
+          "aria-label",
+          next ? labels.collapseDetailPanel : labels.expandDetailPanel,
+        );
+        if (next && id) toggle.setAttribute("aria-controls", `${id}-${rowId}-detail`);
+        else toggle.removeAttribute("aria-controls");
+      }
+      draw();
+      navigation.sync();
+    };
+    // Row reordering (`ok:data-grid:roworder`, cancelable): no sort, filter, tree or lazy rows.
+    const live = element.querySelector<HTMLElement>("[data-ok-data-grid-live]");
+    const rowReorder = createGridRowReorder(main, {
+      canReorder: () =>
+        element.hasAttribute(rowReordering.attr) &&
+        !isTree() &&
+        !lazy() &&
+        sortModel.length === 0 &&
+        filterModel.items.length === 0 &&
+        !filterModel.quickFilterValues?.length,
+      onMove: (rowId, rowIndex) => {
+        const ids = sortedList.map(idOf);
+        const oldIndex = ids.indexOf(rowId);
+        const targetIndex = Math.min(
+          Math.max(rowIndex - firstRowIndex() - rowShift, 0),
+          ids.length - 1,
+        );
+        if (oldIndex < 0 || oldIndex === targetIndex) return;
+        if (!emit("roworder", { id: rowId, oldIndex, targetIndex }, { cancelable: true })) return;
+        const byRowId = new Map(rowEls.map((row) => [idOf(row), row]));
+        rowEls = moveGridRow(ids, rowId, targetIndex).map((rid) => byRowId.get(rid) as HTMLElement);
+        apply();
+        if (live)
+          live.textContent = labels.rowReorderingMoved
+            .replace("{position}", String(targetIndex + 1))
+            .replace("{count}", String(ids.length));
+        (byRowId.get(rowId) as HTMLElement)
+          .querySelector<HTMLElement>("[data-ok-data-grid-reorder-handle]")
+          ?.focus();
+      },
+    });
 
     /** Selection marks: rows, their checkboxes and "select all". */
     const mark = () => {
@@ -763,7 +1378,52 @@ export const dataGrid = defineComponent<DataGridInstance>({
       const [field, operator] = [...row.querySelectorAll<HTMLSelectElement>("select")].filter(
         (select) => select !== logic,
       ) as [HTMLSelectElement, HTMLSelectElement];
-      return { logic, field, operator, input: row.querySelector("input") as HTMLInputElement };
+      // isAnyOf with chips: an Autocomplete takes the value field's place.
+      const chips = row.querySelector<HTMLElement>("[data-ok-autocomplete]");
+      const input = chips ? null : (row.querySelector("input") as HTMLInputElement);
+      return { logic, field, operator, input, chips };
+    };
+    const anyOfTemplate = filterPanel?.querySelector<HTMLTemplateElement>(
+      "template[data-ok-data-grid-any-of]",
+    );
+    /** The value field each filter row had before it showed chips. */
+    const valueBoxes = new WeakMap<HTMLElement, HTMLElement>();
+    const chipValues = (chips: HTMLElement) => {
+      const values = runtime.getOrCreate<AutocompleteInstance>(chips, "autocomplete")?.value;
+      return Array.isArray(values) ? values : values ? [values] : [];
+    };
+    /** isAnyOf shows chips (the Autocomplete template); other operators the text field. */
+    const syncValueField = (row: HTMLElement) => {
+      const { field, operator, input, chips } = partsOf(row);
+      const wantChips = operator.value === "isAnyOf" && !!anyOfTemplate && !operators[field.value];
+      if (wantChips && input) {
+        const box = input.closest<HTMLElement>("[data-ok-text-field]") as HTMLElement;
+        valueBoxes.set(row, box);
+        const clone = (anyOfTemplate as HTMLTemplateElement).content.firstElementChild?.cloneNode(
+          true,
+        ) as HTMLElement;
+        // The template's ids name the first row's field: follow this row's.
+        const from =
+          (anyOfTemplate as HTMLTemplateElement).getAttribute("data-ok-data-grid-any-of") || "";
+        for (const node of [clone, ...clone.querySelectorAll("*")])
+          for (const attr of [
+            "id",
+            "for",
+            "aria-controls",
+            "aria-labelledby",
+            "aria-describedby",
+          ]) {
+            const old = node.getAttribute(attr);
+            if (old && from) node.setAttribute(attr, old.replaceAll(from, input.id));
+          }
+        box.replaceWith(clone);
+      } else if (!wantChips && chips) {
+        const box = valueBoxes.get(row);
+        if (box) {
+          chips.replaceWith(box);
+          (box.querySelector("input") as HTMLInputElement).value = "";
+        }
+      }
     };
     const fillOperators = (operatorSelect: HTMLSelectElement, field: string) => {
       const type = columns.find((c) => c.field === field)?.type;
@@ -790,9 +1450,18 @@ export const dataGrid = defineComponent<DataGridInstance>({
       return {
         ...filterModel,
         items: rowsNow.map((row) => {
-          const { field, operator, input } = partsOf(row);
-          input.disabled = !gridOperatorNeedsValue(operator.value, operators[field.value]);
-          return { field: field.value, operator: operator.value, value: input.value };
+          const { field, operator, input, chips } = partsOf(row);
+          if (chips)
+            return { field: field.value, operator: operator.value, value: chipValues(chips) };
+          (input as HTMLInputElement).disabled = !gridOperatorNeedsValue(
+            operator.value,
+            operators[field.value],
+          );
+          return {
+            field: field.value,
+            operator: operator.value,
+            value: (input as HTMLInputElement).value,
+          };
         }),
         logicOperator: logic === "or" ? "or" : logic === "and" ? "and" : filterModel.logicOperator,
       };
@@ -805,9 +1474,11 @@ export const dataGrid = defineComponent<DataGridInstance>({
       }
     };
     const resetRow = (row: HTMLElement) => {
-      const { field, operator, input } = partsOf(row);
+      const { field, operator } = partsOf(row);
       field.selectedIndex = 0;
       fillOperators(operator, field.value);
+      syncValueField(row);
+      const input = partsOf(row).input as HTMLInputElement;
       input.value = "";
       input.disabled = false;
     };
@@ -815,6 +1486,10 @@ export const dataGrid = defineComponent<DataGridInstance>({
       const rowsNow = filterRows();
       const first = rowsNow[0] as HTMLElement;
       const row = first.cloneNode(true) as HTMLElement;
+      // A copy of chips has no runtime: copy the plain value field instead.
+      const firstBox = valueBoxes.get(first);
+      if (firstBox)
+        row.querySelector("[data-ok-autocomplete]")?.replaceWith(firstBox.cloneNode(true));
       const index = rowsNow.length;
       // The first row has no logic field: add a copy of the column field with and / or.
       const fieldBox = partsOf(row).field.closest("[data-ok-text-field]") as HTMLElement;
@@ -848,6 +1523,7 @@ export const dataGrid = defineComponent<DataGridInstance>({
         const row = target.closest<HTMLElement>("[data-ok-data-grid-filter]");
         if (row && partsOf(row).field === target)
           fillOperators(partsOf(row).operator, target.value);
+        if (row && target.tagName === "SELECT") syncValueField(row);
         if (target.matches('select[id*="-filter-logic"]'))
           for (const other of filterPanel.querySelectorAll<HTMLSelectElement>(
             'select[id*="-filter-logic"]',
@@ -858,6 +1534,12 @@ export const dataGrid = defineComponent<DataGridInstance>({
       { signal },
     );
     filterPanel?.addEventListener("input", () => setFilter(readFilters()), { signal });
+    // Chips change after their event: read them once it has applied.
+    filterPanel?.addEventListener(
+      "ok:autocomplete:change",
+      () => queueMicrotask(() => setFilter(readFilters())),
+      { signal },
+    );
     filterPanel?.addEventListener(
       "click",
       (event) => {
@@ -927,7 +1609,9 @@ export const dataGrid = defineComponent<DataGridInstance>({
     );
     const shownColumns = () =>
       visibleGridColumns(arrangeGridColumns(orderGridColumns(columns, order), pinned), visibility);
-    const toCsv = (options: GridCsvOptions = {}) =>
+    const csvDefaults = () =>
+      parseGridExportOptions(element.getAttribute("data-ok-csv-options")) as GridCsvOptions;
+    const toCsv = (given: GridCsvOptions = {}, options = { ...csvDefaults(), ...given }) =>
       gridToCsv(
         gridExportColumns(columns, shownColumns(), options),
         sortGridRows(
@@ -939,12 +1623,20 @@ export const dataGrid = defineComponent<DataGridInstance>({
         text,
         options,
       );
-    const exportCsv = (options: GridCsvOptions = {}) =>
+    const exportCsv = (given: GridCsvOptions = {}, options = { ...csvDefaults(), ...given }) =>
       download(
         options.fileName ?? element.getAttribute("data-ok-export-file-name") ?? "data",
         toCsv(options),
       );
-    const print = (options: GridPrintOptions = {}) => {
+    const print = (
+      given: GridPrintOptions = {},
+      options: GridPrintOptions = {
+        ...(parseGridExportOptions(
+          element.getAttribute("data-ok-print-options"),
+        ) as GridPrintOptions),
+        ...given,
+      },
+    ) => {
       const keep = options.fields ? new Set(options.fields) : null;
       const base = options.allColumns
         ? arrangeGridColumns(orderGridColumns(columns, order), pinned)
@@ -957,6 +1649,7 @@ export const dataGrid = defineComponent<DataGridInstance>({
         (copy) => {
           // Every filtered, sorted row (all pages), not only the rows on screen.
           const copyBody = copy.querySelector("[data-ok-data-grid-body]") as HTMLElement;
+          for (const row of sortedList) layoutRow(row);
           copyBody.replaceChildren(
             ...sortedList.map((row) => {
               const clone = copy.ownerDocument.importNode(row, true);
@@ -1007,7 +1700,10 @@ export const dataGrid = defineComponent<DataGridInstance>({
       });
     const columnControls = createGridColumnControls(main, {
       onResize: resize,
-      onMove: (field, target) => setOrder(moveGridColumn(arrangedFields(), field, { to: target })),
+      onMove: (field, target) => {
+        if (groupPaths.size && !gridCanMoveColumn(groupPaths, field, target)) return;
+        setOrder(moveGridColumn(arrangedFields(), field, { to: target }));
+      },
       canReorder: () => !element.hasAttribute(disableColumnReorder.attr),
       onAutosize: (field) => autosize({ columns: [field] }),
     });
@@ -1101,6 +1797,17 @@ export const dataGrid = defineComponent<DataGridInstance>({
       input instanceof HTMLInputElement && input.type === "checkbox"
         ? String(input.checked)
         : input.value;
+    /** Cells of a row from a data row (text, formatted). */
+    const fillCells = (row: HTMLElement, item: DataRow) => {
+      for (const column of columns) {
+        if (!(column.field in item)) continue;
+        const cell = cellOf(row, column.field);
+        if (!cell || cell.hasAttribute("data-ok-editing")) continue;
+        const raw = item[column.field];
+        cell.replaceChildren(formatted(column.field, raw));
+        cell.setAttribute("data-ok-value", raw === null || raw === undefined ? "" : String(raw));
+      }
+    };
     /** `ok:data-grid:validate`: a listener sets `detail.error` (true or a message). */
     const validate = (edit: Edit) => {
       const detail: { id: string; field: string; value: unknown; error?: string | boolean } = {
@@ -1142,6 +1849,10 @@ export const dataGrid = defineComponent<DataGridInstance>({
       const done = edits;
       const row = editRow as HTMLElement;
       errors.clear();
+      const previousRow: DataRow = {
+        id: idOf(row),
+        ...Object.fromEntries(columns.map((c) => [c.field, value(row, c.field)])),
+      };
       edits = [];
       editRow = null;
       row.removeAttribute("data-ok-editing");
@@ -1169,6 +1880,19 @@ export const dataGrid = defineComponent<DataGridInstance>({
         cell.replaceChildren(formatted(column.field, next));
         cell.removeAttribute("data-ok-text");
         cell.setAttribute("data-ok-value", next === null || next === undefined ? "" : String(next));
+      }
+      // A data source saves the row; its answer is shown, a failure brings the old values back.
+      if (accepted && source?.updateRow) {
+        const updatedRow = { ...previousRow, ...values };
+        Promise.resolve(source.updateRow({ rowId: idOf(row), updatedRow, previousRow }))
+          .then((saved) => {
+            fillCells(row, saved);
+            sourceCache.clear();
+          })
+          .catch((error: unknown) => {
+            fillCells(row, previousRow);
+            emit("datasourceerror", { error });
+          });
       }
       // Re-sorting moves rows, which drops the focus: apply first, then focus the cell.
       if (accepted) apply();
@@ -1279,9 +2003,12 @@ export const dataGrid = defineComponent<DataGridInstance>({
             },
           );
         else if (action === "hide") setVisibility({ ...visibility, [field]: false });
-        else if (action === "left" || action === "right")
-          setOrder(moveGridColumn(arrangedFields(), field, action === "left" ? -1 : 1));
-        else if (action === "pin-left" || action === "pin-right" || action === "unpin")
+        else if (action === "left" || action === "right") {
+          const fieldsNow = arrangedFields();
+          const neighbour = fieldsNow[fieldsNow.indexOf(field) + (action === "left" ? -1 : 1)];
+          if (groupPaths.size && !gridCanMoveColumn(groupPaths, field, neighbour as string)) return;
+          setOrder(moveGridColumn(fieldsNow, field, action === "left" ? -1 : 1));
+        } else if (action === "pin-left" || action === "pin-right" || action === "unpin")
           setPinned(
             pinGridColumn(
               pinned,
@@ -1311,6 +2038,16 @@ export const dataGrid = defineComponent<DataGridInstance>({
       "click",
       (event) => {
         const target = event.target as Element;
+        const treeToggle = target.closest("[data-ok-data-grid-tree-toggle]");
+        if (treeToggle) {
+          toggleExpansion(treeToggle.closest<HTMLElement>(ROW) as HTMLElement);
+          return;
+        }
+        const detailToggle = target.closest("[data-ok-data-grid-detail-toggle]");
+        if (detailToggle) {
+          toggleDetail(detailToggle.closest<HTMLElement>(ROW) as HTMLElement);
+          return;
+        }
         const menu = target.closest("[data-ok-data-grid-menu-button]");
         if (menu) {
           openColumnMenu(
@@ -1410,7 +2147,17 @@ export const dataGrid = defineComponent<DataGridInstance>({
       syncOverlays(rows().length);
     };
     let rootVars: string[] = [];
-    const options = new MutationObserver(reflect);
+    let listNow = element.hasAttribute(listView.attr);
+    const options = new MutationObserver(() => {
+      reflect();
+      // List view: column cells and headers hide, list cells show.
+      if (element.hasAttribute(listView.attr) !== listNow) {
+        listNow = !listNow;
+        layout();
+        draw();
+        navigation.sync();
+      }
+    });
     options.observe(element, {
       attributes: true,
       attributeFilter: [
@@ -1423,6 +2170,7 @@ export const dataGrid = defineComponent<DataGridInstance>({
         loadingOption.attr,
         disableMultipleRowSelection.attr,
         rowHeightOption.attr,
+        listView.attr,
       ],
     });
 
@@ -1576,11 +2324,22 @@ export const dataGrid = defineComponent<DataGridInstance>({
         pager()?.refresh();
         syncOverlays(rows().length);
       },
+      setRowChildrenExpansion(rowId, expanded) {
+        const row = rows().find((r) => idOf(r) === rowId);
+        if (row) toggleExpansion(row, expanded);
+      },
+      toggleDetailPanel(rowId) {
+        const row = rows().find((r) => idOf(r) === rowId);
+        if (row) toggleDetail(row);
+      },
       setRows(data) {
         buildRows(data);
       },
       setDataSource(next) {
         source = next;
+        // A new source: lazily loaded rows belonged to the old one.
+        lazyLoaded.clear();
+        lazyState.key = "";
         sourceCount = undefined;
         sourceCache.clear();
         if (next) load();
@@ -1590,6 +2349,8 @@ export const dataGrid = defineComponent<DataGridInstance>({
         options.disconnect();
         scrollWatcher.destroy();
         columnControls.destroy();
+        rowReorder.destroy();
+        clearTimeout(lazyState.timer as number);
         navigation.destroy();
         syncCustomProperties(main, {}, written);
         syncCustomProperties(element, {}, rootVars);

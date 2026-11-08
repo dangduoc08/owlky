@@ -320,6 +320,78 @@ export function Customers() {
 <DataGrid aria-label="Danh sách" rows={rows} columns={columns} localeText={viVN} />`,
   },
   {
+    id: "tree",
+    title: "Show rows as a tree",
+    body: "Set `treeData` and return each row's path from `getTreeDataPath`: the names of its ancestors, then its own. Every parent in a path needs its own row. A group column shows the names with a button that opens and closes the children. Right and Left open and close a row when its group cell has the focus. `defaultGroupingExpansionDepth` sets how many levels are open at first. Filters keep the parents of the rows that match, and sorting orders rows among their siblings. In HTML, rows carry `aria-level` and `data-ok-parent`, and the grid fires `ok:data-grid:expand`. With a data source, `getChildrenCount` and `getGroupKey` let the grid load children when a row opens.",
+    html: `<div role="row" data-ok-row-id="m-2" data-ok-parent="m-1" aria-level="2" aria-expanded="false">…</div>`,
+    react: `<DataGrid
+  aria-label="Team"
+  rows={team}
+  columns={columns}
+  treeData
+  getTreeDataPath={(row) => row.path}
+  groupingColDef={{ headerName: "Name" }}
+  defaultGroupingExpansionDepth={1}
+/>`,
+  },
+  {
+    id: "detail",
+    title: "Show details under a row",
+    body: '`getDetailPanelContent` returns what shows under a row when people open it, or `null` for rows without details. A button in the first column opens and closes the panel. `getDetailPanelHeight` sets a height in pixels; by default the content decides. In HTML, put each row\'s content in a `<template data-ok-data-grid-detail="<row id>">` inside the grid. The grid copies it when the panel opens and fires `ok:data-grid:detailpanel`.',
+    html: `<template data-ok-data-grid-detail="o-1001">
+  <p>Order o-1001 for Ana Silva.</p>
+</template>`,
+    react: `<DataGrid
+  aria-label="Orders"
+  rows={orders}
+  columns={columns}
+  getDetailPanelContent={({ row }) => <OrderLines order={row} />}
+/>`,
+  },
+  {
+    id: "ordering",
+    title: "Move and pin rows",
+    body: 'With `rowReordering`, each row gets a handle: drag it onto another row, or press Alt + Up or Alt + Down on it. A screen reader hears the new position. Moving is off while the rows are sorted or filtered. React reports moves with `onRowOrderChange`; HTML fires `ok:data-grid:roworder`, which you can cancel. `pinnedRows` keeps rows above or below the others while they scroll. Pinned rows aren\'t sorted, filtered or paged. In HTML, put them in `<div role="rowgroup" data-ok-data-grid-pinned-rows="top">` (or `bottom`).',
+    react: `<DataGrid
+  aria-label="Agenda"
+  rows={items}
+  columns={columns}
+  rowReordering
+  onRowOrderChange={({ oldIndex, targetIndex }) => save(oldIndex, targetIndex)}
+  pinnedRows={{ top: [welcome], bottom: [questions] }}
+/>`,
+  },
+  {
+    id: "groups",
+    title: "Group column headers and show a list",
+    body: "`columnGroupingModel` puts headers over groups of columns, on as many levels as you need. A group's `description` shows as its tooltip. When a column is hidden or moved, its group splits around it. Columns can't move out of their group. `listView` shows each row as one cell, such as a card on a small screen. `listViewColumn` says which field it shows, and `renderCell` builds its content. The headers and the other cells are hidden in list view.",
+    react: `<DataGrid
+  aria-label="Contacts"
+  rows={contacts}
+  columns={columns}
+  columnGroupingModel={[
+    { groupId: "person", headerName: "Person", children: [{ field: "firstName" }, { field: "lastName" }] },
+    { groupId: "contact", headerName: "Contact", children: [{ field: "email" }] },
+  ]}
+/>`,
+  },
+  {
+    id: "lazy",
+    title: "Load rows as they scroll into view",
+    body: "With `lazyLoading` and a data source, the grid asks for the rows that come into view, 50 at a time. Rows that haven't arrived show as placeholders. The data source answers `start` and `end`, and returns the total in `rowCount`. `lazyLoadingRequestThrottleMs` spaces the requests. Wide grids also render only the columns in view, when the columns have fixed widths. `rowBufferPx` and `columnBufferPx` set how much renders beyond the visible area. A data source's `updateRow` saves edited rows. Its answer is shown, and a failure brings the old values back. The cache keeps answers for five minutes, or for the `ttl` you pass to `createGridDataSourceCache`.",
+    html: `<div data-ok-data-grid id="customers" data-ok-lazy-loading>…</div>
+<script type="module">
+  const grid = window.Owlky.get(document.getElementById("customers"), "data-grid");
+  grid.setDataSource({
+    async getRows({ start, end }) {
+      const response = await fetch(\`/api/customers?start=\${start}&end=\${end}\`);
+      return response.json(); // { rows, rowCount }
+    },
+  });
+</script>`,
+    react: `<DataGrid aria-label="Customers" rows={[]} columns={columns} dataSource={customers} lazyLoading />`,
+  },
+  {
     id: "options",
     title: "Options",
     body: "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default.",
@@ -336,6 +408,7 @@ export function Customers() {
 - **\`ok:data-grid:resize\`** reports \`detail.field\` and \`detail.width\`. **\`ok:data-grid:edit\`** reports \`detail.id\` and the edited values in \`detail.row\`, and is cancelable.
 - **Instance:** \`runtime.get(element, "data-grid")\` returns \`{ sortModel, filterModel, selection, columnVisibilityModel, columnOrder, pinnedColumns, columnWidths }\` with a setter for each (\`setSortModel(model)\`, \`setColumnWidth(field, width)\` and so on; setters fire no events), \`toCsv()\`, \`exportCsv()\`, \`setRows(rows)\` and \`setDataSource(source)\` (\`null\` stops it).
 - **\`ok:data-grid:rowclick\`**, **\`ok:data-grid:rowdoubleclick\`**, **\`ok:data-grid:cellclick\`**, **\`ok:data-grid:celldoubleclick\`** and **\`ok:data-grid:columnheaderclick\`** report the row id, the field and the value. **\`ok:data-grid:editstart\`** and **\`ok:data-grid:editstop\`** report the cell and the reason. **\`ok:data-grid:validate\`** asks for an error in \`detail.error\`.
+- **\`ok:data-grid:expand\`**, **\`ok:data-grid:detailpanel\`** and **\`ok:data-grid:roworder\`** report a row opening, a panel opening and a row moving. They're cancelable. \`setRowChildrenExpansion(id, open)\` and \`toggleDetailPanel(id)\` do the same from code.
 - **More methods:** \`print(options)\`, \`autosizeColumns(options)\`, \`scrollToIndexes({ rowIndex, colIndex })\`, \`exportState()\`, \`restoreState(state)\`, \`setFilterOperators(field, operators)\`, \`setValueFormatter(field, format)\` and \`setLocaleText(labels)\`. \`toCsv\` and \`exportCsv\` take CSV options.
 - **\`ok:data-grid:scrollend\`** reports \`detail.visibleRowsCount\` when people scroll to the end of the rows. **\`ok:data-grid:datasourceerror\`** reports \`detail.error\` when a data source fails.`,
   },
@@ -509,6 +582,30 @@ const PREVIEWS = {
           description: "Delimiter, columns, header line, file name; printed parts.",
         },
         {
+          react: "treeData · getTreeDataPath · groupingColDef",
+          html: "aria-level · data-ok-parent · ok:data-grid:expand",
+          type: "(row) => string[]",
+          description: "Rows as a tree, and the group column.",
+        },
+        {
+          react: "getDetailPanelContent · detailPanelExpandedRowIds",
+          html: "template[data-ok-data-grid-detail]",
+          type: "(params) => ReactNode",
+          description: "Details under a row.",
+        },
+        {
+          react: "rowReordering · onRowOrderChange · pinnedRows",
+          html: "data-ok-row-reordering · ok:data-grid:roworder · pinned rowgroups",
+          type: "boolean · { top, bottom }",
+          description: "Rows people move, and rows that stay in view.",
+        },
+        {
+          react: "columnGroupingModel · listViewColumn",
+          html: "group header rows · data-ok-data-grid-list-cell",
+          type: "GridColumnGroup[]",
+          description: "Header groups, and the cell list view shows.",
+        },
+        {
           react: "showToolbar · localeText · exportFileName",
           html: "the toolbar markup",
           type: "—",
@@ -533,6 +630,11 @@ const PREVIEWS = {
         ["Enter or F2 on an editable cell", "Edits the cell (Enter saves, Escape cancels)"],
         ["A character on an editable cell", "Edits the cell, starting with that character"],
         ["Left / Right, right to left", "Move in the reading order"],
+        [
+          "Right / Left on a tree row's group cell",
+          "Opens / closes the row (Left on a child: its parent)",
+        ],
+        ["Alt + Up / Alt + Down on a row handle", "Moves the row up / down"],
       ]}
     />
   ),

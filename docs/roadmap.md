@@ -46,7 +46,7 @@ component and each `/integrate` run.
 | MUI | Timeline | ✅ | Timeline and its parts | Rating, Slider, Timeline, Transfer list, Tree view & Autocomplete |
 | MUI | Tooltip | ✅ | Tooltip | Popover, Tooltip, Menu, Dialog & Snackbar |
 | MUI | Transfer list | ✅ | TransferList | Rating, Slider, Timeline, Transfer list, Tree view & Autocomplete |
-| MUI X | Data grid | ✅ phases 1–4 of 6 (ADR-0020, ADR-0021) | DataGrid | Data grid |
+| MUI X | Data grid | ✅ phases 1–5 of 6 (ADR-0020, ADR-0021) | DataGrid | Data grid |
 | MUI X | Date pickers | ✅ phase 1 of 4 (ADR-0022) | DatePicker, DesktopDatePicker, MobileDatePicker, StaticDatePicker, DateField, DateCalendar, MonthCalendar, YearCalendar, LocalizationProvider | Date pickers |
 | MUI X | Tree view | ✅ | SimpleTreeView, TreeItem, RichTreeView | Rating, Slider, Timeline, Transfer list, Tree view & Autocomplete |
 | Extra | Animate | ✅ beta | Motion, MotionGroup, MotionText, CountUp, MotionBorder; Dialog `transition` | Motion |
@@ -344,8 +344,8 @@ reference's Basic toolbar is icon-only), original data and names, clicking a row
 | 2 | Multi filters and logic operators (Pro), column resizing and reordering (Pro), column pinning (Pro), cell and row editing, print export | ✅ 2026-11-08 |
 | 3 | Row virtualization; server-side sorting, filtering and pagination (`sortingMode` / `filterMode` / `paginationMode="server"`, `rowCount`); infinite loading, `dataSource` with cache (Pro); `loading` overlay and skeleton rows; HTML: a JavaScript rows API with row templates | ✅ 2026-11-08 |
 | 4 | Community and API completeness. **Selection:** single-row selection (`disableMultipleRowSelection`), `isRowSelectable`, `keepNonExistentRowsSelected`, `checkboxSelectionVisibleOnly`. **Columns:** autosizing (`autosizeColumns`, double-click the resize edge), `colSpan` and `rowSpanning`, header `description` tooltips, `renderHeader`. **Rows:** `getRowHeight` and `"auto"` heights, `getRowClassName` / `getCellClassName`, `getRowSpacing`. **Editing:** validation with error states (`preProcessEditCellProps`), `valueParser` / `valueSetter`, start editing by typing, `onCellEditStart` / `onCellEditStop` / `onRowEditStop`, `isCellEditable`. **Filtering:** `isAnyOf`, custom operators, quick filter options (`quickFilterLogicOperator`, searched columns). **Events and API:** `onRowClick`, `onCellClick`, `onCellDoubleClick`, `onColumnHeaderClick`…, `apiRef`, `exportState` / `restoreState`. **Export:** CSV options (delimiter, fields, all rows or filtered), print options, printing every filtered row. **Look and language:** the reference's icon-only toolbar, locale packs, right-to-left layout. **HTML:** value formatters for edited and `setRows` cells | ✅ 2026-11-08 |
-| 5 | Tree data (data source loading per level), master-detail panels, row reordering by drag, row pinning (top / bottom), column groups (multi-level headers), list view; column virtualization (`columnBufferPx`), lazy loading of row chunks (`lazyLoading`, `rowsLoadingMode`), `dataSource.updateRow`, cache time to live, `rowBufferPx` as an option (Pro); from phase 4: `isAnyOf` values as chips (Autocomplete) instead of comma-separated text, HTML attributes for CSV and print options | next (`/component` Update) |
-| 6 | Row grouping (also through the data source), aggregation (sum, average, min / max, count), pivoting, Excel (.xlsx) export, clipboard copy and paste, cell range selection, header filters (Premium); charts integration and AI assistant once a Chart component exists | — |
+| 5 | Tree data (data source loading per level), master-detail panels, row reordering by drag, row pinning (top / bottom), column groups (multi-level headers), list view; column virtualization (`columnBufferPx`), lazy loading of row chunks (`lazyLoading`, `rowsLoadingMode`), `dataSource.updateRow`, cache time to live, `rowBufferPx` as an option (Pro); from phase 4: `isAnyOf` values as chips (Autocomplete) instead of comma-separated text, HTML attributes for CSV and print options | ✅ 2026-11-08 |
+| 6 | Row grouping (also through the data source), aggregation (sum, average, min / max, count), pivoting, Excel (.xlsx) export, clipboard copy and paste, cell range selection, header filters (Premium); charts integration and AI assistant once a Chart component exists; from phase 5: generated parent rows for tree paths with missing parents | next (`/component` Update) |
 
 Phase 2 (story: Advanced): filter rows combined with and / or, column resizing (drag the header
 edge, or Alt + arrows), reordering (drag a header, or Move left / right in the column menu),
@@ -376,6 +376,13 @@ input), `scrollToIndexes`; edit validation (`preProcessEditCellProps`, HTML `ok:
 (`data-ok-format`, `setValueFormatter`). Differences from the plan: `isAnyOf` values are typed
 separated by commas in both versions (chips in phase 5); CSV and print options are method options
 in HTML (attributes in phase 5).
+
+Phase 5 (stories: Tree data, Master detail, Row ordering and pinning, Column groups, List view,
+Lazy loading): tree data (paths or a server data source), detail panels, row reordering (drag or
+Alt + arrows, announced), pinned rows, column groups, list view, column virtualization,
+row / column buffers, lazy loading in chunks, `dataSource.updateRow`, cache time to live,
+`isAnyOf` chips (Autocomplete), HTML CSV and print options as attributes. Every tree path needs a
+row for its parent (generated parents move to phase 6).
 
 The former backlog is folded into phases 4–6 (ADR-0021, 2026-11-08). New MUI X features go into a
 phase, or into "Pending integrations" below when they need a missing component.

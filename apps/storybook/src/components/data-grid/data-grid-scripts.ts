@@ -1,5 +1,11 @@
 import { getRuntime } from "@owlky/html";
-import { createCustomerSource, LARGE_STEP, LARGE_TOTAL, makeCustomers } from "./server-data.js";
+import {
+  createCustomerSource,
+  createLazyCustomerSource,
+  LARGE_STEP,
+  LARGE_TOTAL,
+  makeCustomers,
+} from "./server-data.js";
 
 interface GridApi {
   setRows(rows: readonly Record<string, unknown>[]): void;
@@ -103,4 +109,23 @@ element.addEventListener("ok:data-grid:validate", (event) => {
   const { field, value } = event.detail;
   if (field === "name" && String(value ?? "").trim() === "") event.detail.error = "Enter a name";
   if (field === "price" && !(Number(value) > 0)) event.detail.error = "Enter a price above 0";
+});`;
+
+/** Lazy loading (HTML): a data source that answers ranges of rows. */
+export function lazyScript(row: HTMLElement) {
+  const { api } = gridIn(row);
+  api.setDataSource(createLazyCustomerSource());
+  return () => api.setDataSource(null);
+}
+
+export const LAZY_SCRIPT_SOURCE = `import { getRuntime } from "@owlky/html";
+
+const grid = getRuntime().get(document.getElementById("grid-lazy"), "data-grid");
+
+// With data-ok-lazy-loading, the grid asks for the rows as they scroll into view
+grid.setDataSource({
+  async getRows({ start, end, sortModel, filterModel }) {
+    const response = await fetch(\`/api/customers?start=\${start}&end=\${end}\`);
+    return response.json(); // { rows, rowCount }
+  },
 });`;

@@ -65,6 +65,27 @@
       </div>
     </div>
     <div popover="manual" data-ok-popover data-ok-placement="bottom-end" id="grid-basic-filters">
+      <template data-ok-data-grid-any-of="grid-basic-filter-value">
+        <div data-ok-autocomplete data-ok-multiple data-ok-free-solo>
+          <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-full-width data-ok-margin="none">
+            <label data-ok-text-field-label for="grid-basic-filter-value">Value</label>
+            <div data-ok-text-field-control>
+              <input role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="grid-basic-filter-value-listbox" autocomplete="off" id="grid-basic-filter-value" data-ok-text-field-input placeholder=" " value="">
+              <span data-ok-text-field-adornment="end">
+                <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-autocomplete-clear tabindex="-1" aria-label="Clear" hidden><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12" /></svg></button>
+              </span>
+              <fieldset data-ok-text-field-outline aria-hidden="true">
+                <legend><span>Value</span></legend>
+              </fieldset>
+            </div>
+          </div>
+          <div popover="manual" data-ok-popover data-ok-placement="bottom-start" data-ok-disable-auto-focus data-ok-disable-restore-focus data-ok-autocomplete-paper>
+            <span data-ok-popover-arrow aria-hidden="true"></span>
+            <ul role="listbox" id="grid-basic-filter-value-listbox" aria-label="Value"></ul>
+            <div data-ok-autocomplete-no-options>No options</div>
+          </div>
+        </div>
+      </template>
       <span data-ok-popover-arrow aria-hidden="true"></span>
       <div data-ok-data-grid-panel role="group" aria-label="Filters">
         <div data-ok-data-grid-filter>
@@ -136,7 +157,7 @@
   <div role="grid" data-ok-data-grid-main aria-label="People" aria-rowcount="21" aria-colcount="7" aria-multiselectable="true">
     <div role="rowgroup" data-ok-data-grid-header>
       <div role="row" aria-rowindex="1">
-        <div role="columnheader" aria-colindex="1" data-ok-field="__check__" data-ok-data-grid-checkbox tabindex="-1">
+        <div role="columnheader" aria-colindex="1" data-ok-field="__check__" tabindex="-1" data-ok-data-grid-checkbox>
           <span data-ok-checkbox data-ok-color="primary" data-ok-size="small">
             <input type="checkbox" data-ok-checkbox-input tabindex="-1" aria-label="Select all rows">
             <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="4.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span>
@@ -183,7 +204,7 @@
     </div>
     <div role="rowgroup" data-ok-data-grid-body>
       <div role="row" aria-rowindex="2" data-ok-row-id="p-001" aria-selected="false">
-        <div role="gridcell" aria-colindex="1" data-ok-field="__check__" data-ok-data-grid-checkbox tabindex="-1">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__check__" tabindex="-1" data-ok-data-grid-checkbox>
           <span data-ok-checkbox data-ok-color="primary" data-ok-size="small">
             <input type="checkbox" data-ok-checkbox-input tabindex="-1" aria-label="Select row">
             <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="4.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span>
@@ -202,7 +223,7 @@
         </div>
       </div>
       <div role="row" aria-rowindex="3" data-ok-row-id="p-002" aria-selected="false">
-        <div role="gridcell" aria-colindex="1" data-ok-field="__check__" data-ok-data-grid-checkbox tabindex="-1">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__check__" tabindex="-1" data-ok-data-grid-checkbox>
           <span data-ok-checkbox data-ok-color="primary" data-ok-size="small">
             <input type="checkbox" data-ok-checkbox-input tabindex="-1" aria-label="Select row">
             <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="4.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span>
@@ -221,7 +242,7 @@
         </div>
       </div>
       <div role="row" aria-rowindex="4" data-ok-row-id="p-003" aria-selected="false">
-        <div role="gridcell" aria-colindex="1" data-ok-field="__check__" data-ok-data-grid-checkbox tabindex="-1">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__check__" tabindex="-1" data-ok-data-grid-checkbox>
           <span data-ok-checkbox data-ok-color="primary" data-ok-size="small">
             <input type="checkbox" data-ok-checkbox-input tabindex="-1" aria-label="Select row">
             <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="4.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span>
@@ -240,7 +261,7 @@
         </div>
       </div>
       <div role="row" aria-rowindex="5" data-ok-row-id="p-004" aria-selected="false">
-        <div role="gridcell" aria-colindex="1" data-ok-field="__check__" data-ok-data-grid-checkbox tabindex="-1">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__check__" tabindex="-1" data-ok-data-grid-checkbox>
           <span data-ok-checkbox data-ok-color="primary" data-ok-size="small">
             <input type="checkbox" data-ok-checkbox-input tabindex="-1" aria-label="Select row">
             <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="4.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span>
@@ -259,7 +280,7 @@
         </div>
       </div>
       <div role="row" aria-rowindex="6" data-ok-row-id="p-005" aria-selected="false">
-        <div role="gridcell" aria-colindex="1" data-ok-field="__check__" data-ok-data-grid-checkbox tabindex="-1">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__check__" tabindex="-1" data-ok-data-grid-checkbox>
           <span data-ok-checkbox data-ok-color="primary" data-ok-size="small">
             <input type="checkbox" data-ok-checkbox-input tabindex="-1" aria-label="Select row">
             <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="4.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span>
@@ -278,7 +299,7 @@
         </div>
       </div>
       <div role="row" aria-rowindex="7" data-ok-row-id="p-006" aria-selected="false">
-        <div role="gridcell" aria-colindex="1" data-ok-field="__check__" data-ok-data-grid-checkbox tabindex="-1">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__check__" tabindex="-1" data-ok-data-grid-checkbox>
           <span data-ok-checkbox data-ok-color="primary" data-ok-size="small">
             <input type="checkbox" data-ok-checkbox-input tabindex="-1" aria-label="Select row">
             <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="4.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span>
@@ -297,7 +318,7 @@
         </div>
       </div>
       <div role="row" aria-rowindex="8" data-ok-row-id="p-007" aria-selected="false">
-        <div role="gridcell" aria-colindex="1" data-ok-field="__check__" data-ok-data-grid-checkbox tabindex="-1">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__check__" tabindex="-1" data-ok-data-grid-checkbox>
           <span data-ok-checkbox data-ok-color="primary" data-ok-size="small">
             <input type="checkbox" data-ok-checkbox-input tabindex="-1" aria-label="Select row">
             <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="4.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span>
@@ -316,7 +337,7 @@
         </div>
       </div>
       <div role="row" aria-rowindex="9" data-ok-row-id="p-008" aria-selected="false">
-        <div role="gridcell" aria-colindex="1" data-ok-field="__check__" data-ok-data-grid-checkbox tabindex="-1">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__check__" tabindex="-1" data-ok-data-grid-checkbox>
           <span data-ok-checkbox data-ok-color="primary" data-ok-size="small">
             <input type="checkbox" data-ok-checkbox-input tabindex="-1" aria-label="Select row">
             <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="4.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span>
@@ -335,7 +356,7 @@
         </div>
       </div>
       <div role="row" aria-rowindex="10" data-ok-row-id="p-009" aria-selected="false">
-        <div role="gridcell" aria-colindex="1" data-ok-field="__check__" data-ok-data-grid-checkbox tabindex="-1">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__check__" tabindex="-1" data-ok-data-grid-checkbox>
           <span data-ok-checkbox data-ok-color="primary" data-ok-size="small">
             <input type="checkbox" data-ok-checkbox-input tabindex="-1" aria-label="Select row">
             <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="4.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span>
@@ -354,7 +375,7 @@
         </div>
       </div>
       <div role="row" aria-rowindex="11" data-ok-row-id="p-010" aria-selected="false">
-        <div role="gridcell" aria-colindex="1" data-ok-field="__check__" data-ok-data-grid-checkbox tabindex="-1">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__check__" tabindex="-1" data-ok-data-grid-checkbox>
           <span data-ok-checkbox data-ok-color="primary" data-ok-size="small">
             <input type="checkbox" data-ok-checkbox-input tabindex="-1" aria-label="Select row">
             <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="4.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span>
@@ -373,7 +394,7 @@
         </div>
       </div>
       <div role="row" aria-rowindex="12" hidden data-ok-row-id="p-011" aria-selected="false">
-        <div role="gridcell" aria-colindex="1" data-ok-field="__check__" data-ok-data-grid-checkbox tabindex="-1">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__check__" tabindex="-1" data-ok-data-grid-checkbox>
           <span data-ok-checkbox data-ok-color="primary" data-ok-size="small">
             <input type="checkbox" data-ok-checkbox-input tabindex="-1" aria-label="Select row">
             <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="4.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span>
@@ -392,7 +413,7 @@
         </div>
       </div>
       <div role="row" aria-rowindex="13" hidden data-ok-row-id="p-012" aria-selected="false">
-        <div role="gridcell" aria-colindex="1" data-ok-field="__check__" data-ok-data-grid-checkbox tabindex="-1">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__check__" tabindex="-1" data-ok-data-grid-checkbox>
           <span data-ok-checkbox data-ok-color="primary" data-ok-size="small">
             <input type="checkbox" data-ok-checkbox-input tabindex="-1" aria-label="Select row">
             <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="4.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span>
@@ -411,7 +432,7 @@
         </div>
       </div>
       <div role="row" aria-rowindex="14" hidden data-ok-row-id="p-013" aria-selected="false">
-        <div role="gridcell" aria-colindex="1" data-ok-field="__check__" data-ok-data-grid-checkbox tabindex="-1">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__check__" tabindex="-1" data-ok-data-grid-checkbox>
           <span data-ok-checkbox data-ok-color="primary" data-ok-size="small">
             <input type="checkbox" data-ok-checkbox-input tabindex="-1" aria-label="Select row">
             <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="4.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span>
@@ -430,7 +451,7 @@
         </div>
       </div>
       <div role="row" aria-rowindex="15" hidden data-ok-row-id="p-014" aria-selected="false">
-        <div role="gridcell" aria-colindex="1" data-ok-field="__check__" data-ok-data-grid-checkbox tabindex="-1">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__check__" tabindex="-1" data-ok-data-grid-checkbox>
           <span data-ok-checkbox data-ok-color="primary" data-ok-size="small">
             <input type="checkbox" data-ok-checkbox-input tabindex="-1" aria-label="Select row">
             <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="4.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span>
@@ -449,7 +470,7 @@
         </div>
       </div>
       <div role="row" aria-rowindex="16" hidden data-ok-row-id="p-015" aria-selected="false">
-        <div role="gridcell" aria-colindex="1" data-ok-field="__check__" data-ok-data-grid-checkbox tabindex="-1">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__check__" tabindex="-1" data-ok-data-grid-checkbox>
           <span data-ok-checkbox data-ok-color="primary" data-ok-size="small">
             <input type="checkbox" data-ok-checkbox-input tabindex="-1" aria-label="Select row">
             <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="4.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span>
@@ -468,7 +489,7 @@
         </div>
       </div>
       <div role="row" aria-rowindex="17" hidden data-ok-row-id="p-016" aria-selected="false">
-        <div role="gridcell" aria-colindex="1" data-ok-field="__check__" data-ok-data-grid-checkbox tabindex="-1">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__check__" tabindex="-1" data-ok-data-grid-checkbox>
           <span data-ok-checkbox data-ok-color="primary" data-ok-size="small">
             <input type="checkbox" data-ok-checkbox-input tabindex="-1" aria-label="Select row">
             <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="4.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span>
@@ -487,7 +508,7 @@
         </div>
       </div>
       <div role="row" aria-rowindex="18" hidden data-ok-row-id="p-017" aria-selected="false">
-        <div role="gridcell" aria-colindex="1" data-ok-field="__check__" data-ok-data-grid-checkbox tabindex="-1">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__check__" tabindex="-1" data-ok-data-grid-checkbox>
           <span data-ok-checkbox data-ok-color="primary" data-ok-size="small">
             <input type="checkbox" data-ok-checkbox-input tabindex="-1" aria-label="Select row">
             <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="4.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span>
@@ -506,7 +527,7 @@
         </div>
       </div>
       <div role="row" aria-rowindex="19" hidden data-ok-row-id="p-018" aria-selected="false">
-        <div role="gridcell" aria-colindex="1" data-ok-field="__check__" data-ok-data-grid-checkbox tabindex="-1">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__check__" tabindex="-1" data-ok-data-grid-checkbox>
           <span data-ok-checkbox data-ok-color="primary" data-ok-size="small">
             <input type="checkbox" data-ok-checkbox-input tabindex="-1" aria-label="Select row">
             <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="4.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span>
@@ -525,7 +546,7 @@
         </div>
       </div>
       <div role="row" aria-rowindex="20" hidden data-ok-row-id="p-019" aria-selected="false">
-        <div role="gridcell" aria-colindex="1" data-ok-field="__check__" data-ok-data-grid-checkbox tabindex="-1">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__check__" tabindex="-1" data-ok-data-grid-checkbox>
           <span data-ok-checkbox data-ok-color="primary" data-ok-size="small">
             <input type="checkbox" data-ok-checkbox-input tabindex="-1" aria-label="Select row">
             <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="4.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span>
@@ -544,7 +565,7 @@
         </div>
       </div>
       <div role="row" aria-rowindex="21" hidden data-ok-row-id="p-020" aria-selected="false">
-        <div role="gridcell" aria-colindex="1" data-ok-field="__check__" data-ok-data-grid-checkbox tabindex="-1">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__check__" tabindex="-1" data-ok-data-grid-checkbox>
           <span data-ok-checkbox data-ok-color="primary" data-ok-size="small">
             <input type="checkbox" data-ok-checkbox-input tabindex="-1" aria-label="Select row">
             <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="4.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span>

@@ -459,7 +459,7 @@
   }
 
   /* Column spans: the cell takes the next columns' place (they are hidden). */
-  :where([data-ok-data-grid-main] [role="gridcell"][aria-colspan]) {
+  :where([data-ok-data-grid-main] :is([role="gridcell"], [role="columnheader"])[aria-colspan]) {
     grid-column: span var(--_ok-data-grid-colspan, 1);
   }
 
@@ -565,6 +565,156 @@
     }
   }
 
+  /* Tree data: the group cell indents by depth; its toggle turns when open. */
+  :where([data-ok-data-grid-main] [role="gridcell"][data-ok-field="__tree_data_group__"]) {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--ok-spacing) * 1);
+    padding-inline-start: calc(
+      var(--_ok-data-grid-pad) +
+      var(--_ok-data-grid-depth, 0) *
+      var(--ok-spacing) *
+      4
+    );
+    line-height: inherit;
+  }
+
+  :where([data-ok-data-grid-tree-toggle] > svg) {
+    transition: rotate var(--ok-duration-shortest) var(--ok-easing-standard);
+  }
+
+  :where([data-ok-data-grid-tree-toggle][aria-expanded="true"] > svg) {
+    rotate: 90deg;
+  }
+
+  :where([data-ok-data-grid-tree-spacer]) {
+    flex: none;
+    width: calc(var(--ok-spacing) * 7);
+  }
+
+  :where([data-ok-data-grid-tree-count]) {
+    color: var(--ok-text-secondary);
+  }
+
+  /* Master-detail: a panel row under its row, its one cell across every column. */
+  :where([data-ok-data-grid-body] > [data-ok-data-grid-detail] > [role="gridcell"]) {
+    grid-column: 1 / -1;
+    display: block;
+    box-sizing: border-box;
+    height: var(--_ok-data-grid-detail-height, auto);
+    padding-block: calc(var(--ok-spacing) * 4);
+    overflow: auto;
+    background-color: var(--ok-bg-neutral);
+    line-height: inherit;
+    white-space: normal;
+  }
+
+  :where([data-ok-data-grid-detail-toggle] > svg) {
+    transition: rotate var(--ok-duration-shortest) var(--ok-easing-standard);
+  }
+
+  :where([data-ok-data-grid-detail-toggle][aria-expanded="true"] > svg) {
+    rotate: 180deg;
+  }
+
+  /* Row reordering: a grab handle; the dragged row fades, the drop place shows a line. */
+  :where([data-ok-data-grid-reorder-handle]) {
+    cursor: grab;
+    touch-action: none;
+  }
+
+  :where([data-ok-data-grid-body] > [role="row"][data-ok-dragging]) {
+    opacity: 0.48;
+  }
+
+  :where([data-ok-data-grid-body] > [role="row"][data-ok-drop="before"]) {
+    box-shadow: inset 0 2px 0 var(--ok-palette-primary-main);
+  }
+
+  :where([data-ok-data-grid-body] > [role="row"][data-ok-drop="after"]) {
+    box-shadow: inset 0 -2px 0 var(--ok-palette-primary-main);
+  }
+
+  /* Pinned rows stay under the header or at the bottom while the others scroll. */
+  :where([data-ok-data-grid-pinned-rows]) {
+    position: sticky;
+    z-index: 1;
+    min-width: fit-content;
+    background-color: var(--ok-bg-paper);
+  }
+
+  :where([data-ok-data-grid-pinned-rows="top"]) {
+    top: var(--_ok-data-grid-header-offset, 0px);
+    border-bottom: 1px solid var(--ok-divider);
+  }
+
+  :where([data-ok-data-grid-pinned-rows="bottom"]) {
+    bottom: 0;
+    border-top: 1px solid var(--ok-divider);
+  }
+
+  /* Column groups: header rows above the column headers. */
+  :where([data-ok-data-grid-header] > [role="row"]:not(:last-child)) {
+    border-bottom: 1px solid var(--ok-divider);
+  }
+
+  /* List view: one card-like cell per row, no column headers. */
+  :where([data-ok-data-grid-list-cell]) {
+    display: none;
+  }
+
+  :where([data-ok-data-grid][data-ok-list-view] [data-ok-data-grid-header]) {
+    display: none;
+  }
+
+  :where([data-ok-data-grid][data-ok-list-view] [data-ok-data-grid-main] [role="row"]) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  :where(
+    [data-ok-data-grid][data-ok-list-view]
+      [data-ok-data-grid-body]
+      > [role="row"]
+      > [role="gridcell"]
+  ) {
+    display: none;
+  }
+
+  :where(
+    [data-ok-data-grid][data-ok-list-view]
+      [data-ok-data-grid-body]
+      > [role="row"]
+      > [data-ok-data-grid-list-cell]
+  ) {
+    display: block;
+    height: auto;
+    padding-block: calc(var(--ok-spacing) * 3);
+    line-height: inherit;
+    white-space: normal;
+  }
+
+  /* Announcements (row moved) for screen readers only. */
+  :where([data-ok-data-grid-live]) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* Lazy loading: rows not loaded yet show placeholder bars. */
+  :where([role="gridcell"] > [data-ok-data-grid-skeleton]) {
+    display: inline-block;
+    width: 70%;
+    vertical-align: middle;
+  }
+
+  /* Column virtualization: the first shown scrolling column (and right pins) after a spacer. */
+  :where([data-ok-data-grid-main] [data-ok-col-start]) {
+    grid-column-start: var(--_ok-data-grid-col-start);
+  }
+
   @media (prefers-reduced-motion: reduce) {
     :where([data-ok-data-grid-body] > [role="row"], [data-ok-data-grid-sort-icon]) {
       transition: none;
@@ -572,6 +722,10 @@
 
     :where([data-ok-data-grid-skeleton]) {
       animation: none;
+    }
+
+    :where([data-ok-data-grid-tree-toggle] > svg, [data-ok-data-grid-detail-toggle] > svg) {
+      transition: none;
     }
   }
 }

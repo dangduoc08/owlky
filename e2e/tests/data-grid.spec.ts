@@ -235,5 +235,56 @@ for (const impl of implementations) {
       await page.keyboard.press("ArrowLeft");
       await expect(page.locator(":focus")).toHaveAttribute("data-ok-field", "lastName");
     });
+
+    test("tree data, detail panels, row moves, groups, list view", async ({ page }) => {
+      await openStory(page, storyId(impl, "datagrid", "tree-data"));
+      const member = (id: string) => page.locator(`[role="row"][data-ok-row-id="${id}"]`);
+      await expect(member("m-3")).toBeHidden();
+      await member("m-2").locator("[data-ok-data-grid-tree-toggle]").click();
+      await expect(member("m-3")).toBeVisible();
+      await expect(member("m-3")).toHaveAttribute("aria-level", "3");
+
+      await openStory(page, storyId(impl, "datagrid", "master-detail"));
+      await page.locator('[data-ok-row-id="o-1002"] [data-ok-data-grid-detail-toggle]').click();
+      await expect(page.locator('[data-ok-detail-for="o-1002"]')).toContainText("2 × Crème lamp");
+
+      await openStory(page, storyId(impl, "datagrid", "ordering"));
+      const handle = page.locator('[data-ok-row-id="a-1"] [data-ok-data-grid-reorder-handle]');
+      await handle.focus();
+      await page.keyboard.press("Alt+ArrowDown");
+      await expect(page.locator('[data-ok-data-grid-body] > [role="row"]').nth(1)).toHaveAttribute(
+        "data-ok-row-id",
+        "a-1",
+      );
+      await expect(page.locator("[data-ok-data-grid-live]")).toHaveText(
+        "Row moved to position 2 of 4",
+      );
+
+      await openStory(page, storyId(impl, "datagrid", "column-groups"));
+      await expect(page.locator('[data-ok-group-id="person"]')).toHaveAttribute(
+        "aria-colspan",
+        "3",
+      );
+
+      await openStory(page, storyId(impl, "datagrid", "list-view"));
+      await expect(page.locator("[data-ok-data-grid-list-cell]").first()).toContainText(
+        "Ana Silva",
+      );
+    });
+
+    test("lazy loading: rows load as they scroll into view", async ({ page }) => {
+      await openStory(page, storyId(impl, "datagrid", "lazy-loading"));
+      const grid = page.locator("[data-ok-data-grid-main]");
+      await expect(grid).toHaveAttribute("aria-rowcount", "10001");
+      await grid.evaluate((element) => {
+        element.scrollTop = 53 * 5000;
+      });
+      await expect(
+        page.locator('[data-ok-data-grid-body] > [role="row"]:not([data-ok-loading-row])').first(),
+      ).toHaveAttribute("aria-rowindex", /^4\d\d\d|^5\d\d\d/);
+      expect(await page.locator('[data-ok-data-grid-body] > [role="row"]').count()).toBeLessThan(
+        40,
+      );
+    });
   });
 }

@@ -27,7 +27,12 @@ export interface GridNavigationOptions {
   onEdit?(cell: HTMLElement, reason: GridEditStartReason, key?: string): void;
   /** Alt + Left / Right on a header: make the column narrower / wider by `delta` px. */
   onResizeKey?(field: string, delta: number): void;
+  /** Tree data: Right / Left on a parent's group cell opens / closes it (treegrid pattern). */
+  onToggleExpansion?(row: HTMLElement, expanded: boolean): void;
 }
+
+/** The tree data group column. */
+export const GRID_TREE_FIELD = "__tree_data_group__";
 
 export type GridEditStartReason =
   | "cellDoubleClick"
@@ -216,6 +221,39 @@ export function createGridNavigation(
           : rtl && event.key === "ArrowRight"
             ? "ArrowLeft"
             : event.key;
+      // Tree data: Right opens a closed parent, Left closes an open one or goes to the parent.
+      const treeRow = cell.closest<HTMLElement>('[role="row"]');
+      if (
+        options.onToggleExpansion &&
+        field === GRID_TREE_FIELD &&
+        !header &&
+        treeRow &&
+        (key === "ArrowRight" || key === "ArrowLeft")
+      ) {
+        const state = treeRow.getAttribute("aria-expanded");
+        if (key === "ArrowRight" && state === "false") {
+          event.preventDefault();
+          options.onToggleExpansion(treeRow, true);
+          return;
+        }
+        if (key === "ArrowLeft" && state === "true") {
+          event.preventDefault();
+          options.onToggleExpansion(treeRow, false);
+          return;
+        }
+        const parentId = treeRow.getAttribute("data-ok-parent");
+        const parent = parentId
+          ? grid.querySelector<HTMLElement>(
+              `[role="row"][data-ok-row-id="${CSS.escape(parentId)}"] [data-ok-field="${GRID_TREE_FIELD}"]`,
+            )
+          : null;
+        if (key === "ArrowLeft" && parent) {
+          event.preventDefault();
+          setStop(parent);
+          gridFocusTarget(parent).focus();
+          return;
+        }
+      }
       const next = moveGridCell(
         { row, col },
         key,

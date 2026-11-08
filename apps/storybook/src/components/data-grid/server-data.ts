@@ -93,3 +93,27 @@ export function createCustomerSource(total = 1000, delay = 400): GridDataSource<
       }),
   };
 }
+
+/** Props of the Lazy loading grid (React demo, HTML snippet). */
+export const LAZY_GRID: Omit<DataGridProps<Customer>, "rows"> = {
+  id: "grid-lazy",
+  "aria-label": "Customers, loaded as they scroll into view",
+  className: "sb-grid",
+  columns: CUSTOMER_COLUMNS,
+  lazyLoading: true,
+  hideFooter: true,
+};
+
+/** A pretend server of 10,000 customers that answers ranges of rows (lazy loading). */
+export function createLazyCustomerSource(total = 10_000, delay = 300): GridDataSource<Customer> {
+  return {
+    getRows: (params) =>
+      new Promise((resolve) => {
+        setTimeout(() => {
+          const start = params.start ?? 0;
+          const end = Math.min(params.end ?? start + 50, total);
+          resolve({ rows: makeCustomers(start, end), rowCount: total });
+        }, delay);
+      }),
+  };
+}

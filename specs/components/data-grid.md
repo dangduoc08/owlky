@@ -2,8 +2,8 @@
 
 Reference: Minimal UI kit "Data grid" page, sections Basic and Custom (content only). Upstream:
 MUI X Data Grid, every tier (Community, Pro, Premium) — the owner's request; built in phases
-(ADR-0020, phases per ADR-0021). This spec covers phases 1 to 4. Created with `/component`;
-phases 2 to 4 by Update.
+(ADR-0020, phases per ADR-0021). This spec covers phases 1 to 5. Created with `/component`;
+phases 2 to 5 by Update.
 Reference URL: https://minimals.cc/components/mui/data-grid
 
 ## Purpose
@@ -52,6 +52,24 @@ div[data-ok-data-grid][data-ok-density][data-ok-checkbox-selection]?[data-ok-dis
            [aria-colspan]? (covered cells: [hidden][data-ok-covered]) [aria-rowspan]? (covered:
            [data-ok-covered][aria-hidden=true], kept in place) [data-ok-editable=false]? [class]?
   template[data-ok-data-grid-row]                (HTML only: one row, copied by setRows / data sources)
+  template[data-ok-data-grid-detail="<row id>"][data-ok-detail-height]? (HTML only: a panel's content)
+  Popover#<id>-filters › template[data-ok-data-grid-any-of="<id>-filter-value"] › Autocomplete (HTML only)
+  div[data-ok-data-grid-live][role=status]       (rowReordering: "Row moved to position n of m")
+  Phase 5 inside the grid (role=treegrid with treeData):
+    header › div[role=row][data-ok-data-grid-group-row] (one per group level) ›
+      div[role=presentation][data-ok-data-grid-group-filler] | div[role=columnheader][data-ok-group-id]
+      [aria-colindex][aria-colspan]?[data-ok-pinned][data-ok-pin-field]? (+ Tooltip for descriptions)
+    special columns first: __reorder__ (IconButton[data-ok-data-grid-reorder-handle]), __check__,
+      __detail_panel_toggle__ (IconButton[data-ok-data-grid-detail-toggle][aria-expanded][aria-controls]?),
+      __tree_data_group__ (IconButton[data-ok-data-grid-tree-toggle] | span[data-ok-data-grid-tree-spacer],
+      span[data-ok-data-grid-tree-label], span[data-ok-data-grid-tree-count]?; --_ok-data-grid-depth)
+    rows: [aria-level][aria-posinset][aria-setsize][aria-expanded]?[data-ok-parent]?[aria-busy]? (tree),
+      [data-ok-loading-row] (lazy placeholders: span[data-ok-data-grid-skeleton] cells),
+      div[role=gridcell][data-ok-data-grid-list-cell][aria-colspan][hidden]? (listViewColumn)
+    body › div[role=row][data-ok-data-grid-detail][data-ok-detail-for][id=<id>-<row id>-detail]
+      › div[role=gridcell][data-ok-data-grid-detail-content][aria-colspan] (after its row)
+    div[role=rowgroup][data-ok-data-grid-pinned-rows=top|bottom] › rows (sticky)
+    cells after a column window spacer: [data-ok-col-start] (--_ok-data-grid-col-start)
   template[data-ok-data-grid-cell="<field>"]?    (HTML only: cell content, [data-ok-data-grid-value] slots)
   div[data-ok-data-grid-loading][data-ok-variant][role=status][aria-label=Loading][hidden]?
     › LinearProgress | CircularProgress | span[data-ok-data-grid-skeleton] × 5
@@ -96,6 +114,14 @@ Root: `data-ok-data-grid`. Unknown values fall back to the default.
 | `quickFilterLogicOperator` | `data-ok-quick-filter-logic-operator="…"` | style | `and` `or` | `and` | Search words: every one must match (`and`), or any one (`or`). |
 | `quickFilterExcludeHiddenColumns` | `data-ok-quick-filter-exclude-hidden-columns` | flag | boolean | off | The search skips hidden columns. |
 | `ignoreDiacritics` | `data-ok-ignore-diacritics` | flag | boolean | off | Searches and filters ignore accents: "ha noi" finds "Hà Nội". |
+| `treeData` | `data-ok-tree-data` | flag | boolean | off | Rows form a tree: a group column opens and closes their children. |
+| `defaultGroupingExpansionDepth` | `data-ok-default-grouping-expansion-depth="…"` | number | number | `0` | Tree levels open at first (`-1`: all). |
+| `rowReordering` | `data-ok-row-reordering` | flag | boolean | off | Rows move by dragging their handle, or Alt + Up / Down on it. |
+| `listView` | `data-ok-list-view` | flag | boolean | off | Each row shows as one cell (a card) instead of columns. |
+| `rowBufferPx` | `data-ok-row-buffer-px="…"` | number | number | `150` | Rows rendered above and below the visible ones, px. |
+| `columnBufferPx` | `data-ok-column-buffer-px="…"` | number | number | `150` | Columns rendered left and right of the visible ones, px. |
+| `lazyLoading` | `data-ok-lazy-loading` | flag | boolean | off | With a data source and a row count: rows load in chunks as they scroll into view. |
+| `lazyLoadingRequestThrottleMs` | `data-ok-lazy-loading-request-throttle-ms="…"` | number | number | `500` | Least time between two lazy loading requests, ms. |
 <!-- /options:data-grid -->
 
 React props (MUI X names): `rows`, `columns` (`GridColDef`: `field`, `headerName`, `type`
@@ -131,7 +157,16 @@ source; `null` disables), `onDataSourceError(error)`. Phase 4: `disableMultipleR
 column `filterOperators`, `getApplyQuickFilterFn: null`, `quickFilterLogicOperator`,
 `quickFilterExcludeHiddenColumns`, `ignoreDiacritics`, `csvOptions`, `printOptions`, locale packs
 (`enUS`, `viVN`, `frFR`, `deDE`, `esES`, `jaJP`, `zhCN` from core), right-to-left layout. Beyond MUI
-X: `toolbarVariant` (labeled | icon: the reference's icon-only toolbar). Beyond MUI X (accessibility): Alt + Left / Right resizes, column menu
+X: `toolbarVariant` (labeled | icon: the reference's icon-only toolbar). Phase 5: `treeData`,
+`getTreeDataPath`, `groupingColDef` (`headerName`, `width`, `hideDescendantCount`),
+`defaultGroupingExpansionDepth`, `isGroupExpandedByDefault`, `apiRef.setRowChildrenExpansion`;
+server tree data (`dataSource.getChildrenCount`, `getGroupKey`, params `groupKeys`);
+`getDetailPanelContent`, `getDetailPanelHeight`, `detailPanelExpandedRowIds` /
+`onDetailPanelExpandedRowIdsChange`, `apiRef.toggleDetailPanel`; `rowReordering`,
+`onRowOrderChange`; `pinnedRows`; `columnGroupingModel`; `listView`, `listViewColumn`;
+`rowBufferPx`, `columnBufferPx`; `lazyLoading`, `lazyLoadingRequestThrottleMs` (params `start` /
+`end`); `dataSource.updateRow`; `createGridDataSourceCache({ ttl, limit })`; `isAnyOf` values as
+Autocomplete chips. Beyond MUI X: Alt + Up / Down on a reorder handle (WCAG 2.5.7). Beyond MUI X (accessibility): Alt + Left / Right resizes, column menu
 Move left / Move right. Renamed: `rowSelectionModel` is an id array (MUI v8:
 `{ type, ids }`). Later phases: see ADR-0021 (tree data, master-detail, row reordering / pinning,
 column groups, row grouping, aggregation, pivoting, Excel, clipboard, cell selection, header
@@ -199,6 +234,23 @@ leaving keep the cell open while it has an error, Escape cancels. Filters: `isAn
 row of every page (the toolbar, footer and checkboxes only when asked). Right to left: from
 `direction`; left pins sit at the start (inline-start), Left / Right and Alt + Left / Right follow
 the reading order, dragging a resize handle left widens.
+Phase 5. Tree data: every row renders (children of closed rows `hidden`); Right / Left on a
+parent's group cell opens / closes it (Left on a child goes to its parent); filters keep the
+ancestors of matching rows; sorting orders siblings; HTML `ok:data-grid:expand` (cancelable,
+`{ id, expanded }`). Every parent path needs its own row (no generated groups). Detail panels: a
+toggle column; the panel row follows its row (measured with it by virtualization); HTML builds it
+from the row's template (`ok:data-grid:detailpanel`, cancelable). Row reordering: off while
+sorted, filtered, tree or lazy; drag a handle (a line marks the drop) or Alt + Up / Down;
+announced in the live region; HTML `ok:data-grid:roworder` (cancelable, `{ id, oldIndex,
+targetIndex }`). Pinned rows: sticky rowgroups (under the header height the owner measures),
+counted in `aria-rowindex` / `aria-rowcount`, not sorted, filtered, paged or selectable. Column
+groups: one header row per level; neighbouring shown columns of a group share a cell (hidden or
+moved columns split it); moves across groups are refused. List view: headers and column cells
+`hidden`, the list cell shown. Column virtualization (fixed widths only; no spans, groups or list
+view): template = specials + left pins + spacer + visible tracks + spacer + right pins; React
+omits the other cells, HTML hides them. Lazy loading: rows are placeholders until their chunk (50
+rows) loads; before the first measure only the first chunk renders. `updateRow` runs after an
+accepted edit; its answer is shown, a failure brings the old values back.
 
 ## Keyboard
 | Key | Action |
@@ -237,7 +289,10 @@ instance `setRows(rows)`, `setDataSource(source | null)`. Phase 4: `ok:data-grid
 `scrollToIndexes({ rowIndex, colIndex })`, `exportState()`, `restoreState(state)`,
 `setFilterOperators(field, operators)`, `setValueFormatter(field, fn | null)`,
 `setLocaleText(labels)` (the text the runtime writes; the markup is written in the page's
-language), `toCsv(options)` / `exportCsv(options)`.
+language), `toCsv(options)` / `exportCsv(options)`. Phase 5: `ok:data-grid:expand`,
+`ok:data-grid:detailpanel`, `ok:data-grid:roworder`; instance `setRowChildrenExpansion(id,
+open)`, `toggleDetailPanel(id)`; attributes `data-ok-csv-options` / `data-ok-print-options` (JSON,
+known keys only; React writes them from `csvOptions` / `printOptions`).
 Attributes: `data-ok-label-no-rows`, `data-ok-label-no-results`, `data-ok-export-file-name`.
 
 ## Responsive
@@ -252,5 +307,8 @@ both render the same window (same measure). Row templates are HTML-only (`<templ
 Phase 4: functions (`getRowHeight`, `isRowSelectable`, `colSpan`, `isCellEditable`, class names)
 are React-only; React writes their result as attributes that HTML reads (`data-ok-row-height`,
 `data-ok-selectable`, `aria-colspan`, `data-ok-editable`, `class`). HTML computes row spans itself.
-`data-ok-format` and `setValueFormatter` are HTML-only (React has `valueFormatter`). The filter
-value field is a text field in both (`isAnyOf`: values separated by commas).
+`data-ok-format` and `setValueFormatter` are HTML-only (React has `valueFormatter`). `isAnyOf`
+shows Autocomplete chips in both (HTML from the panel's template, with no suggestions).
+Phase 5: React renders a detail panel only when open (HTML keeps templates); collapsed tree rows
+render `hidden`; column-virtualized cells are left out in React and `hidden` in HTML (parity skips
+both).

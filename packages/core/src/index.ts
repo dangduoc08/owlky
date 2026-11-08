@@ -484,6 +484,7 @@ export {
 } from "./data-grid/grid-locales.js";
 export {
   createGridNavigation,
+  GRID_TREE_FIELD,
   type GridEditStartReason,
   type GridNavigation,
   type GridNavigationOptions,
@@ -491,11 +492,32 @@ export {
   moveGridCell,
 } from "./data-grid/grid-navigation.js";
 export {
+  createGridRowReorder,
+  type GridColumnGroup,
+  type GridGroupCell,
+  type GridRowReorder,
+  type GridRowReorderOptions,
+  type GridTreeOptions,
+  type GridTreeRow,
+  gridCanMoveColumn,
+  gridColumnWindow,
+  gridExpandedByDepth,
+  gridGroupPaths,
+  gridGroupRows,
+  gridGroupsById,
+  gridMissingRanges,
+  gridParentsFromPaths,
+  gridTreeRows,
+  moveGridRow,
+  parseGridExportOptions,
+} from "./data-grid/grid-structure.js";
+export {
   createGridDataSourceCache,
   createGridScrollWatcher,
   GRID_ROW_BUFFER,
   type GridDataSource,
   type GridDataSourceCache,
+  type GridDataSourceCacheOptions,
   type GridGetRowsParams,
   type GridGetRowsResponse,
   type GridPaginationParams,

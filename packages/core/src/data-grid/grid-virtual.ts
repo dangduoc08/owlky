@@ -52,6 +52,9 @@ export interface GridViewport {
    * virtualize: every row is visible anyway.
    */
   scrolls: boolean;
+  /** Horizontal scroll and visible width, px (column virtualization). */
+  left?: number | undefined;
+  width?: number | undefined;
 }
 
 export interface GridScrollWatcherOptions {
@@ -85,6 +88,8 @@ export function createGridScrollWatcher(
       viewport: Math.max(main.clientHeight - headerHeight, 0),
       rowHeight,
       scrolls: main.scrollHeight > main.clientHeight + 1,
+      left: Math.abs(main.scrollLeft),
+      width: main.clientWidth,
     });
   };
   const onScroll = () => {
@@ -113,6 +118,11 @@ export interface GridGetRowsParams {
   sortModel: GridSortModel;
   filterModel: GridFilterModel;
   paginationModel?: GridPaginationParams | undefined;
+  /** Lazy loading: the row indexes asked for, `[start, end)`. */
+  start?: number | undefined;
+  end?: number | undefined;
+  /** Tree data: the group keys of the parent whose children are asked for (top level: `[]`). */
+  groupKeys?: string[] | undefined;
 }
 
 export interface GridGetRowsResponse<R> {
@@ -124,6 +134,12 @@ export interface GridGetRowsResponse<R> {
 /** A server data source (MUI X Pro `dataSource`). */
 export interface GridDataSource<R> {
   getRows(params: GridGetRowsParams): Promise<GridGetRowsResponse<R>>;
+  /** Saves an edited row; returns the row to show (rejecting keeps the old one). */
+  updateRow?(params: { rowId: string; updatedRow: R; previousRow: R }): Promise<R> | R;
+  /** Tree data: how many children a row has on the server (0: none). */
+  getChildrenCount?(row: R): number;
+  /** Tree data: the key of a row among its siblings (its part of the children's group keys). */
+  getGroupKey?(row: R): string;
 }
 
 export interface GridDataSourceCache<R> {
@@ -132,15 +148,33 @@ export interface GridDataSourceCache<R> {
   clear(): void;
 }
 
-/** Responses kept per request (the oldest goes first past `limit`). */
-export function createGridDataSourceCache<R>(limit = 50): GridDataSourceCache<R> {
-  const entries = new Map<string, GridGetRowsResponse<R>>();
+export interface GridDataSourceCacheOptions {
+  /** Responses kept (the oldest goes first). Default 50. */
+  limit?: number | undefined;
+  /** How long a response stays valid, ms. Default 5 minutes (MUI X). */
+  ttl?: number | undefined;
+}
+
+/** Responses kept per request, for `ttl` ms (the oldest goes first past `limit`). */
+export function createGridDataSourceCache<R>(
+  options: number | GridDataSourceCacheOptions = {},
+): GridDataSourceCache<R> {
+  const { limit = 50, ttl = 300_000 } = typeof options === "number" ? { limit: options } : options;
+  const entries = new Map<string, { response: GridGetRowsResponse<R>; at: number }>();
   const key = (params: GridGetRowsParams) => JSON.stringify(params);
   return {
-    get: (params) => entries.get(key(params)),
+    get(params) {
+      const entry = entries.get(key(params));
+      if (!entry) return undefined;
+      if (Date.now() - entry.at > ttl) {
+        entries.delete(key(params));
+        return undefined;
+      }
+      return entry.response;
+    },
     set(params, response) {
       entries.delete(key(params));
-      entries.set(key(params), response);
+      entries.set(key(params), { response, at: Date.now() });
       if (entries.size > limit) entries.delete(entries.keys().next().value as string);
     },
     clear: () => entries.clear(),
