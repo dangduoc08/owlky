@@ -51,6 +51,8 @@ import {
   chartXTypes,
 } from "../chart/chart-model.js";
 import { type GridDensity, gridDensities } from "../data-grid/data-grid.js";
+import { type GanttBarLabel, ganttBarLabels } from "../gantt/gantt-render.js";
+import { type GanttView, ganttViews } from "../gantt/gantt-scale.js";
 import {
   type LightboxImageFit,
   type LightboxRotateButtons,
@@ -5099,6 +5101,100 @@ export const illustrationAttributes = (
   "data-ok-illustration": name,
 });
 
+// --- Gantt (ADR-0048) ---------------------------------------------------------------------------
+
+export const ganttOptions = defineOptions("gantt", "data-ok-gantt", {
+  view: style(
+    "data-ok-view",
+    ganttViews,
+    "week",
+    "Zoom preset: `day`, `week`, `month`, `quarter` or `year` (36, 16, 5, 1.6 or 0.5 px per day). The header tiers follow the zoom.",
+  ),
+  pixelsPerDay: number(
+    "data-ok-pixels-per-day",
+    undefined,
+    "Zoom in px per day (0.25 to 120), instead of the view's. The zoom buttons write it.",
+    { min: 0.25 },
+  ),
+  rowHeight: number("data-ok-row-height", 40, "Height of a task row in px (at least 24).", {
+    min: 24,
+  }),
+  barMargin: number("data-ok-bar-margin", 8, "Space above and below a bar inside its row, in px.", {
+    min: 0,
+  }),
+  tasksContainerWidth: number(
+    "data-ok-tasks-container-width",
+    440,
+    "Width of the task list in px from 600px up (the name column takes what the other columns leave). Below 600px only the name column shows.",
+    { min: 120 },
+  ),
+  barLabel: style(
+    "data-ok-bar-label",
+    ganttBarLabels,
+    "right",
+    "Where the task name sits: `right` of the bar, `inside` it, `left` of it, or `auto` (inside when it fits).",
+  ),
+  weekStart: number("data-ok-week-start", 1, "First day of a week, 0 = Sunday (default Monday).", {
+    min: 0,
+  }),
+  showToday: behavior("data-ok-show-today", true, "Draws a line on today's date."),
+  showNonWorkingDays: behavior(
+    "data-ok-show-non-working-days",
+    true,
+    "Shades weekends and holidays at day and week zoom.",
+  ),
+  columnLines: behavior(
+    "data-ok-column-lines",
+    true,
+    "Vertical lines between the timeline's columns.",
+  ),
+  criticalPath: flag(
+    "data-ok-critical-path",
+    "Highlights the tasks and dependencies with no slack (the critical path).",
+  ),
+  baseline: flag("data-ok-baseline", "Draws each task's planned dates as a thin bar under it."),
+  projectBoundary: flag(
+    "data-ok-project-boundary",
+    "Dashed lines at the project's first and last day.",
+  ),
+  toolbar: flag("data-ok-toolbar", "A toolbar with zoom out and zoom in buttons."),
+  selection: flag(
+    "data-ok-selection",
+    "Rows can be selected: click, Ctrl or Cmd + click, Shift + click, Space and Ctrl + A.",
+  ),
+  disableTooltip: flag("data-ok-disable-tooltip", "No tooltip on bar hover or row focus."),
+  collapsed: state(
+    "data-ok-collapsed",
+    "Collapsed parent rows: `data-ok-collapsed` on their rows of the data table (`aria-expanded` on the grid rows).",
+    "toggle",
+  ),
+  selected: state(
+    "data-ok-selected",
+    "Selected rows: `data-ok-selected` on their rows of the data table (`aria-selected` on the grid rows).",
+    "selectionchange",
+  ),
+});
+
+export interface GanttAnatomyOptions {
+  view?: GanttView | undefined;
+  pixelsPerDay?: number | undefined;
+  rowHeight?: number | undefined;
+  barMargin?: number | undefined;
+  tasksContainerWidth?: number | undefined;
+  barLabel?: GanttBarLabel | undefined;
+  weekStart?: number | undefined;
+  criticalPath?: boolean | undefined;
+  baseline?: boolean | undefined;
+  projectBoundary?: boolean | undefined;
+  toolbar?: boolean | undefined;
+  selection?: boolean | undefined;
+  disableTooltip?: boolean | undefined;
+}
+
+/** `data-ok-*` attributes of a Gantt root (behavior options are written by the owner when off). */
+export const ganttAttributes = (options: GanttAnatomyOptions = {}): DataAttributes =>
+  optionAttributes(ganttOptions, { ...options });
+
 // --- Typography ---------------------------------------------------------------------------------
 
 /** Typography variants: the type scale of `@owlky/tokens`, plus `inherit` (the parent's font). */
@@ -5333,6 +5429,7 @@ export const optionSchemas = {
   editor: editorOptions,
   markdown: markdownOptions,
   chart: chartOptions,
+  gantt: ganttOptions,
   carousel: carouselOptions,
   "carousel-arrows": carouselArrowsOptions,
   "carousel-dots": carouselDotsOptions,

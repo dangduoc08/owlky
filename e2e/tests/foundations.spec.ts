@@ -155,6 +155,7 @@ const GUIDES = [
   ["components-image--docs", "Accessibility"],
   ["components-rating--docs", "Accessibility"],
   ["components-chart--docs", "Accessibility"],
+  ["components-gantt--docs", "Accessibility"],
   ["components-carousel--docs", "Accessibility"],
   ["components-lightbox--docs", "Accessibility"],
   ["components-upload--docs", "Accessibility"],
@@ -240,6 +241,7 @@ const OPTION_TABLES: [string, (keyof typeof optionSchemas)[]][] = [
   ["components-image--docs", ["image"]],
   ["components-rating--docs", ["rating"]],
   ["components-chart--docs", ["chart"]],
+  ["components-gantt--docs", ["gantt"]],
   [
     "components-carousel--docs",
     ["carousel", "carousel-arrows", "carousel-dots", "carousel-progress", "carousel-thumbs"],

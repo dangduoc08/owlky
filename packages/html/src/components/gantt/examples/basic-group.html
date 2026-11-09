@@ -1,0 +1,23 @@
+<div data-ok-gantt data-ok-view="week" data-ok-bar-label="right" data-ok-toolbar data-ok-today="2025-03-18">
+  <table data-ok-gantt-data>
+    <caption>Website relaunch</caption>
+    <thead>
+      <tr><th scope="col" data-ok-gantt-field="name">Task</th><th scope="col" data-ok-gantt-field="startTime">Start</th><th scope="col" data-ok-gantt-field="endTime">End</th><th scope="col" data-ok-gantt-field="progress">Progress</th><th scope="col" data-ok-gantt-field="dependency">Predecessors</th></tr>
+    </thead>
+    <tbody>
+      <tr data-ok-task-id="discovery"><td>Discovery</td><td></td><td></td><td></td><td></td></tr>
+      <tr data-ok-task-id="research" data-ok-parent-id="discovery"><td>User research</td><td data-ok-value="2025-03-03">Mar 3, 2025</td><td data-ok-value="2025-03-07">Mar 7, 2025</td><td data-ok-value="100">100%</td><td></td></tr>
+      <tr data-ok-task-id="audit" data-ok-parent-id="discovery"><td>Content audit</td><td data-ok-value="2025-03-05">Mar 5, 2025</td><td data-ok-value="2025-03-11">Mar 11, 2025</td><td data-ok-value="80">80%</td><td>research:SS+2</td></tr>
+      <tr data-ok-task-id="brief" data-ok-parent-id="discovery" data-ok-type="milestone"><td>Brief approved</td><td data-ok-value="2025-03-12">Mar 12, 2025</td><td></td><td></td><td>audit</td></tr>
+      <tr data-ok-task-id="design"><td>Design</td><td></td><td></td><td></td><td></td></tr>
+      <tr data-ok-task-id="wireframes" data-ok-parent-id="design"><td>Wireframes</td><td data-ok-value="2025-03-13">Mar 13, 2025</td><td data-ok-value="2025-03-20">Mar 20, 2025</td><td data-ok-value="60">60%</td><td>brief</td></tr>
+      <tr data-ok-task-id="visual" data-ok-parent-id="design"><td>Visual design</td><td data-ok-value="2025-03-21">Mar 21, 2025</td><td data-ok-value="2025-04-01">Apr 1, 2025</td><td data-ok-value="25">25%</td><td>wireframes</td></tr>
+      <tr data-ok-task-id="review" data-ok-parent-id="design" data-ok-type="milestone"><td>Design review</td><td data-ok-value="2025-04-02">Apr 2, 2025</td><td></td><td></td><td>visual</td></tr>
+      <tr data-ok-task-id="build"><td>Build</td><td></td><td></td><td></td><td></td></tr>
+      <tr data-ok-task-id="backend" data-ok-parent-id="build"><td>Back end</td><td data-ok-value="2025-03-24">Mar 24, 2025</td><td data-ok-value="2025-04-16">Apr 16, 2025</td><td data-ok-value="10">10%</td><td>wireframes</td></tr>
+      <tr data-ok-task-id="frontend" data-ok-parent-id="build"><td>Front end</td><td data-ok-value="2025-04-03">Apr 3, 2025</td><td data-ok-value="2025-04-22">Apr 22, 2025</td><td></td><td>review</td></tr>
+      <tr data-ok-task-id="testing" data-ok-parent-id="build"><td>Testing</td><td data-ok-value="2025-04-17">Apr 17, 2025</td><td data-ok-value="2025-04-25">Apr 25, 2025</td><td></td><td>frontend:FF+3, backend</td></tr>
+      <tr data-ok-task-id="launch" data-ok-type="milestone"><td>Launch</td><td data-ok-value="2025-04-28">Apr 28, 2025</td><td></td><td></td><td>testing</td></tr>
+    </tbody>
+  </table>
+</div>

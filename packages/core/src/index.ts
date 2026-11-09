@@ -197,6 +197,9 @@ export {
   formHelperTextOptions,
   formLabelAttributes,
   formLabelOptions,
+  type GanttAnatomyOptions,
+  ganttAttributes,
+  ganttOptions,
   type IconButtonAnatomyOptions,
   type IconButtonColor,
   type IconButtonEdge,
@@ -860,6 +863,7 @@ export {
 export { focusInitial, getTabbables, isFocusable, trapTab } from "./dom/focus.js";
 export { createId } from "./dom/id.js";
 export { type Supports, supports } from "./dom/support.js";
+export * from "./gantt/index.js";
 export {
   type Illustration,
   type IllustrationAttributeName,

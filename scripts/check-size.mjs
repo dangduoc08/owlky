@@ -16,6 +16,9 @@ async function withImports(file, seen = new Set()) {
 }
 
 const budgets = [
+  // 180 kB since the Gantt (ADR-0048 phase 1: dates, model with roll-ups and the critical path,
+  // scales, the node layout with dependency routing, controller, data table, runtime; about
+  // 10.5 kB): 170.6 kB.
   // 165 kB since the Select (ADR-0045: select-only combobox controller, the runtime with chips,
   // placeholder and checkmarks, the TablePagination listbox; about 1.5 kB): 159.1 kB.
   // 160 kB since the Upload (ADR-0037: drop, folders, paste, picker, checks, the runtime with
@@ -53,7 +56,7 @@ const budgets = [
   // Motion (trigger, count-up and five runtimes, the 62 variant names); 31 kB after
   // the composite inputs, 24 kB after the navigation components, 22 kB after the overlays. The CDN bundle carries every component; the npm ESM build
   // (`@owlky/html`) is tree-shaken.
-  ["packages/html/dist/owlky.js", 165_000, "HTML runtime + all components (IIFE)"],
+  ["packages/html/dist/owlky.js", 180_000, "HTML runtime + all components (IIFE)"],
   ["packages/html/dist/esm/runtime/runtime.js", 3_000, "HTML core runtime"],
   // The Editor is opt-in (ADR-0023): Tiptap, ProseMirror and its starter kit are about 125 kB of
   // it; owlky.js stays free of them.

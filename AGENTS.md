@@ -750,6 +750,19 @@ the `check` job, `VITEST_BROWSERS=<engine> pnpm test:browser` in one `unit` job 
   only types and docs-content data modules: the build scripts load them in Node with type
   stripping (`scripts/content.mjs` maps `.js` → `.ts`). The website build and typecheck need
   `pnpm build` first (`scripts/prepare.mjs` copies the CDN bundle and the manifest subset).
+- Gantt (ADR-0048): core `renderGantt` returns every node of the toolbar and the treegrid (rows,
+  cells, bars, ticks, the background SVG): React maps them (`tabindex` → `tabIndex`, `style` holds
+  the `--_ok-gantt-*` positions), the HTML runtime patches them in place with keyed rows (task ids)
+  so focus survives redraws — never move an unchanged element (`insertBefore` blurs it and cancels
+  a click in progress). The controller reads the DOM (rows, `aria-level`, `aria-expanded`,
+  `aria-selected`) and reports intent; it keeps the focus on the task it acted on across owner
+  re-renders and turns a row focused another way into the active one. Parity skips SVG and `style`:
+  `e2e/tests/gantt.spec.ts` compares the canvases and the private properties. Dates are UTC day
+  numbers, so tests never fake time zones; stories pass `today`. The task list narrows by a
+  container query (the Gantt's own width), so Testing Library can't find the hidden columns in
+  the 414px test page (query the DOM). `toHaveTextContent` in this repo matches the whole text: use
+  `textContent` for exact checks. Snippets: `pnpm build && node apps/storybook/scripts/gantt-snippets.mjs`
+  (the root's attributes and the data table of the React render).
 - Parallel work: never run two `/component` / `/integrate` sessions (or two `pnpm build` /
   `pnpm test:e2e`) in the same working tree — builds wipe each other's `dist/` and
   `storybook-static/`, e2e servers share port 4321, and staging part of a shared file while

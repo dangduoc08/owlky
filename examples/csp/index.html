@@ -307,6 +307,18 @@
         <span data-ok-image-placeholder aria-hidden="true"></span>
         <img src="missing.svg" alt="Harbor at dawn, unavailable" loading="lazy" decoding="async">
       </span>
+      <div id="csp-gantt" data-ok-gantt data-ok-view="day" data-ok-bar-label="right" data-ok-today="2025-03-05" data-ok-critical-path>
+        <table data-ok-gantt-data>
+          <caption>Release plan</caption>
+          <thead>
+            <tr><th scope="col" data-ok-gantt-field="name">Task</th><th scope="col" data-ok-gantt-field="startTime">Start</th><th scope="col" data-ok-gantt-field="endTime">End</th><th scope="col" data-ok-gantt-field="dependency">Predecessors</th></tr>
+          </thead>
+          <tbody>
+            <tr data-ok-task-id="build"><td>Build</td><td>2025-03-03</td><td>2025-03-06</td><td></td></tr>
+            <tr data-ok-task-id="ship" data-ok-type="milestone"><td>Ship</td><td>2025-03-07</td><td></td><td>build</td></tr>
+          </tbody>
+        </table>
+      </div>
       <button type="button" data-ok-button data-ok-variant="outlined" data-ok-walktour-start="csp-tour">Start the tour</button>
       <div id="csp-tour" data-ok-walktour data-ok-continuous data-ok-disable-beacon>
         <div data-ok-backdrop data-ok-invisible data-ok-walktour-overlay popover="manual" aria-hidden="true">
