@@ -7,6 +7,7 @@ import {
   Label,
   LinearProgress,
   Rating,
+  Typography,
 } from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
 import { DemoIcon } from "../shared/demo-icon.js";
@@ -152,8 +153,12 @@ const customColumns: GridColDef<Member>[] = [
     valueFormatter: (value) => `${formatDate(value)} ${formatTime(value)}`,
     renderCell: ({ value }) => (
       <span className="sb-grid-date">
-        <span>{formatDate(value)}</span>
-        <span>{formatTime(value)}</span>
+        <Typography variant="body2" component="span">
+          {formatDate(value)}
+        </Typography>
+        <Typography variant="caption" color="textSecondary">
+          {formatTime(value)}
+        </Typography>
       </span>
     ),
   },

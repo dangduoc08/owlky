@@ -14,7 +14,7 @@ const snippets = import.meta.glob(
   { query: "?raw", import: "default", eager: true },
 ) as Record<string, string>;
 
-const SETUP = htmlSetup(["slider.css"], true);
+const SETUP = htmlSetup(["slider.css", "typography.css"], true);
 
 const story = (name: string, label?: string): StoryObj => ({
   ...frameworkStory({

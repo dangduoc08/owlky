@@ -56,6 +56,7 @@ const SETUP = htmlSetup(
     "dialog.css",
     "chart.css",
     "data-grid.css",
+    "typography.css",
   ],
   true,
 );

@@ -13,6 +13,7 @@ import {
   CarouselViewport,
   Motion,
   MotionGroup,
+  Typography,
 } from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
 import type { GroupFiles } from "../shared/snippets.js";
@@ -51,7 +52,9 @@ function ImageSlide({
   return (
     <CarouselSlide>
       <div className={`sb-carousel-image ${className}`.trim()}>
-        <span className="sb-carousel-index">{index + 1}</span>
+        <Typography variant="subtitle2" component="span" className="sb-carousel-index">
+          {index + 1}
+        </Typography>
         <img
           src={image(index)}
           alt={SLIDES[index]?.[0] ?? ""}
@@ -68,10 +71,14 @@ function CardSlide({ index }: { index: number }) {
   return (
     <CarouselSlide>
       <div className="sb-carousel-card">
-        <span className="sb-carousel-index">{index + 1}</span>
+        <Typography variant="subtitle2" component="span" className="sb-carousel-index">
+          {index + 1}
+        </Typography>
         <img src={image(index)} alt="" />
         <div className="sb-carousel-card-content">
-          <h3>{SLIDES[index]?.[1]}</h3>
+          <Typography variant="h5" component="h3">
+            {SLIDES[index]?.[1]}
+          </Typography>
           <Button size="sm" color="white" endIcon={<ArrowIcon />}>
             Learn more
           </Button>
@@ -430,14 +437,19 @@ export const carouselStories: Record<string, ReactGroup[]> = {
               {range(4).map((i) => (
                 <CarouselSlide key={i}>
                   <div className="sb-carousel-hero">
-                    <span className="sb-carousel-index">{i + 1}</span>
+                    <Typography variant="subtitle2" component="span" className="sb-carousel-index">
+                      {i + 1}
+                    </Typography>
                     <img src={image(i + 2)} alt="" />
                     <MotionGroup once={false} className="sb-carousel-hero-content">
                       <Motion variant="fadeInRight">
-                        <h3>{SLIDES[i + 2]?.[1]}</h3>
+                        <Typography variant="h3">{SLIDES[i + 2]?.[1]}</Typography>
                       </Motion>
                       <Motion variant="fadeInRight">
-                        <p className="sb-carousel-hero-text">{`Slide ${i + 1}: the title, this text and the button enter one after the other each time the slide comes into view.`}</p>
+                        <Typography
+                          variant="body2"
+                          className="sb-carousel-hero-text"
+                        >{`Slide ${i + 1}: the title, this text and the button enter one after the other each time the slide comes into view.`}</Typography>
                       </Motion>
                       <Motion variant="fadeInRight">
                         <Button variant="contained" color="primary">

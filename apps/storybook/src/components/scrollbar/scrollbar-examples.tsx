@@ -45,8 +45,12 @@ export const layoutGroups: ReactGroup[] = [
     title: "Layout",
     content: (
       <div className="sb-layout">
-        <div className="sb-layout-top">Top</div>
-        <div className="sb-layout-left">Left</div>
+        <Typography variant="subtitle2" component="div" className="sb-layout-top">
+          Top
+        </Typography>
+        <Typography variant="subtitle2" component="div" className="sb-layout-left">
+          Left
+        </Typography>
         <div className="sb-layout-main">
           <Alert severity="success">Your changes were saved.</Alert>
           <Scrollbar>
@@ -55,12 +59,16 @@ export const layoutGroups: ReactGroup[] = [
             </Typography>
             {paragraphs.map((p, i) => (
               // biome-ignore lint/suspicious/noArrayIndexKey: static demo text repeats.
-              <p key={i}>{p}</p>
+              <Typography key={i}>{p}</Typography>
             ))}
           </Scrollbar>
         </div>
-        <div className="sb-layout-right">Right</div>
-        <div className="sb-layout-bottom">Bottom</div>
+        <Typography variant="subtitle2" component="div" className="sb-layout-right">
+          Right
+        </Typography>
+        <Typography variant="subtitle2" component="div" className="sb-layout-bottom">
+          Bottom
+        </Typography>
       </div>
     ),
   },

@@ -15,6 +15,7 @@ import {
   TablePagination,
   TableRow,
   TextField,
+  Typography,
 } from "@owlky/react";
 import { useState } from "react";
 import { DemoIcon } from "../shared/demo-icon.js";
@@ -62,16 +63,16 @@ export function TableApiDemo() {
   return (
     <div className="sb-table-api">
       <div className="sb-table-api-query">
-        <p>
+        <Typography variant="body2">
           <strong>endpoint:</strong>{" "}
           <code>{`/api/pagination?page=${page + 1}&perPage=${rowsPerPage}`}</code>
-        </p>
-        <p>
+        </Typography>
+        <Typography variant="body2">
           <strong>Items:</strong>
           {` ${found.length} `}
           <strong>Pages:</strong>
           {` ${pages}`}
-        </p>
+        </Typography>
       </div>
       <div className="sb-table-api-filters">
         <TextField

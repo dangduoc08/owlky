@@ -12,7 +12,7 @@ const snippets = import.meta.glob(
   { query: "?raw", import: "default", eager: true },
 ) as Record<string, string>;
 
-const SETUP = htmlSetup(["carousel.css", "icon-button.css", "button.css"], true);
+const SETUP = htmlSetup(["carousel.css", "icon-button.css", "button.css", "typography.css"], true);
 
 /** Every story's example has no state: the same Controls in both frameworks. */
 const story = (name: string, label: string): StoryObj => ({

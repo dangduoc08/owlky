@@ -1,4 +1,12 @@
-import { FormControl, InputLabel, MenuItem, Pagination, Paper, Select } from "@owlky/react";
+import {
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Pagination,
+  Paper,
+  Select,
+  Typography,
+} from "@owlky/react";
 import { useState } from "react";
 
 const TOTAL = 120;
@@ -15,7 +23,11 @@ export function ItemsDemo() {
       <ul className="sb-pagination-grid" aria-label="Items">
         {items.map((item) => (
           <li key={item}>
-            <Paper elevation={1}>{item}</Paper>
+            <Paper elevation={1}>
+              <Typography variant="h3" component="span" color="textSecondary">
+                {item}
+              </Typography>
+            </Paper>
           </li>
         ))}
       </ul>

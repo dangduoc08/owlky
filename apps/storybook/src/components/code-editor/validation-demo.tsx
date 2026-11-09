@@ -1,4 +1,4 @@
-import { CodeEditor, type CodeEditorMarker } from "@owlky/react";
+import { CodeEditor, type CodeEditorMarker, Typography } from "@owlky/react";
 import { useState } from "react";
 import { INVALID_JSON } from "./code-editor-content.js";
 
@@ -16,10 +16,15 @@ export function ValidationDemo() {
         onValidate={setMarkers}
       />
       <section aria-labelledby="code-editor-problems">
-        <h4 id="code-editor-problems" className="sb-code-editor-title">
+        <Typography variant="h6" component="h4" id="code-editor-problems">
           Problems
-        </h4>
-        <ul className="sb-code-editor-problems">
+        </Typography>
+        <Typography
+          variant="body2"
+          color="textSecondary"
+          component="ul"
+          className="sb-code-editor-problems"
+        >
           {markers.length === 0 ? (
             <li>No problems.</li>
           ) : (
@@ -29,7 +34,7 @@ export function ValidationDemo() {
               </li>
             ))
           )}
-        </ul>
+        </Typography>
       </section>
     </div>
   );
