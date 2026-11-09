@@ -171,6 +171,12 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
   made CI fail intermittently. Animations a test only needs at their end state can be `finish()`ed.
 - Infinite CSS animations (spinners) never fire `animation.finished`: test helpers that wait for
   animations must skip them (`expectNoAxeViolations` filters `endTime === Infinity`).
+- The browser's real mouse outlives tests and test files: a pointer left where an earlier test
+  clicked hovers whatever is mounted there next (Firefox only after a later layout), and hover
+  colors measure below the resting contrast (a hovered soft primary Button is 3.8:1).
+  `expectNoAxeViolations` parks the pointer on a 1px element of its own first (`parkPointer()`);
+  pass `{ pointer: "keep" }` to scan a hover state on purpose. Tests that read hover-sensitive
+  computed styles park it the same way.
 - Biome 2 lints the HTML snippets too: decorative `<svg>` needs `aria-hidden="true"` itself (not
   only on its wrapper), and demo links need a real `href` and descriptive text.
 - Add each new component's files to `coverage.thresholds` in `vitest.config.ts`.
@@ -331,6 +337,13 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
   stepper panels) needs an explicit `[hidden] { display: none }` rule: author CSS beats the UA one.
 - WebKit lays out a sentence split into several text nodes differently (sub-pixel): in React demos
   keep each run of text in one node (`{" and the "}`, not `and the{" "}`) or pixel parity fails.
+- Pixels depend on raster history, not only on the DOM: a picture decoded after the first paint
+  is drawn into its own rectangle later, and anti-aliased edges overlapping it (the selected
+  carousel thumbnail's rounded ring) come out a few levels off, once in some loads, in either
+  framework. Waiting longer doesn't help (a load keeps its variant). Pixel parity calls
+  `repaintFromScratch(page)` (`e2e/tests/helpers.ts`) before each screenshot: decode the loaded
+  pictures, hide the story for a frame, paint it in one go. To locate a pixel diff, write both
+  PNGs only when they differ and compare them with `pngjs` (in the store) for the differing box.
 - Snippets generated from React must drop `style` attributes (LinearProgress writes private
   properties; the HTML runtime sets them through CSSOM).
 - Controllers that measure layout (Tabs indicator) write `--_ok-*` through CSSOM and set a flag
@@ -452,7 +465,13 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
   after a final heading / code block: expected values in tests include it. ProseMirror marks
   Escape as handled, so don't gate on `defaultPrevented`. Forms in popovers need `noValidate`
   (`type="url"` validation blocks `submit` silently) and no `method="dialog"` (outside a
-  `<dialog>`, Chrome fires no `submit`).
+  `<dialog>`, Chrome fires no `submit`). Tiptap's chained commands run as they are chained, and
+  `focus()` moves the focus into the editor a frame later even if `run()` is never called: build
+  a chain only once the action will run (a refused image URL used to pull the focus out of the
+  form being typed in, so the alt text landed in the document under load).
+- Runtimes must set up every markup the React side can render: a picker with every view renderer
+  `null` has no `[data-ok-picker-layout]`. An exception in `setup` is only logged ("Failed to
+  initialize") and the test still passes: read the stderr of unit runs, not only the verdict.
 - Editor fullscreen: the root is `position: fixed` (a stacking context), so its composed Backdrop
   (first child) sits at `z-index: -1` and paints over the root's own background: the toolbar, body
   and helper carry the paper themselves (the body's tint is a gradient over `--ok-bg-paper`). Tiptap
