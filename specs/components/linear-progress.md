@@ -53,6 +53,8 @@ progress; the buffer is clamped to the range.
 
 ## Responsive behavior
 Fills its container at every breakpoint; no breakpoint rules. Stories stack the bars in a column.
+"With label" (MUI's demo) composes a Typography (`body2`, `textSecondary`) beside the bar; there
+is no label part.
 
 ## States
 `data-ok-variant` only. Not focusable.

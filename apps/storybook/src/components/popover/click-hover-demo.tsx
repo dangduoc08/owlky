@@ -1,4 +1,4 @@
-import { Button, Popover } from "@owlky/react";
+import { Button, Popover, Typography } from "@owlky/react";
 import { useState } from "react";
 
 /** A popover opened by a click, and one shown while the pointer (or focus) is on its trigger. */
@@ -25,8 +25,12 @@ export function ClickHoverDemo() {
         onOpenChange={() => setClicked(null)}
       >
         <div>
-          <h6 id="popover-click-title">Quarterly summary</h6>
-          <p>Revenue grew in every region this quarter. Open the report for the details.</p>
+          <Typography variant="subtitle1" id="popover-click-title">
+            Quarterly summary
+          </Typography>
+          <Typography variant="body2" color="textSecondary">
+            Revenue grew in every region this quarter. Open the report for the details.
+          </Typography>
         </div>
       </Popover>
       <Button
@@ -48,8 +52,10 @@ export function ClickHoverDemo() {
         disableRestoreFocus
       >
         <div>
-          <h6>Shown on hover</h6>
-          <p>This popover follows the pointer and keyboard focus on its trigger.</p>
+          <Typography variant="subtitle1">Shown on hover</Typography>
+          <Typography variant="body2" color="textSecondary">
+            This popover follows the pointer and keyboard focus on its trigger.
+          </Typography>
         </div>
       </Popover>
     </>

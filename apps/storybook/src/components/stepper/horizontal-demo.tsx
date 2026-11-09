@@ -1,4 +1,4 @@
-import { Button, Step, StepLabel, Stepper } from "@owlky/react";
+import { Button, Step, StepLabel, Stepper, Typography } from "@owlky/react";
 import { useState } from "react";
 
 const STEPS = [
@@ -25,10 +25,10 @@ export function HorizontalDemo({ alternativeLabel = false }: { alternativeLabel?
       </Stepper>
       <div className="sb-stepper-panel">
         {active < STEPS.length ? (
-          <p>{STEPS[active]?.text}</p>
+          <Typography variant="body2">{STEPS[active]?.text}</Typography>
         ) : (
           <div>
-            <p>All steps completed. Your project is ready.</p>
+            <Typography variant="body2">All steps completed. Your project is ready.</Typography>
             <Button color="inherit" onClick={() => setActive(0)}>
               Reset
             </Button>

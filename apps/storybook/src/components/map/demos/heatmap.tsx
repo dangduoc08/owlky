@@ -7,6 +7,7 @@ import {
   Slider,
   Source,
   Switch,
+  Typography,
 } from "@owlky/react";
 import { useState } from "react";
 import { DAYS, dayLabel, EARTHQUAKES, HEATMAP_LAYER, MAP_STYLES } from "../map-data.js";
@@ -36,7 +37,9 @@ export function HeatmapDemo() {
           labelPlacement="start"
           control={<Switch checked={allDays} onChange={setAllDays} />}
         />
-        <p id="map-heatmap-day">{`Each day: ${dayLabel(selected)}`}</p>
+        <Typography variant="body2" color="textSecondary" id="map-heatmap-day">
+          {`Each day: ${dayLabel(selected)}`}
+        </Typography>
         <Slider
           aria-labelledby="map-heatmap-day"
           min={1}

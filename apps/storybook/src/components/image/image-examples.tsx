@@ -1,5 +1,5 @@
 import { type ImageRatio, imageOptions } from "@owlky/core";
-import { Image } from "@owlky/react";
+import { Image, Typography } from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
 import type { GroupFiles } from "../shared/snippets.js";
 
@@ -50,7 +50,9 @@ export const imageStories: Record<string, ReactGroup[]> = {
         <div className="sb-image-grid">
           {RATIOS.map((ratio, i) => (
             <div key={ratio} className="sb-image-item">
-              <span className="sb-image-caption">{ratio}</span>
+              <Typography variant="overline" color="textSecondary">
+                {ratio}
+              </Typography>
               <Image src={src(i + 1)} alt={alt(i + 1)} ratio={ratio} />
             </div>
           ))}
@@ -78,7 +80,9 @@ export const imageStories: Record<string, ReactGroup[]> = {
         <div className="sb-image-grid">
           {(["cover", "contain", "fill", "scale-down"] as const).map((fit) => (
             <div key={fit} className="sb-image-item">
-              <span className="sb-image-caption">{fit}</span>
+              <Typography variant="overline" color="textSecondary">
+                {fit}
+              </Typography>
               <Image src={src(4)} alt={alt(4)} ratio="1/1" fit={fit} />
             </div>
           ))}
@@ -91,7 +95,9 @@ export const imageStories: Record<string, ReactGroup[]> = {
         <div className="sb-image-grid">
           {(["top", "center", "bottom"] as const).map((position) => (
             <div key={position} className="sb-image-item">
-              <span className="sb-image-caption">{position}</span>
+              <Typography variant="overline" color="textSecondary">
+                {position}
+              </Typography>
               <Image src={src(9)} alt={alt(9)} ratio="21/9" position={position} />
             </div>
           ))}
@@ -105,19 +111,27 @@ export const imageStories: Record<string, ReactGroup[]> = {
       content: (
         <div className="sb-image-grid">
           <div className="sb-image-item">
-            <span className="sb-image-caption">Lazy, blur effect</span>
+            <Typography variant="overline" color="textSecondary">
+              Lazy, blur effect
+            </Typography>
             <Image src={src(5)} alt={alt(5)} ratio="4/3" width={1200} height={900} />
           </div>
           <div className="sb-image-item">
-            <span className="sb-image-caption">Opacity effect</span>
+            <Typography variant="overline" color="textSecondary">
+              Opacity effect
+            </Typography>
             <Image src={src(6)} alt={alt(6)} ratio="4/3" effect="opacity" />
           </div>
           <div className="sb-image-item">
-            <span className="sb-image-caption">Visible by default</span>
+            <Typography variant="overline" color="textSecondary">
+              Visible by default
+            </Typography>
             <Image src={src(7)} alt={alt(7)} ratio="4/3" visibleByDefault />
           </div>
           <div className="sb-image-item">
-            <span className="sb-image-caption">Responsive sources</span>
+            <Typography variant="overline" color="textSecondary">
+              Responsive sources
+            </Typography>
             <Image
               src={src(8)}
               srcSet={`${src(8)} 1200w, ${src(3)} 600w`}
@@ -134,7 +148,9 @@ export const imageStories: Record<string, ReactGroup[]> = {
       content: (
         <div className="sb-image-grid">
           <div className="sb-image-item">
-            <span className="sb-image-caption">Broken picture</span>
+            <Typography variant="overline" color="textSecondary">
+              Broken picture
+            </Typography>
             <Image src="images/missing.svg" alt="Harbor at dawn, unavailable" ratio="4/3" />
           </div>
         </div>

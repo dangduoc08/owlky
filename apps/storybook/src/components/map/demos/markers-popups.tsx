@@ -6,6 +6,7 @@ import {
   NavigationControl,
   Popup,
   ScaleControl,
+  Typography,
 } from "@owlky/react";
 import { useState } from "react";
 import { COUNTRIES, type Country, MAP_STYLES } from "../map-data.js";
@@ -46,10 +47,18 @@ export function MarkersPopupsDemo() {
           onClose={() => setSelected(null)}
         >
           <div className="sb-map-popup">
-            <p className="sb-map-popup-title">{selected.name}</p>
-            <p>{`Capital: ${selected.capital}`}</p>
-            <p>{`Time zone: ${selected.timezone}`}</p>
-            <p>{`Lat: ${selected.latitude} · Long: ${selected.longitude}`}</p>
+            <Typography variant="subtitle2" component="p" color="textPrimary">
+              {selected.name}
+            </Typography>
+            <Typography variant="caption" component="p" color="textSecondary">
+              {`Capital: ${selected.capital}`}
+            </Typography>
+            <Typography variant="caption" component="p" color="textSecondary">
+              {`Time zone: ${selected.timezone}`}
+            </Typography>
+            <Typography variant="caption" component="p" color="textSecondary">
+              {`Lat: ${selected.latitude} · Long: ${selected.longitude}`}
+            </Typography>
           </div>
         </Popup>
       ) : null}

@@ -16,7 +16,7 @@ const snippets = import.meta.glob(
   },
 ) as Record<string, string>;
 
-const setup = htmlSetup(["image.css"], true);
+const setup = htmlSetup(["image.css", "typography.css"], true);
 
 /** One story per reference section; the same Controls in both frameworks. */
 const story = (name: string, label?: string): StoryObj => ({

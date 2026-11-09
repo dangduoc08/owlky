@@ -8,6 +8,7 @@ import {
   Popup,
   ScaleControl,
   Source,
+  Typography,
 } from "@owlky/react";
 import { useState } from "react";
 import { MAP_STYLES, regionFilter, STATE_LAYERS, US_STATES } from "../map-data.js";
@@ -68,8 +69,12 @@ export function HighlightByFilterDemo() {
           focusAfterOpen={false}
         >
           <div className="sb-map-popup">
-            <p className="sb-map-popup-title">{hover.name}</p>
-            <p>{`Region: ${hover.region}`}</p>
+            <Typography variant="subtitle2" component="p" color="textPrimary">
+              {hover.name}
+            </Typography>
+            <Typography variant="caption" component="p" color="textSecondary">
+              {`Region: ${hover.region}`}
+            </Typography>
           </div>
         </Popup>
       ) : null}

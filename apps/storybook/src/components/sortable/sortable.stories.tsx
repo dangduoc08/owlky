@@ -40,7 +40,7 @@ const withNumbering: Decorator = (Story) => {
   return <Story />;
 };
 
-const SETUP = `${htmlSetup(["button.css", "icon-button.css", "scrollbar.css", "sortable.css"], true)}
+const SETUP = `${htmlSetup(["button.css", "icon-button.css", "scrollbar.css", "sortable.css", "typography.css"], true)}
 <script>
   // New items come from the <template>: fill their content when they are added.
   document.addEventListener("ok:sortable:add", (event) => {

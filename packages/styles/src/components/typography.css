@@ -1,0 +1,180 @@
+/*
+ * Typography — spec: specs/components/typography.md
+ *
+ * Anatomy:   *[data-ok-typography]   (any text element: h1–h6, p, span, div, label…)
+ * Modifiers: data-ok-variant = h1…h6 | subtitle1 | subtitle2 | body1 (default) | body2 | caption
+ *                              | overline | button | inherit
+ *            data-ok-color   = primary | secondary | info | success | warning | error
+ *                              | textPrimary | textSecondary | textDisabled   (absent: inherited)
+ *            data-ok-align   = inherit | left | center | right | justify       (absent: inherited)
+ *            data-ok-gutter-bottom, data-ok-no-wrap
+ *
+ * Every value comes from the type scale tokens (`--ok-typography-<variant>-*`, responsive through
+ * the token breakpoints). Single :where() selectors in @layer components.
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-ok-typography]) {
+    margin: 0;
+  }
+
+  /* Variants: the type scale */
+  :where([data-ok-typography][data-ok-variant="h1"]) {
+    font-family: var(--ok-typography-h1-font-family);
+    font-size: var(--ok-typography-h1-font-size);
+    font-weight: var(--ok-typography-h1-font-weight);
+    line-height: var(--ok-typography-h1-line-height);
+    text-transform: var(--ok-typography-h1-text-transform);
+  }
+
+  :where([data-ok-typography][data-ok-variant="h2"]) {
+    font-family: var(--ok-typography-h2-font-family);
+    font-size: var(--ok-typography-h2-font-size);
+    font-weight: var(--ok-typography-h2-font-weight);
+    line-height: var(--ok-typography-h2-line-height);
+    text-transform: var(--ok-typography-h2-text-transform);
+  }
+
+  :where([data-ok-typography][data-ok-variant="h3"]) {
+    font-family: var(--ok-typography-h3-font-family);
+    font-size: var(--ok-typography-h3-font-size);
+    font-weight: var(--ok-typography-h3-font-weight);
+    line-height: var(--ok-typography-h3-line-height);
+    text-transform: var(--ok-typography-h3-text-transform);
+  }
+
+  :where([data-ok-typography][data-ok-variant="h4"]) {
+    font-family: var(--ok-typography-h4-font-family);
+    font-size: var(--ok-typography-h4-font-size);
+    font-weight: var(--ok-typography-h4-font-weight);
+    line-height: var(--ok-typography-h4-line-height);
+    text-transform: var(--ok-typography-h4-text-transform);
+  }
+
+  :where([data-ok-typography][data-ok-variant="h5"]) {
+    font-family: var(--ok-typography-h5-font-family);
+    font-size: var(--ok-typography-h5-font-size);
+    font-weight: var(--ok-typography-h5-font-weight);
+    line-height: var(--ok-typography-h5-line-height);
+    text-transform: var(--ok-typography-h5-text-transform);
+  }
+
+  :where([data-ok-typography][data-ok-variant="h6"]) {
+    font-family: var(--ok-typography-h6-font-family);
+    font-size: var(--ok-typography-h6-font-size);
+    font-weight: var(--ok-typography-h6-font-weight);
+    line-height: var(--ok-typography-h6-line-height);
+    text-transform: var(--ok-typography-h6-text-transform);
+  }
+
+  :where([data-ok-typography][data-ok-variant="subtitle1"]) {
+    font-family: var(--ok-typography-subtitle1-font-family);
+    font-size: var(--ok-typography-subtitle1-font-size);
+    font-weight: var(--ok-typography-subtitle1-font-weight);
+    line-height: var(--ok-typography-subtitle1-line-height);
+    text-transform: var(--ok-typography-subtitle1-text-transform);
+  }
+
+  :where([data-ok-typography][data-ok-variant="subtitle2"]) {
+    font-family: var(--ok-typography-subtitle2-font-family);
+    font-size: var(--ok-typography-subtitle2-font-size);
+    font-weight: var(--ok-typography-subtitle2-font-weight);
+    line-height: var(--ok-typography-subtitle2-line-height);
+    text-transform: var(--ok-typography-subtitle2-text-transform);
+  }
+
+  :where([data-ok-typography][data-ok-variant="body1"]) {
+    font-family: var(--ok-typography-body1-font-family);
+    font-size: var(--ok-typography-body1-font-size);
+    font-weight: var(--ok-typography-body1-font-weight);
+    line-height: var(--ok-typography-body1-line-height);
+    text-transform: var(--ok-typography-body1-text-transform);
+  }
+
+  :where([data-ok-typography][data-ok-variant="body2"]) {
+    font-family: var(--ok-typography-body2-font-family);
+    font-size: var(--ok-typography-body2-font-size);
+    font-weight: var(--ok-typography-body2-font-weight);
+    line-height: var(--ok-typography-body2-line-height);
+    text-transform: var(--ok-typography-body2-text-transform);
+  }
+
+  :where([data-ok-typography][data-ok-variant="caption"]) {
+    font-family: var(--ok-typography-caption-font-family);
+    font-size: var(--ok-typography-caption-font-size);
+    font-weight: var(--ok-typography-caption-font-weight);
+    line-height: var(--ok-typography-caption-line-height);
+    text-transform: var(--ok-typography-caption-text-transform);
+  }
+
+  :where([data-ok-typography][data-ok-variant="overline"]) {
+    font-family: var(--ok-typography-overline-font-family);
+    font-size: var(--ok-typography-overline-font-size);
+    font-weight: var(--ok-typography-overline-font-weight);
+    line-height: var(--ok-typography-overline-line-height);
+    text-transform: var(--ok-typography-overline-text-transform);
+  }
+
+  :where([data-ok-typography][data-ok-variant="button"]) {
+    font-family: var(--ok-typography-button-font-family);
+    font-size: var(--ok-typography-button-font-size);
+    font-weight: var(--ok-typography-button-font-weight);
+    line-height: var(--ok-typography-button-line-height);
+    text-transform: var(--ok-typography-button-text-transform);
+  }
+
+  :where([data-ok-typography][data-ok-variant="inherit"]) {
+    font: inherit;
+    text-transform: inherit;
+  }
+
+  /* Colors: palette `main` tones (the [data-ok-color] binding) and the text tones */
+  :where([data-ok-typography][data-ok-color]) {
+    color: var(--ok-c-main);
+  }
+
+  :where([data-ok-typography][data-ok-color="textPrimary"]) {
+    color: var(--ok-text-primary);
+  }
+
+  :where([data-ok-typography][data-ok-color="textSecondary"]) {
+    color: var(--ok-text-secondary);
+  }
+
+  :where([data-ok-typography][data-ok-color="textDisabled"]) {
+    color: var(--ok-text-disabled);
+  }
+
+  /* Alignment */
+  :where([data-ok-typography][data-ok-align="inherit"]) {
+    text-align: inherit;
+  }
+
+  :where([data-ok-typography][data-ok-align="left"]) {
+    text-align: left;
+  }
+
+  :where([data-ok-typography][data-ok-align="center"]) {
+    text-align: center;
+  }
+
+  :where([data-ok-typography][data-ok-align="right"]) {
+    text-align: right;
+  }
+
+  :where([data-ok-typography][data-ok-align="justify"]) {
+    text-align: justify;
+  }
+
+  /* Spacing and wrapping */
+  :where([data-ok-typography][data-ok-gutter-bottom]) {
+    margin-block-end: 0.35em;
+  }
+
+  :where([data-ok-typography][data-ok-no-wrap]) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}

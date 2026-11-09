@@ -12,7 +12,7 @@ const snippets = import.meta.glob(
   { query: "?raw", import: "default", eager: true },
 ) as Record<string, string>;
 
-const setup = htmlSetup(["button.css", "popover.css"], true);
+const setup = htmlSetup(["button.css", "popover.css", "typography.css"], true);
 const files = (title: string): GroupFiles => [[title, "group"]];
 
 const meta = {

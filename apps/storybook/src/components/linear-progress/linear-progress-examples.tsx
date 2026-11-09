@@ -1,5 +1,5 @@
 import { type LinearProgressVariant, linearProgressOptions } from "@owlky/core";
-import { LinearProgress } from "@owlky/react";
+import { LinearProgress, Typography } from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
 import { PROGRESS_COLORS } from "../circular-progress/circular-progress-examples.js";
 import type { GroupFiles } from "../shared/snippets.js";
@@ -34,6 +34,19 @@ export const bufferGroups: ReactGroup[] = [
   { title: "Buffer", content: byColor("buffer", "Progress") },
 ];
 export const queryGroups: ReactGroup[] = [{ title: "Query", content: byColor("query", "Loading") }];
+
+/** MUI's "Linear with label": the value as text beside the bar (story-only row layout). */
+export const labelGroups: ReactGroup[] = [
+  {
+    title: "With label",
+    content: [10, 50, 90].map((value) => (
+      <div key={value} className="sb-progress-label">
+        <LinearProgress variant="determinate" value={value} aria-label="Upload" />
+        <Typography variant="body2" color="textSecondary">{`${value}%`}</Typography>
+      </div>
+    )),
+  },
+];
 
 /** One group per story: `<story>-group.html`. */
 export const files = (title: string): GroupFiles => [[title, "group"]];

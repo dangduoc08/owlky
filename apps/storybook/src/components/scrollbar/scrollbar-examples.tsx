@@ -1,5 +1,5 @@
 import { scrollbarOptions } from "@owlky/core";
-import { Alert, Scrollbar } from "@owlky/react";
+import { Alert, Scrollbar, Typography } from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
 import type { GroupFiles } from "../shared/snippets.js";
 import text from "./scrollbar-text.json" with { type: "json" };
@@ -50,7 +50,9 @@ export const layoutGroups: ReactGroup[] = [
         <div className="sb-layout-main">
           <Alert severity="success">Your changes were saved.</Alert>
           <Scrollbar>
-            <h4>Scrolling inside a page layout</h4>
+            <Typography variant="h6" component="h4">
+              Scrolling inside a page layout
+            </Typography>
             {paragraphs.map((p, i) => (
               // biome-ignore lint/suspicious/noArrayIndexKey: static demo text repeats.
               <p key={i}>{p}</p>

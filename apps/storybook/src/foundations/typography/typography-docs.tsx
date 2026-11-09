@@ -30,7 +30,7 @@ export const typographySections: GuideSection[] = [
 
 The \`h1\`, \`h2\` and \`h3\` headings use the display font, Barlow. All other variants use the main font, Public Sans by default. Sizes are in \`rem\`, so text scales with the root font size.
 
-The stories in the sidebar show each variant in detail.`,
+The stories in the sidebar show each variant in detail. To set a variant on an element without writing CSS, use the **Typography** component, described in **Components › Typography**.`,
   },
   {
     id: "tokens",

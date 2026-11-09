@@ -1,4 +1,4 @@
-import { Autocomplete } from "@owlky/react";
+import { Autocomplete, Typography } from "@owlky/react";
 import { useState } from "react";
 
 /** The value and the input text, both controlled and shown below the field. */
@@ -16,10 +16,10 @@ export function ControllableDemo() {
         inputValue={inputValue}
         onInputChange={setInputValue}
       />
-      <p>
+      <Typography variant="body2" color="textSecondary">
         value: <code>{JSON.stringify(value)}</code> · inputValue:{" "}
         <code>{JSON.stringify(inputValue)}</code>
-      </p>
+      </Typography>
     </div>
   );
 }

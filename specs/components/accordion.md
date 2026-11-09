@@ -36,7 +36,9 @@ Other props: `name` (native attribute, exclusive group) · React `expanded` / `d
 
 ## Layout and tokens
 - Summary: padding 16px / 8px end, `--ok-typography-subtitle1-*`; details: padding 0 16px 16px,
-  `--ok-typography-body2-*`, `--ok-text-secondary`.
+  `--ok-typography-body2-*`, `--ok-text-secondary`. Stories put the summary text in a Typography
+  (`subtitle1`, `component="span"`, like the reference), plus a `body2` / `textSecondary` line
+  in "Controlled".
 - `default`: closed items are separated by `--ok-divider`; the open item is a card
   (`--ok-bg-paper`, `--ok-shadow-z8`, `--ok-radius-md`) with a 16px gutter above and below.
 - `outlined`: one bordered list (`--ok-divider`, `--ok-radius-md`), items joined.

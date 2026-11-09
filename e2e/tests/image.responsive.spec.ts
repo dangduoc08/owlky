@@ -57,7 +57,9 @@ function measure(page: Page) {
         )
           problems.push(`images ${a} and ${b} overlap`);
       }
-    for (const caption of document.querySelectorAll<HTMLElement>(".sb-image-caption"))
+    for (const caption of document.querySelectorAll<HTMLElement>(
+      ".sb-image-item > [data-ok-typography]",
+    ))
       if (caption.scrollWidth > caption.clientWidth + 1)
         problems.push(`caption "${caption.textContent}" clipped`);
     const grid = document.querySelector(".sb-image-grid") as Element;

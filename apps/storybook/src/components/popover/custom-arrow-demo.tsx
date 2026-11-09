@@ -1,5 +1,5 @@
 import type { Placement } from "@owlky/core";
-import { Button, Popover } from "@owlky/react";
+import { Button, Popover, Typography } from "@owlky/react";
 import { useState } from "react";
 
 /**
@@ -78,8 +78,10 @@ export function CustomArrowDemo() {
           onOpenChange={() => setOpen(null)}
         >
           <div>
-            <h6>Arrow {arrow}</h6>
-            <p>The arrow points at the button that opened this popover.</p>
+            <Typography variant="subtitle1">Arrow {arrow}</Typography>
+            <Typography variant="body2" color="textSecondary">
+              The arrow points at the button that opened this popover.
+            </Typography>
           </div>
         </Popover>
       ))}
