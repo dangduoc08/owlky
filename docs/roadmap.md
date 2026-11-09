@@ -57,7 +57,7 @@ component and each `/integrate` run.
 | Extra (monaco-react reference) | Code editor | ✅ (ADR-0034, Monaco) | CodeEditor, DiffEditor, useMonaco, loader | Code editor |
 | Extra | Form validation | not planned | — | Next |
 | Extra | Form wizard | not planned | — | Next |
-| Extra | Image | wave 7 (ADR) | — | Next |
+| Extra | Image | ✅ (ADR-0038) | Image | Image |
 | Extra | Label | ✅ | Label | Avatar, Badge, Chip & Label |
 | Extra | Layout | not planned | — | Next |
 | Extra | Lightbox | ✅ (ADR-0032) | Lightbox, LightboxTrigger | Lightbox |
@@ -510,6 +510,29 @@ integrate these in the same review (additive: no DOM or API change) and remove t
 | Collapse (transition) | Tree view groups | open / close at once (`hidden`); MUI X collapses them |
 | Typography (body text, headings) | Map stories (popup text, the drag readout, panel captions) | demo `.sb-map-*` styled in `.storybook/preview.css` |
 | Typography + Paper (card) | Organization chart stories (node cards: simple, standard, team and member cards, names and roles) | demo `.sb-org-*` styled in `.storybook/preview.css`; the cards compose Avatar, IconButton, Menu and Label |
+| Typography (caption) | Image stories (the ratio, fit and position captions above pictures) | demo `.sb-image-caption` styled in `.storybook/preview.css` |
+
+## ✅ Components — Image (ADR-0038, 2026-11-09)
+Created with `/component` from the reference "Image" page (Minimals' own Image, on
+react-lazy-load-image-component), every section as a story: List, Aspect ratio, Overlay; beyond
+them: Fit and position, Loading and errors. HTML written by us (owner's choice), native first: a
+`span` root with a placeholder, an optional overlay and a plain `img` (`loading="lazy"`,
+`decoding="async"`, `srcset` / `sizes`); `ratio` (11 ratios), `fit`, `position`, `effect`
+(`blur`, `opacity`, `black-and-white`, `none`), `overlay` / `overlayFrom` (dark or palette
+gradients), `disablePlaceholder`, `visibleByDefault`, `placeholderSrc`, `onLoad` / `onError`. The
+load state is `data-ok-state` (React from the image's events, the HTML runtime `image`, both
+through core `imageLoadState` for pictures that settled first); a broken picture keeps its `alt`
+and shows an icon; `@media (scripting: none)` and reduced motion honored. Original SVG pictures in
+`apps/storybook/public/images/`. No new token, no dependency. CSS budget raised to 45 kB (Image
+about 0.95 kB gzip).
+Integrated in the same review: Markdown `images="image"` + `imageRatio` (the reference renders its
+pictures through Image, 16/9): React maps `img` to `Image`, the HTML runtime builds the Image
+markup; both Markdown stories use it. Additive (minor).
+Differences: Image is fluid (its container's width) instead of the reference's fixed grid cells;
+the error state and `fit` / `position` are beyond the reference; the reference's alt texts are the
+ratios, ours describe the pictures.
+**Backlog:** arbitrary ratios and overlay gradients (consumer CSS today), a `threshold` for when
+lazy loading starts (the browser decides).
 
 ## ✅ Components — Organization chart (ADR-0036, 2026-11-09)
 Created with `/component` from the reference "Organization chart" page, every section as a story:
@@ -680,7 +703,7 @@ Dependency-first: leaf components before the ones built from them, the ones that
 | 4 Overlays | ~~Popover~~ ✅, ~~Tooltip~~ ✅, ~~Menu~~ ✅, ~~Dialog~~ ✅, ~~Snackbar~~ ✅, ~~Backdrop~~ ✅ | ~~Drawer / Dialog backdrop~~ ✅ (native `::backdrop`, same token); icon button tooltips: nothing to change (MUI uses native `title` there; Tooltip wraps any IconButton) |
 | 5 Navigation | ~~Tabs~~ ✅, ~~Breadcrumbs~~ ✅, ~~Stepper~~ ✅ | — (nothing waited for them) |
 | 6 Composites | ~~Rating~~ ✅, ~~Slider~~ ✅, ~~Timeline~~ ✅, ~~Transfer list~~ ✅, ~~Autocomplete~~ ✅, ~~Tree view~~ ✅ | — (nothing waited for them; Slider unblocks the SettingsDrawer backlog of Theme settings) |
-| 7 Needs an ADR | ~~Data grid~~ (ADR-0020, phases below), ~~Date pickers~~ (ADR-0022, ADR-0030, complete ✅), ~~Chart~~ (ADR-0024, ADR-0027, ADR-0031, complete ✅), ~~Map~~ (ADR-0025) ✅, ~~Editor~~ (ADR-0023) ✅, ~~Carousel~~ (ADR-0033) ✅, ~~Lightbox~~ (ADR-0032) ✅, ~~Markdown~~ (ADR-0035) ✅, ~~Organization chart~~ (ADR-0036) ✅, Upload, Image, Walktour | — |
+| 7 Needs an ADR | ~~Data grid~~ (ADR-0020, phases below), ~~Date pickers~~ (ADR-0022, ADR-0030, complete ✅), ~~Chart~~ (ADR-0024, ADR-0027, ADR-0031, complete ✅), ~~Map~~ (ADR-0025) ✅, ~~Editor~~ (ADR-0023) ✅, ~~Carousel~~ (ADR-0033) ✅, ~~Lightbox~~ (ADR-0032) ✅, ~~Markdown~~ (ADR-0035) ✅, ~~Organization chart~~ (ADR-0036) ✅, ~~Image~~ (ADR-0038) ✅, Upload, Walktour | ~~Markdown pictures~~ ✅ (Image) |
 
 Not planned as components (patterns or app-level pages of the reference): Layout,
 Utilities, Multi-language, Navigation bar, Mega menu, Scroll progress, Form validation, Form wizard.

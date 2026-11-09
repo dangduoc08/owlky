@@ -126,6 +126,11 @@ test("no CSP or Trusted Types violations", async ({ page }) => {
   // The unsafe link keeps its text but loses its URL (so it is no longer a link).
   await expect(markdown.locator("a", { hasText: "unsafe" })).not.toHaveAttribute("href");
   await expect(markdown.locator("img[onerror], script")).toHaveCount(0);
+  // Image: the load state is an attribute; the error icon is built with createElementNS.
+  await page.locator("#csp-image-broken").scrollIntoViewIfNeeded();
+  await expect(page.locator("#csp-image")).toHaveAttribute("data-ok-state", "loaded");
+  await expect(page.locator("#csp-image-broken")).toHaveAttribute("data-ok-state", "error");
+  await expect(page.locator("#csp-image-broken [data-ok-image-icon]")).toBeVisible();
   expect(
     await page.evaluate(() => (window as unknown as { violations: string[] }).violations),
   ).toEqual([]);

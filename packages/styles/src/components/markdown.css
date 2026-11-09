@@ -3,7 +3,8 @@
  *
  * Anatomy:   div[data-ok-markdown][data-ok-raw-html]?[data-ok-skip-html]?[data-ok-external-links]?
  *              › …rendered elements (h1–h6, p, a, ul / ol › li, blockquote, pre › code, table,
- *                 hr, img, del, input[type=checkbox] in task lists, section[data-footnotes])
+ *                 hr, img, del, input[type=checkbox] in task lists, section[data-footnotes];
+ *                 with data-ok-images="image" pictures are span[data-ok-image] › img)
  *              › pre[data-ok-markdown-source][hidden]   (HTML only: the Markdown text)
  *
  * Content is plain HTML from Markdown, so rules target elements inside the root. Single :where()
@@ -215,11 +216,16 @@
     border-top: 1px solid var(--ok-divider);
   }
 
-  :where([data-ok-markdown] img) {
+  :where([data-ok-markdown] img:not([data-ok-image] > img)) {
     max-width: 100%;
     height: auto;
     border-radius: var(--ok-radius-xl);
     vertical-align: middle;
+  }
+
+  /* Pictures composed as Image (`data-ok-images="image"`): the Image sizes them. */
+  :where([data-ok-markdown] [data-ok-image]) {
+    border-radius: var(--ok-radius-xl);
   }
 
   /* --- Code ------------------------------------------------------------------------------- */

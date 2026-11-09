@@ -1,0 +1,334 @@
+/*
+ * Image — spec: specs/components/image.md
+ *
+ * Anatomy:   span[data-ok-image]
+ *              › span[data-ok-image-placeholder][aria-hidden]? (› img[alt=""] low-res preview)?
+ *              › span[data-ok-image-overlay][aria-hidden]?
+ *              › img[alt]
+ *              › svg[data-ok-image-icon][aria-hidden]? (after an error)
+ * Modifiers: data-ok-ratio    = 1/1 | 2/3 | 3/2 | 3/4 | 4/3 | 4/6 | 6/4 | 9/16 | 16/9 | 9/21 | 21/9
+ *            data-ok-fit      = cover (default) | contain | fill | none | scale-down
+ *            data-ok-position = center (default) | top | bottom | left | right | top-left | …
+ *            data-ok-effect   = blur (default) | opacity | black-and-white | none
+ *            data-ok-overlay  = dark | <palette color>; data-ok-overlay-from = <palette color>
+ *            data-ok-visible-by-default, data-ok-disable-placeholder
+ * State:     data-ok-state = loading | loaded | error (React / HTML runtime; never in snippets).
+ *            Without a state (no JavaScript) the picture shows as is.
+ *
+ * Single :where() selectors in @layer components.
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-ok-image]) {
+    position: relative;
+    display: block;
+    flex-shrink: 0;
+    max-width: 100%;
+    overflow: hidden;
+    vertical-align: bottom;
+  }
+
+  :where([data-ok-image] > img) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    vertical-align: middle;
+    transition:
+      opacity var(--ok-duration-shortest) var(--ok-easing-standard),
+      filter var(--ok-duration-standard) var(--ok-easing-standard);
+  }
+
+  /* --- Ratio: the root takes the ratio, the picture fills it ---------------------------------- */
+
+  :where([data-ok-image][data-ok-ratio] > img) {
+    position: absolute;
+    inset: 0;
+  }
+
+  :where([data-ok-image][data-ok-ratio="1/1"]) {
+    aspect-ratio: 1 / 1;
+  }
+
+  :where([data-ok-image][data-ok-ratio="2/3"]) {
+    aspect-ratio: 2 / 3;
+  }
+
+  :where([data-ok-image][data-ok-ratio="3/2"]) {
+    aspect-ratio: 3 / 2;
+  }
+
+  :where([data-ok-image][data-ok-ratio="3/4"]) {
+    aspect-ratio: 3 / 4;
+  }
+
+  :where([data-ok-image][data-ok-ratio="4/3"]) {
+    aspect-ratio: 4 / 3;
+  }
+
+  :where([data-ok-image][data-ok-ratio="4/6"]) {
+    aspect-ratio: 4 / 6;
+  }
+
+  :where([data-ok-image][data-ok-ratio="6/4"]) {
+    aspect-ratio: 6 / 4;
+  }
+
+  :where([data-ok-image][data-ok-ratio="9/16"]) {
+    aspect-ratio: 9 / 16;
+  }
+
+  :where([data-ok-image][data-ok-ratio="16/9"]) {
+    aspect-ratio: 16 / 9;
+  }
+
+  :where([data-ok-image][data-ok-ratio="9/21"]) {
+    aspect-ratio: 9 / 21;
+  }
+
+  :where([data-ok-image][data-ok-ratio="21/9"]) {
+    aspect-ratio: 21 / 9;
+  }
+
+  /* --- Fit and position ------------------------------------------------------------------- */
+
+  :where([data-ok-image][data-ok-fit="contain"] > img) {
+    object-fit: contain;
+  }
+
+  :where([data-ok-image][data-ok-fit="fill"] > img) {
+    object-fit: fill;
+  }
+
+  :where([data-ok-image][data-ok-fit="none"] > img) {
+    object-fit: none;
+  }
+
+  :where([data-ok-image][data-ok-fit="scale-down"] > img) {
+    object-fit: scale-down;
+  }
+
+  :where([data-ok-image][data-ok-position="top"] > img) {
+    object-position: top;
+  }
+
+  :where([data-ok-image][data-ok-position="bottom"] > img) {
+    object-position: bottom;
+  }
+
+  :where([data-ok-image][data-ok-position="left"] > img) {
+    object-position: left;
+  }
+
+  :where([data-ok-image][data-ok-position="right"] > img) {
+    object-position: right;
+  }
+
+  :where([data-ok-image][data-ok-position="top-left"] > img) {
+    object-position: left top;
+  }
+
+  :where([data-ok-image][data-ok-position="top-right"] > img) {
+    object-position: right top;
+  }
+
+  :where([data-ok-image][data-ok-position="bottom-left"] > img) {
+    object-position: left bottom;
+  }
+
+  :where([data-ok-image][data-ok-position="bottom-right"] > img) {
+    object-position: right bottom;
+  }
+
+  /* --- Placeholder: shown while loading and after an error ----------------------------------- */
+
+  :where([data-ok-image-placeholder]) {
+    position: absolute;
+    inset: 0;
+    display: block;
+    overflow: hidden;
+    background-image: radial-gradient(
+      circle at 50% 47%,
+      rgb(var(--ok-palette-common-white-channel) / 0) 0,
+      rgb(var(--ok-palette-grey-500-channel) / 0.48) 135%
+    );
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--ok-duration-standard) var(--ok-easing-standard);
+  }
+
+  :where([data-ok-image-placeholder] > img) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: blur(12px);
+    transform: scale(1.1);
+  }
+
+  :where([data-ok-image][data-ok-state="loading"] > [data-ok-image-placeholder]) {
+    opacity: 1;
+  }
+
+  :where([data-ok-image][data-ok-state="error"] > [data-ok-image-placeholder]) {
+    opacity: 1;
+  }
+
+  :where([data-ok-image][data-ok-disable-placeholder] > [data-ok-image-placeholder]) {
+    display: none;
+  }
+
+  :where([data-ok-image][data-ok-visible-by-default] > [data-ok-image-placeholder]) {
+    display: none;
+  }
+
+  /* --- Effects: the picture is hidden while it loads, then appears ------------------------- */
+
+  :where([data-ok-image][data-ok-state="loading"] > img) {
+    opacity: 0;
+  }
+
+  :where([data-ok-image][data-ok-effect="blur"][data-ok-state="loading"] > img) {
+    filter: blur(12px);
+  }
+
+  :where([data-ok-image][data-ok-effect="black-and-white"][data-ok-state="loading"] > img) {
+    filter: grayscale(1);
+  }
+
+  :where([data-ok-image][data-ok-effect="none"] > img) {
+    transition: none;
+  }
+
+  :where([data-ok-image][data-ok-visible-by-default] > img) {
+    opacity: 1;
+    filter: none;
+    transition: none;
+  }
+
+  /* A broken picture keeps its text alternative (opacity, not hidden) behind the icon. */
+  :where([data-ok-image][data-ok-state="error"] > img) {
+    opacity: 0;
+    filter: none;
+  }
+
+  :where([data-ok-image-icon]) {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    width: min(40%, calc(var(--ok-spacing) * 12));
+    height: min(40%, calc(var(--ok-spacing) * 12));
+    margin: auto;
+    color: var(--ok-text-disabled);
+    pointer-events: none;
+  }
+
+  /* --- Overlay -------------------------------------------------------------------------- */
+
+  :where([data-ok-image-overlay]) {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: block;
+    pointer-events: none;
+  }
+
+  :where([data-ok-image]:not([data-ok-overlay]) > [data-ok-image-overlay]) {
+    display: none;
+  }
+
+  :where([data-ok-image][data-ok-overlay="dark"] > [data-ok-image-overlay]) {
+    background-color: rgb(var(--ok-palette-grey-900-channel) / 0.48);
+  }
+
+  :where([data-ok-image][data-ok-overlay="primary"] > [data-ok-image-overlay]) {
+    --_ok-image-to: var(--ok-palette-primary-main-channel);
+  }
+
+  :where([data-ok-image][data-ok-overlay="secondary"] > [data-ok-image-overlay]) {
+    --_ok-image-to: var(--ok-palette-secondary-main-channel);
+  }
+
+  :where([data-ok-image][data-ok-overlay="info"] > [data-ok-image-overlay]) {
+    --_ok-image-to: var(--ok-palette-info-main-channel);
+  }
+
+  :where([data-ok-image][data-ok-overlay="success"] > [data-ok-image-overlay]) {
+    --_ok-image-to: var(--ok-palette-success-main-channel);
+  }
+
+  :where([data-ok-image][data-ok-overlay="warning"] > [data-ok-image-overlay]) {
+    --_ok-image-to: var(--ok-palette-warning-main-channel);
+  }
+
+  :where([data-ok-image][data-ok-overlay="error"] > [data-ok-image-overlay]) {
+    --_ok-image-to: var(--ok-palette-error-main-channel);
+  }
+
+  :where([data-ok-image][data-ok-overlay]:not([data-ok-overlay="dark"]) > [data-ok-image-overlay]) {
+    background-image: linear-gradient(
+      rgb(var(--ok-palette-common-white-channel) / 0),
+      rgb(var(--_ok-image-to) / 0.8)
+    );
+  }
+
+  :where([data-ok-image][data-ok-overlay-from="primary"] > [data-ok-image-overlay]) {
+    --_ok-image-from: var(--ok-palette-primary-main-channel);
+  }
+
+  :where([data-ok-image][data-ok-overlay-from="secondary"] > [data-ok-image-overlay]) {
+    --_ok-image-from: var(--ok-palette-secondary-main-channel);
+  }
+
+  :where([data-ok-image][data-ok-overlay-from="info"] > [data-ok-image-overlay]) {
+    --_ok-image-from: var(--ok-palette-info-main-channel);
+  }
+
+  :where([data-ok-image][data-ok-overlay-from="success"] > [data-ok-image-overlay]) {
+    --_ok-image-from: var(--ok-palette-success-main-channel);
+  }
+
+  :where([data-ok-image][data-ok-overlay-from="warning"] > [data-ok-image-overlay]) {
+    --_ok-image-from: var(--ok-palette-warning-main-channel);
+  }
+
+  :where([data-ok-image][data-ok-overlay-from="error"] > [data-ok-image-overlay]) {
+    --_ok-image-from: var(--ok-palette-error-main-channel);
+  }
+
+  :where(
+    [data-ok-image][data-ok-overlay]:not([data-ok-overlay="dark"])[data-ok-overlay-from]
+      > [data-ok-image-overlay]
+  ) {
+    background-image: linear-gradient(
+      to top,
+      rgb(var(--_ok-image-from) / 0.24),
+      rgb(var(--_ok-image-to) / 0.8)
+    );
+  }
+
+  /* --- Without JavaScript or motion -------------------------------------------------------- */
+
+  @media (scripting: none) {
+    :where([data-ok-image] > img) {
+      opacity: 1;
+      filter: none;
+    }
+
+    :where([data-ok-image] > [data-ok-image-placeholder]) {
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :where([data-ok-image] > img) {
+      transition: none;
+    }
+
+    :where([data-ok-image-placeholder]) {
+      transition: none;
+    }
+  }
+}

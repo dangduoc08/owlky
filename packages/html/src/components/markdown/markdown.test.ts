@@ -152,6 +152,56 @@ describe("markdown runtime", () => {
     expect(content(root)).toBe("<p>x</p>");
   });
 
+  it("composes Image for pictures with data-ok-images, and follows the attributes", async () => {
+    const pixel = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
+    const { root } = await setup(
+      `![A cover](${pixel} "Cover") <img src="${pixel}" loading="eager">`,
+      ' data-ok-raw-html data-ok-images="image" data-ok-images-ratio="16/9"',
+    );
+    const [first, second] = root.querySelectorAll<HTMLElement>("[data-ok-image]");
+    expect(first?.dataset).toMatchObject({ okRatio: "16/9", okFit: "cover", okEffect: "blur" });
+    expect(first?.firstElementChild?.getAttribute("data-ok-image-placeholder")).toBe("");
+    expect(first?.firstElementChild?.getAttribute("aria-hidden")).toBe("true");
+    const img = first?.querySelector(":scope > img") as HTMLImageElement;
+    expect(img.alt).toBe("A cover");
+    expect(img.title).toBe("Cover");
+    expect(img.getAttribute("loading")).toBe("lazy");
+    expect(img.getAttribute("decoding")).toBe("async");
+    // Raw HTML loses its loading hint (sanitizer) and gets an empty alt.
+    const raw = second?.querySelector(":scope > img") as HTMLImageElement;
+    expect(raw.getAttribute("loading")).toBe("lazy");
+    expect(raw.getAttribute("alt")).toBe("");
+    // The Image runtime mounts the composed pictures.
+    expect(runtime?.get(first as HTMLElement, "image")).toBeDefined();
+    root.setAttribute("data-ok-images-ratio", '"><img src=x onerror=alert(1)>');
+    await settle();
+    expect(root.querySelector("[data-ok-image]")?.hasAttribute("data-ok-ratio")).toBe(false);
+    root.setAttribute("data-ok-images", "native");
+    await settle();
+    expect(root.querySelector("[data-ok-image]")).toBeNull();
+    expect(root.querySelector("p > img")?.getAttribute("alt")).toBe("A cover");
+  });
+
+  it("keeps loading hints that plugins give pictures composed as Image", async () => {
+    const hints = () => (tree: { children: unknown[] }) => {
+      const visit = (node: { tagName?: string; properties?: object; children?: unknown[] }) => {
+        if (node.tagName === "img")
+          node.properties = { ...node.properties, loading: "eager", decoding: "sync" };
+        for (const child of node.children ?? []) visit(child as typeof node);
+      };
+      visit(tree as never);
+    };
+    const { root } = await setup(
+      "![A cover](cover.svg)",
+      ' data-ok-images="image"',
+      createMarkdown({ rehypePlugins: [hints] }),
+    );
+    const img = root.querySelector("[data-ok-image] > img") as HTMLImageElement;
+    expect(img.getAttribute("loading")).toBe("eager");
+    expect(img.getAttribute("decoding")).toBe("sync");
+    expect(root.querySelector("[data-ok-image]")?.hasAttribute("data-ok-ratio")).toBe(false);
+  });
+
   it("leaves markup without a source (server-rendered) alone", async () => {
     const host = mount("<div data-ok-markdown><p>Prerendered</p></div>");
     const r = start();

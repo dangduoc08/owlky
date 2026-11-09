@@ -284,6 +284,7 @@ export {
   type FormControlLabelProps,
 } from "./form-control-label/form-control-label.js";
 export { IconButton, type IconButtonProps } from "./icon-button/icon-button.js";
+export { Image, type ImageProps } from "./image/image.js";
 export { Label, type LabelProps } from "./label/label.js";
 export {
   Lightbox,

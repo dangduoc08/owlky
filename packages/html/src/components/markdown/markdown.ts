@@ -1,4 +1,4 @@
-import { markdownOptions, readBehavior } from "@owlky/core";
+import { type ImageRatio, imageAttributes, markdownOptions, readBehavior } from "@owlky/core";
 import {
   type AllowElement,
   childSpace,
@@ -40,7 +40,7 @@ export interface CreateMarkdownOptions {
   async?: boolean | undefined;
 }
 
-const { gfm: gfmOption } = markdownOptions.options;
+const { gfm: gfmOption, images: imagesOption, imageRatio: ratioOption } = markdownOptions.options;
 const SVG = "http://www.w3.org/2000/svg";
 const OPTION_ATTRIBUTES = [
   "data-ok-gfm",
@@ -50,17 +50,47 @@ const OPTION_ATTRIBUTES = [
   "data-ok-external-links",
   "data-ok-allowed-elements",
   "data-ok-disallowed-elements",
+  imagesOption.attr,
+  ratioOption.attr,
 ];
 const TAG = /^[a-z][a-z0-9-]*$/i;
 
 const tagList = (value: string | null) =>
   value === null ? undefined : value.split(/\s+/).filter((name) => TAG.test(name));
 
+/** With `images="image"`: pictures become Image markup (the Image runtime then mounts them). */
+interface ImageMode {
+  ratio: ImageRatio | undefined;
+}
+
+/** The same markup as React's `Image` around a built `img` (lazy and async unless set). */
+function imageOf(img: Element, mode: ImageMode, document: Document): HTMLSpanElement {
+  const root = document.createElement("span");
+  for (const [name, value] of Object.entries(imageAttributes({ ratio: mode.ratio })))
+    root.setAttribute(name, value);
+  const placeholder = document.createElement("span");
+  placeholder.setAttribute("data-ok-image-placeholder", "");
+  placeholder.setAttribute("aria-hidden", "true");
+  if (!img.hasAttribute("alt")) img.setAttribute("alt", "");
+  if (!img.hasAttribute("loading")) img.setAttribute("loading", "lazy");
+  if (!img.hasAttribute("decoding")) img.setAttribute("decoding", "async");
+  root.append(placeholder, img);
+  return root;
+}
+
+/** The root's image mode: `null` for plain pictures. */
+function imageMode(element: Element): ImageMode | null {
+  if (element.getAttribute(imagesOption.attr) !== "image") return null;
+  const ratio = element.getAttribute(ratioOption.attr) as ImageRatio | null;
+  return { ratio: ratio !== null && ratioOption.values.includes(ratio) ? ratio : undefined };
+}
+
 /** Builds DOM nodes from the pipeline's tree: `createElement`, `setAttribute`, CSSOM only. */
 function build(
   parent: MarkdownRoot | MarkdownElement,
   space: "html" | "svg",
   document: Document,
+  images: ImageMode | null = null,
 ): ChildNode[] {
   const out: ChildNode[] = [];
   for (const child of parent.children) {
@@ -74,8 +104,8 @@ function build(
       element.setAttribute(attribute.name, attribute.value === true ? "" : attribute.value);
     const style = (element as HTMLElement | SVGElement).style;
     for (const [property, value] of markdownElementStyle(child)) style.setProperty(property, value);
-    element.append(...build(child, childSpace(child, space), document));
-    out.push(element);
+    element.append(...build(child, childSpace(child, space), document, images));
+    out.push(images && child.tagName === "img" ? imageOf(element, images, document) : element);
   }
   return out;
 }
@@ -120,7 +150,7 @@ export const createMarkdown = (setup: CreateMarkdownOptions = {}) =>
 
       const show = (tree: MarkdownRoot, value: string) => {
         for (const node of rendered) node.remove();
-        rendered = build(tree, "html", element.ownerDocument);
+        rendered = build(tree, "html", element.ownerDocument, imageMode(element));
         source.before(...rendered);
         source.hidden = true;
         emit("render", { value });

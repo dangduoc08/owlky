@@ -73,6 +73,11 @@ const pairs: [component: string, story: string][] = [
   ["organization-chart", "standard"],
   ["organization-chart", "group"],
   ["organization-chart", "lines"],
+  ["image", "list"],
+  ["image", "aspect-ratio"],
+  ["image", "overlay"],
+  ["image", "fit-and-position"],
+  ["image", "loading"],
   ["chart", "line"],
   ["chart", "area"],
   ["chart", "column-single"],
@@ -318,7 +323,30 @@ const pairs: [component: string, story: string][] = [
 
 /** Stories whose rows load after the first render (scripts, data sources): wait for them. */
 const LOADS = new Set(["datagrid/large", "datagrid/server", "datagrid/lazy-loading"]);
+
+/**
+ * Image stories (and Markdown, whose pictures are Images): lazy pictures load while the network is
+ * busy; once it is idle, every Image's `data-ok-state` matches its picture (pictures far below
+ * stay `loading` in both implementations).
+ */
+async function imagesSettled(page: Page) {
+  await page.waitForLoadState("networkidle");
+  await page.waitForFunction(() =>
+    [...document.querySelectorAll("[data-ok-image]")].every((root) => {
+      const img = root.querySelector(":scope > img") as HTMLImageElement | null;
+      if (!img) return true;
+      const expected = !img.complete ? "loading" : img.naturalWidth > 0 ? "loaded" : "error";
+      return root.getAttribute("data-ok-state") === expected;
+    }),
+  );
+  await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => setTimeout(r, 50))));
+}
+
 async function loaded(page: Page, key: string) {
+  if (key.startsWith("image/")) {
+    await imagesSettled(page);
+    return;
+  }
   if (key.startsWith("lightbox/")) {
     // The lightbox's slide pictures load lazily (in a closed dialog): wait for the others.
     await page.waitForFunction(() =>
@@ -369,7 +397,7 @@ async function loaded(page: Page, key: string) {
     // The HTML story registers Markdown in its page script: wait for the render and the image.
     await expect(page.locator("[data-ok-markdown] h1")).toBeVisible();
     await expect(page.locator("[data-ok-markdown] .hljs-keyword").first()).toBeVisible();
-    await page.waitForFunction(() => [...document.images].every((image) => image.complete));
+    await imagesSettled(page);
     return;
   }
   if (key.startsWith("code-editor/")) {

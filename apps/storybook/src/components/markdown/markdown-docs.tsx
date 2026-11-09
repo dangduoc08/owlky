@@ -91,6 +91,23 @@ export function Comment({ text }: { text: string }) {
 }`,
   },
   {
+    id: "images",
+    title: "Show pictures as Image",
+    body: "Set `images` to `image` to render every picture as an Image component: it loads lazily, shows a placeholder until it arrives and appears with a short blur effect. Add `imageRatio`, such as `16/9`, to crop every picture to the same shape. By default, pictures are plain `img` elements that keep their own size. In HTML, the Image needs the script, which also renders the Markdown. In React, a `components.img` replacement takes precedence.",
+    html: `<div data-ok-markdown data-ok-images="image" data-ok-images-ratio="16/9">
+<pre data-ok-markdown-source>![A quiet beach at sunrise](beach.jpg)</pre>
+</div>`,
+    react: `import { Markdown } from "@owlky/react";
+
+export function Article({ text }: { text: string }) {
+  return (
+    <Markdown images="image" imageRatio="16/9">
+      {text}
+    </Markdown>
+  );
+}`,
+  },
+  {
     id: "components",
     title: "Replace elements and add plugins",
     body: "In React, `components` replaces elements by tag name, with a component or another tag name. Each component receives the element's props and `node`, its syntax tree node. Both versions take remark plugins (`remarkPlugins`, for Markdown syntax) and rehype plugins (`rehypePlugins`, for the HTML tree), and `remarkRehypeOptions`. In HTML, pass them to `createMarkdown()` and register the result. Plugins run with the same rights as your code: use only plugins you trust.\n\n`Markdown` processes the text synchronously. For asynchronous plugins, use `MarkdownAsync` on a server or `MarkdownHooks` in the browser, which shows `fallback` while it works. In HTML, pass `async: true` to `createMarkdown()`.",

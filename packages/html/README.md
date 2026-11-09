@@ -49,6 +49,9 @@ event `ok:mobile-stepper:change`)
 **Organization chart** (CSS only: `ul[data-ok-organization-chart]` › `li` nodes › label + children
 `ul`; runtime `organization-chart` only writes `data-ok-line-height|width|border-radius` and
 `data-ok-node-padding` as private CSS properties)
+**Image** (`span[data-ok-image]` › placeholder span, optional overlay span, native `img` with
+`loading="lazy"`; ratios, fit, position, effect and overlays are CSS; runtime `image` writes the
+load state `data-ok-state`, adds an error icon, events `ok:image:load` and `ok:image:error`)
 **Rating** (runtime `rating`: a radio per value plus an "Empty" radio; a second click clears; events
 `ok:rating:change` (cancelable) and `ok:rating:active`) **Slider** (runtime `slider`: native range
 inputs as thumbs, `data-ok-min|max|step`, marks, value labels from `data-ok-label-value`; events

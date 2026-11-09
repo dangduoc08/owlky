@@ -1,0 +1,194 @@
+"use client";
+
+import {
+  type ImageEffect,
+  type ImageFit,
+  type ImageOverlay,
+  type ImagePosition,
+  type ImageRatio,
+  type ImageState,
+  imageAttributes,
+  imageLoadState,
+  imageOverlays,
+  type PaletteColorName,
+} from "@owlky/core";
+import {
+  forwardRef,
+  type HTMLAttributes,
+  type ImgHTMLAttributes,
+  type ReactNode,
+  type Ref,
+  type SyntheticEvent,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import { useMergedRefs } from "../utils/refs.js";
+
+/** Shown over the placeholder when the picture fails to load (decorative). */
+export function ImageErrorIcon() {
+  return (
+    <svg data-ok-image-icon="" aria-hidden="true" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M4 5.5A1.5 1.5 0 0 1 5.5 4h13A1.5 1.5 0 0 1 20 5.5v13a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18.5z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      />
+      <path d="m4 16 4.5-4.5 3 3L15 11l5 5" stroke="currentColor" strokeWidth="1.5" />
+      <circle cx="9" cy="8.5" r="1.5" fill="currentColor" />
+      <path d="m3 3 18 18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+type ImgEvent = SyntheticEvent<HTMLImageElement, Event>;
+
+export interface ImageProps
+  extends Omit<HTMLAttributes<HTMLSpanElement>, "onLoad" | "onError" | "placeholder"> {
+  /** Picture URL. */
+  src?: string | undefined;
+  srcSet?: string | undefined;
+  sizes?: string | undefined;
+  /** Text alternative (required). Use `""` for a decorative picture. */
+  alt: string;
+  /** Intrinsic size: reserves the picture's ratio before it loads (without `ratio`). */
+  width?: number | string | undefined;
+  height?: number | string | undefined;
+  /** Native lazy loading. Default `"lazy"` (`"eager"` with `visibleByDefault`). */
+  loading?: "lazy" | "eager" | undefined;
+  /** Default `"async"`. */
+  decoding?: "async" | "auto" | "sync" | undefined;
+  fetchPriority?: "high" | "low" | "auto" | undefined;
+  crossOrigin?: ImgHTMLAttributes<HTMLImageElement>["crossOrigin"];
+  referrerPolicy?: ImgHTMLAttributes<HTMLImageElement>["referrerPolicy"];
+  /** Aspect ratio the picture is cropped to (`"16/9"`). Default: the picture's own ratio. */
+  ratio?: ImageRatio | undefined;
+  /** `object-fit`. Default `"cover"`. */
+  fit?: ImageFit | undefined;
+  /** The part that stays in view when cropped (`object-position`). Default `"center"`. */
+  position?: ImagePosition | undefined;
+  /** How the picture appears once loaded. Default `"blur"`. */
+  effect?: ImageEffect | undefined;
+  /** A layer over the picture: `"dark"` or a palette color (a gradient). */
+  overlay?: ImageOverlay | undefined;
+  /** With a color `overlay`: the gradient starts from this color at the bottom. */
+  overlayFrom?: PaletteColorName | undefined;
+  /** No placeholder while loading. */
+  disablePlaceholder?: boolean | undefined;
+  /** Loads at once, with no placeholder and no effect. */
+  visibleByDefault?: boolean | undefined;
+  /** A small preview shown blurred in the placeholder while the picture loads. */
+  placeholderSrc?: string | undefined;
+  /** Custom placeholder content (decorative). */
+  placeholder?: ReactNode;
+  /** The picture loaded (also after an earlier error, when `src` changes). */
+  onLoad?: ((event: ImgEvent) => void) | undefined;
+  /** The picture failed to load: the placeholder stays, with a broken-image icon. */
+  onError?: ((event: ImgEvent) => void) | undefined;
+  /** Ref of the `<img>` (`ref` is the root). */
+  imgRef?: Ref<HTMLImageElement> | undefined;
+  /** Other attributes of the `<img>`. */
+  imgProps?: ImgHTMLAttributes<HTMLImageElement> | undefined;
+}
+
+/**
+ * Image — spec: specs/components/image.md. A picture that loads lazily behind a placeholder and
+ * appears with an effect; `ratio` crops it, `overlay` paints a layer over it.
+ */
+export const Image = forwardRef<HTMLSpanElement, ImageProps>(function Image(
+  {
+    src,
+    srcSet,
+    sizes,
+    alt,
+    width,
+    height,
+    loading,
+    decoding,
+    fetchPriority,
+    crossOrigin,
+    referrerPolicy,
+    ratio,
+    fit,
+    position,
+    effect,
+    overlay,
+    overlayFrom,
+    disablePlaceholder,
+    visibleByDefault,
+    placeholderSrc,
+    placeholder,
+    onLoad,
+    onError,
+    imgRef,
+    imgProps,
+    ...props
+  },
+  ref,
+) {
+  const own = useRef<HTMLImageElement>(null);
+  const img = useMergedRefs(own, imgRef);
+  const key = `${src ?? ""} ${srcSet ?? ""}`;
+  const [result, setResult] = useState<{ key: string; state: ImageState } | null>(null);
+  const state: ImageState = result?.key === key ? result.state : "loading";
+
+  // An image that settled before hydration (cache, server markup) fires no event for React.
+  useEffect(() => {
+    // The img always renders, so the ref is set by now.
+    const settled = imageLoadState(own.current as HTMLImageElement);
+    if (settled !== "loading") setResult({ key, state: settled });
+  }, [key]);
+
+  return (
+    <span
+      ref={ref}
+      {...imageAttributes({
+        ratio,
+        fit,
+        position,
+        effect,
+        overlay,
+        overlayFrom,
+        disablePlaceholder,
+        visibleByDefault,
+      })}
+      data-ok-state={state}
+      data-ok-runtime="off"
+      {...props}
+    >
+      {/* Always rendered (CSS hides it with `disablePlaceholder` / `visibleByDefault`). */}
+      <span data-ok-image-placeholder="" aria-hidden="true">
+        {placeholderSrc !== undefined ? <img src={placeholderSrc} alt="" /> : placeholder}
+      </span>
+      {overlay !== undefined && imageOverlays.includes(overlay) && (
+        <span data-ok-image-overlay="" aria-hidden="true" />
+      )}
+      <img
+        ref={img}
+        src={src}
+        srcSet={srcSet}
+        sizes={sizes}
+        alt={alt}
+        width={width}
+        height={height}
+        loading={visibleByDefault ? "eager" : (loading ?? "lazy")}
+        decoding={decoding ?? "async"}
+        fetchPriority={fetchPriority}
+        crossOrigin={crossOrigin}
+        referrerPolicy={referrerPolicy}
+        {...imgProps}
+        onLoad={(event) => {
+          setResult({ key, state: "loaded" });
+          imgProps?.onLoad?.(event);
+          onLoad?.(event);
+        }}
+        onError={(event) => {
+          setResult({ key, state: "error" });
+          imgProps?.onError?.(event);
+          onError?.(event);
+        }}
+      />
+      {state === "error" && <ImageErrorIcon />}
+    </span>
+  );
+});

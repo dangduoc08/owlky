@@ -25,6 +25,7 @@ import { dateRangePicker } from "./date-range-picker/date-range-picker.js";
 import { dialog } from "./dialog/dialog.js";
 import { digitalClock } from "./digital-clock/digital-clock.js";
 import { drawer } from "./drawer/drawer.js";
+import { image } from "./image/image.js";
 import { lightbox } from "./lightbox/lightbox.js";
 import { linearProgress } from "./linear-progress/linear-progress.js";
 import { list } from "./list/list.js";
@@ -109,5 +110,6 @@ export const components: readonly ComponentDefinition[] = [
   dateRangePicker as ComponentDefinition,
   carousel as ComponentDefinition,
   organizationChart as ComponentDefinition,
+  image as ComponentDefinition,
   lightbox as ComponentDefinition,
 ];

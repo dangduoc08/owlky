@@ -17,8 +17,9 @@ highlighting, task labels). React maps the tree to elements; the HTML runtime bu
 
 ## Anatomy
 ```
-div[data-ok-markdown][data-ok-gfm="false"]?[data-ok-raw-html]?[data-ok-skip-html]?[data-ok-unwrap-disallowed]?[data-ok-external-links]?[data-ok-allowed-elements]?[data-ok-disallowed-elements]?
-  …rendered content: h1–h6, p, a, strong, em, del, code, ul / ol › li, blockquote, hr, img, br,
+div[data-ok-markdown][data-ok-images]?[data-ok-images-ratio]?[data-ok-gfm="false"]?[data-ok-raw-html]?[data-ok-skip-html]?[data-ok-unwrap-disallowed]?[data-ok-external-links]?[data-ok-allowed-elements]?[data-ok-disallowed-elements]?
+  …rendered content: h1–h6, p, a, strong, em, del, code, ul / ol › li, blockquote, hr, img (or
+    span[data-ok-image] › span[data-ok-image-placeholder] + img with `images="image"`), br,
     table › thead / tbody › tr › th / td (style text-align from the column alignment),
     pre › code[class="hljs language-x"] › span.hljs-* (with a highlighter),
     li.task-list-item › label › input[type=checkbox][disabled][checked]? + text,
@@ -40,6 +41,8 @@ Root: `data-ok-markdown`. Unknown values fall back to the default.
 | `skipHtml` | `data-ok-skip-html` | flag | boolean | off | HTML in the Markdown is dropped. |
 | `unwrapDisallowed` | `data-ok-unwrap-disallowed` | flag | boolean | off | Elements removed by the element filters leave their children in place. |
 | `externalLinks` | `data-ok-external-links` | flag | boolean | off | Absolute `http(s)` links open in a new tab (`target="_blank"`, `rel="noopener noreferrer"`). |
+| `images` | `data-ok-images="…"` | style | `native` `image` | — | `image`: pictures render as Image components (lazy, placeholder, effect). `native`: plain `img`. |
+| `imageRatio` | `data-ok-images-ratio="…"` | style | `1/1` `2/3` `3/2` `3/4` `4/3` `4/6` `6/4` `9/16` `16/9` `9/21` `21/9` | — | With `images` `image`: the aspect ratio the pictures are cropped to (default: their own). |
 | `value` | `data-ok-markdown-source` · event `ok:markdown:render` | state | — | — | The Markdown: React `children`; HTML the text of the source element. |
 <!-- /options:markdown -->
 
@@ -64,7 +67,9 @@ API mapping (react-markdown): kept `children`, `remarkPlugins`, `rehypePlugins`,
 `gfm` (on: the reference renders GFM, and HTML can't pass remark-gfm through attributes),
 `rawHtml` + `sanitizeSchema` (the reference renders HTML; rehype-raw + allow list built in),
 `externalLinks` (the reference's links open in a new tab), `highlighter` (the reference highlights
-code), `onError` (MarkdownHooks). Not applicable: `className` (v9, removed in v10; the root div
+code), `onError` (MarkdownHooks), `images` + `imageRatio` (the reference renders pictures through
+its Image, 16/9: `image` composes Owlky's Image, ADR-0038; React maps `img` to `Image` unless
+`components.img` is set, HTML builds the Image markup and the Image runtime mounts it). Not applicable: `className` (v9, removed in v10; the root div
 takes every div prop).
 
 ## Layout and tokens
@@ -76,7 +81,7 @@ Lists: padding-left 16px, margin-bottom 12px, items line-height 2. Task boxes 16
 `grey-500 / 0.24`, checked `primary-main` with a check of two gradient strokes in
 `primary-contrast-text` (no image: CSP). Blockquote: padding 24 24 24 64px, 8px left border
 `grey-500 / 0.08`, `text-secondary`, 24px / 1.5, a 72px “ in `text-disabled`. Hr: 32px margins,
-`divider`. Images: max-width 100%, radius xl. Inline code: `grey-500 / 0.2`, text primary, mono
+`divider`. Images: max-width 100%, radius xl (as Image: the Image's root has the radius). Inline code: `grey-500 / 0.2`, text primary, mono
 0.875em, radius xs. Code blocks: `grey-900`, white mono body2 / 1.5, padding 24px, radius md,
 lines wrap; syntax colors as the Editor (palette `*-light`, ≥ 4.5:1 on grey-900). Tables: width
 100%, body2, 1px `divider` borders, cells 8px, header bold, odd body rows `bg-neutral`.
