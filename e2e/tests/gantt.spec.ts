@@ -62,7 +62,7 @@ for (const impl of implementations) {
       const grid = page.getByRole("treegrid", { name: "Website relaunch" });
       await expect(grid).toBeVisible();
       // Tab into the grid: the first row holds the tab stop.
-      await page.getByRole("button", { name: "Zoom in" }).focus();
+      await page.getByRole("button", { name: "Download SVG" }).focus();
       await page.keyboard.press("Tab");
       const discovery = grid.getByRole("row", { name: /^Discovery/ });
       await expect(discovery).toBeFocused();
@@ -85,7 +85,7 @@ for (const impl of implementations) {
       // The grid is one tab stop: Shift + Tab leaves it in one step (Firefox keeps the focus when
       // Tab leaves a document's last control, so the test goes backwards).
       await page.keyboard.press("Shift+Tab");
-      await expect(page.getByRole("button", { name: "Zoom in" })).toBeFocused();
+      await expect(page.getByRole("button", { name: "Download SVG" })).toBeFocused();
     });
 
     test("zooms with the toolbar and keeps the focused task in view", async ({ page }) => {
@@ -207,4 +207,32 @@ for (const impl of implementations)
       .locator("[data-ok-gantt-bar]")
       .dblclick();
     await expect(page.getByRole("dialog", { name: "Edit Build" })).toBeVisible();
+  });
+
+for (const impl of implementations)
+  test(`large project (${impl}): rows virtualize and the toolbar downloads a PNG`, async ({
+    page,
+    browserName,
+  }) => {
+    await openStory(page, storyId(impl, "gantt", "large-project"));
+    const grid = page.getByRole("treegrid", { name: "Product year" });
+    await expect(grid).toHaveAttribute("aria-rowcount", "169");
+    const rows = grid.locator("[data-ok-gantt-row]");
+    expect(await rows.count()).toBeLessThan(40);
+    // Scrolling renders later rows; their indexes stay the project's.
+    await page.locator("[data-ok-gantt-viewport]").evaluate((viewport) => {
+      viewport.scrollTop = 3000;
+    });
+    await expect
+      .poll(async () => Number(await rows.first().getAttribute("aria-rowindex")))
+      .toBeGreaterThan(50);
+    // The keyboard reaches the last row.
+    await rows.first().focus();
+    await page.keyboard.press("End");
+    await expect(grid.getByRole("row", { name: /^Review/ }).last()).toBeFocused();
+    await expect(grid.locator('[aria-rowindex="169"]')).toBeFocused();
+    if (browserName === "webkit") return; // WebKit's headless downloads are not reported.
+    const download = page.waitForEvent("download");
+    await page.getByRole("button", { name: "Download PNG" }).click();
+    expect((await download).suggestedFilename()).toBe("product-year.png");
   });

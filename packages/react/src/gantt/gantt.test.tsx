@@ -66,6 +66,19 @@ function Editable({ onTaskEdit }: { onTaskEdit?: (id: string) => void }) {
   );
 }
 
+const MANY: GanttTask[] = Array.from({ length: 150 }, (_, i) => ({
+  id: `t${i}`,
+  name: `Task ${i}`,
+  startTime: "2025-03-03",
+  endTime: "2025-03-05",
+}));
+/** Scrolls the viewport and waits for the redraw (the owners redraw on the next frame). */
+async function scrollTo(viewport: HTMLElement, top: number) {
+  viewport.scrollTop = top;
+  viewport.dispatchEvent(new Event("scroll"));
+  await new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 0)));
+}
+
 /** A controlled Gantt that prints its selection. */
 function Demo() {
   const [selected, setSelected] = useState<string[]>([]);
@@ -344,6 +357,66 @@ describe("Gantt", () => {
     expect(element.querySelector("[data-ok-gantt-handle]")).toBeNull();
     // Without callbacks, edits change nothing.
     drag(row("Alpha").querySelector("[data-ok-gantt-bar]") as HTMLElement, 72);
+  });
+
+  it("virtualizes rows with a height and keeps every row's index", async () => {
+    render(<Gantt tasks={MANY} label="Large" today="2025-03-04" height={240} />);
+    const element = screen
+      .getByRole("treegrid", { name: "Large" })
+      .closest("[data-ok-gantt]") as HTMLElement;
+    expect(element).toHaveAttribute("data-ok-height", "240");
+    const rows = () => element.querySelectorAll("[data-ok-gantt-row]");
+    expect(rows().length).toBeLessThan(40);
+    expect(screen.getByRole("treegrid")).toHaveAttribute("aria-rowcount", "151");
+    const viewport = element.querySelector("[data-ok-gantt-viewport]") as HTMLElement;
+    expect(viewport.getBoundingClientRect().height).toBeLessThanOrEqual(242);
+    await act(async () => scrollTo(viewport, 3000));
+    element.querySelector("[data-ok-gantt-row]")?.dispatchEvent(new Event("scroll"));
+    expect(Number(rows()[0]?.getAttribute("aria-rowindex"))).toBeGreaterThan(50);
+    // The keyboard reaches rows outside the window.
+    (element.querySelector('[data-ok-gantt-row][tabindex="0"]') as HTMLElement).focus();
+    await act(async () => {
+      await userEvent.keyboard("{End}");
+      await new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 0)));
+    });
+    expect(document.activeElement?.getAttribute("data-ok-task-id")).toBe("t149");
+  });
+
+  it("renders every row with disableVirtualization and downloads from the toolbar", async () => {
+    render(
+      <Gantt
+        tasks={MANY.slice(0, 30)}
+        label="All rows"
+        height={200}
+        disableVirtualization
+        toolbar
+        exportFormat="csv"
+      />,
+    );
+    const element = screen
+      .getByRole("treegrid", { name: "All rows" })
+      .closest("[data-ok-gantt]") as HTMLElement;
+    expect(element.querySelectorAll("[data-ok-gantt-row]")).toHaveLength(30);
+    const clicks: string[] = [];
+    vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(function (
+      this: HTMLAnchorElement,
+    ) {
+      clicks.push(this.download);
+    });
+    await userEvent.click(screen.getByRole("button", { name: "Download CSV" }));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(clicks).toEqual(["all-rows.csv"]);
+    // Outside a gesture the download is refused quietly; scroll events of other parts are ignored.
+    vi.spyOn(navigator, "userActivation", "get").mockReturnValue({
+      isActive: false,
+    } as UserActivation);
+    screen.getByRole("button", { name: "Download CSV" }).click();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(clicks).toHaveLength(1);
+    element
+      .querySelector("[data-ok-gantt-row]")
+      ?.dispatchEvent(new Event("scroll", { bubbles: false }));
+    vi.restoreAllMocks();
   });
 
   it("cleans up the controller on unmount", async () => {

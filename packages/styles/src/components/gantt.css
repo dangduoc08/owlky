@@ -195,8 +195,12 @@
   }
 
   /* Body: the SVG behind the rows. */
+  /* A virtualized window: the rows above it are padding, the body keeps every row's height. */
   :where([data-ok-gantt-body]) {
     position: relative;
+    box-sizing: border-box;
+    min-height: var(--_ok-gantt-body, 0);
+    padding-top: var(--_ok-gantt-offset, 0);
     background-color: var(--ok-bg-paper);
   }
 

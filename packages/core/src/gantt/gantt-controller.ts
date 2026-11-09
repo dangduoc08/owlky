@@ -24,6 +24,20 @@ export interface GanttControllerCallbacks extends GanttEditCallbacks {
   onZoom?(direction: 1 | -1): void;
   /** Tooltip content of a task (`undefined`: no tooltip). */
   tooltip?(id: string): GanttTooltipContent | undefined;
+  /**
+   * Every visible row in order (a virtualized Gantt renders only some of them): the keyboard and
+   * range selection move through this list. Default: the rendered rows.
+   */
+  rowList?(): readonly GanttRowEntry[];
+  /** The selected ids, also of rows a window doesn't render. Default: the rendered rows. */
+  selection?(): readonly string[];
+  /** The toolbar's download button. */
+  onExport?(): void;
+}
+
+export interface GanttRowEntry {
+  readonly id: string;
+  readonly level: number;
 }
 
 export interface GanttController {
@@ -62,27 +76,27 @@ export function createGanttController(
     rowsOf(root)
       .filter((row) => row.getAttribute("aria-selected") === "true")
       .map(idOf);
+  const entries = (): readonly GanttRowEntry[] =>
+    callbacks.rowList?.() ?? rowsOf(root).map((row) => ({ id: idOf(row), level: levelOf(row) }));
 
-  const activate = (row: HTMLElement) => {
-    const id = idOf(row);
+  const activate = (id: string) => {
     pendingFocus = id;
     callbacks.onActiveChange?.(id);
     // Owners that render synchronously have already re-rendered; focus right away when possible.
     sync();
   };
 
-  const select = (row: HTMLElement, mode: GanttSelectionMode) => {
-    const id = idOf(row);
-    const current = selectedIds();
+  const select = (id: string, mode: GanttSelectionMode) => {
+    const current = [...(callbacks.selection?.() ?? selectedIds())];
     let next: string[];
     if (mode === "toggle")
       next = current.includes(id) ? current.filter((x) => x !== id) : [...current, id];
     else if (mode === "range" && anchor !== undefined) {
-      const ids = rowsOf(root).map(idOf);
+      const ids = entries().map((entry) => entry.id);
       const a = ids.indexOf(anchor);
       const b = ids.indexOf(id);
       next = a < 0 ? [id] : ids.slice(Math.min(a, b), Math.max(a, b) + 1);
-    } else if (mode === "all") next = rowsOf(root).map(idOf);
+    } else if (mode === "all") next = entries().map((entry) => entry.id);
     else next = [id];
     if (mode !== "range" && mode !== "all") anchor = id;
     callbacks.onSelectionChange?.(next, mode);
@@ -104,13 +118,20 @@ export function createGanttController(
       callbacks.onZoom?.(zoom.getAttribute("data-ok-gantt-zoom") === "in" ? 1 : -1);
       return;
     }
+    if (target.closest?.("[data-ok-gantt-export]")) {
+      callbacks.onExport?.();
+      return;
+    }
     const row = target.closest?.<HTMLElement>(ROW);
     if (!row || !root.contains(row)) return;
     pendingFocus = idOf(row);
     if (target.closest("[data-ok-gantt-toggle]")) toggle(row);
     if (selectable() && !editing.dragging)
-      select(row, event.shiftKey ? "range" : event.ctrlKey || event.metaKey ? "toggle" : "replace");
-    activate(row);
+      select(
+        idOf(row),
+        event.shiftKey ? "range" : event.ctrlKey || event.metaKey ? "toggle" : "replace",
+      );
+    activate(idOf(row));
   };
 
   const onKeyDown = (event: KeyboardEvent) => {
@@ -122,10 +143,11 @@ export function createGanttController(
       pendingFocus = undefined;
       return;
     }
-    const rows = rowsOf(root);
-    const at = rows.indexOf(row);
+    const rows = entries();
+    const id = idOf(row);
+    const at = rows.findIndex((entry) => entry.id === id);
     const level = levelOf(row);
-    let next: HTMLElement | undefined;
+    let next: GanttRowEntry | undefined;
     switch (event.key) {
       case "ArrowDown":
         next = rows[at + 1];
@@ -148,14 +170,14 @@ export function createGanttController(
       case "ArrowRight":
         if (!toggle(row, true)) {
           const child = rows[at + 1];
-          if (row.getAttribute("aria-expanded") === "true" && child && levelOf(child) > level)
+          if (row.getAttribute("aria-expanded") === "true" && child && child.level > level)
             next = child;
         }
         break;
       case "ArrowLeft":
         if (!toggle(row, false))
           for (let i = at - 1; i >= 0; i--)
-            if (levelOf(rows[i] as HTMLElement) < level) {
+            if ((rows[i] as GanttRowEntry).level < level) {
               next = rows[i];
               break;
             }
@@ -165,21 +187,21 @@ export function createGanttController(
         break;
       case " ":
         if (!selectable()) return;
-        select(row, event.shiftKey ? "range" : "toggle");
+        select(id, event.shiftKey ? "range" : "toggle");
         break;
       case "a":
         if (!(event.ctrlKey || event.metaKey) || !selectable()) return;
-        select(row, "all");
+        select(id, "all");
         break;
       default:
         pendingFocus = undefined;
         return;
     }
     event.preventDefault();
-    if (next && next !== row) {
+    if (next && next.id !== id) {
       if (event.shiftKey && selectable() && /^(Arrow|Page|Home|End)/.test(event.key))
-        select(next, "range");
-      activate(next);
+        select(next.id, "range");
+      activate(next.id);
     } else sync();
   };
 
@@ -306,7 +328,10 @@ export function createGanttController(
     if (pendingFocus === undefined) return;
     const row = rowById(pendingFocus);
     if (!row) {
-      pendingFocus = undefined;
+      // A row outside a virtualized window comes with the owner's next render; a row that went
+      // away (collapsed) never does.
+      const id = pendingFocus;
+      if (!entries().some((entry) => entry.id === id)) pendingFocus = undefined;
       return;
     }
     if (row.getAttribute("tabindex") !== "0") return;

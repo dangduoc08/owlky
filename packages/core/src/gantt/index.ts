@@ -8,6 +8,7 @@ export {
   ganttShortDate,
 } from "./gantt-date.js";
 export * from "./gantt-edit.js";
+export * from "./gantt-export.js";
 export * from "./gantt-model.js";
 export * from "./gantt-options.js";
 export * from "./gantt-render.js";

@@ -80,4 +80,5 @@ export const BarLabels: StoryObj = story("bar-labels");
 export const CustomColors: StoryObj = story("custom-colors");
 export const Selection: StoryObj = story("selection");
 export const TaskListColumns: StoryObj = story("task-list-columns");
+export const LargeProject: StoryObj = story("large-project");
 export const Editing: StoryObj = editing;

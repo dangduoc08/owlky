@@ -5204,6 +5204,24 @@ export const ganttOptions = defineOptions("gantt", "data-ok-gantt", {
     "Rows can be selected: click, Ctrl or Cmd + click, Shift + click, Space and Ctrl + A.",
   ),
   disableTooltip: flag("data-ok-disable-tooltip", "No tooltip on bar hover or row focus."),
+  height: number(
+    "data-ok-height",
+    undefined,
+    "Height of the chart's scroll area in px (default: as tall as its rows). With a height, only the rows in view are rendered.",
+    { min: 80 },
+  ),
+  disableVirtualization: flag(
+    "data-ok-disable-virtualization",
+    "Renders every row even with a `height`.",
+  ),
+  exportFormat: style(
+    "data-ok-export-format",
+    ["svg", "png", "csv"] as const,
+    "svg",
+    "Format of the toolbar's download button: `svg`, `png` or `csv` (the data table).",
+    { optional: true },
+  ),
+  disableExport: flag("data-ok-disable-export", "No download button in the toolbar."),
   editable: flag(
     "data-ok-editable",
     "Tasks can be edited: drag bars, their edges and their progress handles, or press Enter on a row (arrows move, Shift + arrows change the end, Page Up / Page Down the progress, Enter saves, Escape cancels). Double click or F2 asks for your own edit form.",
@@ -5250,6 +5268,10 @@ export interface GanttAnatomyOptions {
   selection?: boolean | undefined;
   disableTooltip?: boolean | undefined;
   editable?: boolean | undefined;
+  height?: number | undefined;
+  disableVirtualization?: boolean | undefined;
+  exportFormat?: "svg" | "png" | "csv" | undefined;
+  disableExport?: boolean | undefined;
 }
 
 /** `data-ok-*` attributes of a Gantt root (behavior options are written by the owner when off). */

@@ -82,6 +82,10 @@ Root: `data-ok-gantt`. Unknown values fall back to the default.
 | `toolbar` | `data-ok-toolbar` | flag | boolean | off | A toolbar with zoom out and zoom in buttons. |
 | `selection` | `data-ok-selection` | flag | boolean | off | Rows can be selected: click, Ctrl or Cmd + click, Shift + click, Space and Ctrl + A. |
 | `disableTooltip` | `data-ok-disable-tooltip` | flag | boolean | off | No tooltip on bar hover or row focus. |
+| `height` | `data-ok-height="…"` | number | number | — | Height of the chart's scroll area in px (default: as tall as its rows). With a height, only the rows in view are rendered. |
+| `disableVirtualization` | `data-ok-disable-virtualization` | flag | boolean | off | Renders every row even with a `height`. |
+| `exportFormat` | `data-ok-export-format="…"` | style | `svg` `png` `csv` | — | Format of the toolbar's download button: `svg`, `png` or `csv` (the data table). |
+| `disableExport` | `data-ok-disable-export` | flag | boolean | off | No download button in the toolbar. |
 | `editable` | `data-ok-editable` | flag | boolean | off | Tasks can be edited: drag bars, their edges and their progress handles, or press Enter on a row (arrows move, Shift + arrows change the end, Page Up / Page Down the progress, Enter saves, Escape cancels). Double click or F2 asks for your own edit form. |
 | `taskDrag` | `data-ok-task-drag="false"` turns it off | behavior | boolean | on | With `editable`: bars move by drag and arrow keys. |
 | `taskResize` | `data-ok-task-resize="false"` turns it off | behavior | boolean | on | With `editable`: bar edges change the dates (drag, Shift + arrow keys). |
@@ -114,7 +118,7 @@ palette name), `pixelsPerDay`, `rowHeight`, `barMargin`, `tasksContainerWidth`, 
 `locale.messages` → `localeText`, `zoomIn()` / `zoomOut()` / `scrollToTask()` kept (HTML instance).
 Not applicable: colors and fonts as options (tokens and palettes), `canvasStyle`, `theme`,
 `tooltipTemplate` / `barLabel.render` (HTML strings), `persistState` (no storage, ADR-0007),
-`inputDateFormat` (ISO dates). Phase 2 adds `editable` (`enableTaskDrag` / `enableTaskResize` / `enableProgressDrag` → `taskDrag`, `taskResize`, `progressDrag` behaviors), `onTaskChange` (upstream `taskUpdate` events) and `onTaskEdit` (upstream `enableTaskEdit` dialog, the form is yours), `updateTask()` (HTML). Deferred (roadmap): virtualization and export
+`inputDateFormat` (ISO dates). Phase 2 adds `editable` (`enableTaskDrag` / `enableTaskResize` / `enableProgressDrag` → `taskDrag`, `taskResize`, `progressDrag` behaviors), `onTaskChange` (upstream `taskUpdate` events) and `onTaskEdit` (upstream `enableTaskEdit` dialog, the form is yours), `updateTask()` (HTML). Phase 3 adds `height` (upstream `height`; bounds the scroll area and virtualizes rows), `disableVirtualization`, `exportFormat` (kept) / `disableExport` (upstream `enableExport`) and `exportChart(format)` (kept; HTML instance, core `exportGantt(root, layout, format)`). Deferred (roadmap): the rest below
 (phase 3), sorting and filtering, grouping, custom column renderers, inline editing, CRUD toolbar,
 context menu, undo / redo, split tasks, rollups, annotations, crosshair, draw tasks and links,
 critical path in working days, right to left, sub-day scales.
@@ -186,6 +190,18 @@ Milestones move only; summaries never edit. Touch: `touch-action: none` on edita
 click / double tap / F2 → `onTaskEdit` (the single-pointer path, WCAG 2.5.7). The edit mode
 announces its keys and each draft in `div[data-ok-gantt-status][role=status]` (last child of the
 root). Right to left mirrors the arrows and drags.
+
+Virtualization (phase 3, `height`): the viewport gets `--_ok-gantt-height` (max height); the body
+keeps every row's height (`--_ok-gantt-body`) and pads the rows above the window
+(`--_ok-gantt-offset`); `ganttRowWindow` picks the rows in view plus 8 on each side from the scroll
+position (the `height` before measuring, so server, React and HTML render the same first window).
+Rows keep their `aria-rowindex`; the keyboard walks the full list (`rowList`) and the owner renders
+the window around the row it moves to; the tab stop falls back to the window's first row while the
+active row is scrolled away. Every link is drawn. Export (phase 3): a toolbar button
+`button[data-ok-gantt-export="svg|png|csv"]` (aria-label "Download SVG"…); the SVG file is built
+with DOM methods from the layout of every row (no window) with colors read from computed styles;
+PNG draws it on a canvas; CSV is the data table (formulas neutralized). Downloads need a user
+gesture.
 
 ## Events / API
 HTML events: `ok:gantt:taskchange` (cancelable; `{ id, change: { startTime, endTime?, progress? }, source:

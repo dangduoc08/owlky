@@ -186,6 +186,15 @@ export function EditablePlan() {
 }`,
   },
   {
+    id: "large",
+    title: "Show large projects and download them",
+    body: "Set `height` to give the chart a scroll area of that many pixels. The chart then renders only the rows in view, plus a few on each side, so projects with thousands of tasks stay fast. Screen readers still hear each row's position in the whole project, and the keyboard reaches every row. Set `disableVirtualization` to render every row anyway. With `toolbar`, a download button saves the whole chart, every row included, in the `exportFormat` you choose: `svg` (the default), `png`, or `csv` for the data table. Set `disableExport` to leave the button out. In HTML, `exportChart(format)` on the instance downloads too. Browsers only allow downloads during a click or a key press.",
+    html: htmlGantt(
+      'data-ok-view="week" data-ok-bar-label="right" data-ok-height="400" data-ok-toolbar data-ok-export-format="png"',
+    ),
+    react: reactGantt("LargePlan", ' height={400} toolbar exportFormat="png"'),
+  },
+  {
     id: "layout",
     title: "Choose columns and labels",
     body: "`columns` picks the task-list columns from `name`, `startTime`, `endTime`, `duration` and `progress`. The name always comes first. `tasksContainerWidth` sets the width of the task list (440px by default): the name column takes the space the other columns leave. On screens, or containers, narrower than 600px, only the name column shows, and the timeline scrolls sideways inside the chart. `barLabel` places the task names: `right` of the bars (the default), `left` of them, `inside` them, or `auto`, inside when the name fits. `rowHeight` and `barMargin` set the size of rows and bars.",
@@ -215,6 +224,7 @@ export function EditablePlan() {
 - **\`ok:gantt:taskchange\`** (cancelable) fires when an edit asks to change a task, with \`detail.id\`, \`detail.change\` (\`startTime\`, \`endTime\`, \`progress\`) and \`detail.source\` (\`drag\`, \`resize\`, \`progress\` or \`keyboard\`). Unless you call \`preventDefault()\`, the runtime writes the change into the table.
 - **\`ok:gantt:edit\`** fires with \`detail.id\` on a double click, a double tap or F2: open your edit form.
 - **\`ok:gantt:zoom\`** (cancelable) fires with \`detail.pixelsPerDay\` when a zoom button is selected.
+- **Downloads:** the toolbar's button and the instance's \`exportChart(format)\` save the whole chart. They return a promise that rejects outside a click or a key press.
 - **Instance:** \`runtime.get(element, "gantt")\` returns \`{ tasks, collapsed, setCollapsed(ids), selected, setSelected(ids), pixelsPerDay, zoomIn(), zoomOut(), scrollToTask(id), setLocaleText(text), refresh(), updateTask(id, change) }\`. The methods don't fire events. The chart redraws by itself when the table or an option changes.
 - **React:** \`onTaskChange(id, change, source)\`, \`onTaskEdit(id)\`, \`onCollapsedChange(ids)\`, \`onSelectionChange(ids, mode)\` and \`onZoomChange(pixelsPerDay)\`. Pass \`collapsed\`, \`selected\` or \`pixelsPerDay\` to control that state, or \`defaultCollapsed\`, \`defaultSelected\` or \`defaultPixelsPerDay\` for its first value.`,
   },
@@ -298,6 +308,18 @@ const PREVIEWS = {
       <Gantt label="Budget plan, editable" tasks={TASKS} view="day" editable today="2025-03-07" />
     </Preview>
   ),
+  large: () => (
+    <Preview>
+      <Gantt
+        label="Budget plan, downloadable"
+        tasks={TASKS}
+        height={200}
+        toolbar
+        exportFormat="png"
+        today="2025-03-07"
+      />
+    </Preview>
+  ),
   layout: () => (
     <Preview>
       <Gantt
@@ -357,6 +379,13 @@ const PREVIEWS = {
           html: "data-ok-holidays",
           type: "(string | Date)[]",
           description: "Extra days off, shaded at day and week zoom.",
+        },
+        {
+          react: "exportGantt(root, layout, format)",
+          html: "exportChart(format)",
+          type: "function",
+          description:
+            "Downloads the chart as SVG, PNG or CSV during a user gesture (core function in React, instance method in HTML).",
         },
         {
           react: "localeText",

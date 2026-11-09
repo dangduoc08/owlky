@@ -1,3 +1,4 @@
+import type { GanttTask } from "@owlky/core";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { userEvent } from "vitest/browser";
 import { createRuntime } from "../../runtime/runtime.js";
@@ -55,6 +56,19 @@ function drag(element: Element, dx: number) {
   element.dispatchEvent(new PointerEvent("pointerdown", { ...init, clientX: x }));
   element.dispatchEvent(new PointerEvent("pointermove", { ...init, clientX: x + dx }));
   element.dispatchEvent(new PointerEvent("pointerup", { ...init, clientX: x + dx }));
+}
+
+const MANY: GanttTask[] = Array.from({ length: 150 }, (_, i) => ({
+  id: `t${i}`,
+  name: `Task ${i}`,
+  startTime: "2025-03-03",
+  endTime: "2025-03-05",
+}));
+/** Scrolls the viewport and waits for the redraw (the owners redraw on the next frame). */
+async function scrollTo(viewport: HTMLElement, top: number) {
+  viewport.scrollTop = top;
+  viewport.dispatchEvent(new Event("scroll"));
+  await new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 0)));
 }
 
 const rootOf = (host: Element) => host.querySelector("[data-ok-gantt]") as HTMLElement;
@@ -327,6 +341,56 @@ describe("gantt runtime", () => {
     start();
     drag(rowOf(host, "x").querySelector("[data-ok-gantt-bar]") as HTMLElement, 36);
     expect(rootOf(host).querySelectorAll("td")[1]).toHaveAttribute("data-ok-value", "2025-03-04");
+  });
+
+  it("virtualizes rows with data-ok-height and downloads through the instance", async () => {
+    const rows = MANY.map(
+      (task) =>
+        `<tr data-ok-task-id="${task.id}"><td>${task.name}</td><td>${task.startTime}</td><td>${task.endTime}</td></tr>`,
+    ).join("");
+    const host = mount(
+      `<div data-ok-gantt data-ok-view="day" data-ok-bar-label="right" data-ok-today="2025-03-04" data-ok-height="240" data-ok-toolbar data-ok-export-format="png"><table data-ok-gantt-data><caption>Large</caption><thead><tr><th data-ok-gantt-field="name">Task</th><th data-ok-gantt-field="startTime">Start</th><th data-ok-gantt-field="endTime">End</th></tr></thead><tbody>${rows}</tbody></table></div>`,
+    );
+    start();
+    const root = rootOf(host);
+    const count = () => root.querySelectorAll("[data-ok-gantt-row]").length;
+    expect(count()).toBeLessThan(40);
+    const viewport = root.querySelector("[data-ok-gantt-viewport]") as HTMLElement;
+    await scrollTo(viewport, 3000);
+    expect(
+      Number(root.querySelector("[data-ok-gantt-row]")?.getAttribute("aria-rowindex")),
+    ).toBeGreaterThan(50);
+    (root.querySelector('[data-ok-gantt-row][tabindex="0"]') as HTMLElement).focus();
+    await userEvent.keyboard("{End}");
+    expect(document.activeElement?.getAttribute("data-ok-task-id")).toBe("t149");
+    expect(root.querySelector("[data-ok-gantt-export]")).toHaveAttribute(
+      "aria-label",
+      "Download PNG",
+    );
+    const clicks: string[] = [];
+    vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(function (
+      this: HTMLAnchorElement,
+    ) {
+      clicks.push(this.download);
+    });
+    await userEvent.click(root.querySelector("[data-ok-gantt-export]") as HTMLElement);
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    vi.spyOn(navigator, "userActivation", "get").mockReturnValue({
+      isActive: true,
+    } as UserActivation);
+    await instanceOf(host).exportChart("csv");
+    await instanceOf(host).exportChart();
+    // A refused download (no gesture) from the button is quiet.
+    vi.spyOn(navigator, "userActivation", "get").mockReturnValue({
+      isActive: false,
+    } as UserActivation);
+    (root.querySelector("[data-ok-gantt-export]") as HTMLElement).click();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(clicks).toEqual(["large.png", "large.csv", "large.png"]);
+    root.setAttribute("data-ok-disable-virtualization", "");
+    await settle();
+    expect(count()).toBe(150);
+    vi.restoreAllMocks();
   });
 
   it("has CSP-safe snippets that draw without axe violations", async () => {

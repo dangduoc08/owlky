@@ -1,11 +1,15 @@
 import {
   createGanttController,
+  exportGantt,
   GANTT_TEXT_ATTRIBUTES,
   type GanttBarLabel,
   type GanttColumnKey,
+  type GanttExportFormat,
   type GanttItem,
+  type GanttLayout,
   type GanttLocaleText,
   type GanttNode,
+  type GanttRenderOptions,
   type GanttSelectionMode,
   type GanttTask,
   type GanttTaskChange,
@@ -16,9 +20,11 @@ import {
   ganttModel,
   ganttOptions,
   ganttRenderOptions,
+  ganttRowWindow,
   ganttShortDate,
   ganttTableIds,
   ganttTooltip,
+  ganttVisibleItems,
   ganttZoom,
   readBehavior,
   readGanttTable,
@@ -53,6 +59,8 @@ export interface GanttInstance extends ComponentInstance {
   refresh(): void;
   /** Writes a change into the task's table row and redraws (no event), as your edit form saves. */
   updateTask(id: string, change: GanttTaskChange): void;
+  /** Downloads the chart (every row) as SVG, PNG or CSV; only during a user gesture. */
+  exportChart(format?: GanttExportFormat): Promise<void>;
 }
 
 const SVG = "http://www.w3.org/2000/svg";
@@ -149,6 +157,11 @@ export const gantt = defineComponent<GanttInstance>({
     let built: Element[] = [];
     let active: string | undefined;
     let localeText: Partial<GanttLocaleText> = {};
+    // Virtualization: the scroll position and the scroll area's height (0 until measured).
+    let scroll = { top: 0, height: 0 };
+    let follow = false;
+    let full: GanttRenderOptions | undefined;
+    let visibleIds: { id: string; level: number }[] = [];
     let current = { model: ganttModel([]), text: ganttLocaleText(), density: 16, locale: "en-US" };
     const tooltip = document.createElement("div");
     tooltip.setAttribute("data-ok-gantt-tooltip", "");
@@ -182,6 +195,9 @@ export const gantt = defineComponent<GanttInstance>({
         taskDrag: readBehavior(element, o.taskDrag),
         taskResize: readBehavior(element, o.taskResize),
         progressDrag: readBehavior(element, o.progressDrag),
+        height: numberOf(o.height),
+        exportFormat: readStyle(element, o.exportFormat) as GanttExportFormat,
+        disableExport: element.hasAttribute(o.disableExport.attr),
         columns: text(GANTT_TEXT_ATTRIBUTES.columns) as GanttColumnKey[] | string | undefined,
         today: text(GANTT_TEXT_ATTRIBUTES.today),
         locale: text(GANTT_TEXT_ATTRIBUTES.locale),
@@ -199,15 +215,33 @@ export const gantt = defineComponent<GanttInstance>({
       current = { model, text, density: resolved.density, locale: resolved.locale };
       const label =
         data?.caption?.textContent?.trim() || element.getAttribute("aria-label") || "Gantt";
-      const layout = renderGantt(model, {
+      const collapsed = new Set(data ? ganttTableIds(data, "data-ok-collapsed") : []);
+      const visible = ganttVisibleItems(model, collapsed);
+      visibleIds = visible.map((item) => ({ id: item.id, level: item.level }));
+      full = {
         ...resolved,
         label,
-        collapsed: new Set(data ? ganttTableIds(data, "data-ok-collapsed") : []),
+        collapsed,
         selected: new Set(
           resolved.selection && data ? ganttTableIds(data, "data-ok-selected") : [],
         ),
         active,
         text,
+      };
+      const windowed =
+        resolved.height !== undefined && !element.hasAttribute(o.disableVirtualization.attr);
+      const layout = renderGantt(model, {
+        ...full,
+        window: windowed
+          ? ganttRowWindow({
+              scrollTop: scroll.top,
+              height: scroll.height || (resolved.height as number),
+              rowHeight: resolved.rowHeight,
+              total: visible.length,
+              // The keyboard's row stays rendered until the page scrolls on its own.
+              active: follow ? visible.findIndex((item) => item.id === active) : undefined,
+            })
+          : undefined,
       });
       active = layout.active;
       // Root children: the table (the page's), the built nodes, the tooltip.
@@ -283,6 +317,7 @@ export const gantt = defineComponent<GanttInstance>({
     const controller = createGanttController(element, {
       onActiveChange(id) {
         active = id;
+        follow = true;
         draw();
       },
       onToggle(id, expanded) {
@@ -318,10 +353,42 @@ export const gantt = defineComponent<GanttInstance>({
         emit("edit", { id });
       },
       editText: () => current.text,
+      rowList: () => visibleIds,
+      selection: () => ids("data-ok-selected"),
+      onExport() {
+        exportChart().catch(() => {});
+      },
       formatDay: (day) => ganttShortDate(day, current.locale),
     });
 
     // Redraw on data and option changes (the runtime's own writes are taken back in `draw`).
+    /** The whole chart (no row window) for downloads. */
+    function exportChart(
+      format = (full as GanttRenderOptions).exportFormat as GanttExportFormat,
+    ): Promise<void> {
+      const layout: GanttLayout = renderGantt(current.model, {
+        ...(full as GanttRenderOptions),
+        window: undefined,
+      });
+      return exportGantt(element, layout, format);
+    }
+    let frame = 0;
+    element.addEventListener(
+      "scroll",
+      (event) => {
+        const target = event.target as HTMLElement;
+        if (!target.matches?.("[data-ok-gantt-viewport]") || full?.height === undefined) return;
+        cancelAnimationFrame(frame);
+        frame = requestAnimationFrame(() => {
+          scroll = { top: target.scrollTop, height: target.clientHeight };
+          follow = false;
+          draw();
+        });
+      },
+      { capture: true, signal },
+    );
+    signal.addEventListener("abort", () => cancelAnimationFrame(frame));
+
     const changes = new MutationObserver(() => draw());
     const observe = () => {
       changes.observe(element, { attributes: true, attributeFilter: OPTION_ATTRIBUTES });
@@ -373,6 +440,7 @@ export const gantt = defineComponent<GanttInstance>({
         localeText = { ...localeText, ...text };
         draw();
       },
+      exportChart,
       refresh() {
         observe();
         draw();
