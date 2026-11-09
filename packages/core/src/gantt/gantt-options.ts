@@ -45,6 +45,14 @@ export interface GanttOptionValues {
   readonly projectBoundary?: boolean | undefined;
   readonly toolbar?: boolean | undefined;
   readonly selection?: boolean | undefined;
+  readonly editable?: boolean | undefined;
+  readonly height?: number | undefined;
+  readonly disableVirtualization?: boolean | undefined;
+  readonly exportFormat?: "svg" | "png" | "csv" | undefined;
+  readonly disableExport?: boolean | undefined;
+  readonly taskDrag?: boolean | undefined;
+  readonly taskResize?: boolean | undefined;
+  readonly progressDrag?: boolean | undefined;
   /** Task-list columns (default name, start, duration, progress). */
   readonly columns?: readonly GanttColumnKey[] | string | undefined;
   /** The day of the today line (default the current day). */
@@ -129,6 +137,16 @@ export function ganttRenderOptions(
     projectBoundary: values.projectBoundary === true,
     toolbar: values.toolbar === true,
     selection: values.selection === true,
+    editable: values.editable === true,
+    height:
+      Number.isFinite(values.height) && (values.height as number) >= 80 ? values.height : undefined,
+    exportFormat: (["svg", "png", "csv"] as const).includes(values.exportFormat as "svg")
+      ? values.exportFormat
+      : "svg",
+    disableExport: values.disableExport === true,
+    taskDrag: values.taskDrag !== false,
+    taskResize: values.taskResize !== false,
+    progressDrag: values.progressDrag !== false,
   };
 }
 

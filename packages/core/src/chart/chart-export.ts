@@ -110,7 +110,7 @@ export function chartSvgText(figure: HTMLElement): string {
 }
 
 /** Draws an SVG file on a canvas (at twice its size, for sharp screens) and returns a PNG. */
-async function pngOf(svgText: string): Promise<Blob> {
+export async function pngOf(svgText: string): Promise<Blob> {
   const url = URL.createObjectURL(new Blob([svgText], { type: "image/svg+xml" }));
   try {
     const image = new Image();
@@ -132,7 +132,7 @@ async function pngOf(svgText: string): Promise<Blob> {
 }
 
 /** Saves a file through a temporary download link (a URL we made, never one from input). */
-function save(blob: Blob, name: string) {
+export function save(blob: Blob, name: string) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
@@ -145,7 +145,7 @@ function save(blob: Blob, name: string) {
 }
 
 /** Whether the page is handling a user gesture (no gesture API: assumed, as before it existed). */
-const gesture = () => {
+export const gesture = () => {
   const activation = (navigator as { userActivation?: { isActive: boolean } }).userActivation;
   return activation ? activation.isActive : true;
 };

@@ -24,10 +24,12 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { createElement } from "react";
 import { Gantt } from "@owlky/react";
 import { ganttExamples } from "${folder}/gantt-data.ts";
+import { EditingGanttDemo } from "${folder}/gantt-editing-demo.tsx";
 const html = {};
 for (const [story, { groups }] of Object.entries(ganttExamples))
   for (const group of groups)
     html[story + "-" + group.file] = renderToStaticMarkup(createElement(Gantt, group.props));
+html["editing-group"] = renderToStaticMarkup(createElement(EditingGanttDemo));
 export { html };
 `;
 const result = await build({
@@ -85,7 +87,17 @@ function snippet(markup) {
             : 1;
       return `${"  ".repeat(depth)}${line}`;
     });
-  return `${open}\n${lines.join("\n")}\n</div>\n`;
+  // What follows the Gantt (the editing demo's dialog) is kept as rendered.
+  const end = '<div data-ok-gantt-status="" role="status"></div></div>';
+  const rest = markup.includes(end)
+    ? markup
+        .slice(markup.indexOf(end) + end.length)
+        .replace(/ data-ok-runtime="off"/g, "")
+        .replace(/ style="[^"]*"/g, "")
+        .replace(/ (data-ok-[a-z-]+)=""/g, " $1")
+        .replace(/></g, ">\n<")
+    : "";
+  return `${open}\n${lines.join("\n")}\n</div>\n${rest ? `${rest}\n` : ""}`;
 }
 
 for (const [name, markup] of Object.entries(html)) {

@@ -2,7 +2,9 @@
 
 import {
   createGanttController,
+  exportGantt,
   type GanttBarLabel,
+  type GanttChangeSource,
   type GanttColumnKey,
   type GanttController,
   type GanttItem,
@@ -10,16 +12,21 @@ import {
   type GanttNode,
   type GanttSelectionMode,
   type GanttTask,
+  type GanttTaskChange,
   type GanttView,
   ganttAttributes,
   ganttDensity,
+  ganttEditTask,
   ganttInitialCollapsed,
   ganttLocaleText,
   ganttModel,
   ganttRenderOptions,
+  ganttRowWindow,
+  ganttShortDate,
   ganttTable,
   ganttTextAttributes,
   ganttTooltip,
+  ganttVisibleItems,
   ganttZoom,
   renderGantt,
 } from "@owlky/core";
@@ -29,6 +36,7 @@ import {
   forwardRef,
   type HTMLAttributes,
   type ReactNode,
+  useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -63,6 +71,23 @@ export interface GanttProps
   toolbar?: boolean | undefined;
   selection?: boolean | undefined;
   disableTooltip?: boolean | undefined;
+  /** Tasks can be edited by pointer and keyboard; the changes come through `onTaskChange`. */
+  editable?: boolean | undefined;
+  taskDrag?: boolean | undefined;
+  taskResize?: boolean | undefined;
+  progressDrag?: boolean | undefined;
+  /** Height of the scroll area in px; only the rows in view render (unless `disableVirtualization`). */
+  height?: number | undefined;
+  disableVirtualization?: boolean | undefined;
+  /** Format of the toolbar's download button (`svg`). */
+  exportFormat?: "svg" | "png" | "csv" | undefined;
+  disableExport?: boolean | undefined;
+  /** An edit asks to change a task: update `tasks` to accept it. */
+  onTaskChange?:
+    | ((id: string, change: GanttTaskChange, source: GanttChangeSource) => void)
+    | undefined;
+  /** A double click, a double tap or F2 asks to edit a task in your own form. */
+  onTaskEdit?: ((id: string) => void) | undefined;
   /** Task-list columns (`name`, `startTime`, `endTime`, `duration`, `progress`). */
   columns?: readonly GanttColumnKey[] | undefined;
   /** The today line's day (default the current day). */
@@ -137,6 +162,16 @@ export const Gantt = forwardRef<HTMLDivElement, GanttProps>(function Gantt(
     toolbar,
     selection,
     disableTooltip,
+    editable,
+    taskDrag,
+    taskResize,
+    progressDrag,
+    height,
+    disableVirtualization,
+    exportFormat,
+    disableExport,
+    onTaskChange,
+    onTaskEdit,
     columns,
     today,
     locale,
@@ -191,6 +226,13 @@ export const Gantt = forwardRef<HTMLDivElement, GanttProps>(function Gantt(
     projectBoundary,
     toolbar,
     selection,
+    editable,
+    taskDrag,
+    taskResize,
+    progressDrag,
+    height,
+    exportFormat,
+    disableExport,
     columns,
     today,
     locale,
@@ -203,14 +245,51 @@ export const Gantt = forwardRef<HTMLDivElement, GanttProps>(function Gantt(
     () => new Set(selection ? selectedIds : NONE),
     [selectedIds, selection],
   );
-  const layout = renderGantt(model, {
+  const renderOptions = {
     ...resolved,
     label,
     collapsed: collapsedSet,
     selected: selectedSet,
     active,
     text,
+  };
+  // Virtualization: a window of rows from the scroll position (the height before measuring).
+  const [scroll, setScroll] = useState({ top: 0, height: 0 });
+  const follow = useRef(false);
+  const visible = useMemo(() => ganttVisibleItems(model, collapsedSet), [model, collapsedSet]);
+  const windowed = resolved.height !== undefined && disableVirtualization !== true;
+  const layout = renderGantt(model, {
+    ...renderOptions,
+    window: windowed
+      ? ganttRowWindow({
+          scrollTop: scroll.top,
+          height: scroll.height || (resolved.height as number),
+          rowHeight: resolved.rowHeight,
+          total: visible.length,
+          // The keyboard's row stays rendered until the page scrolls on its own.
+          active: follow.current ? visible.findIndex((item) => item.id === active) : undefined,
+        })
+      : undefined,
   });
+  useEffect(() => {
+    if (!windowed) return;
+    const root = rootRef.current as HTMLDivElement;
+    let frame = 0;
+    const onScroll = (event: Event) => {
+      const target = event.target as HTMLElement;
+      if (!target.matches?.("[data-ok-gantt-viewport]")) return;
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        follow.current = false;
+        setScroll({ top: target.scrollTop, height: target.clientHeight });
+      });
+    };
+    root.addEventListener("scroll", onScroll, true);
+    return () => {
+      cancelAnimationFrame(frame);
+      root.removeEventListener("scroll", onScroll, true);
+    };
+  }, [windowed]);
   const table = ganttTable(tasks, {
     text,
     locale: resolved.locale,
@@ -227,13 +306,32 @@ export const Gantt = forwardRef<HTMLDivElement, GanttProps>(function Gantt(
     setCollapsed,
     setSelected,
     setDensity,
+    visible,
+    renderOptions,
+    selectedIds,
   });
-  latest.current = { model, text, resolved, collapsedIds, setCollapsed, setSelected, setDensity };
+  latest.current = {
+    model,
+    text,
+    resolved,
+    collapsedIds,
+    setCollapsed,
+    setSelected,
+    setDensity,
+    visible,
+    renderOptions,
+    selectedIds,
+  };
+  const edits = useRef({ onTaskChange, onTaskEdit });
+  edits.current = { onTaskChange, onTaskEdit };
   const controller = useRef<GanttController | null>(null);
   useLayoutEffect(() => {
     const root = rootRef.current as HTMLDivElement;
     controller.current = createGanttController(root, {
-      onActiveChange: (id) => setActive(id),
+      onActiveChange: (id) => {
+        follow.current = true;
+        setActive(id);
+      },
       onToggle: (id, expanded) => {
         const { collapsedIds: ids, setCollapsed: set } = latest.current;
         set(expanded ? ids.filter((x) => x !== id) : [...ids, id]);
@@ -250,6 +348,21 @@ export const Gantt = forwardRef<HTMLDivElement, GanttProps>(function Gantt(
       tooltip: (id) => {
         const { model: m, text: t, resolved: r } = latest.current;
         return ganttTooltip(m.byId.get(id) as GanttItem, t, r.locale);
+      },
+      task: (id) => ganttEditTask(latest.current.model, id, latest.current.resolved.density),
+      onTaskChange: (id, change, source) => edits.current.onTaskChange?.(id, change, source),
+      onTaskEdit: (id) => edits.current.onTaskEdit?.(id),
+      editText: () => latest.current.text,
+      formatDay: (day) => ganttShortDate(day, latest.current.resolved.locale),
+      rowList: () => latest.current.visible.map((item) => ({ id: item.id, level: item.level })),
+      selection: () => latest.current.selectedIds,
+      onExport: () => {
+        const { model: m, renderOptions: v } = latest.current;
+        exportGantt(
+          root,
+          renderGantt(m, { ...v, window: undefined }),
+          v.exportFormat as "svg" | "png" | "csv",
+        ).catch(() => {});
       },
     });
     return () => {
@@ -276,12 +389,20 @@ export const Gantt = forwardRef<HTMLDivElement, GanttProps>(function Gantt(
       toolbar,
       selection,
       disableTooltip,
+      editable,
+      height,
+      disableVirtualization,
+      exportFormat,
+      disableExport,
     }),
     ...ganttTextAttributes(values),
   };
   if (showToday === false) attributes["data-ok-show-today"] = "false";
   if (showNonWorkingDays === false) attributes["data-ok-show-non-working-days"] = "false";
   if (columnLines === false) attributes["data-ok-column-lines"] = "false";
+  if (taskDrag === false) attributes["data-ok-task-drag"] = "false";
+  if (taskResize === false) attributes["data-ok-task-resize"] = "false";
+  if (progressDrag === false) attributes["data-ok-progress-drag"] = "false";
 
   return (
     <div {...rest} ref={ref} {...attributes} data-ok-ready="" data-ok-runtime="off">
@@ -310,6 +431,7 @@ export const Gantt = forwardRef<HTMLDivElement, GanttProps>(function Gantt(
       </table>
       {toElements(layout.nodes)}
       <div data-ok-gantt-tooltip="" aria-hidden="true" hidden />
+      <div data-ok-gantt-status="" role="status" />
     </div>
   );
 });

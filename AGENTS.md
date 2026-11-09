@@ -780,7 +780,17 @@ the `check` job, `VITEST_BROWSERS=<engine> pnpm test:browser` in one `unit` job 
   container query (the Gantt's own width), so Testing Library can't find the hidden columns in
   the 414px test page (query the DOM). `toHaveTextContent` in this repo matches the whole text: use
   `textContent` for exact checks. Snippets: `pnpm build && node apps/storybook/scripts/gantt-snippets.mjs`
-  (the root's attributes and the data table of the React render).
+  (the root's attributes and the data table of the React render; the Editing story also keeps
+  the dialog that follows the Gantt). Editing (phase 2, `gantt-edit.ts`): drags preview on the bar
+  through CSSOM and undo the preview before reporting, so a refused change needs no re-render;
+  `setPointerCapture` throws for synthetic pointers (tests dispatch `PointerEvent`s), so it is
+  wrapped. HTML redraws rewrite every `--_ok-gantt-*` property: never draw during a drag.
+  Virtualization (phase 3, `height`): the first window comes from the `height` option, not a
+  measure, so server, React and HTML agree; owners follow the keyboard's row (`follow` flag, set
+  by `onActiveChange`, cleared by the next scroll) or a wheel scroll would snap back to it. The
+  controller keeps a pending focus whose row is in `rowList` but not rendered yet (React renders
+  after the key), and drops it only for rows that went away. Downloads render the layout again
+  without a window (`exportGantt(root, layout, format)`), colors from computed styles.
 - Parallel work: never run two `/component` / `/integrate` sessions (or two `pnpm build` /
   `pnpm test:e2e`) in the same working tree — builds wipe each other's `dist/` and
   `storybook-static/`, e2e servers share port 4321, and staging part of a shared file while

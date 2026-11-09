@@ -150,7 +150,7 @@
     padding: 0;
   }
 
-  :where([data-ok-gantt-visually-hidden]) {
+  :where([data-ok-gantt-visually-hidden], [data-ok-gantt-status]) {
     position: absolute;
     width: 1px;
     height: 1px;
@@ -195,8 +195,12 @@
   }
 
   /* Body: the SVG behind the rows. */
+  /* A virtualized window: the rows above it are padding, the body keeps every row's height. */
   :where([data-ok-gantt-body]) {
     position: relative;
+    box-sizing: border-box;
+    min-height: var(--_ok-gantt-body, 0);
+    padding-top: var(--_ok-gantt-offset, 0);
     background-color: var(--ok-bg-paper);
   }
 
@@ -475,6 +479,70 @@
     height: var(--ok-spacing);
     border-radius: var(--ok-radius-full);
     background-color: var(--ok-palette-warning-main);
+  }
+
+  /* Editing (phase 2): bars are dragged, so touch drags them instead of scrolling the timeline. */
+  :where([data-ok-gantt][data-ok-editable] [data-ok-gantt-bar]:not([data-ok-type="summary"])) {
+    overflow: visible;
+    cursor: grab;
+    touch-action: none;
+  }
+
+  :where([data-ok-gantt][data-ok-editable][data-ok-task-drag="false"] [data-ok-gantt-bar]) {
+    cursor: default;
+  }
+
+  :where([data-ok-gantt-bar][data-ok-dragging]) {
+    cursor: grabbing;
+    outline: 2px solid var(--_ok-gantt-c);
+    outline-offset: 1px;
+  }
+
+  :where([data-ok-gantt-handle]) {
+    position: absolute;
+    inset-block: 0;
+    width: calc(var(--ok-spacing) * 2);
+    cursor: ew-resize;
+  }
+
+  :where([data-ok-gantt-handle="start"]) {
+    inset-inline-start: calc(var(--ok-spacing) * -1);
+  }
+
+  :where([data-ok-gantt-handle="end"]) {
+    inset-inline-end: calc(var(--ok-spacing) * -1);
+  }
+
+  /* The progress handle: a small triangle under the progress edge, shown on hover and focus. */
+  :where([data-ok-gantt-handle="progress"]) {
+    top: auto;
+    bottom: calc(var(--ok-spacing) * -1.5);
+    inset-inline-start: calc(var(--_ok-gantt-progress, 0%) - var(--ok-spacing) * 1.5);
+    width: calc(var(--ok-spacing) * 3);
+    height: calc(var(--ok-spacing) * 2.5);
+    background-color: var(--ok-text-primary);
+    clip-path: polygon(50% 0, 100% 100%, 0 100%);
+    opacity: 0;
+    cursor: col-resize;
+  }
+
+  :where(
+    [data-ok-gantt-row]:is(:hover, :focus-visible, [data-ok-editing])
+      [data-ok-gantt-handle="progress"],
+    [data-ok-gantt-bar][data-ok-dragging] > [data-ok-gantt-handle="progress"]
+  ) {
+    opacity: 1;
+  }
+
+  @media (hover: none) {
+    :where([data-ok-gantt-handle="progress"]) {
+      opacity: 1;
+    }
+  }
+
+  :where([data-ok-gantt-row][data-ok-editing] [data-ok-gantt-bar]) {
+    outline: 2px dashed var(--_ok-gantt-c);
+    outline-offset: 2px;
   }
 
   /* Tooltip: stays while hovered; Escape hides it. */

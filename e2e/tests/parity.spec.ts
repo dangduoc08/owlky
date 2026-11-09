@@ -375,6 +375,8 @@ const pairs: [component: string, story: string][] = [
     "custom-colors",
     "selection",
     "task-list-columns",
+    "editing",
+    "large-project",
   ].map((story) => ["gantt", story] as [string, string]),
   ...["all", "errors", "states", "account", "dashboard", "shapes"].map(
     (story) => ["illustrations", story] as [string, string],

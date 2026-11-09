@@ -72,7 +72,15 @@ export interface GanttLocaleText {
   readonly baseline: string;
   readonly zoomIn: string;
   readonly zoomOut: string;
+  /** Edit mode, announced: `{name}`. */
+  readonly editing: string;
+  /** A step of the edit mode: `{start}`, `{end}`, `{progress}`. */
+  readonly draft: string;
+  readonly saved: string;
+  readonly cancelled: string;
   readonly toolbar: string;
+  /** The toolbar's download button: `{format}` (SVG, PNG or CSV). */
+  readonly download: string;
 }
 
 export const GANTT_LOCALE_TEXT: GanttLocaleText = {
@@ -97,7 +105,13 @@ export const GANTT_LOCALE_TEXT: GanttLocaleText = {
   baseline: "Planned",
   zoomIn: "Zoom in",
   zoomOut: "Zoom out",
+  editing:
+    "Editing {name}. Arrow keys move the task, Shift and arrow keys change its end, Page Up and Page Down change its progress. Enter saves, Escape cancels.",
+  draft: "{start} to {end}, {progress}%",
+  saved: "Saved",
+  cancelled: "Cancelled",
   toolbar: "Gantt tools",
+  download: "Download {format}",
 };
 
 /** Merges partial locale texts (own string keys only). */
@@ -110,7 +124,8 @@ export function ganttLocaleText(text?: Partial<GanttLocaleText> | null): GanttLo
   return merged as unknown as GanttLocaleText;
 }
 
-const fill = (template: string, values: Record<string, string | number>) =>
+/** Fills `{key}` placeholders (unknown ones stay as written). */
+export const ganttFill = (template: string, values: Record<string, string | number>) =>
   template.replace(/\{(\w+)\}/g, (all, key: string) =>
     Object.hasOwn(values, key) ? String(values[key]) : all,
   );
@@ -141,6 +156,18 @@ export interface GanttRenderOptions {
   readonly projectBoundary: boolean;
   readonly toolbar: boolean;
   readonly selection: boolean;
+  /** Bars can be edited: by pointer (per the three flags below) and from the keyboard. */
+  readonly editable?: boolean | undefined;
+  readonly taskDrag?: boolean | undefined;
+  readonly taskResize?: boolean | undefined;
+  readonly progressDrag?: boolean | undefined;
+  /** Height of the scroll area in px (default: as tall as the rows). */
+  readonly height?: number | undefined;
+  /** Rows rendered (indexes into the visible rows, end excluded): a virtualized window. */
+  readonly window?: { readonly start: number; readonly end: number } | undefined;
+  /** The toolbar's download button and its format (`disableExport` leaves it out). */
+  readonly exportFormat?: "svg" | "png" | "csv" | undefined;
+  readonly disableExport?: boolean | undefined;
   readonly collapsed: ReadonlySet<string>;
   readonly selected: ReadonlySet<string>;
   /** The row that holds the tab stop (default the first). */
@@ -186,6 +213,7 @@ const icon = (d: string) =>
   ]);
 const CHEVRON = "m9 6 6 6-6 6";
 const ZOOM_IN = "M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14ZM20 20l-4-4M8 11h6M11 8v6";
+const DOWNLOAD = "M12 4v11M7 10l5 5 5-5M5 20h14";
 const ZOOM_OUT = "M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14ZM20 20l-4-4M8 11h6";
 
 /** Widths of the visible task-list columns (the name column fills `listWidth`). */
@@ -219,16 +247,16 @@ export function ganttBarLabel(
     parts.push(`${text.milestone}, ${ganttLongDate(item.start, locale)}`);
   else {
     parts.push(
-      fill(text.range, {
+      ganttFill(text.range, {
         start: ganttLongDate(item.start, locale),
         end: ganttLongDate(item.end - 1, locale),
       }),
     );
-    parts.push(fill(text.complete, { value: Math.round(item.progress) }));
+    parts.push(ganttFill(text.complete, { value: Math.round(item.progress) }));
   }
   if (flags.baseline && item.baseline)
     parts.push(
-      `${text.baseline} ${fill(text.range, {
+      `${text.baseline} ${ganttFill(text.range, {
         start: ganttLongDate(item.baseline.start, locale),
         end: ganttLongDate(item.baseline.end - 1, locale),
       })}`,
@@ -236,11 +264,11 @@ export function ganttBarLabel(
   if (flags.critical) parts.push(text.critical);
   if (item.links.length)
     parts.push(
-      fill(text.dependsOn, {
+      ganttFill(text.dependsOn, {
         list: item.links
           .map((link) => {
             const from = (model.byId.get(link.from) as GanttItem).name;
-            const lag = link.lag ? `, ${fill(text.lag, { count: link.lag })}` : "";
+            const lag = link.lag ? `, ${ganttFill(text.lag, { count: link.lag })}` : "";
             return `${from} (${text[TYPE_TEXT[link.type]]}${lag})`;
           })
           .join(", "),
@@ -261,13 +289,13 @@ export function ganttTooltip(
   const rows: [string, string][] = [[text.startTime, ganttShortDate(item.start, locale)]];
   if (item.kind !== "milestone") {
     rows.push([text.endTime, ganttShortDate(item.end - 1, locale)]);
-    rows.push([text.duration, fill(text.days, { count: days(item) })]);
+    rows.push([text.duration, ganttFill(text.days, { count: days(item) })]);
     rows.push([text.progress, `${Math.round(item.progress)}%`]);
   }
   if (item.baseline)
     rows.push([
       text.baseline,
-      fill(text.range, {
+      ganttFill(text.range, {
         start: ganttShortDate(item.baseline.start, locale),
         end: ganttShortDate(item.baseline.end - 1, locale),
       }),
@@ -290,7 +318,7 @@ export function ganttCellText(
     case "endTime":
       return ganttShortDate(item.kind === "milestone" ? item.start : item.end - 1, locale);
     case "duration":
-      return fill(text.days, { count: days(item) });
+      return ganttFill(text.days, { count: days(item) });
     default:
       return item.kind === "milestone" ? "" : `${Math.round(item.progress)}%`;
   }
@@ -551,7 +579,12 @@ export function renderGantt(model: GanttModel, options: GanttRenderOptions): Gan
   const siblings = new Map<string | undefined, string[]>();
   for (const item of model.items)
     siblings.set(item.parentId, [...(siblings.get(item.parentId) ?? []), item.id]);
-  const rowNodes = rows.map((item, i) => {
+  const from = options.window ? Math.max(0, options.window.start) : 0;
+  const to = options.window ? Math.min(rows.length, options.window.end) : rows.length;
+  // The tab stop: the active row, or the window's first row while the active one is outside it.
+  const stop = rows.slice(from, to).some((row) => row.id === active) ? active : rows[from]?.id;
+  const rowNodes = rows.slice(from, to).map((item, slot) => {
+    const i = from + slot;
     const isCritical = critical?.tasks.has(item.id) ?? false;
     const set = siblings.get(item.parentId) as string[];
     const attrs: Record<string, string> = {
@@ -563,12 +596,13 @@ export function renderGantt(model: GanttModel, options: GanttRenderOptions): Gan
       "aria-level": String(item.level),
       "aria-posinset": String(set.indexOf(item.id) + 1),
       "aria-setsize": String(set.length),
-      tabindex: item.id === active ? "0" : "-1",
+      tabindex: item.id === stop ? "0" : "-1",
     };
     if (item.children.length)
       attrs["aria-expanded"] = options.collapsed.has(item.id) ? "false" : "true";
     if (options.selection)
       attrs["aria-selected"] = options.selected.has(item.id) ? "true" : "false";
+    if (options.editable && item.kind !== "summary") attrs["aria-keyshortcuts"] = "Enter F2";
     const cells = columns.map((key, c) => {
       const style: Record<string, string> = { "--_ok-gantt-left": px(lefts[c] as number) };
       const cellAttrs = {
@@ -619,7 +653,22 @@ export function renderGantt(model: GanttModel, options: GanttRenderOptions): Gan
   const grid = el(
     "div",
     gridAttrs,
-    [head, el("div", { role: "rowgroup", "data-ok-gantt-body": "" }, [canvas, ...rowNodes])],
+    [
+      head,
+      el(
+        "div",
+        { role: "rowgroup", "data-ok-gantt-body": "" },
+        [canvas, ...rowNodes],
+        options.window
+          ? {
+              style: {
+                "--_ok-gantt-offset": px(from * rowHeight),
+                "--_ok-gantt-body": px(rows.length * rowHeight),
+              },
+            }
+          : {},
+      ),
+    ],
     {
       style: {
         "--_ok-gantt-columns": widths.map(px).join(" "),
@@ -637,7 +686,28 @@ export function renderGantt(model: GanttModel, options: GanttRenderOptions): Gan
       el(
         "div",
         { role: "toolbar", "data-ok-gantt-toolbar": "", "aria-label": text.toolbar },
-        [zoomButton("out", text.zoomOut, ZOOM_OUT), zoomButton("in", text.zoomIn, ZOOM_IN)],
+        [
+          zoomButton("out", text.zoomOut, ZOOM_OUT),
+          zoomButton("in", text.zoomIn, ZOOM_IN),
+          ...(options.disableExport
+            ? []
+            : [
+                el(
+                  "button",
+                  {
+                    type: "button",
+                    "data-ok-icon-button": "",
+                    "data-ok-color": "default",
+                    "data-ok-size": "sm",
+                    "data-ok-gantt-export": options.exportFormat ?? "svg",
+                    "aria-label": ganttFill(text.download, {
+                      format: (options.exportFormat ?? "svg").toUpperCase(),
+                    }),
+                  },
+                  [icon(DOWNLOAD)],
+                ),
+              ]),
+        ],
         { key: "toolbar" },
       ),
     );
@@ -647,7 +717,9 @@ export function renderGantt(model: GanttModel, options: GanttRenderOptions): Gan
       // Rows hold the tab stop: Firefox would otherwise add the scroll container as one more.
       { "data-ok-gantt-viewport": "", tabindex: "-1" },
       [grid],
-      { key: "viewport" },
+      options.height
+        ? { key: "viewport", style: { "--_ok-gantt-height": px(options.height) } }
+        : { key: "viewport" },
     ),
   );
   return { nodes, scale, rows, active };
@@ -722,20 +794,27 @@ function timelineCell(
           ? "inside"
           : "right"
         : options.barLabel;
+  // Drag handles of an editable bar (decorative: the keyboard edits through the row).
+  const handles: GanttNode[] = [];
+  if (options.editable && item.kind === "task") {
+    if (options.taskResize !== false)
+      for (const side of ["start", "end"])
+        handles.push(el("span", { "data-ok-gantt-handle": side, "aria-hidden": "true" }));
+    if (options.progressDrag !== false)
+      handles.push(el("span", { "data-ok-gantt-handle": "progress", "aria-hidden": "true" }));
+  }
   if (position === "inside") {
     out.push(
       el(
         "div",
         barAttrs,
-        [el("span", { "data-ok-gantt-bar-text": "" }, undefined, { text: label })],
-        {
-          style,
-        },
+        [el("span", { "data-ok-gantt-bar-text": "" }, undefined, { text: label }), ...handles],
+        { style },
       ),
     );
     return out;
   }
-  out.push(el("div", barAttrs, undefined, { style }));
+  out.push(el("div", barAttrs, handles.length ? handles : undefined, { style }));
   const half = item.kind === "milestone" ? barHeight / 2 : 0;
   out.push(
     el("span", { "data-ok-gantt-label": position, "aria-hidden": "true" }, undefined, {
@@ -754,4 +833,28 @@ export function parseGanttWeekdays(text: string | null | undefined): Set<number>
     if (part !== "" && Number.isInteger(day) && day >= 0 && day <= 6) days.add(day);
   }
   return days;
+}
+
+/**
+ * The rows a virtualized Gantt renders: the ones in view plus `overscan` on each side, from the
+ * scroll position and the scroll area's height (before measuring: the `height` option), always
+ * including the `active` row (the keyboard's).
+ */
+export function ganttRowWindow(input: {
+  readonly scrollTop: number;
+  readonly height: number;
+  readonly rowHeight: number;
+  readonly total: number;
+  readonly active?: number | undefined;
+  readonly overscan?: number | undefined;
+}): { start: number; end: number } {
+  const overscan = input.overscan ?? 8;
+  const count = Math.ceil(input.height / input.rowHeight) + overscan * 2;
+  let start = Math.max(0, Math.floor(Math.max(0, input.scrollTop) / input.rowHeight) - overscan);
+  if (input.active !== undefined && input.active >= 0) {
+    if (input.active < start) start = Math.max(0, input.active - overscan);
+    else if (input.active >= start + count) start = input.active - count + overscan + 1;
+  }
+  start = Math.max(0, Math.min(start, input.total - count));
+  return { start, end: Math.min(input.total, start + count) };
 }

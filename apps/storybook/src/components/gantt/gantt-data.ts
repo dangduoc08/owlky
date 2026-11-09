@@ -355,6 +355,34 @@ const LABELS: readonly GanttTask[] = [
   { id: "l4", name: "Sign-off", startTime: "2025-03-19", type: "milestone" },
 ];
 
+/** A product year: 24 two-week sprints of five tasks each and a review milestone (168 rows). */
+const SPRINT_WORK = ["Planning", "Design", "Build", "Test", "Release notes"];
+const LARGE: readonly GanttTask[] = Array.from({ length: 24 }, (_, s) => {
+  const start = Date.UTC(2025, 0, 6) + s * 14 * 86_400_000;
+  const day = (offset: number) => new Date(start + offset * 86_400_000).toISOString().slice(0, 10);
+  const sprint = `sprint-${s + 1}`;
+  return [
+    { id: sprint, name: `Sprint ${s + 1}` },
+    ...SPRINT_WORK.map((name, t) => ({
+      id: `${sprint}-${t + 1}`,
+      name,
+      parentId: sprint,
+      startTime: day(t * 2),
+      endTime: day(t * 2 + 3),
+      progress: s < 5 ? 100 : s === 5 ? 50 : 0,
+      ...(t > 0 ? { dependency: `${sprint}-${t}` } : {}),
+    })),
+    {
+      id: `${sprint}-review`,
+      name: "Review",
+      parentId: sprint,
+      startTime: day(11),
+      type: "milestone" as const,
+      dependency: `${sprint}-5`,
+    },
+  ];
+}).flat();
+
 const base = { today: TODAY } as const;
 
 export const ganttExamples: Record<string, GanttExample> = {
@@ -486,6 +514,24 @@ export const ganttExamples: Record<string, GanttExample> = {
           tasks: RELAUNCH,
           selection: true,
           defaultSelected: ["wireframes", "visual"],
+        },
+      },
+    ],
+  },
+  "large-project": {
+    title: "Large project",
+    groups: [
+      {
+        title: "A year of sprints, virtualized, with downloads",
+        file: "group",
+        props: {
+          ...base,
+          label: "Product year",
+          tasks: LARGE,
+          view: "month",
+          height: 400,
+          toolbar: true,
+          exportFormat: "png",
         },
       },
     ],
