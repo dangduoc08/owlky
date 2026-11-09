@@ -24,7 +24,8 @@ function Demo(props: Partial<Parameters<typeof Collapse>[0]>) {
       <button type="button" aria-expanded={open} onClick={() => setOpen(!open)}>
         Details
       </button>
-      <Collapse in={open} {...props}>
+      {/* A long default: a slow runner's click must not outlast the animation the test reads. */}
+      <Collapse in={open} timeout={60_000} {...props}>
         <p style={{ margin: 0, height: 120 }}>Shipping takes two days.</p>
       </Collapse>
     </>
