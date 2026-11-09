@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" width="1200" height="900" role="img">
+  <title>Ocean waves at dusk</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1e3f"/>
+      <stop offset="1" stop-color="#123c69"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.3" cy="0.3" r="0.6">
+      <stop offset="0" stop-color="#38bdf8" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#38bdf8" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="900" fill="url(#bg)"/>
+  <rect width="1200" height="900" fill="url(#glow)"/>
+  <circle cx="300" cy="220" r="90" fill="none" stroke="#38bdf8" stroke-width="10" stroke-opacity="0.7"/>
+  <path d="M0 520 C 200 380 400 660 600 450 S 900 660 1200 473.3333333333333 V 900 H 0 Z" fill="#f97316" fill-opacity="0.85"/>
+  <path d="M0 640 C 200 530 400 750 600 585 S 900 750 1200 603.3333333333334 V 900 H 0 Z" fill="#ef4444" fill-opacity="0.8"/>
+  <path d="M0 760 C 200 680 400 840 600 720 S 900 840 1200 733.3333333333334 V 900 H 0 Z" fill="#0b1e3f" fill-opacity="0.9"/>
+</svg>

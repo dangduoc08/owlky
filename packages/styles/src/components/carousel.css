@@ -1,0 +1,665 @@
+/*
+ * Carousel — spec: specs/components/carousel.md (ADR-0033)
+ *
+ * Anatomy:  div[data-ok-carousel][role="region"][aria-roledescription="carousel"]
+ *             div[data-ok-carousel-stage]?            (positions overlays over the slides)
+ *               div[data-ok-carousel-viewport][tabindex="0"]   (native scroll container)
+ *                 div[data-ok-carousel-container]
+ *                   div[data-ok-carousel-slide][role="group"][aria-roledescription="slide"] …
+ *                     …[data-ok-carousel-parallax]?   (effect="parallax": the layer that moves)
+ *                 span[data-ok-carousel-live][aria-live]       (visually hidden)
+ *             div[data-ok-carousel-arrows] › button[data-ok-icon-button][data-ok-carousel-prev|next]
+ *                                            (+ span[data-ok-carousel-counter] with variant number)
+ *             div[data-ok-carousel-dots] › button[data-ok-carousel-dot] …
+ *             span[data-ok-carousel-progress]
+ *             div[data-ok-carousel-thumbs] › button[data-ok-carousel-thumb] …
+ *             button[data-ok-button][data-ok-carousel-play] › span[data-ok-carousel-play-label="play|pause"]
+ * Modifiers: data-ok-axis = x | y, data-ok-effect = none | fade | opacity | scale | parallax,
+ *            data-ok-loop, data-ok-drag-free, data-ok-skip-snaps, data-ok-auto-height,
+ *            data-ok-draggable="false", data-ok-active="false"; parts: data-ok-variant,
+ *            data-ok-color, data-ok-placement, data-ok-orientation (thumbnails)
+ * States (written by the controller): slides data-ok-snapped / data-ok-in-view, dots and
+ *            thumbnails aria-current, arrows aria-disabled; root data-ok-ready, data-ok-looping,
+ *            data-ok-dragging, data-ok-pointer-down, data-ok-scrolling, data-ok-auto-scrolling,
+ *            data-ok-playing. CSSOM: --_ok-carousel-basis-xs…xl and --_ok-carousel-spacing (root),
+ *            --_ok-carousel-snap / -snap-stop / -overflow / -height (viewport), -lead / -trail
+ *            (container), -snap-align / -snap-start / -snap-end / -order / -tween / -parallax
+ *            (slides), -progress (progress bars), -duration (root).
+ *
+ * Without JavaScript the slides still scroll and snap (one per view unless the sizes are set).
+ * Single :where() selectors in @layer components (zero specificity).
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-ok-carousel]) {
+    --_ok-carousel-basis: var(--_ok-carousel-basis-xs, 100%);
+
+    position: relative;
+    min-width: 0;
+  }
+
+  @media (min-width: 600px) {
+    :where([data-ok-carousel]) {
+      --_ok-carousel-basis: var(--_ok-carousel-basis-sm, var(--_ok-carousel-basis-xs, 100%));
+    }
+  }
+
+  @media (min-width: 900px) {
+    :where([data-ok-carousel]) {
+      --_ok-carousel-basis: var(
+        --_ok-carousel-basis-md,
+        var(--_ok-carousel-basis-sm, var(--_ok-carousel-basis-xs, 100%))
+      );
+    }
+  }
+
+  @media (min-width: 1200px) {
+    :where([data-ok-carousel]) {
+      --_ok-carousel-basis: var(
+        --_ok-carousel-basis-lg,
+        var(
+          --_ok-carousel-basis-md,
+          var(--_ok-carousel-basis-sm, var(--_ok-carousel-basis-xs, 100%))
+        )
+      );
+    }
+  }
+
+  @media (min-width: 1536px) {
+    :where([data-ok-carousel]) {
+      --_ok-carousel-basis: var(
+        --_ok-carousel-basis-xl,
+        var(
+          --_ok-carousel-basis-lg,
+          var(
+            --_ok-carousel-basis-md,
+            var(--_ok-carousel-basis-sm, var(--_ok-carousel-basis-xs, 100%))
+          )
+        )
+      );
+    }
+  }
+
+  :where([data-ok-carousel-stage]) {
+    position: relative;
+    min-width: 0;
+  }
+
+  /* The viewport is the scroll container; its scrollbar is hidden (the controls show position). */
+  :where([data-ok-carousel-viewport]) {
+    position: relative;
+    box-sizing: border-box;
+    height: var(--_ok-carousel-height, auto);
+    overflow-x: var(--_ok-carousel-overflow, auto);
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: var(--_ok-carousel-snap, x mandatory);
+    scrollbar-width: none;
+    outline: none;
+    transition: height var(--ok-duration-shorter) var(--ok-easing-standard);
+  }
+
+  :where([data-ok-carousel-viewport])::-webkit-scrollbar {
+    display: none;
+  }
+
+  :where([data-ok-carousel-viewport]:focus-visible) {
+    outline: 2px solid var(--ok-text-primary);
+    outline-offset: 2px;
+  }
+
+  :where([data-ok-carousel][data-ok-axis="y"] [data-ok-carousel-viewport]) {
+    height: 100%;
+    overflow-x: hidden;
+    overflow-y: var(--_ok-carousel-overflow, auto);
+    overscroll-behavior-x: auto;
+    overscroll-behavior-y: contain;
+    scroll-snap-type: var(--_ok-carousel-snap, y mandatory);
+  }
+
+  :where([data-ok-carousel][data-ok-axis="y"] [data-ok-carousel-stage]) {
+    height: 100%;
+  }
+
+  :where([data-ok-carousel][data-ok-drag-free] [data-ok-carousel-viewport]) {
+    scroll-snap-type: var(--_ok-carousel-snap, none);
+  }
+
+  :where([data-ok-carousel][data-ok-draggable="false"] [data-ok-carousel-viewport]) {
+    overflow: hidden;
+  }
+
+  :where([data-ok-carousel][data-ok-active="false"] [data-ok-carousel-viewport]) {
+    overflow: hidden;
+  }
+
+  /* Animated scrolls, mouse drags and auto scroll move the position themselves. */
+  :where(
+    [data-ok-carousel][data-ok-scrolling] [data-ok-carousel-viewport],
+    [data-ok-carousel][data-ok-dragging] [data-ok-carousel-viewport],
+    [data-ok-carousel][data-ok-auto-scrolling] [data-ok-carousel-viewport]
+  ) {
+    scroll-snap-type: none;
+  }
+
+  :where([data-ok-carousel][data-ok-dragging] [data-ok-carousel-viewport]) {
+    cursor: grabbing;
+    user-select: none;
+  }
+
+  :where([data-ok-carousel-container]) {
+    display: flex;
+    box-sizing: border-box;
+    gap: var(--_ok-carousel-spacing, 0px);
+    min-width: 0;
+    padding-inline: var(--_ok-carousel-lead, 0px) var(--_ok-carousel-trail, 0px);
+  }
+
+  :where([data-ok-carousel][data-ok-axis="y"] [data-ok-carousel-container]) {
+    flex-direction: column;
+    height: 100%;
+    padding-inline: 0;
+    padding-block: var(--_ok-carousel-lead, 0px) var(--_ok-carousel-trail, 0px);
+  }
+
+  :where([data-ok-carousel][data-ok-auto-height] [data-ok-carousel-container]) {
+    align-items: flex-start;
+  }
+
+  :where([data-ok-carousel-slide]) {
+    position: relative;
+    flex: 0 0 var(--_ok-carousel-basis);
+    box-sizing: border-box;
+    min-width: 0;
+    min-height: 0;
+    order: var(--_ok-carousel-order, 0);
+    scroll-snap-align: var(--_ok-carousel-snap-align, start);
+    scroll-snap-stop: var(--_ok-carousel-snap-stop, always);
+    scroll-margin-inline: var(--_ok-carousel-snap-start, 0px) var(--_ok-carousel-snap-end, 0px);
+  }
+
+  :where([data-ok-carousel][data-ok-skip-snaps] [data-ok-carousel-slide]) {
+    scroll-snap-stop: var(--_ok-carousel-snap-stop, normal);
+  }
+
+  :where([data-ok-carousel][data-ok-axis="y"] [data-ok-carousel-slide]) {
+    scroll-margin-inline: 0;
+    scroll-margin-block: var(--_ok-carousel-snap-start, 0px) var(--_ok-carousel-snap-end, 0px);
+  }
+
+  :where([data-ok-carousel-slide] img) {
+    -webkit-user-drag: none;
+  }
+
+  /* Effects: tween values (0–1) are written per slide while scrolling. */
+  :where([data-ok-carousel][data-ok-effect="opacity"] [data-ok-carousel-slide]) {
+    opacity: calc(0.36 + 0.64 * var(--_ok-carousel-tween, 1));
+  }
+
+  :where([data-ok-carousel][data-ok-effect="scale"] [data-ok-carousel-slide] > *) {
+    transform: scale(calc(0.86 + 0.14 * var(--_ok-carousel-tween, 1)));
+  }
+
+  /* Parallax moves the layer the author marks (inside a box that clips it). */
+  :where([data-ok-carousel][data-ok-effect="parallax"] [data-ok-carousel-parallax]) {
+    transform: translateX(calc(var(--_ok-carousel-parallax, 0) * -12%)) scale(1.3);
+  }
+
+  :where([dir="rtl"] [data-ok-carousel][data-ok-effect="parallax"] [data-ok-carousel-parallax]) {
+    transform: translateX(calc(var(--_ok-carousel-parallax, 0) * 12%)) scale(1.3);
+  }
+
+  :where(
+    [data-ok-carousel][data-ok-axis="y"][data-ok-effect="parallax"] [data-ok-carousel-parallax]
+  ) {
+    transform: translateY(calc(var(--_ok-carousel-parallax, 0) * -12%)) scale(1.3);
+  }
+
+  /* Fade: the slides share one cell; hidden slides are invisible to every user once faded. */
+  :where([data-ok-carousel][data-ok-effect="fade"] [data-ok-carousel-viewport]) {
+    overflow: hidden;
+    touch-action: pan-y;
+  }
+
+  :where([data-ok-carousel][data-ok-effect="fade"] [data-ok-carousel-container]) {
+    display: grid;
+  }
+
+  :where([data-ok-carousel][data-ok-effect="fade"] [data-ok-carousel-slide]) {
+    grid-area: 1 / 1;
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity var(--_ok-carousel-duration, var(--ok-duration-exit)) var(--ok-easing-standard),
+      visibility 0s linear var(--_ok-carousel-duration, var(--ok-duration-exit));
+  }
+
+  :where([data-ok-carousel][data-ok-effect="fade"] [data-ok-carousel-slide][data-ok-snapped]) {
+    z-index: 1;
+    opacity: 1;
+    visibility: visible;
+    transition:
+      opacity var(--_ok-carousel-duration, var(--ok-duration-exit)) var(--ok-easing-standard),
+      visibility 0s;
+  }
+
+  :where([data-ok-carousel-live]) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* Arrows ------------------------------------------------------------------------------------ */
+  :where([data-ok-carousel-arrows]) {
+    --_ok-carousel-color: var(--ok-c-main, var(--ok-text-secondary));
+    --_ok-carousel-channel: var(--ok-c-channel, var(--ok-palette-grey-500-channel));
+    --_ok-carousel-contrast: var(--ok-c-contrast, var(--ok-bg-paper));
+
+    display: inline-flex;
+    align-items: center;
+    gap: var(--ok-spacing);
+    color: var(--_ok-carousel-color);
+  }
+
+  :where([data-ok-carousel-arrows] > [data-ok-icon-button]) {
+    --_ok-main: var(--_ok-carousel-color);
+    --_ok-hover-bg: rgb(var(--_ok-carousel-channel) / 0.08);
+  }
+
+  :where([data-ok-carousel-arrows] > [aria-disabled="true"]) {
+    opacity: 0.48;
+    cursor: default;
+  }
+
+  :where([data-ok-carousel][data-ok-axis="y"] [data-ok-carousel-arrows] svg) {
+    rotate: 90deg;
+  }
+
+  :where([dir="rtl"] [data-ok-carousel]:not([data-ok-axis="y"]) [data-ok-carousel-arrows] svg) {
+    scale: -1 1;
+  }
+
+  /* Floating: square buttons on both sides of the slides, inverted colors. */
+  :where([data-ok-carousel-arrows][data-ok-variant="floating"]) {
+    --_ok-carousel-fill: var(--ok-c-main, var(--ok-text-primary));
+    --_ok-carousel-color: var(--ok-c-contrast, var(--ok-bg-paper));
+    --_ok-carousel-hover: var(--ok-c-hover, var(--ok-text-secondary));
+
+    display: contents;
+  }
+
+  :where([data-ok-carousel-arrows][data-ok-variant="floating"] > [data-ok-icon-button]) {
+    position: absolute;
+    top: 50%;
+    z-index: 1;
+    border-radius: var(--ok-radius-lg);
+    background-color: var(--_ok-carousel-fill);
+    translate: 0 -50%;
+  }
+
+  :where([data-ok-carousel-arrows][data-ok-variant="floating"] > [data-ok-carousel-prev]) {
+    inset-inline-start: calc(var(--ok-spacing) * 2);
+  }
+
+  :where([data-ok-carousel-arrows][data-ok-variant="floating"] > [data-ok-carousel-next]) {
+    inset-inline-end: calc(var(--ok-spacing) * 2);
+  }
+
+  @media (hover: hover) {
+    :where([data-ok-carousel-arrows][data-ok-variant="floating"] > [data-ok-icon-button]:hover) {
+      background-color: var(--_ok-carousel-hover);
+    }
+  }
+
+  :where([data-ok-carousel-arrows][data-ok-variant="floating"] > [aria-disabled="true"]) {
+    opacity: 0.48;
+  }
+
+  /* Number: a translucent pill with the counter between the buttons. */
+  :where([data-ok-carousel-arrows][data-ok-variant="number"]) {
+    --_ok-carousel-color: var(--ok-c-contrast, var(--ok-palette-common-white));
+
+    gap: calc(var(--ok-spacing) * 0.5);
+    padding: var(--ok-spacing);
+    border-radius: var(--ok-radius-lg);
+    /* 72% (the reference uses 48%): the counter keeps 4.5:1 even over light content. */
+    background-color: var(--ok-c-main, rgb(var(--ok-palette-grey-800-channel) / 0.72));
+  }
+
+  :where([data-ok-carousel-arrows][data-ok-variant="number"] > [data-ok-icon-button]) {
+    --_ok-size: calc(var(--ok-spacing) * 7);
+    --_ok-icon-size: calc(var(--ok-spacing) * 4);
+    --_ok-hover-bg: rgb(var(--ok-palette-common-white-channel) / 0.08);
+
+    border-radius: var(--ok-radius-md);
+  }
+
+  :where([data-ok-carousel-counter]) {
+    min-width: calc(var(--ok-spacing) * 5);
+    margin-inline: var(--ok-spacing);
+    font-family: var(--ok-font-family);
+    font-size: var(--ok-typography-subtitle2-font-size);
+    font-weight: var(--ok-font-weight-semibold);
+    font-variant-numeric: tabular-nums;
+    line-height: var(--ok-typography-subtitle2-line-height);
+    text-align: center;
+  }
+
+  /* Dots -------------------------------------------------------------------------------------- */
+  :where([data-ok-carousel-dots]) {
+    --_ok-carousel-color: var(--ok-c-main, var(--ok-text-primary));
+    --_ok-carousel-contrast: var(--ok-c-contrast, var(--ok-bg-paper));
+
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    color: var(--_ok-carousel-color);
+  }
+
+  :where([data-ok-carousel-dot]) {
+    position: relative;
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    width: calc(var(--ok-spacing) * 6);
+    height: calc(var(--ok-spacing) * 6);
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: var(--ok-radius-full);
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  :where([data-ok-carousel-dot])::before {
+    content: "";
+    width: calc(var(--ok-spacing) * 2);
+    height: calc(var(--ok-spacing) * 2);
+    border-radius: var(--ok-radius-full);
+    background-color: currentcolor;
+    opacity: 0.24;
+    transition-property: width, opacity;
+    transition-duration: var(--ok-duration-shorter);
+    transition-timing-function: var(--ok-easing-standard);
+  }
+
+  :where([data-ok-carousel-dot][aria-current="true"])::before {
+    opacity: 1;
+  }
+
+  :where([data-ok-carousel-dot]:focus-visible) {
+    outline: 2px solid var(--_ok-carousel-color);
+    outline-offset: -2px;
+  }
+
+  :where(
+    [data-ok-carousel-dots][data-ok-variant="rounded"] > [data-ok-carousel-dot][aria-current="true"]
+  ) {
+    width: calc(var(--ok-spacing) * 7);
+  }
+
+  :where(
+    [data-ok-carousel-dots][data-ok-variant="rounded"] > [data-ok-carousel-dot][aria-current="true"]
+  )::before {
+    width: calc(var(--ok-spacing) * 5);
+  }
+
+  :where([data-ok-carousel-dots][data-ok-variant="number"]) {
+    gap: calc(var(--ok-spacing) * 1.5);
+  }
+
+  :where([data-ok-carousel-dots][data-ok-variant="number"] > [data-ok-carousel-dot]) {
+    width: calc(var(--ok-spacing) * 7);
+    height: calc(var(--ok-spacing) * 7);
+    border: 1px solid rgb(var(--ok-palette-grey-500-channel) / 0.24);
+    color: var(--ok-text-secondary);
+    font-family: var(--ok-font-family);
+    font-size: var(--ok-typography-subtitle2-font-size);
+    font-weight: var(--ok-font-weight-semibold);
+    line-height: 1;
+    transition-property: background-color, color, border-color;
+    transition-duration: var(--ok-duration-shorter);
+  }
+
+  :where([data-ok-carousel-dots][data-ok-variant="number"] > [data-ok-carousel-dot])::before {
+    content: none;
+  }
+
+  :where(
+    [data-ok-carousel-dots][data-ok-variant="number"] > [data-ok-carousel-dot][aria-current="true"]
+  ) {
+    border-color: var(--_ok-carousel-color);
+    background-color: var(--_ok-carousel-color);
+    color: var(--_ok-carousel-contrast);
+  }
+
+  /* Progress ---------------------------------------------------------------------------------- */
+  :where([data-ok-carousel-progress]) {
+    position: relative;
+    display: block;
+    flex: none;
+    width: calc(var(--ok-spacing) * 30);
+    max-width: 100%;
+    height: calc(var(--ok-spacing) * 1.5);
+    overflow: hidden;
+    border-radius: var(--ok-radius-full);
+    background-color: rgb(var(--ok-palette-grey-500-channel) / 0.24);
+    color: var(--ok-c-main, var(--ok-text-primary));
+  }
+
+  :where([data-ok-carousel-progress])::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background-color: currentcolor;
+    transform: scaleX(var(--_ok-carousel-progress, 0));
+    transform-origin: left center;
+  }
+
+  :where([dir="rtl"] [data-ok-carousel-progress])::before {
+    transform-origin: right center;
+  }
+
+  /* Thumbnails -------------------------------------------------------------------------------- */
+  :where([data-ok-carousel-thumbs]) {
+    --_ok-carousel-thumb: calc(var(--ok-spacing) * 16);
+
+    display: flex;
+    gap: calc(var(--ok-spacing) * 3);
+    box-sizing: border-box;
+    max-width: 100%;
+    padding: var(--ok-spacing);
+    overflow: auto;
+    scrollbar-width: none;
+  }
+
+  :where([data-ok-carousel-thumbs])::-webkit-scrollbar {
+    display: none;
+  }
+
+  :where([data-ok-carousel-thumbs][data-ok-orientation="vertical"]) {
+    --_ok-carousel-thumb: calc(var(--ok-spacing) * 12);
+
+    flex-direction: column;
+    max-height: 100%;
+    padding: calc(var(--ok-spacing) * 2);
+    border-radius: var(--ok-radius-lg);
+    background-color: var(--ok-bg-paper);
+  }
+
+  :where([data-ok-carousel-thumbs][data-ok-placement]) {
+    max-height: calc(100% - var(--_ok-carousel-inset) * 2);
+  }
+
+  :where([data-ok-carousel-thumb]) {
+    position: relative;
+    display: inline-flex;
+    flex: none;
+    box-sizing: border-box;
+    width: var(--_ok-carousel-thumb);
+    height: var(--_ok-carousel-thumb);
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    border: 0;
+    border-radius: var(--ok-radius-lg);
+    background: var(--ok-bg-neutral);
+    opacity: 0.48;
+    cursor: pointer;
+    transition-property: opacity, box-shadow;
+    transition-duration: var(--ok-duration-shorter);
+    transition-timing-function: var(--ok-easing-standard);
+  }
+
+  /* Centered while they fit, scrollable from the first one when they don't. */
+  :where([data-ok-carousel-thumbs] > :first-child) {
+    margin-inline-start: auto;
+  }
+
+  :where([data-ok-carousel-thumbs] > :last-child) {
+    margin-inline-end: auto;
+  }
+
+  :where([data-ok-carousel-thumbs][data-ok-orientation="vertical"] > :first-child) {
+    margin-inline-start: 0;
+    margin-block-start: auto;
+  }
+
+  :where([data-ok-carousel-thumbs][data-ok-orientation="vertical"] > :last-child) {
+    margin-inline-end: 0;
+    margin-block-end: auto;
+  }
+
+  :where([data-ok-carousel-thumb] > img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  :where([data-ok-carousel-thumb][aria-current="true"]) {
+    opacity: 1;
+    box-shadow: 0 0 0 2px var(--ok-palette-primary-main);
+  }
+
+  @media (hover: hover) {
+    :where([data-ok-carousel-thumb]:hover) {
+      opacity: 1;
+    }
+  }
+
+  :where([data-ok-carousel-thumb]:focus-visible) {
+    outline: 2px solid var(--ok-text-primary);
+    outline-offset: 2px;
+  }
+
+  /* Play / pause: the label for the current state shows (the other is out of the name). */
+  :where([data-ok-carousel]:not([data-ok-playing]) [data-ok-carousel-play-label="pause"]) {
+    display: none;
+  }
+
+  :where([data-ok-carousel][data-ok-playing] [data-ok-carousel-play-label="play"]) {
+    display: none;
+  }
+
+  /* Overlays: a part with a placement sits over the slides (the stage, else the root). */
+  :where(
+    [data-ok-carousel-arrows][data-ok-placement],
+    [data-ok-carousel-dots][data-ok-placement],
+    [data-ok-carousel-progress][data-ok-placement],
+    [data-ok-carousel-thumbs][data-ok-placement]
+  ) {
+    --_ok-carousel-inset: calc(var(--ok-spacing) * 4);
+
+    position: absolute;
+    z-index: 1;
+  }
+
+  :where(
+    [data-ok-carousel-arrows][data-ok-placement^="top"],
+    [data-ok-carousel-dots][data-ok-placement^="top"],
+    [data-ok-carousel-progress][data-ok-placement^="top"],
+    [data-ok-carousel-thumbs][data-ok-placement^="top"]
+  ) {
+    top: var(--_ok-carousel-inset);
+  }
+
+  :where(
+    [data-ok-carousel-arrows][data-ok-placement^="bottom"],
+    [data-ok-carousel-dots][data-ok-placement^="bottom"],
+    [data-ok-carousel-progress][data-ok-placement^="bottom"],
+    [data-ok-carousel-thumbs][data-ok-placement^="bottom"]
+  ) {
+    bottom: var(--_ok-carousel-inset);
+  }
+
+  :where(
+    [data-ok-carousel-arrows][data-ok-placement$="start"],
+    [data-ok-carousel-dots][data-ok-placement$="start"],
+    [data-ok-carousel-progress][data-ok-placement$="start"],
+    [data-ok-carousel-thumbs][data-ok-placement$="start"]
+  ) {
+    inset-inline-start: var(--_ok-carousel-inset);
+  }
+
+  :where(
+    [data-ok-carousel-arrows][data-ok-placement$="end"],
+    [data-ok-carousel-dots][data-ok-placement$="end"],
+    [data-ok-carousel-progress][data-ok-placement$="end"],
+    [data-ok-carousel-thumbs][data-ok-placement$="end"]
+  ) {
+    inset-inline-end: var(--_ok-carousel-inset);
+  }
+
+  :where(
+    [data-ok-carousel-arrows][data-ok-placement="top"],
+    [data-ok-carousel-arrows][data-ok-placement="bottom"],
+    [data-ok-carousel-dots][data-ok-placement="top"],
+    [data-ok-carousel-dots][data-ok-placement="bottom"],
+    [data-ok-carousel-progress][data-ok-placement="top"],
+    [data-ok-carousel-progress][data-ok-placement="bottom"],
+    [data-ok-carousel-thumbs][data-ok-placement="top"],
+    [data-ok-carousel-thumbs][data-ok-placement="bottom"]
+  ) {
+    left: 50%;
+    translate: -50% 0;
+  }
+
+  :where(
+    [data-ok-carousel-arrows][data-ok-placement="start"],
+    [data-ok-carousel-arrows][data-ok-placement="end"],
+    [data-ok-carousel-dots][data-ok-placement="start"],
+    [data-ok-carousel-dots][data-ok-placement="end"],
+    [data-ok-carousel-progress][data-ok-placement="start"],
+    [data-ok-carousel-progress][data-ok-placement="end"],
+    [data-ok-carousel-thumbs][data-ok-placement="start"],
+    [data-ok-carousel-thumbs][data-ok-placement="end"]
+  ) {
+    top: 50%;
+    translate: 0 -50%;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :where(
+        [data-ok-carousel-viewport],
+        [data-ok-carousel-slide],
+        [data-ok-carousel-dot],
+        [data-ok-carousel-thumb]
+      ) {
+      transition: none;
+    }
+
+    :where([data-ok-carousel-dot])::before {
+      transition: none;
+    }
+  }
+}

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" width="1200" height="900" role="img">
+  <title>Emerald hills</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#052e16"/>
+      <stop offset="1" stop-color="#14532d"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.3" cy="0.5" r="0.6">
+      <stop offset="0" stop-color="#fde68a" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#fde68a" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="900" fill="url(#bg)"/>
+  <rect width="1200" height="900" fill="url(#glow)"/>
+  <circle cx="477" cy="353" r="180" fill="none" stroke="#fde68a" stroke-width="10" stroke-opacity="0.7"/>
+  <path d="M0 520 C 200 380 400 660 600 450 S 900 660 1200 473.3333333333333 V 900 H 0 Z" fill="#22c55e" fill-opacity="0.85"/>
+  <path d="M0 660 C 200 550 400 770 600 605 S 900 770 1200 623.3333333333334 V 900 H 0 Z" fill="#bef264" fill-opacity="0.8"/>
+  <path d="M0 760 C 200 680 400 840 600 720 S 900 840 1200 733.3333333333334 V 900 H 0 Z" fill="#052e16" fill-opacity="0.9"/>
+</svg>

@@ -270,11 +270,43 @@ const pairs: [component: string, story: string][] = [
   ["snackbar", "anchor-origin"],
   ["backdrop", "example"],
   ["editor", "basic"],
+  ...[
+    "align",
+    "progress",
+    "opacity",
+    "scale",
+    "fade",
+    "parallax",
+    "autoplay",
+    "auto-scroll",
+    "thumbs-x",
+    "thumbs-y",
+    "variable-widths",
+    "auto-height",
+    "y-axis",
+    "dots-number",
+    "animation",
+    "custom",
+    "drag-free",
+    "slides-to-scroll",
+    "right-to-left",
+  ].map((story) => ["carousel", story] as [string, string]),
 ];
 
 /** Stories whose rows load after the first render (scripts, data sources): wait for them. */
 const LOADS = new Set(["datagrid/large", "datagrid/server", "datagrid/lazy-loading"]);
 async function loaded(page: Page, key: string) {
+  if (key.startsWith("carousel/")) {
+    // Carousels measure once mounted; pictures change slide sizes as they load.
+    await page.waitForFunction(() =>
+      [...document.querySelectorAll("[data-ok-carousel]")].every((root) =>
+        root.hasAttribute("data-ok-ready"),
+      ),
+    );
+    await page.waitForFunction(() => [...document.images].every((image) => image.complete));
+    await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => setTimeout(r, 50))));
+    return;
+  }
   if (key === "editor/basic") {
     // The HTML story registers the editor in its page script: wait for both editors to mount.
     await expect(page.locator('[data-ok-editor-content][contenteditable="true"]')).toHaveCount(1);

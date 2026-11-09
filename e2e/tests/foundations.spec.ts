@@ -145,6 +145,7 @@ const GUIDES = [
   ["components-timeline--docs", "Accessibility"],
   ["components-rating--docs", "Accessibility"],
   ["components-chart--docs", "Accessibility"],
+  ["components-carousel--docs", "Accessibility"],
   ["components-slider--docs", "Accessibility"],
   ["components-transfer-list--docs", "Accessibility"],
   ["components-tree-view--docs", "Accessibility"],
@@ -197,6 +198,10 @@ const OPTION_TABLES: [string, (keyof typeof optionSchemas)[]][] = [
   ["components-timeline--docs", ["timeline", "timeline-item", "timeline-dot"]],
   ["components-rating--docs", ["rating"]],
   ["components-chart--docs", ["chart"]],
+  [
+    "components-carousel--docs",
+    ["carousel", "carousel-arrows", "carousel-dots", "carousel-progress", "carousel-thumbs"],
+  ],
   ["components-slider--docs", ["slider"]],
   ["components-transfer-list--docs", ["transfer-list"]],
   ["components-tree-view--docs", ["tree-view"]],

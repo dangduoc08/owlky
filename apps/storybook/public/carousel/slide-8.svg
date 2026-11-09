@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" width="1200" height="900" role="img">
+  <title>Glacier blue</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#082f49"/>
+      <stop offset="1" stop-color="#0c4a6e"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.6">
+      <stop offset="0" stop-color="#818cf8" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#818cf8" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="900" fill="url(#bg)"/>
+  <rect width="1200" height="900" fill="url(#glow)"/>
+  <circle cx="313" cy="397" r="180" fill="none" stroke="#818cf8" stroke-width="10" stroke-opacity="0.7"/>
+  <path d="M0 550 C 200 410 400 690 600 480 S 900 690 1200 503.3333333333333 V 900 H 0 Z" fill="#7dd3fc" fill-opacity="0.85"/>
+  <path d="M0 660 C 200 550 400 770 600 605 S 900 770 1200 623.3333333333334 V 900 H 0 Z" fill="#e0f2fe" fill-opacity="0.8"/>
+  <path d="M0 760 C 200 680 400 840 600 720 S 900 840 1200 733.3333333333334 V 900 H 0 Z" fill="#082f49" fill-opacity="0.9"/>
+</svg>

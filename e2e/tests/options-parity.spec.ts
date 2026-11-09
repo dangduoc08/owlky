@@ -45,6 +45,7 @@ const CASES: [
   ["timeline", "right", "timeline", ["position"]],
   ["rating", "controlled", "rating", ["size", "color"]],
   ["chart", "column-multiple", "chart", ["curve", "legend"]],
+  ["carousel", "align", "carousel", ["align", "loop", "dragFree", "containScroll"]],
   ["slider", "temperature", "slider", ["size", "color", "disabled"]],
   ["transfer-list", "simple", "transfer-list", ["disabled"]],
   ["tree-view", "simple", "tree-view", ["variant", "expansionTrigger"]],

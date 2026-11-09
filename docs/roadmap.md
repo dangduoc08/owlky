@@ -5,7 +5,7 @@ and a review before the next starts.
 
 ## Overview
 Every page of the reference's component menu (`https://minimals.cc/components/…`) and where it
-stands. ✅ = built (36); *wave N* = planned, see "Next — components"; *not planned* = a pattern
+stands. ✅ = built (37); *wave N* = planned, see "Next — components"; *not planned* = a pattern
 or app-level page. *Section* = the heading below with the details. Update this table with each
 component and each `/integrate` run.
 
@@ -50,7 +50,7 @@ component and each `/integrate` run.
 | MUI X | Date pickers | ✅ complete, phases 1–4 (ADR-0022, ADR-0026, ADR-0028, ADR-0030) | DatePicker, DesktopDatePicker, MobileDatePicker, StaticDatePicker, DateField, DateCalendar, MonthCalendar, YearCalendar, LocalizationProvider; TimePicker, DateTimePicker (desktop, mobile, static), TimeField, DateTimeField, TimeClock, DigitalClock, MultiSectionDigitalClock; DateRangeCalendar, DateRangePicker (desktop, mobile, static), TimeRangePicker, DateTimeRangePicker (desktop, mobile), single and multi input range fields (date, time, date time); time zones, date adapters (Day.js, date-fns, Luxon, Moment), calendar systems, locale packs, right to left, slots and view renderers | Date pickers |
 | MUI X | Tree view | ✅ | SimpleTreeView, TreeItem, RichTreeView | Rating, Slider, Timeline, Transfer list, Tree view & Autocomplete |
 | Extra | Animate | ✅ beta | Motion, MotionGroup, MotionText, CountUp, MotionBorder; Dialog `transition` | Motion |
-| Extra | Carousel | wave 7 (ADR) | — | Next |
+| Extra | Carousel | ✅ (ADR-0033) | Carousel, CarouselStage, CarouselViewport, CarouselSlide, CarouselArrows, CarouselDots, CarouselProgress, CarouselThumbs, CarouselThumb, CarouselPlayButton | Carousel |
 | Extra | Chart | ✅ complete, phases 1–4 (ADR-0024, ADR-0027, ADR-0029, ADR-0031) | Chart | Chart |
 | Extra | Dnd | ✅ | Sortable | Sortable |
 | Extra | Editor | ✅ (ADR-0023, Tiptap) | Editor | Editor |
@@ -509,6 +509,28 @@ integrate these in the same review (additive: no DOM or API change) and remove t
 | Typography (body text) | Autocomplete stories (output lines under the fields) | demo `p` styled in `.storybook/preview.css` |
 | Collapse (transition) | Tree view groups | open / close at once (`hidden`); MUI X collapses them |
 
+## ✅ Components — Carousel (ADR-0033, 2026-11-09)
+Created with `/component` from the reference "Carousel" page, built on Embla Carousel's API (v8
+names) and plugins, written by us (owner's choice): a native scroll container with CSS scroll
+snapping (works without JavaScript) and one core controller, `createCarouselController`, shared by
+React and the HTML runtime `carousel`. Stories (the 16 reference sections): Align, Progress,
+Opacity, Scale, Fade, Parallax, Autoplay, Auto Scroll, Thumbs-x, Thumbs-y, Variable widths, Auto
+height, Y-axis, Dots number, Animation, Custom; beyond them: Drag free, Slides to scroll, Right to
+left. Every Embla option the reference relies on (`align`, `axis`, `loop`, `dragFree`, `draggable`,
+`dragThreshold`, `skipSnaps`, `slidesToScroll`, `containScroll`, `startIndex`, `duration`,
+`inViewThreshold`, `active`, `breakpoints`, `focus`, `dir`) and plugin (Autoplay, Auto Scroll, Fade,
+Auto Height, Class Names as `data-ok-*` states, Wheel Gestures, the Accessibility plugin's labels and
+live region), the tween effects (opacity, scale, parallax), Minimals' `slidesToShow` per breakpoint
+and `slideSpacing`; arrows (basic, floating, number), dots (circular, rounded, number), progress
+(scroll, autoplay), thumbnails (row, column), a play / pause button, overlay `placement` and
+`color` on every control. Loop reorders the slides with CSS `order` (no clones). Composes
+IconButton, Button and (stories) Motion. No new token, no dependency.
+Differences: dots are 24px targets (reference 20px), the number arrows' pill is 72% grey-800
+(reference 48%, for the counter's contrast), floating arrows sit inside the slides' edges (no page
+overflow on phones), thumbnails have no edge fade, autoplay pauses on hover by default.
+**Not planned (by design, ADR-0033):** loops shorter than one view plus two steps (they fall
+back to bounded), Embla's `ssr` option (CSS sizes render on the server), the v9 `dragFree: "snap"`.
+
 ## ✅ Components — Editor (2026-11-08)
 Created with `/component` from the reference "Editor" page (one story: the editor, a "Full item"
 switch and a live preview). Built on Tiptap 3 (ADR-0023, the first runtime dependency): one core
@@ -579,7 +601,7 @@ Dependency-first: leaf components before the ones built from them, the ones that
 | 4 Overlays | ~~Popover~~ ✅, ~~Tooltip~~ ✅, ~~Menu~~ ✅, ~~Dialog~~ ✅, ~~Snackbar~~ ✅, ~~Backdrop~~ ✅ | ~~Drawer / Dialog backdrop~~ ✅ (native `::backdrop`, same token); icon button tooltips: nothing to change (MUI uses native `title` there; Tooltip wraps any IconButton) |
 | 5 Navigation | ~~Tabs~~ ✅, ~~Breadcrumbs~~ ✅, ~~Stepper~~ ✅ | — (nothing waited for them) |
 | 6 Composites | ~~Rating~~ ✅, ~~Slider~~ ✅, ~~Timeline~~ ✅, ~~Transfer list~~ ✅, ~~Autocomplete~~ ✅, ~~Tree view~~ ✅ | — (nothing waited for them; Slider unblocks the SettingsDrawer backlog of Theme settings) |
-| 7 Needs an ADR | ~~Data grid~~ (ADR-0020, phases below), ~~Date pickers~~ (ADR-0022, ADR-0030, complete ✅), ~~Chart~~ (ADR-0024, ADR-0027, ADR-0031, complete ✅), Map, ~~Editor~~ (ADR-0023) ✅, Carousel, Lightbox, Markdown, Organization chart, Upload, Image, Walktour | — |
+| 7 Needs an ADR | ~~Data grid~~ (ADR-0020, phases below), ~~Date pickers~~ (ADR-0022, ADR-0030, complete ✅), ~~Chart~~ (ADR-0024, ADR-0027, ADR-0031, complete ✅), Map, ~~Editor~~ (ADR-0023) ✅, ~~Carousel~~ (ADR-0033) ✅, Lightbox, Markdown, Organization chart, Upload, Image, Walktour | — |
 
 Not planned as components (patterns or app-level pages of the reference): Layout,
 Utilities, Multi-language, Navigation bar, Mega menu, Scroll progress, Form validation, Form wizard.

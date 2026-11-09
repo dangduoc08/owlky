@@ -13,6 +13,17 @@ export type {
   ButtonLoadingPosition,
   ButtonSize,
   ButtonVariant,
+  CarouselAlign,
+  CarouselArrowsVariant,
+  CarouselAxis,
+  CarouselBreakpointOptions,
+  CarouselColor,
+  CarouselContainScroll,
+  CarouselDotsVariant,
+  CarouselEffect,
+  CarouselPlacement,
+  CarouselProgressVariant,
+  CarouselSlidesToShow,
   ChartActive,
   ChartColor,
   ChartCurve,
@@ -140,6 +151,29 @@ export {
   type ButtonProps,
 } from "./button/button.js";
 export { ButtonGroup, type ButtonGroupProps } from "./button-group/button-group.js";
+export {
+  Carousel,
+  type CarouselApi,
+  CarouselArrows,
+  type CarouselArrowsProps,
+  CarouselDots,
+  type CarouselDotsProps,
+  CarouselPlayButton,
+  type CarouselPlayButtonProps,
+  CarouselProgress,
+  type CarouselProgressProps,
+  type CarouselProps,
+  CarouselSlide,
+  type CarouselSlideProps,
+  CarouselStage,
+  type CarouselStageProps,
+  CarouselThumb,
+  type CarouselThumbProps,
+  CarouselThumbs,
+  type CarouselThumbsProps,
+  CarouselViewport,
+  type CarouselViewportProps,
+} from "./carousel/carousel.js";
 export { Chart, type ChartProps } from "./chart/chart.js";
 export { Checkbox, type CheckboxProps } from "./checkbox/checkbox.js";
 export { Chip, type ChipProps } from "./chip/chip.js";

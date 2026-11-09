@@ -3,6 +3,8 @@ import { readFile } from "node:fs/promises";
 import { gzipSync } from "node:zlib";
 
 const budgets = [
+  // 140 kB since the Carousel (ADR-0033: snap model, controller with loop, drag, wheel, keys,
+  // fade, tweens, auto height, autoplay and auto scroll, and the runtime; about 9.5 kB): 134.4 kB.
   // 130 kB once the chart's phase 4 merged after the date pickers' phase 3 (120.7 kB).
   // 120 kB since the chart's phase 4 (ADR-0031: candlestick, range bar, timeline and polar area
   // layouts, zoom and gesture controller, linked charts, annotations, export, toolbar; about
@@ -32,11 +34,13 @@ const budgets = [
   // Motion (trigger, count-up and five runtimes, the 62 variant names); 31 kB after
   // the composite inputs, 24 kB after the navigation components, 22 kB after the overlays. The CDN bundle carries every component; the npm ESM build
   // (`@owlky/html`) is tree-shaken.
-  ["packages/html/dist/owlky.js", 130_000, "HTML runtime + all components (IIFE)"],
+  ["packages/html/dist/owlky.js", 140_000, "HTML runtime + all components (IIFE)"],
   ["packages/html/dist/esm/runtime/runtime.js", 3_000, "HTML core runtime"],
   // The Editor is opt-in (ADR-0023): Tiptap, ProseMirror and its starter kit are about 125 kB of
   // it; owlky.js stays free of them.
   ["packages/html/dist/owlky-editor.js", 135_000, "Editor + Tiptap (IIFE, loaded after owlky.js)"],
+  // 40 kB since the Carousel (ADR-0033: viewport, slides, effects, arrows, dots, progress,
+  // thumbnails, overlay placements; about 2 kB): 37.8 kB.
   // 36 kB since the chart's phase 4 (ADR-0031: toolbar, candles, annotations, brush selection,
   // opt-in animations; about 0.5 kB): 35.0 kB.
   // 38 kB since the date pickers' phase 3 (range calendar and range picker styles; about 0.7 kB)
@@ -52,7 +56,7 @@ const budgets = [
   // inputs, 22 kB after the navigation components, 20 kB after the form, display and list
   // components. Per-component files (`@owlky/styles/components/*`) let apps
   // load only what they use.
-  ["packages/styles/dist/owlky.min.css", 38_000, "All CSS (tokens + components)"],
+  ["packages/styles/dist/owlky.min.css", 40_000, "All CSS (tokens + components)"],
 ];
 
 let failed = false;

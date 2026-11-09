@@ -10,6 +10,7 @@ import { autocomplete } from "./autocomplete/autocomplete.js";
 import { avatar } from "./avatar/avatar.js";
 import { backdrop } from "./backdrop/backdrop.js";
 import { breadcrumbs } from "./breadcrumbs/breadcrumbs.js";
+import { carousel } from "./carousel/carousel.js";
 import { chart } from "./chart/chart.js";
 import { checkbox } from "./checkbox/checkbox.js";
 import { chip } from "./chip/chip.js";
@@ -104,4 +105,5 @@ export const components: readonly ComponentDefinition[] = [
   dateRangeCalendar as ComponentDefinition,
   multiInputRangeField as ComponentDefinition,
   dateRangePicker as ComponentDefinition,
+  carousel as ComponentDefinition,
 ];
