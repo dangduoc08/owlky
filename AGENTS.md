@@ -627,6 +627,12 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
   page): dynamic parity runs with `thumbnail` off. The HTML runtime keeps per-element bookkeeping in
   `WeakMap`s, not attributes, so its markup stays equal to React's. A disabled zone is in
   `CONTRAST_EXEMPT` (inactive component, dimmed like the reference).
+- Paper is the base surface: `paper.css` is imported **first** among the components, so a surface
+  built on it (Card: `data-ok-paper` + `data-ok-card` on one element, Paper's options spread into
+  its schema) overrides radius and shadow by source order and restates outlined / square for its
+  own rules. Elevation is a `style` option with values `"0"`–`"24"` (`--ok-elevation-<n>`): React
+  takes a number, `paperAttributes` stringifies it, the attribute is always written (outlined too)
+  so Controls stay in parity.
 - Parallel work: never run two `/component` / `/integrate` sessions (or two `pnpm build` /
   `pnpm test:e2e`) in the same working tree — builds wipe each other's `dist/` and
   `storybook-static/`, e2e servers share port 4321, and staging part of a shared file while

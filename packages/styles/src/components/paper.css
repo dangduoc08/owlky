@@ -1,0 +1,136 @@
+/*
+ * Paper — spec: specs/components/paper.md
+ *
+ * Anatomy:   <element>[data-ok-paper]                    (a surface; any element, any content)
+ * Modifiers: data-ok-variant   = elevation (default) | outlined
+ *            data-ok-elevation = 0 … 24 (default 1; ignored by outlined)
+ *            data-ok-square
+ *
+ * Imported first among the components (styles/src/index.css): surfaces built on Paper (Card)
+ * override its radius and shadow by source order. Sets no display, overflow, padding or size.
+ * Single :where() selectors in @layer components.
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-ok-paper]) {
+    border-radius: var(--ok-radius-md);
+    background-color: var(--ok-bg-paper);
+    box-shadow: var(--ok-elevation-1);
+    color: var(--ok-text-primary);
+    transition: box-shadow var(--ok-duration-standard) var(--ok-easing-standard);
+  }
+
+  /* Elevation: MUI's 25 levels (--ok-elevation-<n>; 1 is the base rule). */
+  :where([data-ok-paper][data-ok-elevation="0"]) {
+    box-shadow: none;
+  }
+
+  :where([data-ok-paper][data-ok-elevation="2"]) {
+    box-shadow: var(--ok-elevation-2);
+  }
+
+  :where([data-ok-paper][data-ok-elevation="3"]) {
+    box-shadow: var(--ok-elevation-3);
+  }
+
+  :where([data-ok-paper][data-ok-elevation="4"]) {
+    box-shadow: var(--ok-elevation-4);
+  }
+
+  :where([data-ok-paper][data-ok-elevation="5"]) {
+    box-shadow: var(--ok-elevation-5);
+  }
+
+  :where([data-ok-paper][data-ok-elevation="6"]) {
+    box-shadow: var(--ok-elevation-6);
+  }
+
+  :where([data-ok-paper][data-ok-elevation="7"]) {
+    box-shadow: var(--ok-elevation-7);
+  }
+
+  :where([data-ok-paper][data-ok-elevation="8"]) {
+    box-shadow: var(--ok-elevation-8);
+  }
+
+  :where([data-ok-paper][data-ok-elevation="9"]) {
+    box-shadow: var(--ok-elevation-9);
+  }
+
+  :where([data-ok-paper][data-ok-elevation="10"]) {
+    box-shadow: var(--ok-elevation-10);
+  }
+
+  :where([data-ok-paper][data-ok-elevation="11"]) {
+    box-shadow: var(--ok-elevation-11);
+  }
+
+  :where([data-ok-paper][data-ok-elevation="12"]) {
+    box-shadow: var(--ok-elevation-12);
+  }
+
+  :where([data-ok-paper][data-ok-elevation="13"]) {
+    box-shadow: var(--ok-elevation-13);
+  }
+
+  :where([data-ok-paper][data-ok-elevation="14"]) {
+    box-shadow: var(--ok-elevation-14);
+  }
+
+  :where([data-ok-paper][data-ok-elevation="15"]) {
+    box-shadow: var(--ok-elevation-15);
+  }
+
+  :where([data-ok-paper][data-ok-elevation="16"]) {
+    box-shadow: var(--ok-elevation-16);
+  }
+
+  :where([data-ok-paper][data-ok-elevation="17"]) {
+    box-shadow: var(--ok-elevation-17);
+  }
+
+  :where([data-ok-paper][data-ok-elevation="18"]) {
+    box-shadow: var(--ok-elevation-18);
+  }
+
+  :where([data-ok-paper][data-ok-elevation="19"]) {
+    box-shadow: var(--ok-elevation-19);
+  }
+
+  :where([data-ok-paper][data-ok-elevation="20"]) {
+    box-shadow: var(--ok-elevation-20);
+  }
+
+  :where([data-ok-paper][data-ok-elevation="21"]) {
+    box-shadow: var(--ok-elevation-21);
+  }
+
+  :where([data-ok-paper][data-ok-elevation="22"]) {
+    box-shadow: var(--ok-elevation-22);
+  }
+
+  :where([data-ok-paper][data-ok-elevation="23"]) {
+    box-shadow: var(--ok-elevation-23);
+  }
+
+  :where([data-ok-paper][data-ok-elevation="24"]) {
+    box-shadow: var(--ok-elevation-24);
+  }
+
+  /* Outlined: a flat surface with a 1px outline (Minimals' theme: grey 500 at 16%). */
+  :where([data-ok-paper][data-ok-variant="outlined"]) {
+    border: 1px solid rgb(var(--ok-palette-grey-500-channel) / 0.16);
+    box-shadow: none;
+  }
+
+  :where([data-ok-paper][data-ok-square]) {
+    border-radius: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :where([data-ok-paper]) {
+      transition: none;
+    }
+  }
+}

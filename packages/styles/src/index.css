@@ -3,6 +3,7 @@
  * Every file in ./components must be imported here (enforced by styles.test.ts).
  */
 @import "@owlky/tokens/tokens.css";
+@import "./components/paper.css";
 @import "./components/accordion.css";
 @import "./components/avatar.css";
 @import "./components/badge.css";

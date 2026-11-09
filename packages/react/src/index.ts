@@ -75,6 +75,7 @@ export type {
   PaginationSize,
   PaginationVariant,
   PaletteColorName,
+  PaperVariant,
   Placement,
   PopoverDismissReason,
   ProgressColor,
@@ -417,6 +418,7 @@ export {
   type PaginationProps,
   type PaginationRenderItemParams,
 } from "./pagination/pagination.js";
+export { Paper, type PaperProps } from "./paper/paper.js";
 export {
   DateCalendar,
   type DateCalendarProps,

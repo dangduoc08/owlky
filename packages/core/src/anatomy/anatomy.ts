@@ -1073,6 +1073,73 @@ export interface DividerAnatomyOptions {
 export const dividerAttributes = (options: DividerAnatomyOptions = {}): DataAttributes =>
   optionAttributes(dividerOptions, { ...options });
 
+// --- Paper ------------------------------------------------------------------------------------
+
+export const paperVariants = ["elevation", "outlined"] as const;
+/** MUI's elevation levels, as attribute values (`--ok-elevation-<n>`; 0 = no shadow). */
+export const paperElevations = [
+  "0",
+  "1",
+  "2",
+  "3",
+  "4",
+  "5",
+  "6",
+  "7",
+  "8",
+  "9",
+  "10",
+  "11",
+  "12",
+  "13",
+  "14",
+  "15",
+  "16",
+  "17",
+  "18",
+  "19",
+  "20",
+  "21",
+  "22",
+  "23",
+  "24",
+] as const;
+export type PaperVariant = (typeof paperVariants)[number];
+
+/** Paper (spec: paper.md). Card and other surfaces spread these options into their own schema. */
+export const paperOptions = defineOptions("paper", "data-ok-paper", {
+  variant: style(
+    "data-ok-variant",
+    paperVariants,
+    "elevation",
+    "`elevation`: a shadow; `outlined`: a 1px outline and no shadow.",
+  ),
+  elevation: style(
+    "data-ok-elevation",
+    paperElevations,
+    "1",
+    "Shadow depth from 0 (none) to 24 (`--ok-elevation-<n>`). Ignored by `outlined`.",
+  ),
+  square: flag("data-ok-square", "Square corners (no radius)."),
+});
+
+export interface PaperAnatomyOptions {
+  variant?: PaperVariant | undefined;
+  /** 0–24 (a number or its string). */
+  elevation?: number | string | undefined;
+  square?: boolean | undefined;
+}
+
+/** `data-ok-*` attributes of a paper (and of the surfaces built on it, such as Card). */
+export const paperAttributes = ({
+  elevation,
+  ...options
+}: PaperAnatomyOptions = {}): DataAttributes =>
+  optionAttributes(paperOptions, {
+    ...options,
+    elevation: elevation === undefined ? undefined : String(elevation),
+  });
+
 // --- List -------------------------------------------------------------------------------------
 
 export const listItemAlignments = ["center", "flex-start"] as const;
@@ -4695,6 +4762,7 @@ export const optionSchemas = {
   chip: chipOptions,
   label: labelOptions,
   divider: dividerOptions,
+  paper: paperOptions,
   list: listOptions,
   "list-item": listItemOptions,
   "list-item-button": listItemButtonOptions,

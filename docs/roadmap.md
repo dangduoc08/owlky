@@ -5,7 +5,7 @@ and a review before the next starts.
 
 ## Overview
 Every page of the reference's component menu (`https://minimals.cc/components/…`) and where it
-stands (plus pages from other references, marked). ✅ = built (39); *wave N* = planned, see "Next — components"; *not planned* = a pattern
+stands (plus pages from other references, marked). ✅ = built (40); *wave N* = planned, see "Next — components"; *not planned* = a pattern
 or app-level page. *Section* = the heading below with the details. Update this table with each
 component and each `/integrate` run.
 
@@ -31,6 +31,7 @@ component and each `/integrate` run.
 | MUI | Drawer | ✅ | Drawer | Drawer |
 | MUI (no Minimals page; mui.com) | Divider | ✅ | Divider | Divider |
 | MUI (no Minimals page; mui.com) | Backdrop | ✅ | Backdrop | Backdrop |
+| MUI (no Minimals page; mui.com) | Paper | ✅ | Paper | Paper |
 | MUI | List | ✅ | List, ListItem, ListItemButton, ListItemIcon, ListItemAvatar, ListItemText, ListSubheader, ListItemExpandIcon | List |
 | MUI | Menu | ✅ | Menu, MenuItem | Popover, Tooltip, Menu, Dialog & Snackbar |
 | MUI | Pagination | ✅ | Pagination, PaginationItem | Pagination |
@@ -279,6 +280,18 @@ Beyond upstream: `ListItemExpandIcon` (the chevron turns with `aria-expanded`). 
 labelled by the row text instead of sitting in a row button (a control in a button is invalid).
 Integrated in the same review: the Drawer stories' mailbox menu and Divider "Variants" (rows in a
 List, dividers in their own `li`). CSS budget raised to 20 kB. No new tokens.
+
+## ✅ Components — Paper (2026-11-09)
+Wave 8 (primitives), created with `/component` from MUI's Paper page (Minimals has none; its theme
+customizes MUI's Paper), every section as a story: Basic, Elevation (light and dark pages side by
+side), Variants, Corners. CSS only, any element: `data-ok-paper`, `variant` (elevation /
+outlined), `elevation` 0–24 (`--ok-elevation-<n>`, default 1), `square`; React `component`.
+Minimals' look: no dark-mode lightening gradient, outline grey 500 at 16%. `paper.css` is imported
+first among the components so surfaces built on it override it by source order (the Card
+contract in `specs/components/paper.md`). No new tokens. Closes no "Pending integrations" row on
+its own: the "Typography + Paper (card)" rows wait for Card. Candidates to compose Paper later
+(no visual change): Popover / Menu paper, Dialog paper, Drawer content, TableContainer, Map
+controls and popups, Autocomplete listbox.
 
 ## ✅ Components — Divider (2026-11-07)
 From MUI's Divider page (Minimals has none; its Drawer uses MUI's Divider): `hr` or, with text,
