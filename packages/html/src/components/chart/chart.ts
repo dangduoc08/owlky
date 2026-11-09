@@ -39,6 +39,7 @@ import {
   linkChart,
   nextChartActive,
   parseChartColorRanges,
+  parseChartIndicators,
   parseChartList,
   placeChartTooltip,
   readChartAnnotations,
@@ -456,6 +457,9 @@ export const chart = defineComponent<ChartInstance>({
         whitespace: readNumber(element, o.whitespace) as number | undefined,
         edgeOpacity: readNumber(element, o.edgeOpacity) as number | undefined,
         axisTitles: parseChartList(element.getAttribute(CHART_TEXT_ATTRIBUTES.axisTitles)),
+        indicators: parseChartIndicators(element.getAttribute(CHART_TEXT_ATTRIBUTES.indicators)),
+        navigator: element.hasAttribute(o.navigator.attr),
+        paneHeight: readNumber(element, o.paneHeight) as number | undefined,
         curve: readStyle(element, o.curve) as ChartCurve,
         fill: readStyle(element, o.fill) as ChartFill,
         legend: readStyle(element, o.legend) as ChartLegend,
@@ -509,7 +513,9 @@ export const chart = defineComponent<ChartInstance>({
       svg.setAttribute("height", String(layout.height));
       svg.setAttribute("viewBox", `0 0 ${layout.width} ${layout.height}`);
       patch(svg, layout.nodes);
-      if (source && table) {
+      // Stock charts: indicator columns are computed, so the table is rewritten to match.
+      const generated = render.data.series.some((series) => series.indicator);
+      if ((source || generated) && table) {
         // Data set through the API: the table (the accessible view) follows, in place.
         writeTable(table, render.table);
         changes.takeRecords();
@@ -539,7 +545,8 @@ export const chart = defineComponent<ChartInstance>({
     const mode = (): ChartGestureMode =>
       element.hasAttribute(CHART_TEXT_ATTRIBUTES.brushTarget)
         ? "brush"
-        : element.hasAttribute(o.zoom.attr) && render?.zoomable
+        : (element.hasAttribute(o.zoom.attr) || element.hasAttribute(o.navigator.attr)) &&
+            render?.zoomable
           ? pan
             ? "pan"
             : "zoom"
@@ -612,7 +619,9 @@ export const chart = defineComponent<ChartInstance>({
       syncTools(
         box,
         chartToolbar({
-          zoom: element.hasAttribute(o.zoom.attr) && current.zoomable,
+          zoom:
+            (element.hasAttribute(o.zoom.attr) || element.hasAttribute(o.navigator.attr)) &&
+            current.zoomable,
           zoomed: current.zoom !== null,
           pan,
           text: localeText,

@@ -133,6 +133,42 @@ const CANDLES: [number, number, number, number][] = DAYS_30.map((_, i) => {
   const low = Math.round((Math.min(open, close) - 2 - Math.abs(3 * Math.sin(i))) * 10) / 10;
   return [open, high, low, close];
 });
+/** Weekdays (UTC) from `start`: trading days of the stock examples. */
+const weekdays = (start: string, count: number) => {
+  const out: string[] = [];
+  for (let t = Date.parse(`${start}T00:00:00Z`); out.length < count; t += 86_400_000) {
+    const day = new Date(t).getUTCDay();
+    if (day !== 0 && day !== 6) out.push(new Date(t).toISOString().slice(0, 10));
+  }
+  return out;
+};
+/**
+ * Stock bars of a seeded random walk (the same on every run, in React, HTML and the tests):
+ * `{ y: [open, high, low, close], v }` as ApexStock writes them.
+ */
+const stockBars = (count: number, seed: number, start = 100) => {
+  let state = seed;
+  const random = () => {
+    state = (state * 16_807) % 2_147_483_647;
+    return state / 2_147_483_647;
+  };
+  const round = (value: number) => Math.round(value * 100) / 100;
+  let price = start;
+  return Array.from({ length: count }, (_, i) => {
+    const open = price;
+    const close = round(Math.max(5, open + (random() - 0.48) * 4 + Math.sin(i / 9) * 0.8));
+    const high = round(Math.max(open, close) + random() * 1.8);
+    const low = round(Math.min(open, close) - random() * 1.8);
+    price = close;
+    const v = Math.round(800_000 + random() * 900_000 + Math.abs(close - open) * 150_000);
+    return { y: [round(open), high, low, close], v };
+  });
+};
+const STOCK_DAYS = weekdays("2025-01-02", 130);
+const STOCK = stockBars(130, 20_250_102);
+const STOCK_YEAR = weekdays("2024-01-02", 260);
+const STOCK_LONG = stockBars(260, 7_654_321, 80);
+
 /** Daily users: a slow wave with a weekly dip. */
 const users = (i: number) =>
   Math.round(4000 + 900 * Math.sin(i / 9) + 300 * Math.cos(i / 2.3) - (i % 7 >= 5 ? 700 : 0));
@@ -892,6 +928,76 @@ export const chartExamples: Record<string, ChartExample> = {
       colors: ["primary"],
       categories: ["Mon", "Tue", "Wed", "Thu", "Fri"],
       series: [{ name: "Deploys", data: [14, 22, 19, 25, 9] }],
+    },
+  },
+  // Phase 2.2 (ADR-0047): stock charts, one per ApexStock demo section that applies.
+  stock: {
+    title: "Stock chart",
+    props: {
+      label: "ACME share price, first half of 2025",
+      type: "candlestick",
+      xType: "datetime",
+      valuePrefix: "$",
+      height: 280,
+      navigator: true,
+      indicators: [{ type: "sma", period: 20 }, { type: "volume" }],
+      categories: STOCK_DAYS,
+      series: [{ name: "ACME", data: STOCK }],
+    },
+  },
+  "stock-overlays": {
+    title: "Overlays",
+    props: {
+      label: "ACME share price with overlays",
+      type: "candlestick",
+      xType: "datetime",
+      valuePrefix: "$",
+      zoom: true,
+      toolbar: true,
+      indicators: [
+        { type: "bollinger", period: 20, stdDev: 2, color: "info" },
+        { type: "ema", period: 9, color: "warning" },
+        { type: "vwap", color: "secondary" },
+      ],
+      categories: STOCK_DAYS,
+      series: [{ name: "ACME", data: STOCK }],
+    },
+  },
+  "stock-oscillators": {
+    title: "Oscillators",
+    props: {
+      label: "ACME share price with oscillators",
+      type: "candlestick",
+      xType: "datetime",
+      valuePrefix: "$",
+      height: 240,
+      paneHeight: 110,
+      navigator: true,
+      indicators: [
+        { type: "rsi", period: 14 },
+        { type: "macd", fastPeriod: 12, slowPeriod: 26, signalPeriod: 9 },
+        { type: "stochastic", period: 14, signalPeriod: 3 },
+      ],
+      categories: STOCK_DAYS,
+      series: [{ name: "ACME", data: STOCK }],
+    },
+  },
+  "stock-line": {
+    title: "Large dataset",
+    props: {
+      label: "Index level, 2024",
+      type: "area",
+      xType: "datetime",
+      fill: "solid",
+      colors: ["primary"],
+      navigator: true,
+      paneHeight: 100,
+      indicators: [
+        { type: "volume", color: "info" },
+        { type: "atr", period: 14 },
+      ],
+      categories: STOCK_YEAR,
+      series: [{ name: "Index", data: STOCK_LONG.map(({ y, v }) => ({ y: y[3] as number, v })) }],
     },
   },
   // Phase 2.1 (ADR-0047): Sankey charts, one per ApexSankey demo section that applies.

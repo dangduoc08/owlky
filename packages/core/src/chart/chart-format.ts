@@ -90,7 +90,10 @@ export function chartFormat(data: ChartData, options: ChartFormatOptions = {}): 
         ? safe(custom(value, series))
         : timeline
           ? timeValueLabel(value, tUnit, timeMonths)
-          : `${prefix}${values.format(value)}${suffix}`,
+          : data.series[series]?.pane
+            ? // Stock panes (ADR-0047): oscillators and volumes are plain numbers.
+              values.format(value)
+            : `${prefix}${values.format(value)}${suffix}`,
     part: (part) => options.partLabels?.[part] ?? chartPartLabels[part],
     dataLabel: (value, series, index, fallback) =>
       labelOf ? safe(labelOf(value, series, index)) : fallback,

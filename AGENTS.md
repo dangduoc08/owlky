@@ -510,6 +510,15 @@ the `check` job, `VITEST_BROWSERS=<engine> pnpm test:browser` in one `unit` job 
   `stroke-dasharray` on `[data-ok-chart-link]`. Gradient links use `gradientUnits="userSpaceOnUse"`
   with one stop per node color. New options that every chart would write (styles) need
   `{ optional: true }` or every snippet changes (`orientation`).
+- Stock charts (ADR-0047): `indicators` / `navigator` turn a time chart into `layoutStock`: the
+  generated indicator series are appended to `data.series` (fields `indicator`, `pane`, `table`,
+  `scale`, `guides`), so the legend, the tooltip and the table see them like data. Each pane is a
+  `layoutChart` call with `plotLeft`, `banded`, `fitZoom`, `xLabels` and (price) `zeroBased: false`,
+  wrapped in `g[data-ok-chart-pane][transform]`; marks are re-indexed to global series and moved by
+  the pane offset, and the pane groups lose their own crosshair / active groups (one of each at the
+  top level). Indicator columns (`th[data-ok-indicator]`) are skipped by `readChartTable` and
+  rewritten by the HTML runtime after each draw. The navigator is `layout.navigator`: gestures check
+  it first (a brush on the zoom); `navigator` turns zoom on in both owners.
 - Data grid charts integration: core `gridChartOptions(model, data)` is the only mapping from the
   chart model to the Chart's options (React spreads it on `<Chart>`, HTML writes it with
   `chartAttributes` and removes the other option attributes), and the HTML grid feeds data through

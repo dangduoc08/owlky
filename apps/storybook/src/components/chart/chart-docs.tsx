@@ -9,6 +9,19 @@ const SALES = [
   { name: "In store", data: [11, 32, 45, 32, 34, 52] },
 ];
 
+/** Docs preview prices: 60 days of a smooth walk with volumes. */
+const STOCK_DAYS = Array.from({ length: 60 }, (_, i) =>
+  new Date(Date.UTC(2025, 0, 2 + i)).toISOString().slice(0, 10),
+);
+const STOCK_BARS = STOCK_DAYS.map((_, i) => {
+  const open = Math.round((100 + 8 * Math.sin(i / 7) + 2 * Math.cos(i * 1.3)) * 100) / 100;
+  const close = Math.round((open + 1.6 * Math.sin(i * 2.1)) * 100) / 100;
+  return {
+    y: [open, Math.max(open, close) + 0.8, Math.min(open, close) - 0.8, close],
+    v: Math.round(1_000_000 + 400_000 * Math.sin(i * 0.9)),
+  };
+});
+
 export const chartSections: GuideSection[] = [
   {
     id: "overview",
@@ -63,6 +76,7 @@ export function MonthlySales() {
 - **\`heatmap\` and \`treemap\`:** values as shaded cells. See "Show values as cells".
 - **\`bubble\`:** points placed by two numbers and sized by a third.
 - **\`funnel\` and \`slope\`:** stages that narrow, or the change between a few categories. See "Show stages and changes".
+- **Stock charts:** add \`indicators\`, panes and a \`navigator\` to a candlestick, line, area or column chart of dates. See "Show stock prices with indicators".
 - **\`sankey\`:** flows between nodes, each as wide as its value. See "Show flows between stages".
 
 To mix types in line, area, bar, scatter, box plot, bubble and range area charts, give a series its own \`type\`. In HTML, set \`data-ok-type\` on the column header of the series.`,
@@ -424,6 +438,60 @@ In the data table, each value gets its own column under a second header row, suc
 />`,
   },
   {
+    id: "stock",
+    title: "Show stock prices with indicators",
+    body: `A stock chart is a candlestick, line, area or column chart of prices over time, with technical indicators, panes and a navigator. The first series is the price. Give each point a volume in \`v\`, such as \`{ y: [open, high, low, close], v: 1200000 }\`. In HTML, the volume is a column of the price series under the header \`data-ok-part="volume"\`.
+
+Set \`indicators\` to compute indicators from the price. Each indicator is a type and optional parameters:
+
+- **Overlays,** drawn over the price: \`sma\` and \`ema\` (moving averages, \`period\`), \`bollinger\` (\`period\`, \`stdDev\`), \`vwap\`, \`donchian\` (\`period\`) and \`keltner\` (\`period\`, \`atrPeriod\`, \`multiplier\`).
+- **Oscillators,** each in a pane of its own under the price: \`volume\`, \`rsi\` (\`period\`), \`macd\` (\`fastPeriod\`, \`slowPeriod\`, \`signalPeriod\`), \`stochastic\` (\`period\`, \`signalPeriod\`), \`atr\`, \`cci\` (\`period\`) and \`pvt\`.
+
+In HTML, list the indicators in \`data-ok-indicators\`, separated by semicolons. Write the type, then its numbers in the order above, then an optional color, such as \`"sma 20 warning; rsi 14"\`.
+
+The panes share the date axis, so a zoom applies to all of them. The price axis fits the visible dates. \`paneHeight\` sets the height of each pane in pixels (120 by default). Set \`navigator\` to add a small line of the whole price under the chart. Drag the window on it to move through time, or drag its edges to show more or fewer dates. The navigator also turns on the zoom keys, so the keyboard reaches every date.
+
+The tooltip is one readout of the active date in every pane: open, high, low, close, volume and each indicator. The legend shows and hides each indicator. The data table lists every computed value in its own column (\`th[data-ok-indicator]\`), so screen readers reach them too. In HTML, the runtime writes those columns. It never reads them back as data.`,
+    html: `<figure data-ok-chart data-ok-type="candlestick" data-ok-x-type="datetime" data-ok-navigator
+  data-ok-value-prefix="$" data-ok-indicators="sma 20; volume; rsi 14">
+  <table data-ok-chart-data>
+    <caption>ACME share price</caption>
+    <thead>
+      <tr><th scope="col" rowspan="2">Date</th><th scope="colgroup" colspan="5" data-ok-color="primary-dark">ACME</th></tr>
+      <tr><th scope="col" data-ok-part="open">Open</th><th scope="col" data-ok-part="high">High</th><th scope="col" data-ok-part="low">Low</th><th scope="col" data-ok-part="close">Close</th><th scope="col" data-ok-part="volume">Volume</th></tr>
+    </thead>
+    <tbody>
+      <tr><th scope="row" data-ok-value="2025-01-02">02 Jan 2025</th><td data-ok-value="100">$100</td><td data-ok-value="101.15">$101.15</td><td data-ok-value="98.48">$98.48</td><td data-ok-value="100.02">$100.02</td><td data-ok-value="1661387">1,661,387</td></tr>
+      <tr><th scope="row" data-ok-value="2025-01-03">03 Jan 2025</th><td data-ok-value="100.02">$100.02</td><td data-ok-value="103.33">$103.33</td><td data-ok-value="99.52">$99.52</td><td data-ok-value="101.79">$101.79</td><td data-ok-value="1750206">1,750,206</td></tr>
+    </tbody>
+  </table>
+</figure>`,
+    react: `import { Chart } from "@owlky/react";
+
+export function SharePrice() {
+  return (
+    <Chart
+      label="ACME share price"
+      type="candlestick"
+      xType="datetime"
+      valuePrefix="$"
+      navigator
+      indicators={[{ type: "sma", period: 20 }, { type: "volume" }, { type: "rsi", period: 14 }]}
+      categories={["2025-01-02", "2025-01-03"]}
+      series={[
+        {
+          name: "ACME",
+          data: [
+            { y: [100, 101.15, 98.48, 100.02], v: 1661387 },
+            { y: [100.02, 103.33, 99.52, 101.79], v: 1750206 },
+          ],
+        },
+      ]}
+    />
+  );
+}`,
+  },
+  {
     id: "sankey",
     title: "Show flows between stages",
     body: `A Sankey chart shows how a quantity flows from sources to destinations, such as energy from its sources to its uses. Set \`type\` to \`sankey\` and describe the links instead of series:
@@ -733,6 +801,22 @@ const PREVIEWS = {
       />
     </Preview>
   ),
+  stock: () => (
+    <Preview>
+      <Chart
+        label="ACME share price"
+        type="candlestick"
+        xType="datetime"
+        valuePrefix="$"
+        height={220}
+        paneHeight={90}
+        navigator
+        indicators={[{ type: "sma", period: 10 }, { type: "volume" }, { type: "rsi", period: 14 }]}
+        categories={STOCK_DAYS}
+        series={[{ name: "ACME", data: STOCK_BARS }]}
+      />
+    </Preview>
+  ),
   sankey: () => (
     <Preview>
       <Chart
@@ -799,6 +883,13 @@ const PREVIEWS = {
           type: "{ id, title?, color? }[] / { source, target, value, color? }[]",
           description:
             "Sankey charts: the nodes (optional: names and colors) and the links between them, by node id.",
+        },
+        {
+          react: "indicators",
+          html: "data-ok-indicators",
+          type: "{ type, period?, stdDev?, fastPeriod?, slowPeriod?, signalPeriod?, atrPeriod?, multiplier?, color? }[]",
+          description:
+            'Stock charts: indicators of the first series. HTML writes `"type numbers color; …"`, such as `"bollinger 20 2; rsi 14"`.',
         },
         {
           react: "axisTitles",
@@ -910,7 +1001,7 @@ const PREVIEWS = {
         ["Home / End", "Shows the first or last category or point."],
         ["Escape", "Hides the tooltip. Pressed again, resets the zoom."],
         ["+ / -", "Zooms in or out (charts with zoom, brush charts)."],
-        ["Shift + Left arrow / Right arrow", "Pans the zoomed range."],
+        ["Shift + Left arrow / Right arrow", "Pans the zoomed range (and the navigator's window)."],
         ["0", "Resets the zoom."],
       ]}
     />

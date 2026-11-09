@@ -10,7 +10,8 @@ Candlestick, Range bar, Timeline, Polar area; zoom and pan, synchronized charts,
 annotations, animations, export (SVG, PNG, CSV) and a toolbar; data label formatters and badges, a
 legend with values, the donut hole size, heatmap color ranges, horizontal box plots and localized
 texts. ADR-0047 adds the commercial add-ons' features (behavior and option names only): Sankey
-charts (ApexSankey, phase 2.1). Upstream: ApexCharts (`react-apexcharts`, ADR-0015) and ApexSankey.
+charts (ApexSankey, phase 2.1) and stock charts (ApexStock, phase 2.2: indicators, panes, a
+navigator). Upstream: ApexCharts (`react-apexcharts`, ADR-0015), ApexSankey and ApexStock.
 Created with `/component`.
 Reference URL: https://minimals.cc/components/extra/chart
 HTML source: written by us (ApexCharts' framework-free core is not MIT: the owner chose to write our
@@ -103,6 +104,14 @@ figure[data-ok-chart][data-ok-type][data-ok-x-type][data-ok-curve][data-ok-legen
         + rect[data-ok-chart-node][data-ok-color]
       g[data-ok-chart-active] › path[data-ok-chart-active-link] + rect[data-ok-chart-active-cell] (node outline)
       g[data-ok-chart-data-labels] › text[data-ok-chart-node-label] (after the active group)
+    Stock (ADR-0047; root [data-ok-indicators]?[data-ok-navigator]?[data-ok-pane-height]?):
+      g[data-ok-chart-crosshair] (first: the band behind every pane)
+      g[data-ok-chart-pane="0|n"][transform=translate(0 y)]? › line[data-ok-chart-guide]* + the pane's
+        layout (grid, axes, series; series keep their global data-ok-index); x labels: last pane only
+      line[data-ok-chart-pane-divider] (between panes)
+      g[data-ok-chart-navigator] › rect[data-ok-chart-navigator-frame] + g[transform] › (sparkline of
+        the price) + g[data-ok-chart-brush] › rect[data-ok-chart-selection] + rect[data-ok-chart-handle]×2
+      g[data-ok-chart-active]; g[data-ok-chart-pane-titles] › text[data-ok-chart-pane-title]
     data labels may also be text[data-ok-chart-data-label="plain"] (primary text on faint cells)
     div[data-ok-chart-tooltip][role=status][hidden]?
       div[data-ok-chart-tooltip-title] + div[data-ok-chart-tooltip-rows]
@@ -117,6 +126,9 @@ figure[data-ok-chart][data-ok-type][data-ok-x-type][data-ok-curve][data-ok-legen
     tbody › tr › th[scope=row][data-ok-value]? + td[data-ok-value]?[data-ok-color]? (one per x value)
       Candles: th[data-ok-part="open|high|low|close"]; range bars and timelines: "start|end"
       (timeline cells: the date as text, ISO 8601 in data-ok-value)
+    Stock: the price series gets a th[data-ok-part="volume"] column after its values when a point has
+      `v`; indicator columns th[data-ok-indicator="sma|…"][data-ok-color] (rowspan 2) are written by
+      React and the runtime and skipped when the table is read (volume bars have none)
     Sankey: thead › tr › th[scope=col][data-ok-part="source|target|y"]×3; one row per link:
       tbody › tr › th[scope=row][data-ok-value]?[data-ok-color] (source title; id when it differs)
         + td[data-ok-value]?[data-ok-color] (target) + td[data-ok-value]?[data-ok-color]? (value; own link color)
@@ -132,7 +144,7 @@ Geometry (core, shared): smooth curves keep horizontal tangents at every point (
 35 % of each segment); bars are rounded (4px) at the value end only, and only at the end of a stack;
 value ticks about every 48px (vertical) or 200px (horizontal) on nice steps (1, 2, 2.5, 5 × 10ⁿ);
 x labels are thinned to whole steps (every n categories, or whole days / months / years for dates)
-so they never overlap. Label widths are estimated per glyph class, not measured, so the server,
+so they never overlap; dates with gaps (trading days) also drop a label that would come within 8px of the one before it. Label widths are estimated per glyph class, not measured, so the server,
 React and HTML lay out identically.
 
 Polar geometry (core `chart-polar.ts`): angles in degrees clockwise from 12 o'clock; the chart is
@@ -165,6 +177,28 @@ Sankey geometry (core `chart-sankey.ts`, ADR-0047):
   the first gap is shared by two ranks), left out under 26px.
 - `axisTitles`: one per rank above the columns (vertical: beside the rows, a left margin).
   `dataLabels`: the node's value after its title.
+
+Stock geometry (core `chart-stock.ts`, `chart-indicators.ts`, ADR-0047):
+- Applies when `indicators` or `navigator` is set on a category / date chart that isn't horizontal,
+  a sparkline, scatter, bubble or a whole type. The first series is the price (candles: open, high,
+  low, close; others: the value), with an optional volume per point (`v`).
+- Indicators (warm-up values `null`): `sma`, `ema` (seeded with the first SMA), `bollinger` (SMA ±
+  `stdDev` population deviations, a range area), `vwap` (cumulative, typical price), `donchian`
+  (highest high / lowest low), `keltner` (EMA ± `multiplier` × ATR) on pane 0; `volume` (bars
+  colored by the candle, `success` / `error`; no table column), `rsi` (Wilder; 0–100, guides 30 /
+  70), `macd` (histogram bars by sign, MACD and signal lines), `stochastic` (%K, %D; 0–100, guides
+  20 / 80), `atr` (Wilder), `cci` (guides ±100), `pvt` each in a new pane, in order. Defaults:
+  period 20 (SMA, EMA, Bollinger, Donchian, Keltner, CCI), 14 (RSI, stochastic, ATR); stdDev 2;
+  MACD 12 / 26 / 9; Keltner ATR 10, ×2; %D 3. Periods 1–500, factors (0, 10]; values rounded to 4
+  decimals. Colors: own, else warning, info, secondary, success-dark, error-light, info-dark by
+  position.
+- Panes: pane 0 `height` px, others `paneHeight` px (default 120, min 60) after a 10px gap with a
+  divider; all laid out by `layoutChart` with a common `plotLeft` (the widest value labels),
+  `banded`, `fitZoom` (scale from the points in the zoom window), labels on the last pane only;
+  pane 0 fits its scale (`zeroBased: false`); oscillator ticks are plain numbers (volume compact,
+  "1.2M"); values of panes > 0 are plain numbers (no prefix / suffix).
+- Navigator: 12px under the panes, 48px tall, the price's line over the whole axis (a sparkline),
+  its own axis map (`layout.navigator`), the zoom (or the whole axis) as a brush selection.
 
 Phase 3 geometry (core `chart-layout.ts`, `chart-cells.ts`, `chart-shapes.ts`):
 - Value scales start at 0 unless a box plot, range area, bubble or sparkline series fits them to
@@ -223,6 +257,8 @@ Root: `data-ok-chart`. Unknown values fall back to the default.
 | `nodeWidth` | `data-ok-node-width="…"` | number | number | `20` | Sankey charts: node thickness along the flow in px. |
 | `whitespace` | `data-ok-whitespace="…"` | number | number | `0.18` | Sankey charts: share of the fullest rank left between its nodes (0 to 0.9). |
 | `edgeOpacity` | `data-ok-edge-opacity="…"` | number | number | `0.4` | Sankey charts: link opacity (0 to 1). |
+| `navigator` | `data-ok-navigator` | flag | boolean | off | Stock charts: a navigator under the chart, the whole price line with the zoom as a brush (zooms like `zoom`). |
+| `paneHeight` | `data-ok-pane-height="…"` | number | number | `120` | Stock charts: height in px of each indicator pane (volume, RSI, MACD…) under the price. |
 | `hiddenSeries` | `aria-pressed` · event `ok:chart:toggle` | state | — | — | Indexes of the series hidden through the legend (`aria-pressed="false"` on their buttons); categories in pie, donut and radial bar charts. |
 | `zoomRange` | `instance.zoomRange` · event `ok:chart:zoom` | state | — | — | The visible window of the x axis, `{ min, max }` (category indexes or x values), or `null`. |
 <!-- /options:chart -->
@@ -320,6 +356,13 @@ plots list the five values, range areas `low – high`, bubbles the value and a 
   again. Tooltip: node title + Incoming / Outgoing totals (rows only when > 0); link
   "Source → Target" + Value. No legend, no zoom. HTML reads the links table
   (`readChartSankeyTable`).
+- Stock charts: one tooltip per date lists every visible series of every pane (OHLC, volume, each
+  indicator); the crosshair band runs through all panes; the legend toggles indicators. A press in
+  the navigator (±4px) works like a brush on the zoom: inside the window moves it, its edges (8px)
+  resize it, elsewhere (or anywhere while unzoomed) draws a new one; it commits as a `user` zoom.
+  `navigator` turns the zoom gestures and keys on (like `zoom`). HTML: the runtime rewrites the
+  table after each draw when it has indicator columns (in place; its own mutations are taken back),
+  so computed values never become input; `updateSeries` / `appendData` keep the indicators.
 - Runtime needed: yes (`chart`). Without JavaScript the table stays visible.
 
 ## Responsive
@@ -363,6 +406,9 @@ plots list the five values, range areas `low – high`, bubbles the value and a 
   reset while unzoomed; a visually hidden `role=status` announces failed downloads. Annotations are
   a visually hidden list after the table. Zoom and brush work from the keyboard (no drag needed,
   WCAG 2.5.7). Annotation tags and candles are brand colors in the `aria-hidden` SVG (ADR-0014).
+- Stock charts: every indicator value is a table column (`th[data-ok-indicator]`, named like the
+  legend) and a tooltip row reachable by keyboard; the navigator has keyboard equivalents (zoom keys,
+  WCAG 2.5.7); pane titles sit on a paper halo.
 - Sankey tables have one row per link: the source is the row header, then target and value
   (`th[data-ok-part="source|target|y"]`, localizable as From / To / Value); node labels sit on a
   paper halo over the links; cut labels keep their whole name in the tooltip and the table.
@@ -434,6 +480,13 @@ plots list the five values, range areas `low – high`, bubbles the value and a 
 | `options.xaxis.labels.formatter` | renamed `labelFormatter` |
 | `options.chart.events.legendClick` / `dataPointMouseEnter` | `onHiddenSeriesChange`, `onActiveChange` |
 | `options.theme`, `options.chart.fontFamily`, `sx` | not applicable: tokens and `data-ok-theme` |
+| ApexStock `series[0].data` `{ x, y: [o, h, l, c], v }` | kept (`v` → the volume column) |
+| ApexStock `plotOptions.stockChart.indicators` (keys `"moving average"`, `"exponential moving average"`, `"bollinger bands"`, `"vwap"`, `"donchian channels"`, `"keltner channels"`, `"volumes"`, `"rsi"`, `"macd"`, `"stochastic oscillator"`, `"atr"`, `"commodity channel index"`, `"price volume trend"`; `period`, `stdDev`…) | renamed `indicators` (`sma`, `ema`, `bollinger`, `vwap`, `donchian`, `keltner`, `volume`, `rsi`, `macd`, `stochastic`, `atr`, `cci`, `pvt`; same parameter names) |
+| ApexStock `panes[key].heightRatio` | renamed `paneHeight` (px, every pane) |
+| ApexStock `getVisibleRange` / `setVisibleRange`, `rangeChange` | renamed `zoomRange` / `setZoomRange`, `ok:chart:zoom` (ADR-0031) |
+| ApexStock `legend` (on-chart data readout), `crosshairMove` | the tooltip readout of every pane; `onActiveChange` / `ok:chart:active` |
+| ApexStock `calculate*` helpers | renamed `smaValues`, `emaValues`, `rsiValues`, `macdValues`, `stochasticValues`, `atrValues`, `cciValues`, `vwapValues`, `pvtValues` (core) |
+| ApexStock fibonacci, linear regression, Ichimoku, ADX, Chaikin, TSI, accelerator, %b / width, std dev, drawdown indicators; drawings, price lines, event markers, comparison, price scale modes, `aggregateOHLC`, heikin-ashi / renko, `getState` | not built (ADR-0047 §10) |
 | ApexSankey `render({ nodes, edges })`: `nodes[].id` / `.title` / `.color`, `edges[].source` / `.target` / `.value` | renamed `type="sankey"` + `nodes`, `edges` (colors are palette names); `edges[].type` (parallel edge key): not applicable (parallel links always stay separate) |
 | ApexSankey `orientation`, `nodeWidth`, `whitespace`, `edgeOpacity`, `axisTitles` | kept |
 | ApexSankey `edgeGradientFill` | renamed `fill` (`gradient` default · `solid`) |
@@ -458,5 +511,8 @@ plots list the five values, range areas `low – high`, bubbles the value and a 
   (the list is authored HTML); `zoomRange` is state (no attribute).
 - Sankey stories (ADR-0047): Sankey, Vertical Sankey, Cycles, Alluvial, Link and node options.
   Gradient ids are normalized by the SVG comparison like the others.
+- Stock stories (ADR-0047): Stock chart, Overlays, Oscillators, Large dataset. Snippets hold the
+  computed indicator columns (generated by React's `renderChart`); the runtime rewrites them to the
+  same text.
 - Story "Live data": React keeps the points in state, the HTML page script calls `appendData` /
   `updateSeries`; both start from the same data and add the same points, so they stay identical.

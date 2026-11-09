@@ -11,6 +11,7 @@ import {
   type ChartFill,
   type ChartGestureMode,
   type ChartGestures,
+  type ChartIndicator,
   type ChartLegend,
   type ChartLink,
   type ChartLocaleText,
@@ -89,6 +90,16 @@ export interface ChartProps extends Omit<HTMLAttributes<HTMLElement>, "children"
   edgeOpacity?: number | undefined;
   /** Sankey charts: a title above each rank (beside each row when vertical). */
   axisTitles?: readonly string[] | undefined;
+  /**
+   * Stock charts: indicators of the first series (the price), such as `{ type: "sma", period: 20 }`.
+   * Overlays (`sma`, `ema`, `bollinger`, `vwap`, `donchian`, `keltner`) draw over the price;
+   * `volume`, `rsi`, `macd`, `stochastic`, `atr`, `cci` and `pvt` get a pane each.
+   */
+  indicators?: readonly ChartIndicator[] | undefined;
+  /** Stock charts: a navigator under the chart (the whole price line, the zoom as a brush). */
+  navigator?: boolean | undefined;
+  /** Stock charts: height of each indicator pane in px. Default 120. */
+  paneHeight?: number | undefined;
   /** Category labels, or dates when `xType` is `"datetime"`. */
   categories?: readonly (string | number | Date)[] | undefined;
   /** Default `"category"` (`"numeric"` for scatter). */
@@ -233,6 +244,9 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     whitespace,
     edgeOpacity,
     axisTitles,
+    indicators,
+    navigator,
+    paneHeight,
     categories,
     xType,
     colors,
@@ -324,6 +338,8 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     nodeWidth,
     whitespace,
     edgeOpacity,
+    navigator,
+    paneHeight,
   });
   const isSparkline = attributes["data-ok-sparkline"] !== undefined;
   const givenHeight = attributes["data-ok-height"];
@@ -367,7 +383,10 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
   const validUpColor = attributes["data-ok-candle-up-color"] as ChartColor | undefined;
   const validDownColor = attributes["data-ok-candle-down-color"] as ChartColor | undefined;
   const validDonutSize = number("data-ok-donut-size");
-  const zoomOn = attributes["data-ok-zoom"] !== undefined;
+  const navigatorOn = attributes["data-ok-navigator"] !== undefined;
+  // A navigator zooms the chart: its gestures and keys are on.
+  const zoomOn = attributes["data-ok-zoom"] !== undefined || navigatorOn;
+  const validPaneHeight = number("data-ok-pane-height");
   const validOrientation = attributes["data-ok-orientation"] as ChartOrientation | undefined;
   const validNodeWidth = number("data-ok-node-width");
   const validWhitespace = number("data-ok-whitespace");
@@ -398,6 +417,9 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         whitespace: validWhitespace,
         edgeOpacity: validEdgeOpacity,
         axisTitles,
+        indicators,
+        navigator: navigatorOn,
+        paneHeight: validPaneHeight,
         categories,
         colors,
         curve: chartCurve,
@@ -456,6 +478,9 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       validWhitespace,
       validEdgeOpacity,
       axisTitles,
+      indicators,
+      navigatorOn,
+      validPaneHeight,
       categories,
       colors,
       chartCurve,
@@ -736,6 +761,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         brushTarget,
         colorRanges,
         axisTitles,
+        indicators,
       })}
       data-ok-ready=""
       data-ok-runtime="off"

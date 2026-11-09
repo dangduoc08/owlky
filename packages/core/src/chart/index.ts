@@ -42,6 +42,26 @@ export {
   createChartGestures,
 } from "./chart-gestures.js";
 export {
+  atrValues,
+  type ChartIndicator,
+  type ChartIndicatorType,
+  type ChartPrices,
+  type ChartValues,
+  cciValues,
+  chartIndicatorSeries,
+  chartIndicatorsText,
+  chartIndicatorTypes,
+  chartPrices,
+  emaValues,
+  macdValues,
+  parseChartIndicators,
+  pvtValues,
+  rsiValues,
+  smaValues,
+  stochasticValues,
+  vwapValues,
+} from "./chart-indicators.js";
+export {
   type ChartArc,
   type ChartAxisMap,
   type ChartColorRange,
@@ -106,6 +126,7 @@ export {
   layoutSankey,
   readChartSankeyTable,
 } from "./chart-sankey.js";
+export { type ChartStockOptions, layoutStock } from "./chart-stock.js";
 export {
   CHART_TEXT_ATTRIBUTES,
   type ChartTextOptions,

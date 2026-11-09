@@ -25,6 +25,9 @@
  *                 circle[data-ok-chart-bubble], rect[data-ok-chart-cell][fill-opacity] (heatmap,
  *                 treemap) + text[data-ok-chart-cell-label] + rect[data-ok-chart-tag] +
  *                 text[data-ok-chart-tag-label], rect[data-ok-chart-active-cell];
+ *               Stock (ADR-0047): g[data-ok-chart-pane] › line[data-ok-chart-guide] + the pane's
+ *                 layout; text[data-ok-chart-pane-title]; g[data-ok-chart-navigator] ›
+ *                 rect[data-ok-chart-navigator-frame] + the price line + g[data-ok-chart-brush]
  *               Sankey (ADR-0047): path[data-ok-chart-link][data-ok-back]? + rect[data-ok-chart-node]
  *                 + text[data-ok-chart-node-label], path[data-ok-chart-active-link];
  *                 [data-ok-sparkline] roots: no axes or legend, the plot fills the container
@@ -529,6 +532,43 @@
     stroke-linejoin: round;
     paint-order: stroke;
     pointer-events: none;
+  }
+
+  /* Stock charts (ADR-0047): reference lines of oscillator panes (RSI 30 / 70), pane titles on a
+     paper halo, and the navigator's frame under the brush. */
+  :where([data-ok-chart-guide]) {
+    stroke: var(--ok-text-disabled);
+    stroke-dasharray: 4 3;
+    shape-rendering: crispEdges;
+  }
+
+  :where([data-ok-chart-pane-title]) {
+    fill: var(--ok-text-secondary);
+    font-size: var(--ok-font-size-xs);
+    font-weight: var(--ok-font-weight-semibold);
+    stroke: var(--ok-bg-paper);
+    stroke-width: 3px;
+    stroke-linejoin: round;
+    paint-order: stroke;
+    pointer-events: none;
+  }
+
+  :where([data-ok-chart-pane-divider]) {
+    stroke: var(--ok-divider);
+    shape-rendering: crispEdges;
+  }
+
+  :where([data-ok-chart-navigator] [data-ok-chart-line]) {
+    stroke-width: 1.5px;
+  }
+
+  :where([data-ok-chart-navigator-frame]) {
+    fill: none;
+    stroke: var(--ok-divider);
+  }
+
+  :where([data-ok-chart-navigator]) {
+    cursor: ew-resize;
   }
 
   /* Treemap groups: a dark tag with the series name. */

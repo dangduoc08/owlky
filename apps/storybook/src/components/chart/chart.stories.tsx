@@ -102,3 +102,8 @@ export const SankeyVertical: StoryObj = story("sankey-vertical");
 export const SankeyCycles: StoryObj = story("sankey-cycles");
 export const SankeyAlluvial: StoryObj = story("sankey-alluvial");
 export const SankeyLinks: StoryObj = story("sankey-links");
+// Phase 2.2 (ADR-0047): stock charts.
+export const Stock: StoryObj = story("stock");
+export const StockOverlays: StoryObj = story("stock-overlays");
+export const StockOscillators: StoryObj = story("stock-oscillators");
+export const StockLine: StoryObj = story("stock-line");

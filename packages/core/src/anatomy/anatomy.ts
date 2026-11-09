@@ -3937,6 +3937,16 @@ export const chartOptions = defineOptions("chart", "data-ok-chart", {
   edgeOpacity: number("data-ok-edge-opacity", 0.4, "Sankey charts: link opacity (0 to 1).", {
     min: 0,
   }),
+  navigator: flag(
+    "data-ok-navigator",
+    "Stock charts: a navigator under the chart, the whole price line with the zoom as a brush (zooms like `zoom`).",
+  ),
+  paneHeight: number(
+    "data-ok-pane-height",
+    120,
+    "Stock charts: height in px of each indicator pane (volume, RSI, MACD…) under the price.",
+    { min: 60 },
+  ),
   hiddenSeries: state(
     "aria-pressed",
     'Indexes of the series hidden through the legend (`aria-pressed="false"` on their buttons); categories in pie, donut and radial bar charts.',
@@ -3984,6 +3994,8 @@ export interface ChartAnatomyOptions {
   nodeWidth?: number | undefined;
   whitespace?: number | undefined;
   edgeOpacity?: number | undefined;
+  navigator?: boolean | undefined;
+  paneHeight?: number | undefined;
 }
 
 /** `data-ok-*` attributes of a chart root (numbers only when given). */

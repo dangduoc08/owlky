@@ -47,6 +47,10 @@ const STORIES = [
   "sankey-cycles",
   "sankey-alluvial",
   "sankey-links",
+  "stock",
+  "stock-overlays",
+  "stock-oscillators",
+  "stock-line",
 ];
 
 interface Measure {

@@ -1,3 +1,4 @@
+import { type ChartIndicator, chartIndicatorsText } from "./chart-indicators.js";
 import type { ChartColorRange } from "./chart-layout.js";
 import { type ChartColor, chartColors, parseChartNumber } from "./chart-model.js";
 
@@ -20,6 +21,8 @@ export interface ChartTextOptions {
   readonly colorRanges?: readonly ChartColorRange[] | undefined;
   /** Sankey charts: a title per rank (`"Income; Budget; Spending"`). */
   readonly axisTitles?: readonly string[] | undefined;
+  /** Stock charts: indicators (`"sma 20; rsi 14"`, ADR-0047). */
+  readonly indicators?: readonly ChartIndicator[] | undefined;
 }
 
 export const CHART_TEXT_ATTRIBUTES = {
@@ -32,6 +35,7 @@ export const CHART_TEXT_ATTRIBUTES = {
   brushTarget: "data-ok-brush-target",
   colorRanges: "data-ok-color-ranges",
   axisTitles: "data-ok-axis-titles",
+  indicators: "data-ok-indicators",
 } as const;
 
 const isColor = (value: unknown): value is ChartColor => chartColors.includes(value as ChartColor);
@@ -94,7 +98,10 @@ export function chartTextAttributes(options: ChartTextOptions): Record<string, s
   const out: Record<string, string> = {};
   for (const [key, attr] of Object.entries(CHART_TEXT_ATTRIBUTES)) {
     const value = options[key as keyof ChartTextOptions];
-    if (key === "axisTitles") {
+    if (key === "indicators") {
+      const text = chartIndicatorsText((value as readonly ChartIndicator[] | undefined) ?? []);
+      if (text) out[attr] = text;
+    } else if (key === "axisTitles") {
       const text = chartListText((value as readonly string[] | undefined) ?? []);
       if (text) out[attr] = text;
     } else if (key === "colorRanges") {

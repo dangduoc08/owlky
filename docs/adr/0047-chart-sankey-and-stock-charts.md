@@ -48,7 +48,7 @@ tokens, strict CSP, no `innerHTML`, no new runtime dependency, WCAG 2.2 AA.
    Volume is data: a point's `v` (`{ x, y: [open, high, low, close], v }`, ApexStock's shape),
    written as a `volume` part column of the price series.
 7. **Indicators are computed in core** (`chart-indicators.ts`, pure functions, exported as
-   `chartIndicatorValues`): overlays on the price pane (`sma`, `ema`, `bollinger`, `vwap`, `donchian`,
+   `smaValues`, `rsiValues`, `macdValues`…): overlays on the price pane (`sma`, `ema`, `bollinger`, `vwap`, `donchian`,
    `keltner`) and oscillators in their own pane (`volume`, `rsi`, `macd`, `stochastic`, `atr`, `cci`,
    `pvt`). They become generated series: listed in the legend (toggle to hide), the tooltip and the
    data table (`th[data-ok-indicator]`), so every indicator value is reachable from the keyboard and

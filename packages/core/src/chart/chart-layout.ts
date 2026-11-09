@@ -96,6 +96,16 @@ export interface ChartLayoutOptions {
    * values on numeric axes. The value axis keeps the whole data's scale.
    */
   readonly zoom?: { readonly min: number; readonly max: number } | null | undefined;
+  /** Stock panes (ADR-0047): the value scale fits the points in the zoom window only. */
+  readonly fitZoom?: boolean | undefined;
+  /** Stock panes: the plot's left edge in px (panes line up on one x axis). */
+  readonly plotLeft?: number | undefined;
+  /** Stock panes: `false` leaves out the x axis labels (only the last pane prints them). */
+  readonly xLabels?: boolean | undefined;
+  /** Stock panes: categories are bands even without bars (every pane places x the same way). */
+  readonly banded?: boolean | undefined;
+  /** Stock price panes: `false` fits the value scale to the data (lines and areas too). */
+  readonly zeroBased?: boolean | undefined;
 }
 
 /** A heatmap / treemap color range: values from `from` to `to` (inclusive) take `color`. */
@@ -235,6 +245,21 @@ export interface ChartLayout {
   readonly x?: ChartAxisMap | undefined;
   /** The value axis: values → px (annotations). */
   readonly y?: ChartAxisMap | undefined;
+  /**
+   * Stock charts (ADR-0047): the navigator's region and its axis (the whole x axis). Presses there
+   * move or resize the zoom window like a brush.
+   */
+  readonly navigator?:
+    | {
+        readonly x: ChartAxisMap;
+        readonly plot: {
+          readonly x: number;
+          readonly y: number;
+          readonly width: number;
+          readonly height: number;
+        };
+      }
+    | undefined;
 }
 
 export const FONT = 12;
@@ -431,7 +456,8 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
     data.series.length > 0 && data.series.every((s) => s.type === "scatter" || s.type === "bubble")
       ? "point"
       : "index";
-  const banded = !numeric && visible.some(({ series }) => BANDED.includes(series.type));
+  const banded =
+    !numeric && (options.banded ?? visible.some(({ series }) => BANDED.includes(series.type)));
   const stacked = options.stacked === true;
   const sparkline = options.sparkline === true;
   const count = numeric
@@ -454,8 +480,10 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
   let hi = Number.NEGATIVE_INFINITY;
   let xlo = Number.POSITIVE_INFINITY;
   let xhi = Number.NEGATIVE_INFINITY;
+  const fitZoom = options.fitZoom === true && zoom !== undefined && zoom !== null;
   for (const { series, index } of visible) {
     for (const point of series.points) {
+      if (fitZoom && !inView(point.x)) continue;
       if (numeric) {
         xlo = Math.min(xlo, point.x);
         xhi = Math.max(xhi, point.x);
@@ -490,13 +518,14 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
       ? series.type === "bar" || series.type === "area"
       : ["line", "area", "bar", "scatter"].includes(series.type),
   );
-  if (zeroBased || visible.length === 0) {
+  if ((zeroBased && options.zeroBased !== false) || visible.length === 0) {
     lo = Math.min(lo, 0);
     hi = Math.max(hi, 0);
   }
 
   const gap = 12;
-  const labelHeight = sparkline ? 0 : FONT + gap + 6;
+  const xLabels = options.xLabels !== false;
+  const labelHeight = sparkline ? 0 : xLabels ? FONT + gap + 6 : 6;
   const top = sparkline ? 0 : 10;
   const yTitleSpace = options.yTitle && !sparkline ? FONT + 10 : 0;
 
@@ -638,7 +667,7 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
     });
   } else {
     const valueWidth = Math.max(...tickTexts.map((text) => chartTextWidth(text)));
-    const left = valueWidth + 14 + yTitleSpace;
+    const left = options.plotLeft ?? valueWidth + 14 + yTitleSpace;
     let xTicks: number[] = [];
     let xDecimals = 0;
     let right = 8;
@@ -703,7 +732,9 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
       axisY.push(tickNode(plot.x - 14, toValue(tick), "end", tickTexts[i] as string));
     });
     const labelY = plot.y + plot.height + gap;
-    if (numeric) {
+    if (!xLabels) {
+      // Stock panes above the last one: the x axis is printed once, under the last pane.
+    } else if (numeric) {
       for (const tick of xTicks)
         axisX.push(
           tickNode(toX(tick), labelY, "middle", format.axis(tick, xDecimals).text, false, "0.71em"),
@@ -715,10 +746,16 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
       const key = (i: number) =>
         data.xType === "datetime" ? unitIndex(data.categories[i] as number, format.dateUnit) : i;
       const show = shownLabels(count, band, widest, unit, key);
+      // Dates with gaps (trading days) aren't evenly spaced: a label that would touch the one
+      // before it is left out.
+      let edge = Number.NEGATIVE_INFINITY;
       inWindow.forEach((label, offset) => {
         const i = first + offset;
-        if (show(i))
-          axisX.push(tickNode(toCat(i), labelY, "middle", label.text, label.major, "0.71em"));
+        if (!show(i)) return;
+        const half = chartTextWidth(label.text) / 2;
+        if (toCat(i) - half < edge + 8) return;
+        edge = toCat(i) + half;
+        axisX.push(tickNode(toCat(i), labelY, "middle", label.text, label.major, "0.71em"));
       });
     }
   }
