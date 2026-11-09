@@ -141,6 +141,31 @@ describe("Carousel", () => {
     expect(apiRef.current).toBeNull();
   });
 
+  it("keeps the current slide when a looping carousel resizes", async () => {
+    const apiRef = createRef<CarouselApi>();
+    render(<Demo apiRef={apiRef} count={5} loop slidesToShow={1} slideSpacing={24} />);
+    const api = apiRef.current as CarouselApi;
+    const host = root().parentElement as HTMLElement;
+    expect(root().hasAttribute("data-ok-looping")).toBe(true);
+    act(() => api.scrollTo(2, true));
+    for (const width of [300, 520, 400]) {
+      const view = viewport();
+      host.style.width = `${width}px`;
+      // The browser re-snaps to the slide; its scroll event may come before the ResizeObserver.
+      view.scrollLeft +=
+        (slides()[2] as HTMLElement).getBoundingClientRect().left -
+        view.getBoundingClientRect().left;
+      view.dispatchEvent(new Event("scroll"));
+      for (let i = 0; i < 4; i++) await nextFrame();
+      expect(api.selectedScrollSnap()).toBe(2);
+      expect(snapped()).toEqual(["3 of 5"]);
+      const offset =
+        (slides()[2] as HTMLElement).getBoundingClientRect().left -
+        view.getBoundingClientRect().left;
+      expect(Math.abs(offset)).toBeLessThan(2);
+    }
+  });
+
   it("re-renders the dots when the number of snaps changes", async () => {
     const { rerender } = render(<Demo />);
     expect(dots()).toHaveLength(6);

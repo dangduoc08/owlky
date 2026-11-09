@@ -3,7 +3,8 @@
 | Command                                             | What                                                                                             |
 | --------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
 | `pnpm test`                                         | Unit/component tests (Node + real Chromium). Needs `pnpm build` once (tests load the built CSS). |
-| `VITEST_BROWSERS=chromium,firefox,webkit pnpm test` | Same in all three engines (CI does this).                                                        |
+| `VITEST_BROWSERS=chromium,firefox,webkit pnpm test` | Same in all three engines (CI runs them one engine per job, see below).                           |
+| `pnpm test:node` / `pnpm test:browser`              | Only the Node projects (tokens, styles, mcp) / only the browser projects (core, react, html); `VITEST_BROWSERS` picks the engines. |
 | `pnpm storybook:build && pnpm test:e2e`             | Playwright: parity, interactions, themes, a11y, plain HTML — Chromium, Firefox, WebKit, mobile.  |
 | `pnpm test:visual`                                  | Visual regression in the Playwright Docker image (Docker required).                              |
 | `pnpm test:visual:update`                           | Regenerate baselines (Docker). Never commit baselines made outside Docker.                       |
@@ -14,6 +15,22 @@
 | `pnpm smoke:mcp`                                    | Packs `@owlky/mcp`, starts its bin from the tarball with `npx -y` (needs the registry), and runs `initialize`, `tools/list`, `tools/call` over stdio (CI only, not in `pnpm check`). |
 
 First run: `pnpm exec playwright install chromium firefox webkit`.
+
+CI (`.github/workflows/ci.yml`, also reused by `release.yml` through `workflow_call`) runs these
+jobs in parallel:
+
+- **Lint, types, build, checks** (`check`): lint, build, typecheck, `check:boundaries`,
+  `check:size`, `check:packages`, `check:specs`, `check:manifest`, `smoke:mcp`, then
+  `pnpm test:node`. No browser is installed.
+- **Unit (chromium | firefox | webkit)** (`unit`): one runner per engine builds, installs only that
+  browser and runs `xvfb-run -a pnpm test:browser` with `VITEST_BROWSERS=<engine>` (Xvfb gives
+  headless Firefox WebGL for the Map). One runner with all three engines (about 15,000 tests) ran
+  out of memory. Each job builds itself rather than downloading the build: the build is short and
+  the `dist` folders are about 45 MB.
+- **E2E (project shard)**, **Website (project)** and **Dependency audit**.
+
+`pnpm check` still runs everything locally in one go (`pnpm test`: every project, Chromium unless
+`VITEST_BROWSERS` says otherwise).
 
 Also: `pnpm test:coverage` (v8 coverage, thresholds per component file in `vitest.config.ts`);
 `e2e/tests/<name>.responsive.spec.ts` runs the viewport matrix from `e2e/tests/viewports.ts`

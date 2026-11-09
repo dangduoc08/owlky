@@ -34,6 +34,10 @@ website (ADR-0040; steps in `apps/website/README.md` › Deployment): the Vercel
 `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`, and DNS for owlky.com (`www` redirects to the apex). Until
 then `website.yml` skips with a notice.
 
+**CI jobs** (`ci.yml`, docs/testing.md): `check` (lint, types, build, checks, Node unit tests),
+`unit` × chromium / firefox / webkit (browser unit tests, one engine per runner), `e2e` shards,
+`website`, `audit`.
+
 **Releasing:** CI only on `main`; publish = push tag `release/v<version>` on a `main` commit
 whose packages already carry that version (ADR-0012).
 
@@ -78,6 +82,8 @@ pnpm install
 pnpm build                                  # required before tests (they load built CSS)
 pnpm test                                   # unit/component, Chromium
 VITEST_BROWSERS=chromium,firefox,webkit pnpm test
+pnpm test:node                              # Node projects only (tokens, styles, mcp)
+VITEST_BROWSERS=firefox pnpm test:browser   # browser projects only (core, react, html), one engine: what each CI unit job runs
 pnpm storybook                              # http://localhost:6006
 pnpm storybook:network                      # same, reachable from other devices (LAN, Tailscale; WSL: mirrored networking)
 pnpm storybook:build && pnpm test:e2e       # Chromium, Firefox, WebKit, mobile

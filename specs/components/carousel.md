@@ -182,7 +182,9 @@ properties: `--_ok-carousel-snap*`, `-order`, `-tween`, `-parallax`, `-progress`
   `dragFree`: momentum). Clicks after a drag longer than `dragThreshold` are prevented. Touch, pen
   and trackpads scroll natively (`skipSnaps` off = `scroll-snap-stop: always`).
 - Loop (ADR-0033): the visual order rotates through CSS `order`; no clones; falls back when the
-  content is shorter than one viewport plus two steps.
+  content is shorter than one viewport plus two steps. The rotation puts the selected snap in the
+  middle of the scroll range (by length, not by count); jumps rotate around the target, animated
+  moves around the middle of the shortest way.
 - Fade: slides stacked; swipes step; hidden slides are `visibility: hidden`.
 - Effects: `opacity`, `scale` (the slide's child) and `parallax` (`[data-ok-carousel-parallax]`).
 - Focus inside a slide scrolls to its snap (`focus`).
@@ -192,6 +194,8 @@ properties: `--_ok-carousel-snap*`, `-order`, `-tween`, `-parallax`, `-progress`
 - The play button toggles autoplay (or auto scroll when only that is on).
 - Auto height: the viewport height follows the tallest selected (or in-view) slide.
 - Resize, slide changes, option attributes and matching breakpoints re-initialize the carousel.
+  A scroll frame or a settle that finds the sizes changed re-initializes first (a resize can
+  re-snap the viewport before the ResizeObserver reports it); a running animation is retargeted.
 
 ## Keyboard
 | Key | Action (focus on the viewport) |
