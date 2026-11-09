@@ -124,6 +124,9 @@ describe("chart snippets", () => {
     expectNamedButtons(host);
     await expectNoAxeViolations(host);
     document.documentElement.setAttribute("data-ok-theme", "dark");
+    // A dark page under the chart: on the test page's white body, light legend text measured
+    // white on white (or on a hover tint when the pointer rested on a legend item, as on CI).
+    host.style.backgroundColor = "var(--ok-bg-default)";
     try {
       await expectNoAxeViolations(host);
     } finally {
