@@ -86,6 +86,29 @@ Native buttons: Tab / Shift+Tab move between items, Enter / Space activate.
 ## Responsive
 Mobile first: items keep their size (≥ 24px targets) and wrap; the page never overflows.
 
+## Upstream API mapping
+
+Upstream: MUI `Pagination`, `PaginationItem`, `usePagination` (mui.com/material-ui/api/pagination,
+/api/pagination-item, checked 2026-11-09).
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| `count`, `page`, `defaultPage`, `onChange(event, page)` | same / `data-ok-count`, `data-ok-page`, `ok:pagination:change` | kept | React `onChange(page)` (no event) |
+| `siblingCount`, `boundaryCount` | same / `data-ok-sibling-count`, `-boundary-count` | kept | |
+| `showFirstButton`, `showLastButton`, `hidePrevButton`, `hideNextButton` | same / the buttons the markup contains | kept | |
+| `color` | `color` / `data-ok-color` | kept | adds `info` … `error`; arbitrary strings not applicable |
+| `shape`, `disabled` | same | kept | |
+| `size` `small` / `medium` / `large` | `size` `sm` / `md` / `lg` | renamed | project size names |
+| `variant` `text` / `outlined` | `variant` | kept | `soft` added (reference) |
+| `getItemAriaLabel(type, page, selected)` | same / `data-ok-label-page`, `-label-current` | kept | HTML: templates for page items only |
+| `renderItem` | `renderItem` (React) | kept | HTML: author the markup |
+| PaginationItem `type`, `page`, `selected`, `disabled` | same | kept | |
+| PaginationItem `color`, `shape`, `size`, `variant` | root options | not applicable | items read the root's attributes |
+| PaginationItem `component` (router links) | `href` → `a` only | deferred | router `Link` as the item element (like Link's `component`) |
+| PaginationItem `slots` (`first` / `last` / `next` / `previous` icons) | `icons` / `icon` | renamed | composition |
+| `usePagination` | core `paginationItems` | renamed | framework-free; no React hook |
+| `classes`, `sx`, `slots` / `slotProps` | — | not applicable | by decision |
+
 ## Parity notes
 - Labels: React builds them with `getItemAriaLabel`; HTML uses the `data-ok-label-page` and
   `data-ok-label-current` templates. Defaults are identical.

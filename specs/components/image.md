@@ -102,6 +102,25 @@ HTML: `ok:image:load` (`detail.src` = `currentSrc`), `ok:image:error` (`detail.s
 `runtime.get(el, "image")` → `{ state }`. React: `onLoad(event)`, `onError(event)` (and
 `imgProps.onLoad` / `onError`).
 
+## Upstream API mapping
+
+Upstream: Minimals `Image` on react-lazy-load-image-component `LazyLoadImage`
+(github.com/Aljullu/react-lazy-load-image-component README, checked 2026-11-09).
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| `src`, `srcSet`, `sizes`, `alt`, `width`, `height`, other image attributes | same (on the `img`) | kept | `imgProps` for the rest |
+| `effect` (`blur`, `opacity`, `black-and-white`) | `effect` (+ `none`) | kept | |
+| `placeholderSrc`, `placeholder` | same | kept | |
+| `visibleByDefault` | same | kept | `loading="eager"` |
+| `onLoad`, `afterLoad` (deprecated) | `onLoad(event)` · `ok:image:load` | kept | + `onError` / `ok:image:error` |
+| `threshold`, `delayMethod`, `delayTime`, `useIntersectionObserver`, `beforeLoad`, `scrollPosition`, `trackWindowScroll` | — | not applicable | native `loading="lazy"` (ADR-0038) |
+| `wrapperClassName`, `wrapperProps` | root `className` / attributes | renamed | the root `span` is the wrapper |
+| `LazyLoadComponent` | — | not applicable | lazy non-image content is app code (`content-visibility`) |
+| Minimals `ratio`, `disablePlaceholder` | same | kept | |
+| Minimals `slotProps.img` / `.overlay` / `.placeholder` | `imgProps`, `overlay` / `overlayFrom`, `placeholder` | renamed | allowlists for overlays |
+| Minimals `sx` | — | not applicable | by decision |
+
 ## Parity notes
 HTML authors may leave the placeholder span out (no placeholder). React always renders it. Both
 write `data-ok-state`; parity compares settled pictures.

@@ -230,6 +230,32 @@ React callbacks: `onSelect(index, previous)`, `onSettle(index)`, `onScroll(progr
 Mobile first: one slide per view unless `slidesToShow` says otherwise per breakpoint; controls wrap;
 floating arrows sit inside the slides' edges; touch swipes are native.
 
+## Upstream API mapping
+
+Upstream: Embla Carousel options, methods, events and official plugins
+(embla-carousel.com/docs/api/options, /methods, /events, /plugins, v9.0.0-rc04, checked
+2026-11-09). "API mapping (Embla → Owlky)" above holds the option-level detail; this table adds
+statuses and the v9 API.
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| Options `active`, `align`, `axis`, `breakpoints`, `containScroll`, `dragFree`, `dragThreshold`, `duration`, `focus`, `inViewThreshold`, `loop`, `skipSnaps`, `slidesToScroll` | same | kept | |
+| `draggable` (v8 `watchDrag`), `startSnap` (v8 `startIndex`) | `draggable`, `startIndex` | kept / renamed | `startIndex` keeps the v8 name |
+| `direction` | `dir` attribute | renamed | native |
+| `container`, `slides` | anatomy | not applicable | |
+| `resize`, `slideChanges` (v8 `watchResize`, `watchSlides`), `inViewMargin`, `ssr` | — | not applicable | always observed; CSS sizes are SSR-safe |
+| Methods `goToNext` / `goToPrev` / `goTo`, `canGoToNext` / `canGoToPrev` | `scrollNext` / `scrollPrev` / `scrollTo`, `canScrollNext` / `canScrollPrev` | renamed | v8 names; v9 aliases deferred |
+| Methods `selectedSnap`, `previousSnap`, `snapList` | `selectedScrollSnap`, `previousScrollSnap`, `scrollSnapList` | renamed | v8 names |
+| Methods `scrollProgress`, `slidesInView`, `slideNodes`, `rootNode`, `containerNode`, `reInit` | same (+ `slidesNotInView`) | kept | |
+| Method `snapIndex(slide)` | — | deferred | snap of a slide |
+| Methods `destroy`, `on` / `off` | runtime `stop()` / unmount, DOM events, React callbacks | renamed | |
+| Methods `plugins`, `cloneEngine`, `internalEngine`, `ssrStyles`, `createEvent` | — | not applicable | no plugin system / engine; CSS sizes |
+| Events `select`, `settle`, `scroll`, `slidesinview`, `reinit`, `slidefocus`, `pointerdown`, `pointerup` | `ok:carousel:*` · `onSelect` … `onSlideFocus` | kept | |
+| Events `resize`, `slideschanged`, `pointermove`, `destroy` | — | deferred | |
+| Plugins Autoplay, Auto Scroll, Auto Height, Fade, Wheel Gestures, Class Names, Accessibility | options / attributes (table above) | kept | Class Names → `data-ok-*` |
+| Plugin Ssr | — | not applicable | SSR-safe CSS sizes |
+| Minimals `slidesToShow`, `slideSpacing`, arrows / dots / progress / thumbs / play button | same | kept | |
+
 ## Parity notes
 The HTML runtime adds or removes dots when the measured number of snaps differs from the markup
 (React re-renders them). Parity ignores `style` (sizes and controller values).

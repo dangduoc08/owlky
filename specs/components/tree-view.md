@@ -90,5 +90,32 @@ expanded), setSelected(ids) }`.
 ## Responsive
 Same at every breakpoint; labels wrap.
 
+## Upstream API mapping
+
+Upstream: MUI X `SimpleTreeView`, `RichTreeView`, `TreeItem` (mui.com/x/api/tree-view/…, checked
+2026-11-09).
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| `expandedItems`, `defaultExpandedItems`, `onExpandedItemsChange`, `onItemExpansionToggle` | same · `aria-expanded`, `ok:tree-view:expand` | kept | callbacks without the event |
+| `selectedItems`, `defaultSelectedItems`, `onSelectedItemsChange` | same · `aria-selected`, `ok:tree-view:select` | kept | |
+| `multiSelect`, `checkboxSelection`, `disableSelection`, `expansionTrigger` | same / `data-ok-*` | kept | |
+| RichTreeView `items` | `items` (`{ id, label, children?, disabled? }`) | kept | |
+| `slots` `expandIcon` / `collapseIcon` / `endIcon` | props | renamed | |
+| `slots.groupTransition` | each group is a Collapse | kept | ADR-0044 |
+| — | `variant="lines"` | kept | Owlky addition (reference "Custom styling") |
+| TreeItem `itemId`, `label`, `disabled`, `children` | same | kept | |
+| `onItemSelectionToggle` | — | deferred | per-item selection callback |
+| `onItemClick`, `onItemFocus` | — | deferred | |
+| `isItemDisabled`, `isItemSelectionDisabled`, TreeItem `disableSelection` | `disabled` per item | deferred | callback forms and selection-only disabling |
+| `disabledItemsFocusable` | — | deferred | disabled items stay in the arrow-key order |
+| `itemChildrenIndentation` | fixed 12px per level (CSS) | deferred | option → `--_ok-*` |
+| `getItemId`, `getItemLabel` | — | deferred (4.11) | |
+| `getItemChildren` | — | deferred | with 4.11 `getItemId` / `getItemLabel` |
+| `selectionPropagation`, `apiRef` (`focusItem`, `getItem`, `setItemExpansion`, `setItemSelection` …), `isItemEditable` / `onItemLabelChange`, lazy loading (`loading`), `itemsReordering` | — | deferred (4.11) | expand all / to depth: 4.18.8 |
+| `itemHeight` (virtualization), `domStructure: "flat"` | — | deferred | large trees |
+| `id` | `id` (DOM attribute) | kept | |
+| `classes`, `sx`, other `slots` / `slotProps` | — | not applicable | by decision |
+
 ## Parity notes
 React renders `data-ok-runtime="off"`; SSR markup equals the HTML snippets.

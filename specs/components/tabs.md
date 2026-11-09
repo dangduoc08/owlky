@@ -126,6 +126,30 @@ React: `onChange(value)`; controlled and uncontrolled.
 Same size at every breakpoint. Scrollable bars hide their scroll buttons below 600px (`auto`);
 standard bars clip, so use `scrollable` for many tabs on phones.
 
+## Upstream API mapping
+
+Upstream: MUI `Tabs`, `Tab`; MUI Lab `TabContext`, `TabList`, `TabPanel`
+(mui.com/material-ui/api/tabs, /api/tab, /api/tab-panel, checked 2026-11-09).
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| `value`, `onChange(event, value)` | `value` / `defaultValue` / `onChange(value)` · `aria-selected`, `ok:tabs:change` | kept | value-first callback; `defaultValue` added |
+| `variant`, `orientation`, `centered` | same / `data-ok-variant`, `-orientation`, `-centered` | kept | |
+| `textColor`, `indicatorColor` | same | kept | `inherit` added (reference default); arbitrary color strings not applicable |
+| `scrollButtons`, `allowScrollButtonsMobile`, `visibleScrollbar` | same | kept | |
+| `selectionFollowsFocus` | same | kept | |
+| `aria-label`, `aria-labelledby` | same (on the tablist) | kept | |
+| `action` (`updateIndicator`, `updateScrollButtons`) | — | not applicable | the controller re-measures itself (ResizeObserver, fonts) |
+| `component` | — | not applicable | root is a `div` |
+| — | `segmented` | kept | Owlky addition (reference "Custom") |
+| Tab `value`, `label`, `icon`, `iconPosition`, `wrapped`, `disabled` | same | kept | |
+| Tab `disableRipple`, `disableFocusRipple` | — | not applicable | no ripple |
+| Tab ButtonBase props (`href`, `component`: link tabs) | — | deferred | tabs as links (navigation tabs, router links) |
+| Lab `TabPanel` `value`, `keepMounted` | `TabPanel` (app sets `hidden`) | deferred | panel picks its tab from context (Lab `TabContext`); panels stay mounted |
+| Lab `TabContext`, `TabList` | `Tabs` | not applicable | `Tabs` owns the value |
+| `slots` / `slotProps` (indicator, scroll buttons and icons, scroller, list, scrollbar) | — | not applicable | composition / by decision |
+| `classes`, `sx` | — | not applicable | by decision |
+
 ## Parity notes
 React renders `data-ok-runtime="off"`. Controller-written state (`style`, `data-ok-ready`,
 `data-ok-can-scroll-*`) is the same in both (same controller). Parity ignores `style`.

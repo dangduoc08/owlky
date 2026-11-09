@@ -69,5 +69,21 @@ meaning. Text `--ok-text-primary` (AA).
 ## Responsive
 Same at every breakpoint; long words wrap inside their half.
 
+## Upstream API mapping
+
+Upstream: MUI Lab `Timeline`, `TimelineItem`, `TimelineSeparator`, `TimelineDot`,
+`TimelineConnector`, `TimelineContent`, `TimelineOppositeContent`
+(mui.com/material-ui/api/timeline …, checked 2026-11-09).
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| Timeline `position` | `position` / `data-ok-position` | kept | |
+| Timeline `children`, `className` | same | kept | |
+| TimelineItem `position` | `position` (`right` · `left`) | kept | `alternate*` on one item not applicable (alternation is a list rule) |
+| TimelineDot `variant`, `color` | same / `data-ok-variant`, `data-ok-color` | kept | `info` … `error` as on the reference; arbitrary strings not applicable |
+| TimelineSeparator, TimelineConnector | same / `data-ok-timeline-separator`, `-connector` | kept | |
+| TimelineContent, TimelineOppositeContent (Typography props) | `div` parts, body1 | renamed | compose a Typography inside for other variants |
+| `classes`, `sx` | — | not applicable | by decision |
+
 ## Parity notes
 None (no runtime; same markup).

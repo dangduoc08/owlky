@@ -132,6 +132,30 @@ The Scrollbar inside the container is the focusable scroll region (arrow keys sc
 Mobile first: the container scrolls horizontally when the table is wider than the screen (the page
 never overflows); pagination wraps onto two lines below ~420px. No breakpoint changes otherwise.
 
+## Upstream API mapping
+
+Upstream: MUI `Table`, `TableContainer`, `TableHead` / `TableBody` / `TableFooter`, `TableRow`,
+`TableCell`, `TableSortLabel`, `TablePagination` (mui.com/material-ui/api/table …, checked
+2026-11-09).
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| Table `size`, `padding`, `stickyHeader` | same / `data-ok-size`, `-padding`, `-sticky-header` | kept | arbitrary size strings not applicable |
+| Table / TableHead / TableBody / TableFooter / TableRow / TableContainer `component` | — | not applicable | native table elements (`div` tables: Data grid); container is a `section` |
+| TableRow `hover`, `selected` | same / `data-ok-hover`, `data-ok-selected` | kept | |
+| TableCell `align`, `padding`, `size`, `sortDirection`, `scope` | same / `data-ok-align`, `-padding`, `-size`, `aria-sort`, `scope` | kept | |
+| TableCell `variant` (`head` · `body` · `footer`) | — | not applicable | from the section (`thead` / `tbody` / `tfoot`) |
+| TableSortLabel `active`, `direction`, `hideSortIcon` | same | kept | |
+| TableSortLabel `IconComponent` / `slots.icon` | `icon` | renamed | composition |
+| TablePagination `count`, `page`, `rowsPerPage`, `rowsPerPageOptions` (numbers or `{ label, value }`) | same | kept | HTML: row groups, `data-ok-page`, `<option>`s |
+| TablePagination `onPageChange(event, page)`, `onRowsPerPageChange(event)` | `onPageChange(page)`, `onRowsPerPageChange(rowsPerPage)` · `ok:table-pagination:change` | renamed | value-first callbacks |
+| TablePagination `labelRowsPerPage`, `labelDisplayedRows`, `getItemAriaLabel`, `showFirstButton`, `showLastButton`, `disabled` | same | kept | |
+| TablePagination `slotProps.select` (`SelectProps`) | `selectProps` (`native`, `menuProps`) | renamed | composes Select |
+| TablePagination `ActionsComponent`, `slots` (`actions`, `toolbar`, `spacer`, `selectLabel`, `displayedRows`, `menuItem`) | — | not applicable | composition |
+| TablePagination `component` (TableCell inside a `tfoot`) | `div` after the table | not applicable | keeps the table free of layout rows |
+| — | `TableExpandButton`, `TableDetailRow`, HTML sort / select / page runtime | kept | Owlky additions (reference "Collapsible", HTML data) |
+| `classes`, `sx` | — | not applicable | by decision |
+
 ## Parity notes
 - Data: React renders the rows the app gives it (one page); the HTML runtime sorts, selects and
   pages the rows already in the DOM, hiding the others (`hidden`). Parity compares visible rows.

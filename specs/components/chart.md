@@ -495,6 +495,70 @@ plots list the five values, range areas `low – high`, bubbles the value and a 
 | ApexSankey `spacing`, `viewPortWidth` / `viewPortHeight`, `width`, `nodeBorderWidth` / `nodeBorderColor`, `edgeGap`, `fontSize` / `fontFamily` / `fontColor`, `theme`, `tooltipTheme` | not applicable: fixed by the design and tokens |
 | ApexSankey `type: "chord"`, `particleFlow`, `draggableNodes`, `buildAlluvialData`, `collapseGroups`, `compare`, plugins, `onNodeClick` / pinned path highlight, `update` morphs | not built (ADR-0047 §5); alluvial diagrams are Sankey data with `axisTitles` |
 
+## Upstream API mapping
+
+Completes "API mapping" above (its rows are kept / renamed as written there). Upstream:
+ApexCharts options (apexcharts.com/docs/options/chart, /xaxis, /yaxis, /tooltip, /legend,
+/markers, /grid, /stroke, /fill, /states, /annotations, /title, /nodata, /responsive, /theme,
+/forecastdatapoints, /plotoptions/bar, /chart/events, /docs/methods, checked 2026-11-09).
+Option areas not covered by the table above:
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| ApexCharts v8 types `waterfall`, `dumbbell` (`plotOptions.bar.isDumbbell`, `dumbbellColors`, `dumbbell.*`), `streamgraph`, `sunburst`, `icicle`, `violin`, `beeswarm`, `waffle`, `unit` | — | deferred (4.18.21) | prop-level mapping here when built |
+| `chart.type: "tree"` (ApexTree layouts) | — | deferred (4.18.7) | |
+| `chart.stackType: "100%"`, `chart.stackOnlyBar` | `stacked` | deferred | percent stacks; stacking only the bar series of a mixed chart |
+| `chart.events` `dataPointMouseEnter` / `Leave`, `mouseMove`, `mouseLeave`, `legendClick`, `beforeZoom`, `zoomed`, `beforeResetZoom`, `scrolled`, `brushScrolled`, `selection` | `onActiveChange`, `onHiddenSeriesChange`, `onZoomRangeChange` · `ok:chart:active`, `-toggle`, `-zoom` (cancelable) | renamed | |
+| `chart.events` `click`, `dataPointSelection`, `markerClick`, `xAxisLabelClick`; method `toggleDataPointSelection` | — | deferred | a point / slice / label selection event (click, Enter) |
+| `chart.events` `animationEnd`, `beforeMount`, `mounted`, `updated`, `keyDown`, `keyUp` | — | not applicable | lifecycle: React effects / runtime setup; DOM key events |
+| `chart.events` `crossFilter`, `filterChange`, `highlightFilterChanged`; `annotationDragged` / `Edited` / `Created` / `Styled` / `Deleted`, `measured` | — | deferred (4.18.19, 4.18.20) | |
+| drilldown: `drillDown` / `drillUp` / `drillToRoot` / `clearDrilldownCache`, events `drillDownStart` / `End` / `Error`, `drillUp` | — | deferred | category → child series, with a back control |
+| trellis / small multiples: `ApexCharts.trellis`, `rowSeries`, `getPanels`, `getPanel`, `promotePanel`, `restorePanels` | — | deferred | one chart per category on shared axes |
+| `beatChange`, `ApexCharts.registerUnitLayout` / `registerUnitMark` / `registerRowSource`, `registerTheme`, `refreshTokens`, `exec` | — | not applicable / deferred (4.18.21) | unit charts with 4.18.21; themes are tokens; `exec`: the element instance |
+| `states.active.allowMultipleDataPointsSelection`, `states.hover` / `.active.filter` | — | deferred | selected points (with the selection event); filters fixed by the design |
+| `chart.brush.targets` (several targets), `chart.brush.autoScaleYaxis` | `brushTarget` (one id) | deferred | several targets; y autoscale not applicable (zoom is x only) |
+| `chart.selection` (preselected range, fill, stroke) | the target's zoom | renamed | style fixed by the design |
+| crossfilter (Premium Linked Views / Highlight Filter) | — | deferred (4.18.19) | |
+| measure tool (`toolbar.tools.measure`), draggable annotations | — | deferred (4.18.20) | |
+| `chart.accessibility` (`description`, keyboard navigation, announcements) | always on: `caption` (`label`), the data table, keyboard slots, live text | kept | |
+| `chart.locales`, `chart.defaultLocale` | `locale` (Intl) + `localeText` | renamed | |
+| `chart.dataReducer` (`enabled`, `algorithm`, `targetPoints`, `threshold`) | — | deferred | downsampling large series (LTTB) for drawing; the table keeps every point |
+| `chart.print`, `chart.perspectives`, `chart.license`, `chart.nonce`, `chart.injectStyleSheet`, `chart.redrawOn*Resize`, `chart.parentHeightOffset`, `chart.offsetX` / `Y`, `chart.width`, `chart.foreColor`, `chart.background`, `chart.dropShadow`, `theme` | — | not applicable | CSS / tokens / ResizeObserver; perspectives: app code (roadmap 2.4 notes) |
+| `yaxis` as an array (`seriesName`, `opposite`, `alignZero`), `yaxis.logarithmic` / `logBase`, `.reversed`, `.tickAmount`, `.stepSize`, `.forceNiceScale`, `.decimalsInFloat`, `.floating` | `yMin`, `yMax`, `yTitle` | deferred | several value axes (left / right), log scale, reversed, tick count |
+| `xaxis.title.text` | `xLabel` (table header only) | deferred | drawn x axis title |
+| `xaxis.min` / `.max` / `.range`, `.tickAmount`, `.stepSize`, `.tickPlacement`, `.decimalsInFloat` | zoom window | deferred | fixed x window (`range`: sliding window, see `appendData` `limit`), tick count |
+| `xaxis.group.groups` (grouped categories), `xaxis.labels.rotate` / `.rotateAlways` / `.hideOverlappingLabels` / `.trim` | — | deferred | two-level category labels; label rotation (labels skip today) |
+| `xaxis.labels.datetimeFormatter`, `.format`, `.datetimeUTC` | `labelFormatter`, `locale` | renamed | |
+| `xaxis.crosshairs`, `yaxis.crosshairs`, `xaxis.tooltip` | the hover crosshair | kept | style fixed by the design |
+| axis `style` / `cssClass` / `offsetX` / `offsetY`, `axisBorder`, `axisTicks` | — | not applicable | tokens / CSS |
+| `grid.show`, `grid.xaxis.lines.show`, `grid.yaxis.lines.show`, `grid.row` / `.column` stripes, `grid.padding` | always y lines | deferred | grid lines on / off per axis; stripes |
+| `grid.borderColor`, `.strokeDashArray`, `.position` | — | not applicable | tokens |
+| `tooltip.enabled`, `.shared`, `.intersect`, `.followCursor`, `.fixed`, `.inverseOrder`, `.hideEmptySeries` | the tooltip (shared by category) | deferred | `tooltip: false`; fixed position; per-point (non-shared) mode |
+| `tooltip.custom`, `tooltip.x.formatter`, `.y.title.formatter`, `.z.title` / `.z.formatter` | `valueFormatter`, `labelFormatter` | deferred | custom tooltip content (React node / HTML `<template>`) |
+| `tooltip.theme`, `.style`, `.fillSeriesColor`, `.marker`, `.onDatasetHover` | — | not applicable | tokens; series highlight always on |
+| `legend.horizontalAlign`, `.inverseOrder`, `.showForSingleSeries`, `.showForNullSeries`, `.showForZeroSeries`, `.onItemClick.toggleDataSeries`, `.onItemHover.highlightDataSeries`, `.customLegendItems`, `.clusterGroupedSeries` | `legend` (position) | deferred | alignment, single-series legend, toggle opt-out, custom items |
+| `legend.markers.shape`, `.fontSize` / `.offset*` / `.itemMargin` / `.labels.colors`, `.floating`, `.width` / `.height`, `.tooltipHoverFormatter` | — | not applicable | design / CSS |
+| `markers.shape`, `.discrete` (per-point markers), `.hover.size`, `.showNullDataPoints`, `.strokeWidth` | `markerSize` | deferred | marker shapes (also non-color series cues, WCAG 1.4.1) and per-point markers |
+| `markers.colors` / `.strokeColors` / `.fillOpacity` / `.offset*`, `largeDatasetThreshold`, `onClick` / `onDblClick` | — | not applicable | series colors; selection event above |
+| `stroke.width` (per series), `.lineCap`, `.colors`, `stroke.fill` | `dashArray` | deferred | line width per series |
+| `fill.type: "pattern"` (`verticalLines`, `horizontalLines`, `slantedLines`, `squares`, `circles`) | `fill` (`gradient` · `solid`) | deferred | pattern fills (non-color cue, WCAG 1.4.1) |
+| `fill.type: "image"`, `fill.gradient.*`, `fill.opacity`, `fill.colors` | — | not applicable | design / tokens; `colors` |
+| `plotOptions.bar.borderRadius`, `.borderRadiusApplication`, `.borderRadiusWhenStacked` | fixed radius | not applicable | design |
+| `plotOptions.bar.distributed` | point `color` | renamed | |
+| `plotOptions.bar.colors.ranges`, `.backgroundBarColors` / `-Opacity` / `-Radius` | `colorRanges` (heatmap, treemap) | deferred | value ranges on bars; background (track) bars |
+| `plotOptions.bar.dataLabels.total` (stacked totals), `.position`, `.orientation`, `.maxItems`, `.hideOverflowingLabels` | `dataLabels` | deferred | totals on stacks; inside / end positions |
+| `plotOptions.bar.rangeBarGroupRows`, `.rangeBarOverlap`, `.hideZeroBarsWhenGrouped`, `.isFunnel3d` | — | deferred | timeline rows shared by series; 3D funnel not applicable |
+| `forecastDataPoints` (`count`, `fillOpacity`, `strokeWidth`, `dashArray`) | — | deferred | dashed forecast tail |
+| `title.text` (`align`, `floating`, `style`…) | `label` → `caption` | renamed | style not applicable (tokens); a subtitle: compose a Card header |
+| `noData.text` (`align`, `verticalAlign`; `style` not applicable) | — | deferred | empty state text in the plot |
+| `responsive` (`breakpoint`, `options` overrides) | — | not applicable | container width drives the layout; options per breakpoint are app code |
+| `theme.palette`, `.mode`, `.tokens`, `.follow`, `.name`, `.designSystem` | `colors` (palette names), `data-ok-theme` | renamed | |
+| `theme.monochrome` | — | not applicable | shades of one palette color: `colors` |
+| `theme.accessibility.colorBlindMode` | — | deferred | with the non-color cues row (markers, patterns) |
+| `annotations.texts`, points `click` / `mouseEnter` / `mouseLeave` / `tooltip`, `yAxisIndex` | `annotations` | deferred | free text annotations; interactive point annotations |
+| `annotations.images`, points `image` / `customSVG`, label `style` / `offset*`, `fillColor` / `borderColor` | — | not applicable | design / tokens |
+| methods `render`, `updateOptions`, `appendSeries`, `add*Annotation` / `removeAnnotation` / `clearAnnotations`, `destroy`, `highlightSeries`, `showSeries` / `hideSeries`, `dataURI`, `setLocale`, `getRadialScales` | instance API above | renamed | see the table above; `setLocale` → `setLocaleText`; `destroy` = runtime `stop()` / unmount; `getRadialScales` not applicable |
+
 ## Parity notes
 - Parity doesn't walk into `<svg>`: `e2e/tests/chart.spec.ts` compares the SVG trees (gradient ids
   normalized). Ids differ by design (React `useId`, HTML element id or a counter).

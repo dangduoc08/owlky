@@ -68,3 +68,18 @@ None (native element events).
 ## Integrations
 Breadcrumbs items are Links (`color="inherit" underline="hover"`, as in MUI's breadcrumbs demos);
 `breadcrumbs.css` loads after `link.css` and keeps its own item rules (no DOM or API change).
+
+## Upstream API mapping
+
+Upstream: MUI `Link` (mui.com/material-ui/api/link, checked 2026-11-09; inherits Typography).
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| `children` | `children` | kept | |
+| `color` (palette, `textPrimary` / `textSecondary` / `textDisabled`) | `color` / `data-ok-color` | kept | `inherit` added; arbitrary strings not applicable (consumer CSS) |
+| `underline` | `underline` / `data-ok-underline` | kept | |
+| `variant` | `variant` / `data-ok-variant` | kept | default `inherit` as MUI |
+| `component` | `component` | kept | without `href` / `component` renders a `button` (MUI: `a` without `href`) |
+| Typography `align`, `gutterBottom`, `noWrap` | same / `data-ok-align`, `-gutter-bottom`, `-no-wrap` | kept | |
+| Typography `variantMapping` | — | not applicable | element is `a` / `button` / `component` |
+| `TypographyClasses`, `classes`, `sx` | — | not applicable | by decision |

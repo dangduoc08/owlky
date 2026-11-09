@@ -256,6 +256,30 @@ Mobile first: the lightbox covers the viewport; navigation buttons are 40px belo
 from 600px; the thumbnails row scrolls (8px padding below 600px, 16px from 600px); the toolbar wraps
 and the title shortens with an ellipsis. Inline lightboxes are 3:2 and as wide as their container.
 
+## Upstream API mapping
+
+Upstream: yet-another-react-lightbox props and its 11 plugins
+(yet-another-react-lightbox.com/documentation, /plugins, checked 2026-11-09). "API mapping
+(yet-another-react-lightbox → Owlky)" above holds the per-prop detail; this table adds statuses.
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| `open`, `index`, `slides`, `labels`, `className` | same (+ `defaultOpen`, `defaultIndex`) | kept | |
+| `close`, `on.view`, `on.click` | `onOpenChange(false, reason)`, `onIndexChange`, `onSlideClick` | renamed | value-first callbacks |
+| `on.entering` / `entered` / `exiting` / `exited` | `onOpenChange` | not applicable | no exit animation (native dialog) |
+| `plugins` | built in; `disable*` flags | renamed | Minimals defaults (every plugin on) |
+| `toolbar.buttons` | `toolbarButtons` | renamed | |
+| `carousel.finite`, `.padding`, `.spacing`, `.imageFit`, `.imageProps` | flattened | renamed | ADR-0015 |
+| `carousel.preload` | native `loading="lazy"` | not applicable | |
+| `animation.fade`, `.swipe`; Zoom `animation.zoom` | `animationFade`, `animationSwipe`, `animationZoom` | renamed | |
+| `animation.navigation`, `animation.easing.*` | — | not applicable | the carousel's eased scroll |
+| `controller.closeOnPullUp` / `Down`, `.closeOnBackdropClick`, `.closeOnEscape`, `.disableSwipeNavigation` | flattened | renamed | |
+| `controller.ref`, plugin refs | `apiRef` / HTML instance | renamed | |
+| `controller.focus`, `.aria`, `.touchAction`, `portal.*`, `noScroll.disabled`, `styles.*` | — | not applicable | top layer, modal scroll lock, CSS |
+| `render.slide`, `.slideHeader`, `.slideFooter`, `.controls`, `.thumbnail`, `.iconPrev` / `Next` / `Close`, plugin icons | same | kept | |
+| `render.slideContainer`, `.buttonPrev` / `.buttonNext` / `.buttonClose` (and plugin `button*`), `.iconLoading`, `.iconError` | — | deferred | |
+| Captions, Counter, Download, Fullscreen, Inline, Rotate, Share, Slideshow, Thumbnails, Video, Zoom | options above | kept | see the table above for plugin props |
+
 ## Parity notes
 React renders the initial state (first slide current, counter); the controller writes the rest in
 both implementations. HTML triggers carry `data-ok-lightbox-open` (parity ignores it). Load

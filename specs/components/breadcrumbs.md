@@ -78,5 +78,20 @@ HTML `ok:breadcrumbs:expand` (cancelable). Instance `runtime.get(el, "breadcrumb
 ## Responsive
 Wraps onto more rows; long text wraps inside its item. Same sizes at every breakpoint.
 
+## Upstream API mapping
+
+Upstream: MUI `Breadcrumbs` (mui.com/material-ui/api/breadcrumbs, checked 2026-11-09).
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| `children` | `children` / `li[data-ok-breadcrumbs-item]` | kept | each child = one item |
+| `separator` | `separator` / `li[data-ok-breadcrumbs-separator]` | kept | `BreadcrumbsDot` added |
+| `maxItems`, `itemsBeforeCollapse`, `itemsAfterCollapse` | same / `data-ok-max-items`, `-items-before-collapse`, `-items-after-collapse` | kept | |
+| `expandText` | `expandText` / `data-ok-expand-text` | kept | |
+| `component` | — | not applicable | root is always `nav` (landmark) |
+| Typography props (inherited) | — | not applicable | root keeps body2 / text secondary; consumer CSS |
+| `slots.CollapsedIcon` / `slotProps.collapsedIcon` | — | not applicable | composition; one built-in icon (HTML: author the button's `svg`) |
+| `classes`, `sx` | — | not applicable | by decision |
+
 ## Parity notes
 React renders `data-ok-runtime="off"` and hidden items with `hidden` (as the runtime does).
