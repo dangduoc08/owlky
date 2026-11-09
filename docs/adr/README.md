@@ -49,5 +49,6 @@ ADR that supersedes the old one — don't rewrite history.
 | 0042–0043 | Not used: numbers reserved for Wave 8 agents (Typography, Paper) that needed no ADR | — |
 | [0044](0044-collapse.md) | Collapse: `hidden` is the state, a core controller animates the size | Accepted |
 | [0045](0045-select.md) | Select: a select-only combobox with roving focus; the native select stays | Accepted |
+| [0046](0046-mcp-server.md) | MCP server: `@owlky/mcp` over stdio, answering from a generated manifest | Accepted |
 
 Template: **Context** (why decide) · **Decision** (what) · **Consequences** (trade-offs, follow-ups).
