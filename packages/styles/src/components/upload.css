@@ -1,0 +1,641 @@
+/*
+ * Upload — spec: specs/components/upload.md (ADR-0037)
+ *
+ * Anatomy:   div[data-ok-upload]
+ *              › div[data-ok-upload-zone]
+ *                  › input[type=file][data-ok-upload-input]   (covers the zone, opacity 0)
+ *                  › div[data-ok-upload-placeholder] › illustration / icon, title, description
+ *                  › span[data-ok-upload-preview]?            (single file: image or file card)
+ *                  › button[data-ok-icon-button][data-ok-upload-remove]? (single file)
+ *              › div[data-ok-upload-helper-text]?
+ *              › div[data-ok-upload-rejections][role=alert] › ul › li …
+ *              › ul[data-ok-upload-list]? › li[data-ok-upload-item]
+ *                  › span[data-ok-upload-thumb] › img | span[data-ok-upload-file]
+ *                  › span[data-ok-upload-item-text] › name, size
+ *                  › button[data-ok-icon-button][data-ok-upload-remove]
+ *              › div[data-ok-upload-actions]? (Remove all, Upload)
+ * Modifiers: data-ok-variant = default | avatar | box
+ *            data-ok-layout  = vertical (rows) | horizontal (tiles)
+ *            data-ok-error, data-ok-no-click
+ * States:    data-ok-drag = accept | reject | unknown (while files are over the zone, written by
+ *            the controller), aria-busy, the input's :disabled / :focus-visible (via :has())
+ *
+ * The native input covers the zone, so a press opens the file dialog and a drop fills it even
+ * without JavaScript; parts that must stay clickable sit above it. Single :where() selectors in
+ * @layer components (zero specificity). Translucent colors use rgb(var(--…-channel) / α).
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-ok-upload]) {
+    --_ok-zone-bg: rgb(var(--ok-palette-grey-500-channel) / 0.08);
+    --_ok-zone-border: rgb(var(--ok-palette-grey-500-channel) / 0.2);
+    --_ok-thumb-radius: calc(var(--ok-radius-md) * 1.25);
+
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    color: var(--ok-text-primary);
+    font-family: var(--ok-font-family);
+  }
+
+  /* Zone */
+  :where([data-ok-upload-zone]) {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    min-width: 0;
+    padding: calc(var(--ok-spacing) * 6);
+    border: 1px dashed var(--_ok-zone-border);
+    border-radius: var(--ok-radius-md);
+    background-color: var(--_ok-zone-bg);
+    text-align: center;
+    transition: border-color var(--ok-duration-shorter) var(--ok-easing-standard);
+  }
+
+  :where([data-ok-upload-input]) {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: inherit;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  :where([data-ok-upload][data-ok-no-click] [data-ok-upload-input]) {
+    pointer-events: none;
+  }
+
+  :where([data-ok-upload-zone]:has(> [data-ok-upload-input]:focus-visible)) {
+    outline: 2px solid var(--ok-text-primary);
+    outline-offset: 2px;
+  }
+
+  /* Hover and drag strengthen the border (the reference dims the zone, which lowers text contrast). */
+  @media (hover: hover) {
+    :where([data-ok-upload]:not([data-ok-no-click]) [data-ok-upload-zone]:hover) {
+      border-color: var(--ok-palette-grey-500);
+    }
+  }
+
+  /* Placeholder */
+  :where([data-ok-upload-placeholder]) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: calc(var(--ok-spacing) * 6);
+    min-width: 0;
+  }
+
+  :where([data-ok-upload-illustration]) {
+    display: block;
+    width: calc(var(--ok-spacing) * 50);
+    max-width: 100%;
+    height: auto;
+  }
+
+  :where([data-ok-upload-illustration] [data-ok-tone="main"]) {
+    fill: var(--ok-palette-primary-main);
+  }
+
+  :where([data-ok-upload-illustration] [data-ok-tone="dark"]) {
+    fill: var(--ok-palette-primary-dark);
+  }
+
+  :where([data-ok-upload-illustration] [data-ok-tone="light"]) {
+    fill: var(--ok-palette-primary-light);
+  }
+
+  :where([data-ok-upload-illustration] [data-ok-tone="paper"]) {
+    fill: var(--ok-bg-paper);
+    stroke: rgb(var(--ok-palette-grey-500-channel) / 0.24);
+  }
+
+  :where([data-ok-upload-illustration] [data-ok-tone="line"]) {
+    fill: none;
+    stroke: rgb(var(--ok-palette-grey-500-channel) / 0.4);
+    stroke-linecap: round;
+    stroke-width: 4px;
+  }
+
+  :where([data-ok-upload-illustration] [data-ok-tone="arrow"]) {
+    fill: none;
+    stroke: var(--ok-palette-primary-darker);
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 3px;
+  }
+
+  :where([data-ok-upload-illustration] [data-ok-tone="shadow"]) {
+    fill: rgb(var(--ok-palette-grey-500-channel) / 0.12);
+  }
+
+  :where([data-ok-upload-placeholder-text]) {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ok-spacing);
+    min-width: 0;
+  }
+
+  :where([data-ok-upload-title]) {
+    font-size: var(--ok-typography-h6-font-size);
+    font-weight: var(--ok-typography-h6-font-weight);
+    line-height: var(--ok-typography-h6-line-height);
+  }
+
+  :where([data-ok-upload-description]) {
+    color: var(--ok-text-secondary);
+    font-size: var(--ok-typography-body2-font-size);
+    line-height: var(--ok-typography-body2-line-height);
+  }
+
+  /* "browse": the primary color's AA text tone, underlined (the whole zone opens the dialog). */
+  :where([data-ok-upload-browse]) {
+    color: var(--ok-palette-primary-text);
+    text-decoration: underline;
+  }
+
+  /* Single file: the preview fills the zone, which keeps its size. */
+  :where([data-ok-upload-preview]) {
+    position: absolute;
+    inset: calc(var(--ok-spacing) * 2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--ok-spacing);
+    overflow: hidden;
+    border-radius: var(--ok-radius-md);
+    background-color: var(--ok-bg-paper);
+  }
+
+  :where([data-ok-upload-preview] > img) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  :where([data-ok-upload-preview-name]) {
+    max-width: 100%;
+    overflow: hidden;
+    font-size: var(--ok-typography-subtitle2-font-size);
+    font-weight: var(--ok-typography-subtitle2-font-weight);
+    line-height: var(--ok-typography-subtitle2-line-height);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  :where([data-ok-upload-preview-size]) {
+    color: var(--ok-text-secondary);
+    font-size: var(--ok-typography-caption-font-size);
+    line-height: var(--ok-typography-caption-line-height);
+  }
+
+  :where([data-ok-upload-zone]:has(> [data-ok-upload-preview]) > [data-ok-upload-placeholder]) {
+    visibility: hidden;
+  }
+
+  /* Remove buttons (IconButtons): a dark round button over the preview, a grey one in rows. */
+  :where([data-ok-upload-remove]) {
+    z-index: 2;
+  }
+
+  :where([data-ok-upload-remove][hidden]) {
+    display: none;
+  }
+
+  :where([data-ok-upload-zone] > [data-ok-upload-remove]) {
+    --_ok-main: var(--ok-palette-common-white);
+    --_ok-hover-bg: rgb(var(--ok-palette-grey-900-channel) / 0.72);
+
+    position: absolute;
+    top: calc(var(--ok-spacing) * 4);
+    right: calc(var(--ok-spacing) * 4);
+    background-color: rgb(var(--ok-palette-grey-900-channel) / 0.48);
+  }
+
+  :where([data-ok-upload-remove-text]) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* Helper text */
+  :where([data-ok-upload-helper-text]) {
+    margin: calc(var(--ok-spacing) * 3) calc(var(--ok-spacing) * 3) 0;
+    color: var(--ok-text-secondary);
+    font-size: var(--ok-typography-caption-font-size);
+    line-height: var(--ok-typography-caption-line-height);
+  }
+
+  /* Rejected files of the last drop */
+  :where([data-ok-upload-rejections]:empty) {
+    display: none;
+  }
+
+  :where([data-ok-upload-rejections]) {
+    margin-top: calc(var(--ok-spacing) * 6);
+    padding: calc(var(--ok-spacing) * 2) calc(var(--ok-spacing) * 4);
+    border: 1px solid rgb(var(--ok-palette-error-main-channel) / 0.24);
+    border-radius: var(--ok-radius-md);
+    background-color: rgb(var(--ok-palette-error-main-channel) / 0.08);
+    text-align: start;
+  }
+
+  :where([data-ok-upload-rejections] ul) {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ok-spacing);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  :where([data-ok-upload-rejection-file]) {
+    display: block;
+    overflow: hidden;
+    font-size: var(--ok-typography-subtitle2-font-size);
+    font-weight: var(--ok-typography-subtitle2-font-weight);
+    line-height: var(--ok-typography-subtitle2-line-height);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  :where([data-ok-upload-rejection-error]) {
+    display: block;
+    font-size: var(--ok-typography-caption-font-size);
+    line-height: var(--ok-typography-caption-line-height);
+  }
+
+  /* File list: rows (vertical) */
+  :where([data-ok-upload-list]) {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--ok-spacing) * 2);
+    margin: calc(var(--ok-spacing) * 6) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  :where([data-ok-upload-list]:empty) {
+    display: none;
+  }
+
+  :where([data-ok-upload-item]) {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: calc(var(--ok-spacing) * 3);
+    box-sizing: border-box;
+    min-width: 0;
+    padding: calc(var(--ok-spacing) * 2) calc(var(--ok-spacing) * 2) calc(var(--ok-spacing) * 2)
+      calc(var(--ok-spacing) * 3);
+    border: 1px solid rgb(var(--ok-palette-grey-500-channel) / 0.16);
+    border-radius: var(--ok-radius-md);
+    background-color: var(--ok-bg-paper);
+  }
+
+  :where([data-ok-upload-thumb]) {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: calc(var(--ok-spacing) * 9);
+    height: calc(var(--ok-spacing) * 9);
+    overflow: hidden;
+    border-radius: var(--_ok-thumb-radius);
+  }
+
+  :where([data-ok-upload-thumb] > img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  :where([data-ok-upload-item-text]) {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  :where([data-ok-upload-item-name]) {
+    overflow: hidden;
+    font-size: var(--ok-typography-subtitle2-font-size);
+    font-weight: var(--ok-typography-subtitle2-font-weight);
+    line-height: var(--ok-typography-subtitle2-line-height);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  :where([data-ok-upload-item-size]) {
+    color: var(--ok-text-secondary);
+    font-size: var(--ok-typography-caption-font-size);
+    line-height: var(--ok-typography-caption-line-height);
+  }
+
+  :where([data-ok-upload-item] > [data-ok-upload-remove]) {
+    flex-shrink: 0;
+  }
+
+  /* File list: tiles (horizontal) */
+  :where([data-ok-upload][data-ok-layout="horizontal"] [data-ok-upload-list]) {
+    flex-flow: row wrap;
+  }
+
+  :where([data-ok-upload][data-ok-layout="horizontal"] [data-ok-upload-item]) {
+    width: calc(var(--ok-spacing) * 20);
+    height: calc(var(--ok-spacing) * 20);
+    padding: 0;
+    border-radius: var(--_ok-thumb-radius);
+  }
+
+  :where([data-ok-upload][data-ok-layout="horizontal"] [data-ok-upload-thumb]) {
+    width: 100%;
+    height: 100%;
+  }
+
+  :where(
+    [data-ok-upload][data-ok-layout="horizontal"] [data-ok-upload-thumb] > [data-ok-upload-file]
+  ) {
+    width: calc(var(--ok-spacing) * 10);
+    height: calc(var(--ok-spacing) * 10);
+  }
+
+  :where([data-ok-upload][data-ok-layout="horizontal"] [data-ok-upload-item-text]) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  :where(
+    [data-ok-upload][data-ok-layout="horizontal"] [data-ok-upload-item] > [data-ok-upload-remove]
+  ) {
+    --_ok-main: var(--ok-palette-common-white);
+    --_ok-hover-bg: rgb(var(--ok-palette-grey-900-channel) / 0.72);
+    --_ok-size: calc(var(--ok-spacing) * 6);
+    --_ok-icon-size: calc(var(--ok-spacing) * 3.5);
+
+    position: absolute;
+    top: var(--ok-spacing);
+    right: var(--ok-spacing);
+    background-color: rgb(var(--ok-palette-grey-900-channel) / 0.48);
+  }
+
+  /* File type icon (no thumbnail) */
+  :where([data-ok-upload-file]) {
+    --_ok-file: var(--ok-palette-grey-600);
+
+    position: relative;
+    display: block;
+    flex-shrink: 0;
+    width: 100%;
+    height: 100%;
+    color: var(--_ok-file);
+  }
+
+  :where([data-ok-upload-preview] > [data-ok-upload-file]) {
+    width: calc(var(--ok-spacing) * 12);
+    height: calc(var(--ok-spacing) * 12);
+  }
+
+  :where([data-ok-upload-file] > svg) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    fill: currentColor;
+  }
+
+  :where([data-ok-upload-file] path + path) {
+    fill: var(--ok-palette-common-white);
+    fill-opacity: 0.4;
+  }
+
+  :where([data-ok-upload-file-ext]) {
+    position: absolute;
+    right: 0;
+    bottom: 18%;
+    left: 0;
+    color: var(--ok-palette-common-white);
+    font-size: calc(var(--ok-spacing) * 2);
+    font-weight: var(--ok-font-weight-bold);
+    line-height: 1;
+    text-align: center;
+  }
+
+  :where([data-ok-upload-file][data-ok-kind="image"]) {
+    --_ok-file: var(--ok-palette-success-main);
+  }
+
+  :where([data-ok-upload-file][data-ok-kind="video"]) {
+    --_ok-file: var(--ok-palette-secondary-main);
+  }
+
+  :where([data-ok-upload-file][data-ok-kind="audio"]) {
+    --_ok-file: var(--ok-palette-info-dark);
+  }
+
+  :where([data-ok-upload-file][data-ok-kind="pdf"]) {
+    --_ok-file: var(--ok-palette-error-main);
+  }
+
+  :where([data-ok-upload-file][data-ok-kind="document"]) {
+    --_ok-file: var(--ok-palette-info-main);
+  }
+
+  :where([data-ok-upload-file][data-ok-kind="spreadsheet"]) {
+    --_ok-file: var(--ok-palette-success-dark);
+  }
+
+  :where([data-ok-upload-file][data-ok-kind="presentation"]) {
+    --_ok-file: var(--ok-palette-warning-main);
+  }
+
+  :where([data-ok-upload-file][data-ok-kind="archive"]) {
+    --_ok-file: var(--ok-palette-warning-dark);
+  }
+
+  :where([data-ok-upload-file][data-ok-kind="text"], [data-ok-upload-file][data-ok-kind="code"]) {
+    --_ok-file: var(--ok-palette-grey-700);
+  }
+
+  /* Actions (Remove all, Upload) */
+  :where([data-ok-upload-actions]) {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: calc(var(--ok-spacing) * 3);
+    margin-top: calc(var(--ok-spacing) * 6);
+  }
+
+  :where([data-ok-upload-actions][hidden]) {
+    display: none;
+  }
+
+  /* Avatar: a round photo picker */
+  :where([data-ok-upload][data-ok-variant="avatar"]) {
+    align-items: center;
+  }
+
+  :where([data-ok-upload][data-ok-variant="avatar"] [data-ok-upload-zone]) {
+    width: calc(var(--ok-spacing) * 36);
+    height: calc(var(--ok-spacing) * 36);
+    padding: 0;
+    border-radius: var(--ok-radius-full);
+    background-color: transparent;
+  }
+
+  :where(
+    [data-ok-upload][data-ok-variant="avatar"] [data-ok-upload-placeholder],
+    [data-ok-upload][data-ok-variant="avatar"] [data-ok-upload-preview]
+  ) {
+    position: absolute;
+    inset: calc(var(--ok-spacing) * 2);
+    justify-content: center;
+    gap: var(--ok-spacing);
+    border-radius: var(--ok-radius-full);
+    color: var(--ok-text-secondary);
+  }
+
+  :where([data-ok-upload][data-ok-variant="avatar"] [data-ok-upload-placeholder]) {
+    z-index: 1;
+    background-color: var(--_ok-zone-bg);
+    pointer-events: none;
+    transition: opacity var(--ok-duration-shorter) var(--ok-easing-standard);
+  }
+
+  :where([data-ok-upload][data-ok-variant="avatar"] [data-ok-upload-icon]) {
+    width: calc(var(--ok-spacing) * 8);
+    height: calc(var(--ok-spacing) * 8);
+  }
+
+  :where([data-ok-upload][data-ok-variant="avatar"] [data-ok-upload-title]) {
+    font-size: var(--ok-typography-caption-font-size);
+    font-weight: var(--ok-font-weight-regular);
+    line-height: var(--ok-typography-caption-line-height);
+  }
+
+  /* With a photo: the placeholder becomes an overlay shown on hover and focus. */
+  :where(
+    [data-ok-upload][data-ok-variant="avatar"]
+      [data-ok-upload-zone]:has(> [data-ok-upload-preview])
+      > [data-ok-upload-placeholder]
+  ) {
+    visibility: visible;
+    background-color: rgb(var(--ok-palette-grey-900-channel) / 0.64);
+    color: var(--ok-palette-common-white);
+    opacity: 0;
+  }
+
+  :where(
+    [data-ok-upload][data-ok-variant="avatar"]
+      [data-ok-upload-zone]:has(> [data-ok-upload-preview]):hover
+      > [data-ok-upload-placeholder],
+    [data-ok-upload][data-ok-variant="avatar"]
+      [data-ok-upload-zone]:has(> [data-ok-upload-input]:focus-visible)
+      > [data-ok-upload-placeholder]
+  ) {
+    opacity: 1;
+  }
+
+  :where([data-ok-upload][data-ok-variant="avatar"] [data-ok-upload-helper-text]) {
+    margin: calc(var(--ok-spacing) * 6) 0 0;
+    text-align: center;
+  }
+
+  /* Box: a small square (or the size its placeholder gives it) */
+  :where([data-ok-upload][data-ok-variant="box"]) {
+    display: inline-flex;
+    width: auto;
+  }
+
+  :where([data-ok-upload][data-ok-variant="box"] [data-ok-upload-zone]) {
+    min-width: calc(var(--ok-spacing) * 16);
+    min-height: calc(var(--ok-spacing) * 16);
+    padding: calc(var(--ok-spacing) * 2);
+    color: var(--ok-text-secondary);
+  }
+
+  :where([data-ok-upload][data-ok-variant="box"] [data-ok-upload-placeholder]) {
+    gap: var(--ok-spacing);
+    font-size: var(--ok-typography-body2-font-size);
+    line-height: var(--ok-typography-body2-line-height);
+  }
+
+  :where([data-ok-upload][data-ok-variant="box"] [data-ok-upload-icon]) {
+    width: calc(var(--ok-spacing) * 7);
+    height: calc(var(--ok-spacing) * 7);
+  }
+
+  /* Drag states (written by the controller) */
+  :where([data-ok-upload][data-ok-drag] [data-ok-upload-zone]) {
+    border-color: var(--ok-palette-grey-500);
+  }
+
+  :where([data-ok-upload][data-ok-drag="accept"] [data-ok-upload-zone]) {
+    border-color: var(--ok-palette-primary-main);
+    border-style: solid;
+  }
+
+  :where(
+    [data-ok-upload][data-ok-error] [data-ok-upload-zone],
+    [data-ok-upload][data-ok-drag="reject"] [data-ok-upload-zone]
+  ) {
+    --_ok-zone-bg: rgb(var(--ok-palette-error-main-channel) / 0.08);
+
+    border-color: var(--ok-palette-error-main);
+    color: var(--ok-palette-error-text);
+  }
+
+  /* On the error tint, the description and "browse" take the error text color (AA). */
+  :where(
+    [data-ok-upload][data-ok-error] [data-ok-upload-description],
+    [data-ok-upload][data-ok-error] [data-ok-upload-browse],
+    [data-ok-upload][data-ok-drag="reject"] [data-ok-upload-description],
+    [data-ok-upload][data-ok-drag="reject"] [data-ok-upload-browse]
+  ) {
+    color: inherit;
+  }
+
+  :where([data-ok-upload][data-ok-error] [data-ok-upload-helper-text]) {
+    color: var(--ok-palette-error-text);
+  }
+
+  :where([data-ok-upload][aria-busy="true"] [data-ok-upload-zone]) {
+    cursor: progress;
+  }
+
+  /* Disabled */
+  :where([data-ok-upload-zone]:has(> [data-ok-upload-input]:disabled)) {
+    opacity: 0.48;
+  }
+
+  :where([data-ok-upload-input]:disabled) {
+    cursor: default;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :where([data-ok-upload-zone], [data-ok-upload-placeholder]) {
+      transition: none;
+    }
+  }
+}

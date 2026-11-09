@@ -303,6 +303,9 @@ const pairs: [component: string, story: string][] = [
   ["lightbox", "basic"],
   ["lightbox", "inline"],
   ["lightbox", "toolbar"],
+  ...["single", "multiple", "avatar", "box", "validation", "states", "open-dialog"].map(
+    (story) => ["upload", story] as [string, string],
+  ),
   ["code-editor", "editor"],
   ["code-editor", "diff"],
   ["code-editor", "multi-model"],

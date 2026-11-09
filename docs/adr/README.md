@@ -41,6 +41,7 @@ ADR that supersedes the old one — don't rewrite history.
 | [0034](0034-code-editor-on-monaco.md) | Code editor: Monaco behind opt-in entries, self-hosted, with its own CSP | Accepted |
 | [0035](0035-markdown-on-unified.md) | Markdown: unified (remark / rehype) behind opt-in entries, safe by default | Accepted |
 | [0036](0036-organization-chart.md) | Organization chart: nested lists with CSS connectors, lengths through private properties | Accepted |
+| [0037](0037-upload.md) | Upload: a native file input under the drop zone, one controller in core | Accepted |
 | [0038](0038-image.md) | Image: native lazy loading, the load state as a data attribute | Accepted |
 
 Template: **Context** (why decide) · **Decision** (what) · **Consequences** (trade-offs, follow-ups).

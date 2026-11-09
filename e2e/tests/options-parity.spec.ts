@@ -60,6 +60,13 @@ const CASES: [
     ["disableZoom", "disableTotal", "disableCaptions", "disableThumbnails", "disableFullscreen"],
   ],
   ["lightbox", "inline", "lightbox", ["finite", "imageFit", "thumbnailsPosition"]],
+  [
+    "upload",
+    "single",
+    "upload",
+    ["error", "disabled", "noClick", "noDrag", "noKeyboard", "maxSize"],
+  ],
+  ["upload", "multiple", "upload", ["layout", "thumbnail", "maxFiles"]],
   ["slider", "temperature", "slider", ["size", "color", "disabled"]],
   ["transfer-list", "simple", "transfer-list", ["disabled"]],
   ["tree-view", "simple", "tree-view", ["variant", "expansionTrigger"]],
