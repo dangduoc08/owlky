@@ -219,6 +219,13 @@ describe("snaps", () => {
         2,
       ),
     ).toBe(2);
+    const five = [[0], [1], [2], [3], [4]];
+    // Five 150px slides in a 400px viewport (scroll range 350): the snap of slide 0 goes mid-range
+    // with one slide before it, not two (two would put the next snap at 450, out of reach).
+    expect(loopFirst(five, 0, [150, 150, 150, 150, 150], 175)).toBe(4);
+    // Ties keep the count-based split.
+    expect(loopFirst(five, 0, [200, 200, 200, 200, 200], 300)).toBe(3);
+    expect(loopFirst(five, 2, [100, 100, 100, 100, 100], 0)).toBe(2);
   });
 
   it("decides when a loop fits", () => {

@@ -190,7 +190,7 @@ export function Principles({
           icon={<ShieldIcon />}
           title="How Owlky is built"
         />
-        <Carousel aria-label="Principles" slideSpacing={24} data-landing-carousel="">
+        <Carousel aria-label="Principles" loop slideSpacing={24} data-landing-carousel="">
           <CarouselViewport>
             {slides.map((slide, index) => (
               <CarouselSlide key={slide.title} aria-label={`${index + 1} of ${slides.length}`}>

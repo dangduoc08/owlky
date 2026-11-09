@@ -12,6 +12,7 @@
 import { carouselOptions } from "../anatomy/anatomy.js";
 import { readBehavior, readNumber, readStyle } from "../options/define.js";
 import {
+  alignOffset,
   type CarouselAlign,
   type CarouselSettings,
   canLoop,
@@ -366,8 +367,12 @@ export function createCarouselController(
   /** Loop: rotates the visual order around `center` and keeps the view where it was. */
   const recenter = (center = selected) => {
     if (!looping) return;
-    // While looping every group is its own snap.
-    const first = loopFirst(groups, center);
+    // While looping every group is its own snap. The rotation puts the group's snap in the middle
+    // of the scroll range, so the steps on both sides stay reachable.
+    const spans = groups.map((group) => groupSpan(group));
+    const span = (spans[center] as number) - gap;
+    const offset = maxScroll / 2 + alignOffset(alignSetting(), viewSize, span, center);
+    const first = loopFirst(groups, center, spans, offset);
     if (first === firstSlide) return;
     const anchor = (groups[center] as number[])[0] as number;
     const before = (boxes[anchor] as SlideBox).start;
@@ -538,10 +543,24 @@ export function createCarouselController(
       settle();
       return;
     }
-    if (looping) recenter(selected);
+    // Loop: a jump rotates around the target; an animated move around the middle of the shortest
+    // way, so both ends are within the scroll range.
+    if (looping) {
+      let delta = (target - selected + total) % total;
+      if (delta > total / 2) delta -= total;
+      recenter(jump ? target : (selected + Math.trunc(delta / 2) + total) % total);
+    }
     select(target);
     animateTo(positions[target] as number, jump);
   };
+
+  /**
+   * The sizes changed since the last measure. A resize can re-snap the viewport (a scroll event)
+   * before the ResizeObserver reports it: selecting from the old snaps would pick another slide.
+   */
+  const stale = () =>
+    Math.abs((vertical() ? area.clientHeight : area.clientWidth) - viewSize) > 0.5 ||
+    Math.abs(measureMax() - maxScroll) > 0.5;
 
   let frame = 0;
   const onScrollFrame = () => {
@@ -555,6 +574,9 @@ export function createCarouselController(
     if (frame || animating) return;
     frame = requestAnimationFrame(() => {
       frame = 0;
+      // Measure again, then select from where the browser put the view (it re-snaps to the
+      // same slide after a resize; a swipe stays where it is).
+      if (!drag && stale()) remeasure(true);
       onScrollFrame();
       if (!autoScrollState.running) recenterNearEdge();
     });
@@ -575,6 +597,8 @@ export function createCarouselController(
   };
   const settle = () => {
     if (drag || animating) return;
+    // The ResizeObserver skips resizes during drags: catch up now.
+    if (stale()) reInit();
     settledAt = getScroll();
     if (looping && !autoScrollState.running) recenter(selected);
     userMove = false;
@@ -1159,10 +1183,14 @@ export function createCarouselController(
 
   // --- Init / reInit --------------------------------------------------------------------------
 
-  const reInit = () => {
+  /** `followScroll`: keep the scroll position (the next scroll frame selects from it). */
+  const remeasure = (followScroll: boolean) => {
     settings = readCarouselSettings(root);
     writeCssSettings();
     const keep = initialized ? selected : settings.startIndex;
+    // A running animation aims at a position measured before: it restarts toward the new one.
+    const retarget = animating;
+    if (retarget) cancelAnimation();
     layout();
     const total = count();
     selected =
@@ -1171,7 +1199,10 @@ export function createCarouselController(
       firstSlide = -1;
       recenter(selected);
     }
-    if (!fade() && total > 0 && settings.active) setScroll(positions[selected] as number);
+    if (!fade() && total > 0 && settings.active) {
+      if (retarget) animateTo(positions[selected] as number, false);
+      else if (!followScroll) setScroll(positions[selected] as number);
+    }
     observeInView();
     sync();
     syncHeight();
@@ -1182,10 +1213,11 @@ export function createCarouselController(
       options.onReInit?.(total);
     }
   };
+  const reInit = () => remeasure(false);
 
   const resizeObserver = new ResizeObserver(() => {
     requestAnimationFrame(() => {
-      if (!signal.aborted && !drag && !animating) reInit();
+      if (!signal.aborted && !drag) reInit();
     });
   });
   const observeSizes = () => {

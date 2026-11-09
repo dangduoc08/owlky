@@ -124,6 +124,28 @@ describe("carousel runtime", () => {
     expect(events.some((e) => e.startsWith("slidesinview:"))).toBe(true);
   });
 
+  it("keeps the current slide when a looping carousel resizes", async () => {
+    const host = mount(markup('data-ok-loop data-ok-slides-to-show="1"', 5, 5));
+    start();
+    const root = rootOf(host);
+    const view = root.querySelector<HTMLElement>("[data-ok-carousel-viewport]") as HTMLElement;
+    const slide = root.querySelectorAll<HTMLElement>("[data-ok-carousel-slide]")[3] as HTMLElement;
+    const wrapper = root.parentElement as HTMLElement;
+    expect(root.hasAttribute("data-ok-looping")).toBe(true);
+    instance(host).scrollTo(3, true);
+    const offset = () => slide.getBoundingClientRect().left - view.getBoundingClientRect().left;
+    for (const width of [300, 520, 400]) {
+      wrapper.style.width = `${width}px`;
+      // The browser re-snaps to the slide; its scroll event may come before the ResizeObserver.
+      view.scrollLeft += offset();
+      view.dispatchEvent(new Event("scroll"));
+      for (let i = 0; i < 4; i++) await nextFrame();
+      expect(instance(host).selectedScrollSnap()).toBe(3);
+      expect(slide.hasAttribute("data-ok-snapped")).toBe(true);
+      expect(Math.abs(offset())).toBeLessThan(2);
+    }
+  });
+
   it("keeps one dot per snap", async () => {
     const host = mount(markup("", 4, 4, true));
     start();

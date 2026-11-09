@@ -414,10 +414,41 @@ export function loopOrder(count: number, first: number): number[] {
   return Array.from({ length: count }, (_, i) => (i - first + count) % count);
 }
 
-/** The first slide of a loop that centers group `center` (always a group's first slide). */
-export function loopFirst(groups: readonly (readonly number[])[], center: number): number {
-  const before = Math.floor((groups.length - 1) / 2);
-  const index = (center - before + groups.length * 2) % groups.length;
+/**
+ * The first slide of a loop that centers group `center` (always a group's first slide).
+ *
+ * Without geometry, half the groups go before it. With `spans` (each group's length, gaps
+ * included) and `offset` (the content length that should come before it: the middle of the
+ * scroll range plus the group's align offset), the number of groups before it is the one whose
+ * length is nearest to `offset`, so the group's snap sits mid-range with room on both sides: a
+ * count-based split puts it out of reach when the loop is barely long enough (ADR-0033).
+ */
+export function loopFirst(
+  groups: readonly (readonly number[])[],
+  center: number,
+  spans?: readonly number[],
+  offset = 0,
+): number {
+  const total = groups.length;
+  const half = Math.floor((total - 1) / 2);
+  let before = half;
+  if (spans) {
+    let length = 0;
+    let best = Number.POSITIVE_INFINITY;
+    for (let count = 0; count < total; count++) {
+      if (count > 0) length += spans[(center - count + total * 2) % total] as number;
+      const distance = Math.abs(length - offset);
+      // Ties keep the count-based split (the same order as without geometry).
+      if (
+        distance < best - 0.5 ||
+        (Math.abs(distance - best) <= 0.5 && Math.abs(count - half) < Math.abs(before - half))
+      ) {
+        best = Math.min(best, distance);
+        before = count;
+      }
+    }
+  }
+  const index = (center - before + total * 2) % total;
   return (groups[index] as readonly number[])[0] as number;
 }
 

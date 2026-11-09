@@ -897,6 +897,111 @@ describe("createCarouselController", () => {
     expect(root.hasAttribute(CAROUSEL_FLAGS.ready)).toBe(true);
   });
 
+  /** Distance of slide `index` from its snap (start or center of the viewport). */
+  const offsetOf = (viewport: HTMLElement, slide: HTMLElement, align: string) => {
+    const view = viewport.getBoundingClientRect();
+    const box = slide.getBoundingClientRect();
+    return align === "start"
+      ? box.left - view.left
+      : box.left + box.width / 2 - view.left - view.width / 2;
+  };
+  const loopSetup = (align: string, size: string, duration = "0") => {
+    const result = setup({
+      count: 5,
+      attrs: `data-ok-loop data-ok-align="${align}" data-ok-duration="${duration}"`,
+    });
+    for (const slide of result.slides) slide.style.setProperty("--size", size);
+    result.controller.reInit();
+    expect(result.root.hasAttribute(CAROUSEL_FLAGS.looping)).toBe(true);
+    return result;
+  };
+
+  it.each([
+    ["start", "slides as wide as the viewport", "100%", false],
+    ["center", "slides as wide as the viewport", "100%", false],
+    ["start", "slides as wide as the viewport, re-snapped first", "100%", true],
+    ["center", "slides as wide as the viewport, re-snapped first", "100%", true],
+    ["start", "fixed slides", "150px", false],
+    ["center", "fixed slides", "150px", false],
+    ["start", "fixed slides, re-snapped first", "150px", true],
+  ])(
+    "keeps the current slide when a looping carousel resizes (%s, %s)",
+    async (align, _, size, resnap) => {
+      const { controller, slides, viewport, snapped } = loopSetup(align, size);
+      for (const index of [2, 3, 1, 4, 0]) {
+        controller.scrollTo(index, true);
+        await frames();
+        // 150px slides loop up to a 450px viewport.
+        for (const width of [300, 440, 360, 400]) {
+          const slide = slides[index] as HTMLElement;
+          viewport.style.width = `${width}px`;
+          // Browsers re-snap to the same slide after a resize, and the scroll event can come before
+          // the ResizeObserver reports the new size (a window resize does).
+          if (resnap) {
+            viewport.scrollLeft += offsetOf(viewport, slide, align);
+            viewport.dispatchEvent(new Event("scroll"));
+          }
+          await frames(4);
+          expect(controller.selectedScrollSnap(), `slide ${index} at ${width}px`).toBe(index);
+          expect(snapped()).toEqual([index]);
+          expect(Math.abs(offsetOf(viewport, slide, align)), `in place at ${width}px`).toBeLessThan(
+            2,
+          );
+        }
+      }
+    },
+  );
+
+  it("keeps the slide when a resize turns the loop off and on again", async () => {
+    const { root, controller, slides, viewport, snapped } = loopSetup("start", "150px");
+    controller.scrollTo(1, true);
+    await frames();
+    viewport.style.width = "520px";
+    await until(() => !root.hasAttribute(CAROUSEL_FLAGS.looping));
+    await frames();
+    expect(controller.selectedScrollSnap()).toBe(1);
+    expect(slides.map((s) => s.style.getPropertyValue("--_ok-carousel-order"))).toEqual(
+      Array(5).fill(""),
+    );
+    viewport.style.width = "400px";
+    await until(() => root.hasAttribute(CAROUSEL_FLAGS.looping));
+    await frames();
+    expect(controller.selectedScrollSnap()).toBe(1);
+    expect(snapped()).toEqual([1]);
+    expect(Math.abs(offsetOf(viewport, slides[1] as HTMLElement, "start"))).toBeLessThan(2);
+  });
+
+  it("reaches every slide of a barely long enough loop", async () => {
+    const { controller, slides, viewport, events } = loopSetup("start", "150px", "1");
+    for (const [move, expected] of [
+      [() => controller.scrollTo(2), 2],
+      [() => controller.scrollNext(), 3],
+      [() => controller.scrollNext(), 4],
+      [() => controller.scrollNext(), 0],
+      [() => controller.scrollPrev(), 4],
+      [() => controller.scrollTo(1), 1],
+    ] as const) {
+      move();
+      await settled(events);
+      await frames();
+      expect(controller.selectedScrollSnap()).toBe(expected);
+      expect(Math.abs(offsetOf(viewport, slides[expected] as HTMLElement, "start"))).toBeLessThan(
+        2,
+      );
+    }
+  });
+
+  it("re-measures after a resize during an animation", async () => {
+    // 15 = 300 ms.
+    const { controller, slides, viewport, events } = loopSetup("start", "100%", "15");
+    controller.scrollTo(2);
+    viewport.style.width = "300px";
+    await settled(events);
+    await frames(4);
+    expect(controller.selectedScrollSnap()).toBe(2);
+    expect(Math.abs(offsetOf(viewport, slides[2] as HTMLElement, "start"))).toBeLessThan(2);
+  });
+
   it("survives missing parts and cleans up", () => {
     const host = mount(
       '<section data-ok-carousel aria-label="Empty"><span data-ok-carousel-counter>x</span></section>',
