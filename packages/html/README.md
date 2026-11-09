@@ -46,6 +46,9 @@ states from `data-ok-active-step`, triggers `data-ok-stepper-next|back|reset="<i
 `data-ok-stepper-panel`, event `ok:stepper:change`; runtime `mobile-stepper`: text / dots / progress,
 event `ok:mobile-stepper:change`)
 **Timeline** (CSS only: `ul[data-ok-timeline]` › items › separator, dot, connector, content)
+**Organization chart** (CSS only: `ul[data-ok-organization-chart]` › `li` nodes › label + children
+`ul`; runtime `organization-chart` only writes `data-ok-line-height|width|border-radius` and
+`data-ok-node-padding` as private CSS properties)
 **Rating** (runtime `rating`: a radio per value plus an "Empty" radio; a second click clears; events
 `ok:rating:change` (cancelable) and `ok:rating:active`) **Slider** (runtime `slider`: native range
 inputs as thumbs, `data-ok-min|max|step`, marks, value labels from `data-ok-label-value`; events

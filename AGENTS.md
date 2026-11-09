@@ -574,3 +574,12 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
   another session edits it put lines in the wrong places (commit 7d2e745, repaired in 6eeb0d6).
   Use the commands' multi-URL / multi-component mode: one git worktree and branch per agent, e2e on
   its own port (`PORT=4322 pnpm test:e2e`), merged one by one by the orchestrator.
+- Organization chart (ADR-0036): connectors are borders on `::before` / `::after` of the children
+  `ul` and each child `li` (logical properties); the last child's start half is shifted by the line
+  width so every vertical line uses the same pixels. Free lengths (`lineHeight`…) are `number`
+  options turned into `--_ok-org-*` by core `organizationChartStyle` (React `style`, HTML runtime
+  CSSOM); all private properties are redeclared on every root (nested charts). A node without
+  children renders no children `ul` (an empty one would draw a line down). Snippets are generated
+  from the React stories: `pnpm build && node apps/storybook/scripts/organization-chart-snippets.mjs`
+  (it adds `data-ok-popover-open` to the card menu buttons; esbuild must keep `monaco-editor`,
+  `maplibre-gl` and `@tiptap/*` external because the React dist reaches them).

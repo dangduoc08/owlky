@@ -1717,6 +1717,73 @@ export interface TimelineDotAnatomyOptions {
 export const timelineDotAttributes = (options: TimelineDotAnatomyOptions = {}): DataAttributes =>
   optionAttributes(timelineDotOptions, { ...options });
 
+// --- Organization chart -------------------------------------------------------------------------
+
+export const organizationChartLineColors = ["divider", "inherit", ...paletteColorNames] as const;
+export const organizationChartLineStyles = ["solid", "dashed", "dotted"] as const;
+
+export type OrganizationChartLineColor = (typeof organizationChartLineColors)[number];
+export type OrganizationChartLineStyle = (typeof organizationChartLineStyles)[number];
+
+const CHART_LENGTH = { min: 0, units: ["px", "rem", "em"] } as const;
+
+export const organizationChartOptions = defineOptions(
+  "organization-chart",
+  "data-ok-organization-chart",
+  {
+    lineHeight: number(
+      "data-ok-line-height",
+      40,
+      "Height of the connectors between two levels: a number in px, or a CSS length.",
+      CHART_LENGTH,
+    ),
+    lineWidth: number(
+      "data-ok-line-width",
+      1,
+      "Thickness of the connectors: a number in px, or a CSS length.",
+      CHART_LENGTH,
+    ),
+    lineColor: style(
+      "data-ok-line-color",
+      organizationChartLineColors,
+      "divider",
+      "`divider` (default), `inherit` (the text color) or a palette color (its light tone).",
+    ),
+    lineStyle: style(
+      "data-ok-line-style",
+      organizationChartLineStyles,
+      "solid",
+      "Line style of the connectors.",
+    ),
+    lineBorderRadius: number(
+      "data-ok-line-border-radius",
+      24,
+      "Corner radius where a connector turns: a number in px, or a CSS length.",
+      CHART_LENGTH,
+    ),
+    nodePadding: number(
+      "data-ok-node-padding",
+      4,
+      "Space on each side of every node: a number in px, or a CSS length.",
+      CHART_LENGTH,
+    ),
+  },
+);
+
+export interface OrganizationChartAnatomyOptions {
+  lineHeight?: number | string | undefined;
+  lineWidth?: number | string | undefined;
+  lineColor?: OrganizationChartLineColor | undefined;
+  lineStyle?: OrganizationChartLineStyle | undefined;
+  lineBorderRadius?: number | string | undefined;
+  nodePadding?: number | string | undefined;
+}
+
+/** `data-ok-*` attributes of an organization chart (the outer `ul`). */
+export const organizationChartAttributes = (
+  options: OrganizationChartAnatomyOptions = {},
+): DataAttributes => optionAttributes(organizationChartOptions, { ...options });
+
 // --- Rating -------------------------------------------------------------------------------------
 
 export const ratingSizes = ["xxSmall", "xSmall", "small", "medium", "large"] as const;
@@ -3972,6 +4039,7 @@ export const optionSchemas = {
   timeline: timelineOptions,
   "timeline-item": timelineItemOptions,
   "timeline-dot": timelineDotOptions,
+  "organization-chart": organizationChartOptions,
   rating: ratingOptions,
   slider: sliderOptions,
   "transfer-list": transferListOptions,

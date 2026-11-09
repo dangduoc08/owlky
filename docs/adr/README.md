@@ -38,5 +38,6 @@ ADR that supersedes the old one — don't rewrite history.
 | [0031](0031-chart-phase-4-interaction-and-links.md) | Chart phase 4: zoom as an x window, linked charts, annotations, export, last chart types | Accepted |
 | [0033](0033-carousel.md) | Carousel: native scroll snapping, one controller in core, loop by reordering | Accepted |
 | [0034](0034-code-editor-on-monaco.md) | Code editor: Monaco behind opt-in entries, self-hosted, with its own CSP | Accepted |
+| [0036](0036-organization-chart.md) | Organization chart: nested lists with CSS connectors, lengths through private properties | Accepted |
 
 Template: **Context** (why decide) · **Decision** (what) · **Consequences** (trade-offs, follow-ups).

@@ -43,6 +43,12 @@ const CASES: [
   ["tooltip", "simple", "tooltip", ["arrow"]],
   ["tabs", "custom", "tabs", ["centered", "selectionFollowsFocus"]],
   ["timeline", "right", "timeline", ["position"]],
+  [
+    "organization-chart",
+    "simple",
+    "organization-chart",
+    ["lineHeight", "lineWidth", "lineColor", "lineStyle", "lineBorderRadius", "nodePadding"],
+  ],
   ["rating", "controlled", "rating", ["size", "color"]],
   ["chart", "column-multiple", "chart", ["curve", "legend"]],
   ["carousel", "align", "carousel", ["align", "loop", "dragFree", "containScroll"]],
