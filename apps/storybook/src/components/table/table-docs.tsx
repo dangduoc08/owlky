@@ -151,7 +151,7 @@ For selection, add a column of small **Checkbox** components: put \`data-ok-tabl
   {
     id: "paginate",
     title: "Split rows into pages",
-    body: 'Place a `TablePagination` after the container for a rows-per-page menu, a "1–5 of 12" label and previous and next buttons. In HTML, link it to the table with `data-ok-table-pagination="<table id>"` and the script pages the rows. For numbered pages, use a **Pagination** instead.',
+    body: 'Place a `TablePagination` after the container for a rows-per-page menu, a "1–5 of 12" label and previous and next buttons. In HTML, link it to the table with `data-ok-table-pagination="<table id>"` and the script pages the rows. The rows-per-page menu is a native `<select>`. Set `selectProps` to `{ native: false }` for a **Select** styled like the other fields. For numbered pages, use a **Pagination** instead.',
     html: `<div data-ok-table-pagination="desserts">
   <label data-ok-table-pagination-rows>Rows per page:<select><option value="5" selected>5</option><option value="10">10</option></select></label>
   <span data-ok-table-pagination-displayed aria-live="polite">1–5 of 12</span>

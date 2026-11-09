@@ -131,6 +131,7 @@ export function normalizeStory(page: Page): Promise<NormalizedNode> {
       "data-ok-backdrop-open",
       "data-ok-backdrop-close",
       "data-ok-collapse-toggle",
+      "data-ok-select-open",
       "data-ok-current-placement",
       "data-ok-sortable-add",
       // HTML runtime state and options (React keeps them in props / state).
@@ -287,6 +288,8 @@ export const CONTRAST_EXEMPT = [
   '[data-ok-carousel-dots]:not([data-ok-color="inherit"]) [data-ok-carousel-dot][aria-current="true"]',
   // A disabled upload zone is an inactive component (WCAG 1.4.3 exception), dimmed like the reference.
   "[data-ok-upload-zone]:has(> [data-ok-upload-input]:disabled)",
+  // The label of a disabled Select is inactive (WCAG 1.4.3 exception), like TextField's.
+  "[data-ok-form-control]:has(> [data-ok-select] > [data-ok-select-input]:disabled) > [data-ok-input-label]",
 ];
 
 /** Waits until ProseMirror has read the DOM selection (WebKit reports it on a later task). */

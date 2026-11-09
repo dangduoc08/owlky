@@ -48,7 +48,11 @@ describe("text field snippets", () => {
       const label = root.querySelector(":scope > [data-ok-text-field-label]");
       if (label) expect(label.getAttribute("for")).toBe(input?.id);
       else expect(input?.getAttribute("aria-label")).not.toBeNull();
-      if (input?.localName !== "select") expect(input?.getAttribute("placeholder")).not.toBeNull();
+      // A listbox Select's trigger is a div: its hidden input carries the placeholder.
+      const value = input?.hasAttribute("data-ok-select-display")
+        ? root.querySelector("[data-ok-select-input]")
+        : input;
+      if (input?.localName !== "select") expect(value?.getAttribute("placeholder")).not.toBeNull();
       const outlined = root.dataset["okVariant"] === "outlined";
       expect(root.querySelector("[data-ok-text-field-outline]") !== null).toBe(outlined);
       const helper = root.querySelector(":scope > [data-ok-text-field-helper]");

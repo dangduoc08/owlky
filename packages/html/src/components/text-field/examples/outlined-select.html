@@ -1,9 +1,23 @@
-<div data-ok-text-field data-ok-variant="outlined" data-ok-size="medium" data-ok-color="default" data-ok-margin="none" data-ok-full-width>
-  <label data-ok-text-field-label for="outlined-select">Select</label>
-  <div data-ok-text-field-control>
-    <select id="outlined-select" data-ok-text-field-input aria-describedby="outlined-select-helper-text"><option value="USD">$</option><option value="EUR" selected>€</option><option value="BTC">฿</option><option value="JPY">¥</option></select>
-    <svg data-ok-text-field-select-icon aria-hidden="true" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
-    <fieldset data-ok-text-field-outline aria-hidden="true"><legend><span>Select</span></legend></fieldset>
+<div data-ok-text-field data-ok-variant="outlined" data-ok-size="medium" data-ok-color="default" data-ok-full-width data-ok-margin="none">
+  <label data-ok-text-field-label for="outlined-select" id="outlined-select-label">Select</label>
+  <div data-ok-text-field-control data-ok-select>
+    <div data-ok-text-field-input data-ok-select-display role="combobox" tabindex="0" id="outlined-select" aria-haspopup="listbox" aria-expanded="false" aria-controls="outlined-select-listbox" aria-labelledby="outlined-select-label" aria-describedby="outlined-select-helper-text">€</div>
+    <input data-ok-select-input aria-hidden="true" tabindex="-1" placeholder=" " value="EUR">
+    <svg aria-hidden="true" viewBox="0 0 24 24" data-ok-text-field-select-icon data-ok-select-icon><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+    <fieldset data-ok-text-field-outline aria-hidden="true">
+      <legend>
+        <span>Select</span>
+      </legend>
+    </fieldset>
+    <div popover="manual" data-ok-popover data-ok-placement="bottom-start" id="outlined-select-menu" tabindex="-1">
+      <span data-ok-popover-arrow aria-hidden="true"></span>
+      <ul data-ok-select-listbox role="listbox" id="outlined-select-listbox" aria-labelledby="outlined-select-label">
+        <li role="option" tabindex="-1" data-ok-menu-item aria-selected="false" data-ok-value="USD">$</li>
+        <li role="option" tabindex="-1" data-ok-menu-item data-ok-selected aria-selected="true" data-ok-value="EUR">€</li>
+        <li role="option" tabindex="-1" data-ok-menu-item aria-selected="false" data-ok-value="BTC">฿</li>
+        <li role="option" tabindex="-1" data-ok-menu-item aria-selected="false" data-ok-value="JPY">¥</li>
+      </ul>
+    </div>
   </div>
   <div data-ok-text-field-helper id="outlined-select-helper-text">Please select your currency</div>
 </div>
@@ -16,12 +30,26 @@
   </div>
   <div data-ok-text-field-helper id="outlined-native-select-helper-text">Please select your currency</div>
 </div>
-<div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none" data-ok-full-width>
-  <label data-ok-text-field-label for="outlined-form-select">Form control select</label>
-  <div data-ok-text-field-control>
-    <select id="outlined-form-select" data-ok-text-field-input><option value="USD">$</option><option value="EUR" selected>€</option><option value="BTC">฿</option><option value="JPY">¥</option></select>
-    <svg data-ok-text-field-select-icon aria-hidden="true" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
-    <fieldset data-ok-text-field-outline aria-hidden="true"><legend><span>Form control select</span></legend></fieldset>
+<div data-ok-form-control data-ok-size="small" data-ok-variant="outlined" data-ok-full-width>
+  <label data-ok-form-label data-ok-input-label id="outlined-form-select-label" for="outlined-form-select">Form control select</label>
+  <div data-ok-select data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-full-width>
+    <div data-ok-select-display role="combobox" tabindex="0" id="outlined-form-select" aria-haspopup="listbox" aria-expanded="false" aria-controls="outlined-form-select-listbox" aria-labelledby="outlined-form-select-label">€</div>
+    <input data-ok-select-input aria-hidden="true" tabindex="-1" placeholder=" " value="EUR">
+    <svg aria-hidden="true" viewBox="0 0 24 24" data-ok-select-icon><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+    <fieldset data-ok-select-outline aria-hidden="true">
+      <legend>
+        <span>Form control select</span>
+      </legend>
+    </fieldset>
+    <div popover="manual" data-ok-popover data-ok-placement="bottom-start" id="outlined-form-select-menu" tabindex="-1">
+      <span data-ok-popover-arrow aria-hidden="true"></span>
+      <ul data-ok-select-listbox role="listbox" id="outlined-form-select-listbox" aria-labelledby="outlined-form-select-label">
+        <li role="option" tabindex="-1" data-ok-menu-item aria-selected="false" data-ok-value="USD">$</li>
+        <li role="option" tabindex="-1" data-ok-menu-item data-ok-selected aria-selected="true" data-ok-value="EUR">€</li>
+        <li role="option" tabindex="-1" data-ok-menu-item aria-selected="false" data-ok-value="BTC">฿</li>
+        <li role="option" tabindex="-1" data-ok-menu-item aria-selected="false" data-ok-value="JPY">¥</li>
+      </ul>
+    </div>
   </div>
 </div>
 <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none" data-ok-full-width>

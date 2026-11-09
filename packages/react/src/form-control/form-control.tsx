@@ -28,6 +28,7 @@ export interface FormControlState {
   variant: TextFieldVariant;
   margin: TextFieldMargin;
   fullWidth: boolean;
+  hiddenLabel: boolean;
   disabled: boolean;
   error: boolean;
   required: boolean;
@@ -52,6 +53,8 @@ export interface FormControlProps extends HTMLAttributes<HTMLElement> {
   margin?: TextFieldMargin | undefined;
   /** Stretch to the container width. */
   fullWidth?: boolean | undefined;
+  /** A filled Select without a label: less padding above the value. */
+  hiddenLabel?: boolean | undefined;
   /** Disabled label and helper text; a `fieldset` root also disables every control inside. */
   disabled?: boolean | undefined;
   /** Error colors for the label and the helper text. */
@@ -76,6 +79,7 @@ export const FormControl = forwardRef<HTMLElement, FormControlProps>(function Fo
     variant,
     margin,
     fullWidth,
+    hiddenLabel,
     disabled,
     error,
     required,
@@ -92,6 +96,7 @@ export const FormControl = forwardRef<HTMLElement, FormControlProps>(function Fo
     variant,
     margin,
     fullWidth,
+    hiddenLabel,
     disabled,
     error,
     required,
@@ -104,6 +109,7 @@ export const FormControl = forwardRef<HTMLElement, FormControlProps>(function Fo
     variant: (attributes["data-ok-variant"] ?? "outlined") as TextFieldVariant,
     margin: (attributes["data-ok-margin"] ?? "none") as TextFieldMargin,
     fullWidth: fullWidth === true,
+    hiddenLabel: hiddenLabel === true,
     disabled: disabled === true,
     error: error === true,
     required: required === true,

@@ -63,7 +63,7 @@ const instanceOf = (host: Element) =>
   ) as PaginationInstance;
 
 describe("pagination snippets", () => {
-  it("covers every story group", () => expect(snippets).toHaveLength(10));
+  it("covers every story group", () => expect(snippets).toHaveLength(11));
 
   it.each(snippets)("%s: valid anatomy", (_, html) => {
     const host = mount(html);

@@ -1,6 +1,7 @@
 import { defaultLabelDisplayedRows, lastPage, pageRange } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
 import type { ComponentInstance } from "../../runtime/types.js";
+import type { SelectInstance } from "../select/select.js";
 import { byId, groupsOf, showGroup } from "../table/table.js";
 
 export interface TablePaginationInstance extends ComponentInstance {
@@ -39,9 +40,28 @@ export const tablePagination = defineComponent<TablePaginationInstance>({
   name: "table-pagination",
   selector: "[data-ok-table-pagination]",
 
-  setup(element, { emit }) {
+  setup(element, { emit, runtime, signal }) {
     const select = element.querySelector<HTMLSelectElement>(
       "[data-ok-table-pagination-rows] select",
+    );
+    // A listbox Select (`selectProps.native` false): its hidden input holds the value.
+    const listbox = element.querySelector<HTMLElement>(
+      "[data-ok-table-pagination-rows] > [data-ok-select]",
+    );
+    const listboxInput = listbox?.querySelector<HTMLInputElement>(
+      ":scope > [data-ok-select-input]",
+    );
+    const showRows = (value: number) => {
+      if (select) select.value = String(value);
+      if (listbox) runtime.getOrCreate<SelectInstance>(listbox, "select")?.setValue(String(value));
+    };
+    listbox?.addEventListener(
+      "ok:select:change",
+      (event) => {
+        const { value } = (event as CustomEvent<{ value: string }>).detail;
+        if (!instance.setRowsPerPage(Number(value))) event.preventDefault();
+      },
+      { signal },
     );
     const owner = () => {
       const found = byId(element, element.getAttribute("data-ok-table-pagination") as string);
@@ -58,7 +78,9 @@ export const tablePagination = defineComponent<TablePaginationInstance>({
           })();
     let rows = select
       ? Number(select.value)
-      : whole(element.getAttribute("data-ok-rows-per-page"), 10);
+      : listboxInput
+        ? Number(listboxInput.value)
+        : whole(element.getAttribute("data-ok-rows-per-page"), 10);
     let page = whole(element.getAttribute("data-ok-page"), 0);
 
     const last = () => (rows === -1 ? 0 : lastPage(rows, count()));
@@ -117,13 +139,13 @@ export const tablePagination = defineComponent<TablePaginationInstance>({
       },
       setRowsPerPage(next) {
         if (!emit("change", { page: 0, rowsPerPage: next }, { cancelable: true })) {
-          if (select) select.value = String(rows);
+          showRows(rows);
           return false;
         }
         rows = next;
         page = 0;
         element.setAttribute("data-ok-page", "0");
-        if (select) select.value = String(rows);
+        showRows(rows);
         render();
         return true;
       },

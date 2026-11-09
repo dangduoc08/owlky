@@ -9,6 +9,7 @@ import {
   type PageRange,
   type PaginationAction,
   pageRange,
+  selectBehaviorAttributes,
   type TableAlign,
   type TablePadding,
   type TableSize,
@@ -23,7 +24,10 @@ import {
   forwardRef,
   type ReactNode,
   useContext,
+  useId,
 } from "react";
+import { MenuItem } from "../menu/menu.js";
+import { type SelectMenuProps, SelectRoot } from "../select/select.js";
 
 /** `thead` / `tbody` / `tfoot`: tells cells which element to render. */
 const SectionContext = createContext<"head" | "body" | "footer">("body");
@@ -290,6 +294,13 @@ export interface TablePaginationProps extends Omit<ComponentPropsWithoutRef<"div
   showFirstButton?: boolean | undefined;
   showLastButton?: boolean | undefined;
   disabled?: boolean | undefined;
+  /**
+   * The rows-per-page select (MUI `SelectProps`): `{ native: false }` makes it a listbox Select
+   * (the default stays the native `<select>`); `menuProps` places its menu.
+   */
+  selectProps?:
+    | { native?: boolean | undefined; menuProps?: SelectMenuProps | undefined }
+    | undefined;
 }
 
 /** Rows per page, the displayed range and page buttons. Place it after the `TableContainer`. */
@@ -308,11 +319,16 @@ export const TablePagination = forwardRef<HTMLDivElement, TablePaginationProps>(
       showFirstButton = false,
       showLastButton = false,
       disabled = false,
+      selectProps,
       ...props
     },
     ref,
   ) {
+    const rowsId = useId();
     const last = rowsPerPage === -1 ? 0 : lastPage(rowsPerPage, count);
+    const options = rowsPerPageOptions.map((option) =>
+      typeof option === "number" ? { label: String(option), value: option } : option,
+    );
     const targets: Record<PaginationAction, number> = {
       first: 0,
       previous: page - 1,
@@ -329,26 +345,48 @@ export const TablePagination = forwardRef<HTMLDivElement, TablePaginationProps>(
     ];
     return (
       <div ref={ref} data-ok-table-pagination="" data-ok-runtime="off" {...props}>
-        {rowsPerPageOptions.length > 1 && (
-          <label data-ok-table-pagination-rows="">
-            {labelRowsPerPage}
-            <select
-              value={rowsPerPage}
-              disabled={disabled}
-              onChange={(event) => onRowsPerPageChange?.(Number(event.currentTarget.value))}
-            >
-              {rowsPerPageOptions.map((option) => {
-                const { label, value } =
-                  typeof option === "number" ? { label: String(option), value: option } : option;
-                return (
+        {options.length > 1 &&
+          (selectProps?.native === false ? (
+            <div data-ok-table-pagination-rows="">
+              <span id={`${rowsId}-label`}>{labelRowsPerPage}</span>
+              <SelectRoot
+                host="select"
+                rootProps={selectBehaviorAttributes()}
+                rootRef={null}
+                triggerId={rowsId}
+                labelId={`${rowsId}-label`}
+                error={false}
+                disabled={disabled}
+                required={false}
+                readOnly={false}
+                triggerAria={{}}
+                value={rowsPerPage}
+                onChange={(next) => onRowsPerPageChange?.(Number(next))}
+                menuProps={selectProps.menuProps}
+              >
+                {options.map(({ label, value }) => (
+                  <MenuItem key={value} value={value}>
+                    {label}
+                  </MenuItem>
+                ))}
+              </SelectRoot>
+            </div>
+          ) : (
+            <label data-ok-table-pagination-rows="">
+              {labelRowsPerPage}
+              <select
+                value={rowsPerPage}
+                disabled={disabled}
+                onChange={(event) => onRowsPerPageChange?.(Number(event.currentTarget.value))}
+              >
+                {options.map(({ label, value }) => (
                   <option key={value} value={value}>
                     {label}
                   </option>
-                );
-              })}
-            </select>
-          </label>
-        )}
+                ))}
+              </select>
+            </label>
+          ))}
         <span data-ok-table-pagination-displayed="" aria-live="polite">
           {labelDisplayedRows(pageRange(page, rowsPerPage, count))}
         </span>

@@ -43,13 +43,14 @@ component and each `/integrate` run.
 | MUI | Popover | ✅ | Popover | Popover, Tooltip, Menu, Dialog & Snackbar |
 | MUI | Progress | ✅ | CircularProgress, LinearProgress | Progress |
 | MUI | Radio button | ✅ | Radio, RadioGroup | Text field & Radio |
+| MUI | Select | ✅ (ADR-0045) | Select, InputLabel (`native`, multiple, chips, grouping); TextField and TablePagination `selectProps` | Select |
 | MUI | Rating | ✅ | Rating | Rating, Slider, Timeline, Transfer list, Tree view & Autocomplete |
 | MUI | Slider | ✅ | Slider | Rating, Slider, Timeline, Transfer list, Tree view & Autocomplete |
 | MUI | Stepper | ✅ | Stepper, Step, StepLabel, StepConnector, StepContent, MobileStepper | Tabs, Breadcrumbs & Stepper |
 | MUI | Switch | ✅ | Switch, FormControlLabel | Checkbox & Switch |
 | MUI | Table | ✅ | Table parts, TablePagination, TableExpandButton / TableDetailRow | Table |
 | MUI | Tabs | ✅ | Tabs, Tab, TabPanel | Tabs, Breadcrumbs & Stepper |
-| MUI | Text field | ✅ | TextField, InputAdornment (native select) | Text field & Radio |
+| MUI | Text field | ✅ | TextField, InputAdornment (native select; listbox with `selectProps`) | Text field & Radio |
 | MUI | Timeline | ✅ | Timeline and its parts | Rating, Slider, Timeline, Transfer list, Tree view & Autocomplete |
 | MUI | Tooltip | ✅ | Tooltip | Popover, Tooltip, Menu, Dialog & Snackbar |
 | MUI | Transfer list | ✅ | TransferList | Rating, Slider, Timeline, Transfer list, Tree view & Autocomplete |
@@ -323,7 +324,7 @@ Radio and RadioGroup (colors incl. `default`, sizes, `row`; native radios, CSS o
 `text-field`: growing-row custom properties and a `data-ok-text-field-reveal` password button.
 Differences: resting label `text-secondary` and disabled helper text `text-secondary` (AA), error
 text in the AA error tone, a focus ring on filled fields. CSS budget raised to 16 kB gzip.
-**Backlog:** non-native `select` (listbox, wave 4). FormLabel / FormHelperText / FormControl
+**Backlog:** ~~non-native `select`~~ ✅ (Select, 2026-11-09: `selectProps={{ native: false }}`). FormLabel / FormHelperText / FormControl
 exist since 2026-11-09 (Form control); TextField keeps its own label and helper parts.
 
 ## ✅ Components — Checkbox & Switch (2026-11-07)
@@ -520,10 +521,6 @@ integrate these in the same review (additive: no DOM or API change) and remove t
 
 | Waiting for | Where | Today |
 |---|---|---|
-| Select (listbox, built on Menu) | `TablePagination` rows per page (library markup) | native `<select>` styled in `table.css`; the API (`rowsPerPageOptions`) stays. TextField's native select doesn't match MUI's InputBase select here |
-| Select (listbox, built on Menu) | Pagination story "Items" (card grid + items-per-page Select) | story deferred: the reference uses MUI's listbox Select |
-| Select (listbox, built on Menu) | Table story "Table pagination with API" (search TextField + category Select) | story deferred until the listbox Select; TextField exists |
-| Select (listbox, built on Menu) | TextField `select` (non-native) | native `<select>` only (`select` prop) |
 | Motion full version, phase 1 (custom keyframes) | Motion story "Logo" (the reference's shape-morphing, turning rings and the turning gradient disc) | the logo inside MotionBorder rings; the story becomes the reference's once `animate(element, keyframes)` exists, without changing MotionBorder |
 | Paper (card) | Collapse story (the reference's raised card with a triangle) | demo `.sb-collapse-paper` styled in `.storybook/preview.css` |
 | Collapse (transition) | Card story "Complex interaction" (the method section under the chevron) | shown / hidden at once (`hidden` + `aria-expanded`, the page's own state); MUI collapses it |
@@ -570,6 +567,33 @@ Typography contrast exemption no longer covers `inherit` colors.
 Differences: MUI renders an `a` without `href` (not focusable) where Owlky renders a button;
 underlines of text tones are in the text color (no channel tokens for them); `sx`, `classes`,
 `TypographyClasses` and theme default props are consumer CSS.
+
+## ✅ Components — Select (2026-11-09)
+Wave 8 (primitives, batch C), created with `/component` from MUI's "Select" page (Minimals has
+none; the look is the Text field's, the menu is Menu's), every section with a demo as a story:
+Basic select, Variants, Labels and helper text, Auto width, Small size, Other props, Native
+select, Multiple, Selection indicators, Chip, Placeholder, Multiple native, Controlling the open
+state, With a dialog, Grouping. ADR-0045: the select-only combobox with MUI's roving focus
+(`div[role=combobox]` → a Popover `ul[role=listbox]` of MenuItems; APG's closed-trigger Home /
+End / typeahead added), behavior in core `createSelectController` (reports intent), value in a
+hidden input (forms, and `:placeholder-shown` floats the InputLabel in CSS). Select reads the
+FormControl's variant, size, color and states (`useFormControl()`) and writes them on its field
+box; `InputLabel` = FormLabel + `data-ok-input-label` (`shrink`, `disableAnimation`); FormControl
+gains `hiddenLabel`. `native` keeps the browser's `<select>` in the same box. HTML runtime
+`select` (chips and placeholder templates, checkmark checkboxes, `data-ok-select-open`). No new
+token; budgets raised (CDN bundle 165 kB, CSS 52 kB).
+Integrated in the same review (additive, no DOM or API change of the defaults): TextField
+`selectProps={{ native: false }}` composes the Select in its control (story "Select" groups 1
+and 3 are now the listbox Select and a FormControl + InputLabel + Select, as on the reference);
+TablePagination `selectProps={{ native: false }}` composes a bare listbox Select for rows per page
+(the native select stays the default: the data grid and the Table stories keep it; the Pagination
+story "Table" uses the listbox); new stories Pagination "Items" (cards, Pagination, items-per-page
+Select) and Table "Table pagination with API" (search TextField, category Select, Search button,
+TablePagination with the listbox; HTML page scripts).
+Differences: TextField's `select` and TablePagination stay native by default (MUI: listbox);
+`onChange(value)` / `onOpenChange(open, reason)` instead of MUI's event callbacks; `renderValue` is
+React-only (HTML: chips, placeholder, joined texts); the menu opens under the field
+(`bottom-start`), not over it; chips in the demos are `small`.
 
 ## ✅ Components — Card (2026-11-09)
 Wave 8 (primitives), created with `/component` from MUI's "Card" page (Minimals has none; its theme
@@ -857,7 +881,7 @@ Dependency-first: leaf components before the ones built from them, the ones that
 | Wave | Components | Unlocks (existing components) |
 |---|---|---|
 | 1 Leaves | ~~Scrollbar~~ ✅, ~~Progress~~ ✅, ~~Checkbox~~ ✅, ~~Switch~~ ✅ | ~~Sortable / Drawer / Table scrolling~~ ✅; ~~Button loading~~ ✅; ~~Table selection~~ ✅; ~~Table "Dense"~~ ✅ |
-| 2 Form | ~~Text field (Input, Textarea, native Select)~~ ✅, ~~Radio button~~ ✅ | TablePagination rows per page, Table "Table pagination with API", Pagination "Items": wait for the listbox Select (wave 4) |
+| 2 Form | ~~Text field (Input, Textarea, native Select)~~ ✅, ~~Radio button~~ ✅ | ~~TablePagination rows per page, Table "Table pagination with API", Pagination "Items"~~ ✅ (Select, wave 8) |
 | 3 Display | ~~Avatar~~ ✅, ~~Badge~~ ✅, ~~Chip~~ ✅, ~~Label~~ ✅, ~~Divider~~ ✅, ~~List~~ ✅ | ~~Drawer menu~~ ✅ |
 | 4 Overlays | ~~Popover~~ ✅, ~~Tooltip~~ ✅, ~~Menu~~ ✅, ~~Dialog~~ ✅, ~~Snackbar~~ ✅, ~~Backdrop~~ ✅ | ~~Drawer / Dialog backdrop~~ ✅ (native `::backdrop`, same token); icon button tooltips: nothing to change (MUI uses native `title` there; Tooltip wraps any IconButton) |
 | 5 Navigation | ~~Tabs~~ ✅, ~~Breadcrumbs~~ ✅, ~~Stepper~~ ✅ | — (nothing waited for them) |

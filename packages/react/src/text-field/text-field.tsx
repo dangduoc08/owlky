@@ -4,6 +4,7 @@ import {
   parseNumber,
   type SelectionControlColor,
   type SelectionControlSize,
+  selectBehaviorAttributes,
   type TextFieldMargin,
   type TextFieldVariant,
   textFieldAttributes,
@@ -19,6 +20,7 @@ import {
   type Ref,
   useId,
 } from "react";
+import { type SelectBehaviorProps, SelectRoot, type SelectValue } from "../select/select.js";
 
 /** The select's arrow (decorative, same SVG as the HTML snippets). */
 function SelectIcon() {
@@ -47,6 +49,19 @@ export const InputAdornment = forwardRef<HTMLSpanElement, InputAdornmentProps>(
     return <span ref={ref} data-ok-text-field-adornment={position} {...props} />;
   },
 );
+
+/** Options of TextField's select (`select`): `native: false` makes it a listbox Select. */
+export interface TextFieldSelectProps
+  extends Omit<
+    SelectBehaviorProps<SelectValue>,
+    "value" | "defaultValue" | "onChange" | "multiple"
+  > {
+  /**
+   * A native `<select>` with `<option>` children (the default here). `false`: a listbox Select
+   * with `MenuItem` children (MUI's default).
+   */
+  native?: boolean | undefined;
+}
 
 /** The element `ref` points to: the input, the textarea or the select. */
 export type TextFieldElement = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
@@ -91,7 +106,9 @@ export interface TextFieldProps
   maxRows?: number | undefined;
   /** A native `<select>`; pass `<option>` elements as children. */
   select?: boolean | undefined;
-  /** The `<option>` elements of a select. */
+  /** Select options: `{ native: false }` makes a listbox Select (pass `MenuItem` children). */
+  selectProps?: TextFieldSelectProps | undefined;
+  /** The `<option>` elements of a select (`MenuItem`s with `selectProps.native` `false`). */
   children?: ReactNode;
   /** An `InputAdornment` with `position="start"`. */
   startAdornment?: ReactNode;
@@ -125,6 +142,7 @@ export const TextField = forwardRef<TextFieldElement, TextFieldProps>(function T
     minRows,
     maxRows,
     select,
+    selectProps,
     children,
     startAdornment,
     endAdornment,
@@ -207,6 +225,64 @@ export const TextField = forwardRef<TextFieldElement, TextFieldProps>(function T
     );
   }
   const outlined = attributes["data-ok-variant"] === "outlined";
+  const outline = outlined && (
+    <fieldset data-ok-text-field-outline="" aria-hidden="true">
+      {label != null && (
+        <legend>
+          <span>
+            {label}
+            {required ? " *" : null}
+          </span>
+        </legend>
+      )}
+    </fieldset>
+  );
+  // A listbox Select composed in the control (`select` + `selectProps.native === false`).
+  const listbox = select === true && selectProps?.native === false;
+  const labelId = listbox && label != null ? `${inputId}-label` : undefined;
+  let control: ReactNode;
+  if (listbox) {
+    const { native: _native, ...behavior } = selectProps;
+    control = (
+      <SelectRoot
+        host="text-field"
+        rootProps={{
+          "data-ok-text-field-control": "",
+          ...selectBehaviorAttributes({
+            autoWidth: behavior.autoWidth,
+            displayEmpty: behavior.displayEmpty,
+          }),
+        }}
+        rootRef={null}
+        triggerId={inputId}
+        labelId={labelId}
+        name={props.name}
+        error={error === true}
+        disabled={props.disabled === true}
+        required={required === true}
+        readOnly={props.readOnly === true}
+        triggerAria={{ "aria-label": props["aria-label"], "aria-describedby": describedBy }}
+        inputRef={ref as Ref<HTMLInputElement>}
+        start={startAdornment}
+        end={endAdornment}
+        outline={outline}
+        value={props.value}
+        defaultValue={props.defaultValue}
+        onChange={(next) => onChange?.(String(next))}
+        {...(behavior as SelectBehaviorProps)}
+      >
+        {children}
+      </SelectRoot>
+    );
+  } else
+    control = (
+      <div data-ok-text-field-control="">
+        {startAdornment}
+        {input}
+        {endAdornment}
+        {outline}
+      </div>
+    );
   return (
     <div
       {...attributes}
@@ -215,7 +291,7 @@ export const TextField = forwardRef<TextFieldElement, TextFieldProps>(function T
       style={{ ...rowStyle, ...style }}
     >
       {label != null && (
-        <label data-ok-text-field-label="" htmlFor={inputId}>
+        <label data-ok-text-field-label="" htmlFor={inputId} id={labelId}>
           {label}
           {required ? (
             <span data-ok-text-field-asterisk="" aria-hidden="true">
@@ -224,23 +300,7 @@ export const TextField = forwardRef<TextFieldElement, TextFieldProps>(function T
           ) : null}
         </label>
       )}
-      <div data-ok-text-field-control="">
-        {startAdornment}
-        {input}
-        {endAdornment}
-        {outlined && (
-          <fieldset data-ok-text-field-outline="" aria-hidden="true">
-            {label != null && (
-              <legend>
-                <span>
-                  {label}
-                  {required ? " *" : null}
-                </span>
-              </legend>
-            )}
-          </fieldset>
-        )}
-      </div>
+      {control}
       {helperText != null && (
         <div data-ok-text-field-helper="" id={helperId}>
           {helperText}

@@ -52,6 +52,8 @@ const CONTRAST_EXEMPT = [
   '[data-ok-carousel-dots]:not([data-ok-color="inherit"]) [data-ok-carousel-dot][aria-current="true"]',
   // A disabled upload zone is an inactive component (WCAG 1.4.3 exception), dimmed like the reference.
   "[data-ok-upload-zone]:has(> [data-ok-upload-input]:disabled)",
+  // The label of a disabled Select is inactive (WCAG 1.4.3 exception), like TextField's.
+  "[data-ok-form-control]:has(> [data-ok-select] > [data-ok-select-input]:disabled) > [data-ok-input-label]",
 ];
 const TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 

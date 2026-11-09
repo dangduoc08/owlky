@@ -284,6 +284,42 @@
     outline-offset: 0;
   }
 
+  /*
+   * A listbox Select (`selectProps.native` false): composed bare (`data-ok-select` without a
+   * variant, like MUI's InputBase), so this file draws its field: no line, a focus ring.
+   */
+  :where([data-ok-table-pagination-rows] > [data-ok-select]) {
+    display: inline-flex;
+    align-items: center;
+    border-radius: var(--ok-radius-sm);
+    font-size: var(--ok-font-size-lg);
+    line-height: calc(var(--ok-spacing) * 6);
+  }
+
+  :where([data-ok-table-pagination-rows] > [data-ok-select] > [data-ok-select-display]) {
+    padding: var(--ok-spacing) calc(var(--ok-spacing) * 6) var(--ok-spacing)
+      calc(var(--ok-spacing) * 2);
+    border-radius: inherit;
+  }
+
+  :where(
+    [data-ok-table-pagination-rows] > [data-ok-select] > [data-ok-select-display]:focus-visible
+  ) {
+    outline: 2px solid var(--ok-text-primary);
+    outline-offset: 0;
+  }
+
+  :where([data-ok-table-pagination-rows] > [data-ok-select] > [data-ok-select-icon]) {
+    position: absolute;
+    top: 50%;
+    right: 0;
+    width: calc(var(--ok-spacing) * 5);
+    height: calc(var(--ok-spacing) * 5);
+    color: var(--ok-text-secondary);
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+
   :where([data-ok-table-pagination-actions]) {
     display: inline-flex;
     gap: calc(var(--ok-spacing) * 1);

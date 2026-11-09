@@ -36,6 +36,7 @@ const CASES: [
   ["switch", "colors", "switch", ["color", "size", "disabled"]],
   ["radio", "colors", "radio", ["color", "size", "disabled"]],
   ["form-control", "states", "form-control", ["color", "focused", "error", "margin", "fullWidth"]],
+  ["select", "auto-width", "select", ["size", "color", "fullWidth"]],
   ["avatar", "letter", "avatar", ["variant"]],
   ["badge", "standard", "badge", ["overlap", "invisible"]],
   ["chip", "filled", "chip", ["size", "disabled"]],

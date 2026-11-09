@@ -156,6 +156,7 @@ describe("useFormControl", () => {
       variant: "outlined",
       margin: "none",
       fullWidth: false,
+      hiddenLabel: false,
       disabled: false,
       error: true,
       required: true,

@@ -1,0 +1,534 @@
+/*
+ * Select — spec: specs/components/select.md, ADR-0045
+ *
+ * Anatomy:   [data-ok-form-control]?                                   (the FormControl around it)
+ *              › label[data-ok-form-label][data-ok-input-label][data-ok-shrink]?   (InputLabel)
+ *              › div[data-ok-select][data-ok-variant][data-ok-size][data-ok-color]   (the field box)
+ *                  › div[data-ok-select-display][role=combobox][tabindex=0]   (the value)
+ *                    | select[data-ok-select-native]                           (native)
+ *                  › input[data-ok-select-input][aria-hidden][tabindex=-1]     (form value)
+ *                  › svg[data-ok-select-icon][aria-hidden]
+ *                  › fieldset[data-ok-select-outline] › legend › span          (outlined: the notch)
+ *                  › div[data-ok-popover] › ul[data-ok-select-listbox][role=listbox]
+ *                      › li[data-ok-menu-item][role=option][aria-selected] (menu.css)
+ *              › p[data-ok-form-helper-text]?
+ * Modifiers: data-ok-variant = outlined (default) | filled | standard; data-ok-size = medium |
+ *            small; data-ok-color (focus color); data-ok-error, data-ok-full-width,
+ *            data-ok-multiple, data-ok-auto-width, data-ok-display-empty
+ * States:    :focus-within, the trigger's aria-expanded / aria-disabled, the hidden input's
+ *            :disabled and :placeholder-shown ("has a value", as in TextField)
+ * Private:   --_ok-select-width (px, the popover's minimum width, set through CSSOM)
+ *
+ * The field box mirrors TextField's look (outlined notch, tinted fill, underline) with the same
+ * private variables. A select composed inside another field (TextField's control) carries only
+ * `data-ok-select` without `data-ok-variant`: that field styles the box. The InputLabel floats
+ * through `:has()` on the FormControl (focus and value read in CSS, no state in JavaScript).
+ * Single :where() selectors in @layer components (zero specificity); translucent colors use
+ * rgb(var(--…-channel) / α), never color-mix() (AGENTS.md).
+ */
+@reference "../theme.css";
+
+@layer components {
+  /* Parts shared by every select (also inside another field) */
+  :where([data-ok-select]) {
+    position: relative;
+  }
+
+  :where([data-ok-select-display]) {
+    display: block;
+    box-sizing: border-box;
+    min-width: calc(var(--ok-spacing) * 4);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+    outline: 0;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* An empty value keeps one line of height. */
+  :where([data-ok-select-display])::before {
+    content: "\200b";
+  }
+
+  /* Chips (multiple values): they wrap, the field grows. */
+  :where([data-ok-select-display]:has(> [data-ok-chip])) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--ok-spacing);
+    white-space: normal;
+  }
+
+  :where([data-ok-select-display]:has(> [data-ok-chip]))::before {
+    content: none;
+  }
+
+  :where([data-ok-select-display][aria-disabled="true"]) {
+    color: var(--ok-text-disabled);
+    cursor: default;
+  }
+
+  /* The form value: under the trigger, invisible, never in the way. */
+  :where([data-ok-select-input]) {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    box-sizing: border-box;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  :where([data-ok-select-icon]) {
+    transition: transform var(--ok-duration-shorter) var(--ok-easing-standard);
+  }
+
+  :where([data-ok-select-display][aria-expanded="true"] ~ [data-ok-select-icon]) {
+    transform: translateY(-50%) rotate(180deg);
+  }
+
+  /* The popover: at least the field's width (unless autoWidth). */
+  :where([data-ok-select] > [data-ok-popover]) {
+    min-width: var(--_ok-select-width, 0px);
+    cursor: default;
+  }
+
+  :where([data-ok-select-listbox]) {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    outline: none;
+    list-style: none;
+  }
+
+  :where([data-ok-select-listbox] > [data-ok-list-subheader]) {
+    margin-bottom: var(--ok-spacing);
+  }
+
+  /* The field box (a standalone select) */
+  :where([data-ok-select][data-ok-variant]) {
+    --_ok-pad: calc(var(--ok-spacing) * 4) calc(var(--ok-spacing) * 3.5);
+    --_ok-border: rgb(var(--ok-palette-grey-500-channel) / 0.2);
+    --_ok-border-width: 1px;
+    --_ok-tint: rgb(var(--ok-palette-grey-500-channel) / 0.08);
+    --_ok-tint-hover: rgb(var(--ok-palette-grey-500-channel) / 0.16);
+    --_ok-line: rgb(var(--ok-palette-grey-500-channel) / 0.32);
+    --_ok-accent: var(--ok-text-primary);
+
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    min-width: 0;
+    border-radius: var(--ok-radius-md);
+    color: var(--ok-text-primary);
+    font-family: var(--ok-font-family);
+    font-size: var(--ok-font-size-lg);
+    line-height: calc(var(--ok-spacing) * 6);
+    vertical-align: top;
+  }
+
+  :where([data-ok-select][data-ok-variant][data-ok-color]:not([data-ok-color="default"])) {
+    --_ok-accent: var(--ok-c-main, var(--ok-text-primary));
+  }
+
+  :where([data-ok-select][data-ok-variant][data-ok-full-width]) {
+    width: 100%;
+  }
+
+  :where(
+    [data-ok-select][data-ok-variant] > [data-ok-select-display],
+    [data-ok-select][data-ok-variant] > select[data-ok-select-native]
+  ) {
+    flex: 1 1 auto;
+    width: 100%;
+    padding: var(--_ok-pad);
+    padding-inline-end: calc(var(--ok-spacing) * 8);
+    border-radius: inherit;
+  }
+
+  :where([data-ok-select][data-ok-variant] > select[data-ok-select-native]) {
+    box-sizing: border-box;
+    min-width: 0;
+    margin: 0;
+    border: 0;
+    outline: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    letter-spacing: inherit;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    appearance: none;
+  }
+
+  :where([data-ok-select][data-ok-variant] > select[data-ok-select-native][multiple]) {
+    height: auto;
+    padding-inline-end: calc(var(--ok-spacing) * 3.5);
+    overflow: auto;
+  }
+
+  :where([data-ok-select-native] > option, [data-ok-select-native] > optgroup) {
+    background-color: var(--ok-bg-paper);
+    color: var(--ok-text-primary);
+  }
+
+  :where([data-ok-select][data-ok-variant] > [data-ok-select-icon]) {
+    position: absolute;
+    top: 50%;
+    right: calc(var(--ok-spacing) * 1.75);
+    width: calc(var(--ok-spacing) * 5);
+    height: calc(var(--ok-spacing) * 5);
+    color: var(--ok-text-secondary);
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+
+  :where([data-ok-select][data-ok-size="small"]) {
+    --_ok-pad: calc(var(--ok-spacing) * 2) calc(var(--ok-spacing) * 3.5);
+  }
+
+  /* Outlined: a fieldset whose legend repeats the label (the notch), as in TextField. */
+  :where([data-ok-select-outline]) {
+    position: absolute;
+    inset: calc(var(--ok-spacing) * -1.25) 0 0;
+    min-width: 0;
+    margin: 0;
+    padding: 0 calc(var(--ok-spacing) * 2);
+    overflow: hidden;
+    border: var(--_ok-border-width) solid var(--_ok-border);
+    border-radius: inherit;
+    text-align: left;
+    pointer-events: none;
+  }
+
+  :where([data-ok-select-outline] > legend) {
+    display: block;
+    float: none;
+    width: auto;
+    max-width: var(--_ok-legend-max, 0.01px);
+    height: calc(var(--ok-spacing) * 2.75);
+    padding: 0;
+    overflow: hidden;
+    visibility: hidden;
+    font-size: var(--ok-font-size-xs);
+    font-weight: var(--ok-font-weight-semibold);
+    white-space: nowrap;
+    transition: max-width var(--ok-duration-shortest) var(--ok-easing-decelerate);
+  }
+
+  :where([data-ok-select-outline] > legend > span) {
+    display: inline-block;
+    padding-inline: calc(var(--ok-spacing) * 1.25);
+    opacity: 0;
+    visibility: visible;
+  }
+
+  /* The notch opens with focus, a value, a native select or a shrunk label. */
+  :where(
+    [data-ok-select][data-ok-variant]:focus-within,
+    [data-ok-select][data-ok-variant]:has(> [data-ok-select-input]:not(:placeholder-shown)),
+    [data-ok-select][data-ok-variant]:has(> select),
+    [data-ok-form-control]:has(> [data-ok-input-label][data-ok-shrink]) > [data-ok-select]
+  ) {
+    --_ok-legend-max: 100%;
+  }
+
+  /* Filled */
+  :where([data-ok-select][data-ok-variant="filled"]) {
+    --_ok-pad: calc(var(--ok-spacing) * 6) calc(var(--ok-spacing) * 3) calc(var(--ok-spacing) * 2);
+    background-color: var(--_ok-tint);
+    transition: background-color var(--ok-duration-shorter) var(--ok-easing-standard);
+  }
+
+  :where([data-ok-select][data-ok-variant="filled"][data-ok-size="small"]) {
+    --_ok-pad: calc(var(--ok-spacing) * 5) calc(var(--ok-spacing) * 3) var(--ok-spacing);
+  }
+
+  /* Without a label (or with hiddenLabel), the value sits in the middle. */
+  :where(
+    [data-ok-form-control][data-ok-hidden-label] > [data-ok-select][data-ok-variant="filled"],
+    [data-ok-form-control]:not(:has(> [data-ok-input-label]))
+      > [data-ok-select][data-ok-variant="filled"],
+    :not([data-ok-form-control]) > [data-ok-select][data-ok-variant="filled"]
+  ) {
+    --_ok-pad: calc(var(--ok-spacing) * 4) calc(var(--ok-spacing) * 3);
+  }
+
+  :where(
+    [data-ok-form-control][data-ok-hidden-label]
+      > [data-ok-select][data-ok-variant="filled"][data-ok-size="small"],
+    [data-ok-form-control]:not(:has(> [data-ok-input-label]))
+      > [data-ok-select][data-ok-variant="filled"][data-ok-size="small"],
+    :not([data-ok-form-control]) > [data-ok-select][data-ok-variant="filled"][data-ok-size="small"]
+  ) {
+    --_ok-pad: calc(var(--ok-spacing) * 2) calc(var(--ok-spacing) * 3);
+  }
+
+  /* Standard */
+  :where([data-ok-select][data-ok-variant="standard"]) {
+    --_ok-pad: var(--ok-spacing) 0;
+    border-radius: 0;
+  }
+
+  :where([data-ok-select][data-ok-variant="standard"][data-ok-size="small"]) {
+    --_ok-pad: calc(var(--ok-spacing) * 0.5) 0;
+  }
+
+  :where(
+    [data-ok-select][data-ok-variant="standard"] > [data-ok-select-display],
+    [data-ok-select][data-ok-variant="standard"] > select[data-ok-select-native]
+  ) {
+    padding-inline-end: calc(var(--ok-spacing) * 6);
+  }
+
+  :where([data-ok-select][data-ok-variant="standard"] > [data-ok-select-icon]) {
+    right: 0;
+  }
+
+  :where(
+    [data-ok-form-control]:has(> [data-ok-input-label])
+      > [data-ok-select][data-ok-variant="standard"]
+  ) {
+    margin-block-start: calc(var(--ok-spacing) * 4);
+  }
+
+  :where([data-ok-select][data-ok-variant="standard"])::before {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    border-bottom: 1px solid var(--_ok-line);
+    pointer-events: none;
+    transition: border-color var(--ok-duration-shorter) var(--ok-easing-standard);
+  }
+
+  :where([data-ok-select][data-ok-variant="standard"])::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    border-bottom: 2px solid var(--_ok-accent);
+    transform: scaleX(0);
+    pointer-events: none;
+    transition: transform var(--ok-duration-shorter) var(--ok-easing-decelerate);
+  }
+
+  /* Hover (pointer devices, enabled fields; not while focused: the focus color wins) */
+  @media (hover: hover) {
+    :where(
+        [data-ok-select][data-ok-variant]:hover:not(
+          :has(> [data-ok-select-input]:disabled, > select:disabled)
+        ):not(:focus-within)
+      ) {
+      --_ok-border: var(--ok-text-primary);
+      --_ok-tint: var(--_ok-tint-hover);
+      --_ok-line: var(--ok-text-primary);
+    }
+
+    :where(
+        [data-ok-select][data-ok-variant="standard"]:hover:not(
+          :has(> [data-ok-select-input]:disabled, > select:disabled)
+        )
+      )::before {
+      border-bottom-width: 2px;
+    }
+  }
+
+  /* Focus */
+  :where([data-ok-select][data-ok-variant]:focus-within) {
+    --_ok-border: var(--_ok-accent);
+    --_ok-border-width: 2px;
+    --_ok-tint: var(--_ok-tint-hover);
+  }
+
+  /* Filled shows focus with a ring too, like TextField (WCAG 2.4.7). */
+  :where([data-ok-select][data-ok-variant="filled"]:focus-within) {
+    box-shadow: inset 0 0 0 2px var(--_ok-accent);
+  }
+
+  :where([data-ok-select][data-ok-variant="standard"]:focus-within)::after {
+    transform: scaleX(1);
+  }
+
+  /* Error: the brand color for lines and fills. */
+  :where([data-ok-select][data-ok-variant][data-ok-error]) {
+    --_ok-accent: var(--ok-palette-error-main);
+    --_ok-border: var(--ok-palette-error-main);
+    --_ok-line: var(--ok-palette-error-main);
+    --_ok-tint: rgb(var(--ok-palette-error-main-channel) / 0.08);
+    --_ok-tint-hover: rgb(var(--ok-palette-error-main-channel) / 0.16);
+  }
+
+  /* Disabled */
+  :where(
+    [data-ok-select][data-ok-variant]:has(> [data-ok-select-input]:disabled, > select:disabled)
+  ) {
+    --_ok-tint: rgb(var(--ok-palette-grey-500-channel) / 0.24);
+  }
+
+  :where(
+    [data-ok-select]:has(> [data-ok-select-input]:disabled, > select:disabled)
+      > [data-ok-select-icon],
+    [data-ok-select] > select[data-ok-select-native]:disabled
+  ) {
+    color: var(--ok-text-disabled);
+    -webkit-text-fill-color: var(--ok-text-disabled);
+    cursor: default;
+    opacity: 1;
+  }
+
+  :where(
+    [data-ok-select][data-ok-variant="standard"]:has(
+      > [data-ok-select-input]:disabled,
+      > select:disabled
+    )
+  )::before {
+    border-bottom-style: dotted;
+  }
+
+  /* InputLabel: a FormLabel floating in the field, positioned like TextField's label. */
+  :where([data-ok-form-control]:has(> [data-ok-select][data-ok-variant])) {
+    --_ok-label-x: calc(var(--ok-spacing) * 3.5);
+    --_ok-label-rest: calc(var(--ok-spacing) * 4);
+    --_ok-label-up: calc(var(--ok-spacing) * -2.25);
+    --_ok-label-y: var(--_ok-label-rest);
+    --_ok-label-scale: 1;
+    --_ok-label-size: var(--ok-font-size-lg);
+    --_ok-label-weight: var(--ok-font-weight-regular);
+    --_ok-label-max: calc(100% - var(--ok-spacing) * 6);
+  }
+
+  :where([data-ok-form-control]:has(> [data-ok-select][data-ok-variant][data-ok-size="small"])) {
+    --_ok-label-rest: calc(var(--ok-spacing) * 2);
+  }
+
+  :where([data-ok-form-control]:has(> [data-ok-select][data-ok-variant="filled"])) {
+    --_ok-label-x: calc(var(--ok-spacing) * 3);
+    --_ok-label-up: calc(var(--ok-spacing) * 1.5);
+  }
+
+  :where(
+    [data-ok-form-control]:has(> [data-ok-select][data-ok-variant="filled"][data-ok-size="small"])
+  ) {
+    --_ok-label-rest: calc(var(--ok-spacing) * 3);
+    --_ok-label-up: var(--ok-spacing);
+  }
+
+  :where([data-ok-form-control]:has(> [data-ok-select][data-ok-variant="standard"])) {
+    --_ok-label-x: 0px;
+    --_ok-label-rest: calc(var(--ok-spacing) * 5);
+    --_ok-label-up: calc(var(--ok-spacing) * -0.375);
+    --_ok-label-max: 100%;
+  }
+
+  :where(
+    [data-ok-form-control]:has(> [data-ok-select][data-ok-variant="standard"][data-ok-size="small"])
+  ) {
+    --_ok-label-rest: calc(var(--ok-spacing) * 4.5);
+  }
+
+  /* Floating: focus, a value, a native select, or shrink. */
+  :where(
+    [data-ok-form-control]:has(> [data-ok-select][data-ok-variant]):focus-within,
+    [data-ok-form-control]:has(> [data-ok-input-label][data-ok-shrink]),
+    [data-ok-form-control]:has(
+      > [data-ok-select][data-ok-variant] > [data-ok-select-input]:not(:placeholder-shown)
+    ),
+    [data-ok-form-control]:has(> [data-ok-select][data-ok-variant] > select)
+  ) {
+    --_ok-label-y: var(--_ok-label-up);
+    --_ok-label-scale: 0.75;
+    --_ok-label-size: var(--ok-font-size-xl);
+    --_ok-label-weight: var(--ok-font-weight-semibold);
+    --_ok-label-max: calc(133% - var(--ok-spacing) * 8);
+  }
+
+  :where([data-ok-form-control]:has(> [data-ok-select][data-ok-variant]) > [data-ok-input-label]) {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    max-width: var(--_ok-label-max);
+    overflow: hidden;
+    font-size: var(--_ok-label-size);
+    font-weight: var(--_ok-label-weight);
+    line-height: calc(var(--ok-spacing) * 6);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transform: translate(var(--_ok-label-x), var(--_ok-label-y)) scale(var(--_ok-label-scale));
+    transform-origin: top left;
+    pointer-events: none;
+    transition:
+      color var(--ok-duration-shorter) var(--ok-easing-decelerate),
+      transform var(--ok-duration-shorter) var(--ok-easing-decelerate),
+      max-width var(--ok-duration-shorter) var(--ok-easing-decelerate);
+  }
+
+  :where([data-ok-input-label][data-ok-disable-animation]) {
+    transition: none;
+  }
+
+  /* On the tint, the secondary text tone falls just under 4.5:1 in light themes: one step darker. */
+  :where(
+    [data-ok-form-control]:has(> [data-ok-select][data-ok-variant="filled"]) > [data-ok-input-label]
+  ) {
+    color: var(--ok-palette-grey-700);
+  }
+
+  @supports (color: light-dark(#000, #fff)) {
+    :where(
+        [data-ok-form-control]:has(> [data-ok-select][data-ok-variant="filled"])
+          > [data-ok-input-label]
+      ) {
+      color: light-dark(var(--ok-palette-grey-700), var(--ok-text-secondary));
+    }
+  }
+
+  /* Label colors: focus, then error, then disabled (the form control's states win, in order). */
+  :where([data-ok-form-control]:has(> [data-ok-select]):focus-within > [data-ok-input-label]) {
+    color: var(--_ok-form-focus-own);
+  }
+
+  :where(
+    [data-ok-form-control][data-ok-error] > [data-ok-input-label],
+    [data-ok-input-label][data-ok-error]
+  ) {
+    color: var(--ok-palette-error-text);
+  }
+
+  :where(
+    [data-ok-form-control][data-ok-disabled] > [data-ok-input-label],
+    [data-ok-input-label][data-ok-disabled]
+  ) {
+    color: var(--ok-text-disabled);
+  }
+
+  /* Helper text under an outlined or filled select is indented like TextField's. */
+  :where(
+    [data-ok-form-control]:has(
+        > [data-ok-select]:is([data-ok-variant="outlined"], [data-ok-variant="filled"])
+      )
+      > [data-ok-form-helper-text]
+  ) {
+    margin-inline: calc(var(--ok-spacing) * 3);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :where(
+        [data-ok-input-label],
+        [data-ok-select],
+        [data-ok-select-icon],
+        [data-ok-select-outline] > legend
+      ) {
+      transition: none;
+    }
+
+    :where([data-ok-select])::after {
+      transition: none;
+    }
+  }
+}

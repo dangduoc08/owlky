@@ -672,6 +672,17 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
   for axe `target-size`: HTML snippet tests lay the host out as a flex row with a gap.
   `breadcrumbs.css` loads after `link.css` and keeps its item rules, so a plain `a` and a Link look
   the same there.
+- Select (ADR-0045): `[data-ok-select][data-ok-variant]` is the field box; a `[data-ok-select]`
+  without a variant has none and its host draws it (TextField's control in text-field.css,
+  TablePagination's bare select in table.css). Hosts that load **before** `select.css` (table.css)
+  can't override the box rules at zero specificity: compose bare instead. The value lives in the
+  options' `aria-selected` (HTML) and a hidden input whose `:placeholder-shown` floats the
+  InputLabel (no JS focus / filled state). React's `SelectRoot` (internal) renders the parts for
+  every host; snippets: `pnpm build && node apps/storybook/scripts/select-snippets.mjs` (adds the
+  chip / placeholder templates and the demos' triggers). The InputLabel carries `for` = the
+  trigger's id (Biome `noLabelWithoutControl`; a `div` isn't labelable, `labelId` names it).
+  Checkboxes inside options are `inert` (axe `nested-interactive`). `check-docs-code.mjs` greps
+  **tracked** files for known `data-ok-*` names: `git add` new runtime files before running it.
 - Parallel work: never run two `/component` / `/integrate` sessions (or two `pnpm build` /
   `pnpm test:e2e`) in the same working tree — builds wipe each other's `dist/` and
   `storybook-static/`, e2e servers share port 4321, and staging part of a shared file while

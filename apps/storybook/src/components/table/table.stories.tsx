@@ -6,6 +6,9 @@ import collapsibleCode from "./collapsible-demo.tsx?raw";
 import groupingCode from "./grouping-demo.tsx?raw";
 import paginationCode from "./pagination-demo.tsx?raw";
 import sortingCode from "./sorting-demo.tsx?raw";
+import { TableApiDemo } from "./table-api-demo.js";
+import tableApiCode from "./table-api-demo.tsx?raw";
+import { TABLE_API_SCRIPT_SOURCE, tableApiScript } from "./table-api-script.js";
 import { TableDocs } from "./table-docs.js";
 import {
   basicGroups,
@@ -90,5 +93,40 @@ export const PaginationWithApi: StoryObj = frameworkStory({
   react: {
     ...reactGroupsStory(paginationGroups, undefined, paginationCode),
     name: "Pagination with API",
+  },
+});
+
+export const TablePaginationWithApi: StoryObj = frameworkStory({
+  html: {
+    ...snippetStory(
+      snippets,
+      "table-api",
+      files("Table pagination with API"),
+      htmlSetup(
+        [
+          "button.css",
+          "icon-button.css",
+          "scrollbar.css",
+          "table.css",
+          "text-field.css",
+          "form-control.css",
+          "popover.css",
+          "menu.css",
+          "select.css",
+        ],
+        true,
+      ),
+      undefined,
+      { group: { script: tableApiScript, scriptSource: TABLE_API_SCRIPT_SOURCE } },
+    ),
+    name: "Table pagination with API",
+  },
+  react: {
+    ...reactGroupsStory(
+      [{ title: "Table pagination with API", content: <TableApiDemo /> }],
+      undefined,
+      tableApiCode,
+    ),
+    name: "Table pagination with API",
   },
 });

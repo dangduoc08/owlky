@@ -2,11 +2,14 @@ import { Pagination } from "@owlky/react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { frameworkStory, reactGroupsStory } from "../../helpers/groups.js";
 import { htmlSetup, snippetStory } from "../shared/snippets.js";
+import itemsCode from "./items-demo.tsx?raw";
+import { ITEMS_SCRIPT_SOURCE, itemsScript } from "./items-script.js";
 import { PaginationDocs } from "./pagination-docs.js";
 import {
   buttonGroups,
   files,
   iconGroups,
+  itemsGroups,
   PAGINATION_CONTROLS,
   rangeGroups,
   SHAPE_FILES,
@@ -81,7 +84,22 @@ export const Table: StoryObj = frameworkStory({
     snippets,
     "table",
     files("Table"),
-    htmlSetup(["icon-button.css", "table.css"], true),
+    htmlSetup(["icon-button.css", "table.css", "popover.css", "menu.css", "select.css"], true),
   ),
   react: reactGroupsStory(tableGroups, undefined, tableCode),
+});
+
+export const Items: StoryObj = frameworkStory({
+  html: snippetStory(
+    snippets,
+    "items",
+    files("Items"),
+    htmlSetup(
+      ["pagination.css", "paper.css", "form-control.css", "popover.css", "menu.css", "select.css"],
+      true,
+    ),
+    undefined,
+    { group: { script: itemsScript, scriptSource: ITEMS_SCRIPT_SOURCE } },
+  ),
+  react: reactGroupsStory(itemsGroups, undefined, itemsCode),
 });
