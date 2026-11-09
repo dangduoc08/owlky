@@ -1930,3 +1930,36 @@
   line-height: var(--ok-typography-button-line-height);
   text-transform: var(--ok-typography-button-text-transform);
 }
+
+/* Collapse story (story-only): the reference's raised card with a triangle, in two rows. */
+.sb-collapse-demo {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--ok-spacing) * 2);
+  min-height: calc(var(--ok-spacing) * 75);
+}
+
+.sb-collapse-row {
+  display: flex;
+  justify-content: space-around;
+  width: min(100%, calc(var(--ok-spacing) * 62.5));
+  height: calc(var(--ok-spacing) * 30);
+}
+
+.sb-collapse-half {
+  width: 50%;
+}
+
+.sb-collapse-paper {
+  margin: calc(var(--ok-spacing) * 2);
+  border-radius: var(--ok-radius-sm);
+  background-color: var(--ok-bg-paper);
+  box-shadow: var(--ok-shadow-z4);
+}
+
+.sb-collapse-paper > svg {
+  display: block;
+  fill: var(--ok-palette-grey-300);
+  stroke: var(--ok-palette-grey-500);
+  stroke-width: 1;
+}

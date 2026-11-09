@@ -126,8 +126,10 @@ Set \`alignItems\` to \`flex-start\` when the text wraps to several lines, so th
     title: "Nest lists",
     body: `Put a list inside a list item, after the item's button. Its rows start 32px in. To open and close it, give the button \`aria-expanded\` and \`aria-controls\` with the nested list's \`id\`, and add a \`ListItemExpandIcon\`: its chevron points down while the list is closed and up while it is open.
 
-- **HTML:** the runtime toggles \`aria-expanded\` on the button and \`hidden\` on the nested list when the button is clicked.
-- **React:** keep the open state in your component and set \`aria-expanded\` and \`hidden\` from it.`,
+To animate the height as it opens and closes, make the nested list a Collapse.
+
+- **HTML:** the runtime toggles \`aria-expanded\` on the button and \`hidden\` on the nested list when the button is clicked. Add \`data-ok-collapse\` to the nested list to animate it.
+- **React:** keep the open state in your component and set \`aria-expanded\` from it. Render the nested list with \`<Collapse component={List} in={open}>\`: it sets \`hidden\` while the list is closed.`,
     html: `<!-- Load the runtime once per page -->
 <script src="${CDN}/owlky.js" defer></script>
 
@@ -138,12 +140,19 @@ Set \`alignItems\` to \`flex-start\` when the text wraps to several lines, so th
     </span>
     <span data-ok-list-item-expand-icon aria-hidden="true">${CHEVRON}</span>
   </button>
-  <ul data-ok-list data-ok-disable-padding id="inbox-folders">
+  <ul data-ok-collapse data-ok-timeout="auto" data-ok-list data-ok-disable-padding id="inbox-folders">
     …
   </ul>
 </li>`,
     react: `import { useState } from "react";
-import { List, ListItem, ListItemButton, ListItemExpandIcon, ListItemText } from "@owlky/react";
+import {
+  Collapse,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemExpandIcon,
+  ListItemText,
+} from "@owlky/react";
 
 export function Inbox() {
   const [open, setOpen] = useState(true);
@@ -157,9 +166,9 @@ export function Inbox() {
         <ListItemText primary="Inbox" />
         <ListItemExpandIcon />
       </ListItemButton>
-      <List id="inbox-folders" disablePadding hidden={!open}>
+      <Collapse component={List} id="inbox-folders" in={open} timeout="auto" disablePadding>
         …
-      </List>
+      </Collapse>
     </ListItem>
   );
 }`,

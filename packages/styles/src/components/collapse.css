@@ -1,0 +1,60 @@
+/*
+ * Collapse — spec: specs/components/collapse.md, ADR-0044
+ *
+ * Anatomy:   [data-ok-collapse][hidden]? › content (any element: a div, a nested list, a tree group)
+ * Modifiers: data-ok-orientation="horizontal" (animates the width),
+ *            data-ok-disable-prefers-reduced-motion
+ * States:    hidden (closed); data-ok-state="entering" | "exiting" only while it animates
+ *
+ * The core controller reads the timing below and animates the size (Web Animations API). A
+ * collapsed size other than 0 arrives as private properties (React `style`, runtime CSSOM):
+ * without them a closed collapse is `display: none`. Both are reset on every root so nested
+ * collapses don't inherit them.
+ * Single :where() selectors in @layer components.
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-ok-collapse]) {
+    --_ok-collapse-duration: var(--ok-duration-standard);
+    --_ok-collapse-easing: var(--ok-easing-standard);
+    --_ok-collapse-reduce: 0;
+    --_ok-collapsed-size: initial;
+    --_ok-collapse-closed-display: initial;
+  }
+
+  /* Horizontal: a row whose children keep their width while the root's width animates. */
+  :where([data-ok-collapse][data-ok-orientation="horizontal"]) {
+    display: flex;
+    width: fit-content;
+  }
+
+  :where([data-ok-collapse][data-ok-orientation="horizontal"] > *) {
+    flex-shrink: 0;
+  }
+
+  /* Closed: gone, or clipped at the collapsed size. An author `display` would beat `[hidden]`. */
+  :where([data-ok-collapse][hidden]) {
+    display: var(--_ok-collapse-closed-display, none);
+    overflow: hidden;
+  }
+
+  :where([data-ok-collapse][hidden]:not([data-ok-state])) {
+    height: var(--_ok-collapsed-size, 0);
+  }
+
+  :where([data-ok-collapse][data-ok-orientation="horizontal"][hidden]:not([data-ok-state])) {
+    height: auto;
+    width: var(--_ok-collapsed-size, 0);
+  }
+
+  :where([data-ok-collapse][data-ok-state]) {
+    overflow: hidden;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :where([data-ok-collapse]:not([data-ok-disable-prefers-reduced-motion])) {
+      --_ok-collapse-reduce: 1;
+    }
+  }
+}

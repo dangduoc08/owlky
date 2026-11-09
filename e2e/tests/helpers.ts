@@ -130,6 +130,7 @@ export function normalizeStory(page: Page): Promise<NormalizedNode> {
       "data-ok-toaster-position",
       "data-ok-backdrop-open",
       "data-ok-backdrop-close",
+      "data-ok-collapse-toggle",
       "data-ok-current-placement",
       "data-ok-sortable-add",
       // HTML runtime state and options (React keeps them in props / state).

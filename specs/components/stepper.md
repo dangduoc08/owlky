@@ -22,7 +22,7 @@ ol[data-ok-stepper][data-ok-orientation][data-ok-variant][data-ok-alternative-la
         (custom: the icon node)
       span[data-ok-step-label-text]
         span[data-ok-step-label-title] span[data-ok-step-label-optional]?
-    div[data-ok-step-content]?                                                             (vertical)
+    div[data-ok-collapse][data-ok-timeout="auto"][data-ok-step-content][hidden]?           (vertical; a Collapse)
 [data-ok-stepper-panel="<id>"][data-ok-stepper-panel-step]?   (HTML: shown at its step)
 button[data-ok-stepper-next | -back | -reset="<id> …"]       (HTML triggers)
 
@@ -82,7 +82,7 @@ Other props (not options):
 | `span[data-ok-step-label-title]` | `StepLabel children` | node |
 | `span[data-ok-step-label-optional]` | `StepLabel optional` | node |
 | `span[data-ok-step-icon]` content (+ `data-ok-custom` for a node) | `StepLabel icon` | text, number or node |
-| `div[data-ok-step-content]` | `StepContent` | node |
+| `div[data-ok-collapse][data-ok-timeout="auto"][data-ok-step-content][hidden]?` | `StepContent` | node (a Collapse, `hidden` off the active step) |
 | buttons in the bar (`data-ok-mobile-stepper-back` / `-next`) | `backButton` / `nextButton` | node |
 | `data-ok-label-step` (`{step}`, `{steps}`) | `getStepLabel(step, steps)` | default "Step 2 of 3" |
 
@@ -91,7 +91,8 @@ Step `active`, `completed`, `disabled`, `index`; StepLabel `error`, `optional`, 
 StepContent; MobileStepper `steps`, `activeStep`, `variant`, `position`, `backButton`,
 `nextButton`. Beyond MUI (reference "Customized stepper"): Stepper `variant` (`dot`, `circle`);
 `getStepLabel` (accessible name of dots / bar, MUI has none). Deferred (roadmap backlog):
-`nonLinear`, `StepButton`, Step `expanded` / `last`, StepContent `TransitionComponent`,
+`nonLinear`, `StepButton`, Step `expanded` / `last`, StepContent `TransitionComponent` /
+`transitionDuration` / `TransitionProps` (it is always a Collapse with `timeout="auto"`, MUI's defaults),
 MobileStepper `LinearProgressProps`. Not applicable: `component`, `slots`, `slotProps`, `classes`,
 `sx`, `StepIconComponent` / `StepIconProps` (use `icon`).
 
@@ -115,7 +116,9 @@ primary; progress bar 50% wide (LinearProgress `inherit`).
 ## States
 Step flags `data-ok-active`, `data-ok-completed`, `data-ok-disabled` (linear: before / at / after
 the active step; explicit Step props win), `aria-current="step"` on the active one; StepLabel
-`data-ok-error`; StepContent shows on the active step only.
+`data-ok-error`; StepContent shows on the active step only: it carries `hidden` on the others
+(React from the step context, HTML runtime on every step change) and the Collapse animates its
+height (collapse.md); the CSS rule on inactive steps stays for markup without the runtime.
 
 ## Behavior
 React: `Stepper` clones its direct `Step` children with `index`; each step reads `activeStep`

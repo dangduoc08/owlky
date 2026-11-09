@@ -633,6 +633,19 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
   own rules. Elevation is a `style` option with values `"0"`–`"24"` (`--ok-elevation-<n>`): React
   takes a number, `paperAttributes` stringifies it, the attribute is always written (outlined too)
   so Controls stay in parity.
+- Collapse (ADR-0044): `hidden` is the state; core `createCollapseController` watches it (a
+  MutationObserver, before paint) and animates with the Web Animations API, so tests `finish()` the
+  element's animations and then wait a task (the controller settles on `animation.finished`; a
+  `finish` *event* comes a frame later). A cancelled animation replaces its `finished` promise:
+  grab the promise before interrupting. While exiting, an element whose author CSS hides
+  `[hidden]` (`[data-ok-list][hidden]`) gets an inline `display` from CSSOM until the end, and a
+  closed collapse with a collapsed size keeps one at rest; both are written `!important`, since
+  Tailwind's preflight (Storybook) hides `[hidden]` with `display: none !important` in
+  `@layer base`, which beats every component rule. Owners
+  that write `hidden` (List, Tree view, Stepper runtimes) need no change: adding
+  `data-ok-collapse` to the element animates it. Timing comes from `--_ok-collapse-duration` /
+  `-easing` / `-reduce` read from computed style; e2e opens stories with reduced motion, so
+  collapses are instant there unless a test emulates `reducedMotion: "no-preference"`.
 - Parallel work: never run two `/component` / `/integrate` sessions (or two `pnpm build` /
   `pnpm test:e2e`) in the same working tree — builds wipe each other's `dist/` and
   `storybook-static/`, e2e servers share port 4321, and staging part of a shared file while

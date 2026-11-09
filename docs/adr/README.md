@@ -46,5 +46,6 @@ ADR that supersedes the old one — don't rewrite history.
 | [0039](0039-walktour.md) | Walktour: a state machine in core, steps as Popovers over a Backdrop with an SVG spotlight | Accepted |
 | [0040](0040-website.md) | Website: a Next.js app in the monorepo, docs content shared with Storybook, deployed to Vercel | Accepted |
 | [0041](0041-illustrations.md) | Illustrations: a theme-aware set as data in core, tones mapped to tokens, opt-in bundles | Accepted |
+| [0044](0044-collapse.md) | Collapse: `hidden` is the state, a core controller animates the size | Accepted |
 
 Template: **Context** (why decide) · **Decision** (what) · **Consequences** (trade-offs, follow-ups).

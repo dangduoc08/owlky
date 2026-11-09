@@ -46,6 +46,7 @@ const SPECS = {
   "menu-item": "menu.md",
   dialog: "dialog.md",
   backdrop: "backdrop.md",
+  collapse: "collapse.md",
   toaster: "snackbar.md",
   tabs: "tabs.md",
   tab: "tabs.md",

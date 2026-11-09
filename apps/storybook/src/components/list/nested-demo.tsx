@@ -1,4 +1,5 @@
 import {
+  Collapse,
   List,
   ListItem,
   ListItemButton,
@@ -47,7 +48,7 @@ export function NestedDemo() {
             <ListItemText primary="Inbox" />
             <ListItemExpandIcon />
           </ListItemButton>
-          <List id="list-nested-inbox" disablePadding hidden={!open}>
+          <Collapse component={List} id="list-nested-inbox" in={open} timeout="auto" disablePadding>
             <ListItem disablePadding>
               <ListItemButton>
                 <ListItemIcon>
@@ -56,7 +57,7 @@ export function NestedDemo() {
                 <ListItemText primary="Starred" />
               </ListItemButton>
             </ListItem>
-          </List>
+          </Collapse>
         </ListItem>
       </List>
     </div>
