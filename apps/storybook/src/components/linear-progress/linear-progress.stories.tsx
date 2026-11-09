@@ -10,6 +10,7 @@ import {
   indeterminateGroups,
   LINEAR_PROGRESS_BUFFER_CONTROLS,
   LINEAR_PROGRESS_VALUE_CONTROLS,
+  labelGroups,
   queryGroups,
 } from "./linear-progress-examples.js";
 
@@ -67,3 +68,16 @@ export const Query: StoryObj = frameworkStory({
   html: snippetStory(snippets, "query", files("Query"), setup),
   react: reactGroupsStory(queryGroups),
 });
+
+export const WithLabel: StoryObj = {
+  ...frameworkStory({
+    html: snippetStory(
+      snippets,
+      "with-label",
+      files("With label"),
+      htmlSetup(["linear-progress.css", "typography.css"], true),
+    ),
+    react: reactGroupsStory(labelGroups),
+  }),
+  name: "With label",
+};

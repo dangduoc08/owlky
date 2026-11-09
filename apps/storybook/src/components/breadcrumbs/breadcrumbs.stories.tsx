@@ -50,4 +50,8 @@ export const WithIcon: StoryObj = {
   name: "With icon",
 };
 
-export const Customized: StoryObj = story("customized", ["breadcrumbs.css", "button.css"]);
+export const Customized: StoryObj = story("customized", [
+  "breadcrumbs.css",
+  "button.css",
+  "typography.css",
+]);

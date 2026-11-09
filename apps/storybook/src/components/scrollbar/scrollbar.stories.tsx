@@ -50,7 +50,7 @@ export const Layout: StoryObj = frameworkStory({
     snippets,
     "layout",
     files("Layout"),
-    htmlSetup(["alert.css", "scrollbar.css"]),
+    htmlSetup(["alert.css", "scrollbar.css", "typography.css"]),
     SCROLLBAR_CONTROLS,
   ),
   react: reactGroupsStory(layoutGroups, controls),

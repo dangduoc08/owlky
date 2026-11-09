@@ -1,5 +1,5 @@
 import { breadcrumbsOptions } from "@owlky/core";
-import { Breadcrumbs, BreadcrumbsDot, Button } from "@owlky/react";
+import { Breadcrumbs, BreadcrumbsDot, Button, Typography } from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
 import { DemoIcon } from "../shared/demo-icon.js";
 import type { GroupFiles } from "../shared/snippets.js";
@@ -75,24 +75,24 @@ export const breadcrumbsStories: Record<string, ReactGroup[]> = {
       content: (
         <div className="sb-page-heading">
           <div className="sb-page-heading-title">
-            <h4>
+            <Typography variant="h4" color="textPrimary">
               <a href="#products">
                 <DemoIcon name="chevronLeft" />
                 <span className="sr-only">Back to products</span>
               </a>
               Desk lamp
-            </h4>
+            </Typography>
             <Button variant="contained" color="inherit" startIcon={<DemoIcon name="plus" />}>
               Add product
             </Button>
           </div>
           <DotTrail label="page breadcrumb" />
-          <p>
+          <Typography variant="body2" color="textSecondary">
             {"Read the "}
             <a href="#guide-spacing">spacing guide</a>
             {" and the "}
             <a href="#guide-overflow">overflow guide</a>.
-          </p>
+          </Typography>
         </div>
       ),
     },

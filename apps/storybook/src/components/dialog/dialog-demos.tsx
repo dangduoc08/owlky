@@ -16,6 +16,7 @@ import {
   ListItemButton,
   ListItemText,
   TextField,
+  Typography,
 } from "@owlky/react";
 import { type ReactNode, useState } from "react";
 import { DemoIcon } from "../shared/demo-icon.js";
@@ -68,7 +69,9 @@ export function SimpleDialogDemo() {
       <Trigger id="dialog-simple" {...dialog}>
         Open simple dialog
       </Trigger>
-      <p>Selected: {selected}</p>
+      <Typography variant="subtitle1" component="p" color="textPrimary">
+        {`Selected: ${selected}`}
+      </Typography>
       <Dialog id="dialog-simple" open={dialog.open} onOpenChange={dialog.onOpenChange}>
         <DialogTitle>Set backup account</DialogTitle>
         <List aria-label="Accounts">
@@ -206,7 +209,9 @@ export function FullScreenDialogDemo() {
           <IconButton aria-label="Close" onClick={close}>
             <DemoIcon name="close" />
           </IconButton>
-          <DialogTitle>Sound</DialogTitle>
+          <Typography variant="h6" component={DialogTitle}>
+            Sound
+          </Typography>
           <Button variant="contained" onClick={close}>
             Save
           </Button>

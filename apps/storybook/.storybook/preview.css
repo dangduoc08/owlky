@@ -98,12 +98,6 @@
   display: flex;
   align-items: center;
   gap: var(--ok-spacing);
-  margin: 0;
-  color: var(--ok-text-primary);
-  font-family: var(--ok-typography-h4-font-family);
-  font-size: var(--ok-typography-h4-font-size);
-  font-weight: var(--ok-typography-h4-font-weight);
-  line-height: var(--ok-typography-h4-line-height);
 }
 
 .sb-page-heading h4 > a {
@@ -118,12 +112,6 @@
 .sb-page-heading h4 > a > svg {
   width: 20px;
   height: 20px;
-}
-
-.sb-page-heading > p {
-  margin: 0;
-  color: var(--ok-text-secondary);
-  font-size: var(--ok-typography-body2-font-size);
 }
 
 .sb-page-heading > p > a {
@@ -143,12 +131,6 @@
   border-radius: var(--ok-radius-md);
   background-color: var(--ok-bg-neutral);
   color: var(--ok-text-primary);
-  font-size: var(--ok-typography-body2-font-size);
-}
-
-.sb-stepper-panel p,
-[data-ok-step-content] > p {
-  margin: 0;
 }
 
 .sb-stepper-panel [data-ok-button] {
@@ -163,7 +145,6 @@
 
 [data-ok-step-content] {
   color: var(--ok-text-primary);
-  font-size: var(--ok-typography-body2-font-size);
 }
 
 [data-ok-step-content] > .sb-stepper-actions {
@@ -192,15 +173,6 @@
 
 .sb-mobile-card-body h6 {
   margin: 0 0 calc(var(--ok-spacing) * 2);
-  color: var(--ok-text-primary);
-  font-size: var(--ok-typography-subtitle1-font-size);
-  font-weight: var(--ok-typography-subtitle1-font-weight);
-}
-
-.sb-mobile-card-body p {
-  margin: 0;
-  color: var(--ok-text-secondary);
-  font-size: var(--ok-typography-body2-font-size);
 }
 
 .sb-mobile-card > [data-ok-mobile-stepper] {
@@ -433,12 +405,6 @@
   max-width: 340px;
 }
 
-.sb-autocomplete > p {
-  margin: 0;
-  color: var(--ok-text-secondary);
-  font-size: var(--ok-typography-body2-font-size);
-}
-
 .sb-autocomplete-outputs,
 .sb-autocomplete-variants {
   display: flex;
@@ -469,8 +435,6 @@
   padding: calc(var(--ok-spacing) * 2) calc(var(--ok-spacing) * 3);
   border-radius: var(--ok-radius-md);
   background-color: var(--ok-bg-neutral);
-  color: var(--ok-text-secondary);
-  font-size: var(--ok-typography-caption-font-size);
   text-align: right;
   overflow-wrap: anywhere;
 }
@@ -492,15 +456,6 @@
 /* Drawer demo content in a Scrollbar (stories only): the mailbox menu's width. */
 [data-ok-drawer-content] > [data-ok-scrollbar] > nav {
   min-inline-size: 250px;
-}
-
-/* Sortable demo content (stories only): the reference's big card numbers. */
-[data-ok-sortable-item] > span {
-  color: var(--ok-text-secondary);
-  font-family: var(--ok-typography-h2-font-family);
-  font-size: var(--ok-typography-h2-font-size);
-  font-weight: var(--ok-typography-h2-font-weight);
-  line-height: var(--ok-typography-h2-line-height);
 }
 
 /* Sortable stories: the "Add item" button above the list, like the reference. */
@@ -545,6 +500,22 @@
 /* Linear progress demos: bars stacked like the reference, 1.5rem apart. */
 .sb-row:has(> [data-ok-linear-progress]) {
   gap: 1.5rem;
+}
+
+/* Linear progress "With label" (story-only): the bar and its value on one line. */
+.sb-progress-label {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--ok-spacing) * 2);
+  width: 100%;
+}
+
+.sb-progress-label > [data-ok-linear-progress] {
+  flex: 1 1 auto;
+}
+
+.sb-progress-label > [data-ok-typography] {
+  min-width: calc(var(--ok-spacing) * 9);
 }
 
 .sb-row > [data-ok-scrollbar]:has(> [data-ok-sortable][data-ok-layout="vertical"]) {
@@ -631,9 +602,6 @@
 
 .sb-layout-main > [data-ok-scrollbar] > h4 {
   margin: 0 0 1rem;
-  font-size: var(--ok-typography-h6-font-size);
-  font-weight: var(--ok-typography-h6-font-weight);
-  line-height: var(--ok-typography-h6-line-height);
 }
 
 @media (min-width: 900px) {
@@ -780,16 +748,6 @@
 
 [data-ok-popover] > div > h6 {
   margin: 0 0 calc(var(--ok-spacing) * 2);
-  font-size: var(--ok-typography-subtitle1-font-size);
-  font-weight: var(--ok-typography-subtitle1-font-weight);
-  line-height: var(--ok-typography-subtitle1-line-height);
-}
-
-[data-ok-popover]:where(:not([data-ok-walktour-step])) > div > :where(p) {
-  margin: 0;
-  color: var(--ok-text-secondary);
-  font-size: var(--ok-typography-body2-font-size);
-  line-height: var(--ok-typography-body2-line-height);
 }
 
 /* Popover "Custom arrow": one row of buttons per side. */
@@ -846,13 +804,6 @@
   flex-direction: column;
   align-items: center;
   gap: 1rem;
-}
-
-.sb-row > div:has(> [data-ok-dialog]) > :where(p) {
-  margin: 0;
-  color: var(--ok-text-primary);
-  font-size: var(--ok-typography-subtitle1-font-size);
-  font-weight: var(--ok-typography-subtitle1-font-weight);
 }
 
 [data-ok-dialog][data-ok-full-screen] header {
@@ -1640,20 +1591,6 @@
   display: flex;
   flex-direction: column;
   gap: calc(var(--ok-spacing) * 0.5);
-  font-size: var(--ok-typography-caption-font-size);
-  line-height: var(--ok-typography-caption-line-height);
-}
-
-.sb-map-popup > p {
-  margin: 0;
-  color: var(--ok-text-secondary);
-}
-
-.sb-map-popup > .sb-map-popup-title {
-  color: var(--ok-text-primary);
-  font-size: var(--ok-typography-subtitle2-font-size);
-  font-weight: var(--ok-typography-subtitle2-font-weight);
-  line-height: var(--ok-typography-subtitle2-line-height);
 }
 
 /* The hover popup must not catch the pointer, or the map would see it leave. */
@@ -1668,15 +1605,8 @@
   margin: 0;
 }
 
-.sb-map-events dt {
-  font-size: var(--ok-typography-subtitle2-font-size);
-  font-weight: var(--ok-typography-subtitle2-font-weight);
-}
-
 .sb-map-events dd {
-  margin: 0;
   color: var(--ok-palette-primary-light);
-  font-size: var(--ok-typography-body2-font-size);
 }
 
 .sb-map-settings {
@@ -1703,12 +1633,6 @@
 
 .sb-map-heatmap {
   width: calc(var(--ok-spacing) * 56);
-}
-
-.sb-map-heatmap > p {
-  margin: 0;
-  color: var(--ok-text-secondary);
-  font-size: var(--ok-typography-body2-font-size);
 }
 
 /* Side by side: two maps, or one split down the middle. */
@@ -1861,13 +1785,6 @@
   min-width: 0;
 }
 
-.sb-image-caption {
-  color: var(--ok-text-secondary);
-  font-size: var(--ok-typography-caption-font-size);
-  font-weight: var(--ok-font-weight-bold);
-  line-height: var(--ok-typography-caption-line-height);
-}
-
 /* Upload stories (story-only): the two boxes side by side, the "Open the file dialog" content. */
 .sb-upload-boxes {
   display: flex;
@@ -1991,4 +1908,25 @@
   font-size: var(--ok-typography-body2-font-size);
   line-height: 60px;
   text-align: center;
+}
+
+/* Typography demos (story-only): a full-width column, a narrow box, and plain markup styled
+   with the button variant's tokens instead of the component (story "Theme keys"). */
+.sb-typography {
+  width: 100%;
+  min-width: 0;
+}
+
+.sb-typography-narrow {
+  width: min(100%, 18rem);
+}
+
+.sb-typography-theme-keys {
+  padding: calc(var(--ok-spacing) * 2);
+  background: var(--ok-bg-paper);
+  font-family: var(--ok-typography-button-font-family);
+  font-size: var(--ok-typography-button-font-size);
+  font-weight: var(--ok-typography-button-font-weight);
+  line-height: var(--ok-typography-button-line-height);
+  text-transform: var(--ok-typography-button-text-transform);
 }

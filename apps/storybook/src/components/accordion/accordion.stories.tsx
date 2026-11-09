@@ -19,7 +19,7 @@ const snippets = import.meta.glob(
   { query: "?raw", import: "default", eager: true },
 ) as Record<string, string>;
 
-const setup = htmlSetup(["button.css", "accordion.css"], true);
+const setup = htmlSetup(["button.css", "accordion.css", "typography.css"], true);
 
 const meta = {
   title: "Components/Accordion",

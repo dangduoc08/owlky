@@ -27,6 +27,7 @@ const SETUP = htmlSetup(
     "popover.css",
     "checkbox.css",
     "label.css",
+    "typography.css",
   ],
   true,
 );

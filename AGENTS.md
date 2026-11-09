@@ -662,3 +662,10 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
   `:where(:not([data-ok-walktour-step]))` (same specificity). Snippets: `pnpm build && node
   apps/storybook/scripts/walktour-snippets.mjs` (adds `data-ok-walktour-start` to the restart
   buttons, found by `aria-controls="tour-…"`).
+- Typography is CSS only (`[data-ok-typography]` on any element) and `typography.css` is the
+  **first** component in `owlky.css`: a component that composes it restyles it through its own CSS
+  (same zero specificity, later wins). Demo text in stories is a Typography, never demo CSS for
+  fonts; story CSS keeps layout only (margins, gaps). React picks the element from the variant
+  (`typographyElement`: subtitles are `h6`, `caption` / `overline` / `button` are `span`): pass
+  `component` for anything else (`component={DialogTitle}` keeps the dialog's label). Palette
+  `color`s are brand text (`CONTRAST_EXEMPT`); `textPrimary` / `textSecondary` are AA-tested.

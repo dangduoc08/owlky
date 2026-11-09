@@ -42,7 +42,7 @@ const shown = (element: Element) =>
   new DOMMatrix(getComputedStyle(element).transform).m41 / element.getBoundingClientRect().width;
 
 describe("linear progress snippets", () => {
-  it("covers every story group", () => expect(snippets).toHaveLength(4));
+  it("covers every story group", () => expect(snippets).toHaveLength(5));
 
   it.each(snippets)("%s: valid anatomy", (_, html) => {
     const host = mount(html);

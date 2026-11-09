@@ -129,6 +129,7 @@ export default defineConfig({
         "packages/react/src/slider/**": COMPONENT_THRESHOLDS,
         "packages/react/src/transfer-list/**": COMPONENT_THRESHOLDS,
         "packages/react/src/tree-view/**": COMPONENT_THRESHOLDS,
+        "packages/react/src/typography/**": COMPONENT_THRESHOLDS,
         "packages/react/src/autocomplete/**": COMPONENT_THRESHOLDS,
         "packages/react/src/date-field/**": COMPONENT_THRESHOLDS,
         "packages/react/src/date-calendar/**": COMPONENT_THRESHOLDS,

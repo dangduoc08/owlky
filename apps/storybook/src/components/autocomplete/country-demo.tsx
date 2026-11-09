@@ -1,4 +1,4 @@
-import { Autocomplete, type AutocompleteOption, Label } from "@owlky/react";
+import { Autocomplete, type AutocompleteOption, Label, Typography } from "@owlky/react";
 import { type ReactNode, useState } from "react";
 
 const COUNTRIES: AutocompleteOption[] = [
@@ -31,9 +31,9 @@ function Output({ children, value }: { children: ReactNode; value: unknown }) {
   return (
     <div className="sb-autocomplete-output">
       {children}
-      <output>
+      <Typography variant="caption" component="output" color="textSecondary">
         Output <code>{JSON.stringify(value)}</code>
-      </output>
+      </Typography>
     </div>
   );
 }

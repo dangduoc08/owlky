@@ -5,7 +5,7 @@ and a review before the next starts.
 
 ## Overview
 Every page of the reference's component menu (`https://minimals.cc/components/…`) and where it
-stands (plus pages from other references, marked). ✅ = built (40); *wave N* = planned, see "Next — components"; *not planned* = a pattern
+stands (plus pages from other references, marked). ✅ = built (41); *wave N* = planned, see "Next — components"; *not planned* = a pattern
 or app-level page. *Section* = the heading below with the details. Update this table with each
 component and each `/integrate` run.
 
@@ -32,6 +32,7 @@ component and each `/integrate` run.
 | MUI (no Minimals page; mui.com) | Divider | ✅ | Divider | Divider |
 | MUI (no Minimals page; mui.com) | Backdrop | ✅ | Backdrop | Backdrop |
 | MUI (no Minimals page; mui.com) | Paper | ✅ | Paper | Paper |
+| MUI (no Minimals page; mui.com) | Typography | ✅ | Typography | Typography |
 | MUI | List | ✅ | List, ListItem, ListItemButton, ListItemIcon, ListItemAvatar, ListItemText, ListSubheader, ListItemExpandIcon | List |
 | MUI | Menu | ✅ | Menu, MenuItem | Popover, Tooltip, Menu, Dialog & Snackbar |
 | MUI | Pagination | ✅ | Pagination, PaginationItem | Pagination |
@@ -341,7 +342,8 @@ the HTML runtime turns values, size and thickness into private custom properties
 (strict CSP). New `number` option kind in the schemas (Controls, docs tables, spec tables).
 Button / IconButton loaders are now a CircularProgress (`data-ok-button-spinner` kept; an empty
 spinner span still renders). No new tokens.
-**Backlog:** right-to-left linear progress; a value label part (needs Typography).
+**Backlog:** right-to-left linear progress. The value label is a story ("With label": a
+LinearProgress beside a Typography), like MUI's demo, not a part.
 
 ## ✅ Theme settings (ADR-0017, 2026-11-05)
 From the reference's Settings drawer: primary color presets (default, cyan, purple, blue, orange,
@@ -514,9 +516,6 @@ integrate these in the same review (additive: no DOM or API change) and remove t
 
 | Waiting for | Where | Today |
 |---|---|---|
-| Typography (display text) | Sortable stories (card numbers) | demo `<span>` styled in `.storybook/preview.css` |
-| Typography (heading / secondary text) | Accordion summaries (plain text, no secondary line from the reference) | summary text styled by `accordion.css` |
-| Typography (heading) | Scrollbar "Layout" story heading | demo `<h4>` styled in `.storybook/preview.css` |
 | Select (listbox, built on Menu) | `TablePagination` rows per page (library markup) | native `<select>` styled in `table.css`; the API (`rowsPerPageOptions`) stays. TextField's native select doesn't match MUI's InputBase select here |
 | Select (listbox, built on Menu) | Pagination story "Items" (card grid + items-per-page Select) | story deferred: the reference uses MUI's listbox Select |
 | Select (listbox, built on Menu) | Table story "Table pagination with API" (search TextField + category Select) | story deferred until the listbox Select; TextField exists |
@@ -525,17 +524,33 @@ integrate these in the same review (additive: no DOM or API change) and remove t
 | Collapse (transition) | List nested lists | open / close at once (`hidden`); a Collapse component can animate the height later without a DOM change |
 | Collapse (transition) | Stepper `StepContent` (vertical) | shown / hidden at once by CSS on the active step; MUI collapses it |
 | Link (Typography) | Breadcrumbs items | native `a` / `span[aria-current]` styled by `breadcrumbs.css` (inherit color, hover underline); a Link component can go inside items without a DOM change |
-| Typography (headings, body text) | Breadcrumbs story "Customized" (page heading `h4`, paragraph) and Stepper stories (step panels, mobile card `h6` / `p`) | demo markup styled in `.storybook/preview.css` |
-| Typography (headings, body text) | Popover and Dialog stories (popover text, "Selected:" line, full-screen toolbar title) | demo `h6` / `p` / `header` styled in `.storybook/preview.css` |
 | Typography + Paper (card) | Motion stories (cards, headings, count-up numbers, the stage) | demo `.sb-motion-*` styled in `.storybook/preview.css` |
 | Motion full version, phase 1 (custom keyframes) | Motion story "Logo" (the reference's shape-morphing, turning rings and the turning gradient disc) | the logo inside MotionBorder rings; the story becomes the reference's once `animate(element, keyframes)` exists, without changing MotionBorder |
 | Typography + Paper (card) | Timeline story "Customized" (cards with a title and text) | demo `.sb-timeline-card` styled in `.storybook/preview.css` |
-| Typography (body text) | Autocomplete stories (output lines under the fields) | demo `p` styled in `.storybook/preview.css` |
 | Collapse (transition) | Tree view groups | open / close at once (`hidden`); MUI X collapses them |
-| Typography (body text, headings) | Map stories (popup text, the drag readout, panel captions) | demo `.sb-map-*` styled in `.storybook/preview.css` |
 | Typography + Paper (card) | Organization chart stories (node cards: simple, standard, team and member cards, names and roles) | demo `.sb-org-*` styled in `.storybook/preview.css`; the cards compose Avatar, IconButton, Menu and Label |
-| Typography (caption) | Image stories (the ratio, fit and position captions above pictures) | demo `.sb-image-caption` styled in `.storybook/preview.css` |
 | Typography + Paper (card) | Walktour stories (the dashboard cards the tour points at, step text; the reference's cards hold charts, a carousel and a table, kept as text here) | demo `.sb-walktour-*` styled in `.storybook/preview.css`; the cards compose Avatar, Button and Image (the featured picture, like the reference) |
+
+## ✅ Components — Typography (2026-11-09)
+Created with `/component` from MUI's "Typography" page (Minimals has none; its type scale is
+Foundations › Typography), every section with a demo as a story: Usage, Theme keys, Changing the
+semantic element; beyond them, from MUI's API: Colors, Alignment and wrapping. CSS only:
+`[data-ok-typography]` on any element, `variant` (the 13 steps of the type scale + `inherit`,
+default `body1`), `color` (palette `main` tones, `textPrimary|Secondary|Disabled`), `align`,
+`gutterBottom`, `noWrap`; React `component` and `variantMapping` (MUI's default mapping, shared
+by core `typographyElement`). Every value comes from the `--ok-typography-*` tokens (responsive
+headings, font presets). `typography.css` loads first in `owlky.css`, so components that compose
+it restyle it. No new token, no dependency.
+Integrated in the same review (stories, examples and snippets compose it; the demo CSS is gone):
+Sortable card numbers (h2), Accordion summaries (subtitle1; the Controlled story gains the
+reference's secondary line, body2), Scrollbar "Layout" heading, Breadcrumbs "Customized" heading
+and paragraph, Stepper panels and mobile cards, Popover texts, Dialog "Selected:" line and the
+full-screen title (`component={DialogTitle}`), Autocomplete outputs, Map popups, readouts and
+captions, Image captions (overline, like the reference). New Linear progress story "With label".
+Left: the "Typography + Paper (card)" rows (a Card / Paper component closes them) and "Link
+(Typography)" (a Link component).
+Differences: MUI's arbitrary color strings (`"text.secondary"`, `"primary.dark"`), theme-level
+custom variants and `sx` are consumer CSS; `paragraph` (deprecated upstream) is not kept.
 
 ## ✅ Components — Image (ADR-0038, 2026-11-09)
 Created with `/component` from the reference "Image" page (Minimals' own Image, on

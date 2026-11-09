@@ -5,6 +5,7 @@ import {
   AccordionDetails,
   AccordionSummary,
   Button,
+  Typography,
 } from "@owlky/react";
 import { useState } from "react";
 import type { ReactGroup } from "../../helpers/groups.js";
@@ -23,15 +24,27 @@ export const simpleGroups: ReactGroup[] = [
     title: "Simple",
     content: [
       <Accordion key="1">
-        <AccordionSummary>Accordion 1</AccordionSummary>
+        <AccordionSummary>
+          <Typography variant="subtitle1" component="span">
+            Accordion 1
+          </Typography>
+        </AccordionSummary>
         <AccordionDetails>{TEXT}</AccordionDetails>
       </Accordion>,
       <Accordion key="2">
-        <AccordionSummary>Accordion 2</AccordionSummary>
+        <AccordionSummary>
+          <Typography variant="subtitle1" component="span">
+            Accordion 2
+          </Typography>
+        </AccordionSummary>
         <AccordionDetails>{TEXT}</AccordionDetails>
       </Accordion>,
       <Accordion key="actions" defaultExpanded>
-        <AccordionSummary>Accordion actions</AccordionSummary>
+        <AccordionSummary>
+          <Typography variant="subtitle1" component="span">
+            Accordion actions
+          </Typography>
+        </AccordionSummary>
         <AccordionDetails>{TEXT}</AccordionDetails>
         <AccordionActions>
           <Button color="inherit">Cancel</Button>
@@ -39,7 +52,11 @@ export const simpleGroups: ReactGroup[] = [
         </AccordionActions>
       </Accordion>,
       <Accordion key="disabled" disabled>
-        <AccordionSummary>Disabled accordion</AccordionSummary>
+        <AccordionSummary>
+          <Typography variant="subtitle1" component="span">
+            Disabled accordion
+          </Typography>
+        </AccordionSummary>
         <AccordionDetails>{TEXT}</AccordionDetails>
       </Accordion>,
     ],
@@ -48,7 +65,12 @@ export const simpleGroups: ReactGroup[] = [
 
 export const SIMPLE_FILES: GroupFiles = [["Simple", "group"]];
 
-const PANELS = ["General settings", "Users", "Advanced settings", "Personal data"];
+const PANELS = [
+  ["General settings", "Notifications, language and time zone"],
+  ["Users", "Who can see and edit this workspace"],
+  ["Advanced settings", "Webhooks, exports and API keys"],
+  ["Personal data", "Download or delete your data"],
+] as const;
 
 /**
  * The "Controlled" story: one item open at a time. React keeps the open item in state; HTML uses
@@ -56,14 +78,21 @@ const PANELS = ["General settings", "Users", "Advanced settings", "Personal data
  */
 function ControlledExample() {
   const [expanded, setExpanded] = useState<string | false>(false);
-  return PANELS.map((panel) => (
+  return PANELS.map(([panel, summary]) => (
     <Accordion
       key={panel}
       name="controlled"
       expanded={expanded === panel}
       onChange={(open) => setExpanded(open ? panel : false)}
     >
-      <AccordionSummary>{panel}</AccordionSummary>
+      <AccordionSummary>
+        <Typography variant="subtitle1" component="span">
+          {panel}
+        </Typography>
+        <Typography variant="body2" component="span" color="textSecondary">
+          {summary}
+        </Typography>
+      </AccordionSummary>
       <AccordionDetails>{TEXT}</AccordionDetails>
     </Accordion>
   ));
@@ -76,21 +105,28 @@ export const controlledGroups: ReactGroup[] = [
 export const CONTROLLED_FILES: GroupFiles = [["One open at a time", "group"]];
 
 /** Source shown in the Code panel (the example has state, so `jsxSource` can't expand it). */
-export const CONTROLLED_CODE = `import { Accordion, AccordionDetails, AccordionSummary } from "@owlky/react";
+export const CONTROLLED_CODE = `import { Accordion, AccordionDetails, AccordionSummary, Typography } from "@owlky/react";
 import { useState } from "react";
 
-const PANELS = ${JSON.stringify(PANELS)};
+const PANELS = ${JSON.stringify(PANELS)} as const;
 
 export function ControlledExample() {
   const [expanded, setExpanded] = useState<string | false>(false);
-  return PANELS.map((panel) => (
+  return PANELS.map(([panel, summary]) => (
     <Accordion
       key={panel}
       name="controlled"
       expanded={expanded === panel}
       onChange={(open) => setExpanded(open ? panel : false)}
     >
-      <AccordionSummary>{panel}</AccordionSummary>
+      <AccordionSummary>
+        <Typography variant="subtitle1" component="span">
+          {panel}
+        </Typography>
+        <Typography variant="body2" component="span" color="textSecondary">
+          {summary}
+        </Typography>
+      </AccordionSummary>
       <AccordionDetails>…</AccordionDetails>
     </Accordion>
   ));
@@ -102,7 +138,11 @@ export const variantGroups: ReactGroup[] = [
     title: "Outlined",
     content: ["Accordion 1", "Accordion 2", "Accordion 3"].map((title) => (
       <Accordion key={title} variant="outlined">
-        <AccordionSummary>{title}</AccordionSummary>
+        <AccordionSummary>
+          <Typography variant="subtitle1" component="span">
+            {title}
+          </Typography>
+        </AccordionSummary>
         <AccordionDetails>{TEXT}</AccordionDetails>
       </Accordion>
     )),
@@ -111,7 +151,11 @@ export const variantGroups: ReactGroup[] = [
     title: "Soft",
     content: ["Accordion 1", "Accordion 2", "Accordion 3"].map((title) => (
       <Accordion key={title} variant="soft">
-        <AccordionSummary expandIcon={<DemoIcon name="chevronDown" />}>{title}</AccordionSummary>
+        <AccordionSummary expandIcon={<DemoIcon name="chevronDown" />}>
+          <Typography variant="subtitle1" component="span">
+            {title}
+          </Typography>
+        </AccordionSummary>
         <AccordionDetails>{TEXT}</AccordionDetails>
       </Accordion>
     )),

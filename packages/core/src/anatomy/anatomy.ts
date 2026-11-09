@@ -3,6 +3,7 @@ import {
   componentColorNames,
   type PaletteColorName,
   paletteColorNames,
+  typographyVariants,
 } from "@owlky/tokens";
 import {
   type CarouselArrowsVariant,
@@ -68,6 +69,7 @@ import {
   native,
   number,
   optionAttributes,
+  pick,
   state,
   style,
 } from "../options/define.js";
@@ -4734,6 +4736,93 @@ export const illustrationAttributes = (
   "data-ok-illustration": name,
 });
 
+// --- Typography ---------------------------------------------------------------------------------
+
+/** Typography variants: the type scale of `@owlky/tokens`, plus `inherit` (the parent's font). */
+export const typographyVariantNames = [...typographyVariants, "inherit"] as const;
+export type TypographyVariantName = (typeof typographyVariantNames)[number];
+/** Text colors: the palette's `main` tones and the three text tones. */
+export const typographyColors = [
+  ...paletteColorNames,
+  "textPrimary",
+  "textSecondary",
+  "textDisabled",
+] as const;
+export type TypographyColor = (typeof typographyColors)[number];
+export const typographyAligns = ["inherit", "left", "center", "right", "justify"] as const;
+export type TypographyAlign = (typeof typographyAligns)[number];
+
+/**
+ * The element each variant renders by default (MUI's `variantMapping`): headings for `h1`–`h6`,
+ * `h6` for subtitles, `p` for body text and `inherit`, `span` for the rest.
+ */
+export const typographyVariantMapping: Readonly<Record<TypographyVariantName, string>> = {
+  h1: "h1",
+  h2: "h2",
+  h3: "h3",
+  h4: "h4",
+  h5: "h5",
+  h6: "h6",
+  subtitle1: "h6",
+  subtitle2: "h6",
+  body1: "p",
+  body2: "p",
+  caption: "span",
+  overline: "span",
+  button: "span",
+  inherit: "p",
+};
+
+export const typographyOptions = defineOptions("typography", "data-ok-typography", {
+  variant: style(
+    "data-ok-variant",
+    typographyVariantNames,
+    "body1",
+    "A step of the type scale (font, size, weight, line height, case); `inherit` keeps the parent's font.",
+  ),
+  color: style(
+    "data-ok-color",
+    typographyColors,
+    "textPrimary",
+    "Text color: a palette's `main` tone or a text tone. Without it, the text keeps the parent's color.",
+    { optional: true },
+  ),
+  align: style(
+    "data-ok-align",
+    typographyAligns,
+    "inherit",
+    "Text alignment. Without it, the text keeps the parent's alignment.",
+    { optional: true },
+  ),
+  gutterBottom: flag("data-ok-gutter-bottom", "A bottom margin of 0.35em."),
+  noWrap: flag(
+    "data-ok-no-wrap",
+    "One line: overflowing text ends with an ellipsis (needs a block or inline-block with a width).",
+  ),
+});
+
+export interface TypographyAnatomyOptions {
+  variant?: TypographyVariantName | undefined;
+  color?: TypographyColor | undefined;
+  align?: TypographyAlign | undefined;
+  gutterBottom?: boolean | undefined;
+  noWrap?: boolean | undefined;
+}
+
+/** `data-ok-*` attributes of a typography element (`color` and `align` only when given). */
+export const typographyAttributes = (options: TypographyAnatomyOptions = {}): DataAttributes =>
+  optionAttributes(typographyOptions, { ...options });
+
+/** The element a variant renders: `mapping` first, then the default mapping (unknown → `p`). */
+export const typographyElement = <E = string>(
+  variant: unknown,
+  mapping: Partial<Record<TypographyVariantName, E>> = {},
+): E | string => {
+  const name = pick(typographyVariantNames, variant, "body1");
+  const mapped = Object.hasOwn(mapping, name) ? mapping[name] : undefined;
+  return mapped ?? typographyVariantMapping[name];
+};
+
 export const optionSchemas = {
   accordion: accordionOptions,
   alert: alertOptions,
@@ -4827,6 +4916,7 @@ export const optionSchemas = {
   lightbox: lightboxOptions,
   upload: uploadOptions,
   illustration: illustrationOptions,
+  typography: typographyOptions,
   walktour: walktourOptions,
   "walktour-step": walktourStepOptions,
 } as const;

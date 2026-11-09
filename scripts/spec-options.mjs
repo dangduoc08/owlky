@@ -34,6 +34,7 @@ const SPECS = {
   label: "label.md",
   divider: "divider.md",
   paper: "paper.md",
+  typography: "typography.md",
   list: "list.md",
   "list-item": "list.md",
   "list-item-button": "list.md",

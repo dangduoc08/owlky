@@ -5,7 +5,8 @@ import { viewports } from "./viewports.js";
 
 const item = (page: Page, title: string) =>
   page.locator("details[data-ok-accordion]", {
-    has: page.locator(`summary:text-is("${title}")`),
+    // The summary's title is a Typography (the Controlled story adds a secondary line).
+    has: page.locator(`summary > [data-ok-typography]:text-is("${title}")`),
   });
 const summary = (page: Page, title: string) => item(page, title).locator("summary");
 const isOpen = (page: Page, title: string) =>

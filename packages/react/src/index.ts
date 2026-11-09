@@ -113,6 +113,9 @@ export type {
   TransferListVariant,
   TreeViewExpansionTrigger,
   TreeViewVariant,
+  TypographyAlign,
+  TypographyColor,
+  TypographyVariantName,
 } from "@owlky/core";
 export {
   applyThemeSettings,
@@ -590,6 +593,7 @@ export {
   type TreeItemProps,
   type TreeViewBaseItem,
 } from "./tree-view/tree-view.js";
+export { Typography, type TypographyProps } from "./typography/typography.js";
 export {
   Upload,
   type UploadApi,

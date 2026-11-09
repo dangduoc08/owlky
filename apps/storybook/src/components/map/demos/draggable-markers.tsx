@@ -7,6 +7,7 @@ import {
   type MarkerDragEvent,
   NavigationControl,
   ScaleControl,
+  Typography,
 } from "@owlky/react";
 import { useState } from "react";
 import { MAP_STYLES } from "../map-data.js";
@@ -60,8 +61,12 @@ export function DraggableMarkersDemo() {
         <dl className="sb-map-events">
           {PHASES.map(([phase, label]) => (
             <div key={phase}>
-              <dt>{label}</dt>
-              <dd>{events[phase] ?? "None"}</dd>
+              <Typography variant="subtitle2" component="dt">
+                {label}
+              </Typography>
+              <Typography variant="body2" component="dd">
+                {events[phase] ?? "None"}
+              </Typography>
             </div>
           ))}
         </dl>

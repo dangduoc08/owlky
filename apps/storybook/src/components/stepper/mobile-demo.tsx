@@ -1,4 +1,4 @@
-import { Button, MobileStepper, type MobileStepperVariant } from "@owlky/react";
+import { Button, MobileStepper, type MobileStepperVariant, Typography } from "@owlky/react";
 import { useState } from "react";
 import { DemoIcon } from "../shared/demo-icon.js";
 
@@ -14,8 +14,10 @@ export function MobileDemo({ variant }: { variant: MobileStepperVariant }) {
   return (
     <div className="sb-mobile-card">
       <div className="sb-mobile-card-body">
-        <h6>{STEPS[active]?.label}</h6>
-        <p>{STEPS[active]?.text}</p>
+        <Typography variant="subtitle1">{STEPS[active]?.label}</Typography>
+        <Typography variant="body2" color="textSecondary">
+          {STEPS[active]?.text}
+        </Typography>
       </div>
       <MobileStepper
         variant={variant}

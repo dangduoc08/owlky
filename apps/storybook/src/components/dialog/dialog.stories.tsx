@@ -28,6 +28,7 @@ const css = [
   "text-field.css",
   "dialog.css",
   "motion.css",
+  "typography.css",
 ];
 
 const meta = {
