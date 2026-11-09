@@ -67,6 +67,12 @@ const CASES: [
     ["error", "disabled", "noClick", "noDrag", "noKeyboard", "maxSize"],
   ],
   ["upload", "multiple", "upload", ["layout", "thumbnail", "maxFiles"]],
+  [
+    "walktour",
+    "basic",
+    "walktour",
+    ["hideBackButton", "hideCloseButton", "disableOverlay", "spotlightClicks", "spotlightPadding"],
+  ],
   ["slider", "temperature", "slider", ["size", "color", "disabled"]],
   ["transfer-list", "simple", "transfer-list", ["disabled"]],
   ["tree-view", "simple", "tree-view", ["variant", "expansionTrigger"]],

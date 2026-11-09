@@ -306,6 +306,8 @@ const pairs: [component: string, story: string][] = [
   ...["single", "multiple", "avatar", "box", "validation", "states", "open-dialog"].map(
     (story) => ["upload", story] as [string, string],
   ),
+  ["walktour", "basic"],
+  ["walktour", "beacons"],
   ["code-editor", "editor"],
   ["code-editor", "diff"],
   ["code-editor", "multi-model"],
@@ -348,6 +350,17 @@ async function imagesSettled(page: Page) {
 async function loaded(page: Page, key: string) {
   if (key.startsWith("image/")) {
     await imagesSettled(page);
+    return;
+  }
+  if (key.startsWith("walktour/")) {
+    // The tour opens its first step (or beacon) once mounted; pictures move the targets.
+    await page.waitForFunction(() =>
+      [...document.querySelectorAll("[data-ok-walktour]")].every((root) =>
+        root.hasAttribute("data-ok-status"),
+      ),
+    );
+    await page.waitForFunction(() => [...document.images].every((image) => image.complete));
+    await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => setTimeout(r, 50))));
     return;
   }
   if (key.startsWith("lightbox/")) {

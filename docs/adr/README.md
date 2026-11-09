@@ -43,5 +43,6 @@ ADR that supersedes the old one — don't rewrite history.
 | [0036](0036-organization-chart.md) | Organization chart: nested lists with CSS connectors, lengths through private properties | Accepted |
 | [0037](0037-upload.md) | Upload: a native file input under the drop zone, one controller in core | Accepted |
 | [0038](0038-image.md) | Image: native lazy loading, the load state as a data attribute | Accepted |
+| [0039](0039-walktour.md) | Walktour: a state machine in core, steps as Popovers over a Backdrop with an SVG spotlight | Accepted |
 
 Template: **Context** (why decide) · **Decision** (what) · **Consequences** (trade-offs, follow-ups).

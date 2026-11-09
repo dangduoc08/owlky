@@ -62,6 +62,8 @@ const SPECS = {
   carousel: "carousel.md",
   lightbox: "lightbox.md",
   upload: "upload.md",
+  walktour: "walktour.md",
+  "walktour-step": "walktour.md",
   "carousel-arrows": "carousel.md",
   "carousel-dots": "carousel.md",
   "carousel-progress": "carousel.md",

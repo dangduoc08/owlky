@@ -605,3 +605,10 @@ export {
   type AdaptedProps,
   usePickerDateConverter,
 } from "./utils/picker-adapter.js";
+export {
+  Walktour,
+  type WalktourChangeDetails,
+  type WalktourProps,
+  type WalktourStep,
+  type WalktourTarget,
+} from "./walktour/walktour.js";

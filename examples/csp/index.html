@@ -305,6 +305,21 @@
         <span data-ok-image-placeholder aria-hidden="true"></span>
         <img src="missing.svg" alt="Harbor at dawn, unavailable" loading="lazy" decoding="async">
       </span>
+      <button type="button" data-ok-button data-ok-variant="outlined" data-ok-walktour-start="csp-tour">Start the tour</button>
+      <div id="csp-tour" data-ok-walktour data-ok-continuous data-ok-disable-beacon>
+        <div data-ok-backdrop data-ok-invisible data-ok-walktour-overlay popover="manual" aria-hidden="true">
+          <svg data-ok-walktour-spotlight aria-hidden="true" focusable="false"><path data-ok-walktour-mask fill-rule="evenodd"></path><path data-ok-walktour-hole></path></svg>
+        </div>
+        <button type="button" data-ok-walktour-beacon aria-label="Open the dialog" aria-haspopup="dialog" hidden><span data-ok-walktour-beacon-inner></span></button>
+        <div popover="manual" data-ok-popover data-ok-arrow data-ok-walktour-step data-ok-target="#csp-markdown" data-ok-placement="top" data-ok-width="320" role="dialog" aria-label="Notes">
+          <span data-ok-popover-arrow aria-hidden="true"></span>
+          <div data-ok-walktour-content>Your notes, rendered from Markdown.</div>
+          <div data-ok-walktour-footer>
+            <button type="button" data-ok-button data-ok-variant="contained" data-ok-color="primary" data-ok-walktour-action="primary">Done</button>
+          </div>
+        </div>
+        <span data-ok-walktour-live aria-live="polite" aria-atomic="true"></span>
+      </div>
     </main>
   </body>
 </html>

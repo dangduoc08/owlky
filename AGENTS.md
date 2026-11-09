@@ -626,3 +626,17 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
   from the React stories: `pnpm build && node apps/storybook/scripts/organization-chart-snippets.mjs`
   (it adds `data-ok-popover-open` to the card menu buttons; esbuild must keep `monaco-editor`,
   `maplibre-gl` and `@tiptap/*` external because the React dist reaches them).
+- Walktour (ADR-0039): owners keep the state and run core `walktourTransition` / `walktourEvents`;
+  `createWalktourController(root).render(state)` draws it in both implementations (step Popovers,
+  the Backdrop overlay, the SVG cut-out through `setAttribute("d")`, `hidden` on buttons the
+  options turn off, `aria-modal` + `inert` on the page outside the tour, the live text), so React
+  renders every step and none of these
+  states. Options are root attributes overridable per step (`"false"` = off); the HTML runtime
+  re-renders when they change. The overlay blocks pointer clicks on the page and the beacon
+  pulses forever (never "stable" for Playwright): unit tests click through the DOM
+  (`element.click()` in `act()`). Hidden progress text stays in `textContent` ("Close (1/3)"):
+  assert accessible names. A step's arrow sticks out of the step (`scrollWidth`): measure the
+  content box. Story demo CSS on `[data-ok-popover] > div` excludes steps through
+  `:where(:not([data-ok-walktour-step]))` (same specificity). Snippets: `pnpm build && node
+  apps/storybook/scripts/walktour-snippets.mjs` (adds `data-ok-walktour-start` to the restart
+  buttons, found by `aria-controls="tour-…"`).

@@ -57,6 +57,7 @@ import { tooltip } from "./tooltip/tooltip.js";
 import { transferList } from "./transfer-list/transfer-list.js";
 import { treeView } from "./tree-view/tree-view.js";
 import { upload } from "./upload/upload.js";
+import { walktour } from "./walktour/walktour.js";
 import { yearCalendar } from "./year-calendar/year-calendar.js";
 
 export const components: readonly ComponentDefinition[] = [
@@ -114,4 +115,5 @@ export const components: readonly ComponentDefinition[] = [
   image as ComponentDefinition,
   lightbox as ComponentDefinition,
   upload as ComponentDefinition,
+  walktour as ComponentDefinition,
 ];
