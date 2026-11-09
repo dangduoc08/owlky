@@ -1,5 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
-import { normalizeStory, openStory, storyId } from "./helpers.js";
+import { normalizeStory, openStory, repaintFromScratch, storyId } from "./helpers.js";
 
 /**
  * React ↔ HTML parity: the same story in both implementations must produce the same DOM
@@ -525,11 +525,13 @@ for (const [component, story] of pairs) {
       for (const theme of ["light", "dark"] as const) {
         await openStory(page, storyId("react", component, story), theme);
         await loaded(page, `${component}/${story}`);
+        await repaintFromScratch(page);
         const css = SCREENSHOT_CSS[component];
         const options = { animations: "disabled" as const, ...(css ? { style: css } : {}) };
         const react = await page.locator("#storybook-root").screenshot(options);
         await openStory(page, storyId("html", component, story), theme);
         await loaded(page, `${component}/${story}`);
+        await repaintFromScratch(page);
         const html = await page.locator("#storybook-root").screenshot(options);
         expect(html.equals(react), `${theme} theme screenshots differ`).toBe(true);
       }
