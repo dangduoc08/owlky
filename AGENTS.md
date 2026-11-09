@@ -512,6 +512,24 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
   attributes in snippets (use a class, such as `.sb-day-dot`). The adapter tests load Day.js,
   Luxon and Moment through Vite: list them in the package's `optimizeDeps.include` (with the
   `.js` plugin paths) or the first run reloads mid-test.
+- Map (ADR-0025): MapLibre is reached only through `@owlky/core/map` and the opt-in HTML entries
+  (`map` is in `OPT_IN` of `components.test.ts`). MapLibre draws in a module Worker that it finds
+  from `import.meta.url`, which bundlers break: tests, Storybook and apps call
+  `setMapWorkerUrl(url)` with `@owlky/core/map-worker.js?url` (core's build copies the worker without
+  its source map comment); the IIFE sets it from `document.currentScript`. Tests never touch the
+  network: unit tests use inline styles (`mapFixtureStyle()` in core, `fixtures/*.json?url` in html),
+  e2e `openStory` routes `tiles.openfreemap.org` to an offline style (Natural Earth land, no tiles,
+  no glyphs: symbol labels don't draw). Wait for `data-ok-loaded` (MapLibre `load`); `data-ok-ready`
+  only means the first style is in. A source updated every frame can hold `load` back. The headless
+  browsers here have WebGL (Chromium: SwiftShader); the fallback is tested by stubbing
+  `HTMLCanvasElement.prototype.getContext`. Pixel parity hides the canvas (`style` screenshot option).
+  Coverage of browser tests only works from the repository root (`vitest run --coverage <path>`),
+  not with `--project`. A GeoJSON source without data and paint strings MapLibre can't parse are
+  refused with an `error` event, not an exception. `map.fire("click", { point })` drives the
+  controller's map events in unit tests. React `Source` / `Layer` render nothing; HTML declarations
+  are `hidden` elements read through an allowlist. Controls are portals into the corners (absent from
+  server markup); the snippet generator renders them in place through the internal `InlineCorners`
+  context.
 - Parallel work: never run two `/component` / `/integrate` sessions (or two `pnpm build` /
   `pnpm test:e2e`) in the same working tree — builds wipe each other's `dist/` and
   `storybook-static/`, e2e servers share port 4321, and staging part of a shared file while

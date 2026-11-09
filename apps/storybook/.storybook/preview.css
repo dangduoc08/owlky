@@ -1121,3 +1121,120 @@
   flex-wrap: wrap;
   gap: calc(var(--ok-spacing) * 2);
 }
+
+/* Map stories: the map fills the row; panels and popups use demo text styles (no Typography yet). */
+.sb-row:has(> [data-ok-map], > .sb-map-compare) > :is([data-ok-map], .sb-map-compare) {
+  width: 100%;
+}
+
+.sb-map-popup {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--ok-spacing) * 0.5);
+  font-size: var(--ok-typography-caption-font-size);
+  line-height: var(--ok-typography-caption-line-height);
+}
+
+.sb-map-popup > p {
+  margin: 0;
+  color: var(--ok-text-secondary);
+}
+
+.sb-map-popup > .sb-map-popup-title {
+  color: var(--ok-text-primary);
+  font-size: var(--ok-typography-subtitle2-font-size);
+  font-weight: var(--ok-typography-subtitle2-font-weight);
+  line-height: var(--ok-typography-subtitle2-line-height);
+}
+
+/* The hover popup must not catch the pointer, or the map would see it leave. */
+#map-highlight-popup [data-ok-map-popup-content] {
+  pointer-events: none;
+}
+
+.sb-map-events {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ok-spacing);
+  margin: 0;
+}
+
+.sb-map-events dt {
+  font-size: var(--ok-typography-subtitle2-font-size);
+  font-weight: var(--ok-typography-subtitle2-font-weight);
+}
+
+.sb-map-events dd {
+  margin: 0;
+  color: var(--ok-palette-primary-light);
+  font-size: var(--ok-typography-body2-font-size);
+}
+
+.sb-map-settings {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--ok-spacing) calc(var(--ok-spacing) * 2);
+  width: calc(var(--ok-spacing) * 60);
+}
+
+.sb-map-settings > [data-ok-text-field] {
+  min-width: 0;
+  margin-block-end: var(--ok-spacing);
+}
+
+.sb-map-settings > [data-ok-form-control-label] {
+  grid-column: 1 / -1;
+}
+
+.sb-map-settings [data-ok-form-control-label],
+.sb-map-heatmap [data-ok-form-control-label] {
+  justify-content: space-between;
+  margin: 0;
+}
+
+.sb-map-heatmap {
+  width: calc(var(--ok-spacing) * 56);
+}
+
+.sb-map-heatmap > p {
+  margin: 0;
+  color: var(--ok-text-secondary);
+  font-size: var(--ok-typography-body2-font-size);
+}
+
+/* Side by side: two maps, or one split down the middle. */
+.sb-map-compare {
+  position: relative;
+  display: flex;
+  height: calc(var(--ok-spacing) * 120);
+  overflow: hidden;
+  border-radius: var(--ok-radius-md);
+}
+
+.sb-map-compare > [data-ok-map] {
+  flex: 1 1 0;
+  height: 100%;
+  border-radius: 0;
+}
+
+.sb-map-compare--split-screen > [data-ok-map] {
+  position: absolute;
+  inset: 0;
+}
+
+.sb-map-compare--split-screen > [data-ok-map]:first-of-type {
+  clip-path: inset(0 50% 0 0);
+}
+
+.sb-map-compare--split-screen > [data-ok-map]:nth-of-type(2) {
+  clip-path: inset(0 0 0 50%);
+}
+
+.sb-map-compare-mode {
+  position: absolute;
+  top: calc(var(--ok-spacing) * 2);
+  right: calc(var(--ok-spacing) * 2);
+  z-index: 6;
+  border-radius: var(--ok-radius-md);
+  background-color: var(--ok-bg-paper);
+}

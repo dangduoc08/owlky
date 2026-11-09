@@ -105,6 +105,15 @@ Load it after `owlky.js` on pages that have an editor:
 <script src="https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky-editor.js" defer></script>
 ```
 
+The **Map** is a separate script too, because its map engine (MapLibre GL JS) adds about 300 kB
+gzip. Load it after `owlky.js` on pages that have a map. It loads its worker,
+`owlky-map-worker.js`, from the same folder. Owlky includes no map tiles: pass the URL of a MapLibre
+style, such as one of OpenFreeMap's free styles.
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky-map.js" defer></script>
+```
+
 ## npm
 
 ```ts
@@ -119,6 +128,12 @@ getRuntime().register(...components).start();
 import { createEditor } from "@owlky/html";
 import { common, createLowlight } from "lowlight";
 getRuntime().register(createEditor({ highlighter: createLowlight(common) })).start();
+
+// The Map is opt-in too: point MapLibre at its worker, then import "@owlky/html/map".
+import { setMapWorkerUrl } from "@owlky/core/map";
+import workerUrl from "@owlky/core/map-worker.js?url"; // Vite; other bundlers: copy the file
+setMapWorkerUrl(workerUrl);
+await import("@owlky/html/map");
 ```
 
 ## Runtime API

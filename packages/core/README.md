@@ -6,6 +6,9 @@ feature detection and `data-ok-*` attribute maps. You normally don't install thi
 
 Entry points: `@owlky/core` (everything above, side-effect free) and `@owlky/core/editor`
 (`createEditorController`, the only path to Tiptap; not re-exported from `@owlky/core`, ADR-0023).
+`@owlky/core/map` (`createMapController`, `setMapWorkerUrl`, the only path to MapLibre GL JS,
+ADR-0025) and `@owlky/core/map-worker.js` (MapLibre's worker, for `setMapWorkerUrl`) are opt-in the
+same way.
 
 Date library adapters for the pickers (ADR-0030) are opt-in entry points that take your own copy
 of the library, so Owlky adds no dependency (the libraries are optional peer dependencies):

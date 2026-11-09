@@ -270,11 +270,30 @@ const pairs: [component: string, story: string][] = [
   ["snackbar", "anchor-origin"],
   ["backdrop", "example"],
   ["editor", "basic"],
+  ["map", "change-theme"],
+  ["map", "markers-popups"],
+  ["map", "draggable-markers"],
+  ["map", "geojson-animation"],
+  ["map", "clusters"],
+  ["map", "interaction"],
+  ["map", "viewport-animation"],
+  ["map", "highlight-by-filter"],
+  ["map", "heatmap"],
+  ["map", "side-by-side"],
 ];
 
 /** Stories whose rows load after the first render (scripts, data sources): wait for them. */
 const LOADS = new Set(["datagrid/large", "datagrid/server", "datagrid/lazy-loading"]);
 async function loaded(page: Page, key: string) {
+  if (key.startsWith("map/")) {
+    // Every map drew its first frame (offline style, e2e helpers) and placed its overlays.
+    await expect(page.locator("[data-ok-map]").first()).toBeVisible();
+    await expect(page.locator("[data-ok-map]:not([data-ok-loaded])")).toHaveCount(0);
+    await page.evaluate(
+      () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))),
+    );
+    return;
+  }
   if (key === "editor/basic") {
     // The HTML story registers the editor in its page script: wait for both editors to mount.
     await expect(page.locator('[data-ok-editor-content][contenteditable="true"]')).toHaveCount(1);
@@ -293,6 +312,15 @@ async function loaded(page: Page, key: string) {
   await expect(grid).not.toHaveAttribute("aria-busy", "true");
 }
 
+/**
+ * Map stories: the WebGL canvas can render tiles at different moments in two page loads, so it is
+ * hidden for the pixel comparison; markers, popups, panels and controls are compared (spec: parity
+ * notes). The anatomy test compares the DOM, MapLibre's canvas container included.
+ */
+const SCREENSHOT_CSS: Record<string, string> = {
+  map: "[data-ok-map-view] canvas { visibility: hidden !important; }",
+};
+
 for (const [component, story] of pairs) {
   test.describe(`${component} / ${story}`, () => {
     test("has identical anatomy in React and HTML", async ({ page, browserName }) => {
@@ -310,10 +338,12 @@ for (const [component, story] of pairs) {
       for (const theme of ["light", "dark"] as const) {
         await openStory(page, storyId("react", component, story), theme);
         await loaded(page, `${component}/${story}`);
-        const react = await page.locator("#storybook-root").screenshot({ animations: "disabled" });
+        const css = SCREENSHOT_CSS[component];
+        const options = { animations: "disabled" as const, ...(css ? { style: css } : {}) };
+        const react = await page.locator("#storybook-root").screenshot(options);
         await openStory(page, storyId("html", component, story), theme);
         await loaded(page, `${component}/${story}`);
-        const html = await page.locator("#storybook-root").screenshot({ animations: "disabled" });
+        const html = await page.locator("#storybook-root").screenshot(options);
         expect(html.equals(react), `${theme} theme screenshots differ`).toBe(true);
       }
     });

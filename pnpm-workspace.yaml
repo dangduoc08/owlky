@@ -21,3 +21,6 @@ overrides:
   "prosemirror-transform": "1.12.4"
   "@tiptap/pm>prosemirror-changeset": "2.4.4"
   "@tiptap/pm>prosemirror-schema-list": "1.5.1"
+  # Release age (deps ≥ 14 days): maplibre-gl 6.16.0 (Map, ADR-0025) resolves its style spec
+  # 26.5.1 (2026-11-01). Remove after 2026-11-15.
+  "maplibre-gl>@maplibre/maplibre-gl-style-spec": "26.4.4"

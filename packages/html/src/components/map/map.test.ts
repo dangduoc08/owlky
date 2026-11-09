@@ -1,0 +1,371 @@
+import { setMapWorkerUrl } from "@owlky/core/map";
+import workerUrl from "@owlky/core/map-worker.js?url";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { createRuntime } from "../../runtime/runtime.js";
+import type { Runtime } from "../../runtime/types.js";
+import {
+  expectCspSafe,
+  expectNamedButtons,
+  expectNoAxeViolations,
+  mount,
+  resetPage,
+  settle,
+} from "../../test-utils.js";
+import { components } from "../index.js";
+import pointsUrl from "./fixtures/points.json?url";
+import styleUrl from "./fixtures/style.json?url";
+import { type MapInstance, map } from "./map.js";
+
+beforeAll(() => setMapWorkerUrl(workerUrl));
+
+const snippets = Object.entries(
+  import.meta.glob("./examples/*.html", { query: "?raw", import: "default", eager: true }),
+) as [string, string][];
+const snippet = (name: string) =>
+  String(snippets.find(([path]) => path.endsWith(`/${name}-group.html`))?.[1])
+    // Offline: the test style and data instead of OpenFreeMap and the story data.
+    .replace(/https:\/\/tiles\.openfreemap\.org\/styles\/[a-z]+/g, styleUrl)
+    .replace(/maps\/[a-z-]+\.geojson/g, pointsUrl);
+
+let runtime: Runtime | undefined;
+afterEach(() => {
+  runtime?.stop();
+  runtime = undefined;
+  vi.restoreAllMocks();
+  resetPage();
+});
+const start = () => {
+  runtime = createRuntime()
+    .register(...components, map)
+    .start();
+  return runtime;
+};
+const instanceOf = (root: Element) => runtime?.get<MapInstance>(root, "map") as MapInstance;
+/** Resolves on the next `ok:map:<type>` event of `target`. */
+const next = (target: EventTarget, type: string) =>
+  new Promise<CustomEvent>((resolve) =>
+    target.addEventListener(`ok:map:${type}`, (event) => resolve(event as CustomEvent), {
+      once: true,
+    }),
+  );
+/** Mounts markup and waits for its first map to load. */
+const setup = async (html: string) => {
+  const host = mount(html);
+  const root = host.querySelector<HTMLElement>("[data-ok-map]") as HTMLElement;
+  const load = next(root, "load");
+  start();
+  await load;
+  return { host, root, instance: instanceOf(root) };
+};
+const BASIC = (
+  inner = "",
+  attributes = "",
+) => `<div data-ok-map id="m" data-ok-map-style="${styleUrl}" data-ok-longitude="-95" data-ok-latitude="38" data-ok-zoom="2" ${attributes} style="width: 600px; height: 400px">
+  <div data-ok-map-view></div>
+  <div data-ok-map-fallback></div>
+  <div data-ok-map-status role="status"></div>
+  ${inner}
+</div>`;
+
+describe("map snippets", () => {
+  it.each(snippets.map(([path]) => path.replace(/^.*\/(.+)-group\.html$/, "$1")))(
+    "%s: mounts, is CSP-safe and labels its controls",
+    async (name) => {
+      const html = snippet(name);
+      const host = mount(html);
+      // The markup as written (MapLibre adds inline styles through CSSOM once it runs).
+      expectCspSafe(host, html);
+      expectNamedButtons(host);
+      start();
+      await settle();
+      const roots = host.querySelectorAll<HTMLElement>("[data-ok-map]");
+      expect(roots.length).toBeGreaterThan(0);
+      for (const root of roots) expect(instanceOf(root)?.controller).toBeDefined();
+    },
+  );
+
+  it("passes axe with the map loaded", async () => {
+    const { host } = await setup(snippet("markers-popups"));
+    await expectNoAxeViolations(host);
+  });
+
+  it("adds the declared sources and layers", async () => {
+    const { instance } = await setup(snippet("clusters"));
+    const style = instance.map?.getStyle();
+    expect(Object.keys(style?.sources ?? {})).toContain("earthquakes");
+    expect(style?.layers.map((layer) => layer.id)).toEqual(
+      expect.arrayContaining(["clusters", "cluster-count", "unclustered-point"]),
+    );
+  });
+});
+
+describe("map runtime", () => {
+  it("reports map events with the view state", async () => {
+    const host = mount(BASIC());
+    const root = host.querySelector("[data-ok-map]") as HTMLElement;
+    const load = next(root, "load");
+    start();
+    expect((await load).detail.viewState.zoom).toBe(2);
+    const moved = next(root, "moveend");
+    instanceOf(root).jumpTo({ zoom: 3 });
+    expect((await moved).detail.viewState.zoom).toBe(3);
+    expect(instanceOf(root).viewState.zoom).toBe(3);
+  });
+
+  it("follows root attributes: view, settings, style and label", async () => {
+    const { root, instance } = await setup(BASIC());
+    const m = instance.map as NonNullable<MapInstance["map"]>;
+    root.setAttribute("data-ok-zoom", "4");
+    root.setAttribute("data-ok-scroll-zoom", "false");
+    root.setAttribute("data-ok-cooperative-gestures", "");
+    root.setAttribute("data-ok-max-bounds", "-120,20,-60,50");
+    root.setAttribute("data-ok-label", "Renamed map");
+    await settle();
+    expect(m.getZoom()).toBe(4);
+    expect(m.scrollZoom.isEnabled()).toBe(false);
+    expect(m.cooperativeGestures.isEnabled()).toBe(true);
+    expect(m.getMaxBounds()).not.toBeNull();
+    expect(root.querySelector("canvas")?.getAttribute("aria-label")).toBe("Renamed map");
+    root.removeAttribute("data-ok-label");
+    root.setAttribute("data-ok-max-bounds", "bad");
+    await settle();
+    expect(root.querySelector("canvas")?.getAttribute("aria-label")).toBe("Map");
+    expect(m.getMaxBounds()).toBeNull();
+    const styled = new Promise<void>((resolve) => m.once("style.load", () => resolve()));
+    root.setAttribute("data-ok-map-style-dark", styleUrl);
+    root.setAttribute("data-ok-map-style", `${styleUrl}?v=2`);
+    await styled;
+    root.removeAttribute("data-ok-map-style-dark");
+    root.removeAttribute("data-ok-map-style");
+    await settle();
+  });
+
+  it("reads bounds, interactive layers and reports features under the pointer", async () => {
+    const { root, instance } = await setup(
+      BASIC(
+        `<div data-ok-map-source data-ok-id="points" data-ok-type="geojson" data-ok-data="${pointsUrl}" hidden>
+           <div data-ok-map-layer data-ok-id="dots" data-ok-type="circle" data-ok-paint='{"circle-radius":12}' hidden></div>
+         </div>`,
+        'data-ok-bounds="-120,25,-75,45" data-ok-interactive-layer-ids="dots"',
+      ),
+    );
+    const m = instance.map as NonNullable<MapInstance["map"]>;
+    if (!m.isSourceLoaded("points"))
+      await new Promise<void>((resolve) => m.once("idle", () => resolve()));
+    expect(m.getCenter().lng).toBeCloseTo(-97.5, 0);
+    const point = m.project([-99.1, 31.1]);
+    const enter = next(root, "mouseenter");
+    m.fire("mousemove", { point, lngLat: m.unproject(point) });
+    expect((await enter).detail.features[0].properties.name).toBe("Texas");
+  });
+
+  it("follows declarations as they change, appear and go", async () => {
+    const { host, instance } = await setup(
+      BASIC(
+        `<div data-ok-map-source data-ok-id="points" data-ok-type="geojson" data-ok-data="${pointsUrl}" hidden>
+           <div data-ok-map-layer data-ok-id="dots" data-ok-type="circle" hidden></div>
+         </div>
+         <div data-ok-map-source data-ok-id="bad" data-ok-type="sparkles" hidden></div>
+         <div data-ok-map-layer data-ok-id="loose" data-ok-type="circle" hidden></div>
+         <p id="note">Not a declaration</p>`,
+      ),
+    );
+    const m = instance.map as NonNullable<MapInstance["map"]>;
+    const layer = host.querySelector('[data-ok-id="dots"]') as HTMLElement;
+    layer.setAttribute("data-ok-filter", '["==",["get","region"],"West"]');
+    await settle();
+    expect(m.getFilter("dots")).toEqual(["==", ["get", "region"], "West"]);
+    // A new layer element is picked up; others (a paragraph) are ignored.
+    const extra = document.createElement("div");
+    extra.setAttribute("data-ok-map-layer", "");
+    extra.setAttribute("data-ok-id", "rings");
+    extra.setAttribute("data-ok-type", "circle");
+    extra.setAttribute("data-ok-source", "points");
+    extra.hidden = true;
+    host.querySelector("[data-ok-map]")?.append(extra);
+    (host.querySelector("#note") as HTMLElement).textContent = "Changed";
+    await settle();
+    expect(m.getLayer("rings")).toBeDefined();
+    const wrapper = document.createElement("div");
+    wrapper.append(extra.cloneNode());
+    (wrapper.firstElementChild as HTMLElement).setAttribute("data-ok-id", "rings-2");
+    host.querySelector("[data-ok-map]")?.append(wrapper);
+    await settle();
+    expect(m.getLayer("rings-2")).toBeDefined();
+    // Removing the source removes it and its layers.
+    host.querySelector('[data-ok-map-source][data-ok-id="points"]')?.remove();
+    extra.remove();
+    wrapper.remove();
+    await settle();
+    expect(m.getSource("points")).toBeUndefined();
+    expect(m.getLayer("dots")).toBeUndefined();
+    instance.setSourceData("missing", {});
+  });
+
+  it("opens popups from markers, closes them and gives focus back", async () => {
+    const { host, root, instance } = await setup(snippet("markers-popups"));
+    const marker = host.querySelector('[aria-label="Kenya"]') as HTMLElement;
+    const popup = host.querySelector("#map-popup-ke") as HTMLElement;
+    const opened = next(popup, "popupopen");
+    marker.focus();
+    marker.click();
+    await opened;
+    await settle();
+    expect(popup.hidden).toBe(false);
+    expect(document.activeElement).toBe(popup.querySelector("[data-ok-map-popup-close]"));
+    // Another marker closes it and opens its own.
+    (host.querySelector('[aria-label="Peru"]') as HTMLElement).click();
+    expect(popup.hidden).toBe(true);
+    const peru = host.querySelector("#map-popup-pe") as HTMLElement;
+    expect(peru.hidden).toBe(false);
+    // The same marker again closes its popup.
+    (host.querySelector('[aria-label="Peru"]') as HTMLElement).click();
+    expect(peru.hidden).toBe(true);
+    // Close requests can be canceled.
+    instance.openPopup("map-popup-ke");
+    instance.openPopup(popup);
+    const cancel = (event: Event) => event.preventDefault();
+    root.addEventListener("ok:map:popupclose", cancel);
+    (popup.querySelector("[data-ok-map-popup-close]") as HTMLButtonElement).click();
+    expect(popup.hidden).toBe(false);
+    root.removeEventListener("ok:map:popupclose", cancel);
+    const closed = next(popup, "popupclose");
+    (popup.querySelector("[data-ok-map-popup-close]") as HTMLButtonElement).click();
+    expect((await closed).detail.reason).toBe("close-button");
+    expect(popup.hidden).toBe(true);
+    instance.openPopup("map-popup-ke");
+    instance.closePopup("map-popup-ke");
+    expect(popup.hidden).toBe(true);
+    instance.closePopup("nothing");
+    instance.openPopup(marker);
+    // A trigger whose popup doesn't exist does nothing.
+    marker.setAttribute("data-ok-map-popup-open", "nothing");
+    marker.click();
+  });
+
+  it("stores dragged markers' positions and reports the drag on the marker", async () => {
+    const { host } = await setup(snippet("draggable-markers"));
+    const marker = host.querySelector("[data-ok-map-marker]") as HTMLElement;
+    const ended = next(marker, "markerdragend");
+    const started = next(marker, "markerdragstart");
+    const moved = next(marker, "markerdrag");
+    marker.focus();
+    marker.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
+    await Promise.all([started, moved]);
+    const { lngLat } = (await ended).detail;
+    expect(marker.getAttribute("data-ok-longitude")).toBe(
+      String(Math.round(lngLat.lng * 1e6) / 1e6),
+    );
+    expect(Number(marker.getAttribute("data-ok-longitude"))).toBeGreaterThan(-100);
+  });
+
+  it("flies the map from data-ok-map-fly-to triggers", async () => {
+    const { host, instance } = await setup(
+      `${snippet("viewport-animation")}
+       <button type="button" data-ok-map-fly-to="map-viewport" data-ok-view="2.35,48.86,9">Paris</button>
+       <button type="button" data-ok-map-fly-to="map-viewport" data-ok-view="2.35,48.86,9,30,15" data-ok-duration="0">Tilted</button>
+       <button type="button" data-ok-map-fly-to="map-viewport" data-ok-view="nowhere">Bad</button>
+       <button type="button" data-ok-map-fly-to="missing" data-ok-view="1,2">Missing</button>
+       <button type="button" data-ok-map-fly-to="map-viewport">No view</button>`,
+    );
+    const fly = vi.spyOn(instance.map as NonNullable<MapInstance["map"]>, "flyTo");
+    const button = (name: string) =>
+      [...host.querySelectorAll("button")].find((each) => each.textContent === name) as HTMLElement;
+    button("Paris").click();
+    expect(fly).toHaveBeenLastCalledWith({ center: [2.35, 48.86], zoom: 9 });
+    button("Tilted").click();
+    expect(fly).toHaveBeenLastCalledWith({
+      center: [2.35, 48.86],
+      zoom: 9,
+      pitch: 30,
+      bearing: 15,
+      duration: 0,
+    });
+    button("Bad").click();
+    button("Missing").click();
+    button("No view").click();
+    expect(fly).toHaveBeenCalledTimes(2);
+    const radio = host.querySelector('input[value="Tokyo"]') as HTMLInputElement;
+    radio.click();
+    expect(fly).toHaveBeenLastCalledWith({ center: [139.692, 35.69], zoom: 11, duration: 4000 });
+    expect(fly).toHaveBeenCalledTimes(3);
+    // An unchecked radio's change does nothing.
+    const other = host.querySelector('input[value="Paris"]') as HTMLInputElement;
+    other.dispatchEvent(new Event("change", { bubbles: true }));
+    expect(fly).toHaveBeenCalledTimes(3);
+  });
+
+  it("reports fullscreen, location and the fallback", async () => {
+    vi.spyOn(navigator, "geolocation", "get").mockReturnValue({
+      getCurrentPosition: (success: PositionCallback) =>
+        success({ coords: { longitude: 1, latitude: 2, accuracy: 3 } } as GeolocationPosition),
+      watchPosition: (_s: PositionCallback, error: PositionErrorCallback) => {
+        error({ code: 1, message: "denied" } as GeolocationPositionError);
+        return 1;
+      },
+      clearWatch: () => {},
+    } as unknown as Geolocation);
+    const { host, root, instance } = await setup(snippet("change-theme"));
+    const full = next(root, "fullscreen");
+    vi.spyOn(document, "fullscreenEnabled", "get").mockReturnValue(false);
+    instance.setFullscreen(true);
+    expect((await full).detail.fullscreen).toBe(true);
+    expect(instance.fullscreen).toBe(true);
+    instance.setFullscreen(false);
+    const located = next(root, "geolocate");
+    (host.querySelector('[data-ok-map-action="geolocate"]') as HTMLButtonElement).click();
+    expect((await located).detail.coords).toEqual({ longitude: 1, latitude: 2, accuracy: 3 });
+    host.querySelector("[data-ok-map-geolocate]")?.setAttribute("data-ok-track-user-location", "");
+    const tracking = next(root, "trackuserlocation");
+    const failed = next(root, "geolocateerror");
+    (host.querySelector('[data-ok-map-action="geolocate"]') as HTMLButtonElement).click();
+    expect((await failed).detail).toEqual({ code: 1, message: "denied" });
+    expect((await tracking).detail.tracking).toBe(true);
+    instance.controller.geolocate();
+    vi.spyOn(navigator, "geolocation", "get").mockReturnValue(undefined as unknown as Geolocation);
+    const unsupported = next(root, "geolocateerror");
+    instance.controller.geolocate();
+    expect((await unsupported).detail.code).toBe(0);
+  });
+
+  it("emits the fallback without WebGL", async () => {
+    vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(null);
+    const host = mount(BASIC());
+    const root = host.querySelector("[data-ok-map]") as HTMLElement;
+    const fallback = next(root, "fallback");
+    start();
+    expect((await fallback).detail.reason).toBe("webgl");
+    expect(root.hasAttribute("data-ok-fallback")).toBe(true);
+    await expect(instanceOf(root).getClusterExpansionZoom("none", 1)).rejects.toThrow();
+  });
+
+  it("starts without a style, and ignores the click that ends a marker drag", async () => {
+    const host = mount(
+      BASIC(
+        `<div data-ok-map-marker role="button" tabindex="0" aria-label="Pin" data-ok-draggable data-ok-longitude="-95" data-ok-latitude="38" data-ok-map-popup-open="p"><svg aria-hidden="true"></svg></div>
+         <div data-ok-map-popup id="p" data-ok-longitude="-95" data-ok-latitude="38" role="dialog" aria-label="Pin" hidden><div>Pin</div></div>`,
+      ).replace(/data-ok-map-style="[^"]*"/, ""),
+    );
+    const root = host.querySelector("[data-ok-map]") as HTMLElement;
+    const load = next(root, "load");
+    start();
+    await load;
+    expect(instanceOf(root).map?.getStyle().layers).toEqual([]);
+    const marker = host.querySelector("[data-ok-map-marker]") as HTMLElement;
+    const pointer = (type: string, x: number) =>
+      marker.dispatchEvent(
+        new PointerEvent(type, { bubbles: true, clientX: x, clientY: 0, button: 0, pointerId: 1 }),
+      );
+    pointer("pointerdown", 0);
+    pointer("pointermove", 40);
+    pointer("pointerup", 40);
+    marker.click();
+    expect((host.querySelector("#p") as HTMLElement).hidden).toBe(true);
+  });
+
+  it("cleans up on stop", async () => {
+    const { root } = await setup(BASIC());
+    runtime?.stop();
+    expect(root.querySelector("canvas")).toBeNull();
+  });
+});

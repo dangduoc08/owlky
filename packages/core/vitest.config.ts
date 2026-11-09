@@ -13,6 +13,8 @@ export default defineProject({
       "luxon",
       "moment",
       "moment-timezone",
+      // The Map (ADR-0025).
+      "maplibre-gl",
     ],
   },
 });

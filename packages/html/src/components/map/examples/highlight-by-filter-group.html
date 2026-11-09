@@ -1,0 +1,43 @@
+<div id="map-highlight" data-ok-map data-ok-longitude="-98" data-ok-latitude="38.5" data-ok-zoom="3" data-ok-projection="mercator" data-ok-map-style="https://tiles.openfreemap.org/styles/positron" data-ok-map-style-dark="https://tiles.openfreemap.org/styles/dark" data-ok-interactive-layer-ids="states-fill" data-ok-label="Map of US states by region">
+  <div data-ok-map-view></div>
+  <div data-ok-map-fallback></div>
+  <p data-ok-map-description id="map-highlight-description">The 50 US states and the District of Columbia in four regions: Northeast, Midwest, South and West. Point at a state to highlight its region.</p>
+  <div data-ok-map-status role="status"></div>
+  <div data-ok-map-source data-ok-id="states" data-ok-type="geojson" data-ok-data="maps/us-states.geojson" hidden>
+    <div data-ok-map-layer data-ok-id="states-fill" data-ok-type="fill" data-ok-paint='{"fill-color":"var(--ok-palette-grey-500)","fill-opacity":0.12}' hidden></div>
+    <div data-ok-map-layer data-ok-id="states-highlight" data-ok-type="fill" data-ok-filter='["==",["get","region"],""]' data-ok-paint='{"fill-color":"var(--ok-palette-warning-main)","fill-opacity":0.48}' hidden></div>
+    <div data-ok-map-layer data-ok-id="states-border" data-ok-type="line" data-ok-paint='{"line-color":"var(--ok-palette-grey-500)","line-width":1}' hidden></div>
+  </div>
+  <div role="tooltip" tabindex="-1" id="map-highlight-popup" hidden data-ok-map-popup data-ok-longitude="-98" data-ok-latitude="38.5" data-ok-close-on-click="false" data-ok-focus-after-open="false" data-ok-offset="12">
+    <span data-ok-map-popup-tip aria-hidden="true"></span>
+    <div data-ok-map-popup-content>
+      <div class="sb-map-popup">
+        <p class="sb-map-popup-title">State</p>
+        <p>Region: </p>
+      </div>
+    </div>
+  </div>
+  <div data-ok-map-corner="top-left">
+    <div data-ok-map-control data-ok-map-geolocate>
+      <button type="button" data-ok-map-action="geolocate" aria-label="Find my location"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 2v3M12 19v3M2 12h3M19 12h3M12 19a7 7 0 1 0 0-14 7 7 0 0 0 0 14ZM12 14.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"></path></svg></button>
+    </div>
+    <div data-ok-map-control>
+      <button type="button" data-ok-map-action="fullscreen" aria-label="Enter fullscreen" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false" data-ok-map-icon="enter"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"></path></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false" data-ok-map-icon="exit"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"></path></svg></button>
+    </div>
+  </div>
+  <div data-ok-map-corner="top-right"></div>
+  <div data-ok-map-corner="bottom-left">
+    <div data-ok-map-control data-ok-map-navigation>
+      <button type="button" data-ok-map-action="zoom-in" aria-label="Zoom in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14"></path></svg></button>
+      <button type="button" data-ok-map-action="zoom-out" aria-label="Zoom out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h14"></path></svg></button>
+      <button type="button" data-ok-map-action="compass" aria-label="Reset north"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" data-ok-map-compass-icon><path d="M12 3 16 12H8Z" data-ok-map-compass-north></path><path d="M8 12h8l-4 9Z" data-ok-map-compass-south></path></svg></button>
+    </div>
+    <div data-ok-map-scale data-ok-unit="metric"></div>
+  </div>
+  <div data-ok-map-corner="bottom-right">
+    <details data-ok-map-attribution>
+      <summary aria-label="Map credits"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM12 11v5M12 8h.01"></path></svg></summary>
+      <div data-ok-map-attribution-text></div>
+    </details>
+  </div>
+</div>
