@@ -522,8 +522,6 @@ integrate these in the same review (additive: no DOM or API change) and remove t
 | Waiting for | Where | Today |
 |---|---|---|
 | Motion full version, phase 1 (custom keyframes) | Motion story "Logo" (the reference's shape-morphing, turning rings and the turning gradient disc) | the logo inside MotionBorder rings; the story becomes the reference's once `animate(element, keyframes)` exists, without changing MotionBorder |
-| Paper (card) | Collapse story (the reference's raised card with a triangle) | demo `.sb-collapse-paper` styled in `.storybook/preview.css` |
-| Collapse (transition) | Card story "Complex interaction" (the method section under the chevron) | shown / hidden at once (`hidden` + `aria-expanded`, the page's own state); MUI collapses it |
 
 ## ✅ Components — Form control (2026-11-09)
 Wave 8 (primitives, batch B), created with `/component` from MUI's FormControl, FormLabel,
