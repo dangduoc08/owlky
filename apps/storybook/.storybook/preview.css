@@ -1889,6 +1889,39 @@
 }
 
 /*
+ * Illustrations (Foundations, story-only): a gallery grid, one card per picture with its name below.
+ * Scoped to rows that hold an illustration directly (Upload's drop zone holds one deeper inside).
+ */
+.sb-groups:has(> .sb-group > .sb-row > [data-ok-illustration]) {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, calc(var(--ok-spacing) * 65)), 1fr));
+  gap: calc(var(--ok-spacing) * 4);
+}
+
+.sb-groups:has(> .sb-group > .sb-row > [data-ok-illustration]) > .sb-group {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--ok-spacing) * 3);
+  min-width: 0;
+  padding: calc(var(--ok-spacing) * 4);
+  border-radius: var(--ok-radius-lg);
+  background-color: var(--ok-bg-neutral);
+}
+
+.sb-groups:has(> .sb-group > .sb-row > [data-ok-illustration]) .sb-group-title {
+  order: 1;
+  margin: 0;
+  /* Secondary text on the neutral card is under 4.5:1. */
+  color: var(--ok-text-primary);
+  text-align: center;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.sb-groups:has(> .sb-group > .sb-row > [data-ok-illustration]) .sb-row {
+  justify-content: center;
+}
+
+/*
  * Illustrations (Foundations, story-only): a profile cover cut by the avatar shape, with the avatar
  * in the curve.
  */
