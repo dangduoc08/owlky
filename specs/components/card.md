@@ -111,6 +111,22 @@ the stories use `aria-pressed` and story CSS.
 ## Events / API
 None (native `click` on the action area and controls).
 
+## Upstream API mapping
+Audit 2026-11-09 against MUI API pages Card, CardHeader, CardMedia, CardContent, CardActions, CardActionArea (Card inherits Paper).
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| `Card` `raised`, `children`; Paper's `variant`, `elevation`, `square`, `component` | same | kept | see paper.md |
+| `CardHeader` `avatar`, `action`, `title`, `subheader`, `disableTypography`, `component` | same | kept | |
+| `CardHeader` `slotProps.title` / `subheader` (`titleTypographyProps` / `subheaderTypographyProps`) | `titleProps` / `subheaderProps` | renamed | |
+| `CardHeader` title variant by avatar (`body2` / `h5`) | always `h6` / `body2` | not applicable | Minimals theme |
+| `CardMedia` `image`, `src`, `component`, `children` | same; non-media elements get a cover `img` | kept | no `style` background (CSP) |
+| `CardContent` `component` | same | kept | |
+| `CardActions` `disableSpacing` | same | kept | |
+| `CardActionArea` `children`; ButtonBase `disabled`, `href` | `button` or `a[href]` | kept | |
+| `CardActionArea` `slots.focusHighlight`, `focusVisibleClassName`, ripple props | `::after` tint, `:focus-visible` | not applicable | |
+| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps` | — | not applicable | ADR-0015: CSS and composition |
+
 ## Parity notes
 None: React renders the same elements and attributes as the snippets (generated from the React
 examples by `apps/storybook/scripts/card-snippets.mjs`). Stateful stories (Complex interaction,

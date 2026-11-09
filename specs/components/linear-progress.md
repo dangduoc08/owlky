@@ -76,5 +76,15 @@ Brand colors follow the reference (ADR-0014). Left to right only (right-to-left:
 ## Events / API
 None. HTML: change the attributes above. React: props; `ref` = the root span.
 
+## Upstream API mapping
+Audit 2026-11-09 against MUI API page LinearProgress.
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| `variant` (`determinate` `indeterminate` `buffer` `query`), `value`, `valueBuffer`, `min`, `max` | same (HTML: `aria-value*`, `data-ok-value-buffer`) | kept | |
+| `color` | every palette color + `inherit` | kept | |
+| right to left (MUI flips the bars under `dir="rtl"`) | left to right only | deferred (4.13) | |
+| `sx`, `classes` | — | not applicable | ADR-0015 |
+
 ## Parity notes
 As Circular progress: React `style`, HTML CSSOM; parity ignores `style`.

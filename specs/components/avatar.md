@@ -60,5 +60,20 @@ adds `role="img"` + `aria-label`. Colored backgrounds follow the reference (ADR-
 ## Events / API
 None.
 
+## Upstream API mapping
+Audit 2026-11-09 against MUI API pages Avatar, AvatarGroup.
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| `src`, `srcSet`, `sizes`, `alt`, `children`, `variant` | same | kept | fallback order as upstream |
+| `slotProps.img` | `imgProps` | renamed | |
+| `slots.fallback` | built-in person icon / `span[data-ok-avatar-fallback]` | not applicable | composition: pass children |
+| `component` | — | not applicable | always `span` |
+| — | `color`, `size` | kept | beyond upstream (Minimals) |
+| `AvatarGroup` `max`, `total`, `renderSurplus`, `variant`, `children` | same (React); HTML writes the surplus | kept | |
+| `AvatarGroup` `spacing` (number) | `medium` / `small` only | deferred (4.12) | |
+| `AvatarGroup` `component`, `slots.surplus` | `renderSurplus` | not applicable | |
+| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps` | — | not applicable | ADR-0015: CSS and composition |
+
 ## Parity notes
 HTML writes the surplus avatar; React computes it from `max` / `total`.

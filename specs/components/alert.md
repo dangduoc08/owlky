@@ -61,6 +61,18 @@ HTML: `ok:alert:close` (cancelable); instance `close()`. React: `onClose`.
 ## Responsive
 Full width; the message wraps, actions stay at the end.
 
+## Upstream API mapping
+Audit 2026-11-09 against MUI API pages Alert, AlertTitle.
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| `severity`, `variant`, `color`, `children` | same | kept | |
+| `icon` (`false` hides), `iconMapping`, `action`, `closeText`, `role` | same (React); HTML markup | kept | |
+| `onClose(event)` | `onClose()`; HTML `ok:alert:close` (cancelable) → `hidden` | renamed | no event argument |
+| `slots.closeButton` / `closeIcon` / `icon` / `message` / `action` | parts `[data-ok-alert-*]`; `action` replaces the close button | not applicable | composition |
+| `AlertTitle` `children` | same | kept | |
+| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps` | — | not applicable | ADR-0015: CSS and composition |
+
 ## Parity notes
 Closing differs by design: React reports `onClose` and the app removes the alert; the HTML runtime
 hides it (`hidden`) after `ok:alert:close` unless the event is prevented.

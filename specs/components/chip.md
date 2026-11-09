@@ -60,3 +60,17 @@ Filled / outlined brand colors follow the reference (ADR-0014); soft uses the AA
 
 ## Events / API
 `ok:chip:delete` (cancelable); instance `{ delete() }`. React `onClick(event)`, `onDelete()`.
+
+## Upstream API mapping
+Audit 2026-11-09 against MUI API page Chip.
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| `label`, `avatar`, `icon`, `clickable`, `deleteIcon`, `disabled`, `size`, `variant`, `color` | same; `variant` + `soft`, `color` + `black` / `white` | kept | |
+| `onClick` | same | kept | |
+| `onDelete(event)` | `onDelete()`; HTML `ok:chip:delete` (cancelable) | renamed | no event argument |
+| — | `deleteLabel` ("Remove") | kept | beyond upstream: names the delete button |
+| `component` + `href` (link chip, `clickable`) | — (action is a `button` or `span`) | deferred | new batch E row |
+| `children` | — | not applicable | unsupported upstream too |
+| `skipFocusWhenDisabled`, `nativeButton` | native `button` + `disabled` | not applicable | |
+| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps` | — | not applicable | ADR-0015: CSS and composition |

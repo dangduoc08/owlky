@@ -63,3 +63,25 @@ closes the top layer only. Interactive popovers: `role="dialog"` + a name; trigg
 HTML: `ok:popover:beforeopen` (cancelable, `detail.anchor`), `ok:popover:open`,
 `ok:popover:beforeclose` (cancelable, `detail.reason`: escape | backdrop | trigger | select | tab |
 api), `ok:popover:close`. Instance: `{ isOpen, open(anchor), close(reason?), toggle(anchor) }`.
+
+## Upstream API mapping
+Audit 2026-11-09 against MUI API page Popover (inherits Modal).
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| `open`, `anchorEl` (element or function), `children` | same | kept | |
+| `onClose(event, reason)` | `onOpenChange(open, reason)` (`escape` `backdrop`) | renamed | |
+| `anchorOrigin` / `transformOrigin` | `placement` (side + start / center / end; flip and shift) | renamed | overlapping origins not expressible |
+| Minimals `slotProps.arrow.placement` | `arrow` | renamed | follows the placement |
+| `anchorReference`, `anchorPosition` | — | deferred (4.7) | |
+| `marginThreshold` | 16px fixed | deferred (4.7) | |
+| `transitionDuration` | — (`--ok-duration-shorter`) | deferred | new batch E row (with Menu) |
+| `action` (`updatePosition`) | controller repositions on scroll / resize | not applicable | |
+| `elevation` | `--ok-shadow-dropdown` | not applicable | one dropdown shadow |
+| `container`, Modal `disablePortal` | — | not applicable | top layer |
+| `disableScrollLock` | — | not applicable | non-modal: page stays scrollable |
+| Modal `disableEscapeKeyDown`, `disableAutoFocus`, `disableRestoreFocus` | same | kept | |
+| Modal `keepMounted` | always mounted | kept | |
+| Modal `disableEnforceFocus`, `hideBackdrop`, `BackdropProps` | — | not applicable | no focus trap, no backdrop element |
+| — | `initialFocus` | kept | beyond upstream |
+| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps`, `TransitionComponent` / `TransitionProps` | — | not applicable | ADR-0015: CSS, composition, one CSS transition |

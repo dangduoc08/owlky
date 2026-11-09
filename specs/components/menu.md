@@ -64,3 +64,24 @@ returns to the trigger), Tab closes. Disabled items are skipped.
 ## Events / API
 HTML: `ok:menu:select` (cancelable, `detail.item`) on the list, then the popover closes (reason
 `select`). Instance: `{ select(item) }`. Popover events and instance as in popover.md.
+
+## Upstream API mapping
+Audit 2026-11-09 against MUI API pages Menu (inherits Popover), MenuItem, MenuList.
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| `open`, `anchorEl`, `children` | same | kept | |
+| `onClose(event, reason)` | `onOpenChange(open, reason)` (`escape` `backdrop` `select` `tab`); HTML `ok:menu:select` + popover events | renamed | |
+| Popover `anchorOrigin` / `transformOrigin` | `placement` (default `bottom-start`) | renamed | see popover.md |
+| `MenuListProps` | props on `Menu` (to the list) | renamed | |
+| `PaperProps` / `slotProps.paper` | `paperProps` | renamed | |
+| `variant="selectedMenu"`, `autoFocus` | the only behavior (focus the selected, else first item) | kept | |
+| `variant="menu"`, nested menus | — | deferred (4.5) | |
+| `disableAutoFocusItem` | — | deferred | new batch E row |
+| `transitionDuration` | — | deferred | new batch E row (with Popover) |
+| `PopoverClasses` | — | not applicable | ADR-0015 |
+| `MenuItem` `selected`, `dense`, `divider`, `disableGutters`, `disabled` | same (`disabled` → `aria-disabled`) | kept | |
+| `MenuItem` `autoFocus`, `component`, `focusVisibleClassName`, ripple props | — | not applicable | focus is the menu's; `li[role=menuitem]` |
+| `MenuList` (standalone, without Popover) `autoFocus`, `autoFocusItem`, `variant` | HTML: `ul[data-ok-menu]` works alone; React: none | deferred | new batch E row |
+| `MenuList` `disabledItemsFocusable`, `disableListWrap` | — (disabled items skipped, always wraps) | deferred | new batch E row |
+| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps`, `TransitionComponent` / `TransitionProps` | — | not applicable | ADR-0015: CSS, composition, one CSS transition |

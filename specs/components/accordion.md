@@ -68,6 +68,24 @@ HTML: `ok:accordion:beforetoggle` (cancelable), `ok:accordion:toggle` (`detail.o
 ## Responsive
 Full width of its container at every breakpoint; long titles wrap.
 
+## Upstream API mapping
+Audit 2026-11-09 against MUI API pages Accordion, AccordionSummary, AccordionDetails, AccordionActions.
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| `Accordion` `children`, `disabled`, `disableGutters` | same | kept | |
+| `expanded`, `defaultExpanded` | same; HTML `open` | kept | |
+| `onChange(event, expanded)` | `onChange(expanded)`; HTML `ok:accordion:beforetoggle` / `toggle` | renamed | no event argument |
+| `slots.heading` (default `h3` around the summary) | author's heading inside the summary | renamed | composition |
+| `slots.region` / `slots.transition` (Collapse, `unmountOnExit`) | `div[data-ok-accordion-details]`, `::details-content` height animation | not applicable | native `<details>`; content stays mounted (find-in-page) |
+| — | `variant` (`default` `outlined` `soft`), `name` (exclusive group) | kept | beyond upstream: reference variants, native attribute |
+| `AccordionSummary` `expandIcon`, `children` | same | kept | |
+| `AccordionSummary` `focusVisibleClassName`, ButtonBase props (ripple) | `:focus-visible` | not applicable | native `<summary>` |
+| `AccordionDetails` `children` | same | kept | |
+| `AccordionActions` `children` | same | kept | |
+| `AccordionActions` `disableSpacing` | — | deferred | new batch E row |
+| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps`, `TransitionComponent` / `TransitionProps` | — | not applicable | ADR-0015: CSS, composition, one CSS transition |
+
 ## Parity notes
 Same `<details>` markup. React controls `open` from state: it prevents the summary's native toggle,
 and toggles the browser makes itself (find-in-page, `<details name>`) are reported through

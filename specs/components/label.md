@@ -39,3 +39,12 @@ the reference (ADR-0014).
 
 ## Events / API
 None.
+
+## Upstream API mapping
+Audit 2026-11-09 against Minimals `Label` (`LabelProps`: `color`, `variant`, `startIcon`, `endIcon`, `disabled`, `sx`; no MUI component).
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| `variant` (`filled` `outlined` `soft` `inverted`), `color`, `startIcon`, `endIcon`, `children` | same; `color` + `black` / `white` | kept | |
+| `disabled` | — | deferred | new batch E row |
+| `sx` | — | not applicable | ADR-0015 |

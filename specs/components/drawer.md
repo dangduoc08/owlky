@@ -81,6 +81,24 @@ HTML: `ok:drawer:beforeopen` (cancelable) · `ok:drawer:open` · `ok:drawer:befo
 ## Responsive
 Same anchors at every breakpoint. The `56px` gap keeps the backdrop reachable on small screens.
 
+## Upstream API mapping
+Audit 2026-11-09 against MUI API pages Drawer, SwipeableDrawer (Modal props through `ModalProps`).
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| `open` | `Drawer open` / `defaultOpen`; HTML `data-ok-open` / `hidden` | kept | |
+| `onClose(event, reason)` | `onOpenChange(open, reason)`; HTML `ok:drawer:beforeclose` | renamed | |
+| `variant` (`temporary` `persistent` `permanent`) | same (on `Drawer`) | kept | |
+| `anchor`, `hideBackdrop` | `DrawerContent` props | kept | |
+| one `Drawer` element | `Drawer` (state) + `DrawerTrigger` + `DrawerContent` + `DrawerClose` | renamed | |
+| `PaperProps` / `slotProps.paper` | `DrawerContent` children (`[data-ok-drawer-content]`) | renamed | |
+| `elevation`, `transitionDuration` | — | deferred (4.9) | |
+| `ModalProps.disableEscapeKeyDown` | `disableEscapeKeyDown` | kept | |
+| `ModalProps.keepMounted` (default unmount), `disableRestoreFocus`, `disableScrollLock` | always mounted | deferred | new batch E row (with Dialog) |
+| `ModalProps.container` / `disablePortal` / `disableAutoFocus` / `disableEnforceFocus` | — | not applicable | native modal `<dialog>` in the top layer |
+| `SwipeableDrawer` (`onOpen`, `swipeAreaWidth`, `hysteresis`, `minFlingVelocity`, `disableSwipeToOpen`, `disableDiscovery`, `allowSwipeInChildren`, `disableBackdropTransition`) | — | deferred | new batch E row |
+| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps`, `TransitionComponent` / `TransitionProps` | — | not applicable | ADR-0015: CSS, composition, one CSS transition |
+
 ## Parity notes
 Behavior hooks (`data-ok-drawer-open/close`, `data-ok-*-close` options, `data-ok-open`) exist only in
 HTML; React expresses them as props and handlers.

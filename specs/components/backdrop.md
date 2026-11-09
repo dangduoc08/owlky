@@ -60,6 +60,17 @@ Events: `ok:backdrop:beforeopen` (cancelable, `detail.trigger`), `ok:backdrop:op
 `ok:backdrop:beforeclose` (cancelable, `detail.reason`: trigger | api), `ok:backdrop:close`.
 Instance: `{ isOpen, open(trigger?), close(reason?) }`.
 
+## Upstream API mapping
+Audit 2026-11-09 against MUI API page Backdrop (inherits Fade).
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| `open`, `invisible`, `children` | same; HTML `data-ok-open`, `data-ok-invisible` | kept | |
+| `transitionDuration` | — (fixed `--ok-duration-*`) | deferred (4.9) | |
+| `component` | — | not applicable | one `div` |
+| Fade props (`appear`, `easing`, `timeout`, `addEndListener`, `onEnter`… callbacks) | one CSS fade | not applicable | HTML `ok:backdrop:open` / `close` events |
+| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps`, `TransitionComponent` / `TransitionProps` | — | not applicable | ADR-0015: CSS, composition, one CSS transition |
+
 ## Parity notes
 None: both render the same `div`; React adds `data-ok-runtime="off"`.
 

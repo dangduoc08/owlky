@@ -62,3 +62,24 @@ Escape closes a focused toast (unless not dismissible). The loading toast has a 
 HTML: `ok:toaster:show`, `ok:toaster:dismiss` (`detail.reason`), `ok:toaster:action` (cancelable).
 Instance: `{ show(options), showTemplate(template), promise(promise, messages), dismiss(id?) }` —
 `show()` builds nodes from text only.
+
+## Upstream API mapping
+Audit 2026-11-09 against Sonner docs (`toast()`, `<Toaster>`) and its `types.ts` / `state.ts`.
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| `toast()`, `toast.message` / `info` / `success` / `warning` / `error` / `loading` / `promise` / `custom` / `dismiss(id?)` | same (React `toast`; HTML instance `show` / `showTemplate` / `promise` / `dismiss`) | kept | |
+| `toast.custom(jsx(id))` | `toast.custom(content)` | renamed | content, not a function of the id |
+| toast `id`, `description`, `action`, `cancel`, `duration`, `icon`, `dismissible`, `onDismiss`, `onAutoClose` | same | kept | |
+| toast `position` | — (Toaster's) | deferred (4.14) | |
+| toast `richColors`, Toaster `richColors` | — | deferred (4.14) | |
+| toast `closeButton`, `invert`; Toaster `invert`, `toastOptions`, `icons` | Toaster `closeButton` only | deferred | new batch E row |
+| `toasterId`, Toaster `id` (several toasters) | `<Toaster store>` | deferred | new batch E row |
+| `toast.promise` result `unwrap()`, promise options (`finally`, `id`, other toast options) | returns the id | deferred | new batch E row |
+| `toast.getHistory()`, `toast.getToasts()`, `useSonner()` | — | deferred | new batch E row |
+| Toaster `position`, `duration`, `visibleToasts`, `closeButton` | same | kept | |
+| Toaster `expand`, `swipeDirections` (swipe to dismiss), `hotkey`, `offset` / `mobileOffset`, `gap` | — | deferred (4.14) | |
+| Toaster `dir` | — (physical properties) | deferred | new batch E row |
+| Toaster `theme` | page scheme | not applicable | follows `data-ok-theme` |
+| Toaster `containerAriaLabel` / `customAriaLabel` | `aria-label` ("Notifications") | renamed | |
+| `className`, `classNames`, `style`, `unstyled`, `descriptionClassName`, `actionButtonStyle`, `cancelButtonStyle`, `testId` | — | not applicable | CSS on `[data-ok-toast*]`; DOM attributes |

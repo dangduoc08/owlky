@@ -119,3 +119,24 @@ open?)`. React: app state (`aria-expanded`, `hidden`).
 Animated nested lists (MUI composes `Collapse`): the nested `ul` is a Collapse (collapse.md,
 ADR-0044) — React `<Collapse component={List} in={open} timeout="auto" disablePadding>`, HTML
 `data-ok-collapse data-ok-timeout="auto"` on the `ul`; the list runtime still writes `hidden`.
+
+## Upstream API mapping
+Audit 2026-11-09 against MUI API pages List, ListItem, ListItemButton, ListItemIcon, ListItemAvatar, ListItemText, ListItemSecondaryAction, ListSubheader.
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| `List` `dense`, `disablePadding`, `subheader`, `children` | same | kept | `dense` reaches items through CSS, not context |
+| `ListItem` `alignItems`, `dense`, `disableGutters`, `disablePadding`, `secondaryAction` | same | kept | |
+| `ListItem` / `ListItemButton` `divider` | same; HTML `data-ok-show-divider` | kept | |
+| `ListItemButton` `alignItems`, `dense`, `disableGutters`, `selected`, `disabled` | same | kept | |
+| `ListItemButton` `component` (`a`) | `href` renders `a` | renamed | |
+| `ListItemButton` `autoFocus`, `focusVisibleClassName`, ripple props | native `autofocus`, `:focus-visible` | not applicable | |
+| `ListItemIcon`, `ListItemAvatar` `children` | same | kept | |
+| `ListItemText` `primary`, `secondary`, `inset`, `disableTypography` | same | kept | |
+| `ListItemText` `slotProps.primary` / `secondary` (`*TypographyProps`) | — | not applicable | restyle with CSS |
+| `ListSubheader` `color`, `disableGutters`, `disableSticky`, `inset` | same | kept | |
+| `component` on `List` / `ListItem` / `ListSubheader` / `ListItemSecondaryAction` | — | not applicable | fixed markup (`ul` / `li`) |
+| `ListItemSecondaryAction` | `secondaryAction` | not applicable | deprecated upstream |
+| Collapse around nested lists | `Collapse component={List}`; HTML `data-ok-collapse` | kept | |
+| — | `ListItemExpandIcon` | kept | beyond upstream |
+| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps` | — | not applicable | ADR-0015: CSS and composition |

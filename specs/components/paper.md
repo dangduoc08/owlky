@@ -73,5 +73,14 @@ meaning by elevation alone.
 ## Events / API
 None.
 
+## Upstream API mapping
+Audit 2026-11-09 against MUI API page Paper.
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| `variant`, `elevation` (0–24), `square`, `component`, `children` | same | kept | |
+| dark-mode elevation overlay | — | not applicable | Minimals theme drops it |
+| `sx`, `classes` | — | not applicable | ADR-0015 |
+
 ## Parity notes
 None: React renders the same element and attributes as the snippets.
