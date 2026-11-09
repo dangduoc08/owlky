@@ -35,7 +35,7 @@ Button is the model for how a component spans the packages:
 | Docs | `apps/storybook/src/components/<name>/` | One story per reference section, framework picked in the toolbar (ADR-0018); usage guide page `<name>-docs.tsx` (ADR-0019) |
 | E2E | `e2e/tests/*.spec.ts` | Same tests for both implementations + parity |
 
-Foundations (colors, typography, shadows, grid, icons, settings) are documented in
+Foundations (colors, typography, shadows, grid, icons, settings, illustrations) are documented in
 `apps/storybook/src/foundations/`, generated from `@owlky/tokens`.
 
 Third-party runtime code stays behind its own entry point so the default bundles never carry it:

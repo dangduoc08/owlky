@@ -158,7 +158,9 @@ project. Never copy the reference's source code, branding or assets.
      native platform feature or story-only demo markup, never a home-made stand-in in the library
      (a later component must integrate without DOM or API changes); add each to
      `docs/roadmap.md` → "Pending integrations" — so are reference sections / stories deferred
-     because a component is missing (never only a backlog line);
+     because a component is missing (never only a backlog line), and so is every story-only class
+     in `.storybook/preview.css` that draws a surface or sets fonts (AGENTS.md: story CSS keeps
+     layout only; use Paper / Card / Typography, which exist);
    - **integrations this component unlocks:** (capture each dependent's section from the
      `Reference URL:` of its spec — never build it from a backlog name alone) the rows of
      "Pending integrations" waiting for it,

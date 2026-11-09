@@ -885,7 +885,7 @@ Dependency-first: leaf components before the ones built from them, the ones that
 | 5 Navigation | ~~Tabs~~ ✅, ~~Breadcrumbs~~ ✅, ~~Stepper~~ ✅ | — (nothing waited for them) |
 | 6 Composites | ~~Rating~~ ✅, ~~Slider~~ ✅, ~~Timeline~~ ✅, ~~Transfer list~~ ✅, ~~Autocomplete~~ ✅, ~~Tree view~~ ✅ | — (nothing waited for them; Slider unblocks the SettingsDrawer backlog of Theme settings) |
 | 7 Needs an ADR | ~~Data grid~~ (ADR-0020, phases below), ~~Date pickers~~ (ADR-0022, ADR-0030, complete ✅), ~~Chart~~ (ADR-0024, ADR-0027, ADR-0031, complete ✅), ~~Map~~ (ADR-0025) ✅, ~~Editor~~ (ADR-0023) ✅, ~~Carousel~~ (ADR-0033) ✅, ~~Lightbox~~ (ADR-0032) ✅, ~~Markdown~~ (ADR-0035) ✅, ~~Organization chart~~ (ADR-0036) ✅, ~~Image~~ (ADR-0038) ✅, ~~Upload~~ (ADR-0037) ✅, ~~Walktour~~ (ADR-0039) ✅ | ~~Markdown pictures~~ ✅ (Image) |
-| 8 Primitives (approved 2026-11-09; MUI pages, no Minimals page) | **Batch A:** Typography (`react-typography`), Paper + Card (`react-paper`, `react-card`: Card, CardHeader, CardContent, CardMedia, CardActions, CardActionArea), Collapse (`transitions`, Collapse only: Motion covers fade / grow / slide / zoom). **Batch B:** Link (`react-link`), Form control (FormControl, FormLabel, FormGroup, FormHelperText; no DOM change to TextField, Radio, Checkbox). **Batch C:** Select (`react-select`: listbox on Menu, single, multiple, chips, grouping; the native select stays; ADR if the select-only combobox pattern needs one) | Every Typography, Paper / Card, Collapse, Link, FormLabel and Select row of "Pending integrations" (22 rows), each closed by its own `/component` review |
+| 8 Primitives (approved and done 2026-11-09; MUI pages, no Minimals page) | ~~Typography~~ ✅, ~~Paper~~ ✅, ~~Card~~ ✅, ~~Collapse~~ ✅ (ADR-0044), ~~Link~~ ✅, ~~Form control~~ ✅, ~~Select~~ ✅ (ADR-0045) | ~~every Typography, Paper / Card, Collapse, Link, FormLabel and Select row of "Pending integrations"~~ ✅ (each closed by its own `/component` review; the rest by the `/integrate` sweep) |
 
 Not planned as components (patterns or app-level pages of the reference): Layout,
 Utilities, Multi-language, Navigation bar, Mega menu, Form validation, Form wizard. Scroll progress
@@ -893,8 +893,12 @@ is phase 2 of the Motion full version. Layout, Form wizard and Form validation m
 **blocks** (copy-paste compositions; needs its own ADR), Navigation bar and Mega menu as components.
 
 ## After the waves (order approved 2026-11-09, MCP added before the website the same day)
-1. **Wave 8 Primitives** (above), batches A → B → C, up to three `/component` agents at a time.
-2. **One `/integrate`** (no argument) after batch C: a sweep for any wait left open.
+1. ✅ **Wave 8 Primitives** (above, 2026-11-09): Paper, Typography, Collapse, Card, Form control,
+   Link, Select.
+2. ✅ **One `/integrate`** (2026-11-09): closed the two cross waits (Collapse story ↔ Card) and 14
+   story-only stand-ins that had never been recorded (demo CSS drawing cards or setting fonts in
+   Stepper, List, Editor, Divider, Paper, Autocomplete and nine stories' demo text). Only the Motion
+   "Logo" wait is left (Motion full version).
 3. **`/update-ai-knowledge-base`**, then commit: CLAUDE.md, AGENTS.md, docs, ADRs and specs in
    sync with Wave 8.
 4. **MCP server `@owlky/mcp`** (ADR-0046, proposed first): a generated `manifest.json` (option
@@ -908,12 +912,28 @@ is phase 2 of the Motion full version. Layout, Form wizard and Form validation m
    workflows, owlky.com. It is built with Owlky (after the primitives), reads the manifest for its
    option and prop tables, and emits `llms.txt`, `llms-full.txt` and one `.md` per page.
 6. **Publish 0.1.0** together with the website.
-7. **Motion full version** (ADR first; phase 1 closes the Motion "Logo" wait).
-8. **1.0 prep:** accessibility audit, docs polish, and an upstream API audit of every component
+7. **More frameworks** (user decision 2026-11-09), after 0.1.0:
+   - integration guides and DOM-morphing tests for server-rendered stacks (htmx, Hotwire / Turbo,
+     Laravel Livewire, Phoenix LiveView, Django templates): the HTML runtime must survive morphs
+     (idiomorph, Turbo morphing, LiveView patches);
+   - a Preact check (`@owlky/react` through `preact/compat`) and setup pages for Next.js, Astro and
+     Remix / React Router;
+   - packages written 1:1 like `@owlky/react` (native components, same `data-ok-*` markup, behavior
+     from `core`, parity-tested): `@owlky/vue` → `@owlky/svelte` → `@owlky/angular` →
+     `@owlky/solid`. An ADR first (package layout, boundaries like ADR-0008, SSR per framework,
+     Storybook's Framework menu and parity per framework, docs tabs), then a pilot of about three
+     components (Button, Dialog, Select) before the full set.
+   - Not planned: React Native and Flutter (no DOM), Ember, Lit / Web Component wrappers (the HTML
+     package covers framework-free use), Qwik unless users ask.
+8. **Motion full version** (ADR first; phase 1 closes the Motion "Logo" wait).
+9. **1.0 prep:** accessibility audit, docs polish, and an upstream API audit of every component
    (prop by prop against MUI, a mapping table in each spec; for example Drawer `elevation` and
    `transitionDuration`, Backdrop `transitionDuration`), plus the backlogs (Table toolbar, Sortable
-   auto-scroll and move to top / bottom, Motion `component`, Dialog `keepMounted`).
-9. **Later, each with an ADR:** a blocks tier (free blocks here, premium blocks in a private
+   auto-scroll and move to top / bottom, Motion `component`, Dialog `keepMounted`), Paper composed
+   inside Popover / Menu / Dialog / Drawer / TableContainer / Map controls / Autocomplete listbox
+   (no visual change), and the flaky e2e pixel parity of `carousel / thumbs-y` (about 2 of 60 runs
+   with 4 workers, already before Wave 8; waiting for image decode and scroll settle didn't fix it).
+10. **Later, each with an ADR:** a blocks tier (free blocks here, premium blocks in a private
    repository), Navigation bar and Mega menu.
 
 **Before publishing 0.1.0 (needs the owner):** npm org `@owlky`, npm trusted publishing for

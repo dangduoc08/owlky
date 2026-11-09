@@ -205,7 +205,12 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
 - General rule for any part the library doesn't have yet (scrollbar, list, progress, divider,
   typography, backdrop, …): use a native feature or story-only demo markup, never a library
   stand-in, and list it in `docs/roadmap.md` → "Pending integrations", so the later component can
-  integrate it without breaking DOM or API.
+  integrate it without breaking DOM or API. **Every** stand-in gets a row, including story-only
+  CSS in `.storybook/preview.css` that draws a surface (radius + paper background + a shadow →
+  Paper / Card) or sets fonts (`--ok-typography-*` / `--ok-font-*` → Typography): the 2026-11-09
+  `/integrate` sweep found 14 such stand-ins that had no row. Story CSS keeps layout only;
+  exceptions are Storybook chrome (`.sb-group-title`, `.sb-row > [data-ok-theme]`) and demos
+  whose point is the plain-CSS styling (Typography "Theme keys", the picker toolbar title).
 - A new component closes **every** wait on it in the same review: stand-ins *and* deferred
   stories (`docs/roadmap.md` → "Pending integrations" is the only list; grep the roadmap and specs
   for its name too). Example: Table "Pagination with API" — React slices rows for `page`, HTML

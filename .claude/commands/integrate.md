@@ -54,7 +54,9 @@ This command orchestrates; it doesn't duplicate `/component`. Capture and implem
      "waiting for", "deferred", "until", "stand-in") — backlog lines, deferred stories;
    - stand-in patterns in existing code, e.g. `overflow: auto` (Scrollbar), `<select>` (Select),
      `<input type="checkbox">` (Checkbox), `<hr>` (Divider), own spinners (Progress), demo markup
-     in `apps/storybook/.storybook/preview.css`;
+     in `apps/storybook/.storybook/preview.css` — grep it for surfaces (`box-shadow: var(--ok-shadow-`
+     with a paper background → Paper / Card) and fonts (`--ok-typography-*`, `--ok-font-*` →
+     Typography) in demo classes;
    - a wait recorded only outside "Pending integrations" is itself a finding: report it;
    - optional, when the Storybook MCP server (`storybook` in `.mcp.json`) answers — it needs
      `pnpm storybook` running; otherwise skip: `stories-find-by-component` on
