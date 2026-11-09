@@ -15,6 +15,8 @@ export default defineProject({
       "moment-timezone",
       // Code editor tests load Monaco (ADR-0034).
       "monaco-editor",
+      // The Map (ADR-0025).
+      "maplibre-gl",
     ],
   },
 });

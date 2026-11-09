@@ -1,0 +1,48 @@
+<div id="map-draggable" data-ok-map data-ok-longitude="-100" data-ok-latitude="40" data-ok-zoom="3.5" data-ok-projection="mercator" data-ok-map-style="https://tiles.openfreemap.org/styles/positron" data-ok-map-style-dark="https://tiles.openfreemap.org/styles/dark" data-ok-label="Map with a draggable marker">
+  <div data-ok-map-view></div>
+  <div data-ok-map-fallback></div>
+  <p data-ok-map-description id="map-draggable-description">A marker you can drag, move with the arrow keys, or place with a click on the map.</p>
+  <div data-ok-map-status role="status"></div>
+  <div aria-label="Draggable marker" data-ok-map-marker data-ok-longitude="-100" data-ok-latitude="40" data-ok-anchor="bottom" data-ok-color="error" data-ok-draggable role="button" tabindex="0">
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" data-ok-map-pin><path d="M12 2.5A7.5 7.5 0 0 0 4.5 10c0 5.3 6.2 11 6.9 11.6a.9.9 0 0 0 1.2 0c.7-.6 6.9-6.3 6.9-11.6A7.5 7.5 0 0 0 12 2.5Zm0 10.25a2.75 2.75 0 1 1 0-5.5 2.75 2.75 0 0 1 0 5.5Z" fill="currentColor"></path></svg>
+  </div>
+  <div data-ok-map-panel data-ok-position="top-right" data-ok-theme="dark">
+    <dl class="sb-map-events">
+      <div>
+        <dt>Drag start</dt>
+        <dd>None</dd>
+      </div>
+      <div>
+        <dt>Dragging</dt>
+        <dd>None</dd>
+      </div>
+      <div>
+        <dt>Drag end</dt>
+        <dd>None</dd>
+      </div>
+    </dl>
+  </div>
+  <div data-ok-map-corner="top-left">
+    <div data-ok-map-control data-ok-map-geolocate>
+      <button type="button" data-ok-map-action="geolocate" aria-label="Find my location"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 2v3M12 19v3M2 12h3M19 12h3M12 19a7 7 0 1 0 0-14 7 7 0 0 0 0 14ZM12 14.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"></path></svg></button>
+    </div>
+    <div data-ok-map-control>
+      <button type="button" data-ok-map-action="fullscreen" aria-label="Enter fullscreen" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false" data-ok-map-icon="enter"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"></path></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false" data-ok-map-icon="exit"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"></path></svg></button>
+    </div>
+  </div>
+  <div data-ok-map-corner="top-right"></div>
+  <div data-ok-map-corner="bottom-left">
+    <div data-ok-map-control data-ok-map-navigation>
+      <button type="button" data-ok-map-action="zoom-in" aria-label="Zoom in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14"></path></svg></button>
+      <button type="button" data-ok-map-action="zoom-out" aria-label="Zoom out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h14"></path></svg></button>
+      <button type="button" data-ok-map-action="compass" aria-label="Reset north"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" data-ok-map-compass-icon><path d="M12 3 16 12H8Z" data-ok-map-compass-north></path><path d="M8 12h8l-4 9Z" data-ok-map-compass-south></path></svg></button>
+    </div>
+    <div data-ok-map-scale data-ok-unit="metric"></div>
+  </div>
+  <div data-ok-map-corner="bottom-right">
+    <details data-ok-map-attribution>
+      <summary aria-label="Map credits"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM12 11v5M12 8h.01"></path></svg></summary>
+      <div data-ok-map-attribution-text></div>
+    </details>
+  </div>
+</div>

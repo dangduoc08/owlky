@@ -1,0 +1,339 @@
+import {
+  mapAttributionOptions,
+  mapGeolocateOptions,
+  mapMarkerOptions,
+  mapNavigationOptions,
+  mapOptions,
+  mapPopupOptions,
+  mapScaleOptions,
+} from "@owlky/core";
+import { MapView, Marker, NavigationControl, ScaleControl } from "@owlky/react";
+import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
+import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
+import { MAP_STYLES } from "./map-data.js";
+
+export const mapSections: GuideSection[] = [
+  {
+    id: "overview",
+    title: "Overview",
+    body: "A map shows places and data that people can pan, zoom, tilt and turn. It is drawn by MapLibre GL JS, an open-source map engine, so both versions share the same behavior and markup. Around the map, Owlky draws its own controls, markers, popups and panels, which follow your theme and work with the keyboard.\n\nThe map is a separate script so that pages without one don't download the map engine. Load `owlky-map.js` after `owlky.js`. It finds its worker, `owlky-map-worker.js`, next to itself. With npm, import `@owlky/html/map` (HTML) or use the map components of `@owlky/react`, and point `setMapWorkerUrl()` at `@owlky/core/map-worker.js`.\n\nOwlky includes no map tiles. Pass the URL of a MapLibre style, for example one of OpenFreeMap's free styles, and keep the credits that the style requires.",
+    html: `<!-- Load once per page: the styles, the runtime, then the map -->
+<link rel="stylesheet" href="${CDN}/owlky.css">
+<script src="${CDN}/owlky.js" defer></script>
+<script src="${CDN}/owlky-map.js" defer></script>
+
+<div data-ok-map data-ok-label="Map of Europe"
+  data-ok-map-style="${MAP_STYLES.light}"
+  data-ok-map-style-dark="${MAP_STYLES.dark}"
+  data-ok-longitude="10" data-ok-latitude="50" data-ok-zoom="3">
+  <div data-ok-map-view></div>
+  <div data-ok-map-fallback></div>
+  <div data-ok-map-status role="status"></div>
+  <!-- Markers, popups, data, panels -->
+  <!-- Four corners for the controls (copy them from a snippet) -->
+  <div data-ok-map-corner="top-left"></div>
+  <div data-ok-map-corner="top-right"></div>
+  <div data-ok-map-corner="bottom-left"></div>
+  <div data-ok-map-corner="bottom-right">
+    <details data-ok-map-attribution>…</details>
+  </div>
+</div>`,
+    react: `import workerUrl from "@owlky/core/map-worker.js?url";
+import { setMapWorkerUrl } from "@owlky/core/map";
+import { MapView, NavigationControl } from "@owlky/react";
+
+// Once, before the first map: where the map engine's worker is (Vite: ?url)
+setMapWorkerUrl(workerUrl);
+
+export function Europe() {
+  return (
+    <MapView
+      aria-label="Map of Europe"
+      mapStyle="${MAP_STYLES.light}"
+      mapStyleDark="${MAP_STYLES.dark}"
+      initialViewState={{ longitude: 10, latitude: 50, zoom: 3 }}
+    >
+      <NavigationControl position="bottom-left" />
+    </MapView>
+  );
+}`,
+  },
+  {
+    id: "styles",
+    title: "Choose the map style",
+    body: '`mapStyle` sets the style: a URL of a MapLibre style JSON, or the style object itself. Add `mapStyleDark` to switch styles when the map sits in a dark theme, such as the **Theme** menu\'s dark mode or a `data-ok-theme="dark"` area. Without it, the map keeps one style in both themes.\n\nIn HTML, change `data-ok-map-style` to switch the style later. In React, pass a new `mapStyle`, and keep style objects in a constant or `useMemo`, because a new object reloads the style.\n\nLayer colors can use Owlky tokens: write `"var(--ok-palette-info-main)"` as a paint value. The map reads the token\'s value, and reads it again when the theme changes.',
+    html: `<div data-ok-map
+  data-ok-map-style="${MAP_STYLES.light}"
+  data-ok-map-style-dark="${MAP_STYLES.dark}">…</div>`,
+    react: `<MapView mapStyle="${MAP_STYLES.light}" mapStyleDark="${MAP_STYLES.dark}" />`,
+  },
+  {
+    id: "markers",
+    title: "Add markers and popups",
+    body: "A marker sits on a point given by `longitude` and `latitude`. By default it is a pin in the `color` you choose. Set `anchor` to `bottom` for pins, so the tip touches the point. Give interactive markers a name with `aria-label`: a marker with a click handler or `draggable` is a button that people reach with Tab.\n\nA popup is a dialog that points at a place. It picks the side where it fits unless you set `anchor`, and `offset` moves it away from its marker. Escape, the close button and a click on the map close it. In React, a popup shows while you render it, and `onClose` asks you to remove it. In HTML, write popups with `hidden` and open them from a marker with `data-ok-map-popup-open`.\n\nWith `draggable`, people drag a marker or move it with the arrow keys. In HTML the marker stores its new position in its attributes. In React, update `longitude` and `latitude` in `onDragEnd`. Also let people place a marker with a click, because dragging is hard for some people.",
+    html: `<div data-ok-map-marker data-ok-longitude="2.35" data-ok-latitude="48.86"
+  data-ok-anchor="bottom" data-ok-color="error"
+  role="button" tabindex="0" aria-label="Paris" data-ok-map-popup-open="paris">
+  <svg data-ok-map-pin viewBox="0 0 24 24" aria-hidden="true"><path d="…" fill="currentColor"></path></svg>
+</div>
+<div id="paris" data-ok-map-popup data-ok-longitude="2.35" data-ok-latitude="48.86"
+  data-ok-offset="28" role="dialog" tabindex="-1" aria-label="Paris" hidden>
+  <span data-ok-map-popup-tip aria-hidden="true"></span>
+  <div data-ok-map-popup-content>Capital of France</div>
+  <button type="button" data-ok-map-popup-close aria-label="Close">…</button>
+</div>`,
+    react: `import { MapView, Marker, Popup } from "@owlky/react";
+import { useState } from "react";
+
+export function Capital() {
+  const [open, setOpen] = useState(false);
+  return (
+    <MapView aria-label="Map of France" mapStyle="${MAP_STYLES.light}"
+      initialViewState={{ longitude: 2.35, latitude: 48.86, zoom: 5 }}>
+      <Marker longitude={2.35} latitude={48.86} anchor="bottom" color="error"
+        aria-label="Paris" onClick={() => setOpen(true)} />
+      {open ? (
+        <Popup longitude={2.35} latitude={48.86} offset={28} aria-label="Paris"
+          onClose={() => setOpen(false)}>
+          Capital of France
+        </Popup>
+      ) : null}
+    </MapView>
+  );
+}`,
+  },
+  {
+    id: "data",
+    title: "Show data on the map",
+    body: "A source holds data, such as GeoJSON points or polygons, and its layers draw it as circles, fills, lines, labels or a heatmap. The `paint`, `layout` and `filter` values follow the MapLibre style specification. A GeoJSON source can group nearby points in clusters with `cluster`.\n\nIn HTML, sources and layers are hidden elements inside the map. Write their `paint`, `layout` and `filter` as JSON in single-quoted attributes. Change an attribute, for example `data-ok-filter`, and the map updates the layer. For data that changes every frame, call `setSourceData(id, data)` on the instance instead.",
+    html: `<div data-ok-map-source data-ok-id="quakes" data-ok-type="geojson"
+  data-ok-data="earthquakes.geojson" data-ok-cluster hidden>
+  <div data-ok-map-layer data-ok-id="clusters" data-ok-type="circle"
+    data-ok-filter='["has","point_count"]'
+    data-ok-paint='{"circle-color":"var(--ok-palette-info-light)","circle-radius":20}' hidden></div>
+</div>`,
+    react: `import { Layer, MapView, Source } from "@owlky/react";
+
+export function Quakes() {
+  return (
+    <MapView aria-label="Earthquakes" mapStyle="${MAP_STYLES.light}">
+      <Source id="quakes" type="geojson" data="earthquakes.geojson" cluster>
+        <Layer id="clusters" type="circle" filter={["has", "point_count"]}
+          paint={{ "circle-color": "var(--ok-palette-info-light)", "circle-radius": 20 }} />
+      </Source>
+    </MapView>
+  );
+}`,
+  },
+  {
+    id: "events",
+    title: "Respond to the pointer",
+    body: "List the layers people can point at in `interactiveLayerIds` (HTML: `data-ok-interactive-layer-ids`, separated by spaces). Mouse events then report the features under the pointer in `features`, and the cursor turns into a pointer over them. `onMouseEnter` and `onMouseLeave` fire when the pointer enters or leaves those features. Use them for highlights and hover popups. Give a hover popup `closeButton={false}`, `closeOnClick={false}` and `focusAfterOpen={false}`.",
+    html: `<div data-ok-map id="states" data-ok-interactive-layer-ids="states-fill">…</div>
+<script type="module">
+  const map = document.querySelector("#states");
+  map.addEventListener("ok:map:mousemove", (event) => {
+    console.log(event.detail.features[0]?.properties.name);
+  });
+</script>`,
+    react: `<MapView
+  interactiveLayerIds={["states-fill"]}
+  onMouseMove={(event) => console.log(event.features?.[0]?.properties.name)}
+/>`,
+  },
+  {
+    id: "view",
+    title: "Move the map",
+    body: '`initialViewState` sets where the map starts: `longitude`, `latitude`, `zoom`, `pitch` and `bearing`, or `bounds` to fit. To control the view, pass `viewState` and update it from `onMove`. The map ref has `flyTo`, `easeTo`, `jumpTo` and `fitBounds`, and `getMap()` returns the MapLibre map for anything else.\n\nIn HTML, the root\'s `data-ok-longitude`, `data-ok-latitude` and `data-ok-zoom` set the view, and the map moves when you change them. Any element with `data-ok-map-fly-to="<map id>"` and `data-ok-view="longitude,latitude,zoom"` flies the map there when it is clicked, or when a radio button is selected. With reduced motion, the map jumps instead of flying.',
+    html: `<button type="button" data-ok-map-fly-to="world" data-ok-view="139.69,35.69,10">
+  Tokyo
+</button>`,
+    react: `const mapRef = useRef(null);
+// …
+<MapView ref={mapRef} … />
+<button type="button"
+  onClick={() => mapRef.current?.flyTo({ center: [139.69, 35.69], zoom: 10 })}>
+  Tokyo
+</button>`,
+  },
+  {
+    id: "controls",
+    title: "Add controls",
+    body: "Controls sit in the corners of the map: `NavigationControl` (zoom and a compass you can drag to turn the map), `GeolocateControl`, `FullscreenControl`, `ScaleControl`, `GlobeControl`, `TerrainControl` and `AttributionControl`, which every map shows unless you turn it off with `attributionControl={false}`. Place them with `position`, and add your own buttons in a `MapControl`. In HTML, write the controls inside the four corner elements.\n\nPut settings and readouts in a `MapPanel`: a dark, translucent card in a corner of the map.",
+    html: `<div data-ok-map-corner="bottom-left">
+  <div data-ok-map-control data-ok-map-navigation>
+    <button type="button" data-ok-map-action="zoom-in" aria-label="Zoom in">…</button>
+    <button type="button" data-ok-map-action="zoom-out" aria-label="Zoom out">…</button>
+    <button type="button" data-ok-map-action="compass" aria-label="Reset north">…</button>
+  </div>
+  <div data-ok-map-scale data-ok-unit="metric"></div>
+</div>`,
+    react: `<MapView …>
+  <NavigationControl position="bottom-left" />
+  <ScaleControl position="bottom-left" />
+  <FullscreenControl position="top-left" />
+</MapView>`,
+  },
+  {
+    id: "security",
+    title: "Use the map on a strict page",
+    body: "The map accepts only `http` and `https` URLs for styles, data and tiles, and shows the credits of a style as text and links, never as HTML. Its engine draws in a Web Worker. With a Content Security Policy, allow the worker with `worker-src 'self'`, and add `blob:` when the worker comes from another origin, such as a CDN. Pages that enforce Trusted Types need a policy for the worker's URL.",
+  },
+  {
+    id: "options",
+    title: "Options",
+    body: "Every option works the same way in both versions: a prop in React, an attribute in HTML. The map's options come first, then the marker, popup and control options.",
+  },
+  {
+    id: "props",
+    title: "Content and behavior",
+    body: "These props set the style, the content and the callbacks. They aren't options, because HTML writes them as markup or listens to events.",
+  },
+  {
+    id: "api",
+    title: "Events and methods",
+    body: `- **\`ok:map:load\`**, **\`ok:map:move\`**, **\`ok:map:moveend\`**, **\`ok:map:click\`**, **\`ok:map:mousemove\`**, **\`ok:map:mouseenter\`**, **\`ok:map:mouseleave\`** and the other map events fire on the map with \`detail.viewState\`, and for pointer events \`lngLat\`, \`point\` and \`features\`.
+- **\`ok:map:popupopen\`** and **\`ok:map:popupclose\`** fire on a popup. \`popupclose\` has \`detail.reason\` and can be canceled to keep it open.
+- **\`ok:map:markerdragstart\`**, **\`ok:map:markerdrag\`** and **\`ok:map:markerdragend\`** fire on a marker with \`detail.lngLat\`.
+- **\`ok:map:fullscreen\`**, **\`ok:map:geolocate\`**, **\`ok:map:geolocateerror\`**, **\`ok:map:trackuserlocation\`** and **\`ok:map:fallback\`** report the controls and a map that can't draw.
+- **Instance:** \`runtime.get(element, "map")\` returns \`{ map, controller, viewState, flyTo, easeTo, jumpTo, fitBounds, setSourceData(id, data), getClusterExpansionZoom(source, id), openPopup(popup), closePopup(popup), fullscreen, setFullscreen(on) }\`.
+- **React:** event props such as \`onLoad\`, \`onMove\`, \`onClick\`, \`onMouseMove\` and \`onMouseEnter\`; a ref with \`getMap()\`, \`flyTo\`, \`easeTo\`, \`jumpTo\` and \`fitBounds\`; and \`useMap()\` inside a map or a \`MapProvider\`.`,
+  },
+  {
+    id: "keyboard",
+    title: "Keyboard",
+    body: "The map itself is one stop in the Tab order. With focus on the map, the keys below move it. Markers that people can click or drag, popups and controls are buttons in the Tab order.",
+  },
+  {
+    id: "accessibility",
+    title: "Accessibility",
+    body: `- Name each map with \`aria-label\` (HTML: \`data-ok-label\`). Without a name, it is called "Map".
+- Describe what the map shows with \`description\` (HTML: a \`p[data-ok-map-description]\` with an \`id\`). Screen readers read it with the map, and it replaces the map when the browser can't draw it.
+- Give every interactive marker a name. People can open its popup with Enter or Space, and move a draggable marker with the arrow keys.
+- A popup takes focus when it opens and gives it back when it closes, unless you turn off \`focusAfterOpen\`.
+- Controls have names and states: fullscreen and globe report \`aria-pressed\`, and the location result is announced.
+- Moving content needs a way to pause it, and animations respect reduced motion.`,
+  },
+];
+
+const PREVIEWS = {
+  overview: () => (
+    <Preview>
+      <MapView
+        aria-label="Map of Europe"
+        description="Western Europe with a marker on Paris."
+        mapStyle={MAP_STYLES.light}
+        mapStyleDark={MAP_STYLES.dark}
+        initialViewState={{ longitude: 6, latitude: 48, zoom: 3.5 }}
+        style={{ height: "calc(var(--ok-spacing) * 80)" }}
+      >
+        <NavigationControl position="bottom-left" />
+        <ScaleControl position="bottom-left" />
+        <Marker longitude={2.35} latitude={48.86} anchor="bottom" color="error" />
+      </MapView>
+    </Preview>
+  ),
+  options: () => (
+    <>
+      <OptionsTable schema={mapOptions} />
+      <OptionsTable schema={mapMarkerOptions} />
+      <OptionsTable schema={mapPopupOptions} />
+      <OptionsTable schema={mapNavigationOptions} />
+      <OptionsTable schema={mapGeolocateOptions} />
+      <OptionsTable schema={mapScaleOptions} />
+      <OptionsTable schema={mapAttributionOptions} />
+    </>
+  ),
+  props: () => (
+    <PropsTable
+      label="Map content props"
+      rows={[
+        {
+          react: "mapStyle / mapStyleDark",
+          html: "data-ok-map-style / data-ok-map-style-dark",
+          type: "string | StyleSpecification",
+          description: "The map style, and the one used in a dark theme.",
+        },
+        {
+          react: "initialViewState / viewState",
+          html: "data-ok-longitude, data-ok-latitude, data-ok-zoom, data-ok-bounds",
+          type: "object",
+          description: "Where the map starts, or the view it follows (controlled).",
+        },
+        {
+          react: "maxBounds",
+          html: "data-ok-max-bounds",
+          type: "[west, south, east, north]",
+          description: "People can't move the map outside these bounds.",
+        },
+        {
+          react: "interactiveLayerIds",
+          html: "data-ok-interactive-layer-ids",
+          type: "string[]",
+          description: "Layers that mouse events report and that show a pointer.",
+        },
+        {
+          react: "aria-label",
+          html: "data-ok-label",
+          type: "string",
+          description: 'The name of the map (default "Map").',
+        },
+        {
+          react: "description",
+          html: "p[data-ok-map-description]",
+          type: "ReactNode",
+          description: "A text alternative for the map's content.",
+        },
+        {
+          react: "labels",
+          html: "—",
+          type: "Partial<MapLabels>",
+          description: "Texts of the controls and status messages, to translate them.",
+        },
+        {
+          react: "terrain / cursor / mapOptions",
+          html: "—",
+          type: "object / string / MapOptions",
+          description: "3D terrain, the cursor, and other MapLibre options read once.",
+        },
+        {
+          react: "Source, Layer",
+          html: "div[data-ok-map-source], div[data-ok-map-layer]",
+          type: "MapLibre specs",
+          description: "Data and how it is drawn (`paint`, `layout`, `filter`).",
+        },
+        {
+          react: "Marker onDragStart / onDrag / onDragEnd",
+          html: "ok:map:markerdrag*",
+          type: "({ lngLat }) => void",
+          description: "A draggable marker moved.",
+        },
+        {
+          react: "Popup onClose / onOpen",
+          html: "ok:map:popupclose / popupopen",
+          type: "(reason) => void",
+          description: "The popup asks to close, or opened.",
+        },
+      ]}
+    />
+  ),
+  keyboard: () => (
+    <KeyboardTable
+      rows={[
+        ["Tab", "Moves to the map, then to markers, panels and controls."],
+        ["Arrow keys (map)", "Pan the map."],
+        ["+ / −", "Zoom in, zoom out."],
+        ["Shift + Left arrow / Right arrow", "Turn the map."],
+        ["Shift + Up arrow / Down arrow", "Tilt the map."],
+        ["Enter / Space (marker)", "Clicks the marker, for example to open its popup."],
+        ["Arrow keys (draggable marker)", "Move the marker by 10 px (Shift: 50 px)."],
+        ["Escape", "Closes the popup that has focus, or leaves fullscreen."],
+      ]}
+    />
+  ),
+};
+
+/** Map docs page (ADR-0019). */
+export function MapDocs() {
+  return <GuideDocs sections={mapSections} previews={PREVIEWS} />;
+}

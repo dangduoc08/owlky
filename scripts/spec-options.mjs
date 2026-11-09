@@ -83,6 +83,13 @@ const SPECS = {
   editor: "editor.md",
   "code-editor": "code-editor.md",
   "diff-editor": "code-editor.md",
+  map: "map.md",
+  "map-marker": "map.md",
+  "map-popup": "map.md",
+  "map-navigation": "map.md",
+  "map-geolocate": "map.md",
+  "map-scale": "map.md",
+  "map-attribution": "map.md",
 };
 
 const code = (value) => `\`${value}\``;

@@ -1,0 +1,23 @@
+<div id="map-heatmap" data-ok-map data-ok-longitude="-100" data-ok-latitude="40" data-ok-zoom="3" data-ok-projection="mercator" data-ok-map-style="https://tiles.openfreemap.org/styles/positron" data-ok-map-style-dark="https://tiles.openfreemap.org/styles/dark" data-ok-label="Heatmap of earthquakes">
+  <div data-ok-map-view></div>
+  <div data-ok-map-fallback></div>
+  <p data-ok-map-description id="map-heatmap-description">Earthquakes in the contiguous United States in October 2025 as a heatmap: warmer colors where quakes are many and strong, mostly in California, Nevada and the northwest.</p>
+  <div data-ok-map-status role="status"></div>
+  <div data-ok-map-source data-ok-id="earthquakes" data-ok-type="geojson" data-ok-data="maps/earthquakes.geojson" hidden>
+    <div data-ok-map-layer data-ok-id="heatmap" data-ok-type="heatmap" data-ok-max-zoom="9" data-ok-paint='{"heatmap-weight":["interpolate",["linear"],["get","mag"],0,0,3,1],"heatmap-intensity":["interpolate",["linear"],["zoom"],0,2,9,5],"heatmap-color":["interpolate",["linear"],["heatmap-density"],0,"rgba(33, 102, 172, 0)",0.1,"var(--ok-palette-info-light)",0.3,"var(--ok-palette-info-main)",0.5,"var(--ok-palette-warning-light)",0.7,"var(--ok-palette-warning-main)",0.9,"var(--ok-palette-error-main)",1,"var(--ok-palette-error-dark)"],"heatmap-radius":["interpolate",["linear"],["zoom"],0,6,9,30],"heatmap-opacity":["interpolate",["linear"],["zoom"],7,1,9,0]}' hidden></div>
+  </div>
+  <div class="sb-map-heatmap" data-ok-map-panel data-ok-position="top-right" data-ok-theme="dark">
+    <label data-ok-form-control-label data-ok-label-placement="start"><span data-ok-switch data-ok-color="primary" data-ok-size="medium"><input type="checkbox" role="switch" data-ok-switch-input checked><span data-ok-switch-track aria-hidden="true"></span><span data-ok-switch-thumb aria-hidden="true"></span></span><span data-ok-form-control-label-text>All days</span></label>
+    <p id="map-heatmap-day">Each day: 08 Oct 2025</p>
+    <span data-ok-slider data-ok-color="primary" data-ok-size="medium" data-ok-orientation="horizontal" data-ok-track="normal" data-ok-value-label-display="off" data-ok-disabled data-ok-min="1" data-ok-max="31"><span data-ok-slider-rail></span><span data-ok-slider-track></span><span data-ok-slider-thumb data-ok-index="0"><input type="range" min="1" max="31" step="1" disabled aria-labelledby="map-heatmap-day" value="8"></span></span>
+  </div>
+  <div data-ok-map-corner="top-left"></div>
+  <div data-ok-map-corner="top-right"></div>
+  <div data-ok-map-corner="bottom-left"></div>
+  <div data-ok-map-corner="bottom-right">
+    <details data-ok-map-attribution>
+      <summary aria-label="Map credits"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM12 11v5M12 8h.01"></path></svg></summary>
+      <div data-ok-map-attribution-text></div>
+    </details>
+  </div>
+</div>

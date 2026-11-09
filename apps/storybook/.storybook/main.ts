@@ -23,6 +23,7 @@ const config: StorybookConfig = {
         alias: [
           { find: /^@owlky\/core$/, replacement: pkg("core/src/index.ts") },
           { find: /^@owlky\/core\/editor$/, replacement: pkg("core/src/editor/index.ts") },
+          { find: /^@owlky\/core\/map$/, replacement: pkg("core/src/map/index.ts") },
           {
             find: /^@owlky\/core\/code-editor$/,
             replacement: pkg("core/src/code-editor/index.ts"),
@@ -36,6 +37,7 @@ const config: StorybookConfig = {
           { find: /^@owlky\/html\/auto$/, replacement: pkg("html/src/auto.ts") },
           { find: /^@owlky\/html\/editor$/, replacement: pkg("html/src/editor.ts") },
           { find: /^@owlky\/html\/code-editor$/, replacement: pkg("html/src/code-editor.ts") },
+          { find: /^@owlky\/html\/map$/, replacement: pkg("html/src/map.ts") },
           { find: /^@snippets\//, replacement: `${pkg("html/src/components")}/` },
         ],
       },

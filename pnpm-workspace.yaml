@@ -25,3 +25,6 @@ overrides:
   # ADR-0034) pins dompurify 3.4.15. Its ESM build vendors its own copy and uses neither
   # SAFE_FOR_TEMPLATES nor IN_PLACE. Remove once monaco-editor depends on dompurify >= 3.4.17.
   "monaco-editor>dompurify": "3.4.17"
+  # Release age (deps ≥ 14 days): maplibre-gl 6.16.0 (Map, ADR-0025) resolves its style spec
+  # 26.5.1 (2026-11-01). Remove after 2026-11-15.
+  "maplibre-gl>@maplibre/maplibre-gl-style-spec": "26.4.4"

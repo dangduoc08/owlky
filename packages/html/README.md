@@ -114,6 +114,13 @@ the Code editor docs page.
 
 ```html
 <script src="/assets/owlky/owlky-code-editor.js" defer></script>
+The **Map** is a separate script too, because its map engine (MapLibre GL JS) adds about 300 kB
+gzip. Load it after `owlky.js` on pages that have a map. It loads its worker,
+`owlky-map-worker.js`, from the same folder. Owlky includes no map tiles: pass the URL of a MapLibre
+style, such as one of OpenFreeMap's free styles.
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky-map.js" defer></script>
 ```
 
 ## npm
@@ -134,6 +141,11 @@ getRuntime().register(createEditor({ highlighter: createLowlight(common) })).sta
 // The Code editor is opt-in too: Monaco is imported from the monaco-editor package on demand.
 import { loader } from "@owlky/html/code-editor";
 loader.config({ getWorker: (label) => new Worker(/* your bundler's worker for `label` */) });
+// The Map is opt-in too: point MapLibre at its worker, then import "@owlky/html/map".
+import { setMapWorkerUrl } from "@owlky/core/map";
+import workerUrl from "@owlky/core/map-worker.js?url"; // Vite; other bundlers: copy the file
+setMapWorkerUrl(workerUrl);
+await import("@owlky/html/map");
 ```
 
 ## Runtime API

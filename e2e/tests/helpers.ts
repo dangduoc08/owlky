@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { expect, type Locator, type Page } from "@playwright/test";
+import { type BrowserContext, expect, type Locator, type Page } from "@playwright/test";
 
 export type Implementation = "react" | "html";
 export const implementations: Implementation[] = ["react", "html"];
@@ -19,6 +19,7 @@ export async function openStory(
 ) {
   // Components animate color changes; reduced motion (honored by the CSS) makes reads instant.
   await page.emulateMedia({ reducedMotion: "reduce" });
+  await routeMapTiles(page);
   const [story, framework] = id.split("@");
   const all = [
     `theme:${theme}`,
@@ -35,6 +36,43 @@ export async function openStory(
   await page.waitForFunction((t) => document.documentElement.dataset["okTheme"] === t, theme);
   // Let the HTML runtime's MutationObserver flush (it mounts on a microtask).
   await page.evaluate(() => new Promise((r) => setTimeout(r, 0)));
+}
+
+/**
+ * Map stories (ADR-0025) load OpenFreeMap styles: tests serve an offline style instead (Natural
+ * Earth land, public domain; no tiles, no glyphs), so they never depend on the network.
+ */
+const LAND = readFileSync(new URL("../fixtures/map/land.geojson", import.meta.url), "utf8");
+const MAP_COLORS: Record<string, [water: string, land: string]> = {
+  positron: ["#d4dadc", "#f8f8f6"],
+  dark: ["#1c2329", "#3a4148"],
+  liberty: ["#a0c8f0", "#f2efe9"],
+};
+const routed = new WeakSet<BrowserContext>();
+export async function routeMapTiles(page: Page) {
+  const context = page.context();
+  if (routed.has(context)) return;
+  routed.add(context);
+  await context.route(/^https:\/\/tiles\.openfreemap\.org\//, (route) => {
+    const name = /\/styles\/([a-z]+)/.exec(route.request().url())?.[1] ?? "";
+    const colors = MAP_COLORS[name];
+    if (!colors) return route.fulfill({ status: 404, body: "" });
+    return route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        version: 8,
+        name: `Offline ${name}`,
+        glyphs: "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf",
+        sources: {
+          land: { type: "geojson", data: JSON.parse(LAND), attribution: "Natural Earth" },
+        },
+        layers: [
+          { id: "background", type: "background", paint: { "background-color": colors[0] } },
+          { id: "land", type: "fill", source: "land", paint: { "fill-color": colors[1] } },
+        ],
+      }),
+    });
+  });
 }
 
 /** Storybook folder of each component (sidebar `Components/<Folder>/<Component>`), if nested. */
@@ -109,6 +147,11 @@ export function normalizeStory(page: Page): Promise<NormalizedNode> {
       "data-ok-expand-text",
       // Code editor: Monaco loads asynchronously (parity waits for `ready` where it matters).
       "data-ok-status",
+      // Map (ADR-0025): HTML triggers; React opens popups and flies the map from handlers.
+      "data-ok-map-popup-open",
+      "data-ok-map-fly-to",
+      "data-ok-view",
+      "data-ok-duration",
       // React sets <option> selection as a property (compared through the select's :value).
       "selected",
     ]);

@@ -10,7 +10,9 @@
     "./dist/esm/editor.js",
     "./dist/monaco/**",
     "./dist/owlky-code-editor.js",
+    "./dist/esm/map.js",
     "./dist/owlky-editor.js",
+    "./dist/owlky-map.js",
     "./dist/owlky.js",
     "**/*.css"
   ],
@@ -34,9 +36,15 @@
       "types": "./dist/esm/editor.d.ts",
       "import": "./dist/esm/editor.js"
     },
+    "./map": {
+      "types": "./dist/esm/map.d.ts",
+      "import": "./dist/esm/map.js"
+    },
     "./owlky.js": "./dist/owlky.js",
     "./owlky-code-editor.js": "./dist/owlky-code-editor.js",
     "./owlky-editor.js": "./dist/owlky-editor.js",
+    "./owlky-map.js": "./dist/owlky-map.js",
+    "./owlky-map-worker.js": "./dist/owlky-map-worker.js",
     "./owlky.css": "./dist/owlky.css",
     "./owlky.min.css": "./dist/owlky.min.css",
     "./monaco/*": "./dist/monaco/*",
@@ -46,7 +54,7 @@
   "unpkg": "./dist/owlky.js",
   "jsdelivr": "./dist/owlky.js",
   "scripts": {
-    "build": "rm -rf dist && tsc -p tsconfig.build.json && vite build && vite build --mode editor && vite build --mode code-editor && vite build --mode monaco && vite build --mode monaco-workers && node scripts/copy-assets.mjs",
+    "build": "rm -rf dist && tsc -p tsconfig.build.json && vite build && vite build --mode editor && vite build --mode code-editor && vite build --mode monaco && vite build --mode monaco-workers && vite build --mode map && node scripts/copy-assets.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {

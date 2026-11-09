@@ -1,0 +1,27 @@
+{
+  "version": 8,
+  "name": "Offline test style",
+  "sources": {
+    "land": {
+      "type": "geojson",
+      "attribution": "<a href=\"https://example.com/data\">© Test data</a>",
+      "data": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+              "type": "Polygon",
+              "coordinates": [[[-170, -60], [170, -60], [170, 70], [-170, 70], [-170, -60]]]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "layers": [
+    { "id": "background", "type": "background", "paint": { "background-color": "#d4dadc" } },
+    { "id": "land", "type": "fill", "source": "land", "paint": { "fill-color": "#f8f8f6" } }
+  ]
+}

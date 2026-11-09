@@ -3,7 +3,7 @@ import AxeBuilder from "@axe-core/playwright";
 import { optionSchemas } from "@owlky/core";
 import { defaultTheme, shadowNames, typographyVariants } from "@owlky/tokens";
 import { expect, test } from "@playwright/test";
-import { CONTRAST_EXEMPT, openStory, storyIds } from "./helpers.js";
+import { CONTRAST_EXEMPT, openStory, routeMapTiles, storyIds } from "./helpers.js";
 
 /** Storybook id of an export name: "H1" → "h-1", "Subtitle1" → "subtitle-1". */
 const typographyStory = (variant: string) =>
@@ -155,6 +155,7 @@ const GUIDES = [
   ["components-datagrid--docs", "Accessibility"],
   ["components-editor--docs", "Accessibility"],
   ["components-code-editor--docs", "Accessibility"],
+  ["components-map--docs", "Accessibility"],
 ] as const;
 
 /** Component docs pages and their option schema: the Options table lists every option. */
@@ -165,6 +166,18 @@ const OPTION_TABLES: [string, (keyof typeof optionSchemas)[]][] = [
   ["components-badge--docs", ["badge"]],
   ["components-editor--docs", ["editor"]],
   ["components-code-editor--docs", ["code-editor", "diff-editor"]],
+  [
+    "components-map--docs",
+    [
+      "map",
+      "map-marker",
+      "map-popup",
+      "map-navigation",
+      "map-geolocate",
+      "map-scale",
+      "map-attribution",
+    ],
+  ],
   ["components-button-button--docs", ["button"]],
   ["components-checkbox--docs", ["checkbox", "form-control-label"]],
   ["components-chip--docs", ["chip"]],
@@ -261,6 +274,7 @@ for (const [id, lastHeading] of GUIDES) {
     const openDocs = async (page: import("@playwright/test").Page, theme = "light") => {
       // Live previews animate (Motion): reduced motion shows their end state at once.
       await page.emulateMedia({ reducedMotion: "reduce" });
+      await routeMapTiles(page);
       await page.goto(
         `/apps/storybook/storybook-static/iframe.html?id=${id}&viewMode=docs&globals=theme:${theme};a11y.manual:!true`,
       );

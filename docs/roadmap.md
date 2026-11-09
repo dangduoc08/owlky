@@ -61,7 +61,7 @@ component and each `/integrate` run.
 | Extra | Label | ✅ | Label | Avatar, Badge, Chip & Label |
 | Extra | Layout | not planned | — | Next |
 | Extra | Lightbox | wave 7 (ADR) | — | Next |
-| Extra | Map | wave 7 (ADR) | — | Next |
+| Extra | Map | ✅ (ADR-0025, MapLibre GL JS) | MapView, Marker, Popup, Source, Layer, NavigationControl, GeolocateControl, FullscreenControl, ScaleControl, AttributionControl, GlobeControl, TerrainControl, MapControl, MapPanel, MapProvider / useMap | Map |
 | Extra | Markdown | wave 7 (ADR) | — | Next |
 | Extra | Mega menu | not planned | — | Next |
 | Extra | Multi-language | not planned | — | Next |
@@ -509,6 +509,19 @@ integrate these in the same review (additive: no DOM or API change) and remove t
 | Typography + Paper (card) | Timeline story "Customized" (cards with a title and text) | demo `.sb-timeline-card` styled in `.storybook/preview.css` |
 | Typography (body text) | Autocomplete stories (output lines under the fields) | demo `p` styled in `.storybook/preview.css` |
 | Collapse (transition) | Tree view groups | open / close at once (`hidden`); MUI X collapses them |
+| Typography (body text, headings) | Map stories (popup text, the drag readout, panel captions) | demo `.sb-map-*` styled in `.storybook/preview.css` |
+
+## ✅ Components — Map (2026-11-09)
+Created with `/component` from the reference "Map" page, every section as a story: Change theme,
+Markers & popups, Draggable markers, GeoJSON animation, Clusters, Interaction, Viewport animation,
+Highlight by filter, Heatmap, Side by side. Built on MapLibre GL JS (ADR-0025, owner's choice): one
+core controller (`@owlky/core/map`) for React and HTML, opt-in HTML entry (`@owlky/html/map`,
+`owlky-map.js` + `owlky-map-worker.js`); React maps react-map-gl's props. Owlky draws the controls,
+markers, popups, panels, scale and credits; styles come from the consumer (stories: OpenFreeMap),
+with a dark style that follows the theme and token colors in layer paint. Composes Radio, Switch,
+TextField, Slider, Button and ToggleButton in the stories' panels. No new tokens.
+**Beyond the reference (kept):** globe and terrain controls, keyboard dragging of markers, a WebGL
+fallback with the map's description, CSP example page.
 
 ## ✅ Components — Carousel (ADR-0033, 2026-11-09)
 Created with `/component` from the reference "Carousel" page, built on Embla Carousel's API (v8
@@ -624,7 +637,7 @@ Dependency-first: leaf components before the ones built from them, the ones that
 | 4 Overlays | ~~Popover~~ ✅, ~~Tooltip~~ ✅, ~~Menu~~ ✅, ~~Dialog~~ ✅, ~~Snackbar~~ ✅, ~~Backdrop~~ ✅ | ~~Drawer / Dialog backdrop~~ ✅ (native `::backdrop`, same token); icon button tooltips: nothing to change (MUI uses native `title` there; Tooltip wraps any IconButton) |
 | 5 Navigation | ~~Tabs~~ ✅, ~~Breadcrumbs~~ ✅, ~~Stepper~~ ✅ | — (nothing waited for them) |
 | 6 Composites | ~~Rating~~ ✅, ~~Slider~~ ✅, ~~Timeline~~ ✅, ~~Transfer list~~ ✅, ~~Autocomplete~~ ✅, ~~Tree view~~ ✅ | — (nothing waited for them; Slider unblocks the SettingsDrawer backlog of Theme settings) |
-| 7 Needs an ADR | ~~Data grid~~ (ADR-0020, phases below), ~~Date pickers~~ (ADR-0022, ADR-0030, complete ✅), ~~Chart~~ (ADR-0024, ADR-0027, ADR-0031, complete ✅), Map, ~~Editor~~ (ADR-0023) ✅, ~~Carousel~~ (ADR-0033) ✅, Lightbox, Markdown, Organization chart, Upload, Image, Walktour | — |
+| 7 Needs an ADR | ~~Data grid~~ (ADR-0020, phases below), ~~Date pickers~~ (ADR-0022, ADR-0030, complete ✅), ~~Chart~~ (ADR-0024, ADR-0027, ADR-0031, complete ✅), ~~Map~~ (ADR-0025) ✅, ~~Editor~~ (ADR-0023) ✅, ~~Carousel~~ (ADR-0033) ✅, Lightbox, Markdown, Organization chart, Upload, Image, Walktour | — |
 
 Not planned as components (patterns or app-level pages of the reference): Layout,
 Utilities, Multi-language, Navigation bar, Mega menu, Scroll progress, Form validation, Form wizard.

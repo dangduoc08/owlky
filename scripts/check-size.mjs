@@ -71,10 +71,19 @@ const budgets = [
     1_600_000,
     "Monaco TypeScript worker (+ shared worker chunk)",
   ],
+  // The Map is opt-in (ADR-0025): MapLibre GL JS is about 295 kB of owlky-map.js (main thread)
+  // and all of owlky-map-worker.js (its tile worker, about 147 kB, loaded by the map itself);
+  // owlky.js stays free of them.
+  ["packages/html/dist/owlky-map.js", 310_000, "Map + MapLibre (IIFE, loaded after owlky.js)"],
+  ["packages/html/dist/owlky-map-worker.js", 155_000, "MapLibre tile worker (loaded by the map)"],
+  // 42 kB once the Map, the Carousel and the Code editor merged together (about 2.1 + 2 + 0.3 kB
+  // on 38 kB): 40.4 kB.
   // 36.1 kB with the Code editor (ADR-0034: frame, loading state and fallback textareas; about
   // 0.3 kB). Monaco's own CSS ships in dist/monaco/monaco.css, budgeted above.
   // 40 kB since the Carousel (ADR-0033: viewport, slides, effects, arrows, dots, progress,
   // thumbnails, overlay placements; about 2 kB): 37.8 kB.
+  // 40 kB since the Map (ADR-0025: controls, markers, popups, panels, scale, credits and MapLibre's
+  // canvas essentials, so maplibre-gl.css isn't needed; about 2.1 kB): 37.97 kB.
   // 36 kB since the chart's phase 4 (ADR-0031: toolbar, candles, annotations, brush selection,
   // opt-in animations; about 0.5 kB): 35.0 kB.
   // 38 kB since the date pickers' phase 3 (range calendar and range picker styles; about 0.7 kB)
@@ -90,7 +99,7 @@ const budgets = [
   // inputs, 22 kB after the navigation components, 20 kB after the form, display and list
   // components. Per-component files (`@owlky/styles/components/*`) let apps
   // load only what they use.
-  ["packages/styles/dist/owlky.min.css", 40_000, "All CSS (tokens + components)"],
+  ["packages/styles/dist/owlky.min.css", 42_000, "All CSS (tokens + components)"],
 ];
 
 let failed = false;
