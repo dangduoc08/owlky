@@ -13,7 +13,9 @@ ${LABELS.map(
 ).join("\n")}
 </div>`;
 
-const OUTLINED = 'data-ok-variant="outlined" data-ok-color="inherit" data-ok-size="md"';
+// Buttons in a group have no elevation unless the group sets disableElevation to false.
+const OUTLINED =
+  'data-ok-variant="outlined" data-ok-color="inherit" data-ok-size="md" data-ok-disable-elevation';
 
 export const buttonGroupSections: GuideSection[] = [
   {
@@ -46,22 +48,34 @@ export function RangePicker() {
       'data-ok-orientation="horizontal"',
       'data-ok-variant="contained" data-ok-color="primary" data-ok-size="md" data-ok-disable-elevation',
     ),
-    react: `<ButtonGroup variant="contained" color="primary" aria-label="Range">
-  <Button>Day</Button>
-  <Button>Week</Button>
-  <Button>Month</Button>
-</ButtonGroup>`,
+    react: `import { Button, ButtonGroup } from "@owlky/react";
+
+export function ButtonGroupStyle() {
+  return (
+    <ButtonGroup variant="contained" color="primary" aria-label="Range">
+      <Button>Day</Button>
+      <Button>Week</Button>
+      <Button>Month</Button>
+    </ButtonGroup>
+  );
+}`,
   },
   {
     id: "orientation",
     title: "Stack the buttons",
     body: "Set `orientation` to `vertical` to stack the buttons, for example on narrow screens, where a horizontal group doesn't wrap. Set `fullWidth` to stretch the group to its container.",
     html: htmlGroup('data-ok-orientation="vertical"', OUTLINED),
-    react: `<ButtonGroup orientation="vertical" aria-label="Range">
-  <Button>Day</Button>
-  <Button>Week</Button>
-  <Button>Month</Button>
-</ButtonGroup>`,
+    react: `import { Button, ButtonGroup } from "@owlky/react";
+
+export function ButtonGroupOrientation() {
+  return (
+    <ButtonGroup orientation="vertical" aria-label="Range">
+      <Button>Day</Button>
+      <Button>Week</Button>
+      <Button>Month</Button>
+    </ButtonGroup>
+  );
+}`,
   },
   {
     id: "options",

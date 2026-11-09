@@ -20,6 +20,7 @@ export const fabSections: GuideSection[] = [
     react: `// Load once, in your app's entry file
 import "@owlky/styles/owlky.css";
 import { Fab } from "@owlky/react";
+import { PlusIcon } from "lucide-react";
 
 export function AddButton() {
   return (
@@ -36,10 +37,17 @@ export function AddButton() {
     html: `<button type="button" data-ok-fab data-ok-variant="contained" data-ok-color="primary" data-ok-size="md" data-ok-extended>
   ${PLUS}New project
 </button>`,
-    react: `<Fab color="primary" extended>
-  <PlusIcon />
-  New project
-</Fab>`,
+    react: `import { Fab } from "@owlky/react";
+import { PlusIcon } from "lucide-react";
+
+export function FabExtended() {
+  return (
+    <Fab color="primary" extended>
+      <PlusIcon />
+      New project
+    </Fab>
+  );
+}`,
   },
   {
     id: "variants",
@@ -48,9 +56,16 @@ export function AddButton() {
     html: `<button type="button" data-ok-fab data-ok-variant="soft" data-ok-color="primary" data-ok-size="md" aria-label="Add">
   ${PLUS}
 </button>`,
-    react: `<Fab variant="soft" color="primary" aria-label="Add">
-  <PlusIcon />
-</Fab>`,
+    react: `import { Fab } from "@owlky/react";
+import { PlusIcon } from "lucide-react";
+
+export function FabVariants() {
+  return (
+    <Fab variant="soft" color="primary" aria-label="Add">
+      <PlusIcon />
+    </Fab>
+  );
+}`,
   },
   {
     id: "sizes",
@@ -59,9 +74,16 @@ export function AddButton() {
     html: `<button type="button" data-ok-fab data-ok-variant="contained" data-ok-color="primary" data-ok-size="lg" aria-label="Add">
   ${PLUS}
 </button>`,
-    react: `<Fab color="primary" size="lg" aria-label="Add">
-  <PlusIcon />
-</Fab>`,
+    react: `import { Fab } from "@owlky/react";
+import { PlusIcon } from "lucide-react";
+
+export function FabSizes() {
+  return (
+    <Fab color="primary" size="lg" aria-label="Add">
+      <PlusIcon />
+    </Fab>
+  );
+}`,
   },
   {
     id: "position",
@@ -78,13 +100,16 @@ export function AddButton() {
 <button type="button" class="page-fab" data-ok-fab data-ok-variant="contained" data-ok-color="primary" data-ok-size="md" aria-label="Add">
   ${PLUS}
 </button>`,
-    react: `<Fab
-  color="primary"
-  aria-label="Add"
-  style={{ position: "fixed", right: 24, bottom: 24 }}
->
-  <PlusIcon />
-</Fab>`,
+    react: `import { Fab } from "@owlky/react";
+import { PlusIcon } from "lucide-react";
+
+export function FabPosition() {
+  return (
+    <Fab color="primary" aria-label="Add" style={{ position: "fixed", right: 24, bottom: 24 }}>
+      <PlusIcon />
+    </Fab>
+  );
+}`,
   },
   {
     id: "options",

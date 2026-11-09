@@ -61,10 +61,26 @@ export function SaveButton() {
         capitalize(variant),
       ),
     ).join("\n"),
-    react: `<Button variant="contained" color="primary">Contained</Button>
-<Button variant="outlined" color="primary">Outlined</Button>
-<Button variant="text" color="primary">Text</Button>
-<Button variant="soft" color="primary">Soft</Button>`,
+    react: `import { Button } from "@owlky/react";
+
+export function ButtonVariants() {
+  return (
+    <>
+      <Button variant="contained" color="primary">
+        Contained
+      </Button>
+      <Button variant="outlined" color="primary">
+        Outlined
+      </Button>
+      <Button variant="text" color="primary">
+        Text
+      </Button>
+      <Button variant="soft" color="primary">
+        Soft
+      </Button>
+    </>
+  );
+}`,
   },
   {
     id: "colors",
@@ -74,7 +90,15 @@ export function SaveButton() {
       'data-ok-variant="contained" data-ok-color="error" data-ok-size="md"',
       "Delete",
     ),
-    react: `<Button variant="contained" color="error">Delete</Button>`,
+    react: `import { Button } from "@owlky/react";
+
+export function ButtonColors() {
+  return (
+    <Button variant="contained" color="error">
+      Delete
+    </Button>
+  );
+}`,
   },
   {
     id: "sizes",
@@ -82,8 +106,20 @@ export function SaveButton() {
     body: "Four sizes are available: `sm` (30px), `md` (36px, the default), `lg` (48px) and `xl` (56px). Use `fullWidth` to make a button fill its container, for example for the main action on a phone.",
     html: `${htmlButton('data-ok-variant="contained" data-ok-color="primary" data-ok-size="lg"', "Large")}
 ${htmlButton('data-ok-variant="contained" data-ok-color="primary" data-ok-size="md" data-ok-full-width', "Full width")}`,
-    react: `<Button variant="contained" color="primary" size="lg">Large</Button>
-<Button variant="contained" color="primary" fullWidth>Full width</Button>`,
+    react: `import { Button } from "@owlky/react";
+
+export function ButtonSizes() {
+  return (
+    <>
+      <Button variant="contained" color="primary" size="lg">
+        Large
+      </Button>
+      <Button variant="contained" color="primary" fullWidth>
+        Full width
+      </Button>
+    </>
+  );
+}`,
   },
   {
     id: "icons",
@@ -94,9 +130,16 @@ ${htmlButton('data-ok-variant="contained" data-ok-color="primary" data-ok-size="
       "Send",
       `  <span data-ok-button-icon="start" aria-hidden="true">${MAIL_SVG}</span>\n`,
     ),
-    react: `<Button variant="contained" color="primary" startIcon={<MailIcon />}>
-  Send
-</Button>`,
+    react: `import { Button } from "@owlky/react";
+import { MailIcon } from "lucide-react";
+
+export function ButtonIcons() {
+  return (
+    <Button variant="contained" color="primary" startIcon={<MailIcon />}>
+      Send
+    </Button>
+  );
+}`,
   },
   {
     id: "loading",
@@ -107,15 +150,22 @@ ${htmlButton('data-ok-variant="contained" data-ok-color="primary" data-ok-size="
   <span data-ok-button-loader aria-hidden="true"><span role="progressbar" data-ok-circular-progress data-ok-variant="indeterminate" data-ok-color="inherit" data-ok-button-spinner><svg data-ok-circular-progress-svg aria-hidden="true" viewBox="22 22 44 44"><circle data-ok-circular-progress-circle cx="44" cy="44" r="20.2" stroke-width="3.6" /></svg></span></span>
   <span data-ok-button-label>Sending</span>
 </button>`,
-    react: `<Button
-  variant="contained"
-  color="primary"
-  loading
-  loadingPosition="start"
-  startIcon={<MailIcon />}
->
-  Sending
-</Button>`,
+    react: `import { Button } from "@owlky/react";
+import { MailIcon } from "lucide-react";
+
+export function ButtonLoading() {
+  return (
+    <Button
+      variant="contained"
+      color="primary"
+      loading
+      loadingPosition="start"
+      startIcon={<MailIcon />}
+    >
+      Sending
+    </Button>
+  );
+}`,
   },
   {
     id: "link",
@@ -124,9 +174,15 @@ ${htmlButton('data-ok-variant="contained" data-ok-color="primary" data-ok-size="
     html: `<a href="/docs" data-ok-button data-ok-variant="outlined" data-ok-color="inherit" data-ok-size="md">
   <span data-ok-button-label>Read the docs</span>
 </a>`,
-    react: `<Button variant="outlined" href="/docs">
-  Read the docs
-</Button>`,
+    react: `import { Button } from "@owlky/react";
+
+export function ButtonLink() {
+  return (
+    <Button variant="outlined" href="/docs">
+      Read the docs
+    </Button>
+  );
+}`,
   },
   {
     id: "options",

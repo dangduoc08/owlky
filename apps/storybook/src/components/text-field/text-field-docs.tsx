@@ -31,7 +31,7 @@ import "@owlky/styles/owlky.css";
 import { TextField } from "@owlky/react";
 
 export function Email() {
-  return <TextField label="Email" type="email" name="email" autoComplete="email" />;
+  return <TextField id="email" label="Email" type="email" name="email" autoComplete="email" />;
 }`,
   },
   {
@@ -44,7 +44,11 @@ export function Email() {
     <input id="city" data-ok-text-field-input placeholder=" ">
   </div>
 </div>`,
-    react: `<TextField variant="filled" label="City" />`,
+    react: `import { TextField } from "@owlky/react";
+
+export function TextFieldVariants() {
+  return <TextField id="city" variant="filled" label="City" />;
+}`,
   },
   {
     id: "helper",
@@ -53,24 +57,50 @@ export function Email() {
     html: `<div data-ok-text-field data-ok-variant="outlined" data-ok-size="medium" data-ok-color="default" data-ok-margin="none" data-ok-error>
   <label data-ok-text-field-label for="phone">Phone</label>
   <div data-ok-text-field-control>
-    <input id="phone" data-ok-text-field-input type="tel" aria-invalid="true" aria-describedby="phone-help" placeholder=" " value="12">
+    <input id="phone" data-ok-text-field-input type="tel" aria-invalid="true" aria-describedby="phone-helper-text" placeholder=" " value="12">
     ${outline("Phone")}
   </div>
-  <div data-ok-text-field-helper id="phone-help">Enter at least 8 digits</div>
+  <div data-ok-text-field-helper id="phone-helper-text">Enter at least 8 digits</div>
 </div>`,
-    react: `<TextField label="Phone" type="tel" error helperText="Enter at least 8 digits" />`,
+    react: `import { TextField } from "@owlky/react";
+
+export function TextFieldHelper() {
+  return (
+    <TextField
+      id="phone"
+      label="Phone"
+      type="tel"
+      defaultValue="12"
+      error
+      helperText="Enter at least 8 digits"
+    />
+  );
+}`,
   },
   {
     id: "adornments",
     title: "Add icons, units and buttons",
     body: "Put an `InputAdornment` at the start or the end of the input for an icon, a unit such as kg, or a button. A start adornment keeps the label above the field. In React, show or hide a password by keeping `type` in state; in HTML, give the end button `data-ok-text-field-reveal`, and the script switches the type and `aria-pressed`.",
-    html: `<span data-ok-text-field-adornment="end">
-  <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="md" data-ok-edge="end" data-ok-text-field-reveal aria-label="Show password" aria-pressed="false">…</button>
-</span>`,
-    react: `export function Password() {
+    html: `<div data-ok-text-field data-ok-variant="outlined" data-ok-size="medium" data-ok-color="default" data-ok-margin="none">
+  <label data-ok-text-field-label for="password">Password</label>
+  <div data-ok-text-field-control>
+    <input id="password" data-ok-text-field-input type="password" autocomplete="current-password" placeholder=" ">
+    <span data-ok-text-field-adornment="end">
+      <!-- The script switches the input's type and aria-pressed -->
+      <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="md" data-ok-edge="end" data-ok-text-field-reveal aria-label="Show password" aria-pressed="false"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" /><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></button>
+    </span>
+    <fieldset data-ok-text-field-outline aria-hidden="true"><legend><span>Password</span></legend></fieldset>
+  </div>
+</div>`,
+    react: `import { IconButton, InputAdornment, TextField } from "@owlky/react";
+import { EyeIcon } from "lucide-react";
+import { useState } from "react";
+
+export function Password() {
   const [shown, setShown] = useState(false);
   return (
     <TextField
+      id="password"
       label="Password"
       type={shown ? "text" : "password"}
       autoComplete="current-password"
@@ -97,10 +127,16 @@ export function Email() {
     ${outline("Currency")}
   </div>
 </div>`,
-    react: `<TextField select size="small" label="Currency" defaultValue="EUR">
-  <option value="USD">$</option>
-  <option value="EUR">€</option>
-</TextField>`,
+    react: `import { TextField } from "@owlky/react";
+
+export function TextFieldSelect() {
+  return (
+    <TextField id="currency" select size="small" label="Currency" defaultValue="EUR">
+      <option value="USD">$</option>
+      <option value="EUR">€</option>
+    </TextField>
+  );
+}`,
   },
   {
     id: "multiline",
@@ -113,7 +149,11 @@ export function Email() {
     ${outline("Bio")}
   </div>
 </div>`,
-    react: `<TextField multiline minRows={2} maxRows={6} label="Bio" />`,
+    react: `import { TextField } from "@owlky/react";
+
+export function TextFieldMultiline() {
+  return <TextField id="bio" multiline minRows={2} maxRows={6} label="Bio" />;
+}`,
   },
   {
     id: "options",
@@ -209,7 +249,7 @@ const PREVIEWS = {
   ),
   select: () => (
     <Preview>
-      <TextField select size="small" label="Currency" defaultValue="EUR">
+      <TextField id="currency" select size="small" label="Currency" defaultValue="EUR">
         <option value="USD">$</option>
         <option value="EUR">€</option>
       </TextField>

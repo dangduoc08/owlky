@@ -51,7 +51,10 @@ export function Newsletter() {
   // Save the setting whenever the user changes it
   input.addEventListener("change", () => saveSetting("newsletter", input.checked));
 </script>`,
-    react: `export function Newsletter() {
+    react: `import { Checkbox, FormControlLabel } from "@owlky/react";
+import { useState } from "react";
+
+export function Newsletter() {
   const [subscribed, setSubscribed] = useState(true);
   return (
     <FormControlLabel
@@ -70,24 +73,53 @@ export function Newsletter() {
       " checked",
       "Secondary, small",
     ),
-    react: `<FormControlLabel
-  label="Secondary, small"
-  control={<Checkbox color="secondary" size="small" defaultChecked />}
-/>`,
+    react: `import { Checkbox, FormControlLabel } from "@owlky/react";
+
+export function CheckboxColors() {
+  return (
+    <FormControlLabel
+      label="Secondary, small"
+      control={<Checkbox color="secondary" size="small" defaultChecked />}
+    />
+  );
+}`,
   },
   {
     id: "placement",
     title: "Place the label",
     body: "By default, the text follows the box (`end`). Set `labelPlacement` to `start`, `top` or `bottom` to move it. The label's negative margin lines the box up with the content edge.",
     html: htmlCheckbox('data-ok-color="primary" data-ok-size="medium"', "", "Top", "top"),
-    react: `<FormControlLabel label="Top" labelPlacement="top" control={<Checkbox />} />`,
+    react: `import { Checkbox, FormControlLabel } from "@owlky/react";
+
+export function CheckboxPlacement() {
+  return <FormControlLabel label="Top" labelPlacement="top" control={<Checkbox />} />;
+}`,
   },
   {
     id: "icons",
     title: "Use your own icons",
     body: "Pass `icon` and `checkedIcon` (and `indeterminateIcon`) to replace the box. In HTML, put your SVG inside the matching `data-ok-checkbox-icon` span. Icons follow the text color, so they take the checkbox's colors. Keep them decorative with `aria-hidden`: the label names the checkbox.",
-    html: `<span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24">…</svg></span>`,
-    react: `<Checkbox icon={<HeartIcon />} checkedIcon={<HeartFilledIcon />} aria-label="Favorite" />`,
+    html: `<label data-ok-form-control-label data-ok-label-placement="end">
+  <span data-ok-checkbox data-ok-color="primary" data-ok-size="medium">
+    <input type="checkbox" data-ok-checkbox-input>
+    <!-- Your icons replace the box: an outline heart, then a filled one -->
+    <span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg></span>
+    <span data-ok-checkbox-icon="checked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg></span>
+    <span data-ok-checkbox-icon="indeterminate" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" /><path data-ok-checkbox-mark d="M8 12h8" stroke-width="2" stroke-linecap="round" /></svg></span>
+  </span>
+  <span data-ok-form-control-label-text>Favorite</span>
+</label>`,
+    react: `import { Checkbox, FormControlLabel } from "@owlky/react";
+import { Heart } from "lucide-react";
+
+export function Favorite() {
+  return (
+    <FormControlLabel
+      label="Favorite"
+      control={<Checkbox icon={<Heart />} checkedIcon={<Heart fill="currentColor" />} />}
+    />
+  );
+}`,
   },
   {
     id: "indeterminate",
@@ -95,21 +127,48 @@ export function Newsletter() {
     body: `A parent checkbox shows a dash (mixed) when only some of its children are checked. In React, compute the state with \`selectAllState\` from \`@owlky/core\` and pass \`checked\` and \`indeterminate\`. In HTML, list the children's ids in the parent's \`aria-controls\`: the script checks or clears all of them, and keeps the parent's state in step.
 
 Set \`data-ok-indeterminate\` (or \`indeterminate\` in React) for a mixed state of your own. A click by the user clears it, as with native checkboxes.`,
-    html: `${htmlCheckbox('data-ok-color="primary" data-ok-size="medium"', ' aria-controls="tea coffee"', "All drinks")}
+    html: `${htmlCheckbox('data-ok-color="primary" data-ok-size="medium" data-ok-indeterminate', ' aria-controls="tea coffee"', "All drinks")}
 ${htmlCheckbox('data-ok-color="primary" data-ok-size="medium"', ' id="tea" checked', "Tea")}
 ${htmlCheckbox('data-ok-color="primary" data-ok-size="medium"', ' id="coffee"', "Coffee")}`,
-    react: `const { checked, indeterminate } = selectAllState(selected.length, drinks.length);
+    react: `import { selectAllState } from "@owlky/core";
+import { Checkbox, FormControlLabel } from "@owlky/react";
+import { useState } from "react";
 
-<FormControlLabel
-  label="All drinks"
-  control={
-    <Checkbox
-      checked={checked}
-      indeterminate={indeterminate}
-      onChange={(next) => setSelected(next ? drinks : [])}
-    />
-  }
-/>`,
+const drinks = ["Tea", "Coffee"];
+
+export function Drinks() {
+  const [selected, setSelected] = useState(["Tea"]);
+  const { checked, indeterminate } = selectAllState(selected.length, drinks.length);
+  return (
+    <>
+      <FormControlLabel
+        label="All drinks"
+        control={
+          <Checkbox
+            checked={checked}
+            indeterminate={indeterminate}
+            onChange={(next) => setSelected(next ? drinks : [])}
+          />
+        }
+      />
+      {drinks.map((drink) => (
+        <FormControlLabel
+          key={drink}
+          label={drink}
+          control={
+            <Checkbox
+              id={drink.toLowerCase()}
+              checked={selected.includes(drink)}
+              onChange={(next) =>
+                setSelected(next ? [...selected, drink] : selected.filter((d) => d !== drink))
+              }
+            />
+          }
+        />
+      ))}
+    </>
+  );
+}`,
   },
   {
     id: "options",

@@ -21,6 +21,7 @@ ${html('data-ok-color="default" data-ok-size="md"', "Delete")}`,
     react: `// Load once, in your app's entry file
 import "@owlky/styles/owlky.css";
 import { IconButton } from "@owlky/react";
+import { TrashIcon } from "lucide-react";
 
 export function DeleteAction() {
   return (
@@ -35,39 +36,67 @@ export function DeleteAction() {
     title: "Pick a color",
     body: "The default color is a soft grey that suits most toolbars. Use `inherit` to take the surrounding text color, or a palette color to give the action meaning, such as `error` for a destructive one.",
     html: html('data-ok-color="error" data-ok-size="md"', "Delete"),
-    react: `<IconButton color="error" aria-label="Delete">
-  <TrashIcon />
-</IconButton>`,
+    react: `import { IconButton } from "@owlky/react";
+import { TrashIcon } from "lucide-react";
+
+export function IconButtonColors() {
+  return (
+    <IconButton color="error" aria-label="Delete">
+      <TrashIcon />
+    </IconButton>
+  );
+}`,
   },
   {
     id: "sizes",
     title: "Set the size",
     body: "Three sizes are available: `sm`, `md` (the default) and `lg`. Every size keeps a touch target of at least 24 × 24px. Inside a row of content, set `edge` to `start` or `end` so the icon lines up with the content edge instead of the button's padding.",
     html: html('data-ok-color="default" data-ok-size="sm" data-ok-edge="end"', "Delete"),
-    react: `<IconButton size="sm" edge="end" aria-label="Delete">
-  <TrashIcon />
-</IconButton>`,
+    react: `import { IconButton } from "@owlky/react";
+import { TrashIcon } from "lucide-react";
+
+export function IconButtonSizes() {
+  return (
+    <IconButton size="sm" edge="end" aria-label="Delete">
+      <TrashIcon />
+    </IconButton>
+  );
+}`,
   },
   {
     id: "loading",
     title: "Show that an action is in progress",
     body: "Set `loading` while the action runs. The icon is replaced by a spinner, the button is disabled and it tells assistive technology that it's busy.",
     html: `<button type="button" data-ok-icon-button data-ok-color="primary" data-ok-size="md" data-ok-loading aria-busy="true" disabled aria-label="Send">
-  ${iconMarkup("mail")}
   <span data-ok-icon-button-loader aria-hidden="true"><span role="progressbar" data-ok-circular-progress data-ok-variant="indeterminate" data-ok-color="inherit" data-ok-button-spinner><svg data-ok-circular-progress-svg aria-hidden="true" viewBox="22 22 44 44"><circle data-ok-circular-progress-circle cx="44" cy="44" r="20.2" stroke-width="3.6" /></svg></span></span>
+  ${iconMarkup("mail")}
 </button>`,
-    react: `<IconButton color="primary" loading aria-label="Send">
-  <MailIcon />
-</IconButton>`,
+    react: `import { IconButton } from "@owlky/react";
+import { MailIcon } from "lucide-react";
+
+export function IconButtonLoading() {
+  return (
+    <IconButton color="primary" loading aria-label="Send">
+      <MailIcon />
+    </IconButton>
+  );
+}`,
   },
   {
     id: "animate",
     title: "Add a press animation",
     body: "Set `animate` to scale the button slightly when it's pressed. The animation is plain CSS and turns off when the user prefers reduced motion.",
     html: html('data-ok-color="primary" data-ok-size="md" data-ok-animate', "Add", "plus"),
-    react: `<IconButton color="primary" animate aria-label="Add">
-  <PlusIcon />
-</IconButton>`,
+    react: `import { IconButton } from "@owlky/react";
+import { PlusIcon } from "lucide-react";
+
+export function IconButtonAnimate() {
+  return (
+    <IconButton color="primary" animate aria-label="Add">
+      <PlusIcon />
+    </IconButton>
+  );
+}`,
   },
   {
     id: "options",

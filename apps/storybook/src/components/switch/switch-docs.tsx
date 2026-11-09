@@ -27,11 +27,12 @@ ${htmlSwitch('data-ok-color="primary" data-ok-size="medium"', ' name="notificati
     react: `// Load once, in your app's entry file
 import "@owlky/styles/owlky.css";
 import { FormControlLabel, Switch } from "@owlky/react";
+import { useState } from "react";
 
 export function Notifications() {
   const [on, setOn] = useState(true);
   return (
-    <FormControlLabel label="Notifications" control={<Switch checked={on} onChange={setOn} />} />
+    <FormControlLabel label="Notifications" control={<Switch name="notifications" checked={on} onChange={setOn} />} />
   );
 }`,
   },
@@ -40,14 +41,27 @@ export function Notifications() {
     title: "Choose a color and size",
     body: "The color fills the track when the switch is on. The default is `primary`. Use `default` for the text color, or another palette color to match the context. The `small` size has a 26 × 16px track, and the default `medium` size has a 34 × 20px track.",
     html: htmlSwitch('data-ok-color="info" data-ok-size="small"', " checked", "Info, small"),
-    react: `<FormControlLabel label="Info, small" control={<Switch color="info" size="small" defaultChecked />} />`,
+    react: `import { FormControlLabel, Switch } from "@owlky/react";
+
+export function SwitchColors() {
+  return (
+    <FormControlLabel
+      label="Info, small"
+      control={<Switch color="info" size="small" defaultChecked />}
+    />
+  );
+}`,
   },
   {
     id: "placement",
     title: "Place the label",
     body: "By default, the text follows the switch (`end`). Set `labelPlacement` to `start`, `top` or `bottom` to move it. Without a label, for example at the end of a list row, set `edge` to `start` or `end` to line the track up with the content.",
     html: htmlSwitch('data-ok-color="primary" data-ok-size="medium"', "", "Start", "start"),
-    react: `<FormControlLabel label="Start" labelPlacement="start" control={<Switch />} />`,
+    react: `import { FormControlLabel, Switch } from "@owlky/react";
+
+export function SwitchPlacement() {
+  return <FormControlLabel label="Start" labelPlacement="start" control={<Switch />} />;
+}`,
   },
   {
     id: "options",

@@ -13,10 +13,10 @@ export const sliderSections: GuideSection[] = [
 <link rel="stylesheet" href="${CDN}/owlky.css">
 <script src="${CDN}/owlky.js" defer></script>
 
-<span data-ok-slider data-ok-color="primary" data-ok-size="medium" data-ok-min="0" data-ok-max="100">
+<span data-ok-slider data-ok-color="primary" data-ok-size="medium" data-ok-orientation="horizontal" data-ok-track="normal" data-ok-value-label-display="off">
   <span data-ok-slider-rail></span>
   <span data-ok-slider-track></span>
-  <span data-ok-slider-thumb>
+  <span data-ok-slider-thumb data-ok-index="0">
     <input type="range" min="0" max="100" step="1" value="30" aria-label="Volume">
   </span>
 </span>`,
@@ -32,39 +32,63 @@ export function Volume() {
     id: "steps",
     title: "Set steps and marks",
     body: '`min`, `max` and `step` set the values (0, 100 and 1 by default). `marks` draws a tick at every step (`true`), or at the values you list, each with an optional label below the track. Set `step` to `null` to allow only the marked values. In HTML, write one `data-ok-slider-mark` per mark and set `data-ok-step="0"` for marks only.',
-    html: `<span data-ok-slider data-ok-step="0">
-  …
-  <span data-ok-slider-mark data-ok-value="20"></span>
+    html: `<!-- data-ok-step="0": only the marked values -->
+<span data-ok-slider data-ok-color="primary" data-ok-size="medium" data-ok-orientation="horizontal" data-ok-track="normal" data-ok-value-label-display="off" data-ok-step="0">
+  <span data-ok-slider-rail></span>
+  <span data-ok-slider-track></span>
+  <span data-ok-slider-mark data-ok-value="0" data-ok-active></span>
+  <span data-ok-slider-mark-label data-ok-value="0" aria-hidden="true">0°C</span>
+  <span data-ok-slider-mark data-ok-value="20" data-ok-active></span>
   <span data-ok-slider-mark-label data-ok-value="20" aria-hidden="true">20°C</span>
-  …
+  <span data-ok-slider-mark data-ok-value="100"></span>
+  <span data-ok-slider-mark-label data-ok-value="100" aria-hidden="true">100°C</span>
+  <span data-ok-slider-thumb data-ok-index="0">
+    <input type="range" min="0" max="100" step="any" value="20" aria-label="Temperature">
+  </span>
 </span>`,
-    react: `<Slider
-  aria-label="Temperature"
-  defaultValue={20}
-  step={null}
-  marks={[
-    { value: 0, label: "0°C" },
-    { value: 20, label: "20°C" },
-    { value: 100, label: "100°C" },
-  ]}
-/>`,
+    react: `import { Slider } from "@owlky/react";
+
+export function Temperature() {
+  return (
+    <Slider
+      aria-label="Temperature"
+      defaultValue={20}
+      step={null}
+      marks={[
+        { value: 0, label: "0°C" },
+        { value: 20, label: "20°C" },
+        { value: 100, label: "100°C" },
+      ]}
+    />
+  );
+}`,
   },
   {
     id: "labels",
     title: "Show the value",
     body: '`valueLabelDisplay` shows the value in a bubble above the thumb: `auto` while the thumb is hovered, focused or dragged, `on` always. `valueLabelFormat` sets its text, and `getAriaValueText` what screen readers announce, such as "30°C". In HTML, `data-ok-label-value="{value}°C"` sets both.',
-    html: `<span data-ok-slider data-ok-value-label-display="auto" data-ok-label-value="{value}°C">…
-  <span data-ok-slider-thumb>
-    <input type="range" … aria-valuetext="30°C">
+    html: `<!-- data-ok-label-value formats the bubble and aria-valuetext -->
+<span data-ok-slider data-ok-color="primary" data-ok-size="medium" data-ok-orientation="horizontal" data-ok-track="normal" data-ok-value-label-display="auto" data-ok-label-value="{value}°C">
+  <span data-ok-slider-rail></span>
+  <span data-ok-slider-track></span>
+  <span data-ok-slider-thumb data-ok-index="0">
+    <input type="range" min="0" max="100" step="1" value="30" aria-label="Temperature" aria-valuetext="30°C">
     <span data-ok-slider-value-label aria-hidden="true">30°C</span>
   </span>
 </span>`,
-    react: `<Slider
-  aria-label="Temperature"
-  valueLabelDisplay="auto"
-  valueLabelFormat={(value) => \`\${value}°C\`}
-  getAriaValueText={(value) => \`\${value}°C\`}
-/>`,
+    react: `import { Slider } from "@owlky/react";
+
+export function Temperature() {
+  return (
+    <Slider
+      aria-label="Temperature"
+      defaultValue={30}
+      valueLabelDisplay="auto"
+      valueLabelFormat={(value) => \`\${value}°C\`}
+      getAriaValueText={(value) => \`\${value}°C\`}
+    />
+  );
+}`,
   },
   {
     id: "range",
@@ -75,10 +99,25 @@ export function Volume() {
     id: "look",
     title: "Change the look",
     body: "`size` is `medium` (a 10px track) or `small` (6px). `color` is a palette color or `inherit`. `track` is `normal`, `inverted` (filled from the value to the end) or `false`. Set `orientation` to `vertical` for a slider that fills its container's height: give that container a height.",
-    html: `<div style="height: 200px">…<span data-ok-slider data-ok-orientation="vertical">…</span></div>`,
-    react: `<div style={{ height: 200 }}>
-  <Slider orientation="vertical" aria-label="Level" defaultValue={30} />
+    html: `<!-- A vertical slider fills its container's height -->
+<div style="height: 200px">
+  <span data-ok-slider data-ok-color="primary" data-ok-size="medium" data-ok-orientation="vertical" data-ok-track="normal" data-ok-value-label-display="off">
+    <span data-ok-slider-rail></span>
+    <span data-ok-slider-track></span>
+    <span data-ok-slider-thumb data-ok-index="0">
+      <input type="range" min="0" max="100" step="1" value="30" aria-label="Level" aria-orientation="vertical">
+    </span>
+  </span>
 </div>`,
+    react: `import { Slider } from "@owlky/react";
+
+export function Level() {
+  return (
+    <div style={{ height: 200 }}>
+      <Slider orientation="vertical" aria-label="Level" defaultValue={30} />
+    </div>
+  );
+}`,
   },
   {
     id: "options",

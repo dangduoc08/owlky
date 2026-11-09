@@ -24,6 +24,7 @@ export const toggleButtonSections: GuideSection[] = [
     react: `// Load once, in your app's entry file
 import "@owlky/styles/owlky.css";
 import { ToggleButton } from "@owlky/react";
+import { BoldIcon } from "lucide-react";
 
 export function BoldToggle() {
   return (
@@ -43,15 +44,27 @@ ${htmlToggle("italic", false)}
 ${htmlToggle("underline", false)}
 </div>`,
     react: `import { ToggleButton, ToggleButtonGroup } from "@owlky/react";
+import { BoldIcon, ItalicIcon, UnderlineIcon } from "lucide-react";
 import { useState } from "react";
 
 export function FormatPicker() {
   const [format, setFormat] = useState<string | null>("bold");
   return (
-    <ToggleButtonGroup exclusive value={format} onChange={(next) => setFormat(next as string | null)} aria-label="Text format">
-      <ToggleButton value="bold" aria-label="Bold"><BoldIcon /></ToggleButton>
-      <ToggleButton value="italic" aria-label="Italic"><ItalicIcon /></ToggleButton>
-      <ToggleButton value="underline" aria-label="Underline"><UnderlineIcon /></ToggleButton>
+    <ToggleButtonGroup
+      exclusive
+      value={format}
+      onChange={(next) => setFormat(next as string | null)}
+      aria-label="Text format"
+    >
+      <ToggleButton value="bold" aria-label="Bold">
+        <BoldIcon />
+      </ToggleButton>
+      <ToggleButton value="italic" aria-label="Italic">
+        <ItalicIcon />
+      </ToggleButton>
+      <ToggleButton value="underline" aria-label="Underline">
+        <UnderlineIcon />
+      </ToggleButton>
     </ToggleButtonGroup>
   );
 }`,
@@ -65,32 +78,69 @@ ${htmlToggle("bold", true)}
 ${htmlToggle("italic", true)}
 ${htmlToggle("underline", false)}
 </div>`,
-    react: `<ToggleButtonGroup defaultValue={["bold", "italic"]} aria-label="Text formats">
-  <ToggleButton value="bold" aria-label="Bold"><BoldIcon /></ToggleButton>
-  <ToggleButton value="italic" aria-label="Italic"><ItalicIcon /></ToggleButton>
-  <ToggleButton value="underline" aria-label="Underline"><UnderlineIcon /></ToggleButton>
-</ToggleButtonGroup>`,
+    react: `import { ToggleButton, ToggleButtonGroup } from "@owlky/react";
+import { BoldIcon, ItalicIcon, UnderlineIcon } from "lucide-react";
+
+export function FormatToggles() {
+  return (
+    <ToggleButtonGroup defaultValue={["bold", "italic"]} aria-label="Text formats">
+      <ToggleButton value="bold" aria-label="Bold">
+        <BoldIcon />
+      </ToggleButton>
+      <ToggleButton value="italic" aria-label="Italic">
+        <ItalicIcon />
+      </ToggleButton>
+      <ToggleButton value="underline" aria-label="Underline">
+        <UnderlineIcon />
+      </ToggleButton>
+    </ToggleButtonGroup>
+  );
+}`,
   },
   {
     id: "react",
     title: "React to changes",
     body: "In React, handle `onChange`: it receives the requested value, and a controlled component keeps its value until you update it. In HTML, listen to `ok:toggle-group:change` (or `ok:toggle-button:change` for a standalone button) and call `preventDefault()` to keep the current state.",
-    html: `<script type="module">
+    html: `<div role="group" data-ok-toggle-group data-ok-orientation="horizontal" data-ok-exclusive aria-label="Text format">
+${htmlToggle("bold", true)}
+${htmlToggle("italic", false)}
+${htmlToggle("underline", false)}
+</div>
+
+<script type="module">
   document.addEventListener("ok:toggle-group:change", (event) => {
-    const { value, previous } = event.detail;
-    if (value === null) event.preventDefault(); // always keep one format
+    // Always keep one format: refuse to clear the choice
+    if (event.detail.value === null) event.preventDefault();
   });
 </script>`,
-    react: `<ToggleButtonGroup
-  exclusive
-  value={format}
-  onChange={(next) => {
-    if (next !== null) setFormat(next); // always keep one format
-  }}
-  aria-label="Text format"
->
-  …
-</ToggleButtonGroup>`,
+    react: `import { ToggleButton, ToggleButtonGroup } from "@owlky/react";
+import { BoldIcon, ItalicIcon, UnderlineIcon } from "lucide-react";
+import { useState } from "react";
+
+export function FormatPicker() {
+  const [format, setFormat] = useState("bold");
+  return (
+    <ToggleButtonGroup
+      exclusive
+      value={format}
+      onChange={(next) => {
+        // Always keep one format: ignore a request to clear the choice
+        if (typeof next === "string") setFormat(next);
+      }}
+      aria-label="Text format"
+    >
+      <ToggleButton value="bold" aria-label="Bold">
+        <BoldIcon />
+      </ToggleButton>
+      <ToggleButton value="italic" aria-label="Italic">
+        <ItalicIcon />
+      </ToggleButton>
+      <ToggleButton value="underline" aria-label="Underline">
+        <UnderlineIcon />
+      </ToggleButton>
+    </ToggleButtonGroup>
+  );
+}`,
   },
   {
     id: "options",

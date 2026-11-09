@@ -15,12 +15,19 @@ export const autocompleteSections: GuideSection[] = [
 <script src="${CDN}/owlky.js" defer></script>
 
 <div data-ok-autocomplete>
-  <div data-ok-text-field data-ok-variant="outlined" data-ok-size="medium" data-ok-color="default" data-ok-margin="none" data-ok-full-width>
+  <div data-ok-text-field data-ok-variant="outlined" data-ok-size="medium" data-ok-color="default" data-ok-full-width data-ok-margin="none">
     <label data-ok-text-field-label for="fruit">Fruit</label>
     <div data-ok-text-field-control>
       <input id="fruit" data-ok-text-field-input role="combobox" aria-autocomplete="list"
         aria-expanded="false" aria-controls="fruit-listbox" autocomplete="off" placeholder=" ">
-      <span data-ok-text-field-adornment="end">…clear and open buttons…</span>
+      <span data-ok-text-field-adornment="end">
+        <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-autocomplete-clear tabindex="-1" aria-label="Clear" hidden>
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
+        </button>
+        <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-autocomplete-toggle tabindex="-1" aria-label="Open" data-ok-label-open="Open" data-ok-label-close="Close">
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+        </button>
+      </span>
       <fieldset data-ok-text-field-outline aria-hidden="true"><legend><span>Fruit</span></legend></fieldset>
     </div>
   </div>
@@ -29,6 +36,8 @@ export const autocompleteSections: GuideSection[] = [
     <span data-ok-popover-arrow aria-hidden="true"></span>
     <ul role="listbox" id="fruit-listbox" aria-label="Fruit">
       <li role="option" id="fruit-option-0" data-ok-value="Apple" aria-selected="false">Apple</li>
+      <li role="option" id="fruit-option-1" data-ok-value="Banana" aria-selected="false">Banana</li>
+      <li role="option" id="fruit-option-2" data-ok-value="Cherry" aria-selected="false">Cherry</li>
     </ul>
     <div data-ok-autocomplete-no-options hidden>No options</div>
   </div>
@@ -38,21 +47,27 @@ export const autocompleteSections: GuideSection[] = [
 const fruits = ["Apple", "Banana", "Cherry"];
 
 export function FruitPicker() {
-  return <Autocomplete label="Fruit" options={fruits} />;
+  return <Autocomplete id="fruit" label="Fruit" options={fruits} />;
 }`,
   },
   {
     id: "values",
     title: "Use options and values",
     body: "Pass `options` as strings, or as `{ value, label }` objects when the value you store differs from what people read, such as country codes. The value is the option's `value`: a string, or `null` when nothing is chosen. In HTML, each option is an `li[role=option]` with `data-ok-value`, and `aria-selected` marks the chosen one.",
-    react: `<Autocomplete
-  label="Country"
-  options={[
-    { value: "AR", label: "Argentina" },
-    { value: "DE", label: "Germany" },
-  ]}
-  defaultValue="DE"
-/>`,
+    react: `import { Autocomplete } from "@owlky/react";
+
+export function Country() {
+  return (
+    <Autocomplete
+      label="Country"
+      options={[
+        { value: "AR", label: "Argentina" },
+        { value: "DE", label: "Germany" },
+      ]}
+      defaultValue="DE"
+    />
+  );
+}`,
   },
   {
     id: "controlled",
@@ -63,19 +78,27 @@ export function FruitPicker() {
     id: "multiple",
     title: "Pick several values",
     body: 'Set `multiple` to keep several values, shown as chips in the field. Backspace in an empty field removes the last one, and each chip has a remove button. `limitTags` shows a number of chips while the field isn\'t focused, and "+3" for the rest. With `disableCloseOnSelect` and a `renderOption` that draws a checkbox, the list stays open while people pick. In HTML, a `<template data-ok-autocomplete-tag>` holds the chip for new values.',
-    react: `<Autocomplete
-  label="Favorites"
-  multiple
-  disableCloseOnSelect
-  limitTags={2}
-  options={fruits}
-  renderOption={(option, { selected }) => (
-    <>
-      <Checkbox size="small" checked={selected} readOnly tabIndex={-1} aria-hidden="true" />
-      {option.label}
-    </>
-  )}
-/>`,
+    react: `import { Autocomplete, Checkbox } from "@owlky/react";
+
+const fruits = ["Apple", "Banana", "Cherry", "Grape", "Mango"];
+
+export function Favorites() {
+  return (
+    <Autocomplete
+      label="Favorites"
+      multiple
+      disableCloseOnSelect
+      limitTags={2}
+      options={fruits}
+      renderOption={(option, { selected }) => (
+        <>
+          <Checkbox size="small" checked={selected} readOnly tabIndex={-1} aria-hidden="true" />
+          {option.label}
+        </>
+      )}
+    />
+  );
+}`,
   },
   {
     id: "free-solo",

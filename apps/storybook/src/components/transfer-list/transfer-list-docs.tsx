@@ -8,6 +8,69 @@ const ITEMS = ["Apples", "Bananas", "Cherries", "Dates"].map((label, i) => ({
   label,
 }));
 
+const CHECKBOX_ICONS = [
+  `<span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="4.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span>`,
+  `<span data-ok-checkbox-icon="checked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" /><path data-ok-checkbox-mark d="m7.75 12.25 2.75 2.75 5.75-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></span>`,
+  `<span data-ok-checkbox-icon="indeterminate" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" /><path data-ok-checkbox-mark d="M8 12h8" stroke-width="2" stroke-linecap="round" /></svg></span>`,
+];
+const ARROWS = {
+  "all-right": ["Move all right", "m6 17 5-5-5-5M13 17l5-5-5-5"],
+  right: ["Move selected right", "m9 18 6-6-6-6"],
+  left: ["Move selected left", "m15 18-6-6 6-6"],
+  "all-left": ["Move all left", "m11 17-5-5 5-5M18 17l-5-5 5-5"],
+} as const;
+
+const indent = (text: string, spaces: number) => text.replace(/^/gm, " ".repeat(spaces));
+const checkbox = (input: string) =>
+  `<span data-ok-checkbox data-ok-color="primary" data-ok-size="medium">
+  <input type="checkbox" data-ok-checkbox-input${input}>
+${CHECKBOX_ICONS.map((icon) => `  ${icon}`).join("\n")}
+</span>`;
+
+/** The markup React renders for `<TransferList id="fruits">` with one item on each side. */
+function htmlTransferList(enhanced: boolean) {
+  const [left, right] = enhanced ? ["Available", "Chosen"] : ["Choices", "Chosen"];
+  const panel = (side: "left" | "right", title: string, value: string, label: string) => {
+    const header = enhanced
+      ? `\n  <div data-ok-transfer-list-header>
+${indent(checkbox(` aria-label="Select all ${title.toLowerCase()}"`), 4)}
+    <span data-ok-transfer-list-title>${title}</span>
+    <span data-ok-transfer-list-count>0/1 selected</span>
+  </div>`
+      : "";
+    return `<section data-ok-transfer-list-panel data-ok-side="${side}">${header}
+  <section data-ok-scrollbar aria-label="${title}" tabindex="0">
+    <ul data-ok-list data-ok-disable-padding>
+      <li data-ok-list-item data-ok-disable-padding data-ok-value="${value}">
+        <label data-ok-transfer-list-option>
+${indent(checkbox(` id="fruits-${value}"`), 10)}
+          <span>${label}</span>
+        </label>
+      </li>
+    </ul>
+  </section>
+</section>`;
+  };
+  const moves = (
+    enhanced ? (["right", "left"] as const) : (["all-right", "right", "left", "all-left"] as const)
+  )
+    .map((move) => {
+      const [label, path] = ARROWS[move];
+      const disabled = move === "right" || move === "left" ? " disabled" : "";
+      return `  <button type="button" data-ok-button data-ok-variant="outlined" data-ok-color="inherit" data-ok-size="sm" data-ok-transfer-list-move="${move}" aria-label="${label}"${disabled}>
+    <span data-ok-button-label><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="${path}" /></svg></span>
+  </button>`;
+    })
+    .join("\n");
+  return `<div id="fruits" data-ok-transfer-list data-ok-variant="${enhanced ? "enhanced" : "simple"}">
+${indent(panel("left", left, "apples", "Apples"), 2)}
+  <div data-ok-transfer-list-actions>
+${moves}
+  </div>
+${indent(panel("right", right, "bananas", "Bananas"), 2)}
+</div>`;
+}
+
 export const transferListSections: GuideSection[] = [
   {
     id: "overview",
@@ -17,24 +80,7 @@ export const transferListSections: GuideSection[] = [
 <link rel="stylesheet" href="${CDN}/owlky.css">
 <script src="${CDN}/owlky.js" defer></script>
 
-<div data-ok-transfer-list data-ok-variant="simple">
-  <section data-ok-transfer-list-panel data-ok-side="left">
-    <section data-ok-scrollbar aria-label="Choices" tabindex="0">
-      <ul data-ok-list data-ok-disable-padding>
-        <li data-ok-list-item data-ok-disable-padding data-ok-value="apples">
-          <label data-ok-transfer-list-option>
-            <span data-ok-checkbox …><input type="checkbox">…</span><span>Apples</span>
-          </label>
-        </li>
-      </ul>
-    </section>
-  </section>
-  <div data-ok-transfer-list-actions>
-    <button type="button" data-ok-button data-ok-variant="outlined" data-ok-size="sm"
-      data-ok-transfer-list-move="right" aria-label="Move selected right">…</button>
-  </div>
-  <section data-ok-transfer-list-panel data-ok-side="right">…</section>
-</div>`,
+${htmlTransferList(false)}`,
     react: `import { TransferList } from "@owlky/react";
 
 const fruits = [
@@ -43,7 +89,7 @@ const fruits = [
 ];
 
 export function Fruits() {
-  return <TransferList items={fruits} defaultLeft={["apples"]} />;
+  return <TransferList id="fruits" items={fruits} defaultLeft={["apples"]} />;
 }`,
   },
   {
@@ -55,8 +101,25 @@ export function Fruits() {
     id: "enhanced",
     title: "Use the enhanced variant",
     body: 'Set `variant` to `enhanced` to give each list a title, a select-all checkbox and a count such as "1/4 selected". The select-all checkbox shows a mixed state when some items are checked. `titles` names the two lists ("Choices" and "Chosen" by default) and `getCountLabel` writes the count. In HTML, `data-ok-label-count` takes a template such as `{checked} of {total}`.',
-    html: `<div data-ok-transfer-list data-ok-variant="enhanced" data-ok-label-count="{checked}/{total} selected">…</div>`,
-    react: `<TransferList items={fruits} variant="enhanced" titles={["Available", "Chosen"]} />`,
+    html: htmlTransferList(true),
+    react: `import { TransferList } from "@owlky/react";
+
+const fruits = [
+  { value: "apples", label: "Apples" },
+  { value: "bananas", label: "Bananas" },
+];
+
+export function Fruits() {
+  return (
+    <TransferList
+      id="fruits"
+      items={fruits}
+      defaultLeft={["apples"]}
+      variant="enhanced"
+      titles={["Available", "Chosen"]}
+    />
+  );
+}`,
   },
   {
     id: "options",

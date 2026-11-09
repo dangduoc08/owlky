@@ -6,9 +6,14 @@ import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tab
 const ICONS = `<span data-ok-radio-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span>
       <span data-ok-radio-icon="checked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 6a4 4 0 1 0 0 8 4 4 0 0 0 0-8z" fill="currentColor" fill-rule="evenodd" /></svg></span>`;
 
-const htmlRadio = (value: string, label: string, checked = false) =>
-  `  <label data-ok-form-control-label data-ok-label-placement="end">
-    <span data-ok-radio data-ok-color="primary" data-ok-size="medium">
+const htmlRadio = (
+  value: string,
+  label: string,
+  checked = false,
+  { placement = "end", color = "primary", size = "medium" } = {},
+) =>
+  `  <label data-ok-form-control-label data-ok-label-placement="${placement}">
+    <span data-ok-radio data-ok-color="${color}" data-ok-size="${size}">
       <input type="radio" data-ok-radio-input name="delivery" value="${value}"${checked ? " checked" : ""}>
       ${ICONS}
     </span>
@@ -32,6 +37,7 @@ ${htmlRadio("express", "Express")}
     react: `// Load once, in your app's entry file
 import "@owlky/styles/owlky.css";
 import { FormControlLabel, Radio, RadioGroup } from "@owlky/react";
+import { useState } from "react";
 
 export function Delivery() {
   const [delivery, setDelivery] = useState("standard");
@@ -47,15 +53,41 @@ export function Delivery() {
     id: "layout",
     title: "Lay out the group",
     body: "A group stacks its radios in a column. Set `row` to place them side by side; they wrap on narrow screens. Use `labelPlacement` on each form control label to move the text to the `start`, `top` or `bottom`.",
-    html: `<div role="radiogroup" data-ok-radio-group data-ok-row aria-label="Delivery">…</div>`,
-    react: `<RadioGroup row name="delivery" defaultValue="standard" aria-label="Delivery">…</RadioGroup>`,
+    html: `<!-- Side by side, with the text before each radio -->
+<div role="radiogroup" data-ok-radio-group data-ok-row aria-label="Delivery">
+${htmlRadio("standard", "Standard", true, { placement: "start" })}
+${htmlRadio("express", "Express", false, { placement: "start" })}
+</div>`,
+    react: `import { FormControlLabel, Radio, RadioGroup } from "@owlky/react";
+
+export function Delivery() {
+  return (
+    // Side by side, with the text before each radio
+    <RadioGroup row name="delivery" defaultValue="standard" aria-label="Delivery">
+      <FormControlLabel value="standard" label="Standard" labelPlacement="start" control={<Radio />} />
+      <FormControlLabel value="express" label="Express" labelPlacement="start" control={<Radio />} />
+    </RadioGroup>
+  );
+}`,
   },
   {
     id: "colors",
     title: "Choose a color and size",
     body: "The color shows on the selected radio. The default is `primary`; `default` uses the text color. The `small` size has a 36px target and a 20px circle.",
-    html: `<span data-ok-radio data-ok-color="secondary" data-ok-size="small">…</span>`,
-    react: `<Radio color="secondary" size="small" value="a" />`,
+    html: `<div role="radiogroup" data-ok-radio-group aria-label="Delivery">
+${htmlRadio("standard", "Standard", true, { color: "secondary", size: "small" })}
+${htmlRadio("express", "Express", false, { color: "secondary", size: "small" })}
+</div>`,
+    react: `import { FormControlLabel, Radio, RadioGroup } from "@owlky/react";
+
+export function Delivery() {
+  return (
+    <RadioGroup name="delivery" defaultValue="standard" aria-label="Delivery">
+      <FormControlLabel value="standard" label="Standard" control={<Radio color="secondary" size="small" />} />
+      <FormControlLabel value="express" label="Express" control={<Radio color="secondary" size="small" />} />
+    </RadioGroup>
+  );
+}`,
   },
   {
     id: "options",
