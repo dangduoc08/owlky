@@ -43,6 +43,7 @@ const CASES: [
   ["paper", "basic", "paper", ["variant", "square"]],
   ["card", "basics", "card", ["variant", "raised", "square"]],
   ["typography", "usage", "typography", ["color", "align", "noWrap"]],
+  ["link", "basic-links", "link", ["color", "underline"]],
   ["list", "simple", "list", ["dense", "disablePadding"]],
   ["tooltip", "simple", "tooltip", ["arrow"]],
   ["tabs", "custom", "tabs", ["centered", "selectionFollowsFocus"]],

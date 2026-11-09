@@ -43,15 +43,16 @@ const meta = {
 } satisfies Meta;
 export default meta;
 
-export const Text: StoryObj = story("text", ["breadcrumbs.css"]);
+export const Text: StoryObj = story("text", ["typography.css", "link.css", "breadcrumbs.css"]);
 
 export const WithIcon: StoryObj = {
-  ...story("with-icon", ["breadcrumbs.css"]),
+  ...story("with-icon", ["typography.css", "link.css", "breadcrumbs.css"]),
   name: "With icon",
 };
 
 export const Customized: StoryObj = story("customized", [
+  "typography.css",
+  "link.css",
   "breadcrumbs.css",
   "button.css",
-  "typography.css",
 ]);

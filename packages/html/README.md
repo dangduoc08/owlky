@@ -26,6 +26,9 @@ parts `label|legend[data-ok-form-label]` (› `span[data-ok-form-label-asterisk]
 (› `img[data-ok-card-media-image]` on non-media elements), `data-ok-card-content`, `data-ok-card-actions`
 (`data-ok-disable-spacing`), `button|a[data-ok-card-action-area]`)
 **Paper** (CSS only: `data-ok-paper` on any element, `data-ok-variant`, `data-ok-elevation` 0–24, `data-ok-square`)
+**Link** (CSS only, a Typography root: `a[href]|button[type=button]` with `data-ok-typography data-ok-link` + Typography's
+attributes (`data-ok-variant` default `inherit`, `data-ok-color` default `primary` or `inherit`), `data-ok-underline`
+`always|hover|none`; write `rel="noopener noreferrer"` with `target="_blank"`)
 **List** (CSS only: `ul[data-ok-list]` › `li[data-ok-list-item]` › `button|a[data-ok-list-item-button]`, icon, avatar,
 text, subheader, `data-ok-list-item-secondary-action`; runtime `list` opens / closes nested lists from
 `aria-expanded` + `aria-controls`, event `ok:list:toggle`)

@@ -1,0 +1,73 @@
+/*
+ * Link — spec: specs/components/link.md
+ *
+ * Anatomy:   a[data-ok-typography][data-ok-link][href]   (or button[type="button"], or the element
+ *            a router renders) — a Typography root: typography.css sets the font and the color.
+ * Modifiers: data-ok-variant (Typography's; default inherit), data-ok-color (Typography's +
+ *            inherit; default primary), data-ok-align, data-ok-gutter-bottom, data-ok-no-wrap,
+ *            data-ok-underline = always (default) | hover | none
+ * States:    :hover (hover-capable devices), :focus-visible
+ *
+ * Loads right after typography.css (same zero specificity, later wins). Single :where()
+ * selectors in @layer components.
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-ok-link]) {
+    cursor: pointer;
+    text-decoration-line: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  :where([data-ok-link][data-ok-color="inherit"]) {
+    color: inherit;
+  }
+
+  /* Underline: palette colors draw it at 40 % of their main tone, other colors in the text color. */
+  :where([data-ok-link][data-ok-underline="always"]) {
+    text-decoration-line: underline;
+    text-decoration-color: currentColor;
+  }
+
+  :where(
+    [data-ok-link][data-ok-underline="always"][data-ok-color="primary"],
+    [data-ok-link][data-ok-underline="always"][data-ok-color="secondary"],
+    [data-ok-link][data-ok-underline="always"][data-ok-color="info"],
+    [data-ok-link][data-ok-underline="always"][data-ok-color="success"],
+    [data-ok-link][data-ok-underline="always"][data-ok-color="warning"],
+    [data-ok-link][data-ok-underline="always"][data-ok-color="error"]
+  ) {
+    text-decoration-color: rgb(var(--ok-c-channel) / 0.4);
+  }
+
+  /* A link rendered as a button (no destination): the button's own box goes away. */
+  :where(button[data-ok-link]) {
+    position: relative;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background-color: transparent;
+    vertical-align: middle;
+    user-select: none;
+    appearance: none;
+  }
+
+  @media (hover: hover) {
+    :where([data-ok-link][data-ok-underline="always"]:hover) {
+      text-decoration-color: currentColor;
+    }
+
+    :where([data-ok-link][data-ok-underline="hover"]:hover) {
+      text-decoration-line: underline;
+      text-decoration-color: currentColor;
+    }
+  }
+
+  :where([data-ok-link]:focus-visible) {
+    border-radius: var(--ok-radius-xs);
+    outline: 2px solid var(--ok-text-primary);
+    outline-offset: 2px;
+  }
+}

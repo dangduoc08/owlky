@@ -663,6 +663,15 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
   wrapper (`[data-ok-motion]:has(> [data-ok-card])`). Snippets: `node
   apps/storybook/scripts/card-snippets.mjs`; letter Avatars with `aria-label` need `role="img"`
   (Biome `useAriaPropsSupportedByRole`).
+- Link (on Typography): React `Link` renders a `Typography` with `data-ok-link` (Typography's
+  marker and variant first, so `linkAttributes` drops them before spreading). It passes `href`,
+  `target` and `rel` only when given: a router component's own `href` (from `to`) must survive.
+  `Link` is typed with two call signatures (`LinkComponent`): with `component`, the props of that
+  component. Palette colors draw the `always` underline through `--ok-c-channel`; text tones have
+  no channel, so their underline is `currentColor`. Inline links in story rows need the row's gap
+  for axe `target-size`: HTML snippet tests lay the host out as a flex row with a gap.
+  `breadcrumbs.css` loads after `link.css` and keeps its item rules, so a plain `a` and a Link look
+  the same there.
 - Parallel work: never run two `/component` / `/integrate` sessions (or two `pnpm build` /
   `pnpm test:e2e`) in the same working tree — builds wipe each other's `dist/` and
   `storybook-static/`, e2e servers share port 4321, and staging part of a shared file while

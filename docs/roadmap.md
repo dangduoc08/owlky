@@ -5,7 +5,7 @@ and a review before the next starts.
 
 ## Overview
 Every page of the reference's component menu (`https://minimals.cc/components/…`) and where it
-stands (plus pages from other references, marked). ✅ = built (43); *wave N* = planned, see "Next — components"; *not planned* = a pattern
+stands (plus pages from other references, marked). ✅ = built (45); *wave N* = planned, see "Next — components"; *not planned* = a pattern
 or app-level page. *Section* = the heading below with the details. Update this table with each
 component and each `/integrate` run.
 
@@ -36,6 +36,7 @@ component and each `/integrate` run.
 | MUI (no Minimals page; mui.com) | Transitions (Collapse; Fade, Grow, Slide, Zoom are Motion) | ✅ (ADR-0044) | Collapse | Collapse |
 | MUI (no Minimals page; mui.com) | Card | ✅ | Card, CardHeader, CardContent, CardMedia, CardActions, CardActionArea | Card |
 | MUI (no Minimals page; mui.com) | Form control (API pages; demos on Radio, Checkbox, Switch) | ✅ | FormControl, FormLabel, FormGroup, FormHelperText, `useFormControl` | Form control |
+| MUI (no Minimals page; mui.com) | Link | ✅ | Link | Link |
 | MUI | List | ✅ | List, ListItem, ListItemButton, ListItemIcon, ListItemAvatar, ListItemText, ListSubheader, ListItemExpandIcon | List |
 | MUI | Menu | ✅ | Menu, MenuItem | Popover, Tooltip, Menu, Dialog & Snackbar |
 | MUI | Pagination | ✅ | Pagination, PaginationItem | Pagination |
@@ -523,7 +524,6 @@ integrate these in the same review (additive: no DOM or API change) and remove t
 | Select (listbox, built on Menu) | Pagination story "Items" (card grid + items-per-page Select) | story deferred: the reference uses MUI's listbox Select |
 | Select (listbox, built on Menu) | Table story "Table pagination with API" (search TextField + category Select) | story deferred until the listbox Select; TextField exists |
 | Select (listbox, built on Menu) | TextField `select` (non-native) | native `<select>` only (`select` prop) |
-| Link (Typography) | Breadcrumbs items | native `a` / `span[aria-current]` styled by `breadcrumbs.css` (inherit color, hover underline); a Link component can go inside items without a DOM change |
 | Motion full version, phase 1 (custom keyframes) | Motion story "Logo" (the reference's shape-morphing, turning rings and the turning gradient disc) | the logo inside MotionBorder rings; the story becomes the reference's once `animate(element, keyframes)` exists, without changing MotionBorder |
 | Paper (card) | Collapse story (the reference's raised card with a triangle) | demo `.sb-collapse-paper` styled in `.storybook/preview.css` |
 | Collapse (transition) | Card story "Complex interaction" (the method section under the chevron) | shown / hidden at once (`hidden` + `aria-expanded`, the page's own state); MUI collapses it |
@@ -548,6 +548,28 @@ Differences: MUI's selection controls take `disabled` from the FormControl conte
 own state props add a state; they can't turn off the FormControl's. `hiddenLabel` waits for
 Select's filled input. The contract for Select (InputLabel on FormLabel, `useFormControl()`,
 focus through CSS) is in `specs/components/form-control.md`.
+
+## ✅ Components — Link (2026-11-09)
+Wave 8 (primitives, batch B), created with `/component` from MUI's "Links" page (Minimals has
+none), every section with a demo as a story: Basic links, Underline, Accessibility (links in
+text, a button link, a new-tab link); beyond them, from MUI's API: Colors. "Third-party routing
+library" has no demo: the docs page shows `component` with a router link. CSS only, built on
+Typography: one element with `data-ok-typography` + `data-ok-link`, Typography's options spread
+into `linkOptions` with MUI's defaults (`variant` `inherit`, `color` `primary`, plus `inherit`),
+and `underline` (`always` default, `hover`, `none`). The `always` underline is the palette's main
+tone at 40 % (`--ok-c-channel`), the text color on hover, like MUI. React: `a` with `href`,
+`<button type="button">` without `href` and `component` (keyboard-accessible actions), any
+element or router link through `component` (typed with the component's props); `href` passes
+through untouched, `target="_blank"` always gets `rel="noopener noreferrer"` (core `linkRel`).
+`link.css` loads right after `typography.css`. No new token.
+Integrated in the same review (stories, examples, snippets and the docs page compose it, no DOM
+or API change of Breadcrumbs): Breadcrumbs items are Links (`color="inherit"`,
+`underline="hover"`, as in MUI's demos); the Customized heading's back link (`underline="none"`)
+and the paragraph's links (default Link, underlined) replace the story-only link colors. The
+Typography contrast exemption no longer covers `inherit` colors.
+Differences: MUI renders an `a` without `href` (not focusable) where Owlky renders a button;
+underlines of text tones are in the text color (no channel tokens for them); `sx`, `classes`,
+`TypographyClasses` and theme default props are consumer CSS.
 
 ## ✅ Components — Card (2026-11-09)
 Wave 8 (primitives), created with `/component` from MUI's "Card" page (Minimals has none; its theme
