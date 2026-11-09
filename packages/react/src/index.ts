@@ -64,6 +64,8 @@ export type {
   MotionBorderShape,
   MotionTrigger,
   MotionVariant,
+  OrganizationChartLineColor,
+  OrganizationChartLineStyle,
   Orientation,
   PageRange,
   PaginationAction,
@@ -367,6 +369,12 @@ export {
   type MotionTriggerProps,
 } from "./motion/motion.js";
 export { MotionBorder, type MotionBorderProps } from "./motion-border/motion-border.js";
+export {
+  OrganizationChart,
+  OrganizationChartNode,
+  type OrganizationChartNodeProps,
+  type OrganizationChartProps,
+} from "./organization-chart/organization-chart.js";
 export {
   Pagination,
   type PaginationIcons,

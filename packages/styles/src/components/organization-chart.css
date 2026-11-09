@@ -1,0 +1,192 @@
+/*
+ * Organization chart — spec: specs/components/organization-chart.md
+ *
+ * Anatomy:  ul[data-ok-organization-chart][data-ok-line-color][data-ok-line-style]
+ *             li[data-ok-organization-chart-node]
+ *               div[data-ok-organization-chart-label]
+ *               ul[data-ok-organization-chart-children]?
+ *                 li[data-ok-organization-chart-node] … (nested at any depth)
+ * Modifiers: data-ok-line-color = divider (default) | inherit | palette (light tone);
+ *            data-ok-line-style = solid (default) | dashed | dotted.
+ * Lengths:   --_ok-org-line-height | -line-width | -line-radius | -node-padding, written on the
+ *            root by React (`style`) or the HTML runtime (CSSOM) from data-ok-line-height,
+ *            data-ok-line-width, data-ok-line-border-radius and data-ok-node-padding.
+ *
+ * Connectors: each child list draws the line down from its parent (`::before`); each child node
+ * draws its half of the horizontal bar on both sides (`::before` / `::after`) and the line down
+ * to its label. Logical properties, so right-to-left charts mirror. CSS only.
+ * Single :where() selectors in @layer components (zero specificity).
+ */
+@reference "../theme.css";
+
+@layer components {
+  /* The private properties are declared on every root, so a chart nested in a label never
+     inherits its owner's values. */
+  :where([data-ok-organization-chart]) {
+    --_ok-org-line-height: calc(var(--ok-spacing) * 10);
+    --_ok-org-line-width: 1px;
+    --_ok-org-line-radius: calc(var(--ok-spacing) * 6);
+    --_ok-org-node-padding: var(--ok-spacing);
+    --_ok-org-line-color: var(--ok-divider);
+    --_ok-org-line-style: solid;
+    --_ok-org-line: var(--_ok-org-line-width) var(--_ok-org-line-style) var(--_ok-org-line-color);
+
+    display: flex;
+    justify-content: center;
+    box-sizing: border-box;
+    inline-size: max-content;
+    min-inline-size: 100%;
+    margin: 0;
+    padding: 0;
+    color: var(--ok-text-primary);
+    font-family: var(--ok-font-family);
+    list-style: none;
+  }
+
+  :where([data-ok-organization-chart][data-ok-line-color="inherit"]) {
+    --_ok-org-line-color: currentColor;
+  }
+
+  :where([data-ok-organization-chart][data-ok-line-color="primary"]) {
+    --_ok-org-line-color: var(--ok-palette-primary-light);
+  }
+
+  :where([data-ok-organization-chart][data-ok-line-color="secondary"]) {
+    --_ok-org-line-color: var(--ok-palette-secondary-light);
+  }
+
+  :where([data-ok-organization-chart][data-ok-line-color="info"]) {
+    --_ok-org-line-color: var(--ok-palette-info-light);
+  }
+
+  :where([data-ok-organization-chart][data-ok-line-color="success"]) {
+    --_ok-org-line-color: var(--ok-palette-success-light);
+  }
+
+  :where([data-ok-organization-chart][data-ok-line-color="warning"]) {
+    --_ok-org-line-color: var(--ok-palette-warning-light);
+  }
+
+  :where([data-ok-organization-chart][data-ok-line-color="error"]) {
+    --_ok-org-line-color: var(--ok-palette-error-light);
+  }
+
+  :where([data-ok-organization-chart][data-ok-line-style="dashed"]) {
+    --_ok-org-line-style: dashed;
+  }
+
+  :where([data-ok-organization-chart][data-ok-line-style="dotted"]) {
+    --_ok-org-line-style: dotted;
+  }
+
+  /* Nodes: the label, centered over its children. */
+  :where([data-ok-organization-chart-node]) {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    list-style: none;
+  }
+
+  :where([data-ok-organization-chart-label]) {
+    box-sizing: border-box;
+    max-inline-size: 100%;
+  }
+
+  :where([data-ok-organization-chart-children]) {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    box-sizing: border-box;
+    margin: 0;
+    padding: var(--_ok-org-line-height) 0 0;
+    list-style: none;
+  }
+
+  /* The line down from the parent's label. */
+  :where([data-ok-organization-chart-children])::before {
+    content: "";
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-start: 50%;
+    box-sizing: border-box;
+    block-size: var(--_ok-org-line-height);
+    border-inline-start: var(--_ok-org-line);
+  }
+
+  :where([data-ok-organization-chart-children] > [data-ok-organization-chart-node]) {
+    padding: var(--_ok-org-line-height) var(--_ok-org-node-padding) 0;
+  }
+
+  /* Each child draws both halves of the bar above it; the end half also goes down to its label. */
+  :where([data-ok-organization-chart-children] > [data-ok-organization-chart-node])::before {
+    content: "";
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-end: 50%;
+    box-sizing: border-box;
+    inline-size: 50%;
+    block-size: var(--_ok-org-line-height);
+    border-block-start: var(--_ok-org-line);
+  }
+
+  :where([data-ok-organization-chart-children] > [data-ok-organization-chart-node])::after {
+    content: "";
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-start: 50%;
+    box-sizing: border-box;
+    inline-size: 50%;
+    block-size: var(--_ok-org-line-height);
+    border-block-start: var(--_ok-org-line);
+    border-inline-start: var(--_ok-org-line);
+  }
+
+  /* First child: the bar starts here, turning down with a rounded corner. */
+  :where(
+    [data-ok-organization-chart-children] > [data-ok-organization-chart-node]:first-child
+  )::before {
+    border-block-start: 0;
+  }
+
+  :where(
+    [data-ok-organization-chart-children] > [data-ok-organization-chart-node]:first-child
+  )::after {
+    border-start-start-radius: var(--_ok-org-line-radius);
+  }
+
+  /* Last child: the bar ends here; the start half turns down (on the same pixels as the others). */
+  :where(
+    [data-ok-organization-chart-children] > [data-ok-organization-chart-node]:last-child
+  )::before {
+    inset-inline-end: calc(50% - var(--_ok-org-line-width));
+    inline-size: calc(50% + var(--_ok-org-line-width));
+    border-inline-end: var(--_ok-org-line);
+    border-start-end-radius: var(--_ok-org-line-radius);
+  }
+
+  :where(
+    [data-ok-organization-chart-children] > [data-ok-organization-chart-node]:last-child
+  )::after {
+    border: 0;
+  }
+
+  /* Only child: a straight line down. */
+  :where(
+    [data-ok-organization-chart-children] > [data-ok-organization-chart-node]:only-child
+  )::before {
+    border: 0;
+  }
+
+  :where(
+    [data-ok-organization-chart-children] > [data-ok-organization-chart-node]:only-child
+  )::after {
+    border-block-start: 0;
+    border-inline-start: var(--_ok-org-line);
+    border-start-start-radius: 0;
+  }
+}

@@ -38,6 +38,7 @@
 @import "./components/breadcrumbs.css";
 @import "./components/stepper.css";
 @import "./components/timeline.css";
+@import "./components/organization-chart.css";
 @import "./components/rating.css";
 @import "./components/chart.css";
 @import "./components/slider.css";

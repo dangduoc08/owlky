@@ -36,6 +36,7 @@ import { motionGroup } from "./motion-group/motion-group.js";
 import { motionText } from "./motion-text/motion-text.js";
 import { multiInputRangeField } from "./multi-input-range-field/multi-input-range-field.js";
 import { multiSectionDigitalClock } from "./multi-section-digital-clock/multi-section-digital-clock.js";
+import { organizationChart } from "./organization-chart/organization-chart.js";
 import { pagination } from "./pagination/pagination.js";
 import { popover } from "./popover/popover.js";
 import { rating } from "./rating/rating.js";
@@ -106,4 +107,5 @@ export const components: readonly ComponentDefinition[] = [
   multiInputRangeField as ComponentDefinition,
   dateRangePicker as ComponentDefinition,
   carousel as ComponentDefinition,
+  organizationChart as ComponentDefinition,
 ];

@@ -66,7 +66,7 @@ component and each `/integrate` run.
 | Extra | Mega menu | not planned | — | Next |
 | Extra | Multi-language | not planned | — | Next |
 | Extra | Navigation bar | not planned | — | Next |
-| Extra | Organization chart | wave 7 (ADR) | — | Next |
+| Extra | Organization chart | ✅ (ADR-0036) | OrganizationChart, OrganizationChartNode | Organization chart |
 | Extra | Scroll progress | not planned | — | Next |
 | Extra | Scrollbar | ✅ | Scrollbar | Scrollbar |
 | Extra (Sonner) | Snackbar | ✅ | Toaster, toast() | Popover, Tooltip, Menu, Dialog & Snackbar |
@@ -510,6 +510,22 @@ integrate these in the same review (additive: no DOM or API change) and remove t
 | Typography (body text) | Autocomplete stories (output lines under the fields) | demo `p` styled in `.storybook/preview.css` |
 | Collapse (transition) | Tree view groups | open / close at once (`hidden`); MUI X collapses them |
 | Typography (body text, headings) | Map stories (popup text, the drag readout, panel captions) | demo `.sb-map-*` styled in `.storybook/preview.css` |
+| Typography + Paper (card) | Organization chart stories (node cards: simple, standard, team and member cards, names and roles) | demo `.sb-org-*` styled in `.storybook/preview.css`; the cards compose Avatar, IconButton, Menu and Label |
+
+## ✅ Components — Organization chart (ADR-0036, 2026-11-09)
+Created with `/component` from the reference "Organization chart" page, every section as a story:
+Simple, Standard, Group; beyond them: Lines (the upstream's line options). Built on the API of
+`react-organizational-chart` (`Tree` → `OrganizationChart`, `TreeNode` → `OrganizationChartNode`,
+`label`, `lineHeight`, `lineWidth`, `lineColor`, `lineStyle`, `lineBorderRadius`, `nodePadding`),
+HTML written by us (owner's choice): nested lists with CSS connectors (logical properties, so
+right-to-left mirrors); the lengths reach the CSS as private properties (React `style`, the HTML
+runtime `organization-chart` through CSSOM). Wide charts scroll in a composed Scrollbar, from the
+first node. Story cards compose Avatar, IconButton, Menu (Delete / Edit) and Label. No new token,
+no dependency.
+Differences: `lineColor` is an allowlist (`divider`, `inherit`, palette light tones) instead of any
+CSS color; defaults are the reference's (40px lines, 24px corners, 4px node padding); wide charts
+start at the first node instead of being centered and cut off on phones; menu items are plain text
+(the reference's Delete is red); team cards always show their menu button.
 
 ## ✅ Components — Map (2026-11-09)
 Created with `/component` from the reference "Map" page, every section as a story: Change theme,
@@ -637,7 +653,7 @@ Dependency-first: leaf components before the ones built from them, the ones that
 | 4 Overlays | ~~Popover~~ ✅, ~~Tooltip~~ ✅, ~~Menu~~ ✅, ~~Dialog~~ ✅, ~~Snackbar~~ ✅, ~~Backdrop~~ ✅ | ~~Drawer / Dialog backdrop~~ ✅ (native `::backdrop`, same token); icon button tooltips: nothing to change (MUI uses native `title` there; Tooltip wraps any IconButton) |
 | 5 Navigation | ~~Tabs~~ ✅, ~~Breadcrumbs~~ ✅, ~~Stepper~~ ✅ | — (nothing waited for them) |
 | 6 Composites | ~~Rating~~ ✅, ~~Slider~~ ✅, ~~Timeline~~ ✅, ~~Transfer list~~ ✅, ~~Autocomplete~~ ✅, ~~Tree view~~ ✅ | — (nothing waited for them; Slider unblocks the SettingsDrawer backlog of Theme settings) |
-| 7 Needs an ADR | ~~Data grid~~ (ADR-0020, phases below), ~~Date pickers~~ (ADR-0022, ADR-0030, complete ✅), ~~Chart~~ (ADR-0024, ADR-0027, ADR-0031, complete ✅), ~~Map~~ (ADR-0025) ✅, ~~Editor~~ (ADR-0023) ✅, ~~Carousel~~ (ADR-0033) ✅, Lightbox, Markdown, Organization chart, Upload, Image, Walktour | — |
+| 7 Needs an ADR | ~~Data grid~~ (ADR-0020, phases below), ~~Date pickers~~ (ADR-0022, ADR-0030, complete ✅), ~~Chart~~ (ADR-0024, ADR-0027, ADR-0031, complete ✅), ~~Map~~ (ADR-0025) ✅, ~~Editor~~ (ADR-0023) ✅, ~~Carousel~~ (ADR-0033) ✅, Lightbox, Markdown, ~~Organization chart~~ (ADR-0036) ✅, Upload, Image, Walktour | — |
 
 Not planned as components (patterns or app-level pages of the reference): Layout,
 Utilities, Multi-language, Navigation bar, Mega menu, Scroll progress, Form validation, Form wizard.

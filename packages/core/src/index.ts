@@ -279,8 +279,15 @@ export {
   motionVariants,
   multiSectionDigitalClockAttributes,
   multiSectionDigitalClockOptions,
+  type OrganizationChartAnatomyOptions,
+  type OrganizationChartLineColor,
+  type OrganizationChartLineStyle,
   type Orientation,
   optionSchemas,
+  organizationChartAttributes,
+  organizationChartLineColors,
+  organizationChartLineStyles,
+  organizationChartOptions,
   orientations,
   type PaginationAnatomyOptions,
   type PaginationColor,
@@ -785,6 +792,12 @@ export {
   type StateOption,
   type StyleOption,
 } from "./options/define.js";
+export {
+  ORGANIZATION_CHART_LENGTHS,
+  type OrganizationChartLength,
+  type OrganizationChartStyle,
+  organizationChartStyle,
+} from "./organization-chart/organization-chart.js";
 export { inertOutside } from "./overlay/inert-outside.js";
 export { layerStack } from "./overlay/layer-stack.js";
 export { isScrollLocked, lockScroll } from "./overlay/scroll-lock.js";

@@ -231,6 +231,142 @@
   width: 100%;
 }
 
+/* Organization chart stories (story-only): the scroll area and the node cards. */
+.sb-org-scroll {
+  box-sizing: border-box;
+  width: 100%;
+  padding: calc(var(--ok-spacing) * 12) calc(var(--ok-spacing) * 6);
+  border-radius: var(--ok-radius-lg);
+  background-color: rgb(var(--ok-palette-grey-500-channel) / 0.04);
+}
+
+.sb-org-name {
+  display: block;
+  font-size: var(--ok-typography-subtitle2-font-size);
+  font-weight: var(--ok-typography-subtitle2-font-weight);
+  line-height: var(--ok-typography-subtitle2-line-height);
+  white-space: nowrap;
+}
+
+.sb-org-role {
+  display: block;
+  font-size: var(--ok-typography-caption-font-size);
+  line-height: var(--ok-typography-caption-line-height);
+  white-space: nowrap;
+}
+
+.sb-org-simple {
+  display: inline-flex;
+  flex-direction: column;
+  gap: var(--ok-spacing);
+  padding: calc(var(--ok-spacing) * 4);
+  border: 1px solid rgb(var(--ok-palette-primary-main-channel) / 0.24);
+  border-radius: var(--ok-radius-lg);
+  background-color: rgb(var(--ok-palette-primary-main-channel) / 0.08);
+  color: var(--ok-palette-primary-text);
+}
+
+.sb-org-card,
+.sb-org-member {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: calc(var(--ok-spacing) * 50);
+  padding: calc(var(--ok-spacing) * 4);
+  border-radius: var(--ok-radius-lg);
+  background-color: var(--ok-bg-paper);
+  box-shadow: var(--ok-shadow-card);
+  color: var(--ok-text-primary);
+  text-align: start;
+}
+
+.sb-org-card > [data-ok-avatar] {
+  margin-block-end: calc(var(--ok-spacing) * 4);
+}
+
+.sb-org-card > .sb-org-name,
+.sb-org-member > .sb-org-name {
+  margin-block-end: var(--ok-spacing);
+}
+
+.sb-org-card > .sb-org-role,
+.sb-org-member > .sb-org-role {
+  color: var(--ok-text-secondary);
+}
+
+.sb-org-more {
+  position: absolute;
+  inset-block-start: calc(var(--ok-spacing) * 2);
+  inset-inline-end: calc(var(--ok-spacing) * 2);
+}
+
+/* Bolder dots, as on the reference's "more" icon. */
+.sb-org-more > :where(svg) {
+  stroke-width: 3.5;
+}
+
+/* Group: the avatar sits over the card's top edge, ringed with the paper color. */
+.sb-org-member {
+  align-items: center;
+  padding: calc(var(--ok-spacing) * 10) 0 calc(var(--ok-spacing) * 6);
+  border-block-start: 4px solid var(--_sb-org-color, transparent);
+  text-align: center;
+}
+
+.sb-org-member > [data-ok-avatar] {
+  position: absolute;
+  inset-block-start: calc(var(--ok-spacing) * -7);
+  inset-inline: 0;
+  box-sizing: content-box;
+  margin-inline: auto;
+  border: 4px solid var(--ok-bg-paper);
+}
+
+.sb-org-team {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--ok-spacing) * 2);
+  box-sizing: border-box;
+  min-width: calc(var(--ok-spacing) * 50);
+  padding: calc(var(--ok-spacing) * 2) calc(var(--ok-spacing) * 2) calc(var(--ok-spacing) * 2)
+    calc(var(--ok-spacing) * 4);
+  border: 1px solid rgb(var(--_sb-org-channel) / 0.24);
+  border-radius: var(--ok-radius-lg);
+  background-color: rgb(var(--_sb-org-channel) / 0.08);
+  color: var(--_sb-org-text);
+}
+
+.sb-org-team-name {
+  font-size: var(--ok-typography-subtitle1-font-size);
+  font-weight: var(--ok-typography-subtitle1-font-weight);
+  line-height: var(--ok-typography-subtitle1-line-height);
+  white-space: nowrap;
+}
+
+.sb-org-team > .sb-org-more {
+  position: static;
+  margin-inline-start: auto;
+}
+
+.sb-org-primary {
+  --_sb-org-color: var(--ok-palette-primary-light);
+  --_sb-org-channel: var(--ok-palette-primary-main-channel);
+  --_sb-org-text: var(--ok-palette-primary-text);
+}
+
+.sb-org-info {
+  --_sb-org-color: var(--ok-palette-info-light);
+  --_sb-org-channel: var(--ok-palette-info-main-channel);
+  --_sb-org-text: var(--ok-palette-info-text);
+}
+
+.sb-org-warning {
+  --_sb-org-color: var(--ok-palette-warning-light);
+  --_sb-org-channel: var(--ok-palette-warning-main-channel);
+  --_sb-org-text: var(--ok-palette-warning-text);
+}
+
 /* Rating "Hover feedback" (story-only): the label next to the icons. */
 .sb-rating-feedback {
   display: flex;
