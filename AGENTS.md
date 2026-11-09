@@ -512,6 +512,26 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
   attributes in snippets (use a class, such as `.sb-day-dot`). The adapter tests load Day.js,
   Luxon and Moment through Vite: list them in the package's `optimizeDeps.include` (with the
   `.js` plugin paths) or the first run reloads mid-test.
+- Code editor (ADR-0034): Monaco is reached only through `@owlky/core/code-editor` (Storybook aliases
+  it) and the opt-in HTML entries (`@owlky/html/code-editor`, `owlky-code-editor.js`, `OPT_IN` in
+  `components.test.ts`); `owlky-code-editor.js` holds no Monaco (the html build aliases
+  `monaco-editor` to `src/monaco-stub.ts`) and imports `dist/monaco/monaco.js` from `paths.vs`.
+  Tests and Storybook give the loader Vite `?worker` imports (`test-utils.ts` per package,
+  `monaco-workers.ts`); the loader is module state, so error-path tests live in their own file
+  (`*.error.test.ts[x]`: one module instance per test file). Wait for Monaco through
+  `data-ok-status="ready"` with a MutationObserver (`whenAttribute`), never `vi.waitFor`; markers
+  (`onDidChangeMarkers`) arrive on a later task. Dispose models only after the editors that show
+  them (unmount / `runtime.stop()` first): Monaco throws "TextModel got disposed before
+  DiffEditorWidget model got reset" otherwise, and the diff controller resets its model before
+  disposing. Monaco drops the diff editor's side labels on every `updateOptions` that lacks them:
+  the controller repeats them. Parity skips Monaco's subtree (and its mount element's own
+  attributes) and ignores `data-ok-status`; pixel parity waits until `.scrollbar.visible` is gone
+  (Monaco fades its scrollbars after a layout). Monaco's inline diff colors deleted lines once,
+  maybe before the language's lazy tokenizer is loaded: stories keep the diff side by side
+  (`useInlineViewWhenSpaceIsLimited: false`). Snippets are generated from the React demos:
+  `pnpm build && node apps/storybook/scripts/code-editor-snippets.mjs`. Monaco has role=alert live
+  regions of its own: find story alerts by text. Ctrl+M with Tab moving out of a document's last
+  control keeps `document.activeElement` in Firefox: test Tab focus with Shift+Tab to a control.
 - Parallel work: never run two `/component` / `/integrate` sessions (or two `pnpm build` /
   `pnpm test:e2e`) in the same working tree — builds wipe each other's `dist/` and
   `storybook-static/`, e2e servers share port 4321, and staging part of a shared file while

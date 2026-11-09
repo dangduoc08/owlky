@@ -19,6 +19,18 @@ export {
 } from "@owlky/core";
 export type { AccordionInstance } from "./components/accordion/accordion.js";
 export type { AlertInstance } from "./components/alert/alert.js";
+export {
+  type CodeEditorElementInstance,
+  type CreateCodeEditorOptions,
+  codeEditor,
+  createCodeEditor,
+} from "./components/code-editor/code-editor.js";
+export {
+  type CreateDiffEditorOptions,
+  createDiffEditor,
+  type DiffEditorElementInstance,
+  diffEditor,
+} from "./components/diff-editor/diff-editor.js";
 export type {
   DrawerCloseReason,
   DrawerInstance,

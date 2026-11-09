@@ -70,6 +70,7 @@ const CASES: [
   ["motion", "count-up-story", "count-up", ["duration"]],
   ["motion", "border", "motion-border", ["paused", "width", "duration"]],
   ["breadcrumbs", "text", "breadcrumbs", ["maxItems", "itemsBeforeCollapse", "itemsAfterCollapse"]],
+  ["code-editor", "diff", "diff-editor", ["theme"]],
   [
     "text-field",
     "outlined",

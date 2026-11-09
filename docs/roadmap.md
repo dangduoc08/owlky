@@ -5,7 +5,7 @@ and a review before the next starts.
 
 ## Overview
 Every page of the reference's component menu (`https://minimals.cc/components/…`) and where it
-stands. ✅ = built (36); *wave N* = planned, see "Next — components"; *not planned* = a pattern
+stands (plus pages from other references, marked). ✅ = built (37); *wave N* = planned, see "Next — components"; *not planned* = a pattern
 or app-level page. *Section* = the heading below with the details. Update this table with each
 component and each `/integrate` run.
 
@@ -54,6 +54,7 @@ component and each `/integrate` run.
 | Extra | Chart | ✅ complete, phases 1–4 (ADR-0024, ADR-0027, ADR-0029, ADR-0031) | Chart | Chart |
 | Extra | Dnd | ✅ | Sortable | Sortable |
 | Extra | Editor | ✅ (ADR-0023, Tiptap) | Editor | Editor |
+| Extra (monaco-react reference) | Code editor | ✅ (ADR-0034, Monaco) | CodeEditor, DiffEditor, useMonaco, loader | Code editor |
 | Extra | Form validation | not planned | — | Next |
 | Extra | Form wizard | not planned | — | Next |
 | Extra | Image | wave 7 (ADR) | — | Next |
@@ -517,6 +518,21 @@ controller (`@owlky/core/editor`) for React and HTML, opt-in HTML entry (`@owlky
 Popover + TextField + Button (link and image forms). No new tokens.
 **Backlog (deferred):** Tiptap `extensions` / `editorProps` pass-through, bubble menu, tables,
 mentions, task lists, a form `name` (hidden input with the HTML), character count.
+
+## ✅ Components — Code editor (2026-11-09)
+Created with `/component` from `https://monaco-react.surenatoyan.com/` (the `@monaco-editor/react`
+demo: an editor with Language, Theme and Options settings, and a Diff editor) plus its README
+(multi-model editing, validation, `useMonaco`, `loader`). Built on Monaco 0.57 (ADR-0034), every
+`@monaco-editor/react` prop in one phase: one core controller pair (`@owlky/core/code-editor`) for
+React (`CodeEditor`, `DiffEditor`, `useMonaco`, `loader`) and HTML (`code-editor`, `diff-editor`
+runtimes; opt-in `@owlky/html/code-editor`, `owlky-code-editor.js`), Monaco self-hosted from
+`@owlky/html/dist/monaco/` (engine, CSS, five module workers, UI messages) or bundled from the
+package, Owlky light / dark themes built from the tokens (follow `data-ok-theme`, one theme per
+page), a `<textarea>` with the value (no JavaScript, form value, fallback when Monaco can't load)
+and a documented CSP (`examples/csp/code-editor.html`). Four stories: Editor, Diff editor,
+Multi-model editor, Validation. No new tokens.
+**Backlog (deferred):** Monaco's per-editor themes in nested scopes (Monaco has one theme per page),
+`@monaco-editor/loader`'s AMD `paths` for third-party CDNs (Owlky self-hosts only).
 
 ## Chart (ADR-0024, ADR-0027) — written by us, every ApexCharts chart type in four phases
 Created with `/component` from the reference "Chart" page. ApexCharts' framework-free core isn't

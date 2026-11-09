@@ -1,0 +1,140 @@
+/*
+ * Code editor and Diff editor — spec: specs/components/code-editor.md (ADR-0034)
+ *
+ * Anatomy:   div[data-ok-code-editor][data-ok-status=loading|ready|error]?[data-ok-height]?
+ *              › textarea[data-ok-code-editor-value]     (the value; the editor without JavaScript)
+ *              › div[data-ok-code-editor-loading][role=status]
+ *              › div[data-ok-code-editor-content]        (Monaco mounts here)
+ *            div[data-ok-diff-editor][data-ok-status]?
+ *              › textarea[data-ok-diff-editor-original] + textarea[data-ok-diff-editor-modified]
+ *              › div[data-ok-diff-editor-loading][role=status] › div[data-ok-diff-editor-content]
+ *
+ * No status (no JavaScript) or `error` (Monaco couldn't load): the textareas are the editor.
+ * `loading`: the loading text covers the frame. `ready`: Monaco's canvas (its colors come from
+ * the Owlky themes the controller builds from these tokens). Sizes: `--_ok-code-editor-width`
+ * and `--_ok-code-editor-height` (React style / HTML runtime through CSSOM).
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-ok-code-editor], [data-ok-diff-editor]) {
+    position: relative;
+    display: flex;
+    box-sizing: border-box;
+    width: var(--_ok-code-editor-width, 100%);
+    max-width: 100%;
+    height: var(--_ok-code-editor-height, 100%);
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid rgb(var(--ok-palette-grey-500-channel) / 0.2);
+    border-radius: var(--ok-radius-md);
+    background-color: var(--ok-bg-paper);
+    color: var(--ok-text-primary);
+    text-align: initial;
+  }
+
+  /* Without a height an auto-height parent would collapse the editor to nothing. */
+  :where([data-ok-code-editor]:not([data-ok-height]), [data-ok-diff-editor]:not([data-ok-height])) {
+    min-height: calc(var(--ok-spacing) * 75);
+  }
+
+  /* --- Content (Monaco) ------------------------------------------------------------------------ */
+
+  :where([data-ok-code-editor-content], [data-ok-diff-editor-content]) {
+    flex: 1 1 auto;
+    width: 100%;
+    min-width: 0;
+    height: 100%;
+  }
+
+  :where(
+    [data-ok-code-editor]:not([data-ok-status="loading"], [data-ok-status="ready"])
+      > [data-ok-code-editor-content],
+    [data-ok-diff-editor]:not([data-ok-status="loading"], [data-ok-status="ready"])
+      > [data-ok-diff-editor-content]
+  ) {
+    display: none;
+  }
+
+  :where(
+    [data-ok-code-editor][data-ok-status="loading"] > [data-ok-code-editor-content],
+    [data-ok-diff-editor][data-ok-status="loading"] > [data-ok-diff-editor-content]
+  ) {
+    visibility: hidden;
+  }
+
+  /* --- Value textareas (no JavaScript, fallback) ------------------------------------------------- */
+
+  :where(
+    [data-ok-code-editor-value],
+    [data-ok-diff-editor-original],
+    [data-ok-diff-editor-modified]
+  ) {
+    flex: 1 1 0;
+    box-sizing: border-box;
+    min-width: 0;
+    height: 100%;
+    margin: 0;
+    padding: calc(var(--ok-spacing) * 2) calc(var(--ok-spacing) * 3);
+    overflow: auto;
+    border: 0;
+    border-radius: 0;
+    background-color: transparent;
+    color: var(--ok-text-primary);
+    font-family: var(--ok-font-family-mono);
+    font-size: var(--ok-typography-body2-font-size);
+    line-height: var(--ok-typography-body2-line-height);
+    tab-size: 4;
+    white-space: pre;
+    resize: none;
+  }
+
+  :where([data-ok-diff-editor-original]) {
+    border-right: 1px solid rgb(var(--ok-palette-grey-500-channel) / 0.2);
+  }
+
+  :where(
+    [data-ok-code-editor-value]:focus-visible,
+    [data-ok-diff-editor-original]:focus-visible,
+    [data-ok-diff-editor-modified]:focus-visible
+  ) {
+    outline: 2px solid var(--ok-palette-primary-main);
+    outline-offset: -2px;
+  }
+
+  :where(
+    [data-ok-code-editor][data-ok-status="loading"] > [data-ok-code-editor-value],
+    [data-ok-code-editor][data-ok-status="ready"] > [data-ok-code-editor-value],
+    [data-ok-diff-editor][data-ok-status="loading"] > [data-ok-diff-editor-original],
+    [data-ok-diff-editor][data-ok-status="ready"] > [data-ok-diff-editor-original],
+    [data-ok-diff-editor][data-ok-status="loading"] > [data-ok-diff-editor-modified],
+    [data-ok-diff-editor][data-ok-status="ready"] > [data-ok-diff-editor-modified]
+  ) {
+    display: none;
+  }
+
+  /* --- Loading ------------------------------------------------------------------------------------ */
+
+  :where([data-ok-code-editor-loading], [data-ok-diff-editor-loading]) {
+    display: none;
+  }
+
+  :where(
+    [data-ok-code-editor][data-ok-status="loading"] > [data-ok-code-editor-loading],
+    [data-ok-diff-editor][data-ok-status="loading"] > [data-ok-diff-editor-loading]
+  ) {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    gap: calc(var(--ok-spacing) * 2);
+    align-items: center;
+    justify-content: center;
+    padding: calc(var(--ok-spacing) * 4);
+    color: var(--ok-text-secondary);
+    font-family: var(--ok-typography-body2-font-family);
+    font-size: var(--ok-typography-body2-font-size);
+    font-weight: var(--ok-typography-body2-font-weight);
+    line-height: var(--ok-typography-body2-line-height);
+    text-align: center;
+  }
+}

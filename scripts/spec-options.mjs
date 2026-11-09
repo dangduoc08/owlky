@@ -76,6 +76,8 @@ const SPECS = {
   "date-range-picker": "date-picker.md",
   "date-range-calendar": "date-picker.md",
   editor: "editor.md",
+  "code-editor": "code-editor.md",
+  "diff-editor": "code-editor.md",
 };
 
 const code = (value) => `\`${value}\``;

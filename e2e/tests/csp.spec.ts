@@ -101,3 +101,33 @@ test("no CSP or Trusted Types violations", async ({ page }) => {
     await page.evaluate(() => (window as unknown as { violations: string[] }).violations),
   ).toEqual([]);
 });
+
+/**
+ * ADR-0034: the Code editor's documented policy (Monaco needs inline styles, data: fonts and its
+ * Trusted Types policies; scripts stay 'self'). Monaco and its workers load from dist/monaco/.
+ */
+test("the code editor works under its documented CSP", async ({ page }) => {
+  await page.addInitScript(() => {
+    (window as unknown as { violations: string[] }).violations = [];
+    document.addEventListener("securitypolicyviolation", (event) => {
+      (window as unknown as { violations: string[] }).violations.push(
+        `${event.violatedDirective}: ${event.blockedURI}`,
+      );
+    });
+  });
+  await page.goto("/examples/csp/code-editor.html");
+  const code = page.locator("#code");
+  const diff = page.locator("#diff");
+  await expect(code).toHaveAttribute("data-ok-status", "ready");
+  await expect(diff).toHaveAttribute("data-ok-status", "ready");
+  // Typing goes through Monaco; the JSON worker (a module worker from paths.vs) validates.
+  await code.locator(".view-lines").getByText('"tabSize"').click();
+  await page.keyboard.press("End");
+  await page.keyboard.type(",");
+  await expect(code.locator(".squiggly-error").first()).toBeAttached();
+  // The diff editor's worker computed the changes.
+  await expect(diff.locator(".char-insert, .line-insert").first()).toBeAttached();
+  expect(
+    await page.evaluate(() => (window as unknown as { violations: string[] }).violations),
+  ).toEqual([]);
+});

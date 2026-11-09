@@ -1121,3 +1121,60 @@
   flex-wrap: wrap;
   gap: calc(var(--ok-spacing) * 2);
 }
+
+/* Code editor stories: the editor and its settings side by side from 900px, stacked below. */
+.sb-code-editor-demo {
+  display: grid;
+  gap: calc(var(--ok-spacing) * 6);
+  align-items: start;
+  width: 100%;
+}
+
+@media (min-width: 900px) {
+  .sb-code-editor-demo {
+    grid-template-columns: minmax(0, 1fr) 320px;
+  }
+}
+
+.sb-code-editor-settings,
+.sb-code-editor-validation > section {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--ok-spacing) * 4);
+  min-width: 0;
+}
+
+.sb-code-editor-title {
+  margin: 0;
+  font-size: var(--ok-typography-h6-font-size);
+  font-weight: var(--ok-typography-h6-font-weight);
+  line-height: var(--ok-typography-h6-line-height);
+}
+
+.sb-code-editor-error {
+  margin: 0;
+  color: var(--ok-palette-error-text);
+  font-size: var(--ok-typography-body2-font-size);
+}
+
+.sb-code-editor-files,
+.sb-code-editor-validation {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--ok-spacing) * 4);
+  align-items: flex-start;
+  width: 100%;
+  min-width: 0;
+}
+
+.sb-code-editor-problems {
+  margin: 0;
+  padding-left: calc(var(--ok-spacing) * 5);
+  color: var(--ok-text-secondary);
+  font-size: var(--ok-typography-body2-font-size);
+  list-style: disc;
+}
+
+.sb-row > :where([data-ok-code-editor], [data-ok-diff-editor]) {
+  flex: 1 1 100%;
+}

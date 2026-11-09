@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!--
+      The Code editor's CSP (ADR-0034): Monaco writes its theme and decorations into <style>
+      elements ('unsafe-inline' for styles only), its CSS inlines the icon font and a few images
+      (data:), and its workers come from the same origin. Scripts stay 'self' with Trusted Types:
+      Monaco's own policies plus owlky-code-editor (worker URLs of paths.vs only).
+    -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data:; worker-src 'self'; object-src 'none'; base-uri 'none'; require-trusted-types-for 'script'; trusted-types owlky-code-editor defaultWorkerFactory diffEditorWidget diffReview domLineBreaksComputer editorGhostText editorViewLayer richScreenReaderContent standaloneColorizer stickyScrollViewLayer tokenizeToString dompurify 'allow-duplicates'"
+    />
+    <title>Owlky — Code editor CSP check</title>
+    <link rel="stylesheet" href="../../packages/html/dist/owlky.css" />
+    <script src="../../packages/html/dist/owlky.js" defer></script>
+    <script src="../../packages/html/dist/owlky-code-editor.js" defer></script>
+  </head>
+  <body>
+    <main>
+      <div id="code" data-ok-code-editor data-ok-language="json" data-ok-height="240" data-ok-path="file:///settings.json">
+        <textarea data-ok-code-editor-value aria-label="Settings" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off">{
+  "theme": "auto",
+  "tabSize": 2
+}</textarea>
+        <div data-ok-code-editor-loading role="status">Loading...</div>
+        <div data-ok-code-editor-content></div>
+      </div>
+      <div id="diff" data-ok-diff-editor data-ok-language="markdown" data-ok-height="240">
+        <textarea data-ok-diff-editor-original aria-label="Original" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off"># Notes
+Ship the editor.</textarea>
+        <textarea data-ok-diff-editor-modified aria-label="Modified" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off"># Notes
+Ship the code editor today.</textarea>
+        <div data-ok-diff-editor-loading role="status">Loading...</div>
+        <div data-ok-diff-editor-content></div>
+      </div>
+    </main>
+  </body>
+</html>

@@ -4,8 +4,11 @@ Framework-free behavior and anatomy shared by `@owlky/react` and
 `@owlky/html`: focus utilities, overlay layer stack, scroll lock,
 feature detection and `data-ok-*` attribute maps. You normally don't install this directly.
 
-Entry points: `@owlky/core` (everything above, side-effect free) and `@owlky/core/editor`
-(`createEditorController`, the only path to Tiptap; not re-exported from `@owlky/core`, ADR-0023).
+Entry points: `@owlky/core` (everything above, side-effect free), `@owlky/core/editor`
+(`createEditorController`, the only path to Tiptap; not re-exported from `@owlky/core`, ADR-0023)
+and `@owlky/core/code-editor` (`createCodeEditorController`, `createDiffEditorController`, the
+Owlky Monaco themes and `loader`, the only path to Monaco; it imports `monaco-editor` on demand,
+ADR-0034).
 
 Date library adapters for the pickers (ADR-0030) are opt-in entry points that take your own copy
 of the library, so Owlky adds no dependency (the libraries are optional peer dependencies):

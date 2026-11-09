@@ -107,6 +107,8 @@ export function normalizeStory(page: Page): Promise<NormalizedNode> {
       "data-ok-mobile-stepper-panel",
       "data-ok-label-step",
       "data-ok-expand-text",
+      // Code editor: Monaco loads asynchronously (parity waits for `ready` where it matters).
+      "data-ok-status",
       // React sets <option> selection as a property (compared through the select's :value).
       "selected",
     ]);
@@ -122,10 +124,15 @@ export function normalizeStory(page: Page): Promise<NormalizedNode> {
 
     function walk(element: Element): NormalizedNode {
       const attrs: Record<string, string> = {};
+      // Monaco's DOM (instance ids, measured layout) is the engine's: e2e code-editor specs cover
+      // it. Its mount element keeps only Owlky's own attributes.
+      const engine =
+        element.hasAttribute("data-ok-code-editor-content") ||
+        element.hasAttribute("data-ok-diff-editor-content");
       for (const { name, value } of Array.from(element.attributes).sort((a, b) =>
         a.name.localeCompare(b.name),
       )) {
-        if (IGNORED.has(name)) continue;
+        if (IGNORED.has(name) || (engine && !name.startsWith("data-ok-"))) continue;
         attrs[name] = REFERENCES.has(name) ? "<ref>" : value;
       }
       if (element instanceof HTMLInputElement) {
@@ -134,7 +141,7 @@ export function normalizeStory(page: Page): Promise<NormalizedNode> {
       }
       if (element instanceof HTMLSelectElement) attrs[":value"] = element.value;
       const children: (NormalizedNode | string)[] = [];
-      if (element.localName !== "svg") {
+      if (element.localName !== "svg" && !engine) {
         for (const child of Array.from(element.childNodes)) {
           if (child.nodeType === Node.TEXT_NODE) {
             const text = child.textContent?.replace(/\s+/g, " ") ?? "";
