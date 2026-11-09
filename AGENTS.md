@@ -277,6 +277,12 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
   runtime are opt-in (`@owlky/core/illustrations`, `owlky-illustrations.js`): `illustration` is in
   `OPT_IN` (`components.test.ts`); Storybook's `preview.tsx` registers it. Foundations stories
   with both frameworks are listed in `FRAMEWORK_FOUNDATIONS` (`e2e/tests/helpers.ts`).
+- Illustration style (`docs/illustrations-style.md`, `/illustration`): pictures compose the parts
+  of `core/src/illustrations/parts.ts` (`backdrop()`, `groundShadow()`, `sparkle()`, `person()`…);
+  parts mark their first node with `part` (never rendered), which `style.test.ts` counts to
+  enforce the guide (one backdrop drawn first, one ground, 2–6 sparkles, accent ≤ 30%, ≤ 48
+  nodes). Refactors of the data must regenerate byte-identical snippets. The **All** story is
+  built from the category stories (a picture missing from `ILLUSTRATION_FILES` throws).
 - Story images (Avatar portraits) are original SVGs in `apps/storybook/public/avatars/`
   (`staticDirs`), referenced **relatively** (`avatars/avatar-1.svg`) so they work under the e2e
   server's sub-path. HTML snippet tests rewrite those `src`s to an inline pixel (`local()` in the

@@ -66,3 +66,15 @@ Licenses decide where the art can come from:
   entry, a story group, then regenerate the snippets; the core test validates elements,
   attributes and tones.
 - Replacing the art later (for example with licensed people) changes only the data files.
+
+## Amendment (2026-11-09): style guide and parts
+Additive, approved by the owner: the set's visual grammar is written down in
+`docs/illustrations-style.md` (measured on the 16 pictures). The repeated details are pure
+functions in `packages/core/src/illustrations/parts.ts`, exported from `@owlky/core/illustrations`
+for custom art (`backdrop`, `groundShadow`, `sparkle`, `dot`, `cloud`, `plant`, `lines`, `paper`,
+`screen`, `person`), and every picture composes them (the rendered markup did not change). A part
+marks its first node with `IllustrationNode.part`, which renderers ignore; `style.test.ts` counts
+parts to enforce the guide. Tree shaking: one picture bundles only itself and the parts it uses
+(0.7–1.6 kB gzip); `check:size` now checks that a picture's bundle holds no other picture instead
+of comparing it with a quarter of the set. New pictures go through `/illustration`; the **All**
+story is the contact sheet.

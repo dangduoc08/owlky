@@ -86,6 +86,11 @@ export interface IllustrationNode {
     | Readonly<Partial<Record<IllustrationAttributeName, string | number>>>
     | undefined;
   readonly children?: readonly IllustrationNode[] | undefined;
+  /**
+   * The part of `@owlky/core/illustrations` this node starts (`backdrop`, `ground-shadow`, …),
+   * written by the part functions. Never rendered: the style rule tests count parts with it.
+   */
+  readonly part?: string | undefined;
 }
 
 export interface Illustration {

@@ -1,5 +1,12 @@
 import { type Illustration as IllustrationData, illustrationOptions } from "@owlky/core";
-import { emptyContent, error404, signIn } from "@owlky/core/illustrations";
+import {
+  backdrop,
+  emptyContent,
+  error404,
+  groundShadow,
+  signIn,
+  sparkle,
+} from "@owlky/core/illustrations";
 import { Illustration, Upload } from "@owlky/react";
 import { Caption, CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { OptionsTable } from "../../helpers/guide-tables.js";
@@ -14,7 +21,7 @@ export const illustrationsSections: GuideSection[] = [
 - **Small and private:** the pictures are data in your bundle. They need no image requests and work under a strict Content Security Policy.
 - **Pay for what you use:** every illustration is its own export, so your bundle keeps only the ones you import.
 
-The stories in the sidebar show the whole set by category.`,
+The **All** story in the sidebar shows the whole set on one page. The other stories show it by category.`,
   },
   {
     id: "use",
@@ -88,7 +95,7 @@ export function SignInArt() {
   {
     id: "bundles",
     title: "Load only the illustrations you need",
-    body: `In React and in bundled HTML apps, import the illustrations you use from \`@owlky/core/illustrations\`. Each one adds about 1 kB gzip or less to your bundle. The \`illustrations\` export lists the whole set: import it only for a catalog.
+    body: `In React and in bundled HTML apps, import the illustrations you use from \`@owlky/core/illustrations\`. Each one adds about 0.7 to 1.6 kB gzip to your bundle. Pictures that share parts, such as people and sparkles, share that code. The \`illustrations\` export lists the whole set: import it only for a catalog.
 
 \`owlky-illustrations.js\` and \`@owlky/html/illustrations\` register every illustration, about 10 kB gzip. To ship fewer, register your own set with \`createIllustration\`.`,
     html: `<script type="module">
@@ -111,23 +118,30 @@ export function ErrorArt({ status }: { status: number }) {
     title: "Replace an illustration with your own",
     body: `Components that show an illustration accept your own content. For example, the upload's drop zone shows the \`upload\` illustration. Its \`placeholder\` replaces the illustration and the texts.
 
-To keep your own art theme-aware, draw it as inline SVG with \`data-ok-tone\` on each shape inside an \`svg[data-ok-illustration]\` root, or describe it as data for \`Illustration\`. A picture in an \`<img>\` element, such as a file from an illustration library kept in your app, works too, but it keeps its own colors in every theme.`,
+To keep your own art theme-aware, draw it as inline SVG with \`data-ok-tone\` on each shape inside an \`svg[data-ok-illustration]\` root, or describe it as data for \`Illustration\`. To match the style of the set, compose your data from the parts that \`@owlky/core/illustrations\` exports, such as \`backdrop()\`, \`groundShadow()\`, \`sparkle()\` and \`person()\`. They draw the same backdrop, shadow, sparkles and people as the built-in pictures. A picture in an \`<img>\` element, such as a file from an illustration library kept in your app, works too, but it keeps its own colors in every theme.`,
     html: `<div data-ok-upload-placeholder>
   <svg data-ok-illustration="my-art" data-ok-color="primary" aria-hidden="true" viewBox="0 0 480 360">
-    <circle data-ok-tone="lighter" cx="240" cy="180" r="120" />
-    <rect data-ok-tone="main" x="180" y="120" width="120" height="120" rx="24" />
+    <!-- The backdrop, ground shadow and sparkle of the set, as in the built-in snippets -->
+    <path data-ok-tone="main" d="M86 122C118 62 200 30 282 44c80 14 136 64 142 136 6 72-46 124-134 136-86 12-176-4-214-62-36-56-24-96 10-132Z" opacity="0.08" />
+    <ellipse data-ok-tone="shadow" cx="240" cy="320" rx="190" ry="12" />
+    <rect data-ok-tone="main" x="180" y="120" width="120" height="180" rx="24" />
+    <path data-ok-tone="accent-main" d="M120 88Q120 100 132 100Q120 100 120 112Q120 100 108 100Q120 100 120 88Z" />
   </svg>
   <div data-ok-upload-placeholder-text>…</div>
 </div>`,
     react: `import type { Illustration as IllustrationData } from "@owlky/core";
+import { backdrop, groundShadow, sparkle } from "@owlky/core/illustrations";
 import { Illustration, Upload } from "@owlky/react";
 
+// The parts draw the backdrop, ground shadow and sparkles of the set around your own shapes.
 const myArt: IllustrationData = {
   name: "my-art",
   viewBox: "0 0 480 360",
   nodes: [
-    { tag: "circle", tone: "lighter", attrs: { cx: 240, cy: 180, r: 120 } },
-    { tag: "rect", tone: "main", attrs: { x: 180, y: 120, width: 120, height: 120, rx: 24 } },
+    backdrop(),
+    groundShadow(),
+    { tag: "rect", tone: "main", attrs: { x: 180, y: 120, width: 120, height: 180, rx: 24 } },
+    sparkle(120, 100, 12),
   ],
 };
 
@@ -182,8 +196,10 @@ const MY_ART: IllustrationData = {
   name: "my-art",
   viewBox: "0 0 480 360",
   nodes: [
-    { tag: "circle", tone: "lighter", attrs: { cx: 240, cy: 180, r: 120 } },
-    { tag: "rect", tone: "main", attrs: { x: 180, y: 120, width: 120, height: 120, rx: 24 } },
+    backdrop(),
+    groundShadow(),
+    { tag: "rect", tone: "main", attrs: { x: 180, y: 120, width: 120, height: 180, rx: 24 } },
+    sparkle(120, 100, 12),
   ],
 };
 

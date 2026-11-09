@@ -1,19 +1,13 @@
 import type { Illustration } from "../../illustration/illustration.js";
+import { backdrop, dot, groundShadow, person, sparkle } from "../parts.js";
 
 /** Under maintenance: a person with a wrench beside two gears. Original artwork (MIT). */
 export const maintenance: Illustration = {
   name: "maintenance",
   viewBox: "0 0 480 360",
   nodes: [
-    {
-      tag: "path",
-      tone: "main",
-      attrs: {
-        d: "M86 122C118 62 200 30 282 44c80 14 136 64 142 136 6 72-46 124-134 136-86 12-176-4-214-62-36-56-24-96 10-132Z",
-        opacity: 0.08,
-      },
-    },
-    { tag: "ellipse", tone: "shadow", attrs: { cx: 240, cy: 320, rx: 190, ry: 12 } },
+    backdrop(),
+    groundShadow(),
     {
       tag: "polygon",
       tone: "main",
@@ -32,40 +26,8 @@ export const maintenance: Illustration = {
       },
     },
     { tag: "circle", tone: "paper", attrs: { cx: 408, cy: 250, r: 16 } },
-    {
-      tag: "g",
-      attrs: {},
-      children: [
-        { tag: "path", tone: "ink", stroke: 17, attrs: { d: "M160 228L157 308" } },
-        { tag: "path", tone: "ink", stroke: 17, attrs: { d: "M180 228L183 308" } },
-        { tag: "rect", tone: "ink", attrs: { x: 147, y: 216, width: 46, height: 26, rx: 8 } },
-        { tag: "ellipse", tone: "ink", attrs: { cx: 153, cy: 314, rx: 14, ry: 6 } },
-        { tag: "ellipse", tone: "ink", attrs: { cx: 187, cy: 314, rx: 14, ry: 6 } },
-        { tag: "path", tone: "skin-medium", stroke: 10, attrs: { d: "M137 204L135 236" } },
-        { tag: "path", tone: "light", stroke: 14, attrs: { d: "M146 172L137 206" } },
-        { tag: "circle", tone: "skin-medium", attrs: { cx: 135, cy: 240, r: 6 } },
-        { tag: "path", tone: "skin-medium", stroke: 10, attrs: { d: "M216 180L244 162" } },
-        { tag: "path", tone: "light", stroke: 14, attrs: { d: "M194 172L216 180" } },
-        { tag: "circle", tone: "skin-medium", attrs: { cx: 244, cy: 162, r: 6 } },
-        {
-          tag: "path",
-          tone: "light",
-          attrs: { d: "M141 180q0-18 16-18h26q16 0 16 18l-5 44h-48Z" },
-        },
-        {
-          tag: "rect",
-          tone: "skin-medium",
-          attrs: { x: 164, y: 148, width: 12, height: 16, rx: 4 },
-        },
-        { tag: "path", tone: "shade", attrs: { d: "M164 156h12v8h-12Z" } },
-        { tag: "circle", tone: "skin-medium", attrs: { cx: 170, cy: 136, r: 18 } },
-        {
-          tag: "path",
-          tone: "ink",
-          attrs: { d: "M151 138c-4-20 8-32 22-31 14 1 21 12 16 26-6-9-16-12-38 5Z" },
-        },
-      ],
-    },
+    person({ x: 170, skin: "skin-medium", shirt: "light" }),
+    // Hard hat over the hair, a wrench in the hand, a toolbox on the ground.
     { tag: "path", tone: "accent-main", attrs: { d: "M150 132a20 20 0 0 1 40 0Z" } },
     { tag: "rect", tone: "accent-dark", attrs: { x: 144, y: 130, width: 52, height: 6, rx: 3 } },
     { tag: "path", tone: "grey-600", stroke: 8, attrs: { d: "M244 162l34-14" } },
@@ -74,11 +36,7 @@ export const maintenance: Illustration = {
     { tag: "rect", tone: "accent-dark", attrs: { x: 52, y: 278, width: 72, height: 40, rx: 6 } },
     { tag: "path", tone: "ink", stroke: 6, attrs: { d: "M74 278v-10h28v10" } },
     { tag: "rect", tone: "shade", attrs: { x: 52, y: 290, width: 72, height: 6 } },
-    {
-      tag: "path",
-      tone: "light",
-      attrs: { d: "M70 110Q70 120 80 120Q70 120 70 130Q70 120 60 120Q70 120 70 110Z" },
-    },
-    { tag: "circle", tone: "accent-light", attrs: { cx: 230, cy: 60, r: 5 } },
+    sparkle(70, 120, 10, "light"),
+    dot(230, 60, 5, "accent-light"),
   ],
 };

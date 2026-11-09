@@ -135,7 +135,9 @@ for (const [file, limit, label] of budgets) {
 }
 
 // Tree shaking (ADR-0041): `@owlky/core/illustrations` has one export per picture, so an app that
-// imports one picture bundles that one only. Each must stay under 3 kB gzip once minified.
+// imports one picture bundles that one only, plus the parts it composes (parts.ts, about 0.1 to
+// 0.5 kB: sparkles, the backdrop, people). Each must stay under 3 kB gzip once minified, and its
+// bundle must hold no other picture.
 {
   const require = createRequire(import.meta.url);
   const { build } = await import(
@@ -155,17 +157,21 @@ for (const [file, limit, label] of budgets) {
       write: false,
       logLevel: "error",
     });
-    return gzipSync(result.outputFiles[0].contents).length;
+    const file = result.outputFiles[0];
+    return { size: gzipSync(file.contents).length, text: file.text };
   };
   const { illustrations } = await import(entry);
   const exportName = (name) => name.replace(/-([a-z0-9])/g, (_, c) => c.toUpperCase());
-  const all = await bundled("illustrations");
+  const all = (await bundled("illustrations")).size;
   for (const { name } of illustrations) {
-    const size = await bundled(exportName(name));
-    const ok = size <= 3_000 && size < all / 4;
+    const { size, text } = await bundled(exportName(name));
+    const others = illustrations.filter(
+      (item) => item.name !== name && text.includes(`"${item.name}"`),
+    );
+    const ok = size <= 3_000 && others.length === 0;
     failed ||= !ok;
     console.log(
-      `${ok ? "ok  " : "FAIL"} Illustration ${name} alone: ${(size / 1000).toFixed(2)} kB / 3 kB gzip (all ${(all / 1000).toFixed(2)} kB)`,
+      `${ok ? "ok  " : "FAIL"} Illustration ${name} alone: ${(size / 1000).toFixed(2)} kB / 3 kB gzip (all ${(all / 1000).toFixed(2)} kB)${others.length ? `, also bundles ${others.map((item) => item.name).join(", ")}` : ""}`,
     );
   }
 }

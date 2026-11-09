@@ -68,6 +68,7 @@ const CASES: [
   ],
   ["upload", "multiple", "upload", ["layout", "thumbnail", "maxFiles"]],
   ["illustrations", "errors", "illustration", ["color", "size"]],
+  ["illustrations", "all", "illustration", ["color", "size"]],
   [
     "walktour",
     "basic",

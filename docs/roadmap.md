@@ -98,7 +98,7 @@ section, autodocs page, Controls), generated from the tokens:
 | Shadows | System elevations 1–24, extended shadows, colored shadows | `--ok-elevation-1…24` |
 | Grid | Spacing (0–40px) and column (1–12) stories driven by Controls | — |
 | Icons | Icon sets, sizes, colors, usage | — (no icon set bundled; reference logo/illustrations not reproduced) |
-| Illustrations (ADR-0041, 2026-11-09) | 16 original theme-aware pictures in five stories (Errors, States, Account, Dashboard, Shapes), framework toolbar, Controls `color` / `size`, usage guide | `--ok-illustration-skin-light / -medium / -deep`; `Illustration` (React), runtime `illustration` (opt-in `owlky-illustrations.js`), data in `@owlky/core/illustrations` |
+| Illustrations (ADR-0041, 2026-11-09) | 16 original theme-aware pictures in six stories (All, Errors, States, Account, Dashboard, Shapes), style guide `docs/illustrations-style.md` and shared parts, framework toolbar, Controls `color` / `size`, usage guide | `--ok-illustration-skin-light / -medium / -deep`; `Illustration` (React), runtime `illustration` (opt-in `owlky-illustrations.js`), data in `@owlky/core/illustrations` |
 
 Illustrations: error 404 / 403 / 500, no connection, empty content, no results, maintenance, coming
 soon, sign in, email sent, reset password, welcome, upgrade, order complete, upload, avatar shape.
