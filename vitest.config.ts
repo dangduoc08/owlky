@@ -21,11 +21,14 @@ export default defineConfig({
         "packages/html/src/monaco-stub.ts",
         "packages/html/src/cdn-map.ts",
         "packages/html/src/cdn-markdown.ts",
+        // The stdio entry: covered by the packed smoke test (pnpm smoke:mcp).
+        "packages/mcp/src/cli.ts",
       ],
       reporter: ["text-summary", "text"],
       // Component floor (see .claude/commands/component.md → Coverage matrix). Add each new
       // component's files here.
       thresholds: {
+        "packages/mcp/src/**": COMPONENT_THRESHOLDS,
         "packages/core/src/accordion/**": COMPONENT_THRESHOLDS,
         "packages/core/src/anatomy/**": COMPONENT_THRESHOLDS,
         "packages/core/src/modal/**": COMPONENT_THRESHOLDS,
