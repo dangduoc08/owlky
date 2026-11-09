@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   check:
-    name: Lint, types, build, unit tests
+    name: Lint, types, build, checks
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -27,7 +27,6 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm exec playwright install --with-deps chromium firefox webkit
       - run: pnpm lint
       # Build first: workspace packages resolve each other's types from dist.
       - run: pnpm build
@@ -39,11 +38,37 @@ jobs:
       # The MCP server's manifest (ADR-0046) must match the code, and its tarball must start.
       - run: pnpm check:manifest
       - run: pnpm smoke:mcp
+      # Node-only unit tests (tokens, styles, mcp) run here once; the browser projects run in the
+      # unit jobs below.
+      - run: pnpm test:node
+
+  # Browser unit tests (core, react, html): one runner per browser. A single runner with all
+  # three browsers (about 15,000 tests) ran out of memory and crashed a page. Each job builds on
+  # its own instead of downloading the build from `check`: the build takes well under a minute,
+  # while the dist folders weigh about 45 MB and waiting for `check` would serialize the jobs.
+  unit:
+    name: Unit (${{ matrix.browser }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps ${{ matrix.browser }}
+      # Tests load the built CSS and resolve workspace packages from dist.
+      - run: pnpm build
       # Headless Firefox has no WebGL without a display (the Map needs it): run under Xvfb, which
       # `playwright install --with-deps` installs.
-      - run: xvfb-run -a pnpm test
+      - run: xvfb-run -a pnpm test:browser
         env:
-          VITEST_BROWSERS: chromium,firefox,webkit
+          VITEST_BROWSERS: ${{ matrix.browser }}
 
   e2e:
     name: E2E (${{ matrix.project }} ${{ matrix.shard }})

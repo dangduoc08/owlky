@@ -129,7 +129,8 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
 ## Commands
 
 `pnpm build` · `pnpm test` · `pnpm storybook` · `pnpm storybook:build && pnpm test:e2e` ·
-`pnpm lint:fix` · `pnpm check` (full CI locally).
+`pnpm lint:fix` · `pnpm check` (full CI locally). CI splits unit tests: `pnpm test:node` once in
+the `check` job, `VITEST_BROWSERS=<engine> pnpm test:browser` in one `unit` job per engine.
 
 ## Gotchas
 
