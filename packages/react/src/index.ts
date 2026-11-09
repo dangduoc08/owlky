@@ -49,6 +49,15 @@ export type {
   FabColor,
   FabSize,
   FabVariant,
+  GanttBarLabel,
+  GanttColor,
+  GanttColumnKey,
+  GanttDependency,
+  GanttDependencyType,
+  GanttLocaleText,
+  GanttSelectionMode,
+  GanttTask,
+  GanttView,
   IconButtonColor,
   IconButtonEdge,
   IconButtonSize,
@@ -318,6 +327,7 @@ export {
   FormControlLabel,
   type FormControlLabelProps,
 } from "./form-control-label/form-control-label.js";
+export { Gantt, type GanttProps } from "./gantt/gantt.js";
 export { IconButton, type IconButtonProps } from "./icon-button/icon-button.js";
 export { Illustration, type IllustrationProps } from "./illustration/illustration.js";
 export { Image, type ImageProps } from "./image/image.js";

@@ -1,0 +1,17 @@
+<div data-ok-gantt data-ok-view="day" data-ok-bar-label="right" data-ok-today="2025-03-18" data-ok-working-weekdays="1 2 3 4" data-ok-holidays="2025-03-17">
+  <table data-ok-gantt-data>
+    <caption>Office move, four-day week</caption>
+    <thead>
+      <tr><th scope="col" data-ok-gantt-field="name">Task</th><th scope="col" data-ok-gantt-field="startTime">Start</th><th scope="col" data-ok-gantt-field="endTime">End</th><th scope="col" data-ok-gantt-field="progress">Progress</th><th scope="col" data-ok-gantt-field="dependency">Predecessors</th></tr>
+    </thead>
+    <tbody>
+      <tr data-ok-task-id="lease"><td>Sign the lease</td><td data-ok-value="2025-03-03">Mar 3, 2025</td><td data-ok-value="2025-03-05">Mar 5, 2025</td><td data-ok-value="100">100%</td><td></td></tr>
+      <tr data-ok-task-id="layout"><td>Plan the layout</td><td data-ok-value="2025-03-06">Mar 6, 2025</td><td data-ok-value="2025-03-12">Mar 12, 2025</td><td data-ok-value="70">70%</td><td>lease</td></tr>
+      <tr data-ok-task-id="network"><td>Network cabling</td><td data-ok-value="2025-03-13">Mar 13, 2025</td><td data-ok-value="2025-03-23">Mar 23, 2025</td><td data-ok-value="20">20%</td><td>layout</td></tr>
+      <tr data-ok-task-id="furniture"><td>Order furniture</td><td data-ok-value="2025-03-06">Mar 6, 2025</td><td data-ok-value="2025-03-10">Mar 10, 2025</td><td data-ok-value="100">100%</td><td>lease</td></tr>
+      <tr data-ok-task-id="signs"><td>Signs and labels</td><td data-ok-value="2025-03-11">Mar 11, 2025</td><td data-ok-value="2025-03-14">Mar 14, 2025</td><td></td><td>furniture</td></tr>
+      <tr data-ok-task-id="move"><td>Moving day</td><td data-ok-value="2025-03-24">Mar 24, 2025</td><td data-ok-value="2025-03-25">Mar 25, 2025</td><td></td><td>network, signs</td></tr>
+      <tr data-ok-task-id="open" data-ok-type="milestone"><td>Office opens</td><td data-ok-value="2025-03-26">Mar 26, 2025</td><td></td><td></td><td>move</td></tr>
+    </tbody>
+  </table>
+</div>

@@ -65,6 +65,7 @@ component and each `/integrate` run.
 | Extra | Dnd | ✅ | Sortable | Sortable |
 | Extra | Editor | ✅ (ADR-0023, Tiptap) | Editor | Editor |
 | Extra (monaco-react reference) | Code editor | ✅ (ADR-0034, Monaco) | CodeEditor, DiffEditor, useMonaco, loader | Code editor |
+| Extra (ApexCharts) | Gantt | 🔄 phase 1 of 3 ✅ (ADR-0048: scales, zoom, bars, summaries, milestones, baselines, critical path, tree, dependencies, non-working days, today line, selection, tooltips, keyboard); phase 2 editing and phase 3 virtualization / export to do | Gantt | Gantt |
 | Extra | Form validation | not planned | — | Next |
 | Extra | Form wizard | not planned | — | Next |
 | Extra | Image | ✅ (ADR-0038) | Image | Image |

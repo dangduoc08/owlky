@@ -70,6 +70,9 @@
   "data-ok-badge",
   "data-ok-badge-badge",
   "data-ok-bar-height",
+  "data-ok-bar-label",
+  "data-ok-bar-margin",
+  "data-ok-baseline",
   "data-ok-bearing",
   "data-ok-before-id",
   "data-ok-between",
@@ -252,11 +255,14 @@
   "data-ok-col-start",
   "data-ok-collapse",
   "data-ok-collapse-toggle",
+  "data-ok-collapsed",
   "data-ok-collapsed-size",
   "data-ok-color",
   "data-ok-color-ranges",
   "data-ok-column-buffer-px",
+  "data-ok-column-lines",
   "data-ok-column-width",
+  "data-ok-columns",
   "data-ok-compact",
   "data-ok-completed",
   "data-ok-contain-scroll",
@@ -268,6 +274,8 @@
   "data-ok-count-up-label",
   "data-ok-count-up-value",
   "data-ok-covered",
+  "data-ok-critical",
+  "data-ok-critical-path",
   "data-ok-csv-options",
   "data-ok-current-anchor",
   "data-ok-current-month-calendar-position",
@@ -433,6 +441,7 @@
   "data-ok-disable-swap",
   "data-ok-disable-swipe-navigation",
   "data-ok-disable-thumbnails",
+  "data-ok-disable-tooltip",
   "data-ok-disable-total",
   "data-ok-disable-virtualization",
   "data-ok-disable-zoom",
@@ -542,6 +551,41 @@
   "data-ok-full-width",
   "data-ok-fullscreen",
   "data-ok-fullscreen-auto",
+  "data-ok-gantt",
+  "data-ok-gantt-bar",
+  "data-ok-gantt-bar-text",
+  "data-ok-gantt-baseline",
+  "data-ok-gantt-body",
+  "data-ok-gantt-boundary",
+  "data-ok-gantt-canvas",
+  "data-ok-gantt-cell",
+  "data-ok-gantt-column",
+  "data-ok-gantt-data",
+  "data-ok-gantt-field",
+  "data-ok-gantt-grid",
+  "data-ok-gantt-grid-lines",
+  "data-ok-gantt-head",
+  "data-ok-gantt-label",
+  "data-ok-gantt-link",
+  "data-ok-gantt-link-head",
+  "data-ok-gantt-link-line",
+  "data-ok-gantt-links",
+  "data-ok-gantt-name",
+  "data-ok-gantt-non-working",
+  "data-ok-gantt-row",
+  "data-ok-gantt-scale",
+  "data-ok-gantt-tick",
+  "data-ok-gantt-tier",
+  "data-ok-gantt-today",
+  "data-ok-gantt-toggle",
+  "data-ok-gantt-toggle-space",
+  "data-ok-gantt-toolbar",
+  "data-ok-gantt-tooltip",
+  "data-ok-gantt-tooltip-row",
+  "data-ok-gantt-tooltip-title",
+  "data-ok-gantt-viewport",
+  "data-ok-gantt-visually-hidden",
+  "data-ok-gantt-zoom",
   "data-ok-generate-id",
   "data-ok-generated",
   "data-ok-gfm",
@@ -562,6 +606,7 @@
   "data-ok-hide-sort-icon",
   "data-ok-hideable",
   "data-ok-highlight-selected-only",
+  "data-ok-holidays",
   "data-ok-horizontal",
   "data-ok-hover",
   "data-ok-icon-button",
@@ -819,6 +864,7 @@
   "data-ok-pane-height",
   "data-ok-paper",
   "data-ok-parent",
+  "data-ok-parent-id",
   "data-ok-part",
   "data-ok-path",
   "data-ok-paused",
@@ -854,6 +900,7 @@
   "data-ok-pitch-alignment",
   "data-ok-pivot-active",
   "data-ok-pivot-model",
+  "data-ok-pixels-per-day",
   "data-ok-placeholder",
   "data-ok-placement",
   "data-ok-play-on-init",
@@ -870,6 +917,7 @@
   "data-ok-preview-end",
   "data-ok-preview-start",
   "data-ok-print-options",
+  "data-ok-project-boundary",
   "data-ok-projection",
   "data-ok-promote-id",
   "data-ok-pulling",
@@ -944,6 +992,7 @@
   "data-ok-select-placeholder",
   "data-ok-selectable",
   "data-ok-selected",
+  "data-ok-selection",
   "data-ok-selection-follows-focus",
   "data-ok-severity",
   "data-ok-shape",
@@ -955,8 +1004,10 @@
   "data-ok-show-accuracy-circle",
   "data-ok-show-days-outside-current-month",
   "data-ok-show-divider",
+  "data-ok-show-non-working-days",
   "data-ok-show-progress",
   "data-ok-show-skip-button",
+  "data-ok-show-today",
   "data-ok-show-user-location",
   "data-ok-shrink",
   "data-ok-sibling-count",
@@ -1062,6 +1113,8 @@
   "data-ok-tabs-scroll-button",
   "data-ok-tabs-scroller",
   "data-ok-target",
+  "data-ok-task-id",
+  "data-ok-tasks-container-width",
   "data-ok-text",
   "data-ok-text-align",
   "data-ok-text-color",
@@ -1239,10 +1292,12 @@
   "data-ok-walktour-start",
   "data-ok-walktour-step",
   "data-ok-walktour-title",
+  "data-ok-week-start",
   "data-ok-wheel-gestures",
   "data-ok-wheel-zoom-distance-factor",
   "data-ok-whitespace",
   "data-ok-width",
+  "data-ok-working-weekdays",
   "data-ok-wrapped",
   "data-ok-x",
   "data-ok-x-type",
@@ -8953,6 +9008,330 @@
    "stories": [],
    "summary": "A `<label>` around a control (Checkbox, Switch; Radio later) and its text: the text names the control and clicking it toggles the control.",
    "title": "Form control label"
+  },
+  {
+   "guide": "gantt",
+   "name": "gantt",
+   "react": [
+    "Gantt"
+   ],
+   "referenceUrl": "https://apexcharts.com/apexgantt/",
+   "related": [],
+   "requiredParts": {},
+   "root": "data-ok-gantt",
+   "schemas": [
+    {
+     "name": "gantt",
+     "options": [
+      {
+       "attr": "data-ok-view",
+       "default": "week",
+       "description": "Zoom preset: `day`, `week`, `month`, `quarter` or `year` (36, 16, 5, 1.6 or 0.5 px per day). The header tiers follow the zoom.",
+       "kind": "style",
+       "name": "view",
+       "values": [
+        "day",
+        "week",
+        "month",
+        "quarter",
+        "year"
+       ]
+      },
+      {
+       "attr": "data-ok-pixels-per-day",
+       "description": "Zoom in px per day (0.25 to 120), instead of the view's. The zoom buttons write it.",
+       "kind": "number",
+       "min": 0.25,
+       "name": "pixelsPerDay"
+      },
+      {
+       "attr": "data-ok-row-height",
+       "default": 40,
+       "description": "Height of a task row in px (at least 24).",
+       "kind": "number",
+       "min": 24,
+       "name": "rowHeight"
+      },
+      {
+       "attr": "data-ok-bar-margin",
+       "default": 8,
+       "description": "Space above and below a bar inside its row, in px.",
+       "kind": "number",
+       "min": 0,
+       "name": "barMargin"
+      },
+      {
+       "attr": "data-ok-tasks-container-width",
+       "default": 440,
+       "description": "Width of the task list in px from 600px up (the name column takes what the other columns leave). Below 600px only the name column shows.",
+       "kind": "number",
+       "min": 120,
+       "name": "tasksContainerWidth"
+      },
+      {
+       "attr": "data-ok-bar-label",
+       "default": "right",
+       "description": "Where the task name sits: `right` of the bar, `inside` it, `left` of it, or `auto` (inside when it fits).",
+       "kind": "style",
+       "name": "barLabel",
+       "values": [
+        "right",
+        "inside",
+        "left",
+        "auto"
+       ]
+      },
+      {
+       "attr": "data-ok-week-start",
+       "default": 1,
+       "description": "First day of a week, 0 = Sunday (default Monday).",
+       "kind": "number",
+       "min": 0,
+       "name": "weekStart"
+      },
+      {
+       "attr": "data-ok-show-today",
+       "default": true,
+       "description": "Draws a line on today's date.",
+       "kind": "behavior",
+       "name": "showToday"
+      },
+      {
+       "attr": "data-ok-show-non-working-days",
+       "default": true,
+       "description": "Shades weekends and holidays at day and week zoom.",
+       "kind": "behavior",
+       "name": "showNonWorkingDays"
+      },
+      {
+       "attr": "data-ok-column-lines",
+       "default": true,
+       "description": "Vertical lines between the timeline's columns.",
+       "kind": "behavior",
+       "name": "columnLines"
+      },
+      {
+       "attr": "data-ok-critical-path",
+       "description": "Highlights the tasks and dependencies with no slack (the critical path).",
+       "kind": "flag",
+       "name": "criticalPath"
+      },
+      {
+       "attr": "data-ok-baseline",
+       "description": "Draws each task's planned dates as a thin bar under it.",
+       "kind": "flag",
+       "name": "baseline"
+      },
+      {
+       "attr": "data-ok-project-boundary",
+       "description": "Dashed lines at the project's first and last day.",
+       "kind": "flag",
+       "name": "projectBoundary"
+      },
+      {
+       "attr": "data-ok-toolbar",
+       "description": "A toolbar with zoom out and zoom in buttons.",
+       "kind": "flag",
+       "name": "toolbar"
+      },
+      {
+       "attr": "data-ok-selection",
+       "description": "Rows can be selected: click, Ctrl or Cmd + click, Shift + click, Space and Ctrl + A.",
+       "kind": "flag",
+       "name": "selection"
+      },
+      {
+       "attr": "data-ok-disable-tooltip",
+       "description": "No tooltip on bar hover or row focus.",
+       "kind": "flag",
+       "name": "disableTooltip"
+      },
+      {
+       "attr": "data-ok-collapsed",
+       "description": "Collapsed parent rows: `data-ok-collapsed` on their rows of the data table (`aria-expanded` on the grid rows).",
+       "event": "ok:gantt:toggle",
+       "kind": "state",
+       "name": "collapsed"
+      },
+      {
+       "attr": "data-ok-selected",
+       "description": "Selected rows: `data-ok-selected` on their rows of the data table (`aria-selected` on the grid rows).",
+       "event": "ok:gantt:selectionchange",
+       "kind": "state",
+       "name": "selected"
+      }
+     ],
+     "root": "data-ok-gantt"
+    }
+   ],
+   "sections": [
+    {
+     "body": "Show a project's tasks on a timeline: a task list (name, dates, duration, progress) and a timeline\nwith one bar per task in the same rows, the hierarchy of summary tasks, milestones and the\ndependencies between tasks. One core layout (`renderGantt`) draws it for React and HTML.",
+     "id": "purpose",
+     "title": "Purpose"
+    },
+    {
+     "body": "```\ndiv[data-ok-gantt][data-ok-view][data-ok-bar-label][data-ok-pixels-per-day]?[data-ok-row-height]?\n   [data-ok-bar-margin]?[data-ok-tasks-container-width]?[data-ok-week-start]?\n   [data-ok-show-today=\"false\"]?[data-ok-show-non-working-days=\"false\"]?[data-ok-column-lines=\"false\"]?\n   [data-ok-critical-path]?[data-ok-baseline]?[data-ok-project-boundary]?[data-ok-toolbar]?\n   [data-ok-selection]?[data-ok-disable-tooltip]?\n   [data-ok-columns]?[data-ok-today]?[data-ok-locale]?[data-ok-working-weekdays]?[data-ok-holidays]?\n   [data-ok-ready]?                                    (set once drawn: hides the table)\n  table[data-ok-gantt-data]                            (the tasks; the Gantt without JavaScript)\n    caption                                            (the Gantt's name)\n    thead › tr › th[scope=col][data-ok-gantt-field=\"name|startTime|endTime|progress|dependency|baselineStart|baselineEnd\"]\n    tbody › tr[data-ok-task-id][data-ok-parent-id]?[data-ok-type=\"milestone\"]?[data-ok-color]?\n             [data-ok-collapsed]?[data-ok-selected]?\n      td[data-ok-value]?                               (ISO dates, progress numbers; else the text)\n  div[data-ok-gantt-toolbar][role=toolbar][aria-label] (toolbar)\n    button[type=button][data-ok-icon-button][data-ok-color=default][data-ok-size=sm][data-ok-gantt-zoom=\"out|in\"][aria-label] › svg[aria-hidden]\n  div[data-ok-gantt-viewport][tabindex=-1]             (scrolls both ways; not a tab stop: rows are)\n    div[role=treegrid][data-ok-gantt-grid][aria-label][aria-rowcount][aria-colcount][aria-multiselectable]?\n      div[role=rowgroup][data-ok-gantt-head] › div[role=row][aria-rowindex=1]\n        div[role=columnheader][data-ok-gantt-column=\"<key>\"][aria-colindex]   (task-list columns)\n        div[role=columnheader][data-ok-gantt-column=timeline][aria-colindex]\n          span[data-ok-gantt-visually-hidden] \"Timeline\"\n          div[data-ok-gantt-scale][aria-hidden] › div[data-ok-gantt-tier=\"top|bottom\"] › span[data-ok-gantt-tick]\n      div[role=rowgroup][data-ok-gantt-body]\n        svg[data-ok-gantt-canvas][aria-hidden][focusable=false][width][height][viewBox]\n          path[data-ok-gantt-non-working]? path[data-ok-gantt-grid-lines]? path[data-ok-gantt-boundary]*\n          path[data-ok-gantt-today]? g[data-ok-gantt-links]?\n            › g[data-ok-gantt-link][data-ok-type][data-ok-critical]? › path[data-ok-gantt-link-line] + path[data-ok-gantt-link-head]\n        div[role=row][data-ok-gantt-row][data-ok-task-id][data-ok-type=\"task|summary|milestone\"][aria-rowindex]\n           [aria-level][aria-posinset][aria-setsize][tabindex][aria-expanded]?[aria-selected]?\n          div[role=gridcell][data-ok-gantt-cell=name][aria-colindex]\n            span[data-ok-gantt-toggle|data-ok-gantt-toggle-space][aria-hidden] (› svg) + span[data-ok-gantt-name]\n          div[role=gridcell][data-ok-gantt-cell=\"startTime|endTime|duration|progress\"][aria-colindex]\n          div[role=gridcell][data-ok-gantt-cell=timeline][aria-colindex]\n            span[data-ok-gantt-baseline][aria-hidden]?\n            div[data-ok-gantt-bar][data-ok-type][role=img][aria-label][data-ok-color]?[data-ok-critical]?\n              (› span[data-ok-gantt-bar-text] with barLabel inside / auto)\n            span[data-ok-gantt-label=\"right|left\"][aria-hidden]?\n  div[data-ok-gantt-tooltip][aria-hidden=true][hidden]?[data-ok-placement]?\n    div[data-ok-gantt-tooltip-title] + div[data-ok-gantt-tooltip-row] › span + span\n```\nPrivate properties (from core, React `style`, HTML CSSOM): `--_ok-gantt-columns`, `-name`, `-list`,\n`-timeline`, `-row`, `-bar-margin` on the grid; `--_ok-gantt-left` (sticky offset) and\n`--_ok-gantt-indent` on list cells; `--_ok-gantt-x`, `-w`, `-progress` on bars, labels, baselines\nand ticks; `--_ok-gantt-tooltip-x|y` on the tooltip (controller).",
+     "id": "anatomy",
+     "title": "Anatomy"
+    },
+    {
+     "body": "(Options of `gantt`: listed under \"options\".)\n\nOutside the schema (root text attributes ↔ React props):\n\n| HTML | React | Default | |\n|---|---|---|---|\n| `data-ok-columns` | `columns` | `name startTime duration progress` | task-list columns, from `name`, `startTime`, `endTime`, `duration`, `progress` (name always first) |\n| `data-ok-today` | `today` | the current day | ISO date of the today line |\n| `data-ok-locale` | `locale` | `en-US` | BCP 47 tag of dates |\n| `data-ok-working-weekdays` | `workingWeekdays` | `1 2 3 4 5` | 0 = Sunday |\n| `data-ok-holidays` | `holidays` | — | ISO dates |\n| table `caption` (else `aria-label`) | `label` | — | accessible name |\n| table rows | `tasks` | — | `GanttTask[]`: `id`, `name`, `startTime`, `endTime` (ISO, last day included), `progress` 0–100, `type` (`milestone`), `parentId`, `dependency` (id, `{ taskId, type, lag }` or a list; HTML text `id[:FS|SS|FF|SF[±lag]]`, comma separated), `color` (palette), `collapsed`, `baseline` `{ start, end }` |\n| `setLocaleText()` | `localeText` | English | texts and column titles |\n\nUpstream mapping (ApexGantt → Owlky): `series` → `tasks` (`startTime`, `endTime`, `progress`,\n`type`, `parentId`, `dependency`, `collapsed`, `baseline` kept; `barBackgroundColor` → `color`, a\npalette name), `pixelsPerDay`, `rowHeight`, `barMargin`, `tasksContainerWidth`, `barLabel.position`\n→ `barLabel`, `columnLines`, `enableCriticalPath` → `criticalPath`, `baseline.enabled` →\n`baseline`, `enableProjectBoundary` → `projectBoundary`, `enableSelection` → `selection`,\n`enableTooltip` → `disableTooltip` (MUI-style negative flag), `calendar.workingWeekdays` /\n`holidays` / `weekStart` / `showNonWorkingStripes` → `workingWeekdays` / `holidays` / `weekStart` /\n`showNonWorkingDays`, `columnConfig[].key` → `columns`, `locale.tag` → `locale`,\n`locale.messages` → `localeText`, `zoomIn()` / `zoomOut()` / `scrollToTask()` kept (HTML instance).\nNot applicable: colors and fonts as options (tokens and palettes), `canvasStyle`, `theme`,\n`tooltipTemplate` / `barLabel.render` (HTML strings), `persistState` (no storage, ADR-0007),\n`inputDateFormat` (ISO dates). Deferred (roadmap): editing (phase 2), virtualization and export\n(phase 3), sorting and filtering, grouping, custom column renderers, inline editing, CRUD toolbar,\ncontext menu, undo / redo, split tasks, rollups, annotations, crosshair, draw tasks and links,\ncritical path in working days, right to left, sub-day scales.",
+     "id": "options",
+     "title": "Options"
+    },
+    {
+     "body": "`aria-expanded` on parent rows (`data-ok-collapsed` on their table rows), `aria-selected` with\n`selection` (`data-ok-selected`), the roving `tabindex=\"0\"` on the active row, `data-ok-ready`,\nthe zoom in `data-ok-pixels-per-day`.",
+     "id": "states",
+     "title": "States"
+    },
+    {
+     "body": "- **Dates:** ISO days as UTC day numbers; the end day is included; a task without `endTime` (and\n  without children) is a milestone at `startTime`. Parents become summary tasks: their dates span\n  their children, their progress is the duration-weighted mean of their leaf tasks.\n- **Scale:** `view` presets the zoom (`day` 36, `week` 16, `month` 5, `quarter` 1.6, `year` 0.5 px\n  per day); `pixelsPerDay` overrides it. Two header tiers from the zoom: month / day (≥ 24),\n  month / week (≥ 8), year / month (≥ 2.5), year / quarter (≥ 0.9), year / half. The range starts\n  one bottom unit before the first task and ends one after the last. Zoom buttons multiply or\n  divide by 1.4 (0.25–120).\n- **Background:** non-working days shaded from 8 px per day, column lines at bottom-tier units,\n  row lines, a today line, dashed project boundary lines, dependency arrows (orthogonal, rounded\n  corners, an arrow head; critical links in the error color).\n- **Critical path:** a backward pass from the project's end over the dependencies (calendar days),\n  tasks and milestones with no total float, links with no slack.\n- **Labels:** `right` (default), `left`, `inside` (clipped), `auto` (inside when the estimated\n  width fits). Milestones are always labeled outside; summaries have no bar label.\n- **Controller** (`createGanttController`, both implementations): row focus (roving tab stop, a\n  row focused another way becomes active), expand / collapse, selection, zoom buttons, tooltip.\n  It reports intent; React keeps state in props / state, the HTML runtime in the table and the\n  root, after a cancelable event.\n- **Responsive:** one scroll container; the header and the task list are sticky. Below 600px of\n  the Gantt's own width (container query) only the name column shows, at most 40% of the width.",
+     "id": "behavior",
+     "title": "Behavior"
+    },
+    {
+     "body": "| Key | Action |\n|---|---|\n| Tab | into the grid (the active row), then out of it |\n| ↓ / ↑ | next / previous row |\n| Page Down / Page Up | 10 rows down / up |\n| Home / End | first / last row |\n| → | expands a collapsed parent; on an expanded parent, moves to its first child |\n| ← | collapses an expanded parent; otherwise moves to the parent |\n| Enter | toggles a parent |\n| Space | toggles the row's selection (`selection`); Shift + Space selects the range |\n| Shift + ↓ / ↑ / Page / Home / End | extends the selection (`selection`) |\n| Ctrl / Cmd + A | selects every row (`selection`) |\n| Escape | hides the tooltip (wherever the focus is) |\n\nPointer: a click focuses a row and selects it (Ctrl / Cmd toggles, Shift selects the range); the\nchevron toggles a parent; hovering a bar shows the tooltip, which stays while hovered.",
+     "id": "keyboard",
+     "title": "Keyboard"
+    },
+    {
+     "body": "- `role=treegrid` named by `label` (the table caption in HTML), `aria-rowcount` / `aria-colcount`,\n  rows with `aria-level`, `aria-posinset`, `aria-setsize`, `aria-expanded`, `aria-selected`.\n- Each bar is `role=img` named with the task, its dates, progress, planned dates (baseline), the\n  critical path and its predecessors with the dependency type and lag. Labels, the scale and the\n  SVG are `aria-hidden` (the header names the timeline column \"Timeline\").\n- The tooltip repeats the row's data (`aria-hidden`), shows on keyboard focus too, stays while\n  hovered and closes with Escape (WCAG 1.4.13).\n- Color is never the only cue: critical tasks and links are also named; milestones are diamonds.\n- Text uses neutral tones (AA); bars are graphics (palette fills, 3:1 against the paper).",
+     "id": "accessibility",
+     "title": "Accessibility"
+    },
+    {
+     "body": "HTML events: `ok:gantt:toggle` (cancelable; `{ id, expanded, collapsed }`),\n`ok:gantt:selectionchange` (cancelable; `{ selected, mode }`), `ok:gantt:zoom` (cancelable;\n`{ pixelsPerDay }`). Instance (`runtime.get(el, \"gantt\")`): `tasks`, `collapsed`,\n`setCollapsed(ids)`, `selected`, `setSelected(ids)`, `pixelsPerDay`, `zoomIn()`, `zoomOut()`,\n`scrollToTask(id)`, `setLocaleText(text)`, `refresh()`.\nReact: `onCollapsedChange(ids)`, `onSelectionChange(ids, mode)`, `onZoomChange(pixelsPerDay)`;\ncontrolled `collapsed`, `selected`, `pixelsPerDay` with `default…` counterparts.",
+     "id": "events-api",
+     "title": "Events / API"
+    },
+    {
+     "body": "React renders the same table and treegrid the runtime builds (one core node tree); the SVG and the\nprivate properties are compared by `e2e/tests/gantt.spec.ts` (parity doesn't walk into SVG or\n`style`). The tooltip's content is written by the controller in both.",
+     "id": "parity-notes",
+     "title": "Parity notes"
+    }
+   ],
+   "snippets": {},
+   "stories": [
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/icon-button.css + components/gantt.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Basic -->\n<div data-ok-gantt data-ok-view=\"week\" data-ok-bar-label=\"right\" data-ok-toolbar data-ok-today=\"2025-03-18\">\n  <table data-ok-gantt-data>\n    <caption>Website relaunch</caption>\n    <thead>\n      <tr><th scope=\"col\" data-ok-gantt-field=\"name\">Task</th><th scope=\"col\" data-ok-gantt-field=\"startTime\">Start</th><th scope=\"col\" data-ok-gantt-field=\"endTime\">End</th><th scope=\"col\" data-ok-gantt-field=\"progress\">Progress</th><th scope=\"col\" data-ok-gantt-field=\"dependency\">Predecessors</th></tr>\n    </thead>\n    <tbody>\n      <tr data-ok-task-id=\"discovery\"><td>Discovery</td><td></td><td></td><td></td><td></td></tr>\n      <tr data-ok-task-id=\"research\" data-ok-parent-id=\"discovery\"><td>User research</td><td data-ok-value=\"2025-03-03\">Mar 3, 2025</td><td data-ok-value=\"2025-03-07\">Mar 7, 2025</td><td data-ok-value=\"100\">100%</td><td></td></tr>\n      <tr data-ok-task-id=\"audit\" data-ok-parent-id=\"discovery\"><td>Content audit</td><td data-ok-value=\"2025-03-05\">Mar 5, 2025</td><td data-ok-value=\"2025-03-11\">Mar 11, 2025</td><td data-ok-value=\"80\">80%</td><td>research:SS+2</td></tr>\n      <tr data-ok-task-id=\"brief\" data-ok-parent-id=\"discovery\" data-ok-type=\"milestone\"><td>Brief approved</td><td data-ok-value=\"2025-03-12\">Mar 12, 2025</td><td></td><td></td><td>audit</td></tr>\n      <tr data-ok-task-id=\"design\"><td>Design</td><td></td><td></td><td></td><td></td></tr>\n      <tr data-ok-task-id=\"wireframes\" data-ok-parent-id=\"design\"><td>Wireframes</td><td data-ok-value=\"2025-03-13\">Mar 13, 2025</td><td data-ok-value=\"2025-03-20\">Mar 20, 2025</td><td data-ok-value=\"60\">60%</td><td>brief</td></tr>\n      <tr data-ok-task-id=\"visual\" data-ok-parent-id=\"design\"><td>Visual design</td><td data-ok-value=\"2025-03-21\">Mar 21, 2025</td><td data-ok-value=\"2025-04-01\">Apr 1, 2025</td><td data-ok-value=\"25\">25%</td><td>wireframes</td></tr>\n      <tr data-ok-task-id=\"review\" data-ok-parent-id=\"design\" data-ok-type=\"milestone\"><td>Design review</td><td data-ok-value=\"2025-04-02\">Apr 2, 2025</td><td></td><td></td><td>visual</td></tr>\n      <tr data-ok-task-id=\"build\"><td>Build</td><td></td><td></td><td></td><td></td></tr>\n      <tr data-ok-task-id=\"backend\" data-ok-parent-id=\"build\"><td>Back end</td><td data-ok-value=\"2025-03-24\">Mar 24, 2025</td><td data-ok-value=\"2025-04-16\">Apr 16, 2025</td><td data-ok-value=\"10\">10%</td><td>wireframes</td></tr>\n      <tr data-ok-task-id=\"frontend\" data-ok-parent-id=\"build\"><td>Front end</td><td data-ok-value=\"2025-04-03\">Apr 3, 2025</td><td data-ok-value=\"2025-04-22\">Apr 22, 2025</td><td></td><td>review</td></tr>\n      <tr data-ok-task-id=\"testing\" data-ok-parent-id=\"build\"><td>Testing</td><td data-ok-value=\"2025-04-17\">Apr 17, 2025</td><td data-ok-value=\"2025-04-25\">Apr 25, 2025</td><td></td><td>frontend:FF+3, backend</td></tr>\n      <tr data-ok-task-id=\"launch\" data-ok-type=\"milestone\"><td>Launch</td><td data-ok-value=\"2025-04-28\">Apr 28, 2025</td><td></td><td></td><td>testing</td></tr>\n    </tbody>\n  </table>\n</div>",
+     "id": "components-gantt--basic",
+     "name": "Basic",
+     "react": "import { Gantt, type GanttTask } from \"@owlky/react\";\n\nconst tasks: GanttTask[] = [\n  {\"id\":\"discovery\",\"name\":\"Discovery\"},\n  {\"id\":\"research\",\"name\":\"User research\",\"parentId\":\"discovery\",\"startTime\":\"2025-03-03\",\"endTime\":\"2025-03-07\",\"progress\":100},\n  {\"id\":\"audit\",\"name\":\"Content audit\",\"parentId\":\"discovery\",\"startTime\":\"2025-03-05\",\"endTime\":\"2025-03-11\",\"progress\":80,\"dependency\":{\"taskId\":\"research\",\"type\":\"SS\",\"lag\":2}},\n  {\"id\":\"brief\",\"name\":\"Brief approved\",\"parentId\":\"discovery\",\"startTime\":\"2025-03-12\",\"type\":\"milestone\",\"dependency\":\"audit\"},\n  {\"id\":\"design\",\"name\":\"Design\"},\n  {\"id\":\"wireframes\",\"name\":\"Wireframes\",\"parentId\":\"design\",\"startTime\":\"2025-03-13\",\"endTime\":\"2025-03-20\",\"progress\":60,\"dependency\":\"brief\"},\n  {\"id\":\"visual\",\"name\":\"Visual design\",\"parentId\":\"design\",\"startTime\":\"2025-03-21\",\"endTime\":\"2025-04-01\",\"progress\":25,\"dependency\":\"wireframes\"},\n  {\"id\":\"review\",\"name\":\"Design review\",\"parentId\":\"design\",\"startTime\":\"2025-04-02\",\"type\":\"milestone\",\"dependency\":\"visual\"},\n  {\"id\":\"build\",\"name\":\"Build\"},\n  {\"id\":\"backend\",\"name\":\"Back end\",\"parentId\":\"build\",\"startTime\":\"2025-03-24\",\"endTime\":\"2025-04-16\",\"progress\":10,\"dependency\":\"wireframes\"},\n  {\"id\":\"frontend\",\"name\":\"Front end\",\"parentId\":\"build\",\"startTime\":\"2025-04-03\",\"endTime\":\"2025-04-22\",\"dependency\":\"review\"},\n  {\"id\":\"testing\",\"name\":\"Testing\",\"parentId\":\"build\",\"startTime\":\"2025-04-17\",\"endTime\":\"2025-04-25\",\"dependency\":[{\"taskId\":\"frontend\",\"type\":\"FF\",\"lag\":3},\"backend\"]},\n  {\"id\":\"launch\",\"name\":\"Launch\",\"startTime\":\"2025-04-28\",\"type\":\"milestone\",\"dependency\":\"testing\"},\n];\n\nexport function BasicGantt() {\n  return (\n    <Gantt\n      tasks={tasks}\n      today=\"2025-03-18\"\n      label=\"Website relaunch\"\n      toolbar\n    />\n  );\n}",
+     "snippets": [
+      "basic-group.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/icon-button.css + components/gantt.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Day -->\n<div data-ok-gantt data-ok-view=\"day\" data-ok-bar-label=\"right\" data-ok-today=\"2025-03-18\">\n  <table data-ok-gantt-data>\n    <caption>Website relaunch, day view</caption>\n    <thead>\n      <tr><th scope=\"col\" data-ok-gantt-field=\"name\">Task</th><th scope=\"col\" data-ok-gantt-field=\"startTime\">Start</th><th scope=\"col\" data-ok-gantt-field=\"endTime\">End</th><th scope=\"col\" data-ok-gantt-field=\"progress\">Progress</th><th scope=\"col\" data-ok-gantt-field=\"dependency\">Predecessors</th></tr>\n    </thead>\n    <tbody>\n      <tr data-ok-task-id=\"discovery\"><td>Discovery</td><td></td><td></td><td></td><td></td></tr>\n      <tr data-ok-task-id=\"research\" data-ok-parent-id=\"discovery\"><td>User research</td><td data-ok-value=\"2025-03-03\">Mar 3, 2025</td><td data-ok-value=\"2025-03-07\">Mar 7, 2025</td><td data-ok-value=\"100\">100%</td><td></td></tr>\n      <tr data-ok-task-id=\"audit\" data-ok-parent-id=\"discovery\"><td>Content audit</td><td data-ok-value=\"2025-03-05\">Mar 5, 2025</td><td data-ok-value=\"2025-03-11\">Mar 11, 2025</td><td data-ok-value=\"80\">80%</td><td>research:SS+2</td></tr>\n      <tr data-ok-task-id=\"brief\" data-ok-parent-id=\"discovery\" data-ok-type=\"milestone\"><td>Brief approved</td><td data-ok-value=\"2025-03-12\">Mar 12, 2025</td><td></td><td></td><td>audit</td></tr>\n      <tr data-ok-task-id=\"design\"><td>Design</td><td></td><td></td><td></td><td></td></tr>\n      <tr data-ok-task-id=\"wireframes\" data-ok-parent-id=\"design\"><td>Wireframes</td><td data-ok-value=\"2025-03-13\">Mar 13, 2025</td><td data-ok-value=\"2025-03-20\">Mar 20, 2025</td><td data-ok-value=\"60\">60%</td><td>brief</td></tr>\n      <tr data-ok-task-id=\"visual\" data-ok-parent-id=\"design\"><td>Visual design</td><td data-ok-value=\"2025-03-21\">Mar 21, 2025</td><td data-ok-value=\"2025-04-01\">Apr 1, 2025</td><td data-ok-value=\"25\">25%</td><td>wireframes</td></tr>\n      <tr data-ok-task-id=\"review\" data-ok-parent-id=\"design\" data-ok-type=\"milestone\"><td>Design review</td><td data-ok-value=\"2025-04-02\">Apr 2, 2025</td><td></td><td></td><td>visual</td></tr>\n      <tr data-ok-task-id=\"build\"><td>Build</td><td></td><td></td><td></td><td></td></tr>\n      <tr data-ok-task-id=\"backend\" data-ok-parent-id=\"build\"><td>Back end</td><td data-ok-value=\"2025-03-24\">Mar 24, 2025</td><td data-ok-value=\"2025-04-16\">Apr 16, 2025</td><td data-ok-value=\"10\">10%</td><td>wireframes</td></tr>\n      <tr data-ok-task-id=\"frontend\" data-ok-parent-id=\"build\"><td>Front end</td><td data-ok-value=\"2025-04-03\">Apr 3, 2025</td><td data-ok-value=\"2025-04-22\">Apr 22, 2025</td><td></td><td>review</td></tr>\n      <tr data-ok-task-id=\"testing\" data-ok-parent-id=\"build\"><td>Testing</td><td data-ok-value=\"2025-04-17\">Apr 17, 2025</td><td data-ok-value=\"2025-04-25\">Apr 25, 2025</td><td></td><td>frontend:FF+3, backend</td></tr>\n      <tr data-ok-task-id=\"launch\" data-ok-type=\"milestone\"><td>Launch</td><td data-ok-value=\"2025-04-28\">Apr 28, 2025</td><td></td><td></td><td>testing</td></tr>\n    </tbody>\n  </table>\n</div>\n\n<!-- Week -->\n<div data-ok-gantt data-ok-view=\"week\" data-ok-bar-label=\"right\" data-ok-today=\"2025-03-18\">\n  <table data-ok-gantt-data>\n    <caption>Website relaunch, week view</caption>\n    <thead>\n      <tr><th scope=\"col\" data-ok-gantt-field=\"name\">Task</th><th scope=\"col\" data-ok-gantt-field=\"startTime\">Start</th><th scope=\"col\" data-ok-gantt-field=\"endTime\">End</th><th scope=\"col\" data-ok-gantt-field=\"progress\">Progress</th><th scope=\"col\" data-ok-gantt-field=\"dependency\">Predecessors</th></tr>\n    </thead>\n    <tbody>\n      <tr data-ok-task-id=\"discovery\"><td>Discovery</td><td></td><td></td><td></td><td></td></tr>\n      <tr data-ok-task-id=\"research\" data-ok-parent-id=\"discovery\"><td>User research</td><td data-ok-value=\"2025-03-03\">Mar 3, 2025</td><td data-ok-value=\"2025-03-07\">Mar 7, 2025</td><td data-ok-value=\"100\">100%</td><td></td></tr>\n      <tr data-ok-task-id=\"audit\" data-ok-parent-id=\"discovery\"><td>Content audit</td><td data-ok-value=\"2025-03-05\">Mar 5, 2025</td><td data-ok-value=\"2025-03-11\">Mar 11, 2025</td><td data-ok-value=\"80\">80%</td><td>research:SS+2</td></tr>\n      <tr data-ok-task-id=\"brief\" data-ok-parent-id=\"discovery\" data-ok-type=\"milestone\"><td>Brief approved</td><td data-ok-value=\"2025-03-12\">Mar 12, 2025</td><td></td><td></td><td>audit</td></tr>\n      <tr data-ok-task-id=\"design\"><td>Design</td><td></td><td></td><td></td><td></td></tr>\n      <tr data-ok-task-id=\"wireframes\" data-ok-parent-id=\"design\"><td>Wireframes</td><td data-ok-value=\"2025-03-13\">Mar 13, 2025</td><td data-ok-value=\"2025-03-20\">Mar 20, 2025</td><td data-ok-value=\"60\">60%</td><td>brief</td></tr>\n      <tr data-ok-task-id=\"visual\" data-ok-parent-id=\"design\"><td>Visual design</td><td data-ok-value=\"2025-03-21\">Mar 21, 2025</td><td data-ok-value=\"2025-04-01\">Apr 1, 2025</td><td data-ok-value=\"25\">25%</td><td>wireframes</td></tr>\n      <tr data-ok-task-id=\"review\" data-ok-parent-id=\"design\" data-ok-type=\"milestone\"><td>Design review</td><td data-ok-value=\"2025-04-02\">Apr 2, 2025</td><td></td><td></td><td>visual</td></tr>\n      <tr data-ok-task-id=\"build\"><td>Build</td><td></td><td></td><td></td><td></td></tr>\n      <tr data-ok-task-id=\"backend\" data-ok-parent-id=\"build\"><td>Back end</td><td data-ok-value=\"2025-03-24\">Mar 24, 2025</td><td data-ok-value=\"2025-04-16\">Apr 16, 2025</td><td data-ok-value=\"10\">10%</td><td>wireframes</td></tr>\n      <tr data-ok-task-id=\"frontend\" data-ok-parent-id=\"build\"><td>Front end</td><td data-ok-value=\"2025-04-03\">Apr 3, 2025</td><td data-ok-value=\"2025-04-22\">Apr 22, 2025</td><td></td><td>review</td></tr>\n      <tr data-ok-task-id=\"testing\" data-ok-parent-id=\"build\"><td>Testing</td><td data-ok-value=\"2025-04-17\">Apr 17, 2025</td><td data-ok-value=\"2025-04-25\">Apr 25, 2025</td><td></td><td>frontend:FF+3, backend</td></tr>\n      <tr data-ok-task-id=\"launch\" data-ok-type=\"milestone\"><td>Launch</td><td data-ok-value=\"2025-04-28\">Apr 28, 2025</td><td></td><td></td><td>testing</td></tr>\n    </tbody>\n  </table>\n</div>\n\n<!-- Month -->\n<div data-ok-gantt data-ok-view=\"month\" data-ok-bar-label=\"right\" data-ok-today=\"2025-03-18\">\n  <table data-ok-gantt-data>\n    <caption>Website relaunch, month view</caption>\n    <thead>\n      <tr><th scope=\"col\" data-ok-gantt-field=\"name\">Task</th><th scope=\"col\" data-ok-gantt-field=\"startTime\">Start</th><th scope=\"col\" data-ok-gantt-field=\"endTime\">End</th><th scope=\"col\" data-ok-gantt-field=\"progress\">Progress</th><th scope=\"col\" data-ok-gantt-field=\"dependency\">Predecessors</th></tr>\n    </thead>\n    <tbody>\n      <tr data-ok-task-id=\"discovery\"><td>Discovery</td><td></td><td></td><td></td><td></td></tr>\n      <tr data-ok-task-id=\"research\" data-ok-parent-id=\"discovery\"><td>User research</td><td data-ok-value=\"2025-03-03\">Mar 3, 2025</td><td data-ok-value=\"2025-03-07\">Mar 7, 2025</td><td data-ok-value=\"100\">100%</td><td></td></tr>\n      <tr data-ok-task-id=\"audit\" data-ok-parent-id=\"discovery\"><td>Content audit</td><td data-ok-value=\"2025-03-05\">Mar 5, 2025</td><td data-ok-value=\"2025-03-11\">Mar 11, 2025</td><td data-ok-value=\"80\">80%</td><td>research:SS+2</td></tr>\n      <tr data-ok-task-id=\"brief\" data-ok-parent-id=\"discovery\" data-ok-type=\"milestone\"><td>Brief approved</td><td data-ok-value=\"2025-03-12\">Mar 12, 2025</td><td></td><td></td><td>audit</td></tr>\n      <tr data-ok-task-id=\"design\"><td>Design</td><td></td><td></td><td></td><td></td></tr>\n      <tr data-ok-task-id=\"wireframes\" data-ok-parent-id=\"design\"><td>Wireframes</td><td data-ok-value=\"2025-03-13\">Mar 13, 2025</td><td data-ok-value=\"2025-03-20\">Mar 20, 2025</td><td data-ok-value=\"60\">60%</td><td>brief</td></tr>\n      <tr data-ok-task-id=\"visual\" data-ok-parent-id=\"design\"><td>Visual design</td><td data-ok-value=\"2025-03-21\">Mar 21, 2025</td><td data-ok-value=\"2025-04-01\">Apr 1, 2025</td><td data-ok-value=\"25\">25%</td><td>wireframes</td></tr>\n      <tr data-ok-task-id=\"review\" data-ok-parent-id=\"design\" data-ok-type=\"milestone\"><td>Design review</td><td data-ok-value=\"2025-04-02\">Apr 2, 2025</td><td></td><td></td><td>visual</td></tr>\n      <tr data-ok-task-id=\"build\"><td>Build</td><td></td><td></td><td></td><td></td></tr>\n      <tr data-ok-task-id=\"backend\" data-ok-parent-id=\"build\"><td>Back end</td><td data-ok-value=\"2025-03-24\">Mar 24, 2025</td><td data-ok-value=\"2025-04-16\">Apr 16, 2025</td><td data-ok-value=\"10\">10%</td><td>wireframes</td></tr>\n      <tr data-ok-task-id=\"frontend\" data-ok-parent-id=\"build\"><td>Front end</td><td data-ok-value=\"2025-04-03\">Apr 3, 2025</td><td data-ok-value=\"2025-04-22\">Apr 22, 2025</td><td></td><td>review</td></tr>\n      <tr data-ok-task-id=\"testing\" data-ok-parent-id=\"build\"><td>Testing</td><td data-ok-value=\"2025-04-17\">Apr 17, 2025</td><td data-ok-value=\"2025-04-25\">Apr 25, 2025</td><td></td><td>frontend:FF+3, backend</td></tr>\n      <tr data-ok-task-id=\"launch\" data-ok-type=\"milestone\"><td>Launch</td><td data-ok-value=\"2025-04-28\">Apr 28, 2025</td><td></td><td></td><td>testing</td></tr>\n    </tbody>\n  </table>\n</div>\n\n<!-- Quarter -->\n<div data-ok-gantt data-ok-view=\"quarter\" data-ok-bar-label=\"right\" data-ok-today=\"2025-03-18\">\n  <table data-ok-gantt-data>\n    <caption>Website relaunch, quarter view</caption>\n    <thead>\n      <tr><th scope=\"col\" data-ok-gantt-field=\"name\">Task</th><th scope=\"col\" data-ok-gantt-field=\"startTime\">Start</th><th scope=\"col\" data-ok-gantt-field=\"endTime\">End</th><th scope=\"col\" data-ok-gantt-field=\"progress\">Progress</th><th scope=\"col\" data-ok-gantt-field=\"dependency\">Predecessors</th></tr>\n    </thead>\n    <tbody>\n      <tr data-ok-task-id=\"discovery\"><td>Discovery</td><td></td><td></td><td></td><td></td></tr>\n      <tr data-ok-task-id=\"research\" data-ok-parent-id=\"discovery\"><td>User research</td><td data-ok-value=\"2025-03-03\">Mar 3, 2025</td><td data-ok-value=\"2025-03-07\">Mar 7, 2025</td><td data-ok-value=\"100\">100%</td><td></td></tr>\n      <tr data-ok-task-id=\"audit\" data-ok-parent-id=\"discovery\"><td>Content audit</td><td data-ok-value=\"2025-03-05\">Mar 5, 2025</td><td data-ok-value=\"2025-03-11\">Mar 11, 2025</td><td data-ok-value=\"80\">80%</td><td>research:SS+2</td></tr>\n      <tr data-ok-task-id=\"brief\" data-ok-parent-id=\"discovery\" data-ok-type=\"milestone\"><td>Brief approved</td><td data-ok-value=\"2025-03-12\">Mar 12, 2025</td><td></td><td></td><td>audit</td></tr>\n      <tr data-ok-task-id=\"design\"><td>Design</td><td></td><td></td><td></td><td></td></tr>\n      <tr data-ok-task-id=\"wireframes\" data-ok-parent-id=\"design\"><td>Wireframes</td><td data-ok-value=\"2025-03-13\">Mar 13, 2025</td><td data-ok-value=\"2025-03-20\">Mar 20, 2025</td><td data-ok-value=\"60\">60%</td><td>brief</td></tr>\n      <tr data-ok-task-id=\"visual\" data-ok-parent-id=\"design\"><td>Visual design</td><td data-ok-value=\"2025-03-21\">Mar 21, 2025</td><td data-ok-value=\"2025-04-01\">Apr 1, 2025</td><td data-ok-value=\"25\">25%</td><td>wireframes</td></tr>\n      <tr data-ok-task-id=\"review\" data-ok-parent-id=\"design\" data-ok-type=\"milestone\"><td>Design review</td><td data-ok-value=\"2025-04-02\">Apr 2, 2025</td><td></td><td></td><td>visual</td></tr>\n      <tr data-ok-task-id=\"build\"><td>Build</td><td></td><td></td><td></td><td></td></tr>\n      <tr data-ok-task-id=\"backend\" data-ok-parent-id=\"build\"><td>Back end</td><td data-ok-value=\"2025-03-24\">Mar 24, 2025</td><td data-ok-value=\"2025-04-16\">Apr 16, 2025</td><td data-ok-value=\"10\">10%</td><td>wireframes</td></tr>\n      <tr data-ok-task-id=\"frontend\" data-ok-parent-id=\"build\"><td>Front end</td><td data-ok-value=\"2025-04-03\">Apr 3, 2025</td><td data-ok-value=\"2025-04-22\">Apr 22, 2025</td><td></td><td>review</td></tr>\n      <tr data-ok-task-id=\"testing\" data-ok-parent-id=\"build\"><td>Testing</td><td data-ok-value=\"2025-04-17\">Apr 17, 2025</td><td data-ok-value=\"2025-04-25\">Apr 25, 2025</td><td></td><td>frontend:FF+3, backend</td></tr>\n      <tr data-ok-task-id=\"launch\" data-ok-type=\"milestone\"><td>Launch</td><td data-ok-value=\"2025-04-28\">Apr 28, 2025</td><td></td><td></td><td>testing</td></tr>\n    </tbody>\n  </table>\n</div>\n\n<!-- Year -->\n<div data-ok-gantt data-ok-view=\"year\" data-ok-bar-label=\"right\" data-ok-today=\"2025-03-18\">\n  <table data-ok-gantt-data>\n    <caption>Website relaunch, year view</caption>\n    <thead>\n      <tr><th scope=\"col\" data-ok-gantt-field=\"name\">Task</th><th scope=\"col\" data-ok-gantt-field=\"startTime\">Start</th><th scope=\"col\" data-ok-gantt-field=\"endTime\">End</th><th scope=\"col\" data-ok-gantt-field=\"progress\">Progress</th><th scope=\"col\" data-ok-gantt-field=\"dependency\">Predecessors</th></tr>\n    </thead>\n    <tbody>\n      <tr data-ok-task-id=\"discovery\"><td>Discovery</td><td></td><td></td><td></td><td></td></tr>\n      <tr data-ok-task-id=\"research\" data-ok-parent-id=\"discovery\"><td>User research</td><td data-ok-value=\"2025-03-03\">Mar 3, 2025</td><td data-ok-value=\"2025-03-07\">Mar 7, 2025</td><td data-ok-value=\"100\">100%</td><td></td></tr>\n      <tr data-ok-task-id=\"audit\" data-ok-parent-id=\"discovery\"><td>Content audit</td><td data-ok-value=\"2025-03-05\">Mar 5, 2025</td><td data-ok-value=\"2025-03-11\">Mar 11, 2025</td><td data-ok-value=\"80\">80%</td><td>research:SS+2</td></tr>\n      <tr data-ok-task-id=\"brief\" data-ok-parent-id=\"discovery\" data-ok-type=\"milestone\"><td>Brief approved</td><td data-ok-value=\"2025-03-12\">Mar 12, 2025</td><td></td><td></td><td>audit</td></tr>\n      <tr data-ok-task-id=\"design\"><td>Design</td><td></td><td></td><td></td><td></td></tr>\n      <tr data-ok-task-id=\"wireframes\" data-ok-parent-id=\"design\"><td>Wireframes</td><td data-ok-value=\"2025-03-13\">Mar 13, 2025</td><td data-ok-value=\"2025-03-20\">Mar 20, 2025</td><td data-ok-value=\"60\">60%</td><td>brief</td></tr>\n      <tr data-ok-task-id=\"visual\" data-ok-parent-id=\"design\"><td>Visual design</td><td data-ok-value=\"2025-03-21\">Mar 21, 2025</td><td data-ok-value=\"2025-04-01\">Apr 1, 2025</td><td data-ok-value=\"25\">25%</td><td>wireframes</td></tr>\n      <tr data-ok-task-id=\"review\" data-ok-parent-id=\"design\" data-ok-type=\"milestone\"><td>Design review</td><td data-ok-value=\"2025-04-02\">Apr 2, 2025</td><td></td><td></td><td>visual</td></tr>\n      <tr data-ok-task-id=\"build\"><td>Build</td><td></td><td></td><td></td><td></td></tr>\n      <tr data-ok-task-id=\"backend\" data-ok-parent-id=\"build\"><td>Back end</td><td data-ok-value=\"2025-03-24\">Mar 24, 2025</td><td data-ok-value=\"2025-04-16\">Apr 16, 2025</td><td data-ok-value=\"10\">10%</td><td>wireframes</td></tr>\n      <tr data-ok-task-id=\"frontend\" data-ok-parent-id=\"build\"><td>Front end</td><td data-ok-value=\"2025-04-03\">Apr 3, 2025</td><td data-ok-value=\"2025-04-22\">Apr 22, 2025</td><td></td><td>review</td></tr>\n      <tr data-ok-task-id=\"testing\" data-ok-parent-id=\"build\"><td>Testing</td><td data-ok-value=\"2025-04-17\">Apr 17, 2025</td><td data-ok-value=\"2025-04-25\">Apr 25, 2025</td><td></td><td>frontend:FF+3, backend</td></tr>\n      <tr data-ok-task-id=\"launch\" data-ok-type=\"milestone\"><td>Launch</td><td data-ok-value=\"2025-04-28\">Apr 28, 2025</td><td></td><td></td><td>testing</td></tr>\n    </tbody>\n  </table>\n</div>",
+     "id": "components-gantt--timeline-views",
+     "name": "Timeline views",
+     "react": "import { Gantt, type GanttTask } from \"@owlky/react\";\n\nconst tasks: GanttTask[] = [\n  {\"id\":\"discovery\",\"name\":\"Discovery\"},\n  {\"id\":\"research\",\"name\":\"User research\",\"parentId\":\"discovery\",\"startTime\":\"2025-03-03\",\"endTime\":\"2025-03-07\",\"progress\":100},\n  {\"id\":\"audit\",\"name\":\"Content audit\",\"parentId\":\"discovery\",\"startTime\":\"2025-03-05\",\"endTime\":\"2025-03-11\",\"progress\":80,\"dependency\":{\"taskId\":\"research\",\"type\":\"SS\",\"lag\":2}},\n  {\"id\":\"brief\",\"name\":\"Brief approved\",\"parentId\":\"discovery\",\"startTime\":\"2025-03-12\",\"type\":\"milestone\",\"dependency\":\"audit\"},\n  {\"id\":\"design\",\"name\":\"Design\"},\n  {\"id\":\"wireframes\",\"name\":\"Wireframes\",\"parentId\":\"design\",\"startTime\":\"2025-03-13\",\"endTime\":\"2025-03-20\",\"progress\":60,\"dependency\":\"brief\"},\n  {\"id\":\"visual\",\"name\":\"Visual design\",\"parentId\":\"design\",\"startTime\":\"2025-03-21\",\"endTime\":\"2025-04-01\",\"progress\":25,\"dependency\":\"wireframes\"},\n  {\"id\":\"review\",\"name\":\"Design review\",\"parentId\":\"design\",\"startTime\":\"2025-04-02\",\"type\":\"milestone\",\"dependency\":\"visual\"},\n  {\"id\":\"build\",\"name\":\"Build\"},\n  {\"id\":\"backend\",\"name\":\"Back end\",\"parentId\":\"build\",\"startTime\":\"2025-03-24\",\"endTime\":\"2025-04-16\",\"progress\":10,\"dependency\":\"wireframes\"},\n  {\"id\":\"frontend\",\"name\":\"Front end\",\"parentId\":\"build\",\"startTime\":\"2025-04-03\",\"endTime\":\"2025-04-22\",\"dependency\":\"review\"},\n  {\"id\":\"testing\",\"name\":\"Testing\",\"parentId\":\"build\",\"startTime\":\"2025-04-17\",\"endTime\":\"2025-04-25\",\"dependency\":[{\"taskId\":\"frontend\",\"type\":\"FF\",\"lag\":3},\"backend\"]},\n  {\"id\":\"launch\",\"name\":\"Launch\",\"startTime\":\"2025-04-28\",\"type\":\"milestone\",\"dependency\":\"testing\"},\n];\n\nexport function TimelineViewsGantt() {\n  return (\n    <>\n      <Gantt\n        tasks={tasks}\n        today=\"2025-03-18\"\n        label=\"Website relaunch, day view\"\n        view=\"day\"\n      />\n      <Gantt\n        tasks={tasks}\n        today=\"2025-03-18\"\n        label=\"Website relaunch, week view\"\n        view=\"week\"\n      />\n      <Gantt\n        tasks={tasks}\n        today=\"2025-03-18\"\n        label=\"Website relaunch, month view\"\n        view=\"month\"\n      />\n      <Gantt\n        tasks={tasks}\n        today=\"2025-03-18\"\n        label=\"Website relaunch, quarter view\"\n        view=\"quarter\"\n      />\n      <Gantt\n        tasks={tasks}\n        today=\"2025-03-18\"\n        label=\"Website relaunch, year view\"\n        view=\"year\"\n      />\n    </>\n  );\n}",
+     "snippets": [
+      "timeline-views-day.html",
+      "timeline-views-month.html",
+      "timeline-views-quarter.html",
+      "timeline-views-week.html",
+      "timeline-views-year.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/icon-button.css + components/gantt.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Milestones -->\n<div data-ok-gantt data-ok-view=\"day\" data-ok-bar-label=\"right\" data-ok-today=\"2025-03-18\">\n  <table data-ok-gantt-data>\n    <caption>App release</caption>\n    <thead>\n      <tr><th scope=\"col\" data-ok-gantt-field=\"name\">Task</th><th scope=\"col\" data-ok-gantt-field=\"startTime\">Start</th><th scope=\"col\" data-ok-gantt-field=\"endTime\">End</th><th scope=\"col\" data-ok-gantt-field=\"progress\">Progress</th><th scope=\"col\" data-ok-gantt-field=\"dependency\">Predecessors</th></tr>\n    </thead>\n    <tbody>\n      <tr data-ok-task-id=\"kickoff\" data-ok-type=\"milestone\"><td>Kickoff</td><td data-ok-value=\"2025-03-03\">Mar 3, 2025</td><td></td><td></td><td></td></tr>\n      <tr data-ok-task-id=\"alpha\"><td>Alpha build</td><td data-ok-value=\"2025-03-04\">Mar 4, 2025</td><td data-ok-value=\"2025-03-14\">Mar 14, 2025</td><td data-ok-value=\"100\">100%</td><td>kickoff</td></tr>\n      <tr data-ok-task-id=\"alpha-done\" data-ok-type=\"milestone\"><td>Alpha ready</td><td data-ok-value=\"2025-03-17\">Mar 17, 2025</td><td></td><td></td><td>alpha</td></tr>\n      <tr data-ok-task-id=\"beta\"><td>Beta build</td><td data-ok-value=\"2025-03-17\">Mar 17, 2025</td><td data-ok-value=\"2025-03-28\">Mar 28, 2025</td><td data-ok-value=\"40\">40%</td><td>alpha-done</td></tr>\n      <tr data-ok-task-id=\"beta-done\" data-ok-type=\"milestone\"><td>Beta ready</td><td data-ok-value=\"2025-03-31\">Mar 31, 2025</td><td></td><td></td><td>beta</td></tr>\n      <tr data-ok-task-id=\"store\"><td>Store review</td><td data-ok-value=\"2025-03-31\">Mar 31, 2025</td><td data-ok-value=\"2025-04-04\">Apr 4, 2025</td><td></td><td>beta-done</td></tr>\n      <tr data-ok-task-id=\"release\" data-ok-type=\"milestone\"><td>Release</td><td data-ok-value=\"2025-04-07\">Apr 7, 2025</td><td></td><td></td><td>store</td></tr>\n    </tbody>\n  </table>\n</div>",
+     "id": "components-gantt--milestones",
+     "name": "Milestones",
+     "react": "import { Gantt, type GanttTask } from \"@owlky/react\";\n\nconst tasks: GanttTask[] = [\n  {\"id\":\"kickoff\",\"name\":\"Kickoff\",\"startTime\":\"2025-03-03\",\"type\":\"milestone\"},\n  {\"id\":\"alpha\",\"name\":\"Alpha build\",\"startTime\":\"2025-03-04\",\"endTime\":\"2025-03-14\",\"progress\":100,\"dependency\":\"kickoff\"},\n  {\"id\":\"alpha-done\",\"name\":\"Alpha ready\",\"startTime\":\"2025-03-17\",\"type\":\"milestone\",\"dependency\":\"alpha\"},\n  {\"id\":\"beta\",\"name\":\"Beta build\",\"startTime\":\"2025-03-17\",\"endTime\":\"2025-03-28\",\"progress\":40,\"dependency\":\"alpha-done\"},\n  {\"id\":\"beta-done\",\"name\":\"Beta ready\",\"startTime\":\"2025-03-31\",\"type\":\"milestone\",\"dependency\":\"beta\"},\n  {\"id\":\"store\",\"name\":\"Store review\",\"startTime\":\"2025-03-31\",\"endTime\":\"2025-04-04\",\"dependency\":\"beta-done\"},\n  {\"id\":\"release\",\"name\":\"Release\",\"startTime\":\"2025-04-07\",\"type\":\"milestone\",\"dependency\":\"store\"},\n];\n\nexport function MilestonesGantt() {\n  return (\n    <Gantt\n      tasks={tasks}\n      today=\"2025-03-18\"\n      label=\"App release\"\n      view=\"day\"\n    />\n  );\n}",
+     "snippets": [
+      "milestones-group.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/icon-button.css + components/gantt.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Finish to start, start to start, finish to finish, start to finish -->\n<div data-ok-gantt data-ok-view=\"day\" data-ok-bar-label=\"right\" data-ok-today=\"2025-03-18\">\n  <table data-ok-gantt-data>\n    <caption>Dependency types</caption>\n    <thead>\n      <tr><th scope=\"col\" data-ok-gantt-field=\"name\">Task</th><th scope=\"col\" data-ok-gantt-field=\"startTime\">Start</th><th scope=\"col\" data-ok-gantt-field=\"endTime\">End</th><th scope=\"col\" data-ok-gantt-field=\"progress\">Progress</th><th scope=\"col\" data-ok-gantt-field=\"dependency\">Predecessors</th></tr>\n    </thead>\n    <tbody>\n      <tr data-ok-task-id=\"a\"><td>Pour concrete</td><td data-ok-value=\"2025-03-03\">Mar 3, 2025</td><td data-ok-value=\"2025-03-07\">Mar 7, 2025</td><td data-ok-value=\"100\">100%</td><td></td></tr>\n      <tr data-ok-task-id=\"b\"><td>Frame walls (FS)</td><td data-ok-value=\"2025-03-10\">Mar 10, 2025</td><td data-ok-value=\"2025-03-14\">Mar 14, 2025</td><td data-ok-value=\"30\">30%</td><td>a</td></tr>\n      <tr data-ok-task-id=\"c\"><td>Write copy</td><td data-ok-value=\"2025-03-03\">Mar 3, 2025</td><td data-ok-value=\"2025-03-12\">Mar 12, 2025</td><td data-ok-value=\"70\">70%</td><td></td></tr>\n      <tr data-ok-task-id=\"d\"><td>Edit copy (SS + 2)</td><td data-ok-value=\"2025-03-05\">Mar 5, 2025</td><td data-ok-value=\"2025-03-14\">Mar 14, 2025</td><td data-ok-value=\"20\">20%</td><td>c:SS+2</td></tr>\n      <tr data-ok-task-id=\"e\"><td>Install wiring</td><td data-ok-value=\"2025-03-04\">Mar 4, 2025</td><td data-ok-value=\"2025-03-13\">Mar 13, 2025</td><td data-ok-value=\"50\">50%</td><td></td></tr>\n      <tr data-ok-task-id=\"f\"><td>Inspect wiring (FF)</td><td data-ok-value=\"2025-03-10\">Mar 10, 2025</td><td data-ok-value=\"2025-03-13\">Mar 13, 2025</td><td></td><td>e:FF</td></tr>\n      <tr data-ok-task-id=\"g\"><td>New shift starts</td><td data-ok-value=\"2025-03-12\">Mar 12, 2025</td><td data-ok-value=\"2025-03-14\">Mar 14, 2025</td><td></td><td></td></tr>\n      <tr data-ok-task-id=\"h\"><td>Old shift ends (SF)</td><td data-ok-value=\"2025-03-06\">Mar 6, 2025</td><td data-ok-value=\"2025-03-11\">Mar 11, 2025</td><td data-ok-value=\"100\">100%</td><td>g:SF-1</td></tr>\n    </tbody>\n  </table>\n</div>",
+     "id": "components-gantt--dependency-types",
+     "name": "Dependency types",
+     "react": "import { Gantt, type GanttTask } from \"@owlky/react\";\n\nconst tasks: GanttTask[] = [\n  {\"id\":\"a\",\"name\":\"Pour concrete\",\"startTime\":\"2025-03-03\",\"endTime\":\"2025-03-07\",\"progress\":100},\n  {\"id\":\"b\",\"name\":\"Frame walls (FS)\",\"startTime\":\"2025-03-10\",\"endTime\":\"2025-03-14\",\"progress\":30,\"dependency\":\"a\"},\n  {\"id\":\"c\",\"name\":\"Write copy\",\"startTime\":\"2025-03-03\",\"endTime\":\"2025-03-12\",\"progress\":70},\n  {\"id\":\"d\",\"name\":\"Edit copy (SS + 2)\",\"startTime\":\"2025-03-05\",\"endTime\":\"2025-03-14\",\"progress\":20,\"dependency\":{\"taskId\":\"c\",\"type\":\"SS\",\"lag\":2}},\n  {\"id\":\"e\",\"name\":\"Install wiring\",\"startTime\":\"2025-03-04\",\"endTime\":\"2025-03-13\",\"progress\":50},\n  {\"id\":\"f\",\"name\":\"Inspect wiring (FF)\",\"startTime\":\"2025-03-10\",\"endTime\":\"2025-03-13\",\"dependency\":{\"taskId\":\"e\",\"type\":\"FF\"}},\n  {\"id\":\"g\",\"name\":\"New shift starts\",\"startTime\":\"2025-03-12\",\"endTime\":\"2025-03-14\"},\n  {\"id\":\"h\",\"name\":\"Old shift ends (SF)\",\"startTime\":\"2025-03-06\",\"endTime\":\"2025-03-11\",\"progress\":100,\"dependency\":{\"taskId\":\"g\",\"type\":\"SF\",\"lag\":-1}},\n];\n\nexport function DependencyTypesGantt() {\n  return (\n    <Gantt\n      tasks={tasks}\n      today=\"2025-03-18\"\n      label=\"Dependency types\"\n      view=\"day\"\n    />\n  );\n}",
+     "snippets": [
+      "dependency-types-group.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/icon-button.css + components/gantt.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Baseline -->\n<div data-ok-gantt data-ok-view=\"day\" data-ok-bar-label=\"right\" data-ok-baseline data-ok-today=\"2025-03-18\">\n  <table data-ok-gantt-data>\n    <caption>Warehouse build</caption>\n    <thead>\n      <tr><th scope=\"col\" data-ok-gantt-field=\"name\">Task</th><th scope=\"col\" data-ok-gantt-field=\"startTime\">Start</th><th scope=\"col\" data-ok-gantt-field=\"endTime\">End</th><th scope=\"col\" data-ok-gantt-field=\"progress\">Progress</th><th scope=\"col\" data-ok-gantt-field=\"dependency\">Predecessors</th><th scope=\"col\" data-ok-gantt-field=\"baselineStart\">Planned start</th><th scope=\"col\" data-ok-gantt-field=\"baselineEnd\">Planned end</th></tr>\n    </thead>\n    <tbody>\n      <tr data-ok-task-id=\"survey\"><td>Site survey</td><td data-ok-value=\"2025-03-03\">Mar 3, 2025</td><td data-ok-value=\"2025-03-06\">Mar 6, 2025</td><td data-ok-value=\"100\">100%</td><td></td><td data-ok-value=\"2025-03-03\">Mar 3, 2025</td><td data-ok-value=\"2025-03-05\">Mar 5, 2025</td></tr>\n      <tr data-ok-task-id=\"permits\"><td>Permits</td><td data-ok-value=\"2025-03-07\">Mar 7, 2025</td><td data-ok-value=\"2025-03-19\">Mar 19, 2025</td><td data-ok-value=\"90\">90%</td><td>survey</td><td data-ok-value=\"2025-03-06\">Mar 6, 2025</td><td data-ok-value=\"2025-03-14\">Mar 14, 2025</td></tr>\n      <tr data-ok-task-id=\"foundation\"><td>Foundation</td><td data-ok-value=\"2025-03-20\">Mar 20, 2025</td><td data-ok-value=\"2025-03-28\">Mar 28, 2025</td><td data-ok-value=\"30\">30%</td><td>permits</td><td data-ok-value=\"2025-03-17\">Mar 17, 2025</td><td data-ok-value=\"2025-03-26\">Mar 26, 2025</td></tr>\n      <tr data-ok-task-id=\"handover\" data-ok-type=\"milestone\"><td>Handover</td><td data-ok-value=\"2025-03-31\">Mar 31, 2025</td><td></td><td></td><td>foundation</td><td data-ok-value=\"2025-03-27\">Mar 27, 2025</td><td data-ok-value=\"2025-03-27\">Mar 27, 2025</td></tr>\n    </tbody>\n  </table>\n</div>",
+     "id": "components-gantt--baseline",
+     "name": "Baseline",
+     "react": "import { Gantt, type GanttTask } from \"@owlky/react\";\n\nconst tasks: GanttTask[] = [\n  {\"id\":\"survey\",\"name\":\"Site survey\",\"startTime\":\"2025-03-03\",\"endTime\":\"2025-03-06\",\"progress\":100,\"baseline\":{\"start\":\"2025-03-03\",\"end\":\"2025-03-05\"}},\n  {\"id\":\"permits\",\"name\":\"Permits\",\"startTime\":\"2025-03-07\",\"endTime\":\"2025-03-19\",\"progress\":90,\"dependency\":\"survey\",\"baseline\":{\"start\":\"2025-03-06\",\"end\":\"2025-03-14\"}},\n  {\"id\":\"foundation\",\"name\":\"Foundation\",\"startTime\":\"2025-03-20\",\"endTime\":\"2025-03-28\",\"progress\":30,\"dependency\":\"permits\",\"baseline\":{\"start\":\"2025-03-17\",\"end\":\"2025-03-26\"}},\n  {\"id\":\"handover\",\"name\":\"Handover\",\"startTime\":\"2025-03-31\",\"type\":\"milestone\",\"dependency\":\"foundation\",\"baseline\":{\"start\":\"2025-03-27\",\"end\":\"2025-03-27\"}},\n];\n\nexport function BaselineGantt() {\n  return (\n    <Gantt\n      tasks={tasks}\n      today=\"2025-03-18\"\n      label=\"Warehouse build\"\n      view=\"day\"\n      baseline\n    />\n  );\n}",
+     "snippets": [
+      "baseline-group.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/icon-button.css + components/gantt.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Critical path -->\n<div data-ok-gantt data-ok-view=\"day\" data-ok-bar-label=\"right\" data-ok-critical-path data-ok-today=\"2025-03-18\">\n  <table data-ok-gantt-data>\n    <caption>Office move</caption>\n    <thead>\n      <tr><th scope=\"col\" data-ok-gantt-field=\"name\">Task</th><th scope=\"col\" data-ok-gantt-field=\"startTime\">Start</th><th scope=\"col\" data-ok-gantt-field=\"endTime\">End</th><th scope=\"col\" data-ok-gantt-field=\"progress\">Progress</th><th scope=\"col\" data-ok-gantt-field=\"dependency\">Predecessors</th></tr>\n    </thead>\n    <tbody>\n      <tr data-ok-task-id=\"lease\"><td>Sign the lease</td><td data-ok-value=\"2025-03-03\">Mar 3, 2025</td><td data-ok-value=\"2025-03-05\">Mar 5, 2025</td><td data-ok-value=\"100\">100%</td><td></td></tr>\n      <tr data-ok-task-id=\"layout\"><td>Plan the layout</td><td data-ok-value=\"2025-03-06\">Mar 6, 2025</td><td data-ok-value=\"2025-03-12\">Mar 12, 2025</td><td data-ok-value=\"70\">70%</td><td>lease</td></tr>\n      <tr data-ok-task-id=\"network\"><td>Network cabling</td><td data-ok-value=\"2025-03-13\">Mar 13, 2025</td><td data-ok-value=\"2025-03-23\">Mar 23, 2025</td><td data-ok-value=\"20\">20%</td><td>layout</td></tr>\n      <tr data-ok-task-id=\"furniture\"><td>Order furniture</td><td data-ok-value=\"2025-03-06\">Mar 6, 2025</td><td data-ok-value=\"2025-03-10\">Mar 10, 2025</td><td data-ok-value=\"100\">100%</td><td>lease</td></tr>\n      <tr data-ok-task-id=\"signs\"><td>Signs and labels</td><td data-ok-value=\"2025-03-11\">Mar 11, 2025</td><td data-ok-value=\"2025-03-14\">Mar 14, 2025</td><td></td><td>furniture</td></tr>\n      <tr data-ok-task-id=\"move\"><td>Moving day</td><td data-ok-value=\"2025-03-24\">Mar 24, 2025</td><td data-ok-value=\"2025-03-25\">Mar 25, 2025</td><td></td><td>network, signs</td></tr>\n      <tr data-ok-task-id=\"open\" data-ok-type=\"milestone\"><td>Office opens</td><td data-ok-value=\"2025-03-26\">Mar 26, 2025</td><td></td><td></td><td>move</td></tr>\n    </tbody>\n  </table>\n</div>",
+     "id": "components-gantt--critical-path",
+     "name": "Critical path",
+     "react": "import { Gantt, type GanttTask } from \"@owlky/react\";\n\nconst tasks: GanttTask[] = [\n  {\"id\":\"lease\",\"name\":\"Sign the lease\",\"startTime\":\"2025-03-03\",\"endTime\":\"2025-03-05\",\"progress\":100},\n  {\"id\":\"layout\",\"name\":\"Plan the layout\",\"startTime\":\"2025-03-06\",\"endTime\":\"2025-03-12\",\"progress\":70,\"dependency\":\"lease\"},\n  {\"id\":\"network\",\"name\":\"Network cabling\",\"startTime\":\"2025-03-13\",\"endTime\":\"2025-03-23\",\"progress\":20,\"dependency\":\"layout\"},\n  {\"id\":\"furniture\",\"name\":\"Order furniture\",\"startTime\":\"2025-03-06\",\"endTime\":\"2025-03-10\",\"progress\":100,\"dependency\":\"lease\"},\n  {\"id\":\"signs\",\"name\":\"Signs and labels\",\"startTime\":\"2025-03-11\",\"endTime\":\"2025-03-14\",\"dependency\":\"furniture\"},\n  {\"id\":\"move\",\"name\":\"Moving day\",\"startTime\":\"2025-03-24\",\"endTime\":\"2025-03-25\",\"dependency\":[\"network\",\"signs\"]},\n  {\"id\":\"open\",\"name\":\"Office opens\",\"startTime\":\"2025-03-26\",\"type\":\"milestone\",\"dependency\":\"move\"},\n];\n\nexport function CriticalPathGantt() {\n  return (\n    <Gantt\n      tasks={tasks}\n      today=\"2025-03-18\"\n      label=\"Office move\"\n      view=\"day\"\n      criticalPath\n    />\n  );\n}",
+     "snippets": [
+      "critical-path-group.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/icon-button.css + components/gantt.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Four-day week and a holiday -->\n<div data-ok-gantt data-ok-view=\"day\" data-ok-bar-label=\"right\" data-ok-today=\"2025-03-18\" data-ok-working-weekdays=\"1 2 3 4\" data-ok-holidays=\"2025-03-17\">\n  <table data-ok-gantt-data>\n    <caption>Office move, four-day week</caption>\n    <thead>\n      <tr><th scope=\"col\" data-ok-gantt-field=\"name\">Task</th><th scope=\"col\" data-ok-gantt-field=\"startTime\">Start</th><th scope=\"col\" data-ok-gantt-field=\"endTime\">End</th><th scope=\"col\" data-ok-gantt-field=\"progress\">Progress</th><th scope=\"col\" data-ok-gantt-field=\"dependency\">Predecessors</th></tr>\n    </thead>\n    <tbody>\n      <tr data-ok-task-id=\"lease\"><td>Sign the lease</td><td data-ok-value=\"2025-03-03\">Mar 3, 2025</td><td data-ok-value=\"2025-03-05\">Mar 5, 2025</td><td data-ok-value=\"100\">100%</td><td></td></tr>\n      <tr data-ok-task-id=\"layout\"><td>Plan the layout</td><td data-ok-value=\"2025-03-06\">Mar 6, 2025</td><td data-ok-value=\"2025-03-12\">Mar 12, 2025</td><td data-ok-value=\"70\">70%</td><td>lease</td></tr>\n      <tr data-ok-task-id=\"network\"><td>Network cabling</td><td data-ok-value=\"2025-03-13\">Mar 13, 2025</td><td data-ok-value=\"2025-03-23\">Mar 23, 2025</td><td data-ok-value=\"20\">20%</td><td>layout</td></tr>\n      <tr data-ok-task-id=\"furniture\"><td>Order furniture</td><td data-ok-value=\"2025-03-06\">Mar 6, 2025</td><td data-ok-value=\"2025-03-10\">Mar 10, 2025</td><td data-ok-value=\"100\">100%</td><td>lease</td></tr>\n      <tr data-ok-task-id=\"signs\"><td>Signs and labels</td><td data-ok-value=\"2025-03-11\">Mar 11, 2025</td><td data-ok-value=\"2025-03-14\">Mar 14, 2025</td><td></td><td>furniture</td></tr>\n      <tr data-ok-task-id=\"move\"><td>Moving day</td><td data-ok-value=\"2025-03-24\">Mar 24, 2025</td><td data-ok-value=\"2025-03-25\">Mar 25, 2025</td><td></td><td>network, signs</td></tr>\n      <tr data-ok-task-id=\"open\" data-ok-type=\"milestone\"><td>Office opens</td><td data-ok-value=\"2025-03-26\">Mar 26, 2025</td><td></td><td></td><td>move</td></tr>\n    </tbody>\n  </table>\n</div>",
+     "id": "components-gantt--working-calendar",
+     "name": "Working calendar",
+     "react": "import { Gantt, type GanttTask } from \"@owlky/react\";\n\nconst tasks: GanttTask[] = [\n  {\"id\":\"lease\",\"name\":\"Sign the lease\",\"startTime\":\"2025-03-03\",\"endTime\":\"2025-03-05\",\"progress\":100},\n  {\"id\":\"layout\",\"name\":\"Plan the layout\",\"startTime\":\"2025-03-06\",\"endTime\":\"2025-03-12\",\"progress\":70,\"dependency\":\"lease\"},\n  {\"id\":\"network\",\"name\":\"Network cabling\",\"startTime\":\"2025-03-13\",\"endTime\":\"2025-03-23\",\"progress\":20,\"dependency\":\"layout\"},\n  {\"id\":\"furniture\",\"name\":\"Order furniture\",\"startTime\":\"2025-03-06\",\"endTime\":\"2025-03-10\",\"progress\":100,\"dependency\":\"lease\"},\n  {\"id\":\"signs\",\"name\":\"Signs and labels\",\"startTime\":\"2025-03-11\",\"endTime\":\"2025-03-14\",\"dependency\":\"furniture\"},\n  {\"id\":\"move\",\"name\":\"Moving day\",\"startTime\":\"2025-03-24\",\"endTime\":\"2025-03-25\",\"dependency\":[\"network\",\"signs\"]},\n  {\"id\":\"open\",\"name\":\"Office opens\",\"startTime\":\"2025-03-26\",\"type\":\"milestone\",\"dependency\":\"move\"},\n];\n\nexport function WorkingCalendarGantt() {\n  return (\n    <Gantt\n      tasks={tasks}\n      today=\"2025-03-18\"\n      label=\"Office move, four-day week\"\n      view=\"day\"\n      workingWeekdays={[1,2,3,4]}\n      holidays={[\"2025-03-17\"]}\n    />\n  );\n}",
+     "snippets": [
+      "working-calendar-group.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/icon-button.css + components/gantt.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Project boundary -->\n<div data-ok-gantt data-ok-view=\"week\" data-ok-bar-label=\"right\" data-ok-project-boundary data-ok-today=\"2025-03-18\">\n  <table data-ok-gantt-data>\n    <caption>Website relaunch, boundary</caption>\n    <thead>\n      <tr><th scope=\"col\" data-ok-gantt-field=\"name\">Task</th><th scope=\"col\" data-ok-gantt-field=\"startTime\">Start</th><th scope=\"col\" data-ok-gantt-field=\"endTime\">End</th><th scope=\"col\" data-ok-gantt-field=\"progress\">Progress</th><th scope=\"col\" data-ok-gantt-field=\"dependency\">Predecessors</th></tr>\n    </thead>\n    <tbody>\n      <tr data-ok-task-id=\"discovery\"><td>Discovery</td><td></td><td></td><td></td><td></td></tr>\n      <tr data-ok-task-id=\"research\" data-ok-parent-id=\"discovery\"><td>User research</td><td data-ok-value=\"2025-03-03\">Mar 3, 2025</td><td data-ok-value=\"2025-03-07\">Mar 7, 2025</td><td data-ok-value=\"100\">100%</td><td></td></tr>\n      <tr data-ok-task-id=\"audit\" data-ok-parent-id=\"discovery\"><td>Content audit</td><td data-ok-value=\"2025-03-05\">Mar 5, 2025</td><td data-ok-value=\"2025-03-11\">Mar 11, 2025</td><td data-ok-value=\"80\">80%</td><td>research:SS+2</td></tr>\n      <tr data-ok-task-id=\"brief\" data-ok-parent-id=\"discovery\" data-ok-type=\"milestone\"><td>Brief approved</td><td data-ok-value=\"2025-03-12\">Mar 12, 2025</td><td></td><td></td><td>audit</td></tr>\n      <tr data-ok-task-id=\"design\"><td>Design</td><td></td><td></td><td></td><td></td></tr>\n      <tr data-ok-task-id=\"wireframes\" data-ok-parent-id=\"design\"><td>Wireframes</td><td data-ok-value=\"2025-03-13\">Mar 13, 2025</td><td data-ok-value=\"2025-03-20\">Mar 20, 2025</td><td data-ok-value=\"60\">60%</td><td>brief</td></tr>\n      <tr data-ok-task-id=\"visual\" data-ok-parent-id=\"design\"><td>Visual design</td><td data-ok-value=\"2025-03-21\">Mar 21, 2025</td><td data-ok-value=\"2025-04-01\">Apr 1, 2025</td><td data-ok-value=\"25\">25%</td><td>wireframes</td></tr>\n      <tr data-ok-task-id=\"review\" data-ok-parent-id=\"design\" data-ok-type=\"milestone\"><td>Design review</td><td data-ok-value=\"2025-04-02\">Apr 2, 2025</td><td></td><td></td><td>visual</td></tr>\n      <tr data-ok-task-id=\"build\"><td>Build</td><td></td><td></td><td></td><td></td></tr>\n      <tr data-ok-task-id=\"backend\" data-ok-parent-id=\"build\"><td>Back end</td><td data-ok-value=\"2025-03-24\">Mar 24, 2025</td><td data-ok-value=\"2025-04-16\">Apr 16, 2025</td><td data-ok-value=\"10\">10%</td><td>wireframes</td></tr>\n      <tr data-ok-task-id=\"frontend\" data-ok-parent-id=\"build\"><td>Front end</td><td data-ok-value=\"2025-04-03\">Apr 3, 2025</td><td data-ok-value=\"2025-04-22\">Apr 22, 2025</td><td></td><td>review</td></tr>\n      <tr data-ok-task-id=\"testing\" data-ok-parent-id=\"build\"><td>Testing</td><td data-ok-value=\"2025-04-17\">Apr 17, 2025</td><td data-ok-value=\"2025-04-25\">Apr 25, 2025</td><td></td><td>frontend:FF+3, backend</td></tr>\n      <tr data-ok-task-id=\"launch\" data-ok-type=\"milestone\"><td>Launch</td><td data-ok-value=\"2025-04-28\">Apr 28, 2025</td><td></td><td></td><td>testing</td></tr>\n    </tbody>\n  </table>\n</div>",
+     "id": "components-gantt--project-boundary",
+     "name": "Project boundary",
+     "react": "import { Gantt, type GanttTask } from \"@owlky/react\";\n\nconst tasks: GanttTask[] = [\n  {\"id\":\"discovery\",\"name\":\"Discovery\"},\n  {\"id\":\"research\",\"name\":\"User research\",\"parentId\":\"discovery\",\"startTime\":\"2025-03-03\",\"endTime\":\"2025-03-07\",\"progress\":100},\n  {\"id\":\"audit\",\"name\":\"Content audit\",\"parentId\":\"discovery\",\"startTime\":\"2025-03-05\",\"endTime\":\"2025-03-11\",\"progress\":80,\"dependency\":{\"taskId\":\"research\",\"type\":\"SS\",\"lag\":2}},\n  {\"id\":\"brief\",\"name\":\"Brief approved\",\"parentId\":\"discovery\",\"startTime\":\"2025-03-12\",\"type\":\"milestone\",\"dependency\":\"audit\"},\n  {\"id\":\"design\",\"name\":\"Design\"},\n  {\"id\":\"wireframes\",\"name\":\"Wireframes\",\"parentId\":\"design\",\"startTime\":\"2025-03-13\",\"endTime\":\"2025-03-20\",\"progress\":60,\"dependency\":\"brief\"},\n  {\"id\":\"visual\",\"name\":\"Visual design\",\"parentId\":\"design\",\"startTime\":\"2025-03-21\",\"endTime\":\"2025-04-01\",\"progress\":25,\"dependency\":\"wireframes\"},\n  {\"id\":\"review\",\"name\":\"Design review\",\"parentId\":\"design\",\"startTime\":\"2025-04-02\",\"type\":\"milestone\",\"dependency\":\"visual\"},\n  {\"id\":\"build\",\"name\":\"Build\"},\n  {\"id\":\"backend\",\"name\":\"Back end\",\"parentId\":\"build\",\"startTime\":\"2025-03-24\",\"endTime\":\"2025-04-16\",\"progress\":10,\"dependency\":\"wireframes\"},\n  {\"id\":\"frontend\",\"name\":\"Front end\",\"parentId\":\"build\",\"startTime\":\"2025-04-03\",\"endTime\":\"2025-04-22\",\"dependency\":\"review\"},\n  {\"id\":\"testing\",\"name\":\"Testing\",\"parentId\":\"build\",\"startTime\":\"2025-04-17\",\"endTime\":\"2025-04-25\",\"dependency\":[{\"taskId\":\"frontend\",\"type\":\"FF\",\"lag\":3},\"backend\"]},\n  {\"id\":\"launch\",\"name\":\"Launch\",\"startTime\":\"2025-04-28\",\"type\":\"milestone\",\"dependency\":\"testing\"},\n];\n\nexport function ProjectBoundaryGantt() {\n  return (\n    <Gantt\n      tasks={tasks}\n      today=\"2025-03-18\"\n      label=\"Website relaunch, boundary\"\n      projectBoundary\n    />\n  );\n}",
+     "snippets": [
+      "project-boundary-group.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/icon-button.css + components/gantt.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Right -->\n<div data-ok-gantt data-ok-view=\"day\" data-ok-tasks-container-width=\"280\" data-ok-bar-label=\"right\" data-ok-columns=\"name startTime\" data-ok-today=\"2025-03-18\">\n  <table data-ok-gantt-data>\n    <caption>Labels right</caption>\n    <thead>\n      <tr><th scope=\"col\" data-ok-gantt-field=\"name\">Task</th><th scope=\"col\" data-ok-gantt-field=\"startTime\">Start</th><th scope=\"col\" data-ok-gantt-field=\"endTime\">End</th><th scope=\"col\" data-ok-gantt-field=\"progress\">Progress</th></tr>\n    </thead>\n    <tbody>\n      <tr data-ok-task-id=\"l1\"><td>Kickoff call</td><td data-ok-value=\"2025-03-04\">Mar 4, 2025</td><td data-ok-value=\"2025-03-04\">Mar 4, 2025</td><td data-ok-value=\"100\">100%</td></tr>\n      <tr data-ok-task-id=\"l2\"><td>Requirements</td><td data-ok-value=\"2025-03-05\">Mar 5, 2025</td><td data-ok-value=\"2025-03-14\">Mar 14, 2025</td><td data-ok-value=\"70\">70%</td></tr>\n      <tr data-ok-task-id=\"l3\"><td>Estimate</td><td data-ok-value=\"2025-03-17\">Mar 17, 2025</td><td data-ok-value=\"2025-03-18\">Mar 18, 2025</td><td data-ok-value=\"20\">20%</td></tr>\n      <tr data-ok-task-id=\"l4\" data-ok-type=\"milestone\"><td>Sign-off</td><td data-ok-value=\"2025-03-19\">Mar 19, 2025</td><td></td><td></td></tr>\n    </tbody>\n  </table>\n</div>\n\n<!-- Inside -->\n<div data-ok-gantt data-ok-view=\"day\" data-ok-tasks-container-width=\"280\" data-ok-bar-label=\"inside\" data-ok-columns=\"name startTime\" data-ok-today=\"2025-03-18\">\n  <table data-ok-gantt-data>\n    <caption>Labels inside</caption>\n    <thead>\n      <tr><th scope=\"col\" data-ok-gantt-field=\"name\">Task</th><th scope=\"col\" data-ok-gantt-field=\"startTime\">Start</th><th scope=\"col\" data-ok-gantt-field=\"endTime\">End</th><th scope=\"col\" data-ok-gantt-field=\"progress\">Progress</th></tr>\n    </thead>\n    <tbody>\n      <tr data-ok-task-id=\"l1\"><td>Kickoff call</td><td data-ok-value=\"2025-03-04\">Mar 4, 2025</td><td data-ok-value=\"2025-03-04\">Mar 4, 2025</td><td data-ok-value=\"100\">100%</td></tr>\n      <tr data-ok-task-id=\"l2\"><td>Requirements</td><td data-ok-value=\"2025-03-05\">Mar 5, 2025</td><td data-ok-value=\"2025-03-14\">Mar 14, 2025</td><td data-ok-value=\"70\">70%</td></tr>\n      <tr data-ok-task-id=\"l3\"><td>Estimate</td><td data-ok-value=\"2025-03-17\">Mar 17, 2025</td><td data-ok-value=\"2025-03-18\">Mar 18, 2025</td><td data-ok-value=\"20\">20%</td></tr>\n      <tr data-ok-task-id=\"l4\" data-ok-type=\"milestone\"><td>Sign-off</td><td data-ok-value=\"2025-03-19\">Mar 19, 2025</td><td></td><td></td></tr>\n    </tbody>\n  </table>\n</div>\n\n<!-- Left -->\n<div data-ok-gantt data-ok-view=\"day\" data-ok-tasks-container-width=\"280\" data-ok-bar-label=\"left\" data-ok-columns=\"name startTime\" data-ok-today=\"2025-03-18\">\n  <table data-ok-gantt-data>\n    <caption>Labels left</caption>\n    <thead>\n      <tr><th scope=\"col\" data-ok-gantt-field=\"name\">Task</th><th scope=\"col\" data-ok-gantt-field=\"startTime\">Start</th><th scope=\"col\" data-ok-gantt-field=\"endTime\">End</th><th scope=\"col\" data-ok-gantt-field=\"progress\">Progress</th></tr>\n    </thead>\n    <tbody>\n      <tr data-ok-task-id=\"l1\"><td>Kickoff call</td><td data-ok-value=\"2025-03-04\">Mar 4, 2025</td><td data-ok-value=\"2025-03-04\">Mar 4, 2025</td><td data-ok-value=\"100\">100%</td></tr>\n      <tr data-ok-task-id=\"l2\"><td>Requirements</td><td data-ok-value=\"2025-03-05\">Mar 5, 2025</td><td data-ok-value=\"2025-03-14\">Mar 14, 2025</td><td data-ok-value=\"70\">70%</td></tr>\n      <tr data-ok-task-id=\"l3\"><td>Estimate</td><td data-ok-value=\"2025-03-17\">Mar 17, 2025</td><td data-ok-value=\"2025-03-18\">Mar 18, 2025</td><td data-ok-value=\"20\">20%</td></tr>\n      <tr data-ok-task-id=\"l4\" data-ok-type=\"milestone\"><td>Sign-off</td><td data-ok-value=\"2025-03-19\">Mar 19, 2025</td><td></td><td></td></tr>\n    </tbody>\n  </table>\n</div>\n\n<!-- Auto -->\n<div data-ok-gantt data-ok-view=\"day\" data-ok-tasks-container-width=\"280\" data-ok-bar-label=\"auto\" data-ok-columns=\"name startTime\" data-ok-today=\"2025-03-18\">\n  <table data-ok-gantt-data>\n    <caption>Labels auto</caption>\n    <thead>\n      <tr><th scope=\"col\" data-ok-gantt-field=\"name\">Task</th><th scope=\"col\" data-ok-gantt-field=\"startTime\">Start</th><th scope=\"col\" data-ok-gantt-field=\"endTime\">End</th><th scope=\"col\" data-ok-gantt-field=\"progress\">Progress</th></tr>\n    </thead>\n    <tbody>\n      <tr data-ok-task-id=\"l1\"><td>Kickoff call</td><td data-ok-value=\"2025-03-04\">Mar 4, 2025</td><td data-ok-value=\"2025-03-04\">Mar 4, 2025</td><td data-ok-value=\"100\">100%</td></tr>\n      <tr data-ok-task-id=\"l2\"><td>Requirements</td><td data-ok-value=\"2025-03-05\">Mar 5, 2025</td><td data-ok-value=\"2025-03-14\">Mar 14, 2025</td><td data-ok-value=\"70\">70%</td></tr>\n      <tr data-ok-task-id=\"l3\"><td>Estimate</td><td data-ok-value=\"2025-03-17\">Mar 17, 2025</td><td data-ok-value=\"2025-03-18\">Mar 18, 2025</td><td data-ok-value=\"20\">20%</td></tr>\n      <tr data-ok-task-id=\"l4\" data-ok-type=\"milestone\"><td>Sign-off</td><td data-ok-value=\"2025-03-19\">Mar 19, 2025</td><td></td><td></td></tr>\n    </tbody>\n  </table>\n</div>",
+     "id": "components-gantt--bar-labels",
+     "name": "Bar labels",
+     "react": "import { Gantt, type GanttTask } from \"@owlky/react\";\n\nconst tasks: GanttTask[] = [\n  {\"id\":\"l1\",\"name\":\"Kickoff call\",\"startTime\":\"2025-03-04\",\"endTime\":\"2025-03-04\",\"progress\":100},\n  {\"id\":\"l2\",\"name\":\"Requirements\",\"startTime\":\"2025-03-05\",\"endTime\":\"2025-03-14\",\"progress\":70},\n  {\"id\":\"l3\",\"name\":\"Estimate\",\"startTime\":\"2025-03-17\",\"endTime\":\"2025-03-18\",\"progress\":20},\n  {\"id\":\"l4\",\"name\":\"Sign-off\",\"startTime\":\"2025-03-19\",\"type\":\"milestone\"},\n];\n\nexport function BarLabelsGantt() {\n  return (\n    <>\n      <Gantt\n        tasks={tasks}\n        today=\"2025-03-18\"\n        label=\"Labels right\"\n        view=\"day\"\n        barLabel=\"right\"\n        tasksContainerWidth={280}\n        columns={[\"name\",\"startTime\"]}\n      />\n      <Gantt\n        tasks={tasks}\n        today=\"2025-03-18\"\n        label=\"Labels inside\"\n        view=\"day\"\n        barLabel=\"inside\"\n        tasksContainerWidth={280}\n        columns={[\"name\",\"startTime\"]}\n      />\n      <Gantt\n        tasks={tasks}\n        today=\"2025-03-18\"\n        label=\"Labels left\"\n        view=\"day\"\n        barLabel=\"left\"\n        tasksContainerWidth={280}\n        columns={[\"name\",\"startTime\"]}\n      />\n      <Gantt\n        tasks={tasks}\n        today=\"2025-03-18\"\n        label=\"Labels auto\"\n        view=\"day\"\n        barLabel=\"auto\"\n        tasksContainerWidth={280}\n        columns={[\"name\",\"startTime\"]}\n      />\n    </>\n  );\n}",
+     "snippets": [
+      "bar-labels-auto.html",
+      "bar-labels-inside.html",
+      "bar-labels-left.html",
+      "bar-labels-right.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/icon-button.css + components/gantt.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Custom colors -->\n<div data-ok-gantt data-ok-view=\"day\" data-ok-bar-label=\"auto\" data-ok-today=\"2025-03-18\">\n  <table data-ok-gantt-data>\n    <caption>Sprint board</caption>\n    <thead>\n      <tr><th scope=\"col\" data-ok-gantt-field=\"name\">Task</th><th scope=\"col\" data-ok-gantt-field=\"startTime\">Start</th><th scope=\"col\" data-ok-gantt-field=\"endTime\">End</th><th scope=\"col\" data-ok-gantt-field=\"progress\">Progress</th></tr>\n    </thead>\n    <tbody>\n      <tr data-ok-task-id=\"c1\" data-ok-color=\"primary\"><td>Primary</td><td data-ok-value=\"2025-03-03\">Mar 3, 2025</td><td data-ok-value=\"2025-03-07\">Mar 7, 2025</td><td data-ok-value=\"60\">60%</td></tr>\n      <tr data-ok-task-id=\"c2\" data-ok-color=\"secondary\"><td>Secondary</td><td data-ok-value=\"2025-03-05\">Mar 5, 2025</td><td data-ok-value=\"2025-03-11\">Mar 11, 2025</td><td data-ok-value=\"40\">40%</td></tr>\n      <tr data-ok-task-id=\"c3\" data-ok-color=\"info\"><td>Info</td><td data-ok-value=\"2025-03-07\">Mar 7, 2025</td><td data-ok-value=\"2025-03-13\">Mar 13, 2025</td><td data-ok-value=\"80\">80%</td></tr>\n      <tr data-ok-task-id=\"c4\" data-ok-color=\"success\"><td>Success</td><td data-ok-value=\"2025-03-10\">Mar 10, 2025</td><td data-ok-value=\"2025-03-14\">Mar 14, 2025</td><td data-ok-value=\"100\">100%</td></tr>\n      <tr data-ok-task-id=\"c5\" data-ok-color=\"warning\"><td>Warning</td><td data-ok-value=\"2025-03-11\">Mar 11, 2025</td><td data-ok-value=\"2025-03-18\">Mar 18, 2025</td><td data-ok-value=\"20\">20%</td></tr>\n      <tr data-ok-task-id=\"c6\" data-ok-color=\"error\"><td>Error</td><td data-ok-value=\"2025-03-13\">Mar 13, 2025</td><td data-ok-value=\"2025-03-19\">Mar 19, 2025</td><td data-ok-value=\"50\">50%</td></tr>\n    </tbody>\n  </table>\n</div>",
+     "id": "components-gantt--custom-colors",
+     "name": "Custom colors",
+     "react": "import { Gantt, type GanttTask } from \"@owlky/react\";\n\nconst tasks: GanttTask[] = [\n  {\"id\":\"c1\",\"name\":\"Primary\",\"startTime\":\"2025-03-03\",\"endTime\":\"2025-03-07\",\"progress\":60,\"color\":\"primary\"},\n  {\"id\":\"c2\",\"name\":\"Secondary\",\"startTime\":\"2025-03-05\",\"endTime\":\"2025-03-11\",\"progress\":40,\"color\":\"secondary\"},\n  {\"id\":\"c3\",\"name\":\"Info\",\"startTime\":\"2025-03-07\",\"endTime\":\"2025-03-13\",\"progress\":80,\"color\":\"info\"},\n  {\"id\":\"c4\",\"name\":\"Success\",\"startTime\":\"2025-03-10\",\"endTime\":\"2025-03-14\",\"progress\":100,\"color\":\"success\"},\n  {\"id\":\"c5\",\"name\":\"Warning\",\"startTime\":\"2025-03-11\",\"endTime\":\"2025-03-18\",\"progress\":20,\"color\":\"warning\"},\n  {\"id\":\"c6\",\"name\":\"Error\",\"startTime\":\"2025-03-13\",\"endTime\":\"2025-03-19\",\"progress\":50,\"color\":\"error\"},\n];\n\nexport function CustomColorsGantt() {\n  return (\n    <Gantt\n      tasks={tasks}\n      today=\"2025-03-18\"\n      label=\"Sprint board\"\n      view=\"day\"\n      barLabel=\"auto\"\n    />\n  );\n}",
+     "snippets": [
+      "custom-colors-group.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/icon-button.css + components/gantt.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Selection -->\n<div data-ok-gantt data-ok-view=\"week\" data-ok-bar-label=\"right\" data-ok-selection data-ok-today=\"2025-03-18\">\n  <table data-ok-gantt-data>\n    <caption>Website relaunch, selectable</caption>\n    <thead>\n      <tr><th scope=\"col\" data-ok-gantt-field=\"name\">Task</th><th scope=\"col\" data-ok-gantt-field=\"startTime\">Start</th><th scope=\"col\" data-ok-gantt-field=\"endTime\">End</th><th scope=\"col\" data-ok-gantt-field=\"progress\">Progress</th><th scope=\"col\" data-ok-gantt-field=\"dependency\">Predecessors</th></tr>\n    </thead>\n    <tbody>\n      <tr data-ok-task-id=\"discovery\"><td>Discovery</td><td></td><td></td><td></td><td></td></tr>\n      <tr data-ok-task-id=\"research\" data-ok-parent-id=\"discovery\"><td>User research</td><td data-ok-value=\"2025-03-03\">Mar 3, 2025</td><td data-ok-value=\"2025-03-07\">Mar 7, 2025</td><td data-ok-value=\"100\">100%</td><td></td></tr>\n      <tr data-ok-task-id=\"audit\" data-ok-parent-id=\"discovery\"><td>Content audit</td><td data-ok-value=\"2025-03-05\">Mar 5, 2025</td><td data-ok-value=\"2025-03-11\">Mar 11, 2025</td><td data-ok-value=\"80\">80%</td><td>research:SS+2</td></tr>\n      <tr data-ok-task-id=\"brief\" data-ok-parent-id=\"discovery\" data-ok-type=\"milestone\"><td>Brief approved</td><td data-ok-value=\"2025-03-12\">Mar 12, 2025</td><td></td><td></td><td>audit</td></tr>\n      <tr data-ok-task-id=\"design\"><td>Design</td><td></td><td></td><td></td><td></td></tr>\n      <tr data-ok-task-id=\"wireframes\" data-ok-parent-id=\"design\" data-ok-selected><td>Wireframes</td><td data-ok-value=\"2025-03-13\">Mar 13, 2025</td><td data-ok-value=\"2025-03-20\">Mar 20, 2025</td><td data-ok-value=\"60\">60%</td><td>brief</td></tr>\n      <tr data-ok-task-id=\"visual\" data-ok-parent-id=\"design\" data-ok-selected><td>Visual design</td><td data-ok-value=\"2025-03-21\">Mar 21, 2025</td><td data-ok-value=\"2025-04-01\">Apr 1, 2025</td><td data-ok-value=\"25\">25%</td><td>wireframes</td></tr>\n      <tr data-ok-task-id=\"review\" data-ok-parent-id=\"design\" data-ok-type=\"milestone\"><td>Design review</td><td data-ok-value=\"2025-04-02\">Apr 2, 2025</td><td></td><td></td><td>visual</td></tr>\n      <tr data-ok-task-id=\"build\"><td>Build</td><td></td><td></td><td></td><td></td></tr>\n      <tr data-ok-task-id=\"backend\" data-ok-parent-id=\"build\"><td>Back end</td><td data-ok-value=\"2025-03-24\">Mar 24, 2025</td><td data-ok-value=\"2025-04-16\">Apr 16, 2025</td><td data-ok-value=\"10\">10%</td><td>wireframes</td></tr>\n      <tr data-ok-task-id=\"frontend\" data-ok-parent-id=\"build\"><td>Front end</td><td data-ok-value=\"2025-04-03\">Apr 3, 2025</td><td data-ok-value=\"2025-04-22\">Apr 22, 2025</td><td></td><td>review</td></tr>\n      <tr data-ok-task-id=\"testing\" data-ok-parent-id=\"build\"><td>Testing</td><td data-ok-value=\"2025-04-17\">Apr 17, 2025</td><td data-ok-value=\"2025-04-25\">Apr 25, 2025</td><td></td><td>frontend:FF+3, backend</td></tr>\n      <tr data-ok-task-id=\"launch\" data-ok-type=\"milestone\"><td>Launch</td><td data-ok-value=\"2025-04-28\">Apr 28, 2025</td><td></td><td></td><td>testing</td></tr>\n    </tbody>\n  </table>\n</div>",
+     "id": "components-gantt--selection",
+     "name": "Selection",
+     "react": "import { Gantt, type GanttTask } from \"@owlky/react\";\n\nconst tasks: GanttTask[] = [\n  {\"id\":\"discovery\",\"name\":\"Discovery\"},\n  {\"id\":\"research\",\"name\":\"User research\",\"parentId\":\"discovery\",\"startTime\":\"2025-03-03\",\"endTime\":\"2025-03-07\",\"progress\":100},\n  {\"id\":\"audit\",\"name\":\"Content audit\",\"parentId\":\"discovery\",\"startTime\":\"2025-03-05\",\"endTime\":\"2025-03-11\",\"progress\":80,\"dependency\":{\"taskId\":\"research\",\"type\":\"SS\",\"lag\":2}},\n  {\"id\":\"brief\",\"name\":\"Brief approved\",\"parentId\":\"discovery\",\"startTime\":\"2025-03-12\",\"type\":\"milestone\",\"dependency\":\"audit\"},\n  {\"id\":\"design\",\"name\":\"Design\"},\n  {\"id\":\"wireframes\",\"name\":\"Wireframes\",\"parentId\":\"design\",\"startTime\":\"2025-03-13\",\"endTime\":\"2025-03-20\",\"progress\":60,\"dependency\":\"brief\"},\n  {\"id\":\"visual\",\"name\":\"Visual design\",\"parentId\":\"design\",\"startTime\":\"2025-03-21\",\"endTime\":\"2025-04-01\",\"progress\":25,\"dependency\":\"wireframes\"},\n  {\"id\":\"review\",\"name\":\"Design review\",\"parentId\":\"design\",\"startTime\":\"2025-04-02\",\"type\":\"milestone\",\"dependency\":\"visual\"},\n  {\"id\":\"build\",\"name\":\"Build\"},\n  {\"id\":\"backend\",\"name\":\"Back end\",\"parentId\":\"build\",\"startTime\":\"2025-03-24\",\"endTime\":\"2025-04-16\",\"progress\":10,\"dependency\":\"wireframes\"},\n  {\"id\":\"frontend\",\"name\":\"Front end\",\"parentId\":\"build\",\"startTime\":\"2025-04-03\",\"endTime\":\"2025-04-22\",\"dependency\":\"review\"},\n  {\"id\":\"testing\",\"name\":\"Testing\",\"parentId\":\"build\",\"startTime\":\"2025-04-17\",\"endTime\":\"2025-04-25\",\"dependency\":[{\"taskId\":\"frontend\",\"type\":\"FF\",\"lag\":3},\"backend\"]},\n  {\"id\":\"launch\",\"name\":\"Launch\",\"startTime\":\"2025-04-28\",\"type\":\"milestone\",\"dependency\":\"testing\"},\n];\n\nexport function SelectionGantt() {\n  return (\n    <Gantt\n      tasks={tasks}\n      today=\"2025-03-18\"\n      label=\"Website relaunch, selectable\"\n      selection\n      defaultSelected={[\"wireframes\",\"visual\"]}\n    />\n  );\n}",
+     "snippets": [
+      "selection-group.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/icon-button.css + components/gantt.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Name, start, end and progress -->\n<div data-ok-gantt data-ok-view=\"week\" data-ok-tasks-container-width=\"520\" data-ok-bar-label=\"right\" data-ok-columns=\"name startTime endTime progress\" data-ok-today=\"2025-03-18\">\n  <table data-ok-gantt-data>\n    <caption>Website relaunch, columns</caption>\n    <thead>\n      <tr><th scope=\"col\" data-ok-gantt-field=\"name\">Task</th><th scope=\"col\" data-ok-gantt-field=\"startTime\">Start</th><th scope=\"col\" data-ok-gantt-field=\"endTime\">End</th><th scope=\"col\" data-ok-gantt-field=\"progress\">Progress</th><th scope=\"col\" data-ok-gantt-field=\"dependency\">Predecessors</th></tr>\n    </thead>\n    <tbody>\n      <tr data-ok-task-id=\"discovery\" data-ok-collapsed><td>Discovery</td><td></td><td></td><td></td><td></td></tr>\n      <tr data-ok-task-id=\"research\" data-ok-parent-id=\"discovery\"><td>User research</td><td data-ok-value=\"2025-03-03\">Mar 3, 2025</td><td data-ok-value=\"2025-03-07\">Mar 7, 2025</td><td data-ok-value=\"100\">100%</td><td></td></tr>\n      <tr data-ok-task-id=\"audit\" data-ok-parent-id=\"discovery\"><td>Content audit</td><td data-ok-value=\"2025-03-05\">Mar 5, 2025</td><td data-ok-value=\"2025-03-11\">Mar 11, 2025</td><td data-ok-value=\"80\">80%</td><td>research:SS+2</td></tr>\n      <tr data-ok-task-id=\"brief\" data-ok-parent-id=\"discovery\" data-ok-type=\"milestone\"><td>Brief approved</td><td data-ok-value=\"2025-03-12\">Mar 12, 2025</td><td></td><td></td><td>audit</td></tr>\n      <tr data-ok-task-id=\"design\"><td>Design</td><td></td><td></td><td></td><td></td></tr>\n      <tr data-ok-task-id=\"wireframes\" data-ok-parent-id=\"design\"><td>Wireframes</td><td data-ok-value=\"2025-03-13\">Mar 13, 2025</td><td data-ok-value=\"2025-03-20\">Mar 20, 2025</td><td data-ok-value=\"60\">60%</td><td>brief</td></tr>\n      <tr data-ok-task-id=\"visual\" data-ok-parent-id=\"design\"><td>Visual design</td><td data-ok-value=\"2025-03-21\">Mar 21, 2025</td><td data-ok-value=\"2025-04-01\">Apr 1, 2025</td><td data-ok-value=\"25\">25%</td><td>wireframes</td></tr>\n      <tr data-ok-task-id=\"review\" data-ok-parent-id=\"design\" data-ok-type=\"milestone\"><td>Design review</td><td data-ok-value=\"2025-04-02\">Apr 2, 2025</td><td></td><td></td><td>visual</td></tr>\n      <tr data-ok-task-id=\"build\"><td>Build</td><td></td><td></td><td></td><td></td></tr>\n      <tr data-ok-task-id=\"backend\" data-ok-parent-id=\"build\"><td>Back end</td><td data-ok-value=\"2025-03-24\">Mar 24, 2025</td><td data-ok-value=\"2025-04-16\">Apr 16, 2025</td><td data-ok-value=\"10\">10%</td><td>wireframes</td></tr>\n      <tr data-ok-task-id=\"frontend\" data-ok-parent-id=\"build\"><td>Front end</td><td data-ok-value=\"2025-04-03\">Apr 3, 2025</td><td data-ok-value=\"2025-04-22\">Apr 22, 2025</td><td></td><td>review</td></tr>\n      <tr data-ok-task-id=\"testing\" data-ok-parent-id=\"build\"><td>Testing</td><td data-ok-value=\"2025-04-17\">Apr 17, 2025</td><td data-ok-value=\"2025-04-25\">Apr 25, 2025</td><td></td><td>frontend:FF+3, backend</td></tr>\n      <tr data-ok-task-id=\"launch\" data-ok-type=\"milestone\"><td>Launch</td><td data-ok-value=\"2025-04-28\">Apr 28, 2025</td><td></td><td></td><td>testing</td></tr>\n    </tbody>\n  </table>\n</div>",
+     "id": "components-gantt--task-list-columns",
+     "name": "Task list columns",
+     "react": "import { Gantt, type GanttTask } from \"@owlky/react\";\n\nconst tasks: GanttTask[] = [\n  {\"id\":\"discovery\",\"name\":\"Discovery\"},\n  {\"id\":\"research\",\"name\":\"User research\",\"parentId\":\"discovery\",\"startTime\":\"2025-03-03\",\"endTime\":\"2025-03-07\",\"progress\":100},\n  {\"id\":\"audit\",\"name\":\"Content audit\",\"parentId\":\"discovery\",\"startTime\":\"2025-03-05\",\"endTime\":\"2025-03-11\",\"progress\":80,\"dependency\":{\"taskId\":\"research\",\"type\":\"SS\",\"lag\":2}},\n  {\"id\":\"brief\",\"name\":\"Brief approved\",\"parentId\":\"discovery\",\"startTime\":\"2025-03-12\",\"type\":\"milestone\",\"dependency\":\"audit\"},\n  {\"id\":\"design\",\"name\":\"Design\"},\n  {\"id\":\"wireframes\",\"name\":\"Wireframes\",\"parentId\":\"design\",\"startTime\":\"2025-03-13\",\"endTime\":\"2025-03-20\",\"progress\":60,\"dependency\":\"brief\"},\n  {\"id\":\"visual\",\"name\":\"Visual design\",\"parentId\":\"design\",\"startTime\":\"2025-03-21\",\"endTime\":\"2025-04-01\",\"progress\":25,\"dependency\":\"wireframes\"},\n  {\"id\":\"review\",\"name\":\"Design review\",\"parentId\":\"design\",\"startTime\":\"2025-04-02\",\"type\":\"milestone\",\"dependency\":\"visual\"},\n  {\"id\":\"build\",\"name\":\"Build\"},\n  {\"id\":\"backend\",\"name\":\"Back end\",\"parentId\":\"build\",\"startTime\":\"2025-03-24\",\"endTime\":\"2025-04-16\",\"progress\":10,\"dependency\":\"wireframes\"},\n  {\"id\":\"frontend\",\"name\":\"Front end\",\"parentId\":\"build\",\"startTime\":\"2025-04-03\",\"endTime\":\"2025-04-22\",\"dependency\":\"review\"},\n  {\"id\":\"testing\",\"name\":\"Testing\",\"parentId\":\"build\",\"startTime\":\"2025-04-17\",\"endTime\":\"2025-04-25\",\"dependency\":[{\"taskId\":\"frontend\",\"type\":\"FF\",\"lag\":3},\"backend\"]},\n  {\"id\":\"launch\",\"name\":\"Launch\",\"startTime\":\"2025-04-28\",\"type\":\"milestone\",\"dependency\":\"testing\"},\n];\n\nexport function TaskListColumnsGantt() {\n  return (\n    <Gantt\n      tasks={tasks}\n      today=\"2025-03-18\"\n      label=\"Website relaunch, columns\"\n      columns={[\"name\",\"startTime\",\"endTime\",\"progress\"]}\n      tasksContainerWidth={520}\n      defaultCollapsed={[\"discovery\"]}\n    />\n  );\n}",
+     "snippets": [
+      "task-list-columns-group.html"
+     ]
+    }
+   ],
+   "storybookTitle": "Components/Gantt",
+   "summary": "Show a project's tasks on a timeline: a task list (name, dates, duration, progress) and a timeline with one bar per task in the same rows, the hierarchy of summary tasks, milestones and the dependencies between tasks. One core layout (`renderGantt`) draws it for React and HTML.",
+   "title": "Gantt"
   },
   {
    "guide": "icon-button",
@@ -19882,6 +20261,95 @@
    "title": "Typography"
   },
   {
+   "component": "gantt",
+   "id": "gantt",
+   "kind": "component",
+   "sections": [
+    {
+     "body": "A Gantt chart shows a project's tasks on a timeline. The task list on the start side shows each task's name, start date, duration and progress. The timeline shows one bar per task in the same row, so you can follow a task across both. Parent tasks become summary bars over their children, milestones are diamonds, and arrows join dependent tasks. Use it to plan and follow projects. For a list of dated events without durations, use a Timeline. For data without dates, use a Data grid.",
+     "html": "<!-- Load once per page: the styles and the script -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n\n<div data-ok-gantt data-ok-view=\"week\" data-ok-bar-label=\"right\">\n  <table data-ok-gantt-data>\n    <caption>Budget plan</caption>\n    <thead>\n      <tr><th scope=\"col\" data-ok-gantt-field=\"name\">Task</th><th scope=\"col\" data-ok-gantt-field=\"startTime\">Start</th><th scope=\"col\" data-ok-gantt-field=\"endTime\">End</th><th scope=\"col\" data-ok-gantt-field=\"progress\">Progress</th><th scope=\"col\" data-ok-gantt-field=\"dependency\">Predecessors</th></tr>\n    </thead>\n    <tbody>\n      <tr data-ok-task-id=\"plan\"><td>Plan</td><td></td><td></td><td></td><td></td></tr>\n      <tr data-ok-task-id=\"scope\" data-ok-parent-id=\"plan\"><td>Scope</td><td data-ok-value=\"2025-03-03\">Mar 3, 2025</td><td data-ok-value=\"2025-03-05\">Mar 5, 2025</td><td data-ok-value=\"100\">100%</td><td></td></tr>\n      <tr data-ok-task-id=\"budget\" data-ok-parent-id=\"plan\"><td>Budget</td><td data-ok-value=\"2025-03-06\">Mar 6, 2025</td><td data-ok-value=\"2025-03-11\">Mar 11, 2025</td><td data-ok-value=\"50\">50%</td><td>scope</td></tr>\n      <tr data-ok-task-id=\"approved\" data-ok-type=\"milestone\"><td>Approved</td><td data-ok-value=\"2025-03-12\">Mar 12, 2025</td><td></td><td></td><td>budget</td></tr>\n    </tbody>\n  </table>\n</div>",
+     "id": "overview",
+     "react": "import { Gantt, type GanttTask } from \"@owlky/react\";\n\nconst tasks: GanttTask[] = [\n  { id: \"plan\", name: \"Plan\" },\n  { id: \"scope\", name: \"Scope\", parentId: \"plan\", startTime: \"2025-03-03\", endTime: \"2025-03-05\", progress: 100 },\n  { id: \"budget\", name: \"Budget\", parentId: \"plan\", startTime: \"2025-03-06\", endTime: \"2025-03-11\", progress: 50, dependency: \"scope\" },\n  { id: \"approved\", name: \"Approved\", startTime: \"2025-03-12\", type: \"milestone\", dependency: \"budget\" },\n];\n\nexport function BudgetPlan() {\n  return <Gantt label=\"Budget plan\" tasks={tasks} />;\n}",
+     "title": "Overview"
+    },
+    {
+     "body": "Each task has an `id`, a `name`, a `startTime` and an `endTime`. Dates are ISO dates such as `2025-03-03`, and the end day is part of the task. `progress` is a percentage from 0 to 100. A task without an `endTime`, or with `type: \"milestone\"`, is a milestone on its start date. A task with a `parentId` is a child of that task. Parents take their dates and progress from their children, so they need no dates of their own. `color` paints a bar in a palette color, such as `info` or `warning`. In HTML, the tasks are the rows of a table. Each header cell names its field with `data-ok-gantt-field`. Each row carries `data-ok-task-id` and, when needed, `data-ok-parent-id`, `data-ok-type` and `data-ok-color`. A cell can keep its raw value in `data-ok-value`, so its text stays readable, such as a short date. Without JavaScript, the table is what the page shows. The script draws the chart and hides the table.",
+     "html": "<div data-ok-gantt data-ok-view=\"week\" data-ok-bar-label=\"right\">\n  <table data-ok-gantt-data>\n    <caption>Budget plan</caption>\n    <thead>\n      <tr><th scope=\"col\" data-ok-gantt-field=\"name\">Task</th><th scope=\"col\" data-ok-gantt-field=\"startTime\">Start</th><th scope=\"col\" data-ok-gantt-field=\"endTime\">End</th><th scope=\"col\" data-ok-gantt-field=\"progress\">Progress</th><th scope=\"col\" data-ok-gantt-field=\"dependency\">Predecessors</th></tr>\n    </thead>\n    <tbody>\n      <tr data-ok-task-id=\"plan\"><td>Plan</td><td></td><td></td><td></td><td></td></tr>\n      <tr data-ok-task-id=\"scope\" data-ok-parent-id=\"plan\"><td>Scope</td><td data-ok-value=\"2025-03-03\">Mar 3, 2025</td><td data-ok-value=\"2025-03-05\">Mar 5, 2025</td><td data-ok-value=\"100\">100%</td><td></td></tr>\n      <tr data-ok-task-id=\"budget\" data-ok-parent-id=\"plan\"><td>Budget</td><td data-ok-value=\"2025-03-06\">Mar 6, 2025</td><td data-ok-value=\"2025-03-11\">Mar 11, 2025</td><td data-ok-value=\"50\">50%</td><td>scope</td></tr>\n      <tr data-ok-task-id=\"approved\" data-ok-type=\"milestone\"><td>Approved</td><td data-ok-value=\"2025-03-12\">Mar 12, 2025</td><td></td><td></td><td>budget</td></tr>\n    </tbody>\n  </table>\n</div>",
+     "id": "tasks",
+     "react": "import { Gantt, type GanttTask } from \"@owlky/react\";\n\nconst tasks: GanttTask[] = [\n  { id: \"plan\", name: \"Plan\" },\n  { id: \"scope\", name: \"Scope\", parentId: \"plan\", startTime: \"2025-03-03\", endTime: \"2025-03-05\", progress: 100 },\n  { id: \"budget\", name: \"Budget\", parentId: \"plan\", startTime: \"2025-03-06\", endTime: \"2025-03-11\", progress: 50, dependency: \"scope\" },\n  { id: \"approved\", name: \"Approved\", startTime: \"2025-03-12\", type: \"milestone\", dependency: \"budget\" },\n];\n\nexport function TaskData() {\n  return <Gantt label=\"Budget plan\" tasks={tasks} />;\n}",
+     "title": "Describe the tasks"
+    },
+    {
+     "body": "`dependency` names the task that must come first, the predecessor. A plain id means finish to start: the task starts after its predecessor ends. For other types, pass an object `{ taskId, type, lag }`, where `type` is `FS` (finish to start), `SS` (start to start), `FF` (finish to finish) or `SF` (start to finish), and `lag` is a number of days (negative for a lead). Pass a list for several predecessors. In HTML, the dependency cell holds the same data as text, such as `scope, design:SS+2`. Arrows show each dependency, and every bar's accessible name lists its predecessors.",
+     "html": "<td>scope, design:SS+2, review:FF-1</td>",
+     "id": "dependencies",
+     "react": "import { Gantt, type GanttTask } from \"@owlky/react\";\n\nconst tasks: GanttTask[] = [\n  { id: \"design\", name: \"Design\", startTime: \"2025-03-03\", endTime: \"2025-03-07\" },\n  { id: \"build\", name: \"Build\", startTime: \"2025-03-05\", endTime: \"2025-03-14\", dependency: { taskId: \"design\", type: \"SS\", lag: 2 } },\n];\n\nexport function Dependencies() {\n  return <Gantt label=\"Dependencies\" tasks={tasks} view=\"day\" />;\n}",
+     "title": "Link dependent tasks"
+    },
+    {
+     "body": "`view` picks a zoom: `day`, `week` (the default), `month`, `quarter` or `year`. The header shows two rows of dates that follow the zoom, such as months over days or years over quarters. For any other zoom, set `pixelsPerDay`, the width of one day in pixels, from 0.25 to 120. Set `toolbar` to add zoom out and zoom in buttons. They change the zoom by steps of 1.4. In React, the zoom is state: pass `pixelsPerDay` and `onZoomChange` to control it. In HTML, the buttons write `data-ok-pixels-per-day` on the root. The timeline starts one unit before the first task and ends one unit after the last one.",
+     "html": "<div data-ok-gantt data-ok-view=\"month\" data-ok-bar-label=\"right\" data-ok-toolbar>\n  <table data-ok-gantt-data>\n    <caption>Budget plan</caption>\n    <thead>\n      <tr><th scope=\"col\" data-ok-gantt-field=\"name\">Task</th><th scope=\"col\" data-ok-gantt-field=\"startTime\">Start</th><th scope=\"col\" data-ok-gantt-field=\"endTime\">End</th><th scope=\"col\" data-ok-gantt-field=\"progress\">Progress</th><th scope=\"col\" data-ok-gantt-field=\"dependency\">Predecessors</th></tr>\n    </thead>\n    <tbody>\n      <tr data-ok-task-id=\"plan\"><td>Plan</td><td></td><td></td><td></td><td></td></tr>\n      <tr data-ok-task-id=\"scope\" data-ok-parent-id=\"plan\"><td>Scope</td><td data-ok-value=\"2025-03-03\">Mar 3, 2025</td><td data-ok-value=\"2025-03-05\">Mar 5, 2025</td><td data-ok-value=\"100\">100%</td><td></td></tr>\n      <tr data-ok-task-id=\"budget\" data-ok-parent-id=\"plan\"><td>Budget</td><td data-ok-value=\"2025-03-06\">Mar 6, 2025</td><td data-ok-value=\"2025-03-11\">Mar 11, 2025</td><td data-ok-value=\"50\">50%</td><td>scope</td></tr>\n      <tr data-ok-task-id=\"approved\" data-ok-type=\"milestone\"><td>Approved</td><td data-ok-value=\"2025-03-12\">Mar 12, 2025</td><td></td><td></td><td>budget</td></tr>\n    </tbody>\n  </table>\n</div>",
+     "id": "zoom",
+     "react": "import { Gantt, type GanttTask } from \"@owlky/react\";\n\nconst tasks: GanttTask[] = [\n  { id: \"plan\", name: \"Plan\" },\n  { id: \"scope\", name: \"Scope\", parentId: \"plan\", startTime: \"2025-03-03\", endTime: \"2025-03-05\", progress: 100 },\n  { id: \"budget\", name: \"Budget\", parentId: \"plan\", startTime: \"2025-03-06\", endTime: \"2025-03-11\", progress: 50, dependency: \"scope\" },\n  { id: \"approved\", name: \"Approved\", startTime: \"2025-03-12\", type: \"milestone\", dependency: \"budget\" },\n];\n\nexport function ZoomedPlan() {\n  return <Gantt label=\"Budget plan\" tasks={tasks} view=\"month\" toolbar />;\n}",
+     "title": "Zoom the timeline"
+    },
+    {
+     "body": "At day and week zoom, the timeline shades the days nobody works. `workingWeekdays` lists the working days, where 0 is Sunday (Monday to Friday by default), and `holidays` lists extra days off. Turn the shading off with `showNonWorkingDays={false}` (`data-ok-show-non-working-days=\"false\"` in HTML). A line marks today. Set `today` to another date, for example to show a plan as it was, or hide the line with `showToday={false}`. `weekStart` sets the first day of the weeks in the header.",
+     "html": "<div data-ok-gantt data-ok-view=\"day\" data-ok-bar-label=\"right\" data-ok-working-weekdays=\"1 2 3 4\" data-ok-holidays=\"2025-03-10\" data-ok-today=\"2025-03-07\">\n  <table data-ok-gantt-data>\n    <caption>Budget plan</caption>\n    <thead>\n      <tr><th scope=\"col\" data-ok-gantt-field=\"name\">Task</th><th scope=\"col\" data-ok-gantt-field=\"startTime\">Start</th><th scope=\"col\" data-ok-gantt-field=\"endTime\">End</th><th scope=\"col\" data-ok-gantt-field=\"progress\">Progress</th><th scope=\"col\" data-ok-gantt-field=\"dependency\">Predecessors</th></tr>\n    </thead>\n    <tbody>\n      <tr data-ok-task-id=\"plan\"><td>Plan</td><td></td><td></td><td></td><td></td></tr>\n      <tr data-ok-task-id=\"scope\" data-ok-parent-id=\"plan\"><td>Scope</td><td data-ok-value=\"2025-03-03\">Mar 3, 2025</td><td data-ok-value=\"2025-03-05\">Mar 5, 2025</td><td data-ok-value=\"100\">100%</td><td></td></tr>\n      <tr data-ok-task-id=\"budget\" data-ok-parent-id=\"plan\"><td>Budget</td><td data-ok-value=\"2025-03-06\">Mar 6, 2025</td><td data-ok-value=\"2025-03-11\">Mar 11, 2025</td><td data-ok-value=\"50\">50%</td><td>scope</td></tr>\n      <tr data-ok-task-id=\"approved\" data-ok-type=\"milestone\"><td>Approved</td><td data-ok-value=\"2025-03-12\">Mar 12, 2025</td><td></td><td></td><td>budget</td></tr>\n    </tbody>\n  </table>\n</div>",
+     "id": "calendar",
+     "react": "import { Gantt, type GanttTask } from \"@owlky/react\";\n\nconst tasks: GanttTask[] = [\n  { id: \"plan\", name: \"Plan\" },\n  { id: \"scope\", name: \"Scope\", parentId: \"plan\", startTime: \"2025-03-03\", endTime: \"2025-03-05\", progress: 100 },\n  { id: \"budget\", name: \"Budget\", parentId: \"plan\", startTime: \"2025-03-06\", endTime: \"2025-03-11\", progress: 50, dependency: \"scope\" },\n  { id: \"approved\", name: \"Approved\", startTime: \"2025-03-12\", type: \"milestone\", dependency: \"budget\" },\n];\n\nexport function FourDayWeek() {\n  return <Gantt label=\"Budget plan\" tasks={tasks} view=\"day\" workingWeekdays={[1, 2, 3, 4]} holidays={[\"2025-03-10\"]} today=\"2025-03-07\" />;\n}",
+     "title": "Show working days and today"
+    },
+    {
+     "body": "Set `baseline` to draw each task's planned dates, its `baseline: { start, end }`, as a thin bar under the actual one. The gap shows how far a task moved. Set `criticalPath` to color the tasks and arrows that have no slack in the error color: a delay on any of them delays the whole project. The bars' accessible names say so too. Set `projectBoundary` to draw dashed lines on the project's first and last days.",
+     "html": "<div data-ok-gantt data-ok-view=\"week\" data-ok-bar-label=\"right\" data-ok-critical-path data-ok-project-boundary>\n  <table data-ok-gantt-data>\n    <caption>Budget plan</caption>\n    <thead>\n      <tr><th scope=\"col\" data-ok-gantt-field=\"name\">Task</th><th scope=\"col\" data-ok-gantt-field=\"startTime\">Start</th><th scope=\"col\" data-ok-gantt-field=\"endTime\">End</th><th scope=\"col\" data-ok-gantt-field=\"progress\">Progress</th><th scope=\"col\" data-ok-gantt-field=\"dependency\">Predecessors</th></tr>\n    </thead>\n    <tbody>\n      <tr data-ok-task-id=\"plan\"><td>Plan</td><td></td><td></td><td></td><td></td></tr>\n      <tr data-ok-task-id=\"scope\" data-ok-parent-id=\"plan\"><td>Scope</td><td data-ok-value=\"2025-03-03\">Mar 3, 2025</td><td data-ok-value=\"2025-03-05\">Mar 5, 2025</td><td data-ok-value=\"100\">100%</td><td></td></tr>\n      <tr data-ok-task-id=\"budget\" data-ok-parent-id=\"plan\"><td>Budget</td><td data-ok-value=\"2025-03-06\">Mar 6, 2025</td><td data-ok-value=\"2025-03-11\">Mar 11, 2025</td><td data-ok-value=\"50\">50%</td><td>scope</td></tr>\n      <tr data-ok-task-id=\"approved\" data-ok-type=\"milestone\"><td>Approved</td><td data-ok-value=\"2025-03-12\">Mar 12, 2025</td><td></td><td></td><td>budget</td></tr>\n    </tbody>\n  </table>\n</div>",
+     "id": "analysis",
+     "react": "import { Gantt, type GanttTask } from \"@owlky/react\";\n\nconst tasks: GanttTask[] = [\n  { id: \"plan\", name: \"Plan\" },\n  { id: \"scope\", name: \"Scope\", parentId: \"plan\", startTime: \"2025-03-03\", endTime: \"2025-03-05\", progress: 100 },\n  { id: \"budget\", name: \"Budget\", parentId: \"plan\", startTime: \"2025-03-06\", endTime: \"2025-03-11\", progress: 50, dependency: \"scope\" },\n  { id: \"approved\", name: \"Approved\", startTime: \"2025-03-12\", type: \"milestone\", dependency: \"budget\" },\n];\n\nexport function CriticalPlan() {\n  return <Gantt label=\"Budget plan\" tasks={tasks} criticalPath projectBoundary />;\n}",
+     "title": "Compare plans and find the critical path"
+    },
+    {
+     "body": "Set `selection` to let people select rows: a click selects one row, Ctrl or Cmd and a click adds or removes a row, Shift and a click selects a range, Space toggles the focused row and Ctrl + A selects every row. In React, pass `selected` and `onSelectionChange` to control the selection, or `defaultSelected` for a starting one. In HTML, the selection is `data-ok-selected` on the table rows, and `ok:gantt:selectionchange` reports each change.",
+     "html": "<div data-ok-gantt data-ok-view=\"week\" data-ok-bar-label=\"right\" data-ok-selection>\n  <table data-ok-gantt-data>\n    <caption>Budget plan</caption>\n    <thead>\n      <tr><th scope=\"col\" data-ok-gantt-field=\"name\">Task</th><th scope=\"col\" data-ok-gantt-field=\"startTime\">Start</th><th scope=\"col\" data-ok-gantt-field=\"endTime\">End</th><th scope=\"col\" data-ok-gantt-field=\"progress\">Progress</th><th scope=\"col\" data-ok-gantt-field=\"dependency\">Predecessors</th></tr>\n    </thead>\n    <tbody>\n      <tr data-ok-task-id=\"plan\"><td>Plan</td><td></td><td></td><td></td><td></td></tr>\n      <tr data-ok-task-id=\"scope\" data-ok-parent-id=\"plan\"><td>Scope</td><td data-ok-value=\"2025-03-03\">Mar 3, 2025</td><td data-ok-value=\"2025-03-05\">Mar 5, 2025</td><td data-ok-value=\"100\">100%</td><td></td></tr>\n      <tr data-ok-task-id=\"budget\" data-ok-parent-id=\"plan\"><td>Budget</td><td data-ok-value=\"2025-03-06\">Mar 6, 2025</td><td data-ok-value=\"2025-03-11\">Mar 11, 2025</td><td data-ok-value=\"50\">50%</td><td>scope</td></tr>\n      <tr data-ok-task-id=\"approved\" data-ok-type=\"milestone\"><td>Approved</td><td data-ok-value=\"2025-03-12\">Mar 12, 2025</td><td></td><td></td><td>budget</td></tr>\n    </tbody>\n  </table>\n</div>\n<script>\n  document.querySelector(\"[data-ok-gantt]\").addEventListener(\"ok:gantt:selectionchange\", (event) => {\n    console.log(event.detail.selected);\n  });\n</script>",
+     "id": "selection",
+     "react": "import { Gantt, type GanttTask } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nconst tasks: GanttTask[] = [\n  { id: \"plan\", name: \"Plan\" },\n  { id: \"scope\", name: \"Scope\", parentId: \"plan\", startTime: \"2025-03-03\", endTime: \"2025-03-05\", progress: 100 },\n  { id: \"budget\", name: \"Budget\", parentId: \"plan\", startTime: \"2025-03-06\", endTime: \"2025-03-11\", progress: 50, dependency: \"scope\" },\n  { id: \"approved\", name: \"Approved\", startTime: \"2025-03-12\", type: \"milestone\", dependency: \"budget\" },\n];\n\nexport function SelectablePlan() {\n  const [selected, setSelected] = useState<string[]>([]);\n  return (\n    <Gantt label=\"Budget plan\" tasks={tasks} selection selected={selected} onSelectionChange={setSelected} />\n  );\n}",
+     "title": "Select tasks"
+    },
+    {
+     "body": "`columns` picks the task-list columns from `name`, `startTime`, `endTime`, `duration` and `progress`. The name always comes first. `tasksContainerWidth` sets the width of the task list (440px by default): the name column takes the space the other columns leave. On screens, or containers, narrower than 600px, only the name column shows, and the timeline scrolls sideways inside the chart. `barLabel` places the task names: `right` of the bars (the default), `left` of them, `inside` them, or `auto`, inside when the name fits. `rowHeight` and `barMargin` set the size of rows and bars.",
+     "html": "<div data-ok-gantt data-ok-view=\"week\" data-ok-bar-label=\"auto\" data-ok-columns=\"name startTime endTime\" data-ok-row-height=\"48\">\n  <table data-ok-gantt-data>\n    <caption>Budget plan</caption>\n    <thead>\n      <tr><th scope=\"col\" data-ok-gantt-field=\"name\">Task</th><th scope=\"col\" data-ok-gantt-field=\"startTime\">Start</th><th scope=\"col\" data-ok-gantt-field=\"endTime\">End</th><th scope=\"col\" data-ok-gantt-field=\"progress\">Progress</th><th scope=\"col\" data-ok-gantt-field=\"dependency\">Predecessors</th></tr>\n    </thead>\n    <tbody>\n      <tr data-ok-task-id=\"plan\"><td>Plan</td><td></td><td></td><td></td><td></td></tr>\n      <tr data-ok-task-id=\"scope\" data-ok-parent-id=\"plan\"><td>Scope</td><td data-ok-value=\"2025-03-03\">Mar 3, 2025</td><td data-ok-value=\"2025-03-05\">Mar 5, 2025</td><td data-ok-value=\"100\">100%</td><td></td></tr>\n      <tr data-ok-task-id=\"budget\" data-ok-parent-id=\"plan\"><td>Budget</td><td data-ok-value=\"2025-03-06\">Mar 6, 2025</td><td data-ok-value=\"2025-03-11\">Mar 11, 2025</td><td data-ok-value=\"50\">50%</td><td>scope</td></tr>\n      <tr data-ok-task-id=\"approved\" data-ok-type=\"milestone\"><td>Approved</td><td data-ok-value=\"2025-03-12\">Mar 12, 2025</td><td></td><td></td><td>budget</td></tr>\n    </tbody>\n  </table>\n</div>",
+     "id": "layout",
+     "react": "import { Gantt, type GanttTask } from \"@owlky/react\";\n\nconst tasks: GanttTask[] = [\n  { id: \"plan\", name: \"Plan\" },\n  { id: \"scope\", name: \"Scope\", parentId: \"plan\", startTime: \"2025-03-03\", endTime: \"2025-03-05\", progress: 100 },\n  { id: \"budget\", name: \"Budget\", parentId: \"plan\", startTime: \"2025-03-06\", endTime: \"2025-03-11\", progress: 50, dependency: \"scope\" },\n  { id: \"approved\", name: \"Approved\", startTime: \"2025-03-12\", type: \"milestone\", dependency: \"budget\" },\n];\n\nexport function CompactPlan() {\n  return <Gantt label=\"Budget plan\" tasks={tasks} barLabel=\"auto\" columns={[\"name\", \"startTime\", \"endTime\"]} rowHeight={48} />;\n}",
+     "title": "Choose columns and labels"
+    },
+    {
+     "body": "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default.",
+     "id": "options",
+     "title": "Options"
+    },
+    {
+     "body": "These props set the data, the dates and the texts. They aren't options, because HTML writes them as markup or text attributes.",
+     "id": "props",
+     "title": "Content and behavior"
+    },
+    {
+     "body": "- **`ok:gantt:toggle`** (cancelable) fires when a parent row asks to expand or collapse, with `detail.id`, `detail.expanded` and `detail.collapsed` (every collapsed id). Call `preventDefault()` to keep the row as it is.\n- **`ok:gantt:selectionchange`** (cancelable) fires with `detail.selected` and `detail.mode` (`replace`, `toggle`, `range` or `all`).\n- **`ok:gantt:zoom`** (cancelable) fires with `detail.pixelsPerDay` when a zoom button is selected.\n- **Instance:** `runtime.get(element, \"gantt\")` returns `{ tasks, collapsed, setCollapsed(ids), selected, setSelected(ids), pixelsPerDay, zoomIn(), zoomOut(), scrollToTask(id), setLocaleText(text), refresh() }`. The methods don't fire events. The chart redraws by itself when the table or an option changes.\n- **React:** `onCollapsedChange(ids)`, `onSelectionChange(ids, mode)` and `onZoomChange(pixelsPerDay)`. Pass `collapsed`, `selected` or `pixelsPerDay` to control that state, or `defaultCollapsed`, `defaultSelected` or `defaultPixelsPerDay` for its first value.",
+     "id": "events",
+     "title": "Events and methods"
+    },
+    {
+     "body": "The chart is one tab stop: the row you last used. The arrow keys move between rows and through the tree. A tooltip shows the focused task's dates and progress.",
+     "id": "keyboard",
+     "title": "Keyboard"
+    },
+    {
+     "body": "- Give every chart a `label` (React) or a table `caption` (HTML). It names the grid and the data table.\n- The chart is a tree grid: screen readers announce each row's level, its position among its siblings and whether it is expanded or selected.\n- Each bar has an accessible name with the task's dates, progress, planned dates, critical path and predecessors. The drawing behind the rows is hidden from assistive technologies.\n- The tooltip shows on keyboard focus as well as on hover, stays while you hover it and closes with Escape.\n- Color is never the only cue: milestones are diamonds, and critical tasks are named as such.",
+     "id": "accessibility",
+     "title": "Accessibility"
+    }
+   ],
+   "title": "Gantt"
+  },
+  {
    "component": "icon-button",
    "id": "icon-button",
    "kind": "component",
@@ -22488,6 +22956,8 @@
   "data-ok-editor-toolbar": "data-ok-editor",
   "data-ok-form-control-label-text": "data-ok-form-control-label",
   "data-ok-form-label-asterisk": "data-ok-form-label",
+  "data-ok-gantt-data": "data-ok-gantt",
+  "data-ok-gantt-field": "data-ok-gantt",
   "data-ok-image-overlay": "data-ok-image",
   "data-ok-image-placeholder": "data-ok-image",
   "data-ok-label-icon": "data-ok-label",

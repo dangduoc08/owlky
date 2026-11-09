@@ -71,6 +71,7 @@ const SPECS = {
   image: "image.md",
   rating: "rating.md",
   chart: "chart.md",
+  gantt: "gantt.md",
   carousel: "carousel.md",
   lightbox: "lightbox.md",
   upload: "upload.md",

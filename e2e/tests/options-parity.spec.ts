@@ -58,6 +58,7 @@ const CASES: [
   ["image", "list", "image", ["effect", "disablePlaceholder"]],
   ["rating", "controlled", "rating", ["size", "color"]],
   ["chart", "column-multiple", "chart", ["curve", "legend"]],
+  ["gantt", "basic", "gantt", ["rowHeight", "showToday", "showNonWorkingDays", "columnLines"]],
   ["carousel", "align", "carousel", ["align", "loop", "dragFree", "containScroll"]],
   [
     "lightbox",

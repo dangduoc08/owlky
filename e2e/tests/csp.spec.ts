@@ -137,6 +137,15 @@ test("no CSP or Trusted Types violations", async ({ page }) => {
   await expect(page.locator("#csp-image")).toHaveAttribute("data-ok-state", "loaded");
   await expect(page.locator("#csp-image-broken")).toHaveAttribute("data-ok-state", "error");
   await expect(page.locator("#csp-image-broken [data-ok-image-icon]")).toBeVisible();
+  // The Gantt builds its treegrid and SVG with DOM methods and positions bars through CSSOM.
+  const gantt = page.locator("#csp-gantt");
+  await expect(gantt.getByRole("treegrid", { name: "Release plan" })).toBeVisible();
+  await expect(gantt.locator("[data-ok-gantt-link]")).toHaveCount(1);
+  expect(
+    await gantt
+      .locator('[data-ok-task-id="build"] [data-ok-gantt-bar]')
+      .evaluate((element) => (element as HTMLElement).style.getPropertyValue("--_ok-gantt-w")),
+  ).toBe("144px");
   // The walktour draws its spotlight with an SVG path and places the step through CSSOM.
   await page.getByRole("button", { name: "Start the tour" }).click();
   const step = page.getByRole("dialog", { name: "Notes" });

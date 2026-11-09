@@ -1,0 +1,17 @@
+<div data-ok-gantt data-ok-view="day" data-ok-bar-label="right" data-ok-today="2025-03-18">
+  <table data-ok-gantt-data>
+    <caption>App release</caption>
+    <thead>
+      <tr><th scope="col" data-ok-gantt-field="name">Task</th><th scope="col" data-ok-gantt-field="startTime">Start</th><th scope="col" data-ok-gantt-field="endTime">End</th><th scope="col" data-ok-gantt-field="progress">Progress</th><th scope="col" data-ok-gantt-field="dependency">Predecessors</th></tr>
+    </thead>
+    <tbody>
+      <tr data-ok-task-id="kickoff" data-ok-type="milestone"><td>Kickoff</td><td data-ok-value="2025-03-03">Mar 3, 2025</td><td></td><td></td><td></td></tr>
+      <tr data-ok-task-id="alpha"><td>Alpha build</td><td data-ok-value="2025-03-04">Mar 4, 2025</td><td data-ok-value="2025-03-14">Mar 14, 2025</td><td data-ok-value="100">100%</td><td>kickoff</td></tr>
+      <tr data-ok-task-id="alpha-done" data-ok-type="milestone"><td>Alpha ready</td><td data-ok-value="2025-03-17">Mar 17, 2025</td><td></td><td></td><td>alpha</td></tr>
+      <tr data-ok-task-id="beta"><td>Beta build</td><td data-ok-value="2025-03-17">Mar 17, 2025</td><td data-ok-value="2025-03-28">Mar 28, 2025</td><td data-ok-value="40">40%</td><td>alpha-done</td></tr>
+      <tr data-ok-task-id="beta-done" data-ok-type="milestone"><td>Beta ready</td><td data-ok-value="2025-03-31">Mar 31, 2025</td><td></td><td></td><td>beta</td></tr>
+      <tr data-ok-task-id="store"><td>Store review</td><td data-ok-value="2025-03-31">Mar 31, 2025</td><td data-ok-value="2025-04-04">Apr 4, 2025</td><td></td><td>beta-done</td></tr>
+      <tr data-ok-task-id="release" data-ok-type="milestone"><td>Release</td><td data-ok-value="2025-04-07">Apr 7, 2025</td><td></td><td></td><td>store</td></tr>
+    </tbody>
+  </table>
+</div>
