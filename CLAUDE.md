@@ -17,9 +17,10 @@ file covers project status, workflow and orientation.
 | 2' Foundations | Tokens + Storybook › Foundations (Colors, Typography, Shadows, Grid, Icons, Settings, Illustrations — ADR-0041: theme-aware set in `@owlky/core/illustrations`, opt-in `owlky-illustrations.js`): one story per section, default Storybook UI | ✅ done, awaiting review |
 | Theme settings | Presets (`data-ok-preset`), fonts (`data-ok-font`), root font size, `applyThemeSettings` (ADR-0017) | ✅ done, awaiting review |
 | Components | Button, Icon button, Fab, Button group, Toggle button, Drawer, Sortable, Accordion, Alert, Table, Pagination, Scrollbar, Circular / Linear progress, Checkbox, Switch, Form control label, Radio, Text field, Avatar, Badge, Chip, Label, Divider, List, Popover, Tooltip, Menu, Dialog, Snackbar, Backdrop, Tabs, Breadcrumbs, Stepper, Timeline, Rating, Slider, Transfer list, Tree view, Autocomplete, Motion (Animate: Motion, MotionGroup, MotionText, CountUp, MotionBorder; beta, full version planned in the roadmap), Data grid (phases 1–6 of 6, ADR-0020 / 0021), Editor (Tiptap, ADR-0023; updated 2026-11-09: text transform, fullscreen Backdrop), Map (MapLibre GL JS, ADR-0025), Carousel (ADR-0033: native scroll snapping, Embla options and plugins, loop without clones), Lightbox (ADR-0032: a modal dialog around the Carousel, every yet-another-react-lightbox plugin), Markdown (unified, ADR-0035; the Editor preview renders with it), Chart (complete: phases 1–4, ADR-0024 / 0027 / 0029 / 0031), Date pickers (complete, phases 1–4, ADR-0022 / 0026 / 0028 / 0030: DatePicker, TimePicker and DateTimePicker families, Date / Time / DateTimeField, DateCalendar, Month / YearCalendar, TimeClock, DigitalClock, MultiSectionDigitalClock, LocalizationProvider; DateRangeCalendar, DateRangePicker, TimeRangePicker and DateTimeRangePicker families, single / multi input range fields; time zones, date adapters, calendar systems, locale packs, right to left, slots and view renderers), Code editor (Monaco, ADR-0034: CodeEditor, DiffEditor, useMonaco, loader), Organization chart (ADR-0036: nested lists, CSS connectors), Upload (ADR-0037: a native file input under the drop zone, react-dropzone options; Upload, UploadAvatar, UploadBox), Image (ADR-0038: native lazy loading, placeholder, ratios, overlays; Markdown pictures compose it), Walktour (ADR-0039: react-joyride API, steps as Popovers over a Backdrop with an SVG spotlight, beacons), Paper (CSS only, any element: elevation 0–24, outlined, square; the base of Card), Typography (CSS only, the type scale tokens; MUI API with `component` / `variantMapping`), Collapse (ADR-0044: `hidden` is the state, a core controller animates the size; nested lists, tree view groups and StepContent compose it), Card (CSS only, on Paper: header, media, content, actions, action area), Form control (CSS only: FormControl, FormLabel, FormGroup, FormHelperText; states on the root, `useFormControl` context in React), Link (CSS only, on Typography: underline, button links, `rel` on new tabs; Breadcrumbs items compose it), Select (ADR-0045: select-only combobox with roving focus, InputLabel, native, multiple, chips, grouping; TextField and TablePagination compose it with `selectProps`) ✅ (via `/component`) | awaiting review |
+| MCP server | `@owlky/mcp` (ADR-0046): stdio server (`npx -y @owlky/mcp`), six tools, resources, prompts, answering from the generated `packages/mcp/manifest.json` (`pnpm manifest`, `check:manifest`) | ✅ done, awaiting review |
 
-Full plan: `docs/roadmap.md`; next steps in its "After the waves" (Wave 8 and the `/integrate`
-sweep done → MCP server `@owlky/mcp`, ADR-0046 → website phase 1, ADR-0040 → 0.1.0 → more
+Full plan: `docs/roadmap.md`; next steps in its "After the waves" (Wave 8, the `/integrate`
+sweep and the MCP server `@owlky/mcp`, ADR-0046, done → website phase 1, ADR-0040 → 0.1.0 → more
 frameworks: server-rendered guides, Preact, then Vue / Svelte / Angular / Solid 1:1). Not published
 yet. Repository:
 `github.com/dangduoc08/owlky` (public; the GitHub org `owlky` only reserves the name).
@@ -54,12 +55,13 @@ packages/styles   prebuilt CSS (components in @layer components) + Tailwind v4 t
 packages/core     framework-free behavior + anatomy, shared by react and html
 packages/react    React components
 packages/html     HTML Core Runtime, snippets (src/components/*/examples), CDN IIFE bundle
+packages/mcp      MCP server @owlky/mcp (stdio) + generated manifest.json (ADR-0046; Node, no other Owlky package at run time)
 apps/storybook    Foundations guides (src/foundations/*) + component stories (one per section, Framework toolbar, ADR-0018)
 e2e               Playwright: parity, interactions, themes, a11y, plain-HTML, visual
 examples          plain-html consumer example (uses dist)
 specs/components  component contracts — update before code
 docs              architecture.md, roadmap.md, testing.md, adr/
-scripts           check-boundaries, check-size, check-packages, sync-versions
+scripts           check-boundaries, check-size, check-packages, sync-versions, manifest (MCP data), smoke-mcp
 ```
 
 ## Commands
@@ -74,6 +76,9 @@ pnpm storybook:network                      # same, reachable from other devices
 pnpm storybook:build && pnpm test:e2e       # Chromium, Firefox, WebKit, mobile
 pnpm lint:fix
 pnpm check                                  # everything CI runs
+pnpm manifest                               # after pnpm build: regenerate packages/mcp/manifest.json
+pnpm check:manifest                         # fails when the manifest is out of date (in pnpm check and CI)
+pnpm smoke:mcp                              # pack @owlky/mcp, start it with npx, tools/list (CI)
 ```
 
 ## Slash commands (`.claude/commands/`)
@@ -133,6 +138,16 @@ Storybook after installing). Use it to look things up, not as a contract:
   the option schema in `core/src/anatomy/anatomy.ts`, which stay the source of truth (the
   server's own advice to trust only its docs doesn't apply here).
 - React only: the HTML implementation isn't in the manifest. No `test-run` (no `@storybook/addon-vitest`).
+
+## Owlky MCP
+
+`@owlky/mcp` (ADR-0046) is registered in `.mcp.json` as `owlky` (`node packages/mcp/dist/cli.js`,
+needs `pnpm build`). It answers from `packages/mcp/manifest.json` (option schemas, spec sections,
+every story's HTML and React Code panel, snippets, guides, tokens), so it covers HTML **and**
+React with props, unlike the Storybook MCP. Tools: `list_components`, `get_component`,
+`get_examples`, `search_tokens`, `get_guide`, `validate_markup`. Regenerate the manifest with
+`pnpm build && pnpm manifest` after changing a schema, spec, story, docs page, snippet or token,
+or `check:manifest` fails; a running server only sees the new manifest after a restart.
 
 ## Local environment notes
 

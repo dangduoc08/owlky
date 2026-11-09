@@ -65,7 +65,9 @@ Read this first (humans and AI agents). Architecture: `docs/architecture.md`. De
    `e2e/tests/options-parity.spec.ts`.
 7. E2E: add pairs to `e2e/tests/parity.spec.ts` (first component: restore it with
    `git show bd5fb2d:e2e/tests/parity.spec.ts`); interaction spec for both implementations.
-8. `pnpm changeset`, then `pnpm check`.
+8. `pnpm build && pnpm manifest` (the MCP server's data, ADR-0046: the docs page keeps exporting
+   its `<name>Sections: GuideSection[]`, stories keep `frameworkStory`), `pnpm changeset`, then
+   `pnpm check` (`check:manifest` fails on a stale manifest).
 
 ## Foundations in Storybook
 `apps/storybook/src/foundations/<name>/` — presentational components (`<name>.tsx`) and
@@ -691,6 +693,19 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
   trigger's id (Biome `noLabelWithoutControl`; a `div` isn't labelable, `labelId` names it).
   Checkboxes inside options are `inert` (axe `nested-interactive`). `check-docs-code.mjs` greps
   **tracked** files for known `data-ok-*` names: `git add` new runtime files before running it.
+- MCP manifest (ADR-0046): `scripts/manifest.mjs` loads every `*.stories.tsx` and every file that
+  exports `*Sections: GuideSection[]` with Vite's SSR loader in Node (Storybook, CSS, `?worker` and
+  `?url` imports stubbed): story and docs modules must not touch `document` / `window` at import
+  time. A story's React code is its Code panel (`transform` of `frameworkStory` with
+  `globals.framework`), its id comes from Storybook's `toId(title, storyNameFromExport(key))`, and
+  stories keep source order (`export const` order). Known `data-ok-*` names come from the packages'
+  sources, specs, snippets and guides; required parts are the anatomy's non-optional parts of a
+  root (no `?`, no "(omit / when / with / only …)" comment) that **every** snippet instance
+  contains, so a snippet without a part drops the requirement. `validate.test.ts` validates every
+  story's HTML with zero issues: a number option that takes a keyword (`auto`) must name it in
+  backticks in its description, or `validate_markup` reports it. The repo's pnpm overrides for the
+  SDK's young transitive dependencies don't reach `npx` users (npm resolves the SDK's own ranges).
+  Coverage of `packages/mcp` runs from the root: `pnpm vitest run --coverage packages/mcp`.
 - Parallel work: never run two `/component` / `/integrate` sessions (or two `pnpm build` /
   `pnpm test:e2e`) in the same working tree — builds wipe each other's `dist/` and
   `storybook-static/`, e2e servers share port 4321, and staging part of a shared file while

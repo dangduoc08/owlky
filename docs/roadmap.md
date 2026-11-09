@@ -901,12 +901,15 @@ is phase 2 of the Motion full version. Layout, Form wizard and Form validation m
    "Logo" wait is left (Motion full version).
 3. **`/update-ai-knowledge-base`**, then commit: CLAUDE.md, AGENTS.md, docs, ADRs and specs in
    sync with Wave 8.
-4. **MCP server `@owlky/mcp`** (ADR-0046, proposed first): a generated `manifest.json` (option
-   schemas, spec sections, guide sections as data, HTML snippets, React code of every story,
-   tokens; `check:manifest` in CI) and a stdio server (`npx -y @owlky/mcp`) with the tools
+4. ✅ **MCP server `@owlky/mcp`** (ADR-0046, 2026-11-09): `scripts/manifest.mjs` writes
+   `packages/mcp/manifest.json` (about 6 MB, 0.7 MB gzip: 105 option schemas, 62 specs by section,
+   371 stories with their HTML and React Code panels, 523 snippets, 68 guides, 273 tokens, the
+   Tailwind theme, every `data-ok-*` name and the required parts; `pnpm check:manifest` in
+   `pnpm check` and CI). A stdio server (`npx -y @owlky/mcp`, bin `owlky-mcp`) with the tools
    `list_components`, `get_component`, `get_examples`, `search_tokens`, `get_guide`,
-   `validate_markup`, plus resources and prompts; registered as `owlky` in `.mcp.json`. New
-   dependencies (`@modelcontextprotocol/sdk`, `zod`) come with the ADR. A remote MCP on owlky.com
+   `validate_markup`, resources `owlky://components/<name>`, `owlky://tokens`,
+   `owlky://guides/<id>` and prompts `build-html-page`, `build-react-page`; registered as `owlky`
+   in `.mcp.json`; a packed-tarball smoke test in CI (`pnpm smoke:mcp`). A remote MCP on owlky.com
    is deferred, so the website stays static.
 5. **Website phase 1** (ADR-0040): `apps/website`, `apps/docs-content` for two pilot pages, Vercel
    workflows, owlky.com. It is built with Owlky (after the primitives), reads the manifest for its
