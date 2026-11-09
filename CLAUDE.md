@@ -18,11 +18,13 @@ file covers project status, workflow and orientation.
 | Theme settings | Presets (`data-ok-preset`), fonts (`data-ok-font`), root font size, `applyThemeSettings` (ADR-0017) | ✅ done, awaiting review |
 | Components | Button, Icon button, Fab, Button group, Toggle button, Drawer, Sortable, Accordion, Alert, Table, Pagination, Scrollbar, Circular / Linear progress, Checkbox, Switch, Form control label, Radio, Text field, Avatar, Badge, Chip, Label, Divider, List, Popover, Tooltip, Menu, Dialog, Snackbar, Backdrop, Tabs, Breadcrumbs, Stepper, Timeline, Rating, Slider, Transfer list, Tree view, Autocomplete, Motion (Animate: Motion, MotionGroup, MotionText, CountUp, MotionBorder; beta, full version planned in the roadmap), Data grid (phases 1–6 of 6, ADR-0020 / 0021), Editor (Tiptap, ADR-0023; updated 2026-11-09: text transform, fullscreen Backdrop), Map (MapLibre GL JS, ADR-0025), Carousel (ADR-0033: native scroll snapping, Embla options and plugins, loop without clones), Lightbox (ADR-0032: a modal dialog around the Carousel, every yet-another-react-lightbox plugin), Markdown (unified, ADR-0035; the Editor preview renders with it), Chart (complete: phases 1–4, ADR-0024 / 0027 / 0029 / 0031), Date pickers (complete, phases 1–4, ADR-0022 / 0026 / 0028 / 0030: DatePicker, TimePicker and DateTimePicker families, Date / Time / DateTimeField, DateCalendar, Month / YearCalendar, TimeClock, DigitalClock, MultiSectionDigitalClock, LocalizationProvider; DateRangeCalendar, DateRangePicker, TimeRangePicker and DateTimeRangePicker families, single / multi input range fields; time zones, date adapters, calendar systems, locale packs, right to left, slots and view renderers), Code editor (Monaco, ADR-0034: CodeEditor, DiffEditor, useMonaco, loader), Organization chart (ADR-0036: nested lists, CSS connectors), Upload (ADR-0037: a native file input under the drop zone, react-dropzone options; Upload, UploadAvatar, UploadBox), Image (ADR-0038: native lazy loading, placeholder, ratios, overlays; Markdown pictures compose it), Walktour (ADR-0039: react-joyride API, steps as Popovers over a Backdrop with an SVG spotlight, beacons) ✅ (via `/component`) | awaiting review |
 
-Full plan: `docs/roadmap.md`. Not published yet.
+Full plan: `docs/roadmap.md`; next steps in its "After the waves" (Wave 8 Primitives → one
+`/integrate` → website phase 1, ADR-0040 → 0.1.0). Not published yet. Repository:
+`github.com/dangduoc08/owlky` (public; the GitHub org `owlky` only reserves the name).
 
-**Blocked on the user before publishing 0.1.0:** npm org `@owlky` (ADR-0016), GitHub repo
-(replace `OWNER` in every `packages/*/package.json`), `NPM_TOKEN` secret or npm trusted
-publishing, visual baselines via `pnpm test:visual:update` (Docker only).
+**Blocked on the user before publishing 0.1.0:** npm org `@owlky` (ADR-0016), `NPM_TOKEN` secret
+or npm trusted publishing, the Vercel project and secrets + DNS for owlky.com (ADR-0040), visual
+baselines via `pnpm test:visual:update` (Docker only).
 
 **Releasing:** CI only on `main`; publish = push tag `release/v<version>` on a `main` commit
 whose packages already carry that version (ADR-0012).

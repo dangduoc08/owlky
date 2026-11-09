@@ -68,7 +68,7 @@ component and each `/integrate` run.
 | Extra | Multi-language | not planned | — | Next |
 | Extra | Navigation bar | not planned | — | Next |
 | Extra | Organization chart | ✅ (ADR-0036) | OrganizationChart, OrganizationChartNode | Organization chart |
-| Extra | Scroll progress | not planned | — | Next |
+| Extra | Scroll progress | Motion full, phase 2 | — | Next — Motion, full version |
 | Extra | Scrollbar | ✅ | Scrollbar | Scrollbar |
 | Extra (Sonner) | Snackbar | ✅ | Toaster, toast() | Popover, Tooltip, Menu, Dialog & Snackbar |
 | Extra | Upload | ✅ (ADR-0037) | Upload, UploadAvatar, UploadBox | Upload |
@@ -757,11 +757,27 @@ Dependency-first: leaf components before the ones built from them, the ones that
 | 5 Navigation | ~~Tabs~~ ✅, ~~Breadcrumbs~~ ✅, ~~Stepper~~ ✅ | — (nothing waited for them) |
 | 6 Composites | ~~Rating~~ ✅, ~~Slider~~ ✅, ~~Timeline~~ ✅, ~~Transfer list~~ ✅, ~~Autocomplete~~ ✅, ~~Tree view~~ ✅ | — (nothing waited for them; Slider unblocks the SettingsDrawer backlog of Theme settings) |
 | 7 Needs an ADR | ~~Data grid~~ (ADR-0020, phases below), ~~Date pickers~~ (ADR-0022, ADR-0030, complete ✅), ~~Chart~~ (ADR-0024, ADR-0027, ADR-0031, complete ✅), ~~Map~~ (ADR-0025) ✅, ~~Editor~~ (ADR-0023) ✅, ~~Carousel~~ (ADR-0033) ✅, ~~Lightbox~~ (ADR-0032) ✅, ~~Markdown~~ (ADR-0035) ✅, ~~Organization chart~~ (ADR-0036) ✅, ~~Image~~ (ADR-0038) ✅, ~~Upload~~ (ADR-0037) ✅, ~~Walktour~~ (ADR-0039) ✅ | ~~Markdown pictures~~ ✅ (Image) |
+| 8 Primitives (approved 2026-11-09; MUI pages, no Minimals page) | **Batch A:** Typography (`react-typography`), Paper + Card (`react-paper`, `react-card`: Card, CardHeader, CardContent, CardMedia, CardActions, CardActionArea), Collapse (`transitions`, Collapse only: Motion covers fade / grow / slide / zoom). **Batch B:** Link (`react-link`), Form control (FormControl, FormLabel, FormGroup, FormHelperText; no DOM change to TextField, Radio, Checkbox). **Batch C:** Select (`react-select`: listbox on Menu, single, multiple, chips, grouping; the native select stays; ADR if the select-only combobox pattern needs one) | Every Typography, Paper / Card, Collapse, Link, FormLabel and Select row of "Pending integrations" (22 rows), each closed by its own `/component` review |
 
 Not planned as components (patterns or app-level pages of the reference): Layout,
-Utilities, Multi-language, Navigation bar, Mega menu, Scroll progress, Form validation, Form wizard.
-Typography (display / heading text) has no reference page of its own: build it with wave 3.
-Feedback & 1.0 after the waves: accessibility audit, docs polish, and an upstream API audit of every component (prop by prop against MUI, a mapping table in each spec; e.g. Drawer `elevation`, `transitionDuration` are missing; Backdrop `transitionDuration`).
+Utilities, Multi-language, Navigation bar, Mega menu, Form validation, Form wizard. Scroll progress
+is phase 2 of the Motion full version. Layout, Form wizard and Form validation may come back as
+**blocks** (copy-paste compositions; needs its own ADR), Navigation bar and Mega menu as components.
 
-**Before publishing 0.1.0 (needs the owner):** npm org `@owlky`, GitHub repo (replace
-`OWNER`), npm trusted publishing, visual baselines in Docker (`pnpm test:visual:update`).
+## After the waves (order approved 2026-11-09)
+1. **Wave 8 Primitives** (above), batches A → B → C, up to three `/component` agents at a time.
+2. **One `/integrate`** (no argument) after batch C: a sweep for any wait left open.
+3. **Website phase 1** (ADR-0040): `apps/website`, `apps/docs-content` for two pilot pages, Vercel
+   workflows, owlky.com. It is built with Owlky, so it comes after the primitives.
+4. **Publish 0.1.0** together with the website.
+5. **Motion full version** (ADR first; phase 1 closes the Motion "Logo" wait).
+6. **1.0 prep:** accessibility audit, docs polish, and an upstream API audit of every component
+   (prop by prop against MUI, a mapping table in each spec; for example Drawer `elevation` and
+   `transitionDuration`, Backdrop `transitionDuration`), plus the backlogs (Table toolbar, Sortable
+   auto-scroll and move to top / bottom, Motion `component`, Dialog `keepMounted`).
+7. **Later, each with an ADR:** a blocks tier (free blocks here, premium blocks in a private
+   repository), Navigation bar and Mega menu.
+
+**Before publishing 0.1.0 (needs the owner):** npm org `@owlky`, npm trusted publishing for
+`dangduoc08/owlky`, the Vercel project and secrets, DNS for owlky.com, visual baselines in Docker
+(`pnpm test:visual:update`).
