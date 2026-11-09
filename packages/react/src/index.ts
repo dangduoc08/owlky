@@ -301,6 +301,18 @@ export {
 export { Editor, type EditorHighlighter, type EditorProps } from "./editor/editor.js";
 export { Fab, type FabAsButtonProps, type FabAsLinkProps, type FabProps } from "./fab/fab.js";
 export {
+  FormControl,
+  type FormControlProps,
+  type FormControlState,
+  FormGroup,
+  type FormGroupProps,
+  FormHelperText,
+  type FormHelperTextProps,
+  FormLabel,
+  type FormLabelProps,
+  useFormControl,
+} from "./form-control/form-control.js";
+export {
   FormControlLabel,
   type FormControlLabelProps,
 } from "./form-control-label/form-control-label.js";

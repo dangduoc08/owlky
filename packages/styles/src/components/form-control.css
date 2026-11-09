@@ -1,0 +1,150 @@
+/*
+ * Form control — spec: specs/components/form-control.md
+ *
+ * Anatomy:   (div | fieldset)[data-ok-form-control]
+ *              › (label | legend | span)[data-ok-form-label] (› span[data-ok-form-label-asterisk]?)
+ *              › div[data-ok-form-group] | a radio group | a standalone control
+ *              › p[data-ok-form-helper-text]
+ * Modifiers: root     data-ok-color (focused label), data-ok-size, data-ok-variant, data-ok-margin
+ *                     = none | dense | normal, data-ok-full-width
+ *            states   data-ok-disabled, data-ok-error, data-ok-required, data-ok-focused on the
+ *                     root (shared with its label and helper text) or on a part (that part only);
+ *                     a fieldset root's native :disabled counts as data-ok-disabled
+ *            group    data-ok-row
+ *            helper   data-ok-margin = dense, data-ok-variant = outlined | filled (indent)
+ *
+ * --ok-c-* color bindings don't inherit, so the root reads its focus color into a private
+ * property the label inherits. Precedence by source order: focused < error < disabled.
+ * Single :where() selectors in @layer components (zero specificity).
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-ok-form-control]) {
+    --_ok-form-focus: var(--ok-text-primary);
+    display: inline-flex;
+    position: relative;
+    flex-direction: column;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    vertical-align: top;
+  }
+
+  :where([data-ok-form-control][data-ok-color]:not([data-ok-color="default"])) {
+    --_ok-form-focus: var(--ok-c-text, var(--ok-text-primary));
+  }
+
+  :where([data-ok-form-control][data-ok-full-width]) {
+    width: 100%;
+  }
+
+  :where([data-ok-form-control][data-ok-margin="dense"]) {
+    margin-block: calc(var(--ok-spacing) * 2) var(--ok-spacing);
+  }
+
+  :where([data-ok-form-control][data-ok-margin="normal"]) {
+    margin-block: calc(var(--ok-spacing) * 4) calc(var(--ok-spacing) * 2);
+  }
+
+  /* A standalone control keeps its own width in the column (no stretch). */
+  :where([data-ok-form-control] > :is([data-ok-checkbox], [data-ok-radio], [data-ok-switch])) {
+    align-self: flex-start;
+  }
+
+  /* Label */
+  :where([data-ok-form-label]) {
+    --_ok-form-focus-own: var(--_ok-form-focus, var(--ok-text-primary));
+    padding: 0;
+    color: var(--ok-text-secondary);
+    font-family: var(--ok-font-family);
+    font-size: var(--ok-typography-body2-font-size);
+    font-weight: var(--ok-typography-body2-font-weight);
+    line-height: var(--ok-typography-body2-line-height);
+    overflow-wrap: anywhere;
+  }
+
+  :where([data-ok-form-label][data-ok-color]:not([data-ok-color="default"])) {
+    --_ok-form-focus-own: var(--ok-c-text, var(--ok-text-primary));
+  }
+
+  :where([data-ok-form-label][data-ok-color="default"]) {
+    --_ok-form-focus-own: var(--ok-text-primary);
+  }
+
+  :where([data-ok-form-label-asterisk]) {
+    margin-inline-start: 0.25ch;
+  }
+
+  :where(
+    [data-ok-form-control][data-ok-focused] [data-ok-form-label],
+    [data-ok-form-label][data-ok-focused]
+  ) {
+    color: var(--_ok-form-focus-own);
+  }
+
+  :where(
+    [data-ok-form-control][data-ok-error] [data-ok-form-label],
+    [data-ok-form-label][data-ok-error]
+  ) {
+    color: var(--ok-palette-error-text);
+  }
+
+  :where(
+    [data-ok-form-control][data-ok-disabled] [data-ok-form-label],
+    fieldset[data-ok-form-control]:disabled [data-ok-form-label],
+    [data-ok-form-label][data-ok-disabled]
+  ) {
+    color: var(--ok-text-disabled);
+  }
+
+  /* Group */
+  :where([data-ok-form-group]) {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+  }
+
+  :where([data-ok-form-group][data-ok-row]) {
+    flex-direction: row;
+  }
+
+  /* Helper text */
+  :where([data-ok-form-helper-text]) {
+    margin: calc(var(--ok-spacing) * 1.5) 0 0;
+    color: var(--ok-text-secondary);
+    font-family: var(--ok-font-family);
+    font-size: var(--ok-typography-caption-font-size);
+    font-weight: var(--ok-typography-caption-font-weight);
+    line-height: var(--ok-typography-caption-line-height);
+    text-align: start;
+    overflow-wrap: anywhere;
+  }
+
+  :where(
+    [data-ok-form-control][data-ok-margin="dense"] [data-ok-form-helper-text],
+    [data-ok-form-helper-text][data-ok-margin="dense"]
+  ) {
+    margin-block-start: var(--ok-spacing);
+  }
+
+  :where(
+    [data-ok-form-control]:is([data-ok-variant="outlined"], [data-ok-variant="filled"])
+      [data-ok-form-helper-text],
+    [data-ok-form-helper-text]:is([data-ok-variant="outlined"], [data-ok-variant="filled"])
+  ) {
+    margin-inline: calc(var(--ok-spacing) * 3);
+  }
+
+  :where([data-ok-form-helper-text][data-ok-variant="standard"]) {
+    margin-inline: 0;
+  }
+
+  :where(
+    [data-ok-form-control][data-ok-error] [data-ok-form-helper-text],
+    [data-ok-form-helper-text][data-ok-error]
+  ) {
+    color: var(--ok-palette-error-text);
+  }
+}

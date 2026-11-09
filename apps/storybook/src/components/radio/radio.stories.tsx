@@ -21,6 +21,7 @@ const snippets = import.meta.glob(
 
 const setup = htmlSetup(["radio.css"]);
 const labelled = htmlSetup(["radio.css", "form-control-label.css"]);
+const grouped = htmlSetup(["radio.css", "form-control-label.css", "form-control.css"]);
 
 const meta = {
   title: "Components/Radio",
@@ -52,6 +53,6 @@ export const Placement: StoryObj = frameworkStory({
 });
 
 export const Colors: StoryObj = frameworkStory({
-  html: snippetStory(snippets, "colors", files("Colors"), labelled, RADIO_CONTROLS),
+  html: snippetStory(snippets, "colors", files("Colors"), grouped, RADIO_CONTROLS),
   react: reactGroupsStory(colorGroups, controls),
 });

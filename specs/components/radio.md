@@ -71,4 +71,5 @@ reference (ADR-0014).
 HTML: native `change`. React: `RadioGroup` `onChange(value)`; standalone `Radio` `onChange(checked)`.
 
 ## Parity notes
-The Colors story's group label is story-only text until a FormLabel exists (roadmap).
+None. The Colors story wraps the group in a `fieldset` FormControl with a `legend` FormLabel
+(specs/components/form-control.md); the group's `aria-labelledby` points at the legend.

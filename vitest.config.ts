@@ -117,6 +117,7 @@ export default defineConfig({
         "packages/react/src/list/**": COMPONENT_THRESHOLDS,
         "packages/react/src/pagination/**": COMPONENT_THRESHOLDS,
         "packages/react/src/radio/**": COMPONENT_THRESHOLDS,
+        "packages/react/src/form-control/**": COMPONENT_THRESHOLDS,
         "packages/react/src/scrollbar/**": COMPONENT_THRESHOLDS,
         "packages/react/src/sortable/**": COMPONENT_THRESHOLDS,
         "packages/react/src/switch/**": COMPONENT_THRESHOLDS,

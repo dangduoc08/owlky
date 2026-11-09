@@ -1,5 +1,5 @@
 import { radioOptions, type SelectionControlColor } from "@owlky/core";
-import { FormControlLabel, Radio, RadioGroup } from "@owlky/react";
+import { FormControl, FormControlLabel, FormLabel, Radio, RadioGroup } from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
 import type { GroupFiles } from "../shared/snippets.js";
 
@@ -64,25 +64,26 @@ export const placementGroups: ReactGroup[] = [
 export const colorGroups: ReactGroup[] = [
   {
     title: "Colors",
-    content: [
-      // Story-only text until a FormLabel component exists (docs/roadmap.md → Pending integrations).
-      <span key="label" id="radio-colors-label">
-        Colors
-      </span>,
-      <RadioGroup key="group" name="colors" aria-labelledby="radio-colors-label">
-        {COLORS.map((color) => (
+    content: (
+      <FormControl component="fieldset">
+        <FormLabel component="legend" id="radio-colors-label">
+          Colors
+        </FormLabel>
+        <RadioGroup name="colors" aria-labelledby="radio-colors-label">
+          {COLORS.map((color) => (
+            <FormControlLabel
+              key={color}
+              label={capitalize(color)}
+              control={<Radio value={color} color={color} />}
+            />
+          ))}
           <FormControlLabel
-            key={color}
-            label={capitalize(color)}
-            control={<Radio value={color} color={color} />}
+            label="Disabled"
+            control={<Radio value="disabled" color="error" disabled />}
           />
-        ))}
-        <FormControlLabel
-          label="Disabled"
-          control={<Radio value="disabled" color="error" disabled />}
-        />
-      </RadioGroup>,
-    ],
+        </RadioGroup>
+      </FormControl>
+    ),
   },
 ];
 

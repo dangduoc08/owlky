@@ -35,6 +35,7 @@ component and each `/integrate` run.
 | MUI (no Minimals page; mui.com) | Typography | ✅ | Typography | Typography |
 | MUI (no Minimals page; mui.com) | Transitions (Collapse; Fade, Grow, Slide, Zoom are Motion) | ✅ (ADR-0044) | Collapse | Collapse |
 | MUI (no Minimals page; mui.com) | Card | ✅ | Card, CardHeader, CardContent, CardMedia, CardActions, CardActionArea | Card |
+| MUI (no Minimals page; mui.com) | Form control (API pages; demos on Radio, Checkbox, Switch) | ✅ | FormControl, FormLabel, FormGroup, FormHelperText, `useFormControl` | Form control |
 | MUI | List | ✅ | List, ListItem, ListItemButton, ListItemIcon, ListItemAvatar, ListItemText, ListSubheader, ListItemExpandIcon | List |
 | MUI | Menu | ✅ | Menu, MenuItem | Popover, Tooltip, Menu, Dialog & Snackbar |
 | MUI | Pagination | ✅ | Pagination, PaginationItem | Pagination |
@@ -321,8 +322,8 @@ Radio and RadioGroup (colors incl. `default`, sizes, `row`; native radios, CSS o
 `text-field`: growing-row custom properties and a `data-ok-text-field-reveal` password button.
 Differences: resting label `text-secondary` and disabled helper text `text-secondary` (AA), error
 text in the AA error tone, a focus ring on filled fields. CSS budget raised to 16 kB gzip.
-**Backlog:** non-native `select` (listbox, wave 4), FormLabel /
-FormHelperText / FormControl as separate components.
+**Backlog:** non-native `select` (listbox, wave 4). FormLabel / FormHelperText / FormControl
+exist since 2026-11-09 (Form control); TextField keeps its own label and helper parts.
 
 ## ✅ Components — Checkbox & Switch (2026-11-07)
 Checkbox (colors incl. `default`, `medium` / `small`, `indeterminate`, custom icons) and Switch
@@ -333,8 +334,8 @@ parents with `aria-controls` (WAI-ARIA mixed checkbox); Switch is CSS only. Visi
 (the reference has none). Integrated: Table selection uses small Checkboxes (select-all shows
 mixed), the "Sorting & selecting" story has the reference's "Dense" Switch
 (`data-ok-table-dense="<table id>"` in HTML). No new tokens.
-**Backlog:** Switch `icon` / `checkedIcon` (thumb content); FormGroup, FormControl, FormLabel,
-FormHelperText (wave 2, with Text field).
+**Backlog:** Switch `icon` / `checkedIcon` (thumb content). FormGroup, FormControl, FormLabel,
+FormHelperText: done (Form control, 2026-11-09).
 
 ## ✅ Components — Progress (2026-11-07)
 CircularProgress (indeterminate / determinate, 7 colors incl. `inherit`, `size` in px or a
@@ -522,11 +523,31 @@ integrate these in the same review (additive: no DOM or API change) and remove t
 | Select (listbox, built on Menu) | Pagination story "Items" (card grid + items-per-page Select) | story deferred: the reference uses MUI's listbox Select |
 | Select (listbox, built on Menu) | Table story "Table pagination with API" (search TextField + category Select) | story deferred until the listbox Select; TextField exists |
 | Select (listbox, built on Menu) | TextField `select` (non-native) | native `<select>` only (`select` prop) |
-| FormLabel | Radio story "Colors" (group label) | story-only `<span id>` styled in `.storybook/preview.css` |
 | Link (Typography) | Breadcrumbs items | native `a` / `span[aria-current]` styled by `breadcrumbs.css` (inherit color, hover underline); a Link component can go inside items without a DOM change |
 | Motion full version, phase 1 (custom keyframes) | Motion story "Logo" (the reference's shape-morphing, turning rings and the turning gradient disc) | the logo inside MotionBorder rings; the story becomes the reference's once `animate(element, keyframes)` exists, without changing MotionBorder |
 | Paper (card) | Collapse story (the reference's raised card with a triangle) | demo `.sb-collapse-paper` styled in `.storybook/preview.css` |
 | Collapse (transition) | Card story "Complex interaction" (the method section under the chevron) | shown / hidden at once (`hidden` + `aria-expanded`, the page's own state); MUI collapses it |
+
+## ✅ Components — Form control (2026-11-09)
+Wave 8 (primitives, batch B), created with `/component` from MUI's FormControl, FormLabel,
+FormGroup and FormHelperText API pages and their demos (Radio "Radio group" / "Show error",
+Checkbox "FormGroup", Switch "Switches with FormGroup"); stories Radio group, Checkbox group,
+Switch group, Show error, States (disabled, required, focused), Standalone control. CSS only:
+the shared states (`disabled`, `error`, `required`, `focused`) and `color`, `size`, `variant`,
+`margin`, `fullWidth` are attributes on `[data-ok-form-control]` that the parts' CSS reads (style
+options written only when given); React shares them through a context (`useFormControl()`). A
+`fieldset` root with a `legend` FormLabel names groups natively, and `disabled` there is also the
+native attribute (it turns off every control). Minimals' label look (body2, secondary text);
+helper text like TextField's (caption, 6px above, AA error tone). No DOM or API change to
+TextField, Radio, Checkbox, Switch or FormControlLabel: their ARIA (`aria-describedby`,
+`aria-invalid`, `aria-required`) is written by the author, as in MUI. No new token.
+Integrated: the Radio "Colors" story's group label is a `fieldset` FormControl with a `legend`
+FormLabel (the story-only label and its demo CSS are gone).
+Differences: MUI's selection controls take `disabled` from the FormControl context; here a
+`fieldset` root disables them natively (a `div` root needs `disabled` on each control). A part's
+own state props add a state; they can't turn off the FormControl's. `hiddenLabel` waits for
+Select's filled input. The contract for Select (InputLabel on FormLabel, `useFormControl()`,
+focus through CSS) is in `specs/components/form-control.md`.
 
 ## ✅ Components — Card (2026-11-09)
 Wave 8 (primitives), created with `/component` from MUI's "Card" page (Minimals has none; its theme
