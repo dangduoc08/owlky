@@ -93,6 +93,10 @@ Core: `illustrationAttributes(name, options)`, `illustrationNodeAttributes(node)
 `@owlky/core/illustrations`: the pictures, `illustrations`, the parts (pure functions returning
 nodes; numbers and tones only) and `illustrationParts` (the `part` names).
 
+## Upstream API mapping
+
+No upstream: the set is original artwork and API (ADR-0041); nothing to map.
+
 ## Parity notes
 Snippets carry the shapes; the runtime draws the same markup for named placeholders (tested).
 `style` is ignored by parity (React's private size property; the runtime's CSSOM).

@@ -148,6 +148,34 @@ Same sizes at every breakpoint. On narrow screens titles wrap inside their steps
 breaks only when it can't fit on its own line (`overflow-wrap: anywhere`), so a horizontal stepper
 never overflows; `vertical` or `MobileStepper` read better on phones.
 
+## Upstream API mapping
+
+Upstream: MUI `Stepper`, `Step`, `StepLabel`, `StepContent`, `StepIcon`, `StepConnector`,
+`StepButton`, `MobileStepper` (mui.com/material-ui/api/stepper …, checked 2026-11-09).
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| Stepper `activeStep`, `alternativeLabel`, `orientation` | same / `data-ok-active-step`, `-alternative-label`, `-orientation` | kept | |
+| Stepper `connector` | `connector` / `div[data-ok-step-connector]` | kept | `null`: none |
+| Stepper `children` | `children` | kept | |
+| Stepper `nonLinear` | — | deferred (4.10) | |
+| Stepper `component` | — | not applicable | root is `ol` |
+| — | Stepper `variant` (`dot`, `circle`) | kept | Owlky addition (reference "Customized") |
+| Step `active`, `completed`, `disabled`, `index` | same / `data-ok-active`, `-completed`, `-disabled` | kept | |
+| Step `expanded`, `last` | — | deferred (4.10) | |
+| Step `component` | — | not applicable | `li` |
+| StepButton (`icon`, `optional`) | — | deferred (4.10) | |
+| StepLabel `children`, `error`, `optional`, `icon` | same / `data-ok-error`, `-step-label-optional`, `-step-icon` | kept | |
+| StepLabel `slots.stepIcon` / `StepIconComponent` | `icon` (node) | renamed | composition |
+| StepIcon `active`, `completed`, `error`, `icon` | step / label state | not applicable | internal part, state from the step |
+| StepContent `children` | `StepContent` (a Collapse, `timeout="auto"`) | kept | |
+| StepContent `transitionDuration` | — | deferred | Collapse `timeout` pass-through (Collapse already has it) |
+| MobileStepper `steps`, `activeStep`, `variant`, `position`, `backButton`, `nextButton` | same / `data-ok-steps`, … | kept | |
+| — | MobileStepper `getStepLabel` / `data-ok-label-step` | kept | Owlky addition (name of dots / bar) |
+| MobileStepper Paper props (`elevation`, `square`) | — | not applicable | bar keeps the paper background; compose a Paper around it |
+| MobileStepper `slots` / `slotProps` (`root`, `dot`, `dots`, `progress`) | — | not applicable | composition |
+| `classes`, `sx`, StepContent `slots.transition` | — | not applicable | by decision |
+
 ## Parity notes
 MobileStepper renders `data-ok-runtime="off"` in React. HTML-only hooks (triggers, panels,
 `data-ok-label-step`) are ignored by parity; React demos render the same buttons with handlers.

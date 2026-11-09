@@ -274,6 +274,38 @@ HTML. No `innerHTML`, no inline styles in markup (CSSOM only). CSP: MapLibre's w
 `worker-src 'self'` (`blob:` for a cross-origin worker URL); Trusted Types pages need a policy for
 the worker URL (MapLibre calls `new Worker(url)`).
 
+## Upstream API mapping
+
+Upstream: react-map-gl (maplibre) `Map`, `Marker`, `Popup`, `Source`, `Layer`, controls
+(visgl.github.io/react-map-gl/docs/api-reference/maplibre/…, checked 2026-11-09) on MapLibre GL JS.
+The "API mapping" paragraph above records the details; this table adds a status per area.
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| `Map` | `MapView` | renamed | avoids shadowing the global `Map` |
+| Layout: `id`, `cursor` | same (`id` names the map for `useMap`) | kept | `style`: class names / CSS |
+| Styling: `mapStyle`, `projection`, `renderWorldCopies`, `terrain` | same / `data-ok-map-style`, `-projection`, `-render-world-copies` | kept | `mapStyleDark` added (theme) |
+| Styling: `light`, `sky` | `mapOptions` (read once) | deferred | reactive props (sky / atmosphere on the globe, 3D light) |
+| Styling: `styleDiffing` | — | deferred | diff style changes instead of reloading |
+| Camera: `initialViewState` (`bounds`, `fitBoundsOptions`), `longitude` … `bearing`, `viewState`, `minZoom` / `maxZoom` / `minPitch` / `maxPitch`, `maxBounds` | same / root numbers, `data-ok-bounds`, `-max-bounds` | kept | |
+| Camera: `padding` | — | deferred | camera padding (a side panel over the map) |
+| Input handlers (8 flags), `interactiveLayerIds` | same / `data-ok-<handler>="false"`, `-interactive-layer-ids` | kept | `cooperativeGestures` too |
+| Callbacks: `onLoad` … `onSourceData` (every map, mouse, touch, move, zoom, rotate, pitch, drag, box zoom, data event) | same · `ok:map:*` | kept | HTML emits a subset (Events / API) |
+| Other: `mapLib`, `reuseMaps` | — | not applicable | MapLibre built in |
+| Other: `RTLTextPlugin`, `workerCount`, `maxParallelImageRequests` | MapLibre from `@owlky/core/map` | not applicable | global MapLibre settings, called by the app |
+| Other: `workerUrl` | `setMapWorkerUrl(url)` | renamed | |
+| Methods: `getMap()` (+ safe map methods on the ref) | `MapRef.getMap()`, `flyTo`, `easeTo`, `jumpTo`, `fitBounds`, `getViewState()` | kept | |
+| Marker `longitude`, `latitude`, `anchor`, `offset`, `color`, `draggable`, `rotation`, `rotationAlignment`, `pitchAlignment`, `onClick`, `onDragStart` / `onDrag` / `onDragEnd` | same | kept | `color`: palette names |
+| Marker `scale`, `clickTolerance` | — | deferred | default pin size; click vs drag tolerance |
+| Marker `popup` | compose a `Popup` | not applicable | HTML `data-ok-map-popup-open` |
+| Popup `longitude`, `latitude`, `anchor`, `offset`, `maxWidth`, `closeButton`, `closeOnClick`, `closeOnMove`, `focusAfterOpen`, `onOpen`, `onClose` | same | kept | `onClose(reason)` |
+| Popup / Marker `style`, `className` | `className` | kept | `style` not applicable (strict CSP in HTML) |
+| `Source`, `Layer` (MapLibre specs, `beforeId`) | same / hidden `data-ok-map-source` / `-layer` (allowlist) | kept | |
+| `NavigationControl`, `GeolocateControl`, `FullscreenControl`, `ScaleControl`, `AttributionControl`, `GlobeControl`, `TerrainControl` (+ `position`) | same | kept | Owlky markup |
+| `LogoControl`, `useControl` | — / `MapControl` | not applicable | |
+| `MapProvider`, `useMap` | same | kept | |
+| choropleth, great circles, geo maps (ApexMaps parity) | — | deferred (4.18.15–4.18.17) | |
+
 ## Parity notes
 - React `Source` / `Layer` render no DOM; HTML writes `hidden` declarations (parity skips `hidden`).
 - React renders a popup while it is open; HTML keeps closed popups `hidden` in the markup.

@@ -58,6 +58,21 @@ Tab focuses the area; arrow keys, Page Up / Page Down, Home / End and Space scro
 ## Events / API
 None. React: `ref` is the scroll element.
 
+## Upstream API mapping
+
+Upstream: simplebar / simplebar-react options and API (github.com/Grsmto/simplebar README,
+checked 2026-11-09).
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| `autoHide` | `autoHide` / `data-ok-auto-hide="false"` | kept | |
+| `ariaLabel` | `aria-label` (default "scrollable content") | renamed | native attribute |
+| `tabIndex` | `tabIndex` (default 0) | kept | |
+| `forceVisible`, `clickOnTrack`, `scrollbarMinSize`, `scrollbarMaxSize`, `direction`, `timeout` | — | not applicable | native scrollbars (`overflow`, `dir`, the browser) |
+| `classNames` | — | not applicable | `data-ok-*` anatomy |
+| `getScrollElement()`, `getContentElement()` | React `ref` (the root scrolls) | renamed | one element |
+| `recalculate()`, `removeObserver()`, `SimpleBar.instances` | — | not applicable | no runtime |
+
 ## Parity notes
 None: React renders the same element and attributes as the snippets.
 

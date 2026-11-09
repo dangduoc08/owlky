@@ -417,6 +417,58 @@ the viewport (filter fields wrap to one column). Stacking while scrolling, lowes
 the cell being edited, the header (column groups, header filters); the loading layer sits above.
 `e2e/tests/data-grid.scroll.spec.ts` checks it for every story.
 
+## Upstream API mapping
+
+Upstream: MUI X `DataGridPremium` props and `GridColDef` (mui.com/x/api/data-grid/data-grid-premium,
+/grid-col-def, checked 2026-11-09). Grouped by feature area; the props list in Options above is
+the detailed record of what is kept.
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| Data: `rows`, `columns`, `getRowId`, `initialState`, `localeText`, `apiRef` | same | kept | `apiRef` covers the setters / getters listed above |
+| Column def: `field`, `headerName`, `type`, `width` / `minWidth` / `maxWidth` / `flex`, `align` / `headerAlign`, `description`, `sortable`, `filterable`, `hideable`, `resizable`, `editable`, `valueOptions`, `valueGetter` / `valueFormatter` / `valueParser` / `valueSetter`, `renderCell`, `renderHeader`, `colSpan`, `filterOperators`, `getApplyQuickFilterFn`, `preProcessEditCellProps`, `groupable`, `aggregable`, `availableAggregationFunctions`, `pivotable` | same | kept | |
+| Column def: `sortComparator`, `getSortComparator`, `sortingOrder`; grid `sortingOrder`, `multipleColumnsSortingMode` | — | deferred | custom sort; sort cycle; multi-sort without Shift |
+| Column def: `renderEditCell`, `renderHeaderFilter` | — | deferred | custom editors / header filter inputs (header filter operator menus: spec Deferred) |
+| Column def: `cellClassName`, `headerClassName` | grid `getCellClassName` only | deferred | per column class names |
+| Column def: `hideSortIcons`, `disableColumnMenu`, `disableReorder`, `disableExport`, `pinnable` | — | deferred | per column opt-outs (grid-wide flags exist) |
+| Column def: `rowSpanValueGetter`, `pastedValueParser`, `groupingValueSetter`, `rowHeader`, `display: "flex"` | — | deferred | |
+| Column def: `groupingValueGetter` | — | deferred (4.15) | |
+| Column def: `allowFormulas`, `chartable`, `examples` | — | not applicable | formulas and AI not proposed (roadmap 2.4 notes); `chartable` = every column of `chartModel` |
+| Selection: `checkboxSelection`, `rowSelectionModel` (id array), `disableRowSelectionOnClick`, `disableMultipleRowSelection`, `isRowSelectable`, `keepNonExistentRowsSelected`, `checkboxSelectionVisibleOnly` | same | kept | `rowSelectionModel` renamed shape (MUI v8 `{ type, ids }`) |
+| Selection: `rowSelection: false`, `rowSelectionPropagation` (groups / tree), `checkboxColDef`, `disableRowSelectionExcludeModel` | — | deferred | last one not applicable (id array model) |
+| Sorting / filtering / quick filter: models + callbacks, `sortingMode`, `filterMode`, `disableColumnSorting`, `disableColumnFilter`, `disableMultipleColumnsSorting` / `-Filtering`, `quickFilter*`, `ignoreDiacritics` | same | kept | |
+| Filtering: `filterDebounceMs`, `columnFilterDebounceMs`, `disableChildrenFiltering`, `disableChildrenSorting` | — | deferred | |
+| Pagination: `pagination`, `paginationModel`, `paginationMode`, `pageSizeOptions`, `rowCount` | same | kept | |
+| Pagination: `autoPageSize`, `paginationMeta` / `onPaginationMetaChange`, `estimatedRowCount`, `onRowCountChange` | — | deferred | unknown row counts, page size from height |
+| Layout: `density`, `rowHeight`, `getRowHeight`, `getEstimatedRowHeight`, `getRowSpacing`, `rowSpanning`, `listView` | same | kept | |
+| Layout: `columnHeaderHeight`, `columnGroupHeaderHeight`, `headerFilterHeight`, `rowSpacingType`, `showCellVerticalBorder`, `showColumnVerticalBorder`, `autoHeight` | — | deferred | `autoHeight` = unbounded grid (CSS) today |
+| Layout: `height`, `scrollbarSize`, `resizeThrottleMs`, `throttleRowsMs`, `nonce`, `logger`, `logLevel`, `experimentalFeatures`, `featureDependencies` | — | not applicable | consumer CSS / engine internals (no injected styles) |
+| Columns: resize, reorder, pinning, visibility props + callbacks, `columnGroupingModel`, `autosizeOnMount`, `autosizeOptions` | same | kept | |
+| Columns: `disableAutosize`, `onColumnResize`, `keepColumnPositionIfDraggedOutside`, `pinnedColumnsSectionSeparator`, `pinnedRowsSectionSeparator` | — | deferred | |
+| Editing: `editMode`, `processRowUpdate`, `onProcessRowUpdateError`, `isCellEditable`, `onCellEditStart` / `Stop`, `onRowEditStart` / `Stop` | same | kept | |
+| Editing: `cellModesModel` / `rowModesModel` + change callbacks | — | deferred | controlled edit modes |
+| Undo / redo: `historyStackSize`, `historyEventHandlers`, `historyValidationEvents`, `onUndo`, `onRedo` | — | deferred (4.18.9) | |
+| Toolbar / footer: `showToolbar`, `hideFooter`, `disableColumnSelector`, `disableDensitySelector`, `disableColumnMenu` | same | kept | `toolbarVariant` added |
+| Toolbar / footer: `hideFooterPagination`, `hideFooterRowCount`, `hideFooterSelectedRowCount`, `label` (toolbar title) | — | deferred | |
+| Events: `onRowClick`, `onRowDoubleClick`, `onCellClick`, `onCellDoubleClick`, `onCellKeyDown`, `onColumnHeaderClick`, `onRowsScrollEnd` | same | kept | |
+| Events: `onColumnHeaderDoubleClick`, `-ContextMenu`, `-Enter`, `-Leave`, `-Over`, `-Out`, `onMenuOpen` / `Close`, `onPreferencePanelOpen` / `Close`, `onSidebarOpen` / `Close`, `onResize`, `onFetchRows`, `onExcelExportStateChange` | — | deferred | |
+| Keyboard: `tabNavigation` (`none` · `content` · `header` · `all`) | — | deferred | Tab moves between cells |
+| Data source / server: `dataSource`, `dataSourceCache`, `onDataSourceError`, `lazyLoading`, `lazyLoadingRequestThrottleMs`, `disableVirtualization`, `rowBufferPx`, `columnBufferPx` | same | kept | |
+| Data source: `dataSourceKeepPreviousData`, `dataSourceRevalidateMs`; `virtualizeColumnsWithAutoRowHeight` | — | deferred | |
+| Tree data / master-detail / row order / pinned rows: `treeData`, `getTreeDataPath`, `groupingColDef`, `defaultGroupingExpansionDepth`, `isGroupExpandedByDefault`, detail panel props, `rowReordering`, `onRowOrderChange`, `pinnedRows` | same | kept | |
+| Row order: `isRowReorderable`, `isValidRowReorder`, `setTreeDataPath` (reorder in tree data) | — | deferred | |
+| Row grouping / aggregation / pivot: models + callbacks, `disableRowGrouping`, `aggregationFunctions`, `aggregationRowsScope`, `getAggregationPosition` (root), `disablePivoting`, `pivotActive` | same | kept | |
+| `rowGroupingColumnMode`, `getPivotDerivedColumns`, group footers, server aggregation, pivot drag and drop | — | deferred (4.15) | |
+| Pivot: `pivotingColDef`, `pivotPanelOpen` / `onPivotPanelOpenChange` | — | deferred | |
+| Clipboard / cell selection / export: `cellSelection`, `cellSelectionModel`, `disableClipboardPaste`, `onClipboardCopy`, `onClipboardPasteStart` / `End`, `splitClipboardPastedText`, `clipboardCopyCellDelimiter`, `ignoreValueFormatterDuringExport`, `csvOptions`, `printOptions`, `excelOptions` | same | kept | |
+| `cellSelectionFillHandle`, `onBeforeClipboardPasteStart` | — | deferred | fill handle drag (keyboard alternative needed, WCAG 2.5.7) |
+| Charts: `chartsIntegration`, `chartModel` (renamed, see above) | same | kept | |
+| Charts: `activeChartId` / `onActiveChartIdChange` (several charts) | — | deferred (4.15) | |
+| Formulas / computed columns: `disableFormulas`, `formulaFunctions`, `formulaA1Notation`, `disableEval`, `disableFormulaAutocomplete`, `computedColumns`, `computedColDef`, `disableComputedColumns`, `onComputedColumnsChange` | — | not applicable | a formula engine (roadmap 2.4 notes); `valueGetter` covers derived columns |
+| AI assistant: `aiAssistant*`, `allowAiAssistantDataSampling`, `onPrompt` | — | not applicable | needs a model service (roadmap 2.4 notes) |
+| `rowsLoadingMode` | `lazyLoading`, `paginationMode` | not applicable | |
+| `slots`, `slotProps`, `sx`, `classes`, license keys | — | not applicable | by decision |
+
 ## Parity notes
 React renders every filtered row (other pages `hidden`) and writes the template through `style`;
 the HTML runtime writes it through CSSOM and keeps filtered-out rows `hidden` (parity skips hidden

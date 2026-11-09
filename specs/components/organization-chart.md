@@ -99,6 +99,21 @@ Same layout at every breakpoint: the chart never wraps (a tree keeps its shape).
 container: centered. Wider: overflows to the inline end; the Scrollbar wrapper scrolls it from the
 first node (the reference centers with `justify-content: center` and cuts off the start on phones).
 
+## Upstream API mapping
+
+Upstream: `react-organizational-chart` `Tree`, `TreeNode` (github.com/daniel-hauser/react-organizational-chart
+README, checked 2026-11-09). ApexTree parity is roadmap 2.4.
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| `Tree` | `OrganizationChart` | renamed | avoids a clash with Tree view |
+| `TreeNode` | `OrganizationChartNode` | renamed | |
+| `label`, `children` | same | kept | |
+| `lineHeight`, `lineWidth`, `lineBorderRadius`, `nodePadding` (CSS lengths) | same (px number or `px` / `rem` / `em`) | kept | reference defaults (40 / 1 / 24 / 4) |
+| `lineColor` (any CSS color) | `lineColor` (`divider`, `inherit`, palette) | kept | allowlist; custom colors via `inherit` + `color` |
+| `lineStyle` (any border style) | `solid` · `dashed` · `dotted` | kept | others look solid at 1px |
+| ApexTree collapsible nodes, direction, grouped leaves, highlight / search, zoom / pan, per-node lines | — | deferred (4.18.1–4.18.6) | |
+
 ## Parity notes
 None: the same markup; React's `style` and the runtime's CSSOM properties are equal (parity
 ignores `style`).

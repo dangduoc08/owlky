@@ -92,6 +92,31 @@ Partial<SortableMessages>` localizes the announcements (`grabbed`, `moved`, `dro
 Grid columns follow the width (one column at 320px). Vertical and horizontal lists scroll inside the
 Scrollbar around them (which carries the frame); the page never scrolls horizontally.
 
+## Upstream API mapping
+
+Upstream: Minimals "Dnd" on dnd-kit — `DndContext`, `SortableContext`, `useSortable` (legacy
+`@dnd-kit/sortable` docs, dndkit.com/legacy/…, and `@dnd-kit/react` `useSortable`, checked
+2026-11-09). Owlky is one component, not a toolkit: rows map dnd-kit concepts to it.
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| `SortableContext items`, `arrayMove`, `onDragEnd` reorder | `items` + `onReorder(items)`, `arrayMove` · `ok:sortable:move` | renamed | controlled list |
+| `useSortable id`, `index` | `getKey(item)`, position | renamed | |
+| `strategy` `rectSortingStrategy` / `verticalList…` / `horizontalList…` | `layout` (`grid` · `vertical` · `horizontal`) | renamed | |
+| `strategy` `rectSwappingStrategy` | — | deferred | swap instead of shift |
+| `sensors` (Pointer, Keyboard, `sortableKeyboardCoordinates`) | pointer + keyboard + two taps, built in | kept | activation distance fixed (4px) |
+| `useSortable handle` / `handleRef` | handle button (always) | kept | drag by the whole item: deferred |
+| `accessibility.announcements`, `screenReaderInstructions` | `messages` (React), English defaults (HTML) | renamed | HTML localization: deferred |
+| `useSortable disabled` | — | deferred | items that can't move (pinned first item) |
+| `onDragStart`, `onDragMove`, `onDragOver`, `onDragCancel` | — | deferred | events / callbacks (only move and remove today) |
+| `cancelDrop` | cancelable `ok:sortable:move`; React refuses by not updating `items` | renamed | |
+| `autoScroll` | — | deferred | scroll the Scrollbar / page near its edges while dragging |
+| `modifiers` (restrict to an axis, to the parent) | layout axis | not applicable | the item follows the pointer inside the list |
+| `DragOverlay` | the dragged item itself (`data-ok-dragging`) | not applicable | |
+| several lists: `group`, `accept`, `type`, multiple `SortableContext`s, `onDragOver` between containers | — | deferred | move items between lists (kanban) |
+| `collisionDetection`, `collisionPriority`, `layoutMeasuring`, `plugins`, `effects`, `transition`, `target`, `element`, returned refs / flags | — | not applicable | engine internals; `data-ok-dragging` / `data-ok-grabbed` are the flags |
+| — | `onRemove`, remove buttons, HTML add template | kept | Owlky additions (reference) |
+
 ## Parity notes
 - "Add item" is app logic: React adds to `items`; HTML clones `template[data-ok-sortable-template]`
   on `[data-ok-sortable-add]` and emits `ok:sortable:add`.

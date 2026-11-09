@@ -166,6 +166,31 @@ Core `walktourTransition` (react-joyride's rules):
 | `styles`, `floatingOptions`, `*Component` (tooltip, beacon, arrow, loader), `portalElement`, `nonce`, `debug`, `zIndex`, colors, arrow sizes | not applicable (CSS tokens, top layer, `data-ok-theme`; markup is the component in HTML) |
 | `before` / `after` hooks, `targetWaitTimeout`, `beaconTrigger: "hover"`, `closeButtonAction`, `scrollTarget`, `spotlightTarget`, `isFixed`, `disableFocusTrap`, `beaconPlacement`, `scrollDuration` | deferred (roadmap backlog) |
 
+## Upstream API mapping
+
+Upstream: react-joyride v3 props, options and step fields (react-joyride.com/docs/props,
+/props/options, /step, checked 2026-11-09). Completes "API mapping (react-joyride)" above with a
+status per row.
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| Tour `steps`, `run`, `stepIndex`, `initialStepIndex`, `continuous`, `scrollToFirstStep`, `locale` | same / `data-ok-run`, `-step-index`, `-continuous`, … | kept | |
+| Tour `onEvent` | `onEvent(type, data)` + `onStepChange`, `onStatusChange` · `ok:walktour:*` | renamed | ADR-0015 |
+| `useJoyride().controls` | `apiRef` / HTML instance | renamed | |
+| Options `buttons` (`back`, `close`, `primary`, `skip`) | `hideBackButton`, `hideCloseButton`, `showSkipButton` | renamed | v2 flags |
+| Options `showProgress`, `spotlightPadding`, `spotlightRadius`, `scrollOffset`, `width` | same | kept | reference defaults (radius 16, width 360) |
+| Options `skipBeacon`, `hideOverlay`, `skipScroll`, `blockTargetInteraction` | `disableBeacon`, `disableOverlay`, `disableScrolling`, `spotlightClicks` | renamed | v2 names (inverse for `spotlightClicks`) |
+| Options `dismissKeyAction`, `overlayClickAction` (`close` · `next` · `false`) | `disableCloseOnEsc`, `disableOverlayClose` | renamed | `next` action deferred with `closeButtonAction` (4.17) |
+| Options `closeButtonAction`, `beaconTrigger`, `disableFocusTrap`, `scrollDuration`, `targetWaitTimeout`, `before` / `after` | — | deferred (4.17) | |
+| Options `beforeTimeout`, `loaderDelay`, `loaderComponent` | — | deferred (4.17) | with the `before` hook |
+| Options `offset` (tooltip distance from the target) | fixed | deferred | |
+| Options `backgroundColor`, `primaryColor`, `textColor`, `overlayColor`, `arrowColor`, `arrowBase`, `arrowSize`, `arrowSpacing`, `beaconSize`, `zIndex` | — | not applicable | tokens, top layer |
+| Step `target`, `content`, `title`, `placement` (`auto`, `center`) | same | kept | |
+| Step `id`, `data` | — | deferred | step identity and custom data in events |
+| Step `isFixed`, `scrollTarget`, `spotlightTarget`, `beaconPlacement` | — | deferred (4.17) | |
+| Step option overrides | every boolean option on a step | kept | |
+| `styles`, `floatingOptions`, `tooltipComponent`, `beaconComponent`, `arrowComponent`, `portalElement`, `nonce`, `debug` | — | not applicable | CSS tokens, `data-ok-theme`; HTML markup is the component |
+
 ## Parity notes
 - The controller writes the derived state in both (open step, overlay, `hidden`, `aria-modal`,
   positions, the cut-out, the live text): no parity exception. `data-ok-walktour-start` is an

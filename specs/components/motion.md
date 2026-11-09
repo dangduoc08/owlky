@@ -168,6 +168,33 @@ React: native `onAnimationEnd`; change the `key` to replay.
 ## Responsive
 Nothing changes per breakpoint. Stories clip their stages (`overflow: clip`).
 
+## Upstream API mapping
+
+Upstream: Framer Motion / Motion for React `motion` component props (motion.dev/docs/react-motion-component,
+checked 2026-11-09), as used by the Minimals Animate page. CountUp and MotionBorder are the
+reference's own components (rows in the paragraph above).
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| `variants` + `initial` / `animate` / `exit` (named variants) | `variant` (the reference's names) | renamed | CSS keyframes |
+| `animate` / `exit` / `AnimatePresence` | `trigger="manual"` + `in` | renamed | exit = entrance backwards |
+| `whileInView`, `viewport.once`, `viewport.amount` | `trigger="inView"`, `once`, `amount` | renamed | |
+| `viewport.margin`, `viewport.root` | — | deferred | IntersectionObserver `rootMargin` / scroll root |
+| `transition.duration`, `.delay`, `staggerChildren` | `duration`, `delay`, MotionGroup / MotionText `stagger` | renamed | |
+| `transition` springs, easing, custom keyframes (`animate` objects), `style` motion values, `transformTemplate` | — | deferred (5.1) | |
+| `onAnimationStart`, `onAnimationComplete` | `ok:motion:end` / native `onAnimationEnd` | renamed | start event deferred with 5.1 |
+| `onUpdate` | — | deferred (5.1) | |
+| `onViewportEnter`, `onViewportLeave` | — | deferred | in-view events |
+| `whileHover`, `whileTap` | `variant="interactive"` | renamed | springs, `onHoverStart` / `End`, `onTap*`, `tap`: deferred (5.3) |
+| `whileFocus` | — | deferred (5.3) | |
+| `drag*`, `whileDrag`, `dragControls`, `onDrag*`, `onDirectionLock`, `onPan*`, `pinch`, `whilePinch`, `propagate` | — | deferred (5.3) | |
+| `layout`, `layoutId`, `layoutDependency`, `layoutAnchor`, `layoutScroll`, `layoutRoot`, `onLayoutAnimation*` | — | deferred (5.4) | shared elements 5.5 |
+| `useScroll` (scroll progress) | — | deferred (5.2) | |
+| `inherit`, `custom` | MotionGroup sets the children's timing | renamed | dynamic variants not applicable (named CSS variants) |
+| `motion.*` element factories / `component` | always a `div` | deferred | `component` (spec Deferred) |
+| `useAnimate`, `animate()` | — | deferred (5.1) | core `animate(element, keyframes, options)` |
+| — | `paused`, MotionBorder, CountUp, background and path variants | kept | Owlky / reference additions |
+
 ## Parity notes
 React renders `data-ok-runtime="off"` and writes `data-ok-state` itself (SSR: `initial`); snippets
 carry no state (the runtime writes it). React 19's `<link rel="preload">` hints next to images are
