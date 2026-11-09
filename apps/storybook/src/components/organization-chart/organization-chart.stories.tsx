@@ -21,8 +21,11 @@ const snippets = import.meta.glob(
   { query: "?raw", import: "default", eager: true },
 ) as Record<string, string>;
 
-const CSS = ["scrollbar.css", "organization-chart.css"];
+const CSS = ["typography.css", "scrollbar.css", "organization-chart.css"];
 const WITH_CARDS = [
+  "paper.css",
+  "typography.css",
+  "card.css",
   "scrollbar.css",
   "organization-chart.css",
   "avatar.css",

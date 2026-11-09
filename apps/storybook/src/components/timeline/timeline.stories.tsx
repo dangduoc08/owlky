@@ -13,10 +13,12 @@ const snippets = import.meta.glob(
 ) as Record<string, string>;
 
 const SETUP = htmlSetup(["timeline.css"]);
+/** The Customized cards are a Paper with Typography. */
+const CARDS_SETUP = htmlSetup(["paper.css", "typography.css", "timeline.css"]);
 
-const story = (name: string, label?: string): StoryObj => ({
+const story = (name: string, label?: string, setup = SETUP): StoryObj => ({
   ...frameworkStory({
-    html: snippetStory(snippets, name, TIMELINE_FILES[name] ?? [], SETUP, TIMELINE_CONTROLS),
+    html: snippetStory(snippets, name, TIMELINE_FILES[name] ?? [], setup, TIMELINE_CONTROLS),
     react: reactGroupsStory(timelineStories[name] ?? [], controls),
   }),
   ...(label ? { name: label } : {}),
@@ -42,4 +44,4 @@ export const Alternating: StoryObj = story("alternating");
 export const Filled: StoryObj = story("filled");
 export const Outlined: StoryObj = story("outlined");
 export const Opposite: StoryObj = story("opposite", "Opposite content");
-export const Customized: StoryObj = story("customized");
+export const Customized: StoryObj = story("customized", undefined, CARDS_SETUP);

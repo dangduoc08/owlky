@@ -653,6 +653,16 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
   `data-ok-collapse` to the element animates it. Timing comes from `--_ok-collapse-duration` /
   `-easing` / `-reduce` read from computed style; e2e opens stories with reduced motion, so
   collapses are instant there unless a test emulates `reducedMotion: "no-preference"`.
+- Card (on Paper): React `Card` renders a `Paper` with `data-ok-card` (attribute order: Paper's,
+  then the card's). Only the default level casts `--ok-shadow-card` (a `:not()` list of the other
+  levels in `card.css`), so explicit levels keep Paper's shadows. `overflow: hidden` clips
+  anything placed outside the card (an avatar over its edge): the dependent's class sets
+  `overflow: visible` (Organization chart member cards). `CardMedia` with a non-media element
+  renders a cover `img` instead of MUI's `style` background (strict CSP). Wrapping a component that
+  has no `component` prop (Motion) in a Card adds one element: dependents' tests locate the
+  wrapper (`[data-ok-motion]:has(> [data-ok-card])`). Snippets: `node
+  apps/storybook/scripts/card-snippets.mjs`; letter Avatars with `aria-label` need `role="img"`
+  (Biome `useAriaPropsSupportedByRole`).
 - Parallel work: never run two `/component` / `/integrate` sessions (or two `pnpm build` /
   `pnpm test:e2e`) in the same working tree — builds wipe each other's `dist/` and
   `storybook-static/`, e2e servers share port 4321, and staging part of a shared file while

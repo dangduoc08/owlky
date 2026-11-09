@@ -40,6 +40,7 @@ const CASES: [
   ["chip", "filled", "chip", ["size", "disabled"]],
   ["divider", "variants", "divider", ["variant"]],
   ["paper", "basic", "paper", ["variant", "square"]],
+  ["card", "basics", "card", ["variant", "raised", "square"]],
   ["typography", "usage", "typography", ["color", "align", "noWrap"]],
   ["list", "simple", "list", ["dense", "disablePadding"]],
   ["tooltip", "simple", "tooltip", ["arrow"]],

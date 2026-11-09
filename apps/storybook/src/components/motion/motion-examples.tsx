@@ -3,6 +3,7 @@ import {
   Avatar,
   type AvatarVariant,
   Button,
+  Card,
   CountUp,
   Fab,
   IconButton,
@@ -12,7 +13,9 @@ import {
   type MotionBorderSecondaryColor,
   MotionGroup,
   MotionText,
+  Paper,
   Scrollbar,
+  Typography,
 } from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
 import { DemoIcon } from "../shared/demo-icon.js";
@@ -54,17 +57,26 @@ const TILES: [...Light, number, string][] = [
   ["secondary", "error", 4, "sb-motion-tile sb-motion-corners-drop"],
 ];
 
+/** A card that moves in: the Motion box holds a Card (`.sb-motion-card`: its padding). */
+const movingCard = (item: string) => (
+  <Motion key={item} variant="fadeInUp">
+    <Card className="sb-motion-card">
+      <Typography variant="body2">{item}</Typography>
+    </Card>
+  </Motion>
+);
+
 /**
- * Story groups — the same examples as `packages/html/src/components/motion/examples/`. The stage,
- * cards and gradient box (`.sb-motion-*`) are story-only demo markup; the image is an original SVG
- * in Storybook's static folder.
+ * Story groups — the same examples as `packages/html/src/components/motion/examples/`. The stage
+ * is a flat Paper, the items Cards and the texts Typography; `.sb-motion-*` classes are story-only
+ * sizes and layouts, and the image is an original SVG in Storybook's static folder.
  */
 export const motionStories: Record<string, ReactGroup[]> = {
   "in-view": [
     {
       title: "Single",
       content: (
-        <div className="sb-motion-stage">
+        <Paper className="sb-motion-stage" elevation={0}>
           <Motion variant="fadeInUp">
             <img
               className="sb-motion-image"
@@ -72,21 +84,15 @@ export const motionStories: Record<string, ReactGroup[]> = {
               alt="Abstract waves at dusk"
             />
           </Motion>
-        </div>
+        </Paper>
       ),
     },
     {
       title: "Multiple items",
       content: (
-        <div className="sb-motion-stage">
-          <MotionGroup className="sb-motion-list">
-            {ITEMS.map((item) => (
-              <Motion key={item} variant="fadeInUp" className="sb-motion-card">
-                {item}
-              </Motion>
-            ))}
-          </MotionGroup>
-        </div>
+        <Paper className="sb-motion-stage" elevation={0}>
+          <MotionGroup className="sb-motion-list">{ITEMS.map(movingCard)}</MotionGroup>
+        </Paper>
       ),
     },
   ],
@@ -94,11 +100,11 @@ export const motionStories: Record<string, ReactGroup[]> = {
     {
       title: "Text object",
       content: (
-        <div className="sb-motion-stage">
-          <h3 className="sb-motion-heading">
+        <Paper className="sb-motion-stage" elevation={0}>
+          <Typography variant="h3">
             <MotionText variant="fadeInUp">Owlky moves</MotionText>
-          </h3>
-        </div>
+          </Typography>
+        </Paper>
       ),
     },
   ],
@@ -107,13 +113,7 @@ export const motionStories: Record<string, ReactGroup[]> = {
       title: "Scroll",
       content: (
         <Scrollbar aria-label="Animated items" className="sb-motion-scroll">
-          <div className="sb-motion-list">
-            {SCROLL_ITEMS.map((item) => (
-              <Motion key={item} variant="fadeInUp" className="sb-motion-card">
-                {item}
-              </Motion>
-            ))}
-          </div>
+          <div className="sb-motion-list">{SCROLL_ITEMS.map(movingCard)}</div>
         </Scrollbar>
       ),
     },
@@ -141,7 +141,7 @@ export const motionStories: Record<string, ReactGroup[]> = {
       title: "Color change",
       content: (
         <Motion variant="color3x">
-          <h3 className="sb-motion-heading">Owlky</h3>
+          <Typography variant="h3">Owlky</Typography>
         </Motion>
       ),
     },
@@ -210,8 +210,12 @@ export const otherStories: Record<string, ReactGroup[]> = {
       title: "Count up",
       content: (
         <div className="sb-motion-counts">
-          <CountUp end={500} suffix="+" />
-          <CountUp start={200} end={500.14} decimals={2} suffix="k" />
+          <Typography variant="h2" component="span">
+            <CountUp end={500} suffix="+" />
+          </Typography>
+          <Typography variant="h2" component="span">
+            <CountUp start={200} end={500.14} decimals={2} suffix="k" />
+          </Typography>
         </div>
       ),
     },

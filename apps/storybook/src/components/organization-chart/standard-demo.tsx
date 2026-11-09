@@ -1,11 +1,13 @@
 import {
   Avatar,
+  Card,
   IconButton,
   Menu,
   MenuItem,
   OrganizationChart,
   OrganizationChartNode,
   Scrollbar,
+  Typography,
 } from "@owlky/react";
 import { useState } from "react";
 import { DemoIcon } from "../shared/demo-icon.js";
@@ -23,7 +25,7 @@ function PersonCard({ person, open, setOpen }: { person: Person } & Actions) {
   const menu = `org-standard-${person.id}-menu`;
   const isOpen = open?.id === person.id;
   return (
-    <div className="sb-org-card">
+    <Card className="sb-org-card">
       <IconButton
         id={button}
         className="sb-org-more"
@@ -36,8 +38,12 @@ function PersonCard({ person, open, setOpen }: { person: Person } & Actions) {
         <DemoIcon name="moreHorizontal" />
       </IconButton>
       <Avatar src={person.avatar} alt="" size={48} />
-      <span className="sb-org-name">{person.name}</span>
-      <span className="sb-org-role">{person.role}</span>
+      <Typography className="sb-org-name" variant="subtitle2" component="span" noWrap>
+        {person.name}
+      </Typography>
+      <Typography className="sb-org-role" variant="caption" color="textSecondary" noWrap>
+        {person.role}
+      </Typography>
       <Menu
         id={menu}
         aria-labelledby={button}
@@ -55,7 +61,7 @@ function PersonCard({ person, open, setOpen }: { person: Person } & Actions) {
           Edit
         </MenuItem>
       </Menu>
-    </div>
+    </Card>
   );
 }
 

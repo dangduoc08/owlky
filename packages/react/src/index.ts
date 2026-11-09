@@ -158,6 +158,22 @@ export {
 } from "./button/button.js";
 export { ButtonGroup, type ButtonGroupProps } from "./button-group/button-group.js";
 export {
+  Card,
+  CardActionArea,
+  type CardActionAreaAsButtonProps,
+  type CardActionAreaAsLinkProps,
+  type CardActionAreaProps,
+  CardActions,
+  type CardActionsProps,
+  CardContent,
+  type CardContentProps,
+  CardHeader,
+  type CardHeaderProps,
+  CardMedia,
+  type CardMediaProps,
+  type CardProps,
+} from "./card/card.js";
+export {
   Carousel,
   type CarouselApi,
   CarouselArrows,

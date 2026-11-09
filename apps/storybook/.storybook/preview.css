@@ -179,52 +179,24 @@
   border-top: 1px dashed var(--ok-divider);
 }
 
-/* Timeline "Customized" cards (story-only): a tinted paper with a title and a note. */
+/* Timeline "Customized" cards (story-only): the flat Paper tinted and padded, like the reference. */
 .sb-timeline-card {
   display: inline-block;
   padding: calc(var(--ok-spacing) * 6);
-  border-radius: var(--ok-radius-md);
   background-color: rgb(var(--ok-palette-grey-500-channel) / 0.12);
-}
-
-.sb-timeline-card > h6 {
-  margin: 0;
-  font-size: var(--ok-typography-subtitle2-font-size);
-  font-weight: var(--ok-typography-subtitle2-font-weight);
-}
-
-.sb-timeline-card > p {
-  margin: 0;
-  color: var(--ok-text-primary);
-  font-size: var(--ok-typography-body2-font-size);
 }
 
 .sb-row:has(> [data-ok-timeline]) > [data-ok-timeline] {
   width: 100%;
 }
 
-/* Organization chart stories (story-only): the scroll area and the node cards. */
+/* Organization chart stories (story-only): the scroll area and the node layouts (Card, Paper). */
 .sb-org-scroll {
   box-sizing: border-box;
   width: 100%;
   padding: calc(var(--ok-spacing) * 12) calc(var(--ok-spacing) * 6);
   border-radius: var(--ok-radius-lg);
   background-color: rgb(var(--ok-palette-grey-500-channel) / 0.04);
-}
-
-.sb-org-name {
-  display: block;
-  font-size: var(--ok-typography-subtitle2-font-size);
-  font-weight: var(--ok-typography-subtitle2-font-weight);
-  line-height: var(--ok-typography-subtitle2-line-height);
-  white-space: nowrap;
-}
-
-.sb-org-role {
-  display: block;
-  font-size: var(--ok-typography-caption-font-size);
-  line-height: var(--ok-typography-caption-line-height);
-  white-space: nowrap;
 }
 
 .sb-org-simple {
@@ -238,18 +210,15 @@
   color: var(--ok-palette-primary-text);
 }
 
+/* Person cards are Cards: a smaller radius and their own padding, like the reference. */
 .sb-org-card,
 .sb-org-member {
-  position: relative;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
   width: calc(var(--ok-spacing) * 50);
   padding: calc(var(--ok-spacing) * 4);
   border-radius: var(--ok-radius-lg);
-  background-color: var(--ok-bg-paper);
-  box-shadow: var(--ok-shadow-card);
-  color: var(--ok-text-primary);
   text-align: start;
 }
 
@@ -260,11 +229,6 @@
 .sb-org-card > .sb-org-name,
 .sb-org-member > .sb-org-name {
   margin-block-end: var(--ok-spacing);
-}
-
-.sb-org-card > .sb-org-role,
-.sb-org-member > .sb-org-role {
-  color: var(--ok-text-secondary);
 }
 
 .sb-org-more {
@@ -278,8 +242,9 @@
   stroke-width: 3.5;
 }
 
-/* Group: the avatar sits over the card's top edge, ringed with the paper color. */
+/* Group: the avatar sits over the card's top edge (no clipping), ringed with the paper color. */
 .sb-org-member {
+  overflow: visible;
   align-items: center;
   padding: calc(var(--ok-spacing) * 10) 0 calc(var(--ok-spacing) * 6);
   border-block-start: 4px solid var(--_sb-org-color, transparent);
@@ -307,13 +272,6 @@
   border-radius: var(--ok-radius-lg);
   background-color: rgb(var(--_sb-org-channel) / 0.08);
   color: var(--_sb-org-text);
-}
-
-.sb-org-team-name {
-  font-size: var(--ok-typography-subtitle1-font-size);
-  font-weight: var(--ok-typography-subtitle1-font-weight);
-  line-height: var(--ok-typography-subtitle1-line-height);
-  white-space: nowrap;
 }
 
 .sb-org-team > .sb-org-more {
@@ -823,7 +781,7 @@
   padding-bottom: calc(var(--ok-spacing) * 2);
 }
 
-/* Motion demos (story-only): a clipped stage, cards, an image, a gradient box and headings. */
+/* Motion demos (story-only): the stage (a flat Paper), card padding, an image and a gradient box. */
 .sb-motion-stage {
   box-sizing: border-box;
   width: min(100%, 480px);
@@ -848,13 +806,6 @@
 
 .sb-motion-card {
   padding: calc(var(--ok-spacing) * 3) calc(var(--ok-spacing) * 4);
-  border-radius: var(--ok-radius-md);
-  background-color: var(--ok-bg-paper);
-  box-shadow: var(--ok-shadow-card);
-  color: var(--ok-text-primary);
-  font:
-    var(--ok-typography-body2-font-weight) var(--ok-typography-body2-font-size) /
-    var(--ok-typography-body2-line-height) var(--ok-font-family);
 }
 
 .sb-motion-scroll {
@@ -888,15 +839,6 @@
     var(--ok-palette-secondary-main),
     var(--ok-palette-info-main)
   );
-}
-
-.sb-motion-heading {
-  margin: 0;
-  color: inherit;
-  font-family: var(--ok-typography-h3-font-family);
-  font-size: var(--ok-typography-h3-font-size);
-  font-weight: var(--ok-typography-h3-font-weight);
-  line-height: var(--ok-typography-h3-line-height);
 }
 
 .sb-motion-other {
@@ -1014,11 +956,6 @@
   display: flex;
   flex-wrap: wrap;
   gap: calc(var(--ok-spacing) * 10);
-  color: var(--ok-text-primary);
-  font-family: var(--ok-typography-h2-font-family);
-  font-size: var(--ok-typography-h2-font-size);
-  font-weight: var(--ok-typography-h2-font-weight);
-  line-height: var(--ok-typography-h2-line-height);
 }
 
 /* Data grid demos (story-only): the grid height and custom cell content. */
@@ -1256,23 +1193,10 @@
   gap: calc(var(--ok-spacing) * 2);
   min-width: 0;
   padding: calc(var(--ok-spacing) * 6);
-  border-radius: var(--ok-radius-xl);
-  background: var(--ok-bg-paper);
-  box-shadow: var(--ok-shadow-card);
-  color: var(--ok-text-primary);
 }
 
-.sb-walktour-card h3 {
-  margin: 0;
-  font-size: var(--ok-typography-subtitle2-font-size);
-  font-weight: var(--ok-font-weight-semibold);
-}
-
-.sb-walktour-note {
-  margin: 0;
+.sb-walktour-list {
   padding-inline-start: 0;
-  color: var(--ok-text-secondary);
-  font-size: var(--ok-typography-body2-font-size);
   list-style-position: inside;
 }
 
@@ -1284,13 +1208,6 @@
 .sb-walktour-featured > [data-ok-image] {
   width: 100%;
   border-radius: var(--ok-radius-lg);
-}
-
-.sb-walktour-figure {
-  margin: 0;
-  color: var(--ok-text-primary);
-  font-size: var(--ok-typography-h4-font-size);
-  font-weight: var(--ok-font-weight-bold);
 }
 
 .sb-walktour-actions {
@@ -1962,4 +1879,73 @@
   fill: var(--ok-palette-grey-300);
   stroke: var(--ok-palette-grey-500);
   stroke-width: 1;
+}
+
+/* Card stories (story-only): card widths, media heights and the demo layouts. */
+.sb-card {
+  width: 100%;
+  max-width: 345px;
+}
+
+.sb-card-word {
+  max-width: 275px;
+}
+
+.sb-card-media {
+  height: 140px;
+}
+
+.sb-card-expand {
+  margin-inline-start: auto;
+}
+
+.sb-card-expand > svg {
+  transition: rotate var(--ok-duration-shortest) var(--ok-easing-standard);
+}
+
+.sb-card-expand[aria-expanded="true"] > svg {
+  rotate: 180deg;
+}
+
+.sb-card-player {
+  display: flex;
+  max-width: 100%;
+}
+
+.sb-card-player-details {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.sb-card-player-content {
+  flex: 1 0 auto;
+}
+
+.sb-card-player-controls {
+  display: flex;
+  align-items: center;
+  padding-inline-start: calc(var(--ok-spacing) * 2);
+  padding-block-end: calc(var(--ok-spacing) * 2);
+}
+
+.sb-card-player-cover {
+  flex: 0 0 auto;
+  width: 151px;
+}
+
+/* Active state: the chosen card's action area is pressed (aria-pressed), the page styles it. */
+.sb-card-choices {
+  display: grid;
+  width: 100%;
+  grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr));
+  gap: calc(var(--ok-spacing) * 4);
+}
+
+.sb-card-choices [data-ok-card-action-area] {
+  height: 100%;
+}
+
+.sb-card-choices [data-ok-card-action-area][aria-pressed="true"] {
+  background-color: var(--ok-action-selected);
 }
