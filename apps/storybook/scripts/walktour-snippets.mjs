@@ -86,6 +86,8 @@ for (const [name, markup] of Object.entries(html)) {
     .replace(/<link rel="preload"[^>]*>/g, "")
     .replace(/ data-ok-runtime="off"/g, "")
     .replace(/ style="[^"]*"/g, "")
+    // An Image's load state is written by its owner (React, the image runtime), never in markup.
+    .replace(/ data-ok-state="[^"]*"/g, "")
     .replace(/ (data-ok-[a-z-]+)=""/g, " $1")
     .replace(/ (disabled|hidden|checked)=""/g, " $1")
     .replace(/(<(?:img|input)\b[^>]*?)\/>/g, "$1>")

@@ -3,6 +3,7 @@ import {
   Avatar,
   Button,
   FormControlLabel,
+  Image,
   Switch,
   TextField,
   Walktour,
@@ -12,7 +13,8 @@ import { createRef } from "react";
 
 /*
  * Walktour stories. The dashboard cards are story-only demo markup (`sb-walktour-*` classes in
- * `.storybook/preview.css`); pictures are the original artwork of the Carousel and Avatar stories,
+ * `.storybook/preview.css`); the featured card's picture is an Image, like the reference's (its
+ * step pictures are plain `img`). Pictures are the original artwork of the Carousel and Avatar stories,
  * referenced relatively so they work under the e2e server's sub-path. People and products are
  * invented. The HTML snippets are generated from these examples
  * (`node apps/storybook/scripts/walktour-snippets.mjs`).
@@ -122,7 +124,7 @@ function Dashboard() {
         </Button>
       </section>
       <section className="sb-walktour-card sb-walktour-featured" id="tour-featured">
-        <img src="carousel/slide-1.svg" alt="" />
+        <Image src="carousel/slide-1.svg" alt="" ratio="4/3" />
         <h3>Trail Runner Sneakers</h3>
         <Button variant="contained" color="primary" size="sm">
           Buy now

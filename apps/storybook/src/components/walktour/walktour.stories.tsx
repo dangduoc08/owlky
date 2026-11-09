@@ -22,6 +22,7 @@ const SETUP = htmlSetup(
     "switch.css",
     "form-control-label.css",
     "avatar.css",
+    "image.css",
     "walktour.css",
   ],
   true,
