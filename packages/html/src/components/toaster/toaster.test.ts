@@ -82,12 +82,13 @@ describe("toaster runtime", () => {
   });
 
   it("hover and focus pause the time; actions are cancelable; Escape closes a focused toast", async () => {
-    const host = mount(markup('data-ok-duration="500"'));
+    // Long enough that a loaded CI runner's click-to-hover delay can't use it up.
+    const host = mount(markup('data-ok-duration="1500"'));
     start();
     const toaster = host.querySelector("[data-ok-toaster]") as HTMLElement;
     await userEvent.click(host.querySelector("#b4") as HTMLElement);
     await userEvent.hover(toaster, { force: true });
-    await wait(700);
+    await wait(2000);
     expect(titles(host)).toEqual(["Deleted"]);
     host.addEventListener("ok:toaster:action", (e) => e.preventDefault(), { once: true });
     await userEvent.click(toaster.querySelector("[data-ok-toast-action]") as HTMLElement);

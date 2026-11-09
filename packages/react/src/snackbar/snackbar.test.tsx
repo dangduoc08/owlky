@@ -63,14 +63,15 @@ describe("Toaster", () => {
     await wait(250);
     expect(titles()).toEqual([]);
     act(() => {
-      toast("Two", { duration: 400 });
+      // Long enough that a loaded CI runner's click-to-hover delay can't use it up.
+      toast("Two", { duration: 1500 });
     });
     const region = screen.getByRole("region");
     await userEvent.hover(region, { force: true });
-    await wait(600);
+    await wait(2000);
     expect(titles()).toEqual(["Two"]);
     await userEvent.unhover(region);
-    await wait(600);
+    await wait(2000);
     expect(titles()).toEqual([]);
     act(() => {
       toast("Three", { action: { label: "Undo" } });

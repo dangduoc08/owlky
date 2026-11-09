@@ -912,7 +912,8 @@ export function createLightboxController(
     if (optionsChanged) syncOptions();
     if (selection) {
       const index = snappedIndex();
-      if (index !== current) select(index);
+      // A closed lightbox's carousel re-measures as the dialog hides: that is no view change.
+      if (open && index !== current) select(index);
       else writeCurrent();
     }
   });

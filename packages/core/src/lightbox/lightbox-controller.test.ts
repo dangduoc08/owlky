@@ -394,6 +394,18 @@ describe("navigation", () => {
     expect(controller.index).toBe(1);
   });
 
+  it("reports no view when the carousel settles after the lightbox closed", async () => {
+    const { controller, slides, events } = await setup();
+    controller.open(0);
+    controller.close();
+    const views = events.view.length;
+    slides[0]?.removeAttribute("data-ok-snapped");
+    slides[1]?.setAttribute("data-ok-snapped", "");
+    await flush();
+    expect(events.view).toHaveLength(views);
+    expect(controller.index).toBe(0);
+  });
+
   it("hides the navigation with one slide", async () => {
     const { q } = await setup({ kinds: ["image"] });
     expect(q("[data-ok-carousel-prev]").hidden).toBe(true);
