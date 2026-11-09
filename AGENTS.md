@@ -97,8 +97,13 @@ the style of the Google and Microsoft developer documentation guides. Model: Fou
 - **UI names:** bold and exact, with where to find them ("the **Preset** menu in the toolbar").
 - **Advice:** say why ("…unlike some `color-mix()` fallbacks that drop the transparency").
 - **Lists:** parallel items; definitions as "**Label:** sentence".
-- **Code:** HTML and React tabs show the same idea, as complete snippets (React: a component);
-  comments explain where or why, in sentence case.
+- **Code:** HTML and React tabs show the same idea, as complete snippets that work when copied:
+  no `…` placeholders; React is a module with its imports and an exported component (data and
+  state declared in it, icons from `lucide-react`); HTML is the markup React renders, plus what
+  only HTML needs (the CDN `<link>` / `<script>`, triggers, a `<script>` for events). Long
+  markup comes from a helper in the docs file (`htmlRating()`, `htmlTransferList()`), not a
+  shortened copy. Comments explain where or why, in sentence case. `pnpm check:docs` checks the
+  examples: placeholders, unknown `data-ok-*` names, and a typecheck of every React example.
 - **Numbers:** exact and with units ("a contrast ratio of at least 4.5:1"). Figures that change
   (bundle sizes) are rounded ("about 10 kB") and checked with `pnpm check:size` first.
 - **Framework-agnostic:** describe Owlky as one design system, used in plain HTML or through
