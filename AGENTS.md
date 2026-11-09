@@ -416,6 +416,12 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
   Escape as handled, so don't gate on `defaultPrevented`. Forms in popovers need `noValidate`
   (`type="url"` validation blocks `submit` silently) and no `method="dialog"` (outside a
   `<dialog>`, Chrome fires no `submit`).
+- Editor fullscreen: the root is `position: fixed` (a stacking context), so its composed Backdrop
+  (first child) sits at `z-index: -1` and paints over the root's own background: the toolbar, body
+  and helper carry the paper themselves (the body's tint is a gradient over `--ok-bg-paper`). Tiptap
+  writes styles with a trailing `;` (`text-transform: uppercase;`): React compares a controlled
+  `value` with the string it loaded, never with `getValue()`, or it reloads at mount. ProseMirror's
+  `setAttribute("style")` passes the strict-CSP page (only parsed `style` attributes are refused).
 - Chart (ADR-0024): core `renderChart` lays out a tree of SVG nodes (`ChartNode`); React maps
   attribute names to camelCase, the HTML runtime uses `createElementNS` + `setAttribute`. Text widths
   are **estimated** per glyph class (`chartTextWidth`), never measured, so server, React and HTML

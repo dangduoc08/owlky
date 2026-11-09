@@ -96,6 +96,12 @@ test("no CSP or Trusted Types violations", async ({ page }) => {
   await editorSelected(story);
   await page.getByRole("button", { name: "Bold" }).click();
   await expect(story.locator("strong")).toHaveText("this");
+  // A text transform from markup without a style attribute; fullscreen locks scroll through CSSOM.
+  await expect(story.locator("span")).toHaveCSS("text-transform", "uppercase");
+  await page.getByRole("button", { name: "Fullscreen" }).click();
+  await expect(page.locator("[data-ok-editor] > [data-ok-backdrop]")).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.locator("[data-ok-editor] > [data-ok-backdrop]")).toBeHidden();
   await expect(page.getByRole("switch", { name: "Wi-Fi" })).not.toBeChecked();
   // The carousel sizes slides, reorders a loop and writes tweens through CSSOM.
   const carousel = page.getByRole("region", { name: "Photos" });

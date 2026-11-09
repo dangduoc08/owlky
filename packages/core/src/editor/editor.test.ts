@@ -1,8 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { isScrollLocked } from "../overlay/scroll-lock.js";
 import { cleanupDom, mount, nextFrame } from "../test-utils.js";
 import type { EditorHighlighter, HighlightNode } from "./code-block.js";
 import { createEditorController, type EditorController } from "./editor.js";
+import { holdEditorFullscreen } from "./fullscreen.js";
 import { editorIcons } from "./icons.js";
+import { editorTextTransforms, readTextTransform } from "./text-transform.js";
 import {
   createToolbarNavigation,
   editorActions,
@@ -90,11 +93,11 @@ describe("icons", () => {
 });
 
 describe("toolbar table", () => {
-  it("names every button and covers every action except the block ones", () => {
+  it("names every button and covers every action except the block and text transform ones", () => {
     const actions = editorToolbar.flatMap((group) => group.buttons.map((button) => button.action));
     expect(new Set(actions).size).toBe(actions.length);
     for (const action of editorActions) {
-      if (action === "paragraph" || action === "heading") continue;
+      if (action === "paragraph" || action === "heading" || action === "textTransform") continue;
       expect(actions).toContain(action);
     }
     expect(actions).toContain("fullscreen");
@@ -328,6 +331,103 @@ describe("createEditorController", () => {
   });
 });
 
+describe("text transform", () => {
+  it("reads only the allowed values", () => {
+    expect(editorTextTransforms).toEqual(["uppercase", "lowercase", "capitalize"]);
+    expect(readTextTransform(" Uppercase ")).toBe("uppercase");
+    expect(readTextTransform("none")).toBeNull();
+    expect(readTextTransform('uppercase"><img onerror=x>')).toBeNull();
+    expect(readTextTransform(null)).toBeNull();
+    expect(readTextTransform(undefined)).toBeNull();
+  });
+
+  it("keeps text transform spans (style or data attribute) and drops other spans", () => {
+    const element = content(
+      '<p><span style="text-transform: uppercase">a</span> <span data-ok-text-transform="capitalize">b</span> <span style="color: red">c</span> <span style="text-transform: none">d</span></p>',
+    );
+    const c = create(element);
+    expect(c.getValue()).toBe(
+      '<p><span style="text-transform: uppercase;">a</span> <span style="text-transform: capitalize;">b</span> c d</p>',
+    );
+    expect(getComputedStyle(element.querySelector("span") as Element).textTransform).toBe(
+      "uppercase",
+    );
+  });
+
+  it("sets, reports and removes a text transform", () => {
+    const c = create(content("<p>Shout this</p>"));
+    select(c, "Shout");
+    expect(c.getState().textTransform).toBeNull();
+    expect(c.run("textTransform", { textTransform: "uppercase" })).toBe(true);
+    expect(c.getValue()).toBe('<p><span style="text-transform: uppercase;">Shout</span> this</p>');
+    expect(c.getState().active.textTransform).toBe(true);
+    expect(c.getState().textTransform).toBe("uppercase");
+    expect(c.run("textTransform", { textTransform: "nope" as never })).toBe(false);
+    expect(c.run("textTransform")).toBe(false);
+    expect(c.run("textTransform", { textTransform: null })).toBe(true);
+    expect(c.getValue()).toBe("<p>Shout this</p>");
+    // Clear formatting removes it too.
+    c.run("textTransform", { textTransform: "lowercase" });
+    c.run("clearFormat");
+    expect(c.getValue()).toBe("<p>Shout this</p>");
+    // A value set around the action (Tiptap's own commands) renders no style.
+    select(c, "Shout");
+    c.editor.commands.setMark("textTransform", { textTransform: "x; color: red" });
+    expect(c.getValue()).toBe("<p><span>Shout</span> this</p>");
+  });
+});
+
+describe("holdEditorFullscreen", () => {
+  const page = () => {
+    const root = mount(
+      '<button id="before">Before</button><div data-ok-editor><div data-ok-editor-toolbar><button id="first">First</button></div><div data-ok-editor-content contenteditable="true" tabindex="0"><a href="#x" id="inner">x</a></div></div><button id="after">After</button>',
+    );
+    const editor = root.querySelector<HTMLElement>("[data-ok-editor]") as HTMLElement;
+    const get = (id: string) => root.querySelector<HTMLElement>(`#${id}`) as HTMLElement;
+    return { editor, get };
+  };
+
+  it("locks the page scroll until released (once)", () => {
+    const { editor } = page();
+    const release = holdEditorFullscreen(editor);
+    expect(isScrollLocked()).toBe(true);
+    expect(document.documentElement.style.overflow).toBe("hidden");
+    release();
+    release();
+    expect(isScrollLocked()).toBe(false);
+  });
+
+  it("wraps focus that leaves for the page back into the editor", () => {
+    const { editor, get } = page();
+    const release = holdEditorFullscreen(editor);
+    const content = editor.querySelector<HTMLElement>("[data-ok-editor-content]") as HTMLElement;
+    // Tab past the last stop: back to the first one.
+    content.focus();
+    content.dispatchEvent(new KeyboardEvent("keydown", { key: "Tab", bubbles: true }));
+    get("after").focus();
+    expect(document.activeElement).toBe(get("first"));
+    // Shift+Tab before the first stop: to the last one (the textbox, not the link inside it).
+    get("first").dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Tab", shiftKey: true, bubbles: true }),
+    );
+    get("before").focus();
+    expect(document.activeElement).toBe(content);
+    // Other keys keep the direction of the last Tab.
+    content.dispatchEvent(new KeyboardEvent("keydown", { key: "a", bubbles: true }));
+    get("before").focus();
+    expect(document.activeElement).toBe(content);
+    // Inside the editor, or to the browser's UI: left alone.
+    get("first").focus();
+    expect(document.activeElement).toBe(get("first"));
+    get("first").blur();
+    expect(document.activeElement).toBe(document.body);
+    release();
+    content.focus();
+    get("after").focus();
+    expect(document.activeElement).toBe(get("after"));
+  });
+});
+
 describe("code blocks", () => {
   const text = (value: string): HighlightNode => ({ type: "text", value });
   const highlighter: EditorHighlighter = {
@@ -367,7 +467,14 @@ describe("code blocks", () => {
     const c = create(element, { highlighter });
     const select = element.querySelector<HTMLSelectElement>("[data-ok-editor-language]");
     expect(select?.getAttribute("aria-label")).toBe("Language");
-    expect([...(select?.options ?? [])].map((o) => o.value)).toEqual(["", "javascript", "css"]);
+    expect([...(select?.options ?? [])].map((o) => o.value)).toEqual([
+      "",
+      "\u2014",
+      "javascript",
+      "css",
+    ]);
+    // The rule between "auto" and the languages can't be picked.
+    expect(select?.options[1]?.disabled).toBe(true);
     expect(select?.value).toBe("javascript");
     expect(element.querySelector(".hljs-keyword")?.textContent).toBe("const");
     (select as HTMLSelectElement).value = "";

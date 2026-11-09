@@ -2,6 +2,7 @@
   <label data-ok-form-control-label data-ok-label-placement="end"><span data-ok-switch data-ok-color="primary" data-ok-size="medium"><input type="checkbox" role="switch" data-ok-switch-input id="editor-full-item" checked=""/><span data-ok-switch-track aria-hidden="true"></span><span data-ok-switch-thumb aria-hidden="true"></span></span><span data-ok-form-control-label-text>Full item</span></label>
   <div class="sb-editor-columns">
     <div data-ok-editor data-ok-full-item>
+      <div data-ok-backdrop></div>
       <div data-ok-editor-toolbar role="toolbar" aria-label="Formatting" aria-controls="editor-content">
         <button type="button" data-ok-editor-heading id="editor-heading" data-ok-popover-open="editor-menu" aria-haspopup="menu" aria-expanded="false" aria-controls="editor-menu" tabindex="0"><span data-ok-editor-heading-label>Paragraph</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 9l6 6 6-6"></path></svg></button>
         <div data-ok-editor-group>
@@ -48,7 +49,7 @@
       <div data-ok-editor-body>
         <div data-ok-editor-content id="editor-content" role="textbox" aria-multiline="true" aria-label="Content">
           <h4>Plan the release</h4>
-          <p><strong>Owlky</strong> keeps <em>one</em> design for <u>every</u> framework, so <s>two</s> codebases stay in step. Read the <a target="_blank" rel="noopener noreferrer nofollow" href="https://example.com/notes">release notes</a> before you upgrade.</p>
+          <p><strong>Owlky</strong> keeps <em>one</em> design for <u>every</u> framework, so <s>two</s> codebases stay in step. Read the <a target="_blank" rel="noopener noreferrer nofollow" href="https://example.com/notes">release notes</a> <strong><span data-ok-text-transform="uppercase">before</span></strong> you <span data-ok-text-transform="capitalize">upgrade</span>.</p>
           <p><code>npm install</code> adds the packages.</p>
           <pre><code class="language-javascript">function greet(name) {
   const hour = new Date().getHours();
@@ -95,6 +96,7 @@
     <section class="sb-editor-preview" aria-labelledby="editor-preview-title">
       <h3 id="editor-preview-title">Preview</h3>
       <div data-ok-editor data-ok-editable="false">
+        <div data-ok-backdrop></div>
         <div data-ok-editor-toolbar role="toolbar" aria-label="Formatting" aria-controls="preview-content">
           <button type="button" data-ok-editor-heading id="preview-heading" data-ok-popover-open="preview-menu" aria-haspopup="menu" aria-expanded="false" aria-controls="preview-menu" disabled="" tabindex="0"><span data-ok-editor-heading-label>Paragraph</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 9l6 6 6-6"></path></svg></button>
           <div data-ok-editor-group>
@@ -141,7 +143,7 @@
         <div data-ok-editor-body>
           <div data-ok-editor-content id="preview-content" role="textbox" aria-multiline="true" aria-labelledby="editor-preview-title">
             <h4>Plan the release</h4>
-            <p><strong>Owlky</strong> keeps <em>one</em> design for <u>every</u> framework, so <s>two</s> codebases stay in step. Read the <a target="_blank" rel="noopener noreferrer nofollow" href="https://example.com/notes">release notes</a> before you upgrade.</p>
+            <p><strong>Owlky</strong> keeps <em>one</em> design for <u>every</u> framework, so <s>two</s> codebases stay in step. Read the <a target="_blank" rel="noopener noreferrer nofollow" href="https://example.com/notes">release notes</a> <strong><span data-ok-text-transform="uppercase">before</span></strong> you <span data-ok-text-transform="capitalize">upgrade</span>.</p>
             <p><code>npm install</code> adds the packages.</p>
             <pre><code class="language-javascript">function greet(name) {
   const hour = new Date().getHours();

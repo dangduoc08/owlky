@@ -14,6 +14,8 @@ export const editorSections: GuideSection[] = [
 <script src="${CDN}/owlky-editor.js" defer></script>
 
 <div data-ok-editor data-ok-full-item>
+  <!-- Dims the page while the editor is fullscreen -->
+  <div data-ok-backdrop></div>
   <div data-ok-editor-toolbar role="toolbar" aria-label="Formatting" aria-controls="notes-content">
     <!-- The heading menu, then one group of buttons per tool (copy them from the snippet) -->
   </div>
@@ -35,7 +37,7 @@ export function Notes() {
   {
     id: "content",
     title: "Read and set the content",
-    body: 'The value is an HTML string, and an empty editor has the value `""`. In React, use `value` and `onChange` to control it, or `defaultValue` to only set the initial content. A new `value` replaces the content, but the editor does not undo an edit that you ignore in `onChange`, because rich text cannot be held back key by key. In HTML, write the initial content inside the content element, listen to `ok:editor:change`, and call `setValue(html)` on the instance to replace it.\n\nThe editor keeps only what its toolbar can make. Pasted or loaded HTML loses scripts, event handler attributes and unknown elements, and links only keep `http`, `https`, `mailto`, `tel` and relative URLs.',
+    body: 'The value is an HTML string, and an empty editor has the value `""`. In React, use `value` and `onChange` to control it, or `defaultValue` to only set the initial content. A new `value` replaces the content, but the editor does not undo an edit that you ignore in `onChange`, because rich text cannot be held back key by key. In HTML, write the initial content inside the content element, listen to `ok:editor:change`, and call `setValue(html)` on the instance to replace it.\n\nThe editor keeps only what its toolbar can make, plus text transforms. Pasted or loaded HTML loses scripts, event handler attributes and unknown elements, and links only keep `http`, `https`, `mailto`, `tel` and relative URLs.',
     html: `<script type="module">
   import { getRuntime } from "@owlky/html";
 
@@ -57,9 +59,35 @@ export function Post() {
   {
     id: "toolbar",
     title: "Choose the toolbar",
-    body: "The default toolbar has the heading menu, text styles, lists, alignment, links, images, line breaks, clear formatting and fullscreen. Turn on `fullItem` to add code, code blocks, quotes, horizontal rules, undo and redo.\n\nThe Fullscreen button makes the editor fill the window. Press Escape or the button again to leave. In React, `onFullscreenChange` reports the change; in HTML, listen to `ok:editor:fullscreen`.",
+    body: "The default toolbar has the heading menu, text styles, lists, alignment, links, images, line breaks, clear formatting and fullscreen. Turn on `fullItem` to add code, code blocks, quotes, horizontal rules, undo and redo.\n\nThe Fullscreen button makes the editor fill the window over a backdrop that dims the page. While it is fullscreen, the page doesn't scroll and Tab stays inside the editor. Press Escape or the button again to leave. In React, `onFullscreenChange` reports the change. In HTML, listen to `ok:editor:fullscreen`, and put a `div[data-ok-backdrop]` first in the editor so that the page is dimmed.",
     html: `<div data-ok-editor data-ok-full-item>…</div>`,
     react: `<Editor aria-label="Article" fullItem />`,
+  },
+  {
+    id: "text-transform",
+    title: "Change the case of text",
+    body: 'A text transform shows text in capitals, lower case or with each word capitalized, without changing the letters people typed. The content keeps it as `<span style="text-transform: uppercase">`. Markup written in HTML can use `data-ok-text-transform` instead, because pages with a strict Content Security Policy refuse `style` attributes in their markup. The toolbar has no button for it: run the `textTransform` action of the controller with `uppercase`, `lowercase`, `capitalize`, or `null` to remove it.',
+    html: `<div data-ok-editor-content role="textbox" aria-multiline="true" aria-label="Notes">
+  <p>Ship it <span data-ok-text-transform="uppercase">today</span>.</p>
+</div>
+
+<script type="module">
+  import { getRuntime } from "@owlky/html";
+
+  // Capitalize the selected words
+  const element = document.querySelector("[data-ok-editor]");
+  getRuntime().get(element, "editor").controller.run("textTransform", { textTransform: "capitalize" });
+</script>`,
+    react: `import { Editor } from "@owlky/react";
+
+export function Notes() {
+  return (
+    <Editor
+      aria-label="Notes"
+      defaultValue={'<p>Ship it <span style="text-transform: uppercase">today</span>.</p>'}
+    />
+  );
+}`,
   },
   {
     id: "highlight",
@@ -129,7 +157,7 @@ export function Snippet() {
 - Toolbar buttons have names and report their state with \`aria-pressed\`, so people hear whether bold or a list is on. Their keyboard shortcuts are announced through \`aria-keyshortcuts\`.
 - The link and image forms are dialogs named by their title. Escape closes them and returns focus to their button.
 - Images need a text alternative: fill in **Alt text**, or leave it empty only for decoration.
-- Fullscreen mode can always be left with Escape.`,
+- Fullscreen mode can always be left with Escape. While it is on, Tab moves between the toolbar and the text box only, so focus never reaches controls hidden behind the editor.`,
   },
 ];
 
@@ -207,6 +235,10 @@ const PREVIEWS = {
         ["Shift+Enter", "Line break."],
         ["Ctrl+Shift+X", "Clear formatting."],
         ["Ctrl+Z / Ctrl+Shift+Z", "Undo, redo."],
+        [
+          "Tab / Shift+Tab (fullscreen)",
+          "Stays inside the editor, wrapping from the last stop to the first.",
+        ],
         ["Escape", "Leaves fullscreen mode."],
       ]}
     />

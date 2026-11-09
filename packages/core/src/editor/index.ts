@@ -10,7 +10,14 @@ export {
   type EditorControllerOptions,
   type EditorState,
 } from "./editor.js";
+export { holdEditorFullscreen } from "./fullscreen.js";
 export { type EditorIconName, editorIcons } from "./icons.js";
+export {
+  type EditorTextTransform,
+  editorTextTransforms,
+  readTextTransform,
+  TextTransform,
+} from "./text-transform.js";
 export {
   createToolbarNavigation,
   type EditorAction,

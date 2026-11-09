@@ -1,3 +1,4 @@
+import { isScrollLocked } from "@owlky/core";
 import { act, render, screen } from "@testing-library/react";
 import { StrictMode, useState } from "react";
 import { renderToString } from "react-dom/server";
@@ -163,6 +164,22 @@ describe("Editor", () => {
     expect(textbox().textContent).toBe("Hiabc");
   });
 
+  it("doesn't reload a value that Tiptap writes differently, until it changes", async () => {
+    // Tiptap writes `text-transform: uppercase;` and adds a paragraph after a final code block on
+    // its next transaction: reloading at mount would add it and move the selection.
+    const value =
+      '<p><span style="text-transform: uppercase">a</span></p><pre><code>x</code></pre>';
+    const onChange = vi.fn();
+    const { rerender } = render(<Editor aria-label="Notes" value={value} onChange={onChange} />);
+    await frame();
+    expect(textbox().querySelectorAll("p")).toHaveLength(1);
+    expect(onChange).not.toHaveBeenCalled();
+    rerender(<Editor aria-label="Notes" value="<p>New</p>" onChange={onChange} />);
+    expect(textbox().textContent).toBe("New");
+    rerender(<Editor aria-label="Notes" value={value} onChange={onChange} />);
+    expect(textbox().querySelector("span")?.textContent).toBe("a");
+  });
+
   it("follows accepted changes without re-setting the content", async () => {
     render(<Controlled />);
     await selectText("world");
@@ -257,12 +274,35 @@ describe("Editor", () => {
     expect(root.hasAttribute("data-ok-fullscreen")).toBe(true);
     expect(tool("Fullscreen").getAttribute("aria-pressed")).toBe("true");
     expect(getComputedStyle(root).position).toBe("fixed");
+    // The composed Backdrop dims the page behind; the page doesn't scroll.
+    const backdrop = root.querySelector(":scope > [data-ok-backdrop]") as HTMLElement;
+    expect(backdrop.hasAttribute("data-ok-open")).toBe(true);
+    expect(getComputedStyle(backdrop).zIndex).toBe("-1");
+    expect(isScrollLocked()).toBe(true);
     textbox().focus();
     await userEvent.keyboard("{Escape}");
     expect(root.hasAttribute("data-ok-fullscreen")).toBe(false);
+    expect(backdrop.hasAttribute("data-ok-open")).toBe(false);
+    expect(isScrollLocked()).toBe(false);
     expect(onFullscreenChange.mock.calls).toEqual([[true], [false]]);
     await userEvent.keyboard("{Escape}");
     expect(onFullscreenChange).toHaveBeenCalledTimes(2);
+  });
+
+  it("keeps Tab inside the editor while fullscreen and releases on unmount", async () => {
+    const { unmount } = render(
+      <>
+        <Editor aria-label="Notes" />
+        <button type="button">Behind</button>
+      </>,
+    );
+    await userEvent.click(tool("Fullscreen"));
+    textbox().focus();
+    await userEvent.tab();
+    expect(document.activeElement).toBe(tool("Fullscreen"));
+    expect(isScrollLocked()).toBe(true);
+    unmount();
+    expect(isScrollLocked()).toBe(false);
   });
 
   it("keeps fullscreen when Escape closes a popover", async () => {
