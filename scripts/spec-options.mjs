@@ -37,6 +37,7 @@ const SPECS = {
   card: "card.md",
   "card-actions": "card.md",
   typography: "typography.md",
+  link: "link.md",
   list: "list.md",
   "list-item": "list.md",
   "list-item-button": "list.md",

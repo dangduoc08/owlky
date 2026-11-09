@@ -1,5 +1,5 @@
 import { breadcrumbsOptions } from "@owlky/core";
-import { Breadcrumbs, BreadcrumbsDot } from "@owlky/react";
+import { Breadcrumbs, BreadcrumbsDot, Link } from "@owlky/react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
 import { DemoIcon } from "../shared/demo-icon.js";
@@ -8,27 +8,31 @@ export const breadcrumbsSections: GuideSection[] = [
   {
     id: "overview",
     title: "Overview",
-    body: 'Breadcrumbs show where the current page sits in your site and link back to each level above it. They are a `nav` landmark with an ordered list of links. The last item is the current page: it isn\'t a link, and it carries `aria-current="page"`. Separators go between the items and screen readers skip them.',
+    body: 'Breadcrumbs show where the current page sits in your site and link back to each level above it. They are a `nav` landmark with an ordered list of links: Link components in the parent\'s color, underlined on hover (`color="inherit"`, `underline="hover"`). The last item is the current page: it isn\'t a link, and it carries `aria-current="page"`. Separators go between the items and screen readers skip them.',
     html: `<!-- Load once per page: the styles and the runtime (for long trails) -->
 <link rel="stylesheet" href="${CDN}/owlky.css">
 <script src="${CDN}/owlky.js" defer></script>
 
 <nav data-ok-breadcrumbs aria-label="breadcrumb">
   <ol data-ok-breadcrumbs-list>
-    <li data-ok-breadcrumbs-item><a href="/">Home</a></li>
+    <li data-ok-breadcrumbs-item><a href="/" data-ok-typography data-ok-link data-ok-variant="inherit" data-ok-color="inherit" data-ok-underline="hover">Home</a></li>
     <li data-ok-breadcrumbs-separator aria-hidden="true">/</li>
-    <li data-ok-breadcrumbs-item><a href="/catalog">Catalog</a></li>
+    <li data-ok-breadcrumbs-item><a href="/catalog" data-ok-typography data-ok-link data-ok-variant="inherit" data-ok-color="inherit" data-ok-underline="hover">Catalog</a></li>
     <li data-ok-breadcrumbs-separator aria-hidden="true">/</li>
     <li data-ok-breadcrumbs-item><span aria-current="page">Accessories</span></li>
   </ol>
 </nav>`,
-    react: `import { Breadcrumbs } from "@owlky/react";
+    react: `import { Breadcrumbs, Link } from "@owlky/react";
 
 export function Trail() {
   return (
     <Breadcrumbs>
-      <a href="/">Home</a>
-      <a href="/catalog">Catalog</a>
+      <Link href="/" color="inherit" underline="hover">
+        Home
+      </Link>
+      <Link href="/catalog" color="inherit" underline="hover">
+        Catalog
+      </Link>
       <span aria-current="page">Accessories</span>
     </Breadcrumbs>
   );
@@ -39,18 +43,18 @@ export function Trail() {
     title: "Add icons and change the separator",
     body: 'Put a decorative `svg` before the text of an item. Icons are 20px and follow the item\'s color. In React, every child of `Breadcrumbs` becomes an item and the separator goes between them. Pass `separator` to replace the slash with text, an icon or `<BreadcrumbsDot />`. In HTML, write each separator in its own `li` with `aria-hidden="true"`, and use `<span data-ok-breadcrumbs-dot></span>` for a dot.',
     html: `<li data-ok-breadcrumbs-item>
-  <a href="/"><svg aria-hidden="true" viewBox="0 0 24 24">…</svg>Home</a>
+  <a href="/" data-ok-typography data-ok-link data-ok-variant="inherit" data-ok-color="inherit" data-ok-underline="hover"><svg aria-hidden="true" viewBox="0 0 24 24">…</svg>Home</a>
 </li>
 <li data-ok-breadcrumbs-separator aria-hidden="true"><span data-ok-breadcrumbs-dot></span></li>`,
-    react: `import { Breadcrumbs, BreadcrumbsDot } from "@owlky/react";
+    react: `import { Breadcrumbs, BreadcrumbsDot, Link } from "@owlky/react";
 
 export function Trail() {
   return (
     <Breadcrumbs separator={<BreadcrumbsDot />}>
-      <a href="/">
+      <Link href="/" color="inherit" underline="hover">
         <HomeIcon />
         Home
-      </a>
+      </Link>
       <span aria-current="page">Desk lamp</span>
     </Breadcrumbs>
   );
@@ -64,10 +68,10 @@ export function Trail() {
   <ol data-ok-breadcrumbs-list>…</ol>
 </nav>`,
     react: `<Breadcrumbs maxItems={3} expandText="Show the full path">
-  <a href="/">Home</a>
-  <a href="/catalog">Catalog</a>
-  <a href="/catalog/lighting">Lighting</a>
-  <a href="/catalog/lighting/desk">Desk</a>
+  <Link href="/" color="inherit" underline="hover">Home</Link>
+  <Link href="/catalog" color="inherit" underline="hover">Catalog</Link>
+  <Link href="/catalog/lighting" color="inherit" underline="hover">Lighting</Link>
+  <Link href="/catalog/lighting/desk" color="inherit" underline="hover">Desk</Link>
   <span aria-current="page">Desk lamp</span>
 </Breadcrumbs>`,
   },
@@ -113,8 +117,12 @@ const PREVIEWS = {
   overview: () => (
     <Preview>
       <Breadcrumbs aria-label="Preview breadcrumb">
-        <a href="#home">Home</a>
-        <a href="#catalog">Catalog</a>
+        <Link href="#home" color="inherit" underline="hover">
+          Home
+        </Link>
+        <Link href="#catalog" color="inherit" underline="hover">
+          Catalog
+        </Link>
         <span aria-current="page">Accessories</span>
       </Breadcrumbs>
     </Preview>
@@ -122,14 +130,14 @@ const PREVIEWS = {
   icons: () => (
     <Preview>
       <Breadcrumbs separator={<BreadcrumbsDot />} aria-label="Breadcrumb with icons">
-        <a href="#home">
+        <Link href="#home" color="inherit" underline="hover">
           <DemoIcon name="home" />
           Home
-        </a>
-        <a href="#products">
+        </Link>
+        <Link href="#products" color="inherit" underline="hover">
           <DemoIcon name="cube" />
           Products
-        </a>
+        </Link>
         <span aria-current="page">Desk lamp</span>
       </Breadcrumbs>
     </Preview>
@@ -137,10 +145,18 @@ const PREVIEWS = {
   collapse: () => (
     <Preview>
       <Breadcrumbs maxItems={3} aria-label="Collapsed breadcrumb">
-        <a href="#home">Home</a>
-        <a href="#catalog">Catalog</a>
-        <a href="#lighting">Lighting</a>
-        <a href="#desk">Desk</a>
+        <Link href="#home" color="inherit" underline="hover">
+          Home
+        </Link>
+        <Link href="#catalog" color="inherit" underline="hover">
+          Catalog
+        </Link>
+        <Link href="#lighting" color="inherit" underline="hover">
+          Lighting
+        </Link>
+        <Link href="#desk" color="inherit" underline="hover">
+          Desk
+        </Link>
         <span aria-current="page">Desk lamp</span>
       </Breadcrumbs>
     </Preview>

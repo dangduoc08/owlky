@@ -55,6 +55,8 @@ export type {
   LabelPlacement,
   LabelVariant,
   LinearProgressVariant,
+  LinkColor,
+  LinkUnderline,
   ListItemAlignment,
   ListSubheaderColor,
   MobileStepperPosition,
@@ -326,6 +328,7 @@ export {
   type LightboxVideoTrack,
 } from "./lightbox/lightbox.js";
 export { LinearProgress, type LinearProgressProps } from "./linear-progress/linear-progress.js";
+export { Link, type LinkProps } from "./link/link.js";
 export {
   List,
   ListItem,

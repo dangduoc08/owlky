@@ -106,16 +106,11 @@
   min-height: 24px;
   align-items: center;
   justify-content: center;
-  color: inherit;
 }
 
 .sb-page-heading h4 > a > svg {
   width: 20px;
   height: 20px;
-}
-
-.sb-page-heading > p > a {
-  color: var(--ok-palette-primary-text);
 }
 
 /* Stepper demos (story-only): the step text in a neutral box, Back / Next below. */
@@ -1846,6 +1841,11 @@
   font-weight: var(--ok-typography-button-font-weight);
   line-height: var(--ok-typography-button-line-height);
   text-transform: var(--ok-typography-button-text-transform);
+}
+
+/* Link demos (story-only): a paragraph of readable width around links in text. */
+.sb-link-text {
+  max-width: 36rem;
 }
 
 /* Collapse story (story-only): the reference's raised card with a triangle, in two rows. */

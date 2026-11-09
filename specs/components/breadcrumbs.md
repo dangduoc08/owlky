@@ -12,13 +12,16 @@ The path from the site root to the current page, as links. CSS only, plus the HT
 ```
 nav[data-ok-breadcrumbs][aria-label="breadcrumb"][data-ok-max-items]?…[data-ok-expanded]?
   ol[data-ok-breadcrumbs-list]
-    li[data-ok-breadcrumbs-item] › a[href] (svg[aria-hidden]? text)
+    li[data-ok-breadcrumbs-item] › a[href] (svg[aria-hidden]? text)   (a Link: color inherit, underline hover)
     li[data-ok-breadcrumbs-separator][aria-hidden="true"] › "/" | span[data-ok-breadcrumbs-dot]
     li[data-ok-breadcrumbs-item][data-ok-breadcrumbs-collapsed]                (collapsed)
       › button[type="button"][data-ok-breadcrumbs-expand][aria-label="Show path"] › svg
     li[data-ok-breadcrumbs-item][hidden] …                                     (collapsed items)
     li[data-ok-breadcrumbs-item] › span[aria-current="page"]
 ```
+Items compose Link (`link.md`: `data-ok-typography data-ok-link`, `color="inherit"`,
+`underline="hover"`, as in MUI's demos); a plain `a` gets the same look from `breadcrumbs.css`,
+which loads after `link.css`.
 Collapsed order: items before, their separators, the expand item, a separator, the hidden items
 (each with its following separator hidden), the items after.
 

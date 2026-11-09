@@ -1,5 +1,5 @@
 import { breadcrumbsOptions } from "@owlky/core";
-import { Breadcrumbs, BreadcrumbsDot, Button, Typography } from "@owlky/react";
+import { Breadcrumbs, BreadcrumbsDot, Button, Link, Typography } from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
 import { DemoIcon } from "../shared/demo-icon.js";
 import type { GroupFiles } from "../shared/snippets.js";
@@ -8,18 +8,18 @@ import type { GroupFiles } from "../shared/snippets.js";
 function DotTrail({ label }: { label: string }) {
   return (
     <Breadcrumbs separator={<BreadcrumbsDot />} aria-label={label}>
-      <a href="#home">
+      <Link href="#home" color="inherit" underline="hover">
         <DemoIcon name="home" />
         Home
-      </a>
-      <a href="#products">
+      </Link>
+      <Link href="#products" color="inherit" underline="hover">
         <DemoIcon name="cube" />
         Products
-      </a>
-      <a href="#products-lamps">
+      </Link>
+      <Link href="#products-lamps" color="inherit" underline="hover">
         <DemoIcon name="cube" />
         Lamps
-      </a>
+      </Link>
       <span aria-current="page">
         <DemoIcon name="cube" />
         Desk lamp
@@ -31,8 +31,9 @@ DotTrail.displayName = "DotTrail";
 
 /**
  * Story groups — the same examples, in the same order, as the HTML snippets
- * `packages/html/src/components/breadcrumbs/examples/<story>-<file>.html`. The page heading's
- * wrapper, `h4` and paragraph are story-only demo markup (`.storybook/preview.css`).
+ * `packages/html/src/components/breadcrumbs/examples/<story>-<file>.html`. Items are Links in the
+ * parent's color, underlined on hover (MUI's breadcrumbs); the page heading's wrapper is story-only
+ * demo markup (`.storybook/preview.css`).
  */
 export const breadcrumbsStories: Record<string, ReactGroup[]> = {
   text: [
@@ -40,8 +41,12 @@ export const breadcrumbsStories: Record<string, ReactGroup[]> = {
       title: "Text",
       content: (
         <Breadcrumbs>
-          <a href="#home">Home</a>
-          <a href="#catalog">Catalog</a>
+          <Link href="#home" color="inherit" underline="hover">
+            Home
+          </Link>
+          <Link href="#catalog" color="inherit" underline="hover">
+            Catalog
+          </Link>
           <span aria-current="page">Accessories</span>
         </Breadcrumbs>
       ),
@@ -52,14 +57,14 @@ export const breadcrumbsStories: Record<string, ReactGroup[]> = {
       title: "With icon",
       content: (
         <Breadcrumbs aria-label="breadcrumb with icons">
-          <a href="#home">
+          <Link href="#home" color="inherit" underline="hover">
             <DemoIcon name="home" />
             Home
-          </a>
-          <a href="#catalog">
+          </Link>
+          <Link href="#catalog" color="inherit" underline="hover">
             <DemoIcon name="cube" />
             Catalog
-          </a>
+          </Link>
           <span aria-current="page">
             <DemoIcon name="star" />
             Accessories
@@ -76,10 +81,10 @@ export const breadcrumbsStories: Record<string, ReactGroup[]> = {
         <div className="sb-page-heading">
           <div className="sb-page-heading-title">
             <Typography variant="h4" color="textPrimary">
-              <a href="#products">
+              <Link href="#products" color="inherit" underline="none">
                 <DemoIcon name="chevronLeft" />
                 <span className="sr-only">Back to products</span>
-              </a>
+              </Link>
               Desk lamp
             </Typography>
             <Button variant="contained" color="inherit" startIcon={<DemoIcon name="plus" />}>
@@ -89,9 +94,9 @@ export const breadcrumbsStories: Record<string, ReactGroup[]> = {
           <DotTrail label="page breadcrumb" />
           <Typography variant="body2" color="textSecondary">
             {"Read the "}
-            <a href="#guide-spacing">spacing guide</a>
+            <Link href="#guide-spacing">spacing guide</Link>
             {" and the "}
-            <a href="#guide-overflow">overflow guide</a>.
+            <Link href="#guide-overflow">overflow guide</Link>.
           </Typography>
         </div>
       ),

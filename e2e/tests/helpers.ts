@@ -271,8 +271,9 @@ export const CONTRAST_EXEMPT = [
   '[data-ok-label][data-ok-color="black"]',
   "[data-swatch]",
   '[data-ok-list-subheader][data-ok-color="primary"]',
-  // Typography in a palette's main tone follows the reference (ADR-0014); disabled text is inactive.
-  '[data-ok-typography][data-ok-color]:not([data-ok-color="textPrimary"]):not([data-ok-color="textSecondary"])',
+  // Typography (and Link) in a palette's main tone follows the reference (ADR-0014); disabled text
+  // is inactive; inherited colors (Link `inherit`) are checked.
+  '[data-ok-typography][data-ok-color]:not([data-ok-color="textPrimary"]):not([data-ok-color="textSecondary"]):not([data-ok-color="inherit"])',
   '[data-ok-tabs]:not([data-ok-text-color="inherit"]) [role="tab"][aria-selected="true"]',
   '[data-ok-picker-day][aria-selected="true"]',
   '[data-ok-picker-month][aria-checked="true"]',
