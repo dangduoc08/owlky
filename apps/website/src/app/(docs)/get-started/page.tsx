@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { pageAt } from "../../content/site.js";
-import { PageHeading, PageSections } from "../../site/page.js";
+import { pageAt } from "../../../content/site.js";
+import { PageHeading, PageSections } from "../../../site/page.js";
 
 export const dynamic = "force-static";
 

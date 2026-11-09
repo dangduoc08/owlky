@@ -4,7 +4,7 @@
 //     shows it in an iframe, so the HTML runtime never shares a page with React;
 //   - extracts what the pages read from the MCP manifest (option schemas, spec sections) into
 //     src/generated/manifest.json, so the 6 MB manifest never reaches a bundle.
-import { copyFileSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { copyFileSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { app, loadContent, requireBuild, root } from "./content.mjs";
 
@@ -51,11 +51,21 @@ for (const page of PAGES) {
     ),
   };
 }
+// Facts the home page states (component and test file counts), counted here so they stay true.
+const countFiles = (dir, pattern) =>
+  readdirSync(join(root, dir), { recursive: true }).filter(
+    (file) => pattern.test(String(file)) && !/(^|\/)(node_modules|dist)\//.test(String(file)),
+  ).length;
+const landing = {
+  components: manifest.components.map(({ name, title, summary }) => ({ name, title, summary })),
+  unitTestFiles: countFiles("packages", /\.test\.tsx?$/),
+  e2eSpecFiles: countFiles("e2e/tests", /\.spec\.ts$/),
+};
 const generated = join(app, "src/generated");
 mkdirSync(generated, { recursive: true });
 writeFileSync(
   join(generated, "manifest.json"),
-  `${JSON.stringify({ version: manifest.version, components }, null, 1)}\n`,
+  `${JSON.stringify({ version: manifest.version, components, landing }, null, 1)}\n`,
 );
 
 console.log(`website: copied the CDN bundle, wrote ${count} sandbox pages and the manifest subset`);

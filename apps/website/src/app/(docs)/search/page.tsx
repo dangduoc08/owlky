@@ -1,6 +1,6 @@
 import { Typography } from "@owlky/react";
 import type { Metadata } from "next";
-import { SiteSearch } from "../../site/search.js";
+import { SiteSearch } from "../../../site/search.js";
 
 export const dynamic = "force-static";
 
