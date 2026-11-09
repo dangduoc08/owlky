@@ -21,17 +21,24 @@ const generate = (file: string) => {
   return readFileSync(file, "utf8");
 };
 
+type Schemas = Record<string, { root: string; options: Record<string, { attr: string }> }>;
+
 let first = "";
 let second = "";
 let manifest: Manifest;
-beforeAll(() => {
+let optionSchemas: Schemas;
+// Generating twice and importing the core bundle are slow on loaded machines (CI runners): both
+// happen here, under one long hook timeout, so no test body waits on them.
+beforeAll(async () => {
   first = generate(join(dir, "a.json"));
   second = generate(join(dir, "b.json"));
   manifest = JSON.parse(first) as Manifest;
+  const core = (await import(pathToFileURL(join(root, "packages/core/dist/index.js")).href)) as {
+    optionSchemas: Schemas;
+  };
+  optionSchemas = core.optionSchemas;
 }, 120_000);
 afterAll(() => rmSync(dir, { recursive: true, force: true }));
-
-type Schemas = Record<string, { root: string; options: Record<string, { attr: string }> }>;
 
 describe("manifest generator", () => {
   it("is deterministic, with sorted keys", () => {
@@ -53,15 +60,12 @@ describe("manifest generator", () => {
     expect(manifest.version).toBe(version);
   });
 
-  it("has every option schema, option by option", async () => {
-    const core = (await import(pathToFileURL(join(root, "packages/core/dist/index.js")).href)) as {
-      optionSchemas: Schemas;
-    };
+  it("has every option schema, option by option", () => {
     const found = new Map(
       manifest.components.flatMap((c) => c.schemas.map((schema) => [schema.name, schema])),
     );
-    expect([...found.keys()].sort()).toEqual(Object.keys(core.optionSchemas).sort());
-    for (const [name, schema] of Object.entries(core.optionSchemas)) {
+    expect([...found.keys()].sort()).toEqual(Object.keys(optionSchemas).sort());
+    for (const [name, schema] of Object.entries(optionSchemas)) {
       const entry = found.get(name);
       expect(entry?.root).toBe(schema.root);
       expect(entry?.options.map((o) => [o.name, o.attr])).toEqual(
