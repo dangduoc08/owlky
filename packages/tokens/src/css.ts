@@ -54,6 +54,21 @@ const shadow = (layers: readonly ShadowLayer[], color: string) =>
     )
     .join(", ");
 
+/**
+ * The same layers as a `filter` value (`drop-shadow()` per layer), for shapes that a box shadow
+ * would draw around their box (SVG pins, icons). Only layers without spread: `drop-shadow()` has none.
+ */
+const dropShadow = (layers: readonly ShadowLayer[], color: string) =>
+  layers
+    .map(
+      (l) =>
+        `drop-shadow(${l.x}px ${l.y}px ${l.blur}px color-mix(in srgb, ${color} ${l.alpha}%, transparent))`,
+    )
+    .join(" ");
+
+/** Custom shadows that also get a `--ok-drop-shadow-*` filter (their layers have no spread). */
+export const dropShadowNames = ["z1", "z4", "z8"] as const;
+
 function rootVariables(theme: Theme): CssVariables {
   const vars: CssVariables = {};
   for (const name of paletteColorNames) {
@@ -148,6 +163,9 @@ function schemeVariables(scheme: ColorScheme, theme: Theme, dark: boolean): CssV
   for (const name of shadowNames) {
     vars[`--ok-shadow-${kebab(name)}`] = shadow(theme.shadows[name], "var(--ok-shadow-color)");
   }
+  for (const name of dropShadowNames) {
+    vars[`--ok-drop-shadow-${name}`] = dropShadow(theme.shadows[name], "var(--ok-shadow-color)");
+  }
   theme.elevation.forEach((layers, index) => {
     vars[`--ok-elevation-${index + 1}`] = shadow(layers, "var(--ok-shadow-color)");
   });
@@ -202,6 +220,7 @@ export interface ThemeCssOptions {
 /** Shadow variables: identical text in every scheme, resolved against `--ok-shadow-color`. */
 const isShadowVariable = (name: string) =>
   name.startsWith("--ok-elevation-") ||
+  name.startsWith("--ok-drop-shadow-") ||
   (name.startsWith("--ok-shadow-") && name !== "--ok-shadow-color");
 
 function splitShadows(vars: CssVariables): [scheme: CssVariables, shadows: CssVariables] {

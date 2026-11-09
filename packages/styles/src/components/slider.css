@@ -140,7 +140,7 @@
     border: 1px solid rgb(var(--ok-palette-grey-500-channel) / 0.08);
     border-radius: var(--ok-radius-full);
     background-color: var(--ok-palette-common-white);
-    box-shadow: 0 1px 2px 0 rgb(var(--ok-palette-grey-500-channel) / 0.16);
+    box-shadow: var(--ok-shadow-z1);
     translate: -50% -50%;
     transition: box-shadow var(--ok-duration-shortest) var(--ok-easing-standard);
   }

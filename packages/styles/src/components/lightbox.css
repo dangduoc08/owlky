@@ -537,6 +537,8 @@
   :where([data-ok-lightbox-thumbnail-play] > svg) {
     width: calc(var(--ok-spacing) * 8);
     height: calc(var(--ok-spacing) * 8);
+    /* shadow-literal: a white icon over any photo needs a dark halo in every theme, so it doesn't
+       follow --ok-shadow-color (grey in the light scheme). */
     filter: drop-shadow(0 0 2px rgb(var(--ok-palette-common-black-channel) / 0.48));
   }
 

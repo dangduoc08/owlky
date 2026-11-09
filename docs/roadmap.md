@@ -98,7 +98,7 @@ section, autodocs page, Controls), generated from the tokens:
 |---|---|---|
 | Colors | One story per palette: Hex / Rgb / Var, click to copy | `getContrastText`, `contrastRatio`, `hexToRgb` |
 | Typography | One story per variant with its definition, text colors | Responsive sizes (600/900/1200px), display font Barlow for h1–h3, h5/h6 values, breakpoints |
-| Shadows | System elevations 1–24, extended shadows, colored shadows | `--ok-elevation-1…24` |
+| Shadows | System elevations 1–24, extended shadows, colored shadows, drop shadows (2026-11-09: `filter` versions of z1 / z4 / z8 for shapes; Slider thumb and Map pin moved to tokens; `styles.test.ts` rejects hand-written blurred shadows) | `--ok-elevation-1…24`, `--ok-drop-shadow-z1 / z4 / z8` |
 | Grid | Spacing (0–40px) and column (1–12) stories driven by Controls | — |
 | Icons | Icon sets, sizes, colors, usage | — (no icon set bundled; reference logo/illustrations not reproduced) |
 | Illustrations (ADR-0041, 2026-11-09) | 16 original theme-aware pictures in six stories (All, Errors, States, Account, Dashboard, Shapes), style guide `docs/illustrations-style.md` and shared parts, framework toolbar, Controls `color` / `size`, usage guide | `--ok-illustration-skin-light / -medium / -deep`; `Illustration` (React), runtime `illustration` (opt-in `owlky-illustrations.js`), data in `@owlky/core/illustrations` |

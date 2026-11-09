@@ -85,6 +85,7 @@ describe("themeToCss", () => {
     expect(count("--ok-text-primary:")).toBe(3); // light, dark, system
     expect(count("--ok-elevation-24:")).toBe(1);
     expect(count("--ok-shadow-card:")).toBe(1);
+    expect(count("--ok-drop-shadow-z1:")).toBe(1);
     expect(css).toContain(':where(:root), [data-ok-theme="light"] {');
     expect(css).toContain(":root, [data-ok-theme], .dark {");
     expect(css.indexOf('[data-ok-theme="dark"], .dark {')).toBeLessThan(
@@ -126,6 +127,29 @@ describe("typography and elevation", () => {
     expect(root["--ok-typography-h1-font-family"]).toBe("var(--ok-font-family-secondary)");
     expect(root["--ok-typography-h3-font-family"]).toBe("var(--ok-font-family-secondary)");
     expect(root["--ok-typography-h4-font-family"]).toBe("var(--ok-font-family)");
+  });
+
+  it("mirrors the spread-free custom shadows as drop-shadow filters", () => {
+    const { light, dark } = themeToCssVariables(defaultTheme);
+    expect(light["--ok-drop-shadow-z1"]).toBe(
+      "drop-shadow(0px 1px 2px color-mix(in srgb, var(--ok-shadow-color) 16%, transparent))",
+    );
+    expect(light["--ok-drop-shadow-z8"]).toBe(
+      "drop-shadow(0px 8px 16px color-mix(in srgb, var(--ok-shadow-color) 16%, transparent))",
+    );
+    expect(dark["--ok-drop-shadow-z4"]).toBeDefined();
+    for (const name of ["z1", "z4", "z8"] as const) {
+      expect(defaultTheme.shadows[name].every((layer) => layer.spread === 0)).toBe(true);
+    }
+  });
+
+  it("follows a custom theme's shadow layers in its drop-shadow filters", () => {
+    const layer = { x: 0, y: 2, blur: 6, spread: 0, alpha: 30 };
+    const { light } = themeToCssVariables(createTheme({ shadows: { z4: [layer, layer] } }));
+    expect(light["--ok-drop-shadow-z4"]).toBe(
+      "drop-shadow(0px 2px 6px color-mix(in srgb, var(--ok-shadow-color) 30%, transparent)) " +
+        "drop-shadow(0px 2px 6px color-mix(in srgb, var(--ok-shadow-color) 30%, transparent))",
+    );
   });
 
   it("defines 24 three-layer system elevations per scheme", () => {

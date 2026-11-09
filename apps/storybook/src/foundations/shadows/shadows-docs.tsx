@@ -19,6 +19,7 @@ export const shadowsSections: GuideSection[] = [
 - **Elevation:** 24 levels, from \`--ok-elevation-1\` (almost flat) to \`--ok-elevation-24\` (floating).
 - **Named shadows:** shadows for common surfaces. Use \`--ok-shadow-card\` for cards, \`--ok-shadow-dropdown\` for menus and popovers, \`--ok-shadow-dialog\` for dialogs and \`--ok-shadow-dialog-start\` for drawers. The scale \`--ok-shadow-z1\` to \`--ok-shadow-z24\` covers everything in between.
 - **Colored shadows:** one per palette color, such as \`--ok-shadow-primary\`, for filled buttons and highlighted elements.
+- **Drop shadows:** \`--ok-drop-shadow-z1\`, \`--ok-drop-shadow-z4\` and \`--ok-drop-shadow-z8\` repeat \`--ok-shadow-z1\`, \`--ok-shadow-z4\` and \`--ok-shadow-z8\` as \`filter\` values, for shapes such as map pins and icons.
 
 The stories in the sidebar show every shadow.`,
   },
@@ -102,6 +103,34 @@ export function SalesCard() {
 }`,
   },
   {
+    id: "shapes",
+    title: "Shadow a shape with a filter",
+    body: "A `box-shadow` follows the element's box, so an icon or a pin gets a rectangular shadow. Set `filter` to a drop shadow variable instead: the shadow then follows the shape. Drop shadows use the same offsets, blur and color as the shadow levels, so a pin and a card at the same level look alike.",
+    html: `<style>
+  .pin {
+    width: 26px;
+    height: 26px;
+    color: var(--ok-palette-primary-main);
+    filter: var(--ok-drop-shadow-z4);
+  }
+</style>
+
+<svg class="pin" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+  <path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z" />
+</svg>`,
+    react: `import { MapPin } from "lucide-react";
+
+export function Pin() {
+  return (
+    <MapPin
+      aria-hidden="true"
+      size={26}
+      style={{ color: "var(--ok-palette-primary-main)", filter: "var(--ok-drop-shadow-z4)" }}
+    />
+  );
+}`,
+  },
+  {
     id: "themes",
     title: "Shadows in dark mode",
     body: "Shadows follow the theme. In the light theme they use a soft grey; in the dark theme they use black, so surfaces still stand out from a dark page. `--ok-shadow-primary` follows the active preset. You don't need any extra code.",
@@ -177,11 +206,34 @@ function ThemesPreview() {
   );
 }
 
+function ShapesPreview() {
+  return (
+    <Preview className="gap-8!">
+      {["--ok-drop-shadow-z1", "--ok-drop-shadow-z4", "--ok-drop-shadow-z8"].map((token) => (
+        <div key={token} className="flex flex-col items-center gap-2">
+          <svg
+            viewBox="0 0 24 24"
+            width="40"
+            height="40"
+            fill="currentColor"
+            aria-hidden="true"
+            style={{ color: "var(--ok-palette-primary-main)", filter: `var(${token})` }}
+          >
+            <path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z" />
+          </svg>
+          <Caption>{token.replace("--ok-", "")}</Caption>
+        </div>
+      ))}
+    </Preview>
+  );
+}
+
 const PREVIEWS = {
   levels: LevelsPreview,
   css: CardPreview,
   tailwind: CardPreview,
   colored: ColoredPreview,
+  shapes: ShapesPreview,
   themes: ThemesPreview,
 };
 

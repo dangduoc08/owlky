@@ -23,7 +23,7 @@ const css = themeToCss(
 | Channels | `--ok-palette-<color>-<shade>-channel`, `--ok-palette-grey-<n>-channel`, `--ok-palette-common-white\|black-channel` | e.g. `0 167 111`, for `rgb(var(…) / 0.16)` (ADR-0013) |
 | Font sizes | `--ok-font-size-xs\|sm\|md\|lg\|xl` | 12 / 13 / 14 / 15 / 16px |
 | Component color | `[data-ok-color="primary…error\|black\|white"]` → `--ok-c-main\|channel\|hover\|contrast\|text\|shadow` | non-inheriting bindings |
-| Shadows | `--ok-elevation-1…24`, `--ok-shadow-z1\|z4\|…\|z24\|card\|dropdown\|dialog\|dialog-start`, `--ok-shadow-<color>` | Tinted with `--ok-shadow-color` per theme |
+| Shadows | `--ok-elevation-1…24`, `--ok-shadow-z1\|z4\|…\|z24\|card\|dropdown\|dialog\|dialog-start`, `--ok-shadow-<color>`, `--ok-drop-shadow-z1\|z4\|z8` (`filter` values) | Tinted with `--ok-shadow-color` per theme |
 | Shape & layout | `--ok-radius-*`, `--ok-spacing` (4px), `--ok-breakpoint-*`, `--ok-z-*` | |
 | Motion | `--ok-duration-*`, `--ok-easing-*` | |
 
@@ -41,7 +41,7 @@ resets; load the fonts yourself). Font size: the root `font-size` (12–20px), e
 | `primaryPresets`, `primaryPresetNames`, `fontFamilyPresets`, `fontFamilyPresetNames`, `fontSizeRange`, `paletteTextFor(color, scheme, dark)` | Theme settings data (ADR-0017) and the AA text-tone chooser |
 | `themeToCss(theme, { colorBindings, presets })`, `primaryPresetVariables`, `fontPresetVariables`, `themeToCssVariables(theme)`, `responsiveTypographyVariables(theme)` | Serialize a theme to CSS / variable maps |
 | `hexToRgb`, `relativeLuminance`, `contrastRatio`, `getContrastText(background, candidates?)` | WCAG 2.2 color math for theme authors |
-| `componentColorNames`, `paletteColorNames`, `greyShades`, `typographyVariants`, `shadowNames`, `radiusNames`, `breakpointNames` | Name lists (and their types) |
+| `componentColorNames`, `paletteColorNames`, `greyShades`, `typographyVariants`, `shadowNames`, `dropShadowNames`, `radiusNames`, `breakpointNames` | Name lists (and their types) |
 
 Default colors are verified for WCAG 2.2 AA contrast in light and dark mode.
 

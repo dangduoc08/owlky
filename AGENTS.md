@@ -627,6 +627,13 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
   page): dynamic parity runs with `thumbnail` off. The HTML runtime keeps per-element bookkeeping in
   `WeakMap`s, not attributes, so its markup stays equal to React's. A disabled zone is in
   `CONTRAST_EXEMPT` (inactive component, dimmed like the reference).
+- Shadows always come from tokens: `--ok-elevation-*`, `--ok-shadow-*` (z scale, card, dropdown,
+  dialog, colored) or `--ok-drop-shadow-z1|z4|z8` (`filter` for shapes: pins, icons). A reference
+  value that matches none of them takes the **nearest** token (consistency over pixel copies), never a
+  literal: a hand-written copy also misses `--ok-shadow-color` (grey in light, black in dark) and
+  `createTheme`. `styles.test.ts` (`literalShadows`) rejects blurred literals; rings and borders drawn
+  with a zero-blur shadow are fine. A deliberate exception (Lightbox's play icon over photos) carries a
+  `/* shadow-literal: <reason> */` comment right before the declaration.
 - Paper is the base surface: `paper.css` is imported **first** among the components, so a surface
   built on it (Card: `data-ok-paper` + `data-ok-card` on one element, Paper's options spread into
   its schema) overrides radius and shadow by source order and restates outlined / square for its

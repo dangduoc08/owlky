@@ -185,3 +185,35 @@ describe("preset scopes resolve against the nearest preset and scheme", () => {
     expect(rgb.slice(0, 3)).toEqual(expected.match(/\d+/g)?.map(Number));
   });
 });
+
+describe("drop-shadow tokens follow the scheme's shadow color", () => {
+  const style = document.createElement("style");
+  afterEach(() => {
+    style.remove();
+    document.body.replaceChildren();
+  });
+
+  /** Computed `filter` and `box-shadow` of the z1 tokens in a `data-ok-theme` scope. */
+  function z1(theme: "light" | "dark") {
+    style.textContent = themeToCss(defaultTheme);
+    document.head.append(style);
+    const scope = document.createElement("div");
+    scope.setAttribute("data-ok-theme", theme);
+    const probe = document.createElement("span");
+    probe.style.filter = "var(--ok-drop-shadow-z1)";
+    probe.style.boxShadow = "var(--ok-shadow-z1)";
+    scope.append(probe);
+    document.body.append(scope);
+    const computed = getComputedStyle(probe);
+    return { filter: computed.filter, boxShadow: computed.boxShadow };
+  }
+
+  it("resolves to a drop-shadow() that changes with the scheme, like the box shadow", () => {
+    const light = z1("light");
+    const dark = z1("dark");
+    expect(light.filter).toMatch(/drop-shadow\(/);
+    expect(dark.filter).toMatch(/drop-shadow\(/);
+    expect(light.filter).not.toBe(dark.filter);
+    expect(light.boxShadow).not.toBe(dark.boxShadow);
+  });
+});

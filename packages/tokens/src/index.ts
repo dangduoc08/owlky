@@ -10,6 +10,7 @@ export {
   type CssVariables,
   colorBindingVariables,
   DARK_SELECTOR,
+  dropShadowNames,
   fontPresetVariables,
   LAYER_ORDER,
   LIGHT_SELECTOR,
