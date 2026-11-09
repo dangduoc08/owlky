@@ -4,6 +4,7 @@ import { defineConfig, type UserConfig } from "vite";
 // Builds only the IIFE bundles for <script> / CDN use. The npm ESM output comes from tsc.
 // `vite build` → owlky.js (runtime + components); `vite build --mode editor` → owlky-editor.js
 // (the Editor and Tiptap, ADR-0023; loaded after owlky.js, it shares its runtime).
+// `--mode markdown` → owlky-markdown.js (Markdown and unified, ADR-0035; loaded after owlky.js).
 // `--mode map` → owlky-map.js (the Map and MapLibre, ADR-0025; loaded after owlky.js too).
 // The Code editor (ADR-0034): `--mode code-editor` → owlky-code-editor.js (the runtime definitions
 // and the loader, without Monaco), `--mode monaco` → monaco/monaco.js + monaco.css (the engine, an
@@ -24,6 +25,8 @@ const iife = (entry: string, name: string, file: string, extra: UserConfig = {})
 
 export default defineConfig(({ mode }): UserConfig => {
   if (mode === "editor") return iife("src/cdn-editor.ts", "OwlkyEditorBundle", "owlky-editor.js");
+  if (mode === "markdown")
+    return iife("src/cdn-markdown.ts", "OwlkyMarkdownBundle", "owlky-markdown.js");
   if (mode === "map")
     return iife("src/cdn-map.ts", "OwlkyMapBundle", "owlky-map.js", {
       // MapLibre finds its worker from `import.meta.url`, which an IIFE lacks: cdn-map.ts sets the

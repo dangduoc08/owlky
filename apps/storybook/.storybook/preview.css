@@ -1174,9 +1174,10 @@
   line-height: var(--ok-typography-h6-line-height);
 }
 
-.sb-editor-preview > [data-ok-editor] {
-  border-width: 1px 0 0;
-  border-radius: 0;
+/* The preview renders the editor's HTML with Markdown, as the reference does. */
+.sb-editor-preview > [data-ok-markdown] {
+  padding: calc(var(--ok-spacing) * 6);
+  border-top: 1px solid var(--ok-divider);
 }
 
 /* Date pickers stories: a column of fields, as wide as the reference's cards. */

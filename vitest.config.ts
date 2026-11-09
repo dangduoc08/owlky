@@ -20,6 +20,7 @@ export default defineConfig({
         "packages/html/src/monaco.ts",
         "packages/html/src/monaco-stub.ts",
         "packages/html/src/cdn-map.ts",
+        "packages/html/src/cdn-markdown.ts",
       ],
       reporter: ["text-summary", "text"],
       // Component floor (see .claude/commands/component.md → Coverage matrix). Add each new
@@ -66,6 +67,9 @@ export default defineConfig({
         "packages/core/src/map/**": COMPONENT_THRESHOLDS,
         "packages/react/src/map/**": COMPONENT_THRESHOLDS,
         "packages/html/src/components/map/**": COMPONENT_THRESHOLDS,
+        "packages/core/src/markdown/**": COMPONENT_THRESHOLDS,
+        "packages/react/src/markdown/**": COMPONENT_THRESHOLDS,
+        "packages/html/src/components/markdown/**": COMPONENT_THRESHOLDS,
         "packages/core/src/pickers/**": COMPONENT_THRESHOLDS,
         "packages/core/src/adapters/**": COMPONENT_THRESHOLDS,
         "packages/react/src/accordion/**": COMPONENT_THRESHOLDS,

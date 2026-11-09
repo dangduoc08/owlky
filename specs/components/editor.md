@@ -134,7 +134,8 @@ React: `onChange(html)`, `onFullscreenChange(fullscreen)`.
 ## Responsive
 The toolbar wraps at every width (mobile: three to four rows); the body scrolls inside the 720px
 cap; forms are `min(320px, 100vw − 48px)` wide. The story puts editor and preview side by side from
-900px, stacked below.
+900px, stacked below; the preview renders the editor's HTML with Markdown (`rawHtml`, ADR-0035),
+as the reference does.
 
 ## Parity notes
 React renders `data-ok-runtime="off"` (root and Backdrop); popover triggers carry

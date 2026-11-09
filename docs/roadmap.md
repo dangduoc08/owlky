@@ -62,7 +62,7 @@ component and each `/integrate` run.
 | Extra | Layout | not planned | — | Next |
 | Extra | Lightbox | wave 7 (ADR) | — | Next |
 | Extra | Map | ✅ (ADR-0025, MapLibre GL JS) | MapView, Marker, Popup, Source, Layer, NavigationControl, GeolocateControl, FullscreenControl, ScaleControl, AttributionControl, GlobeControl, TerrainControl, MapControl, MapPanel, MapProvider / useMap | Map |
-| Extra | Markdown | wave 7 (ADR) | — | Next |
+| Extra | Markdown | ✅ (ADR-0035, unified) | Markdown, MarkdownAsync, MarkdownHooks | Markdown |
 | Extra | Mega menu | not planned | — | Next |
 | Extra | Multi-language | not planned | — | Next |
 | Extra | Navigation bar | not planned | — | Next |
@@ -490,7 +490,6 @@ integrate these in the same review (additive: no DOM or API change) and remove t
 
 | Waiting for | Where | Today |
 |---|---|---|
-| Markdown | Editor story "Preview" (the reference renders the HTML with its Markdown component) | a read-only Editor (`editable={false}`) |
 | Typography (display text) | Sortable stories (card numbers) | demo `<span>` styled in `.storybook/preview.css` |
 | Typography (heading / secondary text) | Accordion summaries (plain text, no secondary line from the reference) | summary text styled by `accordion.css` |
 | Typography (heading) | Scrollbar "Layout" story heading | demo `<h4>` styled in `.storybook/preview.css` |
@@ -592,6 +591,21 @@ Multi-model editor, Validation. No new tokens.
 **Backlog (deferred):** Monaco's per-editor themes in nested scopes (Monaco has one theme per page),
 `@monaco-editor/loader`'s AMD `paths` for third-party CDNs (Owlky self-hosts only).
 
+## ✅ Components — Markdown (2026-11-09)
+Created with `/component` from the reference "Markdown" page (react-markdown), both sections as
+stories: Html content, Markdown content. Built from unified (ADR-0035, owner's choice): one
+pipeline in core (`@owlky/core/markdown`: remark-parse + remark-gfm → remark-rehype → rehype-raw +
+an allow-list sanitizer → Owlky's last step) for React (`Markdown`, `MarkdownAsync`,
+`MarkdownHooks`, every react-markdown prop) and HTML (`markdown` runtime, opt-in
+`@owlky/html/markdown`, `owlky-markdown.js`; the Markdown is the text of
+`pre[data-ok-markdown-source]`). Safe by default: `defaultUrlTransform`, raw HTML as text unless
+`rawHtml` (sanitized), scripts / frames / handlers never rendered, styles through CSSOM (strict
+CSP). Owlky options: `gfm`, `rawHtml`, `sanitizeSchema`, `externalLinks`, `highlighter`
+(lowlight, as the Editor). Task list boxes are named by a `label`. Closed the Editor story's
+"Preview" wait (the preview renders the editor's HTML with Markdown, as the reference does). No new
+tokens.
+**Backlog (deferred):** a serif token for the reference's Georgia block quotes (body font today).
+
 ## Chart (ADR-0024, ADR-0027) — written by us, every ApexCharts chart type in four phases
 Created with `/component` from the reference "Chart" page. ApexCharts' framework-free core isn't
 MIT, so the owner chose our own engine (2026-11-08): one SVG layout in core (`renderChart`), drawn by
@@ -653,7 +667,7 @@ Dependency-first: leaf components before the ones built from them, the ones that
 | 4 Overlays | ~~Popover~~ ✅, ~~Tooltip~~ ✅, ~~Menu~~ ✅, ~~Dialog~~ ✅, ~~Snackbar~~ ✅, ~~Backdrop~~ ✅ | ~~Drawer / Dialog backdrop~~ ✅ (native `::backdrop`, same token); icon button tooltips: nothing to change (MUI uses native `title` there; Tooltip wraps any IconButton) |
 | 5 Navigation | ~~Tabs~~ ✅, ~~Breadcrumbs~~ ✅, ~~Stepper~~ ✅ | — (nothing waited for them) |
 | 6 Composites | ~~Rating~~ ✅, ~~Slider~~ ✅, ~~Timeline~~ ✅, ~~Transfer list~~ ✅, ~~Autocomplete~~ ✅, ~~Tree view~~ ✅ | — (nothing waited for them; Slider unblocks the SettingsDrawer backlog of Theme settings) |
-| 7 Needs an ADR | ~~Data grid~~ (ADR-0020, phases below), ~~Date pickers~~ (ADR-0022, ADR-0030, complete ✅), ~~Chart~~ (ADR-0024, ADR-0027, ADR-0031, complete ✅), ~~Map~~ (ADR-0025) ✅, ~~Editor~~ (ADR-0023) ✅, ~~Carousel~~ (ADR-0033) ✅, Lightbox, Markdown, ~~Organization chart~~ (ADR-0036) ✅, Upload, Image, Walktour | — |
+| 7 Needs an ADR | ~~Data grid~~ (ADR-0020, phases below), ~~Date pickers~~ (ADR-0022, ADR-0030, complete ✅), ~~Chart~~ (ADR-0024, ADR-0027, ADR-0031, complete ✅), ~~Map~~ (ADR-0025) ✅, ~~Editor~~ (ADR-0023) ✅, ~~Carousel~~ (ADR-0033) ✅, Lightbox, ~~Markdown~~ (ADR-0035) ✅, ~~Organization chart~~ (ADR-0036) ✅, Upload, Image, Walktour | — |
 
 Not planned as components (patterns or app-level pages of the reference): Layout,
 Utilities, Multi-language, Navigation bar, Mega menu, Scroll progress, Form validation, Form wizard.

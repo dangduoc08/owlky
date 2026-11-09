@@ -116,6 +116,16 @@ test("no CSP or Trusted Types violations", async ({ page }) => {
       (element as HTMLElement).style.getPropertyValue("--_ok-carousel-basis-xs"),
     ),
   ).toBe("70%");
+  // Markdown (owlky-markdown.js, unified) builds DOM with DOM methods; alignment goes through
+  // CSSOM; raw HTML is sanitized and unsafe URLs are removed.
+  const markdown = page.locator("#csp-markdown");
+  await expect(markdown.getByRole("heading", { name: "Notes" })).toBeVisible();
+  await expect(markdown.getByRole("cell", { name: "3" })).toHaveCSS("text-align", "right");
+  await expect(markdown.locator("span")).toHaveCSS("text-transform", "uppercase");
+  await expect(markdown.getByRole("checkbox", { name: "Ship it" })).toBeChecked();
+  // The unsafe link keeps its text but loses its URL (so it is no longer a link).
+  await expect(markdown.locator("a", { hasText: "unsafe" })).not.toHaveAttribute("href");
+  await expect(markdown.locator("img[onerror], script")).toHaveCount(0);
   expect(
     await page.evaluate(() => (window as unknown as { violations: string[] }).violations),
   ).toEqual([]);

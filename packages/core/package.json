@@ -21,6 +21,10 @@
       "types": "./dist/code-editor/index.d.ts",
       "import": "./dist/code-editor/index.js"
     },
+    "./markdown": {
+      "types": "./dist/markdown/index.d.ts",
+      "import": "./dist/markdown/index.js"
+    },
     "./map": {
       "types": "./dist/map/index.d.ts",
       "import": "./dist/map/index.js"
@@ -57,8 +61,17 @@
     "@tiptap/extensions": "3.32.0",
     "@tiptap/pm": "3.32.0",
     "@tiptap/starter-kit": "3.32.0",
+    "@types/hast": "3.0.5",
+    "hast-util-sanitize": "5.0.2",
+    "html-url-attributes": "3.0.1",
     "maplibre-gl": "6.16.0",
-    "monaco-editor": "0.57.0"
+    "monaco-editor": "0.57.0",
+    "property-information": "7.2.0",
+    "rehype-raw": "7.0.0",
+    "remark-gfm": "4.0.1",
+    "remark-parse": "11.0.0",
+    "remark-rehype": "11.1.2",
+    "unified": "11.0.5"
   },
   "peerDependencies": {
     "@date-fns/tz": "^1.2.0",

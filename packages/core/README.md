@@ -9,6 +9,8 @@ Entry points: `@owlky/core` (everything above, side-effect free), `@owlky/core/e
 and `@owlky/core/code-editor` (`createCodeEditorController`, `createDiffEditorController`, the
 Owlky Monaco themes and `loader`, the only path to Monaco; it imports `monaco-editor` on demand,
 ADR-0034).
+`@owlky/core/markdown` (`markdownTree`, `markdownTreeAsync`, `defaultUrlTransform`, the only path
+to unified / remark / rehype, ADR-0035),
 `@owlky/core/map` (`createMapController`, `setMapWorkerUrl`, the only path to MapLibre GL JS,
 ADR-0025) and `@owlky/core/map-worker.js` (MapLibre's worker, for `setMapWorkerUrl`) are opt-in the
 same way.

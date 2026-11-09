@@ -573,6 +573,17 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
   are `hidden` elements read through an allowlist. Controls are portals into the corners (absent from
   server markup); the snippet generator renders them in place through the internal `InlineCorners`
   context.
+- Markdown (ADR-0035): unified is reached only through `@owlky/core/markdown` and the opt-in HTML
+  entries (`@owlky/html/markdown`, `owlky-markdown.js`; `markdown` is in `OPT_IN`). Both renderers
+  write attributes from `markdownElementAttributes` and styles from `markdownElementStyle` (CSSOM),
+  so fix serialization there, never in one renderer. The finished tree holds only elements and
+  text; an empty URL from `urlTransform` removes the attribute (React drops empty `href` / `src`).
+  Task boxes get a `label` after the element filters (axe `label`). HTML snippets are generated
+  (`node apps/storybook/scripts/markdown-snippets.mjs`): the source `pre` escapes `&` and `<`, and the
+  runtime renders before it and hides it, so tests and e2e wait for
+  `[data-ok-markdown-source][hidden]` (HTML stories render in their page script). Links on
+  secondary text (quotes, footnotes) are underlined: axe `link-in-text-block`. Lists set their
+  markers: Storybook's Tailwind preflight removes them.
 - Parallel work: never run two `/component` / `/integrate` sessions (or two `pnpm build` /
   `pnpm test:e2e`) in the same working tree — builds wipe each other's `dist/` and
   `storybook-static/`, e2e servers share port 4321, and staging part of a shared file while

@@ -353,6 +353,21 @@ export {
   type SourceProps,
 } from "./map/map-parts.js";
 export {
+  type AllowElement,
+  type Components as MarkdownComponents,
+  defaultUrlTransform,
+  type ExtraProps as MarkdownExtraProps,
+  Markdown,
+  MarkdownAsync,
+  type MarkdownHighlighter,
+  type MarkdownOptions,
+  type MarkdownProps,
+  type MarkdownSanitizeSchema,
+  markdownSanitizeSchema,
+  type UrlTransform,
+} from "./markdown/markdown.js";
+export { MarkdownHooks, type MarkdownHooksProps } from "./markdown/markdown-hooks.js";
+export {
   Menu,
   type MenuCloseReason,
   MenuItem,

@@ -28,3 +28,17 @@ overrides:
   # Release age (deps ≥ 14 days): maplibre-gl 6.16.0 (Map, ADR-0025) resolves its style spec
   # 26.5.1 (2026-11-01). Remove after 2026-11-15.
   "maplibre-gl>@maplibre/maplibre-gl-style-spec": "26.4.4"
+  # Release age (deps ≥ 14 days): the Markdown pipeline (ADR-0035: remark-gfm 4.0.1, rehype-raw
+  # 7.0.0) resolves releases from 2026-10-29 to 2026-11-07 (hast-util-raw 9.2.0 also moves to
+  # parse5 8 and entities 9). Only the Markdown dependencies use these packages. Remove these nine
+  # lines after 2026-11-21.
+  "rehype-raw>hast-util-raw": "9.1.0"
+  "hast-util-raw>hast-util-from-parse5": "8.0.3"
+  "hast-util-from-parse5>hastscript": "9.0.1"
+  "mdast-util-gfm>mdast-util-gfm-autolink-literal": "2.0.1"
+  "mdast-util-gfm>mdast-util-gfm-table": "2.0.0"
+  "mdast-util-gfm>mdast-util-gfm-task-list-item": "2.0.0"
+  "mdast-util-gfm-table>markdown-table": "3.0.4"
+  "mdast-util-to-markdown": "2.2.0"
+  "vfile-location": "5.0.3"
+  "vfile-message": "4.0.3"

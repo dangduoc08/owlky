@@ -2908,6 +2908,45 @@ export type EditorAnatomyOptions = { fullItem?: boolean | undefined; error?: boo
 export const editorAttributes = (options: EditorAnatomyOptions = {}): DataAttributes =>
   optionAttributes(editorOptions, { ...options });
 
+// --- Markdown (ADR-0035) ------------------------------------------------------------------------
+
+export const markdownOptions = defineOptions("markdown", "data-ok-markdown", {
+  gfm: behavior(
+    "data-ok-gfm",
+    true,
+    "GitHub Flavored Markdown: tables, task lists, strikethrough, autolinks and footnotes (`false`: CommonMark only).",
+  ),
+  rawHtml: flag(
+    "data-ok-raw-html",
+    "HTML in the Markdown is rendered, limited to an allow list (sanitized). Off: it shows as text.",
+  ),
+  skipHtml: flag("data-ok-skip-html", "HTML in the Markdown is dropped."),
+  unwrapDisallowed: flag(
+    "data-ok-unwrap-disallowed",
+    "Elements removed by the element filters leave their children in place.",
+  ),
+  externalLinks: flag(
+    "data-ok-external-links",
+    'Absolute `http(s)` links open in a new tab (`target="_blank"`, `rel="noopener noreferrer"`).',
+  ),
+  value: state(
+    "data-ok-markdown-source",
+    "The Markdown: React `children`; HTML the text of the source element.",
+    "render",
+  ),
+});
+
+export type MarkdownAnatomyOptions = {
+  rawHtml?: boolean | undefined;
+  skipHtml?: boolean | undefined;
+  unwrapDisallowed?: boolean | undefined;
+  externalLinks?: boolean | undefined;
+};
+
+/** `data-ok-*` attributes of a Markdown root (`data-ok-gfm="false"` is written by the owner). */
+export const markdownAttributes = (options: MarkdownAnatomyOptions = {}): DataAttributes =>
+  optionAttributes(markdownOptions, { ...options });
+
 // --- Code editor (ADR-0034) ---------------------------------------------------------------------
 
 /** Monaco's built-in language ids (more can be registered in `beforeMount`). */
@@ -4060,6 +4099,7 @@ export const optionSchemas = {
   "date-range-calendar": dateRangeCalendarOptions,
   "date-range-picker": dateRangePickerOptions,
   editor: editorOptions,
+  markdown: markdownOptions,
   chart: chartOptions,
   carousel: carouselOptions,
   "carousel-arrows": carouselArrowsOptions,
