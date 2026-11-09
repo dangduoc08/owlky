@@ -5,7 +5,7 @@ and a review before the next starts.
 
 ## Overview
 Every page of the reference's component menu (`https://minimals.cc/components/…`) and where it
-stands (plus pages from other references, marked). ✅ = built (45); *wave N* = planned, see "Next — components"; *not planned* = a pattern
+stands (plus pages from other references, marked). ✅ = built (46); *wave N* = planned, see "Next — components"; *not planned* = a pattern
 or app-level page. *Section* = the heading below with the details. Update this table with each
 component and each `/integrate` run.
 
@@ -894,18 +894,28 @@ Utilities, Multi-language, Navigation bar, Mega menu, Form validation, Form wiza
 is phase 2 of the Motion full version. Layout, Form wizard and Form validation may come back as
 **blocks** (copy-paste compositions; needs its own ADR), Navigation bar and Mega menu as components.
 
-## After the waves (order approved 2026-11-09)
+## After the waves (order approved 2026-11-09, MCP added before the website the same day)
 1. **Wave 8 Primitives** (above), batches A → B → C, up to three `/component` agents at a time.
 2. **One `/integrate`** (no argument) after batch C: a sweep for any wait left open.
-3. **Website phase 1** (ADR-0040): `apps/website`, `apps/docs-content` for two pilot pages, Vercel
-   workflows, owlky.com. It is built with Owlky, so it comes after the primitives.
-4. **Publish 0.1.0** together with the website.
-5. **Motion full version** (ADR first; phase 1 closes the Motion "Logo" wait).
-6. **1.0 prep:** accessibility audit, docs polish, and an upstream API audit of every component
+3. **`/update-ai-knowledge-base`**, then commit: CLAUDE.md, AGENTS.md, docs, ADRs and specs in
+   sync with Wave 8.
+4. **MCP server `@owlky/mcp`** (ADR-0046, proposed first): a generated `manifest.json` (option
+   schemas, spec sections, guide sections as data, HTML snippets, React code of every story,
+   tokens; `check:manifest` in CI) and a stdio server (`npx -y @owlky/mcp`) with the tools
+   `list_components`, `get_component`, `get_examples`, `search_tokens`, `get_guide`,
+   `validate_markup`, plus resources and prompts; registered as `owlky` in `.mcp.json`. New
+   dependencies (`@modelcontextprotocol/sdk`, `zod`) come with the ADR. A remote MCP on owlky.com
+   is deferred, so the website stays static.
+5. **Website phase 1** (ADR-0040): `apps/website`, `apps/docs-content` for two pilot pages, Vercel
+   workflows, owlky.com. It is built with Owlky (after the primitives), reads the manifest for its
+   option and prop tables, and emits `llms.txt`, `llms-full.txt` and one `.md` per page.
+6. **Publish 0.1.0** together with the website.
+7. **Motion full version** (ADR first; phase 1 closes the Motion "Logo" wait).
+8. **1.0 prep:** accessibility audit, docs polish, and an upstream API audit of every component
    (prop by prop against MUI, a mapping table in each spec; for example Drawer `elevation` and
    `transitionDuration`, Backdrop `transitionDuration`), plus the backlogs (Table toolbar, Sortable
    auto-scroll and move to top / bottom, Motion `component`, Dialog `keepMounted`).
-7. **Later, each with an ADR:** a blocks tier (free blocks here, premium blocks in a private
+9. **Later, each with an ADR:** a blocks tier (free blocks here, premium blocks in a private
    repository), Navigation bar and Mega menu.
 
 **Before publishing 0.1.0 (needs the owner):** npm org `@owlky`, npm trusted publishing for
