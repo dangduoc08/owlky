@@ -1330,7 +1330,7 @@
   grid-column: span 2;
 }
 
-.sb-walktour-featured img {
+.sb-walktour-featured > [data-ok-image] {
   width: 100%;
   border-radius: var(--ok-radius-lg);
 }

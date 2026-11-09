@@ -511,7 +511,7 @@ integrate these in the same review (additive: no DOM or API change) and remove t
 | Typography (body text, headings) | Map stories (popup text, the drag readout, panel captions) | demo `.sb-map-*` styled in `.storybook/preview.css` |
 | Typography + Paper (card) | Organization chart stories (node cards: simple, standard, team and member cards, names and roles) | demo `.sb-org-*` styled in `.storybook/preview.css`; the cards compose Avatar, IconButton, Menu and Label |
 | Typography (caption) | Image stories (the ratio, fit and position captions above pictures) | demo `.sb-image-caption` styled in `.storybook/preview.css` |
-| Typography + Paper (card) | Walktour stories (the dashboard cards the tour points at, step text; the reference's cards hold charts, a carousel and a table, kept as text here) | demo `.sb-walktour-*` styled in `.storybook/preview.css`; the cards compose Avatar and Button |
+| Typography + Paper (card) | Walktour stories (the dashboard cards the tour points at, step text; the reference's cards hold charts, a carousel and a table, kept as text here) | demo `.sb-walktour-*` styled in `.storybook/preview.css`; the cards compose Avatar, Button and Image (the featured picture, like the reference) |
 
 ## ✅ Components — Image (ADR-0038, 2026-11-09)
 Created with `/component` from the reference "Image" page (Minimals' own Image, on
@@ -565,7 +565,9 @@ Steps are Popovers (top layer, flip / shift, arrow) over an invisible Backdrop w
 a rounded spotlight around the target; beacons, centered and `auto` steps, spotlight clicks,
 scrolling into view, per-step overrides, a live region. Stories: Walktour (the reference's
 five-step dashboard tour, progress, Skip, a dark last step with "Done") and Beacons. Composes
-Backdrop, Popover, Button, IconButton, LinearProgress (and Avatar, TextField, Switch in the demo).
+Backdrop, Popover, Button, IconButton, LinearProgress (and Avatar, TextField, Switch in the demo;
+the featured card's picture is an Image, like the reference's carousel slides, while the step
+pictures stay plain `img` as in the reference).
 No new token, no dependency.
 Differences: the beacon uses the primary color (the reference shows react-joyride's default red),
 the step title is an `h2`, the progress bar is hidden from assistive technology (a live region

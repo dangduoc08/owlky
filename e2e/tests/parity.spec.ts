@@ -360,7 +360,8 @@ async function loaded(page: Page, key: string) {
       ),
     );
     await page.waitForFunction(() => [...document.images].every((image) => image.complete));
-    await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => setTimeout(r, 50))));
+    // The featured card's picture is an Image: its load state settles after the picture.
+    await imagesSettled(page);
     return;
   }
   if (key.startsWith("lightbox/")) {
