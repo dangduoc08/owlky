@@ -151,3 +151,5 @@ never overflows; `vertical` or `MobileStepper` read better on phones.
 ## Parity notes
 MobileStepper renders `data-ok-runtime="off"` in React. HTML-only hooks (triggers, panels,
 `data-ok-label-step`) are ignored by parity; React demos render the same buttons with handlers.
+Stories compose the reference's surfaces: step text in a flat Paper (`elevation={0}`, tinted by
+demo CSS), the mobile demos in an outlined Paper with a Divider above the MobileStepper.

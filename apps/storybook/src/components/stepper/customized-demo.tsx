@@ -1,4 +1,4 @@
-import { Button, Step, StepLabel, Stepper, Typography } from "@owlky/react";
+import { Button, Paper, Step, StepLabel, Stepper, Typography } from "@owlky/react";
 import { useState } from "react";
 import { DemoIcon } from "../shared/demo-icon.js";
 
@@ -32,11 +32,11 @@ export function CustomizedDemo() {
           </Step>
         ))}
       </Stepper>
-      <div className="sb-stepper-panel">
+      <Paper elevation={0} className="sb-stepper-panel">
         <Typography variant="body2">
           {active < STEPS.length ? STEPS[active]?.text : "All steps completed."}
         </Typography>
-      </div>
+      </Paper>
       <div className="sb-stepper-actions">
         <Button color="inherit" disabled={active === 0} onClick={() => setActive(active - 1)}>
           Back

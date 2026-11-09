@@ -1,4 +1,4 @@
-import { Button, Step, StepContent, StepLabel, Stepper, Typography } from "@owlky/react";
+import { Button, Paper, Step, StepContent, StepLabel, Stepper, Typography } from "@owlky/react";
 import { useState } from "react";
 
 const STEPS = [
@@ -39,12 +39,12 @@ export function VerticalDemo() {
         ))}
       </Stepper>
       {active === STEPS.length && (
-        <div className="sb-stepper-panel">
+        <Paper elevation={0} className="sb-stepper-panel">
           <Typography variant="body2">All steps completed. Your project is ready.</Typography>
           <Button color="inherit" onClick={() => setActive(0)}>
             Reset
           </Button>
-        </div>
+        </Paper>
       )}
     </div>
   );
