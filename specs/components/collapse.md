@@ -114,6 +114,20 @@ HTML: `ok:collapse:enter`, `entering`, `entered`, `exit`, `exiting`, `exited` (b
 `detail: { in }`). Instance: `{ in, status, show(), hide(), toggle(force?) }`. React: the six
 callbacks.
 
+## Upstream API mapping
+Audit 2026-11-09 against MUI API page Collapse (inherits react-transition-group Transition).
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| `in`, `orientation`, `collapsedSize`, `easing` (string or `{ enter, exit }`), `disablePrefersReducedMotion`, `children` | same; HTML attributes | kept | |
+| `timeout` (number, `"auto"`, `{ appear, enter, exit }`) | same; `appear` ignored | kept | |
+| `component` | same | kept | |
+| Transition `mountOnEnter`, `unmountOnExit`, `onEnter` / `onEntering` / `onEntered` / `onExit` / `onExiting` / `onExited` | same (React; callbacks get the element, no `isAppearing`); HTML `ok:collapse:*` events | kept | |
+| Transition `appear`, `enter`, `exit`, `nodeRef`, `addEndListener` | — | not applicable | first render = markup state; ends on `animation.finished` |
+| `slots` `wrapper` / `wrapperInner` | — | not applicable | one element, no wrappers |
+| Fade, Grow, Slide, Zoom | Motion (`fadeIn`, `zoomIn`, `slideInUp`…) | renamed | see motion.md; full version Phase 5 |
+| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps` | — | not applicable | ADR-0015: CSS and composition |
+
 ## Parity notes
 React adds `data-ok-runtime="off"` (and `style` for a collapsed size, ignored by parity). The story
 snippet adds the HTML-only trigger `data-ok-collapse-toggle` on the switch input (ignored by

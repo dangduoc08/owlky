@@ -63,3 +63,15 @@ brand text); `textPrimary` / `textSecondary` meet AA; `textDisabled` is for inac
 
 ## Events / API
 None.
+
+## Upstream API mapping
+Audit 2026-11-09 against MUI API page Typography.
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| `variant`, `align`, `gutterBottom`, `noWrap`, `component`, `variantMapping`, `children` | same | kept | |
+| `color` | palette names + `textPrimary` / `textSecondary` / `textDisabled` | kept | no arbitrary strings (`"text.secondary"`) |
+| `paragraph` | `component="p"` + `gutterBottom` | not applicable | deprecated upstream |
+| theme custom variants / theme `variantMapping` | CSS on `[data-ok-variant]` or tokens | not applicable | |
+| Minimals "Text max line" | — | deferred (4.19) | `maxLines` |
+| `sx`, `classes` | — | not applicable | ADR-0015 |

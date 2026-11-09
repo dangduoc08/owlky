@@ -57,3 +57,19 @@ the tooltip is hoverable. Touch: long press. Never interactive content.
 HTML: `ok:tooltip:open` (`detail.trigger`), `ok:tooltip:close`. Instance: `{ isOpen, show(trigger?),
 hide() }`. Triggers are found by delegation (`aria-labelledby` / `aria-describedby` pointing at a
 `[data-ok-tooltip]`).
+
+## Upstream API mapping
+Audit 2026-11-09 against MUI API page Tooltip.
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| `title`, `children` (one element), `placement`, `arrow`, `describeChild`, `id` | same | kept | name through `aria-labelledby` (MUI: `aria-label`) |
+| `enterDelay`, `leaveDelay`, `enterTouchDelay`, `leaveTouchDelay` | same | kept | |
+| `disableHoverListener`, `disableFocusListener`, `disableTouchListener` | same | kept | |
+| `open`; `onOpen` / `onClose` | `open`; `onOpenChange(open)`; HTML `ok:tooltip:open` / `close` | renamed | |
+| `TransitionComponent` (Grow / Fade / Zoom) | `transition` (`grow` `fade` `zoom`) | renamed | |
+| `followCursor`, `enterNextDelay` | — | deferred (4.6) | |
+| `disableInteractive` | — (always hoverable) | not applicable | WCAG 1.4.13 |
+| `placement` `auto` / `auto-start` / `auto-end` | — | not applicable | the controller flips |
+| `PopperComponent` / `PopperProps`, `slots.popper` / `transition` / `arrow` | — | not applicable | core positioning, top layer |
+| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps` | — | not applicable | ADR-0015: CSS and composition |

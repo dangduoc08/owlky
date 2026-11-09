@@ -65,3 +65,26 @@ or `[autofocus]`, else the paper; returns to the trigger. Scrollable content get
 HTML: `ok:dialog:beforeopen` (cancelable), `ok:dialog:open`, `ok:dialog:beforeclose` (cancelable,
 `detail.reason`: escape | backdrop | trigger | api), `ok:dialog:close` (also `native`). Instance:
 `{ isOpen, open(trigger?), close(reason?) }`. `data-ok-open` opens on load.
+
+## Upstream API mapping
+Audit 2026-11-09 against MUI API pages Dialog (inherits Modal), DialogTitle, DialogContent, DialogContentText, DialogActions.
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| `open`, `children`, `fullScreen`, `fullWidth`, `scroll`, `role` (`alertdialog`), `aria-*` | same | kept | the title names the dialog automatically |
+| `maxWidth` (`false`) | `"none"` | renamed | |
+| `onClose(event, reason)` (`escapeKeyDown` `backdropClick`) | `onOpenChange(open, reason)` (`escape` `backdrop` `close`); HTML `ok:dialog:beforeclose` | renamed | |
+| `PaperProps` / `slotProps.paper` | `paperProps` | renamed | |
+| `TransitionComponent` | `transition` (a Motion entrance on the paper) | renamed | |
+| `transitionDuration` | — (fixed `--ok-duration-short`) | deferred | new batch E row (with 5.1 exit transitions) |
+| `PaperComponent` | — | not applicable | the paper is a fixed part; compose inside it |
+| Modal `disableEscapeKeyDown`, `hideBackdrop` | same | kept | |
+| Modal `keepMounted` | always mounted | deferred (4.8) | |
+| Modal `disableRestoreFocus`, `disableScrollLock` | — | deferred | new batch E row |
+| Modal `disableAutoFocus`, `disableEnforceFocus` | — | not applicable | native `showModal()` focuses and traps |
+| Modal `container`, `disablePortal` | — | not applicable | top layer |
+| Modal `closeAfterTransition`, `onTransitionEnter`, `onTransitionExited`, `BackdropComponent` / `BackdropProps`, `onBackdropClick` | `ok:dialog:open` / `close`; native `::backdrop` | not applicable | `onBackdropClick` deprecated upstream |
+| `DialogTitle`, `DialogContentText` `children` | same | kept | |
+| `DialogContent` `dividers` | same | kept | |
+| `DialogActions` `disableSpacing` | same | kept | |
+| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps`, `TransitionComponent` / `TransitionProps` | — | not applicable | ADR-0015: CSS, composition, one CSS transition |

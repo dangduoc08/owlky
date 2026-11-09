@@ -49,3 +49,15 @@ Not focusable. The count is visible text: the author names the anchor with the m
 
 ## Events / API
 None.
+
+## Upstream API mapping
+Audit 2026-11-09 against MUI API page Badge.
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| `badgeContent`, `children`, `max`, `showZero`, `invisible`, `overlap` | same (HTML writes the displayed text) | kept | |
+| `anchorOrigin` `{ vertical, horizontal }` | same; HTML `data-ok-vertical` + `data-ok-horizontal` | kept | |
+| `color` | + `info` `success` `warning` | kept | |
+| `variant` (`standard` `dot`) | + `online` `always` `busy` `offline` `invisible` | kept | Minimals statuses |
+| `component` | — | not applicable | always `span` |
+| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps` | — | not applicable | ADR-0015: CSS and composition |

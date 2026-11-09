@@ -49,3 +49,13 @@ Not focusable. `hr` is a native separator; vertical ones carry `aria-orientation
 
 ## Events / API
 None.
+
+## Upstream API mapping
+Audit 2026-11-09 against MUI API page Divider.
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| `variant`, `orientation`, `textAlign`, `flexItem`, `absolute`, `children` | same | kept | |
+| `component`, `role` | `hr`, or `div[role=separator]` with children | not applicable | element follows the content |
+| `light` | — | not applicable | deprecated upstream |
+| `sx`, `classes` | — | not applicable | ADR-0015 |

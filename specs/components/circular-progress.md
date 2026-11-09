@@ -80,6 +80,15 @@ reference (ADR-0014): light colors (warning, info) are below 3:1 non-text contra
 ## Events / API
 None. HTML: change the attributes above. React: props; `ref` = the root span.
 
+## Upstream API mapping
+Audit 2026-11-09 against MUI API page CircularProgress.
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| `variant`, `color`, `value`, `min`, `max`, `size` (number or length), `thickness`, `disableShrink`, `enableTrackSlot` | same (HTML: `aria-value*`, `data-ok-*`) | kept | |
+| `color` | + `info` `success` `warning` | kept | |
+| `sx`, `classes` | — | not applicable | ADR-0015 |
+
 ## Parity notes
 React sets the private properties through `style` (an SSR style attribute is blocked by a strict
 `style-src` CSP until hydration — documented); HTML through CSSOM. Parity ignores `style`.
