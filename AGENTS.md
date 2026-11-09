@@ -501,6 +501,15 @@ the `check` job, `VITEST_BROWSERS=<engine> pnpm test:browser` in one `unit` job 
   anchored at the root's bottom (`inset-block-end: 0`): anchored at the top, a long hidden table
   added its whole height to the page's scroll height. Weekly time ticks start on Mondays, so panning
   a date axis by one category can keep every label: e2e compares the drawn line instead.
+- Sankey charts (ADR-0047): `type="sankey"` takes links, not series (React `nodes` / `edges`; HTML
+  one table row per link, read by `readChartSankeyTable`), and `renderChart` branches to
+  `renderSankey` before any series logic (`series` is optional in React and core). The layout
+  (`chart-sankey.ts`) precomputes each mark's tooltip and highlight in `mark.flow` (layout mode
+  `flow`): `chartTooltip` / `chartActiveNodes` just copy them. Link opacity and loop dashes are SVG
+  attributes from the layout, so CSS must never set `fill-opacity`, `stroke-opacity` or
+  `stroke-dasharray` on `[data-ok-chart-link]`. Gradient links use `gradientUnits="userSpaceOnUse"`
+  with one stop per node color. New options that every chart would write (styles) need
+  `{ optional: true }` or every snippet changes (`orientation`).
 - Data grid charts integration: core `gridChartOptions(model, data)` is the only mapping from the
   chart model to the Chart's options (React spreads it on `<Chart>`, HTML writes it with
   `chartAttributes` and removes the other option attributes), and the HTML grid feeds data through

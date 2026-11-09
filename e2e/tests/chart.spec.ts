@@ -41,6 +41,11 @@ const STORIES = [
   "box-plot-horizontal",
   "localized",
   "animations",
+  "sankey",
+  "sankey-vertical",
+  "sankey-cycles",
+  "sankey-alluvial",
+  "sankey-links",
 ];
 
 /** The SVG as plain data (gradient ids normalized): parity doesn't walk into SVG. */
@@ -392,6 +397,51 @@ for (const impl of implementations) {
       await plot(page).focus();
       await page.keyboard.press("Home");
       await expect(tooltip(page)).toContainText("02 Mar 2026 – 13 Mar 2026");
+    });
+  });
+}
+
+for (const impl of implementations) {
+  test.describe(`chart sankey (${impl})`, () => {
+    test("pointer and touch: a node shows its totals and highlights its links", async ({
+      page,
+      isMobile,
+    }) => {
+      await openStory(page, storyId(impl, "chart", "sankey"));
+      const building = page.locator("[data-ok-chart-node]").nth(1);
+      const box = (await building.boundingBox()) as {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+      };
+      const x = box.x + box.width / 2;
+      const y = box.y + box.height / 2;
+      if (isMobile) await page.touchscreen.tap(x, y);
+      else await page.mouse.move(x, y);
+      await expect(tooltip(page).locator("[data-ok-chart-tooltip-title]")).toHaveText("Building");
+      await expect(tooltip(page).locator("[data-ok-chart-tooltip-row]")).toHaveText([
+        "Incoming121 MWh",
+        "Outgoing121 MWh",
+      ]);
+      await expect(page.locator("[data-ok-chart-active-link]")).toHaveCount(8);
+    });
+
+    test("keyboard: nodes and links column by column; the table lists every link", async ({
+      page,
+    }) => {
+      await openStory(page, storyId(impl, "chart", "sankey-cycles"));
+      await plot(page).focus();
+      await page.keyboard.press("Home");
+      const title = tooltip(page).locator("[data-ok-chart-tooltip-title]");
+      await expect(title).toHaveText("New material");
+      await page.keyboard.press("ArrowRight");
+      await expect(title).toHaveText("New material → Production");
+      await page.keyboard.press("Escape");
+      await expect(tooltip(page)).toBeHidden();
+      const table = page.getByRole("table", { name: "Packaging material flow, tonnes" });
+      await expect(table.getByRole("row")).toHaveCount(6);
+      await expect(table.getByRole("columnheader")).toHaveText(["From", "To", "Value"]);
     });
   });
 }

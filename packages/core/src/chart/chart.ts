@@ -29,6 +29,14 @@ import {
   isCircularChart,
 } from "./chart-model.js";
 import { layoutCircular, layoutRadar } from "./chart-polar.js";
+import {
+  type ChartOrientation,
+  type ChartSankeyEdge,
+  type ChartSankeyNode,
+  chartSankeyGraph,
+  chartSankeyTable,
+  layoutSankey,
+} from "./chart-sankey.js";
 import { layoutFunnel, layoutSlope } from "./chart-shapes.js";
 import {
   type ChartZoom,
@@ -42,7 +50,21 @@ import {
 export interface ChartRenderInput extends ChartFormatOptions {
   readonly type?: ChartType | undefined;
   readonly xType?: ChartXType | undefined;
-  readonly series: readonly ChartSeries[];
+  /** Every type but `sankey`. */
+  readonly series?: readonly ChartSeries[] | undefined;
+  /** Sankey charts (ADR-0047): nodes (optional: titles and colors) and the links between them. */
+  readonly nodes?: readonly ChartSankeyNode[] | undefined;
+  readonly edges?: readonly ChartSankeyEdge[] | undefined;
+  /** Sankey charts: flow direction. Default `"horizontal"`. */
+  readonly orientation?: ChartOrientation | undefined;
+  /** Sankey charts: node thickness along the flow in px. Default 20. */
+  readonly nodeWidth?: number | undefined;
+  /** Sankey charts: share of the fullest rank left between its nodes (0 to 0.9). Default 0.18. */
+  readonly whitespace?: number | undefined;
+  /** Sankey charts: link opacity (0 to 1). Default 0.4. */
+  readonly edgeOpacity?: number | undefined;
+  /** Sankey charts: a title above each rank. */
+  readonly axisTitles?: readonly string[] | undefined;
   readonly categories?: readonly (string | number | Date)[] | undefined;
   readonly colors?: readonly ChartColor[] | undefined;
   readonly curve?: ChartCurve | undefined;
@@ -133,7 +155,8 @@ export const chartIdPrefix = (raw: string): string =>
 
 /** Data, formatters, layout, legend and table for one render. */
 export function renderChart(input: ChartRenderInput): ChartRender {
-  const data = chartData(input);
+  if (input.type === "sankey") return renderSankey(input);
+  const data = chartData({ ...input, series: input.series ?? [] });
   // Radial bars show percentages unless told otherwise.
   const format = chartFormat(data, {
     ...input,
@@ -247,6 +270,39 @@ export function renderChart(input: ChartRenderInput): ChartRender {
     partLabels: input.partLabels,
   });
   return { data, format, layout, legend, table, extent, zoom: zoomable ? zoom : null, zoomable };
+}
+
+/** Sankey charts (ADR-0047): links instead of series; no legend, no zoom. */
+function renderSankey(input: ChartRenderInput): ChartRender {
+  const data = chartData({ type: "sankey", series: [] });
+  const format = chartFormat(data, input);
+  const graph = chartSankeyGraph(input);
+  const layout = layoutSankey(
+    graph,
+    {
+      width: input.width,
+      height: input.height,
+      idPrefix: input.idPrefix,
+      orientation: input.orientation,
+      nodeWidth: input.nodeWidth,
+      whitespace: input.whitespace,
+      edgeOpacity: input.edgeOpacity,
+      fill: input.fill,
+      axisTitles: input.axisTitles,
+      dataLabels: input.dataLabels,
+    },
+    format,
+  );
+  return {
+    data,
+    format,
+    layout,
+    legend: null,
+    table: chartSankeyTable(graph, format),
+    extent: null,
+    zoom: null,
+    zoomable: false,
+  };
 }
 
 /** Outside data labels on badges: a rounded box behind each text (`dataLabelBackground`). */

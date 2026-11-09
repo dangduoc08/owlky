@@ -63,6 +63,7 @@ export function MonthlySales() {
 - **\`heatmap\` and \`treemap\`:** values as shaded cells. See "Show values as cells".
 - **\`bubble\`:** points placed by two numbers and sized by a third.
 - **\`funnel\` and \`slope\`:** stages that narrow, or the change between a few categories. See "Show stages and changes".
+- **\`sankey\`:** flows between nodes, each as wide as its value. See "Show flows between stages".
 
 To mix types in line, area, bar, scatter, box plot, bubble and range area charts, give a series its own \`type\`. In HTML, set \`data-ok-type\` on the column header of the series.`,
     html: `<figure data-ok-chart data-ok-type="bar" data-ok-x-type="category" data-ok-curve="smooth"
@@ -423,6 +424,64 @@ In the data table, each value gets its own column under a second header row, suc
 />`,
   },
   {
+    id: "sankey",
+    title: "Show flows between stages",
+    body: `A Sankey chart shows how a quantity flows from sources to destinations, such as energy from its sources to its uses. Set \`type\` to \`sankey\` and describe the links instead of series:
+
+- **React:** pass \`edges\`, one \`{ source, target, value }\` per link, with node ids as \`source\` and \`target\`. Pass \`nodes\` (\`{ id, title, color }\`) to name and color the nodes. Nodes without a color take \`colors\` in order, then the chart palette.
+- **HTML:** write one table row per link: the source as the row header, then the target and the value. Mark the three column headers with \`data-ok-part="source"\`, \`"target"\` and \`"y"\`. When a node's id differs from its name, put the id in \`data-ok-value\`. Put a node's color in \`data-ok-color\` on its cells.
+
+The chart places each node in a column by its distance from the sources, sizes it by the larger of what flows in and out, and moves nodes to reduce crossings. A link that goes back to an earlier column, such as recycled material, is drawn as a dashed loop under the chart.
+
+- **\`orientation\`:** \`horizontal\` (the default) or \`vertical\`, which suits flows with many stages on a phone.
+- **\`nodeWidth\`:** the thickness of the nodes in pixels (20 by default).
+- **\`whitespace\`:** the share of the fullest column left between its nodes (0.18 by default).
+- **\`fill\`:** \`gradient\` (the default) fades each link from the source color to the target color. \`solid\` uses the source color, or the link's own \`color\`.
+- **\`edgeOpacity\`:** the opacity of the links (0.4 by default).
+- **\`axisTitles\`:** a title above each column, such as years in an alluvial chart. In HTML, separate the titles with semicolons in \`data-ok-axis-titles\`.
+- **\`dataLabels\`:** adds each node's value after its name.
+
+Point at a node to highlight its links and see what flows in and out. Point at a link to see its source, target and value. The keyboard moves through the nodes and links column by column. Names that don't fit between two columns are shortened with an ellipsis, or left out on narrow screens. The tooltip and the data table keep the whole name.`,
+    html: `<figure data-ok-chart data-ok-type="sankey" data-ok-fill="gradient" data-ok-value-suffix=" MWh">
+  <table data-ok-chart-data>
+    <caption>Office energy use</caption>
+    <thead>
+      <tr><th scope="col" data-ok-part="source">From</th><th scope="col" data-ok-part="target">To</th><th scope="col" data-ok-part="y">Value</th></tr>
+    </thead>
+    <tbody>
+      <tr><th scope="row" data-ok-color="warning">Solar panels</th><td data-ok-color="primary">Building</td><td data-ok-value="42">42 MWh</td></tr>
+      <tr><th scope="row" data-ok-color="info-dark">Grid</th><td data-ok-color="primary">Building</td><td data-ok-value="64">64 MWh</td></tr>
+      <tr><th scope="row" data-ok-color="primary">Building</th><td data-ok-color="error">Heating</td><td data-ok-value="48">48 MWh</td></tr>
+      <tr><th scope="row" data-ok-color="primary">Building</th><td data-ok-color="info">Computers</td><td data-ok-value="58">58 MWh</td></tr>
+    </tbody>
+  </table>
+</figure>`,
+    react: `import { Chart } from "@owlky/react";
+
+export function EnergyUse() {
+  return (
+    <Chart
+      label="Office energy use"
+      type="sankey"
+      valueSuffix=" MWh"
+      nodes={[
+        { id: "solar", title: "Solar panels", color: "warning" },
+        { id: "grid", title: "Grid", color: "info-dark" },
+        { id: "building", title: "Building", color: "primary" },
+        { id: "heating", title: "Heating", color: "error" },
+        { id: "computers", title: "Computers", color: "info" },
+      ]}
+      edges={[
+        { source: "solar", target: "building", value: 42 },
+        { source: "grid", target: "building", value: 64 },
+        { source: "building", target: "heating", value: 48 },
+        { source: "building", target: "computers", value: 58 },
+      ]}
+    />
+  );
+}`,
+  },
+  {
     id: "animations",
     title: "Animate charts",
     body: "Set `animations` (`data-ok-animations` in HTML) to grow the series in when the chart first draws, and to move bars, points and lines to their new values when the data changes. Animations never play when the system asks for reduced motion. Live charts that update often read better without them.",
@@ -674,6 +733,29 @@ const PREVIEWS = {
       />
     </Preview>
   ),
+  sankey: () => (
+    <Preview>
+      <Chart
+        label="Office energy use"
+        type="sankey"
+        height={240}
+        valueSuffix=" MWh"
+        nodes={[
+          { id: "solar", title: "Solar panels", color: "warning" },
+          { id: "grid", title: "Grid", color: "info-dark" },
+          { id: "building", title: "Building", color: "primary" },
+          { id: "heating", title: "Heating", color: "error" },
+          { id: "computers", title: "Computers", color: "info" },
+        ]}
+        edges={[
+          { source: "solar", target: "building", value: 42 },
+          { source: "grid", target: "building", value: 64 },
+          { source: "building", target: "heating", value: 48 },
+          { source: "building", target: "computers", value: 58 },
+        ]}
+      />
+    </Preview>
+  ),
   finance: () => (
     <Preview>
       <Chart
@@ -710,6 +792,20 @@ const PREVIEWS = {
           type: "{ name, data, type?, color? }[]",
           description:
             "The series. Values are numbers, `null` (a gap), `[x, y]` pairs, `[x, y, size]` (bubbles) or `{ x, y, color }`. Box plots take five values in `y`, range areas two. Pie, donut, radial bar and funnel charts draw the first series.",
+        },
+        {
+          react: "nodes / edges",
+          html: "table rows (source, target, value)",
+          type: "{ id, title?, color? }[] / { source, target, value, color? }[]",
+          description:
+            "Sankey charts: the nodes (optional: names and colors) and the links between them, by node id.",
+        },
+        {
+          react: "axisTitles",
+          html: "data-ok-axis-titles",
+          type: "string[]",
+          description:
+            'Sankey charts: a title per column. HTML separates them with semicolons: `"2024; 2025"`.',
         },
         {
           react: "categories",
@@ -810,6 +906,7 @@ const PREVIEWS = {
         ["Right arrow / Down arrow", "Shows the next category or point."],
         ["Left arrow / Up arrow", "Shows the previous category or point."],
         ["Arrow keys (heatmap, treemap)", "Shows the nearest cell in the arrow's direction."],
+        ["Arrow keys (Sankey)", "Shows the next or previous node or link, column by column."],
         ["Home / End", "Shows the first or last category or point."],
         ["Escape", "Hides the tooltip. Pressed again, resets the zoom."],
         ["+ / -", "Zooms in or out (charts with zoom, brush charts)."],

@@ -25,6 +25,8 @@
  *                 circle[data-ok-chart-bubble], rect[data-ok-chart-cell][fill-opacity] (heatmap,
  *                 treemap) + text[data-ok-chart-cell-label] + rect[data-ok-chart-tag] +
  *                 text[data-ok-chart-tag-label], rect[data-ok-chart-active-cell];
+ *               Sankey (ADR-0047): path[data-ok-chart-link][data-ok-back]? + rect[data-ok-chart-node]
+ *                 + text[data-ok-chart-node-label], path[data-ok-chart-active-link];
  *                 [data-ok-sparkline] roots: no axes or legend, the plot fills the container
  *               div[data-ok-chart-tooltip][role="status"] (hidden unless a value is active)
  *                 div[data-ok-chart-tooltip-title] + div[data-ok-chart-tooltip-rows]
@@ -485,6 +487,48 @@
 
   :where([data-ok-chart-cell-label="inside"]) {
     fill: var(--ok-palette-common-white);
+  }
+
+  /* Sankey charts (ADR-0047): nodes, links (gradient links carry their own fill; loops of
+     cycles are strokes dashed by the layout) and node labels with a paper halo over the links. Link opacity is
+     an attribute from the layout (edgeOpacity): CSS never sets it. */
+  :where([data-ok-chart-node]) {
+    fill: var(--_ok-chart-c);
+  }
+
+  :where([data-ok-chart-link]:not([fill])) {
+    fill: var(--_ok-chart-c);
+  }
+
+  :where([data-ok-chart-link][data-ok-back]) {
+    fill: none;
+    stroke: var(--_ok-chart-c);
+  }
+
+  :where([data-ok-chart-active-link]) {
+    fill-opacity: 0.72;
+    pointer-events: none;
+  }
+
+  :where([data-ok-chart-active-link]:not([fill])) {
+    fill: var(--_ok-chart-c);
+  }
+
+  :where([data-ok-chart-active-link][data-ok-back]) {
+    fill: none;
+    stroke: var(--_ok-chart-c);
+    stroke-opacity: 0.72;
+  }
+
+  :where([data-ok-chart-node-label]) {
+    fill: var(--ok-text-primary);
+    font-size: var(--ok-font-size-xs);
+    font-weight: var(--ok-font-weight-semibold);
+    stroke: var(--ok-bg-paper);
+    stroke-width: 3px;
+    stroke-linejoin: round;
+    paint-order: stroke;
+    pointer-events: none;
   }
 
   /* Treemap groups: a dark tag with the series name. */

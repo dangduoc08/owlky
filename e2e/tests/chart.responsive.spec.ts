@@ -42,6 +42,11 @@ const STORIES = [
   "box-plot-horizontal",
   "localized",
   "animations",
+  "sankey",
+  "sankey-vertical",
+  "sankey-cycles",
+  "sankey-alluvial",
+  "sankey-links",
 ];
 
 interface Measure {

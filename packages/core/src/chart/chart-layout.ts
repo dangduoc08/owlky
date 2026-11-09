@@ -159,6 +159,44 @@ export interface ChartMark {
   readonly r?: number | undefined;
   /** Heatmaps and treemaps: the cell that activates the mark. */
   readonly cell?: ChartRect | undefined;
+  /** Sankey charts: the node or link, its tooltip and its highlight. */
+  readonly flow?: ChartFlow | undefined;
+}
+
+/**
+ * A node or link of a Sankey chart (ADR-0047). Link geometry is abstract: `d` runs along the flow
+ * (x, or y when `vertical`), `b` across it; `b0` / `b1` are the band's top edge at both ends.
+ */
+export interface ChartFlow {
+  readonly kind: "node" | "link";
+  /** Keyboard order: rank by rank, nodes before the links that leave them. */
+  readonly order: number;
+  /** Position across the flow (keyboard order within a rank). */
+  readonly cross: number;
+  readonly vertical: boolean;
+  /** Nodes: the rectangle that activates them. */
+  readonly rect?: ChartRect | undefined;
+  readonly link?:
+    | {
+        readonly d0: number;
+        readonly d1: number;
+        readonly b0: number;
+        readonly b1: number;
+        readonly w: number;
+        readonly back: boolean;
+      }
+    | undefined;
+  /** Nodes: the marks of their links (highlighted with the node). */
+  readonly links: readonly number[];
+  /** Links: their path and paint attributes (copied for the highlight). */
+  readonly path?: string | undefined;
+  readonly paint?: Readonly<Record<string, string>> | undefined;
+  readonly title: string;
+  readonly rows: readonly {
+    readonly name: string;
+    readonly value: string;
+    readonly color: ChartColor;
+  }[];
 }
 
 export interface ChartSlot {
@@ -179,9 +217,9 @@ export interface ChartLayout {
   /**
    * `index`: one tooltip per category; `point`: one per point (scatter, bubble); `slice`: one per
    * slice or ring (pie, donut, radial bar); `cell`: one per cell (heatmap, treemap; arrow keys
-   * move in their direction).
+   * move in their direction); `flow`: one per Sankey node or link.
    */
-  readonly mode: "index" | "point" | "slice" | "cell";
+  readonly mode: "index" | "point" | "slice" | "cell" | "flow";
   /** Radar: center and radius; slots are categories and `pos` their angle in degrees. */
   readonly polar?: { readonly cx: number; readonly cy: number; readonly r: number } | undefined;
   readonly horizontal: boolean;

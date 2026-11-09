@@ -27,6 +27,7 @@ export const chartTypes = [
   "rangeBar",
   "timeline",
   "polarArea",
+  "sankey",
 ] as const;
 /** Charts of one series whose categories are slices or rings (legend items are categories). */
 export const chartCircularTypes = ["pie", "donut", "radialBar", "polarArea"] as const;
@@ -58,6 +59,7 @@ const wholeTypes: readonly ChartType[] = [
   "slope",
   "rangeBar",
   "timeline",
+  "sankey",
 ];
 /** Whether a chart type draws every series the same way (no mixed charts). */
 export const isWholeChart = (type: ChartType): boolean => wholeTypes.includes(type);
@@ -80,7 +82,11 @@ export type ChartPart =
   | "open"
   | "close"
   | "start"
-  | "end";
+  | "end"
+  | "source"
+  | "target"
+  | "incoming"
+  | "outgoing";
 const PARTS: Partial<Record<ChartType, readonly ChartPart[]>> = {
   boxPlot: ["min", "q1", "median", "q3", "max"],
   rangeArea: ["low", "high"],
@@ -106,6 +112,10 @@ export const chartPartNames: readonly ChartPart[] = [
   "close",
   "start",
   "end",
+  "source",
+  "target",
+  "incoming",
+  "outgoing",
 ];
 /** Default text of each part (table headers and tooltip rows). */
 export const chartPartLabels: Readonly<Record<ChartPart, string>> = {
@@ -122,6 +132,11 @@ export const chartPartLabels: Readonly<Record<ChartPart, string>> = {
   close: "Close",
   start: "Start",
   end: "End",
+  // Sankey charts (ADR-0047): table headers and tooltip rows.
+  source: "From",
+  target: "To",
+  incoming: "Incoming",
+  outgoing: "Outgoing",
 };
 
 /** One value of a point that has several: a number, or a date (timelines: ISO 8601, ms or Date). */

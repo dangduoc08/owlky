@@ -2,6 +2,7 @@ import type { ChartFormat } from "./chart-format.js";
 import type { ChartArc, ChartLayout, ChartMark, ChartNode, ChartRect } from "./chart-layout.js";
 import type { ChartColor, ChartData, ChartPart } from "./chart-model.js";
 import { polarPoint, slicePath } from "./chart-polar.js";
+import { onSankeyLink } from "./chart-sankey.js";
 
 const BOX: readonly ChartPart[] = ["min", "q1", "median", "q3", "max"];
 const CANDLE: readonly ChartPart[] = ["open", "high", "low", "close"];
@@ -44,6 +45,20 @@ const turn = (a: number, b: number) => {
 /** Pointer position in SVG px → the active item, or `null` outside the plot. */
 export function chartActiveAt(layout: ChartLayout, x: number, y: number): ChartActive | null {
   const { plot } = layout;
+  if (layout.mode === "flow") {
+    // Sankey: the node under the pointer (3px of slack), else the topmost link.
+    const node = layout.marks.findIndex(({ flow }) => {
+      const r = flow?.rect;
+      return r && x >= r.x - 3 && x <= r.x + r.width + 3 && y >= r.y - 3 && y <= r.y + r.height + 3;
+    });
+    if (node >= 0) return { kind: "mark", mark: node };
+    for (let mark = layout.marks.length - 1; mark >= 0; mark--) {
+      const flow = layout.marks[mark]?.flow;
+      if (flow?.link && onSankeyLink(flow.link, flow.vertical ? y : x, flow.vertical ? x : y))
+        return { kind: "mark", mark };
+    }
+    return null;
+  }
   if (layout.mode === "cell") {
     // The cell under the pointer (heatmap, treemap).
     const mark = layout.marks.findIndex(({ cell }) => {
@@ -105,11 +120,18 @@ export function chartActiveAt(layout: ChartLayout, x: number, y: number): ChartA
   return { kind: "index", index: best.index };
 }
 
-/** Marks in reading order (left to right, then top to bottom) for keyboard navigation. */
+/**
+ * Marks in reading order for keyboard navigation: left to right, then top to bottom; Sankey nodes
+ * and links rank by rank (a rank's nodes, then the links that leave it).
+ */
 const order = (layout: ChartLayout) =>
   layout.marks
     .map((mark, index) => ({ mark, index }))
-    .sort((a, b) => a.mark.px - b.mark.px || a.mark.py - b.mark.py);
+    .sort((a, b) =>
+      a.mark.flow && b.mark.flow
+        ? a.mark.flow.order - b.mark.flow.order || a.mark.flow.cross - b.mark.flow.cross
+        : a.mark.px - b.mark.px || a.mark.py - b.mark.py,
+    );
 
 /**
  * Cells (heatmap, treemap): an arrow moves to the nearest cell in its direction (centers
@@ -162,7 +184,7 @@ export function nextChartActive(
   const backward = key === "ArrowLeft" || key === "ArrowUp";
   if (!forward && !backward && key !== "Home" && key !== "End") return undefined;
   if (layout.mode === "cell") return nextCell(layout, active, key);
-  if (layout.mode === "point") {
+  if (layout.mode === "point" || layout.mode === "flow") {
     const sorted = order(layout);
     if (sorted.length === 0) return null;
     const at =
@@ -229,6 +251,7 @@ export function chartActiveNodes(
   if (active.kind === "mark") {
     const mark = layout.marks[active.mark];
     if (!mark) return { under: [], over: [] };
+    if (mark.flow) return { under: [], over: flowNodes(layout, mark) };
     if (mark.cell) {
       // An outline around the cell (heatmap, treemap).
       const { x, y, width, height } = mark.cell;
@@ -325,6 +348,37 @@ export function chartActiveNodes(
   return { under, over };
 }
 
+/** Sankey highlight: the active link, or a node's links and an outline around the node. */
+function flowNodes(layout: ChartLayout, mark: ChartMark): ChartNode[] {
+  const flow = mark.flow as NonNullable<ChartMark["flow"]>;
+  const copy = (link: ChartMark | undefined): ChartNode[] =>
+    link?.flow?.path
+      ? [
+          {
+            tag: "path",
+            attrs: { d: link.flow.path, ...link.flow.paint, "data-ok-chart-active-link": "" },
+          },
+        ]
+      : [];
+  if (flow.kind === "link") return copy(mark);
+  const r = flow.rect as ChartRect;
+  const n = (value: number) => String(Math.round(value * 100) / 100);
+  return [
+    ...flow.links.flatMap((index) => copy(layout.marks[index])),
+    {
+      tag: "rect",
+      attrs: {
+        x: n(r.x - 2),
+        y: n(r.y - 2),
+        width: n(r.width + 4),
+        height: n(r.height + 4),
+        rx: "3",
+        "data-ok-chart-active-cell": "",
+      },
+    },
+  ];
+}
+
 export interface ChartTooltipRow {
   readonly name: string;
   readonly value: string;
@@ -384,6 +438,7 @@ export function chartTooltip(
   if (active.kind === "mark") {
     const mark = layout.marks[active.mark];
     if (!mark) return null;
+    if (mark.flow) return { title: mark.flow.title, rows: mark.flow.rows, x: mark.px, y: mark.py };
     return {
       title: format.title(xOf(mark.x)),
       rows: rowsOf(mark, mark.color),

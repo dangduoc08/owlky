@@ -9,7 +9,9 @@ beyond it: Bubble, Range area, Funnel (and pyramid), Slope, Sparklines, plus a J
 Candlestick, Range bar, Timeline, Polar area; zoom and pan, synchronized charts, brush charts,
 annotations, animations, export (SVG, PNG, CSV) and a toolbar; data label formatters and badges, a
 legend with values, the donut hole size, heatmap color ranges, horizontal box plots and localized
-texts. Upstream: ApexCharts (`react-apexcharts`, ADR-0015). Created with `/component`.
+texts. ADR-0047 adds the commercial add-ons' features (behavior and option names only): Sankey
+charts (ApexSankey, phase 2.1). Upstream: ApexCharts (`react-apexcharts`, ADR-0015) and ApexSankey.
+Created with `/component`.
 Reference URL: https://minimals.cc/components/extra/chart
 HTML source: written by us (ApexCharts' framework-free core is not MIT: the owner chose to write our
 own, 2026-11-08; ADR-0024)
@@ -92,6 +94,15 @@ figure[data-ok-chart][data-ok-type][data-ok-x-type][data-ok-curve][data-ok-legen
                        + rect[data-ok-chart-annotation-tag] + text[data-ok-chart-annotation-label]
       selection:   g[data-ok-chart-brush] (before the active group) › rect[data-ok-chart-selection] + rect[data-ok-chart-handle]×2 (brush charts)
       badges:      g[data-ok-chart-data-labels] › (rect[data-ok-chart-data-label-badge] + text[data-ok-chart-data-label=outside])×n
+    Sankey (ADR-0047; root [data-ok-orientation]?[data-ok-node-width]?[data-ok-whitespace]?
+      [data-ok-edge-opacity]?[data-ok-axis-titles]?):
+      defs › linearGradient[id][gradientUnits=userSpaceOnUse] › stop[data-ok-chart-stop][data-ok-color]×2 (gradient links)
+      g[data-ok-chart-axis=titles]? › text[data-ok-chart-axis-title] (axisTitles)
+      g[data-ok-chart-series][data-ok-type=sankey] › path[data-ok-chart-link][fill-opacity|stroke-opacity]
+        ([fill=url(#…)] | [data-ok-color]; loops of cycles: [data-ok-back][stroke-width][stroke-dasharray])
+        + rect[data-ok-chart-node][data-ok-color]
+      g[data-ok-chart-active] › path[data-ok-chart-active-link] + rect[data-ok-chart-active-cell] (node outline)
+      g[data-ok-chart-data-labels] › text[data-ok-chart-node-label] (after the active group)
     data labels may also be text[data-ok-chart-data-label="plain"] (primary text on faint cells)
     div[data-ok-chart-tooltip][role=status][hidden]?
       div[data-ok-chart-tooltip-title] + div[data-ok-chart-tooltip-rows]
@@ -106,6 +117,9 @@ figure[data-ok-chart][data-ok-type][data-ok-x-type][data-ok-curve][data-ok-legen
     tbody › tr › th[scope=row][data-ok-value]? + td[data-ok-value]?[data-ok-color]? (one per x value)
       Candles: th[data-ok-part="open|high|low|close"]; range bars and timelines: "start|end"
       (timeline cells: the date as text, ISO 8601 in data-ok-value)
+    Sankey: thead › tr › th[scope=col][data-ok-part="source|target|y"]×3; one row per link:
+      tbody › tr › th[scope=row][data-ok-value]?[data-ok-color] (source title; id when it differs)
+        + td[data-ok-value]?[data-ok-color] (target) + td[data-ok-value]?[data-ok-color]? (value; own link color)
   ul[data-ok-chart-annotations]?                         (after the table; visually hidden once drawn)
     li[data-ok-annotation="x|y|point"][data-ok-x]?[data-ok-x2]?[data-ok-y]?[data-ok-y2]?[data-ok-color]? › label text
 Root text attributes (phase 4): [data-ok-group]? [data-ok-brush-target]? [data-ok-color-ranges]?
@@ -128,6 +142,29 @@ outermost ring first; the track is `trackWidth` % as thick; a ring is full at `y
 Pie and donut slices share `endAngle - startAngle` (at most one turn) by value; zero, negative and
 hidden values get no slice. Radar: radius leaves room for the widest category label; 2–6 value
 rings on a nice scale from 0.
+
+Sankey geometry (core `chart-sankey.ts`, ADR-0047):
+- Data: links (`edges`: `source`, `target`, `value` > 0, optional `color`) between node ids; nodes
+  (`id`, `title`, `color`) only name and color them; nodes in order of first use; self links,
+  non-positive and non-numeric values are dropped; parallel links stay separate.
+- Ranks: a depth-first search marks back links (cycles); longest path from the sources over the
+  others; nodes without forward links out go to the last rank. Node size: `max(in, out) × scale`,
+  one scale for every rank: the fullest rank leaves `whitespace` (default 0.18) of the space as
+  gaps; cycles reserve room below for their loops.
+- Order: ranks stacked by first use and centered, then 6 rounds of relaxation (toward the
+  value-weighted center of the neighbors, along the flow and back, alpha 0.9^round) with collisions
+  resolved after each rank. Link ends are sorted by the other end's center (back links last).
+- Links: bands between two cubic curves (control points at the middle depth); `fill` `gradient`
+  (default) = a `userSpaceOnUse` gradient from the source to the target color (same colors: solid),
+  `solid` or own `color` = flat; `fill-opacity` = `edgeOpacity` (default 0.4; an attribute, CSS never
+  sets it). Back links: stroked loops (width = value), dashes from the layout (`stroke-dasharray`
+  scaled to the width), under the diagram, past the end nodes (room reserved).
+- `orientation: vertical` swaps the axes (ranks as rows); labels centered on their node, after the
+  first row and before the others, kept inside the width. Horizontal labels: after first-rank
+  nodes, before the others, cut with an ellipsis to the space between ranks (estimated widths;
+  the first gap is shared by two ranks), left out under 26px.
+- `axisTitles`: one per rank above the columns (vertical: beside the rows, a left margin).
+  `dataLabels`: the node's value after its title.
 
 Phase 3 geometry (core `chart-layout.ts`, `chart-cells.ts`, `chart-shapes.ts`):
 - Value scales start at 0 unless a box plot, range area, bubble or sparkline series fits them to
@@ -152,7 +189,7 @@ Root: `data-ok-chart`. Unknown values fall back to the default.
 
 | React | HTML | Kind | Values | Default | Description |
 |---|---|---|---|---|---|
-| `type` | `data-ok-type="…"` | style | `line` `area` `bar` `scatter` `pie` `donut` `radialBar` `radar` `boxPlot` `heatmap` `treemap` `bubble` `rangeArea` `funnel` `slope` `candlestick` `rangeBar` `timeline` `polarArea` | `line` | Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline` or `polarArea`. Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts). |
+| `type` | `data-ok-type="…"` | style | `line` `area` `bar` `scatter` `pie` `donut` `radialBar` `radar` `boxPlot` `heatmap` `treemap` `bubble` `rangeArea` `funnel` `slope` `candlestick` `rangeBar` `timeline` `polarArea` `sankey` | `line` | Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea` or `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts). |
 | `xType` | `data-ok-x-type="…"` | style | `category` `datetime` `numeric` | `category` | X axis: `category` labels, `datetime` (ISO 8601 dates) or `numeric` values (scatter). |
 | `curve` | `data-ok-curve="…"` | style | `smooth` `straight` `stepline` | `smooth` | Line shape: `smooth`, `straight` or `stepline`. |
 | `legend` | `data-ok-legend="…"` | style | `top` `right` `bottom` `none` | `top` | Legend position: `top`, `right`, `bottom` or `none` (never shown for a single series). |
@@ -182,6 +219,10 @@ Root: `data-ok-chart`. Unknown values fall back to the default.
 | `zoom` | `data-ok-zoom` | flag | boolean | off | Zoom and pan the x axis: drag to select (mouse), pinch or drag (touch), Ctrl + wheel, keys `+` `-` `0` and Shift + arrows. |
 | `toolbar` | `data-ok-toolbar` | flag | boolean | off | A toolbar with zoom buttons (with `zoom`) and downloads (SVG, PNG, CSV). |
 | `animations` | `data-ok-animations` | flag | boolean | off | Series grow in when first drawn and move to new values on updates (never with reduced motion). |
+| `orientation` | `data-ok-orientation="…"` | style | `horizontal` `vertical` | — | Sankey charts: the flow runs left to right (`horizontal`, the default) or top to bottom (`vertical`). |
+| `nodeWidth` | `data-ok-node-width="…"` | number | number | `20` | Sankey charts: node thickness along the flow in px. |
+| `whitespace` | `data-ok-whitespace="…"` | number | number | `0.18` | Sankey charts: share of the fullest rank left between its nodes (0 to 0.9). |
+| `edgeOpacity` | `data-ok-edge-opacity="…"` | number | number | `0.4` | Sankey charts: link opacity (0 to 1). |
 | `hiddenSeries` | `aria-pressed` · event `ok:chart:toggle` | state | — | — | Indexes of the series hidden through the legend (`aria-pressed="false"` on their buttons); categories in pie, donut and radial bar charts. |
 | `zoomRange` | `instance.zoomRange` · event `ok:chart:zoom` | state | — | — | The visible window of the x axis, `{ min, max }` (category indexes or x values), or `null`. |
 <!-- /options:chart -->
@@ -273,6 +314,12 @@ plots list the five values, range areas `low – high`, bubbles the value and a 
   background), PNG (that SVG on a 2× canvas), CSV (the data table: combined headers "Series
   (Part)", raw `data-ok-value`s, a BOM; text starting with `= + - @` is prefixed with `'`). Only
   during a user gesture (`navigator.userActivation`); failures are announced in the toolbar status.
+- Sankey charts (layout mode `flow`): the pointer picks the node under it (3px slack), else the
+  topmost link band (loops of cycles only by keyboard); the active node draws its links again at
+  0.72 opacity (`path[data-ok-chart-active-link]`) and an outline; an active link draws itself
+  again. Tooltip: node title + Incoming / Outgoing totals (rows only when > 0); link
+  "Source → Target" + Value. No legend, no zoom. HTML reads the links table
+  (`readChartSankeyTable`).
 - Runtime needed: yes (`chart`). Without JavaScript the table stays visible.
 
 ## Responsive
@@ -288,6 +335,7 @@ plots list the five values, range areas `low – high`, bubbles the value and a 
 | Right / Down arrow | Next category (or point, scatter; slice or ring, circular charts; hidden slices are skipped) |
 | Left / Up arrow | Previous category (or point) |
 | Arrows (heatmap, treemap) | The nearest cell in the arrow's direction |
+| Arrows (Sankey) | Next / previous node or link, rank by rank (a rank's nodes top to bottom, then the links leaving it) |
 | Home / End | First / last (cells: top-left / bottom-right) |
 | Escape | Hides the tooltip; pressed again, resets the zoom (zoom and brush charts) |
 | `+` / `=`, `-` | Zoom in / out around the middle (zoom and brush charts) |
@@ -315,6 +363,9 @@ plots list the five values, range areas `low – high`, bubbles the value and a 
   reset while unzoomed; a visually hidden `role=status` announces failed downloads. Annotations are
   a visually hidden list after the table. Zoom and brush work from the keyboard (no drag needed,
   WCAG 2.5.7). Annotation tags and candles are brand colors in the `aria-hidden` SVG (ADR-0014).
+- Sankey tables have one row per link: the source is the row header, then target and value
+  (`th[data-ok-part="source|target|y"]`, localizable as From / To / Value); node labels sit on a
+  paper halo over the links; cut labels keep their whole name in the tooltip and the table.
 - Visually hidden tables are anchored at the bottom of the root and grow upward, so long tables never
   add page scroll (they did before phase 4: the page grew by the table's height).
 
@@ -383,6 +434,13 @@ plots list the five values, range areas `low – high`, bubbles the value and a 
 | `options.xaxis.labels.formatter` | renamed `labelFormatter` |
 | `options.chart.events.legendClick` / `dataPointMouseEnter` | `onHiddenSeriesChange`, `onActiveChange` |
 | `options.theme`, `options.chart.fontFamily`, `sx` | not applicable: tokens and `data-ok-theme` |
+| ApexSankey `render({ nodes, edges })`: `nodes[].id` / `.title` / `.color`, `edges[].source` / `.target` / `.value` | renamed `type="sankey"` + `nodes`, `edges` (colors are palette names); `edges[].type` (parallel edge key): not applicable (parallel links always stay separate) |
+| ApexSankey `orientation`, `nodeWidth`, `whitespace`, `edgeOpacity`, `axisTitles` | kept |
+| ApexSankey `edgeGradientFill` | renamed `fill` (`gradient` default · `solid`) |
+| ApexSankey `nodePalette` | renamed `colors` |
+| ApexSankey `enableTooltip`, `highlightConnectedPath`, `nodeTooltipTemplate`, `tooltipTemplate` | always on (tooltip and one-hop highlight); templates: not applicable (`valueFormatter`, part labels) |
+| ApexSankey `spacing`, `viewPortWidth` / `viewPortHeight`, `width`, `nodeBorderWidth` / `nodeBorderColor`, `edgeGap`, `fontSize` / `fontFamily` / `fontColor`, `theme`, `tooltipTheme` | not applicable: fixed by the design and tokens |
+| ApexSankey `type: "chord"`, `particleFlow`, `draggableNodes`, `buildAlluvialData`, `collapseGroups`, `compare`, plugins, `onNodeClick` / pinned path highlight, `update` morphs | not built (ADR-0047 §5); alluvial diagrams are Sankey data with `axisTitles` |
 
 ## Parity notes
 - Parity doesn't walk into `<svg>`: `e2e/tests/chart.spec.ts` compares the SVG trees (gradient ids
@@ -398,5 +456,7 @@ plots list the five values, range areas `low – high`, bubbles the value and a 
   labels, Animations. Synchronized and Brush charts carry fixed `id`s (the same in React and HTML).
   The toolbar, legend values and the annotation list are rendered by React and built by the runtime
   (the list is authored HTML); `zoomRange` is state (no attribute).
+- Sankey stories (ADR-0047): Sankey, Vertical Sankey, Cycles, Alluvial, Link and node options.
+  Gradient ids are normalized by the SVG comparison like the others.
 - Story "Live data": React keeps the points in state, the HTML page script calls `appendData` /
   `updateSeries`; both start from the same data and add the same points, so they stay identical.

@@ -96,3 +96,9 @@ export const HeatmapRanges: StoryObj = story("heatmap-ranges");
 export const BoxPlotHorizontal: StoryObj = story("box-plot-horizontal");
 export const Localized: StoryObj = story("localized");
 export const Animations: StoryObj = story("animations");
+// Phase 2.1 (ADR-0047): Sankey charts.
+export const Sankey: StoryObj = story("sankey");
+export const SankeyVertical: StoryObj = story("sankey-vertical");
+export const SankeyCycles: StoryObj = story("sankey-cycles");
+export const SankeyAlluvial: StoryObj = story("sankey-alluvial");
+export const SankeyLinks: StoryObj = story("sankey-links");

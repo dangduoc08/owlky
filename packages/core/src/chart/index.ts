@@ -45,6 +45,7 @@ export {
   type ChartArc,
   type ChartAxisMap,
   type ChartColorRange,
+  type ChartFlow,
   type ChartLayout,
   type ChartLayoutOptions,
   type ChartMark,
@@ -95,11 +96,24 @@ export {
   readChartTable,
 } from "./chart-model.js";
 export {
+  type ChartOrientation,
+  type ChartSankeyEdge,
+  type ChartSankeyGraph,
+  type ChartSankeyNode,
+  chartOrientations,
+  chartSankeyGraph,
+  chartSankeyTable,
+  layoutSankey,
+  readChartSankeyTable,
+} from "./chart-sankey.js";
+export {
   CHART_TEXT_ATTRIBUTES,
   type ChartTextOptions,
   chartColorRangesText,
+  chartListText,
   chartTextAttributes,
   parseChartColorRanges,
+  parseChartList,
 } from "./chart-text.js";
 export {
   type ChartLocaleText,

@@ -15,6 +15,9 @@ import {
   type ChartLink,
   type ChartLocaleText,
   type ChartNode,
+  type ChartOrientation,
+  type ChartSankeyEdge,
+  type ChartSankeyNode,
   type ChartSeries,
   type ChartTool,
   type ChartType,
@@ -67,8 +70,25 @@ export interface ChartProps extends Omit<HTMLAttributes<HTMLElement>, "children"
    * per category.
    */
   type?: ChartType | undefined;
-  /** Series: values per category, `[x, y]` pairs (scatter, dates) or `{ x, y, color }`. */
-  series: readonly ChartSeries[];
+  /**
+   * Series: values per category, `[x, y]` pairs (scatter, dates) or `{ x, y, color }`. Every type
+   * but `sankey` (which takes `nodes` and `edges`).
+   */
+  series?: readonly ChartSeries[] | undefined;
+  /** Sankey charts: node titles and colors (`{ id, title, color }`); nodes without links aren't drawn. */
+  nodes?: readonly ChartSankeyNode[] | undefined;
+  /** Sankey charts: the links (`{ source, target, value, color }`, node ids). */
+  edges?: readonly ChartSankeyEdge[] | undefined;
+  /** Sankey charts: the flow runs left to right (default) or top to bottom. */
+  orientation?: ChartOrientation | undefined;
+  /** Sankey charts: node thickness along the flow in px. Default 20. */
+  nodeWidth?: number | undefined;
+  /** Sankey charts: share of the fullest rank left between its nodes (0 to 0.9). Default 0.18. */
+  whitespace?: number | undefined;
+  /** Sankey charts: link opacity (0 to 1). Default 0.4. */
+  edgeOpacity?: number | undefined;
+  /** Sankey charts: a title above each rank (beside each row when vertical). */
+  axisTitles?: readonly string[] | undefined;
   /** Category labels, or dates when `xType` is `"datetime"`. */
   categories?: readonly (string | number | Date)[] | undefined;
   /** Default `"category"` (`"numeric"` for scatter). */
@@ -176,6 +196,7 @@ export interface ChartProps extends Omit<HTMLAttributes<HTMLElement>, "children"
 }
 
 const NO_HIDDEN: readonly number[] = [];
+const NO_SERIES: readonly ChartSeries[] = [];
 /** Least height of a sparkline without `height` (the CSS default of `--_ok-chart-height`). */
 const SPARKLINE_HEIGHT = 40;
 const PRESERVED = /^(data-|aria-)/;
@@ -204,7 +225,14 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
   {
     label,
     type,
-    series,
+    series = NO_SERIES,
+    nodes: sankeyNodes,
+    edges,
+    orientation,
+    nodeWidth,
+    whitespace,
+    edgeOpacity,
+    axisTitles,
     categories,
     xType,
     colors,
@@ -292,6 +320,10 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     zoom,
     toolbar,
     animations,
+    orientation,
+    nodeWidth,
+    whitespace,
+    edgeOpacity,
   });
   const isSparkline = attributes["data-ok-sparkline"] !== undefined;
   const givenHeight = attributes["data-ok-height"];
@@ -336,6 +368,10 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
   const validDownColor = attributes["data-ok-candle-down-color"] as ChartColor | undefined;
   const validDonutSize = number("data-ok-donut-size");
   const zoomOn = attributes["data-ok-zoom"] !== undefined;
+  const validOrientation = attributes["data-ok-orientation"] as ChartOrientation | undefined;
+  const validNodeWidth = number("data-ok-node-width");
+  const validWhitespace = number("data-ok-whitespace");
+  const validEdgeOpacity = number("data-ok-edge-opacity");
 
   // Zoom (phase 4): controlled, or kept with the x axis it was set on (so it follows live data).
   const [innerZoom, setInnerZoom] = useState<{
@@ -355,6 +391,13 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         type: chartType,
         xType: chartXType,
         series,
+        nodes: sankeyNodes,
+        edges,
+        orientation: validOrientation,
+        nodeWidth: validNodeWidth,
+        whitespace: validWhitespace,
+        edgeOpacity: validEdgeOpacity,
+        axisTitles,
         categories,
         colors,
         curve: chartCurve,
@@ -406,6 +449,13 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       chartType,
       chartXType,
       series,
+      sankeyNodes,
+      edges,
+      validOrientation,
+      validNodeWidth,
+      validWhitespace,
+      validEdgeOpacity,
+      axisTitles,
       categories,
       colors,
       chartCurve,
@@ -685,6 +735,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         group,
         brushTarget,
         colorRanges,
+        axisTitles,
       })}
       data-ok-ready=""
       data-ok-runtime="off"
