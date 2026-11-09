@@ -90,6 +90,38 @@ jobs:
           path: e2e/playwright-report
           retention-days: 7
 
+  website:
+    name: Website (${{ matrix.project }})
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.64.1-noble
+      options: --ipc=host
+    env:
+      HOME: /root
+      NEXT_TELEMETRY_DISABLED: "1"
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [chromium, firefox, webkit, mobile]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # The website consumes the packages' dist (ADR-0040), then builds its static output.
+      - run: pnpm build
+      - run: pnpm website:build
+      - run: pnpm --filter @owlky/e2e exec playwright test -c website.config.ts --project ${{ matrix.project }}
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-website-${{ matrix.project }}
+          path: e2e/playwright-report
+          retention-days: 7
+
   audit:
     name: Dependency audit
     runs-on: ubuntu-latest

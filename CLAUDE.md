@@ -18,16 +18,20 @@ file covers project status, workflow and orientation.
 | Theme settings | Presets (`data-ok-preset`), fonts (`data-ok-font`), root font size, `applyThemeSettings` (ADR-0017) | ✅ done, awaiting review |
 | Components | Button, Icon button, Fab, Button group, Toggle button, Drawer, Sortable, Accordion, Alert, Table, Pagination, Scrollbar, Circular / Linear progress, Checkbox, Switch, Form control label, Radio, Text field, Avatar, Badge, Chip, Label, Divider, List, Popover, Tooltip, Menu, Dialog, Snackbar, Backdrop, Tabs, Breadcrumbs, Stepper, Timeline, Rating, Slider, Transfer list, Tree view, Autocomplete, Motion (Animate: Motion, MotionGroup, MotionText, CountUp, MotionBorder; beta, full version planned in the roadmap), Data grid (phases 1–6 of 6, ADR-0020 / 0021), Editor (Tiptap, ADR-0023; updated 2026-11-09: text transform, fullscreen Backdrop), Map (MapLibre GL JS, ADR-0025), Carousel (ADR-0033: native scroll snapping, Embla options and plugins, loop without clones), Lightbox (ADR-0032: a modal dialog around the Carousel, every yet-another-react-lightbox plugin), Markdown (unified, ADR-0035; the Editor preview renders with it), Chart (complete: phases 1–4, ADR-0024 / 0027 / 0029 / 0031), Date pickers (complete, phases 1–4, ADR-0022 / 0026 / 0028 / 0030: DatePicker, TimePicker and DateTimePicker families, Date / Time / DateTimeField, DateCalendar, Month / YearCalendar, TimeClock, DigitalClock, MultiSectionDigitalClock, LocalizationProvider; DateRangeCalendar, DateRangePicker, TimeRangePicker and DateTimeRangePicker families, single / multi input range fields; time zones, date adapters, calendar systems, locale packs, right to left, slots and view renderers), Code editor (Monaco, ADR-0034: CodeEditor, DiffEditor, useMonaco, loader), Organization chart (ADR-0036: nested lists, CSS connectors), Upload (ADR-0037: a native file input under the drop zone, react-dropzone options; Upload, UploadAvatar, UploadBox), Image (ADR-0038: native lazy loading, placeholder, ratios, overlays; Markdown pictures compose it), Walktour (ADR-0039: react-joyride API, steps as Popovers over a Backdrop with an SVG spotlight, beacons), Paper (CSS only, any element: elevation 0–24, outlined, square; the base of Card), Typography (CSS only, the type scale tokens; MUI API with `component` / `variantMapping`), Collapse (ADR-0044: `hidden` is the state, a core controller animates the size; nested lists, tree view groups and StepContent compose it), Card (CSS only, on Paper: header, media, content, actions, action area), Form control (CSS only: FormControl, FormLabel, FormGroup, FormHelperText; states on the root, `useFormControl` context in React), Link (CSS only, on Typography: underline, button links, `rel` on new tabs; Breadcrumbs items compose it), Select (ADR-0045: select-only combobox with roving focus, InputLabel, native, multiple, chips, grouping; TextField and TablePagination compose it with `selectProps`) ✅ (via `/component`) | awaiting review |
 | MCP server | `@owlky/mcp` (ADR-0046): stdio server (`npx -y @owlky/mcp`), six tools, resources, prompts, answering from the generated `packages/mcp/manifest.json` (`pnpm manifest`, `check:manifest`) | ✅ done, awaiting review |
+| Website phase 1 | ADR-0040: `apps/website` (owlky.com, Next.js static export built with Owlky: Home, Get started, Colors, Button, Pagefind search, `llms.txt` + `.md` per page, **Open HTML demo** sandboxes), `apps/docs-content` (pilot guides + guide UI, Storybook renders them through its host), `website.yml` (Vercel CLI, skips until the secrets exist) | ✅ done, awaiting review; phase 2 (migrate the other guides) next |
 
 Full plan: `docs/roadmap.md`; next steps in its "After the waves" (Wave 8, the `/integrate`
-sweep and the MCP server `@owlky/mcp`, ADR-0046, done → website phase 1, ADR-0040 → 0.1.0 → more
+sweep and the MCP server `@owlky/mcp`, ADR-0046, done → website phase 1, ADR-0040, done → website phase 2 (migrate the guides) → 0.1.0 → more
 frameworks: server-rendered guides, Preact, then Vue / Svelte / Angular / Solid 1:1). Not published
 yet. Repository:
 `github.com/dangduoc08/owlky` (public; the GitHub org `owlky` only reserves the name).
 
 **Blocked on the user before publishing 0.1.0:** npm org `@owlky` (ADR-0016), `NPM_TOKEN` secret
-or npm trusted publishing, the Vercel project and secrets + DNS for owlky.com (ADR-0040), visual
-baselines via `pnpm test:visual:update` (Docker only).
+or npm trusted publishing, visual baselines via `pnpm test:visual:update` (Docker only), and the
+website (ADR-0040; steps in `apps/website/README.md` › Deployment): the Vercel project (root
+`apps/website`), a Vercel token, the `website` GitHub environment with `VERCEL_TOKEN`,
+`VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`, and DNS for owlky.com (`www` redirects to the apex). Until
+then `website.yml` skips with a notice.
 
 **Releasing:** CI only on `main`; publish = push tag `release/v<version>` on a `main` commit
 whose packages already carry that version (ADR-0012).
@@ -57,6 +61,8 @@ packages/react    React components
 packages/html     HTML Core Runtime, snippets (src/components/*/examples), CDN IIFE bundle
 packages/mcp      MCP server @owlky/mcp (stdio) + generated manifest.json (ADR-0046; Node, no other Owlky package at run time)
 apps/storybook    Foundations guides (src/foundations/*) + component stories (one per section, Framework toolbar, ADR-0018)
+apps/docs-content guides shared by Storybook and the website (ADR-0040; phase 1: Colors, Button) + guide UI; private
+apps/website      owlky.com: Next.js static export built with Owlky, Vercel via GitHub Actions; private
 e2e               Playwright: parity, interactions, themes, a11y, plain-HTML, visual
 examples          plain-html consumer example (uses dist)
 specs/components  component contracts — update before code
@@ -74,6 +80,9 @@ VITEST_BROWSERS=chromium,firefox,webkit pnpm test
 pnpm storybook                              # http://localhost:6006
 pnpm storybook:network                      # same, reachable from other devices (LAN, Tailscale; WSL: mirrored networking)
 pnpm storybook:build && pnpm test:e2e       # Chromium, Firefox, WebKit, mobile
+pnpm website:dev                            # http://localhost:3000 (needs pnpm build)
+pnpm website:build && pnpm website:serve    # static owlky.com in apps/website/out, :4400
+pnpm --filter @owlky/e2e test:website       # website e2e against out/
 pnpm lint:fix
 pnpm check                                  # everything CI runs
 pnpm manifest                               # after pnpm build: regenerate packages/mcp/manifest.json

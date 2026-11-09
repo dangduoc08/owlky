@@ -32,7 +32,7 @@ Button is the model for how a component spans the packages:
 | Styles | `styles/src/components/<name>.css` | `:where([data-ok-<name>…])` in `@layer components` |
 | React | `react/src/<name>/<name>.tsx` | Component(s); state → controller |
 | HTML | `html/src/components/<name>/` | Definition (if it needs JS) + `examples/*.html` snippets |
-| Docs | `apps/storybook/src/components/<name>/` | One story per reference section, framework picked in the toolbar (ADR-0018); usage guide page `<name>-docs.tsx` (ADR-0019) |
+| Docs | `apps/storybook/src/components/<name>/` | One story per reference section, framework picked in the toolbar (ADR-0018); usage guide page `<name>-docs.tsx` (ADR-0019); migrated guides live in `apps/docs-content` (ADR-0040) |
 | E2E | `e2e/tests/*.spec.ts` | Same tests for both implementations + parity |
 
 Foundations (colors, typography, shadows, grid, icons, settings, illustrations) are documented in
@@ -41,6 +41,31 @@ Foundations (colors, typography, shadows, grid, icons, settings, illustrations) 
 Third-party runtime code stays behind its own entry point so the default bundles never carry it:
 Tiptap is a `core` dependency reached only through `@owlky/core/editor` (ADR-0023). The Chart's
 SVG engine is our own code in `core/src/chart/` and ships in the default bundles (ADR-0024).
+
+## Docs content and the website (ADR-0040)
+
+```
+apps/docs-content  guides (sections as data + live previews) and the guide UI (GuideSections,
+      │            tables, code tabs, Copy button); host-agnostic: GuideHostProvider gives it
+      │            the prose, the code block and the preview frame
+      ├──▶ apps/storybook  docs pages: Storybook's Markdown and Source blocks, toolbar framework
+      └──▶ apps/website    owlky.com (Next.js, output: "export"): Owlky Markdown + Shiki rendered
+                           at build time, packages from dist, sandbox pages for HTML demos
+```
+
+Phase 1 moved two pilot guides (Foundations › Colors, Components › Button); the other guides
+still live in Storybook and import the same UI through `apps/storybook/src/helpers/guide.tsx`.
+A guide is split in a server-safe data module (`*-docs-examples.ts`: `<name>Sections`, table rows)
+and a `"use client"` previews module (`*-docs.tsx`: `<name>Previews`, `<Name>Guide`), so the
+website's server components read the sections without loading React previews. The website reads
+option tables from the MCP manifest (a subset written to `src/generated/` before the build),
+renders every route statically, and writes `.md` copies, `llms.txt`, `llms-full.txt` and the
+Pagefind index after `next build`. **Open HTML demo** opens a static sandbox page (built from the
+section's HTML, loading the built `owlky.js` / `owlky.css`) in an iframe, so React and the HTML
+runtime never share a page. Deploys: GitHub Actions + Vercel CLI (`website.yml`); details in
+`apps/website/README.md`.
+
+Published packages never import apps (`check:boundaries`); apps may import every package.
 
 ## MCP server (ADR-0046)
 
@@ -51,7 +76,7 @@ SVG engine is our own code in `core/src/chart/` and ships in the default bundles
 pnpm build ─▶ scripts/manifest.mjs ─▶ packages/mcp/manifest.json ─▶ @owlky/mcp (stdio, npx -y @owlky/mcp)
    optionSchemas (core dist) · specs/components/*.md (sections, Reference URL, options markers)
    stories (Vite SSR of *.stories.tsx: each story's Code panel for html and react)
-   docs pages' *Sections exports · html examples/*.html · tokens.json · styles theme.css
+   docs pages' *Sections exports (Storybook and apps/docs-content) · html examples/*.html · tokens.json · styles theme.css
    data-ok-* names (packages' sources) · required parts and part → root (anatomy ∩ every snippet)
 ```
 

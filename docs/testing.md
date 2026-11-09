@@ -9,6 +9,8 @@
 | `pnpm test:visual:update`                           | Regenerate baselines (Docker). Never commit baselines made outside Docker.                       |
 | `pnpm check`                                        | Everything CI runs, in order.                                                                    |
 | `pnpm check:manifest`                               | Regenerates the MCP manifest (ADR-0046) and fails when the committed one differs.               |
+| `pnpm website:build` then `pnpm --filter @owlky/e2e test:website` | The website's static build (ADR-0040): every page renders, axe light + dark, phone width, internal links and `.md` copies, the Copy button, search (Pagefind), **Open HTML demo**, theme menus — `e2e/website/`, config `e2e/website.config.ts` (port 4400; `PORT` for worktrees). CI job `website`. |
+| `pnpm check:docs` | Checks the code of every guide section (Storybook, `apps/docs-content`, the website's `src/content`): placeholders, unknown `data-ok-*` names, React examples typecheck. Not in `pnpm check` (pre-existing placeholder findings in Storybook pages); pass page names to check a few. |
 | `pnpm smoke:mcp`                                    | Packs `@owlky/mcp`, starts its bin from the tarball with `npx -y` (needs the registry), and runs `initialize`, `tools/list`, `tools/call` over stdio (CI only, not in `pnpm check`). |
 
 First run: `pnpm exec playwright install chromium firefox webkit`.

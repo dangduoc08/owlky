@@ -911,9 +911,18 @@ is phase 2 of the Motion full version. Layout, Form wizard and Form validation m
    `owlky://guides/<id>` and prompts `build-html-page`, `build-react-page`; registered as `owlky`
    in `.mcp.json`; a packed-tarball smoke test in CI (`pnpm smoke:mcp`). A remote MCP on owlky.com
    is deferred, so the website stays static.
-5. **Website phase 1** (ADR-0040): `apps/website`, `apps/docs-content` for two pilot pages, Vercel
-   workflows, owlky.com. It is built with Owlky (after the primitives), reads the manifest for its
-   option and prop tables, and emits `llms.txt`, `llms-full.txt` and one `.md` per page.
+5. **Website** (ADR-0040).
+   - ✅ **Phase 1** (2026-11-09): `apps/website` (Next.js 16, static export, built with Owlky and
+     its theme settings; Home, Get started, Foundations › Colors, Components › Button; Shiki code
+     blocks with a Copy button; **Open HTML demo** sandbox pages; Pagefind search; `llms.txt`,
+     `llms-full.txt` and one `.md` per page; Options tables from the MCP manifest),
+     `apps/docs-content` with the two pilot guides and the guide UI (Storybook renders them through
+     its own host), `website.yml` (Vercel CLI previews and production, skipped until the owner adds
+     the Vercel secrets) and the website e2e. Owner's setup: `apps/website/README.md`.
+   - **Phase 2 (next):** migrate the remaining guides to `apps/docs-content` in batches
+     (Foundations, then components by wave); Storybook's `*-docs.tsx` become thin wrappers, then
+     disappear.
+   - Phase 3: home, changelog, free blocks (own ADR).
 6. **Publish 0.1.0** together with the website.
 7. **More frameworks** (user decision 2026-11-09), after 0.1.0:
    - integration guides and DOM-morphing tests for server-rendered stacks (htmx, Hotwire / Turbo,

@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@owlky/core": "workspace:*",
+    "@owlky/docs-content": "workspace:*",
     "@owlky/html": "workspace:*",
     "@owlky/react": "workspace:*",
     "@owlky/styles": "workspace:*",

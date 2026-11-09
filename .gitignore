@@ -13,3 +13,12 @@ __screenshots__/
 
 # Agent worktrees (Multi-URL mode)
 .claude/worktrees/
+
+# Website (apps/website): Next.js output and files written by its build scripts
+apps/website/.next/
+apps/website/out/
+apps/website/next-env.d.ts
+apps/website/public/cdn/
+apps/website/public/sandbox/
+apps/website/src/generated/
+apps/website/.vercel/

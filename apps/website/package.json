@@ -1,0 +1,39 @@
+{
+  "name": "@owlky/website",
+  "version": "0.0.0",
+  "private": true,
+  "description": "owlky.com: the Owlky docs website (ADR-0040). Static Next.js app, deployed to Vercel.",
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/prepare.mjs && next dev --webpack -p 3000",
+    "build": "node scripts/prepare.mjs && next build --webpack && node scripts/postbuild.mjs",
+    "serve": "node scripts/serve.mjs",
+    "typecheck": "node scripts/prepare.mjs && tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@fontsource-variable/dm-sans": "5.3.0",
+    "@fontsource-variable/inter": "5.3.0",
+    "@fontsource-variable/nunito-sans": "5.3.0",
+    "@fontsource-variable/public-sans": "5.3.0",
+    "@fontsource/barlow": "5.3.0",
+    "@owlky/core": "workspace:*",
+    "@owlky/docs-content": "workspace:*",
+    "@owlky/html": "workspace:*",
+    "@owlky/mcp": "workspace:*",
+    "@owlky/react": "workspace:*",
+    "@owlky/styles": "workspace:*",
+    "@owlky/tokens": "workspace:*",
+    "next": "16.4.3",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "shiki": "4.5.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "4.3.4",
+    "@types/node": "^22.19.0",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "pagefind": "1.5.2",
+    "tailwindcss": "4.3.4"
+  }
+}

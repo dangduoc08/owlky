@@ -9,6 +9,8 @@
 @import "../../../packages/styles/src/base.css";
 
 @source "../src";
+/* Guides and previews shared with the website (ADR-0040). */
+@source "../../docs-content/src";
 
 .sb-row {
   display: flex;

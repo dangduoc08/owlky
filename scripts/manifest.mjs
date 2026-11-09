@@ -13,6 +13,8 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const app = join(root, "apps/storybook");
+// Guides migrated out of Storybook (ADR-0040) keep the same `<group>/<folder>` layout there.
+const docsContent = join(root, "apps/docs-content");
 // `--out <file>` writes elsewhere (the generator's tests compare two runs).
 const outFlag = process.argv.indexOf("--out");
 const OUT =
@@ -216,8 +218,8 @@ const server = await createServer({
   ],
 });
 
-const sourceFiles = (dir) =>
-  readdirSync(join(app, dir), { withFileTypes: true, recursive: true })
+const sourceFiles = (dir, base = app) =>
+  readdirSync(join(base, dir), { withFileTypes: true, recursive: true })
     .filter((entry) => entry.isFile() && /\.(ts|tsx)$/.test(entry.name))
     .map((entry) => join(entry.parentPath, entry.name))
     .sort(byName);
@@ -249,11 +251,14 @@ try {
       });
     }
   }
-  for (const file of sourceFiles("src")) {
+  for (const [base, file] of [
+    ...sourceFiles("src").map((file) => [app, file]),
+    ...sourceFiles("src", docsContent).map((file) => [docsContent, file]),
+  ].sort(([, a], [, b]) => byName(a, b))) {
     const source = readFileSync(file, "utf8");
     const exported = /^export const (\w+Sections): GuideSection\[\]/m.exec(source)?.[1];
     if (!exported) continue;
-    const [group, folder] = relative(join(app, "src"), file).split("/");
+    const [group, folder] = relative(join(base, "src"), file).split("/");
     const mod = await server.ssrLoadModule(file);
     const introduction = folder.includes(".");
     const id = introduction

@@ -4,14 +4,17 @@ import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 
 const REACT = ["react", "react-dom", "@owlky/react"];
+// Apps (Storybook, the website and its docs content, ADR-0040) may use every package, never the
+// other way round: a published package must not reach a private app.
+const APPS = ["@owlky/storybook", "@owlky/docs-content", "@owlky/website"];
 const rules = {
-  tokens: REACT,
-  styles: REACT,
-  core: REACT,
-  html: REACT,
-  react: ["@owlky/html"],
+  tokens: [...REACT, ...APPS],
+  styles: [...REACT, ...APPS],
+  core: [...REACT, ...APPS],
+  html: [...REACT, ...APPS],
+  react: ["@owlky/html", ...APPS],
   // The MCP server (ADR-0046) answers from its manifest: no framework package at run time.
-  mcp: [...REACT, "@owlky/html"],
+  mcp: [...REACT, "@owlky/html", ...APPS],
 };
 
 async function* files(dir) {
@@ -50,5 +53,5 @@ if (problems.length > 0) {
   process.exit(1);
 }
 console.log(
-  "boundaries: OK (html/core/styles/tokens are React-free; react does not use html; mcp uses neither)",
+  "boundaries: OK (html/core/styles/tokens are React-free; react does not use html; mcp uses neither; no package uses an app)",
 );
