@@ -289,6 +289,26 @@ describe("createEditorController", () => {
     expect(c.run("nope" as never)).toBe(false);
   });
 
+  it("leaves the focus where it is when it refuses an action", async () => {
+    const element = content("<p>Photo</p>");
+    const c = create(element);
+    // The form the user types the URL in (link and image popovers).
+    const input = mount("<input aria-label='URL'>").firstElementChild as HTMLInputElement;
+    input.focus();
+    expect(c.run("image", { src: "javascript:alert(1)" })).toBe(false);
+    expect(c.run("link", { href: "" })).toBe(false);
+    expect(c.run("heading", { level: 9 })).toBe(false);
+    expect(c.run("textTransform", { textTransform: "nope" as never })).toBe(false);
+    expect(c.run("nope" as never)).toBe(false);
+    // Tiptap's focus command moves the focus on the next frame.
+    await nextFrame();
+    await nextFrame();
+    expect(document.activeElement).toBe(input);
+    expect(c.run("image", { src: "https://example.com/a.png" })).toBe(true);
+    await nextFrame();
+    expect(document.activeElement).toBe(element);
+  });
+
   it("switches to read only and back", () => {
     const element = content("<p>Text</p>");
     const onStateChange = vi.fn();
