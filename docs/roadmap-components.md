@@ -21,12 +21,12 @@ review that changes it.
 | # | Item | Detail | Status |
 |---|---|---|---|
 | 1.1 | CI unit job per browser | split "Lint, types, build, unit tests" into one unit job per browser (chromium, firefox, webkit), like the e2e shards: one runner ran about 15,000 tests in three browsers and crashed a page on 2026-11-09 | ✅ |
-| 1.2 | Flaky: editor image form | `packages/html/src/components/editor/editor.test.ts` "inserts an image; an invalid form stays open" (Chromium, CI 2026-11-09) | 🔄 |
-| 1.3 | Flaky: button soft colors | `packages/html/src/components/button/button.test.ts` `soft-colors.html: no axe violations` (Firefox, CI 2026-11-09) | 🔄 |
-| 1.4 | Flaky: carousel thumbs-y | e2e parity `carousel / thumbs-y` pixels, about 2 of 60 runs under load (already before Wave 8; image decode and scroll settle waits didn't fix it) | 🔄 |
+| 1.2 | Flaky: editor image form | `packages/html/src/components/editor/editor.test.ts` "inserts an image; an invalid form stays open" (Chromium, CI 2026-11-09) | ✅ |
+| 1.3 | Flaky: button soft colors | `packages/html/src/components/button/button.test.ts` `soft-colors.html: no axe violations` (Firefox, CI 2026-11-09) | ✅ |
+| 1.4 | Flaky: carousel thumbs-y | e2e parity `carousel / thumbs-y` pixels, about 2 of 60 runs under load (already before Wave 8; image decode and scroll settle waits didn't fix it) | ✅ |
 | 1.5 | Carousel `loop` resize | with `loop`, a viewport resize jumps to another slide; the landing page turns `loop` off until fixed | ✅ |
 
-**Done when:** three green CI runs in a row on `main`. Notes: 1.1 split CI into `check` + `unit (chromium | firefox | webkit)` (if branch protection lists the old job name, switch it to the new ones); 1.5 also fixed short loops and resizes during animations. Open lead: in Chromium a Playwright full-page screenshot scrolls carousels by about 185 px without a resize (see 1.4).
+**Done when:** three green CI runs in a row on `main`. Notes: 1.1 split CI into `check` + `unit (chromium | firefox | webkit)` (if branch protection lists the old job name, switch it to the new ones); 1.5 also fixed short loops and resizes during animations. 1.2 was a real editor bug (a refused action still focused the editor) and uncovered a date picker setup crash on field-only pickers (fixed); 1.3 came from the real mouse hovering a button (axe now parks the pointer); 1.4 from Chromium repainting late-decoded thumbnails partially (parity repaints the story from scratch). Still open, unrelated: in Chromium a Playwright full-page screenshot scrolls carousels by about 185 px without a resize.
 
 ## Phase 2 — ApexCharts parity
 
@@ -36,7 +36,7 @@ Commercial add-ons of ApexCharts: behavior and API only, our own code, data and 
 |---|---|---|---|---|
 | 2.1 | Sankey | `sankey` chart type in the engine: column layout with relaxation, link widths by value, palette colors, labels, hover and keyboard on nodes and links, links as an HTML `<table>` | 0047 | 🔄 |
 | 2.2 | Stock charts | indicators computed in core (SMA, EMA, Bollinger Bands, RSI, MACD, volume, others ApexStock lists), panes on one time axis, navigator / range selector (zoom window and brush, ADR-0031), crosshair readout, period buttons | 0047 | 🔄 |
-| 2.3 | Gantt | new component: task tree + timeline, day → year scales, today line, weekends, milestones, summary tasks, dependencies, drag to move / resize / set progress with keyboard alternatives (WCAG 2.5.7), selection, tooltips, virtualization, HTML data as a `<table>` | 0048 | ⬜ |
+| 2.3 | Gantt | new component: task tree + timeline, day → year scales, today line, weekends, milestones, summary tasks, dependencies, drag to move / resize / set progress with keyboard alternatives (WCAG 2.5.7), selection, tooltips, virtualization, HTML data as a `<table>` | 0048 | 🔄 |
 | 2.4 | Parity audit | ApexTree ↔ Organization chart / Tree view, ApexGrid ↔ Data grid, ApexMaps ↔ Map (a choropleth map?), Chart Editor (a builder from the Chart option schema?) → new rows in Phase 4, batch E | — | ⬜ |
 
 ## Phase 3 — Upstream API audit and a complete API reference
