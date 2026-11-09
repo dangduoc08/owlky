@@ -512,6 +512,18 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
   attributes in snippets (use a class, such as `.sb-day-dot`). The adapter tests load Day.js,
   Luxon and Moment through Vite: list them in the package's `optimizeDeps.include` (with the
   `.js` plugin paths) or the first run reloads mid-test.
+- Carousel (ADR-0033): the viewport is a native scroll-snap container; the controller writes the
+  derived state (slides' `data-ok-snapped` / `data-ok-in-view`, dots' and thumbnails'
+  `aria-current`, arrows' `aria-disabled`, counter and live text) in both implementations, and React
+  renders only the initial state (`startIndex`) — never render those attributes from React state.
+  Loop rotates CSS `order` (no clones). Hovering pauses autoplay: unit tests park the real pointer
+  away first (`userEvent.hover` on a fixed corner element) or Chrome's layout-time `mouseenter`
+  pauses it. Settling is a 120 ms scroll debounce; tests of a synchronous move must not wait for a
+  second settle (`idle(root)` in the core test). Snippets are generated from the React examples
+  (`renderToStaticMarkup`, drop `style`, `data-ok-runtime`, `data-ok-state`, preload `<link>`s);
+  HTML tests swap story images for an SVG pixel *with a size*, or overlays cover the dots
+  (axe `target-size`). In a git worktree under `.claude/`, the repo's `coverage.include`
+  (`packages/*/src/**`) matches nothing: measure with an include such as `**/src/carousel/**`.
 - Parallel work: never run two `/component` / `/integrate` sessions (or two `pnpm build` /
   `pnpm test:e2e`) in the same working tree — builds wipe each other's `dist/` and
   `storybook-static/`, e2e servers share port 4321, and staging part of a shared file while

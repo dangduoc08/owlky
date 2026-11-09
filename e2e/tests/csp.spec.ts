@@ -97,6 +97,19 @@ test("no CSP or Trusted Types violations", async ({ page }) => {
   await page.getByRole("button", { name: "Bold" }).click();
   await expect(story.locator("strong")).toHaveText("this");
   await expect(page.getByRole("switch", { name: "Wi-Fi" })).not.toBeChecked();
+  // The carousel sizes slides, reorders a loop and writes tweens through CSSOM.
+  const carousel = page.getByRole("region", { name: "Photos" });
+  await expect(carousel).toHaveAttribute("data-ok-looping", "");
+  await carousel.getByRole("button", { name: "Next slide" }).click();
+  await expect(carousel.getByRole("group", { name: "2 of 4" })).toHaveAttribute(
+    "data-ok-snapped",
+    "",
+  );
+  expect(
+    await carousel.evaluate((element) =>
+      (element as HTMLElement).style.getPropertyValue("--_ok-carousel-basis-xs"),
+    ),
+  ).toBe("70%");
   expect(
     await page.evaluate(() => (window as unknown as { violations: string[] }).violations),
   ).toEqual([]);

@@ -31,6 +31,8 @@ export const CONTRAST_EXEMPT = [
   '[data-ok-time-clock-number][aria-selected="true"]',
   '[data-ok-time-clock-meridiem][aria-pressed="true"]',
   "[data-ok-editor-content] a",
+  '[data-ok-carousel-arrows]:not([data-ok-color="inherit"]) [data-ok-carousel-counter]',
+  '[data-ok-carousel-dots]:not([data-ok-color="inherit"]) [data-ok-carousel-dot][aria-current="true"]',
 ];
 
 const TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];

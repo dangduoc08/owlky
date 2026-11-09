@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" width="1200" height="900" role="img">
+  <title>Northern lights</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#020617"/>
+      <stop offset="1" stop-color="#0f172a"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.7" cy="0.5" r="0.6">
+      <stop offset="0" stop-color="#c084fc" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#c084fc" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="900" fill="url(#bg)"/>
+  <rect width="1200" height="900" fill="url(#glow)"/>
+  <circle cx="395" cy="375" r="120" fill="none" stroke="#c084fc" stroke-width="10" stroke-opacity="0.7"/>
+  <path d="M0 580 C 200 440 400 720 600 510 S 900 720 1200 533.3333333333334 V 900 H 0 Z" fill="#2dd4bf" fill-opacity="0.85"/>
+  <path d="M0 660 C 200 550 400 770 600 605 S 900 770 1200 623.3333333333334 V 900 H 0 Z" fill="#4ade80" fill-opacity="0.8"/>
+  <path d="M0 760 C 200 680 400 840 600 720 S 900 840 1200 733.3333333333334 V 900 H 0 Z" fill="#020617" fill-opacity="0.9"/>
+</svg>
