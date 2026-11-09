@@ -5,7 +5,7 @@ and a review before the next starts.
 
 ## Overview
 Every page of the reference's component menu (`https://minimals.cc/components/…`) and where it
-stands (plus pages from other references, marked). ✅ = built (41); *wave N* = planned, see "Next — components"; *not planned* = a pattern
+stands (plus pages from other references, marked). ✅ = built (42); *wave N* = planned, see "Next — components"; *not planned* = a pattern
 or app-level page. *Section* = the heading below with the details. Update this table with each
 component and each `/integrate` run.
 
@@ -33,6 +33,7 @@ component and each `/integrate` run.
 | MUI (no Minimals page; mui.com) | Backdrop | ✅ | Backdrop | Backdrop |
 | MUI (no Minimals page; mui.com) | Paper | ✅ | Paper | Paper |
 | MUI (no Minimals page; mui.com) | Typography | ✅ | Typography | Typography |
+| MUI (no Minimals page; mui.com) | Card | ✅ | Card, CardHeader, CardContent, CardMedia, CardActions, CardActionArea | Card |
 | MUI | List | ✅ | List, ListItem, ListItemButton, ListItemIcon, ListItemAvatar, ListItemText, ListSubheader, ListItemExpandIcon | List |
 | MUI | Menu | ✅ | Menu, MenuItem | Popover, Tooltip, Menu, Dialog & Snackbar |
 | MUI | Pagination | ✅ | Pagination, PaginationItem | Pagination |
@@ -524,12 +525,32 @@ integrate these in the same review (additive: no DOM or API change) and remove t
 | Collapse (transition) | List nested lists | open / close at once (`hidden`); a Collapse component can animate the height later without a DOM change |
 | Collapse (transition) | Stepper `StepContent` (vertical) | shown / hidden at once by CSS on the active step; MUI collapses it |
 | Link (Typography) | Breadcrumbs items | native `a` / `span[aria-current]` styled by `breadcrumbs.css` (inherit color, hover underline); a Link component can go inside items without a DOM change |
-| Typography + Paper (card) | Motion stories (cards, headings, count-up numbers, the stage) | demo `.sb-motion-*` styled in `.storybook/preview.css` |
 | Motion full version, phase 1 (custom keyframes) | Motion story "Logo" (the reference's shape-morphing, turning rings and the turning gradient disc) | the logo inside MotionBorder rings; the story becomes the reference's once `animate(element, keyframes)` exists, without changing MotionBorder |
-| Typography + Paper (card) | Timeline story "Customized" (cards with a title and text) | demo `.sb-timeline-card` styled in `.storybook/preview.css` |
+| Collapse (transition) | Card story "Complex interaction" (the method section under the chevron) | shown / hidden at once (`hidden` + `aria-expanded`, the page's own state); MUI collapses it |
 | Collapse (transition) | Tree view groups | open / close at once (`hidden`); MUI X collapses them |
-| Typography + Paper (card) | Organization chart stories (node cards: simple, standard, team and member cards, names and roles) | demo `.sb-org-*` styled in `.storybook/preview.css`; the cards compose Avatar, IconButton, Menu and Label |
-| Typography + Paper (card) | Walktour stories (the dashboard cards the tour points at, step text; the reference's cards hold charts, a carousel and a table, kept as text here) | demo `.sb-walktour-*` styled in `.storybook/preview.css`; the cards compose Avatar, Button and Image (the featured picture, like the reference) |
+
+## ✅ Components — Card (2026-11-09)
+Wave 8 (primitives), created with `/component` from MUI's "Card" page (Minimals has none; its theme
+customizes MUI's Card), every section as a story: Basics, Outlined card, Complex interaction,
+Media, Primary action, UI controls, Active state styles. CSS only, built on Paper: one element
+with `data-ok-paper` + `data-ok-card` and Paper's options (spread into `cardOptions`) plus
+`raised`; parts `CardHeader` (Avatar / action slots, title and subheader composed as Typography
+`h6` / `body2`), `CardContent`, `CardMedia` (media elements get `src`, other elements a decorative
+cover `img` — MUI's background image without a `style` attribute; composes Image with
+`component={Image}`), `CardActions` (`disableSpacing`), `CardActionArea` (button, or link with
+`href`). Minimals' look: `--ok-radius-xl`, `--ok-shadow-card` at the default level (other levels
+keep Paper's `--ok-elevation-<n>`, `raised` = `--ok-elevation-8`), header 24/24/0, content 24,
+subheader 4px below. `card.css` loads right after `paper.css` / `typography.css`. No new token. CSS
+budget raised to 50 kB.
+Integrated in the same review (stories, examples and snippets compose them; the demo CSS is gone
+or reduced to layout): Motion (stages are flat Papers, the moving items Cards, headings and
+count-up numbers Typography), Timeline "Customized" (flat Paper + Typography), Organization chart
+(standard and member nodes are Cards, team nodes flat Papers, names and roles Typography),
+Walktour (the dashboard cards are `section` Cards, titles, notes, figures and step texts
+Typography). New wait: "Collapse (transition)" for the Card's Complex interaction.
+Differences: MUI's `titleTypographyProps` / `slotProps.title|subheader` → `titleProps` /
+`subheaderProps`; the "Active state styles" story marks the choice with `aria-pressed` (MUI's demo
+uses `data-active`); the pictures are the stories' own artwork.
 
 ## ✅ Components — Typography (2026-11-09)
 Created with `/component` from MUI's "Typography" page (Minimals has none; its type scale is

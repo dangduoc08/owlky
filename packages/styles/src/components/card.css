@@ -1,0 +1,214 @@
+/*
+ * Card — spec: specs/components/card.md
+ *
+ * Anatomy:   <element>[data-ok-paper][data-ok-card]                 (a Paper root, any element)
+ *              › div[data-ok-card-header]?
+ *                  › div[data-ok-card-header-avatar]?                (an Avatar)
+ *                  › div[data-ok-card-header-content]
+ *                      › span[data-ok-typography][data-ok-card-header-title]?        (h6)
+ *                      › span[data-ok-typography][data-ok-card-header-subheader]?    (body2)
+ *                  › div[data-ok-card-header-action]?                (an IconButton…)
+ *              › <element>[data-ok-card-media]?                      (img | video | picture | iframe
+ *                  › img[data-ok-card-media-image]?                   | audio; other elements hold
+ *                                                                       a cover image)
+ *              › div[data-ok-card-content]?
+ *              › div[data-ok-card-actions][data-ok-disable-spacing]?
+ *              › (button | a)[data-ok-card-action-area]?             (wraps media and content)
+ * Modifiers: Paper's data-ok-variant, data-ok-elevation, data-ok-square; data-ok-raised
+ *
+ * Built on Paper (paper.css loads first): this file overrides its radius and the default shadow
+ * by source order and restates raised / outlined / square after its own rules. Typography loads
+ * before this file too, so the header's title and subheader are restyled here.
+ * Single :where() selectors in @layer components.
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-ok-card]) {
+    position: relative;
+    z-index: 0;
+    overflow: hidden;
+    border-radius: var(--ok-radius-xl);
+  }
+
+  /* The default level (1, or a value Paper doesn't know) casts the card shadow; other levels keep Paper's. */
+  :where(
+    [data-ok-card]:not(
+      [data-ok-elevation="0"],
+      [data-ok-elevation="2"],
+      [data-ok-elevation="3"],
+      [data-ok-elevation="4"],
+      [data-ok-elevation="5"],
+      [data-ok-elevation="6"],
+      [data-ok-elevation="7"],
+      [data-ok-elevation="8"],
+      [data-ok-elevation="9"],
+      [data-ok-elevation="10"],
+      [data-ok-elevation="11"],
+      [data-ok-elevation="12"],
+      [data-ok-elevation="13"],
+      [data-ok-elevation="14"],
+      [data-ok-elevation="15"],
+      [data-ok-elevation="16"],
+      [data-ok-elevation="17"],
+      [data-ok-elevation="18"],
+      [data-ok-elevation="19"],
+      [data-ok-elevation="20"],
+      [data-ok-elevation="21"],
+      [data-ok-elevation="22"],
+      [data-ok-elevation="23"],
+      [data-ok-elevation="24"]
+    )
+  ) {
+    box-shadow: var(--ok-shadow-card);
+  }
+
+  :where([data-ok-card][data-ok-raised]) {
+    box-shadow: var(--ok-elevation-8);
+  }
+
+  /* Restated from Paper: they must beat the card's own rules above. */
+  :where([data-ok-card][data-ok-variant="outlined"]) {
+    box-shadow: none;
+  }
+
+  :where([data-ok-card][data-ok-square]) {
+    border-radius: 0;
+  }
+
+  /* Header: avatar, title and subheader, action. */
+  :where([data-ok-card-header]) {
+    display: flex;
+    align-items: center;
+    padding: calc(var(--ok-spacing) * 6) calc(var(--ok-spacing) * 6) 0;
+  }
+
+  :where([data-ok-card-header-avatar]) {
+    display: flex;
+    flex: 0 0 auto;
+    margin-inline-end: calc(var(--ok-spacing) * 4);
+  }
+
+  :where([data-ok-card-header-content]) {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  :where([data-ok-card-header-title]) {
+    display: block;
+  }
+
+  :where([data-ok-card-header-subheader]) {
+    display: block;
+    margin-block-start: var(--ok-spacing);
+  }
+
+  :where([data-ok-card-header-action]) {
+    flex: 0 0 auto;
+    align-self: flex-start;
+    margin-block: calc(var(--ok-spacing) * -1);
+    margin-inline-end: calc(var(--ok-spacing) * -2);
+  }
+
+  /* Media: media elements fill the width (pictures cropped); other elements hold a cover image. */
+  :where([data-ok-card-media]) {
+    display: block;
+  }
+
+  /* The header has no bottom padding (Minimals): media right below it keeps the 24px rhythm. */
+  :where([data-ok-card-header] + [data-ok-card-media]) {
+    margin-block-start: calc(var(--ok-spacing) * 6);
+  }
+
+  :where(:is(img, video, picture, iframe, audio)[data-ok-card-media]) {
+    width: 100%;
+  }
+
+  :where(:is(img, picture)[data-ok-card-media]) {
+    object-fit: cover;
+  }
+
+  :where([data-ok-card-media]:has(> [data-ok-card-media-image])) {
+    position: relative;
+    overflow: hidden;
+  }
+
+  :where([data-ok-card-media-image]) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+
+  :where([data-ok-card-content]) {
+    padding: calc(var(--ok-spacing) * 6);
+  }
+
+  :where([data-ok-card-actions]) {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--ok-spacing) * 2);
+    padding: calc(var(--ok-spacing) * 2);
+  }
+
+  :where([data-ok-card-actions][data-ok-disable-spacing]) {
+    gap: 0;
+  }
+
+  /* Action area: the whole surface it wraps is one button or link, tinted on hover and focus. */
+  :where([data-ok-card-action-area]) {
+    position: relative;
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: inherit;
+    background-color: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: inherit;
+    text-decoration: none;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  :where([data-ok-card-action-area])::after {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background-color: transparent;
+    content: "";
+    pointer-events: none;
+    transition: background-color var(--ok-duration-shortest) var(--ok-easing-standard);
+  }
+
+  @media (hover: hover) {
+    :where([data-ok-card-action-area]:hover)::after {
+      background-color: var(--ok-action-hover);
+    }
+  }
+
+  :where([data-ok-card-action-area]:focus-visible) {
+    outline: 2px solid var(--ok-text-primary);
+    outline-offset: -2px;
+  }
+
+  :where([data-ok-card-action-area]:focus-visible)::after {
+    background-color: var(--ok-action-focus);
+  }
+
+  :where([data-ok-card-action-area]:is(:disabled, [aria-disabled="true"])) {
+    cursor: default;
+    pointer-events: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :where([data-ok-card-action-area])::after {
+      transition: none;
+    }
+  }
+}

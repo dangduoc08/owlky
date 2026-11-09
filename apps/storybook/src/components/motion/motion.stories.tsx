@@ -23,8 +23,11 @@ const snippets = import.meta.glob(
   { query: "?raw", import: "default", eager: true },
 ) as Record<string, string>;
 
-const SETUP = htmlSetup(["motion.css"], true);
-const SCROLL_SETUP = htmlSetup(["scrollbar.css", "motion.css"], true);
+const SETUP = htmlSetup(["paper.css", "typography.css", "card.css", "motion.css"], true);
+const SCROLL_SETUP = htmlSetup(
+  ["paper.css", "typography.css", "card.css", "scrollbar.css", "motion.css"],
+  true,
+);
 const DIALOG_SETUP = htmlSetup(["button.css", "dialog.css", "motion.css"], true);
 
 type Controls = typeof MOTION_CONTROLS | typeof MOTION_LOOP_CONTROLS | typeof MOTION_TEXT_CONTROLS;
@@ -96,7 +99,7 @@ export const TapHover: StoryObj = other(
 export const Path: StoryObj = other("path", SETUP, { ...MOTION_DRAW_CONTROLS, target: Motion });
 export const CountUpStory: StoryObj = other(
   "count-up",
-  htmlSetup(["count-up.css"], true),
+  htmlSetup(["typography.css", "count-up.css"], true),
   { ...COUNT_UP_CONTROLS, target: CountUp },
   "Count up",
 );

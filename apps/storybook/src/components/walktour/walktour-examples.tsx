@@ -2,18 +2,20 @@ import { type WalktourApi, walktourOptions } from "@owlky/core";
 import {
   Avatar,
   Button,
+  Card,
   FormControlLabel,
   Image,
   Switch,
   TextField,
+  Typography,
   Walktour,
   type WalktourStep,
 } from "@owlky/react";
 import { createRef } from "react";
 
 /*
- * Walktour stories. The dashboard cards are story-only demo markup (`sb-walktour-*` classes in
- * `.storybook/preview.css`); the featured card's picture is an Image, like the reference's (its
+ * Walktour stories. The dashboard cards are Cards with Typography (`sb-walktour-*` classes in
+ * `.storybook/preview.css` lay them out); the featured card's picture is an Image, like the reference's (its
  * step pictures are plain `img`). Pictures are the original artwork of the Carousel and Avatar stories,
  * referenced relatively so they work under the e2e server's sub-path. People and products are
  * invented. The HTML snippets are generated from these examples
@@ -46,7 +48,9 @@ const BASIC_STEPS: WalktourStep[] = [
     placement: "left-start",
     content: (
       <>
-        <p className="sb-walktour-text">{TEXT}</p>
+        <Typography variant="body2" className="sb-walktour-text">
+          {TEXT}
+        </Typography>
         <img className="sb-walktour-image" src="carousel/slide-2.svg" alt="Abstract waves" />
       </>
     ),
@@ -56,7 +60,9 @@ const BASIC_STEPS: WalktourStep[] = [
     title: "Step 3",
     content: (
       <>
-        <p className="sb-walktour-text">Weekly magic on your inbox</p>
+        <Typography variant="body2" className="sb-walktour-text">
+          Weekly magic on your inbox
+        </Typography>
         <TextField
           variant="filled"
           type="email"
@@ -78,7 +84,9 @@ const BASIC_STEPS: WalktourStep[] = [
     placement: "left",
     content: (
       <>
-        <p className="sb-walktour-text">{TEXT}</p>
+        <Typography variant="body2" className="sb-walktour-text">
+          {TEXT}
+        </Typography>
         <div className="sb-walktour-settings">
           {SETTINGS.map((setting) => (
             <FormControlLabel
@@ -100,7 +108,9 @@ const BASIC_STEPS: WalktourStep[] = [
     stepProps: { "data-ok-theme": "dark" } as Record<string, string>,
     content: (
       <>
-        <p className="sb-walktour-text">{TEXT}</p>
+        <Typography variant="body2" className="sb-walktour-text">
+          {TEXT}
+        </Typography>
         <div className="sb-walktour-gallery">
           {[1, 2, 3, 4, 5, 6].map((n) => (
             <img key={n} src={`carousel/slide-${n}.svg`} alt={`Artwork ${n}`} />
@@ -115,45 +125,78 @@ const BASIC_STEPS: WalktourStep[] = [
 function Dashboard() {
   return (
     <div className="sb-walktour-dashboard">
-      <section className="sb-walktour-card sb-walktour-welcome" id="tour-welcome">
+      <Card component="section" className="sb-walktour-card sb-walktour-welcome" id="tour-welcome">
         <Avatar src="avatars/avatar-3.svg" alt="" />
-        <h3>Congratulations, Ana Lima!</h3>
-        <p className="sb-walktour-note">Best seller of the month: you sold 57.6% more today.</p>
+        <Typography variant="subtitle2" component="h3">
+          Congratulations, Ana Lima!
+        </Typography>
+        <Typography variant="body2" color="textSecondary">
+          Best seller of the month: you sold 57.6% more today.
+        </Typography>
         <Button variant="contained" color="primary">
           Go now
         </Button>
-      </section>
-      <section className="sb-walktour-card sb-walktour-featured" id="tour-featured">
+      </Card>
+      <Card
+        component="section"
+        className="sb-walktour-card sb-walktour-featured"
+        id="tour-featured"
+      >
         <Image src="carousel/slide-1.svg" alt="" ratio="4/3" />
-        <h3>Trail Runner Sneakers</h3>
+        <Typography variant="subtitle2" component="h3">
+          Trail Runner Sneakers
+        </Typography>
         <Button variant="contained" color="primary" size="sm">
           Buy now
         </Button>
-      </section>
-      <section className="sb-walktour-card" id="tour-sold">
-        <h3>Product sold</h3>
-        <p className="sb-walktour-figure">765</p>
-      </section>
-      <section className="sb-walktour-card" id="tour-balance">
-        <h3>Total balance</h3>
-        <p className="sb-walktour-figure">18,765</p>
-      </section>
-      <section className="sb-walktour-card" id="tour-profit">
-        <h3>Sales profit</h3>
-        <p className="sb-walktour-figure">4,876</p>
-      </section>
-      <section className="sb-walktour-card sb-walktour-wide" id="tour-sales">
-        <h3>Yearly sales</h3>
-        <p className="sb-walktour-note">(+43%) than last year</p>
-      </section>
-      <section className="sb-walktour-card" id="tour-products">
-        <h3>Latest products</h3>
-        <ul className="sb-walktour-note">
+      </Card>
+      <Card component="section" className="sb-walktour-card" id="tour-sold">
+        <Typography variant="subtitle2" component="h3">
+          Product sold
+        </Typography>
+        <Typography variant="h4" component="p">
+          765
+        </Typography>
+      </Card>
+      <Card component="section" className="sb-walktour-card" id="tour-balance">
+        <Typography variant="subtitle2" component="h3">
+          Total balance
+        </Typography>
+        <Typography variant="h4" component="p">
+          18,765
+        </Typography>
+      </Card>
+      <Card component="section" className="sb-walktour-card" id="tour-profit">
+        <Typography variant="subtitle2" component="h3">
+          Sales profit
+        </Typography>
+        <Typography variant="h4" component="p">
+          4,876
+        </Typography>
+      </Card>
+      <Card component="section" className="sb-walktour-card sb-walktour-wide" id="tour-sales">
+        <Typography variant="subtitle2" component="h3">
+          Yearly sales
+        </Typography>
+        <Typography variant="body2" color="textSecondary">
+          (+43%) than last year
+        </Typography>
+      </Card>
+      <Card component="section" className="sb-walktour-card" id="tour-products">
+        <Typography variant="subtitle2" component="h3">
+          Latest products
+        </Typography>
+        <Typography
+          variant="body2"
+          color="textSecondary"
+          component="ul"
+          className="sb-walktour-list"
+        >
           <li>Trail Runner Sneakers · $83.74</li>
           <li>Harbor Leather Loafers · $97.14</li>
           <li>Summit Hiking Boots · $68.71</li>
-        </ul>
-      </section>
+        </Typography>
+      </Card>
     </div>
   );
 }
@@ -222,19 +265,25 @@ export function BeaconsDemo() {
         Restart the tour
       </Button>
       <div className="sb-walktour-dashboard">
-        <section className="sb-walktour-card" id="tour-b-actions">
-          <h3>Quick actions</h3>
+        <Card component="section" className="sb-walktour-card" id="tour-b-actions">
+          <Typography variant="subtitle2" component="h3">
+            Quick actions
+          </Typography>
           <div className="sb-walktour-actions">
             <Button variant="contained">Request</Button>
             <Button variant="soft" color="primary">
               Transfer
             </Button>
           </div>
-        </section>
-        <section className="sb-walktour-card" id="tour-b-notes">
-          <h3>Notes</h3>
-          <p className="sb-walktour-note">Write down what you want to remember.</p>
-        </section>
+        </Card>
+        <Card component="section" className="sb-walktour-card" id="tour-b-notes">
+          <Typography variant="subtitle2" component="h3">
+            Notes
+          </Typography>
+          <Typography variant="body2" color="textSecondary">
+            Write down what you want to remember.
+          </Typography>
+        </Card>
       </div>
       <Walktour id="tour-beacons" apiRef={beaconsApi} steps={BEACON_STEPS} run showSkipButton />
     </div>

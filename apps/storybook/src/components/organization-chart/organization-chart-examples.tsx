@@ -5,17 +5,22 @@ import {
   type OrganizationChartLineStyle,
   OrganizationChartNode,
   Scrollbar,
+  Typography,
 } from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
 import type { GroupFiles } from "../shared/snippets.js";
 import { CEO, PEOPLE, type Person, type PersonNode } from "./organization-chart-data.js";
 
-/** A simple card: the name and the role (story-only demo markup). */
+/** A simple node: the name and the role in a tinted box (`.sb-org-simple`, story CSS). */
 function SimpleCard({ person }: { person: Person }) {
   return (
     <div className="sb-org-simple">
-      <span className="sb-org-name">{person.name}</span>
-      <span className="sb-org-role">{person.role}</span>
+      <Typography className="sb-org-name" variant="subtitle2" component="span" noWrap>
+        {person.name}
+      </Typography>
+      <Typography className="sb-org-role" variant="caption" noWrap>
+        {person.role}
+      </Typography>
     </div>
   );
 }
@@ -77,8 +82,8 @@ TeamChart.displayName = "TeamChart";
 
 /**
  * Story groups — the same examples as `packages/html/src/components/organization-chart/examples/`
- * (generated from these by `apps/storybook/scripts/organization-chart-snippets.mjs`). Cards
- * (`.sb-org-*`) are story-only demo markup.
+ * (generated from these by `apps/storybook/scripts/organization-chart-snippets.mjs`). Node texts
+ * are Typography; `.sb-org-*` classes are story-only layouts.
  */
 export const organizationChartStories: Record<string, ReactGroup[]> = {
   simple: [

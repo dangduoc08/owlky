@@ -1,12 +1,15 @@
 import {
   Avatar,
+  Card,
   IconButton,
   Label,
   Menu,
   MenuItem,
   OrganizationChart,
   OrganizationChartNode,
+  Paper,
   Scrollbar,
+  Typography,
 } from "@owlky/react";
 import { type ReactNode, useState } from "react";
 import { DemoIcon } from "../shared/demo-icon.js";
@@ -75,12 +78,16 @@ function MemberCard({
   actions: ReactNode;
 }) {
   return (
-    <div className={color ? `sb-org-member sb-org-${color}` : "sb-org-member"}>
+    <Card className={color ? `sb-org-member sb-org-${color}` : "sb-org-member"}>
       <Avatar src={person.avatar} alt="" size={48} />
       {actions}
-      <span className="sb-org-name">{person.name}</span>
-      <span className="sb-org-role">{person.role}</span>
-    </div>
+      <Typography className="sb-org-name" variant="subtitle2" component="span" noWrap>
+        {person.name}
+      </Typography>
+      <Typography className="sb-org-role" variant="caption" color="textSecondary" noWrap>
+        {person.role}
+      </Typography>
+    </Card>
   );
 }
 
@@ -129,11 +136,13 @@ export function GroupChartDemo() {
           <OrganizationChartNode
             key={team.id}
             label={
-              <div className={`sb-org-team sb-org-${team.color}`}>
-                <span className="sb-org-team-name">{team.name}</span>
+              <Paper className={`sb-org-team sb-org-${team.color}`} elevation={0}>
+                <Typography variant="subtitle1" component="span" noWrap>
+                  {team.name}
+                </Typography>
                 <Label color={team.color}>{headcount(team.members)}</Label>
                 <CardActions id={team.id} name={team.name} {...actions} />
-              </div>
+              </Paper>
             }
           >
             <MemberNodes people={team.members} color={team.color} {...actions} />

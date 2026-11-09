@@ -17,6 +17,10 @@ and **Form control label** (CSS only: native checkbox with `role="switch"`;
 `data-ok-avatar-group`, surplus `data-ok-avatar-surplus`) **Badge** and **Label** (CSS only) **Chip**
 (runtime `chip`: delete button / Backspace → cancelable `ok:chip:delete`, then hidden)
 **Divider** (CSS only: `hr[data-ok-divider]`, with text `div[role=separator][data-ok-divider] › span[data-ok-divider-text]`)
+**Card** (CSS only, a Paper root: `data-ok-paper data-ok-card` + Paper's attributes, `data-ok-raised`; parts
+`data-ok-card-header` (`-avatar`, `-content`, `-title`, `-subheader`, `-action`), `data-ok-card-media`
+(› `img[data-ok-card-media-image]` on non-media elements), `data-ok-card-content`, `data-ok-card-actions`
+(`data-ok-disable-spacing`), `button|a[data-ok-card-action-area]`)
 **Paper** (CSS only: `data-ok-paper` on any element, `data-ok-variant`, `data-ok-elevation` 0–24, `data-ok-square`)
 **List** (CSS only: `ul[data-ok-list]` › `li[data-ok-list-item]` › `button|a[data-ok-list-item-button]`, icon, avatar,
 text, subheader, `data-ok-list-item-secondary-action`; runtime `list` opens / closes nested lists from

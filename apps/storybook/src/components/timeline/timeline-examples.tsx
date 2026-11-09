@@ -1,5 +1,6 @@
 import { timelineOptions } from "@owlky/core";
 import {
+  Paper,
   Timeline,
   TimelineConnector,
   TimelineContent,
@@ -10,6 +11,7 @@ import {
   TimelineOppositeContent,
   type TimelinePosition,
   TimelineSeparator,
+  Typography,
 } from "@owlky/react";
 import type { ReactNode } from "react";
 import type { ReactGroup } from "../../helpers/groups.js";
@@ -90,7 +92,8 @@ const colored = (extra: (color: TimelineDotColor, index: number) => Partial<Even
 
 /**
  * Story groups — the same examples as `packages/html/src/components/timeline/examples/`. The
- * Customized cards (`div.sb-timeline-card`, `h6`, `p`) are story-only demo markup.
+ * Customized cards are a flat Paper with Typography; `.sb-timeline-card` (story CSS) tints
+ * and pads it, like the reference.
  */
 export const timelineStories: Record<string, ReactGroup[]> = {
   left: [{ title: "Left", content: <Events events={STATUS} position="left" /> }],
@@ -119,10 +122,10 @@ export const timelineStories: Record<string, ReactGroup[]> = {
             opposite: TIMES[i],
             icon: ICONS[i] as DemoIconName,
             label: (
-              <div className="sb-timeline-card">
-                <h6>{LABELS[color]}</h6>
-                <p>{NOTES[i]}</p>
-              </div>
+              <Paper className="sb-timeline-card" elevation={0}>
+                <Typography variant="subtitle2">{LABELS[color]}</Typography>
+                <Typography variant="body2">{NOTES[i]}</Typography>
+              </Paper>
             ),
           }))}
         />

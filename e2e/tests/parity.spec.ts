@@ -260,6 +260,13 @@ const pairs: [component: string, story: string][] = [
   ["paper", "elevation"],
   ["paper", "variants"],
   ["paper", "corners"],
+  ["card", "basics"],
+  ["card", "outlined"],
+  ["card", "complex-interaction"],
+  ["card", "media"],
+  ["card", "primary-action"],
+  ["card", "ui-controls"],
+  ["card", "active-state"],
   ["list", "simple"],
   ["list", "nested"],
   ["list", "folder"],
@@ -394,6 +401,13 @@ async function loaded(page: Page, key: string) {
       }),
     );
     await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => setTimeout(r, 50))));
+    return;
+  }
+  if (key.startsWith("card/")) {
+    // Card pictures change the card heights as they load; the Media story's Image settles after.
+    await page.waitForLoadState("networkidle");
+    await page.waitForFunction(() => [...document.images].every((image) => image.complete));
+    await imagesSettled(page);
     return;
   }
   if (key.startsWith("carousel/")) {

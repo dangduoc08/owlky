@@ -7,7 +7,7 @@ for (const impl of implementations) {
       page,
     }) => {
       await openStory(page, storyId(impl, "motion", "in-view"));
-      const cards = page.locator(".sb-motion-card");
+      const cards = page.locator("[data-ok-motion]:has(> [data-ok-card])");
       await expect(cards).toHaveCount(5);
       for (const card of await cards.all())
         await expect(card).toHaveAttribute("data-ok-state", "enter");
@@ -18,7 +18,7 @@ for (const impl of implementations) {
 
     test("scroll: items enter as they scroll into view", async ({ page }) => {
       await openStory(page, storyId(impl, "motion", "scroll"));
-      const last = page.locator(".sb-motion-card").last();
+      const last = page.locator("[data-ok-motion]:has(> [data-ok-card])").last();
       // Not seen yet: waiting at the start of its entrance (faded out).
       await expect(last).toHaveAttribute("data-ok-state", "initial");
       await expect(last).toHaveCSS("opacity", "0");

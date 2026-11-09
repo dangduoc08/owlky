@@ -5,6 +5,7 @@
 @import "@owlky/tokens/tokens.css";
 @import "./components/paper.css";
 @import "./components/typography.css";
+@import "./components/card.css";
 @import "./components/accordion.css";
 @import "./components/avatar.css";
 @import "./components/badge.css";

@@ -34,6 +34,8 @@ const SPECS = {
   label: "label.md",
   divider: "divider.md",
   paper: "paper.md",
+  card: "card.md",
+  "card-actions": "card.md",
   typography: "typography.md",
   list: "list.md",
   "list-item": "list.md",
