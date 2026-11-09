@@ -113,7 +113,7 @@
   height: 20px;
 }
 
-/* Stepper demos (story-only): the step text in a neutral box, Back / Next below. */
+/* Stepper demos (story-only): the step text in a tinted Paper, Back / Next below. */
 .sb-stepper-demo {
   display: flex;
   flex-direction: column;
@@ -121,11 +121,10 @@
   width: 100%;
 }
 
+/* The step text sits in a flat Paper, tinted like the reference's. */
 .sb-stepper-panel {
   padding: calc(var(--ok-spacing) * 6);
-  border-radius: var(--ok-radius-md);
   background-color: var(--ok-bg-neutral);
-  color: var(--ok-text-primary);
 }
 
 .sb-stepper-panel [data-ok-button] {
@@ -138,23 +137,16 @@
   gap: calc(var(--ok-spacing) * 2);
 }
 
-[data-ok-step-content] {
-  color: var(--ok-text-primary);
-}
-
 [data-ok-step-content] > .sb-stepper-actions {
   justify-content: flex-start;
   margin-block: calc(var(--ok-spacing) * 3) calc(var(--ok-spacing) * 2);
 }
 
-/* Mobile stepper demo (story-only): a card with its text above the stepper. */
+/* Mobile stepper demo (story-only): an outlined Paper, its text above a Divider and the stepper. */
 .sb-mobile-card {
   width: 100%;
   max-width: 340px;
   overflow: hidden;
-  border-radius: var(--ok-radius-lg);
-  background-color: var(--ok-bg-paper);
-  box-shadow: var(--ok-shadow-card);
 }
 
 .sb-mobile-card-body {
@@ -168,10 +160,6 @@
 
 .sb-mobile-card-body h6 {
   margin: 0 0 calc(var(--ok-spacing) * 2);
-}
-
-.sb-mobile-card > [data-ok-mobile-stepper] {
-  border-top: 1px dashed var(--ok-divider);
 }
 
 /* Timeline "Customized" cards (story-only): the flat Paper tinted and padded, like the reference. */
@@ -736,19 +724,23 @@
   padding-block: 0.75rem;
 }
 
-/* List demos (story-only): a paper panel, like the reference's demo cards. */
+/* List demos (story-only): the width of the Card around each list. */
 .sb-row > div:has(> [data-ok-list]),
 .sb-row > div:has(> nav > [data-ok-list]) {
   box-sizing: border-box;
   width: 100%;
   max-width: 22.5rem;
+}
+
+/* Divider "Variants" (story-only): its list still sits in a demo panel instead of a Paper. */
+.sb-row > div:not([data-ok-paper]):has(> [data-ok-list]) {
   border-radius: var(--ok-radius-md);
   background-color: var(--ok-bg-paper);
   box-shadow: var(--ok-shadow-card);
 }
 
 /* Divider demos (story-only): a bordered panel, rows of words, a toolbar. */
-.sb-row > div:has(> [data-ok-divider]):not(:has(> nav)) {
+.sb-row > div:not([data-ok-paper]):has(> [data-ok-divider]):not(:has(> nav)) {
   box-sizing: border-box;
   width: 100%;
   max-width: 22.5rem;
@@ -1138,20 +1130,13 @@
   }
 }
 
+/* The preview is an outlined Card: its title (a Typography) above the rendered HTML. */
 .sb-editor-preview {
   min-width: 0;
-  border-radius: var(--ok-radius-xl);
-  background-color: var(--ok-bg-paper);
-  box-shadow: var(--ok-shadow-card);
-  overflow: hidden;
 }
 
 .sb-editor-preview > h3 {
-  margin: 0;
   padding: calc(var(--ok-spacing) * 6);
-  font-size: var(--ok-typography-h6-font-size);
-  font-weight: var(--ok-typography-h6-font-weight);
-  line-height: var(--ok-typography-h6-line-height);
 }
 
 /* The preview renders the editor's HTML with Markdown, as the reference does. */

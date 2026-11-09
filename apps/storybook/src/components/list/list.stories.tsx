@@ -17,6 +17,9 @@ import nestedSource from "./nested-demo.tsx?raw";
 
 const controls = { ...LIST_CONTROLS, target: List };
 
+/** Every list demo sits in a Card (built on Paper). */
+const CARD_CSS = ["paper.css", "card.css"];
+
 const snippets = import.meta.glob(
   "../../../../../packages/html/src/components/list/examples/*.html",
   { query: "?raw", import: "default", eager: true },
@@ -29,7 +32,13 @@ const story = (
   css: string[],
 ) =>
   frameworkStory({
-    html: snippetStory(snippets, name, files(title), htmlSetup(css), LIST_CONTROLS),
+    html: snippetStory(
+      snippets,
+      name,
+      files(title),
+      htmlSetup([...CARD_CSS, ...css]),
+      LIST_CONTROLS,
+    ),
     react: reactGroupsStory(groups, controls),
   });
 
@@ -52,7 +61,12 @@ export const Simple: StoryObj = story("simple", "Simple", simpleGroups, [
   "divider.css",
 ]);
 export const Nested: StoryObj = frameworkStory({
-  html: snippetStory(snippets, "nested", files("Nested"), htmlSetup(["list.css"], true)),
+  html: snippetStory(
+    snippets,
+    "nested",
+    files("Nested"),
+    htmlSetup([...CARD_CSS, "list.css"], true),
+  ),
   react: reactGroupsStory(nestedGroups, undefined, nestedSource),
 });
 export const Folder: StoryObj = story("folder", "Folder", folderGroups, ["list.css", "avatar.css"]);

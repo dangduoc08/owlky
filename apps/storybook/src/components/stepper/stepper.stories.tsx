@@ -16,9 +16,16 @@ const snippets = import.meta.glob(
   { query: "?raw", import: "default", eager: true },
 ) as Record<string, string>;
 
-const SETUP = htmlSetup(["stepper.css", "button.css", "typography.css"], true);
+const SETUP = htmlSetup(["paper.css", "typography.css", "stepper.css", "button.css"], true);
 const MOBILE_SETUP = htmlSetup(
-  ["stepper.css", "button.css", "linear-progress.css", "typography.css"],
+  [
+    "paper.css",
+    "typography.css",
+    "stepper.css",
+    "button.css",
+    "linear-progress.css",
+    "divider.css",
+  ],
   true,
 );
 

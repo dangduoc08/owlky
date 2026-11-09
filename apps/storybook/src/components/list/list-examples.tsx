@@ -1,6 +1,7 @@
 import { listOptions } from "@owlky/core";
 import {
   Avatar,
+  Card,
   Checkbox,
   Divider,
   IconButton,
@@ -46,7 +47,7 @@ Row.displayName = "Row";
 /** Two mailbox menus split by a divider (Simple and Selected). */
 function Mailbox({ selected }: { selected?: string }) {
   return (
-    <div>
+    <Card>
       <nav aria-label="Main mailbox folders">
         <List>
           <Row icon="inbox" label="Inbox" selected={selected === "Inbox"} />
@@ -60,14 +61,14 @@ function Mailbox({ selected }: { selected?: string }) {
           <Row label="Spam" selected={selected === "Spam"} />
         </List>
       </nav>
-    </div>
+    </Card>
   );
 }
 Mailbox.displayName = "Mailbox";
 
 /**
- * The same markup as `packages/html/src/components/list/examples/<story>-group.html`. The
- * wrapper `div`s are story-only demo markup (`.storybook/preview.css`: a paper panel).
+ * The same markup as `packages/html/src/components/list/examples/<story>-group.html`. Each
+ * list sits in a Card, as in the reference's demo cards.
  */
 export const simpleGroups: ReactGroup[] = [{ title: "Simple", content: <Mailbox /> }];
 
@@ -88,7 +89,7 @@ export const folderGroups: ReactGroup[] = [
   {
     title: "Folder",
     content: (
-      <div>
+      <Card>
         <List>
           {FOLDERS.map(([icon, name, date]) => (
             <ListItem key={name}>
@@ -101,7 +102,7 @@ export const folderGroups: ReactGroup[] = [
             </ListItem>
           ))}
         </List>
-      </div>
+      </Card>
     ),
   },
 ];
@@ -111,7 +112,7 @@ export const controlsGroups: ReactGroup[] = [
   {
     title: "Controls",
     content: (
-      <div>
+      <Card>
         <List dense>
           {[1, 2, 3, 4].map((n) => (
             <ListItem
@@ -129,7 +130,7 @@ export const controlsGroups: ReactGroup[] = [
             </ListItem>
           ))}
         </List>
-      </div>
+      </Card>
     ),
   },
 ];
@@ -144,7 +145,7 @@ export const switchGroups: ReactGroup[] = [
   {
     title: "Switch",
     content: (
-      <div>
+      <Card>
         <List
           aria-labelledby="list-switch-subheader"
           subheader={<ListSubheader id="list-switch-subheader">Settings</ListSubheader>}
@@ -159,7 +160,7 @@ export const switchGroups: ReactGroup[] = [
             </ListItem>
           ))}
         </List>
-      </div>
+      </Card>
     ),
   },
 ];

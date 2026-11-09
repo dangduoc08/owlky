@@ -1,4 +1,11 @@
-import { Button, MobileStepper, type MobileStepperVariant, Typography } from "@owlky/react";
+import {
+  Button,
+  Divider,
+  MobileStepper,
+  type MobileStepperVariant,
+  Paper,
+  Typography,
+} from "@owlky/react";
 import { useState } from "react";
 import { DemoIcon } from "../shared/demo-icon.js";
 
@@ -8,17 +15,18 @@ const STEPS = [
   { label: "Review and confirm", text: "Check the summary, then confirm to create the project." },
 ];
 
-/** A card with a compact stepper below it: Back, the progress, Next. */
+/** An outlined Paper with a compact stepper below a divider: Back, the progress, Next. */
 export function MobileDemo({ variant }: { variant: MobileStepperVariant }) {
   const [active, setActive] = useState(0);
   return (
-    <div className="sb-mobile-card">
+    <Paper variant="outlined" className="sb-mobile-card">
       <div className="sb-mobile-card-body">
         <Typography variant="subtitle1">{STEPS[active]?.label}</Typography>
         <Typography variant="body2" color="textSecondary">
           {STEPS[active]?.text}
         </Typography>
       </div>
+      <Divider />
       <MobileStepper
         variant={variant}
         position="static"
@@ -47,6 +55,6 @@ export function MobileDemo({ variant }: { variant: MobileStepperVariant }) {
           </Button>
         }
       />
-    </div>
+    </Paper>
   );
 }

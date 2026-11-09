@@ -104,7 +104,8 @@ channel / 0.08 (hover 0.16, focus 0.2); focus-visible 2px `--ok-text-primary` ou
 row + `--ok-action-focus`; disabled opacity 0.48.
 
 ## Responsive behavior
-Fluid: rows take the container's width; text wraps inside `ListItemText` (`min-width: 0`).
+Fluid: rows take the container's width; text wraps inside `ListItemText` (`min-width: 0`). Stories put
+each list in a Card (360px wide), as the reference shows its demos in cards.
 
 ## Keyboard / Accessibility
 Native buttons and links. A button with `aria-expanded` + `aria-controls` opens / closes the

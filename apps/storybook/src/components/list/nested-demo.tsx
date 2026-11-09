@@ -1,4 +1,5 @@
 import {
+  Card,
   Collapse,
   List,
   ListItem,
@@ -15,7 +16,7 @@ import { DemoIcon } from "../shared/demo-icon.js";
 export function NestedDemo() {
   const [open, setOpen] = useState(true);
   return (
-    <div>
+    <Card>
       <List
         aria-labelledby="list-nested-subheader"
         subheader={<ListSubheader id="list-nested-subheader">Nested list items</ListSubheader>}
@@ -60,6 +61,6 @@ export function NestedDemo() {
           </Collapse>
         </ListItem>
       </List>
-    </div>
+    </Card>
   );
 }

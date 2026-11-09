@@ -306,6 +306,9 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
 - Story CSS that targets `.sb-row > div:has(> [aria-labelledby])`-style hooks also matches overlay
   roots that sit in the row (a popover is a `div` with a labelled `ul`): scope demo rules to the
   component (`:has(> [data-ok-tooltip])`, `:not([popover])`).
+- Demo wrappers that become a Paper / Card still match the old `div:has(> [data-ok-…])` demo
+  rules (a Paper with a Divider child picked up the Divider stories' border and width): demo
+  rules that paint a stand-in surface carry `:not([data-ok-paper])`.
 - Overlay stories need state in React: one `?raw` demo per story (no Controls); generate the HTML
   snippet from the closed render and add the HTML triggers (`data-ok-popover-open`,
   `data-ok-dialog-open` / `-close`). Toast templates (`<template>`) are skipped by parity.
