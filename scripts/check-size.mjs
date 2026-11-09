@@ -107,7 +107,8 @@ const budgets = [
   // load only what they use.
   // 44 kB since the Lightbox (toolbar, captions, thumbnails, zoom frame; about 1.4 kB): 42.1 kB;
   // 43.25 kB once merged with Markdown and the Organization chart.
-  ["packages/styles/dist/owlky.min.css", 44_000, "All CSS (tokens + components)"],
+  // 45 kB since the Image (ratios, fits, positions, overlays, placeholder; about 0.95 kB): 44.2 kB.
+  ["packages/styles/dist/owlky.min.css", 45_000, "All CSS (tokens + components)"],
 ];
 
 let failed = false;

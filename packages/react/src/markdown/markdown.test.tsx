@@ -294,6 +294,40 @@ describe("Markdown", () => {
     expect(normalize(root(container))).toBe(normalize(root(host)));
   });
 
+  it("composes Image for pictures with images='image' (components.img still wins)", () => {
+    const source = '![A cover](cover.svg "Cover")';
+    const { container } = render(
+      <Markdown images="image" imageRatio="16/9">
+        {source}
+      </Markdown>,
+    );
+    expect(root(container).dataset).toMatchObject({ okImages: "image", okImagesRatio: "16/9" });
+    const image = root(container).querySelector("p > [data-ok-image]") as HTMLElement;
+    expect(image.dataset).toMatchObject({ okRatio: "16/9", okFit: "cover", okEffect: "blur" });
+    const img = screen.getByRole("img", { name: "A cover" });
+    expect(img.parentElement).toBe(image);
+    expect(img.getAttribute("title")).toBe("Cover");
+    expect(img.getAttribute("loading")).toBe("lazy");
+    expect(image.querySelector("[data-ok-image-placeholder]")).not.toBeNull();
+    const plain = render(<Markdown imageRatio="4/3">{source}</Markdown>);
+    expect(root(plain.container).hasAttribute("data-ok-images-ratio")).toBe(false);
+    expect(root(plain.container).querySelector("[data-ok-image]")).toBeNull();
+    const custom = render(
+      <Markdown images="image" components={{ img: "span" }}>
+        {source}
+      </Markdown>,
+    );
+    expect(root(custom.container).querySelector("[data-ok-image]")).toBeNull();
+    const noAlt = render(
+      <Markdown images="image" rawHtml>
+        {'<img src="x.svg">'}
+      </Markdown>,
+    );
+    expect(root(noAlt.container).querySelector("[data-ok-image] > img")?.getAttribute("alt")).toBe(
+      "",
+    );
+  });
+
   it("renders nothing for empty or missing children", () => {
     const { container } = render(<Markdown />);
     expect(root(container).childNodes).toHaveLength(0);

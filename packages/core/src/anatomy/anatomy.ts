@@ -1794,6 +1794,120 @@ export const organizationChartAttributes = (
   options: OrganizationChartAnatomyOptions = {},
 ): DataAttributes => optionAttributes(organizationChartOptions, { ...options });
 
+// --- Image --------------------------------------------------------------------------------------
+
+export const imageRatios = [
+  "1/1",
+  "2/3",
+  "3/2",
+  "3/4",
+  "4/3",
+  "4/6",
+  "6/4",
+  "9/16",
+  "16/9",
+  "9/21",
+  "21/9",
+] as const;
+export const imageFits = ["cover", "contain", "fill", "none", "scale-down"] as const;
+export const imagePositions = [
+  "center",
+  "top",
+  "bottom",
+  "left",
+  "right",
+  "top-left",
+  "top-right",
+  "bottom-left",
+  "bottom-right",
+] as const;
+export const imageEffects = ["blur", "opacity", "black-and-white", "none"] as const;
+export const imageOverlays = ["dark", ...paletteColorNames] as const;
+export const imageStates = ["loading", "loaded", "error"] as const;
+
+export type ImageRatio = (typeof imageRatios)[number];
+export type ImageFit = (typeof imageFits)[number];
+export type ImagePosition = (typeof imagePositions)[number];
+export type ImageEffect = (typeof imageEffects)[number];
+export type ImageOverlay = (typeof imageOverlays)[number];
+export type ImageState = (typeof imageStates)[number];
+
+export const imageOptions = defineOptions("image", "data-ok-image", {
+  ratio: style(
+    "data-ok-ratio",
+    imageRatios,
+    "1/1",
+    "Aspect ratio (width/height) the picture is cropped to. None: the picture's own ratio.",
+    { optional: true },
+  ),
+  fit: style("data-ok-fit", imageFits, "cover", "How the picture fills its box (`object-fit`)."),
+  position: style(
+    "data-ok-position",
+    imagePositions,
+    "center",
+    "Which part of the picture stays in view when it is cropped (`object-position`).",
+  ),
+  effect: style(
+    "data-ok-effect",
+    imageEffects,
+    "blur",
+    "How the picture appears once loaded: blurred, faded, from grayscale, or at once.",
+  ),
+  overlay: style(
+    "data-ok-overlay",
+    imageOverlays,
+    "dark",
+    "A layer over the picture: `dark` (48% grey 900) or a palette color (a gradient to 80%).",
+    { optional: true },
+  ),
+  overlayFrom: style(
+    "data-ok-overlay-from",
+    paletteColorNames,
+    "primary",
+    "With a color `overlay`: the gradient starts from this color (24%) at the bottom.",
+    { optional: true },
+  ),
+  disablePlaceholder: flag(
+    "data-ok-disable-placeholder",
+    "No placeholder while the picture loads or after an error.",
+  ),
+  visibleByDefault: flag(
+    "data-ok-visible-by-default",
+    'Loads at once (`loading="eager"`), with no placeholder and no effect.',
+  ),
+  state: state(
+    "data-ok-state",
+    "`loading`, `loaded` or `error`, written by the component (never in snippets).",
+    "load",
+  ),
+});
+
+export interface ImageAnatomyOptions {
+  ratio?: ImageRatio | undefined;
+  fit?: ImageFit | undefined;
+  position?: ImagePosition | undefined;
+  effect?: ImageEffect | undefined;
+  overlay?: ImageOverlay | undefined;
+  overlayFrom?: PaletteColorName | undefined;
+  disablePlaceholder?: boolean | undefined;
+  visibleByDefault?: boolean | undefined;
+}
+
+/** `data-ok-*` attributes of an image root (`ratio`, `overlay`, `overlayFrom` only when given). */
+export const imageAttributes = (options: ImageAnatomyOptions = {}): DataAttributes =>
+  optionAttributes(imageOptions, {
+    ...options,
+    overlayFrom: options.overlay && options.overlay !== "dark" ? options.overlayFrom : undefined,
+  });
+
+/** The load state of a settled `<img>`: `loaded`, `error`, or `loading` while it isn't. */
+export function imageLoadState(
+  img: Pick<HTMLImageElement, "complete" | "naturalWidth">,
+): ImageState {
+  if (!img.complete) return "loading";
+  return img.naturalWidth > 0 ? "loaded" : "error";
+}
+
 // --- Rating -------------------------------------------------------------------------------------
 
 export const ratingSizes = ["xxSmall", "xSmall", "small", "medium", "large"] as const;
@@ -2920,6 +3034,9 @@ export const editorAttributes = (options: EditorAnatomyOptions = {}): DataAttrib
 
 // --- Markdown (ADR-0035) ------------------------------------------------------------------------
 
+export const markdownImageModes = ["native", "image"] as const;
+export type MarkdownImageMode = (typeof markdownImageModes)[number];
+
 export const markdownOptions = defineOptions("markdown", "data-ok-markdown", {
   gfm: behavior(
     "data-ok-gfm",
@@ -2939,6 +3056,20 @@ export const markdownOptions = defineOptions("markdown", "data-ok-markdown", {
     "data-ok-external-links",
     'Absolute `http(s)` links open in a new tab (`target="_blank"`, `rel="noopener noreferrer"`).',
   ),
+  images: style(
+    "data-ok-images",
+    markdownImageModes,
+    "native",
+    "`image`: pictures render as Image components (lazy, placeholder, effect). `native`: plain `img`.",
+    { optional: true },
+  ),
+  imageRatio: style(
+    "data-ok-images-ratio",
+    imageRatios,
+    "16/9",
+    "With `images` `image`: the aspect ratio the pictures are cropped to (default: their own).",
+    { optional: true },
+  ),
   value: state(
     "data-ok-markdown-source",
     "The Markdown: React `children`; HTML the text of the source element.",
@@ -2947,6 +3078,8 @@ export const markdownOptions = defineOptions("markdown", "data-ok-markdown", {
 });
 
 export type MarkdownAnatomyOptions = {
+  images?: MarkdownImageMode | undefined;
+  imageRatio?: ImageRatio | undefined;
   rawHtml?: boolean | undefined;
   skipHtml?: boolean | undefined;
   unwrapDisallowed?: boolean | undefined;
@@ -4322,6 +4455,7 @@ export const optionSchemas = {
   "timeline-item": timelineItemOptions,
   "timeline-dot": timelineDotOptions,
   "organization-chart": organizationChartOptions,
+  image: imageOptions,
   rating: ratingOptions,
   slider: sliderOptions,
   "transfer-list": transferListOptions,

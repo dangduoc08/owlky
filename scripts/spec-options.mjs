@@ -56,6 +56,7 @@ const SPECS = {
   "timeline-item": "timeline.md",
   "timeline-dot": "timeline.md",
   "organization-chart": "organization-chart.md",
+  image: "image.md",
   rating: "rating.md",
   chart: "chart.md",
   carousel: "carousel.md",

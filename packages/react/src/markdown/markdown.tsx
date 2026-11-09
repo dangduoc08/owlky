@@ -1,4 +1,4 @@
-import { markdownAttributes } from "@owlky/core";
+import { type ImageRatio, type MarkdownImageMode, markdownAttributes } from "@owlky/core";
 import {
   childSpace,
   type MarkdownElement,
@@ -21,6 +21,7 @@ import {
   type ReactNode,
   type Ref,
 } from "react";
+import { Image } from "../image/image.js";
 
 export {
   type AllowElement,
@@ -49,6 +50,10 @@ export interface MarkdownOptions extends MarkdownProcessOptions {
   children?: string | null | undefined;
   /** Replaces elements by tag name. */
   components?: Components | null | undefined;
+  /** `"image"`: pictures render as `Image` (lazy, placeholder, effect). Default `"native"`. */
+  images?: MarkdownImageMode | undefined;
+  /** With `images="image"`: the aspect ratio pictures are cropped to. Default: their own. */
+  imageRatio?: ImageRatio | undefined;
 }
 
 export interface MarkdownProps
@@ -82,10 +87,31 @@ function propsOf(element: MarkdownElement, space: Space, key: string): Record<st
   return props;
 }
 
+/** How pictures render: Image components (`images="image"`) or plain `img`. */
+interface ImageMode {
+  image: boolean;
+  ratio: ImageRatio | undefined;
+}
+
+/** An `img` of the tree as an Image: its own attributes go to the picture (as in HTML). */
+function markdownImage(props: Record<string, unknown>, mode: ImageMode): ReactElement {
+  const { key, src, alt, width, height, ...other } = props;
+  return createElement(Image, {
+    key: key as string,
+    src: src as string | undefined,
+    alt: typeof alt === "string" ? alt : "",
+    width: width as number | string | undefined,
+    height: height as number | string | undefined,
+    ratio: mode.ratio,
+    imgProps: other,
+  });
+}
+
 function toReact(
   node: MarkdownRoot | MarkdownElement,
   components: Components | null | undefined,
   space: Space,
+  mode: ImageMode = { image: false, ratio: undefined },
 ): ReactNode[] {
   // A finished tree holds elements and text only (comments, doctypes and raw HTML are gone).
   return node.children.map((content, index): ReactNode => {
@@ -93,8 +119,10 @@ function toReact(
     const child = content as MarkdownElement;
     const inner = childSpace(child, space);
     const props = propsOf(child, space, String(index));
-    const children = toReact(child, components, inner);
+    const children = toReact(child, components, inner, mode);
     const replacement = components?.[child.tagName as keyof Components];
+    if (mode.image && child.tagName === "img" && replacement === undefined)
+      return markdownImage(props, mode);
     if (replacement !== undefined && typeof replacement !== "string") props["node"] = child;
     const type = (replacement ?? child.tagName) as ElementType;
     return children.length > 0
@@ -107,6 +135,8 @@ function toReact(
 function rootAttributes(options: MarkdownOptions) {
   return {
     ...markdownAttributes({
+      images: options.images,
+      imageRatio: options.images === "image" ? options.imageRatio : undefined,
       rawHtml: options.rawHtml === true,
       skipHtml: options.skipHtml === true,
       unwrapDisallowed: options.unwrapDisallowed === true,
@@ -127,6 +157,8 @@ export function splitMarkdownProps(props: MarkdownProps) {
   const {
     children,
     components,
+    images,
+    imageRatio,
     remarkPlugins,
     rehypePlugins,
     remarkRehypeOptions,
@@ -146,6 +178,8 @@ export function splitMarkdownProps(props: MarkdownProps) {
   const options: MarkdownOptions = {
     children,
     components,
+    images,
+    imageRatio,
     remarkPlugins,
     rehypePlugins,
     remarkRehypeOptions,
@@ -174,7 +208,12 @@ export function renderMarkdownRoot(
 ): ReactElement {
   return (
     <div ref={ref} {...rest} {...rootAttributes(options)} data-ok-runtime="off">
-      {tree ? toReact(tree, options.components, "html") : fallback}
+      {tree
+        ? toReact(tree, options.components, "html", {
+            image: options.images === "image",
+            ratio: options.imageRatio,
+          })
+        : fallback}
     </div>
   );
 }

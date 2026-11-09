@@ -49,6 +49,7 @@ const CASES: [
     "organization-chart",
     ["lineHeight", "lineWidth", "lineColor", "lineStyle", "lineBorderRadius", "nodePadding"],
   ],
+  ["image", "list", "image", ["effect", "disablePlaceholder"]],
   ["rating", "controlled", "rating", ["size", "color"]],
   ["chart", "column-multiple", "chart", ["curve", "legend"]],
   ["carousel", "align", "carousel", ["align", "loop", "dragFree", "containScroll"]],
@@ -98,6 +99,19 @@ const CASES: [
 async function rendered(page: Page, component: string) {
   if (component === "markdown")
     await page.locator("[data-ok-markdown-source][hidden]").first().waitFor({ state: "attached" });
+  if (component === "image") await imagesSettled(page);
+}
+
+/** Every Image's `data-ok-state` matches its picture once the network is idle. */
+async function imagesSettled(page: Page) {
+  await page.waitForLoadState("networkidle");
+  await page.waitForFunction(() =>
+    [...document.querySelectorAll("[data-ok-image]")].every((root) => {
+      const img = root.querySelector(":scope > img") as HTMLImageElement;
+      const expected = !img.complete ? "loading" : img.naturalWidth > 0 ? "loaded" : "error";
+      return root.getAttribute("data-ok-state") === expected;
+    }),
+  );
 }
 
 /** A non-default value for the option, in Storybook's URL args syntax. */
@@ -123,6 +137,7 @@ for (const [component, story, schemaName, keys] of CASES) {
     }) => {
       test.skip(browserName !== "chromium", "Structure is browser-independent.");
       await openStory(page, storyId("react", component, story), "light", args);
+      if (component === "image") await rendered(page, component);
       const react = await normalizeStory(page);
       await openStory(page, storyId("html", component, story), "light", args);
       await rendered(page, component);

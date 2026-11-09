@@ -55,6 +55,8 @@ export default defineConfig({
         "packages/core/src/organization-chart/**": COMPONENT_THRESHOLDS,
         "packages/react/src/organization-chart/**": COMPONENT_THRESHOLDS,
         "packages/html/src/components/organization-chart/**": COMPONENT_THRESHOLDS,
+        "packages/react/src/image/**": COMPONENT_THRESHOLDS,
+        "packages/html/src/components/image/**": COMPONENT_THRESHOLDS,
         "packages/react/src/carousel/**": COMPONENT_THRESHOLDS,
         "packages/html/src/components/carousel/**": COMPONENT_THRESHOLDS,
         "packages/core/src/lightbox/**": COMPONENT_THRESHOLDS,

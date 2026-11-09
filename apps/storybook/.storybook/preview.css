@@ -1713,3 +1713,44 @@
     transition: none;
   }
 }
+
+/* Image (story-only demo markup): grids of pictures with 16px corners and small captions. */
+.sb-image-grid {
+  display: grid;
+  flex: 1 1 100%;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: calc(var(--ok-spacing) * 4);
+  align-items: start;
+  min-width: 0;
+  max-width: 50rem;
+}
+
+@media (min-width: 600px) {
+  .sb-image-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 900px) {
+  .sb-image-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.sb-image-grid [data-ok-image] {
+  border-radius: var(--ok-radius-xl);
+}
+
+.sb-image-item {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--ok-spacing) * 2);
+  min-width: 0;
+}
+
+.sb-image-caption {
+  color: var(--ok-text-secondary);
+  font-size: var(--ok-typography-caption-font-size);
+  font-weight: var(--ok-font-weight-bold);
+  line-height: var(--ok-typography-caption-line-height);
+}

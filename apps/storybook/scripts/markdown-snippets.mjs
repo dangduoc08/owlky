@@ -19,16 +19,23 @@ mkdirSync(out, { recursive: true });
 const escapeText = (text) =>
   text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-/** One Markdown root; `attributes` as written on the root (React writes the same ones). */
+/** One Markdown root; `attributes` as written on the root (React writes the same ones).
+ * Pictures render as Image (16/9), as on the reference. */
 const snippet = (attributes, source) =>
   `<div data-ok-markdown${attributes}>\n<pre data-ok-markdown-source>${escapeText(source)}</pre>\n</div>\n`;
 
 writeFileSync(
   resolve(out, "markdown-html-content.html"),
-  snippet(" data-ok-raw-html data-ok-external-links", HTML_CONTENT),
+  snippet(
+    ' data-ok-raw-html data-ok-external-links data-ok-images="image" data-ok-images-ratio="16/9"',
+    HTML_CONTENT,
+  ),
 );
 writeFileSync(
   resolve(out, "markdown-markdown-content.html"),
-  snippet(" data-ok-external-links", MARKDOWN_CONTENT),
+  snippet(
+    ' data-ok-external-links data-ok-images="image" data-ok-images-ratio="16/9"',
+    MARKDOWN_CONTENT,
+  ),
 );
 console.log("markdown: wrote 2 snippets");

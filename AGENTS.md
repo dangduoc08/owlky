@@ -593,6 +593,16 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
   `[data-ok-lightbox]` (it is dark itself). Grids with `auto-fill` and a `max-width` need
   `min-width: 0` in flex rows, or the mobile layout viewport widens. Snippets are generated from
   `lightbox-examples.tsx` (renderToStaticMarkup; drop React 19's `<link rel="preload">`).
+- Image (ADR-0038): `data-ok-state` (`loading` · `loaded` · `error`) is written by React and the
+  `image` runtime only, never in snippets (the generator strips it): without a state the picture
+  shows. A lazy picture far below the page never loads, so tests and parity wait for each
+  Image's state to match its `img` (`complete`, `naturalWidth`) after `networkidle`, not for
+  every image to be complete. React always renders the placeholder span (CSS hides it with
+  `disablePlaceholder` / `visibleByDefault`) so Controls keep parity. Markdown composes Image
+  with `images="image"`: React maps `img` to `Image`, the HTML runtime builds the same markup;
+  the sanitizer drops raw HTML's `loading`, so composed pictures are always lazy unless a plugin
+  sets it. The e2e server only serves `storybook-static`, not `public/`: example pages point at
+  `apps/storybook/storybook-static/images/…`.
 - Parallel work: never run two `/component` / `/integrate` sessions (or two `pnpm build` /
   `pnpm test:e2e`) in the same working tree — builds wipe each other's `dist/` and
   `storybook-static/`, e2e servers share port 4321, and staging part of a shared file while
