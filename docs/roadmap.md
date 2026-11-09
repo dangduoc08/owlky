@@ -79,7 +79,7 @@ component and each `/integrate` run.
 | Extra | Scrollbar | ✅ | Scrollbar | Scrollbar |
 | Extra (Sonner) | Snackbar | ✅ | Toaster, toast() | Popover, Tooltip, Menu, Dialog & Snackbar |
 | Extra | Upload | ✅ (ADR-0037) | Upload, UploadAvatar, UploadBox | Upload |
-| Extra | Utilities | not planned | — | Next |
+| Extra | Utilities | spread across components ([`roadmap-components.md`](roadmap-components.md) 4.19–4.26) | Typography, Text field, Colors, Motion, Radio / Checkbox, Settings guide | — |
 | Extra | Walktour | ✅ (ADR-0039) | Walktour | Walktour |
 
 ## ✅ Phase 0 — Foundation tooling
@@ -887,9 +887,8 @@ Dependency-first: leaf components before the ones built from them, the ones that
 | 7 Needs an ADR | ~~Data grid~~ (ADR-0020, phases below), ~~Date pickers~~ (ADR-0022, ADR-0030, complete ✅), ~~Chart~~ (ADR-0024, ADR-0027, ADR-0031, complete ✅), ~~Map~~ (ADR-0025) ✅, ~~Editor~~ (ADR-0023) ✅, ~~Carousel~~ (ADR-0033) ✅, ~~Lightbox~~ (ADR-0032) ✅, ~~Markdown~~ (ADR-0035) ✅, ~~Organization chart~~ (ADR-0036) ✅, ~~Image~~ (ADR-0038) ✅, ~~Upload~~ (ADR-0037) ✅, ~~Walktour~~ (ADR-0039) ✅ | ~~Markdown pictures~~ ✅ (Image) |
 | 8 Primitives (approved and done 2026-11-09; MUI pages, no Minimals page) | ~~Typography~~ ✅, ~~Paper~~ ✅, ~~Card~~ ✅, ~~Collapse~~ ✅ (ADR-0044), ~~Link~~ ✅, ~~Form control~~ ✅, ~~Select~~ ✅ (ADR-0045) | ~~every Typography, Paper / Card, Collapse, Link, FormLabel and Select row of "Pending integrations"~~ ✅ (each closed by its own `/component` review; the rest by the `/integrate` sweep) |
 
-Not planned as components (patterns or app-level pages of the reference): Layout,
-Utilities, Multi-language, Navigation bar, Mega menu, Form validation, Form wizard. Scroll progress
-is phase 2 of the Motion full version. Layout, Form wizard and Form validation may come back as
+Not planned as components (patterns or app-level pages of the reference): Layout, Multi-language, Navigation bar, Mega menu, Form validation, Form wizard (Utilities is spread across components:
+`roadmap-components.md` 4.19–4.26). Scroll progress is phase 2 of the Motion full version. Layout, Form wizard and Form validation may come back as
 **blocks** (copy-paste compositions; needs its own ADR), Navigation bar and Mega menu as components.
 
 ## After the waves (order approved 2026-11-09, MCP added before the website the same day)
@@ -899,7 +898,7 @@ is phase 2 of the Motion full version. Layout, Form wizard and Form validation m
    story-only stand-ins that had never been recorded (demo CSS drawing cards or setting fonts in
    Stepper, List, Editor, Divider, Paper, Autocomplete and nine stories' demo text). Only the Motion
    "Logo" wait is left (Motion full version).
-3. **`/update-ai-knowledge-base`**, then commit: CLAUDE.md, AGENTS.md, docs, ADRs and specs in
+3. ✅ **`/update-ai-knowledge-base`**, then commit: CLAUDE.md, AGENTS.md, docs, ADRs and specs in
    sync with Wave 8.
 4. ✅ **MCP server `@owlky/mcp`** (ADR-0046, 2026-11-09): `scripts/manifest.mjs` writes
    `packages/mcp/manifest.json` (about 6 MB, 0.7 MB gzip: 105 option schemas, 62 specs by section,
@@ -911,7 +910,11 @@ is phase 2 of the Motion full version. Layout, Form wizard and Form validation m
    `owlky://guides/<id>` and prompts `build-html-page`, `build-react-page`; registered as `owlky`
    in `.mcp.json`; a packed-tarball smoke test in CI (`pnpm smoke:mcp`). A remote MCP on owlky.com
    is deferred, so the website stays static.
-5. **Website** (ADR-0040).
+5. **Component completion** (next; owner's decision 2026-11-09: finish every component before the
+   website continues): tracked on its own in [`docs/roadmap-components.md`](roadmap-components.md)
+   — stability, ApexCharts parity, upstream API audit with a complete API reference on every docs
+   page, every remaining gap, Motion full version.
+6. **Website** (ADR-0040).
    - ✅ **Phase 1** (2026-11-09): `apps/website` (Next.js 16, static export, built with Owlky and
      its theme settings; Home, Get started, Foundations › Colors, Components › Button; Shiki code
      blocks with a Copy button; **Open HTML demo** sandbox pages; Pagefind search; `llms.txt`,
@@ -919,12 +922,17 @@ is phase 2 of the Motion full version. Layout, Form wizard and Form validation m
      `apps/docs-content` with the two pilot guides and the guide UI (Storybook renders them through
      its own host), `website.yml` (Vercel CLI previews and production, skipped until the owner adds
      the Vercel secrets) and the website e2e. Owner's setup: `apps/website/README.md`.
-   - **Phase 2 (next):** migrate the remaining guides to `apps/docs-content` in batches
-     (Foundations, then components by wave); Storybook's `*-docs.tsx` become thin wrappers, then
-     disappear.
-   - Phase 3: home, changelog, free blocks (own ADR).
-6. **Publish 0.1.0** together with the website.
-7. **More frameworks** (user decision 2026-11-09), after 0.1.0:
+   - ✅ **Landing page** (2026-11-09): the home page rebuilt in the layout of a SaaS template
+     landing page with live Owlky components (dashboard preview, bento features, component tabs,
+     principles carousel, FAQ, call to action); docs pages moved into an `app/(docs)/` route group.
+   - **Phase 2 (after component completion):** migrate the remaining guides to `apps/docs-content` in
+     batches (Foundations, then components by wave); Storybook's `*-docs.tsx` become thin
+     wrappers, then disappear. Then deploy (the owner's Vercel project, secrets and DNS) and decide
+     on a remote MCP endpoint on owlky.com (proposed, on hold: a `/mcp` route handler reusing
+     `createOwlkyServer`, own ADR).
+   - Phase 3: changelog, free blocks (own ADR).
+7. **Publish 0.1.0** together with the website.
+8. **More frameworks** (user decision 2026-11-09), after 0.1.0:
    - integration guides and DOM-morphing tests for server-rendered stacks (htmx, Hotwire / Turbo,
      Laravel Livewire, Phoenix LiveView, Django templates): the HTML runtime must survive morphs
      (idiomorph, Turbo morphing, LiveView patches);
@@ -937,14 +945,13 @@ is phase 2 of the Motion full version. Layout, Form wizard and Form validation m
      components (Button, Dialog, Select) before the full set.
    - Not planned: React Native and Flutter (no DOM), Ember, Lit / Web Component wrappers (the HTML
      package covers framework-free use), Qwik unless users ask.
-8. **Motion full version** (ADR first; phase 1 closes the Motion "Logo" wait).
-9. **1.0 prep:** accessibility audit, docs polish, and an upstream API audit of every component
-   (prop by prop against MUI, a mapping table in each spec; for example Drawer `elevation` and
-   `transitionDuration`, Backdrop `transitionDuration`), plus the backlogs (Table toolbar, Sortable
+9. **1.0 prep:** accessibility audit and docs polish (the upstream API audit moved to component completion),
+   plus the backlogs (Table toolbar, Sortable
    auto-scroll and move to top / bottom, Motion `component`, Dialog `keepMounted`), Paper composed
    inside Popover / Menu / Dialog / Drawer / TableContainer / Map controls / Autocomplete listbox
    (no visual change), and the flaky e2e pixel parity of `carousel / thumbs-y` (about 2 of 60 runs
-   with 4 workers, already before Wave 8; waiting for image decode and scroll settle didn't fix it).
+   with 4 workers, already before Wave 8; waiting for image decode and scroll settle didn't fix it). Carousel bug: with `loop`, a viewport resize (also Playwright's screenshot resize) jumps a
+   looping carousel to another slide (found by the landing page, which turns `loop` off for now).
 10. **Later, each with an ADR:** a blocks tier (free blocks here, premium blocks in a private
    repository), Navigation bar and Mega menu.
 

@@ -24,6 +24,7 @@ The knowledge base is part of the source of truth. Treat it with the same qualit
 | `docs/architecture.md` | Map of packages, flows, distribution | package responsibilities or flows change |
 | `docs/adr/*.md` + `docs/adr/README.md` | Decisions and reasons | a decision is made or superseded (new ADR, never rewrite history) |
 | `docs/roadmap.md` | Implementation plan and phase status | a phase/item is done or re-planned |
+| `docs/roadmap-components.md` | Component completion plan with a status per item | a component item is done, re-planned or found by an audit |
 | `docs/testing.md` | Test layers and commands | test tooling or scripts change |
 | `specs/components/*.md` | Component contracts (anatomy, options, keyboard, a11y, events) | component API or behavior changes |
 | Package `README.md`s | npm-facing usage | exports change |

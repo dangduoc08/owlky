@@ -20,9 +20,10 @@ file covers project status, workflow and orientation.
 | MCP server | `@owlky/mcp` (ADR-0046): stdio server (`npx -y @owlky/mcp`), six tools, resources, prompts, answering from the generated `packages/mcp/manifest.json` (`pnpm manifest`, `check:manifest`) | ✅ done, awaiting review |
 | Website phase 1 | ADR-0040: `apps/website` (owlky.com, Next.js static export built with Owlky: Home, Get started, Colors, Button, Pagefind search, `llms.txt` + `.md` per page, **Open HTML demo** sandboxes), `apps/docs-content` (pilot guides + guide UI, Storybook renders them through its host), `website.yml` (Vercel CLI, skips until the secrets exist) | ✅ done, awaiting review; phase 2 (migrate the other guides) next |
 
-Full plan: `docs/roadmap.md`; next steps in its "After the waves" (Wave 8, the `/integrate`
-sweep and the MCP server `@owlky/mcp`, ADR-0046, done → website phase 1, ADR-0040, done → website phase 2 (migrate the guides) → 0.1.0 → more
-frameworks: server-rendered guides, Preact, then Vue / Svelte / Angular / Solid 1:1). Not published
+Full plan: `docs/roadmap.md` ("After the waves"); **next: component completion**, tracked on its own in
+`docs/roadmap-components.md` (stability → ApexCharts parity → upstream API audit + full API reference on
+every docs page → every gap → Motion full), then website phase 2 + deploy → 0.1.0 → more frameworks.
+Not published
 yet. Repository:
 `github.com/dangduoc08/owlky` (public; the GitHub org `owlky` only reserves the name).
 
@@ -66,7 +67,7 @@ apps/website      owlky.com: Next.js static export built with Owlky, Vercel via 
 e2e               Playwright: parity, interactions, themes, a11y, plain-HTML, visual
 examples          plain-html consumer example (uses dist)
 specs/components  component contracts — update before code
-docs              architecture.md, roadmap.md, testing.md, adr/
+docs              architecture.md, roadmap.md, roadmap-components.md, testing.md, adr/
 scripts           check-boundaries, check-size, check-packages, sync-versions, manifest (MCP data), smoke-mcp
 ```
 
