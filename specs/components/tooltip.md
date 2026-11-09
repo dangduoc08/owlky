@@ -36,7 +36,7 @@ merged ref), `describeChild`, `open` / `onOpenChange(open)`, `enterTouchDelay` (
 `disableTouchListener`. Renamed: `TransitionComponent` (Grow / Fade / Zoom) → `transition`;
 `onOpen` / `onClose` → `onOpenChange`. Kept behavior: `describeChild=false` names the trigger
 (MUI sets `aria-label`; we use `aria-labelledby`, same name). Deferred: `followCursor`,
-`enterNextDelay`, `disableInteractive` (always hoverable, WCAG 1.4.13). Not applicable:
+`enterNextDelay` (4.6). Not applicable: `disableInteractive` (always hoverable, WCAG 1.4.13),
 `PopperProps`, `slots`, `slotProps`, `components`, `sx`.
 
 ## Layout and tokens
