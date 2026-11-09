@@ -1,0 +1,108 @@
+/*
+ * The website is a Tailwind CSS v4 consumer, set up as the Get started page says: Tailwind, the
+ * Owlky stylesheet and theme from the built package, then the optional document base styles.
+ */
+@import "tailwindcss";
+@import "@owlky/styles/owlky.css";
+@import "@owlky/styles/theme.css";
+@import "@owlky/styles/base.css";
+
+/* Guides and previews shared with Storybook (ADR-0040). */
+@source "../../../docs-content/src";
+
+/* Long token names in prose wrap on phones. */
+[data-site-prose] :is(p, li) code {
+  overflow-wrap: anywhere;
+}
+
+[data-site-heading] {
+  margin-block: 0 calc(var(--ok-spacing) * 3);
+  scroll-margin-top: calc(var(--ok-spacing) * 6);
+}
+
+/* Code blocks (Shiki, build time): one dark theme, a Copy button in the top corner. */
+[data-site-code] {
+  margin: calc(var(--ok-spacing) * 3) 0 0;
+  padding: calc(var(--ok-spacing) * 4);
+  padding-inline-end: calc(var(--ok-spacing) * 14);
+  overflow-x: auto;
+  border-radius: var(--ok-radius-lg);
+  font-family: var(--ok-font-family-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  tab-size: 2;
+}
+
+[data-site-code] > pre {
+  margin: 0;
+  font: inherit;
+}
+
+[data-site-code]:focus-visible {
+  outline: 2px solid var(--ok-palette-primary-main);
+  outline-offset: 2px;
+}
+
+[data-docs-code] [role="tabpanel"],
+[data-site-sample] > div {
+  position: relative;
+}
+
+[data-docs-copy] {
+  position: absolute;
+  top: calc(var(--ok-spacing) * 5);
+  right: calc(var(--ok-spacing) * 2);
+  display: inline-grid;
+  place-items: center;
+  width: calc(var(--ok-spacing) * 9);
+  height: calc(var(--ok-spacing) * 9);
+  padding: 0;
+  border: 1px solid rgb(var(--ok-palette-common-white-channel) / 0.24);
+  border-radius: var(--ok-radius-md);
+  background: rgb(var(--ok-palette-common-white-channel) / 0.08);
+  color: var(--ok-palette-common-white);
+  cursor: pointer;
+  transition:
+    background-color 150ms,
+    border-color 150ms,
+    color 150ms,
+    transform 150ms;
+}
+
+[data-site-sample] [data-docs-copy] {
+  top: calc(var(--ok-spacing) * 2);
+}
+
+[data-docs-copy] > svg[aria-hidden="true"] {
+  width: 18px;
+  height: 18px;
+}
+
+[data-docs-copy="idle"]:hover {
+  background: rgb(var(--ok-palette-common-white-channel) / 0.18);
+}
+
+[data-docs-copy]:active {
+  transform: scale(0.94);
+}
+
+[data-docs-copy]:focus-visible {
+  outline: 2px solid var(--ok-palette-common-white);
+  outline-offset: 2px;
+}
+
+[data-docs-copy="copied"] {
+  border-color: var(--ok-palette-success-main);
+  background: var(--ok-palette-success-main);
+}
+
+[data-docs-copy="failed"] {
+  border-color: var(--ok-palette-error-main);
+  background: var(--ok-palette-error-main);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-docs-copy] {
+    transition: none;
+  }
+}

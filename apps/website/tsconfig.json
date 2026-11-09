@@ -1,0 +1,18 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
+    "allowJs": false,
+    "jsx": "react-jsx",
+    "declaration": false,
+    "declarationMap": false,
+    "incremental": false,
+    "types": ["node"],
+    "plugins": [{ "name": "next" }]
+  },
+  "include": ["next-env.d.ts", "src", "scripts/*.d.ts"],
+  "exclude": ["node_modules", ".next", "out"]
+}

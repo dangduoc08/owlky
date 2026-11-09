@@ -6,6 +6,7 @@
   "scripts": {
     "test": "playwright test --grep-invert @visual",
     "test:visual": "playwright test --grep @visual",
+    "test:website": "playwright test -c website.config.ts",
     "test:visual:update": "playwright test --grep @visual --update-snapshots",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },

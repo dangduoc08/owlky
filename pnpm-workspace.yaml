@@ -52,3 +52,6 @@ overrides:
   "express-rate-limit>ip-address": "10.7.5"
   "encodeurl": "2.0.0"
   "qs": "6.16.1"
+  # Release age (dev deps ≥ 14 days): shiki 4.5.0 (website code blocks, ADR-0040) resolves
+  # hast-util-to-html 9.0.6 (2026-10-29). Only the website uses it. Remove after 2026-11-12.
+  "@shikijs/core>hast-util-to-html": "9.0.5"
