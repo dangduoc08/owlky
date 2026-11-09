@@ -22,6 +22,8 @@ const types = {
   ".woff2": "font/woff2",
   ".png": "image/png",
   ".map": "application/json",
+  ".webm": "video/webm",
+  ".vtt": "text/vtt; charset=utf-8",
 };
 const port = Number(process.env.PORT ?? 4321);
 

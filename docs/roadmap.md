@@ -5,7 +5,7 @@ and a review before the next starts.
 
 ## Overview
 Every page of the reference's component menu (`https://minimals.cc/components/…`) and where it
-stands (plus pages from other references, marked). ✅ = built (37); *wave N* = planned, see "Next — components"; *not planned* = a pattern
+stands (plus pages from other references, marked). ✅ = built (38); *wave N* = planned, see "Next — components"; *not planned* = a pattern
 or app-level page. *Section* = the heading below with the details. Update this table with each
 component and each `/integrate` run.
 
@@ -60,7 +60,7 @@ component and each `/integrate` run.
 | Extra | Image | wave 7 (ADR) | — | Next |
 | Extra | Label | ✅ | Label | Avatar, Badge, Chip & Label |
 | Extra | Layout | not planned | — | Next |
-| Extra | Lightbox | wave 7 (ADR) | — | Next |
+| Extra | Lightbox | ✅ (ADR-0032) | Lightbox, LightboxTrigger | Lightbox |
 | Extra | Map | ✅ (ADR-0025, MapLibre GL JS) | MapView, Marker, Popup, Source, Layer, NavigationControl, GeolocateControl, FullscreenControl, ScaleControl, AttributionControl, GlobeControl, TerrainControl, MapControl, MapPanel, MapProvider / useMap | Map |
 | Extra | Markdown | wave 7 (ADR) | — | Next |
 | Extra | Mega menu | not planned | — | Next |
@@ -523,6 +523,19 @@ TextField, Slider, Button and ToggleButton in the stories' panels. No new tokens
 **Beyond the reference (kept):** globe and terrain controls, keyboard dragging of markers, a WebGL
 fallback with the map's description, CSP example page.
 
+## ✅ Components — Lightbox (ADR-0032, 2026-11-09)
+Created with `/component` from the reference "Lightbox" page, built on yet-another-react-lightbox's
+API and every plugin (Captions, Counter, Download, Fullscreen, Inline, Rotate, Share, Slideshow,
+Thumbnails, Video, Zoom), written by us (the upstream is React only): a modal `<dialog>` around a
+Carousel, one core controller (`createLightboxController`) shared by React and the HTML runtime
+`lightbox`. Stories: Lightbox (the reference's gallery with its `disable…` Controls), Inline and
+Toolbar (download, share, rotate, toggles, backdrop click, pull down). Composes Carousel and
+IconButton. No new token, no dependency; the Carousel's key and pointer handlers now skip events
+the lightbox handled.
+Differences: `disableVideo` isn't an option (leave video slides out), thumbnails keep the selected
+one in view rather than centered in a loop, no fade on close (native dialog), spacing between
+slides in px or % of the slide area, video slides take caption `tracks`.
+
 ## ✅ Components — Carousel (ADR-0033, 2026-11-09)
 Created with `/component` from the reference "Carousel" page, built on Embla Carousel's API (v8
 names) and plugins, written by us (owner's choice): a native scroll container with CSS scroll
@@ -637,7 +650,7 @@ Dependency-first: leaf components before the ones built from them, the ones that
 | 4 Overlays | ~~Popover~~ ✅, ~~Tooltip~~ ✅, ~~Menu~~ ✅, ~~Dialog~~ ✅, ~~Snackbar~~ ✅, ~~Backdrop~~ ✅ | ~~Drawer / Dialog backdrop~~ ✅ (native `::backdrop`, same token); icon button tooltips: nothing to change (MUI uses native `title` there; Tooltip wraps any IconButton) |
 | 5 Navigation | ~~Tabs~~ ✅, ~~Breadcrumbs~~ ✅, ~~Stepper~~ ✅ | — (nothing waited for them) |
 | 6 Composites | ~~Rating~~ ✅, ~~Slider~~ ✅, ~~Timeline~~ ✅, ~~Transfer list~~ ✅, ~~Autocomplete~~ ✅, ~~Tree view~~ ✅ | — (nothing waited for them; Slider unblocks the SettingsDrawer backlog of Theme settings) |
-| 7 Needs an ADR | ~~Data grid~~ (ADR-0020, phases below), ~~Date pickers~~ (ADR-0022, ADR-0030, complete ✅), ~~Chart~~ (ADR-0024, ADR-0027, ADR-0031, complete ✅), ~~Map~~ (ADR-0025) ✅, ~~Editor~~ (ADR-0023) ✅, ~~Carousel~~ (ADR-0033) ✅, Lightbox, Markdown, Organization chart, Upload, Image, Walktour | — |
+| 7 Needs an ADR | ~~Data grid~~ (ADR-0020, phases below), ~~Date pickers~~ (ADR-0022, ADR-0030, complete ✅), ~~Chart~~ (ADR-0024, ADR-0027, ADR-0031, complete ✅), ~~Map~~ (ADR-0025) ✅, ~~Editor~~ (ADR-0023) ✅, ~~Carousel~~ (ADR-0033) ✅, ~~Lightbox~~ (ADR-0032) ✅, Markdown, Organization chart, Upload, Image, Walktour | — |
 
 Not planned as components (patterns or app-level pages of the reference): Layout,
 Utilities, Multi-language, Navigation bar, Mega menu, Scroll progress, Form validation, Form wizard.

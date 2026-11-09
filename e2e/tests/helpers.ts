@@ -117,6 +117,7 @@ export function normalizeStory(page: Page): Promise<NormalizedNode> {
       "data-ok-open",
       "data-ok-drawer-open",
       "data-ok-drawer-close",
+      "data-ok-lightbox-open",
       "data-ok-popover-open",
       "data-ok-popover-hover",
       "data-ok-toast-open",

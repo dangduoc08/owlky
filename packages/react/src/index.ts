@@ -283,6 +283,23 @@ export {
 } from "./form-control-label/form-control-label.js";
 export { IconButton, type IconButtonProps } from "./icon-button/icon-button.js";
 export { Label, type LabelProps } from "./label/label.js";
+export {
+  Lightbox,
+  type LightboxApi,
+  type LightboxCloseReason,
+  type LightboxCustomSlide,
+  type LightboxImageSlide,
+  type LightboxLabels,
+  type LightboxProps,
+  type LightboxRender,
+  type LightboxSlide,
+  LightboxTrigger,
+  type LightboxTriggerProps,
+  type LightboxVideoOptions,
+  type LightboxVideoSlide,
+  type LightboxVideoSource,
+  type LightboxVideoTrack,
+} from "./lightbox/lightbox.js";
 export { LinearProgress, type LinearProgressProps } from "./linear-progress/linear-progress.js";
 export {
   List,

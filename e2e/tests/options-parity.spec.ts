@@ -46,6 +46,13 @@ const CASES: [
   ["rating", "controlled", "rating", ["size", "color"]],
   ["chart", "column-multiple", "chart", ["curve", "legend"]],
   ["carousel", "align", "carousel", ["align", "loop", "dragFree", "containScroll"]],
+  [
+    "lightbox",
+    "basic",
+    "lightbox",
+    ["disableZoom", "disableTotal", "disableCaptions", "disableThumbnails", "disableFullscreen"],
+  ],
+  ["lightbox", "inline", "lightbox", ["finite", "imageFit", "thumbnailsPosition"]],
   ["slider", "temperature", "slider", ["size", "color", "disabled"]],
   ["transfer-list", "simple", "transfer-list", ["disabled"]],
   ["tree-view", "simple", "tree-view", ["variant", "expansionTrigger"]],

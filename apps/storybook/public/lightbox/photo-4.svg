@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2400 1600" width="2400" height="1600" role="img">
+  <title>Desert road</title>
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7c2d12"/>
+      <stop offset="1" stop-color="#fdba74"/>
+    </linearGradient>
+  </defs>
+  <rect width="2400" height="1600" fill="url(#sky)"/>
+  <circle cx="600" cy="560" r="180" fill="#fff7ed"/>
+  <path d="M0 1000 Q600 900 1200 980 T2400 940 L2400 1600 L0 1600Z" fill="#c2410c"/>
+  <path d="M1100 1000 L1300 1000 L1900 1600 L500 1600Z" fill="#292524"/>
+  <path d="M1196 1040 L1204 1040 L1220 1600 L1180 1600Z" fill="#fde047"/>
+</svg>

@@ -1,0 +1,563 @@
+/*
+ * Lightbox — spec: specs/components/lightbox.md (ADR-0032)
+ *
+ * Anatomy:  button[data-ok-lightbox-trigger] › img           (opens the lightbox at a slide)
+ *           dialog[data-ok-lightbox][data-ok-theme="dark"]   (div with data-ok-inline)
+ *             section[data-ok-carousel][data-ok-lightbox-carousel]   (a Carousel, ADR-0033)
+ *               div[data-ok-carousel-stage]
+ *                 div[data-ok-carousel-viewport] › div[data-ok-carousel-container]
+ *                   div[data-ok-carousel-slide][data-ok-lightbox-slide][data-ok-rotation]?
+ *                     div[data-ok-lightbox-zoom] › img[data-ok-lightbox-image]
+ *                                                  | video[data-ok-lightbox-video]
+ *                                                  | [data-ok-lightbox-media] (custom slides)
+ *                     div[data-ok-lightbox-caption="title|description"]?
+ *                 div[data-ok-lightbox-toolbar] › button[data-ok-icon-button][data-ok-lightbox-…]…,
+ *                                                 span[data-ok-lightbox-counter]
+ *                 button[data-ok-icon-button][data-ok-carousel-prev|next][data-ok-lightbox-nav]
+ *               div[data-ok-carousel-thumbs][data-ok-lightbox-thumbnails] › button[data-ok-carousel-thumb]
+ *               span[data-ok-lightbox-live]
+ * Modifiers: data-ok-image-fit, data-ok-thumbnails-position, data-ok-thumbnails-image-fit,
+ *            data-ok-thumbnails-vignette="false", data-ok-description-text-align, data-ok-disable-*,
+ *            data-ok-download, data-ok-share, data-ok-rotate(-buttons), data-ok-captions-show-toggle,
+ *            data-ok-thumbnails-show-toggle, data-ok-inline
+ * States (controller): data-ok-captions-hidden, data-ok-thumbnails-hidden, data-ok-zoomed,
+ *            data-ok-zooming, data-ok-pulling, data-ok-fullscreen, data-ok-ready (root); inert on
+ *            other slides; aria-disabled on buttons. CSSOM: --_ok-lightbox-scale / -x / -y (zoom
+ *            frame), -pull and -toolbar-width (root), and the sizes of the numeric options (root).
+ *
+ * Load after carousel.css (same zero specificity: the later stylesheet wins).
+ * Single :where() selectors in @layer components (zero specificity).
+ */
+@reference "../theme.css";
+
+@layer components {
+  /* Triggers ---------------------------------------------------------------------------------- */
+  :where([data-ok-lightbox-trigger]) {
+    display: block;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    border: 0;
+    border-radius: var(--ok-radius-md);
+    background: none;
+    color: inherit;
+    font: inherit;
+    cursor: zoom-in;
+  }
+
+  :where([data-ok-lightbox-trigger] > img) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  :where([data-ok-lightbox-trigger]:focus-visible) {
+    outline: 2px solid var(--ok-text-primary);
+    outline-offset: 2px;
+  }
+
+  /* Root -------------------------------------------------------------------------------------- */
+  :where([data-ok-lightbox]) {
+    --_ok-lightbox-bg: rgb(var(--ok-palette-grey-900-channel) / 0.9);
+
+    box-sizing: border-box;
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    border: 0;
+    background-color: var(--_ok-lightbox-bg);
+    color: var(--ok-text-primary);
+    font-family: var(--ok-font-family);
+    overscroll-behavior: contain;
+  }
+
+  :where([data-ok-lightbox][open]) {
+    display: block;
+    animation: ok-lightbox-fade var(--_ok-lightbox-fade, var(--ok-duration-short))
+      var(--ok-easing-standard);
+  }
+
+  :where([data-ok-lightbox])::backdrop {
+    background-color: transparent;
+  }
+
+  :where([data-ok-lightbox][data-ok-fallback]) {
+    z-index: var(--ok-z-modal);
+  }
+
+  :where([data-ok-lightbox][data-ok-inline]) {
+    position: relative;
+    inset: auto;
+    display: block;
+    height: auto;
+    aspect-ratio: 3 / 2;
+    border-radius: var(--ok-radius-md);
+  }
+
+  @keyframes ok-lightbox-fade {
+    from {
+      opacity: 0;
+    }
+  }
+
+  /* The carousel fills the lightbox: slides, then the thumbnails at their position. */
+  :where([data-ok-lightbox-carousel]) {
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "stage" "thumbs";
+    width: 100%;
+    height: 100%;
+  }
+
+  :where([data-ok-lightbox][data-ok-thumbnails-position="top"] [data-ok-lightbox-carousel]) {
+    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-areas: "thumbs" "stage";
+  }
+
+  :where([data-ok-lightbox][data-ok-thumbnails-position="start"] [data-ok-lightbox-carousel]) {
+    grid-template-rows: minmax(0, 1fr);
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas: "thumbs stage";
+  }
+
+  :where([data-ok-lightbox][data-ok-thumbnails-position="end"] [data-ok-lightbox-carousel]) {
+    grid-template-rows: minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: "stage thumbs";
+  }
+
+  :where([data-ok-lightbox-carousel] > [data-ok-carousel-stage]) {
+    grid-area: stage;
+    min-height: 0;
+  }
+
+  :where([data-ok-lightbox-carousel] [data-ok-carousel-viewport]) {
+    container-type: inline-size;
+    height: 100%;
+  }
+
+  :where([data-ok-lightbox-carousel] [data-ok-carousel-viewport]:focus-visible) {
+    outline-offset: -2px;
+  }
+
+  :where([data-ok-lightbox-carousel] [data-ok-carousel-container]) {
+    gap: var(--_ok-lightbox-spacing, 30cqw);
+    height: 100%;
+  }
+
+  /* Slides ------------------------------------------------------------------------------------ */
+  :where([data-ok-lightbox-slide]) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: var(--_ok-lightbox-padding, calc(var(--ok-spacing) * 4));
+    overflow: hidden;
+  }
+
+  :where([data-ok-lightbox-zoom]) {
+    container-type: size;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    touch-action: pan-x;
+    transform: translate(var(--_ok-lightbox-x, 0px), var(--_ok-lightbox-y, 0px))
+      scale(var(--_ok-lightbox-scale, 1));
+    transition: transform var(--_ok-lightbox-zoom-duration, calc(var(--ok-duration-short) * 2))
+      var(--ok-easing-decelerate);
+  }
+
+  :where([data-ok-lightbox][data-ok-zooming] [data-ok-lightbox-zoom]) {
+    transition: none;
+  }
+
+  :where([data-ok-lightbox][data-ok-zoomed] [data-ok-lightbox-zoom]) {
+    cursor: grab;
+    touch-action: none;
+  }
+
+  :where([data-ok-lightbox][data-ok-zoomed] [data-ok-carousel-viewport]) {
+    overflow: hidden;
+  }
+
+  :where([data-ok-lightbox][data-ok-disable-swipe-navigation] [data-ok-carousel-viewport]) {
+    overflow: hidden;
+  }
+
+  :where([data-ok-lightbox][data-ok-disable-swipe-navigation] [data-ok-lightbox-zoom]) {
+    touch-action: none;
+  }
+
+  :where([data-ok-lightbox][data-ok-pulling] [data-ok-snapped] > [data-ok-lightbox-zoom]) {
+    transition: none;
+    translate: 0 var(--_ok-lightbox-pull, 0px);
+  }
+
+  :where([data-ok-lightbox-image]) {
+    display: block;
+    flex: none;
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    max-height: 100%;
+    object-fit: contain;
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+
+  :where([data-ok-lightbox][data-ok-image-fit="cover"] [data-ok-lightbox-image]) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  :where([data-ok-lightbox-slide][data-ok-image-fit="contain"] [data-ok-lightbox-image]) {
+    width: auto;
+    height: auto;
+    object-fit: contain;
+  }
+
+  :where([data-ok-lightbox-slide][data-ok-image-fit="cover"] [data-ok-lightbox-image]) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Quarter turns: the image fits the frame with its sides swapped. */
+  :where([data-ok-lightbox-slide][data-ok-rotation] [data-ok-lightbox-image]) {
+    transition: rotate var(--ok-duration-shorter) var(--ok-easing-standard);
+  }
+
+  :where([data-ok-lightbox-slide][data-ok-rotation="90"] [data-ok-lightbox-image]) {
+    max-width: 100cqh;
+    max-height: 100cqw;
+    rotate: 90deg;
+  }
+
+  :where([data-ok-lightbox-slide][data-ok-rotation="180"] [data-ok-lightbox-image]) {
+    rotate: 180deg;
+  }
+
+  :where([data-ok-lightbox-slide][data-ok-rotation="270"] [data-ok-lightbox-image]) {
+    max-width: 100cqh;
+    max-height: 100cqw;
+    rotate: 270deg;
+  }
+
+  :where([data-ok-lightbox-video]) {
+    display: block;
+    flex: none;
+    max-width: 100%;
+    max-height: 100%;
+    background-color: var(--ok-palette-common-black);
+  }
+
+  /* Captions: the title over the top of the slide, the description over its bottom. */
+  :where([data-ok-lightbox-caption]) {
+    position: absolute;
+    inset-inline: 0;
+    box-sizing: border-box;
+    margin: 0;
+    padding: calc(var(--ok-spacing) * 4);
+    background-color: rgb(var(--ok-palette-common-black-channel) / 0.32);
+    color: var(--ok-palette-common-white);
+  }
+
+  :where([data-ok-lightbox-caption="title"]) {
+    inset-block-start: var(--_ok-lightbox-title-top, 0px);
+    overflow: hidden;
+    padding-inline-end: max(calc(var(--ok-spacing) * 4), var(--_ok-lightbox-toolbar-width, 0px));
+    font-size: var(--ok-typography-h5-font-size);
+    font-weight: var(--ok-font-weight-semibold);
+    line-height: var(--ok-typography-h5-line-height);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  :where([data-ok-lightbox-caption="description"]) {
+    inset-block-end: 0;
+    font-size: var(--ok-typography-body2-font-size);
+    line-height: var(--ok-typography-body2-line-height);
+    text-align: start;
+  }
+
+  :where([data-ok-lightbox-caption="description"] > [data-ok-lightbox-description-text]) {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: var(--_ok-lightbox-lines, 3);
+    line-clamp: var(--_ok-lightbox-lines, 3);
+    white-space: pre-line;
+  }
+
+  :where(
+    [data-ok-lightbox][data-ok-description-text-align="center"]
+      [data-ok-lightbox-caption="description"]
+  ) {
+    text-align: center;
+  }
+
+  :where(
+    [data-ok-lightbox][data-ok-description-text-align="end"]
+      [data-ok-lightbox-caption="description"]
+  ) {
+    text-align: end;
+  }
+
+  :where(
+    [data-ok-lightbox][data-ok-captions-hidden] [data-ok-lightbox-caption],
+    [data-ok-lightbox][data-ok-disable-captions] [data-ok-lightbox-caption]
+  ) {
+    display: none;
+  }
+
+  /* Toolbar ----------------------------------------------------------------------------------- */
+  :where([data-ok-lightbox-toolbar]) {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-end: 0;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    box-sizing: border-box;
+    max-width: 100%;
+    padding: calc(var(--ok-spacing) * 2);
+  }
+
+  :where([data-ok-lightbox-toolbar] > [data-ok-icon-button]) {
+    --_ok-size: calc(var(--ok-spacing) * 10);
+    --_ok-icon-size: calc(var(--ok-spacing) * 6);
+
+    color: var(--ok-palette-common-white);
+  }
+
+  :where(
+    [data-ok-lightbox-toolbar] > [aria-disabled="true"],
+    [data-ok-lightbox-nav][aria-disabled="true"]
+  ) {
+    color: rgb(var(--ok-palette-common-white-channel) / 0.4);
+    cursor: default;
+  }
+
+  :where([data-ok-lightbox-counter]) {
+    padding-inline: calc(var(--ok-spacing) * 2);
+    color: var(--ok-palette-common-white);
+    font-size: var(--ok-typography-body2-font-size);
+    line-height: calc(var(--ok-spacing) * 10);
+    white-space: nowrap;
+  }
+
+  :where([data-ok-lightbox-counter-current]) {
+    font-weight: var(--ok-font-weight-semibold);
+  }
+
+  /* Hidden toolbar items: plugins that are off, and labels of the other state. */
+  :where(
+    [data-ok-lightbox][data-ok-disable-zoom] [data-ok-lightbox-zoom-in],
+    [data-ok-lightbox][data-ok-disable-zoom] [data-ok-lightbox-zoom-out],
+    [data-ok-lightbox]:not([data-ok-rotate]) [data-ok-lightbox-rotate-cw],
+    [data-ok-lightbox]:not([data-ok-rotate]) [data-ok-lightbox-rotate-ccw],
+    [data-ok-lightbox][data-ok-rotate-buttons="clockwise"] [data-ok-lightbox-rotate-ccw],
+    [data-ok-lightbox][data-ok-rotate-buttons="counterclockwise"] [data-ok-lightbox-rotate-cw],
+    [data-ok-lightbox][data-ok-disable-slideshow] [data-ok-lightbox-slideshow],
+    [data-ok-lightbox][data-ok-disable-fullscreen] [data-ok-lightbox-fullscreen],
+    [data-ok-lightbox]:not([data-ok-download]) [data-ok-lightbox-download],
+    [data-ok-lightbox]:not([data-ok-share]) [data-ok-lightbox-share],
+    [data-ok-lightbox]:not([data-ok-captions-show-toggle]) [data-ok-lightbox-captions],
+    [data-ok-lightbox][data-ok-disable-captions] [data-ok-lightbox-captions],
+    [data-ok-lightbox]:not([data-ok-thumbnails-show-toggle]) [data-ok-lightbox-thumbnails-toggle],
+    [data-ok-lightbox][data-ok-disable-thumbnails] [data-ok-lightbox-thumbnails-toggle],
+    [data-ok-lightbox][data-ok-disable-total] [data-ok-lightbox-counter],
+    [data-ok-lightbox][data-ok-inline] [data-ok-lightbox-close],
+    [data-ok-lightbox-toolbar] > [hidden],
+    [data-ok-lightbox-nav][hidden]
+  ) {
+    display: none;
+  }
+
+  :where(
+    [data-ok-lightbox][data-ok-fullscreen] [data-ok-lightbox-label="enter"],
+    [data-ok-lightbox]:not([data-ok-fullscreen]) [data-ok-lightbox-label="exit"],
+    [data-ok-lightbox][data-ok-captions-hidden]
+      [data-ok-lightbox-captions]
+      [data-ok-lightbox-label="hide"],
+    [data-ok-lightbox]:not([data-ok-captions-hidden])
+      [data-ok-lightbox-captions]
+      [data-ok-lightbox-label="show"],
+    [data-ok-lightbox][data-ok-thumbnails-hidden]
+      [data-ok-lightbox-thumbnails-toggle]
+      [data-ok-lightbox-label="hide"],
+    [data-ok-lightbox]:not([data-ok-thumbnails-hidden])
+      [data-ok-lightbox-thumbnails-toggle]
+      [data-ok-lightbox-label="show"]
+  ) {
+    display: none;
+  }
+
+  /* Visually hidden names and live region. */
+  :where(
+    span[data-ok-lightbox-label],
+    [data-ok-lightbox-live],
+    [data-ok-lightbox-toolbar] [data-ok-carousel-play-label]:not(svg)
+  ) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* Navigation -------------------------------------------------------------------------------- */
+  :where([data-ok-lightbox-nav]) {
+    --_ok-size: calc(var(--ok-spacing) * 10);
+    --_ok-icon-size: calc(var(--ok-spacing) * 6);
+
+    position: absolute;
+    inset-block-start: 50%;
+    z-index: 1;
+    margin-inline: 0;
+    color: rgb(var(--ok-palette-common-white-channel) / 0.8);
+    translate: 0 -50%;
+  }
+
+  :where([data-ok-lightbox-nav][data-ok-carousel-prev]) {
+    inset-inline-start: 0;
+  }
+
+  :where([data-ok-lightbox-nav][data-ok-carousel-next]) {
+    inset-inline-end: 0;
+  }
+
+  :where([dir="rtl"] [data-ok-lightbox-nav] > svg) {
+    rotate: 180deg;
+  }
+
+  /* Thumbnails -------------------------------------------------------------------------------- */
+  :where([data-ok-lightbox-thumbnails]) {
+    grid-area: thumbs;
+    gap: var(--_ok-lightbox-thumb-gap, calc(var(--ok-spacing) * 4));
+    max-width: none;
+    max-height: none;
+    padding: calc(var(--ok-spacing) * 2);
+    border-radius: 0;
+    background-color: transparent;
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      var(--ok-palette-common-black) 12%,
+      var(--ok-palette-common-black) 88%,
+      transparent
+    );
+  }
+
+  :where([data-ok-lightbox-thumbnails][data-ok-orientation="vertical"]) {
+    border-radius: 0;
+    background-color: transparent;
+    mask-image: linear-gradient(
+      to bottom,
+      transparent,
+      var(--ok-palette-common-black) 12%,
+      var(--ok-palette-common-black) 88%,
+      transparent
+    );
+  }
+
+  :where([data-ok-lightbox][data-ok-thumbnails-vignette="false"] [data-ok-lightbox-thumbnails]) {
+    mask-image: none;
+  }
+
+  :where(
+    [data-ok-lightbox][data-ok-thumbnails-hidden] [data-ok-lightbox-thumbnails],
+    [data-ok-lightbox][data-ok-disable-thumbnails] [data-ok-lightbox-thumbnails]
+  ) {
+    display: none;
+  }
+
+  :where([data-ok-lightbox-thumbnails] > [data-ok-carousel-thumb]) {
+    box-sizing: content-box;
+    align-items: center;
+    justify-content: center;
+    width: var(--_ok-lightbox-thumb-width, calc(var(--ok-spacing) * 30));
+    height: var(--_ok-lightbox-thumb-height, calc(var(--ok-spacing) * 20));
+    padding: var(--_ok-lightbox-thumb-padding, 0px);
+    border: var(--_ok-lightbox-thumb-border, calc(var(--ok-spacing) * 0.75)) solid transparent;
+    border-radius: var(--_ok-lightbox-thumb-radius, calc(var(--ok-spacing) * 2.5));
+    background-color: var(--ok-palette-common-black);
+  }
+
+  :where([data-ok-lightbox-thumbnails] > [data-ok-carousel-thumb][aria-current="true"]) {
+    border-color: var(--ok-palette-primary-main);
+    box-shadow: none;
+  }
+
+  :where([data-ok-lightbox-thumbnails] > [data-ok-carousel-thumb] > img) {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  :where([data-ok-lightbox][data-ok-thumbnails-image-fit="cover"] [data-ok-carousel-thumb] > img) {
+    object-fit: cover;
+  }
+
+  :where([data-ok-lightbox-thumbnails] > [data-ok-carousel-thumb][data-ok-rotation="90"] > img) {
+    rotate: 90deg;
+  }
+
+  :where([data-ok-lightbox-thumbnails] > [data-ok-carousel-thumb][data-ok-rotation="180"] > img) {
+    rotate: 180deg;
+  }
+
+  :where([data-ok-lightbox-thumbnails] > [data-ok-carousel-thumb][data-ok-rotation="270"] > img) {
+    rotate: 270deg;
+  }
+
+  :where([data-ok-lightbox-thumbnail-play]) {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ok-palette-common-white);
+  }
+
+  :where([data-ok-lightbox-thumbnail-play] > svg) {
+    width: calc(var(--ok-spacing) * 8);
+    height: calc(var(--ok-spacing) * 8);
+    filter: drop-shadow(0 0 2px rgb(var(--ok-palette-common-black-channel) / 0.48));
+  }
+
+  /* From 600px: more room around the thumbnails, larger navigation buttons. */
+  @media (min-width: 600px) {
+    :where([data-ok-lightbox-thumbnails]) {
+      padding: calc(var(--ok-spacing) * 4);
+    }
+
+    :where([data-ok-lightbox-nav]) {
+      --_ok-size: calc(var(--ok-spacing) * 12);
+      --_ok-icon-size: calc(var(--ok-spacing) * 8);
+
+      margin-inline: calc(var(--ok-spacing) * 2);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :where([data-ok-lightbox][open], [data-ok-lightbox-zoom], [data-ok-lightbox-image]) {
+      animation: none;
+      transition: none;
+    }
+  }
+}

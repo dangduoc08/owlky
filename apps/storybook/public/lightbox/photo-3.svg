@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2400 1600" width="2400" height="1600" role="img">
+  <title>Forest in the fog</title>
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#14532d"/>
+      <stop offset="1" stop-color="#d1fae5"/>
+    </linearGradient>
+  </defs>
+  <rect width="2400" height="1600" fill="url(#sky)"/>
+  <g fill="#065f46">
+    <path d="M200 1600 L420 600 L640 1600Z"/><path d="M700 1600 L980 420 L1260 1600Z"/>
+    <path d="M1300 1600 L1560 540 L1820 1600Z"/><path d="M1850 1600 L2080 700 L2310 1600Z"/>
+  </g>
+  <rect y="900" width="2400" height="700" fill="#ecfdf5" opacity="0.35"/>
+  <g fill="#022c22"><path d="M0 1600 L260 980 L520 1600Z"/><path d="M1500 1600 L1760 1040 L2020 1600Z"/></g>
+</svg>

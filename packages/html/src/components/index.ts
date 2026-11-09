@@ -25,6 +25,7 @@ import { dateRangePicker } from "./date-range-picker/date-range-picker.js";
 import { dialog } from "./dialog/dialog.js";
 import { digitalClock } from "./digital-clock/digital-clock.js";
 import { drawer } from "./drawer/drawer.js";
+import { lightbox } from "./lightbox/lightbox.js";
 import { linearProgress } from "./linear-progress/linear-progress.js";
 import { list } from "./list/list.js";
 import { menu } from "./menu/menu.js";
@@ -106,4 +107,5 @@ export const components: readonly ComponentDefinition[] = [
   multiInputRangeField as ComponentDefinition,
   dateRangePicker as ComponentDefinition,
   carousel as ComponentDefinition,
+  lightbox as ComponentDefinition,
 ];

@@ -36,6 +36,7 @@ ADR that supersedes the old one — don't rewrite history.
 | [0029](0029-chart-phase-3-data-model.md) | Chart phase 3: several values per point, cell charts, sparklines, live updates | Accepted |
 | [0030](0030-picker-adapters-and-time-zones.md) | Pickers phase 4: date adapters as opt-in entries, zones and calendars at the edge | Accepted |
 | [0031](0031-chart-phase-4-interaction-and-links.md) | Chart phase 4: zoom as an x window, linked charts, annotations, export, last chart types | Accepted |
+| [0032](0032-lightbox.md) | Lightbox: a modal dialog around the Carousel, one controller in core | Accepted |
 | [0033](0033-carousel.md) | Carousel: native scroll snapping, one controller in core, loop by reordering | Accepted |
 | [0034](0034-code-editor-on-monaco.md) | Code editor: Monaco behind opt-in entries, self-hosted, with its own CSP | Accepted |
 

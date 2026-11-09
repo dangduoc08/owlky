@@ -291,6 +291,9 @@ const pairs: [component: string, story: string][] = [
     "slides-to-scroll",
     "right-to-left",
   ].map((story) => ["carousel", story] as [string, string]),
+  ["lightbox", "basic"],
+  ["lightbox", "inline"],
+  ["lightbox", "toolbar"],
   ["code-editor", "editor"],
   ["code-editor", "diff"],
   ["code-editor", "multi-model"],
@@ -310,6 +313,25 @@ const pairs: [component: string, story: string][] = [
 /** Stories whose rows load after the first render (scripts, data sources): wait for them. */
 const LOADS = new Set(["datagrid/large", "datagrid/server", "datagrid/lazy-loading"]);
 async function loaded(page: Page, key: string) {
+  if (key.startsWith("lightbox/")) {
+    // The lightbox's slide pictures load lazily (in a closed dialog): wait for the others.
+    await page.waitForFunction(() =>
+      [...document.querySelectorAll("[data-ok-lightbox]")].every((root) =>
+        root.hasAttribute("data-ok-ready"),
+      ),
+    );
+    await page.waitForFunction(() =>
+      [...document.images].every((image) => {
+        if (image.complete) return true;
+        // Lazy pictures off screen (closed dialog, other slides) don't load.
+        const box = image.getBoundingClientRect();
+        const shown = image.checkVisibility() && box.right > 0 && box.left < innerWidth;
+        return image.loading === "lazy" && !shown;
+      }),
+    );
+    await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => setTimeout(r, 50))));
+    return;
+  }
   if (key.startsWith("carousel/")) {
     // Carousels measure once mounted; pictures change slide sizes as they load.
     await page.waitForFunction(() =>
