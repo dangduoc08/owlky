@@ -11,6 +11,7 @@ import {
   type ChartLink,
   type ChartLocaleText,
   type ChartNode,
+  type ChartOrientation,
   type ChartPart,
   type ChartPointInput,
   type ChartRender,
@@ -38,8 +39,11 @@ import {
   linkChart,
   nextChartActive,
   parseChartColorRanges,
+  parseChartIndicators,
+  parseChartList,
   placeChartTooltip,
   readChartAnnotations,
+  readChartSankeyTable,
   readChartTable,
   readNumber,
   readStyle,
@@ -421,9 +425,13 @@ export const chart = defineComponent<ChartInstance>({
       // First: the table leaves the flow before the plot is measured (sparklines fill the root).
       element.setAttribute("data-ok-ready", "");
       const xType = readStyle(element, o.xType) as ChartXType;
-      const read = data();
+      const type = readStyle(element, o.type) as ChartType;
+      // Sankey charts (ADR-0047): the table lists links, not series.
+      const flow = type === "sankey" && table ? readChartSankeyTable(table) : undefined;
+      const read = flow ? EMPTY : data();
       const { series, categories } = read;
-      if ("partLabels" in read && read.partLabels) partLabels = read.partLabels;
+      if (flow) partLabels = flow.partLabels;
+      else if ("partLabels" in read && read.partLabels) partLabels = read.partLabels;
       const brushTarget = text(element, CHART_TEXT_ATTRIBUTES.brushTarget);
       const label = table?.caption?.textContent?.trim() ?? "";
       if (label) plot.setAttribute("aria-label", label);
@@ -438,10 +446,20 @@ export const chart = defineComponent<ChartInstance>({
         ? measuredHeight() || (element.hasAttribute(o.height.attr) ? given : SPARKLINE_HEIGHT)
         : given;
       render = renderChart({
-        type: readStyle(element, o.type) as ChartType,
+        type,
         xType,
         series,
         categories,
+        nodes: flow?.nodes,
+        edges: flow?.edges,
+        orientation: readStyle(element, o.orientation) as ChartOrientation,
+        nodeWidth: readNumber(element, o.nodeWidth) as number | undefined,
+        whitespace: readNumber(element, o.whitespace) as number | undefined,
+        edgeOpacity: readNumber(element, o.edgeOpacity) as number | undefined,
+        axisTitles: parseChartList(element.getAttribute(CHART_TEXT_ATTRIBUTES.axisTitles)),
+        indicators: parseChartIndicators(element.getAttribute(CHART_TEXT_ATTRIBUTES.indicators)),
+        navigator: element.hasAttribute(o.navigator.attr),
+        paneHeight: readNumber(element, o.paneHeight) as number | undefined,
         curve: readStyle(element, o.curve) as ChartCurve,
         fill: readStyle(element, o.fill) as ChartFill,
         legend: readStyle(element, o.legend) as ChartLegend,
@@ -495,7 +513,9 @@ export const chart = defineComponent<ChartInstance>({
       svg.setAttribute("height", String(layout.height));
       svg.setAttribute("viewBox", `0 0 ${layout.width} ${layout.height}`);
       patch(svg, layout.nodes);
-      if (source && table) {
+      // Stock charts: indicator columns are computed, so the table is rewritten to match.
+      const generated = render.data.series.some((series) => series.indicator);
+      if ((source || generated) && table) {
         // Data set through the API: the table (the accessible view) follows, in place.
         writeTable(table, render.table);
         changes.takeRecords();
@@ -525,7 +545,8 @@ export const chart = defineComponent<ChartInstance>({
     const mode = (): ChartGestureMode =>
       element.hasAttribute(CHART_TEXT_ATTRIBUTES.brushTarget)
         ? "brush"
-        : element.hasAttribute(o.zoom.attr) && render?.zoomable
+        : (element.hasAttribute(o.zoom.attr) || element.hasAttribute(o.navigator.attr)) &&
+            render?.zoomable
           ? pan
             ? "pan"
             : "zoom"
@@ -598,7 +619,9 @@ export const chart = defineComponent<ChartInstance>({
       syncTools(
         box,
         chartToolbar({
-          zoom: element.hasAttribute(o.zoom.attr) && current.zoomable,
+          zoom:
+            (element.hasAttribute(o.zoom.attr) || element.hasAttribute(o.navigator.attr)) &&
+            current.zoomable,
           zoomed: current.zoom !== null,
           pan,
           text: localeText,

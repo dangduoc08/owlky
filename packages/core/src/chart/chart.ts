@@ -5,6 +5,7 @@ import {
 } from "./chart-annotations.js";
 import { layoutHeatmap, layoutTreemap } from "./chart-cells.js";
 import { type ChartFormat, type ChartFormatOptions, chartFormat } from "./chart-format.js";
+import { type ChartIndicator, chartIndicatorSeries } from "./chart-indicators.js";
 import {
   type ChartColorRange,
   type ChartLayout,
@@ -27,9 +28,19 @@ import {
   chartData,
   chartTable,
   isCircularChart,
+  isWholeChart,
 } from "./chart-model.js";
 import { layoutCircular, layoutRadar } from "./chart-polar.js";
+import {
+  type ChartOrientation,
+  type ChartSankeyEdge,
+  type ChartSankeyNode,
+  chartSankeyGraph,
+  chartSankeyTable,
+  layoutSankey,
+} from "./chart-sankey.js";
 import { layoutFunnel, layoutSlope } from "./chart-shapes.js";
+import { layoutStock } from "./chart-stock.js";
 import {
   type ChartZoom,
   chartSelectionNodes,
@@ -42,7 +53,27 @@ import {
 export interface ChartRenderInput extends ChartFormatOptions {
   readonly type?: ChartType | undefined;
   readonly xType?: ChartXType | undefined;
-  readonly series: readonly ChartSeries[];
+  /** Every type but `sankey`. */
+  readonly series?: readonly ChartSeries[] | undefined;
+  /** Sankey charts (ADR-0047): nodes (optional: titles and colors) and the links between them. */
+  readonly nodes?: readonly ChartSankeyNode[] | undefined;
+  readonly edges?: readonly ChartSankeyEdge[] | undefined;
+  /** Sankey charts: flow direction. Default `"horizontal"`. */
+  readonly orientation?: ChartOrientation | undefined;
+  /** Sankey charts: node thickness along the flow in px. Default 20. */
+  readonly nodeWidth?: number | undefined;
+  /** Sankey charts: share of the fullest rank left between its nodes (0 to 0.9). Default 0.18. */
+  readonly whitespace?: number | undefined;
+  /** Sankey charts: link opacity (0 to 1). Default 0.4. */
+  readonly edgeOpacity?: number | undefined;
+  /** Sankey charts: a title above each rank. */
+  readonly axisTitles?: readonly string[] | undefined;
+  /** Stock charts (ADR-0047): indicators of the first series (overlays and panes). */
+  readonly indicators?: readonly ChartIndicator[] | undefined;
+  /** Stock charts: a navigator under the panes (the whole axis, the zoom as a brush). */
+  readonly navigator?: boolean | undefined;
+  /** Stock charts: height of each indicator pane in px. Default 120. */
+  readonly paneHeight?: number | undefined;
   readonly categories?: readonly (string | number | Date)[] | undefined;
   readonly colors?: readonly ChartColor[] | undefined;
   readonly curve?: ChartCurve | undefined;
@@ -133,7 +164,23 @@ export const chartIdPrefix = (raw: string): string =>
 
 /** Data, formatters, layout, legend and table for one render. */
 export function renderChart(input: ChartRenderInput): ChartRender {
-  const data = chartData(input);
+  if (input.type === "sankey") return renderSankey(input);
+  const plain = chartData({ ...input, series: input.series ?? [] });
+  // Stock charts (ADR-0047): indicators become generated series; panes share one x axis.
+  const stock =
+    (input.indicators?.length || input.navigator) &&
+    plain.xType !== "numeric" &&
+    !input.horizontal &&
+    !input.sparkline &&
+    !isWholeChart(plain.type) &&
+    plain.type !== "scatter" &&
+    plain.type !== "bubble";
+  const data: ChartData = stock
+    ? {
+        ...plain,
+        series: [...plain.series, ...chartIndicatorSeries(plain, input.indicators ?? [])],
+      }
+    : plain;
   // Radial bars show percentages unless told otherwise.
   const format = chartFormat(data, {
     ...input,
@@ -149,8 +196,10 @@ export function renderChart(input: ChartRenderInput): ChartRender {
     funnel: (d, o) => layoutFunnel(d, o, format),
     slope: (d, o) => layoutSlope(d, o, format),
   };
-  const layoutOf: Layout =
-    layouts[data.type] ?? (circular ? (d, o) => layoutCircular(d, o, format) : layoutChart);
+  const layoutOf: Layout = stock
+    ? (d, o) =>
+        layoutStock(d, { ...o, paneHeight: input.paneHeight, navigator: input.navigator }, format)
+    : (layouts[data.type] ?? (circular ? (d, o) => layoutCircular(d, o, format) : layoutChart));
   const extent = chartZoomExtent(data);
   const kind = data.xType === "numeric" ? "value" : "index";
   // A zoom set on an older x axis (live data) follows it: at the end, it keeps to the end.
@@ -243,10 +292,44 @@ export function renderChart(input: ChartRenderInput): ChartRender {
     formatX: (x) => format.title(x),
     formatValue: (value, series) => format.value(value, series),
     formatNumber: format.number,
-    seriesTypes: data.series.some((series) => series.type !== data.type),
+    // Indicator columns carry their indicator, not a type (they are never read back).
+    seriesTypes: data.series.some((series) => !series.indicator && series.type !== data.type),
     partLabels: input.partLabels,
   });
   return { data, format, layout, legend, table, extent, zoom: zoomable ? zoom : null, zoomable };
+}
+
+/** Sankey charts (ADR-0047): links instead of series; no legend, no zoom. */
+function renderSankey(input: ChartRenderInput): ChartRender {
+  const data = chartData({ type: "sankey", series: [] });
+  const format = chartFormat(data, input);
+  const graph = chartSankeyGraph(input);
+  const layout = layoutSankey(
+    graph,
+    {
+      width: input.width,
+      height: input.height,
+      idPrefix: input.idPrefix,
+      orientation: input.orientation,
+      nodeWidth: input.nodeWidth,
+      whitespace: input.whitespace,
+      edgeOpacity: input.edgeOpacity,
+      fill: input.fill,
+      axisTitles: input.axisTitles,
+      dataLabels: input.dataLabels,
+    },
+    format,
+  );
+  return {
+    data,
+    format,
+    layout,
+    legend: null,
+    table: chartSankeyTable(graph, format),
+    extent: null,
+    zoom: null,
+    zoomable: false,
+  };
 }
 
 /** Outside data labels on badges: a rounded box behind each text (`dataLabelBackground`). */

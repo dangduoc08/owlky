@@ -1,3 +1,4 @@
+import { type ChartIndicator, chartIndicatorsText } from "./chart-indicators.js";
 import type { ChartColorRange } from "./chart-layout.js";
 import { type ChartColor, chartColors, parseChartNumber } from "./chart-model.js";
 
@@ -18,6 +19,10 @@ export interface ChartTextOptions {
   /** Brush charts: the id of the chart they zoom. */
   readonly brushTarget?: string | undefined;
   readonly colorRanges?: readonly ChartColorRange[] | undefined;
+  /** Sankey charts: a title per rank (`"Income; Budget; Spending"`). */
+  readonly axisTitles?: readonly string[] | undefined;
+  /** Stock charts: indicators (`"sma 20; rsi 14"`, ADR-0047). */
+  readonly indicators?: readonly ChartIndicator[] | undefined;
 }
 
 export const CHART_TEXT_ATTRIBUTES = {
@@ -29,6 +34,8 @@ export const CHART_TEXT_ATTRIBUTES = {
   group: "data-ok-group",
   brushTarget: "data-ok-brush-target",
   colorRanges: "data-ok-color-ranges",
+  axisTitles: "data-ok-axis-titles",
+  indicators: "data-ok-indicators",
 } as const;
 
 const isColor = (value: unknown): value is ChartColor => chartColors.includes(value as ChartColor);
@@ -66,12 +73,38 @@ export function chartColorRangesText(ranges: readonly ChartColorRange[]): string
     .join("; ");
 }
 
+/** A list as attribute text: items separated by `; ` (a `;` inside an item becomes a space). */
+export function chartListText(items: readonly string[]): string {
+  return items
+    .map((item) =>
+      String(item)
+        .replace(/[;\s]+/g, " ")
+        .trim(),
+    )
+    .join("; ");
+}
+
+/** A list from attribute text (`chartListText`); at most 2000 characters and 100 items. */
+export function parseChartList(text: string | null | undefined): string[] {
+  if (!text || text.length > 2000) return [];
+  return text
+    .split(";")
+    .slice(0, 100)
+    .map((item) => item.trim());
+}
+
 /** The root's text attributes for these options (only the ones given). */
 export function chartTextAttributes(options: ChartTextOptions): Record<string, string> {
   const out: Record<string, string> = {};
   for (const [key, attr] of Object.entries(CHART_TEXT_ATTRIBUTES)) {
     const value = options[key as keyof ChartTextOptions];
-    if (key === "colorRanges") {
+    if (key === "indicators") {
+      const text = chartIndicatorsText((value as readonly ChartIndicator[] | undefined) ?? []);
+      if (text) out[attr] = text;
+    } else if (key === "axisTitles") {
+      const text = chartListText((value as readonly string[] | undefined) ?? []);
+      if (text) out[attr] = text;
+    } else if (key === "colorRanges") {
       const text = chartColorRangesText((value as readonly ChartColorRange[] | undefined) ?? []);
       if (text) out[attr] = text;
     } else if (typeof value === "string" && value) out[attr] = value;

@@ -60,6 +60,8 @@ component and each `/integrate` run.
 | Extra | Animate | ✅ beta | Motion, MotionGroup, MotionText, CountUp, MotionBorder; Dialog `transition` | Motion |
 | Extra | Carousel | ✅ (ADR-0033) | Carousel, CarouselStage, CarouselViewport, CarouselSlide, CarouselArrows, CarouselDots, CarouselProgress, CarouselThumbs, CarouselThumb, CarouselPlayButton | Carousel |
 | Extra | Chart | ✅ complete, phases 1–4 (ADR-0024, ADR-0027, ADR-0029, ADR-0031) | Chart | Chart |
+| Extra (ApexSankey reference) | Sankey | ✅ (ADR-0047) | Chart `type="sankey"` | Chart |
+| Extra (ApexStock reference) | Stock charts | ✅ (ADR-0047) | Chart `indicators`, `navigator`, `paneHeight` | Chart |
 | Extra | Dnd | ✅ | Sortable | Sortable |
 | Extra | Editor | ✅ (ADR-0023, Tiptap) | Editor | Editor |
 | Extra (monaco-react reference) | Code editor | ✅ (ADR-0034, Monaco) | CodeEditor, DiffEditor, useMonaco, loader | Code editor |
@@ -854,6 +856,21 @@ HTML instance members `zoomRange`, `setZoomRange`, `exportChart`, `setLocaleText
 and export, Synchronized, Brush, Annotations, Data labels, Donut with values, Heatmap color ranges,
 Horizontal box plot, Localized labels, Animations. **Chart is complete:** every ApexCharts chart
 type and the features listed in ADR-0027 are built.
+
+Sankey (ADR-0047, roadmap-components phase 2.1) added the type `sankey` (links between nodes: React
+`nodes` / `edges`, an HTML table of links), the options `orientation`, `nodeWidth`, `whitespace`,
+`edgeOpacity`, the text attribute `axisTitles`, a `flow` interaction mode (nodes and links, highlight,
+keyboard rank by rank) and loops for cycles. Stories: Sankey, Vertical Sankey, Cycles, Alluvial, Link
+and node options. Not built: chord and circular projections, particle flow, draggable nodes,
+drill-down, the comparison split view, pinned path highlight.
+
+Stock charts (ADR-0047, roadmap-components phase 2.2) added `indicators` (13 indicators computed
+in core: `sma`, `ema`, `bollinger`, `vwap`, `donchian`, `keltner`, `volume`, `rsi`, `macd`,
+`stochastic`, `atr`, `cci`, `pvt`), panes on one x axis (`paneHeight`), a navigator (`navigator`,
+a brush on the zoom), a volume per point (`v`), indicator columns in the data table and a tooltip
+readout of every pane. Stories: Stock chart, Overlays, Oscillators, Large dataset. Not built:
+drawing tools (an editing UI with keyboard alternatives: a feature of its own), comparison, price
+scale modes, event markers, price lines, aggregation helpers, period buttons (ApexStock has none).
 
 **Not planned (by design, ADR-0031):** y / xy zoom and per-zoom y autoscaling, zooming horizontal,
 polar, cell, funnel and slope charts, links between React and HTML charts on one page, custom

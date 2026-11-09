@@ -50,5 +50,6 @@ ADR that supersedes the old one — don't rewrite history.
 | [0044](0044-collapse.md) | Collapse: `hidden` is the state, a core controller animates the size | Accepted |
 | [0045](0045-select.md) | Select: a select-only combobox with roving focus; the native select stays | Accepted |
 | [0046](0046-mcp-server.md) | MCP server: `@owlky/mcp` over stdio, answering from a generated manifest | Accepted |
+| [0047](0047-chart-sankey-and-stock-charts.md) | Chart: Sankey and stock charts in the shared engine (links table, indicators, panes, navigator) | Accepted |
 
 Template: **Context** (why decide) · **Decision** (what) · **Consequences** (trade-offs, follow-ups).

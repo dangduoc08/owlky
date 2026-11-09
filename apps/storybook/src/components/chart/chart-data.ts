@@ -133,6 +133,42 @@ const CANDLES: [number, number, number, number][] = DAYS_30.map((_, i) => {
   const low = Math.round((Math.min(open, close) - 2 - Math.abs(3 * Math.sin(i))) * 10) / 10;
   return [open, high, low, close];
 });
+/** Weekdays (UTC) from `start`: trading days of the stock examples. */
+const weekdays = (start: string, count: number) => {
+  const out: string[] = [];
+  for (let t = Date.parse(`${start}T00:00:00Z`); out.length < count; t += 86_400_000) {
+    const day = new Date(t).getUTCDay();
+    if (day !== 0 && day !== 6) out.push(new Date(t).toISOString().slice(0, 10));
+  }
+  return out;
+};
+/**
+ * Stock bars of a seeded random walk (the same on every run, in React, HTML and the tests):
+ * `{ y: [open, high, low, close], v }` as ApexStock writes them.
+ */
+const stockBars = (count: number, seed: number, start = 100) => {
+  let state = seed;
+  const random = () => {
+    state = (state * 16_807) % 2_147_483_647;
+    return state / 2_147_483_647;
+  };
+  const round = (value: number) => Math.round(value * 100) / 100;
+  let price = start;
+  return Array.from({ length: count }, (_, i) => {
+    const open = price;
+    const close = round(Math.max(5, open + (random() - 0.48) * 4 + Math.sin(i / 9) * 0.8));
+    const high = round(Math.max(open, close) + random() * 1.8);
+    const low = round(Math.min(open, close) - random() * 1.8);
+    price = close;
+    const v = Math.round(800_000 + random() * 900_000 + Math.abs(close - open) * 150_000);
+    return { y: [round(open), high, low, close], v };
+  });
+};
+const STOCK_DAYS = weekdays("2025-01-02", 130);
+const STOCK = stockBars(130, 20_250_102);
+const STOCK_YEAR = weekdays("2024-01-02", 260);
+const STOCK_LONG = stockBars(260, 7_654_321, 80);
+
 /** Daily users: a slow wave with a weekly dip. */
 const users = (i: number) =>
   Math.round(4000 + 900 * Math.sin(i / 9) + 300 * Math.cos(i / 2.3) - (i % 7 >= 5 ? 700 : 0));
@@ -892,6 +928,207 @@ export const chartExamples: Record<string, ChartExample> = {
       colors: ["primary"],
       categories: ["Mon", "Tue", "Wed", "Thu", "Fri"],
       series: [{ name: "Deploys", data: [14, 22, 19, 25, 9] }],
+    },
+  },
+  // Phase 2.2 (ADR-0047): stock charts, one per ApexStock demo section that applies.
+  stock: {
+    title: "Stock chart",
+    props: {
+      label: "ACME share price, first half of 2025",
+      type: "candlestick",
+      xType: "datetime",
+      valuePrefix: "$",
+      height: 280,
+      navigator: true,
+      indicators: [{ type: "sma", period: 20 }, { type: "volume" }],
+      categories: STOCK_DAYS,
+      series: [{ name: "ACME", data: STOCK }],
+    },
+  },
+  "stock-overlays": {
+    title: "Overlays",
+    props: {
+      label: "ACME share price with overlays",
+      type: "candlestick",
+      xType: "datetime",
+      valuePrefix: "$",
+      zoom: true,
+      toolbar: true,
+      indicators: [
+        { type: "bollinger", period: 20, stdDev: 2, color: "info" },
+        { type: "ema", period: 9, color: "warning" },
+        { type: "vwap", color: "secondary" },
+      ],
+      categories: STOCK_DAYS,
+      series: [{ name: "ACME", data: STOCK }],
+    },
+  },
+  "stock-oscillators": {
+    title: "Oscillators",
+    props: {
+      label: "ACME share price with oscillators",
+      type: "candlestick",
+      xType: "datetime",
+      valuePrefix: "$",
+      height: 240,
+      paneHeight: 110,
+      navigator: true,
+      indicators: [
+        { type: "rsi", period: 14 },
+        { type: "macd", fastPeriod: 12, slowPeriod: 26, signalPeriod: 9 },
+        { type: "stochastic", period: 14, signalPeriod: 3 },
+      ],
+      categories: STOCK_DAYS,
+      series: [{ name: "ACME", data: STOCK }],
+    },
+  },
+  "stock-line": {
+    title: "Large dataset",
+    props: {
+      label: "Index level, 2024",
+      type: "area",
+      xType: "datetime",
+      fill: "solid",
+      colors: ["primary"],
+      navigator: true,
+      paneHeight: 100,
+      indicators: [
+        { type: "volume", color: "info" },
+        { type: "atr", period: 14 },
+      ],
+      categories: STOCK_YEAR,
+      series: [{ name: "Index", data: STOCK_LONG.map(({ y, v }) => ({ y: y[3] as number, v })) }],
+    },
+  },
+  // Phase 2.1 (ADR-0047): Sankey charts, one per ApexSankey demo section that applies.
+  sankey: {
+    title: "Sankey",
+    props: {
+      label: "Office energy use, MWh per year",
+      type: "sankey",
+      valueSuffix: " MWh",
+      nodes: [
+        { id: "solar", title: "Solar panels", color: "warning" },
+        { id: "grid", title: "Grid", color: "info-dark" },
+        { id: "battery", title: "Battery", color: "success" },
+        { id: "building", title: "Building", color: "primary" },
+        { id: "heating", title: "Heating", color: "error" },
+        { id: "lighting", title: "Lighting", color: "warning-dark" },
+        { id: "computers", title: "Computers", color: "info" },
+        { id: "kitchen", title: "Kitchen", color: "secondary" },
+        { id: "losses", title: "Losses", color: "secondary-dark" },
+      ],
+      edges: [
+        { source: "solar", target: "building", value: 42 },
+        { source: "solar", target: "battery", value: 18 },
+        { source: "grid", target: "building", value: 64 },
+        { source: "battery", target: "building", value: 15 },
+        { source: "battery", target: "losses", value: 3 },
+        { source: "building", target: "heating", value: 48 },
+        { source: "building", target: "lighting", value: 21 },
+        { source: "building", target: "computers", value: 33 },
+        { source: "building", target: "kitchen", value: 12 },
+        { source: "building", target: "losses", value: 7 },
+      ],
+    },
+  },
+  "sankey-vertical": {
+    title: "Vertical Sankey",
+    props: {
+      label: "Hiring pipeline, candidates this quarter",
+      type: "sankey",
+      orientation: "vertical",
+      height: 400,
+      nodes: [
+        { id: "referral", title: "Referral", color: "primary" },
+        { id: "board", title: "Job board", color: "info" },
+        { id: "careers", title: "Careers page", color: "secondary" },
+        { id: "screen", title: "Screening", color: "info-dark" },
+        { id: "interview", title: "Interview", color: "warning" },
+        { id: "offer", title: "Offer", color: "success" },
+        { id: "declined", title: "Not selected", color: "error" },
+      ],
+      edges: [
+        { source: "referral", target: "screen", value: 40 },
+        { source: "board", target: "screen", value: 120 },
+        { source: "careers", target: "screen", value: 80 },
+        { source: "screen", target: "interview", value: 90 },
+        { source: "screen", target: "declined", value: 150 },
+        { source: "interview", target: "offer", value: 24 },
+        { source: "interview", target: "declined", value: 66 },
+      ],
+    },
+  },
+  "sankey-cycles": {
+    title: "Cycles",
+    props: {
+      label: "Packaging material flow, tonnes",
+      type: "sankey",
+      valueSuffix: " t",
+      nodes: [
+        { id: "new", title: "New material", color: "info" },
+        { id: "made", title: "Production", color: "primary" },
+        { id: "shipped", title: "Shipped", color: "success" },
+        { id: "returned", title: "Returned", color: "warning" },
+        { id: "waste", title: "Waste", color: "error" },
+      ],
+      edges: [
+        { source: "new", target: "made", value: 70 },
+        { source: "made", target: "shipped", value: 95 },
+        { source: "shipped", target: "returned", value: 32 },
+        { source: "shipped", target: "waste", value: 63 },
+        { source: "returned", target: "made", value: 25 },
+      ],
+    },
+  },
+  "sankey-alluvial": {
+    title: "Alluvial",
+    props: {
+      label: "Plan changes of 400 customers",
+      type: "sankey",
+      axisTitles: ["2024", "2025", "2026"],
+      whitespace: 0.3,
+      nodes: [
+        { id: "free-24", title: "Free", color: "info" },
+        { id: "team-24", title: "Team", color: "primary" },
+        { id: "free-25", title: "Free", color: "info" },
+        { id: "team-25", title: "Team", color: "primary" },
+        { id: "business-25", title: "Business", color: "warning" },
+        { id: "free-26", title: "Free", color: "info" },
+        { id: "team-26", title: "Team", color: "primary" },
+        { id: "business-26", title: "Business", color: "warning" },
+      ],
+      edges: [
+        { source: "free-24", target: "free-25", value: 150 },
+        { source: "free-24", target: "team-25", value: 90 },
+        { source: "team-24", target: "team-25", value: 120 },
+        { source: "team-24", target: "business-25", value: 40 },
+        { source: "free-25", target: "free-26", value: 110 },
+        { source: "free-25", target: "team-26", value: 40 },
+        { source: "team-25", target: "team-26", value: 160 },
+        { source: "team-25", target: "business-26", value: 50 },
+        { source: "business-25", target: "business-26", value: 40 },
+      ],
+    },
+  },
+  "sankey-links": {
+    title: "Link and node options",
+    props: {
+      label: "Support tickets by channel and outcome",
+      type: "sankey",
+      fill: "solid",
+      edgeOpacity: 0.56,
+      nodeWidth: 12,
+      dataLabels: true,
+      colors: ["primary", "success", "error", "info", "secondary"],
+      edges: [
+        { source: "Email", target: "Solved", value: 320 },
+        { source: "Email", target: "Escalated", value: 60, color: "error" },
+        { source: "Chat", target: "Solved", value: 410 },
+        { source: "Chat", target: "Escalated", value: 35, color: "error" },
+        { source: "Phone", target: "Solved", value: 150 },
+        { source: "Phone", target: "Escalated", value: 45, color: "error" },
+      ],
     },
   },
 };

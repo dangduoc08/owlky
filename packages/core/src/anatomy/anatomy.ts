@@ -50,6 +50,7 @@ import {
   chartTypes,
   chartXTypes,
 } from "../chart/chart-model.js";
+import { type ChartOrientation, chartOrientations } from "../chart/chart-sankey.js";
 import { type GridDensity, gridDensities } from "../data-grid/data-grid.js";
 import {
   type LightboxImageFit,
@@ -3770,7 +3771,7 @@ export const chartOptions = defineOptions("chart", "data-ok-chart", {
     "data-ok-type",
     chartTypes,
     "line",
-    "Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline` or `polarArea`. Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts).",
+    "Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea` or `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts).",
   ),
   xType: style(
     "data-ok-x-type",
@@ -3912,6 +3913,40 @@ export const chartOptions = defineOptions("chart", "data-ok-chart", {
     "data-ok-animations",
     "Series grow in when first drawn and move to new values on updates (never with reduced motion).",
   ),
+  orientation: style(
+    "data-ok-orientation",
+    chartOrientations,
+    "horizontal",
+    "Sankey charts: the flow runs left to right (`horizontal`, the default) or top to bottom (`vertical`).",
+    { optional: true },
+  ),
+  nodeWidth: number(
+    "data-ok-node-width",
+    20,
+    "Sankey charts: node thickness along the flow in px.",
+    {
+      min: 1,
+    },
+  ),
+  whitespace: number(
+    "data-ok-whitespace",
+    0.18,
+    "Sankey charts: share of the fullest rank left between its nodes (0 to 0.9).",
+    { min: 0 },
+  ),
+  edgeOpacity: number("data-ok-edge-opacity", 0.4, "Sankey charts: link opacity (0 to 1).", {
+    min: 0,
+  }),
+  navigator: flag(
+    "data-ok-navigator",
+    "Stock charts: a navigator under the chart, the whole price line with the zoom as a brush (zooms like `zoom`).",
+  ),
+  paneHeight: number(
+    "data-ok-pane-height",
+    120,
+    "Stock charts: height in px of each indicator pane (volume, RSI, MACD…) under the price.",
+    { min: 60 },
+  ),
   hiddenSeries: state(
     "aria-pressed",
     'Indexes of the series hidden through the legend (`aria-pressed="false"` on their buttons); categories in pie, donut and radial bar charts.',
@@ -3955,6 +3990,12 @@ export interface ChartAnatomyOptions {
   zoom?: boolean | undefined;
   toolbar?: boolean | undefined;
   animations?: boolean | undefined;
+  orientation?: ChartOrientation | undefined;
+  nodeWidth?: number | undefined;
+  whitespace?: number | undefined;
+  edgeOpacity?: number | undefined;
+  navigator?: boolean | undefined;
+  paneHeight?: number | undefined;
 }
 
 /** `data-ok-*` attributes of a chart root (numbers only when given). */
