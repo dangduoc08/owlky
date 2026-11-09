@@ -1,0 +1,136 @@
+name: Website
+
+# owlky.com on Vercel, through the Vercel CLI (ADR-0040 decision 10). Vercel's own Git deployments
+# are off (apps/website/vercel.json):
+#   - preview: each pull request from this repository, after CI passes; the URL is posted on the
+#     pull request. Pull requests from forks get none (no secrets).
+#   - production: each release tag, after Release has published to npm (owlky.com documents the
+#     version on npm), or by hand (workflow_dispatch: redeploys the latest release tag).
+# Secrets VERCEL_TOKEN, VERCEL_ORG_ID and VERCEL_PROJECT_ID live in the `website` environment.
+# Until the owner adds them, every job ends with a notice instead of failing.
+on:
+  workflow_run:
+    workflows: [CI, Release]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: website-${{ github.event.workflow_run.head_branch || github.ref }}
+  cancel-in-progress: true
+
+env:
+  VERCEL_CLI: vercel@65.2.0
+
+jobs:
+  preview:
+    name: Preview
+    if: >-
+      github.event_name == 'workflow_run' &&
+      github.event.workflow_run.name == 'CI' &&
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_repository.full_name == github.repository
+    runs-on: ubuntu-latest
+    environment: website
+    permissions:
+      contents: read
+      pull-requests: write
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - id: secrets
+        name: Vercel secrets
+        run: |
+          if [ -z "$VERCEL_TOKEN" ] || [ -z "$VERCEL_ORG_ID" ] || [ -z "$VERCEL_PROJECT_ID" ]; then
+            echo "::notice title=Website preview skipped::The website environment has no Vercel secrets yet (VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID). See apps/website/README.md."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.secrets.outputs.ready == 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+      - if: steps.secrets.outputs.ready == 'true'
+        uses: pnpm/action-setup@v4
+      - if: steps.secrets.outputs.ready == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - if: steps.secrets.outputs.ready == 'true'
+        run: pnpm install --frozen-lockfile
+      - if: steps.secrets.outputs.ready == 'true'
+        run: npx --yes "$VERCEL_CLI" pull --yes --environment=preview --token="$VERCEL_TOKEN"
+      - if: steps.secrets.outputs.ready == 'true'
+        run: npx --yes "$VERCEL_CLI" build --token="$VERCEL_TOKEN"
+      - if: steps.secrets.outputs.ready == 'true'
+        id: deploy
+        run: echo "url=$(npx --yes "$VERCEL_CLI" deploy --prebuilt --token="$VERCEL_TOKEN")" >> "$GITHUB_OUTPUT"
+      - if: steps.secrets.outputs.ready == 'true' && github.event.workflow_run.pull_requests[0].number
+        name: Post the preview URL
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.workflow_run.pull_requests[0].number }}
+          URL: ${{ steps.deploy.outputs.url }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          gh pr comment "$PR" --repo "$GITHUB_REPOSITORY" --body "Website preview for $SHA: $URL"
+
+  production:
+    name: Production
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.name == 'Release' &&
+       github.event.workflow_run.conclusion == 'success')
+    runs-on: ubuntu-latest
+    environment: website
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - id: secrets
+        name: Vercel secrets
+        run: |
+          if [ -z "$VERCEL_TOKEN" ] || [ -z "$VERCEL_ORG_ID" ] || [ -z "$VERCEL_PROJECT_ID" ]; then
+            echo "::notice title=Website deploy skipped::The website environment has no Vercel secrets yet (VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID). See apps/website/README.md."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.secrets.outputs.ready == 'true'
+        uses: actions/checkout@v4
+        with:
+          # Release: the tagged commit. By hand: the latest release tag, found below.
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          fetch-depth: 0
+      - if: steps.secrets.outputs.ready == 'true' && github.event_name == 'workflow_dispatch'
+        name: Check out the latest release
+        run: |
+          tag=$(git tag --list 'release/v*' --sort=-v:refname | head -n 1)
+          if [ -z "$tag" ]; then
+            echo "::error::No release/v* tag yet: production documents the version on npm (ADR-0040)."
+            exit 1
+          fi
+          git checkout --detach "$tag"
+      - if: steps.secrets.outputs.ready == 'true'
+        uses: pnpm/action-setup@v4
+      - if: steps.secrets.outputs.ready == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - if: steps.secrets.outputs.ready == 'true'
+        run: pnpm install --frozen-lockfile
+      - if: steps.secrets.outputs.ready == 'true'
+        run: npx --yes "$VERCEL_CLI" pull --yes --environment=production --token="$VERCEL_TOKEN"
+      - if: steps.secrets.outputs.ready == 'true'
+        run: npx --yes "$VERCEL_CLI" build --prod --token="$VERCEL_TOKEN"
+      - if: steps.secrets.outputs.ready == 'true'
+        run: npx --yes "$VERCEL_CLI" deploy --prebuilt --prod --token="$VERCEL_TOKEN"
