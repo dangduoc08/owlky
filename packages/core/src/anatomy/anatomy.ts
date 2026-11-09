@@ -812,6 +812,135 @@ export const textFieldMargins = ["none", "dense", "normal"] as const;
 export type TextFieldVariant = (typeof textFieldVariants)[number];
 export type TextFieldMargin = (typeof textFieldMargins)[number];
 
+// --- FormControl, FormLabel, FormGroup, FormHelperText ----------------------------------------
+
+/** States a FormControl shares with its label and helper text (spec: form-control.md). */
+const formStates = (owner: string) => ({
+  disabled: flag("data-ok-disabled", `Disabled colors for ${owner}.`),
+  error: flag("data-ok-error", `Error colors for ${owner}.`),
+  required: flag("data-ok-required", `Marks ${owner} as required.`),
+  focused: flag("data-ok-focused", `Focused colors for ${owner}.`),
+});
+
+export const formControlOptions = defineOptions("form-control", "data-ok-form-control", {
+  color: style(
+    "data-ok-color",
+    selectionControlColors,
+    "default",
+    "Color of a focused label (`default` = text color, as on the reference; MUI's default is `primary`).",
+    { optional: true },
+  ),
+  size: style(
+    "data-ok-size",
+    selectionControlSizes,
+    "medium",
+    "Size shared with the composed input.",
+    { optional: true },
+  ),
+  variant: style(
+    "data-ok-variant",
+    textFieldVariants,
+    "outlined",
+    "Variant shared with the composed input; `outlined` and `filled` indent the helper text.",
+    { optional: true },
+  ),
+  margin: style(
+    "data-ok-margin",
+    textFieldMargins,
+    "none",
+    "Vertical margin: 0, 8 / 4px or 16 / 8px.",
+    { optional: true },
+  ),
+  fullWidth: flag("data-ok-full-width", "Stretch to the container width."),
+  ...formStates("the label and the helper text"),
+});
+
+export interface FormControlAnatomyOptions {
+  color?: SelectionControlColor | undefined;
+  size?: SelectionControlSize | undefined;
+  variant?: TextFieldVariant | undefined;
+  margin?: TextFieldMargin | undefined;
+  fullWidth?: boolean | undefined;
+  disabled?: boolean | undefined;
+  error?: boolean | undefined;
+  required?: boolean | undefined;
+  focused?: boolean | undefined;
+}
+
+/** `data-ok-*` attributes of a form control's root (style options only when given). */
+export const formControlAttributes = (options: FormControlAnatomyOptions = {}): DataAttributes =>
+  optionAttributes(formControlOptions, { ...options });
+
+export const formLabelOptions = defineOptions("form-label", "data-ok-form-label", {
+  color: style(
+    "data-ok-color",
+    selectionControlColors,
+    "default",
+    "Color when focused; default: the form control's.",
+    { optional: true },
+  ),
+  ...formStates("the label"),
+  filled: flag("data-ok-filled", "Marks the label of an input that has a value (no style)."),
+});
+
+export interface FormLabelAnatomyOptions {
+  color?: SelectionControlColor | undefined;
+  disabled?: boolean | undefined;
+  error?: boolean | undefined;
+  required?: boolean | undefined;
+  focused?: boolean | undefined;
+  filled?: boolean | undefined;
+}
+
+/** `data-ok-*` attributes of a form label (its own states; the form control's come from CSS). */
+export const formLabelAttributes = (options: FormLabelAnatomyOptions = {}): DataAttributes =>
+  optionAttributes(formLabelOptions, { ...options });
+
+export const formGroupOptions = defineOptions("form-group", "data-ok-form-group", {
+  row: flag("data-ok-row", "Controls side by side instead of a column."),
+});
+
+/** `data-ok-*` attributes of a form group. */
+export const formGroupAttributes = (options: { row?: boolean | undefined } = {}): DataAttributes =>
+  optionAttributes(formGroupOptions, { ...options });
+
+export const formHelperTextMargins = ["dense"] as const;
+export type FormHelperTextMargin = (typeof formHelperTextMargins)[number];
+
+export const formHelperTextOptions = defineOptions("form-helper-text", "data-ok-form-helper-text", {
+  margin: style(
+    "data-ok-margin",
+    formHelperTextMargins,
+    "dense",
+    "`dense`: 4px above instead of 6px; default: the form control's.",
+    { optional: true },
+  ),
+  variant: style(
+    "data-ok-variant",
+    textFieldVariants,
+    "outlined",
+    "`outlined` and `filled` indent the text; default: the form control's.",
+    { optional: true },
+  ),
+  ...formStates("the helper text"),
+  filled: flag("data-ok-filled", "Marks the helper text of an input that has a value (no style)."),
+});
+
+export interface FormHelperTextAnatomyOptions {
+  margin?: FormHelperTextMargin | undefined;
+  variant?: TextFieldVariant | undefined;
+  disabled?: boolean | undefined;
+  error?: boolean | undefined;
+  required?: boolean | undefined;
+  focused?: boolean | undefined;
+  filled?: boolean | undefined;
+}
+
+/** `data-ok-*` attributes of a form helper text (its own states). */
+export const formHelperTextAttributes = (
+  options: FormHelperTextAnatomyOptions = {},
+): DataAttributes => optionAttributes(formHelperTextOptions, { ...options });
+
 const FIELD_INPUT = ":scope > [data-ok-text-field-control] > [data-ok-text-field-input]";
 
 export const textFieldOptions = defineOptions("text-field", "data-ok-text-field", {
@@ -4975,6 +5104,10 @@ export const optionSchemas = {
   "form-control-label": formControlLabelOptions,
   radio: radioOptions,
   "radio-group": radioGroupOptions,
+  "form-control": formControlOptions,
+  "form-label": formLabelOptions,
+  "form-group": formGroupOptions,
+  "form-helper-text": formHelperTextOptions,
   "text-field": textFieldOptions,
   avatar: avatarOptions,
   "avatar-group": avatarGroupOptions,

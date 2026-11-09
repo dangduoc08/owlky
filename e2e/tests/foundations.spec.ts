@@ -139,6 +139,7 @@ const GUIDES = [
   ["components-progress-circular-progress--docs", "Accessibility"],
   ["components-progress-linear-progress--docs", "Accessibility"],
   ["components-radio--docs", "Accessibility"],
+  ["components-form-control--docs", "Accessibility"],
   ["components-scrollbar--docs", "Accessibility"],
   ["components-sortable--docs", "Accessibility"],
   ["components-switch--docs", "Accessibility"],
@@ -218,6 +219,10 @@ const OPTION_TABLES: [string, (keyof typeof optionSchemas)[]][] = [
   ["components-progress-circular-progress--docs", ["circular-progress"]],
   ["components-progress-linear-progress--docs", ["linear-progress"]],
   ["components-radio--docs", ["radio", "radio-group", "form-control-label"]],
+  [
+    "components-form-control--docs",
+    ["form-control", "form-label", "form-group", "form-helper-text"],
+  ],
   ["components-scrollbar--docs", ["scrollbar"]],
   ["components-sortable--docs", ["sortable"]],
   ["components-switch--docs", ["switch", "form-control-label"]],

@@ -699,3 +699,11 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
   (`typographyElement`: subtitles are `h6`, `caption` / `overline` / `button` are `span`): pass
   `component` for anything else (`component={DialogTitle}` keeps the dialog's label). Palette
   `color`s are brand text (`CONTRAST_EXEMPT`); `textPrimary` / `textSecondary` are AA-tested.
+- Form control: the shared states are attributes on `[data-ok-form-control]` only; the parts'
+  CSS reads them with descendant selectors, so React parts write their **own** props only (the
+  context gives the asterisk and `useFormControl()`), and HTML markup stays equal. `--ok-c-text`
+  doesn't inherit: the root copies it into `--_ok-form-focus` for its label. `disabled` is also the
+  native attribute on a `fieldset` root (it disables the controls; `:disabled` styles them), so the
+  stories' Controls don't offer it (HTML Controls write only `data-ok-*`). Snippets: `pnpm build &&
+  node apps/storybook/scripts/form-control-snippets.mjs` (labels and helper texts stay on one line:
+  a break before the asterisk would render a space).
