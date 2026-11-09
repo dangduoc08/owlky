@@ -205,8 +205,11 @@ describe("editor snippet", () => {
     expect(tool("image").getAttribute("aria-expanded")).toBe("true");
     await userEvent.fill(src as HTMLInputElement, "https://example.com/cat.png");
     await userEvent.fill(alt as HTMLInputElement, "A cat");
-    // Enter submits too (e2e); WebKit's implicit submission right after fill() is flaky here.
-    await userEvent.click(form.querySelector("button[type=submit]") as HTMLButtonElement);
+    const apply = form.querySelector("button[type=submit]") as HTMLButtonElement;
+    expect(apply.disabled).toBe(false);
+    // Submit with the Apply button as the submitter: a pointer click could miss the popover while
+    // a loaded CI runner repositions it (the link test above clicks Apply; e2e submits with Enter).
+    form.requestSubmit(apply);
     expect(content.querySelector('img[alt="A cat"]')).not.toBeNull();
     expect(instance.value).toContain('<img src="https://example.com/cat.png" alt="A cat">');
   });
