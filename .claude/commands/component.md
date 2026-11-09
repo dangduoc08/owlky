@@ -652,11 +652,25 @@ For each finished agent, in dependency order:
 2. `pnpm install` (lockfile changes), `pnpm build`, `pnpm lint`, `pnpm typecheck`,
    `pnpm check:specs`, `pnpm check:size`, and the merged component's unit tests. Fix merge
    mistakes in a follow-up commit (`fix(<name>): …`); never amend.
-3. Remove the worktree and the branch once merged (`git worktree remove`, `git branch -d`).
+3. After resolving conflicts, check the lines both sides shared: a closing `}` / `return; }`
+   right after a conflict hunk belongs to both blocks (lint and typecheck catch the missing one).
+   Check that no branch made a shared list global, such as an attribute added to parity's
+   `IGNORED` that another component uses as an option.
+4. Remove the worktree and the branch once merged (`git worktree remove`, `git branch -d`).
 
 ### O4 — After the last merge
-1. `pnpm storybook:build && pnpm test:e2e` once on the merged result (default port), plus
-   `VITEST_BROWSERS=chromium,firefox,webkit pnpm test`.
+1. Each agent already ran its component's e2e. The orchestrator doesn't run the full e2e suite
+   locally (about an hour): CI runs it on push. Run instead, on the merged result:
+   - `pnpm storybook:build`, then the shared e2e specs every merge touched, for the new
+     components and the existing ones: `pnpm --filter @owlky/e2e exec playwright test
+     tests/parity.spec.ts tests/options-parity.spec.ts tests/a11y.spec.ts
+     tests/foundations.spec.ts tests/csp.spec.ts`, plus the e2e of any existing component a
+     branch changed (for example the Carousel, changed by the Lightbox);
+   - `VITEST_BROWSERS=chromium,firefox,webkit pnpm test`, one browser at a time; rerun failing
+     files alone to tell flakes under load from real failures.
+   Under no display (CI), wrap browser runs in `xvfb-run -a` (headless Firefox needs it for
+   WebGL). After the user pushes, follow the CI run (`gh run list`, `gh run view`) and fix what
+   fails.
 2. Run `/integrate <name>` for each new component whose spec or roadmap rows unlock dependents
    (it may itself run in Multi-component mode).
 3. Report **in Vietnamese, then English**: one summary table (component, mode, branch, commit,
