@@ -45,7 +45,7 @@ Commercial add-ons of ApexCharts: behavior and API only, our own code, data and 
 
 | # | Item | Detail | Status |
 |---|---|---|---|
-| 3.1 | Upstream audit | all 62 components, prop by prop against the upstream API pages; a mapping table in each spec (kept · renamed · deferred · not applicable); every gap becomes a row in Phase 4, batch E | ⬜ |
+| 3.1 | Upstream audit | all 62 components, prop by prop against the upstream API pages; a mapping table in each spec (kept · renamed · deferred · not applicable); every gap becomes a row in Phase 4, batch E | 🔄 |
 | 3.2 | Structured API data | React prop types, option schemas (ADR-0015), the anatomy's part attributes, triggers, events (`ok:<component>:<event>` with `detail`), instance methods and the public `--ok-*` variables each component reads, per component and per part, exported as data and added to the MCP manifest (ADR-0046) | ⬜ |
 | 3.3 | API reference on every docs page | generated tables (not hand-written) in each Storybook docs page: React props, HTML attributes (options and their values, parts, triggers), events, methods, CSS variables / tokens — for the component and each of its parts (Card → CardHeader, CardMedia…). The website (ADR-0040) reads the same data | ⬜ |
 | 3.4 | Completeness check | a test fails when a schema option, a `data-ok-*` name used in the snippets, an event, a method or a React prop is missing from the docs page (extends `foundations.spec.ts` `OPTION_TABLES` and `check:docs`). `pnpm check:docs` reports 376 problems today (placeholders `…`, React examples that aren't modules) and runs in neither `pnpm check` nor CI: fix them and add it to both | ⬜ |
