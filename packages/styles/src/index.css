@@ -59,5 +59,6 @@
 @import "./components/editor.css";
 @import "./components/markdown.css";
 @import "./components/carousel.css";
+@import "./components/lightbox.css";
 @import "./components/code-editor.css";
 @import "./components/map.css";

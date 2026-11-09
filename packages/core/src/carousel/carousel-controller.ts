@@ -1023,6 +1023,8 @@ export function createCarouselController(
   };
 
   const onKeyDown = (event: KeyboardEvent) => {
+    // An owner (the Lightbox) may handle the key first.
+    if (event.defaultPrevented) return;
     if (event.target !== area || event.altKey || event.ctrlKey || event.metaKey) return;
     const next = vertical() ? "ArrowDown" : rtl() ? "ArrowLeft" : "ArrowRight";
     const prev = vertical() ? "ArrowUp" : rtl() ? "ArrowRight" : "ArrowLeft";
@@ -1085,6 +1087,8 @@ export function createCarouselController(
   root.addEventListener(
     "pointerdown",
     (event) => {
+      // An owner (the Lightbox panning a zoomed image) may handle the press first.
+      if (event.defaultPrevented) return;
       if (own((event.target as Element).closest("[data-ok-carousel-viewport]")))
         onPointerDown(event);
     },

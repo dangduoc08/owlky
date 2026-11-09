@@ -482,7 +482,7 @@
 }
 
 /* Demo surfaces: a theme scope inside a row gets its own paper background. */
-.sb-row > [data-ok-theme] {
+.sb-row > [data-ok-theme]:not([data-ok-lightbox]) {
   padding: 0.75rem;
   border-radius: var(--ok-radius-lg);
   background-color: var(--ok-bg-paper);
@@ -1257,6 +1257,27 @@
   display: flex;
   flex-wrap: wrap;
   gap: calc(var(--ok-spacing) * 2);
+}
+
+/* Lightbox (story-only demo layout): a gallery of square thumbnails, and the inline lightbox's width. */
+.sb-lightbox-gallery {
+  display: grid;
+  flex: 1 1 100%;
+  grid-template-columns: repeat(auto-fill, minmax(6rem, 1fr));
+  gap: calc(var(--ok-spacing) * 2);
+  min-width: 0;
+  max-width: 40rem;
+}
+
+.sb-lightbox-gallery > [data-ok-lightbox-trigger] {
+  aspect-ratio: 1;
+}
+
+.sb-lightbox-inline,
+.sb-row > [data-ok-lightbox][data-ok-inline] {
+  flex: 1 1 100%;
+  min-width: 0;
+  max-width: 56rem;
 }
 
 /* Carousel (story-only demo markup): the slides' pictures, number badges, cards and control rows. */

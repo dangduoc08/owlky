@@ -584,6 +584,15 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
   `[data-ok-markdown-source][hidden]` (HTML stories render in their page script). Links on
   secondary text (quotes, footnotes) are underlined: axe `link-in-text-block`. Lists set their
   markers: Storybook's Tailwind preflight removes them.
+- Lightbox (ADR-0032): a `<dialog>` around a Carousel; `lightbox.css` loads after `carousel.css`
+  (same zero specificity). The controller writes `inert` on other slides and the carousel's
+  attributes from the root's options, so React renders only the first state. Its key and pointer
+  handlers run in the capture phase and the Carousel skips `defaultPrevented` events (a zoomed
+  image pans). The Carousel captures mouse presses: clicks land on the viewport, so the lightbox
+  resolves the slide from the pressed element. Story CSS on `.sb-row > [data-ok-theme]` skips
+  `[data-ok-lightbox]` (it is dark itself). Grids with `auto-fill` and a `max-width` need
+  `min-width: 0` in flex rows, or the mobile layout viewport widens. Snippets are generated from
+  `lightbox-examples.tsx` (renderToStaticMarkup; drop React 19's `<link rel="preload">`).
 - Parallel work: never run two `/component` / `/integrate` sessions (or two `pnpm build` /
   `pnpm test:e2e`) in the same working tree — builds wipe each other's `dist/` and
   `storybook-static/`, e2e servers share port 4321, and staging part of a shared file while

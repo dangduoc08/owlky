@@ -59,6 +59,7 @@ const SPECS = {
   rating: "rating.md",
   chart: "chart.md",
   carousel: "carousel.md",
+  lightbox: "lightbox.md",
   "carousel-arrows": "carousel.md",
   "carousel-dots": "carousel.md",
   "carousel-progress": "carousel.md",

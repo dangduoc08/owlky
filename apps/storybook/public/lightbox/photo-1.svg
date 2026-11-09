@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2400 1600" width="2400" height="1600" role="img">
+  <title>Mountain lake at sunrise</title>
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1e3a5f"/>
+      <stop offset="1" stop-color="#f59e0b"/>
+    </linearGradient>
+  </defs>
+  <rect width="2400" height="1600" fill="url(#sky)"/>
+  <circle cx="1700" cy="520" r="210" fill="#fde68a" opacity="0.9"/>
+  <path d="M0 1050 L520 520 L860 860 L1250 380 L1720 940 L2050 640 L2400 980 L2400 1600 L0 1600Z" fill="#334155"/>
+  <path d="M0 1180 L640 760 L1100 1080 L1560 820 L2400 1200 L2400 1600 L0 1600Z" fill="#1f2937"/>
+  <rect y="1220" width="2400" height="380" fill="#0ea5e9" opacity="0.55"/>
+  <path d="M0 1300 Q600 1260 1200 1310 T2400 1290" stroke="#e0f2fe" stroke-width="10" fill="none" opacity="0.6"/>
+</svg>

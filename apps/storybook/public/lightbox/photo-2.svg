@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2400 1600" width="2400" height="1600" role="img">
+  <title>Neon arches</title>
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0f172a"/>
+      <stop offset="1" stop-color="#7c3aed"/>
+    </linearGradient>
+  </defs>
+  <rect width="2400" height="1600" fill="url(#sky)"/>
+  <g fill="none" stroke-width="70" stroke-linecap="round">
+    <path d="M300 1600 A900 900 0 0 1 2100 1600" stroke="#f43f5e"/>
+    <path d="M520 1600 A680 680 0 0 1 1880 1600" stroke="#f97316"/>
+    <path d="M740 1600 A460 460 0 0 1 1660 1600" stroke="#facc15"/>
+    <path d="M960 1600 A240 240 0 0 1 1440 1600" stroke="#22d3ee"/>
+  </g>
+</svg>
