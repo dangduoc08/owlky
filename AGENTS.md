@@ -58,6 +58,12 @@ Read this first (humans and AI agents). Architecture: `docs/architecture.md`. De
    `parameters.docs.page`; sections Overview → usage → Options → Content and behavior → Events and
    methods → Keyboard → Accessibility. Add it to `GUIDES` and `OPTION_TABLES` in
    `e2e/tests/foundations.spec.ts`. Model: Button.
+   **Docs content (ADR-0040):** guides migrated to the website live in `apps/docs-content`
+   (phase 1: Foundations › Colors, Components › Button; the others follow in phase 2). There a
+   guide is `src/<group>/<name>/<name>-docs-examples.ts` (sections and table rows as data, no
+   React: the website's server code reads it) plus `<name>-docs.tsx` (`"use client"`:
+   `<name>Previews`, `<Name>Guide`); Storybook's `<name>-docs.tsx` becomes a thin wrapper
+   (`StorybookGuide`), and the page is added to `apps/website/src/content/site.ts`.
    Controls come from the option schema (ADR-0015): export `<NAME>_CONTROLS = { schema, keys }`
    from the examples file and pass it to both — React `reactGroupsStory(groups,
    { ...CONTROLS, target })`, HTML `snippetStory(…, setup, CONTROLS)`. Only options that change
@@ -706,6 +712,24 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
   backticks in its description, or `validate_markup` reports it. The repo's pnpm overrides for the
   SDK's young transitive dependencies don't reach `npx` users (npm resolves the SDK's own ranges).
   Coverage of `packages/mcp` runs from the root: `pnpm vitest run --coverage packages/mcp`.
+- Docs content (ADR-0040): the guide UI (`GuideSections`, tables, code tabs, Copy button) lives in
+  `apps/docs-content/src/guide/` and takes its prose, code block and preview frame from
+  `GuideHostProvider`; `apps/storybook/src/helpers/guide.tsx` is Storybook's host and re-exports
+  the helpers for pages not yet migrated. Never import Storybook from docs-content. Sections that
+  describe Storybook's own UI (sidebar, toolbar) carry `bodyByHost.website`. Its sources are
+  scanned by Tailwind through `@source` in both hosts' CSS. `scripts/manifest.mjs` and
+  `check-docs-code.mjs` scan docs-content too (same `<group>/<folder>` layout).
+- Website (ADR-0040): Next.js `output: "export"`, built with webpack (`--webpack`): Turbopack
+  doesn't map the workspace's `.js` specifiers to `.ts` (`experimental.extensionAlias` does).
+  `optimizePackageImports: ["@owlky/react", "@owlky/core"]` is required: the `@owlky/react`
+  barrel otherwise ships every component (about 900 kB gzip per page instead of about 210 kB).
+  In server components, never import data from a `"use client"` module (RSC turns it into a
+  client reference): sections come from the `*-docs-examples.ts` modules. Prose (Owlky `Markdown`)
+  and code (Shiki) render at build time and reach the client host as React nodes keyed by
+  section id / `codeKey(language, code)`. Content files in `apps/website/src/content/` import
+  only types and docs-content data modules: the build scripts load them in Node with type
+  stripping (`scripts/content.mjs` maps `.js` → `.ts`). The website build and typecheck need
+  `pnpm build` first (`scripts/prepare.mjs` copies the CDN bundle and the manifest subset).
 - Parallel work: never run two `/component` / `/integrate` sessions (or two `pnpm build` /
   `pnpm test:e2e`) in the same working tree — builds wipe each other's `dist/` and
   `storybook-static/`, e2e servers share port 4321, and staging part of a shared file while
