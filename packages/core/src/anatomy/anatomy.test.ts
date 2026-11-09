@@ -23,10 +23,12 @@ import {
   chipVariants,
   circularProgressAttributes,
   circularProgressVariants,
+  codeEditorAttributes,
   countUpAttributes,
   dataGridAttributes,
   dialogAttributes,
   dialogMaxWidths,
+  diffEditorAttributes,
   dividerAttributes,
   dividerTextAligns,
   dividerVariants,
@@ -1426,5 +1428,54 @@ describe("editorAttributes", () => {
       "data-ok-error": "",
     });
     expect(editorAttributes({ fullItem: false })).toEqual({ "data-ok-editor": "" });
+  });
+});
+
+describe("codeEditorAttributes / diffEditorAttributes", () => {
+  it("write known languages and themes, valid sizes and lines, and flags that are on", () => {
+    expect(codeEditorAttributes()).toEqual({ "data-ok-code-editor": "" });
+    expect(
+      codeEditorAttributes({
+        language: "typescript",
+        theme: "vs-dark",
+        width: 600,
+        height: "90vh",
+        line: 12,
+        keepCurrentModel: true,
+      }),
+    ).toEqual({
+      "data-ok-code-editor": "",
+      "data-ok-language": "typescript",
+      "data-ok-monaco-theme": "vs-dark",
+      "data-ok-width": "600",
+      "data-ok-height": "90vh",
+      "data-ok-line": "12",
+      "data-ok-keep-current-model": "",
+    });
+    // Custom names (registered in beforeMount) and invalid numbers stay off the markup.
+    expect(
+      codeEditorAttributes({ language: "my-lang", theme: "night", line: 0, height: "calc(1px)" }),
+    ).toEqual({ "data-ok-code-editor": "" });
+    expect(diffEditorAttributes()).toEqual({ "data-ok-diff-editor": "" });
+    expect(
+      diffEditorAttributes({
+        language: "markdown",
+        originalLanguage: "json",
+        modifiedLanguage: "yaml",
+        theme: "auto",
+        height: 400,
+        keepCurrentOriginalModel: true,
+        keepCurrentModifiedModel: true,
+      }),
+    ).toEqual({
+      "data-ok-diff-editor": "",
+      "data-ok-language": "markdown",
+      "data-ok-original-language": "json",
+      "data-ok-modified-language": "yaml",
+      "data-ok-monaco-theme": "auto",
+      "data-ok-height": "400",
+      "data-ok-keep-current-original-model": "",
+      "data-ok-keep-current-modified-model": "",
+    });
   });
 });

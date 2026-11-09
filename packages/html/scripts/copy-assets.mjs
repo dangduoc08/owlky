@@ -22,4 +22,10 @@ for (const entry of await readdir(components, { withFileTypes: true })) {
   await mkdir(join(root, "dist", "snippets", entry.name), { recursive: true });
   await cp(examples, join(root, "dist", "snippets", entry.name), { recursive: true });
 }
-console.log("html: copied CSS and snippets");
+// Monaco's UI messages (ADR-0034, `loader.config({ "vs/nls": … })` with `paths.vs`): self-contained
+// modules that set Monaco's message globals before monaco.js loads.
+const nls = join(root, "node_modules", "monaco-editor", "esm", "vs", "nls", "lang");
+await mkdir(join(root, "dist", "monaco", "nls"), { recursive: true });
+for (const file of await readdir(nls))
+  if (file.endsWith(".js")) await cp(join(nls, file), join(root, "dist", "monaco", "nls", file));
+console.log("html: copied CSS, snippets and Monaco's messages");

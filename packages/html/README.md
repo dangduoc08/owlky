@@ -105,6 +105,17 @@ Load it after `owlky.js` on pages that have an editor:
 <script src="https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky-editor.js" defer></script>
 ```
 
+The **Code editor** is a separate script too. `owlky-code-editor.js` is about 11 kB gzip and loads
+Monaco only when an editor appears, from the `monaco/` folder next to it (about 1.15 MB gzip for
+the first editor, more for the TypeScript language service). Host the whole `dist/` folder, or
+point `data-ok-monaco-path` at your own copy of `dist/monaco/`: Monaco's workers must come from
+the page's origin. Monaco needs `style-src 'unsafe-inline'` and a few Trusted Types policies; see
+the Code editor docs page.
+
+```html
+<script src="/assets/owlky/owlky-code-editor.js" defer></script>
+```
+
 ## npm
 
 ```ts
@@ -119,6 +130,10 @@ getRuntime().register(...components).start();
 import { createEditor } from "@owlky/html";
 import { common, createLowlight } from "lowlight";
 getRuntime().register(createEditor({ highlighter: createLowlight(common) })).start();
+
+// The Code editor is opt-in too: Monaco is imported from the monaco-editor package on demand.
+import { loader } from "@owlky/html/code-editor";
+loader.config({ getWorker: (label) => new Worker(/* your bundler's worker for `label` */) });
 ```
 
 ## Runtime API

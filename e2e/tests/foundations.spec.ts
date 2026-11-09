@@ -154,6 +154,7 @@ const GUIDES = [
   ["components-motion--docs", "Accessibility"],
   ["components-datagrid--docs", "Accessibility"],
   ["components-editor--docs", "Accessibility"],
+  ["components-code-editor--docs", "Accessibility"],
 ] as const;
 
 /** Component docs pages and their option schema: the Options table lists every option. */
@@ -163,6 +164,7 @@ const OPTION_TABLES: [string, (keyof typeof optionSchemas)[]][] = [
   ["components-avatar--docs", ["avatar", "avatar-group"]],
   ["components-badge--docs", ["badge"]],
   ["components-editor--docs", ["editor"]],
+  ["components-code-editor--docs", ["code-editor", "diff-editor"]],
   ["components-button-button--docs", ["button"]],
   ["components-checkbox--docs", ["checkbox", "form-control-label"]],
   ["components-chip--docs", ["chip"]],

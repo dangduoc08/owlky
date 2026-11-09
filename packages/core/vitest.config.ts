@@ -13,6 +13,8 @@ export default defineProject({
       "luxon",
       "moment",
       "moment-timezone",
+      // Code editor tests load Monaco (ADR-0034).
+      "monaco-editor",
     ],
   },
 });

@@ -1,6 +1,18 @@
 // Gzip size budgets for what users download. Raise a budget only with a reason in the PR.
 import { readFile } from "node:fs/promises";
+import { dirname, join } from "node:path";
 import { gzipSync } from "node:zlib";
+
+/** An ES module and every file it imports statically (what the browser loads before it runs). */
+async function withImports(file, seen = new Set()) {
+  if (seen.has(file)) return [];
+  seen.add(file);
+  const code = await readFile(file, "utf8");
+  const imports = [...code.matchAll(/(?:from|import)\s*"(\.{1,2}\/[^"]+\.js)"/g)].map((m) =>
+    join(dirname(file), m[1]),
+  );
+  return [file, ...(await Promise.all(imports.map((each) => withImports(each, seen)))).flat()];
+}
 
 const budgets = [
   // 140 kB since the Carousel (ADR-0033: snap model, controller with loop, drag, wheel, keys,
@@ -39,6 +51,28 @@ const budgets = [
   // The Editor is opt-in (ADR-0023): Tiptap, ProseMirror and its starter kit are about 125 kB of
   // it; owlky.js stays free of them.
   ["packages/html/dist/owlky-editor.js", 135_000, "Editor + Tiptap (IIFE, loaded after owlky.js)"],
+  // The Code editor is opt-in (ADR-0034): owlky-code-editor.js holds the runtimes, the controller,
+  // the Owlky themes and the loader (about 10.7 kB); Monaco loads on demand from dist/monaco/.
+  ["packages/html/dist/owlky-code-editor.js", 12_000, "Code editor runtime + loader (IIFE)"],
+  // Monaco itself (0.57): the editor, its 80+ language tokenizers' registrations and its CSS are
+  // about 1.15 MB gzip when the first editor mounts (tokenizers and language features load later,
+  // per language). Budgets track Monaco upgrades; they are not Owlky code.
+  [
+    [
+      ...(await withImports("packages/html/dist/monaco/monaco.js")),
+      "packages/html/dist/monaco/monaco.css",
+    ],
+    1_250_000,
+    "Monaco engine, first editor (monaco.js + static imports + monaco.css)",
+  ],
+  // TypeScript / JavaScript language service (the TypeScript compiler), only for those languages.
+  [
+    await withImports("packages/html/dist/monaco/typescript.worker.js"),
+    1_600_000,
+    "Monaco TypeScript worker (+ shared worker chunk)",
+  ],
+  // 36.1 kB with the Code editor (ADR-0034: frame, loading state and fallback textareas; about
+  // 0.3 kB). Monaco's own CSS ships in dist/monaco/monaco.css, budgeted above.
   // 40 kB since the Carousel (ADR-0033: viewport, slides, effects, arrows, dots, progress,
   // thumbnails, overlay placements; about 2 kB): 37.8 kB.
   // 36 kB since the chart's phase 4 (ADR-0031: toolbar, candles, annotations, brush selection,
@@ -61,7 +95,10 @@ const budgets = [
 
 let failed = false;
 for (const [file, limit, label] of budgets) {
-  const size = gzipSync(await readFile(file)).length;
+  // A list of files is downloaded together: each is gzipped on its own, as servers send them.
+  const files = Array.isArray(file) ? file : [file];
+  let size = 0;
+  for (const each of files) size += gzipSync(await readFile(each)).length;
   const ok = size <= limit;
   failed ||= !ok;
   console.log(

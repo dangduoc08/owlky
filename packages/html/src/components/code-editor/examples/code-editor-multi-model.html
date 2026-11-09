@@ -1,0 +1,36 @@
+<div class="sb-code-editor-files">
+  <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none">
+    <label data-ok-text-field-label for="code-editor-file">File</label>
+    <div data-ok-text-field-control>
+      <select id="code-editor-file" data-ok-text-field-input><option value="index.html">index.html</option><option value="style.css">style.css</option><option value="script.js" selected>script.js</option></select>
+      <svg data-ok-text-field-select-icon aria-hidden="true" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+      <fieldset data-ok-text-field-outline aria-hidden="true"><legend><span>File</span></legend></fieldset>
+    </div>
+  </div>
+  <div data-ok-code-editor data-ok-language="javascript" data-ok-height="320" data-ok-path="file:///script.js">
+    <textarea data-ok-code-editor-value aria-label="File content" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off">const title = document.querySelector("h1");
+title.textContent = "Hello, Owlky";
+</textarea>
+    <div data-ok-code-editor-loading role="status">Loading...</div>
+    <div data-ok-code-editor-content></div>
+    <template data-ok-code-editor-model data-ok-path="file:///index.html" data-ok-language="html">&lt;!doctype html>
+&lt;html lang="en">
+  &lt;head>
+    &lt;link rel="stylesheet" href="style.css">
+  &lt;/head>
+  &lt;body>
+    &lt;h1>Hello&lt;/h1>
+    &lt;script src="script.js">&lt;/script>
+  &lt;/body>
+&lt;/html>
+</template>
+    <template data-ok-code-editor-model data-ok-path="file:///style.css" data-ok-language="css">h1 {
+  color: #00a76f;
+  font-family: system-ui, sans-serif;
+}
+</template>
+    <template data-ok-code-editor-model data-ok-path="file:///script.js" data-ok-language="javascript">const title = document.querySelector("h1");
+title.textContent = "Hello, Owlky";
+</template>
+  </div>
+</div>

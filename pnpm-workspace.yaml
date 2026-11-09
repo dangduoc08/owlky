@@ -21,3 +21,7 @@ overrides:
   "prosemirror-transform": "1.12.4"
   "@tiptap/pm>prosemirror-changeset": "2.4.4"
   "@tiptap/pm>prosemirror-schema-list": "1.5.1"
+  # Security fix (GHSA-cg2g-xh64-v4q7, GHSA-mrv2-3pqr-j5jr): monaco-editor 0.57.0 (Code editor,
+  # ADR-0034) pins dompurify 3.4.15. Its ESM build vendors its own copy and uses neither
+  # SAFE_FOR_TEMPLATES nor IN_PLACE. Remove once monaco-editor depends on dompurify >= 3.4.17.
+  "monaco-editor>dompurify": "3.4.17"

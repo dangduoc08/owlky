@@ -24,6 +24,10 @@ const config: StorybookConfig = {
           { find: /^@owlky\/core$/, replacement: pkg("core/src/index.ts") },
           { find: /^@owlky\/core\/editor$/, replacement: pkg("core/src/editor/index.ts") },
           {
+            find: /^@owlky\/core\/code-editor$/,
+            replacement: pkg("core/src/code-editor/index.ts"),
+          },
+          {
             find: /^@owlky\/core\/adapters\/(dayjs|date-fns|luxon|moment)$/,
             replacement: `${pkg("core/src/adapters")}/$1.ts`,
           },
@@ -31,6 +35,7 @@ const config: StorybookConfig = {
           { find: /^@owlky\/html$/, replacement: pkg("html/src/index.ts") },
           { find: /^@owlky\/html\/auto$/, replacement: pkg("html/src/auto.ts") },
           { find: /^@owlky\/html\/editor$/, replacement: pkg("html/src/editor.ts") },
+          { find: /^@owlky\/html\/code-editor$/, replacement: pkg("html/src/code-editor.ts") },
           { find: /^@snippets\//, replacement: `${pkg("html/src/components")}/` },
         ],
       },

@@ -181,6 +181,19 @@ export {
   CircularProgress,
   type CircularProgressProps,
 } from "./circular-progress/circular-progress.js";
+export {
+  CodeEditor,
+  type CodeEditorChangeEvent,
+  type CodeEditorInstance,
+  type CodeEditorMarker,
+  type CodeEditorOptions,
+  type CodeEditorProps,
+  type CodeEditorTheme,
+  type LoaderConfig,
+  loader,
+  type Monaco,
+  useMonaco,
+} from "./code-editor/code-editor.js";
 export { CountUp, type CountUpProps } from "./count-up/count-up.js";
 export {
   DataGrid,
@@ -247,6 +260,12 @@ export {
   type DialogProps,
   DialogTitle,
 } from "./dialog/dialog.js";
+export {
+  DiffEditor,
+  type DiffEditorInstance,
+  type DiffEditorOptions,
+  type DiffEditorProps,
+} from "./diff-editor/diff-editor.js";
 export { Divider, type DividerProps } from "./divider/divider.js";
 export {
   Drawer,

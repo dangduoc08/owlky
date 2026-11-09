@@ -6,7 +6,10 @@
   "type": "module",
   "sideEffects": [
     "./dist/esm/auto.js",
+    "./dist/esm/code-editor.js",
     "./dist/esm/editor.js",
+    "./dist/monaco/**",
+    "./dist/owlky-code-editor.js",
     "./dist/owlky-editor.js",
     "./dist/owlky.js",
     "**/*.css"
@@ -23,21 +26,27 @@
       "types": "./dist/esm/auto.d.ts",
       "import": "./dist/esm/auto.js"
     },
+    "./code-editor": {
+      "types": "./dist/esm/code-editor.d.ts",
+      "import": "./dist/esm/code-editor.js"
+    },
     "./editor": {
       "types": "./dist/esm/editor.d.ts",
       "import": "./dist/esm/editor.js"
     },
     "./owlky.js": "./dist/owlky.js",
+    "./owlky-code-editor.js": "./dist/owlky-code-editor.js",
     "./owlky-editor.js": "./dist/owlky-editor.js",
     "./owlky.css": "./dist/owlky.css",
     "./owlky.min.css": "./dist/owlky.min.css",
+    "./monaco/*": "./dist/monaco/*",
     "./snippets/*": "./dist/snippets/*",
     "./package.json": "./package.json"
   },
   "unpkg": "./dist/owlky.js",
   "jsdelivr": "./dist/owlky.js",
   "scripts": {
-    "build": "rm -rf dist && tsc -p tsconfig.build.json && vite build && vite build --mode editor && node scripts/copy-assets.mjs",
+    "build": "rm -rf dist && tsc -p tsconfig.build.json && vite build && vite build --mode editor && vite build --mode code-editor && vite build --mode monaco && vite build --mode monaco-workers && node scripts/copy-assets.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
@@ -46,6 +55,7 @@
   "devDependencies": {
     "@owlky/styles": "workspace:*",
     "dayjs": "1.11.23",
+    "monaco-editor": "0.57.0",
     "vite": "8.3.5"
   },
   "publishConfig": {

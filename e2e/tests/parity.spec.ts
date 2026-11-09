@@ -291,6 +291,10 @@ const pairs: [component: string, story: string][] = [
     "slides-to-scroll",
     "right-to-left",
   ].map((story) => ["carousel", story] as [string, string]),
+  ["code-editor", "editor"],
+  ["code-editor", "diff"],
+  ["code-editor", "multi-model"],
+  ["code-editor", "validation"],
 ];
 
 /** Stories whose rows load after the first render (scripts, data sources): wait for them. */
@@ -312,6 +316,22 @@ async function loaded(page: Page, key: string) {
     await expect(page.locator('[data-ok-editor-content][contenteditable="true"]')).toHaveCount(1);
     await expect(page.locator('[data-ok-editor-content][contenteditable="false"]')).toHaveCount(1);
     await expect(page.locator(".hljs-keyword").first()).toBeVisible();
+    return;
+  }
+  if (key.startsWith("code-editor/")) {
+    // Monaco loads on demand: wait for every editor, its fonts and (Validation) the markers.
+    for (const root of await page.locator("[data-ok-code-editor], [data-ok-diff-editor]").all())
+      await expect(root).toHaveAttribute("data-ok-status", "ready");
+    if (key === "code-editor/validation")
+      await expect(page.locator(".sb-code-editor-problems li").first()).toContainText("Line");
+    if (key === "code-editor/diff")
+      await expect(page.locator("[data-ok-diff-editor] .char-insert").first()).toBeAttached();
+    await page.evaluate(() => document.fonts.ready);
+    // Monaco shows its scrollbars after a layout, then fades them out: wait until they're hidden.
+    await expect(page.locator(".monaco-editor .scrollbar.visible")).toHaveCount(0);
+    await page.evaluate(
+      () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))),
+    );
     return;
   }
   if (key === "date-pickers/customization") {

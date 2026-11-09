@@ -17,6 +17,10 @@
       "types": "./dist/editor/index.d.ts",
       "import": "./dist/editor/index.js"
     },
+    "./code-editor": {
+      "types": "./dist/code-editor/index.d.ts",
+      "import": "./dist/code-editor/index.js"
+    },
     "./adapters/dayjs": {
       "types": "./dist/adapters/dayjs.d.ts",
       "import": "./dist/adapters/dayjs.js"
@@ -47,7 +51,8 @@
     "@tiptap/extension-text-align": "3.32.0",
     "@tiptap/extensions": "3.32.0",
     "@tiptap/pm": "3.32.0",
-    "@tiptap/starter-kit": "3.32.0"
+    "@tiptap/starter-kit": "3.32.0",
+    "monaco-editor": "0.57.0"
   },
   "peerDependencies": {
     "@date-fns/tz": "^1.2.0",
