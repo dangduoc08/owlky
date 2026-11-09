@@ -45,11 +45,13 @@ Commercial add-ons of ApexCharts: behavior and API only, our own code, data and 
 
 | # | Item | Detail | Status |
 |---|---|---|---|
-| 3.1 | Upstream audit | all 62 components, prop by prop against the upstream API pages; a mapping table in each spec (kept · renamed · deferred · not applicable); every gap becomes a row in Phase 4, batch E | 🔄 |
+| 3.1 | Upstream audit | all 62 components, prop by prop against the upstream API pages; a mapping table in each spec (kept · renamed · deferred · not applicable); every gap becomes a row in Phase 4, batch E | ✅ |
 | 3.2 | Structured API data | React prop types, option schemas (ADR-0015), the anatomy's part attributes, triggers, events (`ok:<component>:<event>` with `detail`), instance methods and the public `--ok-*` variables each component reads, per component and per part, exported as data and added to the MCP manifest (ADR-0046) | ⬜ |
 | 3.3 | API reference on every docs page | generated tables (not hand-written) in each Storybook docs page: React props, HTML attributes (options and their values, parts, triggers), events, methods, CSS variables / tokens — for the component and each of its parts (Card → CardHeader, CardMedia…). The website (ADR-0040) reads the same data | ⬜ |
 | 3.4 | Completeness check | a test fails when a schema option, a `data-ok-*` name used in the snippets, an event, a method or a React prop is missing from the docs page (extends `foundations.spec.ts` `OPTION_TABLES` and `check:docs`). `pnpm check:docs` reports 376 problems today (placeholders `…`, React examples that aren't modules) and runs in neither `pnpm check` nor CI: fix them and add it to both | ⬜ |
 | 3.5 | Controls unchanged | Storybook's Controls panel keeps following `/component`: only options that change every example at once, from the option schema. The full reference lives in the docs page | — |
+
+**Notes:** 3.1 (2026-11-09): every spec has an `## Upstream API mapping` table (kept · renamed · deferred · not applicable); gaps already in Phase 4 are cited there, the 61 new ones are rows 4.18.22–4.18.82. Judgement calls recorded in the specs: ripple props not applicable (no ripple, CSS states), Tooltip `disableInteractive` not applicable (WCAG 1.4.13), selection controls don't read the Form control context (a `fieldset` root disables them natively). Components with no new gap: Alert, Badge, Card, Circular / Linear progress, Collapse, Divider, Paper, Typography, Backdrop, Tooltip, Markdown, Transfer list, Checkbox, Radio, Rating, Form control (+ label), Breadcrumbs, Link, Timeline, Table, Image, Organization chart (beyond 4.18.1–6), Scrollbar, Illustration.
 
 ## Phase 4 — Close every gap
 
@@ -98,6 +100,67 @@ then 4.22–4.24, then 4.25 with its ADR).
 | 4.18.19 | E — ApexCharts Premium (should) | Chart | crossfilter between charts of a `group` (a slice click or a brush filters the others; Linked Views / Highlight Filter) | ⬜ |
 | 4.18.20 | E (could) | Chart | measure ruler (span · free, keyboard alternative, pinned rulers, `clearMeasures`), draggable annotations that report data coordinates (Ink) | ⬜ |
 | 4.18.21 | E — ApexCharts v8 (should: waterfall, dumbbell first) | Chart | new types `waterfall`, `dumbbell`, `streamgraph`, `sunburst`, `icicle`, `violin`, `beeswarm`, `waffle`, `unit` (prop-level mapping in 3.1) | ⬜ |
+| 4.18.22 | E — audit 3.1 (should) | Button, Icon button, Fab (+ Button group) | polymorphic `component` / `LinkComponent` (router links); Icon button `href` (icon links); Button group `component` | ⬜ |
+| 4.18.23 | E — audit 3.1 (should) | Autocomplete | `readOnly`, `onHighlightChange`, `autoComplete` (inline completion), `clearOnBlur`, `filterSelectedOptions`, `disableListWrap`, `disabledItemsFocusable`, configurable `handleHomeEndKeys`, `resetHighlightOnMouseLeave` | ⬜ |
+| 4.18.24 | E — audit 3.1 (could) | Autocomplete | `renderValue` (custom chips), `clearIcon` / `popupIcon` / `forcePopupIcon`, object values (`getOptionLabel` / `isOptionEqualToValue` / `getOptionKey` / `getOptionValue`), public `useAutocomplete` / `createFilterOptions` | ⬜ |
+| 4.18.25 | E — audit 3.1 (should) | Text field | FormControl props `hiddenLabel`, `focused`, `component`; InputAdornment `disablePointerEvents`, `component` | ⬜ |
+| 4.18.26 | E — audit 3.1 (could) | Text field (+ Select) | standalone `InputBase` / `OutlinedInput` (`notched`) / `FilledInput` (`disableUnderline`) / `Input`, `inputComponent` | ⬜ |
+| 4.18.27 | E — audit 3.1 (should) | Select | InputBase `startAdornment` / `endAdornment` | ⬜ |
+| 4.18.28 | E — audit 3.1 (could) | Slider | `tabIndex` | ⬜ |
+| 4.18.29 | E — audit 3.1 (should) | Date pickers (fields) | `clearButtonPosition`, `openPickerButtonPosition`, public `startAdornment` / `endAdornment`, `shouldRespectLeadingZeros`, `fieldRef` (field API), TextField props `color` / `margin` / `hiddenLabel` / `focused`, `selectedSections` `"all"` / section type | ⬜ |
+| 4.18.30 | E — audit 3.1 (could) | Date pickers | range fields `dateSeparator`; calendars and clocks `focusedView` / `onFocusedViewChange`; TimeClock `showViewSwitcher`; static pickers `displayStaticWrapperAs` | ⬜ |
+| 4.18.31 | E — audit 3.1 (could) | Upload | `dragFileRejections` (MIME / surplus rejections during a drag) | ⬜ |
+| 4.18.32 | E — audit 3.1 (could) | Code editor | DiffEditor `line` | ⬜ |
+| 4.18.33 | E — audit 3.1 (should) | Editor | React access to the Tiptap editor (`onCreate` / editor ref) and Tiptap events (`create`, `focus`, `blur`, `selectionUpdate`, `transaction`, `paste`, `drop`, `delete`, `contentError`); `getJSON()` / `getText()` | ⬜ |
+| 4.18.34 | E — audit 3.1 (could) | Editor | `editorProps`, `parseOptions`, `enableInputRules` / `enablePasteRules`, `textDirection`, `autofocus`; form `name` (hidden input) (with 4.16) | ⬜ |
+| 4.18.35 | E — audit 3.1 (could, **ADR**) | Editor | `extensions` pass-through (tables, mentions), `BubbleMenu` / `FloatingMenu` / `useEditor` (with 4.16: new Tiptap extension dependencies, schema and sanitizer impact) | ⬜ |
+| 4.18.36 | E — audit 3.1 (should) | Chip | link chips: `component="a"` / `href` on the action (clickable) | ⬜ |
+| 4.18.37 | E — audit 3.1 (should) | Snackbar | right to left: Toaster `dir`, logical properties in `snackbar.css` (with 4.13) | ⬜ |
+| 4.18.38 | E — audit 3.1 (should) | Snackbar | per-toast `closeButton` / `invert`, Toaster `invert`, `toastOptions` (defaults for every toast), `icons` | ⬜ |
+| 4.18.39 | E — audit 3.1 (should) | Menu | React `MenuList` without a Popover (`autoFocus`, `autoFocusItem`, `variant`); Menu `disableAutoFocusItem` | ⬜ |
+| 4.18.40 | E — audit 3.1 (could) | Snackbar | several toasters: Toaster `id` + toast `toasterId` | ⬜ |
+| 4.18.41 | E — audit 3.1 (could) | Snackbar | `toast.promise` `unwrap()`, `finally`, toast options; `toast.getHistory()` / `getToasts()`, `useSonner()` | ⬜ |
+| 4.18.42 | E — audit 3.1 (could) | Menu | `MenuList` `disabledItemsFocusable`, `disableListWrap` | ⬜ |
+| 4.18.43 | E — audit 3.1 (could) | Popover, Menu | `transitionDuration` | ⬜ |
+| 4.18.44 | E — audit 3.1 (could) | Dialog | `transitionDuration` (with 5.1 exit transitions) | ⬜ |
+| 4.18.45 | E — audit 3.1 (could) | Dialog, Drawer | Modal props `disableRestoreFocus`, `disableScrollLock`; Drawer `ModalProps.keepMounted` (with 4.8) | ⬜ |
+| 4.18.46 | E — audit 3.1 (could) | Drawer | `SwipeableDrawer`: `onOpen`, `swipeAreaWidth`, `hysteresis`, `minFlingVelocity`, `disableSwipeToOpen`, `disableDiscovery`, `allowSwipeInChildren`; a button to open and close stays (WCAG 2.5.7); shares a core swipe helper with 4.14 | ⬜ |
+| 4.18.47 | E — audit 3.1 (could) | Accordion | `AccordionActions` `disableSpacing` | ⬜ |
+| 4.18.48 | E — audit 3.1 (could) | Label | `disabled` | ⬜ |
+| 4.18.49 | E — audit 3.1 (must) | Data grid | column `sortComparator` / `getSortComparator` / `sortingOrder`, grid `sortingOrder`, `multipleColumnsSortingMode` | ⬜ |
+| 4.18.50 | E — audit 3.1 (must) | Data grid | column `renderEditCell`, `renderHeaderFilter`; controlled `cellModesModel` / `rowModesModel` | ⬜ |
+| 4.18.51 | E — audit 3.1 (should) | Data grid | per-column hooks and opt-outs: `cellClassName`, `headerClassName`, `hideSortIcons`, `disableColumnMenu`, `disableReorder`, `disableExport`, `pinnable`, `rowSpanValueGetter`, `pastedValueParser`, `groupingValueSetter`, `rowHeader`, `display: "flex"` | ⬜ |
+| 4.18.52 | E — audit 3.1 (should) | Data grid | selection: `rowSelection: false`, `rowSelectionPropagation` (groups / tree), `checkboxColDef` | ⬜ |
+| 4.18.53 | E — audit 3.1 (should) | Data grid | layout: `columnHeaderHeight`, `columnGroupHeaderHeight`, `headerFilterHeight`, `showCellVerticalBorder`, `showColumnVerticalBorder`, `rowSpacingType`, `autoHeight`, `autoPageSize` | ⬜ |
+| 4.18.54 | E — audit 3.1 (should) | Data grid | footer / toolbar: `hideFooterPagination`, `hideFooterRowCount`, `hideFooterSelectedRowCount`, `label`; `tabNavigation` | ⬜ |
+| 4.18.55 | E — audit 3.1 (could) | Data grid | events: column header double click / context menu / enter / leave / over / out, `onMenuOpen` / `Close`, `onPreferencePanelOpen` / `Close`, `onSidebarOpen` / `Close`, `onResize`, `onColumnResize`, `onFetchRows`, `onExcelExportStateChange`, `onBeforeClipboardPasteStart` | ⬜ |
+| 4.18.56 | E — audit 3.1 (could) | Data grid | server: `paginationMeta` / `estimatedRowCount` / `onRowCountChange`, `dataSourceKeepPreviousData`, `dataSourceRevalidateMs`, `filterDebounceMs` / `columnFilterDebounceMs`, `disableChildrenFiltering` / `-Sorting` | ⬜ |
+| 4.18.57 | E — audit 3.1 (could) | Data grid | `disableAutosize`, `keepColumnPositionIfDraggedOutside`, pinned section separators, `isRowReorderable` / `isValidRowReorder` / `setTreeDataPath`, `pivotingColDef`, `pivotPanelOpen`, `virtualizeColumnsWithAutoRowHeight` | ⬜ |
+| 4.18.58 | E — audit 3.1 (could) | Data grid | `cellSelectionFillHandle` (drag to fill, keyboard alternative, WCAG 2.5.7) | ⬜ |
+| 4.18.59 | E — audit 3.1 (must) | Chart | several value axes (`yaxis[]` with `seriesName`, `opposite`), `logarithmic`, `reversed`, `tickAmount`; a drawn x axis title | ⬜ |
+| 4.18.60 | E — audit 3.1 (must) | Chart | point / slice / label selection: `ok:chart:select` + React callback (click, Enter), selected state (`allowMultipleDataPointsSelection`, `toggleDataPointSelection`) | ⬜ |
+| 4.18.61 | E — audit 3.1 (should) | Chart | `stackType: "100%"`, `stackOnlyBar`; stacked totals, data label position; bar `colors.ranges`, background bars | ⬜ |
+| 4.18.62 | E — audit 3.1 (should) | Chart | non-color series cues: `markers.shape`, `markers.discrete`, `fill.pattern`, `colorBlindMode` (WCAG 1.4.1); `stroke.width` per series | ⬜ |
+| 4.18.63 | E — audit 3.1 (should) | Chart | tooltip: `tooltip: false`, per-point mode (`shared: false`), fixed position, custom content (React node / HTML `<template>`) | ⬜ |
+| 4.18.64 | E — audit 3.1 (should) | Chart | legend `horizontalAlign`, `showForSingleSeries`, toggle opt-out, custom items; grid lines per axis, stripes | ⬜ |
+| 4.18.65 | E — audit 3.1 (could) | Chart | `xaxis.group` (two-level categories), label rotation, fixed x `min` / `max` / `range`; `forecastDataPoints`; `noData`; text annotations; several `brush.targets` | ⬜ |
+| 4.18.66 | E — audit 3.1 (could) | Chart | `dataReducer` (LTTB downsampling of the drawing) | ⬜ |
+| 4.18.67 | E — audit 3.1 (could) | Chart | timeline `rangeBarGroupRows` / `rangeBarOverlap`, `hideZeroBarsWhenGrouped` | ⬜ |
+| 4.18.68 | E — audit 3.1 (could, **ADR**) | Chart | drilldown (`drillDown` / `drillUp` / `drillToRoot`, back control, events); trellis small multiples | ⬜ |
+| 4.18.69 | E — audit 3.1 (should) | Tree view | `onItemSelectionToggle`, `onItemClick`, `onItemFocus`; `isItemDisabled`, `isItemSelectionDisabled` / TreeItem `disableSelection`, `disabledItemsFocusable`, `getItemChildren` (with 4.11) | ⬜ |
+| 4.18.70 | E — audit 3.1 (could, **ADR**) | Tree view | `itemChildrenIndentation`; virtualization (`itemHeight`, flat DOM `domStructure`) | ⬜ |
+| 4.18.71 | E — audit 3.1 (should) | Tabs | link tabs (Tab `href` / `component`, navigation pattern with `aria-current`) | ⬜ |
+| 4.18.72 | E — audit 3.1 (could) | Tabs | `TabPanel value` from the Tabs context (hides itself, `keepMounted`), like MUI Lab `TabContext` | ⬜ |
+| 4.18.73 | E — audit 3.1 (could) | Pagination | PaginationItem `component` (router link as the item) | ⬜ |
+| 4.18.74 | E — audit 3.1 (could) | Stepper | StepContent `transitionDuration` (Collapse `timeout` pass-through) | ⬜ |
+| 4.18.75 | E — audit 3.1 (should, **ADR**) | Sortable | move between lists (`group` / `accept`, a kanban story), keyboard and announcements across lists | ⬜ |
+| 4.18.76 | E — audit 3.1 (should) | Sortable | auto scroll near Scrollbar / page edges while dragging; disabled items; `onDragStart` / `onDragOver` / `onDragCancel`; HTML `messages` | ⬜ |
+| 4.18.77 | E — audit 3.1 (could) | Sortable | swapping strategy; drag by the whole item (no handle) | ⬜ |
+| 4.18.78 | E — audit 3.1 (should) | Motion | `component` (any element); `viewport.margin` / `root`; in-view events (`onViewportEnter` / `Leave`, `ok:motion:enter` / `leave`) | ⬜ |
+| 4.18.79 | E — audit 3.1 (could) | Map | reactive `light` / `sky`, `styleDiffing`, camera `padding`; Marker `scale`, `clickTolerance` | ⬜ |
+| 4.18.80 | E — audit 3.1 (could) | Carousel | Embla v9 method aliases (`goTo`, `goToNext`, `selectedSnap`, `snapList`…), `snapIndex(slide)`, events `resize`, `slideschanged`, `pointermove` | ⬜ |
+| 4.18.81 | E — audit 3.1 (could) | Lightbox | `render.slideContainer`, `render.buttonPrev` / `buttonNext` / `buttonClose` (+ plugin buttons), `render.iconLoading` / `iconError` | ⬜ |
+| 4.18.82 | E — audit 3.1 (could) | Walktour | option `offset`; step `id` and `data` (in events) | ⬜ |
 | 4.19 | F — Minimals Utilities, spread across components (owner's decision 2026-11-09: no Utilities group) | Typography (+ Link) | "Text max line": a `maxLines` option (CSS `line-clamp`, beside `noWrap`), a "Text max line" story with 1–4 lines and "As link" | ⬜ |
 | 4.20 | F | Text field (+ Snackbar) | "Copy to clipboard": a copy IconButton in an end adornment and copy on double click, a core helper on a user gesture with the refused path handled, a "Copied" toast | ⬜ |
 | 4.21 | F | Foundations › Colors (+ Paper / Card, Typography) | "Gradient": `--ok-gradient-*` tokens from the palette (follow presets and dark mode), gradient text, border, background and paper examples | ⬜ |
