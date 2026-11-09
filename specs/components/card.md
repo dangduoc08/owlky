@@ -115,4 +115,6 @@ None (native `click` on the action area and controls).
 None: React renders the same elements and attributes as the snippets (generated from the React
 examples by `apps/storybook/scripts/card-snippets.mjs`). Stateful stories (Complex interaction,
 Active state styles) render their first state; HTML pages toggle `hidden` / `aria-expanded` /
-`aria-pressed` in a page script.
+`aria-pressed` in a page script. Complex interaction's method section is a Collapse
+(`timeout="auto"`, as MUI's `<Collapse in timeout="auto">`) around the `CardContent`: the
+`collapse` runtime animates it when the page script toggles `hidden`.

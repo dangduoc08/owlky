@@ -95,7 +95,9 @@ Core `createCollapseController(element, options)` (React layout effect, HTML run
 
 ## Responsive behavior
 No breakpoints: the root takes its container's width (vertical) or its content's (horizontal).
-The story's rows are capped at 250px and shrink on phones; nothing overflows at 375px.
+The story's rows are capped at 250px and shrink on phones; nothing overflows at 375px. Each
+collapse holds a Paper (`elevation={4}`) around the triangle, as the reference; story CSS keeps
+only its margin.
 
 ## Keyboard
 None: the trigger (button, switch) handles keys.

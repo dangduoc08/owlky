@@ -73,8 +73,12 @@ describe("card snippets", () => {
     expect(getComputedStyle(host.querySelector("[data-ok-card-header]") as Element).padding).toBe(
       "24px 24px 0px",
     );
-    // The collapsed section starts hidden; the page script shows it.
-    expect(host.querySelector<HTMLElement>("#card-garden-method")?.hidden).toBe(true);
+    // The method is a Collapse around the card content: it starts hidden; the page script shows it.
+    const method = host.querySelector<HTMLElement>("#card-garden-method");
+    expect(method?.hidden).toBe(true);
+    expect(method?.dataset["okCollapse"]).toBe("");
+    expect(method?.dataset["okTimeout"]).toBe("auto");
+    expect(method?.firstElementChild?.hasAttribute("data-ok-card-content")).toBe(true);
   });
 
   it("media: a media element fills the width; other elements hold a cover image", () => {

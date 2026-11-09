@@ -60,6 +60,31 @@ for (const impl of implementations) {
       ).toEqual(["0px", "0px", "0px"]);
     });
 
+    test("complex interaction with motion: the method collapses in and out", async ({ page }) => {
+      await openStory(page, storyId(impl, "card", "complex-interaction"));
+      await page.emulateMedia({ reducedMotion: "no-preference" });
+      const expand = page.getByRole("button", { name: "Show the method" });
+      const method = page.locator("#card-garden-method");
+      // Record the transient states (polling for them can miss a short animation).
+      await method.evaluate((element) => {
+        const seen: string[] = [];
+        (window as unknown as { okStates: string[] }).okStates = seen;
+        new MutationObserver(() => {
+          const state = element.getAttribute("data-ok-state");
+          if (state) seen.push(state);
+        }).observe(element, { attributes: true, attributeFilter: ["data-ok-state"] });
+      });
+      await expand.click();
+      await expect(method).toBeVisible();
+      await expect(method).not.toHaveAttribute("data-ok-state");
+      await expand.click();
+      await expect(method).toBeHidden();
+      await expect(method).not.toHaveAttribute("data-ok-state");
+      expect(
+        await page.evaluate(() => (window as unknown as { okStates: string[] }).okStates),
+      ).toEqual(["entering", "exiting"]);
+    });
+
     test("complex interaction: the chevron shows and hides the method", async ({ page }) => {
       await openStory(page, storyId(impl, "card", "complex-interaction"));
       const expand = page.getByRole("button", { name: "Show the method" });
@@ -70,6 +95,10 @@ for (const impl of implementations) {
       await expect(expand).toHaveAttribute("aria-expanded", "true");
       await expect(method).toBeVisible();
       await expect(method).toContainText("Method:");
+      // The method section is a Collapse (timeout "auto") around the card content.
+      await expect(method).toHaveAttribute("data-ok-collapse", "");
+      await expect(method).toHaveAttribute("data-ok-timeout", "auto");
+      await expect(method.locator("> [data-ok-card-content]")).toHaveCount(1);
       await expand.press("Enter");
       await expect(expand).toHaveAttribute("aria-expanded", "false");
       await expect(method).toBeHidden();

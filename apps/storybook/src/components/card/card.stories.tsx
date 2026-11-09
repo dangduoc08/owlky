@@ -47,9 +47,10 @@ const demoStory = (
   source: string,
   script: Pick<HtmlGroup, "script" | "scriptSource">,
   css = CSS,
+  runtime = false,
 ): StoryObj =>
   frameworkStory({
-    html: snippetStory(snippets, name, [[title, "group"]], htmlSetup(css), undefined, {
+    html: snippetStory(snippets, name, [[title, "group"]], htmlSetup(css, runtime), undefined, {
       group: script,
     }),
     react: reactGroupsStory([{ title, content: demo }], undefined, source),
@@ -78,7 +79,8 @@ export const ComplexInteraction: StoryObj = {
     <ComplexInteractionDemo />,
     complexInteractionSource,
     { script: expandScript, scriptSource: EXPAND_SCRIPT_SOURCE },
-    [...CSS, "avatar.css"],
+    [...CSS, "avatar.css", "collapse.css"],
+    true,
   ),
   name: "Complex interaction",
 };
