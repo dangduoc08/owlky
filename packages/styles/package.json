@@ -37,7 +37,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/owlky/owlky.git",
+    "url": "git+https://github.com/dangduoc08/owlky.git",
     "directory": "packages/styles"
   },
   "keywords": [
