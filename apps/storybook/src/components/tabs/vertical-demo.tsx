@@ -1,4 +1,4 @@
-import { Tab, TabPanel, Tabs } from "@owlky/react";
+import { Tab, TabPanel, Tabs, Typography } from "@owlky/react";
 import { useState } from "react";
 
 const ITEMS = [
@@ -32,7 +32,7 @@ export function VerticalDemo() {
             aria-labelledby={`tabs-vertical-tab-${id}`}
             hidden={value !== id}
           >
-            {label}
+            <Typography variant="body2">{label}</Typography>
           </TabPanel>
         ))}
       </div>
@@ -61,7 +61,7 @@ export function VerticalDemo() {
             aria-labelledby={`tabs-segmented-tab-${id}`}
             hidden={custom !== id}
           >
-            {label}
+            <Typography variant="body2">{label}</Typography>
           </TabPanel>
         ))}
       </div>

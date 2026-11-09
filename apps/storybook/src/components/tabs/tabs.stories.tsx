@@ -16,7 +16,7 @@ const snippets = import.meta.glob(
   { query: "?raw", import: "default", eager: true },
 ) as Record<string, string>;
 
-const SETUP = htmlSetup(["tabs.css"], true);
+const SETUP = htmlSetup(["tabs.css", "typography.css"], true);
 
 /** A story whose examples have no state: the same Controls in both frameworks. */
 const story = (name: string): StoryObj =>

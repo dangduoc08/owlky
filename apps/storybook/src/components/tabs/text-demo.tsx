@@ -1,4 +1,4 @@
-import { Tab, TabPanel, Tabs } from "@owlky/react";
+import { Tab, TabPanel, Tabs, Typography } from "@owlky/react";
 import { useState } from "react";
 
 const ITEMS = [
@@ -31,7 +31,7 @@ export function TextDemo() {
           aria-labelledby={`tabs-text-tab-${id}`}
           hidden={value !== id}
         >
-          {label}
+          <Typography variant="body2">{label}</Typography>
         </TabPanel>
       ))}
     </div>

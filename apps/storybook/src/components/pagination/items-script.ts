@@ -24,7 +24,9 @@ export function itemsScript(row: HTMLElement) {
     grid.replaceChildren(
       ...Array.from({ length: count }, (_, i) => {
         const item = template.cloneNode(true) as HTMLElement;
-        (item.firstElementChild as HTMLElement).textContent = String(first + i + 1);
+        (item.querySelector("[data-ok-typography]") as HTMLElement).textContent = String(
+          first + i + 1,
+        );
         return item;
       }),
     );
@@ -60,7 +62,7 @@ function show(page) {
   grid.replaceChildren(
     ...Array.from({ length: count }, (_, i) => {
       const item = template.cloneNode(true);
-      item.firstElementChild.textContent = String(first + i + 1);
+      item.querySelector("[data-ok-typography]").textContent = String(first + i + 1);
       return item;
     }),
   );

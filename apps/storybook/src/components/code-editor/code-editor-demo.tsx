@@ -1,5 +1,5 @@
 import { codeEditorLanguages, codeEditorThemes } from "@owlky/core";
-import { Button, CodeEditor, type CodeEditorOptions, TextField } from "@owlky/react";
+import { Button, CodeEditor, type CodeEditorOptions, TextField, Typography } from "@owlky/react";
 import { useState } from "react";
 import { EDITOR_OPTIONS, EDITOR_SAMPLE, OPTIONS_EDITOR } from "./code-editor-content.js";
 
@@ -30,9 +30,9 @@ export function CodeEditorDemo() {
         options={options}
       />
       <section className="sb-code-editor-settings" aria-labelledby="code-editor-settings">
-        <h4 id="code-editor-settings" className="sb-code-editor-title">
+        <Typography variant="h6" component="h4" id="code-editor-settings">
           Settings
-        </h4>
+        </Typography>
         <TextField
           id="code-editor-language"
           select
@@ -72,9 +72,9 @@ export function CodeEditorDemo() {
           options={OPTIONS_EDITOR}
         />
         {invalid ? (
-          <p className="sb-code-editor-error" role="alert">
+          <Typography variant="body2" color="error" className="sb-code-editor-error" role="alert">
             The options aren't valid JSON.
-          </p>
+          </Typography>
         ) : null}
         <Button id="code-editor-apply" variant="contained" fullWidth onClick={apply}>
           Apply

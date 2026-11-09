@@ -69,8 +69,6 @@
   padding: calc(var(--ok-spacing) * 3) calc(var(--ok-spacing) * 4);
   border: 1px solid var(--ok-divider);
   border-radius: var(--ok-radius-md);
-  color: var(--ok-text-primary);
-  font-size: var(--ok-typography-body2-font-size);
 }
 
 .sb-tabs-demo-vertical > [data-ok-tab-panel] {
@@ -285,8 +283,6 @@
   display: flex;
   align-items: center;
   gap: calc(var(--ok-spacing) * 4);
-  color: var(--ok-text-primary);
-  font-size: var(--ok-typography-body2-font-size);
 }
 
 /* Slider demos (story-only): volume icons, a fixed height for vertical sliders, the range output. */
@@ -329,12 +325,9 @@
 
 .sb-slider-range > p {
   align-self: center;
-  margin: 0;
   padding: calc(var(--ok-spacing) * 2) calc(var(--ok-spacing) * 4);
   border-radius: var(--ok-radius-md);
   background-color: var(--ok-bg-neutral);
-  color: var(--ok-text-primary);
-  font-size: var(--ok-typography-body2-font-size);
 }
 
 /* Select demos (story-only): field widths as in MUI's demos, a shorter menu for long lists. */
@@ -391,9 +384,6 @@
   display: grid;
   place-items: center;
   height: calc(var(--ok-spacing) * 24);
-  color: var(--ok-text-secondary);
-  font-size: var(--ok-typography-h4-font-size);
-  font-weight: var(--ok-font-weight-bold);
 }
 
 .sb-pagination-footer {
@@ -411,8 +401,6 @@
   gap: calc(var(--ok-spacing) * 4);
   width: 100%;
   min-width: 0;
-  color: var(--ok-text-primary);
-  font-size: var(--ok-typography-body2-font-size);
 }
 
 .sb-table-api-query {
@@ -423,7 +411,6 @@
 }
 
 .sb-table-api-query > p {
-  margin: 0;
   overflow-wrap: anywhere;
 }
 
@@ -618,8 +605,6 @@
   border: 1px solid var(--ok-divider);
   border-radius: var(--ok-radius-lg);
   background-color: rgb(var(--ok-palette-grey-500-channel) / 0.04);
-  font-size: var(--ok-typography-subtitle2-font-size);
-  font-weight: var(--ok-typography-subtitle2-font-weight);
 }
 
 .sb-layout > :is(.sb-layout-top, .sb-layout-left, .sb-layout-right, .sb-layout-bottom) {
@@ -649,7 +634,6 @@
 .sb-layout-main > [data-ok-scrollbar] {
   height: 16rem;
   padding: 1.5rem;
-  font-weight: normal;
 }
 
 .sb-layout-main > [data-ok-scrollbar] > h4 {
@@ -1083,12 +1067,6 @@
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  line-height: var(--ok-typography-body2-line-height);
-}
-
-.sb-grid-date > :last-child {
-  color: var(--ok-text-secondary);
-  font-size: var(--ok-typography-caption-font-size);
 }
 
 .sb-grid-check {
@@ -1377,8 +1355,6 @@
   border-radius: var(--ok-radius-full);
   background-color: var(--ok-palette-common-white);
   color: var(--ok-palette-grey-800);
-  font-size: var(--ok-typography-subtitle2-font-size);
-  font-weight: var(--ok-font-weight-semibold);
 }
 
 .sb-carousel-controls {
@@ -1474,14 +1450,6 @@
   color: var(--ok-palette-common-white);
 }
 
-.sb-carousel-card-content h3,
-.sb-carousel-hero-content h3 {
-  margin: 0;
-  font-size: var(--ok-typography-h6-font-size);
-  font-weight: var(--ok-font-weight-bold);
-  line-height: var(--ok-typography-h6-line-height);
-}
-
 .sb-carousel-hero {
   aspect-ratio: 16 / 9;
   border-radius: 0;
@@ -1493,9 +1461,7 @@
 }
 
 .sb-carousel-hero-text {
-  margin: 0;
   max-width: 40rem;
-  font-size: var(--ok-typography-body2-font-size);
 }
 
 .sb-carousel-inset {
@@ -1541,19 +1507,6 @@
   min-width: 0;
 }
 
-.sb-code-editor-title {
-  margin: 0;
-  font-size: var(--ok-typography-h6-font-size);
-  font-weight: var(--ok-typography-h6-font-weight);
-  line-height: var(--ok-typography-h6-line-height);
-}
-
-.sb-code-editor-error {
-  margin: 0;
-  color: var(--ok-palette-error-text);
-  font-size: var(--ok-typography-body2-font-size);
-}
-
 .sb-code-editor-files,
 .sb-code-editor-validation {
   display: flex;
@@ -1565,10 +1518,7 @@
 }
 
 .sb-code-editor-problems {
-  margin: 0;
   padding-left: calc(var(--ok-spacing) * 5);
-  color: var(--ok-text-secondary);
-  font-size: var(--ok-typography-body2-font-size);
   list-style: disc;
 }
 

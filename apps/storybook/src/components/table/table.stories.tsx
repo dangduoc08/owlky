@@ -113,6 +113,7 @@ export const TablePaginationWithApi: StoryObj = frameworkStory({
           "popover.css",
           "menu.css",
           "select.css",
+          "typography.css",
         ],
         true,
       ),

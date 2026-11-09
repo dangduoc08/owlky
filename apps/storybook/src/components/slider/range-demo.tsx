@@ -1,4 +1,4 @@
-import { Slider } from "@owlky/react";
+import { Slider, Typography } from "@owlky/react";
 import { useState } from "react";
 
 const MARKS = [0, 250, 500, 750, 1000].map((value) => ({ value, label: `$${value}` }));
@@ -23,9 +23,10 @@ export function RangeDemo() {
         getAriaValueText={price}
         data-ok-label-value={"$" + "{value}"}
       />
-      <p>
-        Min: {price(low as number)} · Max: {price(high as number)}
-      </p>
+      <Typography
+        variant="subtitle2"
+        component="p"
+      >{`Min: ${price(low as number)} · Max: ${price(high as number)}`}</Typography>
     </div>
   );
 }

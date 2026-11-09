@@ -1,4 +1,4 @@
-import { Rating } from "@owlky/react";
+import { Rating, Typography } from "@owlky/react";
 import { useState } from "react";
 
 const LABELS: Record<number, string> = {
@@ -29,7 +29,11 @@ export function HoverDemo() {
         onChangeActive={setHover}
         getLabelText={(v) => `${v} Star${v !== 1 ? "s" : ""}, ${LABELS[v]}`}
       />
-      {shown !== null && <span>{LABELS[shown]}</span>}
+      {shown !== null && (
+        <Typography variant="body1" component="span">
+          {LABELS[shown]}
+        </Typography>
+      )}
     </div>
   );
 }

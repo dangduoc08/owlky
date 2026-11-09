@@ -95,7 +95,15 @@ export const Items: StoryObj = frameworkStory({
     "items",
     files("Items"),
     htmlSetup(
-      ["pagination.css", "paper.css", "form-control.css", "popover.css", "menu.css", "select.css"],
+      [
+        "pagination.css",
+        "paper.css",
+        "form-control.css",
+        "popover.css",
+        "menu.css",
+        "select.css",
+        "typography.css",
+      ],
       true,
     ),
     undefined,

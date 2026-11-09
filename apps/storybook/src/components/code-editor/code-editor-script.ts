@@ -26,7 +26,11 @@ export function editorScript(row: HTMLElement) {
       error?.remove();
     } catch {
       if (!error) {
+        // The same Typography markup as the React demo's message.
         error = document.createElement("p");
+        error.setAttribute("data-ok-typography", "");
+        error.setAttribute("data-ok-variant", "body2");
+        error.setAttribute("data-ok-color", "error");
         error.className = "sb-code-editor-error";
         error.setAttribute("role", "alert");
         error.textContent = "The options aren't valid JSON.";
