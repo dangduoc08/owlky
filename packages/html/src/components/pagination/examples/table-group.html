@@ -1,8 +1,23 @@
-<div data-ok-table-pagination="" data-ok-count="100" data-ok-page="2">
-  <label data-ok-table-pagination-rows>Rows per page:<select><option value="5">5</option><option value="10" selected>10</option><option value="25">25</option></select></label>
+<div data-ok-table-pagination data-ok-count="100" data-ok-page="2">
+  <div data-ok-table-pagination-rows>
+    <span id="table-pagination-rows-label">Rows per page:</span>
+    <div data-ok-select>
+      <div data-ok-select-display role="combobox" tabindex="0" id="table-pagination-rows" aria-haspopup="listbox" aria-expanded="false" aria-controls="table-pagination-rows-listbox" aria-labelledby="table-pagination-rows-label">10</div>
+      <input data-ok-select-input aria-hidden="true" tabindex="-1" placeholder=" " value="10">
+      <svg aria-hidden="true" viewBox="0 0 24 24" data-ok-select-icon><path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+      <div popover="manual" data-ok-popover data-ok-placement="bottom-start" id="table-pagination-rows-menu" tabindex="-1">
+        <span data-ok-popover-arrow aria-hidden="true"></span>
+        <ul data-ok-select-listbox role="listbox" id="table-pagination-rows-listbox" aria-labelledby="table-pagination-rows-label">
+          <li role="option" tabindex="-1" data-ok-menu-item aria-selected="false" data-ok-value="5">5</li>
+          <li role="option" tabindex="-1" data-ok-menu-item data-ok-selected aria-selected="true" data-ok-value="10">10</li>
+          <li role="option" tabindex="-1" data-ok-menu-item aria-selected="false" data-ok-value="25">25</li>
+        </ul>
+      </div>
+    </div>
+  </div>
   <span data-ok-table-pagination-displayed aria-live="polite">21–30 of 100</span>
   <div data-ok-table-pagination-actions>
-    <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-table-pagination-action="previous" aria-label="Go to previous page" title="Go to previous page"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6" /></svg></button>
-    <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-table-pagination-action="next" aria-label="Go to next page" title="Go to next page"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6" /></svg></button>
+    <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-table-pagination-action="previous" aria-label="Go to previous page" title="Go to previous page"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg></button>
+    <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-table-pagination-action="next" aria-label="Go to next page" title="Go to next page"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg></button>
   </div>
 </div>

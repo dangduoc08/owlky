@@ -16,6 +16,8 @@ async function withImports(file, seen = new Set()) {
 }
 
 const budgets = [
+  // 165 kB since the Select (ADR-0045: select-only combobox controller, the runtime with chips,
+  // placeholder and checkmarks, the TablePagination listbox; about 1.5 kB): 159.1 kB.
   // 160 kB since the Upload (ADR-0037: drop, folders, paste, picker, checks, the runtime with
   // previews, list and rejections; about 6.4 kB): 150.2 kB.
   // 150 kB since the Lightbox (ADR-0032: modal around the Carousel, zoom and pan gestures,
@@ -51,7 +53,7 @@ const budgets = [
   // Motion (trigger, count-up and five runtimes, the 62 variant names); 31 kB after
   // the composite inputs, 24 kB after the navigation components, 22 kB after the overlays. The CDN bundle carries every component; the npm ESM build
   // (`@owlky/html`) is tree-shaken.
-  ["packages/html/dist/owlky.js", 160_000, "HTML runtime + all components (IIFE)"],
+  ["packages/html/dist/owlky.js", 165_000, "HTML runtime + all components (IIFE)"],
   ["packages/html/dist/esm/runtime/runtime.js", 3_000, "HTML core runtime"],
   // The Editor is opt-in (ADR-0023): Tiptap, ProseMirror and its starter kit are about 125 kB of
   // it; owlky.js stays free of them.
@@ -120,7 +122,9 @@ const budgets = [
   // 43.25 kB once merged with Markdown and the Organization chart.
   // 50 kB since the Card (on Paper: header, media, content, actions, action area; about 0.5 kB
   // in the bundle): 47.8 kB, after Paper and Typography; the rest of wave 8 adds small files.
-  ["packages/styles/dist/owlky.min.css", 50_000, "All CSS (tokens + components)"],
+  // 52 kB since the Select (field box mirroring TextField's three variants, InputLabel, the
+  // TablePagination and TextField compositions; about 1.3 kB): 49.6 kB.
+  ["packages/styles/dist/owlky.min.css", 52_000, "All CSS (tokens + components)"],
 ];
 
 let failed = false;

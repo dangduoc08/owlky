@@ -1,7 +1,7 @@
 # Pagination
 
 Reference: Minimal "Pagination" page (sections Shapes, Variants, Sizes, Buttons, Ranges, Custom
-icons, Table). Upstream: MUI `Pagination` / `PaginationItem` / `usePagination` (ADR-0015).
+icons, Table, Items). Upstream: MUI `Pagination` / `PaginationItem` / `usePagination` (ADR-0015).
 Reference URL: https://minimals.cc/components/mui/pagination
 
 ## Purpose

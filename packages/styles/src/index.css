@@ -39,6 +39,7 @@
 @import "./components/scrollbar.css";
 @import "./components/switch.css";
 @import "./components/text-field.css";
+@import "./components/select.css";
 @import "./components/tabs.css";
 @import "./components/breadcrumbs.css";
 @import "./components/stepper.css";

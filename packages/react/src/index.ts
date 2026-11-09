@@ -532,6 +532,17 @@ export {
 } from "./radio/radio.js";
 export { Rating, type RatingProps, StarIcon } from "./rating/rating.js";
 export { Scrollbar, type ScrollbarProps } from "./scrollbar/scrollbar.js";
+export {
+  InputLabel,
+  type InputLabelProps,
+  Select,
+  type SelectBehaviorProps,
+  type SelectCloseReason,
+  type SelectMenuProps,
+  type SelectProps,
+  type SelectValue,
+  type SelectValueType,
+} from "./select/select.js";
 export { Slider, type SliderProps } from "./slider/slider.js";
 export {
   TOAST_ICONS,
@@ -591,6 +602,7 @@ export {
   TextField,
   type TextFieldElement,
   type TextFieldProps,
+  type TextFieldSelectProps,
 } from "./text-field/text-field.js";
 export {
   Timeline,

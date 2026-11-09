@@ -1,7 +1,7 @@
 # Table
 
 Reference: Minimal "Table" page (sections Basic, Sorting & selecting, Grouping & fixed header,
-Collapsible, Pagination with API). Upstream: MUI `Table`, `TableHead` / `TableBody` / `TableFooter`, `TableRow`,
+Collapsible, Pagination with API, Table pagination with API). Upstream: MUI `Table`, `TableHead` / `TableBody` / `TableFooter`, `TableRow`,
 `TableCell`, `TableContainer`, `TableSortLabel`, `TablePagination` (ADR-0015).
 Reference URL: https://minimals.cc/components/mui/table
 
@@ -82,7 +82,13 @@ Pagination (`TablePagination` ↔ HTML): `count` (`-1` = unknown) ↔ number of 
   primary when active or hovered. `hideSortIcon`: no arrow while inactive.
 - Detail row: `--ok-bg-neutral`; the expand button's chevron turns 180° when open.
 - Pagination: flex, wraps, right-aligned, 16px gaps, min-height 64px; prev/next are small icon
-  buttons; the rows-per-page `<select>` is native (Select component pending).
+  buttons; the rows-per-page `<select>` is native by default. `selectProps={{ native: false }}`
+  (MUI `SelectProps`) composes a bare listbox Select instead (additive):
+  `div[data-ok-table-pagination-rows] › span[id] (the label) + div[data-ok-select]` (no variant:
+  table.css draws it, 32px, no line, a focus ring); the HTML runtime listens to its
+  `ok:select:change` (refused when `ok:table-pagination:change` is prevented) and reads the
+  hidden input for the first rows per page. Story "Table pagination with API" (search TextField
+  + category Select; HTML: a page script filters the rows the runtime pages).
 
 ## Behavior
 - React: data is the app's (sort, select, page in state; `compareCellValues`, `nextSortDirection`,

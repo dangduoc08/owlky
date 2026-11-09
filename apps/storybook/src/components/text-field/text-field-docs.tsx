@@ -118,7 +118,7 @@ export function Password() {
   {
     id: "select",
     title: "Let people choose from a list",
-    body: "Set `select` and pass `<option>` elements to get a native `<select>` in the field's frame. The label always stays above it. A native select uses the system's list on every device, which works well on touch screens and with assistive technology.",
+    body: "Set `select` and pass `<option>` elements to get a native `<select>` in the field's frame. The label always stays above it. A native select uses the system's list on every device, which works well on touch screens and with assistive technology. For a list in the page's own style, set `selectProps` to `{ native: false }` and pass **MenuItem**s: the field then holds a **Select** (see its page).",
     html: `<div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none">
   <label data-ok-text-field-label for="currency">Currency</label>
   <div data-ok-text-field-control>

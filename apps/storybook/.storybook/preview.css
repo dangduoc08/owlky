@@ -349,6 +349,117 @@
   font-size: var(--ok-typography-body2-font-size);
 }
 
+/* Select demos (story-only): field widths as in MUI's demos, a shorter menu for long lists. */
+.sb-select,
+.sb-select-group {
+  min-width: 120px;
+}
+
+.sb-select-auto {
+  min-width: 80px;
+}
+
+.sb-select-wide {
+  width: 300px;
+  max-width: 100%;
+}
+
+.sb-select-menu {
+  max-height: 224px;
+}
+
+.sb-select-dialog {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--ok-spacing) * 4);
+  padding-top: calc(var(--ok-spacing) * 2);
+}
+
+/* Pagination "Items" demo (story-only): a grid of numbered cards over the pagination. */
+.sb-pagination-items {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--ok-spacing) * 6);
+  width: 100%;
+  min-width: 0;
+}
+
+.sb-pagination-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: calc(var(--ok-spacing) * 4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 600px) {
+  .sb-pagination-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.sb-pagination-grid > li > * {
+  display: grid;
+  place-items: center;
+  height: calc(var(--ok-spacing) * 24);
+  color: var(--ok-text-secondary);
+  font-size: var(--ok-typography-h4-font-size);
+  font-weight: var(--ok-font-weight-bold);
+}
+
+.sb-pagination-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(var(--ok-spacing) * 4);
+}
+
+/* Table "Table pagination with API" demo (story-only): the query, then the filters in a row. */
+.sb-table-api {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--ok-spacing) * 4);
+  width: 100%;
+  min-width: 0;
+  color: var(--ok-text-primary);
+  font-size: var(--ok-typography-body2-font-size);
+}
+
+.sb-table-api-query {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: calc(var(--ok-spacing) * 2);
+}
+
+.sb-table-api-query > p {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.sb-table-api-query code {
+  color: var(--ok-palette-primary-text);
+}
+
+.sb-table-api-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: calc(var(--ok-spacing) * 2);
+}
+
+.sb-table-api-filters > [data-ok-text-field] {
+  flex: 1 1 240px;
+  width: auto;
+}
+
+.sb-table-api-category {
+  width: 180px;
+  max-width: 100%;
+}
+
 /* Autocomplete demos (story-only): a column width, value outputs beside the fields. */
 .sb-autocomplete {
   display: flex;

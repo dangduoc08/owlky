@@ -7,6 +7,8 @@
  *                  › span[data-ok-text-field-adornment="start"]?
  *                  › (input | textarea | select)[data-ok-text-field-input]
  *                  › svg[data-ok-text-field-select-icon]?                 (select)
+ *              A listbox Select composes the control: [data-ok-text-field-control][data-ok-select]
+ *              › div[data-ok-text-field-input][data-ok-select-display] + the Select's parts.
  *                  › span[data-ok-text-field-adornment="end"]?
  *                  › fieldset[data-ok-text-field-outline] › legend › span (outlined; the label again)
  *              › div[data-ok-text-field-helper]?
@@ -216,6 +218,22 @@
     white-space: nowrap;
     cursor: pointer;
     appearance: none;
+  }
+
+  /* Select (listbox, composed: the control carries data-ok-select and the trigger is the input). */
+  :where([data-ok-text-field-control]:has(> [data-ok-select-display])) {
+    cursor: pointer;
+  }
+
+  :where([data-ok-text-field-control] > [data-ok-select-display][data-ok-text-field-input]) {
+    padding-inline-end: calc(var(--ok-spacing) * 8);
+  }
+
+  :where(
+    [data-ok-text-field][data-ok-variant="standard"]
+      [data-ok-select-display][data-ok-text-field-input]
+  ) {
+    padding-inline-end: calc(var(--ok-spacing) * 6);
   }
 
   :where([data-ok-text-field-input] > option) {

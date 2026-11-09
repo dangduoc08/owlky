@@ -40,8 +40,8 @@ Root: `data-ok-text-field`. Unknown values fall back to the default.
 | `shrink` | `data-ok-shrink` | flag | boolean | off | Keep the label above the value even when empty. |
 | `minRows` | `data-ok-min-rows="…"` | number | number | — | Multiline: rows shown at least. |
 | `maxRows` | `data-ok-max-rows="…"` | number | number | — | Multiline: rows before it scrolls. |
-| `disabled` | `disabled` on each `[data-ok-text-field-control] > [data-ok-text-field-input]` | native | boolean | off | Native `disabled` on the input. |
-| `required` | `required` on each `[data-ok-text-field-control] > [data-ok-text-field-input]` | native | boolean | off | Native `required`; the label gets an asterisk. |
+| `disabled` | `disabled` on each `[data-ok-text-field-control] > :is([data-ok-text-field-input]:not([data-ok-select-display]), [data-ok-select-input])` | native | boolean | off | Native `disabled` on the input. |
+| `required` | `required` on each `[data-ok-text-field-control] > :is([data-ok-text-field-input]:not([data-ok-select-display]), [data-ok-select-input])` | native | boolean | off | Native `required`; the label gets an asterisk. |
 | `value` | `value` · event `ok:text-field:input` | state | — | — | The input's value (`value` / `defaultValue` + `onChange(value)`). |
 <!-- /options:text-field -->
 
@@ -51,8 +51,15 @@ React: `label`, `helperText`, `startAdornment` / `endAdornment` (`InputAdornment
 → `startAdornment` / `endAdornment`, `slotProps.inputLabel.shrink` → `shrink` (no slotProps).
 `color` keeps MUI's name and values plus `default` (the text color, as on the reference), which is
 the default (MUI: `primary`): lines use the palette's `main`, the focused label its AA `-text` tone.
-Deferred: non-native `select`
-(needs Menu / Popover — roadmap). Not applicable: `sx`, `classes`, `slots`, `slotProps`.
+Listbox `select`: `selectProps={{ native: false, … }}` (MUI `SelectProps` / `slotProps.select`)
+with `MenuItem` children composes the Select (select.md) in the control: the control gets
+`data-ok-select` (+ `data-ok-auto-width` / `data-ok-display-empty`), the trigger
+`div[data-ok-text-field-input][data-ok-select-display][role=combobox]` replaces the `<select>`,
+followed by the hidden `input[data-ok-select-input]`, the icon (`data-ok-text-field-select-icon
+data-ok-select-icon`), the outline and the Select's popover; the label gets `id` (`<id>-label`).
+`select` alone stays native (MUI's default is the listbox; additive, no DOM change). Single
+values only (`value` stays a string): use FormControl + Select for `multiple`. Not applicable:
+`sx`, `classes`, `slots`, `slotProps`.
 
 ## Layout and tokens
 - Text `--ok-font-size-lg` (15px) / 24px; label rest `--ok-text-secondary` 15px (filled:

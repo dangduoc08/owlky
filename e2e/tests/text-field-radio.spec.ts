@@ -26,7 +26,8 @@ for (const impl of implementations) {
 
     test("text field: select changes; helper text describes the input", async ({ page }) => {
       await openStory(page, storyId(impl, "text-field", "filled"));
-      const select = page.getByRole("combobox", { name: "Select", exact: true });
+      // "Select" is the listbox Select since the Select component (select.spec.ts).
+      const select = page.getByRole("combobox", { name: "Native select", exact: true });
       await select.selectOption("USD");
       await expect(select).toHaveValue("USD");
       await expect(select).toHaveAccessibleDescription("Please select your currency");

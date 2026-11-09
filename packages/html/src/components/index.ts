@@ -43,6 +43,7 @@ import { organizationChart } from "./organization-chart/organization-chart.js";
 import { pagination } from "./pagination/pagination.js";
 import { popover } from "./popover/popover.js";
 import { rating } from "./rating/rating.js";
+import { select } from "./select/select.js";
 import { slider } from "./slider/slider.js";
 import { sortable } from "./sortable/sortable.js";
 import { stepper } from "./stepper/stepper.js";
@@ -84,6 +85,7 @@ export const components: readonly ComponentDefinition[] = [
   table as ComponentDefinition,
   tablePagination as ComponentDefinition,
   textField as ComponentDefinition,
+  select as ComponentDefinition,
   toggleButton as ComponentDefinition,
   toggleGroup as ComponentDefinition,
   tabs as ComponentDefinition,

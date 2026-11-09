@@ -16,6 +16,7 @@ export function TablePaginationDemo() {
         setRowsPerPage(next);
         setPage(0);
       }}
+      selectProps={{ native: false }}
     />
   );
 }

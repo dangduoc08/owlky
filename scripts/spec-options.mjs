@@ -31,6 +31,8 @@ const SPECS = {
   "form-group": "form-control.md",
   "form-helper-text": "form-control.md",
   "text-field": "text-field.md",
+  select: "select.md",
+  "input-label": "select.md",
   avatar: "avatar.md",
   "avatar-group": "avatar.md",
   badge: "badge.md",

@@ -42,6 +42,10 @@ events `ok:dialog:*`) **Snackbar** (runtime `toaster`: `section[data-ok-toaster]
 **Radio** (CSS only: `div[role=radiogroup][data-ok-radio-group]` › `span[data-ok-radio]` › native radio)
 **Text field** (CSS only, plus runtime `text-field` for `data-ok-min-rows` / `data-ok-max-rows` and the
 `data-ok-text-field-reveal` password button; inputs keep a `placeholder`, " " when none)
+**Select** (runtime `select`: `div[data-ok-select]` › `[data-ok-select-display][role=combobox]`, a hidden
+`input[data-ok-select-input]` and a Popover with `ul[data-ok-select-listbox][role=listbox]` of MenuItems;
+`template[data-ok-select-chip]` / `[data-ok-select-placeholder]`, opener `data-ok-select-open`, events
+`ok:select:change|open|close`; `select[data-ok-select-native]` needs no JavaScript)
 **Circular progress** / **Linear progress** (runtime: `circular-progress`, `linear-progress` —
 draws `aria-valuenow` / `-valuemin` / `-valuemax`, `data-ok-size`, `data-ok-thickness`,
 `data-ok-value-buffer` and redraws when they change; indeterminate needs no JavaScript)

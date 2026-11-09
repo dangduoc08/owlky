@@ -3,6 +3,7 @@ import { Pagination } from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
 import { DemoIcon } from "../shared/demo-icon.js";
 import type { GroupFiles } from "../shared/snippets.js";
+import { ItemsDemo } from "./items-demo.js";
 import { TablePaginationDemo } from "./table-pagination-demo.js";
 
 const VARIANTS = ["text", "outlined", "soft"] as const;
@@ -80,6 +81,8 @@ export const iconGroups: ReactGroup[] = [
 ];
 
 export const tableGroups: ReactGroup[] = [{ title: "Table", content: <TablePaginationDemo /> }];
+
+export const itemsGroups: ReactGroup[] = [{ title: "Items", content: <ItemsDemo /> }];
 
 export const files = (title: string): GroupFiles => [[title, "group"]];
 

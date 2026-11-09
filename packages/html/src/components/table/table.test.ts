@@ -60,7 +60,7 @@ const header = (host: Element, text: string) =>
   [...host.querySelectorAll("th")].find((th) => th.textContent?.trim() === text) as HTMLElement;
 
 describe("table snippets", () => {
-  it("covers every story group", () => expect(snippets).toHaveLength(5));
+  it("covers every story group", () => expect(snippets).toHaveLength(6));
 
   it.each(snippets)("%s: valid anatomy", (_, html) => {
     const host = mount(html);

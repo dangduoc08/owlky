@@ -12,8 +12,19 @@ const snippets = import.meta.glob(
   { query: "?raw", import: "default", eager: true },
 ) as Record<string, string>;
 
-// The runtime is needed for growing textareas and the password button only.
-const setup = htmlSetup(["text-field.css", "button.css", "icon-button.css"], true);
+// The runtime is needed for growing textareas, the password button and the listbox selects.
+const setup = htmlSetup(
+  [
+    "text-field.css",
+    "button.css",
+    "icon-button.css",
+    "form-control.css",
+    "popover.css",
+    "menu.css",
+    "select.css",
+  ],
+  true,
+);
 
 const story = (variant: "outlined" | "filled" | "standard") =>
   frameworkStory({

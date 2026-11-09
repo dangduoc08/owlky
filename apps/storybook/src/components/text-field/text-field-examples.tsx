@@ -1,5 +1,14 @@
 import { type TextFieldVariant, textFieldOptions } from "@owlky/core";
-import { Button, IconButton, InputAdornment, TextField } from "@owlky/react";
+import {
+  Button,
+  FormControl,
+  IconButton,
+  InputAdornment,
+  InputLabel,
+  MenuItem,
+  Select,
+  TextField,
+} from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
 import type { GroupFiles } from "../shared/snippets.js";
 
@@ -71,6 +80,13 @@ const options = CURRENCIES.map(([value, label]) => (
   <option key={value} value={value}>
     {label}
   </option>
+));
+
+/** The listbox Select's options (the reference's "Select" and "Form control select"). */
+const menuItems = CURRENCIES.map(([value, label]) => (
+  <MenuItem key={value} value={value}>
+    {label}
+  </MenuItem>
 ));
 
 /** The groups of one variant story, as in `<variant>-<group>.html`. */
@@ -217,12 +233,14 @@ export function variantGroups(variant: TextFieldVariant): ReactGroup[] {
         <TextField
           key="1"
           {...base}
+          id={`${variant}-select`}
           select
+          selectProps={{ native: false }}
           label="Select"
           defaultValue="EUR"
           helperText="Please select your currency"
         >
-          {options}
+          {menuItems}
         </TextField>,
         <TextField
           key="2"
@@ -235,16 +253,19 @@ export function variantGroups(variant: TextFieldVariant): ReactGroup[] {
         >
           {options}
         </TextField>,
-        <TextField
-          key="3"
-          {...base}
-          select
-          size="small"
-          label="Form control select"
-          defaultValue="EUR"
-        >
-          {options}
-        </TextField>,
+        <FormControl key="3" variant={variant} size="small" fullWidth>
+          <InputLabel id={`${variant}-form-select-label`} htmlFor={`${variant}-form-select`}>
+            Form control select
+          </InputLabel>
+          <Select
+            labelId={`${variant}-form-select-label`}
+            id={`${variant}-form-select`}
+            label="Form control select"
+            defaultValue="EUR"
+          >
+            {menuItems}
+          </Select>
+        </FormControl>,
         <TextField
           key="4"
           {...base}
