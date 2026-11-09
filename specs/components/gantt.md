@@ -82,6 +82,10 @@ Root: `data-ok-gantt`. Unknown values fall back to the default.
 | `toolbar` | `data-ok-toolbar` | flag | boolean | off | A toolbar with zoom out and zoom in buttons. |
 | `selection` | `data-ok-selection` | flag | boolean | off | Rows can be selected: click, Ctrl or Cmd + click, Shift + click, Space and Ctrl + A. |
 | `disableTooltip` | `data-ok-disable-tooltip` | flag | boolean | off | No tooltip on bar hover or row focus. |
+| `editable` | `data-ok-editable` | flag | boolean | off | Tasks can be edited: drag bars, their edges and their progress handles, or press Enter on a row (arrows move, Shift + arrows change the end, Page Up / Page Down the progress, Enter saves, Escape cancels). Double click or F2 asks for your own edit form. |
+| `taskDrag` | `data-ok-task-drag="false"` turns it off | behavior | boolean | on | With `editable`: bars move by drag and arrow keys. |
+| `taskResize` | `data-ok-task-resize="false"` turns it off | behavior | boolean | on | With `editable`: bar edges change the dates (drag, Shift + arrow keys). |
+| `progressDrag` | `data-ok-progress-drag="false"` turns it off | behavior | boolean | on | With `editable`: the progress handle sets the progress (drag, Page Up / Page Down). |
 | `collapsed` | `data-ok-collapsed` · event `ok:gantt:toggle` | state | — | — | Collapsed parent rows: `data-ok-collapsed` on their rows of the data table (`aria-expanded` on the grid rows). |
 | `selected` | `data-ok-selected` · event `ok:gantt:selectionchange` | state | — | — | Selected rows: `data-ok-selected` on their rows of the data table (`aria-selected` on the grid rows). |
 <!-- /options:gantt -->
@@ -110,7 +114,7 @@ palette name), `pixelsPerDay`, `rowHeight`, `barMargin`, `tasksContainerWidth`, 
 `locale.messages` → `localeText`, `zoomIn()` / `zoomOut()` / `scrollToTask()` kept (HTML instance).
 Not applicable: colors and fonts as options (tokens and palettes), `canvasStyle`, `theme`,
 `tooltipTemplate` / `barLabel.render` (HTML strings), `persistState` (no storage, ADR-0007),
-`inputDateFormat` (ISO dates). Deferred (roadmap): editing (phase 2), virtualization and export
+`inputDateFormat` (ISO dates). Phase 2 adds `editable` (`enableTaskDrag` / `enableTaskResize` / `enableProgressDrag` → `taskDrag`, `taskResize`, `progressDrag` behaviors), `onTaskChange` (upstream `taskUpdate` events) and `onTaskEdit` (upstream `enableTaskEdit` dialog, the form is yours), `updateTask()` (HTML). Deferred (roadmap): virtualization and export
 (phase 3), sorting and filtering, grouping, custom column renderers, inline editing, CRUD toolbar,
 context menu, undo / redo, split tasks, rollups, annotations, crosshair, draw tasks and links,
 critical path in working days, right to left, sub-day scales.
@@ -156,7 +160,9 @@ the zoom in `data-ok-pixels-per-day`.
 | Space | toggles the row's selection (`selection`); Shift + Space selects the range |
 | Shift + ↓ / ↑ / Page / Home / End | extends the selection (`selection`) |
 | Ctrl / Cmd + A | selects every row (`selection`) |
-| Escape | hides the tooltip (wherever the focus is) |
+| Escape | hides the tooltip (wherever the focus is); cancels a drag |
+| Enter (editable task row) | starts the edit mode: ← / → move a day, Shift + ← / → change the end, Page Up / Page Down ±10 % progress, Enter saves, Escape (or Tab) cancels; other arrows stay in the mode |
+| F2 (editable task row) | asks for the owner's edit form (`onTaskEdit`, `ok:gantt:edit`) |
 
 Pointer: a click focuses a row and selects it (Ctrl / Cmd toggles, Shift selects the range); the
 chevron toggles a parent; hovering a bar shows the tooltip, which stays while hovered.
@@ -172,8 +178,19 @@ chevron toggles a parent; hovering a bar shows the tooltip, which stays while ho
 - Color is never the only cue: critical tasks and links are also named; milestones are diamonds.
 - Text uses neutral tones (AA); bars are graphics (palette fills, 3:1 against the paper).
 
+Editing (`editable`, phase 2): editable task bars carry `span[data-ok-gantt-handle="start|end|progress"]`
+(aria-hidden), rows `aria-keyshortcuts="Enter F2"`; drag the bar (move), an edge (resize, at least a
+day) or the progress handle (whole percents); 3 px before a drag starts; the preview is CSSOM on the
+bar (`data-ok-dragging`), undone before the change is reported, so the owner's render decides.
+Milestones move only; summaries never edit. Touch: `touch-action: none` on editable bars. Double
+click / double tap / F2 → `onTaskEdit` (the single-pointer path, WCAG 2.5.7). The edit mode
+announces its keys and each draft in `div[data-ok-gantt-status][role=status]` (last child of the
+root). Right to left mirrors the arrows and drags.
+
 ## Events / API
-HTML events: `ok:gantt:toggle` (cancelable; `{ id, expanded, collapsed }`),
+HTML events: `ok:gantt:taskchange` (cancelable; `{ id, change: { startTime, endTime?, progress? }, source:
+"drag" | "resize" | "progress" | "keyboard" }`; then the runtime writes the table row), `ok:gantt:edit`
+(`{ id }`), `ok:gantt:toggle` (cancelable; `{ id, expanded, collapsed }`),
 `ok:gantt:selectionchange` (cancelable; `{ selected, mode }`), `ok:gantt:zoom` (cancelable;
 `{ pixelsPerDay }`). Instance (`runtime.get(el, "gantt")`): `tasks`, `collapsed`,
 `setCollapsed(ids)`, `selected`, `setSelected(ids)`, `pixelsPerDay`, `zoomIn()`, `zoomOut()`,

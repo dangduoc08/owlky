@@ -564,6 +564,7 @@
   "data-ok-gantt-field",
   "data-ok-gantt-grid",
   "data-ok-gantt-grid-lines",
+  "data-ok-gantt-handle",
   "data-ok-gantt-head",
   "data-ok-gantt-label",
   "data-ok-gantt-link",
@@ -574,6 +575,7 @@
   "data-ok-gantt-non-working",
   "data-ok-gantt-row",
   "data-ok-gantt-scale",
+  "data-ok-gantt-status",
   "data-ok-gantt-tick",
   "data-ok-gantt-tier",
   "data-ok-gantt-today",
@@ -917,6 +919,7 @@
   "data-ok-preview-end",
   "data-ok-preview-start",
   "data-ok-print-options",
+  "data-ok-progress-drag",
   "data-ok-project-boundary",
   "data-ok-projection",
   "data-ok-promote-id",
@@ -1113,7 +1116,9 @@
   "data-ok-tabs-scroll-button",
   "data-ok-tabs-scroller",
   "data-ok-target",
+  "data-ok-task-drag",
   "data-ok-task-id",
+  "data-ok-task-resize",
   "data-ok-tasks-container-width",
   "data-ok-text",
   "data-ok-text-align",
@@ -1425,6 +1430,11 @@
      "title": "Responsive"
     },
     {
+     "body": "Audit 2026-11-09 against MUI API pages Accordion, AccordionSummary, AccordionDetails, AccordionActions.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `Accordion` `children`, `disabled`, `disableGutters` | same | kept | |\n| `expanded`, `defaultExpanded` | same; HTML `open` | kept | |\n| `onChange(event, expanded)` | `onChange(expanded)`; HTML `ok:accordion:beforetoggle` / `toggle` | renamed | no event argument |\n| `slots.heading` (default `h3` around the summary) | author's heading inside the summary | renamed | composition |\n| `slots.region` / `slots.transition` (Collapse, `unmountOnExit`) | `div[data-ok-accordion-details]`, `::details-content` height animation | not applicable | native `<details>`; content stays mounted (find-in-page) |\n| — | `variant` (`default` `outlined` `soft`), `name` (exclusive group) | kept | beyond upstream: reference variants, native attribute |\n| `AccordionSummary` `expandIcon`, `children` | same | kept | |\n| `AccordionSummary` `focusVisibleClassName`, ButtonBase props (ripple) | `:focus-visible` | not applicable | native `<summary>` |\n| `AccordionDetails` `children` | same | kept | |\n| `AccordionActions` `children` | same | kept | |\n| `AccordionActions` `disableSpacing` | — | deferred | new batch E row |\n| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps`, `TransitionComponent` / `TransitionProps` | — | not applicable | ADR-0015: CSS, composition, one CSS transition |",
+     "id": "upstream-api-mapping",
+     "title": "Upstream API mapping"
+    },
+    {
      "body": "Same `<details>` markup. React controls `open` from state: it prevents the summary's native toggle,\nand toggles the browser makes itself (find-in-page, `<details name>`) are reported through\n`onToggle` and reverted after render when refused. The HTML runtime lets the native toggle happen\nand reports it (`ok:accordion:beforetoggle` / `ok:accordion:toggle`).",
      "id": "parity-notes",
      "title": "Parity notes"
@@ -1583,6 +1593,11 @@
      "title": "Responsive"
     },
     {
+     "body": "Audit 2026-11-09 against MUI API pages Alert, AlertTitle.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `severity`, `variant`, `color`, `children` | same | kept | |\n| `icon` (`false` hides), `iconMapping`, `action`, `closeText`, `role` | same (React); HTML markup | kept | |\n| `onClose(event)` | `onClose()`; HTML `ok:alert:close` (cancelable) → `hidden` | renamed | no event argument |\n| `slots.closeButton` / `closeIcon` / `icon` / `message` / `action` | parts `[data-ok-alert-*]`; `action` replaces the close button | not applicable | composition |\n| `AlertTitle` `children` | same | kept | |\n| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps` | — | not applicable | ADR-0015: CSS and composition |",
+     "id": "upstream-api-mapping",
+     "title": "Upstream API mapping"
+    },
+    {
      "body": "Closing differs by design: React reports `onClose` and the app removes the alert; the HTML runtime\nhides it (`hidden`) after `ok:alert:close` unless the event is prevented.",
      "id": "parity-notes",
      "title": "Parity notes"
@@ -1729,7 +1744,7 @@
      "title": "Anatomy"
     },
     {
-     "body": "(Options of `autocomplete`: listed under \"options\".)\n\nOther props: `options` (`(string | { value, label, disabled? })[]`), `value` / `defaultValue` /\n`onChange(value)` (`string | null`, `string[]` multiple), `inputValue` / `onInputChange(text)`,\n`open` / `onOpenChange(open, reason)`, `getLimitTagsText(more)`, `filterOptions(options, text)`,\n`renderOption(option, { selected })`, `noOptionsText`, `clearText`, `openText`, `closeText`, and\nTextField props `label`, `placeholder`, `helperText`, `error`, `variant`, `size`, `disabled`,\n`id`, `name`.\n\nAPI mapping (MUI): kept the props above, `multiple`, `freeSolo`, `disableCloseOnSelect`,\n`disableClearable`, `openOnFocus`, `autoHighlight`, `limitTags`. Renamed: `renderInput` → the\nTextField props (the field is built in); `getOptionLabel` / `isOptionEqualToValue` → options as\n`{ value, label }` (values are strings). Deferred: `groupBy`, `loading` / `loadingText`,\n`autoSelect`, `blurOnSelect`, `clearOnEscape`, `includeInputInList`, `selectOnFocus`,\n`handleHomeEndKeys` (follows MUI's default: on unless free solo), virtualization, `ListboxComponent`.\nNot applicable: `slots`, `slotProps`, `PaperComponent`, `PopperComponent`, `sx`.",
+     "body": "(Options of `autocomplete`: listed under \"options\".)\n\nOther props: `options` (`(string | { value, label, disabled? })[]`), `value` / `defaultValue` /\n`onChange(value)` (`string | null`, `string[]` multiple), `inputValue` / `onInputChange(text)`,\n`open` / `onOpenChange(open, reason)`, `getLimitTagsText(more)`, `filterOptions(options, text)`,\n`renderOption(option, { selected })`, `noOptionsText`, `clearText`, `openText`, `closeText`, and\nTextField props `label`, `placeholder`, `helperText`, `error`, `variant`, `size`, `disabled`,\n`id`, `name`.\n\nAPI mapping: see \"Upstream API mapping\" below.",
      "id": "options",
      "title": "Options"
     },
@@ -1762,6 +1777,11 @@
      "body": "The field fills its container; the paper follows the field's width (min 160px) in the top layer.",
      "id": "responsive",
      "title": "Responsive"
+    },
+    {
+     "body": "Upstream: MUI `Autocomplete`, mui.com/material-ui/api/autocomplete/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `options`, `value`, `defaultValue`, `inputValue`, `open`, `multiple`, `freeSolo`, `disableCloseOnSelect`, `disableClearable`, `openOnFocus`, `autoHighlight`, `limitTags`, `getLimitTagsText`, `filterOptions`, `renderOption`, `noOptionsText`, `clearText`, `openText`, `closeText`, `disabled`, `id`, `size` | same | kept | `options`: strings or `{ value, label, disabled? }` |\n| `onChange(event, value, reason, details)` | `onChange(value)` | renamed | value-first (ADR-0015) |\n| `onInputChange(event, value, reason)` | `onInputChange(text)` | renamed | |\n| `onOpen` / `onClose` | `onOpenChange(open, reason)` | renamed | |\n| `renderInput` | TextField props (`label`, `placeholder`, `helperText`, `error`, `variant`, `name`) | renamed | the field is built in |\n| `getOptionLabel`, `getOptionKey`, `getOptionValue`, `isOptionEqualToValue`, `getOptionDisabled` | options as `{ value, label, disabled? }` | renamed | string values only; object values deferred |\n| `fullWidth` | — | not applicable | the field always fills its container (reference) |\n| `groupBy`, `renderGroup` | — | deferred (4.1) | `renderGroup` goes with `groupBy` |\n| `loading`, `loadingText` | — | deferred (4.1) | |\n| `autoSelect`, `blurOnSelect`, `clearOnEscape`, `selectOnFocus`, `includeInputInList` | — | deferred (4.1) | |\n| virtualization, `slots.listbox` (`ListboxComponent`) | — | deferred (4.1) | |\n| `readOnly` | — | deferred | |\n| `onHighlightChange(event, option, reason)` | — | deferred | |\n| `autoComplete` (inline completion), `clearOnBlur`, `filterSelectedOptions`, `disableListWrap`, `disabledItemsFocusable`, `handleHomeEndKeys`, `resetHighlightOnMouseLeave` | — | deferred | `handleHomeEndKeys` follows MUI's default (on unless free solo), not configurable |\n| `renderValue` (MUI `renderTags`) | — | deferred | chips are built in |\n| `clearIcon`, `popupIcon`, `forcePopupIcon` | — | deferred | |\n| `useAutocomplete`, `createFilterOptions` | core `filterOptions` / `nextAutocompleteValue` | deferred | no public hook / filter factory |\n| `slots.paper`, `slots.popper`, `disablePortal` (`PaperComponent`, `PopperComponent`) | Popover | not applicable | top layer, no portal |\n| `sx`, `classes`, `slots`, `slotProps` | — | not applicable | ADR-0015 |",
+     "id": "upstream-api-mapping",
+     "title": "Upstream API mapping"
     },
     {
      "body": "React renders `data-ok-runtime=\"off\"` on the root and the Popover. The chip `<template>` is\nHTML-only (parity skips templates); hidden chips / options / no-options are skipped by parity.\nCountry flags of the reference are not reproduced: options show the country code on a Label.",
@@ -1917,6 +1937,11 @@
      "title": "Events / API"
     },
     {
+     "body": "Audit 2026-11-09 against MUI API pages Avatar, AvatarGroup.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `src`, `srcSet`, `sizes`, `alt`, `children`, `variant` | same | kept | fallback order as upstream |\n| `slotProps.img` | `imgProps` | renamed | |\n| `slots.fallback` | built-in person icon / `span[data-ok-avatar-fallback]` | not applicable | composition: pass children |\n| `component` | — | not applicable | always `span` |\n| — | `color`, `size` | kept | beyond upstream (Minimals) |\n| `AvatarGroup` `max`, `total`, `renderSurplus`, `variant`, `children` | same (React); HTML writes the surplus | kept | |\n| `AvatarGroup` `spacing` (number) | `medium` / `small` only | deferred (4.12) | |\n| `AvatarGroup` `component`, `slots.surplus` | `renderSurplus` | not applicable | |\n| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps` | — | not applicable | ADR-0015: CSS and composition |",
+     "id": "upstream-api-mapping",
+     "title": "Upstream API mapping"
+    },
+    {
      "body": "HTML writes the surplus avatar; React computes it from `max` / `total`.",
      "id": "parity-notes",
      "title": "Parity notes"
@@ -2061,6 +2086,11 @@
      "body": "HTML triggers: `[data-ok-backdrop-open=\"id\"]`; `[data-ok-backdrop-close=\"id\"]`, or\n`[data-ok-backdrop-close]` with no value inside a backdrop or on the backdrop itself (a click\nanywhere on it closes it, like the reference's `onClick`). `data-ok-open` opens it on load.\nEvents: `ok:backdrop:beforeopen` (cancelable, `detail.trigger`), `ok:backdrop:open`,\n`ok:backdrop:beforeclose` (cancelable, `detail.reason`: trigger | api), `ok:backdrop:close`.\nInstance: `{ isOpen, open(trigger?), close(reason?) }`.",
      "id": "events-api",
      "title": "Events / API"
+    },
+    {
+     "body": "Audit 2026-11-09 against MUI API page Backdrop (inherits Fade).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `open`, `invisible`, `children` | same; HTML `data-ok-open`, `data-ok-invisible` | kept | |\n| `transitionDuration` | — (fixed `--ok-duration-*`) | deferred (4.9) | |\n| `component` | — | not applicable | one `div` |\n| Fade props (`appear`, `easing`, `timeout`, `addEndListener`, `onEnter`… callbacks) | one CSS fade | not applicable | HTML `ok:backdrop:open` / `close` events |\n| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps`, `TransitionComponent` / `TransitionProps` | — | not applicable | ADR-0015: CSS, composition, one CSS transition |",
+     "id": "upstream-api-mapping",
+     "title": "Upstream API mapping"
     },
     {
      "body": "None: both render the same `div`; React adds `data-ok-runtime=\"off\"`.",
@@ -2219,6 +2249,11 @@
      "body": "None.",
      "id": "events-api",
      "title": "Events / API"
+    },
+    {
+     "body": "Audit 2026-11-09 against MUI API page Badge.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `badgeContent`, `children`, `max`, `showZero`, `invisible`, `overlap` | same (HTML writes the displayed text) | kept | |\n| `anchorOrigin` `{ vertical, horizontal }` | same; HTML `data-ok-vertical` + `data-ok-horizontal` | kept | |\n| `color` | + `info` `success` `warning` | kept | |\n| `variant` (`standard` `dot`) | + `online` `always` `busy` `offline` `invisible` | kept | Minimals statuses |\n| `component` | — | not applicable | always `span` |\n| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps` | — | not applicable | ADR-0015: CSS and composition |",
+     "id": "upstream-api-mapping",
+     "title": "Upstream API mapping"
     }
    ],
    "snippets": {},
@@ -2565,6 +2600,11 @@
      "title": "Events / API"
     },
     {
+     "body": "Upstream: MUI `Button` (+ `ButtonBase`), mui.com/material-ui/api/button/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `variant` (`text` · `contained` · `outlined`) | `variant` | kept | + `soft` (reference) |\n| `color` | `color` | kept | default `inherit` (reference; MUI `primary`); + `black` / `white` |\n| `size` (`small` · `medium` · `large`) | `size` (`sm` · `md` · `lg` · `xl`) | renamed | + `xl` (reference) |\n| `children`, `disabled`, `fullWidth`, `disableElevation`, `href`, `startIcon`, `endIcon` | same | kept | disabled link: no `href`, `aria-disabled` |\n| `loading`, `loadingIndicator`, `loadingPosition` | same | kept | `loading` boolean (MUI `null` = no loader slot) |\n| `type` (ButtonBase, default `button`) | native `type` | kept | |\n| `component`, `LinkComponent` (ButtonBase) | — | deferred | `<button>` or `<a href>` only; router links can't be passed |\n| `action`, `focusVisibleClassName`, `onFocusVisible` (ButtonBase) | `ref.focus()`, `:focus-visible` | not applicable | |\n| `nativeButton` (ButtonBase) | — | not applicable | always a native element |\n| `disableRipple`, `disableFocusRipple`, `disableTouchRipple`, `centerRipple`, `focusRipple`, `TouchRippleProps`, `touchRippleRef` | — | not applicable | no ripple (CSS states) |\n| `sx`, `classes` | — | not applicable | ADR-0015 |",
+     "id": "upstream-api-mapping",
+     "title": "Upstream API mapping"
+    },
+    {
      "body": "None: React renders the snippet markup (`jsxSource` examples and HTML snippets are compared by the\nparity e2e tests, per option in `options-parity.spec.ts`).",
      "id": "parity-notes",
      "title": "Parity notes"
@@ -2792,6 +2832,11 @@
      "title": "Responsive"
     },
     {
+     "body": "Upstream: MUI `ButtonGroup`, mui.com/material-ui/api/button-group/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `children`, `orientation`, `fullWidth`, `disabled`, `disableElevation` | same | kept | reach **direct** child Buttons only (`cloneElement`); `disableElevation` on by default (reference) |\n| `variant` | `variant` | kept | default `outlined` (as MUI); + `soft` |\n| `color` | `color` | kept | default `inherit` (MUI `primary`); + `black` / `white` |\n| `size` (`small` · `medium` · `large`) | `size` (`sm` · `md` · `lg` · `xl`) | renamed | |\n| `component` | — | deferred | root is always `div[role=group]` |\n| `disableRipple`, `disableFocusRipple` | — | not applicable | no ripple |\n| `sx`, `classes` | — | not applicable | ADR-0015 |",
+     "id": "upstream-api-mapping",
+     "title": "Upstream API mapping"
+    },
+    {
      "body": "In HTML, write `data-ok-variant` / `data-ok-color` / `data-ok-size` / `data-ok-disable-elevation` on every button (React does it\nfrom the group's props).",
      "id": "parity-notes",
      "title": "Parity notes"
@@ -3001,6 +3046,11 @@
      "body": "None (native `click` on the action area and controls).",
      "id": "events-api",
      "title": "Events / API"
+    },
+    {
+     "body": "Audit 2026-11-09 against MUI API pages Card, CardHeader, CardMedia, CardContent, CardActions, CardActionArea (Card inherits Paper).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `Card` `raised`, `children`; Paper's `variant`, `elevation`, `square`, `component` | same | kept | see paper.md |\n| `CardHeader` `avatar`, `action`, `title`, `subheader`, `disableTypography`, `component` | same | kept | |\n| `CardHeader` `slotProps.title` / `subheader` (`titleTypographyProps` / `subheaderTypographyProps`) | `titleProps` / `subheaderProps` | renamed | |\n| `CardHeader` title variant by avatar (`body2` / `h5`) | always `h6` / `body2` | not applicable | Minimals theme |\n| `CardMedia` `image`, `src`, `component`, `children` | same; non-media elements get a cover `img` | kept | no `style` background (CSP) |\n| `CardContent` `component` | same | kept | |\n| `CardActions` `disableSpacing` | same | kept | |\n| `CardActionArea` `children`; ButtonBase `disabled`, `href` | `button` or `a[href]` | kept | |\n| `CardActionArea` `slots.focusHighlight`, `focusVisibleClassName`, ripple props | `::after` tint, `:focus-visible` | not applicable | |\n| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps` | — | not applicable | ADR-0015: CSS and composition |",
+     "id": "upstream-api-mapping",
+     "title": "Upstream API mapping"
     },
     {
      "body": "None: React renders the same elements and attributes as the snippets (generated from the React\nexamples by `apps/storybook/scripts/card-snippets.mjs`). Stateful stories (Complex interaction,\nActive state styles) render their first state; HTML pages toggle `hidden` / `aria-expanded` /\n`aria-pressed` in a page script. Complex interaction's method section is a Collapse\n(`timeout=\"auto\"`, as MUI's `<Collapse in timeout=\"auto\">`) around the `CardContent`: the\n`collapse` runtime animates it when the page script toggles `hidden`.",
@@ -4936,6 +4986,11 @@
      "title": "Events / API"
     },
     {
+     "body": "Upstream: MUI `Checkbox`, mui.com/material-ui/api/checkbox/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `checked`, `defaultChecked`, `disabled`, `required`, `id`, `value` | native props on the input | kept | |\n| `color` | `color` | kept | + `default` (text color) |\n| `size` (`small` · `medium`) | `size` | kept | |\n| `indeterminate` | `indeterminate` | kept | HTML `data-ok-indeterminate` |\n| `icon`, `checkedIcon`, `indeterminateIcon` | same | kept | React only; HTML: own SVG in the slot |\n| `onChange(event, checked)` | `onChange(checked)` | renamed | value-first (ADR-0015) |\n| `slotProps.input` (`inputProps`, `inputRef`) | `ref` and rest props → the input | renamed | `className` / `style` → the root |\n| `disableRipple` | — | not applicable | no ripple |\n| `sx`, `classes`, `slots`, `slotProps` | — | not applicable | ADR-0015 |",
+     "id": "upstream-api-mapping",
+     "title": "Upstream API mapping"
+    },
+    {
      "body": "HTML parents (`aria-controls`) are runtime behavior; React apps compute the state\n(`selectAllState`) as the Indeterminate story does.",
      "id": "parity-notes",
      "title": "Parity notes"
@@ -5115,6 +5170,11 @@
      "body": "`ok:chip:delete` (cancelable); instance `{ delete() }`. React `onClick(event)`, `onDelete()`.",
      "id": "events-api",
      "title": "Events / API"
+    },
+    {
+     "body": "Audit 2026-11-09 against MUI API page Chip.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `label`, `avatar`, `icon`, `clickable`, `deleteIcon`, `disabled`, `size`, `variant`, `color` | same; `variant` + `soft`, `color` + `black` / `white` | kept | |\n| `onClick` | same | kept | |\n| `onDelete(event)` | `onDelete()`; HTML `ok:chip:delete` (cancelable) | renamed | no event argument |\n| — | `deleteLabel` (\"Remove\") | kept | beyond upstream: names the delete button |\n| `component` + `href` (link chip, `clickable`) | — (action is a `button` or `span`) | deferred | new batch E row |\n| `children` | — | not applicable | unsupported upstream too |\n| `skipFocusWhenDisabled`, `nativeButton` | native `button` + `disabled` | not applicable | |\n| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps` | — | not applicable | ADR-0015: CSS and composition |",
+     "id": "upstream-api-mapping",
+     "title": "Upstream API mapping"
     }
    ],
    "snippets": {},
@@ -5313,6 +5373,11 @@
      "body": "None. HTML: change the attributes above. React: props; `ref` = the root span.",
      "id": "events-api",
      "title": "Events / API"
+    },
+    {
+     "body": "Audit 2026-11-09 against MUI API page CircularProgress.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `variant`, `color`, `value`, `min`, `max`, `size` (number or length), `thickness`, `disableShrink`, `enableTrackSlot` | same (HTML: `aria-value*`, `data-ok-*`) | kept | |\n| `color` | + `info` `success` `warning` | kept | |\n| `sx`, `classes` | — | not applicable | ADR-0015 |",
+     "id": "upstream-api-mapping",
+     "title": "Upstream API mapping"
     },
     {
      "body": "React sets the private properties through `style` (an SSR style attribute is blocked by a strict\n`style-src` CSP until hydration — documented); HTML through CSSOM. Parity ignores `style`.",
@@ -5967,7 +6032,7 @@
      "title": "Anatomy"
     },
     {
-     "body": "(Options of `code-editor`: listed under \"options\".)\n\n(Options of `diff-editor`: listed under \"options\".)\n\nLanguage and theme attributes also accept names registered in `beforeMount` (letters, digits,\n`. + # - _`, up to 64 characters); React passes any string. `data-ok-options`: Monaco options as\nJSON (at most 16 kB; `JSON.parse` only, prototype keys dropped; React writes it from `options`).\n\nAPI mapping (`@monaco-editor/react`): **kept** `defaultValue`, `defaultLanguage`, `defaultPath`,\n`value`, `language`, `path`, `theme`, `line`, `loading`, `options`, `overrideServices`,\n`saveViewState`, `keepCurrentModel`, `width`, `height`, `className` (on the content element, as\nupstream), `wrapperProps` (on the root), `beforeMount`, `onMount`, `onChange(value, event)`,\n`onValidate(markers)`; DiffEditor `original`, `modified`, `language`, `originalLanguage`,\n`modifiedLanguage`, `originalModelPath`, `modifiedModelPath`, `keepCurrentOriginalModel`,\n`keepCurrentModifiedModel`, `theme`, `loading`, `options`, `width`, `height`, `className`,\n`wrapperProps`, `beforeMount`, `onMount`; `useMonaco()`; `loader.config({ paths: { vs },\nmonaco, \"vs/nls\" })`, `loader.init()` (cancelable). **Changed:** `theme` default `\"auto\"`\n(upstream `\"light\"`: Owlky themes follow `data-ok-theme`); `loader` has no CDN default (`paths.vs`\nis a folder of Owlky's build, self-hosted) and adds `import` and `getWorker`;\n`loader.__getMonacoInstance` → `getMonaco()`. **Added:** `aria-label` (default \"Code editor\":\nMonaco's `ariaLabel` and the textarea's name), `onError(error)`, a `ref` to the root. **Not\napplicable:** none.",
+     "body": "(Options of `code-editor`: listed under \"options\".)\n\n(Options of `diff-editor`: listed under \"options\".)\n\nLanguage and theme attributes also accept names registered in `beforeMount` (letters, digits,\n`. + # - _`, up to 64 characters); React passes any string. `data-ok-options`: Monaco options as\nJSON (at most 16 kB; `JSON.parse` only, prototype keys dropped; React writes it from `options`).\n\nAPI mapping: see \"Upstream API mapping\" below.",
      "id": "options",
      "title": "Options"
     },
@@ -6000,6 +6065,11 @@
      "body": "The frame is fluid (`width` 100%, never wider than its container); Monaco relayouts on resize.\nThe story settings sit beside the editor from 900px and above it below (the reference hides the\neditor on phones; Owlky keeps both).",
      "id": "responsive",
      "title": "Responsive"
+    },
+    {
+     "body": "Upstream: `@monaco-editor/react` 4.7 README (Editor, DiffEditor, `useMonaco`, `loader`).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| Editor `defaultValue`, `defaultLanguage`, `defaultPath`, `value`, `language`, `path`, `line`, `loading`, `options`, `overrideServices`, `saveViewState`, `keepCurrentModel`, `width`, `height` | same | kept | |\n| `className`, `wrapperProps` | same | kept | `className` on the content element (as upstream), `wrapperProps` on the root |\n| `beforeMount`, `onMount`, `onChange(value, event)`, `onValidate(markers)` | same | kept | |\n| `theme` (default `\"light\"`) | `theme` (default `\"auto\"`) | renamed | `auto` follows `data-ok-theme` |\n| DiffEditor `original`, `modified`, `language`, `originalLanguage`, `modifiedLanguage`, `originalModelPath`, `modifiedModelPath`, `keepCurrentOriginalModel`, `keepCurrentModifiedModel`, `theme`, `loading`, `options`, `width`, `height`, `className`, `wrapperProps`, `beforeMount`, `onMount` | same | kept | |\n| DiffEditor `line` | — | deferred | |\n| `useMonaco()` | same | kept | |\n| `loader.config({ paths: { vs }, monaco, \"vs/nls\" })`, `loader.init()` | same | kept | no CDN default (self-hosted `paths.vs`); adds `import`, `getWorker`; `init()` cancelable |\n| `loader.__getMonacoInstance` | `getMonaco()` | renamed | |\n\nBeyond upstream: `aria-label` (default \"Code editor\"), `onError(error)`, `ref` to the root.",
+     "id": "upstream-api-mapping",
+     "title": "Upstream API mapping"
     },
     {
      "body": "React renders `data-ok-runtime=\"off\"` and the status from state. Monaco's DOM (instance ids,\nmeasured layout) is compared by the code editor e2e spec, not by the anatomy parity test.\nMonaco's theme is page-wide (ADR-0034).",
@@ -6163,6 +6233,11 @@
      "body": "HTML: `ok:collapse:enter`, `entering`, `entered`, `exit`, `exiting`, `exited` (bubbling,\n`detail: { in }`). Instance: `{ in, status, show(), hide(), toggle(force?) }`. React: the six\ncallbacks.",
      "id": "events-api",
      "title": "Events / API"
+    },
+    {
+     "body": "Audit 2026-11-09 against MUI API page Collapse (inherits react-transition-group Transition).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `in`, `orientation`, `collapsedSize`, `easing` (string or `{ enter, exit }`), `disablePrefersReducedMotion`, `children` | same; HTML attributes | kept | |\n| `timeout` (number, `\"auto\"`, `{ appear, enter, exit }`) | same; `appear` ignored | kept | |\n| `component` | same | kept | |\n| Transition `mountOnEnter`, `unmountOnExit`, `onEnter` / `onEntering` / `onEntered` / `onExit` / `onExiting` / `onExited` | same (React; callbacks get the element, no `isAppearing`); HTML `ok:collapse:*` events | kept | |\n| Transition `appear`, `enter`, `exit`, `nodeRef`, `addEndListener` | — | not applicable | first render = markup state; ends on `animation.finished` |\n| `slots` `wrapper` / `wrapperInner` | — | not applicable | one element, no wrappers |\n| Fade, Grow, Slide, Zoom | Motion (`fadeIn`, `zoomIn`, `slideInUp`…) | renamed | see motion.md; full version Phase 5 |\n| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps` | — | not applicable | ADR-0015: CSS and composition |",
+     "id": "upstream-api-mapping",
+     "title": "Upstream API mapping"
     },
     {
      "body": "React adds `data-ok-runtime=\"off\"` (and `style` for a collapsed size, ignored by parity). The story\nsnippet adds the HTML-only trigger `data-ok-collapse-toggle` on the switch input (ignored by\nparity).",
@@ -7447,7 +7522,7 @@
      "title": "Anatomy"
     },
     {
-     "body": "(Options of `date-picker`: listed under \"options\".)\n\n(Options of `date-calendar`: listed under \"options\".)\n\n(Options of `date-field`: listed under \"options\".)\n\n(Options of `time-clock`: listed under \"options\".)\n\n(Options of `digital-clock`: listed under \"options\".)\n\n(Options of `multi-section-digital-clock`: listed under \"options\".)\n\n(Options of `date-range-picker`: listed under \"options\".)\n\n(Options of `date-range-calendar`: listed under \"options\".)\n\nTime attributes (strings, ADR-0026): `data-ok-value` on clocks (`HH:mm:ss`), `data-ok-min-time`,\n`data-ok-max-time` (ISO times), `data-ok-min-date-time`, `data-ok-max-date-time` (ISO date\ntimes), `data-ok-disable-ignoring-date-part-for-time-validation`, `data-ok-views` (`hours minutes\nseconds`), `data-ok-view`, `data-ok-time-steps` (`\"1 5 5\"`: hours minutes seconds),\n`data-ok-open-to` (time and date time pickers). Fields and pickers also take `data-ok-minutes-step`.\n\nPhase 4 attributes (strings, not in the schema): `data-ok-timezone` (closest ancestor; values in\nthe markup are that zone's wall times, ISO input may carry an offset), `data-ok-calendar`\n(closest ancestor; ignored when the locale names a calendar). `data-ok-month` is `YYYY-MM` in the\nGregorian calendar, else the ISO date of the shown month's first day; month buttons' and year\nbuttons' `data-ok-value` are the calendar's month index and year.\n\nOther attributes (strings, not in the schema): `data-ok-value`, `data-ok-min-date`,\n`data-ok-max-date` (ISO 8601), `data-ok-format` (Day.js tokens), `data-ok-views` (`year month\nday`), `data-ok-month` (`YYYY-MM`, the shown month), `data-ok-actions` (`clear today cancel\naccept nextOrAccept`), `data-ok-desktop-mode-media-query`, `data-ok-locale` (on the element or an\nancestor), `data-ok-disabled` (calendar). Invalid values fall back to the default.\n\n### API mapping (MUI X, ADR-0015)\n- **Kept:** `value` / `defaultValue`, `onChange` (`(value, { validationError })`), `onAccept`,\n  `onError`, `open`, `views`, `openTo`, `view` / `onViewChange`, `format`, `formatDensity`,\n  `minDate`, `maxDate`, `disablePast`, `disableFuture`, `shouldDisableDate` / `Month` / `Year`,\n  `closeOnSelect`, `desktopModeMediaQuery`, `keepOpenDuringFieldFocus`, `reduceAnimations`,\n  `displayWeekNumber`, `fixedWeekNumber`, `showDaysOutsideCurrentMonth`,\n  `disableHighlightToday`, `dayOfWeekFormatter`, `monthsPerRow`, `yearsPerRow`, `yearsOrder`,\n  `orientation`, `loading`, `renderLoading`, `onMonthChange`, `onYearChange`, `referenceDate`,\n  `autoFocus`, `selectedSections` / `onSelectedSectionsChange` (section index), `readOnly`,\n  `disabled`, `label`, `name`, `inputRef` (the hidden input), `localeText`;\n  `LocalizationProvider` `adapterLocale`, `localeText`.\n- **Renamed:** `onOpen` / `onClose` / `onCancel` → `onOpenChange(open, reason)` (reasons `button`,\n  `escape`, `clickaway`, `accept`, `cancel`, `select`, `clear`, `today`, `shortcut`, `api`);\n  `slotProps.actionBar.actions` → `actions`; `slotProps.shortcuts.items` → `shortcuts`;\n  `slotProps.field.clearable` / `onClear` → `clearable` / `onClear`; `slotProps.textField` →\n  the TextField props (`helperText`, `error`, `variant`, `size`, `fullWidth`, `required`).\n- **Beyond MUI:** `today` (React: pins \"today\" for demos and tests); `aria-current=\"date\"` on\n  today; HTML `data-ok-locale`; a hidden ISO input for forms.\n- **Kept (phase 2):** `ampm`, `ampmInClock`, `minTime`, `maxTime`, `minDateTime`,\n  `maxDateTime`, `minutesStep`, `shouldDisableTime`, `disableIgnoringDatePartForTimeValidation`,\n  `timeSteps`, `timeStep` (DigitalClock), `thresholdToRenderTimeInASingleColumn`, `skipDisabled`,\n  time `views` / `openTo` / `view` / `onViewChange`; `onChange(value, selectionState)` of the\n  clocks (`\"shallow\"` while dragging, `\"partial\"`, `\"finish\"`); `localeText` keys\n  `timePickerToolbarTitle`, `dateTimePickerToolbarTitle`, `openTimePickerDialogue`,\n  `openPreviousView`, `openNextView`, `clockLabelText`, `hours/minutes/secondsClockNumberText`,\n  `selectViewText`, `dateTableLabel`, `timeTableLabel`.\n- **Defaults (MUI v9, as the reference shows):** time and date time pickers don't close on a\n  pick; their action bar is Cancel + OK (mobile and static date time: Cancel + Next / OK).\n- **Kept (phase 3, Pro):** `value` / `defaultValue` as `[start, end]`, `onChange(value, {\n  validationError: [start, end] })`, `onError`, `onAccept`, `calendars`,\n  `currentMonthCalendarPosition`, `rangePosition` / `defaultRangePosition` /\n  `onRangePositionChange`, `availableRangePositions` (DateRangeCalendar), `disableDragEditing`,\n  `disableAutoMonthSwitching`, range `shortcuts` (`getValue({ isValid })` returns a range); the\n  validation error `invalidRange`; `localeText` keys `start`, `end`, `startDate`, `startTime`,\n  `endDate`, `endTime`, `dateRangePickerToolbarTitle`, `timeRangePickerToolbarTitle`,\n  `dateTimeRangePickerToolbarTitle`.\n- **Renamed (phase 3):** `slots.field: MultiInput…RangeField` → `multiInput`;\n  `slotProps.textField` per end → `startLabel` / `endLabel`.\n- **Beyond MUI (phase 3):** ISO 8601 intervals in HTML (`data-ok-value`, the hidden input of a\n  single input field, shortcut chips); open buttons on range fields (MUI v8+ has them on single\n  input fields; multi input fields get one per end, each opening on its end); `openRangePickerDialogue`\n  names them; Start / End tabs on every form of time and date time ranges (MUI shows them on\n  touch screens; with one field, they choose the edited end on desktop too).\n- **Kept (phase 4, ADR-0030):** `timezone` (`\"default\" | \"system\" | \"UTC\" |` IANA) on every\n  picker, field, calendar and clock; `LocalizationProvider` `dateAdapter`; `PickerValidDate`\n  (declaration merging); `viewRenderers` (`renderDateViewCalendar`, `renderTimeViewClock`,\n  `renderDigitalClockTimeView`, `renderMultiSectionDigitalClockTimeView`, `null`); `slots`\n  `layout`, `toolbar`, `actionBar`, `shortcuts`, `day`, `openPickerIcon`, `leftArrowIcon`,\n  `rightArrowIcon`, `switchViewIcon`; `slotProps` `toolbar.hidden`, `tabs.hidden`, `day` (object\n  or function of the owner state), `layout`; `usePickerContext()` (value, `setValue`, `open`,\n  `setOpen`, views, `acceptValueChanges`, `cancelValueChanges`, `clearValue`,\n  `setValueToToday`, `goToNextStep`; ranges add `rangePosition` / `setRangePosition`);\n  `PickersDay` → `PickerDay`, `PickersLayout` → `PickerLayout` (+ `PickerLayoutRoot`,\n  `PickerLayoutContent`), `PickersActionBar` → `PickerActionBar`, `PickersShortcuts` →\n  `PickerShortcuts`; locale packs (MUI X `xxXX` objects) as `pickersFrFR`, `pickersDeDE`,\n  `pickersEsES`, `pickersJaJP`, `pickersZhCN`, `pickersFaIR`, `pickersArSD`.\n- **Renamed (phase 4):** MUI X's adapter classes (`AdapterDayjs`…) → factories that take the\n  library (`createDayjsAdapter(dayjs)`, `createDateFnsAdapter({ TZDate })`,\n  `createLuxonAdapter(DateTime)`, `createMomentAdapter(moment)`); Jalali / Hijri adapters →\n  an adapter's `calendar` option, `LocalizationProvider calendar` or the locale's `-u-ca-`.\n- **Beyond MUI (phase 4):** calendar systems through `Intl` for any adapter (also Buddhist and\n  Indian); HTML `data-ok-timezone`, `data-ok-calendar`, instance `date` / `setDate` /\n  `setDateAdapter`, `setDayRenderer`; ISO input with offsets.\n- **Not applicable:** other `slots` (`textField`, `field`, `popper`, `dialog`, `desktopPaper`,\n  transitions: the TextField props, Popover and Dialog are ours), `sx`, `className` of parts,\n  `disableOpenPicker` (deprecated: `viewRenderers` with `null`), `enableAccessibleFieldDOMStructure`\n  (always on), `dateFormats` (`format` per picker). Range pickers take `viewRenderers` with\n  `null` only.",
+     "body": "(Options of `date-picker`: listed under \"options\".)\n\n(Options of `date-calendar`: listed under \"options\".)\n\n(Options of `date-field`: listed under \"options\".)\n\n(Options of `time-clock`: listed under \"options\".)\n\n(Options of `digital-clock`: listed under \"options\".)\n\n(Options of `multi-section-digital-clock`: listed under \"options\".)\n\n(Options of `date-range-picker`: listed under \"options\".)\n\n(Options of `date-range-calendar`: listed under \"options\".)\n\nTime attributes (strings, ADR-0026): `data-ok-value` on clocks (`HH:mm:ss`), `data-ok-min-time`,\n`data-ok-max-time` (ISO times), `data-ok-min-date-time`, `data-ok-max-date-time` (ISO date\ntimes), `data-ok-disable-ignoring-date-part-for-time-validation`, `data-ok-views` (`hours minutes\nseconds`), `data-ok-view`, `data-ok-time-steps` (`\"1 5 5\"`: hours minutes seconds),\n`data-ok-open-to` (time and date time pickers). Fields and pickers also take `data-ok-minutes-step`.\n\nPhase 4 attributes (strings, not in the schema): `data-ok-timezone` (closest ancestor; values in\nthe markup are that zone's wall times, ISO input may carry an offset), `data-ok-calendar`\n(closest ancestor; ignored when the locale names a calendar). `data-ok-month` is `YYYY-MM` in the\nGregorian calendar, else the ISO date of the shown month's first day; month buttons' and year\nbuttons' `data-ok-value` are the calendar's month index and year.\n\nOther attributes (strings, not in the schema): `data-ok-value`, `data-ok-min-date`,\n`data-ok-max-date` (ISO 8601), `data-ok-format` (Day.js tokens), `data-ok-views` (`year month\nday`), `data-ok-month` (`YYYY-MM`, the shown month), `data-ok-actions` (`clear today cancel\naccept nextOrAccept`), `data-ok-desktop-mode-media-query`, `data-ok-locale` (on the element or an\nancestor), `data-ok-disabled` (calendar). Invalid values fall back to the default.\n\nAPI mapping: see \"Upstream API mapping\" below.",
      "id": "options",
      "title": "Options"
     },
@@ -7485,6 +7560,11 @@
      "body": "HTML: `ok:date-picker:change` (`{ value, validationError }`), `:accept` (`{ value }`), `:open` /\n`:close` (`{ reason }`); `ok:date-field:change` (cancelable), `:clear`; `ok:date-calendar:change`\n(cancelable, `{ value, selectionState }`), `:viewchange`, `:monthchange`, `:yearchange`;\n`ok:month-calendar:change`, `ok:year-calendar:change` (cancelable). Instances: date-picker `{ value,\nsetValue, isOpen, open, close, setShortcuts, setShouldDisableDate / Month / Year, setLocaleText }`;\ndate-field `{ value, validationError, setValue, focus, setShouldDisable…, setLocaleText }`;\ndate-calendar `{ value, setValue, view, setView, month, focus, setShouldDisable…,\nsetDayOfWeekFormatter, setLocaleText }`. React: callbacks above.\nPhase 2: `ok:time-clock:change` (cancelable, `{ value: \"HH:mm:ss\", selectionState }`),\n`:viewchange` (`{ view }`); `ok:digital-clock:change`, `ok:multi-section-digital-clock:change`\n(cancelable, `{ value, selectionState }`). Instances: time-clock `{ value, setValue, view,\nsetView, setShouldDisableTime, setLocaleText }`; digital clocks `{ value, setValue,\nsetShouldDisableTime, setLocaleText }`; date-field and date-picker add `setShouldDisableTime`.\nValues are ISO by type (`HH:mm:ss`, `YYYY-MM-DDTHH:mm:ss`).\nPhase 4 (ADR-0030): every picker, field, calendar and clock instance adds `date` (the adapter's\ndates, or `Date` instants; ranges `[start, end]`), `setDate(value)` and\n`setDateAdapter(adapter | null)`; date-calendar, date-range-calendar, date-picker and\ndate-range-picker add `setDayRenderer((button, date) => void | null)` (runs on each built day,\nerrors ignored); `setLocaleText` also relabels the action bar. `setValue` takes ISO text with an\noffset. React: `usePickerContext()` in custom slots, `usePickerDateConverter()`.\nPhase 3 (ADR-0028): `ok:date-range-picker:change` (`{ value: \"start/end\" | null, validationError:\n[start, end] }`), `:accept`, `:open` / `:close` (`{ reason }`), `:rangepositionchange`\n(`{ rangePosition }`); `ok:date-range-calendar:change` (cancelable, `{ value, selectionState }`),\n`:rangepositionchange`, `:monthchange`; `ok:multi-input-range-field:change` (cancelable; canceling\ncancels the field's change); range `ok:date-field:change` reports `validationError: [start, end]`.\nInstances: date-range-picker `{ value, setValue, rangePosition, setRangePosition, isOpen,\nopen(position?), close, setShortcuts, setShouldDisableDate, setShouldDisableTime, setLocaleText }`;\ndate-range-calendar `{ value, setValue, rangePosition, setRangePosition,\nsetAvailableRangePositions, calendars, setCalendars, month, focus, setShouldDisable…,\nsetDayOfWeekFormatter, setLocaleText }`; multi-input-range-field `{ value, validationError,\nsetValue }`; date-field adds `setError(error | null)`. React: `onChange(range, { validationError\n})`, `onError(errors, range)`, `onRangePositionChange(position)`.",
      "id": "events-api",
      "title": "Events / API"
+    },
+    {
+     "body": "Upstream: MUI X Date and Time Pickers v9 (Community + Pro), mui.com/x/api/date-pickers/.\nApplies to every picker, field, calendar and clock that has the prop upstream.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `value` / `defaultValue`, `onChange(value, { validationError })`, `onAccept`, `onError` | same | kept | ranges `[start, end]`; error `invalidRange` |\n| `onOpen` / `onClose` / `onCancel` | `onOpenChange(open, reason)` | renamed | reasons `button` · `escape` · `clickaway` · `accept` · `cancel` · `select` · `clear` · `today` · `shortcut` · `api` |\n| `open`, `views`, `openTo`, `view` / `onViewChange` | same | kept | date and time views |\n| `format`, `formatDensity`, `referenceDate`, `autoFocus`, `readOnly`, `disabled`, `label`, `name`, `inputRef`, `localeText` | same | kept | `inputRef` = the hidden input |\n| `selectedSections` / `onSelectedSectionsChange` | same | kept | a section index (MUI also `\"all\"` / a section type) |\n| `minDate`, `maxDate`, `disablePast`, `disableFuture`, `shouldDisableDate` / `Month` / `Year` | same | kept | |\n| `closeOnSelect`, `desktopModeMediaQuery`, `keepOpenDuringFieldFocus`, `reduceAnimations`, `orientation`, `loading`, `renderLoading` | same | kept | time / date time: no close on pick, Cancel + OK (MUI v9, reference) |\n| `displayWeekNumber`, `fixedWeekNumber`, `showDaysOutsideCurrentMonth`, `disableHighlightToday`, `dayOfWeekFormatter`, `monthsPerRow`, `yearsPerRow`, `yearsOrder`, `onMonthChange`, `onYearChange` | same | kept | |\n| `ampm`, `ampmInClock`, `minTime`, `maxTime`, `minDateTime`, `maxDateTime`, `minutesStep`, `shouldDisableTime`, `disableIgnoringDatePartForTimeValidation`, `timeSteps`, `timeStep`, `thresholdToRenderTimeInASingleColumn`, `skipDisabled` | same | kept | clocks' `onChange(value, selectionState)` |\n| Pro: `calendars`, `currentMonthCalendarPosition`, `rangePosition` / `defaultRangePosition` / `onRangePositionChange`, `availableRangePositions`, `disableDragEditing`, `disableAutoMonthSwitching`, range `shortcuts` | same | kept | |\n| `timezone` | same | kept | `\"default\"` · `\"system\"` · `\"UTC\"` · IANA |\n| `viewRenderers` (`renderDateViewCalendar`, `renderTimeViewClock`, `renderDigitalClockTimeView`, `renderMultiSectionDigitalClockTimeView`, `null`) | same | kept | range pickers: `null` only |\n| `slots` `layout`, `toolbar`, `actionBar`, `shortcuts`, `day`, `openPickerIcon`, `leftArrowIcon`, `rightArrowIcon`, `switchViewIcon`; `slotProps` `toolbar.hidden`, `tabs.hidden`, `day`, `layout` | same | kept | |\n| `slotProps.actionBar.actions`, `slotProps.shortcuts.items` | `actions`, `shortcuts` | renamed | |\n| `slotProps.field.clearable` / `onClear`; fields `clearable`, `onClear` | `clearable`, `onClear` | renamed | |\n| `slotProps.textField` | TextField props `helperText`, `error`, `variant`, `size`, `fullWidth`, `required` | renamed | |\n| range `slots.field` (multi input) / per-end `slotProps.textField` | `multiInput`, `startLabel` / `endLabel` | renamed | |\n| `usePickerContext()` | same | kept | ranges add `rangePosition` / `setRangePosition` |\n| `PickersDay`, `PickersLayout`, `PickersActionBar`, `PickersShortcuts` | `PickerDay`, `PickerLayout` (+ `PickerLayoutRoot`, `PickerLayoutContent`), `PickerActionBar`, `PickerShortcuts` | renamed | |\n| locale packs (`frFR`…) | `pickersFrFR`, `pickersDeDE`, `pickersEsES`, `pickersJaJP`, `pickersZhCN`, `pickersFaIR`, `pickersArSD` | renamed | |\n| LocalizationProvider `adapterLocale`, `localeText`, `dateAdapter`; `PickerValidDate` | same | kept | |\n| adapter classes (`AdapterDayjs`…), `dateLibInstance` | `createDayjsAdapter(dayjs)`, `createDateFnsAdapter({ TZDate })`, `createLuxonAdapter(DateTime)`, `createMomentAdapter(moment)` | renamed | the library is the factory's argument |\n| Jalali / Hijri adapters | adapter `calendar`, `LocalizationProvider calendar`, locale `-u-ca-` | renamed | any `Intl` calendar |\n| fields `clearButtonPosition`, `openPickerButtonPosition` | — | deferred | buttons always at the end |\n| fields `startAdornment` / `endAdornment` | — | deferred | `endAdornment` internal (open button) |\n| fields `shouldRespectLeadingZeros` | — | deferred | |\n| fields `fieldRef` (field API) | — | deferred | |\n| fields TextField props `color`, `margin`, `hiddenLabel`, `focused` | — | deferred | |\n| single input range fields `dateSeparator` | — | deferred | fixed `\" – \"` |\n| calendars / clocks `focusedView` / `onFocusedViewChange` | — | deferred | |\n| TimeClock `showViewSwitcher` | — | deferred | |\n| static pickers `displayStaticWrapperAs` | — | deferred | |\n| `dateFormats` | — | not applicable | `format` per picker |\n| `disableOpenPicker` (deprecated) | `viewRenderers` with `null` | not applicable | |\n| `enableAccessibleFieldDOMStructure` | — | not applicable | always the accessible structure |\n| other `slots` (`textField`, `field`, `popper`, `dialog`, `desktopPaper`, `mobilePaper`, `desktopTrapFocus`, transitions), `sx`, `classes`, `className` of parts | TextField props, Popover, Dialog | not applicable | ADR-0015 |\n\nBeyond MUI: `today` (React: pins \"today\"), `aria-current=\"date\"`, HTML `data-ok-locale` /\n`data-ok-timezone` / `data-ok-calendar`, a hidden ISO input for forms, ISO 8601 intervals in HTML,\nopen buttons on range fields (`openRangePickerDialogue`), Start / End tabs on every time range form,\ncalendar systems through `Intl` for any adapter, HTML instance `date` / `setDate` /\n`setDateAdapter` / `setDayRenderer`.",
+     "id": "upstream-api-mapping",
+     "title": "Upstream API mapping"
     },
     {
      "body": "React renders `data-ok-runtime=\"off\"`. The HTML runtime rebuilds other months with DOM methods and\npatches the same month in place; snippets are generated from the React examples. A responsive\npicker renders the mobile actions and toolbar hidden while it is in its desktop form; responsive\ntime and date time pickers also render both forms' views (digital clock, tabs, time clock) and\nhide the other form's. The clock pointer's angle is a private property (parity ignores `style`).\nRange snippets are generated from the React examples too; the HTML range calendar rebuilds its\nmonths with DOM methods and patches the same months in place. Phase 4 snippets too (custom days\nget their dots from the story's page script, `setDayRenderer`); React writes `data-ok-timezone`\non zoned roots.",
@@ -7856,6 +7936,11 @@
      "body": "HTML: `ok:dialog:beforeopen` (cancelable), `ok:dialog:open`, `ok:dialog:beforeclose` (cancelable,\n`detail.reason`: escape | backdrop | trigger | api), `ok:dialog:close` (also `native`). Instance:\n`{ isOpen, open(trigger?), close(reason?) }`. `data-ok-open` opens on load.",
      "id": "events-api",
      "title": "Events / API"
+    },
+    {
+     "body": "Audit 2026-11-09 against MUI API pages Dialog (inherits Modal), DialogTitle, DialogContent, DialogContentText, DialogActions.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `open`, `children`, `fullScreen`, `fullWidth`, `scroll`, `role` (`alertdialog`), `aria-*` | same | kept | the title names the dialog automatically |\n| `maxWidth` (`false`) | `\"none\"` | renamed | |\n| `onClose(event, reason)` (`escapeKeyDown` `backdropClick`) | `onOpenChange(open, reason)` (`escape` `backdrop` `close`); HTML `ok:dialog:beforeclose` | renamed | |\n| `PaperProps` / `slotProps.paper` | `paperProps` | renamed | |\n| `TransitionComponent` | `transition` (a Motion entrance on the paper) | renamed | |\n| `transitionDuration` | — (fixed `--ok-duration-short`) | deferred | new batch E row (with 5.1 exit transitions) |\n| `PaperComponent` | — | not applicable | the paper is a fixed part; compose inside it |\n| Modal `disableEscapeKeyDown`, `hideBackdrop` | same | kept | |\n| Modal `keepMounted` | always mounted | deferred (4.8) | |\n| Modal `disableRestoreFocus`, `disableScrollLock` | — | deferred | new batch E row |\n| Modal `disableAutoFocus`, `disableEnforceFocus` | — | not applicable | native `showModal()` focuses and traps |\n| Modal `container`, `disablePortal` | — | not applicable | top layer |\n| Modal `closeAfterTransition`, `onTransitionEnter`, `onTransitionExited`, `BackdropComponent` / `BackdropProps`, `onBackdropClick` | `ok:dialog:open` / `close`; native `::backdrop` | not applicable | `onBackdropClick` deprecated upstream |\n| `DialogTitle`, `DialogContentText` `children` | same | kept | |\n| `DialogContent` `dividers` | same | kept | |\n| `DialogActions` `disableSpacing` | same | kept | |\n| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps`, `TransitionComponent` / `TransitionProps` | — | not applicable | ADR-0015: CSS, composition, one CSS transition |",
+     "id": "upstream-api-mapping",
+     "title": "Upstream API mapping"
     }
    ],
    "snippets": {},
@@ -8036,6 +8121,11 @@
      "body": "None.",
      "id": "events-api",
      "title": "Events / API"
+    },
+    {
+     "body": "Audit 2026-11-09 against MUI API page Divider.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `variant`, `orientation`, `textAlign`, `flexItem`, `absolute`, `children` | same | kept | |\n| `component`, `role` | `hr`, or `div[role=separator]` with children | not applicable | element follows the content |\n| `light` | — | not applicable | deprecated upstream |\n| `sx`, `classes` | — | not applicable | ADR-0015 |",
+     "id": "upstream-api-mapping",
+     "title": "Upstream API mapping"
     }
    ],
    "snippets": {},
@@ -8211,6 +8301,11 @@
      "title": "Responsive"
     },
     {
+     "body": "Audit 2026-11-09 against MUI API pages Drawer, SwipeableDrawer (Modal props through `ModalProps`).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `open` | `Drawer open` / `defaultOpen`; HTML `data-ok-open` / `hidden` | kept | |\n| `onClose(event, reason)` | `onOpenChange(open, reason)`; HTML `ok:drawer:beforeclose` | renamed | |\n| `variant` (`temporary` `persistent` `permanent`) | same (on `Drawer`) | kept | |\n| `anchor`, `hideBackdrop` | `DrawerContent` props | kept | |\n| one `Drawer` element | `Drawer` (state) + `DrawerTrigger` + `DrawerContent` + `DrawerClose` | renamed | |\n| `PaperProps` / `slotProps.paper` | `DrawerContent` children (`[data-ok-drawer-content]`) | renamed | |\n| `elevation`, `transitionDuration` | — | deferred (4.9) | |\n| `ModalProps.disableEscapeKeyDown` | `disableEscapeKeyDown` | kept | |\n| `ModalProps.keepMounted` (default unmount), `disableRestoreFocus`, `disableScrollLock` | always mounted | deferred | new batch E row (with Dialog) |\n| `ModalProps.container` / `disablePortal` / `disableAutoFocus` / `disableEnforceFocus` | — | not applicable | native modal `<dialog>` in the top layer |\n| `SwipeableDrawer` (`onOpen`, `swipeAreaWidth`, `hysteresis`, `minFlingVelocity`, `disableSwipeToOpen`, `disableDiscovery`, `allowSwipeInChildren`, `disableBackdropTransition`) | — | deferred | new batch E row |\n| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps`, `TransitionComponent` / `TransitionProps` | — | not applicable | ADR-0015: CSS, composition, one CSS transition |",
+     "id": "upstream-api-mapping",
+     "title": "Upstream API mapping"
+    },
+    {
      "body": "Behavior hooks (`data-ok-drawer-open/close`, `data-ok-*-close` options, `data-ok-open`) exist only in\nHTML; React expresses them as props and handlers.",
      "id": "parity-notes",
      "title": "Parity notes"
@@ -8325,7 +8420,7 @@
      "title": "Anatomy"
     },
     {
-     "body": "(Options of `editor`: listed under \"options\".)\n\nOther props: `value` / `defaultValue` / `onChange(html)` (`\"\"` when empty), `placeholder`\n(default \"Write something awesome...\"; HTML `data-ok-placeholder`), `helperText`, `highlighter`\n(lowlight-compatible; HTML `createEditor({ highlighter })`), `onFullscreenChange(fullscreen)`,\n`aria-label` (default \"Editor\") / `aria-labelledby` (go to the textbox).\n\nAPI mapping (Minimals `Editor`): kept `value`, `onChange`, `editable`, `fullItem`, `error`,\n`helperText`, `placeholder`. Added `defaultValue` (uncontrolled), `highlighter`,\n`onFullscreenChange`, `aria-*`. Not applicable: `resetValue` (`value=\"\"` resets), `slotProps`,\n`sx`, `className` of the wrapper (root `className`). Deferred: Tiptap `extensions` /\n`editorProps` pass-through, bubble menus, tables, mentions, a form `name` (hidden input) — none of\nthem is in the reference or the Minimals wrapper. Minimals' Tiptap extensions are all covered:\nStarterKit, Placeholder, Image, TextAlign, CodeBlockLowlight (our code block + `highlighter`),\nTextTransform, ClearFormat.",
+     "body": "(Options of `editor`: listed under \"options\".)\n\nOther props: `value` / `defaultValue` / `onChange(html)` (`\"\"` when empty), `placeholder`\n(default \"Write something awesome...\"; HTML `data-ok-placeholder`), `helperText`, `highlighter`\n(lowlight-compatible; HTML `createEditor({ highlighter })`), `onFullscreenChange(fullscreen)`,\n`aria-label` (default \"Editor\") / `aria-labelledby` (go to the textbox).\n\nAPI mapping: see \"Upstream API mapping\" below.",
      "id": "options",
      "title": "Options"
     },
@@ -8358,6 +8453,11 @@
      "body": "The toolbar wraps at every width (mobile: three to four rows); the body scrolls inside the 720px\ncap; forms are `min(320px, 100vw − 48px)` wide. The story puts editor and preview side by side from\n900px, stacked below; the preview renders the editor's HTML with Markdown (`rawHtml`, ADR-0035),\nas the reference does, in an outlined Card (`component=\"section\"`) under a Typography `h6`\ntitle (`component=\"h3\"`).",
      "id": "responsive",
      "title": "Responsive"
+    },
+    {
+     "body": "Upstream: the Minimals `Editor` wrapper's props and Tiptap 3 (tiptap.dev/docs/editor/api/editor,\n/api/events).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| Minimals `value`, `onChange`, `editable`, `fullItem`, `error`, `helperText`, `placeholder` | same | kept | `onChange(html)`, `\"\"` when empty |\n| Minimals `resetValue` | `value=\"\"` | not applicable | |\n| Minimals `className`, `sx`, `slotProps` | root `className` | not applicable | ADR-0015 |\n| Tiptap `content` | `value` / `defaultValue`; HTML: markup in the content element | renamed | |\n| Tiptap `editable`, `setEditable()` | `editable`, `setEditable(on)` | kept | |\n| Tiptap `element`, `mount()` / `unmount()` | `[data-ok-editor-content]` | not applicable | the anatomy owns the mount |\n| Tiptap `injectCSS`, `injectNonce` | — | not applicable | `injectCSS: false` (CSP); editor.css |\n| Tiptap `extensions`, `schemaSpec`, `coreExtensionOptions`, `enableExtensionDispatchTransaction` | built-in set | deferred | StarterKit, Placeholder, Image, TextAlign, code block + `highlighter`, TextTransform, ClearFormat; no pass-through (tables, mentions…) |\n| Tiptap `editorProps`, `parseOptions`, `enableInputRules`, `enablePasteRules`, `textDirection`, `autofocus` | — | deferred | |\n| event `update` | `onChange(html)`, `ok:editor:change` | renamed | |\n| events `beforeCreate`, `create`, `selectionUpdate`, `transaction`, `focus`, `blur`, `destroy`, `paste`, `drop`, `delete`, `contentError` | — | deferred | HTML: `controller.editor.on()`; React: no editor handle |\n| `getHTML()` | `getValue()`, instance `value` | renamed | |\n| `getJSON()`, `getText()`, `isEmpty`, `isFocused`, `registerPlugin()`, `setOptions()` | — | deferred | HTML through `controller.editor`; React none |\n| `chain()`, `can()`, `isActive()`, `getAttributes()` | `run(action, value)`, `EditorState` (`active`, `disabled`, `link`, `textTransform`) | renamed | |\n| `commands.focus()`, `destroy()` | `focus()`, `destroy({ restore })` | kept | |\n| `@tiptap/react` `useEditor`, `EditorContent`, `useCurrentEditor`, `BubbleMenu`, `FloatingMenu` | — | deferred | |\n| form `name` (hidden input) | — | deferred | not in the reference or the wrapper |\n\nBeyond upstream: `defaultValue`, `highlighter`, `onFullscreenChange`, `aria-label` /\n`aria-labelledby`, fullscreen.",
+     "id": "upstream-api-mapping",
+     "title": "Upstream API mapping"
     },
     {
      "body": "React renders `data-ok-runtime=\"off\"` (root and Backdrop); popover triggers carry\n`data-ok-popover-open` in HTML only. Snippets write text transforms as `data-ok-text-transform`\n(no `style` in snippets); the content DOM after mount is the same `style` form on both sides.\nBoth mount the same controller, so the content DOM matches after mount (React fills it from\n`value`, HTML from the markup).",
@@ -8500,6 +8600,11 @@
      "body": "Same size at every breakpoint; labels don't wrap.",
      "id": "responsive",
      "title": "Responsive"
+    },
+    {
+     "body": "Upstream: MUI `Fab` (+ `ButtonBase`), mui.com/material-ui/api/fab/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `variant` (`circular` · `extended`) | `extended` flag | renamed | Owlky's `variant` is the fill style (`contained` · `outlined` · `soft`, reference) |\n| `color` (default `default`) | `color` | kept | + `inherit`, `black` / `white` |\n| `size` (`small` · `medium` · `large`, default `large`) | `size` (`sm` · `md` · `lg`, default `md`) | renamed | |\n| `children`, `disabled`, `href` | same | kept | |\n| `component`, `LinkComponent` (ButtonBase) | — | deferred | router links can't be passed |\n| `action`, `focusVisibleClassName`, `onFocusVisible`, `nativeButton` (ButtonBase) | `ref.focus()`, `:focus-visible` | not applicable | |\n| `disableRipple`, `disableFocusRipple` (+ ButtonBase ripple props) | — | not applicable | no ripple |\n| `sx`, `classes` | — | not applicable | ADR-0015 |\n\nBeyond MUI: `animate` (reference).",
+     "id": "upstream-api-mapping",
+     "title": "Upstream API mapping"
     },
     {
      "body": "Visible focus outline; CSS-only animate (see Icon button).",
@@ -8814,7 +8919,7 @@
      "title": "Anatomy"
     },
     {
-     "body": "(Options of `form-control`: listed under \"options\".)\n\n(Options of `form-label`: listed under \"options\".)\n\n(Options of `form-group`: listed under \"options\".)\n\n(Options of `form-helper-text`: listed under \"options\".)\n\nStyle options are written only when given (a plain group stays `data-ok-form-control` alone).\n\nReact: `component` on FormControl (default `div`), FormLabel (`label`), FormHelperText (`p`);\nFormGroup `row`. A part's own state props add a state to it (`data-ok-*` on the part); the\nFormControl's states reach the parts through CSS in both frameworks, so React writes the root's\nstates only on the root. FormLabel renders the asterisk when its own `required` or the\nFormControl's is on (`required={false}` on the label hides it). `disabled` on a `fieldset`\nFormControl is also written as the native `disabled`, which disables every control inside; on a\n`div` root, pass `disabled` to each control. `useFormControl()` returns the shared state (or\n`undefined` outside a FormControl).\n\nAPI mapping (MUI → Owlky): every FormControl prop kept (`hiddenLabel` since the Select: a filled\nSelect without a label) except `sx` / `classes` (not applicable).\nFormLabel / FormHelperText: every prop kept. FormGroup: `row` kept. MUI tracks `focused` and\n`filled` from its InputBase; with no InputBase they are props here (see \"Contract for Select\").\nMUI's selection controls take `disabled` from the FormControl context; here they don't (no change\nto their API): a `fieldset` root disables them natively.",
+     "body": "(Options of `form-control`: listed under \"options\".)\n\n(Options of `form-label`: listed under \"options\".)\n\n(Options of `form-group`: listed under \"options\".)\n\n(Options of `form-helper-text`: listed under \"options\".)\n\nStyle options are written only when given (a plain group stays `data-ok-form-control` alone).\n\nReact: `component` on FormControl (default `div`), FormLabel (`label`), FormHelperText (`p`);\nFormGroup `row`. A part's own state props add a state to it (`data-ok-*` on the part); the\nFormControl's states reach the parts through CSS in both frameworks, so React writes the root's\nstates only on the root. FormLabel renders the asterisk when its own `required` or the\nFormControl's is on (`required={false}` on the label hides it). `disabled` on a `fieldset`\nFormControl is also written as the native `disabled`, which disables every control inside; on a\n`div` root, pass `disabled` to each control. `useFormControl()` returns the shared state (or\n`undefined` outside a FormControl).\n\nAPI mapping: see \"Upstream API mapping\" below.",
      "id": "options",
      "title": "Options"
     },
@@ -8852,6 +8957,11 @@
      "body": "Select composes FormControl + an InputLabel without changing this DOM:\n- InputLabel = FormLabel (`label[data-ok-form-label][for]` + Select's own part attribute, such as\n  `data-ok-input-label`, `data-ok-shrink`) inside the root; its float / shrink styles live in\n  Select's CSS (`[data-ok-form-control]:has(> [data-ok-select])`).\n- Select reads `useFormControl()` for `disabled`, `error`, `required`, `size`, `color`, `variant`,\n  `fullWidth` and writes the resolved values on its own field box and trigger (as MUI's InputBase\n  takes them from the context); the FormControl's attributes style the label and helper text.\n- Focus and value: the root's CSS uses `:focus-within` / `:has()` on Select's parts in both\n  frameworks (no React-only focus state, for parity): the hidden input's `:placeholder-shown`\n  tells whether there is a value. No `data-ok-filled` and no context setters were needed.\n- `hiddenLabel` (`data-ok-hidden-label`) arrived with Select's filled variant.",
      "id": "contract-for-select-batch-c-implemented-see-select-md-and-adr-0045",
      "title": "Contract for Select (batch C; implemented, see select.md and ADR-0045)"
+    },
+    {
+     "body": "Upstream: MUI `FormControl`, `FormLabel`, `FormGroup`, `FormHelperText`, `useFormControl`.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| FormControl `children`, `component`, `color`, `disabled`, `error`, `focused`, `fullWidth`, `hiddenLabel`, `margin`, `required`, `size`, `variant` | same | kept | `color` default `default` (MUI `primary`); `hiddenLabel` since Select |\n| FormControl `focused` / FormLabel / FormHelperText `filled` tracking | props | renamed | MUI tracks them from its InputBase; here they are props (Select uses CSS `:focus-within` / `:placeholder-shown`) |\n| FormLabel `children`, `component`, `color`, `disabled`, `error`, `filled`, `focused`, `required` | same | kept | |\n| FormGroup `children`, `row` | same | kept | |\n| FormHelperText `children`, `component`, `disabled`, `error`, `filled`, `focused`, `margin`, `required`, `variant` | same | kept | |\n| `useFormControl()` | same | kept | `undefined` outside a FormControl |\n| context `disabled` / `required` / `error` read by Checkbox, Radio, Switch | — | not applicable | controls' API unchanged by decision; a `fieldset` root disables them natively |\n| `sx`, `classes` | — | not applicable | ADR-0015 |",
+     "id": "upstream-api-mapping",
+     "title": "Upstream API mapping"
     },
     {
      "body": "None: both frameworks write the same attributes; snippets are generated from the React stories\n(`apps/storybook/scripts/form-control-snippets.mjs`).",
@@ -8999,6 +9109,11 @@
      "title": "Events / API"
     },
     {
+     "body": "Upstream: MUI `FormControlLabel`, mui.com/material-ui/api/form-control-label/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `control`, `label`, `labelPlacement` | same | kept | |\n| `checked`, `disabled`, `required`, `onChange`, `value` | same | kept | cloned onto the control when it doesn't set them |\n| `disableTypography`, `slotProps.typography` | — | not applicable | the text span carries body2 itself; any node is passed through |\n| `sx`, `classes`, `slots`, `slotProps` | — | not applicable | ADR-0015 |",
+     "id": "upstream-api-mapping",
+     "title": "Upstream API mapping"
+    },
+    {
      "body": "None.",
      "id": "parity-notes",
      "title": "Parity notes"
@@ -9016,7 +9131,11 @@
     "Gantt"
    ],
    "referenceUrl": "https://apexcharts.com/apexgantt/",
-   "related": [],
+   "related": [
+    "button",
+    "dialog",
+    "text-field"
+   ],
    "requiredParts": {},
    "root": "data-ok-gantt",
    "schemas": [
@@ -9147,6 +9266,33 @@
        "name": "disableTooltip"
       },
       {
+       "attr": "data-ok-editable",
+       "description": "Tasks can be edited: drag bars, their edges and their progress handles, or press Enter on a row (arrows move, Shift + arrows change the end, Page Up / Page Down the progress, Enter saves, Escape cancels). Double click or F2 asks for your own edit form.",
+       "kind": "flag",
+       "name": "editable"
+      },
+      {
+       "attr": "data-ok-task-drag",
+       "default": true,
+       "description": "With `editable`: bars move by drag and arrow keys.",
+       "kind": "behavior",
+       "name": "taskDrag"
+      },
+      {
+       "attr": "data-ok-task-resize",
+       "default": true,
+       "description": "With `editable`: bar edges change the dates (drag, Shift + arrow keys).",
+       "kind": "behavior",
+       "name": "taskResize"
+      },
+      {
+       "attr": "data-ok-progress-drag",
+       "default": true,
+       "description": "With `editable`: the progress handle sets the progress (drag, Page Up / Page Down).",
+       "kind": "behavior",
+       "name": "progressDrag"
+      },
+      {
        "attr": "data-ok-collapsed",
        "description": "Collapsed parent rows: `data-ok-collapsed` on their rows of the data table (`aria-expanded` on the grid rows).",
        "event": "ok:gantt:toggle",
@@ -9176,7 +9322,7 @@
      "title": "Anatomy"
     },
     {
-     "body": "(Options of `gantt`: listed under \"options\".)\n\nOutside the schema (root text attributes ↔ React props):\n\n| HTML | React | Default | |\n|---|---|---|---|\n| `data-ok-columns` | `columns` | `name startTime duration progress` | task-list columns, from `name`, `startTime`, `endTime`, `duration`, `progress` (name always first) |\n| `data-ok-today` | `today` | the current day | ISO date of the today line |\n| `data-ok-locale` | `locale` | `en-US` | BCP 47 tag of dates |\n| `data-ok-working-weekdays` | `workingWeekdays` | `1 2 3 4 5` | 0 = Sunday |\n| `data-ok-holidays` | `holidays` | — | ISO dates |\n| table `caption` (else `aria-label`) | `label` | — | accessible name |\n| table rows | `tasks` | — | `GanttTask[]`: `id`, `name`, `startTime`, `endTime` (ISO, last day included), `progress` 0–100, `type` (`milestone`), `parentId`, `dependency` (id, `{ taskId, type, lag }` or a list; HTML text `id[:FS|SS|FF|SF[±lag]]`, comma separated), `color` (palette), `collapsed`, `baseline` `{ start, end }` |\n| `setLocaleText()` | `localeText` | English | texts and column titles |\n\nUpstream mapping (ApexGantt → Owlky): `series` → `tasks` (`startTime`, `endTime`, `progress`,\n`type`, `parentId`, `dependency`, `collapsed`, `baseline` kept; `barBackgroundColor` → `color`, a\npalette name), `pixelsPerDay`, `rowHeight`, `barMargin`, `tasksContainerWidth`, `barLabel.position`\n→ `barLabel`, `columnLines`, `enableCriticalPath` → `criticalPath`, `baseline.enabled` →\n`baseline`, `enableProjectBoundary` → `projectBoundary`, `enableSelection` → `selection`,\n`enableTooltip` → `disableTooltip` (MUI-style negative flag), `calendar.workingWeekdays` /\n`holidays` / `weekStart` / `showNonWorkingStripes` → `workingWeekdays` / `holidays` / `weekStart` /\n`showNonWorkingDays`, `columnConfig[].key` → `columns`, `locale.tag` → `locale`,\n`locale.messages` → `localeText`, `zoomIn()` / `zoomOut()` / `scrollToTask()` kept (HTML instance).\nNot applicable: colors and fonts as options (tokens and palettes), `canvasStyle`, `theme`,\n`tooltipTemplate` / `barLabel.render` (HTML strings), `persistState` (no storage, ADR-0007),\n`inputDateFormat` (ISO dates). Deferred (roadmap): editing (phase 2), virtualization and export\n(phase 3), sorting and filtering, grouping, custom column renderers, inline editing, CRUD toolbar,\ncontext menu, undo / redo, split tasks, rollups, annotations, crosshair, draw tasks and links,\ncritical path in working days, right to left, sub-day scales.",
+     "body": "(Options of `gantt`: listed under \"options\".)\n\nOutside the schema (root text attributes ↔ React props):\n\n| HTML | React | Default | |\n|---|---|---|---|\n| `data-ok-columns` | `columns` | `name startTime duration progress` | task-list columns, from `name`, `startTime`, `endTime`, `duration`, `progress` (name always first) |\n| `data-ok-today` | `today` | the current day | ISO date of the today line |\n| `data-ok-locale` | `locale` | `en-US` | BCP 47 tag of dates |\n| `data-ok-working-weekdays` | `workingWeekdays` | `1 2 3 4 5` | 0 = Sunday |\n| `data-ok-holidays` | `holidays` | — | ISO dates |\n| table `caption` (else `aria-label`) | `label` | — | accessible name |\n| table rows | `tasks` | — | `GanttTask[]`: `id`, `name`, `startTime`, `endTime` (ISO, last day included), `progress` 0–100, `type` (`milestone`), `parentId`, `dependency` (id, `{ taskId, type, lag }` or a list; HTML text `id[:FS|SS|FF|SF[±lag]]`, comma separated), `color` (palette), `collapsed`, `baseline` `{ start, end }` |\n| `setLocaleText()` | `localeText` | English | texts and column titles |\n\nUpstream mapping (ApexGantt → Owlky): `series` → `tasks` (`startTime`, `endTime`, `progress`,\n`type`, `parentId`, `dependency`, `collapsed`, `baseline` kept; `barBackgroundColor` → `color`, a\npalette name), `pixelsPerDay`, `rowHeight`, `barMargin`, `tasksContainerWidth`, `barLabel.position`\n→ `barLabel`, `columnLines`, `enableCriticalPath` → `criticalPath`, `baseline.enabled` →\n`baseline`, `enableProjectBoundary` → `projectBoundary`, `enableSelection` → `selection`,\n`enableTooltip` → `disableTooltip` (MUI-style negative flag), `calendar.workingWeekdays` /\n`holidays` / `weekStart` / `showNonWorkingStripes` → `workingWeekdays` / `holidays` / `weekStart` /\n`showNonWorkingDays`, `columnConfig[].key` → `columns`, `locale.tag` → `locale`,\n`locale.messages` → `localeText`, `zoomIn()` / `zoomOut()` / `scrollToTask()` kept (HTML instance).\nNot applicable: colors and fonts as options (tokens and palettes), `canvasStyle`, `theme`,\n`tooltipTemplate` / `barLabel.render` (HTML strings), `persistState` (no storage, ADR-0007),\n`inputDateFormat` (ISO dates). Phase 2 adds `editable` (`enableTaskDrag` / `enableTaskResize` / `enableProgressDrag` → `taskDrag`, `taskResize`, `progressDrag` behaviors), `onTaskChange` (upstream `taskUpdate` events) and `onTaskEdit` (upstream `enableTaskEdit` dialog, the form is yours), `updateTask()` (HTML). Deferred (roadmap): virtualization and export\n(phase 3), sorting and filtering, grouping, custom column renderers, inline editing, CRUD toolbar,\ncontext menu, undo / redo, split tasks, rollups, annotations, crosshair, draw tasks and links,\ncritical path in working days, right to left, sub-day scales.",
      "id": "options",
      "title": "Options"
     },
@@ -9191,17 +9337,17 @@
      "title": "Behavior"
     },
     {
-     "body": "| Key | Action |\n|---|---|\n| Tab | into the grid (the active row), then out of it |\n| ↓ / ↑ | next / previous row |\n| Page Down / Page Up | 10 rows down / up |\n| Home / End | first / last row |\n| → | expands a collapsed parent; on an expanded parent, moves to its first child |\n| ← | collapses an expanded parent; otherwise moves to the parent |\n| Enter | toggles a parent |\n| Space | toggles the row's selection (`selection`); Shift + Space selects the range |\n| Shift + ↓ / ↑ / Page / Home / End | extends the selection (`selection`) |\n| Ctrl / Cmd + A | selects every row (`selection`) |\n| Escape | hides the tooltip (wherever the focus is) |\n\nPointer: a click focuses a row and selects it (Ctrl / Cmd toggles, Shift selects the range); the\nchevron toggles a parent; hovering a bar shows the tooltip, which stays while hovered.",
+     "body": "| Key | Action |\n|---|---|\n| Tab | into the grid (the active row), then out of it |\n| ↓ / ↑ | next / previous row |\n| Page Down / Page Up | 10 rows down / up |\n| Home / End | first / last row |\n| → | expands a collapsed parent; on an expanded parent, moves to its first child |\n| ← | collapses an expanded parent; otherwise moves to the parent |\n| Enter | toggles a parent |\n| Space | toggles the row's selection (`selection`); Shift + Space selects the range |\n| Shift + ↓ / ↑ / Page / Home / End | extends the selection (`selection`) |\n| Ctrl / Cmd + A | selects every row (`selection`) |\n| Escape | hides the tooltip (wherever the focus is); cancels a drag |\n| Enter (editable task row) | starts the edit mode: ← / → move a day, Shift + ← / → change the end, Page Up / Page Down ±10 % progress, Enter saves, Escape (or Tab) cancels; other arrows stay in the mode |\n| F2 (editable task row) | asks for the owner's edit form (`onTaskEdit`, `ok:gantt:edit`) |\n\nPointer: a click focuses a row and selects it (Ctrl / Cmd toggles, Shift selects the range); the\nchevron toggles a parent; hovering a bar shows the tooltip, which stays while hovered.",
      "id": "keyboard",
      "title": "Keyboard"
     },
     {
-     "body": "- `role=treegrid` named by `label` (the table caption in HTML), `aria-rowcount` / `aria-colcount`,\n  rows with `aria-level`, `aria-posinset`, `aria-setsize`, `aria-expanded`, `aria-selected`.\n- Each bar is `role=img` named with the task, its dates, progress, planned dates (baseline), the\n  critical path and its predecessors with the dependency type and lag. Labels, the scale and the\n  SVG are `aria-hidden` (the header names the timeline column \"Timeline\").\n- The tooltip repeats the row's data (`aria-hidden`), shows on keyboard focus too, stays while\n  hovered and closes with Escape (WCAG 1.4.13).\n- Color is never the only cue: critical tasks and links are also named; milestones are diamonds.\n- Text uses neutral tones (AA); bars are graphics (palette fills, 3:1 against the paper).",
+     "body": "- `role=treegrid` named by `label` (the table caption in HTML), `aria-rowcount` / `aria-colcount`,\n  rows with `aria-level`, `aria-posinset`, `aria-setsize`, `aria-expanded`, `aria-selected`.\n- Each bar is `role=img` named with the task, its dates, progress, planned dates (baseline), the\n  critical path and its predecessors with the dependency type and lag. Labels, the scale and the\n  SVG are `aria-hidden` (the header names the timeline column \"Timeline\").\n- The tooltip repeats the row's data (`aria-hidden`), shows on keyboard focus too, stays while\n  hovered and closes with Escape (WCAG 1.4.13).\n- Color is never the only cue: critical tasks and links are also named; milestones are diamonds.\n- Text uses neutral tones (AA); bars are graphics (palette fills, 3:1 against the paper).\n\nEditing (`editable`, phase 2): editable task bars carry `span[data-ok-gantt-handle=\"start|end|progress\"]`\n(aria-hidden), rows `aria-keyshortcuts=\"Enter F2\"`; drag the bar (move), an edge (resize, at least a\nday) or the progress handle (whole percents); 3 px before a drag starts; the preview is CSSOM on the\nbar (`data-ok-dragging`), undone before the change is reported, so the owner's render decides.\nMilestones move only; summaries never edit. Touch: `touch-action: none` on editable bars. Double\nclick / double tap / F2 → `onTaskEdit` (the single-pointer path, WCAG 2.5.7). The edit mode\nannounces its keys and each draft in `div[data-ok-gantt-status][role=status]` (last child of the\nroot). Right to left mirrors the arrows and drags.",
      "id": "accessibility",
      "title": "Accessibility"
     },
     {
-     "body": "HTML events: `ok:gantt:toggle` (cancelable; `{ id, expanded, collapsed }`),\n`ok:gantt:selectionchange` (cancelable; `{ selected, mode }`), `ok:gantt:zoom` (cancelable;\n`{ pixelsPerDay }`). Instance (`runtime.get(el, \"gantt\")`): `tasks`, `collapsed`,\n`setCollapsed(ids)`, `selected`, `setSelected(ids)`, `pixelsPerDay`, `zoomIn()`, `zoomOut()`,\n`scrollToTask(id)`, `setLocaleText(text)`, `refresh()`.\nReact: `onCollapsedChange(ids)`, `onSelectionChange(ids, mode)`, `onZoomChange(pixelsPerDay)`;\ncontrolled `collapsed`, `selected`, `pixelsPerDay` with `default…` counterparts.",
+     "body": "HTML events: `ok:gantt:taskchange` (cancelable; `{ id, change: { startTime, endTime?, progress? }, source:\n\"drag\" | \"resize\" | \"progress\" | \"keyboard\" }`; then the runtime writes the table row), `ok:gantt:edit`\n(`{ id }`), `ok:gantt:toggle` (cancelable; `{ id, expanded, collapsed }`),\n`ok:gantt:selectionchange` (cancelable; `{ selected, mode }`), `ok:gantt:zoom` (cancelable;\n`{ pixelsPerDay }`). Instance (`runtime.get(el, \"gantt\")`): `tasks`, `collapsed`,\n`setCollapsed(ids)`, `selected`, `setSelected(ids)`, `pixelsPerDay`, `zoomIn()`, `zoomOut()`,\n`scrollToTask(id)`, `setLocaleText(text)`, `refresh()`.\nReact: `onCollapsedChange(ids)`, `onSelectionChange(ids, mode)`, `onZoomChange(pixelsPerDay)`;\ncontrolled `collapsed`, `selected`, `pixelsPerDay` with `default…` counterparts.",
      "id": "events-api",
      "title": "Events / API"
     },
@@ -9326,6 +9472,15 @@
      "react": "import { Gantt, type GanttTask } from \"@owlky/react\";\n\nconst tasks: GanttTask[] = [\n  {\"id\":\"discovery\",\"name\":\"Discovery\"},\n  {\"id\":\"research\",\"name\":\"User research\",\"parentId\":\"discovery\",\"startTime\":\"2025-03-03\",\"endTime\":\"2025-03-07\",\"progress\":100},\n  {\"id\":\"audit\",\"name\":\"Content audit\",\"parentId\":\"discovery\",\"startTime\":\"2025-03-05\",\"endTime\":\"2025-03-11\",\"progress\":80,\"dependency\":{\"taskId\":\"research\",\"type\":\"SS\",\"lag\":2}},\n  {\"id\":\"brief\",\"name\":\"Brief approved\",\"parentId\":\"discovery\",\"startTime\":\"2025-03-12\",\"type\":\"milestone\",\"dependency\":\"audit\"},\n  {\"id\":\"design\",\"name\":\"Design\"},\n  {\"id\":\"wireframes\",\"name\":\"Wireframes\",\"parentId\":\"design\",\"startTime\":\"2025-03-13\",\"endTime\":\"2025-03-20\",\"progress\":60,\"dependency\":\"brief\"},\n  {\"id\":\"visual\",\"name\":\"Visual design\",\"parentId\":\"design\",\"startTime\":\"2025-03-21\",\"endTime\":\"2025-04-01\",\"progress\":25,\"dependency\":\"wireframes\"},\n  {\"id\":\"review\",\"name\":\"Design review\",\"parentId\":\"design\",\"startTime\":\"2025-04-02\",\"type\":\"milestone\",\"dependency\":\"visual\"},\n  {\"id\":\"build\",\"name\":\"Build\"},\n  {\"id\":\"backend\",\"name\":\"Back end\",\"parentId\":\"build\",\"startTime\":\"2025-03-24\",\"endTime\":\"2025-04-16\",\"progress\":10,\"dependency\":\"wireframes\"},\n  {\"id\":\"frontend\",\"name\":\"Front end\",\"parentId\":\"build\",\"startTime\":\"2025-04-03\",\"endTime\":\"2025-04-22\",\"dependency\":\"review\"},\n  {\"id\":\"testing\",\"name\":\"Testing\",\"parentId\":\"build\",\"startTime\":\"2025-04-17\",\"endTime\":\"2025-04-25\",\"dependency\":[{\"taskId\":\"frontend\",\"type\":\"FF\",\"lag\":3},\"backend\"]},\n  {\"id\":\"launch\",\"name\":\"Launch\",\"startTime\":\"2025-04-28\",\"type\":\"milestone\",\"dependency\":\"testing\"},\n];\n\nexport function TaskListColumnsGantt() {\n  return (\n    <Gantt\n      tasks={tasks}\n      today=\"2025-03-18\"\n      label=\"Website relaunch, columns\"\n      columns={[\"name\",\"startTime\",\"endTime\",\"progress\"]}\n      tasksContainerWidth={520}\n      defaultCollapsed={[\"discovery\"]}\n    />\n  );\n}",
      "snippets": [
       "task-list-columns-group.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/icon-button.css + components/gantt.css + components/dialog.css + components/text-field.css + components/button.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Editing -->\n<div data-ok-gantt data-ok-view=\"day\" data-ok-bar-label=\"right\" data-ok-editable data-ok-today=\"2025-03-10\">\n  <table data-ok-gantt-data>\n    <caption>Editable plan</caption>\n    <thead>\n      <tr><th scope=\"col\" data-ok-gantt-field=\"name\">Task</th><th scope=\"col\" data-ok-gantt-field=\"startTime\">Start</th><th scope=\"col\" data-ok-gantt-field=\"endTime\">End</th><th scope=\"col\" data-ok-gantt-field=\"progress\">Progress</th><th scope=\"col\" data-ok-gantt-field=\"dependency\">Predecessors</th></tr>\n    </thead>\n    <tbody>\n      <tr data-ok-task-id=\"plan\"><td>Plan</td><td></td><td></td><td></td><td></td></tr>\n      <tr data-ok-task-id=\"scope\" data-ok-parent-id=\"plan\"><td>Scope</td><td data-ok-value=\"2025-03-03\">Mar 3, 2025</td><td data-ok-value=\"2025-03-05\">Mar 5, 2025</td><td data-ok-value=\"100\">100%</td><td></td></tr>\n      <tr data-ok-task-id=\"design\" data-ok-parent-id=\"plan\"><td>Design</td><td data-ok-value=\"2025-03-06\">Mar 6, 2025</td><td data-ok-value=\"2025-03-12\">Mar 12, 2025</td><td data-ok-value=\"40\">40%</td><td>scope</td></tr>\n      <tr data-ok-task-id=\"build\"><td>Build</td><td data-ok-value=\"2025-03-13\">Mar 13, 2025</td><td data-ok-value=\"2025-03-21\">Mar 21, 2025</td><td data-ok-value=\"0\">0%</td><td>design</td></tr>\n      <tr data-ok-task-id=\"launch\" data-ok-type=\"milestone\"><td>Launch</td><td data-ok-value=\"2025-03-24\">Mar 24, 2025</td><td></td><td></td><td>build</td></tr>\n    </tbody>\n  </table>\n</div>\n<dialog data-ok-dialog data-ok-max-width=\"sm\" data-ok-scroll=\"paper\" aria-labelledby=\"gantt-edit-title\" id=\"gantt-edit-dialog\">\n<div data-ok-dialog-paper>\n<h2 id=\"gantt-edit-title\" data-ok-dialog-title>Edit task</h2>\n<div data-ok-dialog-content>\n<div data-ok-text-field data-ok-variant=\"outlined\" data-ok-size=\"medium\" data-ok-color=\"default\" data-ok-full-width data-ok-margin=\"dense\" data-ok-shrink>\n<label data-ok-text-field-label for=\"gantt-edit-start\">Start</label>\n<div data-ok-text-field-control>\n<input id=\"gantt-edit-start\" data-ok-text-field-input type=\"date\" placeholder=\" \" value=\"\"/>\n<fieldset data-ok-text-field-outline aria-hidden=\"true\">\n<legend>\n<span>Start</span>\n</legend>\n</fieldset>\n</div>\n</div>\n<div data-ok-text-field data-ok-variant=\"outlined\" data-ok-size=\"medium\" data-ok-color=\"default\" data-ok-full-width data-ok-margin=\"dense\" data-ok-shrink>\n<label data-ok-text-field-label for=\"gantt-edit-end\">End</label>\n<div data-ok-text-field-control>\n<input id=\"gantt-edit-end\" data-ok-text-field-input type=\"date\" placeholder=\" \" value=\"\"/>\n<fieldset data-ok-text-field-outline aria-hidden=\"true\">\n<legend>\n<span>End</span>\n</legend>\n</fieldset>\n</div>\n</div>\n<div data-ok-text-field data-ok-variant=\"outlined\" data-ok-size=\"medium\" data-ok-color=\"default\" data-ok-full-width data-ok-margin=\"dense\">\n<label data-ok-text-field-label for=\"gantt-edit-progress\">Progress (%)</label>\n<div data-ok-text-field-control>\n<input id=\"gantt-edit-progress\" data-ok-text-field-input type=\"number\" placeholder=\" \" value=\"\"/>\n<fieldset data-ok-text-field-outline aria-hidden=\"true\">\n<legend>\n<span>Progress (%)</span>\n</legend>\n</fieldset>\n</div>\n</div>\n</div>\n<div data-ok-dialog-actions>\n<button type=\"button\" data-ok-button data-ok-variant=\"outlined\" data-ok-color=\"inherit\" data-ok-size=\"md\">\n<span data-ok-button-label>Cancel</span>\n</button>\n<button type=\"button\" data-ok-button data-ok-variant=\"contained\" data-ok-color=\"inherit\" data-ok-size=\"md\">\n<span data-ok-button-label>Save</span>\n</button>\n</div>\n</div>\n</dialog>\n\n<script type=\"module\">\nimport { getRuntime } from \"@owlky/html\";\n\n// Drags and the keyboard edit the table through the runtime (ok:gantt:taskchange, cancelable).\n// A double click, a double tap or F2 fires ok:gantt:edit: open your own form.\nconst runtime = getRuntime();\nconst gantt = document.querySelector(\"[data-ok-gantt]\");\nconst dialog = document.querySelector(\"#gantt-edit-dialog\");\nconst field = (id) => document.getElementById(id);\nlet editing;\n\ngantt.addEventListener(\"ok:gantt:edit\", (event) => {\n  const task = runtime.get(gantt, \"gantt\").tasks.find((item) => item.id === event.detail.id);\n  editing = task.id;\n  document.getElementById(\"gantt-edit-title\").textContent = `Edit ${task.name}`;\n  field(\"gantt-edit-start\").value = task.startTime ?? \"\";\n  field(\"gantt-edit-end\").value = task.endTime ?? task.startTime ?? \"\";\n  field(\"gantt-edit-progress\").value = task.progress ?? 0;\n  runtime.get(dialog, \"dialog\").open();\n});\n\ndialog.addEventListener(\"click\", (event) => {\n  const button = event.target.closest(\"[data-ok-dialog-actions] [data-ok-button]\");\n  if (!button) return;\n  if (button.textContent.trim() === \"Save\" && editing) {\n    const task = runtime.get(gantt, \"gantt\").tasks.find((item) => item.id === editing);\n    runtime.get(gantt, \"gantt\").updateTask(\n      editing,\n      task.type === \"milestone\"\n        ? { startTime: field(\"gantt-edit-start\").value }\n        : {\n            startTime: field(\"gantt-edit-start\").value,\n            endTime: field(\"gantt-edit-end\").value,\n            progress: Math.min(100, Math.max(0, Number(field(\"gantt-edit-progress\").value) || 0)),\n          },\n    );\n  }\n  editing = undefined;\n  runtime.get(dialog, \"dialog\").close();\n});\n</script>",
+     "id": "components-gantt--editing",
+     "name": "Editing",
+     "react": "import {\n  Button,\n  Dialog,\n  DialogActions,\n  DialogContent,\n  DialogTitle,\n  Gantt,\n  type GanttTask,\n  TextField,\n} from \"@owlky/react\";\nimport { useState } from \"react\";\n\nconst TASKS: GanttTask[] = [\n  { id: \"plan\", name: \"Plan\" },\n  {\n    id: \"scope\",\n    name: \"Scope\",\n    parentId: \"plan\",\n    startTime: \"2025-03-03\",\n    endTime: \"2025-03-05\",\n    progress: 100,\n  },\n  {\n    id: \"design\",\n    name: \"Design\",\n    parentId: \"plan\",\n    startTime: \"2025-03-06\",\n    endTime: \"2025-03-12\",\n    progress: 40,\n    dependency: \"scope\",\n  },\n  {\n    id: \"build\",\n    name: \"Build\",\n    startTime: \"2025-03-13\",\n    endTime: \"2025-03-21\",\n    progress: 0,\n    dependency: \"design\",\n  },\n  { id: \"launch\", name: \"Launch\", startTime: \"2025-03-24\", type: \"milestone\", dependency: \"build\" },\n];\n\ninterface Draft {\n  id: string;\n  name: string;\n  startTime: string;\n  endTime: string;\n  progress: string;\n}\n\n/**\n * Drag bars, their edges or their progress handles, or press Enter on a row and use the arrow\n * keys. A double click, a double tap or F2 opens a form: the single-pointer way to the same edits.\n */\nexport function EditingGanttDemo() {\n  const [tasks, setTasks] = useState(TASKS);\n  const [draft, setDraft] = useState<Draft | null>(null);\n  const update = (id: string, change: Partial<GanttTask>) =>\n    setTasks((list) => list.map((task) => (task.id === id ? { ...task, ...change } : task)));\n  const edit = (id: string) => {\n    const task = tasks.find((item) => item.id === id) as GanttTask;\n    setDraft({\n      id,\n      name: task.name,\n      startTime: String(task.startTime ?? \"\"),\n      endTime: String(task.endTime ?? task.startTime ?? \"\"),\n      progress: String(task.progress ?? 0),\n    });\n  };\n  const save = () => {\n    if (draft) {\n      const milestone = tasks.find((task) => task.id === draft.id)?.type === \"milestone\";\n      update(\n        draft.id,\n        milestone\n          ? { startTime: draft.startTime }\n          : {\n              startTime: draft.startTime,\n              endTime: draft.endTime,\n              progress: Math.min(100, Math.max(0, Number(draft.progress) || 0)),\n            },\n      );\n    }\n    setDraft(null);\n  };\n  return (\n    <>\n      <Gantt\n        label=\"Editable plan\"\n        tasks={tasks}\n        view=\"day\"\n        today=\"2025-03-10\"\n        editable\n        onTaskChange={update}\n        onTaskEdit={edit}\n      />\n      <Dialog\n        id=\"gantt-edit-dialog\"\n        aria-labelledby=\"gantt-edit-title\"\n        open={draft !== null}\n        onOpenChange={(open) => !open && setDraft(null)}\n      >\n        <DialogTitle id=\"gantt-edit-title\">{`Edit ${draft?.name ?? \"task\"}`}</DialogTitle>\n        <DialogContent>\n          <TextField\n            id=\"gantt-edit-start\"\n            type=\"date\"\n            label=\"Start\"\n            shrink\n            fullWidth\n            margin=\"dense\"\n            value={draft?.startTime ?? \"\"}\n            onChange={(value) => draft && setDraft({ ...draft, startTime: String(value) })}\n          />\n          <TextField\n            id=\"gantt-edit-end\"\n            type=\"date\"\n            label=\"End\"\n            shrink\n            fullWidth\n            margin=\"dense\"\n            value={draft?.endTime ?? \"\"}\n            onChange={(value) => draft && setDraft({ ...draft, endTime: String(value) })}\n          />\n          <TextField\n            id=\"gantt-edit-progress\"\n            type=\"number\"\n            label=\"Progress (%)\"\n            fullWidth\n            margin=\"dense\"\n            value={draft?.progress ?? \"\"}\n            onChange={(value) => draft && setDraft({ ...draft, progress: String(value) })}\n          />\n        </DialogContent>\n        <DialogActions>\n          <Button variant=\"outlined\" onClick={() => setDraft(null)}>\n            Cancel\n          </Button>\n          <Button variant=\"contained\" onClick={save}>\n            Save\n          </Button>\n        </DialogActions>\n      </Dialog>\n    </>\n  );\n}\n",
+     "snippets": [
+      "editing-group.html"
      ]
     }
    ],
@@ -9457,6 +9612,11 @@
      "body": "Same size at every breakpoint.",
      "id": "responsive",
      "title": "Responsive"
+    },
+    {
+     "body": "Upstream: MUI `IconButton` (+ `ButtonBase`), mui.com/material-ui/api/icon-button/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `children`, `color`, `edge`, `disabled`, `loading`, `loadingIndicator` | same | kept | `color` + `black` / `white`; `edge` `false` = absent |\n| `size` (`small` · `medium` · `large`) | `size` (`sm` · `md` · `lg`) | renamed | |\n| `type` (ButtonBase) | native `type` | kept | |\n| `href`, `component`, `LinkComponent` (ButtonBase) | — | deferred | always a `<button>`: no icon links |\n| `action`, `focusVisibleClassName`, `onFocusVisible`, `nativeButton` (ButtonBase) | `ref.focus()`, `:focus-visible` | not applicable | |\n| `disableRipple`, `disableFocusRipple` (+ ButtonBase ripple props) | — | not applicable | no ripple |\n| `sx`, `classes` | — | not applicable | ADR-0015 |\n\nBeyond MUI: `animate` (reference).",
+     "id": "upstream-api-mapping",
+     "title": "Upstream API mapping"
     },
     {
      "body": "Visible focus outline (the reference has none). The reference's \"With animate\" uses an\nanimation library; here it is plain CSS.",
@@ -10023,6 +10183,11 @@
      "body": "None.",
      "id": "events-api",
      "title": "Events / API"
+    },
+    {
+     "body": "Audit 2026-11-09 against Minimals `Label` (`LabelProps`: `color`, `variant`, `startIcon`, `endIcon`, `disabled`, `sx`; no MUI component).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `variant` (`filled` `outlined` `soft` `inverted`), `color`, `startIcon`, `endIcon`, `children` | same; `color` + `black` / `white` | kept | |\n| `disabled` | — | deferred | new batch E row |\n| `sx` | — | not applicable | ADR-0015 |",
+     "id": "upstream-api-mapping",
+     "title": "Upstream API mapping"
     }
    ],
    "snippets": {},
@@ -10695,6 +10860,11 @@
      "title": "Events / API"
     },
     {
+     "body": "Audit 2026-11-09 against MUI API page LinearProgress.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `variant` (`determinate` `indeterminate` `buffer` `query`), `value`, `valueBuffer`, `min`, `max` | same (HTML: `aria-value*`, `data-ok-value-buffer`) | kept | |\n| `color` | every palette color + `inherit` | kept | |\n| right to left (MUI flips the bars under `dir=\"rtl\"`) | left to right only | deferred (4.13) | |\n| `sx`, `classes` | — | not applicable | ADR-0015 |",
+     "id": "upstream-api-mapping",
+     "title": "Upstream API mapping"
+    },
+    {
      "body": "As Circular progress: React `style`, HTML CSSOM; parity ignores `style`.",
      "id": "parity-notes",
      "title": "Parity notes"
@@ -11171,6 +11341,11 @@
      "body": "HTML: `ok:list:toggle` (cancelable, `detail: { open, list }`) on the button's list, then\n`aria-expanded` and the nested list's `hidden` flip. `runtime.get(list, \"list\").toggle(button,\nopen?)`. React: app state (`aria-expanded`, `hidden`).\nAnimated nested lists (MUI composes `Collapse`): the nested `ul` is a Collapse (collapse.md,\nADR-0044) — React `<Collapse component={List} in={open} timeout=\"auto\" disablePadding>`, HTML\n`data-ok-collapse data-ok-timeout=\"auto\"` on the `ul`; the list runtime still writes `hidden`.",
      "id": "events-api",
      "title": "Events / API"
+    },
+    {
+     "body": "Audit 2026-11-09 against MUI API pages List, ListItem, ListItemButton, ListItemIcon, ListItemAvatar, ListItemText, ListItemSecondaryAction, ListSubheader.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `List` `dense`, `disablePadding`, `subheader`, `children` | same | kept | `dense` reaches items through CSS, not context |\n| `ListItem` `alignItems`, `dense`, `disableGutters`, `disablePadding`, `secondaryAction` | same | kept | |\n| `ListItem` / `ListItemButton` `divider` | same; HTML `data-ok-show-divider` | kept | |\n| `ListItemButton` `alignItems`, `dense`, `disableGutters`, `selected`, `disabled` | same | kept | |\n| `ListItemButton` `component` (`a`) | `href` renders `a` | renamed | |\n| `ListItemButton` `autoFocus`, `focusVisibleClassName`, ripple props | native `autofocus`, `:focus-visible` | not applicable | |\n| `ListItemIcon`, `ListItemAvatar` `children` | same | kept | |\n| `ListItemText` `primary`, `secondary`, `inset`, `disableTypography` | same | kept | |\n| `ListItemText` `slotProps.primary` / `secondary` (`*TypographyProps`) | — | not applicable | restyle with CSS |\n| `ListSubheader` `color`, `disableGutters`, `disableSticky`, `inset` | same | kept | |\n| `component` on `List` / `ListItem` / `ListSubheader` / `ListItemSecondaryAction` | — | not applicable | fixed markup (`ul` / `li`) |\n| `ListItemSecondaryAction` | `secondaryAction` | not applicable | deprecated upstream |\n| Collapse around nested lists | `Collapse component={List}`; HTML `data-ok-collapse` | kept | |\n| — | `ListItemExpandIcon` | kept | beyond upstream |\n| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps` | — | not applicable | ADR-0015: CSS and composition |",
+     "id": "upstream-api-mapping",
+     "title": "Upstream API mapping"
     }
    ],
    "snippets": {},
@@ -11932,7 +12107,7 @@
      "title": "Anatomy"
     },
     {
-     "body": "(Options of `markdown`: listed under \"options\".)\n\nOther props (react-markdown's): `children` (string), `remarkPlugins`, `rehypePlugins`,\n`remarkRehypeOptions` (`allowDangerousHtml` forced on), `allowedElements` /\n`disallowedElements` (HTML `data-ok-allowed-elements` / `data-ok-disallowed-elements`, space\nseparated; both → error), `allowElement(element, index, parent)`, `urlTransform(url, key, node)`\n(default `defaultUrlTransform`; `\"\"`, `null`, `undefined` remove the attribute), `components`\n(React: tag → component or tag name; components get `node`). Owlky's: `sanitizeSchema` (default\n`markdownSanitizeSchema`), `highlighter` (lowlight-compatible, as the Editor). JavaScript-only\noptions in HTML go to `createMarkdown({ … })`, plus `async: true`.\nExports: React `Markdown`, `MarkdownAsync` (async server component), `MarkdownHooks` (`fallback`,\n`onError`), `defaultUrlTransform`, `markdownSanitizeSchema`, types `MarkdownComponents`,\n`MarkdownExtraProps`, `AllowElement`, `UrlTransform`, `MarkdownOptions`. HTML `markdown`,\n`createMarkdown`. Core `markdownTree`, `markdownTreeAsync`, `createMarkdownProcessor`,\n`finishTree`, `markdownElementAttributes`, `markdownElementStyle`, `childSpace`, `parseStyle`.\n\nAPI mapping (react-markdown): kept `children`, `remarkPlugins`, `rehypePlugins`,\n`remarkRehypeOptions`, `allowedElements`, `disallowedElements`, `allowElement`,\n`unwrapDisallowed`, `skipHtml`, `urlTransform`, `components`, `Markdown`, `MarkdownAsync`,\n`MarkdownHooks` (+ `fallback`), `defaultUrlTransform`. Added (reference, HTML parity, security):\n`gfm` (on: the reference renders GFM, and HTML can't pass remark-gfm through attributes),\n`rawHtml` + `sanitizeSchema` (the reference renders HTML; rehype-raw + allow list built in),\n`externalLinks` (the reference's links open in a new tab), `highlighter` (the reference highlights\ncode), `onError` (MarkdownHooks), `images` + `imageRatio` (the reference renders pictures through\nits Image, 16/9: `image` composes Owlky's Image, ADR-0038; React maps `img` to `Image` unless\n`components.img` is set, HTML builds the Image markup and the Image runtime mounts it). Not applicable: `className` (v9, removed in v10; the root div\ntakes every div prop).",
+     "body": "(Options of `markdown`: listed under \"options\".)\n\nOther props (react-markdown's): `children` (string), `remarkPlugins`, `rehypePlugins`,\n`remarkRehypeOptions` (`allowDangerousHtml` forced on), `allowedElements` /\n`disallowedElements` (HTML `data-ok-allowed-elements` / `data-ok-disallowed-elements`, space\nseparated; both → error), `allowElement(element, index, parent)`, `urlTransform(url, key, node)`\n(default `defaultUrlTransform`; `\"\"`, `null`, `undefined` remove the attribute), `components`\n(React: tag → component or tag name; components get `node`). Owlky's: `sanitizeSchema` (default\n`markdownSanitizeSchema`), `highlighter` (lowlight-compatible, as the Editor). JavaScript-only\noptions in HTML go to `createMarkdown({ … })`, plus `async: true`.\nExports: React `Markdown`, `MarkdownAsync` (async server component), `MarkdownHooks` (`fallback`,\n`onError`), `defaultUrlTransform`, `markdownSanitizeSchema`, types `MarkdownComponents`,\n`MarkdownExtraProps`, `AllowElement`, `UrlTransform`, `MarkdownOptions`. HTML `markdown`,\n`createMarkdown`. Core `markdownTree`, `markdownTreeAsync`, `createMarkdownProcessor`,\n`finishTree`, `markdownElementAttributes`, `markdownElementStyle`, `childSpace`, `parseStyle`.\n\nAPI mapping: see \"Upstream API mapping\" below.",
      "id": "options",
      "title": "Options"
     },
@@ -11965,6 +12140,11 @@
      "body": "Content flows at every width: images and tables are 100% wide at most, cells and code wrap\n(`overflow-wrap`), headings use the responsive typography tokens. The story puts its card full\nwidth; no breakpoint of its own.",
      "id": "responsive",
      "title": "Responsive"
+    },
+    {
+     "body": "Upstream: react-markdown 10 README (`Markdown`, `MarkdownAsync`, `MarkdownHooks`, `Options`).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `children`, `remarkPlugins`, `rehypePlugins`, `allowedElements`, `disallowedElements`, `allowElement`, `unwrapDisallowed`, `skipHtml`, `urlTransform`, `components` | same | kept | HTML: element lists as attributes, functions through `createMarkdown({ … })` |\n| `remarkRehypeOptions` | same | kept | `allowDangerousHtml` forced on (raw HTML handled by Owlky's last step) |\n| `Markdown`, `MarkdownAsync`, `MarkdownHooks` (`fallback`), `defaultUrlTransform` | same | kept | |\n| types `Components`, `ExtraProps`, `AllowElement`, `UrlTransform`, `Options` | `MarkdownComponents`, `MarkdownExtraProps`, `AllowElement`, `UrlTransform`, `MarkdownOptions` | renamed | |\n| `className` (v9, removed in v10) | root `div` props | not applicable | |\n\nBeyond upstream: `gfm` (on), `rawHtml` + `sanitizeSchema`, `externalLinks`, `highlighter`,\n`onError` (MarkdownHooks), `images` + `imageRatio` (ADR-0038).",
+     "id": "upstream-api-mapping",
+     "title": "Upstream API mapping"
     },
     {
      "body": "React renders `data-ok-runtime=\"off\"` on the root; HTML keeps the hidden source `pre` (parity\nskips `[hidden]`). Both renderers write the same attributes (`markdownElementAttributes`) and the\nsame inline styles through CSSOM (parity ignores `style`). React writes `checked` / `value` of\ninputs as `defaultChecked` / `defaultValue` (the attributes match).",
@@ -12105,6 +12285,11 @@
      "body": "HTML: `ok:menu:select` (cancelable, `detail.item`) on the list, then the popover closes (reason\n`select`). Instance: `{ select(item) }`. Popover events and instance as in popover.md.",
      "id": "events-api",
      "title": "Events / API"
+    },
+    {
+     "body": "Audit 2026-11-09 against MUI API pages Menu (inherits Popover), MenuItem, MenuList.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `open`, `anchorEl`, `children` | same | kept | |\n| `onClose(event, reason)` | `onOpenChange(open, reason)` (`escape` `backdrop` `select` `tab`); HTML `ok:menu:select` + popover events | renamed | |\n| Popover `anchorOrigin` / `transformOrigin` | `placement` (default `bottom-start`) | renamed | see popover.md |\n| `MenuListProps` | props on `Menu` (to the list) | renamed | |\n| `PaperProps` / `slotProps.paper` | `paperProps` | renamed | |\n| `variant=\"selectedMenu\"`, `autoFocus` | the only behavior (focus the selected, else first item) | kept | |\n| `variant=\"menu\"`, nested menus | — | deferred (4.5) | |\n| `disableAutoFocusItem` | — | deferred | new batch E row |\n| `transitionDuration` | — | deferred | new batch E row (with Popover) |\n| `PopoverClasses` | — | not applicable | ADR-0015 |\n| `MenuItem` `selected`, `dense`, `divider`, `disableGutters`, `disabled` | same (`disabled` → `aria-disabled`) | kept | |\n| `MenuItem` `autoFocus`, `component`, `focusVisibleClassName`, ripple props | — | not applicable | focus is the menu's; `li[role=menuitem]` |\n| `MenuList` (standalone, without Popover) `autoFocus`, `autoFocusItem`, `variant` | HTML: `ul[data-ok-menu]` works alone; React: none | deferred | new batch E row |\n| `MenuList` `disabledItemsFocusable`, `disableListWrap` | — (disabled items skipped, always wraps) | deferred | new batch E row |\n| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps`, `TransitionComponent` / `TransitionProps` | — | not applicable | ADR-0015: CSS, composition, one CSS transition |",
+     "id": "upstream-api-mapping",
+     "title": "Upstream API mapping"
     }
    ],
    "snippets": {},
@@ -13364,6 +13549,11 @@
      "title": "Events / API"
     },
     {
+     "body": "Audit 2026-11-09 against MUI API page Paper.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `variant`, `elevation` (0–24), `square`, `component`, `children` | same | kept | |\n| dark-mode elevation overlay | — | not applicable | Minimals theme drops it |\n| `sx`, `classes` | — | not applicable | ADR-0015 |",
+     "id": "upstream-api-mapping",
+     "title": "Upstream API mapping"
+    },
+    {
      "body": "None: React renders the same element and attributes as the snippets.",
      "id": "parity-notes",
      "title": "Parity notes"
@@ -13520,6 +13710,11 @@
      "body": "HTML: `ok:popover:beforeopen` (cancelable, `detail.anchor`), `ok:popover:open`,\n`ok:popover:beforeclose` (cancelable, `detail.reason`: escape | backdrop | trigger | select | tab |\napi), `ok:popover:close`. Instance: `{ isOpen, open(anchor), close(reason?), toggle(anchor) }`.",
      "id": "events-api",
      "title": "Events / API"
+    },
+    {
+     "body": "Audit 2026-11-09 against MUI API page Popover (inherits Modal).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `open`, `anchorEl` (element or function), `children` | same | kept | |\n| `onClose(event, reason)` | `onOpenChange(open, reason)` (`escape` `backdrop`) | renamed | |\n| `anchorOrigin` / `transformOrigin` | `placement` (side + start / center / end; flip and shift) | renamed | overlapping origins not expressible |\n| Minimals `slotProps.arrow.placement` | `arrow` | renamed | follows the placement |\n| `anchorReference`, `anchorPosition` | — | deferred (4.7) | |\n| `marginThreshold` | 16px fixed | deferred (4.7) | |\n| `transitionDuration` | — (`--ok-duration-shorter`) | deferred | new batch E row (with Menu) |\n| `action` (`updatePosition`) | controller repositions on scroll / resize | not applicable | |\n| `elevation` | `--ok-shadow-dropdown` | not applicable | one dropdown shadow |\n| `container`, Modal `disablePortal` | — | not applicable | top layer |\n| `disableScrollLock` | — | not applicable | non-modal: page stays scrollable |\n| Modal `disableEscapeKeyDown`, `disableAutoFocus`, `disableRestoreFocus` | same | kept | |\n| Modal `keepMounted` | always mounted | kept | |\n| Modal `disableEnforceFocus`, `hideBackdrop`, `BackdropProps` | — | not applicable | no focus trap, no backdrop element |\n| — | `initialFocus` | kept | beyond upstream |\n| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps`, `TransitionComponent` / `TransitionProps` | — | not applicable | ADR-0015: CSS, composition, one CSS transition |",
+     "id": "upstream-api-mapping",
+     "title": "Upstream API mapping"
     }
    ],
    "snippets": {},
@@ -13676,6 +13871,11 @@
      "title": "Events / API"
     },
     {
+     "body": "Upstream: MUI `Radio`, `RadioGroup`, mui.com/material-ui/api/radio/ and /radio-group/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| Radio `checked`, `disabled`, `required`, `id`, `name`, `value` | native props on the input | kept | in a group: `name` / `checked` from the group |\n| Radio `color`, `size` | same | kept | `color` + `default` |\n| Radio `icon`, `checkedIcon` | same | kept | React only |\n| Radio `onChange(event, checked)` | `onChange(checked)` | renamed | standalone radios |\n| Radio `slotProps.input` (`inputProps`, `inputRef`) | `ref` and rest props → the input | renamed | |\n| RadioGroup `children`, `name`, `value`, `defaultValue` | same | kept | `name` default `useId()` |\n| RadioGroup `onChange(event, value)` | `onChange(value)` | renamed | |\n| RadioGroup `row` (FormGroup) | `row` | kept | |\n| `disableRipple` | — | not applicable | no ripple |\n| `sx`, `classes`, `slots`, `slotProps` | — | not applicable | ADR-0015 |",
+     "id": "upstream-api-mapping",
+     "title": "Upstream API mapping"
+    },
+    {
      "body": "None. The Colors story wraps the group in a `fieldset` FormControl with a `legend` FormLabel\n(specs/components/form-control.md); the group's `aria-labelledby` points at the legend.",
      "id": "parity-notes",
      "title": "Parity notes"
@@ -13815,7 +14015,7 @@
      "title": "Anatomy"
     },
     {
-     "body": "(Options of `rating`: listed under \"options\".)\n\nOther props: `value` / `defaultValue` / `onChange(value | null)`, `onChangeActive(value | null)`,\n`max` (5), `precision` (1 · 0.5 · 0.25), `name`, `icon`, `emptyIcon`, `renderIcon(value)`\n(MUI `IconContainerComponent`, renamed: a function of the value), `getLabelText(value)` (default\n\"2 Stars\"), `emptyLabelText` (\"Empty\"). HTML: markup per value, labels as text.\n\nAPI mapping (MUI): kept `value`, `defaultValue`, `onChange` (value-first), `onChangeActive`, `max`,\n`precision`, `readOnly`, `disabled`, `highlightSelectedOnly`, `name`, `icon`, `emptyIcon`,\n`getLabelText`, `emptyLabelText`, `size` (+ the reference's `xSmall`, `xxSmall`). Beyond MUI:\n`color` (the reference's custom color). Not applicable: `classes`, `sx`, `slotProps`.",
+     "body": "(Options of `rating`: listed under \"options\".)\n\nOther props: `value` / `defaultValue` / `onChange(value | null)`, `onChangeActive(value | null)`,\n`max` (5), `precision` (1 · 0.5 · 0.25), `name`, `icon`, `emptyIcon`, `renderIcon(value)`\n(MUI `IconContainerComponent`, renamed: a function of the value), `getLabelText(value)` (default\n\"2 Stars\"), `emptyLabelText` (\"Empty\"). HTML: markup per value, labels as text.\n\nAPI mapping: see \"Upstream API mapping\" below.",
      "id": "options",
      "title": "Options"
     },
@@ -13848,6 +14048,11 @@
      "body": "Same sizes everywhere; 24px icons meet the 24px target size (smaller sizes: read-only use).",
      "id": "responsive",
      "title": "Responsive"
+    },
+    {
+     "body": "Upstream: MUI `Rating`, mui.com/material-ui/api/rating/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `value`, `defaultValue`, `max`, `precision`, `readOnly`, `disabled`, `highlightSelectedOnly`, `name`, `icon`, `emptyIcon`, `getLabelText`, `emptyLabelText` | same | kept | |\n| `size` | `size` | kept | + `xSmall`, `xxSmall` (reference) |\n| `onChange(event, value)`, `onChangeActive(event, value)` | `onChange(value)`, `onChangeActive(value)` | renamed | value-first (ADR-0015) |\n| `slots.icon` (`IconContainerComponent`) | `renderIcon(value)` | renamed | a function of the value |\n| `component` | — | not applicable | root is a `span` around a native radio group |\n| `sx`, `classes`, `slots`, `slotProps` | — | not applicable | ADR-0015 |\n\nBeyond MUI: `color` (the reference's custom color).",
+     "id": "upstream-api-mapping",
+     "title": "Upstream API mapping"
     },
     {
      "body": "React renders `data-ok-runtime=\"off\"`. Hover feedback text is app markup (React demo state).",
@@ -14213,7 +14418,7 @@
      "title": "Anatomy"
     },
     {
-     "body": "(Options of `select`: listed under \"options\".)\n\n(Options of `input-label`: listed under \"options\".)\n\nFormControl gains `hiddenLabel` (`data-ok-hidden-label`, see form-control.md): a filled Select\nwithout a label (also automatic when the FormControl has no InputLabel).\n\nReact: `value` / `defaultValue` / `onChange(value)` (the options' own values: numbers stay\nnumbers; multiple → a list), `open` / `defaultOpen` / `onOpenChange(open, reason)` (reasons\n`escape` · `backdrop` · `select` · `tab` · `toggle`), `renderValue(value)`, `label` (the notch),\n`labelId`, `id` (the trigger), `name`, `readOnly`, `native`, `inputProps` / `inputRef` (hidden\ninput or native select), `displayProps` (MUI `SelectDisplayProps`), `menuProps`\n(`{ placement, paperProps, listProps }`, MUI `MenuProps`), `aria-label` / `aria-labelledby` /\n`aria-describedby` (to the trigger), children `MenuItem` (+ `ListSubheader`) or `<option>`\n(native). `ref` → the field box. `InputLabel`: FormLabel's props + `shrink`, `disableAnimation`.\nTextField: `selectProps` (`{ native: false, … }` → listbox; TextField's `select` stays native by\ndefault for compatibility; MUI's default is the listbox). TablePagination: `selectProps`\n(`{ native: false, menuProps }` → listbox; native by default).\n\nAPI mapping (MUI → Owlky): kept `autoWidth`, `children`, `defaultOpen`, `defaultValue`,\n`displayEmpty`, `id`, `inputProps`, `inputRef`, `label`, `labelId`, `multiple`, `native`, `open`,\n`renderValue`, `value`, `variant`, `size`, `color`, `error`, `disabled`, `required`, `fullWidth`,\n`name`, `readOnly`. Renamed: `onChange(event, child)` → `onChange(value)`; `onOpen` / `onClose` →\n`onOpenChange(open, reason)`; `MenuProps` → `menuProps`; `SelectDisplayProps` → `displayProps`;\n`NativeSelect` → `Select native` (with `variant=\"standard\"` for its look); `IconComponent` → not\napplicable (the arrow is part of the anatomy). Not applicable: `input` (the field box is the\nSelect), `sx`, `classes`, `slotProps`, `slots`, `component`. InputLabel `variant` / `size` /\n`margin`: not applicable (CSS reads the Select's), `focused` / `error` / `disabled` / `required`\ncome from FormLabel.",
+     "body": "(Options of `select`: listed under \"options\".)\n\n(Options of `input-label`: listed under \"options\".)\n\nFormControl gains `hiddenLabel` (`data-ok-hidden-label`, see form-control.md): a filled Select\nwithout a label (also automatic when the FormControl has no InputLabel).\n\nReact: `value` / `defaultValue` / `onChange(value)` (the options' own values: numbers stay\nnumbers; multiple → a list), `open` / `defaultOpen` / `onOpenChange(open, reason)` (reasons\n`escape` · `backdrop` · `select` · `tab` · `toggle`), `renderValue(value)`, `label` (the notch),\n`labelId`, `id` (the trigger), `name`, `readOnly`, `native`, `inputProps` / `inputRef` (hidden\ninput or native select), `displayProps` (MUI `SelectDisplayProps`), `menuProps`\n(`{ placement, paperProps, listProps }`, MUI `MenuProps`), `aria-label` / `aria-labelledby` /\n`aria-describedby` (to the trigger), children `MenuItem` (+ `ListSubheader`) or `<option>`\n(native). `ref` → the field box. `InputLabel`: FormLabel's props + `shrink`, `disableAnimation`.\nTextField: `selectProps` (`{ native: false, … }` → listbox; TextField's `select` stays native by\ndefault for compatibility; MUI's default is the listbox). TablePagination: `selectProps`\n(`{ native: false, menuProps }` → listbox; native by default).\n\nAPI mapping: see \"Upstream API mapping\" below.",
      "id": "options",
      "title": "Options"
     },
@@ -14246,6 +14451,11 @@
      "body": "HTML: `ok:select:change` (cancelable, `{ value }`: string, or string[] with multiple) before the\nvalue changes; `ok:select:open`; `ok:select:close` (`{ reason }`: `escape` · `backdrop` · `select` ·\n`tab` · `toggle` · `api`). Instance: `{ value, setValue(value), isOpen, open(), close() }` (a native\nselect's instance reads and writes the `<select>`). React: `onChange(value)`,\n`onOpenChange(open, reason)`.",
      "id": "events-api",
      "title": "Events / API"
+    },
+    {
+     "body": "Upstream: MUI `Select` (+ OutlinedInput / InputBase props), `InputLabel`, `NativeSelect`,\nmui.com/material-ui/api/select/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `autoWidth`, `children`, `defaultOpen`, `defaultValue`, `displayEmpty`, `id`, `inputProps`, `inputRef`, `label`, `labelId`, `multiple`, `native`, `open`, `renderValue`, `value`, `variant` | same | kept | `id` → the trigger; `inputProps` / `inputRef` → hidden input or native select |\n| InputBase `size`, `color`, `error`, `disabled`, `required`, `fullWidth`, `name`, `readOnly` | same | kept | default: the FormControl's |\n| `onChange(event, child)` | `onChange(value)` | renamed | the options' own values (numbers stay numbers) |\n| `onOpen` / `onClose` | `onOpenChange(open, reason)` | renamed | reasons `escape` · `backdrop` · `select` · `tab` · `toggle` |\n| `MenuProps` | `menuProps` (`placement`, `paperProps`, `listProps`) | renamed | |\n| `SelectDisplayProps` | `displayProps` | renamed | |\n| `NativeSelect` (`IconComponent`, `input`, `inputProps`, `onChange`, `value`, `variant`) | `Select native` | renamed | `variant=\"standard\"` for its look |\n| InputBase `startAdornment` / `endAdornment` | — | deferred | adornments inside the field box |\n| `IconComponent` | — | not applicable | the arrow is part of the anatomy |\n| `input` | — | not applicable | the field box is the Select |\n| InputLabel `children`, `shrink`, `disableAnimation` | same | kept | |\n| InputLabel `color`, `disabled`, `error`, `focused`, `required` | same | kept | from FormLabel |\n| InputLabel `variant`, `size`, `margin` | — | not applicable | CSS reads the Select's |\n| `sx`, `classes`, `slots`, `slotProps`, `component` | — | not applicable | ADR-0015 |",
+     "id": "upstream-api-mapping",
+     "title": "Upstream API mapping"
     },
     {
      "body": "Snippets are generated from the React stories\n(`apps/storybook/scripts/select-snippets.mjs`), which also adds the HTML-only templates\n(`SELECT_TEMPLATES`) and triggers (`data-ok-select-open`, `data-ok-dialog-open` / `-close`;\nparity ignores `data-ok-select-open`). `renderValue` is React-only: HTML covers chips, the\nplaceholder and joined texts. The width of the menu (`--_ok-select-width`) is CSSOM.",
@@ -14536,7 +14746,7 @@
      "title": "Anatomy"
     },
     {
-     "body": "(Options of `slider`: listed under \"options\".)\n\nOther props: `value` / `defaultValue` (number or `[a, b]`), `onChange(value, activeThumb)`,\n`onChangeCommitted(value)`, `marks` (`true` · `{ value, label? }[]`; HTML: mark parts), `step`\n`null` (HTML `data-ok-step=\"0\"`), `valueLabelFormat(value, index)`, `getAriaValueText(value,\nindex)` (HTML `data-ok-label-value=\"{value}°C\"` for both), `getAriaLabel(index)`, `aria-label`,\n`aria-labelledby`, `name`.\n\nAPI mapping (MUI): kept `value`, `defaultValue`, `onChange`, `onChangeCommitted`, `min`, `max`,\n`step`, `marks`, `orientation`, `size`, `color` (+ `inherit` and every palette color, as on the\nreference), `track`, `valueLabelDisplay`, `valueLabelFormat`, `getAriaValueText`, `getAriaLabel`,\n`disabled`, `disableSwap`, `name`. Deferred: `scale`, `shiftStep`, `tabIndex`, `slots`.\nNot applicable: `classes`, `sx`, `component`.",
+     "body": "(Options of `slider`: listed under \"options\".)\n\nOther props: `value` / `defaultValue` (number or `[a, b]`), `onChange(value, activeThumb)`,\n`onChangeCommitted(value)`, `marks` (`true` · `{ value, label? }[]`; HTML: mark parts), `step`\n`null` (HTML `data-ok-step=\"0\"`), `valueLabelFormat(value, index)`, `getAriaValueText(value,\nindex)` (HTML `data-ok-label-value=\"{value}°C\"` for both), `getAriaLabel(index)`, `aria-label`,\n`aria-labelledby`, `name`.\n\nAPI mapping: see \"Upstream API mapping\" below.",
      "id": "options",
      "title": "Options"
     },
@@ -14569,6 +14779,11 @@
      "body": "Horizontal sliders fill their container; vertical ones its height. Pressing the track (any\nwidth) moves a thumb, so the 20px thumb isn't the only target.",
      "id": "responsive",
      "title": "Responsive"
+    },
+    {
+     "body": "Upstream: MUI `Slider`, mui.com/material-ui/api/slider/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `value`, `defaultValue`, `min`, `max`, `step` (incl. `null`), `marks`, `orientation`, `size`, `track`, `valueLabelDisplay`, `valueLabelFormat`, `getAriaValueText`, `getAriaLabel`, `aria-label`, `aria-labelledby`, `disabled`, `disableSwap`, `name` | same | kept | |\n| `color` | `color` | kept | + `inherit` and every palette color (reference) |\n| `onChange(event, value, activeThumb)` | `onChange(value, activeThumb)` | renamed | value-first (ADR-0015) |\n| `onChangeCommitted(event, value)` | `onChangeCommitted(value)` | renamed | |\n| `aria-valuetext` | `getAriaValueText` | renamed | per thumb |\n| `scale`, `shiftStep` | — | deferred (4.2) | |\n| `tabIndex` | — | deferred | thumbs' inputs keep the default tab order |\n| `sx`, `classes`, `slots`, `slotProps`, `component` | — | not applicable | ADR-0015 (custom thumbs / labels by composition) |",
+     "id": "upstream-api-mapping",
+     "title": "Upstream API mapping"
     },
     {
      "body": "React renders `data-ok-runtime=\"off\"` and positions in `style`; HTML computes the same through\nCSSOM on mount (parity ignores `style`).",
@@ -14773,6 +14988,11 @@
      "body": "HTML: `ok:toaster:show`, `ok:toaster:dismiss` (`detail.reason`), `ok:toaster:action` (cancelable).\nInstance: `{ show(options), showTemplate(template), promise(promise, messages), dismiss(id?) }` —\n`show()` builds nodes from text only.",
      "id": "events-api",
      "title": "Events / API"
+    },
+    {
+     "body": "Audit 2026-11-09 against Sonner docs (`toast()`, `<Toaster>`) and its `types.ts` / `state.ts`.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `toast()`, `toast.message` / `info` / `success` / `warning` / `error` / `loading` / `promise` / `custom` / `dismiss(id?)` | same (React `toast`; HTML instance `show` / `showTemplate` / `promise` / `dismiss`) | kept | |\n| `toast.custom(jsx(id))` | `toast.custom(content)` | renamed | content, not a function of the id |\n| toast `id`, `description`, `action`, `cancel`, `duration`, `icon`, `dismissible`, `onDismiss`, `onAutoClose` | same | kept | |\n| toast `position` | — (Toaster's) | deferred (4.14) | |\n| toast `richColors`, Toaster `richColors` | — | deferred (4.14) | |\n| toast `closeButton`, `invert`; Toaster `invert`, `toastOptions`, `icons` | Toaster `closeButton` only | deferred | new batch E row |\n| `toasterId`, Toaster `id` (several toasters) | `<Toaster store>` | deferred | new batch E row |\n| `toast.promise` result `unwrap()`, promise options (`finally`, `id`, other toast options) | returns the id | deferred | new batch E row |\n| `toast.getHistory()`, `toast.getToasts()`, `useSonner()` | — | deferred | new batch E row |\n| Toaster `position`, `duration`, `visibleToasts`, `closeButton` | same | kept | |\n| Toaster `expand`, `swipeDirections` (swipe to dismiss), `hotkey`, `offset` / `mobileOffset`, `gap` | — | deferred (4.14) | |\n| Toaster `dir` | — (physical properties) | deferred | new batch E row |\n| Toaster `theme` | page scheme | not applicable | follows `data-ok-theme` |\n| Toaster `containerAriaLabel` / `customAriaLabel` | `aria-label` (\"Notifications\") | renamed | |\n| `className`, `classNames`, `style`, `unstyled`, `descriptionClassName`, `actionButtonStyle`, `cancelButtonStyle`, `testId` | — | not applicable | CSS on `[data-ok-toast*]`; DOM attributes |",
+     "id": "upstream-api-mapping",
+     "title": "Upstream API mapping"
     }
    ],
    "snippets": {},
@@ -15343,6 +15563,11 @@
      "body": "HTML: native `change`. React: `onChange(checked)`, `checked` / `defaultChecked`.",
      "id": "events-api",
      "title": "Events / API"
+    },
+    {
+     "body": "Upstream: MUI `Switch`, mui.com/material-ui/api/switch/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `checked`, `defaultChecked`, `disabled`, `required`, `id`, `value` | native props on the input | kept | |\n| `color`, `size`, `edge` | same | kept | `color` + `default` |\n| `onChange(event, checked)` | `onChange(checked)` | renamed | value-first (ADR-0015) |\n| `slotProps.input` (`inputProps`, `inputRef`) | `ref` and rest props → the input | renamed | |\n| `icon`, `checkedIcon` | — | deferred (4.3) | thumb content |\n| `disableRipple` | — | not applicable | no ripple |\n| `sx`, `classes`, `slots`, `slotProps` | — | not applicable | ADR-0015 |",
+     "id": "upstream-api-mapping",
+     "title": "Upstream API mapping"
     },
     {
      "body": "None.",
@@ -16096,6 +16321,11 @@
      "title": "Events / API"
     },
     {
+     "body": "Upstream: MUI `TextField` (+ FormControl props), `InputAdornment`, `InputBase`, `OutlinedInput`,\n`FilledInput`, `Input`, mui.com/material-ui/api/text-field/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `variant`, `size`, `error`, `fullWidth`, `margin`, `label`, `helperText`, `disabled`, `required` | same | kept | |\n| `color` | `color` | kept | + `default` (the default; MUI `primary`) |\n| `value`, `defaultValue`, `id`, `name`, `type`, `placeholder`, `autoComplete`, `autoFocus` | same | kept | native ones go to the input; `id` default `useId()` |\n| `multiline`, `rows`, `minRows`, `maxRows` | same | kept | |\n| `select`, `children` | same | kept | `select` stays native by default (MUI: listbox) |\n| `onChange(event)` | `onChange(value)` | renamed | value-first (ADR-0015) |\n| `inputRef` | `ref` | renamed | `ref` and rest props go to the input |\n| `slotProps.input.startAdornment` / `endAdornment` (`InputProps`) | `startAdornment` / `endAdornment` | renamed | |\n| `slotProps.inputLabel.shrink` (`InputLabelProps`) | `shrink` | renamed | |\n| `slotProps.htmlInput` (`inputProps`) | rest props on the input | renamed | `readOnly`, `min`, `maxLength`… |\n| `slotProps.select` (`SelectProps`) | `selectProps` | renamed | `{ native: false }` → listbox Select; single value only |\n| FormControl `hiddenLabel`, `focused`, `component` | — | deferred | filled field without label (less top padding), forced focus style, root element |\n| InputAdornment `position`, `children` | same | kept | |\n| InputAdornment `disablePointerEvents`, `component` | — | deferred | |\n| InputAdornment `disableTypography`, `variant` | — | not applicable | CSS reads the field's variant and styles the text |\n| `InputBase`, `OutlinedInput` (`notched`), `FilledInput` (`disableUnderline`), `Input`, `inputComponent` | — | deferred | standalone inputs without label / helper (custom fields, Select `input`) |\n| `sx`, `classes`, `slots`, other `slotProps` (`formHelperText`, `root`) | — | not applicable | ADR-0015 |\n\nRelated reference features: copy to clipboard (4.20), number input (4.24), phone input (4.25).",
+     "id": "upstream-api-mapping",
+     "title": "Upstream API mapping"
+    },
+    {
      "body": "React stories render the password button without state (apps own `type`, see the docs page);\n`data-ok-text-field-reveal` is an HTML hook (ignored by parity).",
      "id": "parity-notes",
      "title": "Parity notes"
@@ -16548,6 +16778,11 @@
      "title": "Responsive"
     },
     {
+     "body": "Upstream: MUI `ToggleButton`, `ToggleButtonGroup`, mui.com/material-ui/api/toggle-button/ and\n/toggle-button-group/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| ToggleButton `children`, `value`, `selected`, `color`, `disabled`, `fullWidth`, `onClick` | same | kept | `onClick` native; + `defaultSelected` (uncontrolled) |\n| ToggleButton `size` (`small` · `medium` · `large`) | `size` (`sm` · `md` · `lg`) | renamed | |\n| ToggleButton `onChange(event, value)` | `onChange(selected)` | renamed | value-first (ADR-0015) |\n| ToggleButtonGroup `children`, `exclusive`, `value`, `orientation`, `fullWidth`, `color`, `disabled` | same | kept | + `defaultValue`; exclusive value `string \\| null` |\n| ToggleButtonGroup `size` | `size` (`sm` · `md` · `lg`) | renamed | |\n| ToggleButtonGroup `onChange(event, value)` | `onChange(value)` | renamed | HTML `ok:toggle-group:change` |\n| `disableRipple`, `disableFocusRipple` (+ ButtonBase ripple props) | — | not applicable | no ripple |\n| `sx`, `classes` | — | not applicable | ADR-0015 |",
+     "id": "upstream-api-mapping",
+     "title": "Upstream API mapping"
+    },
+    {
      "body": "React renders `data-ok-runtime=\"off\"` on the group and on standalone buttons.",
      "id": "parity-notes",
      "title": "Parity notes"
@@ -16736,6 +16971,11 @@
      "body": "HTML: `ok:tooltip:open` (`detail.trigger`), `ok:tooltip:close`. Instance: `{ isOpen, show(trigger?),\nhide() }`. Triggers are found by delegation (`aria-labelledby` / `aria-describedby` pointing at a\n`[data-ok-tooltip]`).",
      "id": "events-api",
      "title": "Events / API"
+    },
+    {
+     "body": "Audit 2026-11-09 against MUI API page Tooltip.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `title`, `children` (one element), `placement`, `arrow`, `describeChild`, `id` | same | kept | name through `aria-labelledby` (MUI: `aria-label`) |\n| `enterDelay`, `leaveDelay`, `enterTouchDelay`, `leaveTouchDelay` | same | kept | |\n| `disableHoverListener`, `disableFocusListener`, `disableTouchListener` | same | kept | |\n| `open`; `onOpen` / `onClose` | `open`; `onOpenChange(open)`; HTML `ok:tooltip:open` / `close` | renamed | |\n| `TransitionComponent` (Grow / Fade / Zoom) | `transition` (`grow` `fade` `zoom`) | renamed | |\n| `followCursor`, `enterNextDelay` | — | deferred (4.6) | |\n| `disableInteractive` | — (always hoverable) | not applicable | WCAG 1.4.13 |\n| `placement` `auto` / `auto-start` / `auto-end` | — | not applicable | the controller flips |\n| `PopperComponent` / `PopperProps`, `slots.popper` / `transition` / `arrow` | — | not applicable | core positioning, top layer |\n| `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps` | — | not applicable | ADR-0015: CSS and composition |",
+     "id": "upstream-api-mapping",
+     "title": "Upstream API mapping"
     }
    ],
    "snippets": {},
@@ -16888,6 +17128,11 @@
      "body": "Stacked below 600px (no overflow at 375px), side by side above.",
      "id": "responsive",
      "title": "Responsive"
+    },
+    {
+     "body": "Upstream: the MUI \"Transfer list\" demo (mui.com/material-ui/react-transfer-list/); MUI has no\ncomponent, so the demo's state and handlers map to props.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| Basic demo: `left` / `right` state, `checked` rows, `handleAllRight` / `handleCheckedRight` / `handleCheckedLeft` / `handleAllLeft`, buttons disabled when nothing moves | `variant=\"simple\"`, `left` / `right` / `defaultLeft`, `onChange(left, right)` | kept | checked state is internal |\n| Enhanced demo: titled cards, `handleToggleAll` (mixed), `numberOfChecked` (\"n/m selected\") | `variant=\"enhanced\"`, `titles`, `getCountLabel(checked, total)` | kept | |\n| `not` / `intersection` / `union` helpers | core `transferMove` / `canTransfer` / `toggleAll` / `sideCheckedState` | renamed | |\n| `customList` (List › ListItemButton › Checkbox) | Scrollbar › List › Checkbox rows in a `label` | renamed | no nested interactive rows |\n\nBeyond the demo: `disabled`, `buttonLabels`, `id`, HTML `move(direction)`.",
+     "id": "upstream-api-mapping",
+     "title": "Upstream API mapping"
     },
     {
      "body": "React renders `data-ok-runtime=\"off\"`. Both render the same Scrollbar / List / Checkbox / Button\nmarkup.",
@@ -17223,6 +17468,11 @@
      "body": "None.",
      "id": "events-api",
      "title": "Events / API"
+    },
+    {
+     "body": "Audit 2026-11-09 against MUI API page Typography.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `variant`, `align`, `gutterBottom`, `noWrap`, `component`, `variantMapping`, `children` | same | kept | |\n| `color` | palette names + `textPrimary` / `textSecondary` / `textDisabled` | kept | no arbitrary strings (`\"text.secondary\"`) |\n| `paragraph` | `component=\"p\"` + `gutterBottom` | not applicable | deprecated upstream |\n| theme custom variants / theme `variantMapping` | CSS on `[data-ok-variant]` or tokens | not applicable | |\n| Minimals \"Text max line\" | — | deferred (4.19) | `maxLines` |\n| `sx`, `classes` | — | not applicable | ADR-0015 |",
+     "id": "upstream-api-mapping",
+     "title": "Upstream API mapping"
     }
    ],
    "snippets": {},
@@ -17478,14 +17728,14 @@
      "title": "Responsive"
     },
     {
+     "body": "Upstream: react-dropzone 20 (`useDropzone`, `Dropzone`) and the Minimals `Upload` wrapper.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `accept` (incl. `AcceptGroup[]`), `multiple`, `maxFiles`, `maxSize`, `minSize`, `disabled` | same | kept | `multiple` default `false` (Minimals' Upload); `maxFiles` counts the files held |\n| `noClick`, `noKeyboard`, `noDrag`, `noDragEventsBubbling`, `noPaste`, `preventDropOnDocument`, `useFsAccessApi`, `autoFocus` | same | kept | `noDragEventsBubbling` without `stopPropagation` (outer uploads skip claimed events) |\n| `validator` (sync or async), `getFilesFromEvent`, `getErrorMessage`, `onError` | same | kept | |\n| `onDrop(accepted, rejections, event)` | `onDrop(accepted, rejections)` | renamed | value-first (ADR-0015) |\n| `onDropAccepted`, `onDropRejected`, `onFileDialogOpen`, `onFileDialogCancel` | same | kept | cancel from the native `cancel` event |\n| `onDragEnter` / `onDragOver` / `onDragLeave` | native root props | kept | state via `placeholder(state)` / `data-ok-drag` |\n| `isDragActive` / `isDragAccept` / `isDragReject` / `isDragUnknown` / `isDragGlobal`, `isFileDialogActive`, `isProcessing` | `UploadState` | kept | |\n| `isFocused` | CSS `:focus-visible` | renamed | |\n| `open`, `removeFile`, `clearFiles`, `acceptedFiles`, `fileRejections` | `apiRef` (`files`, `rejections`) | renamed | |\n| `dragFileRejections` | — | deferred | MIME / surplus rejections during a drag |\n| `getRootProps` / `getInputProps` / `rootRef` / `inputRef`, `Dropzone` (render prop `children(state)`) | the component; `inputRef` | deferred (4.4) | hook form |\n| `refKey` | — | not applicable | no prop getters |\n| Minimals `value`, `error`, `helperText`, `thumbnail`, `onRemove`, `onRemoveAll`, `onUpload`, `placeholder`, `disabled` | same | kept | |\n| Minimals \"Horizontal layout\" | `layout` | renamed | |",
+     "id": "upstream-api-mapping",
+     "title": "Upstream API mapping"
+    },
+    {
      "body": "- The HTML list item comes from `<template data-ok-upload-template>` (skipped by parity).\n- Ids differ (React `useId`, HTML from the input's id or `createId`); parity normalizes them.\n- Image previews are object URLs (different per page): dynamic parity runs with `thumbnail` off.",
      "id": "parity-notes",
      "title": "Parity notes"
-    },
-    {
-     "body": "| Upstream | Owlky | Note |\n|---|---|---|\n| `accept`, `multiple`, `maxFiles`, `maxSize`, `minSize`, `disabled` | kept | `multiple` defaults to `false` (Minimals' Upload); `maxFiles` counts the files held |\n| `noClick`, `noKeyboard`, `noDrag`, `noDragEventsBubbling`, `noPaste`, `preventDropOnDocument`, `useFsAccessApi`, `autoFocus` | kept | `noDragEventsBubbling` without `stopPropagation` (outer uploads skip claimed events) |\n| `validator`, `getFilesFromEvent`, `getErrorMessage`, `onError` | kept | |\n| `onDrop(accepted, rejections, event)` | `onDrop(accepted, rejections)` | value-first (ADR-0015) |\n| `onDropAccepted`, `onDropRejected`, `onFileDialogOpen`, `onFileDialogCancel` | kept | cancel from the native `cancel` event |\n| `onDragEnter` / `onDragOver` / `onDragLeave` | native root props | state via `placeholder(state)` / `data-ok-drag` |\n| `isDragActive` / `Accept` / `Reject` / `Unknown` / `Global`, `isFileDialogActive`, `isProcessing` | `UploadState` | `isFocused` → CSS `:focus-visible` |\n| `open`, `removeFile`, `clearFiles`, `acceptedFiles`, `fileRejections` | `apiRef` (`files`, `rejections`) | |\n| `getRootProps` / `getInputProps` / `rootRef` / `inputRef` | the component; `inputRef` | hook form deferred (backlog) |\n| Minimals: `value`, `error`, `helperText`, `thumbnail`, `onRemove`, `onRemoveAll`, `onUpload`, `placeholder`, `disabled` | kept | \"Horizontal layout\" → `layout` |",
-     "id": "api-mapping-react-dropzone-owlky",
-     "title": "API mapping (react-dropzone → Owlky)"
     }
    ],
    "snippets": {},
@@ -20315,6 +20565,13 @@
      "title": "Select tasks"
     },
     {
+     "body": "Set `editable` to let people change tasks. Drag a bar to move it, drag its edges to change its dates, or drag the small handle under it to set its progress. From the keyboard, press Enter on a row: the arrow keys move the task a day, Shift and the arrow keys change its end, Page Up and Page Down change its progress by 10%, Enter saves and Escape cancels. A double click, a double tap or F2 asks for your own edit form, so every change also works with a single tap. Milestones only move, and summary tasks follow their children. Turn single gestures off with `taskDrag`, `taskResize` or `progressDrag` set to `false`. The chart doesn't change the data itself. In React, `onTaskChange(id, change, source)` reports each change: update `tasks` to keep it. In HTML, `ok:gantt:taskchange` fires first and is cancelable, then the runtime writes the change into the table. `updateTask(id, change)` writes your form's values.",
+     "html": "<div data-ok-gantt data-ok-view=\"day\" data-ok-bar-label=\"right\" data-ok-editable>\n  <table data-ok-gantt-data>\n    <caption>Budget plan</caption>\n    <thead>\n      <tr><th scope=\"col\" data-ok-gantt-field=\"name\">Task</th><th scope=\"col\" data-ok-gantt-field=\"startTime\">Start</th><th scope=\"col\" data-ok-gantt-field=\"endTime\">End</th><th scope=\"col\" data-ok-gantt-field=\"progress\">Progress</th><th scope=\"col\" data-ok-gantt-field=\"dependency\">Predecessors</th></tr>\n    </thead>\n    <tbody>\n      <tr data-ok-task-id=\"plan\"><td>Plan</td><td></td><td></td><td></td><td></td></tr>\n      <tr data-ok-task-id=\"scope\" data-ok-parent-id=\"plan\"><td>Scope</td><td data-ok-value=\"2025-03-03\">Mar 3, 2025</td><td data-ok-value=\"2025-03-05\">Mar 5, 2025</td><td data-ok-value=\"100\">100%</td><td></td></tr>\n      <tr data-ok-task-id=\"budget\" data-ok-parent-id=\"plan\"><td>Budget</td><td data-ok-value=\"2025-03-06\">Mar 6, 2025</td><td data-ok-value=\"2025-03-11\">Mar 11, 2025</td><td data-ok-value=\"50\">50%</td><td>scope</td></tr>\n      <tr data-ok-task-id=\"approved\" data-ok-type=\"milestone\"><td>Approved</td><td data-ok-value=\"2025-03-12\">Mar 12, 2025</td><td></td><td></td><td>budget</td></tr>\n    </tbody>\n  </table>\n</div>\n<script>\n  const gantt = document.querySelector(\"[data-ok-gantt]\");\n  gantt.addEventListener(\"ok:gantt:taskchange\", (event) => {\n    // Refuse changes that start before March 3.\n    if (event.detail.change.startTime < \"2025-03-03\") event.preventDefault();\n  });\n</script>",
+     "id": "editing",
+     "react": "import { Gantt, type GanttTask } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nconst tasks: GanttTask[] = [\n  { id: \"plan\", name: \"Plan\" },\n  { id: \"scope\", name: \"Scope\", parentId: \"plan\", startTime: \"2025-03-03\", endTime: \"2025-03-05\", progress: 100 },\n  { id: \"budget\", name: \"Budget\", parentId: \"plan\", startTime: \"2025-03-06\", endTime: \"2025-03-11\", progress: 50, dependency: \"scope\" },\n  { id: \"approved\", name: \"Approved\", startTime: \"2025-03-12\", type: \"milestone\", dependency: \"budget\" },\n];\n\nexport function EditablePlan() {\n  const [items, setItems] = useState(tasks);\n  return (\n    <Gantt\n      label=\"Budget plan\"\n      tasks={items}\n      view=\"day\"\n      editable\n      onTaskChange={(id, change) =>\n        setItems((list) => list.map((task) => (task.id === id ? { ...task, ...change } : task)))\n      }\n    />\n  );\n}",
+     "title": "Edit tasks"
+    },
+    {
      "body": "`columns` picks the task-list columns from `name`, `startTime`, `endTime`, `duration` and `progress`. The name always comes first. `tasksContainerWidth` sets the width of the task list (440px by default): the name column takes the space the other columns leave. On screens, or containers, narrower than 600px, only the name column shows, and the timeline scrolls sideways inside the chart. `barLabel` places the task names: `right` of the bars (the default), `left` of them, `inside` them, or `auto`, inside when the name fits. `rowHeight` and `barMargin` set the size of rows and bars.",
      "html": "<div data-ok-gantt data-ok-view=\"week\" data-ok-bar-label=\"auto\" data-ok-columns=\"name startTime endTime\" data-ok-row-height=\"48\">\n  <table data-ok-gantt-data>\n    <caption>Budget plan</caption>\n    <thead>\n      <tr><th scope=\"col\" data-ok-gantt-field=\"name\">Task</th><th scope=\"col\" data-ok-gantt-field=\"startTime\">Start</th><th scope=\"col\" data-ok-gantt-field=\"endTime\">End</th><th scope=\"col\" data-ok-gantt-field=\"progress\">Progress</th><th scope=\"col\" data-ok-gantt-field=\"dependency\">Predecessors</th></tr>\n    </thead>\n    <tbody>\n      <tr data-ok-task-id=\"plan\"><td>Plan</td><td></td><td></td><td></td><td></td></tr>\n      <tr data-ok-task-id=\"scope\" data-ok-parent-id=\"plan\"><td>Scope</td><td data-ok-value=\"2025-03-03\">Mar 3, 2025</td><td data-ok-value=\"2025-03-05\">Mar 5, 2025</td><td data-ok-value=\"100\">100%</td><td></td></tr>\n      <tr data-ok-task-id=\"budget\" data-ok-parent-id=\"plan\"><td>Budget</td><td data-ok-value=\"2025-03-06\">Mar 6, 2025</td><td data-ok-value=\"2025-03-11\">Mar 11, 2025</td><td data-ok-value=\"50\">50%</td><td>scope</td></tr>\n      <tr data-ok-task-id=\"approved\" data-ok-type=\"milestone\"><td>Approved</td><td data-ok-value=\"2025-03-12\">Mar 12, 2025</td><td></td><td></td><td>budget</td></tr>\n    </tbody>\n  </table>\n</div>",
      "id": "layout",
@@ -20332,7 +20589,7 @@
      "title": "Content and behavior"
     },
     {
-     "body": "- **`ok:gantt:toggle`** (cancelable) fires when a parent row asks to expand or collapse, with `detail.id`, `detail.expanded` and `detail.collapsed` (every collapsed id). Call `preventDefault()` to keep the row as it is.\n- **`ok:gantt:selectionchange`** (cancelable) fires with `detail.selected` and `detail.mode` (`replace`, `toggle`, `range` or `all`).\n- **`ok:gantt:zoom`** (cancelable) fires with `detail.pixelsPerDay` when a zoom button is selected.\n- **Instance:** `runtime.get(element, \"gantt\")` returns `{ tasks, collapsed, setCollapsed(ids), selected, setSelected(ids), pixelsPerDay, zoomIn(), zoomOut(), scrollToTask(id), setLocaleText(text), refresh() }`. The methods don't fire events. The chart redraws by itself when the table or an option changes.\n- **React:** `onCollapsedChange(ids)`, `onSelectionChange(ids, mode)` and `onZoomChange(pixelsPerDay)`. Pass `collapsed`, `selected` or `pixelsPerDay` to control that state, or `defaultCollapsed`, `defaultSelected` or `defaultPixelsPerDay` for its first value.",
+     "body": "- **`ok:gantt:toggle`** (cancelable) fires when a parent row asks to expand or collapse, with `detail.id`, `detail.expanded` and `detail.collapsed` (every collapsed id). Call `preventDefault()` to keep the row as it is.\n- **`ok:gantt:selectionchange`** (cancelable) fires with `detail.selected` and `detail.mode` (`replace`, `toggle`, `range` or `all`).\n- **`ok:gantt:taskchange`** (cancelable) fires when an edit asks to change a task, with `detail.id`, `detail.change` (`startTime`, `endTime`, `progress`) and `detail.source` (`drag`, `resize`, `progress` or `keyboard`). Unless you call `preventDefault()`, the runtime writes the change into the table.\n- **`ok:gantt:edit`** fires with `detail.id` on a double click, a double tap or F2: open your edit form.\n- **`ok:gantt:zoom`** (cancelable) fires with `detail.pixelsPerDay` when a zoom button is selected.\n- **Instance:** `runtime.get(element, \"gantt\")` returns `{ tasks, collapsed, setCollapsed(ids), selected, setSelected(ids), pixelsPerDay, zoomIn(), zoomOut(), scrollToTask(id), setLocaleText(text), refresh(), updateTask(id, change) }`. The methods don't fire events. The chart redraws by itself when the table or an option changes.\n- **React:** `onTaskChange(id, change, source)`, `onTaskEdit(id)`, `onCollapsedChange(ids)`, `onSelectionChange(ids, mode)` and `onZoomChange(pixelsPerDay)`. Pass `collapsed`, `selected` or `pixelsPerDay` to control that state, or `defaultCollapsed`, `defaultSelected` or `defaultPixelsPerDay` for its first value.",
      "id": "events",
      "title": "Events and methods"
     },

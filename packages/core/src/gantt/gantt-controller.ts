@@ -1,8 +1,10 @@
 /**
  * Gantt controller (ADR-0048): keyboard focus on rows (roving `tabindex`), expand / collapse,
- * selection, zoom buttons and the tooltip. It reads the rendered markup and reports intent; the
+ * selection, zoom buttons, the tooltip and editing (`gantt-edit.ts`). It reads the rendered markup and reports intent; the
  * owner (React state, the HTML runtime) changes the data and renders, then calls `sync()`.
  */
+
+import { createGanttEditing, type GanttEditCallbacks } from "./gantt-edit.js";
 
 export interface GanttTooltipContent {
   readonly title: string;
@@ -11,7 +13,7 @@ export interface GanttTooltipContent {
 
 export type GanttSelectionMode = "replace" | "toggle" | "range" | "all";
 
-export interface GanttControllerCallbacks {
+export interface GanttControllerCallbacks extends GanttEditCallbacks {
   /** The tab stop moves to a row. */
   onActiveChange?(id: string): void;
   /** A parent row asks to expand (`true`) or collapse. */
@@ -49,6 +51,7 @@ export function createGanttController(
   let anchor: string | undefined;
   let tooltipFor: string | undefined;
   let hideTimer: ReturnType<typeof setTimeout> | undefined;
+  const editing = createGanttEditing(root, callbacks);
   const viewport = () => root.querySelector<HTMLElement>("[data-ok-gantt-viewport]");
   const tooltip = () => root.querySelector<HTMLElement>("[data-ok-gantt-tooltip]");
   const rowById = (id: string) =>
@@ -105,7 +108,7 @@ export function createGanttController(
     if (!row || !root.contains(row)) return;
     pendingFocus = idOf(row);
     if (target.closest("[data-ok-gantt-toggle]")) toggle(row);
-    if (selectable())
+    if (selectable() && !editing.dragging)
       select(row, event.shiftKey ? "range" : event.ctrlKey || event.metaKey ? "toggle" : "replace");
     activate(row);
   };
@@ -115,6 +118,10 @@ export function createGanttController(
     if (!row.matches?.(ROW) || !root.contains(row)) return;
     // Owners may rebuild the row while handling the key: keep the focus on this task.
     pendingFocus = idOf(row);
+    if (editing.key(event, row)) {
+      pendingFocus = undefined;
+      return;
+    }
     const rows = rowsOf(root);
     const at = rows.indexOf(row);
     const level = levelOf(row);
@@ -329,6 +336,7 @@ export function createGanttController(
     },
     hideTooltip,
     destroy() {
+      editing.destroy();
       hideTooltip();
       root.removeEventListener("click", onClick);
       root.removeEventListener("keydown", onKeyDown);

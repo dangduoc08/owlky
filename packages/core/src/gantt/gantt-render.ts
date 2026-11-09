@@ -72,6 +72,12 @@ export interface GanttLocaleText {
   readonly baseline: string;
   readonly zoomIn: string;
   readonly zoomOut: string;
+  /** Edit mode, announced: `{name}`. */
+  readonly editing: string;
+  /** A step of the edit mode: `{start}`, `{end}`, `{progress}`. */
+  readonly draft: string;
+  readonly saved: string;
+  readonly cancelled: string;
   readonly toolbar: string;
 }
 
@@ -97,6 +103,11 @@ export const GANTT_LOCALE_TEXT: GanttLocaleText = {
   baseline: "Planned",
   zoomIn: "Zoom in",
   zoomOut: "Zoom out",
+  editing:
+    "Editing {name}. Arrow keys move the task, Shift and arrow keys change its end, Page Up and Page Down change its progress. Enter saves, Escape cancels.",
+  draft: "{start} to {end}, {progress}%",
+  saved: "Saved",
+  cancelled: "Cancelled",
   toolbar: "Gantt tools",
 };
 
@@ -110,7 +121,8 @@ export function ganttLocaleText(text?: Partial<GanttLocaleText> | null): GanttLo
   return merged as unknown as GanttLocaleText;
 }
 
-const fill = (template: string, values: Record<string, string | number>) =>
+/** Fills `{key}` placeholders (unknown ones stay as written). */
+export const ganttFill = (template: string, values: Record<string, string | number>) =>
   template.replace(/\{(\w+)\}/g, (all, key: string) =>
     Object.hasOwn(values, key) ? String(values[key]) : all,
   );
@@ -141,6 +153,11 @@ export interface GanttRenderOptions {
   readonly projectBoundary: boolean;
   readonly toolbar: boolean;
   readonly selection: boolean;
+  /** Bars can be edited: by pointer (per the three flags below) and from the keyboard. */
+  readonly editable?: boolean | undefined;
+  readonly taskDrag?: boolean | undefined;
+  readonly taskResize?: boolean | undefined;
+  readonly progressDrag?: boolean | undefined;
   readonly collapsed: ReadonlySet<string>;
   readonly selected: ReadonlySet<string>;
   /** The row that holds the tab stop (default the first). */
@@ -219,16 +236,16 @@ export function ganttBarLabel(
     parts.push(`${text.milestone}, ${ganttLongDate(item.start, locale)}`);
   else {
     parts.push(
-      fill(text.range, {
+      ganttFill(text.range, {
         start: ganttLongDate(item.start, locale),
         end: ganttLongDate(item.end - 1, locale),
       }),
     );
-    parts.push(fill(text.complete, { value: Math.round(item.progress) }));
+    parts.push(ganttFill(text.complete, { value: Math.round(item.progress) }));
   }
   if (flags.baseline && item.baseline)
     parts.push(
-      `${text.baseline} ${fill(text.range, {
+      `${text.baseline} ${ganttFill(text.range, {
         start: ganttLongDate(item.baseline.start, locale),
         end: ganttLongDate(item.baseline.end - 1, locale),
       })}`,
@@ -236,11 +253,11 @@ export function ganttBarLabel(
   if (flags.critical) parts.push(text.critical);
   if (item.links.length)
     parts.push(
-      fill(text.dependsOn, {
+      ganttFill(text.dependsOn, {
         list: item.links
           .map((link) => {
             const from = (model.byId.get(link.from) as GanttItem).name;
-            const lag = link.lag ? `, ${fill(text.lag, { count: link.lag })}` : "";
+            const lag = link.lag ? `, ${ganttFill(text.lag, { count: link.lag })}` : "";
             return `${from} (${text[TYPE_TEXT[link.type]]}${lag})`;
           })
           .join(", "),
@@ -261,13 +278,13 @@ export function ganttTooltip(
   const rows: [string, string][] = [[text.startTime, ganttShortDate(item.start, locale)]];
   if (item.kind !== "milestone") {
     rows.push([text.endTime, ganttShortDate(item.end - 1, locale)]);
-    rows.push([text.duration, fill(text.days, { count: days(item) })]);
+    rows.push([text.duration, ganttFill(text.days, { count: days(item) })]);
     rows.push([text.progress, `${Math.round(item.progress)}%`]);
   }
   if (item.baseline)
     rows.push([
       text.baseline,
-      fill(text.range, {
+      ganttFill(text.range, {
         start: ganttShortDate(item.baseline.start, locale),
         end: ganttShortDate(item.baseline.end - 1, locale),
       }),
@@ -290,7 +307,7 @@ export function ganttCellText(
     case "endTime":
       return ganttShortDate(item.kind === "milestone" ? item.start : item.end - 1, locale);
     case "duration":
-      return fill(text.days, { count: days(item) });
+      return ganttFill(text.days, { count: days(item) });
     default:
       return item.kind === "milestone" ? "" : `${Math.round(item.progress)}%`;
   }
@@ -569,6 +586,7 @@ export function renderGantt(model: GanttModel, options: GanttRenderOptions): Gan
       attrs["aria-expanded"] = options.collapsed.has(item.id) ? "false" : "true";
     if (options.selection)
       attrs["aria-selected"] = options.selected.has(item.id) ? "true" : "false";
+    if (options.editable && item.kind !== "summary") attrs["aria-keyshortcuts"] = "Enter F2";
     const cells = columns.map((key, c) => {
       const style: Record<string, string> = { "--_ok-gantt-left": px(lefts[c] as number) };
       const cellAttrs = {
@@ -722,20 +740,27 @@ function timelineCell(
           ? "inside"
           : "right"
         : options.barLabel;
+  // Drag handles of an editable bar (decorative: the keyboard edits through the row).
+  const handles: GanttNode[] = [];
+  if (options.editable && item.kind === "task") {
+    if (options.taskResize !== false)
+      for (const side of ["start", "end"])
+        handles.push(el("span", { "data-ok-gantt-handle": side, "aria-hidden": "true" }));
+    if (options.progressDrag !== false)
+      handles.push(el("span", { "data-ok-gantt-handle": "progress", "aria-hidden": "true" }));
+  }
   if (position === "inside") {
     out.push(
       el(
         "div",
         barAttrs,
-        [el("span", { "data-ok-gantt-bar-text": "" }, undefined, { text: label })],
-        {
-          style,
-        },
+        [el("span", { "data-ok-gantt-bar-text": "" }, undefined, { text: label }), ...handles],
+        { style },
       ),
     );
     return out;
   }
-  out.push(el("div", barAttrs, undefined, { style }));
+  out.push(el("div", barAttrs, handles.length ? handles : undefined, { style }));
   const half = item.kind === "milestone" ? barHeight / 2 : 0;
   out.push(
     el("span", { "data-ok-gantt-label": position, "aria-hidden": "true" }, undefined, {

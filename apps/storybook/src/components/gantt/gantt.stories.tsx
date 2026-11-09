@@ -4,7 +4,10 @@ import { frameworkStory, reactGroupsStory, type StoryControls } from "../../help
 import { htmlSetup, snippetStory } from "../shared/snippets.js";
 import { ganttExamples } from "./gantt-data.js";
 import { GanttDocs } from "./gantt-docs.js";
+import { EditingGanttDemo } from "./gantt-editing-demo.js";
+import editingSource from "./gantt-editing-demo.tsx?raw";
 import { GANTT_CONTROLS, GANTT_FILES, ganttCode, ganttStories } from "./gantt-examples.js";
+import { EDITING_SCRIPT_SOURCE, editingScript } from "./gantt-scripts.js";
 
 const controls: StoryControls = { ...GANTT_CONTROLS, target: Gantt };
 
@@ -26,6 +29,29 @@ const story = (name: string): StoryObj => ({
   }),
   name: ganttExamples[name]?.title ?? name,
 });
+
+/** Editing keeps state: the demo's source in React, a page script in HTML (no Controls). */
+const editing: StoryObj = {
+  ...frameworkStory({
+    html: snippetStory(
+      snippets,
+      "editing",
+      [["Editing", "group"]],
+      htmlSetup(
+        ["icon-button.css", "gantt.css", "dialog.css", "text-field.css", "button.css"],
+        true,
+      ),
+      undefined,
+      { group: { script: editingScript, scriptSource: EDITING_SCRIPT_SOURCE } },
+    ),
+    react: reactGroupsStory(
+      [{ title: "Editing", content: <EditingGanttDemo /> }],
+      undefined,
+      editingSource,
+    ),
+  }),
+  name: "Editing",
+};
 
 const meta = {
   title: "Components/Gantt",
@@ -54,3 +80,4 @@ export const BarLabels: StoryObj = story("bar-labels");
 export const CustomColors: StoryObj = story("custom-colors");
 export const Selection: StoryObj = story("selection");
 export const TaskListColumns: StoryObj = story("task-list-columns");
+export const Editing: StoryObj = editing;

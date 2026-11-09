@@ -45,6 +45,10 @@ export interface GanttOptionValues {
   readonly projectBoundary?: boolean | undefined;
   readonly toolbar?: boolean | undefined;
   readonly selection?: boolean | undefined;
+  readonly editable?: boolean | undefined;
+  readonly taskDrag?: boolean | undefined;
+  readonly taskResize?: boolean | undefined;
+  readonly progressDrag?: boolean | undefined;
   /** Task-list columns (default name, start, duration, progress). */
   readonly columns?: readonly GanttColumnKey[] | string | undefined;
   /** The day of the today line (default the current day). */
@@ -129,6 +133,10 @@ export function ganttRenderOptions(
     projectBoundary: values.projectBoundary === true,
     toolbar: values.toolbar === true,
     selection: values.selection === true,
+    editable: values.editable === true,
+    taskDrag: values.taskDrag !== false,
+    taskResize: values.taskResize !== false,
+    progressDrag: values.progressDrag !== false,
   };
 }
 

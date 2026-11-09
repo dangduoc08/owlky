@@ -3,6 +3,7 @@
 import {
   createGanttController,
   type GanttBarLabel,
+  type GanttChangeSource,
   type GanttColumnKey,
   type GanttController,
   type GanttItem,
@@ -10,13 +11,16 @@ import {
   type GanttNode,
   type GanttSelectionMode,
   type GanttTask,
+  type GanttTaskChange,
   type GanttView,
   ganttAttributes,
   ganttDensity,
+  ganttEditTask,
   ganttInitialCollapsed,
   ganttLocaleText,
   ganttModel,
   ganttRenderOptions,
+  ganttShortDate,
   ganttTable,
   ganttTextAttributes,
   ganttTooltip,
@@ -63,6 +67,17 @@ export interface GanttProps
   toolbar?: boolean | undefined;
   selection?: boolean | undefined;
   disableTooltip?: boolean | undefined;
+  /** Tasks can be edited by pointer and keyboard; the changes come through `onTaskChange`. */
+  editable?: boolean | undefined;
+  taskDrag?: boolean | undefined;
+  taskResize?: boolean | undefined;
+  progressDrag?: boolean | undefined;
+  /** An edit asks to change a task: update `tasks` to accept it. */
+  onTaskChange?:
+    | ((id: string, change: GanttTaskChange, source: GanttChangeSource) => void)
+    | undefined;
+  /** A double click, a double tap or F2 asks to edit a task in your own form. */
+  onTaskEdit?: ((id: string) => void) | undefined;
   /** Task-list columns (`name`, `startTime`, `endTime`, `duration`, `progress`). */
   columns?: readonly GanttColumnKey[] | undefined;
   /** The today line's day (default the current day). */
@@ -137,6 +152,12 @@ export const Gantt = forwardRef<HTMLDivElement, GanttProps>(function Gantt(
     toolbar,
     selection,
     disableTooltip,
+    editable,
+    taskDrag,
+    taskResize,
+    progressDrag,
+    onTaskChange,
+    onTaskEdit,
     columns,
     today,
     locale,
@@ -191,6 +212,10 @@ export const Gantt = forwardRef<HTMLDivElement, GanttProps>(function Gantt(
     projectBoundary,
     toolbar,
     selection,
+    editable,
+    taskDrag,
+    taskResize,
+    progressDrag,
     columns,
     today,
     locale,
@@ -229,6 +254,8 @@ export const Gantt = forwardRef<HTMLDivElement, GanttProps>(function Gantt(
     setDensity,
   });
   latest.current = { model, text, resolved, collapsedIds, setCollapsed, setSelected, setDensity };
+  const edits = useRef({ onTaskChange, onTaskEdit });
+  edits.current = { onTaskChange, onTaskEdit };
   const controller = useRef<GanttController | null>(null);
   useLayoutEffect(() => {
     const root = rootRef.current as HTMLDivElement;
@@ -251,6 +278,11 @@ export const Gantt = forwardRef<HTMLDivElement, GanttProps>(function Gantt(
         const { model: m, text: t, resolved: r } = latest.current;
         return ganttTooltip(m.byId.get(id) as GanttItem, t, r.locale);
       },
+      task: (id) => ganttEditTask(latest.current.model, id, latest.current.resolved.density),
+      onTaskChange: (id, change, source) => edits.current.onTaskChange?.(id, change, source),
+      onTaskEdit: (id) => edits.current.onTaskEdit?.(id),
+      editText: () => latest.current.text,
+      formatDay: (day) => ganttShortDate(day, latest.current.resolved.locale),
     });
     return () => {
       controller.current?.destroy();
@@ -276,12 +308,16 @@ export const Gantt = forwardRef<HTMLDivElement, GanttProps>(function Gantt(
       toolbar,
       selection,
       disableTooltip,
+      editable,
     }),
     ...ganttTextAttributes(values),
   };
   if (showToday === false) attributes["data-ok-show-today"] = "false";
   if (showNonWorkingDays === false) attributes["data-ok-show-non-working-days"] = "false";
   if (columnLines === false) attributes["data-ok-column-lines"] = "false";
+  if (taskDrag === false) attributes["data-ok-task-drag"] = "false";
+  if (taskResize === false) attributes["data-ok-task-resize"] = "false";
+  if (progressDrag === false) attributes["data-ok-progress-drag"] = "false";
 
   return (
     <div {...rest} ref={ref} {...attributes} data-ok-ready="" data-ok-runtime="off">
@@ -310,6 +346,7 @@ export const Gantt = forwardRef<HTMLDivElement, GanttProps>(function Gantt(
       </table>
       {toElements(layout.nodes)}
       <div data-ok-gantt-tooltip="" aria-hidden="true" hidden />
+      <div data-ok-gantt-status="" role="status" />
     </div>
   );
 });

@@ -8,11 +8,15 @@ import {
   type GanttNode,
   type GanttSelectionMode,
   type GanttTask,
+  type GanttTaskChange,
   type GanttView,
+  ganttDay,
+  ganttEditTask,
   ganttLocaleText,
   ganttModel,
   ganttOptions,
   ganttRenderOptions,
+  ganttShortDate,
   ganttTableIds,
   ganttTooltip,
   ganttZoom,
@@ -47,6 +51,8 @@ export interface GanttInstance extends ComponentInstance {
   setLocaleText(text: Partial<GanttLocaleText>): void;
   /** Reads the table and the options again and redraws (done automatically on changes). */
   refresh(): void;
+  /** Writes a change into the task's table row and redraws (no event), as your edit form saves. */
+  updateTask(id: string, change: GanttTaskChange): void;
 }
 
 const SVG = "http://www.w3.org/2000/svg";
@@ -148,6 +154,9 @@ export const gantt = defineComponent<GanttInstance>({
     tooltip.setAttribute("data-ok-gantt-tooltip", "");
     tooltip.setAttribute("aria-hidden", "true");
     tooltip.hidden = true;
+    const status = document.createElement("div");
+    status.setAttribute("data-ok-gantt-status", "");
+    status.setAttribute("role", "status");
 
     const values = () => {
       const text = (name: string) => element.getAttribute(name) ?? undefined;
@@ -169,6 +178,10 @@ export const gantt = defineComponent<GanttInstance>({
         projectBoundary: element.hasAttribute(o.projectBoundary.attr),
         toolbar: element.hasAttribute(o.toolbar.attr),
         selection: element.hasAttribute(o.selection.attr),
+        editable: element.hasAttribute(o.editable.attr),
+        taskDrag: readBehavior(element, o.taskDrag),
+        taskResize: readBehavior(element, o.taskResize),
+        progressDrag: readBehavior(element, o.progressDrag),
         columns: text(GANTT_TEXT_ATTRIBUTES.columns) as GanttColumnKey[] | string | undefined,
         today: text(GANTT_TEXT_ATTRIBUTES.today),
         locale: text(GANTT_TEXT_ATTRIBUTES.locale),
@@ -210,6 +223,7 @@ export const gantt = defineComponent<GanttInstance>({
       });
       for (const stale of byKey.values()) stale?.remove();
       if (tooltip.parentElement !== element) element.append(tooltip);
+      if (status.parentElement !== element) element.append(status);
       // Move only what is out of place: moving a node blurs it and cancels a click on it.
       for (let i = next.length - 1; i >= 0; i--) {
         const el = next[i] as Element;
@@ -220,6 +234,35 @@ export const gantt = defineComponent<GanttInstance>({
       element.setAttribute("data-ok-ready", "");
       changes.takeRecords();
       controller.sync();
+    };
+
+    /** Writes a change into the task's table row (dates as `data-ok-value` + short text). */
+    const writeTask = (id: string, change: GanttTaskChange) => {
+      const data = table();
+      const row = [
+        ...(data?.querySelectorAll<HTMLTableRowElement>("tbody > tr[data-ok-task-id]") ?? []),
+      ].find((tr) => tr.getAttribute("data-ok-task-id") === id);
+      const head = data?.tHead?.rows[0];
+      if (!row || !head) return;
+      const cellOf = (field: string) => {
+        const index = [...head.cells].findIndex(
+          (th) => th.getAttribute("data-ok-gantt-field") === field,
+        );
+        return index < 0 ? undefined : row.cells[index];
+      };
+      const date = (field: string, value: string | undefined) => {
+        const cell = cellOf(field);
+        if (!cell || value === undefined) return;
+        cell.setAttribute("data-ok-value", value);
+        cell.textContent = ganttShortDate(ganttDay(value) as number, current.locale);
+      };
+      date("startTime", change.startTime);
+      date("endTime", change.endTime);
+      const progress = cellOf("progress");
+      if (progress && change.progress !== undefined) {
+        progress.setAttribute("data-ok-value", String(change.progress));
+        progress.textContent = `${change.progress}%`;
+      }
     };
 
     /** Writes `attribute` on exactly the table rows of `ids`. */
@@ -265,6 +308,17 @@ export const gantt = defineComponent<GanttInstance>({
       // Rows come from the current model: every id is known.
       tooltip: (id) =>
         ganttTooltip(current.model.byId.get(id) as GanttItem, current.text, current.locale),
+      task: (id) => ganttEditTask(current.model, id, current.density),
+      onTaskChange(id, change, source) {
+        if (!emit("taskchange", { id, change, source }, { cancelable: true })) return;
+        writeTask(id, change);
+        draw();
+      },
+      onTaskEdit(id) {
+        emit("edit", { id });
+      },
+      editText: () => current.text,
+      formatDay: (day) => ganttShortDate(day, current.locale),
     });
 
     // Redraw on data and option changes (the runtime's own writes are taken back in `draw`).
@@ -323,11 +377,16 @@ export const gantt = defineComponent<GanttInstance>({
         observe();
         draw();
       },
+      updateTask(id, change) {
+        writeTask(id, change);
+        draw();
+      },
       destroy() {
         changes.disconnect();
         controller.destroy();
         for (const el of built) el.remove();
         tooltip.remove();
+        status.remove();
         element.removeAttribute("data-ok-ready");
       },
     };

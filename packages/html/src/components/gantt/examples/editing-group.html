@@ -1,0 +1,63 @@
+<div data-ok-gantt data-ok-view="day" data-ok-bar-label="right" data-ok-editable data-ok-today="2025-03-10">
+  <table data-ok-gantt-data>
+    <caption>Editable plan</caption>
+    <thead>
+      <tr><th scope="col" data-ok-gantt-field="name">Task</th><th scope="col" data-ok-gantt-field="startTime">Start</th><th scope="col" data-ok-gantt-field="endTime">End</th><th scope="col" data-ok-gantt-field="progress">Progress</th><th scope="col" data-ok-gantt-field="dependency">Predecessors</th></tr>
+    </thead>
+    <tbody>
+      <tr data-ok-task-id="plan"><td>Plan</td><td></td><td></td><td></td><td></td></tr>
+      <tr data-ok-task-id="scope" data-ok-parent-id="plan"><td>Scope</td><td data-ok-value="2025-03-03">Mar 3, 2025</td><td data-ok-value="2025-03-05">Mar 5, 2025</td><td data-ok-value="100">100%</td><td></td></tr>
+      <tr data-ok-task-id="design" data-ok-parent-id="plan"><td>Design</td><td data-ok-value="2025-03-06">Mar 6, 2025</td><td data-ok-value="2025-03-12">Mar 12, 2025</td><td data-ok-value="40">40%</td><td>scope</td></tr>
+      <tr data-ok-task-id="build"><td>Build</td><td data-ok-value="2025-03-13">Mar 13, 2025</td><td data-ok-value="2025-03-21">Mar 21, 2025</td><td data-ok-value="0">0%</td><td>design</td></tr>
+      <tr data-ok-task-id="launch" data-ok-type="milestone"><td>Launch</td><td data-ok-value="2025-03-24">Mar 24, 2025</td><td></td><td></td><td>build</td></tr>
+    </tbody>
+  </table>
+</div>
+<dialog data-ok-dialog data-ok-max-width="sm" data-ok-scroll="paper" aria-labelledby="gantt-edit-title" id="gantt-edit-dialog">
+<div data-ok-dialog-paper>
+<h2 id="gantt-edit-title" data-ok-dialog-title>Edit task</h2>
+<div data-ok-dialog-content>
+<div data-ok-text-field data-ok-variant="outlined" data-ok-size="medium" data-ok-color="default" data-ok-full-width data-ok-margin="dense" data-ok-shrink>
+<label data-ok-text-field-label for="gantt-edit-start">Start</label>
+<div data-ok-text-field-control>
+<input id="gantt-edit-start" data-ok-text-field-input type="date" placeholder=" " value=""/>
+<fieldset data-ok-text-field-outline aria-hidden="true">
+<legend>
+<span>Start</span>
+</legend>
+</fieldset>
+</div>
+</div>
+<div data-ok-text-field data-ok-variant="outlined" data-ok-size="medium" data-ok-color="default" data-ok-full-width data-ok-margin="dense" data-ok-shrink>
+<label data-ok-text-field-label for="gantt-edit-end">End</label>
+<div data-ok-text-field-control>
+<input id="gantt-edit-end" data-ok-text-field-input type="date" placeholder=" " value=""/>
+<fieldset data-ok-text-field-outline aria-hidden="true">
+<legend>
+<span>End</span>
+</legend>
+</fieldset>
+</div>
+</div>
+<div data-ok-text-field data-ok-variant="outlined" data-ok-size="medium" data-ok-color="default" data-ok-full-width data-ok-margin="dense">
+<label data-ok-text-field-label for="gantt-edit-progress">Progress (%)</label>
+<div data-ok-text-field-control>
+<input id="gantt-edit-progress" data-ok-text-field-input type="number" placeholder=" " value=""/>
+<fieldset data-ok-text-field-outline aria-hidden="true">
+<legend>
+<span>Progress (%)</span>
+</legend>
+</fieldset>
+</div>
+</div>
+</div>
+<div data-ok-dialog-actions>
+<button type="button" data-ok-button data-ok-variant="outlined" data-ok-color="inherit" data-ok-size="md">
+<span data-ok-button-label>Cancel</span>
+</button>
+<button type="button" data-ok-button data-ok-variant="contained" data-ok-color="inherit" data-ok-size="md">
+<span data-ok-button-label>Save</span>
+</button>
+</div>
+</div>
+</dialog>

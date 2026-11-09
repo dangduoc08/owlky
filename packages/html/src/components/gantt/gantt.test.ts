@@ -47,6 +47,16 @@ const TABLE = `<table data-ok-gantt-data>
 </table>`;
 const gantt = (attrs = "") =>
   `<div data-ok-gantt data-ok-view="week" data-ok-bar-label="right" data-ok-today="2025-03-12" ${attrs}>${TABLE}</div>`;
+/** A pointer drag of `dx` px from the center of `element`. */
+function drag(element: Element, dx: number) {
+  const box = element.getBoundingClientRect();
+  const x = box.left + box.width / 2;
+  const init = { bubbles: true, pointerId: 5, button: 0, clientY: box.top + box.height / 2 };
+  element.dispatchEvent(new PointerEvent("pointerdown", { ...init, clientX: x }));
+  element.dispatchEvent(new PointerEvent("pointermove", { ...init, clientX: x + dx }));
+  element.dispatchEvent(new PointerEvent("pointerup", { ...init, clientX: x + dx }));
+}
+
 const rootOf = (host: Element) => host.querySelector("[data-ok-gantt]") as HTMLElement;
 const rowOf = (host: Element, id: string) =>
   host.querySelector<HTMLElement>(`[data-ok-gantt-row][data-ok-task-id="${id}"]`) as HTMLElement;
@@ -69,7 +79,8 @@ describe("gantt runtime", () => {
     const bar = rowOf(host, "a").querySelector("[data-ok-gantt-bar]") as HTMLElement;
     expect(bar.style.getPropertyValue("--_ok-gantt-w")).toBe("80px");
     expect(getComputedStyle(root.querySelector("table") as HTMLElement).display).toBe("none");
-    expect(root.lastElementChild).toHaveAttribute("data-ok-gantt-tooltip");
+    expect(root.lastElementChild).toHaveAttribute("data-ok-gantt-status");
+    expect(root.lastElementChild?.previousElementSibling).toHaveAttribute("data-ok-gantt-tooltip");
     expect(root.querySelectorAll("[data-ok-gantt-link]")).toHaveLength(2);
     await expectNoAxeViolations(root);
   });
@@ -245,6 +256,7 @@ describe("gantt runtime", () => {
     expect(none.collapsed).toEqual([]);
     none.setCollapsed(["x"]);
     expect(none.selected).toEqual([]);
+    none.updateTask("x", { startTime: "2025-03-03" });
     expect(empty.querySelector("[data-ok-gantt-row]")).toBeNull();
     const second = host.querySelectorAll("[data-ok-gantt]")[1] as HTMLElement;
     expect(runtime?.get<GanttInstance>(second, "gantt")?.tasks).toHaveLength(4);
@@ -253,6 +265,68 @@ describe("gantt runtime", () => {
     expect(empty).not.toHaveAttribute("data-ok-ready");
     const root = host.querySelectorAll("[data-ok-gantt]")[1] as HTMLElement;
     expect(root.children).toHaveLength(1);
+  });
+
+  it("edits tasks with cancelable taskchange events and writes the table", async () => {
+    const host = mount(
+      gantt('data-ok-editable data-ok-view="day"').replace('data-ok-view="week" ', ""),
+    );
+    start();
+    const root = rootOf(host);
+    const changes: unknown[] = [];
+    root.addEventListener("ok:gantt:taskchange", (event) => {
+      changes.push((event as CustomEvent).detail);
+    });
+    const bar = () => rowOf(host, "a").querySelector("[data-ok-gantt-bar]") as HTMLElement;
+    drag(bar(), 72);
+    expect(changes).toEqual([
+      {
+        id: "a",
+        change: { startTime: "2025-03-05", endTime: "2025-03-09", progress: 50 },
+        source: "drag",
+      },
+    ]);
+    const cells = root.querySelector('tr[data-ok-task-id="a"]')?.querySelectorAll("td") ?? [];
+    expect(cells[1]).toHaveAttribute("data-ok-value", "2025-03-05");
+    expect(cells[1]?.textContent).toBe("Mar 5, 2025");
+    expect(cells[2]).toHaveAttribute("data-ok-value", "2025-03-09");
+    expect(rowOf(host, "a").querySelector('[data-ok-gantt-cell="startTime"]')?.textContent).toBe(
+      "Mar 5, 2025",
+    );
+    rowOf(host, "a").focus();
+    await userEvent.keyboard("{Enter}{PageUp}{Enter}");
+    expect(cells[3]?.textContent).toBe("60%");
+    // Milestones have no end or progress to write.
+    drag(rowOf(host, "m").querySelector("[data-ok-gantt-bar]") as HTMLElement, -36);
+    expect(
+      root.querySelector('tr[data-ok-task-id="m"]')?.querySelectorAll("td")[1],
+    ).toHaveAttribute("data-ok-value", "2025-03-16");
+    root.addEventListener("ok:gantt:taskchange", (event) => event.preventDefault(), { once: true });
+    drag(bar(), 72);
+    expect(cells[1]).toHaveAttribute("data-ok-value", "2025-03-05");
+    const edits: unknown[] = [];
+    root.addEventListener("ok:gantt:edit", (event) => edits.push((event as CustomEvent).detail));
+    rowOf(host, "b").dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
+    expect(edits).toEqual([{ id: "b" }]);
+    expect(root.querySelector("[data-ok-gantt-status]")?.textContent).toBe("Saved");
+    // Your form writes through updateTask (unknown ids change nothing).
+    instanceOf(host).updateTask("b", {
+      startTime: "2025-03-11",
+      endTime: "2025-03-12",
+      progress: 5,
+    });
+    const beta = root.querySelector('tr[data-ok-task-id="b"]')?.querySelectorAll("td") ?? [];
+    expect(beta[1]).toHaveAttribute("data-ok-value", "2025-03-11");
+    instanceOf(host).updateTask("nope", { startTime: "2025-03-11" });
+  });
+
+  it("skips columns the table doesn't have when it writes a change", () => {
+    const host = mount(
+      `<div data-ok-gantt data-ok-editable data-ok-view="day" data-ok-bar-label="right" data-ok-today="2025-03-12"><table data-ok-gantt-data><thead><tr><th data-ok-gantt-field="name">Task</th><th data-ok-gantt-field="startTime">Start</th><th data-ok-gantt-field="endTime">End</th></tr></thead><tbody><tr data-ok-task-id="x"><td>X</td><td>2025-03-03</td><td>2025-03-04</td></tr></tbody></table></div>`,
+    );
+    start();
+    drag(rowOf(host, "x").querySelector("[data-ok-gantt-bar]") as HTMLElement, 36);
+    expect(rootOf(host).querySelectorAll("td")[1]).toHaveAttribute("data-ok-value", "2025-03-04");
   });
 
   it("has CSP-safe snippets that draw without axe violations", async () => {

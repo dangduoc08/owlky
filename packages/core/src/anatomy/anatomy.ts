@@ -5204,6 +5204,25 @@ export const ganttOptions = defineOptions("gantt", "data-ok-gantt", {
     "Rows can be selected: click, Ctrl or Cmd + click, Shift + click, Space and Ctrl + A.",
   ),
   disableTooltip: flag("data-ok-disable-tooltip", "No tooltip on bar hover or row focus."),
+  editable: flag(
+    "data-ok-editable",
+    "Tasks can be edited: drag bars, their edges and their progress handles, or press Enter on a row (arrows move, Shift + arrows change the end, Page Up / Page Down the progress, Enter saves, Escape cancels). Double click or F2 asks for your own edit form.",
+  ),
+  taskDrag: behavior(
+    "data-ok-task-drag",
+    true,
+    "With `editable`: bars move by drag and arrow keys.",
+  ),
+  taskResize: behavior(
+    "data-ok-task-resize",
+    true,
+    "With `editable`: bar edges change the dates (drag, Shift + arrow keys).",
+  ),
+  progressDrag: behavior(
+    "data-ok-progress-drag",
+    true,
+    "With `editable`: the progress handle sets the progress (drag, Page Up / Page Down).",
+  ),
   collapsed: state(
     "data-ok-collapsed",
     "Collapsed parent rows: `data-ok-collapsed` on their rows of the data table (`aria-expanded` on the grid rows).",
@@ -5230,6 +5249,7 @@ export interface GanttAnatomyOptions {
   toolbar?: boolean | undefined;
   selection?: boolean | undefined;
   disableTooltip?: boolean | undefined;
+  editable?: boolean | undefined;
 }
 
 /** `data-ok-*` attributes of a Gantt root (behavior options are written by the owner when off). */

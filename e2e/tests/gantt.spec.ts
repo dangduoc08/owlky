@@ -161,3 +161,50 @@ test("touch: taps select rows and toggle parents", async ({ browser, browserName
   }
   await context.close();
 });
+
+for (const impl of implementations)
+  test(`editing (${impl}): drag, keyboard and the edit form change tasks`, async ({ page }) => {
+    await openStory(page, storyId(impl, "gantt", "editing"));
+    const grid = page.getByRole("treegrid", { name: "Editable plan" });
+    const design = grid.getByRole("row", { name: /^Design/ });
+    const start = design.locator('[data-ok-gantt-cell="startTime"]');
+    await expect(start).toHaveText("Mar 6, 2025");
+    // Drag the bar two days later (day view: 36 px per day).
+    const bar = design.locator("[data-ok-gantt-bar]");
+    await bar.scrollIntoViewIfNeeded();
+    const box = (await bar.boundingBox()) as {
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+    };
+    const y = box.y + box.height / 2;
+    await page.mouse.move(box.x + box.width / 2, y);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width / 2 + 40, y, { steps: 4 });
+    await page.mouse.move(box.x + box.width / 2 + 72, y, { steps: 4 });
+    await page.mouse.up();
+    await expect(start).toHaveText("Mar 8, 2025");
+    // Keyboard: Enter, one day earlier, 10% more, Enter.
+    await design.focus();
+    await page.keyboard.press("Enter");
+    await expect(page.locator("[data-ok-gantt-status]")).toContainText("Editing Design");
+    await page.keyboard.press("ArrowLeft");
+    await page.keyboard.press("PageUp");
+    await page.keyboard.press("Enter");
+    await expect(start).toHaveText("Mar 7, 2025");
+    await expect(design.locator('[data-ok-gantt-cell="progress"]')).toHaveText("50%");
+    // F2 opens the form; a double click is the single-pointer way.
+    await page.keyboard.press("F2");
+    const dialog = page.getByRole("dialog", { name: "Edit Design" });
+    await expect(dialog).toBeVisible();
+    await dialog.getByLabel("Progress (%)").fill("80");
+    await dialog.getByRole("button", { name: "Save" }).click();
+    await expect(dialog).toBeHidden();
+    await expect(design.locator('[data-ok-gantt-cell="progress"]')).toHaveText("80%");
+    await grid
+      .getByRole("row", { name: /^Build/ })
+      .locator("[data-ok-gantt-bar]")
+      .dblclick();
+    await expect(page.getByRole("dialog", { name: "Edit Build" })).toBeVisible();
+  });

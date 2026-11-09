@@ -154,6 +154,38 @@ export function SelectablePlan() {
 }`,
   },
   {
+    id: "editing",
+    title: "Edit tasks",
+    body: "Set `editable` to let people change tasks. Drag a bar to move it, drag its edges to change its dates, or drag the small handle under it to set its progress. From the keyboard, press Enter on a row: the arrow keys move the task a day, Shift and the arrow keys change its end, Page Up and Page Down change its progress by 10%, Enter saves and Escape cancels. A double click, a double tap or F2 asks for your own edit form, so every change also works with a single tap. Milestones only move, and summary tasks follow their children. Turn single gestures off with `taskDrag`, `taskResize` or `progressDrag` set to `false`. The chart doesn't change the data itself. In React, `onTaskChange(id, change, source)` reports each change: update `tasks` to keep it. In HTML, `ok:gantt:taskchange` fires first and is cancelable, then the runtime writes the change into the table. `updateTask(id, change)` writes your form's values.",
+    html: `${htmlGantt('data-ok-view="day" data-ok-bar-label="right" data-ok-editable')}
+<script>
+  const gantt = document.querySelector("[data-ok-gantt]");
+  gantt.addEventListener("ok:gantt:taskchange", (event) => {
+    // Refuse changes that start before March 3.
+    if (event.detail.change.startTime < "2025-03-03") event.preventDefault();
+  });
+</script>`,
+    react: `import { Gantt, type GanttTask } from "@owlky/react";
+import { useState } from "react";
+
+${TASKS_SOURCE}
+
+export function EditablePlan() {
+  const [items, setItems] = useState(tasks);
+  return (
+    <Gantt
+      label="Budget plan"
+      tasks={items}
+      view="day"
+      editable
+      onTaskChange={(id, change) =>
+        setItems((list) => list.map((task) => (task.id === id ? { ...task, ...change } : task)))
+      }
+    />
+  );
+}`,
+  },
+  {
     id: "layout",
     title: "Choose columns and labels",
     body: "`columns` picks the task-list columns from `name`, `startTime`, `endTime`, `duration` and `progress`. The name always comes first. `tasksContainerWidth` sets the width of the task list (440px by default): the name column takes the space the other columns leave. On screens, or containers, narrower than 600px, only the name column shows, and the timeline scrolls sideways inside the chart. `barLabel` places the task names: `right` of the bars (the default), `left` of them, `inside` them, or `auto`, inside when the name fits. `rowHeight` and `barMargin` set the size of rows and bars.",
@@ -180,9 +212,11 @@ export function SelectablePlan() {
     title: "Events and methods",
     body: `- **\`ok:gantt:toggle\`** (cancelable) fires when a parent row asks to expand or collapse, with \`detail.id\`, \`detail.expanded\` and \`detail.collapsed\` (every collapsed id). Call \`preventDefault()\` to keep the row as it is.
 - **\`ok:gantt:selectionchange\`** (cancelable) fires with \`detail.selected\` and \`detail.mode\` (\`replace\`, \`toggle\`, \`range\` or \`all\`).
+- **\`ok:gantt:taskchange\`** (cancelable) fires when an edit asks to change a task, with \`detail.id\`, \`detail.change\` (\`startTime\`, \`endTime\`, \`progress\`) and \`detail.source\` (\`drag\`, \`resize\`, \`progress\` or \`keyboard\`). Unless you call \`preventDefault()\`, the runtime writes the change into the table.
+- **\`ok:gantt:edit\`** fires with \`detail.id\` on a double click, a double tap or F2: open your edit form.
 - **\`ok:gantt:zoom\`** (cancelable) fires with \`detail.pixelsPerDay\` when a zoom button is selected.
-- **Instance:** \`runtime.get(element, "gantt")\` returns \`{ tasks, collapsed, setCollapsed(ids), selected, setSelected(ids), pixelsPerDay, zoomIn(), zoomOut(), scrollToTask(id), setLocaleText(text), refresh() }\`. The methods don't fire events. The chart redraws by itself when the table or an option changes.
-- **React:** \`onCollapsedChange(ids)\`, \`onSelectionChange(ids, mode)\` and \`onZoomChange(pixelsPerDay)\`. Pass \`collapsed\`, \`selected\` or \`pixelsPerDay\` to control that state, or \`defaultCollapsed\`, \`defaultSelected\` or \`defaultPixelsPerDay\` for its first value.`,
+- **Instance:** \`runtime.get(element, "gantt")\` returns \`{ tasks, collapsed, setCollapsed(ids), selected, setSelected(ids), pixelsPerDay, zoomIn(), zoomOut(), scrollToTask(id), setLocaleText(text), refresh(), updateTask(id, change) }\`. The methods don't fire events. The chart redraws by itself when the table or an option changes.
+- **React:** \`onTaskChange(id, change, source)\`, \`onTaskEdit(id)\`, \`onCollapsedChange(ids)\`, \`onSelectionChange(ids, mode)\` and \`onZoomChange(pixelsPerDay)\`. Pass \`collapsed\`, \`selected\` or \`pixelsPerDay\` to control that state, or \`defaultCollapsed\`, \`defaultSelected\` or \`defaultPixelsPerDay\` for its first value.`,
   },
   {
     id: "keyboard",
@@ -257,6 +291,11 @@ const PREVIEWS = {
         projectBoundary
         today="2025-03-07"
       />
+    </Preview>
+  ),
+  editing: () => (
+    <Preview>
+      <Gantt label="Budget plan, editable" tasks={TASKS} view="day" editable today="2025-03-07" />
     </Preview>
   ),
   layout: () => (
@@ -344,7 +383,12 @@ const PREVIEWS = {
           "Extends the selection (with selection).",
         ],
         ["Ctrl + A / Cmd + A", "Selects every row (with selection)."],
-        ["Escape", "Closes the tooltip."],
+        ["Escape", "Closes the tooltip, or cancels an edit or a drag."],
+        ["Enter (editable task)", "Starts editing the task, or saves the edit."],
+        ["Left arrow / Right arrow (editing)", "Moves the task one day earlier or later."],
+        ["Shift + Left arrow / Right arrow (editing)", "Changes the task's end by one day."],
+        ["Page Up / Page Down (editing)", "Changes the progress by 10%."],
+        ["F2 (editable task)", "Asks for your edit form."],
       ]}
     />
   ),
