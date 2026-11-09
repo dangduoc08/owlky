@@ -59,6 +59,9 @@ gradient; the dark paper already differs from the dark page background).
   themselves today; they can move onto `data-ok-paper` later without a visual change by keeping
   their own shadow / radius rules after `paper.css`.
 
+Stories: the labels are Typography `body2` (`textSecondary` on the Elevation levels, as in the
+reference); `sb-paper-*` classes give sizes and centering only.
+
 ## Responsive behavior
 Fluid: no width or height of its own; nothing changes per breakpoint.
 

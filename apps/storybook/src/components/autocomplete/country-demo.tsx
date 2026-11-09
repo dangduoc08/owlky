@@ -26,13 +26,16 @@ function country(option: AutocompleteOption) {
   );
 }
 
-/** The field with the value it outputs beside it. */
+/** The field with the value it outputs beside it: a caption, the value in bold below it. */
 function Output({ children, value }: { children: ReactNode; value: unknown }) {
   return (
     <div className="sb-autocomplete-output">
       {children}
       <Typography variant="caption" component="output" color="textSecondary">
-        Output <code>{JSON.stringify(value)}</code>
+        {"Output "}
+        <Typography variant="subtitle2" component="code" color="textPrimary">
+          {JSON.stringify(value)}
+        </Typography>
       </Typography>
     </div>
   );
