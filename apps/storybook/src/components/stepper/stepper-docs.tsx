@@ -91,11 +91,11 @@ export function Setup() {
   {
     id: "layout",
     title: "Lay out the steps",
-    body: "Steps sit in a row, joined by lines. Set `alternativeLabel` to put the labels below the icons, and the steps share the width. Set `orientation` to `vertical` to stack the steps. In a vertical stepper, `StepContent` holds what the active step shows below its title, such as a form and its buttons. On narrow screens, the titles wrap inside their steps so the row never overflows. A vertical stepper or a mobile stepper reads better on phones.",
+    body: "Steps sit in a row, joined by lines. Set `alternativeLabel` to put the labels below the icons, and the steps share the width. Set `orientation` to `vertical` to stack the steps. In a vertical stepper, `StepContent` holds what the active step shows below its title, such as a form and its buttons. It is a Collapse: it opens with a height animation on the active step and carries `hidden` on the others. On narrow screens, the titles wrap inside their steps so the row never overflows. A vertical stepper or a mobile stepper reads better on phones.",
     html: `<ol data-ok-stepper data-ok-orientation="vertical" data-ok-active-step="0">
   <li data-ok-step>
     <span data-ok-step-label>…</span>
-    <div data-ok-step-content>…</div>
+    <div data-ok-collapse data-ok-timeout="auto" data-ok-step-content>…</div>
   </li>
 </ol>`,
     react: `<Stepper activeStep={active} orientation="vertical">

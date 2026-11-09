@@ -30,7 +30,7 @@ export const treeViewSections: GuideSection[] = [
       <span data-ok-tree-item-icon><svg data-ok-tree-chevron aria-hidden="true" viewBox="0 0 24 24">…</svg></span>
       <span data-ok-tree-item-label>Design</span>
     </div>
-    <ul role="group" data-ok-tree-item-group hidden>
+    <ul data-ok-collapse role="group" data-ok-tree-item-group hidden>
       <li role="treeitem" data-ok-tree-item data-ok-item-id="mockups" aria-selected="false" tabindex="-1">…</li>
     </ul>
   </li>
@@ -50,7 +50,7 @@ export function Projects() {
   {
     id: "expand",
     title: "Expand items",
-    body: "A click on an item's row opens or closes it. Set `expansionTrigger` to `iconContainer` so only the icon does, for example when a click on the row opens a page. `defaultExpandedItems` sets the items open at first. To control them, pass `expandedItems` and `onExpandedItemsChange`. `onItemExpansionToggle` reports each toggle.",
+    body: "A click on an item's row opens or closes it. Set `expansionTrigger` to `iconContainer` so only the icon does, for example when a click on the row opens a page. `defaultExpandedItems` sets the items open at first. To control them, pass `expandedItems` and `onExpandedItemsChange`. `onItemExpansionToggle` reports each toggle. Each group of child items is a Collapse: its height animates as it opens and closes, and it opens at once when the user prefers reduced motion. In HTML, keep `data-ok-collapse` on the groups.",
   },
   {
     id: "select",

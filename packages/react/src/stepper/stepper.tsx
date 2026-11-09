@@ -23,6 +23,7 @@ import {
   type ReactNode,
   useContext,
 } from "react";
+import { Collapse } from "../collapse/collapse.js";
 import { LinearProgress } from "../linear-progress/linear-progress.js";
 
 interface StepperContextValue {
@@ -207,11 +208,14 @@ export type StepContentProps = HTMLAttributes<HTMLDivElement>;
 
 /**
  * StepContent — spec: specs/components/stepper.md. Vertical steppers: what the active step shows
- * below its label (hidden on the other steps).
+ * below its label. A Collapse (`timeout="auto"`, as MUI): `hidden` on the other steps.
  */
 export const StepContent = forwardRef<HTMLDivElement, StepContentProps>(
   function StepContent(props, ref) {
-    return <div ref={ref} data-ok-step-content="" {...props} />;
+    const step = useContext(StepContext);
+    return (
+      <Collapse ref={ref} in={step.active} timeout="auto" data-ok-step-content="" {...props} />
+    );
   },
 );
 

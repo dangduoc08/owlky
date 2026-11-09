@@ -59,6 +59,9 @@ export const stepper = defineComponent<StepperInstance>({
         item.toggleAttribute(disabled.attr, state.disabled);
         if (state.active) item.setAttribute("aria-current", "step");
         else item.removeAttribute("aria-current");
+        // Vertical steppers: the content is a Collapse, closed on the other steps.
+        const content = item.querySelector<HTMLElement>(":scope > [data-ok-step-content]");
+        if (content) content.hidden = !state.active;
       });
       linked("data-ok-stepper-panel").forEach((panel, index) => {
         const own = Number(panel.getAttribute("data-ok-stepper-panel-step") ?? index);

@@ -23,6 +23,7 @@ import {
   useState,
 } from "react";
 import { Checkbox } from "../checkbox/checkbox.js";
+import { Collapse } from "../collapse/collapse.js";
 import { useMergedRefs } from "../utils/refs.js";
 import { useControllableState } from "../utils/use-controllable-state.js";
 
@@ -301,10 +302,10 @@ export const TreeItem = forwardRef<HTMLLIElement, TreeItemProps>(function TreeIt
         <span data-ok-tree-item-label="">{label}</span>
       </div>
       {branch && (
-        // biome-ignore lint/a11y/useSemanticElements: WAI-ARIA tree: child items are a list with role="group".
-        <ul role="group" data-ok-tree-item-group="" hidden={!open}>
+        // The group opens and closes with a Collapse (MUI X's default group transition).
+        <Collapse component="ul" in={open} role="group" data-ok-tree-item-group="">
           {children}
-        </ul>
+        </Collapse>
       )}
     </li>
   );

@@ -19,7 +19,7 @@ ul[data-ok-tree-view][role=tree][data-ok-variant][data-ok-expansion-trigger][ari
       span[data-ok-tree-item-icon] › svg[data-ok-tree-chevron] | span[data-ok-tree-expand-icon] + span[data-ok-tree-collapse-icon] | end icon
       span[data-ok-tree-item-checkbox][aria-hidden]? › span[data-ok-checkbox] (small, tabindex -1)
       span[data-ok-tree-item-label]
-    ul[role=group][data-ok-tree-item-group][hidden]?      (branches only)
+    ul[data-ok-collapse][role=group][data-ok-tree-item-group][hidden]?      (branches only; a Collapse)
 ```
 
 ## Options
@@ -48,6 +48,9 @@ API mapping (MUI X): kept the props above, `multiSelect`, `checkboxSelection` (i
 → props. Beyond MUI X (reference "Custom styling"): `variant="lines"`. Deferred:
 `selectionPropagation`, drag and drop (`itemsReordering`), lazy loading, `apiRef`,
 `getItemId` / `getItemLabel`, label editing. Not applicable: `slots`, `slotProps`, `sx`.
+Group transition (MUI X `slots.groupTransition`, default Collapse): each group is a Collapse
+(collapse.md, ADR-0044; React `TreeItem` renders `Collapse component="ul"`, HTML snippets carry
+`data-ok-collapse`); the runtime still writes the group's `hidden`, the Collapse animates it.
 
 ## Layout and tokens
 Rows: min 30px, padding 4px 8px (+12px per level, up to 6 levels, rows stay full width), gap 8px,

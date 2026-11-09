@@ -115,3 +115,6 @@ nested list (Enter / Space). `selected` is visual only: add `aria-current`. Bran
 HTML: `ok:list:toggle` (cancelable, `detail: { open, list }`) on the button's list, then
 `aria-expanded` and the nested list's `hidden` flip. `runtime.get(list, "list").toggle(button,
 open?)`. React: app state (`aria-expanded`, `hidden`).
+Animated nested lists (MUI composes `Collapse`): the nested `ul` is a Collapse (collapse.md,
+ADR-0044) — React `<Collapse component={List} in={open} timeout="auto" disablePadding>`, HTML
+`data-ok-collapse data-ok-timeout="auto"` on the `ul`; the list runtime still writes `hidden`.

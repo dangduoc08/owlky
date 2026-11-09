@@ -5,7 +5,7 @@ and a review before the next starts.
 
 ## Overview
 Every page of the reference's component menu (`https://minimals.cc/components/…`) and where it
-stands (plus pages from other references, marked). ✅ = built (39); *wave N* = planned, see "Next — components"; *not planned* = a pattern
+stands (plus pages from other references, marked). ✅ = built (40); *wave N* = planned, see "Next — components"; *not planned* = a pattern
 or app-level page. *Section* = the heading below with the details. Update this table with each
 component and each `/integrate` run.
 
@@ -31,6 +31,7 @@ component and each `/integrate` run.
 | MUI | Drawer | ✅ | Drawer | Drawer |
 | MUI (no Minimals page; mui.com) | Divider | ✅ | Divider | Divider |
 | MUI (no Minimals page; mui.com) | Backdrop | ✅ | Backdrop | Backdrop |
+| MUI (no Minimals page; mui.com) | Transitions (Collapse; Fade, Grow, Slide, Zoom are Motion) | ✅ (ADR-0044) | Collapse | Collapse |
 | MUI | List | ✅ | List, ListItem, ListItemButton, ListItemIcon, ListItemAvatar, ListItemText, ListSubheader, ListItemExpandIcon | List |
 | MUI | Menu | ✅ | Menu, MenuItem | Popover, Tooltip, Menu, Dialog & Snackbar |
 | MUI | Pagination | ✅ | Pagination, PaginationItem | Pagination |
@@ -509,8 +510,6 @@ integrate these in the same review (additive: no DOM or API change) and remove t
 | Select (listbox, built on Menu) | Table story "Table pagination with API" (search TextField + category Select) | story deferred until the listbox Select; TextField exists |
 | Select (listbox, built on Menu) | TextField `select` (non-native) | native `<select>` only (`select` prop) |
 | FormLabel | Radio story "Colors" (group label) | story-only `<span id>` styled in `.storybook/preview.css` |
-| Collapse (transition) | List nested lists | open / close at once (`hidden`); a Collapse component can animate the height later without a DOM change |
-| Collapse (transition) | Stepper `StepContent` (vertical) | shown / hidden at once by CSS on the active step; MUI collapses it |
 | Link (Typography) | Breadcrumbs items | native `a` / `span[aria-current]` styled by `breadcrumbs.css` (inherit color, hover underline); a Link component can go inside items without a DOM change |
 | Typography (headings, body text) | Breadcrumbs story "Customized" (page heading `h4`, paragraph) and Stepper stories (step panels, mobile card `h6` / `p`) | demo markup styled in `.storybook/preview.css` |
 | Typography (headings, body text) | Popover and Dialog stories (popover text, "Selected:" line, full-screen toolbar title) | demo `h6` / `p` / `header` styled in `.storybook/preview.css` |
@@ -518,11 +517,26 @@ integrate these in the same review (additive: no DOM or API change) and remove t
 | Motion full version, phase 1 (custom keyframes) | Motion story "Logo" (the reference's shape-morphing, turning rings and the turning gradient disc) | the logo inside MotionBorder rings; the story becomes the reference's once `animate(element, keyframes)` exists, without changing MotionBorder |
 | Typography + Paper (card) | Timeline story "Customized" (cards with a title and text) | demo `.sb-timeline-card` styled in `.storybook/preview.css` |
 | Typography (body text) | Autocomplete stories (output lines under the fields) | demo `p` styled in `.storybook/preview.css` |
-| Collapse (transition) | Tree view groups | open / close at once (`hidden`); MUI X collapses them |
 | Typography (body text, headings) | Map stories (popup text, the drag readout, panel captions) | demo `.sb-map-*` styled in `.storybook/preview.css` |
 | Typography + Paper (card) | Organization chart stories (node cards: simple, standard, team and member cards, names and roles) | demo `.sb-org-*` styled in `.storybook/preview.css`; the cards compose Avatar, IconButton, Menu and Label |
 | Typography (caption) | Image stories (the ratio, fit and position captions above pictures) | demo `.sb-image-caption` styled in `.storybook/preview.css` |
+| Paper (card) | Collapse story (the reference's raised card with a triangle) | demo `.sb-collapse-paper` styled in `.storybook/preview.css` |
 | Typography + Paper (card) | Walktour stories (the dashboard cards the tour points at, step text; the reference's cards hold charts, a carousel and a table, kept as text here) | demo `.sb-walktour-*` styled in `.storybook/preview.css`; the cards compose Avatar, Button and Image (the featured picture, like the reference) |
+
+## ✅ Components — Collapse (ADR-0044, 2026-11-09)
+Wave 8 (primitives), created with `/component` from MUI's Transitions page (section Collapse; Fade,
+Grow, Slide and Zoom are Motion variants). One element (`data-ok-collapse`, React `component`):
+`hidden` is the state, core `createCollapseController` watches it and animates the height or
+width with the Web Animations API (keeps an author-hidden element rendered while it exits),
+timing from `--ok-duration-standard` / `--ok-easing-standard`, `timeout` (ms, `auto`,
+enter / exit), `easing`, `collapsedSize` (private properties), reduced motion honored. HTML
+runtime `collapse`: triggers `data-ok-collapse-toggle` (checkbox or button), `ok:collapse:*`
+events, `show()` / `hide()` / `toggle()`. Story: Collapse (the reference's four cards).
+Closes the pending integrations "Collapse (transition)": List nested lists (`Collapse
+component={List}`, `data-ok-collapse` on the `ul`), Tree view groups (TreeItem renders its group
+as a Collapse), Stepper `StepContent` (a Collapse with `timeout="auto"`, `hidden` off the active
+step, written by the stepper runtime too). Additive: new attributes on those elements, no
+structural change. Differences: no `appear`, `addEndListener`, wrapper slots (one element).
 
 ## ✅ Components — Image (ADR-0038, 2026-11-09)
 Created with `/component` from the reference "Image" page (Minimals' own Image, on

@@ -196,6 +196,7 @@ export {
   type Monaco,
   useMonaco,
 } from "./code-editor/code-editor.js";
+export { Collapse, type CollapseProps } from "./collapse/collapse.js";
 export { CountUp, type CountUpProps } from "./count-up/count-up.js";
 export {
   DataGrid,

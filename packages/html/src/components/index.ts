@@ -15,6 +15,7 @@ import { chart } from "./chart/chart.js";
 import { checkbox } from "./checkbox/checkbox.js";
 import { chip } from "./chip/chip.js";
 import { circularProgress } from "./circular-progress/circular-progress.js";
+import { collapse } from "./collapse/collapse.js";
 import { countUp } from "./count-up/count-up.js";
 import { dataGrid } from "./data-grid/data-grid.js";
 import { dateCalendar } from "./date-calendar/date-calendar.js";
@@ -67,6 +68,7 @@ export const components: readonly ComponentDefinition[] = [
   menu as ComponentDefinition,
   dialog as ComponentDefinition,
   backdrop as ComponentDefinition,
+  collapse as ComponentDefinition,
   accordion as ComponentDefinition,
   alert as ComponentDefinition,
   avatar as ComponentDefinition,

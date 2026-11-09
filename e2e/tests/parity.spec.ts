@@ -278,6 +278,7 @@ const pairs: [component: string, story: string][] = [
   ["snackbar", "custom"],
   ["snackbar", "anchor-origin"],
   ["backdrop", "example"],
+  ["collapse", "simple-collapse"],
   ["editor", "basic"],
   ...[
     "align",

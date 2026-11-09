@@ -28,7 +28,7 @@ const ITEM = '[role="treeitem"]';
  *            <li role="treeitem" data-ok-tree-item data-ok-item-id="docs" aria-expanded="false" aria-selected="false" tabindex="0">
  *              <div data-ok-tree-item-content><span data-ok-tree-item-icon>…chevron…</span>
  *                <span data-ok-tree-item-label>Documents</span></div>
- *              <ul role="group" data-ok-tree-item-group hidden>…items…</ul>
+ *              <ul data-ok-collapse role="group" data-ok-tree-item-group hidden>…items…</ul>
  *            </li>
  *          </ul>
  * Behavior: core `createTreeController` (arrows, Home / End, `*`, typeahead, clicks); the runtime
