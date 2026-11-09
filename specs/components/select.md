@@ -85,16 +85,7 @@ TextField: `selectProps` (`{ native: false, … }` → listbox; TextField's `sel
 default for compatibility; MUI's default is the listbox). TablePagination: `selectProps`
 (`{ native: false, menuProps }` → listbox; native by default).
 
-API mapping (MUI → Owlky): kept `autoWidth`, `children`, `defaultOpen`, `defaultValue`,
-`displayEmpty`, `id`, `inputProps`, `inputRef`, `label`, `labelId`, `multiple`, `native`, `open`,
-`renderValue`, `value`, `variant`, `size`, `color`, `error`, `disabled`, `required`, `fullWidth`,
-`name`, `readOnly`. Renamed: `onChange(event, child)` → `onChange(value)`; `onOpen` / `onClose` →
-`onOpenChange(open, reason)`; `MenuProps` → `menuProps`; `SelectDisplayProps` → `displayProps`;
-`NativeSelect` → `Select native` (with `variant="standard"` for its look); `IconComponent` → not
-applicable (the arrow is part of the anatomy). Not applicable: `input` (the field box is the
-Select), `sx`, `classes`, `slotProps`, `slots`, `component`. InputLabel `variant` / `size` /
-`margin`: not applicable (CSS reads the Select's), `focused` / `error` / `disabled` / `required`
-come from FormLabel.
+API mapping: see "Upstream API mapping" below.
 
 ## Layout and tokens
 The field box mirrors TextField (text-field.md): outlined 1px `grey-500` at 0.2 → hover
@@ -156,6 +147,27 @@ value changes; `ok:select:open`; `ok:select:close` (`{ reason }`: `escape` · `b
 `tab` · `toggle` · `api`). Instance: `{ value, setValue(value), isOpen, open(), close() }` (a native
 select's instance reads and writes the `<select>`). React: `onChange(value)`,
 `onOpenChange(open, reason)`.
+
+## Upstream API mapping
+Upstream: MUI `Select` (+ OutlinedInput / InputBase props), `InputLabel`, `NativeSelect`,
+mui.com/material-ui/api/select/.
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| `autoWidth`, `children`, `defaultOpen`, `defaultValue`, `displayEmpty`, `id`, `inputProps`, `inputRef`, `label`, `labelId`, `multiple`, `native`, `open`, `renderValue`, `value`, `variant` | same | kept | `id` → the trigger; `inputProps` / `inputRef` → hidden input or native select |
+| InputBase `size`, `color`, `error`, `disabled`, `required`, `fullWidth`, `name`, `readOnly` | same | kept | default: the FormControl's |
+| `onChange(event, child)` | `onChange(value)` | renamed | the options' own values (numbers stay numbers) |
+| `onOpen` / `onClose` | `onOpenChange(open, reason)` | renamed | reasons `escape` · `backdrop` · `select` · `tab` · `toggle` |
+| `MenuProps` | `menuProps` (`placement`, `paperProps`, `listProps`) | renamed | |
+| `SelectDisplayProps` | `displayProps` | renamed | |
+| `NativeSelect` (`IconComponent`, `input`, `inputProps`, `onChange`, `value`, `variant`) | `Select native` | renamed | `variant="standard"` for its look |
+| InputBase `startAdornment` / `endAdornment` | — | deferred | adornments inside the field box |
+| `IconComponent` | — | not applicable | the arrow is part of the anatomy |
+| `input` | — | not applicable | the field box is the Select |
+| InputLabel `children`, `shrink`, `disableAnimation` | same | kept | |
+| InputLabel `color`, `disabled`, `error`, `focused`, `required` | same | kept | from FormLabel |
+| InputLabel `variant`, `size`, `margin` | — | not applicable | CSS reads the Select's |
+| `sx`, `classes`, `slots`, `slotProps`, `component` | — | not applicable | ADR-0015 |
 
 ## Parity notes
 Snippets are generated from the React stories

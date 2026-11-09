@@ -290,74 +290,7 @@ day`), `data-ok-month` (`YYYY-MM`, the shown month), `data-ok-actions` (`clear t
 accept nextOrAccept`), `data-ok-desktop-mode-media-query`, `data-ok-locale` (on the element or an
 ancestor), `data-ok-disabled` (calendar). Invalid values fall back to the default.
 
-### API mapping (MUI X, ADR-0015)
-- **Kept:** `value` / `defaultValue`, `onChange` (`(value, { validationError })`), `onAccept`,
-  `onError`, `open`, `views`, `openTo`, `view` / `onViewChange`, `format`, `formatDensity`,
-  `minDate`, `maxDate`, `disablePast`, `disableFuture`, `shouldDisableDate` / `Month` / `Year`,
-  `closeOnSelect`, `desktopModeMediaQuery`, `keepOpenDuringFieldFocus`, `reduceAnimations`,
-  `displayWeekNumber`, `fixedWeekNumber`, `showDaysOutsideCurrentMonth`,
-  `disableHighlightToday`, `dayOfWeekFormatter`, `monthsPerRow`, `yearsPerRow`, `yearsOrder`,
-  `orientation`, `loading`, `renderLoading`, `onMonthChange`, `onYearChange`, `referenceDate`,
-  `autoFocus`, `selectedSections` / `onSelectedSectionsChange` (section index), `readOnly`,
-  `disabled`, `label`, `name`, `inputRef` (the hidden input), `localeText`;
-  `LocalizationProvider` `adapterLocale`, `localeText`.
-- **Renamed:** `onOpen` / `onClose` / `onCancel` → `onOpenChange(open, reason)` (reasons `button`,
-  `escape`, `clickaway`, `accept`, `cancel`, `select`, `clear`, `today`, `shortcut`, `api`);
-  `slotProps.actionBar.actions` → `actions`; `slotProps.shortcuts.items` → `shortcuts`;
-  `slotProps.field.clearable` / `onClear` → `clearable` / `onClear`; `slotProps.textField` →
-  the TextField props (`helperText`, `error`, `variant`, `size`, `fullWidth`, `required`).
-- **Beyond MUI:** `today` (React: pins "today" for demos and tests); `aria-current="date"` on
-  today; HTML `data-ok-locale`; a hidden ISO input for forms.
-- **Kept (phase 2):** `ampm`, `ampmInClock`, `minTime`, `maxTime`, `minDateTime`,
-  `maxDateTime`, `minutesStep`, `shouldDisableTime`, `disableIgnoringDatePartForTimeValidation`,
-  `timeSteps`, `timeStep` (DigitalClock), `thresholdToRenderTimeInASingleColumn`, `skipDisabled`,
-  time `views` / `openTo` / `view` / `onViewChange`; `onChange(value, selectionState)` of the
-  clocks (`"shallow"` while dragging, `"partial"`, `"finish"`); `localeText` keys
-  `timePickerToolbarTitle`, `dateTimePickerToolbarTitle`, `openTimePickerDialogue`,
-  `openPreviousView`, `openNextView`, `clockLabelText`, `hours/minutes/secondsClockNumberText`,
-  `selectViewText`, `dateTableLabel`, `timeTableLabel`.
-- **Defaults (MUI v9, as the reference shows):** time and date time pickers don't close on a
-  pick; their action bar is Cancel + OK (mobile and static date time: Cancel + Next / OK).
-- **Kept (phase 3, Pro):** `value` / `defaultValue` as `[start, end]`, `onChange(value, {
-  validationError: [start, end] })`, `onError`, `onAccept`, `calendars`,
-  `currentMonthCalendarPosition`, `rangePosition` / `defaultRangePosition` /
-  `onRangePositionChange`, `availableRangePositions` (DateRangeCalendar), `disableDragEditing`,
-  `disableAutoMonthSwitching`, range `shortcuts` (`getValue({ isValid })` returns a range); the
-  validation error `invalidRange`; `localeText` keys `start`, `end`, `startDate`, `startTime`,
-  `endDate`, `endTime`, `dateRangePickerToolbarTitle`, `timeRangePickerToolbarTitle`,
-  `dateTimeRangePickerToolbarTitle`.
-- **Renamed (phase 3):** `slots.field: MultiInput…RangeField` → `multiInput`;
-  `slotProps.textField` per end → `startLabel` / `endLabel`.
-- **Beyond MUI (phase 3):** ISO 8601 intervals in HTML (`data-ok-value`, the hidden input of a
-  single input field, shortcut chips); open buttons on range fields (MUI v8+ has them on single
-  input fields; multi input fields get one per end, each opening on its end); `openRangePickerDialogue`
-  names them; Start / End tabs on every form of time and date time ranges (MUI shows them on
-  touch screens; with one field, they choose the edited end on desktop too).
-- **Kept (phase 4, ADR-0030):** `timezone` (`"default" | "system" | "UTC" |` IANA) on every
-  picker, field, calendar and clock; `LocalizationProvider` `dateAdapter`; `PickerValidDate`
-  (declaration merging); `viewRenderers` (`renderDateViewCalendar`, `renderTimeViewClock`,
-  `renderDigitalClockTimeView`, `renderMultiSectionDigitalClockTimeView`, `null`); `slots`
-  `layout`, `toolbar`, `actionBar`, `shortcuts`, `day`, `openPickerIcon`, `leftArrowIcon`,
-  `rightArrowIcon`, `switchViewIcon`; `slotProps` `toolbar.hidden`, `tabs.hidden`, `day` (object
-  or function of the owner state), `layout`; `usePickerContext()` (value, `setValue`, `open`,
-  `setOpen`, views, `acceptValueChanges`, `cancelValueChanges`, `clearValue`,
-  `setValueToToday`, `goToNextStep`; ranges add `rangePosition` / `setRangePosition`);
-  `PickersDay` → `PickerDay`, `PickersLayout` → `PickerLayout` (+ `PickerLayoutRoot`,
-  `PickerLayoutContent`), `PickersActionBar` → `PickerActionBar`, `PickersShortcuts` →
-  `PickerShortcuts`; locale packs (MUI X `xxXX` objects) as `pickersFrFR`, `pickersDeDE`,
-  `pickersEsES`, `pickersJaJP`, `pickersZhCN`, `pickersFaIR`, `pickersArSD`.
-- **Renamed (phase 4):** MUI X's adapter classes (`AdapterDayjs`…) → factories that take the
-  library (`createDayjsAdapter(dayjs)`, `createDateFnsAdapter({ TZDate })`,
-  `createLuxonAdapter(DateTime)`, `createMomentAdapter(moment)`); Jalali / Hijri adapters →
-  an adapter's `calendar` option, `LocalizationProvider calendar` or the locale's `-u-ca-`.
-- **Beyond MUI (phase 4):** calendar systems through `Intl` for any adapter (also Buddhist and
-  Indian); HTML `data-ok-timezone`, `data-ok-calendar`, instance `date` / `setDate` /
-  `setDateAdapter`, `setDayRenderer`; ISO input with offsets.
-- **Not applicable:** other `slots` (`textField`, `field`, `popper`, `dialog`, `desktopPaper`,
-  transitions: the TextField props, Popover and Dialog are ours), `sx`, `className` of parts,
-  `disableOpenPicker` (deprecated: `viewRenderers` with `null`), `enableAccessibleFieldDOMStructure`
-  (always on), `dateFormats` (`format` per picker). Range pickers take `viewRenderers` with
-  `null` only.
+API mapping: see "Upstream API mapping" below.
 
 ## Layout and tokens
 Field: a TextField (outlined 56px); sections are `inline-flex`, tabular numbers, the focused one
@@ -536,6 +469,55 @@ setAvailableRangePositions, calendars, setCalendars, month, focus, setShouldDisa
 setDayOfWeekFormatter, setLocaleText }`; multi-input-range-field `{ value, validationError,
 setValue }`; date-field adds `setError(error | null)`. React: `onChange(range, { validationError
 })`, `onError(errors, range)`, `onRangePositionChange(position)`.
+
+## Upstream API mapping
+Upstream: MUI X Date and Time Pickers v9 (Community + Pro), mui.com/x/api/date-pickers/.
+Applies to every picker, field, calendar and clock that has the prop upstream.
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| `value` / `defaultValue`, `onChange(value, { validationError })`, `onAccept`, `onError` | same | kept | ranges `[start, end]`; error `invalidRange` |
+| `onOpen` / `onClose` / `onCancel` | `onOpenChange(open, reason)` | renamed | reasons `button` · `escape` · `clickaway` · `accept` · `cancel` · `select` · `clear` · `today` · `shortcut` · `api` |
+| `open`, `views`, `openTo`, `view` / `onViewChange` | same | kept | date and time views |
+| `format`, `formatDensity`, `referenceDate`, `autoFocus`, `readOnly`, `disabled`, `label`, `name`, `inputRef`, `localeText` | same | kept | `inputRef` = the hidden input |
+| `selectedSections` / `onSelectedSectionsChange` | same | kept | a section index (MUI also `"all"` / a section type) |
+| `minDate`, `maxDate`, `disablePast`, `disableFuture`, `shouldDisableDate` / `Month` / `Year` | same | kept | |
+| `closeOnSelect`, `desktopModeMediaQuery`, `keepOpenDuringFieldFocus`, `reduceAnimations`, `orientation`, `loading`, `renderLoading` | same | kept | time / date time: no close on pick, Cancel + OK (MUI v9, reference) |
+| `displayWeekNumber`, `fixedWeekNumber`, `showDaysOutsideCurrentMonth`, `disableHighlightToday`, `dayOfWeekFormatter`, `monthsPerRow`, `yearsPerRow`, `yearsOrder`, `onMonthChange`, `onYearChange` | same | kept | |
+| `ampm`, `ampmInClock`, `minTime`, `maxTime`, `minDateTime`, `maxDateTime`, `minutesStep`, `shouldDisableTime`, `disableIgnoringDatePartForTimeValidation`, `timeSteps`, `timeStep`, `thresholdToRenderTimeInASingleColumn`, `skipDisabled` | same | kept | clocks' `onChange(value, selectionState)` |
+| Pro: `calendars`, `currentMonthCalendarPosition`, `rangePosition` / `defaultRangePosition` / `onRangePositionChange`, `availableRangePositions`, `disableDragEditing`, `disableAutoMonthSwitching`, range `shortcuts` | same | kept | |
+| `timezone` | same | kept | `"default"` · `"system"` · `"UTC"` · IANA |
+| `viewRenderers` (`renderDateViewCalendar`, `renderTimeViewClock`, `renderDigitalClockTimeView`, `renderMultiSectionDigitalClockTimeView`, `null`) | same | kept | range pickers: `null` only |
+| `slots` `layout`, `toolbar`, `actionBar`, `shortcuts`, `day`, `openPickerIcon`, `leftArrowIcon`, `rightArrowIcon`, `switchViewIcon`; `slotProps` `toolbar.hidden`, `tabs.hidden`, `day`, `layout` | same | kept | |
+| `slotProps.actionBar.actions`, `slotProps.shortcuts.items` | `actions`, `shortcuts` | renamed | |
+| `slotProps.field.clearable` / `onClear`; fields `clearable`, `onClear` | `clearable`, `onClear` | renamed | |
+| `slotProps.textField` | TextField props `helperText`, `error`, `variant`, `size`, `fullWidth`, `required` | renamed | |
+| range `slots.field` (multi input) / per-end `slotProps.textField` | `multiInput`, `startLabel` / `endLabel` | renamed | |
+| `usePickerContext()` | same | kept | ranges add `rangePosition` / `setRangePosition` |
+| `PickersDay`, `PickersLayout`, `PickersActionBar`, `PickersShortcuts` | `PickerDay`, `PickerLayout` (+ `PickerLayoutRoot`, `PickerLayoutContent`), `PickerActionBar`, `PickerShortcuts` | renamed | |
+| locale packs (`frFR`…) | `pickersFrFR`, `pickersDeDE`, `pickersEsES`, `pickersJaJP`, `pickersZhCN`, `pickersFaIR`, `pickersArSD` | renamed | |
+| LocalizationProvider `adapterLocale`, `localeText`, `dateAdapter`; `PickerValidDate` | same | kept | |
+| adapter classes (`AdapterDayjs`…), `dateLibInstance` | `createDayjsAdapter(dayjs)`, `createDateFnsAdapter({ TZDate })`, `createLuxonAdapter(DateTime)`, `createMomentAdapter(moment)` | renamed | the library is the factory's argument |
+| Jalali / Hijri adapters | adapter `calendar`, `LocalizationProvider calendar`, locale `-u-ca-` | renamed | any `Intl` calendar |
+| fields `clearButtonPosition`, `openPickerButtonPosition` | — | deferred | buttons always at the end |
+| fields `startAdornment` / `endAdornment` | — | deferred | `endAdornment` internal (open button) |
+| fields `shouldRespectLeadingZeros` | — | deferred | |
+| fields `fieldRef` (field API) | — | deferred | |
+| fields TextField props `color`, `margin`, `hiddenLabel`, `focused` | — | deferred | |
+| single input range fields `dateSeparator` | — | deferred | fixed `" – "` |
+| calendars / clocks `focusedView` / `onFocusedViewChange` | — | deferred | |
+| TimeClock `showViewSwitcher` | — | deferred | |
+| static pickers `displayStaticWrapperAs` | — | deferred | |
+| `dateFormats` | — | not applicable | `format` per picker |
+| `disableOpenPicker` (deprecated) | `viewRenderers` with `null` | not applicable | |
+| `enableAccessibleFieldDOMStructure` | — | not applicable | always the accessible structure |
+| other `slots` (`textField`, `field`, `popper`, `dialog`, `desktopPaper`, `mobilePaper`, `desktopTrapFocus`, transitions), `sx`, `classes`, `className` of parts | TextField props, Popover, Dialog | not applicable | ADR-0015 |
+
+Beyond MUI: `today` (React: pins "today"), `aria-current="date"`, HTML `data-ok-locale` /
+`data-ok-timezone` / `data-ok-calendar`, a hidden ISO input for forms, ISO 8601 intervals in HTML,
+open buttons on range fields (`openRangePickerDialogue`), Start / End tabs on every time range form,
+calendar systems through `Intl` for any adapter, HTML instance `date` / `setDate` /
+`setDateAdapter` / `setDayRenderer`.
 
 ## Parity notes
 React renders `data-ok-runtime="off"`. The HTML runtime rebuilds other months with DOM methods and

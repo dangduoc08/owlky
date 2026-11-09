@@ -78,6 +78,21 @@ Native checkbox: name from the label, `aria-label` or `aria-labelledby`; mixed v
 HTML: native `change` (only the checkbox the user changed; children updated by a parent fire
 none). No instance methods. React: `onChange(checked)`, `checked` / `defaultChecked`.
 
+## Upstream API mapping
+Upstream: MUI `Checkbox`, mui.com/material-ui/api/checkbox/.
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| `checked`, `defaultChecked`, `disabled`, `required`, `id`, `value` | native props on the input | kept | |
+| `color` | `color` | kept | + `default` (text color) |
+| `size` (`small` · `medium`) | `size` | kept | |
+| `indeterminate` | `indeterminate` | kept | HTML `data-ok-indeterminate` |
+| `icon`, `checkedIcon`, `indeterminateIcon` | same | kept | React only; HTML: own SVG in the slot |
+| `onChange(event, checked)` | `onChange(checked)` | renamed | value-first (ADR-0015) |
+| `slotProps.input` (`inputProps`, `inputRef`) | `ref` and rest props → the input | renamed | `className` / `style` → the root |
+| `disableRipple` | — | not applicable | no ripple |
+| `sx`, `classes`, `slots`, `slotProps` | — | not applicable | ADR-0015 |
+
 ## Parity notes
 HTML parents (`aria-controls`) are runtime behavior; React apps compute the state
 (`selectAllState`) as the Indeterminate story does.

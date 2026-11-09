@@ -67,5 +67,18 @@ carries the shape. Brand colors follow the reference (ADR-0014).
 ## Events / API
 HTML: native `change`. React: `onChange(checked)`, `checked` / `defaultChecked`.
 
+## Upstream API mapping
+Upstream: MUI `Switch`, mui.com/material-ui/api/switch/.
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| `checked`, `defaultChecked`, `disabled`, `required`, `id`, `value` | native props on the input | kept | |
+| `color`, `size`, `edge` | same | kept | `color` + `default` |
+| `onChange(event, checked)` | `onChange(checked)` | renamed | value-first (ADR-0015) |
+| `slotProps.input` (`inputProps`, `inputRef`) | `ref` and rest props → the input | renamed | |
+| `icon`, `checkedIcon` | — | deferred (4.3) | thumb content |
+| `disableRipple` | — | not applicable | no ripple |
+| `sx`, `classes`, `slots`, `slotProps` | — | not applicable | ADR-0015 |
+
 ## Parity notes
 None.

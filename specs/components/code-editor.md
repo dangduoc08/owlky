@@ -70,20 +70,7 @@ Language and theme attributes also accept names registered in `beforeMount` (let
 `. + # - _`, up to 64 characters); React passes any string. `data-ok-options`: Monaco options as
 JSON (at most 16 kB; `JSON.parse` only, prototype keys dropped; React writes it from `options`).
 
-API mapping (`@monaco-editor/react`): **kept** `defaultValue`, `defaultLanguage`, `defaultPath`,
-`value`, `language`, `path`, `theme`, `line`, `loading`, `options`, `overrideServices`,
-`saveViewState`, `keepCurrentModel`, `width`, `height`, `className` (on the content element, as
-upstream), `wrapperProps` (on the root), `beforeMount`, `onMount`, `onChange(value, event)`,
-`onValidate(markers)`; DiffEditor `original`, `modified`, `language`, `originalLanguage`,
-`modifiedLanguage`, `originalModelPath`, `modifiedModelPath`, `keepCurrentOriginalModel`,
-`keepCurrentModifiedModel`, `theme`, `loading`, `options`, `width`, `height`, `className`,
-`wrapperProps`, `beforeMount`, `onMount`; `useMonaco()`; `loader.config({ paths: { vs },
-monaco, "vs/nls" })`, `loader.init()` (cancelable). **Changed:** `theme` default `"auto"`
-(upstream `"light"`: Owlky themes follow `data-ok-theme`); `loader` has no CDN default (`paths.vs`
-is a folder of Owlky's build, self-hosted) and adds `import` and `getWorker`;
-`loader.__getMonacoInstance` → `getMonaco()`. **Added:** `aria-label` (default "Code editor":
-Monaco's `ariaLabel` and the textarea's name), `onError(error)`, a `ref` to the root. **Not
-applicable:** none.
+API mapping: see "Upstream API mapping" below.
 
 ## States
 - No `data-ok-status` (no JavaScript): the textarea is the editor; loading and content hidden.
@@ -143,6 +130,23 @@ React: `CodeEditor`, `DiffEditor`, `useMonaco()`, `loader`.
 The frame is fluid (`width` 100%, never wider than its container); Monaco relayouts on resize.
 The story settings sit beside the editor from 900px and above it below (the reference hides the
 editor on phones; Owlky keeps both).
+
+## Upstream API mapping
+Upstream: `@monaco-editor/react` 4.7 README (Editor, DiffEditor, `useMonaco`, `loader`).
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| Editor `defaultValue`, `defaultLanguage`, `defaultPath`, `value`, `language`, `path`, `line`, `loading`, `options`, `overrideServices`, `saveViewState`, `keepCurrentModel`, `width`, `height` | same | kept | |
+| `className`, `wrapperProps` | same | kept | `className` on the content element (as upstream), `wrapperProps` on the root |
+| `beforeMount`, `onMount`, `onChange(value, event)`, `onValidate(markers)` | same | kept | |
+| `theme` (default `"light"`) | `theme` (default `"auto"`) | renamed | `auto` follows `data-ok-theme` |
+| DiffEditor `original`, `modified`, `language`, `originalLanguage`, `modifiedLanguage`, `originalModelPath`, `modifiedModelPath`, `keepCurrentOriginalModel`, `keepCurrentModifiedModel`, `theme`, `loading`, `options`, `width`, `height`, `className`, `wrapperProps`, `beforeMount`, `onMount` | same | kept | |
+| DiffEditor `line` | — | deferred | |
+| `useMonaco()` | same | kept | |
+| `loader.config({ paths: { vs }, monaco, "vs/nls" })`, `loader.init()` | same | kept | no CDN default (self-hosted `paths.vs`); adds `import`, `getWorker`; `init()` cancelable |
+| `loader.__getMonacoInstance` | `getMonaco()` | renamed | |
+
+Beyond upstream: `aria-label` (default "Code editor"), `onError(error)`, `ref` to the root.
 
 ## Parity notes
 React renders `data-ok-runtime="off"` and the status from state. Monaco's DOM (instance ids,

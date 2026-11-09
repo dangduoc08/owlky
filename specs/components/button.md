@@ -86,6 +86,23 @@ Native: `Enter` / `Space` activate a button; `Enter` follows a link.
 None: CSS only, no runtime. React forwards `ref` (`HTMLButtonElement`, or `HTMLAnchorElement` with
 `href`) and every native button / link prop.
 
+## Upstream API mapping
+Upstream: MUI `Button` (+ `ButtonBase`), mui.com/material-ui/api/button/.
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| `variant` (`text` · `contained` · `outlined`) | `variant` | kept | + `soft` (reference) |
+| `color` | `color` | kept | default `inherit` (reference; MUI `primary`); + `black` / `white` |
+| `size` (`small` · `medium` · `large`) | `size` (`sm` · `md` · `lg` · `xl`) | renamed | + `xl` (reference) |
+| `children`, `disabled`, `fullWidth`, `disableElevation`, `href`, `startIcon`, `endIcon` | same | kept | disabled link: no `href`, `aria-disabled` |
+| `loading`, `loadingIndicator`, `loadingPosition` | same | kept | `loading` boolean (MUI `null` = no loader slot) |
+| `type` (ButtonBase, default `button`) | native `type` | kept | |
+| `component`, `LinkComponent` (ButtonBase) | — | deferred | `<button>` or `<a href>` only; router links can't be passed |
+| `action`, `focusVisibleClassName`, `onFocusVisible` (ButtonBase) | `ref.focus()`, `:focus-visible` | not applicable | |
+| `nativeButton` (ButtonBase) | — | not applicable | always a native element |
+| `disableRipple`, `disableFocusRipple`, `disableTouchRipple`, `centerRipple`, `focusRipple`, `TouchRippleProps`, `touchRippleRef` | — | not applicable | no ripple (CSS states) |
+| `sx`, `classes` | — | not applicable | ADR-0015 |
+
 ## Parity notes
 None: React renders the snippet markup (`jsxSource` examples and HTML snippets are compared by the
 parity e2e tests, per option in `options-parity.spec.ts`).

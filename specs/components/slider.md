@@ -49,11 +49,7 @@ Other props: `value` / `defaultValue` (number or `[a, b]`), `onChange(value, act
 index)` (HTML `data-ok-label-value="{value}°C"` for both), `getAriaLabel(index)`, `aria-label`,
 `aria-labelledby`, `name`.
 
-API mapping (MUI): kept `value`, `defaultValue`, `onChange`, `onChangeCommitted`, `min`, `max`,
-`step`, `marks`, `orientation`, `size`, `color` (+ `inherit` and every palette color, as on the
-reference), `track`, `valueLabelDisplay`, `valueLabelFormat`, `getAriaValueText`, `getAriaLabel`,
-`disabled`, `disableSwap`, `name`. Deferred: `scale`, `shiftStep`, `tabIndex`, `slots`.
-Not applicable: `classes`, `sx`, `component`.
+API mapping: see "Upstream API mapping" below.
 
 ## Layout and tokens
 Root: 26px vertical padding area (13px), width 100% (vertical: height 100%, min 100px). Rail:
@@ -91,6 +87,20 @@ HTML `ok:slider:change` (cancelable, `{ value: number[], activeThumb }`), `ok:sl
 ## Responsive
 Horizontal sliders fill their container; vertical ones its height. Pressing the track (any
 width) moves a thumb, so the 20px thumb isn't the only target.
+
+## Upstream API mapping
+Upstream: MUI `Slider`, mui.com/material-ui/api/slider/.
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| `value`, `defaultValue`, `min`, `max`, `step` (incl. `null`), `marks`, `orientation`, `size`, `track`, `valueLabelDisplay`, `valueLabelFormat`, `getAriaValueText`, `getAriaLabel`, `aria-label`, `aria-labelledby`, `disabled`, `disableSwap`, `name` | same | kept | |
+| `color` | `color` | kept | + `inherit` and every palette color (reference) |
+| `onChange(event, value, activeThumb)` | `onChange(value, activeThumb)` | renamed | value-first (ADR-0015) |
+| `onChangeCommitted(event, value)` | `onChangeCommitted(value)` | renamed | |
+| `aria-valuetext` | `getAriaValueText` | renamed | per thumb |
+| `scale`, `shiftStep` | — | deferred (4.2) | |
+| `tabIndex` | — | deferred | thumbs' inputs keep the default tab order |
+| `sx`, `classes`, `slots`, `slotProps`, `component` | — | not applicable | ADR-0015 (custom thumbs / labels by composition) |
 
 ## Parity notes
 React renders `data-ok-runtime="off"` and positions in `style`; HTML computes the same through
