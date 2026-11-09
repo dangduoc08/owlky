@@ -97,6 +97,7 @@ export default defineConfig({
         "packages/react/src/chip/**": COMPONENT_THRESHOLDS,
         "packages/react/src/circular-progress/**": COMPONENT_THRESHOLDS,
         "packages/react/src/divider/**": COMPONENT_THRESHOLDS,
+        "packages/react/src/paper/**": COMPONENT_THRESHOLDS,
         "packages/react/src/tooltip/**": COMPONENT_THRESHOLDS,
         "packages/react/src/snackbar/**": COMPONENT_THRESHOLDS,
         "packages/react/src/popover/**": COMPONENT_THRESHOLDS,

@@ -1952,3 +1952,43 @@
   inset-inline-start: 50%;
   translate: -50% 0;
 }
+
+/* Paper stories (story-only): Paper has no size of its own, the demos give it one. */
+.sb-paper-box {
+  width: 128px;
+  height: 128px;
+  margin: calc(var(--ok-spacing) * 2);
+}
+
+.sb-paper-demo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 120px;
+  height: 120px;
+  margin: calc(var(--ok-spacing) * 2);
+  padding: calc(var(--ok-spacing) * 2);
+  font-size: var(--ok-typography-body2-font-size);
+  line-height: var(--ok-typography-body2-line-height);
+  text-align: center;
+}
+
+/* Elevation: a light and a dark page side by side, each a two-column grid of levels. */
+.sb-row > [data-ok-theme].sb-paper-levels {
+  display: grid;
+  flex: 1 1 260px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: calc(var(--ok-spacing) * 4);
+  padding: calc(var(--ok-spacing) * 4);
+  background-color: var(--ok-bg-default);
+  box-shadow: none;
+}
+
+.sb-paper-levels > [data-ok-paper] {
+  height: 60px;
+  color: var(--ok-text-secondary);
+  font-size: var(--ok-typography-body2-font-size);
+  line-height: 60px;
+  text-align: center;
+}

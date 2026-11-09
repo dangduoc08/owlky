@@ -65,7 +65,12 @@ import {
   motionGroupAttributes,
   motionTextAttributes,
   motionVariants,
+  optionSchemas,
   orientations,
+  paperAttributes,
+  paperElevations,
+  paperOptions,
+  paperVariants,
   popoverAttributes,
   popoverPlacements,
   progressColors,
@@ -756,6 +761,33 @@ describe("dividerAttributes", () => {
         flexItem: HOSTILE,
       }),
     ).toEqual(dividerAttributes());
+  });
+});
+
+describe("paperAttributes", () => {
+  it("emits explicit defaults: elevation variant, level 1, rounded", () => {
+    expect(paperAttributes()).toEqual({
+      "data-ok-paper": "",
+      "data-ok-variant": "elevation",
+      "data-ok-elevation": "1",
+    });
+  });
+  it.each(paperVariants)("variant %s", (variant) => {
+    expect(paperAttributes({ variant })["data-ok-variant"]).toBe(variant);
+  });
+  it.each(paperElevations)("elevation %s (number and string)", (level) => {
+    expect(paperAttributes({ elevation: Number(level) })["data-ok-elevation"]).toBe(level);
+    expect(paperAttributes({ elevation: level })["data-ok-elevation"]).toBe(level);
+  });
+  it("square, and invalid values fall back to the defaults", () => {
+    expect(paperAttributes({ square: true })["data-ok-square"]).toBe("");
+    for (const elevation of [-1, 25, 1.5, Number.NaN, "01", " 2", HOSTILE]) {
+      expect(paperAttributes({ elevation })["data-ok-elevation"]).toBe("1");
+    }
+    expect(paperAttributes({ variant: HOSTILE, square: HOSTILE })).toEqual(paperAttributes());
+  });
+  it("is in the option registry", () => {
+    expect(optionSchemas.paper).toBe(paperOptions);
   });
 });
 
