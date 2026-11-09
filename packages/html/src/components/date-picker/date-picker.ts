@@ -128,21 +128,22 @@ export const datePicker = defineComponent<DatePickerInstance>({
     const isDateTime = type === "date-time";
     const isStatic = variant === "static";
     const fieldEl = element.querySelector<HTMLElement>(":scope > [data-ok-date-field]");
-    const layout = element.querySelector<HTMLElement>("[data-ok-picker-layout]") as HTMLElement;
-    const content = layout.querySelector<HTMLElement>(":scope > [data-ok-picker-content]");
+    // No layout when every view renderer is `null` (field only): the picker never opens.
+    const layout = element.querySelector<HTMLElement>("[data-ok-picker-layout]");
+    const content = layout?.querySelector<HTMLElement>(":scope > [data-ok-picker-content]");
     const calendarEl = content?.querySelector<HTMLElement>(":scope > [data-ok-date-calendar]");
     const clockEl = content?.querySelector<HTMLElement>(":scope > [data-ok-time-clock]") ?? null;
     const deskEl = content?.querySelector<HTMLElement>(`:scope > :is(${TIME_VIEWS})`) ?? null;
-    const tabsEl = layout.querySelector<HTMLElement>(":scope > [data-ok-picker-tabs]");
+    const tabsEl = layout?.querySelector<HTMLElement>(":scope > [data-ok-picker-tabs]");
     const paper = element.querySelector<HTMLElement>(":scope > [data-ok-date-picker-paper]");
     const dialogEl = element.querySelector<HTMLElement>(":scope > [data-ok-date-picker-dialog]");
     const dialogPaper = dialogEl?.querySelector<HTMLElement>("[data-ok-dialog-paper]") ?? null;
     const openButton = element.querySelector<HTMLButtonElement>("[data-ok-date-picker-open]");
-    const toolbar = layout.querySelector<HTMLElement>(":scope > [data-ok-picker-toolbar]");
+    const toolbar = layout?.querySelector<HTMLElement>(":scope > [data-ok-picker-toolbar]");
     const toolbarTitle =
       toolbar?.querySelector<HTMLElement>("[data-ok-picker-toolbar-title]") ?? null;
-    const actionsBar = layout.querySelector<HTMLElement>(":scope > [data-ok-picker-actions]");
-    const shortcutsList = layout.querySelector<HTMLElement>(":scope > [data-ok-picker-shortcuts]");
+    const actionsBar = layout?.querySelector<HTMLElement>(":scope > [data-ok-picker-actions]");
+    const shortcutsList = layout?.querySelector<HTMLElement>(":scope > [data-ok-picker-shortcuts]");
     const locale = readLocale(element);
     let overrides: Partial<PickerLocaleText> | undefined;
     let text = readLocaleText(element);
@@ -351,7 +352,7 @@ export const datePicker = defineComponent<DatePickerInstance>({
       else dialog()?.close();
       // Focus goes back to the open button, unless it already moved elsewhere (the field).
       const active = element.ownerDocument.activeElement;
-      if (active === null || active === element.ownerDocument.body || layout.contains(active))
+      if (active === null || active === element.ownerDocument.body || layout?.contains(active))
         openButton?.focus();
       render();
       emit("close", { reason });
@@ -372,7 +373,7 @@ export const datePicker = defineComponent<DatePickerInstance>({
       close("select");
     };
     const openPicker = (reason: PickerOpenReason) => {
-      if (open || isStatic || isDisabled() || isReadOnly()) return;
+      if (open || !layout || isStatic || isDisabled() || isReadOnly()) return;
       mode = resolvePickerMode(
         variant,
         element.getAttribute("data-ok-desktop-mode-media-query") ?? undefined,
@@ -547,12 +548,12 @@ export const datePicker = defineComponent<DatePickerInstance>({
       },
       { signal },
     );
-    layout.addEventListener(
+    layout?.addEventListener(
       "click",
       (event) => {
         const target = event.target as Element;
         const action = target.closest<HTMLButtonElement>("[data-ok-picker-action]");
-        if (action && layout.contains(action)) {
+        if (action && layout?.contains(action)) {
           runAction(action.getAttribute("data-ok-picker-action") as PickerAction);
           return;
         }
@@ -690,7 +691,7 @@ export const datePicker = defineComponent<DatePickerInstance>({
         calendar()?.setLocaleText(next);
         clock()?.setLocaleText(next);
         desk()?.setLocaleText(next);
-        relabelActions(layout, text);
+        if (layout) relabelActions(layout, text);
         render();
       },
       destroy() {
