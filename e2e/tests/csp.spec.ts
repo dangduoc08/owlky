@@ -126,6 +126,19 @@ test("no CSP or Trusted Types violations", async ({ page }) => {
   // The unsafe link keeps its text but loses its URL (so it is no longer a link).
   await expect(markdown.locator("a", { hasText: "unsafe" })).not.toHaveAttribute("href");
   await expect(markdown.locator("img[onerror], script")).toHaveCount(0);
+  // The walktour draws its spotlight with an SVG path and places the step through CSSOM.
+  await page.getByRole("button", { name: "Start the tour" }).click();
+  const step = page.getByRole("dialog", { name: "Notes" });
+  await expect(step).toBeVisible();
+  await expect(step.getByRole("button", { name: "Done" })).toBeFocused();
+  await expect(page.locator("[data-ok-walktour-mask]")).toHaveAttribute("d", /^M0 0H\d+V\d+H0Z M/);
+  expect(
+    await step.evaluate((element) =>
+      (element as HTMLElement).style.getPropertyValue("--_ok-walktour-width"),
+    ),
+  ).toBe("320px");
+  await page.keyboard.press("Escape");
+  await expect(step).toBeHidden();
   expect(
     await page.evaluate(() => (window as unknown as { violations: string[] }).violations),
   ).toEqual([]);

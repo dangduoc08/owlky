@@ -5,7 +5,7 @@ and a review before the next starts.
 
 ## Overview
 Every page of the reference's component menu (`https://minimals.cc/components/…`) and where it
-stands (plus pages from other references, marked). ✅ = built (38); *wave N* = planned, see "Next — components"; *not planned* = a pattern
+stands (plus pages from other references, marked). ✅ = built (39); *wave N* = planned, see "Next — components"; *not planned* = a pattern
 or app-level page. *Section* = the heading below with the details. Update this table with each
 component and each `/integrate` run.
 
@@ -72,7 +72,7 @@ component and each `/integrate` run.
 | Extra (Sonner) | Snackbar | ✅ | Toaster, toast() | Popover, Tooltip, Menu, Dialog & Snackbar |
 | Extra | Upload | wave 7 (ADR) | — | Next |
 | Extra | Utilities | not planned | — | Next |
-| Extra | Walktour | wave 7 (ADR) | — | Next |
+| Extra | Walktour | ✅ (ADR-0039) | Walktour | Walktour |
 
 ## ✅ Phase 0 — Foundation tooling
 pnpm workspace, strict TypeScript 7, Biome (incl. boundary import rules), Vitest browser mode,
@@ -510,6 +510,26 @@ integrate these in the same review (additive: no DOM or API change) and remove t
 | Collapse (transition) | Tree view groups | open / close at once (`hidden`); MUI X collapses them |
 | Typography (body text, headings) | Map stories (popup text, the drag readout, panel captions) | demo `.sb-map-*` styled in `.storybook/preview.css` |
 | Typography + Paper (card) | Organization chart stories (node cards: simple, standard, team and member cards, names and roles) | demo `.sb-org-*` styled in `.storybook/preview.css`; the cards compose Avatar, IconButton, Menu and Label |
+| Typography + Paper (card) | Walktour stories (the dashboard cards the tour points at, step text; the reference's cards hold charts, a carousel and a table, kept as text here) | demo `.sb-walktour-*` styled in `.storybook/preview.css`; the cards compose Avatar and Button |
+
+## ✅ Components — Walktour (ADR-0039, 2026-11-09)
+Created with `/component` from the reference "Walktour" page, built on react-joyride's API (the v2
+option names plus v3's `initialStepIndex`, `spotlightRadius` and step `width`), written by us (the
+upstream is React only): a pure state machine in core (`walktourTransition`, `walktourEvents`)
+owned by React (`run`, controlled `stepIndex`) and the HTML runtime `walktour` (`data-ok-run`,
+cancelable `beforechange`), and one controller (`createWalktourController`) that renders a state.
+Steps are Popovers (top layer, flip / shift, arrow) over an invisible Backdrop whose SVG path cuts
+a rounded spotlight around the target; beacons, centered and `auto` steps, spotlight clicks,
+scrolling into view, per-step overrides, a live region. Stories: Walktour (the reference's
+five-step dashboard tour, progress, Skip, a dark last step with "Done") and Beacons. Composes
+Backdrop, Popover, Button, IconButton, LinearProgress (and Avatar, TextField, Switch in the demo).
+No new token, no dependency.
+Differences: the beacon uses the primary color (the reference shows react-joyride's default red),
+the step title is an `h2`, the progress bar is hidden from assistive technology (a live region
+announces the step), the demo cards are text (no charts or carousel).
+**Backlog:** `before` / `after` hooks and the loader, `targetWaitTimeout`, `beaconTrigger: "hover"`,
+`closeButtonAction`, `scrollTarget` / `spotlightTarget`, `isFixed`, `disableFocusTrap`,
+`beaconPlacement`, `scrollDuration`.
 
 ## ✅ Components — Organization chart (ADR-0036, 2026-11-09)
 Created with `/component` from the reference "Organization chart" page, every section as a story:
@@ -680,7 +700,7 @@ Dependency-first: leaf components before the ones built from them, the ones that
 | 4 Overlays | ~~Popover~~ ✅, ~~Tooltip~~ ✅, ~~Menu~~ ✅, ~~Dialog~~ ✅, ~~Snackbar~~ ✅, ~~Backdrop~~ ✅ | ~~Drawer / Dialog backdrop~~ ✅ (native `::backdrop`, same token); icon button tooltips: nothing to change (MUI uses native `title` there; Tooltip wraps any IconButton) |
 | 5 Navigation | ~~Tabs~~ ✅, ~~Breadcrumbs~~ ✅, ~~Stepper~~ ✅ | — (nothing waited for them) |
 | 6 Composites | ~~Rating~~ ✅, ~~Slider~~ ✅, ~~Timeline~~ ✅, ~~Transfer list~~ ✅, ~~Autocomplete~~ ✅, ~~Tree view~~ ✅ | — (nothing waited for them; Slider unblocks the SettingsDrawer backlog of Theme settings) |
-| 7 Needs an ADR | ~~Data grid~~ (ADR-0020, phases below), ~~Date pickers~~ (ADR-0022, ADR-0030, complete ✅), ~~Chart~~ (ADR-0024, ADR-0027, ADR-0031, complete ✅), ~~Map~~ (ADR-0025) ✅, ~~Editor~~ (ADR-0023) ✅, ~~Carousel~~ (ADR-0033) ✅, ~~Lightbox~~ (ADR-0032) ✅, ~~Markdown~~ (ADR-0035) ✅, ~~Organization chart~~ (ADR-0036) ✅, Upload, Image, Walktour | — |
+| 7 Needs an ADR | ~~Data grid~~ (ADR-0020, phases below), ~~Date pickers~~ (ADR-0022, ADR-0030, complete ✅), ~~Chart~~ (ADR-0024, ADR-0027, ADR-0031, complete ✅), ~~Map~~ (ADR-0025) ✅, ~~Editor~~ (ADR-0023) ✅, ~~Carousel~~ (ADR-0033) ✅, ~~Lightbox~~ (ADR-0032) ✅, ~~Markdown~~ (ADR-0035) ✅, ~~Organization chart~~ (ADR-0036) ✅, Upload, Image, ~~Walktour~~ (ADR-0039) ✅ | — |
 
 Not planned as components (patterns or app-level pages of the reference): Layout,
 Utilities, Multi-language, Navigation bar, Mega menu, Scroll progress, Form validation, Form wizard.

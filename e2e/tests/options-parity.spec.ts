@@ -59,6 +59,12 @@ const CASES: [
     ["disableZoom", "disableTotal", "disableCaptions", "disableThumbnails", "disableFullscreen"],
   ],
   ["lightbox", "inline", "lightbox", ["finite", "imageFit", "thumbnailsPosition"]],
+  [
+    "walktour",
+    "basic",
+    "walktour",
+    ["hideBackButton", "hideCloseButton", "disableOverlay", "spotlightClicks", "spotlightPadding"],
+  ],
   ["slider", "temperature", "slider", ["size", "color", "disabled"]],
   ["transfer-list", "simple", "transfer-list", ["disabled"]],
   ["tree-view", "simple", "tree-view", ["variant", "expansionTrigger"]],

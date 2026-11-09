@@ -1,0 +1,219 @@
+/*
+ * Walktour — spec: specs/components/walktour.md (ADR-0039)
+ *
+ * Anatomy:   div[data-ok-walktour] …options
+ *              › div[data-ok-backdrop][data-ok-invisible][data-ok-walktour-overlay][popover=manual]
+ *                  › svg[data-ok-walktour-spotlight] › path[data-ok-walktour-mask], path[data-ok-walktour-hole]
+ *              › button[data-ok-walktour-beacon] › span[data-ok-walktour-beacon-inner]
+ *              › div[data-ok-popover][data-ok-walktour-step][role=dialog] …   (one per step)
+ *                  › span[data-ok-popover-arrow], div[data-ok-walktour-header] › h2[data-ok-walktour-title],
+ *                    button[data-ok-icon-button][data-ok-walktour-action="close"];
+ *                    div[data-ok-walktour-content]; span[data-ok-linear-progress];
+ *                    div[data-ok-walktour-footer] › button[data-ok-button][data-ok-walktour-action] ×3
+ *              › span[data-ok-walktour-live]
+ * States (controller): data-ok-open on the overlay (Backdrop) and the step (Popover),
+ *            data-ok-spotlight-clicks on the overlay, data-ok-centered on a centered step, hidden
+ *            on the beacon and on buttons the options turn off.
+ * Private:   --_ok-walktour-width (step), --_ok-walktour-beacon-x / -y (beacon), through CSSOM.
+ *
+ * Composes Backdrop, Popover, IconButton, Button and LinearProgress: load after their stylesheets
+ * (same zero specificity: the later stylesheet wins).
+ * Single :where() selectors in @layer components.
+ */
+@reference "../theme.css";
+
+@layer components {
+  /* The overlay is a transparent Backdrop in the top layer; the SVG paints the dim and the hole. */
+  :where([data-ok-walktour-overlay]) {
+    width: auto;
+    height: auto;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    border: 0;
+    pointer-events: none;
+  }
+
+  :where([data-ok-walktour-overlay])::backdrop {
+    background: transparent;
+  }
+
+  :where([data-ok-walktour-spotlight]) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  :where([data-ok-walktour-mask]) {
+    fill: rgb(var(--ok-palette-grey-900-channel) / 0.8);
+    cursor: default;
+    pointer-events: auto;
+  }
+
+  /* The hole blocks presses on the target unless spotlight clicks are on. */
+  :where([data-ok-walktour-hole]) {
+    fill: transparent;
+    pointer-events: auto;
+  }
+
+  :where([data-ok-walktour-overlay][data-ok-spotlight-clicks] [data-ok-walktour-hole]) {
+    pointer-events: none;
+  }
+
+  /* The step: an opaque Popover paper (no glow, no blur) above the overlay. */
+  :where([data-ok-walktour-step]) {
+    --_ok-popover-bg: var(--ok-bg-paper);
+    --_ok-popover-glow: none;
+    --_ok-popover-blur: none;
+
+    z-index: var(--ok-z-tooltip);
+    width: var(--_ok-walktour-width, calc(var(--ok-spacing) * 90));
+    padding: 0;
+    border-radius: var(--ok-radius-xl);
+    box-shadow: var(--ok-shadow-dialog);
+    font-family: var(--ok-typography-body1-font-family);
+  }
+
+  :where([data-ok-walktour-step][data-ok-open]) {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Centered steps (placement `center`, or no target) sit in the middle of the screen. */
+  :where([data-ok-walktour-step][data-ok-centered]) {
+    top: 50%;
+    left: 50%;
+    translate: -50% -50%;
+  }
+
+  :where([data-ok-walktour-step][data-ok-centered] > [data-ok-popover-arrow]) {
+    display: none;
+  }
+
+  /* Buttons have an author `display`: the options hide them with `hidden`. */
+  :where([data-ok-walktour-step] [hidden]) {
+    display: none;
+  }
+
+  :where([data-ok-walktour-header]) {
+    position: relative;
+    padding: calc(var(--ok-spacing) * 6) calc(var(--ok-spacing) * 10) 0 calc(var(--ok-spacing) * 6);
+  }
+
+  :where([data-ok-walktour-title]) {
+    margin: 0;
+    color: var(--ok-text-primary);
+    font-family: var(--ok-typography-h6-font-family);
+    font-size: var(--ok-typography-h6-font-size);
+    font-weight: var(--ok-typography-h6-font-weight);
+    line-height: var(--ok-typography-h6-line-height);
+  }
+
+  :where([data-ok-walktour-header] > [data-ok-walktour-action="close"]) {
+    position: absolute;
+    top: calc(var(--ok-spacing) * 2.5);
+    right: calc(var(--ok-spacing) * 2.5);
+  }
+
+  :where([data-ok-walktour-content]) {
+    padding: calc(var(--ok-spacing) * 4) calc(var(--ok-spacing) * 6) calc(var(--ok-spacing) * 8);
+    color: var(--ok-text-secondary);
+    font-size: var(--ok-typography-body1-font-size);
+    font-weight: var(--ok-typography-body1-font-weight);
+    line-height: var(--ok-typography-body1-line-height);
+    overflow-wrap: anywhere;
+  }
+
+  /* The step's LinearProgress is a thin, square line between the content and the footer. */
+  :where([data-ok-walktour-step] > [data-ok-linear-progress]) {
+    flex: none;
+    height: calc(var(--ok-spacing) / 2);
+    border-radius: 0;
+  }
+
+  :where([data-ok-walktour-footer]) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: calc(var(--ok-spacing) * 3);
+    padding: calc(var(--ok-spacing) * 5) calc(var(--ok-spacing) * 5) calc(var(--ok-spacing) * 5)
+      calc(var(--ok-spacing) * 4);
+  }
+
+  :where([data-ok-walktour-footer] > [data-ok-walktour-action="skip"]) {
+    margin-inline-end: auto;
+  }
+
+  /* Beacon: a pulsing dot in a ring, centered on a point of the target's edge. */
+  :where([data-ok-walktour-beacon]) {
+    --_ok-beacon-size: calc(var(--ok-spacing) * 9);
+
+    position: fixed;
+    top: var(--_ok-walktour-beacon-y, 0);
+    left: var(--_ok-walktour-beacon-x, 0);
+    z-index: var(--ok-z-tooltip);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    width: var(--_ok-beacon-size);
+    height: var(--_ok-beacon-size);
+    margin: calc(var(--_ok-beacon-size) / -2) 0 0 calc(var(--_ok-beacon-size) / -2);
+    padding: 0;
+    border: 2px solid var(--ok-palette-primary-main);
+    border-radius: var(--ok-radius-full);
+    background-color: rgb(var(--ok-palette-primary-main-channel) / 0.2);
+    cursor: pointer;
+    animation: ok-walktour-beacon calc(var(--ok-duration-standard) * 4) var(--ok-easing-standard)
+      infinite;
+  }
+
+  :where([data-ok-walktour-beacon][hidden]) {
+    display: none;
+  }
+
+  :where([data-ok-walktour-beacon]:focus-visible) {
+    outline: 2px solid var(--ok-palette-primary-main);
+    outline-offset: 2px;
+  }
+
+  :where([data-ok-walktour-beacon-inner]) {
+    width: 50%;
+    height: 50%;
+    border-radius: var(--ok-radius-full);
+    background-color: var(--ok-palette-primary-main);
+  }
+
+  /* Live progress for screen readers ("Step 2 of 5"): visually hidden. */
+  :where([data-ok-walktour-live]) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    border: 0;
+    white-space: nowrap;
+  }
+
+  @keyframes ok-walktour-beacon {
+    0% {
+      transform: scale(1);
+    }
+
+    55% {
+      transform: scale(1.25);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :where([data-ok-walktour-beacon]) {
+      animation: none;
+    }
+  }
+}

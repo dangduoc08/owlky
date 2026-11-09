@@ -55,6 +55,7 @@ import { toggleGroup } from "./toggle-group/toggle-group.js";
 import { tooltip } from "./tooltip/tooltip.js";
 import { transferList } from "./transfer-list/transfer-list.js";
 import { treeView } from "./tree-view/tree-view.js";
+import { walktour } from "./walktour/walktour.js";
 import { yearCalendar } from "./year-calendar/year-calendar.js";
 
 export const components: readonly ComponentDefinition[] = [
@@ -110,4 +111,5 @@ export const components: readonly ComponentDefinition[] = [
   carousel as ComponentDefinition,
   organizationChart as ComponentDefinition,
   lightbox as ComponentDefinition,
+  walktour as ComponentDefinition,
 ];

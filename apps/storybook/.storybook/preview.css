@@ -771,7 +771,7 @@
 }
 
 /* Popover demos (story-only; a Typography component will replace the headings and text). */
-[data-ok-popover]
+[data-ok-popover]:where(:not([data-ok-walktour-step]))
   > div:not([data-ok-popover-arrow], [data-ok-data-grid-panel], [data-ok-picker-layout]) {
   box-sizing: border-box;
   max-width: 17.5rem;
@@ -785,7 +785,7 @@
   line-height: var(--ok-typography-subtitle1-line-height);
 }
 
-[data-ok-popover] > div > :where(p) {
+[data-ok-popover]:where(:not([data-ok-walktour-step])) > div > :where(p) {
   margin: 0;
   color: var(--ok-text-secondary);
   font-size: var(--ok-typography-body2-font-size);
@@ -1278,6 +1278,119 @@
   flex: 1 1 100%;
   min-width: 0;
   max-width: 56rem;
+}
+
+/* Walktour (story-only demo markup): the dashboard cards the tours point at, and step content. */
+.sb-walktour {
+  display: flex;
+  flex: 1 1 100%;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: calc(var(--ok-spacing) * 6);
+  min-width: 0;
+  max-width: 60rem;
+}
+
+.sb-walktour-dashboard {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: calc(var(--ok-spacing) * 6);
+  align-self: stretch;
+}
+
+.sb-walktour-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: calc(var(--ok-spacing) * 2);
+  min-width: 0;
+  padding: calc(var(--ok-spacing) * 6);
+  border-radius: var(--ok-radius-xl);
+  background: var(--ok-bg-paper);
+  box-shadow: var(--ok-shadow-card);
+  color: var(--ok-text-primary);
+}
+
+.sb-walktour-card h3 {
+  margin: 0;
+  font-size: var(--ok-typography-subtitle2-font-size);
+  font-weight: var(--ok-font-weight-semibold);
+}
+
+.sb-walktour-note {
+  margin: 0;
+  padding-inline-start: 0;
+  color: var(--ok-text-secondary);
+  font-size: var(--ok-typography-body2-font-size);
+  list-style-position: inside;
+}
+
+.sb-walktour-welcome,
+.sb-walktour-wide {
+  grid-column: span 2;
+}
+
+.sb-walktour-featured img {
+  width: 100%;
+  border-radius: var(--ok-radius-lg);
+}
+
+.sb-walktour-figure {
+  margin: 0;
+  color: var(--ok-text-primary);
+  font-size: var(--ok-typography-h4-font-size);
+  font-weight: var(--ok-font-weight-bold);
+}
+
+.sb-walktour-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--ok-spacing) * 3);
+}
+
+.sb-walktour-text {
+  margin: 0 0 calc(var(--ok-spacing) * 4);
+}
+
+.sb-walktour-image {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: var(--ok-radius-lg);
+}
+
+.sb-walktour-settings {
+  display: flex;
+  flex-direction: column;
+  padding: calc(var(--ok-spacing) * 2) calc(var(--ok-spacing) * 4);
+  border: 1px solid var(--ok-divider);
+  border-radius: var(--ok-radius-lg);
+}
+
+.sb-walktour-settings > label {
+  justify-content: space-between;
+  margin: 0;
+}
+
+.sb-walktour-gallery {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: calc(var(--ok-spacing) * 2);
+}
+
+.sb-walktour-gallery img {
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+  border-radius: var(--ok-radius-md);
+}
+
+@media (max-width: 599px) {
+  .sb-walktour-welcome,
+  .sb-walktour-wide {
+    grid-column: auto;
+  }
 }
 
 /* Carousel (story-only demo markup): the slides' pictures, number badges, cards and control rows. */

@@ -73,6 +73,7 @@ import {
 } from "../options/define.js";
 import { type Placement, placements } from "../popover/position.js";
 import { type ToastPosition, toastPositions } from "../toast/toast-store.js";
+import { type WalktourPlacement, walktourPlacements } from "../walktour/walktour-model.js";
 
 /*
  * Anatomy: each component's option schema (ADR-0015) and the `<name>Attributes(options)` helper
@@ -4270,6 +4271,143 @@ export function lightboxAttributes(options: LightboxAnatomyOptions = {}): DataAt
   return attributes;
 }
 
+// --- Walktour (ADR-0039) ------------------------------------------------------------------------
+
+export const walktourOptions = defineOptions("walktour", "data-ok-walktour", {
+  continuous: flag(
+    "data-ok-continuous",
+    "Next and Back move from tooltip to tooltip (otherwise the primary button closes the step).",
+  ),
+  showProgress: flag("data-ok-show-progress", "Adds the step count to the Next button: `(2/5)`."),
+  showSkipButton: flag("data-ok-show-skip-button", "Shows a Skip button that ends the tour."),
+  hideBackButton: flag("data-ok-hide-back-button", "Hides the Back button."),
+  hideCloseButton: flag("data-ok-hide-close-button", "Hides the close button (the X)."),
+  disableBeacon: flag(
+    "data-ok-disable-beacon",
+    "Steps open their tooltip at once instead of a pulsing beacon on the target.",
+  ),
+  disableCloseOnEsc: flag("data-ok-disable-close-on-esc", "Escape doesn't close the step."),
+  disableOverlay: flag(
+    "data-ok-disable-overlay",
+    "No overlay and no spotlight: the page stays usable (the step is not modal).",
+  ),
+  disableOverlayClose: flag(
+    "data-ok-disable-overlay-close",
+    "A click on the overlay doesn't close the step.",
+  ),
+  spotlightClicks: flag(
+    "data-ok-spotlight-clicks",
+    "The target in the spotlight can be clicked (the step is then not modal).",
+  ),
+  disableScrolling: flag(
+    "data-ok-disable-scrolling",
+    "Doesn't scroll a target that is out of view into view.",
+  ),
+  scrollToFirstStep: flag(
+    "data-ok-scroll-to-first-step",
+    "Scrolls to the first step's target too (only later steps scroll otherwise).",
+  ),
+  spotlightPadding: number(
+    "data-ok-spotlight-padding",
+    10,
+    "Space between the target and the edge of the spotlight (px).",
+    { min: 0 },
+  ),
+  spotlightRadius: number("data-ok-spotlight-radius", 16, "Corner radius of the spotlight (px).", {
+    min: 0,
+  }),
+  scrollOffset: number(
+    "data-ok-scroll-offset",
+    20,
+    "Space kept above a target scrolled into view (px).",
+    { min: 0 },
+  ),
+  run: state("data-ok-run", "Runs the tour (`run`; HTML: the attribute, `start()` / `stop()`)."),
+  stepIndex: state(
+    "data-ok-step-index",
+    "The current step (`stepIndex` / `onStepChange`; HTML: the first step, `go()`).",
+    "change",
+  ),
+});
+
+export interface WalktourAnatomyOptions {
+  continuous?: boolean | undefined;
+  showProgress?: boolean | undefined;
+  showSkipButton?: boolean | undefined;
+  hideBackButton?: boolean | undefined;
+  hideCloseButton?: boolean | undefined;
+  disableBeacon?: boolean | undefined;
+  disableCloseOnEsc?: boolean | undefined;
+  disableOverlay?: boolean | undefined;
+  disableOverlayClose?: boolean | undefined;
+  spotlightClicks?: boolean | undefined;
+  disableScrolling?: boolean | undefined;
+  scrollToFirstStep?: boolean | undefined;
+  spotlightPadding?: number | undefined;
+  spotlightRadius?: number | undefined;
+  scrollOffset?: number | undefined;
+}
+
+/** `data-ok-*` attributes of a walktour root. */
+export const walktourAttributes = (options: WalktourAnatomyOptions = {}): DataAttributes =>
+  optionAttributes(walktourOptions, { ...options });
+
+export const walktourStepOptions = defineOptions("walktour-step", "data-ok-walktour-step", {
+  placement: style(
+    "data-ok-placement",
+    walktourPlacements,
+    "bottom",
+    "Side of the target and alignment, `auto` (the side with the most room) or `center` (the middle of the screen, no target needed).",
+  ),
+  spotlightPadding: number(
+    "data-ok-spotlight-padding",
+    undefined,
+    "This step's spotlight padding (px); default: the tour's.",
+    { min: 0 },
+  ),
+  width: number("data-ok-width", undefined, "Tooltip width (px). Default 360px.", { min: 0 }),
+});
+
+/** Step overrides of the tour's boolean options (`false` turns a tour option off for the step). */
+export const walktourStepOverrides = [
+  "continuous",
+  "showProgress",
+  "showSkipButton",
+  "hideBackButton",
+  "hideCloseButton",
+  "disableBeacon",
+  "disableCloseOnEsc",
+  "disableOverlay",
+  "disableOverlayClose",
+  "spotlightClicks",
+  "disableScrolling",
+] as const;
+export type WalktourStepOverride = (typeof walktourStepOverrides)[number];
+
+export interface WalktourStepAnatomyOptions
+  extends Partial<Record<WalktourStepOverride, boolean | undefined>> {
+  placement?: WalktourPlacement | undefined;
+  spotlightPadding?: number | undefined;
+  width?: number | undefined;
+  /** A CSS selector (`data-ok-target`); elements and refs are resolved by the component. */
+  target?: string | undefined;
+}
+
+/**
+ * `data-ok-*` attributes of a step. Overrides are written only when given: `""` (on) or
+ * `"false"` (off), so a step can turn off an option of the tour.
+ */
+export function walktourStepAttributes(options: WalktourStepAnatomyOptions = {}): DataAttributes {
+  const attributes = optionAttributes(walktourStepOptions, { ...options });
+  for (const key of walktourStepOverrides) {
+    const value = options[key];
+    if (value !== undefined) attributes[walktourOptions.options[key].attr] = value ? "" : "false";
+  }
+  if (typeof options.target === "string" && options.target)
+    attributes["data-ok-target"] = options.target;
+  return attributes;
+}
+
 export const optionSchemas = {
   accordion: accordionOptions,
   alert: alertOptions,
@@ -4359,4 +4497,6 @@ export const optionSchemas = {
   "map-scale": mapScaleOptions,
   "map-attribution": mapAttributionOptions,
   lightbox: lightboxOptions,
+  walktour: walktourOptions,
+  "walktour-step": walktourStepOptions,
 } as const;
