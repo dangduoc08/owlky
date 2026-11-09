@@ -5,8 +5,8 @@ import { components } from "./index.js";
 
 // Browser-mode test: files are discovered with Vite glob imports (no Node fs).
 // Opt-in components: registered by their own entry (`@owlky/html/editor`,
-// `@owlky/html/code-editor`, `@owlky/html/map`), not by `components`.
-const OPT_IN = ["editor", "code-editor", "diff-editor", "map", "markdown"];
+// `@owlky/html/code-editor`, `@owlky/html/map`, `@owlky/html/illustrations`), not by `components`.
+const OPT_IN = ["editor", "code-editor", "diff-editor", "map", "markdown", "illustration"];
 const definitions = import.meta.glob("./*/*.ts", { eager: false });
 const snippets = import.meta.glob("./*/examples/*.html", {
   query: "?raw",

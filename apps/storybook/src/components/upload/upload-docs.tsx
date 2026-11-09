@@ -17,7 +17,9 @@ export const uploadSections: GuideSection[] = [
     <input type="file" data-ok-upload-input id="photo" name="photo" title=" "
       aria-labelledby="photo-title">
     <div data-ok-upload-placeholder>
-      <svg data-ok-upload-illustration aria-hidden="true" viewBox="0 0 200 150">…</svg>
+      <!-- The "upload" illustration (Foundations › Illustrations) -->
+      <svg data-ok-illustration="upload" data-ok-color="primary" data-ok-upload-illustration
+        aria-hidden="true" focusable="false" viewBox="0 0 480 360">…</svg>
       <div data-ok-upload-placeholder-text>
         <span data-ok-upload-title id="photo-title">Drop or select a file</span>
         <span data-ok-upload-description>Drag a file here, or <span data-ok-upload-browse>browse</span> your device.</span>

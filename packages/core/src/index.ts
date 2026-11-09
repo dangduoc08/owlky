@@ -176,6 +176,8 @@ export {
   type IconButtonColor,
   type IconButtonEdge,
   type IconButtonSize,
+  type IllustrationAnatomyOptions,
+  type IllustrationColor,
   type ImageAnatomyOptions,
   type ImageEffect,
   type ImageFit,
@@ -188,6 +190,9 @@ export {
   iconButtonEdges,
   iconButtonOptions,
   iconButtonSizes,
+  illustrationAttributes,
+  illustrationColors,
+  illustrationOptions,
   imageAttributes,
   imageEffects,
   imageFits,
@@ -782,6 +787,21 @@ export {
 export { focusInitial, getTabbables, isFocusable, trapTab } from "./dom/focus.js";
 export { createId } from "./dom/id.js";
 export { type Supports, supports } from "./dom/support.js";
+export {
+  type Illustration,
+  type IllustrationAttributeName,
+  type IllustrationNode,
+  type IllustrationTag,
+  type IllustrationTone,
+  illustrationAria,
+  illustrationAttributeNames,
+  illustrationChildren,
+  illustrationNodeAttributes,
+  illustrationStyle,
+  illustrationTags,
+  illustrationTones,
+  isIllustrationTag,
+} from "./illustration/illustration.js";
 export {
   createLightboxController,
   LIGHTBOX_FLAGS,

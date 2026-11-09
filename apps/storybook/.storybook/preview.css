@@ -1887,3 +1887,35 @@
   align-items: center;
   color: var(--ok-text-secondary);
 }
+
+/*
+ * Illustrations (Foundations, story-only): a profile cover cut by the avatar shape, with the avatar
+ * in the curve.
+ */
+.sb-illustration-cover {
+  position: relative;
+  width: min(100%, calc(var(--ok-spacing) * 80));
+  height: calc(var(--ok-spacing) * 40);
+  overflow: hidden;
+  border-radius: var(--ok-radius-lg);
+  background: linear-gradient(
+    135deg,
+    var(--ok-palette-primary-light),
+    var(--ok-palette-primary-dark)
+  );
+  box-shadow: var(--ok-shadow-card);
+}
+
+.sb-illustration-cover > [data-ok-illustration] {
+  position: absolute;
+  inset-block-end: -1px;
+  inset-inline-start: 50%;
+  translate: -50% 0;
+}
+
+.sb-illustration-cover > [data-ok-avatar] {
+  position: absolute;
+  inset-block-end: calc(var(--ok-spacing) * 2);
+  inset-inline-start: 50%;
+  translate: -50% 0;
+}

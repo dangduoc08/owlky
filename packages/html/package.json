@@ -8,11 +8,13 @@
     "./dist/esm/auto.js",
     "./dist/esm/code-editor.js",
     "./dist/esm/editor.js",
+    "./dist/esm/illustrations.js",
     "./dist/monaco/**",
     "./dist/owlky-code-editor.js",
     "./dist/esm/map.js",
     "./dist/esm/markdown.js",
     "./dist/owlky-editor.js",
+    "./dist/owlky-illustrations.js",
     "./dist/owlky-map.js",
     "./dist/owlky-markdown.js",
     "./dist/owlky.js",
@@ -38,6 +40,10 @@
       "types": "./dist/esm/editor.d.ts",
       "import": "./dist/esm/editor.js"
     },
+    "./illustrations": {
+      "types": "./dist/esm/illustrations.d.ts",
+      "import": "./dist/esm/illustrations.js"
+    },
     "./markdown": {
       "types": "./dist/esm/markdown.d.ts",
       "import": "./dist/esm/markdown.js"
@@ -49,6 +55,7 @@
     "./owlky.js": "./dist/owlky.js",
     "./owlky-code-editor.js": "./dist/owlky-code-editor.js",
     "./owlky-editor.js": "./dist/owlky-editor.js",
+    "./owlky-illustrations.js": "./dist/owlky-illustrations.js",
     "./owlky-map.js": "./dist/owlky-map.js",
     "./owlky-map-worker.js": "./dist/owlky-map-worker.js",
     "./owlky-markdown.js": "./dist/owlky-markdown.js",
@@ -61,7 +68,7 @@
   "unpkg": "./dist/owlky.js",
   "jsdelivr": "./dist/owlky.js",
   "scripts": {
-    "build": "rm -rf dist && tsc -p tsconfig.build.json && vite build && vite build --mode editor && vite build --mode code-editor && vite build --mode monaco && vite build --mode monaco-workers && vite build --mode map && vite build --mode markdown && node scripts/copy-assets.mjs",
+    "build": "rm -rf dist && tsc -p tsconfig.build.json && vite build && vite build --mode editor && vite build --mode code-editor && vite build --mode monaco && vite build --mode monaco-workers && vite build --mode map && vite build --mode markdown && vite build --mode illustrations && node scripts/copy-assets.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {

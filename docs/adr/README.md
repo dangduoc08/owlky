@@ -44,5 +44,6 @@ ADR that supersedes the old one — don't rewrite history.
 | [0037](0037-upload.md) | Upload: a native file input under the drop zone, one controller in core | Accepted |
 | [0038](0038-image.md) | Image: native lazy loading, the load state as a data attribute | Accepted |
 | [0039](0039-walktour.md) | Walktour: a state machine in core, steps as Popovers over a Backdrop with an SVG spotlight | Accepted |
+| [0040](0040-illustrations.md) | Illustrations: a theme-aware set as data in core, tones mapped to tokens, opt-in bundles | Accepted |
 
 Template: **Context** (why decide) · **Decision** (what) · **Consequences** (trade-offs, follow-ups).

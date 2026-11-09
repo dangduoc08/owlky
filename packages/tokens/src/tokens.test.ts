@@ -9,6 +9,7 @@ import {
   hexToRgb,
   paletteColorNames,
   type RgbChannels,
+  skinToneNames,
   themeToCss,
   themeToCssVariables,
 } from "./index.js";
@@ -147,6 +148,17 @@ describe("button foundations", () => {
     expect(root["--ok-palette-grey-500-channel"]).toBe("145 158 171");
     expect(root["--ok-palette-common-black-channel"]).toBe("0 0 0");
     expect(root["--ok-palette-common-white-channel"]).toBe("255 255 255");
+  });
+
+  it("exposes the illustrations' skin tones (ADR-0040), customizable with createTheme", () => {
+    const { root } = themeToCssVariables(defaultTheme);
+    for (const name of skinToneNames)
+      expect(root[`--ok-illustration-skin-${name}`]).toBe(defaultTheme.illustration.skin[name]);
+    const custom = createTheme({ illustration: { skin: { deep: "#5A3825" } } });
+    expect(custom.illustration.skin).toEqual({
+      ...defaultTheme.illustration.skin,
+      deep: "#5A3825",
+    });
   });
 
   it("exposes a font-size scale", () => {

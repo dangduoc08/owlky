@@ -127,10 +127,18 @@ export const shadowNames = [
 ] as const;
 export type ShadowName = (typeof shadowNames)[number];
 
+export const skinToneNames = ["light", "medium", "deep"] as const;
+export type SkinToneName = (typeof skinToneNames)[number];
+
 export interface Theme {
   palette: Record<PaletteColorName, PaletteColor>;
   grey: GreyScale;
   common: { white: string; black: string };
+  /**
+   * Decorative colors of the illustration set (Foundations › Illustrations, ADR-0040) that no
+   * palette color covers: the skin tones of its people. Never used for text.
+   */
+  illustration: { skin: Record<SkinToneName, string> };
   schemes: { light: ColorScheme; dark: ColorScheme };
   typography: Typography;
   radius: Record<RadiusName, string>;

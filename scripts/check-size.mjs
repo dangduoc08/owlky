@@ -1,5 +1,6 @@
 // Gzip size budgets for what users download. Raise a budget only with a reason in the PR.
 import { readFile } from "node:fs/promises";
+import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { gzipSync } from "node:zlib";
 
@@ -84,6 +85,10 @@ const budgets = [
   // and property-information are nearly all of owlky-markdown.js (about 102 kB measured);
   // owlky.js stays free of them.
   ["packages/html/dist/owlky-markdown.js", 110_000, "Markdown + unified (IIFE, after owlky.js)"],
+  // Illustrations are opt-in (ADR-0040): the 16 pictures' node trees are nearly all of
+  // owlky-illustrations.js (10.3 kB measured; 5.5 kB minified ESM); owlky.js stays free
+  // of them.
+  ["packages/html/dist/owlky-illustrations.js", 12_000, "Illustrations (IIFE, after owlky.js)"],
   // 42 kB once the Map, the Carousel and the Code editor merged together (about 2.1 + 2 + 0.3 kB
   // on 38 kB): 40.4 kB.
   // 36.1 kB with the Code editor (ADR-0034: frame, loading state and fallback textareas; about
@@ -107,11 +112,13 @@ const budgets = [
   // inputs, 22 kB after the navigation components, 20 kB after the form, display and list
   // components. Per-component files (`@owlky/styles/components/*`) let apps
   // load only what they use.
+  // 48 kB since the Illustrations (ADR-0040: tones mapped to tokens for six palettes, sizing; about
+  // 0.5 kB once the Upload's own tone rules moved there): 46.7 kB.
   // 47 kB since the Upload (zone, previews, list rows and tiles, file icons; about 2.3 kB): 44.7 kB.
   // 45 kB since the Image (ratios, fits, positions, overlays, placeholder; about 0.95 kB): 44.2 kB.
   // 44 kB since the Lightbox (toolbar, captions, thumbnails, zoom frame; about 1.4 kB): 42.1 kB;
   // 43.25 kB once merged with Markdown and the Organization chart.
-  ["packages/styles/dist/owlky.min.css", 47_000, "All CSS (tokens + components)"],
+  ["packages/styles/dist/owlky.min.css", 48_000, "All CSS (tokens + components)"],
 ];
 
 let failed = false;
@@ -125,5 +132,41 @@ for (const [file, limit, label] of budgets) {
   console.log(
     `${ok ? "ok  " : "FAIL"} ${label}: ${(size / 1000).toFixed(2)} kB / ${limit / 1000} kB gzip`,
   );
+}
+
+// Tree shaking (ADR-0040): `@owlky/core/illustrations` has one export per picture, so an app that
+// imports one picture bundles that one only. Each must stay under 3 kB gzip once minified.
+{
+  const require = createRequire(import.meta.url);
+  const { build } = await import(
+    require.resolve("esbuild", { paths: [join(process.cwd(), "node_modules/.pnpm/node_modules")] })
+  );
+  const entry = join(process.cwd(), "packages/core/dist/illustrations/index.js");
+  const bundled = async (names) => {
+    const result = await build({
+      stdin: {
+        contents: `export { ${names} } from ${JSON.stringify(entry)};`,
+        loader: "js",
+        resolveDir: process.cwd(),
+      },
+      bundle: true,
+      minify: true,
+      format: "esm",
+      write: false,
+      logLevel: "error",
+    });
+    return gzipSync(result.outputFiles[0].contents).length;
+  };
+  const { illustrations } = await import(entry);
+  const exportName = (name) => name.replace(/-([a-z0-9])/g, (_, c) => c.toUpperCase());
+  const all = await bundled("illustrations");
+  for (const { name } of illustrations) {
+    const size = await bundled(exportName(name));
+    const ok = size <= 3_000 && size < all / 4;
+    failed ||= !ok;
+    console.log(
+      `${ok ? "ok  " : "FAIL"} Illustration ${name} alone: ${(size / 1000).toFixed(2)} kB / 3 kB gzip (all ${(all / 1000).toFixed(2)} kB)`,
+    );
+  }
 }
 if (failed) process.exit(1);

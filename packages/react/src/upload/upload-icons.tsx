@@ -1,39 +1,19 @@
 import { UPLOAD_FILE_ICON, type UploadFileKind, uploadFileLabel } from "@owlky/core";
+import { upload } from "@owlky/core/illustrations";
+import { Illustration } from "../illustration/illustration.js";
 
 /*
  * Upload icons and illustration: original, static, decorative SVG (no external references).
  * The HTML snippets carry the same markup; the runtime builds the file icon from core's paths.
  */
 
-/** The drop zone illustration: an open folder with two pages. Colors come from `upload.css`. */
+/**
+ * The drop zone illustration: the illustration set's `upload` picture (Foundations ›
+ * Illustrations, ADR-0040), marked as Upload's part. Tones come from `illustration.css`, the size
+ * from `upload.css`.
+ */
 export function UploadIllustration() {
-  return (
-    <svg data-ok-upload-illustration="" aria-hidden="true" focusable="false" viewBox="0 0 200 150">
-      <ellipse data-ok-tone="shadow" cx="100" cy="138" rx="76" ry="7" />
-      <circle data-ok-tone="light" cx="26" cy="34" r="5" />
-      <circle data-ok-tone="light" cx="176" cy="26" r="4" />
-      <circle data-ok-tone="light" cx="184" cy="96" r="3" />
-      <circle data-ok-tone="light" cx="14" cy="104" r="3" />
-      <path
-        data-ok-tone="dark"
-        d="M38 44h42l10 12h72a8 8 0 0 1 8 8v58a8 8 0 0 1-8 8H38a8 8 0 0 1-8-8V52a8 8 0 0 1 8-8Z"
-      />
-      <g transform="rotate(-8 88 60)">
-        <rect data-ok-tone="paper" x="58" y="18" width="62" height="78" rx="6" />
-        <path data-ok-tone="line" d="M68 34h34M68 44h42M68 54h26" />
-      </g>
-      <g transform="rotate(7 118 56)">
-        <rect data-ok-tone="paper" x="88" y="16" width="62" height="78" rx="6" />
-        <path data-ok-tone="line" d="M98 32h40M98 42h30M98 52h36" />
-      </g>
-      <path
-        data-ok-tone="main"
-        d="M26 78a8 8 0 0 1 8-8h132a8 8 0 0 1 8 8l-6 46a8 8 0 0 1-8 7H40a8 8 0 0 1-8-7Z"
-      />
-      <circle data-ok-tone="light" cx="100" cy="104" r="13" />
-      <path data-ok-tone="arrow" d="M100 112v-15m-6 6 6-6 6 6" />
-    </svg>
-  );
+  return <Illustration illustration={upload} data-ok-upload-illustration="" />;
 }
 
 /** A cloud with an arrow (box placeholder, Upload button). */

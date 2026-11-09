@@ -308,6 +308,9 @@ const pairs: [component: string, story: string][] = [
   ),
   ["walktour", "basic"],
   ["walktour", "beacons"],
+  ...["errors", "states", "account", "dashboard", "shapes"].map(
+    (story) => ["illustrations", story] as [string, string],
+  ),
   ["code-editor", "editor"],
   ["code-editor", "diff"],
   ["code-editor", "multi-model"],

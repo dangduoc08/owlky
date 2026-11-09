@@ -21,6 +21,9 @@ const grey: GreyScale = {
 
 const common = { white: "#FFFFFF", black: "#000000" };
 
+/** Skin tones of the illustrations' people (decorative, ADR-0040). */
+const illustration = { skin: { light: "#FFD8BF", medium: "#E0A47C", deep: "#8D5B3D" } };
+
 /*
  * System elevations 1–24 as [y, blur, spread] for the umbra, penumbra and ambient layers
  * (Material elevation geometry; alphas 20 % / 14 % / 12 %). x is always 0.
@@ -265,6 +268,7 @@ export const defaultTheme: Theme = {
   },
   grey,
   common,
+  illustration,
   schemes: { light, dark },
   typography: {
     fontFamily:

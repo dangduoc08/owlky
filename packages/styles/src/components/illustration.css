@@ -1,0 +1,185 @@
+/*
+ * Illustration — spec: specs/components/illustration.md (ADR-0040)
+ *
+ * Anatomy:   svg[data-ok-illustration="<name>"][viewBox][aria-hidden | role="img"][focusable="false"]
+ *              › title? › (g | path | circle | ellipse | rect | polygon | polyline | line)[data-ok-tone]…
+ * Tones:     data-ok-tone = lighter | light | main | dark | darker (the `color` palette)
+ *            | accent-light | accent-main | accent-dark (warning palette)
+ *            | paper | neutral | outline | line | shadow | shade | ink (follow the color scheme)
+ *            | grey-300 | grey-500 | grey-600 | white | skin-light | skin-medium | skin-deep
+ *            data-ok-stroke: the tone paints the outline (width from `stroke-width`), not the fill.
+ * Modifiers: data-ok-color = primary (default) | secondary | info | success | warning | error
+ *            data-ok-size  = width (the runtime / React write --_ok-illustration-size through CSSOM)
+ *
+ * The palette tones are read on the root itself, so a root inside a [data-ok-preset] or
+ * [data-ok-theme] scope takes that scope's colors. Single :where() selectors in @layer components.
+ */
+@reference "../theme.css";
+
+@layer components {
+  :where([data-ok-illustration]) {
+    --_ok-illustration-lighter: var(--ok-palette-primary-lighter);
+    --_ok-illustration-light: var(--ok-palette-primary-light);
+    --_ok-illustration-main: var(--ok-palette-primary-main);
+    --_ok-illustration-dark: var(--ok-palette-primary-dark);
+    --_ok-illustration-darker: var(--ok-palette-primary-darker);
+    display: block;
+    flex-shrink: 0;
+    max-width: 100%;
+    height: auto;
+    overflow: hidden;
+  }
+
+  /* Without a `width` attribute: the size option, or 480px (the viewBox). */
+  :where([data-ok-illustration]:not([width])) {
+    width: var(--_ok-illustration-size, calc(var(--ok-spacing) * 120));
+  }
+
+  :where([data-ok-illustration][data-ok-color="secondary"]) {
+    --_ok-illustration-lighter: var(--ok-palette-secondary-lighter);
+    --_ok-illustration-light: var(--ok-palette-secondary-light);
+    --_ok-illustration-main: var(--ok-palette-secondary-main);
+    --_ok-illustration-dark: var(--ok-palette-secondary-dark);
+    --_ok-illustration-darker: var(--ok-palette-secondary-darker);
+  }
+
+  :where([data-ok-illustration][data-ok-color="info"]) {
+    --_ok-illustration-lighter: var(--ok-palette-info-lighter);
+    --_ok-illustration-light: var(--ok-palette-info-light);
+    --_ok-illustration-main: var(--ok-palette-info-main);
+    --_ok-illustration-dark: var(--ok-palette-info-dark);
+    --_ok-illustration-darker: var(--ok-palette-info-darker);
+  }
+
+  :where([data-ok-illustration][data-ok-color="success"]) {
+    --_ok-illustration-lighter: var(--ok-palette-success-lighter);
+    --_ok-illustration-light: var(--ok-palette-success-light);
+    --_ok-illustration-main: var(--ok-palette-success-main);
+    --_ok-illustration-dark: var(--ok-palette-success-dark);
+    --_ok-illustration-darker: var(--ok-palette-success-darker);
+  }
+
+  :where([data-ok-illustration][data-ok-color="warning"]) {
+    --_ok-illustration-lighter: var(--ok-palette-warning-lighter);
+    --_ok-illustration-light: var(--ok-palette-warning-light);
+    --_ok-illustration-main: var(--ok-palette-warning-main);
+    --_ok-illustration-dark: var(--ok-palette-warning-dark);
+    --_ok-illustration-darker: var(--ok-palette-warning-darker);
+  }
+
+  :where([data-ok-illustration][data-ok-color="error"]) {
+    --_ok-illustration-lighter: var(--ok-palette-error-lighter);
+    --_ok-illustration-light: var(--ok-palette-error-light);
+    --_ok-illustration-main: var(--ok-palette-error-main);
+    --_ok-illustration-dark: var(--ok-palette-error-dark);
+    --_ok-illustration-darker: var(--ok-palette-error-darker);
+  }
+
+  /* Every shape is filled with its tone; outlines (data-ok-stroke) paint it as the stroke. */
+  :where([data-ok-illustration] [data-ok-tone]) {
+    fill: var(--_ok-tone);
+    stroke: none;
+  }
+
+  :where([data-ok-illustration] [data-ok-stroke]) {
+    fill: none;
+    stroke: var(--_ok-tone);
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  :where([data-ok-illustration] [data-ok-tone="lighter"]) {
+    --_ok-tone: var(--_ok-illustration-lighter);
+  }
+
+  :where([data-ok-illustration] [data-ok-tone="light"]) {
+    --_ok-tone: var(--_ok-illustration-light);
+  }
+
+  :where([data-ok-illustration] [data-ok-tone="main"]) {
+    --_ok-tone: var(--_ok-illustration-main);
+  }
+
+  :where([data-ok-illustration] [data-ok-tone="dark"]) {
+    --_ok-tone: var(--_ok-illustration-dark);
+  }
+
+  :where([data-ok-illustration] [data-ok-tone="darker"]) {
+    --_ok-tone: var(--_ok-illustration-darker);
+  }
+
+  :where([data-ok-illustration] [data-ok-tone="accent-light"]) {
+    --_ok-tone: var(--ok-palette-warning-light);
+  }
+
+  :where([data-ok-illustration] [data-ok-tone="accent-main"]) {
+    --_ok-tone: var(--ok-palette-warning-main);
+  }
+
+  :where([data-ok-illustration] [data-ok-tone="accent-dark"]) {
+    --_ok-tone: var(--ok-palette-warning-dark);
+  }
+
+  :where([data-ok-illustration] [data-ok-tone="paper"]) {
+    --_ok-tone: var(--ok-bg-paper);
+  }
+
+  :where([data-ok-illustration] [data-ok-tone="neutral"]) {
+    --_ok-tone: var(--ok-bg-neutral);
+  }
+
+  :where([data-ok-illustration] [data-ok-tone="outline"]) {
+    --_ok-tone: rgb(var(--ok-palette-grey-500-channel) / 0.24);
+  }
+
+  :where([data-ok-illustration] [data-ok-tone="line"]) {
+    --_ok-tone: rgb(var(--ok-palette-grey-500-channel) / 0.48);
+  }
+
+  :where([data-ok-illustration] [data-ok-tone="shadow"]) {
+    --_ok-tone: rgb(var(--ok-palette-grey-500-channel) / 0.16);
+  }
+
+  :where([data-ok-illustration] [data-ok-tone="shade"]) {
+    --_ok-tone: rgb(var(--ok-palette-common-black-channel) / 0.12);
+  }
+
+  :where([data-ok-illustration] [data-ok-tone="grey-300"]) {
+    --_ok-tone: var(--ok-palette-grey-300);
+  }
+
+  :where([data-ok-illustration] [data-ok-tone="grey-500"]) {
+    --_ok-tone: var(--ok-palette-grey-500);
+  }
+
+  :where([data-ok-illustration] [data-ok-tone="grey-600"]) {
+    --_ok-tone: var(--ok-palette-grey-600);
+  }
+
+  /* Dark details (frames, hair, cables): grey 800, lifted to grey 600 on dark surfaces. */
+  :where([data-ok-illustration] [data-ok-tone="ink"]) {
+    --_ok-tone: var(--ok-palette-grey-800);
+  }
+
+  @supports (color: light-dark(#000, #fff)) {
+    :where([data-ok-illustration] [data-ok-tone="ink"]) {
+      --_ok-tone: light-dark(var(--ok-palette-grey-800), var(--ok-palette-grey-600));
+    }
+  }
+
+  :where([data-ok-illustration] [data-ok-tone="white"]) {
+    --_ok-tone: var(--ok-palette-common-white);
+  }
+
+  :where([data-ok-illustration] [data-ok-tone="skin-light"]) {
+    --_ok-tone: var(--ok-illustration-skin-light);
+  }
+
+  :where([data-ok-illustration] [data-ok-tone="skin-medium"]) {
+    --_ok-tone: var(--ok-illustration-skin-medium);
+  }
+
+  :where([data-ok-illustration] [data-ok-tone="skin-deep"]) {
+    --_ok-tone: var(--ok-illustration-skin-deep);
+  }
+}

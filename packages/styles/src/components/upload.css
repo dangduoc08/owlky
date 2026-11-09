@@ -5,6 +5,7 @@
  *              › div[data-ok-upload-zone]
  *                  › input[type=file][data-ok-upload-input]   (covers the zone, opacity 0)
  *                  › div[data-ok-upload-placeholder] › illustration / icon, title, description
+ *                    (the illustration is the illustration set's `upload`: illustration.css)
  *                  › span[data-ok-upload-preview]?            (single file: image or file card)
  *                  › button[data-ok-icon-button][data-ok-upload-remove]? (single file)
  *              › div[data-ok-upload-helper-text]?
@@ -103,42 +104,6 @@
     width: calc(var(--ok-spacing) * 50);
     max-width: 100%;
     height: auto;
-  }
-
-  :where([data-ok-upload-illustration] [data-ok-tone="main"]) {
-    fill: var(--ok-palette-primary-main);
-  }
-
-  :where([data-ok-upload-illustration] [data-ok-tone="dark"]) {
-    fill: var(--ok-palette-primary-dark);
-  }
-
-  :where([data-ok-upload-illustration] [data-ok-tone="light"]) {
-    fill: var(--ok-palette-primary-light);
-  }
-
-  :where([data-ok-upload-illustration] [data-ok-tone="paper"]) {
-    fill: var(--ok-bg-paper);
-    stroke: rgb(var(--ok-palette-grey-500-channel) / 0.24);
-  }
-
-  :where([data-ok-upload-illustration] [data-ok-tone="line"]) {
-    fill: none;
-    stroke: rgb(var(--ok-palette-grey-500-channel) / 0.4);
-    stroke-linecap: round;
-    stroke-width: 4px;
-  }
-
-  :where([data-ok-upload-illustration] [data-ok-tone="arrow"]) {
-    fill: none;
-    stroke: var(--ok-palette-primary-darker);
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    stroke-width: 3px;
-  }
-
-  :where([data-ok-upload-illustration] [data-ok-tone="shadow"]) {
-    fill: rgb(var(--ok-palette-grey-500-channel) / 0.12);
   }
 
   :where([data-ok-upload-placeholder-text]) {

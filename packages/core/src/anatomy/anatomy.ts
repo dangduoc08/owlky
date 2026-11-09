@@ -4634,6 +4634,39 @@ export function walktourStepAttributes(options: WalktourStepAnatomyOptions = {})
   return attributes;
 }
 
+/** Palettes an illustration's brand tones can take (ADR-0040). */
+export const illustrationColors = paletteColorNames;
+export type IllustrationColor = PaletteColorName;
+
+export const illustrationOptions = defineOptions("illustration", "data-ok-illustration", {
+  color: style(
+    "data-ok-color",
+    illustrationColors,
+    "primary",
+    "Palette of the brand tones (the accent and neutral tones stay).",
+  ),
+  size: number(
+    "data-ok-size",
+    undefined,
+    "Width: a number in px, or a CSS length. The height follows the 4:3 picture. Default 480px, never wider than the container.",
+    { min: 0, units: ["px", "rem", "em"] },
+  ),
+});
+
+export interface IllustrationAnatomyOptions {
+  color?: IllustrationColor | undefined;
+  size?: number | string | undefined;
+}
+
+/** Root attributes; the root attribute holds the illustration's name. */
+export const illustrationAttributes = (
+  name: string,
+  options: IllustrationAnatomyOptions = {},
+): DataAttributes => ({
+  ...optionAttributes(illustrationOptions, { ...options }),
+  "data-ok-illustration": name,
+});
+
 export const optionSchemas = {
   accordion: accordionOptions,
   alert: alertOptions,
@@ -4725,6 +4758,7 @@ export const optionSchemas = {
   "map-attribution": mapAttributionOptions,
   lightbox: lightboxOptions,
   upload: uploadOptions,
+  illustration: illustrationOptions,
   walktour: walktourOptions,
   "walktour-step": walktourStepOptions,
 } as const;

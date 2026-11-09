@@ -118,6 +118,12 @@ test("no CSP or Trusted Types violations", async ({ page }) => {
   ).toBe("70%");
   // Markdown (owlky-markdown.js, unified) builds DOM with DOM methods; alignment goes through
   // CSSOM; raw HTML is sanitized and unsafe URLs are removed.
+  // Illustrations (owlky-illustrations.js) draw with createElementNS and size through CSSOM.
+  const illustration = page.locator("#csp-illustration");
+  await expect(illustration).toHaveAttribute("viewBox", "0 0 480 360");
+  await expect(illustration).toHaveAttribute("aria-hidden", "true");
+  await expect(illustration.locator("[data-ok-tone]").first()).toBeAttached();
+  await expect(illustration).toHaveCSS("width", "240px");
   const markdown = page.locator("#csp-markdown");
   await expect(markdown.getByRole("heading", { name: "Notes" })).toBeVisible();
   await expect(markdown.getByRole("cell", { name: "3" })).toHaveCSS("text-align", "right");
