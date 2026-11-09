@@ -1,269 +1,57 @@
+import { GuideSections as Sections } from "@owlky/docs-content/guide";
+import { type GuideHost, GuideHostProvider } from "@owlky/docs-content/guide/host";
+import type { GuideSection } from "@owlky/docs-content/guide/text";
 import { Description, Markdown, Source, Subtitle, Title } from "@storybook/addon-docs/blocks";
-import {
-  type KeyboardEvent,
-  type ReactNode,
-  useEffect,
-  useId,
-  useRef,
-  useState,
-  useSyncExternalStore,
-} from "react";
-import { writeClipboard } from "./clipboard.js";
+import type { ReactNode } from "react";
 import { frameworkGlobal } from "./framework-global.js";
 
 /*
- * Usage guides for the Introduction and Foundations docs pages: each section is prose (Markdown,
- * no GFM tables), an optional live preview and one code block with HTML | React tabs.
- * Writing style: AGENTS.md → "Writing documentation". Every `--ok-*` variable and Tailwind token
- * class in the code is checked against the built CSS (e2e/tests/foundations.spec.ts).
+ * Storybook's host for the usage guides (ADR-0040): the guide UI lives in `@owlky/docs-content`;
+ * Storybook gives it its docs blocks (Markdown, the Source block) and the toolbar's Framework
+ * choice. Pages not yet migrated to docs-content import the helpers from here.
  */
 
-export interface GuideSection {
-  id: string;
-  title: string;
-  /** Markdown (no GFM tables). */
-  body: string;
-  html?: string;
-  react?: string;
-}
+export { Caption, Dot, Preview } from "@owlky/docs-content/guide";
+export {
+  CDN,
+  capitalize,
+  codeList,
+  type GuideSection,
+  type Impl,
+} from "@owlky/docs-content/guide/text";
 
-export type Impl = "html" | "react";
-const IMPLS: { id: Impl; label: string }[] = [
-  { id: "html", label: "HTML" },
-  { id: "react", label: "React" },
-];
-
-const COPY_ICONS = {
-  idle: [
-    "M11 9h9a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-9a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2z",
-    "M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1",
-  ],
-  copied: ["M20 6 9 17l-5-5"],
-  failed: ["M18 6 6 18", "M6 6l12 12"],
-} as const;
-
-const COPY_LABELS = {
-  idle: "Copy code",
-  copied: "Copied",
-  failed: "Couldn't copy: select the code and copy it",
-} as const;
-
-/** Icon button over the code block; turns into a green check once the code is on the clipboard. */
-function CopyButton({ code }: { code: string }) {
-  const [state, setState] = useState<keyof typeof COPY_ICONS>("idle");
-  const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
-  useEffect(() => () => clearTimeout(timer.current), []);
-  const copy = async () => {
-    const copied = await writeClipboard(code.trim());
-    setState(copied ? "copied" : "failed");
-    clearTimeout(timer.current);
-    timer.current = setTimeout(() => setState("idle"), 2000);
-  };
-  return (
-    <>
-      <button
-        type="button"
-        onClick={copy}
-        aria-label={COPY_LABELS.idle}
-        title={COPY_LABELS[state]}
-        data-docs-copy={state}
-      >
-        <svg
-          aria-hidden="true"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          {COPY_ICONS[state].map((d) => (
-            <path key={d} d={d} />
-          ))}
-        </svg>
-      </button>
-      <span role="status" className="sr-only">
-        {state === "idle" ? "" : COPY_LABELS[state]}
-      </span>
-    </>
-  );
-}
-
-/** HTML | React tabs (WAI-ARIA tabs, arrow keys); one choice drives every example on the page. */
-function CodeTabs({
-  section,
-  impl,
-  onImpl,
-}: {
-  section: GuideSection;
-  impl: Impl;
-  onImpl: (impl: Impl) => void;
-}) {
-  const id = useId();
-  const tabs = useRef<(HTMLButtonElement | null)[]>([]);
-  const onKeyDown = (event: KeyboardEvent) => {
-    if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
-    const next = impl === "html" ? "react" : "html";
-    onImpl(next);
-    tabs.current[IMPLS.findIndex((i) => i.id === next)]?.focus();
-  };
-  return (
-    <div data-docs-code="">
-      <div
-        role="tablist"
-        aria-label={`${section.title} code`}
-        className="flex gap-1 border-b border-divider"
-      >
-        {IMPLS.map((tab, index) => (
-          <button
-            key={tab.id}
-            ref={(el) => {
-              tabs.current[index] = el;
-            }}
-            type="button"
-            role="tab"
-            id={`${id}-${tab.id}`}
-            aria-selected={impl === tab.id}
-            aria-controls={`${id}-${tab.id}-panel`}
-            tabIndex={impl === tab.id ? 0 : -1}
-            onClick={() => onImpl(tab.id)}
-            onKeyDown={onKeyDown}
-            className={`-mb-px cursor-pointer border-0 border-b-2 border-solid bg-transparent px-3 py-2 font-semibold text-[0.8125rem] ${
-              impl === tab.id
-                ? "border-text-primary text-text-primary"
-                : "border-transparent text-text-secondary hover:text-text-primary"
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
-      {IMPLS.map((tab) => (
-        <div
-          key={tab.id}
-          role="tabpanel"
-          id={`${id}-${tab.id}-panel`}
-          aria-labelledby={`${id}-${tab.id}`}
-          hidden={impl !== tab.id}
-        >
-          {/* Storybook's Source block for highlighting; its own Copy bar is hidden (preview.css). */}
-          <Source
-            code={(tab.id === "html" ? section.html : section.react) ?? ""}
-            language={tab.id === "html" ? "html" : "tsx"}
-            dark
-          />
-          <CopyButton code={(tab.id === "html" ? section.html : section.react) ?? ""} />
-        </div>
-      ))}
-    </div>
-  );
-}
-
-/**
- * Live preview frame; `sb-unstyled` keeps Storybook's docs typography out of the examples. A
- * column never wraps: in a multi-line flex container, rows would grow to their longest content.
- */
-export const Preview = ({
-  children,
-  className = "",
-}: {
-  children: ReactNode;
-  className?: string;
-}) => (
-  <div
-    className={`sb-unstyled mb-4 flex flex-wrap items-center gap-4 [&.flex-col]:flex-nowrap rounded-xl border border-dashed border-divider bg-paper p-6 ${className}`}
-  >
-    {children}
-  </div>
-);
-
-/** Decorative color dot. */
-export const Dot = ({
-  color,
-  size = 28,
-  label,
-}: {
-  color: string;
-  size?: number;
-  label?: string;
-}) => (
-  <span
-    title={label}
-    aria-hidden="true"
-    className="inline-block shrink-0 rounded-full"
-    style={{ width: size, height: size, backgroundColor: color }}
-  />
-);
-
-/** Small secondary label used inside previews. */
-export const Caption = ({ children }: { children: ReactNode }) => (
-  <span className="text-[0.8125rem] text-text-secondary">{children}</span>
-);
-
-export const capitalize = (value: string) => value[0]?.toUpperCase() + value.slice(1);
-
-/** Inline code list for Markdown: `a`, `b` and `c`. */
-export const codeList = (values: readonly (string | number)[]) => {
-  const items = values.map((v) => `\`${v}\``);
-  return items.length < 2 ? items.join("") : `${items.slice(0, -1).join(", ")} and ${items.at(-1)}`;
+const storybookHost: GuideHost = {
+  Prose: ({ section }) => <Markdown>{`## ${section.title}\n\n${section.body}`}</Markdown>,
+  // Storybook's Source block for highlighting; its own Copy bar is hidden (preview.css).
+  CodeBlock: ({ code, language }) => <Source code={code} language={language} dark />,
+  PreviewFrame: ({ className, children }) => <div className={className}>{children}</div>,
+  framework: frameworkGlobal,
+  sectionClassName: "sb-docs-guide mb-12",
+  // Keeps Storybook's docs typography out of previews and tables.
+  unstyledClassName: "sb-unstyled",
 };
 
-export const CDN = "https://cdn.jsdelivr.net/npm/@owlky/html@0/dist";
+type GuideProps = {
+  sections: GuideSection[];
+  previews?: Record<string, () => ReactNode>;
+};
 
-function Section({
-  section,
-  preview: Live,
-  impl,
-  onImpl,
-}: {
-  section: GuideSection;
-  preview: (() => ReactNode) | undefined;
-  impl: Impl;
-  onImpl: (impl: Impl) => void;
-}) {
-  return (
-    <div className="sb-docs-guide mb-12">
-      <Markdown>{`## ${section.title}\n\n${section.body}`}</Markdown>
-      {Live ? <Live /> : null}
-      {section.html !== undefined || section.react !== undefined ? (
-        <CodeTabs section={section} impl={impl} onImpl={onImpl} />
-      ) : null}
-    </div>
-  );
+/** Provides Storybook's blocks to the guide UI (docs pages rendered from docs-content). */
+export function StorybookGuide({ children }: { children: ReactNode }) {
+  return <GuideHostProvider host={storybookHost}>{children}</GuideHostProvider>;
 }
 
 /** The sections of a guide, sharing one HTML | React choice. */
-export function GuideSections({
-  sections,
-  previews = {},
-}: {
-  sections: GuideSection[];
-  previews?: Record<string, () => ReactNode>;
-}) {
-  // Starts from (and follows) the toolbar's Framework menu; a tab click changes this page only.
-  const framework = useSyncExternalStore(frameworkGlobal.subscribe, frameworkGlobal.get);
-  const [impl, setImpl] = useState<Impl>(framework);
-  useEffect(() => setImpl(framework), [framework]);
+export function GuideSections(props: GuideProps) {
   return (
-    <>
-      {sections.map((section) => (
-        <Section
-          key={section.id}
-          section={section}
-          preview={previews[section.id]}
-          impl={impl}
-          onImpl={setImpl}
-        />
-      ))}
-    </>
+    <StorybookGuide>
+      <Sections {...props} />
+    </StorybookGuide>
   );
 }
 
-/** A foundation docs page: title, description and the guide. The stories stay in the sidebar. */
-export function GuideDocs(props: {
-  sections: GuideSection[];
-  previews?: Record<string, () => ReactNode>;
-}) {
+/** A docs page: title, description and the guide. The stories stay in the sidebar. */
+export function GuideDocs(props: GuideProps) {
   return (
     <>
       <Title />

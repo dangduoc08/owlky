@@ -228,11 +228,33 @@ importers:
         specifier: 5.1.0
         version: 5.1.0(@types/node@22.20.5)(@vitest/browser-playwright@5.1.0)(@vitest/coverage-v8@5.1.0)(@vitest/ui@5.1.0)(vite@8.3.5(@types/node@22.20.5)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))
 
+  apps/docs-content:
+    dependencies:
+      '@owlky/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@owlky/react':
+        specifier: workspace:*
+        version: link:../../packages/react
+      '@owlky/tokens':
+        specifier: workspace:*
+        version: link:../../packages/tokens
+    devDependencies:
+      '@types/react':
+        specifier: 19.3.0
+        version: 19.3.0
+      react:
+        specifier: 19.3.1
+        version: 19.3.1
+
   apps/storybook:
     dependencies:
       '@owlky/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@owlky/docs-content':
+        specifier: workspace:*
+        version: link:../docs-content
       '@owlky/html':
         specifier: workspace:*
         version: link:../../packages/html

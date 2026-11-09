@@ -1,5 +1,6 @@
-// Checks the code examples of every docs page (`*-docs.tsx` sections: `html` and `react`), so
-// what a reader copies works as written:
+// Checks the code examples of every docs page (`*-docs.tsx` sections: `html` and `react`, in
+// Storybook and in `apps/docs-content`, ADR-0040, plus the website's own pages), so what a reader
+// copies works as written:
 //   - no placeholders (`…`, or `...` that isn't a spread);
 //   - HTML: every `data-ok-*` attribute and `ok:*:*` event exists in the packages;
 //   - React: each example is a complete module (its imports included) that typechecks against
@@ -8,7 +9,7 @@
 // Run after `pnpm build` (types resolve from `dist`):
 //   node apps/storybook/scripts/check-docs-code.mjs [page …]
 import { execFileSync } from "node:child_process";
-import { mkdirSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createServer } from "vite";
@@ -18,15 +19,25 @@ const app = resolve(here, "..");
 const root = resolve(app, "../..");
 const only = process.argv.slice(2);
 
-const pages = ["components", "foundations"].flatMap((group) =>
-  readdirSync(join(app, "src", group), { withFileTypes: true })
-    .filter((entry) => entry.isDirectory())
-    .flatMap((entry) =>
-      readdirSync(join(app, "src", group, entry.name))
-        .filter((file) => file.endsWith("-docs.tsx"))
-        .map((file) => join(app, "src", group, entry.name, file)),
-    ),
-);
+const docsPages = (base, pattern) =>
+  ["components", "foundations"].flatMap((group) =>
+    readdirSync(join(base, "src", group), { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .flatMap((entry) =>
+        readdirSync(join(base, "src", group, entry.name))
+          .filter((file) => pattern.test(file))
+          .map((file) => join(base, "src", group, entry.name, file)),
+      ),
+  );
+const website = join(root, "apps/website/src/content");
+const pages = [
+  ...docsPages(app, /-docs\.tsx$/),
+  // Migrated guides: sections live next to their previews (`*-docs-examples.ts`).
+  ...docsPages(join(root, "apps/docs-content"), /-docs(-examples)?\.tsx?$/),
+  ...(existsSync(website) ? readdirSync(website) : [])
+    .filter((file) => /\.ts$/.test(file))
+    .map((file) => join(website, file)),
+];
 
 // Docs pages only build section arrays at module level: Storybook's blocks are never called.
 const stub = "\0docs-stub";
@@ -54,14 +65,24 @@ const server = await createServer({
 });
 
 const sections = [];
+const seen = new Set(); // section arrays re-exported by a page's previews module
 try {
   for (const file of pages) {
-    const page = basename(file, ".tsx").replace(/-docs$/, "");
+    const page = basename(file).replace(/(-docs)?(-examples)?\.tsx?$/, "");
     if (only.length && !only.includes(page)) continue;
     const mod = await server.ssrLoadModule(file);
     for (const value of Object.values(mod)) {
-      if (!Array.isArray(value) || typeof value[0]?.body !== "string") continue;
-      for (const section of value) sections.push({ page, ...section });
+      if (!Array.isArray(value) || typeof value[0]?.body !== "string" || seen.has(value)) continue;
+      seen.add(value);
+      for (const section of value) {
+        // Website-only pages carry code blocks (`code`) instead of HTML | React tabs.
+        if (!section.code) sections.push({ page, ...section });
+        for (const [index, sample] of (section.code ?? []).entries()) {
+          const impl = { html: "html", tsx: "react" }[sample.language];
+          if (impl)
+            sections.push({ page, ...section, id: `${section.id}-${index}`, [impl]: sample.code });
+        }
+      }
     }
   }
 } finally {

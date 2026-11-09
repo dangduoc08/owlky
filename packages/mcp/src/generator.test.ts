@@ -116,11 +116,12 @@ describe("manifest generator", () => {
   });
 
   it("has every guide that a docs page exports", () => {
-    const pages = (
-      readdirSync(join(root, "apps/storybook/src"), { recursive: true }) as string[]
-    ).filter((file) =>
-      /export const \w+Sections: GuideSection\[\]/.test(
-        /\.tsx?$/.test(file) ? readFileSync(join(root, "apps/storybook/src", file), "utf8") : "",
+    // Guides migrated to the website's docs content (ADR-0040) count too.
+    const pages = ["apps/storybook/src", "apps/docs-content/src"].flatMap((dir) =>
+      (readdirSync(join(root, dir), { recursive: true }) as string[]).filter((file) =>
+        /export const \w+Sections: GuideSection\[\]/.test(
+          /\.tsx?$/.test(file) ? readFileSync(join(root, dir, file), "utf8") : "",
+        ),
       ),
     );
     expect(manifest.guides).toHaveLength(pages.length);

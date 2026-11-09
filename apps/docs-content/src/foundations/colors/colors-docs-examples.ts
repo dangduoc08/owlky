@@ -1,5 +1,5 @@
 import { componentColorNames, greyShades, paletteColorNames } from "@owlky/tokens";
-import { CDN, codeList, type GuideSection } from "../../helpers/guide.js";
+import { CDN, codeList, type GuideSection } from "../../guide/text.js";
 
 /*
  * Content of the Colors docs page: prose (Markdown) and HTML / React examples. Every `--ok-*`
@@ -11,17 +11,24 @@ const list = codeList;
 
 export const SHADES = ["lighter", "light", "main", "dark", "darker", "contrast-text"] as const;
 
+const PALETTE_BODY = `Owlky has six palette colors: ${list(paletteColorNames)}. Each color comes in five shades, from \`lighter\` to \`darker\`. The \`main\` shade is the color itself, and \`contrast-text\` is the text color to use on top of it.
+
+Each color also has a \`text\` tone. Use it for colored text on the page background: it stays readable in both light and dark themes.
+
+For neutral colors, use the \`grey\` scale (${list(greyShades)}), \`common-black\` and \`common-white\`.`;
+
 export const colorsDocsSections: GuideSection[] = [
   {
     id: "palette",
     title: "Palette",
-    body: `Owlky has six palette colors: ${list(paletteColorNames)}. Each color comes in five shades, from \`lighter\` to \`darker\`. The \`main\` shade is the color itself, and \`contrast-text\` is the text color to use on top of it.
-
-Each color also has a \`text\` tone. Use it for colored text on the page background: it stays readable in both light and dark themes.
-
-For neutral colors, use the \`grey\` scale (${list(greyShades)}), \`common-black\` and \`common-white\`.
+    body: `${PALETTE_BODY}
 
 The stories in the sidebar show each palette in detail. Select a swatch to copy its hex value. The \`primary\` color follows the **Preset** menu in the toolbar.`,
+    bodyByHost: {
+      website: `${PALETTE_BODY}
+
+The \`primary\` color follows the **Preset** menu in the header.`,
+    },
   },
   {
     id: "tokens",
