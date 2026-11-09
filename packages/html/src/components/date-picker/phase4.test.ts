@@ -265,6 +265,29 @@ describe("customization", () => {
       analog.querySelector("[data-ok-digital-clock], [data-ok-multi-section-digital-clock]"),
     ).toBeNull();
   });
+
+  it("sets up field-only pickers (every view renderer null), which never open", () => {
+    const error = vi.spyOn(console, "error");
+    // A range picker without views renders no layout either (React's `fieldOnly`).
+    const host = mount(snippet("customization-view-renderers") + snippet("range-input"));
+    const range = host.querySelector("[data-ok-date-range-picker]") as HTMLElement;
+    for (const part of range.querySelectorAll(
+      "[data-ok-picker-layout], [data-ok-date-picker-open], [data-ok-date-picker-paper], [data-ok-date-picker-dialog]",
+    ))
+      part.remove();
+    start();
+    expect(error).not.toHaveBeenCalled();
+    const picker = get<DatePickerInstance>(pickerOf("custom-field-only"), "date-picker");
+    const events: string[] = [];
+    for (const type of ["ok:date-picker:open", "ok:date-range-picker:open"])
+      host.addEventListener(type, (event) => events.push(event.type));
+    picker.open();
+    expect(picker.value).toBe("2025-05-25");
+    const ranged = get<DateRangePickerInstance>(range, "date-range-picker");
+    ranged.open();
+    expect(ranged.value).toBe("2025-05-20/2025-05-25");
+    expect(events).toEqual([]);
+  });
 });
 
 describe("date adapters", () => {

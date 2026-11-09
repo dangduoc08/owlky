@@ -1,5 +1,6 @@
 import axe from "axe-core";
 import { expect } from "vitest";
+import { userEvent } from "vitest/browser";
 
 /** Test helpers (not published). */
 export function mount(html: string, parent: ParentNode = document.body): HTMLElement {
@@ -57,23 +58,54 @@ const CONTRAST_EXEMPT = [
 ];
 const TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 
+export interface AxeScanOptions {
+  /**
+   * `"park"` (default) first moves the real pointer onto a spot of its own: the page's mouse
+   * outlives tests and test files, so a pointer left where an earlier test clicked hovers whatever
+   * is mounted there next (Firefox only after a later layout), and hover colors (soft buttons)
+   * measure below the resting contrast. `"keep"` scans a hover state on purpose.
+   */
+  readonly pointer?: "park" | "keep";
+}
+
+/** Moves the real pointer onto a 1px element above the page; remove it after the scan. */
+export async function parkPointer(): Promise<HTMLElement> {
+  const parking = document.createElement("div");
+  parking.setAttribute("aria-hidden", "true");
+  parking.style.cssText = "position:fixed;right:0;bottom:0;width:1px;height:1px;z-index:2147483647";
+  document.body.append(parking);
+  // A modal in the top layer covers it: the pointer still leaves the parts axe measures.
+  await userEvent.hover(parking, { force: true });
+  return parking;
+}
+
 /** Asserts that axe finds no WCAG 2.2 AA violations inside `host`. */
-export async function expectNoAxeViolations(host: Element): Promise<void> {
-  // Mid-transition colors lower measured contrast (slow CI runners): scan the settled UI.
-  // Infinite animations (spinners) never finish, so only finite ones are awaited.
-  const finite = document
-    .getAnimations()
-    .filter((a) => a.effect?.getComputedTiming().endTime !== Number.POSITIVE_INFINITY);
-  await Promise.all(finite.map((animation) => animation.finished.catch(() => {})));
-  const all = await axe.run(host, {
-    runOnly: { type: "tag", values: TAGS },
-    rules: { "color-contrast": { enabled: false } },
-  });
-  const contrast = await axe.run(
-    { include: [host], exclude: CONTRAST_EXEMPT.map((selector) => [selector]) },
-    { runOnly: { type: "rule", values: ["color-contrast"] } },
-  );
-  const violations = [...all.violations, ...contrast.violations];
+export async function expectNoAxeViolations(
+  host: Element,
+  { pointer = "park" }: AxeScanOptions = {},
+): Promise<void> {
+  const parking = pointer === "park" ? await parkPointer() : null;
+  let violations: axe.Result[];
+  try {
+    // Mid-transition colors lower measured contrast (slow CI runners): scan the settled UI, once
+    // the pointer left (un-hover transitions start then). Infinite animations (spinners) never
+    // finish, so only finite ones are awaited.
+    const finite = document
+      .getAnimations()
+      .filter((a) => a.effect?.getComputedTiming().endTime !== Number.POSITIVE_INFINITY);
+    await Promise.all(finite.map((animation) => animation.finished.catch(() => {})));
+    const all = await axe.run(host, {
+      runOnly: { type: "tag", values: TAGS },
+      rules: { "color-contrast": { enabled: false } },
+    });
+    const contrast = await axe.run(
+      { include: [host], exclude: CONTRAST_EXEMPT.map((selector) => [selector]) },
+      { runOnly: { type: "rule", values: ["color-contrast"] } },
+    );
+    violations = [...all.violations, ...contrast.violations];
+  } finally {
+    parking?.remove();
+  }
   expect(violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target).join(", ")}`)).toEqual([]);
 }
 /** Every snippet is CSP-safe: no inline handlers, inline styles, scripts or javascript: URLs. */

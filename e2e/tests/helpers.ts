@@ -39,6 +39,31 @@ export async function openStory(
 }
 
 /**
+ * Repaints the story from scratch before a pixel comparison. Pixels depend on raster history, not
+ * only on the DOM: a picture decoded after the first paint is drawn into its own rectangle later,
+ * and the anti-aliased edges that overlap it (a selected carousel thumbnail's rounded ring) come
+ * out a few levels different from a page painted in one go. Which happens is a race per page load,
+ * so identical markup gave different pixels about once in 30 loads under load. Hiding the story
+ * for a frame (after every loaded picture is decoded) makes the next paint a full one. Skipped
+ * when the focus is inside the story: hiding it would blur the focused element.
+ */
+export async function repaintFromScratch(page: Page) {
+  await page.evaluate(async () => {
+    const frames = () =>
+      new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    const root = document.getElementById("storybook-root");
+    if (!root || root.contains(document.activeElement)) return;
+    // Lazy pictures that never loaded (off screen) would never decode: only loaded ones.
+    const loaded = [...document.images].filter((image) => image.complete && image.naturalWidth);
+    await Promise.all(loaded.map((image) => image.decode().catch(() => {})));
+    root.style.visibility = "hidden";
+    await frames();
+    root.style.removeProperty("visibility");
+    await frames();
+  });
+}
+
+/**
  * Map stories (ADR-0025) load OpenFreeMap styles: tests serve an offline style instead (Natural
  * Earth land, public domain; no tiles, no glyphs), so they never depend on the network.
  */

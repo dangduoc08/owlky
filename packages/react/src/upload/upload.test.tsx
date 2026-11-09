@@ -117,7 +117,7 @@ describe("Upload", () => {
     );
     // Hovered, the zone keeps its text contrast.
     await userEvent.hover(document.querySelector("[data-ok-upload-zone]") as HTMLElement);
-    await expectNoAxeViolations();
+    await expectNoAxeViolations(document.body, { pointer: "keep" });
   });
 
   it("removes files: the focus moves to the next remove button, then to the input", () => {

@@ -124,25 +124,26 @@ export const dateRangePicker = defineComponent<DateRangePickerInstance>({
     const groupEl = element.querySelector<HTMLElement>(
       ":scope > [data-ok-multi-input-range-field]",
     );
-    const layout = element.querySelector<HTMLElement>("[data-ok-picker-layout]") as HTMLElement;
-    const content = layout.querySelector<HTMLElement>(":scope > [data-ok-picker-content]");
+    // No layout when every view renderer is `null` (field only): the picker never opens.
+    const layout = element.querySelector<HTMLElement>("[data-ok-picker-layout]");
+    const content = layout?.querySelector<HTMLElement>(":scope > [data-ok-picker-content]");
     const calendarEl = content?.querySelector<HTMLElement>(
       ":scope > [data-ok-date-range-calendar]",
     );
     const clockEl = content?.querySelector<HTMLElement>(":scope > [data-ok-time-clock]") ?? null;
     const deskEl = content?.querySelector<HTMLElement>(`:scope > :is(${TIME_VIEWS})`) ?? null;
-    const tabsEl = layout.querySelector<HTMLElement>(":scope > [data-ok-picker-range-tabs]");
+    const tabsEl = layout?.querySelector<HTMLElement>(":scope > [data-ok-picker-range-tabs]");
     const paper = element.querySelector<HTMLElement>(":scope > [data-ok-date-picker-paper]");
     const dialogEl = element.querySelector<HTMLElement>(":scope > [data-ok-date-picker-dialog]");
     const dialogPaper = dialogEl?.querySelector<HTMLElement>("[data-ok-dialog-paper]") ?? null;
     const openButtons = [
       ...element.querySelectorAll<HTMLButtonElement>("[data-ok-date-picker-open]"),
     ]
-      .filter((button) => !layout.contains(button))
+      .filter((button) => !layout?.contains(button))
       .slice(0, 2);
-    const toolbar = layout.querySelector<HTMLElement>(":scope > [data-ok-picker-toolbar]");
-    const actionsBar = layout.querySelector<HTMLElement>(":scope > [data-ok-picker-actions]");
-    const shortcutsList = layout.querySelector<HTMLElement>(":scope > [data-ok-picker-shortcuts]");
+    const toolbar = layout?.querySelector<HTMLElement>(":scope > [data-ok-picker-toolbar]");
+    const actionsBar = layout?.querySelector<HTMLElement>(":scope > [data-ok-picker-actions]");
+    const shortcutsList = layout?.querySelector<HTMLElement>(":scope > [data-ok-picker-shortcuts]");
     const locale = readLocale(element);
     let overrides: Partial<PickerLocaleText> | undefined;
     let text = readLocaleText(element);
@@ -338,7 +339,7 @@ export const dateRangePicker = defineComponent<DateRangePickerInstance>({
       if (mode === "desktop") popover()?.close();
       else dialog()?.close();
       const active = element.ownerDocument.activeElement;
-      if (active === null || active === element.ownerDocument.body || layout.contains(active))
+      if (active === null || active === element.ownerDocument.body || layout?.contains(active))
         openButtons[openedFrom]?.focus();
       render();
       emit("close", { reason });
@@ -359,7 +360,7 @@ export const dateRangePicker = defineComponent<DateRangePickerInstance>({
     };
     const openPicker = (reason: PickerOpenReason, at: RangePosition) => {
       // Disabled and read-only pickers have disabled open buttons.
-      if (open || isStatic || isDisabled()) return;
+      if (open || !layout || isStatic || isDisabled()) return;
       mode = resolvePickerMode(
         variant,
         element.getAttribute("data-ok-desktop-mode-media-query") ?? undefined,
@@ -558,12 +559,12 @@ export const dateRangePicker = defineComponent<DateRangePickerInstance>({
       },
       { signal },
     );
-    layout.addEventListener(
+    layout?.addEventListener(
       "click",
       (event) => {
         const target = event.target as Element;
         const action = target.closest<HTMLButtonElement>("[data-ok-picker-action]");
-        if (action && layout.contains(action)) {
+        if (action && layout?.contains(action)) {
           runAction(action.getAttribute("data-ok-picker-action") as PickerAction);
           return;
         }
@@ -689,7 +690,7 @@ export const dateRangePicker = defineComponent<DateRangePickerInstance>({
         calendar()?.setLocaleText(next);
         clock()?.setLocaleText(next);
         desk()?.setLocaleText(next);
-        relabelActions(layout, text);
+        if (layout) relabelActions(layout, text);
         render();
       },
       destroy() {

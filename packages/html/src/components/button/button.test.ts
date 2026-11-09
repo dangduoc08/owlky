@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
+import { userEvent } from "vitest/browser";
 import { expectNoAxeViolations, mount, resetPage } from "../../test-utils.js";
 
 // Browser-mode test: snippets are loaded with Vite glob imports (no Node fs).
@@ -54,6 +55,15 @@ describe("button snippets", () => {
 
   it.each(entries)("%s: no axe violations", async (_, html) => {
     await expectNoAxeViolations(mount(html));
+  });
+
+  it("scans the resting colors even when an earlier test left the pointer on a button", async () => {
+    const host = mount(snippets["./examples/soft-colors.html"] as string);
+    const primary = host.querySelector('[data-ok-color="primary"]') as HTMLElement;
+    await userEvent.hover(primary);
+    expect(primary.matches(":hover")).toBe(true);
+    await expectNoAxeViolations(host);
+    expect(primary.matches(":hover")).toBe(false);
   });
 });
 

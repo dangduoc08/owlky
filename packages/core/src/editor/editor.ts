@@ -228,73 +228,85 @@ export function createEditorController(
     getState: () => readState(editor),
     run(action, value = {}) {
       if (destroyed || !editor.isEditable) return false;
-      const chain = editor.chain().focus();
+      // Built per action, only once it runs: chained commands execute at once, and `focus()`
+      // schedules a frame that moves focus into the editor (a refused image or link would
+      // otherwise pull focus out of the form the user is still typing in).
+      const chain = () => editor.chain().focus();
       switch (action) {
         case "paragraph":
-          return chain.setParagraph().run();
+          return chain().setParagraph().run();
         case "heading": {
           const level = headingLevels.find((each) => each === value.level);
-          return level !== undefined && chain.setHeading({ level: level as HeadingLevel }).run();
+          return (
+            level !== undefined &&
+            chain()
+              .setHeading({ level: level as HeadingLevel })
+              .run()
+          );
         }
         case "bold":
-          return chain.toggleBold().run();
+          return chain().toggleBold().run();
         case "italic":
-          return chain.toggleItalic().run();
+          return chain().toggleItalic().run();
         case "underline":
-          return chain.toggleUnderline().run();
+          return chain().toggleUnderline().run();
         case "strike":
-          return chain.toggleStrike().run();
+          return chain().toggleStrike().run();
         case "bulletList":
-          return chain.toggleBulletList().run();
+          return chain().toggleBulletList().run();
         case "orderedList":
-          return chain.toggleOrderedList().run();
+          return chain().toggleOrderedList().run();
         case "alignLeft":
         case "alignCenter":
         case "alignRight":
         case "alignJustify":
           return editor.isActive({ textAlign: ALIGN[action] })
-            ? chain.unsetTextAlign().run()
-            : chain.setTextAlign(ALIGN[action]).run();
+            ? chain().unsetTextAlign().run()
+            : chain().setTextAlign(ALIGN[action]).run();
         case "code":
-          return chain.toggleCode().run();
+          return chain().toggleCode().run();
         case "codeBlock":
-          return chain.toggleCodeBlock().run();
+          return chain().toggleCodeBlock().run();
         case "blockquote":
-          return chain.toggleBlockquote().run();
+          return chain().toggleBlockquote().run();
         case "horizontalRule":
-          return chain.setHorizontalRule().run();
+          return chain().setHorizontalRule().run();
         case "link": {
           const href = safeEditorUrl(value.href ?? "");
           if (href === null) return false;
           if (editor.state.selection.empty && !editor.isActive("link"))
-            return chain
+            return chain()
               .insertContent({
                 type: "text",
                 text: href,
                 marks: [{ type: "link", attrs: { href } }],
               })
               .run();
-          return chain.extendMarkRange("link").setLink({ href }).run();
+          return chain().extendMarkRange("link").setLink({ href }).run();
         }
         case "unlink":
-          return chain.extendMarkRange("link").unsetLink().run();
+          return chain().extendMarkRange("link").unsetLink().run();
         case "image": {
           const src = safeEditorUrl(value.src ?? "", "image");
           if (src === null) return false;
-          return chain.setImage({ src, alt: (value.alt ?? "").trim() }).run();
+          return chain()
+            .setImage({ src, alt: (value.alt ?? "").trim() })
+            .run();
         }
         case "hardBreak":
-          return chain.setHardBreak().run();
+          return chain().setHardBreak().run();
         case "clearFormat":
-          return chain.unsetAllMarks().clearNodes().run();
+          return chain().unsetAllMarks().clearNodes().run();
         case "undo":
-          return chain.undo().run();
+          return chain().undo().run();
         case "redo":
-          return chain.redo().run();
+          return chain().redo().run();
         case "textTransform": {
-          if (value.textTransform === null) return chain.unsetMark("textTransform").run();
+          if (value.textTransform === null) return chain().unsetMark("textTransform").run();
           const textTransform = readTextTransform(value.textTransform);
-          return textTransform !== null && chain.setMark("textTransform", { textTransform }).run();
+          return (
+            textTransform !== null && chain().setMark("textTransform", { textTransform }).run()
+          );
         }
         default:
           return false;
