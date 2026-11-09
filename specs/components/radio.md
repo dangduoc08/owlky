@@ -70,6 +70,22 @@ reference (ADR-0014).
 ## Events / API
 HTML: native `change`. React: `RadioGroup` `onChange(value)`; standalone `Radio` `onChange(checked)`.
 
+## Upstream API mapping
+Upstream: MUI `Radio`, `RadioGroup`, mui.com/material-ui/api/radio/ and /radio-group/.
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| Radio `checked`, `disabled`, `required`, `id`, `name`, `value` | native props on the input | kept | in a group: `name` / `checked` from the group |
+| Radio `color`, `size` | same | kept | `color` + `default` |
+| Radio `icon`, `checkedIcon` | same | kept | React only |
+| Radio `onChange(event, checked)` | `onChange(checked)` | renamed | standalone radios |
+| Radio `slotProps.input` (`inputProps`, `inputRef`) | `ref` and rest props → the input | renamed | |
+| RadioGroup `children`, `name`, `value`, `defaultValue` | same | kept | `name` default `useId()` |
+| RadioGroup `onChange(event, value)` | `onChange(value)` | renamed | |
+| RadioGroup `row` (FormGroup) | `row` | kept | |
+| `disableRipple` | — | not applicable | no ripple |
+| `sx`, `classes`, `slots`, `slotProps` | — | not applicable | ADR-0015 |
+
 ## Parity notes
 None. The Colors story wraps the group in a `fieldset` FormControl with a `legend` FormLabel
 (specs/components/form-control.md); the group's `aria-labelledby` points at the legend.

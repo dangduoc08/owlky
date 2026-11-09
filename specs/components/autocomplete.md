@@ -57,13 +57,7 @@ Other props: `options` (`(string | { value, label, disabled? })[]`), `value` / `
 TextField props `label`, `placeholder`, `helperText`, `error`, `variant`, `size`, `disabled`,
 `id`, `name`.
 
-API mapping (MUI): kept the props above, `multiple`, `freeSolo`, `disableCloseOnSelect`,
-`disableClearable`, `openOnFocus`, `autoHighlight`, `limitTags`. Renamed: `renderInput` → the
-TextField props (the field is built in); `getOptionLabel` / `isOptionEqualToValue` → options as
-`{ value, label }` (values are strings). Deferred: `groupBy`, `loading` / `loadingText`,
-`autoSelect`, `blurOnSelect`, `clearOnEscape`, `includeInputInList`, `selectOnFocus`,
-`handleHomeEndKeys` (follows MUI's default: on unless free solo), virtualization, `ListboxComponent`.
-Not applicable: `slots`, `slotProps`, `PaperComponent`, `PopperComponent`, `sx`.
+API mapping: see "Upstream API mapping" below.
 
 ## Layout and tokens
 The field is a TextField; in an autocomplete its control wraps (chips row-gap 4px, chip margin
@@ -110,6 +104,31 @@ React `onChange`, `onInputChange`, `onOpenChange(open, reason)`.
 
 ## Responsive
 The field fills its container; the paper follows the field's width (min 160px) in the top layer.
+
+## Upstream API mapping
+Upstream: MUI `Autocomplete`, mui.com/material-ui/api/autocomplete/.
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| `options`, `value`, `defaultValue`, `inputValue`, `open`, `multiple`, `freeSolo`, `disableCloseOnSelect`, `disableClearable`, `openOnFocus`, `autoHighlight`, `limitTags`, `getLimitTagsText`, `filterOptions`, `renderOption`, `noOptionsText`, `clearText`, `openText`, `closeText`, `disabled`, `id`, `size` | same | kept | `options`: strings or `{ value, label, disabled? }` |
+| `onChange(event, value, reason, details)` | `onChange(value)` | renamed | value-first (ADR-0015) |
+| `onInputChange(event, value, reason)` | `onInputChange(text)` | renamed | |
+| `onOpen` / `onClose` | `onOpenChange(open, reason)` | renamed | |
+| `renderInput` | TextField props (`label`, `placeholder`, `helperText`, `error`, `variant`, `name`) | renamed | the field is built in |
+| `getOptionLabel`, `getOptionKey`, `getOptionValue`, `isOptionEqualToValue`, `getOptionDisabled` | options as `{ value, label, disabled? }` | renamed | string values only; object values deferred |
+| `fullWidth` | — | not applicable | the field always fills its container (reference) |
+| `groupBy`, `renderGroup` | — | deferred (4.1) | `renderGroup` goes with `groupBy` |
+| `loading`, `loadingText` | — | deferred (4.1) | |
+| `autoSelect`, `blurOnSelect`, `clearOnEscape`, `selectOnFocus`, `includeInputInList` | — | deferred (4.1) | |
+| virtualization, `slots.listbox` (`ListboxComponent`) | — | deferred (4.1) | |
+| `readOnly` | — | deferred | |
+| `onHighlightChange(event, option, reason)` | — | deferred | |
+| `autoComplete` (inline completion), `clearOnBlur`, `filterSelectedOptions`, `disableListWrap`, `disabledItemsFocusable`, `handleHomeEndKeys`, `resetHighlightOnMouseLeave` | — | deferred | `handleHomeEndKeys` follows MUI's default (on unless free solo), not configurable |
+| `renderValue` (MUI `renderTags`) | — | deferred | chips are built in |
+| `clearIcon`, `popupIcon`, `forcePopupIcon` | — | deferred | |
+| `useAutocomplete`, `createFilterOptions` | core `filterOptions` / `nextAutocompleteValue` | deferred | no public hook / filter factory |
+| `slots.paper`, `slots.popper`, `disablePortal` (`PaperComponent`, `PopperComponent`) | Popover | not applicable | top layer, no portal |
+| `sx`, `classes`, `slots`, `slotProps` | — | not applicable | ADR-0015 |
 
 ## Parity notes
 React renders `data-ok-runtime="off"` on the root and the Popover. The chip `<template>` is

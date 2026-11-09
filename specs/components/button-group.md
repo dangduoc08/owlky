@@ -53,6 +53,19 @@ child elements only (`cloneElement`).
 ## Responsive
 The group doesn't wrap: use `vertical` (or fewer buttons) on narrow screens.
 
+## Upstream API mapping
+Upstream: MUI `ButtonGroup`, mui.com/material-ui/api/button-group/.
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| `children`, `orientation`, `fullWidth`, `disabled`, `disableElevation` | same | kept | reach **direct** child Buttons only (`cloneElement`); `disableElevation` on by default (reference) |
+| `variant` | `variant` | kept | default `outlined` (as MUI); + `soft` |
+| `color` | `color` | kept | default `inherit` (MUI `primary`); + `black` / `white` |
+| `size` (`small` · `medium` · `large`) | `size` (`sm` · `md` · `lg` · `xl`) | renamed | |
+| `component` | — | deferred | root is always `div[role=group]` |
+| `disableRipple`, `disableFocusRipple` | — | not applicable | no ripple |
+| `sx`, `classes` | — | not applicable | ADR-0015 |
+
 ## Parity notes
 In HTML, write `data-ok-variant` / `data-ok-color` / `data-ok-size` / `data-ok-disable-elevation` on every button (React does it
 from the group's props).

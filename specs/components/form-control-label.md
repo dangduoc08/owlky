@@ -46,5 +46,15 @@ hidden from assistive technology (the input is `required`).
 ## Events / API
 None (the control's events).
 
+## Upstream API mapping
+Upstream: MUI `FormControlLabel`, mui.com/material-ui/api/form-control-label/.
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| `control`, `label`, `labelPlacement` | same | kept | |
+| `checked`, `disabled`, `required`, `onChange`, `value` | same | kept | cloned onto the control when it doesn't set them |
+| `disableTypography`, `slotProps.typography` | — | not applicable | the text span carries body2 itself; any node is passed through |
+| `sx`, `classes`, `slots`, `slotProps` | — | not applicable | ADR-0015 |
+
 ## Parity notes
 None.

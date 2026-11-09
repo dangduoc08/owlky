@@ -42,10 +42,7 @@ Other props: `value` / `defaultValue` / `onChange(value | null)`, `onChangeActiv
 (MUI `IconContainerComponent`, renamed: a function of the value), `getLabelText(value)` (default
 "2 Stars"), `emptyLabelText` ("Empty"). HTML: markup per value, labels as text.
 
-API mapping (MUI): kept `value`, `defaultValue`, `onChange` (value-first), `onChangeActive`, `max`,
-`precision`, `readOnly`, `disabled`, `highlightSelectedOnly`, `name`, `icon`, `emptyIcon`,
-`getLabelText`, `emptyLabelText`, `size` (+ the reference's `xSmall`, `xxSmall`). Beyond MUI:
-`color` (the reference's custom color). Not applicable: `classes`, `sx`, `slotProps`.
+API mapping: see "Upstream API mapping" below.
 
 ## Layout and tokens
 Icon size `--_ok-rating-size`: 12 / 16 / 20 / 24 / 28px (`spacing` × 3 … 7). Filled: palette
@@ -72,6 +69,20 @@ again), `ok:rating:active` (`{ value }`). Instance `{ value, setValue(value) }`.
 
 ## Responsive
 Same sizes everywhere; 24px icons meet the 24px target size (smaller sizes: read-only use).
+
+## Upstream API mapping
+Upstream: MUI `Rating`, mui.com/material-ui/api/rating/.
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| `value`, `defaultValue`, `max`, `precision`, `readOnly`, `disabled`, `highlightSelectedOnly`, `name`, `icon`, `emptyIcon`, `getLabelText`, `emptyLabelText` | same | kept | |
+| `size` | `size` | kept | + `xSmall`, `xxSmall` (reference) |
+| `onChange(event, value)`, `onChangeActive(event, value)` | `onChange(value)`, `onChangeActive(value)` | renamed | value-first (ADR-0015) |
+| `slots.icon` (`IconContainerComponent`) | `renderIcon(value)` | renamed | a function of the value |
+| `component` | — | not applicable | root is a `span` around a native radio group |
+| `sx`, `classes`, `slots`, `slotProps` | — | not applicable | ADR-0015 |
+
+Beyond MUI: `color` (the reference's custom color).
 
 ## Parity notes
 React renders `data-ok-runtime="off"`. Hover feedback text is app markup (React demo state).

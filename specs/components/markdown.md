@@ -60,17 +60,7 @@ Exports: React `Markdown`, `MarkdownAsync` (async server component), `MarkdownHo
 `createMarkdown`. Core `markdownTree`, `markdownTreeAsync`, `createMarkdownProcessor`,
 `finishTree`, `markdownElementAttributes`, `markdownElementStyle`, `childSpace`, `parseStyle`.
 
-API mapping (react-markdown): kept `children`, `remarkPlugins`, `rehypePlugins`,
-`remarkRehypeOptions`, `allowedElements`, `disallowedElements`, `allowElement`,
-`unwrapDisallowed`, `skipHtml`, `urlTransform`, `components`, `Markdown`, `MarkdownAsync`,
-`MarkdownHooks` (+ `fallback`), `defaultUrlTransform`. Added (reference, HTML parity, security):
-`gfm` (on: the reference renders GFM, and HTML can't pass remark-gfm through attributes),
-`rawHtml` + `sanitizeSchema` (the reference renders HTML; rehype-raw + allow list built in),
-`externalLinks` (the reference's links open in a new tab), `highlighter` (the reference highlights
-code), `onError` (MarkdownHooks), `images` + `imageRatio` (the reference renders pictures through
-its Image, 16/9: `image` composes Owlky's Image, ADR-0038; React maps `img` to `Image` unless
-`components.img` is set, HTML builds the Image markup and the Image runtime mounts it). Not applicable: `className` (v9, removed in v10; the root div
-takes every div prop).
+API mapping: see "Upstream API mapping" below.
 
 ## Layout and tokens
 Root: body1, `text-primary`, `overflow-wrap: break-word`; first child no top margin, last
@@ -130,6 +120,20 @@ HTML `ok:markdown:render` (`{ value }`), `ok:markdown:error` (`{ error }`). Inst
 Content flows at every width: images and tables are 100% wide at most, cells and code wrap
 (`overflow-wrap`), headings use the responsive typography tokens. The story puts its card full
 width; no breakpoint of its own.
+
+## Upstream API mapping
+Upstream: react-markdown 10 README (`Markdown`, `MarkdownAsync`, `MarkdownHooks`, `Options`).
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| `children`, `remarkPlugins`, `rehypePlugins`, `allowedElements`, `disallowedElements`, `allowElement`, `unwrapDisallowed`, `skipHtml`, `urlTransform`, `components` | same | kept | HTML: element lists as attributes, functions through `createMarkdown({ … })` |
+| `remarkRehypeOptions` | same | kept | `allowDangerousHtml` forced on (raw HTML handled by Owlky's last step) |
+| `Markdown`, `MarkdownAsync`, `MarkdownHooks` (`fallback`), `defaultUrlTransform` | same | kept | |
+| types `Components`, `ExtraProps`, `AllowElement`, `UrlTransform`, `Options` | `MarkdownComponents`, `MarkdownExtraProps`, `AllowElement`, `UrlTransform`, `MarkdownOptions` | renamed | |
+| `className` (v9, removed in v10) | root `div` props | not applicable | |
+
+Beyond upstream: `gfm` (on), `rawHtml` + `sanitizeSchema`, `externalLinks`, `highlighter`,
+`onError` (MarkdownHooks), `images` + `imageRatio` (ADR-0038).
 
 ## Parity notes
 React renders `data-ok-runtime="off"` on the root; HTML keeps the hidden source `pre` (parity

@@ -59,14 +59,7 @@ Other props: `value` / `defaultValue` / `onChange(html)` (`""` when empty), `pla
 (lowlight-compatible; HTML `createEditor({ highlighter })`), `onFullscreenChange(fullscreen)`,
 `aria-label` (default "Editor") / `aria-labelledby` (go to the textbox).
 
-API mapping (Minimals `Editor`): kept `value`, `onChange`, `editable`, `fullItem`, `error`,
-`helperText`, `placeholder`. Added `defaultValue` (uncontrolled), `highlighter`,
-`onFullscreenChange`, `aria-*`. Not applicable: `resetValue` (`value=""` resets), `slotProps`,
-`sx`, `className` of the wrapper (root `className`). Deferred: Tiptap `extensions` /
-`editorProps` pass-through, bubble menus, tables, mentions, a form `name` (hidden input) — none of
-them is in the reference or the Minimals wrapper. Minimals' Tiptap extensions are all covered:
-StarterKit, Placeholder, Image, TextAlign, CodeBlockLowlight (our code block + `highlighter`),
-TextTransform, ClearFormat.
+API mapping: see "Upstream API mapping" below.
 
 ## Layout and tokens
 Root: 1px `rgb(grey-500 / 0.2)` border (error: `error-main`), radius `--ok-radius-md`, min height
@@ -137,6 +130,33 @@ cap; forms are `min(320px, 100vw − 48px)` wide. The story puts editor and prev
 900px, stacked below; the preview renders the editor's HTML with Markdown (`rawHtml`, ADR-0035),
 as the reference does, in an outlined Card (`component="section"`) under a Typography `h6`
 title (`component="h3"`).
+
+## Upstream API mapping
+Upstream: the Minimals `Editor` wrapper's props and Tiptap 3 (tiptap.dev/docs/editor/api/editor,
+/api/events).
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| Minimals `value`, `onChange`, `editable`, `fullItem`, `error`, `helperText`, `placeholder` | same | kept | `onChange(html)`, `""` when empty |
+| Minimals `resetValue` | `value=""` | not applicable | |
+| Minimals `className`, `sx`, `slotProps` | root `className` | not applicable | ADR-0015 |
+| Tiptap `content` | `value` / `defaultValue`; HTML: markup in the content element | renamed | |
+| Tiptap `editable`, `setEditable()` | `editable`, `setEditable(on)` | kept | |
+| Tiptap `element`, `mount()` / `unmount()` | `[data-ok-editor-content]` | not applicable | the anatomy owns the mount |
+| Tiptap `injectCSS`, `injectNonce` | — | not applicable | `injectCSS: false` (CSP); editor.css |
+| Tiptap `extensions`, `schemaSpec`, `coreExtensionOptions`, `enableExtensionDispatchTransaction` | built-in set | deferred | StarterKit, Placeholder, Image, TextAlign, code block + `highlighter`, TextTransform, ClearFormat; no pass-through (tables, mentions…) |
+| Tiptap `editorProps`, `parseOptions`, `enableInputRules`, `enablePasteRules`, `textDirection`, `autofocus` | — | deferred | |
+| event `update` | `onChange(html)`, `ok:editor:change` | renamed | |
+| events `beforeCreate`, `create`, `selectionUpdate`, `transaction`, `focus`, `blur`, `destroy`, `paste`, `drop`, `delete`, `contentError` | — | deferred | HTML: `controller.editor.on()`; React: no editor handle |
+| `getHTML()` | `getValue()`, instance `value` | renamed | |
+| `getJSON()`, `getText()`, `isEmpty`, `isFocused`, `registerPlugin()`, `setOptions()` | — | deferred | HTML through `controller.editor`; React none |
+| `chain()`, `can()`, `isActive()`, `getAttributes()` | `run(action, value)`, `EditorState` (`active`, `disabled`, `link`, `textTransform`) | renamed | |
+| `commands.focus()`, `destroy()` | `focus()`, `destroy({ restore })` | kept | |
+| `@tiptap/react` `useEditor`, `EditorContent`, `useCurrentEditor`, `BubbleMenu`, `FloatingMenu` | — | deferred | |
+| form `name` (hidden input) | — | deferred | not in the reference or the wrapper |
+
+Beyond upstream: `defaultValue`, `highlighter`, `onFullscreenChange`, `aria-label` /
+`aria-labelledby`, fullscreen.
 
 ## Parity notes
 React renders `data-ok-runtime="off"` (root and Backdrop); popover triggers carry

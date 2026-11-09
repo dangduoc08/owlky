@@ -86,5 +86,20 @@ both work controlled and uncontrolled.
 ## Responsive
 Same size at every breakpoint; use `vertical` for narrow screens.
 
+## Upstream API mapping
+Upstream: MUI `ToggleButton`, `ToggleButtonGroup`, mui.com/material-ui/api/toggle-button/ and
+/toggle-button-group/.
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| ToggleButton `children`, `value`, `selected`, `color`, `disabled`, `fullWidth`, `onClick` | same | kept | `onClick` native; + `defaultSelected` (uncontrolled) |
+| ToggleButton `size` (`small` · `medium` · `large`) | `size` (`sm` · `md` · `lg`) | renamed | |
+| ToggleButton `onChange(event, value)` | `onChange(selected)` | renamed | value-first (ADR-0015) |
+| ToggleButtonGroup `children`, `exclusive`, `value`, `orientation`, `fullWidth`, `color`, `disabled` | same | kept | + `defaultValue`; exclusive value `string \| null` |
+| ToggleButtonGroup `size` | `size` (`sm` · `md` · `lg`) | renamed | |
+| ToggleButtonGroup `onChange(event, value)` | `onChange(value)` | renamed | HTML `ok:toggle-group:change` |
+| `disableRipple`, `disableFocusRipple` (+ ButtonBase ripple props) | — | not applicable | no ripple |
+| `sx`, `classes` | — | not applicable | ADR-0015 |
+
 ## Parity notes
 React renders `data-ok-runtime="off"` on the group and on standalone buttons.

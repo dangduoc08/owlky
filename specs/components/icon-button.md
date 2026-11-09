@@ -57,6 +57,21 @@ None: CSS only, no runtime. React forwards `ref` (`HTMLButtonElement`) and every
 ## Responsive
 Same size at every breakpoint.
 
+## Upstream API mapping
+Upstream: MUI `IconButton` (+ `ButtonBase`), mui.com/material-ui/api/icon-button/.
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| `children`, `color`, `edge`, `disabled`, `loading`, `loadingIndicator` | same | kept | `color` + `black` / `white`; `edge` `false` = absent |
+| `size` (`small` · `medium` · `large`) | `size` (`sm` · `md` · `lg`) | renamed | |
+| `type` (ButtonBase) | native `type` | kept | |
+| `href`, `component`, `LinkComponent` (ButtonBase) | — | deferred | always a `<button>`: no icon links |
+| `action`, `focusVisibleClassName`, `onFocusVisible`, `nativeButton` (ButtonBase) | `ref.focus()`, `:focus-visible` | not applicable | |
+| `disableRipple`, `disableFocusRipple` (+ ButtonBase ripple props) | — | not applicable | no ripple |
+| `sx`, `classes` | — | not applicable | ADR-0015 |
+
+Beyond MUI: `animate` (reference).
+
 ## Parity notes
 Visible focus outline (the reference has none). The reference's "With animate" uses an
 animation library; here it is plain CSS.

@@ -160,21 +160,27 @@ Instance: `files`, `rejections`, `dragState`, `isFileDialogActive`, `isProcessin
 The zone, list and actions fill their container at every width; names are cut with an ellipsis;
 tiles wrap; the description wraps; actions wrap and stay at the end. No breakpoint changes.
 
+## Upstream API mapping
+Upstream: react-dropzone 20 (`useDropzone`, `Dropzone`) and the Minimals `Upload` wrapper.
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| `accept` (incl. `AcceptGroup[]`), `multiple`, `maxFiles`, `maxSize`, `minSize`, `disabled` | same | kept | `multiple` default `false` (Minimals' Upload); `maxFiles` counts the files held |
+| `noClick`, `noKeyboard`, `noDrag`, `noDragEventsBubbling`, `noPaste`, `preventDropOnDocument`, `useFsAccessApi`, `autoFocus` | same | kept | `noDragEventsBubbling` without `stopPropagation` (outer uploads skip claimed events) |
+| `validator` (sync or async), `getFilesFromEvent`, `getErrorMessage`, `onError` | same | kept | |
+| `onDrop(accepted, rejections, event)` | `onDrop(accepted, rejections)` | renamed | value-first (ADR-0015) |
+| `onDropAccepted`, `onDropRejected`, `onFileDialogOpen`, `onFileDialogCancel` | same | kept | cancel from the native `cancel` event |
+| `onDragEnter` / `onDragOver` / `onDragLeave` | native root props | kept | state via `placeholder(state)` / `data-ok-drag` |
+| `isDragActive` / `isDragAccept` / `isDragReject` / `isDragUnknown` / `isDragGlobal`, `isFileDialogActive`, `isProcessing` | `UploadState` | kept | |
+| `isFocused` | CSS `:focus-visible` | renamed | |
+| `open`, `removeFile`, `clearFiles`, `acceptedFiles`, `fileRejections` | `apiRef` (`files`, `rejections`) | renamed | |
+| `dragFileRejections` | — | deferred | MIME / surplus rejections during a drag |
+| `getRootProps` / `getInputProps` / `rootRef` / `inputRef`, `Dropzone` (render prop `children(state)`) | the component; `inputRef` | deferred (4.4) | hook form |
+| `refKey` | — | not applicable | no prop getters |
+| Minimals `value`, `error`, `helperText`, `thumbnail`, `onRemove`, `onRemoveAll`, `onUpload`, `placeholder`, `disabled` | same | kept | |
+| Minimals "Horizontal layout" | `layout` | renamed | |
+
 ## Parity notes
 - The HTML list item comes from `<template data-ok-upload-template>` (skipped by parity).
 - Ids differ (React `useId`, HTML from the input's id or `createId`); parity normalizes them.
 - Image previews are object URLs (different per page): dynamic parity runs with `thumbnail` off.
-
-## API mapping (react-dropzone → Owlky)
-| Upstream | Owlky | Note |
-|---|---|---|
-| `accept`, `multiple`, `maxFiles`, `maxSize`, `minSize`, `disabled` | kept | `multiple` defaults to `false` (Minimals' Upload); `maxFiles` counts the files held |
-| `noClick`, `noKeyboard`, `noDrag`, `noDragEventsBubbling`, `noPaste`, `preventDropOnDocument`, `useFsAccessApi`, `autoFocus` | kept | `noDragEventsBubbling` without `stopPropagation` (outer uploads skip claimed events) |
-| `validator`, `getFilesFromEvent`, `getErrorMessage`, `onError` | kept | |
-| `onDrop(accepted, rejections, event)` | `onDrop(accepted, rejections)` | value-first (ADR-0015) |
-| `onDropAccepted`, `onDropRejected`, `onFileDialogOpen`, `onFileDialogCancel` | kept | cancel from the native `cancel` event |
-| `onDragEnter` / `onDragOver` / `onDragLeave` | native root props | state via `placeholder(state)` / `data-ok-drag` |
-| `isDragActive` / `Accept` / `Reject` / `Unknown` / `Global`, `isFileDialogActive`, `isProcessing` | `UploadState` | `isFocused` → CSS `:focus-visible` |
-| `open`, `removeFile`, `clearFiles`, `acceptedFiles`, `fileRejections` | `apiRef` (`files`, `rejections`) | |
-| `getRootProps` / `getInputProps` / `rootRef` / `inputRef` | the component; `inputRef` | hook form deferred (backlog) |
-| Minimals: `value`, `error`, `helperText`, `thumbnail`, `onRemove`, `onRemoveAll`, `onUpload`, `placeholder`, `disabled` | kept | "Horizontal layout" → `layout` |

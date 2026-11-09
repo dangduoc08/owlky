@@ -102,12 +102,7 @@ FormControl is also written as the native `disabled`, which disables every contr
 `div` root, pass `disabled` to each control. `useFormControl()` returns the shared state (or
 `undefined` outside a FormControl).
 
-API mapping (MUI → Owlky): every FormControl prop kept (`hiddenLabel` since the Select: a filled
-Select without a label) except `sx` / `classes` (not applicable).
-FormLabel / FormHelperText: every prop kept. FormGroup: `row` kept. MUI tracks `focused` and
-`filled` from its InputBase; with no InputBase they are props here (see "Contract for Select").
-MUI's selection controls take `disabled` from the FormControl context; here they don't (no change
-to their API): a `fieldset` root disables them natively.
+API mapping: see "Upstream API mapping" below.
 
 ## Layout and tokens
 - Root: `inline-flex` column, `min-width: 0`, no margin / padding / border (a `fieldset` too),
@@ -159,6 +154,20 @@ Select composes FormControl + an InputLabel without changing this DOM:
   frameworks (no React-only focus state, for parity): the hidden input's `:placeholder-shown`
   tells whether there is a value. No `data-ok-filled` and no context setters were needed.
 - `hiddenLabel` (`data-ok-hidden-label`) arrived with Select's filled variant.
+
+## Upstream API mapping
+Upstream: MUI `FormControl`, `FormLabel`, `FormGroup`, `FormHelperText`, `useFormControl`.
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| FormControl `children`, `component`, `color`, `disabled`, `error`, `focused`, `fullWidth`, `hiddenLabel`, `margin`, `required`, `size`, `variant` | same | kept | `color` default `default` (MUI `primary`); `hiddenLabel` since Select |
+| FormControl `focused` / FormLabel / FormHelperText `filled` tracking | props | renamed | MUI tracks them from its InputBase; here they are props (Select uses CSS `:focus-within` / `:placeholder-shown`) |
+| FormLabel `children`, `component`, `color`, `disabled`, `error`, `filled`, `focused`, `required` | same | kept | |
+| FormGroup `children`, `row` | same | kept | |
+| FormHelperText `children`, `component`, `disabled`, `error`, `filled`, `focused`, `margin`, `required`, `variant` | same | kept | |
+| `useFormControl()` | same | kept | `undefined` outside a FormControl |
+| context `disabled` / `required` / `error` read by Checkbox, Radio, Switch | — | not applicable | controls' API unchanged by decision; a `fieldset` root disables them natively |
+| `sx`, `classes` | — | not applicable | ADR-0015 |
 
 ## Parity notes
 None: both frameworks write the same attributes; snippets are generated from the React stories

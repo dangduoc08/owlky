@@ -103,6 +103,32 @@ sets `aria-invalid`; the asterisk is `aria-hidden` (the input is `required`). Th
 ## Events / API
 HTML: native `input` / `change`. React: `onChange(value)`.
 
+## Upstream API mapping
+Upstream: MUI `TextField` (+ FormControl props), `InputAdornment`, `InputBase`, `OutlinedInput`,
+`FilledInput`, `Input`, mui.com/material-ui/api/text-field/.
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| `variant`, `size`, `error`, `fullWidth`, `margin`, `label`, `helperText`, `disabled`, `required` | same | kept | |
+| `color` | `color` | kept | + `default` (the default; MUI `primary`) |
+| `value`, `defaultValue`, `id`, `name`, `type`, `placeholder`, `autoComplete`, `autoFocus` | same | kept | native ones go to the input; `id` default `useId()` |
+| `multiline`, `rows`, `minRows`, `maxRows` | same | kept | |
+| `select`, `children` | same | kept | `select` stays native by default (MUI: listbox) |
+| `onChange(event)` | `onChange(value)` | renamed | value-first (ADR-0015) |
+| `inputRef` | `ref` | renamed | `ref` and rest props go to the input |
+| `slotProps.input.startAdornment` / `endAdornment` (`InputProps`) | `startAdornment` / `endAdornment` | renamed | |
+| `slotProps.inputLabel.shrink` (`InputLabelProps`) | `shrink` | renamed | |
+| `slotProps.htmlInput` (`inputProps`) | rest props on the input | renamed | `readOnly`, `min`, `maxLength`… |
+| `slotProps.select` (`SelectProps`) | `selectProps` | renamed | `{ native: false }` → listbox Select; single value only |
+| FormControl `hiddenLabel`, `focused`, `component` | — | deferred | filled field without label (less top padding), forced focus style, root element |
+| InputAdornment `position`, `children` | same | kept | |
+| InputAdornment `disablePointerEvents`, `component` | — | deferred | |
+| InputAdornment `disableTypography`, `variant` | — | not applicable | CSS reads the field's variant and styles the text |
+| `InputBase`, `OutlinedInput` (`notched`), `FilledInput` (`disableUnderline`), `Input`, `inputComponent` | — | deferred | standalone inputs without label / helper (custom fields, Select `input`) |
+| `sx`, `classes`, `slots`, other `slotProps` (`formHelperText`, `root`) | — | not applicable | ADR-0015 |
+
+Related reference features: copy to clipboard (4.20), number input (4.24), phone input (4.25).
+
 ## Parity notes
 React stories render the password button without state (apps own `type`, see the docs page);
 `data-ok-text-field-reveal` is an HTML hook (ignored by parity).

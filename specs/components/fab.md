@@ -52,5 +52,21 @@ None: CSS only, no runtime. React forwards `ref` (`HTMLButtonElement`, or `HTMLA
 ## Responsive
 Same size at every breakpoint; labels don't wrap.
 
+## Upstream API mapping
+Upstream: MUI `Fab` (+ `ButtonBase`), mui.com/material-ui/api/fab/.
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| `variant` (`circular` · `extended`) | `extended` flag | renamed | Owlky's `variant` is the fill style (`contained` · `outlined` · `soft`, reference) |
+| `color` (default `default`) | `color` | kept | + `inherit`, `black` / `white` |
+| `size` (`small` · `medium` · `large`, default `large`) | `size` (`sm` · `md` · `lg`, default `md`) | renamed | |
+| `children`, `disabled`, `href` | same | kept | |
+| `component`, `LinkComponent` (ButtonBase) | — | deferred | router links can't be passed |
+| `action`, `focusVisibleClassName`, `onFocusVisible`, `nativeButton` (ButtonBase) | `ref.focus()`, `:focus-visible` | not applicable | |
+| `disableRipple`, `disableFocusRipple` (+ ButtonBase ripple props) | — | not applicable | no ripple |
+| `sx`, `classes` | — | not applicable | ADR-0015 |
+
+Beyond MUI: `animate` (reference).
+
 ## Parity notes
 Visible focus outline; CSS-only animate (see Icon button).

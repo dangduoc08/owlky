@@ -69,6 +69,19 @@ HTML `ok:transfer-list:change` (cancelable, `{ left, right, direction }`). Insta
 ## Responsive
 Stacked below 600px (no overflow at 375px), side by side above.
 
+## Upstream API mapping
+Upstream: the MUI "Transfer list" demo (mui.com/material-ui/react-transfer-list/); MUI has no
+component, so the demo's state and handlers map to props.
+
+| Upstream | Owlky | Status | Note |
+|---|---|---|---|
+| Basic demo: `left` / `right` state, `checked` rows, `handleAllRight` / `handleCheckedRight` / `handleCheckedLeft` / `handleAllLeft`, buttons disabled when nothing moves | `variant="simple"`, `left` / `right` / `defaultLeft`, `onChange(left, right)` | kept | checked state is internal |
+| Enhanced demo: titled cards, `handleToggleAll` (mixed), `numberOfChecked` ("n/m selected") | `variant="enhanced"`, `titles`, `getCountLabel(checked, total)` | kept | |
+| `not` / `intersection` / `union` helpers | core `transferMove` / `canTransfer` / `toggleAll` / `sideCheckedState` | renamed | |
+| `customList` (List › ListItemButton › Checkbox) | Scrollbar › List › Checkbox rows in a `label` | renamed | no nested interactive rows |
+
+Beyond the demo: `disabled`, `buttonLabels`, `id`, HTML `move(direction)`.
+
 ## Parity notes
 React renders `data-ok-runtime="off"`. Both render the same Scrollbar / List / Checkbox / Button
 markup.
