@@ -37,6 +37,10 @@ block); vertical `height: 100%`, `flexItem` stretches; `absolute` pins to the bo
 `--ok-text-secondary` body2, lines as `::before` / `::after`, text padding 10px (`left` / `right`:
 the near line is 10%).
 
+Stories compose the reference's surfaces: Variants' list on an outlined Paper, Icon grouping on an
+outlined Card; words and paragraphs are Typography `body2` / `textSecondary` (story classes
+`sb-divider-*` keep layout only).
+
 ## Responsive behavior
 Fluid; the text never wraps (`white-space: nowrap`).
 

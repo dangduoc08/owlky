@@ -20,7 +20,7 @@ const snippets = import.meta.glob(
   { query: "?raw", import: "default", eager: true },
 ) as Record<string, string>;
 
-const setup = htmlSetup(["divider.css"]);
+const setup = htmlSetup(["typography.css", "divider.css"]);
 const story = (
   name: string,
   title: string,
@@ -57,7 +57,7 @@ export const Variants: StoryObj = story(
   "variants",
   "Variants",
   variantGroups,
-  htmlSetup(["divider.css", "list.css"]),
+  htmlSetup(["paper.css", "divider.css", "list.css"]),
 );
 export const Orientation: StoryObj = story(
   "orientation",
@@ -75,7 +75,7 @@ export const WithChildren: StoryObj = {
     "with-children",
     "With children",
     childrenGroups,
-    htmlSetup(["divider.css", "chip.css"]),
+    htmlSetup(["typography.css", "divider.css", "chip.css"]),
     false,
   ),
   name: "With children",
@@ -85,7 +85,7 @@ export const IconGrouping: StoryObj = {
     "icon-grouping",
     "Icon grouping",
     iconGroups,
-    htmlSetup(["divider.css", "icon-button.css"]),
+    htmlSetup(["paper.css", "card.css", "divider.css", "icon-button.css"]),
     false,
   ),
   name: "Icon grouping",

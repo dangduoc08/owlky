@@ -478,10 +478,9 @@
   overflow-wrap: anywhere;
 }
 
+/* The value (a Typography) on its own line below "Output". */
 .sb-autocomplete-output > output > code {
   display: block;
-  color: var(--ok-text-primary);
-  font-weight: var(--ok-font-weight-semibold);
 }
 
 /* Demo surfaces: a theme scope inside a row gets its own paper background. */
@@ -716,51 +715,35 @@
   max-width: 22.5rem;
 }
 
-/* Divider "Variants" (story-only): its list still sits in a demo panel instead of a Paper. */
-.sb-row > div:not([data-ok-paper]):has(> [data-ok-list]) {
-  border-radius: var(--ok-radius-md);
-  background-color: var(--ok-bg-paper);
-  box-shadow: var(--ok-shadow-card);
-}
-
-/* Divider demos (story-only): a bordered panel, rows of words, a toolbar. */
-.sb-row > div:not([data-ok-paper]):has(> [data-ok-divider]):not(:has(> nav)) {
-  box-sizing: border-box;
-  width: 100%;
-  max-width: 22.5rem;
-  border: 1px solid var(--ok-divider);
-  border-radius: var(--ok-radius-md);
-  color: var(--ok-text-primary);
-  font-family: var(--ok-font-family);
-  font-size: var(--ok-typography-body2-font-size);
-}
-
-.sb-row > div:has(> [data-ok-divider]) > p {
-  margin: 0;
-  padding: 0.75rem 1rem;
-}
-
-.sb-row > div:has(> span + [data-ok-divider]),
-.sb-row > div[role="toolbar"] {
+/* Divider demos (story-only layout): a bordered row of words, paragraphs between dividers, the
+   outlined Card of the icon group. */
+.sb-divider-row,
+.sb-divider-toolbar {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  width: auto;
+  box-sizing: border-box;
   height: 3rem;
-  padding: 0 1rem;
 }
 
-.sb-row > div[role="toolbar"] {
+.sb-divider-row {
+  gap: 1rem;
+  padding: 0 1rem;
+  border: 1px solid var(--ok-divider);
+  border-radius: var(--ok-radius-md);
+}
+
+.sb-divider-toolbar {
   gap: 0.25rem;
   padding: 0 0.25rem;
 }
 
-.sb-row > div:has(> [data-ok-divider] > [data-ok-divider-text]) {
+.sb-divider-text {
+  box-sizing: border-box;
+  width: 100%;
   max-width: 45rem;
-  border: 0;
 }
 
-.sb-row > div:has(> [data-ok-divider] > [data-ok-divider-text]) > p {
+.sb-divider-text > p {
   padding: 0.5rem 0;
 }
 
@@ -1526,7 +1509,8 @@
   flex: 1 1 100%;
 }
 
-/* Map stories: the map fills the row; panels and popups use demo text styles (no Typography yet). */
+/* Map stories (story-only layout): the map fills the row; popup text and the event log stack in
+   columns, the settings panels are grids. Their text is Typography. */
 .sb-row:has(> [data-ok-map], > .sb-map-compare) > :is([data-ok-map], .sb-map-compare) {
   width: 100%;
 }
@@ -1830,8 +1814,6 @@
   height: 120px;
   margin: calc(var(--ok-spacing) * 2);
   padding: calc(var(--ok-spacing) * 2);
-  font-size: var(--ok-typography-body2-font-size);
-  line-height: var(--ok-typography-body2-line-height);
   text-align: center;
 }
 
@@ -1846,12 +1828,12 @@
   box-shadow: none;
 }
 
+/* Each level is 60px tall, its Typography label centered. */
 .sb-paper-levels > [data-ok-paper] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   height: 60px;
-  color: var(--ok-text-secondary);
-  font-size: var(--ok-typography-body2-font-size);
-  line-height: 60px;
-  text-align: center;
 }
 
 /* Typography demos (story-only): a full-width column, a narrow box, and plain markup styled
