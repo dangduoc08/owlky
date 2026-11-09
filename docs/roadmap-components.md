@@ -20,11 +20,11 @@ review that changes it.
 
 | # | Item | Detail | Status |
 |---|---|---|---|
-| 1.1 | CI unit job per browser | split "Lint, types, build, unit tests" into one unit job per browser (chromium, firefox, webkit), like the e2e shards: one runner ran about 15,000 tests in three browsers and crashed a page on 2026-11-09 | ⬜ |
-| 1.2 | Flaky: editor image form | `packages/html/src/components/editor/editor.test.ts` "inserts an image; an invalid form stays open" (Chromium, CI 2026-11-09) | ⬜ |
-| 1.3 | Flaky: button soft colors | `packages/html/src/components/button/button.test.ts` `soft-colors.html: no axe violations` (Firefox, CI 2026-11-09) | ⬜ |
-| 1.4 | Flaky: carousel thumbs-y | e2e parity `carousel / thumbs-y` pixels, about 2 of 60 runs under load (already before Wave 8; image decode and scroll settle waits didn't fix it) | ⬜ |
-| 1.5 | Carousel `loop` resize | with `loop`, a viewport resize jumps to another slide; the landing page turns `loop` off until fixed | ⬜ |
+| 1.1 | CI unit job per browser | split "Lint, types, build, unit tests" into one unit job per browser (chromium, firefox, webkit), like the e2e shards: one runner ran about 15,000 tests in three browsers and crashed a page on 2026-11-09 |🔄 |
+| 1.2 | Flaky: editor image form | `packages/html/src/components/editor/editor.test.ts` "inserts an image; an invalid form stays open" (Chromium, CI 2026-11-09) |🔄 |
+| 1.3 | Flaky: button soft colors | `packages/html/src/components/button/button.test.ts` `soft-colors.html: no axe violations` (Firefox, CI 2026-11-09) |🔄 |
+| 1.4 | Flaky: carousel thumbs-y | e2e parity `carousel / thumbs-y` pixels, about 2 of 60 runs under load (already before Wave 8; image decode and scroll settle waits didn't fix it) |🔄 |
+| 1.5 | Carousel `loop` resize | with `loop`, a viewport resize jumps to another slide; the landing page turns `loop` off until fixed |🔄 |
 
 **Done when:** three green CI runs in a row on `main`.
 
