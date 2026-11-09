@@ -10,6 +10,8 @@ const rules = {
   core: REACT,
   html: REACT,
   react: ["@owlky/html"],
+  // The MCP server (ADR-0046) answers from its manifest: no framework package at run time.
+  mcp: [...REACT, "@owlky/html"],
 };
 
 async function* files(dir) {
@@ -47,4 +49,6 @@ if (problems.length > 0) {
   console.error(`Framework boundary violations:\n  ${problems.join("\n  ")}`);
   process.exit(1);
 }
-console.log("boundaries: OK (html/core/styles/tokens are React-free; react does not use html)");
+console.log(
+  "boundaries: OK (html/core/styles/tokens are React-free; react does not use html; mcp uses neither)",
+);

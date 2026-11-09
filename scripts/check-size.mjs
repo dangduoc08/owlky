@@ -125,6 +125,9 @@ const budgets = [
   // 52 kB since the Select (field box mirroring TextField's three variants, InputLabel, the
   // TablePagination and TextField compositions; about 1.3 kB): 49.6 kB.
   ["packages/styles/dist/owlky.min.css", 52_000, "All CSS (tokens + components)"],
+  // The MCP server's data (ADR-0046, downloaded by `npx -y @owlky/mcp`): 0.69 MB gzip (6 MB raw)
+  // at first, most of it the HTML of the date picker and data grid stories.
+  ["packages/mcp/manifest.json", 900_000, "MCP manifest (npm tarball, not a browser download)"],
 ];
 
 let failed = false;

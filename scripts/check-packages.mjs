@@ -3,7 +3,7 @@
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 
-const packages = ["tokens", "styles", "core", "react", "html"];
+const packages = ["tokens", "styles", "core", "react", "html", "mcp"];
 const run = (command, args) => execFileSync(command, args, { stdio: "inherit" });
 
 for (const name of packages) {

@@ -23,7 +23,7 @@
     "check:packages": "node scripts/check-packages.mjs",
     "check:boundaries": "node scripts/check-boundaries.mjs",
     "check:size": "node scripts/check-size.mjs",
-    "check": "pnpm lint && pnpm build && pnpm typecheck && pnpm check:boundaries && pnpm check:size && pnpm check:packages && pnpm check:specs && pnpm test",
+    "check": "pnpm lint && pnpm build && pnpm typecheck && pnpm check:boundaries && pnpm check:size && pnpm check:packages && pnpm check:specs && pnpm check:manifest && pnpm test",
     "changeset": "changeset",
     "version-packages": "changeset version && node scripts/sync-versions.mjs && pnpm install --lockfile-only",
     "release": "pnpm build && pnpm -r --filter \"./packages/*\" publish --access public --no-git-checks",
@@ -32,7 +32,10 @@
     "check:release": "node scripts/check-release.mjs",
     "specs:options": "node scripts/spec-options.mjs",
     "check:specs": "node scripts/spec-options.mjs --check",
-    "check:docs": "node apps/storybook/scripts/check-docs-code.mjs"
+    "check:docs": "node apps/storybook/scripts/check-docs-code.mjs",
+    "manifest": "node scripts/manifest.mjs",
+    "check:manifest": "node scripts/manifest.mjs --check",
+    "smoke:mcp": "node scripts/smoke-mcp.mjs"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "0.18.5",

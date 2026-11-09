@@ -14,7 +14,8 @@
       "!**/playwright-report",
       "!**/*.snap",
       "!**/*.md",
-      "!apps/storybook/src/foundations/icons/icon-data.json"
+      "!apps/storybook/src/foundations/icons/icon-data.json",
+      "!packages/mcp/manifest.json"
     ]
   },
   "formatter": {
@@ -108,6 +109,26 @@
               "options": {
                 "paths": {
                   "@owlky/html": "Framework independence (ADR-0008): React must not depend on the HTML runtime."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["packages/mcp/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "paths": {
+                  "react": "Boundaries (ADR-0046): the MCP server answers from its manifest, without React.",
+                  "react-dom": "Boundaries (ADR-0046): the MCP server answers from its manifest, without React DOM.",
+                  "@owlky/react": "Boundaries (ADR-0046): the MCP server must not import the React package.",
+                  "@owlky/html": "Boundaries (ADR-0046): the MCP server must not import the HTML runtime."
                 }
               }
             }

@@ -3,6 +3,11 @@
     "storybook": {
       "type": "http",
       "url": "http://localhost:6006/mcp"
+    },
+    "owlky": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["packages/mcp/dist/cli.js"]
     }
   }
 }

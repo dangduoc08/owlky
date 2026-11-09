@@ -42,6 +42,28 @@ Third-party runtime code stays behind its own entry point so the default bundles
 Tiptap is a `core` dependency reached only through `@owlky/core/editor` (ADR-0023). The Chart's
 SVG engine is our own code in `core/src/chart/` and ships in the default bundles (ADR-0024).
 
+## MCP server (ADR-0046)
+
+`@owlky/mcp` gives coding agents the exact API offline. It answers only from a generated
+`packages/mcp/manifest.json` that ships in its tarball, and imports no other Owlky package.
+
+```
+pnpm build ─▶ scripts/manifest.mjs ─▶ packages/mcp/manifest.json ─▶ @owlky/mcp (stdio, npx -y @owlky/mcp)
+   optionSchemas (core dist) · specs/components/*.md (sections, Reference URL, options markers)
+   stories (Vite SSR of *.stories.tsx: each story's Code panel for html and react)
+   docs pages' *Sections exports · html examples/*.html · tokens.json · styles theme.css
+   data-ok-* names (packages' sources) · required parts and part → root (anatomy ∩ every snippet)
+```
+
+The generator loads the stories and docs pages with Vite's SSR loader (Storybook, CSS and worker
+imports stubbed), like `check-docs-code.mjs`, so the React code is exactly what the **Code** panel
+shows (`jsxSource()` or the `?raw` demo). Output is sorted and deterministic; `pnpm check:manifest`
+regenerates it and fails on a diff. Tools: `list_components`, `get_component`, `get_examples`,
+`search_tokens`, `get_guide`, `validate_markup` (its own tag scanner, `src/markup.ts`); resources
+`owlky://components/<name>`, `owlky://tokens`, `owlky://guides/<id>`; prompts `build-html-page`,
+`build-react-page`. The server factory (`createOwlkyServer`) is separate from the stdio entry
+(`cli.ts`), so tests use the SDK's in-memory transport.
+
 ## Runtime lifecycle (HTML)
 
 ```

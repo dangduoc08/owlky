@@ -8,6 +8,8 @@
 | `pnpm test:visual`                                  | Visual regression in the Playwright Docker image (Docker required).                              |
 | `pnpm test:visual:update`                           | Regenerate baselines (Docker). Never commit baselines made outside Docker.                       |
 | `pnpm check`                                        | Everything CI runs, in order.                                                                    |
+| `pnpm check:manifest`                               | Regenerates the MCP manifest (ADR-0046) and fails when the committed one differs.               |
+| `pnpm smoke:mcp`                                    | Packs `@owlky/mcp`, starts its bin from the tarball with `npx -y` (needs the registry), and runs `initialize`, `tools/list`, `tools/call` over stdio (CI only, not in `pnpm check`). |
 
 First run: `pnpm exec playwright install chromium firefox webkit`.
 
@@ -28,5 +30,11 @@ Writing tests:
   the built Storybook `index.json` (`storyIds()` in `e2e/tests/helpers.ts`, once per framework for
   component stories); `foundations.spec.ts` runs the small-screen check on `foundations-*` stories.
   Docs pages are registered by hand (`GUIDES`, `OPTION_TABLES` in `foundations.spec.ts`).
+- MCP server (`packages/mcp`, Node): `generator.test.ts` runs `scripts/manifest.mjs` twice (same
+  bytes, sorted keys) and checks that every option schema, spec, snippet, guide, token and story
+  (HTML and React code) is in it; `server.test.ts` drives every tool, resource and prompt through the
+  SDK's in-memory transport (unknown names, invalid input, the markup size limit);
+  `validate.test.ts` validates every story's HTML with zero issues, so a new part or attribute that
+  the validator would reject fails there.
 - Parallel worktrees: `PORT=4322 pnpm test:e2e` serves each build on its own port (default 4321).
   Never run two e2e runs in one working tree.

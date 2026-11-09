@@ -31,7 +31,8 @@ Because every layer is shared, you can move between environments, or mix them on
 - **\`@owlky/tokens\`:** the design tokens, as CSS variables and as JavaScript values.
 - **\`@owlky/html\`:** HTML snippets and the script that adds behavior to them. Also available from a CDN.
 - **Framework packages:** components for a specific framework, such as \`@owlky/react\`. Support for more frameworks will follow.
-- **\`@owlky/core\`:** the shared behavior core. Framework packages include it, so you rarely install it yourself.`,
+- **\`@owlky/core\`:** the shared behavior core. Framework packages include it, so you rarely install it yourself.
+- **\`@owlky/mcp\`:** a Model Context Protocol server for coding agents. It answers with the exact components, options, examples and tokens of your Owlky version, without a network connection.`,
   },
   {
     id: "install",
