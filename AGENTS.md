@@ -593,6 +593,14 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
   `[data-ok-lightbox]` (it is dark itself). Grids with `auto-fill` and a `max-width` need
   `min-width: 0` in flex rows, or the mobile layout viewport widens. Snippets are generated from
   `lightbox-examples.tsx` (renderToStaticMarkup; drop React 19's `<link rel="preload">`).
+- Upload (ADR-0037): the native file input covers the zone (`opacity: 0`), so parts that must stay
+  clickable (single remove button, `[data-ok-upload-open]` with `noClick`) sit above it (z-index 2)
+  and nothing interactive goes in a `<label>` around it. Tests drop files with a plain event plus a
+  `dataTransfer` object (`types: ["Files"]`, `files`, `items`): every engine accepts it, while
+  `DragEvent` / `ClipboardEvent` init dictionaries differ. Previews are object URLs (different per
+  page): dynamic parity runs with `thumbnail` off. The HTML runtime keeps per-element bookkeeping in
+  `WeakMap`s, not attributes, so its markup stays equal to React's. A disabled zone is in
+  `CONTRAST_EXEMPT` (inactive component, dimmed like the reference).
 - Parallel work: never run two `/component` / `/integrate` sessions (or two `pnpm build` /
   `pnpm test:e2e`) in the same working tree — builds wipe each other's `dist/` and
   `storybook-static/`, e2e servers share port 4321, and staging part of a shared file while

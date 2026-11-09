@@ -587,6 +587,19 @@ export {
   type TreeViewBaseItem,
 } from "./tree-view/tree-view.js";
 export {
+  Upload,
+  type UploadApi,
+  UploadAvatar,
+  type UploadAvatarProps,
+  UploadBox,
+  type UploadBoxProps,
+  type UploadLabels,
+  type UploadProps,
+  type UploadState,
+  type UploadValue,
+} from "./upload/upload.js";
+export { UploadCloudIcon } from "./upload/upload-icons.js";
+export {
   type AdaptDate,
   type AdaptedProps,
   usePickerDateConverter,

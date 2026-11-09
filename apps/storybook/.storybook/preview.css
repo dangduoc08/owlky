@@ -1713,3 +1713,23 @@
     transition: none;
   }
 }
+
+/* Upload stories (story-only): the two boxes side by side, the "Open the file dialog" content. */
+.sb-upload-boxes {
+  display: flex;
+  gap: calc(var(--ok-spacing) * 6);
+  align-items: stretch;
+  width: 100%;
+}
+
+.sb-upload-boxes > :last-child {
+  flex: 1 1 auto;
+}
+
+.sb-upload-open {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--ok-spacing) * 4);
+  align-items: center;
+  color: var(--ok-text-secondary);
+}

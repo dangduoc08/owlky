@@ -15,6 +15,8 @@ async function withImports(file, seen = new Set()) {
 }
 
 const budgets = [
+  // 160 kB since the Upload (ADR-0037: drop, folders, paste, picker, checks, the runtime with
+  // previews, list and rejections; about 6.4 kB): 150.2 kB.
   // 150 kB since the Lightbox (ADR-0032: modal around the Carousel, zoom and pan gestures,
   // rotate, fullscreen, download, share, toggles, the runtime; about 4 kB): 143.3 kB.
   // 140 kB since the Carousel (ADR-0033: snap model, controller with loop, drag, wheel, keys,
@@ -48,7 +50,7 @@ const budgets = [
   // Motion (trigger, count-up and five runtimes, the 62 variant names); 31 kB after
   // the composite inputs, 24 kB after the navigation components, 22 kB after the overlays. The CDN bundle carries every component; the npm ESM build
   // (`@owlky/html`) is tree-shaken.
-  ["packages/html/dist/owlky.js", 150_000, "HTML runtime + all components (IIFE)"],
+  ["packages/html/dist/owlky.js", 160_000, "HTML runtime + all components (IIFE)"],
   ["packages/html/dist/esm/runtime/runtime.js", 3_000, "HTML core runtime"],
   // The Editor is opt-in (ADR-0023): Tiptap, ProseMirror and its starter kit are about 125 kB of
   // it; owlky.js stays free of them.
@@ -105,9 +107,10 @@ const budgets = [
   // inputs, 22 kB after the navigation components, 20 kB after the form, display and list
   // components. Per-component files (`@owlky/styles/components/*`) let apps
   // load only what they use.
+  // 47 kB since the Upload (zone, previews, list rows and tiles, file icons; about 2.3 kB): 44.7 kB.
   // 44 kB since the Lightbox (toolbar, captions, thumbnails, zoom frame; about 1.4 kB): 42.1 kB;
   // 43.25 kB once merged with Markdown and the Organization chart.
-  ["packages/styles/dist/owlky.min.css", 44_000, "All CSS (tokens + components)"],
+  ["packages/styles/dist/owlky.min.css", 47_000, "All CSS (tokens + components)"],
 ];
 
 let failed = false;

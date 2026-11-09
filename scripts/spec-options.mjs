@@ -60,6 +60,7 @@ const SPECS = {
   chart: "chart.md",
   carousel: "carousel.md",
   lightbox: "lightbox.md",
+  upload: "upload.md",
   "carousel-arrows": "carousel.md",
   "carousel-dots": "carousel.md",
   "carousel-progress": "carousel.md",

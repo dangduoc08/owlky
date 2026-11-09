@@ -5,7 +5,7 @@ and a review before the next starts.
 
 ## Overview
 Every page of the reference's component menu (`https://minimals.cc/components/…`) and where it
-stands (plus pages from other references, marked). ✅ = built (38); *wave N* = planned, see "Next — components"; *not planned* = a pattern
+stands (plus pages from other references, marked). ✅ = built (39); *wave N* = planned, see "Next — components"; *not planned* = a pattern
 or app-level page. *Section* = the heading below with the details. Update this table with each
 component and each `/integrate` run.
 
@@ -70,7 +70,7 @@ component and each `/integrate` run.
 | Extra | Scroll progress | not planned | — | Next |
 | Extra | Scrollbar | ✅ | Scrollbar | Scrollbar |
 | Extra (Sonner) | Snackbar | ✅ | Toaster, toast() | Popover, Tooltip, Menu, Dialog & Snackbar |
-| Extra | Upload | wave 7 (ADR) | — | Next |
+| Extra | Upload | ✅ (ADR-0037) | Upload, UploadAvatar, UploadBox | Upload |
 | Extra | Utilities | not planned | — | Next |
 | Extra | Walktour | wave 7 (ADR) | — | Next |
 
@@ -511,6 +511,26 @@ integrate these in the same review (additive: no DOM or API change) and remove t
 | Typography (body text, headings) | Map stories (popup text, the drag readout, panel captions) | demo `.sb-map-*` styled in `.storybook/preview.css` |
 | Typography + Paper (card) | Organization chart stories (node cards: simple, standard, team and member cards, names and roles) | demo `.sb-org-*` styled in `.storybook/preview.css`; the cards compose Avatar, IconButton, Menu and Label |
 
+## ✅ Components — Upload (ADR-0037, 2026-11-09)
+Created with `/component` from the reference "Upload" page, every section as a story: Upload
+single file, Upload multi file (Controls `layout` and `thumbnail` are the reference's "Horizontal
+layout" and "Show image" switches), Upload avatar, Upload box; beyond them: Validation, Error and
+disabled, Open the file dialog. Built on react-dropzone's API (every option, the drag states,
+`open` / `removeFile` / `clearFiles`), HTML written by us (the upstream is React only): a native
+file input covers the zone (works without JavaScript), one core controller
+(`createUploadController`) handles drops, folders, paste, the File System Access picker, the
+dialog's `cancel` event and the checks; the files are mirrored into `input.files` for forms. React:
+`Upload`, `UploadAvatar`, `UploadBox`; HTML runtime `upload` (list rows from a `<template>`).
+Composes IconButton and Button. No new token, no dependency.
+Differences: an original illustration and icons; the description and helper texts use
+`text-secondary` and "browse" the primary AA text tone (the reference uses grey 500 and primary
+main); `multiple` defaults to `false` (Minimals' Upload, react-dropzone defaults to `true`);
+`maxFiles` counts the files held; the drag verdict also colors the zone (primary border on accept,
+error colors on reject); hover and drags strengthen the border instead of dimming the zone (the
+description stays AA); remove buttons are 24px or more.
+**Backlog:** a `useUpload` hook with `getRootProps` / `getInputProps` (react-dropzone's hook form);
+upload progress per file (LinearProgress) once an upload API is in scope.
+
 ## ✅ Components — Organization chart (ADR-0036, 2026-11-09)
 Created with `/component` from the reference "Organization chart" page, every section as a story:
 Simple, Standard, Group; beyond them: Lines (the upstream's line options). Built on the API of
@@ -680,7 +700,7 @@ Dependency-first: leaf components before the ones built from them, the ones that
 | 4 Overlays | ~~Popover~~ ✅, ~~Tooltip~~ ✅, ~~Menu~~ ✅, ~~Dialog~~ ✅, ~~Snackbar~~ ✅, ~~Backdrop~~ ✅ | ~~Drawer / Dialog backdrop~~ ✅ (native `::backdrop`, same token); icon button tooltips: nothing to change (MUI uses native `title` there; Tooltip wraps any IconButton) |
 | 5 Navigation | ~~Tabs~~ ✅, ~~Breadcrumbs~~ ✅, ~~Stepper~~ ✅ | — (nothing waited for them) |
 | 6 Composites | ~~Rating~~ ✅, ~~Slider~~ ✅, ~~Timeline~~ ✅, ~~Transfer list~~ ✅, ~~Autocomplete~~ ✅, ~~Tree view~~ ✅ | — (nothing waited for them; Slider unblocks the SettingsDrawer backlog of Theme settings) |
-| 7 Needs an ADR | ~~Data grid~~ (ADR-0020, phases below), ~~Date pickers~~ (ADR-0022, ADR-0030, complete ✅), ~~Chart~~ (ADR-0024, ADR-0027, ADR-0031, complete ✅), ~~Map~~ (ADR-0025) ✅, ~~Editor~~ (ADR-0023) ✅, ~~Carousel~~ (ADR-0033) ✅, ~~Lightbox~~ (ADR-0032) ✅, ~~Markdown~~ (ADR-0035) ✅, ~~Organization chart~~ (ADR-0036) ✅, Upload, Image, Walktour | — |
+| 7 Needs an ADR | ~~Data grid~~ (ADR-0020, phases below), ~~Date pickers~~ (ADR-0022, ADR-0030, complete ✅), ~~Chart~~ (ADR-0024, ADR-0027, ADR-0031, complete ✅), ~~Map~~ (ADR-0025) ✅, ~~Editor~~ (ADR-0023) ✅, ~~Carousel~~ (ADR-0033) ✅, ~~Lightbox~~ (ADR-0032) ✅, ~~Markdown~~ (ADR-0035) ✅, ~~Organization chart~~ (ADR-0036) ✅, ~~Upload~~ (ADR-0037) ✅, Image, Walktour | — |
 
 Not planned as components (patterns or app-level pages of the reference): Layout,
 Utilities, Multi-language, Navigation bar, Mega menu, Scroll progress, Form validation, Form wizard.
