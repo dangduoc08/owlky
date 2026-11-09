@@ -7,6 +7,7 @@ import {
   error403,
   error404,
   error500,
+  illustrations,
   maintenance,
   noConnection,
   noResults,
@@ -21,7 +22,8 @@ import { Avatar, Illustration } from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
 
 /*
- * Illustration stories: one per category, one group per picture. The HTML snippets
+ * Illustration stories: "All" (the contact sheet), then one per category, one group per picture.
+ * "All" reuses the category groups and snippets, in the set's order. The HTML snippets
  * (packages/html/src/components/illustration/examples) are generated from these examples:
  * `pnpm build && node apps/storybook/scripts/illustration-snippets.mjs`.
  */
@@ -92,3 +94,21 @@ export const illustrationStories: Record<string, ReactGroup[]> = {
     },
   ],
 };
+
+/**
+ * The "All" story (the contact sheet of the set): every picture of `illustrations`, in its order,
+ * as [category story, group index]. A picture missing from the category stories fails here.
+ */
+export const ILLUSTRATION_ALL: readonly (readonly [story: string, index: number])[] =
+  illustrations.map((picture) => {
+    for (const [story, files] of Object.entries(ILLUSTRATION_FILES)) {
+      const index = files.findIndex(([, file]) => file === picture.name);
+      if (index >= 0) return [story, index] as const;
+    }
+    throw new Error(`Illustration "${picture.name}" is in no story of ILLUSTRATION_FILES.`);
+  });
+
+/** React groups of the "All" story. */
+export const illustrationAll: ReactGroup[] = ILLUSTRATION_ALL.flatMap(
+  ([story, index]) => illustrationStories[story]?.[index] ?? [],
+);

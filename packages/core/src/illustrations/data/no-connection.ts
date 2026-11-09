@@ -1,26 +1,14 @@
 import type { Illustration } from "../../illustration/illustration.js";
+import { backdrop, cloud, dot, groundShadow, sparkle } from "../parts.js";
 
 /** No connection: an unplugged cable under a cloud. Original artwork (MIT). */
 export const noConnection: Illustration = {
   name: "no-connection",
   viewBox: "0 0 480 360",
   nodes: [
-    {
-      tag: "path",
-      tone: "main",
-      attrs: {
-        d: "M86 122C118 62 200 30 282 44c80 14 136 64 142 136 6 72-46 124-134 136-86 12-176-4-214-62-36-56-24-96 10-132Z",
-        opacity: 0.08,
-      },
-    },
-    { tag: "ellipse", tone: "shadow", attrs: { cx: 240, cy: 320, rx: 190, ry: 12 } },
-    {
-      tag: "path",
-      tone: "neutral",
-      attrs: {
-        d: "M170 150h133a34.2 34.2 0 0 0 0-68.4a49.4 49.4 0 0 0-91.2-19a38 38 0 0 0-64.6 26.6a30.4 30.4 0 0 0 22.8 60.8Z",
-      },
-    },
+    backdrop(),
+    groundShadow(),
+    cloud(170, 150, 1.9),
     { tag: "path", tone: "main", stroke: 9, attrs: { d: "M196 128a62 62 0 0 1 88 0" } },
     { tag: "path", tone: "main", stroke: 9, attrs: { d: "M213 146a38 38 0 0 1 54 0" } },
     { tag: "circle", tone: "main", attrs: { cx: 240, cy: 166, r: 7 } },
@@ -38,11 +26,7 @@ export const noConnection: Illustration = {
       stroke: 5,
       attrs: { d: "M240 236v-12M222 244l-8-8M258 244l8-8" },
     },
-    {
-      tag: "path",
-      tone: "accent-main",
-      attrs: { d: "M400 80Q400 90 410 90Q400 90 400 100Q400 90 390 90Q400 90 400 80Z" },
-    },
-    { tag: "circle", tone: "light", attrs: { cx: 80, cy: 120, r: 5 } },
+    sparkle(400, 90, 10),
+    dot(80, 120, 5),
   ],
 };

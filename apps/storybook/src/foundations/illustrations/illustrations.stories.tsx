@@ -1,10 +1,12 @@
 import { Illustration } from "@owlky/react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { snippetStory } from "../../components/shared/snippets.js";
-import { frameworkStory, reactGroupsStory } from "../../helpers/groups.js";
+import { frameworkStory, htmlGroupsStory, reactGroupsStory } from "../../helpers/groups.js";
 import {
+  ILLUSTRATION_ALL,
   ILLUSTRATION_CONTROLS,
   ILLUSTRATION_FILES,
+  illustrationAll,
   illustrationStories,
 } from "./illustration-examples.js";
 import { IllustrationsDocs } from "./illustrations-docs.js";
@@ -42,6 +44,26 @@ const story = (name: string, label: string): StoryObj => ({
   name: label,
 });
 
+/** Every picture on one page, from the category stories' groups and snippets. */
+const all: StoryObj = {
+  ...frameworkStory({
+    html: htmlGroupsStory(
+      ILLUSTRATION_ALL.map(([story, index]) => {
+        const [title = "", file = ""] = ILLUSTRATION_FILES[story]?.[index] ?? [];
+        const html = Object.entries(snippets).find(([path]) =>
+          path.endsWith(`/${story}-${file}.html`),
+        )?.[1];
+        if (html === undefined) throw new Error(`Missing snippet ${story}-${file}.html`);
+        return { title, html };
+      }),
+      SETUP,
+      ILLUSTRATION_CONTROLS,
+    ),
+    react: reactGroupsStory(illustrationAll, { ...ILLUSTRATION_CONTROLS, target: Illustration }),
+  }),
+  name: "All",
+};
+
 const meta = {
   title: "Foundations/Illustrations",
   tags: ["autodocs"],
@@ -58,6 +80,8 @@ const meta = {
 
 export default meta;
 
+/** Every illustration: a contact sheet to check that the set looks consistent. */
+export const All: StoryObj = all;
 /** Error pages. */
 export const Errors: StoryObj = story("errors", "Errors");
 /** Empty, waiting and unavailable states. */

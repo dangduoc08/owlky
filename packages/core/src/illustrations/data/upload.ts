@@ -1,6 +1,11 @@
 import type { Illustration } from "../../illustration/illustration.js";
+import { dot, groundShadow, paper } from "../parts.js";
 
-/** Upload: an open folder with two pages and an arrow (the Upload drop zone). Original artwork (MIT). */
+/**
+ * Upload: an open folder with two pages and an arrow (the Upload drop zone). Original artwork
+ * (MIT). Drawn on a 200 × 150 grid scaled to the canvas; no backdrop, because the drop zone
+ * paints its own surface.
+ */
 export const upload: Illustration = {
   name: "upload",
   viewBox: "0 0 480 360",
@@ -9,11 +14,11 @@ export const upload: Illustration = {
       tag: "g",
       attrs: { transform: "scale(2.4)" },
       children: [
-        { tag: "ellipse", tone: "shadow", attrs: { cx: 100, cy: 138, rx: 76, ry: 7 } },
-        { tag: "circle", tone: "light", attrs: { cx: 26, cy: 34, r: 5 } },
-        { tag: "circle", tone: "light", attrs: { cx: 176, cy: 26, r: 4 } },
-        { tag: "circle", tone: "light", attrs: { cx: 184, cy: 96, r: 3 } },
-        { tag: "circle", tone: "light", attrs: { cx: 14, cy: 104, r: 3 } },
+        groundShadow({ cx: 100, cy: 138, rx: 76, ry: 7 }),
+        dot(26, 34, 5),
+        dot(176, 26, 4),
+        dot(184, 96, 3),
+        dot(14, 104, 3),
         {
           tag: "path",
           tone: "dark",
@@ -21,34 +26,26 @@ export const upload: Illustration = {
             d: "M38 44h42l10 12h72a8 8 0 0 1 8 8v58a8 8 0 0 1-8 8H38a8 8 0 0 1-8-8V52a8 8 0 0 1 8-8Z",
           },
         },
-        {
-          tag: "g",
-          attrs: { transform: "rotate(-8 88 60)" },
-          children: [
-            { tag: "rect", tone: "paper", attrs: { x: 58, y: 18, width: 62, height: 78, rx: 6 } },
-            {
-              tag: "rect",
-              tone: "outline",
-              stroke: 1,
-              attrs: { x: 58, y: 18, width: 62, height: 78, rx: 6 },
-            },
-            { tag: "path", tone: "line", stroke: 4, attrs: { d: "M68 34h34M68 44h42M68 54h26" } },
-          ],
-        },
-        {
-          tag: "g",
-          attrs: { transform: "rotate(7 118 56)" },
-          children: [
-            { tag: "rect", tone: "paper", attrs: { x: 88, y: 16, width: 62, height: 78, rx: 6 } },
-            {
-              tag: "rect",
-              tone: "outline",
-              stroke: 1,
-              attrs: { x: 88, y: 16, width: 62, height: 78, rx: 6 },
-            },
-            { tag: "path", tone: "line", stroke: 4, attrs: { d: "M98 32h40M98 42h30M98 52h36" } },
-          ],
-        },
+        ...paper({
+          x: 58,
+          y: 18,
+          width: 62,
+          height: 78,
+          radius: 6,
+          outline: 1,
+          lines: { x: 68, y: 34, lengths: [34, 42, 26], gap: 10, width: 4 },
+          transform: "rotate(-8 88 60)",
+        }),
+        ...paper({
+          x: 88,
+          y: 16,
+          width: 62,
+          height: 78,
+          radius: 6,
+          outline: 1,
+          lines: { x: 98, y: 32, lengths: [40, 30, 36], gap: 10, width: 4 },
+          transform: "rotate(7 118 56)",
+        }),
         {
           tag: "path",
           tone: "main",

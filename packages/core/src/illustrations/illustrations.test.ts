@@ -21,7 +21,10 @@ const walk = (nodes: readonly IllustrationNode[], visit: (node: IllustrationNode
 
 describe("illustration set", () => {
   it("exports every illustration once, and lists them all", () => {
-    const exported = Object.entries(entry).filter(([name]) => name !== "illustrations");
+    // The other exports are the parts (functions) and the part names.
+    const exported = Object.entries(entry).filter(
+      ([name, value]) => name !== "illustrations" && typeof value === "object" && "nodes" in value,
+    );
     expect(exported).toHaveLength(illustrations.length);
     for (const [, value] of exported) expect(illustrations).toContain(value);
     expect(illustrations.length).toBeGreaterThanOrEqual(16);

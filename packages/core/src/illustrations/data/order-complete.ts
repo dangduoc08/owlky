@@ -1,19 +1,13 @@
 import type { Illustration } from "../../illustration/illustration.js";
+import { backdrop, dot, groundShadow, sparkle } from "../parts.js";
 
 /** Order complete: a shopping bag with a check mark and confetti. Original artwork (MIT). */
 export const orderComplete: Illustration = {
   name: "order-complete",
   viewBox: "0 0 480 360",
   nodes: [
-    {
-      tag: "path",
-      tone: "main",
-      attrs: {
-        d: "M86 122C118 62 200 30 282 44c80 14 136 64 142 136 6 72-46 124-134 136-86 12-176-4-214-62-36-56-24-96 10-132Z",
-        opacity: 0.08,
-      },
-    },
-    { tag: "ellipse", tone: "shadow", attrs: { cx: 240, cy: 320, rx: 190, ry: 12 } },
+    backdrop(),
+    groundShadow(),
     { tag: "path", tone: "ink", stroke: 10, attrs: { d: "M200 132v-22a40 40 0 0 1 80 0v22" } },
     {
       tag: "path",
@@ -31,6 +25,7 @@ export const orderComplete: Illustration = {
     { tag: "circle", tone: "ink", attrs: { cx: 280, cy: 140, r: 6 } },
     { tag: "circle", tone: "white", attrs: { cx: 240, cy: 222, r: 42 } },
     { tag: "path", tone: "main", stroke: 12, attrs: { d: "M220 222l14 14 26-28" } },
+    // Confetti.
     {
       tag: "rect",
       tone: "accent-main",
@@ -53,17 +48,9 @@ export const orderComplete: Illustration = {
     },
     { tag: "path", tone: "light", stroke: 5, attrs: { d: "M118 150c10-10 0-20 10-30" } },
     { tag: "path", tone: "accent-main", stroke: 5, attrs: { d: "M352 128c10 6 20-4 30 2" } },
-    {
-      tag: "path",
-      tone: "accent-main",
-      attrs: { d: "M140 50Q140 60 150 60Q140 60 140 70Q140 60 130 60Q140 60 140 50Z" },
-    },
-    {
-      tag: "path",
-      tone: "light",
-      attrs: { d: "M340 32Q340 40 348 40Q340 40 340 48Q340 40 332 40Q340 40 340 32Z" },
-    },
-    { tag: "circle", tone: "accent-light", attrs: { cx: 410, cy: 260, r: 5 } },
-    { tag: "circle", tone: "light", attrs: { cx: 70, cy: 260, r: 5 } },
+    sparkle(140, 60, 10),
+    sparkle(340, 40, 8, "light"),
+    dot(410, 260, 5, "accent-light"),
+    dot(70, 260, 5),
   ],
 };

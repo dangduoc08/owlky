@@ -15,6 +15,13 @@ color scheme, nested themes, `data-ok-preset` and the `color` option. One export
 the opt-in entry `@owlky/core/illustrations` (tree-shaken). Components that show decorative art
 compose it (Upload's drop zone).
 
+## Style
+Every scene follows `docs/illustrations-style.md` (canvas, composition, tones, strokes, people,
+detail) and composes the parts of `@owlky/core/illustrations` (`backdrop`, `groundShadow`,
+`sparkle`, `dot`, `cloud`, `plant`, `lines`, `paper`, `screen`, `person`;
+`core/src/illustrations/parts.ts`). Parts set `part` on their first node (data only, never
+rendered); `core/src/illustrations/style.test.ts` enforces the guide. New pictures: `/illustration`.
+
 ## Anatomy
 ```
 svg[data-ok-illustration="<name>"][data-ok-color][data-ok-size]?[viewBox][focusable="false"]
@@ -83,6 +90,8 @@ art has no contrast requirement (axe passes in light and dark).
 HTML instance: `runtime.get(svg, "illustration").illustration` (the data drawn, or `undefined`).
 Core: `illustrationAttributes(name, options)`, `illustrationNodeAttributes(node)`,
 `illustrationChildren(nodes)`, `illustrationStyle(size)`, `illustrationAria(named, title?)`.
+`@owlky/core/illustrations`: the pictures, `illustrations`, the parts (pure functions returning
+nodes; numbers and tones only) and `illustrationParts` (the `part` names).
 
 ## Parity notes
 Snippets carry the shapes; the runtime draws the same markup for named placeholders (tested).

@@ -2,7 +2,7 @@ import { expect, type Page, test } from "@playwright/test";
 import { implementations, openStory, storyId } from "./helpers.js";
 import { viewports } from "./viewports.js";
 
-const STORIES = ["errors", "states", "account", "dashboard", "shapes"];
+const STORIES = ["all", "errors", "states", "account", "dashboard", "shapes"];
 
 /**
  * No page overflow, every illustration inside the page and its container, the 4:3 canvas (or the
@@ -100,6 +100,28 @@ test.describe("illustrations follow the theme", () => {
         expect(colors.neutral[0], `${impl} ${theme}`).toBe(colors.neutral[1]);
         expect(colors.hidden).toBe("true");
       }
+    }
+  });
+});
+
+test.describe("illustrations: the All story", () => {
+  test("shows every picture of the category stories once (both frameworks)", async ({ page }) => {
+    const names = () =>
+      page.evaluate(() =>
+        [...document.querySelectorAll("svg[data-ok-illustration]")].map(
+          (svg) => svg.getAttribute("data-ok-illustration") ?? "",
+        ),
+      );
+    for (const impl of implementations) {
+      const expected: string[] = [];
+      for (const story of STORIES.filter((name) => name !== "all")) {
+        await openStory(page, storyId(impl, "illustrations", story));
+        expected.push(...(await names()));
+      }
+      await openStory(page, storyId(impl, "illustrations", "all"));
+      const all = await names();
+      expect(new Set(all).size, impl).toBe(all.length);
+      expect([...all].sort(), impl).toEqual([...expected].sort());
     }
   });
 });

@@ -1,7 +1,9 @@
 /*
  * `@owlky/core/illustrations` (ADR-0041): the illustration set as data, one export per picture so
  * bundlers keep only the ones an app imports. Render them with React's `Illustration` or the HTML
- * runtime (`@owlky/html/illustrations`). All artwork is original (MIT).
+ * runtime (`@owlky/html/illustrations`). All artwork is original (MIT). The parts the pictures share
+ * (`backdrop`, `person`, …) are exported too, for custom art in the same style
+ * (docs/illustrations-style.md).
  */
 import type { Illustration } from "../illustration/illustration.js";
 import { avatarShape } from "./data/avatar-shape.js";
@@ -26,6 +28,30 @@ export type {
   IllustrationNode,
   IllustrationTone,
 } from "../illustration/illustration.js";
+export type {
+  GroundShadowOptions,
+  IllustrationBrandTone,
+  IllustrationPart,
+  IllustrationSkinTone,
+  IllustrationSparkleTone,
+  LinesOptions,
+  PaperOptions,
+  PersonOptions,
+  ScreenOptions,
+} from "./parts.js";
+export {
+  backdrop,
+  cloud,
+  dot,
+  groundShadow,
+  illustrationParts,
+  lines,
+  paper,
+  person,
+  plant,
+  screen,
+  sparkle,
+} from "./parts.js";
 export {
   avatarShape,
   comingSoon,
