@@ -50,7 +50,7 @@ for (const impl of implementations) {
       const content = await open(page, impl);
       // Focus first: on focus, ProseMirror restores its own selection in WebKit.
       await content.focus();
-      await content.locator("strong").dblclick();
+      await content.locator("strong").first().dblclick();
       await editorSelected(content);
       await page.getByRole("button", { name: "Insert link" }).click();
       const dialog = page.getByRole("dialog", { name: "Link URL" });
@@ -81,10 +81,36 @@ for (const impl of implementations) {
       const root = page.locator("[data-ok-editor]").first();
       await expect(root).toHaveAttribute("data-ok-fullscreen", "");
       await expect(root).toHaveCSS("position", "fixed");
-      await page.keyboard.press("Escape");
-      await expect(root).not.toHaveAttribute("data-ok-fullscreen", "");
+      // The page behind is dimmed and out of reach: Tab from the textbox wraps to the toolbar.
+      const backdrop = root.locator(":scope > [data-ok-backdrop]");
+      await expect(backdrop).toHaveAttribute("data-ok-open", "");
+      await expect(backdrop).toBeVisible();
+      await expect(page.locator("html")).toHaveCSS("overflow", "hidden");
       await page.keyboard.press("Tab");
       await expect(page.getByRole("textbox", { name: "Content" })).toBeFocused();
+      await page.keyboard.press("Tab");
+      await expect(page.getByRole("combobox", { name: "Language" })).toBeFocused();
+      await page.keyboard.press("Tab");
+      await expect(fullscreen).toBeFocused();
+      await page.keyboard.press("Escape");
+      await expect(root).not.toHaveAttribute("data-ok-fullscreen", "");
+      await expect(backdrop).toBeHidden();
+      await page.keyboard.press("Tab");
+      await expect(page.getByRole("textbox", { name: "Content" })).toBeFocused();
+    });
+
+    test("keeps text transforms and lists heading levels in their own type", async ({ page }) => {
+      const content = await open(page, impl);
+      await expect(content.locator("strong > span")).toHaveCSS("text-transform", "uppercase");
+      await expect(content.locator("p > span").first()).toHaveCSS("text-transform", "capitalize");
+      await page.getByRole("button", { name: "Heading 4" }).click();
+      const size = (name: string) =>
+        page
+          .getByRole("menuitem", { name })
+          .evaluate((item) => Number.parseFloat(getComputedStyle(item).fontSize));
+      expect(await size("Heading 1")).toBe(17);
+      expect(await size("Heading 6")).toBe(12);
+      expect(await size("Paragraph")).toBe(14);
     });
 
     test("the Full item switch hides the extra groups", async ({ page }) => {

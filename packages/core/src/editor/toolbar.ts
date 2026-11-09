@@ -28,6 +28,7 @@ export const editorActions = [
   "clearFormat",
   "undo",
   "redo",
+  "textTransform",
 ] as const;
 export type EditorAction = (typeof editorActions)[number];
 
@@ -39,7 +40,7 @@ export type EditorBlock = "paragraph" | `h${HeadingLevel}` | "other";
 
 export interface EditorToolButton {
   /** `data-ok-editor-action` value. */
-  readonly action: Exclude<EditorAction, "paragraph" | "heading"> | "fullscreen";
+  readonly action: Exclude<EditorAction, "paragraph" | "heading" | "textTransform"> | "fullscreen";
   /** Accessible name (`aria-label`). */
   readonly label: string;
   /** `aria-keyshortcuts` (Tiptap's default keys), when the action has one. */

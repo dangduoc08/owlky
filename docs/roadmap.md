@@ -537,6 +537,13 @@ switch and a live preview). Built on Tiptap 3 (ADR-0023, the first runtime depen
 controller (`@owlky/core/editor`) for React and HTML, opt-in HTML entry (`@owlky/html/editor`,
 `owlky-editor.js`), lowlight-compatible `highlighter` for code blocks. Composes Menu (heading),
 Popover + TextField + Button (link and image forms). No new tokens.
+**Update (2026-11-09, `/component editor`):** parity with the reference and the Minimals wrapper's
+Tiptap extensions: a text transform mark (`span[style="text-transform: …"]`, `textTransform`
+action; snippets use `data-ok-text-transform`), fullscreen over a composed Backdrop with page scroll
+lock and Tab kept inside (core `holdEditorFullscreen`), heading menu items in their own type, the
+"—" rule in the language menu; React no longer reloads a controlled value Tiptap writes differently.
+Additive (minor). Kept differences: inline code is primary text (AA), Undo / Redo / Remove link are
+disabled when they can't run, toolbar labels carry no shortcut text (`aria-keyshortcuts`).
 **Backlog (deferred):** Tiptap `extensions` / `editorProps` pass-through, bubble menu, tables,
 mentions, task lists, a form `name` (hidden input with the HTML), character count.
 

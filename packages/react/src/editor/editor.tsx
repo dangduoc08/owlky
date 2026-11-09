@@ -13,6 +13,7 @@ import {
   editorBlockLabels,
   editorIcons,
   editorToolbar,
+  holdEditorFullscreen,
   safeEditorUrl,
 } from "@owlky/core/editor";
 import {
@@ -27,10 +28,12 @@ import {
   useRef,
   useState,
 } from "react";
+import { Backdrop } from "../backdrop/backdrop.js";
 import { Button } from "../button/button.js";
 import { Menu, MenuItem } from "../menu/menu.js";
 import { Popover } from "../popover/popover.js";
 import { TextField } from "../text-field/text-field.js";
+import { useMergedRefs } from "../utils/refs.js";
 
 export type { EditorHighlighter } from "@owlky/core/editor";
 
@@ -69,6 +72,7 @@ const INITIAL: EditorState = {
   active: {} as EditorState["active"],
   disabled: { undo: true, redo: true, unlink: true } as EditorState["disabled"],
   link: null,
+  textTransform: null,
   empty: true,
   editable: true,
 };
@@ -127,6 +131,8 @@ export const Editor = forwardRef<HTMLDivElement, EditorProps>(function Editor(
     image: `${base}image`,
     imageTitle: `${base}image-title`,
   };
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const rootRefs = useMergedRefs(ref, rootRef);
   const contentRef = useRef<HTMLDivElement>(null);
   const toolbarRef = useRef<HTMLDivElement>(null);
   const controllerRef = useRef<EditorController | null>(null);
@@ -138,6 +144,10 @@ export const Editor = forwardRef<HTMLDivElement, EditorProps>(function Editor(
   // Values the editor reported (controlled only, oldest first) that the owner may still echo back
   // while the user types on. Capped: an owner that ignores changes never echoes them.
   const emittedRef = useRef<string[]>([]);
+  // The string the content was last loaded from (until the next edit): Tiptap normalizes markup
+  // (`style="a: b"` → `style="a: b;"`), so comparing it with getValue() would reload the content
+  // at mount, moving the selection and adding the trailing paragraph.
+  const loadedRef = useRef<string | null>(null);
   const controlledRef = useRef(value !== undefined);
   controlledRef.current = value !== undefined;
   const editableRef = useRef(editable);
@@ -152,6 +162,7 @@ export const Editor = forwardRef<HTMLDivElement, EditorProps>(function Editor(
   const [alt, setAlt] = useState("");
 
   useEffect(() => {
+    loadedRef.current = valueRef.current;
     const controller = createEditorController(contentRef.current as HTMLDivElement, {
       content: valueRef.current,
       editable: editableRef.current,
@@ -159,6 +170,7 @@ export const Editor = forwardRef<HTMLDivElement, EditorProps>(function Editor(
       highlighter,
       onChange: (next) => {
         valueRef.current = next;
+        loadedRef.current = null;
         if (controlledRef.current) emittedRef.current = [...emittedRef.current, next].slice(-50);
         onChangeRef.current?.(next);
       },
@@ -177,14 +189,17 @@ export const Editor = forwardRef<HTMLDivElement, EditorProps>(function Editor(
   // ignores are not undone: rich text can't be held back key by key.
   useEffect(() => {
     const controller = controllerRef.current;
-    if (value === undefined || !controller) return;
+    if (value === undefined || !controller || value === loadedRef.current) return;
     const echo = emittedRef.current.indexOf(value);
     if (echo >= 0) {
       emittedRef.current = emittedRef.current.slice(echo + 1);
       return;
     }
     emittedRef.current = [];
-    if (value !== controller.getValue()) controller.setContent(value);
+    if (value !== controller.getValue()) {
+      controller.setContent(value);
+      loadedRef.current = value;
+    }
   }, [value]);
 
   useEffect(() => {
@@ -200,6 +215,12 @@ export const Editor = forwardRef<HTMLDivElement, EditorProps>(function Editor(
     };
   }, []);
   useLayoutEffect(() => navigationRef.current?.sync());
+
+  // Fullscreen covers the page: lock its scroll and keep Tab inside the editor.
+  useEffect(() => {
+    if (!fullscreen || !rootRef.current) return;
+    return holdEditorFullscreen(rootRef.current);
+  }, [fullscreen]);
 
   const changeFullscreen = (next: boolean) => {
     setFullscreen(next);
@@ -234,7 +255,7 @@ export const Editor = forwardRef<HTMLDivElement, EditorProps>(function Editor(
   return (
     // biome-ignore lint/a11y/noStaticElementInteractions: Escape from any part leaves fullscreen.
     <div
-      ref={ref}
+      ref={rootRefs}
       {...editorAttributes({ fullItem, error })}
       data-ok-editable={editable ? undefined : "false"}
       data-ok-fullscreen={fullscreen ? "" : undefined}
@@ -250,6 +271,8 @@ export const Editor = forwardRef<HTMLDivElement, EditorProps>(function Editor(
       }}
       {...props}
     >
+      {/* Fullscreen dims the page behind the editor (editor.css keeps it under the editor). */}
+      <Backdrop open={fullscreen} />
       <div
         ref={toolbarRef}
         data-ok-editor-toolbar=""

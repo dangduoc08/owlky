@@ -1,3 +1,4 @@
+import { isScrollLocked } from "@owlky/core";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { userEvent } from "vitest/browser";
 import { createRuntime } from "../../runtime/runtime.js";
@@ -210,15 +211,45 @@ describe("editor snippet", () => {
     expect(root.hasAttribute("data-ok-fullscreen")).toBe(true);
     expect(tool("fullscreen").getAttribute("aria-pressed")).toBe("true");
     expect(instance.fullscreen).toBe(true);
+    // The composed Backdrop dims the page behind; the page doesn't scroll.
+    const backdrop = root.querySelector(":scope > [data-ok-backdrop]") as HTMLElement;
+    expect(backdrop.hasAttribute("data-ok-open")).toBe(true);
+    expect(isScrollLocked()).toBe(true);
     content.focus();
     await userEvent.keyboard("{Escape}");
     expect(instance.fullscreen).toBe(false);
+    expect(backdrop.hasAttribute("data-ok-open")).toBe(false);
+    expect(isScrollLocked()).toBe(false);
     instance.setFullscreen(false);
     instance.setFullscreen(true);
     expect(events).toEqual([true, false, true]);
     await userEvent.click(tool("link"));
     await userEvent.keyboard("{Escape}");
     expect(instance.fullscreen).toBe(true);
+  });
+
+  it("keeps Tab inside while fullscreen, also from markup, and releases on stop", async () => {
+    const host = mount(
+      '<div data-ok-editor data-ok-fullscreen><div data-ok-editor-toolbar role="toolbar" aria-label="Formatting"><button type="button" data-ok-editor-action="bold" aria-label="Bold">B</button></div><div data-ok-editor-body><div data-ok-editor-content role="textbox" aria-label="Notes"><p>x</p></div></div></div><button type="button">Behind</button>',
+    );
+    start();
+    await settle();
+    expect(isScrollLocked()).toBe(true);
+    const content = host.querySelector<HTMLElement>("[data-ok-editor-content]") as HTMLElement;
+    content.focus();
+    await userEvent.tab();
+    expect(document.activeElement?.getAttribute("aria-label")).toBe("Bold");
+    runtime?.stop();
+    runtime = undefined;
+    expect(isScrollLocked()).toBe(false);
+  });
+
+  it("shows text transforms from markup without a style attribute", async () => {
+    const { content, instance } = await setup();
+    const span = content.querySelector("span[style]") as HTMLElement;
+    expect(getComputedStyle(span).textTransform).toBe("uppercase");
+    expect(instance.value).toContain('<span style="text-transform: uppercase;">before</span>');
+    expect(instance.value).toContain('<span style="text-transform: capitalize;">upgrade</span>');
   });
 
   it("offers value, setValue, setEditable and focus", async () => {

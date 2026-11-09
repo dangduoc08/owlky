@@ -108,6 +108,11 @@ export const createCodeBlock = (highlighter: EditorHighlighter | undefined) =>
           auto.value = "";
           auto.textContent = "auto";
           field.append(auto);
+          // A rule between "auto" and the languages, as in the reference.
+          const rule = document.createElement("option");
+          rule.disabled = true;
+          rule.textContent = "\u2014";
+          field.append(rule);
           for (const language of highlighter.listLanguages()) {
             const option = document.createElement("option");
             option.value = language;

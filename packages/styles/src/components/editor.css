@@ -2,6 +2,7 @@
  * Editor — spec: specs/components/editor.md (ADR-0023)
  *
  * Anatomy:   div[data-ok-editor][data-ok-full-item]?[data-ok-error]?[data-ok-fullscreen]?
+ *              › div[data-ok-backdrop] (Backdrop, open while fullscreen)
  *              › div[data-ok-editor-toolbar][role=toolbar]
  *                  › button[data-ok-editor-heading] › span[data-ok-editor-heading-label] + svg
  *                  › div[data-ok-editor-group][data-ok-full]? › button[data-ok-editor-action] › svg
@@ -43,7 +44,12 @@
     inset: calc(var(--ok-spacing) * 4);
     z-index: var(--ok-z-modal);
     max-height: none;
-    box-shadow: var(--ok-shadow-dialog);
+  }
+
+  /* Fullscreen dims the page with the root's Backdrop (composed, first child), painted under the
+     editor's parts: they carry the paper themselves. Closed, the Backdrop is hidden. */
+  :where([data-ok-editor] > [data-ok-backdrop]) {
+    z-index: -1;
   }
 
   /* --- Toolbar ------------------------------------------------------------------------------ */
@@ -192,7 +198,13 @@
     min-height: 0;
     overflow: auto;
     border-radius: 0 0 var(--ok-radius-md) var(--ok-radius-md);
-    background-color: rgb(var(--ok-palette-grey-500-channel) / 0.08);
+    /* The tint over the paper (opaque over a fullscreen Backdrop). */
+    background:
+      linear-gradient(
+        rgb(var(--ok-palette-grey-500-channel) / 0.08),
+        rgb(var(--ok-palette-grey-500-channel) / 0.08)
+      ),
+      var(--ok-bg-paper);
   }
 
   :where([data-ok-editor-content]) {
@@ -484,6 +496,8 @@
     margin: 0;
     padding: calc(var(--ok-spacing) * 2) calc(var(--ok-spacing) * 3.5) calc(var(--ok-spacing) * 2.5);
     border-top: 1px solid var(--_ok-editor-border);
+    border-radius: 0 0 var(--ok-radius-md) var(--ok-radius-md);
+    background-color: var(--ok-bg-paper);
     color: var(--ok-text-secondary);
     font-size: var(--ok-typography-caption-font-size);
     line-height: var(--ok-typography-caption-line-height);
@@ -491,6 +505,35 @@
 
   :where([data-ok-editor][data-ok-error] [data-ok-editor-helper]) {
     color: var(--ok-palette-error-text);
+  }
+
+  /* Heading menu: each block in its own type, Heading 1 (17px) down to Heading 6 (12px). */
+  :where([data-ok-menu-item][data-ok-editor-block^="h"]) {
+    font-weight: var(--ok-font-weight-bold);
+  }
+
+  :where([data-ok-menu-item][data-ok-editor-block="h1"]) {
+    font-size: calc(var(--ok-font-size-xl) * 17 / 16);
+  }
+
+  :where([data-ok-menu-item][data-ok-editor-block="h2"]) {
+    font-size: var(--ok-font-size-xl);
+  }
+
+  :where([data-ok-menu-item][data-ok-editor-block="h3"]) {
+    font-size: var(--ok-font-size-lg);
+  }
+
+  :where([data-ok-menu-item][data-ok-editor-block="h4"]) {
+    font-size: var(--ok-font-size-md);
+  }
+
+  :where([data-ok-menu-item][data-ok-editor-block="h5"]) {
+    font-size: var(--ok-font-size-sm);
+  }
+
+  :where([data-ok-menu-item][data-ok-editor-block="h6"]) {
+    font-size: var(--ok-font-size-xs);
   }
 
   :where([data-ok-editor-form]) {

@@ -8,6 +8,7 @@ import {
   type EditorState,
   editorActions,
   editorBlockLabels,
+  holdEditorFullscreen,
   safeEditorUrl,
 } from "@owlky/core/editor";
 import { defineComponent } from "../../runtime/define.js";
@@ -114,13 +115,20 @@ export const createEditor = ({ highlighter }: CreateEditorOptions = {}) =>
       });
       paint(controller.getState());
 
+      // Fullscreen: the page behind is dimmed (the root's Backdrop), locked and out of Tab's reach.
+      let release: (() => void) | null = null;
       const setFullscreen = (next: boolean) => {
         if (element.hasAttribute(fullscreenOption.attr) === next) return;
         element.toggleAttribute(fullscreenOption.attr, next);
         for (const button of own("[data-ok-editor-action='fullscreen']"))
           button.setAttribute("aria-pressed", String(next));
+        for (const backdrop of element.querySelectorAll(":scope > [data-ok-backdrop]"))
+          backdrop.toggleAttribute("data-ok-open", next);
+        release?.();
+        release = next ? holdEditorFullscreen(element) : null;
         emit("fullscreen", { fullscreen: next });
       };
+      if (element.hasAttribute(fullscreenOption.attr)) release = holdEditorFullscreen(element);
 
       const popoverOf = (node: Element) =>
         runtime.get<{ close(reason?: string): boolean } & ComponentInstance>(
@@ -244,6 +252,7 @@ export const createEditor = ({ highlighter }: CreateEditorOptions = {}) =>
         },
         controller,
         destroy() {
+          release?.();
           navigation.destroy();
           controller.destroy({ restore: true });
         },

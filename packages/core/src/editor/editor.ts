@@ -5,6 +5,7 @@ import { Placeholder } from "@tiptap/extensions";
 import { DOMSerializer, DOMParser as SchemaParser } from "@tiptap/pm/model";
 import StarterKit from "@tiptap/starter-kit";
 import { createCodeBlock, type EditorHighlighter } from "./code-block.js";
+import { type EditorTextTransform, readTextTransform, TextTransform } from "./text-transform.js";
 import {
   type EditorAction,
   type EditorBlock,
@@ -21,6 +22,8 @@ export interface EditorState {
   readonly disabled: Readonly<Record<EditorAction, boolean>>;
   /** `href` of the link at the selection, or `null`. */
   readonly link: string | null;
+  /** Text transform at the selection, or `null`. */
+  readonly textTransform: EditorTextTransform | null;
   readonly empty: boolean;
   readonly editable: boolean;
 }
@@ -34,6 +37,8 @@ export interface EditorActionValue {
   /** `image`: the URL (checked with `safeEditorUrl(…, "image")`) and its text alternative. */
   readonly src?: string | undefined;
   readonly alt?: string | undefined;
+  /** `textTransform`: `uppercase`, `lowercase` or `capitalize`; `null` removes it. */
+  readonly textTransform?: EditorTextTransform | null | undefined;
 }
 
 export interface EditorControllerOptions {
@@ -101,6 +106,7 @@ const extensions = (options: EditorControllerOptions) => [
   TextAlign.configure({ types: ["heading", "paragraph"] }),
   Image.configure({ allowBase64: false }),
   Placeholder.configure({ placeholder: options.placeholder ?? "" }),
+  TextTransform,
   ClearFormat,
 ];
 
@@ -145,7 +151,8 @@ function readState(editor: Editor): EditorState {
       case "blockquote":
         return editor.isActive(action);
       case "link":
-        return editor.isActive("link");
+      case "textTransform":
+        return editor.isActive(action);
       default:
         return false;
     }
@@ -163,6 +170,7 @@ function readState(editor: Editor): EditorState {
     active,
     disabled,
     link: typeof href === "string" ? href : null,
+    textTransform: readTextTransform(editor.getAttributes("textTransform")["textTransform"]),
     empty: editor.isEmpty,
     editable,
   };
@@ -283,6 +291,11 @@ export function createEditorController(
           return chain.undo().run();
         case "redo":
           return chain.redo().run();
+        case "textTransform": {
+          if (value.textTransform === null) return chain.unsetMark("textTransform").run();
+          const textTransform = readTextTransform(value.textTransform);
+          return textTransform !== null && chain.setMark("textTransform", { textTransform }).run();
+        }
         default:
           return false;
       }
