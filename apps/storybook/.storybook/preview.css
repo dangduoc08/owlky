@@ -1612,3 +1612,82 @@
   border-radius: var(--ok-radius-md);
   background-color: var(--ok-bg-paper);
 }
+
+/*
+ * Docs code blocks (src/helpers/guide.tsx): Storybook's text-only Copy bar gave no feedback, so
+ * it is hidden and an icon button sits in the block's top corner instead. It turns into a green
+ * check once the code is on the clipboard (a red cross if the browser refused).
+ */
+[data-docs-code] [role="tabpanel"] {
+  position: relative;
+}
+
+[data-docs-code] .docblock-source {
+  margin-top: calc(var(--ok-spacing) * 3);
+}
+
+[data-docs-code] .docblock-source > div:has(> button) {
+  display: none;
+}
+
+/* Keep the first lines readable under the button. */
+[data-docs-code] .docblock-source pre {
+  padding-inline-end: calc(var(--ok-spacing) * 14);
+}
+
+[data-docs-copy] {
+  position: absolute;
+  top: calc(var(--ok-spacing) * 5);
+  right: calc(var(--ok-spacing) * 2);
+  display: inline-grid;
+  place-items: center;
+  width: calc(var(--ok-spacing) * 9);
+  height: calc(var(--ok-spacing) * 9);
+  padding: 0;
+  border: 1px solid rgb(var(--ok-palette-common-white-channel) / 0.24);
+  border-radius: var(--ok-radius-md);
+  background: rgb(var(--ok-palette-common-white-channel) / 0.08);
+  color: var(--ok-palette-common-white);
+  cursor: pointer;
+  transition:
+    background-color 150ms,
+    border-color 150ms,
+    color 150ms,
+    transform 150ms;
+}
+
+[data-docs-copy] > svg[aria-hidden="true"] {
+  width: 18px;
+  height: 18px;
+}
+
+[data-docs-copy="idle"]:hover {
+  background: rgb(var(--ok-palette-common-white-channel) / 0.18);
+}
+
+[data-docs-copy]:active {
+  transform: scale(0.94);
+}
+
+[data-docs-copy]:focus-visible {
+  outline: 2px solid var(--ok-palette-common-white);
+  outline-offset: 2px;
+}
+
+[data-docs-copy="copied"] {
+  border-color: var(--ok-palette-success-main);
+  background: var(--ok-palette-success-main);
+  color: var(--ok-palette-common-white);
+}
+
+[data-docs-copy="failed"] {
+  border-color: var(--ok-palette-error-main);
+  background: var(--ok-palette-error-main);
+  color: var(--ok-palette-common-white);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-docs-copy] {
+    transition: none;
+  }
+}

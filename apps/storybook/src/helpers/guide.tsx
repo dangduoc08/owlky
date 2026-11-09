@@ -8,6 +8,7 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
+import { writeClipboard } from "./clipboard.js";
 import { frameworkGlobal } from "./framework-global.js";
 
 /*
@@ -31,6 +32,62 @@ const IMPLS: { id: Impl; label: string }[] = [
   { id: "html", label: "HTML" },
   { id: "react", label: "React" },
 ];
+
+const COPY_ICONS = {
+  idle: [
+    "M11 9h9a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-9a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2z",
+    "M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1",
+  ],
+  copied: ["M20 6 9 17l-5-5"],
+  failed: ["M18 6 6 18", "M6 6l12 12"],
+} as const;
+
+const COPY_LABELS = {
+  idle: "Copy code",
+  copied: "Copied",
+  failed: "Couldn't copy: select the code and copy it",
+} as const;
+
+/** Icon button over the code block; turns into a green check once the code is on the clipboard. */
+function CopyButton({ code }: { code: string }) {
+  const [state, setState] = useState<keyof typeof COPY_ICONS>("idle");
+  const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  useEffect(() => () => clearTimeout(timer.current), []);
+  const copy = async () => {
+    const copied = await writeClipboard(code.trim());
+    setState(copied ? "copied" : "failed");
+    clearTimeout(timer.current);
+    timer.current = setTimeout(() => setState("idle"), 2000);
+  };
+  return (
+    <>
+      <button
+        type="button"
+        onClick={copy}
+        aria-label={COPY_LABELS.idle}
+        title={COPY_LABELS[state]}
+        data-docs-copy={state}
+      >
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          {COPY_ICONS[state].map((d) => (
+            <path key={d} d={d} />
+          ))}
+        </svg>
+      </button>
+      <span role="status" className="sr-only">
+        {state === "idle" ? "" : COPY_LABELS[state]}
+      </span>
+    </>
+  );
+}
 
 /** HTML | React tabs (WAI-ARIA tabs, arrow keys); one choice drives every example on the page. */
 function CodeTabs({
@@ -89,12 +146,13 @@ function CodeTabs({
           aria-labelledby={`${id}-${tab.id}`}
           hidden={impl !== tab.id}
         >
-          {/* Storybook's Source block: syntax highlighting and a Copy button. */}
+          {/* Storybook's Source block for highlighting; its own Copy bar is hidden (preview.css). */}
           <Source
             code={(tab.id === "html" ? section.html : section.react) ?? ""}
             language={tab.id === "html" ? "html" : "tsx"}
             dark
           />
+          <CopyButton code={(tab.id === "html" ? section.html : section.react) ?? ""} />
         </div>
       ))}
     </div>

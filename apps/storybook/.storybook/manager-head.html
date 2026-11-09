@@ -1,15 +1,105 @@
 <style>
   /*
-   * Code panel: long story sources pushed the Copy button far below the fold. Keep its bar
-   * stuck to the bottom of the panel (overflow: clip instead of hidden, so sticky can work).
+   * Code panel: Storybook's text-only Copy button sat at the bottom and gave no feedback.
+   * Its bar becomes a zero-height row stuck to the top of the panel (overflow: clip instead of
+   * hidden, so sticky can work), and the button an icon button in its corner. The copy itself and
+   * the `data-owlky-copy` state come from code-copy.ts; so do the colors (Owlky tokens).
    */
   #storybook-panel-root .docblock-source {
+    display: flex;
+    flex-direction: column;
     overflow: clip;
   }
 
   #storybook-panel-root .docblock-source > div:has(> button) {
+    order: -1;
     position: sticky;
-    bottom: 0;
+    top: 0;
     z-index: 1;
+    display: flex;
+    justify-content: flex-end;
+    height: 0;
+    overflow: visible;
+    border: 0;
+    background: none;
+  }
+
+  #storybook-panel-root .docblock-source > div > button {
+    position: relative;
+    flex: none;
+    width: 36px;
+    height: 36px;
+    margin: 8px 12px 0 0;
+    padding: 0;
+    border: 1px solid var(--owlky-copy-border);
+    border-radius: 8px;
+    background: var(--owlky-copy-bg);
+    color: transparent;
+    font-size: 0;
+    box-shadow: none;
+    cursor: pointer;
+    transition:
+      background-color 150ms,
+      border-color 150ms,
+      transform 150ms;
+  }
+
+  #storybook-panel-root .docblock-source > div > button::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: 18px;
+    height: 18px;
+    background: var(--owlky-copy-fg);
+    mask: var(--owlky-copy-icon) center / contain no-repeat;
+    --owlky-copy-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M11 9h9a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-9a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2z'/%3E%3Cpath d='M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1'/%3E%3C/svg%3E");
+  }
+
+  #storybook-panel-root .docblock-source > div > button:hover {
+    background: var(--owlky-copy-hover);
+  }
+
+  #storybook-panel-root .docblock-source > div > button:focus-visible {
+    outline: 2px solid var(--owlky-copy-fg);
+    outline-offset: 2px;
+  }
+
+  #storybook-panel-root .docblock-source > div > button:active {
+    transform: scale(0.94);
+  }
+
+  #storybook-panel-root .docblock-source > div > button[data-owlky-copy="copied"] {
+    border-color: var(--owlky-copy-success);
+    background: var(--owlky-copy-success);
+  }
+
+  #storybook-panel-root .docblock-source > div > button[data-owlky-copy="failed"] {
+    border-color: var(--owlky-copy-error);
+    background: var(--owlky-copy-error);
+  }
+
+  #storybook-panel-root .docblock-source > div > button[data-owlky-copy="copied"]::before,
+  #storybook-panel-root .docblock-source > div > button[data-owlky-copy="failed"]::before {
+    background: var(--owlky-copy-on);
+  }
+
+  #storybook-panel-root .docblock-source > div > button[data-owlky-copy="copied"]::before {
+    --owlky-copy-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E");
+  }
+
+  #storybook-panel-root .docblock-source > div > button[data-owlky-copy="failed"]::before {
+    --owlky-copy-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 6 6 18'/%3E%3Cpath d='M6 6l12 12'/%3E%3C/svg%3E");
+  }
+
+  /* Keep the first lines readable under the button. */
+  #storybook-panel-root .docblock-source pre {
+    padding-inline-end: 64px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #storybook-panel-root .docblock-source > div > button {
+      transition: none;
+    }
   }
 </style>

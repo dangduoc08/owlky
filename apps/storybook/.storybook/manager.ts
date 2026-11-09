@@ -1,5 +1,6 @@
 import { addons } from "storybook/manager-api";
 import { create } from "storybook/theming";
+import "./code-copy.js";
 import "./toolbar.js";
 
 addons.setConfig({
