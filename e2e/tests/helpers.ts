@@ -150,8 +150,6 @@ export function normalizeStory(page: Page): Promise<NormalizedNode> {
       // Map (ADR-0025): HTML triggers; React opens popups and flies the map from handlers.
       "data-ok-map-popup-open",
       "data-ok-map-fly-to",
-      "data-ok-view",
-      "data-ok-duration",
       // React sets <option> selection as a property (compared through the select's :value).
       "selected",
     ]);
@@ -172,10 +170,14 @@ export function normalizeStory(page: Page): Promise<NormalizedNode> {
       const engine =
         element.hasAttribute("data-ok-code-editor-content") ||
         element.hasAttribute("data-ok-diff-editor-content");
+      // A Map fly-to trigger's view and duration are HTML-only too (scoped: Motion and Snackbar
+      // use `data-ok-duration` as an option).
+      const flyTo = element.hasAttribute("data-ok-map-fly-to");
       for (const { name, value } of Array.from(element.attributes).sort((a, b) =>
         a.name.localeCompare(b.name),
       )) {
         if (IGNORED.has(name) || (engine && !name.startsWith("data-ok-"))) continue;
+        if (flyTo && (name === "data-ok-view" || name === "data-ok-duration")) continue;
         attrs[name] = REFERENCES.has(name) ? "<ref>" : value;
       }
       if (element instanceof HTMLInputElement) {
