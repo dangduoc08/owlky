@@ -154,6 +154,7 @@ const GUIDES = [
   ["components-motion--docs", "Accessibility"],
   ["components-datagrid--docs", "Accessibility"],
   ["components-editor--docs", "Accessibility"],
+  ["components-markdown--docs", "Accessibility"],
   ["components-code-editor--docs", "Accessibility"],
   ["components-map--docs", "Accessibility"],
 ] as const;
@@ -165,6 +166,7 @@ const OPTION_TABLES: [string, (keyof typeof optionSchemas)[]][] = [
   ["components-avatar--docs", ["avatar", "avatar-group"]],
   ["components-badge--docs", ["badge"]],
   ["components-editor--docs", ["editor"]],
+  ["components-markdown--docs", ["markdown"]],
   ["components-code-editor--docs", ["code-editor", "diff-editor"]],
   [
     "components-map--docs",

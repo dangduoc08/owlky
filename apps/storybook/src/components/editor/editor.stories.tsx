@@ -17,7 +17,8 @@ const SETUP = [
   `<link rel="stylesheet" href="${CDN}/owlky.css">`,
   `<script src="${CDN}/owlky.js" defer></script>`,
   `<script src="${CDN}/owlky-editor.js" defer></script>`,
-  '<!-- npm: import "@owlky/styles/owlky.css" and "@owlky/html/auto", then "@owlky/html/editor" (or register createEditor() yourself, as below). -->',
+  `<script src="${CDN}/owlky-markdown.js" defer></script>`,
+  '<!-- npm: import "@owlky/styles/owlky.css" and "@owlky/html/auto", then "@owlky/html/editor" and "@owlky/html/markdown" (or register createEditor() and createMarkdown() yourself, as below). -->',
 ].join("\n");
 
 const meta = {

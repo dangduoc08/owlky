@@ -305,6 +305,8 @@ const pairs: [component: string, story: string][] = [
   ["map", "highlight-by-filter"],
   ["map", "heatmap"],
   ["map", "side-by-side"],
+  ["markdown", "html-content"],
+  ["markdown", "markdown-content"],
 ];
 
 /** Stories whose rows load after the first render (scripts, data sources): wait for them. */
@@ -331,10 +333,17 @@ async function loaded(page: Page, key: string) {
     return;
   }
   if (key === "editor/basic") {
-    // The HTML story registers the editor in its page script: wait for both editors to mount.
+    // The HTML story registers the editor and Markdown in its page script: wait for both.
     await expect(page.locator('[data-ok-editor-content][contenteditable="true"]')).toHaveCount(1);
-    await expect(page.locator('[data-ok-editor-content][contenteditable="false"]')).toHaveCount(1);
+    await expect(page.locator(".sb-editor-preview [data-ok-markdown] h4")).toBeVisible();
     await expect(page.locator(".hljs-keyword").first()).toBeVisible();
+    return;
+  }
+  if (key.startsWith("markdown/")) {
+    // The HTML story registers Markdown in its page script: wait for the render and the image.
+    await expect(page.locator("[data-ok-markdown] h1")).toBeVisible();
+    await expect(page.locator("[data-ok-markdown] .hljs-keyword").first()).toBeVisible();
+    await page.waitForFunction(() => [...document.images].every((image) => image.complete));
     return;
   }
   if (key.startsWith("code-editor/")) {

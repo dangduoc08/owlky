@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="../../packages/html/dist/owlky.css" />
     <script src="../../packages/html/dist/owlky.js" defer></script>
     <script src="../../packages/html/dist/owlky-editor.js" defer></script>
+    <script src="../../packages/html/dist/owlky-markdown.js" defer></script>
   </head>
   <body>
     <main>
@@ -79,6 +80,18 @@
             <p>Edit <em>this</em> text, <span data-ok-text-transform="uppercase">loudly</span>.</p>
           </div>
         </div>
+      </div>
+      <!-- Markdown: rendered with DOM methods and CSSOM; raw HTML through the allow list. -->
+      <div id="csp-markdown" data-ok-markdown data-ok-raw-html>
+<pre data-ok-markdown-source>### Notes
+
+- [x] Ship it
+
+| Item | Count |
+| :-- | --: |
+| Apples | 3 |
+
+&lt;span style="text-transform: uppercase"&gt;loud&lt;/span&gt; &lt;img src="x" onerror="alert(1)"&gt; [unsafe](javascript:alert(1))</pre>
       </div>
       <a href="/docs" data-ok-button data-ok-variant="text" data-ok-color="inherit" data-ok-size="md">
         <span data-ok-button-label>Documentation</span>

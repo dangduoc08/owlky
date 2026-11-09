@@ -13,7 +13,10 @@ function measure(page: Page) {
     const problems: string[] = [];
     if (document.documentElement.scrollWidth > window.innerWidth)
       problems.push(`page overflows: ${document.documentElement.scrollWidth}px`);
-    const editors = [...document.querySelectorAll<HTMLElement>("[data-ok-editor]")];
+    // The editor and its preview (Markdown).
+    const editors = [
+      ...document.querySelectorAll<HTMLElement>("[data-ok-editor], [data-ok-markdown]"),
+    ];
     for (const [i, editor] of editors.entries()) {
       const box = editor.getBoundingClientRect();
       if (box.right > window.innerWidth + 0.5 || box.left < -0.5)
@@ -80,9 +83,7 @@ for (const viewport of viewports) {
       for (const impl of implementations) {
         const page = await context.newPage();
         await openStory(page, storyId(impl, "editor", "basic"));
-        await expect(page.locator('[data-ok-editor-content][contenteditable="false"]')).toHaveCount(
-          1,
-        );
+        await expect(page.locator(".sb-editor-preview [data-ok-markdown] h4")).toBeVisible();
         await expect(page.locator(".hljs-keyword").first()).toBeVisible();
         await page.evaluate(() => document.fonts.ready);
         const { problems, boxes, columns } = await measure(page);

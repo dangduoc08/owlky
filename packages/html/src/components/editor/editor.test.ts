@@ -94,12 +94,22 @@ describe("editor snippet", () => {
     expect(instance.value).toContain("<h4>Plan the release</h4>");
     expect(content.querySelector("[data-ok-editor-code-block] pre")).not.toBeNull();
     expect(root.querySelector("[data-ok-editor-heading-label]")?.textContent).toBe("Heading 4");
-    const preview = host.querySelectorAll<HTMLElement>("[data-ok-editor]")[1] as HTMLElement;
-    const previewContent = preview.querySelector("[data-ok-editor-content]") as HTMLElement;
+    // The story's preview is Markdown (its own runtime): its source is the editor's HTML.
+    expect(host.querySelectorAll("[data-ok-editor]")).toHaveLength(1);
+    expect(host.querySelector("[data-ok-markdown-source]")?.textContent).toContain(
+      "<h4>Plan the release</h4>",
+    );
+    // A read-only editor: no editing, toolbar hidden.
+    const readOnly = mount(`<div data-ok-editor data-ok-editable="false">
+      <div data-ok-editor-toolbar role="toolbar" aria-label="Formatting"></div>
+      <div data-ok-editor-body><div data-ok-editor-content role="textbox" aria-label="Read only"><p>Text</p></div></div>
+    </div>`);
+    await settle();
+    const previewContent = readOnly.querySelector("[data-ok-editor-content]") as HTMLElement;
     expect(previewContent.getAttribute("contenteditable")).toBe("false");
     expect(previewContent.getAttribute("aria-readonly")).toBe("true");
     expect(
-      getComputedStyle(preview.querySelector("[data-ok-editor-toolbar]") as Element).display,
+      getComputedStyle(readOnly.querySelector("[data-ok-editor-toolbar]") as Element).display,
     ).toBe("none");
     expectNamedButtons(root.querySelector("[data-ok-editor-toolbar]") as Element);
     await expectNoAxeViolations(host);

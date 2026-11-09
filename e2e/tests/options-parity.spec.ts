@@ -1,5 +1,5 @@
 import { type OptionSpec, optionSchemas } from "@owlky/core";
-import { expect, test } from "@playwright/test";
+import { expect, type Page, test } from "@playwright/test";
 import { normalizeStory, openStory, storyId } from "./helpers.js";
 
 /**
@@ -72,6 +72,7 @@ const CASES: [
   ["motion", "border", "motion-border", ["paused", "width", "duration"]],
   ["breadcrumbs", "text", "breadcrumbs", ["maxItems", "itemsBeforeCollapse", "itemsAfterCollapse"]],
   ["code-editor", "diff", "diff-editor", ["theme"]],
+  ["markdown", "markdown-content", "markdown", ["gfm", "skipHtml"]],
   [
     "text-field",
     "outlined",
@@ -79,6 +80,12 @@ const CASES: [
     ["size", "color", "error", "margin", "shrink", "disabled"],
   ],
 ];
+
+/** HTML stories whose page script renders after mount (Markdown): wait for the render. */
+async function rendered(page: Page, component: string) {
+  if (component === "markdown")
+    await page.locator("[data-ok-markdown-source][hidden]").first().waitFor({ state: "attached" });
+}
 
 /** A non-default value for the option, in Storybook's URL args syntax. */
 function testValue(spec: OptionSpec): string {
@@ -105,10 +112,12 @@ for (const [component, story, schemaName, keys] of CASES) {
       await openStory(page, storyId("react", component, story), "light", args);
       const react = await normalizeStory(page);
       await openStory(page, storyId("html", component, story), "light", args);
+      await rendered(page, component);
       const html = await normalizeStory(page);
       expect(react).toEqual(html);
       // The option really changed something (or is a runtime behavior read on action).
       await openStory(page, storyId("html", component, story));
+      await rendered(page, component);
       const pristine = await normalizeStory(page);
       if (spec.kind !== "behavior") expect(html).not.toEqual(pristine);
     });

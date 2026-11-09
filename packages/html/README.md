@@ -123,6 +123,20 @@ style, such as one of OpenFreeMap's free styles.
 <script src="https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky-map.js" defer></script>
 ```
 
+**Markdown** is a separate script too, because its parser (unified, with GitHub Flavored Markdown
+and an HTML sanitizer) adds about 100 kB gzip. Load it after `owlky.js` on pages that render
+Markdown, and write the Markdown, with `&` and `<` escaped, in a `pre[data-ok-markdown-source]`.
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky-markdown.js" defer></script>
+
+<div data-ok-markdown>
+<pre data-ok-markdown-source># Release notes
+
+- [x] Faster start-up</pre>
+</div>
+```
+
 ## npm
 
 ```ts
@@ -146,6 +160,10 @@ import { setMapWorkerUrl } from "@owlky/core/map";
 import workerUrl from "@owlky/core/map-worker.js?url"; // Vite; other bundlers: copy the file
 setMapWorkerUrl(workerUrl);
 await import("@owlky/html/map");
+
+// Markdown is opt-in too: import "@owlky/html/markdown", or register it with plugins or a highlighter.
+import { createMarkdown } from "@owlky/html";
+getRuntime().register(createMarkdown({ highlighter: createLowlight(common) })).start();
 ```
 
 ## Runtime API

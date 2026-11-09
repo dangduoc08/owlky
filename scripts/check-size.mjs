@@ -76,6 +76,10 @@ const budgets = [
   // owlky.js stays free of them.
   ["packages/html/dist/owlky-map.js", 310_000, "Map + MapLibre (IIFE, loaded after owlky.js)"],
   ["packages/html/dist/owlky-map-worker.js", 155_000, "MapLibre tile worker (loaded by the map)"],
+  // Markdown is opt-in (ADR-0035): unified, micromark with GFM, parse5 (raw HTML), the sanitizer
+  // and property-information are nearly all of owlky-markdown.js (about 102 kB measured);
+  // owlky.js stays free of them.
+  ["packages/html/dist/owlky-markdown.js", 110_000, "Markdown + unified (IIFE, after owlky.js)"],
   // 42 kB once the Map, the Carousel and the Code editor merged together (about 2.1 + 2 + 0.3 kB
   // on 38 kB): 40.4 kB.
   // 36.1 kB with the Code editor (ADR-0034: frame, loading state and fallback textareas; about

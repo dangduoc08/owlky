@@ -1,12 +1,12 @@
 import { expect, type Page, test } from "@playwright/test";
 import { editorSelected, implementations, openStory, storyId } from "./helpers.js";
 
-/** Both implementations of the story mounted: the editor and its read-only preview. */
+/** Both implementations of the story mounted: the editor and its preview (Markdown). */
 async function open(page: Page, impl: (typeof implementations)[number]) {
   await openStory(page, storyId(impl, "editor", "basic"));
   const content = page.getByRole("textbox", { name: "Content" });
   await expect(content).toHaveAttribute("contenteditable", "true");
-  await expect(page.locator('[data-ok-editor-content][contenteditable="false"]')).toHaveCount(1);
+  await expect(page.locator(".sb-editor-preview [data-ok-markdown] h4")).toBeVisible();
   return content;
 }
 
@@ -25,7 +25,7 @@ for (const impl of implementations) {
         "true",
       );
       await expect(content.locator("h4 em")).toHaveText("Plan the release");
-      const preview = page.locator('[data-ok-editor-content][contenteditable="false"]');
+      const preview = page.locator(".sb-editor-preview [data-ok-markdown]");
       await expect(preview.locator("h4 em")).toHaveText("Plan the release");
     });
 

@@ -56,6 +56,7 @@
 @import "./components/date-range-calendar.css";
 @import "./components/date-range-picker.css";
 @import "./components/editor.css";
+@import "./components/markdown.css";
 @import "./components/carousel.css";
 @import "./components/code-editor.css";
 @import "./components/map.css";

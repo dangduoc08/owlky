@@ -1,18 +1,20 @@
-import { createEditor, type EditorInstance, getRuntime } from "@owlky/html";
+import { createEditor, getRuntime, type MarkdownInstance } from "@owlky/html";
 import { common, createLowlight } from "lowlight";
+import { markdownDefinition } from "../markdown/markdown-script.js";
 
 // Syntax highlighting: lowlight with highlight.js's common languages.
 const editor = createEditor({ highlighter: createLowlight(common) });
 
-/** HTML: registers the editor, syncs the preview and the "Full item" switch. */
+/** HTML: registers the editor and Markdown, syncs the preview and the "Full item" switch. */
 export function editorScript(row: HTMLElement) {
-  const runtime = getRuntime().register(editor);
+  const runtime = getRuntime().register(editor, markdownDefinition);
   runtime.init(row);
-  const [main, preview] = row.querySelectorAll<HTMLElement>("[data-ok-editor]");
+  const main = row.querySelector<HTMLElement>("[data-ok-editor]");
+  const preview = row.querySelector<HTMLElement>("[data-ok-markdown]");
   const toggle = row.querySelector<HTMLInputElement>("[data-ok-switch] input");
   const sync = (event: Event) => {
     const { value } = (event as CustomEvent<{ value: string }>).detail;
-    runtime.get<EditorInstance>(preview ?? null, "editor")?.setValue(value);
+    runtime.get<MarkdownInstance>(preview, "markdown")?.setValue(value);
   };
   const full = () => main?.toggleAttribute("data-ok-full-item", toggle?.checked === true);
   main?.addEventListener("ok:editor:change", sync);
@@ -23,18 +25,23 @@ export function editorScript(row: HTMLElement) {
   };
 }
 
-export const EDITOR_SCRIPT_SOURCE = `import { createEditor, getRuntime } from "@owlky/html";
+export const EDITOR_SCRIPT_SOURCE = `import { createEditor, createMarkdown, getRuntime } from "@owlky/html";
 import { common, createLowlight } from "lowlight";
 
-// The editor with syntax highlighting (or import "@owlky/html/editor" without it).
-getRuntime().register(createEditor({ highlighter: createLowlight(common) })).start();
+// The editor and Markdown with syntax highlighting (or import "@owlky/html/editor" and
+// "@owlky/html/markdown" without it).
+const highlighter = createLowlight(common);
+getRuntime()
+  .register(createEditor({ highlighter }), createMarkdown({ highlighter }))
+  .start();
 
-const [editor, preview] = document.querySelectorAll("[data-ok-editor]");
+const editor = document.querySelector("[data-ok-editor]");
+const preview = document.querySelector("[data-ok-markdown]");
 const fullItem = document.querySelector("#editor-full-item");
 
-// Show the content in the read-only preview.
+// Render the editor's HTML in the preview.
 editor.addEventListener("ok:editor:change", (event) => {
-  getRuntime().get(preview, "editor").setValue(event.detail.value);
+  getRuntime().get(preview, "markdown").setValue(event.detail.value);
 });
 // The "Full item" switch shows every toolbar group.
 fullItem.addEventListener("change", () => {

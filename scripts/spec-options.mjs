@@ -81,6 +81,7 @@ const SPECS = {
   "date-range-picker": "date-picker.md",
   "date-range-calendar": "date-picker.md",
   editor: "editor.md",
+  markdown: "markdown.md",
   "code-editor": "code-editor.md",
   "diff-editor": "code-editor.md",
   map: "map.md",
