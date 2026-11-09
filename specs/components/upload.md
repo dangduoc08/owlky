@@ -26,7 +26,9 @@ div[data-ok-upload][data-ok-variant][data-ok-layout] …options
          [aria-describedby=<helper>]? [aria-invalid]? [multiple]? [accept]? [disabled]? [tabindex=-1 with noKeyboard]
          (covers the zone, opacity 0: a press opens the dialog, a drop fills it, even without JS)
     div[data-ok-upload-placeholder]
-      default: svg[data-ok-upload-illustration][aria-hidden] (shapes carry data-ok-tone)
+      default: svg[data-ok-illustration="upload"][data-ok-color="primary"][data-ok-upload-illustration][aria-hidden]
+               (the illustration set's `upload` picture by composition, specs/components/illustration.md;
+               shapes carry data-ok-tone, colors from illustration.css, the 200px width from upload.css)
                div[data-ok-upload-placeholder-text]
                  span[data-ok-upload-title][id]   "Drop or select a file" / "…files"
                  span[data-ok-upload-description] "Drag … or " span[data-ok-upload-browse] " your device."

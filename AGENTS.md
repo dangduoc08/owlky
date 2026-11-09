@@ -267,6 +267,16 @@ Specs (`specs/**`), ADRs and code comments are for maintainers: terse is fine th
   call them as plain functions): keep story examples stateless, or pass a `?raw` demo with `code`
   and no Controls (Checkbox "Indeterminate"). Text field stories render the password button
   without state; the docs page shows the stateful pattern.
+- Illustrations (ADR-0041): new decorative art in library code goes into the set
+  (`packages/core/src/illustrations/data/<name>.ts`, export + `illustrations` list, a story group,
+  then `pnpm build && node apps/storybook/scripts/illustration-snippets.mjs`), never an `<img>` of a
+  themed picture or hand-colored inline SVG. Shapes name a tone (`data-ok-tone`, allowlist in
+  `core/src/illustration/illustration.ts`), never a color; outlines are `stroke` in the data
+  (`data-ok-stroke`). Components compose `Illustration` with their own part attribute (Upload:
+  `data-ok-upload-illustration`; its size stays in the component's CSS). The data entry and the
+  runtime are opt-in (`@owlky/core/illustrations`, `owlky-illustrations.js`): `illustration` is in
+  `OPT_IN` (`components.test.ts`); Storybook's `preview.tsx` registers it. Foundations stories
+  with both frameworks are listed in `FRAMEWORK_FOUNDATIONS` (`e2e/tests/helpers.ts`).
 - Story images (Avatar portraits) are original SVGs in `apps/storybook/public/avatars/`
   (`staticDirs`), referenced **relatively** (`avatars/avatar-1.svg`) so they work under the e2e
   server's sub-path. HTML snippet tests rewrite those `src`s to an inline pixel (`local()` in the

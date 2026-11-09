@@ -67,6 +67,7 @@ const CASES: [
     ["error", "disabled", "noClick", "noDrag", "noKeyboard", "maxSize"],
   ],
   ["upload", "multiple", "upload", ["layout", "thumbnail", "maxFiles"]],
+  ["illustrations", "errors", "illustration", ["color", "size"]],
   [
     "walktour",
     "basic",

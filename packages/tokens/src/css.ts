@@ -16,6 +16,7 @@ import {
   radiusNames,
   type ShadowLayer,
   shadowNames,
+  skinToneNames,
   type Theme,
   typographyVariants,
 } from "./types.js";
@@ -73,6 +74,8 @@ function rootVariables(theme: Theme): CssVariables {
   vars["--ok-palette-common-white-channel"] = channel(theme.common.white);
   vars["--ok-palette-common-black"] = theme.common.black;
   vars["--ok-palette-common-black-channel"] = channel(theme.common.black);
+  for (const name of skinToneNames)
+    vars[`--ok-illustration-skin-${name}`] = theme.illustration.skin[name];
 
   const { typography } = theme;
   vars["--ok-font-family"] = typography.fontFamily;

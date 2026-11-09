@@ -17,6 +17,7 @@ component and each `/integrate` run.
 | Foundation | Grid | ✅ | Foundations › Grid | Phase 2' |
 | Foundation | Icons | ✅ | Foundations › Icons | Phase 2' |
 | Foundation | (Settings drawer) | ✅ | Foundations › Settings, `applyThemeSettings` | Theme settings |
+| Foundation | Illustrations (error, maintenance, empty, account and dashboard pages) | ✅ (ADR-0041) | Foundations › Illustrations, `Illustration`, `@owlky/core/illustrations` | Phase 2' |
 | MUI | Accordion | ✅ | Accordion | Accordion & Alert |
 | MUI | Alert | ✅ | Alert | Accordion & Alert |
 | MUI | Autocomplete | ✅ | Autocomplete | Rating, Slider, Timeline, Transfer list, Tree view & Autocomplete |
@@ -97,6 +98,16 @@ section, autodocs page, Controls), generated from the tokens:
 | Shadows | System elevations 1–24, extended shadows, colored shadows | `--ok-elevation-1…24` |
 | Grid | Spacing (0–40px) and column (1–12) stories driven by Controls | — |
 | Icons | Icon sets, sizes, colors, usage | — (no icon set bundled; reference logo/illustrations not reproduced) |
+| Illustrations (ADR-0041, 2026-11-09) | 16 original theme-aware pictures in five stories (Errors, States, Account, Dashboard, Shapes), framework toolbar, Controls `color` / `size`, usage guide | `--ok-illustration-skin-light / -medium / -deep`; `Illustration` (React), runtime `illustration` (opt-in `owlky-illustrations.js`), data in `@owlky/core/illustrations` |
+
+Illustrations: error 404 / 403 / 500, no connection, empty content, no results, maintenance, coming
+soon, sign in, email sent, reset password, welcome, upgrade, order complete, upload, avatar shape.
+All drawn by us (Humaaans is CC0 but only downloadable through a Gumroad checkout; ADR-0041).
+Upload's drop zone composes the `upload` picture. No other component draws an illustration (the
+other inline SVGs are icons, such as the Lightbox toolbar, or functional, such as the Walktour
+spotlight). Candidates for an optional picture, not changed (they would change anatomy and API):
+the Data grid's no-rows / no-results overlays (text only; the reference shows its "empty content"
+picture there) and empty Table / Transfer list states (`emptyContent`, `noResults`).
 
 ## ✅ Components — Button (first component, 2026-11-04)
 Created with `/component` from the reference "Buttons" page: 4 variants × 9 colors × 4 sizes,

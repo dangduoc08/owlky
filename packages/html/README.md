@@ -129,6 +129,17 @@ style, such as one of OpenFreeMap's free styles.
 <script src="https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky-map.js" defer></script>
 ```
 
+**Illustrations** are a separate script too (about 10 kB gzip with all 16 pictures). The snippets
+are inline SVG that needs only the stylesheet. Load `owlky-illustrations.js` after `owlky.js` to
+draw named placeholders and apply `data-ok-size`, or register `createIllustration([…])` with the
+pictures you import from `@owlky/core/illustrations`.
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky-illustrations.js" defer></script>
+
+<svg data-ok-illustration="error-404" data-ok-color="primary" aria-hidden="true"></svg>
+```
+
 **Markdown** is a separate script too, because its parser (unified, with GitHub Flavored Markdown
 and an HTML sanitizer) adds about 100 kB gzip. Load it after `owlky.js` on pages that render
 Markdown, and write the Markdown, with `&` and `<` escaped, in a `pre[data-ok-markdown-source]`.

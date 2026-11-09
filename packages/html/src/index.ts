@@ -41,6 +41,11 @@ export {
   type EditorInstance,
   editor,
 } from "./components/editor/editor.js";
+export {
+  createIllustration,
+  type IllustrationInstance,
+  illustration,
+} from "./components/illustration/illustration.js";
 export { components } from "./components/index.js";
 export { type MapInstance, map } from "./components/map/map.js";
 export {

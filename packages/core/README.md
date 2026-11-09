@@ -13,7 +13,9 @@ ADR-0034).
 to unified / remark / rehype, ADR-0035),
 `@owlky/core/map` (`createMapController`, `setMapWorkerUrl`, the only path to MapLibre GL JS,
 ADR-0025) and `@owlky/core/map-worker.js` (MapLibre's worker, for `setMapWorkerUrl`) are opt-in the
-same way.
+same way. `@owlky/core/illustrations` holds the illustration set as data, one export per picture
+(`error404`, `emptyContent`, `upload`, …, plus `illustrations`, the whole list), so bundles keep
+only the pictures they import (ADR-0041).
 
 Date library adapters for the pickers (ADR-0030) are opt-in entry points that take your own copy
 of the library, so Owlky adds no dependency (the libraries are optional peer dependencies):

@@ -86,8 +86,13 @@ const FOLDERS: Record<string, string> = {
   "linear-progress": "progress",
 };
 
+/** Foundations whose stories have both frameworks (ADR-0018 toolbar): `foundations-<name>--…`. */
+const FRAMEWORK_FOUNDATIONS = ["illustrations"];
+
 /** A component story rendered by one framework: `components-<folder>-<component>--<story>@<impl>`. */
 export const storyId = (impl: Implementation, component: string, story: string) => {
+  if (FRAMEWORK_FOUNDATIONS.includes(component))
+    return `foundations-${component}--${story}@${impl}`;
   const folder = FOLDERS[component];
   return `components-${folder ? `${folder}-` : ""}${component}--${story}@${impl}`;
 };
@@ -237,7 +242,8 @@ export function storyIds(prefix: string): string[] {
   return Object.values(index.entries)
     .filter((entry) => entry.type === "story" && entry.id.startsWith(prefix))
     .flatMap((entry) =>
-      entry.id.startsWith("components-")
+      entry.id.startsWith("components-") ||
+      FRAMEWORK_FOUNDATIONS.some((name) => entry.id.startsWith(`foundations-${name}--`))
         ? implementations.map((impl) => `${entry.id}@${impl}`)
         : [entry.id],
     );

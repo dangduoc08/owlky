@@ -6,15 +6,16 @@ import "@fontsource/barlow/700.css";
 import "@fontsource/barlow/800.css";
 import "./preview.css";
 import { applyThemeSettings, fontFamilyPresetNames, fontSizeRange } from "@owlky/core";
-import { components, getRuntime } from "@owlky/html";
+import { components, getRuntime, illustration } from "@owlky/html";
 import type { Preview } from "@storybook/react-vite";
 import { trackFrameworkGlobal } from "../src/helpers/framework-global.js";
 import { DEFAULT_FRAMEWORK } from "../src/helpers/groups.js";
 
 // The real HTML runtime runs in every story (started explicitly, as an npm user would). React
 // components opt out via data-ok-runtime="off", so both implementations coexist on one page.
+// The Illustration runtime is opt-in (`@owlky/html/illustrations`, ADR-0041): registered here too.
 getRuntime()
-  .register(...components)
+  .register(...components, illustration)
   .start();
 trackFrameworkGlobal();
 

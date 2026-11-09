@@ -1,0 +1,73 @@
+import type { Illustration } from "../../illustration/illustration.js";
+
+/** Sign in: a person next to a phone with a sign-in form and a shield. Original artwork (MIT). */
+export const signIn: Illustration = {
+  name: "sign-in",
+  viewBox: "0 0 480 360",
+  nodes: [
+    {
+      tag: "path",
+      tone: "main",
+      attrs: {
+        d: "M86 122C118 62 200 30 282 44c80 14 136 64 142 136 6 72-46 124-134 136-86 12-176-4-214-62-36-56-24-96 10-132Z",
+        opacity: 0.08,
+      },
+    },
+    { tag: "ellipse", tone: "shadow", attrs: { cx: 240, cy: 320, rx: 190, ry: 12 } },
+    { tag: "rect", tone: "ink", attrs: { x: 236, y: 44, width: 150, height: 266, rx: 24 } },
+    { tag: "rect", tone: "paper", attrs: { x: 246, y: 56, width: 130, height: 242, rx: 16 } },
+    { tag: "rect", tone: "ink", attrs: { x: 291, y: 62, width: 40, height: 8, rx: 4 } },
+    { tag: "circle", tone: "lighter", attrs: { cx: 311, cy: 108, r: 20 } },
+    { tag: "circle", tone: "main", attrs: { cx: 311, cy: 102, r: 8 } },
+    { tag: "path", tone: "main", attrs: { d: "M297 124a14 12 0 0 1 28 0Z" } },
+    { tag: "rect", tone: "neutral", attrs: { x: 264, y: 146, width: 94, height: 22, rx: 6 } },
+    { tag: "rect", tone: "neutral", attrs: { x: 264, y: 178, width: 94, height: 22, rx: 6 } },
+    { tag: "circle", tone: "grey-500", attrs: { cx: 276, cy: 189, r: 3 } },
+    { tag: "circle", tone: "grey-500", attrs: { cx: 288, cy: 189, r: 3 } },
+    { tag: "circle", tone: "grey-500", attrs: { cx: 300, cy: 189, r: 3 } },
+    { tag: "circle", tone: "grey-500", attrs: { cx: 312, cy: 189, r: 3 } },
+    { tag: "circle", tone: "grey-500", attrs: { cx: 324, cy: 189, r: 3 } },
+    { tag: "rect", tone: "main", attrs: { x: 264, y: 218, width: 94, height: 26, rx: 8 } },
+    { tag: "path", tone: "line", stroke: 6, attrs: { d: "M286 266h50" } },
+    {
+      tag: "path",
+      tone: "main",
+      attrs: { d: "M400 70l40 14v32c0 26-16 42-40 52-24-10-40-26-40-52V84Z" },
+    },
+    { tag: "path", tone: "dark", attrs: { d: "M400 70l40 14v32c0 26-16 42-40 52Z" } },
+    { tag: "path", tone: "white", stroke: 7, attrs: { d: "M386 116l10 10 18-20" } },
+    {
+      tag: "g",
+      attrs: {},
+      children: [
+        { tag: "path", tone: "ink", stroke: 17, attrs: { d: "M140 228L137 308" } },
+        { tag: "path", tone: "ink", stroke: 17, attrs: { d: "M160 228L163 308" } },
+        { tag: "rect", tone: "ink", attrs: { x: 127, y: 216, width: 46, height: 26, rx: 8 } },
+        { tag: "ellipse", tone: "ink", attrs: { cx: 133, cy: 314, rx: 14, ry: 6 } },
+        { tag: "ellipse", tone: "ink", attrs: { cx: 167, cy: 314, rx: 14, ry: 6 } },
+        { tag: "path", tone: "skin-deep", stroke: 10, attrs: { d: "M117 204L115 236" } },
+        { tag: "path", tone: "main", stroke: 14, attrs: { d: "M126 172L117 206" } },
+        { tag: "circle", tone: "skin-deep", attrs: { cx: 115, cy: 240, r: 6 } },
+        { tag: "path", tone: "skin-deep", stroke: 10, attrs: { d: "M196 180L224 162" } },
+        { tag: "path", tone: "main", stroke: 14, attrs: { d: "M174 172L196 180" } },
+        { tag: "circle", tone: "skin-deep", attrs: { cx: 224, cy: 162, r: 6 } },
+        { tag: "path", tone: "main", attrs: { d: "M121 180q0-18 16-18h26q16 0 16 18l-5 44h-48Z" } },
+        { tag: "rect", tone: "skin-deep", attrs: { x: 144, y: 148, width: 12, height: 16, rx: 4 } },
+        { tag: "path", tone: "shade", attrs: { d: "M144 156h12v8h-12Z" } },
+        { tag: "circle", tone: "skin-deep", attrs: { cx: 150, cy: 136, r: 18 } },
+        { tag: "circle", tone: "ink", attrs: { cx: 154, cy: 112, r: 10 } },
+        {
+          tag: "path",
+          tone: "ink",
+          attrs: { d: "M131 138c-4-20 8-32 22-31 14 1 21 12 16 26-6-9-16-12-38 5Z" },
+        },
+      ],
+    },
+    {
+      tag: "path",
+      tone: "accent-main",
+      attrs: { d: "M80 80Q80 90 90 90Q80 90 80 100Q80 90 70 90Q80 90 80 80Z" },
+    },
+    { tag: "circle", tone: "light", attrs: { cx: 200, cy: 50, r: 5 } },
+  ],
+};

@@ -30,6 +30,10 @@
       "import": "./dist/map/index.js"
     },
     "./map-worker.js": "./dist/map/worker.js",
+    "./illustrations": {
+      "types": "./dist/illustrations/index.d.ts",
+      "import": "./dist/illustrations/index.js"
+    },
     "./adapters/dayjs": {
       "types": "./dist/adapters/dayjs.d.ts",
       "import": "./dist/adapters/dayjs.js"
