@@ -22,6 +22,11 @@ E2E against the build: `pnpm --filter @owlky/e2e test:website` (or
   Website-only pages (Home, Get started) and the page registry are data in `src/content/`.
   The guide UI gets its code block (Shiki, highlighted at build time), prose (Owlky's `Markdown`,
   rendered at build time) and preview frame from `src/site/guide-host.tsx`.
+- **Home page.** A landing page with its own header and footer (`src/site/landing/`); the docs
+  pages share the `(docs)` route group's frame (`src/site/docs-shell.tsx`). It uses Owlky
+  components only, with layout CSS in `landing.css` (tokens for every value). Counts it states
+  (components, test files) come from `scripts/prepare.mjs`. The home page never uses `next/link`:
+  Next.js would list the home page's chunk for every page that imports it.
 - **Static only.** `output: "export"`, every route `force-static`, no route handlers or middleware.
   Builds use webpack (`next build --webpack`): Turbopack can't resolve the workspace's `.js`
   specifiers of TypeScript sources (`experimental.extensionAlias` maps them).

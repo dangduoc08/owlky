@@ -8,7 +8,7 @@ import { CONTRAST_EXEMPT } from "../tests/helpers.js";
  */
 
 const PAGES = [
-  { path: "/", heading: "Owlky" },
+  { path: "/", heading: "Accessible components, in HTML or React." },
   { path: "/get-started/", heading: "Get started" },
   { path: "/foundations/colors/", heading: "Colors" },
   { path: "/components/button/", heading: "Button" },
@@ -38,7 +38,10 @@ for (const { path, heading } of PAGES) {
     });
     await open(page, path);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(heading);
-    await expect(page.getByRole("navigation", { name: "Docs" })).toBeVisible();
+    // The home page is a landing page: its own navigation, no docs sidebar.
+    await expect(
+      page.getByRole("navigation", { name: path === "/" ? "Main" : "Docs" }),
+    ).toBeVisible();
     expect(errors).toEqual([]);
   });
 
@@ -107,7 +110,7 @@ test("the Copy button copies the code of the selected tab", async ({
 });
 
 test("search finds the Button page", async ({ page }) => {
-  await open(page, "/");
+  await open(page, "/get-started/");
   await page.getByRole("searchbox", { name: "Search the docs" }).fill("button");
   await page.getByRole("searchbox", { name: "Search the docs" }).press("Enter");
   await expect(page).toHaveURL(/\/search\/\?q=button/);
@@ -141,4 +144,73 @@ test("the theme menus switch and remember the theme", async ({ page }) => {
   await expect(page).toHaveURL(/\/components\/button\/$/);
   await page.reload();
   await expect(page.locator("html")).toHaveAttribute("data-ok-preset", "cyan");
+});
+
+test("the home page's preset swatches recolor the page and switch to dark mode", async ({
+  page,
+}) => {
+  await open(page, "/");
+  const primary = () =>
+    page.evaluate(() =>
+      getComputedStyle(document.documentElement)
+        .getPropertyValue("--ok-palette-primary-main")
+        .trim(),
+    );
+  const before = await primary();
+  const swatches = page.getByRole("group", { name: "Primary color" });
+  await expect(swatches.getByRole("button", { name: "Green" })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await swatches.getByRole("button", { name: "Purple" }).click();
+  await expect(page.locator("html")).toHaveAttribute("data-ok-preset", "purple");
+  await expect(swatches.getByRole("button", { name: "Purple" })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  expect(await primary()).not.toBe(before);
+  // The hero's accent line follows the preset.
+  const accent = await page
+    .locator("[data-landing-accent]")
+    .evaluate((element) => getComputedStyle(element).color);
+  expect(accent).not.toBe("");
+  await page.getByRole("switch", { name: "Dark mode" }).check();
+  await expect(page.locator("html")).toHaveAttribute("data-ok-theme", "dark");
+  // Saved like the docs pages' menus (the menus test covers restoring after a reload).
+  const saved = await page.evaluate(() => localStorage.getItem("owlky:theme-settings"));
+  expect(JSON.parse(saved ?? "{}")).toMatchObject({ mode: "dark", preset: "purple" });
+});
+
+test("the home page's sections render live components", async ({ page }) => {
+  await open(page, "/");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
+  for (const name of [
+    "Works with the tools you already use",
+    "Build dashboards faster, for everyone",
+    "What you get",
+    "And much more",
+    "How Owlky is built",
+    "Questions and answers",
+    "Start building today.",
+  ])
+    await expect(page.getByRole("heading", { level: 2, name })).toBeVisible();
+  // The dashboard preview draws its chart; the showcase switches tabs.
+  await expect(page.locator("[data-landing-chart-card] [data-ok-chart] svg").first()).toBeVisible();
+  const tabs = page.getByRole("tablist", { name: "Large components" });
+  await tabs.getByRole("tab", { name: "Charts" }).click();
+  await expect(page.getByRole("heading", { level: 3, name: "Charts" })).toBeVisible();
+  await tabs.getByRole("tab", { name: "Date pickers" }).click();
+  await expect(
+    page.getByRole("heading", { level: 3, name: "Date and time pickers" }),
+  ).toBeVisible();
+  // An FAQ entry opens.
+  await page.getByText("Is Owlky free to use?").click();
+  await expect(
+    page.getByText("Owlky is open source under the MIT license. You can use it"),
+  ).toBeVisible();
+  // The heavy opt-in engines never load on the home page.
+  const scripts = await page.evaluate(() =>
+    performance.getEntriesByType("resource").map((entry) => entry.name),
+  );
+  expect(scripts.filter((url) => /monaco|maplibre|tiptap|prosemirror/i.test(url))).toEqual([]);
 });

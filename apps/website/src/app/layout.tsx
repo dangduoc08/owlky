@@ -6,13 +6,10 @@ import "@fontsource/barlow/700.css";
 import "@fontsource/barlow/800.css";
 import "./globals.css";
 import { THEME_SETTINGS_KEY } from "@owlky/core";
-import { Link } from "@owlky/react";
 import { fontFamilyPresetNames, primaryPresetNames } from "@owlky/tokens";
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
-import { PAGES, SITE } from "../content/site.js";
-import { SiteHeader } from "../site/header.js";
-import { SiteNav } from "../site/nav.js";
+import { SITE } from "../content/site.js";
 
 export const dynamic = "force-static";
 
@@ -36,8 +33,6 @@ const THEME_SCRIPT = `(function () {
   } catch (e) {}
 })();`;
 
-const NAV = PAGES.map(({ path, title, group }) => ({ path, title, group }));
-
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     // The theme script changes these attributes before React hydrates.
@@ -51,23 +46,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:m-2">
           Skip to content
         </a>
-        <SiteHeader />
-        <div className="mx-auto grid max-w-[90rem] grid-cols-1 gap-8 px-4 py-8 md:grid-cols-[13rem_minmax(0,1fr)] md:px-8">
-          <aside className="md:sticky md:top-8 md:self-start">
-            <SiteNav items={NAV} />
-          </aside>
-          <main id="main" className="min-w-0" data-pagefind-body="">
-            {children}
-          </main>
-        </div>
-        <footer className="border-0 border-t border-solid border-divider px-4 py-6 text-center md:px-8">
-          <p className="m-0 text-[0.8125rem] text-text-secondary">
-            Owlky is open source under the MIT license.{" "}
-            <Link href={SITE.github} color="textPrimary">
-              Source on GitHub
-            </Link>
-          </p>
-        </footer>
+        {/* The docs pages' frame is the (docs) layout; the home page has its own. */}
+        {children}
       </body>
     </html>
   );
