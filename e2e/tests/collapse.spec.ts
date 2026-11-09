@@ -48,6 +48,12 @@ for (const impl of implementations) {
       ]);
       await show.check();
       await expect(collapses.nth(0)).toBeVisible();
+      // Each collapse holds a Paper at elevation 4 (the reference's raised card).
+      const papers = page.locator('[data-ok-collapse] > [data-ok-paper][data-ok-elevation="4"]');
+      await expect(papers).toHaveCount(4);
+      expect(
+        await papers.evaluateAll((all) => all.map((p) => getComputedStyle(p).boxShadow !== "none")),
+      ).toEqual([true, true, true, true]);
       // Open: the card (100px + 2 × 8px margin); vertical ones stretch to the 120px row (as MUI).
       expect(await sizes(page)).toEqual([
         [116, 120],

@@ -10,7 +10,7 @@ const snippets = import.meta.glob(
   { query: "?raw", import: "default", eager: true },
 ) as Record<string, string>;
 
-const css = ["form-control-label.css", "switch.css", "collapse.css"];
+const css = ["paper.css", "form-control-label.css", "switch.css", "collapse.css"];
 
 const meta = {
   title: "Components/Collapse",

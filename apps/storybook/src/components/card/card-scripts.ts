@@ -3,7 +3,7 @@
  * `useState`, the page decides what a button does. Each script returns its cleanup.
  */
 
-/** Complex interaction: the chevron shows or hides the section it controls. */
+/** Complex interaction: the chevron shows or hides the section it controls (a Collapse animates it). */
 export function expandScript(row: HTMLElement) {
   const onClick = (event: Event) => {
     const button = (event.target as Element).closest("[aria-controls][aria-expanded]");
@@ -20,6 +20,7 @@ export function expandScript(row: HTMLElement) {
 
 export const EXPAND_SCRIPT_SOURCE = `
 // Show or hide the section that the chevron button controls.
+// The section is a Collapse: the runtime animates it when \`hidden\` changes.
 document.addEventListener("click", (event) => {
   const button = event.target.closest("[data-ok-card] [aria-controls][aria-expanded]");
   if (!button) return;

@@ -5,13 +5,14 @@ import {
   CardContent,
   CardHeader,
   CardMedia,
+  Collapse,
   IconButton,
   Typography,
 } from "@owlky/react";
 import { useState } from "react";
 import { DemoIcon } from "../shared/demo-icon.js";
 
-/** A card whose method section opens and closes with the chevron button. */
+/** A card whose method section opens and closes with the chevron button, through a Collapse. */
 export function ComplexInteractionDemo() {
   const [expanded, setExpanded] = useState(false);
   return (
@@ -54,21 +55,23 @@ export function ComplexInteractionDemo() {
           <DemoIcon name="chevronDown" />
         </IconButton>
       </CardActions>
-      <CardContent id="card-garden-method" hidden={!expanded}>
-        <Typography variant="body2" gutterBottom>
-          Method:
-        </Typography>
-        <Typography variant="body2" gutterBottom>
-          Pick a spot with at least six hours of sun. Loosen the soil to a spade's depth and mix in
-          a layer of compost.
-        </Typography>
-        <Typography variant="body2" gutterBottom>
-          Set the plants a hand's width apart, firm the soil around each one and water them well.
-        </Typography>
-        <Typography variant="body2">
-          Water once a week while they settle in, then only in dry spells.
-        </Typography>
-      </CardContent>
+      <Collapse id="card-garden-method" in={expanded} timeout="auto">
+        <CardContent>
+          <Typography variant="body2" gutterBottom>
+            Method:
+          </Typography>
+          <Typography variant="body2" gutterBottom>
+            Pick a spot with at least six hours of sun. Loosen the soil to a spade's depth and mix
+            in a layer of compost.
+          </Typography>
+          <Typography variant="body2" gutterBottom>
+            Set the plants a hand's width apart, firm the soil around each one and water them well.
+          </Typography>
+          <Typography variant="body2">
+            Water once a week while they settle in, then only in dry spells.
+          </Typography>
+        </CardContent>
+      </Collapse>
     </Card>
   );
 }

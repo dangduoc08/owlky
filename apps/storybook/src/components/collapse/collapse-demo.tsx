@@ -1,14 +1,14 @@
-import { Collapse, FormControlLabel, Switch } from "@owlky/react";
+import { Collapse, FormControlLabel, Paper, Switch } from "@owlky/react";
 import { useState } from "react";
 
-/** A raised card with a triangle: the content each collapse shows. */
+/** A raised Paper with a triangle: the content each collapse shows. */
 function Shape() {
   return (
-    <div className="sb-collapse-paper">
+    <Paper className="sb-collapse-paper" elevation={4}>
       <svg aria-hidden="true" width="100" height="100" viewBox="0 0 100 100">
         <polygon points="0,100 50,0 100,100" />
       </svg>
-    </div>
+    </Paper>
   );
 }
 
