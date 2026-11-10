@@ -136,8 +136,11 @@ const budgets = [
   // at first, most of it the HTML of the date picker and data grid stories. 1 MB since the API
   // reference (ADR-0049: every prop, attribute, part, event, method, type and CSS variable per
   // component; about 145 kB gzip, 0.77 → 0.92 MB): gzip's 32 kB window can't share the props
-  // that the date picker family repeats per component, and agents need each one whole.
-  ["packages/mcp/manifest.json", 1_000_000, "MCP manifest (npm tarball, not a browser download)"],
+  // that the date picker family repeats per component, and agents need each one whole. 1.15 MB
+  // since the docs examples became complete (roadmap 3.4, `check:docs`): the guides' HTML repeats
+  // whole snippets (data grids, date pickers, the editor, the lightbox) instead of shortened
+  // copies, about 0.1 MB gzip.
+  ["packages/mcp/manifest.json", 1_150_000, "MCP manifest (npm tarball, not a browser download)"],
 ];
 
 let failed = false;
