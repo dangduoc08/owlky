@@ -393,6 +393,7 @@ describe("gantt runtime", () => {
     vi.restoreAllMocks();
   });
 
+  // Every snippet drawn and scanned by axe: about 15 s on a loaded runner, so a longer limit.
   it("has CSP-safe snippets that draw without axe violations", async () => {
     for (const [path, html] of snippets) {
       const host = mount(html);
@@ -404,5 +405,5 @@ describe("gantt runtime", () => {
       runtime?.stop();
       resetPage();
     }
-  });
+  }, 60_000);
 });
