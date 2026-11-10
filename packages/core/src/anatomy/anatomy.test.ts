@@ -1380,6 +1380,7 @@ describe("overlay attributes", () => {
       "data-ok-loading-variant": "linear-progress",
       "data-ok-toolbar-variant": "labeled",
       "data-ok-quick-filter-logic-operator": "and",
+      "data-ok-row-grouping-column-mode": "single",
       "data-ok-aggregation-rows-scope": "filtered",
     });
     expect(
@@ -1413,14 +1414,20 @@ describe("overlay attributes", () => {
       "data-ok-disable-row-selection-on-click": "",
       "data-ok-disable-column-menu": "",
       "data-ok-disable-multiple-columns-sorting": "",
+      "data-ok-row-grouping-column-mode": "single",
       "data-ok-aggregation-rows-scope": "filtered",
     });
     expect(dataGridAttributes({ density: HOSTILE })["data-ok-density"]).toBe("standard");
     // Phase 6: invalid scopes fall back; flags are written only when on.
     expect(
-      dataGridAttributes({ aggregationRowsScope: HOSTILE as never, cellSelection: true }),
+      dataGridAttributes({
+        aggregationRowsScope: HOSTILE as never,
+        rowGroupingColumnMode: HOSTILE as never,
+        cellSelection: true,
+      }),
     ).toMatchObject({
       "data-ok-aggregation-rows-scope": "filtered",
+      "data-ok-row-grouping-column-mode": "single",
       "data-ok-cell-selection": "",
     });
     expect(

@@ -1,0 +1,501 @@
+<div data-ok-data-grid data-ok-density="standard" data-ok-edit-mode="cell" data-ok-sorting-mode="client" data-ok-filter-mode="client" data-ok-pagination-mode="client" data-ok-loading-variant="linear-progress" data-ok-toolbar-variant="labeled" data-ok-quick-filter-logic-operator="and" data-ok-row-grouping-column-mode="multiple" data-ok-aggregation-rows-scope="filtered" data-ok-row-grouping-model="[&quot;region&quot;,&quot;product&quot;]" data-ok-aggregation-model="{&quot;revenue&quot;:&quot;sum&quot;}" id="grid-grouping-multiple" class="sb-grid-wide">
+  <div role="treegrid" data-ok-data-grid-main aria-label="Sales by region and product" aria-rowcount="6" aria-colcount="7">
+    <div role="rowgroup" data-ok-data-grid-header>
+      <div role="row" aria-rowindex="1">
+        <div role="columnheader" aria-colindex="1" data-ok-field="__row_group_by_columns_group_region__" tabindex="-1" data-ok-width="200"><span data-ok-data-grid-header-title>Region</span></div>
+        <div role="columnheader" aria-colindex="2" data-ok-field="__row_group_by_columns_group_product__" tabindex="-1" data-ok-width="200"><span data-ok-data-grid-header-title>Product</span></div>
+        <div role="columnheader" aria-colindex="3" data-ok-field="region" data-ok-type="string" data-ok-align="left" data-ok-width="130" aria-sort="none" tabindex="-1">
+          <span data-ok-data-grid-header-title>Region</span>
+          <span data-ok-data-grid-sort-icon><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 4l-6 6h4v10h4V10h4z" /></svg></span>
+          <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-menu-button tabindex="-1" aria-label="Region column menu" aria-haspopup="menu" aria-expanded="false" aria-controls="grid-grouping-multiple-column-menu"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg></button>
+          <span data-ok-data-grid-resize aria-hidden="true"></span>
+        </div>
+        <div role="columnheader" aria-colindex="4" data-ok-field="product" data-ok-type="string" data-ok-align="left" data-ok-width="130" aria-sort="none" tabindex="-1">
+          <span data-ok-data-grid-header-title>Product</span>
+          <span data-ok-data-grid-sort-icon><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 4l-6 6h4v10h4V10h4z" /></svg></span>
+          <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-menu-button tabindex="-1" aria-label="Product column menu" aria-haspopup="menu" aria-expanded="false" aria-controls="grid-grouping-multiple-column-menu"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg></button>
+          <span data-ok-data-grid-resize aria-hidden="true"></span>
+        </div>
+        <div role="columnheader" aria-colindex="5" data-ok-field="year" data-ok-type="number" data-ok-align="right" data-ok-width="100" aria-sort="none" tabindex="-1">
+          <span data-ok-data-grid-header-title>Year</span>
+          <span data-ok-data-grid-sort-icon><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 4l-6 6h4v10h4V10h4z" /></svg></span>
+          <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-menu-button tabindex="-1" aria-label="Year column menu" aria-haspopup="menu" aria-expanded="false" aria-controls="grid-grouping-multiple-column-menu"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg></button>
+          <span data-ok-data-grid-resize aria-hidden="true"></span>
+        </div>
+        <div role="columnheader" aria-colindex="6" data-ok-field="units" data-ok-type="number" data-ok-align="right" data-ok-width="110" aria-sort="none" tabindex="-1">
+          <span data-ok-data-grid-header-title>Units</span>
+          <span data-ok-data-grid-sort-icon><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 4l-6 6h4v10h4V10h4z" /></svg></span>
+          <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-menu-button tabindex="-1" aria-label="Units column menu" aria-haspopup="menu" aria-expanded="false" aria-controls="grid-grouping-multiple-column-menu"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg></button>
+          <span data-ok-data-grid-resize aria-hidden="true"></span>
+        </div>
+        <div role="columnheader" aria-colindex="7" data-ok-field="revenue" data-ok-type="number" data-ok-align="right" data-ok-width="130" aria-sort="none" tabindex="-1">
+          <span data-ok-data-grid-header-title>Revenue</span>
+          <span data-ok-data-grid-aggregation-label>sum</span>
+          <span data-ok-data-grid-sort-icon><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 4l-6 6h4v10h4V10h4z" /></svg></span>
+          <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-data-grid-menu-button tabindex="-1" aria-label="Revenue column menu" aria-haspopup="menu" aria-expanded="false" aria-controls="grid-grouping-multiple-column-menu"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" /></svg></button>
+          <span data-ok-data-grid-resize aria-hidden="true"></span>
+        </div>
+      </div>
+    </div>
+    <div role="rowgroup" data-ok-data-grid-body>
+      <div role="row" aria-rowindex="2" data-ok-row-id="auto-generated-row-region/North" data-ok-generated aria-level="1" aria-posinset="1" aria-setsize="4" aria-expanded="false">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__row_group_by_columns_group_region__" tabindex="-1">
+          <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" tabindex="-1" data-ok-data-grid-tree-toggle aria-label="see children" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M9 6l6 6-6 6-1.4-1.4 4.6-4.6-4.6-4.6z" /></svg></button>
+          <span data-ok-data-grid-tree-label>North</span>
+          <span data-ok-data-grid-tree-count>(6)</span>
+        </div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="__row_group_by_columns_group_product__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="region" data-ok-align="left" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="product" data-ok-align="left" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="year" data-ok-align="right" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="6" data-ok-field="units" data-ok-align="right" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="7" data-ok-field="revenue" data-ok-align="right" tabindex="-1">1760</div>
+      </div>
+      <div role="row" aria-rowindex="1" hidden data-ok-row-id="auto-generated-row-region/North/product/Tea" data-ok-generated aria-level="2" aria-posinset="1" aria-setsize="3" aria-expanded="false" data-ok-parent="auto-generated-row-region/North">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__row_group_by_columns_group_region__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="__row_group_by_columns_group_product__" tabindex="-1">
+          <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" tabindex="-1" data-ok-data-grid-tree-toggle aria-label="see children" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M9 6l6 6-6 6-1.4-1.4 4.6-4.6-4.6-4.6z" /></svg></button>
+          <span data-ok-data-grid-tree-label>Tea</span>
+          <span data-ok-data-grid-tree-count>(2)</span>
+        </div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="region" data-ok-align="left" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="product" data-ok-align="left" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="year" data-ok-align="right" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="6" data-ok-field="units" data-ok-align="right" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="7" data-ok-field="revenue" data-ok-align="right" tabindex="-1">510</div>
+      </div>
+      <div role="row" aria-rowindex="1" hidden data-ok-row-id="s-01" aria-level="3" aria-posinset="1" aria-setsize="2" data-ok-parent="auto-generated-row-region/North/product/Tea">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__row_group_by_columns_group_region__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="__row_group_by_columns_group_product__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="region" data-ok-align="left" tabindex="-1">North</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="product" data-ok-align="left" tabindex="-1">Tea</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="year" data-ok-align="right" data-ok-value="2024" tabindex="-1">2024</div>
+        <div role="gridcell" aria-colindex="6" data-ok-field="units" data-ok-align="right" data-ok-value="10" tabindex="-1">10</div>
+        <div role="gridcell" aria-colindex="7" data-ok-field="revenue" data-ok-align="right" data-ok-value="40" tabindex="-1">40</div>
+      </div>
+      <div role="row" aria-rowindex="1" hidden data-ok-row-id="s-13" aria-level="3" aria-posinset="2" aria-setsize="2" data-ok-parent="auto-generated-row-region/North/product/Tea">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__row_group_by_columns_group_region__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="__row_group_by_columns_group_product__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="region" data-ok-align="left" tabindex="-1">North</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="product" data-ok-align="left" tabindex="-1">Tea</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="year" data-ok-align="right" data-ok-value="2024" tabindex="-1">2024</div>
+        <div role="gridcell" aria-colindex="6" data-ok-field="units" data-ok-align="right" data-ok-value="94" tabindex="-1">94</div>
+        <div role="gridcell" aria-colindex="7" data-ok-field="revenue" data-ok-align="right" data-ok-value="470" tabindex="-1">470</div>
+      </div>
+      <div role="row" aria-rowindex="1" hidden data-ok-row-id="auto-generated-row-region/North/product/Juice" data-ok-generated aria-level="2" aria-posinset="2" aria-setsize="3" aria-expanded="false" data-ok-parent="auto-generated-row-region/North">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__row_group_by_columns_group_region__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="__row_group_by_columns_group_product__" tabindex="-1">
+          <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" tabindex="-1" data-ok-data-grid-tree-toggle aria-label="see children" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M9 6l6 6-6 6-1.4-1.4 4.6-4.6-4.6-4.6z" /></svg></button>
+          <span data-ok-data-grid-tree-label>Juice</span>
+          <span data-ok-data-grid-tree-count>(2)</span>
+        </div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="region" data-ok-align="left" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="product" data-ok-align="left" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="year" data-ok-align="right" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="6" data-ok-field="units" data-ok-align="right" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="7" data-ok-field="revenue" data-ok-align="right" tabindex="-1">842</div>
+      </div>
+      <div role="row" aria-rowindex="1" hidden data-ok-row-id="s-05" aria-level="3" aria-posinset="1" aria-setsize="2" data-ok-parent="auto-generated-row-region/North/product/Juice">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__row_group_by_columns_group_region__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="__row_group_by_columns_group_product__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="region" data-ok-align="left" tabindex="-1">North</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="product" data-ok-align="left" tabindex="-1">Juice</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="year" data-ok-align="right" data-ok-value="2024" tabindex="-1">2024</div>
+        <div role="gridcell" aria-colindex="6" data-ok-field="units" data-ok-align="right" data-ok-value="68" tabindex="-1">68</div>
+        <div role="gridcell" aria-colindex="7" data-ok-field="revenue" data-ok-align="right" data-ok-value="408" tabindex="-1">408</div>
+      </div>
+      <div role="row" aria-rowindex="1" hidden data-ok-row-id="s-17" aria-level="3" aria-posinset="2" aria-setsize="2" data-ok-parent="auto-generated-row-region/North/product/Juice">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__row_group_by_columns_group_region__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="__row_group_by_columns_group_product__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="region" data-ok-align="left" tabindex="-1">North</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="product" data-ok-align="left" tabindex="-1">Juice</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="year" data-ok-align="right" data-ok-value="2024" tabindex="-1">2024</div>
+        <div role="gridcell" aria-colindex="6" data-ok-field="units" data-ok-align="right" data-ok-value="62" tabindex="-1">62</div>
+        <div role="gridcell" aria-colindex="7" data-ok-field="revenue" data-ok-align="right" data-ok-value="434" tabindex="-1">434</div>
+      </div>
+      <div role="row" aria-rowindex="1" hidden data-ok-row-id="auto-generated-row-region/North/product/Coffee" data-ok-generated aria-level="2" aria-posinset="3" aria-setsize="3" aria-expanded="false" data-ok-parent="auto-generated-row-region/North">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__row_group_by_columns_group_region__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="__row_group_by_columns_group_product__" tabindex="-1">
+          <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" tabindex="-1" data-ok-data-grid-tree-toggle aria-label="see children" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M9 6l6 6-6 6-1.4-1.4 4.6-4.6-4.6-4.6z" /></svg></button>
+          <span data-ok-data-grid-tree-label>Coffee</span>
+          <span data-ok-data-grid-tree-count>(2)</span>
+        </div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="region" data-ok-align="left" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="product" data-ok-align="left" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="year" data-ok-align="right" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="6" data-ok-field="units" data-ok-align="right" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="7" data-ok-field="revenue" data-ok-align="right" tabindex="-1">408</div>
+      </div>
+      <div role="row" aria-rowindex="1" hidden data-ok-row-id="s-09" aria-level="3" aria-posinset="1" aria-setsize="2" data-ok-parent="auto-generated-row-region/North/product/Coffee">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__row_group_by_columns_group_region__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="__row_group_by_columns_group_product__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="region" data-ok-align="left" tabindex="-1">North</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="product" data-ok-align="left" tabindex="-1">Coffee</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="year" data-ok-align="right" data-ok-value="2024" tabindex="-1">2024</div>
+        <div role="gridcell" aria-colindex="6" data-ok-field="units" data-ok-align="right" data-ok-value="36" tabindex="-1">36</div>
+        <div role="gridcell" aria-colindex="7" data-ok-field="revenue" data-ok-align="right" data-ok-value="288" tabindex="-1">288</div>
+      </div>
+      <div role="row" aria-rowindex="1" hidden data-ok-row-id="s-21" aria-level="3" aria-posinset="2" aria-setsize="2" data-ok-parent="auto-generated-row-region/North/product/Coffee">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__row_group_by_columns_group_region__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="__row_group_by_columns_group_product__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="region" data-ok-align="left" tabindex="-1">North</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="product" data-ok-align="left" tabindex="-1">Coffee</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="year" data-ok-align="right" data-ok-value="2024" tabindex="-1">2024</div>
+        <div role="gridcell" aria-colindex="6" data-ok-field="units" data-ok-align="right" data-ok-value="30" tabindex="-1">30</div>
+        <div role="gridcell" aria-colindex="7" data-ok-field="revenue" data-ok-align="right" data-ok-value="120" tabindex="-1">120</div>
+      </div>
+      <div role="row" aria-rowindex="3" data-ok-row-id="auto-generated-row-region/South" data-ok-generated aria-level="1" aria-posinset="2" aria-setsize="4" aria-expanded="false">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__row_group_by_columns_group_region__" tabindex="-1">
+          <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" tabindex="-1" data-ok-data-grid-tree-toggle aria-label="see children" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M9 6l6 6-6 6-1.4-1.4 4.6-4.6-4.6-4.6z" /></svg></button>
+          <span data-ok-data-grid-tree-label>South</span>
+          <span data-ok-data-grid-tree-count>(6)</span>
+        </div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="__row_group_by_columns_group_product__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="region" data-ok-align="left" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="product" data-ok-align="left" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="year" data-ok-align="right" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="6" data-ok-field="units" data-ok-align="right" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="7" data-ok-field="revenue" data-ok-align="right" tabindex="-1">2119</div>
+      </div>
+      <div role="row" aria-rowindex="1" hidden data-ok-row-id="auto-generated-row-region/South/product/Juice" data-ok-generated aria-level="2" aria-posinset="1" aria-setsize="3" aria-expanded="false" data-ok-parent="auto-generated-row-region/South">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__row_group_by_columns_group_region__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="__row_group_by_columns_group_product__" tabindex="-1">
+          <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" tabindex="-1" data-ok-data-grid-tree-toggle aria-label="see children" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M9 6l6 6-6 6-1.4-1.4 4.6-4.6-4.6-4.6z" /></svg></button>
+          <span data-ok-data-grid-tree-label>Juice</span>
+          <span data-ok-data-grid-tree-count>(2)</span>
+        </div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="region" data-ok-align="left" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="product" data-ok-align="left" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="year" data-ok-align="right" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="6" data-ok-field="units" data-ok-align="right" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="7" data-ok-field="revenue" data-ok-align="right" tabindex="-1">657</div>
+      </div>
+      <div role="row" aria-rowindex="1" hidden data-ok-row-id="s-02" aria-level="3" aria-posinset="1" aria-setsize="2" data-ok-parent="auto-generated-row-region/South/product/Juice">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__row_group_by_columns_group_region__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="__row_group_by_columns_group_product__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="region" data-ok-align="left" tabindex="-1">South</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="product" data-ok-align="left" tabindex="-1">Juice</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="year" data-ok-align="right" data-ok-value="2025" tabindex="-1">2025</div>
+        <div role="gridcell" aria-colindex="6" data-ok-field="units" data-ok-align="right" data-ok-value="47" tabindex="-1">47</div>
+        <div role="gridcell" aria-colindex="7" data-ok-field="revenue" data-ok-align="right" data-ok-value="329" tabindex="-1">329</div>
+      </div>
+      <div role="row" aria-rowindex="1" hidden data-ok-row-id="s-14" aria-level="3" aria-posinset="2" aria-setsize="2" data-ok-parent="auto-generated-row-region/South/product/Juice">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__row_group_by_columns_group_region__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="__row_group_by_columns_group_product__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="region" data-ok-align="left" tabindex="-1">South</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="product" data-ok-align="left" tabindex="-1">Juice</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="year" data-ok-align="right" data-ok-value="2025" tabindex="-1">2025</div>
+        <div role="gridcell" aria-colindex="6" data-ok-field="units" data-ok-align="right" data-ok-value="41" tabindex="-1">41</div>
+        <div role="gridcell" aria-colindex="7" data-ok-field="revenue" data-ok-align="right" data-ok-value="328" tabindex="-1">328</div>
+      </div>
+      <div role="row" aria-rowindex="1" hidden data-ok-row-id="auto-generated-row-region/South/product/Coffee" data-ok-generated aria-level="2" aria-posinset="2" aria-setsize="3" aria-expanded="false" data-ok-parent="auto-generated-row-region/South">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__row_group_by_columns_group_region__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="__row_group_by_columns_group_product__" tabindex="-1">
+          <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" tabindex="-1" data-ok-data-grid-tree-toggle aria-label="see children" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M9 6l6 6-6 6-1.4-1.4 4.6-4.6-4.6-4.6z" /></svg></button>
+          <span data-ok-data-grid-tree-label>Coffee</span>
+          <span data-ok-data-grid-tree-count>(2)</span>
+        </div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="region" data-ok-align="left" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="product" data-ok-align="left" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="year" data-ok-align="right" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="6" data-ok-field="units" data-ok-align="right" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="7" data-ok-field="revenue" data-ok-align="right" tabindex="-1">555</div>
+      </div>
+      <div role="row" aria-rowindex="1" hidden data-ok-row-id="s-06" aria-level="3" aria-posinset="1" aria-setsize="2" data-ok-parent="auto-generated-row-region/South/product/Coffee">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__row_group_by_columns_group_region__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="__row_group_by_columns_group_product__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="region" data-ok-align="left" tabindex="-1">South</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="product" data-ok-align="left" tabindex="-1">Coffee</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="year" data-ok-align="right" data-ok-value="2025" tabindex="-1">2025</div>
+        <div role="gridcell" aria-colindex="6" data-ok-field="units" data-ok-align="right" data-ok-value="15" tabindex="-1">15</div>
+        <div role="gridcell" aria-colindex="7" data-ok-field="revenue" data-ok-align="right" data-ok-value="60" tabindex="-1">60</div>
+      </div>
+      <div role="row" aria-rowindex="1" hidden data-ok-row-id="s-18" aria-level="3" aria-posinset="2" aria-setsize="2" data-ok-parent="auto-generated-row-region/South/product/Coffee">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__row_group_by_columns_group_region__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="__row_group_by_columns_group_product__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="region" data-ok-align="left" tabindex="-1">South</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="product" data-ok-align="left" tabindex="-1">Coffee</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="year" data-ok-align="right" data-ok-value="2025" tabindex="-1">2025</div>
+        <div role="gridcell" aria-colindex="6" data-ok-field="units" data-ok-align="right" data-ok-value="99" tabindex="-1">99</div>
+        <div role="gridcell" aria-colindex="7" data-ok-field="revenue" data-ok-align="right" data-ok-value="495" tabindex="-1">495</div>
+      </div>
+      <div role="row" aria-rowindex="1" hidden data-ok-row-id="auto-generated-row-region/South/product/Tea" data-ok-generated aria-level="2" aria-posinset="3" aria-setsize="3" aria-expanded="false" data-ok-parent="auto-generated-row-region/South">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__row_group_by_columns_group_region__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="__row_group_by_columns_group_product__" tabindex="-1">
+          <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" tabindex="-1" data-ok-data-grid-tree-toggle aria-label="see children" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M9 6l6 6-6 6-1.4-1.4 4.6-4.6-4.6-4.6z" /></svg></button>
+          <span data-ok-data-grid-tree-label>Tea</span>
+          <span data-ok-data-grid-tree-count>(2)</span>
+        </div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="region" data-ok-align="left" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="product" data-ok-align="left" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="year" data-ok-align="right" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="6" data-ok-field="units" data-ok-align="right" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="7" data-ok-field="revenue" data-ok-align="right" tabindex="-1">907</div>
+      </div>
+      <div role="row" aria-rowindex="1" hidden data-ok-row-id="s-10" aria-level="3" aria-posinset="1" aria-setsize="2" data-ok-parent="auto-generated-row-region/South/product/Tea">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__row_group_by_columns_group_region__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="__row_group_by_columns_group_product__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="region" data-ok-align="left" tabindex="-1">South</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="product" data-ok-align="left" tabindex="-1">Tea</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="year" data-ok-align="right" data-ok-value="2025" tabindex="-1">2025</div>
+        <div role="gridcell" aria-colindex="6" data-ok-field="units" data-ok-align="right" data-ok-value="73" tabindex="-1">73</div>
+        <div role="gridcell" aria-colindex="7" data-ok-field="revenue" data-ok-align="right" data-ok-value="438" tabindex="-1">438</div>
+      </div>
+      <div role="row" aria-rowindex="1" hidden data-ok-row-id="s-22" aria-level="3" aria-posinset="2" aria-setsize="2" data-ok-parent="auto-generated-row-region/South/product/Tea">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__row_group_by_columns_group_region__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="__row_group_by_columns_group_product__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="region" data-ok-align="left" tabindex="-1">South</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="product" data-ok-align="left" tabindex="-1">Tea</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="year" data-ok-align="right" data-ok-value="2025" tabindex="-1">2025</div>
+        <div role="gridcell" aria-colindex="6" data-ok-field="units" data-ok-align="right" data-ok-value="67" tabindex="-1">67</div>
+        <div role="gridcell" aria-colindex="7" data-ok-field="revenue" data-ok-align="right" data-ok-value="469" tabindex="-1">469</div>
+      </div>
+      <div role="row" aria-rowindex="4" data-ok-row-id="auto-generated-row-region/East" data-ok-generated aria-level="1" aria-posinset="3" aria-setsize="4" aria-expanded="false">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__row_group_by_columns_group_region__" tabindex="-1">
+          <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" tabindex="-1" data-ok-data-grid-tree-toggle aria-label="see children" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M9 6l6 6-6 6-1.4-1.4 4.6-4.6-4.6-4.6z" /></svg></button>
+          <span data-ok-data-grid-tree-label>East</span>
+          <span data-ok-data-grid-tree-count>(6)</span>
+        </div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="__row_group_by_columns_group_product__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="region" data-ok-align="left" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="product" data-ok-align="left" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="year" data-ok-align="right" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="6" data-ok-field="units" data-ok-align="right" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="7" data-ok-field="revenue" data-ok-align="right" tabindex="-1">1770</div>
+      </div>
+      <div role="row" aria-rowindex="1" hidden data-ok-row-id="auto-generated-row-region/East/product/Coffee" data-ok-generated aria-level="2" aria-posinset="1" aria-setsize="3" aria-expanded="false" data-ok-parent="auto-generated-row-region/East">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__row_group_by_columns_group_region__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="__row_group_by_columns_group_product__" tabindex="-1">
+          <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" tabindex="-1" data-ok-data-grid-tree-toggle aria-label="see children" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M9 6l6 6-6 6-1.4-1.4 4.6-4.6-4.6-4.6z" /></svg></button>
+          <span data-ok-data-grid-tree-label>Coffee</span>
+          <span data-ok-data-grid-tree-count>(2)</span>
+        </div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="region" data-ok-align="left" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="product" data-ok-align="left" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="year" data-ok-align="right" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="6" data-ok-field="units" data-ok-align="right" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="7" data-ok-field="revenue" data-ok-align="right" tabindex="-1">888</div>
+      </div>
+      <div role="row" aria-rowindex="1" hidden data-ok-row-id="s-03" aria-level="3" aria-posinset="1" aria-setsize="2" data-ok-parent="auto-generated-row-region/East/product/Coffee">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__row_group_by_columns_group_region__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="__row_group_by_columns_group_product__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="region" data-ok-align="left" tabindex="-1">East</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="product" data-ok-align="left" tabindex="-1">Coffee</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="year" data-ok-align="right" data-ok-value="2024" tabindex="-1">2024</div>
+        <div role="gridcell" aria-colindex="6" data-ok-field="units" data-ok-align="right" data-ok-value="84" tabindex="-1">84</div>
+        <div role="gridcell" aria-colindex="7" data-ok-field="revenue" data-ok-align="right" data-ok-value="420" tabindex="-1">420</div>
+      </div>
+      <div role="row" aria-rowindex="1" hidden data-ok-row-id="s-15" aria-level="3" aria-posinset="2" aria-setsize="2" data-ok-parent="auto-generated-row-region/East/product/Coffee">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__row_group_by_columns_group_region__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="__row_group_by_columns_group_product__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="region" data-ok-align="left" tabindex="-1">East</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="product" data-ok-align="left" tabindex="-1">Coffee</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="year" data-ok-align="right" data-ok-value="2024" tabindex="-1">2024</div>
+        <div role="gridcell" aria-colindex="6" data-ok-field="units" data-ok-align="right" data-ok-value="78" tabindex="-1">78</div>
+        <div role="gridcell" aria-colindex="7" data-ok-field="revenue" data-ok-align="right" data-ok-value="468" tabindex="-1">468</div>
+      </div>
+      <div role="row" aria-rowindex="1" hidden data-ok-row-id="auto-generated-row-region/East/product/Tea" data-ok-generated aria-level="2" aria-posinset="2" aria-setsize="3" aria-expanded="false" data-ok-parent="auto-generated-row-region/East">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__row_group_by_columns_group_region__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="__row_group_by_columns_group_product__" tabindex="-1">
+          <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" tabindex="-1" data-ok-data-grid-tree-toggle aria-label="see children" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M9 6l6 6-6 6-1.4-1.4 4.6-4.6-4.6-4.6z" /></svg></button>
+          <span data-ok-data-grid-tree-label>Tea</span>
+          <span data-ok-data-grid-tree-count>(2)</span>
+        </div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="region" data-ok-align="left" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="product" data-ok-align="left" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="year" data-ok-align="right" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="6" data-ok-field="units" data-ok-align="right" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="7" data-ok-field="revenue" data-ok-align="right" tabindex="-1">732</div>
+      </div>
+      <div role="row" aria-rowindex="1" hidden data-ok-row-id="s-07" aria-level="3" aria-posinset="1" aria-setsize="2" data-ok-parent="auto-generated-row-region/East/product/Tea">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__row_group_by_columns_group_region__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="__row_group_by_columns_group_product__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="region" data-ok-align="left" tabindex="-1">East</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="product" data-ok-align="left" tabindex="-1">Tea</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="year" data-ok-align="right" data-ok-value="2024" tabindex="-1">2024</div>
+        <div role="gridcell" aria-colindex="6" data-ok-field="units" data-ok-align="right" data-ok-value="52" tabindex="-1">52</div>
+        <div role="gridcell" aria-colindex="7" data-ok-field="revenue" data-ok-align="right" data-ok-value="364" tabindex="-1">364</div>
+      </div>
+      <div role="row" aria-rowindex="1" hidden data-ok-row-id="s-19" aria-level="3" aria-posinset="2" aria-setsize="2" data-ok-parent="auto-generated-row-region/East/product/Tea">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__row_group_by_columns_group_region__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="__row_group_by_columns_group_product__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="region" data-ok-align="left" tabindex="-1">East</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="product" data-ok-align="left" tabindex="-1">Tea</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="year" data-ok-align="right" data-ok-value="2024" tabindex="-1">2024</div>
+        <div role="gridcell" aria-colindex="6" data-ok-field="units" data-ok-align="right" data-ok-value="46" tabindex="-1">46</div>
+        <div role="gridcell" aria-colindex="7" data-ok-field="revenue" data-ok-align="right" data-ok-value="368" tabindex="-1">368</div>
+      </div>
+      <div role="row" aria-rowindex="1" hidden data-ok-row-id="auto-generated-row-region/East/product/Juice" data-ok-generated aria-level="2" aria-posinset="3" aria-setsize="3" aria-expanded="false" data-ok-parent="auto-generated-row-region/East">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__row_group_by_columns_group_region__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="__row_group_by_columns_group_product__" tabindex="-1">
+          <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" tabindex="-1" data-ok-data-grid-tree-toggle aria-label="see children" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M9 6l6 6-6 6-1.4-1.4 4.6-4.6-4.6-4.6z" /></svg></button>
+          <span data-ok-data-grid-tree-label>Juice</span>
+          <span data-ok-data-grid-tree-count>(2)</span>
+        </div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="region" data-ok-align="left" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="product" data-ok-align="left" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="year" data-ok-align="right" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="6" data-ok-field="units" data-ok-align="right" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="7" data-ok-field="revenue" data-ok-align="right" tabindex="-1">150</div>
+      </div>
+      <div role="row" aria-rowindex="1" hidden data-ok-row-id="s-11" aria-level="3" aria-posinset="1" aria-setsize="2" data-ok-parent="auto-generated-row-region/East/product/Juice">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__row_group_by_columns_group_region__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="__row_group_by_columns_group_product__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="region" data-ok-align="left" tabindex="-1">East</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="product" data-ok-align="left" tabindex="-1">Juice</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="year" data-ok-align="right" data-ok-value="2024" tabindex="-1">2024</div>
+        <div role="gridcell" aria-colindex="6" data-ok-field="units" data-ok-align="right" data-ok-value="20" tabindex="-1">20</div>
+        <div role="gridcell" aria-colindex="7" data-ok-field="revenue" data-ok-align="right" data-ok-value="80" tabindex="-1">80</div>
+      </div>
+      <div role="row" aria-rowindex="1" hidden data-ok-row-id="s-23" aria-level="3" aria-posinset="2" aria-setsize="2" data-ok-parent="auto-generated-row-region/East/product/Juice">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__row_group_by_columns_group_region__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="__row_group_by_columns_group_product__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="region" data-ok-align="left" tabindex="-1">East</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="product" data-ok-align="left" tabindex="-1">Juice</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="year" data-ok-align="right" data-ok-value="2024" tabindex="-1">2024</div>
+        <div role="gridcell" aria-colindex="6" data-ok-field="units" data-ok-align="right" data-ok-value="14" tabindex="-1">14</div>
+        <div role="gridcell" aria-colindex="7" data-ok-field="revenue" data-ok-align="right" data-ok-value="70" tabindex="-1">70</div>
+      </div>
+      <div role="row" aria-rowindex="5" data-ok-row-id="auto-generated-row-region/West" data-ok-generated aria-level="1" aria-posinset="4" aria-setsize="4" aria-expanded="false">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__row_group_by_columns_group_region__" tabindex="-1">
+          <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" tabindex="-1" data-ok-data-grid-tree-toggle aria-label="see children" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M9 6l6 6-6 6-1.4-1.4 4.6-4.6-4.6-4.6z" /></svg></button>
+          <span data-ok-data-grid-tree-label>West</span>
+          <span data-ok-data-grid-tree-count>(6)</span>
+        </div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="__row_group_by_columns_group_product__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="region" data-ok-align="left" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="product" data-ok-align="left" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="year" data-ok-align="right" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="6" data-ok-field="units" data-ok-align="right" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="7" data-ok-field="revenue" data-ok-align="right" tabindex="-1">2098</div>
+      </div>
+      <div role="row" aria-rowindex="1" hidden data-ok-row-id="auto-generated-row-region/West/product/Tea" data-ok-generated aria-level="2" aria-posinset="1" aria-setsize="3" aria-expanded="false" data-ok-parent="auto-generated-row-region/West">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__row_group_by_columns_group_region__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="__row_group_by_columns_group_product__" tabindex="-1">
+          <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" tabindex="-1" data-ok-data-grid-tree-toggle aria-label="see children" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M9 6l6 6-6 6-1.4-1.4 4.6-4.6-4.6-4.6z" /></svg></button>
+          <span data-ok-data-grid-tree-label>Tea</span>
+          <span data-ok-data-grid-tree-count>(2)</span>
+        </div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="region" data-ok-align="left" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="product" data-ok-align="left" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="year" data-ok-align="right" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="6" data-ok-field="units" data-ok-align="right" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="7" data-ok-field="revenue" data-ok-align="right" tabindex="-1">348</div>
+      </div>
+      <div role="row" aria-rowindex="1" hidden data-ok-row-id="s-04" aria-level="3" aria-posinset="1" aria-setsize="2" data-ok-parent="auto-generated-row-region/West/product/Tea">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__row_group_by_columns_group_region__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="__row_group_by_columns_group_product__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="region" data-ok-align="left" tabindex="-1">West</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="product" data-ok-align="left" tabindex="-1">Tea</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="year" data-ok-align="right" data-ok-value="2025" tabindex="-1">2025</div>
+        <div role="gridcell" aria-colindex="6" data-ok-field="units" data-ok-align="right" data-ok-value="31" tabindex="-1">31</div>
+        <div role="gridcell" aria-colindex="7" data-ok-field="revenue" data-ok-align="right" data-ok-value="248" tabindex="-1">248</div>
+      </div>
+      <div role="row" aria-rowindex="1" hidden data-ok-row-id="s-16" aria-level="3" aria-posinset="2" aria-setsize="2" data-ok-parent="auto-generated-row-region/West/product/Tea">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__row_group_by_columns_group_region__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="__row_group_by_columns_group_product__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="region" data-ok-align="left" tabindex="-1">West</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="product" data-ok-align="left" tabindex="-1">Tea</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="year" data-ok-align="right" data-ok-value="2025" tabindex="-1">2025</div>
+        <div role="gridcell" aria-colindex="6" data-ok-field="units" data-ok-align="right" data-ok-value="25" tabindex="-1">25</div>
+        <div role="gridcell" aria-colindex="7" data-ok-field="revenue" data-ok-align="right" data-ok-value="100" tabindex="-1">100</div>
+      </div>
+      <div role="row" aria-rowindex="1" hidden data-ok-row-id="auto-generated-row-region/West/product/Juice" data-ok-generated aria-level="2" aria-posinset="2" aria-setsize="3" aria-expanded="false" data-ok-parent="auto-generated-row-region/West">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__row_group_by_columns_group_region__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="__row_group_by_columns_group_product__" tabindex="-1">
+          <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" tabindex="-1" data-ok-data-grid-tree-toggle aria-label="see children" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M9 6l6 6-6 6-1.4-1.4 4.6-4.6-4.6-4.6z" /></svg></button>
+          <span data-ok-data-grid-tree-label>Juice</span>
+          <span data-ok-data-grid-tree-count>(2)</span>
+        </div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="region" data-ok-align="left" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="product" data-ok-align="left" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="year" data-ok-align="right" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="6" data-ok-field="units" data-ok-align="right" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="7" data-ok-field="revenue" data-ok-align="right" tabindex="-1">943</div>
+      </div>
+      <div role="row" aria-rowindex="1" hidden data-ok-row-id="s-08" aria-level="3" aria-posinset="1" aria-setsize="2" data-ok-parent="auto-generated-row-region/West/product/Juice">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__row_group_by_columns_group_region__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="__row_group_by_columns_group_product__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="region" data-ok-align="left" tabindex="-1">West</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="product" data-ok-align="left" tabindex="-1">Juice</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="year" data-ok-align="right" data-ok-value="2025" tabindex="-1">2025</div>
+        <div role="gridcell" aria-colindex="6" data-ok-field="units" data-ok-align="right" data-ok-value="89" tabindex="-1">89</div>
+        <div role="gridcell" aria-colindex="7" data-ok-field="revenue" data-ok-align="right" data-ok-value="445" tabindex="-1">445</div>
+      </div>
+      <div role="row" aria-rowindex="1" hidden data-ok-row-id="s-20" aria-level="3" aria-posinset="2" aria-setsize="2" data-ok-parent="auto-generated-row-region/West/product/Juice">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__row_group_by_columns_group_region__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="__row_group_by_columns_group_product__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="region" data-ok-align="left" tabindex="-1">West</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="product" data-ok-align="left" tabindex="-1">Juice</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="year" data-ok-align="right" data-ok-value="2025" tabindex="-1">2025</div>
+        <div role="gridcell" aria-colindex="6" data-ok-field="units" data-ok-align="right" data-ok-value="83" tabindex="-1">83</div>
+        <div role="gridcell" aria-colindex="7" data-ok-field="revenue" data-ok-align="right" data-ok-value="498" tabindex="-1">498</div>
+      </div>
+      <div role="row" aria-rowindex="1" hidden data-ok-row-id="auto-generated-row-region/West/product/Coffee" data-ok-generated aria-level="2" aria-posinset="3" aria-setsize="3" aria-expanded="false" data-ok-parent="auto-generated-row-region/West">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__row_group_by_columns_group_region__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="__row_group_by_columns_group_product__" tabindex="-1">
+          <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" tabindex="-1" data-ok-data-grid-tree-toggle aria-label="see children" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M9 6l6 6-6 6-1.4-1.4 4.6-4.6-4.6-4.6z" /></svg></button>
+          <span data-ok-data-grid-tree-label>Coffee</span>
+          <span data-ok-data-grid-tree-count>(2)</span>
+        </div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="region" data-ok-align="left" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="product" data-ok-align="left" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="year" data-ok-align="right" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="6" data-ok-field="units" data-ok-align="right" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="7" data-ok-field="revenue" data-ok-align="right" tabindex="-1">807</div>
+      </div>
+      <div role="row" aria-rowindex="1" hidden data-ok-row-id="s-12" aria-level="3" aria-posinset="1" aria-setsize="2" data-ok-parent="auto-generated-row-region/West/product/Coffee">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__row_group_by_columns_group_region__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="__row_group_by_columns_group_product__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="region" data-ok-align="left" tabindex="-1">West</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="product" data-ok-align="left" tabindex="-1">Coffee</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="year" data-ok-align="right" data-ok-value="2025" tabindex="-1">2025</div>
+        <div role="gridcell" aria-colindex="6" data-ok-field="units" data-ok-align="right" data-ok-value="57" tabindex="-1">57</div>
+        <div role="gridcell" aria-colindex="7" data-ok-field="revenue" data-ok-align="right" data-ok-value="399" tabindex="-1">399</div>
+      </div>
+      <div role="row" aria-rowindex="1" hidden data-ok-row-id="s-24" aria-level="3" aria-posinset="2" aria-setsize="2" data-ok-parent="auto-generated-row-region/West/product/Coffee">
+        <div role="gridcell" aria-colindex="1" data-ok-field="__row_group_by_columns_group_region__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="__row_group_by_columns_group_product__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="region" data-ok-align="left" tabindex="-1">West</div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="product" data-ok-align="left" tabindex="-1">Coffee</div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="year" data-ok-align="right" data-ok-value="2025" tabindex="-1">2025</div>
+        <div role="gridcell" aria-colindex="6" data-ok-field="units" data-ok-align="right" data-ok-value="51" tabindex="-1">51</div>
+        <div role="gridcell" aria-colindex="7" data-ok-field="revenue" data-ok-align="right" data-ok-value="408" tabindex="-1">408</div>
+      </div>
+    </div>
+    <div role="rowgroup" data-ok-data-grid-pinned-rows="bottom">
+      <div role="row" aria-rowindex="6" data-ok-row-id="auto-generated-group-footer-root" data-ok-data-grid-aggregation-row>
+        <div role="gridcell" aria-colindex="1" data-ok-field="__row_group_by_columns_group_region__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="2" data-ok-field="__row_group_by_columns_group_product__" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="3" data-ok-field="region" data-ok-align="left" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="4" data-ok-field="product" data-ok-align="left" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="5" data-ok-field="year" data-ok-align="right" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="6" data-ok-field="units" data-ok-align="right" tabindex="-1"></div>
+        <div role="gridcell" aria-colindex="7" data-ok-field="revenue" data-ok-align="right" tabindex="-1">7747</div>
+      </div>
+    </div>
+  </div>
+  <div data-ok-data-grid-loading data-ok-variant="linear-progress" role="status" aria-label="Loading" hidden><span role="progressbar" data-ok-linear-progress data-ok-variant="indeterminate" data-ok-color="primary" aria-label="Loading"><span data-ok-linear-progress-bar="1"></span><span data-ok-linear-progress-bar="2"></span></span></div>
+  <div data-ok-data-grid-overlay role="status" hidden></div>
+  <div popover="manual" data-ok-popover data-ok-placement="bottom-start" id="grid-grouping-multiple-column-menu">
+    <span data-ok-popover-arrow aria-hidden="true"></span>
+    <ul role="menu" data-ok-menu>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item aria-disabled="true" data-ok-data-grid-action="asc">Sort by ASC</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item aria-disabled="true" data-ok-data-grid-action="desc">Sort by DESC</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item aria-disabled="true" data-ok-data-grid-action="unsort">Unsort</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item aria-disabled="true" data-ok-data-grid-action="left">Move left</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="right">Move right</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="pin-left">Pin to left</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="pin-right">Pin to right</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item aria-disabled="true" data-ok-data-grid-action="unpin">Unpin</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item aria-disabled="true" data-ok-data-grid-action="group">Group by</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="aggregate-none" hidden>Aggregation: none</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="aggregate-sum" hidden>Aggregation: sum</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="aggregate-avg" hidden>Aggregation: avg</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="aggregate-min" hidden>Aggregation: min</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="aggregate-max" hidden>Aggregation: max</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-data-grid-action="aggregate-size" hidden>Aggregation: size</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item aria-disabled="true" data-ok-data-grid-action="hide">Hide column</li>
+    </ul>
+  </div>
+</div>

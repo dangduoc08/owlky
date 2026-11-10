@@ -627,6 +627,8 @@ export interface DataGridParts {
   "data-ok-group-path": Value<string>;
   /** On a header cell: `false` keeps the column out of row grouping. */
   "data-ok-groupable": Value<"false">;
+  /** On a cell: the value its row is grouped by (React writes it from `groupingValueGetter`). */
+  "data-ok-grouping-value": Value<string>;
   /** Hides the number of children of tree rows. */
   "data-ok-hide-descendant-count": State;
   /** On a header cell: `false` keeps the column visible. */

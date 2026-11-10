@@ -577,12 +577,13 @@
     }
   }
 
-  /* Tree data: the group cell indents by depth; its toggle turns when open. */
+  /* Tree data and row grouping: the group cell indents by depth (one column per grouped field:
+     none); its toggle turns when open. */
   :where(
     [data-ok-data-grid-main]
       [role="gridcell"]:is(
         [data-ok-field="__tree_data_group__"],
-        [data-ok-field="__row_group_by_columns_group__"]
+        [data-ok-field^="__row_group_by_columns_group_"]
       )
   ) {
     display: flex;

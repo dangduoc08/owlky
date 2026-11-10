@@ -147,6 +147,62 @@ describe("data grid row grouping and aggregation (HTML)", () => {
     await settle();
   });
 
+  it("shows one grouping column per grouped field, like React", async () => {
+    const { host, root, instance } = setup("grouping-multiple");
+    const fields = () =>
+      [...host.querySelectorAll('[data-ok-data-grid-header] [role="columnheader"]')]
+        .map((h) => h.getAttribute("data-ok-field") as string)
+        .filter((f) => f.startsWith("__"));
+    expect(fields()).toEqual([
+      "__row_group_by_columns_group_region__",
+      "__row_group_by_columns_group_product__",
+    ]);
+    const north = bodyRows(host)[0] as HTMLElement;
+    expect(shownCells(north).slice(0, 2)).toEqual(["North(6)", ""]);
+    (north.querySelector("[data-ok-data-grid-tree-toggle]") as HTMLElement).click();
+    expect(shownCells(bodyRows(host)[1] as HTMLElement).slice(0, 2)).toEqual(["", "Tea(2)"]);
+    // A grouping column sorts its field's groups by name.
+    instance.setSortModel([{ field: "__row_group_by_columns_group_product__", sort: "desc" }]);
+    expect(
+      bodyRows(host)
+        .slice(1, 4)
+        .map((r) => shownCells(r)[1]),
+    ).toEqual(["Tea(2)", "Juice(2)", "Coffee(2)"]);
+    // Grouping by another field adds its column, named after it.
+    menuSelect(host, "year", "group");
+    expect(fields()).toHaveLength(3);
+    expect(header(host, "__row_group_by_columns_group_year__").textContent).toBe("Year");
+    // One column again when the mode changes.
+    root.setAttribute("data-ok-row-grouping-column-mode", "single");
+    await settle();
+    expect(fields()).toEqual(["__row_group_by_columns_group__"]);
+    expect(shownCells(bodyRows(host)[0] as HTMLElement)[0]).toBe("North(6)");
+    root.setAttribute("data-ok-row-grouping-column-mode", "multiple");
+    await settle();
+    expect(fields()).toHaveLength(3);
+    instance.setRowGroupingModel([]);
+    expect(fields()).toEqual([]);
+    expect(host.querySelector('[role="grid"]')).not.toBeNull();
+  });
+
+  it("groups by the grouping values React writes, or a getter", () => {
+    const { host, instance } = setup("grouping-value");
+    const names = () =>
+      bodyRows(host)
+        .filter((r) => r.hasAttribute("data-ok-generated"))
+        .map((r) => shownCells(r)[0]);
+    expect(names()).toEqual(["Under 50 units(11)", "50 units or more(13)"]);
+    instance.setGroupingValueGetter("units", (value) => (Number(value) % 2 ? "Odd" : "Even"));
+    expect(names().map((n) => n?.replace(/\(\d+\)/, ""))).toEqual(["Even", "Odd"]);
+    instance.setGroupingValueGetter(
+      "units",
+      (value) => new Date(2025, 0, Number(value) > 50 ? 2 : 1),
+    );
+    expect(names().map((n) => n?.replace(/\(\d+\)/, ""))).toEqual(["2025-01-01", "2025-01-02"]);
+    instance.setGroupingValueGetter("units", null);
+    expect(names()).toEqual(["Under 50 units(11)", "50 units or more(13)"]);
+  });
+
   it("filters leaves, selects data rows, exports and keeps its state", () => {
     const { host, root, instance } = setup("grouping-group", (r) =>
       r.setAttribute("data-ok-aggregation-rows-scope", "all"),

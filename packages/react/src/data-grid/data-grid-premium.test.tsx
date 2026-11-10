@@ -319,6 +319,109 @@ describe("DataGrid row grouping and aggregation", () => {
     );
   });
 
+  it("shows one grouping column per grouped field (rowGroupingColumnMode)", async () => {
+    const colDef = vi.fn(({ fields }: { fields: string[] }) =>
+      fields[0] === "product" ? { headerName: "Item", hideDescendantCount: true } : {},
+    );
+    const { rerender } = render(
+      <DataGrid
+        aria-label="Sales"
+        disableVirtualization
+        rows={SALES}
+        columns={COLUMNS}
+        rowGroupingColumnMode="multiple"
+        rowGroupingModel={["region", "product"]}
+        groupingColDef={colDef}
+        defaultGroupingExpansionDepth={1}
+        hideFooter
+      />,
+    );
+    const g = grid();
+    expect(g.closest("[data-ok-data-grid]")?.getAttribute("data-ok-row-grouping-column-mode")).toBe(
+      "multiple",
+    );
+    const titles = [...g.querySelectorAll('[role="columnheader"]')]
+      .slice(0, 2)
+      .map((h) => [h.getAttribute("data-ok-field"), h.textContent]);
+    expect(titles).toEqual([
+      ["__row_group_by_columns_group_region__", "Region"],
+      ["__row_group_by_columns_group_product__", "Item"],
+    ]);
+    expect(colDef).toHaveBeenCalledWith({ fields: ["region"] });
+    // Each group names itself in its own field's column (no count for products).
+    expect(texts().map((r) => r.slice(0, 2))).toEqual([
+      ["North(2)", ""],
+      ["", "Tea"],
+      ["", "Coffee"],
+      ["South(1)", ""],
+      ["", "Tea"],
+      ["East(1)", ""],
+      ["", "Juice"],
+    ]);
+    // A grouping column sorts its own field's groups by name.
+    rerender(
+      <DataGrid
+        aria-label="Sales"
+        disableVirtualization
+        rows={SALES}
+        columns={COLUMNS}
+        rowGroupingColumnMode="multiple"
+        rowGroupingModel={["region", "product"]}
+        sortModel={[{ field: "__row_group_by_columns_group_product__", sort: "asc" }]}
+        defaultGroupingExpansionDepth={1}
+        hideFooter
+      />,
+    );
+    expect(texts().map((r) => r[0] || r[1])).toEqual([
+      "North(2)",
+      "Coffee(1)",
+      "Tea(1)",
+      "South(1)",
+      "Tea(1)",
+      "East(1)",
+      "Juice(1)",
+    ]);
+    await expectNoAxeViolations(document.body);
+    // Back to one column.
+    rerender(
+      <DataGrid
+        aria-label="Sales"
+        disableVirtualization
+        rows={SALES}
+        columns={COLUMNS}
+        rowGroupingModel={["region", "product"]}
+        hideFooter
+      />,
+    );
+    expect(
+      [...g.querySelectorAll('[role="columnheader"]')].map((h) => h.getAttribute("data-ok-field")),
+    ).toEqual(["__row_group_by_columns_group__", "region", "product", "year", "units", "date"]);
+  });
+
+  it("groups by groupingValueGetter, from the row's own value", () => {
+    const getter = vi.fn((value: unknown) => (Number(value) >= 20 ? "20 or more" : "Under 20"));
+    render(
+      <DataGrid
+        aria-label="Sales"
+        disableVirtualization
+        rows={SALES}
+        columns={COLUMNS.map((c) =>
+          c.field === "units"
+            ? { ...c, valueGetter: (row: Sale) => row.units * 100, groupingValueGetter: getter }
+            : c,
+        )}
+        rowGroupingModel={["units"]}
+        hideFooter
+      />,
+    );
+    expect(texts().map((r) => r[0])).toEqual(["Under 20(2)", "20 or more(2)"]);
+    // The value is row[field], not the valueGetter's.
+    expect(getter).toHaveBeenCalledWith(10, SALES[0]);
+    // HTML groups by the attribute React writes.
+    expect(cell("1", "units").getAttribute("data-ok-grouping-value")).toBe("Under 20");
+    expect(cell("1", "region").hasAttribute("data-ok-grouping-value")).toBe(false);
+  });
+
   it("tree data generates rows for missing parents", () => {
     const files = [
       { id: "a", path: ["Docs", "A.txt"], size: 2 },

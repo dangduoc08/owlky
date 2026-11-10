@@ -74,6 +74,9 @@ import {
   gridFilterOperators,
   gridFilterValues,
   gridGroupComparator,
+  gridGroupingField,
+  gridGroupingFieldOf,
+  gridGroupingKey,
   gridGroupPaths,
   gridGroupRows,
   gridGroupsById,
@@ -228,6 +231,13 @@ export interface GridColDef<R = Record<string, unknown>> extends GridColumn {
   availableAggregationFunctions?: readonly string[] | undefined;
   /** The column can be used in the pivot. Default true. */
   pivotable?: boolean | undefined;
+  /**
+   * The value rows are grouped by, from `row[field]` (MUI X: a string, number, `Date` or nothing),
+   * such as a decade for a year. Default: the cell's text.
+   */
+  groupingValueGetter?:
+    | ((value: unknown, row: R) => string | number | Date | null | undefined)
+    | undefined;
 }
 
 /** Where a group's aggregated values show: in its row, or (the root) in a footer row. */
@@ -497,8 +507,14 @@ export interface DataGridProps<R>
   treeData?: boolean | undefined;
   /** A row's path in the tree: its ancestors' keys, then its own (MUI X). */
   getTreeDataPath?: ((row: R) => readonly string[]) | undefined;
-  /** Overrides the grouping column (header, width…). */
-  groupingColDef?: GridGroupingColDef | undefined;
+  /**
+   * Overrides the grouping column (header, width…). A function is called for each grouping
+   * column with the fields it groups by (`rowGroupingColumnMode="multiple"`: one each).
+   */
+  groupingColDef?:
+    | GridGroupingColDef
+    | ((params: { fields: string[] }) => GridGroupingColDef)
+    | undefined;
   /** Levels open at first (`-1`: all). Default 0. */
   defaultGroupingExpansionDepth?: number | undefined;
   /** Returns whether a group row starts expanded. */
@@ -540,6 +556,11 @@ export interface DataGridProps<R>
   /** Called when the row grouping changes. */
   onRowGroupingModelChange?: ((model: string[]) => void) | undefined;
   disableRowGrouping?: boolean | undefined;
+  /**
+   * One grouping column for every grouped field (`single`, default), or one column per grouped
+   * field (`multiple`). Server-side grouping keeps one column.
+   */
+  rowGroupingColumnMode?: "single" | "multiple" | undefined;
   /** Field → aggregation function (`sum`, `avg`, `min`, `max`, `size` or your own). */
   aggregationModel?: GridAggregationModel | undefined;
   /** Called when the aggregation changes. */
@@ -844,6 +865,7 @@ function DataGridInner<R>(
     rowGroupingModel: groupingProp,
     onRowGroupingModelChange,
     disableRowGrouping,
+    rowGroupingColumnMode = "single",
     aggregationModel: aggregationProp,
     onAggregationModelChange,
     disableAggregation,
@@ -1095,6 +1117,34 @@ function DataGridInner<R>(
   };
   const groupField = treeData ? GRID_TREE_FIELD : GRID_GROUPING_FIELD;
   const treeLike = !!treeData || grouping.length > 0;
+  // One grouping column per grouped field (client-side row grouping only).
+  const multipleGrouping =
+    rowGroupingColumnMode === "multiple" &&
+    !treeData &&
+    !pivot &&
+    !serverTree &&
+    grouping.length > 0;
+  const groupingColumns = multipleGrouping
+    ? grouping.map((field) => gridGroupingField(field))
+    : [groupField];
+  /** The grouping column's overrides (`groupingColDef`, per column when it is a function). */
+  const groupingColDefOf = (field: string): GridGroupingColDef => {
+    const own = gridGroupingFieldOf(field);
+    const fields = own ? [own] : treeData ? [] : [...grouping];
+    return typeof groupingColDef === "function"
+      ? groupingColDef({ fields })
+      : (groupingColDef ?? {});
+  };
+  /** The grouping column that shows a group row's name. */
+  const groupCellOf = (row: R & Group) =>
+    multipleGrouping ? gridGroupingField(row[GROUP].field ?? null) : groupField;
+  /** A row's group key: `groupingValueGetter` (from `row[field]`), else the cell's text. */
+  const groupingKeyOf = (row: R, field: string) => {
+    const column = sourceOf(field);
+    return column?.groupingValueGetter
+      ? gridGroupingKey(column.groupingValueGetter((row as Record<string, unknown>)[field], row))
+      : textOf(column, row);
+  };
   const ordered = orderGridColumns(columns, order);
   // While printing (every row and the printed columns render, then the page prints).
   const [printing, setPrinting] = useState<GridPrintOptions | null>(null);
@@ -1162,7 +1212,7 @@ function DataGridInner<R>(
       ? null
       : treeData
         ? gridTreeGroups(source, idOf, getTreeDataPath ?? (() => []))
-        : gridRowGroups(source, grouping, idOf, (row, field) => textOf(sourceOf(field), row));
+        : gridRowGroups(source, grouping, idOf, groupingKeyOf);
     const generated = (nodes?.groups ?? []).map((node) => asGroupRow<R>(node));
     const items = pivot ? generated : [...generated, ...source];
     const parents: ReadonlyMap<string, string | null> = nodes ? nodes.parentOf : serverParents;
@@ -1210,6 +1260,7 @@ function DataGridInner<R>(
             firstPlace: (row) => firstPlace.get(idOf(row)) as number,
             keyOf: (row) => (row as Group)[GROUP].key,
             aggregateOf: (row, field) => aggregates.get(idOf(row))?.[field],
+            fieldOf: (row) => (isGroup(row) ? row[GROUP].field : undefined),
             sortModel,
             columns,
             groupFields: grouping,
@@ -1376,7 +1427,9 @@ function DataGridInner<R>(
     ...(rowReordering ? [{ field: REORDER_FIELD, width: 50 }] : []),
     ...(checkboxSelection ? [{ field: GRID_CHECKBOX_FIELD, width: GRID_CHECKBOX_WIDTH }] : []),
     ...(getDetailPanelContent ? [{ field: DETAIL_FIELD, width: 50 }] : []),
-    ...(treeLike ? [{ field: groupField, width: groupingColDef?.width ?? 200 }] : []),
+    ...(treeLike
+      ? groupingColumns.map((field) => ({ field, width: groupingColDefOf(field).width ?? 200 }))
+      : []),
   ];
   const colOffset = specials.length + 1;
   const colCount = specials.length + shown.length;
@@ -3195,6 +3248,9 @@ function DataGridInner<R>(
               }
               {...(raw !== text || typeof value !== "string" ? { "data-ok-value": raw } : {})}
               {...(column.renderCell ? { "data-ok-text": text } : {})}
+              {...(sourceOf(column.field)?.groupingValueGetter
+                ? { "data-ok-grouping-value": groupingKeyOf(row, column.field) }
+                : {})}
               {...(gridPinSide(pinned, column.field)
                 ? { "data-ok-pinned": gridPinSide(pinned, column.field) }
                 : {})}
@@ -3415,7 +3471,8 @@ function DataGridInner<R>(
       hidden: listView || undefined,
       tabIndex: -1,
     } as const;
-    if (place !== "body" || (isGroup(row) && field !== groupField)) return <div {...common} />;
+    if (place !== "body" || (isGroup(row) && field !== groupCellOf(row)))
+      return <div {...common} />;
     if (field === REORDER_FIELD)
       return (
         <div {...common}>
@@ -3463,7 +3520,10 @@ function DataGridInner<R>(
         </div>
       );
     }
-    const depth = { "--_ok-data-grid-depth": node?.depth ?? 0 } as CSSProperties;
+    // One column per grouped field: no indent.
+    const depth = {
+      "--_ok-data-grid-depth": multipleGrouping ? 0 : (node?.depth ?? 0),
+    } as CSSProperties;
     // Row grouping: data rows leave the group column empty.
     if (!treeData && !serverTree && !isGroup(row)) return <div {...common} style={depth} />;
     const label = isGroup(row)
@@ -3488,7 +3548,7 @@ function DataGridInner<R>(
           <span data-ok-data-grid-tree-spacer="" />
         )}
         <span data-ok-data-grid-tree-label="">{label}</span>
-        {hasChildren && !serverTree && !groupingColDef?.hideDescendantCount && (
+        {hasChildren && !serverTree && !groupingColDefOf(field).hideDescendantCount && (
           <span data-ok-data-grid-tree-count="">{`(${count})`}</span>
         )}
       </div>
@@ -3523,18 +3583,22 @@ function DataGridInner<R>(
           )}
         </div>
       );
-    if (field === groupField)
+    if (groupingColumns.includes(field)) {
+      const def = groupingColDefOf(field);
+      const own = gridGroupingFieldOf(field);
       return (
         <div
           {...common}
-          data-ok-width={groupingColDef?.width ?? 200}
-          {...(groupingColDef?.hideDescendantCount ? { "data-ok-hide-descendant-count": "" } : {})}
+          data-ok-width={def.width ?? 200}
+          {...(def.hideDescendantCount ? { "data-ok-hide-descendant-count": "" } : {})}
         >
           <span data-ok-data-grid-header-title="">
-            {groupingColDef?.headerName ?? labels.treeDataGroupingHeaderName}
+            {def.headerName ??
+              (own ? (sourceOf(own)?.headerName ?? own) : labels.treeDataGroupingHeaderName)}
           </span>
         </div>
       );
+    }
     return (
       <div
         {...common}
@@ -3645,6 +3709,7 @@ function DataGridInner<R>(
         lazyLoadingRequestThrottleMs:
           lazyLoadingRequestThrottleMs === 500 ? undefined : lazyLoadingRequestThrottleMs,
         disableRowGrouping,
+        rowGroupingColumnMode,
         disableAggregation,
         aggregationRowsScope,
         disablePivoting,

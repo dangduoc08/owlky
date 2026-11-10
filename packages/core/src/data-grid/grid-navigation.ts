@@ -6,7 +6,7 @@
  * the controller moves `tabindex="0"`.
  */
 
-import { GRID_GROUPING_FIELD } from "./grid-premium.js";
+import { isGridGroupingField } from "./grid-premium.js";
 
 const CELL = '[role="columnheader"], [role="gridcell"]';
 /** Controls that take focus instead of their cell (checkboxes, action buttons, links). */
@@ -239,7 +239,7 @@ export function createGridNavigation(
       const treeRow = cell.closest<HTMLElement>('[role="row"]');
       if (
         options.onToggleExpansion &&
-        (field === GRID_TREE_FIELD || field === GRID_GROUPING_FIELD) &&
+        (field === GRID_TREE_FIELD || isGridGroupingField(field)) &&
         !header &&
         treeRow &&
         (key === "ArrowRight" || key === "ArrowLeft")

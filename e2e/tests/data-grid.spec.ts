@@ -291,14 +291,31 @@ for (const impl of implementations) {
 
     test("row grouping, aggregation and pivoting", async ({ page }) => {
       await openStory(page, storyId(impl, "datagrid", "row-grouping"));
-      const north = page.locator('[data-ok-row-id="auto-generated-row-region/North"]').first();
+      const grouping = page.locator("#grid-grouping");
+      const north = grouping.locator('[data-ok-row-id="auto-generated-row-region/North"]');
       await expect(north).toContainText("North(6)");
       await north.locator("[data-ok-data-grid-tree-toggle]").click();
       await expect(north).toHaveAttribute("aria-expanded", "true");
-      await expect(page.locator('[data-ok-parent="auto-generated-row-region/North"]')).toHaveCount(
-        6,
-      );
-      await expect(page.locator("[data-ok-data-grid-aggregation-row]")).toHaveCount(1);
+      await expect(
+        grouping.locator('[data-ok-parent="auto-generated-row-region/North"]'),
+      ).toHaveCount(6);
+      await expect(grouping.locator("[data-ok-data-grid-aggregation-row]")).toHaveCount(1);
+      // One grouping column per field: a product group names itself in the second one.
+      const multiple = page.locator("#grid-grouping-multiple");
+      await multiple
+        .locator(
+          '[data-ok-row-id="auto-generated-row-region/North"] [data-ok-data-grid-tree-toggle]',
+        )
+        .click();
+      await expect(
+        multiple.locator(
+          '[data-ok-row-id="auto-generated-row-region/North/product/Tea"] [data-ok-field="__row_group_by_columns_group_product__"]',
+        ),
+      ).toHaveText("Tea(2)");
+      // Grouping values: two bands of units.
+      await expect(
+        page.locator('#grid-grouping-value [data-ok-generated][aria-level="1"]'),
+      ).toHaveText([/^Under 50 units\(11\)/, /^50 units or more\(13\)/]);
       // Tree data: generated parents.
       await expect(
         page.locator('[data-ok-row-id="auto-generated-row-Images/Photos"]'),

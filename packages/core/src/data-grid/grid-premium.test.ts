@@ -11,12 +11,16 @@ import {
   gridChartOptions,
   gridChartStacked,
   gridGroupComparator,
+  gridGroupingField,
+  gridGroupingFieldOf,
+  gridGroupingKey,
   gridGroupRowId,
   gridPivot,
   gridPivotField,
   gridPivotRole,
   gridRowGroups,
   gridTreeGroups,
+  isGridGroupingField,
   isGridPivotField,
   parseGridAggregationModel,
   sanitizeGridChartModel,
@@ -71,6 +75,29 @@ describe("row grouping", () => {
     const { groups, parentOf } = gridRowGroups(SALES, [], (r) => r.id, text);
     expect(groups).toEqual([]);
     expect(parentOf.get("1")).toBeNull();
+  });
+});
+
+describe("grouping columns", () => {
+  it("names one column per grouped field and reads the field back", () => {
+    expect(gridGroupingField(null)).toBe(GRID_GROUPING_FIELD);
+    expect(gridGroupingField("region")).toBe("__row_group_by_columns_group_region__");
+    expect(gridGroupingFieldOf("__row_group_by_columns_group_region__")).toBe("region");
+    expect(gridGroupingFieldOf(GRID_GROUPING_FIELD)).toBeNull();
+    expect(gridGroupingFieldOf("region")).toBeUndefined();
+    expect(gridGroupingFieldOf("__row_group_by_columns_group_")).toBeUndefined();
+    expect(gridGroupingFieldOf("__row_group_by_columns_group___")).toBeUndefined();
+    expect(isGridGroupingField(gridGroupingField("a_b"))).toBe(true);
+    expect(isGridGroupingField("__tree_data_group__")).toBe(false);
+  });
+
+  it("turns grouping values into keys", () => {
+    expect(gridGroupingKey("North")).toBe("North");
+    expect(gridGroupingKey(1990)).toBe("1990");
+    expect(gridGroupingKey(null)).toBe("");
+    expect(gridGroupingKey(undefined)).toBe("");
+    expect(gridGroupingKey(new Date(2025, 4, 3))).toBe("2025-05-03");
+    expect(gridGroupingKey(new Date(Number.NaN))).toBe("");
   });
 });
 
@@ -206,6 +233,27 @@ describe("group order", () => {
     expect(order([{ field: "total", sort: "asc" }])).toEqual(["b", "a", "c"]);
     expect(order([{ field: "total", sort: "desc" }])).toEqual(["a", "b", "c"]);
     expect(order([{ field: "other", sort: "asc" }])).toEqual(["a", "c", "b"]);
+  });
+
+  it("sorts the groups of one field from its own grouping column", () => {
+    const fieldOf = (i: Item) => (i.key === "c" ? "product" : "region");
+    const compare = gridGroupComparator<Item>({
+      isGroup: (i) => i.group,
+      place: (i) => i.place,
+      firstPlace: (i) => i.place,
+      keyOf: (i) => i.key,
+      aggregateOf: () => null,
+      fieldOf,
+      sortModel: [{ field: gridGroupingField("region"), sort: "desc" }],
+      columns: [],
+      groupFields: ["region", "product"],
+      aggregated: [],
+    });
+    const [b, a, c] = items as [Item, Item, Item];
+    // Two region groups: by key, descending; a product group against a region group: by place.
+    expect(compare(a, b)).toBeGreaterThan(0);
+    expect(compare(c, a)).toBeGreaterThan(0);
+    expect(compare(b, c)).toBeGreaterThan(0);
   });
 
   it("orders data rows by their place, and mixed siblings by first place", () => {

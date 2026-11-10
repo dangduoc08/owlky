@@ -71,6 +71,8 @@ import {
   gridFormats,
   gridFormatValue,
   gridGroupComparator,
+  gridGroupingField,
+  gridGroupingKey,
   gridGroupPaths,
   gridGroupRows,
   gridGroupsById,
@@ -94,6 +96,7 @@ import {
   gridToXlsx,
   gridTreeRows,
   isGridCellSelected,
+  isGridGroupingField,
   isGridResizable,
   isGridSortable,
   measureGridColumn,
@@ -260,6 +263,16 @@ export interface DataGridInstance extends ComponentInstance {
   setFilterOperators(field: string, operators: readonly GridFilterOperator<HTMLElement>[]): void;
   /** The text of a column's values in `setRows` and after editing (`null`: back to the default). */
   setValueFormatter(field: string, format: ((value: unknown) => string) | null): void;
+  /**
+   * The value a column's rows are grouped by (MUI X `groupingValueGetter`), from the cell's value
+   * (`data-ok-value`, else its text); `null`: back to `data-ok-grouping-value`, else the text.
+   */
+  setGroupingValueGetter(
+    field: string,
+    getter:
+      | ((value: unknown, row: HTMLElement) => string | number | Date | null | undefined)
+      | null,
+  ): void;
   /** Tree data: opens or closes a row's children. */
   setRowChildrenExpansion(id: string, expanded: boolean): void;
   /** Master-detail: opens or closes a row's detail panel. */
@@ -339,6 +352,7 @@ const {
   quickFilterExcludeHiddenColumns,
   ignoreDiacritics,
   disableRowGrouping,
+  rowGroupingColumnMode,
   disableAggregation,
   aggregationRowsScope,
   disablePivoting,
@@ -368,6 +382,8 @@ const SPECIALS: Record<string, number> = {
   [GRID_TREE_FIELD]: 200,
   [GRID_GROUPING_FIELD]: 200,
 };
+/** Columns the grid adds: the specials, and the grouping columns of each grouped field. */
+const isSpecial = (field: string) => field in SPECIALS || isGridGroupingField(field);
 const LAZY_CHUNK = 50;
 const INTERACTIVE = "button, a, input, label, select, textarea";
 
@@ -465,16 +481,18 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     const readSpecials = () =>
       [...headerRow.querySelectorAll<HTMLElement>('[role="columnheader"][data-ok-field]')]
         .map((header) => header.getAttribute("data-ok-field") as string)
-        .filter((field) => field in SPECIALS);
+        .filter(isSpecial);
     let specialFields = readSpecials();
     const specialWidth = (field: string) =>
       numberAttr(
         headerRow.querySelector(`[data-ok-field="${CSS.escape(field)}"]`) as Element,
         "data-ok-width",
-      ) ?? (SPECIALS[field] as number);
+      ) ??
+      SPECIALS[field] ??
+      200;
     const headers = () =>
       [...headerRow.querySelectorAll<HTMLElement>('[role="columnheader"]')].filter(
-        (header) => !((header.getAttribute("data-ok-field") ?? "") in SPECIALS),
+        (header) => !isSpecial(header.getAttribute("data-ok-field") ?? ""),
       );
     const readColumns = (): GridColumn[] =>
       headers().map((header) => ({
@@ -726,10 +744,28 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       }
       cell.replaceChildren(...parts);
     };
-    const hideCount = () =>
+    const hideCount = (field: string) =>
       !!headerRow.querySelector(
-        `:scope > [data-ok-field="${GRID_GROUPING_FIELD}"][data-ok-hide-descendant-count]`,
+        `:scope > [data-ok-field="${CSS.escape(field)}"][data-ok-hide-descendant-count]`,
       );
+    /** The grouping columns now: one, or one per grouped field (`multiple`, client-side). */
+    const groupingColumns = () => {
+      const fields = grouping();
+      if (!fields.length) return [];
+      return !pivot && !serverGrouping() && readStyle(element, rowGroupingColumnMode) === "multiple"
+        ? fields.map((field) => gridGroupingField(field))
+        : [GRID_GROUPING_FIELD];
+    };
+    const groupingGetters = new Map<
+      string,
+      (value: unknown, row: HTMLElement) => string | number | Date | null | undefined
+    >();
+    /** A row's group key: the column's getter, its `data-ok-grouping-value`, else its text. */
+    const groupingKey = (row: HTMLElement, field: string) => {
+      const getter = groupingGetters.get(field);
+      if (getter) return gridGroupingKey(getter(cellValue(row, field), row));
+      return cellOf(row, field)?.getAttribute("data-ok-grouping-value") ?? cellText(row, field);
+    };
     const groupElFor = (node: GridGroupNode) => {
       let row = groupEls.get(node.id);
       if (!row) {
@@ -743,53 +779,70 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       groupNodes.set(node.id, node);
       return row;
     };
-    /** The group column of every row (and the row template) while rows are grouped. */
-    const syncGroupColumn = (on: boolean) => {
-      const has = !!headerRow.querySelector(`:scope > [data-ok-field="${GRID_GROUPING_FIELD}"]`);
-      if (on === has) return;
+    /**
+     * The grouping columns of every row (and the row template) while rows are grouped: one, or one
+     * per grouped field. Headers of the markup are kept (their width, title and count option).
+     */
+    const syncGroupColumns = () => {
+      const wanted = groupingColumns();
+      const grouped = (row: HTMLElement) =>
+        [...row.querySelectorAll<HTMLElement>(":scope > [data-ok-field]")].filter((cell) =>
+          isGridGroupingField(cell.getAttribute("data-ok-field") as string),
+        );
+      const present = grouped(headerRow);
+      if (present.map((h) => h.getAttribute("data-ok-field")).join() === wanted.join()) return;
       const templateRow = element.querySelector<HTMLTemplateElement>(
         "template[data-ok-data-grid-row]",
       )?.content.firstElementChild as HTMLElement | null | undefined;
       const targets = [...rowEls, ...pinnedRowEls(), ...(templateRow ? [templateRow] : [])];
-      if (!on) {
-        for (const row of [headerRow, ...targets])
-          row.querySelector(`:scope > [data-ok-field="${GRID_GROUPING_FIELD}"]`)?.remove();
+      const kept = new Map(present.map((h) => [h.getAttribute("data-ok-field") as string, h]));
+      for (const row of [headerRow, ...targets]) for (const cell of grouped(row)) cell.remove();
+      if (!wanted.length)
         for (const row of rowEls)
           for (const attr of ["aria-level", "aria-posinset", "aria-setsize", "data-ok-parent"])
             row.removeAttribute(attr);
-      } else {
-        const after = (row: HTMLElement) =>
-          [...row.querySelectorAll<HTMLElement>(":scope > [data-ok-field]")]
-            .filter((cell) => (cell.getAttribute("data-ok-field") as string) in SPECIALS)
-            .at(-1) ?? null;
-        const header = document.createElement("div");
-        header.setAttribute("role", "columnheader");
-        header.setAttribute("data-ok-field", GRID_GROUPING_FIELD);
-        header.tabIndex = -1;
-        header.setAttribute("data-ok-width", "200");
-        const title = document.createElement("span");
-        title.setAttribute("data-ok-data-grid-header-title", "");
-        title.textContent = labels.treeDataGroupingHeaderName;
-        header.append(title);
-        const place = (row: HTMLElement, cell: HTMLElement) => {
-          const last = after(row);
-          if (last) last.after(cell);
-          else row.prepend(cell);
-          cell.setAttribute(
-            "aria-colindex",
-            String(
-              [...row.querySelectorAll(":scope > [data-ok-field]")].filter(
-                (c) => (c.getAttribute("data-ok-field") as string) in SPECIALS,
-              ).length,
-            ),
-          );
-        };
+      const after = (row: HTMLElement) =>
+        [...row.querySelectorAll<HTMLElement>(":scope > [data-ok-field]")]
+          .filter((cell) => isSpecial(cell.getAttribute("data-ok-field") as string))
+          .at(-1) ?? null;
+      const place = (row: HTMLElement, cell: HTMLElement) => {
+        const last = after(row);
+        if (last) last.after(cell);
+        else row.prepend(cell);
+        cell.setAttribute(
+          "aria-colindex",
+          String(
+            [...row.querySelectorAll(":scope > [data-ok-field]")].filter((c) =>
+              isSpecial(c.getAttribute("data-ok-field") as string),
+            ).length,
+          ),
+        );
+      };
+      for (const field of wanted) {
+        let header = kept.get(field);
+        if (!header) {
+          header = document.createElement("div");
+          header.setAttribute("role", "columnheader");
+          header.setAttribute("data-ok-field", field);
+          header.tabIndex = -1;
+          header.setAttribute("data-ok-width", "200");
+          const title = document.createElement("span");
+          title.setAttribute("data-ok-data-grid-header-title", "");
+          const own = field === GRID_GROUPING_FIELD ? null : grouping()[wanted.indexOf(field)];
+          title.textContent = own
+            ? (baseColumns.find((c) => c.field === own)?.headerName ?? own)
+            : labels.treeDataGroupingHeaderName;
+          header.append(title);
+        }
         place(headerRow, header);
-        for (const row of targets) place(row, gridCell(GRID_GROUPING_FIELD));
+        for (const row of targets) place(row, gridCell(field));
       }
       specialFields = readSpecials();
       for (const row of groupEls.values()) fillGroupRow(row);
-      main.setAttribute("role", on || element.hasAttribute(treeData.attr) ? "treegrid" : "grid");
+      main.setAttribute(
+        "role",
+        wanted.length > 0 || element.hasAttribute(treeData.attr) ? "treegrid" : "grid",
+      );
       layout();
     };
 
@@ -1046,7 +1099,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         }
         for (const cell of row.querySelectorAll<HTMLElement>(":scope > [data-ok-field]")) {
           const field = cell.getAttribute("data-ok-field") as string;
-          const special = field in SPECIALS;
+          const special = isSpecial(field);
           const side = special ? (leftPinned ? "left" : undefined) : gridPinSide(pinned, field);
           if (side) cell.setAttribute("data-ok-pinned", side);
           else cell.removeAttribute("data-ok-pinned");
@@ -1249,7 +1302,8 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         // Row grouping (and the pivot, which shows its groups only).
         const fields = grouping();
         const source = pivot ? pivotRows() : all;
-        const nodes = gridRowGroups(source, fields, idOf, cellText);
+        const nodes = gridRowGroups(source, fields, idOf, groupingKey);
+        const multipleColumns = groupingColumns()[0] !== GRID_GROUPING_FIELD;
         const current = new Set(nodes.groups.map((g) => g.id));
         for (const known of [...groupEls.keys()])
           if (!current.has(known)) {
@@ -1296,6 +1350,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
                 firstPlace: (row) => firstPlace.get(idOf(row)) as number,
                 keyOf: (row) => (groupNodes.get(idOf(row)) as GridGroupNode).key,
                 aggregateOf: (row, field) => aggregates.get(idOf(row))?.[field],
+                fieldOf: (row) => groupNodes.get(idOf(row))?.field,
                 sortModel,
                 columns,
                 groupFields: fields,
@@ -1310,10 +1365,17 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
           row.setAttribute("aria-setsize", String(node.setSize));
           if (node.parentId) row.setAttribute("data-ok-parent", node.parentId);
           else row.removeAttribute("data-ok-parent");
+          // One column per grouped field: a group row names itself in its field's column.
+          const groupNode = groupNodes.get(node.id);
+          const own =
+            multipleColumns && groupNode
+              ? gridGroupingField(groupNode.field ?? null)
+              : GRID_GROUPING_FIELD;
           const cell = row.querySelector<HTMLElement>(
-            `:scope > [data-ok-field="${GRID_GROUPING_FIELD}"]`,
+            `:scope > [data-ok-field="${CSS.escape(own)}"]`,
           );
-          cell?.style.setProperty("--_ok-data-grid-depth", String(node.depth));
+          if (!multipleColumns)
+            cell?.style.setProperty("--_ok-data-grid-depth", String(node.depth));
           if (!generatedRow(row)) continue;
           const parent = node.childrenCount > 0;
           if (parent) row.setAttribute("aria-expanded", String(node.expanded));
@@ -1322,7 +1384,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
             groupLabel(
               cell as HTMLElement,
               (groupNodes.get(node.id) as GridGroupNode).key,
-              parent && !hideCount() ? (leafCounts.get(node.id) as number) : null,
+              parent && !hideCount(own) ? (leafCounts.get(node.id) as number) : null,
               parent ? node.expanded : null,
             );
             const toggle = (cell as HTMLElement).querySelector("[data-ok-data-grid-tree-toggle]");
@@ -1562,7 +1624,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         cell.removeAttribute("data-ok-value");
         cell.removeAttribute("data-ok-text");
         const field = cell.getAttribute("data-ok-field") as string;
-        if (field in SPECIALS) {
+        if (isSpecial(field)) {
           cell.replaceChildren();
           continue;
         }
@@ -1806,7 +1868,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         row.setAttribute("data-ok-row-id", String(item["id"]));
         for (const cell of row.querySelectorAll<HTMLElement>('[role="gridcell"][data-ok-field]')) {
           const field = cell.getAttribute("data-ok-field") as string;
-          if (field in SPECIALS) continue;
+          if (isSpecial(field)) continue;
           const raw = item[field];
           const shownText = formatted(field, raw);
           const cellTemplate = element.querySelector<HTMLTemplateElement>(
@@ -2038,7 +2100,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       if (rowGrouping.length)
         element.setAttribute("data-ok-row-grouping-model", JSON.stringify(rowGrouping));
       else element.removeAttribute("data-ok-row-grouping-model");
-      syncGroupColumn(grouping().length > 0);
+      syncGroupColumns();
       refresh();
     };
     const setAggregation = (model: GridAggregationModel) =>
@@ -2101,7 +2163,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
           (node): node is HTMLElement =>
             node instanceof HTMLElement &&
             (node.getAttribute("data-ok-field") ?? "") in SPECIALS &&
-            node.getAttribute("data-ok-field") !== GRID_GROUPING_FIELD,
+            !isGridGroupingField(node.getAttribute("data-ok-field") ?? ""),
         );
         const cells: HTMLElement[] = specials.map((node) => node.cloneNode(true) as HTMLElement);
         if (result.rowGroupingModel.length) {
@@ -3454,11 +3516,17 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     let rootVars: string[] = [];
     let listNow = element.hasAttribute(listView.attr);
     let pivotNow = pivotOn();
+    let columnModeNow = readStyle(element, rowGroupingColumnMode);
     const options = new MutationObserver(() => {
       reflect();
       if (pivotOn() !== pivotNow) {
         pivotNow = pivotOn();
         showPivot();
+      }
+      if (readStyle(element, rowGroupingColumnMode) !== columnModeNow) {
+        columnModeNow = readStyle(element, rowGroupingColumnMode);
+        syncGroupColumns();
+        apply();
       }
       markCells();
       // List view: column cells and headers hide, list cells show.
@@ -3484,12 +3552,13 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         listView.attr,
         pivotActiveOption.attr,
         cellSelectionOption.attr,
+        rowGroupingColumnMode.attr,
       ],
     });
 
     for (const row of filterRows()) fillOperators(partsOf(row).operator, partsOf(row).field.value);
     styleRows();
-    syncGroupColumn(grouping().length > 0);
+    syncGroupColumns();
     layout();
     if (pivotOn()) showPivot();
     else apply();
@@ -3629,7 +3698,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
           element.toggleAttribute(pivotActiveOption.attr, state.pivoting.active);
         if (state.rowGrouping?.model) {
           rowGrouping = state.rowGrouping.model;
-          syncGroupColumn(grouping().length > 0);
+          syncGroupColumns();
         }
         if (state.pivoting) showPivot();
         layout();
@@ -3644,6 +3713,11 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       setValueFormatter(field, format) {
         if (format) formatters.set(field, format);
         else formatters.delete(field);
+      },
+      setGroupingValueGetter(field, getter) {
+        if (getter) groupingGetters.set(field, getter);
+        else groupingGetters.delete(field);
+        apply();
       },
       setLocaleText(next) {
         labels = { ...gridDefaultLabels, ...next };

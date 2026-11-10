@@ -35,6 +35,17 @@ const salesColumns: GridColDef<Sale>[] = [
   { field: "revenue", headerName: "Revenue", type: "number", width: 130 },
 ];
 
+/* The same columns, with units grouped into two bands instead of one group per value. */
+const bandColumns: GridColDef<Sale>[] = salesColumns.map((column) =>
+  column.field === "units"
+    ? {
+        ...column,
+        groupingValueGetter: (value) =>
+          Number(value) >= 50 ? "50 units or more" : "Under 50 units",
+      }
+    : column,
+);
+
 /* Tree data with missing parents: the grid generates the "Docs" and "Images" folders. */
 export interface FileEntry {
   id: string;
@@ -118,6 +129,41 @@ export const phase6Stories: Record<string, ReactGroup[]> = {
             pagination: { paginationModel: { pageSize: 25 } },
           }}
           pageSizeOptions={[25, 50]}
+        />
+      ),
+    },
+    {
+      title: "Multiple grouping columns",
+      content: (
+        <DataGrid
+          id="grid-grouping-multiple"
+          aria-label="Sales by region and product"
+          className="sb-grid-wide"
+          rows={SALES}
+          columns={salesColumns}
+          rowGroupingColumnMode="multiple"
+          initialState={{
+            rowGrouping: { model: ["region", "product"] },
+            aggregation: { model: { revenue: "sum" } },
+          }}
+          hideFooter
+        />
+      ),
+    },
+    {
+      title: "Grouping value getter",
+      content: (
+        <DataGrid
+          id="grid-grouping-value"
+          aria-label="Sales by units"
+          className="sb-grid-wide"
+          rows={SALES}
+          columns={bandColumns}
+          initialState={{
+            rowGrouping: { model: ["units"] },
+            aggregation: { model: { revenue: "sum" } },
+          }}
+          hideFooter
         />
       ),
     },
@@ -265,6 +311,8 @@ export const phase6Stories: Record<string, ReactGroup[]> = {
 export const PHASE6_FILES = {
   grouping: [
     ["Row grouping and aggregation", "group"],
+    ["Multiple grouping columns", "multiple"],
+    ["Grouping value getter", "value"],
     ["Generated parents", "tree"],
   ],
   pivot: [["Pivoting", "group"]],

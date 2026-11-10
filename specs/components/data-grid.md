@@ -76,6 +76,10 @@ div[data-ok-data-grid][data-ok-density][data-ok-checkbox-selection]?[data-ok-dis
       [data-ok-pivot-model='{…}']? [data-ok-chart-model='{…}']? [data-ok-excel-options='{…}']? (JSON)
     rows grouped (role=treegrid): special column __row_group_by_columns_group__ (header
       [data-ok-width][data-ok-hide-descendant-count]?; data rows: an empty cell, --_ok-data-grid-depth)
+      [data-ok-row-grouping-column-mode=multiple]: one special column per grouped field instead,
+      __row_group_by_columns_group_<field>__ (header title: the field's header name; a group row
+      fills its field's column, the others stay empty; no indent)
+    data cells [data-ok-grouping-value]? (the group key; React writes it from groupingValueGetter)
       group rows: div[role=row][data-ok-row-id="auto-generated-row-<field>/<key>…"][data-ok-generated]
         [aria-level][aria-posinset][aria-setsize][aria-expanded]?[data-ok-parent]?
         › group cell (toggle | spacer, span[data-ok-data-grid-tree-label], span[data-ok-data-grid-tree-count]?)
@@ -158,6 +162,7 @@ Root: `data-ok-data-grid`. Unknown values fall back to the default.
 | `lazyLoading` | `data-ok-lazy-loading` | flag | boolean | off | With a data source and a row count: rows load in chunks as they scroll into view. |
 | `lazyLoadingRequestThrottleMs` | `data-ok-lazy-loading-request-throttle-ms="…"` | number | number | `500` | Least time between two lazy loading requests, ms. |
 | `disableRowGrouping` | `data-ok-disable-row-grouping` | flag | boolean | off | Columns can't be grouped by (no Group by in the column menu). |
+| `rowGroupingColumnMode` | `data-ok-row-grouping-column-mode="…"` | style | `single` `multiple` | `single` | Grouped rows show in one grouping column (`single`), or in one column per grouped field (`multiple`). |
 | `disableAggregation` | `data-ok-disable-aggregation` | flag | boolean | off | No aggregation (no Aggregation items in the column menu). |
 | `aggregationRowsScope` | `data-ok-aggregation-rows-scope="…"` | style | `filtered` `all` | `filtered` | Rows aggregated: the `filtered` ones, or `all` of them. |
 | `disablePivoting` | `data-ok-disable-pivoting` | flag | boolean | off | No pivot button in the toolbar. |
@@ -215,6 +220,8 @@ Autocomplete chips. Phase 6: `rowGroupingModel` / `onRowGroupingModelChange` /
 `onAggregationModelChange` / `initialState.aggregation.model`, `disableAggregation`,
 `aggregationFunctions` (`{ apply(values, column), columnTypes? }`), `aggregationRowsScope`,
 `getAggregationPosition` (groups `inline` | null, root `footer` | null), column `aggregable`,
+`rowGroupingColumnMode` (`single` | `multiple`), column `groupingValueGetter(value, row)` (value:
+`row[field]`), `groupingColDef` as a function of `{ fields }` (one call per grouping column),
 `availableAggregationFunctions`; `pivotModel` / `onPivotModelChange`, `pivotActive` /
 `onPivotActiveChange`, `initialState.pivoting` (`model`, `active`), `disablePivoting`, column
 `pivotable`; `excelOptions` (`fileName`, `sheetName`, `fields`, `allColumns`, `includeHeaders`),
@@ -228,10 +235,12 @@ Move left / Move right. Renamed: `rowSelectionModel` is an id array (MUI v8:
 `{ type, ids }`). Later phases: see ADR-0021 (tree data, master-detail, row reordering / pinning,
 column groups, row grouping, aggregation, pivoting, Excel, clipboard, cell selection, header
 filters, column virtualization, lazy loading of row chunks). Not applicable: `slots`, `slotProps`, `sx`, `classes`, license keys.
-Deferred (roadmap): `rowGroupingColumnMode="multiple"`, `groupingValueGetter`, group footers
-(`getAggregationPosition` → `footer` for groups), server-side aggregation, `getPivotDerivedColumns`
-(year / quarter of dates), the pivot panel's drag and drop (selects instead), header filter operator
-menus, the AI assistant (needs a language model service).
+Deferred (roadmap): group footers (`getAggregationPosition` → `footer` for groups), server-side
+aggregation, `getPivotDerivedColumns` (year / quarter of dates), the pivot panel's drag and drop
+(selects instead), header filter operator menus, the AI assistant (needs a language model service).
+Row grouping gaps (not in a roadmap row): `leafField`, `mainGroupingCriteria`, rows with missing
+groups shown before the groups (`null` keys group under ""), sortable grouping column headers (the
+sort model accepts grouping fields).
 Renamed: the charts integration is one `chartModel` and a chart inside the grid (MUI X: a renderer
 proxy and a context provider around the grid). Its configuration is flat in the model (MUI X:
 `configuration`): kept `stacked`, `itemLabel` (`none` | `value`), `colors` (palette names, not MUI
@@ -325,9 +334,13 @@ view): template = specials + left pins + spacer + visible tracks + spacer + righ
 omits the other cells, HTML hides them. Lazy loading: rows are placeholders until their chunk (50
 rows) loads; before the first measure only the first chunk renders. `updateRow` runs after an
 accepted edit; its answer is shown, a failure brings the old values back.
-Phase 6. Row grouping: one group per distinct cell text of each grouped field (nested in the model's
-order); groups count their filtered rows; the column menu groups and ungroups; data rows keep the
-group column empty. Sorting orders groups by key (sort on a grouped field or the group column), by
+Phase 6. Row grouping: one group per distinct cell text (or `groupingValueGetter` key) of each grouped
+field (nested in the model's order); groups count their filtered rows; the column menu groups and
+ungroups; data rows keep the group column empty. `rowGroupingColumnMode="multiple"`: one grouping
+column per grouped field (client-side grouping); a group row's toggle, name and count sit in its
+field's column; sorting on a field's grouping column orders that field's groups by key; the HTML
+runtime adds and removes the columns when the model or the mode attribute changes (markup headers
+are kept). Sorting orders groups by key (sort on a grouped field or the group column), by
 aggregated value (sort on an aggregated field), else by their first row. Aggregation: `sum` /
 `avg` (2 decimals) / `min` / `max` (numbers and dates) / `size`; values left out when a row has
 none (pivot buckets); groups show theirs inline, the footer row the filtered rows' (`all`: every
@@ -405,6 +418,8 @@ known keys only; React writes them from `csvOptions` / `printOptions`).
 Phase 6: `ok:data-grid:rowgrouping | aggregation | cellselection | chart` (cancelable, `{ model }`),
 `ok:data-grid:pivot` (cancelable, `{ model, active }`), `ok:data-grid:clipboardcopy` (`{ data }`),
 `ok:data-grid:clipboardpaste` (cancelable, `{ data }`: the pasted cells); instance
+`setGroupingValueGetter(field, getter | null)` (getter of the cell's value and row; else
+`data-ok-grouping-value`, else the cell text);
 `rowGroupingModel`, `aggregationModel`, `pivotModel`, `pivotActive`, `cellSelectionModel`,
 `chartModel` with `set…` (no events; the chart panel's fields follow the model),
 `toExcel(options)`, `exportExcel(options)`.
@@ -432,7 +447,7 @@ the detailed record of what is kept.
 | Column def: `cellClassName`, `headerClassName` | grid `getCellClassName` only | deferred | per column class names |
 | Column def: `hideSortIcons`, `disableColumnMenu`, `disableReorder`, `disableExport`, `pinnable` | — | deferred | per column opt-outs (grid-wide flags exist) |
 | Column def: `rowSpanValueGetter`, `pastedValueParser`, `groupingValueSetter`, `rowHeader`, `display: "flex"` | — | deferred | |
-| Column def: `groupingValueGetter` | — | deferred (4.15) | |
+| Column def: `groupingValueGetter` | same | kept | value is `row[field]`; HTML: `data-ok-grouping-value` (React writes it) or `setGroupingValueGetter` |
 | Column def: `allowFormulas`, `chartable`, `examples` | — | not applicable | formulas and AI not proposed (roadmap 2.4 notes); `chartable` = every column of `chartModel` |
 | Selection: `checkboxSelection`, `rowSelectionModel` (id array), `disableRowSelectionOnClick`, `disableMultipleRowSelection`, `isRowSelectable`, `keepNonExistentRowsSelected`, `checkboxSelectionVisibleOnly` | same | kept | `rowSelectionModel` renamed shape (MUI v8 `{ type, ids }`) |
 | Selection: `rowSelection: false`, `rowSelectionPropagation` (groups / tree), `checkboxColDef`, `disableRowSelectionExcludeModel` | — | deferred | last one not applicable (id array model) |
@@ -458,7 +473,8 @@ the detailed record of what is kept.
 | Tree data / master-detail / row order / pinned rows: `treeData`, `getTreeDataPath`, `groupingColDef`, `defaultGroupingExpansionDepth`, `isGroupExpandedByDefault`, detail panel props, `rowReordering`, `onRowOrderChange`, `pinnedRows` | same | kept | |
 | Row order: `isRowReorderable`, `isValidRowReorder`, `setTreeDataPath` (reorder in tree data) | — | deferred | |
 | Row grouping / aggregation / pivot: models + callbacks, `disableRowGrouping`, `aggregationFunctions`, `aggregationRowsScope`, `getAggregationPosition` (root), `disablePivoting`, `pivotActive` | same | kept | |
-| `rowGroupingColumnMode`, `getPivotDerivedColumns`, group footers, server aggregation, pivot drag and drop | — | deferred (4.15) | |
+| `rowGroupingColumnMode`, `groupingColDef` callback | same | kept | callback params `{ fields }`; server-side grouping keeps one column |
+| `getPivotDerivedColumns`, group footers, server aggregation, pivot drag and drop | — | deferred (4.15) | |
 | Pivot: `pivotingColDef`, `pivotPanelOpen` / `onPivotPanelOpenChange` | — | deferred | |
 | Clipboard / cell selection / export: `cellSelection`, `cellSelectionModel`, `disableClipboardPaste`, `onClipboardCopy`, `onClipboardPasteStart` / `End`, `splitClipboardPastedText`, `clipboardCopyCellDelimiter`, `ignoreValueFormatterDuringExport`, `csvOptions`, `printOptions`, `excelOptions` | same | kept | |
 | `cellSelectionFillHandle`, `onBeforeClipboardPasteStart` | — | deferred | fill handle drag (keyboard alternative needed, WCAG 2.5.7) |

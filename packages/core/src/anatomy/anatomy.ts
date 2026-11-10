@@ -3073,6 +3073,12 @@ export const dataGridOptions = defineOptions("data-grid", "data-ok-data-grid", {
     "data-ok-disable-row-grouping",
     "Columns can't be grouped by (no Group by in the column menu).",
   ),
+  rowGroupingColumnMode: style(
+    "data-ok-row-grouping-column-mode",
+    ["single", "multiple"] as const,
+    "single",
+    "Grouped rows show in one grouping column (`single`), or in one column per grouped field (`multiple`).",
+  ),
   disableAggregation: flag(
     "data-ok-disable-aggregation",
     "No aggregation (no Aggregation items in the column menu).",
@@ -3105,6 +3111,7 @@ export const dataGridOptions = defineOptions("data-grid", "data-ok-data-grid", {
 
 export interface DataGridAnatomyOptions {
   disableRowGrouping?: boolean | undefined;
+  rowGroupingColumnMode?: "single" | "multiple" | undefined;
   disableAggregation?: boolean | undefined;
   aggregationRowsScope?: "filtered" | "all" | undefined;
   disablePivoting?: boolean | undefined;

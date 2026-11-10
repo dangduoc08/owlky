@@ -25,6 +25,39 @@ import type { GridColumnGroup } from "./grid-structure.js";
 
 /** The row grouping column (MUI X `GRID_ROW_GROUPING_SINGLE_GROUPING_FIELD`). */
 export const GRID_GROUPING_FIELD = "__row_group_by_columns_group__";
+const GROUPING_PREFIX = "__row_group_by_columns_group_";
+
+/**
+ * The grouping column of one grouped field (`rowGroupingColumnMode="multiple"`; MUI X
+ * `getRowGroupingFieldFromGroupingCriteria`), or the single one for `null`.
+ */
+export const gridGroupingField = (field: string | null): string =>
+  field === null ? GRID_GROUPING_FIELD : `${GROUPING_PREFIX}${field}__`;
+
+/** The grouped field of a grouping column (`null`: the single column; `undefined`: not one). */
+export function gridGroupingFieldOf(field: string): string | null | undefined {
+  if (field === GRID_GROUPING_FIELD) return null;
+  return field.startsWith(GROUPING_PREFIX) &&
+    field.endsWith("__") &&
+    field.length > GROUPING_PREFIX.length + 2
+    ? field.slice(GROUPING_PREFIX.length, -2)
+    : undefined;
+}
+
+/** Whether a field is a row grouping column (the single one, or one per grouped field). */
+export const isGridGroupingField = (field: string): boolean =>
+  gridGroupingFieldOf(field) !== undefined;
+
+/** A group key from a `groupingValueGetter` result (MUI X: a string, number, Date or nothing). */
+export function gridGroupingKey(value: unknown): string {
+  if (value === null || value === undefined) return "";
+  if (value instanceof Date) {
+    if (Number.isNaN(value.getTime())) return "";
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${value.getFullYear()}-${pad(value.getMonth() + 1)}-${pad(value.getDate())}`;
+  }
+  return String(value);
+}
 /** Id of the aggregation footer row (the root group). */
 export const GRID_AGGREGATION_ROOT_ID = "auto-generated-group-footer-root";
 
@@ -264,6 +297,8 @@ export interface GridGroupOrderOptions<T> {
   firstPlace(item: T): number;
   keyOf(item: T): string;
   aggregateOf(item: T, field: string): unknown;
+  /** A group's grouped field (a column of one grouped field sorts that field's groups). */
+  fieldOf?: ((item: T) => string | undefined) | undefined;
   sortModel: GridSortModel;
   columns: readonly GridColumn[];
   /** Fields grouped by (sorting one of them, or the grouping column, sorts the groups by key). */
@@ -273,8 +308,8 @@ export interface GridGroupOrderOptions<T> {
 
 /**
  * Sibling order under row grouping: data rows as sorted; groups by key when the sort is on a
- * grouped field (or the grouping column), by their aggregated value when it is on an aggregated
- * field, else in the order of their first row.
+ * grouped field or the grouping column (a column of one grouped field: that field's groups), by
+ * their aggregated value when it is on an aggregated field, else in the order of their first row.
  */
 export function gridGroupComparator<T>(o: GridGroupOrderOptions<T>): (a: T, b: T) => number {
   const first = o.sortModel[0];
@@ -282,7 +317,12 @@ export function gridGroupComparator<T>(o: GridGroupOrderOptions<T>): (a: T, b: T
     if (!o.isGroup(a) && !o.isGroup(b)) return o.place(a) - o.place(b);
     if (first && o.isGroup(a) && o.isGroup(b)) {
       const sign = first.sort === "asc" ? 1 : -1;
-      if (first.field === GRID_GROUPING_FIELD || o.groupFields.includes(first.field)) {
+      const own = gridGroupingFieldOf(first.field);
+      if (
+        own === null ||
+        o.groupFields.includes(first.field) ||
+        (own !== undefined && o.fieldOf?.(a) === own && o.fieldOf?.(b) === own)
+      ) {
         const order = o.keyOf(a).localeCompare(o.keyOf(b), undefined, { numeric: true });
         if (order !== 0) return sign * order;
       } else if (o.aggregated.includes(first.field)) {
