@@ -103,6 +103,10 @@ describe("styles source", () => {
               break;
             }
           }
+          // A pseudo-element inside :where() makes the whole rule invalid (browsers drop it).
+          expect(selector.slice(":where(".length, end), `${file}: "${selector}"`).not.toContain(
+            "::",
+          );
           expect(
             [
               "",

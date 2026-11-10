@@ -203,9 +203,8 @@
 
   /* Separators between header cells (a header's tooltip may follow the last one). */
   :where(
-    [data-ok-data-grid-main]
-      [role="columnheader"]:not(:nth-last-child(1 of [role="columnheader"]))::after
-  ) {
+    [data-ok-data-grid-main] [role="columnheader"]:not(:nth-last-child(1 of [role="columnheader"]))
+  )::after {
     position: absolute;
     inset-block: 30%;
     inset-inline-end: 0;
@@ -916,8 +915,8 @@
   :where(
     [data-ok-data-grid][data-ok-show-column-vertical-border]
       [data-ok-data-grid-header]
-      [role="columnheader"]::after
-  ) {
+      [role="columnheader"]
+  )::after {
     display: none;
   }
 
@@ -934,7 +933,7 @@
     cursor: default;
   }
 
-  :where([data-ok-data-grid-header-filters] > [role="columnheader"]::after) {
+  :where([data-ok-data-grid-header-filters] > [role="columnheader"])::after {
     display: none;
   }
 
