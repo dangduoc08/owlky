@@ -11,6 +11,7 @@ import columnDataLabelsGroup from "../../../../../packages/html/src/components/c
 import columnRangesGroup from "../../../../../packages/html/src/components/chart/examples/column-ranges-group.html?raw";
 import columnSingle from "../../../../../packages/html/src/components/chart/examples/column-single-group.html?raw";
 import dataLabelsGroup from "../../../../../packages/html/src/components/chart/examples/data-labels-group.html?raw";
+import dumbbellGroup from "../../../../../packages/html/src/components/chart/examples/dumbbell-group.html?raw";
 import funnelGroup from "../../../../../packages/html/src/components/chart/examples/funnel-group.html?raw";
 import gridGroup from "../../../../../packages/html/src/components/chart/examples/grid-group.html?raw";
 import legendGroup from "../../../../../packages/html/src/components/chart/examples/legend-group.html?raw";
@@ -106,6 +107,7 @@ export function MonthlySales() {
 - **Stock charts:** add \`indicators\`, panes and a \`navigator\` to a candlestick, line, area or column chart of dates. See "Show stock prices with indicators".
 - **\`sankey\`:** flows between nodes, each as wide as its value. See "Show flows between stages".
 - **\`waterfall\`:** how a start value changes step by step into an end value. See "Show changes step by step".
+- **\`dumbbell\`:** two values per category, such as before and after, joined by a line. See "Compare two values per category".
 
 To mix types in line, area, bar, scatter, box plot, bubble and range area charts, give a series its own \`type\`. In HTML, set \`data-ok-type\` on the column header of the series.`,
     html: `${snippetElement(mixedGroup, "data-ok-chart ")}`,
@@ -561,6 +563,48 @@ export function CashFlowWaterfall() {
       dataLabels
       categories={items}
       series={cash}
+    />
+  );
+}`,
+  },
+  {
+    id: "dumbbell",
+    title: "Compare two values per category",
+    body: `A dumbbell chart draws two values per category as two markers joined by a line, such as a page's load time before and after an update. Set \`type\` to \`dumbbell\` and give each point a start and an end value in \`y\`, such as \`{ y: [3.2, 1.8] }\`. The order matters: the start is a ring and the end is a filled disc, so the direction of the change doesn't rely on color.
+
+- **Colors:** \`dumbbellColors\` sets the start and end colors of each series, such as \`[["warning-dark", "info-dark"]]\`. In HTML, write the pairs in \`data-ok-dumbbell-colors\`, separated by semicolons. Without it, both ends take the series color.
+- **Size:** \`markerSize\` sets the radius of the markers in pixels (6 by default).
+- **Direction:** \`horizontal\` draws the dumbbells from left to right.
+- **Names:** the table and the tooltip call the values Start and End. Rename them with \`localeText\`, such as \`{ start: "Before", end: "After" }\`. In HTML, the text of the part headers in the table names them.
+
+The value axis fits the data, with some room on both sides for the markers and their data labels.`,
+    html: `${snippetElement(dumbbellGroup, "data-ok-chart ")}`,
+    react: `import { Chart } from "@owlky/react";
+
+const pages = ["Home", "Search", "Product", "Cart", "Checkout"];
+const loadTimes = [
+  {
+    name: "Load time",
+    data: [
+      { y: [3.2, 1.8] },
+      { y: [2.6, 1.9] },
+      { y: [4.1, 2.2] },
+      { y: [1.9, 2.3] },
+      { y: [3.6, 2.4] },
+    ],
+  },
+];
+
+export function PageLoadDumbbell() {
+  return (
+    <Chart
+      label="Median page load in seconds, before and after the update"
+      type="dumbbell"
+      dataLabels
+      xLabel="Page"
+      localeText={{ start: "Before", end: "After" }}
+      categories={pages}
+      series={loadTimes}
     />
   );
 }`,
@@ -1472,6 +1516,33 @@ const PREVIEWS = {
           {
             name: "Cash",
             data: [120, 260, 85, -190, -45, { isSubtotal: true }, -60, { isTotal: true }],
+          },
+        ]}
+      />
+    </Preview>
+  ),
+  dumbbell: () => (
+    <Preview>
+      <Chart
+        label="Pay gap by department (women and men, thousands of dollars)"
+        type="dumbbell"
+        horizontal
+        height={260}
+        markerSize={7}
+        dumbbellColors={[["warning-dark", "info-dark"]]}
+        localeText={{ start: "Women", end: "Men" }}
+        categories={["Design", "Engineering", "Finance", "Marketing", "Sales", "Support"]}
+        series={[
+          {
+            name: "Salary",
+            data: [
+              { y: [72, 78] },
+              { y: [96, 104] },
+              { y: [81, 92] },
+              { y: [69, 71] },
+              { y: [74, 86] },
+              { y: [52, 55] },
+            ],
           },
         ]}
       />

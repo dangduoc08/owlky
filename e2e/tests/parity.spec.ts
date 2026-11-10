@@ -162,6 +162,7 @@ const pairs: [component: string, story: string][] = [
   ["chart", "legend"],
   ["chart", "grid"],
   ["chart", "waterfall"],
+  ["chart", "dumbbell"],
   ["rating", "controlled"],
   ["rating", "read-only"],
   ["rating", "disabled"],

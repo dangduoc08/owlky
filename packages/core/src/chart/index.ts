@@ -197,10 +197,12 @@ export {
   CHART_TEXT_ATTRIBUTES,
   type ChartTextOptions,
   chartColorRangesText,
+  chartDumbbellColorsText,
   chartListText,
   chartTextAttributes,
   parseChartColorRanges,
   parseChartColors,
+  parseChartDumbbellColors,
   parseChartList,
   parseChartStripeColors,
 } from "./chart-text.js";

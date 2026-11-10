@@ -1043,6 +1043,26 @@
     stroke-width: 1.5px;
   }
 
+  /* Dumbbells (4.18.21): a faint line between a ring (the start) and a disc (the end). */
+  :where([data-ok-chart-dumbbell-line]) {
+    stroke: var(--_ok-chart-c);
+    stroke-opacity: 0.48;
+    stroke-width: 4px;
+    stroke-linecap: round;
+  }
+
+  :where([data-ok-chart-dumbbell]) {
+    fill: var(--_ok-chart-c);
+    stroke: var(--ok-bg-paper);
+    stroke-width: 2px;
+  }
+
+  :where([data-ok-chart-dumbbell="start"]) {
+    fill: var(--ok-bg-paper);
+    stroke: var(--_ok-chart-c);
+    stroke-width: 3px;
+  }
+
   /* Waterfall connectors (4.18.21): a dashed line from each bar's end to the next bar. */
   :where([data-ok-chart-connector]) {
     stroke: var(--ok-text-secondary);

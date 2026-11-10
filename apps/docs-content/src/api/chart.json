@@ -363,7 +363,7 @@
      {
       "attr": "data-ok-type",
       "default": "line",
-      "description": "Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML) or `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts).",
+      "description": "Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML), `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total) or `dumbbell` (a start and an end value per category: two markers joined by a line). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts).",
       "kind": "style",
       "name": "type",
       "values": [
@@ -387,7 +387,8 @@
        "timeline",
        "polarArea",
        "sankey",
-       "waterfall"
+       "waterfall",
+       "dumbbell"
       ]
      },
      {
@@ -1540,6 +1541,23 @@
       "name": "data-ok-chart-data-labels"
      },
      {
+      "description": "One end of a dumbbell: the `start` (a ring) or the `end` (a disc).",
+      "kind": "value",
+      "name": "data-ok-chart-dumbbell",
+      "value": [
+       "end",
+       "start"
+      ]
+     },
+     {
+      "description": "The line between the two ends of a dumbbell.",
+      "elements": [
+       "line"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-dumbbell-line"
+     },
+     {
       "description": "The grid.",
       "elements": [
        "g"
@@ -2030,6 +2048,12 @@
       "value": "string"
      },
      {
+      "description": "Dumbbell marker colors: a start and an end color per series, pairs separated by \\`;\\`, such as \\`info success\\`.",
+      "kind": "value",
+      "name": "data-ok-dumbbell-colors",
+      "value": "string"
+     },
+     {
       "description": "On a data table column header: the series' pattern.",
       "kind": "value",
       "name": "data-ok-fill-pattern",
@@ -2405,6 +2429,11 @@
       "description": "Donut hole in % of the radius (10 to 95). Default 72.",
       "name": "donutSize",
       "type": "number"
+     },
+     {
+      "description": "Dumbbell charts: the start and end marker colors of each series, such as `[[\"info\", \"success\"]]` (pair n for series n; later series take the first pair). Default the series color: a ring at the start, a disc at the end.",
+      "name": "dumbbellColors",
+      "type": "readonly (readonly ChartColor[])[]"
      },
      {
       "description": "Sankey charts: link opacity (0 to 1). 4.",
@@ -2794,7 +2823,7 @@
   },
   {
    "name": "ChartType",
-   "type": "\"area\" | \"bar\" | \"boxPlot\" | \"bubble\" | \"candlestick\" | \"donut\" | \"funnel\" | \"heatmap\" | \"line\" | \"pie\" | \"polarArea\" | \"radar\" | \"radialBar\" | \"rangeArea\" | \"rangeBar\" | \"sankey\" | \"scatter\" | \"slope\" | \"timeline\" | \"treemap\" | \"waterfall\""
+   "type": "\"area\" | \"bar\" | \"boxPlot\" | \"bubble\" | \"candlestick\" | \"donut\" | \"dumbbell\" | \"funnel\" | \"heatmap\" | \"line\" | \"pie\" | \"polarArea\" | \"radar\" | \"radialBar\" | \"rangeArea\" | \"rangeBar\" | \"sankey\" | \"scatter\" | \"slope\" | \"timeline\" | \"treemap\" | \"waterfall\""
   },
   {
    "name": "ChartZoomReason",

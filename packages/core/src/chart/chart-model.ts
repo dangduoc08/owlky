@@ -29,6 +29,7 @@ export const chartTypes = [
   "polarArea",
   "sankey",
   "waterfall",
+  "dumbbell",
 ] as const;
 /** Charts of one series whose categories are slices or rings (legend items are categories). */
 export const chartCircularTypes = ["pie", "donut", "radialBar", "polarArea"] as const;
@@ -106,6 +107,7 @@ const wholeTypes: readonly ChartType[] = [
   "timeline",
   "sankey",
   "waterfall",
+  "dumbbell",
 ];
 /** Whether a chart type draws every series the same way (no mixed charts). */
 export const isWholeChart = (type: ChartType): boolean => wholeTypes.includes(type);
@@ -143,6 +145,8 @@ const PARTS: Partial<Record<ChartType, readonly ChartPart[]>> = {
   candlestick: ["open", "high", "low", "close"],
   rangeBar: ["start", "end"],
   timeline: ["start", "end"],
+  // Dumbbells (4.18.21): the two ends in the order given (never sorted).
+  dumbbell: ["start", "end"],
 };
 export const chartParts = (type: ChartType): readonly ChartPart[] => PARTS[type] ?? [];
 /** Every part name (an allowlist for labels read from tables and props). */
@@ -444,7 +448,7 @@ export function chartData(input: {
         const values = Array.isArray(rawY) ? rawY.map(parse) : [];
         if (values.length === parts && values.every((value) => value !== null))
           range =
-            seriesType === "candlestick"
+            seriesType === "candlestick" || seriesType === "dumbbell"
               ? (values as number[])
               : (values as number[]).sort((a, b) => a - b);
         y = range ? (range[parts === 5 ? 2 : parts === 4 ? 3 : 1] as number) : null;

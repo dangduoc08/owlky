@@ -11,7 +11,7 @@ annotations, animations, export (SVG, PNG, CSV) and a toolbar; data label format
 legend with values, the donut hole size, heatmap color ranges, horizontal box plots and localized
 texts. ADR-0047 adds the commercial add-ons' features (behavior and option names only): Sankey
 charts (ApexSankey, phase 2.1) and stock charts (ApexStock, phase 2.2: indicators, panes, a
-navigator). Roadmap 4.18.21 adds ApexCharts v8's waterfall charts. Upstream: ApexCharts
+navigator). Roadmap 4.18.21 adds ApexCharts v8's waterfall and dumbbell charts. Upstream: ApexCharts
 (`react-apexcharts`, ADR-0015), ApexSankey and ApexStock.
 Created with `/component`.
 Reference URL: https://minimals.cc/components/extra/chart
@@ -133,6 +133,10 @@ figure[data-ok-chart][data-ok-type][data-ok-x-type][data-ok-curve][data-ok-legen
       [data-ok-waterfall-total-color]?[data-ok-waterfall-subtotal-color]?[data-ok-hide-connectors]?):
       g[data-ok-chart-series][data-ok-type=waterfall] › line[data-ok-chart-connector]* (unless hideConnectors)
         + rect[data-ok-chart-bar][data-ok-chart-step="up|down|total|subtotal"][data-ok-color][rx]×n
+    Dumbbell (4.18.21; root [data-ok-dumbbell-colors]?):
+      g[data-ok-chart-series][data-ok-type=dumbbell] › (line[data-ok-chart-dumbbell-line] +
+        circle[data-ok-chart-dumbbell=start][data-ok-color]? + circle[data-ok-chart-dumbbell=end][data-ok-color]?)×n
+      (drawn with the points group, after bars and lines)
     data labels may also be text[data-ok-chart-data-label="plain"] (primary text on faint cells)
     div[data-ok-chart-tooltip][role=status][hidden]?     (tooltip="none": visually hidden, 4.18.63)
       div[data-ok-chart-tooltip-title] + div[data-ok-chart-tooltip-state]? ("Selected", localeText `selected`)
@@ -295,6 +299,23 @@ Waterfall geometry (core `chart-model.ts` running totals, `layoutChart`, 4.18.21
 - The legend lists the series (none for one series): the step colors are explained by the signed
   values in the tooltip, the labels and the table, so color is never the only cue.
 
+Dumbbell geometry (core `layoutChart`, 4.18.21):
+- Data: two values per point in `y`, kept in the order given (start, end; never sorted), table
+  columns `th[data-ok-part="start|end"]` under the series (part labels `start` / `end`, localizable:
+  "Before" / "After"). A whole type; every series is drawn in its band slot; `horizontal` turns it.
+- The value scale fits the data plus a tenth of its span on both sides (never below zero for
+  positive data), so markers and labels stay in the plot.
+- Each point: a line between the two values (CSS: the series color at 0.48, 4px, round caps),
+  a start ring (paper fill, 3px stroke) and an end disc (paper ring), radius `markerSize`
+  (default 6, at least 2). `dumbbellColors` (`[[start, end], …]`; HTML
+  `data-ok-dumbbell-colors="start end; …"`, core `parseChartDumbbellColors`, one color colors
+  both ends) gives pair n to series n, later series the first pair; a point's `color` colors
+  both ends. Start ring vs end disc tells the direction without color.
+- Data labels: outside, the higher value above (right of) its marker, the lower below (left of)
+  it; one label when both are equal. Tooltip rows `Start` / `End` ("Series (Start)" with several
+  dumbbell series), each with its marker's color. Marks are blocks (the bounding box of the line
+  and the markers: band highlight, click selection, frame outline); zoom works as for columns.
+
 Phase 3 geometry (core `chart-layout.ts`, `chart-cells.ts`, `chart-shapes.ts`):
 - Value scales start at 0 unless a box plot, range area, bubble or sparkline series fits them to
   the data (bars and areas next to them keep 0).
@@ -318,7 +339,7 @@ Root: `data-ok-chart`. Unknown values fall back to the default.
 
 | React | HTML | Kind | Values | Default | Description |
 |---|---|---|---|---|---|
-| `type` | `data-ok-type="…"` | style | `line` `area` `bar` `scatter` `pie` `donut` `radialBar` `radar` `boxPlot` `heatmap` `treemap` `bubble` `rangeArea` `funnel` `slope` `candlestick` `rangeBar` `timeline` `polarArea` `sankey` `waterfall` | `line` | Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML) or `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts). |
+| `type` | `data-ok-type="…"` | style | `line` `area` `bar` `scatter` `pie` `donut` `radialBar` `radar` `boxPlot` `heatmap` `treemap` `bubble` `rangeArea` `funnel` `slope` `candlestick` `rangeBar` `timeline` `polarArea` `sankey` `waterfall` `dumbbell` | `line` | Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML), `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total) or `dumbbell` (a start and an end value per category: two markers joined by a line). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts). |
 | `xType` | `data-ok-x-type="…"` | style | `category` `datetime` `numeric` | `category` | X axis: `category` labels, `datetime` (ISO 8601 dates) or `numeric` values (scatter). |
 | `curve` | `data-ok-curve="…"` | style | `smooth` `straight` `stepline` | `smooth` | Line shape: `smooth`, `straight` or `stepline`. |
 | `legend` | `data-ok-legend="…"` | style | `top` `right` `bottom` `none` | `top` | Legend position: `top`, `right`, `bottom` or `none` (never shown for a single series). |
@@ -395,7 +416,8 @@ names stay out of it: each series column carries its axis, `th[data-ok-y-axis="<
 `chartDiscreteMarkersText` / `parseChartDiscreteMarkers`), `customLegendItems` ↔
 `data-ok-custom-legend-items` (`; `-separated), `gridRowColors` / `gridColumnColors` ↔
 `data-ok-grid-row-colors` / `data-ok-grid-column-colors` (space-separated: palette names, `grey`,
-`transparent`; core `parseChartStripeColors`), `group` ↔ `data-ok-group`, `brushTarget` ↔
+`transparent`; core `parseChartStripeColors`), `dumbbellColors` ↔ `data-ok-dumbbell-colors`
+(`"start end; …"`, core `chartDumbbellColorsText` / `parseChartDumbbellColors`), `group` ↔ `data-ok-group`, `brushTarget` ↔
 `data-ok-brush-target`, `colorRanges` ↔ `data-ok-color-ranges` (`"from to color [name]; …"`, core
 `chartTextAttributes` / `parseChartColorRanges`). Always set as text (`textContent`), never markup.
 
@@ -682,6 +704,10 @@ Option areas not covered by the table above:
 | `plotOptions.waterfall.colors.positive` / `.negative` / `.total` / `.subtotal` | `waterfallPositiveColor` (default `success`), `waterfallNegativeColor` (`error`), `waterfallTotalColor` (the series color), `waterfallSubtotalColor` (the total color) | renamed (4.18.21) | palette names (tokens), not CSS colors |
 | `plotOptions.waterfall.connectors.show` | `hideConnectors` (`data-ok-hide-connectors`) | renamed (4.18.21) | on by default as upstream; a flag that turns them off |
 | `plotOptions.waterfall.connectors.color` / `.strokeWidth` / `.strokeDashArray` | — | not applicable | fixed by the design: 1px secondary text, dashes of 3px |
+| `rangeBar` + `plotOptions.bar.isDumbbell`; `chart.type: "dumbbell"` (ApexCharts 7.1+) | `type="dumbbell"` (two values per point in `y`) | renamed (4.18.21) | one type for both upstream forms; `horizontal` as `plotOptions.bar.horizontal` |
+| `plotOptions.bar.dumbbellColors` (`[[start, end], …]`) | `dumbbellColors` (palette names; HTML `data-ok-dumbbell-colors="start end; …"`) | kept (4.18.21) | pair n for series n, later series the first pair; CSS colors: not applicable (tokens) |
+| `markers.size` on dumbbells | `markerSize` (default 6) | renamed (4.18.21) | |
+| dumbbell line style (`stroke.width`, `stroke.colors`), `plotOptions.bar.dumbbell.*` styling | — | not applicable | fixed by the design: the series color at 0.48, 4px; start ring, end disc |
 | ApexCharts v8 types `streamgraph`, `sunburst`, `icicle`, `violin`, `beeswarm`, `waffle`, `unit` | — | deferred (4.18.21) | not built in this batch (waterfall and dumbbell first); prop-level mapping here when built |
 | `chart.type: "tree"` (ApexTree layouts) | — | deferred (4.18.7) | |
 | `chart.stackType` (`"normal"`, `"100%"`), `chart.stackOnlyBar` | `stackType` (`data-ok-stack-type`, optional), `stackOnlyBar` (`data-ok-stack-only-bar`) | kept (4.18.61) | `stackOnlyBar` is off by default (ApexCharts: on), so stacked lines keep stacking as before |
@@ -781,6 +807,8 @@ Option areas not covered by the table above:
 - Tooltip stories (4.18.63): Tooltip options; Custom tooltip (a React demo with `?raw` source and
   the HTML template; no Controls; the tooltip is hidden at rest, so parity compares the same markup).
 - Legend and grid stories (4.18.64): Legend options, Grid lines and stripes.
+- Dumbbell story (4.18.21): Dumbbell (page load before and after with data labels and renamed
+  parts; a horizontal pay gap with `dumbbellColors`).
 - Waterfall story (4.18.21): Waterfall (a vertical cash flow with a subtotal, a total, data labels
   and a prefix; a horizontal headcount change with own colors).
 - Story "Live data": React keeps the points in state, the HTML page script calls `appendData` /

@@ -289,6 +289,10 @@ export interface ChartParts {
   "data-ok-chart-crosshair": Part<"g">;
   /** One line of the crosshair. */
   "data-ok-chart-crosshair-line": Part<"line">;
+  /** One end of a dumbbell: the `start` (a ring) or the `end` (a disc). */
+  "data-ok-chart-dumbbell": Value<"start" | "end">;
+  /** The line between the two ends of a dumbbell. */
+  "data-ok-chart-dumbbell-line": Part<"line">;
   /** HTML: the data, as a table. Visually hidden once the chart is drawn; without JavaScript it shows. */
   "data-ok-chart-data": Part<"table">;
   /** One data label. */
@@ -431,6 +435,8 @@ export interface ChartParts {
   "data-ok-grid-row-colors": Value<string>;
   /** Column stripe colors separated by spaces: palette names, \`grey\` or \`transparent\`. */
   "data-ok-grid-column-colors": Value<string>;
+  /** Dumbbell marker colors: a start and an end color per series, pairs separated by \`;\`, such as \`info success\`. */
+  "data-ok-dumbbell-colors": Value<string>;
   /** Markers on single points, such as \`0 3 error star 8; 1 2\`. */
   "data-ok-discrete-markers": Value<string>;
   /** On a data table column header: the series' marker shape. */

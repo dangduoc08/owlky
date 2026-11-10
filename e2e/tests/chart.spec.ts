@@ -66,6 +66,7 @@ const STORIES = [
   "legend",
   "grid",
   "waterfall",
+  "dumbbell",
 ];
 
 /** The SVG as plain data (gradient ids normalized): parity doesn't walk into SVG. */
@@ -604,6 +605,23 @@ for (const impl of implementations) {
       ]);
       await page.keyboard.press("End");
       await expect(first.locator("[data-ok-chart-tooltip-row]")).toHaveText(["Cash170"]);
+    });
+  });
+
+  // Roadmap 4.18.21: dumbbell charts.
+  test.describe(`chart dumbbell (${impl})`, () => {
+    test("a click selects a dumbbell; the keyboard reads both ends", async ({ page }) => {
+      await openStory(page, storyId(impl, "chart", "dumbbell"));
+      const first = page.locator("[data-ok-chart]").first();
+      await expect(first.locator("[data-ok-chart-dumbbell-line]")).toHaveCount(5);
+      await first.locator('[data-ok-chart-dumbbell="end"]').nth(2).click();
+      await expect(first.locator("[data-ok-chart-selected-mark]")).toHaveCount(1);
+      await first.locator("[data-ok-chart-plot]").focus();
+      await page.keyboard.press("Home");
+      await expect(first.locator("[data-ok-chart-tooltip-row]")).toHaveText([
+        "Before3.2",
+        "After1.8",
+      ]);
     });
   });
 }

@@ -175,6 +175,8 @@ export interface ChartRenderInput extends ChartFormatOptions {
   readonly waterfallSubtotalColor?: ChartColor | undefined;
   /** Waterfall charts: no connectors between the bars. */
   readonly hideConnectors?: boolean | undefined;
+  /** Dumbbell charts: start and end marker colors per series (`[[start, end], …]`). */
+  readonly dumbbellColors?: readonly (readonly ChartColor[])[] | undefined;
   /** Heatmaps, treemaps and bars: values in a range take its color. */
   readonly colorRanges?: readonly ChartColorRange[] | undefined;
   /** Outside data labels sit on a badge (a paper box with a border). */
@@ -340,6 +342,7 @@ export function renderChart(input: ChartRenderInput): ChartRender {
     waterfallTotalColor: input.waterfallTotalColor,
     waterfallSubtotalColor: input.waterfallSubtotalColor,
     hideConnectors: input.hideConnectors,
+    dumbbellColors: input.dumbbellColors,
     colorRanges: input.colorRanges,
     discreteMarkers: chartDiscreteMarkers(input.discreteMarkers),
     grid: input.grid,

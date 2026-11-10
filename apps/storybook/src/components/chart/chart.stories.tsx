@@ -140,3 +140,4 @@ export const StockOscillators: StoryObj = story("stock-oscillators");
 export const StockLine: StoryObj = story("stock-line");
 // Roadmap 4.18.21: waterfall and dumbbell charts.
 export const Waterfall: StoryObj = story("waterfall");
+export const Dumbbell: StoryObj = story("dumbbell");

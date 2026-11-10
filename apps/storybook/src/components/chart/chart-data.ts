@@ -1588,4 +1588,52 @@ export const chartExamples: Record<string, ChartExample> = {
       },
     ],
   },
+  // Roadmap 4.18.21: dumbbell charts (ApexCharts `rangeBar` + `isDumbbell`, `dumbbellColors`).
+  dumbbell: {
+    title: "Dumbbell",
+    props: {
+      label: "Median page load in seconds, before and after the update",
+      type: "dumbbell",
+      dataLabels: true,
+      xLabel: "Page",
+      localeText: { start: "Before", end: "After" },
+      categories: ["Home", "Search", "Product", "Cart", "Checkout"],
+      series: [
+        {
+          name: "Load time",
+          data: [
+            { y: [3.2, 1.8] },
+            { y: [2.6, 1.9] },
+            { y: [4.1, 2.2] },
+            { y: [1.9, 2.3] },
+            { y: [3.6, 2.4] },
+          ],
+        },
+      ],
+    },
+    more: [
+      {
+        label: "Pay gap by department (women and men, thousands of dollars)",
+        type: "dumbbell",
+        horizontal: true,
+        markerSize: 7,
+        dumbbellColors: [["warning-dark", "info-dark"]],
+        localeText: { start: "Women", end: "Men" },
+        categories: ["Design", "Engineering", "Finance", "Marketing", "Sales", "Support"],
+        series: [
+          {
+            name: "Salary",
+            data: [
+              { y: [72, 78] },
+              { y: [96, 104] },
+              { y: [81, 92] },
+              { y: [69, 71] },
+              { y: [74, 86] },
+              { y: [52, 55] },
+            ],
+          },
+        ],
+      },
+    ],
+  },
 };

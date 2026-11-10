@@ -301,6 +301,12 @@ export interface ChartProps extends Omit<HTMLAttributes<HTMLElement>, "children"
   waterfallSubtotalColor?: ChartColor | undefined;
   /** Waterfall charts: no dashed lines from the end of each bar to the next one. */
   hideConnectors?: boolean | undefined;
+  /**
+   * Dumbbell charts: the start and end marker colors of each series, such as
+   * `[["info", "success"]]` (pair n for series n; later series take the first pair). Default the
+   * series color: a ring at the start, a disc at the end.
+   */
+  dumbbellColors?: readonly (readonly ChartColor[])[] | undefined;
   /** Data labels above points sit on a badge. */
   dataLabelBackground?: boolean | undefined;
   /** Replaces the values printed on the chart (pie and donut labels get the percentage). */
@@ -440,6 +446,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     waterfallTotalColor,
     waterfallSubtotalColor,
     hideConnectors,
+    dumbbellColors,
     dataLabelBackground,
     dataLabelFormatter,
     legendValues,
@@ -701,6 +708,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         waterfallTotalColor: validTotalColor,
         waterfallSubtotalColor: validSubtotal,
         hideConnectors: connectorsOff,
+        dumbbellColors,
         dataLabelBackground,
         dataLabelFormatter,
         legendValues,
@@ -791,6 +799,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       validTotalColor,
       validSubtotal,
       connectorsOff,
+      dumbbellColors,
       dataLabelBackground,
       dataLabelFormatter,
       legendValues,
@@ -1098,6 +1107,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         customLegendItems,
         gridRowColors,
         gridColumnColors,
+        dumbbellColors,
       })}
       data-ok-ready=""
       data-ok-runtime="off"

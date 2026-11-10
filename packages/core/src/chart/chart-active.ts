@@ -545,6 +545,14 @@ function tooltipOf(
         },
       ];
     }
+    if (mark.type === "dumbbell" && range) {
+      // Dumbbells (4.18.21): the start and the end, each with its marker's color.
+      return (["start", "end"] as const).map((part, i) => ({
+        name: several("dumbbell") ? `${series.name} (${format.part(part)})` : format.part(part),
+        value: value(range[i] as number),
+        color: mark.ends?.[i] ?? color,
+      }));
+    }
     if (range && (range.length === 5 || range.length === 4)) {
       // Box plots list five values, candles four (open, high, low, close).
       const parts = range.length === 5 ? BOX : CANDLE;

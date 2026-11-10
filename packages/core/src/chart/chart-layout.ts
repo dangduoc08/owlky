@@ -173,6 +173,11 @@ export interface ChartLayoutOptions {
   readonly waterfallSubtotalColor?: ChartColor | undefined;
   /** Waterfall charts: no dashed lines from each bar's end to the next bar. */
   readonly hideConnectors?: boolean | undefined;
+  /**
+   * Dumbbell charts (4.18.21): the start and end marker colors of each series (pair n for series
+   * n; later series take the first pair). Default the series color for both.
+   */
+  readonly dumbbellColors?: readonly (readonly ChartColor[])[] | undefined;
 }
 
 /** A heatmap / treemap color range: values from `from` to `to` (inclusive) take `color`. */
@@ -252,6 +257,8 @@ export interface ChartMark {
   readonly point?: number | undefined;
   /** Waterfall charts: a total or subtotal bar (`range` is `[0, total]`). */
   readonly sum?: ChartSum | undefined;
+  /** Dumbbells: the colors of the start and end markers (tooltip rows). */
+  readonly ends?: readonly [ChartColor, ChartColor] | undefined;
 }
 
 /**
@@ -505,7 +512,7 @@ const flatScale = (min: number, max: number) => {
 // --- Layout -----------------------------------------------------------------------------------
 
 /** Series types that `horizontal` turns (left to right). */
-const TURNABLE: readonly ChartType[] = ["bar", "boxPlot", "rangeBar", "waterfall"];
+const TURNABLE: readonly ChartType[] = ["bar", "boxPlot", "rangeBar", "waterfall", "dumbbell"];
 /** Series types drawn in category bands. */
 const BANDED: readonly ChartType[] = [
   "bar",
@@ -514,6 +521,7 @@ const BANDED: readonly ChartType[] = [
   "rangeBar",
   "timeline",
   "waterfall",
+  "dumbbell",
 ];
 /** Series types that fit the value scale to their data (no zero baseline). */
 const FITTED: readonly ChartType[] = [
@@ -523,6 +531,7 @@ const FITTED: readonly ChartType[] = [
   "candlestick",
   "rangeBar",
   "timeline",
+  "dumbbell",
 ];
 export const clamp = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value));
@@ -669,6 +678,15 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
     if (!isLog(axis) && ((zeroBased && options.zeroBased !== false) || own.length === 0)) {
       los[axis] = Math.min(los[axis] as number, 0);
       his[axis] = Math.max(his[axis] as number, 0);
+    }
+    // Dumbbells (4.18.21): a tenth of the span on both sides, so the end markers and their labels
+    // stay inside the plot (never below zero for positive data).
+    if (!isLog(axis) && own.some(({ series }) => series.type === "dumbbell")) {
+      const lo = los[axis] as number;
+      const hi = his[axis] as number;
+      const pad = (hi - lo) / 10 || Math.abs(hi) / 10 || 1;
+      los[axis] = lo >= 0 ? Math.max(0, lo - pad) : lo - pad;
+      his[axis] = hi + pad;
     }
     // 100% stacks end at ±100 (sums of shares may round past it).
     if (percentAxis(axis)) {
@@ -1062,6 +1080,7 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
   const candleSeries = indexesOf(["candlestick"]);
   const rangeSeries = indexesOf(["rangeBar", "timeline"]);
   const waterfallSeries = indexesOf(["waterfall"]);
+  const dumbbellSeries = indexesOf(["dumbbell"]);
   /** The rectangle a block mark covers (4.18.60: clicks select it, an outline shows it). */
   const box = (a: number, size: number, v0: number, v1: number): ChartRect => {
     const lo = r2(Math.min(v0, v1));
@@ -1371,6 +1390,101 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
         }
       }
       bars.push(node("g", seriesAttrs, children));
+      continue;
+    }
+    if (series.type === "dumbbell") {
+      // Two markers per category joined by a line (4.18.21): the start ring, the end disc.
+      const slot = dumbbellSeries.indexOf(index);
+      const size = groupSize / Math.max(1, dumbbellSeries.length);
+      const radius = Math.max(2, options.markerSize ?? 6);
+      const pair = options.dumbbellColors?.[index] ?? options.dumbbellColors?.[0];
+      const children: ChartNode[] = [];
+      for (const point of points) {
+        if (!point.range) continue;
+        const [start, end] = point.range as [number, number];
+        const from = toValue(start);
+        const to = toValue(end);
+        const c = posOf(point.x) - groupSize / 2 + slot * size + size / 2;
+        const at = (value: number): Pt => (horizontal ? [value, c] : [c, value]);
+        const [x1, y1] = at(from);
+        const [x2, y2] = at(to);
+        const startColor = point.color ?? pair?.[0];
+        const endColor = point.color ?? pair?.[1];
+        marks.push({
+          series: index,
+          type: series.type,
+          index: point.x,
+          x: point.x,
+          value: end,
+          px: r2(x2),
+          py: r2(y2),
+          color: endColor ?? series.color,
+          range: point.range,
+          box: box(
+            c - radius,
+            radius * 2,
+            Math.min(from, to) - radius,
+            Math.max(from, to) + radius,
+          ),
+          ends: [startColor ?? series.color, endColor ?? series.color],
+          ...pointOf(point),
+        });
+        children.push(
+          node("line", {
+            x1: fmt(x1),
+            y1: fmt(y1),
+            x2: fmt(x2),
+            y2: fmt(y2),
+            "data-ok-chart-dumbbell-line": "",
+          }),
+          node("circle", {
+            cx: fmt(x1),
+            cy: fmt(y1),
+            r: fmt(radius),
+            "data-ok-chart-dumbbell": "start",
+            ...(startColor ? { "data-ok-color": startColor } : {}),
+          }),
+          node("circle", {
+            cx: fmt(x2),
+            cy: fmt(y2),
+            r: fmt(radius),
+            "data-ok-chart-dumbbell": "end",
+            ...(endColor ? { "data-ok-color": endColor } : {}),
+          }),
+        );
+        if (options.dataLabels) {
+          // Each value outside its marker: below or left of the lower end, above or right of the higher.
+          const ends: [number, number][] =
+            start === end
+              ? [[end, to]]
+              : [
+                  [start, from],
+                  [end, to],
+                ];
+          const high = Math.max(start, end);
+          for (const [value, px] of ends) {
+            const text = format.dataLabel(value, index, point.x, format.value(value, index));
+            const outward = value === high ? 1 : -1;
+            labels.push(
+              horizontal
+                ? node(
+                    "text",
+                    {
+                      x: fmt(px + outward * (radius + 6)),
+                      y: fmt(c),
+                      dy: "0.35em",
+                      "text-anchor": outward > 0 ? "start" : "end",
+                      "data-ok-chart-data-label": "outside",
+                    },
+                    undefined,
+                    text,
+                  )
+                : dataLabel(c, px - outward * (radius + 10), text, "outside"),
+            );
+          }
+        }
+      }
+      scatters.push(node("g", seriesAttrs, children));
       continue;
     }
     if (series.type === "waterfall") {

@@ -58,6 +58,7 @@ import {
   parseChartColorRanges,
   parseChartColors,
   parseChartDiscreteMarkers,
+  parseChartDumbbellColors,
   parseChartIndicators,
   parseChartList,
   parseChartStripeColors,
@@ -653,6 +654,9 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
         waterfallTotalColor: colorAttribute(element, o.waterfallTotalColor.attr),
         waterfallSubtotalColor: colorAttribute(element, o.waterfallSubtotalColor.attr),
         hideConnectors: element.hasAttribute(o.hideConnectors.attr),
+        dumbbellColors: parseChartDumbbellColors(
+          element.getAttribute(CHART_TEXT_ATTRIBUTES.dumbbellColors),
+        ),
         dataLabelBackground: element.hasAttribute(o.dataLabelBackground.attr),
         legendValues: element.hasAttribute(o.legendValues.attr),
         dataLabelFormatter: formatters.dataLabel,
