@@ -51,6 +51,16 @@ export interface ToastOptions<C> {
   dismissible?: boolean | undefined;
   onDismiss?: ((toast: Toast<C>) => void) | undefined;
   onAutoClose?: ((toast: Toast<C>) => void) | undefined;
+  /** Shows this toast at another position than the toaster's. */
+  position?: ToastPosition | undefined;
+  /** Shows or hides the close button on this toast. Default: the toaster's `closeButton`. */
+  closeButton?: boolean | undefined;
+  /** Reverses this toast's colors (dark on light pages). Default: the toaster's `invert`. */
+  invert?: boolean | undefined;
+  /** Colors this typed toast with its status color. Default: the toaster's `richColors`. */
+  richColors?: boolean | undefined;
+  /** The `id` of the toaster that shows this toast. Default: the toaster without an `id`. */
+  toasterId?: string | undefined;
 }
 
 export interface Toast<C> extends Omit<ToastOptions<C>, "id"> {
@@ -63,6 +73,8 @@ export interface Toast<C> extends Omit<ToastOptions<C>, "id"> {
 
 export interface ToastStore<C> {
   readonly toasts: readonly Toast<C>[];
+  /** Every toast shown since the page loaded (dismissed ones too), oldest first, last version. */
+  readonly history: readonly Toast<C>[];
   /** Adds a toast, or replaces the one with the same id. */
   set(toast: Toast<C>): ToastId;
   /** Removes one toast, or every toast without an id. Calls `onDismiss`. */
@@ -72,13 +84,19 @@ export interface ToastStore<C> {
   subscribe(listener: (toasts: readonly Toast<C>[]) => void): () => void;
 }
 
+/** A toast id as a primitive (`toast.promise` returns a boxed id that also has `unwrap()`). */
+const plainId = (id: ToastId): ToastId =>
+  typeof id === "object" && id !== null ? ((id as object).valueOf() as ToastId) : id;
+
 export function createToastStore<C>(): ToastStore<C> {
   let toasts: Toast<C>[] = [];
+  let history: Toast<C>[] = [];
   const listeners = new Set<(toasts: readonly Toast<C>[]) => void>();
   const emit = () => {
     for (const listener of [...listeners]) listener(toasts);
   };
-  const remove = (id: ToastId, callback: "onDismiss" | "onAutoClose") => {
+  const remove = (given: ToastId, callback: "onDismiss" | "onAutoClose") => {
+    const id = plainId(given);
     const toast = toasts.find((t) => t.id === id);
     if (!toast) return;
     toasts = toasts.filter((t) => t !== toast);
@@ -89,12 +107,20 @@ export function createToastStore<C>(): ToastStore<C> {
     get toasts() {
       return toasts;
     },
-    set(toast) {
+    get history() {
+      return history;
+    },
+    set(given) {
+      const toast = { ...given, id: plainId(given.id) };
       const index = toasts.findIndex((t) => t.id === toast.id);
       toasts =
         index === -1
           ? [toast, ...toasts]
           : toasts.map((t, i) => (i === index ? { ...t, ...toast } : t));
+      const current = toasts.find((t) => t.id === toast.id) as Toast<C>;
+      const past = history.findIndex((t) => t.id === toast.id);
+      history =
+        past === -1 ? [...history, current] : history.map((t, i) => (i === past ? current : t));
       emit();
       return toast.id;
     },
@@ -117,12 +143,20 @@ export function createToastStore<C>(): ToastStore<C> {
   };
 }
 
-export interface PromiseMessages<C, T> {
+export interface PromiseMessages<C, T> extends Omit<ToastOptions<C>, "description"> {
   loading: C;
   success: C | ((value: T) => C);
   error: C | ((reason: unknown) => C);
   description?: C | undefined;
+  /** Runs once the promise settled, after the toast shows the result. */
+  finally?: (() => void | Promise<void>) | undefined;
 }
+
+/** What `toast.promise` returns: the toast's id, with `unwrap()` for the promise's own result. */
+export type PromiseToastId<T> = ToastId & {
+  /** The original promise's result (rejects like it). */
+  unwrap(): Promise<T>;
+};
 
 export interface ToastApi<C> {
   (title: C, options?: ToastOptions<C>): ToastId;
@@ -132,12 +166,22 @@ export interface ToastApi<C> {
   warning(title: C, options?: ToastOptions<C>): ToastId;
   error(title: C, options?: ToastOptions<C>): ToastId;
   loading(title: C, options?: ToastOptions<C>): ToastId;
-  /** Shows `loading` until the promise settles, then `success` or `error` in the same toast. */
-  promise<T>(promise: Promise<T> | (() => Promise<T>), messages: PromiseMessages<C, T>): ToastId;
+  /**
+   * Shows `loading` until the promise settles, then `success` or `error` in the same toast.
+   * Returns the id with `unwrap()`.
+   */
+  promise<T>(
+    promise: Promise<T> | (() => Promise<T>),
+    messages: PromiseMessages<C, T>,
+  ): PromiseToastId<T>;
   /** Renders your own content in a toast frame. */
   custom(content: C, options?: ToastOptions<C>): ToastId;
   /** Closes one toast, or all of them. */
   dismiss(id?: ToastId): void;
+  /** Every toast shown so far, dismissed ones too (oldest first). */
+  getHistory(): readonly Toast<C>[];
+  /** The toasts shown now (newest first). */
+  getToasts(): readonly Toast<C>[];
 }
 
 /** The `toast()` function for a store; ids are counters unless you pass one. */
@@ -162,23 +206,28 @@ export function createToastApi<C>(store: ToastStore<C>): ToastApi<C> {
     const { id = ++counter, ...rest } = options;
     return store.set({ ...rest, id, type: "default", custom: content });
   };
-  api.promise = (input, messages) => {
-    const id = show("loading", messages.loading, { description: messages.description });
+  api.promise = <T>(input: Promise<T> | (() => Promise<T>), messages: PromiseMessages<C, T>) => {
+    const { loading, success, error, finally: after, duration, ...options } = messages;
+    const id = show("loading", loading, options);
     const settle = (type: "success" | "error", message: unknown, value: unknown) => {
       const title =
         typeof message === "function" ? (message as (v: unknown) => C)(value) : (message as C);
       // Updated in place (same id): a fresh duration starts for the settled toast.
-      store.set({ id, type, title, duration: undefined, description: undefined });
+      store.set({ id, type, title, duration, description: undefined });
     };
-    Promise.resolve()
-      .then(() => (typeof input === "function" ? input() : input))
+    const result = Promise.resolve().then(() => (typeof input === "function" ? input() : input));
+    result
       .then(
-        (value) => settle("success", messages.success, value),
-        (reason) => settle("error", messages.error, reason),
-      );
-    return id;
+        (value) => settle("success", success, value),
+        (reason) => settle("error", error, reason),
+      )
+      .then(() => after?.());
+    // A boxed id: it still works as an id (the store unboxes it), and carries `unwrap()`.
+    return Object.assign(Object(id) as object, { unwrap: () => result }) as PromiseToastId<T>;
   };
   api.dismiss = (id) => store.dismiss(id);
+  api.getHistory = () => store.history;
+  api.getToasts = () => store.toasts;
   return api;
 }
 

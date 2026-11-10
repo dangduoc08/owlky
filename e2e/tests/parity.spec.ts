@@ -337,6 +337,8 @@ const pairs: [component: string, story: string][] = [
   ["snackbar", "status"],
   ["snackbar", "custom"],
   ["snackbar", "anchor-origin"],
+  ["snackbar", "expand"],
+  ["snackbar", "rich-colors"],
   ["backdrop", "example"],
   ["collapse", "simple-collapse"],
   ["editor", "basic"],

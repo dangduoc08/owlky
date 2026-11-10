@@ -91,24 +91,24 @@ describe("toast api", () => {
       success: "Done",
       error: (reason) => `Error: ${(reason as Error).message}`,
     });
-    expect(store.toasts.find((t) => t.id === ok)).toMatchObject({
+    expect(store.toasts.find((t) => t.id === ok.valueOf())).toMatchObject({
       type: "loading",
       description: "wait",
     });
     await new Promise((resolve) => setTimeout(resolve, 0));
-    expect(store.toasts.find((t) => t.id === ok)).toMatchObject({
+    expect(store.toasts.find((t) => t.id === ok.valueOf())).toMatchObject({
       type: "success",
       title: "Got 3",
       duration: undefined,
       description: undefined,
     });
-    expect(store.toasts.find((t) => t.id === bad)).toMatchObject({
+    expect(store.toasts.find((t) => t.id === bad.valueOf())).toMatchObject({
       type: "error",
       title: "Error: x",
     });
     const plain = toast.promise(Promise.resolve(1), { loading: "l", success: "Done", error: "e" });
     await new Promise((resolve) => setTimeout(resolve, 0));
-    expect(store.toasts.find((t) => t.id === plain)?.title).toBe("Done");
+    expect(store.toasts.find((t) => t.id === plain.valueOf())?.title).toBe("Done");
   });
 });
 

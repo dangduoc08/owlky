@@ -10,10 +10,17 @@
  *                      › button[data-ok-toast-cancel]? + button[data-ok-toast-action]?
  *                        (or div[data-ok-toast-actions] with your own buttons)
  *                      › button[data-ok-toast-close][aria-label]?
+ *              › ol[data-ok-toaster-list][data-ok-position]*   (toasts at another position, fixed)
  * Modifiers: toaster data-ok-position = top-right (default) | top-left | top-center |
- *            bottom-left | bottom-center | bottom-right, data-ok-close-button
+ *            bottom-left | bottom-center | bottom-right, data-ok-close-button,
+ *            data-ok-expand="false" (stacked until hovered / focused / data-ok-expanded),
+ *            data-ok-rich-colors, data-ok-invert
  *            toast   data-ok-type = default | info | success | warning | error | loading,
- *                    data-ok-custom (your own content in the frame)
+ *                    data-ok-custom (your own content in the frame), data-ok-invert /
+ *                    data-ok-rich-colors ("" on, "false" off), data-ok-swiping
+ * Private:   --_ok-toaster-<side> / --_ok-toaster-mobile-<side> (offsets), --_ok-toast-gap,
+ *            --_ok-swipe-x|y (CSSOM: React style, the HTML runtime, the swipe controller)
+ * Logical properties inside the toast, so `dir="rtl"` mirrors it; positions stay physical.
  *
  * Default toasts are inverted (dark on light pages, light on dark ones); typed toasts are paper
  * with a tinted icon box. Single :where() selectors in @layer components.
@@ -21,47 +28,90 @@
 @reference "../theme.css";
 
 @layer components {
+  /* Offsets: the mobile ones first (mobile-first), the desktop ones from 600px. */
   :where([data-ok-toaster]) {
-    position: fixed;
-    top: calc(var(--ok-spacing) * 4);
-    right: calc(var(--ok-spacing) * 4);
+    --_ok-o-top: var(--_ok-toaster-mobile-top, calc(var(--ok-spacing) * 4));
+    --_ok-o-right: var(--_ok-toaster-mobile-right, calc(var(--ok-spacing) * 4));
+    --_ok-o-bottom: var(--_ok-toaster-mobile-bottom, calc(var(--ok-spacing) * 4));
+    --_ok-o-left: var(--_ok-toaster-mobile-left, calc(var(--ok-spacing) * 4));
+
     z-index: var(--ok-z-toast);
-    box-sizing: border-box;
-    width: min(calc(var(--ok-spacing) * 75), calc(100% - var(--ok-spacing) * 8));
-    margin: 0;
-    padding: 0;
     color: var(--ok-text-primary);
     font-family: var(--ok-font-family);
+  }
+
+  @media (min-width: 600px) {
+    :where([data-ok-toaster]) {
+      --_ok-o-top: var(--_ok-toaster-top, calc(var(--ok-spacing) * 4));
+      --_ok-o-right: var(--_ok-toaster-right, calc(var(--ok-spacing) * 4));
+      --_ok-o-bottom: var(--_ok-toaster-bottom, calc(var(--ok-spacing) * 4));
+      --_ok-o-left: var(--_ok-toaster-left, calc(var(--ok-spacing) * 4));
+    }
+  }
+
+  /* The toaster and the lists of other positions are fixed boxes at their position. */
+  :where([data-ok-toaster], [data-ok-toaster-list][data-ok-position]) {
+    position: fixed;
+    top: var(--_ok-o-top);
+    right: var(--_ok-o-right);
+    bottom: auto;
+    left: auto;
+    box-sizing: border-box;
+    width: min(calc(var(--ok-spacing) * 75), calc(100% - var(--_ok-o-left) - var(--_ok-o-right)));
+    margin: 0;
+    padding: 0;
     pointer-events: none;
   }
 
-  :where([data-ok-toaster][data-ok-position^="bottom"]) {
+  :where(
+    [data-ok-toaster][data-ok-position^="bottom"],
+    [data-ok-toaster-list][data-ok-position^="bottom"]
+  ) {
     top: auto;
-    bottom: calc(var(--ok-spacing) * 4);
+    bottom: var(--_ok-o-bottom);
   }
 
-  :where([data-ok-toaster][data-ok-position$="left"]) {
+  :where(
+    [data-ok-toaster][data-ok-position$="left"],
+    [data-ok-toaster-list][data-ok-position$="left"]
+  ) {
     right: auto;
-    left: calc(var(--ok-spacing) * 4);
+    left: var(--_ok-o-left);
   }
 
-  :where([data-ok-toaster][data-ok-position$="center"]) {
-    right: auto;
-    left: 50%;
-    transform: translateX(-50%);
+  /* Centered without a transform, so the lists of other positions stay fixed to the viewport. */
+  :where(
+    [data-ok-toaster][data-ok-position$="center"],
+    [data-ok-toaster-list][data-ok-position$="center"]
+  ) {
+    right: 0;
+    left: 0;
+    margin-inline: auto;
+  }
+
+  :where([data-ok-toaster-list]:not([data-ok-position])) {
+    position: relative;
   }
 
   :where([data-ok-toaster-list]) {
     display: flex;
     flex-direction: column;
-    gap: calc(var(--ok-spacing) * 3);
+    gap: var(--_ok-toast-gap, calc(var(--ok-spacing) * 3));
     margin: 0;
     padding: 0;
     list-style: none;
   }
 
+  :where([data-ok-toaster-list]:focus-visible) {
+    outline: 2px solid var(--ok-text-primary);
+    outline-offset: 2px;
+  }
+
   /* Bottom: the newest toast sits nearest to the edge. */
-  :where([data-ok-toaster][data-ok-position^="bottom"] > [data-ok-toaster-list]) {
+  :where(
+    [data-ok-toaster][data-ok-position^="bottom"] > [data-ok-toaster-list]:not([data-ok-position]),
+    [data-ok-toaster-list][data-ok-position^="bottom"]
+  ) {
     flex-direction: column-reverse;
   }
 
@@ -77,8 +127,8 @@
     gap: calc(var(--ok-spacing) * 3);
     box-sizing: border-box;
     min-height: calc(var(--ok-spacing) * 13);
-    padding: calc(var(--ok-spacing) * 2) calc(var(--ok-spacing) * 2) calc(var(--ok-spacing) * 2)
-      calc(var(--ok-spacing) * 3);
+    padding-block: calc(var(--ok-spacing) * 2);
+    padding-inline: calc(var(--ok-spacing) * 3) calc(var(--ok-spacing) * 2);
     border-radius: var(--ok-radius-lg);
     background-color: var(--_ok-toast-bg);
     box-shadow: var(--ok-shadow-z8);
@@ -86,7 +136,19 @@
     font-size: var(--ok-font-size-sm);
     line-height: calc(var(--ok-spacing) * 5);
     pointer-events: auto;
+    touch-action: none;
+    transition:
+      transform var(--ok-duration-short) var(--ok-easing-standard),
+      translate var(--ok-duration-short) var(--ok-easing-standard),
+      opacity var(--ok-duration-short) var(--ok-easing-standard);
     animation: ok-toast-in var(--ok-duration-short) var(--ok-easing-decelerate);
+  }
+
+  /* Swipe to dismiss: the toast follows the pointer. */
+  :where([data-ok-toast][data-ok-swiping]) {
+    translate: var(--_ok-swipe-x, 0) var(--_ok-swipe-y, 0);
+    transition: none;
+    user-select: none;
   }
 
   @supports (color: light-dark(#000, #fff)) {
@@ -97,7 +159,12 @@
     }
   }
 
-  :where([data-ok-toaster][data-ok-position^="bottom"] [data-ok-toast]) {
+  :where(
+    [data-ok-toaster][data-ok-position^="bottom"]
+      > [data-ok-toaster-list]:not([data-ok-position])
+      > [data-ok-toast],
+    [data-ok-toaster-list][data-ok-position^="bottom"] > [data-ok-toast]
+  ) {
     animation-name: ok-toast-in-bottom;
   }
 
@@ -107,27 +174,36 @@
     --_ok-toast-color: var(--ok-text-primary);
     --_ok-toast-muted: var(--ok-text-secondary);
 
-    padding: var(--ok-spacing) calc(var(--ok-spacing) * 2) var(--ok-spacing) var(--ok-spacing);
+    padding-block: var(--ok-spacing);
+    padding-inline: var(--ok-spacing) calc(var(--ok-spacing) * 2);
   }
 
   :where([data-ok-toast][data-ok-type="info"]) {
     --_ok-toast-channel: var(--ok-palette-info-main-channel);
     --_ok-toast-main: var(--ok-palette-info-main);
+    --_ok-toast-lighter: var(--ok-palette-info-lighter);
+    --_ok-toast-darker: var(--ok-palette-info-darker);
   }
 
   :where([data-ok-toast][data-ok-type="success"]) {
     --_ok-toast-channel: var(--ok-palette-success-main-channel);
     --_ok-toast-main: var(--ok-palette-success-main);
+    --_ok-toast-lighter: var(--ok-palette-success-lighter);
+    --_ok-toast-darker: var(--ok-palette-success-darker);
   }
 
   :where([data-ok-toast][data-ok-type="warning"]) {
     --_ok-toast-channel: var(--ok-palette-warning-main-channel);
     --_ok-toast-main: var(--ok-palette-warning-main);
+    --_ok-toast-lighter: var(--ok-palette-warning-lighter);
+    --_ok-toast-darker: var(--ok-palette-warning-darker);
   }
 
   :where([data-ok-toast][data-ok-type="error"]) {
     --_ok-toast-channel: var(--ok-palette-error-main-channel);
     --_ok-toast-main: var(--ok-palette-error-main);
+    --_ok-toast-lighter: var(--ok-palette-error-lighter);
+    --_ok-toast-darker: var(--ok-palette-error-darker);
   }
 
   :where([data-ok-toast][data-ok-type="loading"]) {
@@ -211,8 +287,8 @@
 
   :where([data-ok-toast-close]) {
     position: absolute;
-    top: calc(var(--ok-spacing) * -1.5);
-    left: calc(var(--ok-spacing) * -1.5);
+    inset-block-start: calc(var(--ok-spacing) * -1.5);
+    inset-inline-start: calc(var(--ok-spacing) * -1.5);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -258,6 +334,128 @@
     outline-offset: 2px;
   }
 
+  /* Inverted toasts: default toasts become paper, typed toasts dark (light on dark pages). */
+  :where(
+    [data-ok-toaster][data-ok-invert]
+      [data-ok-toast][data-ok-type="default"]:not([data-ok-invert="false"]),
+    [data-ok-toast][data-ok-type="default"][data-ok-invert]:not([data-ok-invert="false"])
+  ) {
+    --_ok-toast-bg: var(--ok-bg-paper);
+    --_ok-toast-color: var(--ok-text-primary);
+    --_ok-toast-muted: var(--ok-text-secondary);
+  }
+
+  :where(
+    [data-ok-toaster][data-ok-invert]
+      [data-ok-toast]:not([data-ok-type="default"], [data-ok-invert="false"]),
+    [data-ok-toast]:not([data-ok-type="default"])[data-ok-invert]:not([data-ok-invert="false"])
+  ) {
+    --_ok-toast-bg: var(--ok-palette-grey-800);
+    --_ok-toast-color: var(--ok-palette-common-white);
+    --_ok-toast-muted: var(--ok-palette-grey-500);
+  }
+
+  @supports (color: light-dark(#000, #fff)) {
+    :where(
+        [data-ok-toaster][data-ok-invert]
+          [data-ok-toast]:not([data-ok-type="default"], [data-ok-invert="false"]),
+        [data-ok-toast]:not([data-ok-type="default"])[data-ok-invert]:not([data-ok-invert="false"])
+      ) {
+      --_ok-toast-bg: light-dark(var(--ok-palette-grey-800), var(--ok-palette-common-white));
+      --_ok-toast-color: light-dark(var(--ok-palette-common-white), var(--ok-palette-grey-800));
+      --_ok-toast-muted: light-dark(var(--ok-palette-grey-500), var(--ok-palette-grey-600));
+    }
+  }
+
+  /* Rich colors: typed toasts take their status tones (the darker tone on the lighter one). */
+  :where(
+    [data-ok-toaster][data-ok-rich-colors]
+      [data-ok-toast]:is(
+        [data-ok-type="info"],
+        [data-ok-type="success"],
+        [data-ok-type="warning"],
+        [data-ok-type="error"]
+      ):not([data-ok-rich-colors="false"]),
+    [data-ok-toast]:is(
+      [data-ok-type="info"],
+      [data-ok-type="success"],
+      [data-ok-type="warning"],
+      [data-ok-type="error"]
+    )[data-ok-rich-colors]:not([data-ok-rich-colors="false"])
+  ) {
+    --_ok-toast-bg: var(--_ok-toast-lighter);
+    --_ok-toast-color: var(--_ok-toast-darker);
+    --_ok-toast-muted: var(--_ok-toast-darker);
+  }
+
+  /*
+   * Stacked (data-ok-expand="false"): the newest toast in front, two more peeking behind it at
+   * its size, the rest hidden; hover, focus or the hotkey (data-ok-expanded) list them all.
+   */
+  :where(
+    [data-ok-toaster][data-ok-expand="false"]:not([data-ok-expanded], :hover, :focus-within)
+      [data-ok-toast]:nth-child(n + 2)
+  ) {
+    position: absolute;
+    inset: 0;
+    transform: translateY(calc(var(--_ok-stack-y) * var(--_ok-stack-y-sign, 1)))
+      scale(var(--_ok-stack-scale));
+    transform-origin: 50% 100%;
+  }
+
+  :where(
+    [data-ok-toaster][data-ok-expand="false"]:not([data-ok-expanded], :hover, :focus-within)
+      [data-ok-toast]:nth-child(n + 2)
+      > *
+  ) {
+    opacity: 0;
+  }
+
+  :where([data-ok-toaster][data-ok-expand="false"] [data-ok-toast]:nth-child(1)) {
+    z-index: 3;
+  }
+
+  :where([data-ok-toaster][data-ok-expand="false"] [data-ok-toast]:nth-child(2)) {
+    --_ok-stack-y: calc(var(--ok-spacing) * 4);
+    --_ok-stack-scale: 0.95;
+
+    z-index: 2;
+  }
+
+  :where([data-ok-toaster][data-ok-expand="false"] [data-ok-toast]:nth-child(3)) {
+    --_ok-stack-y: calc(var(--ok-spacing) * 8);
+    --_ok-stack-scale: 0.9;
+
+    z-index: 1;
+  }
+
+  :where(
+    [data-ok-toaster][data-ok-expand="false"]:not([data-ok-expanded], :hover, :focus-within)
+      [data-ok-toast]:nth-child(n + 4)
+  ) {
+    visibility: hidden;
+    opacity: 0;
+  }
+
+  /* Bottom positions peek upward. */
+  :where(
+    [data-ok-toaster][data-ok-expand="false"][data-ok-position^="bottom"]
+      > [data-ok-toaster-list]:not([data-ok-position])
+      > [data-ok-toast],
+    [data-ok-toaster][data-ok-expand="false"]
+      > [data-ok-toaster-list][data-ok-position^="bottom"]
+      > [data-ok-toast]
+  ) {
+    --_ok-stack-y-sign: -1;
+
+    transform-origin: 50% 0;
+  }
+
+  /* Expanded by the pointer: the gaps between toasts keep the hover. */
+  :where([data-ok-toaster][data-ok-expand="false"] [data-ok-toaster-list]:hover) {
+    pointer-events: auto;
+  }
+
   @keyframes ok-toast-in {
     from {
       opacity: 0;
@@ -274,6 +472,7 @@
 
   @media (prefers-reduced-motion: reduce) {
     :where([data-ok-toast]) {
+      transition: none;
       animation: none;
     }
   }

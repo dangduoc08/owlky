@@ -1447,6 +1447,14 @@ export interface SliderParts {
 export interface SnackbarParts {
   /** Marks a toast with custom content and no default styling. */
   "data-ok-custom": State;
+  /** Set on a stacked toaster (`data-ok-expand="false"`) while the hotkey keeps it expanded. */
+  "data-ok-expanded": State;
+  /** HTML: the keys that expand the toaster and focus it, such as `altKey+KeyT` (the default). */
+  "data-ok-hotkey": Value<string>;
+  /** HTML: the directions a toast can be swiped away in, such as `top right`. Default: toward the toaster's edges. */
+  "data-ok-swipe-directions": Value<string>;
+  /** Set on a toast while a pointer swipes it. */
+  "data-ok-swiping": State;
   /** HTML: the id of the toast template that replaces this one when its promise settles. */
   "data-ok-then": Value<string>;
   /** One toast. */
@@ -1475,6 +1483,8 @@ export interface SnackbarParts {
   "data-ok-toaster-list": Part<"ol">;
   /** On a toast trigger: the corner it shows the toast in. */
   "data-ok-toaster-position": Value<string>;
+  /** HTML: on a toast trigger, the `id` of the toaster that shows the toast (default: the page's first). */
+  "data-ok-toast-toaster": Value<string>;
 }
 
 /** Sortable: parts, states, values and triggers. */

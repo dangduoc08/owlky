@@ -1144,6 +1144,7 @@ export {
   createToastTimer,
   isToastButton,
   type PromiseMessages,
+  type PromiseToastId,
   type Toast,
   type ToastApi,
   type ToastButton,
@@ -1157,6 +1158,22 @@ export {
   toastPositions,
   toastTypes,
 } from "./toast/toast-store.js";
+export {
+  createToasterHotkey,
+  createToastSwipe,
+  matchesHotkey,
+  parseHotkey,
+  parseSwipeDirections,
+  SWIPE_THRESHOLD,
+  SWIPE_VELOCITY,
+  type SwipeDirection,
+  swipeDirections,
+  TOASTER_HOTKEY,
+  type ToasterOffset,
+  type ToastSwipeOptions,
+  toasterStyle,
+  toastSwipeDirections,
+} from "./toast/toaster-controller.js";
 export {
   fromSelection,
   nextToggleSelection,

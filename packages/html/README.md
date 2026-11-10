@@ -38,7 +38,7 @@ text, subheader, `data-ok-list-item-secondary-action`; runtime `list` opens / cl
 (runtime `tooltip`: `div[data-ok-tooltip][role=tooltip]`, found from `aria-labelledby` / `aria-describedby`)
 **Dialog** (runtime `dialog`: `dialog[data-ok-dialog]`, triggers `data-ok-dialog-open` / `data-ok-dialog-close`,
 events `ok:dialog:*`) **Snackbar** (runtime `toaster`: `section[data-ok-toaster]`, `<template>` toasts shown by
-`data-ok-toast-open`, instance `show()` / `promise()` / `dismiss()`, events `ok:toaster:*`)
+`data-ok-toast-open` (`data-ok-toast-toaster` picks a toaster), instance `show()` / `promise()` / `dismiss()` / `getToasts()` / `getHistory()`, swipe to dismiss, `data-ok-expand="false"` stack + `data-ok-hotkey`, `data-ok-rich-colors`, `data-ok-invert`, `data-ok-offset` / `data-ok-gap`, events `ok:toaster:*`)
 **Radio** (CSS only: `div[role=radiogroup][data-ok-radio-group]` › `span[data-ok-radio]` › native radio)
 **Text field** (CSS only, plus runtime `text-field` for `data-ok-min-rows` / `data-ok-max-rows` and the
 `data-ok-text-field-reveal` password button; inputs keep a `placeholder`, " " when none)

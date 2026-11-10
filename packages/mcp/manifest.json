@@ -516,6 +516,7 @@
   "data-ok-exaggeration",
   "data-ok-excel-options",
   "data-ok-exclusive",
+  "data-ok-expand",
   "data-ok-expand-text",
   "data-ok-expanded",
   "data-ok-expansion-trigger",
@@ -600,6 +601,7 @@
   "data-ok-gantt-viewport",
   "data-ok-gantt-visually-hidden",
   "data-ok-gantt-zoom",
+  "data-ok-gap",
   "data-ok-generate-id",
   "data-ok-generated",
   "data-ok-gfm",
@@ -623,6 +625,7 @@
   "data-ok-highlight-selected-only",
   "data-ok-holidays",
   "data-ok-horizontal",
+  "data-ok-hotkey",
   "data-ok-hover",
   "data-ok-icon-button",
   "data-ok-icon-button-loader",
@@ -653,6 +656,7 @@
   "data-ok-input-label",
   "data-ok-inset",
   "data-ok-interactive-layer-ids",
+  "data-ok-invert",
   "data-ok-invisible",
   "data-ok-item-id",
   "data-ok-item-index",
@@ -816,6 +820,7 @@
   "data-ok-min-width",
   "data-ok-min-zoom",
   "data-ok-minutes-step",
+  "data-ok-mobile-offset",
   "data-ok-mobile-stepper",
   "data-ok-mobile-stepper-back",
   "data-ok-mobile-stepper-dot",
@@ -970,6 +975,7 @@
   "data-ok-required",
   "data-ok-reset-highlight-on-mouse-leave",
   "data-ok-resizable",
+  "data-ok-rich-colors",
   "data-ok-rotate",
   "data-ok-rotate-buttons",
   "data-ok-rotation",
@@ -1108,6 +1114,8 @@
   "data-ok-stop-on-last-snap",
   "data-ok-stop-on-mouse-enter",
   "data-ok-stroke",
+  "data-ok-swipe-directions",
+  "data-ok-swiping",
   "data-ok-switch",
   "data-ok-switch-checked-icon",
   "data-ok-switch-icon",
@@ -1207,6 +1215,7 @@
   "data-ok-toast-id",
   "data-ok-toast-open",
   "data-ok-toast-title",
+  "data-ok-toast-toaster",
   "data-ok-toaster",
   "data-ok-toaster-list",
   "data-ok-toaster-position",
@@ -51605,6 +51614,10 @@
       "value": "cubic-bezier(0, 0, 0.2, 1)"
      },
      {
+      "name": "--ok-easing-standard",
+      "value": "cubic-bezier(0.4, 0, 0.2, 1)"
+     },
+     {
       "name": "--ok-font-family",
       "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
      },
@@ -51627,6 +51640,14 @@
      {
       "name": "--ok-palette-common-white",
       "value": "#FFFFFF"
+     },
+     {
+      "name": "--ok-palette-error-darker",
+      "value": "#7A0916"
+     },
+     {
+      "name": "--ok-palette-error-lighter",
+      "value": "#FFE9D5"
      },
      {
       "name": "--ok-palette-error-main",
@@ -51653,6 +51674,14 @@
       "value": "#1C252E"
      },
      {
+      "name": "--ok-palette-info-darker",
+      "value": "#003768"
+     },
+     {
+      "name": "--ok-palette-info-lighter",
+      "value": "#CAFDF5"
+     },
+     {
       "name": "--ok-palette-info-main",
       "value": "#00B8D9"
      },
@@ -51661,12 +51690,28 @@
       "value": "0 184 217"
      },
      {
+      "name": "--ok-palette-success-darker",
+      "value": "#065E49"
+     },
+     {
+      "name": "--ok-palette-success-lighter",
+      "value": "#D3FCD2"
+     },
+     {
       "name": "--ok-palette-success-main",
       "value": "#22C55E"
      },
      {
       "name": "--ok-palette-success-main-channel",
       "value": "34 197 94"
+     },
+     {
+      "name": "--ok-palette-warning-darker",
+      "value": "#7A4100"
+     },
+     {
+      "name": "--ok-palette-warning-lighter",
+      "value": "#FFF5CC"
      },
      {
       "name": "--ok-palette-warning-main",
@@ -51743,10 +51788,22 @@
          "type": "(id?: string | undefined) => void"
         },
         {
+         "description": "Every toast shown since the toaster started, dismissed ones too (oldest first).",
+         "kind": "method",
+         "name": "getHistory",
+         "type": "() => HTMLElement[]"
+        },
+        {
+         "description": "The toasts shown now, newest first.",
+         "kind": "method",
+         "name": "getToasts",
+         "type": "() => HTMLElement[]"
+        },
+        {
          "description": "Shows `loading` until the promise settles, then `success` or `error` in the same toast.",
          "kind": "method",
          "name": "promise",
-         "type": "<T>(promise: Promise<T>, messages: { loading: string; success: string; error: string; }) => string"
+         "type": "<T>(promise: Promise<T>, messages: ToastPromiseMessages) => string"
         },
         {
          "description": "Shows a toast built from text (never HTML). Returns its id.",
@@ -51798,6 +51855,65 @@
          "description": "Every toast shows a close button.",
          "kind": "flag",
          "name": "closeButton"
+        },
+        {
+         "attr": "data-ok-expand",
+         "default": true,
+         "description": "Toasts are listed one under another; `false` stacks them and expands the stack on hover, focus or the hotkey.",
+         "kind": "behavior",
+         "name": "expand"
+        },
+        {
+         "attr": "data-ok-rich-colors",
+         "description": "Typed toasts take their status color.",
+         "kind": "flag",
+         "name": "richColors"
+        },
+        {
+         "attr": "data-ok-invert",
+         "description": "Reverses the toasts' colors (dark on light pages).",
+         "kind": "flag",
+         "name": "invert"
+        },
+        {
+         "attr": "data-ok-offset",
+         "default": 16,
+         "description": "Distance from the viewport's edges: px or a CSS length.",
+         "kind": "number",
+         "min": 0,
+         "name": "offset",
+         "units": [
+          "px",
+          "rem",
+          "em",
+          "vh",
+          "vw",
+          "%"
+         ]
+        },
+        {
+         "attr": "data-ok-mobile-offset",
+         "default": 16,
+         "description": "Distance from the edges on screens under 600px wide: px or a CSS length.",
+         "kind": "number",
+         "min": 0,
+         "name": "mobileOffset",
+         "units": [
+          "px",
+          "rem",
+          "em",
+          "vh",
+          "vw",
+          "%"
+         ]
+        },
+        {
+         "attr": "data-ok-gap",
+         "default": 12,
+         "description": "Space between expanded toasts, in px.",
+         "kind": "number",
+         "min": 0,
+         "name": "gap"
         }
        ],
        "parts": [
@@ -51805,6 +51921,28 @@
          "description": "Marks a toast with custom content and no default styling.",
          "kind": "state",
          "name": "data-ok-custom"
+        },
+        {
+         "description": "Set on a stacked toaster (`data-ok-expand=\"false\"`) while the hotkey keeps it expanded.",
+         "kind": "state",
+         "name": "data-ok-expanded"
+        },
+        {
+         "description": "HTML: the keys that expand the toaster and focus it, such as `altKey+KeyT` (the default).",
+         "kind": "value",
+         "name": "data-ok-hotkey",
+         "value": "string"
+        },
+        {
+         "description": "HTML: the directions a toast can be swiped away in, such as `top right`. Default: toward the toaster's edges.",
+         "kind": "value",
+         "name": "data-ok-swipe-directions",
+         "value": "string"
+        },
+        {
+         "description": "Set on a toast while a pointer swipes it.",
+         "kind": "state",
+         "name": "data-ok-swiping"
         },
         {
          "description": "HTML: the id of the toast template that replaces this one when its promise settles.",
@@ -51874,6 +52012,12 @@
          "name": "data-ok-toast-title"
         },
         {
+         "description": "HTML: on a toast trigger, the `id` of the toaster that shows the toast (default: the page's first).",
+         "kind": "value",
+         "name": "data-ok-toast-toaster",
+         "value": "string"
+        },
+        {
          "description": "The list of toasts in one corner.",
          "elements": [
           "ol"
@@ -51896,7 +52040,7 @@
        "native": "HTMLElement",
        "props": [
         {
-         "description": "Every toast shows a close button.",
+         "description": "Every toast shows a close button. Default: shown while toasts can be swiped away; `false` hides it.",
          "name": "closeButton",
          "type": "boolean"
         },
@@ -51906,15 +52050,72 @@
          "type": "number"
         },
         {
+         "default": "true",
+         "description": "`false` stacks the toasts and expands them on hover, focus or the hotkey.",
+         "name": "expand",
+         "type": "boolean"
+        },
+        {
+         "description": "Space between expanded toasts, in px. Default 12.",
+         "name": "gap",
+         "type": "number"
+        },
+        {
+         "default": "[\"altKey\", \"KeyT\"]",
+         "description": "Keys that expand the toaster and move the focus to it. `[]` turns it off.",
+         "name": "hotkey",
+         "type": "readonly string[]"
+        },
+        {
+         "description": "Replaces the type icons and the close icon.",
+         "name": "icons",
+         "type": "Partial<Record<\"close\" | \"error\" | \"info\" | \"loading\" | \"success\" | \"warning\", ReactNode>>"
+        },
+        {
+         "description": "Names the toaster: it shows the toasts whose `toasterId` is this id (and is the element's `id`).",
+         "name": "id",
+         "type": "string"
+        },
+        {
+         "description": "Reverses the toasts' colors (dark on light pages).",
+         "name": "invert",
+         "type": "boolean"
+        },
+        {
+         "description": "`offset` on screens under 600px wide. Default 16px.",
+         "name": "mobileOffset",
+         "type": "ToasterOffset"
+        },
+        {
+         "description": "Distance from the viewport's edges: px, a CSS length or one per side. Default 16px.",
+         "name": "offset",
+         "type": "ToasterOffset"
+        },
+        {
          "default": "\"top-right\"",
          "description": "Corner or edge of the viewport.",
          "name": "position",
          "type": "\"bottom-center\" | \"bottom-left\" | \"bottom-right\" | \"top-center\" | \"top-left\" | \"top-right\""
         },
         {
-         "description": "Another store than the page's `toastStore` (tests, several toasters).",
+         "description": "Typed toasts take their status color.",
+         "name": "richColors",
+         "type": "boolean"
+        },
+        {
+         "description": "Another store than the page's `toastStore` (tests, separate queues).",
          "name": "store",
          "type": "ToastStore<ReactNode>"
+        },
+        {
+         "description": "Directions a toast can be swiped away in. Default: toward the toaster's edges; `[]` turns swiping off.",
+         "name": "swipeDirections",
+         "type": "readonly (\"bottom\" | \"left\" | \"right\" | \"top\")[]"
+        },
+        {
+         "description": "Defaults for every toast.",
+         "name": "toastOptions",
+         "type": "ToasterToastOptions"
         },
         {
          "description": "Toasts shown at once. Default 3.",
@@ -51924,6 +52125,12 @@
        ]
       }
      }
+    ],
+    "types": [
+     {
+      "name": "ToasterOffset",
+      "type": "string | number | { top?: string | number; right?: string | number; bottom?: string | number; left?: string | number; }"
+     }
     ]
    },
    "guide": "snackbar",
@@ -51932,7 +52139,8 @@
     "TOAST_ICONS",
     "Toaster",
     "toast",
-    "toastStore"
+    "toastStore",
+    "useSonner"
    ],
    "referenceUrl": "https://minimals.cc/components/extra/snackbar",
    "related": [
@@ -51985,6 +52193,65 @@
        "description": "Every toast shows a close button.",
        "kind": "flag",
        "name": "closeButton"
+      },
+      {
+       "attr": "data-ok-expand",
+       "default": true,
+       "description": "Toasts are listed one under another; `false` stacks them and expands the stack on hover, focus or the hotkey.",
+       "kind": "behavior",
+       "name": "expand"
+      },
+      {
+       "attr": "data-ok-rich-colors",
+       "description": "Typed toasts take their status color.",
+       "kind": "flag",
+       "name": "richColors"
+      },
+      {
+       "attr": "data-ok-invert",
+       "description": "Reverses the toasts' colors (dark on light pages).",
+       "kind": "flag",
+       "name": "invert"
+      },
+      {
+       "attr": "data-ok-offset",
+       "default": 16,
+       "description": "Distance from the viewport's edges: px or a CSS length.",
+       "kind": "number",
+       "min": 0,
+       "name": "offset",
+       "units": [
+        "px",
+        "rem",
+        "em",
+        "vh",
+        "vw",
+        "%"
+       ]
+      },
+      {
+       "attr": "data-ok-mobile-offset",
+       "default": 16,
+       "description": "Distance from the edges on screens under 600px wide: px or a CSS length.",
+       "kind": "number",
+       "min": 0,
+       "name": "mobileOffset",
+       "units": [
+        "px",
+        "rem",
+        "em",
+        "vh",
+        "vw",
+        "%"
+       ]
+      },
+      {
+       "attr": "data-ok-gap",
+       "default": 12,
+       "description": "Space between expanded toasts, in px.",
+       "kind": "number",
+       "min": 0,
+       "name": "gap"
       }
      ],
      "root": "data-ok-toaster"
@@ -51997,17 +52264,17 @@
      "title": "Purpose"
     },
     {
-     "body": "```\nsection[data-ok-toaster][data-ok-position][aria-label]\n  › ol[data-ok-toaster-list][aria-live=polite]\n      › li[data-ok-toast][data-ok-type][data-ok-custom]?\n          › span[data-ok-toast-icon][aria-hidden]? › svg | CircularProgress\n          › div[data-ok-toast-content] › div[data-ok-toast-title] + div[data-ok-toast-description]?\n          › button[data-ok-toast-cancel]? + button[data-ok-toast-action]? | div[data-ok-toast-actions]\n          › button[data-ok-toast-close][aria-label]?\ntemplate[id] › li[data-ok-toast][data-ok-duration]?[data-ok-then]?        (HTML)\nbutton[data-ok-toast-open=\"template id\"][data-ok-toaster-position]?        (HTML)\n```",
+     "body": "```\nsection[data-ok-toaster][data-ok-position][aria-label][dir]?[data-ok-expanded]?   (hotkey state)\n  › ol[data-ok-toaster-list][aria-live=polite]                 the toaster's position\n  › ol[data-ok-toaster-list][data-ok-position][aria-live]*     one per other position a toast asked for\n      › li[data-ok-toast][data-ok-type][data-ok-custom]?[data-ok-position]?[data-ok-invert]?\n          [data-ok-rich-colors]?[data-ok-swiping]?             (invert / rich colors: \"\" on, \"false\" off)\n          › span[data-ok-toast-icon][aria-hidden]? › svg | CircularProgress\n          › div[data-ok-toast-content] › div[data-ok-toast-title] + div[data-ok-toast-description]?\n          › button[data-ok-toast-cancel]? + button[data-ok-toast-action]? | div[data-ok-toast-actions]\n          › button[data-ok-toast-close][aria-label]?\ntemplate[id] › li[data-ok-toast][data-ok-duration]?[data-ok-then]?        (HTML)\nbutton[data-ok-toast-open=\"template id\"][data-ok-toaster-position]?[data-ok-toast-toaster]?  (HTML)\nHTML toaster attributes beyond the options: data-ok-hotkey=\"altKey+KeyT\", data-ok-swipe-directions=\"top right\"\n```",
      "id": "anatomy",
      "title": "Anatomy"
     },
     {
-     "body": "(Options of `toaster`: listed under \"options\".)\n\nReact: `toast(title, options)`, `toast.message|info|success|warning|error|loading|promise|custom`,\n`toast.dismiss(id?)`; options `id`, `description`, `action` (`{ label, onClick }` or your nodes),\n`cancel`, `duration`, `icon`, `dismissible`, `onDismiss`, `onAutoClose`; `<Toaster store>`.\nKept from Sonner: `position`, `duration` (4000), `visibleToasts` (3), `closeButton`. Deferred:\n`expand` / stacked collapse (always expanded, like the reference), swipe to dismiss, `hotkey`,\n`richColors`, `theme` (follows the page scheme), `offset` / `gap`, per-toast `position`,\n`toast.getHistory`. Not applicable: `className` / `style` / `unstyled` per toast (CSS).",
+     "body": "(Options of `toaster`: listed under \"options\".)\n\nReact: `toast(title, options)`, `toast.message|info|success|warning|error|loading|promise|custom`,\n`toast.dismiss(id?)`; options `id`, `description`, `action` (`{ label, onClick }` or your nodes),\n`cancel`, `duration`, `icon`, `dismissible`, `onDismiss`, `onAutoClose`; `<Toaster store>`.\nToast options also `position`, `closeButton`, `invert`, `richColors`, `toasterId`;\n`toast.promise(promise, { loading, success, error, description, finally, …toast options })` returns\nthe id boxed with `unwrap()` (as Sonner); `toast.getHistory()`, `toast.getToasts()`; `useSonner()`.\nToaster: `position`, `duration` (4000), `visibleToasts` (3), `closeButton`, `expand` (default\n**true**: the reference lists the toasts; `false` = Sonner's stack), `richColors`, `invert`,\n`hotkey` (`[\"altKey\", \"KeyT\"]`), `offset` / `mobileOffset` (16px; number, length or per side),\n`gap` (12), `swipeDirections`, `toastOptions` (defaults: `duration`, `closeButton`, `invert`,\n`richColors`, `dismissible`), `icons` (`info` · `success` · `warning` · `error` · `loading` ·\n`close`), `id` (+ toast `toasterId`), `dir` (native attribute). Not applicable: `className` /\n`style` / `unstyled` per toast (CSS), `theme` (follows the page scheme).",
      "id": "options",
      "title": "Options"
     },
     {
-     "body": "Toaster fixed 16px from the edges, width min(300px, 100% − 32px), gap 12px; bottom positions stack\nnewest nearest the edge. Default toast: inverted (grey-800 / white, dark scheme reversed via\n`light-dark()`), padding 8px 8px 8px 12px. Typed toasts: `--ok-bg-paper`, padding 4px 8px 4px 4px,\nicon box 48px radius `--ok-radius-lg` tinted with the status channel / 0.08, icon 24px in the\nstatus main color. Radius `--ok-radius-lg`, `--ok-shadow-z8`, 13px (`--ok-font-size-sm`), title\n500. Close button 24px circle at the top-left corner, shown on hover / focus (always on touch).\nEntry: slide 50% + fade (`--ok-duration-short`); no exit animation.",
+     "body": "Toaster fixed `offset` from the edges (16px; `mobileOffset` under 600px, mobile-first: private\n`--_ok-toaster-[mobile-]<side>` from React `style` / the HTML runtime through CSSOM), width\nmin(300px, 100% − the side offsets), gap `--_ok-toast-gap` (12px); centered positions use\n`margin-inline: auto` (no transform: lists of other positions are `position: fixed` inside the\nsection); bottom positions stack newest nearest the edge. Stacked (`expand` false): toasts 2–3\nsit behind the newest at its size (`inset: 0`), 16 / 32px lower (higher at the bottom), scaled\n0.95 / 0.9, content hidden; later ones hidden; `:hover`, `:focus-within` or `data-ok-expanded`\nlists them. Rich colors: status `lighter` background, `darker` text (as Label inverted). Invert:\ndefault toasts paper, typed toasts grey-800 (reversed in dark). Logical properties inside the\ntoast (padding, close button at the inline start), so `dir=\"rtl\"` mirrors it. Default toast: inverted (grey-800 / white, dark scheme reversed via\n`light-dark()`), padding 8px 8px 8px 12px. Typed toasts: `--ok-bg-paper`, padding 4px 8px 4px 4px,\nicon box 48px radius `--ok-radius-lg` tinted with the status channel / 0.08, icon 24px in the\nstatus main color. Radius `--ok-radius-lg`, `--ok-shadow-z8`, 13px (`--ok-font-size-sm`), title\n500. Close button 24px circle at the top-left corner, shown on hover / focus (always on touch).\nEntry: slide 50% + fade (`--ok-duration-short`); no exit animation.",
      "id": "layout-and-tokens",
      "title": "Layout and tokens"
     },
@@ -52017,17 +52284,17 @@
      "title": "Responsive behavior"
     },
     {
-     "body": "Polite live region; toasts never take focus. Time pauses while the toaster is hovered or focused.\nEscape closes a focused toast (unless not dismissible). The loading toast has a named progress.",
+     "body": "Polite live region; toasts never take focus. Time pauses while the toaster is hovered or focused.\nEscape closes a focused toast (unless not dismissible). The loading toast has a named progress.\nSwipe to dismiss (core `createToastSwipe`, both owners): a pointer drag from the toast (not its\nbuttons) along an allowed direction past 45px or faster than 0.11px/ms closes it; otherwise it\nsprings back; directions default to the toaster's edges (`top` / `bottom`, plus `left` / `right`\nfor corners). The close button and Escape stay the single-pointer / keyboard path (WCAG 2.5.7):\nwith `closeButton` it is always shown on touch screens. Hotkey (core `createToasterHotkey`):\nexpands the toaster (`data-ok-expanded`) and focuses its first non-empty list (`tabindex=-1`,\nwritten then); Escape or the focus leaving collapses it.",
      "id": "keyboard-accessibility",
      "title": "Keyboard / Accessibility"
     },
     {
-     "body": "HTML: `ok:toaster:show`, `ok:toaster:dismiss` (`detail.reason`), `ok:toaster:action` (cancelable).\nInstance: `{ show(options), showTemplate(template), promise(promise, messages), dismiss(id?) }` —\n`show()` builds nodes from text only.",
+     "body": "HTML: `ok:toaster:show`, `ok:toaster:dismiss` (`detail.reason`, now also `\"swipe\"`),\n`ok:toaster:action` (cancelable). Instance: `{ show(options), showTemplate(template),\npromise(promise, messages), dismiss(id?), getToasts(), getHistory() }` — `show()` builds nodes\nfrom text only and takes `position`, `closeButton`, `invert`, `richColors`; `promise` takes\n`description` and `finally` (the HTML instance returns the id string: the caller holds the\npromise, so no `unwrap()`). Several toasters: one instance each; triggers pick one with\n`data-ok-toast-toaster`. `toastOptions` / `icons` are React-only by nature (nodes): HTML toaster\nattributes are the defaults, and templates carry their own icons.",
      "id": "events-api",
      "title": "Events / API"
     },
     {
-     "body": "Audit 2026-11-09 against Sonner docs (`toast()`, `<Toaster>`) and its `types.ts` / `state.ts`.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `toast()`, `toast.message` / `info` / `success` / `warning` / `error` / `loading` / `promise` / `custom` / `dismiss(id?)` | same (React `toast`; HTML instance `show` / `showTemplate` / `promise` / `dismiss`) | kept | |\n| `toast.custom(jsx(id))` | `toast.custom(content)` | renamed | content, not a function of the id |\n| toast `id`, `description`, `action`, `cancel`, `duration`, `icon`, `dismissible`, `onDismiss`, `onAutoClose` | same | kept | |\n| toast `position` | — (Toaster's) | deferred (4.14) | |\n| toast `richColors`, Toaster `richColors` | — | deferred (4.14) | |\n| toast `closeButton`, `invert`; Toaster `invert`, `toastOptions`, `icons` | Toaster `closeButton` only | deferred | new batch E row |\n| `toasterId`, Toaster `id` (several toasters) | `<Toaster store>` | deferred | new batch E row |\n| `toast.promise` result `unwrap()`, promise options (`finally`, `id`, other toast options) | returns the id | deferred | new batch E row |\n| `toast.getHistory()`, `toast.getToasts()`, `useSonner()` | — | deferred | new batch E row |\n| Toaster `position`, `duration`, `visibleToasts`, `closeButton` | same | kept | |\n| Toaster `expand`, `swipeDirections` (swipe to dismiss), `hotkey`, `offset` / `mobileOffset`, `gap` | — | deferred (4.14) | |\n| Toaster `dir` | — (physical properties) | deferred | new batch E row |\n| Toaster `theme` | page scheme | not applicable | follows `data-ok-theme` |\n| Toaster `containerAriaLabel` / `customAriaLabel` | `aria-label` (\"Notifications\") | renamed | |\n| `className`, `classNames`, `style`, `unstyled`, `descriptionClassName`, `actionButtonStyle`, `cancelButtonStyle`, `testId` | — | not applicable | CSS on `[data-ok-toast*]`; DOM attributes |",
+     "body": "Audit 2026-11-09 against Sonner docs (`toast()`, `<Toaster>`) and its `types.ts` / `state.ts`.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `toast()`, `toast.message` / `info` / `success` / `warning` / `error` / `loading` / `promise` / `custom` / `dismiss(id?)` | same (React `toast`; HTML instance `show` / `showTemplate` / `promise` / `dismiss`) | kept | |\n| `toast.custom(jsx(id))` | `toast.custom(content)` | renamed | content, not a function of the id |\n| toast `id`, `description`, `action`, `cancel`, `duration`, `icon`, `dismissible`, `onDismiss`, `onAutoClose` | same | kept | |\n| toast `position` | same; HTML `show({ position })` / `li[data-ok-position]` | kept | 4.14: a list per position |\n| toast `richColors`, Toaster `richColors` | same; HTML `data-ok-rich-colors` | kept | 4.14 |\n| toast `closeButton`, `invert`; Toaster `invert`, `toastOptions`, `icons` | same (React); HTML `data-ok-invert`, `show({ closeButton, invert })` | kept | 4.18.38; `toastOptions` / `icons` React only (HTML: toaster attributes, templates) |\n| `toasterId`, Toaster `id` (several toasters) | same; HTML one instance per toaster, trigger `data-ok-toast-toaster` | kept | 4.18.40 |\n| `toast.promise` result `unwrap()`, promise options (`finally`, `id`, other toast options) | same (React); HTML `finally`, `description` | kept | 4.18.41: the id is boxed (`ok.valueOf()` for `===`) like Sonner |\n| `toast.getHistory()`, `toast.getToasts()`, `useSonner()` | same; HTML instance `getHistory()` / `getToasts()` (elements) | kept | 4.18.41 |\n| Toaster `position`, `duration`, `visibleToasts`, `closeButton` | same | kept | |\n| Toaster `expand`, `swipeDirections` (swipe to dismiss), `hotkey`, `offset` / `mobileOffset`, `gap` | same; HTML `data-ok-expand=\"false\"`, `data-ok-swipe-directions`, `data-ok-hotkey`, `data-ok-offset` / `data-ok-mobile-offset` (one length), `data-ok-gap` | renamed | 4.14: `expand` defaults to `true` (the reference); per-side offsets React only |\n| Toaster `dir` | native `dir` (React prop passes through) | kept | 4.18.37: logical properties in the toast |\n| Toaster `theme` | page scheme | not applicable | follows `data-ok-theme` |\n| Toaster `containerAriaLabel` / `customAriaLabel` | `aria-label` (\"Notifications\") | renamed | |\n| `className`, `classNames`, `style`, `unstyled`, `descriptionClassName`, `actionButtonStyle`, `cancelButtonStyle`, `testId` | — | not applicable | CSS on `[data-ok-toast*]`; DOM attributes |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     }
@@ -52038,7 +52305,7 @@
      "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/button.css + components/circular-progress.css + components/snackbar.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Default -->\n<button type=\"button\" data-ok-button data-ok-variant=\"contained\" data-ok-color=\"inherit\" data-ok-size=\"md\" data-ok-toast-open=\"toast-default\">\n  <span data-ok-button-label>Default</span>\n</button>\n<button type=\"button\" data-ok-button data-ok-variant=\"contained\" data-ok-color=\"inherit\" data-ok-size=\"md\" data-ok-toast-open=\"toast-message\">\n  <span data-ok-button-label>Message</span>\n</button>\n<section data-ok-toaster data-ok-position=\"top-right\" data-ok-close-button aria-label=\"Notifications\">\n  <ol data-ok-toaster-list aria-live=\"polite\"></ol>\n</section>\n<template id=\"toast-default\">\n  <li data-ok-toast data-ok-type=\"default\">\n    <div data-ok-toast-content>\n      <div data-ok-toast-title>Event has been created</div>\n    </div>\n    <button type=\"button\" data-ok-toast-close aria-label=\"Close\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M18 6 6 18M6 6l12 12\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-width=\"2\" /></svg></button>\n  </li>\n</template>\n<template id=\"toast-message\">\n  <li data-ok-toast data-ok-type=\"default\">\n    <div data-ok-toast-content>\n      <div data-ok-toast-title>Event has been created</div>\n      <div data-ok-toast-description>Monday at 6:00 PM</div>\n    </div>\n    <button type=\"button\" data-ok-toast-close aria-label=\"Close\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M18 6 6 18M6 6l12 12\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-width=\"2\" /></svg></button>\n  </li>\n</template>",
      "id": "components-snackbar--default",
      "name": "Default",
-     "react": "import type { ToastPosition } from \"@owlky/core\";\nimport { Button, Toaster, toast } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nconst wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));\n\n/** Default: a message, and a message with a description. */\nexport function DefaultDemo() {\n  return (\n    <>\n      <Button variant=\"contained\" onClick={() => toast(\"Event has been created\")}>\n        Default\n      </Button>\n      <Button\n        variant=\"contained\"\n        onClick={() =>\n          toast.message(\"Event has been created\", { description: \"Monday at 6:00 PM\" })\n        }\n      >\n        Message\n      </Button>\n      <Toaster closeButton />\n    </>\n  );\n}\n\n/** Status: one toast per type, and a promise that resolves after 2 seconds. */\nexport function StatusDemo() {\n  return (\n    <>\n      <Button\n        variant=\"contained\"\n        color=\"info\"\n        onClick={() => toast.info(\"Arrive 10 minutes early\")}\n      >\n        Info\n      </Button>\n      <Button\n        variant=\"contained\"\n        color=\"success\"\n        onClick={() => toast.success(\"Event has been created\")}\n      >\n        Success\n      </Button>\n      <Button\n        variant=\"contained\"\n        color=\"warning\"\n        onClick={() => toast.warning(\"Events can't start before 8 AM\")}\n      >\n        Warning\n      </Button>\n      <Button\n        variant=\"contained\"\n        color=\"error\"\n        onClick={() => toast.error(\"Event has not been created\")}\n      >\n        Error\n      </Button>\n      <Button\n        variant=\"outlined\"\n        onClick={() =>\n          toast.promise(wait(2000), {\n            loading: \"Loading…\",\n            success: \"Loading succeeded\",\n            error: \"Loading failed\",\n          })\n        }\n      >\n        Promise\n      </Button>\n      <Toaster closeButton />\n    </>\n  );\n}\n\n/** Custom: an action button, your own buttons, and rich content. */\nexport function CustomDemo() {\n  return (\n    <>\n      <Button\n        variant=\"outlined\"\n        onClick={() =>\n          toast(\"Event has been created\", { action: { label: \"Undo\", onClick: () => {} } })\n        }\n      >\n        Action\n      </Button>\n      <Button\n        variant=\"outlined\"\n        onClick={() => {\n          const id = toast.warning(\"Title\", {\n            description: \"Description\",\n            action: (\n              <>\n                <Button size=\"sm\" color=\"warning\" onClick={() => toast.dismiss(id)}>\n                  Action\n                </Button>\n                <Button size=\"sm\" onClick={() => toast.dismiss(id)}>\n                  Dismiss\n                </Button>\n              </>\n            ),\n          });\n        }}\n      >\n        Custom action\n      </Button>\n      <Button\n        variant=\"outlined\"\n        onClick={() =>\n          toast.success(<strong>Event has been created</strong>, {\n            description: <em>Monday at 6:00 PM</em>,\n          })\n        }\n      >\n        Custom\n      </Button>\n      <Toaster closeButton />\n    </>\n  );\n}\n\nconst POSITIONS: ToastPosition[] = [\n  \"top-left\",\n  \"top-center\",\n  \"top-right\",\n  \"bottom-left\",\n  \"bottom-center\",\n  \"bottom-right\",\n];\n\n/** Anchor origin: the toaster moves to the chosen corner or edge. */\nexport function AnchorOriginDemo() {\n  const [position, setPosition] = useState<ToastPosition>(\"top-right\");\n  return (\n    <>\n      {POSITIONS.map((value) => (\n        <Button\n          key={value}\n          variant=\"outlined\"\n          onClick={() => {\n            setPosition(value);\n            toast(`Shown at ${value}`);\n          }}\n        >\n          {value}\n        </Button>\n      ))}\n      <Toaster position={position} closeButton />\n    </>\n  );\n}\n",
+     "react": "import type { ToastPosition } from \"@owlky/core\";\nimport { Button, Toaster, toast } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nconst wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));\n\n/** Default: a message, and a message with a description. */\nexport function DefaultDemo() {\n  return (\n    <>\n      <Button variant=\"contained\" onClick={() => toast(\"Event has been created\")}>\n        Default\n      </Button>\n      <Button\n        variant=\"contained\"\n        onClick={() =>\n          toast.message(\"Event has been created\", { description: \"Monday at 6:00 PM\" })\n        }\n      >\n        Message\n      </Button>\n      <Toaster closeButton />\n    </>\n  );\n}\n\n/** Status: one toast per type, and a promise that resolves after 2 seconds. */\nexport function StatusDemo() {\n  return (\n    <>\n      <Button\n        variant=\"contained\"\n        color=\"info\"\n        onClick={() => toast.info(\"Arrive 10 minutes early\")}\n      >\n        Info\n      </Button>\n      <Button\n        variant=\"contained\"\n        color=\"success\"\n        onClick={() => toast.success(\"Event has been created\")}\n      >\n        Success\n      </Button>\n      <Button\n        variant=\"contained\"\n        color=\"warning\"\n        onClick={() => toast.warning(\"Events can't start before 8 AM\")}\n      >\n        Warning\n      </Button>\n      <Button\n        variant=\"contained\"\n        color=\"error\"\n        onClick={() => toast.error(\"Event has not been created\")}\n      >\n        Error\n      </Button>\n      <Button\n        variant=\"outlined\"\n        onClick={() =>\n          toast.promise(wait(2000), {\n            loading: \"Loading…\",\n            success: \"Loading succeeded\",\n            error: \"Loading failed\",\n          })\n        }\n      >\n        Promise\n      </Button>\n      <Toaster closeButton />\n    </>\n  );\n}\n\n/** Custom: an action button, your own buttons, and rich content. */\nexport function CustomDemo() {\n  return (\n    <>\n      <Button\n        variant=\"outlined\"\n        onClick={() =>\n          toast(\"Event has been created\", { action: { label: \"Undo\", onClick: () => {} } })\n        }\n      >\n        Action\n      </Button>\n      <Button\n        variant=\"outlined\"\n        onClick={() => {\n          const id = toast.warning(\"Title\", {\n            description: \"Description\",\n            action: (\n              <>\n                <Button size=\"sm\" color=\"warning\" onClick={() => toast.dismiss(id)}>\n                  Action\n                </Button>\n                <Button size=\"sm\" onClick={() => toast.dismiss(id)}>\n                  Dismiss\n                </Button>\n              </>\n            ),\n          });\n        }}\n      >\n        Custom action\n      </Button>\n      <Button\n        variant=\"outlined\"\n        onClick={() =>\n          toast.success(<strong>Event has been created</strong>, {\n            description: <em>Monday at 6:00 PM</em>,\n          })\n        }\n      >\n        Custom\n      </Button>\n      <Toaster closeButton />\n    </>\n  );\n}\n\nconst POSITIONS: ToastPosition[] = [\n  \"top-left\",\n  \"top-center\",\n  \"top-right\",\n  \"bottom-left\",\n  \"bottom-center\",\n  \"bottom-right\",\n];\n\n/** Anchor origin: the toaster moves to the chosen corner or edge. */\nexport function AnchorOriginDemo() {\n  const [position, setPosition] = useState<ToastPosition>(\"top-right\");\n  return (\n    <>\n      {POSITIONS.map((value) => (\n        <Button\n          key={value}\n          variant=\"outlined\"\n          onClick={() => {\n            setPosition(value);\n            toast(`Shown at ${value}`);\n          }}\n        >\n          {value}\n        </Button>\n      ))}\n      <Toaster position={position} closeButton />\n    </>\n  );\n}\n\n/** Expand (Sonner's demo): stacked toasts that expand on hover, focus or Alt + T. */\nexport function ExpandDemo() {\n  return (\n    <>\n      <Button variant=\"contained\" onClick={() => toast(\"Event has been created\")}>\n        Show toast\n      </Button>\n      <Toaster expand={false} closeButton />\n    </>\n  );\n}\n\n/** Rich colors (Sonner's \"Other\" demo): typed toasts in their status colors. */\nexport function RichColorsDemo() {\n  return (\n    <>\n      <Button\n        variant=\"contained\"\n        color=\"success\"\n        onClick={() => toast.success(\"Event has been created\")}\n      >\n        Success\n      </Button>\n      <Button\n        variant=\"contained\"\n        color=\"error\"\n        onClick={() => toast.error(\"Event has not been created\")}\n      >\n        Error\n      </Button>\n      <Toaster richColors closeButton />\n    </>\n  );\n}\n",
      "snippets": [
       "default-group.html"
      ]
@@ -52047,7 +52314,7 @@
      "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/button.css + components/circular-progress.css + components/snackbar.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Status -->\n<button type=\"button\" data-ok-button data-ok-variant=\"contained\" data-ok-color=\"info\" data-ok-size=\"md\" data-ok-toast-open=\"toast-info\">\n  <span data-ok-button-label>Info</span>\n</button>\n<button type=\"button\" data-ok-button data-ok-variant=\"contained\" data-ok-color=\"success\" data-ok-size=\"md\" data-ok-toast-open=\"toast-success\">\n  <span data-ok-button-label>Success</span>\n</button>\n<button type=\"button\" data-ok-button data-ok-variant=\"contained\" data-ok-color=\"warning\" data-ok-size=\"md\" data-ok-toast-open=\"toast-warning\">\n  <span data-ok-button-label>Warning</span>\n</button>\n<button type=\"button\" data-ok-button data-ok-variant=\"contained\" data-ok-color=\"error\" data-ok-size=\"md\" data-ok-toast-open=\"toast-error\">\n  <span data-ok-button-label>Error</span>\n</button>\n<button type=\"button\" data-ok-button data-ok-variant=\"outlined\" data-ok-color=\"inherit\" data-ok-size=\"md\" data-ok-toast-open=\"toast-promise\">\n  <span data-ok-button-label>Promise</span>\n</button>\n<section data-ok-toaster data-ok-position=\"top-right\" data-ok-close-button aria-label=\"Notifications\">\n  <ol data-ok-toaster-list aria-live=\"polite\"></ol>\n</section>\n<template id=\"toast-info\">\n  <li data-ok-toast data-ok-type=\"info\">\n    <span data-ok-toast-icon aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20m1 15h-2v-6h2zm0-8h-2V7h2z\" fill=\"currentColor\" /></svg></span>\n    <div data-ok-toast-content>\n      <div data-ok-toast-title>Arrive 10 minutes early</div>\n    </div>\n    <button type=\"button\" data-ok-toast-close aria-label=\"Close\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M18 6 6 18M6 6l12 12\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-width=\"2\" /></svg></button>\n  </li>\n</template>\n<template id=\"toast-success\">\n  <li data-ok-toast data-ok-type=\"success\">\n    <span data-ok-toast-icon aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20m-1.4 14.2-4.3-4.3 1.4-1.4 2.9 2.9 6-6 1.4 1.4z\" fill=\"currentColor\" /></svg></span>\n    <div data-ok-toast-content>\n      <div data-ok-toast-title>Event has been created</div>\n    </div>\n    <button type=\"button\" data-ok-toast-close aria-label=\"Close\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M18 6 6 18M6 6l12 12\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-width=\"2\" /></svg></button>\n  </li>\n</template>\n<template id=\"toast-warning\">\n  <li data-ok-toast data-ok-type=\"warning\">\n    <span data-ok-toast-icon aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M12 2.5 1.5 21h21zM13 18h-2v-2h2zm0-4h-2V9h2z\" fill=\"currentColor\" /></svg></span>\n    <div data-ok-toast-content>\n      <div data-ok-toast-title>Events can&#39;t start before 8 AM</div>\n    </div>\n    <button type=\"button\" data-ok-toast-close aria-label=\"Close\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M18 6 6 18M6 6l12 12\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-width=\"2\" /></svg></button>\n  </li>\n</template>\n<template id=\"toast-error\">\n  <li data-ok-toast data-ok-type=\"error\">\n    <span data-ok-toast-icon aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M15.7 2H8.3L3 7.3v7.4L8.3 20h7.4l5.3-5.3V7.3zM13 16h-2v-2h2zm0-4h-2V7h2z\" fill=\"currentColor\" /></svg></span>\n    <div data-ok-toast-content>\n      <div data-ok-toast-title>Event has not been created</div>\n    </div>\n    <button type=\"button\" data-ok-toast-close aria-label=\"Close\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M18 6 6 18M6 6l12 12\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-width=\"2\" /></svg></button>\n  </li>\n</template>\n<template id=\"toast-promise\">\n  <li data-ok-toast data-ok-type=\"loading\" data-ok-duration=\"2000\" data-ok-then=\"toast-promise-success\">\n    <span data-ok-toast-icon aria-hidden=\"true\"><span data-ok-circular-progress data-ok-variant=\"indeterminate\" data-ok-color=\"inherit\" role=\"progressbar\" aria-label=\"Loading\"><svg data-ok-circular-progress-svg viewBox=\"22 22 44 44\" aria-hidden=\"true\"><circle data-ok-circular-progress-circle cx=\"44\" cy=\"44\" r=\"20.2\" stroke-width=\"3.6\" /></svg></span></span>\n    <div data-ok-toast-content>\n      <div data-ok-toast-title>Loading…</div>\n    </div>\n  </li>\n</template>\n<template id=\"toast-promise-success\">\n  <li data-ok-toast data-ok-type=\"success\">\n    <span data-ok-toast-icon aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20m-1.4 14.2-4.3-4.3 1.4-1.4 2.9 2.9 6-6 1.4 1.4z\" fill=\"currentColor\" /></svg></span>\n    <div data-ok-toast-content>\n      <div data-ok-toast-title>Loading succeeded</div>\n    </div>\n    <button type=\"button\" data-ok-toast-close aria-label=\"Close\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M18 6 6 18M6 6l12 12\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-width=\"2\" /></svg></button>\n  </li>\n</template>",
      "id": "components-snackbar--status",
      "name": "Status",
-     "react": "import type { ToastPosition } from \"@owlky/core\";\nimport { Button, Toaster, toast } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nconst wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));\n\n/** Default: a message, and a message with a description. */\nexport function DefaultDemo() {\n  return (\n    <>\n      <Button variant=\"contained\" onClick={() => toast(\"Event has been created\")}>\n        Default\n      </Button>\n      <Button\n        variant=\"contained\"\n        onClick={() =>\n          toast.message(\"Event has been created\", { description: \"Monday at 6:00 PM\" })\n        }\n      >\n        Message\n      </Button>\n      <Toaster closeButton />\n    </>\n  );\n}\n\n/** Status: one toast per type, and a promise that resolves after 2 seconds. */\nexport function StatusDemo() {\n  return (\n    <>\n      <Button\n        variant=\"contained\"\n        color=\"info\"\n        onClick={() => toast.info(\"Arrive 10 minutes early\")}\n      >\n        Info\n      </Button>\n      <Button\n        variant=\"contained\"\n        color=\"success\"\n        onClick={() => toast.success(\"Event has been created\")}\n      >\n        Success\n      </Button>\n      <Button\n        variant=\"contained\"\n        color=\"warning\"\n        onClick={() => toast.warning(\"Events can't start before 8 AM\")}\n      >\n        Warning\n      </Button>\n      <Button\n        variant=\"contained\"\n        color=\"error\"\n        onClick={() => toast.error(\"Event has not been created\")}\n      >\n        Error\n      </Button>\n      <Button\n        variant=\"outlined\"\n        onClick={() =>\n          toast.promise(wait(2000), {\n            loading: \"Loading…\",\n            success: \"Loading succeeded\",\n            error: \"Loading failed\",\n          })\n        }\n      >\n        Promise\n      </Button>\n      <Toaster closeButton />\n    </>\n  );\n}\n\n/** Custom: an action button, your own buttons, and rich content. */\nexport function CustomDemo() {\n  return (\n    <>\n      <Button\n        variant=\"outlined\"\n        onClick={() =>\n          toast(\"Event has been created\", { action: { label: \"Undo\", onClick: () => {} } })\n        }\n      >\n        Action\n      </Button>\n      <Button\n        variant=\"outlined\"\n        onClick={() => {\n          const id = toast.warning(\"Title\", {\n            description: \"Description\",\n            action: (\n              <>\n                <Button size=\"sm\" color=\"warning\" onClick={() => toast.dismiss(id)}>\n                  Action\n                </Button>\n                <Button size=\"sm\" onClick={() => toast.dismiss(id)}>\n                  Dismiss\n                </Button>\n              </>\n            ),\n          });\n        }}\n      >\n        Custom action\n      </Button>\n      <Button\n        variant=\"outlined\"\n        onClick={() =>\n          toast.success(<strong>Event has been created</strong>, {\n            description: <em>Monday at 6:00 PM</em>,\n          })\n        }\n      >\n        Custom\n      </Button>\n      <Toaster closeButton />\n    </>\n  );\n}\n\nconst POSITIONS: ToastPosition[] = [\n  \"top-left\",\n  \"top-center\",\n  \"top-right\",\n  \"bottom-left\",\n  \"bottom-center\",\n  \"bottom-right\",\n];\n\n/** Anchor origin: the toaster moves to the chosen corner or edge. */\nexport function AnchorOriginDemo() {\n  const [position, setPosition] = useState<ToastPosition>(\"top-right\");\n  return (\n    <>\n      {POSITIONS.map((value) => (\n        <Button\n          key={value}\n          variant=\"outlined\"\n          onClick={() => {\n            setPosition(value);\n            toast(`Shown at ${value}`);\n          }}\n        >\n          {value}\n        </Button>\n      ))}\n      <Toaster position={position} closeButton />\n    </>\n  );\n}\n",
+     "react": "import type { ToastPosition } from \"@owlky/core\";\nimport { Button, Toaster, toast } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nconst wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));\n\n/** Default: a message, and a message with a description. */\nexport function DefaultDemo() {\n  return (\n    <>\n      <Button variant=\"contained\" onClick={() => toast(\"Event has been created\")}>\n        Default\n      </Button>\n      <Button\n        variant=\"contained\"\n        onClick={() =>\n          toast.message(\"Event has been created\", { description: \"Monday at 6:00 PM\" })\n        }\n      >\n        Message\n      </Button>\n      <Toaster closeButton />\n    </>\n  );\n}\n\n/** Status: one toast per type, and a promise that resolves after 2 seconds. */\nexport function StatusDemo() {\n  return (\n    <>\n      <Button\n        variant=\"contained\"\n        color=\"info\"\n        onClick={() => toast.info(\"Arrive 10 minutes early\")}\n      >\n        Info\n      </Button>\n      <Button\n        variant=\"contained\"\n        color=\"success\"\n        onClick={() => toast.success(\"Event has been created\")}\n      >\n        Success\n      </Button>\n      <Button\n        variant=\"contained\"\n        color=\"warning\"\n        onClick={() => toast.warning(\"Events can't start before 8 AM\")}\n      >\n        Warning\n      </Button>\n      <Button\n        variant=\"contained\"\n        color=\"error\"\n        onClick={() => toast.error(\"Event has not been created\")}\n      >\n        Error\n      </Button>\n      <Button\n        variant=\"outlined\"\n        onClick={() =>\n          toast.promise(wait(2000), {\n            loading: \"Loading…\",\n            success: \"Loading succeeded\",\n            error: \"Loading failed\",\n          })\n        }\n      >\n        Promise\n      </Button>\n      <Toaster closeButton />\n    </>\n  );\n}\n\n/** Custom: an action button, your own buttons, and rich content. */\nexport function CustomDemo() {\n  return (\n    <>\n      <Button\n        variant=\"outlined\"\n        onClick={() =>\n          toast(\"Event has been created\", { action: { label: \"Undo\", onClick: () => {} } })\n        }\n      >\n        Action\n      </Button>\n      <Button\n        variant=\"outlined\"\n        onClick={() => {\n          const id = toast.warning(\"Title\", {\n            description: \"Description\",\n            action: (\n              <>\n                <Button size=\"sm\" color=\"warning\" onClick={() => toast.dismiss(id)}>\n                  Action\n                </Button>\n                <Button size=\"sm\" onClick={() => toast.dismiss(id)}>\n                  Dismiss\n                </Button>\n              </>\n            ),\n          });\n        }}\n      >\n        Custom action\n      </Button>\n      <Button\n        variant=\"outlined\"\n        onClick={() =>\n          toast.success(<strong>Event has been created</strong>, {\n            description: <em>Monday at 6:00 PM</em>,\n          })\n        }\n      >\n        Custom\n      </Button>\n      <Toaster closeButton />\n    </>\n  );\n}\n\nconst POSITIONS: ToastPosition[] = [\n  \"top-left\",\n  \"top-center\",\n  \"top-right\",\n  \"bottom-left\",\n  \"bottom-center\",\n  \"bottom-right\",\n];\n\n/** Anchor origin: the toaster moves to the chosen corner or edge. */\nexport function AnchorOriginDemo() {\n  const [position, setPosition] = useState<ToastPosition>(\"top-right\");\n  return (\n    <>\n      {POSITIONS.map((value) => (\n        <Button\n          key={value}\n          variant=\"outlined\"\n          onClick={() => {\n            setPosition(value);\n            toast(`Shown at ${value}`);\n          }}\n        >\n          {value}\n        </Button>\n      ))}\n      <Toaster position={position} closeButton />\n    </>\n  );\n}\n\n/** Expand (Sonner's demo): stacked toasts that expand on hover, focus or Alt + T. */\nexport function ExpandDemo() {\n  return (\n    <>\n      <Button variant=\"contained\" onClick={() => toast(\"Event has been created\")}>\n        Show toast\n      </Button>\n      <Toaster expand={false} closeButton />\n    </>\n  );\n}\n\n/** Rich colors (Sonner's \"Other\" demo): typed toasts in their status colors. */\nexport function RichColorsDemo() {\n  return (\n    <>\n      <Button\n        variant=\"contained\"\n        color=\"success\"\n        onClick={() => toast.success(\"Event has been created\")}\n      >\n        Success\n      </Button>\n      <Button\n        variant=\"contained\"\n        color=\"error\"\n        onClick={() => toast.error(\"Event has not been created\")}\n      >\n        Error\n      </Button>\n      <Toaster richColors closeButton />\n    </>\n  );\n}\n",
      "snippets": [
       "status-group.html"
      ]
@@ -52056,7 +52323,7 @@
      "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/button.css + components/circular-progress.css + components/snackbar.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Custom -->\n<button type=\"button\" data-ok-button data-ok-variant=\"outlined\" data-ok-color=\"inherit\" data-ok-size=\"md\" data-ok-toast-open=\"toast-action\">\n  <span data-ok-button-label>Action</span>\n</button>\n<button type=\"button\" data-ok-button data-ok-variant=\"outlined\" data-ok-color=\"inherit\" data-ok-size=\"md\" data-ok-toast-open=\"toast-custom-action\">\n  <span data-ok-button-label>Custom action</span>\n</button>\n<button type=\"button\" data-ok-button data-ok-variant=\"outlined\" data-ok-color=\"inherit\" data-ok-size=\"md\" data-ok-toast-open=\"toast-custom\">\n  <span data-ok-button-label>Custom</span>\n</button>\n<section data-ok-toaster data-ok-position=\"top-right\" data-ok-close-button aria-label=\"Notifications\">\n  <ol data-ok-toaster-list aria-live=\"polite\"></ol>\n</section>\n<template id=\"toast-action\">\n  <li data-ok-toast data-ok-type=\"default\">\n    <div data-ok-toast-content>\n      <div data-ok-toast-title>Event has been created</div>\n    </div>\n    <button type=\"button\" data-ok-toast-action>Undo</button>\n  </li>\n</template>\n<template id=\"toast-custom-action\">\n  <li data-ok-toast data-ok-type=\"warning\">\n    <span data-ok-toast-icon aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M12 2.5 1.5 21h21zM13 18h-2v-2h2zm0-4h-2V9h2z\" fill=\"currentColor\" /></svg></span>\n    <div data-ok-toast-content>\n      <div data-ok-toast-title>Title</div>\n      <div data-ok-toast-description>Description</div>\n    </div>\n    <div data-ok-toast-actions>\n      <button type=\"button\" data-ok-button data-ok-variant=\"text\" data-ok-color=\"warning\" data-ok-size=\"sm\" data-ok-toast-dismiss>\n        <span data-ok-button-label>Action</span>\n      </button>\n      <button type=\"button\" data-ok-button data-ok-variant=\"text\" data-ok-color=\"inherit\" data-ok-size=\"sm\" data-ok-toast-dismiss>\n        <span data-ok-button-label>Dismiss</span>\n      </button>\n    </div>\n  </li>\n</template>\n<template id=\"toast-custom\">\n  <li data-ok-toast data-ok-type=\"success\">\n    <span data-ok-toast-icon aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20m-1.4 14.2-4.3-4.3 1.4-1.4 2.9 2.9 6-6 1.4 1.4z\" fill=\"currentColor\" /></svg></span>\n    <div data-ok-toast-content>\n      <div data-ok-toast-title><strong>Event has been created</strong></div>\n      <div data-ok-toast-description><em>Monday at 6:00 PM</em></div>\n    </div>\n    <button type=\"button\" data-ok-toast-close aria-label=\"Close\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M18 6 6 18M6 6l12 12\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-width=\"2\" /></svg></button>\n  </li>\n</template>",
      "id": "components-snackbar--custom",
      "name": "Custom",
-     "react": "import type { ToastPosition } from \"@owlky/core\";\nimport { Button, Toaster, toast } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nconst wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));\n\n/** Default: a message, and a message with a description. */\nexport function DefaultDemo() {\n  return (\n    <>\n      <Button variant=\"contained\" onClick={() => toast(\"Event has been created\")}>\n        Default\n      </Button>\n      <Button\n        variant=\"contained\"\n        onClick={() =>\n          toast.message(\"Event has been created\", { description: \"Monday at 6:00 PM\" })\n        }\n      >\n        Message\n      </Button>\n      <Toaster closeButton />\n    </>\n  );\n}\n\n/** Status: one toast per type, and a promise that resolves after 2 seconds. */\nexport function StatusDemo() {\n  return (\n    <>\n      <Button\n        variant=\"contained\"\n        color=\"info\"\n        onClick={() => toast.info(\"Arrive 10 minutes early\")}\n      >\n        Info\n      </Button>\n      <Button\n        variant=\"contained\"\n        color=\"success\"\n        onClick={() => toast.success(\"Event has been created\")}\n      >\n        Success\n      </Button>\n      <Button\n        variant=\"contained\"\n        color=\"warning\"\n        onClick={() => toast.warning(\"Events can't start before 8 AM\")}\n      >\n        Warning\n      </Button>\n      <Button\n        variant=\"contained\"\n        color=\"error\"\n        onClick={() => toast.error(\"Event has not been created\")}\n      >\n        Error\n      </Button>\n      <Button\n        variant=\"outlined\"\n        onClick={() =>\n          toast.promise(wait(2000), {\n            loading: \"Loading…\",\n            success: \"Loading succeeded\",\n            error: \"Loading failed\",\n          })\n        }\n      >\n        Promise\n      </Button>\n      <Toaster closeButton />\n    </>\n  );\n}\n\n/** Custom: an action button, your own buttons, and rich content. */\nexport function CustomDemo() {\n  return (\n    <>\n      <Button\n        variant=\"outlined\"\n        onClick={() =>\n          toast(\"Event has been created\", { action: { label: \"Undo\", onClick: () => {} } })\n        }\n      >\n        Action\n      </Button>\n      <Button\n        variant=\"outlined\"\n        onClick={() => {\n          const id = toast.warning(\"Title\", {\n            description: \"Description\",\n            action: (\n              <>\n                <Button size=\"sm\" color=\"warning\" onClick={() => toast.dismiss(id)}>\n                  Action\n                </Button>\n                <Button size=\"sm\" onClick={() => toast.dismiss(id)}>\n                  Dismiss\n                </Button>\n              </>\n            ),\n          });\n        }}\n      >\n        Custom action\n      </Button>\n      <Button\n        variant=\"outlined\"\n        onClick={() =>\n          toast.success(<strong>Event has been created</strong>, {\n            description: <em>Monday at 6:00 PM</em>,\n          })\n        }\n      >\n        Custom\n      </Button>\n      <Toaster closeButton />\n    </>\n  );\n}\n\nconst POSITIONS: ToastPosition[] = [\n  \"top-left\",\n  \"top-center\",\n  \"top-right\",\n  \"bottom-left\",\n  \"bottom-center\",\n  \"bottom-right\",\n];\n\n/** Anchor origin: the toaster moves to the chosen corner or edge. */\nexport function AnchorOriginDemo() {\n  const [position, setPosition] = useState<ToastPosition>(\"top-right\");\n  return (\n    <>\n      {POSITIONS.map((value) => (\n        <Button\n          key={value}\n          variant=\"outlined\"\n          onClick={() => {\n            setPosition(value);\n            toast(`Shown at ${value}`);\n          }}\n        >\n          {value}\n        </Button>\n      ))}\n      <Toaster position={position} closeButton />\n    </>\n  );\n}\n",
+     "react": "import type { ToastPosition } from \"@owlky/core\";\nimport { Button, Toaster, toast } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nconst wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));\n\n/** Default: a message, and a message with a description. */\nexport function DefaultDemo() {\n  return (\n    <>\n      <Button variant=\"contained\" onClick={() => toast(\"Event has been created\")}>\n        Default\n      </Button>\n      <Button\n        variant=\"contained\"\n        onClick={() =>\n          toast.message(\"Event has been created\", { description: \"Monday at 6:00 PM\" })\n        }\n      >\n        Message\n      </Button>\n      <Toaster closeButton />\n    </>\n  );\n}\n\n/** Status: one toast per type, and a promise that resolves after 2 seconds. */\nexport function StatusDemo() {\n  return (\n    <>\n      <Button\n        variant=\"contained\"\n        color=\"info\"\n        onClick={() => toast.info(\"Arrive 10 minutes early\")}\n      >\n        Info\n      </Button>\n      <Button\n        variant=\"contained\"\n        color=\"success\"\n        onClick={() => toast.success(\"Event has been created\")}\n      >\n        Success\n      </Button>\n      <Button\n        variant=\"contained\"\n        color=\"warning\"\n        onClick={() => toast.warning(\"Events can't start before 8 AM\")}\n      >\n        Warning\n      </Button>\n      <Button\n        variant=\"contained\"\n        color=\"error\"\n        onClick={() => toast.error(\"Event has not been created\")}\n      >\n        Error\n      </Button>\n      <Button\n        variant=\"outlined\"\n        onClick={() =>\n          toast.promise(wait(2000), {\n            loading: \"Loading…\",\n            success: \"Loading succeeded\",\n            error: \"Loading failed\",\n          })\n        }\n      >\n        Promise\n      </Button>\n      <Toaster closeButton />\n    </>\n  );\n}\n\n/** Custom: an action button, your own buttons, and rich content. */\nexport function CustomDemo() {\n  return (\n    <>\n      <Button\n        variant=\"outlined\"\n        onClick={() =>\n          toast(\"Event has been created\", { action: { label: \"Undo\", onClick: () => {} } })\n        }\n      >\n        Action\n      </Button>\n      <Button\n        variant=\"outlined\"\n        onClick={() => {\n          const id = toast.warning(\"Title\", {\n            description: \"Description\",\n            action: (\n              <>\n                <Button size=\"sm\" color=\"warning\" onClick={() => toast.dismiss(id)}>\n                  Action\n                </Button>\n                <Button size=\"sm\" onClick={() => toast.dismiss(id)}>\n                  Dismiss\n                </Button>\n              </>\n            ),\n          });\n        }}\n      >\n        Custom action\n      </Button>\n      <Button\n        variant=\"outlined\"\n        onClick={() =>\n          toast.success(<strong>Event has been created</strong>, {\n            description: <em>Monday at 6:00 PM</em>,\n          })\n        }\n      >\n        Custom\n      </Button>\n      <Toaster closeButton />\n    </>\n  );\n}\n\nconst POSITIONS: ToastPosition[] = [\n  \"top-left\",\n  \"top-center\",\n  \"top-right\",\n  \"bottom-left\",\n  \"bottom-center\",\n  \"bottom-right\",\n];\n\n/** Anchor origin: the toaster moves to the chosen corner or edge. */\nexport function AnchorOriginDemo() {\n  const [position, setPosition] = useState<ToastPosition>(\"top-right\");\n  return (\n    <>\n      {POSITIONS.map((value) => (\n        <Button\n          key={value}\n          variant=\"outlined\"\n          onClick={() => {\n            setPosition(value);\n            toast(`Shown at ${value}`);\n          }}\n        >\n          {value}\n        </Button>\n      ))}\n      <Toaster position={position} closeButton />\n    </>\n  );\n}\n\n/** Expand (Sonner's demo): stacked toasts that expand on hover, focus or Alt + T. */\nexport function ExpandDemo() {\n  return (\n    <>\n      <Button variant=\"contained\" onClick={() => toast(\"Event has been created\")}>\n        Show toast\n      </Button>\n      <Toaster expand={false} closeButton />\n    </>\n  );\n}\n\n/** Rich colors (Sonner's \"Other\" demo): typed toasts in their status colors. */\nexport function RichColorsDemo() {\n  return (\n    <>\n      <Button\n        variant=\"contained\"\n        color=\"success\"\n        onClick={() => toast.success(\"Event has been created\")}\n      >\n        Success\n      </Button>\n      <Button\n        variant=\"contained\"\n        color=\"error\"\n        onClick={() => toast.error(\"Event has not been created\")}\n      >\n        Error\n      </Button>\n      <Toaster richColors closeButton />\n    </>\n  );\n}\n",
      "snippets": [
       "custom-group.html"
      ]
@@ -52065,9 +52332,27 @@
      "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/button.css + components/circular-progress.css + components/snackbar.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Anchor origin -->\n<button type=\"button\" data-ok-button data-ok-variant=\"outlined\" data-ok-color=\"inherit\" data-ok-size=\"md\" data-ok-toast-open=\"toast-at-top-left\" data-ok-toaster-position=\"top-left\">\n  <span data-ok-button-label>top-left</span>\n</button>\n<button type=\"button\" data-ok-button data-ok-variant=\"outlined\" data-ok-color=\"inherit\" data-ok-size=\"md\" data-ok-toast-open=\"toast-at-top-center\" data-ok-toaster-position=\"top-center\">\n  <span data-ok-button-label>top-center</span>\n</button>\n<button type=\"button\" data-ok-button data-ok-variant=\"outlined\" data-ok-color=\"inherit\" data-ok-size=\"md\" data-ok-toast-open=\"toast-at-top-right\" data-ok-toaster-position=\"top-right\">\n  <span data-ok-button-label>top-right</span>\n</button>\n<button type=\"button\" data-ok-button data-ok-variant=\"outlined\" data-ok-color=\"inherit\" data-ok-size=\"md\" data-ok-toast-open=\"toast-at-bottom-left\" data-ok-toaster-position=\"bottom-left\">\n  <span data-ok-button-label>bottom-left</span>\n</button>\n<button type=\"button\" data-ok-button data-ok-variant=\"outlined\" data-ok-color=\"inherit\" data-ok-size=\"md\" data-ok-toast-open=\"toast-at-bottom-center\" data-ok-toaster-position=\"bottom-center\">\n  <span data-ok-button-label>bottom-center</span>\n</button>\n<button type=\"button\" data-ok-button data-ok-variant=\"outlined\" data-ok-color=\"inherit\" data-ok-size=\"md\" data-ok-toast-open=\"toast-at-bottom-right\" data-ok-toaster-position=\"bottom-right\">\n  <span data-ok-button-label>bottom-right</span>\n</button>\n<section data-ok-toaster data-ok-position=\"top-right\" data-ok-close-button aria-label=\"Notifications\">\n  <ol data-ok-toaster-list aria-live=\"polite\"></ol>\n</section>\n<template id=\"toast-at-top-left\">\n  <li data-ok-toast data-ok-type=\"default\">\n    <div data-ok-toast-content>\n      <div data-ok-toast-title>Shown at top-left</div>\n    </div>\n    <button type=\"button\" data-ok-toast-close aria-label=\"Close\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M18 6 6 18M6 6l12 12\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-width=\"2\" /></svg></button>\n  </li>\n</template>\n<template id=\"toast-at-top-center\">\n  <li data-ok-toast data-ok-type=\"default\">\n    <div data-ok-toast-content>\n      <div data-ok-toast-title>Shown at top-center</div>\n    </div>\n    <button type=\"button\" data-ok-toast-close aria-label=\"Close\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M18 6 6 18M6 6l12 12\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-width=\"2\" /></svg></button>\n  </li>\n</template>\n<template id=\"toast-at-top-right\">\n  <li data-ok-toast data-ok-type=\"default\">\n    <div data-ok-toast-content>\n      <div data-ok-toast-title>Shown at top-right</div>\n    </div>\n    <button type=\"button\" data-ok-toast-close aria-label=\"Close\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M18 6 6 18M6 6l12 12\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-width=\"2\" /></svg></button>\n  </li>\n</template>\n<template id=\"toast-at-bottom-left\">\n  <li data-ok-toast data-ok-type=\"default\">\n    <div data-ok-toast-content>\n      <div data-ok-toast-title>Shown at bottom-left</div>\n    </div>\n    <button type=\"button\" data-ok-toast-close aria-label=\"Close\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M18 6 6 18M6 6l12 12\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-width=\"2\" /></svg></button>\n  </li>\n</template>\n<template id=\"toast-at-bottom-center\">\n  <li data-ok-toast data-ok-type=\"default\">\n    <div data-ok-toast-content>\n      <div data-ok-toast-title>Shown at bottom-center</div>\n    </div>\n    <button type=\"button\" data-ok-toast-close aria-label=\"Close\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M18 6 6 18M6 6l12 12\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-width=\"2\" /></svg></button>\n  </li>\n</template>\n<template id=\"toast-at-bottom-right\">\n  <li data-ok-toast data-ok-type=\"default\">\n    <div data-ok-toast-content>\n      <div data-ok-toast-title>Shown at bottom-right</div>\n    </div>\n    <button type=\"button\" data-ok-toast-close aria-label=\"Close\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M18 6 6 18M6 6l12 12\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-width=\"2\" /></svg></button>\n  </li>\n</template>",
      "id": "components-snackbar--anchor-origin",
      "name": "Anchor origin",
-     "react": "import type { ToastPosition } from \"@owlky/core\";\nimport { Button, Toaster, toast } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nconst wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));\n\n/** Default: a message, and a message with a description. */\nexport function DefaultDemo() {\n  return (\n    <>\n      <Button variant=\"contained\" onClick={() => toast(\"Event has been created\")}>\n        Default\n      </Button>\n      <Button\n        variant=\"contained\"\n        onClick={() =>\n          toast.message(\"Event has been created\", { description: \"Monday at 6:00 PM\" })\n        }\n      >\n        Message\n      </Button>\n      <Toaster closeButton />\n    </>\n  );\n}\n\n/** Status: one toast per type, and a promise that resolves after 2 seconds. */\nexport function StatusDemo() {\n  return (\n    <>\n      <Button\n        variant=\"contained\"\n        color=\"info\"\n        onClick={() => toast.info(\"Arrive 10 minutes early\")}\n      >\n        Info\n      </Button>\n      <Button\n        variant=\"contained\"\n        color=\"success\"\n        onClick={() => toast.success(\"Event has been created\")}\n      >\n        Success\n      </Button>\n      <Button\n        variant=\"contained\"\n        color=\"warning\"\n        onClick={() => toast.warning(\"Events can't start before 8 AM\")}\n      >\n        Warning\n      </Button>\n      <Button\n        variant=\"contained\"\n        color=\"error\"\n        onClick={() => toast.error(\"Event has not been created\")}\n      >\n        Error\n      </Button>\n      <Button\n        variant=\"outlined\"\n        onClick={() =>\n          toast.promise(wait(2000), {\n            loading: \"Loading…\",\n            success: \"Loading succeeded\",\n            error: \"Loading failed\",\n          })\n        }\n      >\n        Promise\n      </Button>\n      <Toaster closeButton />\n    </>\n  );\n}\n\n/** Custom: an action button, your own buttons, and rich content. */\nexport function CustomDemo() {\n  return (\n    <>\n      <Button\n        variant=\"outlined\"\n        onClick={() =>\n          toast(\"Event has been created\", { action: { label: \"Undo\", onClick: () => {} } })\n        }\n      >\n        Action\n      </Button>\n      <Button\n        variant=\"outlined\"\n        onClick={() => {\n          const id = toast.warning(\"Title\", {\n            description: \"Description\",\n            action: (\n              <>\n                <Button size=\"sm\" color=\"warning\" onClick={() => toast.dismiss(id)}>\n                  Action\n                </Button>\n                <Button size=\"sm\" onClick={() => toast.dismiss(id)}>\n                  Dismiss\n                </Button>\n              </>\n            ),\n          });\n        }}\n      >\n        Custom action\n      </Button>\n      <Button\n        variant=\"outlined\"\n        onClick={() =>\n          toast.success(<strong>Event has been created</strong>, {\n            description: <em>Monday at 6:00 PM</em>,\n          })\n        }\n      >\n        Custom\n      </Button>\n      <Toaster closeButton />\n    </>\n  );\n}\n\nconst POSITIONS: ToastPosition[] = [\n  \"top-left\",\n  \"top-center\",\n  \"top-right\",\n  \"bottom-left\",\n  \"bottom-center\",\n  \"bottom-right\",\n];\n\n/** Anchor origin: the toaster moves to the chosen corner or edge. */\nexport function AnchorOriginDemo() {\n  const [position, setPosition] = useState<ToastPosition>(\"top-right\");\n  return (\n    <>\n      {POSITIONS.map((value) => (\n        <Button\n          key={value}\n          variant=\"outlined\"\n          onClick={() => {\n            setPosition(value);\n            toast(`Shown at ${value}`);\n          }}\n        >\n          {value}\n        </Button>\n      ))}\n      <Toaster position={position} closeButton />\n    </>\n  );\n}\n",
+     "react": "import type { ToastPosition } from \"@owlky/core\";\nimport { Button, Toaster, toast } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nconst wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));\n\n/** Default: a message, and a message with a description. */\nexport function DefaultDemo() {\n  return (\n    <>\n      <Button variant=\"contained\" onClick={() => toast(\"Event has been created\")}>\n        Default\n      </Button>\n      <Button\n        variant=\"contained\"\n        onClick={() =>\n          toast.message(\"Event has been created\", { description: \"Monday at 6:00 PM\" })\n        }\n      >\n        Message\n      </Button>\n      <Toaster closeButton />\n    </>\n  );\n}\n\n/** Status: one toast per type, and a promise that resolves after 2 seconds. */\nexport function StatusDemo() {\n  return (\n    <>\n      <Button\n        variant=\"contained\"\n        color=\"info\"\n        onClick={() => toast.info(\"Arrive 10 minutes early\")}\n      >\n        Info\n      </Button>\n      <Button\n        variant=\"contained\"\n        color=\"success\"\n        onClick={() => toast.success(\"Event has been created\")}\n      >\n        Success\n      </Button>\n      <Button\n        variant=\"contained\"\n        color=\"warning\"\n        onClick={() => toast.warning(\"Events can't start before 8 AM\")}\n      >\n        Warning\n      </Button>\n      <Button\n        variant=\"contained\"\n        color=\"error\"\n        onClick={() => toast.error(\"Event has not been created\")}\n      >\n        Error\n      </Button>\n      <Button\n        variant=\"outlined\"\n        onClick={() =>\n          toast.promise(wait(2000), {\n            loading: \"Loading…\",\n            success: \"Loading succeeded\",\n            error: \"Loading failed\",\n          })\n        }\n      >\n        Promise\n      </Button>\n      <Toaster closeButton />\n    </>\n  );\n}\n\n/** Custom: an action button, your own buttons, and rich content. */\nexport function CustomDemo() {\n  return (\n    <>\n      <Button\n        variant=\"outlined\"\n        onClick={() =>\n          toast(\"Event has been created\", { action: { label: \"Undo\", onClick: () => {} } })\n        }\n      >\n        Action\n      </Button>\n      <Button\n        variant=\"outlined\"\n        onClick={() => {\n          const id = toast.warning(\"Title\", {\n            description: \"Description\",\n            action: (\n              <>\n                <Button size=\"sm\" color=\"warning\" onClick={() => toast.dismiss(id)}>\n                  Action\n                </Button>\n                <Button size=\"sm\" onClick={() => toast.dismiss(id)}>\n                  Dismiss\n                </Button>\n              </>\n            ),\n          });\n        }}\n      >\n        Custom action\n      </Button>\n      <Button\n        variant=\"outlined\"\n        onClick={() =>\n          toast.success(<strong>Event has been created</strong>, {\n            description: <em>Monday at 6:00 PM</em>,\n          })\n        }\n      >\n        Custom\n      </Button>\n      <Toaster closeButton />\n    </>\n  );\n}\n\nconst POSITIONS: ToastPosition[] = [\n  \"top-left\",\n  \"top-center\",\n  \"top-right\",\n  \"bottom-left\",\n  \"bottom-center\",\n  \"bottom-right\",\n];\n\n/** Anchor origin: the toaster moves to the chosen corner or edge. */\nexport function AnchorOriginDemo() {\n  const [position, setPosition] = useState<ToastPosition>(\"top-right\");\n  return (\n    <>\n      {POSITIONS.map((value) => (\n        <Button\n          key={value}\n          variant=\"outlined\"\n          onClick={() => {\n            setPosition(value);\n            toast(`Shown at ${value}`);\n          }}\n        >\n          {value}\n        </Button>\n      ))}\n      <Toaster position={position} closeButton />\n    </>\n  );\n}\n\n/** Expand (Sonner's demo): stacked toasts that expand on hover, focus or Alt + T. */\nexport function ExpandDemo() {\n  return (\n    <>\n      <Button variant=\"contained\" onClick={() => toast(\"Event has been created\")}>\n        Show toast\n      </Button>\n      <Toaster expand={false} closeButton />\n    </>\n  );\n}\n\n/** Rich colors (Sonner's \"Other\" demo): typed toasts in their status colors. */\nexport function RichColorsDemo() {\n  return (\n    <>\n      <Button\n        variant=\"contained\"\n        color=\"success\"\n        onClick={() => toast.success(\"Event has been created\")}\n      >\n        Success\n      </Button>\n      <Button\n        variant=\"contained\"\n        color=\"error\"\n        onClick={() => toast.error(\"Event has not been created\")}\n      >\n        Error\n      </Button>\n      <Toaster richColors closeButton />\n    </>\n  );\n}\n",
      "snippets": [
       "anchor-origin-group.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/button.css + components/circular-progress.css + components/snackbar.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Expand -->\n<button type=\"button\" data-ok-button data-ok-variant=\"contained\" data-ok-color=\"inherit\" data-ok-size=\"md\" data-ok-toast-open=\"toast-expand\">\n  <span data-ok-button-label>Show toast</span>\n</button>\n<section data-ok-toaster data-ok-position=\"top-right\" data-ok-close-button data-ok-expand=\"false\" aria-label=\"Notifications\">\n  <ol data-ok-toaster-list aria-live=\"polite\"></ol>\n</section>\n<template id=\"toast-expand\">\n  <li data-ok-toast data-ok-type=\"default\">\n    <div data-ok-toast-content>\n      <div data-ok-toast-title>Event has been created</div>\n    </div>\n    <button type=\"button\" data-ok-toast-close aria-label=\"Close\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M18 6 6 18M6 6l12 12\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-width=\"2\" /></svg></button>\n  </li>\n</template>",
+     "id": "components-snackbar--expand",
+     "name": "Expand",
+     "react": "import type { ToastPosition } from \"@owlky/core\";\nimport { Button, Toaster, toast } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nconst wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));\n\n/** Default: a message, and a message with a description. */\nexport function DefaultDemo() {\n  return (\n    <>\n      <Button variant=\"contained\" onClick={() => toast(\"Event has been created\")}>\n        Default\n      </Button>\n      <Button\n        variant=\"contained\"\n        onClick={() =>\n          toast.message(\"Event has been created\", { description: \"Monday at 6:00 PM\" })\n        }\n      >\n        Message\n      </Button>\n      <Toaster closeButton />\n    </>\n  );\n}\n\n/** Status: one toast per type, and a promise that resolves after 2 seconds. */\nexport function StatusDemo() {\n  return (\n    <>\n      <Button\n        variant=\"contained\"\n        color=\"info\"\n        onClick={() => toast.info(\"Arrive 10 minutes early\")}\n      >\n        Info\n      </Button>\n      <Button\n        variant=\"contained\"\n        color=\"success\"\n        onClick={() => toast.success(\"Event has been created\")}\n      >\n        Success\n      </Button>\n      <Button\n        variant=\"contained\"\n        color=\"warning\"\n        onClick={() => toast.warning(\"Events can't start before 8 AM\")}\n      >\n        Warning\n      </Button>\n      <Button\n        variant=\"contained\"\n        color=\"error\"\n        onClick={() => toast.error(\"Event has not been created\")}\n      >\n        Error\n      </Button>\n      <Button\n        variant=\"outlined\"\n        onClick={() =>\n          toast.promise(wait(2000), {\n            loading: \"Loading…\",\n            success: \"Loading succeeded\",\n            error: \"Loading failed\",\n          })\n        }\n      >\n        Promise\n      </Button>\n      <Toaster closeButton />\n    </>\n  );\n}\n\n/** Custom: an action button, your own buttons, and rich content. */\nexport function CustomDemo() {\n  return (\n    <>\n      <Button\n        variant=\"outlined\"\n        onClick={() =>\n          toast(\"Event has been created\", { action: { label: \"Undo\", onClick: () => {} } })\n        }\n      >\n        Action\n      </Button>\n      <Button\n        variant=\"outlined\"\n        onClick={() => {\n          const id = toast.warning(\"Title\", {\n            description: \"Description\",\n            action: (\n              <>\n                <Button size=\"sm\" color=\"warning\" onClick={() => toast.dismiss(id)}>\n                  Action\n                </Button>\n                <Button size=\"sm\" onClick={() => toast.dismiss(id)}>\n                  Dismiss\n                </Button>\n              </>\n            ),\n          });\n        }}\n      >\n        Custom action\n      </Button>\n      <Button\n        variant=\"outlined\"\n        onClick={() =>\n          toast.success(<strong>Event has been created</strong>, {\n            description: <em>Monday at 6:00 PM</em>,\n          })\n        }\n      >\n        Custom\n      </Button>\n      <Toaster closeButton />\n    </>\n  );\n}\n\nconst POSITIONS: ToastPosition[] = [\n  \"top-left\",\n  \"top-center\",\n  \"top-right\",\n  \"bottom-left\",\n  \"bottom-center\",\n  \"bottom-right\",\n];\n\n/** Anchor origin: the toaster moves to the chosen corner or edge. */\nexport function AnchorOriginDemo() {\n  const [position, setPosition] = useState<ToastPosition>(\"top-right\");\n  return (\n    <>\n      {POSITIONS.map((value) => (\n        <Button\n          key={value}\n          variant=\"outlined\"\n          onClick={() => {\n            setPosition(value);\n            toast(`Shown at ${value}`);\n          }}\n        >\n          {value}\n        </Button>\n      ))}\n      <Toaster position={position} closeButton />\n    </>\n  );\n}\n\n/** Expand (Sonner's demo): stacked toasts that expand on hover, focus or Alt + T. */\nexport function ExpandDemo() {\n  return (\n    <>\n      <Button variant=\"contained\" onClick={() => toast(\"Event has been created\")}>\n        Show toast\n      </Button>\n      <Toaster expand={false} closeButton />\n    </>\n  );\n}\n\n/** Rich colors (Sonner's \"Other\" demo): typed toasts in their status colors. */\nexport function RichColorsDemo() {\n  return (\n    <>\n      <Button\n        variant=\"contained\"\n        color=\"success\"\n        onClick={() => toast.success(\"Event has been created\")}\n      >\n        Success\n      </Button>\n      <Button\n        variant=\"contained\"\n        color=\"error\"\n        onClick={() => toast.error(\"Event has not been created\")}\n      >\n        Error\n      </Button>\n      <Toaster richColors closeButton />\n    </>\n  );\n}\n",
+     "snippets": [
+      "expand-group.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/button.css + components/circular-progress.css + components/snackbar.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Rich colors -->\n<button type=\"button\" data-ok-button data-ok-variant=\"contained\" data-ok-color=\"success\" data-ok-size=\"md\" data-ok-toast-open=\"toast-rich-success\">\n  <span data-ok-button-label>Success</span>\n</button>\n<button type=\"button\" data-ok-button data-ok-variant=\"contained\" data-ok-color=\"error\" data-ok-size=\"md\" data-ok-toast-open=\"toast-rich-error\">\n  <span data-ok-button-label>Error</span>\n</button>\n<section data-ok-toaster data-ok-position=\"top-right\" data-ok-close-button data-ok-rich-colors aria-label=\"Notifications\">\n  <ol data-ok-toaster-list aria-live=\"polite\"></ol>\n</section>\n<template id=\"toast-rich-success\">\n  <li data-ok-toast data-ok-type=\"success\">\n    <span data-ok-toast-icon aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20m-1.4 14.2-4.3-4.3 1.4-1.4 2.9 2.9 6-6 1.4 1.4z\" fill=\"currentColor\" /></svg></span>\n    <div data-ok-toast-content>\n      <div data-ok-toast-title>Event has been created</div>\n    </div>\n    <button type=\"button\" data-ok-toast-close aria-label=\"Close\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M18 6 6 18M6 6l12 12\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-width=\"2\" /></svg></button>\n  </li>\n</template>\n<template id=\"toast-rich-error\">\n  <li data-ok-toast data-ok-type=\"error\">\n    <span data-ok-toast-icon aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M15.7 2H8.3L3 7.3v7.4L8.3 20h7.4l5.3-5.3V7.3zM13 16h-2v-2h2zm0-4h-2V7h2z\" fill=\"currentColor\" /></svg></span>\n    <div data-ok-toast-content>\n      <div data-ok-toast-title>Event has not been created</div>\n    </div>\n    <button type=\"button\" data-ok-toast-close aria-label=\"Close\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M18 6 6 18M6 6l12 12\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-width=\"2\" /></svg></button>\n  </li>\n</template>",
+     "id": "components-snackbar--rich-colors",
+     "name": "Rich colors",
+     "react": "import type { ToastPosition } from \"@owlky/core\";\nimport { Button, Toaster, toast } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nconst wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));\n\n/** Default: a message, and a message with a description. */\nexport function DefaultDemo() {\n  return (\n    <>\n      <Button variant=\"contained\" onClick={() => toast(\"Event has been created\")}>\n        Default\n      </Button>\n      <Button\n        variant=\"contained\"\n        onClick={() =>\n          toast.message(\"Event has been created\", { description: \"Monday at 6:00 PM\" })\n        }\n      >\n        Message\n      </Button>\n      <Toaster closeButton />\n    </>\n  );\n}\n\n/** Status: one toast per type, and a promise that resolves after 2 seconds. */\nexport function StatusDemo() {\n  return (\n    <>\n      <Button\n        variant=\"contained\"\n        color=\"info\"\n        onClick={() => toast.info(\"Arrive 10 minutes early\")}\n      >\n        Info\n      </Button>\n      <Button\n        variant=\"contained\"\n        color=\"success\"\n        onClick={() => toast.success(\"Event has been created\")}\n      >\n        Success\n      </Button>\n      <Button\n        variant=\"contained\"\n        color=\"warning\"\n        onClick={() => toast.warning(\"Events can't start before 8 AM\")}\n      >\n        Warning\n      </Button>\n      <Button\n        variant=\"contained\"\n        color=\"error\"\n        onClick={() => toast.error(\"Event has not been created\")}\n      >\n        Error\n      </Button>\n      <Button\n        variant=\"outlined\"\n        onClick={() =>\n          toast.promise(wait(2000), {\n            loading: \"Loading…\",\n            success: \"Loading succeeded\",\n            error: \"Loading failed\",\n          })\n        }\n      >\n        Promise\n      </Button>\n      <Toaster closeButton />\n    </>\n  );\n}\n\n/** Custom: an action button, your own buttons, and rich content. */\nexport function CustomDemo() {\n  return (\n    <>\n      <Button\n        variant=\"outlined\"\n        onClick={() =>\n          toast(\"Event has been created\", { action: { label: \"Undo\", onClick: () => {} } })\n        }\n      >\n        Action\n      </Button>\n      <Button\n        variant=\"outlined\"\n        onClick={() => {\n          const id = toast.warning(\"Title\", {\n            description: \"Description\",\n            action: (\n              <>\n                <Button size=\"sm\" color=\"warning\" onClick={() => toast.dismiss(id)}>\n                  Action\n                </Button>\n                <Button size=\"sm\" onClick={() => toast.dismiss(id)}>\n                  Dismiss\n                </Button>\n              </>\n            ),\n          });\n        }}\n      >\n        Custom action\n      </Button>\n      <Button\n        variant=\"outlined\"\n        onClick={() =>\n          toast.success(<strong>Event has been created</strong>, {\n            description: <em>Monday at 6:00 PM</em>,\n          })\n        }\n      >\n        Custom\n      </Button>\n      <Toaster closeButton />\n    </>\n  );\n}\n\nconst POSITIONS: ToastPosition[] = [\n  \"top-left\",\n  \"top-center\",\n  \"top-right\",\n  \"bottom-left\",\n  \"bottom-center\",\n  \"bottom-right\",\n];\n\n/** Anchor origin: the toaster moves to the chosen corner or edge. */\nexport function AnchorOriginDemo() {\n  const [position, setPosition] = useState<ToastPosition>(\"top-right\");\n  return (\n    <>\n      {POSITIONS.map((value) => (\n        <Button\n          key={value}\n          variant=\"outlined\"\n          onClick={() => {\n            setPosition(value);\n            toast(`Shown at ${value}`);\n          }}\n        >\n          {value}\n        </Button>\n      ))}\n      <Toaster position={position} closeButton />\n    </>\n  );\n}\n\n/** Expand (Sonner's demo): stacked toasts that expand on hover, focus or Alt + T. */\nexport function ExpandDemo() {\n  return (\n    <>\n      <Button variant=\"contained\" onClick={() => toast(\"Event has been created\")}>\n        Show toast\n      </Button>\n      <Toaster expand={false} closeButton />\n    </>\n  );\n}\n\n/** Rich colors (Sonner's \"Other\" demo): typed toasts in their status colors. */\nexport function RichColorsDemo() {\n  return (\n    <>\n      <Button\n        variant=\"contained\"\n        color=\"success\"\n        onClick={() => toast.success(\"Event has been created\")}\n      >\n        Success\n      </Button>\n      <Button\n        variant=\"contained\"\n        color=\"error\"\n        onClick={() => toast.error(\"Event has not been created\")}\n      >\n        Error\n      </Button>\n      <Toaster richColors closeButton />\n    </>\n  );\n}\n",
+     "snippets": [
+      "rich-colors-group.html"
      ]
     }
    ],
@@ -66354,6 +66639,48 @@
      "title": "Move the toaster"
     },
     {
+     "body": "By default the toasts are listed one under another. Set `expand` to `false` to stack them: the newest toast stays in front and two more peek out behind it. The stack expands while the pointer or the focus is in it. Press **Alt + T** to expand it from the keyboard and move the focus to the toasts, and press **Escape** to collapse it again. Change the keys with `hotkey`, such as `[\"ctrlKey\", \"KeyM\"]` (HTML: `data-ok-hotkey=\"ctrlKey+KeyM\"`), or pass `[]` to turn it off.",
+     "html": "<section data-ok-toaster data-ok-position=\"bottom-right\" data-ok-expand=\"false\" aria-label=\"Notifications\">\n  <ol data-ok-toaster-list aria-live=\"polite\"></ol>\n</section>",
+     "id": "stack",
+     "react": "import { Toaster } from \"@owlky/react\";\n\nexport function StackedToaster() {\n  return <Toaster position=\"bottom-right\" expand={false} />;\n}",
+     "title": "Stack toasts"
+    },
+    {
+     "body": "People can swipe a toast toward the edge of the screen to close it: up or down, and toward the side for toasts in a corner. A short swipe springs back. Set `swipeDirections` to choose the directions, or pass `[]` to turn swiping off (HTML: `data-ok-swipe-directions`, empty to turn it off). Because a swipe needs a dragging movement, every toast that can be swiped also shows a close button, unless you set `closeButton` to `false`. Keyboard users close a focused toast with **Escape**.",
+     "html": "<section data-ok-toaster data-ok-position=\"top-center\" data-ok-swipe-directions=\"top\" aria-label=\"Notifications\">\n  <ol data-ok-toaster-list aria-live=\"polite\"></ol>\n</section>",
+     "id": "swipe",
+     "react": "import { Toaster } from \"@owlky/react\";\n\nexport function SwipeUpToaster() {\n  return <Toaster position=\"top-center\" swipeDirections={[\"top\"]} />;\n}",
+     "title": "Swipe toasts away"
+    },
+    {
+     "body": "Set `richColors` to give success, info, warning and error toasts their status color: the dark tone of the color on its light tone. Set `invert` to reverse the colors: plain toasts become light and typed toasts dark. Both work on the toaster, for every toast, or on one toast, where `false` turns the toaster's setting off. In HTML, put `data-ok-rich-colors` or `data-ok-invert` on the toaster or on a toast (`=\"false\"` turns it off for that toast).",
+     "html": "<section data-ok-toaster data-ok-position=\"top-right\" data-ok-rich-colors aria-label=\"Notifications\">\n  <ol data-ok-toaster-list aria-live=\"polite\"></ol>\n</section>\n<template id=\"saved-toast\">\n  <li data-ok-toast data-ok-type=\"success\">\n    <div data-ok-toast-content><div data-ok-toast-title>Event has been created</div></div>\n  </li>\n</template>\n<button type=\"button\" data-ok-toast-open=\"saved-toast\">Show toast</button>",
+     "id": "colors",
+     "react": "import { Button, Toaster, toast } from \"@owlky/react\";\n\nexport function RichColors() {\n  return (\n    <>\n      <Button variant=\"contained\" onClick={() => toast.success(\"Event has been created\")}>\n        Show toast\n      </Button>\n      <Button variant=\"outlined\" onClick={() => toast(\"Draft saved\", { invert: true })}>\n        Inverted\n      </Button>\n      <Toaster richColors />\n    </>\n  );\n}",
+     "title": "Color toasts"
+    },
+    {
+     "body": "A toast can ask for another position than the toaster's with its own `position`: it then shows in a list of its own at that position. `offset` sets the distance from the edges of the screen (16px by default) as a number of pixels, a CSS length such as `2rem`, or one value per side. `mobileOffset` does the same on screens under 600px wide, and `gap` sets the space between toasts (12px). For right-to-left languages, set `dir=\"rtl\"` on the toaster: the icon, the text and the close button swap sides.",
+     "html": "<section data-ok-toaster data-ok-position=\"top-right\" data-ok-offset=\"24\" data-ok-gap=\"8\" dir=\"rtl\" aria-label=\"Notifications\">\n  <ol data-ok-toaster-list aria-live=\"polite\"></ol>\n</section>\n<script type=\"module\">\n  const toaster = document.querySelector(\"[data-ok-toaster]\");\n  const instance = Owlky.runtime.get(toaster, \"toaster\");\n  instance.show({ title: \"Copied\", position: \"bottom-center\" });\n</script>",
+     "id": "place",
+     "react": "import { Button, Toaster, toast } from \"@owlky/react\";\n\nexport function PlacedToasts() {\n  return (\n    <>\n      <Button onClick={() => toast(\"Copied\", { position: \"bottom-center\" })}>Copy</Button>\n      <Toaster offset={{ top: 24, right: 24 }} mobileOffset={8} gap={8} dir=\"rtl\" />\n    </>\n  );\n}",
+     "title": "Place toasts and change the spacing"
+    },
+    {
+     "body": "Give a toaster an `id` to keep it apart: it shows only the toasts whose `toasterId` names it, and a toaster without an `id` shows the others. In HTML, each toaster has its own instance, and a trigger picks one with `data-ok-toast-toaster`. In React, `toastOptions` sets defaults for every toast of a toaster, such as `duration` or `closeButton`, and `icons` replaces the type icons and the close icon.",
+     "html": "<section id=\"uploads\" data-ok-toaster data-ok-position=\"bottom-left\" aria-label=\"Uploads\">\n  <ol data-ok-toaster-list aria-live=\"polite\"></ol>\n</section>\n<template id=\"upload-toast\">\n  <li data-ok-toast data-ok-type=\"info\">\n    <div data-ok-toast-content><div data-ok-toast-title>Upload started</div></div>\n  </li>\n</template>\n<button type=\"button\" data-ok-toast-open=\"upload-toast\" data-ok-toast-toaster=\"uploads\">Upload</button>",
+     "id": "toasters",
+     "react": "import { Button, Toaster, toast } from \"@owlky/react\";\nimport { CheckIcon } from \"lucide-react\";\n\nexport function UploadToasts() {\n  return (\n    <>\n      <Button onClick={() => toast.success(\"Upload done\", { toasterId: \"uploads\" })}>Upload</Button>\n      <Toaster />\n      <Toaster\n        id=\"uploads\"\n        position=\"bottom-left\"\n        aria-label=\"Uploads\"\n        toastOptions={{ duration: 8000, closeButton: true }}\n        icons={{ success: <CheckIcon /> }}\n      />\n    </>\n  );\n}",
+     "title": "Use several toasters and set defaults"
+    },
+    {
+     "body": "`toast.promise()` shows the `loading` message until the promise settles, then `success` or `error` in the same toast. It also takes toast options, such as `position` or `duration`, and `finally`, which runs after the result shows. It returns the toast's id with an `unwrap()` method that gives the promise's own result. The id is an object, so compare it with `id.valueOf()`. `toast.getToasts()` returns the toasts shown now, `toast.getHistory()` every toast shown so far, and the `useSonner()` hook keeps a component up to date with the toasts. In HTML, the instance has `promise()` with `finally`, `getToasts()` and `getHistory()`.",
+     "html": "<section data-ok-toaster data-ok-position=\"top-right\" aria-label=\"Notifications\">\n  <ol data-ok-toaster-list aria-live=\"polite\"></ol>\n</section>\n<script type=\"module\">\n  const toaster = document.querySelector(\"[data-ok-toaster]\");\n  const instance = Owlky.runtime.get(toaster, \"toaster\");\n  const saving = fetch(\"/api/save\", { method: \"POST\" });\n  instance.promise(saving, {\n    loading: \"Saving\",\n    success: \"Saved\",\n    error: \"Couldn't save\",\n    finally: () => console.log(instance.getHistory().length, \"toasts so far\"),\n  });\n</script>",
+     "id": "promise",
+     "react": "import { Button, Toaster, toast, useSonner } from \"@owlky/react\";\n\nexport function SaveButton() {\n  const { toasts } = useSonner();\n  const save = async () => {\n    const id = toast.promise(fetch(\"/api/save\", { method: \"POST\" }), {\n      loading: \"Saving\",\n      success: \"Saved\",\n      error: \"Couldn't save\",\n    });\n    const response = await id.unwrap();\n    console.log(response.status);\n  };\n  return (\n    <>\n      <Button onClick={save}>Save ({toasts.length} shown)</Button>\n      <Toaster />\n    </>\n  );\n}",
+     "title": "Follow a promise and read the toasts"
+    },
+    {
      "body": "Every option works the same way in both versions: a prop of `Toaster` in React, an attribute of the toaster in HTML.",
      "id": "options",
      "title": "Options"
@@ -66364,7 +66691,7 @@
      "title": "Content and behavior"
     },
     {
-     "body": "- **`ok:toaster:show`** (`detail.toast`) and **`ok:toaster:dismiss`** (`detail.toast`, `detail.reason`: `close`, `dismiss`, `action`, `cancel`, `timeout`, `escape`, `api` or `overflow`) fire on the toaster.\n- **`ok:toaster:action`** (cancelable) fires before an action or cancel button closes its toast.\n- **Instance:** `runtime.get(toaster, \"toaster\")` returns `{ show(options), showTemplate(template), promise(promise, messages), dismiss(id?) }`. `show()` builds the toast from text, never from HTML.\n- **React:** `toast()` returns the toast's id; `toast.dismiss(id?)` closes one toast or all of them. `onDismiss` and `onAutoClose` report how it closed.",
+     "body": "- **`ok:toaster:show`** (`detail.toast`) and **`ok:toaster:dismiss`** (`detail.toast`, `detail.reason`: `close`, `dismiss`, `action`, `cancel`, `timeout`, `escape`, `swipe`, `api` or `overflow`) fire on the toaster.\n- **`ok:toaster:action`** (cancelable) fires before an action or cancel button closes its toast.\n- **Instance:** `runtime.get(toaster, \"toaster\")` returns `{ show(options), showTemplate(template), promise(promise, messages), dismiss(id?), getToasts(), getHistory() }`. `show()` builds the toast from text, never from HTML.\n- **React:** `toast()` returns the toast's id; `toast.dismiss(id?)` closes one toast or all of them. `onDismiss` and `onAutoClose` report how it closed.",
      "id": "events",
      "title": "Events and methods"
     },
@@ -66374,7 +66701,7 @@
      "title": "Keyboard"
     },
     {
-     "body": "- The toast list is a polite live region: screen readers announce new toasts without interrupting.\n- Time pauses while the pointer or focus is in the toaster, so people can read and act.\n- Don't rely on a toast for anything that must be done: it closes by itself. Use a Dialog instead.\n- Icons are decorative; the title carries the message. Typed toasts keep their text at a contrast ratio of at least 4.5:1.",
+     "body": "- The toast list is a polite live region: screen readers announce new toasts without interrupting.\n- Time pauses while the pointer or focus is in the toaster, so people can read and act.\n- Don't rely on a toast for anything that must be done: it closes by itself. Use a Dialog instead.\n- Swiping is never the only way to close a toast: swipeable toasts show a close button, and **Escape** closes a focused toast.\n- Rich colors pair each status color's dark tone with its light tone, at a contrast ratio of at least 4.5:1.\n- Icons are decorative; the title carries the message. Typed toasts keep their text at a contrast ratio of at least 4.5:1.",
      "id": "accessibility",
      "title": "Accessibility"
     },

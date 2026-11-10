@@ -577,9 +577,12 @@ export { Slider, type SliderProps } from "./slider/slider.js";
 export {
   TOAST_ICONS,
   Toaster,
+  type ToasterIcons,
   type ToasterProps,
+  type ToasterToastOptions,
   toast,
   toastStore,
+  useSonner,
 } from "./snackbar/snackbar.js";
 export { arrayMove, Sortable, type SortableProps } from "./sortable/sortable.js";
 export {
