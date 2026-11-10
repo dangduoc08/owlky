@@ -55,6 +55,30 @@
       "name": "ok:sortable:add"
      },
      {
+      "cancelable": false,
+      "description": "A move was cancelled (Escape, an interrupted touch), before the item goes back.",
+      "detail": "{ item: HTMLElement; index: number; list: HTMLElement; }",
+      "name": "ok:sortable:dragcancel"
+     },
+     {
+      "cancelable": false,
+      "description": "The item was dropped in this list, at `index`.",
+      "detail": "{ item: HTMLElement; index: number; list: HTMLElement; }",
+      "name": "ok:sortable:dragend"
+     },
+     {
+      "cancelable": false,
+      "description": "The item is about to move to `index` in `list` (this list or another one).",
+      "detail": "{ item: HTMLElement; index: number; list: HTMLElement; }",
+      "name": "ok:sortable:dragover"
+     },
+     {
+      "cancelable": false,
+      "description": "An item was grabbed (keyboard, tap) or started a pointer drag.",
+      "detail": "{ item: HTMLElement; index: number; list: HTMLElement; }",
+      "name": "ok:sortable:dragstart"
+     },
+     {
       "cancelable": true,
       "description": "Before an item moves from index `from` to `to`. Call `preventDefault()` to keep the order.",
       "detail": "{ from: number; to: number; item: HTMLElement; }",
@@ -118,6 +142,13 @@
       "event": "ok:sortable:move",
       "kind": "state",
       "name": "items"
+     },
+     {
+      "attr": "data-ok-auto-scroll",
+      "default": true,
+      "description": "While dragging near the edge of a scroll area or the window, it scrolls; `false` turns it off.",
+      "kind": "behavior",
+      "name": "autoScroll"
      }
     ],
     "parts": [
@@ -126,6 +157,11 @@
       "kind": "value",
       "name": "data-ok-accept",
       "value": "string"
+     },
+     {
+      "description": "On an item: it can't move and isn't a target (its handle is `disabled` too).",
+      "kind": "state",
+      "name": "data-ok-disabled"
      },
      {
       "description": "Set by the runtime on the item being dragged.",
@@ -141,6 +177,42 @@
       "description": "On the list: the group it belongs to. Items move between lists of the same group.",
       "kind": "value",
       "name": "data-ok-group",
+      "value": "string"
+     },
+     {
+      "description": "HTML: on the list, the announcement when a move is cancelled (`{position}`, `{total}`, `{list}`).",
+      "kind": "value",
+      "name": "data-ok-message-cancelled",
+      "value": "string"
+     },
+     {
+      "description": "HTML: on the list, the announcement when an item is dropped (`{position}`, `{total}`, `{list}`).",
+      "kind": "value",
+      "name": "data-ok-message-dropped",
+      "value": "string"
+     },
+     {
+      "description": "HTML: on the list, the announcement when an item is grabbed (`{position}`, `{total}`, `{list}`).",
+      "kind": "value",
+      "name": "data-ok-message-grabbed",
+      "value": "string"
+     },
+     {
+      "description": "HTML: on the list, the announcement when an item moves (`{position}`, `{total}`, `{list}`).",
+      "kind": "value",
+      "name": "data-ok-message-moved",
+      "value": "string"
+     },
+     {
+      "description": "HTML: on the list, the announcement when an item moves to this list (`{position}`, `{total}`, `{list}`).",
+      "kind": "value",
+      "name": "data-ok-message-moved-to-list",
+      "value": "string"
+     },
+     {
+      "description": "HTML: on the list, the announcement when an item is removed (`{position}`, `{total}`, `{list}`).",
+      "kind": "value",
+      "name": "data-ok-message-removed",
       "value": "string"
      },
      {
@@ -208,6 +280,12 @@
       "type": "string | readonly string[]"
      },
      {
+      "default": "true",
+      "description": "While dragging near the edge of a scroll area (such as a Scrollbar) or the window, it scrolls.",
+      "name": "autoScroll",
+      "type": "boolean"
+     },
+     {
       "default": "Item <n>",
       "description": "Name used in the handle / remove labels (\"Reorder …\", \"Remove …\").",
       "name": "getItemLabel",
@@ -225,6 +303,11 @@
       "type": "string"
      },
      {
+      "description": "Items that can't move: their handle is disabled and other items don't take their place.",
+      "name": "isItemDisabled",
+      "type": "((item: T, index: number) => boolean)"
+     },
+     {
       "description": "The items, in display order.",
       "name": "items",
       "required": true,
@@ -240,6 +323,26 @@
       "description": "Screen reader announcements (localization).",
       "name": "messages",
       "type": "Partial<SortableMessages>"
+     },
+     {
+      "description": "Called when a move is cancelled (Escape, an interrupted touch), before the item goes back.",
+      "name": "onDragCancel",
+      "type": "((event: SortableDragEvent<T>) => void)"
+     },
+     {
+      "description": "Called when the item is dropped in this list.",
+      "name": "onDragEnd",
+      "type": "((event: SortableDragEvent<T>) => void)"
+     },
+     {
+      "description": "Called before the item moves over another position, in this list or another one.",
+      "name": "onDragOver",
+      "type": "((event: SortableDragEvent<T>) => void)"
+     },
+     {
+      "description": "Called when an item is grabbed (keyboard, tap) or starts a pointer drag.",
+      "name": "onDragStart",
+      "type": "((event: SortableDragEvent<T>) => void)"
      },
      {
       "description": "Renders a remove button per item and is called when one is pressed.",

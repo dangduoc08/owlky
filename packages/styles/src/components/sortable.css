@@ -6,7 +6,8 @@
  *           (handles and remove buttons are Icon buttons: icon-button.css)
  *           div[data-ok-sortable-announcer]   live region, created by the controller
  * Modifiers: data-ok-layout = grid (default) | vertical | horizontal
- * States:    [data-ok-dragging] on the list and the dragged item, [data-ok-grabbed] on an item
+ * States:    [data-ok-dragging] on the list and the dragged item, [data-ok-grabbed] on an item,
+ *            [data-ok-disabled] on an item that can't move
  *
  * Single :where() selectors in @layer components (zero specificity). Translucent colors use
  * channels, never color-mix() (AGENTS.md).
@@ -122,6 +123,10 @@
   :where([data-ok-sortable-handle]) {
     cursor: grab;
     touch-action: none;
+  }
+
+  :where([data-ok-sortable-item][data-ok-disabled] [data-ok-sortable-handle]) {
+    cursor: default;
   }
 
   /* Remove buttons appear on item hover or keyboard focus; always on touch screens. */

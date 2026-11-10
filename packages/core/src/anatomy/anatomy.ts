@@ -484,12 +484,20 @@ export const sortableOptions = defineOptions("sortable", "data-ok-sortable", {
     "Grid, one column or one scrolling row.",
   ),
   items: state("data-ok-sortable-item", "Item order (`items` + `onReorder`).", "move"),
+  autoScroll: behavior(
+    "data-ok-auto-scroll",
+    true,
+    "While dragging near the edge of a scroll area or the window, it scrolls; `false` turns it off.",
+  ),
 });
 
-/** `data-ok-*` attributes of a sortable list. */
+/** `data-ok-*` attributes of a sortable list (`autoScroll` is written only when turned off). */
 export const sortableAttributes = (
-  options: { layout?: SortableLayout | undefined } = {},
-): DataAttributes => optionAttributes(sortableOptions, { ...options });
+  options: { layout?: SortableLayout | undefined; autoScroll?: boolean | undefined } = {},
+): DataAttributes => ({
+  ...optionAttributes(sortableOptions, { layout: options.layout }),
+  ...(options.autoScroll === false ? { [sortableOptions.options.autoScroll.attr]: "false" } : {}),
+});
 
 // --- Accordion --------------------------------------------------------------------------------
 

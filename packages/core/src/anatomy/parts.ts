@@ -1712,6 +1712,20 @@ export interface SortableParts {
   "data-ok-accept": Value<string>;
   /** On a button or menu item inside an item: the `id` of the list it moves the item to (its end). */
   "data-ok-sortable-move-to": Value<string>;
+  /** On an item: it can't move and isn't a target (its handle is `disabled` too). */
+  "data-ok-disabled": State;
+  /** HTML: on the list, the announcement when an item is grabbed (`{position}`, `{total}`, `{list}`). */
+  "data-ok-message-grabbed": Value<string>;
+  /** HTML: on the list, the announcement when an item moves (`{position}`, `{total}`, `{list}`). */
+  "data-ok-message-moved": Value<string>;
+  /** HTML: on the list, the announcement when an item moves to this list (`{position}`, `{total}`, `{list}`). */
+  "data-ok-message-moved-to-list": Value<string>;
+  /** HTML: on the list, the announcement when an item is dropped (`{position}`, `{total}`, `{list}`). */
+  "data-ok-message-dropped": Value<string>;
+  /** HTML: on the list, the announcement when a move is cancelled (`{position}`, `{total}`, `{list}`). */
+  "data-ok-message-cancelled": Value<string>;
+  /** HTML: on the list, the announcement when an item is removed (`{position}`, `{total}`, `{list}`). */
+  "data-ok-message-removed": Value<string>;
 }
 
 /** Stepper: parts, states, values and triggers. */

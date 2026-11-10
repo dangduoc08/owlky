@@ -1,7 +1,9 @@
 /**
  * Sortable list behavior — spec: specs/components/sortable.md, ADR-0053 (several lists). Reports
- * intent (`onMove`, `onTransfer`, `onRemove`); the owner changes its state (React) or the DOM
- * (HTML runtime). Every step re-reads the DOM, so owners that update asynchronously work too.
+ * intent (`onMove`, `onTransfer`, `onRemove`) and drag events (`onDragStart` …); the owner changes
+ * its state (React) or the DOM (HTML runtime). Every step re-reads the DOM, so owners that update
+ * asynchronously work too. Items with `data-ok-disabled` don't move and aren't targets; lists
+ * with `data-ok-auto-scroll="false"` don't scroll their containers while dragging.
  *
  * Lists register in a module-scoped registry per document; the grab or drag in progress is one
  * session per document, continued by the controller of whichever list holds the item. Intents go
@@ -17,6 +19,9 @@ const MOVE_TO = "[data-ok-sortable-move-to]";
 const DRAG_THRESHOLD = 4;
 /** Frames an owner has to apply a transfer before it counts as refused. */
 const TRANSFER_FRAMES = 8;
+/** Auto scroll: the edge zone (a fifth of the container, at most this many px) and top speed. */
+const SCROLL_ZONE = 80;
+const SCROLL_SPEED = 20;
 
 /** Moves one element of a copy of `items` from `from` to `to`. */
 export function arrayMove<T>(items: readonly T[], from: number, to: number): T[] {
@@ -99,6 +104,16 @@ export interface SortableTransfer {
   index: number;
 }
 
+/** A drag event: the item, its index and its list (for `onDragOver`, where it is about to go). */
+export interface SortableDragEvent {
+  /** The dragged (or grabbed) item. */
+  item: HTMLElement;
+  /** Its index in `list`. */
+  index: number;
+  /** The list it is in, or about to enter. */
+  list: HTMLElement;
+}
+
 export interface SortableControllerOptions {
   /** The user asked to move the item at `from` to `to` (indexes among the items). */
   onMove?: ((from: number, to: number) => void) | undefined;
@@ -111,6 +126,14 @@ export interface SortableControllerOptions {
   onRemove?: ((index: number) => void) | undefined;
   /** Announcement texts (localization). */
   messages?: Partial<SortableMessages> | undefined;
+  /** An item of this list was grabbed (keyboard, tap) or started a pointer drag. */
+  onDragStart?: ((event: SortableDragEvent) => void) | undefined;
+  /** The item held by this list is about to move to `index` in `list` (this list or another). */
+  onDragOver?: ((event: SortableDragEvent) => void) | undefined;
+  /** The item was dropped in this list. */
+  onDragEnd?: ((event: SortableDragEvent) => void) | undefined;
+  /** The move of the item held by this list was cancelled; it goes back to its start. */
+  onDragCancel?: ((event: SortableDragEvent) => void) | undefined;
 }
 
 export interface SortableController {
@@ -122,6 +145,9 @@ export interface SortableController {
 }
 
 interface Drag {
+  /** Largest scroll offsets of the containers met, measured once (the dragged item's own
+   *  transform would otherwise grow them while auto scrolling). */
+  limits: Map<Element, { x: number; y: number }>;
   pointerId: number;
   startX: number;
   startY: number;
@@ -199,6 +225,16 @@ function announcer(doc: Document): HTMLElement {
 const itemsOf = (list: Element) =>
   Array.from(list.children).filter((child): child is HTMLElement => child.matches(ITEM));
 const handleOf = (item: HTMLElement) => item.querySelector<HTMLElement>(HANDLE);
+const isDisabled = (item: Element) => item.hasAttribute("data-ok-disabled");
+
+/** Pixels per frame toward the edge `position` is close to, signed (0 outside the zones). */
+function edgeSpeed(position: number, start: number, end: number): number {
+  const zone = Math.min((end - start) / 5, SCROLL_ZONE);
+  const near = (distance: number) => Math.ceil(SCROLL_SPEED * Math.min(1, distance / zone));
+  if (position < start + zone) return -near(start + zone - position);
+  if (position > end - zone) return near(position - (end - zone));
+  return 0;
+}
 const groupOf = (list: Element) => list.getAttribute("data-ok-group") || null;
 
 /** Whether `target` takes items from `source` (ADR-0053: groups and `accept`). */
@@ -249,6 +285,16 @@ export function createSortableController(
       owner.getAttribute("aria-label") ?? "",
     );
     announcer(doc).textContent = text;
+  };
+
+  type DragKey = "onDragStart" | "onDragOver" | "onDragEnd" | "onDragCancel";
+  /** Calls a drag callback of the owner of `owner` (the list holding the item). */
+  const notify = (owner: HTMLElement, key: DragKey, event: SortableDragEvent) =>
+    entryOf(owner)?.options()[key]?.(event);
+  /** `onDragEnd` for an item where it is now. */
+  const ended = (item: HTMLElement) => {
+    const owner = item.parentElement as HTMLElement;
+    notify(owner, "onDragEnd", { item, index: indexOf(item), list: owner });
   };
 
   /** Ignores focusout until the owner has had a frame to update and focus was restored. */
@@ -371,6 +417,7 @@ export function createSortableController(
     shared.session = session;
     mark(session);
     say(owner, "grabbed", session.startIndex + 1);
+    notify(owner, "onDragStart", { item, index: session.startIndex, list: owner });
   }
 
   /** Ends the session without announcing. Returns it. */
@@ -385,10 +432,12 @@ export function createSortableController(
   function drop(session: Session) {
     release();
     say(session.list, "dropped", indexOf(session.item) + 1);
+    ended(session.item);
   }
 
   /** Moves the session's item to `to` at `index`; it stays grabbed (or dragged) there. */
   function transferSession(session: Session, to: HTMLElement, index: number, focus: boolean) {
+    notify(session.list, "onDragOver", { item: session.item, index, list: to });
     const pending = transfer(session.item, session.list, to, index, (moved) => {
       if (shared.session !== session) return;
       session.pending = null;
@@ -424,8 +473,17 @@ export function createSortableController(
     if (!pending) announce(item);
   }
 
+  /** `onDragCancel` where the item is, before it goes back. */
+  const cancelled = (session: Session) =>
+    notify(session.list, "onDragCancel", {
+      item: session.item,
+      index: indexOf(session.item),
+      list: session.list,
+    });
+
   function cancelGrab(session: Session) {
     release();
+    cancelled(session);
     restore(session, true);
   }
 
@@ -458,9 +516,12 @@ export function createSortableController(
     const owner = listAt(under);
     if (!owner) return;
     const over = itemIn(owner, under);
+    // Disabled items are never targets (dnd-kit `disabled`).
+    if (over && isDisabled(over)) return;
     if (owner === session.list) {
-      if (over && over !== session.item && moveWithin(owner, session.item, indexOf(over)) !== -1)
-        follow(session.item, drag);
+      if (!over || over === session.item) return;
+      notify(owner, "onDragOver", { item: session.item, index: indexOf(over), list: owner });
+      if (moveWithin(owner, session.item, indexOf(over)) !== -1) follow(session.item, drag);
       return;
     }
     if (!accepts(owner, session.list)) return;
@@ -472,13 +533,78 @@ export function createSortableController(
     press = null;
     release();
     say(session.list, "dropped", indexOf(session.item) + 1);
+    ended(session.item);
   }
 
   function cancelDrag(session: Session) {
     press?.abort();
     press = null;
     release();
+    cancelled(session);
     restore(session, false);
+  }
+
+  // --- auto scroll ----------------------------------------------------------------------------
+
+  /** Containers around `item` that scroll on `axis`, nearest first, then the page. */
+  function scrollers(item: HTMLElement, axis: "x" | "y"): Element[] {
+    const found: Element[] = [];
+    const page = doc.scrollingElement as Element;
+    for (let element = item.parentElement; element && element !== page; ) {
+      const overflow = view.getComputedStyle(element)[axis === "x" ? "overflowX" : "overflowY"];
+      if (/auto|scroll|overlay/.test(overflow)) found.push(element);
+      element = element.parentElement;
+    }
+    found.push(page);
+    return found;
+  }
+
+  /** Scrolls the nearest container (per axis) the pointer is near the edge of. */
+  function autoScroll(session: Session): boolean {
+    const drag = session.drag as Drag;
+    if (session.list.getAttribute("data-ok-auto-scroll") === "false") return false;
+    const page = doc.scrollingElement as Element;
+    let scrolled = false;
+    for (const axis of ["x", "y"] as const) {
+      for (const element of scrollers(session.item, axis)) {
+        const box =
+          element === page
+            ? { left: 0, top: 0, right: view.innerWidth, bottom: view.innerHeight }
+            : element.getBoundingClientRect();
+        const [position, start, end, crossIn] =
+          axis === "x"
+            ? [drag.x, box.left, box.right, drag.y >= box.top && drag.y <= box.bottom]
+            : [drag.y, box.top, box.bottom, drag.x >= box.left && drag.x <= box.right];
+        const speed = crossIn ? edgeSpeed(position, start, end) : 0;
+        if (!speed) continue;
+        let limit = drag.limits.get(element);
+        if (!limit) {
+          limit = {
+            x: element.scrollWidth - element.clientWidth,
+            y: element.scrollHeight - element.clientHeight,
+          };
+          drag.limits.set(element, limit);
+        }
+        const key = axis === "x" ? "scrollLeft" : "scrollTop";
+        const before = element[key];
+        const next = Math.max(0, Math.min(limit[axis], before + speed));
+        if (Math.abs(next - before) < 1) continue;
+        element[key] = next;
+        scrolled = true;
+        break;
+      }
+    }
+    return scrolled;
+  }
+
+  /** Auto scrolls every frame while the drag lasts; items move under the pointer meanwhile. */
+  function scrollLoop(session: Session, until: AbortSignal) {
+    const tick = () => {
+      if (until.aborted || shared.session !== session) return;
+      if (autoScroll(session)) step(session);
+      view.requestAnimationFrame(tick);
+    };
+    view.requestAnimationFrame(tick);
   }
 
   list.addEventListener(
@@ -488,10 +614,11 @@ export function createSortableController(
       shared.pressing = true;
       const handle = (event.target as Element).closest(HANDLE);
       const item = itemIn(list, handle);
-      if (!item || event.button !== 0 || !event.isPrimary) return;
+      if (!item || isDisabled(item) || event.button !== 0 || !event.isPrimary) return;
       if (shared.session?.drag) return;
       const box = item.getBoundingClientRect();
       const drag: Drag = {
+        limits: new Map(),
         pointerId: event.pointerId,
         startX: event.clientX,
         startY: event.clientY,
@@ -532,6 +659,8 @@ export function createSortableController(
             shared.session = session;
             mark(session);
             say(owner, "grabbed", session.startIndex + 1);
+            notify(owner, "onDragStart", { item, index: session.startIndex, list: owner });
+            scrollLoop(session, (press as AbortController).signal);
           }
           step(session);
         },
@@ -542,7 +671,9 @@ export function createSortableController(
         (up) => {
           if (up.pointerId !== drag.pointerId) return;
           if (session && shared.session === session) {
+            // The click that follows (same task) is swallowed; none may follow (released elsewhere).
             shared.suppressClick = true;
+            view.setTimeout(() => (shared.suppressClick = false));
             endDrag(session);
           } else {
             press?.abort();
@@ -606,6 +737,7 @@ export function createSortableController(
       const trigger = target.closest(MOVE_TO);
       const moving = itemIn(list, trigger);
       if (moving) {
+        if (isDisabled(moving)) return;
         const to = doc.getElementById(
           (trigger as Element).getAttribute("data-ok-sortable-move-to") as string,
         );
@@ -619,7 +751,7 @@ export function createSortableController(
         return;
       }
       const item = itemIn(list, target.closest(HANDLE));
-      if (!item) return;
+      if (!item || isDisabled(item)) return;
       if (shared.suppressClick) {
         shared.suppressClick = false;
         return;
@@ -633,17 +765,25 @@ export function createSortableController(
         drop(session);
       } else if (session.list === list) {
         release();
+        notify(list, "onDragOver", { item: session.item, index: indexOf(item), list });
         const to = moveWithin(list, session.item, indexOf(item));
         keepFocus(session.item);
         say(list, "dropped", to + 1);
+        notify(list, "onDragEnd", { item: session.item, index: to, list });
       } else if (accepts(list, session.list)) {
         release();
-        const pending = transfer(session.item, session.list, list, indexOf(item), (moved) => {
+        const index = indexOf(item);
+        notify(session.list, "onDragOver", { item: session.item, index, list });
+        const pending = transfer(session.item, session.list, list, index, (moved) => {
           if (!moved) return;
           keepFocus(moved);
           say(list, "movedToList", indexOf(moved) + 1);
+          ended(moved);
         });
-        if (!pending) say(session.list, "dropped", indexOf(session.item) + 1);
+        if (!pending) {
+          say(session.list, "dropped", indexOf(session.item) + 1);
+          ended(session.item);
+        }
       } else {
         drop(session);
         grab(item);
@@ -715,8 +855,15 @@ export function createSortableController(
         transferSession(session, to, at, true);
         return;
       }
-      const to = moveWithin(list, session.item, index + (delta as number));
-      if (to === -1) return;
+      // Disabled items are skipped: the item jumps past them (or stays when none is left).
+      const all = itemsOf(list);
+      const sign = Math.sign(delta as number);
+      let target = Math.max(0, Math.min(last, index + (delta as number)));
+      const blocked = (at: number) => at >= 0 && at <= last && isDisabled(all[at] as HTMLElement);
+      while (target !== index && blocked(target)) target += sign;
+      if (target < 0 || target > last || target === index) return;
+      notify(list, "onDragOver", { item: session.item, index: target, list });
+      const to = moveWithin(list, session.item, target);
       keepFocus(session.item);
       say(list, "moved", to + 1);
     },

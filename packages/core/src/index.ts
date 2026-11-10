@@ -1207,6 +1207,7 @@ export {
   moveBetweenLists,
   type SortableController,
   type SortableControllerOptions,
+  type SortableDragEvent,
   type SortableMessages,
   type SortableTransfer,
   type SortableTransferTarget,

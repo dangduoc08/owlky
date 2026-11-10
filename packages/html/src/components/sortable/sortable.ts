@@ -1,4 +1,9 @@
-import { createSortableController } from "@owlky/core";
+import {
+  createSortableController,
+  defaultSortableMessages,
+  type SortableDragEvent,
+  type SortableMessages,
+} from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
 import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
 
@@ -18,6 +23,14 @@ export interface SortableEvents {
     { item: HTMLElement; from: HTMLElement; to: HTMLElement; index: number },
     true
   >;
+  /** An item was grabbed (keyboard, tap) or started a pointer drag. */
+  dragstart: EventSpec<{ item: HTMLElement; index: number; list: HTMLElement }>;
+  /** The item is about to move to `index` in `list` (this list or another one). */
+  dragover: EventSpec<{ item: HTMLElement; index: number; list: HTMLElement }>;
+  /** The item was dropped in this list, at `index`. */
+  dragend: EventSpec<{ item: HTMLElement; index: number; list: HTMLElement }>;
+  /** A move was cancelled (Escape, an interrupted touch), before the item goes back. */
+  dragcancel: EventSpec<{ item: HTMLElement; index: number; list: HTMLElement }>;
 }
 
 export interface SortableInstance extends ComponentInstance {
@@ -36,6 +49,15 @@ export interface SortableInstance extends ComponentInstance {
 
 const ITEM = "[data-ok-sortable-item]";
 const TEMPLATE = ":scope > template[data-ok-sortable-template]";
+/** Announcement keys and the attributes that replace their text (`data-ok-message-<name>`). */
+const MESSAGES: [keyof SortableMessages, string][] = [
+  ["grabbed", "grabbed"],
+  ["moved", "moved"],
+  ["movedToList", "moved-to-list"],
+  ["dropped", "dropped"],
+  ["cancelled", "cancelled"],
+  ["removed", "removed"],
+];
 
 /**
  * Sortable — spec: specs/components/sortable.md
@@ -48,7 +70,11 @@ const TEMPLATE = ":scope > template[data-ok-sortable-template]";
  * Several lists (ADR-0053): data-ok-group="<name>" connects lists, data-ok-accept="<names>"
  *          widens or narrows what a list takes; [data-ok-sortable-move-to="<list id>"] in an item
  *          moves it to that list.
- * Events:  ok:sortable:move (cancelable, detail: { from, to, item }),
+ * Messages: data-ok-message-<grabbed|moved|moved-to-list|dropped|cancelled|removed> on the list,
+ *          with {position}, {total} and {list} (read when announced).
+ * Disabled: li[data-ok-disabled] (+ the handle's `disabled`) never moves and isn't a target.
+ * Events:  ok:sortable:dragstart / dragover / dragend / dragcancel (detail: { item, index, list }),
+ *          ok:sortable:move (cancelable, detail: { from, to, item }),
  *          ok:sortable:transfer (cancelable, detail: { item, from, to, index }) on the list it leaves,
  *          ok:sortable:remove (cancelable, detail: { index, item }),
  *          ok:sortable:add (detail: { item, index }) after a template clone is inserted.
@@ -100,10 +126,30 @@ export const sortable = defineComponent<SortableInstance, SortableEvents>({
       },
     };
 
+    // Texts from the list's attributes, read when announced (they may change at any time).
+    const messages: Partial<SortableMessages> = {};
+    for (const [key, name] of MESSAGES)
+      messages[key] = (position, total, label) => {
+        const text = list.getAttribute(`data-ok-message-${name}`);
+        if (text === null) return defaultSortableMessages[key](position, total, label);
+        return text
+          .replaceAll("{position}", String(position))
+          .replaceAll("{total}", String(total))
+          .replaceAll("{list}", label);
+      };
+    const relay =
+      (name: "dragstart" | "dragover" | "dragend" | "dragcancel") =>
+      ({ item, index, list: target }: SortableDragEvent) =>
+        emit(name, { item, index, list: target });
     const controller = createSortableController(list, {
+      messages,
       onMove: (from, to) => instance.move(from, to),
       onRemove: (index) => instance.remove(index),
       onTransfer: ({ fromIndex, to, index }) => instance.transfer(fromIndex, to, index),
+      onDragStart: relay("dragstart"),
+      onDragOver: relay("dragover"),
+      onDragEnd: relay("dragend"),
+      onDragCancel: relay("dragcancel"),
     });
     return { ...instance, destroy: () => controller.destroy() };
   },

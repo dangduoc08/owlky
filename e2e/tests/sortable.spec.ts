@@ -61,6 +61,56 @@ for (const impl of implementations) {
   });
 }
 
+for (const impl of implementations) {
+  test.describe(`sortable disabled items, events, auto scroll (${impl})`, () => {
+    test("a pinned item keeps its place; drag events update the status", async ({
+      page,
+      isMobile,
+    }) => {
+      await openStory(page, storyId(impl, "sortable", "disabled-items"));
+      const status = page.locator("#sortable-disabled-status");
+      await expect(page.getByRole("button", { name: "Reorder Overview" })).toBeDisabled();
+      const sales = page.getByRole("button", { name: "Reorder Sales", exact: true });
+      if (isMobile) await sales.tap();
+      else {
+        await sales.focus();
+        await page.keyboard.press("Space");
+      }
+      await expect(status).toHaveText("Moving Sales.");
+      await sales.focus();
+      await page.keyboard.press("ArrowUp"); // the pinned item can't be passed
+      await page.keyboard.press("ArrowDown");
+      await page.keyboard.press("Space");
+      await expect(status).toHaveText("Sales is now at position 3.");
+      const titles = await page
+        .locator("#sortable-disabled > li > span")
+        .evaluateAll((spans) => spans.map((span) => span.textContent));
+      expect(titles.slice(0, 3)).toEqual(["Overview (pinned)", "Orders", "Sales"]);
+      await sales.focus();
+      await page.keyboard.press("Space");
+      await page.keyboard.press("Escape");
+      await expect(status).toHaveText("Sales went back.");
+    });
+
+    test("dragging near the Scrollbar's edge scrolls it", async ({ page, isMobile }) => {
+      test.skip(isMobile, "Mouse drags only; touch drags use the same code path.");
+      await openStory(page, storyId(impl, "sortable", "vertical"));
+      const scrollbar = page.locator("[data-ok-scrollbar]:has(> [data-ok-sortable])");
+      const frame = await scrollbar.boundingBox();
+      const from = await handle(page, 1).boundingBox();
+      if (!frame || !from) throw new Error("no boxes");
+      await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
+      await page.mouse.down();
+      await page.mouse.move(from.x + from.width / 2, frame.y + frame.height - 4, { steps: 12 });
+      await expect
+        .poll(() => scrollbar.evaluate((element) => element.scrollTop), { timeout: 5000 })
+        .toBeGreaterThan(100);
+      await page.mouse.up();
+      expect((await order(page)).startsWith("1,")).toBe(false);
+    });
+  });
+}
+
 /** Task titles of a Kanban column, in order. */
 const column = (page: Page, label: string) =>
   page

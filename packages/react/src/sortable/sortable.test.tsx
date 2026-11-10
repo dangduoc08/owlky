@@ -243,6 +243,45 @@ describe("Sortable between lists", () => {
     await expectNoAxeViolations();
   });
 
+  it("disabled items, auto scroll off and drag events with the item's data", async () => {
+    const events: string[] = [];
+    const log = (kind: string) => (event: { item: number; index: number; list: string }) =>
+      events.push(`${kind}:${event.item}@${event.index} in ${event.list}`);
+    render(
+      <Numbers
+        id="n"
+        layout="vertical"
+        autoScroll={false}
+        isItemDisabled={(n) => n === 1}
+        onDragStart={log("start")}
+        onDragOver={log("over")}
+        onDragEnd={log("end")}
+        onDragCancel={log("cancel")}
+      />,
+    );
+    const list = screen.getByRole("list", { name: "Numbers" });
+    expect(list.dataset["okAutoScroll"]).toBe("false");
+    const first = screen.getAllByRole("listitem")[0] as HTMLElement;
+    expect(first.hasAttribute("data-ok-disabled")).toBe(true);
+    expect((handle(1) as HTMLButtonElement).disabled).toBe(true);
+    expect((handle(2) as HTMLButtonElement).disabled).toBe(false);
+    handle(3).focus();
+    await userEvent.keyboard(" ");
+    await userEvent.keyboard("{ArrowUp}");
+    await userEvent.keyboard("{ArrowUp}"); // item 1 can't be passed
+    expect(order()).toBe("1,3,2,4");
+    await userEvent.keyboard(" ");
+    await userEvent.keyboard(" ");
+    await userEvent.keyboard("{Escape}");
+    expect(events).toEqual([
+      "start:3@2 in n",
+      "over:3@1 in n",
+      "end:3@1 in n",
+      "start:3@1 in n",
+      "cancel:3@1 in n",
+    ]);
+  });
+
   it("without onTransfer, items stay in their list", async () => {
     render(<Board withTransfer={false} />);
     await userEvent.click(screen.getByRole("button", { name: "Move 1" }));

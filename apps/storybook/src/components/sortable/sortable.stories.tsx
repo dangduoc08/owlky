@@ -2,6 +2,8 @@ import type { Decorator, Meta, StoryObj } from "@storybook/react-vite";
 import { useEffect } from "react";
 import { frameworkStory, reactGroupsStory, type StoryControls } from "../../helpers/groups.js";
 import { htmlSetup, snippetStory } from "../shared/snippets.js";
+import { DisabledItemsDemo } from "./disabled-demo.js";
+import disabledSource from "./disabled-demo.tsx?raw";
 import { KanbanDemo } from "./kanban-demo.js";
 import kanbanSource from "./kanban-demo.tsx?raw";
 import { SortableDocs } from "./sortable-docs.js";
@@ -110,3 +112,64 @@ export const Kanban: StoryObj = frameworkStory({
   ),
   react: reactGroupsStory([{ title: "Kanban", content: <KanbanDemo /> }], undefined, kanbanSource),
 });
+
+/** The status line follows the drag events: the app's job (see the Code panel). */
+const DISABLED_SCRIPT_SOURCE = `// Drag events report the item element, its index and its list.
+const status = document.getElementById("sortable-disabled-status");
+const title = (item) => item.querySelector("span").textContent;
+const list = document.getElementById("sortable-disabled");
+list.addEventListener("ok:sortable:dragstart", (event) => {
+  status.textContent = \`Moving \${title(event.detail.item)}.\`;
+});
+list.addEventListener("ok:sortable:dragend", (event) => {
+  const { item, index } = event.detail;
+  status.textContent = \`\${title(item)} is now at position \${index + 1}.\`;
+});
+list.addEventListener("ok:sortable:dragcancel", (event) => {
+  status.textContent = \`\${title(event.detail.item)} went back.\`;
+});`;
+
+type DragDetail = { item: HTMLElement; index: number };
+
+/** The same script, run on the story's row. */
+function disabledScript(row: HTMLElement) {
+  const status = row.querySelector("#sortable-disabled-status") as HTMLElement;
+  const list = row.querySelector("#sortable-disabled") as HTMLElement;
+  const title = (item: HTMLElement) => item.querySelector("span")?.textContent ?? "";
+  const handlers: [string, (detail: DragDetail) => string][] = [
+    ["dragstart", ({ item }) => `Moving ${title(item)}.`],
+    ["dragend", ({ item, index }) => `${title(item)} is now at position ${index + 1}.`],
+    ["dragcancel", ({ item }) => `${title(item)} went back.`],
+  ];
+  const listeners = handlers.map(([name, text]) => {
+    const listener = (event: Event) => {
+      status.textContent = text((event as CustomEvent<DragDetail>).detail);
+    };
+    list.addEventListener(`ok:sortable:${name}`, listener);
+    return [name, listener] as const;
+  });
+  return () => {
+    for (const [name, listener] of listeners)
+      list.removeEventListener(`ok:sortable:${name}`, listener);
+  };
+}
+
+/** A pinned item that can't move, and drag events (no Controls: the demo keeps state). */
+export const DisabledItems: StoryObj = {
+  ...frameworkStory({
+    html: snippetStory(
+      snippets,
+      "disabled-items",
+      [["Disabled items", "group"]],
+      htmlSetup(["scrollbar.css", "icon-button.css", "sortable.css", "typography.css"], true),
+      undefined,
+      { group: { script: disabledScript, scriptSource: DISABLED_SCRIPT_SOURCE } },
+    ),
+    react: reactGroupsStory(
+      [{ title: "Disabled items", content: <DisabledItemsDemo /> }],
+      undefined,
+      disabledSource,
+    ),
+  }),
+  name: "Disabled items",
+};

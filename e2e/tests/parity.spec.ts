@@ -246,6 +246,7 @@ const pairs: [component: string, story: string][] = [
   ["sortable", "vertical"],
   ["sortable", "horizontal"],
   ["sortable", "kanban"],
+  ["sortable", "disabled-items"],
   ["circular-progress", "indeterminate"],
   ["circular-progress", "determinate"],
   ["circular-progress", "sizes"],

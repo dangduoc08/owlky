@@ -629,6 +629,7 @@ export {
   arrayMove,
   moveBetweenLists,
   Sortable,
+  type SortableDragEvent,
   type SortableProps,
   type SortableTransferEvent,
 } from "./sortable/sortable.js";

@@ -11,11 +11,11 @@ removes.
 ## Anatomy
 ```
 ul[data-ok-sortable][data-ok-layout][aria-label][id]?[data-ok-group]?[data-ok-accept]?   React: + data-ok-runtime="off"
-  li[data-ok-sortable-item][data-ok-dragging | data-ok-grabbed]?
+  li[data-ok-sortable-item][data-ok-dragging | data-ok-grabbed]?[data-ok-disabled]?
     … content (yours), may hold [data-ok-sortable-move-to="<list id>"] triggers (buttons, menu items)
     div[data-ok-sortable-actions]
       button[data-ok-icon-button][data-ok-size="sm"][data-ok-sortable-remove][aria-label]?  (optional)
-      button[data-ok-icon-button][data-ok-size="sm"][data-ok-sortable-handle][aria-label][aria-pressed]
+      button[data-ok-icon-button][data-ok-size="sm"][data-ok-sortable-handle][aria-label][aria-pressed][disabled]?
   template[data-ok-sortable-template]?                          HTML only: markup of new items
 [add trigger] button[data-ok-sortable-add="<list id>"]          HTML only
 div[data-ok-sortable-announcer][aria-live="polite"]             created once per document (visually hidden)
@@ -33,6 +33,7 @@ Root: `data-ok-sortable`. Unknown values fall back to the default.
 |---|---|---|---|---|---|
 | `layout` | `data-ok-layout="…"` | style | `grid` `vertical` `horizontal` | `grid` | Grid, one column or one scrolling row. |
 | `items` | `data-ok-sortable-item` · event `ok:sortable:move` | state | — | — | Item order (`items` + `onReorder`). |
+| `autoScroll` | `data-ok-auto-scroll="false"` turns it off | behavior | boolean | on | While dragging near the edge of a scroll area or the window, it scrolls; `false` turns it off. |
 <!-- /options:sortable -->
 
 Other props (not options):
@@ -48,6 +49,9 @@ Other props (not options):
 | `id` on the list | `id` (falls back to `useId()` with a group) | names lists in transfers and move-to triggers |
 | `ok:sortable:transfer` (cancelable) · instance `transfer` | `onTransfer({ item, from, to, fromIndex, index })` + `moveBetweenLists(lists, event)` | without `onTransfer` a React list never gives items |
 | `[data-ok-sortable-move-to="<list id>"]` inside an item | same attribute (in `renderItem`) | moves the item to that list's end |
+| `li[data-ok-disabled]` + the handle's `disabled` | `isItemDisabled(item, index)` | the item never moves and isn't a target |
+| `ok:sortable:dragstart` · `dragover` · `dragend` · `dragcancel` (`detail: { item, index, list }`) | `onDragStart` · `onDragOver` · `onDragEnd` · `onDragCancel` (`{ item, index, list }`, `list` = id) | to the owner of the list holding the item |
+| `data-ok-message-<grabbed\|moved\|moved-to-list\|dropped\|cancelled\|removed>` (`{position}`, `{total}`, `{list}`) | `messages` | announcement texts |
 
 ## Layout and tokens
 - Items: background `channel(grey-500)` 4 %, 1px border 16 %, radius `--ok-radius-lg`; actions at the
@@ -84,7 +88,20 @@ The controller reports intent (`onMove(from, to)`, `onRemove(index)`); the owner
   to that list's end (single-pointer alternative; the Kanban story composes a Menu). Escape puts it
   back in its start list. Announced with `movedToList` (the list's `aria-label`).
 - **Announcements** (polite live region): grabbed, moved, dropped, cancelled, removed — with
-  positions ("position 3 of 12").
+  positions ("position 3 of 12"). HTML replaces them with `data-ok-message-*` on the list (read when
+  announced; `{position}`, `{total}`, `{list}`).
+- **Disabled items** (`data-ok-disabled`, dnd-kit `disabled: true`): can't be grabbed, dragged or
+  moved by a trigger; the pointer over one moves nothing; keys skip them (the item jumps past, or
+  stays when only disabled items are left in that direction). Other items may still move past
+  them, which shifts them by one (as upstream).
+- **Drag events:** `onDragStart` on a grab or once a drag starts; `onDragOver` before each move
+  (the target index and list); `onDragEnd` on a drop (where it landed); `onDragCancel` before the
+  item goes back. Each goes to the owner of the list holding the item.
+- **Auto scroll** (on unless `data-ok-auto-scroll="false"`): while a pointer drag is near an edge
+  (a fifth of the container, at most 80px) of a scrolling ancestor of the item, or of the window,
+  the nearest one that can scroll on that axis scrolls up to 20px per frame (full speed past the
+  edge), within the scroll size measured when the container was first met (the dragged item's
+  transform would grow it). Items under the pointer move meanwhile. Keys scroll the item into view.
 
 ## Keyboard
 | Key (handle focused) | Action |
@@ -129,11 +146,12 @@ Upstream: Minimals "Dnd" on dnd-kit — `DndContext`, `SortableContext`, `useSor
 | `strategy` `rectSwappingStrategy` | — | deferred | swap instead of shift |
 | `sensors` (Pointer, Keyboard, `sortableKeyboardCoordinates`) | pointer + keyboard + two taps, built in | kept | activation distance fixed (4px) |
 | `useSortable handle` / `handleRef` | handle button (always) | kept | drag by the whole item: deferred |
-| `accessibility.announcements`, `screenReaderInstructions` | `messages` (React), English defaults (HTML) | renamed | HTML localization: deferred |
-| `useSortable disabled` | — | deferred | items that can't move (pinned first item) |
-| `onDragStart`, `onDragMove`, `onDragOver`, `onDragCancel` | — | deferred | events / callbacks (only move and remove today) |
+| `accessibility.announcements` | `messages` (React), `data-ok-message-*` (HTML) | renamed | `screenReaderInstructions`: part of `grabbed` |
+| `useSortable disabled` (`true`) | `isItemDisabled` · `li[data-ok-disabled]` | renamed | the `{ draggable, droppable }` object form: not offered |
+| `onDragStart`, `onDragOver`, `onDragEnd`, `onDragCancel` | same names · `ok:sortable:dragstart` / `dragover` / `dragend` / `dragcancel` | kept | the React ones replace the `ul`'s native HTML drag handlers |
+| `onDragMove` | — | not applicable | every pointer move; `onDragOver` reports each new position |
 | `cancelDrop` | cancelable `ok:sortable:move`; React refuses by not updating `items` | renamed | |
-| `autoScroll` | — | deferred | scroll the Scrollbar / page near its edges while dragging |
+| `autoScroll` (boolean) | `autoScroll` · `data-ok-auto-scroll="false"` | kept | its options (`threshold`, `acceleration`, `interval`, `canScroll`, `order`): fixed values |
 | `modifiers` (restrict to an axis, to the parent) | layout axis | not applicable | the item follows the pointer inside the list |
 | `DragOverlay` | the dragged item itself (`data-ok-dragging`) | not applicable | |
 | several lists: `group`, `accept`, multiple `SortableContext`s / one `DragDropProvider`, `onDragOver` between containers | `group`, `accept` on the list · `onTransfer` · `ok:sortable:transfer` | renamed | ADR-0053: list attributes, not per item; groups connect lists of the page |

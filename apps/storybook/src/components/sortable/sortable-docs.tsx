@@ -266,6 +266,149 @@ export function MoveToDone() {
 }`,
   },
   {
+    id: "disabled",
+    title: "Keep items in place",
+    body: `Disable an item to pin it, such as a summary that always comes first. A disabled item can't be dragged or grabbed, and other items never take its place: the keyboard moves them past it, and the pointer moves nothing while it is over it. In React, return \`true\` from \`isItemDisabled\`. In HTML, add \`data-ok-disabled\` to the item and \`disabled\` to its handle, so that the handle also leaves the tab order.`,
+    html: `<ul id="widgets" data-ok-sortable data-ok-layout="vertical" aria-label="Widgets">
+${htmlItem("Overview", false).replace("<li data-ok-sortable-item>", "<li data-ok-sortable-item data-ok-disabled>").replace('aria-pressed="false">', 'aria-pressed="false" disabled>')}
+${htmlItem("Sales", false)}
+${htmlItem("Orders", false)}
+</ul>`,
+    react: `import { Sortable } from "@owlky/react";
+import { useState } from "react";
+
+export function PinnedWidgets() {
+  const [widgets, setWidgets] = useState(["Overview", "Sales", "Orders"]);
+  return (
+    <Sortable
+      layout="vertical"
+      aria-label="Widgets"
+      items={widgets}
+      getKey={(widget) => widget}
+      getItemLabel={(widget) => widget}
+      isItemDisabled={(widget) => widget === "Overview"}
+      renderItem={(widget) => <span>{widget}</span>}
+      onReorder={setWidgets}
+    />
+  );
+}`,
+  },
+  {
+    id: "auto-scroll",
+    title: "Scroll while dragging",
+    body: 'When people drag an item near the edge of a scroll area, such as the **Scrollbar** around a list, or near the edge of the window, it scrolls. The closer the pointer gets to the edge, the faster it scrolls. To turn it off, set `autoScroll={false}` in React or `data-ok-auto-scroll="false"` in HTML. The keyboard always scrolls the moved item into view.',
+    html: `<section data-ok-scrollbar aria-label="Tasks list" tabindex="0">
+  <ul id="tasks" data-ok-sortable data-ok-layout="vertical" data-ok-auto-scroll="false" aria-label="Tasks">
+${TASKS.slice(0, 2)
+  .map((t) => htmlItem(t, false))
+  .join("\n")}
+  </ul>
+</section>`,
+    react: `import { Scrollbar, Sortable } from "@owlky/react";
+import { useState } from "react";
+
+export function FixedTasks() {
+  const [tasks, setTasks] = useState(["Design", "Build"]);
+  return (
+    <Scrollbar aria-label="Tasks list">
+      <Sortable
+        layout="vertical"
+        aria-label="Tasks"
+        autoScroll={false}
+        items={tasks}
+        getKey={(task) => task}
+        getItemLabel={(task) => task}
+        renderItem={(task) => <span>{task}</span>}
+        onReorder={setTasks}
+      />
+    </Scrollbar>
+  );
+}`,
+  },
+  {
+    id: "drag-events",
+    title: "Follow a drag",
+    body: `Drag events tell you where an item is while it moves, for example to show a status or to save the order only once it is dropped. They fire for the pointer, the keyboard and taps alike:
+
+- **Start:** an item is grabbed, or a pointer drag starts.
+- **Over:** the item is about to move to a new position, in its list or in another one.
+- **End:** the item is dropped.
+- **Cancel:** the move is cancelled, such as with Escape, before the item goes back.
+
+In React, pass \`onDragStart\`, \`onDragOver\`, \`onDragEnd\` and \`onDragCancel\`: each gets \`{ item, index, list }\`, where \`list\` is the list's \`id\`. In HTML, listen for \`ok:sortable:dragstart\`, \`ok:sortable:dragover\`, \`ok:sortable:dragend\` and \`ok:sortable:dragcancel\`, whose \`detail\` has the item element, its index and its list element.`,
+    html: `<ul id="tasks" data-ok-sortable data-ok-layout="vertical" aria-label="Tasks">
+${TASKS.slice(0, 2)
+  .map((t) => htmlItem(t, false))
+  .join("\n")}
+</ul>
+<p id="tasks-status" role="status"></p>
+
+<script type="module">
+  const status = document.getElementById("tasks-status");
+  document.getElementById("tasks").addEventListener("ok:sortable:dragend", (event) => {
+    const { item, index } = event.detail;
+    status.textContent = \`\${item.querySelector("span").textContent} is now at position \${index + 1}.\`;
+  });
+</script>`,
+    react: `import { Sortable } from "@owlky/react";
+import { useState } from "react";
+
+export function TrackedTasks() {
+  const [tasks, setTasks] = useState(["Design", "Build"]);
+  const [status, setStatus] = useState("");
+  return (
+    <>
+      <Sortable
+        layout="vertical"
+        aria-label="Tasks"
+        items={tasks}
+        getKey={(task) => task}
+        getItemLabel={(task) => task}
+        renderItem={(task) => <span>{task}</span>}
+        onReorder={setTasks}
+        onDragEnd={({ item, index }) => setStatus(\`\${item} is now at position \${index + 1}.\`)}
+      />
+      <p role="status">{status}</p>
+    </>
+  );
+}`,
+  },
+  {
+    id: "messages",
+    title: "Translate the announcements",
+    body: `Screen readers hear every grab, move, drop, cancel and removal. Replace the English texts in your language. In React, pass \`messages\`, with a function per text that gets the position, the number of items and the list's name. In HTML, add \`data-ok-message-grabbed\`, \`-moved\`, \`-moved-to-list\`, \`-dropped\`, \`-cancelled\` or \`-removed\` to the list, with \`{position}\`, \`{total}\` and \`{list}\` where the values go.`,
+    html: `<ul id="tasks" data-ok-sortable data-ok-layout="vertical" aria-label="Tâches"
+  data-ok-message-grabbed="Élément saisi en position {position} sur {total}."
+  data-ok-message-moved="Déplacé en position {position} sur {total}."
+  data-ok-message-dropped="Déposé en position {position} sur {total}.">
+${TASKS.slice(0, 2)
+  .map((t) => htmlItem(t, false))
+  .join("\n")}
+</ul>`,
+    react: `import { Sortable } from "@owlky/react";
+import { useState } from "react";
+
+export function FrenchTasks() {
+  const [tasks, setTasks] = useState(["Design", "Build"]);
+  return (
+    <Sortable
+      layout="vertical"
+      aria-label="Tâches"
+      items={tasks}
+      getKey={(task) => task}
+      getItemLabel={(task) => task}
+      renderItem={(task) => <span>{task}</span>}
+      onReorder={setTasks}
+      messages={{
+        grabbed: (position, total) => \`Élément saisi en position \${position} sur \${total}.\`,
+        moved: (position, total) => \`Déplacé en position \${position} sur \${total}.\`,
+        dropped: (position, total) => \`Déposé en position \${position} sur \${total}.\`,
+      }}
+    />
+  );
+}`,
+  },
+  {
     id: "options",
     title: "Options",
     body: "Every option works the same way in both versions: a prop in React, an attribute in HTML.",
@@ -279,11 +422,12 @@ export function MoveToDone() {
     id: "events",
     title: "Events and methods",
     body: `- **\`ok:sortable:move\`** (cancelable) fires before an item moves, with \`detail: { from, to, item }\`.
+- **\`ok:sortable:dragstart\`**, **\`ok:sortable:dragover\`**, **\`ok:sortable:dragend\`** and **\`ok:sortable:dragcancel\`** follow a drag, with \`detail: { item, index, list }\`. They fire on the list that holds the item.
 - **\`ok:sortable:transfer\`** (cancelable) fires on the list an item leaves, before the item moves to another list, with \`detail: { item, from, to, index }\`. \`from\` and \`to\` are the lists.
 - **\`ok:sortable:remove\`** (cancelable) fires before an item is removed, with \`detail: { index, item }\`.
 - **\`ok:sortable:add\`** fires after a new item is added from the template, with \`detail: { item, index }\`. Fill in its content here.
 - **Instance:** \`runtime.get(element, "sortable")\` returns \`{ move(from, to), remove(index), add(), transfer(index, to, toIndex) }\`. \`to\` is a list or its \`id\`. Without \`toIndex\`, the item goes to the end.
-- **React:** \`onReorder(items)\`, \`onRemove(item, index)\` and \`onTransfer({ item, from, to, fromIndex, index })\`, where \`from\` and \`to\` are list ids. The \`arrayMove(items, from, to)\` and \`moveBetweenLists(lists, event)\` helpers are exported too.`,
+- **React:** \`onDragStart\`, \`onDragOver\`, \`onDragEnd\` and \`onDragCancel\` get \`{ item, index, list }\`. They replace the native HTML drag and drop handlers of the list element. \`onReorder(items)\`, \`onRemove(item, index)\` and \`onTransfer({ item, from, to, fromIndex, index })\`, where \`from\` and \`to\` are list ids. The \`arrayMove(items, from, to)\` and \`moveBetweenLists(lists, event)\` helpers are exported too.`,
   },
   {
     id: "keyboard",
@@ -296,7 +440,8 @@ export function MoveToDone() {
     body: `- Every drag has a keyboard and a tap alternative, so people who can't drag can still reorder (WCAG 2.2, success criteria 2.1.1 and 2.5.7). Between lists, add a \`data-ok-sortable-move-to\` control, such as a **Move** menu, so that one tap is enough.
 - Name the list with \`aria-label\`. Handles and remove buttons are named from each item, such as "Reorder Design"; set the item's label with \`getItemLabel\` in React or the buttons' \`aria-label\` in HTML.
 - The handle has \`aria-pressed="true"\` while its item is grabbed.
-- Moves are announced in a polite live region. Translate the messages with \`messages\` in React.`,
+- Moves are announced in a polite live region. Translate the messages with \`messages\` in React or the \`data-ok-message-*\` attributes in HTML.
+- A disabled item's handle is \`disabled\`, so it leaves the tab order and screen readers report it as unavailable.`,
   },
   apiReferenceSection(sortableApi),
 ];
@@ -393,9 +538,22 @@ const PREVIEWS = {
         },
         {
           react: "messages",
+          html: "data-ok-message-*",
           type: "Partial<SortableMessages>",
           description:
             "Translates the announcements: `grabbed`, `moved`, `movedToList`, `dropped`, `cancelled` and `removed`. Each gets the position, the number of items and the list's name.",
+        },
+        {
+          react: "isItemDisabled",
+          html: "data-ok-disabled",
+          type: "(item: T, index: number) => boolean",
+          description: "Items that can't move. Other items never take their place.",
+        },
+        {
+          react: "onDragStart, onDragOver, onDragEnd, onDragCancel",
+          html: "ok:sortable:dragstart, dragover, dragend, dragcancel",
+          type: "(event: SortableDragEvent<T>) => void",
+          description: "Follow a drag: `{ item, index, list }`, where `list` is the list's id.",
         },
         {
           react: "group",
