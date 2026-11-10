@@ -76,13 +76,15 @@ export function Mailbox() {
 - **End action:** \`secondaryAction\`, such as an icon button, placed 16px from the end.
 
 Set \`alignItems\` to \`flex-start\` when the text wraps to several lines, so the icon or avatar stays next to the first line.`,
-    html: `<li data-ok-list-item>
-  <span data-ok-list-item-avatar>…</span>
-  <span data-ok-list-item-text>
-    <span data-ok-list-item-text-primary>Photos</span>
-    <span data-ok-list-item-text-secondary>Jan 9, 2014</span>
-  </span>
-</li>`,
+    html: `<ul data-ok-list>
+  <li data-ok-list-item>
+    <span data-ok-list-item-avatar><span data-ok-avatar data-ok-variant="circular" data-ok-color="default">P</span></span>
+    <span data-ok-list-item-text>
+      <span data-ok-list-item-text-primary>Photos</span>
+      <span data-ok-list-item-text-secondary>Jan 9, 2014</span>
+    </span>
+  </li>
+</ul>`,
     react: `import { Avatar, ListItem, ListItemAvatar, ListItemText } from "@owlky/react";
 import { ImageIcon } from "lucide-react";
 
@@ -128,17 +130,31 @@ export function ListButtons() {
     body: "A subheader names the list. It is the first list item and sticks to the top while the list scrolls. Give it an `id` and point the list's `aria-labelledby` at it. Set `disableSticky` to let it scroll away.",
     html: `<ul data-ok-list aria-labelledby="settings-title">
   <li data-ok-list-subheader data-ok-color="default" id="settings-title">Settings</li>
-  …
+  <li data-ok-list-item>
+    <span data-ok-list-item-text>
+      <span data-ok-list-item-text-primary>Notifications</span>
+    </span>
+  </li>
+  <li data-ok-list-item>
+    <span data-ok-list-item-text>
+      <span data-ok-list-item-text-primary>Privacy</span>
+    </span>
+  </li>
 </ul>`,
-    react: `import { List, ListSubheader } from "@owlky/react";
+    react: `import { List, ListItem, ListItemText, ListSubheader } from "@owlky/react";
 
-export function ListSubheader() {
+export function SettingsList() {
   return (
     <List
       aria-labelledby="settings-title"
       subheader={<ListSubheader id="settings-title">Settings</ListSubheader>}
     >
-      …
+      <ListItem>
+        <ListItemText primary="Notifications" />
+      </ListItem>
+      <ListItem>
+        <ListItemText primary="Privacy" />
+      </ListItem>
     </List>
   );
 }`,
@@ -163,7 +179,11 @@ To animate the height as it opens and closes, make the nested list a Collapse.
     <span data-ok-list-item-expand-icon aria-hidden="true">${CHEVRON}</span>
   </button>
   <ul data-ok-collapse data-ok-timeout="auto" data-ok-list data-ok-disable-padding id="inbox-folders">
-    …
+    <li data-ok-list-item data-ok-disable-padding>
+      <button type="button" data-ok-list-item-button>
+        <span data-ok-list-item-text><span data-ok-list-item-text-primary>Starred</span></span>
+      </button>
+    </li>
   </ul>
 </li>`,
     react: `import { useState } from "react";
@@ -189,7 +209,11 @@ export function Inbox() {
         <ListItemExpandIcon />
       </ListItemButton>
       <Collapse component={List} id="inbox-folders" in={open} timeout="auto" disablePadding>
-        …
+        <ListItem disablePadding>
+          <ListItemButton>
+            <ListItemText primary="Starred" />
+          </ListItemButton>
+        </ListItem>
       </Collapse>
     </ListItem>
   );
@@ -200,7 +224,7 @@ export function Inbox() {
     title: "Add controls to rows",
     body: "A row can hold a checkbox or a switch. Don't put a control inside a `ListItemButton`: a control inside a button can't be reached or announced reliably. Instead, label the control with the row's text: a `<label>` around the text for a checkbox at the start, or `aria-labelledby` with the text's `id` for a switch at the end.",
     html: `<li data-ok-list-item>
-  <span data-ok-list-item-icon>…</span>
+  <span data-ok-list-item-icon><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0" /><path d="M1.42 9a16 16 0 0 1 21.16 0" /><path d="M8.53 16.11a6 6 0 0 1 6.95 0" /><path d="M12 20h.01" /></svg></span>
   <span data-ok-list-item-text id="wifi-label">
     <span data-ok-list-item-text-primary>Wi-Fi</span>
   </span>
