@@ -1020,6 +1020,67 @@
     outline-offset: 2px;
   }
 
+  /* Crossfilter (4.18.19): tints behind the filtered categories, a Clear button under the plot. */
+  :where([data-ok-chart-filter-band]) {
+    fill: rgb(var(--ok-palette-primary-main-channel) / 0.12);
+    pointer-events: none;
+  }
+
+  :where([data-ok-chart-filter]) {
+    display: flex;
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+  }
+
+  /* Without a filter, out of the flow (no grid gap) but rendered: its status still announces. */
+  :where(div[data-ok-chart-filter]:not(:has(> [data-ok-chart-filter-clear]:not([hidden])))) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  :where([data-ok-chart-filter-clear]) {
+    min-height: calc(var(--ok-spacing) * 8);
+    margin: 0;
+    padding: 0 calc(var(--ok-spacing) * 2);
+    border: 1px solid var(--ok-divider);
+    border-radius: var(--ok-radius-sm);
+    background: none;
+    color: var(--ok-text-primary);
+    font: inherit;
+    font-size: var(--ok-font-size-xs);
+    font-weight: var(--ok-font-weight-semibold);
+    cursor: pointer;
+  }
+
+  :where([data-ok-chart-filter-clear][hidden]) {
+    display: none;
+  }
+
+  @media (hover: hover) {
+    :where([data-ok-chart-filter-clear]:hover) {
+      background-color: var(--ok-action-hover);
+    }
+  }
+
+  :where([data-ok-chart-filter-clear]:focus-visible) {
+    outline: 2px solid var(--ok-palette-primary-main);
+    outline-offset: 2px;
+  }
+
+  :where([data-ok-chart-filter-status]) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
   :where([data-ok-chart-tool-icon]) {
     fill: none;
     stroke: currentcolor;

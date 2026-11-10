@@ -42,6 +42,9 @@ export const chartShades = ["lighter", "light", "main", "dark", "darker"] as con
 export const chartStackTypes = ["normal", "100%"] as const;
 /** Where values sit inside bars (4.18.61): the middle, the value end or the base. */
 export const chartDataLabelPositions = ["center", "top", "bottom"] as const;
+/** How a chart shows its group's crossfilter (4.18.19, ADR-0054). */
+export const chartCrossfilters = ["filter", "highlight"] as const;
+export type ChartCrossfilter = (typeof chartCrossfilters)[number];
 
 export type ChartType = (typeof chartTypes)[number];
 export type ChartCurve = (typeof chartCurves)[number];

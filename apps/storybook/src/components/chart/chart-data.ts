@@ -1588,6 +1588,42 @@ export const chartExamples: Record<string, ChartExample> = {
       },
     ],
   },
+  // Roadmap 4.18.19: crossfilter (ApexCharts Premium Linked Views / Highlight Filter, ADR-0054).
+  crossfilter: {
+    title: "Crossfilter",
+    props: {
+      label: "Orders by region (select columns to filter the other charts)",
+      type: "bar",
+      group: "regions",
+      crossfilter: "highlight",
+      allowMultipleDataPointsSelection: true,
+      height: 240,
+      colors: ["info"],
+      categories: ["North", "South", "East", "West", "Central"],
+      series: [{ name: "Orders", data: [420, 310, 280, 390, 150] }],
+    },
+    more: [
+      {
+        label: "Revenue by region (thousands of dollars)",
+        type: "bar",
+        group: "regions",
+        crossfilter: "filter",
+        height: 240,
+        colors: ["warning"],
+        categories: ["North", "South", "East", "West", "Central"],
+        series: [{ name: "Revenue", data: [96, 71, 64, 88, 35] }],
+      },
+      {
+        label: "Returns by region (select a slice to filter the other charts)",
+        type: "donut",
+        group: "regions",
+        crossfilter: "filter",
+        height: 240,
+        categories: ["North", "South", "East", "West", "Central"],
+        series: [{ name: "Returns", data: [18, 25, 9, 14, 6] }],
+      },
+    ],
+  },
   // Roadmap 4.18.21: dumbbell charts (ApexCharts `rangeBar` + `isDumbbell`, `dumbbellColors`).
   dumbbell: {
     title: "Dumbbell",

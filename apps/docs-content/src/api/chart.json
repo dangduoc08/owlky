@@ -250,6 +250,12 @@
      },
      {
       "cancelable": false,
+      "description": "After the group's crossfilter changed (charts with `data-ok-crossfilter`): the filtered category indexes (`null`: none) and whether this chart set it.",
+      "detail": "{ categories: number[] | null; own: boolean; }",
+      "name": "ok:chart:filter"
+     },
+     {
+      "cancelable": false,
       "description": "After a click, Enter or Space selected or cleared a point, slice or cell (one event per point it toggled), with the point, whether it is selected now and every selected point.",
       "detail": "ChartSelectionDetail",
       "name": "ok:chart:select"
@@ -281,10 +287,22 @@
       "type": "(data: ChartAppendData, options?: ChartAppendOptions | undefined) => void"
      },
      {
+      "description": "Clears the group's crossfilter (its source clears its selection; no event here).",
+      "kind": "method",
+      "name": "clearFilter",
+      "type": "() => void"
+     },
+     {
       "description": "Downloads the chart as SVG, PNG or CSV (only during a user gesture: rejects otherwise).",
       "kind": "method",
       "name": "exportChart",
       "type": "(format: ChartExportFormat) => Promise<void>"
+     },
+     {
+      "description": "The group's crossfilter: the filtered category indexes, or `null`.",
+      "kind": "property",
+      "name": "filter",
+      "type": "readonly number[] | null"
      },
      {
       "description": "Indexes of the series hidden through the legend.",
@@ -326,7 +344,7 @@
       "description": "Localized texts: tool names, the export error and part labels (tables carry their own).",
       "kind": "method",
       "name": "setLocaleText",
-      "type": "(text: Readonly<Partial<Record<\"exportFailed\" | \"selected\" | \"toolbar\" | ChartPart | ChartTool, string>>>) => void"
+      "type": "(text: Readonly<Partial<Record<\"clearFilter\" | \"exportFailed\" | \"filter\" | \"filterCleared\" | \"selected\" | \"toolbar\" | ChartPart | ChartTool, string>>>) => void"
      },
      {
       "description": "Selects exactly these points (invalid entries are dropped; no event).",
@@ -1191,6 +1209,18 @@
       "name": "hideConnectors"
      },
      {
+      "attr": "data-ok-crossfilter",
+      "default": "highlight",
+      "description": "Charts of a `group`: a selection (click, Enter or Space) or a brush in this chart filters the group, and this chart shows the group's filter as a `filter` (only the filtered categories keep their values) or a `highlight` (a tint behind them).",
+      "kind": "style",
+      "name": "crossfilter",
+      "optional": true,
+      "values": [
+       "filter",
+       "highlight"
+      ]
+     },
+     {
       "attr": "aria-pressed",
       "description": "Indexes of the series hidden through the legend (`aria-pressed=\"false\"` on their buttons); categories in pie, donut and radial bar charts.",
       "event": "ok:chart:toggle",
@@ -1556,6 +1586,47 @@
       ],
       "kind": "part",
       "name": "data-ok-chart-dumbbell-line"
+     },
+     {
+      "description": "Crossfilter: the controls after the plot, a **Clear filter** button and a status.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-filter"
+     },
+     {
+      "description": "Crossfilter: the tint behind a filtered category (a band, a slice halo or a cell frame).",
+      "elements": [
+       "path",
+       "rect"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-filter-band"
+     },
+     {
+      "description": "Crossfilter: clears the group's filter. `hidden` while the group has none.",
+      "elements": [
+       "button"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-filter-clear"
+     },
+     {
+      "description": "Crossfilter: the group of tints behind the filtered categories (`highlight`), under the series.",
+      "elements": [
+       "g"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-filter-layer"
+     },
+     {
+      "description": "Crossfilter: a visually hidden live region that announces the filter this chart set or cleared.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-filter-status"
      },
      {
       "description": "The grid.",
@@ -2364,6 +2435,11 @@
       "type": "number"
      },
      {
+      "description": "Charts of a `group`: a selection in this chart (click, Enter or Space), or its brush, filters the other charts of the group, and this chart shows the group's filter: `\"filter\"` draws only the filtered categories' values, `\"highlight\"` tints them. Charts of a group share their categories by position. A **Clear filter** button under the plot clears it.",
+      "name": "crossfilter",
+      "type": "\"filter\" | \"highlight\""
+     },
+     {
       "default": "\"smooth\"",
       "description": "Line shape: `smooth`, `straight` or `stepline`.",
       "name": "curve",
@@ -2552,7 +2628,7 @@
      {
       "description": "Localized texts: part labels (\"Minimum\", \"Q1\"…), tool names, the export error and `selected`.",
       "name": "localeText",
-      "type": "Readonly<Partial<Record<\"exportFailed\" | \"selected\" | \"toolbar\" | ChartPart | ChartTool, string>>>"
+      "type": "Readonly<Partial<Record<\"clearFilter\" | \"exportFailed\" | \"filter\" | \"filterCleared\" | \"selected\" | \"toolbar\" | ChartPart | ChartTool, string>>>"
      },
      {
       "description": "Marker shape of every series: `\"circle\"` (default), `\"square\"`, `\"triangle\"`, `\"diamond\"`, `\"cross\"`, `\"plus\"` or `\"star\"`. Series may set `markerShape` themselves.",
@@ -2588,6 +2664,11 @@
       "description": "Called for each point a click, Enter or Space selects or clears, with the point, whether it is selected now and every selected point (ApexCharts' `dataPointSelection`).",
       "name": "onDataPointSelection",
       "type": "((detail: ChartSelectionDetail) => void)"
+     },
+     {
+      "description": "Called when the group's filter changes: the filtered category indexes (`null`: none) and whether this chart set it.",
+      "name": "onFilterChange",
+      "type": "((categories: number[] | null, own: boolean) => void)"
      },
      {
       "description": "Called with the new hidden series when a legend item is toggled.",

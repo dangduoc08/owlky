@@ -65,6 +65,17 @@ export {
   chartSvgText,
   exportChart,
 } from "./chart-export.js";
+export {
+  type ChartGroupFilter,
+  chartBrushCategories,
+  chartFilter,
+  chartFilterCategories,
+  chartFilterHidden,
+  chartFilterLabels,
+  chartFilterNodes,
+  chartFilterText,
+  filterChartData,
+} from "./chart-filter.js";
 export { type ChartFormat, type ChartFormatOptions, chartFormat } from "./chart-format.js";
 export {
   type ChartGestureHost,
@@ -112,6 +123,7 @@ export { type ChartLink, type ChartLinkMember, linkChart } from "./chart-link.js
 export {
   type ChartCircularType,
   type ChartColor,
+  type ChartCrossfilter,
   type ChartCurve,
   type ChartData,
   type ChartDataLabelPosition,
@@ -138,6 +150,7 @@ export {
   type ChartXType,
   chartCircularTypes,
   chartColors,
+  chartCrossfilters,
   chartCurves,
   chartData,
   chartDataLabelPositions,

@@ -10,6 +10,7 @@ import colorBlindGroup from "../../../../../packages/html/src/components/chart/e
 import columnDataLabelsGroup from "../../../../../packages/html/src/components/chart/examples/column-data-labels-group.html?raw";
 import columnRangesGroup from "../../../../../packages/html/src/components/chart/examples/column-ranges-group.html?raw";
 import columnSingle from "../../../../../packages/html/src/components/chart/examples/column-single-group.html?raw";
+import crossfilterGroup from "../../../../../packages/html/src/components/chart/examples/crossfilter-group.html?raw";
 import dataLabelsGroup from "../../../../../packages/html/src/components/chart/examples/data-labels-group.html?raw";
 import dumbbellGroup from "../../../../../packages/html/src/components/chart/examples/dumbbell-group.html?raw";
 import funnelGroup from "../../../../../packages/html/src/components/chart/examples/funnel-group.html?raw";
@@ -478,6 +479,64 @@ export function ChartBrush() {
     <>
       <Chart id="builds" label="Builds per day" type="area" categories={days} series={builds} />
       <Chart label="Builds, overview" type="bar" brushTarget="builds" height={120} categories={days} series={builds} />
+    </>
+  );
+}`,
+  },
+  {
+    id: "crossfilter",
+    title: "Filter linked charts",
+    body: `Charts of one \`group\` can filter each other: selecting a column, a bar or a slice in one chart filters the others, such as showing the revenue of the regions whose orders you selected. Set \`crossfilter\` (\`data-ok-crossfilter\` in HTML) on every chart that takes part. Its value says how the chart shows the filter that another chart sets:
+
+- **\`filter\`:** only the filtered categories keep their values, and the value axis fits them. Pie and donut charts hide the other slices.
+- **\`highlight\`:** every value stays, and a tint marks the filtered categories.
+
+A click, Enter or Space selects values as described in "Select data points", and the selected categories become the group's filter. Set \`allowMultipleDataPointsSelection\` to filter by several categories. A brush chart with \`crossfilter\` filters its group by the categories its selection covers. The charts of a group match categories by position, so give them the same categories in the same order.
+
+Every chart that takes part shows a **Clear filter** button under the plot while the group is filtered. It clears the filter and the selection that set it. The chart you act on announces the change to screen readers, such as "Filter: North, West". Rename the texts with \`localeText\`: \`clearFilter\`, \`filter\` and \`filterCleared\`.
+
+- **React:** \`onFilterChange(categories, own)\` is called with the filtered category indexes (\`null\` when cleared) and whether this chart set the filter.
+- **HTML:** \`ok:chart:filter\` fires with \`detail.categories\` and \`detail.own\`. The instance has \`filter\` and \`clearFilter()\`.`,
+    html: `${snippetElement(crossfilterGroup, "data-ok-chart ")}
+${snippetElement(crossfilterGroup, "data-ok-chart ", 1)}
+<script>
+  // Each change of the group's filter, as this chart sees it.
+  document.querySelector("[data-ok-chart]").addEventListener("ok:chart:filter", (event) => {
+    console.log(event.detail.categories, event.detail.own);
+  });
+</script>`,
+    react: `import { Chart } from "@owlky/react";
+import { useState } from "react";
+
+const regions = ["North", "South", "East", "West", "Central"];
+const orders = [{ name: "Orders", data: [420, 310, 280, 390, 150] }];
+const revenue = [{ name: "Revenue", data: [96, 71, 64, 88, 35] }];
+
+export function RegionsCrossfilter() {
+  const [filtered, setFiltered] = useState("every region");
+  return (
+    <>
+      <Chart
+        label="Orders by region"
+        type="bar"
+        group="regions"
+        crossfilter="highlight"
+        allowMultipleDataPointsSelection
+        categories={regions}
+        series={orders}
+        onFilterChange={(categories) =>
+          setFiltered(categories ? categories.map((i) => regions[i]).join(", ") : "every region")
+        }
+      />
+      <Chart
+        label="Revenue by region"
+        type="bar"
+        group="regions"
+        crossfilter="filter"
+        categories={regions}
+        series={revenue}
+      />
+      <p>Showing: {filtered}</p>
     </>
   );
 }`,
@@ -1144,6 +1203,7 @@ export function ChartLegendGrid() {
 - **\`ok:chart:active\`** fires with \`detail.active\`: the category (\`{ kind: "index", index }\`) or point (\`{ kind: "mark", mark }\`) under the pointer or the keyboard, or \`null\`.
 - **Instance:** \`runtime.get(element, "chart")\` returns \`{ hiddenSeries, setHiddenSeries(list), active, setActive(active), setFormatters(formatters), refresh(), updateSeries(series, categories), appendData(data, options) }\`. The methods don't fire events. The chart redraws by itself when the table or an option changes. See "Update data live".
 - **\`ok:chart:select\`** fires for each value a click, Enter or Space selects or clears, with \`detail.seriesIndex\`, \`detail.dataPointIndex\`, \`detail.selected\` and \`detail.selectedDataPoints\`. See "Select data points".
+- **\`ok:chart:filter\`** fires when the group's crossfilter changes, with \`detail.categories\` (\`null\` when cleared) and \`detail.own\`. The instance has \`filter\` and \`clearFilter()\`. See "Filter linked charts".
 - **\`ok:chart:zoom\`** fires when the zoom changes, with \`detail.range\` (\`{ min, max }\` or \`null\`) and \`detail.reason\`: \`user\` for the chart's own gestures, keys and buttons (cancelable), \`group\` or \`brush\` when a linked chart zoomed it.
 - **Phase 4 methods:** \`zoomRange\`, \`setZoomRange(range)\` (its group and brushes follow), \`exportChart("svg" | "png" | "csv")\` (a promise that rejects outside a user gesture) and \`setLocaleText(text)\`.
 - **Selection methods:** \`selectedDataPoints\`, \`setSelectedDataPoints(list)\` and \`toggleDataPointSelection(seriesIndex, dataPointIndex)\`.
@@ -1161,6 +1221,7 @@ export function ChartLegendGrid() {
 - The data table holds every value, including hidden series. Screen readers can read it instead of the drawing, which they skip.
 - The tooltip is a status region, so screen readers announce the values the keyboard moves to, and whether they are selected.
 - Selected values get an outline, not only a color change, and Enter or Space selects them without a pointer.
+- Crossfilters are set with the same clicks and keys, the chart you act on announces the filter, and a **Clear filter** button clears it. Filtered charts keep every value in their data table.
 - Marker shapes, patterns and dashes (\`colorBlindMode\` turns them all on) tell series apart without color, and the legend and the tooltip repeat them.
 - Legend buttons report their state with \`aria-pressed\`. A hidden series keeps a hollow marker and crossed-out text, so the state doesn't rely on color.
 - Axis labels use the secondary text color, which meets a contrast ratio of at least 4.5:1 in light and dark mode.`,
@@ -1518,6 +1579,31 @@ const PREVIEWS = {
             data: [120, 260, 85, -190, -45, { isSubtotal: true }, -60, { isTotal: true }],
           },
         ]}
+      />
+    </Preview>
+  ),
+  crossfilter: () => (
+    <Preview>
+      <Chart
+        label="Orders by region (select columns to filter the revenue)"
+        type="bar"
+        group="docs-regions"
+        crossfilter="highlight"
+        allowMultipleDataPointsSelection
+        height={200}
+        colors={["info"]}
+        categories={["North", "South", "East", "West", "Central"]}
+        series={[{ name: "Orders", data: [420, 310, 280, 390, 150] }]}
+      />
+      <Chart
+        label="Revenue by region (thousands of dollars)"
+        type="bar"
+        group="docs-regions"
+        crossfilter="filter"
+        height={200}
+        colors={["warning"]}
+        categories={["North", "South", "East", "West", "Central"]}
+        series={[{ name: "Revenue", data: [96, 71, 64, 88, 35] }]}
       />
     </Preview>
   ),

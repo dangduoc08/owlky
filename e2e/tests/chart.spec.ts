@@ -67,6 +67,7 @@ const STORIES = [
   "grid",
   "waterfall",
   "dumbbell",
+  "crossfilter",
 ];
 
 /** The SVG as plain data (gradient ids normalized): parity doesn't walk into SVG. */
@@ -624,4 +625,55 @@ for (const impl of implementations) {
       ]);
     });
   });
+
+  // Roadmap 4.18.19: crossfilter (ADR-0054).
+  test.describe(`chart crossfilter (${impl})`, () => {
+    test("clicks filter and highlight the group; Clear filter clears it", async ({ page }) => {
+      await openStory(page, storyId(impl, "chart", "crossfilter"));
+      const charts = page.locator("[data-ok-chart]");
+      const orders = charts.nth(0);
+      const revenue = charts.nth(1);
+      const returns = charts.nth(2);
+      await expect(revenue.getByRole("button", { name: "Clear filter" })).toBeHidden();
+      await orders.locator("[data-ok-chart-bar]").nth(3).click();
+      await orders.locator("[data-ok-chart-bar]").nth(0).click();
+      await expect(revenue.locator("[data-ok-chart-bar]")).toHaveCount(2);
+      await expect(returns.locator("[data-ok-chart-slice]")).toHaveCount(2);
+      await expect(orders.locator("[data-ok-chart-filter-status]")).toHaveText(
+        "Filter: North, West",
+      );
+      // A slice replaces the filter; the column chart is highlighted.
+      await returns.locator("[data-ok-chart-plot]").focus();
+      await page.keyboard.press("Home");
+      // The slice is active before Enter selects it (slow WebKit runs).
+      await expect(returns.locator("[data-ok-chart-tooltip]")).toBeVisible();
+      await page.keyboard.press("Enter");
+      await expect(orders.locator("[data-ok-chart-filter-band]")).toHaveCount(1);
+      await revenue.getByRole("button", { name: "Clear filter" }).click();
+      await expect(revenue.locator("[data-ok-chart-bar]")).toHaveCount(5);
+      await expect(returns.locator("[data-ok-chart-selected-mark]")).toHaveCount(0);
+      await expect(orders.getByRole("button", { name: "Clear filter" })).toBeHidden();
+    });
+  });
 }
+
+test("chart crossfilter: after the same actions, React and HTML draw the same SVG", async ({
+  page,
+  browserName,
+}) => {
+  test.skip(browserName !== "chromium", "Structure is browser-independent.");
+  const after = async (impl: "react" | "html") => {
+    await openStory(page, storyId(impl, "chart", "crossfilter"));
+    await page.locator("[data-ok-chart]").first().locator("[data-ok-chart-bar]").nth(1).click();
+    await page.locator("[data-ok-chart-plot]").nth(2).focus();
+    await page.keyboard.press("End");
+    await page.keyboard.press("Enter");
+    await page.keyboard.press("Escape");
+    await page.mouse.move(0, 0);
+    await expect(page.locator("[data-ok-chart-filter-band]")).toHaveCount(1);
+    return svgTree(page);
+  };
+  const react = await after("react");
+  const html = await after("html");
+  expect(html).toEqual(react);
+});

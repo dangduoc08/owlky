@@ -6,6 +6,7 @@ import {
   type ChartAnnotation,
   type ChartColor,
   type ChartColorRange,
+  type ChartCrossfilter,
   type ChartCurve,
   type ChartDataLabelPosition,
   type ChartDataPoint,
@@ -15,6 +16,7 @@ import {
   type ChartGestureMode,
   type ChartGestures,
   type ChartGrid,
+  type ChartGroupFilter,
   type ChartIndicator,
   type ChartLegend,
   type ChartLegendAlign,
@@ -44,6 +46,10 @@ import {
   chartActiveNodes,
   chartAnnotationItems,
   chartAttributes,
+  chartBrushCategories,
+  chartFilterCategories,
+  chartFilterLabels,
+  chartFilterText,
   chartIdPrefix,
   chartMarkAt,
   chartMarkPoint,
@@ -329,6 +335,18 @@ export interface ChartProps extends Omit<HTMLAttributes<HTMLElement>, "children"
   group?: string | undefined;
   /** A brush chart: its selection zooms the chart with this `id`. */
   brushTarget?: string | undefined;
+  /**
+   * Charts of a `group`: a selection in this chart (click, Enter or Space), or its brush, filters
+   * the other charts of the group, and this chart shows the group's filter: `"filter"` draws only
+   * the filtered categories' values, `"highlight"` tints them. Charts of a group share their
+   * categories by position. A **Clear filter** button under the plot clears it.
+   */
+  crossfilter?: ChartCrossfilter | undefined;
+  /**
+   * Called when the group's filter changes: the filtered category indexes (`null`: none) and
+   * whether this chart set it.
+   */
+  onFilterChange?: ((categories: number[] | null, own: boolean) => void) | undefined;
   /** A toolbar with zoom buttons (with `zoom`) and downloads (SVG, PNG, CSV). */
   toolbar?: boolean | undefined;
   /** Series grow in when first drawn and move to new values (never with reduced motion). */
@@ -458,6 +476,8 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     onZoomRangeChange,
     group,
     brushTarget,
+    crossfilter,
+    onFilterChange,
     toolbar,
     animations,
     localeText,
@@ -548,6 +568,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     waterfallTotalColor,
     waterfallSubtotalColor,
     hideConnectors,
+    crossfilter,
   });
   const isSparkline = attributes["data-ok-sparkline"] !== undefined;
   const givenHeight = attributes["data-ok-height"];
@@ -597,6 +618,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
   const validTotalColor = color("data-ok-waterfall-total-color");
   const validSubtotal = color("data-ok-waterfall-subtotal-color");
   const connectorsOff = attributes["data-ok-hide-connectors"] !== undefined;
+  const validCrossfilter = attributes["data-ok-crossfilter"] as ChartCrossfilter | undefined;
   const navigatorOn = attributes["data-ok-navigator"] !== undefined;
   // A navigator zooms the chart: its gestures and keys are on.
   const zoomOn = attributes["data-ok-zoom"] !== undefined || navigatorOn;
@@ -640,6 +662,10 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     defaultValue: defaultSelectedDataPoints,
   });
   const validSelected = useMemo(() => chartSelection(selected), [selected]);
+  // Crossfilter (4.18.19, ADR-0054): the group's filter as the registry told it, and the status.
+  const [groupFilter, setGroupFilter] = useState<ChartGroupFilter | null>(null);
+  const [filterStatus, setFilterStatus] = useState("");
+  const shownFilter = groupFilter && !groupFilter.own ? groupFilter.categories : null;
 
   const render = useMemo(
     () =>
@@ -720,6 +746,8 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         selection: brushTarget ? selection : preview,
         brush: Boolean(brushTarget),
         selectedDataPoints: validSelected,
+        crossfilter: validCrossfilter,
+        filter: shownFilter,
         yTitle,
         yaxis,
         xTitle,
@@ -813,6 +841,8 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       selection,
       preview,
       validSelected,
+      validCrossfilter,
+      shownFilter,
       yTitle,
       yaxis,
       xTitle,
@@ -859,6 +889,8 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
   const setBrush = (range: ChartZoom | null) => {
     setSelection(range);
     linkRef.current?.brush(range);
+    // Crossfilter: a brush filters its group by the categories it covers.
+    if (validCrossfilter) publishFilter(chartBrushCategories(range));
   };
   const setBrushRef = useRef(setBrush);
   setBrushRef.current = setBrush;
@@ -880,6 +912,25 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     linkRef.current?.shown(next?.kind === "index" ? next.index : null);
   };
 
+  /** Crossfilter: this chart's selection or brush now filters these categories; announced here. */
+  const publishFilter = (categories: number[] | null) => {
+    const link = linkRef.current;
+    if (!link || !group) return;
+    // Clearing only matters when this chart's filter is the group's.
+    if (!categories && !groupFilterRef.current?.own) return;
+    link.filtered(categories);
+    const current = renderRef.current;
+    setFilterStatus(
+      chartFilterText(current.data, categories, current.format.title, localeText ?? {}),
+    );
+  };
+  const groupFilterRef = useRef(groupFilter);
+  groupFilterRef.current = groupFilter;
+  const onFilterRef = useRef(onFilterChange);
+  onFilterRef.current = onFilterChange;
+  const selectedRef = useRef(validSelected);
+  selectedRef.current = validSelected;
+
   const figureRef = useRef<HTMLElement>(null);
   const mergedRef = useMergedRefs(ref, figureRef);
   const elementId = rest.id;
@@ -900,13 +951,28 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       },
       applyZoom: (range, reason) => setZoomRef.current(range, reason),
       select: (range) => setSelection(range),
+      ...(validCrossfilter
+        ? {
+            filter: (next: ChartGroupFilter | null) => {
+              setGroupFilter(next);
+              onFilterRef.current?.(next ? [...next.categories] : null, next?.own ?? false);
+            },
+            cleared: () => clearOwnRef.current(),
+          }
+        : {}),
     });
     linkRef.current = link;
+    // A chart linking again (new options) still filters with its selection.
+    if (validCrossfilter && group) {
+      const own = chartFilterCategories(renderRef.current.data, selectedRef.current);
+      if (own) link.filtered(own);
+    }
     return () => {
       link.unlink();
       linkRef.current = null;
+      setGroupFilter(null);
     };
-  }, [elementId, group, brushTarget]);
+  }, [elementId, group, brushTarget, validCrossfilter]);
 
   // A zoom that follows live data moves by itself: brushes of this chart redraw.
   const drawnMin = render.zoom?.min;
@@ -997,7 +1063,19 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         selected: hasChartDataPoint(next, entry),
         selectedDataPoints: [...next],
       });
+    // Crossfilter: the selection's categories filter the group.
+    if (validCrossfilter) publishFilter(chartFilterCategories(render.data, next));
   };
+  /** Crossfilter: the group's filter was cleared elsewhere: this chart's selection goes too. */
+  const clearOwn = () => {
+    const previous = selectedRef.current;
+    if (previous.length === 0) return;
+    setSelected([]);
+    for (const entry of previous)
+      onSelectionRef.current?.({ ...entry, selected: false, selectedDataPoints: [] });
+  };
+  const clearOwnRef = useRef(clearOwn);
+  clearOwnRef.current = clearOwn;
   // A click selects the point, slice or cell under the pointer (not after a drag or on brushes).
   const onClick = (event: MouseEvent<HTMLDivElement>) => {
     if (brushTarget || gesturesRef.current?.moved) return;
@@ -1242,6 +1320,24 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
               )}
         </div>
       </div>
+      {validCrossfilter && (
+        <div data-ok-chart-filter="">
+          <button
+            type="button"
+            data-ok-chart-filter-clear=""
+            hidden={!groupFilter}
+            onClick={() => {
+              linkRef.current?.clearFilter();
+              setFilterStatus(localeText?.filterCleared ?? chartFilterLabels.filterCleared);
+            }}
+          >
+            {localeText?.clearFilter ?? chartFilterLabels.clearFilter}
+          </button>
+          <span data-ok-chart-filter-status="" role="status">
+            {filterStatus}
+          </span>
+        </div>
+      )}
       <table data-ok-chart-data="">
         <caption>{label}</caption>
         <thead>

@@ -38,6 +38,7 @@ import {
 } from "../carousel/carousel-model.js";
 import {
   type ChartColor,
+  type ChartCrossfilter,
   type ChartCurve,
   type ChartDataLabelPosition,
   type ChartFill,
@@ -52,6 +53,7 @@ import {
   type ChartType,
   type ChartXType,
   chartColors,
+  chartCrossfilters,
   chartCurves,
   chartDataLabelPositions,
   chartFills,
@@ -4706,6 +4708,13 @@ export const chartOptions = defineOptions("chart", "data-ok-chart", {
     "data-ok-hide-connectors",
     "Waterfall charts: no dashed lines from the end of each bar to the next one.",
   ),
+  crossfilter: style(
+    "data-ok-crossfilter",
+    chartCrossfilters,
+    "highlight",
+    "Charts of a `group`: a selection (click, Enter or Space) or a brush in this chart filters the group, and this chart shows the group's filter as a `filter` (only the filtered categories keep their values) or a `highlight` (a tint behind them).",
+    { optional: true },
+  ),
   hiddenSeries: state(
     "aria-pressed",
     'Indexes of the series hidden through the legend (`aria-pressed="false"` on their buttons); categories in pie, donut and radial bar charts.',
@@ -4785,6 +4794,7 @@ export interface ChartAnatomyOptions {
   waterfallTotalColor?: ChartColor | undefined;
   waterfallSubtotalColor?: ChartColor | undefined;
   hideConnectors?: boolean | undefined;
+  crossfilter?: ChartCrossfilter | undefined;
 }
 
 /** `data-ok-*` attributes of a chart root (numbers only when given). */

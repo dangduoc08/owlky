@@ -301,6 +301,16 @@ export interface ChartParts {
   "data-ok-chart-data-label-badge": Part<"rect">;
   /** The group of data labels. Only labels that fit are drawn. */
   "data-ok-chart-data-labels": Part<"g">;
+  /** Crossfilter: the controls after the plot, a **Clear filter** button and a status. */
+  "data-ok-chart-filter": Part<"div">;
+  /** Crossfilter: the tint behind a filtered category (a band, a slice halo or a cell frame). */
+  "data-ok-chart-filter-band": Part<"rect" | "path">;
+  /** Crossfilter: clears the group's filter. `hidden` while the group has none. */
+  "data-ok-chart-filter-clear": Part<"button">;
+  /** Crossfilter: the group of tints behind the filtered categories (`highlight`), under the series. */
+  "data-ok-chart-filter-layer": Part<"g">;
+  /** Crossfilter: a visually hidden live region that announces the filter this chart set or cleared. */
+  "data-ok-chart-filter-status": Part<"span">;
   /** The grid. */
   "data-ok-chart-grid": Part<"g">;
   /** One grid line. */

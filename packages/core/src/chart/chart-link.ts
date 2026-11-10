@@ -1,3 +1,4 @@
+import type { ChartGroupFilter } from "./chart-filter.js";
 import type { ChartZoom, ChartZoomReason } from "./chart-zoom.js";
 
 /*
@@ -22,6 +23,13 @@ export interface ChartLinkMember {
   applyZoom(range: ChartZoom | null, reason: ChartZoomReason): void;
   /** Brush charts: their target zoomed (the selection to draw). */
   select(range: ChartZoom | null): void;
+  /**
+   * Crossfilter (ADR-0054): the group's filter changed (`null`: none). Only members that define
+   * it take part (charts with `crossfilter`).
+   */
+  filter?(filter: ChartGroupFilter | null): void;
+  /** Crossfilter: another chart cleared this chart's filter; it clears its own selection. */
+  cleared?(): void;
 }
 
 export interface ChartLink {
@@ -33,10 +41,32 @@ export interface ChartLink {
   brush(range: ChartZoom | null): void;
   /** The zoom drawn changed by itself (live data that it follows): only brushes redraw. */
   drawn(range: ChartZoom | null): void;
+  /**
+   * Crossfilter: this chart's selection or brush now filters these categories (`null`: its own
+   * filter is gone). Replaces the group's filter; the group's members are told.
+   */
+  filtered(categories: readonly number[] | null): void;
+  /** Crossfilter: clears the group's filter (its source clears its selection). */
+  clearFilter(): void;
   unlink(): void;
 }
 
 const members = new Set<ChartLinkMember>();
+/** One filter per group (ADR-0054): its categories and the chart that set it. */
+const filters = new Map<string, { categories: readonly number[]; source: ChartLinkMember }>();
+
+/** Members of a group that take part in its filter (the source included). */
+const filterMembers = (group: string) =>
+  [...members].filter((m) => m.group === group && m.filter !== undefined);
+
+/** Tells the group about its filter (or that it has none). */
+function tellFilter(group: string) {
+  const current = filters.get(group);
+  for (const member of filterMembers(group))
+    member.filter?.(
+      current ? { categories: current.categories, own: current.source === member } : null,
+    );
+}
 
 const groupOf = (member: ChartLinkMember) =>
   member.group ? [...members].filter((m) => m !== member && m.group === member.group) : [];
@@ -60,6 +90,9 @@ export function linkChart(member: ChartLinkMember): ChartLink {
     member.select(target ? target.zoom() : null);
   }
   if (member.id) for (const brush of brushesOf([member])) brush.select(member.zoom());
+  // A chart joining a filtered group shows its filter.
+  const current = member.group ? filters.get(member.group) : undefined;
+  if (current && member.filter) member.filter({ categories: current.categories, own: false });
   return {
     shown(index) {
       for (const other of groupOf(member)) other.showIndex(index);
@@ -77,8 +110,30 @@ export function linkChart(member: ChartLinkMember): ChartLink {
     drawn(range) {
       if (member.id) for (const brush of brushesOf([member])) brush.select(range);
     },
+    filtered(categories) {
+      const group = member.group;
+      if (!group || !member.filter) return;
+      if (categories?.length) filters.set(group, { categories: [...categories], source: member });
+      else if (filters.get(group)?.source === member) filters.delete(group);
+      else return;
+      tellFilter(group);
+    },
+    clearFilter() {
+      const group = member.group;
+      const current = group ? filters.get(group) : undefined;
+      if (!group || !current) return;
+      filters.delete(group);
+      tellFilter(group);
+      current.source.cleared?.();
+    },
     unlink() {
       members.delete(member);
+      // A source that leaves takes its filter with it.
+      const group = member.group;
+      if (group && filters.get(group)?.source === member) {
+        filters.delete(group);
+        tellFilter(group);
+      }
     },
   };
 }
