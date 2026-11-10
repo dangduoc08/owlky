@@ -826,6 +826,8 @@ export const gridDefaultLabels = {
   filterValueAny: "any",
   filterValueTrue: "true",
   filterValueFalse: "false",
+  toolbarUndo: "Undo",
+  toolbarRedo: "Redo",
   statusBarCount: "Count",
   statusBarSum: "Sum",
   statusBarAvg: "Average",

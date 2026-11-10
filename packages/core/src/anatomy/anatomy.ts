@@ -3381,9 +3381,16 @@ export const dataGridOptions = defineOptions("data-grid", "data-ok-data-grid", {
     "data-ok-status-bar",
     "With cell selection: a bar under the rows counts the selected cells and sums their numbers.",
   ),
+  historyStackSize: number(
+    "data-ok-history-stack-size",
+    30,
+    "Edits and pastes that Ctrl / Cmd + Z can undo (`0` turns undo and redo off).",
+    { min: 0 },
+  ),
 });
 
 export interface DataGridAnatomyOptions {
+  historyStackSize?: number | undefined;
   multipleColumnsSortingMode?: "withModifierKey" | "always" | undefined;
   statusBar?: boolean | undefined;
   disableRowGrouping?: boolean | undefined;

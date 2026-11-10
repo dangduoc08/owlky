@@ -517,6 +517,29 @@ for (const impl of implementations) {
       expect(await visible(page, "points")).toEqual(["5", "8", "5"]);
     });
 
+    test("undo and redo: keys and toolbar buttons undo an edit", async ({ page }) => {
+      await openStory(page, storyId(impl, "datagrid", "undo-redo"));
+      const title = page.locator(
+        '[data-ok-row-id="is-2"] [role="gridcell"][data-ok-field="title"]',
+      );
+      const undo = page.getByRole("button", { name: "Undo" });
+      await expect(undo).toBeDisabled();
+      await title.dblclick();
+      const field = page.getByRole("textbox", { name: "Edit Title" });
+      await field.fill("Write the docs");
+      await field.press("Enter");
+      await expect(title).toHaveText("Write the docs");
+      await expect(title).toBeFocused();
+      await page.keyboard.press("ControlOrMeta+z");
+      await expect(title).toHaveText("Update the docs");
+      await page.keyboard.press("ControlOrMeta+Shift+z");
+      await expect(title).toHaveText("Write the docs");
+      await undo.click();
+      await expect(title).toHaveText("Update the docs");
+      await page.getByRole("button", { name: "Redo" }).click();
+      await expect(title).toHaveText("Write the docs");
+    });
+
     test("edit modes: Edit, Save and Cancel buttons drive row editing", async ({ page }) => {
       await openStory(page, storyId(impl, "datagrid", "edit-modes"));
       const hours = page.locator('[data-ok-row-id="m-2"] [data-ok-field="hours"]');

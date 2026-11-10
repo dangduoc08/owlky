@@ -18,7 +18,8 @@ moved and `hidden`).
 div[data-ok-data-grid][data-ok-density][data-ok-checkbox-selection]?[data-ok-disable-*]?[id]
   div[data-ok-data-grid-toolbar]                                            (showToolbar)
     div[data-ok-data-grid-quick-filter] › TextField (search)
-    div[data-ok-data-grid-toolbar-actions] › Button × (Columns, Filters, Density, Export)
+    div[data-ok-data-grid-toolbar-actions] › IconButton[data-ok-data-grid-history=undo|redo][disabled]? × 2 (undo on)
+      › Button × (Columns, Filters, Density, Export)
          [aria-haspopup][aria-controls="<id>-columns|filters|density|export"] (HTML: data-ok-popover-open)
          (toolbarVariant="icon": IconButton[aria-labelledby] + Tooltip#<id>-<panel>-tooltip)
     Popover#<id>-columns › div[data-ok-data-grid-panel][role=group] › FormControlLabel(Switch[data-ok-field])…
@@ -191,6 +192,7 @@ Root: `data-ok-data-grid`. Unknown values fall back to the default.
 | `chartsIntegration` | `data-ok-charts-integration` | flag | boolean | off | A chart of the grid's rows (or top-level groups) follows its filters, sorting and grouping. |
 | `multipleColumnsSortingMode` | `data-ok-multiple-columns-sorting-mode="…"` | style | `withModifierKey` `always` | — | Sorting a column keeps the others with Shift, Ctrl or Cmd (`withModifierKey`), or `always`. |
 | `statusBar` | `data-ok-status-bar` | flag | boolean | off | With cell selection: a bar under the rows counts the selected cells and sums their numbers. |
+| `historyStackSize` | `data-ok-history-stack-size="…"` | number | number | `30` | Edits and pastes that Ctrl / Cmd + Z can undo (`0` turns undo and redo off). |
 <!-- /options:data-grid -->
 
 React props (MUI X names): `rows`, `columns` (`GridColDef`: `field`, `headerName`, `type`
@@ -260,7 +262,10 @@ row grouping, aggregation, pivot, cell selection and chart setters. Batch E (roa
 `sortComparator(v1, v2, params1, params2)`, `getSortComparator(direction)`; (4.18.50) column
 `renderEditCell`, `renderHeaderFilter`, `cellModesModel` / `onCellModesModelChange`, `rowModesModel` /
 `onRowModesModelChange`, apiRef `setEditCellValue`, `getCellModesModel`, `getRowModesModel`,
-`startCellEditMode`, `stopCellEditMode`, `startRowEditMode`, `stopRowEditMode`. Beyond MUI X (4.18.11,
+`startCellEditMode`, `stopCellEditMode`, `startRowEditMode`, `stopRowEditMode`; (4.18.9)
+`historyStackSize` (30; 0: off), `onUndo` / `onRedo` (`{ ids }`), `showHistoryControls` (MUI X:
+`slotProps.toolbar.showHistoryControls`), apiRef `history` (`undo()` / `redo()` → `Promise<boolean>`,
+`clear()`, `canUndo()`, `canRedo()`). Beyond MUI X (4.18.11,
 ApexGrid / spreadsheets): `statusBar` with `cellSelection`, locale keys `statusBarCount`,
 `statusBarSum`, `statusBarAvg`, `statusBarMin`, `statusBarMax`. Beyond MUI X: Alt + Up / Down on a reorder handle (WCAG 2.5.7). Beyond MUI X (accessibility): Alt + Left / Right resizes, column menu
 Move left / Move right. Renamed: `rowSelectionModel` is an id array (MUI v8:
@@ -430,6 +435,21 @@ hides the sort items outside the cycle. `sortComparator` compares ascending (rev
 a 0 or NaN goes on to the next sort key. `multipleColumnsSortingMode="always"` adds every clicked
 column to the sort (Shift not needed; `disableMultipleColumnsSorting` still wins). Grouped rows and
 the pivot order groups as before (by key or aggregated value).
+Undo and redo (4.18.9): each saved cell or row edit (after `processRowUpdate`; HTML: an accepted
+`ok:data-grid:edit`) and each paste (all its rows) is one step, at most `historyStackSize` (core
+`createGridHistoryStack`); a new step drops the redo steps. Ctrl / Cmd + Z on a cell or header undoes,
+Ctrl / Cmd + Shift + Z and Ctrl / Cmd + Y redo (core `createGridHistoryKeys`; fields keep their own
+undo). A step writes the changed fields of each row back (or forward) through `processRowUpdate`
+(HTML: a cancelable `ok:data-grid:edit`, then `updateRow` with a data source); it applies only when
+the rows still hold the values it left (core `gridHistoryRow`; HTML compares as text). A step that
+can't apply or is refused fails: an undo drops the steps before it, a redo the ones after it (MUI
+X). Off with `historyStackSize` 0, without editable columns, or with a data source without
+`updateRow`; pastes with a data source aren't steps. Toolbar: Undo / Redo icon buttons (labels
+`toolbarUndo`, `toolbarRedo`) first in the actions, disabled when there is nothing to undo or redo
+(React: with `showToolbar`, `showHistoryControls`, undo on; HTML: the markup's
+`button[data-ok-data-grid-history]`). HTML now keeps the values from before an edit for
+`updateRow`'s `previousRow` (it read the editors' cells before).
+
 Custom editors and edit modes (4.18.50): `renderEditCell` replaces the editor of the cell being
 edited; the first control (or the one marked `data-ok-data-grid-edit-input`) takes the focus; Enter
 saves, Escape cancels, focus leaving the cell (row mode: the row) saves; keys and focus moves inside
@@ -471,6 +491,8 @@ changes (no repeated announcements). React: custom `aggregationFunctions` apply;
 | Right to left | Left / Right and Alt + Left / Right follow the reading order |
 | Shift + arrows (cellSelection) | Extend the cell range from the anchor |
 | Ctrl / Cmd + C, Ctrl / Cmd + V (cell) | Copy (cells, rows or the focused cell) / paste into editable cells |
+| Ctrl / Cmd + Z (cell, header) | Undo the last edit or paste |
+| Ctrl / Cmd + Shift + Z, Ctrl / Cmd + Y (cell, header) | Redo it |
 | Up / Down (header filter field) | Move to the cell above / below |
 
 ## Accessibility
@@ -509,7 +531,8 @@ the active chart's), `chartModels`, `activeChartId`, `setChartModels(models)`,
 `setActiveChartId(id)`; `ok:data-grid:chart` carries `id` with several charts;
 `ok:data-grid:activechart` (cancelable, `{ id }`);
 `toExcel(options)`, `exportExcel(options)`.
-Batch E: `ok:data-grid:cellmodes` / `rowmodes` (cancelable, `{ model }`: the next modes model of a
+Batch E: `ok:data-grid:undo` / `redo` (`{ ids }`), instance `history` (`undo()`, `redo()`,
+`clear()`, `canUndo()`, `canRedo()`); `ok:data-grid:cellmodes` / `rowmodes` (cancelable, `{ model }`: the next modes model of a
 start or stop people make); instance `cellModesModel`, `rowModesModel`, `setCellModesModel(model)`,
 `setRowModesModel(model)` (no events), `setEditCellValue({ id, field, value })`;
 `setSortComparator(field, { sortComparator?, getSortComparator? } | null)`
@@ -554,7 +577,8 @@ the detailed record of what is kept.
 | Columns: `disableAutosize`, `onColumnResize`, `keepColumnPositionIfDraggedOutside`, `pinnedColumnsSectionSeparator`, `pinnedRowsSectionSeparator` | — | deferred | |
 | Editing: `editMode`, `processRowUpdate`, `onProcessRowUpdateError`, `isCellEditable`, `onCellEditStart` / `Stop`, `onRowEditStart` / `Stop` | same | kept | |
 | Editing: `cellModesModel` / `rowModesModel` + change callbacks; apiRef `setEditCellValue`, `startCellEditMode` / `stopCellEditMode`, `startRowEditMode` / `stopRowEditMode` | same (+ `getCellModesModel` / `getRowModesModel`) | kept (4.18.50) | one cell or row at a time (the first `edit` entry); callbacks get the model only (MUI X: `details` too); apiRef starts and stops fire no edit start / stop callbacks; HTML: `cellModesModel` / `rowModesModel`, `setCellModesModel` / `setRowModesModel` (no events), cancelable `ok:data-grid:cellmodes` / `rowmodes` |
-| Undo / redo: `historyStackSize`, `historyEventHandlers`, `historyValidationEvents`, `onUndo`, `onRedo` | — | deferred (4.18.9) | |
+| Undo / redo: `historyStackSize`, `onUndo`, `onRedo`, `slotProps.toolbar.showHistoryControls`, apiRef `history` (`undo`, `redo`, `clear`, `canUndo`, `canRedo`) | same (`showHistoryControls` a grid prop) | kept (4.18.9) | steps: saved cell / row edits and pastes (not pastes with a data source; off with a data source without `updateRow`); `onUndo` / `onRedo` get `{ ids }`; HTML `data-ok-history-stack-size`, `button[data-ok-data-grid-history]`, instance `history`, `ok:data-grid:undo` / `redo` |
+| Undo / redo: `historyEventHandlers`, `historyValidationEvents`, `undoable` setters | — | not applicable | engine events of MUI X; each step checks its rows instead (see Behavior) |
 | Toolbar / footer: `showToolbar`, `hideFooter`, `disableColumnSelector`, `disableDensitySelector`, `disableColumnMenu` | same | kept | `toolbarVariant` added |
 | Toolbar / footer: `hideFooterPagination`, `hideFooterRowCount`, `hideFooterSelectedRowCount`, `label` (toolbar title) | — | deferred | |
 | Events: `onRowClick`, `onRowDoubleClick`, `onCellClick`, `onCellDoubleClick`, `onCellKeyDown`, `onColumnHeaderClick`, `onRowsScrollEnd` | same | kept | |

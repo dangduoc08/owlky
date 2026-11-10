@@ -562,6 +562,8 @@ export interface DataGridParts {
   "data-ok-data-grid-header-filters": Part<"div">;
   /** The title of a column header. */
   "data-ok-data-grid-header-title": Part<"span">;
+  /** A toolbar button that undoes or redoes the last edit (disabled when there is none). */
+  "data-ok-data-grid-history": Value<"undo" | "redo">;
   /** The single cell of a row in the list view. */
   "data-ok-data-grid-list-cell": Part<"div">;
   /** A visually hidden live region, such as "Row moved to position 2 of 8". */

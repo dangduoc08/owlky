@@ -11,6 +11,7 @@ import groupingFooters from "../../../../../packages/html/src/components/data-gr
 import groupingGroup from "../../../../../packages/html/src/components/data-grid/examples/grouping-group.html?raw";
 import groupingMultiple from "../../../../../packages/html/src/components/data-grid/examples/grouping-multiple.html?raw";
 import groupingValue from "../../../../../packages/html/src/components/data-grid/examples/grouping-value.html?raw";
+import historyGroup from "../../../../../packages/html/src/components/data-grid/examples/history-group.html?raw";
 import largeGroup from "../../../../../packages/html/src/components/data-grid/examples/large-group.html?raw";
 import layoutTasks from "../../../../../packages/html/src/components/data-grid/examples/layout-tasks.html?raw";
 import lazyGroup from "../../../../../packages/html/src/components/data-grid/examples/lazy-group.html?raw";
@@ -1308,6 +1309,43 @@ export function DataGridChartsConfiguration() {
 }`,
   },
   {
+    id: "undo-redo",
+    title: "Undo and redo edits",
+    body: "Ctrl + Z (Cmd + Z on macOS) undoes the last saved edit, and Ctrl + Shift + Z or Ctrl + Y redoes it, while the focus is on a cell or a header. Each edited cell or row is one step, and so is each paste, whatever the number of cells it fills. Undo and redo save the rows again through `processRowUpdate` (HTML: a cancelable `ok:data-grid:edit`), so your server sees them like any edit. If a row changed in another way since the step, for example new `rows` from your code, the step can't apply and the steps before it are dropped. A refused save does the same. `historyStackSize` sets how many steps the grid keeps (30 by default; `0` turns undo and redo off). With `showToolbar`, the toolbar has **Undo** and **Redo** buttons. In React, `showHistoryControls={false}` hides them. In HTML, they're the toolbar buttons with `data-ok-data-grid-history`. `apiRef.current.history` (HTML: the instance's `history`) has `undo()`, `redo()`, `canUndo()`, `canRedo()` and `clear()`. `onUndo` and `onRedo` (HTML: `ok:data-grid:undo` and `ok:data-grid:redo`) report the ids of the rows that changed. Typing in a field keeps the field's own undo.",
+    html: `${gridOf(historyGroup)}`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+const issues = [
+  { id: 1, title: "Fix the login form", points: 3 },
+  { id: 2, title: "Add dark mode", points: 8 },
+];
+
+const columns: GridColDef<(typeof issues)[number]>[] = [
+  { field: "title", headerName: "Title", flex: 1, editable: true },
+  { field: "points", headerName: "Points", type: "number", editable: true },
+];
+
+// Your own save: send the row to your API
+async function save(row: (typeof issues)[number]) {
+  await fetch(\`/api/issues/\${row.id}\`, { method: "PUT", body: JSON.stringify(row) });
+  return row;
+}
+
+export function Issues() {
+  return (
+    <DataGrid
+      aria-label="Issues"
+      rows={issues}
+      columns={columns}
+      showToolbar
+      cellSelection
+      historyStackSize={20}
+      processRowUpdate={(row) => save(row)}
+    />
+  );
+}`,
+  },
+  {
     id: "custom-editors",
     title: "Use your own editors and filter fields",
     body: 'A column\'s `renderEditCell` replaces the field that edits its cells, for example with a slider. The editor gets the edited `value`, the `error` of the value, and `api`: call `api.setEditCellValue({ id, field, value })` when the value changes. Enter saves, Escape cancels, and moving the focus out of the cell saves, like the built-in fields. The first control of the editor takes the focus. In HTML, write the editor in `<template data-ok-data-grid-edit-cell="<field>">` at the end of the grid. The grid copies it into the cell. A field marked `data-ok-data-grid-edit-input` holds the value, or call `setEditCellValue()` from a script. With `headerFilters`, a column\'s `renderHeaderFilter` replaces its filter field: call `applyFilterChanges(item)` with the column\'s filter item. In HTML, write that field in the header filter cell, and name its operator with `data-ok-filter-operator`, such as `">="`.',
@@ -1552,6 +1590,7 @@ export function Issues() {
 - **\`ok:data-grid:expand\`**, **\`ok:data-grid:detailpanel\`** and **\`ok:data-grid:roworder\`** report a row opening, a panel opening and a row moving. They're cancelable. \`setRowChildrenExpansion(id, open)\` and \`toggleDetailPanel(id)\` do the same from code.
 - **More methods:** \`print(options)\`, \`autosizeColumns(options)\`, \`scrollToIndexes({ rowIndex, colIndex })\`, \`exportState()\`, \`restoreState(state)\`, \`setFilterOperators(field, operators)\`, \`setSortComparator(field, comparators)\`, \`setValueFormatter(field, format)\`, \`setGroupingValueGetter(field, getter)\`, \`setPivotDerivedColumns(getter)\` and \`setLocaleText(labels)\`. \`toCsv\` and \`exportCsv\` take CSV options.
 - **\`ok:data-grid:rowgrouping\`**, **\`ok:data-grid:aggregation\`**, **\`ok:data-grid:cellselection\`** and **\`ok:data-grid:chart\`** fire with the new model in \`detail.model\`. **\`ok:data-grid:pivot\`** reports \`detail.model\` and \`detail.active\`. **\`ok:data-grid:activechart\`** reports the chart the panel switches to in \`detail.id\`. They're cancelable. **\`ok:data-grid:clipboardcopy\`** reports the copied text in \`detail.data\`, and the cancelable **\`ok:data-grid:clipboardpaste\`** the pasted cells. The instance has \`rowGroupingModel\`, \`aggregationModel\`, \`pivotModel\`, \`pivotActive\`, \`cellSelectionModel\` and \`chartModel\` with their setters, \`toExcel(options)\` and \`exportExcel(options)\`.
+- **\`ok:data-grid:undo\`** and **\`ok:data-grid:redo\`** report the ids of the rows an undo or a redo changed, in \`detail.ids\`. The instance's \`history\` has \`undo()\`, \`redo()\`, \`canUndo()\`, \`canRedo()\` and \`clear()\`.
 - **\`ok:data-grid:cellmodes\`** and **\`ok:data-grid:rowmodes\`** fire when people start or stop editing, with the next modes model in \`detail.model\`. They're cancelable. The instance has \`cellModesModel\` and \`rowModesModel\` with their setters, and \`setEditCellValue({ id, field, value })\`.
 - **\`ok:data-grid:scrollend\`** reports \`detail.visibleRowsCount\` when people scroll to the end of the rows. **\`ok:data-grid:datasourceerror\`** reports \`detail.error\` when a data source fails.`,
   },
@@ -1717,6 +1756,12 @@ const PREVIEWS = {
           description: "Read-only cells, checks while typing, and how edits become values.",
         },
         {
+          react: "historyStackSize · onUndo · onRedo · showHistoryControls",
+          html: "data-ok-history-stack-size · ok:data-grid:undo · redo · data-ok-data-grid-history",
+          type: "number · ({ ids }) => void · boolean",
+          description: "Undo and redo of edits and pastes, and the toolbar's buttons.",
+        },
+        {
           react: "renderEditCell · renderHeaderFilter (column)",
           html: "template[data-ok-data-grid-edit-cell] · data-ok-filter-operator",
           type: "(params) => ReactNode",
@@ -1826,6 +1871,8 @@ const PREVIEWS = {
         ["Alt + Up / Alt + Down on a row handle", "Moves the row up / down"],
         ["Shift + arrow keys (cell selection)", "Extends the selected range"],
         ["Ctrl + C / Ctrl + V on a cell", "Copies the selection / pastes into editable cells"],
+        ["Ctrl + Z on a cell or a header", "Undoes the last edit or paste"],
+        ["Ctrl + Shift + Z or Ctrl + Y on a cell or a header", "Redoes it"],
         ["Up / Down in a header filter", "Moves to the cell above / below"],
       ]}
     />

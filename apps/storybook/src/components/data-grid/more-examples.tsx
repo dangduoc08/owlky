@@ -101,6 +101,20 @@ const editorColumns: GridColDef<Issue>[] = [
   },
 ];
 
+/* Editable issues: edits and pastes can be undone. */
+const historyColumns: GridColDef<Issue>[] = [
+  { field: "title", headerName: "Title", flex: 1, minWidth: 180, editable: true },
+  {
+    field: "priority",
+    headerName: "Priority",
+    type: "singleSelect",
+    valueOptions: ["High", "Medium", "Low"],
+    width: 140,
+    editable: true,
+  },
+  { field: "points", headerName: "Points", type: "number", width: 110, editable: true },
+];
+
 /**
  * Story groups beyond the reference's sections (roadmap batch E). Snippets: `node
  * apps/storybook/scripts/data-grid-snippets.mjs`.
@@ -140,10 +154,29 @@ export const moreStories: Record<string, ReactGroup[]> = {
     },
   ],
   modes: [{ title: "Edit modes", content: <EditModesDemo /> }],
+  history: [
+    {
+      title: "Undo and redo",
+      content: (
+        <DataGrid
+          id="grid-history"
+          aria-label="Issues"
+          className="sb-grid"
+          rows={ISSUES}
+          columns={historyColumns}
+          showToolbar
+          cellSelection
+          historyStackSize={20}
+          hideFooter
+        />
+      ),
+    },
+  ],
 };
 
 export const MORE_FILES = {
   sorting: [["Sort order and comparators", "group"]],
   editors: [["Custom edit and filter fields", "group"]],
   modes: [["Edit modes", "group"]],
+  history: [["Undo and redo", "group"]],
 } as const;

@@ -48,7 +48,7 @@ const header = (host: Element, field: string) =>
   host.querySelector<HTMLElement>(`[role="columnheader"][data-ok-field="${field}"]`) as HTMLElement;
 
 describe("data grid snippets", () => {
-  it("covers every story group", () => expect(snippets).toHaveLength(31));
+  it("covers every story group", () => expect(snippets).toHaveLength(32));
 
   // Grids whose rows come from JavaScript (setRows, data sources) ship no rows.
   const scripted = (path: string) => /(large|server|lazy|server-aggregation)-group/.test(path);
@@ -72,7 +72,7 @@ describe("data grid snippets", () => {
 
   // Layout and validation grids: their own rows, no pages.
   const unpaged = (path: string) =>
-    /(layout|validation|tree|detail|ordering|groups|list|grouping|pivot|cells|charts|sorting|editors|modes)-/.test(
+    /(layout|validation|tree|detail|ordering|groups|list|grouping|pivot|cells|charts|sorting|editors|modes|history)-/.test(
       path,
     );
 
@@ -2161,5 +2161,116 @@ describe("data grid custom editors and edit modes", () => {
     expect(getComputedStyle(save).display).toBe("none");
     await expectNoAxeViolations(host);
     expect(cell("m-1", "hours").textContent).toBe("32");
+  });
+});
+
+describe("data grid undo and redo", () => {
+  const snippet = (name: string) =>
+    snippets.find(([path]) => path.endsWith(`${name}.html`))?.[1] as string;
+  const open = (name: string, edit?: (root: HTMLElement) => void) => {
+    const host = mount(snippet(name));
+    const root = host.querySelector<HTMLElement>("[data-ok-data-grid]") as HTMLElement;
+    root.setAttribute("data-ok-disable-virtualization", "");
+    edit?.(root);
+    start();
+    const instance = runtime?.get<DataGridInstance>(root, "data-grid") as DataGridInstance;
+    const cell = (id: string, field: string) =>
+      host.querySelector<HTMLElement>(
+        `[data-ok-row-id="${id}"] [role="gridcell"][data-ok-field="${field}"]`,
+      ) as HTMLElement;
+    return { host, root, instance, cell };
+  };
+  const key = (target: Element, k: string, init: KeyboardEventInit = {}) =>
+    target.dispatchEvent(
+      new KeyboardEvent("keydown", { bubbles: true, cancelable: true, key: k, ...init }),
+    );
+  const editTo = (cell: HTMLElement, text: string) => {
+    cell.dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
+    const input = cell.querySelector("input") as HTMLInputElement;
+    input.value = text;
+    key(input, "Enter");
+  };
+
+  it("Ctrl + Z undoes an edit, Shift + Z and Y redo it; the toolbar buttons follow", async () => {
+    const { host, root, instance, cell } = open("cells-group");
+    const events: [string, unknown][] = [];
+    for (const name of ["edit", "undo", "redo"])
+      root.addEventListener(`ok:data-grid:${name}`, (event) =>
+        events.push([name, (event as CustomEvent).detail]),
+      );
+    const undo = host.querySelector('[data-ok-data-grid-history="undo"]') as HTMLButtonElement;
+    const redo = host.querySelector('[data-ok-data-grid-history="redo"]') as HTMLButtonElement;
+    expect(undo.disabled).toBe(true);
+    editTo(cell("i-1", "name"), "Pot");
+    expect(cell("i-1", "name").textContent).toBe("Pot");
+    expect(undo.disabled).toBe(false);
+    key(cell("i-1", "name"), "z", { ctrlKey: true });
+    expect(cell("i-1", "name").textContent).toBe("Kettle");
+    expect(events.slice(-2)).toEqual([
+      ["edit", { id: "i-1", row: { name: "Kettle" } }],
+      ["undo", { ids: ["i-1"] }],
+    ]);
+    expect(redo.disabled).toBe(false);
+    key(cell("i-1", "name"), "z", { metaKey: true, shiftKey: true });
+    expect(cell("i-1", "name").textContent).toBe("Pot");
+    expect(events.at(-1)).toEqual(["redo", { ids: ["i-1"] }]);
+    undo.click();
+    expect(cell("i-1", "name").textContent).toBe("Kettle");
+    key(cell("i-1", "name"), "y", { ctrlKey: true });
+    expect(cell("i-1", "name").textContent).toBe("Pot");
+    expect(instance.history.canUndo()).toBe(true);
+    expect(instance.history.canRedo()).toBe(false);
+    redo.click();
+    expect(await instance.history.redo()).toBe(false);
+    // A refused undo fails and forgets the steps.
+    root.addEventListener("ok:data-grid:edit", (event) => event.preventDefault(), { once: true });
+    expect(await instance.history.undo()).toBe(false);
+    expect(instance.history.canUndo()).toBe(false);
+    expect(undo.disabled).toBe(true);
+    await expectNoAxeViolations(host);
+  });
+
+  it("a paste is one step; changed rows and new rows stop a step; the size and clear", async () => {
+    const { root, instance, cell } = open("cells-group", (r) =>
+      r.setAttribute("data-ok-history-stack-size", "2"),
+    );
+    // Paste two rows of two cells into name / category.
+    cell("i-1", "name").focus();
+    key(cell("i-1", "name"), "v", { ctrlKey: true });
+    const area = document.activeElement as HTMLElement;
+    const read = vi.spyOn(DataTransfer.prototype, "getData").mockReturnValue("A\tTools\nB\tTools");
+    area.dispatchEvent(
+      new ClipboardEvent("paste", {
+        bubbles: true,
+        cancelable: true,
+        clipboardData: new DataTransfer(),
+      }),
+    );
+    read.mockRestore();
+    expect(cell("i-2", "name").textContent).toBe("B");
+    expect(await instance.history.undo()).toBe(true);
+    expect(cell("i-1", "name").textContent).toBe("Kettle");
+    expect(cell("i-2", "category").textContent).toBe("Serving");
+    expect(await instance.history.redo()).toBe(true);
+    expect(cell("i-2", "category").textContent).toBe("Tools");
+    // Three edits, two kept.
+    editTo(cell("i-3", "name"), "C");
+    editTo(cell("i-3", "name"), "D");
+    editTo(cell("i-3", "name"), "E");
+    expect(await instance.history.undo()).toBe(true);
+    expect(await instance.history.undo()).toBe(true);
+    expect(await instance.history.undo()).toBe(false);
+    expect(cell("i-3", "name").textContent).toBe("C");
+    // Changed outside the history: the step can't apply.
+    instance.history.clear();
+    editTo(cell("i-4", "name"), "F");
+    cell("i-4", "name").setAttribute("data-ok-value", "G");
+    expect(await instance.history.undo()).toBe(false);
+    // Turned off: no steps, no keys.
+    root.setAttribute("data-ok-history-stack-size", "0");
+    editTo(cell("i-5", "name"), "H");
+    key(cell("i-5", "name"), "z", { ctrlKey: true });
+    expect(cell("i-5", "name").textContent).toBe("H");
+    expect(instance.history.canUndo()).toBe(false);
   });
 });

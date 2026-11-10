@@ -7,6 +7,8 @@ import {
   createGridClipboard,
   createGridColumnControls,
   createGridDataSourceCache,
+  createGridHistoryKeys,
+  createGridHistoryStack,
   createGridNavigation,
   createGridPivotDrag,
   createGridRowReorder,
@@ -43,6 +45,9 @@ import {
   type GridFilterModel,
   type GridFilterOperator,
   type GridGroupNode,
+  type GridHistoryApi,
+  type GridHistoryChange,
+  type GridHistoryStack,
   type GridLabels,
   type GridNavigation,
   type GridPinnedColumns,
@@ -94,6 +99,7 @@ import {
   gridGroupRows,
   gridGroupsById,
   gridHeaderAlign,
+  gridHistoryRow,
   gridMissingRanges,
   gridOperatorNeedsValue,
   gridPinSide,
@@ -392,6 +398,8 @@ export interface GridApi<R> {
   /** The .xlsx file of the filtered, sorted rows (bytes). */
   getDataAsExcel(options?: GridExcelOptions): Uint8Array;
   exportDataAsExcel(options?: GridExcelOptions): void;
+  /** Undo and redo of edits and pastes (MUI X `apiRef.current.history`). */
+  history: GridHistoryApi;
   /** Sets the value of a cell being edited (custom editors). */
   setEditCellValue(params: { id: string; field: string; value: unknown }): void;
   /** The cells in edit mode. */
@@ -522,6 +530,18 @@ export interface DataGridProps<R>
   processRowUpdate?: ((newRow: R, oldRow: R) => R | Promise<R>) | undefined;
   /** Called when `processRowUpdate` throws or rejects. */
   onProcessRowUpdateError?: ((error: unknown) => void) | undefined;
+  /**
+   * Edits that Ctrl / Cmd + Z can undo (Ctrl / Cmd + Shift + Z or Ctrl + Y redo). Each saved cell
+   * or row edit, and each paste, is one step; undo and redo go through `processRowUpdate`. `0`
+   * turns undo and redo off. Default `30`.
+   */
+  historyStackSize?: number | undefined;
+  /** Called after an undo, with the ids of the rows it restored. */
+  onUndo?: ((params: { ids: string[] }) => void) | undefined;
+  /** Called after a redo, with the ids of the rows it changed again. */
+  onRedo?: ((params: { ids: string[] }) => void) | undefined;
+  /** Undo and Redo buttons in the toolbar (with `showToolbar` and undo on). Default `true`. */
+  showHistoryControls?: boolean | undefined;
   /**
    * Which cells are in edit mode (`editMode="cell"`), controlled: `{ [id]: { [field]: { mode } } }`
    * with `mode` `"edit"` or `"view"` (`ignoreModifications: true` leaves without saving). The
@@ -859,6 +879,16 @@ const ChartIcon = () => (
     <path d="M4 20V10h3v10zm6.5 0V4h3v16zM17 20v-7h3v7z" />
   </svg>
 );
+const UndoIcon = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
+    <path d="M9 5 4 10l5 5v-4h6a4 4 0 0 1 0 8h-3v2h3a6 6 0 0 0 0-12H9z" />
+  </svg>
+);
+const RedoIcon = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
+    <path d="m15 5 5 5-5 5v-4H9a4 4 0 0 0 0 8h3v2H9a6 6 0 0 1 0-12h6z" />
+  </svg>
+);
 
 const REORDER_FIELD = "__reorder__";
 const DETAIL_FIELD = "__detail_panel_toggle__";
@@ -979,6 +1009,10 @@ function DataGridInner<R>(
     onPinnedColumnsChange,
     editMode = "cell",
     processRowUpdate,
+    historyStackSize: historyStackSizeProp = 30,
+    onUndo,
+    onRedo,
+    showHistoryControls = true,
     cellModesModel,
     onCellModesModelChange,
     rowModesModel,
@@ -2386,7 +2420,9 @@ function DataGridInner<R>(
         ? column.valueSetter(value, newRow)
         : ({ ...newRow, [f]: value } as R);
     }
-    commitRow(rowId, oldRow, newRow);
+    commitRow(rowId, oldRow, newRow).then(
+      (saved) => saved && record([{ id: rowId, before: oldRow, after: saved }]),
+    );
   };
   /** `apiRef` starts and stops: no reasons (MUI X fires no edit start / stop events for them). */
   const apiStart = (rowId: string, field: string) => {
@@ -2446,24 +2482,108 @@ function DataGridInner<R>(
           : undefined);
     if (field) beginEdit(target.id, field, begin?.reason, begin?.key);
   }, [cellModesModel, rowModesModel, editing]);
-  /** An edited (or pasted) row: `processRowUpdate`, then the data source's `updateRow`. */
-  const commitRow = (rowId: string, oldRow: R, newRow: R) =>
+  /**
+   * An edited (or pasted) row: `processRowUpdate`, then the data source's `updateRow`. Resolves
+   * the row `processRowUpdate` answered, or `null` when it refused.
+   */
+  const commitRow = (rowId: string, oldRow: R, newRow: R): Promise<R | null> =>
     Promise.resolve(processRowUpdate ? processRowUpdate(newRow, oldRow) : newRow)
       .then((result) => {
         setOverrides((current) => new Map(current).set(rowId, result));
         // A data source saves the row too; its answer is the row to show.
-        if (!dataSource?.updateRow) return;
-        Promise.resolve(dataSource.updateRow({ rowId, updatedRow: result, previousRow: oldRow }))
-          .then((saved) => {
-            setOverrides((current) => new Map(current).set(rowId, saved));
-            cache?.clear();
-          })
-          .catch((error: unknown) => {
-            setOverrides((current) => new Map(current).set(rowId, oldRow));
-            onDataSourceError?.(error);
-          });
+        if (dataSource?.updateRow)
+          Promise.resolve(dataSource.updateRow({ rowId, updatedRow: result, previousRow: oldRow }))
+            .then((saved) => {
+              setOverrides((current) => new Map(current).set(rowId, saved));
+              cache?.clear();
+            })
+            .catch((error: unknown) => {
+              setOverrides((current) => new Map(current).set(rowId, oldRow));
+              onDataSourceError?.(error);
+            });
+        return result;
       })
-      .catch((error: unknown) => onProcessRowUpdateError?.(error));
+      .catch((error: unknown) => {
+        onProcessRowUpdateError?.(error);
+        return null;
+      });
+
+  // Undo and redo (MUI X `historyStackSize`): each saved edit, or paste, is one step. Off with a
+  // stack size of 0, without editable columns, and with a data source that can't save rows.
+  const historyStackSize = Math.max(0, Math.floor(historyStackSizeProp) || 0);
+  const historyOn =
+    historyStackSize > 0 && columns.some(editable) && (!dataSource || !!dataSource.updateRow);
+  const history = useRef<GridHistoryStack<R> | null>(null);
+  const historySize = useRef(-1);
+  if (!history.current || historySize.current !== historyStackSize) {
+    history.current = createGridHistoryStack<R>(historyStackSize);
+    historySize.current = historyStackSize;
+  }
+  const [historySizes, setHistorySizes] = useState({ undo: 0, redo: 0 });
+  const historySync = () => setHistorySizes((history.current as GridHistoryStack<R>).sizes);
+  const historyBusy = useRef(false);
+  /** Keeps the rows a step saved (the ones `processRowUpdate` accepted). */
+  const record = (changes: (GridHistoryChange<R> | null)[]) => {
+    if (!historyOn) return;
+    history.current?.push({ changes: changes.filter((c): c is GridHistoryChange<R> => !!c) });
+    historySync();
+  };
+  /** Applies the last step backwards (undo) or forwards (redo), each row through `commitRow`. */
+  const travel = async (direction: "undo" | "redo"): Promise<boolean> => {
+    const stack = history.current as GridHistoryStack<R>;
+    const step = stack.peek(direction);
+    if (!historyOn || !step || historyBusy.current) return false;
+    historyBusy.current = true;
+    const writes = step.changes.map((change) => {
+      const current = dataById.get(change.id);
+      const row =
+        current &&
+        gridHistoryRow(
+          current as Record<string, unknown>,
+          change as GridHistoryChange<Record<string, unknown>>,
+          direction,
+        );
+      return row ? { change, current, row: row as R } : null;
+    });
+    // A row changed elsewhere since the step: the step (and the ones behind it) can't apply.
+    let ok = writes.every(Boolean);
+    if (ok)
+      for (const write of writes as { change: GridHistoryChange<R>; current: R; row: R }[]) {
+        const saved = await commitRow(write.change.id, write.current, write.row);
+        if (saved === null) ok = false;
+      }
+    historyBusy.current = false;
+    stack.settle(direction, ok);
+    historySync();
+    if (ok) {
+      const params = { ids: step.changes.map((change) => change.id) };
+      if (direction === "undo") onUndo?.(params);
+      else onRedo?.(params);
+    }
+    return ok;
+  };
+  const historyApi: GridHistoryApi = {
+    undo: () => travel("undo"),
+    redo: () => travel("redo"),
+    clear: () => {
+      history.current?.clear();
+      historySync();
+    },
+    canUndo: () => historyOn && (history.current?.sizes.undo ?? 0) > 0,
+    canRedo: () => historyOn && (history.current?.sizes.redo ?? 0) > 0,
+  };
+  const historyKeys = useRef(historyApi);
+  historyKeys.current = historyApi;
+  const historyEnabled = useRef(historyOn);
+  historyEnabled.current = historyOn;
+  useEffect(() => {
+    const keys = createGridHistoryKeys(gridRef.current as HTMLDivElement, {
+      enabled: () => historyEnabled.current,
+      undo: () => void historyKeys.current.undo(),
+      redo: () => void historyKeys.current.redo(),
+    });
+    return () => keys.destroy();
+  }, []);
 
   // Cell selection: ranges over the page's data rows and the shown columns.
   const cellRows = pageRows.filter(isData);
@@ -2569,7 +2689,7 @@ function DataGridInner<R>(
     const width = fill
       ? (picked as { fields: string[] }).fields.length
       : Math.max(...data.map((r) => r.length));
-    const updates: Promise<unknown>[] = [];
+    const updates: Promise<GridHistoryChange<R> | null>[] = [];
     for (let r = 0; r < height; r++) {
       const row = fill
         ? (dataById.get((picked as { ids: string[] }).ids[r] as string) as R)
@@ -2589,9 +2709,18 @@ function DataGridInner<R>(
           : ({ ...next, [column.field]: value } as R);
         changed = true;
       }
-      if (changed) updates.push(commitRow(idOf(row), row, next));
+      if (changed)
+        updates.push(
+          commitRow(idOf(row), row, next).then((saved) =>
+            saved ? { id: idOf(row), before: row, after: saved } : null,
+          ),
+        );
     }
-    Promise.allSettled(updates).then(() => onClipboardPasteEnd?.());
+    Promise.all(updates).then((changes) => {
+      // One step for the whole paste (MUI X: not with a data source).
+      if (!dataSource) record(changes);
+      onClipboardPasteEnd?.();
+    });
   };
   const clipboard = useRef<{
     copyText: () => string | null;
@@ -2784,6 +2913,7 @@ function DataGridInner<R>(
     setActiveChartId,
     getDataAsExcel: getExcel,
     exportDataAsExcel: exportExcel,
+    history: historyApi,
     setEditCellValue,
     getCellModesModel: () =>
       cellModesModel ??
@@ -3361,6 +3491,28 @@ function DataGridInner<R>(
         />
       </div>
       <div data-ok-data-grid-toolbar-actions="">
+        {showHistoryControls && historyOn && (
+          <>
+            <IconButton
+              size="sm"
+              data-ok-data-grid-history="undo"
+              aria-label={labels.toolbarUndo}
+              disabled={historySizes.undo === 0}
+              onClick={() => void historyApi.undo()}
+            >
+              <UndoIcon />
+            </IconButton>
+            <IconButton
+              size="sm"
+              data-ok-data-grid-history="redo"
+              aria-label={labels.toolbarRedo}
+              disabled={historySizes.redo === 0}
+              onClick={() => void historyApi.redo()}
+            >
+              <RedoIcon />
+            </IconButton>
+          </>
+        )}
         {!disableColumnSelector &&
           toolbarButton("columns", labels.toolbarColumns, <ColumnsIcon />, "dialog")}
         {!disableColumnFilter &&
@@ -4467,6 +4619,7 @@ function DataGridInner<R>(
         chartsIntegration,
         multipleColumnsSortingMode,
         statusBar,
+        historyStackSize: historyStackSize === 30 ? undefined : historyStackSize,
       })}
       {...(sortingOrder ? { "data-ok-sorting-order": JSON.stringify(sortingOrder) } : {})}
       {...(groupingModel.length && !treeData

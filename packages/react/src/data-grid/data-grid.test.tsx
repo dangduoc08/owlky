@@ -2850,4 +2850,179 @@ describe("DataGrid", () => {
       await expectNoAxeViolations(document.body);
     });
   });
+
+  describe("undo and redo", () => {
+    interface Item {
+      id: number;
+      name: string;
+      qty: number;
+    }
+    const ITEMS: Item[] = [
+      { id: 1, name: "Bolt", qty: 4 },
+      { id: 2, name: "Nut", qty: 9 },
+    ];
+    const COLS: GridColDef<Item>[] = [
+      { field: "name", headerName: "Name", editable: true },
+      { field: "qty", headerName: "Qty", type: "number", editable: true },
+    ];
+    const cellOf = (rowId: string, field: string) =>
+      grid().querySelector(`[data-ok-row-id="${rowId}"] [data-ok-field="${field}"]`) as HTMLElement;
+    const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
+    const press = async (target: Element, init: KeyboardEventInit) => {
+      fireEvent.keyDown(target, init);
+      await act(settle);
+      await act(settle);
+    };
+    const editName = async (rowId: string, text: string) => {
+      await userEvent.dblClick(cellOf(rowId, "name"));
+      const input = screen.getByRole("textbox", { name: "Edit Name" });
+      await userEvent.clear(input);
+      await userEvent.type(input, `${text}{Enter}`);
+      await act(settle);
+    };
+
+    it("Ctrl + Z undoes an edit, Ctrl + Shift + Z and Ctrl + Y redo it, through processRowUpdate", async () => {
+      const processRowUpdate = vi.fn((row: Item) => row);
+      const onUndo = vi.fn();
+      const onRedo = vi.fn();
+      render(
+        <DataGrid
+          aria-label="Items"
+          rows={ITEMS}
+          columns={COLS}
+          showToolbar
+          processRowUpdate={processRowUpdate}
+          onUndo={onUndo}
+          onRedo={onRedo}
+        />,
+      );
+      const undo = screen.getByRole("button", { name: "Undo" });
+      const redo = screen.getByRole("button", { name: "Redo" });
+      expect(undo.hasAttribute("disabled")).toBe(true);
+      expect(redo.hasAttribute("disabled")).toBe(true);
+      await editName("1", "Screw");
+      expect(cellOf("1", "name").textContent).toBe("Screw");
+      expect(undo.hasAttribute("disabled")).toBe(false);
+      await press(cellOf("1", "name"), { key: "z", ctrlKey: true });
+      expect(cellOf("1", "name").textContent).toBe("Bolt");
+      expect(processRowUpdate).toHaveBeenLastCalledWith(ITEMS[0], { ...ITEMS[0], name: "Screw" });
+      expect(onUndo).toHaveBeenCalledWith({ ids: ["1"] });
+      expect(redo.hasAttribute("disabled")).toBe(false);
+      await press(cellOf("1", "name"), { key: "z", metaKey: true, shiftKey: true });
+      expect(cellOf("1", "name").textContent).toBe("Screw");
+      expect(onRedo).toHaveBeenCalledWith({ ids: ["1"] });
+      await press(cellOf("1", "name"), { key: "z", ctrlKey: true });
+      await press(cellOf("1", "name"), { key: "y", ctrlKey: true });
+      expect(cellOf("1", "name").textContent).toBe("Screw");
+      // The toolbar buttons do the same.
+      await userEvent.click(undo);
+      await act(settle);
+      expect(cellOf("1", "name").textContent).toBe("Bolt");
+      await userEvent.click(redo);
+      await act(settle);
+      expect(cellOf("1", "name").textContent).toBe("Screw");
+      // A new edit drops the redo steps.
+      await press(cellOf("1", "name"), { key: "z", ctrlKey: true });
+      await editName("2", "Washer");
+      expect(redo.hasAttribute("disabled")).toBe(true);
+      await expectNoAxeViolations(document.body);
+    });
+
+    it("a paste is one step; a row changed elsewhere drops the steps; refusals fail", async () => {
+      const apiRef = createRef<GridApi<Item> | null>() as { current: GridApi<Item> | null };
+      let refuse = false;
+      const view = (rows: Item[]) => (
+        <DataGrid
+          aria-label="Items"
+          rows={rows}
+          columns={COLS}
+          apiRef={apiRef}
+          cellSelection
+          historyStackSize={5}
+          processRowUpdate={(row: Item) =>
+            refuse ? Promise.reject(new Error("no")) : Promise.resolve(row)
+          }
+          onProcessRowUpdateError={() => {}}
+        />
+      );
+      const { rerender } = render(view(ITEMS));
+      const api = () => apiRef.current as GridApi<Item>;
+      expect(api().history.canUndo()).toBe(false);
+      expect(await act(() => api().history.undo())).toBe(false);
+      // Paste "A\tB" into the first row: one step for both cells.
+      const pasted = vi.spyOn(DataTransfer.prototype, "getData").mockReturnValue("A\t7\nB\t8");
+      act(() => cellOf("1", "name").focus());
+      fireEvent.keyDown(cellOf("1", "name"), { key: "v", ctrlKey: true });
+      const area = document.activeElement as HTMLElement;
+      area.dispatchEvent(
+        new ClipboardEvent("paste", {
+          bubbles: true,
+          cancelable: true,
+          clipboardData: new DataTransfer(),
+        }),
+      );
+      pasted.mockRestore();
+      await act(settle);
+      await act(settle);
+      expect(cellOf("2", "qty").textContent).toBe("8");
+      expect(api().history.canUndo()).toBe(true);
+      expect(await act(() => api().history.undo())).toBe(true);
+      expect(cellOf("1", "name").textContent).toBe("Bolt");
+      expect(cellOf("2", "qty").textContent).toBe("9");
+      expect(api().history.canRedo()).toBe(true);
+      expect(await act(() => api().history.redo())).toBe(true);
+      expect(cellOf("1", "qty").textContent).toBe("7");
+      // A refused undo fails and forgets the steps.
+      refuse = true;
+      expect(await act(() => api().history.undo())).toBe(false);
+      expect(api().history.canUndo()).toBe(false);
+      refuse = false;
+      // New rows from the parent that changed the edited value: the step can't apply.
+      await editName("1", "Pin");
+      rerender(view([{ id: 1, name: "Changed", qty: 1 }, ITEMS[1] as Item]));
+      expect(await act(() => api().history.undo())).toBe(false);
+      expect(cellOf("1", "name").textContent).toBe("Changed");
+      await editName("2", "Cap");
+      act(() => api().history.clear());
+      expect(api().history.canUndo()).toBe(false);
+    });
+
+    it("historyStackSize 0, no editable columns or a data source without updateRow: off", async () => {
+      const { rerender } = render(
+        <DataGrid
+          aria-label="Items"
+          rows={ITEMS}
+          columns={COLS}
+          showToolbar
+          historyStackSize={0}
+        />,
+      );
+      const root = grid().closest("[data-ok-data-grid]") as HTMLElement;
+      expect(root.getAttribute("data-ok-history-stack-size")).toBe("0");
+      expect(screen.queryByRole("button", { name: "Undo" })).toBeNull();
+      await editName("1", "Screw");
+      await press(cellOf("1", "name"), { key: "z", ctrlKey: true });
+      expect(cellOf("1", "name").textContent).toBe("Screw");
+      rerender(
+        <DataGrid
+          aria-label="Items"
+          rows={ITEMS}
+          columns={COLS.map((c) => ({ ...c, editable: false }))}
+          showToolbar
+        />,
+      );
+      expect(screen.queryByRole("button", { name: "Undo" })).toBeNull();
+      expect(root.hasAttribute("data-ok-history-stack-size")).toBe(false);
+      rerender(
+        <DataGrid
+          aria-label="Items"
+          rows={ITEMS}
+          columns={COLS}
+          showToolbar
+          showHistoryControls={false}
+        />,
+      );
+      expect(screen.queryByRole("button", { name: "Undo" })).toBeNull();
+    });
+  });
 });

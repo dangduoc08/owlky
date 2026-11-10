@@ -206,6 +206,7 @@ export const Sorting: StoryObj = {
   }),
   name: "Sorting",
 };
+export const UndoRedo: StoryObj = { ...story("history"), name: "Undo and redo" };
 export const Editors: StoryObj = {
   ...frameworkStory({
     html: snippetStory(

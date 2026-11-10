@@ -8,6 +8,8 @@ import {
   createGridClipboard,
   createGridColumnControls,
   createGridDataSourceCache,
+  createGridHistoryKeys,
+  createGridHistoryStack,
   createGridNavigation,
   createGridPivotDrag,
   createGridRowReorder,
@@ -44,6 +46,8 @@ import {
   type GridFormat,
   type GridGetRowsResponse,
   type GridGroupNode,
+  type GridHistoryApi,
+  type GridHistoryChange,
   type GridLabels,
   type GridPinnedColumns,
   type GridPivotColumn,
@@ -93,6 +97,7 @@ import {
   gridGroupRows,
   gridGroupsById,
   gridHeaderAlign,
+  gridHistoryRow,
   gridMissingRanges,
   gridOperatorNeedsValue,
   gridPinSide,
@@ -218,6 +223,10 @@ export interface DataGridEvents {
   editstart: EventSpec<{ id: string; field?: string; reason: string }>;
   /** After editing stopped. */
   editstop: EventSpec<{ id: string; field?: string; reason: string }>;
+  /** After Ctrl / Cmd + Z (or `history.undo()`) restored rows, with their ids. */
+  undo: EventSpec<{ ids: string[] }>;
+  /** After a redo changed rows again, with their ids. */
+  redo: EventSpec<{ ids: string[] }>;
   /** Before a cell starts or stops editing (cell mode), with the next cell modes model. Call `preventDefault()` to refuse. */
   cellmodes: EventSpec<{ model: GridCellModesModel }, true>;
   /** Before a row starts or stops editing (row mode), with the next row modes model. Call `preventDefault()` to refuse. */
@@ -311,6 +320,8 @@ export interface DataGridInstance extends ComponentInstance {
   setCellModesModel(model: GridCellModesModel): void;
   /** Starts or stops editing a row (row mode; no events), like `setCellModesModel`. */
   setRowModesModel(model: GridRowModesModel): void;
+  /** Undo and redo of edits and pastes (MUI X `apiRef.current.history`), without the keys. */
+  readonly history: GridHistoryApi;
   /** Sets the value of a field being edited, such as from a custom editor's widget. */
   setEditCellValue(params: { id: string; field: string; value: unknown }): void;
   /** The text of a column's values in `setRows` and after editing (`null`: back to the default). */
@@ -429,6 +440,7 @@ const {
   disableClipboardPaste,
   multipleColumnsSortingMode,
   statusBar: statusBarOption,
+  historyStackSize,
 } = dataGridOptions.options;
 
 type DataRow = Record<string, unknown>;
@@ -2803,6 +2815,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       }
       if (!emit("clipboardpaste", { data }, { cancelable: true })) return;
       const rowIds = fill ? (picked as { ids: string[] }).ids : ids.slice(top, top + data.length);
+      const changes: GridHistoryChange<DataRow>[] = [];
       rowIds.forEach((rowId, r) => {
         const row = rowEls.find((el) => idOf(el) === rowId) as HTMLElement;
         const targets = fill ? (picked as { fields: string[] }).fields : fields.slice(left);
@@ -2819,18 +2832,131 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
           !emit("edit", { id: rowId, row: values }, { cancelable: true })
         )
           return;
-        for (const [field, next] of Object.entries(values)) {
-          const cell = cellOf(row, field) as HTMLElement;
-          cell.replaceChildren(formatted(field, next));
-          cell.removeAttribute("data-ok-text");
-          cell.setAttribute(
-            "data-ok-value",
-            next === null || next === undefined ? "" : String(next),
-          );
-        }
+        changes.push({ id: rowId, before: valuesOf(row, Object.keys(values)), after: values });
+        writeCells(row, values);
       });
+      // One step for the whole paste (MUI X: not with a data source).
+      if (!source) recordStep(changes);
       apply();
     };
+    /** The values of some fields of a row (as the cells hold them). */
+    const valuesOf = (row: HTMLElement, fields: readonly string[]): DataRow =>
+      Object.fromEntries(fields.map((field) => [field, value(row, field)]));
+    /** Writes values into a row's cells (formatted text, raw value). */
+    const writeCells = (row: HTMLElement, values: DataRow) => {
+      for (const [field, next] of Object.entries(values)) {
+        const cell = cellOf(row, field);
+        if (!cell) continue;
+        cell.replaceChildren(formatted(field, next));
+        cell.removeAttribute("data-ok-text");
+        cell.setAttribute("data-ok-value", next === null || next === undefined ? "" : String(next));
+      }
+    };
+
+    // Undo and redo (MUI X `historyStackSize`): each saved edit, or paste, is one step; every
+    // undo and redo goes through a cancelable `ok:data-grid:edit`.
+    const historySize = () => readNumber(element, historyStackSize) as number;
+    let historyStack = createGridHistoryStack<DataRow>(historySize());
+    let historyStackOf = historySize();
+    const stackNow = () => {
+      if (historySize() !== historyStackOf) {
+        historyStackOf = historySize();
+        historyStack = createGridHistoryStack<DataRow>(historyStackOf);
+      }
+      return historyStack;
+    };
+    const historyOn = () =>
+      historySize() > 0 && columns.some((c) => c.editable) && (!source || !!source.updateRow);
+    const historyButtons = () =>
+      element.querySelectorAll<HTMLButtonElement>("button[data-ok-data-grid-history]");
+    const syncHistory = () => {
+      const { sizes } = stackNow();
+      for (const button of historyButtons())
+        button.disabled =
+          !historyOn() ||
+          sizes[button.getAttribute("data-ok-data-grid-history") === "redo" ? "redo" : "undo"] ===
+            0;
+    };
+    const recordStep = (changes: GridHistoryChange<DataRow>[]) => {
+      if (!historyOn()) return;
+      stackNow().push({ changes });
+      syncHistory();
+    };
+    /** Applies the last step backwards (undo) or forwards (redo). */
+    const travel = (direction: "undo" | "redo"): boolean => {
+      const stack = stackNow();
+      const step = stack.peek(direction);
+      if (!historyOn() || !step) return false;
+      const writes = step.changes.map((change) => {
+        const row = rowEls.find((el) => idOf(el) === change.id);
+        const fields = [...new Set([...Object.keys(change.before), ...Object.keys(change.after)])];
+        const next = row && gridHistoryRow(valuesOf(row, fields), change, direction);
+        return row && next ? { row, values: next } : null;
+      });
+      // A row changed elsewhere since the step (or a refused edit): the step can't apply.
+      let ok = writes.every(Boolean);
+      if (ok)
+        for (const write of writes as { row: HTMLElement; values: DataRow }[]) {
+          if (!emit("edit", { id: idOf(write.row), row: write.values }, { cancelable: true })) {
+            ok = false;
+            break;
+          }
+          const previousRow: DataRow = {
+            id: idOf(write.row),
+            ...valuesOf(
+              write.row,
+              columns.map((c) => c.field),
+            ),
+          };
+          writeCells(write.row, write.values);
+          if (source?.updateRow) {
+            const row = write.row;
+            const updatedRow = { ...previousRow, ...write.values };
+            Promise.resolve(source.updateRow({ rowId: idOf(row), updatedRow, previousRow }))
+              .then((saved) => {
+                fillCells(row, saved);
+                sourceCache.clear();
+              })
+              .catch((error: unknown) => {
+                fillCells(row, previousRow);
+                emit("datasourceerror", { error });
+              });
+          }
+        }
+      stack.settle(direction, ok);
+      syncHistory();
+      apply();
+      if (ok) emit(direction, { ids: step.changes.map((change) => change.id) });
+      return ok;
+    };
+    const historyApi: GridHistoryApi = {
+      undo: () => Promise.resolve(travel("undo")),
+      redo: () => Promise.resolve(travel("redo")),
+      clear: () => {
+        stackNow().clear();
+        syncHistory();
+      },
+      canUndo: () => historyOn() && stackNow().sizes.undo > 0,
+      canRedo: () => historyOn() && stackNow().sizes.redo > 0,
+    };
+    const historyKeys = createGridHistoryKeys(main, {
+      enabled: historyOn,
+      undo: () => travel("undo"),
+      redo: () => travel("redo"),
+    });
+    signal.addEventListener("abort", () => historyKeys.destroy());
+    element.addEventListener(
+      "click",
+      (event) => {
+        const button = (event.target as Element).closest<HTMLElement>(
+          "button[data-ok-data-grid-history]",
+        );
+        if (!button || !element.contains(button)) return;
+        travel(button.getAttribute("data-ok-data-grid-history") === "redo" ? "redo" : "undo");
+      },
+      { signal },
+    );
+    syncHistory();
 
     // Charts integration: the chart follows the rows (or the top-level groups; pivoted grids:
     // their pivot columns) through the Chart's update path (`updateSeries`, option attributes).
@@ -3475,6 +3601,8 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     }
     let edits: Edit[] = [];
     let editRow: HTMLElement | null = null;
+    /** The edited row's values before the editors replaced its cells. */
+    let editBefore: DataRow = {};
     const errors = new Map<string, string | true>();
     const cellEditable = (row: HTMLElement, column: GridColumn) =>
       !!column.editable &&
@@ -3531,6 +3659,10 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         ? visibleGridColumns(columns, visibility).filter((c) => cellEditable(row, c))
         : [column];
       errors.clear();
+      editBefore = {
+        id: idOf(row),
+        ...Object.fromEntries(columns.map((c) => [c.field, value(row, c.field)])),
+      };
       editRow = row;
       if (rowMode()) row.setAttribute("data-ok-editing", "");
       edits = targets.map((c) => {
@@ -3647,10 +3779,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       const row = editRow as HTMLElement;
       if (!reportModes(row, (done[0] as Edit).column.field, "view", !commit)) return;
       errors.clear();
-      const previousRow: DataRow = {
-        id: idOf(row),
-        ...Object.fromEntries(columns.map((c) => [c.field, value(row, c.field)])),
-      };
+      const previousRow: DataRow = { ...editBefore };
       const values = Object.fromEntries(done.map((edit) => [edit.column.field, editValue(edit)]));
       edits = [];
       editRow = null;
@@ -3674,6 +3803,14 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         cell.removeAttribute("data-ok-text");
         cell.setAttribute("data-ok-value", next === null || next === undefined ? "" : String(next));
       }
+      if (accepted)
+        recordStep([
+          {
+            id: idOf(row),
+            before: Object.fromEntries(Object.keys(values).map((f) => [f, previousRow[f]])),
+            after: values,
+          },
+        ]);
       // A data source saves the row; its answer is shown, a failure brings the old values back.
       if (accepted && source?.updateRow) {
         const updatedRow = { ...previousRow, ...values };
@@ -4261,6 +4398,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
           (rowId) => rowsModel[rowId]?.ignoreModifications === true,
         );
       },
+      history: historyApi,
       setEditCellValue({ id: rowId, field, value: next }) {
         if (!editRow || idOf(editRow) !== rowId) return;
         const edit = edits.find((e) => e.column.field === field);
