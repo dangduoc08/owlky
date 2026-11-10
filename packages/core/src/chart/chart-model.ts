@@ -30,6 +30,7 @@ export const chartTypes = [
   "sankey",
   "waterfall",
   "dumbbell",
+  "tree",
 ] as const;
 /** Charts of one series whose categories are slices or rings (legend items are categories). */
 export const chartCircularTypes = ["pie", "donut", "radialBar", "polarArea"] as const;
@@ -111,6 +112,7 @@ const wholeTypes: readonly ChartType[] = [
   "sankey",
   "waterfall",
   "dumbbell",
+  "tree",
 ];
 /** Whether a chart type draws every series the same way (no mixed charts). */
 export const isWholeChart = (type: ChartType): boolean => wholeTypes.includes(type);
@@ -139,7 +141,12 @@ export type ChartPart =
   | "incoming"
   | "outgoing"
   | "volume"
-  | "total";
+  | "total"
+  | "name"
+  | "parent"
+  | "children"
+  | "collapsed"
+  | "level";
 const PARTS: Partial<Record<ChartType, readonly ChartPart[]>> = {
   boxPlot: ["min", "q1", "median", "q3", "max"],
   rangeArea: ["low", "high"],
@@ -173,6 +180,11 @@ export const chartPartNames: readonly ChartPart[] = [
   "outgoing",
   "volume",
   "total",
+  "name",
+  "parent",
+  "children",
+  "collapsed",
+  "level",
 ];
 /** Default text of each part (table headers and tooltip rows). */
 export const chartPartLabels: Readonly<Record<ChartPart, string>> = {
@@ -198,6 +210,12 @@ export const chartPartLabels: Readonly<Record<ChartPart, string>> = {
   volume: "Volume",
   // Waterfall charts (4.18.21): the running total after a step (tooltip rows).
   total: "Total",
+  // Hierarchy charts (ADR-0058): table headers and tooltip rows.
+  name: "Name",
+  parent: "Parent",
+  children: "Children",
+  collapsed: "Collapsed",
+  level: "Level",
 };
 
 /** One value of a point that has several: a number, or a date (timelines: ISO 8601, ms or Date). */

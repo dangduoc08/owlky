@@ -1,0 +1,9 @@
+---
+"@owlky/core": minor
+"@owlky/styles": minor
+"@owlky/react": minor
+"@owlky/html": minor
+"@owlky/mcp": minor
+---
+
+Chart tree charts (ApexTree layouts, ADR-0058). `type="tree"` draws a hierarchy: React `hierarchy` (one node or a list of roots, `{ id, name, value, color, children }`; parents are the sum of their children), HTML one table row per node with its parent's name and an optional value (`th[data-ok-part="name|parent|y"]`). `direction` puts the root at the `top` (default), `bottom`, `left` or `right`, or in the center (`radial`); `layoutType` is a tidy `tree` (Reingold–Tilford, Buchheim's linear-time version) or a `cluster` dendrogram; `edgeStyle` draws `orthogonal`, `curved` or `straight` links; `markerSize` sizes the nodes and `dataLabels` adds values to the labels. Arrow keys walk the hierarchy (first child, parent, the next or previous node of a level), the tooltip announces the path, value, level and children, and the active node's path from the root is highlighted. `enableExpandCollapse` lets a click, Enter or Space hide or show a node's children: the state is `data-ok-collapsed-nodes` on the root, with `ok:chart:expand` (cancelable) and the instance's `collapsedNodes` / `setCollapsedNodes` in HTML, and `collapsedNodes` / `defaultCollapsedNodes` / `onCollapsedNodesChange` in React. Core exports `chartHierarchy`, `chartHierarchyTable`, `readChartHierarchyTable`, `layoutTree`, `nextChartTreeMark` and the related types; `ChartLayout` has a `tree` mode and `ChartMark` a `tree` entry; part labels `name`, `parent`, `children`, `collapsed` and `level`. New story: Tree.

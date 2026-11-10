@@ -67,6 +67,7 @@ const STORIES = [
   "grid",
   "waterfall",
   "dumbbell",
+  "tree",
   "crossfilter",
 ];
 
@@ -623,6 +624,34 @@ for (const impl of implementations) {
         "Before3.2",
         "After1.8",
       ]);
+    });
+  });
+
+  // Roadmap 4.18.7 (ADR-0058): tree charts.
+  test.describe(`chart tree (${impl})`, () => {
+    test("arrows walk the hierarchy; Enter and clicks collapse nodes", async ({ page }) => {
+      await openStory(page, storyId(impl, "chart", "tree"));
+      const first = page.locator("[data-ok-chart]").first();
+      const title = first.locator("[data-ok-chart-tooltip-title]");
+      await expect(first.locator("[data-ok-chart-tree-node]")).toHaveCount(11);
+      await first.locator("[data-ok-chart-plot]").focus();
+      await page.keyboard.press("Home");
+      await expect(title).toHaveText("Product");
+      await page.keyboard.press("ArrowDown");
+      await page.keyboard.press("ArrowRight");
+      await expect(title).toHaveText("Product › Mobile");
+      await page.keyboard.press("Enter");
+      await expect(first.locator("[data-ok-chart-tree-node]")).toHaveCount(9);
+      await expect(first.locator("[data-ok-chart-tooltip-row]")).toHaveText([
+        "Value10",
+        "Level2",
+        "Collapsed2",
+      ]);
+      await first.locator("[data-ok-chart-tree-node][data-ok-collapsed]").click();
+      await expect(first.locator("[data-ok-chart-tree-node]")).toHaveCount(11);
+      const table = page.getByRole("table", { name: "Product teams and their engineers" });
+      await expect(table.getByRole("columnheader")).toHaveText(["Name", "Parent", "Value"]);
+      await expect(table.getByRole("row")).toHaveCount(12);
     });
   });
 

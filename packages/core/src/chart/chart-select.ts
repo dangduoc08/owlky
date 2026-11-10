@@ -89,10 +89,11 @@ const inside = (box: NonNullable<ChartMark["box"]>, x: number, y: number, slack:
 
 /**
  * The mark a click at SVG px `(x, y)` selects: the block, slice or cell under it, or the nearest
- * point within 16px (index charts) or 24px (scatter, bubble); `null` elsewhere and on Sankey charts.
+ * point within 16px (index charts) or 24px (scatter, bubble); `null` elsewhere and on Sankey and
+ * hierarchy charts.
  */
 export function chartMarkAt(layout: ChartLayout, x: number, y: number): number | null {
-  if (layout.mode === "flow") return null;
+  if (layout.mode === "flow" || layout.mode === "tree") return null;
   if (layout.mode !== "index") {
     const hit = chartActiveAt(layout, x, y);
     if (!hit) return null;
@@ -118,7 +119,7 @@ export function chartMarkAt(layout: ChartLayout, x: number, y: number): number |
 
 /** The marks of the active item (Enter / Space selects them): a category's points, or one mark. */
 export function chartActiveMarks(layout: ChartLayout, active: ChartActive | null): number[] {
-  if (!active || layout.mode === "flow") return [];
+  if (!active || layout.mode === "flow" || layout.mode === "tree") return [];
   if (active.kind === "mark") return layout.marks[active.mark] ? [active.mark] : [];
   return layout.marks.flatMap((mark, index) => (mark.index === active.index ? [index] : []));
 }
@@ -162,7 +163,7 @@ export function chartSelectedNodes(
   layout: ChartLayout,
   selected: readonly ChartDataPoint[],
 ): ChartNode[] {
-  if (selected.length === 0 || layout.mode === "flow") return [];
+  if (selected.length === 0 || layout.mode === "flow" || layout.mode === "tree") return [];
   const shapes = layout.marks.flatMap((mark): ChartNode[] => {
     if (!hasChartDataPoint(selected, chartMarkPoint(mark))) return [];
     const attrs = { "data-ok-chart-selected-mark": "" };

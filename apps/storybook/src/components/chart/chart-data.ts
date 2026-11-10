@@ -1672,4 +1672,97 @@ export const chartExamples: Record<string, ChartExample> = {
       },
     ],
   },
+  // Roadmap 4.18.7 (ADR-0058): tree charts (ApexTree `direction`, `layoutType`, `edgeStyle`).
+  tree: {
+    title: "Tree",
+    props: {
+      label: "Product teams and their engineers",
+      type: "tree",
+      enableExpandCollapse: true,
+      dataLabels: true,
+      height: 360,
+      hierarchy: {
+        name: "Product",
+        children: [
+          {
+            name: "Web",
+            children: [
+              { name: "Checkout", value: 6 },
+              { name: "Search", value: 4 },
+              { name: "Accounts", value: 3 },
+            ],
+          },
+          {
+            name: "Mobile",
+            children: [
+              { name: "iOS", value: 5 },
+              { name: "Android", value: 5 },
+            ],
+          },
+          {
+            name: "Platform",
+            children: [
+              { name: "Payments", value: 4 },
+              { name: "Data", value: 7 },
+            ],
+          },
+        ],
+      },
+    },
+    more: [
+      {
+        label: "Plant families and their genera",
+        type: "tree",
+        direction: "radial",
+        layoutType: "cluster",
+        edgeStyle: "curved",
+        height: 440,
+        hierarchy: {
+          name: "Plants",
+          children: [
+            {
+              name: "Rosaceae",
+              children: [
+                { name: "Rosa" },
+                { name: "Malus" },
+                { name: "Prunus" },
+                { name: "Rubus" },
+              ],
+            },
+            {
+              name: "Fabaceae",
+              children: [{ name: "Pisum" }, { name: "Lupinus" }, { name: "Acacia" }],
+            },
+            {
+              name: "Asteraceae",
+              children: [
+                { name: "Aster" },
+                { name: "Bellis" },
+                { name: "Helianthus" },
+                { name: "Lactuca" },
+              ],
+            },
+            { name: "Poaceae", children: [{ name: "Oryza" }, { name: "Zea" }, { name: "Avena" }] },
+          ],
+        },
+      },
+      {
+        label: "Website sections and their pages",
+        type: "tree",
+        direction: "left",
+        edgeStyle: "curved",
+        enableExpandCollapse: true,
+        defaultCollapsedNodes: ["Blog"],
+        height: 320,
+        hierarchy: {
+          name: "Home",
+          children: [
+            { name: "Products", children: [{ name: "Laptops" }, { name: "Phones" }] },
+            { name: "Blog", children: [{ name: "News" }, { name: "Guides" }, { name: "Events" }] },
+            { name: "Support", children: [{ name: "Contact" }, { name: "Returns" }] },
+          ],
+        },
+      },
+    ],
+  },
 };

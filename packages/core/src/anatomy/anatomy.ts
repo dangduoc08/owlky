@@ -37,6 +37,14 @@ import {
   slidesToShowAttr,
 } from "../carousel/carousel-model.js";
 import {
+  type ChartDirection,
+  type ChartEdgeStyle,
+  type ChartLayoutType,
+  chartDirections,
+  chartEdgeStyles,
+  chartLayoutTypes,
+} from "../chart/chart-hierarchy.js";
+import {
   type ChartColor,
   type ChartCrossfilter,
   type ChartCurve,
@@ -4493,7 +4501,7 @@ export const chartOptions = defineOptions("chart", "data-ok-chart", {
     "data-ok-type",
     chartTypes,
     "line",
-    "Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML), `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total) or `dumbbell` (a start and an end value per category: two markers joined by a line). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts).",
+    "Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML), `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total), `dumbbell` (a start and an end value per category: two markers joined by a line) or `tree` (a hierarchy: `hierarchy` in React, one table row per node with its parent in HTML). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts).",
   ),
   xType: style(
     "data-ok-x-type",
@@ -4815,6 +4823,31 @@ export const chartOptions = defineOptions("chart", "data-ok-chart", {
     "data-ok-hide-connectors",
     "Waterfall charts: no dashed lines from the end of each bar to the next one.",
   ),
+  direction: style(
+    "data-ok-direction",
+    chartDirections,
+    "top",
+    "Tree charts: where the root sits, `top` (the default), `bottom`, `left` or `right`, or `radial` (the root in the center, levels as rings).",
+    { optional: true },
+  ),
+  layoutType: style(
+    "data-ok-layout-type",
+    chartLayoutTypes,
+    "tree",
+    "Tree charts: `tree` (a tidy tree, the default) or `cluster` (a dendrogram: every leaf on the last level).",
+    { optional: true },
+  ),
+  edgeStyle: style(
+    "data-ok-edge-style",
+    chartEdgeStyles,
+    "orthogonal",
+    "Tree charts: links with right angles (`orthogonal`, the default), `curved` or `straight`.",
+    { optional: true },
+  ),
+  enableExpandCollapse: flag(
+    "data-ok-enable-expand-collapse",
+    "Tree charts: a click, Enter or Space on a node with children hides or shows them.",
+  ),
   crossfilter: style(
     "data-ok-crossfilter",
     chartCrossfilters,
@@ -4901,6 +4934,10 @@ export interface ChartAnatomyOptions {
   waterfallTotalColor?: ChartColor | undefined;
   waterfallSubtotalColor?: ChartColor | undefined;
   hideConnectors?: boolean | undefined;
+  direction?: ChartDirection | undefined;
+  layoutType?: ChartLayoutType | undefined;
+  edgeStyle?: ChartEdgeStyle | undefined;
+  enableExpandCollapse?: boolean | undefined;
   crossfilter?: ChartCrossfilter | undefined;
 }
 

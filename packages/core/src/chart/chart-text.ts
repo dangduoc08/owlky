@@ -45,6 +45,8 @@ export interface ChartTextOptions {
   readonly gridColumnColors?: readonly ChartStripeColor[] | undefined;
   /** Dumbbell markers: a start and an end color per series (`"info success; warning error"`, 4.18.21). */
   readonly dumbbellColors?: readonly (readonly ChartColor[])[] | undefined;
+  /** Tree charts: ids of the collapsed nodes (`"Sales; Support"`, ADR-0058). */
+  readonly collapsedNodes?: readonly string[] | undefined;
 }
 
 export const CHART_TEXT_ATTRIBUTES = {
@@ -66,6 +68,7 @@ export const CHART_TEXT_ATTRIBUTES = {
   gridRowColors: "data-ok-grid-row-colors",
   gridColumnColors: "data-ok-grid-column-colors",
   dumbbellColors: "data-ok-dumbbell-colors",
+  collapsedNodes: "data-ok-collapsed-nodes",
 } as const;
 
 const isColor = (value: unknown): value is ChartColor => chartColors.includes(value as ChartColor);
@@ -185,7 +188,7 @@ export function chartTextAttributes(options: ChartTextOptions): Record<string, s
         (value as readonly (readonly ChartColor[])[] | undefined) ?? [],
       );
       if (text) out[attr] = text;
-    } else if (key === "customLegendItems") {
+    } else if (key === "customLegendItems" || key === "collapsedNodes") {
       const text = chartListText((value as readonly string[] | undefined) ?? []);
       if (text) out[attr] = text;
     } else if (key === "discreteMarkers") {

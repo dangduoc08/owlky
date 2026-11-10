@@ -6,11 +6,15 @@ import {
   type ChartCurve,
   type ChartDataLabelPosition,
   type ChartDataPoint,
+  type ChartDirection,
+  type ChartEdgeStyle,
   type ChartExportFormat,
   type ChartFill,
   type ChartGestureMode,
   type ChartGrid,
   type ChartGroupFilter,
+  type ChartHierarchyAction,
+  type ChartLayoutType,
   type ChartLegend,
   type ChartLegendItem,
   type ChartLink,
@@ -44,7 +48,9 @@ import {
   chartFilterCategories,
   chartFilterLabels,
   chartFilterText,
+  chartHierarchyAction,
   chartIdPrefix,
+  chartListText,
   chartMarkAt,
   chartMarkPoint,
   chartOptions,
@@ -55,10 +61,12 @@ import {
   chartTooltip,
   chartTooltipContext,
   chartTooltipFixed,
+  chartTreeMarkOf,
   chartZoomKey,
   createChartGestures,
   exportChart,
   hasChartDataPoint,
+  isHierarchyChart,
   linkChart,
   nextChartActive,
   parseChartColorRanges,
@@ -71,12 +79,14 @@ import {
   parseChartYAxes,
   placeChartTooltip,
   readChartAnnotations,
+  readChartHierarchyTable,
   readChartSankeyTable,
   readChartTable,
   readNumber,
   readStyle,
   renderChart,
   sameChartActive,
+  toggleChartCollapsed,
   toggleChartSelection,
   zoomChartBy,
 } from "@owlky/core";
@@ -120,6 +130,11 @@ export interface ChartEvents {
    * category indexes (`null`: none) and whether this chart set it.
    */
   filter: EventSpec<{ categories: number[] | null; own: boolean }>;
+  /**
+   * Tree charts with `data-ok-enable-expand-collapse`: before a click, Enter or Space hides or
+   * shows a node's children. Call `preventDefault()` to refuse.
+   */
+  expand: EventSpec<{ id: string; expanded: boolean; collapsedNodes: string[] }, true>;
 }
 
 export interface ChartInstance extends ComponentInstance {
@@ -166,6 +181,10 @@ export interface ChartInstance extends ComponentInstance {
   readonly filter: readonly number[] | null;
   /** Clears the group's crossfilter (its source clears its selection; no event here). */
   clearFilter(): void;
+  /** Tree charts: ids of the nodes whose children are hidden (`data-ok-collapsed-nodes`). */
+  readonly collapsedNodes: readonly string[];
+  /** Tree charts: hides the children of exactly these nodes (no event). */
+  setCollapsedNodes(ids: readonly string[]): void;
 }
 
 const SVG = "http://www.w3.org/2000/svg";
@@ -574,11 +593,14 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
       element.setAttribute("data-ok-ready", "");
       const xType = readStyle(element, o.xType) as ChartXType;
       const type = readStyle(element, o.type) as ChartType;
-      // Sankey charts (ADR-0047): the table lists links, not series.
+      // Sankey charts (ADR-0047): the table lists links, not series; hierarchy charts (ADR-0058)
+      // one node per row.
       const flow = type === "sankey" && table ? readChartSankeyTable(table) : undefined;
-      const read = flow ? EMPTY : data();
+      const tree = isHierarchyChart(type) && table ? readChartHierarchyTable(table) : undefined;
+      const read = flow || tree ? EMPTY : data();
       const { series, categories } = read;
       if (flow) partLabels = flow.partLabels;
+      else if (tree) partLabels = tree.partLabels;
       else if ("partLabels" in read && read.partLabels) partLabels = read.partLabels;
       const brushTarget = text(element, CHART_TEXT_ATTRIBUTES.brushTarget);
       const label = table?.caption?.textContent?.trim() ?? "";
@@ -605,6 +627,12 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
         whitespace: readNumber(element, o.whitespace) as number | undefined,
         edgeOpacity: readNumber(element, o.edgeOpacity) as number | undefined,
         axisTitles: parseChartList(element.getAttribute(CHART_TEXT_ATTRIBUTES.axisTitles)),
+        hierarchy: tree?.hierarchy,
+        direction: readStyle(element, o.direction) as ChartDirection | undefined,
+        layoutType: readStyle(element, o.layoutType) as ChartLayoutType | undefined,
+        edgeStyle: readStyle(element, o.edgeStyle) as ChartEdgeStyle | undefined,
+        enableExpandCollapse: element.hasAttribute(o.enableExpandCollapse.attr),
+        collapsedNodes: collapsedNodes(),
         indicators: parseChartIndicators(element.getAttribute(CHART_TEXT_ATTRIBUTES.indicators)),
         navigator: element.hasAttribute(o.navigator.attr),
         paneHeight: readNumber(element, o.paneHeight) as number | undefined,
@@ -729,6 +757,36 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
         drawnZoom = zoomed;
         link?.drawn(render.zoom);
       }
+    };
+
+    /** Tree charts: the collapsed nodes, kept in `data-ok-collapsed-nodes`. */
+    const collapsedNodes = () =>
+      parseChartList(element.getAttribute(CHART_TEXT_ATTRIBUTES.collapsedNodes)).filter(Boolean);
+    const writeCollapsed = (ids: readonly string[]) => {
+      const textValue = chartListText(ids);
+      if (textValue) element.setAttribute(CHART_TEXT_ATTRIBUTES.collapsedNodes, textValue);
+      else element.removeAttribute(CHART_TEXT_ATTRIBUTES.collapsedNodes);
+      // The runtime's own write: drawn here, not by the observer.
+      changes.takeRecords();
+      draw();
+    };
+    /**
+     * Hierarchy charts: what a click, Enter or Space on a node does (expand or collapse it); the
+     * node stays active after the redraw. Returns whether the press did something.
+     */
+    const act = (action: ChartHierarchyAction | null) => {
+      if (!action) return false;
+      if (action.kind === "toggle") {
+        const current = collapsedNodes();
+        const next = toggleChartCollapsed(current, action.id);
+        const expanded = current.includes(action.id);
+        if (emit("expand", { id: action.id, expanded, collapsedNodes: next }, { cancelable: true }))
+          writeCollapsed(next);
+        const mark = chartTreeMarkOf((render as ChartRender).layout, action.id);
+        setActive(mark === null ? null : { kind: "mark", mark }, true);
+        return true;
+      }
+      return false;
     };
 
     /** The data: set through the API, or read from the table. */
@@ -990,6 +1048,16 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
         const layout = (render as ChartRender).layout;
         const box = plot.getBoundingClientRect();
         const scale = layout.width / (box.width || layout.width);
+        if (layout.mode === "tree") {
+          // Hierarchy charts: the node under the pointer expands, collapses or drills.
+          const hit = chartActiveAt(
+            layout,
+            (event.clientX - box.left) * scale,
+            (event.clientY - box.top) * scale,
+          );
+          act(chartHierarchyAction(layout, hit?.kind === "mark" ? hit.mark : null));
+          return;
+        }
         const mark = chartMarkAt(
           layout,
           (event.clientX - box.left) * scale,
@@ -1035,6 +1103,16 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
           if (range !== undefined) {
             event.preventDefault();
             commitRange(range);
+            return;
+          }
+        }
+        if ((event.key === "Enter" || event.key === " ") && !event.repeat) {
+          const layout = (render as ChartRender).layout;
+          if (
+            layout.mode === "tree" &&
+            act(chartHierarchyAction(layout, active?.kind === "mark" ? active.mark : null))
+          ) {
+            event.preventDefault();
             return;
           }
         }
@@ -1227,6 +1305,12 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
       },
       clearFilter() {
         link?.clearFilter();
+      },
+      get collapsedNodes() {
+        return collapsedNodes();
+      },
+      setCollapsedNodes(ids) {
+        writeCollapsed([...new Set(ids.map(String))]);
       },
       toggleDataPointSelection(seriesIndex, dataPointIndex) {
         selected = toggleChartSelection(

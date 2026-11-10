@@ -41,7 +41,11 @@ function figure(props, html = []) {
         props.xType ??
         (props.type === "scatter" || props.type === "bubble" ? "numeric" : "category"),
     }),
-    ...chartTextAttributes(props),
+    // Tree charts write their collapsed nodes (React: the state, at first the default).
+    ...chartTextAttributes({
+      ...props,
+      collapsedNodes: props.collapsedNodes ?? props.defaultCollapsedNodes,
+    }),
   };
   const { table } = renderChart({
     ...props,

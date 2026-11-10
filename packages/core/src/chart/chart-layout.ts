@@ -6,6 +6,7 @@ import {
   chartPatternDefs,
 } from "./chart-cues.js";
 import type { ChartFormat } from "./chart-format.js";
+import type { ChartHierarchyState, ChartTreeMark } from "./chart-hierarchy.js";
 import {
   type ChartColor,
   type ChartCurve,
@@ -245,6 +246,8 @@ export interface ChartMark {
   readonly cell?: ChartRect | undefined;
   /** Sankey charts: the node or link, its tooltip and its highlight. */
   readonly flow?: ChartFlow | undefined;
+  /** Hierarchy charts (ADR-0058): the node, its relatives, its shape and its tooltip. */
+  readonly tree?: ChartTreeMark | undefined;
   /** Blocks (bars, boxes, candles, range bars, funnel bars): the rectangle they cover. */
   readonly box?: ChartRect | undefined;
   /** Non-color cues (4.18.62): the point's marker shape, the block's or slice's pattern. */
@@ -315,9 +318,12 @@ export interface ChartLayout {
   /**
    * `index`: one tooltip per category; `point`: one per point (scatter, bubble); `slice`: one per
    * slice or ring (pie, donut, radial bar); `cell`: one per cell (heatmap, treemap; arrow keys
-   * move in their direction); `flow`: one per Sankey node or link.
+   * move in their direction); `flow`: one per Sankey node or link; `tree`: one per node of a
+   * hierarchy chart (arrow keys walk parents, children and the nodes of a level).
    */
-  readonly mode: "index" | "point" | "slice" | "cell" | "flow";
+  readonly mode: "index" | "point" | "slice" | "cell" | "flow" | "tree";
+  /** Hierarchy charts (ADR-0058): the drilled node and the drill path. */
+  readonly hierarchy?: ChartHierarchyState | undefined;
   /** Radar: center and radius; slots are categories and `pos` their angle in degrees. */
   readonly polar?: { readonly cx: number; readonly cy: number; readonly r: number } | undefined;
   readonly horizontal: boolean;

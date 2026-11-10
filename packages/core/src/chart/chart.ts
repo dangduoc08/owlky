@@ -19,6 +19,15 @@ import {
   filterChartData,
 } from "./chart-filter.js";
 import { type ChartFormat, type ChartFormatOptions, chartFormat } from "./chart-format.js";
+import {
+  type ChartDirection,
+  type ChartEdgeStyle,
+  type ChartHierarchyNode,
+  type ChartLayoutType,
+  chartHierarchy,
+  chartHierarchyTable,
+  isHierarchyChart,
+} from "./chart-hierarchy.js";
 import { type ChartIndicator, chartIndicatorSeries } from "./chart-indicators.js";
 import {
   type ChartColorRange,
@@ -64,6 +73,7 @@ import {
 import { type ChartDataPoint, chartSelectedNodes, chartSelection } from "./chart-select.js";
 import { layoutFunnel, layoutSlope } from "./chart-shapes.js";
 import { layoutStock } from "./chart-stock.js";
+import { layoutTree } from "./chart-tree.js";
 import {
   type ChartZoom,
   chartSelectionNodes,
@@ -91,6 +101,18 @@ export interface ChartRenderInput extends ChartFormatOptions {
   readonly edgeOpacity?: number | undefined;
   /** Sankey charts: a title above each rank. */
   readonly axisTitles?: readonly string[] | undefined;
+  /** Hierarchy charts (ADR-0058): nested nodes (one root, or several). */
+  readonly hierarchy?: ChartHierarchyNode | readonly ChartHierarchyNode[] | undefined;
+  /** Tree charts: where the root sits (`radial`: the center). Default `"top"`. */
+  readonly direction?: ChartDirection | undefined;
+  /** Tree charts: `tree` (tidy, default) or `cluster` (a dendrogram: leaves on one level). */
+  readonly layoutType?: ChartLayoutType | undefined;
+  /** Tree charts: links `orthogonal` (default), `curved` or `straight`. */
+  readonly edgeStyle?: ChartEdgeStyle | undefined;
+  /** Tree charts: Enter and clicks expand and collapse nodes. */
+  readonly enableExpandCollapse?: boolean | undefined;
+  /** Tree charts: ids of the nodes whose children are hidden. */
+  readonly collapsedNodes?: readonly string[] | undefined;
   /** Stock charts (ADR-0047): indicators of the first series (overlays and panes). */
   readonly indicators?: readonly ChartIndicator[] | undefined;
   /** Stock charts: a navigator under the panes (the whole axis, the zoom as a brush). */
@@ -254,6 +276,7 @@ export const chartIdPrefix = (raw: string): string =>
 /** Data, formatters, layout, legend and table for one render. */
 export function renderChart(input: ChartRenderInput): ChartRender {
   if (input.type === "sankey") return renderSankey(input);
+  if (isHierarchyChart(input.type)) return renderHierarchy(input);
   const axes = chartYAxes(input.yaxis);
   // Several value axes (4.18.59): every series gets its axis (written on its table column).
   const plain = withChartAxes(chartData({ ...input, series: input.series ?? [] }), axes);
@@ -498,6 +521,40 @@ function renderSankey(input: ChartRenderInput): ChartRender {
     layout,
     legend: null,
     table: chartSankeyTable(graph, format),
+    extent: null,
+    zoom: null,
+    zoomable: false,
+  };
+}
+
+/** Hierarchy charts (ADR-0058): nested nodes instead of series; no legend, no zoom. */
+function renderHierarchy(input: ChartRenderInput): ChartRender {
+  const data = chartData({ type: input.type, series: [] });
+  const format = chartFormat(data, input);
+  const hierarchy = chartHierarchy(input);
+  const layout = layoutTree(
+    hierarchy,
+    {
+      width: input.width,
+      height: input.height,
+      direction: input.direction,
+      layoutType: input.layoutType,
+      edgeStyle: input.edgeStyle,
+      markerSize: input.markerSize,
+      collapsed: input.collapsedNodes,
+      expandCollapse: input.enableExpandCollapse,
+      dataLabels: input.dataLabels,
+      startAngle: input.startAngle,
+      endAngle: input.endAngle,
+    },
+    format,
+  );
+  return {
+    data,
+    format,
+    layout,
+    legend: null,
+    table: chartHierarchyTable(hierarchy, format),
     extent: null,
     zoom: null,
     zoomable: false,

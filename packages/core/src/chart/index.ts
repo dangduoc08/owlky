@@ -84,6 +84,39 @@ export {
   createChartGestures,
 } from "./chart-gestures.js";
 export {
+  type ChartDirection,
+  type ChartEdgeStyle,
+  type ChartHierarchy,
+  type ChartHierarchyAction,
+  type ChartHierarchyItem,
+  type ChartHierarchyNode,
+  type ChartHierarchyState,
+  type ChartHierarchyType,
+  type ChartLayoutType,
+  type ChartLeaf,
+  type ChartTreeAxis,
+  type ChartTreeMark,
+  type ChartZoomType,
+  chartDirections,
+  chartDrillLabels,
+  chartDrillUp,
+  chartEdgeStyles,
+  chartHierarchy,
+  chartHierarchyAction,
+  chartHierarchyIndex,
+  chartHierarchyPath,
+  chartHierarchyTable,
+  chartHierarchyTypes,
+  chartLayoutTypes,
+  chartLeaves,
+  chartTreeMarkOf,
+  chartZoomTypes,
+  isHierarchyChart,
+  nextChartTreeMark,
+  readChartHierarchyTable,
+  toggleChartCollapsed,
+} from "./chart-hierarchy.js";
+export {
   atrValues,
   type ChartIndicator,
   type ChartIndicatorType,
@@ -227,6 +260,7 @@ export {
   chartToolLabels,
   chartTools,
 } from "./chart-toolbar.js";
+export { type ChartTreeOptions, layoutTree } from "./chart-tree.js";
 export {
   type ChartZoom,
   type ChartZoomReason,

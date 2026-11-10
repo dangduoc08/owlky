@@ -31,6 +31,9 @@
  *                 rect[data-ok-chart-navigator-frame] + the price line + g[data-ok-chart-brush]
  *               Sankey (ADR-0047): path[data-ok-chart-link][data-ok-back]? + rect[data-ok-chart-node]
  *                 + text[data-ok-chart-node-label], path[data-ok-chart-active-link];
+ *               Tree (ADR-0058): path[data-ok-chart-tree-link] + circle[data-ok-chart-tree-node]
+ *                 [data-ok-collapsed]? + text[data-ok-chart-node-label], path[data-ok-chart-active-path]
+ *                 (the lineage) + circle[data-ok-chart-active-node] in the active group;
  *                 [data-ok-sparkline] roots: no axes or legend, the plot fills the container
  *               div[data-ok-chart-tooltip][role="status"] (hidden unless a value is active)
  *                 div[data-ok-chart-tooltip-title] + div[data-ok-chart-tooltip-state]? + div[data-ok-chart-tooltip-rows]
@@ -1122,6 +1125,40 @@
     fill: var(--ok-bg-paper);
     stroke: var(--_ok-chart-c);
     stroke-width: 3px;
+  }
+
+  /* Tree charts (ADR-0058): grey links, nodes in their branch color (collapsed nodes hollow),
+     the active node's lineage in its color and a ring around the node. */
+  :where([data-ok-chart-tree-link]) {
+    fill: none;
+    stroke: var(--ok-text-disabled);
+    stroke-width: 1.5px;
+  }
+
+  :where([data-ok-chart-tree-node]) {
+    fill: var(--_ok-chart-c);
+    stroke: var(--ok-bg-paper);
+    stroke-width: 1.5px;
+  }
+
+  :where([data-ok-chart-tree-node][data-ok-collapsed]) {
+    fill: var(--ok-bg-paper);
+    stroke: var(--_ok-chart-c);
+    stroke-width: 2.5px;
+  }
+
+  :where([data-ok-chart-active-path]) {
+    fill: none;
+    stroke: var(--_ok-chart-c);
+    stroke-width: 2.5px;
+    pointer-events: none;
+  }
+
+  :where([data-ok-chart-active-node]) {
+    fill: none;
+    stroke: var(--ok-text-primary);
+    stroke-width: 2px;
+    pointer-events: none;
   }
 
   /* Waterfall connectors (4.18.21): a dashed line from each bar's end to the next bar. */

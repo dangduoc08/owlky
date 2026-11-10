@@ -10,14 +10,19 @@ import {
   type ChartCurve,
   type ChartDataLabelPosition,
   type ChartDataPoint,
+  type ChartDirection,
   type ChartDiscreteMarker,
+  type ChartEdgeStyle,
   type ChartExportFormat,
   type ChartFill,
   type ChartGestureMode,
   type ChartGestures,
   type ChartGrid,
   type ChartGroupFilter,
+  type ChartHierarchyAction,
+  type ChartHierarchyNode,
   type ChartIndicator,
+  type ChartLayoutType,
   type ChartLegend,
   type ChartLegendAlign,
   type ChartLink,
@@ -50,6 +55,7 @@ import {
   chartFilterCategories,
   chartFilterLabels,
   chartFilterText,
+  chartHierarchyAction,
   chartIdPrefix,
   chartMarkAt,
   chartMarkPoint,
@@ -60,6 +66,7 @@ import {
   chartTooltip,
   chartTooltipContext,
   chartTooltipFixed,
+  chartTreeMarkOf,
   chartZoomKey,
   createChartGestures,
   exportChart,
@@ -69,6 +76,7 @@ import {
   placeChartTooltip,
   renderChart,
   sameChartActive,
+  toggleChartCollapsed,
   toggleChartSelection,
   zoomChartBy,
 } from "@owlky/core";
@@ -119,6 +127,25 @@ export interface ChartProps extends Omit<HTMLAttributes<HTMLElement>, "children"
   edgeOpacity?: number | undefined;
   /** Sankey charts: a title above each rank (beside each row when vertical). */
   axisTitles?: readonly string[] | undefined;
+  /**
+   * Tree charts: the nodes, nested (`{ id, name, value, color, children }`; one root or several).
+   * `id` defaults to the name; parents' values are the sum of their children.
+   */
+  hierarchy?: ChartHierarchyNode | readonly ChartHierarchyNode[] | undefined;
+  /** Tree charts: where the root sits, or `radial` (the root in the center). Default `"top"`. */
+  direction?: ChartDirection | undefined;
+  /** Tree charts: `tree` (a tidy tree) or `cluster` (a dendrogram). Default `"tree"`. */
+  layoutType?: ChartLayoutType | undefined;
+  /** Tree charts: links with right angles, curved or straight. Default `"orthogonal"`. */
+  edgeStyle?: ChartEdgeStyle | undefined;
+  /** Tree charts: a click, Enter or Space on a node with children hides or shows them. */
+  enableExpandCollapse?: boolean | undefined;
+  /** Tree charts, controlled: ids of the nodes whose children are hidden. */
+  collapsedNodes?: readonly string[] | undefined;
+  /** Tree charts: the nodes collapsed at first (uncontrolled). */
+  defaultCollapsedNodes?: readonly string[] | undefined;
+  /** Tree charts: called with the collapsed ids after a node is expanded or collapsed. */
+  onCollapsedNodesChange?: ((collapsedNodes: string[]) => void) | undefined;
   /**
    * Stock charts: indicators of the first series (the price), such as `{ type: "sma", period: 20 }`.
    * Overlays (`sma`, `ema`, `bollinger`, `vwap`, `donchian`, `keltner`) draw over the price;
@@ -370,6 +397,7 @@ export interface ChartProps extends Omit<HTMLAttributes<HTMLElement>, "children"
 }
 
 const NO_HIDDEN: readonly number[] = [];
+const NO_IDS: readonly string[] = [];
 const NO_POINTS: readonly ChartDataPoint[] = [];
 const NO_SERIES: readonly ChartSeries[] = [];
 /** Least height of a sparkline without `height` (the CSS default of `--_ok-chart-height`). */
@@ -408,6 +436,14 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     whitespace,
     edgeOpacity,
     axisTitles,
+    hierarchy,
+    direction,
+    layoutType,
+    edgeStyle,
+    enableExpandCollapse,
+    collapsedNodes,
+    defaultCollapsedNodes = NO_IDS,
+    onCollapsedNodesChange,
     indicators,
     navigator,
     paneHeight,
@@ -569,6 +605,10 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     waterfallSubtotalColor,
     hideConnectors,
     crossfilter,
+    direction,
+    layoutType,
+    edgeStyle,
+    enableExpandCollapse,
   });
   const isSparkline = attributes["data-ok-sparkline"] !== undefined;
   const givenHeight = attributes["data-ok-height"];
@@ -644,6 +684,16 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
   const validColumnOpacity = number("data-ok-grid-column-opacity");
   const single = attributes["data-ok-show-for-single-series"] !== undefined;
   const legendToggle = attributes["data-ok-disable-legend-toggle"] === undefined;
+  const validDirection = attributes["data-ok-direction"] as ChartDirection | undefined;
+  const validLayoutType = attributes["data-ok-layout-type"] as ChartLayoutType | undefined;
+  const validEdgeStyle = attributes["data-ok-edge-style"] as ChartEdgeStyle | undefined;
+  const expandCollapse = attributes["data-ok-enable-expand-collapse"] !== undefined;
+  // Tree charts (ADR-0058): collapsed nodes, controlled or kept here.
+  const [collapsed, setCollapsed] = useControllableState<readonly string[]>({
+    value: collapsedNodes,
+    defaultValue: defaultCollapsedNodes,
+    onChange: onCollapsedNodesChange as ((value: readonly string[]) => void) | undefined,
+  });
 
   // Zoom (phase 4): controlled, or kept with the x axis it was set on (so it follows live data).
   const [innerZoom, setInnerZoom] = useState<{
@@ -680,6 +730,12 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         whitespace: validWhitespace,
         edgeOpacity: validEdgeOpacity,
         axisTitles,
+        hierarchy,
+        direction: validDirection,
+        layoutType: validLayoutType,
+        edgeStyle: validEdgeStyle,
+        enableExpandCollapse: expandCollapse,
+        collapsedNodes: collapsed,
         indicators,
         navigator: navigatorOn,
         paneHeight: validPaneHeight,
@@ -773,6 +829,12 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       validWhitespace,
       validEdgeOpacity,
       axisTitles,
+      hierarchy,
+      validDirection,
+      validLayoutType,
+      validEdgeStyle,
+      expandCollapse,
+      collapsed,
       indicators,
       navigatorOn,
       validPaneHeight,
@@ -1079,11 +1141,44 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
   };
   const clearOwnRef = useRef(clearOwn);
   clearOwnRef.current = clearOwn;
+  /** Hierarchy charts: the node to make active once the chart has redrawn after an action. */
+  const focusRef = useRef<string | null>(null);
+  /**
+   * Hierarchy charts: what a click, Enter or Space on a node does (expand or collapse it).
+   * Returns whether the press did something.
+   */
+  const act = (action: ChartHierarchyAction | null) => {
+    if (!action) return false;
+    if (action.kind === "toggle") {
+      focusRef.current = action.id;
+      setCollapsed(toggleChartCollapsed(collapsed, action.id));
+      return true;
+    }
+    return false;
+  };
+  // After an action, the node acted on stays active (its mark may have moved).
+  useLayoutEffect(() => {
+    const id = focusRef.current;
+    if (id === null) return;
+    focusRef.current = null;
+    const mark = chartTreeMarkOf(layout, id);
+    setActive(mark === null ? null : { kind: "mark", mark });
+  });
   // A click selects the point, slice or cell under the pointer (not after a drag or on brushes).
   const onClick = (event: MouseEvent<HTMLDivElement>) => {
     if (brushTarget || gesturesRef.current?.moved) return;
     const box = event.currentTarget.getBoundingClientRect();
     const scale = layout.width / (box.width || layout.width);
+    if (layout.mode === "tree") {
+      // Hierarchy charts: the node under the pointer expands, collapses or drills.
+      const hit = chartActiveAt(
+        layout,
+        (event.clientX - box.left) * scale,
+        (event.clientY - box.top) * scale,
+      );
+      act(chartHierarchyAction(layout, hit?.kind === "mark" ? hit.mark : null));
+      return;
+    }
     const mark = chartMarkAt(
       layout,
       (event.clientX - box.left) * scale,
@@ -1093,6 +1188,20 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       select([chartMarkPoint(layout.marks[mark] as (typeof layout.marks)[number])]);
   };
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (
+      (event.key === "Enter" || event.key === " ") &&
+      !event.repeat &&
+      layout.mode === "tree" &&
+      act(
+        chartHierarchyAction(
+          layout,
+          activeRef.current?.kind === "mark" ? activeRef.current.mark : null,
+        ),
+      )
+    ) {
+      event.preventDefault();
+      return;
+    }
     if ((event.key === "Enter" || event.key === " ") && !event.repeat && !brushTarget) {
       // Enter or Space selects the active item's points (a category: every series' point).
       const marks = chartActiveMarks(layout, activeRef.current);
@@ -1189,6 +1298,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         gridRowColors,
         gridColumnColors,
         dumbbellColors,
+        collapsedNodes: collapsed,
       })}
       data-ok-ready=""
       data-ok-runtime="off"

@@ -249,6 +249,12 @@
       "name": "ok:chart:active"
      },
      {
+      "cancelable": true,
+      "description": "Tree charts with `data-ok-enable-expand-collapse`: before a click, Enter or Space hides or shows a node's children. Call `preventDefault()` to refuse.",
+      "detail": "{ id: string; expanded: boolean; collapsedNodes: string[]; }",
+      "name": "ok:chart:expand"
+     },
+     {
       "cancelable": false,
       "description": "After the group's crossfilter changed (charts with `data-ok-crossfilter`): the filtered category indexes (`null`: none) and whether this chart set it.",
       "detail": "{ categories: number[] | null; own: boolean; }",
@@ -293,6 +299,12 @@
       "type": "() => void"
      },
      {
+      "description": "Tree charts: ids of the nodes whose children are hidden (`data-ok-collapsed-nodes`).",
+      "kind": "property",
+      "name": "collapsedNodes",
+      "type": "readonly string[]"
+     },
+     {
       "description": "Downloads the chart as SVG, PNG or CSV (only during a user gesture: rejects otherwise).",
       "kind": "method",
       "name": "exportChart",
@@ -327,6 +339,12 @@
       "kind": "method",
       "name": "setActive",
       "type": "(active: ChartActive | null) => void"
+     },
+     {
+      "description": "Tree charts: hides the children of exactly these nodes (no event).",
+      "kind": "method",
+      "name": "setCollapsedNodes",
+      "type": "(ids: readonly string[]) => void"
      },
      {
       "description": "Sets formatters (functions can't be attributes). Redraws.",
@@ -381,7 +399,7 @@
      {
       "attr": "data-ok-type",
       "default": "line",
-      "description": "Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML), `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total) or `dumbbell` (a start and an end value per category: two markers joined by a line). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts).",
+      "description": "Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML), `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total), `dumbbell` (a start and an end value per category: two markers joined by a line) or `tree` (a hierarchy: `hierarchy` in React, one table row per node with its parent in HTML). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts).",
       "kind": "style",
       "name": "type",
       "values": [
@@ -406,7 +424,8 @@
        "polarArea",
        "sankey",
        "waterfall",
-       "dumbbell"
+       "dumbbell",
+       "tree"
       ]
      },
      {
@@ -1209,6 +1228,52 @@
       "name": "hideConnectors"
      },
      {
+      "attr": "data-ok-direction",
+      "default": "top",
+      "description": "Tree charts: where the root sits, `top` (the default), `bottom`, `left` or `right`, or `radial` (the root in the center, levels as rings).",
+      "kind": "style",
+      "name": "direction",
+      "optional": true,
+      "values": [
+       "top",
+       "bottom",
+       "left",
+       "right",
+       "radial"
+      ]
+     },
+     {
+      "attr": "data-ok-layout-type",
+      "default": "tree",
+      "description": "Tree charts: `tree` (a tidy tree, the default) or `cluster` (a dendrogram: every leaf on the last level).",
+      "kind": "style",
+      "name": "layoutType",
+      "optional": true,
+      "values": [
+       "tree",
+       "cluster"
+      ]
+     },
+     {
+      "attr": "data-ok-edge-style",
+      "default": "orthogonal",
+      "description": "Tree charts: links with right angles (`orthogonal`, the default), `curved` or `straight`.",
+      "kind": "style",
+      "name": "edgeStyle",
+      "optional": true,
+      "values": [
+       "orthogonal",
+       "curved",
+       "straight"
+      ]
+     },
+     {
+      "attr": "data-ok-enable-expand-collapse",
+      "description": "Tree charts: a click, Enter or Space on a node with children hides or shows them.",
+      "kind": "flag",
+      "name": "enableExpandCollapse"
+     },
+     {
       "attr": "data-ok-crossfilter",
       "default": "highlight",
       "description": "Charts of a `group`: a selection (click, Enter or Space) or a brush in this chart filters the group, and this chart shows the group's filter as a `filter` (only the filtered categories keep their values) or a `highlight` (a tint behind them).",
@@ -1307,6 +1372,24 @@
       ],
       "kind": "part",
       "name": "data-ok-chart-active-marker"
+     },
+     {
+      "description": "A tree chart: the ring around the active node.",
+      "elements": [
+       "circle",
+       "path",
+       "rect"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-active-node"
+     },
+     {
+      "description": "A tree chart: one link of the path from the root to the active node.",
+      "elements": [
+       "path"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-active-path"
      },
      {
       "description": "The highlight of the active slice.",
@@ -2066,6 +2149,22 @@
       "name": "data-ok-chart-track"
      },
      {
+      "description": "A tree chart: the link from a node to its parent.",
+      "elements": [
+       "path"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-tree-link"
+     },
+     {
+      "description": "A tree chart: one node.",
+      "elements": [
+       "circle"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-tree-node"
+     },
+     {
       "description": "The web of a radar chart.",
       "elements": [
        "path"
@@ -2088,6 +2187,17 @@
       ],
       "kind": "part",
       "name": "data-ok-chart-wick"
+     },
+     {
+      "description": "On a tree node: its children are hidden.",
+      "kind": "state",
+      "name": "data-ok-collapsed"
+     },
+     {
+      "description": "Tree charts: the ids of the collapsed nodes, separated by `;`. Written by the chart.",
+      "kind": "value",
+      "name": "data-ok-collapsed-nodes",
+      "value": "string"
      },
      {
       "description": "Colors per value range, such as `0 30 error; 30 70 warning`.",
@@ -2212,8 +2322,12 @@
        "max",
        "median",
        "min",
+       "name",
+       "parent",
        "q1",
        "q3",
+       "source",
+       "target",
        "y",
        "z"
       ]
@@ -2415,6 +2529,11 @@
       "type": "readonly (string | number | Date)[]"
      },
      {
+      "description": "Tree charts, controlled: ids of the nodes whose children are hidden.",
+      "name": "collapsedNodes",
+      "type": "readonly string[]"
+     },
+     {
       "description": "Series differ by more than color: each gets its own marker shape (lines get markers), pattern and dash.",
       "name": "colorBlindMode",
       "type": "boolean"
@@ -2477,6 +2596,11 @@
       "type": "boolean"
      },
      {
+      "description": "Tree charts: the nodes collapsed at first (uncontrolled).",
+      "name": "defaultCollapsedNodes",
+      "type": "readonly string[]"
+     },
+     {
       "description": "Uncontrolled initial hidden series.",
       "name": "defaultHiddenSeries",
       "type": "readonly number[]"
@@ -2490,6 +2614,12 @@
       "description": "Uncontrolled initial zoom.",
       "name": "defaultZoomRange",
       "type": "ChartZoom | null"
+     },
+     {
+      "default": "\"top\"",
+      "description": "Tree charts: where the root sits, or `radial` (the root in the center).",
+      "name": "direction",
+      "type": "\"bottom\" | \"left\" | \"radial\" | \"right\" | \"top\""
      },
      {
       "description": "Legend items are plain labels: clicks don't hide series.",
@@ -2517,9 +2647,20 @@
       "type": "number"
      },
      {
+      "default": "\"orthogonal\"",
+      "description": "Tree charts: links with right angles, curved or straight.",
+      "name": "edgeStyle",
+      "type": "\"curved\" | \"orthogonal\" | \"straight\""
+     },
+     {
       "description": "Sankey charts: the links (`{ source, target, value, color }`, node ids).",
       "name": "edges",
       "type": "readonly ChartSankeyEdge[]"
+     },
+     {
+      "description": "Tree charts: a click, Enter or Space on a node with children hides or shows them.",
+      "name": "enableExpandCollapse",
+      "type": "boolean"
      },
      {
       "description": "Pie, donut and radial bar: end angle in degrees. Default 360.",
@@ -2583,6 +2724,11 @@
       "type": "boolean"
      },
      {
+      "description": "Tree charts: the nodes, nested (`{ id, name, value, color, children }`; one root or several). `id` defaults to the name; parents' values are the sum of their children.",
+      "name": "hierarchy",
+      "type": "ChartHierarchyNode | readonly ChartHierarchyNode[]"
+     },
+     {
       "description": "Bars run left to right, categories down the side.",
       "name": "horizontal",
       "type": "boolean"
@@ -2602,6 +2748,12 @@
       "description": "Replaces the x text in axis labels, the tooltip title and the table.",
       "name": "labelFormatter",
       "type": "((x: string | number) => string)"
+     },
+     {
+      "default": "\"tree\"",
+      "description": "Tree charts: `tree` (a tidy tree) or `cluster` (a dendrogram).",
+      "name": "layoutType",
+      "type": "\"cluster\" | \"tree\""
      },
      {
       "default": "\"top\"",
@@ -2659,6 +2811,11 @@
       "description": "Called when the active category or point changes (pointer, touch or keyboard).",
       "name": "onActiveChange",
       "type": "((active: ChartActive | null) => void)"
+     },
+     {
+      "description": "Tree charts: called with the collapsed ids after a node is expanded or collapsed.",
+      "name": "onCollapsedNodesChange",
+      "type": "((collapsedNodes: string[]) => void)"
      },
      {
       "description": "Called for each point a click, Enter or Space selects or clears, with the point, whether it is selected now and every selected point (ApexCharts' `dataPointSelection`).",
@@ -2892,7 +3049,7 @@
   },
   {
    "name": "ChartPart",
-   "type": "\"close\" | \"end\" | \"high\" | \"incoming\" | \"low\" | \"max\" | \"median\" | \"min\" | \"open\" | \"outgoing\" | \"q1\" | \"q3\" | \"source\" | \"start\" | \"target\" | \"total\" | \"volume\" | \"y\" | \"z\""
+   "type": "\"children\" | \"close\" | \"collapsed\" | \"end\" | \"high\" | \"incoming\" | \"level\" | \"low\" | \"max\" | \"median\" | \"min\" | \"name\" | \"open\" | \"outgoing\" | \"parent\" | \"q1\" | \"q3\" | \"source\" | \"start\" | \"target\" | \"total\" | \"volume\" | \"y\" | \"z\""
   },
   {
    "name": "ChartStripeColor",
@@ -2904,7 +3061,7 @@
   },
   {
    "name": "ChartType",
-   "type": "\"area\" | \"bar\" | \"boxPlot\" | \"bubble\" | \"candlestick\" | \"donut\" | \"dumbbell\" | \"funnel\" | \"heatmap\" | \"line\" | \"pie\" | \"polarArea\" | \"radar\" | \"radialBar\" | \"rangeArea\" | \"rangeBar\" | \"sankey\" | \"scatter\" | \"slope\" | \"timeline\" | \"treemap\" | \"waterfall\""
+   "type": "\"area\" | \"bar\" | \"boxPlot\" | \"bubble\" | \"candlestick\" | \"donut\" | \"dumbbell\" | \"funnel\" | \"heatmap\" | \"line\" | \"pie\" | \"polarArea\" | \"radar\" | \"radialBar\" | \"rangeArea\" | \"rangeBar\" | \"sankey\" | \"scatter\" | \"slope\" | \"timeline\" | \"tree\" | \"treemap\" | \"waterfall\""
   },
   {
    "name": "ChartZoomReason",

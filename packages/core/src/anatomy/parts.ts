@@ -233,6 +233,18 @@ export interface ChartParts {
   "data-ok-chart-active-marker": Part<"circle" | "path">;
   /** The highlight of the active slice. */
   "data-ok-chart-active-slice": Part<"path">;
+  /** A tree chart: the ring around the active node. */
+  "data-ok-chart-active-node": Part<"circle" | "path" | "rect">;
+  /** A tree chart: one link of the path from the root to the active node. */
+  "data-ok-chart-active-path": Part<"path">;
+  /** A tree chart: the link from a node to its parent. */
+  "data-ok-chart-tree-link": Part<"path">;
+  /** A tree chart: one node. */
+  "data-ok-chart-tree-node": Part<"circle">;
+  /** On a tree node: its children are hidden. */
+  "data-ok-collapsed": State;
+  /** Tree charts: the ids of the collapsed nodes, separated by `;`. Written by the chart. */
+  "data-ok-collapsed-nodes": Value<string>;
   /** One drawn annotation: a line, a band or a point. */
   "data-ok-chart-annotation": Value<"x" | "y" | "point">;
   /** The band of a range annotation. */
@@ -468,7 +480,21 @@ export interface ChartParts {
     "slantedLines" | "squares" | "circles" | "horizontalLines" | "verticalLines"
   >;
   /** On a data table header cell: which value of a point the column holds. */
-  "data-ok-part": Value<"min" | "q1" | "median" | "q3" | "max" | "low" | "high" | "y" | "z">;
+  "data-ok-part": Value<
+    | "min"
+    | "q1"
+    | "median"
+    | "q3"
+    | "max"
+    | "low"
+    | "high"
+    | "y"
+    | "z"
+    | "source"
+    | "target"
+    | "name"
+    | "parent"
+  >;
   /** Set by the runtime once the chart is drawn: the data table hides. */
   "data-ok-ready": State;
   /** On a waterfall data cell: the bar shows the running total (`total` or `subtotal`); the cell's text is that total. */
