@@ -1222,9 +1222,13 @@ export {
   arrayMove,
   createSortableController,
   defaultSortableMessages,
+  moveBetweenLists,
   type SortableController,
   type SortableControllerOptions,
+  type SortableDragEvent,
   type SortableMessages,
+  type SortableTransfer,
+  type SortableTransferTarget,
 } from "./sortable/sortable-controller.js";
 export {
   clampStep,

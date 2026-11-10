@@ -250,6 +250,8 @@ const pairs: [component: string, story: string][] = [
   ["scrollbar", "layout"],
   ["sortable", "vertical"],
   ["sortable", "horizontal"],
+  ["sortable", "kanban"],
+  ["sortable", "disabled-items"],
   ["circular-progress", "indeterminate"],
   ["circular-progress", "determinate"],
   ["circular-progress", "sizes"],

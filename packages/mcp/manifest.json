@@ -1,6 +1,7 @@
 {
  "attributes": [
   "data-ok-absolute",
+  "data-ok-accept",
   "data-ok-accordion",
   "data-ok-accordion-actions",
   "data-ok-accordion-details",
@@ -933,6 +934,13 @@
   "data-ok-menu-item",
   "data-ok-menu-submenu",
   "data-ok-menu-submenu-icon",
+  "data-ok-message",
+  "data-ok-message-cancelled",
+  "data-ok-message-dropped",
+  "data-ok-message-grabbed",
+  "data-ok-message-moved",
+  "data-ok-message-moved-to-list",
+  "data-ok-message-removed",
   "data-ok-min",
   "data-ok-min-date",
   "data-ok-min-date-time",
@@ -1217,6 +1225,7 @@
   "data-ok-sortable-announcer",
   "data-ok-sortable-handle",
   "data-ok-sortable-item",
+  "data-ok-sortable-move-to",
   "data-ok-sortable-remove",
   "data-ok-sortable-template",
   "data-ok-sorting-mode",
@@ -57203,6 +57212,30 @@
          "name": "ok:sortable:add"
         },
         {
+         "cancelable": false,
+         "description": "A move was cancelled (Escape, an interrupted touch), before the item goes back.",
+         "detail": "{ item: HTMLElement; index: number; list: HTMLElement; }",
+         "name": "ok:sortable:dragcancel"
+        },
+        {
+         "cancelable": false,
+         "description": "The item was dropped in this list, at `index`.",
+         "detail": "{ item: HTMLElement; index: number; list: HTMLElement; }",
+         "name": "ok:sortable:dragend"
+        },
+        {
+         "cancelable": false,
+         "description": "The item is about to move to `index` in `list` (this list or another one).",
+         "detail": "{ item: HTMLElement; index: number; list: HTMLElement; }",
+         "name": "ok:sortable:dragover"
+        },
+        {
+         "cancelable": false,
+         "description": "An item was grabbed (keyboard, tap) or started a pointer drag.",
+         "detail": "{ item: HTMLElement; index: number; list: HTMLElement; }",
+         "name": "ok:sortable:dragstart"
+        },
+        {
          "cancelable": true,
          "description": "Before an item moves from index `from` to `to`. Call `preventDefault()` to keep the order.",
          "detail": "{ from: number; to: number; item: HTMLElement; }",
@@ -57213,6 +57246,12 @@
          "description": "Before an item is removed. Call `preventDefault()` to keep it.",
          "detail": "{ index: number; item: HTMLElement; }",
          "name": "ok:sortable:remove"
+        },
+        {
+         "cancelable": true,
+         "description": "Before an item moves to another list of its group (`data-ok-group`), at `index` in `to`. Fires on the list it leaves. Call `preventDefault()` to keep it.",
+         "detail": "{ item: HTMLElement; from: HTMLElement; to: HTMLElement; index: number; }",
+         "name": "ok:sortable:transfer"
         }
        ],
        "methods": [
@@ -57233,6 +57272,12 @@
          "kind": "method",
          "name": "remove",
          "type": "(index: number) => boolean"
+        },
+        {
+         "description": "Moves the item at `index` to another sortable list (an element or its `id`), at `toIndex` (default: its end). Returns `false` if out of range or `ok:sortable:transfer` was prevented.",
+         "kind": "method",
+         "name": "transfer",
+         "type": "(index: number, to: string | HTMLElement, toIndex?: number | undefined) => boolean"
         }
        ],
        "options": [
@@ -57254,9 +57299,27 @@
          "event": "ok:sortable:move",
          "kind": "state",
          "name": "items"
+        },
+        {
+         "attr": "data-ok-auto-scroll",
+         "default": true,
+         "description": "While dragging near the edge of a scroll area or the window, it scrolls; `false` turns it off.",
+         "kind": "behavior",
+         "name": "autoScroll"
         }
        ],
        "parts": [
+        {
+         "description": "On the list: the groups it takes items from, separated by spaces (default: its own group).",
+         "kind": "value",
+         "name": "data-ok-accept",
+         "value": "string"
+        },
+        {
+         "description": "On an item: it can't move and isn't a target (its handle is `disabled` too).",
+         "kind": "state",
+         "name": "data-ok-disabled"
+        },
         {
          "description": "Set by the runtime on the item being dragged.",
          "kind": "state",
@@ -57266,6 +57329,48 @@
          "description": "Set by the runtime on the item grabbed with the keyboard.",
          "kind": "state",
          "name": "data-ok-grabbed"
+        },
+        {
+         "description": "On the list: the group it belongs to. Items move between lists of the same group.",
+         "kind": "value",
+         "name": "data-ok-group",
+         "value": "string"
+        },
+        {
+         "description": "HTML: on the list, the announcement when a move is cancelled (`{position}`, `{total}`, `{list}`).",
+         "kind": "value",
+         "name": "data-ok-message-cancelled",
+         "value": "string"
+        },
+        {
+         "description": "HTML: on the list, the announcement when an item is dropped (`{position}`, `{total}`, `{list}`).",
+         "kind": "value",
+         "name": "data-ok-message-dropped",
+         "value": "string"
+        },
+        {
+         "description": "HTML: on the list, the announcement when an item is grabbed (`{position}`, `{total}`, `{list}`).",
+         "kind": "value",
+         "name": "data-ok-message-grabbed",
+         "value": "string"
+        },
+        {
+         "description": "HTML: on the list, the announcement when an item moves (`{position}`, `{total}`, `{list}`).",
+         "kind": "value",
+         "name": "data-ok-message-moved",
+         "value": "string"
+        },
+        {
+         "description": "HTML: on the list, the announcement when an item moves to this list (`{position}`, `{total}`, `{list}`).",
+         "kind": "value",
+         "name": "data-ok-message-moved-to-list",
+         "value": "string"
+        },
+        {
+         "description": "HTML: on the list, the announcement when an item is removed (`{position}`, `{total}`, `{list}`).",
+         "kind": "value",
+         "name": "data-ok-message-removed",
+         "value": "string"
         },
         {
          "description": "The buttons at the end of an item.",
@@ -57300,6 +57405,12 @@
          "name": "data-ok-sortable-handle"
         },
         {
+         "description": "On a button or menu item inside an item: the `id` of the list it moves the item to (its end).",
+         "kind": "value",
+         "name": "data-ok-sortable-move-to",
+         "value": "string"
+        },
+        {
          "description": "The button that removes its item.",
          "kind": "part",
          "name": "data-ok-sortable-remove"
@@ -57321,6 +57432,17 @@
        "native": "HTMLUListElement",
        "props": [
         {
+         "description": "The groups this list takes items from (default: its own `group`). Set it to take items from other groups, such as a \"Done\" list that takes tasks but gives none back.",
+         "name": "accept",
+         "type": "string | readonly string[]"
+        },
+        {
+         "default": "true",
+         "description": "While dragging near the edge of a scroll area (such as a Scrollbar) or the window, it scrolls.",
+         "name": "autoScroll",
+         "type": "boolean"
+        },
+        {
          "default": "Item <n>",
          "description": "Name used in the handle / remove labels (\"Reorder …\", \"Remove …\").",
          "name": "getItemLabel",
@@ -57331,6 +57453,16 @@
          "name": "getKey",
          "required": true,
          "type": "(item: T) => Key"
+        },
+        {
+         "description": "Connects lists: items move between lists of the page with the same group (drag, keys, taps, move-to triggers). Give each list an `id`.",
+         "name": "group",
+         "type": "string"
+        },
+        {
+         "description": "Items that can't move: their handle is disabled and other items don't take their place.",
+         "name": "isItemDisabled",
+         "type": "((item: T, index: number) => boolean)"
         },
         {
          "description": "The items, in display order.",
@@ -57350,6 +57482,26 @@
          "type": "Partial<SortableMessages>"
         },
         {
+         "description": "Called when a move is cancelled (Escape, an interrupted touch), before the item goes back.",
+         "name": "onDragCancel",
+         "type": "((event: SortableDragEvent<T>) => void)"
+        },
+        {
+         "description": "Called when the item is dropped in this list.",
+         "name": "onDragEnd",
+         "type": "((event: SortableDragEvent<T>) => void)"
+        },
+        {
+         "description": "Called before the item moves over another position, in this list or another one.",
+         "name": "onDragOver",
+         "type": "((event: SortableDragEvent<T>) => void)"
+        },
+        {
+         "description": "Called when an item is grabbed (keyboard, tap) or starts a pointer drag.",
+         "name": "onDragStart",
+         "type": "((event: SortableDragEvent<T>) => void)"
+        },
+        {
          "description": "Renders a remove button per item and is called when one is pressed.",
          "name": "onRemove",
          "type": "((item: T, index: number) => void)"
@@ -57359,6 +57511,11 @@
          "name": "onReorder",
          "required": true,
          "type": "(items: T[]) => void"
+        },
+        {
+         "description": "Called when an item of this list moves to another list. Update both lists, for example with `moveBetweenLists(lists, event)`. Without it, items never leave the list.",
+         "name": "onTransfer",
+         "type": "((event: SortableTransferEvent<T>) => void)"
         },
         {
          "description": "Content of an item.",
@@ -57375,20 +57532,19 @@
    "name": "sortable",
    "react": [
     "Sortable",
-    "arrayMove"
+    "arrayMove",
+    "moveBetweenLists"
    ],
    "referenceUrl": "https://minimals.cc/components/extra/dnd",
    "related": [
     "button",
     "icon-button",
+    "menu",
+    "popover",
     "scrollbar",
     "typography"
    ],
-   "requiredParts": {
-    "data-ok-sortable": [
-     "data-ok-sortable-actions"
-    ]
-   },
+   "requiredParts": {},
    "root": "data-ok-sortable",
    "schemas": [
     {
@@ -57412,6 +57568,13 @@
        "event": "ok:sortable:move",
        "kind": "state",
        "name": "items"
+      },
+      {
+       "attr": "data-ok-auto-scroll",
+       "default": true,
+       "description": "While dragging near the edge of a scroll area or the window, it scrolls; `false` turns it off.",
+       "kind": "behavior",
+       "name": "autoScroll"
       }
      ],
      "root": "data-ok-sortable"
@@ -57424,27 +57587,27 @@
      "title": "Purpose"
     },
     {
-     "body": "```\nul[data-ok-sortable][data-ok-layout][aria-label]                React: + data-ok-runtime=\"off\"\n  li[data-ok-sortable-item][data-ok-dragging | data-ok-grabbed]?\n    … content (yours)\n    div[data-ok-sortable-actions]\n      button[data-ok-icon-button][data-ok-size=\"sm\"][data-ok-sortable-remove][aria-label]?  (optional)\n      button[data-ok-icon-button][data-ok-size=\"sm\"][data-ok-sortable-handle][aria-label][aria-pressed]\n  template[data-ok-sortable-template]?                          HTML only: markup of new items\n[add trigger] button[data-ok-sortable-add=\"<list id>\"]          HTML only\ndiv[data-ok-sortable-announcer][aria-live=\"polite\"]             created once per document (visually hidden)\n```\nScrolling (vertical / horizontal): wrap the list in a Scrollbar — `section[data-ok-scrollbar] ›\nul[data-ok-sortable]`. The Scrollbar then scrolls and carries the dashed frame; the list grows\nfreely (`:has(> [data-ok-sortable])`). A list without a Scrollbar still scrolls itself (as before).\nHandles and remove buttons are Icon buttons (`default`, `sm`), so they share its CSS.",
+     "body": "```\nul[data-ok-sortable][data-ok-layout][aria-label][id]?[data-ok-group]?[data-ok-accept]?   React: + data-ok-runtime=\"off\"\n  li[data-ok-sortable-item][data-ok-dragging | data-ok-grabbed]?[data-ok-disabled]?\n    … content (yours), may hold [data-ok-sortable-move-to=\"<list id>\"] triggers (buttons, menu items)\n    div[data-ok-sortable-actions]\n      button[data-ok-icon-button][data-ok-size=\"sm\"][data-ok-sortable-remove][aria-label]?  (optional)\n      button[data-ok-icon-button][data-ok-size=\"sm\"][data-ok-sortable-handle][aria-label][aria-pressed][disabled]?\n  template[data-ok-sortable-template]?                          HTML only: markup of new items\n[add trigger] button[data-ok-sortable-add=\"<list id>\"]          HTML only\ndiv[data-ok-sortable-announcer][aria-live=\"polite\"]             created once per document (visually hidden)\n```\nScrolling (vertical / horizontal): wrap the list in a Scrollbar — `section[data-ok-scrollbar] ›\nul[data-ok-sortable]`. The Scrollbar then scrolls and carries the dashed frame; the list grows\nfreely (`:has(> [data-ok-sortable])`). A list without a Scrollbar still scrolls itself (as before).\nHandles and remove buttons are Icon buttons (`default`, `sm`), so they share its CSS.",
      "id": "anatomy",
      "title": "Anatomy"
     },
     {
-     "body": "(Options of `sortable`: listed under \"options\".)\n\nOther props (not options):\n\n| HTML | React | Values |\n|---|---|---|\n| item markup | `items` + `getKey` + `renderItem` | your data |\n| move handling | `onReorder(items)` (controlled) | |\n| `data-ok-sortable-remove` buttons | `onRemove(item, index)` (renders the buttons) | none |\n| handle / remove names | `getItemLabel(item, index)` → `Reorder …` / `Remove …` | `Item <n>` |",
+     "body": "(Options of `sortable`: listed under \"options\".)\n\nOther props (not options):\n\n| HTML | React | Values |\n|---|---|---|\n| item markup | `items` + `getKey` + `renderItem` | your data |\n| move handling | `onReorder(items)` (controlled) | |\n| `data-ok-sortable-remove` buttons | `onRemove(item, index)` (renders the buttons) | none |\n| handle / remove names | `getItemLabel(item, index)` → `Reorder …` / `Remove …` | `Item <n>` |\n| `data-ok-group=\"<name>\"` on the list | `group` | lists of the same group exchange items (ADR-0053) |\n| `data-ok-accept=\"<names>\"` (spaces) | `accept` (string or array) | groups the list takes from; default its own |\n| `id` on the list | `id` (falls back to `useId()` with a group) | names lists in transfers and move-to triggers |\n| `ok:sortable:transfer` (cancelable) · instance `transfer` | `onTransfer({ item, from, to, fromIndex, index })` + `moveBetweenLists(lists, event)` | without `onTransfer` a React list never gives items |\n| `[data-ok-sortable-move-to=\"<list id>\"]` inside an item | same attribute (in `renderItem`) | moves the item to that list's end |\n| `li[data-ok-disabled]` + the handle's `disabled` | `isItemDisabled(item, index)` | the item never moves and isn't a target |\n| `ok:sortable:dragstart` · `dragover` · `dragend` · `dragcancel` (`detail: { item, index, list }`) | `onDragStart` · `onDragOver` · `onDragEnd` · `onDragCancel` (`{ item, index, list }`, `list` = id) | to the owner of the list holding the item |\n| `data-ok-message-<grabbed\\|moved\\|moved-to-list\\|dropped\\|cancelled\\|removed>` (`{position}`, `{total}`, `{list}`) | `messages` | announcement texts |",
      "id": "options",
      "title": "Options"
     },
     {
-     "body": "- Items: background `channel(grey-500)` 4 %, 1px border 16 %, radius `--ok-radius-lg`; actions at the\n  top end. Remove buttons appear on item hover / focus-within, always on touch (`hover: none`).\n- `grid`: columns of at least 160px (`auto-fill`), gap 20px.\n- `vertical`: one column, at most 480px wide and 560px tall (scrolls), dashed frame, padding 20px.\n- `horizontal`: one row of 144px items that scrolls horizontally, dashed frame, padding 20px.\n- Dragging: the item follows the pointer above the others (`--ok-shadow-z16`); grabbed (keyboard /\n  tap): `--ok-shadow-z8` and a 2px outline in `--ok-text-secondary`.",
+     "body": "- Items: background `channel(grey-500)` 4 %, 1px border 16 %, radius `--ok-radius-lg`; actions at the\n  top end. Remove buttons appear on item hover / focus-within, always on touch (`hover: none`).\n- `grid`: columns of at least 160px (`auto-fill`), gap 20px.\n- `vertical`: one column, at most 480px wide and 560px tall (scrolls), dashed frame, padding 20px.\n- `horizontal`: one row of 144px items that scrolls horizontally, dashed frame, padding 20px.\n- An empty list with a group keeps a block size of 80px (a drop target).\n- Dragging: the item follows the pointer above the others (`--ok-shadow-z16`); grabbed (keyboard /\n  tap): `--ok-shadow-z8` and a 2px outline in `--ok-text-secondary`.",
      "id": "layout-and-tokens",
      "title": "Layout and tokens"
     },
     {
-     "body": "The controller reports intent (`onMove(from, to)`, `onRemove(index)`); the owner reorders its state\n(React) or the DOM (HTML runtime). It re-reads the DOM on every step, so async owners work.\n- **Pointer drag** (mouse, touch, pen) on the handle: starts after 4px; the item follows the pointer;\n  moving over another item moves it there. Release drops; `pointercancel` / Escape restore the start\n  position.\n- **Keyboard / taps** on the handle: Space / Enter / click grabs; Arrow keys move it (vertical: ↑↓,\n  horizontal: ←→, grid: ←→ ±1 and ↑↓ ± one row); Space / Enter / click drops; Escape cancels;\n  focus leaving the list drops. Clicking another item's handle while one is grabbed moves it there.\n  Focus stays on the moved handle.\n- **Remove:** reported for the item; focus moves to the next item's handle (or the previous one).\n- **Announcements** (polite live region): grabbed, moved, dropped, cancelled, removed — with\n  positions (\"position 3 of 12\").",
+     "body": "The controller reports intent (`onMove(from, to)`, `onRemove(index)`); the owner reorders its state\n(React) or the DOM (HTML runtime). It re-reads the DOM on every step, so async owners work.\n- **Pointer drag** (mouse, touch, pen) on the handle: starts after 4px; the item follows the pointer;\n  moving over another item moves it there. Release drops; `pointercancel` / Escape restore the start\n  position.\n- **Keyboard / taps** on the handle: Space / Enter / click grabs; Arrow keys move it (vertical: ↑↓,\n  horizontal: ←→, grid: ←→ ±1 and ↑↓ ± one row); Space / Enter / click drops; Escape cancels;\n  focus leaving the list drops. Clicking another item's handle while one is grabbed moves it there.\n  Focus stays on the moved handle.\n- **Remove:** reported for the item; focus moves to the next item's handle (or the previous one).\n- **Several lists** (ADR-0053): lists with the same `data-ok-group` (or a target whose\n  `data-ok-accept` names the source's group) exchange items. Controllers register in a\n  module-scoped registry per document; the grab / drag is one session per document, continued by\n  the controller of the list holding the item, and every intent goes to that list's owner\n  (`onTransfer({ item, from, to, fromIndex, index })`, `false` refuses). React may render the moved\n  item as a new element: the session resolves to it (same node in the target, or the target's item\n  at `index` once the old one is gone; refused after 8 frames) and moves its flags and focus there.\n  Pointer: over another list's item → its index; over another list's box (or its Scrollbar) → its\n  end. Keys: vertical ←/→, horizontal ↑/↓ go to the previous / next accepting list (document\n  order, index kept); grids go there when ←/→ pass the first / last item. Taps: a grabbed item\n  goes to the tapped handle's position in another list. `[data-ok-sortable-move-to]` moves an item\n  to that list's end (single-pointer alternative; the Kanban story composes a Menu). Escape puts it\n  back in its start list. Announced with `movedToList` (the list's `aria-label`).\n- **Announcements** (polite live region): grabbed, moved, dropped, cancelled, removed — with\n  positions (\"position 3 of 12\"). HTML replaces them with `data-ok-message-*` on the list (read when\n  announced; `{position}`, `{total}`, `{list}`).\n- **Disabled items** (`data-ok-disabled`, dnd-kit `disabled: true`): can't be grabbed, dragged or\n  moved by a trigger; the pointer over one moves nothing; keys skip them (the item jumps past, or\n  stays when only disabled items are left in that direction). Other items may still move past\n  them, which shifts them by one (as upstream).\n- **Drag events:** `onDragStart` on a grab or once a drag starts; `onDragOver` before each move\n  (the target index and list); `onDragEnd` on a drop (where it landed); `onDragCancel` before the\n  item goes back. Each goes to the owner of the list holding the item.\n- **Auto scroll** (on unless `data-ok-auto-scroll=\"false\"`): while a pointer drag is near an edge\n  (a fifth of the container, at most 80px) of a scrolling ancestor of the item, or of the window,\n  the nearest one that can scroll on that axis scrolls up to 20px per frame (full speed past the\n  edge), within the scroll size measured when the container was first met (the dragged item's\n  transform would grow it). Items under the pointer move meanwhile. Keys scroll the item into view.",
      "id": "behavior-core-createsortablecontroller",
      "title": "Behavior (`core` `createSortableController`)"
     },
     {
-     "body": "| Key (handle focused) | Action |\n|---|---|\n| Space / Enter | grab · drop |\n| Arrow keys (grabbed) | move by one (grid: ↑↓ by a row) |\n| Escape (grabbed) | cancel, back to the start position |\n| Tab (grabbed) | drop, then move focus |",
+     "body": "| Key (handle focused) | Action |\n|---|---|\n| Space / Enter | grab · drop |\n| Arrow keys (grabbed) | move by one (grid: ↑↓ by a row) |\n| ←/→ (vertical) · ↑/↓ (horizontal) · ←/→ past the ends (grid) | move to the previous / next list of the group |\n| Escape (grabbed) | cancel, back to the start position |\n| Tab (grabbed) | drop, then move focus |",
      "id": "keyboard",
      "title": "Keyboard"
     },
@@ -57454,7 +57617,7 @@
      "title": "Accessibility"
     },
     {
-     "body": "HTML: `ok:sortable:move` (cancelable, `detail: { from, to, item }`), `ok:sortable:remove`\n(cancelable, `detail: { index, item }`), `ok:sortable:add` (after a template clone is inserted,\n`detail: { item, index }` — fill its content here). Instance: `move(from, to)`, `remove(index)`.\nReact: `onReorder`, `onRemove`; helper `arrayMove(items, from, to)`; `messages?:\nPartial<SortableMessages>` localizes the announcements (`grabbed`, `moved`, `dropped`, `cancelled`,\n`removed`, each `(position, total) => string`; defaults from `defaultSortableMessages`).",
+     "body": "HTML: `ok:sortable:move` (cancelable, `detail: { from, to, item }`), `ok:sortable:transfer`\n(cancelable, `detail: { item, from, to, index }`, on the list it leaves), `ok:sortable:remove`\n(cancelable, `detail: { index, item }`), `ok:sortable:add` (after a template clone is inserted,\n`detail: { item, index }` — fill its content here). Instance: `move(from, to)`, `remove(index)`, `transfer(index, to, toIndex?)`.\nReact: `onReorder`, `onRemove`; helper `arrayMove(items, from, to)`; `messages?:\nPartial<SortableMessages>` localizes the announcements (`grabbed`, `moved`, `dropped`, `cancelled`,\n`removed`, `movedToList`, each `(position, total, list) => string`, `list` = the list's\n`aria-label`; defaults from `defaultSortableMessages`). React: `group`, `accept`, `onTransfer`,\nhelper `moveBetweenLists`.",
      "id": "events-api",
      "title": "Events / API"
     },
@@ -57464,12 +57627,12 @@
      "title": "Responsive"
     },
     {
-     "body": "Upstream: Minimals \"Dnd\" on dnd-kit — `DndContext`, `SortableContext`, `useSortable` (legacy\n`@dnd-kit/sortable` docs, dndkit.com/legacy/…, and `@dnd-kit/react` `useSortable`, checked\n2026-11-09). Owlky is one component, not a toolkit: rows map dnd-kit concepts to it.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `SortableContext items`, `arrayMove`, `onDragEnd` reorder | `items` + `onReorder(items)`, `arrayMove` · `ok:sortable:move` | renamed | controlled list |\n| `useSortable id`, `index` | `getKey(item)`, position | renamed | |\n| `strategy` `rectSortingStrategy` / `verticalList…` / `horizontalList…` | `layout` (`grid` · `vertical` · `horizontal`) | renamed | |\n| `strategy` `rectSwappingStrategy` | — | deferred | swap instead of shift |\n| `sensors` (Pointer, Keyboard, `sortableKeyboardCoordinates`) | pointer + keyboard + two taps, built in | kept | activation distance fixed (4px) |\n| `useSortable handle` / `handleRef` | handle button (always) | kept | drag by the whole item: deferred |\n| `accessibility.announcements`, `screenReaderInstructions` | `messages` (React), English defaults (HTML) | renamed | HTML localization: deferred |\n| `useSortable disabled` | — | deferred | items that can't move (pinned first item) |\n| `onDragStart`, `onDragMove`, `onDragOver`, `onDragCancel` | — | deferred | events / callbacks (only move and remove today) |\n| `cancelDrop` | cancelable `ok:sortable:move`; React refuses by not updating `items` | renamed | |\n| `autoScroll` | — | deferred | scroll the Scrollbar / page near its edges while dragging |\n| `modifiers` (restrict to an axis, to the parent) | layout axis | not applicable | the item follows the pointer inside the list |\n| `DragOverlay` | the dragged item itself (`data-ok-dragging`) | not applicable | |\n| several lists: `group`, `accept`, `type`, multiple `SortableContext`s, `onDragOver` between containers | — | deferred | move items between lists (kanban) |\n| `collisionDetection`, `collisionPriority`, `layoutMeasuring`, `plugins`, `effects`, `transition`, `target`, `element`, returned refs / flags | — | not applicable | engine internals; `data-ok-dragging` / `data-ok-grabbed` are the flags |\n| — | `onRemove`, remove buttons, HTML add template | kept | Owlky additions (reference) |",
+     "body": "Upstream: Minimals \"Dnd\" on dnd-kit — `DndContext`, `SortableContext`, `useSortable` (legacy\n`@dnd-kit/sortable` docs, dndkit.com/legacy/…, and `@dnd-kit/react` `useSortable`, checked\n2026-11-09). Owlky is one component, not a toolkit: rows map dnd-kit concepts to it.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `SortableContext items`, `arrayMove`, `onDragEnd` reorder | `items` + `onReorder(items)`, `arrayMove` · `ok:sortable:move` | renamed | controlled list |\n| `useSortable id`, `index` | `getKey(item)`, position | renamed | |\n| `strategy` `rectSortingStrategy` / `verticalList…` / `horizontalList…` | `layout` (`grid` · `vertical` · `horizontal`) | renamed | |\n| `strategy` `rectSwappingStrategy` | — | deferred | swap instead of shift |\n| `sensors` (Pointer, Keyboard, `sortableKeyboardCoordinates`) | pointer + keyboard + two taps, built in | kept | activation distance fixed (4px) |\n| `useSortable handle` / `handleRef` | handle button (always) | kept | drag by the whole item: deferred |\n| `accessibility.announcements` | `messages` (React), `data-ok-message-*` (HTML) | renamed | `screenReaderInstructions`: part of `grabbed` |\n| `useSortable disabled` (`true`) | `isItemDisabled` · `li[data-ok-disabled]` | renamed | the `{ draggable, droppable }` object form: not offered |\n| `onDragStart`, `onDragOver`, `onDragEnd`, `onDragCancel` | same names · `ok:sortable:dragstart` / `dragover` / `dragend` / `dragcancel` | kept | the React ones replace the `ul`'s native HTML drag handlers |\n| `onDragMove` | — | not applicable | every pointer move; `onDragOver` reports each new position |\n| `cancelDrop` | cancelable `ok:sortable:move`; React refuses by not updating `items` | renamed | |\n| `autoScroll` (boolean) | `autoScroll` · `data-ok-auto-scroll=\"false\"` | kept | its options (`threshold`, `acceleration`, `interval`, `canScroll`, `order`): fixed values |\n| `modifiers` (restrict to an axis, to the parent) | layout axis | not applicable | the item follows the pointer inside the list |\n| `DragOverlay` | the dragged item itself (`data-ok-dragging`) | not applicable | |\n| several lists: `group`, `accept`, multiple `SortableContext`s / one `DragDropProvider`, `onDragOver` between containers | `group`, `accept` on the list · `onTransfer` · `ok:sortable:transfer` | renamed | ADR-0053: list attributes, not per item; groups connect lists of the page |\n| `move(items, event)` (`@dnd-kit/helpers`) | `moveBetweenLists(lists, event)` | renamed | record of arrays keyed by list id |\n| `useDroppable` columns (empty lists) | empty lists of a group are drop targets (min block size) | kept | |\n| `type`, `accept` predicate `(source) => boolean` | — | deferred | one kind of item per list; HTML can't express a predicate |\n| `collisionDetection`, `collisionPriority`, `layoutMeasuring`, `plugins`, `effects`, `transition`, `target`, `element`, returned refs / flags | — | not applicable | engine internals; `data-ok-dragging` / `data-ok-grabbed` are the flags |\n| — | `onRemove`, remove buttons, HTML add template | kept | Owlky additions (reference) |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
     {
-     "body": "- \"Add item\" is app logic: React adds to `items`; HTML clones `template[data-ok-sortable-template]`\n  on `[data-ok-sortable-add]` and emits `ok:sortable:add`.\n- Announcements: React accepts `messages`; the HTML runtime uses the English defaults.",
+     "body": "- \"Add item\" is app logic: React adds to `items`; HTML clones `template[data-ok-sortable-template]`\n  on `[data-ok-sortable-add]` and emits `ok:sortable:add`.\n- Announcements: React accepts `messages`; the HTML runtime uses the English defaults.\n- Moves between lists: React lists need `onTransfer` (state); HTML moves the node. React and HTML\n  lists can't be mixed in one group. The Kanban story's \"Move\" menus list every column (choosing\n  the current one does nothing), so both stay equal after moves.",
      "id": "parity-notes",
      "title": "Parity notes"
     }
@@ -57501,6 +57664,24 @@
      "react": "import \"@owlky/styles/owlky.css\";\nimport { Button, Scrollbar, Sortable, Typography } from \"@owlky/react\";\nimport { useState } from \"react\";\n// PlusIcon: your own decorative SVG icon (aria-hidden=\"true\").\n\nexport function HorizontalExample() {\n  const [items, setItems] = useState(() => Array.from({ length: 12 }, (_, i) => i + 1));\n  return (\n    <>\n      <Button\n        variant=\"contained\"\n        startIcon={<PlusIcon />}\n        onClick={() => setItems((current) => [...current, Math.max(0, ...current) + 1])}\n      >\n        Add item\n      </Button>\n      <Scrollbar>\n        <Sortable\n          aria-label=\"Horizontal items\"\n          layout=\"horizontal\"\n          items={items}\n          getKey={(n) => n}\n          getItemLabel={(n) => `item ${n}`}\n          renderItem={(n) => (\n            <Typography variant=\"h2\" component=\"span\" color=\"textSecondary\">\n              {n}\n            </Typography>\n          )}\n          onReorder={setItems}\n          onRemove={(n) => setItems((current) => current.filter((item) => item !== n))}\n        />\n      </Scrollbar>\n    </>\n  );\n}\n",
      "snippets": [
       "horizontal-group.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/button.css + components/icon-button.css + components/list.css + components/popover.css + components/menu.css + components/scrollbar.css + components/sortable.css + components/typography.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Kanban -->\n<section data-ok-scrollbar aria-label=\"Board\" tabindex=\"0\">\n  <div class=\"sb-kanban\">\n    <section aria-labelledby=\"kanban-todo-title\">\n      <h3 data-ok-typography data-ok-variant=\"h6\" id=\"kanban-todo-title\">To do</h3>\n      <ul id=\"kanban-todo\" data-ok-sortable data-ok-layout=\"vertical\" data-ok-group=\"kanban\" aria-label=\"To do\">\n        <li data-ok-sortable-item>\n          <div class=\"sb-kanban-card\">\n            <span data-ok-typography data-ok-variant=\"subtitle2\">Write the brief</span>\n            <button type=\"button\" data-ok-button data-ok-variant=\"text\" data-ok-color=\"inherit\" data-ok-size=\"sm\" id=\"task-1-move\" aria-label=\"Move Write the brief\" aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"task-1-menu\" data-ok-popover-open=\"task-1-menu\"><span data-ok-button-label>Move</span></button>\n            <div popover=\"manual\" data-ok-popover data-ok-placement=\"bottom-start\" id=\"task-1-menu\">\n              <span data-ok-popover-arrow aria-hidden=\"true\"></span>\n              <ul role=\"menu\" data-ok-menu aria-labelledby=\"task-1-move\">\n                <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item data-ok-sortable-move-to=\"kanban-todo\">Move to To do</li>\n                <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item data-ok-sortable-move-to=\"kanban-progress\">Move to In progress</li>\n                <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item data-ok-sortable-move-to=\"kanban-review\">Move to In review</li>\n                <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item data-ok-sortable-move-to=\"kanban-done\">Move to Done</li>\n              </ul>\n            </div>\n          </div>\n          <div data-ok-sortable-actions>\n            <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-sortable-handle aria-label=\"Reorder Write the brief\" aria-pressed=\"false\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\"><path d=\"M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01\"></path></svg></button>\n          </div>\n        </li>\n        <li data-ok-sortable-item>\n          <div class=\"sb-kanban-card\">\n            <span data-ok-typography data-ok-variant=\"subtitle2\">Book the venue</span>\n            <button type=\"button\" data-ok-button data-ok-variant=\"text\" data-ok-color=\"inherit\" data-ok-size=\"sm\" id=\"task-2-move\" aria-label=\"Move Book the venue\" aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"task-2-menu\" data-ok-popover-open=\"task-2-menu\"><span data-ok-button-label>Move</span></button>\n            <div popover=\"manual\" data-ok-popover data-ok-placement=\"bottom-start\" id=\"task-2-menu\">\n              <span data-ok-popover-arrow aria-hidden=\"true\"></span>\n              <ul role=\"menu\" data-ok-menu aria-labelledby=\"task-2-move\">\n                <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item data-ok-sortable-move-to=\"kanban-todo\">Move to To do</li>\n                <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item data-ok-sortable-move-to=\"kanban-progress\">Move to In progress</li>\n                <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item data-ok-sortable-move-to=\"kanban-review\">Move to In review</li>\n                <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item data-ok-sortable-move-to=\"kanban-done\">Move to Done</li>\n              </ul>\n            </div>\n          </div>\n          <div data-ok-sortable-actions>\n            <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-sortable-handle aria-label=\"Reorder Book the venue\" aria-pressed=\"false\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\"><path d=\"M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01\"></path></svg></button>\n          </div>\n        </li>\n        <li data-ok-sortable-item>\n          <div class=\"sb-kanban-card\">\n            <span data-ok-typography data-ok-variant=\"subtitle2\">Send invitations</span>\n            <button type=\"button\" data-ok-button data-ok-variant=\"text\" data-ok-color=\"inherit\" data-ok-size=\"sm\" id=\"task-3-move\" aria-label=\"Move Send invitations\" aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"task-3-menu\" data-ok-popover-open=\"task-3-menu\"><span data-ok-button-label>Move</span></button>\n            <div popover=\"manual\" data-ok-popover data-ok-placement=\"bottom-start\" id=\"task-3-menu\">\n              <span data-ok-popover-arrow aria-hidden=\"true\"></span>\n              <ul role=\"menu\" data-ok-menu aria-labelledby=\"task-3-move\">\n                <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item data-ok-sortable-move-to=\"kanban-todo\">Move to To do</li>\n                <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item data-ok-sortable-move-to=\"kanban-progress\">Move to In progress</li>\n                <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item data-ok-sortable-move-to=\"kanban-review\">Move to In review</li>\n                <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item data-ok-sortable-move-to=\"kanban-done\">Move to Done</li>\n              </ul>\n            </div>\n          </div>\n          <div data-ok-sortable-actions>\n            <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-sortable-handle aria-label=\"Reorder Send invitations\" aria-pressed=\"false\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\"><path d=\"M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01\"></path></svg></button>\n          </div>\n        </li>\n      </ul>\n    </section>\n    <section aria-labelledby=\"kanban-progress-title\">\n      <h3 data-ok-typography data-ok-variant=\"h6\" id=\"kanban-progress-title\">In progress</h3>\n      <ul id=\"kanban-progress\" data-ok-sortable data-ok-layout=\"vertical\" data-ok-group=\"kanban\" aria-label=\"In progress\">\n        <li data-ok-sortable-item>\n          <div class=\"sb-kanban-card\">\n            <span data-ok-typography data-ok-variant=\"subtitle2\">Design the poster</span>\n            <button type=\"button\" data-ok-button data-ok-variant=\"text\" data-ok-color=\"inherit\" data-ok-size=\"sm\" id=\"task-4-move\" aria-label=\"Move Design the poster\" aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"task-4-menu\" data-ok-popover-open=\"task-4-menu\"><span data-ok-button-label>Move</span></button>\n            <div popover=\"manual\" data-ok-popover data-ok-placement=\"bottom-start\" id=\"task-4-menu\">\n              <span data-ok-popover-arrow aria-hidden=\"true\"></span>\n              <ul role=\"menu\" data-ok-menu aria-labelledby=\"task-4-move\">\n                <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item data-ok-sortable-move-to=\"kanban-todo\">Move to To do</li>\n                <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item data-ok-sortable-move-to=\"kanban-progress\">Move to In progress</li>\n                <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item data-ok-sortable-move-to=\"kanban-review\">Move to In review</li>\n                <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item data-ok-sortable-move-to=\"kanban-done\">Move to Done</li>\n              </ul>\n            </div>\n          </div>\n          <div data-ok-sortable-actions>\n            <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-sortable-handle aria-label=\"Reorder Design the poster\" aria-pressed=\"false\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\"><path d=\"M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01\"></path></svg></button>\n          </div>\n        </li>\n        <li data-ok-sortable-item>\n          <div class=\"sb-kanban-card\">\n            <span data-ok-typography data-ok-variant=\"subtitle2\">Plan the budget</span>\n            <button type=\"button\" data-ok-button data-ok-variant=\"text\" data-ok-color=\"inherit\" data-ok-size=\"sm\" id=\"task-5-move\" aria-label=\"Move Plan the budget\" aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"task-5-menu\" data-ok-popover-open=\"task-5-menu\"><span data-ok-button-label>Move</span></button>\n            <div popover=\"manual\" data-ok-popover data-ok-placement=\"bottom-start\" id=\"task-5-menu\">\n              <span data-ok-popover-arrow aria-hidden=\"true\"></span>\n              <ul role=\"menu\" data-ok-menu aria-labelledby=\"task-5-move\">\n                <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item data-ok-sortable-move-to=\"kanban-todo\">Move to To do</li>\n                <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item data-ok-sortable-move-to=\"kanban-progress\">Move to In progress</li>\n                <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item data-ok-sortable-move-to=\"kanban-review\">Move to In review</li>\n                <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item data-ok-sortable-move-to=\"kanban-done\">Move to Done</li>\n              </ul>\n            </div>\n          </div>\n          <div data-ok-sortable-actions>\n            <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-sortable-handle aria-label=\"Reorder Plan the budget\" aria-pressed=\"false\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\"><path d=\"M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01\"></path></svg></button>\n          </div>\n        </li>\n      </ul>\n    </section>\n    <section aria-labelledby=\"kanban-review-title\">\n      <h3 data-ok-typography data-ok-variant=\"h6\" id=\"kanban-review-title\">In review</h3>\n      <ul id=\"kanban-review\" data-ok-sortable data-ok-layout=\"vertical\" data-ok-group=\"kanban\" aria-label=\"In review\">\n        <li data-ok-sortable-item>\n          <div class=\"sb-kanban-card\">\n            <span data-ok-typography data-ok-variant=\"subtitle2\">Pick the menu</span>\n            <button type=\"button\" data-ok-button data-ok-variant=\"text\" data-ok-color=\"inherit\" data-ok-size=\"sm\" id=\"task-6-move\" aria-label=\"Move Pick the menu\" aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"task-6-menu\" data-ok-popover-open=\"task-6-menu\"><span data-ok-button-label>Move</span></button>\n            <div popover=\"manual\" data-ok-popover data-ok-placement=\"bottom-start\" id=\"task-6-menu\">\n              <span data-ok-popover-arrow aria-hidden=\"true\"></span>\n              <ul role=\"menu\" data-ok-menu aria-labelledby=\"task-6-move\">\n                <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item data-ok-sortable-move-to=\"kanban-todo\">Move to To do</li>\n                <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item data-ok-sortable-move-to=\"kanban-progress\">Move to In progress</li>\n                <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item data-ok-sortable-move-to=\"kanban-review\">Move to In review</li>\n                <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item data-ok-sortable-move-to=\"kanban-done\">Move to Done</li>\n              </ul>\n            </div>\n          </div>\n          <div data-ok-sortable-actions>\n            <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-sortable-handle aria-label=\"Reorder Pick the menu\" aria-pressed=\"false\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\"><path d=\"M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01\"></path></svg></button>\n          </div>\n        </li>\n      </ul>\n    </section>\n    <section aria-labelledby=\"kanban-done-title\">\n      <h3 data-ok-typography data-ok-variant=\"h6\" id=\"kanban-done-title\">Done</h3>\n      <ul id=\"kanban-done\" data-ok-sortable data-ok-layout=\"vertical\" data-ok-group=\"kanban\" aria-label=\"Done\">\n      </ul>\n    </section>\n  </div>\n</section>",
+     "id": "components-sortable--kanban",
+     "name": "Kanban",
+     "react": "import {\n  Button,\n  Menu,\n  MenuItem,\n  moveBetweenLists,\n  Scrollbar,\n  Sortable,\n  Typography,\n} from \"@owlky/react\";\nimport { useState } from \"react\";\n\ntype Task = { id: string; title: string };\n\nconst COLUMNS = [\n  { id: \"kanban-todo\", title: \"To do\" },\n  { id: \"kanban-progress\", title: \"In progress\" },\n  { id: \"kanban-review\", title: \"In review\" },\n  { id: \"kanban-done\", title: \"Done\" },\n];\n\nconst INITIAL: Record<string, Task[]> = {\n  \"kanban-todo\": [\n    { id: \"task-1\", title: \"Write the brief\" },\n    { id: \"task-2\", title: \"Book the venue\" },\n    { id: \"task-3\", title: \"Send invitations\" },\n  ],\n  \"kanban-progress\": [\n    { id: \"task-4\", title: \"Design the poster\" },\n    { id: \"task-5\", title: \"Plan the budget\" },\n  ],\n  \"kanban-review\": [{ id: \"task-6\", title: \"Pick the menu\" }],\n  \"kanban-done\": [],\n};\n\n/**\n * \"Move to\" choices for one task: every column (a single-pointer alternative to dragging). Choosing\n * the column the task is in does nothing.\n */\nfunction MoveMenu({ task }: { task: Task }) {\n  const [anchor, setAnchor] = useState<HTMLElement | null>(null);\n  const menu = `${task.id}-menu`;\n  return (\n    <>\n      <Button\n        id={`${task.id}-move`}\n        size=\"sm\"\n        aria-label={`Move ${task.title}`}\n        aria-haspopup=\"menu\"\n        aria-expanded={anchor !== null}\n        aria-controls={menu}\n        onClick={(event) => setAnchor(anchor ? null : event.currentTarget)}\n      >\n        Move\n      </Button>\n      <Menu\n        id={menu}\n        aria-labelledby={`${task.id}-move`}\n        open={anchor !== null}\n        anchorEl={anchor}\n        onOpenChange={() => setAnchor(null)}\n      >\n        {COLUMNS.map((other) => (\n          <MenuItem key={other.id} data-ok-sortable-move-to={other.id}>\n            {`Move to ${other.title}`}\n          </MenuItem>\n        ))}\n      </Menu>\n    </>\n  );\n}\n\n/** A board: four lists in one group, so tasks move between columns. */\nexport function KanbanDemo() {\n  const [lists, setLists] = useState(INITIAL);\n  return (\n    <Scrollbar aria-label=\"Board\">\n      <div className=\"sb-kanban\">\n        {COLUMNS.map((column) => (\n          <section key={column.id} aria-labelledby={`${column.id}-title`}>\n            <Typography variant=\"h6\" component=\"h3\" id={`${column.id}-title`}>\n              {column.title}\n            </Typography>\n            <Sortable\n              id={column.id}\n              group=\"kanban\"\n              layout=\"vertical\"\n              aria-label={column.title}\n              items={lists[column.id] ?? []}\n              getKey={(task) => task.id}\n              getItemLabel={(task) => task.title}\n              renderItem={(task) => (\n                <div className=\"sb-kanban-card\">\n                  <Typography variant=\"subtitle2\" component=\"span\">\n                    {task.title}\n                  </Typography>\n                  <MoveMenu task={task} />\n                </div>\n              )}\n              onReorder={(items) => setLists((all) => ({ ...all, [column.id]: items }))}\n              onTransfer={(event) => setLists((all) => moveBetweenLists(all, event))}\n            />\n          </section>\n        ))}\n      </div>\n    </Scrollbar>\n  );\n}\n",
+     "snippets": [
+      "kanban-group.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/scrollbar.css + components/icon-button.css + components/sortable.css + components/typography.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Disabled items -->\n<section data-ok-scrollbar aria-label=\"Dashboard widgets list\" tabindex=\"0\">\n  <ul id=\"sortable-disabled\" data-ok-sortable data-ok-layout=\"vertical\" aria-label=\"Dashboard widgets\">\n    <li data-ok-sortable-item data-ok-disabled>\n      <span data-ok-typography data-ok-variant=\"subtitle2\">Overview (pinned)</span>\n      <div data-ok-sortable-actions>\n        <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-sortable-handle aria-label=\"Reorder Overview\" aria-pressed=\"false\" disabled><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\"><path d=\"M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01\"></path></svg></button>\n      </div>\n    </li>\n    <li data-ok-sortable-item>\n      <span data-ok-typography data-ok-variant=\"subtitle2\">Sales</span>\n      <div data-ok-sortable-actions>\n        <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-sortable-handle aria-label=\"Reorder Sales\" aria-pressed=\"false\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\"><path d=\"M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01\"></path></svg></button>\n      </div>\n    </li>\n    <li data-ok-sortable-item>\n      <span data-ok-typography data-ok-variant=\"subtitle2\">Orders</span>\n      <div data-ok-sortable-actions>\n        <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-sortable-handle aria-label=\"Reorder Orders\" aria-pressed=\"false\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\"><path d=\"M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01\"></path></svg></button>\n      </div>\n    </li>\n    <li data-ok-sortable-item>\n      <span data-ok-typography data-ok-variant=\"subtitle2\">Visitors</span>\n      <div data-ok-sortable-actions>\n        <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-sortable-handle aria-label=\"Reorder Visitors\" aria-pressed=\"false\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\"><path d=\"M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01\"></path></svg></button>\n      </div>\n    </li>\n    <li data-ok-sortable-item>\n      <span data-ok-typography data-ok-variant=\"subtitle2\">Reviews</span>\n      <div data-ok-sortable-actions>\n        <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-sortable-handle aria-label=\"Reorder Reviews\" aria-pressed=\"false\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\"><path d=\"M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01\"></path></svg></button>\n      </div>\n    </li>\n  </ul>\n</section>\n<p data-ok-typography data-ok-variant=\"body2\" data-ok-color=\"textSecondary\" id=\"sortable-disabled-status\" role=\"status\">Move a widget.</p>\n\n<script type=\"module\">\n// Drag events report the item element, its index and its list.\nconst status = document.getElementById(\"sortable-disabled-status\");\nconst title = (item) => item.querySelector(\"span\").textContent;\nconst list = document.getElementById(\"sortable-disabled\");\nlist.addEventListener(\"ok:sortable:dragstart\", (event) => {\n  status.textContent = `Moving ${title(event.detail.item)}.`;\n});\nlist.addEventListener(\"ok:sortable:dragend\", (event) => {\n  const { item, index } = event.detail;\n  status.textContent = `${title(item)} is now at position ${index + 1}.`;\n});\nlist.addEventListener(\"ok:sortable:dragcancel\", (event) => {\n  status.textContent = `${title(event.detail.item)} went back.`;\n});\n</script>",
+     "id": "components-sortable--disabled-items",
+     "name": "Disabled items",
+     "react": "import { Scrollbar, Sortable, Typography } from \"@owlky/react\";\nimport { useState } from \"react\";\n\ntype Widget = { id: string; title: string; pinned?: boolean };\n\nconst WIDGETS: Widget[] = [\n  { id: \"widget-overview\", title: \"Overview\", pinned: true },\n  { id: \"widget-sales\", title: \"Sales\" },\n  { id: \"widget-orders\", title: \"Orders\" },\n  { id: \"widget-visitors\", title: \"Visitors\" },\n  { id: \"widget-reviews\", title: \"Reviews\" },\n];\n\n/** A pinned first item that can't move, and a status line that follows the drag events. */\nexport function DisabledItemsDemo() {\n  const [widgets, setWidgets] = useState(WIDGETS);\n  const [status, setStatus] = useState(\"Move a widget.\");\n  return (\n    <>\n      <Scrollbar aria-label=\"Dashboard widgets list\">\n        <Sortable\n          id=\"sortable-disabled\"\n          layout=\"vertical\"\n          aria-label=\"Dashboard widgets\"\n          items={widgets}\n          getKey={(widget) => widget.id}\n          getItemLabel={(widget) => widget.title}\n          isItemDisabled={(widget) => widget.pinned === true}\n          renderItem={(widget) => (\n            <Typography variant=\"subtitle2\" component=\"span\">\n              {widget.pinned ? `${widget.title} (pinned)` : widget.title}\n            </Typography>\n          )}\n          onReorder={setWidgets}\n          onDragStart={({ item }) => setStatus(`Moving ${item.title}.`)}\n          onDragEnd={({ item, index }) =>\n            setStatus(`${item.title} is now at position ${index + 1}.`)\n          }\n          onDragCancel={({ item }) => setStatus(`${item.title} went back.`)}\n        />\n      </Scrollbar>\n      <Typography\n        id=\"sortable-disabled-status\"\n        variant=\"body2\"\n        component=\"p\"\n        color=\"textSecondary\"\n        role=\"status\"\n      >\n        {status}\n      </Typography>\n    </>\n  );\n}\n",
+     "snippets": [
+      "disabled-items-group.html"
      ]
     }
    ],
@@ -72902,6 +73083,48 @@
      "title": "Add items"
     },
     {
+     "body": "Give lists the same group to let people move items between them, such as tasks on a board. In HTML, add `data-ok-group` and an `id` to each list; the script moves the items. In React, pass `group` and `id`, and update your data in `onTransfer`. The `moveBetweenLists(lists, event)` helper updates data kept as an object of arrays by list id.\n\nPeople drag an item onto another list, even an empty one. With the keyboard, they grab an item, then press the Left or Right arrow key in vertical lists, or the Up or Down arrow key in horizontal lists. In a grid, the arrow keys move past the first or last item into the previous or next list. Focus stays on the moved item, and screen readers hear the list's name, such as \"Moved to Done, position 1 of 2\".\n\nTo limit where items go, set `accept` (`data-ok-accept` in HTML) to the groups a list takes items from. For example, a list in the group `archive` with `accept=\"board\"` takes items from the board but gives none back.",
+     "html": "<div>\n<ul id=\"todo\" data-ok-sortable data-ok-layout=\"vertical\" data-ok-group=\"board\" aria-label=\"To do\">\n    <li data-ok-sortable-item>\n      <span>Design</span>\n      <div data-ok-sortable-actions>\n        <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-sortable-handle aria-label=\"Reorder Design\" aria-pressed=\"false\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\"><path d=\"M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01\" /></svg></button>\n      </div>\n    </li>\n    <li data-ok-sortable-item>\n      <span>Build</span>\n      <div data-ok-sortable-actions>\n        <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-sortable-handle aria-label=\"Reorder Build\" aria-pressed=\"false\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\"><path d=\"M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01\" /></svg></button>\n      </div>\n    </li>\n</ul>\n<ul id=\"done\" data-ok-sortable data-ok-layout=\"vertical\" data-ok-group=\"board\" aria-label=\"Done\">\n    <li data-ok-sortable-item>\n      <span>Test</span>\n      <div data-ok-sortable-actions>\n        <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-sortable-handle aria-label=\"Reorder Test\" aria-pressed=\"false\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\"><path d=\"M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01\" /></svg></button>\n      </div>\n    </li>\n</ul>\n</div>",
+     "id": "lists",
+     "react": "import { moveBetweenLists, Sortable } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nconst LISTS = [\n  { id: \"todo\", label: \"To do\" },\n  { id: \"done\", label: \"Done\" },\n];\n\nexport function Board() {\n  const [lists, setLists] = useState<Record<string, string[]>>({\n    todo: [\"Design\", \"Build\"],\n    done: [\"Test\"],\n  });\n  return (\n    <div>\n      {LISTS.map((list) => (\n        <Sortable\n          key={list.id}\n          id={list.id}\n          group=\"board\"\n          layout=\"vertical\"\n          aria-label={list.label}\n          items={lists[list.id] ?? []}\n          getKey={(task) => task}\n          getItemLabel={(task) => task}\n          renderItem={(task) => <span>{task}</span>}\n          onReorder={(items) => setLists((all) => ({ ...all, [list.id]: items }))}\n          onTransfer={(event) => setLists((all) => moveBetweenLists(all, event))}\n        />\n      ))}\n    </div>\n  );\n}",
+     "title": "Move items between lists"
+    },
+    {
+     "body": "Some people can't drag, or use a screen reader on a touch screen. Give them a control that moves an item in one tap: a button or menu item inside the item with `data-ok-sortable-move-to=\"<list id>\"` moves the item to the end of that list, in HTML and in React. For example, the **Kanban** story puts a **Move** menu on every card. Two taps also work: tap an item's handle, then a handle in another list.",
+     "html": "<ul id=\"todo\" data-ok-sortable data-ok-layout=\"vertical\" data-ok-group=\"board\" aria-label=\"To do\">\n    <li data-ok-sortable-item>\n      <span>Design</span>\n      <button type=\"button\" data-ok-button data-ok-variant=\"text\" data-ok-color=\"inherit\" data-ok-size=\"sm\" data-ok-sortable-move-to=\"done\" aria-label=\"Move Design to Done\"><span data-ok-button-label>Move to Done</span></button>\n      <div data-ok-sortable-actions>\n        <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-sortable-handle aria-label=\"Reorder Design\" aria-pressed=\"false\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\"><path d=\"M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01\" /></svg></button>\n      </div>\n    </li>\n</ul>\n<ul id=\"done\" data-ok-sortable data-ok-layout=\"vertical\" data-ok-group=\"board\" aria-label=\"Done\"></ul>",
+     "id": "move-to",
+     "react": "import { Button, moveBetweenLists, Sortable } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nexport function MoveToDone() {\n  const [lists, setLists] = useState<Record<string, string[]>>({ todo: [\"Design\"], done: [] });\n  return (\n    <>\n      <Sortable\n        id=\"todo\"\n        group=\"board\"\n        layout=\"vertical\"\n        aria-label=\"To do\"\n        items={lists[\"todo\"] ?? []}\n        getKey={(task) => task}\n        getItemLabel={(task) => task}\n        renderItem={(task) => (\n          <>\n            <span>{task}</span>\n            <Button size=\"sm\" data-ok-sortable-move-to=\"done\" aria-label={`Move ${task} to Done`}>\n              Move to Done\n            </Button>\n          </>\n        )}\n        onReorder={(items) => setLists((all) => ({ ...all, todo: items }))}\n        onTransfer={(event) => setLists((all) => moveBetweenLists(all, event))}\n      />\n      <Sortable\n        id=\"done\"\n        group=\"board\"\n        layout=\"vertical\"\n        aria-label=\"Done\"\n        items={lists[\"done\"] ?? []}\n        getKey={(task) => task}\n        getItemLabel={(task) => task}\n        renderItem={(task) => <span>{task}</span>}\n        onReorder={(items) => setLists((all) => ({ ...all, done: items }))}\n        onTransfer={(event) => setLists((all) => moveBetweenLists(all, event))}\n      />\n    </>\n  );\n}",
+     "title": "Move items without dragging"
+    },
+    {
+     "body": "Disable an item to pin it, such as a summary that always comes first. A disabled item can't be dragged or grabbed, and other items never take its place: the keyboard moves them past it, and the pointer moves nothing while it is over it. In React, return `true` from `isItemDisabled`. In HTML, add `data-ok-disabled` to the item and `disabled` to its handle, so that the handle also leaves the tab order.",
+     "html": "<ul id=\"widgets\" data-ok-sortable data-ok-layout=\"vertical\" aria-label=\"Widgets\">\n    <li data-ok-sortable-item data-ok-disabled>\n      <span>Overview</span>\n      <div data-ok-sortable-actions>\n        <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-sortable-handle aria-label=\"Reorder Overview\" aria-pressed=\"false\" disabled><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\"><path d=\"M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01\" /></svg></button>\n      </div>\n    </li>\n    <li data-ok-sortable-item>\n      <span>Sales</span>\n      <div data-ok-sortable-actions>\n        <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-sortable-handle aria-label=\"Reorder Sales\" aria-pressed=\"false\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\"><path d=\"M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01\" /></svg></button>\n      </div>\n    </li>\n    <li data-ok-sortable-item>\n      <span>Orders</span>\n      <div data-ok-sortable-actions>\n        <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-sortable-handle aria-label=\"Reorder Orders\" aria-pressed=\"false\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\"><path d=\"M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01\" /></svg></button>\n      </div>\n    </li>\n</ul>",
+     "id": "disabled",
+     "react": "import { Sortable } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nexport function PinnedWidgets() {\n  const [widgets, setWidgets] = useState([\"Overview\", \"Sales\", \"Orders\"]);\n  return (\n    <Sortable\n      layout=\"vertical\"\n      aria-label=\"Widgets\"\n      items={widgets}\n      getKey={(widget) => widget}\n      getItemLabel={(widget) => widget}\n      isItemDisabled={(widget) => widget === \"Overview\"}\n      renderItem={(widget) => <span>{widget}</span>}\n      onReorder={setWidgets}\n    />\n  );\n}",
+     "title": "Keep items in place"
+    },
+    {
+     "body": "When people drag an item near the edge of a scroll area, such as the **Scrollbar** around a list, or near the edge of the window, it scrolls. The closer the pointer gets to the edge, the faster it scrolls. To turn it off, set `autoScroll={false}` in React or `data-ok-auto-scroll=\"false\"` in HTML. The keyboard always scrolls the moved item into view.",
+     "html": "<section data-ok-scrollbar aria-label=\"Tasks list\" tabindex=\"0\">\n  <ul id=\"tasks\" data-ok-sortable data-ok-layout=\"vertical\" data-ok-auto-scroll=\"false\" aria-label=\"Tasks\">\n    <li data-ok-sortable-item>\n      <span>Design</span>\n      <div data-ok-sortable-actions>\n        <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-sortable-handle aria-label=\"Reorder Design\" aria-pressed=\"false\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\"><path d=\"M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01\" /></svg></button>\n      </div>\n    </li>\n    <li data-ok-sortable-item>\n      <span>Build</span>\n      <div data-ok-sortable-actions>\n        <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-sortable-handle aria-label=\"Reorder Build\" aria-pressed=\"false\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\"><path d=\"M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01\" /></svg></button>\n      </div>\n    </li>\n  </ul>\n</section>",
+     "id": "auto-scroll",
+     "react": "import { Scrollbar, Sortable } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nexport function FixedTasks() {\n  const [tasks, setTasks] = useState([\"Design\", \"Build\"]);\n  return (\n    <Scrollbar aria-label=\"Tasks list\">\n      <Sortable\n        layout=\"vertical\"\n        aria-label=\"Tasks\"\n        autoScroll={false}\n        items={tasks}\n        getKey={(task) => task}\n        getItemLabel={(task) => task}\n        renderItem={(task) => <span>{task}</span>}\n        onReorder={setTasks}\n      />\n    </Scrollbar>\n  );\n}",
+     "title": "Scroll while dragging"
+    },
+    {
+     "body": "Drag events tell you where an item is while it moves, for example to show a status or to save the order only once it is dropped. They fire for the pointer, the keyboard and taps alike:\n\n- **Start:** an item is grabbed, or a pointer drag starts.\n- **Over:** the item is about to move to a new position, in its list or in another one.\n- **End:** the item is dropped.\n- **Cancel:** the move is cancelled, such as with Escape, before the item goes back.\n\nIn React, pass `onDragStart`, `onDragOver`, `onDragEnd` and `onDragCancel`: each gets `{ item, index, list }`, where `list` is the list's `id`. In HTML, listen for `ok:sortable:dragstart`, `ok:sortable:dragover`, `ok:sortable:dragend` and `ok:sortable:dragcancel`, whose `detail` has the item element, its index and its list element.",
+     "html": "<ul id=\"tasks\" data-ok-sortable data-ok-layout=\"vertical\" aria-label=\"Tasks\">\n    <li data-ok-sortable-item>\n      <span>Design</span>\n      <div data-ok-sortable-actions>\n        <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-sortable-handle aria-label=\"Reorder Design\" aria-pressed=\"false\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\"><path d=\"M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01\" /></svg></button>\n      </div>\n    </li>\n    <li data-ok-sortable-item>\n      <span>Build</span>\n      <div data-ok-sortable-actions>\n        <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-sortable-handle aria-label=\"Reorder Build\" aria-pressed=\"false\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\"><path d=\"M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01\" /></svg></button>\n      </div>\n    </li>\n</ul>\n<p id=\"tasks-status\" role=\"status\"></p>\n\n<script type=\"module\">\n  const status = document.getElementById(\"tasks-status\");\n  document.getElementById(\"tasks\").addEventListener(\"ok:sortable:dragend\", (event) => {\n    const { item, index } = event.detail;\n    status.textContent = `${item.querySelector(\"span\").textContent} is now at position ${index + 1}.`;\n  });\n</script>",
+     "id": "drag-events",
+     "react": "import { Sortable } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nexport function TrackedTasks() {\n  const [tasks, setTasks] = useState([\"Design\", \"Build\"]);\n  const [status, setStatus] = useState(\"\");\n  return (\n    <>\n      <Sortable\n        layout=\"vertical\"\n        aria-label=\"Tasks\"\n        items={tasks}\n        getKey={(task) => task}\n        getItemLabel={(task) => task}\n        renderItem={(task) => <span>{task}</span>}\n        onReorder={setTasks}\n        onDragEnd={({ item, index }) => setStatus(`${item} is now at position ${index + 1}.`)}\n      />\n      <p role=\"status\">{status}</p>\n    </>\n  );\n}",
+     "title": "Follow a drag"
+    },
+    {
+     "body": "Screen readers hear every grab, move, drop, cancel and removal. Replace the English texts in your language. In React, pass `messages`, with a function per text that gets the position, the number of items and the list's name. In HTML, add `data-ok-message-grabbed`, `-moved`, `-moved-to-list`, `-dropped`, `-cancelled` or `-removed` to the list, with `{position}`, `{total}` and `{list}` where the values go.",
+     "html": "<ul id=\"tasks\" data-ok-sortable data-ok-layout=\"vertical\" aria-label=\"Tâches\"\n  data-ok-message-grabbed=\"Élément saisi en position {position} sur {total}.\"\n  data-ok-message-moved=\"Déplacé en position {position} sur {total}.\"\n  data-ok-message-dropped=\"Déposé en position {position} sur {total}.\">\n    <li data-ok-sortable-item>\n      <span>Design</span>\n      <div data-ok-sortable-actions>\n        <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-sortable-handle aria-label=\"Reorder Design\" aria-pressed=\"false\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\"><path d=\"M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01\" /></svg></button>\n      </div>\n    </li>\n    <li data-ok-sortable-item>\n      <span>Build</span>\n      <div data-ok-sortable-actions>\n        <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-sortable-handle aria-label=\"Reorder Build\" aria-pressed=\"false\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\"><path d=\"M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01\" /></svg></button>\n      </div>\n    </li>\n</ul>",
+     "id": "messages",
+     "react": "import { Sortable } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nexport function FrenchTasks() {\n  const [tasks, setTasks] = useState([\"Design\", \"Build\"]);\n  return (\n    <Sortable\n      layout=\"vertical\"\n      aria-label=\"Tâches\"\n      items={tasks}\n      getKey={(task) => task}\n      getItemLabel={(task) => task}\n      renderItem={(task) => <span>{task}</span>}\n      onReorder={setTasks}\n      messages={{\n        grabbed: (position, total) => `Élément saisi en position ${position} sur ${total}.`,\n        moved: (position, total) => `Déplacé en position ${position} sur ${total}.`,\n        dropped: (position, total) => `Déposé en position ${position} sur ${total}.`,\n      }}\n    />\n  );\n}",
+     "title": "Translate the announcements"
+    },
+    {
      "body": "Every option works the same way in both versions: a prop in React, an attribute in HTML.",
      "id": "options",
      "title": "Options"
@@ -72912,7 +73135,7 @@
      "title": "Content and behavior"
     },
     {
-     "body": "- **`ok:sortable:move`** (cancelable) fires before an item moves, with `detail: { from, to, item }`.\n- **`ok:sortable:remove`** (cancelable) fires before an item is removed, with `detail: { index, item }`.\n- **`ok:sortable:add`** fires after a new item is added from the template, with `detail: { item, index }`. Fill in its content here.\n- **Instance:** `runtime.get(element, \"sortable\")` returns `{ move(from, to), remove(index) }`.\n- **React:** `onReorder(items)` and `onRemove(item, index)`. The `arrayMove(items, from, to)` helper is exported too.",
+     "body": "- **`ok:sortable:move`** (cancelable) fires before an item moves, with `detail: { from, to, item }`.\n- **`ok:sortable:dragstart`**, **`ok:sortable:dragover`**, **`ok:sortable:dragend`** and **`ok:sortable:dragcancel`** follow a drag, with `detail: { item, index, list }`. They fire on the list that holds the item.\n- **`ok:sortable:transfer`** (cancelable) fires on the list an item leaves, before the item moves to another list, with `detail: { item, from, to, index }`. `from` and `to` are the lists.\n- **`ok:sortable:remove`** (cancelable) fires before an item is removed, with `detail: { index, item }`.\n- **`ok:sortable:add`** fires after a new item is added from the template, with `detail: { item, index }`. Fill in its content here.\n- **Instance:** `runtime.get(element, \"sortable\")` returns `{ move(from, to), remove(index), add(), transfer(index, to, toIndex) }`. `to` is a list or its `id`. Without `toIndex`, the item goes to the end.\n- **React:** `onDragStart`, `onDragOver`, `onDragEnd` and `onDragCancel` get `{ item, index, list }`. They replace the native HTML drag and drop handlers of the list element. `onReorder(items)`, `onRemove(item, index)` and `onTransfer({ item, from, to, fromIndex, index })`, where `from` and `to` are list ids. The `arrayMove(items, from, to)` and `moveBetweenLists(lists, event)` helpers are exported too.",
      "id": "events",
      "title": "Events and methods"
     },
@@ -72922,7 +73145,7 @@
      "title": "Keyboard"
     },
     {
-     "body": "- Every drag has a keyboard and a tap alternative, so people who can't drag can still reorder (WCAG 2.2, success criteria 2.1.1 and 2.5.7).\n- Name the list with `aria-label`. Handles and remove buttons are named from each item, such as \"Reorder Design\"; set the item's label with `getItemLabel` in React or the buttons' `aria-label` in HTML.\n- The handle has `aria-pressed=\"true\"` while its item is grabbed.\n- Moves are announced in a polite live region. Translate the messages with `messages` in React.",
+     "body": "- Every drag has a keyboard and a tap alternative, so people who can't drag can still reorder (WCAG 2.2, success criteria 2.1.1 and 2.5.7). Between lists, add a `data-ok-sortable-move-to` control, such as a **Move** menu, so that one tap is enough.\n- Name the list with `aria-label`. Handles and remove buttons are named from each item, such as \"Reorder Design\"; set the item's label with `getItemLabel` in React or the buttons' `aria-label` in HTML.\n- The handle has `aria-pressed=\"true\"` while its item is grabbed.\n- Moves are announced in a polite live region. Translate the messages with `messages` in React or the `data-ok-message-*` attributes in HTML.\n- A disabled item's handle is `disabled`, so it leaves the tab order and screen readers report it as unavailable.",
      "id": "accessibility",
      "title": "Accessibility"
     },
@@ -74296,6 +74519,7 @@
   "data-ok-sortable-actions": "data-ok-sortable",
   "data-ok-sortable-handle": "data-ok-sortable",
   "data-ok-sortable-item": "data-ok-sortable",
+  "data-ok-sortable-move-to": "data-ok-sortable",
   "data-ok-sortable-remove": "data-ok-sortable",
   "data-ok-sortable-template": "data-ok-sortable",
   "data-ok-step-button": "data-ok-step",

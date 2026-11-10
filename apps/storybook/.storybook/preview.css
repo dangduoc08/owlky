@@ -521,6 +521,34 @@
   align-items: flex-end;
 }
 
+/* Sortable "Kanban" story: columns side by side in the board's Scrollbar (layout only). */
+.sb-row > [data-ok-scrollbar]:has(> .sb-kanban) {
+  width: 100%;
+}
+
+.sb-kanban {
+  display: flex;
+  align-items: flex-start;
+  gap: calc(var(--ok-spacing) * 4);
+  width: max-content;
+  padding-block-end: calc(var(--ok-spacing) * 2);
+}
+
+.sb-kanban > section {
+  display: flex;
+  flex: 0 0 calc(var(--ok-spacing) * 68);
+  flex-direction: column;
+  gap: calc(var(--ok-spacing) * 3);
+}
+
+.sb-kanban-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: calc(var(--ok-spacing) * 1);
+  width: 100%;
+}
+
 /* Tables (container + pagination) stack at full width. */
 .sb-row:has(> [data-ok-table-container]) {
   flex-direction: column;

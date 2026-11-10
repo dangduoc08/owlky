@@ -106,6 +106,7 @@ export type {
   SliderValueLabelDisplay,
   SortableLayout,
   SortableMessages,
+  SortableTransferTarget,
   StepperVariant,
   SwitchEdge,
   TabIconPosition,
@@ -624,7 +625,14 @@ export {
   toastStore,
   useSonner,
 } from "./snackbar/snackbar.js";
-export { arrayMove, Sortable, type SortableProps } from "./sortable/sortable.js";
+export {
+  arrayMove,
+  moveBetweenLists,
+  Sortable,
+  type SortableDragEvent,
+  type SortableProps,
+  type SortableTransferEvent,
+} from "./sortable/sortable.js";
 export {
   MobileStepper,
   type MobileStepperProps,

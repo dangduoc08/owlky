@@ -55,6 +55,30 @@
       "name": "ok:sortable:add"
      },
      {
+      "cancelable": false,
+      "description": "A move was cancelled (Escape, an interrupted touch), before the item goes back.",
+      "detail": "{ item: HTMLElement; index: number; list: HTMLElement; }",
+      "name": "ok:sortable:dragcancel"
+     },
+     {
+      "cancelable": false,
+      "description": "The item was dropped in this list, at `index`.",
+      "detail": "{ item: HTMLElement; index: number; list: HTMLElement; }",
+      "name": "ok:sortable:dragend"
+     },
+     {
+      "cancelable": false,
+      "description": "The item is about to move to `index` in `list` (this list or another one).",
+      "detail": "{ item: HTMLElement; index: number; list: HTMLElement; }",
+      "name": "ok:sortable:dragover"
+     },
+     {
+      "cancelable": false,
+      "description": "An item was grabbed (keyboard, tap) or started a pointer drag.",
+      "detail": "{ item: HTMLElement; index: number; list: HTMLElement; }",
+      "name": "ok:sortable:dragstart"
+     },
+     {
       "cancelable": true,
       "description": "Before an item moves from index `from` to `to`. Call `preventDefault()` to keep the order.",
       "detail": "{ from: number; to: number; item: HTMLElement; }",
@@ -65,6 +89,12 @@
       "description": "Before an item is removed. Call `preventDefault()` to keep it.",
       "detail": "{ index: number; item: HTMLElement; }",
       "name": "ok:sortable:remove"
+     },
+     {
+      "cancelable": true,
+      "description": "Before an item moves to another list of its group (`data-ok-group`), at `index` in `to`. Fires on the list it leaves. Call `preventDefault()` to keep it.",
+      "detail": "{ item: HTMLElement; from: HTMLElement; to: HTMLElement; index: number; }",
+      "name": "ok:sortable:transfer"
      }
     ],
     "methods": [
@@ -85,6 +115,12 @@
       "kind": "method",
       "name": "remove",
       "type": "(index: number) => boolean"
+     },
+     {
+      "description": "Moves the item at `index` to another sortable list (an element or its `id`), at `toIndex` (default: its end). Returns `false` if out of range or `ok:sortable:transfer` was prevented.",
+      "kind": "method",
+      "name": "transfer",
+      "type": "(index: number, to: string | HTMLElement, toIndex?: number | undefined) => boolean"
      }
     ],
     "options": [
@@ -106,9 +142,27 @@
       "event": "ok:sortable:move",
       "kind": "state",
       "name": "items"
+     },
+     {
+      "attr": "data-ok-auto-scroll",
+      "default": true,
+      "description": "While dragging near the edge of a scroll area or the window, it scrolls; `false` turns it off.",
+      "kind": "behavior",
+      "name": "autoScroll"
      }
     ],
     "parts": [
+     {
+      "description": "On the list: the groups it takes items from, separated by spaces (default: its own group).",
+      "kind": "value",
+      "name": "data-ok-accept",
+      "value": "string"
+     },
+     {
+      "description": "On an item: it can't move and isn't a target (its handle is `disabled` too).",
+      "kind": "state",
+      "name": "data-ok-disabled"
+     },
      {
       "description": "Set by the runtime on the item being dragged.",
       "kind": "state",
@@ -118,6 +172,48 @@
       "description": "Set by the runtime on the item grabbed with the keyboard.",
       "kind": "state",
       "name": "data-ok-grabbed"
+     },
+     {
+      "description": "On the list: the group it belongs to. Items move between lists of the same group.",
+      "kind": "value",
+      "name": "data-ok-group",
+      "value": "string"
+     },
+     {
+      "description": "HTML: on the list, the announcement when a move is cancelled (`{position}`, `{total}`, `{list}`).",
+      "kind": "value",
+      "name": "data-ok-message-cancelled",
+      "value": "string"
+     },
+     {
+      "description": "HTML: on the list, the announcement when an item is dropped (`{position}`, `{total}`, `{list}`).",
+      "kind": "value",
+      "name": "data-ok-message-dropped",
+      "value": "string"
+     },
+     {
+      "description": "HTML: on the list, the announcement when an item is grabbed (`{position}`, `{total}`, `{list}`).",
+      "kind": "value",
+      "name": "data-ok-message-grabbed",
+      "value": "string"
+     },
+     {
+      "description": "HTML: on the list, the announcement when an item moves (`{position}`, `{total}`, `{list}`).",
+      "kind": "value",
+      "name": "data-ok-message-moved",
+      "value": "string"
+     },
+     {
+      "description": "HTML: on the list, the announcement when an item moves to this list (`{position}`, `{total}`, `{list}`).",
+      "kind": "value",
+      "name": "data-ok-message-moved-to-list",
+      "value": "string"
+     },
+     {
+      "description": "HTML: on the list, the announcement when an item is removed (`{position}`, `{total}`, `{list}`).",
+      "kind": "value",
+      "name": "data-ok-message-removed",
+      "value": "string"
      },
      {
       "description": "The buttons at the end of an item.",
@@ -152,6 +248,12 @@
       "name": "data-ok-sortable-handle"
      },
      {
+      "description": "On a button or menu item inside an item: the `id` of the list it moves the item to (its end).",
+      "kind": "value",
+      "name": "data-ok-sortable-move-to",
+      "value": "string"
+     },
+     {
       "description": "The button that removes its item.",
       "kind": "part",
       "name": "data-ok-sortable-remove"
@@ -173,6 +275,17 @@
     "native": "HTMLUListElement",
     "props": [
      {
+      "description": "The groups this list takes items from (default: its own `group`). Set it to take items from other groups, such as a \"Done\" list that takes tasks but gives none back.",
+      "name": "accept",
+      "type": "string | readonly string[]"
+     },
+     {
+      "default": "true",
+      "description": "While dragging near the edge of a scroll area (such as a Scrollbar) or the window, it scrolls.",
+      "name": "autoScroll",
+      "type": "boolean"
+     },
+     {
       "default": "Item <n>",
       "description": "Name used in the handle / remove labels (\"Reorder …\", \"Remove …\").",
       "name": "getItemLabel",
@@ -183,6 +296,16 @@
       "name": "getKey",
       "required": true,
       "type": "(item: T) => Key"
+     },
+     {
+      "description": "Connects lists: items move between lists of the page with the same group (drag, keys, taps, move-to triggers). Give each list an `id`.",
+      "name": "group",
+      "type": "string"
+     },
+     {
+      "description": "Items that can't move: their handle is disabled and other items don't take their place.",
+      "name": "isItemDisabled",
+      "type": "((item: T, index: number) => boolean)"
      },
      {
       "description": "The items, in display order.",
@@ -202,6 +325,26 @@
       "type": "Partial<SortableMessages>"
      },
      {
+      "description": "Called when a move is cancelled (Escape, an interrupted touch), before the item goes back.",
+      "name": "onDragCancel",
+      "type": "((event: SortableDragEvent<T>) => void)"
+     },
+     {
+      "description": "Called when the item is dropped in this list.",
+      "name": "onDragEnd",
+      "type": "((event: SortableDragEvent<T>) => void)"
+     },
+     {
+      "description": "Called before the item moves over another position, in this list or another one.",
+      "name": "onDragOver",
+      "type": "((event: SortableDragEvent<T>) => void)"
+     },
+     {
+      "description": "Called when an item is grabbed (keyboard, tap) or starts a pointer drag.",
+      "name": "onDragStart",
+      "type": "((event: SortableDragEvent<T>) => void)"
+     },
+     {
       "description": "Renders a remove button per item and is called when one is pressed.",
       "name": "onRemove",
       "type": "((item: T, index: number) => void)"
@@ -211,6 +354,11 @@
       "name": "onReorder",
       "required": true,
       "type": "(items: T[]) => void"
+     },
+     {
+      "description": "Called when an item of this list moves to another list. Update both lists, for example with `moveBetweenLists(lists, event)`. Without it, items never leave the list.",
+      "name": "onTransfer",
+      "type": "((event: SortableTransferEvent<T>) => void)"
      },
      {
       "description": "Content of an item.",

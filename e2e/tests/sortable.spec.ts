@@ -61,6 +61,121 @@ for (const impl of implementations) {
   });
 }
 
+for (const impl of implementations) {
+  test.describe(`sortable disabled items, events, auto scroll (${impl})`, () => {
+    test("a pinned item keeps its place; drag events update the status", async ({
+      page,
+      isMobile,
+    }) => {
+      await openStory(page, storyId(impl, "sortable", "disabled-items"));
+      const status = page.locator("#sortable-disabled-status");
+      await expect(page.getByRole("button", { name: "Reorder Overview" })).toBeDisabled();
+      const sales = page.getByRole("button", { name: "Reorder Sales", exact: true });
+      if (isMobile) await sales.tap();
+      else {
+        await sales.focus();
+        await page.keyboard.press("Space");
+      }
+      await expect(status).toHaveText("Moving Sales.");
+      await sales.focus();
+      await page.keyboard.press("ArrowUp"); // the pinned item can't be passed
+      await page.keyboard.press("ArrowDown");
+      await page.keyboard.press("Space");
+      await expect(status).toHaveText("Sales is now at position 3.");
+      const titles = await page
+        .locator("#sortable-disabled > li > span")
+        .evaluateAll((spans) => spans.map((span) => span.textContent));
+      expect(titles.slice(0, 3)).toEqual(["Overview (pinned)", "Orders", "Sales"]);
+      await sales.focus();
+      await page.keyboard.press("Space");
+      await page.keyboard.press("Escape");
+      await expect(status).toHaveText("Sales went back.");
+    });
+
+    test("dragging near the Scrollbar's edge scrolls it", async ({ page, isMobile }) => {
+      test.skip(isMobile, "Mouse drags only; touch drags use the same code path.");
+      await openStory(page, storyId(impl, "sortable", "vertical"));
+      const scrollbar = page.locator("[data-ok-scrollbar]:has(> [data-ok-sortable])");
+      const frame = await scrollbar.boundingBox();
+      const from = await handle(page, 1).boundingBox();
+      if (!frame || !from) throw new Error("no boxes");
+      await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
+      await page.mouse.down();
+      await page.mouse.move(from.x + from.width / 2, frame.y + frame.height - 4, { steps: 12 });
+      await expect
+        .poll(() => scrollbar.evaluate((element) => element.scrollTop), { timeout: 5000 })
+        .toBeGreaterThan(100);
+      await page.mouse.up();
+      expect((await order(page)).startsWith("1,")).toBe(false);
+    });
+  });
+}
+
+/** Task titles of a Kanban column, in order. */
+const column = (page: Page, label: string) =>
+  page
+    .getByRole("list", { name: label, exact: true })
+    .locator(":scope > [data-ok-sortable-item] .sb-kanban-card > span")
+    .evaluateAll((spans) => spans.map((span) => span.textContent).join(","));
+const taskHandle = (page: Page, title: string) =>
+  page.getByRole("button", { name: `Reorder ${title}`, exact: true });
+
+for (const impl of implementations) {
+  test.describe(`sortable kanban (${impl})`, () => {
+    test("drags a task into the empty column with the mouse", async ({ page, isMobile }) => {
+      test.skip(isMobile, "Covered by the Move menu on touch devices.");
+      await openStory(page, storyId(impl, "sortable", "kanban"));
+      const done = page.getByRole("list", { name: "Done", exact: true });
+      await done.scrollIntoViewIfNeeded();
+      const from = await taskHandle(page, "Write the brief").boundingBox();
+      const to = await done.boundingBox();
+      if (!from || !to) throw new Error("no boxes");
+      await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
+      await page.mouse.down();
+      await page.mouse.move(to.x + to.width / 2, to.y + to.height / 2, { steps: 16 });
+      await expect(done).toHaveAttribute("data-ok-dragging", "");
+      await page.mouse.up();
+      await expect(page.locator("[data-ok-dragging]")).toHaveCount(0);
+      expect(await column(page, "Done")).toBe("Write the brief");
+      expect(await column(page, "To do")).toBe("Book the venue,Send invitations");
+    });
+
+    test("moves a task to the next column with the keyboard and announces it", async ({ page }) => {
+      await openStory(page, storyId(impl, "sortable", "kanban"));
+      await taskHandle(page, "Book the venue").focus();
+      await page.keyboard.press("Space");
+      await page.keyboard.press("ArrowRight");
+      await expect(page.locator("[data-ok-sortable-announcer]")).toHaveText(
+        "Moved to In progress, position 2 of 3.",
+      );
+      await expect(taskHandle(page, "Book the venue")).toBeFocused();
+      await page.keyboard.press("ArrowDown");
+      await page.keyboard.press("Space");
+      expect(await column(page, "In progress")).toBe(
+        "Design the poster,Plan the budget,Book the venue",
+      );
+      await expect(taskHandle(page, "Book the venue")).toHaveAttribute("aria-pressed", "false");
+    });
+
+    test("the Move menu moves a task in one tap per step", async ({ page, isMobile }) => {
+      await openStory(page, storyId(impl, "sortable", "kanban"));
+      const press = (locator: ReturnType<typeof taskHandle>) =>
+        isMobile ? locator.tap() : locator.click();
+      await press(page.getByRole("button", { name: "Move Pick the menu", exact: true }));
+      await press(page.getByRole("menuitem", { name: "Move to Done" }).first());
+      await expect(
+        page
+          .getByRole("list", { name: "Done", exact: true })
+          .locator(":scope > [data-ok-sortable-item] .sb-kanban-card > span"),
+      ).toHaveText(["Pick the menu"]);
+      expect(await column(page, "In review")).toBe("");
+      await expect(page.locator("[data-ok-sortable-announcer]")).toHaveText(
+        "Moved to Done, position 1 of 1.",
+      );
+    });
+  });
+}
+
 for (const viewport of viewports) {
   test.describe(`sortable responsive @ ${viewport.name} ${viewport.width}×${viewport.height}`, () => {
     for (const story of STORIES) {

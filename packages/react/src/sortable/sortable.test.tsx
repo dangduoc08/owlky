@@ -4,7 +4,7 @@ import { renderToString } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { userEvent } from "vitest/browser";
 import { expectNoAxeViolations } from "../test-utils.js";
-import { arrayMove, Sortable, type SortableProps } from "./sortable.js";
+import { arrayMove, moveBetweenLists, Sortable, type SortableProps } from "./sortable.js";
 
 type Demo = Partial<SortableProps<number>> & {
   count?: number;
@@ -137,5 +137,154 @@ describe("Sortable behavior", () => {
       getComputedStyle(screen.getAllByRole("listitem")[0] as Element).borderTopLeftRadius,
     ).toBe("12px");
     await expectNoAxeViolations();
+  });
+});
+
+function Board({ withTransfer = true }: { withTransfer?: boolean }) {
+  const [lists, setLists] = useState<Record<string, number[]>>({ a: [1, 2], b: [3], c: [] });
+  return (
+    <>
+      {Object.keys(lists).map((id) => (
+        <Sortable
+          key={id}
+          id={id}
+          group="g"
+          accept={id === "c" ? ["g", "other"] : undefined}
+          layout="vertical"
+          aria-label={`List ${id}`}
+          items={lists[id] ?? []}
+          getKey={(n) => n}
+          getItemLabel={(n) => `item ${n}`}
+          renderItem={(n) => (
+            <>
+              <span>{n}</span>
+              <button type="button" data-ok-sortable-move-to="c">{`Move ${n}`}</button>
+            </>
+          )}
+          onReorder={(items) => setLists((all) => ({ ...all, [id]: items }))}
+          onTransfer={
+            withTransfer ? (event) => setLists((all) => moveBetweenLists(all, event)) : undefined
+          }
+        />
+      ))}
+    </>
+  );
+}
+
+const listOrder = (name: string) =>
+  [...screen.getByRole("list", { name }).querySelectorAll(":scope > li > span")]
+    .map((span) => span.textContent)
+    .join(",");
+
+/** Resolves once a list's children change (React committed a transfer). */
+const committed = (name: string) =>
+  new Promise<void>((resolve) => {
+    const observer = new MutationObserver(() => {
+      observer.disconnect();
+      resolve();
+    });
+    observer.observe(screen.getByRole("list", { name }), { childList: true });
+  });
+const frame = () => new Promise((resolve) => requestAnimationFrame(resolve));
+
+describe("Sortable between lists", () => {
+  it("writes the group, accept and an id", () => {
+    render(
+      <>
+        <Board />
+        <Sortable
+          aria-label="Plain"
+          items={[]}
+          getKey={String}
+          renderItem={String}
+          onReorder={() => {}}
+          group="z"
+        />
+      </>,
+    );
+    const a = screen.getByRole("list", { name: "List a" });
+    expect(a.id).toBe("a");
+    expect(a.dataset).toMatchObject({ okGroup: "g" });
+    expect(a.hasAttribute("data-ok-accept")).toBe(false);
+    expect(screen.getByRole("list", { name: "List c" }).dataset["okAccept"]).toBe("g other");
+    expect(screen.getByRole("list", { name: "Plain" }).id).not.toBe("");
+  });
+
+  it("moves an item to the next list with the arrow keys; focus follows the new element", async () => {
+    render(<Board />);
+    handle(2).focus();
+    await userEvent.keyboard(" ");
+    const done = committed("List b");
+    await userEvent.keyboard("{ArrowRight}");
+    await done;
+    expect(listOrder("List a")).toBe("1");
+    expect(listOrder("List b")).toBe("3,2");
+    await frame();
+    await frame();
+    expect(document.activeElement).toBe(handle(2));
+    expect(handle(2).getAttribute("aria-pressed")).toBe("true");
+    await userEvent.keyboard("{Escape}");
+    await frame();
+    await frame();
+    expect(listOrder("List a")).toBe("1,2");
+    expect(document.activeElement).toBe(handle(2));
+  });
+
+  it("move-to buttons move an item into an empty list; two taps move between lists", async () => {
+    render(<Board />);
+    await userEvent.click(screen.getByRole("button", { name: "Move 1" }));
+    expect(listOrder("List c")).toBe("1");
+    await frame();
+    expect(document.activeElement).toBe(handle(1));
+    await userEvent.click(handle(3));
+    await userEvent.click(handle(1));
+    expect(listOrder("List c")).toBe("3,1");
+    expect(listOrder("List b")).toBe("");
+    await expectNoAxeViolations();
+  });
+
+  it("disabled items, auto scroll off and drag events with the item's data", async () => {
+    const events: string[] = [];
+    const log = (kind: string) => (event: { item: number; index: number; list: string }) =>
+      events.push(`${kind}:${event.item}@${event.index} in ${event.list}`);
+    render(
+      <Numbers
+        id="n"
+        layout="vertical"
+        autoScroll={false}
+        isItemDisabled={(n) => n === 1}
+        onDragStart={log("start")}
+        onDragOver={log("over")}
+        onDragEnd={log("end")}
+        onDragCancel={log("cancel")}
+      />,
+    );
+    const list = screen.getByRole("list", { name: "Numbers" });
+    expect(list.dataset["okAutoScroll"]).toBe("false");
+    const first = screen.getAllByRole("listitem")[0] as HTMLElement;
+    expect(first.hasAttribute("data-ok-disabled")).toBe(true);
+    expect((handle(1) as HTMLButtonElement).disabled).toBe(true);
+    expect((handle(2) as HTMLButtonElement).disabled).toBe(false);
+    handle(3).focus();
+    await userEvent.keyboard(" ");
+    await userEvent.keyboard("{ArrowUp}");
+    await userEvent.keyboard("{ArrowUp}"); // item 1 can't be passed
+    expect(order()).toBe("1,3,2,4");
+    await userEvent.keyboard(" ");
+    await userEvent.keyboard(" ");
+    await userEvent.keyboard("{Escape}");
+    expect(events).toEqual([
+      "start:3@2 in n",
+      "over:3@1 in n",
+      "end:3@1 in n",
+      "start:3@1 in n",
+      "cancel:3@1 in n",
+    ]);
+  });
+
+  it("without onTransfer, items stay in their list", async () => {
+    render(<Board withTransfer={false} />);
+    await userEvent.click(screen.getByRole("button", { name: "Move 1" }));
+    expect(listOrder("List a")).toBe("1,2");
   });
 });

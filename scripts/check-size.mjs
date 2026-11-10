@@ -16,6 +16,10 @@ async function withImports(file, seen = new Set()) {
 }
 
 const budgets = [
+  // 225 kB since the sortable and data grid shoulds merged together: 221.0 kB.
+  // 221 kB since Phase 4 batch E's sortable shoulds (4.18.75-76, ADR-0053: moves between lists,
+  // one session per document, move-to triggers; auto scroll, disabled items, drag events, HTML
+  // messages; about 1.6 kB): 217.6 kB. Optimization is deferred to 1.0 prep.
   // 221 kB since Phase 4 batch E's data grid shoulds (4.18.10 set filter, 4.18.51-54: column
   // options, selection propagation, layout options, footer counts, Tab navigation; about 3.5 kB):
   // 217.6 kB. Optimization is deferred to 1.0 prep.
@@ -79,7 +83,7 @@ const budgets = [
   // Motion (trigger, count-up and five runtimes, the 62 variant names); 31 kB after
   // the composite inputs, 24 kB after the navigation components, 22 kB after the overlays. The CDN bundle carries every component; the npm ESM build
   // (`@owlky/html`) is tree-shaken.
-  ["packages/html/dist/owlky.js", 221_000, "HTML runtime + all components (IIFE)"],
+  ["packages/html/dist/owlky.js", 225_000, "HTML runtime + all components (IIFE)"],
   ["packages/html/dist/esm/runtime/runtime.js", 3_000, "HTML core runtime"],
   // The Editor is opt-in (ADR-0023): Tiptap, ProseMirror and its starter kit are about 125 kB of
   // it; owlky.js stays free of them. 155.1 kB after ADR-0050 (from 130.8 kB): tables
@@ -166,10 +170,11 @@ const budgets = [
   // since the docs examples became complete (roadmap 3.4, `check:docs`): the guides' HTML repeats
   // whole snippets (data grids, date pickers, the editor, the lightbox) instead of shortened
   // copies, about 0.1 MB gzip.
+  // 1.3 MB since the data grid and sortable shoulds (stories, docs sections, API entries): 1249.6 kB.
   // 1.25 MB since Phase 4 batch E shoulds (chart stacks, cues, tooltips, legends; button, text field,
   // select and picker field options: their stories, docs sections and API entries): 1202.0 kB.
   // 1.2 MB since Phase 4 batch E (new chart and data grid stories, sections and API entries): 1154.6 kB.
-  ["packages/mcp/manifest.json", 1_250_000, "MCP manifest (npm tarball, not a browser download)"],
+  ["packages/mcp/manifest.json", 1_300_000, "MCP manifest (npm tarball, not a browser download)"],
 ];
 
 let failed = false;
