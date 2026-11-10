@@ -964,6 +964,8 @@ Not planned as components (patterns or app-level pages of the reference): Layout
    - Not planned: React Native and Flutter (no DOM), Ember, Lit / Web Component wrappers (the HTML
      package covers framework-free use), Qwik unless users ask.
 9. **1.0 prep:** accessibility audit and docs polish (the upstream API audit moved to component completion),
+   size optimization (owner 2026-11-10: later, not before 0.1.0): per-page budgets for sample pages
+   and per component, and a lighter CDN core with opt-in heavy bundles (data grid, chart, pickers, Gantt),
    plus the backlogs (Table toolbar, Sortable
    auto-scroll and move to top / bottom, Motion `component`, Dialog `keepMounted`), Paper composed
    inside Popover / Menu / Dialog / Drawer / TableContainer / Map controls / Autocomplete listbox
