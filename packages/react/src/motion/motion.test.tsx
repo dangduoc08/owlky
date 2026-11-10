@@ -1,5 +1,5 @@
 import { act, render, screen } from "@testing-library/react";
-import { createRef, StrictMode } from "react";
+import { createRef, type ReactNode, type RefObject, StrictMode } from "react";
 import { renderToString } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { Dialog } from "../dialog/dialog.js";
@@ -400,6 +400,138 @@ describe("MotionText", () => {
       </MotionText>,
     );
     expect(css(second).animationName).toBe("ok-motion-exit");
+  });
+});
+
+/** A 100px scroller whose first child is `content`, followed by 1000px of space. */
+function Scroller({
+  scroller,
+  children,
+}: {
+  scroller: RefObject<HTMLDivElement | null>;
+  children: ReactNode;
+}) {
+  return (
+    <div ref={scroller} data-testid="scroller" style={{ height: 100, overflow: "auto" }}>
+      {children}
+      <div style={{ height: 1000 }} />
+    </div>
+  );
+}
+
+/** Resolves on the next call of a viewport handler. */
+const called = () => {
+  let resolve: (entry: IntersectionObserverEntry) => void = () => {};
+  const promise = new Promise<IntersectionObserverEntry>((done) => {
+    resolve = done;
+  });
+  return { promise, handler: (entry: IntersectionObserverEntry) => resolve(entry) };
+};
+
+describe("component and viewport", () => {
+  it("component picks the element of every root; the ref points at it", () => {
+    const ref = createRef<HTMLElement>();
+    render(
+      <>
+        <Motion ref={ref} component="section" data-testid="m" trigger="mount">
+          Section
+        </Motion>
+        <MotionGroup component="ul" data-testid="g" trigger="mount">
+          <Motion component="li">Item</Motion>
+        </MotionGroup>
+        <MotionText component="h2" data-testid="t" trigger="mount">
+          Title
+        </MotionText>
+      </>,
+    );
+    expect(byTestId("m").tagName).toBe("SECTION");
+    expect(ref.current).toBe(byTestId("m"));
+    expect(byTestId("g").tagName).toBe("UL");
+    expect(byTestId("g").firstElementChild?.tagName).toBe("LI");
+    expect(byTestId("g").firstElementChild?.getAttribute("data-ok-state")).toBe("enter");
+    expect(screen.getByRole("heading", { level: 2, name: "Title" })).toBe(byTestId("t"));
+    expect(screen.getByRole("list")).toBe(byTestId("g"));
+  });
+
+  it("viewportMargin is written like the HTML markup; empty margins are dropped", () => {
+    render(
+      <>
+        <Motion data-testid="m" viewportMargin=" 0px 0px -100px ">
+          A
+        </Motion>
+        <MotionGroup data-testid="g" viewportMargin="">
+          <Motion>B</Motion>
+        </MotionGroup>
+        <MotionText data-testid="t" viewportMargin="10%">
+          C
+        </MotionText>
+      </>,
+    );
+    expect(byTestId("m").getAttribute("data-ok-viewport-margin")).toBe("0px 0px -100px");
+    expect(byTestId("g").hasAttribute("data-ok-viewport-margin")).toBe(false);
+    expect(byTestId("t").getAttribute("data-ok-viewport-margin")).toBe("10%");
+  });
+
+  it("viewport events: enter and leave a scrolling root", async () => {
+    const scroller = createRef<HTMLDivElement>();
+    const enter = called();
+    const leave = called();
+    render(
+      <Scroller scroller={scroller}>
+        <Motion
+          data-testid="m"
+          once={false}
+          amount={0}
+          viewportRoot={scroller}
+          onViewportEnter={enter.handler}
+          onViewportLeave={leave.handler}
+          style={{ height: 40 }}
+        >
+          Box
+        </Motion>
+      </Scroller>,
+    );
+    const entered = await enter.promise;
+    expect(entered.isIntersecting).toBe(true);
+    expect(entered.rootBounds?.height).toBe(100);
+    (scroller.current as HTMLDivElement).scrollTop = 600;
+    const left = await leave.promise;
+    expect(left.isIntersecting).toBe(false);
+    await stateBecomes(byTestId("m"), "exit");
+  });
+
+  it("a negative margin keeps an element at the edge out of view", async () => {
+    const scroller = createRef<HTMLDivElement>();
+    const enter = called();
+    const onViewportEnter = vi.fn(enter.handler);
+    render(
+      <Scroller scroller={scroller}>
+        <MotionGroup
+          data-testid="g"
+          amount={0}
+          viewportRoot={scroller}
+          viewportMargin="0px 0px -80px"
+          onViewportEnter={onViewportEnter}
+          style={{ marginTop: 60 }}
+        >
+          <Motion style={{ height: 10 }}>Late</Motion>
+        </MotionGroup>
+      </Scroller>,
+    );
+    const group = byTestId("g");
+    // The group (60px down) lies below the shrunk viewport (its top 20px).
+    await new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 100)));
+    expect(onViewportEnter).not.toHaveBeenCalled();
+    expect(group.getAttribute("data-ok-state")).toBe("initial");
+    (scroller.current as HTMLDivElement).scrollTop = 60;
+    await enter.promise;
+    await stateBecomes(group, "enter");
+  });
+
+  it("MotionText reports the viewport too", async () => {
+    const enter = called();
+    render(<MotionText onViewportEnter={enter.handler}>Seen</MotionText>);
+    expect((await enter.promise).isIntersecting).toBe(true);
   });
 });
 

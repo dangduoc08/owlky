@@ -1549,6 +1549,10 @@ export interface MotionParts {
   "data-ok-motion-text-label": Part<"span">;
   /** One animated word. */
   "data-ok-motion-text-word": Part<"span">;
+  /** In view: grows (or, with negative values, shrinks) the viewport's box, written like CSS margins in `px` or `%`, such as `0px 0px -100px`. */
+  "data-ok-viewport-margin": Value<string>;
+  /** In view: the id of the scrolling ancestor whose box counts as the viewport. Default: the browser viewport. */
+  "data-ok-viewport-root": Value<string>;
 }
 
 /** Organization chart: parts, states, values and triggers. */

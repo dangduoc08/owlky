@@ -49,8 +49,20 @@ export interface MotionTriggerOptions {
   amount: number;
   /** Manual trigger: the current `in`. */
   in?: boolean | undefined;
+  /**
+   * In view: grows (or, negative, shrinks) the viewport's box, written like CSS margins
+   * (`"0px 0px -100px"`, px or %). Invalid → none.
+   */
+  margin?: string | undefined;
+  /** In view: the scrolling ancestor whose box counts as the viewport. Default: the browser viewport. */
+  root?: Element | Document | null | undefined;
   /** Called with `true` to show (enter) and `false` to hide (exit). */
   onChange(active: boolean): void;
+  /**
+   * In view: the element entered (`true`: the `amount` is visible) or left (`false`: nothing is
+   * visible) the viewport. With `once`, only the first entrance is reported.
+   */
+  onViewport?(inView: boolean, entry: IntersectionObserverEntry): void;
 }
 
 export interface MotionTriggerHandle {
@@ -74,19 +86,33 @@ export function createMotionTrigger(
   else if (typeof IntersectionObserver === "undefined") options.onChange(true);
   else {
     const amount = Math.min(Math.max(options.amount, 0), 1);
-    observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          // A zero-area target (scaled to 0) reports a ratio of 1 while it intersects.
-          const visible = entry.isIntersecting && entry.intersectionRatio >= amount - 0.001;
-          if (visible) {
-            options.onChange(true);
-            if (options.once) observer?.disconnect();
-          } else if (!options.once && !entry.isIntersecting) options.onChange(false);
+    let inside = false;
+    const callback: IntersectionObserverCallback = (entries) => {
+      for (const entry of entries) {
+        // A zero-area target (scaled to 0) reports a ratio of 1 while it intersects.
+        const visible = entry.isIntersecting && entry.intersectionRatio >= amount - 0.001;
+        if (visible) {
+          options.onChange(true);
+          if (!inside) options.onViewport?.(true, entry);
+          inside = true;
+          if (options.once) observer?.disconnect();
+        } else if (!options.once && !entry.isIntersecting) {
+          options.onChange(false);
+          if (inside) options.onViewport?.(false, entry);
+          inside = false;
         }
-      },
-      { threshold: [0, amount] },
-    );
+      }
+    };
+    const init: IntersectionObserverInit = { threshold: [0, amount] };
+    if (options.root) init.root = options.root;
+    if (options.margin) init.rootMargin = options.margin;
+    try {
+      observer = new IntersectionObserver(callback, init);
+    } catch {
+      // An invalid `rootMargin` throws a SyntaxError: watch without it.
+      delete init.rootMargin;
+      observer = new IntersectionObserver(callback, init);
+    }
     observer.observe(element);
   }
   return {
@@ -96,6 +122,22 @@ export function createMotionTrigger(
     destroy() {
       observer?.disconnect();
     },
+  };
+}
+
+/**
+ * The in-view options written on an element (HTML): `data-ok-viewport-margin` (a `rootMargin`)
+ * and `data-ok-viewport-root` (the id of the scrolling ancestor; an unknown id → the browser
+ * viewport).
+ */
+export function readMotionViewport(element: Element): {
+  margin: string | undefined;
+  root: Element | null;
+} {
+  const id = element.getAttribute("data-ok-viewport-root");
+  return {
+    margin: element.getAttribute("data-ok-viewport-margin")?.trim() || undefined,
+    root: id ? element.ownerDocument.getElementById(id) : null,
   };
 }
 

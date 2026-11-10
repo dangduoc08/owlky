@@ -21,6 +21,7 @@ import {
   type CSSProperties,
   cloneElement,
   createContext,
+  type ElementType,
   Fragment,
   forwardRef,
   type HTMLAttributes,
@@ -47,6 +48,17 @@ export interface MotionTriggerProps {
   amount?: number | undefined;
   /** Wait before the entrance, ms. */
   delay?: number | undefined;
+  /**
+   * In view: grows (or, with negative values, shrinks) the viewport's box before the visible
+   * fraction is measured, written like CSS margins in `px` or `%`, such as `"0px 0px -100px"`.
+   */
+  viewportMargin?: string | undefined;
+  /** In view: the scrolling ancestor whose box counts as the viewport. Default: the browser viewport. */
+  viewportRoot?: RefObject<Element | null> | undefined;
+  /** In view: called when the element enters the viewport (the `amount` is visible). With `once`, the first time only. */
+  onViewportEnter?: ((entry: IntersectionObserverEntry) => void) | undefined;
+  /** In view with `once={false}`: called when the element leaves the viewport (nothing is visible). */
+  onViewportLeave?: ((entry: IntersectionObserverEntry) => void) | undefined;
 }
 
 /** The state of the enclosing MotionGroup (its Motions follow it). */
@@ -55,15 +67,31 @@ const GroupState = createContext<MotionState | undefined>(undefined);
 const numberOr = (spec: { default: number | undefined }, value: number | undefined) =>
   typeof value === "number" && Number.isFinite(value) && value >= 0 ? value : spec.default;
 
+/** `viewportMargin` isn't an option of the schema (free text): written as the HTML markup has it. */
+const viewportAttributes = (margin: string | undefined) =>
+  margin?.trim() ? { "data-ok-viewport-margin": margin.trim() } : {};
+
 /** The animation state of `ref`, driven by its trigger (or by the enclosing group). */
 function useMotionState(
   ref: RefObject<HTMLElement | null>,
-  { trigger = "inView", in: shown, once = true, amount }: MotionTriggerProps,
+  {
+    trigger = "inView",
+    in: shown,
+    once = true,
+    amount,
+    viewportMargin,
+    viewportRoot,
+    onViewportEnter,
+    onViewportLeave,
+  }: MotionTriggerProps,
   follow: MotionState | undefined,
 ): MotionState {
   const [state, setState] = useState<MotionState>("initial");
   const driven = follow !== undefined;
   const manualIn = trigger === "manual" ? (shown ?? true) : undefined;
+  // The latest handlers, without restarting the observer when they change.
+  const handlers = useRef({ onViewportEnter, onViewportLeave });
+  handlers.current = { onViewportEnter, onViewportLeave };
   useEffect(() => {
     const element = ref.current;
     if (driven || !element) return;
@@ -72,10 +100,14 @@ function useMotionState(
       once,
       amount: numberOr(motionOptions.options.amount, amount) as number,
       in: manualIn,
+      margin: viewportMargin?.trim() || undefined,
+      root: viewportRoot?.current,
       onChange: (active) => setState((current) => nextMotionState(current, active)),
+      onViewport: (inView, entry) =>
+        (inView ? handlers.current.onViewportEnter : handlers.current.onViewportLeave)?.(entry),
     });
     return () => handle.destroy();
-  }, [ref, driven, trigger, once, amount, manualIn]);
+  }, [ref, driven, trigger, once, amount, manualIn, viewportMargin, viewportRoot]);
   return follow ?? state;
 }
 
@@ -97,7 +129,9 @@ function useReplayOnChange(ref: RefObject<HTMLElement | null>, look: string): vo
   }, [ref, look]);
 }
 
-export interface MotionProps extends HTMLAttributes<HTMLDivElement>, MotionTriggerProps {
+export interface MotionProps extends HTMLAttributes<HTMLElement>, MotionTriggerProps {
+  /** The element to render, such as `"section"` or `"li"`. Default `"div"`. */
+  component?: ElementType | undefined;
   /** Animation. Default `fadeIn`. */
   variant?: MotionVariant | undefined;
   /** Entrance length, ms (default 640; loops: about 5 s). */
@@ -114,8 +148,9 @@ export interface MotionProps extends HTMLAttributes<HTMLDivElement>, MotionTrigg
  * view, on mount or when `in` changes. Inside a MotionGroup it follows the group. To replay the
  * entrance, change its `key`.
  */
-export const Motion = forwardRef<HTMLDivElement, MotionProps>(function Motion(
+export const Motion = forwardRef<HTMLElement, MotionProps>(function Motion(
   {
+    component: Root = "div",
     variant,
     trigger,
     in: shown,
@@ -125,20 +160,38 @@ export const Motion = forwardRef<HTMLDivElement, MotionProps>(function Motion(
     duration,
     distance,
     paused,
+    viewportMargin,
+    viewportRoot,
+    onViewportEnter,
+    onViewportLeave,
     style,
     children,
     ...props
   },
   ref,
 ) {
-  const own = useRef<HTMLDivElement>(null);
+  const own = useRef<HTMLElement>(null);
   const mergedRef = useMergedRefs(own, ref);
-  const state = useMotionState(own, { trigger, in: shown, once, amount }, useContext(GroupState));
+  const state = useMotionState(
+    own,
+    {
+      trigger,
+      in: shown,
+      once,
+      amount,
+      viewportMargin,
+      viewportRoot,
+      onViewportEnter,
+      onViewportLeave,
+    },
+    useContext(GroupState),
+  );
   useReplayOnChange(own, `${variant}|${duration}|${distance}`);
   return (
-    <div
+    <Root
       ref={mergedRef}
       {...motionAttributes({ variant, trigger, once, amount, delay, duration, distance, paused })}
+      {...viewportAttributes(viewportMargin)}
       data-ok-state={state}
       data-ok-runtime="off"
       {...(trigger === "manual" && (shown ?? true) ? { "data-ok-in": "" } : {})}
@@ -155,14 +208,16 @@ export const Motion = forwardRef<HTMLDivElement, MotionProps>(function Motion(
       {...props}
     >
       {children}
-    </div>
+    </Root>
   );
 });
 
 const valid = (value: number | undefined) =>
   typeof value === "number" && Number.isFinite(value) && value >= 0 ? value : undefined;
 
-export interface MotionGroupProps extends HTMLAttributes<HTMLDivElement>, MotionTriggerProps {
+export interface MotionGroupProps extends HTMLAttributes<HTMLElement>, MotionTriggerProps {
+  /** The element to render, such as `"ul"` or `"section"`. Default `"div"`. */
+  component?: ElementType | undefined;
   /** Milliseconds between the entrances of the direct child Motions. Default 50. */
   stagger?: number | undefined;
   /** Motions (direct children are staggered in order). */
@@ -173,13 +228,41 @@ export interface MotionGroupProps extends HTMLAttributes<HTMLDivElement>, Motion
  * MotionGroup — spec: specs/components/motion.md. Plays the Motions inside it together, one
  * direct child after the other (the reference's "MultiItem").
  */
-export const MotionGroup = forwardRef<HTMLDivElement, MotionGroupProps>(function MotionGroup(
-  { trigger, in: shown, once, amount, delay, stagger, style, children, ...props },
+export const MotionGroup = forwardRef<HTMLElement, MotionGroupProps>(function MotionGroup(
+  {
+    component: Root = "div",
+    trigger,
+    in: shown,
+    once,
+    amount,
+    delay,
+    stagger,
+    viewportMargin,
+    viewportRoot,
+    onViewportEnter,
+    onViewportLeave,
+    style,
+    children,
+    ...props
+  },
   ref,
 ) {
-  const own = useRef<HTMLDivElement>(null);
+  const own = useRef<HTMLElement>(null);
   const mergedRef = useMergedRefs(own, ref);
-  const state = useMotionState(own, { trigger, in: shown, once, amount }, undefined);
+  const state = useMotionState(
+    own,
+    {
+      trigger,
+      in: shown,
+      once,
+      amount,
+      viewportMargin,
+      viewportRoot,
+      onViewportEnter,
+      onViewportLeave,
+    },
+    undefined,
+  );
   let index = 0;
   const items = Children.map(children, (child) => {
     if (!isValidElement<{ style?: CSSProperties }>(child)) return child;
@@ -189,9 +272,10 @@ export const MotionGroup = forwardRef<HTMLDivElement, MotionGroupProps>(function
     });
   });
   return (
-    <div
+    <Root
       ref={mergedRef}
       {...motionGroupAttributes({ trigger, once, amount, delay, stagger })}
+      {...viewportAttributes(viewportMargin)}
       data-ok-state={state}
       data-ok-runtime="off"
       {...(trigger === "manual" && (shown ?? true) ? { "data-ok-in": "" } : {})}
@@ -207,13 +291,15 @@ export const MotionGroup = forwardRef<HTMLDivElement, MotionGroupProps>(function
       {...props}
     >
       <GroupState.Provider value={state}>{items}</GroupState.Provider>
-    </div>
+    </Root>
   );
 });
 
 export interface MotionTextProps
-  extends Omit<HTMLAttributes<HTMLSpanElement>, "children">,
+  extends Omit<HTMLAttributes<HTMLElement>, "children">,
     MotionTriggerProps {
+  /** The element to render, such as `"h2"` or `"p"`. Default `"span"`. */
+  component?: ElementType | undefined;
   /** The text. Letters animate one after the other; assistive technologies read it whole. */
   children: string;
   /** Animation of each letter. Default `fadeIn`. */
@@ -227,8 +313,9 @@ export interface MotionTextProps
 }
 
 /** MotionText — spec: specs/components/motion.md. Animates a text letter by letter ("Text object"). */
-export const MotionText = forwardRef<HTMLSpanElement, MotionTextProps>(function MotionText(
+export const MotionText = forwardRef<HTMLElement, MotionTextProps>(function MotionText(
   {
+    component: Root = "span",
     children,
     variant,
     trigger,
@@ -239,19 +326,36 @@ export const MotionText = forwardRef<HTMLSpanElement, MotionTextProps>(function 
     duration,
     distance,
     stagger,
+    viewportMargin,
+    viewportRoot,
+    onViewportEnter,
+    onViewportLeave,
     style,
     ...props
   },
   ref,
 ) {
-  const own = useRef<HTMLSpanElement>(null);
+  const own = useRef<HTMLElement>(null);
   const mergedRef = useMergedRefs(own, ref);
-  const state = useMotionState(own, { trigger, in: shown, once, amount }, undefined);
+  const state = useMotionState(
+    own,
+    {
+      trigger,
+      in: shown,
+      once,
+      amount,
+      viewportMargin,
+      viewportRoot,
+      onViewportEnter,
+      onViewportLeave,
+    },
+    undefined,
+  );
   useReplayOnChange(own, `${variant}|${duration}|${distance}`);
   const words = splitMotionText(children);
   let index = 0;
   return (
-    <span
+    <Root
       ref={mergedRef}
       {...motionTextAttributes({
         variant,
@@ -263,6 +367,7 @@ export const MotionText = forwardRef<HTMLSpanElement, MotionTextProps>(function 
         distance,
         stagger,
       })}
+      {...viewportAttributes(viewportMargin)}
       data-ok-state={state}
       data-ok-runtime="off"
       {...(trigger === "manual" && (shown ?? true) ? { "data-ok-in": "" } : {})}
@@ -300,6 +405,6 @@ export const MotionText = forwardRef<HTMLSpanElement, MotionTextProps>(function 
           </Fragment>
         ))}
       </span>
-    </span>
+    </Root>
   );
 });

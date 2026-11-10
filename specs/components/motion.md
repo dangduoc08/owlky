@@ -19,7 +19,10 @@ the animations; core decides when (`createMotionTrigger`: mount, in view, manual
 ```
 [data-ok-motion][data-ok-variant][data-ok-trigger][data-ok-once="false"]?[data-ok-amount]?[data-ok-in]?
   [data-ok-duration]?[data-ok-delay]?[data-ok-distance]?[data-ok-paused]?[data-ok-state=initial|enter|exit]
+  [data-ok-viewport-margin=<rootMargin>]?[data-ok-viewport-root=<id>]?
   › content (draw: an svg whose shapes have pathLength="1")
+  (any element: React `component`, default `div`; MotionGroup `div`, MotionText `span`; the
+   viewport attributes also go on MotionGroup and MotionText roots)
 [data-ok-motion-group][trigger options][data-ok-stagger]? › [data-ok-motion]…   (direct children staggered)
 span[data-ok-motion-text][data-ok-variant][trigger options][data-ok-stagger]?[data-ok-state]
   › span[data-ok-motion-text-label] (visually hidden text)
@@ -123,8 +126,12 @@ MotionText `stagger`; `whileHover` / `whileTap` → `variant="interactive"`; `pa
 MotionBorder (the reference's own animated border): `slotProps.primaryBorder` → `color`, `width`;
 `slotProps.secondaryBorder` → `secondaryColor` (the two lights share one ring); per-side `padding` /
 per-corner radius → the root's CSS `border-width` / `border-radius` (zero specificity, so author
-rules win). Beyond the reference: `paused` (WCAG 2.2.2). Deferred: `component` (Motion always renders a
-`div`), spring physics, custom keyframes, layout animations, scroll-linked progress (Scroll
+rules win). Beyond the reference: `paused` (WCAG 2.2.2). `viewport.margin` / `viewport.root` →
+`viewportMargin` / `viewportRoot` (HTML `data-ok-viewport-margin`, `data-ok-viewport-root="<id>"`;
+free text, so not in the option schemas: React writes the margin attribute, a ref root has none),
+`onViewportEnter` / `onViewportLeave` → `ok:motion:enter` / `leave` (also `ok:motion-group:*`,
+`ok:motion-text:*`), `component` (Motion, MotionGroup, MotionText; HTML: any element). Deferred:
+CountUp `component` / viewport options / viewport events (not in the row), spring physics, custom keyframes, layout animations, scroll-linked progress (Scroll
 progress page), exit of a Dialog, the reference's logo rings (shape-morphing,
 custom keyframes: Motion full version, phase 1). Not applicable: `motion.*` element factories, `useAnimate`.
 
@@ -145,7 +152,12 @@ at 8% → second light's at 24%; `inherit` and `multi` use `--ok-palette-grey-50
 `enter` plays; `exit` plays the other way (other keyframe name, so it restarts). An entered
 in-variant drops the animation at its end (`animation-fill-mode: backwards`): no transform is left.
 `inView` (IntersectionObserver; none → shown at once): plays when `amount` is visible; `once=false`
-exits when it leaves. `mount`: at once. `manual`: follows `in` / `data-ok-in`. Changing `variant`,
+exits when it leaves. `viewportMargin` is the observer's `rootMargin` (invalid → none),
+`viewportRoot` its `root` (HTML: the element with that id; unknown → the browser viewport). Both
+are read when the trigger starts. Viewport events: enter once per crossing into view (the
+`amount` visible), leave when nothing is visible after an entrance; with `once`, the first
+entrance only. Only the element that owns the trigger reports (a Motion in a group doesn't);
+`mount` and `manual` triggers don't observe, so they report nothing. `mount`: at once. `manual`: follows `in` / `data-ok-in`. Changing `variant`,
 `duration` or `distance` replays an entered Motion (React too). MotionGroup drives every Motion
 whose closest group it is. Loops run while entered, `paused` stops them. Reduced motion: entrances
 and exits take 1ms, loops and the border don't run, interactive doesn't transition, CountUp shows
@@ -161,9 +173,14 @@ the whole text / end value. Loops need a pause control (WCAG 2.2.2): `paused`. D
 entrances start outside the box: clip containers that could widen the page.
 
 ## Events / API
-HTML: `ok:motion:end` (`{ state }`) on a Motion. Instances: motion / motion-group / motion-text
+HTML: `ok:motion:end` (`{ state }`) on a Motion; `ok:motion:enter` / `ok:motion:leave`
+(`{ ratio }`: the visible fraction), also `ok:motion-group:enter|leave` and
+`ok:motion-text:enter|leave`. Instances: motion / motion-group / motion-text
 `{ state, replay() }`, count-up `{ replay() }`, motion-border `{}` (width and duration only).
-React: native `onAnimationEnd`; change the `key` to replay.
+React: native `onAnimationEnd`, `onViewportEnter(entry)` / `onViewportLeave(entry)`
+(`IntersectionObserverEntry`, as Motion for React); change the `key` to replay.
+Core: `createMotionTrigger` options `margin`, `root`, `onViewport(inView, entry)`;
+`readMotionViewport(element)`.
 
 ## Responsive
 Nothing changes per breakpoint. Stories clip their stages (`overflow: clip`).
@@ -179,19 +196,19 @@ reference's own components (rows in the paragraph above).
 | `variants` + `initial` / `animate` / `exit` (named variants) | `variant` (the reference's names) | renamed | CSS keyframes |
 | `animate` / `exit` / `AnimatePresence` | `trigger="manual"` + `in` | renamed | exit = entrance backwards |
 | `whileInView`, `viewport.once`, `viewport.amount` | `trigger="inView"`, `once`, `amount` | renamed | |
-| `viewport.margin`, `viewport.root` | — | deferred | IntersectionObserver `rootMargin` / scroll root |
+| `viewport.margin`, `viewport.root` | `viewportMargin`, `viewportRoot` · `data-ok-viewport-margin`, `data-ok-viewport-root="<id>"` | renamed | IntersectionObserver `rootMargin` / `root`; React root is a ref, HTML an id |
 | `transition.duration`, `.delay`, `staggerChildren` | `duration`, `delay`, MotionGroup / MotionText `stagger` | renamed | |
 | `transition` springs, easing, custom keyframes (`animate` objects), `style` motion values, `transformTemplate` | — | deferred (5.1) | |
 | `onAnimationStart`, `onAnimationComplete` | `ok:motion:end` / native `onAnimationEnd` | renamed | start event deferred with 5.1 |
 | `onUpdate` | — | deferred (5.1) | |
-| `onViewportEnter`, `onViewportLeave` | — | deferred | in-view events |
+| `onViewportEnter`, `onViewportLeave` | same (`IntersectionObserverEntry`) · `ok:motion:enter` / `leave` (`{ ratio }`) | kept | in-view trigger only; group and text roots too |
 | `whileHover`, `whileTap` | `variant="interactive"` | renamed | springs, `onHoverStart` / `End`, `onTap*`, `tap`: deferred (5.3) |
 | `whileFocus` | — | deferred (5.3) | |
 | `drag*`, `whileDrag`, `dragControls`, `onDrag*`, `onDirectionLock`, `onPan*`, `pinch`, `whilePinch`, `propagate` | — | deferred (5.3) | |
 | `layout`, `layoutId`, `layoutDependency`, `layoutAnchor`, `layoutScroll`, `layoutRoot`, `onLayoutAnimation*` | — | deferred (5.4) | shared elements 5.5 |
 | `useScroll` (scroll progress) | — | deferred (5.2) | |
 | `inherit`, `custom` | MotionGroup sets the children's timing | renamed | dynamic variants not applicable (named CSS variants) |
-| `motion.*` element factories / `component` | always a `div` | deferred | `component` (spec Deferred) |
+| `motion.*` element factories / `component` | `component` (Motion, MotionGroup, MotionText) · HTML: any element | renamed | factories not applicable; inline elements need `display: inline-block` for transforms |
 | `useAnimate`, `animate()` | — | deferred (5.1) | core `animate(element, keyframes, options)` |
 | — | `paused`, MotionBorder, CountUp, background and path variants | kept | Owlky / reference additions |
 

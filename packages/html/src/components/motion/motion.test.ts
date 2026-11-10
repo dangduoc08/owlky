@@ -155,6 +155,90 @@ describe("motion runtime", () => {
     expect(state(element)).toBe("exit");
   });
 
+  it("viewport: margin and root reach the observer; enter / leave events on every root", () => {
+    const observers: {
+      callback: IntersectionObserverCallback;
+      init: IntersectionObserverInit | undefined;
+    }[] = [];
+    vi.stubGlobal(
+      "IntersectionObserver",
+      class {
+        constructor(callback: IntersectionObserverCallback, init?: IntersectionObserverInit) {
+          observers.push({ callback, init });
+        }
+        observe() {}
+        disconnect() {}
+      },
+    );
+    const host = mount(`<div id="scroller">
+      <section data-ok-motion data-ok-once="false" data-ok-viewport-margin="0px 0px -100px" data-ok-viewport-root="scroller">A</section>
+      <ul data-ok-motion-group data-ok-once="false" data-ok-viewport-root="missing"><li data-ok-motion>B</li></ul>
+      <h2 data-ok-motion-text data-ok-once="false">C</h2>
+    </div>`);
+    start();
+    const scroller = host.querySelector("#scroller");
+    expect(observers.map(({ init }) => init)).toEqual([
+      { threshold: [0, 0.3], root: scroller, rootMargin: "0px 0px -100px" },
+      { threshold: [0, 0.3] },
+      { threshold: [0, 0.3] },
+    ]);
+    const events: string[] = [];
+    for (const name of [
+      "ok:motion:enter",
+      "ok:motion:leave",
+      "ok:motion-group:enter",
+      "ok:motion-text:enter",
+      "ok:motion-group:leave",
+      "ok:motion-text:leave",
+    ])
+      host.addEventListener(name, (event) =>
+        events.push(`${name} ${(event as CustomEvent<{ ratio: number }>).detail.ratio}`),
+      );
+    const fire = (index: number, isIntersecting: boolean, intersectionRatio: number) =>
+      observers[index]?.callback(
+        [{ isIntersecting, intersectionRatio } as IntersectionObserverEntry],
+        {} as IntersectionObserver,
+      );
+    fire(0, false, 0);
+    fire(0, true, 0.5);
+    fire(0, true, 1);
+    fire(0, false, 0);
+    fire(1, true, 0.4);
+    fire(2, true, 1);
+    fire(1, false, 0);
+    fire(2, false, 0);
+    expect(events).toEqual([
+      "ok:motion:enter 0.5",
+      "ok:motion:leave 0",
+      "ok:motion-group:enter 0.4",
+      "ok:motion-text:enter 1",
+      "ok:motion-group:leave 0",
+      "ok:motion-text:leave 0",
+    ]);
+    // The group's Motion is driven by the group: no observer, no events of its own.
+    expect(observers).toHaveLength(3);
+    expect(state(host.querySelector("li") as Element)).toBe("exit");
+  });
+
+  it("viewport: a real scrolling root reports leaving it", async () => {
+    const host = mount(`<div id="box" style="height: 100px; overflow: auto">
+      <div data-ok-motion data-ok-once="false" data-ok-amount="0" data-ok-viewport-root="box" style="height: 40px">A</div>
+      <div style="height: 1000px"></div>
+    </div>`);
+    const element = host.querySelector("[data-ok-motion]") as HTMLElement;
+    const next = (name: string) =>
+      new Promise<CustomEvent>((resolve) =>
+        element.addEventListener(name, (event) => resolve(event as CustomEvent), { once: true }),
+      );
+    const entered = next("ok:motion:enter");
+    start();
+    expect((await entered).detail.ratio).toBeGreaterThan(0.9);
+    const left = next("ok:motion:leave");
+    (host.querySelector("#box") as HTMLElement).scrollTop = 600;
+    expect((await left).detail.ratio).toBe(0);
+    expect(state(element)).toBe("exit");
+  });
+
   it("tuning attributes become private properties (CSSOM); changes replay an entered Motion", async () => {
     const host = mount(
       '<div data-ok-motion data-ok-variant="slideInLeft" data-ok-trigger="mount" data-ok-duration="800" data-ok-delay="100" data-ok-distance="40">A</div>',

@@ -1474,6 +1474,8 @@
   "data-ok-variant",
   "data-ok-vertical",
   "data-ok-view",
+  "data-ok-viewport-margin",
+  "data-ok-viewport-root",
   "data-ok-views",
   "data-ok-virtualize",
   "data-ok-visible-by-default",
@@ -49478,6 +49480,18 @@
          "description": "After the root's own animation ended. `state` is its `data-ok-state`.",
          "detail": "{ state: string | null; }",
          "name": "ok:motion:end"
+        },
+        {
+         "cancelable": false,
+         "description": "In view trigger: the element entered the viewport (the `data-ok-amount` fraction is visible). `ratio` is the visible fraction. With `once` (the default) it fires the first time only.",
+         "detail": "MotionViewportDetail",
+         "name": "ok:motion:enter"
+        },
+        {
+         "cancelable": false,
+         "description": "In view trigger with `data-ok-once=\"false\"`: the element left the viewport (nothing visible).",
+         "detail": "MotionViewportDetail",
+         "name": "ok:motion:leave"
         }
        ],
        "methods": [
@@ -49635,6 +49649,18 @@
          ],
          "kind": "part",
          "name": "data-ok-motion-char"
+        },
+        {
+         "description": "In view: grows (or, with negative values, shrinks) the viewport's box, written like CSS margins in `px` or `%`, such as `0px 0px -100px`.",
+         "kind": "value",
+         "name": "data-ok-viewport-margin",
+         "value": "string"
+        },
+        {
+         "description": "In view: the id of the scrolling ancestor whose box counts as the viewport. Default: the browser viewport.",
+         "kind": "value",
+         "name": "data-ok-viewport-root",
+         "value": "string"
         }
        ],
        "runtime": "motion"
@@ -49642,7 +49668,7 @@
       "name": "Motion",
       "react": {
        "description": "Animates its box in (or out) when it scrolls into view, on mount or when `in` changes. Inside a MotionGroup it follows the group. To replay the entrance, change its `key`.",
-       "native": "HTMLDivElement",
+       "native": "HTMLElement",
        "props": [
         {
          "description": "In view: the visible fraction (0 to 1) that starts the animation. 3.",
@@ -49653,6 +49679,12 @@
          "description": "The content.",
          "name": "children",
          "type": "ReactNode"
+        },
+        {
+         "default": "\"div\"",
+         "description": "The element to render, such as `\"section\"` or `\"li\"`.",
+         "name": "component",
+         "type": "ElementType"
         },
         {
          "description": "Wait before the entrance, ms.",
@@ -49676,6 +49708,16 @@
          "type": "boolean"
         },
         {
+         "description": "In view: called when the element enters the viewport (the `amount` is visible). With `once`, the first time only.",
+         "name": "onViewportEnter",
+         "type": "((entry: IntersectionObserverEntry) => void)"
+        },
+        {
+         "description": "In view with `once={false}`: called when the element leaves the viewport (nothing is visible).",
+         "name": "onViewportLeave",
+         "type": "((entry: IntersectionObserverEntry) => void)"
+        },
+        {
          "description": "In view: plays only the first time (default). `false` also plays the exit when it leaves.",
          "name": "once",
          "type": "boolean"
@@ -49695,6 +49737,16 @@
          "description": "Animation.",
          "name": "variant",
          "type": "MotionVariant"
+        },
+        {
+         "description": "In view: grows (or, with negative values, shrinks) the viewport's box before the visible fraction is measured, written like CSS margins in `px` or `%`, such as `\"0px 0px -100px\"`.",
+         "name": "viewportMargin",
+         "type": "string"
+        },
+        {
+         "description": "In view: the scrolling ancestor whose box counts as the viewport. Default: the browser viewport.",
+         "name": "viewportRoot",
+         "type": "RefObject<Element | null>"
         }
        ]
       }
@@ -49974,6 +50026,20 @@
      {
       "html": {
        "attribute": "data-ok-motion-group",
+       "events": [
+        {
+         "cancelable": false,
+         "description": "In view trigger: the group entered the viewport. `ratio` is its visible fraction.",
+         "detail": "MotionViewportDetail",
+         "name": "ok:motion-group:enter"
+        },
+        {
+         "cancelable": false,
+         "description": "In view trigger with `data-ok-once=\"false\"`: the group left the viewport.",
+         "detail": "MotionViewportDetail",
+         "name": "ok:motion-group:leave"
+        }
+       ],
        "methods": [
         {
          "description": "Plays the entrances again.",
@@ -50043,7 +50109,7 @@
       "name": "MotionGroup",
       "react": {
        "description": "Plays the Motions inside it together, one direct child after the other (the reference's \"MultiItem\").",
-       "native": "HTMLDivElement",
+       "native": "HTMLElement",
        "props": [
         {
          "description": "In view: the visible fraction (0 to 1) that starts the animation. 3.",
@@ -50056,6 +50122,12 @@
          "type": "ReactNode"
         },
         {
+         "default": "\"div\"",
+         "description": "The element to render, such as `\"ul\"` or `\"section\"`.",
+         "name": "component",
+         "type": "ElementType"
+        },
+        {
          "description": "Wait before the entrance, ms.",
          "name": "delay",
          "type": "number"
@@ -50065,6 +50137,16 @@
          "description": "Manual trigger: shown. Turning it off plays the exit.",
          "name": "in",
          "type": "boolean"
+        },
+        {
+         "description": "In view: called when the element enters the viewport (the `amount` is visible). With `once`, the first time only.",
+         "name": "onViewportEnter",
+         "type": "((entry: IntersectionObserverEntry) => void)"
+        },
+        {
+         "description": "In view with `once={false}`: called when the element leaves the viewport (nothing is visible).",
+         "name": "onViewportLeave",
+         "type": "((entry: IntersectionObserverEntry) => void)"
         },
         {
          "description": "In view: plays only the first time (default). `false` also plays the exit when it leaves.",
@@ -50080,6 +50162,16 @@
          "description": "`inView` (default): plays when scrolled into view; `mount`: right away; `manual`: follows `in`.",
          "name": "trigger",
          "type": "\"inView\" | \"manual\" | \"mount\""
+        },
+        {
+         "description": "In view: grows (or, with negative values, shrinks) the viewport's box before the visible fraction is measured, written like CSS margins in `px` or `%`, such as `\"0px 0px -100px\"`.",
+         "name": "viewportMargin",
+         "type": "string"
+        },
+        {
+         "description": "In view: the scrolling ancestor whose box counts as the viewport. Default: the browser viewport.",
+         "name": "viewportRoot",
+         "type": "RefObject<Element | null>"
         }
        ]
       }
@@ -50087,6 +50179,20 @@
      {
       "html": {
        "attribute": "data-ok-motion-text",
+       "events": [
+        {
+         "cancelable": false,
+         "description": "In view trigger: the text entered the viewport. `ratio` is its visible fraction.",
+         "detail": "MotionViewportDetail",
+         "name": "ok:motion-text:enter"
+        },
+        {
+         "cancelable": false,
+         "description": "In view trigger with `data-ok-once=\"false\"`: the text left the viewport.",
+         "detail": "MotionViewportDetail",
+         "name": "ok:motion-text:leave"
+        }
+       ],
        "methods": [
         {
          "description": "Plays the entrance again.",
@@ -50259,7 +50365,7 @@
       "name": "MotionText",
       "react": {
        "description": "Animates a text letter by letter (\"Text object\").",
-       "native": "HTMLSpanElement",
+       "native": "HTMLElement",
        "props": [
         {
          "description": "In view: the visible fraction (0 to 1) that starts the animation. 3.",
@@ -50271,6 +50377,12 @@
          "name": "children",
          "required": true,
          "type": "string"
+        },
+        {
+         "default": "\"span\"",
+         "description": "The element to render, such as `\"h2\"` or `\"p\"`.",
+         "name": "component",
+         "type": "ElementType"
         },
         {
          "description": "Wait before the entrance, ms.",
@@ -50294,6 +50406,16 @@
          "type": "boolean"
         },
         {
+         "description": "In view: called when the element enters the viewport (the `amount` is visible). With `once`, the first time only.",
+         "name": "onViewportEnter",
+         "type": "((entry: IntersectionObserverEntry) => void)"
+        },
+        {
+         "description": "In view with `once={false}`: called when the element leaves the viewport (nothing is visible).",
+         "name": "onViewportLeave",
+         "type": "((entry: IntersectionObserverEntry) => void)"
+        },
+        {
          "description": "In view: plays only the first time (default). `false` also plays the exit when it leaves.",
          "name": "once",
          "type": "boolean"
@@ -50313,6 +50435,16 @@
          "description": "Animation of each letter.",
          "name": "variant",
          "type": "MotionVariant"
+        },
+        {
+         "description": "In view: grows (or, with negative values, shrinks) the viewport's box before the visible fraction is measured, written like CSS margins in `px` or `%`, such as `\"0px 0px -100px\"`.",
+         "name": "viewportMargin",
+         "type": "string"
+        },
+        {
+         "description": "In view: the scrolling ancestor whose box counts as the viewport. Default: the browser viewport.",
+         "name": "viewportRoot",
+         "type": "RefObject<Element | null>"
         }
        ]
       }
@@ -50836,12 +50968,12 @@
      "title": "Purpose"
     },
     {
-     "body": "```\n[data-ok-motion][data-ok-variant][data-ok-trigger][data-ok-once=\"false\"]?[data-ok-amount]?[data-ok-in]?\n  [data-ok-duration]?[data-ok-delay]?[data-ok-distance]?[data-ok-paused]?[data-ok-state=initial|enter|exit]\n  › content (draw: an svg whose shapes have pathLength=\"1\")\n[data-ok-motion-group][trigger options][data-ok-stagger]? › [data-ok-motion]…   (direct children staggered)\nspan[data-ok-motion-text][data-ok-variant][trigger options][data-ok-stagger]?[data-ok-state]\n  › span[data-ok-motion-text-label] (visually hidden text)\n  + span[aria-hidden=true] › span[data-ok-motion-text-word] › span[data-ok-motion-char]…\nspan[data-ok-count-up][data-ok-end][data-ok-start]?[data-ok-decimals]?[data-ok-duration]?[trigger options]\n  › span[data-ok-count-up-label] (visually hidden end value) + span[aria-hidden=true] › prefix,\n    span[data-ok-count-up-value], suffix\ndiv[data-ok-motion-border][data-ok-shape][data-ok-color][data-ok-secondary-color]?[data-ok-width]?[data-ok-duration]?\n  [data-ok-paused]? › content\nDialog: div[data-ok-dialog-paper][data-ok-motion][data-ok-variant][data-ok-trigger=mount]   (`transition`)\n```\nPrivate properties (React `style`, HTML CSSOM): `--_ok-motion-duration | -delay | -distance |\n-stagger | -index`, `--_ok-motion-border-width | -duration | -fill`; CSS-only\n`--_ok-motion-border-light | -light-channel | -light-2 | -light-2-channel` (reset to `initial` on\nevery root so nested borders don't inherit them).",
+     "body": "```\n[data-ok-motion][data-ok-variant][data-ok-trigger][data-ok-once=\"false\"]?[data-ok-amount]?[data-ok-in]?\n  [data-ok-duration]?[data-ok-delay]?[data-ok-distance]?[data-ok-paused]?[data-ok-state=initial|enter|exit]\n  [data-ok-viewport-margin=<rootMargin>]?[data-ok-viewport-root=<id>]?\n  › content (draw: an svg whose shapes have pathLength=\"1\")\n  (any element: React `component`, default `div`; MotionGroup `div`, MotionText `span`; the\n   viewport attributes also go on MotionGroup and MotionText roots)\n[data-ok-motion-group][trigger options][data-ok-stagger]? › [data-ok-motion]…   (direct children staggered)\nspan[data-ok-motion-text][data-ok-variant][trigger options][data-ok-stagger]?[data-ok-state]\n  › span[data-ok-motion-text-label] (visually hidden text)\n  + span[aria-hidden=true] › span[data-ok-motion-text-word] › span[data-ok-motion-char]…\nspan[data-ok-count-up][data-ok-end][data-ok-start]?[data-ok-decimals]?[data-ok-duration]?[trigger options]\n  › span[data-ok-count-up-label] (visually hidden end value) + span[aria-hidden=true] › prefix,\n    span[data-ok-count-up-value], suffix\ndiv[data-ok-motion-border][data-ok-shape][data-ok-color][data-ok-secondary-color]?[data-ok-width]?[data-ok-duration]?\n  [data-ok-paused]? › content\nDialog: div[data-ok-dialog-paper][data-ok-motion][data-ok-variant][data-ok-trigger=mount]   (`transition`)\n```\nPrivate properties (React `style`, HTML CSSOM): `--_ok-motion-duration | -delay | -distance |\n-stagger | -index`, `--_ok-motion-border-width | -duration | -fill`; CSS-only\n`--_ok-motion-border-light | -light-channel | -light-2 | -light-2-channel` (reset to `initial` on\nevery root so nested borders don't inherit them).",
      "id": "anatomy",
      "title": "Anatomy"
     },
     {
-     "body": "(Options of `motion`: listed under \"options\".)\n\nMotionGroup:\n(Options of `motion-group`: listed under \"options\".)\n\nMotionText:\n(Options of `motion-text`: listed under \"options\".)\n\nCountUp:\n(Options of `count-up`: listed under \"options\".)\n\nMotionBorder:\n(Options of `motion-border`: listed under \"options\".)\n\nContent: `children` (MotionText: a string), CountUp `prefix` / `suffix`. API mapping (Framer\nMotion): variants → `variant` (the reference's 48 entrance / exit names, its background and its\nother effects); `whileInView` + `viewport.once` / `amount` → `trigger=\"inView\"`, `once`, `amount`;\n`animate` / `exit` / `AnimatePresence` → `trigger=\"manual\"` + `in` (exits play the entrance\nbackwards); `transition.duration` / `delay` → `duration`, `delay`; `staggerChildren` → MotionGroup /\nMotionText `stagger`; `whileHover` / `whileTap` → `variant=\"interactive\"`; `pathLength` → `draw`.\nMotionBorder (the reference's own animated border): `slotProps.primaryBorder` → `color`, `width`;\n`slotProps.secondaryBorder` → `secondaryColor` (the two lights share one ring); per-side `padding` /\nper-corner radius → the root's CSS `border-width` / `border-radius` (zero specificity, so author\nrules win). Beyond the reference: `paused` (WCAG 2.2.2). Deferred: `component` (Motion always renders a\n`div`), spring physics, custom keyframes, layout animations, scroll-linked progress (Scroll\nprogress page), exit of a Dialog, the reference's logo rings (shape-morphing,\ncustom keyframes: Motion full version, phase 1). Not applicable: `motion.*` element factories, `useAnimate`.",
+     "body": "(Options of `motion`: listed under \"options\".)\n\nMotionGroup:\n(Options of `motion-group`: listed under \"options\".)\n\nMotionText:\n(Options of `motion-text`: listed under \"options\".)\n\nCountUp:\n(Options of `count-up`: listed under \"options\".)\n\nMotionBorder:\n(Options of `motion-border`: listed under \"options\".)\n\nContent: `children` (MotionText: a string), CountUp `prefix` / `suffix`. API mapping (Framer\nMotion): variants → `variant` (the reference's 48 entrance / exit names, its background and its\nother effects); `whileInView` + `viewport.once` / `amount` → `trigger=\"inView\"`, `once`, `amount`;\n`animate` / `exit` / `AnimatePresence` → `trigger=\"manual\"` + `in` (exits play the entrance\nbackwards); `transition.duration` / `delay` → `duration`, `delay`; `staggerChildren` → MotionGroup /\nMotionText `stagger`; `whileHover` / `whileTap` → `variant=\"interactive\"`; `pathLength` → `draw`.\nMotionBorder (the reference's own animated border): `slotProps.primaryBorder` → `color`, `width`;\n`slotProps.secondaryBorder` → `secondaryColor` (the two lights share one ring); per-side `padding` /\nper-corner radius → the root's CSS `border-width` / `border-radius` (zero specificity, so author\nrules win). Beyond the reference: `paused` (WCAG 2.2.2). `viewport.margin` / `viewport.root` →\n`viewportMargin` / `viewportRoot` (HTML `data-ok-viewport-margin`, `data-ok-viewport-root=\"<id>\"`;\nfree text, so not in the option schemas: React writes the margin attribute, a ref root has none),\n`onViewportEnter` / `onViewportLeave` → `ok:motion:enter` / `leave` (also `ok:motion-group:*`,\n`ok:motion-text:*`), `component` (Motion, MotionGroup, MotionText; HTML: any element). Deferred:\nCountUp `component` / viewport options / viewport events (not in the row), spring physics, custom keyframes, layout animations, scroll-linked progress (Scroll\nprogress page), exit of a Dialog, the reference's logo rings (shape-morphing,\ncustom keyframes: Motion full version, phase 1). Not applicable: `motion.*` element factories, `useAnimate`.",
      "id": "options",
      "title": "Options"
     },
@@ -50851,7 +50983,7 @@
      "title": "Layout and tokens"
     },
     {
-     "body": "`initial` holds in-variants at their start (paused animation) and out-variants as themselves;\n`enter` plays; `exit` plays the other way (other keyframe name, so it restarts). An entered\nin-variant drops the animation at its end (`animation-fill-mode: backwards`): no transform is left.\n`inView` (IntersectionObserver; none → shown at once): plays when `amount` is visible; `once=false`\nexits when it leaves. `mount`: at once. `manual`: follows `in` / `data-ok-in`. Changing `variant`,\n`duration` or `distance` replays an entered Motion (React too). MotionGroup drives every Motion\nwhose closest group it is. Loops run while entered, `paused` stops them. Reduced motion: entrances\nand exits take 1ms, loops and the border don't run, interactive doesn't transition, CountUp shows\nthe end at once.",
+     "body": "`initial` holds in-variants at their start (paused animation) and out-variants as themselves;\n`enter` plays; `exit` plays the other way (other keyframe name, so it restarts). An entered\nin-variant drops the animation at its end (`animation-fill-mode: backwards`): no transform is left.\n`inView` (IntersectionObserver; none → shown at once): plays when `amount` is visible; `once=false`\nexits when it leaves. `viewportMargin` is the observer's `rootMargin` (invalid → none),\n`viewportRoot` its `root` (HTML: the element with that id; unknown → the browser viewport). Both\nare read when the trigger starts. Viewport events: enter once per crossing into view (the\n`amount` visible), leave when nothing is visible after an entrance; with `once`, the first\nentrance only. Only the element that owns the trigger reports (a Motion in a group doesn't);\n`mount` and `manual` triggers don't observe, so they report nothing. `mount`: at once. `manual`: follows `in` / `data-ok-in`. Changing `variant`,\n`duration` or `distance` replays an entered Motion (React too). MotionGroup drives every Motion\nwhose closest group it is. Loops run while entered, `paused` stops them. Reduced motion: entrances\nand exits take 1ms, loops and the border don't run, interactive doesn't transition, CountUp shows\nthe end at once.",
      "id": "behavior",
      "title": "Behavior"
     },
@@ -50866,7 +50998,7 @@
      "title": "Accessibility"
     },
     {
-     "body": "HTML: `ok:motion:end` (`{ state }`) on a Motion. Instances: motion / motion-group / motion-text\n`{ state, replay() }`, count-up `{ replay() }`, motion-border `{}` (width and duration only).\nReact: native `onAnimationEnd`; change the `key` to replay.",
+     "body": "HTML: `ok:motion:end` (`{ state }`) on a Motion; `ok:motion:enter` / `ok:motion:leave`\n(`{ ratio }`: the visible fraction), also `ok:motion-group:enter|leave` and\n`ok:motion-text:enter|leave`. Instances: motion / motion-group / motion-text\n`{ state, replay() }`, count-up `{ replay() }`, motion-border `{}` (width and duration only).\nReact: native `onAnimationEnd`, `onViewportEnter(entry)` / `onViewportLeave(entry)`\n(`IntersectionObserverEntry`, as Motion for React); change the `key` to replay.\nCore: `createMotionTrigger` options `margin`, `root`, `onViewport(inView, entry)`;\n`readMotionViewport(element)`.",
      "id": "events-api",
      "title": "Events / API"
     },
@@ -50876,7 +51008,7 @@
      "title": "Responsive"
     },
     {
-     "body": "Upstream: Framer Motion / Motion for React `motion` component props (motion.dev/docs/react-motion-component,\nchecked 2026-11-09), as used by the Minimals Animate page. CountUp and MotionBorder are the\nreference's own components (rows in the paragraph above).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `variants` + `initial` / `animate` / `exit` (named variants) | `variant` (the reference's names) | renamed | CSS keyframes |\n| `animate` / `exit` / `AnimatePresence` | `trigger=\"manual\"` + `in` | renamed | exit = entrance backwards |\n| `whileInView`, `viewport.once`, `viewport.amount` | `trigger=\"inView\"`, `once`, `amount` | renamed | |\n| `viewport.margin`, `viewport.root` | — | deferred | IntersectionObserver `rootMargin` / scroll root |\n| `transition.duration`, `.delay`, `staggerChildren` | `duration`, `delay`, MotionGroup / MotionText `stagger` | renamed | |\n| `transition` springs, easing, custom keyframes (`animate` objects), `style` motion values, `transformTemplate` | — | deferred (5.1) | |\n| `onAnimationStart`, `onAnimationComplete` | `ok:motion:end` / native `onAnimationEnd` | renamed | start event deferred with 5.1 |\n| `onUpdate` | — | deferred (5.1) | |\n| `onViewportEnter`, `onViewportLeave` | — | deferred | in-view events |\n| `whileHover`, `whileTap` | `variant=\"interactive\"` | renamed | springs, `onHoverStart` / `End`, `onTap*`, `tap`: deferred (5.3) |\n| `whileFocus` | — | deferred (5.3) | |\n| `drag*`, `whileDrag`, `dragControls`, `onDrag*`, `onDirectionLock`, `onPan*`, `pinch`, `whilePinch`, `propagate` | — | deferred (5.3) | |\n| `layout`, `layoutId`, `layoutDependency`, `layoutAnchor`, `layoutScroll`, `layoutRoot`, `onLayoutAnimation*` | — | deferred (5.4) | shared elements 5.5 |\n| `useScroll` (scroll progress) | — | deferred (5.2) | |\n| `inherit`, `custom` | MotionGroup sets the children's timing | renamed | dynamic variants not applicable (named CSS variants) |\n| `motion.*` element factories / `component` | always a `div` | deferred | `component` (spec Deferred) |\n| `useAnimate`, `animate()` | — | deferred (5.1) | core `animate(element, keyframes, options)` |\n| — | `paused`, MotionBorder, CountUp, background and path variants | kept | Owlky / reference additions |",
+     "body": "Upstream: Framer Motion / Motion for React `motion` component props (motion.dev/docs/react-motion-component,\nchecked 2026-11-09), as used by the Minimals Animate page. CountUp and MotionBorder are the\nreference's own components (rows in the paragraph above).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `variants` + `initial` / `animate` / `exit` (named variants) | `variant` (the reference's names) | renamed | CSS keyframes |\n| `animate` / `exit` / `AnimatePresence` | `trigger=\"manual\"` + `in` | renamed | exit = entrance backwards |\n| `whileInView`, `viewport.once`, `viewport.amount` | `trigger=\"inView\"`, `once`, `amount` | renamed | |\n| `viewport.margin`, `viewport.root` | `viewportMargin`, `viewportRoot` · `data-ok-viewport-margin`, `data-ok-viewport-root=\"<id>\"` | renamed | IntersectionObserver `rootMargin` / `root`; React root is a ref, HTML an id |\n| `transition.duration`, `.delay`, `staggerChildren` | `duration`, `delay`, MotionGroup / MotionText `stagger` | renamed | |\n| `transition` springs, easing, custom keyframes (`animate` objects), `style` motion values, `transformTemplate` | — | deferred (5.1) | |\n| `onAnimationStart`, `onAnimationComplete` | `ok:motion:end` / native `onAnimationEnd` | renamed | start event deferred with 5.1 |\n| `onUpdate` | — | deferred (5.1) | |\n| `onViewportEnter`, `onViewportLeave` | same (`IntersectionObserverEntry`) · `ok:motion:enter` / `leave` (`{ ratio }`) | kept | in-view trigger only; group and text roots too |\n| `whileHover`, `whileTap` | `variant=\"interactive\"` | renamed | springs, `onHoverStart` / `End`, `onTap*`, `tap`: deferred (5.3) |\n| `whileFocus` | — | deferred (5.3) | |\n| `drag*`, `whileDrag`, `dragControls`, `onDrag*`, `onDirectionLock`, `onPan*`, `pinch`, `whilePinch`, `propagate` | — | deferred (5.3) | |\n| `layout`, `layoutId`, `layoutDependency`, `layoutAnchor`, `layoutScroll`, `layoutRoot`, `onLayoutAnimation*` | — | deferred (5.4) | shared elements 5.5 |\n| `useScroll` (scroll progress) | — | deferred (5.2) | |\n| `inherit`, `custom` | MotionGroup sets the children's timing | renamed | dynamic variants not applicable (named CSS variants) |\n| `motion.*` element factories / `component` | `component` (Motion, MotionGroup, MotionText) · HTML: any element | renamed | factories not applicable; inline elements need `display: inline-block` for transforms |\n| `useAnimate`, `animate()` | — | deferred (5.1) | core `animate(element, keyframes, options)` |\n| — | `paused`, MotionBorder, CountUp, background and path variants | kept | Owlky / reference additions |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
@@ -71966,6 +72098,13 @@
      "title": "Decide when it plays"
     },
     {
+     "body": "With the `inView` trigger, two options change what counts as the view:\n- **`viewportMargin`:** grows the view, or shrinks it with negative values, before the visible part is measured. Write it like CSS margins in `px` or `%`. For example, `0px 0px -100px` plays the animation once the content is 100 pixels above the bottom edge. In HTML, use the `data-ok-viewport-margin` attribute.\n- **`viewportRoot`:** a scrolling container that holds the content, used as the view instead of the browser window. In React, pass a ref to it. In HTML, write its `id` in `data-ok-viewport-root`.\n\n`onViewportEnter` runs when the content enters the view, and `onViewportLeave` when it leaves. In HTML, listen for the `ok:motion:enter` and `ok:motion:leave` events. MotionGroup and MotionText have the same options and events. With `once` on (the default), only the first entrance is reported, so set `once` to `false` to hear every one.",
+     "html": "<style>\n  #feed { height: 240px; overflow: auto; }\n</style>\n\n<div id=\"feed\" tabindex=\"0\" aria-label=\"News feed\">\n  <section\n    id=\"latest\"\n    data-ok-motion\n    data-ok-variant=\"fadeInUp\"\n    data-ok-once=\"false\"\n    data-ok-viewport-root=\"feed\"\n    data-ok-viewport-margin=\"0px 0px -40px\"\n  >\n    <h2>Latest news</h2>\n  </section>\n</div>\n\n<script>\n  // Mark the section as read while it is in view\n  const latest = document.getElementById(\"latest\");\n  latest.addEventListener(\"ok:motion:enter\", () => latest.classList.add(\"seen\"));\n  latest.addEventListener(\"ok:motion:leave\", () => latest.classList.remove(\"seen\"));\n</script>",
+     "id": "viewport",
+     "react": "import { Motion } from \"@owlky/react\";\nimport { useRef, useState } from \"react\";\n\nexport function LatestNews() {\n  const feed = useRef<HTMLDivElement>(null);\n  const [seen, setSeen] = useState(false);\n  return (\n    <div ref={feed} tabIndex={0} aria-label=\"News feed\" style={{ height: 240, overflow: \"auto\" }}>\n      <Motion\n        component=\"section\"\n        variant=\"fadeInUp\"\n        once={false}\n        viewportRoot={feed}\n        viewportMargin=\"0px 0px -40px\"\n        onViewportEnter={() => setSeen(true)}\n        onViewportLeave={() => setSeen(false)}\n        className={seen ? \"seen\" : undefined}\n      >\n        <h2>Latest news</h2>\n      </Motion>\n    </div>\n  );\n}",
+     "title": "Tune the viewport and react to it"
+    },
+    {
      "body": "MotionGroup plays the Motions inside it together, one direct child after the other. `stagger` sets the time between two children, 50 milliseconds by default. The group's trigger replaces the trigger of its Motions.",
      "html": "<ul data-ok-motion-group data-ok-stagger=\"80\">\n  <li data-ok-motion data-ok-variant=\"slideInUp\">Design</li>\n  <li data-ok-motion data-ok-variant=\"slideInUp\">Develop</li>\n  <li data-ok-motion data-ok-variant=\"slideInUp\">Release</li>\n</ul>",
      "id": "group",
@@ -71978,6 +72117,13 @@
      "id": "text",
      "react": "import { MotionText } from \"@owlky/react\";\n\nexport function Title() {\n  return (\n    <h2>\n      <MotionText variant=\"fadeInUp\">Owlky moves</MotionText>\n    </h2>\n  );\n}",
      "title": "Animate text letter by letter"
+    },
+    {
+     "body": "Motion renders a `div`, MotionGroup a `div` and MotionText a `span`. Set `component` to render another element, such as a `section`, a list or a heading, so the page keeps its structure without an extra wrapper. In HTML, put the attributes on the element you need. Transforms don't apply to inline elements such as `a`: give them `display: inline-block`.",
+     "html": "<ul data-ok-motion-group>\n  <li data-ok-motion data-ok-variant=\"fadeInLeft\">Design</li>\n  <li data-ok-motion data-ok-variant=\"fadeInLeft\">Develop</li>\n</ul>\n<h2 data-ok-motion-text data-ok-variant=\"fadeIn\">Our process</h2>",
+     "id": "component",
+     "react": "import { Motion, MotionGroup, MotionText } from \"@owlky/react\";\n\nexport function Process() {\n  return (\n    <>\n      <MotionGroup component=\"ul\">\n        <Motion component=\"li\" variant=\"fadeInLeft\">\n          Design\n        </Motion>\n        <Motion component=\"li\" variant=\"fadeInLeft\">\n          Develop\n        </Motion>\n      </MotionGroup>\n      <MotionText component=\"h2\" variant=\"fadeIn\">\n        Our process\n      </MotionText>\n    </>\n  );\n}",
+     "title": "Render another element"
     },
     {
      "body": "Set `transition` on a Dialog to open its paper with a Motion entrance, such as `slideInUp` or `zoomIn`. Without it, the paper fades and scales in briefly.",
@@ -72025,7 +72171,7 @@
      "title": "Content and behavior"
     },
     {
-     "body": "- **`ok:motion:end`** fires on a Motion when its animation ends, with the state in `detail.state`: `enter` or `exit`.\n- **Instance:** `runtime.get(element, \"motion\")` returns `{ state, replay() }`. MotionGroup (`\"motion-group\"`) and MotionText (`\"motion-text\"`) have the same instance. `replay()` plays the entrance again.\n- **React:** use `onAnimationEnd`, and change the `key` to play the entrance again.",
+     "body": "- **`ok:motion:end`** fires on a Motion when its animation ends, with the state in `detail.state`: `enter` or `exit`.\n- **`ok:motion:enter` and `ok:motion:leave`** fire on a Motion with the `inView` trigger when it enters or leaves the view, with the visible fraction in `detail.ratio`. MotionGroup and MotionText fire `ok:motion-group:enter`, `ok:motion-text:enter` and the matching `leave` events. A Motion inside a group fires none: the group reports for it.\n- **Instance:** `runtime.get(element, \"motion\")` returns `{ state, replay() }`. MotionGroup (`\"motion-group\"`) and MotionText (`\"motion-text\"`) have the same instance. `replay()` plays the entrance again.\n- **React:** use `onAnimationEnd`, `onViewportEnter` and `onViewportLeave` (they receive the `IntersectionObserverEntry`), and change the `key` to play the entrance again.",
      "id": "events",
      "title": "Events and methods"
     },

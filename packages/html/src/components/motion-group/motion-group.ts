@@ -1,8 +1,16 @@
 import { type MotionState, motionGroupOptions, motionStyle, readNumber } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
 import { syncCustomProperties } from "../../runtime/style.js";
-import type { ComponentInstance } from "../../runtime/types.js";
-import { driveMotion, STATE } from "../motion/drive.js";
+import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
+import { driveMotion, type MotionViewportDetail, STATE } from "../motion/drive.js";
+
+/** Events of this component (`ok:<name>:<event>` on the root). */
+export interface MotionGroupEvents {
+  /** In view trigger: the group entered the viewport. `ratio` is its visible fraction. */
+  enter: EventSpec<MotionViewportDetail>;
+  /** In view trigger with `data-ok-once="false"`: the group left the viewport. */
+  leave: EventSpec<MotionViewportDetail>;
+}
 
 export interface MotionGroupInstance extends ComponentInstance {
   /** The motion's state (`initial`, `animate` or `exit`). */
@@ -22,12 +30,13 @@ const GROUP = "[data-ok-motion-group]";
  *          </div>
  * Behavior: its trigger drives every Motion inside it (whose closest group it is); direct
  *          children are staggered in order (`--_ok-motion-index` through CSSOM).
+ * Events:  ok:motion-group:enter / leave (`{ ratio }`) with the in-view trigger.
  */
-export const motionGroup = defineComponent<MotionGroupInstance>({
+export const motionGroup = defineComponent<MotionGroupInstance, MotionGroupEvents>({
   name: "motion-group",
   selector: GROUP,
 
-  setup(element) {
+  setup(element, { emit }) {
     let written = syncCustomProperties(
       element,
       motionStyle({ delay: readNumber(element, delay), stagger: readNumber(element, stagger) }),
@@ -50,7 +59,9 @@ export const motionGroup = defineComponent<MotionGroupInstance>({
       if (state === null) element.removeAttribute(STATE);
       else element.setAttribute(STATE, state);
     };
-    const driver = driveMotion(element, write);
+    const driver = driveMotion(element, write, (inView, detail) =>
+      emit(inView ? "enter" : "leave", detail),
+    );
     return {
       get state() {
         return driver.state;

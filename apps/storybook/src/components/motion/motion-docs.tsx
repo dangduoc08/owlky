@@ -83,6 +83,61 @@ export function Notice({ saved }: { saved: boolean }) {
 }`,
   },
   {
+    id: "viewport",
+    title: "Tune the viewport and react to it",
+    body: `With the \`inView\` trigger, two options change what counts as the view:
+- **\`viewportMargin\`:** grows the view, or shrinks it with negative values, before the visible part is measured. Write it like CSS margins in \`px\` or \`%\`. For example, \`0px 0px -100px\` plays the animation once the content is 100 pixels above the bottom edge. In HTML, use the \`data-ok-viewport-margin\` attribute.
+- **\`viewportRoot\`:** a scrolling container that holds the content, used as the view instead of the browser window. In React, pass a ref to it. In HTML, write its \`id\` in \`data-ok-viewport-root\`.
+
+\`onViewportEnter\` runs when the content enters the view, and \`onViewportLeave\` when it leaves. In HTML, listen for the \`ok:motion:enter\` and \`ok:motion:leave\` events. MotionGroup and MotionText have the same options and events. With \`once\` on (the default), only the first entrance is reported, so set \`once\` to \`false\` to hear every one.`,
+    html: `<style>
+  #feed { height: 240px; overflow: auto; }
+</style>
+
+<div id="feed" tabindex="0" aria-label="News feed">
+  <section
+    id="latest"
+    data-ok-motion
+    data-ok-variant="fadeInUp"
+    data-ok-once="false"
+    data-ok-viewport-root="feed"
+    data-ok-viewport-margin="0px 0px -40px"
+  >
+    <h2>Latest news</h2>
+  </section>
+</div>
+
+<script>
+  // Mark the section as read while it is in view
+  const latest = document.getElementById("latest");
+  latest.addEventListener("ok:motion:enter", () => latest.classList.add("seen"));
+  latest.addEventListener("ok:motion:leave", () => latest.classList.remove("seen"));
+</script>`,
+    react: `import { Motion } from "@owlky/react";
+import { useRef, useState } from "react";
+
+export function LatestNews() {
+  const feed = useRef<HTMLDivElement>(null);
+  const [seen, setSeen] = useState(false);
+  return (
+    <div ref={feed} tabIndex={0} aria-label="News feed" style={{ height: 240, overflow: "auto" }}>
+      <Motion
+        component="section"
+        variant="fadeInUp"
+        once={false}
+        viewportRoot={feed}
+        viewportMargin="0px 0px -40px"
+        onViewportEnter={() => setSeen(true)}
+        onViewportLeave={() => setSeen(false)}
+        className={seen ? "seen" : undefined}
+      >
+        <h2>Latest news</h2>
+      </Motion>
+    </div>
+  );
+}`,
+  },
+  {
     id: "group",
     title: "Animate several items",
     body: "MotionGroup plays the Motions inside it together, one direct child after the other. `stagger` sets the time between two children, 50 milliseconds by default. The group's trigger replaces the trigger of its Motions.",
@@ -115,6 +170,35 @@ export function Title() {
     <h2>
       <MotionText variant="fadeInUp">Owlky moves</MotionText>
     </h2>
+  );
+}`,
+  },
+  {
+    id: "component",
+    title: "Render another element",
+    body: "Motion renders a `div`, MotionGroup a `div` and MotionText a `span`. Set `component` to render another element, such as a `section`, a list or a heading, so the page keeps its structure without an extra wrapper. In HTML, put the attributes on the element you need. Transforms don't apply to inline elements such as `a`: give them `display: inline-block`.",
+    html: `<ul data-ok-motion-group>
+  <li data-ok-motion data-ok-variant="fadeInLeft">Design</li>
+  <li data-ok-motion data-ok-variant="fadeInLeft">Develop</li>
+</ul>
+<h2 data-ok-motion-text data-ok-variant="fadeIn">Our process</h2>`,
+    react: `import { Motion, MotionGroup, MotionText } from "@owlky/react";
+
+export function Process() {
+  return (
+    <>
+      <MotionGroup component="ul">
+        <Motion component="li" variant="fadeInLeft">
+          Design
+        </Motion>
+        <Motion component="li" variant="fadeInLeft">
+          Develop
+        </Motion>
+      </MotionGroup>
+      <MotionText component="h2" variant="fadeIn">
+        Our process
+      </MotionText>
+    </>
   );
 }`,
   },
@@ -289,8 +373,9 @@ export function ActiveUser() {
     id: "events",
     title: "Events and methods",
     body: `- **\`ok:motion:end\`** fires on a Motion when its animation ends, with the state in \`detail.state\`: \`enter\` or \`exit\`.
+- **\`ok:motion:enter\` and \`ok:motion:leave\`** fire on a Motion with the \`inView\` trigger when it enters or leaves the view, with the visible fraction in \`detail.ratio\`. MotionGroup and MotionText fire \`ok:motion-group:enter\`, \`ok:motion-text:enter\` and the matching \`leave\` events. A Motion inside a group fires none: the group reports for it.
 - **Instance:** \`runtime.get(element, "motion")\` returns \`{ state, replay() }\`. MotionGroup (\`"motion-group"\`) and MotionText (\`"motion-text"\`) have the same instance. \`replay()\` plays the entrance again.
-- **React:** use \`onAnimationEnd\`, and change the \`key\` to play the entrance again.`,
+- **React:** use \`onAnimationEnd\`, \`onViewportEnter\` and \`onViewportLeave\` (they receive the \`IntersectionObserverEntry\`), and change the \`key\` to play the entrance again.`,
   },
   {
     id: "keyboard",
@@ -336,6 +421,18 @@ const PREVIEWS = {
       </strong>
     </Preview>
   ),
+  component: () => (
+    <Preview>
+      <MotionGroup component="ul" trigger="mount">
+        <Motion component="li" variant="fadeInLeft">
+          Design
+        </Motion>
+        <Motion component="li" variant="fadeInLeft">
+          Develop
+        </Motion>
+      </MotionGroup>
+    </Preview>
+  ),
   "count-up": () => (
     <Preview>
       <strong>
@@ -373,6 +470,36 @@ const PREVIEWS = {
           html: "content",
           type: "ReactNode",
           description: "What moves. MotionText takes a string.",
+        },
+        {
+          react: "component",
+          html: "the element",
+          type: "ElementType",
+          description: "The element to render. Default: a `div` (MotionText: a `span`).",
+        },
+        {
+          react: "viewportMargin",
+          html: "data-ok-viewport-margin",
+          type: "string",
+          description: "In view: grows or shrinks the view, like CSS margins in px or %.",
+        },
+        {
+          react: "viewportRoot",
+          html: "data-ok-viewport-root",
+          type: "RefObject<Element> · id",
+          description: "In view: the scrolling container used as the view.",
+        },
+        {
+          react: "onViewportEnter",
+          html: "ok:motion:enter",
+          type: "event",
+          description: "The content entered the view.",
+        },
+        {
+          react: "onViewportLeave",
+          html: "ok:motion:leave",
+          type: "event",
+          description: "The content left the view (with `once` off).",
         },
         {
           react: "onAnimationEnd",
