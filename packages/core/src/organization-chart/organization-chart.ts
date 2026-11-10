@@ -7,6 +7,7 @@ export const ORGANIZATION_CHART_LENGTHS = {
   lineWidth: "--_ok-org-line-width",
   lineBorderRadius: "--_ok-org-line-radius",
   nodePadding: "--_ok-org-node-padding",
+  groupLeafNodesSpacing: "--_ok-org-leaf-spacing",
 } as const;
 
 export type OrganizationChartLength = keyof typeof ORGANIZATION_CHART_LENGTHS;
@@ -47,6 +48,19 @@ const TOGGLE = "[data-ok-organization-chart-toggle]";
 /** Content of a label that keeps its own clicks (`expandCollapseOnNodeClick` skips them). */
 const INTERACTIVE =
   "a[href], button, input, select, textarea, label, summary, [contenteditable], [tabindex], [role=button], [role=link], [role=menuitem], [popover]";
+
+/**
+ * A node whose children are grouped (`data-ok-group-leaf-nodes`, 4.18.3): two or more children,
+ * none with a children list of its own (lazy and collapsible branches count as branches). The
+ * stylesheet uses the same condition.
+ */
+export const ORGANIZATION_CHART_GROUPED =
+  "[data-ok-organization-chart][data-ok-group-leaf-nodes] [data-ok-organization-chart-node]:has(> [data-ok-organization-chart-children] > [data-ok-organization-chart-node] + [data-ok-organization-chart-node]):not(:has(> [data-ok-organization-chart-children] > [data-ok-organization-chart-node] > [data-ok-organization-chart-children]))";
+
+/** Whether a node's children are grouped leaves (one column joined by a line along its side). */
+export function organizationChartGrouped(node: Element): boolean {
+  return node.matches(ORGANIZATION_CHART_GROUPED);
+}
 
 /** Whether an element belongs to `root` itself (not to a chart nested in one of its labels). */
 const owns = (root: Element, element: Element) => element.closest(ROOT) === root;
@@ -278,6 +292,8 @@ export function organizationChartPathStyle(node: HTMLElement): OrganizationChart
   if (!list?.matches("[data-ok-organization-chart-children]")) return null;
   const direction = node.closest(ROOT)?.getAttribute("data-ok-direction");
   const across = direction === "left" || direction === "right";
+  if (list.parentElement && organizationChartGrouped(list.parentElement))
+    return groupedPathStyle(node, list, direction);
   const outer = list.getBoundingClientRect();
   const inner = node.getBoundingClientRect();
   const size = across ? outer.height : outer.width;
@@ -297,6 +313,38 @@ export function organizationChartPathStyle(node: HTMLElement): OrganizationChart
     "--_ok-org-path-offset": `${offset}px`,
     "--_ok-org-path-forward": offset >= 0 ? "1" : "0",
     "--_ok-org-path-round": list.childElementCount > 1 && end ? "1" : "0",
+  };
+}
+
+/**
+ * A grouped leaf's path segment: the line along the column, from the first leaf's edge (where the
+ * parent's line meets the column) to this leaf. The offset is the distance from the first leaf's
+ * near edge to this leaf's, along the column, in layout px (zoomed charts measure scaled boxes).
+ */
+function groupedPathStyle(
+  node: HTMLElement,
+  list: HTMLElement,
+  direction: string | null | undefined,
+): OrganizationChartPathStyle {
+  const first = (list.firstElementChild as Element).getBoundingClientRect();
+  const inner = node.getBoundingClientRect();
+  const across = direction === "left" || direction === "right";
+  const rtl = across && getComputedStyle(list).direction === "rtl";
+  // Left charts run their column toward the inline end; right charts toward the start.
+  const toRight = (direction === "left") !== rtl;
+  let distance: number;
+  if (direction === "bottom") distance = first.bottom - inner.bottom;
+  else if (!across) distance = inner.top - first.top;
+  else if (toRight) distance = inner.left - first.left;
+  else distance = first.right - inner.right;
+  const box = list.getBoundingClientRect();
+  const size = across ? box.width : box.height;
+  const layout = across ? list.offsetWidth : list.offsetHeight;
+  const scale = size > 0 && layout > 0 ? layout / size : 1;
+  return {
+    "--_ok-org-path-offset": `${Math.round(distance * scale * 100) / 100}px`,
+    "--_ok-org-path-forward": "1",
+    "--_ok-org-path-round": node === list.lastElementChild ? "1" : "0",
   };
 }
 
@@ -389,7 +437,12 @@ export function createOrganizationChartHighlight(root: HTMLElement): Organizatio
     subtree: true,
     childList: true,
     attributes: true,
-    attributeFilter: ["hidden", "data-ok-highlighted", "data-ok-direction"],
+    attributeFilter: [
+      "hidden",
+      "data-ok-highlighted",
+      "data-ok-direction",
+      "data-ok-group-leaf-nodes",
+    ],
   });
   const resize = new ResizeObserver(() => sync());
   resize.observe(root);

@@ -22,6 +22,7 @@ ul[data-ok-organization-chart][data-ok-direction]?[data-ok-line-color][data-ok-l
   [data-ok-line-height]? [data-ok-line-width]? [data-ok-line-border-radius]? [data-ok-node-padding]?
   [data-ok-enable-expand-collapse]? [data-ok-expand-collapse-on-node-click]?
   [data-ok-collapse-badge-threshold]? [data-ok-highlight-on-hover]? [data-ok-dim-opacity]?
+  [data-ok-edge-color-mode]? [data-ok-group-leaf-nodes]? [data-ok-group-leaf-nodes-spacing]?
   [aria-label | aria-labelledby]
   li[data-ok-organization-chart-node][data-ok-node-id]?[data-ok-highlighted]?
     [data-ok-line-color]?[data-ok-line-style]?            (the root node: React `label`;
@@ -59,6 +60,8 @@ Root: `data-ok-organization-chart`. Unknown values fall back to the default.
 | `edgeColorMode` | `data-ok-edge-color-mode="…"` | style | `default` `node` | — | `default`: a node's own `lineColor` and `lineStyle` style the lines to its children only. `node`: they style its whole branch, down to the nodes that set their own. |
 | `lineBorderRadius` | `data-ok-line-border-radius="…"` | number | number (px) or `px` `rem` `em` length | `24` | Corner radius where a connector turns: a number in px, or a CSS length. |
 | `nodePadding` | `data-ok-node-padding="…"` | number | number (px) or `px` `rem` `em` length | `4` | Space on each side of every node: a number in px, or a CSS length. |
+| `groupLeafNodes` | `data-ok-group-leaf-nodes` | flag | boolean | off | Two or more children without children of their own stack in one column, joined to their parent by a line along their side. |
+| `groupLeafNodesSpacing` | `data-ok-group-leaf-nodes-spacing="…"` | number | number (px) or `px` `rem` `em` length | `8` | Space between grouped leaf nodes: a number in px, or a CSS length. |
 | `enableExpandCollapse` | `data-ok-enable-expand-collapse` | flag | boolean | off | Nodes with children can be collapsed and expanded with their toggle button. |
 | `expandCollapseOnNodeClick` | `data-ok-expand-collapse-on-node-click` | flag | boolean | off | A click on a node's label (outside its buttons and links) also toggles its children. |
 | `collapseBadgeThreshold` | `data-ok-collapse-badge-threshold="…"` | number | number | `1` | Smallest number of hidden descendants that a collapsed node's badge shows. |
@@ -129,6 +132,22 @@ untrusted CSS. `lineStyle` keeps `solid` / `dashed` / `dotted` (other border sty
   stop at its children; `node` lets them inherit, so a node's values carry through its branch
   until a node sets its own. The chart's root node takes the chart's `lineColor` / `lineStyle`
   (React has no separate root-node props; HTML may set them on the root `li`).
+- Grouped leaves (4.18.3, `groupLeafNodes`, CSS only): a node with **two or more** children,
+  none of which has a children list (lazy and collapsible branches have one, so they count as
+  branches and a list mixing them with leaves stays a row), stacks them in one column along the
+  way the chart grows. The node becomes a grid of two equal halves (`1fr 1fr`, packed toward its
+  label) whose second half holds the children list, so the list starts on the label's center and
+  the line from the parent runs straight into a line along the column's inline start; each leaf
+  has a stub (`lineHeight / 2`) to its label at its center, the last one turning with
+  `min(lineBorderRadius, stub)`. Leaves are `groupLeafNodesSpacing` apart (default 8px,
+  `--_ok-org-leaf-spacing`, padding split on both sides so the lines stay continuous). `bottom`
+  stacks upward (`column-reverse`, the list in the first row); `left` / `right` swap the axes: the
+  grid's two equal rows put the list's block start on the label's center, the leaves form a row
+  after (left) or before (right) the node with the line along their block start and a stub down
+  to each. The condition is one selector, `ORGANIZATION_CHART_GROUPED` in core (`:has()` and
+  `:not(:has())`, no nested `:has()`). The highlighted path's segment of a grouped leaf runs from
+  the column's start to the leaf (`--_ok-org-path-offset` = the distance from the first leaf's
+  near edge, measured by core).
 - Logical properties throughout: right-to-left charts mirror.
 - Direction (ADR-0052, CSS only, same markup): `bottom` → nodes `column-reverse`, lists pad the
   block end, connector borders and radii move from the block start to the block end; `left` /
@@ -271,7 +290,10 @@ checked 2026-11-10; ADR-0051):
 | `edgeColor`, `edgeWidth` | `lineColor`, `lineWidth` | renamed | react-organizational-chart names (ADR-0036) |
 | `edgeStyle` `curved` · `orthogonal` · `straight` | rounded orthogonal connectors (`lineBorderRadius`; 0 = square) | not applicable | CSS borders draw orthogonal lines only (ADR-0036) |
 | `edgeFlow` (marching dashes on the active path) | — | not applicable | not proposed in 2.4 (edge flow animation) |
-| grouped leaves, zoom / pan | — | deferred (4.18.3, 4.18.5) | |
+| `groupLeafNodes` (default `false`) | same | kept | two or more leaves only (one leaf keeps its straight line); a list mixing leaves and branches stays a row (CSS can't move a subset of siblings into a column) |
+| `groupLeafNodesSpacing` (default 10) | same (default 8, px or a length) | kept | the 4px spacing scale |
+| grouped leaves' side-bracket connector | the same, with rounded last turn | kept | left / right charts: a row after the node (the axes swap) |
+| zoom / pan | — | deferred (4.18.5) | |
 
 ## Parity notes
 The path measures (`--_ok-org-path-*`) are CSSOM on both sides (parity ignores `style`). The search

@@ -118,6 +118,20 @@ export const Direction: StoryObj = frameworkStory({
   react: reactGroupsStory(organizationChartStories["direction"] ?? []),
 });
 
+/** Grouped leaves (4.18.3): each group sets its own direction, so no Controls here. */
+export const GroupedLeaves: StoryObj = {
+  ...frameworkStory({
+    html: snippetStory(
+      snippets,
+      "leaves",
+      ORGANIZATION_CHART_FILES["leaves"] ?? [],
+      htmlSetup(COLLAPSIBLE, true),
+    ),
+    react: reactGroupsStory(organizationChartStories["leaves"] ?? []),
+  }),
+  name: "Grouped leaves",
+};
+
 /** Expand and collapse (ADR-0051): stateful in React (`apiRef`), a page script in HTML. */
 export const Collapsible: StoryObj = {
   ...frameworkStory({

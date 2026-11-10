@@ -59,7 +59,7 @@ const firstAfter = (host: Element) =>
   );
 
 describe("organization chart snippets", () => {
-  it("covers every story group", () => expect(snippets).toHaveLength(17));
+  it("covers every story group", () => expect(snippets).toHaveLength(22));
 
   it.each(snippets)("%s: valid anatomy", (_, html) => {
     const host = mount(local(html));
@@ -157,19 +157,19 @@ describe("organization chart CSS without JavaScript", () => {
  */
 function connectorMisses(root: Element, vertical: boolean): string[] {
   const misses: string[] = [];
-  const center = (element: Element) => {
+  const center = (element: Element, across = vertical) => {
     const rect = (element.firstElementChild ?? element).getBoundingClientRect();
-    return vertical ? rect.left + rect.width / 2 : rect.top + rect.height / 2;
+    return across ? rect.left + rect.width / 2 : rect.top + rect.height / 2;
   };
-  const lines = (element: Element, which: "::before" | "::after") => {
+  const lines = (element: Element, which: "::before" | "::after", across = vertical) => {
     const style = getComputedStyle(element, which);
     if (style.content === "none") return [];
     const host = element.getBoundingClientRect();
-    const start = vertical
+    const start = across
       ? host.left + Number.parseFloat(style.left)
       : host.top + Number.parseFloat(style.top);
-    const size = Number.parseFloat(vertical ? style.width : style.height);
-    const sides: [number, number][] = vertical
+    const size = Number.parseFloat(across ? style.width : style.height);
+    const sides: [number, number][] = across
       ? [
           [Number.parseFloat(style.borderLeftWidth), start],
           [-Number.parseFloat(style.borderRightWidth), start + size],
@@ -188,10 +188,12 @@ function connectorMisses(root: Element, vertical: boolean): string[] {
     const label = parent.querySelector(":scope > [data-ok-organization-chart-label]") as Element;
     if (!near(lines(list, "::before"), center(label)))
       misses.push(`line from ${label.textContent?.trim()}`);
+    // Grouped leaves (a grid parent): each stub meets its label's center on the other axis.
+    const across = getComputedStyle(parent).display === "grid" ? !vertical : vertical;
     for (const child of list.children) {
       const own = child.querySelector(":scope > [data-ok-organization-chart-label]") as Element;
-      if (!near([...lines(child, "::before"), ...lines(child, "::after")], center(own)))
-        misses.push(`line to ${own.textContent?.trim()}`);
+      const drawn = [...lines(child, "::before", across), ...lines(child, "::after", across)];
+      if (!near(drawn, center(own, across))) misses.push(`line to ${own.textContent?.trim()}`);
     }
   }
   return misses;
@@ -323,6 +325,119 @@ describe("organization chart per-node lines (CSS only)", () => {
   it("has no axe violations", async () => {
     const host = mount(branch('data-ok-edge-color-mode="node"'));
     await expectNoAxeViolations(host);
+  });
+});
+
+describe("organization chart grouped leaves", () => {
+  const leaves = (name: string) =>
+    mount(local(snippets.find(([path]) => path.endsWith(`/leaves-${name}.html`))?.[1] as string));
+  /** The labels of a node's children, in order, by their card's name. */
+  const childLabels = (host: Element, name: string) => {
+    const parent = [...host.querySelectorAll("[data-ok-organization-chart-node]")].find((item) =>
+      item.firstElementChild?.textContent?.includes(name),
+    ) as Element;
+    return [
+      ...parent.querySelectorAll(
+        ":scope > [data-ok-organization-chart-children] > li > [data-ok-organization-chart-label]",
+      ),
+    ].map((label) => label.getBoundingClientRect());
+  };
+
+  it.each([
+    ["top", true],
+    ["bottom", true],
+    ["left", false],
+    ["rtl", false],
+    ["collapsible", true],
+  ] as const)("leaves-%s: one column per lead, every line on its label", (name, vertical) => {
+    const host = leaves(name);
+    expect(connectorMisses(rootOf(host), vertical)).toEqual([]);
+    const reports = childLabels(host, "Jonah Pereira");
+    expect(reports).toHaveLength(3);
+    const [first, second, third] = reports as [DOMRect, DOMRect, DOMRect];
+    if (vertical) {
+      // Stacked: the same start, 8px apart (the default spacing), down (or up) the column.
+      expect(Math.abs(first.left - second.left)).toBeLessThan(1);
+      const gap = name === "bottom" ? first.top - second.bottom : second.top - first.bottom;
+      expect(gap).toBeCloseTo(8, 0);
+      expect(name === "bottom" ? third.bottom < second.top : third.top > second.bottom).toBe(true);
+    } else {
+      // Left and right charts: a row after the lead, away from it.
+      expect(Math.abs(first.top - second.top)).toBeLessThan(1);
+      // (A right chart in a right-to-left page mirrors back: also toward the right.)
+      expect(second.left).toBeGreaterThan(first.right);
+    }
+  });
+
+  it("groups only two or more leaves; follows the flag and the spacing", async () => {
+    const host = mount(
+      chart('data-ok-group-leaf-nodes data-ok-group-leaf-nodes-spacing="16"').replace(
+        node("Report"),
+        node("Report") + node("Second report"),
+      ),
+    );
+    const root = rootOf(host);
+    const middle = [...root.querySelectorAll("li")].find(
+      (item) => item.firstElementChild?.textContent === "Middle",
+    ) as HTMLElement;
+    const lead = root.firstElementChild as HTMLElement;
+    // The lead's children are mixed (Middle has children): a row, not grouped.
+    expect(getComputedStyle(lead).display).toBe("flex");
+    expect(getComputedStyle(middle).display).toBe("grid");
+    start();
+    await settle();
+    expect(root.style.getPropertyValue("--_ok-org-leaf-spacing")).toBe("16px");
+    const [report, second] = childLabels(host, "Middle") as [DOMRect, DOMRect];
+    expect(second.top - report.bottom).toBeCloseTo(16, 0);
+    expect(connectorMisses(root, true)).toEqual([]);
+    // One leaf is a straight line down, as before.
+    middle.querySelector("ul > li:last-child")?.remove();
+    expect(getComputedStyle(middle).display).toBe("flex");
+    root.removeAttribute("data-ok-group-leaf-nodes");
+    await settle();
+    expect(getComputedStyle(middle).display).toBe("flex");
+  });
+
+  it("collapsible: a collapsed group draws nothing; it opens as a column", async () => {
+    const host = leaves("collapsible");
+    start();
+    await settle();
+    const priya = toggle(host, "priya");
+    expect(priya.getAttribute("aria-expanded")).toBe("false");
+    priya.click();
+    await finish();
+    expect(list(host, "priya").hidden).toBe(false);
+    expect(childLabels(host, "Priya Raman")).toHaveLength(4);
+    expect(connectorMisses(rootOf(host), true)).toEqual([]);
+    await expectNoAxeViolations(host);
+  });
+
+  it("the highlighted path runs along the column to the leaf", async () => {
+    const host = leaves("top");
+    const root = rootOf(host);
+    root.setAttribute("data-ok-highlight-on-hover", "");
+    const zara = [...root.querySelectorAll("li")].find((item) =>
+      item.firstElementChild?.textContent?.includes("Zara Okafor"),
+    ) as HTMLElement;
+    zara.setAttribute("data-ok-node-id", "zara");
+    const instance = start().get(root, "organization-chart") as unknown as {
+      highlightNode(id: string): Promise<void>;
+    };
+    await settle();
+    await instance.highlightNode("zara");
+    await settle();
+    const list = zara.parentElement as HTMLElement;
+    const first = (list.firstElementChild as Element).getBoundingClientRect();
+    const segment = getComputedStyle(zara.firstElementChild as Element, "::before");
+    expect(segment.content).not.toBe("none");
+    const top = zara.getBoundingClientRect().top + Number.parseFloat(segment.top);
+    expect(Math.abs(top - first.top)).toBeLessThan(1);
+    // It turns into Zara's label, at its center, with the last leaf's rounded corner.
+    const bottom = top + Number.parseFloat(segment.height);
+    const label = (zara.firstElementChild as Element).getBoundingClientRect();
+    expect(Math.abs(bottom - (label.top + label.height / 2))).toBeLessThan(1.5);
+    expect(segment.borderBottomLeftRadius).not.toBe("0px");
+    expect(zara.style.getPropertyValue("--_ok-org-path-round")).toBe("1");
   });
 });
 

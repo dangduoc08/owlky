@@ -679,20 +679,20 @@ describe("OrganizationChart expand and collapse", () => {
  */
 function connectorMisses(root: Element, vertical: boolean): string[] {
   const misses: string[] = [];
-  const center = (element: Element) => {
+  const center = (element: Element, across = vertical) => {
     const rect = (element.firstElementChild ?? element).getBoundingClientRect();
-    return vertical ? rect.left + rect.width / 2 : rect.top + rect.height / 2;
+    return across ? rect.left + rect.width / 2 : rect.top + rect.height / 2;
   };
   /** Centers of the lines a pseudo-element draws toward a label. */
-  const lines = (element: Element, which: "::before" | "::after") => {
+  const lines = (element: Element, which: "::before" | "::after", across = vertical) => {
     const style = getComputedStyle(element, which);
     if (style.content === "none") return [];
     const host = element.getBoundingClientRect();
-    const start = vertical
+    const start = across
       ? host.left + Number.parseFloat(style.left)
       : host.top + Number.parseFloat(style.top);
-    const size = Number.parseFloat(vertical ? style.width : style.height);
-    const sides: [number, number][] = vertical
+    const size = Number.parseFloat(across ? style.width : style.height);
+    const sides: [number, number][] = across
       ? [
           [Number.parseFloat(style.borderLeftWidth), start],
           [-Number.parseFloat(style.borderRightWidth), start + size],
@@ -711,10 +711,12 @@ function connectorMisses(root: Element, vertical: boolean): string[] {
     const label = parent.querySelector(":scope > [data-ok-organization-chart-label]") as Element;
     if (!near(lines(list, "::before"), center(label)))
       misses.push(`line from ${label.textContent}`);
+    // Grouped leaves (a grid parent): each stub meets its label's center on the other axis.
+    const across = getComputedStyle(parent).display === "grid" ? !vertical : vertical;
     for (const child of list.children) {
       const own = child.querySelector(":scope > [data-ok-organization-chart-label]") as Element;
-      if (!near([...lines(child, "::before"), ...lines(child, "::after")], center(own)))
-        misses.push(`line to ${own.textContent}`);
+      const drawn = [...lines(child, "::before", across), ...lines(child, "::after", across)];
+      if (!near(drawn, center(own, across))) misses.push(`line to ${own.textContent}`);
     }
   }
   return misses;
@@ -783,6 +785,109 @@ describe("OrganizationChart per-node lines", () => {
     expect(stem("Report").borderLeftStyle).toBe("dashed");
     expect(pseudo(nodeOf("Deep"), "::after").borderLeftColor).toBe(error());
     await expectNoAxeViolations();
+  });
+});
+
+/** A lead with two leaves and one branch with three leaves. */
+function Leaves(props: Partial<OrganizationChartProps>) {
+  return (
+    <OrganizationChart
+      aria-label="Team"
+      groupLeafNodes
+      nodeId="lead"
+      label={<span>Lead</span>}
+      {...props}
+    >
+      <OrganizationChartNode nodeId="first" label={<span>First</span>} />
+      <OrganizationChartNode nodeId="middle" label={<span>Middle</span>}>
+        <OrganizationChartNode nodeId="a" label={<span>Report A</span>} />
+        <OrganizationChartNode nodeId="b" label={<span>Report B</span>} />
+        <OrganizationChartNode nodeId="c" label={<span>Report C</span>} />
+      </OrganizationChartNode>
+    </OrganizationChart>
+  );
+}
+
+describe("OrganizationChart grouped leaves", () => {
+  const top = (text: string) => box(screen.getByText(text)).top;
+
+  it("is off by default; writes the flag and the spacing", () => {
+    const { rerender } = render(<Team />);
+    expect(chart().hasAttribute("data-ok-group-leaf-nodes")).toBe(false);
+    rerender(<Leaves groupLeafNodesSpacing={12} />);
+    expect(chart().hasAttribute("data-ok-group-leaf-nodes")).toBe(true);
+    expect(chart().getAttribute("data-ok-group-leaf-nodes-spacing")).toBe("12");
+    expect(chart().style.getPropertyValue("--_ok-org-leaf-spacing")).toBe("12px");
+  });
+
+  it("stacks two or more leaves in one column; mixed children stay a row", async () => {
+    render(<Leaves />);
+    expect(getComputedStyle(nodeOf("Middle")).display).toBe("grid");
+    expect(getComputedStyle(nodeOf("Lead")).display).toBe("flex");
+    const [a, b, c] = ["Report A", "Report B", "Report C"].map((text) =>
+      box(screen.getByText(text)),
+    );
+    expect(Math.abs((a as DOMRect).left - (b as DOMRect).left)).toBeLessThan(1);
+    expect((b as DOMRect).top).toBeGreaterThan((a as DOMRect).bottom);
+    expect((c as DOMRect).top).toBeGreaterThan((b as DOMRect).bottom);
+    // The column starts on the lead's center: its line runs straight down from the label.
+    const middle = box(nodeOf("Middle").firstElementChild as Element);
+    const column = box(
+      nodeOf("Middle").querySelector(":scope > [data-ok-organization-chart-children]") as Element,
+    );
+    expect(Math.abs(column.left - (middle.left + middle.width / 2))).toBeLessThan(1);
+    expect(connectorMisses(chart(), true)).toEqual([]);
+    await expectNoAxeViolations();
+  });
+
+  it("works in every direction", () => {
+    for (const direction of ["bottom", "left", "right"] as const) {
+      const { unmount } = render(<Leaves direction={direction} />);
+      expect(connectorMisses(chart(), direction === "bottom")).toEqual([]);
+      if (direction === "bottom") expect(top("Report B")).toBeLessThan(top("Report A"));
+      else expect(Math.abs(top("Report B") - top("Report A"))).toBeLessThan(1);
+      unmount();
+    }
+  });
+
+  it("collapsible and lazy branches are branches, not leaves", async () => {
+    render(
+      <Leaves enableExpandCollapse defaultCollapsedNodes={["middle"]}>
+        <OrganizationChartNode nodeId="first" label={<span>First</span>} />
+        <OrganizationChartNode nodeId="lazy" hasChildren label={<span>Lazy</span>} />
+      </Leaves>,
+    );
+    // The lazy node has an (empty, hidden) children list: the lead's children aren't grouped.
+    expect(getComputedStyle(nodeOf("Lead")).display).toBe("flex");
+    await expectNoAxeViolations();
+  });
+
+  it("a collapsed group opens as a column", async () => {
+    render(<Leaves enableExpandCollapse defaultCollapsedNodes={["middle"]} />);
+    const toggle = nodeOf("Middle").querySelector(
+      ":scope > [data-ok-organization-chart-toggle]",
+    ) as HTMLButtonElement;
+    await userEvent.click(toggle);
+    for (const animation of document.getAnimations()) animation.finish();
+    await settled(toggle);
+    expect(toggle.getAttribute("aria-expanded")).toBe("true");
+    expect(getComputedStyle(nodeOf("Middle")).display).toBe("grid");
+    expect(connectorMisses(chart(), true)).toEqual([]);
+  });
+
+  it("the highlighted path runs along the column", async () => {
+    const apiRef = createRef<OrganizationChartApi>() as MutableRefObject<
+      OrganizationChartApi | undefined
+    >;
+    render(<Leaves apiRef={apiRef} />);
+    await act(() => apiRef.current?.highlightNode("c"));
+    const c = nodeOf("Report C");
+    expect(c.style.getPropertyValue("--_ok-org-path-round")).toBe("1");
+    const offset = Number.parseFloat(c.style.getPropertyValue("--_ok-org-path-offset"));
+    const a = nodeOf("Report A");
+    expect(offset).toBeCloseTo(box(c).top - box(a).top, 0);
+    const segment = pseudo(c.firstElementChild as Element, "::before");
+    expect(Math.abs(box(c).top + Number.parseFloat(segment.top) - box(a).top)).toBeLessThan(1);
   });
 });
 

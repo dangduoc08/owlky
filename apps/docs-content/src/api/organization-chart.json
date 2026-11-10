@@ -289,6 +289,25 @@
       ]
      },
      {
+      "attr": "data-ok-group-leaf-nodes",
+      "description": "Two or more children without children of their own stack in one column, joined to their parent by a line along their side.",
+      "kind": "flag",
+      "name": "groupLeafNodes"
+     },
+     {
+      "attr": "data-ok-group-leaf-nodes-spacing",
+      "default": 8,
+      "description": "Space between grouped leaf nodes: a number in px, or a CSS length.",
+      "kind": "number",
+      "min": 0,
+      "name": "groupLeafNodesSpacing",
+      "units": [
+       "px",
+       "rem",
+       "em"
+      ]
+     },
+     {
       "attr": "data-ok-enable-expand-collapse",
       "description": "Nodes with children can be collapsed and expanded with their toggle button.",
       "kind": "flag",
@@ -465,6 +484,18 @@
       "description": "A click on a node's label, outside its buttons and links, also toggles it.",
       "name": "expandCollapseOnNodeClick",
       "type": "boolean"
+     },
+     {
+      "default": "false",
+      "description": "A node with two or more children that have no children of their own stacks them in one column, joined to it by a line along their side.",
+      "name": "groupLeafNodes",
+      "type": "boolean"
+     },
+     {
+      "default": "8",
+      "description": "Space between grouped leaf nodes: px, or a CSS length.",
+      "name": "groupLeafNodesSpacing",
+      "type": "string | number"
      },
      {
       "description": "The node has children that `loadChildren` loads on its first expand (collapsible charts).",

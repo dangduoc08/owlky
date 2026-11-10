@@ -2527,6 +2527,16 @@ export const organizationChartOptions = defineOptions(
       "Space on each side of every node: a number in px, or a CSS length.",
       CHART_LENGTH,
     ),
+    groupLeafNodes: flag(
+      "data-ok-group-leaf-nodes",
+      "Two or more children without children of their own stack in one column, joined to their parent by a line along their side.",
+    ),
+    groupLeafNodesSpacing: number(
+      "data-ok-group-leaf-nodes-spacing",
+      8,
+      "Space between grouped leaf nodes: a number in px, or a CSS length.",
+      CHART_LENGTH,
+    ),
     enableExpandCollapse: flag(
       "data-ok-enable-expand-collapse",
       "Nodes with children can be collapsed and expanded with their toggle button.",
@@ -2563,6 +2573,8 @@ export interface OrganizationChartAnatomyOptions {
   edgeColorMode?: OrganizationChartEdgeColorMode | undefined;
   lineBorderRadius?: number | string | undefined;
   nodePadding?: number | string | undefined;
+  groupLeafNodes?: boolean | undefined;
+  groupLeafNodesSpacing?: number | string | undefined;
   enableExpandCollapse?: boolean | undefined;
   expandCollapseOnNodeClick?: boolean | undefined;
   collapseBadgeThreshold?: number | undefined;

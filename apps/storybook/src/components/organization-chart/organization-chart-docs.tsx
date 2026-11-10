@@ -217,6 +217,39 @@ export function SidewaysCompany() {
 }`,
   },
   {
+    id: "group-leaves",
+    title: "Group leaf nodes",
+    body: "A wide level of people without reports makes a chart wide. Set `groupLeafNodes` to stack them in one column under their parent instead, joined by a line along their side. A node's children are grouped when there are two or more of them and none has children of its own. A level that mixes leaves with branches keeps its row, and a single child keeps its straight line. Branches that collapse or load their children on demand count as branches. `groupLeafNodesSpacing` sets the space between grouped leaves: 8 pixels by default, or a string with a unit. Grouping follows the `direction`: the column grows upward in a `bottom` chart, and in `left` and `right` charts the leaves form a row after their parent. In HTML, the spacing needs the script, like the other lengths. Grouping itself is CSS only.",
+    html: `<ul data-ok-organization-chart data-ok-line-color="divider" data-ok-line-style="solid"
+    data-ok-group-leaf-nodes aria-label="Design team">
+  <li data-ok-organization-chart-node>
+    <div data-ok-organization-chart-label>Jonah Pereira, design lead</div>
+    <ul data-ok-organization-chart-children>
+      <li data-ok-organization-chart-node>
+        <div data-ok-organization-chart-label>Aiko Tanaka</div>
+      </li>
+      <li data-ok-organization-chart-node>
+        <div data-ok-organization-chart-label>Oskar Berg</div>
+      </li>
+      <li data-ok-organization-chart-node>
+        <div data-ok-organization-chart-label>Zara Okafor</div>
+      </li>
+    </ul>
+  </li>
+</ul>`,
+    react: `import { OrganizationChart, OrganizationChartNode } from "@owlky/react";
+
+export function DesignTeam() {
+  return (
+    <OrganizationChart aria-label="Design team" groupLeafNodes label="Jonah Pereira, design lead">
+      <OrganizationChartNode label="Aiko Tanaka" />
+      <OrganizationChartNode label="Oskar Berg" />
+      <OrganizationChartNode label="Zara Okafor" />
+    </OrganizationChart>
+  );
+}`,
+  },
+  {
     id: "collapse",
     title: "Collapse and expand nodes",
     body: 'Set `enableExpandCollapse` to give every node with children a toggle button on the bottom edge of its label. The button collapses the node\'s children and expands them again, with an animation. A collapsed node draws no lines below it, and its button shows how many nodes it hides. Every node starts expanded: list the ids of the nodes to collapse at first in `defaultCollapsedNodes`, or control them with `collapsedNodes` and `onCollapsedNodesChange`. Give each node a `nodeId` and a `toggleLabel`, such as "Priya Raman\'s reports", which names its button for screen readers. Set `expandCollapseOnNodeClick` to also toggle a node when someone clicks its label, outside its own buttons and links. In HTML, the markup holds the state: a collapsed node\'s children list has `hidden` and its button has `aria-expanded="false"`. The script toggles both.',
@@ -584,6 +617,15 @@ const PREVIEWS = {
           <OrganizationChartNode label="Leila Haddad, marketing" />
         </OrganizationChart>
       </Scrollbar>
+    </Preview>
+  ),
+  "group-leaves": () => (
+    <Preview>
+      <OrganizationChart aria-label="Design team" groupLeafNodes label="Jonah Pereira, design lead">
+        <OrganizationChartNode label="Aiko Tanaka" />
+        <OrganizationChartNode label="Oskar Berg" />
+        <OrganizationChartNode label="Zara Okafor" />
+      </OrganizationChart>
     </Preview>
   ),
   collapse: () => (

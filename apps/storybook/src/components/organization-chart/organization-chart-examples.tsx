@@ -10,7 +10,7 @@ import {
 } from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
 import type { GroupFiles } from "../shared/snippets.js";
-import { CEO, PEOPLE, type Person, type PersonNode } from "./organization-chart-data.js";
+import { CEO, PEOPLE, type Person, type PersonNode, PRODUCT } from "./organization-chart-data.js";
 
 /** A simple node: the name and the role in a tinted box (`.sb-org-simple`, story CSS). */
 export function SimpleCard({ person }: { person: Person }) {
@@ -248,6 +248,70 @@ organizationChartStories["direction"] = [
   },
 ];
 
+/** The product team with grouped leaves, from the given side; collapsible with toggles. */
+function GroupedChart({
+  name,
+  direction,
+  dir,
+  collapsible,
+}: {
+  name: string;
+  direction?: OrganizationChartDirection;
+  dir?: "rtl";
+  collapsible?: boolean;
+}) {
+  return (
+    <Scrollbar className="sb-org-scroll" aria-label={`${name}, scrollable`} dir={dir}>
+      <OrganizationChart
+        aria-label={name}
+        direction={direction}
+        groupLeafNodes
+        lineColor="primary"
+        lineHeight={24}
+        {...(collapsible
+          ? {
+              enableExpandCollapse: true,
+              defaultCollapsedNodes: ["priya"],
+              nodeId: PRODUCT.id,
+              toggleLabel: `${PRODUCT.name}'s reports`,
+            }
+          : {})}
+        label={<SimpleCard person={PRODUCT} />}
+      >
+        {PRODUCT.children?.map((child) =>
+          collapsible ? (
+            <TeamNode key={child.id} person={child} />
+          ) : (
+            <SimpleNode key={child.id} person={child} />
+          ),
+        )}
+      </OrganizationChart>
+    </Scrollbar>
+  );
+}
+GroupedChart.displayName = "GroupedChart";
+
+/** Grouped leaves (4.18.3): the product team's reports in one column under each lead. */
+organizationChartStories["leaves"] = [
+  { title: "Top", content: <GroupedChart name="Grouped leaves" /> },
+  {
+    title: "Bottom",
+    content: <GroupedChart name="Grouped leaves, growing upward" direction="bottom" />,
+  },
+  {
+    title: "Left",
+    content: <GroupedChart name="Grouped leaves, growing to the right" direction="left" />,
+  },
+  {
+    title: "Right, right to left",
+    content: <GroupedChart name="Grouped leaves, right to left" direction="right" dir="rtl" />,
+  },
+  {
+    title: "Collapsible",
+    content: <GroupedChart name="Collapsible grouped leaves" collapsible />,
+  },
+];
+
 export const ORGANIZATION_CHART_FILES: Record<string, GroupFiles> = {
   simple: [["Simple", "group"]],
   lines: [
@@ -264,6 +328,13 @@ export const ORGANIZATION_CHART_FILES: Record<string, GroupFiles> = {
     ["Right", "right"],
     ["Left, right to left", "rtl"],
     ["Left, collapsible", "collapsible"],
+  ],
+  leaves: [
+    ["Top", "top"],
+    ["Bottom", "bottom"],
+    ["Left", "left"],
+    ["Right, right to left", "rtl"],
+    ["Collapsible", "collapsible"],
   ],
 };
 

@@ -17,19 +17,19 @@ function connectorGaps(page: Page) {
       const root = list.closest("[data-ok-organization-chart]") as Element;
       const direction = root.getAttribute("data-ok-direction");
       const vertical = direction !== "left" && direction !== "right";
-      const center = (label: Element) => {
+      const center = (label: Element, across = vertical) => {
         const box = (label.firstElementChild ?? label).getBoundingClientRect();
-        return vertical ? box.left + box.width / 2 : box.top + box.height / 2;
+        return across ? box.left + box.width / 2 : box.top + box.height / 2;
       };
-      const lines = (element: Element, which: string) => {
+      const lines = (element: Element, which: string, across = vertical) => {
         const style = getComputedStyle(element, which);
         if (style.content === "none") return [];
         const host = element.getBoundingClientRect();
-        const start = vertical
+        const start = across
           ? host.left + Number.parseFloat(style.left)
           : host.top + Number.parseFloat(style.top);
-        const size = Number.parseFloat(vertical ? style.width : style.height);
-        const sides: [number, number][] = vertical
+        const size = Number.parseFloat(across ? style.width : style.height);
+        const sides: [number, number][] = across
           ? [
               [Number.parseFloat(style.borderLeftWidth), start],
               [-Number.parseFloat(style.borderRightWidth), start + size],
@@ -45,9 +45,15 @@ function connectorGaps(page: Page) {
       const labelOf = (node: Element) =>
         node.querySelector(":scope > [data-ok-organization-chart-label]") as Element;
       gaps.push(gap(lines(list, "::before"), center(labelOf(list.parentElement as Element))));
+      // Grouped leaves (a grid parent): each stub meets its label's center on the other axis.
+      const parent = list.parentElement as Element;
+      const across = getComputedStyle(parent).display === "grid" ? !vertical : vertical;
       for (const child of list.children)
         gaps.push(
-          gap([...lines(child, "::before"), ...lines(child, "::after")], center(labelOf(child))),
+          gap(
+            [...lines(child, "::before", across), ...lines(child, "::after", across)],
+            center(labelOf(child), across),
+          ),
         );
     }
     return gaps;
@@ -67,6 +73,7 @@ for (const impl of implementations) {
         "group",
         "lines",
         "direction",
+        "grouped-leaves",
         "collapsible",
         "search",
         "lazy-children",
@@ -250,6 +257,56 @@ for (const impl of implementations) {
         };
       });
       expect(lines).toEqual({ engineer: true, lead: true, priya: true, sofia: true });
+    });
+
+    test("grouped leaves stack in one column per lead and open as one", async ({
+      page,
+      isMobile,
+    }) => {
+      await openStory(page, storyId(impl, "organization-chart", "grouped-leaves"));
+      const column = (chart: string, names: string[]) =>
+        Promise.all(
+          names.map((name) =>
+            page
+              .getByRole("list", { name: chart, exact: true })
+              .getByText(name, { exact: true })
+              .evaluate((element) => {
+                const box = element.getBoundingClientRect();
+                return { left: box.left, top: box.top, bottom: box.bottom };
+              }),
+          ),
+        );
+      const [aiko, oskar, zara] = await column("Grouped leaves", [
+        "Aiko Tanaka",
+        "Oskar Berg",
+        "Zara Okafor",
+      ]);
+      expect(oskar?.top).toBeGreaterThan(aiko?.bottom ?? 0);
+      expect(zara?.top).toBeGreaterThan(oskar?.bottom ?? 0);
+      // Left charts: a row after the lead.
+      const [left1, left2] = await column("Grouped leaves, growing to the right", [
+        "Aiko Tanaka",
+        "Oskar Berg",
+      ]);
+      expect(Math.abs((left1?.top ?? 0) - (left2?.top ?? 0))).toBeLessThan(1);
+      expect(left2?.left).toBeGreaterThan(left1?.left ?? 0);
+      // Collapsible: Priya's group starts collapsed and opens as a column.
+      const chart = page.getByRole("list", { name: "Collapsible grouped leaves" });
+      const priya = chart.locator(
+        '[data-ok-node-id="priya"] > [data-ok-organization-chart-toggle]',
+      );
+      await expect(priya).toHaveAccessibleName("Priya Raman's reports 4");
+      await priya.scrollIntoViewIfNeeded();
+      if (isMobile) await priya.tap();
+      else await priya.click();
+      await expect(chart.getByText("Noah Brennan", { exact: true })).toBeVisible();
+      const [elias, noah] = await column("Collapsible grouped leaves", [
+        "Elias Novak",
+        "Noah Brennan",
+      ]);
+      expect(noah?.top).toBeGreaterThan(elias?.bottom ?? 0);
+      const gaps = await connectorGaps(page);
+      for (const gap of gaps) expect(gap).toBeLessThan(1.5);
     });
 
     test("a collapsible left-to-right chart toggles toward its children", async ({

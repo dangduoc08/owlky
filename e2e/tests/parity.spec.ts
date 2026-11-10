@@ -90,6 +90,7 @@ const pairs: [component: string, story: string][] = [
   ["organization-chart", "group"],
   ["organization-chart", "lines"],
   ["organization-chart", "direction"],
+  ["organization-chart", "grouped-leaves"],
   ["organization-chart", "collapsible"],
   ["organization-chart", "search"],
   ["organization-chart", "lazy-children"],

@@ -240,6 +240,13 @@ export interface OrganizationChartProps
   lineBorderRadius?: number | string | undefined;
   /** Space on each side of every node: px, or a CSS length. Default `4`. */
   nodePadding?: number | string | undefined;
+  /**
+   * A node with two or more children that have no children of their own stacks them in one
+   * column, joined to it by a line along their side. Default `false`.
+   */
+  groupLeafNodes?: boolean | undefined;
+  /** Space between grouped leaf nodes: px, or a CSS length. Default `8`. */
+  groupLeafNodesSpacing?: number | string | undefined;
   /** Nodes with children get a toggle button that collapses and expands them. Default `false`. */
   enableExpandCollapse?: boolean | undefined;
   /** A click on a node's label, outside its buttons and links, also toggles it. Default `false`. */
@@ -296,6 +303,8 @@ export const OrganizationChart = forwardRef<HTMLUListElement, OrganizationChartP
       edgeColorMode,
       lineBorderRadius,
       nodePadding,
+      groupLeafNodes = false,
+      groupLeafNodesSpacing,
       enableExpandCollapse = false,
       expandCollapseOnNodeClick = false,
       collapseBadgeEnabled = true,
@@ -508,7 +517,7 @@ export const OrganizationChart = forwardRef<HTMLUListElement, OrganizationChartP
       [enableExpandCollapse, collapsedSet, loaded, loading, collapseBadgeEnabled, register],
     );
 
-    const lengths = { lineHeight, lineWidth, lineBorderRadius, nodePadding };
+    const lengths = { lineHeight, lineWidth, lineBorderRadius, nodePadding, groupLeafNodesSpacing };
     const look = { ...lengths, dimOpacity };
     return (
       <ul
@@ -519,6 +528,7 @@ export const OrganizationChart = forwardRef<HTMLUListElement, OrganizationChartP
           lineColor,
           lineStyle,
           edgeColorMode,
+          groupLeafNodes,
           enableExpandCollapse,
           expandCollapseOnNodeClick,
           collapseBadgeThreshold,

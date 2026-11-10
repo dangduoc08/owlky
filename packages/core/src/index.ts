@@ -1102,6 +1102,7 @@ export {
 export {
   createOrganizationChartController,
   createOrganizationChartHighlight,
+  ORGANIZATION_CHART_GROUPED,
   ORGANIZATION_CHART_LENGTHS,
   type OrganizationChartAction,
   type OrganizationChartController,
@@ -1114,6 +1115,7 @@ export {
   organizationChartDepth,
   organizationChartDescendants,
   organizationChartExpanded,
+  organizationChartGrouped,
   organizationChartHighlighted,
   organizationChartList,
   organizationChartLoaded,

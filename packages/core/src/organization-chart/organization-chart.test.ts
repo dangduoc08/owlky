@@ -15,6 +15,7 @@ import {
   organizationChartDepth,
   organizationChartDescendants,
   organizationChartExpanded,
+  organizationChartGrouped,
   organizationChartHighlighted,
   organizationChartList,
   organizationChartLoaded,
@@ -170,6 +171,7 @@ describe("organizationChartStyle", () => {
       "lineWidth",
       "lineBorderRadius",
       "nodePadding",
+      "groupLeafNodesSpacing",
     ]);
     for (const name of Object.values(ORGANIZATION_CHART_LENGTHS))
       expect(name).toMatch(/^--_ok-org-/);
@@ -449,6 +451,58 @@ describe("organization chart lineage helpers", () => {
     const root = mountRow();
     (root.parentElement as HTMLElement).style.transform = "scale(0.5)";
     expect(pathOf(root, "x")?.["--_ok-org-path-offset"]).toBe("100px");
+  });
+
+  it("grouped leaves: two or more children without lists; measured along the column", () => {
+    /** A lead over three leaves 100px, 50px and 150px long, stacked the way `direction` grows. */
+    const mountGroup = (direction: string, dir = "ltr") => {
+      const across = direction === "left" || direction === "right";
+      const flow = across
+        ? direction === "right"
+          ? "row-reverse"
+          : "row"
+        : direction === "bottom"
+          ? "column-reverse"
+          : "column";
+      const size = (px: number) =>
+        across ? `width:${px}px;height:40px` : `height:${px}px;width:40px`;
+      const child = (id: string, px: number) =>
+        `<li data-ok-organization-chart-node data-ok-node-id="${id}" style="flex:none;padding:0;${size(px)}"><div data-ok-organization-chart-label>${id}</div></li>`;
+      const host = document.createElement("div");
+      // Test markup only (library code never uses innerHTML).
+      host.innerHTML = `<ul data-ok-organization-chart data-ok-group-leaf-nodes data-ok-direction="${direction}" aria-label="Group"><li data-ok-organization-chart-node data-ok-node-id="lead"><div data-ok-organization-chart-label>lead</div><ul data-ok-organization-chart-children dir="${dir}" style="display:flex;flex-direction:${flow};padding:0;width:max-content">${child("x", 100)}${child("y", 50)}${child("z", 150)}</ul></li></ul>`;
+      document.body.append(host);
+      return host.firstElementChild as HTMLElement;
+    };
+    for (const [direction, dir] of [
+      ["top", "ltr"],
+      ["bottom", "ltr"],
+      ["left", "ltr"],
+      ["left", "rtl"],
+      ["right", "ltr"],
+      ["right", "rtl"],
+    ]) {
+      const root = mountGroup(direction as string, dir);
+      expect(organizationChartGrouped(byId(root, "lead"))).toBe(true);
+      expect(pathOf(root, "x")?.["--_ok-org-path-offset"]).toBe("0px");
+      expect(pathOf(root, "y")).toEqual({
+        "--_ok-org-path-offset": "100px",
+        "--_ok-org-path-forward": "1",
+        "--_ok-org-path-round": "0",
+      });
+      expect(pathOf(root, "z")?.["--_ok-org-path-offset"]).toBe("150px");
+      expect(pathOf(root, "z")?.["--_ok-org-path-round"]).toBe("1");
+      // Layout px inside a scaled container.
+      (root.parentElement as HTMLElement).style.transform = "scale(0.5)";
+      expect(pathOf(root, "y")?.["--_ok-org-path-offset"]).toBe("100px");
+      document.body.replaceChildren();
+    }
+    // One leaf, a branch among the children, or no flag: not grouped.
+    const root = mountChart();
+    expect(organizationChartGrouped(byId(root, "lead"))).toBe(false);
+    root.setAttribute("data-ok-group-leaf-nodes", "");
+    expect(organizationChartGrouped(byId(root, "lead"))).toBe(false);
+    expect(organizationChartGrouped(byId(root, "c"))).toBe(false);
   });
 
   it("an only child sits on its parent's line; hidden lists measure nothing", () => {
