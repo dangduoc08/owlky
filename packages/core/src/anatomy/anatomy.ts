@@ -2563,6 +2563,20 @@ export const treeViewOptions = defineOptions("tree-view", "data-ok-tree-view", {
     "Each item shows a checkbox for its selection.",
   ),
   disableSelection: flag("data-ok-disable-selection", "Items can't be selected (only expanded)."),
+  disabledItemsFocusable: flag(
+    "data-ok-disabled-items-focusable",
+    "Disabled items stay in the arrow-key focus order.",
+  ),
+  itemsReordering: flag(
+    "data-ok-items-reordering",
+    "Items can be dragged to a new position (or moved with Ctrl / ⌘ + Shift + arrows).",
+  ),
+  itemChildrenIndentation: number(
+    "data-ok-item-children-indentation",
+    12,
+    "Indentation of each level of children: px or a CSS length.",
+    { min: 0, units: ["px", "rem", "em"] },
+  ),
   expanded: state("aria-expanded", "Expanded items (`expandedItems`).", "expand"),
   selected: state("aria-selected", "Selected items (`selectedItems`).", "select"),
 });
@@ -2573,11 +2587,24 @@ export interface TreeViewAnatomyOptions {
   multiSelect?: boolean | undefined;
   checkboxSelection?: boolean | undefined;
   disableSelection?: boolean | undefined;
+  disabledItemsFocusable?: boolean | undefined;
+  itemsReordering?: boolean | undefined;
+  itemChildrenIndentation?: number | string | undefined;
 }
 
 /** `data-ok-*` attributes of a tree view (`ul[role=tree]`). */
 export const treeViewAttributes = (options: TreeViewAnatomyOptions = {}): DataAttributes =>
   optionAttributes(treeViewOptions, { ...options });
+
+/** The indentation as `--_ok-tree-indent` (a number is px), or nothing when invalid. */
+export const treeViewStyle = (
+  indentation: unknown,
+): Partial<Record<"--_ok-tree-indent", string>> => {
+  const value = parseNumber(treeViewOptions.options.itemChildrenIndentation, indentation);
+  return value === undefined
+    ? {}
+    : { "--_ok-tree-indent": typeof value === "number" ? `${value}px` : value };
+};
 
 // --- Autocomplete -------------------------------------------------------------------------------
 

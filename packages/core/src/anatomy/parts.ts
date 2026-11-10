@@ -1685,8 +1685,34 @@ export interface TransferListParts {
 
 /** Tree view: parts, states, values and triggers. */
 export interface TreeViewParts {
+  /** On an item: the item can't be selected (it still expands). */
+  "data-ok-disable-selection": State;
+  /** Set by the controller on the item being dragged. */
+  "data-ok-dragging": State;
+  /** Set by the controller on the item a dragged item would land on: before it, after it or inside it. */
+  "data-ok-drop-position": Value<"before" | "after" | "inside">;
+  /** On an item: its label can be edited (F2, double click); on the tree: every item's. `"false"` opts an item out. */
+  "data-ok-editable": Value<"" | "false">;
+  /** On an item: its children failed to load. */
+  "data-ok-error": State;
+  /** Set on the label input once saved or cancelled, so its blur doesn't save it again. */
+  "data-ok-finished": State;
+  /** On the tree: highlights the items whose label contains this text, and their ancestors. */
+  "data-ok-highlight": Value<string>;
+  /** Set on an item whose label matches the highlight. */
+  "data-ok-highlighted": State;
+  /** Set on an ancestor of an item that matches the highlight. */
+  "data-ok-highlighted-ancestor": State;
   /** On an item: its id. */
   "data-ok-item-id": Value<string>;
+  /** On an item: children to load from the data source when it expands. */
+  "data-ok-lazy": State;
+  /** On an item, with `data-ok-items-reordering`: `"false"` keeps it in place. */
+  "data-ok-reorderable": Value<"false">;
+  /** On the tree: `parents`, `descendants` or both: how a selection spreads. */
+  "data-ok-selection-propagation": Value<string>;
+  /** The icon of an item whose children failed to load. */
+  "data-ok-tree-error-icon": Part<"svg">;
   /** The default expand icon. */
   "data-ok-tree-chevron": Part;
   /** The icon of an expanded item. */
@@ -1705,6 +1731,10 @@ export interface TreeViewParts {
   "data-ok-tree-item-icon": Part;
   /** The label of an item. */
   "data-ok-tree-item-label": Part;
+  /** The input that replaces the label while it is edited. */
+  "data-ok-tree-item-label-input": Part<"input">;
+  /** Why an item's children couldn't load, in its row. */
+  "data-ok-tree-item-error": Part<"span">;
 }
 
 /** Upload: parts, states, values and triggers. */

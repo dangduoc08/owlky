@@ -480,6 +480,7 @@
   "data-ok-drawer-content",
   "data-ok-drawer-open",
   "data-ok-drop",
+  "data-ok-drop-position",
   "data-ok-duration",
   "data-ok-easing",
   "data-ok-easing-exit",
@@ -534,6 +535,7 @@
   "data-ok-filter-mode",
   "data-ok-filter-selected-options",
   "data-ok-filterable",
+  "data-ok-finished",
   "data-ok-finite",
   "data-ok-fit",
   "data-ok-fixed-week-number",
@@ -622,7 +624,10 @@
   "data-ok-hide-descendant-count",
   "data-ok-hide-sort-icon",
   "data-ok-hideable",
+  "data-ok-highlight",
   "data-ok-highlight-selected-only",
+  "data-ok-highlighted",
+  "data-ok-highlighted-ancestor",
   "data-ok-holidays",
   "data-ok-horizontal",
   "data-ok-hotkey",
@@ -658,10 +663,12 @@
   "data-ok-interactive-layer-ids",
   "data-ok-invert",
   "data-ok-invisible",
+  "data-ok-item-children-indentation",
   "data-ok-item-id",
   "data-ok-item-index",
   "data-ok-items-after-collapse",
   "data-ok-items-before-collapse",
+  "data-ok-items-reordering",
   "data-ok-just-dragged",
   "data-ok-keep-current-model",
   "data-ok-keep-current-modified-model",
@@ -690,6 +697,7 @@
   "data-ok-language",
   "data-ok-latitude",
   "data-ok-layout",
+  "data-ok-lazy",
   "data-ok-lazy-loading",
   "data-ok-lazy-loading-request-throttle-ms",
   "data-ok-leave-delay",
@@ -972,6 +980,7 @@
   "data-ok-ready",
   "data-ok-reduce-animations",
   "data-ok-render-world-copies",
+  "data-ok-reorderable",
   "data-ok-required",
   "data-ok-reset-highlight-on-mouse-leave",
   "data-ok-resizable",
@@ -1021,6 +1030,7 @@
   "data-ok-selected",
   "data-ok-selection",
   "data-ok-selection-follows-focus",
+  "data-ok-selection-propagation",
   "data-ok-severity",
   "data-ok-shape",
   "data-ok-share",
@@ -1248,13 +1258,16 @@
   "data-ok-tree-chevron",
   "data-ok-tree-collapse-icon",
   "data-ok-tree-data",
+  "data-ok-tree-error-icon",
   "data-ok-tree-expand-icon",
   "data-ok-tree-item",
   "data-ok-tree-item-checkbox",
   "data-ok-tree-item-content",
+  "data-ok-tree-item-error",
   "data-ok-tree-item-group",
   "data-ok-tree-item-icon",
   "data-ok-tree-item-label",
+  "data-ok-tree-item-label-input",
   "data-ok-tree-view",
   "data-ok-trigger",
   "data-ok-type",
@@ -58291,6 +58304,11 @@
       "value": "color-mix(in srgb, #919EAB 8%, transparent)"
      },
      {
+      "dark": "#1C252E",
+      "light": "#FFFFFF",
+      "name": "--ok-bg-paper"
+     },
+     {
       "name": "--ok-duration-shortest",
       "value": "150ms"
      },
@@ -58311,8 +58329,25 @@
       "value": "500"
      },
      {
+      "name": "--ok-font-weight-semibold",
+      "value": "600"
+     },
+     {
+      "name": "--ok-palette-error-main",
+      "value": "#FF5630"
+     },
+     {
+      "dark": "#FFAC82",
+      "light": "#B71D18",
+      "name": "--ok-palette-error-text"
+     },
+     {
       "name": "--ok-palette-grey-500-channel",
       "value": "145 158 171"
+     },
+     {
+      "name": "--ok-palette-primary-main",
+      "value": "#00A76F"
      },
      {
       "name": "--ok-palette-primary-main-channel",
@@ -58324,12 +58359,20 @@
       "name": "--ok-palette-primary-text"
      },
      {
+      "name": "--ok-palette-warning-main-channel",
+      "value": "255 171 0"
+     },
+     {
       "name": "--ok-radius-full",
       "value": "9999px"
      },
      {
       "name": "--ok-radius-md",
       "value": "8px"
+     },
+     {
+      "name": "--ok-radius-sm",
+      "value": "6px"
      },
      {
       "name": "--ok-radius-xs",
@@ -58351,6 +58394,14 @@
      {
       "name": "--ok-typography-body2-line-height",
       "value": "1.5714"
+     },
+     {
+      "name": "--ok-typography-caption-font-size",
+      "value": "0.75rem"
+     },
+     {
+      "name": "--ok-typography-caption-line-height",
+      "value": "1.5"
      }
     ],
     "entries": [
@@ -58365,13 +58416,73 @@
          "name": "ok:tree-view:expand"
         },
         {
+         "cancelable": false,
+         "description": "An item's row was clicked.",
+         "detail": "{ itemId: string; }",
+         "name": "ok:tree-view:itemclick"
+        },
+        {
+         "cancelable": false,
+         "description": "An item got the focus.",
+         "detail": "{ itemId: string; }",
+         "name": "ok:tree-view:itemfocus"
+        },
+        {
+         "cancelable": true,
+         "description": "Before an edited label is saved. Call `preventDefault()` to keep the old one.",
+         "detail": "{ itemId: string; label: string; }",
+         "name": "ok:tree-view:labelchange"
+        },
+        {
+         "cancelable": true,
+         "description": "Before an item moves. Call `preventDefault()` to refuse (MUI `canMoveItemToNewPosition`).",
+         "detail": "{ itemId: string; oldPosition: TreeItemPosition; newPosition: TreeItemPosition; }",
+         "name": "ok:tree-view:move"
+        },
+        {
+         "cancelable": false,
+         "description": "After an item moved.",
+         "detail": "{ itemId: string; oldPosition: TreeItemPosition; newPosition: TreeItemPosition; }",
+         "name": "ok:tree-view:positionchange"
+        },
+        {
          "cancelable": true,
          "description": "Before the selection changes. Call `preventDefault()` to keep the current one.",
          "detail": "{ selectedItems: string[]; }",
          "name": "ok:tree-view:select"
+        },
+        {
+         "cancelable": false,
+         "description": "After an item's selection changed, once per item.",
+         "detail": "{ itemId: string; selected: boolean; }",
+         "name": "ok:tree-view:selectiontoggle"
         }
        ],
        "methods": [
+        {
+         "description": "Collapses every item.",
+         "kind": "method",
+         "name": "collapseAll",
+         "type": "() => void"
+        },
+        {
+         "description": "Expands every item that has children.",
+         "kind": "method",
+         "name": "expandAll",
+         "type": "() => void"
+        },
+        {
+         "description": "Expands an item and all its descendants.",
+         "kind": "method",
+         "name": "expandSubtree",
+         "type": "(itemId: string) => void"
+        },
+        {
+         "description": "Expands the items down to `depth` levels (1: the root's items) and collapses the rest.",
+         "kind": "method",
+         "name": "expandToDepth",
+         "type": "(depth: number) => void"
+        },
         {
          "description": "Ids of the expanded items.",
          "kind": "property",
@@ -58379,10 +58490,40 @@
          "type": "string[]"
         },
         {
+         "description": "Moves the focus to an item.",
+         "kind": "method",
+         "name": "focusItem",
+         "type": "(itemId: string) => void"
+        },
+        {
+         "description": "The ids of an item's children (`null`: the root's), in order.",
+         "kind": "method",
+         "name": "getItemOrderedChildrenIds",
+         "type": "(itemId: string | null) => string[]"
+        },
+        {
+         "description": "Highlights the items whose label contains `query`, and their ancestors (`\"\"` clears).",
+         "kind": "method",
+         "name": "highlight",
+         "type": "(query: string) => void"
+        },
+        {
          "description": "Ids of the selected items.",
          "kind": "property",
          "name": "selectedItems",
          "type": "string[]"
+        },
+        {
+         "description": "Loads children on expand from `source` (items with `data-ok-lazy`), and the root's items if the tree is empty.",
+         "kind": "method",
+         "name": "setDataSource",
+         "type": "(source: TreeViewDataSource | null) => void"
+        },
+        {
+         "description": "Starts (or with `null`, stops) editing an item's label.",
+         "kind": "method",
+         "name": "setEditedItem",
+         "type": "(itemId: string | null) => void"
         },
         {
          "description": "Expands or collapses an item without emitting events.",
@@ -58395,6 +58536,12 @@
          "kind": "method",
          "name": "setSelected",
          "type": "(itemIds: readonly string[]) => void"
+        },
+        {
+         "description": "Changes an item's label text without emitting events.",
+         "kind": "method",
+         "name": "updateItemLabel",
+         "type": "(itemId: string, label: string) => void"
         }
        ],
        "options": [
@@ -58439,6 +58586,31 @@
          "name": "disableSelection"
         },
         {
+         "attr": "data-ok-disabled-items-focusable",
+         "description": "Disabled items stay in the arrow-key focus order.",
+         "kind": "flag",
+         "name": "disabledItemsFocusable"
+        },
+        {
+         "attr": "data-ok-items-reordering",
+         "description": "Items can be dragged to a new position (or moved with Ctrl / ⌘ + Shift + arrows).",
+         "kind": "flag",
+         "name": "itemsReordering"
+        },
+        {
+         "attr": "data-ok-item-children-indentation",
+         "default": 12,
+         "description": "Indentation of each level of children: px or a CSS length.",
+         "kind": "number",
+         "min": 0,
+         "name": "itemChildrenIndentation",
+         "units": [
+          "px",
+          "rem",
+          "em"
+         ]
+        },
+        {
          "attr": "aria-expanded",
          "description": "Expanded items (`expandedItems`).",
          "event": "ok:tree-view:expand",
@@ -58455,9 +58627,83 @@
        ],
        "parts": [
         {
+         "description": "On an item: the item can't be selected (it still expands).",
+         "kind": "state",
+         "name": "data-ok-disable-selection"
+        },
+        {
+         "description": "Set by the controller on the item being dragged.",
+         "kind": "state",
+         "name": "data-ok-dragging"
+        },
+        {
+         "description": "Set by the controller on the item a dragged item would land on: before it, after it or inside it.",
+         "kind": "value",
+         "name": "data-ok-drop-position",
+         "value": [
+          "after",
+          "before",
+          "inside"
+         ]
+        },
+        {
+         "description": "On an item: its label can be edited (F2, double click); on the tree: every item's. `\"false\"` opts an item out.",
+         "kind": "value",
+         "name": "data-ok-editable",
+         "value": [
+          "",
+          "false"
+         ]
+        },
+        {
+         "description": "On an item: its children failed to load.",
+         "kind": "state",
+         "name": "data-ok-error"
+        },
+        {
+         "description": "Set on the label input once saved or cancelled, so its blur doesn't save it again.",
+         "kind": "state",
+         "name": "data-ok-finished"
+        },
+        {
+         "description": "On the tree: highlights the items whose label contains this text, and their ancestors.",
+         "kind": "value",
+         "name": "data-ok-highlight",
+         "value": "string"
+        },
+        {
+         "description": "Set on an item whose label matches the highlight.",
+         "kind": "state",
+         "name": "data-ok-highlighted"
+        },
+        {
+         "description": "Set on an ancestor of an item that matches the highlight.",
+         "kind": "state",
+         "name": "data-ok-highlighted-ancestor"
+        },
+        {
          "description": "On an item: its id.",
          "kind": "value",
          "name": "data-ok-item-id",
+         "value": "string"
+        },
+        {
+         "description": "On an item: children to load from the data source when it expands.",
+         "kind": "state",
+         "name": "data-ok-lazy"
+        },
+        {
+         "description": "On an item, with `data-ok-items-reordering`: `\"false\"` keeps it in place.",
+         "kind": "value",
+         "name": "data-ok-reorderable",
+         "value": [
+          "false"
+         ]
+        },
+        {
+         "description": "On the tree: `parents`, `descendants` or both: how a selection spreads.",
+         "kind": "value",
+         "name": "data-ok-selection-propagation",
          "value": "string"
         },
         {
@@ -58469,6 +58715,14 @@
          "description": "The icon of an expanded item.",
          "kind": "part",
          "name": "data-ok-tree-collapse-icon"
+        },
+        {
+         "description": "The icon of an item whose children failed to load.",
+         "elements": [
+          "svg"
+         ],
+         "kind": "part",
+         "name": "data-ok-tree-error-icon"
         },
         {
          "description": "The icon of a collapsed item.",
@@ -58487,9 +58741,19 @@
        "native": "HTMLUListElement",
        "props": [
         {
+         "description": "Receives the tree's methods (`useTreeViewApiRef()`).",
+         "name": "apiRef",
+         "type": "MutableRefObject<TreeViewApi | undefined>"
+        },
+        {
          "description": "Names the tree (or use `aria-labelledby`).",
          "name": "aria-label",
          "type": "string"
+        },
+        {
+         "description": "Refuses a move by returning `false`.",
+         "name": "canMoveItemToNewPosition",
+         "type": "((change: TreeViewItemPositionChange) => boolean)"
         },
         {
          "description": "Each item shows a checkbox for its selection (implies `multiSelect`).",
@@ -58500,6 +58764,16 @@
          "description": "Icon of expanded items (with `expandIcon`).",
          "name": "collapseIcon",
          "type": "ReactNode"
+        },
+        {
+         "description": "Loads the root's items (without `items`) and children on expand.",
+         "name": "dataSource",
+         "type": "TreeViewDataSource<R>"
+        },
+        {
+         "description": "Text of an item whose children failed to load. Default \"Couldn't load the items\".",
+         "name": "dataSourceErrorLabel",
+         "type": "string"
         },
         {
          "description": "Uncontrolled expanded item ids. Default none.",
@@ -58514,6 +58788,11 @@
         {
          "description": "Items can only be expanded, not selected.",
          "name": "disableSelection",
+         "type": "boolean"
+        },
+        {
+         "description": "Disabled items stay in the arrow-key focus order.",
+         "name": "disabledItemsFocusable",
          "type": "boolean"
         },
         {
@@ -58537,10 +58816,63 @@
          "type": "\"content\" | \"iconContainer\""
         },
         {
-         "description": "The items, as data.",
+         "default": "item.children",
+         "description": "An item's children.",
+         "name": "getItemChildren",
+         "type": "((item: R) => readonly R[] | undefined)"
+        },
+        {
+         "default": "item.id",
+         "description": "An item's id.",
+         "name": "getItemId",
+         "type": "((item: R) => string)"
+        },
+        {
+         "default": "item.label",
+         "description": "An item's label.",
+         "name": "getItemLabel",
+         "type": "((item: R) => ReactNode)"
+        },
+        {
+         "description": "Highlights the items whose label contains this text, and their ancestors.",
+         "name": "highlight",
+         "type": "string"
+        },
+        {
+         "default": "item.disabled",
+         "description": "Whether an item is disabled.",
+         "name": "isItemDisabled",
+         "type": "((item: R) => boolean)"
+        },
+        {
+         "description": "Labels can be edited (F2, double click; Enter saves, Escape cancels): every item or some.",
+         "name": "isItemEditable",
+         "type": "boolean | ((item: R) => boolean)"
+        },
+        {
+         "description": "Whether an item can be moved. Default every item.",
+         "name": "isItemReorderable",
+         "type": "((itemId: string) => boolean)"
+        },
+        {
+         "description": "Whether an item can't be selected (it still expands).",
+         "name": "isItemSelectionDisabled",
+         "type": "((item: R) => boolean)"
+        },
+        {
+         "description": "Indentation of each level of children: px or a CSS length. Default 12px.",
+         "name": "itemChildrenIndentation",
+         "type": "string | number"
+        },
+        {
+         "description": "The items, as data (or loaded by `dataSource`).",
          "name": "items",
-         "required": true,
-         "type": "readonly TreeViewBaseItem[]"
+         "type": "readonly R[]"
+        },
+        {
+         "description": "Items can be dragged to a new position (or moved with Ctrl / ⌘ + Shift + arrows).",
+         "name": "itemsReordering",
+         "type": "boolean"
         },
         {
          "description": "Several items can be selected (Ctrl / ⌘ click, Shift click, Space).",
@@ -58553,9 +58885,34 @@
          "type": "((itemIds: string[]) => void)"
         },
         {
+         "description": "Called when an item's row is clicked.",
+         "name": "onItemClick",
+         "type": "((itemId: string) => void)"
+        },
+        {
          "description": "Called when one item expands or collapses.",
          "name": "onItemExpansionToggle",
          "type": "((itemId: string, isExpanded: boolean) => void)"
+        },
+        {
+         "description": "Called when an item gets the focus.",
+         "name": "onItemFocus",
+         "type": "((itemId: string) => void)"
+        },
+        {
+         "description": "Called with an item's new label.",
+         "name": "onItemLabelChange",
+         "type": "((itemId: string, label: string) => void)"
+        },
+        {
+         "description": "Called after an item moved.",
+         "name": "onItemPositionChange",
+         "type": "((change: TreeViewItemPositionChange) => void)"
+        },
+        {
+         "description": "Called for each item whose selection changed.",
+         "name": "onItemSelectionToggle",
+         "type": "((itemId: string, isSelected: boolean) => void)"
         },
         {
          "description": "Called with the new selection (same shape as `selectedItems`).",
@@ -58566,6 +58923,11 @@
          "description": "Controlled selection: an id (single), ids (`multiSelect`) or `null`.",
          "name": "selectedItems",
          "type": "Selection"
+        },
+        {
+         "description": "Selecting an item also selects its descendants, and / or a parent whose children all are.",
+         "name": "selectionPropagation",
+         "type": "TreeSelectionPropagation"
         },
         {
          "description": "`\"standard\"` (default) or `\"lines\"` (dashed guides, round expand icons).",
@@ -58581,6 +58943,11 @@
        "description": "A WAI-ARIA tree of `TreeItem`s. Keyboard, clicks and typeahead are core's `createTreeController`; this component owns the expanded and selected items.",
        "native": "HTMLUListElement",
        "props": [
+        {
+         "description": "Receives the tree's methods (`useTreeViewApiRef()`).",
+         "name": "apiRef",
+         "type": "MutableRefObject<TreeViewApi | undefined>"
+        },
         {
          "description": "Names the tree (or use `aria-labelledby`).",
          "name": "aria-label",
@@ -58617,6 +58984,11 @@
          "type": "boolean"
         },
         {
+         "description": "Disabled items stay in the arrow-key focus order.",
+         "name": "disabledItemsFocusable",
+         "type": "boolean"
+        },
+        {
          "description": "Icon of items without children.",
          "name": "endIcon",
          "type": "ReactNode"
@@ -58637,6 +59009,16 @@
          "type": "\"content\" | \"iconContainer\""
         },
         {
+         "description": "Highlights the items whose label contains this text, and their ancestors.",
+         "name": "highlight",
+         "type": "string"
+        },
+        {
+         "description": "Indentation of each level of children: px or a CSS length. Default 12px.",
+         "name": "itemChildrenIndentation",
+         "type": "string | number"
+        },
+        {
          "description": "Several items can be selected (Ctrl / ⌘ click, Shift click, Space).",
          "name": "multiSelect",
          "type": "boolean"
@@ -58647,9 +59029,24 @@
          "type": "((itemIds: string[]) => void)"
         },
         {
+         "description": "Called when an item's row is clicked.",
+         "name": "onItemClick",
+         "type": "((itemId: string) => void)"
+        },
+        {
          "description": "Called when one item expands or collapses.",
          "name": "onItemExpansionToggle",
          "type": "((itemId: string, isExpanded: boolean) => void)"
+        },
+        {
+         "description": "Called when an item gets the focus.",
+         "name": "onItemFocus",
+         "type": "((itemId: string) => void)"
+        },
+        {
+         "description": "Called for each item whose selection changed.",
+         "name": "onItemSelectionToggle",
+         "type": "((itemId: string, isSelected: boolean) => void)"
         },
         {
          "description": "Called with the new selection (same shape as `selectedItems`).",
@@ -58660,6 +59057,11 @@
          "description": "Controlled selection: an id (single), ids (`multiSelect`) or `null`.",
          "name": "selectedItems",
          "type": "Selection"
+        },
+        {
+         "description": "Selecting an item also selects its descendants, and / or a parent whose children all are.",
+         "name": "selectionPropagation",
+         "type": "TreeSelectionPropagation"
         },
         {
          "description": "`\"standard\"` (default) or `\"lines\"` (dashed guides, round expand icons).",
@@ -58685,6 +59087,14 @@
          "name": "data-ok-tree-item-content"
         },
         {
+         "description": "Why an item's children couldn't load, in its row.",
+         "elements": [
+          "span"
+         ],
+         "kind": "part",
+         "name": "data-ok-tree-item-error"
+        },
+        {
          "description": "The children of an item: a collapse.",
          "kind": "part",
          "name": "data-ok-tree-item-group"
@@ -58698,6 +59108,14 @@
          "description": "The label of an item.",
          "kind": "part",
          "name": "data-ok-tree-item-label"
+        },
+        {
+         "description": "The input that replaces the label while it is edited.",
+         "elements": [
+          "input"
+         ],
+         "kind": "part",
+         "name": "data-ok-tree-item-label-input"
         }
        ]
       },
@@ -58712,7 +59130,12 @@
          "type": "ReactNode"
         },
         {
-         "description": "Can't be selected or expanded; still focusable.",
+         "description": "The item can't be selected, but still expands.",
+         "name": "disableSelection",
+         "type": "boolean"
+        },
+        {
+         "description": "Can't be selected or expanded (and isn't focusable unless `disabledItemsFocusable`).",
          "name": "disabled",
          "type": "boolean"
         },
@@ -58738,7 +59161,8 @@
    "react": [
     "RichTreeView",
     "SimpleTreeView",
-    "TreeItem"
+    "TreeItem",
+    "useTreeViewApiRef"
    ],
    "referenceUrl": "https://minimals.cc/components/mui/tree-view",
    "related": [
@@ -58792,6 +59216,31 @@
        "name": "disableSelection"
       },
       {
+       "attr": "data-ok-disabled-items-focusable",
+       "description": "Disabled items stay in the arrow-key focus order.",
+       "kind": "flag",
+       "name": "disabledItemsFocusable"
+      },
+      {
+       "attr": "data-ok-items-reordering",
+       "description": "Items can be dragged to a new position (or moved with Ctrl / ⌘ + Shift + arrows).",
+       "kind": "flag",
+       "name": "itemsReordering"
+      },
+      {
+       "attr": "data-ok-item-children-indentation",
+       "default": 12,
+       "description": "Indentation of each level of children: px or a CSS length.",
+       "kind": "number",
+       "min": 0,
+       "name": "itemChildrenIndentation",
+       "units": [
+        "px",
+        "rem",
+        "em"
+       ]
+      },
+      {
        "attr": "aria-expanded",
        "description": "Expanded items (`expandedItems`).",
        "event": "ok:tree-view:expand",
@@ -58816,27 +59265,27 @@
      "title": "Purpose"
     },
     {
-     "body": "```\nul[data-ok-tree-view][role=tree][data-ok-variant][data-ok-expansion-trigger][aria-label]\n    [aria-multiselectable]?[data-ok-multi-select]?[data-ok-checkbox-selection]?[data-ok-disable-selection]?\n  li[role=treeitem][data-ok-tree-item][data-ok-item-id][tabindex][aria-expanded]?[aria-selected]?[aria-disabled]?\n    div[data-ok-tree-item-content]\n      span[data-ok-tree-item-icon] › svg[data-ok-tree-chevron] | span[data-ok-tree-expand-icon] + span[data-ok-tree-collapse-icon] | end icon\n      span[data-ok-tree-item-checkbox][aria-hidden]? › span[data-ok-checkbox] (small, tabindex -1)\n      span[data-ok-tree-item-label]\n    ul[data-ok-collapse][role=group][data-ok-tree-item-group][hidden]?      (branches only; a Collapse)\n```",
+     "body": "```\nul[data-ok-tree-view][role=tree][data-ok-variant][data-ok-expansion-trigger][aria-label]\n    [aria-multiselectable]?[data-ok-multi-select]?[data-ok-checkbox-selection]?[data-ok-disable-selection]?\n    [data-ok-disabled-items-focusable]?[data-ok-items-reordering]?[data-ok-item-children-indentation]?\n    [data-ok-editable]?[data-ok-selection-propagation=\"parents descendants\"]?[data-ok-highlight]?[aria-busy]?\n  li[role=treeitem][data-ok-tree-item][data-ok-item-id][tabindex][aria-expanded]?[aria-selected]?[aria-disabled]?\n    [data-ok-disable-selection]?[data-ok-editable]?[data-ok-reorderable=\"false\"]?[data-ok-lazy]?[aria-busy]?\n    [data-ok-error]?   written by owners: [data-ok-highlighted]?[data-ok-highlighted-ancestor]?\n                       written by the controller while dragging: [data-ok-dragging]?[data-ok-drop-position]?\n    div[data-ok-tree-item-content]\n      span[data-ok-tree-item-icon] › svg[data-ok-tree-chevron] | span[data-ok-tree-expand-icon] + span[data-ok-tree-collapse-icon] | end icon\n                                    | CircularProgress (loading) | svg[data-ok-tree-error-icon]\n      span[data-ok-tree-item-checkbox][aria-hidden]? › span[data-ok-checkbox] (small, tabindex -1)\n      span[data-ok-tree-item-label][hidden]?   (hidden while edited)\n      input[data-ok-tree-item-label-input][aria-label]?   (editing)\n      span[data-ok-tree-item-error]?           (children failed to load)\n    ul[data-ok-collapse][role=group][data-ok-tree-item-group][hidden]?      (branches only; a Collapse)\n```",
      "id": "anatomy",
      "title": "Anatomy"
     },
     {
-     "body": "(Options of `tree-view`: listed under \"options\".)\n\nOther props: `expandedItems` / `defaultExpandedItems` / `onExpandedItemsChange(ids)`,\n`onItemExpansionToggle(id, expanded)`, `selectedItems` / `defaultSelectedItems` /\n`onSelectedItemsChange` (`string | null`, `string[]` when multi), `expandIcon`, `collapseIcon`,\n`endIcon`; TreeItem `itemId`, `label`, `disabled`; RichTreeView `items` (`{ id, label,\nchildren?, disabled? }[]`).\n\nAPI mapping (MUI X): kept the props above, `multiSelect`, `checkboxSelection` (implies multi),\n`disableSelection`, `expansionTrigger`. Renamed: `slots.expandIcon` / `collapseIcon` / `endIcon`\n→ props. Beyond MUI X (reference \"Custom styling\"): `variant=\"lines\"`. Deferred:\n`selectionPropagation`, drag and drop (`itemsReordering`), lazy loading, `apiRef`,\n`getItemId` / `getItemLabel`, label editing. Not applicable: `slots`, `slotProps`, `sx`.\nGroup transition (MUI X `slots.groupTransition`, default Collapse): each group is a Collapse\n(collapse.md, ADR-0044; React `TreeItem` renders `Collapse component=\"ul\"`, HTML snippets carry\n`data-ok-collapse`); the runtime still writes the group's `hidden`, the Collapse animates it.",
+     "body": "(Options of `tree-view`: listed under \"options\".)\n\nOther props: `expandedItems` / `defaultExpandedItems` / `onExpandedItemsChange(ids)`,\n`onItemExpansionToggle(id, expanded)`, `selectedItems` / `defaultSelectedItems` /\n`onSelectedItemsChange` (`string | null`, `string[]` when multi), `expandIcon`, `collapseIcon`,\n`endIcon`, `onItemSelectionToggle(id, selected)`, `onItemClick(id)`, `onItemFocus(id)`,\n`selectionPropagation` (`{ parents, descendants }`), `highlight` (search text), `apiRef`\n(`useTreeViewApiRef()`); TreeItem `itemId`, `label`, `disabled`, `disableSelection`;\nRichTreeView `items` (`{ id, label, children?, disabled? }[]`), `getItemId`, `getItemLabel`,\n`getItemChildren`, `isItemDisabled`, `isItemSelectionDisabled`, `isItemEditable` (boolean or\nfunction) + `onItemLabelChange(id, label)`, `itemsReordering` + `isItemReorderable(id)` +\n`canMoveItemToNewPosition(change)` + `onItemPositionChange(change)`, `dataSource`\n(`{ getChildrenCount(item), getTreeItems(parentId?) }`), `dataSourceErrorLabel`.\n\nAPI mapping (MUI X): kept the props above, `multiSelect`, `checkboxSelection` (implies multi),\n`disableSelection`, `expansionTrigger`. Renamed: `slots.expandIcon` / `collapseIcon` / `endIcon`\n→ props. Beyond MUI X (reference \"Custom styling\"): `variant=\"lines\"`; `highlight` (roadmap\n4.18.8). As in MUI X, editing, reordering, lazy loading and the item accessors are RichTreeView\nprops (they need the items as data); the HTML runtime offers them on any markup. Deferred:\nvirtualization (`itemHeight`, `domStructure: \"flat\"`; needs an ADR: flat DOM vs nested groups).\nNot applicable: `slots`, `slotProps`, `sx`.\nGroup transition (MUI X `slots.groupTransition`, default Collapse): each group is a Collapse\n(collapse.md, ADR-0044; React `TreeItem` renders `Collapse component=\"ul\"`, HTML snippets carry\n`data-ok-collapse`); the runtime still writes the group's `hidden`, the Collapse animates it.",
      "id": "options",
      "title": "Options"
     },
     {
-     "body": "Rows: min 30px, padding 4px 8px (+12px per level, up to 6 levels, rows stay full width), gap 8px,\n`--ok-radius-md`; icon 18px; label body2. Hover `--ok-action-hover`; selected\n`rgb(primary / 0.08)` (checkbox selection: the checkbox shows it); focus-visible 2px outline +\n`--ok-action-focus`; disabled 0.48. Chevron turns 90° when open (`--ok-duration-shortest`).\nLines: groups indented 17px with a 1px dashed `rgb(grey-500 / 0.4)` guide, rows `--ok-radius-xs`,\nlabels 13px medium, expand icons round `rgb(primary / 0.25)`, selected `rgb(primary / 0.2)`.",
+     "body": "Rows: min 30px, padding 4px 8px (+`itemChildrenIndentation`, default 12px, per level through\n`--_ok-tree-indent`, up to 6 levels, rows stay full width), gap 8px,\n`--ok-radius-md`; icon 18px; label body2. Hover `--ok-action-hover`; selected\n`rgb(primary / 0.08)` (checkbox selection: the checkbox shows it); focus-visible 2px outline +\n`--ok-action-focus`; disabled 0.48. Chevron turns 90° when open (`--ok-duration-shortest`).\nLines: groups indented 17px with a 1px dashed `rgb(grey-500 / 0.4)` guide, rows `--ok-radius-xs`,\nlabels 13px medium, expand icons round `rgb(primary / 0.25)`, selected `rgb(primary / 0.2)`.\nEditing: a 1px primary-bordered input in the label's place. Drag: the dragged row 0.48, the\ntarget row a 2px primary inset line above / below, or a primary ring with a 0.16 tint (inside).\nLazy: a 16px CircularProgress in the icon while loading; error: error-colored icon and a caption\n(`--ok-palette-error-text`). Highlight: matching labels on `rgb(warning / 0.24)`, semibold;\nancestors' labels semibold.",
      "id": "layout-and-tokens",
      "title": "Layout and tokens"
     },
     {
-     "body": "Click on the row (or only the icon with `iconContainer`) toggles a branch; click selects (multi:\nCtrl / ⌘ toggles, Shift selects a range from the anchor). The checkbox toggles selection.\nSingle select replaces; selecting the selected item keeps it. Tab stop: the selected item\n(if visible), else the first.",
+     "body": "Click on the row (or only the icon with `iconContainer`) toggles a branch; click selects (multi:\nCtrl / ⌘ toggles, Shift selects a range from the anchor). The checkbox toggles selection.\nSingle select replaces; selecting the selected item keeps it. Tab stop: the selected item\n(if visible), else the first focusable one. Disabled items are skipped by arrows, Home / End and\ntypeahead unless `disabledItemsFocusable` (MUI's default; before, they were always focusable).\nSelection propagation (multi select, core `propagateTreeSelection` on the DOM): descendants\nfollow an item; a parent is selected exactly when all its selectable children are.\nEditing (core controller): F2 or a double click on the label starts it (`data-ok-editable`);\nEnter saves, Escape cancels, blur saves; focus returns to the item.\nReordering (core controller, `data-ok-items-reordering`): a pointer drag on the row (after 4px)\ndrops before (top quarter), after (bottom quarter) or inside the target; the keyboard path\n(WCAG 2.5.7) is Ctrl / ⌘ + Shift + ↑ / ↓ (among siblings), → (into the previous sibling) and\n← (out, after the parent). Positions are `{ parentId, index }` with the item removed first;\nthe new parent opens and the moved item keeps the focus. Lazy loading: items with children to\nload are expandable without children; expanding one loads them (`aria-busy`), a failure shows\nthe error, expanding again retries. Expansion helpers: core `treeBranchIds` (expand all, to a\ndepth, a subtree); highlight: core `treeHighlight` / `applyTreeHighlight`.",
      "id": "behavior",
      "title": "Behavior"
     },
     {
-     "body": "| Key | Action |\n|---|---|\n| ↓ / ↑ | Next / previous visible item (Shift: extend, multi) |\n| → | Open; if open, first child |\n| ← | Close; if closed, parent |\n| Home / End | First / last visible item |\n| Enter | Toggle a branch; select a leaf |\n| Space | Select (multi: toggle; Shift: range) |\n| * | Open all siblings |\n| Letters | Typeahead |",
+     "body": "| Key | Action |\n|---|---|\n| ↓ / ↑ | Next / previous visible item (Shift: extend, multi) |\n| → | Open; if open, first child |\n| ← | Close; if closed, parent |\n| Home / End | First / last visible item |\n| Enter | Toggle a branch; select a leaf |\n| F2 | Edit the label (editable items); Enter saves, Escape cancels |\n| Ctrl / ⌘ + Shift + ↑ ↓ ← → | Move the item (with reordering) |\n| Space | Select (multi: toggle; Shift: range) |\n| * | Open all siblings |\n| Letters | Typeahead |",
      "id": "keyboard",
      "title": "Keyboard"
     },
@@ -58846,7 +59295,7 @@
      "title": "Accessibility"
     },
     {
-     "body": "HTML `ok:tree-view:expand` (cancelable, `{ itemId, expanded }`), `ok:tree-view:select`\n(cancelable, `{ selectedItems }`). Instance `{ expandedItems, selectedItems, setExpanded(id,\nexpanded), setSelected(ids) }`.",
+     "body": "HTML `ok:tree-view:expand` (cancelable, `{ itemId, expanded }`), `ok:tree-view:select`\n(cancelable, `{ selectedItems }`), `selectiontoggle` (`{ itemId, selected }`), `itemclick`,\n`itemfocus` (`{ itemId }`), `labelchange` (cancelable, `{ itemId, label }`), `move` (cancelable,\n`{ itemId, oldPosition, newPosition }`, MUI `canMoveItemToNewPosition`), `positionchange`.\nInstance `{ expandedItems, selectedItems, setExpanded(id, expanded), setSelected(ids),\nexpandAll(), collapseAll(), expandToDepth(depth), expandSubtree(id), focusItem(id),\ngetItemOrderedChildrenIds(id | null), setEditedItem(id | null), updateItemLabel(id, label),\nhighlight(query), setDataSource({ getTreeItems(parentId?) } | null) }` — data source items\n`{ id, label, disabled?, childrenCount? }` are built with text only. React `apiRef`: the same\nexpansion methods plus `getItem`, `getItemDOMElement`, `getItemTree`, `isItemExpanded`,\n`setItemExpansion`, `selectItem`.",
      "id": "events-api",
      "title": "Events / API"
     },
@@ -58856,7 +59305,7 @@
      "title": "Responsive"
     },
     {
-     "body": "Upstream: MUI X `SimpleTreeView`, `RichTreeView`, `TreeItem` (mui.com/x/api/tree-view/…, checked\n2026-11-09).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `expandedItems`, `defaultExpandedItems`, `onExpandedItemsChange`, `onItemExpansionToggle` | same · `aria-expanded`, `ok:tree-view:expand` | kept | callbacks without the event |\n| `selectedItems`, `defaultSelectedItems`, `onSelectedItemsChange` | same · `aria-selected`, `ok:tree-view:select` | kept | |\n| `multiSelect`, `checkboxSelection`, `disableSelection`, `expansionTrigger` | same / `data-ok-*` | kept | |\n| RichTreeView `items` | `items` (`{ id, label, children?, disabled? }`) | kept | |\n| `slots` `expandIcon` / `collapseIcon` / `endIcon` | props | renamed | |\n| `slots.groupTransition` | each group is a Collapse | kept | ADR-0044 |\n| — | `variant=\"lines\"` | kept | Owlky addition (reference \"Custom styling\") |\n| TreeItem `itemId`, `label`, `disabled`, `children` | same | kept | |\n| `onItemSelectionToggle` | — | deferred | per-item selection callback |\n| `onItemClick`, `onItemFocus` | — | deferred | |\n| `isItemDisabled`, `isItemSelectionDisabled`, TreeItem `disableSelection` | `disabled` per item | deferred | callback forms and selection-only disabling |\n| `disabledItemsFocusable` | — | deferred | disabled items stay in the arrow-key order |\n| `itemChildrenIndentation` | fixed 12px per level (CSS) | deferred | option → `--_ok-*` |\n| `getItemId`, `getItemLabel` | — | deferred (4.11) | |\n| `getItemChildren` | — | deferred | with 4.11 `getItemId` / `getItemLabel` |\n| `selectionPropagation`, `apiRef` (`focusItem`, `getItem`, `setItemExpansion`, `setItemSelection` …), `isItemEditable` / `onItemLabelChange`, lazy loading (`loading`), `itemsReordering` | — | deferred (4.11) | expand all / to depth: 4.18.8 |\n| `itemHeight` (virtualization), `domStructure: \"flat\"` | — | deferred | large trees |\n| `id` | `id` (DOM attribute) | kept | |\n| `classes`, `sx`, other `slots` / `slotProps` | — | not applicable | by decision |",
+     "body": "Upstream: MUI X `SimpleTreeView`, `RichTreeView`, `TreeItem` (mui.com/x/api/tree-view/…, checked\n2026-11-09).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `expandedItems`, `defaultExpandedItems`, `onExpandedItemsChange`, `onItemExpansionToggle` | same · `aria-expanded`, `ok:tree-view:expand` | kept | callbacks without the event |\n| `selectedItems`, `defaultSelectedItems`, `onSelectedItemsChange` | same · `aria-selected`, `ok:tree-view:select` | kept | |\n| `multiSelect`, `checkboxSelection`, `disableSelection`, `expansionTrigger` | same / `data-ok-*` | kept | |\n| RichTreeView `items` | `items` (`{ id, label, children?, disabled? }`) | kept | |\n| `slots` `expandIcon` / `collapseIcon` / `endIcon` | props | renamed | |\n| `slots.groupTransition` | each group is a Collapse | kept | ADR-0044 |\n| — | `variant=\"lines\"` | kept | Owlky addition (reference \"Custom styling\") |\n| TreeItem `itemId`, `label`, `disabled`, `children` | same | kept | |\n| `onItemSelectionToggle`, `onItemClick`, `onItemFocus` | same, without the event; HTML `selectiontoggle`, `itemclick`, `itemfocus` | renamed | 4.18.69 |\n| `isItemDisabled`, `isItemSelectionDisabled`, TreeItem `disableSelection` | same; HTML `aria-disabled`, `data-ok-disable-selection` per item | kept | 4.18.69 |\n| `disabledItemsFocusable` | same; HTML `data-ok-disabled-items-focusable` | kept | 4.18.69: default off, as MUI (disabled items were focusable before) |\n| `itemChildrenIndentation` | same; HTML `data-ok-item-children-indentation` → `--_ok-tree-indent` | kept | 4.18.70 |\n| `getItemId`, `getItemLabel`, `getItemChildren` | same (RichTreeView) | kept | 4.11 / 4.18.69; HTML is markup |\n| `selectionPropagation` | same; HTML `data-ok-selection-propagation` | kept | 4.11 |\n| `apiRef` (`focusItem`, `getItem`, `getItemDOMElement`, `getItemOrderedChildrenIds`, `getItemTree`, `setItemExpansion`, `selectItem`, `setEditedItem`, `updateItemLabel`) | same (`useTreeViewApiRef`); HTML instance | kept | 4.11; `setItemSelection` is `selectItem` |\n| — | `expandAll`, `collapseAll`, `expandToDepth`, `expandSubtree` (apiRef, instance); `highlight` | kept | 4.18.8, beyond MUI |\n| `isItemEditable` / `onItemLabelChange` | same (RichTreeView); HTML `data-ok-editable`, `labelchange` | kept | 4.11 |\n| lazy loading (`dataSource` `getChildrenCount` / `getTreeItems`) | same (RichTreeView, `dataSourceErrorLabel`); HTML `setDataSource`, `data-ok-lazy` | kept | 4.11; no `dataSourceCache` (loaded children stay) |\n| `itemsReordering`, `isItemReorderable`, `canMoveItemToNewPosition`, `onItemPositionChange` | same (RichTreeView); HTML `data-ok-items-reordering`, `data-ok-reorderable`, `move` / `positionchange` | kept | 4.11; keyboard alternative added (WCAG 2.5.7) |\n| `itemHeight` (virtualization), `domStructure: \"flat\"` | — | deferred | needs an ADR (4.18.70) |\n| `id` | `id` (DOM attribute) | kept | |\n| `classes`, `sx`, other `slots` / `slotProps` | — | not applicable | by decision |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
@@ -58911,6 +59360,33 @@
      "react": "import \"@owlky/styles/owlky.css\";\nimport { SimpleTreeView, TreeItem } from \"@owlky/react\";\n\n{/* Custom styling */}\n<SimpleTreeView aria-label=\"Styled outline\" variant=\"lines\" defaultExpandedItems={[\"main\"]} defaultSelectedItems=\"main\">\n  <TreeItem itemId=\"main\" label=\"Main\">\n    <TreeItem itemId=\"notes\" label=\"Notes\" />\n    <TreeItem itemId=\"drafts\" label=\"Drafts\">\n      <TreeItem itemId=\"drafts-ideas\" label=\"Ideas\" />\n      <TreeItem itemId=\"drafts-plans\" label=\"Plans\">\n        <TreeItem itemId=\"drafts-plans-q1\" label=\"First quarter\" />\n      </TreeItem>\n    </TreeItem>\n    <TreeItem itemId=\"archive\" label=\"Archive\" />\n    <TreeItem itemId=\"shared\" label=\"Shared with me\" />\n  </TreeItem>\n</SimpleTreeView>\n",
      "snippets": [
       "custom-styling-group.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/tree-view.css + components/checkbox.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Drag and drop -->\n<ul role=\"tree\" data-ok-tree-view data-ok-variant=\"standard\" data-ok-expansion-trigger=\"content\" data-ok-items-reordering aria-label=\"Projects to reorder\">\n  <li role=\"treeitem\" data-ok-tree-item data-ok-item-id=\"design\" aria-expanded=\"false\" aria-selected=\"false\" tabindex=\"0\">\n    <div data-ok-tree-item-content><span data-ok-tree-item-icon><svg data-ok-tree-chevron aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m9 18 6-6-6-6\" /></svg></span><span data-ok-tree-item-label>Design</span></div>\n    <ul data-ok-collapse role=\"group\" data-ok-tree-item-group hidden>\n      <li role=\"treeitem\" data-ok-tree-item data-ok-item-id=\"design-wireframes\" aria-selected=\"false\" tabindex=\"-1\">\n        <div data-ok-tree-item-content><span data-ok-tree-item-icon></span><span data-ok-tree-item-label>Wireframes</span></div>\n      </li>\n      <li role=\"treeitem\" data-ok-tree-item data-ok-item-id=\"design-mockups\" aria-selected=\"false\" tabindex=\"-1\">\n        <div data-ok-tree-item-content><span data-ok-tree-item-icon></span><span data-ok-tree-item-label>Mockups</span></div>\n      </li>\n      <li role=\"treeitem\" data-ok-tree-item data-ok-item-id=\"design-assets\" aria-selected=\"false\" tabindex=\"-1\">\n        <div data-ok-tree-item-content><span data-ok-tree-item-icon></span><span data-ok-tree-item-label>Assets</span></div>\n      </li>\n    </ul>\n  </li>\n  <li role=\"treeitem\" data-ok-tree-item data-ok-item-id=\"development\" aria-expanded=\"false\" aria-selected=\"false\" tabindex=\"-1\">\n    <div data-ok-tree-item-content><span data-ok-tree-item-icon><svg data-ok-tree-chevron aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m9 18 6-6-6-6\" /></svg></span><span data-ok-tree-item-label>Development</span></div>\n    <ul data-ok-collapse role=\"group\" data-ok-tree-item-group hidden>\n      <li role=\"treeitem\" data-ok-tree-item data-ok-item-id=\"development-frontend\" aria-selected=\"false\" tabindex=\"-1\">\n        <div data-ok-tree-item-content><span data-ok-tree-item-icon></span><span data-ok-tree-item-label>Frontend</span></div>\n      </li>\n      <li role=\"treeitem\" data-ok-tree-item data-ok-item-id=\"development-backend\" aria-selected=\"false\" tabindex=\"-1\">\n        <div data-ok-tree-item-content><span data-ok-tree-item-icon></span><span data-ok-tree-item-label>Backend</span></div>\n      </li>\n    </ul>\n  </li>\n</ul>",
+     "id": "components-tree-view--drag-and-drop",
+     "name": "Drag and drop",
+     "react": "import \"@owlky/styles/owlky.css\";\nimport { RichTreeView } from \"@owlky/react\";\n\n{/* Drag and drop */}\n<RichTreeView aria-label=\"Projects to reorder\" items={[{\"id\":\"design\",\"label\":\"Design\",\"children\":[{\"id\":\"design-wireframes\",\"label\":\"Wireframes\"},{\"id\":\"design-mockups\",\"label\":\"Mockups\"},{\"id\":\"design-assets\",\"label\":\"Assets\"}]},{\"id\":\"development\",\"label\":\"Development\",\"children\":[{\"id\":\"development-frontend\",\"label\":\"Frontend\"},{\"id\":\"development-backend\",\"label\":\"Backend\"}]}]} itemsReordering />\n",
+     "snippets": [
+      "drag-and-drop-group.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/tree-view.css + components/checkbox.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Label editing -->\n<ul role=\"tree\" data-ok-tree-view data-ok-variant=\"standard\" data-ok-expansion-trigger=\"content\" aria-label=\"Projects to rename\">\n  <li role=\"treeitem\" data-ok-tree-item data-ok-item-id=\"design\" data-ok-editable aria-expanded=\"false\" aria-selected=\"false\" tabindex=\"0\">\n    <div data-ok-tree-item-content><span data-ok-tree-item-icon><svg data-ok-tree-chevron aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m9 18 6-6-6-6\" /></svg></span><span data-ok-tree-item-label>Design</span></div>\n    <ul data-ok-collapse role=\"group\" data-ok-tree-item-group hidden>\n      <li role=\"treeitem\" data-ok-tree-item data-ok-item-id=\"design-wireframes\" data-ok-editable aria-selected=\"false\" tabindex=\"-1\">\n        <div data-ok-tree-item-content><span data-ok-tree-item-icon></span><span data-ok-tree-item-label>Wireframes</span></div>\n      </li>\n      <li role=\"treeitem\" data-ok-tree-item data-ok-item-id=\"design-mockups\" data-ok-editable aria-selected=\"false\" tabindex=\"-1\">\n        <div data-ok-tree-item-content><span data-ok-tree-item-icon></span><span data-ok-tree-item-label>Mockups</span></div>\n      </li>\n      <li role=\"treeitem\" data-ok-tree-item data-ok-item-id=\"design-assets\" data-ok-editable aria-selected=\"false\" tabindex=\"-1\">\n        <div data-ok-tree-item-content><span data-ok-tree-item-icon></span><span data-ok-tree-item-label>Assets</span></div>\n      </li>\n    </ul>\n  </li>\n  <li role=\"treeitem\" data-ok-tree-item data-ok-item-id=\"development\" data-ok-editable aria-expanded=\"false\" aria-selected=\"false\" tabindex=\"-1\">\n    <div data-ok-tree-item-content><span data-ok-tree-item-icon><svg data-ok-tree-chevron aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m9 18 6-6-6-6\" /></svg></span><span data-ok-tree-item-label>Development</span></div>\n    <ul data-ok-collapse role=\"group\" data-ok-tree-item-group hidden>\n      <li role=\"treeitem\" data-ok-tree-item data-ok-item-id=\"development-frontend\" data-ok-editable aria-selected=\"false\" tabindex=\"-1\">\n        <div data-ok-tree-item-content><span data-ok-tree-item-icon></span><span data-ok-tree-item-label>Frontend</span></div>\n      </li>\n      <li role=\"treeitem\" data-ok-tree-item data-ok-item-id=\"development-backend\" data-ok-editable aria-selected=\"false\" tabindex=\"-1\">\n        <div data-ok-tree-item-content><span data-ok-tree-item-icon></span><span data-ok-tree-item-label>Backend</span></div>\n      </li>\n    </ul>\n  </li>\n</ul>",
+     "id": "components-tree-view--label-editing",
+     "name": "Label editing",
+     "react": "import \"@owlky/styles/owlky.css\";\nimport { RichTreeView } from \"@owlky/react\";\n\n{/* Label editing */}\n<RichTreeView aria-label=\"Projects to rename\" items={[{\"id\":\"design\",\"label\":\"Design\",\"children\":[{\"id\":\"design-wireframes\",\"label\":\"Wireframes\"},{\"id\":\"design-mockups\",\"label\":\"Mockups\"},{\"id\":\"design-assets\",\"label\":\"Assets\"}]},{\"id\":\"development\",\"label\":\"Development\",\"children\":[{\"id\":\"development-frontend\",\"label\":\"Frontend\"},{\"id\":\"development-backend\",\"label\":\"Backend\"}]}]} isItemEditable />\n",
+     "snippets": [
+      "label-editing-group.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/tree-view.css + components/checkbox.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Selection propagation -->\n<ul role=\"tree\" data-ok-tree-view data-ok-variant=\"standard\" data-ok-expansion-trigger=\"content\" data-ok-multi-select data-ok-checkbox-selection data-ok-selection-propagation=\"parents descendants\" aria-multiselectable=\"true\" aria-label=\"Projects with propagation\">\n  <li role=\"treeitem\" data-ok-tree-item data-ok-item-id=\"design\" aria-expanded=\"false\" aria-selected=\"false\" tabindex=\"0\">\n    <div data-ok-tree-item-content>\n      <span data-ok-tree-item-icon><svg data-ok-tree-chevron aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m9 18 6-6-6-6\" /></svg></span>\n      <span data-ok-tree-item-checkbox aria-hidden=\"true\">\n        <span data-ok-checkbox data-ok-color=\"primary\" data-ok-size=\"small\">\n          <input type=\"checkbox\" data-ok-checkbox-input tabindex=\"-1\" readonly>\n          <span data-ok-checkbox-icon=\"unchecked\" aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><rect x=\"3.75\" y=\"3.75\" width=\"16.5\" height=\"16.5\" rx=\"4.25\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" /></svg></span>\n          <span data-ok-checkbox-icon=\"checked\" aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"5\" fill=\"currentColor\" /><path data-ok-checkbox-mark d=\"m7.75 12.25 2.75 2.75 5.75-6\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" /></svg></span>\n          <span data-ok-checkbox-icon=\"indeterminate\" aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"5\" fill=\"currentColor\" /><path data-ok-checkbox-mark d=\"M8 12h8\" stroke-width=\"2\" stroke-linecap=\"round\" /></svg></span>\n        </span>\n      </span>\n      <span data-ok-tree-item-label>Design</span>\n    </div>\n    <ul data-ok-collapse role=\"group\" data-ok-tree-item-group hidden>\n      <li role=\"treeitem\" data-ok-tree-item data-ok-item-id=\"design-wireframes\" aria-selected=\"false\" tabindex=\"-1\">\n        <div data-ok-tree-item-content>\n          <span data-ok-tree-item-icon></span>\n          <span data-ok-tree-item-checkbox aria-hidden=\"true\">\n            <span data-ok-checkbox data-ok-color=\"primary\" data-ok-size=\"small\">\n              <input type=\"checkbox\" data-ok-checkbox-input tabindex=\"-1\" readonly>\n              <span data-ok-checkbox-icon=\"unchecked\" aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><rect x=\"3.75\" y=\"3.75\" width=\"16.5\" height=\"16.5\" rx=\"4.25\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" /></svg></span>\n              <span data-ok-checkbox-icon=\"checked\" aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"5\" fill=\"currentColor\" /><path data-ok-checkbox-mark d=\"m7.75 12.25 2.75 2.75 5.75-6\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" /></svg></span>\n              <span data-ok-checkbox-icon=\"indeterminate\" aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"5\" fill=\"currentColor\" /><path data-ok-checkbox-mark d=\"M8 12h8\" stroke-width=\"2\" stroke-linecap=\"round\" /></svg></span>\n            </span>\n          </span>\n          <span data-ok-tree-item-label>Wireframes</span>\n        </div>\n      </li>\n      <li role=\"treeitem\" data-ok-tree-item data-ok-item-id=\"design-mockups\" aria-selected=\"false\" tabindex=\"-1\">\n        <div data-ok-tree-item-content>\n          <span data-ok-tree-item-icon></span>\n          <span data-ok-tree-item-checkbox aria-hidden=\"true\">\n            <span data-ok-checkbox data-ok-color=\"primary\" data-ok-size=\"small\">\n              <input type=\"checkbox\" data-ok-checkbox-input tabindex=\"-1\" readonly>\n              <span data-ok-checkbox-icon=\"unchecked\" aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><rect x=\"3.75\" y=\"3.75\" width=\"16.5\" height=\"16.5\" rx=\"4.25\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" /></svg></span>\n              <span data-ok-checkbox-icon=\"checked\" aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"5\" fill=\"currentColor\" /><path data-ok-checkbox-mark d=\"m7.75 12.25 2.75 2.75 5.75-6\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" /></svg></span>\n              <span data-ok-checkbox-icon=\"indeterminate\" aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"5\" fill=\"currentColor\" /><path data-ok-checkbox-mark d=\"M8 12h8\" stroke-width=\"2\" stroke-linecap=\"round\" /></svg></span>\n            </span>\n          </span>\n          <span data-ok-tree-item-label>Mockups</span>\n        </div>\n      </li>\n      <li role=\"treeitem\" data-ok-tree-item data-ok-item-id=\"design-assets\" aria-selected=\"false\" tabindex=\"-1\">\n        <div data-ok-tree-item-content>\n          <span data-ok-tree-item-icon></span>\n          <span data-ok-tree-item-checkbox aria-hidden=\"true\">\n            <span data-ok-checkbox data-ok-color=\"primary\" data-ok-size=\"small\">\n              <input type=\"checkbox\" data-ok-checkbox-input tabindex=\"-1\" readonly>\n              <span data-ok-checkbox-icon=\"unchecked\" aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><rect x=\"3.75\" y=\"3.75\" width=\"16.5\" height=\"16.5\" rx=\"4.25\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" /></svg></span>\n              <span data-ok-checkbox-icon=\"checked\" aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"5\" fill=\"currentColor\" /><path data-ok-checkbox-mark d=\"m7.75 12.25 2.75 2.75 5.75-6\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" /></svg></span>\n              <span data-ok-checkbox-icon=\"indeterminate\" aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"5\" fill=\"currentColor\" /><path data-ok-checkbox-mark d=\"M8 12h8\" stroke-width=\"2\" stroke-linecap=\"round\" /></svg></span>\n            </span>\n          </span>\n          <span data-ok-tree-item-label>Assets</span>\n        </div>\n      </li>\n    </ul>\n  </li>\n  <li role=\"treeitem\" data-ok-tree-item data-ok-item-id=\"development\" aria-expanded=\"false\" aria-selected=\"false\" tabindex=\"-1\">\n    <div data-ok-tree-item-content>\n      <span data-ok-tree-item-icon><svg data-ok-tree-chevron aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m9 18 6-6-6-6\" /></svg></span>\n      <span data-ok-tree-item-checkbox aria-hidden=\"true\">\n        <span data-ok-checkbox data-ok-color=\"primary\" data-ok-size=\"small\">\n          <input type=\"checkbox\" data-ok-checkbox-input tabindex=\"-1\" readonly>\n          <span data-ok-checkbox-icon=\"unchecked\" aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><rect x=\"3.75\" y=\"3.75\" width=\"16.5\" height=\"16.5\" rx=\"4.25\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" /></svg></span>\n          <span data-ok-checkbox-icon=\"checked\" aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"5\" fill=\"currentColor\" /><path data-ok-checkbox-mark d=\"m7.75 12.25 2.75 2.75 5.75-6\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" /></svg></span>\n          <span data-ok-checkbox-icon=\"indeterminate\" aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"5\" fill=\"currentColor\" /><path data-ok-checkbox-mark d=\"M8 12h8\" stroke-width=\"2\" stroke-linecap=\"round\" /></svg></span>\n        </span>\n      </span>\n      <span data-ok-tree-item-label>Development</span>\n    </div>\n    <ul data-ok-collapse role=\"group\" data-ok-tree-item-group hidden>\n      <li role=\"treeitem\" data-ok-tree-item data-ok-item-id=\"development-frontend\" aria-selected=\"false\" tabindex=\"-1\">\n        <div data-ok-tree-item-content>\n          <span data-ok-tree-item-icon></span>\n          <span data-ok-tree-item-checkbox aria-hidden=\"true\">\n            <span data-ok-checkbox data-ok-color=\"primary\" data-ok-size=\"small\">\n              <input type=\"checkbox\" data-ok-checkbox-input tabindex=\"-1\" readonly>\n              <span data-ok-checkbox-icon=\"unchecked\" aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><rect x=\"3.75\" y=\"3.75\" width=\"16.5\" height=\"16.5\" rx=\"4.25\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" /></svg></span>\n              <span data-ok-checkbox-icon=\"checked\" aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"5\" fill=\"currentColor\" /><path data-ok-checkbox-mark d=\"m7.75 12.25 2.75 2.75 5.75-6\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" /></svg></span>\n              <span data-ok-checkbox-icon=\"indeterminate\" aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"5\" fill=\"currentColor\" /><path data-ok-checkbox-mark d=\"M8 12h8\" stroke-width=\"2\" stroke-linecap=\"round\" /></svg></span>\n            </span>\n          </span>\n          <span data-ok-tree-item-label>Frontend</span>\n        </div>\n      </li>\n      <li role=\"treeitem\" data-ok-tree-item data-ok-item-id=\"development-backend\" aria-selected=\"false\" tabindex=\"-1\">\n        <div data-ok-tree-item-content>\n          <span data-ok-tree-item-icon></span>\n          <span data-ok-tree-item-checkbox aria-hidden=\"true\">\n            <span data-ok-checkbox data-ok-color=\"primary\" data-ok-size=\"small\">\n              <input type=\"checkbox\" data-ok-checkbox-input tabindex=\"-1\" readonly>\n              <span data-ok-checkbox-icon=\"unchecked\" aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><rect x=\"3.75\" y=\"3.75\" width=\"16.5\" height=\"16.5\" rx=\"4.25\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" /></svg></span>\n              <span data-ok-checkbox-icon=\"checked\" aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"5\" fill=\"currentColor\" /><path data-ok-checkbox-mark d=\"m7.75 12.25 2.75 2.75 5.75-6\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" /></svg></span>\n              <span data-ok-checkbox-icon=\"indeterminate\" aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"5\" fill=\"currentColor\" /><path data-ok-checkbox-mark d=\"M8 12h8\" stroke-width=\"2\" stroke-linecap=\"round\" /></svg></span>\n            </span>\n          </span>\n          <span data-ok-tree-item-label>Backend</span>\n        </div>\n      </li>\n    </ul>\n  </li>\n</ul>",
+     "id": "components-tree-view--selection-propagation",
+     "name": "Selection propagation",
+     "react": "import \"@owlky/styles/owlky.css\";\nimport { RichTreeView } from \"@owlky/react\";\n\n{/* Selection propagation */}\n<RichTreeView aria-label=\"Projects with propagation\" items={[{\"id\":\"design\",\"label\":\"Design\",\"children\":[{\"id\":\"design-wireframes\",\"label\":\"Wireframes\"},{\"id\":\"design-mockups\",\"label\":\"Mockups\"},{\"id\":\"design-assets\",\"label\":\"Assets\"}]},{\"id\":\"development\",\"label\":\"Development\",\"children\":[{\"id\":\"development-frontend\",\"label\":\"Frontend\"},{\"id\":\"development-backend\",\"label\":\"Backend\"}]}]} checkboxSelection selectionPropagation={{\"parents\":true,\"descendants\":true}} />\n",
+     "snippets": [
+      "selection-propagation-group.html"
      ]
     }
    ],
@@ -67448,6 +67924,41 @@
      "title": "Change the icons and the look"
     },
     {
+     "body": "With `multiSelect`, set `selectionPropagation` to `{ parents: true, descendants: true }`: selecting an item selects its descendants, and a parent is selected exactly when all its children are. `onItemSelectionToggle(itemId, isSelected)` reports each item whose selection changed, `onItemClick(itemId)` each click on a row and `onItemFocus(itemId)` each item that gets the focus. Disabled items are skipped by the arrow keys unless you set `disabledItemsFocusable`. `disableSelection` on a `TreeItem` (or `isItemSelectionDisabled` on a `RichTreeView`) keeps an item from being selected while it still expands. In HTML, write `data-ok-selection-propagation=\"parents descendants\"` on the tree, `data-ok-disable-selection` on an item, and listen to `ok:tree-view:selectiontoggle`, `ok:tree-view:itemclick` and `ok:tree-view:itemfocus`.",
+     "html": "<ul data-ok-tree-view role=\"tree\" data-ok-variant=\"standard\" data-ok-expansion-trigger=\"content\" data-ok-multi-select aria-multiselectable=\"true\" data-ok-selection-propagation=\"parents descendants\" aria-label=\"Export\">\n  <li role=\"treeitem\" data-ok-tree-item data-ok-item-id=\"design\" aria-expanded=\"false\" aria-selected=\"false\" tabindex=\"0\">\n    <div data-ok-tree-item-content><span data-ok-tree-item-icon></span><span data-ok-tree-item-label>Design</span></div>\n    <ul data-ok-collapse role=\"group\" data-ok-tree-item-group hidden>\n      <li role=\"treeitem\" data-ok-tree-item data-ok-item-id=\"mockups\" aria-selected=\"false\" tabindex=\"-1\">\n        <div data-ok-tree-item-content><span data-ok-tree-item-icon></span><span data-ok-tree-item-label>Mockups</span></div>\n      </li>\n    </ul>\n  </li>\n</ul>\n<script type=\"module\">\n  document.addEventListener(\"ok:tree-view:selectiontoggle\", (event) => {\n    console.log(event.detail.itemId, event.detail.selected);\n  });\n</script>",
+     "id": "propagation",
+     "react": "import { SimpleTreeView, TreeItem } from \"@owlky/react\";\n\nexport function ExportTree() {\n  return (\n    <SimpleTreeView\n      aria-label=\"Export\"\n      multiSelect\n      selectionPropagation={{ parents: true, descendants: true }}\n      onItemSelectionToggle={(itemId, isSelected) => console.log(itemId, isSelected)}\n    >\n      <TreeItem itemId=\"design\" label=\"Design\">\n        <TreeItem itemId=\"mockups\" label=\"Mockups\" />\n        <TreeItem itemId=\"assets\" label=\"Assets\" disableSelection />\n      </TreeItem>\n    </SimpleTreeView>\n  );\n}",
+     "title": "Spread the selection and follow it"
+    },
+    {
+     "body": "On a `RichTreeView`, set `isItemEditable` to `true`, or to a function that picks the items. Press **F2** or double-click a label to edit it, **Enter** to save and **Escape** to cancel. Moving the focus away saves too. `onItemLabelChange(itemId, label)` reports the new label. In HTML, put `data-ok-editable` on the items (or on the tree for every item) and listen to `ok:tree-view:labelchange`: call `preventDefault()` to keep the old label.",
+     "html": "<script type=\"module\">\n  document.addEventListener(\"ok:tree-view:labelchange\", (event) => {\n    if (event.detail.label.trim() === \"\") event.preventDefault();\n  });\n</script>",
+     "id": "editing",
+     "react": "import { RichTreeView } from \"@owlky/react\";\n\nconst items = [{ id: \"notes\", label: \"Notes\" }, { id: \"drafts\", label: \"Drafts\" }];\n\nexport function RenameTree() {\n  return (\n    <RichTreeView\n      aria-label=\"Folders\"\n      items={items}\n      isItemEditable={(item) => item.id !== \"drafts\"}\n      onItemLabelChange={(itemId, label) => console.log(itemId, label)}\n    />\n  );\n}",
+     "title": "Edit labels"
+    },
+    {
+     "body": "Set `itemsReordering` on a `RichTreeView` to let people drag an item by its row. Drop it on the top or bottom edge of another row to place it before or after, or on the middle to make it a child. The keyboard does the same with **Ctrl + Shift** (**⌘ + Shift** on a Mac) and an arrow: up and down move it among its siblings, right moves it into the item above, and left moves it out of its parent. `isItemReorderable(itemId)` keeps some items in place, `canMoveItemToNewPosition` refuses a move by returning `false`, and `onItemPositionChange` reports each move with the old and new `{ parentId, index }`. In HTML, use `data-ok-items-reordering` on the tree, `data-ok-reorderable=\"false\"` on an item, and the cancelable `ok:tree-view:move` event.",
+     "html": "<script type=\"module\">\n  document.addEventListener(\"ok:tree-view:move\", (event) => {\n    // Keep everything at the top level.\n    if (event.detail.newPosition.parentId !== null) event.preventDefault();\n  });\n</script>",
+     "id": "reorder",
+     "react": "import { RichTreeView } from \"@owlky/react\";\n\nconst items = [\n  { id: \"inbox\", label: \"Inbox\", children: [{ id: \"invoices\", label: \"Invoices\" }] },\n  { id: \"archive\", label: \"Archive\" },\n];\n\nexport function SortableFolders() {\n  return (\n    <RichTreeView\n      aria-label=\"Folders\"\n      items={items}\n      itemsReordering\n      isItemReorderable={(itemId) => itemId !== \"inbox\"}\n      onItemPositionChange={({ itemId, newPosition }) => console.log(itemId, newPosition)}\n    />\n  );\n}",
+     "title": "Reorder items"
+    },
+    {
+     "body": "Pass a `dataSource` to a `RichTreeView` to load items when they are needed. `getChildrenCount(item)` tells whether an item has children: `0` for none, a number, or `-1` when you don't know yet. `getTreeItems(parentId)` returns a promise of the children, or of the root's items when `parentId` is undefined and there are no `items`. While the children load, the item shows a progress indicator and is marked `aria-busy`. If loading fails, the item shows the error and loads again when it is expanded again. In HTML, mark the items with `data-ok-lazy` and an empty group, and pass the data source to the instance's `setDataSource()`: its items are `{ id, label, childrenCount }` and are built as text.",
+     "html": "<script type=\"module\">\n  const tree = document.querySelector(\"[data-ok-tree-view]\");\n  Owlky.runtime.get(tree, \"tree-view\").setDataSource({\n    getTreeItems: (parentId) => fetch(`/api/folders?parent=${parentId ?? \"\"}`).then((response) => response.json()),\n  });\n</script>",
+     "id": "lazy",
+     "react": "import { RichTreeView, type TreeViewBaseItem } from \"@owlky/react\";\n\ntype Folder = TreeViewBaseItem & { childCount: number };\n\nconst dataSource = {\n  getChildrenCount: (folder: Folder) => folder.childCount,\n  getTreeItems: (parentId?: string): Promise<Folder[]> =>\n    fetch(`/api/folders?parent=${parentId ?? \"\"}`).then((response) => response.json()),\n};\n\nexport function RemoteFolders() {\n  return <RichTreeView<Folder> aria-label=\"Folders\" dataSource={dataSource} />;\n}",
+     "title": "Load children on demand"
+    },
+    {
+     "body": "Pass a ref from `useTreeViewApiRef()` as `apiRef` to control the tree from your code. `expandAll()`, `collapseAll()`, `expandToDepth(depth)` and `expandSubtree(itemId)` open many items at once, and `focusItem`, `selectItem`, `setItemExpansion`, `getItem`, `getItemTree` and `setEditedItem` work on one. Set `highlight` to a search text: matching labels are marked and their ancestors' labels are bold, so people see where the matches are. In HTML, the instance has the same expansion methods, and `data-ok-highlight` or `highlight(query)` marks the matches.",
+     "html": "<script type=\"module\">\n  const tree = document.querySelector(\"[data-ok-tree-view]\");\n  const instance = Owlky.runtime.get(tree, \"tree-view\");\n  instance.expandToDepth(2);\n  document.querySelector(\"#tree-search\").addEventListener(\"input\", (event) => {\n    instance.highlight(event.target.value);\n  });\n</script>",
+     "id": "methods",
+     "react": "import { Button, RichTreeView, useTreeViewApiRef } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nconst items = [\n  { id: \"design\", label: \"Design\", children: [{ id: \"mockups\", label: \"Mockups\" }] },\n  { id: \"development\", label: \"Development\", children: [{ id: \"frontend\", label: \"Frontend\" }] },\n];\n\nexport function SearchableTree() {\n  const apiRef = useTreeViewApiRef();\n  const [query, setQuery] = useState(\"\");\n  return (\n    <>\n      <input aria-label=\"Search\" value={query} onChange={(event) => setQuery(event.target.value)} />\n      <Button onClick={() => apiRef.current?.expandAll()}>Expand all</Button>\n      <RichTreeView aria-label=\"Projects\" items={items} apiRef={apiRef} highlight={query} />\n    </>\n  );\n}",
+     "title": "Expand everything and highlight matches"
+    },
+    {
      "body": "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default.",
      "id": "options",
      "title": "Options"
@@ -67458,7 +67969,7 @@
      "title": "Content and behavior"
     },
     {
-     "body": "- **`ok:tree-view:expand`** (cancelable) fires on the tree with `detail.itemId` and `detail.expanded`.\n- **`ok:tree-view:select`** (cancelable) fires with `detail.selectedItems`.\n- **Instance:** `runtime.get(element, \"tree-view\")` returns `{ expandedItems, selectedItems, setExpanded(id, expanded), setSelected(ids) }`. The setters don't fire events.\n- **React:** `onExpandedItemsChange(ids)`, `onItemExpansionToggle(id, expanded)` and `onSelectedItemsChange(selection)`.",
+     "body": "- **`ok:tree-view:expand`** (cancelable) fires on the tree with `detail.itemId` and `detail.expanded`.\n- **`ok:tree-view:select`** (cancelable) fires with `detail.selectedItems`.\n- **`ok:tree-view:selectiontoggle`** fires once per item whose selection changed, with `detail.itemId` and `detail.selected`. **`ok:tree-view:itemclick`** and **`ok:tree-view:itemfocus`** fire with `detail.itemId`.\n- **`ok:tree-view:labelchange`** (cancelable) fires before an edited label is saved, with `detail.itemId` and `detail.label`.\n- **`ok:tree-view:move`** (cancelable) fires before an item moves, and **`ok:tree-view:positionchange`** after it, with `detail.itemId`, `detail.oldPosition` and `detail.newPosition`.\n- **Instance:** `runtime.get(element, \"tree-view\")` returns `{ expandedItems, selectedItems, setExpanded(id, expanded), setSelected(ids), expandAll(), collapseAll(), expandToDepth(depth), expandSubtree(id), focusItem(id), getItemOrderedChildrenIds(id), setEditedItem(id), updateItemLabel(id, label), highlight(query), setDataSource(source) }`. The setters don't fire events.\n- **React:** `onExpandedItemsChange(ids)`, `onItemExpansionToggle(id, expanded)`, `onSelectedItemsChange(selection)`, `onItemSelectionToggle(id, selected)`, `onItemClick(id)`, `onItemFocus(id)`, `onItemLabelChange(id, label)`, `onItemPositionChange(change)` and the methods of `apiRef`.",
      "id": "events",
      "title": "Events and methods"
     },
@@ -67468,7 +67979,7 @@
      "title": "Keyboard"
     },
     {
-     "body": "- Name the tree with `aria-label` or `aria-labelledby`.\n- Items carry `aria-expanded` and `aria-selected`. A multi-select tree has `aria-multiselectable`.\n- The focused item shows a focus ring. Item text uses the primary text color.\n- Icons and selection checkboxes are decorative: the item's state is in its ARIA attributes.",
+     "body": "- Name the tree with `aria-label` or `aria-labelledby`.\n- Items carry `aria-expanded` and `aria-selected`. A multi-select tree has `aria-multiselectable`.\n- The focused item shows a focus ring. Item text uses the primary text color.\n- Icons and selection checkboxes are decorative: the item's state is in its ARIA attributes.\n- Dragging is never the only way to reorder: Ctrl / ⌘ + Shift and the arrow keys move the focused item, and it keeps the focus after the move.\n- An item that loads its children is marked `aria-busy`, and its progress indicator is named \"Loading\". The label input is named \"Item label\".\n- The highlight is visual. Pair it with a text such as the number of matches when the search is the main task.",
      "id": "accessibility",
      "title": "Accessibility"
     },

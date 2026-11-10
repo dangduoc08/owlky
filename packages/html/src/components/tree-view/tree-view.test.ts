@@ -36,7 +36,7 @@ const row = (host: Element, id: string) =>
   item(host, id).querySelector(":scope > [data-ok-tree-item-content]") as HTMLElement;
 
 describe("tree view snippets", () => {
-  it("covers every story group", () => expect(snippets).toHaveLength(5));
+  it("covers every story group", () => expect(snippets).toHaveLength(8));
 
   it.each(snippets)("%s: valid anatomy", (_, html) => {
     const host = mount(html);

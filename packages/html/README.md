@@ -74,7 +74,11 @@ inputs as thumbs, `data-ok-min|max|step`, marks, value labels from `data-ok-labe
 `ok:slider:change` (cancelable) and `ok:slider:commit`) **Transfer list** (runtime `transfer-list`:
 two checkbox lists and move buttons; event `ok:transfer-list:change` (cancelable)) **Tree view**
 (runtime `tree-view`: `ul[role=tree]` › `li[role=treeitem]`; WAI-ARIA keyboard and typeahead; events
-`ok:tree-view:expand` and `ok:tree-view:select` (cancelable)) **Autocomplete** (runtime
+`ok:tree-view:expand`, `select`, `labelchange`, `move` (cancelable), `selectiontoggle`, `itemclick`,
+`itemfocus`, `positionchange`; label editing `data-ok-editable`, reordering
+`data-ok-items-reordering` (drag or Ctrl / ⌘ + Shift + arrows), `data-ok-selection-propagation`,
+`data-ok-highlight`, lazy children through `setDataSource()`, `expandAll()` / `expandToDepth()`)
+**Autocomplete** (runtime
 `autocomplete`: a TextField combobox with a Popover listbox; chips from
 `<template data-ok-autocomplete-tag>`; events `ok:autocomplete:change` (cancelable),
 `ok:autocomplete:open|close`) **Motion** (runtimes `motion`, `motion-group`, `motion-text`:

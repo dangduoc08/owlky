@@ -668,7 +668,12 @@ export {
   type SimpleTreeViewProps,
   TreeItem,
   type TreeItemProps,
+  type TreeViewApi,
   type TreeViewBaseItem,
+  type TreeViewDataSource,
+  type TreeViewItemPositionChange,
+  type TreeViewItemTree,
+  useTreeViewApiRef,
 } from "./tree-view/tree-view.js";
 export { Typography, type TypographyProps } from "./typography/typography.js";
 export {

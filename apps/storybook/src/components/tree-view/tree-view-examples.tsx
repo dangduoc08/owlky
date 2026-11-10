@@ -90,6 +90,32 @@ export const treeViewStories: Record<string, ReactGroup[]> = {
       content: <RichTreeView aria-label="Projects to export" items={PROJECTS} checkboxSelection />,
     },
   ],
+  // MUI X "Drag and drop", "Editing" and "Selection" (parent / children selection) demos.
+  "drag-and-drop": [
+    {
+      title: "Drag and drop",
+      content: <RichTreeView aria-label="Projects to reorder" items={PROJECTS} itemsReordering />,
+    },
+  ],
+  "label-editing": [
+    {
+      title: "Label editing",
+      content: <RichTreeView aria-label="Projects to rename" items={PROJECTS} isItemEditable />,
+    },
+  ],
+  "selection-propagation": [
+    {
+      title: "Selection propagation",
+      content: (
+        <RichTreeView
+          aria-label="Projects with propagation"
+          items={PROJECTS}
+          checkboxSelection
+          selectionPropagation={{ parents: true, descendants: true }}
+        />
+      ),
+    },
+  ],
   "custom-styling": [
     {
       title: "Custom styling",

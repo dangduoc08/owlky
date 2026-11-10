@@ -14,11 +14,19 @@ the HTML runtime `tree-view` writes them to the DOM.
 ```
 ul[data-ok-tree-view][role=tree][data-ok-variant][data-ok-expansion-trigger][aria-label]
     [aria-multiselectable]?[data-ok-multi-select]?[data-ok-checkbox-selection]?[data-ok-disable-selection]?
+    [data-ok-disabled-items-focusable]?[data-ok-items-reordering]?[data-ok-item-children-indentation]?
+    [data-ok-editable]?[data-ok-selection-propagation="parents descendants"]?[data-ok-highlight]?[aria-busy]?
   li[role=treeitem][data-ok-tree-item][data-ok-item-id][tabindex][aria-expanded]?[aria-selected]?[aria-disabled]?
+    [data-ok-disable-selection]?[data-ok-editable]?[data-ok-reorderable="false"]?[data-ok-lazy]?[aria-busy]?
+    [data-ok-error]?   written by owners: [data-ok-highlighted]?[data-ok-highlighted-ancestor]?
+                       written by the controller while dragging: [data-ok-dragging]?[data-ok-drop-position]?
     div[data-ok-tree-item-content]
       span[data-ok-tree-item-icon] › svg[data-ok-tree-chevron] | span[data-ok-tree-expand-icon] + span[data-ok-tree-collapse-icon] | end icon
+                                    | CircularProgress (loading) | svg[data-ok-tree-error-icon]
       span[data-ok-tree-item-checkbox][aria-hidden]? › span[data-ok-checkbox] (small, tabindex -1)
-      span[data-ok-tree-item-label]
+      span[data-ok-tree-item-label][hidden]?   (hidden while edited)
+      input[data-ok-tree-item-label-input][aria-label]?   (editing)
+      span[data-ok-tree-item-error]?           (children failed to load)
     ul[data-ok-collapse][role=group][data-ok-tree-item-group][hidden]?      (branches only; a Collapse)
 ```
 
@@ -33,6 +41,9 @@ Root: `data-ok-tree-view`. Unknown values fall back to the default.
 | `multiSelect` | `data-ok-multi-select` | flag | boolean | off | Several items can be selected (`aria-multiselectable`). |
 | `checkboxSelection` | `data-ok-checkbox-selection` | flag | boolean | off | Each item shows a checkbox for its selection. |
 | `disableSelection` | `data-ok-disable-selection` | flag | boolean | off | Items can't be selected (only expanded). |
+| `disabledItemsFocusable` | `data-ok-disabled-items-focusable` | flag | boolean | off | Disabled items stay in the arrow-key focus order. |
+| `itemsReordering` | `data-ok-items-reordering` | flag | boolean | off | Items can be dragged to a new position (or moved with Ctrl / ⌘ + Shift + arrows). |
+| `itemChildrenIndentation` | `data-ok-item-children-indentation="…"` | number | number (px) or `px` `rem` `em` length | `12` | Indentation of each level of children: px or a CSS length. |
 | `expanded` | `aria-expanded` · event `ok:tree-view:expand` | state | — | — | Expanded items (`expandedItems`). |
 | `selected` | `aria-selected` · event `ok:tree-view:select` | state | — | — | Selected items (`selectedItems`). |
 <!-- /options:tree-view -->
@@ -40,31 +51,58 @@ Root: `data-ok-tree-view`. Unknown values fall back to the default.
 Other props: `expandedItems` / `defaultExpandedItems` / `onExpandedItemsChange(ids)`,
 `onItemExpansionToggle(id, expanded)`, `selectedItems` / `defaultSelectedItems` /
 `onSelectedItemsChange` (`string | null`, `string[]` when multi), `expandIcon`, `collapseIcon`,
-`endIcon`; TreeItem `itemId`, `label`, `disabled`; RichTreeView `items` (`{ id, label,
-children?, disabled? }[]`).
+`endIcon`, `onItemSelectionToggle(id, selected)`, `onItemClick(id)`, `onItemFocus(id)`,
+`selectionPropagation` (`{ parents, descendants }`), `highlight` (search text), `apiRef`
+(`useTreeViewApiRef()`); TreeItem `itemId`, `label`, `disabled`, `disableSelection`;
+RichTreeView `items` (`{ id, label, children?, disabled? }[]`), `getItemId`, `getItemLabel`,
+`getItemChildren`, `isItemDisabled`, `isItemSelectionDisabled`, `isItemEditable` (boolean or
+function) + `onItemLabelChange(id, label)`, `itemsReordering` + `isItemReorderable(id)` +
+`canMoveItemToNewPosition(change)` + `onItemPositionChange(change)`, `dataSource`
+(`{ getChildrenCount(item), getTreeItems(parentId?) }`), `dataSourceErrorLabel`.
 
 API mapping (MUI X): kept the props above, `multiSelect`, `checkboxSelection` (implies multi),
 `disableSelection`, `expansionTrigger`. Renamed: `slots.expandIcon` / `collapseIcon` / `endIcon`
-→ props. Beyond MUI X (reference "Custom styling"): `variant="lines"`. Deferred:
-`selectionPropagation`, drag and drop (`itemsReordering`), lazy loading, `apiRef`,
-`getItemId` / `getItemLabel`, label editing. Not applicable: `slots`, `slotProps`, `sx`.
+→ props. Beyond MUI X (reference "Custom styling"): `variant="lines"`; `highlight` (roadmap
+4.18.8). As in MUI X, editing, reordering, lazy loading and the item accessors are RichTreeView
+props (they need the items as data); the HTML runtime offers them on any markup. Deferred:
+virtualization (`itemHeight`, `domStructure: "flat"`; needs an ADR: flat DOM vs nested groups).
+Not applicable: `slots`, `slotProps`, `sx`.
 Group transition (MUI X `slots.groupTransition`, default Collapse): each group is a Collapse
 (collapse.md, ADR-0044; React `TreeItem` renders `Collapse component="ul"`, HTML snippets carry
 `data-ok-collapse`); the runtime still writes the group's `hidden`, the Collapse animates it.
 
 ## Layout and tokens
-Rows: min 30px, padding 4px 8px (+12px per level, up to 6 levels, rows stay full width), gap 8px,
+Rows: min 30px, padding 4px 8px (+`itemChildrenIndentation`, default 12px, per level through
+`--_ok-tree-indent`, up to 6 levels, rows stay full width), gap 8px,
 `--ok-radius-md`; icon 18px; label body2. Hover `--ok-action-hover`; selected
 `rgb(primary / 0.08)` (checkbox selection: the checkbox shows it); focus-visible 2px outline +
 `--ok-action-focus`; disabled 0.48. Chevron turns 90° when open (`--ok-duration-shortest`).
 Lines: groups indented 17px with a 1px dashed `rgb(grey-500 / 0.4)` guide, rows `--ok-radius-xs`,
 labels 13px medium, expand icons round `rgb(primary / 0.25)`, selected `rgb(primary / 0.2)`.
+Editing: a 1px primary-bordered input in the label's place. Drag: the dragged row 0.48, the
+target row a 2px primary inset line above / below, or a primary ring with a 0.16 tint (inside).
+Lazy: a 16px CircularProgress in the icon while loading; error: error-colored icon and a caption
+(`--ok-palette-error-text`). Highlight: matching labels on `rgb(warning / 0.24)`, semibold;
+ancestors' labels semibold.
 
 ## Behavior
 Click on the row (or only the icon with `iconContainer`) toggles a branch; click selects (multi:
 Ctrl / ⌘ toggles, Shift selects a range from the anchor). The checkbox toggles selection.
 Single select replaces; selecting the selected item keeps it. Tab stop: the selected item
-(if visible), else the first.
+(if visible), else the first focusable one. Disabled items are skipped by arrows, Home / End and
+typeahead unless `disabledItemsFocusable` (MUI's default; before, they were always focusable).
+Selection propagation (multi select, core `propagateTreeSelection` on the DOM): descendants
+follow an item; a parent is selected exactly when all its selectable children are.
+Editing (core controller): F2 or a double click on the label starts it (`data-ok-editable`);
+Enter saves, Escape cancels, blur saves; focus returns to the item.
+Reordering (core controller, `data-ok-items-reordering`): a pointer drag on the row (after 4px)
+drops before (top quarter), after (bottom quarter) or inside the target; the keyboard path
+(WCAG 2.5.7) is Ctrl / ⌘ + Shift + ↑ / ↓ (among siblings), → (into the previous sibling) and
+← (out, after the parent). Positions are `{ parentId, index }` with the item removed first;
+the new parent opens and the moved item keeps the focus. Lazy loading: items with children to
+load are expandable without children; expanding one loads them (`aria-busy`), a failure shows
+the error, expanding again retries. Expansion helpers: core `treeBranchIds` (expand all, to a
+depth, a subtree); highlight: core `treeHighlight` / `applyTreeHighlight`.
 
 ## Keyboard
 | Key | Action |
@@ -74,6 +112,8 @@ Single select replaces; selecting the selected item keeps it. Tab stop: the sele
 | ← | Close; if closed, parent |
 | Home / End | First / last visible item |
 | Enter | Toggle a branch; select a leaf |
+| F2 | Edit the label (editable items); Enter saves, Escape cancels |
+| Ctrl / ⌘ + Shift + ↑ ↓ ← → | Move the item (with reordering) |
 | Space | Select (multi: toggle; Shift: range) |
 | * | Open all siblings |
 | Letters | Typeahead |
@@ -84,8 +124,16 @@ Single select replaces; selecting the selected item keeps it. Tab stop: the sele
 
 ## Events / API
 HTML `ok:tree-view:expand` (cancelable, `{ itemId, expanded }`), `ok:tree-view:select`
-(cancelable, `{ selectedItems }`). Instance `{ expandedItems, selectedItems, setExpanded(id,
-expanded), setSelected(ids) }`.
+(cancelable, `{ selectedItems }`), `selectiontoggle` (`{ itemId, selected }`), `itemclick`,
+`itemfocus` (`{ itemId }`), `labelchange` (cancelable, `{ itemId, label }`), `move` (cancelable,
+`{ itemId, oldPosition, newPosition }`, MUI `canMoveItemToNewPosition`), `positionchange`.
+Instance `{ expandedItems, selectedItems, setExpanded(id, expanded), setSelected(ids),
+expandAll(), collapseAll(), expandToDepth(depth), expandSubtree(id), focusItem(id),
+getItemOrderedChildrenIds(id | null), setEditedItem(id | null), updateItemLabel(id, label),
+highlight(query), setDataSource({ getTreeItems(parentId?) } | null) }` — data source items
+`{ id, label, disabled?, childrenCount? }` are built with text only. React `apiRef`: the same
+expansion methods plus `getItem`, `getItemDOMElement`, `getItemTree`, `isItemExpanded`,
+`setItemExpansion`, `selectItem`.
 
 ## Responsive
 Same at every breakpoint; labels wrap.
@@ -105,15 +153,18 @@ Upstream: MUI X `SimpleTreeView`, `RichTreeView`, `TreeItem` (mui.com/x/api/tree
 | `slots.groupTransition` | each group is a Collapse | kept | ADR-0044 |
 | — | `variant="lines"` | kept | Owlky addition (reference "Custom styling") |
 | TreeItem `itemId`, `label`, `disabled`, `children` | same | kept | |
-| `onItemSelectionToggle` | — | deferred | per-item selection callback |
-| `onItemClick`, `onItemFocus` | — | deferred | |
-| `isItemDisabled`, `isItemSelectionDisabled`, TreeItem `disableSelection` | `disabled` per item | deferred | callback forms and selection-only disabling |
-| `disabledItemsFocusable` | — | deferred | disabled items stay in the arrow-key order |
-| `itemChildrenIndentation` | fixed 12px per level (CSS) | deferred | option → `--_ok-*` |
-| `getItemId`, `getItemLabel` | — | deferred (4.11) | |
-| `getItemChildren` | — | deferred | with 4.11 `getItemId` / `getItemLabel` |
-| `selectionPropagation`, `apiRef` (`focusItem`, `getItem`, `setItemExpansion`, `setItemSelection` …), `isItemEditable` / `onItemLabelChange`, lazy loading (`loading`), `itemsReordering` | — | deferred (4.11) | expand all / to depth: 4.18.8 |
-| `itemHeight` (virtualization), `domStructure: "flat"` | — | deferred | large trees |
+| `onItemSelectionToggle`, `onItemClick`, `onItemFocus` | same, without the event; HTML `selectiontoggle`, `itemclick`, `itemfocus` | renamed | 4.18.69 |
+| `isItemDisabled`, `isItemSelectionDisabled`, TreeItem `disableSelection` | same; HTML `aria-disabled`, `data-ok-disable-selection` per item | kept | 4.18.69 |
+| `disabledItemsFocusable` | same; HTML `data-ok-disabled-items-focusable` | kept | 4.18.69: default off, as MUI (disabled items were focusable before) |
+| `itemChildrenIndentation` | same; HTML `data-ok-item-children-indentation` → `--_ok-tree-indent` | kept | 4.18.70 |
+| `getItemId`, `getItemLabel`, `getItemChildren` | same (RichTreeView) | kept | 4.11 / 4.18.69; HTML is markup |
+| `selectionPropagation` | same; HTML `data-ok-selection-propagation` | kept | 4.11 |
+| `apiRef` (`focusItem`, `getItem`, `getItemDOMElement`, `getItemOrderedChildrenIds`, `getItemTree`, `setItemExpansion`, `selectItem`, `setEditedItem`, `updateItemLabel`) | same (`useTreeViewApiRef`); HTML instance | kept | 4.11; `setItemSelection` is `selectItem` |
+| — | `expandAll`, `collapseAll`, `expandToDepth`, `expandSubtree` (apiRef, instance); `highlight` | kept | 4.18.8, beyond MUI |
+| `isItemEditable` / `onItemLabelChange` | same (RichTreeView); HTML `data-ok-editable`, `labelchange` | kept | 4.11 |
+| lazy loading (`dataSource` `getChildrenCount` / `getTreeItems`) | same (RichTreeView, `dataSourceErrorLabel`); HTML `setDataSource`, `data-ok-lazy` | kept | 4.11; no `dataSourceCache` (loaded children stay) |
+| `itemsReordering`, `isItemReorderable`, `canMoveItemToNewPosition`, `onItemPositionChange` | same (RichTreeView); HTML `data-ok-items-reordering`, `data-ok-reorderable`, `move` / `positionchange` | kept | 4.11; keyboard alternative added (WCAG 2.5.7) |
+| `itemHeight` (virtualization), `domStructure: "flat"` | — | deferred | needs an ADR (4.18.70) |
 | `id` | `id` (DOM attribute) | kept | |
 | `classes`, `sx`, other `slots` / `slotProps` | — | not applicable | by decision |
 

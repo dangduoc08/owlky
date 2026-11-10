@@ -205,6 +205,53 @@ for (const impl of implementations) {
       }
       await expect(page.locator('[role="treeitem"][aria-selected="true"]')).toHaveCount(2);
     });
+
+    test("drag and drop: a drag and Ctrl + Shift + arrows reorder items", async ({ page }) => {
+      await openStory(page, storyId(impl, "tree-view", "drag-and-drop"));
+      const tree = page.getByRole("tree", { name: "Projects to reorder" });
+      const ids = () =>
+        tree.evaluate((el) => [...el.children].map((li) => li.getAttribute("data-ok-item-id")));
+      const development = page.getByRole("treeitem", { name: /^Development/ });
+      await development.focus();
+      await page.keyboard.press("Control+Shift+ArrowUp");
+      expect(await ids()).toEqual(["development", "design"]);
+      await expect(development).toBeFocused();
+      // Drag Design above Development with the pointer.
+      const source = page
+        .getByRole("treeitem", { name: /^Design/ })
+        .locator("[data-ok-tree-item-content]")
+        .first();
+      const target = development.locator("[data-ok-tree-item-content]").first();
+      const from = await source.boundingBox();
+      const to = await target.boundingBox();
+      if (!from || !to) throw new Error("no rows");
+      await page.mouse.move(from.x + 40, from.y + from.height / 2);
+      await page.mouse.down();
+      await page.mouse.move(to.x + 40, to.y + 4, { steps: 6 });
+      await expect(page.getByRole("treeitem", { name: /^Development/ })).toHaveAttribute(
+        "data-ok-drop-position",
+        "before",
+      );
+      await page.mouse.up();
+      expect(await ids()).toEqual(["design", "development"]);
+    });
+
+    test("label editing: F2, type, Enter saves; Escape cancels", async ({ page }) => {
+      await openStory(page, storyId(impl, "tree-view", "label-editing"));
+      const design = page.getByRole("treeitem", { name: /^Design/ });
+      await design.focus();
+      await page.keyboard.press("F2");
+      const input = page.getByRole("textbox", { name: "Item label" });
+      await expect(input).toBeFocused();
+      await input.fill("Design system");
+      await page.keyboard.press("Enter");
+      await expect(design.locator("[data-ok-tree-item-label]").first()).toHaveText("Design system");
+      await expect(design).toBeFocused();
+      await page.keyboard.press("F2");
+      await page.keyboard.type("Nope");
+      await page.keyboard.press("Escape");
+      await expect(design.locator("[data-ok-tree-item-label]").first()).toHaveText("Design system");
+    });
   });
 
   test.describe(`autocomplete (${impl})`, () => {
