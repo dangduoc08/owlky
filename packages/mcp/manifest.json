@@ -598,6 +598,7 @@
   "data-ok-enable-expand-collapse",
   "data-ok-enable-input-rules",
   "data-ok-enable-paste-rules",
+  "data-ok-enable-zoom-pan",
   "data-ok-encoding",
   "data-ok-end",
   "data-ok-end-angle",
@@ -1027,12 +1028,18 @@
   "data-ok-organization-chart",
   "data-ok-organization-chart-badge",
   "data-ok-organization-chart-children",
+  "data-ok-organization-chart-fit",
   "data-ok-organization-chart-label",
   "data-ok-organization-chart-node",
+  "data-ok-organization-chart-reset",
   "data-ok-organization-chart-spinner",
   "data-ok-organization-chart-toggle",
   "data-ok-organization-chart-toggle-icon",
   "data-ok-organization-chart-toggle-label",
+  "data-ok-organization-chart-toolbar",
+  "data-ok-organization-chart-zoom-in",
+  "data-ok-organization-chart-zoom-out",
+  "data-ok-organization-chart-zoom-value",
   "data-ok-orientation",
   "data-ok-original-language",
   "data-ok-original-model-path",
@@ -1048,6 +1055,7 @@
   "data-ok-pagination-mode",
   "data-ok-paint",
   "data-ok-pane-height",
+  "data-ok-panning",
   "data-ok-paper",
   "data-ok-parent",
   "data-ok-parent-id",
@@ -52142,6 +52150,10 @@
       "name": "--ok-text-secondary"
      },
      {
+      "name": "--ok-typography-body2-font-size",
+      "value": "0.875rem"
+     },
+     {
       "name": "--ok-typography-caption-font-size",
       "value": "0.75rem"
      }
@@ -52168,9 +52180,21 @@
          "description": "A node whose children list is empty is expanding for the first time. Call `respondWith(nodesOrPromise)` with its child nodes (`li[data-ok-organization-chart-node]` elements, for example cloned from a `template`). No nodes make it a leaf; a rejected promise keeps it collapsed, and the next expand asks again.",
          "detail": "{ nodeId: string | null; node: HTMLElement; respondWith(nodes: PromiseLike<OrganizationChartLoadedNodes> | OrganizationChartLoadedNodes): void; }",
          "name": "ok:organization-chart:loadchildren"
+        },
+        {
+         "cancelable": true,
+         "description": "The user asked for another zoom level (Ctrl or Command with the wheel, a pinch, the + / − / 0 keys or the toolbar; `data-ok-enable-zoom-pan`). `preventDefault()` keeps the current level.",
+         "detail": "{ zoom: number; previous: number; }",
+         "name": "ok:organization-chart:zoom"
         }
        ],
        "methods": [
+        {
+         "description": "Scrolls the chart's scroll area so the node with this `data-ok-node-id` is centered, after expanding its collapsed ancestors. Resolves once the scroll starts.",
+         "kind": "method",
+         "name": "centerOnNode",
+         "type": "(nodeId: string) => Promise<void>"
+        },
         {
          "description": "Removes the highlight.",
          "kind": "method",
@@ -52220,10 +52244,22 @@
          "type": "(depth: number) => void"
         },
         {
+         "description": "The largest level up to 100% at which the whole chart fits its scroll area, then scrolls to its start.",
+         "kind": "method",
+         "name": "fitScreen",
+         "type": "() => void"
+        },
+        {
          "description": "The `data-ok-node-id` of the highlighted node, or `null`.",
          "kind": "method",
          "name": "getHighlightedNode",
          "type": "() => string | null"
+        },
+        {
+         "description": "The zoom level shown.",
+         "kind": "method",
+         "name": "getZoom",
+         "type": "() => number"
         },
         {
          "description": "Highlights the node with this `data-ok-node-id` and its path to the root (`data-ok-highlighted`, the others fade), expands its collapsed ancestors and scrolls it into view. Resolves once it is in view. Replaces an earlier highlight.",
@@ -52236,6 +52272,36 @@
          "kind": "method",
          "name": "isExpanded",
          "type": "(nodeId: string) => boolean"
+        },
+        {
+         "description": "Back to 100%.",
+         "kind": "method",
+         "name": "resetZoom",
+         "type": "() => void"
+        },
+        {
+         "description": "Sets the zoom level (1 is 100%), within `data-ok-min-zoom` and `data-ok-max-zoom`.",
+         "kind": "method",
+         "name": "setZoom",
+         "type": "(level: number) => void"
+        },
+        {
+         "description": "Multiplies the zoom level by `1 + factor`: positive zooms in, negative zooms out.",
+         "kind": "method",
+         "name": "zoom",
+         "type": "(factor: number) => void"
+        },
+        {
+         "description": "25).",
+         "kind": "method",
+         "name": "zoomIn",
+         "type": "() => void"
+        },
+        {
+         "description": "25).",
+         "kind": "method",
+         "name": "zoomOut",
+         "type": "() => void"
         }
        ],
        "options": [
@@ -52398,6 +52464,36 @@
          "kind": "number",
          "min": 0,
          "name": "dimOpacity"
+        },
+        {
+         "attr": "data-ok-enable-zoom-pan",
+         "description": "Ctrl or Command with the mouse wheel, a trackpad pinch, the + / − / 0 keys and the toolbar zoom the chart; a mouse drag pans it.",
+         "kind": "flag",
+         "name": "enableZoomPan"
+        },
+        {
+         "attr": "data-ok-zoom",
+         "default": 1,
+         "description": "The zoom level, from `minZoom` to `maxZoom` (1 is 100%). Changed by the user with zoom and pan on.",
+         "kind": "number",
+         "min": 0.01,
+         "name": "zoom"
+        },
+        {
+         "attr": "data-ok-min-zoom",
+         "default": 0.25,
+         "description": "The smallest zoom level.",
+         "kind": "number",
+         "min": 0.01,
+         "name": "minZoom"
+        },
+        {
+         "attr": "data-ok-max-zoom",
+         "default": 2,
+         "description": "The largest zoom level.",
+         "kind": "number",
+         "min": 0.01,
+         "name": "maxZoom"
         }
        ],
        "parts": [
@@ -52429,12 +52525,28 @@
          "name": "data-ok-organization-chart-children"
         },
         {
+         "description": "In the toolbar: fits the whole chart in its scroll area, up to 100%.",
+         "elements": [
+          "button"
+         ],
+         "kind": "part",
+         "name": "data-ok-organization-chart-fit"
+        },
+        {
          "description": "A node's content, such as a card.",
          "elements": [
           "div"
          ],
          "kind": "part",
          "name": "data-ok-organization-chart-label"
+        },
+        {
+         "description": "In the toolbar: back to 100%.",
+         "elements": [
+          "button"
+         ],
+         "kind": "part",
+         "name": "data-ok-organization-chart-reset"
         },
         {
          "description": "In a toggle: the loading indicator of a node whose children load on demand, shown while the toggle is `aria-busy`.",
@@ -52467,6 +52579,35 @@
          ],
          "kind": "part",
          "name": "data-ok-organization-chart-toggle-label"
+        },
+        {
+         "description": "In the toolbar: zooms in by one step. `aria-disabled` at the largest level.",
+         "elements": [
+          "button"
+         ],
+         "kind": "part",
+         "name": "data-ok-organization-chart-zoom-in"
+        },
+        {
+         "description": "In the toolbar: zooms out by one step. `aria-disabled` at the smallest level.",
+         "elements": [
+          "button"
+         ],
+         "kind": "part",
+         "name": "data-ok-organization-chart-zoom-out"
+        },
+        {
+         "description": "In the toolbar: the zoom level as a percentage, written by the script and announced politely.",
+         "elements": [
+          "output"
+         ],
+         "kind": "part",
+         "name": "data-ok-organization-chart-zoom-value"
+        },
+        {
+         "description": "On the chart: set while a mouse drag pans its scroll area.",
+         "kind": "state",
+         "name": "data-ok-panning"
         }
        ],
        "runtime": "organization-chart"
@@ -52514,6 +52655,12 @@
          "type": "string | null"
         },
         {
+         "default": "1",
+         "description": "The zoom level at first (uncontrolled).",
+         "name": "defaultZoom",
+         "type": "number"
+        },
+        {
          "default": "0.7",
          "description": "How much nodes outside a highlighted path fade, from 0 (not at all) to 1 (hidden).",
          "name": "dimOpacity",
@@ -52535,6 +52682,12 @@
          "default": "false",
          "description": "Nodes with children get a toggle button that collapses and expands them.",
          "name": "enableExpandCollapse",
+         "type": "boolean"
+        },
+        {
+         "default": "false",
+         "description": "Ctrl or Command with the mouse wheel, a trackpad pinch, the + / − / 0 keys and an `OrganizationChartToolbar` zoom the chart; a mouse drag pans its scroll area.",
+         "name": "enableZoomPan",
          "type": "boolean"
         },
         {
@@ -52611,6 +52764,18 @@
          "type": "((node: { id: string; }) => Promise<ReactNode>)"
         },
         {
+         "default": "2",
+         "description": "The largest zoom level.",
+         "name": "maxZoom",
+         "type": "number"
+        },
+        {
+         "default": "0.25",
+         "description": "The smallest zoom level.",
+         "name": "minZoom",
+         "type": "number"
+        },
+        {
          "description": "The node's id, written as `data-ok-node-id`: the methods, callbacks and `collapsedNodes` use it.",
          "name": "nodeId",
          "type": "string"
@@ -52642,10 +52807,20 @@
          "type": "((nodeId: string | null) => void)"
         },
         {
+         "description": "Called with the new level after a zoom by the user or a method call.",
+         "name": "onZoomChange",
+         "type": "((level: number) => void)"
+        },
+        {
          "default": "\"Child nodes\"",
          "description": "Accessible name of the node's toggle button, such as \"Priya Raman's reports\".",
          "name": "toggleLabel",
          "type": "string"
+        },
+        {
+         "description": "Controlled zoom level (1 is 100%), within `minZoom` and `maxZoom`.",
+         "name": "zoom",
+         "type": "number"
         }
        ]
       }
@@ -52735,6 +52910,52 @@
         }
        ]
       }
+     },
+     {
+      "html": {
+       "attribute": "data-ok-organization-chart-toolbar",
+       "description": "A group of zoom buttons next to the chart; its value is the chart's `id`. Works with `data-ok-enable-zoom-pan`.",
+       "elements": [
+        "div"
+       ]
+      },
+      "name": "OrganizationChartToolbar",
+      "react": {
+       "description": "Place it next to the chart's scroll area. The chart writes the level and the limits (`aria-disabled`) on it. Name the group with `aria-label` (default \"Zoom\").",
+       "native": "HTMLDivElement",
+       "props": [
+        {
+         "description": "The `id` of the chart the buttons zoom (its `enableZoomPan` must be on).",
+         "name": "chartId",
+         "required": true,
+         "type": "string"
+        },
+        {
+         "default": "\"Fit to screen\"",
+         "description": "Accessible name of the fit button.",
+         "name": "fitLabel",
+         "type": "string"
+        },
+        {
+         "default": "\"Reset zoom\"",
+         "description": "Accessible name of the reset button.",
+         "name": "resetLabel",
+         "type": "string"
+        },
+        {
+         "default": "\"Zoom in\"",
+         "description": "Accessible name of the zoom in button.",
+         "name": "zoomInLabel",
+         "type": "string"
+        },
+        {
+         "default": "\"Zoom out\"",
+         "description": "Accessible name of the zoom out button.",
+         "name": "zoomOutLabel",
+         "type": "string"
+        }
+       ]
+      }
      }
     ],
     "types": [
@@ -52749,6 +52970,7 @@
    "react": [
     "OrganizationChart",
     "OrganizationChartNode",
+    "OrganizationChartToolbar",
     "useOrganizationChartApiRef"
    ],
    "referenceUrl": "https://minimals.cc/components/extra/organization-chart",
@@ -52937,6 +53159,36 @@
        "kind": "number",
        "min": 0,
        "name": "dimOpacity"
+      },
+      {
+       "attr": "data-ok-enable-zoom-pan",
+       "description": "Ctrl or Command with the mouse wheel, a trackpad pinch, the + / − / 0 keys and the toolbar zoom the chart; a mouse drag pans it.",
+       "kind": "flag",
+       "name": "enableZoomPan"
+      },
+      {
+       "attr": "data-ok-zoom",
+       "default": 1,
+       "description": "The zoom level, from `minZoom` to `maxZoom` (1 is 100%). Changed by the user with zoom and pan on.",
+       "kind": "number",
+       "min": 0.01,
+       "name": "zoom"
+      },
+      {
+       "attr": "data-ok-min-zoom",
+       "default": 0.25,
+       "description": "The smallest zoom level.",
+       "kind": "number",
+       "min": 0.01,
+       "name": "minZoom"
+      },
+      {
+       "attr": "data-ok-max-zoom",
+       "default": 2,
+       "description": "The largest zoom level.",
+       "kind": "number",
+       "min": 0.01,
+       "name": "maxZoom"
       }
      ],
      "root": "data-ok-organization-chart"
@@ -52986,7 +53238,7 @@
      "title": "Purpose"
     },
     {
-     "body": "```\nul[data-ok-organization-chart][data-ok-direction]?[data-ok-line-color][data-ok-line-style]\n  [data-ok-line-height]? [data-ok-line-width]? [data-ok-line-border-radius]? [data-ok-node-padding]?\n  [data-ok-enable-expand-collapse]? [data-ok-expand-collapse-on-node-click]?\n  [data-ok-collapse-badge-threshold]? [data-ok-highlight-on-hover]? [data-ok-dim-opacity]?\n  [data-ok-edge-color-mode]? [data-ok-group-leaf-nodes]? [data-ok-group-leaf-nodes-spacing]?\n  [aria-label | aria-labelledby]\n  li[data-ok-organization-chart-node][data-ok-node-id]?[data-ok-highlighted]?\n    [data-ok-line-color]?[data-ok-line-style]?            (the root node: React `label`;\n                                                           per-node lines, 4.18.6)\n    div[data-ok-organization-chart-label]                 (any content)\n    button[data-ok-organization-chart-toggle][type=button][aria-expanded][aria-controls]\n          [aria-busy]?                                    (collapsible charts, branches only)\n      span[data-ok-organization-chart-toggle-label]       (the name, visually hidden)\n      svg[data-ok-organization-chart-toggle-icon]         (chevron, aria-hidden)\n      span[data-ok-circular-progress][data-ok-organization-chart-spinner][aria-hidden]?\n                                                          (lazy nodes: a CircularProgress)\n      span[data-ok-organization-chart-badge]?             (hidden count, written by the script)\n    ul[data-ok-organization-chart-children][data-ok-collapse]?[id]?[hidden]?\n                                                          (only when there are children, or\n                                                           empty + hidden on a lazy node)\n      li[data-ok-organization-chart-node]                 (OrganizationChartNode, any depth)\n        div[data-ok-organization-chart-label]\n        ul[data-ok-organization-chart-children]?\n```\nWide charts scroll by composition: `Scrollbar › OrganizationChart` (stories, docs). Search by\ncomposition: `Autocomplete` (options = node ids and names) + a `role=\"status\"` line next to the\nchart; the app calls `highlightNode(value)` on change (stories \"Highlight and search\", docs).",
+     "body": "```\nul[data-ok-organization-chart][data-ok-direction]?[data-ok-line-color][data-ok-line-style]\n  [data-ok-line-height]? [data-ok-line-width]? [data-ok-line-border-radius]? [data-ok-node-padding]?\n  [data-ok-enable-expand-collapse]? [data-ok-expand-collapse-on-node-click]?\n  [data-ok-collapse-badge-threshold]? [data-ok-highlight-on-hover]? [data-ok-dim-opacity]?\n  [data-ok-edge-color-mode]? [data-ok-group-leaf-nodes]? [data-ok-group-leaf-nodes-spacing]?\n  [data-ok-enable-zoom-pan]? [data-ok-zoom]? [data-ok-min-zoom]? [data-ok-max-zoom]?\n  [data-ok-panning]? [id]?                                (id: named by a toolbar)\n  [aria-label | aria-labelledby]\n  li[data-ok-organization-chart-node][data-ok-node-id]?[data-ok-highlighted]?\n    [data-ok-line-color]?[data-ok-line-style]?            (the root node: React `label`;\n                                                           per-node lines, 4.18.6)\n    div[data-ok-organization-chart-label]                 (any content)\n    button[data-ok-organization-chart-toggle][type=button][aria-expanded][aria-controls]\n          [aria-busy]?                                    (collapsible charts, branches only)\n      span[data-ok-organization-chart-toggle-label]       (the name, visually hidden)\n      svg[data-ok-organization-chart-toggle-icon]         (chevron, aria-hidden)\n      span[data-ok-circular-progress][data-ok-organization-chart-spinner][aria-hidden]?\n                                                          (lazy nodes: a CircularProgress)\n      span[data-ok-organization-chart-badge]?             (hidden count, written by the script)\n    ul[data-ok-organization-chart-children][data-ok-collapse]?[id]?[hidden]?\n                                                          (only when there are children, or\n                                                           empty + hidden on a lazy node)\n      li[data-ok-organization-chart-node]                 (OrganizationChartNode, any depth)\n        div[data-ok-organization-chart-label]\n        ul[data-ok-organization-chart-children]?\n```\nWide charts scroll by composition: `Scrollbar › OrganizationChart` (stories, docs).\nZoom toolbar (ADR-0056), a sibling the app places next to the Scrollbar:\n```\ndiv[data-ok-organization-chart-toolbar=\"<chart id>\"][role=group][aria-label]   (React OrganizationChartToolbar)\n  button[data-ok-icon-button][data-ok-organization-chart-zoom-out][aria-label][aria-controls][aria-disabled]?\n  output[data-ok-organization-chart-zoom-value]                                (written by the script)\n  button[data-ok-icon-button][data-ok-organization-chart-zoom-in][aria-label][aria-controls][aria-disabled]?\n  button[data-ok-icon-button][data-ok-organization-chart-fit][aria-label][aria-controls]\n  button[data-ok-icon-button][data-ok-organization-chart-reset][aria-label][aria-controls]\n``` Search by\ncomposition: `Autocomplete` (options = node ids and names) + a `role=\"status\"` line next to the\nchart; the app calls `highlightNode(value)` on change (stories \"Highlight and search\", docs).",
      "id": "anatomy",
      "title": "Anatomy"
     },
@@ -53006,22 +53258,22 @@
      "title": "States"
     },
     {
-     "body": "Without `enableExpandCollapse`, no interaction. HTML runtime (`organization-chart`): reads `data-ok-line-height`,\n`data-ok-line-width`, `data-ok-line-border-radius`, `data-ok-node-padding` through the schema\n(invalid → left out) and writes the private properties through CSSOM; follows changes to those\nattributes (`MutationObserver`); `destroy()` removes what it wrote. Without JavaScript the\nstylesheet defaults apply. React writes the same properties in `style` and renders\n`data-ok-runtime=\"off\"`.\n\nExpand and collapse (ADR-0051): core `createOrganizationChartController(root, options)` reports a\ntoggle click (and, with `expandCollapseOnNodeClick`, a click on a label outside its interactive\ncontent: links, buttons, form fields, `[tabindex]`, menu items, popovers, prevented clicks) as\n`onToggle(node, expanded)`, ignores busy toggles, and writes every collapsed node's badge (the\nnode's descendants at every depth, nested charts left out; empty when expanded or under the\nthreshold) from a MutationObserver. React keeps the collapsed ids and renders `hidden` /\n`aria-expanded`; the HTML runtime emits cancelable `expand` / `collapse` and writes them. The\ntoggle straddles the label's bottom edge (half its 24px height over the label); the children\nlist's connector starts below it, so collapsible charts are 12px taller per level. During the\nCollapse animation the list's top padding (the line from the parent) stays (ADR-0044). Lazy\nnodes: React calls `loadChildren` once, renders the resolved nodes as the node's children and\nexpands it (empty → leaf: no toggle, no list; rejected → stays collapsed, retried on the next\nexpand); HTML emits `loadchildren` with `respondWith(nodes | Promise<nodes>)` (elements, a\nfragment or nothing), appends them and expands, or removes toggle and list when nothing came.\nBatch methods (`organizationChartPlan`) change loaded nodes only and emit nothing.\n\nLineage highlight: CSS finds the path with `:has()` (a node `:has()` the active label or toggle;\nits lists' `::before` take `--_ok-org-highlight-color`, `--ok-palette-primary-main`). The bar\nsegment from a parent's line to a child on the path is the child label's `::before` (z-index 1,\nover the connectors): CSS can't know where the list's center falls among siblings of different\nsizes, so core `createOrganizationChartHighlight(root)` (both owners) measures\n`organizationChartPathStyle(node)` for each node of the active paths (pointerover / focusin on a\nlabel or toggle, `data-ok-highlighted`, DOM and size changes) and writes `--_ok-org-path-offset`\n(signed logical px to the list's center), `--_ok-org-path-forward`, `--_ok-org-path-round` on the\nnode through CSSOM (parity ignores `style`). Without them only the line to the label shows.\n`highlightNode(id)`: writes the state (React: `highlightedNode`; HTML: `data-ok-highlighted`, one\nnode), expands the collapsed ancestors (no events, like the batch methods), then core\n`revealOrganizationChartNode` waits a frame and the ancestors' Collapse animations and calls\n`scrollIntoView({ block: \"nearest\", inline: \"nearest\" })`, smooth unless reduced motion. Nodes\nwithout `nodeId` can't be highlighted from code.",
+     "body": "Without `enableExpandCollapse`, no interaction. HTML runtime (`organization-chart`): reads `data-ok-line-height`,\n`data-ok-line-width`, `data-ok-line-border-radius`, `data-ok-node-padding` through the schema\n(invalid → left out) and writes the private properties through CSSOM; follows changes to those\nattributes (`MutationObserver`); `destroy()` removes what it wrote. Without JavaScript the\nstylesheet defaults apply. React writes the same properties in `style` and renders\n`data-ok-runtime=\"off\"`.\n\nExpand and collapse (ADR-0051): core `createOrganizationChartController(root, options)` reports a\ntoggle click (and, with `expandCollapseOnNodeClick`, a click on a label outside its interactive\ncontent: links, buttons, form fields, `[tabindex]`, menu items, popovers, prevented clicks) as\n`onToggle(node, expanded)`, ignores busy toggles, and writes every collapsed node's badge (the\nnode's descendants at every depth, nested charts left out; empty when expanded or under the\nthreshold) from a MutationObserver. React keeps the collapsed ids and renders `hidden` /\n`aria-expanded`; the HTML runtime emits cancelable `expand` / `collapse` and writes them. The\ntoggle straddles the label's bottom edge (half its 24px height over the label); the children\nlist's connector starts below it, so collapsible charts are 12px taller per level. During the\nCollapse animation the list's top padding (the line from the parent) stays (ADR-0044). Lazy\nnodes: React calls `loadChildren` once, renders the resolved nodes as the node's children and\nexpands it (empty → leaf: no toggle, no list; rejected → stays collapsed, retried on the next\nexpand); HTML emits `loadchildren` with `respondWith(nodes | Promise<nodes>)` (elements, a\nfragment or nothing), appends them and expands, or removes toggle and list when nothing came.\nBatch methods (`organizationChartPlan`) change loaded nodes only and emit nothing.\n\nZoom and pan (ADR-0056, `enableZoomPan`): the level is CSS `zoom` on the root\n(`[data-ok-zoom]` → `zoom: var(--_ok-org-zoom)`, written with the lengths), so the composed\nScrollbar scrolls the zoomed size, focus scrolling and `scrollIntoView` work, and a narrow chart\nstays centered. State: React `zoom` / `defaultZoom` / `onZoomChange` (every change) and\n`data-ok-zoom` while `enableZoomPan` is on or the level isn't 1; HTML `data-ok-zoom`, written after\nthe cancelable `zoom` event. Clamped to `minZoom` (0.25) / `maxZoom` (2). Core\n`createOrganizationChartZoom(root, options)` (both owners) reports `onZoom(level)` for Ctrl / ⌘ +\nwheel and trackpad pinches (`ctrlKey` wheels, WebKit `gesturechange`; always prevented), + / = / −\n/ 0 on a key press in the viewport or the chart (not with Ctrl / ⌘ / Alt, not in editable\nfields, menus, listboxes, grids, trees, comboboxes, sliders, spinbuttons) and the toolbar (one\ndocument click listener, the toolbar names the chart by `id`); the owner writes the level and\ncalls `update({ zoom })`, then the controller scrolls the viewport so the content under the\npointer (or the viewport's center) stays put. Mouse drag (outside interactive content, past 4px)\npans the viewport, `data-ok-panning` while it lasts, and the click ending it is prevented. Touch\nand pen scroll natively; touch pinches zoom the page. Methods: `zoom(factor)` (× `1 + factor`),\n`zoomIn()` / `zoomOut()` (× / ÷ 1.25), `setZoom(level)`, `getZoom()`, `resetZoom()`, `fitScreen()`\n(largest level ≤ 1 at which the root node fits the viewport's content box, the height only when\nthe viewport doesn't grow with the content, then scroll to the start), `centerOnNode(id)` (expands\ncollapsed ancestors, waits for their Collapse, scrolls the viewport only, smooth unless reduced\nmotion). Methods emit no HTML events. The controller writes the toolbar's value (`125%`) and\n`aria-disabled` on zoom in / out at the limits in both implementations (React renders neither).\nCollapse measures layout px (box / offset ratio), so branches animate to their real size under zoom.\n\nLineage highlight: CSS finds the path with `:has()` (a node `:has()` the active label or toggle;\nits lists' `::before` take `--_ok-org-highlight-color`, `--ok-palette-primary-main`). The bar\nsegment from a parent's line to a child on the path is the child label's `::before` (z-index 1,\nover the connectors): CSS can't know where the list's center falls among siblings of different\nsizes, so core `createOrganizationChartHighlight(root)` (both owners) measures\n`organizationChartPathStyle(node)` for each node of the active paths (pointerover / focusin on a\nlabel or toggle, `data-ok-highlighted`, DOM and size changes) and writes `--_ok-org-path-offset`\n(signed logical px to the list's center), `--_ok-org-path-forward`, `--_ok-org-path-round` on the\nnode through CSSOM (parity ignores `style`). Without them only the line to the label shows.\n`highlightNode(id)`: writes the state (React: `highlightedNode`; HTML: `data-ok-highlighted`, one\nnode), expands the collapsed ancestors (no events, like the batch methods), then core\n`revealOrganizationChartNode` waits a frame and the ancestors' Collapse animations and calls\n`scrollIntoView({ block: \"nearest\", inline: \"nearest\" })`, smooth unless reduced motion. Nodes\nwithout `nodeId` can't be highlighted from code.",
      "id": "behavior",
      "title": "Behavior"
     },
     {
-     "body": "None of its own. Controls in labels follow DOM order: a node, its toggle, then its children, in\nevery direction (only flex directions change, never the DOM).\nToggles are native buttons (Enter / Space). Label clicks are a pointer shortcut only.",
+     "body": "None of its own without zoom. Controls in labels follow DOM order: a node, its toggle, then its children, in\nevery direction (only flex directions change, never the DOM).\nToggles are native buttons (Enter / Space). Label clicks are a pointer shortcut only.\nZoom (`enableZoomPan`): **+** or **=** zooms in, **−** zooms out, **0** resets, on the focused\nscroll area or any control in the chart; the toolbar's buttons are the pointer-free alternative to\nthe wheel, pinch and drag. Arrow keys scroll the focused Scrollbar.",
      "id": "keyboard",
      "title": "Keyboard"
     },
     {
-     "body": "Highlight: faded nodes are below the text contrast minimum while a hover / focus highlight\nlasts (transient, user-driven; `dimOpacity={0}` keeps full contrast, the path colors remain); a\nsearch result fades nothing for that reason. The highlight is visual: the composed search\nannounces its result in a `role=\"status\"` line (polite).\nNested lists: screen readers announce each level, its size and positions. Name the root `ul`\n(`aria-label` / `aria-labelledby`). Lines are decorative (borders on pseudo-elements). Wide\ncharts go in a named, focusable Scrollbar (keyboard scrolling). Toggles: `aria-expanded`,\n`aria-controls` (the list's id), the name from the visually hidden label plus the visible count\n(label in name, WCAG 2.5.3), `aria-busy` while loading, a 24px target, a focus ring. Collapsed\nchildren are `hidden` (out of the accessibility tree).\nIn every direction the children list's Collapse animates its block size (left / right charts:\nthe column folds toward its center; ADR-0052).",
+     "body": "Highlight: faded nodes are below the text contrast minimum while a hover / focus highlight\nlasts (transient, user-driven; `dimOpacity={0}` keeps full contrast, the path colors remain); a\nsearch result fades nothing for that reason. The highlight is visual: the composed search\nannounces its result in a `role=\"status\"` line (polite).\nNested lists: screen readers announce each level, its size and positions. Name the root `ul`\n(`aria-label` / `aria-labelledby`). Lines are decorative (borders on pseudo-elements). Wide\ncharts go in a named, focusable Scrollbar (keyboard scrolling). Toggles: `aria-expanded`,\n`aria-controls` (the list's id), the name from the visually hidden label plus the visible count\n(label in name, WCAG 2.5.3), `aria-busy` while loading, a 24px target, a focus ring. Collapsed\nchildren are `hidden` (out of the accessibility tree).\nIn every direction the children list's Collapse animates its block size (left / right charts:\nthe column folds toward its center; ADR-0052).\nZoom: the toolbar is a named group of named IconButtons (`aria-controls` = the chart); the level\nis an `output` (polite status). Limits use `aria-disabled` (the focus stays on the button). A\nfocused control is scrolled into view by the browser at every level. Below 100% the toggles and\nlabel controls shrink under the 24px target size: a user-chosen view, like the browser's zoom, one\n**0** or **Reset zoom** away from full size (axe scans run at 100%). Zoom changes are instant;\n`centerOnNode` scrolls smoothly unless reduced motion.",
      "id": "accessibility",
      "title": "Accessibility"
     },
     {
-     "body": "HTML events (user intent only): `ok:organization-chart:expand` / `collapse` (cancelable, `{ nodeId,\nnode }`), `ok:organization-chart:loadchildren` (`{ nodeId, node, respondWith }`). HTML instance:\n`expand(id)` (Promise; loads lazy children), `collapse(id)`, `isExpanded(id)`, `expandAll()`,\n`collapseAll()`, `expandToDepth(depth)` (root = 0), `expandSubtree(id)`, `collapseSubtree(id)`,\n`highlightNode(id)` (Promise; resolves once in view), `clearHighlight()`, `getHighlightedNode()`,\n`destroy()`. React: the same methods on `apiRef`. Highlight methods emit no events.",
+     "body": "HTML events (user intent only): `ok:organization-chart:expand` / `collapse` (cancelable, `{ nodeId,\nnode }`), `ok:organization-chart:loadchildren` (`{ nodeId, node, respondWith }`). HTML instance:\n`expand(id)` (Promise; loads lazy children), `collapse(id)`, `isExpanded(id)`, `expandAll()`,\n`collapseAll()`, `expandToDepth(depth)` (root = 0), `expandSubtree(id)`, `collapseSubtree(id)`,\n`highlightNode(id)` (Promise; resolves once in view), `clearHighlight()`, `getHighlightedNode()`,\n`zoom(factor)`, `zoomIn()`, `zoomOut()`, `setZoom(level)`, `getZoom()`, `resetZoom()`,\n`fitScreen()`, `centerOnNode(id)` (Promise), `destroy()`. React: the same methods on `apiRef`.\nHighlight and zoom methods emit no events. `ok:organization-chart:zoom` (cancelable,\n`{ zoom, previous }`): the user asked for another level.",
      "id": "events-api",
      "title": "Events / API"
     },
@@ -53031,7 +53283,7 @@
      "title": "Responsive"
     },
     {
-     "body": "Upstream: `react-organizational-chart` `Tree`, `TreeNode` (github.com/daniel-hauser/react-organizational-chart\nREADME, checked 2026-11-09). ApexTree parity is roadmap 2.4.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `Tree` | `OrganizationChart` | renamed | avoids a clash with Tree view |\n| `TreeNode` | `OrganizationChartNode` | renamed | |\n| `label`, `children` | same | kept | |\n| `lineHeight`, `lineWidth`, `lineBorderRadius`, `nodePadding` (CSS lengths) | same (px number or `px` / `rem` / `em`) | kept | reference defaults (40 / 1 / 24 / 4) |\n| `lineColor` (any CSS color) | `lineColor` (`divider`, `inherit`, palette) | kept | allowlist; custom colors via `inherit` + `color` |\n| `lineStyle` (any border style) | `solid` · `dashed` · `dotted` | kept | others look solid at 1px |\n\nApexTree (`apexcharts.com/apextree/docs`: options, methods, expand-collapse and lazy-children pages,\nchecked 2026-11-10; ADR-0051):\n\n| ApexTree | Owlky | Status | Note |\n|---|---|---|---|\n| `enableExpandCollapse` (default `true`) | same (default `false`) | kept | off keeps existing charts unchanged |\n| `expandCollapseOnNodeClick` | same | kept | skips interactive content in labels |\n| `collapseBadgeEnabled`, `collapseBadgeThreshold` | same | kept | |\n| `expand`, `collapse`, `expandAll`, `collapseAll`, `expandToDepth`, `expandSubtree`, `collapseSubtree` | same (React `apiRef`, HTML instance) + `isExpanded` | kept | `expand` returns a promise (lazy loads) |\n| node `id`, `hasChildren` | `nodeId`, `hasChildren` | renamed / kept | `id` would be the DOM id |\n| `loadChildren({ id, name, data })` → nodes | React `loadChildren({ id })` → `ReactNode`; HTML `loadchildren` + `respondWith` | renamed | name and data are the app's own |\n| — | `collapsedNodes` / `defaultCollapsedNodes` / `onCollapsedNodesChange`, `onExpand` / `onCollapse`, `toggleLabel`, `ok:organization-chart:expand` / `collapse` | added | React state, HTML events, the toggle's name (ApexTree has none) |\n| `expandCollapseButton*` colors and size, `collapseBadge*` colors and font size | tokens | not applicable | 24px target, line-colored border |\n| `locale.messages.loadingNodeLabel` | `aria-busy` | not applicable | a stable toggle name |\n| `countBadgeEnabled`, `countBadgeSource`, `countBadgeDataKey`, `countBadgeThreshold` | — | deferred | always-on counts; content badges belong in labels |\n| `enableExpandCollapseZoom`, `maxZoomNodeSpan` | — | deferred (4.18.5) | zoom / fit |\n| `enableAnimation`, `motion.stagger`, `motion.spring` | Collapse timing tokens | not applicable | reduced motion respected |\n| `onNodeClick`, `cardExpansion`, `expandCard` / `collapseCard` / `toggleCard` | — | not applicable | labels hold the app's content and handlers |\n| `direction` `top` · `bottom` · `left` · `right` | `direction` (default `top`, not written) | kept | CSS only; `left` / `right` are logical (ADR-0052) |\n| `direction: \"radial\"` | — | deferred (4.18.7) | rings need measured positions (Chart engine) |\n| `locale.direction` (`ltr` · `rtl` · `auto`) | the page's `dir` | not applicable | logical properties mirror the chart |\n| `highlightOnHover` (default `true`) | same (default `false`) | kept | off keeps existing charts unchanged; the focus highlights too |\n| `focus.dimOpacity` (default 0.7) | `dimOpacity` (0.7) | renamed | applies to the hover highlight |\n| `edgeColorHover`, `nodeBGColorHover`, `borderColorHover` | `--ok-palette-primary-main` path | not applicable | tokens; cards are the app's |\n| `enableSearch`, `locale.messages.searchPlaceholder` / `searchAriaLabel` / `searchMatchCount` | a composed `Autocomplete` + `highlightNode(id)` + a status line | renamed | the root is a list (no room for a field); labels, placeholder and announcement are the app's |\n| `focus.clickToFocus`, `clearFocus()`, `graph.setActivePath(ids)` | `highlightNode(id)` / `clearHighlight()` | renamed | no camera (zoom is 4.18.5) |\n| — | `highlightedNode` / `defaultHighlightedNode` / `onHighlightedNodeChange`, `getHighlightedNode()` | added | React state, HTML instance |\n| `edgeColorMode` `default` · `node` | `edgeColorMode` (`data-ok-edge-color-mode`, not written by default) | kept | `node`: a node's line options carry through its branch; `default`: they stop at its children |\n| node colors in `edgeColorMode: \"node\"` (the source node's color) | node `lineColor` / `lineStyle` (`data-ok-line-color` / `-style` on the `li`) | renamed | nodes have no color of their own (content is free): the line options are the node's; allowlists, no free CSS |\n| `edgeColor`, `edgeWidth` | `lineColor`, `lineWidth` | renamed | react-organizational-chart names (ADR-0036) |\n| `edgeStyle` `curved` · `orthogonal` · `straight` | rounded orthogonal connectors (`lineBorderRadius`; 0 = square) | not applicable | CSS borders draw orthogonal lines only (ADR-0036) |\n| `edgeFlow` (marching dashes on the active path) | — | not applicable | not proposed in 2.4 (edge flow animation) |\n| `groupLeafNodes` (default `false`) | same | kept | two or more leaves only (one leaf keeps its straight line); a list mixing leaves and branches stays a row (CSS can't move a subset of siblings into a column) |\n| `groupLeafNodesSpacing` (default 10) | same (default 8, px or a length) | kept | the 4px spacing scale |\n| grouped leaves' side-bracket connector | the same, with rounded last turn | kept | left / right charts: a row after the node (the axes swap) |\n| zoom / pan | — | deferred (4.18.5) | |",
+     "body": "Upstream: `react-organizational-chart` `Tree`, `TreeNode` (github.com/daniel-hauser/react-organizational-chart\nREADME, checked 2026-11-09). ApexTree parity is roadmap 2.4.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `Tree` | `OrganizationChart` | renamed | avoids a clash with Tree view |\n| `TreeNode` | `OrganizationChartNode` | renamed | |\n| `label`, `children` | same | kept | |\n| `lineHeight`, `lineWidth`, `lineBorderRadius`, `nodePadding` (CSS lengths) | same (px number or `px` / `rem` / `em`) | kept | reference defaults (40 / 1 / 24 / 4) |\n| `lineColor` (any CSS color) | `lineColor` (`divider`, `inherit`, palette) | kept | allowlist; custom colors via `inherit` + `color` |\n| `lineStyle` (any border style) | `solid` · `dashed` · `dotted` | kept | others look solid at 1px |\n\nApexTree (`apexcharts.com/apextree/docs`: options, methods, expand-collapse and lazy-children pages,\nchecked 2026-11-10; ADR-0051):\n\n| ApexTree | Owlky | Status | Note |\n|---|---|---|---|\n| `enableExpandCollapse` (default `true`) | same (default `false`) | kept | off keeps existing charts unchanged |\n| `expandCollapseOnNodeClick` | same | kept | skips interactive content in labels |\n| `collapseBadgeEnabled`, `collapseBadgeThreshold` | same | kept | |\n| `expand`, `collapse`, `expandAll`, `collapseAll`, `expandToDepth`, `expandSubtree`, `collapseSubtree` | same (React `apiRef`, HTML instance) + `isExpanded` | kept | `expand` returns a promise (lazy loads) |\n| node `id`, `hasChildren` | `nodeId`, `hasChildren` | renamed / kept | `id` would be the DOM id |\n| `loadChildren({ id, name, data })` → nodes | React `loadChildren({ id })` → `ReactNode`; HTML `loadchildren` + `respondWith` | renamed | name and data are the app's own |\n| — | `collapsedNodes` / `defaultCollapsedNodes` / `onCollapsedNodesChange`, `onExpand` / `onCollapse`, `toggleLabel`, `ok:organization-chart:expand` / `collapse` | added | React state, HTML events, the toggle's name (ApexTree has none) |\n| `expandCollapseButton*` colors and size, `collapseBadge*` colors and font size | tokens | not applicable | 24px target, line-colored border |\n| `locale.messages.loadingNodeLabel` | `aria-busy` | not applicable | a stable toggle name |\n| `countBadgeEnabled`, `countBadgeSource`, `countBadgeDataKey`, `countBadgeThreshold` | — | deferred | always-on counts; content badges belong in labels |\n| `enableExpandCollapseZoom`, `maxZoomNodeSpan` | — | not applicable | refitting after each toggle moves the view under the pointer; apps call `fitScreen()` from `onExpand` (ADR-0056) |\n| `enableAnimation`, `motion.stagger`, `motion.spring` | Collapse timing tokens | not applicable | reduced motion respected |\n| `onNodeClick`, `cardExpansion`, `expandCard` / `collapseCard` / `toggleCard` | — | not applicable | labels hold the app's content and handlers |\n| `direction` `top` · `bottom` · `left` · `right` | `direction` (default `top`, not written) | kept | CSS only; `left` / `right` are logical (ADR-0052) |\n| `direction: \"radial\"` | — | deferred (4.18.7) | rings need measured positions (Chart engine) |\n| `locale.direction` (`ltr` · `rtl` · `auto`) | the page's `dir` | not applicable | logical properties mirror the chart |\n| `highlightOnHover` (default `true`) | same (default `false`) | kept | off keeps existing charts unchanged; the focus highlights too |\n| `focus.dimOpacity` (default 0.7) | `dimOpacity` (0.7) | renamed | applies to the hover highlight |\n| `edgeColorHover`, `nodeBGColorHover`, `borderColorHover` | `--ok-palette-primary-main` path | not applicable | tokens; cards are the app's |\n| `enableSearch`, `locale.messages.searchPlaceholder` / `searchAriaLabel` / `searchMatchCount` | a composed `Autocomplete` + `highlightNode(id)` + a status line | renamed | the root is a list (no room for a field); labels, placeholder and announcement are the app's |\n| `focus.clickToFocus`, `clearFocus()`, `graph.setActivePath(ids)` | `highlightNode(id)` / `clearHighlight()` | renamed | the highlight scrolls the node into view; `centerOnNode` centers it |\n| — | `highlightedNode` / `defaultHighlightedNode` / `onHighlightedNodeChange`, `getHighlightedNode()` | added | React state, HTML instance |\n| `edgeColorMode` `default` · `node` | `edgeColorMode` (`data-ok-edge-color-mode`, not written by default) | kept | `node`: a node's line options carry through its branch; `default`: they stop at its children |\n| node colors in `edgeColorMode: \"node\"` (the source node's color) | node `lineColor` / `lineStyle` (`data-ok-line-color` / `-style` on the `li`) | renamed | nodes have no color of their own (content is free): the line options are the node's; allowlists, no free CSS |\n| `edgeColor`, `edgeWidth` | `lineColor`, `lineWidth` | renamed | react-organizational-chart names (ADR-0036) |\n| `edgeStyle` `curved` · `orthogonal` · `straight` | rounded orthogonal connectors (`lineBorderRadius`; 0 = square) | not applicable | CSS borders draw orthogonal lines only (ADR-0036) |\n| `edgeFlow` (marching dashes on the active path) | — | not applicable | not proposed in 2.4 (edge flow animation) |\n| `groupLeafNodes` (default `false`) | same | kept | two or more leaves only (one leaf keeps its straight line); a list mixing leaves and branches stays a row (CSS can't move a subset of siblings into a column) |\n| `groupLeafNodesSpacing` (default 10) | same (default 8, px or a length) | kept | the 4px spacing scale |\n| grouped leaves' side-bracket connector | the same, with rounded last turn | kept | left / right charts: a row after the node (the axes swap) |\n| `enableZoomPan` (default `true`) | same (default `false`) | kept | off keeps existing charts unchanged; Ctrl / ⌘ + wheel, pinch, + / − / 0, mouse drag (ADR-0056) |\n| `enableToolbar` | `OrganizationChartToolbar` (HTML `data-ok-organization-chart-toolbar`) | renamed | a composed part next to the chart (the root is a list); zoom in / out, the level, fit, reset |\n| `zoom(zoomFactor)`, `fitScreen()`, `centerOnNode(nodeId)` | same (React `apiRef`, HTML instance) + `zoomIn`, `zoomOut`, `setZoom`, `getZoom`, `resetZoom` | kept | fit never enlarges past 100%; `centerOnNode` opens collapsed ancestors and returns a promise |\n| — | `zoom` / `defaultZoom` / `onZoomChange`, `minZoom`, `maxZoom`, `ok:organization-chart:zoom` | added | state, limits and the HTML event |\n| `exportToSvg()`, the toolbar's export button | — | not applicable | the chart is HTML, not SVG |\n| `viewPortWidth`, `viewPortHeight`, `paddingX`, `paddingY` | the Scrollbar's size and padding | not applicable | no SVG coordinate space |\n| `enableAnimation` for `centerOnNode` | reduced motion decides | not applicable | smooth scroll unless reduced motion; zoom steps are instant |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
@@ -53135,6 +53387,15 @@
      "react": "import { OrganizationChart, OrganizationChartNode, Scrollbar } from \"@owlky/react\";\nimport { CEO, PEOPLE, type PersonNode } from \"./organization-chart-data.js\";\nimport { SimpleCard } from \"./organization-chart-examples.js\";\n\n/** One person and, below them, their reports. */\nfunction PersonNodeItem({ person }: { person: PersonNode }) {\n  return (\n    <OrganizationChartNode\n      nodeId={person.id}\n      toggleLabel={`${person.name}'s reports`}\n      label={<SimpleCard person={person} />}\n    >\n      {person.children?.map((child) => (\n        <PersonNodeItem key={child.id} person={child} />\n      ))}\n    </OrganizationChartNode>\n  );\n}\n\n/** The reports of a lead, as nodes (what a server would answer). */\nexport function reportsOf(id: string) {\n  const lead = PEOPLE.find((person) => person.id === id);\n  return (lead?.children ?? []).map((person) => <PersonNodeItem key={person.id} person={person} />);\n}\n\n/** Answers after a short delay, like a request. */\nconst delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));\n\n/** Lazy children: the leads' reports load on their first expand. */\nexport function LazyChartDemo() {\n  return (\n    <Scrollbar\n      className=\"sb-org-scroll\"\n      aria-label=\"Organization chart with lazy children, scrollable\"\n    >\n      <OrganizationChart\n        id=\"org-lazy\"\n        aria-label=\"Organization chart with lazy children\"\n        enableExpandCollapse\n        lineColor=\"primary\"\n        lineHeight={20}\n        nodeId={CEO.id}\n        toggleLabel={`${CEO.name}'s reports`}\n        label={<SimpleCard person={CEO} />}\n        loadChildren={async ({ id }) => {\n          await delay(800);\n          return reportsOf(id);\n        }}\n      >\n        {PEOPLE.map((lead) => (\n          <OrganizationChartNode\n            key={lead.id}\n            nodeId={lead.id}\n            hasChildren\n            toggleLabel={`${lead.name}'s reports`}\n            label={<SimpleCard person={lead} />}\n          />\n        ))}\n      </OrganizationChart>\n    </Scrollbar>\n  );\n}\n",
      "snippets": [
       "lazy-group.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/typography.css + components/button.css + components/scrollbar.css + components/organization-chart.css + components/circular-progress.css + components/collapse.css + components/icon-button.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Zoom and pan -->\n<div class=\"sb-org-demo\">\n  <div class=\"sb-org-actions\">\n    <div data-ok-organization-chart-toolbar=\"org-zoom\" role=\"group\" aria-label=\"Zoom\">\n      <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-organization-chart-zoom-out aria-label=\"Zoom out\" aria-controls=\"org-zoom\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"11\" cy=\"11\" r=\"8\"></circle><path d=\"m21 21-4.35-4.35\"></path><path d=\"M8 11h6\"></path></svg></button>\n      <output data-ok-organization-chart-zoom-value></output>\n      <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-organization-chart-zoom-in aria-label=\"Zoom in\" aria-controls=\"org-zoom\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"11\" cy=\"11\" r=\"8\"></circle><path d=\"m21 21-4.35-4.35\"></path><path d=\"M11 8v6\"></path><path d=\"M8 11h6\"></path></svg></button>\n      <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-organization-chart-fit aria-label=\"Fit to screen\" aria-controls=\"org-zoom\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 7V5a2 2 0 0 1 2-2h2\"></path><path d=\"M17 3h2a2 2 0 0 1 2 2v2\"></path><path d=\"M21 17v2a2 2 0 0 1-2 2h-2\"></path><path d=\"M7 21H5a2 2 0 0 1-2-2v-2\"></path></svg></button>\n      <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-organization-chart-reset aria-label=\"Reset zoom\" aria-controls=\"org-zoom\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\"></path><path d=\"M3 3v5h5\"></path></svg></button>\n    </div>\n    <button type=\"button\" data-ok-button data-ok-variant=\"outlined\" data-ok-color=\"inherit\" data-ok-size=\"md\" id=\"org-zoom-center\"><span data-ok-button-label>Center on Tomás Rivera</span></button>\n  </div>\n  <section data-ok-scrollbar aria-label=\"Zoomable chart, scrollable\" tabindex=\"0\" class=\"sb-org-scroll sb-org-viewport\">\n    <ul data-ok-organization-chart data-ok-line-height=\"20\" data-ok-line-color=\"primary\" data-ok-line-style=\"solid\" data-ok-enable-expand-collapse data-ok-enable-zoom-pan data-ok-zoom=\"1\" id=\"org-zoom\" aria-label=\"Zoomable organization chart\">\n      <li data-ok-organization-chart-node data-ok-node-id=\"maya\">\n        <div data-ok-organization-chart-label>\n          <div class=\"sb-org-simple\">\n            <span data-ok-typography data-ok-variant=\"subtitle2\" data-ok-no-wrap class=\"sb-org-name\">Maya Lindqvist</span>\n            <span data-ok-typography data-ok-variant=\"caption\" data-ok-no-wrap class=\"sb-org-role\">CEO, Co-founder</span>\n          </div>\n        </div>\n        <button type=\"button\" data-ok-organization-chart-toggle aria-expanded=\"true\" aria-controls=\"org-zoom-1\"><span data-ok-organization-chart-toggle-label>Maya Lindqvist&#x27;s reports</span> <svg data-ok-organization-chart-toggle-icon aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m6 9 6 6 6-6\"></path></svg><span data-ok-organization-chart-badge></span></button>\n        <ul data-ok-collapse data-ok-organization-chart-children id=\"org-zoom-1\">\n          <li data-ok-organization-chart-node data-ok-node-id=\"jonah\">\n            <div data-ok-organization-chart-label>\n              <div class=\"sb-org-simple\">\n                <span data-ok-typography data-ok-variant=\"subtitle2\" data-ok-no-wrap class=\"sb-org-name\">Jonah Pereira</span>\n                <span data-ok-typography data-ok-variant=\"caption\" data-ok-no-wrap class=\"sb-org-role\">Lead</span>\n              </div>\n            </div>\n            <button type=\"button\" data-ok-organization-chart-toggle aria-expanded=\"true\" aria-controls=\"org-zoom-2\"><span data-ok-organization-chart-toggle-label>Jonah Pereira&#x27;s reports</span> <svg data-ok-organization-chart-toggle-icon aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m6 9 6 6 6-6\"></path></svg><span data-ok-organization-chart-badge></span></button>\n            <ul data-ok-collapse data-ok-organization-chart-children id=\"org-zoom-2\">\n              <li data-ok-organization-chart-node data-ok-node-id=\"aiko\">\n                <div data-ok-organization-chart-label>\n                  <div class=\"sb-org-simple\">\n                    <span data-ok-typography data-ok-variant=\"subtitle2\" data-ok-no-wrap class=\"sb-org-name\">Aiko Tanaka</span>\n                    <span data-ok-typography data-ok-variant=\"caption\" data-ok-no-wrap class=\"sb-org-role\">Senior</span>\n                  </div>\n                </div>\n              </li>\n            </ul>\n          </li>\n          <li data-ok-organization-chart-node data-ok-node-id=\"priya\">\n            <div data-ok-organization-chart-label>\n              <div class=\"sb-org-simple\">\n                <span data-ok-typography data-ok-variant=\"subtitle2\" data-ok-no-wrap class=\"sb-org-name\">Priya Raman</span>\n                <span data-ok-typography data-ok-variant=\"caption\" data-ok-no-wrap class=\"sb-org-role\">Lead</span>\n              </div>\n            </div>\n            <button type=\"button\" data-ok-organization-chart-toggle aria-expanded=\"true\" aria-controls=\"org-zoom-3\"><span data-ok-organization-chart-toggle-label>Priya Raman&#x27;s reports</span> <svg data-ok-organization-chart-toggle-icon aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m6 9 6 6 6-6\"></path></svg><span data-ok-organization-chart-badge></span></button>\n            <ul data-ok-collapse data-ok-organization-chart-children id=\"org-zoom-3\">\n              <li data-ok-organization-chart-node data-ok-node-id=\"elias\">\n                <div data-ok-organization-chart-label>\n                  <div class=\"sb-org-simple\">\n                    <span data-ok-typography data-ok-variant=\"subtitle2\" data-ok-no-wrap class=\"sb-org-name\">Elias Novak</span>\n                    <span data-ok-typography data-ok-variant=\"caption\" data-ok-no-wrap class=\"sb-org-role\">Senior</span>\n                  </div>\n                </div>\n                <button type=\"button\" data-ok-organization-chart-toggle aria-expanded=\"true\" aria-controls=\"org-zoom-4\"><span data-ok-organization-chart-toggle-label>Elias Novak&#x27;s reports</span> <svg data-ok-organization-chart-toggle-icon aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m6 9 6 6 6-6\"></path></svg><span data-ok-organization-chart-badge></span></button>\n                <ul data-ok-collapse data-ok-organization-chart-children id=\"org-zoom-4\">\n                  <li data-ok-organization-chart-node data-ok-node-id=\"sofia\">\n                    <div data-ok-organization-chart-label>\n                      <div class=\"sb-org-simple\">\n                        <span data-ok-typography data-ok-variant=\"subtitle2\" data-ok-no-wrap class=\"sb-org-name\">Sofia Marchetti</span>\n                        <span data-ok-typography data-ok-variant=\"caption\" data-ok-no-wrap class=\"sb-org-role\">Back end developer</span>\n                      </div>\n                    </div>\n                    <button type=\"button\" data-ok-organization-chart-toggle aria-expanded=\"false\" aria-controls=\"org-zoom-5\"><span data-ok-organization-chart-toggle-label>Sofia Marchetti&#x27;s reports</span> <svg data-ok-organization-chart-toggle-icon aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m6 9 6 6 6-6\"></path></svg><span data-ok-organization-chart-badge></span></button>\n                    <ul data-ok-collapse hidden data-ok-organization-chart-children id=\"org-zoom-5\">\n                      <li data-ok-organization-chart-node data-ok-node-id=\"tomas\">\n                        <div data-ok-organization-chart-label>\n                          <div class=\"sb-org-simple\">\n                            <span data-ok-typography data-ok-variant=\"subtitle2\" data-ok-no-wrap class=\"sb-org-name\">Tomás Rivera</span>\n                            <span data-ok-typography data-ok-variant=\"caption\" data-ok-no-wrap class=\"sb-org-role\">Back end developer</span>\n                          </div>\n                        </div>\n                      </li>\n                    </ul>\n                  </li>\n                  <li data-ok-organization-chart-node data-ok-node-id=\"noah\">\n                    <div data-ok-organization-chart-label>\n                      <div class=\"sb-org-simple\">\n                        <span data-ok-typography data-ok-variant=\"subtitle2\" data-ok-no-wrap class=\"sb-org-name\">Noah Brennan</span>\n                        <span data-ok-typography data-ok-variant=\"caption\" data-ok-no-wrap class=\"sb-org-role\">Front end</span>\n                      </div>\n                    </div>\n                  </li>\n                </ul>\n              </li>\n            </ul>\n          </li>\n          <li data-ok-organization-chart-node data-ok-node-id=\"leila\">\n            <div data-ok-organization-chart-label>\n              <div class=\"sb-org-simple\">\n                <span data-ok-typography data-ok-variant=\"subtitle2\" data-ok-no-wrap class=\"sb-org-name\">Leila Haddad</span>\n                <span data-ok-typography data-ok-variant=\"caption\" data-ok-no-wrap class=\"sb-org-role\">Lead</span>\n              </div>\n            </div>\n            <button type=\"button\" data-ok-organization-chart-toggle aria-expanded=\"true\" aria-controls=\"org-zoom-6\"><span data-ok-organization-chart-toggle-label>Leila Haddad&#x27;s reports</span> <svg data-ok-organization-chart-toggle-icon aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m6 9 6 6 6-6\"></path></svg><span data-ok-organization-chart-badge></span></button>\n            <ul data-ok-collapse data-ok-organization-chart-children id=\"org-zoom-6\">\n              <li data-ok-organization-chart-node data-ok-node-id=\"oskar\">\n                <div data-ok-organization-chart-label>\n                  <div class=\"sb-org-simple\">\n                    <span data-ok-typography data-ok-variant=\"subtitle2\" data-ok-no-wrap class=\"sb-org-name\">Oskar Berg</span>\n                    <span data-ok-typography data-ok-variant=\"caption\" data-ok-no-wrap class=\"sb-org-role\">Support</span>\n                  </div>\n                </div>\n              </li>\n              <li data-ok-organization-chart-node data-ok-node-id=\"zara\">\n                <div data-ok-organization-chart-label>\n                  <div class=\"sb-org-simple\">\n                    <span data-ok-typography data-ok-variant=\"subtitle2\" data-ok-no-wrap class=\"sb-org-name\">Zara Okafor</span>\n                    <span data-ok-typography data-ok-variant=\"caption\" data-ok-no-wrap class=\"sb-org-role\">Content writer</span>\n                  </div>\n                </div>\n              </li>\n            </ul>\n          </li>\n        </ul>\n      </li>\n    </ul>\n  </section>\n</div>\n\n<script type=\"module\">\nimport { getRuntime } from \"@owlky/html\";\n\n// The toolbar works on its own: it names the chart with data-ok-organization-chart-toolbar\nconst chart = getRuntime().get(document.getElementById(\"org-zoom\"), \"organization-chart\");\n\n// Expands the collapsed branches above the node, then centers it in the scroll area\ndocument.getElementById(\"org-zoom-center\").addEventListener(\"click\", () => chart.centerOnNode(\"tomas\"));\n</script>",
+     "id": "components-organization-chart--zoom-pan",
+     "name": "Zoom and pan",
+     "react": "import {\n  Button,\n  OrganizationChart,\n  OrganizationChartNode,\n  OrganizationChartToolbar,\n  Scrollbar,\n  useOrganizationChartApiRef,\n} from \"@owlky/react\";\nimport { CEO, PEOPLE, type PersonNode } from \"./organization-chart-data.js\";\nimport { SimpleCard } from \"./organization-chart-examples.js\";\n\n/** One person and, below them, their reports, with an id for centerOnNode and a toggle. */\nfunction ZoomNode({ person }: { person: PersonNode }) {\n  return (\n    <OrganizationChartNode\n      nodeId={person.id}\n      toggleLabel={`${person.name}'s reports`}\n      label={<SimpleCard person={person} />}\n    >\n      {person.children?.map((child) => (\n        <ZoomNode key={child.id} person={child} />\n      ))}\n    </OrganizationChartNode>\n  );\n}\n\n/**\n * Zoom and pan: the toolbar, Ctrl or Command with the wheel, a pinch, the + / − / 0 keys and a\n * mouse drag; a button centers a person (opening the collapsed branch above them).\n */\nexport function ZoomChartDemo() {\n  const apiRef = useOrganizationChartApiRef();\n  return (\n    <div className=\"sb-org-demo\">\n      <div className=\"sb-org-actions\">\n        <OrganizationChartToolbar chartId=\"org-zoom\" />\n        <Button\n          id=\"org-zoom-center\"\n          variant=\"outlined\"\n          onClick={() => apiRef.current?.centerOnNode(\"tomas\")}\n        >\n          Center on Tomás Rivera\n        </Button>\n      </div>\n      <Scrollbar className=\"sb-org-scroll sb-org-viewport\" aria-label=\"Zoomable chart, scrollable\">\n        <OrganizationChart\n          id=\"org-zoom\"\n          aria-label=\"Zoomable organization chart\"\n          apiRef={apiRef}\n          enableZoomPan\n          enableExpandCollapse\n          defaultCollapsedNodes={[\"sofia\"]}\n          toggleLabel={`${CEO.name}'s reports`}\n          lineColor=\"primary\"\n          lineHeight={20}\n          nodeId={CEO.id}\n          label={<SimpleCard person={CEO} />}\n        >\n          {PEOPLE.map((person) => (\n            <ZoomNode key={person.id} person={person} />\n          ))}\n        </OrganizationChart>\n      </Scrollbar>\n    </div>\n  );\n}\n",
+     "snippets": [
+      "zoom-group.html"
      ]
     }
    ],
@@ -73725,6 +73986,13 @@
      "title": "Load children on demand"
     },
     {
+     "body": "Set `enableZoomPan` to let people zoom a large chart and drag it around. Put the chart in a `Scrollbar` with a fixed height: the zoomed chart scrolls inside it, and the page never scrolls sideways. Then:\n\n- **Zoom with the pointer:** hold **Ctrl** (**Command** on macOS) and turn the mouse wheel, or pinch on a trackpad. The point under the pointer stays in place. A wheel without the key scrolls as usual, so the chart never takes over the page's scrolling.\n- **Zoom with the keyboard:** press **+** to zoom in, **−** to zoom out and **0** to return to 100%, while the scroll area or a control in the chart has the focus.\n- **Pan:** drag the chart with the mouse. Touch screens scroll it natively.\n- **Use the toolbar:** `OrganizationChartToolbar` shows zoom out, the level, zoom in, fit and reset buttons for the chart whose `id` its `chartId` names. Place it next to the scroll area, so it doesn't scroll away. In HTML, the toolbar is a `div` whose `data-ok-organization-chart-toolbar` attribute names the chart, and it needs no script of its own.\n\nThe level goes from `minZoom` (0.25) to `maxZoom` (2), and 1 is 100%. Control it with `zoom` and `onZoomChange`, or start from `defaultZoom`. In HTML, `data-ok-zoom` holds the level. **Fit to screen** picks the largest level up to 100% at which the whole chart fits the scroll area. It doesn't enlarge a small chart, so text never grows past its normal size. To bring a node into view, call `centerOnNode(id)`: it opens the collapsed branches above the node first.",
+     "html": "<!-- Zoom and pan need the script (once per page) -->\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n\n<!-- The toolbar names the chart by its id -->\n<div data-ok-organization-chart-toolbar=\"company-chart\" role=\"group\" aria-label=\"Zoom\">\n  <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\"\n          data-ok-organization-chart-zoom-out aria-label=\"Zoom out\" aria-controls=\"company-chart\">\n    <svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"11\" cy=\"11\" r=\"8\"></circle><path d=\"m21 21-4.35-4.35\"></path><path d=\"M8 11h6\"></path></svg>\n  </button>\n  <output data-ok-organization-chart-zoom-value></output>\n  <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\"\n          data-ok-organization-chart-zoom-in aria-label=\"Zoom in\" aria-controls=\"company-chart\">\n    <svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"11\" cy=\"11\" r=\"8\"></circle><path d=\"m21 21-4.35-4.35\"></path><path d=\"M11 8v6\"></path><path d=\"M8 11h6\"></path></svg>\n  </button>\n  <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\"\n          data-ok-organization-chart-fit aria-label=\"Fit to screen\" aria-controls=\"company-chart\">\n    <svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 7V5a2 2 0 0 1 2-2h2\"></path><path d=\"M17 3h2a2 2 0 0 1 2 2v2\"></path><path d=\"M21 17v2a2 2 0 0 1-2 2h-2\"></path><path d=\"M7 21H5a2 2 0 0 1-2-2v-2\"></path></svg>\n  </button>\n  <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\"\n          data-ok-organization-chart-reset aria-label=\"Reset zoom\" aria-controls=\"company-chart\">\n    <svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\"></path><path d=\"M3 3v5h5\"></path></svg>\n  </button>\n</div>\n\n<!-- A scroll area with a fixed height: the zoomed chart scrolls inside it -->\n<section data-ok-scrollbar aria-label=\"Company chart, scrollable\" tabindex=\"0\" style=\"height: 400px\">\n  <ul data-ok-organization-chart data-ok-line-color=\"divider\" data-ok-line-style=\"solid\"\n      data-ok-enable-zoom-pan data-ok-zoom=\"1\" id=\"company-chart\" aria-label=\"Company\">\n    <li data-ok-organization-chart-node>\n      <div data-ok-organization-chart-label>Maya Lindqvist, CEO</div>\n      <ul data-ok-organization-chart-children>\n        <li data-ok-organization-chart-node>\n          <div data-ok-organization-chart-label>Jonah Pereira, design</div>\n        </li>\n        <li data-ok-organization-chart-node>\n          <div data-ok-organization-chart-label>Priya Raman, development</div>\n        </li>\n      </ul>\n    </li>\n  </ul>\n</section>\n\n<script type=\"module\">\n  // The level changes through a cancelable event, with the new and the previous level\n  document.getElementById(\"company-chart\").addEventListener(\"ok:organization-chart:zoom\", (event) => {\n    console.log(`Zoom: ${event.detail.previous} to ${event.detail.zoom}`);\n  });\n</script>",
+     "id": "zoom",
+     "react": "import {\n  OrganizationChart,\n  OrganizationChartNode,\n  OrganizationChartToolbar,\n  Scrollbar,\n} from \"@owlky/react\";\n\nexport function ZoomableCompany() {\n  return (\n    <>\n      <OrganizationChartToolbar chartId=\"company-chart\" />\n      {/* A scroll area with a fixed height: the zoomed chart scrolls inside it */}\n      <Scrollbar aria-label=\"Company chart, scrollable\" style={{ height: 400 }}>\n        <OrganizationChart\n          id=\"company-chart\"\n          aria-label=\"Company\"\n          enableZoomPan\n          onZoomChange={(level) => console.log(`Zoom: ${level}`)}\n          label=\"Maya Lindqvist, CEO\"\n        >\n          <OrganizationChartNode label=\"Jonah Pereira, design\" />\n          <OrganizationChartNode label=\"Priya Raman, development\" />\n        </OrganizationChart>\n      </Scrollbar>\n    </>\n  );\n}",
+     "title": "Zoom and pan"
+    },
+    {
      "body": "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed, and lengths that aren't valid, fall back to the default.",
      "id": "options",
      "title": "Options"
@@ -73735,17 +74003,17 @@
      "title": "Content and behavior"
     },
     {
-     "body": "- **`ok:organization-chart:expand`** (cancelable) fires on the chart before someone expands a node, with `detail.nodeId` and `detail.node`. Call `preventDefault()` to keep the node collapsed.\n- **`ok:organization-chart:collapse`** (cancelable) fires before someone collapses a node, with the same details.\n- **`ok:organization-chart:loadchildren`** fires the first time a node with an empty children list expands, with `detail.nodeId`, `detail.node` and `detail.respondWith(nodes)`.\n- **Instance:** `runtime.get(element, \"organization-chart\")` returns `{ expand(id), collapse(id), isExpanded(id), expandAll(), collapseAll(), expandToDepth(depth), expandSubtree(id), collapseSubtree(id), highlightNode(id), clearHighlight(), getHighlightedNode() }`. `expand(id)` returns a promise that resolves once the children are loaded and shown, and `highlightNode(id)` one that resolves once the node is in view. The methods don't fire events.\n- **React:** `onExpand(nodeId)`, `onCollapse(nodeId)`, `onCollapsedNodesChange(nodeIds)`, `onHighlightedNodeChange(nodeId)` and the same methods on `apiRef`.",
+     "body": "- **`ok:organization-chart:expand`** (cancelable) fires on the chart before someone expands a node, with `detail.nodeId` and `detail.node`. Call `preventDefault()` to keep the node collapsed.\n- **`ok:organization-chart:collapse`** (cancelable) fires before someone collapses a node, with the same details.\n- **`ok:organization-chart:zoom`** (cancelable) fires when someone zooms with the wheel, a pinch, the keys or the toolbar, with `detail.zoom` (the new level) and `detail.previous`. Call `preventDefault()` to keep the level.\n- **`ok:organization-chart:loadchildren`** fires the first time a node with an empty children list expands, with `detail.nodeId`, `detail.node` and `detail.respondWith(nodes)`.\n- **Instance:** `runtime.get(element, \"organization-chart\")` returns `{ expand(id), collapse(id), isExpanded(id), expandAll(), collapseAll(), expandToDepth(depth), expandSubtree(id), collapseSubtree(id), highlightNode(id), clearHighlight(), getHighlightedNode(), zoom(factor), zoomIn(), zoomOut(), setZoom(level), getZoom(), resetZoom(), fitScreen(), centerOnNode(id) }`. `zoom(factor)` multiplies the level by 1 + factor, and `zoomIn()` and `zoomOut()` multiply or divide it by 1.25. `expand(id)` returns a promise that resolves once the children are loaded and shown, `highlightNode(id)` one that resolves once the node is in view, and `centerOnNode(id)` one that resolves once the scroll starts. The methods don't fire events.\n- **React:** `onExpand(nodeId)`, `onCollapse(nodeId)`, `onCollapsedNodesChange(nodeIds)`, `onHighlightedNodeChange(nodeId)`, `onZoomChange(level)` and the same methods on `apiRef`.",
      "id": "events",
      "title": "Events and methods"
     },
     {
-     "body": "A chart has no keys of its own. Buttons and links in its labels work as usual, in reading order: each node, its toggle button, then its children. **Tab** reaches the scroll area of a wide chart, and the arrow keys scroll it.",
+     "body": "Buttons and links in a chart's labels work as usual, in reading order: each node, its toggle button, then its children. **Tab** reaches the scroll area of a wide chart, and the arrow keys scroll it. With `enableZoomPan`, these keys work while the scroll area or a control in the chart has the focus:\n\n- **+** or **=:** zooms in.\n- **−:** zooms out.\n- **0:** returns to 100%.\n\nThey don't apply in text fields, menus and other widgets with keys of their own, or with **Ctrl**, **Command** or **Alt**, which stay the browser's zoom.",
      "id": "keyboard",
      "title": "Keyboard"
     },
     {
-     "body": "- The chart is a set of nested lists. Screen readers announce each level, the number of nodes in it and the position of each node.\n- Name the chart with `aria-label` or `aria-labelledby`, such as the name of the team it shows.\n- Lines are decorative: the list structure carries the hierarchy. Don't rely on a line color alone to convey meaning.\n- Text in labels needs a contrast ratio of at least 4.5:1, like any other text.\n- In right-to-left pages, the chart mirrors: the first child is on the right, and a `left` chart grows toward the left.\n- Every `direction` keeps the tree's reading order: a node, then its children.\n- Toggle buttons have `aria-expanded` and `aria-controls`. Their name is the hidden `toggleLabel` followed by the visible number of hidden nodes, so that speech input users can say what they see. Make each `toggleLabel` unique, such as the person's name and \"reports\".\n- Collapsed children are hidden from screen readers too. While children load, the toggle has `aria-busy=\"true\"`.\n- A click on a label is a shortcut for pointer users: keyboard users reach the toggle button with **Tab**.\n- The hover highlight follows the keyboard focus too, so keyboard users see the same path. Faded nodes stay readable but drop below the text contrast minimum while the highlight lasts: set `dimOpacity` to 0 to keep full contrast, as the path's colors still show it.\n- A node found by a search gets a ring and a colored path, and nothing fades. Announce the result in a `role=\"status\"` element: the highlight itself is visual only.",
+     "body": "- The chart is a set of nested lists. Screen readers announce each level, the number of nodes in it and the position of each node.\n- Name the chart with `aria-label` or `aria-labelledby`, such as the name of the team it shows.\n- Lines are decorative: the list structure carries the hierarchy. Don't rely on a line color alone to convey meaning.\n- Text in labels needs a contrast ratio of at least 4.5:1, like any other text.\n- In right-to-left pages, the chart mirrors: the first child is on the right, and a `left` chart grows toward the left.\n- Every `direction` keeps the tree's reading order: a node, then its children.\n- Toggle buttons have `aria-expanded` and `aria-controls`. Their name is the hidden `toggleLabel` followed by the visible number of hidden nodes, so that speech input users can say what they see. Make each `toggleLabel` unique, such as the person's name and \"reports\".\n- Collapsed children are hidden from screen readers too. While children load, the toggle has `aria-busy=\"true\"`.\n- A click on a label is a shortcut for pointer users: keyboard users reach the toggle button with **Tab**.\n- The hover highlight follows the keyboard focus too, so keyboard users see the same path. Faded nodes stay readable but drop below the text contrast minimum while the highlight lasts: set `dimOpacity` to 0 to keep full contrast, as the path's colors still show it.\n- A node found by a search gets a ring and a colored path, and nothing fades. Announce the result in a `role=\"status\"` element: the highlight itself is visual only.\n- Zooming has keyboard and toolbar alternatives to the wheel, pinch and drag. The toolbar's level is an `output` element, so screen readers announce each new level politely. At a limit, the zoom in or zoom out button has `aria-disabled=\"true\"` and keeps the focus.\n- At every level, the browser scrolls the focused control into view inside the scroll area.\n- Below 100%, buttons in the chart are smaller than the 24 by 24 pixel minimum target size. People choose that view themselves, as with the browser's zoom, and **0** or **Reset zoom** returns to full size. Start charts at 100%.\n- Zoom steps are instant. `centerOnNode` and `highlightNode` scroll smoothly, unless the user prefers reduced motion.",
      "id": "accessibility",
      "title": "Accessibility"
     },

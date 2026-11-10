@@ -1128,6 +1128,17 @@ export {
   organizationChartToggle,
   revealOrganizationChartNode,
 } from "./organization-chart/organization-chart.js";
+export {
+  centerOrganizationChartNode,
+  clampOrganizationChartZoom,
+  createOrganizationChartZoom,
+  ORGANIZATION_CHART_ZOOM_LIMITS,
+  ORGANIZATION_CHART_ZOOM_STEP,
+  type OrganizationChartZoomController,
+  type OrganizationChartZoomOptions,
+  organizationChartFitZoom,
+  organizationChartViewport,
+} from "./organization-chart/organization-chart-zoom.js";
 export { inertOutside } from "./overlay/inert-outside.js";
 export { layerStack } from "./overlay/layer-stack.js";
 export { isScrollLocked, lockScroll } from "./overlay/scroll-lock.js";

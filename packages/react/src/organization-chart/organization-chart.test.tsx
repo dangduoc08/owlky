@@ -9,6 +9,7 @@ import {
   type OrganizationChartApi,
   OrganizationChartNode,
   type OrganizationChartProps,
+  OrganizationChartToolbar,
   useOrganizationChartApiRef,
 } from "./organization-chart.js";
 
@@ -1189,5 +1190,134 @@ describe("OrganizationChart highlight", () => {
   it("has no axe violations with a highlighted node", async () => {
     render(<Collapsible highlightOnHover defaultHighlightedNode="c" />);
     await expectNoAxeViolations(document.body);
+  });
+});
+
+/** A zoomable chart in a 300 × 200 scroll area, with its toolbar. */
+function Zoomable(props: Partial<OrganizationChartProps>) {
+  return (
+    <>
+      <OrganizationChartToolbar chartId="zoom-chart" />
+      <section
+        data-ok-scrollbar=""
+        aria-label="Area"
+        // biome-ignore lint/a11y/noNoninteractiveTabindex: a scroll area takes the keyboard
+        tabIndex={0}
+        style={{ width: 300, height: 200, overflow: "auto" }}
+      >
+        <OrganizationChart
+          id="zoom-chart"
+          aria-label="Team"
+          enableZoomPan
+          label={<span style={{ display: "block", width: 500 }}>Lead</span>}
+          {...props}
+        >
+          <OrganizationChartNode nodeId="first" label={<span>First</span>} />
+          <OrganizationChartNode nodeId="last" label={<span>Last</span>} />
+        </OrganizationChart>
+      </section>
+    </>
+  );
+}
+
+describe("OrganizationChart zoom and pan", () => {
+  const zoomValue = () => document.querySelector("[data-ok-organization-chart-zoom-value]");
+
+  it("is off by default: no zoom attribute, the same markup as before", () => {
+    render(<Team />);
+    expect(chart().hasAttribute("data-ok-zoom")).toBe(false);
+    expect(chart().hasAttribute("data-ok-enable-zoom-pan")).toBe(false);
+    expect(chart().style.getPropertyValue("--_ok-org-zoom")).toBe("");
+  });
+
+  it("writes the level while zoom and pan is on, or when it isn't 100%", () => {
+    const { rerender } = render(<Team zoom={1.5} />);
+    expect(chart().getAttribute("data-ok-zoom")).toBe("1.5");
+    expect(getComputedStyle(chart()).zoom).toBe("1.5");
+    rerender(<Team zoom={5} maxZoom={3} minZoom={0.5} />);
+    expect(chart().getAttribute("data-ok-zoom")).toBe("3");
+    expect(chart().getAttribute("data-ok-max-zoom")).toBe("3");
+    rerender(<Team enableZoomPan />);
+    expect(chart().getAttribute("data-ok-zoom")).toBe("1");
+  });
+
+  it("the toolbar zooms, reports the level and shows it; the limits are aria-disabled", async () => {
+    const onZoomChange = vi.fn();
+    render(<Zoomable onZoomChange={onZoomChange} maxZoom={1.25} />);
+    expect(zoomValue()?.textContent).toBe("100%");
+    const zoomIn = screen.getByRole("button", { name: "Zoom in" });
+    await userEvent.click(zoomIn);
+    expect(onZoomChange).toHaveBeenLastCalledWith(1.25);
+    expect(chart().getAttribute("data-ok-zoom")).toBe("1.25");
+    expect(zoomValue()?.textContent).toBe("125%");
+    expect(zoomIn.getAttribute("aria-disabled")).toBe("true");
+    await userEvent.click(screen.getByRole("button", { name: "Zoom out" }));
+    expect(onZoomChange).toHaveBeenLastCalledWith(1);
+    await userEvent.click(screen.getByRole("button", { name: "Fit to screen" }));
+    expect(onZoomChange.mock.lastCall?.[0]).toBeLessThan(1);
+    await userEvent.click(screen.getByRole("button", { name: "Reset zoom" }));
+    expect(onZoomChange).toHaveBeenLastCalledWith(1);
+    expect(screen.getByRole("group", { name: "Zoom" })).toBeTruthy();
+    await expectNoAxeViolations();
+  });
+
+  it("controlled: zoom decides; keys ask through onZoomChange", async () => {
+    const onZoomChange = vi.fn();
+    render(<Zoomable zoom={1} onZoomChange={onZoomChange} />);
+    const area = screen.getByRole("region", { name: "Area" });
+    area.focus();
+    await userEvent.keyboard("+");
+    expect(onZoomChange).toHaveBeenLastCalledWith(1.25);
+    expect(chart().getAttribute("data-ok-zoom")).toBe("1");
+  });
+
+  it("apiRef: zoom steps, factor, set, reset, fit and center", async () => {
+    const apiRef = createRef<OrganizationChartApi>() as MutableRefObject<
+      OrganizationChartApi | undefined
+    >;
+    const onZoomChange = vi.fn();
+    render(<Zoomable apiRef={apiRef} onZoomChange={onZoomChange} />);
+    const api = () => apiRef.current as OrganizationChartApi;
+    act(() => api().zoomIn());
+    expect(api().getZoom()).toBe(1.25);
+    act(() => api().zoomOut());
+    expect(api().getZoom()).toBe(1);
+    act(() => api().zoom(1));
+    expect(api().getZoom()).toBe(2);
+    act(() => api().setZoom(0.1));
+    expect(api().getZoom()).toBe(0.25);
+    act(() => api().resetZoom());
+    expect(api().getZoom()).toBe(1);
+    act(() => api().fitScreen());
+    expect(api().getZoom()).toBeLessThan(1);
+    expect(onZoomChange).toHaveBeenCalledTimes(6);
+    await act(() => api().centerOnNode("last"));
+    await act(() => api().centerOnNode("nobody"));
+  });
+
+  it("centerOnNode opens collapsed ancestors first", async () => {
+    const apiRef = createRef<OrganizationChartApi>() as MutableRefObject<
+      OrganizationChartApi | undefined
+    >;
+    render(
+      <Leaves
+        apiRef={apiRef}
+        enableExpandCollapse
+        enableZoomPan
+        defaultCollapsedNodes={["middle"]}
+      />,
+    );
+    await act(() => apiRef.current?.centerOnNode("b"));
+    const toggle = nodeOf("Middle").querySelector(
+      ":scope > [data-ok-organization-chart-toggle]",
+    ) as Element;
+    expect(toggle.getAttribute("aria-expanded")).toBe("true");
+  });
+
+  it("renders the toolbar and the zoom attributes on the server as on the client", () => {
+    const html = renderToString(<Zoomable />);
+    expect(html).toContain('data-ok-organization-chart-toolbar="zoom-chart"');
+    expect(html).toContain('data-ok-zoom="1"');
+    expect(html).toContain("data-ok-enable-zoom-pan");
   });
 });

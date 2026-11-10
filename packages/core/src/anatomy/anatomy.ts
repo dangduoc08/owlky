@@ -2561,6 +2561,18 @@ export const organizationChartOptions = defineOptions(
       "How much nodes outside a highlighted path fade, from 0 (not at all) to 1 (hidden).",
       { min: 0 },
     ),
+    enableZoomPan: flag(
+      "data-ok-enable-zoom-pan",
+      "Ctrl or Command with the mouse wheel, a trackpad pinch, the + / − / 0 keys and the toolbar zoom the chart; a mouse drag pans it.",
+    ),
+    zoom: number(
+      "data-ok-zoom",
+      1,
+      "The zoom level, from `minZoom` to `maxZoom` (1 is 100%). Changed by the user with zoom and pan on.",
+      { min: 0.01 },
+    ),
+    minZoom: number("data-ok-min-zoom", 0.25, "The smallest zoom level.", { min: 0.01 }),
+    maxZoom: number("data-ok-max-zoom", 2, "The largest zoom level.", { min: 0.01 }),
   },
 );
 
@@ -2580,6 +2592,10 @@ export interface OrganizationChartAnatomyOptions {
   collapseBadgeThreshold?: number | undefined;
   highlightOnHover?: boolean | undefined;
   dimOpacity?: number | undefined;
+  enableZoomPan?: boolean | undefined;
+  zoom?: number | undefined;
+  minZoom?: number | undefined;
+  maxZoom?: number | undefined;
 }
 
 /** `data-ok-*` attributes of an organization chart (the outer `ul`). */

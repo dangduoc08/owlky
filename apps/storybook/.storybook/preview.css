@@ -199,6 +199,11 @@
   gap: calc(var(--ok-spacing) * 2);
 }
 
+/* A scroll area with a fixed height: zoom, fit and pan work on both axes (Zoom and pan story). */
+.sb-org-viewport {
+  height: calc(var(--ok-spacing) * 100);
+}
+
 .sb-org-simple {
   display: inline-flex;
   flex-direction: column;

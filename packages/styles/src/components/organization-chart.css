@@ -56,6 +56,8 @@
     /* Lineage highlight: how much the other nodes fade, and the path's color. */
     --_ok-org-dim-opacity: 0.7;
     --_ok-org-highlight-color: var(--ok-palette-primary-main);
+    /* Zoom level (ADR-0056), applied with data-ok-zoom only. */
+    --_ok-org-zoom: 1;
 
     display: flex;
     justify-content: center;
@@ -1876,6 +1878,37 @@
     border-inline-start: var(--_ok-org-line-width) var(--_ok-org-line-style)
       var(--_ok-org-highlight-color);
     border-start-start-radius: calc(var(--_ok-org-leaf-radius) * var(--_ok-org-path-round, 0));
+  }
+
+  /* Zoom and pan (ADR-0056). CSS zoom scales layout, so the composed Scrollbar scrolls the zoomed
+     chart's real size; only roots with data-ok-zoom get it (others keep their pixels). */
+  :where([data-ok-organization-chart][data-ok-zoom]) {
+    zoom: var(--_ok-org-zoom);
+  }
+
+  :where([data-ok-organization-chart][data-ok-enable-zoom-pan]) {
+    cursor: grab;
+  }
+
+  :where([data-ok-organization-chart][data-ok-panning]) {
+    cursor: grabbing;
+    user-select: none;
+  }
+
+  /* The toolbar: a group of IconButtons next to the chart, and the level between them. */
+  :where([data-ok-organization-chart-toolbar]) {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--ok-spacing);
+  }
+
+  :where([data-ok-organization-chart-zoom-value]) {
+    min-inline-size: calc(var(--ok-spacing) * 12);
+    color: var(--ok-text-secondary);
+    font-family: var(--ok-font-family);
+    font-size: var(--ok-typography-body2-font-size);
+    font-variant-numeric: tabular-nums;
+    text-align: center;
   }
 
   @media (prefers-reduced-motion: reduce) {

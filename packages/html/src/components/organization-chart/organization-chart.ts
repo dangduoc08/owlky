@@ -1,7 +1,11 @@
 import {
+  centerOrganizationChartNode,
+  clampOrganizationChartZoom,
   createOrganizationChartController,
   createOrganizationChartHighlight,
+  createOrganizationChartZoom,
   ORGANIZATION_CHART_LENGTHS,
+  ORGANIZATION_CHART_ZOOM_STEP,
   type OrganizationChartAction,
   type OrganizationChartController,
   type OrganizationChartLength,
@@ -32,6 +36,10 @@ const OBSERVED = [
   options.enableExpandCollapse.attr,
   options.expandCollapseOnNodeClick.attr,
   options.collapseBadgeThreshold.attr,
+  options.enableZoomPan.attr,
+  options.zoom.attr,
+  options.minZoom.attr,
+  options.maxZoom.attr,
 ];
 
 /** Nodes `loadchildren` may answer with: elements, a fragment, or nothing (no children). */
@@ -46,6 +54,11 @@ export interface OrganizationChartEvents {
   expand: EventSpec<{ nodeId: string | null; node: HTMLElement }, true>;
   /** The user asked to collapse a node. `preventDefault()` keeps it expanded. */
   collapse: EventSpec<{ nodeId: string | null; node: HTMLElement }, true>;
+  /**
+   * The user asked for another zoom level (Ctrl or Command with the wheel, a pinch, the + / − / 0
+   * keys or the toolbar; `data-ok-enable-zoom-pan`). `preventDefault()` keeps the current level.
+   */
+  zoom: EventSpec<{ zoom: number; previous: number }, true>;
   /**
    * A node whose children list is empty is expanding for the first time. Call
    * `respondWith(nodesOrPromise)` with its child nodes (`li[data-ok-organization-chart-node]`
@@ -88,6 +101,25 @@ export interface OrganizationChartInstance extends ComponentInstance {
   clearHighlight(): void;
   /** The `data-ok-node-id` of the highlighted node, or `null`. */
   getHighlightedNode(): string | null;
+  /** Multiplies the zoom level by `1 + factor`: positive zooms in, negative zooms out. */
+  zoom(factor: number): void;
+  /** Zooms in by one step (× 1.25). */
+  zoomIn(): void;
+  /** Zooms out by one step (÷ 1.25). */
+  zoomOut(): void;
+  /** Sets the zoom level (1 is 100%), within `data-ok-min-zoom` and `data-ok-max-zoom`. */
+  setZoom(level: number): void;
+  /** The zoom level shown. */
+  getZoom(): number;
+  /** Back to 100%. */
+  resetZoom(): void;
+  /** The largest level up to 100% at which the whole chart fits its scroll area, then scrolls to its start. */
+  fitScreen(): void;
+  /**
+   * Scrolls the chart's scroll area so the node with this `data-ok-node-id` is centered, after
+   * expanding its collapsed ancestors. Resolves once the scroll starts.
+   */
+  centerOnNode(nodeId: string): Promise<void>;
 }
 
 const isNodes = (value: unknown): value is Iterable<Node> =>
@@ -127,6 +159,27 @@ export const organizationChart = defineComponent<
     let written: string[] = [];
     let controller: OrganizationChartController | null = null;
     const highlight = createOrganizationChartHighlight(element);
+    const zoomer = createOrganizationChartZoom(element);
+    const limits = () => {
+      const min = readNumber(element, options.minZoom);
+      const max = readNumber(element, options.maxZoom);
+      return { min: Number(min), max: Number(max) };
+    };
+    /** The level shown: `data-ok-zoom`, clamped. */
+    const level = () => {
+      const { min, max } = limits();
+      return clampOrganizationChartZoom(Number(readNumber(element, options.zoom)), min, max);
+    };
+    /** Writes a level (the attribute is the state); the observer's sync re-anchors the view. */
+    const show = (next: number) => {
+      element.setAttribute(options.zoom.attr, String(next));
+      sync();
+    };
+    /** A method's change: planned (the view stays steady), no event. */
+    const zoomTo = (target: number, start = false) => {
+      const next = zoomer.plan(target, { start });
+      if (next !== level() || !element.hasAttribute(options.zoom.attr)) show(next);
+    };
     const pending = new Set<Element>();
 
     /** A branch's toggle and children list; `null` for leaves (or a toggle without a list). */
@@ -188,11 +241,29 @@ export const organizationChart = defineComponent<
     const byId = (id: string) => organizationChartNode(element, id);
 
     const sync = () => {
-      const values: Partial<Record<OrganizationChartLength | "dimOpacity", string | null>> = {
+      const values: Partial<
+        Record<
+          OrganizationChartLength | "dimOpacity" | "zoom" | "minZoom" | "maxZoom",
+          string | null
+        >
+      > = {
         dimOpacity: element.getAttribute(options.dimOpacity.attr),
+        zoom: element.getAttribute(options.zoom.attr),
+        minZoom: element.getAttribute(options.minZoom.attr),
+        maxZoom: element.getAttribute(options.maxZoom.attr),
       };
       for (const key of LENGTHS) values[key] = element.getAttribute(options[key].attr);
       written = syncCustomProperties(element, organizationChartStyle(values), written);
+      const previous = level();
+      zoomer.update({
+        enabled: element.hasAttribute(options.enableZoomPan.attr),
+        zoom: previous,
+        ...limits(),
+        onZoom(next) {
+          if (!emit("zoom", { zoom: next, previous: level() }, { cancelable: true })) return;
+          show(next);
+        },
+      });
 
       const enabled = element.hasAttribute(options.enableExpandCollapse.attr);
       if (!enabled) {
@@ -259,9 +330,24 @@ export const organizationChart = defineComponent<
         const [node] = organizationChartHighlighted(element);
         return node ? organizationChartNodeId(node) : null;
       },
+      zoom: (factor) => zoomTo(level() * (1 + factor)),
+      zoomIn: () => zoomTo(level() * ORGANIZATION_CHART_ZOOM_STEP),
+      zoomOut: () => zoomTo(level() / ORGANIZATION_CHART_ZOOM_STEP),
+      setZoom: (next) => zoomTo(next),
+      getZoom: level,
+      resetZoom: () => zoomTo(1),
+      fitScreen: () => zoomTo(zoomer.fit(), true),
+      centerOnNode: (id) => {
+        const node = byId(id);
+        if (!node) return Promise.resolve();
+        for (const ancestor of organizationChartAncestors(node))
+          if (!organizationChartExpanded(ancestor)) void change(ancestor, true);
+        return centerOrganizationChartNode(node);
+      },
       destroy() {
         observer.disconnect();
         highlight.destroy();
+        zoomer.destroy();
         controller?.destroy();
         syncCustomProperties(element, {}, written);
       },

@@ -165,6 +165,20 @@ describe("organizationChartStyle", () => {
     ).toEqual({});
   });
 
+  it("writes the zoom level clamped to its limits (ADR-0056)", () => {
+    expect(organizationChartStyle({ zoom: 1.5 })).toEqual({ "--_ok-org-zoom": "1.5" });
+    expect(organizationChartStyle({ zoom: "3", maxZoom: "2.5" })).toEqual({
+      "--_ok-org-zoom": "2.5",
+    });
+    expect(organizationChartStyle({ zoom: 0.1, minZoom: 0.5 })).toEqual({
+      "--_ok-org-zoom": "0.5",
+    });
+    expect(organizationChartStyle({ zoom: HOSTILE, minZoom: HOSTILE })).toEqual({});
+    expect(organizationChartStyle({ zoom: 0.1, minZoom: "x", maxZoom: "y" })).toEqual({
+      "--_ok-org-zoom": "0.25",
+    });
+  });
+
   it("names one private property per length option", () => {
     expect(Object.keys(ORGANIZATION_CHART_LENGTHS)).toEqual([
       "lineHeight",

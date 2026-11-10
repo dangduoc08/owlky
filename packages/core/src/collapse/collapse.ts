@@ -181,9 +181,17 @@ export function createCollapseController(
     const size = parseNumber(collapseOptions.options.collapsedSize, options.collapsedSize);
     return size === undefined ? "0px" : typeof size === "number" ? `${size}px` : size;
   };
+  /**
+   * The size in layout px (the keyframes' unit): under a zoomed or scaled ancestor (a zoomed
+   * organization chart, ADR-0056) the box is scaled, so divide by the box / offset ratio. Small
+   * ratios are rounding of the integer offset size, not a scale.
+   */
   const measure = () => {
     const box = element.getBoundingClientRect();
-    return horizontal() ? box.width : box.height;
+    const size = horizontal() ? box.width : box.height;
+    const layout = horizontal() ? element.offsetWidth : element.offsetHeight;
+    const scale = layout > 0 && size > 0 ? size / layout : 1;
+    return Math.abs(scale - 1) > 0.02 ? size / scale : size;
   };
 
   const timing = (entering: boolean, distance: number) => {

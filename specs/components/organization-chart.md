@@ -2,7 +2,8 @@
 
 Reference: Minimal UI kit "Organization chart" page, sections Simple, Standard, Group (content
 only). Upstream: `react-organizational-chart` (`Tree`, `TreeNode`; ADR-0015, ADR-0036); expand and
-collapse after ApexTree (ADR-0051); direction after ApexTree (ADR-0052).
+collapse after ApexTree (ADR-0051); direction after ApexTree (ADR-0052); zoom and pan after
+ApexTree (ADR-0056).
 Created with `/component`.
 Reference URL: https://minimals.cc/components/extra/organization-chart
 HTML source: written by us (the upstream is React only)
@@ -23,6 +24,8 @@ ul[data-ok-organization-chart][data-ok-direction]?[data-ok-line-color][data-ok-l
   [data-ok-enable-expand-collapse]? [data-ok-expand-collapse-on-node-click]?
   [data-ok-collapse-badge-threshold]? [data-ok-highlight-on-hover]? [data-ok-dim-opacity]?
   [data-ok-edge-color-mode]? [data-ok-group-leaf-nodes]? [data-ok-group-leaf-nodes-spacing]?
+  [data-ok-enable-zoom-pan]? [data-ok-zoom]? [data-ok-min-zoom]? [data-ok-max-zoom]?
+  [data-ok-panning]? [id]?                                (id: named by a toolbar)
   [aria-label | aria-labelledby]
   li[data-ok-organization-chart-node][data-ok-node-id]?[data-ok-highlighted]?
     [data-ok-line-color]?[data-ok-line-style]?            (the root node: React `label`;
@@ -42,7 +45,16 @@ ul[data-ok-organization-chart][data-ok-direction]?[data-ok-line-color][data-ok-l
         div[data-ok-organization-chart-label]
         ul[data-ok-organization-chart-children]?
 ```
-Wide charts scroll by composition: `Scrollbar › OrganizationChart` (stories, docs). Search by
+Wide charts scroll by composition: `Scrollbar › OrganizationChart` (stories, docs).
+Zoom toolbar (ADR-0056), a sibling the app places next to the Scrollbar:
+```
+div[data-ok-organization-chart-toolbar="<chart id>"][role=group][aria-label]   (React OrganizationChartToolbar)
+  button[data-ok-icon-button][data-ok-organization-chart-zoom-out][aria-label][aria-controls][aria-disabled]?
+  output[data-ok-organization-chart-zoom-value]                                (written by the script)
+  button[data-ok-icon-button][data-ok-organization-chart-zoom-in][aria-label][aria-controls][aria-disabled]?
+  button[data-ok-icon-button][data-ok-organization-chart-fit][aria-label][aria-controls]
+  button[data-ok-icon-button][data-ok-organization-chart-reset][aria-label][aria-controls]
+``` Search by
 composition: `Autocomplete` (options = node ids and names) + a `role="status"` line next to the
 chart; the app calls `highlightNode(value)` on change (stories "Highlight and search", docs).
 
@@ -67,6 +79,10 @@ Root: `data-ok-organization-chart`. Unknown values fall back to the default.
 | `collapseBadgeThreshold` | `data-ok-collapse-badge-threshold="…"` | number | number | `1` | Smallest number of hidden descendants that a collapsed node's badge shows. |
 | `highlightOnHover` | `data-ok-highlight-on-hover` | flag | boolean | off | Hovering or focusing a node highlights its path to the root and dims the other nodes. |
 | `dimOpacity` | `data-ok-dim-opacity="…"` | number | number | `0.7` | How much nodes outside a highlighted path fade, from 0 (not at all) to 1 (hidden). |
+| `enableZoomPan` | `data-ok-enable-zoom-pan` | flag | boolean | off | Ctrl or Command with the mouse wheel, a trackpad pinch, the + / − / 0 keys and the toolbar zoom the chart; a mouse drag pans it. |
+| `zoom` | `data-ok-zoom="…"` | number | number | `1` | The zoom level, from `minZoom` to `maxZoom` (1 is 100%). Changed by the user with zoom and pan on. |
+| `minZoom` | `data-ok-min-zoom="…"` | number | number | `0.25` | The smallest zoom level. |
+| `maxZoom` | `data-ok-max-zoom="…"` | number | number | `2` | The largest zoom level. |
 <!-- /options:organization-chart -->
 
 Per node (4.18.6, ApexTree `edgeColorMode: "node"`):
@@ -196,6 +212,29 @@ expand); HTML emits `loadchildren` with `respondWith(nodes | Promise<nodes>)` (e
 fragment or nothing), appends them and expands, or removes toggle and list when nothing came.
 Batch methods (`organizationChartPlan`) change loaded nodes only and emit nothing.
 
+Zoom and pan (ADR-0056, `enableZoomPan`): the level is CSS `zoom` on the root
+(`[data-ok-zoom]` → `zoom: var(--_ok-org-zoom)`, written with the lengths), so the composed
+Scrollbar scrolls the zoomed size, focus scrolling and `scrollIntoView` work, and a narrow chart
+stays centered. State: React `zoom` / `defaultZoom` / `onZoomChange` (every change) and
+`data-ok-zoom` while `enableZoomPan` is on or the level isn't 1; HTML `data-ok-zoom`, written after
+the cancelable `zoom` event. Clamped to `minZoom` (0.25) / `maxZoom` (2). Core
+`createOrganizationChartZoom(root, options)` (both owners) reports `onZoom(level)` for Ctrl / ⌘ +
+wheel and trackpad pinches (`ctrlKey` wheels, WebKit `gesturechange`; always prevented), + / = / −
+/ 0 on a key press in the viewport or the chart (not with Ctrl / ⌘ / Alt, not in editable
+fields, menus, listboxes, grids, trees, comboboxes, sliders, spinbuttons) and the toolbar (one
+document click listener, the toolbar names the chart by `id`); the owner writes the level and
+calls `update({ zoom })`, then the controller scrolls the viewport so the content under the
+pointer (or the viewport's center) stays put. Mouse drag (outside interactive content, past 4px)
+pans the viewport, `data-ok-panning` while it lasts, and the click ending it is prevented. Touch
+and pen scroll natively; touch pinches zoom the page. Methods: `zoom(factor)` (× `1 + factor`),
+`zoomIn()` / `zoomOut()` (× / ÷ 1.25), `setZoom(level)`, `getZoom()`, `resetZoom()`, `fitScreen()`
+(largest level ≤ 1 at which the root node fits the viewport's content box, the height only when
+the viewport doesn't grow with the content, then scroll to the start), `centerOnNode(id)` (expands
+collapsed ancestors, waits for their Collapse, scrolls the viewport only, smooth unless reduced
+motion). Methods emit no HTML events. The controller writes the toolbar's value (`125%`) and
+`aria-disabled` on zoom in / out at the limits in both implementations (React renders neither).
+Collapse measures layout px (box / offset ratio), so branches animate to their real size under zoom.
+
 Lineage highlight: CSS finds the path with `:has()` (a node `:has()` the active label or toggle;
 its lists' `::before` take `--_ok-org-highlight-color`, `--ok-palette-primary-main`). The bar
 segment from a parent's line to a child on the path is the child label's `::before` (z-index 1,
@@ -212,9 +251,12 @@ node), expands the collapsed ancestors (no events, like the batch methods), then
 without `nodeId` can't be highlighted from code.
 
 ## Keyboard
-None of its own. Controls in labels follow DOM order: a node, its toggle, then its children, in
+None of its own without zoom. Controls in labels follow DOM order: a node, its toggle, then its children, in
 every direction (only flex directions change, never the DOM).
 Toggles are native buttons (Enter / Space). Label clicks are a pointer shortcut only.
+Zoom (`enableZoomPan`): **+** or **=** zooms in, **−** zooms out, **0** resets, on the focused
+scroll area or any control in the chart; the toolbar's buttons are the pointer-free alternative to
+the wheel, pinch and drag. Arrow keys scroll the focused Scrollbar.
 
 ## Accessibility
 Highlight: faded nodes are below the text contrast minimum while a hover / focus highlight
@@ -229,6 +271,12 @@ charts go in a named, focusable Scrollbar (keyboard scrolling). Toggles: `aria-e
 children are `hidden` (out of the accessibility tree).
 In every direction the children list's Collapse animates its block size (left / right charts:
 the column folds toward its center; ADR-0052).
+Zoom: the toolbar is a named group of named IconButtons (`aria-controls` = the chart); the level
+is an `output` (polite status). Limits use `aria-disabled` (the focus stays on the button). A
+focused control is scrolled into view by the browser at every level. Below 100% the toggles and
+label controls shrink under the 24px target size: a user-chosen view, like the browser's zoom, one
+**0** or **Reset zoom** away from full size (axe scans run at 100%). Zoom changes are instant;
+`centerOnNode` scrolls smoothly unless reduced motion.
 
 ## Events / API
 HTML events (user intent only): `ok:organization-chart:expand` / `collapse` (cancelable, `{ nodeId,
@@ -236,7 +284,10 @@ node }`), `ok:organization-chart:loadchildren` (`{ nodeId, node, respondWith }`)
 `expand(id)` (Promise; loads lazy children), `collapse(id)`, `isExpanded(id)`, `expandAll()`,
 `collapseAll()`, `expandToDepth(depth)` (root = 0), `expandSubtree(id)`, `collapseSubtree(id)`,
 `highlightNode(id)` (Promise; resolves once in view), `clearHighlight()`, `getHighlightedNode()`,
-`destroy()`. React: the same methods on `apiRef`. Highlight methods emit no events.
+`zoom(factor)`, `zoomIn()`, `zoomOut()`, `setZoom(level)`, `getZoom()`, `resetZoom()`,
+`fitScreen()`, `centerOnNode(id)` (Promise), `destroy()`. React: the same methods on `apiRef`.
+Highlight and zoom methods emit no events. `ok:organization-chart:zoom` (cancelable,
+`{ zoom, previous }`): the user asked for another level.
 
 ## Responsive
 Same layout at every breakpoint: the chart never wraps (a tree keeps its shape) and keeps its
@@ -273,7 +324,7 @@ checked 2026-11-10; ADR-0051):
 | `expandCollapseButton*` colors and size, `collapseBadge*` colors and font size | tokens | not applicable | 24px target, line-colored border |
 | `locale.messages.loadingNodeLabel` | `aria-busy` | not applicable | a stable toggle name |
 | `countBadgeEnabled`, `countBadgeSource`, `countBadgeDataKey`, `countBadgeThreshold` | — | deferred | always-on counts; content badges belong in labels |
-| `enableExpandCollapseZoom`, `maxZoomNodeSpan` | — | deferred (4.18.5) | zoom / fit |
+| `enableExpandCollapseZoom`, `maxZoomNodeSpan` | — | not applicable | refitting after each toggle moves the view under the pointer; apps call `fitScreen()` from `onExpand` (ADR-0056) |
 | `enableAnimation`, `motion.stagger`, `motion.spring` | Collapse timing tokens | not applicable | reduced motion respected |
 | `onNodeClick`, `cardExpansion`, `expandCard` / `collapseCard` / `toggleCard` | — | not applicable | labels hold the app's content and handlers |
 | `direction` `top` · `bottom` · `left` · `right` | `direction` (default `top`, not written) | kept | CSS only; `left` / `right` are logical (ADR-0052) |
@@ -283,7 +334,7 @@ checked 2026-11-10; ADR-0051):
 | `focus.dimOpacity` (default 0.7) | `dimOpacity` (0.7) | renamed | applies to the hover highlight |
 | `edgeColorHover`, `nodeBGColorHover`, `borderColorHover` | `--ok-palette-primary-main` path | not applicable | tokens; cards are the app's |
 | `enableSearch`, `locale.messages.searchPlaceholder` / `searchAriaLabel` / `searchMatchCount` | a composed `Autocomplete` + `highlightNode(id)` + a status line | renamed | the root is a list (no room for a field); labels, placeholder and announcement are the app's |
-| `focus.clickToFocus`, `clearFocus()`, `graph.setActivePath(ids)` | `highlightNode(id)` / `clearHighlight()` | renamed | no camera (zoom is 4.18.5) |
+| `focus.clickToFocus`, `clearFocus()`, `graph.setActivePath(ids)` | `highlightNode(id)` / `clearHighlight()` | renamed | the highlight scrolls the node into view; `centerOnNode` centers it |
 | — | `highlightedNode` / `defaultHighlightedNode` / `onHighlightedNodeChange`, `getHighlightedNode()` | added | React state, HTML instance |
 | `edgeColorMode` `default` · `node` | `edgeColorMode` (`data-ok-edge-color-mode`, not written by default) | kept | `node`: a node's line options carry through its branch; `default`: they stop at its children |
 | node colors in `edgeColorMode: "node"` (the source node's color) | node `lineColor` / `lineStyle` (`data-ok-line-color` / `-style` on the `li`) | renamed | nodes have no color of their own (content is free): the line options are the node's; allowlists, no free CSS |
@@ -293,7 +344,13 @@ checked 2026-11-10; ADR-0051):
 | `groupLeafNodes` (default `false`) | same | kept | two or more leaves only (one leaf keeps its straight line); a list mixing leaves and branches stays a row (CSS can't move a subset of siblings into a column) |
 | `groupLeafNodesSpacing` (default 10) | same (default 8, px or a length) | kept | the 4px spacing scale |
 | grouped leaves' side-bracket connector | the same, with rounded last turn | kept | left / right charts: a row after the node (the axes swap) |
-| zoom / pan | — | deferred (4.18.5) | |
+| `enableZoomPan` (default `true`) | same (default `false`) | kept | off keeps existing charts unchanged; Ctrl / ⌘ + wheel, pinch, + / − / 0, mouse drag (ADR-0056) |
+| `enableToolbar` | `OrganizationChartToolbar` (HTML `data-ok-organization-chart-toolbar`) | renamed | a composed part next to the chart (the root is a list); zoom in / out, the level, fit, reset |
+| `zoom(zoomFactor)`, `fitScreen()`, `centerOnNode(nodeId)` | same (React `apiRef`, HTML instance) + `zoomIn`, `zoomOut`, `setZoom`, `getZoom`, `resetZoom` | kept | fit never enlarges past 100%; `centerOnNode` opens collapsed ancestors and returns a promise |
+| — | `zoom` / `defaultZoom` / `onZoomChange`, `minZoom`, `maxZoom`, `ok:organization-chart:zoom` | added | state, limits and the HTML event |
+| `exportToSvg()`, the toolbar's export button | — | not applicable | the chart is HTML, not SVG |
+| `viewPortWidth`, `viewPortHeight`, `paddingX`, `paddingY` | the Scrollbar's size and padding | not applicable | no SVG coordinate space |
+| `enableAnimation` for `centerOnNode` | reduced motion decides | not applicable | smooth scroll unless reduced motion; zoom steps are instant |
 
 ## Parity notes
 The path measures (`--_ok-org-path-*`) are CSSOM on both sides (parity ignores `style`). The search

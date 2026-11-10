@@ -2,8 +2,8 @@ import { expect, type Page, test } from "@playwright/test";
 import { implementations, openStory, storyId } from "./helpers.js";
 import { viewports } from "./viewports.js";
 
-/** One entry per reference section, plus the line options, directions and grouped leaves. */
-const STORIES = ["simple", "standard", "group", "lines", "direction", "grouped-leaves"];
+/** One entry per reference section, plus the line options, directions, grouped leaves and zoom. */
+const STORIES = ["simple", "standard", "group", "lines", "direction", "grouped-leaves", "zoom-pan"];
 
 interface Box {
   x: number;

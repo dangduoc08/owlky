@@ -26,6 +26,7 @@ import { GroupChartDemo } from "${folder}/group-demo.tsx";
 import { CollapsibleChartDemo } from "${folder}/collapsible-demo.tsx";
 import { LazyChartDemo, reportsOf } from "${folder}/lazy-demo.tsx";
 import { SearchChartDemo } from "${folder}/search-demo.tsx";
+import { ZoomChartDemo } from "${folder}/zoom-demo.tsx";
 import { OrganizationChart } from "@owlky/react";
 import { PEOPLE } from "${folder}/organization-chart-data.ts";
 const html = {};
@@ -37,6 +38,7 @@ html["standard-group"] = renderToStaticMarkup(createElement(StandardChartDemo));
 html["group-group"] = renderToStaticMarkup(createElement(GroupChartDemo));
 html["collapsible-group"] = renderToStaticMarkup(createElement(CollapsibleChartDemo));
 html["search-group"] = renderToStaticMarkup(createElement(SearchChartDemo));
+html["zoom-group"] = renderToStaticMarkup(createElement(ZoomChartDemo));
 // Lazy children: the chart as first rendered, then one template per lead with the nodes its
 // load answers (rendered inside a collapsible chart, so they carry their own toggles). Each
 // render numbers its ids from 1: the template's get the lead's id as a prefix.
@@ -138,8 +140,8 @@ for (const [name, markup] of Object.entries(html)) {
       /(<button\b[^>]*aria-haspopup="menu"[^>]*aria-controls="([^"]+)")/g,
       (_, button, menu) => `${button} data-ok-popover-open="${menu}"`,
     );
-  // An empty children list (lazy nodes) or status line stays on one line: no whitespace inside it.
-  const lines = pretty(snippet).replace(/(<(ul|p)\b[^>]*>)\n\s*(<\/\2>)/g, "$1$3");
+  // An empty children list (lazy nodes), status line or zoom value stays on one line: no whitespace inside it.
+  const lines = pretty(snippet).replace(/(<(ul|p|output)\b[^>]*>)\n\s*(<\/\2>)/g, "$1$3");
   writeFileSync(resolve(out, `${name}.html`), `${lines}\n`);
   console.log(`${name}.html`);
 }

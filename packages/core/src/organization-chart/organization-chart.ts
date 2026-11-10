@@ -1,5 +1,6 @@
 import { organizationChartOptions } from "../anatomy/anatomy.js";
 import { parseNumber } from "../options/define.js";
+import { clampOrganizationChartZoom } from "./organization-chart-zoom.js";
 
 /** The length options of an organization chart and the private custom property each one sets. */
 export const ORGANIZATION_CHART_LENGTHS = {
@@ -14,19 +15,24 @@ export type OrganizationChartLength = keyof typeof ORGANIZATION_CHART_LENGTHS;
 
 export type OrganizationChartStyle = Partial<
   Record<
-    (typeof ORGANIZATION_CHART_LENGTHS)[OrganizationChartLength] | "--_ok-org-dim-opacity",
+    | (typeof ORGANIZATION_CHART_LENGTHS)[OrganizationChartLength]
+    | "--_ok-org-dim-opacity"
+    | "--_ok-org-zoom",
     string
   >
 >;
 
 /**
- * Private custom properties of an organization chart root for the given lengths and dim
- * strength (React `style`, the HTML runtime through CSSOM). A length number is in px; a string
- * may carry a unit (`"2rem"`). `dimOpacity` above 1 counts as 1. Invalid or missing values are
- * left out, so the stylesheet's defaults apply.
+ * Private custom properties of an organization chart root for the given lengths, dim strength
+ * and zoom level (React `style`, the HTML runtime through CSSOM). A length number is in px; a
+ * string may carry a unit (`"2rem"`). `dimOpacity` above 1 counts as 1; `zoom` is clamped to
+ * `minZoom` / `maxZoom` (ADR-0056). Invalid or missing values are left out, so the stylesheet's
+ * defaults apply.
  */
 export function organizationChartStyle(
-  values: Partial<Record<OrganizationChartLength | "dimOpacity", unknown>>,
+  values: Partial<
+    Record<OrganizationChartLength | "dimOpacity" | "zoom" | "minZoom" | "maxZoom", unknown>
+  >,
 ): OrganizationChartStyle {
   const style: OrganizationChartStyle = {};
   for (const key of Object.keys(ORGANIZATION_CHART_LENGTHS) as OrganizationChartLength[]) {
@@ -36,6 +42,19 @@ export function organizationChartStyle(
   }
   const dim = parseNumber(organizationChartOptions.options.dimOpacity, values.dimOpacity);
   if (typeof dim === "number") style["--_ok-org-dim-opacity"] = String(Math.min(dim, 1));
+  const { options } = organizationChartOptions;
+  const zoom = parseNumber(options.zoom, values.zoom);
+  if (typeof zoom === "number") {
+    const min = parseNumber(options.minZoom, values.minZoom);
+    const max = parseNumber(options.maxZoom, values.maxZoom);
+    style["--_ok-org-zoom"] = String(
+      clampOrganizationChartZoom(
+        zoom,
+        typeof min === "number" ? min : undefined,
+        typeof max === "number" ? max : undefined,
+      ),
+    );
+  }
   return style;
 }
 

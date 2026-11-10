@@ -84,6 +84,10 @@
    "name": "--ok-text-secondary"
   },
   {
+   "name": "--ok-typography-body2-font-size",
+   "value": "0.875rem"
+  },
+  {
    "name": "--ok-typography-caption-font-size",
    "value": "0.75rem"
   }
@@ -110,9 +114,21 @@
       "description": "A node whose children list is empty is expanding for the first time. Call `respondWith(nodesOrPromise)` with its child nodes (`li[data-ok-organization-chart-node]` elements, for example cloned from a `template`). No nodes make it a leaf; a rejected promise keeps it collapsed, and the next expand asks again.",
       "detail": "{ nodeId: string | null; node: HTMLElement; respondWith(nodes: PromiseLike<OrganizationChartLoadedNodes> | OrganizationChartLoadedNodes): void; }",
       "name": "ok:organization-chart:loadchildren"
+     },
+     {
+      "cancelable": true,
+      "description": "The user asked for another zoom level (Ctrl or Command with the wheel, a pinch, the + / − / 0 keys or the toolbar; `data-ok-enable-zoom-pan`). `preventDefault()` keeps the current level.",
+      "detail": "{ zoom: number; previous: number; }",
+      "name": "ok:organization-chart:zoom"
      }
     ],
     "methods": [
+     {
+      "description": "Scrolls the chart's scroll area so the node with this `data-ok-node-id` is centered, after expanding its collapsed ancestors. Resolves once the scroll starts.",
+      "kind": "method",
+      "name": "centerOnNode",
+      "type": "(nodeId: string) => Promise<void>"
+     },
      {
       "description": "Removes the highlight.",
       "kind": "method",
@@ -162,10 +178,22 @@
       "type": "(depth: number) => void"
      },
      {
+      "description": "The largest level up to 100% at which the whole chart fits its scroll area, then scrolls to its start.",
+      "kind": "method",
+      "name": "fitScreen",
+      "type": "() => void"
+     },
+     {
       "description": "The `data-ok-node-id` of the highlighted node, or `null`.",
       "kind": "method",
       "name": "getHighlightedNode",
       "type": "() => string | null"
+     },
+     {
+      "description": "The zoom level shown.",
+      "kind": "method",
+      "name": "getZoom",
+      "type": "() => number"
      },
      {
       "description": "Highlights the node with this `data-ok-node-id` and its path to the root (`data-ok-highlighted`, the others fade), expands its collapsed ancestors and scrolls it into view. Resolves once it is in view. Replaces an earlier highlight.",
@@ -178,6 +206,36 @@
       "kind": "method",
       "name": "isExpanded",
       "type": "(nodeId: string) => boolean"
+     },
+     {
+      "description": "Back to 100%.",
+      "kind": "method",
+      "name": "resetZoom",
+      "type": "() => void"
+     },
+     {
+      "description": "Sets the zoom level (1 is 100%), within `data-ok-min-zoom` and `data-ok-max-zoom`.",
+      "kind": "method",
+      "name": "setZoom",
+      "type": "(level: number) => void"
+     },
+     {
+      "description": "Multiplies the zoom level by `1 + factor`: positive zooms in, negative zooms out.",
+      "kind": "method",
+      "name": "zoom",
+      "type": "(factor: number) => void"
+     },
+     {
+      "description": "25).",
+      "kind": "method",
+      "name": "zoomIn",
+      "type": "() => void"
+     },
+     {
+      "description": "25).",
+      "kind": "method",
+      "name": "zoomOut",
+      "type": "() => void"
      }
     ],
     "options": [
@@ -340,6 +398,36 @@
       "kind": "number",
       "min": 0,
       "name": "dimOpacity"
+     },
+     {
+      "attr": "data-ok-enable-zoom-pan",
+      "description": "Ctrl or Command with the mouse wheel, a trackpad pinch, the + / − / 0 keys and the toolbar zoom the chart; a mouse drag pans it.",
+      "kind": "flag",
+      "name": "enableZoomPan"
+     },
+     {
+      "attr": "data-ok-zoom",
+      "default": 1,
+      "description": "The zoom level, from `minZoom` to `maxZoom` (1 is 100%). Changed by the user with zoom and pan on.",
+      "kind": "number",
+      "min": 0.01,
+      "name": "zoom"
+     },
+     {
+      "attr": "data-ok-min-zoom",
+      "default": 0.25,
+      "description": "The smallest zoom level.",
+      "kind": "number",
+      "min": 0.01,
+      "name": "minZoom"
+     },
+     {
+      "attr": "data-ok-max-zoom",
+      "default": 2,
+      "description": "The largest zoom level.",
+      "kind": "number",
+      "min": 0.01,
+      "name": "maxZoom"
      }
     ],
     "parts": [
@@ -371,12 +459,28 @@
       "name": "data-ok-organization-chart-children"
      },
      {
+      "description": "In the toolbar: fits the whole chart in its scroll area, up to 100%.",
+      "elements": [
+       "button"
+      ],
+      "kind": "part",
+      "name": "data-ok-organization-chart-fit"
+     },
+     {
       "description": "A node's content, such as a card.",
       "elements": [
        "div"
       ],
       "kind": "part",
       "name": "data-ok-organization-chart-label"
+     },
+     {
+      "description": "In the toolbar: back to 100%.",
+      "elements": [
+       "button"
+      ],
+      "kind": "part",
+      "name": "data-ok-organization-chart-reset"
      },
      {
       "description": "In a toggle: the loading indicator of a node whose children load on demand, shown while the toggle is `aria-busy`.",
@@ -409,6 +513,35 @@
       ],
       "kind": "part",
       "name": "data-ok-organization-chart-toggle-label"
+     },
+     {
+      "description": "In the toolbar: zooms in by one step. `aria-disabled` at the largest level.",
+      "elements": [
+       "button"
+      ],
+      "kind": "part",
+      "name": "data-ok-organization-chart-zoom-in"
+     },
+     {
+      "description": "In the toolbar: zooms out by one step. `aria-disabled` at the smallest level.",
+      "elements": [
+       "button"
+      ],
+      "kind": "part",
+      "name": "data-ok-organization-chart-zoom-out"
+     },
+     {
+      "description": "In the toolbar: the zoom level as a percentage, written by the script and announced politely.",
+      "elements": [
+       "output"
+      ],
+      "kind": "part",
+      "name": "data-ok-organization-chart-zoom-value"
+     },
+     {
+      "description": "On the chart: set while a mouse drag pans its scroll area.",
+      "kind": "state",
+      "name": "data-ok-panning"
      }
     ],
     "runtime": "organization-chart"
@@ -456,6 +589,12 @@
       "type": "string | null"
      },
      {
+      "default": "1",
+      "description": "The zoom level at first (uncontrolled).",
+      "name": "defaultZoom",
+      "type": "number"
+     },
+     {
       "default": "0.7",
       "description": "How much nodes outside a highlighted path fade, from 0 (not at all) to 1 (hidden).",
       "name": "dimOpacity",
@@ -477,6 +616,12 @@
       "default": "false",
       "description": "Nodes with children get a toggle button that collapses and expands them.",
       "name": "enableExpandCollapse",
+      "type": "boolean"
+     },
+     {
+      "default": "false",
+      "description": "Ctrl or Command with the mouse wheel, a trackpad pinch, the + / − / 0 keys and an `OrganizationChartToolbar` zoom the chart; a mouse drag pans its scroll area.",
+      "name": "enableZoomPan",
       "type": "boolean"
      },
      {
@@ -553,6 +698,18 @@
       "type": "((node: { id: string; }) => Promise<ReactNode>)"
      },
      {
+      "default": "2",
+      "description": "The largest zoom level.",
+      "name": "maxZoom",
+      "type": "number"
+     },
+     {
+      "default": "0.25",
+      "description": "The smallest zoom level.",
+      "name": "minZoom",
+      "type": "number"
+     },
+     {
       "description": "The node's id, written as `data-ok-node-id`: the methods, callbacks and `collapsedNodes` use it.",
       "name": "nodeId",
       "type": "string"
@@ -584,10 +741,20 @@
       "type": "((nodeId: string | null) => void)"
      },
      {
+      "description": "Called with the new level after a zoom by the user or a method call.",
+      "name": "onZoomChange",
+      "type": "((level: number) => void)"
+     },
+     {
       "default": "\"Child nodes\"",
       "description": "Accessible name of the node's toggle button, such as \"Priya Raman's reports\".",
       "name": "toggleLabel",
       "type": "string"
+     },
+     {
+      "description": "Controlled zoom level (1 is 100%), within `minZoom` and `maxZoom`.",
+      "name": "zoom",
+      "type": "number"
      }
     ]
    }
@@ -673,6 +840,52 @@
       "default": "\"Child nodes\"",
       "description": "Accessible name of the node's toggle button, such as \"Priya Raman's reports\".",
       "name": "toggleLabel",
+      "type": "string"
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-organization-chart-toolbar",
+    "description": "A group of zoom buttons next to the chart; its value is the chart's `id`. Works with `data-ok-enable-zoom-pan`.",
+    "elements": [
+     "div"
+    ]
+   },
+   "name": "OrganizationChartToolbar",
+   "react": {
+    "description": "Place it next to the chart's scroll area. The chart writes the level and the limits (`aria-disabled`) on it. Name the group with `aria-label` (default \"Zoom\").",
+    "native": "HTMLDivElement",
+    "props": [
+     {
+      "description": "The `id` of the chart the buttons zoom (its `enableZoomPan` must be on).",
+      "name": "chartId",
+      "required": true,
+      "type": "string"
+     },
+     {
+      "default": "\"Fit to screen\"",
+      "description": "Accessible name of the fit button.",
+      "name": "fitLabel",
+      "type": "string"
+     },
+     {
+      "default": "\"Reset zoom\"",
+      "description": "Accessible name of the reset button.",
+      "name": "resetLabel",
+      "type": "string"
+     },
+     {
+      "default": "\"Zoom in\"",
+      "description": "Accessible name of the zoom in button.",
+      "name": "zoomInLabel",
+      "type": "string"
+     },
+     {
+      "default": "\"Zoom out\"",
+      "description": "Accessible name of the zoom out button.",
+      "name": "zoomOutLabel",
       "type": "string"
      }
     ]
