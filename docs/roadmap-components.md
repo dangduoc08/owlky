@@ -139,10 +139,10 @@ then 4.22–4.24, then 4.25 with its ADR).
 | 4.18.58 | E — audit 3.1 (could) | Data grid | `cellSelectionFillHandle` (drag to fill, keyboard alternative, WCAG 2.5.7) | ⬜ |
 | 4.18.59 | E — audit 3.1 (must) | Chart | several value axes (`yaxis[]` with `seriesName`, `opposite`), `logarithmic`, `reversed`, `tickAmount`; a drawn x axis title | ✅ |
 | 4.18.60 | E — audit 3.1 (must) | Chart | point / slice / label selection: `ok:chart:select` + React callback (click, Enter), selected state (`allowMultipleDataPointsSelection`, `toggleDataPointSelection`) | ✅ |
-| 4.18.61 | E — audit 3.1 (should) | Chart | `stackType: "100%"`, `stackOnlyBar`; stacked totals, data label position; bar `colors.ranges`, background bars | 🔄 |
-| 4.18.62 | E — audit 3.1 (should) | Chart | non-color series cues: `markers.shape`, `markers.discrete`, `fill.pattern`, `colorBlindMode` (WCAG 1.4.1); `stroke.width` per series | 🔄 |
-| 4.18.63 | E — audit 3.1 (should) | Chart | tooltip: `tooltip: false`, per-point mode (`shared: false`), fixed position, custom content (React node / HTML `<template>`) | 🔄 |
-| 4.18.64 | E — audit 3.1 (should) | Chart | legend `horizontalAlign`, `showForSingleSeries`, toggle opt-out, custom items; grid lines per axis, stripes | 🔄 |
+| 4.18.61 | E — audit 3.1 (should) | Chart | `stackType: "100%"`, `stackOnlyBar`; stacked totals, data label position; bar `colors.ranges`, background bars | ✅ |
+| 4.18.62 | E — audit 3.1 (should) | Chart | non-color series cues: `markers.shape`, `markers.discrete`, `fill.pattern`, `colorBlindMode` (WCAG 1.4.1); `stroke.width` per series | ✅ |
+| 4.18.63 | E — audit 3.1 (should) | Chart | tooltip: `tooltip: false`, per-point mode (`shared: false`), fixed position, custom content (React node / HTML `<template>`) | ✅ |
+| 4.18.64 | E — audit 3.1 (should) | Chart | legend `horizontalAlign`, `showForSingleSeries`, toggle opt-out, custom items; grid lines per axis, stripes | ✅ |
 | 4.18.65 | E — audit 3.1 (could) | Chart | `xaxis.group` (two-level categories), label rotation, fixed x `min` / `max` / `range`; `forecastDataPoints`; `noData`; text annotations; several `brush.targets` | ⬜ |
 | 4.18.66 | E — audit 3.1 (could) | Chart | `dataReducer` (LTTB downsampling of the drawing) | ⬜ |
 | 4.18.67 | E — audit 3.1 (could) | Chart | timeline `rangeBarGroupRows` / `rangeBarOverlap`, `hideZeroBarsWhenGrouped` | ⬜ |
