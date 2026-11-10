@@ -1,12 +1,33 @@
 {
  "css": [
   {
+   "name": "--ok-action-hover",
+   "value": "color-mix(in srgb, #919EAB 8%, transparent)"
+  },
+  {
+   "dark": "#1C252E",
+   "light": "#FFFFFF",
+   "name": "--ok-bg-paper"
+  },
+  {
    "name": "--ok-divider",
    "value": "color-mix(in srgb, #919EAB 20%, transparent)"
   },
   {
+   "name": "--ok-duration-shortest",
+   "value": "150ms"
+  },
+  {
+   "name": "--ok-easing-standard",
+   "value": "cubic-bezier(0.4, 0, 0.2, 1)"
+  },
+  {
    "name": "--ok-font-family",
    "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+  },
+  {
+   "name": "--ok-font-weight-semibold",
+   "value": "600"
   },
   {
    "name": "--ok-palette-error-light",
@@ -21,6 +42,10 @@
    "value": "#5BE49B"
   },
   {
+   "name": "--ok-palette-primary-main",
+   "value": "#00A76F"
+  },
+  {
    "name": "--ok-palette-secondary-light",
    "value": "#C684FF"
   },
@@ -33,6 +58,10 @@
    "value": "#FFD666"
   },
   {
+   "name": "--ok-radius-full",
+   "value": "9999px"
+  },
+  {
    "name": "--ok-spacing",
    "value": "0.25rem"
   },
@@ -40,12 +69,91 @@
    "dark": "#FFFFFF",
    "light": "#1C252E",
    "name": "--ok-text-primary"
+  },
+  {
+   "dark": "#919EAB",
+   "light": "#637381",
+   "name": "--ok-text-secondary"
+  },
+  {
+   "name": "--ok-typography-caption-font-size",
+   "value": "0.75rem"
   }
  ],
  "entries": [
   {
    "html": {
     "attribute": "data-ok-organization-chart",
+    "events": [
+     {
+      "cancelable": true,
+      "description": "The user asked to collapse a node. `preventDefault()` keeps it expanded.",
+      "detail": "{ nodeId: string | null; node: HTMLElement; }",
+      "name": "ok:organization-chart:collapse"
+     },
+     {
+      "cancelable": true,
+      "description": "The user asked to expand a node (its toggle, or its label with `data-ok-expand-collapse-on-node-click`). `preventDefault()` keeps it collapsed.",
+      "detail": "{ nodeId: string | null; node: HTMLElement; }",
+      "name": "ok:organization-chart:expand"
+     },
+     {
+      "cancelable": false,
+      "description": "A node whose children list is empty is expanding for the first time. Call `respondWith(nodesOrPromise)` with its child nodes (`li[data-ok-organization-chart-node]` elements, for example cloned from a `template`). No nodes make it a leaf; a rejected promise keeps it collapsed, and the next expand asks again.",
+      "detail": "{ nodeId: string | null; node: HTMLElement; respondWith(nodes: PromiseLike<OrganizationChartLoadedNodes> | OrganizationChartLoadedNodes): void; }",
+      "name": "ok:organization-chart:loadchildren"
+     }
+    ],
+    "methods": [
+     {
+      "description": "Collapses the node with this `data-ok-node-id`.",
+      "kind": "method",
+      "name": "collapse",
+      "type": "(nodeId: string) => void"
+     },
+     {
+      "description": "Collapses every node, the root included.",
+      "kind": "method",
+      "name": "collapseAll",
+      "type": "() => void"
+     },
+     {
+      "description": "Collapses a node and every node under it.",
+      "kind": "method",
+      "name": "collapseSubtree",
+      "type": "(nodeId: string) => void"
+     },
+     {
+      "description": "Expands the node with this `data-ok-node-id`, loading its children first when needed. Resolves once done.",
+      "kind": "method",
+      "name": "expand",
+      "type": "(nodeId: string) => Promise<void>"
+     },
+     {
+      "description": "Expands every node whose children are loaded.",
+      "kind": "method",
+      "name": "expandAll",
+      "type": "() => void"
+     },
+     {
+      "description": "Expands a node and every loaded node under it.",
+      "kind": "method",
+      "name": "expandSubtree",
+      "type": "(nodeId: string) => void"
+     },
+     {
+      "description": "Expands the nodes above `depth` (the root is depth 0) and collapses the others.",
+      "kind": "method",
+      "name": "expandToDepth",
+      "type": "(depth: number) => void"
+     },
+     {
+      "description": "Whether the node with this `data-ok-node-id` shows its children.",
+      "kind": "method",
+      "name": "isExpanded",
+      "type": "(nodeId: string) => boolean"
+     }
+    ],
     "options": [
      {
       "attr": "data-ok-line-height",
@@ -127,11 +235,45 @@
        "rem",
        "em"
       ]
+     },
+     {
+      "attr": "data-ok-enable-expand-collapse",
+      "description": "Nodes with children can be collapsed and expanded with their toggle button.",
+      "kind": "flag",
+      "name": "enableExpandCollapse"
+     },
+     {
+      "attr": "data-ok-expand-collapse-on-node-click",
+      "description": "A click on a node's label (outside its buttons and links) also toggles its children.",
+      "kind": "flag",
+      "name": "expandCollapseOnNodeClick"
+     },
+     {
+      "attr": "data-ok-collapse-badge-threshold",
+      "default": 1,
+      "description": "Smallest number of hidden descendants that a collapsed node's badge shows.",
+      "kind": "number",
+      "min": 1,
+      "name": "collapseBadgeThreshold"
      }
     ],
     "parts": [
      {
-      "description": "The list of a node's children. Absent without children.",
+      "description": "On a node: its id, used by the instance methods and in the events.",
+      "kind": "value",
+      "name": "data-ok-node-id",
+      "value": "string"
+     },
+     {
+      "description": "In a toggle: the number of hidden descendants, written by the script while the node is collapsed. Leave it out for no badge.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-organization-chart-badge"
+     },
+     {
+      "description": "The list of a node's children. Absent without children; empty and `hidden` on a node whose children load on demand.",
       "elements": [
        "ul"
       ],
@@ -145,19 +287,95 @@
       ],
       "kind": "part",
       "name": "data-ok-organization-chart-label"
+     },
+     {
+      "description": "In a toggle: the loading indicator of a node whose children load on demand, shown while the toggle is `aria-busy`.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-organization-chart-spinner"
+     },
+     {
+      "description": "The button after a label that expands and collapses the node's children (`aria-expanded`, `aria-controls`).",
+      "elements": [
+       "button"
+      ],
+      "kind": "part",
+      "name": "data-ok-organization-chart-toggle"
+     },
+     {
+      "description": "The chevron icon of a toggle.",
+      "elements": [
+       "svg"
+      ],
+      "kind": "part",
+      "name": "data-ok-organization-chart-toggle-icon"
+     },
+     {
+      "description": "The toggle's name, visually hidden, such as \"Priya Raman's reports\". The badge's count follows it in the name.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-organization-chart-toggle-label"
      }
     ],
     "runtime": "organization-chart"
    },
    "name": "OrganizationChart",
    "react": {
-    "description": "A hierarchy drawn as nested lists (`ul` › `li`) with connector lines. CSS only; the lengths become private custom properties on the root. Name it with `aria-label` / `aria-labelledby`.",
+    "description": "A hierarchy drawn as nested lists (`ul` › `li`) with connector lines. The lengths become private custom properties on the root. Name it with `aria-label` / `aria-labelledby`.",
     "native": "HTMLUListElement",
     "props": [
+     {
+      "description": "Receives the chart's methods (`useOrganizationChartApiRef()`).",
+      "name": "apiRef",
+      "type": "MutableRefObject<OrganizationChartApi | undefined>"
+     },
      {
       "description": "The root's children: `OrganizationChartNode` elements.",
       "name": "children",
       "type": "ReactNode"
+     },
+     {
+      "default": "true",
+      "description": "Collapsed nodes show the number of hidden descendants on their toggle.",
+      "name": "collapseBadgeEnabled",
+      "type": "boolean"
+     },
+     {
+      "default": "1",
+      "description": "Smallest number of hidden descendants the badge shows.",
+      "name": "collapseBadgeThreshold",
+      "type": "number"
+     },
+     {
+      "description": "Controlled ids of the collapsed nodes (`nodeId`).",
+      "name": "collapsedNodes",
+      "type": "readonly string[]"
+     },
+     {
+      "description": "Ids of the nodes collapsed at first (uncontrolled). Default none: every node is expanded.",
+      "name": "defaultCollapsedNodes",
+      "type": "readonly string[]"
+     },
+     {
+      "default": "false",
+      "description": "Nodes with children get a toggle button that collapses and expands them.",
+      "name": "enableExpandCollapse",
+      "type": "boolean"
+     },
+     {
+      "default": "false",
+      "description": "A click on a node's label, outside its buttons and links, also toggles it.",
+      "name": "expandCollapseOnNodeClick",
+      "type": "boolean"
+     },
+     {
+      "description": "The node has children that `loadChildren` loads on its first expand (collapsible charts).",
+      "name": "hasChildren",
+      "type": "boolean"
      },
      {
       "description": "Content of the root node, such as a card.",
@@ -194,10 +412,41 @@
       "type": "string | number"
      },
      {
+      "description": "Loads the children of a node with `hasChildren` on its first expand: resolve with `OrganizationChartNode` elements (none makes it a leaf). A rejection keeps it collapsed.",
+      "name": "loadChildren",
+      "type": "((node: { id: string; }) => Promise<ReactNode>)"
+     },
+     {
+      "description": "The node's id, written as `data-ok-node-id`: the methods, callbacks and `collapsedNodes` use it.",
+      "name": "nodeId",
+      "type": "string"
+     },
+     {
       "default": "4",
       "description": "Space on each side of every node: px, or a CSS length.",
       "name": "nodePadding",
       "type": "string | number"
+     },
+     {
+      "description": "Called when the user collapses a node, before it closes.",
+      "name": "onCollapse",
+      "type": "((nodeId: string) => void)"
+     },
+     {
+      "description": "Called with the collapsed ids after a toggle or a method call.",
+      "name": "onCollapsedNodesChange",
+      "type": "((nodeIds: string[]) => void)"
+     },
+     {
+      "description": "Called when the user expands a node (toggle or label click), before it opens.",
+      "name": "onExpand",
+      "type": "((nodeId: string) => void)"
+     },
+     {
+      "default": "\"Child nodes\"",
+      "description": "Accessible name of the node's toggle button, such as \"Priya Raman's reports\".",
+      "name": "toggleLabel",
+      "type": "string"
      }
     ]
    }
@@ -212,7 +461,7 @@
    },
    "name": "OrganizationChartNode",
    "react": {
-    "description": "One node (`li`): its label and, below it, its children.",
+    "description": "One node (`li`): its label and, below it, its children. In a collapsible chart a node with children (or `hasChildren`) gets a toggle button.",
     "native": "HTMLLIElement",
     "props": [
      {
@@ -221,10 +470,26 @@
       "type": "ReactNode"
      },
      {
+      "description": "The node has children that `loadChildren` loads on its first expand (collapsible charts).",
+      "name": "hasChildren",
+      "type": "boolean"
+     },
+     {
       "description": "Content of the node, such as a card.",
       "name": "label",
       "required": true,
       "type": "ReactNode"
+     },
+     {
+      "description": "The node's id, written as `data-ok-node-id`: the methods, callbacks and `collapsedNodes` use it.",
+      "name": "nodeId",
+      "type": "string"
+     },
+     {
+      "default": "\"Child nodes\"",
+      "description": "Accessible name of the node's toggle button, such as \"Priya Raman's reports\".",
+      "name": "toggleLabel",
+      "type": "string"
      }
     ]
    }
@@ -232,5 +497,11 @@
  ],
  "format": 1,
  "name": "organization-chart",
- "title": "Organization chart"
+ "title": "Organization chart",
+ "types": [
+  {
+   "name": "OrganizationChartLoadedNodes",
+   "type": "Iterable<Node> | Node | null"
+  }
+ ]
 }

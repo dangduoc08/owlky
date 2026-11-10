@@ -1062,10 +1062,24 @@ export {
   type StyleOption,
 } from "./options/define.js";
 export {
+  createOrganizationChartController,
   ORGANIZATION_CHART_LENGTHS,
+  type OrganizationChartAction,
+  type OrganizationChartController,
+  type OrganizationChartControllerOptions,
   type OrganizationChartLength,
   type OrganizationChartStyle,
+  organizationChartDepth,
+  organizationChartDescendants,
+  organizationChartExpanded,
+  organizationChartList,
+  organizationChartLoaded,
+  organizationChartNode,
+  organizationChartNodeId,
+  organizationChartNodes,
+  organizationChartPlan,
   organizationChartStyle,
+  organizationChartToggle,
 } from "./organization-chart/organization-chart.js";
 export { inertOutside } from "./overlay/inert-outside.js";
 export { layerStack } from "./overlay/layer-stack.js";

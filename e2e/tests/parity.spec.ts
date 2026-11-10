@@ -84,6 +84,8 @@ const pairs: [component: string, story: string][] = [
   ["organization-chart", "standard"],
   ["organization-chart", "group"],
   ["organization-chart", "lines"],
+  ["organization-chart", "collapsible"],
+  ["organization-chart", "lazy-children"],
   ["image", "list"],
   ["image", "aspect-ratio"],
   ["image", "overlay"],

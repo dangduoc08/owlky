@@ -40,7 +40,7 @@ ADR that supersedes the old one — don't rewrite history.
 | [0033](0033-carousel.md) | Carousel: native scroll snapping, one controller in core, loop by reordering | Accepted |
 | [0034](0034-code-editor-on-monaco.md) | Code editor: Monaco behind opt-in entries, self-hosted, with its own CSP | Accepted |
 | [0035](0035-markdown-on-unified.md) | Markdown: unified (remark / rehype) behind opt-in entries, safe by default | Accepted |
-| [0036](0036-organization-chart.md) | Organization chart: nested lists with CSS connectors, lengths through private properties | Accepted |
+| [0036](0036-organization-chart.md) | Organization chart: nested lists with CSS connectors, lengths through private properties | Accepted (partly superseded by 0051) |
 | [0037](0037-upload.md) | Upload: a native file input under the drop zone, one controller in core | Accepted |
 | [0038](0038-image.md) | Image: native lazy loading, the load state as a data attribute | Accepted |
 | [0039](0039-walktour.md) | Walktour: a state machine in core, steps as Popovers over a Backdrop with an SVG spotlight | Accepted |
@@ -54,5 +54,6 @@ ADR that supersedes the old one — don't rewrite history.
 | [0048](0048-gantt.md) | Gantt: one treegrid with a timeline column, laid out by core, built in three phases | Accepted |
 | [0049](0049-api-reference.md) | API reference: generated from typed sources (props, parts, event maps, instances), shown on every docs page | Accepted |
 | [0050](0050-editor-tables-mentions-bubble-menu.md) | Editor: tables, mentions and a bubble menu (new Tiptap extensions, opt-in), Tiptap settings passed through, a form value | Accepted |
+| [0051](0051-organization-chart-collapsible-nodes.md) | Organization chart: collapsible nodes, a toggle per branch, lazy children (supersedes part of ADR-0036) | Accepted |
 
 Template: **Context** (why decide) · **Decision** (what) · **Consequences** (trade-offs, follow-ups).

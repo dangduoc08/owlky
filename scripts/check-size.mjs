@@ -18,6 +18,8 @@ async function withImports(file, seen = new Set()) {
 const budgets = [
   // 210 kB since Phase 4 batch E (chart value axes and selection; data grid sort comparators, status
   // bar, custom editors and edit modes, undo / redo): 206.8 kB.
+  // Batch E row 4.18.1 (Organization chart collapsible nodes: the expand / collapse controller,
+  // badges, lazy children and eight methods; about 1.4 kB) fits it: 208.3 kB.
   // 205 kB since Phase 4 batch D: the data grid's row 4.15 (multiple grouping columns, grouping
   // values, group footers, server-side aggregation, derived pivot fields, the pivot panel's drag and
   // drop, several charts per grid; about 2.7 kB) on top of the Editor merge: 200.0 kB.

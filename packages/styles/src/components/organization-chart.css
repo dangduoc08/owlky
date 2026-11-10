@@ -12,6 +12,12 @@
  *            root by React (`style`) or the HTML runtime (CSSOM) from data-ok-line-height,
  *            data-ok-line-width, data-ok-line-border-radius and data-ok-node-padding.
  *
+ * Expand and collapse (ADR-0051, data-ok-enable-expand-collapse): a branch's label is followed by
+ *            button[data-ok-organization-chart-toggle][aria-expanded][aria-busy]?
+ *              › span[…-toggle-label] (hidden name), svg[…-toggle-icon], CircularProgress
+ *                [data-ok-organization-chart-spinner]? (lazy), span[…-badge]? (hidden count);
+ *            its children list is a Collapse (`hidden` while closed: no list, no connectors).
+ *
  * Connectors: each child list draws the line down from its parent (`::before`); each child node
  * draws its half of the horizontal bar on both sides (`::before` / `::after`) and the line down
  * to its label. Logical properties, so right-to-left charts mirror. CSS only.
@@ -188,5 +194,118 @@
     border-block-start: 0;
     border-inline-start: var(--_ok-org-line);
     border-start-start-radius: 0;
+  }
+
+  /* Expand and collapse (ADR-0051). The toggle straddles the label's bottom edge, above it; the
+     children list (a Collapse, `hidden` while closed, so no connectors) starts below it. */
+  :where([data-ok-organization-chart-toggle]) {
+    --_ok-org-toggle-size: calc(var(--ok-spacing) * 6);
+
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    gap: calc(var(--ok-spacing) * 0.5);
+    box-sizing: border-box;
+    min-inline-size: var(--_ok-org-toggle-size);
+    block-size: var(--_ok-org-toggle-size);
+    margin: calc(var(--_ok-org-toggle-size) / -2) 0 0;
+    padding: 0 calc(var(--ok-spacing) * 1.5);
+    border: var(--_ok-org-line-width) solid var(--_ok-org-line-color);
+    border-radius: var(--ok-radius-full);
+    background-color: var(--ok-bg-paper);
+    color: var(--ok-text-secondary);
+    font-family: var(--ok-font-family);
+    font-size: var(--ok-typography-caption-font-size);
+    font-weight: var(--ok-font-weight-semibold);
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  @media (hover: hover) {
+    :where([data-ok-organization-chart-toggle]:hover) {
+      background-image: linear-gradient(var(--ok-action-hover), var(--ok-action-hover));
+      color: var(--ok-text-primary);
+    }
+  }
+
+  :where([data-ok-organization-chart-toggle]:focus-visible) {
+    outline: 2px solid var(--ok-palette-primary-main);
+    outline-offset: 2px;
+  }
+
+  /* The toggle's name, for assistive technology only (the count that follows stays in it). */
+  :where([data-ok-organization-chart-toggle-label]) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  :where([data-ok-organization-chart-toggle-icon]) {
+    flex-shrink: 0;
+    inline-size: calc(var(--ok-spacing) * 4);
+    block-size: calc(var(--ok-spacing) * 4);
+    margin-inline: calc(var(--ok-spacing) * -1);
+    transition: rotate var(--ok-duration-shortest) var(--ok-easing-standard);
+  }
+
+  :where(
+    [data-ok-organization-chart-toggle][aria-expanded="true"]
+      > [data-ok-organization-chart-toggle-icon]
+  ) {
+    rotate: 180deg;
+  }
+
+  /* The hidden count: written while collapsed, empty otherwise. */
+  :where([data-ok-organization-chart-badge]) {
+    margin-inline-start: calc(var(--ok-spacing) * 1.5);
+    font-variant-numeric: tabular-nums;
+  }
+
+  :where([data-ok-organization-chart-badge]:empty) {
+    display: none;
+  }
+
+  /* Lazy children: the spinner replaces the chevron while they load. */
+  :where([data-ok-organization-chart-spinner]) {
+    --_ok-progress-size: calc(var(--ok-spacing) * 3.5);
+  }
+
+  :where(
+    [data-ok-organization-chart-toggle]:not([aria-busy="true"])
+      > [data-ok-organization-chart-spinner]
+  ) {
+    display: none;
+  }
+
+  :where(
+    [data-ok-organization-chart-toggle][aria-busy="true"] > [data-ok-organization-chart-toggle-icon]
+  ) {
+    display: none;
+  }
+
+  :where([data-ok-organization-chart-toggle][aria-busy="true"]) {
+    cursor: progress;
+  }
+
+  :where(
+    [data-ok-organization-chart][data-ok-expand-collapse-on-node-click]
+      [data-ok-organization-chart-label]:has(+ [data-ok-organization-chart-toggle])
+  ) {
+    cursor: pointer;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :where([data-ok-organization-chart-toggle-icon]) {
+      transition: none;
+    }
   }
 }

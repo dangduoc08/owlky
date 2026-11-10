@@ -135,6 +135,178 @@ export function CompanyChart() {
 }`,
   },
   {
+    id: "collapse",
+    title: "Collapse and expand nodes",
+    body: 'Set `enableExpandCollapse` to give every node with children a toggle button on the bottom edge of its label. The button collapses the node\'s children and expands them again, with an animation. A collapsed node draws no lines below it, and its button shows how many nodes it hides. Every node starts expanded: list the ids of the nodes to collapse at first in `defaultCollapsedNodes`, or control them with `collapsedNodes` and `onCollapsedNodesChange`. Give each node a `nodeId` and a `toggleLabel`, such as "Priya Raman\'s reports", which names its button for screen readers. Set `expandCollapseOnNodeClick` to also toggle a node when someone clicks its label, outside its own buttons and links. In HTML, the markup holds the state: a collapsed node\'s children list has `hidden` and its button has `aria-expanded="false"`. The script toggles both.',
+    html: `<!-- Load once per page: the styles and the script -->
+<link rel="stylesheet" href="${CDN}/owlky.css">
+<script src="${CDN}/owlky.js" defer></script>
+
+<ul data-ok-organization-chart data-ok-line-color="divider" data-ok-line-style="solid"
+    data-ok-enable-expand-collapse data-ok-expand-collapse-on-node-click aria-label="Company">
+  <li data-ok-organization-chart-node data-ok-node-id="maya">
+    <div data-ok-organization-chart-label>Maya Lindqvist, CEO</div>
+    <button type="button" data-ok-organization-chart-toggle aria-expanded="true"
+            aria-controls="maya-reports">
+      <span data-ok-organization-chart-toggle-label>Maya Lindqvist's reports</span>
+      <svg data-ok-organization-chart-toggle-icon aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+      <span data-ok-organization-chart-badge></span>
+    </button>
+    <ul data-ok-organization-chart-children data-ok-collapse id="maya-reports">
+      <li data-ok-organization-chart-node data-ok-node-id="jonah">
+        <div data-ok-organization-chart-label>Jonah Pereira, design</div>
+      </li>
+      <li data-ok-organization-chart-node data-ok-node-id="priya">
+        <div data-ok-organization-chart-label>Priya Raman, development</div>
+        <!-- Collapsed at first: aria-expanded="false" and a hidden list -->
+        <button type="button" data-ok-organization-chart-toggle aria-expanded="false"
+                aria-controls="priya-reports">
+          <span data-ok-organization-chart-toggle-label>Priya Raman's reports</span>
+          <svg data-ok-organization-chart-toggle-icon aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+          <span data-ok-organization-chart-badge></span>
+        </button>
+        <ul data-ok-organization-chart-children data-ok-collapse id="priya-reports" hidden>
+          <li data-ok-organization-chart-node data-ok-node-id="elias">
+            <div data-ok-organization-chart-label>Elias Novak</div>
+          </li>
+          <li data-ok-organization-chart-node data-ok-node-id="noah">
+            <div data-ok-organization-chart-label>Noah Brennan</div>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ul>`,
+    react: `import { OrganizationChart, OrganizationChartNode } from "@owlky/react";
+
+export function CollapsibleCompany() {
+  return (
+    <OrganizationChart
+      aria-label="Company"
+      enableExpandCollapse
+      expandCollapseOnNodeClick
+      defaultCollapsedNodes={["priya"]}
+      nodeId="maya"
+      toggleLabel="Maya Lindqvist's reports"
+      label="Maya Lindqvist, CEO"
+    >
+      <OrganizationChartNode nodeId="jonah" label="Jonah Pereira, design" />
+      <OrganizationChartNode
+        nodeId="priya"
+        toggleLabel="Priya Raman's reports"
+        label="Priya Raman, development"
+      >
+        <OrganizationChartNode nodeId="elias" label="Elias Novak" />
+        <OrganizationChartNode nodeId="noah" label="Noah Brennan" />
+      </OrganizationChartNode>
+    </OrganizationChart>
+  );
+}`,
+  },
+  {
+    id: "methods",
+    title: "Expand and collapse from code",
+    body: "The chart's methods change many nodes at once: `expandAll()`, `collapseAll()`, `expandToDepth(depth)`, `expandSubtree(nodeId)` and `collapseSubtree(nodeId)`, plus `expand(nodeId)`, `collapse(nodeId)` and `isExpanded(nodeId)` for one node. The top node is at depth 0, so `expandToDepth(1)` shows the top node and its children only. The methods change only nodes whose children are loaded, and they fire no events. In React, pass a ref from `useOrganizationChartApiRef()` to `apiRef`. In HTML, get the chart's instance from the runtime.",
+    html: `<button type="button" id="collapse-all">Collapse all</button>
+<button type="button" id="leads-only">Show the leads only</button>
+
+<script type="module">
+  // The chart from the previous example
+  const element = document.querySelector('[aria-label="Company"]');
+  const chart = Owlky.runtime.get(element, "organization-chart");
+  document.getElementById("collapse-all").addEventListener("click", () => chart.collapseAll());
+  document.getElementById("leads-only").addEventListener("click", () => chart.expandToDepth(1));
+</script>`,
+    react: `import {
+  Button,
+  OrganizationChart,
+  OrganizationChartNode,
+  useOrganizationChartApiRef,
+} from "@owlky/react";
+
+export function CompanyWithActions() {
+  const apiRef = useOrganizationChartApiRef();
+  return (
+    <>
+      <Button onClick={() => apiRef.current?.collapseAll()}>Collapse all</Button>
+      <Button onClick={() => apiRef.current?.expandToDepth(1)}>Show the leads only</Button>
+      <OrganizationChart
+        aria-label="Company"
+        apiRef={apiRef}
+        enableExpandCollapse
+        nodeId="maya"
+        label="Maya Lindqvist, CEO"
+      >
+        <OrganizationChartNode nodeId="priya" label="Priya Raman, development">
+          <OrganizationChartNode nodeId="elias" label="Elias Novak" />
+        </OrganizationChartNode>
+      </OrganizationChart>
+    </>
+  );
+}`,
+  },
+  {
+    id: "lazy",
+    title: "Load children on demand",
+    body: 'A node can load its children the first time it expands, such as from a server. In React, set `hasChildren` on the node and pass `loadChildren` to the chart: it receives the node\'s id and resolves with the child nodes. In HTML, give the node a toggle and an empty, hidden children list, then answer the `ok:organization-chart:loadchildren` event with `detail.respondWith()`, which takes child node elements or a promise of them. While the children load, the toggle shows a progress indicator and has `aria-busy="true"`. When no children come back, the node becomes a leaf. When the promise is rejected, the node stays collapsed and the next expand tries again. Children load once: catch errors in your loader to show a message, and reject so that people can retry.',
+    html: `<ul data-ok-organization-chart data-ok-line-color="divider" data-ok-line-style="solid"
+    data-ok-enable-expand-collapse aria-label="Company" id="company">
+  <li data-ok-organization-chart-node data-ok-node-id="maya">
+    <div data-ok-organization-chart-label>Maya Lindqvist, CEO</div>
+    <!-- No children yet: an empty, hidden list and a progress indicator -->
+    <button type="button" data-ok-organization-chart-toggle aria-expanded="false"
+            aria-controls="maya-reports">
+      <span data-ok-organization-chart-toggle-label>Maya Lindqvist's reports</span>
+      <svg data-ok-organization-chart-toggle-icon aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+      <span role="progressbar" data-ok-circular-progress data-ok-variant="indeterminate"
+            data-ok-color="inherit" aria-hidden="true" data-ok-organization-chart-spinner><svg data-ok-circular-progress-svg aria-hidden="true" viewBox="22 22 44 44"><circle data-ok-circular-progress-circle cx="44" cy="44" r="20.2" stroke-width="3.6"></circle></svg></span>
+      <span data-ok-organization-chart-badge></span>
+    </button>
+    <ul data-ok-organization-chart-children data-ok-collapse id="maya-reports" hidden></ul>
+  </li>
+</ul>
+
+<template id="maya-reports-template">
+  <li data-ok-organization-chart-node data-ok-node-id="priya">
+    <div data-ok-organization-chart-label>Priya Raman, development</div>
+  </li>
+</template>
+
+<script type="module">
+  const chart = document.getElementById("company");
+  chart.addEventListener("ok:organization-chart:loadchildren", (event) => {
+    // A server request works the same way: respond with a promise of the nodes
+    const template = document.getElementById(\`\${event.detail.nodeId}-reports-template\`);
+    event.detail.respondWith(template ? template.content.cloneNode(true) : null);
+  });
+</script>`,
+    react: `import { OrganizationChart, OrganizationChartNode } from "@owlky/react";
+
+const REPORTS: Record<string, string[]> = { maya: ["Priya Raman", "Jonah Pereira"] };
+
+async function fetchReports(id: string) {
+  await new Promise((resolve) => setTimeout(resolve, 500));
+  return REPORTS[id] ?? [];
+}
+
+export function LazyCompany() {
+  return (
+    <OrganizationChart
+      aria-label="Company"
+      enableExpandCollapse
+      nodeId="maya"
+      hasChildren
+      toggleLabel="Maya Lindqvist's reports"
+      label="Maya Lindqvist, CEO"
+      loadChildren={async ({ id }) => {
+        const names = await fetchReports(id);
+        return names.map((name) => <OrganizationChartNode key={name} label={name} />);
+      }}
+    />
+  );
+}`,
+  },
+  {
     id: "options",
     title: "Options",
     body: "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed, and lengths that aren't valid, fall back to the default.",
@@ -145,9 +317,18 @@ export function CompanyChart() {
     body: "These parts hold the content. They aren't options, because HTML writes them as markup.",
   },
   {
+    id: "events",
+    title: "Events and methods",
+    body: `- **\`ok:organization-chart:expand\`** (cancelable) fires on the chart before someone expands a node, with \`detail.nodeId\` and \`detail.node\`. Call \`preventDefault()\` to keep the node collapsed.
+- **\`ok:organization-chart:collapse\`** (cancelable) fires before someone collapses a node, with the same details.
+- **\`ok:organization-chart:loadchildren\`** fires the first time a node with an empty children list expands, with \`detail.nodeId\`, \`detail.node\` and \`detail.respondWith(nodes)\`.
+- **Instance:** \`runtime.get(element, "organization-chart")\` returns \`{ expand(id), collapse(id), isExpanded(id), expandAll(), collapseAll(), expandToDepth(depth), expandSubtree(id), collapseSubtree(id) }\`. \`expand(id)\` returns a promise that resolves once the children are loaded and shown. The methods don't fire events.
+- **React:** \`onExpand(nodeId)\`, \`onCollapse(nodeId)\`, \`onCollapsedNodesChange(nodeIds)\` and the same methods on \`apiRef\`.`,
+  },
+  {
     id: "keyboard",
     title: "Keyboard",
-    body: "A chart isn't interactive. Buttons and links in its labels work as usual, in reading order: each node, then its children. **Tab** reaches the scroll area of a wide chart, and the arrow keys scroll it.",
+    body: "A chart has no keys of its own. Buttons and links in its labels work as usual, in reading order: each node, its toggle button, then its children. **Tab** reaches the scroll area of a wide chart, and the arrow keys scroll it.",
   },
   {
     id: "accessibility",
@@ -156,7 +337,10 @@ export function CompanyChart() {
 - Name the chart with \`aria-label\` or \`aria-labelledby\`, such as the name of the team it shows.
 - Lines are decorative: the list structure carries the hierarchy. Don't rely on a line color alone to convey meaning.
 - Text in labels needs a contrast ratio of at least 4.5:1, like any other text.
-- In right-to-left pages, the chart mirrors: the first child is on the right.`,
+- In right-to-left pages, the chart mirrors: the first child is on the right.
+- Toggle buttons have \`aria-expanded\` and \`aria-controls\`. Their name is the hidden \`toggleLabel\` followed by the visible number of hidden nodes, so that speech input users can say what they see. Make each \`toggleLabel\` unique, such as the person's name and "reports".
+- Collapsed children are hidden from screen readers too. While children load, the toggle has \`aria-busy="true"\`.
+- A click on a label is a shortcut for pointer users: keyboard users reach the toggle button with **Tab**.`,
   },
   apiReferenceSection(organizationChartApi),
 ];
@@ -203,6 +387,47 @@ const PREVIEWS = {
       </Scrollbar>
     </Preview>
   ),
+  collapse: () => (
+    <Preview>
+      <OrganizationChart
+        aria-label="Company"
+        enableExpandCollapse
+        expandCollapseOnNodeClick
+        defaultCollapsedNodes={["priya"]}
+        nodeId="maya"
+        toggleLabel="Maya Lindqvist's reports"
+        label="Maya Lindqvist, CEO"
+      >
+        <OrganizationChartNode nodeId="jonah" label="Jonah Pereira, design" />
+        <OrganizationChartNode
+          nodeId="priya"
+          toggleLabel="Priya Raman's reports"
+          label="Priya Raman, development"
+        >
+          <OrganizationChartNode nodeId="elias" label="Elias Novak" />
+          <OrganizationChartNode nodeId="noah" label="Noah Brennan" />
+        </OrganizationChartNode>
+      </OrganizationChart>
+    </Preview>
+  ),
+  lazy: () => (
+    <Preview>
+      <OrganizationChart
+        aria-label="Company"
+        enableExpandCollapse
+        nodeId="maya"
+        hasChildren
+        toggleLabel="Maya Lindqvist's reports"
+        label="Maya Lindqvist, CEO"
+        loadChildren={async () => {
+          await new Promise((resolve) => setTimeout(resolve, 500));
+          return ["Priya Raman", "Jonah Pereira"].map((name) => (
+            <OrganizationChartNode key={name} label={name} />
+          ));
+        }}
+      />
+    </Preview>
+  ),
   options: () => <OptionsTable schema={organizationChartOptions} />,
   props: () => (
     <PropsTable
@@ -225,6 +450,32 @@ const PREVIEWS = {
           html: "ul[data-ok-organization-chart-children]",
           type: "ReactNode",
           description: "The nodes of the next level. Leave it out on nodes without children.",
+        },
+        {
+          react: "nodeId",
+          html: "data-ok-node-id",
+          type: "string",
+          description: "The node's id, used by the methods, events and collapsedNodes.",
+        },
+        {
+          react: "toggleLabel",
+          html: "span[data-ok-organization-chart-toggle-label]",
+          type: "string",
+          description:
+            'The name of the node\'s toggle button, hidden on screen. Default "Child nodes".',
+        },
+        {
+          react: "hasChildren",
+          html: "an empty ul[data-ok-organization-chart-children][hidden]",
+          type: "boolean",
+          description: "The node has children to load with loadChildren on its first expand.",
+        },
+        {
+          react: "collapseBadgeEnabled",
+          html: "span[data-ok-organization-chart-badge]",
+          type: "boolean",
+          description:
+            "Shows the number of hidden nodes on collapsed toggles. Default true. In HTML, leave the span out for no badge.",
         },
       ]}
     />

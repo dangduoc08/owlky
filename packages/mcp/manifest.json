@@ -277,6 +277,7 @@
   "data-ok-code-editor-value",
   "data-ok-col-start",
   "data-ok-collapse",
+  "data-ok-collapse-badge-threshold",
   "data-ok-collapse-toggle",
   "data-ok-collapsed",
   "data-ok-collapsed-size",
@@ -546,6 +547,7 @@
   "data-ok-editor-toolbar",
   "data-ok-effect",
   "data-ok-elevation",
+  "data-ok-enable-expand-collapse",
   "data-ok-enable-input-rules",
   "data-ok-enable-paste-rules",
   "data-ok-encoding",
@@ -558,6 +560,7 @@
   "data-ok-excel-options",
   "data-ok-exclusive",
   "data-ok-expand",
+  "data-ok-expand-collapse-on-node-click",
   "data-ok-expand-text",
   "data-ok-expanded",
   "data-ok-expansion-trigger",
@@ -916,6 +919,7 @@
   "data-ok-no-keyboard",
   "data-ok-no-paste",
   "data-ok-no-wrap",
+  "data-ok-node-id",
   "data-ok-node-padding",
   "data-ok-node-width",
   "data-ok-non-linear",
@@ -927,9 +931,14 @@
   "data-ok-opposite",
   "data-ok-options",
   "data-ok-organization-chart",
+  "data-ok-organization-chart-badge",
   "data-ok-organization-chart-children",
   "data-ok-organization-chart-label",
   "data-ok-organization-chart-node",
+  "data-ok-organization-chart-spinner",
+  "data-ok-organization-chart-toggle",
+  "data-ok-organization-chart-toggle-icon",
+  "data-ok-organization-chart-toggle-label",
   "data-ok-orientation",
   "data-ok-original-language",
   "data-ok-original-model-path",
@@ -48241,12 +48250,33 @@
    "api": {
     "css": [
      {
+      "name": "--ok-action-hover",
+      "value": "color-mix(in srgb, #919EAB 8%, transparent)"
+     },
+     {
+      "dark": "#1C252E",
+      "light": "#FFFFFF",
+      "name": "--ok-bg-paper"
+     },
+     {
       "name": "--ok-divider",
       "value": "color-mix(in srgb, #919EAB 20%, transparent)"
      },
      {
+      "name": "--ok-duration-shortest",
+      "value": "150ms"
+     },
+     {
+      "name": "--ok-easing-standard",
+      "value": "cubic-bezier(0.4, 0, 0.2, 1)"
+     },
+     {
       "name": "--ok-font-family",
       "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+     },
+     {
+      "name": "--ok-font-weight-semibold",
+      "value": "600"
      },
      {
       "name": "--ok-palette-error-light",
@@ -48261,6 +48291,10 @@
       "value": "#5BE49B"
      },
      {
+      "name": "--ok-palette-primary-main",
+      "value": "#00A76F"
+     },
+     {
       "name": "--ok-palette-secondary-light",
       "value": "#C684FF"
      },
@@ -48273,6 +48307,10 @@
       "value": "#FFD666"
      },
      {
+      "name": "--ok-radius-full",
+      "value": "9999px"
+     },
+     {
       "name": "--ok-spacing",
       "value": "0.25rem"
      },
@@ -48280,12 +48318,91 @@
       "dark": "#FFFFFF",
       "light": "#1C252E",
       "name": "--ok-text-primary"
+     },
+     {
+      "dark": "#919EAB",
+      "light": "#637381",
+      "name": "--ok-text-secondary"
+     },
+     {
+      "name": "--ok-typography-caption-font-size",
+      "value": "0.75rem"
      }
     ],
     "entries": [
      {
       "html": {
        "attribute": "data-ok-organization-chart",
+       "events": [
+        {
+         "cancelable": true,
+         "description": "The user asked to collapse a node. `preventDefault()` keeps it expanded.",
+         "detail": "{ nodeId: string | null; node: HTMLElement; }",
+         "name": "ok:organization-chart:collapse"
+        },
+        {
+         "cancelable": true,
+         "description": "The user asked to expand a node (its toggle, or its label with `data-ok-expand-collapse-on-node-click`). `preventDefault()` keeps it collapsed.",
+         "detail": "{ nodeId: string | null; node: HTMLElement; }",
+         "name": "ok:organization-chart:expand"
+        },
+        {
+         "cancelable": false,
+         "description": "A node whose children list is empty is expanding for the first time. Call `respondWith(nodesOrPromise)` with its child nodes (`li[data-ok-organization-chart-node]` elements, for example cloned from a `template`). No nodes make it a leaf; a rejected promise keeps it collapsed, and the next expand asks again.",
+         "detail": "{ nodeId: string | null; node: HTMLElement; respondWith(nodes: PromiseLike<OrganizationChartLoadedNodes> | OrganizationChartLoadedNodes): void; }",
+         "name": "ok:organization-chart:loadchildren"
+        }
+       ],
+       "methods": [
+        {
+         "description": "Collapses the node with this `data-ok-node-id`.",
+         "kind": "method",
+         "name": "collapse",
+         "type": "(nodeId: string) => void"
+        },
+        {
+         "description": "Collapses every node, the root included.",
+         "kind": "method",
+         "name": "collapseAll",
+         "type": "() => void"
+        },
+        {
+         "description": "Collapses a node and every node under it.",
+         "kind": "method",
+         "name": "collapseSubtree",
+         "type": "(nodeId: string) => void"
+        },
+        {
+         "description": "Expands the node with this `data-ok-node-id`, loading its children first when needed. Resolves once done.",
+         "kind": "method",
+         "name": "expand",
+         "type": "(nodeId: string) => Promise<void>"
+        },
+        {
+         "description": "Expands every node whose children are loaded.",
+         "kind": "method",
+         "name": "expandAll",
+         "type": "() => void"
+        },
+        {
+         "description": "Expands a node and every loaded node under it.",
+         "kind": "method",
+         "name": "expandSubtree",
+         "type": "(nodeId: string) => void"
+        },
+        {
+         "description": "Expands the nodes above `depth` (the root is depth 0) and collapses the others.",
+         "kind": "method",
+         "name": "expandToDepth",
+         "type": "(depth: number) => void"
+        },
+        {
+         "description": "Whether the node with this `data-ok-node-id` shows its children.",
+         "kind": "method",
+         "name": "isExpanded",
+         "type": "(nodeId: string) => boolean"
+        }
+       ],
        "options": [
         {
          "attr": "data-ok-line-height",
@@ -48367,11 +48484,45 @@
           "rem",
           "em"
          ]
+        },
+        {
+         "attr": "data-ok-enable-expand-collapse",
+         "description": "Nodes with children can be collapsed and expanded with their toggle button.",
+         "kind": "flag",
+         "name": "enableExpandCollapse"
+        },
+        {
+         "attr": "data-ok-expand-collapse-on-node-click",
+         "description": "A click on a node's label (outside its buttons and links) also toggles its children.",
+         "kind": "flag",
+         "name": "expandCollapseOnNodeClick"
+        },
+        {
+         "attr": "data-ok-collapse-badge-threshold",
+         "default": 1,
+         "description": "Smallest number of hidden descendants that a collapsed node's badge shows.",
+         "kind": "number",
+         "min": 1,
+         "name": "collapseBadgeThreshold"
         }
        ],
        "parts": [
         {
-         "description": "The list of a node's children. Absent without children.",
+         "description": "On a node: its id, used by the instance methods and in the events.",
+         "kind": "value",
+         "name": "data-ok-node-id",
+         "value": "string"
+        },
+        {
+         "description": "In a toggle: the number of hidden descendants, written by the script while the node is collapsed. Leave it out for no badge.",
+         "elements": [
+          "span"
+         ],
+         "kind": "part",
+         "name": "data-ok-organization-chart-badge"
+        },
+        {
+         "description": "The list of a node's children. Absent without children; empty and `hidden` on a node whose children load on demand.",
          "elements": [
           "ul"
          ],
@@ -48385,19 +48536,95 @@
          ],
          "kind": "part",
          "name": "data-ok-organization-chart-label"
+        },
+        {
+         "description": "In a toggle: the loading indicator of a node whose children load on demand, shown while the toggle is `aria-busy`.",
+         "elements": [
+          "span"
+         ],
+         "kind": "part",
+         "name": "data-ok-organization-chart-spinner"
+        },
+        {
+         "description": "The button after a label that expands and collapses the node's children (`aria-expanded`, `aria-controls`).",
+         "elements": [
+          "button"
+         ],
+         "kind": "part",
+         "name": "data-ok-organization-chart-toggle"
+        },
+        {
+         "description": "The chevron icon of a toggle.",
+         "elements": [
+          "svg"
+         ],
+         "kind": "part",
+         "name": "data-ok-organization-chart-toggle-icon"
+        },
+        {
+         "description": "The toggle's name, visually hidden, such as \"Priya Raman's reports\". The badge's count follows it in the name.",
+         "elements": [
+          "span"
+         ],
+         "kind": "part",
+         "name": "data-ok-organization-chart-toggle-label"
         }
        ],
        "runtime": "organization-chart"
       },
       "name": "OrganizationChart",
       "react": {
-       "description": "A hierarchy drawn as nested lists (`ul` › `li`) with connector lines. CSS only; the lengths become private custom properties on the root. Name it with `aria-label` / `aria-labelledby`.",
+       "description": "A hierarchy drawn as nested lists (`ul` › `li`) with connector lines. The lengths become private custom properties on the root. Name it with `aria-label` / `aria-labelledby`.",
        "native": "HTMLUListElement",
        "props": [
+        {
+         "description": "Receives the chart's methods (`useOrganizationChartApiRef()`).",
+         "name": "apiRef",
+         "type": "MutableRefObject<OrganizationChartApi | undefined>"
+        },
         {
          "description": "The root's children: `OrganizationChartNode` elements.",
          "name": "children",
          "type": "ReactNode"
+        },
+        {
+         "default": "true",
+         "description": "Collapsed nodes show the number of hidden descendants on their toggle.",
+         "name": "collapseBadgeEnabled",
+         "type": "boolean"
+        },
+        {
+         "default": "1",
+         "description": "Smallest number of hidden descendants the badge shows.",
+         "name": "collapseBadgeThreshold",
+         "type": "number"
+        },
+        {
+         "description": "Controlled ids of the collapsed nodes (`nodeId`).",
+         "name": "collapsedNodes",
+         "type": "readonly string[]"
+        },
+        {
+         "description": "Ids of the nodes collapsed at first (uncontrolled). Default none: every node is expanded.",
+         "name": "defaultCollapsedNodes",
+         "type": "readonly string[]"
+        },
+        {
+         "default": "false",
+         "description": "Nodes with children get a toggle button that collapses and expands them.",
+         "name": "enableExpandCollapse",
+         "type": "boolean"
+        },
+        {
+         "default": "false",
+         "description": "A click on a node's label, outside its buttons and links, also toggles it.",
+         "name": "expandCollapseOnNodeClick",
+         "type": "boolean"
+        },
+        {
+         "description": "The node has children that `loadChildren` loads on its first expand (collapsible charts).",
+         "name": "hasChildren",
+         "type": "boolean"
         },
         {
          "description": "Content of the root node, such as a card.",
@@ -48434,10 +48661,41 @@
          "type": "string | number"
         },
         {
+         "description": "Loads the children of a node with `hasChildren` on its first expand: resolve with `OrganizationChartNode` elements (none makes it a leaf). A rejection keeps it collapsed.",
+         "name": "loadChildren",
+         "type": "((node: { id: string; }) => Promise<ReactNode>)"
+        },
+        {
+         "description": "The node's id, written as `data-ok-node-id`: the methods, callbacks and `collapsedNodes` use it.",
+         "name": "nodeId",
+         "type": "string"
+        },
+        {
          "default": "4",
          "description": "Space on each side of every node: px, or a CSS length.",
          "name": "nodePadding",
          "type": "string | number"
+        },
+        {
+         "description": "Called when the user collapses a node, before it closes.",
+         "name": "onCollapse",
+         "type": "((nodeId: string) => void)"
+        },
+        {
+         "description": "Called with the collapsed ids after a toggle or a method call.",
+         "name": "onCollapsedNodesChange",
+         "type": "((nodeIds: string[]) => void)"
+        },
+        {
+         "description": "Called when the user expands a node (toggle or label click), before it opens.",
+         "name": "onExpand",
+         "type": "((nodeId: string) => void)"
+        },
+        {
+         "default": "\"Child nodes\"",
+         "description": "Accessible name of the node's toggle button, such as \"Priya Raman's reports\".",
+         "name": "toggleLabel",
+         "type": "string"
         }
        ]
       }
@@ -48452,7 +48710,7 @@
       },
       "name": "OrganizationChartNode",
       "react": {
-       "description": "One node (`li`): its label and, below it, its children.",
+       "description": "One node (`li`): its label and, below it, its children. In a collapsible chart a node with children (or `hasChildren`) gets a toggle button.",
        "native": "HTMLLIElement",
        "props": [
         {
@@ -48461,13 +48719,35 @@
          "type": "ReactNode"
         },
         {
+         "description": "The node has children that `loadChildren` loads on its first expand (collapsible charts).",
+         "name": "hasChildren",
+         "type": "boolean"
+        },
+        {
          "description": "Content of the node, such as a card.",
          "name": "label",
          "required": true,
          "type": "ReactNode"
+        },
+        {
+         "description": "The node's id, written as `data-ok-node-id`: the methods, callbacks and `collapsedNodes` use it.",
+         "name": "nodeId",
+         "type": "string"
+        },
+        {
+         "default": "\"Child nodes\"",
+         "description": "Accessible name of the node's toggle button, such as \"Priya Raman's reports\".",
+         "name": "toggleLabel",
+         "type": "string"
         }
        ]
       }
+     }
+    ],
+    "types": [
+     {
+      "name": "OrganizationChartLoadedNodes",
+      "type": "Iterable<Node> | Node | null"
      }
     ]
    },
@@ -48475,12 +48755,16 @@
    "name": "organization-chart",
    "react": [
     "OrganizationChart",
-    "OrganizationChartNode"
+    "OrganizationChartNode",
+    "useOrganizationChartApiRef"
    ],
    "referenceUrl": "https://minimals.cc/components/extra/organization-chart",
    "related": [
     "avatar",
+    "button",
     "card",
+    "circular-progress",
+    "collapse",
     "icon-button",
     "label",
     "menu",
@@ -48580,6 +48864,26 @@
         "rem",
         "em"
        ]
+      },
+      {
+       "attr": "data-ok-enable-expand-collapse",
+       "description": "Nodes with children can be collapsed and expanded with their toggle button.",
+       "kind": "flag",
+       "name": "enableExpandCollapse"
+      },
+      {
+       "attr": "data-ok-expand-collapse-on-node-click",
+       "description": "A click on a node's label (outside its buttons and links) also toggles its children.",
+       "kind": "flag",
+       "name": "expandCollapseOnNodeClick"
+      },
+      {
+       "attr": "data-ok-collapse-badge-threshold",
+       "default": 1,
+       "description": "Smallest number of hidden descendants that a collapsed node's badge shows.",
+       "kind": "number",
+       "min": 1,
+       "name": "collapseBadgeThreshold"
       }
      ],
      "root": "data-ok-organization-chart"
@@ -48587,17 +48891,17 @@
    ],
    "sections": [
     {
-     "body": "A hierarchy (people of a company, parts of a product) as a top-down tree of nodes joined by\nconnector lines. Node content is free (cards in the stories). CSS only; a small runtime turns the\nlength options into private custom properties in HTML.",
+     "body": "A hierarchy (people of a company, parts of a product) as a top-down tree of nodes joined by\nconnector lines. Node content is free (cards in the stories). CSS only; a small runtime turns the\nlength options into private custom properties in HTML. Opt-in (`enableExpandCollapse`): branches\ncollapse and expand with a toggle button, their children list is a Collapse, children can load on\ndemand.",
      "id": "purpose",
      "title": "Purpose"
     },
     {
-     "body": "```\nul[data-ok-organization-chart][data-ok-line-color][data-ok-line-style]\n  [data-ok-line-height]? [data-ok-line-width]? [data-ok-line-border-radius]? [data-ok-node-padding]?\n  [aria-label | aria-labelledby]\n  li[data-ok-organization-chart-node]                     (the root node: React `label`)\n    div[data-ok-organization-chart-label]                 (any content)\n    ul[data-ok-organization-chart-children]?              (only when there are children)\n      li[data-ok-organization-chart-node]                 (OrganizationChartNode, any depth)\n        div[data-ok-organization-chart-label]\n        ul[data-ok-organization-chart-children]?\n```\nWide charts scroll by composition: `Scrollbar › OrganizationChart` (stories, docs).",
+     "body": "```\nul[data-ok-organization-chart][data-ok-line-color][data-ok-line-style]\n  [data-ok-line-height]? [data-ok-line-width]? [data-ok-line-border-radius]? [data-ok-node-padding]?\n  [data-ok-enable-expand-collapse]? [data-ok-expand-collapse-on-node-click]?\n  [data-ok-collapse-badge-threshold]?\n  [aria-label | aria-labelledby]\n  li[data-ok-organization-chart-node][data-ok-node-id]?   (the root node: React `label`)\n    div[data-ok-organization-chart-label]                 (any content)\n    button[data-ok-organization-chart-toggle][type=button][aria-expanded][aria-controls]\n          [aria-busy]?                                    (collapsible charts, branches only)\n      span[data-ok-organization-chart-toggle-label]       (the name, visually hidden)\n      svg[data-ok-organization-chart-toggle-icon]         (chevron, aria-hidden)\n      span[data-ok-circular-progress][data-ok-organization-chart-spinner][aria-hidden]?\n                                                          (lazy nodes: a CircularProgress)\n      span[data-ok-organization-chart-badge]?             (hidden count, written by the script)\n    ul[data-ok-organization-chart-children][data-ok-collapse]?[id]?[hidden]?\n                                                          (only when there are children, or\n                                                           empty + hidden on a lazy node)\n      li[data-ok-organization-chart-node]                 (OrganizationChartNode, any depth)\n        div[data-ok-organization-chart-label]\n        ul[data-ok-organization-chart-children]?\n```\nWide charts scroll by composition: `Scrollbar › OrganizationChart` (stories, docs).",
      "id": "anatomy",
      "title": "Anatomy"
     },
     {
-     "body": "(Options of `organization-chart`: listed under \"options\".)\n\nContent: `label` (ReactNode) on `OrganizationChart` and `OrganizationChartNode`; `children`\n(`OrganizationChartNode` elements). Rest props go to the root `ul` (chart) or the `li` (node);\n`style` is merged after the length properties.\n\nAPI mapping (`react-organizational-chart`): `Tree` → **renamed** `OrganizationChart` (a generic\n`Tree` would collide with Tree view), `TreeNode` → **renamed** `OrganizationChartNode`; kept\n`label`, `children`, `lineHeight`, `lineWidth`, `lineColor`, `lineStyle`, `lineBorderRadius`,\n`nodePadding`. Defaults follow the reference (the Minimals wrapper), not the upstream:\n`lineHeight` 40 (upstream 20px), `lineBorderRadius` 24 (5px), `nodePadding` 4 (5px), `lineColor`\n`divider` (`black`). `lineColor` is an allowlist (`divider`, `inherit`, palette colors at their\nlight tone) instead of any CSS color: `inherit` + the root's `color` covers custom colors without\nuntrusted CSS. `lineStyle` keeps `solid` / `dashed` / `dotted` (other border styles look like\n`solid` at 1px). Lengths: a number (px) or a non-negative length in `px`, `rem` or `em`.",
+     "body": "(Options of `organization-chart`: listed under \"options\".)\n\nContent: `label` (ReactNode) on `OrganizationChart` and `OrganizationChartNode`; `children`\n(`OrganizationChartNode` elements). Rest props go to the root `ul` (chart) or the `li` (node);\n`style` is merged after the length properties.\n\nExpand and collapse (React, ADR-0051): `enableExpandCollapse` (default `false`),\n`expandCollapseOnNodeClick`, `collapseBadgeEnabled` (default `true`; HTML: leave the badge span\nout), `collapseBadgeThreshold` (default 1), `collapsedNodes` / `defaultCollapsedNodes` /\n`onCollapsedNodesChange` (ids; default: every node expanded), `onExpand(nodeId)` /\n`onCollapse(nodeId)` (user intent, before the change), `loadChildren({ id }) => Promise<ReactNode>`,\n`apiRef` (`useOrganizationChartApiRef()`). Per node (and on the chart for its root node): `nodeId`\n(`data-ok-node-id`; nodes without one get an internal id), `hasChildren` (children to load),\n`toggleLabel` (default \"Child nodes\").\n\nAPI mapping (`react-organizational-chart`): `Tree` → **renamed** `OrganizationChart` (a generic\n`Tree` would collide with Tree view), `TreeNode` → **renamed** `OrganizationChartNode`; kept\n`label`, `children`, `lineHeight`, `lineWidth`, `lineColor`, `lineStyle`, `lineBorderRadius`,\n`nodePadding`. Defaults follow the reference (the Minimals wrapper), not the upstream:\n`lineHeight` 40 (upstream 20px), `lineBorderRadius` 24 (5px), `nodePadding` 4 (5px), `lineColor`\n`divider` (`black`). `lineColor` is an allowlist (`divider`, `inherit`, palette colors at their\nlight tone) instead of any CSS color: `inherit` + the root's `color` covers custom colors without\nuntrusted CSS. `lineStyle` keeps `solid` / `dashed` / `dotted` (other border styles look like\n`solid` at 1px). Lengths: a number (px) or a non-negative length in `px`, `rem` or `em`.",
      "id": "options",
      "title": "Options"
     },
@@ -48607,27 +48911,27 @@
      "title": "Layout and tokens"
     },
     {
-     "body": "None (static).",
+     "body": "Static unless `data-ok-enable-expand-collapse`. Then per branch: expanded (list without `hidden`,\ntoggle `aria-expanded=\"true\"`, chevron turned) · collapsed (list `hidden`, so it and its connectors\naren't drawn; the badge shows the hidden count when ≥ threshold) · loading (toggle\n`aria-busy=\"true\"`, the spinner replaces the chevron) · lazy (empty hidden list). Collapse's own\n`data-ok-state` while animating.",
      "id": "states",
      "title": "States"
     },
     {
-     "body": "No interaction. HTML runtime (`organization-chart`): reads `data-ok-line-height`,\n`data-ok-line-width`, `data-ok-line-border-radius`, `data-ok-node-padding` through the schema\n(invalid → left out) and writes the private properties through CSSOM; follows changes to those\nattributes (`MutationObserver`); `destroy()` removes what it wrote. Without JavaScript the\nstylesheet defaults apply. React writes the same properties in `style` and renders\n`data-ok-runtime=\"off\"`.",
+     "body": "Without `enableExpandCollapse`, no interaction. HTML runtime (`organization-chart`): reads `data-ok-line-height`,\n`data-ok-line-width`, `data-ok-line-border-radius`, `data-ok-node-padding` through the schema\n(invalid → left out) and writes the private properties through CSSOM; follows changes to those\nattributes (`MutationObserver`); `destroy()` removes what it wrote. Without JavaScript the\nstylesheet defaults apply. React writes the same properties in `style` and renders\n`data-ok-runtime=\"off\"`.\n\nExpand and collapse (ADR-0051): core `createOrganizationChartController(root, options)` reports a\ntoggle click (and, with `expandCollapseOnNodeClick`, a click on a label outside its interactive\ncontent: links, buttons, form fields, `[tabindex]`, menu items, popovers, prevented clicks) as\n`onToggle(node, expanded)`, ignores busy toggles, and writes every collapsed node's badge (the\nnode's descendants at every depth, nested charts left out; empty when expanded or under the\nthreshold) from a MutationObserver. React keeps the collapsed ids and renders `hidden` /\n`aria-expanded`; the HTML runtime emits cancelable `expand` / `collapse` and writes them. The\ntoggle straddles the label's bottom edge (half its 24px height over the label); the children\nlist's connector starts below it, so collapsible charts are 12px taller per level. During the\nCollapse animation the list's top padding (the line from the parent) stays (ADR-0044). Lazy\nnodes: React calls `loadChildren` once, renders the resolved nodes as the node's children and\nexpands it (empty → leaf: no toggle, no list; rejected → stays collapsed, retried on the next\nexpand); HTML emits `loadchildren` with `respondWith(nodes | Promise<nodes>)` (elements, a\nfragment or nothing), appends them and expands, or removes toggle and list when nothing came.\nBatch methods (`organizationChartPlan`) change loaded nodes only and emit nothing.",
      "id": "behavior",
      "title": "Behavior"
     },
     {
-     "body": "None of its own. Controls in labels follow DOM order: a node, then its children.",
+     "body": "None of its own. Controls in labels follow DOM order: a node, its toggle, then its children.\nToggles are native buttons (Enter / Space). Label clicks are a pointer shortcut only.",
      "id": "keyboard",
      "title": "Keyboard"
     },
     {
-     "body": "Nested lists: screen readers announce each level, its size and positions. Name the root `ul`\n(`aria-label` / `aria-labelledby`). Lines are decorative (borders on pseudo-elements). Wide\ncharts go in a named, focusable Scrollbar (keyboard scrolling).",
+     "body": "Nested lists: screen readers announce each level, its size and positions. Name the root `ul`\n(`aria-label` / `aria-labelledby`). Lines are decorative (borders on pseudo-elements). Wide\ncharts go in a named, focusable Scrollbar (keyboard scrolling). Toggles: `aria-expanded`,\n`aria-controls` (the list's id), the name from the visually hidden label plus the visible count\n(label in name, WCAG 2.5.3), `aria-busy` while loading, a 24px target, a focus ring. Collapsed\nchildren are `hidden` (out of the accessibility tree).",
      "id": "accessibility",
      "title": "Accessibility"
     },
     {
-     "body": "None. HTML instance: `destroy()` only (runtime-managed).",
+     "body": "HTML events (user intent only): `ok:organization-chart:expand` / `collapse` (cancelable, `{ nodeId,\nnode }`), `ok:organization-chart:loadchildren` (`{ nodeId, node, respondWith }`). HTML instance:\n`expand(id)` (Promise; loads lazy children), `collapse(id)`, `isExpanded(id)`, `expandAll()`,\n`collapseAll()`, `expandToDepth(depth)` (root = 0), `expandSubtree(id)`, `collapseSubtree(id)`,\n`destroy()`. React: the same methods on `apiRef`.",
      "id": "events-api",
      "title": "Events / API"
     },
@@ -48637,12 +48941,12 @@
      "title": "Responsive"
     },
     {
-     "body": "Upstream: `react-organizational-chart` `Tree`, `TreeNode` (github.com/daniel-hauser/react-organizational-chart\nREADME, checked 2026-11-09). ApexTree parity is roadmap 2.4.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `Tree` | `OrganizationChart` | renamed | avoids a clash with Tree view |\n| `TreeNode` | `OrganizationChartNode` | renamed | |\n| `label`, `children` | same | kept | |\n| `lineHeight`, `lineWidth`, `lineBorderRadius`, `nodePadding` (CSS lengths) | same (px number or `px` / `rem` / `em`) | kept | reference defaults (40 / 1 / 24 / 4) |\n| `lineColor` (any CSS color) | `lineColor` (`divider`, `inherit`, palette) | kept | allowlist; custom colors via `inherit` + `color` |\n| `lineStyle` (any border style) | `solid` · `dashed` · `dotted` | kept | others look solid at 1px |\n| ApexTree collapsible nodes, direction, grouped leaves, highlight / search, zoom / pan, per-node lines | — | deferred (4.18.1–4.18.6) | |",
+     "body": "Upstream: `react-organizational-chart` `Tree`, `TreeNode` (github.com/daniel-hauser/react-organizational-chart\nREADME, checked 2026-11-09). ApexTree parity is roadmap 2.4.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `Tree` | `OrganizationChart` | renamed | avoids a clash with Tree view |\n| `TreeNode` | `OrganizationChartNode` | renamed | |\n| `label`, `children` | same | kept | |\n| `lineHeight`, `lineWidth`, `lineBorderRadius`, `nodePadding` (CSS lengths) | same (px number or `px` / `rem` / `em`) | kept | reference defaults (40 / 1 / 24 / 4) |\n| `lineColor` (any CSS color) | `lineColor` (`divider`, `inherit`, palette) | kept | allowlist; custom colors via `inherit` + `color` |\n| `lineStyle` (any border style) | `solid` · `dashed` · `dotted` | kept | others look solid at 1px |\n\nApexTree (`apexcharts.com/apextree/docs`: options, methods, expand-collapse and lazy-children pages,\nchecked 2026-11-10; ADR-0051):\n\n| ApexTree | Owlky | Status | Note |\n|---|---|---|---|\n| `enableExpandCollapse` (default `true`) | same (default `false`) | kept | off keeps existing charts unchanged |\n| `expandCollapseOnNodeClick` | same | kept | skips interactive content in labels |\n| `collapseBadgeEnabled`, `collapseBadgeThreshold` | same | kept | |\n| `expand`, `collapse`, `expandAll`, `collapseAll`, `expandToDepth`, `expandSubtree`, `collapseSubtree` | same (React `apiRef`, HTML instance) + `isExpanded` | kept | `expand` returns a promise (lazy loads) |\n| node `id`, `hasChildren` | `nodeId`, `hasChildren` | renamed / kept | `id` would be the DOM id |\n| `loadChildren({ id, name, data })` → nodes | React `loadChildren({ id })` → `ReactNode`; HTML `loadchildren` + `respondWith` | renamed | name and data are the app's own |\n| — | `collapsedNodes` / `defaultCollapsedNodes` / `onCollapsedNodesChange`, `onExpand` / `onCollapse`, `toggleLabel`, `ok:organization-chart:expand` / `collapse` | added | React state, HTML events, the toggle's name (ApexTree has none) |\n| `expandCollapseButton*` colors and size, `collapseBadge*` colors and font size | tokens | not applicable | 24px target, line-colored border |\n| `locale.messages.loadingNodeLabel` | `aria-busy` | not applicable | a stable toggle name |\n| `countBadgeEnabled`, `countBadgeSource`, `countBadgeDataKey`, `countBadgeThreshold` | — | deferred | always-on counts; content badges belong in labels |\n| `enableExpandCollapseZoom`, `maxZoomNodeSpan` | — | deferred (4.18.5) | zoom / fit |\n| `enableAnimation`, `motion.stagger`, `motion.spring` | Collapse timing tokens | not applicable | reduced motion respected |\n| `onNodeClick`, `cardExpansion`, `expandCard` / `collapseCard` / `toggleCard` | — | not applicable | labels hold the app's content and handlers |\n| direction, grouped leaves, highlight / search, zoom / pan, per-node lines | — | deferred (4.18.2–4.18.6) | |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
     {
-     "body": "None: the same markup; React's `style` and the runtime's CSSOM properties are equal (parity\nignores `style`).",
+     "body": "None: the same markup; React's `style` and the runtime's CSSOM properties are equal (parity\nignores `style`). Collapsible charts: React's list ids come from `useId` (parity ignores `id` and\ncompares `aria-controls` as references; the snippet generator renames them `org-<story>-<n>`);\nbadge counts are written by the shared controller in both. The lazy snippet ships the answers as\n`<template>`s (skipped by parity) that the story script clones.",
      "id": "parity-notes",
      "title": "Parity notes"
     }
@@ -48687,10 +48991,28 @@
       "lines-short.html",
       "lines-thick.html"
      ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/typography.css + components/button.css + components/scrollbar.css + components/organization-chart.css + components/circular-progress.css + components/collapse.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Expand and collapse -->\n<div class=\"sb-org-demo\">\n  <div class=\"sb-org-actions\">\n    <button type=\"button\" data-ok-button data-ok-variant=\"outlined\" data-ok-color=\"inherit\" data-ok-size=\"md\" id=\"org-expand-all\"><span data-ok-button-label>Expand all</span></button>\n    <button type=\"button\" data-ok-button data-ok-variant=\"outlined\" data-ok-color=\"inherit\" data-ok-size=\"md\" id=\"org-collapse-all\"><span data-ok-button-label>Collapse all</span></button>\n    <button type=\"button\" data-ok-button data-ok-variant=\"outlined\" data-ok-color=\"inherit\" data-ok-size=\"md\" id=\"org-expand-depth\"><span data-ok-button-label>Show the leads only</span></button>\n  </div>\n  <section data-ok-scrollbar aria-label=\"Collapsible organization chart, scrollable\" tabindex=\"0\" class=\"sb-org-scroll\">\n    <ul data-ok-organization-chart data-ok-line-height=\"20\" data-ok-line-color=\"primary\" data-ok-line-style=\"solid\" data-ok-enable-expand-collapse data-ok-expand-collapse-on-node-click id=\"org-collapsible\" aria-label=\"Collapsible organization chart\">\n      <li data-ok-organization-chart-node data-ok-node-id=\"maya\">\n        <div data-ok-organization-chart-label>\n          <div class=\"sb-org-simple\">\n            <span data-ok-typography data-ok-variant=\"subtitle2\" data-ok-no-wrap class=\"sb-org-name\">Maya Lindqvist</span>\n            <span data-ok-typography data-ok-variant=\"caption\" data-ok-no-wrap class=\"sb-org-role\">CEO, Co-founder</span>\n          </div>\n        </div>\n        <button type=\"button\" data-ok-organization-chart-toggle aria-expanded=\"true\" aria-controls=\"org-collapsible-1\"><span data-ok-organization-chart-toggle-label>Maya Lindqvist&#x27;s reports</span> <svg data-ok-organization-chart-toggle-icon aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m6 9 6 6 6-6\"></path></svg><span data-ok-organization-chart-badge></span></button>\n        <ul data-ok-collapse data-ok-organization-chart-children id=\"org-collapsible-1\">\n          <li data-ok-organization-chart-node data-ok-node-id=\"jonah\">\n            <div data-ok-organization-chart-label>\n              <div class=\"sb-org-simple\">\n                <span data-ok-typography data-ok-variant=\"subtitle2\" data-ok-no-wrap class=\"sb-org-name\">Jonah Pereira</span>\n                <span data-ok-typography data-ok-variant=\"caption\" data-ok-no-wrap class=\"sb-org-role\">Lead</span>\n              </div>\n            </div>\n            <button type=\"button\" data-ok-organization-chart-toggle aria-expanded=\"true\" aria-controls=\"org-collapsible-2\"><span data-ok-organization-chart-toggle-label>Jonah Pereira&#x27;s reports</span> <svg data-ok-organization-chart-toggle-icon aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m6 9 6 6 6-6\"></path></svg><span data-ok-organization-chart-badge></span></button>\n            <ul data-ok-collapse data-ok-organization-chart-children id=\"org-collapsible-2\">\n              <li data-ok-organization-chart-node data-ok-node-id=\"aiko\">\n                <div data-ok-organization-chart-label>\n                  <div class=\"sb-org-simple\">\n                    <span data-ok-typography data-ok-variant=\"subtitle2\" data-ok-no-wrap class=\"sb-org-name\">Aiko Tanaka</span>\n                    <span data-ok-typography data-ok-variant=\"caption\" data-ok-no-wrap class=\"sb-org-role\">Senior</span>\n                  </div>\n                </div>\n              </li>\n            </ul>\n          </li>\n          <li data-ok-organization-chart-node data-ok-node-id=\"priya\">\n            <div data-ok-organization-chart-label>\n              <div class=\"sb-org-simple\">\n                <span data-ok-typography data-ok-variant=\"subtitle2\" data-ok-no-wrap class=\"sb-org-name\">Priya Raman</span>\n                <span data-ok-typography data-ok-variant=\"caption\" data-ok-no-wrap class=\"sb-org-role\">Lead</span>\n              </div>\n            </div>\n            <button type=\"button\" data-ok-organization-chart-toggle aria-expanded=\"true\" aria-controls=\"org-collapsible-3\"><span data-ok-organization-chart-toggle-label>Priya Raman&#x27;s reports</span> <svg data-ok-organization-chart-toggle-icon aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m6 9 6 6 6-6\"></path></svg><span data-ok-organization-chart-badge></span></button>\n            <ul data-ok-collapse data-ok-organization-chart-children id=\"org-collapsible-3\">\n              <li data-ok-organization-chart-node data-ok-node-id=\"elias\">\n                <div data-ok-organization-chart-label>\n                  <div class=\"sb-org-simple\">\n                    <span data-ok-typography data-ok-variant=\"subtitle2\" data-ok-no-wrap class=\"sb-org-name\">Elias Novak</span>\n                    <span data-ok-typography data-ok-variant=\"caption\" data-ok-no-wrap class=\"sb-org-role\">Senior</span>\n                  </div>\n                </div>\n                <button type=\"button\" data-ok-organization-chart-toggle aria-expanded=\"false\" aria-controls=\"org-collapsible-4\"><span data-ok-organization-chart-toggle-label>Elias Novak&#x27;s reports</span> <svg data-ok-organization-chart-toggle-icon aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m6 9 6 6 6-6\"></path></svg><span data-ok-organization-chart-badge></span></button>\n                <ul data-ok-collapse hidden data-ok-organization-chart-children id=\"org-collapsible-4\">\n                  <li data-ok-organization-chart-node data-ok-node-id=\"sofia\">\n                    <div data-ok-organization-chart-label>\n                      <div class=\"sb-org-simple\">\n                        <span data-ok-typography data-ok-variant=\"subtitle2\" data-ok-no-wrap class=\"sb-org-name\">Sofia Marchetti</span>\n                        <span data-ok-typography data-ok-variant=\"caption\" data-ok-no-wrap class=\"sb-org-role\">Back end developer</span>\n                      </div>\n                    </div>\n                    <button type=\"button\" data-ok-organization-chart-toggle aria-expanded=\"true\" aria-controls=\"org-collapsible-5\"><span data-ok-organization-chart-toggle-label>Sofia Marchetti&#x27;s reports</span> <svg data-ok-organization-chart-toggle-icon aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m6 9 6 6 6-6\"></path></svg><span data-ok-organization-chart-badge></span></button>\n                    <ul data-ok-collapse data-ok-organization-chart-children id=\"org-collapsible-5\">\n                      <li data-ok-organization-chart-node data-ok-node-id=\"tomas\">\n                        <div data-ok-organization-chart-label>\n                          <div class=\"sb-org-simple\">\n                            <span data-ok-typography data-ok-variant=\"subtitle2\" data-ok-no-wrap class=\"sb-org-name\">Tomás Rivera</span>\n                            <span data-ok-typography data-ok-variant=\"caption\" data-ok-no-wrap class=\"sb-org-role\">Back end developer</span>\n                          </div>\n                        </div>\n                      </li>\n                    </ul>\n                  </li>\n                  <li data-ok-organization-chart-node data-ok-node-id=\"noah\">\n                    <div data-ok-organization-chart-label>\n                      <div class=\"sb-org-simple\">\n                        <span data-ok-typography data-ok-variant=\"subtitle2\" data-ok-no-wrap class=\"sb-org-name\">Noah Brennan</span>\n                        <span data-ok-typography data-ok-variant=\"caption\" data-ok-no-wrap class=\"sb-org-role\">Front end</span>\n                      </div>\n                    </div>\n                  </li>\n                </ul>\n              </li>\n            </ul>\n          </li>\n          <li data-ok-organization-chart-node data-ok-node-id=\"leila\">\n            <div data-ok-organization-chart-label>\n              <div class=\"sb-org-simple\">\n                <span data-ok-typography data-ok-variant=\"subtitle2\" data-ok-no-wrap class=\"sb-org-name\">Leila Haddad</span>\n                <span data-ok-typography data-ok-variant=\"caption\" data-ok-no-wrap class=\"sb-org-role\">Lead</span>\n              </div>\n            </div>\n            <button type=\"button\" data-ok-organization-chart-toggle aria-expanded=\"true\" aria-controls=\"org-collapsible-6\"><span data-ok-organization-chart-toggle-label>Leila Haddad&#x27;s reports</span> <svg data-ok-organization-chart-toggle-icon aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m6 9 6 6 6-6\"></path></svg><span data-ok-organization-chart-badge></span></button>\n            <ul data-ok-collapse data-ok-organization-chart-children id=\"org-collapsible-6\">\n              <li data-ok-organization-chart-node data-ok-node-id=\"oskar\">\n                <div data-ok-organization-chart-label>\n                  <div class=\"sb-org-simple\">\n                    <span data-ok-typography data-ok-variant=\"subtitle2\" data-ok-no-wrap class=\"sb-org-name\">Oskar Berg</span>\n                    <span data-ok-typography data-ok-variant=\"caption\" data-ok-no-wrap class=\"sb-org-role\">Support</span>\n                  </div>\n                </div>\n              </li>\n              <li data-ok-organization-chart-node data-ok-node-id=\"zara\">\n                <div data-ok-organization-chart-label>\n                  <div class=\"sb-org-simple\">\n                    <span data-ok-typography data-ok-variant=\"subtitle2\" data-ok-no-wrap class=\"sb-org-name\">Zara Okafor</span>\n                    <span data-ok-typography data-ok-variant=\"caption\" data-ok-no-wrap class=\"sb-org-role\">Content writer</span>\n                  </div>\n                </div>\n              </li>\n            </ul>\n          </li>\n        </ul>\n      </li>\n    </ul>\n  </section>\n</div>\n\n<script type=\"module\">\nimport { getRuntime } from \"@owlky/html\";\n\nconst element = document.getElementById(\"org-collapsible\");\nconst chart = getRuntime().get(element, \"organization-chart\");\n\ndocument.getElementById(\"org-expand-all\").addEventListener(\"click\", () => chart.expandAll());\ndocument.getElementById(\"org-collapse-all\").addEventListener(\"click\", () => chart.collapseAll());\n// Depth 0 is the root: depth 1 shows the root and its children\ndocument.getElementById(\"org-expand-depth\").addEventListener(\"click\", () => chart.expandToDepth(1));\n</script>",
+     "id": "components-organization-chart--collapsible",
+     "name": "Expand and collapse",
+     "react": "import {\n  Button,\n  OrganizationChart,\n  OrganizationChartNode,\n  Scrollbar,\n  useOrganizationChartApiRef,\n} from \"@owlky/react\";\nimport { CEO, PEOPLE, type PersonNode } from \"./organization-chart-data.js\";\nimport { SimpleCard } from \"./organization-chart-examples.js\";\n\n/** One person and, below them, their reports; the toggle is named after the person. */\nfunction PersonNodeItem({ person }: { person: PersonNode }) {\n  return (\n    <OrganizationChartNode\n      nodeId={person.id}\n      toggleLabel={`${person.name}'s reports`}\n      label={<SimpleCard person={person} />}\n    >\n      {person.children?.map((child) => (\n        <PersonNodeItem key={child.id} person={child} />\n      ))}\n    </OrganizationChartNode>\n  );\n}\n\n/** Collapsible nodes: a toggle per branch, a click on a card toggles it too, and the methods. */\nexport function CollapsibleChartDemo() {\n  const apiRef = useOrganizationChartApiRef();\n  return (\n    <div className=\"sb-org-demo\">\n      <div className=\"sb-org-actions\">\n        <Button id=\"org-expand-all\" variant=\"outlined\" onClick={() => apiRef.current?.expandAll()}>\n          Expand all\n        </Button>\n        <Button\n          id=\"org-collapse-all\"\n          variant=\"outlined\"\n          onClick={() => apiRef.current?.collapseAll()}\n        >\n          Collapse all\n        </Button>\n        <Button\n          id=\"org-expand-depth\"\n          variant=\"outlined\"\n          onClick={() => apiRef.current?.expandToDepth(1)}\n        >\n          Show the leads only\n        </Button>\n      </div>\n      <Scrollbar className=\"sb-org-scroll\" aria-label=\"Collapsible organization chart, scrollable\">\n        <OrganizationChart\n          id=\"org-collapsible\"\n          aria-label=\"Collapsible organization chart\"\n          apiRef={apiRef}\n          enableExpandCollapse\n          expandCollapseOnNodeClick\n          defaultCollapsedNodes={[\"elias\"]}\n          lineColor=\"primary\"\n          lineHeight={20}\n          nodeId={CEO.id}\n          toggleLabel={`${CEO.name}'s reports`}\n          label={<SimpleCard person={CEO} />}\n        >\n          {PEOPLE.map((person) => (\n            <PersonNodeItem key={person.id} person={person} />\n          ))}\n        </OrganizationChart>\n      </Scrollbar>\n    </div>\n  );\n}\n",
+     "snippets": [
+      "collapsible-group.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/typography.css + components/button.css + components/scrollbar.css + components/organization-chart.css + components/circular-progress.css + components/collapse.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Lazy children -->\n<section data-ok-scrollbar aria-label=\"Organization chart with lazy children, scrollable\" tabindex=\"0\" class=\"sb-org-scroll\">\n  <ul data-ok-organization-chart data-ok-line-height=\"20\" data-ok-line-color=\"primary\" data-ok-line-style=\"solid\" data-ok-enable-expand-collapse id=\"org-lazy\" aria-label=\"Organization chart with lazy children\">\n    <li data-ok-organization-chart-node data-ok-node-id=\"maya\">\n      <div data-ok-organization-chart-label>\n        <div class=\"sb-org-simple\">\n          <span data-ok-typography data-ok-variant=\"subtitle2\" data-ok-no-wrap class=\"sb-org-name\">Maya Lindqvist</span>\n          <span data-ok-typography data-ok-variant=\"caption\" data-ok-no-wrap class=\"sb-org-role\">CEO, Co-founder</span>\n        </div>\n      </div>\n      <button type=\"button\" data-ok-organization-chart-toggle aria-expanded=\"true\" aria-controls=\"org-lazy-1\"><span data-ok-organization-chart-toggle-label>Maya Lindqvist&#x27;s reports</span> <svg data-ok-organization-chart-toggle-icon aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m6 9 6 6 6-6\"></path></svg><span data-ok-organization-chart-badge></span></button>\n      <ul data-ok-collapse data-ok-organization-chart-children id=\"org-lazy-1\">\n        <li data-ok-organization-chart-node data-ok-node-id=\"jonah\">\n          <div data-ok-organization-chart-label>\n            <div class=\"sb-org-simple\">\n              <span data-ok-typography data-ok-variant=\"subtitle2\" data-ok-no-wrap class=\"sb-org-name\">Jonah Pereira</span>\n              <span data-ok-typography data-ok-variant=\"caption\" data-ok-no-wrap class=\"sb-org-role\">Lead</span>\n            </div>\n          </div>\n          <button type=\"button\" data-ok-organization-chart-toggle aria-expanded=\"false\" aria-controls=\"org-lazy-2\"><span data-ok-organization-chart-toggle-label>Jonah Pereira&#x27;s reports</span> <svg data-ok-organization-chart-toggle-icon aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m6 9 6 6 6-6\"></path></svg><span role=\"progressbar\" data-ok-circular-progress data-ok-variant=\"indeterminate\" data-ok-color=\"inherit\" aria-hidden=\"true\" data-ok-organization-chart-spinner><svg data-ok-circular-progress-svg aria-hidden=\"true\" viewBox=\"22 22 44 44\"><circle data-ok-circular-progress-circle cx=\"44\" cy=\"44\" r=\"20.2\" stroke-width=\"3.6\"></circle></svg></span><span data-ok-organization-chart-badge></span></button>\n          <ul data-ok-collapse hidden data-ok-organization-chart-children id=\"org-lazy-2\"></ul>\n        </li>\n        <li data-ok-organization-chart-node data-ok-node-id=\"priya\">\n          <div data-ok-organization-chart-label>\n            <div class=\"sb-org-simple\">\n              <span data-ok-typography data-ok-variant=\"subtitle2\" data-ok-no-wrap class=\"sb-org-name\">Priya Raman</span>\n              <span data-ok-typography data-ok-variant=\"caption\" data-ok-no-wrap class=\"sb-org-role\">Lead</span>\n            </div>\n          </div>\n          <button type=\"button\" data-ok-organization-chart-toggle aria-expanded=\"false\" aria-controls=\"org-lazy-3\"><span data-ok-organization-chart-toggle-label>Priya Raman&#x27;s reports</span> <svg data-ok-organization-chart-toggle-icon aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m6 9 6 6 6-6\"></path></svg><span role=\"progressbar\" data-ok-circular-progress data-ok-variant=\"indeterminate\" data-ok-color=\"inherit\" aria-hidden=\"true\" data-ok-organization-chart-spinner><svg data-ok-circular-progress-svg aria-hidden=\"true\" viewBox=\"22 22 44 44\"><circle data-ok-circular-progress-circle cx=\"44\" cy=\"44\" r=\"20.2\" stroke-width=\"3.6\"></circle></svg></span><span data-ok-organization-chart-badge></span></button>\n          <ul data-ok-collapse hidden data-ok-organization-chart-children id=\"org-lazy-3\"></ul>\n        </li>\n        <li data-ok-organization-chart-node data-ok-node-id=\"leila\">\n          <div data-ok-organization-chart-label>\n            <div class=\"sb-org-simple\">\n              <span data-ok-typography data-ok-variant=\"subtitle2\" data-ok-no-wrap class=\"sb-org-name\">Leila Haddad</span>\n              <span data-ok-typography data-ok-variant=\"caption\" data-ok-no-wrap class=\"sb-org-role\">Lead</span>\n            </div>\n          </div>\n          <button type=\"button\" data-ok-organization-chart-toggle aria-expanded=\"false\" aria-controls=\"org-lazy-4\"><span data-ok-organization-chart-toggle-label>Leila Haddad&#x27;s reports</span> <svg data-ok-organization-chart-toggle-icon aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m6 9 6 6 6-6\"></path></svg><span role=\"progressbar\" data-ok-circular-progress data-ok-variant=\"indeterminate\" data-ok-color=\"inherit\" aria-hidden=\"true\" data-ok-organization-chart-spinner><svg data-ok-circular-progress-svg aria-hidden=\"true\" viewBox=\"22 22 44 44\"><circle data-ok-circular-progress-circle cx=\"44\" cy=\"44\" r=\"20.2\" stroke-width=\"3.6\"></circle></svg></span><span data-ok-organization-chart-badge></span></button>\n          <ul data-ok-collapse hidden data-ok-organization-chart-children id=\"org-lazy-4\"></ul>\n        </li>\n      </ul>\n    </li>\n  </ul>\n</section>\n<template id=\"org-lazy-jonah\">\n  <li data-ok-organization-chart-node data-ok-node-id=\"aiko\">\n    <div data-ok-organization-chart-label>\n      <div class=\"sb-org-simple\">\n        <span data-ok-typography data-ok-variant=\"subtitle2\" data-ok-no-wrap class=\"sb-org-name\">Aiko Tanaka</span>\n        <span data-ok-typography data-ok-variant=\"caption\" data-ok-no-wrap class=\"sb-org-role\">Senior</span>\n      </div>\n    </div>\n  </li>\n</template>\n<template id=\"org-lazy-priya\">\n  <li data-ok-organization-chart-node data-ok-node-id=\"elias\">\n    <div data-ok-organization-chart-label>\n      <div class=\"sb-org-simple\">\n        <span data-ok-typography data-ok-variant=\"subtitle2\" data-ok-no-wrap class=\"sb-org-name\">Elias Novak</span>\n        <span data-ok-typography data-ok-variant=\"caption\" data-ok-no-wrap class=\"sb-org-role\">Senior</span>\n      </div>\n    </div>\n    <button type=\"button\" data-ok-organization-chart-toggle aria-expanded=\"true\" aria-controls=\"org-lazy-5\"><span data-ok-organization-chart-toggle-label>Elias Novak&#x27;s reports</span> <svg data-ok-organization-chart-toggle-icon aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m6 9 6 6 6-6\"></path></svg><span data-ok-organization-chart-badge></span></button>\n    <ul data-ok-collapse data-ok-organization-chart-children id=\"org-lazy-5\">\n      <li data-ok-organization-chart-node data-ok-node-id=\"sofia\">\n        <div data-ok-organization-chart-label>\n          <div class=\"sb-org-simple\">\n            <span data-ok-typography data-ok-variant=\"subtitle2\" data-ok-no-wrap class=\"sb-org-name\">Sofia Marchetti</span>\n            <span data-ok-typography data-ok-variant=\"caption\" data-ok-no-wrap class=\"sb-org-role\">Back end developer</span>\n          </div>\n        </div>\n        <button type=\"button\" data-ok-organization-chart-toggle aria-expanded=\"true\" aria-controls=\"org-lazy-6\"><span data-ok-organization-chart-toggle-label>Sofia Marchetti&#x27;s reports</span> <svg data-ok-organization-chart-toggle-icon aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m6 9 6 6 6-6\"></path></svg><span data-ok-organization-chart-badge></span></button>\n        <ul data-ok-collapse data-ok-organization-chart-children id=\"org-lazy-6\">\n          <li data-ok-organization-chart-node data-ok-node-id=\"tomas\">\n            <div data-ok-organization-chart-label>\n              <div class=\"sb-org-simple\">\n                <span data-ok-typography data-ok-variant=\"subtitle2\" data-ok-no-wrap class=\"sb-org-name\">Tomás Rivera</span>\n                <span data-ok-typography data-ok-variant=\"caption\" data-ok-no-wrap class=\"sb-org-role\">Back end developer</span>\n              </div>\n            </div>\n          </li>\n        </ul>\n      </li>\n      <li data-ok-organization-chart-node data-ok-node-id=\"noah\">\n        <div data-ok-organization-chart-label>\n          <div class=\"sb-org-simple\">\n            <span data-ok-typography data-ok-variant=\"subtitle2\" data-ok-no-wrap class=\"sb-org-name\">Noah Brennan</span>\n            <span data-ok-typography data-ok-variant=\"caption\" data-ok-no-wrap class=\"sb-org-role\">Front end</span>\n          </div>\n        </div>\n      </li>\n    </ul>\n  </li>\n</template>\n<template id=\"org-lazy-leila\">\n  <li data-ok-organization-chart-node data-ok-node-id=\"oskar\">\n    <div data-ok-organization-chart-label>\n      <div class=\"sb-org-simple\">\n        <span data-ok-typography data-ok-variant=\"subtitle2\" data-ok-no-wrap class=\"sb-org-name\">Oskar Berg</span>\n        <span data-ok-typography data-ok-variant=\"caption\" data-ok-no-wrap class=\"sb-org-role\">Support</span>\n      </div>\n    </div>\n  </li>\n  <li data-ok-organization-chart-node data-ok-node-id=\"zara\">\n    <div data-ok-organization-chart-label>\n      <div class=\"sb-org-simple\">\n        <span data-ok-typography data-ok-variant=\"subtitle2\" data-ok-no-wrap class=\"sb-org-name\">Zara Okafor</span>\n        <span data-ok-typography data-ok-variant=\"caption\" data-ok-no-wrap class=\"sb-org-role\">Content writer</span>\n      </div>\n    </div>\n  </li>\n</template>\n\n<script type=\"module\">\nconst element = document.getElementById(\"org-lazy\");\n\n// A node whose children list is empty asks for its children on its first expand\nelement.addEventListener(\"ok:organization-chart:loadchildren\", (event) => {\n  const { nodeId, respondWith } = event.detail;\n  // The reports come from a template here; a server request works the same way\n  const template = document.getElementById(`org-lazy-${nodeId}`);\n  respondWith(\n    new Promise((resolve) =>\n      setTimeout(() => resolve(template ? template.content.cloneNode(true) : null), 800),\n    ),\n  );\n});\n</script>",
+     "id": "components-organization-chart--lazy-children",
+     "name": "Lazy children",
+     "react": "import { OrganizationChart, OrganizationChartNode, Scrollbar } from \"@owlky/react\";\nimport { CEO, PEOPLE, type PersonNode } from \"./organization-chart-data.js\";\nimport { SimpleCard } from \"./organization-chart-examples.js\";\n\n/** One person and, below them, their reports. */\nfunction PersonNodeItem({ person }: { person: PersonNode }) {\n  return (\n    <OrganizationChartNode\n      nodeId={person.id}\n      toggleLabel={`${person.name}'s reports`}\n      label={<SimpleCard person={person} />}\n    >\n      {person.children?.map((child) => (\n        <PersonNodeItem key={child.id} person={child} />\n      ))}\n    </OrganizationChartNode>\n  );\n}\n\n/** The reports of a lead, as nodes (what a server would answer). */\nexport function reportsOf(id: string) {\n  const lead = PEOPLE.find((person) => person.id === id);\n  return (lead?.children ?? []).map((person) => <PersonNodeItem key={person.id} person={person} />);\n}\n\n/** Answers after a short delay, like a request. */\nconst delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));\n\n/** Lazy children: the leads' reports load on their first expand. */\nexport function LazyChartDemo() {\n  return (\n    <Scrollbar\n      className=\"sb-org-scroll\"\n      aria-label=\"Organization chart with lazy children, scrollable\"\n    >\n      <OrganizationChart\n        id=\"org-lazy\"\n        aria-label=\"Organization chart with lazy children\"\n        enableExpandCollapse\n        lineColor=\"primary\"\n        lineHeight={20}\n        nodeId={CEO.id}\n        toggleLabel={`${CEO.name}'s reports`}\n        label={<SimpleCard person={CEO} />}\n        loadChildren={async ({ id }) => {\n          await delay(800);\n          return reportsOf(id);\n        }}\n      >\n        {PEOPLE.map((lead) => (\n          <OrganizationChartNode\n            key={lead.id}\n            nodeId={lead.id}\n            hasChildren\n            toggleLabel={`${lead.name}'s reports`}\n            label={<SimpleCard person={lead} />}\n          />\n        ))}\n      </OrganizationChart>\n    </Scrollbar>\n  );\n}\n",
+     "snippets": [
+      "lazy-group.html"
+     ]
     }
    ],
    "storybookTitle": "Components/Organization chart",
-   "summary": "A hierarchy (people of a company, parts of a product) as a top-down tree of nodes joined by connector lines. Node content is free (cards in the stories). CSS only; a small runtime turns the length options into private custom properties in HTML.",
+   "summary": "A hierarchy (people of a company, parts of a product) as a top-down tree of nodes joined by connector lines. Node content is free (cards in the stories). CSS only; a small runtime turns the length options into private custom properties in HTML. Opt-in (`enableExpandCollapse`): branches collapse and expand with a toggle button, their children list is a Collapse, children can load on demand.",
    "title": "Organization chart"
   },
   {
@@ -68700,6 +69022,27 @@
      "title": "Scroll wide charts"
     },
     {
+     "body": "Set `enableExpandCollapse` to give every node with children a toggle button on the bottom edge of its label. The button collapses the node's children and expands them again, with an animation. A collapsed node draws no lines below it, and its button shows how many nodes it hides. Every node starts expanded: list the ids of the nodes to collapse at first in `defaultCollapsedNodes`, or control them with `collapsedNodes` and `onCollapsedNodesChange`. Give each node a `nodeId` and a `toggleLabel`, such as \"Priya Raman's reports\", which names its button for screen readers. Set `expandCollapseOnNodeClick` to also toggle a node when someone clicks its label, outside its own buttons and links. In HTML, the markup holds the state: a collapsed node's children list has `hidden` and its button has `aria-expanded=\"false\"`. The script toggles both.",
+     "html": "<!-- Load once per page: the styles and the script -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n\n<ul data-ok-organization-chart data-ok-line-color=\"divider\" data-ok-line-style=\"solid\"\n    data-ok-enable-expand-collapse data-ok-expand-collapse-on-node-click aria-label=\"Company\">\n  <li data-ok-organization-chart-node data-ok-node-id=\"maya\">\n    <div data-ok-organization-chart-label>Maya Lindqvist, CEO</div>\n    <button type=\"button\" data-ok-organization-chart-toggle aria-expanded=\"true\"\n            aria-controls=\"maya-reports\">\n      <span data-ok-organization-chart-toggle-label>Maya Lindqvist's reports</span>\n      <svg data-ok-organization-chart-toggle-icon aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m6 9 6 6 6-6\"></path></svg>\n      <span data-ok-organization-chart-badge></span>\n    </button>\n    <ul data-ok-organization-chart-children data-ok-collapse id=\"maya-reports\">\n      <li data-ok-organization-chart-node data-ok-node-id=\"jonah\">\n        <div data-ok-organization-chart-label>Jonah Pereira, design</div>\n      </li>\n      <li data-ok-organization-chart-node data-ok-node-id=\"priya\">\n        <div data-ok-organization-chart-label>Priya Raman, development</div>\n        <!-- Collapsed at first: aria-expanded=\"false\" and a hidden list -->\n        <button type=\"button\" data-ok-organization-chart-toggle aria-expanded=\"false\"\n                aria-controls=\"priya-reports\">\n          <span data-ok-organization-chart-toggle-label>Priya Raman's reports</span>\n          <svg data-ok-organization-chart-toggle-icon aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m6 9 6 6 6-6\"></path></svg>\n          <span data-ok-organization-chart-badge></span>\n        </button>\n        <ul data-ok-organization-chart-children data-ok-collapse id=\"priya-reports\" hidden>\n          <li data-ok-organization-chart-node data-ok-node-id=\"elias\">\n            <div data-ok-organization-chart-label>Elias Novak</div>\n          </li>\n          <li data-ok-organization-chart-node data-ok-node-id=\"noah\">\n            <div data-ok-organization-chart-label>Noah Brennan</div>\n          </li>\n        </ul>\n      </li>\n    </ul>\n  </li>\n</ul>",
+     "id": "collapse",
+     "react": "import { OrganizationChart, OrganizationChartNode } from \"@owlky/react\";\n\nexport function CollapsibleCompany() {\n  return (\n    <OrganizationChart\n      aria-label=\"Company\"\n      enableExpandCollapse\n      expandCollapseOnNodeClick\n      defaultCollapsedNodes={[\"priya\"]}\n      nodeId=\"maya\"\n      toggleLabel=\"Maya Lindqvist's reports\"\n      label=\"Maya Lindqvist, CEO\"\n    >\n      <OrganizationChartNode nodeId=\"jonah\" label=\"Jonah Pereira, design\" />\n      <OrganizationChartNode\n        nodeId=\"priya\"\n        toggleLabel=\"Priya Raman's reports\"\n        label=\"Priya Raman, development\"\n      >\n        <OrganizationChartNode nodeId=\"elias\" label=\"Elias Novak\" />\n        <OrganizationChartNode nodeId=\"noah\" label=\"Noah Brennan\" />\n      </OrganizationChartNode>\n    </OrganizationChart>\n  );\n}",
+     "title": "Collapse and expand nodes"
+    },
+    {
+     "body": "The chart's methods change many nodes at once: `expandAll()`, `collapseAll()`, `expandToDepth(depth)`, `expandSubtree(nodeId)` and `collapseSubtree(nodeId)`, plus `expand(nodeId)`, `collapse(nodeId)` and `isExpanded(nodeId)` for one node. The top node is at depth 0, so `expandToDepth(1)` shows the top node and its children only. The methods change only nodes whose children are loaded, and they fire no events. In React, pass a ref from `useOrganizationChartApiRef()` to `apiRef`. In HTML, get the chart's instance from the runtime.",
+     "html": "<button type=\"button\" id=\"collapse-all\">Collapse all</button>\n<button type=\"button\" id=\"leads-only\">Show the leads only</button>\n\n<script type=\"module\">\n  // The chart from the previous example\n  const element = document.querySelector('[aria-label=\"Company\"]');\n  const chart = Owlky.runtime.get(element, \"organization-chart\");\n  document.getElementById(\"collapse-all\").addEventListener(\"click\", () => chart.collapseAll());\n  document.getElementById(\"leads-only\").addEventListener(\"click\", () => chart.expandToDepth(1));\n</script>",
+     "id": "methods",
+     "react": "import {\n  Button,\n  OrganizationChart,\n  OrganizationChartNode,\n  useOrganizationChartApiRef,\n} from \"@owlky/react\";\n\nexport function CompanyWithActions() {\n  const apiRef = useOrganizationChartApiRef();\n  return (\n    <>\n      <Button onClick={() => apiRef.current?.collapseAll()}>Collapse all</Button>\n      <Button onClick={() => apiRef.current?.expandToDepth(1)}>Show the leads only</Button>\n      <OrganizationChart\n        aria-label=\"Company\"\n        apiRef={apiRef}\n        enableExpandCollapse\n        nodeId=\"maya\"\n        label=\"Maya Lindqvist, CEO\"\n      >\n        <OrganizationChartNode nodeId=\"priya\" label=\"Priya Raman, development\">\n          <OrganizationChartNode nodeId=\"elias\" label=\"Elias Novak\" />\n        </OrganizationChartNode>\n      </OrganizationChart>\n    </>\n  );\n}",
+     "title": "Expand and collapse from code"
+    },
+    {
+     "body": "A node can load its children the first time it expands, such as from a server. In React, set `hasChildren` on the node and pass `loadChildren` to the chart: it receives the node's id and resolves with the child nodes. In HTML, give the node a toggle and an empty, hidden children list, then answer the `ok:organization-chart:loadchildren` event with `detail.respondWith()`, which takes child node elements or a promise of them. While the children load, the toggle shows a progress indicator and has `aria-busy=\"true\"`. When no children come back, the node becomes a leaf. When the promise is rejected, the node stays collapsed and the next expand tries again. Children load once: catch errors in your loader to show a message, and reject so that people can retry.",
+     "html": "<ul data-ok-organization-chart data-ok-line-color=\"divider\" data-ok-line-style=\"solid\"\n    data-ok-enable-expand-collapse aria-label=\"Company\" id=\"company\">\n  <li data-ok-organization-chart-node data-ok-node-id=\"maya\">\n    <div data-ok-organization-chart-label>Maya Lindqvist, CEO</div>\n    <!-- No children yet: an empty, hidden list and a progress indicator -->\n    <button type=\"button\" data-ok-organization-chart-toggle aria-expanded=\"false\"\n            aria-controls=\"maya-reports\">\n      <span data-ok-organization-chart-toggle-label>Maya Lindqvist's reports</span>\n      <svg data-ok-organization-chart-toggle-icon aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m6 9 6 6 6-6\"></path></svg>\n      <span role=\"progressbar\" data-ok-circular-progress data-ok-variant=\"indeterminate\"\n            data-ok-color=\"inherit\" aria-hidden=\"true\" data-ok-organization-chart-spinner><svg data-ok-circular-progress-svg aria-hidden=\"true\" viewBox=\"22 22 44 44\"><circle data-ok-circular-progress-circle cx=\"44\" cy=\"44\" r=\"20.2\" stroke-width=\"3.6\"></circle></svg></span>\n      <span data-ok-organization-chart-badge></span>\n    </button>\n    <ul data-ok-organization-chart-children data-ok-collapse id=\"maya-reports\" hidden></ul>\n  </li>\n</ul>\n\n<template id=\"maya-reports-template\">\n  <li data-ok-organization-chart-node data-ok-node-id=\"priya\">\n    <div data-ok-organization-chart-label>Priya Raman, development</div>\n  </li>\n</template>\n\n<script type=\"module\">\n  const chart = document.getElementById(\"company\");\n  chart.addEventListener(\"ok:organization-chart:loadchildren\", (event) => {\n    // A server request works the same way: respond with a promise of the nodes\n    const template = document.getElementById(`${event.detail.nodeId}-reports-template`);\n    event.detail.respondWith(template ? template.content.cloneNode(true) : null);\n  });\n</script>",
+     "id": "lazy",
+     "react": "import { OrganizationChart, OrganizationChartNode } from \"@owlky/react\";\n\nconst REPORTS: Record<string, string[]> = { maya: [\"Priya Raman\", \"Jonah Pereira\"] };\n\nasync function fetchReports(id: string) {\n  await new Promise((resolve) => setTimeout(resolve, 500));\n  return REPORTS[id] ?? [];\n}\n\nexport function LazyCompany() {\n  return (\n    <OrganizationChart\n      aria-label=\"Company\"\n      enableExpandCollapse\n      nodeId=\"maya\"\n      hasChildren\n      toggleLabel=\"Maya Lindqvist's reports\"\n      label=\"Maya Lindqvist, CEO\"\n      loadChildren={async ({ id }) => {\n        const names = await fetchReports(id);\n        return names.map((name) => <OrganizationChartNode key={name} label={name} />);\n      }}\n    />\n  );\n}",
+     "title": "Load children on demand"
+    },
+    {
      "body": "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed, and lengths that aren't valid, fall back to the default.",
      "id": "options",
      "title": "Options"
@@ -68710,12 +69053,17 @@
      "title": "Content and behavior"
     },
     {
-     "body": "A chart isn't interactive. Buttons and links in its labels work as usual, in reading order: each node, then its children. **Tab** reaches the scroll area of a wide chart, and the arrow keys scroll it.",
+     "body": "- **`ok:organization-chart:expand`** (cancelable) fires on the chart before someone expands a node, with `detail.nodeId` and `detail.node`. Call `preventDefault()` to keep the node collapsed.\n- **`ok:organization-chart:collapse`** (cancelable) fires before someone collapses a node, with the same details.\n- **`ok:organization-chart:loadchildren`** fires the first time a node with an empty children list expands, with `detail.nodeId`, `detail.node` and `detail.respondWith(nodes)`.\n- **Instance:** `runtime.get(element, \"organization-chart\")` returns `{ expand(id), collapse(id), isExpanded(id), expandAll(), collapseAll(), expandToDepth(depth), expandSubtree(id), collapseSubtree(id) }`. `expand(id)` returns a promise that resolves once the children are loaded and shown. The methods don't fire events.\n- **React:** `onExpand(nodeId)`, `onCollapse(nodeId)`, `onCollapsedNodesChange(nodeIds)` and the same methods on `apiRef`.",
+     "id": "events",
+     "title": "Events and methods"
+    },
+    {
+     "body": "A chart has no keys of its own. Buttons and links in its labels work as usual, in reading order: each node, its toggle button, then its children. **Tab** reaches the scroll area of a wide chart, and the arrow keys scroll it.",
      "id": "keyboard",
      "title": "Keyboard"
     },
     {
-     "body": "- The chart is a set of nested lists. Screen readers announce each level, the number of nodes in it and the position of each node.\n- Name the chart with `aria-label` or `aria-labelledby`, such as the name of the team it shows.\n- Lines are decorative: the list structure carries the hierarchy. Don't rely on a line color alone to convey meaning.\n- Text in labels needs a contrast ratio of at least 4.5:1, like any other text.\n- In right-to-left pages, the chart mirrors: the first child is on the right.",
+     "body": "- The chart is a set of nested lists. Screen readers announce each level, the number of nodes in it and the position of each node.\n- Name the chart with `aria-label` or `aria-labelledby`, such as the name of the team it shows.\n- Lines are decorative: the list structure carries the hierarchy. Don't rely on a line color alone to convey meaning.\n- Text in labels needs a contrast ratio of at least 4.5:1, like any other text.\n- In right-to-left pages, the chart mirrors: the first child is on the right.\n- Toggle buttons have `aria-expanded` and `aria-controls`. Their name is the hidden `toggleLabel` followed by the visible number of hidden nodes, so that speech input users can say what they see. Make each `toggleLabel` unique, such as the person's name and \"reports\".\n- Collapsed children are hidden from screen readers too. While children load, the toggle has `aria-busy=\"true\"`.\n- A click on a label is a shortcut for pointer users: keyboard users reach the toggle button with **Tab**.",
      "id": "accessibility",
      "title": "Accessibility"
     },
@@ -70811,9 +71159,7 @@
   "data-ok-mobile-stepper-text": "data-ok-mobile-stepper",
   "data-ok-motion-text-label": "data-ok-motion-text",
   "data-ok-motion-text-word": "data-ok-motion-text",
-  "data-ok-organization-chart-children": "data-ok-organization-chart",
-  "data-ok-organization-chart-label": "data-ok-organization-chart",
-  "data-ok-organization-chart-node": "data-ok-organization-chart",
+  "data-ok-organization-chart-spinner": "data-ok-organization-chart",
   "data-ok-pagination-ellipsis": "data-ok-pagination",
   "data-ok-pagination-item": "data-ok-pagination",
   "data-ok-popover-arrow": "data-ok-popover",

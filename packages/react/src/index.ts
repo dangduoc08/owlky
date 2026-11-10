@@ -490,9 +490,11 @@ export {
 export { MotionBorder, type MotionBorderProps } from "./motion-border/motion-border.js";
 export {
   OrganizationChart,
+  type OrganizationChartApi,
   OrganizationChartNode,
   type OrganizationChartNodeProps,
   type OrganizationChartProps,
+  useOrganizationChartApiRef,
 } from "./organization-chart/organization-chart.js";
 export {
   Pagination,
