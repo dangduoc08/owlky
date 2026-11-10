@@ -36,8 +36,10 @@
  *                 (the lineage) + circle[data-ok-chart-active-node] in the active group;
  *               Sunburst (ADR-0058): path[data-ok-chart-arc][fill-opacity][stroke-width] +
  *                 text[data-ok-chart-partition-label="inside|plain"], path[data-ok-chart-active-node];
+ *               Icicle (ADR-0058): rect[data-ok-chart-icicle-cell][fill-opacity][stroke-width] + the same
+ *                 labels, rect[data-ok-chart-active-node];
  *             div[data-ok-chart-drill] › button[data-ok-chart-drill-up] + span[data-ok-chart-drill-path]
- *               (sunburst charts, before the plot);
+ *               (sunburst and icicle charts, before the plot);
  *                 [data-ok-sparkline] roots: no axes or legend, the plot fills the container
  *               div[data-ok-chart-tooltip][role="status"] (hidden unless a value is active)
  *                 div[data-ok-chart-tooltip-title] + div[data-ok-chart-tooltip-state]? + div[data-ok-chart-tooltip-rows]
@@ -1214,9 +1216,9 @@
     pointer-events: none;
   }
 
-  /* Sunburst arcs (ADR-0058): the branch color, shaded per level by a fill-opacity attribute and
+  /* Sunburst arcs and icicle cells (ADR-0058): the branch color, shaded per level by a fill-opacity attribute and
      separated by a paper stroke whose width is an attribute (spacing): CSS never sets either. */
-  :where([data-ok-chart-arc]) {
+  :where([data-ok-chart-arc], [data-ok-chart-icicle-cell]) {
     fill: var(--_ok-chart-c);
     stroke: var(--ok-bg-paper);
     stroke-linejoin: round;

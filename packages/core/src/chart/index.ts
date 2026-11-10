@@ -116,6 +116,7 @@ export {
   readChartHierarchyTable,
   toggleChartCollapsed,
 } from "./chart-hierarchy.js";
+export { type ChartIcicleOptions, layoutIcicle } from "./chart-icicle.js";
 export {
   atrValues,
   type ChartIndicator,

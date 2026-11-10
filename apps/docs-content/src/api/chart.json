@@ -250,7 +250,7 @@
      },
      {
       "cancelable": true,
-      "description": "Sunburst charts: before a click, Enter, Space, Escape or the **Back** button zooms into a node (`id`, and the names from the root in `path`) or out (`null` at the top). Call `preventDefault()` to refuse.",
+      "description": "Sunburst and icicle charts: before a click, Enter, Space, Escape or the **Back** button zooms into a node (`id`, and the names from the root in `path`) or out (`null` at the top). Call `preventDefault()` to refuse.",
       "detail": "{ id: string | null; path: string[]; }",
       "name": "ok:chart:drill"
      },
@@ -311,7 +311,7 @@
       "type": "readonly string[]"
      },
      {
-      "description": "Sunburst charts: the id of the node zoomed into (`data-ok-drill-node`), or `null`.",
+      "description": "Sunburst and icicle charts: the id of the node zoomed into (`data-ok-drill-node`), or `null`.",
       "kind": "property",
       "name": "drillNode",
       "type": "string | null"
@@ -359,7 +359,7 @@
       "type": "(ids: readonly string[]) => void"
      },
      {
-      "description": "Sunburst charts: zooms into a node (`null`: the whole chart; no event).",
+      "description": "Sunburst and icicle charts: zooms into a node (`null`: the whole chart; no event).",
       "kind": "method",
       "name": "setDrillNode",
       "type": "(id: string | null) => void"
@@ -417,7 +417,7 @@
      {
       "attr": "data-ok-type",
       "default": "line",
-      "description": "Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML), `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total), `dumbbell` (a start and an end value per category: two markers joined by a line), `tree` (a hierarchy: `hierarchy` in React, one table row per node with its parent in HTML) or `sunburst` (the same hierarchy as rings, each node an arc sized by its value). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts).",
+      "description": "Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML), `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total), `dumbbell` (a start and an end value per category: two markers joined by a line), `tree` (a hierarchy: `hierarchy` in React, one table row per node with its parent in HTML), `sunburst` (the same hierarchy as rings, each node an arc sized by its value) or `icicle` (the same hierarchy as bands, each node a cell sized by its value). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts).",
       "kind": "style",
       "name": "type",
       "values": [
@@ -444,7 +444,8 @@
        "waterfall",
        "dumbbell",
        "tree",
-       "sunburst"
+       "sunburst",
+       "icicle"
       ]
      },
      {
@@ -1249,7 +1250,7 @@
      {
       "attr": "data-ok-direction",
       "default": "top",
-      "description": "Tree charts: where the root sits, `top` (the default), `bottom`, `left` or `right`, or `radial` (the root in the center, levels as rings).",
+      "description": "Tree and icicle charts: where the root sits, `top` (the default), `bottom`, `left` or `right`, or `radial` (trees: the root in the center, levels as rings).",
       "kind": "style",
       "name": "direction",
       "optional": true,
@@ -1301,7 +1302,7 @@
      },
      {
       "attr": "data-ok-spacing",
-      "description": "Sunburst charts: the gap between arcs in px (default 1).",
+      "description": "Sunburst and icicle charts: the gap between arcs or cells in px (default 1).",
       "kind": "number",
       "min": 0,
       "name": "spacing"
@@ -1309,7 +1310,7 @@
      {
       "attr": "data-ok-leaf",
       "default": "extend",
-      "description": "Sunburst charts: branches that end before the deepest level `extend` to the edge (the default) or `stop` at their level.",
+      "description": "Sunburst and icicle charts: branches that end before the deepest level `extend` to the edge or `stop` at their level (default `extend` on sunbursts, `stop` on icicles).",
       "kind": "style",
       "name": "leaf",
       "optional": true,
@@ -1320,16 +1321,28 @@
      },
      {
       "attr": "data-ok-tint",
-      "description": "Sunburst charts: how much paler each level is than the level its color starts at (0 to 1; default 0.14).",
+      "description": "Sunburst and icicle charts: how much paler each level is than the level its color starts at (0 to 1; default 0.14).",
       "kind": "number",
       "min": 0,
       "name": "tint"
      },
      {
       "attr": "data-ok-disable-zoom-on-click",
-      "description": "Sunburst charts: a click, Enter or Space on a node doesn't zoom into it.",
+      "description": "Sunburst and icicle charts: a click, Enter or Space on a node doesn't zoom into it.",
       "kind": "flag",
       "name": "disableZoomOnClick"
+     },
+     {
+      "attr": "data-ok-zoom-type",
+      "default": "value",
+      "description": "Icicle charts: a branch zoomed into keeps its ancestors as full bands above it (`value`, the default) or becomes the top level (`both`).",
+      "kind": "style",
+      "name": "zoomType",
+      "optional": true,
+      "values": [
+       "value",
+       "both"
+      ]
      },
      {
       "attr": "data-ok-crossfilter",
@@ -1720,7 +1733,7 @@
       "name": "data-ok-chart-data-labels"
      },
      {
-      "description": "Sunburst charts: the controls before the plot, a **Back** button and the drilled path (a status).",
+      "description": "Sunburst and icicle charts: the controls before the plot, a **Back** button and the drilled path (a status).",
       "elements": [
        "div"
       ],
@@ -1832,6 +1845,14 @@
       ],
       "kind": "part",
       "name": "data-ok-chart-handle"
+     },
+     {
+      "description": "One cell of an icicle chart.",
+      "elements": [
+       "rect"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-icicle-cell"
      },
      {
       "description": "The legend. Absent with one series or `legend=\"none\"`.",
@@ -1960,7 +1981,7 @@
       "name": "data-ok-chart-pane-titles"
      },
      {
-      "description": "The name of a sunburst arc: white on strong shades (`inside`), primary text on pale ones (`plain`).",
+      "description": "The name of a sunburst arc or an icicle cell: white on strong shades (`inside`), primary text on pale ones (`plain`).",
       "kind": "value",
       "name": "data-ok-chart-partition-label",
       "value": [
@@ -2328,7 +2349,7 @@
       "value": "string"
      },
      {
-      "description": "Sunburst charts: the id of the node zoomed into. Written by the chart.",
+      "description": "Sunburst and icicle charts: the id of the node zoomed into. Written by the chart.",
       "kind": "value",
       "name": "data-ok-drill-node",
       "value": "string"
@@ -2706,7 +2727,7 @@
       "type": "readonly string[]"
      },
      {
-      "description": "Sunburst charts: the node zoomed into at first (uncontrolled).",
+      "description": "Sunburst and icicle charts: the node zoomed into at first (uncontrolled).",
       "name": "defaultDrillNode",
       "type": "string | null"
      },
@@ -2727,7 +2748,7 @@
      },
      {
       "default": "\"top\"",
-      "description": "Tree charts: where the root sits, or `radial` (the root in the center).",
+      "description": "Tree and icicle charts: where the root sits, or `radial` (trees: the root in the center).",
       "name": "direction",
       "type": "\"bottom\" | \"left\" | \"radial\" | \"right\" | \"top\""
      },
@@ -2737,7 +2758,7 @@
       "type": "boolean"
      },
      {
-      "description": "Sunburst charts: clicks, Enter and Space don't zoom into nodes.",
+      "description": "Sunburst and icicle charts: clicks, Enter and Space don't zoom into nodes.",
       "name": "disableZoomOnClick",
       "type": "boolean"
      },
@@ -2752,7 +2773,7 @@
       "type": "number"
      },
      {
-      "description": "Sunburst charts, controlled: the id of the node zoomed into (`null`: none). A click, Enter or Space on a node with children zooms into it; on the zoomed node, Escape or **Back** zooms out.",
+      "description": "Sunburst and icicle charts, controlled: the id of the node zoomed into (`null`: none). A click, Enter or Space on a node with children zooms into it; on the zoomed node, Escape or **Back** zooms out.",
       "name": "drillNode",
       "type": "string | null"
      },
@@ -2882,7 +2903,7 @@
      },
      {
       "default": "\"extend\"",
-      "description": "Sunburst charts: branches that end early `extend` to the edge or `stop`.",
+      "description": "Sunburst and icicle charts: branches that end early `extend` to the edge or `stop`. on sunbursts, `\"stop\"` on icicles.",
       "name": "leaf",
       "type": "\"extend\" | \"stop\""
      },
@@ -2954,7 +2975,7 @@
       "type": "((detail: ChartSelectionDetail) => void)"
      },
      {
-      "description": "Sunburst charts: called with the new node (`null` at the top) when the chart zooms.",
+      "description": "Sunburst and icicle charts: called with the new node (`null` at the top) when the chart zooms.",
       "name": "onDrillNodeChange",
       "type": "((drillNode: string | null) => void)"
      },
@@ -2999,7 +3020,7 @@
       "type": "boolean"
      },
      {
-      "description": "Sunburst charts: the gap between arcs in px. Default 1.",
+      "description": "Sunburst and icicle charts: the gap between arcs or cells in px. Default 1.",
       "name": "spacing",
       "type": "number"
      },
@@ -3039,7 +3060,7 @@
       "type": "number"
      },
      {
-      "description": "Sunburst charts: how much paler each level is (0 to 1). 14.",
+      "description": "Sunburst and icicle charts: how much paler each level is (0 to 1). 14.",
       "name": "tint",
       "type": "number"
      },
@@ -3172,6 +3193,12 @@
       "description": "Controlled zoom: the visible window of the x axis (category indexes or x values), or `null`.",
       "name": "zoomRange",
       "type": "ChartZoom | null"
+     },
+     {
+      "default": "\"value\"",
+      "description": "Icicle charts: a branch zoomed into keeps its ancestors as full bands above it (`value`) or becomes the top level (`both`).",
+      "name": "zoomType",
+      "type": "\"both\" | \"value\""
      }
     ]
    }
@@ -3207,7 +3234,7 @@
   },
   {
    "name": "ChartType",
-   "type": "\"area\" | \"bar\" | \"boxPlot\" | \"bubble\" | \"candlestick\" | \"donut\" | \"dumbbell\" | \"funnel\" | \"heatmap\" | \"line\" | \"pie\" | \"polarArea\" | \"radar\" | \"radialBar\" | \"rangeArea\" | \"rangeBar\" | \"sankey\" | \"scatter\" | \"slope\" | \"sunburst\" | \"timeline\" | \"tree\" | \"treemap\" | \"waterfall\""
+   "type": "\"area\" | \"bar\" | \"boxPlot\" | \"bubble\" | \"candlestick\" | \"donut\" | \"dumbbell\" | \"funnel\" | \"heatmap\" | \"icicle\" | \"line\" | \"pie\" | \"polarArea\" | \"radar\" | \"radialBar\" | \"rangeArea\" | \"rangeBar\" | \"sankey\" | \"scatter\" | \"slope\" | \"sunburst\" | \"timeline\" | \"tree\" | \"treemap\" | \"waterfall\""
   },
   {
    "name": "ChartZoomReason",

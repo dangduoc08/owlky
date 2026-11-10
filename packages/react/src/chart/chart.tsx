@@ -47,6 +47,7 @@ import {
   type ChartYAxis,
   type ChartZoom,
   type ChartZoomReason,
+  type ChartZoomType,
   chartActiveAt,
   chartActiveMarks,
   chartActiveNodes,
@@ -135,7 +136,7 @@ export interface ChartProps extends Omit<HTMLAttributes<HTMLElement>, "children"
    * `id` defaults to the name; parents' values are the sum of their children.
    */
   hierarchy?: ChartHierarchyNode | readonly ChartHierarchyNode[] | undefined;
-  /** Tree charts: where the root sits, or `radial` (the root in the center). Default `"top"`. */
+  /** Tree and icicle charts: where the root sits, or `radial` (trees: the root in the center). Default `"top"`. */
   direction?: ChartDirection | undefined;
   /** Tree charts: `tree` (a tidy tree) or `cluster` (a dendrogram). Default `"tree"`. */
   layoutType?: ChartLayoutType | undefined;
@@ -150,24 +151,29 @@ export interface ChartProps extends Omit<HTMLAttributes<HTMLElement>, "children"
   /** Tree charts: called with the collapsed ids after a node is expanded or collapsed. */
   onCollapsedNodesChange?: ((collapsedNodes: string[]) => void) | undefined;
   /**
-   * Sunburst charts, controlled: the id of the node zoomed into (`null`: none). A click, Enter or
+   * Sunburst and icicle charts, controlled: the id of the node zoomed into (`null`: none). A click, Enter or
    * Space on a node with children zooms into it; on the zoomed node, Escape or **Back** zooms out.
    */
   drillNode?: string | null | undefined;
-  /** Sunburst charts: the node zoomed into at first (uncontrolled). */
+  /** Sunburst and icicle charts: the node zoomed into at first (uncontrolled). */
   defaultDrillNode?: string | null | undefined;
-  /** Sunburst charts: called with the new node (`null` at the top) when the chart zooms. */
+  /** Sunburst and icicle charts: called with the new node (`null` at the top) when the chart zooms. */
   onDrillNodeChange?: ((drillNode: string | null) => void) | undefined;
-  /** Sunburst charts: clicks, Enter and Space don't zoom into nodes. */
+  /** Sunburst and icicle charts: clicks, Enter and Space don't zoom into nodes. */
   disableZoomOnClick?: boolean | undefined;
   /** Sunburst charts: the hole in the center in % of the radius (0 to 90). Default 15. */
   innerSize?: number | undefined;
-  /** Sunburst charts: the gap between arcs in px. Default 1. */
+  /** Sunburst and icicle charts: the gap between arcs or cells in px. Default 1. */
   spacing?: number | undefined;
-  /** Sunburst charts: branches that end early `extend` to the edge or `stop`. Default `"extend"`. */
+  /** Sunburst and icicle charts: branches that end early `extend` to the edge or `stop`. Default `"extend"` on sunbursts, `"stop"` on icicles. */
   leaf?: ChartLeaf | undefined;
-  /** Sunburst charts: how much paler each level is (0 to 1). Default 0.14. */
+  /** Sunburst and icicle charts: how much paler each level is (0 to 1). Default 0.14. */
   tint?: number | undefined;
+  /**
+   * Icicle charts: a branch zoomed into keeps its ancestors as full bands above it (`value`) or
+   * becomes the top level (`both`). Default `"value"`.
+   */
+  zoomType?: ChartZoomType | undefined;
   /**
    * Stock charts: indicators of the first series (the price), such as `{ type: "sma", period: 20 }`.
    * Overlays (`sma`, `ema`, `bollinger`, `vwap`, `donchian`, `keltner`) draw over the price;
@@ -474,6 +480,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     spacing,
     leaf,
     tint,
+    zoomType,
     indicators,
     navigator,
     paneHeight,
@@ -644,6 +651,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     spacing,
     leaf,
     tint,
+    zoomType,
   });
   const isSparkline = attributes["data-ok-sparkline"] !== undefined;
   const givenHeight = attributes["data-ok-height"];
@@ -729,7 +737,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     defaultValue: defaultCollapsedNodes,
     onChange: onCollapsedNodesChange as ((value: readonly string[]) => void) | undefined,
   });
-  // Sunburst charts: the drilled node, controlled or kept here.
+  // Sunburst and icicle charts: the drilled node, controlled or kept here.
   const [drill, setDrill] = useControllableState<string | null>({
     value: drillNode,
     defaultValue: defaultDrillNode,
@@ -740,6 +748,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
   const validSpacing = number("data-ok-spacing");
   const validLeaf = attributes["data-ok-leaf"] as ChartLeaf | undefined;
   const validTint = number("data-ok-tint");
+  const validZoomType = attributes["data-ok-zoom-type"] as ChartZoomType | undefined;
 
   // Zoom (phase 4): controlled, or kept with the x axis it was set on (so it follows live data).
   const [innerZoom, setInnerZoom] = useState<{
@@ -788,6 +797,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         spacing: validSpacing,
         leaf: validLeaf,
         tint: validTint,
+        zoomType: validZoomType,
         indicators,
         navigator: navigatorOn,
         paneHeight: validPaneHeight,
@@ -893,6 +903,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       validSpacing,
       validLeaf,
       validTint,
+      validZoomType,
       indicators,
       navigatorOn,
       validPaneHeight,
@@ -1280,7 +1291,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       return;
     }
     if (event.key === "Escape" && act(chartDrillUp(layout))) {
-      // Sunburst charts: one level up before anything else.
+      // Sunburst and icicle charts: one level up before anything else.
       event.preventDefault();
       return;
     }

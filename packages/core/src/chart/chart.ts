@@ -25,10 +25,12 @@ import {
   type ChartHierarchyNode,
   type ChartLayoutType,
   type ChartLeaf,
+  type ChartZoomType,
   chartHierarchy,
   chartHierarchyTable,
   isHierarchyChart,
 } from "./chart-hierarchy.js";
+import { layoutIcicle } from "./chart-icicle.js";
 import { type ChartIndicator, chartIndicatorSeries } from "./chart-indicators.js";
 import {
   type ChartColorRange,
@@ -105,7 +107,7 @@ export interface ChartRenderInput extends ChartFormatOptions {
   readonly axisTitles?: readonly string[] | undefined;
   /** Hierarchy charts (ADR-0058): nested nodes (one root, or several). */
   readonly hierarchy?: ChartHierarchyNode | readonly ChartHierarchyNode[] | undefined;
-  /** Tree charts: where the root sits (`radial`: the center). Default `"top"`. */
+  /** Tree and icicle charts: where the root sits (`radial`: trees around the center). Default `"top"`. */
   readonly direction?: ChartDirection | undefined;
   /** Tree charts: `tree` (tidy, default) or `cluster` (a dendrogram: leaves on one level). */
   readonly layoutType?: ChartLayoutType | undefined;
@@ -115,18 +117,20 @@ export interface ChartRenderInput extends ChartFormatOptions {
   readonly enableExpandCollapse?: boolean | undefined;
   /** Tree charts: ids of the nodes whose children are hidden. */
   readonly collapsedNodes?: readonly string[] | undefined;
-  /** Sunburst charts: the node zoomed into (an id; `null`: none). */
+  /** Sunburst and icicle charts: the node zoomed into (an id; `null`: none). */
   readonly drillNode?: string | null | undefined;
-  /** Sunburst charts: clicks, Enter and Space don't zoom into nodes. */
+  /** Sunburst and icicle charts: clicks, Enter and Space don't zoom into nodes. */
   readonly disableZoomOnClick?: boolean | undefined;
   /** Sunburst charts: the hole in % of the radius. Default 15. */
   readonly innerSize?: number | undefined;
-  /** Sunburst charts: the gap between arcs in px. Default 1. */
+  /** Sunburst and icicle charts: the gap between arcs or cells in px. Default 1. */
   readonly spacing?: number | undefined;
-  /** Sunburst charts: shallow branches `extend` to the edge (default) or `stop`. */
+  /** Sunburst and icicle charts: shallow branches `extend` to the edge or `stop` (default `extend` on sunbursts, `stop` on icicles). */
   readonly leaf?: ChartLeaf | undefined;
-  /** Sunburst charts: how much paler each level gets (0 to 1). Default 0.14. */
+  /** Sunburst and icicle charts: how much paler each level gets (0 to 1). Default 0.14. */
   readonly tint?: number | undefined;
+  /** Icicle charts: a zoomed branch keeps its ancestors (`value`, default) or is the top (`both`). */
+  readonly zoomType?: ChartZoomType | undefined;
   /** Stock charts (ADR-0047): indicators of the first series (overlays and panes). */
   readonly indicators?: readonly ChartIndicator[] | undefined;
   /** Stock charts: a navigator under the panes (the whole axis, the zoom as a brush). */
@@ -568,23 +572,29 @@ function renderHierarchy(input: ChartRenderInput): ChartRender {
           },
           format,
         )
-      : layoutTree(
-          hierarchy,
-          {
-            width: input.width,
-            height: input.height,
-            direction: input.direction,
-            layoutType: input.layoutType,
-            edgeStyle: input.edgeStyle,
-            markerSize: input.markerSize,
-            collapsed: input.collapsedNodes,
-            expandCollapse: input.enableExpandCollapse,
-            dataLabels: input.dataLabels,
-            startAngle: input.startAngle,
-            endAngle: input.endAngle,
-          },
-          format,
-        );
+      : input.type === "icicle"
+        ? layoutIcicle(
+            hierarchy,
+            { ...partition, direction: input.direction, zoomType: input.zoomType },
+            format,
+          )
+        : layoutTree(
+            hierarchy,
+            {
+              width: input.width,
+              height: input.height,
+              direction: input.direction,
+              layoutType: input.layoutType,
+              edgeStyle: input.edgeStyle,
+              markerSize: input.markerSize,
+              collapsed: input.collapsedNodes,
+              expandCollapse: input.enableExpandCollapse,
+              dataLabels: input.dataLabels,
+              startAngle: input.startAngle,
+              endAngle: input.endAngle,
+            },
+            format,
+          );
   return {
     data,
     format,

@@ -41,6 +41,7 @@ import {
   type ChartXType,
   type ChartZoom,
   type ChartZoomReason,
+  type ChartZoomType,
   chartActiveAt,
   chartActiveMarks,
   chartActiveNodes,
@@ -139,7 +140,7 @@ export interface ChartEvents {
    */
   expand: EventSpec<{ id: string; expanded: boolean; collapsedNodes: string[] }, true>;
   /**
-   * Sunburst charts: before a click, Enter, Space, Escape or the **Back** button zooms into a node
+   * Sunburst and icicle charts: before a click, Enter, Space, Escape or the **Back** button zooms into a node
    * (`id`, and the names from the root in `path`) or out (`null` at the top). Call
    * `preventDefault()` to refuse.
    */
@@ -194,9 +195,9 @@ export interface ChartInstance extends ComponentInstance {
   readonly collapsedNodes: readonly string[];
   /** Tree charts: hides the children of exactly these nodes (no event). */
   setCollapsedNodes(ids: readonly string[]): void;
-  /** Sunburst charts: the id of the node zoomed into (`data-ok-drill-node`), or `null`. */
+  /** Sunburst and icicle charts: the id of the node zoomed into (`data-ok-drill-node`), or `null`. */
   readonly drillNode: string | null;
-  /** Sunburst charts: zooms into a node (`null`: the whole chart; no event). */
+  /** Sunburst and icicle charts: zooms into a node (`null`: the whole chart; no event). */
   setDrillNode(id: string | null): void;
 }
 
@@ -650,8 +651,12 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
         disableZoomOnClick: element.hasAttribute(o.disableZoomOnClick.attr),
         innerSize: readNumber(element, o.innerSize) as number | undefined,
         spacing: readNumber(element, o.spacing) as number | undefined,
-        leaf: readStyle(element, o.leaf) as ChartLeaf | undefined,
+        // The default depends on the type (sunburst extend, icicle stop): only a given value.
+        leaf: element.hasAttribute(o.leaf.attr)
+          ? (readStyle(element, o.leaf) as ChartLeaf)
+          : undefined,
         tint: readNumber(element, o.tint) as number | undefined,
+        zoomType: readStyle(element, o.zoomType) as ChartZoomType | undefined,
         indicators: parseChartIndicators(element.getAttribute(CHART_TEXT_ATTRIBUTES.indicators)),
         navigator: element.hasAttribute(o.navigator.attr),
         paneHeight: readNumber(element, o.paneHeight) as number | undefined,
@@ -813,14 +818,14 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
       setActive(mark === null ? null : { kind: "mark", mark }, true);
       return true;
     };
-    /** Sunburst charts: the drilled node, kept in `data-ok-drill-node`. */
+    /** Sunburst and icicle charts: the drilled node, kept in `data-ok-drill-node`. */
     const writeDrill = (id: string | null) => {
       if (id === null) element.removeAttribute(CHART_TEXT_ATTRIBUTES.drillNode);
       else element.setAttribute(CHART_TEXT_ATTRIBUTES.drillNode, id);
       changes.takeRecords();
       draw();
     };
-    /** Sunburst charts: a **Back** button and the drilled path (a status) before the plot. */
+    /** Sunburst and icicle charts: a **Back** button and the drilled path (a status) before the plot. */
     const drawDrill = () => {
       let box = element.querySelector<HTMLElement>(":scope > [data-ok-chart-drill]");
       const state = (render as ChartRender).layout.hierarchy;
@@ -1141,7 +1146,7 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
       "keydown",
       (event) => {
         if (event.key === "Escape") {
-          // Sunburst charts: one level up before anything else.
+          // Sunburst and icicle charts: one level up before anything else.
           if (act(chartDrillUp((render as ChartRender).layout))) {
             event.preventDefault();
             return;

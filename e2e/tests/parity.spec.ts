@@ -167,6 +167,7 @@ const pairs: [component: string, story: string][] = [
   ["chart", "dumbbell"],
   ["chart", "tree"],
   ["chart", "sunburst"],
+  ["chart", "icicle"],
   ["chart", "crossfilter"],
   ["rating", "controlled"],
   ["rating", "read-only"],

@@ -145,5 +145,7 @@ export const Dumbbell: StoryObj = story("dumbbell");
 export const Tree: StoryObj = story("tree");
 // Roadmap 4.18.21 (ADR-0058): sunburst charts.
 export const Sunburst: StoryObj = story("sunburst");
+// Roadmap 4.18.21 (ADR-0058): icicle charts.
+export const Icicle: StoryObj = story("icicle");
 // Roadmap 4.18.19: crossfilter between the charts of a group.
 export const Crossfilter: StoryObj = story("crossfilter");

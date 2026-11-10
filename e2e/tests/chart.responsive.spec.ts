@@ -49,6 +49,7 @@ const STORIES = [
   "sankey-links",
   "tree",
   "sunburst",
+  "icicle",
   "stock",
   "stock-overlays",
   "stock-oscillators",
@@ -147,7 +148,7 @@ for (const viewport of viewports) {
           await expect(page.locator("[data-ok-chart][data-ok-ready]")).toHaveCount(
             story === "sparklines" || story === "synchronized" || story === "tree"
               ? 3
-              : story === "brush" || story === "sunburst"
+              : story === "brush" || story === "sunburst" || story === "icicle"
                 ? 2
                 : 1,
           );

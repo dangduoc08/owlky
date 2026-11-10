@@ -237,15 +237,17 @@ export interface ChartParts {
   "data-ok-chart-active-node": Part<"circle" | "path" | "rect">;
   /** One arc of a sunburst chart (the drilled node: the center disc). */
   "data-ok-chart-arc": Part<"path">;
-  /** Sunburst charts: the controls before the plot, a **Back** button and the drilled path (a status). */
+  /** One cell of an icicle chart. */
+  "data-ok-chart-icicle-cell": Part<"rect">;
+  /** Sunburst and icicle charts: the controls before the plot, a **Back** button and the drilled path (a status). */
   "data-ok-chart-drill": Part<"div">;
   /** Sunburst charts: the drilled path, a status region (empty when not drilled). */
   "data-ok-chart-drill-path": Part<"span">;
   /** Sunburst charts: zooms out one level. `hidden` while not drilled. */
   "data-ok-chart-drill-up": Part<"button">;
-  /** The name of a sunburst arc: white on strong shades (`inside`), primary text on pale ones (`plain`). */
+  /** The name of a sunburst arc or an icicle cell: white on strong shades (`inside`), primary text on pale ones (`plain`). */
   "data-ok-chart-partition-label": Value<"inside" | "plain">;
-  /** Sunburst charts: the id of the node zoomed into. Written by the chart. */
+  /** Sunburst and icicle charts: the id of the node zoomed into. Written by the chart. */
   "data-ok-drill-node": Value<string>;
   /** A tree chart: one link of the path from the root to the active node. */
   "data-ok-chart-active-path": Part<"path">;

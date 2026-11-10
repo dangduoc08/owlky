@@ -32,6 +32,7 @@ export const chartTypes = [
   "dumbbell",
   "tree",
   "sunburst",
+  "icicle",
 ] as const;
 /** Charts of one series whose categories are slices or rings (legend items are categories). */
 export const chartCircularTypes = ["pie", "donut", "radialBar", "polarArea"] as const;
@@ -115,6 +116,7 @@ const wholeTypes: readonly ChartType[] = [
   "dumbbell",
   "tree",
   "sunburst",
+  "icicle",
 ];
 /** Whether a chart type draws every series the same way (no mixed charts). */
 export const isWholeChart = (type: ChartType): boolean => wholeTypes.includes(type);

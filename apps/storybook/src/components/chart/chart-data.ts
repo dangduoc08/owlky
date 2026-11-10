@@ -1839,4 +1839,76 @@ export const chartExamples: Record<string, ChartExample> = {
       },
     ],
   },
+  // Roadmap 4.18.21 (ADR-0058): icicle charts (ApexCharts v8 `icicle`, `direction`, `zoomType`).
+  icicle: {
+    title: "Icicle",
+    props: {
+      label: "Page load time by step, milliseconds",
+      type: "icicle",
+      valueSuffix: " ms",
+      height: 320,
+      hierarchy: {
+        name: "Page load",
+        children: [
+          {
+            name: "Network",
+            children: [
+              { name: "DNS", value: 40 },
+              { name: "Connect", value: 90 },
+              { name: "Download", value: 220 },
+            ],
+          },
+          {
+            name: "Scripts",
+            children: [
+              { name: "Parse", value: 120 },
+              {
+                name: "Run",
+                children: [
+                  { name: "Framework", value: 160 },
+                  { name: "App", value: 110 },
+                ],
+              },
+            ],
+          },
+          {
+            name: "Render",
+            children: [
+              { name: "Layout", value: 70 },
+              { name: "Paint", value: 50 },
+            ],
+          },
+        ],
+      },
+    },
+    more: [
+      {
+        label: "Online store visits by source and campaign this month",
+        type: "icicle",
+        direction: "left",
+        leaf: "extend",
+        zoomType: "both",
+        dataLabels: true,
+        height: 300,
+        hierarchy: [
+          {
+            name: "Search",
+            children: [
+              { name: "Organic", value: 4200 },
+              { name: "Ads", value: 1800 },
+            ],
+          },
+          {
+            name: "Social",
+            children: [
+              { name: "Video", value: 1500 },
+              { name: "Photos", value: 900 },
+            ],
+          },
+          { name: "Direct", value: 2600 },
+          { name: "Email", value: 1100 },
+        ],
+      },
+    ],
+  },
 };

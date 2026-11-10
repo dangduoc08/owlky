@@ -31,7 +31,7 @@ export type ChartLocaleText = Readonly<
       | "clearFilter"
       | "filter"
       | "filterCleared"
-      // Drill controls of sunburst charts (ADR-0058).
+      // Drill controls of sunburst and icicle charts (ADR-0058).
       | "drillUp",
       string
     >

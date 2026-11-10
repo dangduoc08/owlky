@@ -69,6 +69,7 @@ const STORIES = [
   "dumbbell",
   "tree",
   "sunburst",
+  "icicle",
   "crossfilter",
 ];
 
@@ -735,6 +736,34 @@ for (const impl of implementations) {
       await expect(back).toBeHidden();
       const table = page.getByRole("table", { name: /^Cloud spend by service/ });
       await expect(table.getByRole("row")).toHaveCount(15);
+    });
+  });
+}
+
+// Roadmap 4.18.21 (ADR-0058): icicle charts.
+for (const impl of implementations) {
+  test.describe(`chart icicle (${impl})`, () => {
+    test("Enter zooms into a branch; its ancestor band and Back zoom out", async ({ page }) => {
+      await openStory(page, storyId(impl, "chart", "icicle"));
+      const first = page.locator("[data-ok-chart]").first();
+      const cells = first.locator("[data-ok-chart-icicle-cell]");
+      await expect(cells).toHaveCount(13);
+      await first.locator("[data-ok-chart-plot]").focus();
+      await page.keyboard.press("Home");
+      await page.keyboard.press("ArrowDown");
+      await page.keyboard.press("ArrowRight");
+      await expect(first.locator("[data-ok-chart-tooltip-title]")).toHaveText(
+        "Page load › Scripts",
+      );
+      await page.keyboard.press("Enter");
+      await expect(cells).toHaveCount(6);
+      await expect(first.locator("[data-ok-chart-drill-path]")).toHaveText("Page load › Scripts");
+      await first.getByRole("button", { name: "Back" }).click();
+      await expect(cells).toHaveCount(13);
+      await cells.nth(5).click();
+      await expect(first.locator("[data-ok-chart-drill-path]")).toHaveText("Page load › Scripts");
+      await cells.first().click();
+      await expect(first.locator("[data-ok-chart-drill-path]")).toHaveText("Page load");
     });
   });
 }

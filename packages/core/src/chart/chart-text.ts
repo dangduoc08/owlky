@@ -47,7 +47,7 @@ export interface ChartTextOptions {
   readonly dumbbellColors?: readonly (readonly ChartColor[])[] | undefined;
   /** Tree charts: ids of the collapsed nodes (`"Sales; Support"`, ADR-0058). */
   readonly collapsedNodes?: readonly string[] | undefined;
-  /** Sunburst charts: the id of the node zoomed into (ADR-0058). */
+  /** Sunburst and icicle charts: the id of the node zoomed into (ADR-0058). */
   readonly drillNode?: string | null | undefined;
 }
 

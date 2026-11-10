@@ -15,6 +15,7 @@ import dataLabelsGroup from "../../../../../packages/html/src/components/chart/e
 import dumbbellGroup from "../../../../../packages/html/src/components/chart/examples/dumbbell-group.html?raw";
 import funnelGroup from "../../../../../packages/html/src/components/chart/examples/funnel-group.html?raw";
 import gridGroup from "../../../../../packages/html/src/components/chart/examples/grid-group.html?raw";
+import icicleGroup from "../../../../../packages/html/src/components/chart/examples/icicle-group.html?raw";
 import legendGroup from "../../../../../packages/html/src/components/chart/examples/legend-group.html?raw";
 import localizedGroup from "../../../../../packages/html/src/components/chart/examples/localized-group.html?raw";
 import markerShapesGroup from "../../../../../packages/html/src/components/chart/examples/marker-shapes-group.html?raw";
@@ -113,6 +114,7 @@ export function MonthlySales() {
 - **\`dumbbell\`:** two values per category, such as before and after, joined by a line. See "Compare two values per category".
 - **\`tree\`:** a hierarchy of nodes joined by links, such as teams or a site map. See "Show a hierarchy as a tree".
 - **\`sunburst\`:** a hierarchy as rings, each node an arc sized by its value. See "Show parts of a hierarchy as rings".
+- **\`icicle\`:** a hierarchy as bands, each node a cell sized by its value, such as a flame graph. See "Show parts of a hierarchy as bands".
 
 To mix types in line, area, bar, scatter, box plot, bubble and range area charts, give a series its own \`type\`. In HTML, set \`data-ok-type\` on the column header of the series.`,
     html: `${snippetElement(mixedGroup, "data-ok-chart ")}`,
@@ -799,6 +801,66 @@ export function CloudSpend() {
 }`,
   },
   {
+    id: "icicle",
+    title: "Show parts of a hierarchy as bands",
+    body: `An icicle chart shows the same hierarchy as a sunburst, in bands: one band per level, and each node a cell as long as its share of its parent. Long names and deep trees read better in bands than in rings, and cells of one level are easy to compare by length. Set \`type\` to \`icicle\` and describe the nodes as for a tree chart. See "Show a hierarchy as a tree".
+
+- **\`direction\`:** where the root sits: \`top\` (the default), \`bottom\` (a flame graph), \`left\` or \`right\`.
+- **\`leaf\`:** branches that end before the deepest level \`stop\` at their band (the default) or \`extend\` to the far edge.
+- **\`zoomType\`:** when you zoom into a branch, \`value\` (the default) keeps its ancestors as full bands above it, and \`both\` makes the branch the top level.
+- **\`spacing\`, \`tint\` and \`dataLabels\`:** as for sunburst charts.
+
+Select a cell, or press Enter or Space on it, to zoom into its branch: the branch fills the width. Select the branch's own cell or one of its ancestors, press Escape or select **Back** to zoom out. The arrow pointing away from the root goes to the first child, the opposite arrow to the parent, and the other two arrows move along the level. Names are drawn in cells at least 30 pixels long and a line tall.`,
+    html: `${snippetElement(icicleGroup, "data-ok-chart ")}`,
+    react: `import { Chart } from "@owlky/react";
+
+const steps = {
+  name: "Page load",
+  children: [
+    {
+      name: "Network",
+      children: [
+        { name: "DNS", value: 40 },
+        { name: "Connect", value: 90 },
+        { name: "Download", value: 220 },
+      ],
+    },
+    {
+      name: "Scripts",
+      children: [
+        { name: "Parse", value: 120 },
+        {
+          name: "Run",
+          children: [
+            { name: "Framework", value: 160 },
+            { name: "App", value: 110 },
+          ],
+        },
+      ],
+    },
+    {
+      name: "Render",
+      children: [
+        { name: "Layout", value: 70 },
+        { name: "Paint", value: 50 },
+      ],
+    },
+  ],
+};
+
+export function PageLoadSteps() {
+  return (
+    <Chart
+      label="Page load time by step, milliseconds"
+      type="icicle"
+      valueSuffix=" ms"
+      height={320}
+      hierarchy={steps}
+    />
+  );
+}`,
+  },
+  {
     id: "stock",
     title: "Show stock prices with indicators",
     body: `A stock chart is a candlestick, line, area or column chart of prices over time, with technical indicators, panes and a navigator. The first series is the price. Give each point a volume in \`v\`, such as \`{ y: [open, high, low, close], v: 1200000 }\`. In HTML, the volume is a column of the price series under the header \`data-ok-part="volume"\`.
@@ -1335,7 +1397,7 @@ export function ChartLegendGrid() {
 - **\`ok:chart:select\`** fires for each value a click, Enter or Space selects or clears, with \`detail.seriesIndex\`, \`detail.dataPointIndex\`, \`detail.selected\` and \`detail.selectedDataPoints\`. See "Select data points".
 - **\`ok:chart:filter\`** fires when the group's crossfilter changes, with \`detail.categories\` (\`null\` when cleared) and \`detail.own\`. The instance has \`filter\` and \`clearFilter()\`. See "Filter linked charts".
 - **\`ok:chart:zoom\`** fires when the zoom changes, with \`detail.range\` (\`{ min, max }\` or \`null\`) and \`detail.reason\`: \`user\` for the chart's own gestures, keys and buttons (cancelable), \`group\` or \`brush\` when a linked chart zoomed it.
-- **\`ok:chart:drill\`** (cancelable) fires before a sunburst chart zooms into a branch or out of it, with \`detail.id\` (\`null\` at the top) and \`detail.path\`, the names from the root. The instance has \`drillNode\` and \`setDrillNode(id)\`.
+- **\`ok:chart:drill\`** (cancelable) fires before a sunburst or icicle chart zooms into a branch or out of it, with \`detail.id\` (\`null\` at the top) and \`detail.path\`, the names from the root. The instance has \`drillNode\` and \`setDrillNode(id)\`.
 - **\`ok:chart:expand\`** (cancelable) fires before a click, Enter or Space hides or shows a tree node's children, with \`detail.id\`, \`detail.expanded\` and \`detail.collapsedNodes\`. The instance has \`collapsedNodes\` and \`setCollapsedNodes(ids)\`.
 - **Phase 4 methods:** \`zoomRange\`, \`setZoomRange(range)\` (its group and brushes follow), \`exportChart("svg" | "png" | "csv")\` (a promise that rejects outside a user gesture) and \`setLocaleText(text)\`.
 - **Selection methods:** \`selectedDataPoints\`, \`setSelectedDataPoints(list)\` and \`toggleDataPointSelection(seriesIndex, dataPointIndex)\`.
@@ -1739,6 +1801,37 @@ const PREVIEWS = {
       />
     </Preview>
   ),
+  icicle: () => (
+    <Preview>
+      <Chart
+        label="Online store visits by source and campaign this month"
+        type="icicle"
+        direction="left"
+        leaf="extend"
+        zoomType="both"
+        dataLabels
+        height={300}
+        hierarchy={[
+          {
+            name: "Search",
+            children: [
+              { name: "Organic", value: 4200 },
+              { name: "Ads", value: 1800 },
+            ],
+          },
+          {
+            name: "Social",
+            children: [
+              { name: "Video", value: 1500 },
+              { name: "Photos", value: 900 },
+            ],
+          },
+          { name: "Direct", value: 2600 },
+          { name: "Email", value: 1100 },
+        ]}
+      />
+    </Preview>
+  ),
   sunburst: () => (
     <Preview>
       <Chart
@@ -1913,7 +2006,7 @@ const PREVIEWS = {
           react: "drillNode / defaultDrillNode / onDrillNodeChange",
           html: "data-ok-drill-node · ok:chart:drill",
           type: "string | null",
-          description: "Sunburst charts: the id of the branch the chart is zoomed into.",
+          description: "Sunburst and icicle charts: the id of the branch the chart is zoomed into.",
         },
         {
           react: "indicators",
@@ -2065,7 +2158,15 @@ const PREVIEWS = {
           "Enter / Space (sunburst)",
           "Zooms into the arc's branch. On the center, zooms out one level.",
         ],
-        ["Escape (sunburst)", "Zooms out one level. At the top, hides the tooltip."],
+        [
+          "Arrow keys (icicle)",
+          "Away from the root: the first child. Toward the root: the parent. Along the level: the next or previous cell.",
+        ],
+        [
+          "Enter / Space (icicle)",
+          "Zooms into the cell's branch. On the branch's own cell or an ancestor, zooms out to it.",
+        ],
+        ["Escape (sunburst, icicle)", "Zooms out one level. At the top, hides the tooltip."],
         ["Home / End", "Shows the first or last category or point."],
         [
           "Enter / Space",

@@ -17,8 +17,9 @@ async function withImports(file, seen = new Set()) {
 
 const budgets = [
   // 239 kB since the tree chart type (4.18.7, ADR-0058: the hierarchy model and table, tidy /
-  // cluster / radial layouts, keyboard over the hierarchy, collapse): 235.5 kB; size work is
-  // deferred to 1.0 prep. 235 kB since the ApexTree rows (4.18.3, .5, .6, ADR-0056: grouped leaves, zoom / fit / center
+  // cluster / radial layouts, keyboard over the hierarchy, collapse): 235.5 kB, 238.2 kB with the
+  // sunburst and icicle partitions and their drill controls; size work is deferred to 1.0 prep.
+  // 235 kB since the ApexTree rows (4.18.3, .5, .6, ADR-0056: grouped leaves, zoom / fit / center
   // with a toolbar and a core controller, per-node lines) on top of the range charts: 230.4 kB.
   // Phase 4 batch E's data grid range charts (4.18.12, ADR-0055: createRangeChart and
   // Alt + F1, cross-filtering, chartsToJSON / restoreCharts, chart regions built by the runtime;
