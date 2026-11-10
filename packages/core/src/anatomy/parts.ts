@@ -2121,6 +2121,10 @@ export interface WalktourParts {
   "data-ok-scroll-target": Value<string>;
   /** On a step: a CSS selector of the element to put in the spotlight instead of the target. */
   "data-ok-spotlight-target": Value<string>;
+  /** On a step: its identifier, passed in the tour's events as `step.id`. */
+  "data-ok-step-id": Value<string>;
+  /** HTML: on a step, JSON passed in the tour's events as `step.data`. */
+  "data-ok-step-data": Value<string>;
   /** A step button and what it does. */
   "data-ok-walktour-action": Value<"back" | "close" | "primary" | "skip">;
   /** The pulsing button that opens a step. */

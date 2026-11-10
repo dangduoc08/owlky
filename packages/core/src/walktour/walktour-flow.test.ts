@@ -337,3 +337,43 @@ describe("createWalktourFlow", () => {
     ]);
   });
 });
+
+describe("step identity in events and hooks (roadmap 4.18.82)", () => {
+  it("adds the owner's step info to every event and hook argument", () => {
+    const events: WalktourEventData[] = [];
+    const hooks: unknown[] = [];
+    let state: WalktourState = initialWalktourState();
+    const flow = createWalktourFlow({
+      state: () => state,
+      context: () => ({ size: 2, continuous: true, disableBeacon: () => true }),
+      commit(next) {
+        state = next;
+      },
+      wait(next) {
+        state = next;
+      },
+      emit: (event) => events.push(event),
+      before: (data) => {
+        hooks.push(["before", data.step]);
+        return undefined;
+      },
+      after: (data) => {
+        hooks.push(["after", data.step]);
+        return true;
+      },
+      step: (index) => (index === 0 ? { id: "intro", data: { n: 1 } } : undefined),
+    });
+    flow.dispatch("start");
+    flow.dispatch("next");
+    const first = events.filter((event) => event.index === 0);
+    expect(first.length).toBeGreaterThan(0);
+    for (const event of first) expect(event.step).toEqual({ id: "intro", data: { n: 1 } });
+    for (const event of events.filter((event) => event.index === 1))
+      expect(event).not.toHaveProperty("step");
+    expect(hooks).toContainEqual(["before", { id: "intro", data: { n: 1 } }]);
+    expect(hooks).toContainEqual(["after", { id: "intro", data: { n: 1 } }]);
+    expect(
+      events.some((event) => event.type === "step:after-hook" && event.step?.id === "intro"),
+    ).toBe(true);
+  });
+});

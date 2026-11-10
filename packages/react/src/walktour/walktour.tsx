@@ -66,6 +66,12 @@ export interface WalktourStep extends Partial<Record<WalktourStepOverride, boole
   spotlightPadding?: number | undefined;
   /** Tooltip width (px). Default 360. */
   width?: number | undefined;
+  /** This step's distance between the spotlight and the tooltip (px). Default: the tour's `offset`. */
+  offset?: number | undefined;
+  /** A unique identifier of the step, passed in events and hooks as `step.id`. */
+  id?: string | undefined;
+  /** Your data for the step, passed in events and hooks as `step.data`. */
+  data?: unknown;
   /** This step's texts. */
   locale?: Partial<WalktourLocale> | undefined;
   /** Attributes for the step's element (for example `data-ok-theme="dark"` or a `className`). */
@@ -180,6 +186,7 @@ export const Walktour = forwardRef<HTMLDivElement, WalktourProps>(function Walkt
     scrollToFirstStep,
     spotlightPadding,
     spotlightRadius,
+    offset,
     scrollOffset,
     scrollDuration,
     beaconTrigger,
@@ -255,6 +262,11 @@ export const Walktour = forwardRef<HTMLDivElement, WalktourProps>(function Walkt
       setState(next);
     },
     emit: (event) => latest.current.onEvent?.(event.type, event),
+    step(index) {
+      const step = latest.current.steps[index];
+      if (!step || (step.id === undefined && step.data === undefined)) return undefined;
+      return { id: step.id, data: step.data };
+    },
     before(data) {
       const step = latest.current.steps[data.index];
       return (step?.before ?? latest.current.before)?.(data);
@@ -364,6 +376,7 @@ export const Walktour = forwardRef<HTMLDivElement, WalktourProps>(function Walkt
         scrollToFirstStep,
         spotlightPadding,
         spotlightRadius,
+        offset,
         scrollOffset,
         scrollDuration,
         beaconTrigger,
@@ -416,6 +429,8 @@ export const Walktour = forwardRef<HTMLDivElement, WalktourProps>(function Walkt
               placement: step.placement,
               spotlightPadding: step.spotlightPadding,
               width: step.width,
+              offset: step.offset,
+              id: step.id,
               beaconPlacement: step.beaconPlacement,
               isFixed: step.isFixed,
               beaconTrigger: step.beaconTrigger,

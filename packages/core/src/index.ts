@@ -1409,6 +1409,7 @@ export {
   type WalktourStepFlag,
   type WalktourTargetKind,
   walktourStepFlags,
+  walktourStepInfo,
 } from "./walktour/walktour-controller.js";
 export {
   createWalktourFlow,
@@ -1438,6 +1439,7 @@ export {
   type WalktourPlacement,
   type WalktourState,
   type WalktourStatus,
+  type WalktourStepInfo,
   type WalktourTransition,
   walktourActions,
   walktourBeaconTriggers,

@@ -13,6 +13,7 @@ import {
   type WalktourContext,
   type WalktourOrigin,
   type WalktourState,
+  type WalktourStepInfo,
   walktourBeaconTriggers,
   walktourCloseButtonActions,
   walktourPlacements,
@@ -43,6 +44,8 @@ export interface WalktourControllerOptions {
 export interface WalktourController {
   /** The step elements, in order. */
   readonly steps: HTMLElement[];
+  /** Step `index`'s `data-ok-step-id` and `data-ok-step-data` (JSON), or `undefined` without them. */
+  stepInfo(index: number): WalktourStepInfo | undefined;
   /** The tour options the transitions need, read from the attributes now. */
   context(): WalktourContext;
   /** Shows `state`: the beacon or the tooltip of its step, or nothing when it isn't running. */
@@ -71,14 +74,15 @@ export const walktourStepFlags = [
 ] as const;
 export type WalktourStepFlag = (typeof walktourStepFlags)[number];
 
-/** Gap between the spotlight and the tooltip's arrow tip, plus the arrow (12px) itself. */
-const TOOLTIP_GAP = 20;
+/** The arrow's length (px), added to the `offset` between the spotlight and the arrow's tip. */
+const ARROW = 12;
 /** Beacon diameter (`--_ok-beacon-size` in walktour.css: 36px). */
 export const WALKTOUR_BEACON_SIZE = 36;
 
 const DEFAULTS = {
   spotlightPadding: 10,
   spotlightRadius: 16,
+  offset: 8,
   scrollOffset: 20,
   scrollDuration: 300,
   targetWaitTimeout: 1000,
@@ -104,6 +108,26 @@ function readPx(element: Element, attr: string, fallback: number): number {
   const text = element.getAttribute(attr);
   if (text === null || text.length > 16 || !/^\d+(?:\.\d+)?$/.test(text.trim())) return fallback;
   return Number(text);
+}
+
+/** Longest `data-ok-step-data` read (characters): larger JSON is ignored. */
+const STEP_DATA_LIMIT = 10_000;
+
+/** A step element's `id` and `data` (`data-ok-step-id`, the JSON of `data-ok-step-data`). */
+export function walktourStepInfo(step: Element | undefined): WalktourStepInfo | undefined {
+  if (!step) return undefined;
+  const id = step.getAttribute("data-ok-step-id") || undefined;
+  const text = step.getAttribute("data-ok-step-data");
+  let data: unknown;
+  if (text !== null && text.length <= STEP_DATA_LIMIT) {
+    try {
+      data = JSON.parse(text);
+    } catch {
+      data = undefined;
+    }
+  }
+  if (id === undefined && data === undefined) return undefined;
+  return data === undefined ? { id } : { id, data };
 }
 
 /** `selector` in `from`'s document, or `null` (an invalid selector is no target, never an error). */
@@ -294,11 +318,12 @@ export function createWalktourController(
 
   function popoverOptions(step: HTMLElement, target: Element | null) {
     const padding = num(step, "data-ok-spotlight-padding", DEFAULTS.spotlightPadding);
+    const gap = num(step, "data-ok-offset", DEFAULTS.offset);
     const arrow = step.hasAttribute("data-ok-arrow") && !centered(step, target);
     return {
       placement: resolvePlacement(step, target),
       arrow: arrow ? 24 : 0,
-      offset: padding + (arrow ? TOOLTIP_GAP : 8),
+      offset: padding + gap + (arrow ? ARROW : 0),
       closeOnOutside: false,
       closeOnEscape: !flag(step, "data-ok-disable-close-on-esc"),
       autoFocus: true,
@@ -443,7 +468,8 @@ export function createWalktourController(
       const tooltip =
         step.offsetHeight +
         num(step, "data-ok-spotlight-padding", DEFAULTS.spotlightPadding) +
-        TOOLTIP_GAP;
+        num(step, "data-ok-offset", DEFAULTS.offset) +
+        ARROW;
       top = side === "top" ? rect.y - tooltip : rect.y;
       bottom = side === "bottom" ? rect.y + rect.height + tooltip : rect.y + rect.height;
     }
@@ -587,6 +613,7 @@ export function createWalktourController(
     get steps() {
       return stepsOf();
     },
+    stepInfo: (index) => walktourStepInfo(stepsOf()[index]),
 
     context() {
       const steps = stepsOf();

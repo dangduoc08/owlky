@@ -718,3 +718,36 @@ describe("createWalktourController", () => {
     expect(steps()[1]?.hasAttribute("data-ok-open")).toBe(false);
   });
 });
+
+describe("offset and step identity (roadmap 4.18.82)", () => {
+  it("puts the tooltip `offset` px past the spotlight (plus the arrow); a step overrides it", () => {
+    const { controller, steps } = setup("data-ok-continuous data-ok-offset='30'", [
+      'data-ok-target="#t1" data-ok-placement="bottom"',
+      'data-ok-target="#t1" data-ok-placement="bottom" data-ok-offset="0"',
+      'data-ok-target="#t1" data-ok-placement="bottom" data-ok-offset="nope"',
+    ]);
+    controller.render(state(0));
+    // Spotlight bottom (160) + 30 + the 12px arrow.
+    expect(steps()[0]?.getBoundingClientRect().top).toBeCloseTo(202, 0);
+    controller.render(state(1));
+    expect(steps()[1]?.getBoundingClientRect().top).toBeCloseTo(172, 0);
+    // An invalid value falls back to the tour's.
+    controller.render(state(2));
+    expect(steps()[2]?.getBoundingClientRect().top).toBeCloseTo(202, 0);
+  });
+
+  it("reads each step's id and JSON data; invalid or missing data is left out", () => {
+    const { controller } = setup("", [
+      `data-ok-target="#t1" data-ok-step-id="intro" data-ok-step-data='{"section":"cards","n":1}'`,
+      'data-ok-target="#t1" data-ok-step-data="not json"',
+      'data-ok-target="#t1" data-ok-step-data="[1,2]"',
+    ]);
+    expect(controller.stepInfo(0)).toEqual({ id: "intro", data: { section: "cards", n: 1 } });
+    expect(controller.stepInfo(1)).toBeUndefined();
+    expect(controller.stepInfo(2)).toEqual({ id: undefined, data: [1, 2] });
+    expect(controller.stepInfo(9)).toBeUndefined();
+    // Too long to read.
+    controller.steps[0]?.setAttribute("data-ok-step-data", `"${"x".repeat(10_001)}"`);
+    expect(controller.stepInfo(0)).toEqual({ id: "intro" });
+  });
+});

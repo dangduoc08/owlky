@@ -11,6 +11,7 @@ import {
   type WalktourEventData,
   type WalktourOrigin,
   type WalktourState,
+  type WalktourStepInfo,
   walktourEventData,
   walktourEvents,
   walktourTransition,
@@ -50,6 +51,8 @@ export interface WalktourFlowHost {
   before?: ((data: WalktourEventData) => PromiseLike<unknown> | undefined | void) | undefined;
   /** Step `data.index` ended: run its `after` hook (never awaited). `true` when a hook ran. */
   after?: ((data: WalktourEventData) => boolean | undefined | void) | undefined;
+  /** Step `index`'s `id` and `data`: added as `step` to every event and hook argument. */
+  step?: ((index: number) => WalktourStepInfo | undefined) | undefined;
 }
 
 export interface WalktourFlow {
@@ -81,7 +84,18 @@ const lookups = (ctx: WalktourContext) => ({
   limit: ctx.beforeTimeout ?? (() => BEFORE_TIMEOUT),
 });
 
-export function createWalktourFlow(host: WalktourFlowHost): WalktourFlow {
+export function createWalktourFlow(owner: WalktourFlowHost): WalktourFlow {
+  /** Adds the step's `id` and `data` to what the owner reports and its hooks receive. */
+  const withStep = (event: WalktourEventData): WalktourEventData => {
+    const step = owner.step?.(event.index);
+    return step ? { ...event, step } : event;
+  };
+  const host: WalktourFlowHost = {
+    ...owner,
+    emit: (event) => owner.emit(withStep(event)),
+    before: owner.before && ((data) => owner.before?.(withStep(data))),
+    after: owner.after && ((data) => owner.after?.(withStep(data))),
+  };
   let run = 0;
   let timer: ReturnType<typeof setTimeout> | undefined;
 

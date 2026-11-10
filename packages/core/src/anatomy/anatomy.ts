@@ -5834,6 +5834,12 @@ export const walktourOptions = defineOptions("walktour", "data-ok-walktour", {
   spotlightRadius: number("data-ok-spotlight-radius", 16, "Corner radius of the spotlight (px).", {
     min: 0,
   }),
+  offset: number(
+    "data-ok-offset",
+    8,
+    "Distance between the spotlight's edge and the tooltip, or the tip of its arrow (px).",
+    { min: 0 },
+  ),
   scrollOffset: number(
     "data-ok-scroll-offset",
     20,
@@ -5899,6 +5905,7 @@ export interface WalktourAnatomyOptions {
   scrollToFirstStep?: boolean | undefined;
   spotlightPadding?: number | undefined;
   spotlightRadius?: number | undefined;
+  offset?: number | undefined;
   scrollOffset?: number | undefined;
   scrollDuration?: number | undefined;
   beaconTrigger?: WalktourBeaconTrigger | undefined;
@@ -5926,6 +5933,12 @@ export const walktourStepOptions = defineOptions("walktour-step", "data-ok-walkt
     { min: 0 },
   ),
   width: number("data-ok-width", undefined, "Tooltip width (px). Default 360px.", { min: 0 }),
+  offset: number(
+    "data-ok-offset",
+    undefined,
+    "This step's distance between the spotlight and the tooltip (px); default: the tour's.",
+    { min: 0 },
+  ),
   beaconPlacement: style(
     "data-ok-beacon-placement",
     placements,
@@ -5993,6 +6006,7 @@ export interface WalktourStepAnatomyOptions
   placement?: WalktourPlacement | undefined;
   spotlightPadding?: number | undefined;
   width?: number | undefined;
+  offset?: number | undefined;
   beaconPlacement?: Placement | undefined;
   isFixed?: boolean | undefined;
   beaconTrigger?: WalktourBeaconTrigger | undefined;
@@ -6006,6 +6020,8 @@ export interface WalktourStepAnatomyOptions
   scrollTarget?: string | undefined;
   /** A CSS selector of the element to put in the spotlight instead (`data-ok-spotlight-target`). */
   spotlightTarget?: string | undefined;
+  /** The step's identifier (`data-ok-step-id`), passed in the tour's events. */
+  id?: string | undefined;
 }
 
 /**
@@ -6024,6 +6040,7 @@ export function walktourStepAttributes(options: WalktourStepAnatomyOptions = {})
     attributes["data-ok-scroll-target"] = options.scrollTarget;
   if (typeof options.spotlightTarget === "string" && options.spotlightTarget)
     attributes["data-ok-spotlight-target"] = options.spotlightTarget;
+  if (typeof options.id === "string" && options.id) attributes["data-ok-step-id"] = options.id;
   return attributes;
 }
 
