@@ -41,7 +41,7 @@ import {
   validatePickerValue,
 } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
-import type { ComponentInstance } from "../../runtime/types.js";
+import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
 import type { DateCalendarInstance, PickerDayRenderer } from "../date-calendar/date-calendar.js";
 import {
   asFunction,
@@ -68,21 +68,40 @@ import type { PopoverInstance } from "../popover/popover.js";
 import type { TabsInstance } from "../tabs/tabs.js";
 import type { TimeClockInstance } from "../time-clock/time-clock.js";
 
+/** Events of this component (`ok:<name>:<event>` on the root). */
+export interface DatePickerEvents {
+  /** After the value changed (ISO text by type, `null` when empty), with the validation error. */
+  change: EventSpec<{ value: string | null; validationError: unknown }>;
+  /** After a value was accepted (picked, or the action bar's OK). */
+  accept: EventSpec<{ value: string | null }>;
+  /** After the popover or dialog opened. */
+  open: EventSpec<{ reason: PickerOpenReason }>;
+  /** After the popover or dialog closed, with what closed it. */
+  close: EventSpec<{ reason: PickerOpenReason }>;
+}
+
 export interface DatePickerInstance extends ComponentInstance, PickerDateApi {
   /** ISO value, or `null`: a date, a time (`HH:mm:ss`) or a date time, by `data-ok-value-type`. */
   readonly value: string | null;
   /** Sets the value (ISO string, `Date` or `null`) without events. */
   setValue(value: string | Date | null): void;
+  /** Whether the popover or dialog is open. */
   readonly isOpen: boolean;
+  /** Opens the popover or dialog. */
   open(): void;
+  /** Closes it. */
   close(): void;
   /** Shortcut chips computed by functions (markup chips carry a fixed `data-ok-value`). */
   setShortcuts(shortcuts: readonly PickerShortcut[]): void;
+  /** Disables the days for which the function returns `true` (`null`: none). */
   setShouldDisableDate(fn: ((day: Date) => boolean) | null): void;
+  /** Disables the months for which the function returns `true` (`null`: none). */
   setShouldDisableMonth(fn: ((month: Date) => boolean) | null): void;
+  /** Disables the years for which the function returns `true` (`null`: none). */
   setShouldDisableYear(fn: ((year: Date) => boolean) | null): void;
   /** Times that can't be picked (time and date time pickers). */
   setShouldDisableTime(fn: ((value: Date, view: TimeView) => boolean) | null): void;
+  /** Replaces the text of the labels and buttons, such as for another language. */
   setLocaleText(text: Partial<PickerLocaleText>): void;
   /** Decorates each day button of the calendar (phase 4); `null` removes the renderer. */
   setDayRenderer(fn: PickerDayRenderer | null): void;
@@ -117,7 +136,7 @@ const pad2 = (n: number) => String(n).padStart(2, "0");
  * Events:  ok:date-picker:change (`{ value, validationError }`), ok:date-picker:accept (`{ value }`),
  *          ok:date-picker:open / close (`{ reason }`).
  */
-export const datePicker = defineComponent<DatePickerInstance>({
+export const datePicker = defineComponent<DatePickerInstance, DatePickerEvents>({
   name: "date-picker",
   selector: "[data-ok-date-picker]",
 

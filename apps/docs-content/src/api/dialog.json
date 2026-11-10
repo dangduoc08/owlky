@@ -1,0 +1,418 @@
+{
+ "css": [
+  {
+   "dark": "color-mix(in srgb, #141A21 64%, transparent)",
+   "light": "color-mix(in srgb, #1C252E 48%, transparent)",
+   "name": "--ok-backdrop"
+  },
+  {
+   "dark": "#1C252E",
+   "light": "#FFFFFF",
+   "name": "--ok-bg-paper"
+  },
+  {
+   "name": "--ok-breakpoint-lg",
+   "value": "1200px"
+  },
+  {
+   "name": "--ok-breakpoint-md",
+   "value": "900px"
+  },
+  {
+   "name": "--ok-breakpoint-xl",
+   "value": "1536px"
+  },
+  {
+   "name": "--ok-divider",
+   "value": "color-mix(in srgb, #919EAB 20%, transparent)"
+  },
+  {
+   "name": "--ok-duration-short",
+   "value": "250ms"
+  },
+  {
+   "name": "--ok-easing-decelerate",
+   "value": "cubic-bezier(0, 0, 0.2, 1)"
+  },
+  {
+   "name": "--ok-font-family",
+   "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+  },
+  {
+   "name": "--ok-radius-xl",
+   "value": "16px"
+  },
+  {
+   "name": "--ok-shadow-dialog",
+   "value": "-40px 40px 80px -8px color-mix(in srgb, var(--ok-shadow-color) 24%, transparent)"
+  },
+  {
+   "name": "--ok-spacing",
+   "value": "0.25rem"
+  },
+  {
+   "dark": "#FFFFFF",
+   "light": "#1C252E",
+   "name": "--ok-text-primary"
+  },
+  {
+   "dark": "#919EAB",
+   "light": "#637381",
+   "name": "--ok-text-secondary"
+  },
+  {
+   "name": "--ok-typography-body1-font-size",
+   "value": "1rem"
+  },
+  {
+   "name": "--ok-typography-body1-line-height",
+   "value": "1.5"
+  },
+  {
+   "name": "--ok-typography-h6-font-size",
+   "value": "1.0625rem"
+  },
+  {
+   "name": "--ok-typography-h6-font-weight",
+   "value": "600"
+  },
+  {
+   "name": "--ok-typography-h6-line-height",
+   "value": "1.5556"
+  },
+  {
+   "name": "--ok-z-modal",
+   "value": "1300"
+  }
+ ],
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-dialog",
+    "events": [
+     {
+      "cancelable": true,
+      "description": "Before the dialog closes. Call `preventDefault()` to keep it open.",
+      "detail": "{ reason: DialogCloseReason; }",
+      "name": "ok:dialog:beforeclose"
+     },
+     {
+      "cancelable": true,
+      "description": "Before the dialog opens. Call `preventDefault()` to keep it closed.",
+      "detail": "{ trigger: HTMLElement | null; }",
+      "name": "ok:dialog:beforeopen"
+     },
+     {
+      "cancelable": false,
+      "description": "After the dialog closed, with what closed it (`native`: a form with `method=\"dialog\"`).",
+      "detail": "{ reason: DialogCloseReason; }",
+      "name": "ok:dialog:close"
+     },
+     {
+      "cancelable": false,
+      "description": "After the dialog opened. `trigger` is the element that opened it, if any.",
+      "detail": "{ trigger: HTMLElement | null; }",
+      "name": "ok:dialog:open"
+     }
+    ],
+    "methods": [
+     {
+      "description": "Closes it. Returns `false` if `ok:dialog:beforeclose` was prevented.",
+      "kind": "method",
+      "name": "close",
+      "type": "(reason?: DialogCloseReason | undefined) => boolean"
+     },
+     {
+      "description": "Whether the dialog is open.",
+      "kind": "property",
+      "name": "isOpen",
+      "type": "boolean"
+     },
+     {
+      "description": "Opens the dialog. Returns `false` if `ok:dialog:beforeopen` was prevented.",
+      "kind": "method",
+      "name": "open",
+      "type": "(trigger?: HTMLElement | null | undefined) => boolean"
+     }
+    ],
+    "options": [
+     {
+      "attr": "data-ok-max-width",
+      "default": "sm",
+      "description": "Largest width: 444 / 600 / 900 / 1200 / 1536px, or `none`.",
+      "kind": "style",
+      "name": "maxWidth",
+      "values": [
+       "xs",
+       "sm",
+       "md",
+       "lg",
+       "xl",
+       "none"
+      ]
+     },
+     {
+      "attr": "data-ok-full-width",
+      "description": "Takes the whole `maxWidth`, even with little content.",
+      "kind": "flag",
+      "name": "fullWidth"
+     },
+     {
+      "attr": "data-ok-full-screen",
+      "description": "Covers the viewport, without corners or margins.",
+      "kind": "flag",
+      "name": "fullScreen"
+     },
+     {
+      "attr": "data-ok-scroll",
+      "default": "paper",
+      "description": "`paper`: the content scrolls inside the dialog; `body`: the whole dialog scrolls.",
+      "kind": "style",
+      "name": "scroll",
+      "values": [
+       "paper",
+       "body"
+      ]
+     },
+     {
+      "attr": "data-ok-hide-backdrop",
+      "description": "Transparent backdrop (still modal).",
+      "kind": "flag",
+      "name": "hideBackdrop"
+     },
+     {
+      "attr": "data-ok-disable-escape-key-down",
+      "description": "Escape doesn't request close.",
+      "kind": "flag",
+      "name": "disableEscapeKeyDown"
+     },
+     {
+      "attr": "data-ok-variant",
+      "children": "[data-ok-dialog-paper]",
+      "default": "fadeIn",
+      "description": "Entrance of the paper: a Motion entrance (`slideInUp`, `zoomIn`…); without it, a short fade and scale.",
+      "kind": "style",
+      "name": "transition",
+      "optional": true,
+      "values": [
+       "slideInUp",
+       "slideInDown",
+       "slideInLeft",
+       "slideInRight",
+       "fadeIn",
+       "fadeInUp",
+       "fadeInDown",
+       "fadeInLeft",
+       "fadeInRight",
+       "zoomIn",
+       "zoomInUp",
+       "zoomInDown",
+       "zoomInLeft",
+       "zoomInRight",
+       "bounceIn",
+       "bounceInUp",
+       "bounceInDown",
+       "bounceInLeft",
+       "bounceInRight",
+       "flipInX",
+       "flipInY",
+       "scaleInX",
+       "scaleInY",
+       "rotateIn"
+      ]
+     },
+     {
+      "attr": "open",
+      "description": "Open state (`open` / `onOpenChange`; HTML: a trigger or `open()`).",
+      "event": "ok:dialog:close",
+      "kind": "state",
+      "name": "open"
+     }
+    ],
+    "parts": [
+     {
+      "description": "Closes the dialog whose `id` it names, or, without a value, the dialog it sits in.",
+      "kind": "trigger",
+      "name": "data-ok-dialog-close",
+      "value": [
+       "",
+       "id"
+      ]
+     },
+     {
+      "description": "Opens the dialog whose `id` it names.",
+      "kind": "trigger",
+      "name": "data-ok-dialog-open",
+      "value": [
+       "id"
+      ]
+     },
+     {
+      "description": "The dialog's surface.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-dialog-paper"
+     },
+     {
+      "description": "Draws lines above and below the content.",
+      "kind": "state",
+      "name": "data-ok-dividers"
+     }
+    ],
+    "runtime": "dialog"
+   },
+   "name": "Dialog",
+   "react": {
+    "description": "A modal `<dialog data-ok-dialog>` (native top layer, inert page, focus trap; fallback without `showModal()`) with the paper inside. Controlled, like MUI: keep `open` in state. Named by its `DialogTitle` (automatic `aria-labelledby`). Focus returns to the element focused before it opened.",
+    "native": "HTMLDialogElement",
+    "props": [
+     {
+      "description": "Escape doesn't ask to close.",
+      "name": "disableEscapeKeyDown",
+      "type": "boolean"
+     },
+     {
+      "description": "Covers the viewport.",
+      "name": "fullScreen",
+      "type": "boolean"
+     },
+     {
+      "description": "Takes the whole `maxWidth`.",
+      "name": "fullWidth",
+      "type": "boolean"
+     },
+     {
+      "description": "Transparent backdrop (still modal).",
+      "name": "hideBackdrop",
+      "type": "boolean"
+     },
+     {
+      "default": "\"sm\"",
+      "description": "(600px).",
+      "name": "maxWidth",
+      "type": "\"lg\" | \"md\" | \"none\" | \"sm\" | \"xl\" | \"xs\""
+     },
+     {
+      "description": "Called when the dialog asks to close: `\"escape\"`, `\"backdrop\"` (a click outside the paper) or `\"close\"` (the browser closed it, for example a `form[method=dialog]`).",
+      "name": "onOpenChange",
+      "type": "((open: boolean, reason?: DialogCloseReason | undefined) => void)"
+     },
+     {
+      "description": "Controlled open state.",
+      "name": "open",
+      "required": true,
+      "type": "boolean"
+     },
+     {
+      "description": "Props of the paper (`className`, `style`, …).",
+      "name": "paperProps",
+      "type": "HTMLAttributes<HTMLDivElement>"
+     },
+     {
+      "description": "`paper` (default): the content scrolls; `body`: the whole dialog scrolls.",
+      "name": "scroll",
+      "type": "\"body\" | \"paper\""
+     },
+     {
+      "description": "Entrance of the paper: a Motion entrance (`slideInUp`, `zoomIn`…). Without it, the paper fades and scales in briefly.",
+      "name": "transition",
+      "type": "DialogTransition"
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-dialog-actions",
+    "description": "The row of actions at the bottom.",
+    "elements": [
+     "div"
+    ]
+   },
+   "name": "DialogActions",
+   "react": {
+    "description": "The row of buttons at the end of the dialog.",
+    "native": "HTMLDivElement",
+    "props": [
+     {
+      "description": "No 12px gap between the actions.",
+      "name": "disableSpacing",
+      "type": "boolean"
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-dialog-content",
+    "description": "The content, which scrolls with `data-ok-scroll=\"paper\"`.",
+    "elements": [
+     "div"
+    ]
+   },
+   "name": "DialogContent",
+   "react": {
+    "description": "The scrollable body of the dialog.",
+    "native": "HTMLDivElement",
+    "props": [
+     {
+      "description": "Lines above and below the content (and 16px padding).",
+      "name": "dividers",
+      "type": "boolean"
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-dialog-content-text",
+    "description": "A paragraph of the content, in the secondary text color.",
+    "elements": [
+     "p"
+    ]
+   },
+   "name": "DialogContentText",
+   "react": {
+    "description": "Secondary text in the content (`p`).",
+    "native": "HTMLParagraphElement",
+    "props": []
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-dialog-title",
+    "description": "The title. Name the dialog with it through `aria-labelledby`.",
+    "elements": [
+     "h2"
+    ]
+   },
+   "name": "DialogTitle",
+   "react": {
+    "description": "The dialog's heading (`h2`); it names the dialog.",
+    "native": "HTMLHeadingElement",
+    "props": []
+   }
+  }
+ ],
+ "format": 1,
+ "name": "dialog",
+ "title": "Dialog",
+ "types": [
+  {
+   "framework": "react",
+   "name": "DialogCloseReason",
+   "type": "\"backdrop\" | \"close\" | \"escape\""
+  },
+  {
+   "framework": "html",
+   "name": "DialogCloseReason",
+   "type": "\"api\" | \"backdrop\" | \"escape\" | \"native\" | \"trigger\""
+  },
+  {
+   "name": "DialogTransition",
+   "type": "\"bounceIn\" | \"bounceInDown\" | \"bounceInLeft\" | \"bounceInRight\" | \"bounceInUp\" | \"fadeIn\" | \"fadeInDown\" | \"fadeInLeft\" | \"fadeInRight\" | \"fadeInUp\" | \"flipInX\" | \"flipInY\" | \"rotateIn\" | \"scaleInX\" | \"scaleInY\" | \"slideInDown\" | \"slideInLeft\" | \"slideInRight\" | \"slideInUp\" | \"zoomIn\" | \"zoomInDown\" | \"zoomInLeft\" | \"zoomInRight\" | \"zoomInUp\""
+  }
+ ]
+}

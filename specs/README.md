@@ -14,7 +14,8 @@ Reference URL: <the exact URL given to `/component`>
 
 ## Purpose
 
-## Anatomy            element tree with data-ok-* attributes (identical in React and HTML)
+## Anatomy            element tree with data-ok-* attributes (identical in React and HTML);
+                     every name is also declared in core/src/anatomy/parts.ts (ADR-0049)
 
 ## Options            generated: <!-- options:<schema> --> … <!-- /options:<schema> -->
                      (`pnpm specs:options`, AGENTS.md checklist step 1); props and
@@ -28,7 +29,9 @@ Reference URL: <the exact URL given to `/component`>
 
 ## Accessibility      roles, names, descriptions, focus management
 
-## Events / API       HTML events + instance API; React callbacks
+## Events / API       HTML events + instance API; React callbacks. Keep in step with the
+                     runtime's event map (EventSpec) and instance interface, which the
+                     generated API reference reads (ADR-0049)
 
 ## Parity notes       intentional differences (if any)
 ```

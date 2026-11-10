@@ -1,4 +1,6 @@
 import { toggleButtonOptions, toggleGroupOptions } from "@owlky/core";
+import toggleButtonApi from "@owlky/docs-content/api/toggle-button.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { ToggleButton, ToggleButtonGroup } from "@owlky/react";
 import { DocsIcon, type DocsIconName, iconMarkup } from "../../helpers/docs-icons.js";
 import { CDN, capitalize, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
@@ -175,6 +177,7 @@ export function FormatPicker() {
 - Buttons that show only an icon need \`aria-label\`.
 - Disabled buttons never change their state.`,
   },
+  apiReferenceSection(toggleButtonApi),
 ];
 
 const PREVIEWS = {

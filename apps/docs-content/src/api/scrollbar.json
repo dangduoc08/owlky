@@ -1,0 +1,57 @@
+{
+ "css": [
+  {
+   "name": "--ok-palette-grey-500-channel",
+   "value": "145 158 171"
+  },
+  {
+   "name": "--ok-palette-grey-600-channel",
+   "value": "99 115 129"
+  },
+  {
+   "name": "--ok-radius-full",
+   "value": "9999px"
+  },
+  {
+   "name": "--ok-spacing",
+   "value": "0.25rem"
+  },
+  {
+   "dark": "#FFFFFF",
+   "light": "#1C252E",
+   "name": "--ok-text-primary"
+  }
+ ],
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-scrollbar",
+    "options": [
+     {
+      "attr": "data-ok-auto-hide",
+      "default": true,
+      "description": "The thumb shows on hover and focus only; `false` keeps it visible.",
+      "kind": "behavior",
+      "name": "autoHide"
+     }
+    ]
+   },
+   "name": "Scrollbar",
+   "react": {
+    "description": "A named, focusable scroll area with themed native scrollbars.",
+    "native": "HTMLElement",
+    "props": [
+     {
+      "default": "true",
+      "description": "The thumb shows on hover and focus only.",
+      "name": "autoHide",
+      "type": "boolean"
+     }
+    ]
+   }
+  }
+ ],
+ "format": 1,
+ "name": "scrollbar",
+ "title": "Scrollbar"
+}

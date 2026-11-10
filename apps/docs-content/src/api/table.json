@@ -1,0 +1,660 @@
+{
+ "css": [
+  {
+   "name": "--ok-action-hover",
+   "value": "color-mix(in srgb, #919EAB 8%, transparent)"
+  },
+  {
+   "dark": "#28323D",
+   "light": "#F4F6F8",
+   "name": "--ok-bg-neutral"
+  },
+  {
+   "dark": "#1C252E",
+   "light": "#FFFFFF",
+   "name": "--ok-bg-paper"
+  },
+  {
+   "name": "--ok-divider",
+   "value": "color-mix(in srgb, #919EAB 20%, transparent)"
+  },
+  {
+   "name": "--ok-duration-shorter",
+   "value": "200ms"
+  },
+  {
+   "name": "--ok-duration-shortest",
+   "value": "150ms"
+  },
+  {
+   "name": "--ok-easing-standard",
+   "value": "cubic-bezier(0.4, 0, 0.2, 1)"
+  },
+  {
+   "name": "--ok-font-family",
+   "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+  },
+  {
+   "name": "--ok-font-size-lg",
+   "value": "0.9375rem"
+  },
+  {
+   "name": "--ok-palette-primary-main-channel",
+   "value": "0 167 111"
+  },
+  {
+   "name": "--ok-radius-sm",
+   "value": "6px"
+  },
+  {
+   "name": "--ok-radius-xs",
+   "value": "4px"
+  },
+  {
+   "name": "--ok-spacing",
+   "value": "0.25rem"
+  },
+  {
+   "dark": "#FFFFFF",
+   "light": "#1C252E",
+   "name": "--ok-text-primary"
+  },
+  {
+   "dark": "#919EAB",
+   "light": "#637381",
+   "name": "--ok-text-secondary"
+  },
+  {
+   "name": "--ok-typography-body2-font-size",
+   "value": "0.875rem"
+  },
+  {
+   "name": "--ok-typography-body2-font-weight",
+   "value": "400"
+  },
+  {
+   "name": "--ok-typography-body2-line-height",
+   "value": "1.5714"
+  },
+  {
+   "name": "--ok-typography-caption-font-size",
+   "value": "0.75rem"
+  },
+  {
+   "name": "--ok-typography-caption-line-height",
+   "value": "1.5"
+  },
+  {
+   "name": "--ok-typography-subtitle2-font-weight",
+   "value": "600"
+  }
+ ],
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-table",
+    "events": [
+     {
+      "cancelable": true,
+      "description": "Before a collapsible row opens or closes. Call `preventDefault()` to refuse.",
+      "detail": "{ row: Element; expanded: boolean; }",
+      "name": "ok:table:expand"
+     },
+     {
+      "cancelable": false,
+      "description": "After the selection changed through a row checkbox or the select-all checkbox.",
+      "detail": "{ rows: HTMLTableRowElement[]; }",
+      "name": "ok:table:select"
+     },
+     {
+      "cancelable": true,
+      "description": "Before a column is sorted. Call `preventDefault()` to keep the current order.",
+      "detail": "{ column: number; direction: \"asc\" | \"desc\"; }",
+      "name": "ok:table:sort"
+     }
+    ],
+    "methods": [
+     {
+      "description": "Opens / closes / flips a detail row. Returns `false` if `ok:table:expand` was prevented.",
+      "kind": "method",
+      "name": "expand",
+      "type": "(row: HTMLTableRowElement, open?: boolean | undefined) => boolean"
+     },
+     {
+      "description": "Body rows with their detail rows, in DOM order.",
+      "kind": "method",
+      "name": "groups",
+      "type": "() => HTMLTableRowElement[][]"
+     },
+     {
+      "description": "Sorts the rows by a column (0-based, last header row). Without `direction` an active column flips and another one starts ascending. Returns `false` if `ok:table:sort` was prevented.",
+      "kind": "method",
+      "name": "sort",
+      "type": "(column: number, direction?: \"asc\" | \"desc\" | undefined) => boolean"
+     }
+    ],
+    "options": [
+     {
+      "attr": "data-ok-size",
+      "default": "medium",
+      "description": "Cell height (`small` = dense).",
+      "kind": "style",
+      "name": "size",
+      "values": [
+       "medium",
+       "small"
+      ]
+     },
+     {
+      "attr": "data-ok-padding",
+      "default": "normal",
+      "description": "Cell padding (`checkbox` for a selection column).",
+      "kind": "style",
+      "name": "padding",
+      "values": [
+       "normal",
+       "checkbox",
+       "none"
+      ]
+     },
+     {
+      "attr": "data-ok-sticky-header",
+      "description": "Header stays visible while a height-limited container scrolls.",
+      "kind": "flag",
+      "name": "stickyHeader"
+     },
+     {
+      "attr": "aria-sort",
+      "description": "Sorted column (`TableSortLabel` + app state; HTML sorts rows).",
+      "event": "ok:table:sort",
+      "kind": "state",
+      "name": "sort"
+     },
+     {
+      "attr": "data-ok-selected",
+      "description": "Selected rows (app state; HTML: row checkboxes).",
+      "event": "ok:table:select",
+      "kind": "state",
+      "name": "selected"
+     },
+     {
+      "attr": "aria-expanded",
+      "description": "Open detail rows (`TableExpandButton`).",
+      "event": "ok:table:expand",
+      "kind": "state",
+      "name": "expanded"
+     }
+    ],
+    "parts": [
+     {
+      "description": "Highlights rows on hover.",
+      "kind": "state",
+      "name": "data-ok-hover"
+     },
+     {
+      "description": "A switch that makes the table whose `id` it names dense while checked.",
+      "kind": "trigger",
+      "name": "data-ok-table-dense",
+      "value": [
+       "id"
+      ]
+     },
+     {
+      "description": "The detail row under a collapsible row.",
+      "elements": [
+       "tr"
+      ],
+      "kind": "part",
+      "name": "data-ok-table-detail"
+     },
+     {
+      "description": "The button that opens and closes a row's detail.",
+      "elements": [
+       "button"
+      ],
+      "kind": "part",
+      "name": "data-ok-table-expand"
+     },
+     {
+      "description": "The checkbox that selects a row.",
+      "elements": [
+       "input"
+      ],
+      "kind": "part",
+      "name": "data-ok-table-select"
+     },
+     {
+      "description": "The checkbox that selects every row.",
+      "elements": [
+       "input"
+      ],
+      "kind": "part",
+      "name": "data-ok-table-select-all"
+     },
+     {
+      "description": "The sort arrow of a sortable header.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-table-sort-icon"
+     }
+    ],
+    "runtime": "table"
+   },
+   "name": "Table",
+   "react": {
+    "description": "Data, sorting and paging stay in the app.",
+    "native": "HTMLTableElement",
+    "props": [
+     {
+      "default": "\"normal\"",
+      "description": "Cell padding (`checkbox` for a selection column).",
+      "name": "padding",
+      "type": "\"checkbox\" | \"none\" | \"normal\""
+     },
+     {
+      "default": "\"medium\"",
+      "description": "`\"small\"` = dense rows.",
+      "name": "size",
+      "type": "\"medium\" | \"small\""
+     },
+     {
+      "description": "Header stays visible while a height-limited `TableContainer` scrolls.",
+      "name": "stickyHeader",
+      "type": "boolean"
+     }
+    ]
+   }
+  },
+  {
+   "name": "TableBody",
+   "react": {
+    "description": "",
+    "native": "HTMLTableSectionElement",
+    "props": []
+   }
+  },
+  {
+   "name": "TableCell",
+   "react": {
+    "description": "`<th scope=\"col\">` in the head, `<th>` with `scope=\"row\"`, `<td>` otherwise.",
+    "native": "HTMLTableCellElement",
+    "props": [
+     {
+      "description": "Text alignment (right for numbers). Default: inherit.",
+      "name": "align",
+      "type": "\"center\" | \"inherit\" | \"justify\" | \"left\" | \"right\""
+     },
+     {
+      "description": "Overrides the table's padding.",
+      "name": "padding",
+      "type": "\"checkbox\" | \"none\" | \"normal\""
+     },
+     {
+      "description": "Overrides the table's size.",
+      "name": "size",
+      "type": "\"medium\" | \"small\""
+     },
+     {
+      "description": "Header cell of the sorted column: sets `aria-sort`.",
+      "name": "sortDirection",
+      "type": "\"asc\" | \"desc\" | false"
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-table-container",
+    "description": "The container around the table, with a scrollbar.",
+    "elements": [
+     "section"
+    ]
+   },
+   "name": "TableContainer",
+   "react": {
+    "description": "Holds a table. Wrap the table in a `Scrollbar` (the named, focusable scroll region), or name the container itself (`aria-label`) to let it scroll natively.",
+    "native": "HTMLElement",
+    "props": [
+     {
+      "description": "Name of the scrollable region (or `aria-labelledby`); omit it when a `Scrollbar` inside scrolls.",
+      "name": "aria-label",
+      "type": "string"
+     }
+    ]
+   }
+  },
+  {
+   "name": "TableDetailRow",
+   "react": {
+    "description": "The collapsible row under a data row.",
+    "native": "HTMLTableRowElement",
+    "props": [
+     {
+      "description": "Number of columns it spans.",
+      "name": "colSpan",
+      "required": true,
+      "type": "number"
+     },
+     {
+      "description": "Referenced by the row's `TableExpandButton`.",
+      "name": "id",
+      "required": true,
+      "type": "string"
+     },
+     {
+      "description": "The row is open.",
+      "name": "open",
+      "required": true,
+      "type": "boolean"
+     }
+    ]
+   }
+  },
+  {
+   "name": "TableExpandButton",
+   "react": {
+    "description": "Opens / closes a `TableDetailRow` (an icon button with a chevron).",
+    "native": "HTMLButtonElement",
+    "props": [
+     {
+      "description": "g. \"Show details of Eclair\".",
+      "name": "aria-label",
+      "required": true,
+      "type": "string"
+     },
+     {
+      "description": "`id` of the `TableDetailRow` it opens.",
+      "name": "controls",
+      "required": true,
+      "type": "string"
+     },
+     {
+      "description": "The detail row is open.",
+      "name": "expanded",
+      "required": true,
+      "type": "boolean"
+     }
+    ]
+   }
+  },
+  {
+   "name": "TableFooter",
+   "react": {
+    "description": "",
+    "native": "HTMLTableSectionElement",
+    "props": []
+   }
+  },
+  {
+   "name": "TableHead",
+   "react": {
+    "description": "",
+    "native": "HTMLTableSectionElement",
+    "props": []
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-table-pagination",
+    "description": "The pagination under a table.",
+    "elements": [
+     "div"
+    ],
+    "events": [
+     {
+      "cancelable": true,
+      "description": "Before the page or the rows per page change. Call `preventDefault()` to keep them.",
+      "detail": "{ page: number; rowsPerPage: number; }",
+      "name": "ok:table-pagination:change"
+     }
+    ],
+    "methods": [
+     {
+      "description": "Last 0-based page (`Infinity` when the count is unknown).",
+      "kind": "property",
+      "name": "lastPage",
+      "type": "number"
+     },
+     {
+      "description": "The page (0-based).",
+      "kind": "property",
+      "name": "page",
+      "type": "number"
+     },
+     {
+      "description": "Re-applies the page to the table's rows (after rows were added, removed or sorted).",
+      "kind": "method",
+      "name": "refresh",
+      "type": "() => void"
+     },
+     {
+      "description": "The rows per page.",
+      "kind": "property",
+      "name": "rowsPerPage",
+      "type": "number"
+     },
+     {
+      "description": "Returns `false` if out of range or `ok:table-pagination:change` was prevented.",
+      "kind": "method",
+      "name": "setPage",
+      "type": "(page: number) => boolean"
+     },
+     {
+      "description": "Back to the first page. Returns `false` if `ok:table-pagination:change` was prevented.",
+      "kind": "method",
+      "name": "setRowsPerPage",
+      "type": "(rowsPerPage: number) => boolean"
+     }
+    ],
+    "parts": [
+     {
+      "description": "A navigation button of the pagination.",
+      "kind": "value",
+      "name": "data-ok-table-pagination-action",
+      "value": [
+       "first",
+       "last",
+       "next",
+       "previous"
+      ]
+     },
+     {
+      "description": "The navigation buttons.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-table-pagination-actions"
+     },
+     {
+      "description": "The \"1–10 of 100\" text.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-table-pagination-displayed"
+     },
+     {
+      "description": "The rows per page select and its label.",
+      "elements": [
+       "label"
+      ],
+      "kind": "part",
+      "name": "data-ok-table-pagination-rows"
+     }
+    ],
+    "runtime": "table-pagination"
+   },
+   "name": "TablePagination",
+   "react": {
+    "description": "Rows per page, the displayed range and page buttons. Place it after the `TableContainer`.",
+    "native": "HTMLDivElement",
+    "props": [
+     {
+      "description": "Total rows; `-1` = unknown (server-side).",
+      "name": "count",
+      "required": true,
+      "type": "number"
+     },
+     {
+      "description": "Turns the controls off.",
+      "name": "disabled",
+      "type": "boolean"
+     },
+     {
+      "description": "Returns the accessible name of each navigation button.",
+      "name": "getItemAriaLabel",
+      "type": "((type: PaginationAction) => string)"
+     },
+     {
+      "description": "Formats the range text, such as \"1–10 of 100\".",
+      "name": "labelDisplayedRows",
+      "type": "((range: PageRange) => ReactNode)"
+     },
+     {
+      "default": "\"Rows per page:\"",
+      "description": "Label of the rows-per-page select.",
+      "name": "labelRowsPerPage",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Called with the page (0-based) a button moves to.",
+      "name": "onPageChange",
+      "required": true,
+      "type": "(page: number) => void"
+     },
+     {
+      "description": "Called when another number of rows per page is picked.",
+      "name": "onRowsPerPageChange",
+      "type": "((rowsPerPage: number) => void)"
+     },
+     {
+      "description": "0-based page.",
+      "name": "page",
+      "required": true,
+      "type": "number"
+     },
+     {
+      "description": "The rows per page.",
+      "name": "rowsPerPage",
+      "required": true,
+      "type": "number"
+     },
+     {
+      "default": "[10, 25, 50, 100]",
+      "description": "Fewer than two hides the select; `-1` = all.",
+      "name": "rowsPerPageOptions",
+      "type": "readonly RowsPerPageOption[]"
+     },
+     {
+      "description": "The rows-per-page select (MUI `SelectProps`): `{ native: false }` makes it a listbox Select (the default stays the native `<select>`); `menuProps` places its menu.",
+      "name": "selectProps",
+      "type": "{ native?: boolean | undefined; menuProps?: SelectMenuProps | undefined; }"
+     },
+     {
+      "description": "Shows a button to the first page.",
+      "name": "showFirstButton",
+      "type": "boolean"
+     },
+     {
+      "description": "Shows a button to the last page.",
+      "name": "showLastButton",
+      "type": "boolean"
+     }
+    ]
+   }
+  },
+  {
+   "name": "TableRow",
+   "react": {
+    "description": "",
+    "native": "HTMLTableRowElement",
+    "props": [
+     {
+      "description": "Shade on hover.",
+      "name": "hover",
+      "type": "boolean"
+     },
+     {
+      "description": "Selected shading.",
+      "name": "selected",
+      "type": "boolean"
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-table-sort-label",
+    "options": [
+     {
+      "attr": "data-ok-active",
+      "description": "The table is sorted by this column.",
+      "kind": "flag",
+      "name": "active"
+     },
+     {
+      "attr": "data-ok-direction",
+      "default": "asc",
+      "description": "Arrow direction.",
+      "kind": "style",
+      "name": "direction",
+      "values": [
+       "asc",
+       "desc"
+      ]
+     },
+     {
+      "attr": "data-ok-hide-sort-icon",
+      "description": "No arrow while inactive (shown on hover / focus).",
+      "kind": "flag",
+      "name": "hideSortIcon"
+     }
+    ]
+   },
+   "name": "TableSortLabel",
+   "react": {
+    "description": "The sort button of a header cell. Set `sortDirection` on the cell for `aria-sort`.",
+    "native": "HTMLButtonElement",
+    "props": [
+     {
+      "description": "The table is sorted by this column.",
+      "name": "active",
+      "type": "boolean"
+     },
+     {
+      "default": "\"asc\"",
+      "description": "Arrow direction.",
+      "name": "direction",
+      "type": "\"asc\" | \"desc\""
+     },
+     {
+      "description": "No arrow while inactive.",
+      "name": "hideSortIcon",
+      "type": "boolean"
+     },
+     {
+      "description": "Replaces the arrow (rotated 180° when ascending).",
+      "name": "icon",
+      "type": "ReactNode"
+     }
+    ]
+   }
+  }
+ ],
+ "format": 1,
+ "name": "table",
+ "title": "Table",
+ "types": [
+  {
+   "name": "PaginationAction",
+   "type": "\"first\" | \"last\" | \"next\" | \"previous\""
+  },
+  {
+   "name": "RowsPerPageOption",
+   "type": "number | { label: string; value: number; }"
+  }
+ ]
+}

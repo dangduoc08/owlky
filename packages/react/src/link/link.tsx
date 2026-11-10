@@ -36,10 +36,11 @@ type LinkOwnProps = Pick<
  */
 export interface LinkComponent {
   <C extends ElementType>(
-    props: LinkOwnProps & { component: C; ref?: Ref<HTMLElement> | undefined } & Omit<
-        ComponentPropsWithoutRef<C>,
-        keyof LinkOwnProps | "component"
-      >,
+    props: LinkOwnProps & {
+      /** The element or component to render, such as a router link. */
+      component: C;
+      ref?: Ref<HTMLElement> | undefined;
+    } & Omit<ComponentPropsWithoutRef<C>, keyof LinkOwnProps | "component">,
   ): ReactElement | null;
   (props: LinkProps & RefAttributes<HTMLElement>): ReactElement | null;
   displayName?: string | undefined;

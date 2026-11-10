@@ -62,42 +62,70 @@ export interface LightboxControllerOptions {
 }
 
 export interface LightboxApi {
+  /** Whether the lightbox is open. */
   readonly isOpen: boolean;
   /** Current slide. */
   readonly index: number;
   /** Opens at `index` (default: the current slide). Focus returns to `returnFocusTo` on close. */
   open(index?: number, returnFocusTo?: HTMLElement | null): void;
   close(): void;
+  /** Shows the previous slide. */
   prev(): void;
+  /** Shows the next slide. */
   next(): void;
+  /** Shows the slide at `index` (`jump`: without animation). */
   goTo(index: number, jump?: boolean): void;
+  /** The zoom level (1: none). */
   readonly zoom: number;
+  /** The highest zoom level of the current slide. */
   readonly maxZoom: number;
+  /** The horizontal pan of the zoomed slide, in pixels. */
   readonly offsetX: number;
+  /** The vertical pan of the zoomed slide, in pixels. */
   readonly offsetY: number;
   /** `true` when the current slide can't zoom. */
   readonly zoomDisabled: boolean;
+  /** Zooms in one step. */
   zoomIn(): void;
+  /** Zooms out one step. */
   zoomOut(): void;
   /** Sets the zoom; `rapid` skips the animation; `dx` / `dy` are offsets from the center. */
   changeZoom(zoom: number, rapid?: boolean, dx?: number, dy?: number): void;
+  /** The rotation of the current slide, in degrees. */
   readonly rotation: number;
+  /** Rotates the current slide by 90 degrees clockwise. */
   rotateClockwise(): void;
+  /** Rotates the current slide by 90 degrees counterclockwise. */
   rotateCounterClockwise(): void;
+  /** Whether the lightbox is in full screen. */
   readonly fullscreen: boolean;
+  /** Whether full screen is unavailable (the browser refuses it). */
   readonly fullscreenDisabled: boolean;
+  /** Enters full screen. */
   enterFullscreen(): Promise<void>;
+  /** Leaves full screen. */
   exitFullscreen(): Promise<void>;
+  /** Whether the slideshow plays. */
   readonly playing: boolean;
+  /** Starts the slideshow. */
   play(): void;
+  /** Pauses the slideshow. */
   pause(): void;
+  /** Whether the captions are shown. */
   readonly captionsVisible: boolean;
+  /** Shows the captions. */
   showCaptions(): void;
+  /** Hides the captions. */
   hideCaptions(): void;
+  /** Whether the thumbnails are shown. */
   readonly thumbnailsVisible: boolean;
+  /** Shows the thumbnails. */
   showThumbnails(): void;
+  /** Hides the thumbnails. */
   hideThumbnails(): void;
+  /** Downloads the current slide. */
   download(): Promise<void>;
+  /** Shares the current slide (the Web Share API). */
   share(): Promise<void>;
 }
 

@@ -66,8 +66,11 @@ export interface MarkerProps
   rotation?: number | undefined;
   rotationAlignment?: MapAlignment | undefined;
   pitchAlignment?: MapAlignment | undefined;
+  /** Called when a drag of the marker starts. */
   onDragStart?: ((event: MarkerDragEvent) => void) | undefined;
+  /** Called while the marker is dragged. */
   onDrag?: ((event: MarkerDragEvent) => void) | undefined;
+  /** Called when the marker is dropped. */
   onDragEnd?: ((event: MarkerDragEvent) => void) | undefined;
   /** Content (default: a pin). */
   children?: ReactNode;
@@ -318,6 +321,7 @@ export interface MapPanelProps extends HTMLAttributes<HTMLDivElement> {
   /** Corner it sits in. Default `top-right`. */
   position?: MapPosition | undefined;
   children?: ReactNode;
+  /** Inline styles of the panel. */
   style?: CSSProperties | undefined;
 }
 

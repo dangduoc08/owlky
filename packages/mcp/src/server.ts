@@ -1,7 +1,7 @@
 import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import * as z from "zod";
-import { componentMarkdown, guideMarkdown, storyMarkdown } from "./format.js";
+import { apiMarkdown, componentMarkdown, guideMarkdown, storyMarkdown } from "./format.js";
 import {
   loadManifest,
   type Manifest,
@@ -22,6 +22,10 @@ import { createValidator, MAX_MARKUP } from "./validate.js";
 
 /** Without a `story`, `get_examples` lists the stories instead once their code is this long. */
 export const MAX_EXAMPLES = 80_000;
+/** `CardHeader`, `card-header` and `cardheader` name the same API entry. */
+const squash = (value: string) => value.toLowerCase().replace(/[^a-z0-9]/g, "");
+/** Without a `part`, `get_component` lists the API reference's entries once it is this long. */
+export const MAX_API = 60_000;
 /** Longest free-text query. */
 const MAX_QUERY = 200;
 
@@ -60,6 +64,85 @@ const optionShape = z.object({
   event: z.string().optional(),
 });
 const sectionShape = z.object({ id: z.string(), title: z.string(), body: z.string() });
+// The API reference (ADR-0049), as `get_component` returns it.
+const apiShape = z.object({
+  entries: z.array(
+    z.object({
+      name: z.string(),
+      react: z
+        .object({
+          description: z.string(),
+          props: z.array(
+            z.object({
+              name: z.string(),
+              type: z.string(),
+              description: z.string(),
+              default: z.string().optional(),
+              required: z.boolean().optional(),
+            }),
+          ),
+          native: z.string().optional(),
+          ref: z.string().optional(),
+        })
+        .optional(),
+      html: z
+        .object({
+          attribute: z.string(),
+          description: z.string().optional(),
+          elements: z.array(z.string()).optional(),
+          options: z.array(z.record(z.string(), z.unknown())).optional(),
+          parts: z
+            .array(
+              z.object({
+                name: z.string(),
+                kind: z.string(),
+                description: z.string(),
+                elements: z.array(z.string()).optional(),
+                value: z.union([z.array(z.string()), z.string()]).optional(),
+              }),
+            )
+            .optional(),
+          runtime: z.string().optional(),
+          events: z
+            .array(
+              z.object({
+                name: z.string(),
+                detail: z.string(),
+                cancelable: z.union([z.boolean(), z.string()]),
+                description: z.string(),
+              }),
+            )
+            .optional(),
+          methods: z
+            .array(
+              z.object({
+                name: z.string(),
+                kind: z.string(),
+                type: z.string(),
+                description: z.string(),
+              }),
+            )
+            .optional(),
+        })
+        .optional(),
+    }),
+  ),
+  types: z
+    .array(z.object({ name: z.string(), type: z.string(), framework: z.string().optional() }))
+    .optional(),
+  css: z
+    .array(
+      z.object({
+        name: z.string(),
+        value: z.string().optional(),
+        light: z.string().optional(),
+        dark: z.string().optional(),
+        description: z.string().optional(),
+      }),
+    )
+    .optional(),
+});
+type ApiOutput = z.infer<typeof apiShape>;
 const componentSummaryShape = z.object({
   name: z.string(),
   title: z.string(),
@@ -218,14 +301,21 @@ export function createOwlkyServer(options: OwlkyServerOptions = {}): McpServer {
     "get_component",
     {
       title: "Get a component",
-      description:
-        "Returns one component's API: options (React prop, HTML data-ok-* attribute, values, default), anatomy, states, behavior, keyboard, accessibility, events, parity notes, required parts, related components and its example stories. Accepts a name, title or React export (`icon-button`, `Icon button`, `IconButton`).",
+      description: `Returns one component's API: options (React prop, HTML data-ok-* attribute, values, default), anatomy, states, behavior, keyboard, accessibility, events, parity notes, required parts, related components, its example stories and the API reference (every React prop, HTML attribute, part, event with its detail, instance method, type and CSS variable, per React component and HTML part). Accepts a name, title or React export (\`icon-button\`, \`Icon button\`, \`IconButton\`). Pass \`part\` (a React component such as "CardHeader", or an attribute such as "data-ok-card-header") for one entry of the API reference; without it, references longer than ${MAX_API} characters list their entries instead.`,
       inputSchema: {
         name: z
           .string()
           .min(1)
           .max(MAX_QUERY)
           .describe('Component, such as "button" or "DatePicker"'),
+        part: z
+          .string()
+          .min(1)
+          .max(MAX_QUERY)
+          .optional()
+          .describe(
+            'One entry of the API reference, such as "CardHeader" or "data-ok-card-header"',
+          ),
       },
       outputSchema: {
         name: z.string(),
@@ -249,12 +339,27 @@ export function createOwlkyServer(options: OwlkyServerOptions = {}): McpServer {
         related: z.array(z.string()),
         guide: z.string().optional(),
         stories: z.array(z.object({ id: z.string(), name: z.string() })),
+        api: apiShape.optional(),
+        apiEntries: z.array(z.string()).optional(),
       },
       annotations: READ_ONLY,
     },
-    ({ name }) => {
+    ({ name, part }) => {
       const component = findComponent(name);
       if (!component) return unknownComponent(name);
+      const api = component.api;
+      const entries = api?.entries ?? [];
+      const wanted = part
+        ? entries.filter(
+            (entry) => squash(entry.name) === squash(part) || entry.html?.attribute === part,
+          )
+        : entries;
+      if (part && wanted.length === 0)
+        return failure(
+          `${component.title} has no API entry "${part}". Entries: ${entries.map((entry) => entry.name).join(", ")}.`,
+        );
+      const apiText = api ? apiMarkdown(api, wanted) : "";
+      const listOnly = !part && apiText.length > MAX_API;
       const named: Record<string, string> = {};
       const used = new Set<ManifestSection>();
       for (const [key, prefix] of Object.entries(NAMED_SECTIONS)) {
@@ -292,6 +397,14 @@ export function createOwlkyServer(options: OwlkyServerOptions = {}): McpServer {
         related: [...component.related],
         ...(component.guide ? { guide: component.guide } : {}),
         stories: component.stories.map((story) => ({ id: story.id, name: story.name })),
+        ...(api && !listOnly
+          ? {
+              api: structuredClone(
+                part ? { ...api, entries: wanted } : api,
+              ) as unknown as ApiOutput,
+            }
+          : {}),
+        ...(api ? { apiEntries: entries.map((entry) => entry.name) } : {}),
       };
       const ordered = [
         ...Object.values(NAMED_SECTIONS)
@@ -299,8 +412,16 @@ export function createOwlkyServer(options: OwlkyServerOptions = {}): McpServer {
           .filter((section): section is ManifestSection => section !== undefined),
         ...other,
       ];
+      const apiBlock = !api
+        ? ""
+        : listOnly
+          ? `## API reference\n\nThis reference is long: call get_component again with \`part\` set to one of ${entries.map((entry) => `\`${entry.name}\``).join(", ")}.`
+          : apiText;
+      const body = part
+        ? `# ${component.title}: ${part}\n\n${apiBlock}`
+        : [componentMarkdown(component, ordered), apiBlock].filter(Boolean).join("\n\n");
       return {
-        content: [text(componentMarkdown(component, ordered))],
+        content: [text(body)],
         structuredContent: structured,
       };
     },

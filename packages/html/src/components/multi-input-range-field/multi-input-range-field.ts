@@ -7,7 +7,7 @@ import {
   validateRange,
 } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
-import type { ComponentInstance } from "../../runtime/types.js";
+import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
 import {
   type PickerDateApi,
   pickerDateApi,
@@ -20,6 +20,18 @@ import {
 } from "../date-calendar/picker-dom.js";
 import type { DateFieldInstance } from "../date-field/date-field.js";
 import { toRange } from "../date-range-calendar/date-range-calendar.js";
+
+/** Events of this component (`ok:<name>:<event>` on the root). */
+export interface MultiInputRangeFieldEvents {
+  /** Before one of the two fields changes the range (`start/end`). Call `preventDefault()` to refuse it. */
+  change: EventSpec<
+    {
+      value: string | null;
+      validationError: [RangeValidationError | null, RangeValidationError | null];
+    },
+    true
+  >;
+}
 
 export interface MultiInputRangeFieldInstance extends ComponentInstance, PickerDateApi {
   /** The range as an ISO 8601 interval (`start/end`), or `null` when both fields are empty. */
@@ -43,7 +55,10 @@ export interface MultiInputRangeFieldInstance extends ComponentInstance, PickerD
  * Events:  ok:multi-input-range-field:change (cancelable, `{ value, validationError }`); canceling
  *          it cancels the field's change.
  */
-export const multiInputRangeField = defineComponent<MultiInputRangeFieldInstance>({
+export const multiInputRangeField = defineComponent<
+  MultiInputRangeFieldInstance,
+  MultiInputRangeFieldEvents
+>({
   name: "multi-input-range-field",
   selector: "[data-ok-multi-input-range-field]",
 

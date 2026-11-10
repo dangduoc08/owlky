@@ -7,16 +7,29 @@ import {
   readNumber,
 } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
-import type { ComponentInstance } from "../../runtime/types.js";
+import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
 import type { PopoverInstance } from "../popover/popover.js";
+
+/** Events of this component (`ok:<name>:<event>` on the root). */
+export interface AutocompleteEvents {
+  /** Before the value changes. Call `preventDefault()` to keep the current one. */
+  change: EventSpec<{ value: string | string[] | null }, true>;
+  /** After the listbox opened. */
+  open: EventSpec<{ reason: string }>;
+  /** After the listbox closed. */
+  close: EventSpec<{ reason: string }>;
+}
 
 export interface AutocompleteInstance extends ComponentInstance {
   /** Option value(s) or typed text: `string | null`, or `string[]` with `data-ok-multiple`. */
   readonly value: string | string[] | null;
   /** Sets the value without emitting events. */
   setValue(value: string | readonly string[] | null): void;
+  /** Whether the listbox is open. */
   readonly isOpen: boolean;
+  /** Opens the listbox. */
   open(): void;
+  /** Closes the listbox. */
   close(): void;
 }
 
@@ -43,7 +56,7 @@ const { multiple, freeSolo, disableCloseOnSelect, openOnFocus, autoHighlight, li
  *          chip removes its value.
  * Events:  ok:autocomplete:change (cancelable, `{ value }`), ok:autocomplete:open / close (`{ reason }`).
  */
-export const autocomplete = defineComponent<AutocompleteInstance>({
+export const autocomplete = defineComponent<AutocompleteInstance, AutocompleteEvents>({
   name: "autocomplete",
   selector: "[data-ok-autocomplete]",
 

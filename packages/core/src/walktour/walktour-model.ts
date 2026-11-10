@@ -108,7 +108,9 @@ export interface WalktourApi {
   stop(): void;
   /** Back to the first step, not running; `restart` starts it again. */
   reset(restart?: boolean): void;
+  /** Moves to the next step. */
   next(): void;
+  /** Moves to the previous step. */
   prev(): void;
   /** Moves to step `index`. */
   go(index: number): void;

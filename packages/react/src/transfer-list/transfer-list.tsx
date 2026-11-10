@@ -60,6 +60,7 @@ export interface TransferListProps extends Omit<HTMLAttributes<HTMLDivElement>, 
   items: readonly TransferListItem[];
   /** Controlled: values on the left / right. */
   left?: readonly string[] | undefined;
+  /** The items of the right list, controlled. */
   right?: readonly string[] | undefined;
   /** Uncontrolled: values on the left at first (the rest start on the right). Default: all. */
   defaultLeft?: readonly string[] | undefined;

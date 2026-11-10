@@ -64,10 +64,13 @@ export { defineComponent, readBooleanOption } from "./runtime/define.js";
 export { getRuntime } from "./runtime/global.js";
 export { createRuntime, RUNTIME_OFF_SELECTOR } from "./runtime/runtime.js";
 export type {
+  AnyEvents,
   ComponentDefinition,
   ComponentInstance,
   DelegatedHandler,
   EmitOptions,
+  EventMap,
+  EventSpec,
   Runtime,
   SetupContext,
   StartOptions,

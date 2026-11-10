@@ -1,6 +1,12 @@
 import { canTransfer, sideCheckedState, type TransferDirection, transferMove } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
-import type { ComponentInstance } from "../../runtime/types.js";
+import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
+
+/** Events of this component (`ok:<name>:<event>` on the root). */
+export interface TransferListEvents {
+  /** Before checked items move to the other list. Call `preventDefault()` to keep them. */
+  change: EventSpec<{ left: string[]; right: string[]; direction: TransferDirection }, true>;
+}
 
 export interface TransferListInstance extends ComponentInstance {
   /** Item values on each side, in order. */
@@ -30,7 +36,7 @@ const COUNT = "{checked}/{total} selected";
  *          select-all checkbox (mixed state) and count (`data-ok-label-count`) in step.
  * Events:  ok:transfer-list:change (cancelable, detail `{ left, right, direction }`).
  */
-export const transferList = defineComponent<TransferListInstance>({
+export const transferList = defineComponent<TransferListInstance, TransferListEvents>({
   name: "transfer-list",
   selector: "[data-ok-transfer-list]",
 

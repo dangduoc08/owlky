@@ -12,7 +12,15 @@ import {
   safeEditorUrl,
 } from "@owlky/core/editor";
 import { defineComponent } from "../../runtime/define.js";
-import type { ComponentInstance } from "../../runtime/types.js";
+import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
+
+/** Events of this component (`ok:<name>:<event>` on the root). */
+export interface EditorEvents {
+  /** After the content changed, with its HTML. */
+  change: EventSpec<{ value: string }>;
+  /** After the editor entered or left full screen. */
+  fullscreen: EventSpec<{ fullscreen: boolean }>;
+}
 
 export interface EditorInstance extends ComponentInstance {
   /** Current HTML, `""` when empty. */
@@ -22,9 +30,13 @@ export interface EditorInstance extends ComponentInstance {
    * enforce Trusted Types need a policy for it). Emits no event.
    */
   setValue(value: string): void;
+  /** Whether the editor is in full screen. */
   readonly fullscreen: boolean;
+  /** Enters or leaves full screen. */
   setFullscreen(fullscreen: boolean): void;
+  /** Turns editing on or off. */
   setEditable(editable: boolean): void;
+  /** Moves the focus into the editor. */
   focus(): void;
   /** The core controller (its `editor` is the Tiptap editor). */
   readonly controller: EditorController;
@@ -60,7 +72,7 @@ const isAction = (value: string | null): value is EditorAction =>
  * Events:  ok:editor:change (detail `{ value }`), ok:editor:fullscreen (detail `{ fullscreen }`).
  */
 export const createEditor = ({ highlighter }: CreateEditorOptions = {}) =>
-  defineComponent<EditorInstance>({
+  defineComponent<EditorInstance, EditorEvents>({
     name: "editor",
     selector: "[data-ok-editor]",
 

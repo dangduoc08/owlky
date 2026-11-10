@@ -83,6 +83,7 @@ export interface TabsProps
   selectionFollowsFocus?: boolean | undefined;
   /** Names the tab list (or use `aria-labelledby`). */
   "aria-label"?: string | undefined;
+  /** Names it with the id of a visible label. */
   "aria-labelledby"?: string | undefined;
   children?: ReactNode;
 }

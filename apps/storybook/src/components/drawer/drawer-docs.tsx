@@ -1,4 +1,6 @@
 import { drawerOptions } from "@owlky/core";
+import drawerApi from "@owlky/docs-content/api/drawer.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import {
   Drawer,
   DrawerClose,
@@ -87,7 +89,10 @@ export function Filters() {
     if (event.detail.reason === "backdrop" && formHasChanges) event.preventDefault();
   });
 </script>`,
-    react: `export function EditPanel() {
+    react: `import { Drawer } from "@owlky/react";
+import { useState } from "react";
+
+export function EditPanel() {
   const [open, setOpen] = useState(false);
   return (
     <Drawer
@@ -150,6 +155,7 @@ export function Filters() {
 - Triggers carry \`aria-haspopup="dialog"\`. Docked drawers' triggers carry \`aria-expanded\` and \`aria-controls\` instead.
 - If the content can scroll, put it in a **Scrollbar**: it becomes a named region that keyboard users can scroll, and it's the first thing focused when the drawer opens.`,
   },
+  apiReferenceSection(drawerApi),
 ];
 
 function ControlledPreview() {

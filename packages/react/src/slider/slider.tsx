@@ -65,6 +65,7 @@ export interface SliderProps
   getAriaLabel?: ((index: number) => string) | undefined;
   /** Names the thumb(s) (or use `aria-labelledby`). */
   "aria-label"?: string | undefined;
+  /** Names it with the id of a visible label. */
   "aria-labelledby"?: string | undefined;
   disabled?: boolean | undefined;
   /** Range: thumbs can't cross. */

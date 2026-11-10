@@ -1,0 +1,227 @@
+{
+ "css": [
+  {
+   "name": "--ok-action-disabled",
+   "value": "color-mix(in srgb, #919EAB 80%, transparent)"
+  },
+  {
+   "name": "--ok-action-hover",
+   "value": "color-mix(in srgb, #919EAB 8%, transparent)"
+  },
+  {
+   "description": "The main color of the element's `data-ok-color`, as RGB channels.",
+   "name": "--ok-c-channel"
+  },
+  {
+   "description": "The main color of the element's `data-ok-color`.",
+   "name": "--ok-c-main"
+  },
+  {
+   "name": "--ok-duration-shortest",
+   "value": "150ms"
+  },
+  {
+   "name": "--ok-easing-standard",
+   "value": "cubic-bezier(0.4, 0, 0.2, 1)"
+  },
+  {
+   "name": "--ok-palette-primary-main",
+   "value": "#00A76F"
+  },
+  {
+   "name": "--ok-palette-primary-main-channel",
+   "value": "0 167 111"
+  },
+  {
+   "name": "--ok-radius-full",
+   "value": "9999px"
+  },
+  {
+   "name": "--ok-spacing",
+   "value": "0.25rem"
+  },
+  {
+   "dark": "#FFFFFF",
+   "light": "#1C252E",
+   "name": "--ok-text-primary"
+  },
+  {
+   "dark": "#919EAB",
+   "light": "#637381",
+   "name": "--ok-text-secondary"
+  }
+ ],
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-radio",
+    "options": [
+     {
+      "attr": "data-ok-color",
+      "default": "primary",
+      "description": "Color when selected (`default` = text color).",
+      "kind": "style",
+      "name": "color",
+      "values": [
+       "default",
+       "primary",
+       "secondary",
+       "info",
+       "success",
+       "warning",
+       "error"
+      ]
+     },
+     {
+      "attr": "data-ok-size",
+      "default": "medium",
+      "description": "Target 40 / 36px, icon 24 / 20px.",
+      "kind": "style",
+      "name": "size",
+      "values": [
+       "medium",
+       "small"
+      ]
+     },
+     {
+      "attr": "disabled",
+      "children": ":scope > input",
+      "description": "Native `disabled` on the input.",
+      "kind": "native",
+      "name": "disabled"
+     },
+     {
+      "attr": "checked",
+      "description": "Native `checked` (in a group: the group's `value`).",
+      "event": "ok:radio:change",
+      "kind": "state",
+      "name": "checked"
+     }
+    ],
+    "parts": [
+     {
+      "description": "The icon of one state.",
+      "kind": "value",
+      "name": "data-ok-radio-icon",
+      "value": [
+       "checked",
+       "unchecked"
+      ]
+     },
+     {
+      "description": "The native radio. It covers the control, invisible.",
+      "elements": [
+       "input"
+      ],
+      "kind": "part",
+      "name": "data-ok-radio-input"
+     }
+    ]
+   },
+   "name": "Radio",
+   "react": {
+    "description": "A native `<input type=\"radio\">` with themed icons. In a `RadioGroup` it takes the group's name and selection. `ref` and the remaining props go to the input.",
+    "native": "HTMLInputElement",
+    "props": [
+     {
+      "description": "Replaces the selected icon.",
+      "name": "checkedIcon",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Class of the root span (other props go to the input).",
+      "name": "className",
+      "type": "string"
+     },
+     {
+      "default": "\"primary\"",
+      "description": "Color when selected; `default` is the text color.",
+      "name": "color",
+      "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
+     },
+     {
+      "description": "Replaces the unselected icon.",
+      "name": "icon",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Standalone: called with `true` when the radio gets selected.",
+      "name": "onChange",
+      "type": "((checked: boolean) => void)"
+     },
+     {
+      "default": "\"medium\"",
+      "description": "`medium` (40px target, 24px icon) or `small` (36 / 20px).",
+      "name": "size",
+      "type": "\"medium\" | \"small\""
+     },
+     {
+      "description": "Style of the root span.",
+      "name": "style",
+      "type": "CSSProperties"
+     },
+     {
+      "description": "Identifies the radio in a `RadioGroup` (and in the submitted form).",
+      "name": "value",
+      "type": "string"
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-radio-group",
+    "options": [
+     {
+      "attr": "data-ok-row",
+      "description": "Radios side by side instead of a column.",
+      "kind": "flag",
+      "name": "row"
+     },
+     {
+      "attr": "checked",
+      "description": "Selected radio (`value` / `defaultValue` + `onChange(value)`; HTML: the checked input).",
+      "event": "ok:radio-group:change",
+      "kind": "state",
+      "name": "value"
+     }
+    ]
+   },
+   "name": "RadioGroup",
+   "react": {
+    "description": "`role=\"radiogroup\"`: name it with `aria-label` or `aria-labelledby`. The browser keeps one radio checked and moves with the arrow keys.",
+    "native": "HTMLDivElement",
+    "props": [
+     {
+      "description": "Uncontrolled: the initially selected value.",
+      "name": "defaultValue",
+      "type": "string"
+     },
+     {
+      "description": "Name of the radios (default: a generated one).",
+      "name": "name",
+      "type": "string"
+     },
+     {
+      "description": "Called with the value of the radio that gets selected.",
+      "name": "onChange",
+      "type": "((value: string) => void)"
+     },
+     {
+      "description": "Radios side by side instead of a column.",
+      "name": "row",
+      "type": "boolean"
+     },
+     {
+      "description": "Controlled: the selected value (`null` = none).",
+      "name": "value",
+      "type": "string | null"
+     }
+    ]
+   }
+  }
+ ],
+ "format": 1,
+ "name": "radio",
+ "title": "Radio"
+}

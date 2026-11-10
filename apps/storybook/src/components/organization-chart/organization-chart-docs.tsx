@@ -1,4 +1,8 @@
 import { organizationChartOptions } from "@owlky/core";
+import organizationChartApi from "@owlky/docs-content/api/organization-chart.json" with {
+  type: "json",
+};
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { OrganizationChart, OrganizationChartNode, Scrollbar } from "@owlky/react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
@@ -118,6 +122,7 @@ export function CompanyChart() {
 - Text in labels needs a contrast ratio of at least 4.5:1, like any other text.
 - In right-to-left pages, the chart mirrors: the first child is on the right.`,
   },
+  apiReferenceSection(organizationChartApi),
 ];
 
 const PREVIEWS = {

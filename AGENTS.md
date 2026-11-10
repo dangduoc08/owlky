@@ -39,14 +39,18 @@ Read this first (humans and AI agents). Architecture: `docs/architecture.md`. De
    `scripts/spec-options.mjs`, then `pnpm build && pnpm specs:options` (`check:specs` in CI).
 2. `core/src/anatomy/anatomy.ts`: the option schema `<name>Options` (`defineOptions`, ADR-0015) and
    `<name>Attributes()` built from it (`optionAttributes`); behavior → `core/src/<name>/` + tests
-   (native **and** fallback paths), exported from `core/src/index.ts`.
+   (native **and** fallback paths), exported from `core/src/index.ts`. Every other `data-ok-*`
+   name (parts, states, values, triggers) goes in `core/src/anatomy/parts.ts` as a
+   `<Name>Parts` interface member with a comment (ADR-0049).
 3. `styles/src/components/<name>.css` + `@import` in `styles/src/index.css`. (First component
    only: restore the `"./components/*": "./dist/components/*"` export in `styles/package.json`.)
 4. `react/src/<name>/<name>.tsx` + `<name>.test.tsx` (behavior + axe), export from `react/src/index.ts`.
    Interactive roots render `data-ok-runtime="off"`; files with hooks start with `"use client"`.
 5. `html/src/components/<name>/examples/*.html` (canonical snippets; first component only: restore
    the `"./snippets/*": "./dist/snippets/*"` export in `html/package.json`). If it needs JS:
-   `<name>.ts` (`defineComponent`) + tests, one line in `html/src/components/index.ts`.
+   `<name>.ts` (`defineComponent<Instance, Events>`, both exported, every member and event
+   commented: the API reference reads them, ADR-0049) + tests, one line in
+   `html/src/components/index.ts`. React props carry JSDoc (description, "Default `x`.").
 6. Storybook: `apps/storybook/src/components/<name>/<name>.stories.tsx`, title
    `Components/<Name>` — **one story per reference section, every framework in it** (ADR-0018):
    `frameworkStory({ html: snippetStory(…, htmlSetup(css, runtime)), react: reactGroupsStory(…) })`.
@@ -56,8 +60,10 @@ Read this first (humans and AI agents). Architecture: `docs/architecture.md`. De
    (`helpers/guide.tsx`) and `OptionsTable` / `PropsTable` / `KeyboardTable`
    (`helpers/guide-tables.tsx`), attached with `tags: ["autodocs"]` +
    `parameters.docs.page`; sections Overview → usage → Options → Content and behavior → Events and
-   methods → Keyboard → Accessibility. Add it to `GUIDES` and `OPTION_TABLES` in
-   `e2e/tests/foundations.spec.ts`. Model: Button.
+   methods → Keyboard → Accessibility → API reference (`apiReferenceSection(<name>Api)` from
+   `@owlky/docs-content/guide/api-data`, the JSON imported from `@owlky/docs-content/api/<name>.json`
+   `with { type: "json" }`; ADR-0049). Add it to `GUIDES` and `OPTION_TABLES` in
+   `e2e/tests/foundations.spec.ts` (`API_PAGES` follows them). Model: Button.
    **Docs content (ADR-0040):** guides migrated to the website live in `apps/docs-content`
    (phase 1: Foundations › Colors, Components › Button; the others follow in phase 2). There a
    guide is `src/<group>/<name>/<name>-docs-examples.ts` (sections and table rows as data, no
@@ -71,9 +77,10 @@ Read this first (humans and AI agents). Architecture: `docs/architecture.md`. De
    `e2e/tests/options-parity.spec.ts`.
 7. E2E: add pairs to `e2e/tests/parity.spec.ts` (first component: restore it with
    `git show bd5fb2d:e2e/tests/parity.spec.ts`); interaction spec for both implementations.
-8. `pnpm build && pnpm manifest` (the MCP server's data, ADR-0046: the docs page keeps exporting
-   its `<name>Sections: GuideSection[]`, stories keep `frameworkStory`), `pnpm changeset`, then
-   `pnpm check` (`check:manifest` fails on a stale manifest).
+8. `pnpm build && pnpm api && pnpm manifest` (the API reference, ADR-0049, then the MCP server's
+   data, ADR-0046: the docs page keeps exporting its `<name>Sections: GuideSection[]`, stories keep
+   `frameworkStory`), `pnpm changeset`, then `pnpm check` (`check:api` and `check:manifest` fail
+   when stale; `check:api` also fails on an undocumented prop, name, event or method).
 
 ## Foundations in Storybook
 `apps/storybook/src/foundations/<name>/` — presentational components (`<name>.tsx`) and
@@ -835,3 +842,17 @@ the `check` job, `VITEST_BROWSERS=<engine> pnpm test:browser` in one `unit` job 
   stories' Controls don't offer it (HTML Controls write only `data-ok-*`). Snippets: `pnpm build &&
   node apps/storybook/scripts/form-control-snippets.mjs` (labels and helper texts stay on one line:
   a break before the asterisk would render a space).
+- API reference (ADR-0049): `scripts/api-reference.mjs` reads React props with TypeScript 7's
+  `typescript/unstable/sync` API (props declared in `packages/*`; the rest is "native"), parts from
+  `core/src/anatomy/parts.ts` (type only, never in a bundle), events from each runtime's
+  `EventSpec` map and methods from its instance interface, then writes
+  `apps/docs-content/src/api/<spec>.json` (Biome skips them). `--list-missing` prints the
+  declarations that still lack JSDoc. Runtime files are matched by `defineComponent<I, E>({ name:`
+  with a literal name: keep that form. `emit` only takes the map's names and detail types, so a
+  helper that forwards a name (the data grid's `change`) types it as a union of the map's keys.
+  forwardRef drops the named props of a props type with an index signature (CardMedia): the
+  generator falls back to the exported `<Name>Props`. Maintainer prose in JSDoc ("— spec:", ADR
+  numbers, snippets, parity, `--_ok-*`) is cut from the reference: write user-facing sentences.
+  Docs pages import their reference JSON `with { type: "json" }` (the website loads
+  docs-content modules in Node). Rows carry `data-docs-api-row="<kind>:<entry>:<name>"`, not
+  `data-docs-option` (the Options table test counts those).

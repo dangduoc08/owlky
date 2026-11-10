@@ -1,0 +1,285 @@
+{
+ "css": [
+  {
+   "description": "The main color of the element's `data-ok-color`, as RGB channels.",
+   "name": "--ok-c-channel"
+  },
+  {
+   "description": "The text color on the main color.",
+   "name": "--ok-c-contrast"
+  },
+  {
+   "description": "The main color of the element's `data-ok-color`.",
+   "name": "--ok-c-main"
+  },
+  {
+   "name": "--ok-font-family",
+   "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+  },
+  {
+   "name": "--ok-font-weight-medium",
+   "value": "500"
+  },
+  {
+   "name": "--ok-palette-common-white",
+   "value": "#FFFFFF"
+  },
+  {
+   "name": "--ok-palette-error-dark",
+   "value": "#B71D18"
+  },
+  {
+   "name": "--ok-palette-error-darker",
+   "value": "#7A0916"
+  },
+  {
+   "name": "--ok-palette-error-lighter",
+   "value": "#FFE9D5"
+  },
+  {
+   "name": "--ok-palette-info-dark",
+   "value": "#006C9C"
+  },
+  {
+   "name": "--ok-palette-info-darker",
+   "value": "#003768"
+  },
+  {
+   "name": "--ok-palette-info-lighter",
+   "value": "#CAFDF5"
+  },
+  {
+   "name": "--ok-palette-success-dark",
+   "value": "#118D57"
+  },
+  {
+   "name": "--ok-palette-success-darker",
+   "value": "#065E49"
+  },
+  {
+   "name": "--ok-palette-success-lighter",
+   "value": "#D3FCD2"
+  },
+  {
+   "name": "--ok-palette-success-main",
+   "value": "#22C55E"
+  },
+  {
+   "name": "--ok-palette-success-main-channel",
+   "value": "34 197 94"
+  },
+  {
+   "name": "--ok-palette-warning-dark",
+   "value": "#B76E00"
+  },
+  {
+   "name": "--ok-palette-warning-darker",
+   "value": "#7A4100"
+  },
+  {
+   "name": "--ok-palette-warning-lighter",
+   "value": "#FFF5CC"
+  },
+  {
+   "name": "--ok-radius-md",
+   "value": "8px"
+  },
+  {
+   "name": "--ok-spacing",
+   "value": "0.25rem"
+  },
+  {
+   "name": "--ok-typography-body2-font-size",
+   "value": "0.875rem"
+  },
+  {
+   "name": "--ok-typography-body2-line-height",
+   "value": "1.5714"
+  },
+  {
+   "name": "--ok-typography-subtitle1-font-size",
+   "value": "1rem"
+  },
+  {
+   "name": "--ok-typography-subtitle1-font-weight",
+   "value": "600"
+  },
+  {
+   "name": "--ok-typography-subtitle1-line-height",
+   "value": "1.5"
+  }
+ ],
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-alert",
+    "events": [
+     {
+      "cancelable": true,
+      "description": "Before the alert closes. Call `preventDefault()` to keep it.",
+      "detail": "undefined",
+      "name": "ok:alert:close"
+     }
+    ],
+    "methods": [
+     {
+      "description": "Hides the alert. Returns `false` if `ok:alert:close` was prevented.",
+      "kind": "method",
+      "name": "close",
+      "type": "() => boolean"
+     }
+    ],
+    "options": [
+     {
+      "attr": "data-ok-severity",
+      "default": "success",
+      "description": "Meaning and default icon.",
+      "kind": "style",
+      "name": "severity",
+      "values": [
+       "success",
+       "info",
+       "warning",
+       "error"
+      ]
+     },
+     {
+      "attr": "data-ok-variant",
+      "default": "standard",
+      "description": "Tinted, filled or outlined.",
+      "kind": "style",
+      "name": "variant",
+      "values": [
+       "standard",
+       "filled",
+       "outlined"
+      ]
+     },
+     {
+      "attr": "data-ok-color",
+      "default": "success",
+      "description": "Colors (default: the severity's).",
+      "kind": "style",
+      "name": "color",
+      "values": [
+       "success",
+       "info",
+       "warning",
+       "error"
+      ]
+     },
+     {
+      "attr": "hidden",
+      "description": "Removed from view when its close button is pressed (HTML).",
+      "event": "ok:alert:close",
+      "kind": "state",
+      "name": "open"
+     }
+    ],
+    "parts": [
+     {
+      "description": "Actions at the end, such as a close button.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-alert-action"
+     },
+     {
+      "description": "A button inside the alert that closes it.",
+      "kind": "trigger",
+      "name": "data-ok-alert-close",
+      "value": [
+       ""
+      ]
+     },
+     {
+      "description": "The severity icon at the start. Leave it out for no icon.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-alert-icon"
+     },
+     {
+      "description": "The message, after the title.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-alert-message"
+     }
+    ],
+    "runtime": "alert"
+   },
+   "name": "Alert",
+   "react": {
+    "description": "`role=\"alert\"` by default (use `role=\"status\"` for non-urgent messages).",
+    "native": "HTMLDivElement",
+    "props": [
+     {
+      "description": "Actions at the end (buttons). Replaces the close button.",
+      "name": "action",
+      "type": "ReactNode"
+     },
+     {
+      "default": "\"Close\"",
+      "description": "Name of the close button.",
+      "name": "closeText",
+      "type": "string"
+     },
+     {
+      "description": "Colors; default: the severity's.",
+      "name": "color",
+      "type": "\"error\" | \"info\" | \"success\" | \"warning\""
+     },
+     {
+      "description": "Replaces the severity icon; `false` hides it.",
+      "name": "icon",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Icons per severity, replacing the defaults.",
+      "name": "iconMapping",
+      "type": "Partial<Record<\"error\" | \"info\" | \"success\" | \"warning\", ReactNode>>"
+     },
+     {
+      "description": "Renders a close button that calls it; stop rendering the alert to dismiss it.",
+      "name": "onClose",
+      "type": "(() => void)"
+     },
+     {
+      "default": "\"success\"",
+      "description": "Meaning and default icon.",
+      "name": "severity",
+      "type": "\"error\" | \"info\" | \"success\" | \"warning\""
+     },
+     {
+      "default": "\"standard\"",
+      "description": "Tinted, filled or outlined.",
+      "name": "variant",
+      "type": "\"filled\" | \"outlined\" | \"standard\""
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-alert-title",
+    "description": "The bold title above the message.",
+    "elements": [
+     "div"
+    ]
+   },
+   "name": "AlertTitle",
+   "react": {
+    "description": "The alert's title, above the message.",
+    "native": "HTMLDivElement",
+    "props": []
+   }
+  }
+ ],
+ "format": 1,
+ "name": "alert",
+ "title": "Alert"
+}

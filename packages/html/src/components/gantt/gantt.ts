@@ -33,7 +33,17 @@ import {
   renderGantt,
 } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
-import type { ComponentInstance } from "../../runtime/types.js";
+import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
+
+/** Events of this component (`ok:<name>:<event>` on the root). */
+export interface GanttEvents {
+  /** Before a summary task expands or collapses. Call `preventDefault()` to refuse. */
+  toggle: EventSpec<{ id: string; expanded: boolean; collapsed: string[] }, true>;
+  /** Before the selection changes. Call `preventDefault()` to keep the current one. */
+  selectionchange: EventSpec<{ selected: string[]; mode: string }, true>;
+  /** Before the zoom level changes. Call `preventDefault()` to keep it. */
+  zoom: EventSpec<{ pixelsPerDay: number }, true>;
+}
 
 export interface GanttInstance extends ComponentInstance {
   /** The tasks read from the data table. */
@@ -50,6 +60,7 @@ export interface GanttInstance extends ComponentInstance {
   readonly pixelsPerDay: number;
   /** One zoom step in or out (no event). */
   zoomIn(): void;
+  /** Zooms out one level. */
   zoomOut(): void;
   /** Scrolls a task's row and bar into view; `false` for an unknown or hidden task. */
   scrollToTask(id: string): boolean;
@@ -147,7 +158,7 @@ function patch(parent: Element, nodes: readonly GanttNode[], svg: boolean) {
  * `ok:gantt:selectionchange`, `ok:gantt:zoom`); the runtime then writes the state into the table
  * rows (`data-ok-collapsed`, `data-ok-selected`) or the root (`data-ok-pixels-per-day`).
  */
-export const gantt = defineComponent<GanttInstance>({
+export const gantt = defineComponent<GanttInstance, GanttEvents>({
   name: "gantt",
   selector: "[data-ok-gantt]",
 

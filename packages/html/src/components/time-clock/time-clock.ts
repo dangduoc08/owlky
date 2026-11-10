@@ -18,7 +18,7 @@ import {
 } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
 import { syncCustomProperties } from "../../runtime/style.js";
-import type { ComponentInstance } from "../../runtime/types.js";
+import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
 import {
   asFunction,
   h,
@@ -34,16 +34,26 @@ import {
   toPickerDate,
 } from "../date-calendar/picker-dom.js";
 
+/** Events of this component (`ok:<name>:<event>` on the root). */
+export interface TimeClockEvents {
+  /** Before the dial sets the time (`HH:mm:ss`). Call `preventDefault()` to refuse it. */
+  change: EventSpec<{ value: string; selectionState: "shallow" | "partial" | "finish" }, true>;
+  /** After the clock switched between hours, minutes and seconds. */
+  viewchange: EventSpec<{ view: TimeView }>;
+}
+
 export interface TimeClockInstance extends ComponentInstance, PickerDateApi {
   /** ISO time (`HH:mm:ss`), or `null`. */
   readonly value: string | null;
   /** Sets the value (ISO time or date time, `Date` or `null`) without events. A `Date` keeps its day. */
   setValue(value: string | Date | null): void;
+  /** The view shown (`hours`, `minutes` or `seconds`). */
   readonly view: TimeView;
   /** Shows another view (one of `data-ok-views`) without events. */
   setView(view: TimeView): void;
   /** Times that can't be picked (functions have no attribute). */
   setShouldDisableTime(fn: ((value: Date, view: TimeView) => boolean) | null): void;
+  /** Replaces the text of the labels and buttons, such as for another language. */
   setLocaleText(text: Partial<PickerLocaleText>): void;
 }
 
@@ -67,7 +77,7 @@ let uid = 0;
  * Events:  ok:time-clock:change (cancelable, `{ value, selectionState }`), ok:time-clock:viewchange
  *          (`{ view }`).
  */
-export const timeClock = defineComponent<TimeClockInstance>({
+export const timeClock = defineComponent<TimeClockInstance, TimeClockEvents>({
   name: "time-clock",
   selector: "[data-ok-time-clock]",
 

@@ -1,0 +1,268 @@
+{
+ "css": [
+  {
+   "dark": "#28323D",
+   "light": "#F4F6F8",
+   "name": "--ok-bg-neutral"
+  },
+  {
+   "dark": "#1C252E",
+   "light": "#FFFFFF",
+   "name": "--ok-bg-paper"
+  },
+  {
+   "name": "--ok-illustration-skin-deep",
+   "value": "#8D5B3D"
+  },
+  {
+   "name": "--ok-illustration-skin-light",
+   "value": "#FFD8BF"
+  },
+  {
+   "name": "--ok-illustration-skin-medium",
+   "value": "#E0A47C"
+  },
+  {
+   "name": "--ok-palette-common-black-channel",
+   "value": "0 0 0"
+  },
+  {
+   "name": "--ok-palette-common-white",
+   "value": "#FFFFFF"
+  },
+  {
+   "name": "--ok-palette-error-dark",
+   "value": "#B71D18"
+  },
+  {
+   "name": "--ok-palette-error-darker",
+   "value": "#7A0916"
+  },
+  {
+   "name": "--ok-palette-error-light",
+   "value": "#FFAC82"
+  },
+  {
+   "name": "--ok-palette-error-lighter",
+   "value": "#FFE9D5"
+  },
+  {
+   "name": "--ok-palette-error-main",
+   "value": "#FF5630"
+  },
+  {
+   "name": "--ok-palette-grey-300",
+   "value": "#DFE3E8"
+  },
+  {
+   "name": "--ok-palette-grey-500",
+   "value": "#919EAB"
+  },
+  {
+   "name": "--ok-palette-grey-500-channel",
+   "value": "145 158 171"
+  },
+  {
+   "name": "--ok-palette-grey-600",
+   "value": "#637381"
+  },
+  {
+   "name": "--ok-palette-grey-800",
+   "value": "#1C252E"
+  },
+  {
+   "name": "--ok-palette-info-dark",
+   "value": "#006C9C"
+  },
+  {
+   "name": "--ok-palette-info-darker",
+   "value": "#003768"
+  },
+  {
+   "name": "--ok-palette-info-light",
+   "value": "#61F3F3"
+  },
+  {
+   "name": "--ok-palette-info-lighter",
+   "value": "#CAFDF5"
+  },
+  {
+   "name": "--ok-palette-info-main",
+   "value": "#00B8D9"
+  },
+  {
+   "name": "--ok-palette-primary-dark",
+   "value": "#007867"
+  },
+  {
+   "name": "--ok-palette-primary-darker",
+   "value": "#004B50"
+  },
+  {
+   "name": "--ok-palette-primary-light",
+   "value": "#5BE49B"
+  },
+  {
+   "name": "--ok-palette-primary-lighter",
+   "value": "#C8FAD6"
+  },
+  {
+   "name": "--ok-palette-primary-main",
+   "value": "#00A76F"
+  },
+  {
+   "name": "--ok-palette-secondary-dark",
+   "value": "#5119B7"
+  },
+  {
+   "name": "--ok-palette-secondary-darker",
+   "value": "#27097A"
+  },
+  {
+   "name": "--ok-palette-secondary-light",
+   "value": "#C684FF"
+  },
+  {
+   "name": "--ok-palette-secondary-lighter",
+   "value": "#EFD6FF"
+  },
+  {
+   "name": "--ok-palette-secondary-main",
+   "value": "#8E33FF"
+  },
+  {
+   "name": "--ok-palette-success-dark",
+   "value": "#118D57"
+  },
+  {
+   "name": "--ok-palette-success-darker",
+   "value": "#065E49"
+  },
+  {
+   "name": "--ok-palette-success-light",
+   "value": "#77ED8B"
+  },
+  {
+   "name": "--ok-palette-success-lighter",
+   "value": "#D3FCD2"
+  },
+  {
+   "name": "--ok-palette-success-main",
+   "value": "#22C55E"
+  },
+  {
+   "name": "--ok-palette-warning-dark",
+   "value": "#B76E00"
+  },
+  {
+   "name": "--ok-palette-warning-darker",
+   "value": "#7A4100"
+  },
+  {
+   "name": "--ok-palette-warning-light",
+   "value": "#FFD666"
+  },
+  {
+   "name": "--ok-palette-warning-lighter",
+   "value": "#FFF5CC"
+  },
+  {
+   "name": "--ok-palette-warning-main",
+   "value": "#FFAB00"
+  },
+  {
+   "name": "--ok-spacing",
+   "value": "0.25rem"
+  }
+ ],
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-illustration",
+    "methods": [
+     {
+      "description": "The illustration drawn, or `undefined` when the name is unknown to this set.",
+      "kind": "property",
+      "name": "illustration",
+      "type": "Illustration"
+     }
+    ],
+    "options": [
+     {
+      "attr": "data-ok-color",
+      "default": "primary",
+      "description": "Palette of the brand tones (the accent and neutral tones stay).",
+      "kind": "style",
+      "name": "color",
+      "values": [
+       "primary",
+       "secondary",
+       "info",
+       "success",
+       "warning",
+       "error"
+      ]
+     },
+     {
+      "attr": "data-ok-size",
+      "description": "Width: a number in px, or a CSS length. The height follows the 4:3 picture. Default 480px, never wider than the container.",
+      "kind": "number",
+      "min": 0,
+      "name": "size",
+      "units": [
+       "px",
+       "rem",
+       "em"
+      ]
+     }
+    ],
+    "parts": [
+     {
+      "description": "Marks a shape drawn as an outline.",
+      "kind": "state",
+      "name": "data-ok-stroke"
+     },
+     {
+      "description": "The color tone of a shape, such as `primary` or `neutral`.",
+      "kind": "value",
+      "name": "data-ok-tone",
+      "value": "string"
+     }
+    ],
+    "runtime": "illustration"
+   },
+   "name": "Illustration",
+   "react": {
+    "description": "Renders an illustration's node tree as inline SVG; tones follow the theme through the stylesheet. Decorative unless named (`title`, `aria-label` or `aria-labelledby`).",
+    "native": "SVGSVGElement",
+    "props": [
+     {
+      "default": "\"primary\"",
+      "description": "Palette of the brand tones.",
+      "name": "color",
+      "type": "\"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
+     },
+     {
+      "description": "The picture: an export of `@owlky/core/illustrations` (such as `error404`) or your own data.",
+      "name": "illustration",
+      "required": true,
+      "type": "Illustration"
+     },
+     {
+      "description": "Width: a number in px, or a CSS length such as `\"20rem\"`. Default 480px, never wider than the container.",
+      "name": "size",
+      "type": "string | number"
+     },
+     {
+      "description": "The accessible name. With it (or `aria-label` / `aria-labelledby`) the picture is an image (`role=\"img\"`); without, it is decorative (`aria-hidden`).",
+      "name": "title",
+      "type": "string"
+     }
+    ]
+   }
+  }
+ ],
+ "format": 1,
+ "name": "illustration",
+ "title": "Illustration"
+}

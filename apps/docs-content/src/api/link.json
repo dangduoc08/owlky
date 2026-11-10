@@ -1,0 +1,156 @@
+{
+ "css": [
+  {
+   "description": "The main color of the element's `data-ok-color`, as RGB channels.",
+   "name": "--ok-c-channel"
+  },
+  {
+   "name": "--ok-radius-xs",
+   "value": "4px"
+  },
+  {
+   "dark": "#FFFFFF",
+   "light": "#1C252E",
+   "name": "--ok-text-primary"
+  }
+ ],
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-link",
+    "options": [
+     {
+      "attr": "data-ok-variant",
+      "default": "inherit",
+      "description": "A step of the type scale; `inherit` (the default) keeps the font of the text around the link.",
+      "kind": "style",
+      "name": "variant",
+      "values": [
+       "h1",
+       "h2",
+       "h3",
+       "h4",
+       "h5",
+       "h6",
+       "subtitle1",
+       "subtitle2",
+       "body1",
+       "body2",
+       "caption",
+       "overline",
+       "button",
+       "inherit"
+      ]
+     },
+     {
+      "attr": "data-ok-color",
+      "default": "primary",
+      "description": "Text color: a palette's `main` tone, a text tone, or `inherit` (the parent's color).",
+      "kind": "style",
+      "name": "color",
+      "values": [
+       "primary",
+       "secondary",
+       "info",
+       "success",
+       "warning",
+       "error",
+       "textPrimary",
+       "textSecondary",
+       "textDisabled",
+       "inherit"
+      ]
+     },
+     {
+      "attr": "data-ok-align",
+      "default": "inherit",
+      "description": "Text alignment. Without it, the text keeps the parent's alignment.",
+      "kind": "style",
+      "name": "align",
+      "optional": true,
+      "values": [
+       "inherit",
+       "left",
+       "center",
+       "right",
+       "justify"
+      ]
+     },
+     {
+      "attr": "data-ok-gutter-bottom",
+      "description": "A bottom margin of 0.35em.",
+      "kind": "flag",
+      "name": "gutterBottom"
+     },
+     {
+      "attr": "data-ok-no-wrap",
+      "description": "One line: overflowing text ends with an ellipsis (needs a block or inline-block with a width).",
+      "kind": "flag",
+      "name": "noWrap"
+     },
+     {
+      "attr": "data-ok-underline",
+      "default": "always",
+      "description": "When the link is underlined: `always`, on `hover` (pointer devices), or `none`.",
+      "kind": "style",
+      "name": "underline",
+      "values": [
+       "always",
+       "hover",
+       "none"
+      ]
+     }
+    ]
+   },
+   "name": "Link",
+   "react": {
+    "description": "A Typography (`data-ok-typography` + `data-ok-link`) rendered as `a`, or as `<button type=\"button\">` when there is neither `href` nor `component` (an action, not a destination). `href` passes through untouched; `target=\"_blank\"` always gets `rel=\"noopener noreferrer\"`.",
+    "native": "HTMLElement",
+    "props": [
+     {
+      "description": "Text alignment. Default: the parent's alignment (`\"inherit\"`).",
+      "name": "align",
+      "type": "\"center\" | \"inherit\" | \"justify\" | \"left\" | \"right\""
+     },
+     {
+      "default": "\"primary\"",
+      "description": "A palette's `main` tone, a text tone, or `inherit`.",
+      "name": "color",
+      "type": "\"error\" | \"info\" | \"inherit\" | \"primary\" | \"secondary\" | \"success\" | \"textDisabled\" | \"textPrimary\" | \"textSecondary\" | \"warning\""
+     },
+     {
+      "description": "The element or component to render, such as a router link.",
+      "name": "component",
+      "required": true,
+      "type": "C"
+     },
+     {
+      "description": "35em.",
+      "name": "gutterBottom",
+      "type": "boolean"
+     },
+     {
+      "description": "One line; overflowing text ends with an ellipsis.",
+      "name": "noWrap",
+      "type": "boolean"
+     },
+     {
+      "default": "\"always\"",
+      "description": "When the link is underlined.",
+      "name": "underline",
+      "type": "\"always\" | \"hover\" | \"none\""
+     },
+     {
+      "default": "\"inherit\"",
+      "description": "A step of the type scale. (the font of the text around the link).",
+      "name": "variant",
+      "type": "\"body1\" | \"body2\" | \"button\" | \"caption\" | \"h1\" | \"h2\" | \"h3\" | \"h4\" | \"h5\" | \"h6\" | \"inherit\" | \"overline\" | \"subtitle1\" | \"subtitle2\""
+     }
+    ]
+   }
+  }
+ ],
+ "format": 1,
+ "name": "link",
+ "title": "Link"
+}

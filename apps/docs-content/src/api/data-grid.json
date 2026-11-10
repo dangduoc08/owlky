@@ -1,0 +1,2227 @@
+{
+ "css": [
+  {
+   "name": "--ok-action-hover",
+   "value": "color-mix(in srgb, #919EAB 8%, transparent)"
+  },
+  {
+   "dark": "#28323D",
+   "light": "#F4F6F8",
+   "name": "--ok-bg-neutral"
+  },
+  {
+   "dark": "#1C252E",
+   "light": "#FFFFFF",
+   "name": "--ok-bg-paper"
+  },
+  {
+   "name": "--ok-divider",
+   "value": "color-mix(in srgb, #919EAB 20%, transparent)"
+  },
+  {
+   "name": "--ok-duration-enter",
+   "value": "640ms"
+  },
+  {
+   "name": "--ok-duration-shortest",
+   "value": "150ms"
+  },
+  {
+   "name": "--ok-easing-standard",
+   "value": "cubic-bezier(0.4, 0, 0.2, 1)"
+  },
+  {
+   "name": "--ok-font-family",
+   "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+  },
+  {
+   "name": "--ok-font-weight-regular",
+   "value": "400"
+  },
+  {
+   "name": "--ok-font-weight-semibold",
+   "value": "600"
+  },
+  {
+   "name": "--ok-palette-error-contrast-text",
+   "value": "#FFFFFF"
+  },
+  {
+   "name": "--ok-palette-error-dark",
+   "value": "#B71D18"
+  },
+  {
+   "name": "--ok-palette-error-main",
+   "value": "#FF5630"
+  },
+  {
+   "name": "--ok-palette-primary-main",
+   "value": "#00A76F"
+  },
+  {
+   "name": "--ok-palette-primary-main-channel",
+   "value": "0 167 111"
+  },
+  {
+   "name": "--ok-radius-sm",
+   "value": "6px"
+  },
+  {
+   "name": "--ok-spacing",
+   "value": "0.25rem"
+  },
+  {
+   "dark": "#FFFFFF",
+   "light": "#1C252E",
+   "name": "--ok-text-primary"
+  },
+  {
+   "dark": "#919EAB",
+   "light": "#637381",
+   "name": "--ok-text-secondary"
+  },
+  {
+   "name": "--ok-typography-body2-font-size",
+   "value": "0.875rem"
+  },
+  {
+   "name": "--ok-typography-body2-font-weight",
+   "value": "400"
+  },
+  {
+   "name": "--ok-typography-body2-line-height",
+   "value": "1.5714"
+  },
+  {
+   "name": "--ok-typography-caption-font-size",
+   "value": "0.75rem"
+  },
+  {
+   "name": "--ok-typography-caption-font-weight",
+   "value": "400"
+  },
+  {
+   "name": "--ok-typography-caption-line-height",
+   "value": "1.5"
+  },
+  {
+   "name": "--ok-typography-subtitle2-font-weight",
+   "value": "600"
+  }
+ ],
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-data-grid",
+    "events": [
+     {
+      "cancelable": true,
+      "description": "Before the aggregation changes (field to function). Call `preventDefault()` to keep it.",
+      "detail": "{ model: Record<string, string>; }",
+      "name": "ok:data-grid:aggregation"
+     },
+     {
+      "cancelable": false,
+      "description": "After a click on a cell, with its raw value.",
+      "detail": "{ id: string; field: string; value: unknown; }",
+      "name": "ok:data-grid:cellclick"
+     },
+     {
+      "cancelable": false,
+      "description": "After a double click on a cell.",
+      "detail": "{ id: string; field: string; value: unknown; }",
+      "name": "ok:data-grid:celldoubleclick"
+     },
+     {
+      "cancelable": true,
+      "description": "Before the cell selection changes. Call `preventDefault()` to keep it.",
+      "detail": "{ model: GridCellSelectionModel; }",
+      "name": "ok:data-grid:cellselection"
+     },
+     {
+      "cancelable": true,
+      "description": "Before the chart panel's model changes. Call `preventDefault()` to keep it.",
+      "detail": "{ model: GridChartModel; }",
+      "name": "ok:data-grid:chart"
+     },
+     {
+      "cancelable": false,
+      "description": "After cells were copied, with the copied text.",
+      "detail": "{ data: string; }",
+      "name": "ok:data-grid:clipboardcopy"
+     },
+     {
+      "cancelable": true,
+      "description": "Before pasted cells are written. Call `preventDefault()` to refuse them.",
+      "detail": "{ data: string[][]; }",
+      "name": "ok:data-grid:clipboardpaste"
+     },
+     {
+      "cancelable": false,
+      "description": "After a click on a column header.",
+      "detail": "{ field: string; }",
+      "name": "ok:data-grid:columnheaderclick"
+     },
+     {
+      "cancelable": true,
+      "description": "Before the column visibility changes. Call `preventDefault()` to keep it.",
+      "detail": "{ model: Record<string, boolean>; }",
+      "name": "ok:data-grid:columns"
+     },
+     {
+      "cancelable": false,
+      "description": "After the data source failed to load rows.",
+      "detail": "{ error: unknown; }",
+      "name": "ok:data-grid:datasourceerror"
+     },
+     {
+      "cancelable": true,
+      "description": "Before the density changes. Call `preventDefault()` to keep it.",
+      "detail": "{ model: \"comfortable\" | \"compact\" | \"standard\"; }",
+      "name": "ok:data-grid:density"
+     },
+     {
+      "cancelable": true,
+      "description": "Before a row's detail panel opens or closes. Call `preventDefault()` to refuse.",
+      "detail": "{ id: string; expanded: boolean; }",
+      "name": "ok:data-grid:detailpanel"
+     },
+     {
+      "cancelable": true,
+      "description": "Before an edited row is saved (`row`: the edited fields). Call `preventDefault()` to discard the edit.",
+      "detail": "{ id: string; row: Record<string, unknown>; }",
+      "name": "ok:data-grid:edit"
+     },
+     {
+      "cancelable": false,
+      "description": "After editing started (`field` in cell mode).",
+      "detail": "{ id: string; field?: string; reason: string; }",
+      "name": "ok:data-grid:editstart"
+     },
+     {
+      "cancelable": false,
+      "description": "After editing stopped.",
+      "detail": "{ id: string; field?: string; reason: string; }",
+      "name": "ok:data-grid:editstop"
+     },
+     {
+      "cancelable": true,
+      "description": "Before a tree row expands or collapses. Call `preventDefault()` to refuse.",
+      "detail": "{ id: string; expanded: boolean; }",
+      "name": "ok:data-grid:expand"
+     },
+     {
+      "cancelable": true,
+      "description": "Before the filter model changes. Call `preventDefault()` to keep it.",
+      "detail": "{ model: GridFilterModel; }",
+      "name": "ok:data-grid:filter"
+     },
+     {
+      "cancelable": true,
+      "description": "Before the column order changes (fields). Call `preventDefault()` to keep it.",
+      "detail": "{ model: string[]; }",
+      "name": "ok:data-grid:order"
+     },
+     {
+      "cancelable": true,
+      "description": "Before the pinned columns change. Call `preventDefault()` to keep them.",
+      "detail": "{ model: GridPinnedColumns; }",
+      "name": "ok:data-grid:pinned"
+     },
+     {
+      "cancelable": true,
+      "description": "Before the pivot model or mode changes. Call `preventDefault()` to keep it.",
+      "detail": "{ model: GridPivotModel; active: boolean; }",
+      "name": "ok:data-grid:pivot"
+     },
+     {
+      "cancelable": false,
+      "description": "After a column was resized, in pixels.",
+      "detail": "{ field: string; width: number | undefined; }",
+      "name": "ok:data-grid:resize"
+     },
+     {
+      "cancelable": false,
+      "description": "After a click on a row.",
+      "detail": "{ id: string; }",
+      "name": "ok:data-grid:rowclick"
+     },
+     {
+      "cancelable": false,
+      "description": "After a double click on a row.",
+      "detail": "{ id: string; }",
+      "name": "ok:data-grid:rowdoubleclick"
+     },
+     {
+      "cancelable": true,
+      "description": "Before the row grouping changes (fields). Call `preventDefault()` to keep it.",
+      "detail": "{ model: string[]; }",
+      "name": "ok:data-grid:rowgrouping"
+     },
+     {
+      "cancelable": true,
+      "description": "Before a dragged row moves to `targetIndex`. Call `preventDefault()` to keep the order.",
+      "detail": "{ id: string; oldIndex: number; targetIndex: number; }",
+      "name": "ok:data-grid:roworder"
+     },
+     {
+      "cancelable": false,
+      "description": "After the rows were scrolled to the end (load more rows here).",
+      "detail": "{ visibleRowsCount: number; }",
+      "name": "ok:data-grid:scrollend"
+     },
+     {
+      "cancelable": true,
+      "description": "Before the row selection changes (row ids). Call `preventDefault()` to keep it.",
+      "detail": "{ model: string[]; }",
+      "name": "ok:data-grid:selection"
+     },
+     {
+      "cancelable": true,
+      "description": "Before the sort model changes. Call `preventDefault()` to keep it.",
+      "detail": "{ model: GridSortModel; }",
+      "name": "ok:data-grid:sort"
+     },
+     {
+      "cancelable": false,
+      "description": "error` to `true` or a message to mark the value invalid.",
+      "detail": "{ id: string; field: string; value: unknown; error?: string | boolean; }",
+      "name": "ok:data-grid:validate"
+     }
+    ],
+    "methods": [
+     {
+      "description": "The aggregation (field to function).",
+      "kind": "property",
+      "name": "aggregationModel",
+      "type": "GridAggregationModel"
+     },
+     {
+      "description": "Fits columns to their content (default: every resizable shown column).",
+      "kind": "method",
+      "name": "autosizeColumns",
+      "type": "(options?: { columns?: readonly string[]; includeHeaders?: boolean; } | undefined) => void"
+     },
+     {
+      "description": "The selected cells.",
+      "kind": "property",
+      "name": "cellSelectionModel",
+      "type": "GridCellSelectionModel"
+     },
+     {
+      "description": "The chart panel's model.",
+      "kind": "property",
+      "name": "chartModel",
+      "type": "GridChartModel"
+     },
+     {
+      "description": "The fields in their display order.",
+      "kind": "property",
+      "name": "columnOrder",
+      "type": "string[]"
+     },
+     {
+      "description": "Which columns are visible (field to `false` hides it).",
+      "kind": "property",
+      "name": "columnVisibilityModel",
+      "type": "GridColumnVisibilityModel"
+     },
+     {
+      "description": "The width of each resized column, in pixels.",
+      "kind": "property",
+      "name": "columnWidths",
+      "type": "GridColumnWidths"
+     },
+     {
+      "description": "fileName`, else `data-ok-export-file-name`, default \"data\").",
+      "kind": "method",
+      "name": "exportCsv",
+      "type": "(options?: GridCsvOptions | undefined) => void"
+     },
+     {
+      "description": "fileName`, else `data-ok-export-file-name`, default \"data\").",
+      "kind": "method",
+      "name": "exportExcel",
+      "type": "(options?: GridExcelOptions | undefined) => void"
+     },
+     {
+      "description": "Returns the grid's state (models, column widths), for `restoreState`.",
+      "kind": "method",
+      "name": "exportState",
+      "type": "() => GridState"
+     },
+     {
+      "description": "The filter model.",
+      "kind": "property",
+      "name": "filterModel",
+      "type": "GridFilterModel"
+     },
+     {
+      "description": "The columns pinned to the start and the end.",
+      "kind": "property",
+      "name": "pinnedColumns",
+      "type": "GridPinnedColumns"
+     },
+     {
+      "description": "Whether pivot mode is on.",
+      "kind": "property",
+      "name": "pivotActive",
+      "type": "boolean"
+     },
+     {
+      "description": "The pivot model.",
+      "kind": "property",
+      "name": "pivotModel",
+      "type": "GridPivotModel"
+     },
+     {
+      "description": "Prints every filtered row (toolbar and footer left out unless asked).",
+      "kind": "method",
+      "name": "print",
+      "type": "(options?: GridPrintOptions | undefined) => void"
+     },
+     {
+      "description": "Applies a saved state (unknown keys and values are dropped).",
+      "kind": "method",
+      "name": "restoreState",
+      "type": "(state: unknown) => void"
+     },
+     {
+      "description": "Phase 6 (MUI X Premium). These setters don't emit events.",
+      "kind": "property",
+      "name": "rowGroupingModel",
+      "type": "string[]"
+     },
+     {
+      "description": "Scrolls a row (index on the current page) and / or a column (shown index) into view.",
+      "kind": "method",
+      "name": "scrollToIndexes",
+      "type": "(indexes: { rowIndex?: number; colIndex?: number; }) => void"
+     },
+     {
+      "description": "Selected row ids.",
+      "kind": "property",
+      "name": "selection",
+      "type": "string[]"
+     },
+     {
+      "description": "Sets the aggregation.",
+      "kind": "method",
+      "name": "setAggregationModel",
+      "type": "(model: GridAggregationModel) => void"
+     },
+     {
+      "description": "Selects these cells.",
+      "kind": "method",
+      "name": "setCellSelectionModel",
+      "type": "(model: GridCellSelectionModel) => void"
+     },
+     {
+      "description": "Sets the chart panel's model.",
+      "kind": "method",
+      "name": "setChartModel",
+      "type": "(model: GridChartModel) => void"
+     },
+     {
+      "description": "These setters don't emit events.",
+      "kind": "method",
+      "name": "setColumnOrder",
+      "type": "(fields: readonly string[]) => void"
+     },
+     {
+      "description": "Shows or hides columns (no event).",
+      "kind": "method",
+      "name": "setColumnVisibilityModel",
+      "type": "(model: GridColumnVisibilityModel) => void"
+     },
+     {
+      "description": "Sets a column's width, in pixels.",
+      "kind": "method",
+      "name": "setColumnWidth",
+      "type": "(field: string, width: number) => void"
+     },
+     {
+      "description": "Loads the rows from a server for the current sort, filter and page (`null`: stop).",
+      "kind": "method",
+      "name": "setDataSource",
+      "type": "(source: GridDataSource<DataRow> | null) => void"
+     },
+     {
+      "description": "Filters the rows (no event).",
+      "kind": "method",
+      "name": "setFilterModel",
+      "type": "(model: GridFilterModel) => void"
+     },
+     {
+      "description": "Operators of a column's filter (they replace the type's operators).",
+      "kind": "method",
+      "name": "setFilterOperators",
+      "type": "(field: string, operators: readonly GridFilterOperator<HTMLElement>[]) => void"
+     },
+     {
+      "description": "Labels of the text the runtime writes (a locale pack, such as `viVN`).",
+      "kind": "method",
+      "name": "setLocaleText",
+      "type": "(labels: Partial<{ toolbarColumns: string; toolbarFilters: string; toolbarDensity: string; toolbarExport: string; toolbarExportCSV: string; toolbarQuickFilterPlaceholder: string; toolbarQuickFilterLabel: string; ... 87 more ...; filterOperator: Record<...>; }>) => void"
+     },
+     {
+      "description": "Pins columns to the start and the end.",
+      "kind": "method",
+      "name": "setPinnedColumns",
+      "type": "(model: GridPinnedColumns) => void"
+     },
+     {
+      "description": "Turns pivot mode on or off.",
+      "kind": "method",
+      "name": "setPivotActive",
+      "type": "(active: boolean) => void"
+     },
+     {
+      "description": "Sets the pivot model.",
+      "kind": "method",
+      "name": "setPivotModel",
+      "type": "(model: GridPivotModel) => void"
+     },
+     {
+      "description": "Tree data: opens or closes a row's children.",
+      "kind": "method",
+      "name": "setRowChildrenExpansion",
+      "type": "(id: string, expanded: boolean) => void"
+     },
+     {
+      "description": "Groups the rows by these fields.",
+      "kind": "method",
+      "name": "setRowGroupingModel",
+      "type": "(model: readonly string[]) => void"
+     },
+     {
+      "description": "Replaces the rows with data: each row is a copy of `<template data-ok-data-grid-row>`, its cells filled as text (or from `<template data-ok-data-grid-cell=\"<field>\">`, whose `[data-ok-data-grid-value]` elements get the value). Needs `id` on each row.",
+      "kind": "method",
+      "name": "setRows",
+      "type": "(rows: readonly DataRow[]) => void"
+     },
+     {
+      "description": "Selects these rows (no event).",
+      "kind": "method",
+      "name": "setSelection",
+      "type": "(ids: readonly string[]) => void"
+     },
+     {
+      "description": "Sorts the rows (no event).",
+      "kind": "method",
+      "name": "setSortModel",
+      "type": "(model: GridSortModel) => void"
+     },
+     {
+      "description": "The text of a column's values in `setRows` and after editing (`null`: back to the default).",
+      "kind": "method",
+      "name": "setValueFormatter",
+      "type": "(field: string, format: ((value: unknown) => string) | null) => void"
+     },
+     {
+      "description": "The sort model.",
+      "kind": "property",
+      "name": "sortModel",
+      "type": "GridSortModel"
+     },
+     {
+      "description": "The CSV of the filtered, sorted rows and shown columns (or the columns of `options`).",
+      "kind": "method",
+      "name": "toCsv",
+      "type": "(options?: GridCsvOptions | undefined) => string"
+     },
+     {
+      "description": "xlsx file of the filtered, sorted rows (bytes).",
+      "kind": "method",
+      "name": "toExcel",
+      "type": "(options?: GridExcelOptions | undefined) => Uint8Array<ArrayBufferLike>"
+     },
+     {
+      "description": "Master-detail: opens or closes a row's detail panel.",
+      "kind": "method",
+      "name": "toggleDetailPanel",
+      "type": "(id: string) => void"
+     }
+    ],
+    "options": [
+     {
+      "attr": "data-ok-density",
+      "default": "standard",
+      "description": "Row height: `compact` 36px, `standard` 52px, `comfortable` 67px.",
+      "kind": "style",
+      "name": "density",
+      "values": [
+       "compact",
+       "standard",
+       "comfortable"
+      ]
+     },
+     {
+      "attr": "data-ok-checkbox-selection",
+      "description": "A first column of checkboxes selects rows.",
+      "kind": "flag",
+      "name": "checkboxSelection"
+     },
+     {
+      "attr": "data-ok-disable-row-selection-on-click",
+      "description": "Clicking a row doesn't select it (only its checkbox does).",
+      "kind": "flag",
+      "name": "disableRowSelectionOnClick"
+     },
+     {
+      "attr": "data-ok-disable-column-menu",
+      "description": "No column menu in the headers.",
+      "kind": "flag",
+      "name": "disableColumnMenu"
+     },
+     {
+      "attr": "data-ok-disable-multiple-columns-sorting",
+      "description": "Shift doesn't add columns to the sort.",
+      "kind": "flag",
+      "name": "disableMultipleColumnsSorting"
+     },
+     {
+      "attr": "data-ok-disable-multiple-columns-filtering",
+      "description": "The filter panel keeps one filter (no Add filter).",
+      "kind": "flag",
+      "name": "disableMultipleColumnsFiltering"
+     },
+     {
+      "attr": "data-ok-disable-column-resize",
+      "description": "Columns can't be resized.",
+      "kind": "flag",
+      "name": "disableColumnResize"
+     },
+     {
+      "attr": "data-ok-disable-column-reorder",
+      "description": "Columns can't be moved.",
+      "kind": "flag",
+      "name": "disableColumnReorder"
+     },
+     {
+      "attr": "data-ok-disable-column-pinning",
+      "description": "Columns can't be pinned.",
+      "kind": "flag",
+      "name": "disableColumnPinning"
+     },
+     {
+      "attr": "data-ok-edit-mode",
+      "default": "cell",
+      "description": "Editable columns: edit one `cell` at a time, or every editable cell of a `row` together.",
+      "kind": "style",
+      "name": "editMode",
+      "values": [
+       "cell",
+       "row"
+      ]
+     },
+     {
+      "attr": "data-ok-disable-virtualization",
+      "description": "Render every row of the page, not only the visible ones.",
+      "kind": "flag",
+      "name": "disableVirtualization"
+     },
+     {
+      "attr": "data-ok-sorting-mode",
+      "default": "client",
+      "description": "`server`: the grid reports the sort model and shows the rows as given.",
+      "kind": "style",
+      "name": "sortingMode",
+      "values": [
+       "client",
+       "server"
+      ]
+     },
+     {
+      "attr": "data-ok-filter-mode",
+      "default": "client",
+      "description": "`server`: the grid reports the filter model and shows the rows as given.",
+      "kind": "style",
+      "name": "filterMode",
+      "values": [
+       "client",
+       "server"
+      ]
+     },
+     {
+      "attr": "data-ok-pagination-mode",
+      "default": "client",
+      "description": "`server`: the rows are the current page; `rowCount` is the total.",
+      "kind": "style",
+      "name": "paginationMode",
+      "values": [
+       "client",
+       "server"
+      ]
+     },
+     {
+      "attr": "data-ok-row-count",
+      "description": "Total rows on the server.",
+      "kind": "number",
+      "min": 0,
+      "name": "rowCount"
+     },
+     {
+      "attr": "data-ok-loading",
+      "description": "Data is loading: an overlay shows progress.",
+      "kind": "flag",
+      "name": "loading"
+     },
+     {
+      "attr": "data-ok-loading-variant",
+      "default": "linear-progress",
+      "description": "How loading shows: a bar, a spinner or placeholder rows.",
+      "kind": "style",
+      "name": "loadingVariant",
+      "values": [
+       "linear-progress",
+       "circular-progress",
+       "skeleton"
+      ]
+     },
+     {
+      "attr": "data-ok-scroll-end-threshold",
+      "default": 80,
+      "description": "Distance from the end of the rows (px) that reports the scroll end.",
+      "kind": "number",
+      "min": 0,
+      "name": "scrollEndThreshold"
+     },
+     {
+      "attr": "data-ok-disable-multiple-row-selection",
+      "description": "One row at a time: selecting a row clears the others (no select all).",
+      "kind": "flag",
+      "name": "disableMultipleRowSelection"
+     },
+     {
+      "attr": "data-ok-keep-non-existent-rows-selected",
+      "description": "Selected ids stay selected when their rows go away (server pages, new data).",
+      "kind": "flag",
+      "name": "keepNonExistentRowsSelected"
+     },
+     {
+      "attr": "data-ok-checkbox-selection-visible-only",
+      "description": "Select all selects the rows of the current page only.",
+      "kind": "flag",
+      "name": "checkboxSelectionVisibleOnly"
+     },
+     {
+      "attr": "data-ok-autosize-on-mount",
+      "description": "Columns fit their content once the grid shows (resizable, non-flex columns).",
+      "kind": "flag",
+      "name": "autosizeOnMount"
+     },
+     {
+      "attr": "data-ok-row-spanning",
+      "description": "Neighbouring cells of a column with the same value merge into one tall cell.",
+      "kind": "flag",
+      "name": "rowSpanning"
+     },
+     {
+      "attr": "data-ok-row-height",
+      "description": "Row height (px) before density.",
+      "kind": "number",
+      "min": 1,
+      "name": "rowHeight"
+     },
+     {
+      "attr": "data-ok-toolbar-variant",
+      "default": "labeled",
+      "description": "Toolbar buttons with text, or icons with tooltips.",
+      "kind": "style",
+      "name": "toolbarVariant",
+      "values": [
+       "labeled",
+       "icon"
+      ]
+     },
+     {
+      "attr": "data-ok-quick-filter-logic-operator",
+      "default": "and",
+      "description": "Search words: every one must match (`and`), or any one (`or`).",
+      "kind": "style",
+      "name": "quickFilterLogicOperator",
+      "values": [
+       "and",
+       "or"
+      ]
+     },
+     {
+      "attr": "data-ok-quick-filter-exclude-hidden-columns",
+      "description": "The search skips hidden columns.",
+      "kind": "flag",
+      "name": "quickFilterExcludeHiddenColumns"
+     },
+     {
+      "attr": "data-ok-ignore-diacritics",
+      "description": "Searches and filters ignore accents: \"ha noi\" finds \"Hà Nội\".",
+      "kind": "flag",
+      "name": "ignoreDiacritics"
+     },
+     {
+      "attr": "data-ok-tree-data",
+      "description": "Rows form a tree: a group column opens and closes their children.",
+      "kind": "flag",
+      "name": "treeData"
+     },
+     {
+      "attr": "data-ok-default-grouping-expansion-depth",
+      "default": 0,
+      "description": "Tree levels open at first (`-1`: all).",
+      "kind": "number",
+      "name": "defaultGroupingExpansionDepth"
+     },
+     {
+      "attr": "data-ok-row-reordering",
+      "description": "Rows move by dragging their handle, or Alt + Up / Down on it.",
+      "kind": "flag",
+      "name": "rowReordering"
+     },
+     {
+      "attr": "data-ok-list-view",
+      "description": "Each row shows as one cell (a card) instead of columns.",
+      "kind": "flag",
+      "name": "listView"
+     },
+     {
+      "attr": "data-ok-row-buffer-px",
+      "default": 150,
+      "description": "Rows rendered above and below the visible ones, px.",
+      "kind": "number",
+      "min": 0,
+      "name": "rowBufferPx"
+     },
+     {
+      "attr": "data-ok-column-buffer-px",
+      "default": 150,
+      "description": "Columns rendered left and right of the visible ones, px.",
+      "kind": "number",
+      "min": 0,
+      "name": "columnBufferPx"
+     },
+     {
+      "attr": "data-ok-lazy-loading",
+      "description": "With a data source and a row count: rows load in chunks as they scroll into view.",
+      "kind": "flag",
+      "name": "lazyLoading"
+     },
+     {
+      "attr": "data-ok-lazy-loading-request-throttle-ms",
+      "default": 500,
+      "description": "Least time between two lazy loading requests, ms.",
+      "kind": "number",
+      "min": 0,
+      "name": "lazyLoadingRequestThrottleMs"
+     },
+     {
+      "attr": "data-ok-disable-row-grouping",
+      "description": "Columns can't be grouped by (no Group by in the column menu).",
+      "kind": "flag",
+      "name": "disableRowGrouping"
+     },
+     {
+      "attr": "data-ok-disable-aggregation",
+      "description": "No aggregation (no Aggregation items in the column menu).",
+      "kind": "flag",
+      "name": "disableAggregation"
+     },
+     {
+      "attr": "data-ok-aggregation-rows-scope",
+      "default": "filtered",
+      "description": "Rows aggregated: the `filtered` ones, or `all` of them.",
+      "kind": "style",
+      "name": "aggregationRowsScope",
+      "values": [
+       "filtered",
+       "all"
+      ]
+     },
+     {
+      "attr": "data-ok-disable-pivoting",
+      "description": "No pivot button in the toolbar.",
+      "kind": "flag",
+      "name": "disablePivoting"
+     },
+     {
+      "attr": "data-ok-pivot-active",
+      "description": "The grid shows the pivot of its rows (`pivotModel`) instead of the rows.",
+      "kind": "flag",
+      "name": "pivotActive"
+     },
+     {
+      "attr": "data-ok-cell-selection",
+      "description": "Cells are selected in ranges: press, drag, Shift + click or Shift + arrows.",
+      "kind": "flag",
+      "name": "cellSelection"
+     },
+     {
+      "attr": "data-ok-disable-clipboard-paste",
+      "description": "Ctrl / Cmd + V doesn't paste into editable cells (copying still works).",
+      "kind": "flag",
+      "name": "disableClipboardPaste"
+     },
+     {
+      "attr": "data-ok-header-filters",
+      "description": "A row of filter fields under the column headers.",
+      "kind": "flag",
+      "name": "headerFilters"
+     },
+     {
+      "attr": "data-ok-charts-integration",
+      "description": "A chart of the grid's rows (or top-level groups) follows its filters, sorting and grouping.",
+      "kind": "flag",
+      "name": "chartsIntegration"
+     }
+    ],
+    "parts": [
+     {
+      "description": "On a header cell: `false` keeps the column out of the aggregation menu.",
+      "kind": "value",
+      "name": "data-ok-aggregable",
+      "value": [
+       "false"
+      ]
+     },
+     {
+      "description": "The aggregation (field to function), as JSON.",
+      "kind": "value",
+      "name": "data-ok-aggregation-model",
+      "value": "string"
+     },
+     {
+      "description": "Set by the runtime on the first cell after the hidden columns of the column window.",
+      "kind": "state",
+      "name": "data-ok-col-start"
+     },
+     {
+      "description": "The total number of rows. HTML: written by the grid.",
+      "kind": "value",
+      "name": "data-ok-count",
+      "value": "string"
+     },
+     {
+      "description": "Set by the runtime on cells another cell spans over.",
+      "kind": "state",
+      "name": "data-ok-covered"
+     },
+     {
+      "description": "On a column menu item: what it does.",
+      "kind": "value",
+      "name": "data-ok-data-grid-action",
+      "value": [
+       "aggregate-<fn>",
+       "aggregate-none",
+       "group"
+      ]
+     },
+     {
+      "description": "The function name in an aggregated column's header.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-aggregation-label"
+     },
+     {
+      "description": "The footer row with the aggregated values.",
+      "kind": "part",
+      "name": "data-ok-data-grid-aggregation-row"
+     },
+     {
+      "description": "HTML only: the template of the \"is any of\" filter input.",
+      "elements": [
+       "template"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-any-of"
+     },
+     {
+      "description": "The rows.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-body"
+     },
+     {
+      "description": "HTML only: the template of a column's custom cells, named by its field.",
+      "elements": [
+       "template"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-cell"
+     },
+     {
+      "description": "The chart panel's chart.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-chart"
+     },
+     {
+      "description": "The chart panel's switch for item labels.",
+      "kind": "part",
+      "name": "data-ok-data-grid-chart-item-label"
+     },
+     {
+      "description": "The chart panel's switch for stacked series.",
+      "kind": "part",
+      "name": "data-ok-data-grid-chart-stacked"
+     },
+     {
+      "description": "The chart panel's switch for a value field.",
+      "kind": "part",
+      "name": "data-ok-data-grid-chart-value"
+     },
+     {
+      "description": "The selection checkbox of a row or of the header.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-checkbox"
+     },
+     {
+      "description": "HTML only: the template of the date filter input.",
+      "elements": [
+       "template"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-date"
+     },
+     {
+      "description": "HTML only: the template of the date and time filter input.",
+      "elements": [
+       "template"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-date-time"
+     },
+     {
+      "description": "HTML only: the template of a row's detail panel, named by the row id.",
+      "elements": [
+       "template"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-detail"
+     },
+     {
+      "description": "The content of an open detail panel.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-detail-content"
+     },
+     {
+      "description": "The button that opens and closes a row's detail panel.",
+      "kind": "part",
+      "name": "data-ok-data-grid-detail-toggle"
+     },
+     {
+      "description": "The error message of an invalid edited value.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-edit-error"
+     },
+     {
+      "description": "The input of an edited cell.",
+      "elements": [
+       "select"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-edit-input"
+     },
+     {
+      "description": "An export button in the toolbar and its format.",
+      "kind": "value",
+      "name": "data-ok-data-grid-export",
+      "value": [
+       "csv",
+       "excel",
+       "print"
+      ]
+     },
+     {
+      "description": "The filter panel.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-filter"
+     },
+     {
+      "description": "The button that adds a filter.",
+      "kind": "part",
+      "name": "data-ok-data-grid-filter-add"
+     },
+     {
+      "description": "The button that removes a filter.",
+      "kind": "part",
+      "name": "data-ok-data-grid-filter-remove"
+     },
+     {
+      "description": "The footer: the selected rows and the pagination.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-footer"
+     },
+     {
+      "description": "A panel with a form, such as the columns or the filters.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-form-panel"
+     },
+     {
+      "description": "Fills the column group header above a column outside any group.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-group-filler"
+     },
+     {
+      "description": "A group row of row grouping.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-group-row"
+     },
+     {
+      "description": "The column headers.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-header"
+     },
+     {
+      "description": "The filter under a column header.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-header-filter"
+     },
+     {
+      "description": "The row of header filters.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-header-filters"
+     },
+     {
+      "description": "The title of a column header.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-header-title"
+     },
+     {
+      "description": "The single cell of a row in the list view.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-list-cell"
+     },
+     {
+      "description": "A visually hidden live region, such as \"Row moved to position 2 of 8\".",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-live"
+     },
+     {
+      "description": "The loading layer.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-loading"
+     },
+     {
+      "description": "The grid itself (`role=\"grid\"` or `role=\"treegrid\"`).",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-main"
+     },
+     {
+      "description": "The button that opens a column's menu.",
+      "kind": "part",
+      "name": "data-ok-data-grid-menu-button"
+     },
+     {
+      "description": "The text shown without rows, such as \"No rows\".",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-overlay"
+     },
+     {
+      "description": "A popover panel of the toolbar or the column menu.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-panel"
+     },
+     {
+      "description": "The rows pinned to the top or the bottom.",
+      "kind": "value",
+      "name": "data-ok-data-grid-pinned-rows",
+      "value": [
+       "bottom",
+       "top"
+      ]
+     },
+     {
+      "description": "One field of the pivot panel.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-pivot-field"
+     },
+     {
+      "description": "The switch that turns pivot mode on.",
+      "kind": "part",
+      "name": "data-ok-data-grid-pivot-switch"
+     },
+     {
+      "description": "The quick filter search field of the toolbar.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-quick-filter"
+     },
+     {
+      "description": "The handle that drags a row to another position.",
+      "kind": "part",
+      "name": "data-ok-data-grid-reorder-handle"
+     },
+     {
+      "description": "The handle that resizes a column.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-resize"
+     },
+     {
+      "description": "HTML only: the template of one row, copied by `setRows` and data sources.",
+      "elements": [
+       "template"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-row"
+     },
+     {
+      "description": "The placeholder of a cell that is still loading.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-skeleton"
+     },
+     {
+      "description": "The sort arrow of a column header.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-sort-icon"
+     },
+     {
+      "description": "The toolbar.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-toolbar"
+     },
+     {
+      "description": "The buttons at the end of the toolbar.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-toolbar-actions"
+     },
+     {
+      "description": "The number of children of a tree row.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-tree-count"
+     },
+     {
+      "description": "The label of a tree or group row.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-tree-label"
+     },
+     {
+      "description": "The indent of a tree row without children.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-tree-spacer"
+     },
+     {
+      "description": "The button that expands and collapses a tree row.",
+      "kind": "part",
+      "name": "data-ok-data-grid-tree-toggle"
+     },
+     {
+      "description": "HTML only: where a custom cell template shows the value.",
+      "kind": "part",
+      "name": "data-ok-data-grid-value"
+     },
+     {
+      "description": "On a detail panel: the id of its row.",
+      "kind": "value",
+      "name": "data-ok-detail-for",
+      "value": "string"
+     },
+     {
+      "description": "The height of a detail panel, in pixels, or `auto`.",
+      "kind": "value",
+      "name": "data-ok-detail-height",
+      "value": "string"
+     },
+     {
+      "description": "On a chart panel field: turns it off.",
+      "kind": "value",
+      "name": "data-ok-disable",
+      "value": "string"
+     },
+     {
+      "description": "Set by the runtime on the row or column a drag would drop next to.",
+      "kind": "value",
+      "name": "data-ok-drop",
+      "value": [
+       "after",
+       "before"
+      ]
+     },
+     {
+      "description": "Set by the runtime on a cell or row being edited.",
+      "kind": "state",
+      "name": "data-ok-editing"
+     },
+     {
+      "description": "Options of the Excel export, as JSON.",
+      "kind": "value",
+      "name": "data-ok-excel-options",
+      "value": "string"
+     },
+     {
+      "description": "On a header or a cell: the column's field.",
+      "kind": "value",
+      "name": "data-ok-field",
+      "value": "string"
+     },
+     {
+      "description": "On a filter row: the field it filters.",
+      "kind": "value",
+      "name": "data-ok-filter-field",
+      "value": "string"
+     },
+     {
+      "description": "On a header cell: `false` turns filtering off for the column.",
+      "kind": "value",
+      "name": "data-ok-filterable",
+      "value": [
+       "false"
+      ]
+     },
+     {
+      "description": "On a header cell: the column's share of the free width.",
+      "kind": "value",
+      "name": "data-ok-flex",
+      "value": "string"
+     },
+     {
+      "description": "On a header cell: how the column formats its values.",
+      "kind": "value",
+      "name": "data-ok-format",
+      "value": [
+       "currency",
+       "date",
+       "datetime",
+       "number",
+       "percent"
+      ]
+     },
+     {
+      "description": "On a header cell: `Intl` format options, as JSON.",
+      "kind": "value",
+      "name": "data-ok-format-options",
+      "value": "string"
+     },
+     {
+      "description": "Marks rows the grid generated, such as group rows.",
+      "kind": "state",
+      "name": "data-ok-generated"
+     },
+     {
+      "description": "On a column group header: the group's id.",
+      "kind": "value",
+      "name": "data-ok-group-id",
+      "value": "string"
+     },
+     {
+      "description": "On a row: its path in tree data.",
+      "kind": "value",
+      "name": "data-ok-group-path",
+      "value": "string"
+     },
+     {
+      "description": "On a header cell: `false` keeps the column out of row grouping.",
+      "kind": "value",
+      "name": "data-ok-groupable",
+      "value": [
+       "false"
+      ]
+     },
+     {
+      "description": "Hides the number of children of tree rows.",
+      "kind": "state",
+      "name": "data-ok-hide-descendant-count"
+     },
+     {
+      "description": "On a header cell: `false` keeps the column visible.",
+      "kind": "value",
+      "name": "data-ok-hideable",
+      "value": [
+       "false"
+      ]
+     },
+     {
+      "description": "Set by the runtime on a placeholder row of lazy loading.",
+      "kind": "state",
+      "name": "data-ok-loading-row"
+     },
+     {
+      "description": "On a header cell: the column's smallest width, in pixels.",
+      "kind": "value",
+      "name": "data-ok-min-width",
+      "value": "string"
+     },
+     {
+      "description": "On a row: the id of its parent in tree data.",
+      "kind": "value",
+      "name": "data-ok-parent",
+      "value": "string"
+     },
+     {
+      "description": "On a pin menu item: the field it pins.",
+      "kind": "value",
+      "name": "data-ok-pin-field",
+      "value": "string"
+     },
+     {
+      "description": "On a cell: the side its column is pinned to.",
+      "kind": "value",
+      "name": "data-ok-pinned",
+      "value": [
+       "left",
+       "right"
+      ]
+     },
+     {
+      "description": "The pivot model, as JSON.",
+      "kind": "value",
+      "name": "data-ok-pivot-model",
+      "value": "string"
+     },
+     {
+      "description": "Set by the runtime on the edge cells of a selected range: `top`, `right`, `bottom` and `left`.",
+      "kind": "value",
+      "name": "data-ok-range-edge",
+      "value": "string"
+     },
+     {
+      "description": "On a header cell: `false` turns resizing off for the column.",
+      "kind": "value",
+      "name": "data-ok-resizable",
+      "value": [
+       "false"
+      ]
+     },
+     {
+      "description": "The fields the rows are grouped by.",
+      "kind": "value",
+      "name": "data-ok-row-grouping-model",
+      "value": "string"
+     },
+     {
+      "description": "On a row: its id.",
+      "kind": "value",
+      "name": "data-ok-row-id",
+      "value": "string"
+     },
+     {
+      "description": "On a header cell: `false` keeps the column out of the quick filter.",
+      "kind": "value",
+      "name": "data-ok-searchable",
+      "value": [
+       "false"
+      ]
+     },
+     {
+      "description": "On a row: `false` means the row can't be selected.",
+      "kind": "value",
+      "name": "data-ok-selectable",
+      "value": [
+       "false"
+      ]
+     },
+     {
+      "description": "On a row: extra space above it, in pixels.",
+      "kind": "value",
+      "name": "data-ok-spacing-top",
+      "value": "string"
+     },
+     {
+      "description": "On a cell: the text the quick filter and the export use, when the cell shows something else.",
+      "kind": "value",
+      "name": "data-ok-text",
+      "value": "string"
+     },
+     {
+      "description": "On a header cell: the options of a single select column, as JSON.",
+      "kind": "value",
+      "name": "data-ok-value-options",
+      "value": "string"
+     }
+    ],
+    "runtime": "data-grid"
+   },
+   "name": "DataGrid",
+   "react": {
+    "description": "An ARIA grid with sorting, filtering, quick search, pagination, selection, column visibility, density and CSV export.",
+    "native": "HTMLDivElement",
+    "props": [
+     {
+      "description": "The functions offered (default: the built-in ones).",
+      "name": "aggregationFunctions",
+      "type": "Readonly<Record<string, GridAggregationFunction>>"
+     },
+     {
+      "description": "Field → aggregation function (`sum`, `avg`, `min`, `max`, `size` or your own).",
+      "name": "aggregationModel",
+      "type": "GridAggregationModel"
+     },
+     {
+      "description": "Rows aggregated: the filtered ones (default) or all.",
+      "name": "aggregationRowsScope",
+      "type": "\"all\" | \"filtered\""
+     },
+     {
+      "description": "Receives the grid's methods.",
+      "name": "apiRef",
+      "type": "RefObject<GridApi<R> | null>"
+     },
+     {
+      "description": "Columns fit their content once the grid shows (resizable, non-flex columns).",
+      "name": "autosizeOnMount",
+      "type": "boolean"
+     },
+     {
+      "description": "How `autosizeColumns` measures (columns, header, outliers, extra width).",
+      "name": "autosizeOptions",
+      "type": "GridAutosizeOptions"
+     },
+     {
+      "description": "Cells are selected in ranges (press, drag, Shift + click, Shift + arrows).",
+      "name": "cellSelection",
+      "type": "boolean"
+     },
+     {
+      "description": "The selected cells (row id to fields), controlled.",
+      "name": "cellSelectionModel",
+      "type": "GridCellSelectionModel"
+     },
+     {
+      "description": "The chart panel's model, controlled.",
+      "name": "chartModel",
+      "type": "GridChartModel"
+     },
+     {
+      "description": "A chart of the rows (or top-level groups) under the grid.",
+      "name": "chartsIntegration",
+      "type": "boolean"
+     },
+     {
+      "description": "A first column of checkboxes selects rows.",
+      "name": "checkboxSelection",
+      "type": "boolean"
+     },
+     {
+      "description": "Select all selects the current page only.",
+      "name": "checkboxSelectionVisibleOnly",
+      "type": "boolean"
+     },
+     {
+      "description": "Default a tab.",
+      "name": "clipboardCopyCellDelimiter",
+      "type": "string"
+     },
+     {
+      "description": "Columns rendered beyond the visible ones, px. Default 150.",
+      "name": "columnBufferPx",
+      "type": "number"
+     },
+     {
+      "description": "Header groups over the columns (multi-level headers).",
+      "name": "columnGroupingModel",
+      "type": "readonly GridColumnGroup[]"
+     },
+     {
+      "description": "Column order (fields); missing fields follow in their place.",
+      "name": "columnOrder",
+      "type": "readonly string[]"
+     },
+     {
+      "description": "Which columns are visible (field to `false` hides it), controlled.",
+      "name": "columnVisibilityModel",
+      "type": "GridColumnVisibilityModel"
+     },
+     {
+      "description": "The columns: field, header, type, width and how cells render.",
+      "name": "columns",
+      "required": true,
+      "type": "readonly GridColDef<R>[]"
+     },
+     {
+      "description": "Options of the CSV export (file name, delimiter, fields…).",
+      "name": "csvOptions",
+      "type": "GridCsvOptions"
+     },
+     {
+      "description": "Loads rows from a server for the current sort, filter and page (replaces `rows`).",
+      "name": "dataSource",
+      "type": "GridDataSource<R>"
+     },
+     {
+      "description": "Responses kept per request; `null` turns caching off. Default: a cache of 50.",
+      "name": "dataSourceCache",
+      "type": "GridDataSourceCache<R> | null"
+     },
+     {
+      "description": "Levels open at first (`-1`: all). Default 0.",
+      "name": "defaultGroupingExpansionDepth",
+      "type": "number"
+     },
+     {
+      "default": "standard",
+      "description": "Row height: `compact` 36px, `standard` 52px, `comfortable` 67px.",
+      "name": "density",
+      "type": "\"comfortable\" | \"compact\" | \"standard\""
+     },
+     {
+      "description": "The rows whose detail panel is open, controlled.",
+      "name": "detailPanelExpandedRowIds",
+      "type": "readonly string[]"
+     },
+     {
+      "description": "No aggregation (no Aggregation items in the column menu).",
+      "name": "disableAggregation",
+      "type": "boolean"
+     },
+     {
+      "description": "Ctrl / Cmd + V doesn't paste into editable cells.",
+      "name": "disableClipboardPaste",
+      "type": "boolean"
+     },
+     {
+      "description": "Turns filtering off for every column.",
+      "name": "disableColumnFilter",
+      "type": "boolean"
+     },
+     {
+      "description": "No column menu in the headers.",
+      "name": "disableColumnMenu",
+      "type": "boolean"
+     },
+     {
+      "description": "Columns can't be pinned.",
+      "name": "disableColumnPinning",
+      "type": "boolean"
+     },
+     {
+      "description": "Columns can't be moved.",
+      "name": "disableColumnReorder",
+      "type": "boolean"
+     },
+     {
+      "description": "Columns can't be resized.",
+      "name": "disableColumnResize",
+      "type": "boolean"
+     },
+     {
+      "description": "Hides the column selector of the toolbar and the column menu.",
+      "name": "disableColumnSelector",
+      "type": "boolean"
+     },
+     {
+      "description": "Turns sorting off for every column.",
+      "name": "disableColumnSorting",
+      "type": "boolean"
+     },
+     {
+      "description": "Hides the density selector of the toolbar.",
+      "name": "disableDensitySelector",
+      "type": "boolean"
+     },
+     {
+      "description": "The filter panel keeps one filter (no Add filter).",
+      "name": "disableMultipleColumnsFiltering",
+      "type": "boolean"
+     },
+     {
+      "description": "Shift doesn't add columns to the sort.",
+      "name": "disableMultipleColumnsSorting",
+      "type": "boolean"
+     },
+     {
+      "description": "One row at a time (no select all).",
+      "name": "disableMultipleRowSelection",
+      "type": "boolean"
+     },
+     {
+      "description": "No pivot button in the toolbar.",
+      "name": "disablePivoting",
+      "type": "boolean"
+     },
+     {
+      "description": "Columns can't be grouped by (no Group by in the column menu).",
+      "name": "disableRowGrouping",
+      "type": "boolean"
+     },
+     {
+      "description": "Clicking a row doesn't select it (only its checkbox does).",
+      "name": "disableRowSelectionOnClick",
+      "type": "boolean"
+     },
+     {
+      "description": "Render every row of the page instead of the visible ones.",
+      "name": "disableVirtualization",
+      "type": "boolean"
+     },
+     {
+      "description": "Editable columns: edit one `cell` (default) or every editable cell of a `row` together.",
+      "name": "editMode",
+      "type": "\"cell\" | \"row\""
+     },
+     {
+      "description": "Options of the Excel export.",
+      "name": "excelOptions",
+      "type": "GridExcelOptions"
+     },
+     {
+      "description": "csv`). Default \"data\".",
+      "name": "exportFileName",
+      "type": "string"
+     },
+     {
+      "default": "client",
+      "description": "`server`: the grid reports the filter model and shows the rows as given.",
+      "name": "filterMode",
+      "type": "\"client\" | \"server\""
+     },
+     {
+      "description": "The filter model, controlled.",
+      "name": "filterModel",
+      "type": "GridFilterModel"
+     },
+     {
+      "description": "Where a group shows its values (default: groups inline, the root in a footer row).",
+      "name": "getAggregationPosition",
+      "type": "((group: { id: string; depth: number; isRoot: boolean; }) => GridAggregationPosition)"
+     },
+     {
+      "description": "Returns a class name for a cell.",
+      "name": "getCellClassName",
+      "type": "((params: GridCellParams<R>) => string)"
+     },
+     {
+      "description": "A row's detail panel (`null`: none, no toggle).",
+      "name": "getDetailPanelContent",
+      "type": "((params: { id: string; row: R; }) => ReactNode)"
+     },
+     {
+      "description": "px, or `\"auto\"` (default): the content decides.",
+      "name": "getDetailPanelHeight",
+      "type": "((params: { id: string; row: R; }) => number | \"auto\")"
+     },
+     {
+      "description": "The height to assume for `\"auto\"` rows before they are measured.",
+      "name": "getEstimatedRowHeight",
+      "type": "((params: { id: string; model: R; }) => number)"
+     },
+     {
+      "description": "Returns a class name for a row.",
+      "name": "getRowClassName",
+      "type": "((params: GridRowParams<R>) => string)"
+     },
+     {
+      "description": "A row's height: px, or `\"auto\"` (the content decides); `null`: the default.",
+      "name": "getRowHeight",
+      "type": "((params: { id: string; model: R; densityFactor: number; }) => number | \"auto\" | null)"
+     },
+     {
+      "default": "row.id",
+      "description": "Returns a row's id.",
+      "name": "getRowId",
+      "type": "((row: R) => string | number)"
+     },
+     {
+      "description": "Space above and below a row, px.",
+      "name": "getRowSpacing",
+      "type": "((params: GridRowParams<R>) => { top?: number | undefined; bottom?: number | undefined; })"
+     },
+     {
+      "description": "A row's path in the tree: its ancestors' keys, then its own (MUI X).",
+      "name": "getTreeDataPath",
+      "type": "((row: R) => readonly string[])"
+     },
+     {
+      "description": "Overrides the grouping column (header, width…).",
+      "name": "groupingColDef",
+      "type": "GridGroupingColDef"
+     },
+     {
+      "description": "A row of filter fields under the column headers.",
+      "name": "headerFilters",
+      "type": "boolean"
+     },
+     {
+      "description": "Hides the footer (row count and pagination).",
+      "name": "hideFooter",
+      "type": "boolean"
+     },
+     {
+      "description": "Searches and filters ignore accents.",
+      "name": "ignoreDiacritics",
+      "type": "boolean"
+     },
+     {
+      "description": "Copies raw values instead of formatted text.",
+      "name": "ignoreValueFormatterDuringExport",
+      "type": "boolean"
+     },
+     {
+      "description": "The first state of the uncontrolled models (sort, filter, pagination, columns…).",
+      "name": "initialState",
+      "type": "GridState"
+     },
+     {
+      "description": "Returns whether a cell can be edited (over the column's `editable`).",
+      "name": "isCellEditable",
+      "type": "((params: GridCellParams<R>) => boolean)"
+     },
+     {
+      "description": "Returns whether a group row starts expanded.",
+      "name": "isGroupExpandedByDefault",
+      "type": "((node: { id: string; depth: number; row: R; }) => boolean)"
+     },
+     {
+      "description": "Returns whether a row can be selected.",
+      "name": "isRowSelectable",
+      "type": "((params: { id: string; row: R; }) => boolean)"
+     },
+     {
+      "description": "Selected ids stay selected when their rows go away (server pages, new data).",
+      "name": "keepNonExistentRowsSelected",
+      "type": "boolean"
+     },
+     {
+      "description": "With `dataSource` and a row count: rows load in chunks as they scroll into view.",
+      "name": "lazyLoading",
+      "type": "boolean"
+     },
+     {
+      "description": "Least time between two lazy loading requests, ms. Default 500.",
+      "name": "lazyLoadingRequestThrottleMs",
+      "type": "number"
+     },
+     {
+      "description": "Each row shows as one cell (`listViewColumn`).",
+      "name": "listView",
+      "type": "boolean"
+     },
+     {
+      "description": "The single column of the list view (`listView`).",
+      "name": "listViewColumn",
+      "type": "{ field: string; renderCell?: ((params: GridRenderCellParams<R>) => ReactNode) | undefined; }"
+     },
+     {
+      "description": "Shows the loading overlay.",
+      "name": "loading",
+      "type": "boolean"
+     },
+     {
+      "default": "linear-progress",
+      "description": "How loading shows: a bar, a spinner or placeholder rows.",
+      "name": "loadingVariant",
+      "type": "\"circular-progress\" | \"linear-progress\" | \"skeleton\""
+     },
+     {
+      "description": "Labels (MUI X locale text keys).",
+      "name": "localeText",
+      "type": "Partial<GridLabels>"
+     },
+     {
+      "description": "Called when the aggregation changes.",
+      "name": "onAggregationModelChange",
+      "type": "((model: GridAggregationModel) => void)"
+     },
+     {
+      "description": "Called on a click on a cell.",
+      "name": "onCellClick",
+      "type": "((params: GridCellParams<R>, event: MouseEvent<HTMLElement, MouseEvent>) => void)"
+     },
+     {
+      "description": "Called on a double click on a cell.",
+      "name": "onCellDoubleClick",
+      "type": "((params: GridCellParams<R>, event: MouseEvent<HTMLElement, MouseEvent>) => void)"
+     },
+     {
+      "description": "Called when a cell starts editing, with the reason.",
+      "name": "onCellEditStart",
+      "type": "((params: GridCellParams<R>, reason: GridEditStartReason) => void)"
+     },
+     {
+      "description": "Called when a cell stops editing, with the reason.",
+      "name": "onCellEditStop",
+      "type": "((params: GridCellParams<R>, reason: GridEditStopReason) => void)"
+     },
+     {
+      "description": "Called on a key press in a cell.",
+      "name": "onCellKeyDown",
+      "type": "((params: GridCellParams<R>, event: KeyboardEvent<HTMLElement>) => void)"
+     },
+     {
+      "description": "Called when the cell selection changes.",
+      "name": "onCellSelectionModelChange",
+      "type": "((model: GridCellSelectionModel) => void)"
+     },
+     {
+      "description": "Called when the chart panel's model changes.",
+      "name": "onChartModelChange",
+      "type": "((model: GridChartModel) => void)"
+     },
+     {
+      "description": "Called after cells were copied, with the copied text.",
+      "name": "onClipboardCopy",
+      "type": "((data: string) => void)"
+     },
+     {
+      "description": "Called after pasted cells were written.",
+      "name": "onClipboardPasteEnd",
+      "type": "(() => void)"
+     },
+     {
+      "description": "Called before pasted cells are written.",
+      "name": "onClipboardPasteStart",
+      "type": "((params: { data: string[][]; }) => void)"
+     },
+     {
+      "description": "Called on a click on a column header.",
+      "name": "onColumnHeaderClick",
+      "type": "((params: { field: string; colDef: GridColDef<R>; }, event: MouseEvent<HTMLElement, MouseEvent>) => void)"
+     },
+     {
+      "description": "Called when the column order changes, with the fields in their new order.",
+      "name": "onColumnOrderChange",
+      "type": "((fields: string[]) => void)"
+     },
+     {
+      "description": "Called when the column visibility changes.",
+      "name": "onColumnVisibilityModelChange",
+      "type": "((model: GridColumnVisibilityModel) => void)"
+     },
+     {
+      "description": "A column's width after resizing (on release, and for each keyboard step).",
+      "name": "onColumnWidthChange",
+      "type": "((field: string, width: number) => void)"
+     },
+     {
+      "description": "Called when the data source fails to load rows.",
+      "name": "onDataSourceError",
+      "type": "((error: unknown) => void)"
+     },
+     {
+      "description": "Called when the density changes.",
+      "name": "onDensityChange",
+      "type": "((density: \"comfortable\" | \"compact\" | \"standard\") => void)"
+     },
+     {
+      "description": "Called when detail panels open or close.",
+      "name": "onDetailPanelExpandedRowIdsChange",
+      "type": "((ids: string[]) => void)"
+     },
+     {
+      "description": "Called when the filter model changes.",
+      "name": "onFilterModelChange",
+      "type": "((model: GridFilterModel) => void)"
+     },
+     {
+      "description": "Called when the page or the page size changes.",
+      "name": "onPaginationModelChange",
+      "type": "((model: GridPaginationModel) => void)"
+     },
+     {
+      "description": "Called when the pinned columns change.",
+      "name": "onPinnedColumnsChange",
+      "type": "((model: GridPinnedColumns) => void)"
+     },
+     {
+      "description": "Called when pivot mode turns on or off.",
+      "name": "onPivotActiveChange",
+      "type": "((active: boolean) => void)"
+     },
+     {
+      "description": "Called when the pivot model changes.",
+      "name": "onPivotModelChange",
+      "type": "((model: GridPivotModel) => void)"
+     },
+     {
+      "description": "Called when `processRowUpdate` throws or rejects.",
+      "name": "onProcessRowUpdateError",
+      "type": "((error: unknown) => void)"
+     },
+     {
+      "description": "Called on a click on a row.",
+      "name": "onRowClick",
+      "type": "((params: GridRowParams<R>, event: MouseEvent<HTMLElement, MouseEvent>) => void)"
+     },
+     {
+      "description": "Called on a double click on a row.",
+      "name": "onRowDoubleClick",
+      "type": "((params: GridRowParams<R>, event: MouseEvent<HTMLElement, MouseEvent>) => void)"
+     },
+     {
+      "description": "Called when a row starts editing (`editMode=\"row\"`).",
+      "name": "onRowEditStart",
+      "type": "((params: { id: string; row: R; }, reason: GridEditStartReason) => void)"
+     },
+     {
+      "description": "Called when a row stops editing (`editMode=\"row\"`).",
+      "name": "onRowEditStop",
+      "type": "((params: { id: string; row: R; }, reason: GridEditStopReason) => void)"
+     },
+     {
+      "description": "Called when the row grouping changes.",
+      "name": "onRowGroupingModelChange",
+      "type": "((model: string[]) => void)"
+     },
+     {
+      "description": "Called when a dragged row moves.",
+      "name": "onRowOrderChange",
+      "type": "((params: { row: R; oldIndex: number; targetIndex: number; }) => void)"
+     },
+     {
+      "description": "Called when the row selection changes.",
+      "name": "onRowSelectionModelChange",
+      "type": "((ids: string[]) => void)"
+     },
+     {
+      "description": "The rows were scrolled near their end (infinite loading). Called once per row count.",
+      "name": "onRowsScrollEnd",
+      "type": "((params: { visibleRowsCount: number; }) => void)"
+     },
+     {
+      "description": "Called when the sort model changes.",
+      "name": "onSortModelChange",
+      "type": "((model: GridSortModel) => void)"
+     },
+     {
+      "default": "[5, 10, 25]",
+      "description": "The page sizes the footer offers.",
+      "name": "pageSizeOptions",
+      "type": "readonly number[]"
+     },
+     {
+      "description": "`server`: `rows` are the current page and `rowCount` the total.",
+      "name": "paginationMode",
+      "type": "\"client\" | \"server\""
+     },
+     {
+      "description": "The page and the page size, controlled.",
+      "name": "paginationModel",
+      "type": "GridPaginationModel"
+     },
+     {
+      "description": "The columns pinned to the start and the end, controlled.",
+      "name": "pinnedColumns",
+      "type": "GridPinnedColumns"
+     },
+     {
+      "description": "Rows kept above or below the others (not sorted, filtered or paged).",
+      "name": "pinnedRows",
+      "type": "{ top?: readonly R[] | undefined; bottom?: readonly R[] | undefined; }"
+     },
+     {
+      "description": "Shows the pivot of the rows instead of the rows.",
+      "name": "pivotActive",
+      "type": "boolean"
+     },
+     {
+      "description": "The pivot model (rows, columns and values), controlled.",
+      "name": "pivotModel",
+      "type": "GridPivotModel"
+     },
+     {
+      "description": "Options of the print export (title, fields…).",
+      "name": "printOptions",
+      "type": "GridPrintOptions"
+     },
+     {
+      "description": "Called with the edited row; return (or resolve) the row to show. Reject to refuse it.",
+      "name": "processRowUpdate",
+      "type": "((newRow: R, oldRow: R) => R | Promise<R>)"
+     },
+     {
+      "description": "The search skips hidden columns.",
+      "name": "quickFilterExcludeHiddenColumns",
+      "type": "boolean"
+     },
+     {
+      "description": "Search words: all must match (`and`, default) or any (`or`).",
+      "name": "quickFilterLogicOperator",
+      "type": "\"and\" | \"or\""
+     },
+     {
+      "description": "Rows rendered beyond the visible ones, px. Default 150.",
+      "name": "rowBufferPx",
+      "type": "number"
+     },
+     {
+      "description": "Total rows on the server.",
+      "name": "rowCount",
+      "type": "number"
+     },
+     {
+      "description": "Fields the rows are grouped by, outermost first (MUI X Premium).",
+      "name": "rowGroupingModel",
+      "type": "readonly string[]"
+     },
+     {
+      "description": "Row height, px, before the density factor. Default 52.",
+      "name": "rowHeight",
+      "type": "number"
+     },
+     {
+      "description": "Rows move by dragging their handle (or Alt + Up / Down on it).",
+      "name": "rowReordering",
+      "type": "boolean"
+     },
+     {
+      "description": "The selected row ids, controlled.",
+      "name": "rowSelectionModel",
+      "type": "readonly string[]"
+     },
+     {
+      "description": "Neighbouring cells with the same value merge (per column).",
+      "name": "rowSpanning",
+      "type": "boolean"
+     },
+     {
+      "description": "The rows: one object per row.",
+      "name": "rows",
+      "required": true,
+      "type": "readonly R[]"
+     },
+     {
+      "description": "Distance from the end that counts as the end, px. Default 80.",
+      "name": "scrollEndThreshold",
+      "type": "number"
+     },
+     {
+      "description": "Shows the toolbar: quick filter, columns, filters, density and export.",
+      "name": "showToolbar",
+      "type": "boolean"
+     },
+     {
+      "description": "The sort model, controlled.",
+      "name": "sortModel",
+      "type": "GridSortModel"
+     },
+     {
+      "default": "client",
+      "description": "`server`: report the model and show `rows` as given.",
+      "name": "sortingMode",
+      "type": "\"client\" | \"server\""
+     },
+     {
+      "description": "Splits pasted text into cells (default: tab-separated lines).",
+      "name": "splitClipboardPastedText",
+      "type": "((text: string) => string[][])"
+     },
+     {
+      "description": "Toolbar buttons with text (default) or icons with tooltips.",
+      "name": "toolbarVariant",
+      "type": "\"icon\" | \"labeled\""
+     },
+     {
+      "description": "Rows form a tree (`getTreeDataPath`, or a data source with `getChildrenCount`).",
+      "name": "treeData",
+      "type": "boolean"
+     }
+    ]
+   }
+  }
+ ],
+ "format": 1,
+ "name": "data-grid",
+ "title": "Data grid",
+ "types": [
+  {
+   "name": "GridAggregationModel",
+   "type": "{ [x: string]: string; }"
+  },
+  {
+   "name": "GridCellSelectionModel",
+   "type": "{ [x: string]: Record<string, boolean>; }"
+  },
+  {
+   "name": "GridColumnVisibilityModel",
+   "type": "{ [x: string]: boolean; }"
+  },
+  {
+   "name": "GridColumnWidths",
+   "type": "{ [x: string]: number; }"
+  },
+  {
+   "name": "GridEditStartReason",
+   "type": "\"cellDoubleClick\" | \"enterKeyDown\" | \"f2KeyDown\" | \"printableKeyDown\""
+  },
+  {
+   "name": "GridSortModel",
+   "type": "GridSortItem[]"
+  }
+ ]
+}

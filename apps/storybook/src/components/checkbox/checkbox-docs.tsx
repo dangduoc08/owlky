@@ -1,4 +1,9 @@
 import { checkboxOptions, formControlLabelOptions } from "@owlky/core";
+import checkboxApi from "@owlky/docs-content/api/checkbox.json" with { type: "json" };
+import formControlLabelApi from "@owlky/docs-content/api/form-control-label.json" with {
+  type: "json",
+};
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { Checkbox, FormControlLabel } from "@owlky/react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
@@ -200,6 +205,11 @@ export function Drinks() {
 - The unchecked box uses the secondary text color, with a contrast ratio of at least 4.5:1. Brand colors of checked boxes follow the design, so light colors such as \`warning\` are below 3:1 on white.
 - Group related checkboxes under a heading or a \`<fieldset>\` with a \`<legend>\`.`,
   },
+  apiReferenceSection(checkboxApi),
+  apiReferenceSection(formControlLabelApi, {
+    id: "api-form-control-label",
+    title: "Form control label API reference",
+  }),
 ];
 
 const PREVIEWS = {

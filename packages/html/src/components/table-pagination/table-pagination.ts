@@ -1,11 +1,19 @@
 import { defaultLabelDisplayedRows, lastPage, pageRange } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
-import type { ComponentInstance } from "../../runtime/types.js";
+import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
 import type { SelectInstance } from "../select/select.js";
 import { byId, groupsOf, showGroup } from "../table/table.js";
 
+/** Events of this component (`ok:<name>:<event>` on the root). */
+export interface TablePaginationEvents {
+  /** Before the page or the rows per page change. Call `preventDefault()` to keep them. */
+  change: EventSpec<{ page: number; rowsPerPage: number }, true>;
+}
+
 export interface TablePaginationInstance extends ComponentInstance {
+  /** The page (0-based). */
   readonly page: number;
+  /** The rows per page. */
   readonly rowsPerPage: number;
   /** Last 0-based page (`Infinity` when the count is unknown). */
   readonly lastPage: number;
@@ -36,7 +44,7 @@ const whole = (value: string | null, fallback: number) => {
  * label, the buttons and the event change.
  * Events:  ok:table-pagination:change (cancelable, detail.page / rowsPerPage)
  */
-export const tablePagination = defineComponent<TablePaginationInstance>({
+export const tablePagination = defineComponent<TablePaginationInstance, TablePaginationEvents>({
   name: "table-pagination",
   selector: "[data-ok-table-pagination]",
 

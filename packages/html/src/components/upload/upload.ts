@@ -17,15 +17,38 @@ import {
   uploadOptions,
 } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
-import type { ComponentInstance } from "../../runtime/types.js";
+import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
+
+/** Events of this component (`ok:<name>:<event>` on the root). */
+export interface UploadEvents {
+  /** Before dropped or picked files are added. Call `preventDefault()` to refuse them all. */
+  drop: EventSpec<{ accepted: File[]; rejections: UploadRejection[] }, true>;
+  /** After the files changed, with the reason (`drop`, `remove`, `clear`, `api`). */
+  change: EventSpec<{ files: File[]; reason: string }>;
+  /** Before a file is removed (`file` is `null` for the single preview). Call `preventDefault()` to keep it. */
+  remove: EventSpec<{ file: File | null }, true>;
+  /** After a `data-ok-upload-submit` button was pressed, with the files. */
+  upload: EventSpec<{ files: File[] }>;
+  /** After the file dialog opened. */
+  dialogopen: EventSpec;
+  /** After the file dialog closed without a choice. */
+  dialogcancel: EventSpec;
+  /** While files are dragged over the zone or the page. */
+  drag: EventSpec<UploadDragState>;
+  /** After reading the files failed. */
+  error: EventSpec<{ error: unknown }>;
+}
 
 export interface UploadInstance extends ComponentInstance {
   /** The files the upload holds. */
   readonly files: readonly File[];
   /** Rejections of the last drop, pick or paste. */
   readonly rejections: readonly UploadRejection[];
+  /** The drag state: whether files are over the zone or the page, and whether they would be accepted. */
   readonly dragState: UploadDragState;
+  /** Whether the file dialog is open. */
   readonly isFileDialogActive: boolean;
+  /** Whether dropped files are being read. */
   readonly isProcessing: boolean;
   /** Opens the file dialog (call it from a user action). */
   open(): void;
@@ -68,7 +91,7 @@ const SVG = "http://www.w3.org/2000/svg";
  *          ok:upload:dialogcancel, ok:upload:drag (`{ active, verdict, global }`), ok:upload:error
  *          (`{ error }`).
  */
-export const upload = defineComponent<UploadInstance>({
+export const upload = defineComponent<UploadInstance, UploadEvents>({
   name: "upload",
   selector: "[data-ok-upload]",
 

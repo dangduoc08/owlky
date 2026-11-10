@@ -1,4 +1,6 @@
 import { ratingOptions } from "@owlky/core";
+import ratingApi from "@owlky/docs-content/api/rating.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { Rating } from "@owlky/react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
@@ -150,6 +152,7 @@ export function Likes() {
 - Read-only ratings are one image with the value as its name.
 - Icons are 24px by default, the minimum target size for pointers. Use the smaller sizes for read-only scores.`,
   },
+  apiReferenceSection(ratingApi),
 ];
 
 const PREVIEWS = {

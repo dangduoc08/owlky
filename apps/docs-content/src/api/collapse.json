@@ -1,0 +1,277 @@
+{
+ "css": [
+  {
+   "name": "--ok-duration-standard",
+   "value": "300ms"
+  },
+  {
+   "name": "--ok-easing-standard",
+   "value": "cubic-bezier(0.4, 0, 0.2, 1)"
+  }
+ ],
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-collapse",
+    "events": [
+     {
+      "cancelable": false,
+      "description": "Before the opening animation starts (`in` is `true`).",
+      "detail": "{ in: boolean; }",
+      "name": "ok:collapse:enter"
+     },
+     {
+      "cancelable": false,
+      "description": "After the opening animation ended.",
+      "detail": "{ in: boolean; }",
+      "name": "ok:collapse:entered"
+     },
+     {
+      "cancelable": false,
+      "description": "When the opening animation starts.",
+      "detail": "{ in: boolean; }",
+      "name": "ok:collapse:entering"
+     },
+     {
+      "cancelable": false,
+      "description": "Before the closing animation starts (`in` is `false`).",
+      "detail": "{ in: boolean; }",
+      "name": "ok:collapse:exit"
+     },
+     {
+      "cancelable": false,
+      "description": "After the closing animation ended.",
+      "detail": "{ in: boolean; }",
+      "name": "ok:collapse:exited"
+     },
+     {
+      "cancelable": false,
+      "description": "When the closing animation starts.",
+      "detail": "{ in: boolean; }",
+      "name": "ok:collapse:exiting"
+     }
+    ],
+    "methods": [
+     {
+      "description": "Closes it (adds `hidden`).",
+      "kind": "method",
+      "name": "hide",
+      "type": "() => void"
+     },
+     {
+      "description": "`true` while the element has no `hidden`.",
+      "kind": "property",
+      "name": "in",
+      "type": "boolean"
+     },
+     {
+      "description": "Opens it (removes `hidden`).",
+      "kind": "method",
+      "name": "show",
+      "type": "() => void"
+     },
+     {
+      "description": "`entering`, `entered`, `exiting` or `exited`.",
+      "kind": "property",
+      "name": "status",
+      "type": "CollapseStatus"
+     },
+     {
+      "description": "Opens it when closed, closes it when open; `force` picks the state.",
+      "kind": "method",
+      "name": "toggle",
+      "type": "(force?: boolean | undefined) => void"
+     }
+    ],
+    "options": [
+     {
+      "attr": "data-ok-orientation",
+      "default": "vertical",
+      "description": "`vertical` animates the height, `horizontal` the width.",
+      "kind": "style",
+      "name": "orientation",
+      "optional": true,
+      "values": [
+       "vertical",
+       "horizontal"
+      ]
+     },
+     {
+      "attr": "data-ok-collapsed-size",
+      "default": 0,
+      "description": "Size kept while closed (height, or width when horizontal): a number in px, or a CSS length.",
+      "kind": "number",
+      "min": 0,
+      "name": "collapsedSize",
+      "units": [
+       "px",
+       "rem",
+       "em",
+       "%"
+      ]
+     },
+     {
+      "attr": "data-ok-timeout",
+      "description": "Duration in ms (default `--ok-duration-standard`), or `auto`: from the distance travelled.",
+      "kind": "number",
+      "min": 0,
+      "name": "timeout"
+     },
+     {
+      "attr": "data-ok-disable-prefers-reduced-motion",
+      "description": "Animates even when the user prefers reduced motion.",
+      "kind": "flag",
+      "name": "disablePrefersReducedMotion"
+     },
+     {
+      "attr": "hidden",
+      "description": "Open while the element has no `hidden` (React `in`; HTML: `hidden`, a trigger or `show()` / `hide()`).",
+      "event": "ok:collapse:entered",
+      "kind": "state",
+      "name": "in"
+     }
+    ],
+    "parts": [
+     {
+      "description": "A button or a checkbox that opens and closes the collapses whose ids it names.",
+      "kind": "trigger",
+      "name": "data-ok-collapse-toggle",
+      "value": [
+       "id"
+      ]
+     },
+     {
+      "description": "The easing of the opening animation, such as `ease-in-out`.",
+      "kind": "value",
+      "name": "data-ok-easing",
+      "value": "string"
+     },
+     {
+      "description": "The easing of the closing animation.",
+      "kind": "value",
+      "name": "data-ok-easing-exit",
+      "value": "string"
+     },
+     {
+      "description": "The duration of the closing animation, in milliseconds.",
+      "kind": "value",
+      "name": "data-ok-timeout-exit",
+      "value": "string"
+     }
+    ],
+    "runtime": "collapse"
+   },
+   "name": "Collapse",
+   "react": {
+    "description": "Shows or hides its content by animating its height (or width) from the collapsed size.",
+    "props": [
+     {
+      "description": "The content.",
+      "name": "children",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Size kept while closed: a number in px, or a CSS length (`\"2rem\"`). Default 0.",
+      "name": "collapsedSize",
+      "type": "string | number"
+     },
+     {
+      "description": "The element or component to render: `\"div\"` (default), `\"ul\"`, `List`… It must forward its ref and the props it gets to its root element.",
+      "name": "component",
+      "type": "C"
+     },
+     {
+      "description": "Animates even when the user prefers reduced motion.",
+      "name": "disablePrefersReducedMotion",
+      "type": "boolean"
+     },
+     {
+      "default": "--ok-easing-standard",
+      "description": "A CSS easing (`var(--ok-easing-*)` included) or `{ enter, exit }`.",
+      "name": "easing",
+      "type": "CollapseEasing"
+     },
+     {
+      "default": "false",
+      "description": "Open (`true`) or closed. The element carries `hidden` while closed.",
+      "name": "in",
+      "type": "boolean"
+     },
+     {
+      "description": "Renders the children only once it first opens.",
+      "name": "mountOnEnter",
+      "type": "boolean"
+     },
+     {
+      "description": "`hidden` was removed: the enter animation is about to start.",
+      "name": "onEnter",
+      "type": "((node: HTMLElement) => void)"
+     },
+     {
+      "description": "The element is fully open.",
+      "name": "onEntered",
+      "type": "((node: HTMLElement) => void)"
+     },
+     {
+      "description": "The enter animation started.",
+      "name": "onEntering",
+      "type": "((node: HTMLElement) => void)"
+     },
+     {
+      "description": "`hidden` was added: the exit animation is about to start.",
+      "name": "onExit",
+      "type": "((node: HTMLElement) => void)"
+     },
+     {
+      "description": "The element is fully closed.",
+      "name": "onExited",
+      "type": "((node: HTMLElement) => void)"
+     },
+     {
+      "description": "The exit animation started.",
+      "name": "onExiting",
+      "type": "((node: HTMLElement) => void)"
+     },
+     {
+      "description": "`\"vertical\"` (default) animates the height, `\"horizontal\"` the width.",
+      "name": "orientation",
+      "type": "CollapseOrientation"
+     },
+     {
+      "default": "--ok-duration-standard",
+      "description": "Duration in ms, `\"auto\"` (from the distance travelled), or `{ enter, exit }`.",
+      "name": "timeout",
+      "type": "CollapseTimeout"
+     },
+     {
+      "description": "Removes the children once it has closed (and before it first opens).",
+      "name": "unmountOnExit",
+      "type": "boolean"
+     }
+    ],
+    "ref": "HTMLElement"
+   }
+  }
+ ],
+ "format": 1,
+ "name": "collapse",
+ "title": "Collapse",
+ "types": [
+  {
+   "name": "CollapseEasing",
+   "type": "string | { enter?: string; exit?: string; }"
+  },
+  {
+   "name": "CollapseOrientation",
+   "type": "\"horizontal\" | \"vertical\""
+  },
+  {
+   "name": "CollapseStatus",
+   "type": "\"entered\" | \"entering\" | \"exited\" | \"exiting\""
+  },
+  {
+   "name": "CollapseTimeout",
+   "type": "number | \"auto\" | { appear?: number; enter?: number; exit?: number; }"
+  }
+ ]
+}

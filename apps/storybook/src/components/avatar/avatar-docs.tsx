@@ -1,4 +1,6 @@
 import { avatarGroupOptions, avatarOptions } from "@owlky/core";
+import avatarApi from "@owlky/docs-content/api/avatar.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { Avatar, AvatarGroup } from "@owlky/react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
@@ -29,14 +31,30 @@ export function Author() {
     title: "Show initials or an icon",
     body: 'Without a picture, put initials or an icon inside. Set `color` to tint the background: `default` is grey, the palette colors use white or dark text. Initials scale with the avatar. When the avatar is the only place that names a person, give it `role="img"` and an `aria-label`.',
     html: `<span data-ok-avatar data-ok-variant="circular" data-ok-color="primary" role="img" aria-label="Deja Brady">DB</span>`,
-    react: `<Avatar color="primary" role="img" aria-label="Deja Brady">DB</Avatar>`,
+    react: `import { Avatar } from "@owlky/react";
+
+export function DejaAvatar() {
+  return (
+    <Avatar color="primary" role="img" aria-label="Deja Brady">
+      DB
+    </Avatar>
+  );
+}`,
   },
   {
     id: "size",
     title: "Change the shape and size",
     body: "Set `variant` to `rounded` (12px corners) or `square`. The default size is 40px. Set `size` to a number of pixels, or to a length in `px`, `rem` or `em`. In HTML, the script turns `data-ok-size` into the avatar's size.",
-    html: `<span data-ok-avatar data-ok-variant="rounded" data-ok-color="default" data-ok-size="56">…</span>`,
-    react: `<Avatar variant="rounded" size={56} src="/people/lucian.jpg" alt="Lucian Obrien" />`,
+    html: `<span data-ok-avatar data-ok-variant="rounded" data-ok-color="default" data-ok-size="56">
+  <img src="/people/lucian.jpg" alt="Lucian Obrien">
+</span>`,
+    react: `import { Avatar } from "@owlky/react";
+
+export function LargeAvatar() {
+  return (
+    <Avatar variant="rounded" size={56} src="/people/lucian.jpg" alt="Lucian Obrien" />
+  );
+}`,
   },
   {
     id: "group",
@@ -47,11 +65,17 @@ export function Author() {
   <span data-ok-avatar data-ok-variant="circular" data-ok-color="error">H</span>
   <span data-ok-avatar data-ok-variant="circular" data-ok-color="default" data-ok-avatar-surplus>+5</span>
 </div>`,
-    react: `<AvatarGroup max={3} total={7}>
-  <Avatar color="secondary">D</Avatar>
-  <Avatar color="error">H</Avatar>
-  <Avatar color="info">R</Avatar>
-</AvatarGroup>`,
+    react: `import { Avatar, AvatarGroup } from "@owlky/react";
+
+export function Team() {
+  return (
+    <AvatarGroup max={3} total={7}>
+      <Avatar color="secondary">D</Avatar>
+      <Avatar color="error">H</Avatar>
+      <Avatar color="info">R</Avatar>
+    </AvatarGroup>
+  );
+}`,
   },
   {
     id: "options",
@@ -80,6 +104,7 @@ export function Author() {
 - Initials and icons are decorative by default. Give the avatar \`role="img"\` and \`aria-label\` when it's the only place that says who it is.
 - Grey avatars use dark grey initials, with a contrast ratio of at least 4.5:1. Palette colors follow the design.`,
   },
+  apiReferenceSection(avatarApi),
 ];
 
 const PREVIEWS = {

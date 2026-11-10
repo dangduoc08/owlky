@@ -1,4 +1,6 @@
 import { backdropOptions } from "@owlky/core";
+import backdropApi from "@owlky/docs-content/api/backdrop.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
 import { ExampleBackdropDemo } from "./backdrop-demos.js";
@@ -41,13 +43,18 @@ export function Loader() {
     id: "loading",
     title: "Show a backdrop while work runs",
     body: "Open the backdrop when the work starts and close it when the work ends, whether it succeeds or fails. People can't dismiss a backdrop with the keyboard, so never leave it open after the work is done. In HTML, call `open()` and `close()` on the instance. In React, derive `open` from your loading state.",
-    html: `<div id="saving" data-ok-backdrop>…</div>
+    html: `<div id="saving" data-ok-backdrop>
+  <span role="progressbar" data-ok-circular-progress data-ok-variant="indeterminate" data-ok-color="inherit" aria-label="Saving">
+    <svg data-ok-circular-progress-svg aria-hidden="true" viewBox="22 22 44 44"><circle data-ok-circular-progress-circle cx="44" cy="44" r="20.2" stroke-width="3.6" /></svg>
+  </span>
+</div>
 
 <script type="module">
   const backdrop = window.Owlky.get(document.getElementById("saving"), "backdrop");
   backdrop.open();
   try {
-    await saveDraft();
+    // Your own work, such as saving a form.
+    await fetch("/api/drafts", { method: "POST", body: new FormData(document.forms[0]) });
   } finally {
     // Close it on success and on failure.
     backdrop.close();
@@ -68,7 +75,18 @@ export function SavingOverlay({ saving }: { saving: boolean }) {
     title: "Block clicks without dimming",
     body: "Set `invisible` to make the backdrop transparent. It still covers the page and catches clicks, so a click outside a custom menu or panel can close it without the page behind reacting.",
     html: `<div id="catcher" data-ok-backdrop data-ok-invisible data-ok-backdrop-close></div>`,
-    react: `<Backdrop open={open} invisible onClick={() => setOpen(false)} />`,
+    react: `import { Backdrop, Button } from "@owlky/react";
+import { useState } from "react";
+
+export function ClickShield() {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <Button onClick={() => setOpen(true)}>Block clicks</Button>
+      <Backdrop open={open} invisible onClick={() => setOpen(false)} />
+    </>
+  );
+}`,
   },
   {
     id: "transitions",
@@ -110,6 +128,7 @@ export function SavingOverlay({ saving }: { saving: boolean }) {
 - Put text on a paper inside the backdrop, not on the backdrop itself. White text directly on the light theme's backdrop has a contrast ratio of about 3:1, below the 4.5:1 that text needs.
 - Close the backdrop when the work ends. Keyboard users can't dismiss it themselves.`,
   },
+  apiReferenceSection(backdropApi),
 ];
 
 const PREVIEWS = {

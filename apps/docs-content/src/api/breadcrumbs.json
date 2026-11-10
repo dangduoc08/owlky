@@ -1,0 +1,223 @@
+{
+ "css": [
+  {
+   "name": "--ok-action-hover",
+   "value": "color-mix(in srgb, #919EAB 8%, transparent)"
+  },
+  {
+   "name": "--ok-action-selected",
+   "value": "color-mix(in srgb, #919EAB 16%, transparent)"
+  },
+  {
+   "name": "--ok-duration-shorter",
+   "value": "200ms"
+  },
+  {
+   "name": "--ok-easing-standard",
+   "value": "cubic-bezier(0.4, 0, 0.2, 1)"
+  },
+  {
+   "name": "--ok-font-family",
+   "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+  },
+  {
+   "name": "--ok-palette-grey-500",
+   "value": "#919EAB"
+  },
+  {
+   "name": "--ok-radius-full",
+   "value": "9999px"
+  },
+  {
+   "name": "--ok-radius-xs",
+   "value": "4px"
+  },
+  {
+   "name": "--ok-spacing",
+   "value": "0.25rem"
+  },
+  {
+   "dark": "#FFFFFF",
+   "light": "#1C252E",
+   "name": "--ok-text-primary"
+  },
+  {
+   "dark": "#919EAB",
+   "light": "#637381",
+   "name": "--ok-text-secondary"
+  },
+  {
+   "name": "--ok-typography-body2-font-size",
+   "value": "0.875rem"
+  },
+  {
+   "name": "--ok-typography-body2-line-height",
+   "value": "1.5714"
+  }
+ ],
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-breadcrumbs",
+    "events": [
+     {
+      "cancelable": true,
+      "description": "Before the collapsed items are shown. Call `preventDefault()` to keep them collapsed.",
+      "detail": "undefined",
+      "name": "ok:breadcrumbs:expand"
+     }
+    ],
+    "methods": [
+     {
+      "description": "`true` while items are collapsed behind the expand button.",
+      "kind": "property",
+      "name": "collapsed",
+      "type": "boolean"
+     },
+     {
+      "description": "Shows every item and removes the expand button. Returns `false` if prevented.",
+      "kind": "method",
+      "name": "expand",
+      "type": "() => boolean"
+     }
+    ],
+    "options": [
+     {
+      "attr": "data-ok-max-items",
+      "default": 8,
+      "description": "More items than this collapse into an expand button.",
+      "kind": "number",
+      "min": 1,
+      "name": "maxItems"
+     },
+     {
+      "attr": "data-ok-items-before-collapse",
+      "default": 1,
+      "description": "Collapsed: items shown before the expand button.",
+      "kind": "number",
+      "min": 0,
+      "name": "itemsBeforeCollapse"
+     },
+     {
+      "attr": "data-ok-items-after-collapse",
+      "default": 1,
+      "description": "Collapsed: items shown after the expand button.",
+      "kind": "number",
+      "min": 0,
+      "name": "itemsAfterCollapse"
+     }
+    ],
+    "parts": [
+     {
+      "description": "The item that stands for the hidden middle of a long trail.",
+      "elements": [
+       "li"
+      ],
+      "kind": "part",
+      "name": "data-ok-breadcrumbs-collapsed"
+     },
+     {
+      "description": "The button that shows the hidden items.",
+      "elements": [
+       "button"
+      ],
+      "kind": "part",
+      "name": "data-ok-breadcrumbs-expand"
+     },
+     {
+      "description": "One crumb: a link, or the text of the current page.",
+      "elements": [
+       "li"
+      ],
+      "kind": "part",
+      "name": "data-ok-breadcrumbs-item"
+     },
+     {
+      "description": "The ordered list of crumbs.",
+      "elements": [
+       "ol"
+      ],
+      "kind": "part",
+      "name": "data-ok-breadcrumbs-list"
+     },
+     {
+      "description": "The separator between two crumbs. Hidden from assistive technology.",
+      "elements": [
+       "li"
+      ],
+      "kind": "part",
+      "name": "data-ok-breadcrumbs-separator"
+     },
+     {
+      "description": "Set once the hidden items are shown.",
+      "kind": "state",
+      "name": "data-ok-expanded"
+     }
+    ],
+    "runtime": "breadcrumbs"
+   },
+   "name": "Breadcrumbs",
+   "react": {
+    "description": "A `nav` with an ordered list of links; every child becomes an item, separators go between them. Long trails collapse into an expand button (React state; the HTML runtime does the same).",
+    "native": "HTMLElement",
+    "props": [
+     {
+      "default": "\"breadcrumb\"",
+      "description": "Names the navigation landmark.",
+      "name": "aria-label",
+      "type": "string"
+     },
+     {
+      "description": "Links (`a`) and the current page (`<span aria-current=\"page\">`), in order.",
+      "name": "children",
+      "type": "ReactNode"
+     },
+     {
+      "default": "\"Show path\"",
+      "description": "Accessible name of the expand button.",
+      "name": "expandText",
+      "type": "string"
+     },
+     {
+      "description": "Collapsed: items shown after the expand button. Default 1.",
+      "name": "itemsAfterCollapse",
+      "type": "number"
+     },
+     {
+      "description": "Collapsed: items shown before the expand button. Default 1.",
+      "name": "itemsBeforeCollapse",
+      "type": "number"
+     },
+     {
+      "description": "More items than this collapse into an expand button. Default 8.",
+      "name": "maxItems",
+      "type": "number"
+     },
+     {
+      "default": "\"/\"",
+      "description": "Shown between items. `<BreadcrumbsDot />` draws a dot.",
+      "name": "separator",
+      "type": "ReactNode"
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-breadcrumbs-dot",
+    "description": "A dot of the collapsed item's button.",
+    "elements": [
+     "span"
+    ]
+   },
+   "name": "BreadcrumbsDot",
+   "react": {
+    "description": "A dot separator for `Breadcrumbs` (`separator={<BreadcrumbsDot />}`).",
+    "props": []
+   }
+  }
+ ],
+ "format": 1,
+ "name": "breadcrumbs",
+ "title": "Breadcrumbs"
+}

@@ -1,4 +1,6 @@
 import { menuItemOptions, menuOptions, popoverOptions } from "@owlky/core";
+import menuApi from "@owlky/docs-content/api/menu.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
 import { SimpleMenuDemo } from "./simple-demo.js";
@@ -44,8 +46,8 @@ export function AccountMenu() {
         anchorEl={anchor}
         onOpenChange={() => setAnchor(null)}
       >
-        <MenuItem onClick={openProfile}>Profile</MenuItem>
-        <MenuItem onClick={logout}>Logout</MenuItem>
+        <MenuItem onClick={() => window.location.assign("/profile")}>Profile</MenuItem>
+        <MenuItem onClick={() => window.location.assign("/logout")}>Logout</MenuItem>
       </Menu>
     </>
   );
@@ -57,8 +59,23 @@ export function AccountMenu() {
     body: "Mark the current choice with `selected`: it is bold and tinted, and the menu focuses it when it opens. Use `disabled` for a choice that isn't available: the keyboard skips it and clicks are ignored.",
     html: `<li data-ok-menu-item role="menuitem" tabindex="-1" aria-disabled="true">Choose an option</li>
 <li data-ok-menu-item role="menuitem" tabindex="-1" data-ok-selected>Show all</li>`,
-    react: `<MenuItem disabled>Choose an option</MenuItem>
-<MenuItem selected>Show all</MenuItem>`,
+    react: `import { Button, Menu, MenuItem } from "@owlky/react";
+import { useState } from "react";
+
+export function FilterMenu() {
+  const [anchor, setAnchor] = useState<HTMLElement | null>(null);
+  return (
+    <>
+      <Button id="filter-button" aria-haspopup="menu" onClick={(event) => setAnchor(event.currentTarget)}>
+        Filter
+      </Button>
+      <Menu aria-labelledby="filter-button" open={anchor !== null} anchorEl={anchor} onOpenChange={() => setAnchor(null)}>
+        <MenuItem disabled>Choose an option</MenuItem>
+        <MenuItem selected>Show all</MenuItem>
+      </Menu>
+    </>
+  );
+}`,
   },
   {
     id: "choose",
@@ -69,7 +86,24 @@ export function AccountMenu() {
     console.log(event.detail.item.textContent);
   });
 </script>`,
-    react: `<MenuItem onClick={() => setSort("name")}>Sort by name</MenuItem>`,
+    react: `import { Button, Menu, MenuItem } from "@owlky/react";
+import { useState } from "react";
+
+export function SortMenu() {
+  const [anchor, setAnchor] = useState<HTMLElement | null>(null);
+  const [sort, setSort] = useState("name");
+  return (
+    <>
+      <Button id="sort-button" aria-haspopup="menu" onClick={(event) => setAnchor(event.currentTarget)}>
+        Sort by {sort}
+      </Button>
+      <Menu aria-labelledby="sort-button" open={anchor !== null} anchorEl={anchor} onOpenChange={() => setAnchor(null)}>
+        <MenuItem onClick={() => setSort("name")}>Sort by name</MenuItem>
+        <MenuItem onClick={() => setSort("date")}>Sort by date</MenuItem>
+      </Menu>
+    </>
+  );
+}`,
   },
   {
     id: "options",
@@ -102,6 +136,7 @@ export function AccountMenu() {
 - Disabled items have \`aria-disabled="true"\`: they stay visible but can't be chosen.
 - The selected item is bold and tinted. The tint alone isn't the only cue.`,
   },
+  apiReferenceSection(menuApi),
 ];
 
 const PREVIEWS = {

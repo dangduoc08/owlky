@@ -287,6 +287,77 @@ for (const [id, schemaNames] of OPTION_TABLES) {
   });
 }
 
+/**
+ * Component docs pages and the API references they show (ADR-0049): the "API reference" section
+ * renders one row per prop, option, part, event, method, type and CSS variable of the generated
+ * `apps/docs-content/src/api/<component>.json` (roadmap 3.4).
+ */
+const API_PAGES: [string, string[]][] = [
+  ...OPTION_TABLES.map(([id]) => id)
+    .filter((id) => id.startsWith("components-"))
+    .map((id): [string, string[]] => {
+      const page = id.replace(/^components-(button-|progress-)?|--docs$/g, "");
+      const spec = { "date-pickers": "date-picker", datagrid: "data-grid" }[page] ?? page;
+      return [
+        id,
+        ["checkbox", "radio", "switch"].includes(spec) ? [spec, "form-control-label"] : [spec],
+      ];
+    }),
+  ["components-list--docs", ["list"]] as [string, string[]],
+  ["components-gantt--docs", ["gantt"]] as [string, string[]],
+  ["foundations-illustrations--docs", ["illustration"]] as [string, string[]],
+].filter(([id], index, all) => all.findIndex(([other]) => other === id) === index);
+
+interface ApiJson {
+  entries: {
+    name: string;
+    react?: { props: { name: string }[] };
+    html?: {
+      options?: { name: string }[];
+      parts?: { name: string }[];
+      events?: { name: string }[];
+      methods?: { name: string }[];
+    };
+  }[];
+  types?: { name: string; framework?: string }[];
+  css?: { name: string }[];
+}
+
+/** The `data-docs-api-row` values the reference of `spec` renders. */
+function apiRows(spec: string): string[] {
+  const data = JSON.parse(
+    readFileSync(new URL(`../../apps/docs-content/src/api/${spec}.json`, import.meta.url), "utf8"),
+  ) as ApiJson;
+  return [
+    ...data.entries.flatMap(({ name, react, html }) => [
+      ...(react?.props ?? []).map((prop) => `prop:${name}:${prop.name}`),
+      ...(html?.options ?? []).map((option) => `option:${name}:${option.name}`),
+      ...(html?.parts ?? []).map((part) => `part:${name}:${part.name}`),
+      ...(html?.events ?? []).map((event) => `event:${name}:${event.name}`),
+      ...(html?.methods ?? []).map((method) => `method:${name}:${method.name}`),
+    ]),
+    ...(data.types ?? []).map(
+      (type) => `type:${type.name}${type.framework ? `:${type.framework}` : ""}`,
+    ),
+    ...(data.css ?? []).map((variable) => `css:${variable.name}`),
+  ];
+}
+
+for (const [id, specs] of API_PAGES) {
+  test(`${id}: the API reference lists every prop, attribute, event, method and variable`, async ({
+    page,
+    browserName,
+  }) => {
+    test.skip(browserName !== "chromium", "Content check runs once.");
+    await page.goto(`/apps/storybook/storybook-static/iframe.html?id=${id}&viewMode=docs`);
+    await expect(page.locator("[data-docs-api]").first()).toBeVisible();
+    const rows = await page
+      .locator("[data-docs-api-row]")
+      .evaluateAll((all) => all.map((row) => row.getAttribute("data-docs-api-row")));
+    expect(rows.sort()).toEqual(specs.flatMap(apiRows).sort());
+  });
+}
+
 const THEME_CSS = readFileSync(
   new URL("../../packages/styles/src/theme.css", import.meta.url),
   "utf8",
@@ -320,9 +391,13 @@ for (const [id, lastHeading] of GUIDES) {
     }) => {
       test.skip(browserName !== "chromium", "Content check runs once.");
       await openDocs(page);
-      const code = (
-        await page.locator("[data-docs-code] pre, .sb-docs-guide code").allTextContents()
-      ).join("\n");
+      const code =
+        // The API reference lists variables as data (color bindings exist per element only).
+        (
+          await page
+            .locator("[data-docs-code] pre, .sb-docs-guide code:not([data-docs-api] code)")
+            .allTextContents()
+        ).join("\n");
       const variables = [...new Set(code.match(/--ok-[a-z0-9-]*[a-z0-9]\b(?!-)/g) ?? [])];
       const missing = await page.evaluate(
         (names) =>

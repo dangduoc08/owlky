@@ -1,4 +1,6 @@
 import { dataGridOptions } from "@owlky/core";
+import dataGridApi from "@owlky/docs-content/api/data-grid.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { CDN, GuideDocs, type GuideSection } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
 
@@ -157,7 +159,9 @@ export function People({ rows }: { rows: Person[] }) {
     },
   });
 </script>`,
-    react: `const customers = {
+    react: `import { DataGrid } from "@owlky/react";
+
+const customers = {
   // params: { sortModel, filterModel, paginationModel: { page, pageSize } }
   async getRows(params) {
     const response = await fetch("/api/customers", {
@@ -561,6 +565,7 @@ When the grid is pivoted, a value field of the pivot draws one series per pivot 
 - Selected cells carry \`aria-selected\`. Header filter cells are named after their column, such as "Name filter".
 - While rows load, the grid sets \`aria-busy\` and the loading overlay is a \`status\` named "Loading". The grid keeps the full row count and each row's index, also when only some rows are in the page.`,
   },
+  apiReferenceSection(dataGridApi),
 ];
 
 const PREVIEWS = {

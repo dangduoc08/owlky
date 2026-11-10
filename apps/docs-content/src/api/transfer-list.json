@@ -1,0 +1,260 @@
+{
+ "css": [
+  {
+   "name": "--ok-action-hover",
+   "value": "color-mix(in srgb, #919EAB 8%, transparent)"
+  },
+  {
+   "dark": "#1C252E",
+   "light": "#FFFFFF",
+   "name": "--ok-bg-paper"
+  },
+  {
+   "name": "--ok-divider",
+   "value": "color-mix(in srgb, #919EAB 20%, transparent)"
+  },
+  {
+   "name": "--ok-font-family",
+   "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+  },
+  {
+   "name": "--ok-radius-xl",
+   "value": "16px"
+  },
+  {
+   "name": "--ok-shadow-card",
+   "value": "0px 0px 2px 0px color-mix(in srgb, var(--ok-shadow-color) 20%, transparent), 0px 12px 24px -4px color-mix(in srgb, var(--ok-shadow-color) 12%, transparent)"
+  },
+  {
+   "name": "--ok-spacing",
+   "value": "0.25rem"
+  },
+  {
+   "dark": "#FFFFFF",
+   "light": "#1C252E",
+   "name": "--ok-text-primary"
+  },
+  {
+   "dark": "#919EAB",
+   "light": "#637381",
+   "name": "--ok-text-secondary"
+  },
+  {
+   "name": "--ok-typography-caption-font-size",
+   "value": "0.75rem"
+  },
+  {
+   "name": "--ok-typography-caption-line-height",
+   "value": "1.5"
+  },
+  {
+   "name": "--ok-typography-subtitle2-font-size",
+   "value": "0.875rem"
+  },
+  {
+   "name": "--ok-typography-subtitle2-font-weight",
+   "value": "600"
+  },
+  {
+   "name": "--ok-typography-subtitle2-line-height",
+   "value": "1.5714"
+  }
+ ],
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-transfer-list",
+    "events": [
+     {
+      "cancelable": true,
+      "description": "Before checked items move to the other list. Call `preventDefault()` to keep them.",
+      "detail": "{ left: string[]; right: string[]; direction: TransferDirection; }",
+      "name": "ok:transfer-list:change"
+     }
+    ],
+    "methods": [
+     {
+      "description": "Moves items as a move button would. Returns `false` if nothing moved or it was prevented.",
+      "kind": "method",
+      "name": "move",
+      "type": "(direction: TransferDirection) => boolean"
+     },
+     {
+      "description": "Item values on each side, in order.",
+      "kind": "property",
+      "name": "value",
+      "type": "{ left: string[]; right: string[]; }"
+     }
+    ],
+    "options": [
+     {
+      "attr": "data-ok-variant",
+      "default": "simple",
+      "description": "`simple`: four move buttons; `enhanced`: titled lists with select-all and counts.",
+      "kind": "style",
+      "name": "variant",
+      "values": [
+       "simple",
+       "enhanced"
+      ]
+     },
+     {
+      "attr": "data-ok-disabled",
+      "description": "Nothing can be selected or moved.",
+      "kind": "flag",
+      "name": "disabled"
+     },
+     {
+      "attr": "checked",
+      "description": "Items on each side (`left` / `right`).",
+      "event": "ok:transfer-list:change",
+      "kind": "state",
+      "name": "value"
+     }
+    ],
+    "parts": [
+     {
+      "description": "The pattern of the selected count, such as `{checked}/{total} selected`.",
+      "kind": "value",
+      "name": "data-ok-label-count",
+      "value": "string"
+     },
+     {
+      "description": "On a panel: which list it is.",
+      "kind": "value",
+      "name": "data-ok-side",
+      "value": [
+       "left",
+       "right"
+      ]
+     },
+     {
+      "description": "The buttons that move items between the lists.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-transfer-list-actions"
+     },
+     {
+      "description": "The selected count in a panel's header.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-transfer-list-count"
+     },
+     {
+      "description": "A panel's header: the select-all checkbox, the title and the count.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-transfer-list-header"
+     },
+     {
+      "description": "A button that moves items to the other list.",
+      "elements": [
+       "button"
+      ],
+      "kind": "part",
+      "name": "data-ok-transfer-list-move"
+     },
+     {
+      "description": "One item: a label around its checkbox.",
+      "elements": [
+       "label"
+      ],
+      "kind": "part",
+      "name": "data-ok-transfer-list-option"
+     },
+     {
+      "description": "One list.",
+      "elements": [
+       "section"
+      ],
+      "kind": "part",
+      "name": "data-ok-transfer-list-panel"
+     },
+     {
+      "description": "The title of a panel.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-transfer-list-title"
+     }
+    ],
+    "runtime": "transfer-list"
+   },
+   "name": "TransferList",
+   "react": {
+    "description": "Two lists of checkable items and move buttons (the MUI transfer list demo as a component). Built from Scrollbar, List, Checkbox and Button; the move rules are core's `transferMove`.",
+    "native": "HTMLDivElement",
+    "props": [
+     {
+      "description": "Accessible names of the move buttons.",
+      "name": "buttonLabels",
+      "type": "Partial<Record<TransferDirection, string>>"
+     },
+     {
+      "description": "Uncontrolled: values on the left at first (the rest start on the right). Default: all.",
+      "name": "defaultLeft",
+      "type": "readonly string[]"
+     },
+     {
+      "description": "Nothing can be selected or moved.",
+      "name": "disabled",
+      "type": "boolean"
+     },
+     {
+      "description": "Text of the enhanced counts. Default \"1/4 selected\".",
+      "name": "getCountLabel",
+      "type": "((checked: number, total: number) => string)"
+     },
+     {
+      "description": "Every item, on either side.",
+      "name": "items",
+      "required": true,
+      "type": "readonly TransferListItem[]"
+     },
+     {
+      "description": "Controlled: values on the left / right.",
+      "name": "left",
+      "type": "readonly string[]"
+     },
+     {
+      "description": "Called with both sides after a move.",
+      "name": "onChange",
+      "type": "((left: string[], right: string[]) => void)"
+     },
+     {
+      "description": "The items of the right list, controlled.",
+      "name": "right",
+      "type": "readonly string[]"
+     },
+     {
+      "default": "[\"Choices\", \"Chosen\"]",
+      "description": "Names of the two lists (and enhanced titles).",
+      "name": "titles",
+      "type": "readonly [string, string]"
+     },
+     {
+      "description": "`\"simple\"` (default): four buttons; `\"enhanced\"`: titles, select-all and counts.",
+      "name": "variant",
+      "type": "\"enhanced\" | \"simple\""
+     }
+    ]
+   }
+  }
+ ],
+ "format": 1,
+ "name": "transfer-list",
+ "title": "Transfer list",
+ "types": [
+  {
+   "name": "TransferDirection",
+   "type": "\"all-left\" | \"all-right\" | \"left\" | \"right\""
+  }
+ ]
+}

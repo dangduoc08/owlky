@@ -1,0 +1,370 @@
+{
+ "css": [
+  {
+   "name": "--ok-duration-shortest",
+   "value": "150ms"
+  },
+  {
+   "name": "--ok-duration-standard",
+   "value": "300ms"
+  },
+  {
+   "name": "--ok-easing-standard",
+   "value": "cubic-bezier(0.4, 0, 0.2, 1)"
+  },
+  {
+   "name": "--ok-palette-common-white-channel",
+   "value": "255 255 255"
+  },
+  {
+   "name": "--ok-palette-error-main-channel",
+   "value": "255 86 48"
+  },
+  {
+   "name": "--ok-palette-grey-500-channel",
+   "value": "145 158 171"
+  },
+  {
+   "name": "--ok-palette-grey-900-channel",
+   "value": "20 26 33"
+  },
+  {
+   "name": "--ok-palette-info-main-channel",
+   "value": "0 184 217"
+  },
+  {
+   "name": "--ok-palette-primary-main-channel",
+   "value": "0 167 111"
+  },
+  {
+   "name": "--ok-palette-secondary-main-channel",
+   "value": "142 51 255"
+  },
+  {
+   "name": "--ok-palette-success-main-channel",
+   "value": "34 197 94"
+  },
+  {
+   "name": "--ok-palette-warning-main-channel",
+   "value": "255 171 0"
+  },
+  {
+   "name": "--ok-spacing",
+   "value": "0.25rem"
+  },
+  {
+   "dark": "#637381",
+   "light": "#919EAB",
+   "name": "--ok-text-disabled"
+  }
+ ],
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-image",
+    "events": [
+     {
+      "cancelable": false,
+      "description": "After the picture failed to load.",
+      "detail": "{ src: string; }",
+      "name": "ok:image:error"
+     },
+     {
+      "cancelable": false,
+      "description": "After the picture loaded. `src` is the source the browser picked (`currentSrc`).",
+      "detail": "{ src: string; }",
+      "name": "ok:image:load"
+     }
+    ],
+    "options": [
+     {
+      "attr": "data-ok-ratio",
+      "default": "1/1",
+      "description": "Aspect ratio (width/height) the picture is cropped to. None: the picture's own ratio.",
+      "kind": "style",
+      "name": "ratio",
+      "optional": true,
+      "values": [
+       "1/1",
+       "2/3",
+       "3/2",
+       "3/4",
+       "4/3",
+       "4/6",
+       "6/4",
+       "9/16",
+       "16/9",
+       "9/21",
+       "21/9"
+      ]
+     },
+     {
+      "attr": "data-ok-fit",
+      "default": "cover",
+      "description": "How the picture fills its box (`object-fit`).",
+      "kind": "style",
+      "name": "fit",
+      "values": [
+       "cover",
+       "contain",
+       "fill",
+       "none",
+       "scale-down"
+      ]
+     },
+     {
+      "attr": "data-ok-position",
+      "default": "center",
+      "description": "Which part of the picture stays in view when it is cropped (`object-position`).",
+      "kind": "style",
+      "name": "position",
+      "values": [
+       "center",
+       "top",
+       "bottom",
+       "left",
+       "right",
+       "top-left",
+       "top-right",
+       "bottom-left",
+       "bottom-right"
+      ]
+     },
+     {
+      "attr": "data-ok-effect",
+      "default": "blur",
+      "description": "How the picture appears once loaded: blurred, faded, from grayscale, or at once.",
+      "kind": "style",
+      "name": "effect",
+      "values": [
+       "blur",
+       "opacity",
+       "black-and-white",
+       "none"
+      ]
+     },
+     {
+      "attr": "data-ok-overlay",
+      "default": "dark",
+      "description": "A layer over the picture: `dark` (48% grey 900) or a palette color (a gradient to 80%).",
+      "kind": "style",
+      "name": "overlay",
+      "optional": true,
+      "values": [
+       "dark",
+       "primary",
+       "secondary",
+       "info",
+       "success",
+       "warning",
+       "error"
+      ]
+     },
+     {
+      "attr": "data-ok-overlay-from",
+      "default": "primary",
+      "description": "With a color `overlay`: the gradient starts from this color (24%) at the bottom.",
+      "kind": "style",
+      "name": "overlayFrom",
+      "optional": true,
+      "values": [
+       "primary",
+       "secondary",
+       "info",
+       "success",
+       "warning",
+       "error"
+      ]
+     },
+     {
+      "attr": "data-ok-disable-placeholder",
+      "description": "No placeholder while the picture loads or after an error.",
+      "kind": "flag",
+      "name": "disablePlaceholder"
+     },
+     {
+      "attr": "data-ok-visible-by-default",
+      "description": "Loads at once (`loading=\"eager\"`), with no placeholder and no effect.",
+      "kind": "flag",
+      "name": "visibleByDefault"
+     },
+     {
+      "attr": "data-ok-state",
+      "description": "`loading`, `loaded` or `error`, written by the component (never in snippets).",
+      "event": "ok:image:load",
+      "kind": "state",
+      "name": "state"
+     }
+    ],
+    "parts": [
+     {
+      "description": "The broken picture icon, shown after an error.",
+      "elements": [
+       "svg"
+      ],
+      "kind": "part",
+      "name": "data-ok-image-icon"
+     },
+     {
+      "description": "The overlay over the picture.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-image-overlay"
+     },
+     {
+      "description": "The placeholder shown while the picture loads.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-image-placeholder"
+     }
+    ],
+    "runtime": "image"
+   },
+   "name": "Image",
+   "react": {
+    "description": "A picture that loads lazily behind a placeholder and appears with an effect; `ratio` crops it, `overlay` paints a layer over it.",
+    "native": "HTMLSpanElement",
+    "props": [
+     {
+      "description": "Text alternative (required). Use `\"\"` for a decorative picture.",
+      "name": "alt",
+      "required": true,
+      "type": "string"
+     },
+     {
+      "description": "The `crossorigin` of the `img`.",
+      "name": "crossOrigin",
+      "type": "CrossOrigin"
+     },
+     {
+      "default": "\"async\"",
+      "description": "How the browser decodes the picture (the `img` attribute).",
+      "name": "decoding",
+      "type": "\"async\" | \"auto\" | \"sync\""
+     },
+     {
+      "description": "No placeholder while loading.",
+      "name": "disablePlaceholder",
+      "type": "boolean"
+     },
+     {
+      "default": "\"blur\"",
+      "description": "How the picture appears once loaded.",
+      "name": "effect",
+      "type": "\"black-and-white\" | \"blur\" | \"none\" | \"opacity\""
+     },
+     {
+      "description": "How soon the browser fetches the picture (`fetchpriority`).",
+      "name": "fetchPriority",
+      "type": "\"auto\" | \"high\" | \"low\""
+     },
+     {
+      "default": "\"cover\"",
+      "description": "`object-fit`.",
+      "name": "fit",
+      "type": "\"contain\" | \"cover\" | \"fill\" | \"none\" | \"scale-down\""
+     },
+     {
+      "description": "The picture's height (the `img` attribute), which reserves its space with `width`.",
+      "name": "height",
+      "type": "string | number"
+     },
+     {
+      "description": "Other attributes of the `<img>`.",
+      "name": "imgProps",
+      "type": "ImgHTMLAttributes<HTMLImageElement>"
+     },
+     {
+      "description": "Ref of the `<img>` (`ref` is the root).",
+      "name": "imgRef",
+      "type": "Ref<HTMLImageElement>"
+     },
+     {
+      "default": "\"lazy\"",
+      "description": "Native lazy loading. (`\"eager\"` with `visibleByDefault`).",
+      "name": "loading",
+      "type": "\"eager\" | \"lazy\""
+     },
+     {
+      "description": "The picture failed to load: the placeholder stays, with a broken-image icon.",
+      "name": "onError",
+      "type": "((event: ImgEvent) => void)"
+     },
+     {
+      "description": "The picture loaded (also after an earlier error, when `src` changes).",
+      "name": "onLoad",
+      "type": "((event: ImgEvent) => void)"
+     },
+     {
+      "description": "A layer over the picture: `\"dark\"` or a palette color (a gradient).",
+      "name": "overlay",
+      "type": "\"dark\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
+     },
+     {
+      "description": "With a color `overlay`: the gradient starts from this color at the bottom.",
+      "name": "overlayFrom",
+      "type": "\"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
+     },
+     {
+      "description": "Custom placeholder content (decorative).",
+      "name": "placeholder",
+      "type": "ReactNode"
+     },
+     {
+      "description": "A small preview shown blurred in the placeholder while the picture loads.",
+      "name": "placeholderSrc",
+      "type": "string"
+     },
+     {
+      "default": "\"center\"",
+      "description": "The part that stays in view when cropped (`object-position`).",
+      "name": "position",
+      "type": "\"bottom\" | \"bottom-left\" | \"bottom-right\" | \"center\" | \"left\" | \"right\" | \"top\" | \"top-left\" | \"top-right\""
+     },
+     {
+      "description": "Aspect ratio the picture is cropped to (`\"16/9\"`). Default: the picture's own ratio.",
+      "name": "ratio",
+      "type": "\"1/1\" | \"16/9\" | \"2/3\" | \"21/9\" | \"3/2\" | \"3/4\" | \"4/3\" | \"4/6\" | \"6/4\" | \"9/16\" | \"9/21\""
+     },
+     {
+      "description": "The `referrerpolicy` of the `img`.",
+      "name": "referrerPolicy",
+      "type": "HTMLAttributeReferrerPolicy"
+     },
+     {
+      "description": "The `sizes` of the `img`, with `srcSet`.",
+      "name": "sizes",
+      "type": "string"
+     },
+     {
+      "description": "Picture URL.",
+      "name": "src",
+      "type": "string"
+     },
+     {
+      "description": "Candidate pictures at other resolutions (the `srcset` of the `img`).",
+      "name": "srcSet",
+      "type": "string"
+     },
+     {
+      "description": "Loads at once, with no placeholder and no effect.",
+      "name": "visibleByDefault",
+      "type": "boolean"
+     },
+     {
+      "description": "Intrinsic size: reserves the picture's ratio before it loads (without `ratio`).",
+      "name": "width",
+      "type": "string | number"
+     }
+    ]
+   }
+  }
+ ],
+ "format": 1,
+ "name": "image",
+ "title": "Image"
+}

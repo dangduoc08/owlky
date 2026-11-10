@@ -1,4 +1,6 @@
 import { dialogOptions } from "@owlky/core";
+import dialogApi from "@owlky/docs-content/api/dialog.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
 import { AlertDialogDemo } from "./dialog-demos.js";
@@ -104,6 +106,7 @@ export function DiscardDraft() {
 - The page behind is inert, so screen readers and the keyboard stay in the dialog.
 - Secondary text uses the secondary text color, with a contrast ratio of at least 4.5:1.`,
   },
+  apiReferenceSection(dialogApi),
 ];
 
 const PREVIEWS = {

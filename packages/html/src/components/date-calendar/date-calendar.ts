@@ -36,7 +36,7 @@ import {
   yearRange,
 } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
-import type { ComponentInstance } from "../../runtime/types.js";
+import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
 import {
   ARROW_LEFT,
   ARROW_RIGHT,
@@ -57,24 +57,42 @@ import {
 /** Decorates a day button after it is built (phase 4: badges, highlights; MUI X `slots.day`). */
 export type PickerDayRenderer = (day: HTMLButtonElement, date: Date) => void;
 
+/** Events of this component (`ok:<name>:<event>` on the root). */
+export interface DateCalendarEvents {
+  /** Before a day is picked (`YYYY-MM-DD`). Call `preventDefault()` to refuse it. */
+  change: EventSpec<{ value: string; selectionState: "partial" | "finish" }, true>;
+  /** After the calendar switched between the day, month and year views. */
+  viewchange: EventSpec<{ view: DateView }>;
+  /** After another month is shown (`YYYY-MM`). */
+  monthchange: EventSpec<{ month: string }>;
+  /** After another year is shown. */
+  yearchange: EventSpec<{ year: number }>;
+}
+
 export interface DateCalendarInstance extends ComponentInstance, PickerDateApi {
   /** Selected day (ISO), or `null`. */
   readonly value: string | null;
   /** Sets the value (ISO string, `Date` or `null`) and shows its month, without events. */
   setValue(value: string | Date | null): void;
+  /** The view shown (`day`, `month` or `year`). */
   readonly view: DateView;
+  /** Shows another view. */
   setView(view: DateView): void;
   /** The shown month (`YYYY-MM`). */
   readonly month: string;
   /** Focuses the current day (or month / year). */
   focus(): void;
+  /** Disables the days for which the function returns `true` (`null`: none). */
   setShouldDisableDate(fn: ((day: Date) => boolean) | null): void;
+  /** Disables the months for which the function returns `true` (`null`: none). */
   setShouldDisableMonth(fn: ((month: Date) => boolean) | null): void;
+  /** Disables the years for which the function returns `true` (`null`: none). */
   setShouldDisableYear(fn: ((year: Date) => boolean) | null): void;
   /** Weekday header text (default: first letter of the short name). */
   setDayOfWeekFormatter(fn: ((date: Date) => string) | null): void;
   /** Decorates each day button (phase 4); `null` removes the renderer. */
   setDayRenderer(fn: PickerDayRenderer | null): void;
+  /** Replaces the text of the labels and buttons, such as for another language. */
   setLocaleText(text: Partial<PickerLocaleText>): void;
 }
 
@@ -95,7 +113,7 @@ const o = dateCalendarOptions.options;
  * Events:  ok:date-calendar:change (cancelable, `{ value, selectionState }`), :viewchange `{ view }`,
  *          :monthchange `{ month }`, :yearchange `{ year }`.
  */
-export const dateCalendar = defineComponent<DateCalendarInstance>({
+export const dateCalendar = defineComponent<DateCalendarInstance, DateCalendarEvents>({
   name: "date-calendar",
   selector: "[data-ok-date-calendar]",
 

@@ -10,7 +10,7 @@ import {
 } from "@owlky/core/code-editor";
 import { defineComponent } from "../../runtime/define.js";
 import { syncCustomProperties } from "../../runtime/style.js";
-import type { ComponentInstance } from "../../runtime/types.js";
+import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
 import {
   labelOf,
   ownPart,
@@ -21,6 +21,20 @@ import {
   sizeProperties,
 } from "./code-editor-dom.js";
 
+/** Events of this component (`ok:<name>:<event>` on the root). */
+export interface CodeEditorEvents {
+  /** Before the editor is created: configure `monaco` here (themes, languages). */
+  beforemount: EventSpec<{ monaco: unknown }>;
+  /** After the editor was created. */
+  mount: EventSpec<{ editor: unknown; monaco: unknown }>;
+  /** After the text changed. `event` is Monaco's change event (`null` in the fallback). */
+  change: EventSpec<{ value: string; event: unknown }>;
+  /** After the language service reported its markers (errors and warnings). */
+  validate: EventSpec<{ markers: unknown[] }>;
+  /** After Monaco failed to load (the plain text area stays). */
+  error: EventSpec<{ error: unknown }>;
+}
+
 export interface CodeEditorElementInstance extends ComponentInstance {
   /** `loading`, `ready` or `error` (the `<textarea>` fallback). */
   readonly status: CodeEditorStatus;
@@ -30,9 +44,11 @@ export interface CodeEditorElementInstance extends ComponentInstance {
   setValue(value: string): void;
   /** Merges Monaco options (`editor.updateOptions`). */
   updateOptions(options: CodeEditorOptions): void;
+  /** Moves the focus into the editor. */
   focus(): void;
   /** Monaco's editor and namespace once ready. */
   readonly editor: MonacoEditor | null;
+  /** The Monaco namespace once loaded, or `null`. */
   readonly monaco: Monaco | null;
   /** The core controller. */
   readonly controller: CodeEditorController;
@@ -79,7 +95,7 @@ const WATCHED = [
  *          ok:code-editor:error `{ error }`.
  */
 export const createCodeEditor = (hooks: CreateCodeEditorOptions = {}) =>
-  defineComponent<CodeEditorElementInstance>({
+  defineComponent<CodeEditorElementInstance, CodeEditorEvents>({
     name: "code-editor",
     selector: ROOT,
 

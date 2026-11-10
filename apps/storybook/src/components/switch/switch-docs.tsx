@@ -1,4 +1,9 @@
 import { formControlLabelOptions, switchOptions } from "@owlky/core";
+import formControlLabelApi from "@owlky/docs-content/api/form-control-label.json" with {
+  type: "json",
+};
+import switchApi from "@owlky/docs-content/api/switch.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { FormControlLabel, Switch } from "@owlky/react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
@@ -92,6 +97,11 @@ export function SwitchPlacement() {
 - Focus is shown with a 2px ring around the track. The target is at least 24px high.
 - The off track follows the design: a light grey with a contrast ratio of about 1.6:1 on white. The white thumb and its shadow show the switch's shape. Brand colors of the on track follow the design too.`,
   },
+  apiReferenceSection(switchApi),
+  apiReferenceSection(formControlLabelApi, {
+    id: "api-form-control-label",
+    title: "Form control label API reference",
+  }),
 ];
 
 const PREVIEWS = {

@@ -1,4 +1,9 @@
 import { formControlLabelOptions, radioGroupOptions, radioOptions } from "@owlky/core";
+import formControlLabelApi from "@owlky/docs-content/api/form-control-label.json" with {
+  type: "json",
+};
+import radioApi from "@owlky/docs-content/api/radio.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { FormControlLabel, Radio, RadioGroup } from "@owlky/react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
@@ -118,6 +123,11 @@ export function Delivery() {
 - Focus is shown with a 2px ring inside the target. The target is at least 36 × 36px.
 - Unselected radios use the secondary text color, with a contrast ratio of at least 4.5:1. Brand colors of selected radios follow the design.`,
   },
+  apiReferenceSection(radioApi),
+  apiReferenceSection(formControlLabelApi, {
+    id: "api-form-control-label",
+    title: "Form control label API reference",
+  }),
 ];
 
 const PREVIEWS = {

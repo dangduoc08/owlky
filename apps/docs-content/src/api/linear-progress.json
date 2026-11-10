@@ -1,0 +1,157 @@
+{
+ "css": [
+  {
+   "description": "The main color of the element's `data-ok-color`.",
+   "name": "--ok-c-main"
+  },
+  {
+   "name": "--ok-duration-shorter",
+   "value": "200ms"
+  },
+  {
+   "name": "--ok-duration-standard",
+   "value": "300ms"
+  },
+  {
+   "name": "--ok-palette-primary-main",
+   "value": "#00A76F"
+  },
+  {
+   "name": "--ok-radius-full",
+   "value": "9999px"
+  },
+  {
+   "name": "--ok-spacing",
+   "value": "0.25rem"
+  }
+ ],
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-linear-progress",
+    "options": [
+     {
+      "attr": "data-ok-variant",
+      "default": "indeterminate",
+      "description": "`indeterminate` / `query` while the duration is unknown; `determinate` / `buffer` show `value`.",
+      "kind": "style",
+      "name": "variant",
+      "values": [
+       "indeterminate",
+       "determinate",
+       "buffer",
+       "query"
+      ]
+     },
+     {
+      "attr": "data-ok-color",
+      "default": "primary",
+      "description": "Palette color, or `inherit` (text color).",
+      "kind": "style",
+      "name": "color",
+      "values": [
+       "inherit",
+       "primary",
+       "secondary",
+       "info",
+       "success",
+       "warning",
+       "error"
+      ]
+     },
+     {
+      "attr": "aria-valuenow",
+      "description": "Progress between `min` and `max` (determinate and buffer variants; default `min`).",
+      "kind": "number",
+      "name": "value"
+     },
+     {
+      "attr": "aria-valuemin",
+      "default": 0,
+      "description": "Lowest value.",
+      "kind": "number",
+      "name": "min"
+     },
+     {
+      "attr": "aria-valuemax",
+      "default": 100,
+      "description": "Highest value (above `min`, otherwise `min` + 100).",
+      "kind": "number",
+      "name": "max"
+     },
+     {
+      "attr": "data-ok-value-buffer",
+      "description": "Buffer variant: how far loading has got, between `value` and `max`.",
+      "kind": "number",
+      "name": "valueBuffer"
+     }
+    ],
+    "parts": [
+     {
+      "description": "One of the two bars.",
+      "kind": "value",
+      "name": "data-ok-linear-progress-bar",
+      "value": [
+       "1",
+       "2"
+      ]
+     },
+     {
+      "description": "The dashes after the buffer bar.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-linear-progress-dashed"
+     }
+    ],
+    "runtime": "linear-progress"
+   },
+   "name": "LinearProgress",
+   "react": {
+    "description": "A `progressbar`: give it a name (`aria-label` / `aria-labelledby`). CSS only; the value and buffer become private custom properties on the root.",
+    "native": "HTMLSpanElement",
+    "props": [
+     {
+      "default": "\"primary\"",
+      "description": "Palette color, or `inherit` (the text color).",
+      "name": "color",
+      "type": "\"error\" | \"info\" | \"inherit\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
+     },
+     {
+      "default": "100",
+      "description": "Highest value (above `min`, otherwise `min` + 100).",
+      "name": "max",
+      "type": "number"
+     },
+     {
+      "default": "0",
+      "description": "Lowest value.",
+      "name": "min",
+      "type": "number"
+     },
+     {
+      "default": "min",
+      "description": "Determinate and buffer: progress between `min` and `max`.",
+      "name": "value",
+      "type": "number"
+     },
+     {
+      "description": "Buffer: how far loading has got, between `value` and `max`.",
+      "name": "valueBuffer",
+      "type": "number"
+     },
+     {
+      "default": "\"indeterminate\"",
+      "description": "`indeterminate` / `query` while the duration is unknown; `determinate` / `buffer` show `value`.",
+      "name": "variant",
+      "type": "\"buffer\" | \"determinate\" | \"indeterminate\" | \"query\""
+     }
+    ]
+   }
+  }
+ ],
+ "format": 1,
+ "name": "linear-progress",
+ "title": "Linear progress"
+}

@@ -8,14 +8,25 @@ import {
   syncSelectPaperWidth,
 } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
-import type { ComponentInstance } from "../../runtime/types.js";
+import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
 import type { PopoverCloseReason, PopoverInstance } from "../popover/popover.js";
+
+/** Events of this component (`ok:<name>:<event>` on the root). */
+export interface SelectEvents {
+  /** Before the value changes (`string[]` with `data-ok-multiple`). Call `preventDefault()` to keep the current one. */
+  change: EventSpec<{ value: string | string[] }, true>;
+  /** After the listbox opened. */
+  open: EventSpec;
+  /** After the listbox closed, with what closed it. */
+  close: EventSpec<{ reason: SelectCloseReason | "api" }>;
+}
 
 export interface SelectInstance extends ComponentInstance {
   /** The value: a string (`""` = none), or a list with `data-ok-multiple`. */
   readonly value: string | string[];
   /** Sets the value without emitting events. */
   setValue(value: string | readonly string[]): void;
+  /** Whether the listbox is open. */
   readonly isOpen: boolean;
   /** Opens the listbox. Returns `false` if `ok:popover:beforeopen` was prevented. */
   open(): boolean;
@@ -55,7 +66,7 @@ const fromPopover = (reason: PopoverCloseReason): SelectCloseReason | "api" =>
  * Events:  ok:select:change (cancelable, `{ value }`), ok:select:open, ok:select:close (`{ reason }`).
  * A native select (`select[data-ok-select-native]`) needs no runtime.
  */
-export const select = defineComponent<SelectInstance>({
+export const select = defineComponent<SelectInstance, SelectEvents>({
   name: "select",
   selector: "[data-ok-select]",
 

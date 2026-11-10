@@ -1,4 +1,6 @@
 import { imageOptions } from "@owlky/core";
+import imageApi from "@owlky/docs-content/api/image.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { Image } from "@owlky/react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
@@ -135,6 +137,7 @@ export function Photo() {
 - White text on a picture needs a contrast ratio of at least 4.5:1: add a \`dark\` overlay under it.
 - When people prefer reduced motion, pictures appear without the transition.`,
   },
+  apiReferenceSection(imageApi),
 ];
 
 const PREVIEWS = {

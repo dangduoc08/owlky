@@ -1,4 +1,6 @@
 import { linearProgressOptions } from "@owlky/core";
+import linearProgressApi from "@owlky/docs-content/api/linear-progress.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { LinearProgress } from "@owlky/react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
@@ -41,7 +43,9 @@ export function LoadingOrders() {
   // Later, as the upload goes on
   document.querySelector("[aria-label='Upload']").setAttribute("aria-valuenow", "80");
 </script>`,
-    react: `export function Upload({ percent }: { percent: number }) {
+    react: `import { LinearProgress } from "@owlky/react";
+
+export function Upload({ percent }: { percent: number }) {
   return <LinearProgress variant="determinate" value={percent} aria-label="Upload" />;
 }`,
   },
@@ -125,6 +129,7 @@ export function LoadingOrders() {
 - Brand colors follow the design. Light colors such as \`warning\` have a contrast ratio below 3:1 on white, so don't rely on the bar alone to tell people something important.
 - The bar fills from left to right in every language.`,
   },
+  apiReferenceSection(linearProgressApi),
 ];
 
 const PREVIEWS = {

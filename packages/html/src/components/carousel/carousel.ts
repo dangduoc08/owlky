@@ -7,7 +7,31 @@ import {
 } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
 import { syncCustomProperties } from "../../runtime/style.js";
-import type { ComponentInstance } from "../../runtime/types.js";
+import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
+
+/** Events of this component (`ok:<name>:<event>` on the root). */
+export interface CarouselEvents {
+  /** After another slide was selected. */
+  select: EventSpec<{ index: number; previous: number }>;
+  /** After scrolling settled on a slide. */
+  settle: EventSpec<{ index: number }>;
+  /** While the carousel scrolls; `progress` goes from 0 to 1. */
+  scroll: EventSpec<{ progress: number }>;
+  /** After the slides in view changed. */
+  slidesinview: EventSpec<{ indexes: number[] }>;
+  /** After the carousel set itself up again (options or slides changed). */
+  reinit: EventSpec<{ snapCount: number }>;
+  /** After autoplay started or stopped. */
+  autoplay: EventSpec<{ playing: boolean }>;
+  /** After auto scroll started or stopped. */
+  autoscroll: EventSpec<{ playing: boolean }>;
+  /** After a slide received the focus. */
+  slidefocus: EventSpec<{ index: number }>;
+  /** When a pointer pressed the viewport (a drag may start). */
+  pointerdown: EventSpec;
+  /** When the pointer was released. */
+  pointerup: EventSpec;
+}
 
 /** The carousel instance: Embla's API (v8 names) on the root element. */
 export interface CarouselInstance extends ComponentInstance, CarouselApi {}
@@ -73,7 +97,7 @@ function syncDots(root: HTMLElement, count: number) {
  *          slidesinview `{ indexes }`, reinit `{ snapCount }`, autoplay / autoscroll `{ playing }`,
  *          slidefocus `{ index }`, pointerdown, pointerup.
  */
-export const carousel = defineComponent<CarouselInstance>({
+export const carousel = defineComponent<CarouselInstance, CarouselEvents>({
   name: "carousel",
   selector: "[data-ok-carousel]",
 

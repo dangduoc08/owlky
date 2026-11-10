@@ -136,15 +136,23 @@ export interface UploadProps
   /** Default `true`. */
   preventDropOnDocument?: boolean | undefined;
   useFsAccessApi?: boolean | undefined;
+  /** Focuses the drop zone when it mounts. */
   autoFocus?: boolean | undefined;
+  /** Checks each file: return an error (or several) to reject it. */
   validator?: UploadValidator | undefined;
+  /** Reads the files of a drop or a change event (for example, to unpack folders). */
   getFilesFromEvent?: UploadFilesFromEvent | undefined;
+  /** Returns the message shown for a rejected file. */
   getErrorMessage?: UploadErrorMessage | undefined;
   /** Every drop, pick or paste: the accepted and the rejected files. */
   onDrop?: ((accepted: File[], rejections: UploadRejection[]) => void) | undefined;
+  /** Called with the files that passed the checks. */
   onDropAccepted?: ((files: File[]) => void) | undefined;
+  /** Called with the files that were rejected and why. */
   onDropRejected?: ((rejections: UploadRejection[]) => void) | undefined;
+  /** Called when the file dialog opens. */
   onFileDialogOpen?: (() => void) | undefined;
+  /** Called when the file dialog closes without a choice. */
   onFileDialogCancel?: (() => void) | undefined;
   /** A validator or `getFilesFromEvent` threw; the drop is discarded. */
   onError?: ((error: unknown) => void) | undefined;
@@ -156,12 +164,19 @@ export interface UploadProps
   onUpload?: ((files: UploadValue[]) => void) | undefined;
   /** Input `name`, `form`, `required`, `capture` and `id`. */
   name?: string | undefined;
+  /** The `form` the file input belongs to (its id). */
   form?: string | undefined;
+  /** Makes the file input required in a form. */
   required?: boolean | undefined;
+  /** Asks for the camera on phones: `user` (front) or `environment` (back). */
   capture?: "user" | "environment" | undefined;
+  /** The id of the file input. */
   inputId?: string | undefined;
+  /** A ref to the file input. */
   inputRef?: Ref<HTMLInputElement> | undefined;
+  /** A ref to the upload's methods (open the dialog, set or clear files). */
   apiRef?: Ref<UploadApi> | undefined;
+  /** Replaces the text of the labels and messages, such as for another language. */
   labels?: Partial<UploadLabels> | undefined;
   /** Language of the file sizes (default: the page's). */
   locale?: string | undefined;

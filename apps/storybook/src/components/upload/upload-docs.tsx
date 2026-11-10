@@ -1,4 +1,6 @@
 import { uploadOptions } from "@owlky/core";
+import uploadApi from "@owlky/docs-content/api/upload.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { Upload, UploadAvatar, UploadBox } from "@owlky/react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
@@ -218,6 +220,7 @@ export function Profile() {
     title: "Accessibility",
     body: "- **Native control:** the zone holds a real file input, named by the zone's title (or `aria-label`) and described by the helper text. Screen readers announce it as a file button, and it works without JavaScript.\n- **Errors:** with `error`, the input gets `aria-invalid`. Rejected files appear in an alert, so screen readers announce them.\n- **New files:** the list is a polite live region, so added files are announced.\n- **Remove buttons:** each one is named after its file, such as \"Remove report.pdf\". When a removed button had the focus, the focus moves to the next remove button, or back to the input.\n- **Text and contrast:** the texts meet a contrast ratio of at least 4.5:1, including the zone's description and the helper text. File names are always shown as text, never as markup.",
   },
+  apiReferenceSection(uploadApi),
 ];
 
 const PREVIEWS = {

@@ -1,0 +1,1101 @@
+{
+ "css": [
+  {
+   "dark": "#1C252E",
+   "light": "#FFFFFF",
+   "name": "--ok-bg-paper"
+  },
+  {
+   "name": "--ok-font-family-mono",
+   "value": "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace"
+  },
+  {
+   "name": "--ok-palette-grey-500-channel",
+   "value": "145 158 171"
+  },
+  {
+   "name": "--ok-palette-primary-main",
+   "value": "#00A76F"
+  },
+  {
+   "name": "--ok-radius-md",
+   "value": "8px"
+  },
+  {
+   "name": "--ok-spacing",
+   "value": "0.25rem"
+  },
+  {
+   "dark": "#FFFFFF",
+   "light": "#1C252E",
+   "name": "--ok-text-primary"
+  },
+  {
+   "dark": "#919EAB",
+   "light": "#637381",
+   "name": "--ok-text-secondary"
+  },
+  {
+   "name": "--ok-typography-body2-font-family",
+   "value": "var(--ok-font-family)"
+  },
+  {
+   "name": "--ok-typography-body2-font-size",
+   "value": "0.875rem"
+  },
+  {
+   "name": "--ok-typography-body2-font-weight",
+   "value": "400"
+  },
+  {
+   "name": "--ok-typography-body2-line-height",
+   "value": "1.5714"
+  }
+ ],
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-code-editor",
+    "events": [
+     {
+      "cancelable": false,
+      "description": "Before the editor is created: configure `monaco` here (themes, languages).",
+      "detail": "{ monaco: unknown; }",
+      "name": "ok:code-editor:beforemount"
+     },
+     {
+      "cancelable": false,
+      "description": "After the text changed. `event` is Monaco's change event (`null` in the fallback).",
+      "detail": "{ value: string; event: unknown; }",
+      "name": "ok:code-editor:change"
+     },
+     {
+      "cancelable": false,
+      "description": "After Monaco failed to load (the plain text area stays).",
+      "detail": "{ error: unknown; }",
+      "name": "ok:code-editor:error"
+     },
+     {
+      "cancelable": false,
+      "description": "After the editor was created.",
+      "detail": "{ editor: unknown; monaco: unknown; }",
+      "name": "ok:code-editor:mount"
+     },
+     {
+      "cancelable": false,
+      "description": "After the language service reported its markers (errors and warnings).",
+      "detail": "{ markers: unknown[]; }",
+      "name": "ok:code-editor:validate"
+     }
+    ],
+    "methods": [
+     {
+      "description": "The core controller.",
+      "kind": "property",
+      "name": "controller",
+      "type": "CodeEditorController"
+     },
+     {
+      "description": "Monaco's editor and namespace once ready.",
+      "kind": "property",
+      "name": "editor",
+      "type": "IStandaloneCodeEditor | null"
+     },
+     {
+      "description": "Moves the focus into the editor.",
+      "kind": "method",
+      "name": "focus",
+      "type": "() => void"
+     },
+     {
+      "description": "The Monaco namespace once loaded, or `null`.",
+      "kind": "property",
+      "name": "monaco",
+      "type": "typeof import(\"/home/duoc/owlky/.claude/worktrees/agent-a3d100da79ad3921a/node_modules/.pnpm/monaco-editor@0.57.0/node_modules/monaco-editor/esm/vs/index\") | null"
+     },
+     {
+      "description": "Replaces the value (an undoable edit). Emits no `change` event.",
+      "kind": "method",
+      "name": "setValue",
+      "type": "(value: string) => void"
+     },
+     {
+      "description": "`loading`, `ready` or `error` (the `<textarea>` fallback).",
+      "kind": "property",
+      "name": "status",
+      "type": "CodeEditorStatus"
+     },
+     {
+      "description": "updateOptions`).",
+      "kind": "method",
+      "name": "updateOptions",
+      "type": "(options: IStandaloneEditorConstructionOptions) => void"
+     },
+     {
+      "description": "Current value (the `<textarea>`'s until Monaco is ready).",
+      "kind": "property",
+      "name": "value",
+      "type": "string"
+     }
+    ],
+    "options": [
+     {
+      "attr": "data-ok-language",
+      "default": "plaintext",
+      "description": "Language of the current model (HTML: also the initial one). Without it, Monaco infers it from the path.",
+      "kind": "style",
+      "name": "language",
+      "optional": true,
+      "values": [
+       "plaintext",
+       "abap",
+       "aes",
+       "apex",
+       "azcli",
+       "bat",
+       "bicep",
+       "c",
+       "cameligo",
+       "clojure",
+       "coffeescript",
+       "cpp",
+       "csharp",
+       "csp",
+       "css",
+       "cypher",
+       "dart",
+       "dockerfile",
+       "ecl",
+       "elixir",
+       "flow9",
+       "freemarker2",
+       "fsharp",
+       "go",
+       "graphql",
+       "handlebars",
+       "hcl",
+       "html",
+       "ini",
+       "java",
+       "javascript",
+       "json",
+       "julia",
+       "kotlin",
+       "less",
+       "lexon",
+       "liquid",
+       "lua",
+       "m3",
+       "markdown",
+       "mdx",
+       "mips",
+       "msdax",
+       "mysql",
+       "objective-c",
+       "pascal",
+       "pascaligo",
+       "perl",
+       "pgsql",
+       "php",
+       "pla",
+       "postiats",
+       "powerquery",
+       "powershell",
+       "proto",
+       "pug",
+       "python",
+       "qsharp",
+       "r",
+       "razor",
+       "redis",
+       "redshift",
+       "restructuredtext",
+       "ruby",
+       "rust",
+       "sb",
+       "scala",
+       "scheme",
+       "scss",
+       "shell",
+       "sol",
+       "sparql",
+       "sql",
+       "st",
+       "swift",
+       "systemverilog",
+       "tcl",
+       "twig",
+       "typescript",
+       "typespec",
+       "vb",
+       "verilog",
+       "wgsl",
+       "xml",
+       "yaml"
+      ]
+     },
+     {
+      "attr": "data-ok-monaco-theme",
+      "default": "auto",
+      "description": "Monaco theme. `auto`: Owlky's light or dark theme after the scope's `data-ok-theme`; others are Monaco's (or one defined in `beforeMount`).",
+      "kind": "style",
+      "name": "theme",
+      "optional": true,
+      "values": [
+       "auto",
+       "owlky-light",
+       "owlky-dark",
+       "light",
+       "vs",
+       "vs-dark",
+       "hc-black",
+       "hc-light"
+      ]
+     },
+     {
+      "attr": "data-ok-width",
+      "description": "Width (number = px, or a CSS length such as `50%`). Default `100%`.",
+      "kind": "number",
+      "min": 0,
+      "name": "width",
+      "units": [
+       "px",
+       "%",
+       "rem",
+       "em",
+       "vh",
+       "vw",
+       "svh",
+       "dvh",
+       "lvh",
+       "ch"
+      ]
+     },
+     {
+      "attr": "data-ok-height",
+      "description": "Height (number = px, or a CSS length such as `90vh`). Default `100%`, at least 300px when not given.",
+      "kind": "number",
+      "min": 0,
+      "name": "height",
+      "units": [
+       "px",
+       "%",
+       "rem",
+       "em",
+       "vh",
+       "vw",
+       "svh",
+       "dvh",
+       "lvh",
+       "ch"
+      ]
+     },
+     {
+      "attr": "data-ok-line",
+      "description": "Scrolls to this line (1-based).",
+      "kind": "number",
+      "min": 1,
+      "name": "line"
+     },
+     {
+      "attr": "data-ok-save-view-state",
+      "default": true,
+      "description": "Keeps each model's scroll, selection and folding when the path changes.",
+      "kind": "behavior",
+      "name": "saveViewState"
+     },
+     {
+      "attr": "data-ok-keep-current-model",
+      "description": "Keeps the current model (and its view state) when the editor is removed.",
+      "kind": "flag",
+      "name": "keepCurrentModel"
+     },
+     {
+      "attr": "data-ok-path",
+      "description": "Model path (`file:///index.ts`): each path is its own model, created on first use.",
+      "kind": "state",
+      "name": "path"
+     },
+     {
+      "attr": "data-ok-code-editor-value",
+      "description": "The value: the `<textarea>`'s text (the initial value, the form value and the fallback).",
+      "event": "ok:code-editor:change",
+      "kind": "state",
+      "name": "value"
+     }
+    ],
+    "parts": [
+     {
+      "description": "The element the editor mounts in.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-code-editor-content"
+     },
+     {
+      "description": "Shown while the editor loads.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-code-editor-loading"
+     },
+     {
+      "description": "HTML only: one file of a multi-model editor, with its path and language.",
+      "kind": "part",
+      "name": "data-ok-code-editor-model"
+     },
+     {
+      "description": "Editor options, as JSON.",
+      "kind": "value",
+      "name": "data-ok-options",
+      "value": "string"
+     },
+     {
+      "description": "Set by the runtime: where loading the editor stands.",
+      "kind": "value",
+      "name": "data-ok-status",
+      "value": [
+       "error",
+       "loading",
+       "ready"
+      ]
+     }
+    ],
+    "runtime": "code-editor"
+   },
+   "name": "CodeEditor",
+   "react": {
+    "description": "Monaco (the editor of VS Code) through the core controller shared with the HTML runtime; mirrors `@monaco-editor/react`'s `Editor` prop by prop. Monaco loads on demand (`loader`); until then `loading` shows, and if it can't load the value stays editable in a textarea.",
+    "native": "HTMLDivElement",
+    "props": [
+     {
+      "description": "Accessible name of the editor (Monaco's `ariaLabel`). Default \"Code editor\".",
+      "name": "aria-label",
+      "type": "string"
+     },
+     {
+      "description": "Called with Monaco before the editor is created (register languages, themes, …).",
+      "name": "beforeMount",
+      "type": "((monaco: Monaco) => void)"
+     },
+     {
+      "description": "Class of the element Monaco mounts on.",
+      "name": "className",
+      "type": "string"
+     },
+     {
+      "description": "Language of the default model.",
+      "name": "defaultLanguage",
+      "type": "string"
+     },
+     {
+      "description": "ts`).",
+      "name": "defaultPath",
+      "type": "string"
+     },
+     {
+      "description": "Initial value of the default model (uncontrolled).",
+      "name": "defaultValue",
+      "type": "string"
+     },
+     {
+      "default": "\"100%\"",
+      "description": "(at least 300px when not given). A number is in pixels.",
+      "name": "height",
+      "type": "string | number"
+     },
+     {
+      "description": "Keeps the current model when the editor unmounts.",
+      "name": "keepCurrentModel",
+      "type": "boolean"
+     },
+     {
+      "description": "Language of the current model.",
+      "name": "language",
+      "type": "string"
+     },
+     {
+      "description": "Scrolls to this line (1-based).",
+      "name": "line",
+      "type": "number"
+     },
+     {
+      "description": "Shown until Monaco is ready. \".",
+      "name": "loading",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Called with the new value (`event` is `undefined` in the textarea fallback).",
+      "name": "onChange",
+      "type": "((value: string, event: IModelContentChangedEvent | undefined) => void)"
+     },
+     {
+      "description": "Called when Monaco couldn't load (the textarea fallback is shown).",
+      "name": "onError",
+      "type": "((error: unknown) => void)"
+     },
+     {
+      "description": "Called with the editor and Monaco once mounted.",
+      "name": "onMount",
+      "type": "((editor: CodeEditorInstance, monaco: Monaco) => void)"
+     },
+     {
+      "description": "Called with the current model's markers when they change (validation).",
+      "name": "onValidate",
+      "type": "((markers: IMarker[]) => void)"
+     },
+     {
+      "description": "Monaco editor options (`IStandaloneEditorConstructionOptions`).",
+      "name": "options",
+      "type": "IStandaloneEditorConstructionOptions"
+     },
+     {
+      "description": "Monaco service overrides (mount time).",
+      "name": "overrideServices",
+      "type": "IEditorOverrideServices"
+     },
+     {
+      "description": "Path of the current model: each path is its own model, created on first use.",
+      "name": "path",
+      "type": "string"
+     },
+     {
+      "default": "true",
+      "description": "Keeps each path's scroll, selection and folding across model switches.",
+      "name": "saveViewState",
+      "type": "boolean"
+     },
+     {
+      "default": "\"auto\"",
+      "description": "Owlky's light or dark theme, after the scope's `data-ok-theme`.",
+      "name": "theme",
+      "type": "CodeEditorTheme"
+     },
+     {
+      "description": "Value of the current model: a new value replaces the content as one undoable edit.",
+      "name": "value",
+      "type": "string"
+     },
+     {
+      "default": "\"100%\"",
+      "description": "A number is in pixels.",
+      "name": "width",
+      "type": "string | number"
+     },
+     {
+      "description": "Props of the root element.",
+      "name": "wrapperProps",
+      "type": "HTMLAttributes<HTMLDivElement>"
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-diff-editor",
+    "events": [
+     {
+      "cancelable": false,
+      "description": "Before the diff editor is created: configure `monaco` here.",
+      "detail": "{ monaco: unknown; }",
+      "name": "ok:diff-editor:beforemount"
+     },
+     {
+      "cancelable": false,
+      "description": "After Monaco failed to load.",
+      "detail": "{ error: unknown; }",
+      "name": "ok:diff-editor:error"
+     },
+     {
+      "cancelable": false,
+      "description": "After the diff editor was created.",
+      "detail": "{ editor: unknown; monaco: unknown; }",
+      "name": "ok:diff-editor:mount"
+     }
+    ],
+    "methods": [
+     {
+      "description": "The core controller.",
+      "kind": "property",
+      "name": "controller",
+      "type": "DiffEditorController"
+     },
+     {
+      "description": "Monaco's diff editor once loaded, or `null`.",
+      "kind": "property",
+      "name": "editor",
+      "type": "IStandaloneDiffEditor | null"
+     },
+     {
+      "description": "The text on the modified side.",
+      "kind": "property",
+      "name": "modified",
+      "type": "string"
+     },
+     {
+      "description": "The Monaco namespace once loaded, or `null`.",
+      "kind": "property",
+      "name": "monaco",
+      "type": "typeof import(\"/home/duoc/owlky/.claude/worktrees/agent-a3d100da79ad3921a/node_modules/.pnpm/monaco-editor@0.57.0/node_modules/monaco-editor/esm/vs/index\") | null"
+     },
+     {
+      "description": "The original and modified texts (the `<textarea>`s' until Monaco is ready).",
+      "kind": "property",
+      "name": "original",
+      "type": "string"
+     },
+     {
+      "description": "Replaces the modified text (an undoable edit).",
+      "kind": "method",
+      "name": "setModified",
+      "type": "(value: string) => void"
+     },
+     {
+      "description": "Replaces the text on the original side.",
+      "kind": "method",
+      "name": "setOriginal",
+      "type": "(value: string) => void"
+     },
+     {
+      "description": "`loading`, `ready` or `error`.",
+      "kind": "property",
+      "name": "status",
+      "type": "CodeEditorStatus"
+     },
+     {
+      "description": "Changes Monaco's diff editor options.",
+      "kind": "method",
+      "name": "updateOptions",
+      "type": "(options: IStandaloneDiffEditorConstructionOptions) => void"
+     }
+    ],
+    "options": [
+     {
+      "attr": "data-ok-language",
+      "default": "plaintext",
+      "description": "Language of both models.",
+      "kind": "style",
+      "name": "language",
+      "optional": true,
+      "values": [
+       "plaintext",
+       "abap",
+       "aes",
+       "apex",
+       "azcli",
+       "bat",
+       "bicep",
+       "c",
+       "cameligo",
+       "clojure",
+       "coffeescript",
+       "cpp",
+       "csharp",
+       "csp",
+       "css",
+       "cypher",
+       "dart",
+       "dockerfile",
+       "ecl",
+       "elixir",
+       "flow9",
+       "freemarker2",
+       "fsharp",
+       "go",
+       "graphql",
+       "handlebars",
+       "hcl",
+       "html",
+       "ini",
+       "java",
+       "javascript",
+       "json",
+       "julia",
+       "kotlin",
+       "less",
+       "lexon",
+       "liquid",
+       "lua",
+       "m3",
+       "markdown",
+       "mdx",
+       "mips",
+       "msdax",
+       "mysql",
+       "objective-c",
+       "pascal",
+       "pascaligo",
+       "perl",
+       "pgsql",
+       "php",
+       "pla",
+       "postiats",
+       "powerquery",
+       "powershell",
+       "proto",
+       "pug",
+       "python",
+       "qsharp",
+       "r",
+       "razor",
+       "redis",
+       "redshift",
+       "restructuredtext",
+       "ruby",
+       "rust",
+       "sb",
+       "scala",
+       "scheme",
+       "scss",
+       "shell",
+       "sol",
+       "sparql",
+       "sql",
+       "st",
+       "swift",
+       "systemverilog",
+       "tcl",
+       "twig",
+       "typescript",
+       "typespec",
+       "vb",
+       "verilog",
+       "wgsl",
+       "xml",
+       "yaml"
+      ]
+     },
+     {
+      "attr": "data-ok-original-language",
+      "default": "plaintext",
+      "description": "Language of the original model (default `language`).",
+      "kind": "style",
+      "name": "originalLanguage",
+      "optional": true,
+      "values": [
+       "plaintext",
+       "abap",
+       "aes",
+       "apex",
+       "azcli",
+       "bat",
+       "bicep",
+       "c",
+       "cameligo",
+       "clojure",
+       "coffeescript",
+       "cpp",
+       "csharp",
+       "csp",
+       "css",
+       "cypher",
+       "dart",
+       "dockerfile",
+       "ecl",
+       "elixir",
+       "flow9",
+       "freemarker2",
+       "fsharp",
+       "go",
+       "graphql",
+       "handlebars",
+       "hcl",
+       "html",
+       "ini",
+       "java",
+       "javascript",
+       "json",
+       "julia",
+       "kotlin",
+       "less",
+       "lexon",
+       "liquid",
+       "lua",
+       "m3",
+       "markdown",
+       "mdx",
+       "mips",
+       "msdax",
+       "mysql",
+       "objective-c",
+       "pascal",
+       "pascaligo",
+       "perl",
+       "pgsql",
+       "php",
+       "pla",
+       "postiats",
+       "powerquery",
+       "powershell",
+       "proto",
+       "pug",
+       "python",
+       "qsharp",
+       "r",
+       "razor",
+       "redis",
+       "redshift",
+       "restructuredtext",
+       "ruby",
+       "rust",
+       "sb",
+       "scala",
+       "scheme",
+       "scss",
+       "shell",
+       "sol",
+       "sparql",
+       "sql",
+       "st",
+       "swift",
+       "systemverilog",
+       "tcl",
+       "twig",
+       "typescript",
+       "typespec",
+       "vb",
+       "verilog",
+       "wgsl",
+       "xml",
+       "yaml"
+      ]
+     },
+     {
+      "attr": "data-ok-modified-language",
+      "default": "plaintext",
+      "description": "Language of the modified model (default `language`).",
+      "kind": "style",
+      "name": "modifiedLanguage",
+      "optional": true,
+      "values": [
+       "plaintext",
+       "abap",
+       "aes",
+       "apex",
+       "azcli",
+       "bat",
+       "bicep",
+       "c",
+       "cameligo",
+       "clojure",
+       "coffeescript",
+       "cpp",
+       "csharp",
+       "csp",
+       "css",
+       "cypher",
+       "dart",
+       "dockerfile",
+       "ecl",
+       "elixir",
+       "flow9",
+       "freemarker2",
+       "fsharp",
+       "go",
+       "graphql",
+       "handlebars",
+       "hcl",
+       "html",
+       "ini",
+       "java",
+       "javascript",
+       "json",
+       "julia",
+       "kotlin",
+       "less",
+       "lexon",
+       "liquid",
+       "lua",
+       "m3",
+       "markdown",
+       "mdx",
+       "mips",
+       "msdax",
+       "mysql",
+       "objective-c",
+       "pascal",
+       "pascaligo",
+       "perl",
+       "pgsql",
+       "php",
+       "pla",
+       "postiats",
+       "powerquery",
+       "powershell",
+       "proto",
+       "pug",
+       "python",
+       "qsharp",
+       "r",
+       "razor",
+       "redis",
+       "redshift",
+       "restructuredtext",
+       "ruby",
+       "rust",
+       "sb",
+       "scala",
+       "scheme",
+       "scss",
+       "shell",
+       "sol",
+       "sparql",
+       "sql",
+       "st",
+       "swift",
+       "systemverilog",
+       "tcl",
+       "twig",
+       "typescript",
+       "typespec",
+       "vb",
+       "verilog",
+       "wgsl",
+       "xml",
+       "yaml"
+      ]
+     },
+     {
+      "attr": "data-ok-monaco-theme",
+      "default": "auto",
+      "description": "Monaco theme. `auto`: Owlky's light or dark theme after the scope's `data-ok-theme`; others are Monaco's (or one defined in `beforeMount`).",
+      "kind": "style",
+      "name": "theme",
+      "optional": true,
+      "values": [
+       "auto",
+       "owlky-light",
+       "owlky-dark",
+       "light",
+       "vs",
+       "vs-dark",
+       "hc-black",
+       "hc-light"
+      ]
+     },
+     {
+      "attr": "data-ok-width",
+      "description": "Width (number = px, or a CSS length such as `50%`). Default `100%`.",
+      "kind": "number",
+      "min": 0,
+      "name": "width",
+      "units": [
+       "px",
+       "%",
+       "rem",
+       "em",
+       "vh",
+       "vw",
+       "svh",
+       "dvh",
+       "lvh",
+       "ch"
+      ]
+     },
+     {
+      "attr": "data-ok-height",
+      "description": "Height (number = px, or a CSS length such as `90vh`). Default `100%`, at least 300px when not given.",
+      "kind": "number",
+      "min": 0,
+      "name": "height",
+      "units": [
+       "px",
+       "%",
+       "rem",
+       "em",
+       "vh",
+       "vw",
+       "svh",
+       "dvh",
+       "lvh",
+       "ch"
+      ]
+     },
+     {
+      "attr": "data-ok-keep-current-original-model",
+      "description": "Keeps the original model when the editor is removed.",
+      "kind": "flag",
+      "name": "keepCurrentOriginalModel"
+     },
+     {
+      "attr": "data-ok-keep-current-modified-model",
+      "description": "Keeps the modified model when the editor is removed.",
+      "kind": "flag",
+      "name": "keepCurrentModifiedModel"
+     },
+     {
+      "attr": "data-ok-original-model-path",
+      "description": "Path of the original model.",
+      "kind": "state",
+      "name": "originalModelPath"
+     },
+     {
+      "attr": "data-ok-modified-model-path",
+      "description": "Path of the modified model.",
+      "kind": "state",
+      "name": "modifiedModelPath"
+     },
+     {
+      "attr": "data-ok-diff-editor-original",
+      "description": "The original text: its `<textarea>`.",
+      "kind": "state",
+      "name": "original"
+     },
+     {
+      "attr": "data-ok-diff-editor-modified",
+      "description": "The modified text: its `<textarea>`.",
+      "kind": "state",
+      "name": "modified"
+     }
+    ],
+    "parts": [
+     {
+      "description": "The element the diff editor mounts in.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-diff-editor-content"
+     },
+     {
+      "description": "Shown while the diff editor loads.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-diff-editor-loading"
+     }
+    ],
+    "runtime": "diff-editor"
+   },
+   "name": "DiffEditor",
+   "react": {
+    "description": "Monaco's diff editor through the core controller shared with the HTML runtime; mirrors `@monaco-editor/react`'s `DiffEditor`.",
+    "native": "HTMLDivElement",
+    "props": [
+     {
+      "description": "Called with Monaco before the diff editor is created.",
+      "name": "beforeMount",
+      "type": "((monaco: Monaco) => void)"
+     },
+     {
+      "description": "Class of the element Monaco mounts on.",
+      "name": "className",
+      "type": "string"
+     },
+     {
+      "default": "\"100%\"",
+      "description": "(at least 300px when not given). A number is in pixels.",
+      "name": "height",
+      "type": "string | number"
+     },
+     {
+      "description": "Keeps the modified model when the editor unmounts.",
+      "name": "keepCurrentModifiedModel",
+      "type": "boolean"
+     },
+     {
+      "description": "Keeps the original model when the editor unmounts.",
+      "name": "keepCurrentOriginalModel",
+      "type": "boolean"
+     },
+     {
+      "description": "Language of both models.",
+      "name": "language",
+      "type": "string"
+     },
+     {
+      "description": "Shown until Monaco is ready. \".",
+      "name": "loading",
+      "type": "ReactNode"
+     },
+     {
+      "description": "The modified text: a new value replaces it as one undoable edit.",
+      "name": "modified",
+      "type": "string"
+     },
+     {
+      "description": "Language of the modified model (default `language`).",
+      "name": "modifiedLanguage",
+      "type": "string"
+     },
+     {
+      "description": "Path of the modified model.",
+      "name": "modifiedModelPath",
+      "type": "string"
+     },
+     {
+      "description": "Called when Monaco couldn't load (the two textareas are shown).",
+      "name": "onError",
+      "type": "((error: unknown) => void)"
+     },
+     {
+      "description": "Called with the diff editor and Monaco once mounted.",
+      "name": "onMount",
+      "type": "((editor: DiffEditorInstance, monaco: Monaco) => void)"
+     },
+     {
+      "description": "Monaco diff editor options (`IStandaloneDiffEditorConstructionOptions`).",
+      "name": "options",
+      "type": "IStandaloneDiffEditorConstructionOptions"
+     },
+     {
+      "description": "The original text.",
+      "name": "original",
+      "type": "string"
+     },
+     {
+      "description": "Language of the original model (default `language`).",
+      "name": "originalLanguage",
+      "type": "string"
+     },
+     {
+      "description": "Path of the original model.",
+      "name": "originalModelPath",
+      "type": "string"
+     },
+     {
+      "default": "\"auto\"",
+      "description": "Owlky's light or dark theme, after the scope's `data-ok-theme`.",
+      "name": "theme",
+      "type": "CodeEditorTheme"
+     },
+     {
+      "default": "\"100%\"",
+      "description": "A number is in pixels.",
+      "name": "width",
+      "type": "string | number"
+     },
+     {
+      "description": "Props of the root element.",
+      "name": "wrapperProps",
+      "type": "HTMLAttributes<HTMLDivElement>"
+     }
+    ]
+   }
+  }
+ ],
+ "format": 1,
+ "name": "code-editor",
+ "title": "Code editor",
+ "types": [
+  {
+   "name": "CodeEditorInstance",
+   "type": "IStandaloneCodeEditor"
+  },
+  {
+   "name": "CodeEditorTheme",
+   "type": "\"auto\" | (string & {})"
+  },
+  {
+   "name": "DiffEditorInstance",
+   "type": "IStandaloneDiffEditor"
+  },
+  {
+   "name": "Monaco",
+   "type": "typeof import(\"/home/duoc/owlky/.claude/worktrees/agent-a3d100da79ad3921a/node_modules/.pnpm/monaco-editor@0.57.0/node_modules/monaco-editor/esm/vs/index\")"
+  }
+ ]
+}

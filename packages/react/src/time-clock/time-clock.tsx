@@ -53,8 +53,10 @@ export interface ClockBaseProps extends TimeValidationProps {
   today?: Date | undefined;
   /** Earliest / latest date and time (date time pickers). */
   minDateTime?: Date | undefined;
+  /** The latest date and time that can be picked. */
   maxDateTime?: Date | undefined;
   readOnly?: boolean | undefined;
+  /** Turns the clock off. */
   disabled?: boolean | undefined;
   /** Text overrides. */
   localeText?: Partial<PickerLocaleText> | undefined;
@@ -97,6 +99,7 @@ export interface TimeClockProps
   openTo?: TimeView | undefined;
   /** Controlled view. */
   view?: TimeView | undefined;
+  /** Called when the view changes. */
   onViewChange?: ((view: TimeView) => void) | undefined;
   /** AM / PM buttons on the clock (12-hour clocks). */
   ampmInClock?: boolean | undefined;

@@ -81,6 +81,7 @@ export interface DateRangeCalendarProps
   rangePosition?: RangePosition | undefined;
   /** Uncontrolled initial position. Default `"start"`. */
   defaultRangePosition?: RangePosition | undefined;
+  /** Called when the end being edited (`start` or `end`) changes. */
   onRangePositionChange?: ((position: RangePosition) => void) | undefined;
   /** The ends a pick may edit. Default both. */
   availableRangePositions?: readonly RangePosition[] | undefined;
@@ -101,16 +102,20 @@ export interface DateRangeCalendarProps
   /** Days of other months fill the first and last weeks (one calendar only, MUI). */
   showDaysOutsideCurrentMonth?: boolean | undefined;
   disableHighlightToday?: boolean | undefined;
+  /** Formats the weekday headings of the calendar. */
   dayOfWeekFormatter?: ((date: Date) => string) | undefined;
   readOnly?: boolean | undefined;
+  /** Turns the calendar off. */
   disabled?: boolean | undefined;
   loading?: boolean | undefined;
+  /** Renders the calendar while `loading` is on. */
   renderLoading?: (() => ReactNode) | undefined;
   reduceAnimations?: boolean | undefined;
   /** Called when the first shown month changes. */
   onMonthChange?: ((month: Date) => void) | undefined;
   /** Focuses the current day on mount. */
   autoFocus?: boolean | undefined;
+  /** Replaces the text of the labels and buttons, such as for another language. */
   localeText?: Partial<PickerLocaleText> | undefined;
   /** Replaced parts: the day button and the arrow icons (phase 4). */
   slots?: Omit<DateCalendarSlots, "switchViewIcon"> | undefined;

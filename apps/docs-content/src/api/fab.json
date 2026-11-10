@@ -1,0 +1,234 @@
+{
+ "css": [
+  {
+   "name": "--ok-action-disabled",
+   "value": "color-mix(in srgb, #919EAB 80%, transparent)"
+  },
+  {
+   "name": "--ok-action-disabled-bg",
+   "value": "color-mix(in srgb, #919EAB 24%, transparent)"
+  },
+  {
+   "description": "The main color of the element's `data-ok-color`, as RGB channels.",
+   "name": "--ok-c-channel"
+  },
+  {
+   "description": "The text color on the main color.",
+   "name": "--ok-c-contrast"
+  },
+  {
+   "description": "The hover color of the element's `data-ok-color`.",
+   "name": "--ok-c-hover"
+  },
+  {
+   "description": "The main color of the element's `data-ok-color`.",
+   "name": "--ok-c-main"
+  },
+  {
+   "description": "The colored shadow of the element's `data-ok-color`.",
+   "name": "--ok-c-shadow"
+  },
+  {
+   "description": "The accessible text tone of the element's `data-ok-color`.",
+   "name": "--ok-c-text"
+  },
+  {
+   "name": "--ok-duration-short",
+   "value": "250ms"
+  },
+  {
+   "name": "--ok-easing-standard",
+   "value": "cubic-bezier(0.4, 0, 0.2, 1)"
+  },
+  {
+   "name": "--ok-font-family",
+   "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+  },
+  {
+   "name": "--ok-font-size-lg",
+   "value": "0.9375rem"
+  },
+  {
+   "name": "--ok-font-size-md",
+   "value": "0.875rem"
+  },
+  {
+   "name": "--ok-font-size-sm",
+   "value": "0.8125rem"
+  },
+  {
+   "dark": "#1C252E",
+   "light": "#FFFFFF",
+   "name": "--ok-inherit-contrast"
+  },
+  {
+   "dark": "#C4CDD5",
+   "light": "#454F5B",
+   "name": "--ok-inherit-hover"
+  },
+  {
+   "dark": "#FFFFFF",
+   "light": "#1C252E",
+   "name": "--ok-inherit-main"
+  },
+  {
+   "name": "--ok-palette-grey-300",
+   "value": "#DFE3E8"
+  },
+  {
+   "name": "--ok-palette-grey-400",
+   "value": "#C4CDD5"
+  },
+  {
+   "name": "--ok-palette-grey-500-channel",
+   "value": "145 158 171"
+  },
+  {
+   "name": "--ok-palette-grey-800",
+   "value": "#1C252E"
+  },
+  {
+   "name": "--ok-radius-full",
+   "value": "9999px"
+  },
+  {
+   "name": "--ok-shadow-z8",
+   "value": "0px 8px 16px 0px color-mix(in srgb, var(--ok-shadow-color) 16%, transparent)"
+  },
+  {
+   "name": "--ok-spacing",
+   "value": "0.25rem"
+  },
+  {
+   "dark": "#FFFFFF",
+   "light": "#1C252E",
+   "name": "--ok-text-primary"
+  },
+  {
+   "dark": "#919EAB",
+   "light": "#637381",
+   "name": "--ok-text-secondary"
+  },
+  {
+   "name": "--ok-typography-button-font-weight",
+   "value": "700"
+  },
+  {
+   "name": "--ok-typography-button-line-height",
+   "value": "1.7143"
+  }
+ ],
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-fab",
+    "options": [
+     {
+      "attr": "data-ok-variant",
+      "default": "contained",
+      "description": "Visual style.",
+      "kind": "style",
+      "name": "variant",
+      "values": [
+       "contained",
+       "outlined",
+       "soft"
+      ]
+     },
+     {
+      "attr": "data-ok-color",
+      "default": "default",
+      "description": "`default` (grey), `inherit` (dark), palette.",
+      "kind": "style",
+      "name": "color",
+      "values": [
+       "default",
+       "inherit",
+       "primary",
+       "secondary",
+       "info",
+       "success",
+       "warning",
+       "error",
+       "black",
+       "white"
+      ]
+     },
+     {
+      "attr": "data-ok-size",
+      "default": "md",
+      "description": "Round 40 / 48 / 56px; extended 36 / 40 / 48px.",
+      "kind": "style",
+      "name": "size",
+      "values": [
+       "sm",
+       "md",
+       "lg"
+      ]
+     },
+     {
+      "attr": "data-ok-extended",
+      "description": "Pill with an icon and a label.",
+      "kind": "flag",
+      "name": "extended"
+     },
+     {
+      "attr": "data-ok-animate",
+      "description": "Scale up on hover, down while pressed.",
+      "kind": "flag",
+      "name": "animate"
+     },
+     {
+      "attr": "disabled",
+      "description": "Native `disabled`.",
+      "kind": "native",
+      "name": "disabled"
+     }
+    ]
+   },
+   "name": "Fab",
+   "react": {
+    "description": "A native `<button type=\"button\">`, or an `<a>` when `href` is set; round fabs need `aria-label`, extended fabs are named by their label.",
+    "native": "HTMLAnchorElement",
+    "props": [
+     {
+      "description": "Scales up on hover and down while pressed (off with reduced motion).",
+      "name": "animate",
+      "type": "boolean"
+     },
+     {
+      "default": "\"default\"",
+      "description": "`default` (grey), `inherit` (dark) or a palette color.",
+      "name": "color",
+      "type": "\"black\" | \"default\" | \"error\" | \"info\" | \"inherit\" | \"primary\" | \"secondary\" | \"success\" | \"warning\" | \"white\""
+     },
+     {
+      "description": "Removes `href` and sets `aria-disabled`, so the link can't be followed.",
+      "name": "disabled",
+      "type": "boolean"
+     },
+     {
+      "description": "A pill with an icon and a label instead of a round icon button.",
+      "name": "extended",
+      "type": "boolean"
+     },
+     {
+      "default": "\"md\"",
+      "description": "Round `sm` 40 · `md` 48 · `lg` 56; extended `sm` 36 · `md` 40 · `lg` 48.",
+      "name": "size",
+      "type": "\"lg\" | \"md\" | \"sm\""
+     },
+     {
+      "default": "\"contained\"",
+      "description": "Visual style.",
+      "name": "variant",
+      "type": "\"contained\" | \"outlined\" | \"soft\""
+     }
+    ]
+   }
+  }
+ ],
+ "format": 1,
+ "name": "fab",
+ "title": "Fab"
+}

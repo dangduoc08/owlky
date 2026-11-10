@@ -1,4 +1,6 @@
 import { type WalktourApi, walktourOptions, walktourStepOptions } from "@owlky/core";
+import walktourApi from "@owlky/docs-content/api/walktour.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { Button, Walktour, type WalktourStep } from "@owlky/react";
 import { useRef } from "react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
@@ -180,6 +182,7 @@ export function ControlledTour({ steps }) {
 - Escape closes a step unless \`disableCloseOnEsc\` is set. Keep it on: it is the quickest way out for keyboard users.
 - The beacon's pulse stops when the system asks for reduced motion, and scrolling to a target is instant then.`,
   },
+  apiReferenceSection(walktourApi),
 ];
 
 const STEPS: WalktourStep[] = [

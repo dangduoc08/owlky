@@ -1,4 +1,6 @@
 import { breadcrumbsOptions } from "@owlky/core";
+import breadcrumbsApi from "@owlky/docs-content/api/breadcrumbs.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { Breadcrumbs, BreadcrumbsDot, Link } from "@owlky/react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
@@ -42,17 +44,21 @@ export function Trail() {
     id: "icons",
     title: "Add icons and change the separator",
     body: 'Put a decorative `svg` before the text of an item. Icons are 20px and follow the item\'s color. In React, every child of `Breadcrumbs` becomes an item and the separator goes between them. Pass `separator` to replace the slash with text, an icon or `<BreadcrumbsDot />`. In HTML, write each separator in its own `li` with `aria-hidden="true"`, and use `<span data-ok-breadcrumbs-dot></span>` for a dot.',
-    html: `<li data-ok-breadcrumbs-item>
-  <a href="/" data-ok-typography data-ok-link data-ok-variant="inherit" data-ok-color="inherit" data-ok-underline="hover"><svg aria-hidden="true" viewBox="0 0 24 24">…</svg>Home</a>
-</li>
-<li data-ok-breadcrumbs-separator aria-hidden="true"><span data-ok-breadcrumbs-dot></span></li>`,
+    html: `<nav data-ok-breadcrumbs aria-label="breadcrumb">
+  <ol data-ok-breadcrumbs-list>
+    <li data-ok-breadcrumbs-item><a href="/" data-ok-typography data-ok-link data-ok-variant="inherit" data-ok-color="inherit" data-ok-underline="hover"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10 12 3l9 7v10a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1Z" /></svg>Home</a></li>
+    <li data-ok-breadcrumbs-separator aria-hidden="true"><span data-ok-breadcrumbs-dot></span></li>
+    <li data-ok-breadcrumbs-item><span aria-current="page">Desk lamp</span></li>
+  </ol>
+</nav>`,
     react: `import { Breadcrumbs, BreadcrumbsDot, Link } from "@owlky/react";
+import { HouseIcon } from "lucide-react";
 
 export function Trail() {
   return (
     <Breadcrumbs separator={<BreadcrumbsDot />}>
       <Link href="/" color="inherit" underline="hover">
-        <HomeIcon />
+        <HouseIcon aria-hidden="true" />
         Home
       </Link>
       <span aria-current="page">Desk lamp</span>
@@ -65,15 +71,39 @@ export function Trail() {
     title: "Collapse long trails",
     body: 'A trail with more than `maxItems` items (8 by default) collapses. It keeps `itemsBeforeCollapse` items at the start and `itemsAfterCollapse` at the end (1 each by default), and replaces the others with a button. Pressing the button shows the whole trail and moves focus to the first item that was hidden. In HTML, the runtime collapses the trail when it starts. `data-ok-expand-text` names the button (default "Show path").',
     html: `<nav data-ok-breadcrumbs aria-label="breadcrumb" data-ok-max-items="3" data-ok-expand-text="Show the full path">
-  <ol data-ok-breadcrumbs-list>…</ol>
+  <ol data-ok-breadcrumbs-list>
+    <li data-ok-breadcrumbs-item><a href="/" data-ok-typography data-ok-link data-ok-variant="inherit" data-ok-color="inherit" data-ok-underline="hover">Home</a></li>
+    <li data-ok-breadcrumbs-separator aria-hidden="true">/</li>
+    <li data-ok-breadcrumbs-item><a href="/catalog" data-ok-typography data-ok-link data-ok-variant="inherit" data-ok-color="inherit" data-ok-underline="hover">Catalog</a></li>
+    <li data-ok-breadcrumbs-separator aria-hidden="true">/</li>
+    <li data-ok-breadcrumbs-item><a href="/catalog/lighting" data-ok-typography data-ok-link data-ok-variant="inherit" data-ok-color="inherit" data-ok-underline="hover">Lighting</a></li>
+    <li data-ok-breadcrumbs-separator aria-hidden="true">/</li>
+    <li data-ok-breadcrumbs-item><a href="/catalog/lighting/desk" data-ok-typography data-ok-link data-ok-variant="inherit" data-ok-color="inherit" data-ok-underline="hover">Desk</a></li>
+    <li data-ok-breadcrumbs-separator aria-hidden="true">/</li>
+    <li data-ok-breadcrumbs-item><span aria-current="page">Desk lamp</span></li>
+  </ol>
 </nav>`,
-    react: `<Breadcrumbs maxItems={3} expandText="Show the full path">
-  <Link href="/" color="inherit" underline="hover">Home</Link>
-  <Link href="/catalog" color="inherit" underline="hover">Catalog</Link>
-  <Link href="/catalog/lighting" color="inherit" underline="hover">Lighting</Link>
-  <Link href="/catalog/lighting/desk" color="inherit" underline="hover">Desk</Link>
-  <span aria-current="page">Desk lamp</span>
-</Breadcrumbs>`,
+    react: `import { Breadcrumbs, Link } from "@owlky/react";
+
+export function ProductTrail() {
+  return (
+    <Breadcrumbs maxItems={3} expandText="Show the full path">
+      <Link href="/" color="inherit" underline="hover">
+        Home
+      </Link>
+      <Link href="/catalog" color="inherit" underline="hover">
+        Catalog
+      </Link>
+      <Link href="/catalog/lighting" color="inherit" underline="hover">
+        Lighting
+      </Link>
+      <Link href="/catalog/lighting/desk" color="inherit" underline="hover">
+        Desk
+      </Link>
+      <span aria-current="page">Desk lamp</span>
+    </Breadcrumbs>
+  );
+}`,
   },
   {
     id: "wrap",
@@ -111,6 +141,7 @@ export function Trail() {
 - Item text uses the secondary text color and the current page the primary one, both with a contrast ratio of at least 4.5:1.
 - Links and the expand button show a focus ring for keyboard users. The expand button is at least 24px tall.`,
   },
+  apiReferenceSection(breadcrumbsApi),
 ];
 
 const PREVIEWS = {

@@ -36,7 +36,9 @@ function PersonIcon() {
 export interface AvatarProps extends Omit<HTMLAttributes<HTMLSpanElement>, "color"> {
   /** Image URL. If it fails to load, the avatar shows `children`, the first letter of `alt` or an icon. */
   src?: string | undefined;
+  /** Candidate pictures for `src` at other resolutions (the `srcset` of the `img`). */
   srcSet?: string | undefined;
+  /** The `sizes` of the `img`, with `srcSet`. */
   sizes?: string | undefined;
   /** Text alternative of the image (also the source of the fallback letter). */
   alt?: string | undefined;

@@ -259,6 +259,7 @@ export const TableExpandButton = forwardRef<HTMLButtonElement, TableExpandButton
 export interface TableDetailRowProps extends ComponentPropsWithoutRef<"tr"> {
   /** Referenced by the row's `TableExpandButton`. */
   id: string;
+  /** The row is open. */
   open: boolean;
   /** Number of columns it spans. */
   colSpan: number;
@@ -282,17 +283,25 @@ export interface TablePaginationProps extends Omit<ComponentPropsWithoutRef<"div
   count: number;
   /** 0-based page. */
   page: number;
+  /** The rows per page. */
   rowsPerPage: number;
+  /** Called with the page (0-based) a button moves to. */
   onPageChange: (page: number) => void;
+  /** Called when another number of rows per page is picked. */
   onRowsPerPageChange?: ((rowsPerPage: number) => void) | undefined;
   /** Default `[10, 25, 50, 100]`; fewer than two hides the select; `-1` = all. */
   rowsPerPageOptions?: readonly RowsPerPageOption[] | undefined;
-  /** Default `"Rows per page:"`. */
+  /** Label of the rows-per-page select. Default `"Rows per page:"`. */
   labelRowsPerPage?: ReactNode;
+  /** Formats the range text, such as "1–10 of 100". */
   labelDisplayedRows?: ((range: PageRange) => ReactNode) | undefined;
+  /** Returns the accessible name of each navigation button. */
   getItemAriaLabel?: ((type: PaginationAction) => string) | undefined;
+  /** Shows a button to the first page. */
   showFirstButton?: boolean | undefined;
+  /** Shows a button to the last page. */
   showLastButton?: boolean | undefined;
+  /** Turns the controls off. */
   disabled?: boolean | undefined;
   /**
    * The rows-per-page select (MUI `SelectProps`): `{ native: false }` makes it a listbox Select

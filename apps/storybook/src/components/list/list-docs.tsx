@@ -5,6 +5,8 @@ import {
   listOptions,
   listSubheaderOptions,
 } from "@owlky/core";
+import listApi from "@owlky/docs-content/api/list.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import {
   List,
   ListItem,
@@ -44,6 +46,7 @@ export const listSections: GuideSection[] = [
     react: `// Load once, in your app's entry file
 import "@owlky/styles/owlky.css";
 import { List, ListItem, ListItemButton, ListItemIcon, ListItemText } from "@owlky/react";
+import { InboxIcon } from "lucide-react";
 
 export function Mailbox() {
   return (
@@ -226,6 +229,7 @@ export function Inbox() {
 - Secondary text uses the secondary text color, with a contrast ratio of at least 4.5:1, also on a selected row.
 - Disabled buttons are native \`disabled\`. Disabled links lose their \`href\` and get \`aria-disabled="true"\`.`,
   },
+  apiReferenceSection(listApi),
 ];
 
 const PREVIEWS = {

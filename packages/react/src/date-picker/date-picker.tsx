@@ -126,6 +126,7 @@ export interface DatePickerProps
   openTo?: DateView | undefined;
   /** Controlled view. */
   view?: DateView | undefined;
+  /** Called when the view changes. */
   onViewChange?: ((view: DateView) => void) | undefined;
   /** Field format (Day.js tokens). Default: from the views and the locale. */
   format?: string | undefined;
@@ -144,36 +145,55 @@ export interface DatePickerProps
   keepOpenDuringFieldFocus?: boolean | undefined;
   /** Calendar props. */
   referenceDate?: Date | undefined;
+  /** The date treated as today (the default is the current date). */
   today?: Date | undefined;
   displayWeekNumber?: boolean | undefined;
   fixedWeekNumber?: number | undefined;
   showDaysOutsideCurrentMonth?: boolean | undefined;
   disableHighlightToday?: boolean | undefined;
+  /** Formats the weekday headings of the calendar. */
   dayOfWeekFormatter?: ((date: Date) => string) | undefined;
   monthsPerRow?: 3 | 4 | undefined;
   yearsPerRow?: 3 | 4 | undefined;
   yearsOrder?: "asc" | "desc" | undefined;
   loading?: boolean | undefined;
+  /** Renders the calendar while `loading` is on. */
   renderLoading?: (() => ReactNode) | undefined;
   reduceAnimations?: boolean | undefined;
+  /** Called when the calendar shows another month. */
   onMonthChange?: ((month: Date) => void) | undefined;
+  /** Called when the calendar shows another year. */
   onYearChange?: ((year: Date) => void) | undefined;
   /** Field props. */
   clearable?: boolean | undefined;
+  /** Called when the clear button empties the field. */
   onClear?: (() => void) | undefined;
   readOnly?: boolean | undefined;
+  /** Turns the field off. */
   disabled?: boolean | undefined;
+  /** Focuses the field when it mounts. */
   autoFocus?: boolean | undefined;
+  /** The selected section of the field (its index, `null`: none), controlled. */
   selectedSections?: number | null | undefined;
+  /** Called when the selected section changes. */
   onSelectedSectionsChange?: ((section: number | null) => void) | undefined;
+  /** The field's label. */
   label?: ReactNode;
+  /** Text under the field, such as a hint or an error message. */
   helperText?: ReactNode;
+  /** Shows the field in the error state. */
   error?: boolean | undefined;
+  /** The field's variant: `outlined`, `filled` or `standard`. */
   variant?: TextFieldVariant | undefined;
+  /** The field's size. */
   size?: SelectionControlSize | undefined;
+  /** Stretches the field to the container's width. */
   fullWidth?: boolean | undefined;
+  /** Marks the field as required (an asterisk on the label). */
   required?: boolean | undefined;
+  /** The name of the hidden input that carries the value in a form. */
   name?: string | undefined;
+  /** A ref to the hidden input that carries the value. */
   inputRef?: Ref<HTMLInputElement> | undefined;
   /** Text overrides. */
   localeText?: Partial<PickerLocaleText> | undefined;

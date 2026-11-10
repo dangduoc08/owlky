@@ -1,0 +1,646 @@
+{
+ "css": [
+  {
+   "dark": "#1C252E",
+   "light": "#FFFFFF",
+   "name": "--ok-bg-paper"
+  },
+  {
+   "name": "--ok-divider",
+   "value": "color-mix(in srgb, #919EAB 20%, transparent)"
+  },
+  {
+   "name": "--ok-font-family",
+   "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+  },
+  {
+   "name": "--ok-font-size-md",
+   "value": "0.875rem"
+  },
+  {
+   "name": "--ok-font-size-xs",
+   "value": "0.75rem"
+  },
+  {
+   "name": "--ok-font-weight-medium",
+   "value": "500"
+  },
+  {
+   "name": "--ok-font-weight-regular",
+   "value": "400"
+  },
+  {
+   "name": "--ok-palette-common-white",
+   "value": "#FFFFFF"
+  },
+  {
+   "name": "--ok-palette-error-contrast-text",
+   "value": "#FFFFFF"
+  },
+  {
+   "name": "--ok-palette-error-main",
+   "value": "#FF5630"
+  },
+  {
+   "dark": "#FFAC82",
+   "light": "#B71D18",
+   "name": "--ok-palette-error-text"
+  },
+  {
+   "name": "--ok-palette-grey-500-channel",
+   "value": "145 158 171"
+  },
+  {
+   "name": "--ok-palette-grey-600",
+   "value": "#637381"
+  },
+  {
+   "name": "--ok-palette-primary-contrast-text",
+   "value": "#FFFFFF"
+  },
+  {
+   "name": "--ok-palette-primary-main",
+   "value": "#00A76F"
+  },
+  {
+   "name": "--ok-palette-warning-main",
+   "value": "#FFAB00"
+  },
+  {
+   "name": "--ok-radius-full",
+   "value": "9999px"
+  },
+  {
+   "name": "--ok-shadow-z8",
+   "value": "0px 8px 16px 0px color-mix(in srgb, var(--ok-shadow-color) 16%, transparent)"
+  },
+  {
+   "name": "--ok-spacing",
+   "value": "0.25rem"
+  },
+  {
+   "dark": "#FFFFFF",
+   "light": "#1C252E",
+   "name": "--ok-text-primary"
+  },
+  {
+   "dark": "#919EAB",
+   "light": "#637381",
+   "name": "--ok-text-secondary"
+  },
+  {
+   "name": "--ok-typography-body2-font-size",
+   "value": "0.875rem"
+  },
+  {
+   "name": "--ok-typography-body2-line-height",
+   "value": "1.5714"
+  },
+  {
+   "name": "--ok-typography-caption-font-size",
+   "value": "0.75rem"
+  },
+  {
+   "name": "--ok-typography-caption-line-height",
+   "value": "1.5"
+  },
+  {
+   "name": "--ok-z-mobile-stepper",
+   "value": "1000"
+  }
+ ],
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-stepper",
+    "events": [
+     {
+      "cancelable": true,
+      "description": "Before a trigger moves to another step. Call `preventDefault()` to stay.",
+      "detail": "{ activeStep: number; previous: number; }",
+      "name": "ok:stepper:change"
+     }
+    ],
+    "methods": [
+     {
+      "description": "Index of the current step; equal to the step count once every step is completed.",
+      "kind": "property",
+      "name": "activeStep",
+      "type": "number"
+     },
+     {
+      "description": "Moves as the user would (Next / Back / Reset). Returns `false` if prevented or unchanged.",
+      "kind": "method",
+      "name": "go",
+      "type": "(step: number) => boolean"
+     },
+     {
+      "description": "Moves to `step` without emitting events (clamped to 0 … step count).",
+      "kind": "method",
+      "name": "setActiveStep",
+      "type": "(step: number) => void"
+     }
+    ],
+    "options": [
+     {
+      "attr": "data-ok-orientation",
+      "default": "horizontal",
+      "description": "Row or column of steps.",
+      "kind": "style",
+      "name": "orientation",
+      "values": [
+       "horizontal",
+       "vertical"
+      ]
+     },
+     {
+      "attr": "data-ok-alternative-label",
+      "description": "Horizontal: labels below the icons, steps share the width.",
+      "kind": "flag",
+      "name": "alternativeLabel"
+     },
+     {
+      "attr": "data-ok-variant",
+      "default": "standard",
+      "description": "`standard` numbered icons; `dot` small dots; `circle` large icon circles. Thicker lines with `dot` / `circle`.",
+      "kind": "style",
+      "name": "variant",
+      "values": [
+       "standard",
+       "dot",
+       "circle"
+      ]
+     },
+     {
+      "attr": "data-ok-active-step",
+      "default": 0,
+      "description": "Index of the current step; earlier steps are completed.",
+      "kind": "number",
+      "min": 0,
+      "name": "activeStep"
+     }
+    ],
+    "parts": [
+     {
+      "description": "Marks a step icon with custom content.",
+      "kind": "state",
+      "name": "data-ok-custom"
+     },
+     {
+      "description": "Moves the stepper whose `id` it names back one step.",
+      "kind": "trigger",
+      "name": "data-ok-stepper-back",
+      "value": [
+       "id"
+      ]
+     },
+     {
+      "description": "Moves the stepper whose `id` it names to the next step.",
+      "kind": "trigger",
+      "name": "data-ok-stepper-next",
+      "value": [
+       "id"
+      ]
+     },
+     {
+      "description": "HTML: content shown while the stepper whose `id` it names is at this panel's index.",
+      "kind": "trigger",
+      "name": "data-ok-stepper-panel",
+      "value": [
+       "id"
+      ]
+     },
+     {
+      "description": "On a panel: the step it shows at, instead of its index.",
+      "kind": "value",
+      "name": "data-ok-stepper-panel-step",
+      "value": "string"
+     },
+     {
+      "description": "Moves the stepper whose `id` it names back to the first step.",
+      "kind": "trigger",
+      "name": "data-ok-stepper-reset",
+      "value": [
+       "id"
+      ]
+     }
+    ],
+    "runtime": "stepper"
+   },
+   "name": "Stepper",
+   "react": {
+    "description": "An ordered list of steps; each `Step` gets its index and its state (active, completed, not reached) from `activeStep`. The app owns `activeStep` (Back / Next buttons).",
+    "native": "HTMLOListElement",
+    "props": [
+     {
+      "description": "Index of the current step (0-based). Earlier steps are completed. Default 0.",
+      "name": "activeStep",
+      "type": "number"
+     },
+     {
+      "description": "Horizontal: labels below the icons; the steps share the width.",
+      "name": "alternativeLabel",
+      "type": "boolean"
+     },
+     {
+      "description": "`Step` elements.",
+      "name": "children",
+      "type": "ReactNode"
+     },
+     {
+      "default": "<StepConnector />",
+      "description": "The line between steps. `null` draws none.",
+      "name": "connector",
+      "type": "ReactNode"
+     },
+     {
+      "default": "\"horizontal\"",
+      "description": "Row or column of steps.",
+      "name": "orientation",
+      "type": "\"horizontal\" | \"vertical\""
+     },
+     {
+      "description": "`\"standard\"` (default) numbered icons, `\"dot\"` small dots, `\"circle\"` large icon circles.",
+      "name": "variant",
+      "type": "\"circle\" | \"dot\" | \"standard\""
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-mobile-stepper",
+    "events": [
+     {
+      "cancelable": true,
+      "description": "Before a trigger moves to another step. Call `preventDefault()` to stay.",
+      "detail": "{ activeStep: number; previous: number; }",
+      "name": "ok:mobile-stepper:change"
+     }
+    ],
+    "methods": [
+     {
+      "description": "The active step (0-based).",
+      "kind": "property",
+      "name": "activeStep",
+      "type": "number"
+     },
+     {
+      "description": "Moves as the user would (Next / Back). Returns `false` if prevented or unchanged.",
+      "kind": "method",
+      "name": "go",
+      "type": "(step: number) => boolean"
+     },
+     {
+      "description": "Moves to `step` without emitting events (clamped to the steps).",
+      "kind": "method",
+      "name": "setActiveStep",
+      "type": "(step: number) => void"
+     }
+    ],
+    "options": [
+     {
+      "attr": "data-ok-variant",
+      "default": "dots",
+      "description": "How progress shows: `text` (2 / 3), `dots`, or a `progress` bar.",
+      "kind": "style",
+      "name": "variant",
+      "values": [
+       "text",
+       "dots",
+       "progress"
+      ]
+     },
+     {
+      "attr": "data-ok-position",
+      "default": "bottom",
+      "description": "`bottom` / `top`: fixed to the viewport edge; `static`: in the flow.",
+      "kind": "style",
+      "name": "position",
+      "values": [
+       "bottom",
+       "top",
+       "static"
+      ]
+     },
+     {
+      "attr": "data-ok-steps",
+      "description": "Number of steps.",
+      "kind": "number",
+      "min": 1,
+      "name": "steps"
+     },
+     {
+      "attr": "data-ok-active-step",
+      "default": 0,
+      "description": "Index of the current step.",
+      "kind": "number",
+      "min": 0,
+      "name": "activeStep"
+     }
+    ],
+    "parts": [
+     {
+      "description": "Moves the mobile stepper whose `id` it names back one step.",
+      "kind": "trigger",
+      "name": "data-ok-mobile-stepper-back",
+      "value": [
+       "id"
+      ]
+     },
+     {
+      "description": "One dot.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-mobile-stepper-dot"
+     },
+     {
+      "description": "The dots of the `dots` variant.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-mobile-stepper-dots"
+     },
+     {
+      "description": "Moves the mobile stepper whose `id` it names to the next step.",
+      "kind": "trigger",
+      "name": "data-ok-mobile-stepper-next",
+      "value": [
+       "id"
+      ]
+     },
+     {
+      "description": "HTML: content shown while the mobile stepper whose `id` it names is at this panel's index.",
+      "kind": "trigger",
+      "name": "data-ok-mobile-stepper-panel",
+      "value": [
+       "id"
+      ]
+     },
+     {
+      "description": "The progress bar of the `progress` variant.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-mobile-stepper-progress"
+     },
+     {
+      "description": "The \"2 / 6\" text of the `text` variant.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-mobile-stepper-text"
+     }
+    ],
+    "runtime": "mobile-stepper"
+   },
+   "name": "MobileStepper",
+   "react": {
+    "description": "A compact bar: Back, the progress (text, dots or a bar), Next.",
+    "native": "HTMLDivElement",
+    "props": [
+     {
+      "description": "Index of the current step (0-based). Default 0.",
+      "name": "activeStep",
+      "type": "number"
+     },
+     {
+      "description": "The Back control (a `Button`).",
+      "name": "backButton",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Accessible name of the dots and the progress bar. Default \"Step 2 of 3\".",
+      "name": "getStepLabel",
+      "type": "((step: number, steps: number) => string)"
+     },
+     {
+      "description": "The Next control (a `Button`).",
+      "name": "nextButton",
+      "type": "ReactNode"
+     },
+     {
+      "description": "`\"bottom\"` (default) / `\"top\"`: fixed to the viewport edge; `\"static\"`: in the flow.",
+      "name": "position",
+      "type": "\"bottom\" | \"static\" | \"top\""
+     },
+     {
+      "description": "Number of steps.",
+      "name": "steps",
+      "required": true,
+      "type": "number"
+     },
+     {
+      "description": "`\"dots\"` (default), `\"text\"` (\"2 / 3\") or a `\"progress\"` bar.",
+      "name": "variant",
+      "type": "\"dots\" | \"progress\" | \"text\""
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-step",
+    "options": [
+     {
+      "attr": "data-ok-active",
+      "description": "The current step (`aria-current=\"step\"` on its label).",
+      "kind": "flag",
+      "name": "active"
+     },
+     {
+      "attr": "data-ok-completed",
+      "description": "Done: the icon shows a check.",
+      "kind": "flag",
+      "name": "completed"
+     },
+     {
+      "attr": "data-ok-disabled",
+      "description": "Not reached yet (dimmed).",
+      "kind": "flag",
+      "name": "disabled"
+     }
+    ],
+    "parts": [
+     {
+      "description": "The step's icon: its number, a check or an error.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-step-icon"
+     },
+     {
+      "description": "The check of a completed step.",
+      "elements": [
+       "svg"
+      ],
+      "kind": "part",
+      "name": "data-ok-step-icon-check"
+     },
+     {
+      "description": "The icon of a step with an error.",
+      "elements": [
+       "svg"
+      ],
+      "kind": "part",
+      "name": "data-ok-step-icon-error"
+     },
+     {
+      "description": "The step's number.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-step-icon-text"
+     }
+    ]
+   },
+   "name": "Step",
+   "react": {
+    "description": "One `li` of a `Stepper`.",
+    "native": "HTMLLIElement",
+    "props": [
+     {
+      "description": "Overrides the state the stepper computes.",
+      "name": "active",
+      "type": "boolean"
+     },
+     {
+      "description": "`StepLabel` and, in a vertical stepper, `StepContent`.",
+      "name": "children",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Done: the icon shows a check.",
+      "name": "completed",
+      "type": "boolean"
+     },
+     {
+      "description": "Not reached yet (dimmed).",
+      "name": "disabled",
+      "type": "boolean"
+     },
+     {
+      "description": "Set by the `Stepper` (its position).",
+      "name": "index",
+      "type": "number"
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-step-connector",
+    "description": "The line before a step (not on the first one).",
+    "elements": [
+     "div"
+    ],
+    "parts": [
+     {
+      "description": "The line itself.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-step-connector-line"
+     }
+    ]
+   },
+   "name": "StepConnector",
+   "react": {
+    "description": "The line drawn before a step.",
+    "props": []
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-step-content",
+    "description": "The content under a vertical step: a collapse.",
+    "elements": [
+     "div"
+    ]
+   },
+   "name": "StepContent",
+   "react": {
+    "description": "Vertical steppers: what the active step shows below its label. A Collapse (`timeout=\"auto\"`, as MUI): `hidden` on the other steps.",
+    "native": "HTMLElement",
+    "props": []
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-step-label",
+    "options": [
+     {
+      "attr": "data-ok-error",
+      "description": "The step failed: error color and icon.",
+      "kind": "flag",
+      "name": "error"
+     }
+    ],
+    "parts": [
+     {
+      "description": "The optional text under the title, such as \"Optional\".",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-step-label-optional"
+     },
+     {
+      "description": "The title and the optional text.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-step-label-text"
+     },
+     {
+      "description": "The step's title.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-step-label-title"
+     }
+    ]
+   },
+   "name": "StepLabel",
+   "react": {
+    "description": "The icon and the title of a step.",
+    "native": "HTMLSpanElement",
+    "props": [
+     {
+      "description": "The step's title.",
+      "name": "children",
+      "type": "ReactNode"
+     },
+     {
+      "description": "The step failed: error color and icon.",
+      "name": "error",
+      "type": "boolean"
+     },
+     {
+      "description": "Replaces the step number: a number or text, or any node (a decorative `svg`).",
+      "name": "icon",
+      "type": "ReactNode"
+     },
+     {
+      "description": "A second line, such as \"Optional\".",
+      "name": "optional",
+      "type": "ReactNode"
+     }
+    ]
+   }
+  }
+ ],
+ "format": 1,
+ "name": "stepper",
+ "title": "Stepper"
+}

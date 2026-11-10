@@ -1,0 +1,960 @@
+{
+ "css": [
+  {
+   "dark": "#1C252E",
+   "light": "#FFFFFF",
+   "name": "--ok-bg-paper"
+  },
+  {
+   "description": "The main color of the element's `data-ok-color`, as RGB channels.",
+   "name": "--ok-c-channel"
+  },
+  {
+   "description": "The main color of the element's `data-ok-color`.",
+   "name": "--ok-c-main"
+  },
+  {
+   "name": "--ok-duration-enter",
+   "value": "640ms"
+  },
+  {
+   "name": "--ok-duration-exit",
+   "value": "480ms"
+  },
+  {
+   "name": "--ok-duration-shorter",
+   "value": "200ms"
+  },
+  {
+   "name": "--ok-easing-decelerate",
+   "value": "cubic-bezier(0, 0, 0.2, 1)"
+  },
+  {
+   "name": "--ok-easing-expressive",
+   "value": "cubic-bezier(0.43, 0.13, 0.23, 0.96)"
+  },
+  {
+   "name": "--ok-easing-standard",
+   "value": "cubic-bezier(0.4, 0, 0.2, 1)"
+  },
+  {
+   "name": "--ok-palette-error-main",
+   "value": "#FF5630"
+  },
+  {
+   "name": "--ok-palette-error-main-channel",
+   "value": "255 86 48"
+  },
+  {
+   "name": "--ok-palette-grey-500-channel",
+   "value": "145 158 171"
+  },
+  {
+   "name": "--ok-palette-info-main",
+   "value": "#00B8D9"
+  },
+  {
+   "name": "--ok-palette-info-main-channel",
+   "value": "0 184 217"
+  },
+  {
+   "name": "--ok-palette-primary-main",
+   "value": "#00A76F"
+  },
+  {
+   "name": "--ok-palette-primary-main-channel",
+   "value": "0 167 111"
+  },
+  {
+   "name": "--ok-palette-secondary-main",
+   "value": "#8E33FF"
+  },
+  {
+   "name": "--ok-palette-secondary-main-channel",
+   "value": "142 51 255"
+  },
+  {
+   "name": "--ok-palette-success-main",
+   "value": "#22C55E"
+  },
+  {
+   "name": "--ok-palette-success-main-channel",
+   "value": "34 197 94"
+  },
+  {
+   "name": "--ok-palette-warning-main",
+   "value": "#FFAB00"
+  },
+  {
+   "name": "--ok-palette-warning-main-channel",
+   "value": "255 171 0"
+  },
+  {
+   "name": "--ok-radius-lg",
+   "value": "12px"
+  },
+  {
+   "name": "--ok-spacing",
+   "value": "0.25rem"
+  }
+ ],
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-motion",
+    "events": [
+     {
+      "cancelable": false,
+      "description": "After the root's own animation ended. `state` is its `data-ok-state`.",
+      "detail": "{ state: string | null; }",
+      "name": "ok:motion:end"
+     }
+    ],
+    "methods": [
+     {
+      "description": "Plays the entrance again.",
+      "kind": "method",
+      "name": "replay",
+      "type": "() => void"
+     },
+     {
+      "description": "`initial`, `enter` or `exit`.",
+      "kind": "property",
+      "name": "state",
+      "type": "MotionState"
+     }
+    ],
+    "options": [
+     {
+      "attr": "data-ok-variant",
+      "default": "fadeIn",
+      "description": "Animation: entrances and exits (`fadeInUp`, `zoomOut`…) or looping backgrounds (`kenburnsTop`, `panLeft`, `color3x`…).",
+      "kind": "style",
+      "name": "variant",
+      "values": [
+       "slideInUp",
+       "slideInDown",
+       "slideInLeft",
+       "slideInRight",
+       "slideOutUp",
+       "slideOutDown",
+       "slideOutLeft",
+       "slideOutRight",
+       "fadeIn",
+       "fadeInUp",
+       "fadeInDown",
+       "fadeInLeft",
+       "fadeInRight",
+       "fadeOut",
+       "fadeOutUp",
+       "fadeOutDown",
+       "fadeOutLeft",
+       "fadeOutRight",
+       "zoomIn",
+       "zoomInUp",
+       "zoomInDown",
+       "zoomInLeft",
+       "zoomInRight",
+       "zoomOut",
+       "zoomOutUp",
+       "zoomOutDown",
+       "zoomOutLeft",
+       "zoomOutRight",
+       "bounceIn",
+       "bounceInUp",
+       "bounceInDown",
+       "bounceInLeft",
+       "bounceInRight",
+       "bounceOut",
+       "bounceOutUp",
+       "bounceOutDown",
+       "bounceOutLeft",
+       "bounceOutRight",
+       "flipInX",
+       "flipInY",
+       "flipOutX",
+       "flipOutY",
+       "scaleInX",
+       "scaleInY",
+       "scaleOutX",
+       "scaleOutY",
+       "rotateIn",
+       "rotateOut",
+       "kenburnsTop",
+       "kenburnsBottom",
+       "kenburnsLeft",
+       "kenburnsRight",
+       "panTop",
+       "panBottom",
+       "panLeft",
+       "panRight",
+       "color2x",
+       "color3x",
+       "color4x",
+       "color5x",
+       "draw",
+       "interactive"
+      ]
+     },
+     {
+      "attr": "data-ok-duration",
+      "description": "Entrance length in milliseconds (default 640; loops have their own).",
+      "kind": "number",
+      "min": 0,
+      "name": "duration"
+     },
+     {
+      "attr": "data-ok-distance",
+      "description": "How far directional variants travel, in pixels (default 160 for slides, 120 for fades).",
+      "kind": "number",
+      "min": 0,
+      "name": "distance"
+     },
+     {
+      "attr": "data-ok-trigger",
+      "default": "inView",
+      "description": "`inView`: plays when the element scrolls into view; `mount`: right away; `manual`: follows `in`.",
+      "kind": "style",
+      "name": "trigger",
+      "values": [
+       "inView",
+       "mount",
+       "manual"
+      ]
+     },
+     {
+      "attr": "data-ok-once",
+      "default": true,
+      "description": "In view: plays only the first time; `false` also plays the exit when it leaves the view.",
+      "kind": "behavior",
+      "name": "once"
+     },
+     {
+      "attr": "data-ok-amount",
+      "default": 0.3,
+      "description": "In view: the visible fraction (0 to 1) that starts the animation.",
+      "kind": "number",
+      "min": 0,
+      "name": "amount"
+     },
+     {
+      "attr": "data-ok-in",
+      "description": "Manual trigger: shown (`in`; HTML: the `data-ok-in` attribute). Turning it off plays the exit.",
+      "kind": "state",
+      "name": "in"
+     },
+     {
+      "attr": "data-ok-delay",
+      "description": "Wait before the entrance, in milliseconds.",
+      "kind": "number",
+      "min": 0,
+      "name": "delay"
+     },
+     {
+      "attr": "data-ok-paused",
+      "description": "Pauses the animation (looping variants need a pause control: WCAG 2.2.2).",
+      "kind": "flag",
+      "name": "paused"
+     }
+    ],
+    "parts": [
+     {
+      "description": "One animated character.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-motion-char"
+     }
+    ],
+    "runtime": "motion"
+   },
+   "name": "Motion",
+   "react": {
+    "description": "Animates its box in (or out) when it scrolls into view, on mount or when `in` changes. Inside a MotionGroup it follows the group. To replay the entrance, change its `key`.",
+    "native": "HTMLDivElement",
+    "props": [
+     {
+      "description": "In view: the visible fraction (0 to 1) that starts the animation. 3.",
+      "name": "amount",
+      "type": "number"
+     },
+     {
+      "description": "The content.",
+      "name": "children",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Wait before the entrance, ms.",
+      "name": "delay",
+      "type": "number"
+     },
+     {
+      "description": "Travel of directional variants, px (default 160 for slides, 120 for fades).",
+      "name": "distance",
+      "type": "number"
+     },
+     {
+      "description": "Entrance length, ms (default 640; loops: about 5 s).",
+      "name": "duration",
+      "type": "number"
+     },
+     {
+      "default": "true",
+      "description": "Manual trigger: shown. Turning it off plays the exit.",
+      "name": "in",
+      "type": "boolean"
+     },
+     {
+      "description": "In view: plays only the first time (default). `false` also plays the exit when it leaves.",
+      "name": "once",
+      "type": "boolean"
+     },
+     {
+      "description": "2).",
+      "name": "paused",
+      "type": "boolean"
+     },
+     {
+      "description": "`inView` (default): plays when scrolled into view; `mount`: right away; `manual`: follows `in`.",
+      "name": "trigger",
+      "type": "\"inView\" | \"manual\" | \"mount\""
+     },
+     {
+      "default": "fadeIn",
+      "description": "Animation.",
+      "name": "variant",
+      "type": "MotionVariant"
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-count-up",
+    "methods": [
+     {
+      "description": "Counts again from the start.",
+      "kind": "method",
+      "name": "replay",
+      "type": "() => void"
+     }
+    ],
+    "options": [
+     {
+      "attr": "data-ok-start",
+      "default": 0,
+      "description": "First value shown.",
+      "kind": "number",
+      "name": "start"
+     },
+     {
+      "attr": "data-ok-end",
+      "default": 0,
+      "description": "Value reached at the end (also what screen readers read).",
+      "kind": "number",
+      "name": "end"
+     },
+     {
+      "attr": "data-ok-decimals",
+      "default": 0,
+      "description": "Digits after the decimal point.",
+      "kind": "number",
+      "min": 0,
+      "name": "decimals"
+     },
+     {
+      "attr": "data-ok-duration",
+      "default": 2000,
+      "description": "Length of the count, in milliseconds.",
+      "kind": "number",
+      "min": 0,
+      "name": "duration"
+     },
+     {
+      "attr": "data-ok-trigger",
+      "default": "inView",
+      "description": "`inView`: plays when the element scrolls into view; `mount`: right away; `manual`: follows `in`.",
+      "kind": "style",
+      "name": "trigger",
+      "values": [
+       "inView",
+       "mount",
+       "manual"
+      ]
+     },
+     {
+      "attr": "data-ok-once",
+      "default": true,
+      "description": "In view: plays only the first time; `false` also plays the exit when it leaves the view.",
+      "kind": "behavior",
+      "name": "once"
+     },
+     {
+      "attr": "data-ok-amount",
+      "default": 0.3,
+      "description": "In view: the visible fraction (0 to 1) that starts the animation.",
+      "kind": "number",
+      "min": 0,
+      "name": "amount"
+     },
+     {
+      "attr": "data-ok-in",
+      "description": "Manual trigger: shown (`in`; HTML: the `data-ok-in` attribute). Turning it off plays the exit.",
+      "kind": "state",
+      "name": "in"
+     }
+    ],
+    "parts": [
+     {
+      "description": "The full number for assistive technology.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-count-up-label"
+     },
+     {
+      "description": "The counting number (hidden from assistive technology).",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-count-up-value"
+     }
+    ],
+    "runtime": "count-up"
+   },
+   "name": "CountUp",
+   "react": {
+    "description": "Counts up to `end` when it scrolls into view (the reference's \"Count up\"). Reduced motion shows the end value at once.",
+    "native": "HTMLSpanElement",
+    "props": [
+     {
+      "description": "In view: the visible fraction (0 to 1) that starts the count. 3.",
+      "name": "amount",
+      "type": "number"
+     },
+     {
+      "description": "Digits after the decimal point. Default 0.",
+      "name": "decimals",
+      "type": "number"
+     },
+     {
+      "description": "Length of the count, ms. Default 2000.",
+      "name": "duration",
+      "type": "number"
+     },
+     {
+      "description": "Value reached at the end; screen readers read it (with the prefix and suffix) from the start.",
+      "name": "end",
+      "required": true,
+      "type": "number"
+     },
+     {
+      "default": "true",
+      "description": "Manual trigger: counts when it turns on.",
+      "name": "in",
+      "type": "boolean"
+     },
+     {
+      "description": "In view: counts only the first time (default).",
+      "name": "once",
+      "type": "boolean"
+     },
+     {
+      "description": "Text before the number, such as \"$\".",
+      "name": "prefix",
+      "type": "ReactNode"
+     },
+     {
+      "description": "First value shown. Default 0.",
+      "name": "start",
+      "type": "number"
+     },
+     {
+      "description": "Text after the number, such as \"k\" or \"+\".",
+      "name": "suffix",
+      "type": "ReactNode"
+     },
+     {
+      "description": "`inView` (default): counts when scrolled into view; `mount`: right away; `manual`: on `in`.",
+      "name": "trigger",
+      "type": "\"inView\" | \"manual\" | \"mount\""
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-motion-border",
+    "options": [
+     {
+      "attr": "data-ok-shape",
+      "default": "rounded",
+      "description": "`rounded` corners or a `circle`.",
+      "kind": "style",
+      "name": "shape",
+      "values": [
+       "rounded",
+       "circle"
+      ]
+     },
+     {
+      "attr": "data-ok-color",
+      "default": "multi",
+      "description": "`multi`: several brand colors all around; `inherit` (the text color) or a palette color: a light running along the border.",
+      "kind": "style",
+      "name": "color",
+      "values": [
+       "multi",
+       "inherit",
+       "primary",
+       "secondary",
+       "info",
+       "success",
+       "warning",
+       "error"
+      ]
+     },
+     {
+      "attr": "data-ok-secondary-color",
+      "default": "inherit",
+      "description": "A second light in this color, starting on the opposite side (not with `multi`; absent by default).",
+      "kind": "style",
+      "name": "secondaryColor",
+      "optional": true,
+      "values": [
+       "inherit",
+       "primary",
+       "secondary",
+       "info",
+       "success",
+       "warning",
+       "error"
+      ]
+     },
+     {
+      "attr": "data-ok-width",
+      "default": 2,
+      "description": "Border width in pixels.",
+      "kind": "number",
+      "min": 0,
+      "name": "width"
+     },
+     {
+      "attr": "data-ok-duration",
+      "description": "One turn, in milliseconds (default about 5 s).",
+      "kind": "number",
+      "min": 0,
+      "name": "duration"
+     },
+     {
+      "attr": "data-ok-paused",
+      "description": "Stops the turning border (a looping animation needs a pause control: WCAG 2.2.2).",
+      "kind": "flag",
+      "name": "paused"
+     }
+    ],
+    "runtime": "motion-border"
+   },
+   "name": "MotionBorder",
+   "react": {
+    "description": "A gradient border, or one or two lights, turning around its content over a faint track. Per-side widths and per-corner radii come from CSS (`border-width`, `border-radius`). CSS only; reduced motion stops it.",
+    "native": "HTMLDivElement",
+    "props": [
+     {
+      "description": "The content.",
+      "name": "children",
+      "type": "ReactNode"
+     },
+     {
+      "description": "`multi` (default): several brand colors all around; `inherit` (the text color) or a palette color: a light running along the border.",
+      "name": "color",
+      "type": "\"error\" | \"info\" | \"inherit\" | \"multi\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
+     },
+     {
+      "description": "One turn, ms (default about 5 s).",
+      "name": "duration",
+      "type": "number"
+     },
+     {
+      "description": "2).",
+      "name": "paused",
+      "type": "boolean"
+     },
+     {
+      "description": "A second light in this color, starting on the opposite side (ignored with `multi`).",
+      "name": "secondaryColor",
+      "type": "\"error\" | \"info\" | \"inherit\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
+     },
+     {
+      "description": "`rounded` (default) or `circle`.",
+      "name": "shape",
+      "type": "\"circle\" | \"rounded\""
+     },
+     {
+      "description": "Border width, px. Default 2.",
+      "name": "width",
+      "type": "number"
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-motion-group",
+    "methods": [
+     {
+      "description": "Plays the entrances again.",
+      "kind": "method",
+      "name": "replay",
+      "type": "() => void"
+     },
+     {
+      "description": "The motion's state (`initial`, `animate` or `exit`).",
+      "kind": "property",
+      "name": "state",
+      "type": "MotionState"
+     }
+    ],
+    "options": [
+     {
+      "attr": "data-ok-trigger",
+      "default": "inView",
+      "description": "`inView`: plays when the element scrolls into view; `mount`: right away; `manual`: follows `in`.",
+      "kind": "style",
+      "name": "trigger",
+      "values": [
+       "inView",
+       "mount",
+       "manual"
+      ]
+     },
+     {
+      "attr": "data-ok-once",
+      "default": true,
+      "description": "In view: plays only the first time; `false` also plays the exit when it leaves the view.",
+      "kind": "behavior",
+      "name": "once"
+     },
+     {
+      "attr": "data-ok-amount",
+      "default": 0.3,
+      "description": "In view: the visible fraction (0 to 1) that starts the animation.",
+      "kind": "number",
+      "min": 0,
+      "name": "amount"
+     },
+     {
+      "attr": "data-ok-in",
+      "description": "Manual trigger: shown (`in`; HTML: the `data-ok-in` attribute). Turning it off plays the exit.",
+      "kind": "state",
+      "name": "in"
+     },
+     {
+      "attr": "data-ok-delay",
+      "description": "Wait before the entrance, in milliseconds.",
+      "kind": "number",
+      "min": 0,
+      "name": "delay"
+     },
+     {
+      "attr": "data-ok-stagger",
+      "default": 50,
+      "description": "Milliseconds between the entrances of the direct child Motions.",
+      "kind": "number",
+      "min": 0,
+      "name": "stagger"
+     }
+    ],
+    "runtime": "motion-group"
+   },
+   "name": "MotionGroup",
+   "react": {
+    "description": "Plays the Motions inside it together, one direct child after the other (the reference's \"MultiItem\").",
+    "native": "HTMLDivElement",
+    "props": [
+     {
+      "description": "In view: the visible fraction (0 to 1) that starts the animation. 3.",
+      "name": "amount",
+      "type": "number"
+     },
+     {
+      "description": "Motions (direct children are staggered in order).",
+      "name": "children",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Wait before the entrance, ms.",
+      "name": "delay",
+      "type": "number"
+     },
+     {
+      "default": "true",
+      "description": "Manual trigger: shown. Turning it off plays the exit.",
+      "name": "in",
+      "type": "boolean"
+     },
+     {
+      "description": "In view: plays only the first time (default). `false` also plays the exit when it leaves.",
+      "name": "once",
+      "type": "boolean"
+     },
+     {
+      "description": "Milliseconds between the entrances of the direct child Motions. Default 50.",
+      "name": "stagger",
+      "type": "number"
+     },
+     {
+      "description": "`inView` (default): plays when scrolled into view; `mount`: right away; `manual`: follows `in`.",
+      "name": "trigger",
+      "type": "\"inView\" | \"manual\" | \"mount\""
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-motion-text",
+    "methods": [
+     {
+      "description": "Plays the entrance again.",
+      "kind": "method",
+      "name": "replay",
+      "type": "() => void"
+     },
+     {
+      "description": "The motion's state (`initial`, `animate` or `exit`).",
+      "kind": "property",
+      "name": "state",
+      "type": "MotionState"
+     }
+    ],
+    "options": [
+     {
+      "attr": "data-ok-variant",
+      "default": "fadeIn",
+      "description": "Animation: entrances and exits (`fadeInUp`, `zoomOut`…) or looping backgrounds (`kenburnsTop`, `panLeft`, `color3x`…).",
+      "kind": "style",
+      "name": "variant",
+      "values": [
+       "slideInUp",
+       "slideInDown",
+       "slideInLeft",
+       "slideInRight",
+       "slideOutUp",
+       "slideOutDown",
+       "slideOutLeft",
+       "slideOutRight",
+       "fadeIn",
+       "fadeInUp",
+       "fadeInDown",
+       "fadeInLeft",
+       "fadeInRight",
+       "fadeOut",
+       "fadeOutUp",
+       "fadeOutDown",
+       "fadeOutLeft",
+       "fadeOutRight",
+       "zoomIn",
+       "zoomInUp",
+       "zoomInDown",
+       "zoomInLeft",
+       "zoomInRight",
+       "zoomOut",
+       "zoomOutUp",
+       "zoomOutDown",
+       "zoomOutLeft",
+       "zoomOutRight",
+       "bounceIn",
+       "bounceInUp",
+       "bounceInDown",
+       "bounceInLeft",
+       "bounceInRight",
+       "bounceOut",
+       "bounceOutUp",
+       "bounceOutDown",
+       "bounceOutLeft",
+       "bounceOutRight",
+       "flipInX",
+       "flipInY",
+       "flipOutX",
+       "flipOutY",
+       "scaleInX",
+       "scaleInY",
+       "scaleOutX",
+       "scaleOutY",
+       "rotateIn",
+       "rotateOut",
+       "kenburnsTop",
+       "kenburnsBottom",
+       "kenburnsLeft",
+       "kenburnsRight",
+       "panTop",
+       "panBottom",
+       "panLeft",
+       "panRight",
+       "color2x",
+       "color3x",
+       "color4x",
+       "color5x",
+       "draw",
+       "interactive"
+      ]
+     },
+     {
+      "attr": "data-ok-duration",
+      "description": "Entrance length in milliseconds (default 640; loops have their own).",
+      "kind": "number",
+      "min": 0,
+      "name": "duration"
+     },
+     {
+      "attr": "data-ok-distance",
+      "description": "How far directional variants travel, in pixels (default 160 for slides, 120 for fades).",
+      "kind": "number",
+      "min": 0,
+      "name": "distance"
+     },
+     {
+      "attr": "data-ok-trigger",
+      "default": "inView",
+      "description": "`inView`: plays when the element scrolls into view; `mount`: right away; `manual`: follows `in`.",
+      "kind": "style",
+      "name": "trigger",
+      "values": [
+       "inView",
+       "mount",
+       "manual"
+      ]
+     },
+     {
+      "attr": "data-ok-once",
+      "default": true,
+      "description": "In view: plays only the first time; `false` also plays the exit when it leaves the view.",
+      "kind": "behavior",
+      "name": "once"
+     },
+     {
+      "attr": "data-ok-amount",
+      "default": 0.3,
+      "description": "In view: the visible fraction (0 to 1) that starts the animation.",
+      "kind": "number",
+      "min": 0,
+      "name": "amount"
+     },
+     {
+      "attr": "data-ok-in",
+      "description": "Manual trigger: shown (`in`; HTML: the `data-ok-in` attribute). Turning it off plays the exit.",
+      "kind": "state",
+      "name": "in"
+     },
+     {
+      "attr": "data-ok-delay",
+      "description": "Wait before the entrance, in milliseconds.",
+      "kind": "number",
+      "min": 0,
+      "name": "delay"
+     },
+     {
+      "attr": "data-ok-stagger",
+      "default": 25,
+      "description": "Milliseconds between the entrances of the letters.",
+      "kind": "number",
+      "min": 0,
+      "name": "stagger"
+     }
+    ],
+    "parts": [
+     {
+      "description": "The full text for assistive technology.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-motion-text-label"
+     },
+     {
+      "description": "One animated word.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-motion-text-word"
+     }
+    ],
+    "runtime": "motion-text"
+   },
+   "name": "MotionText",
+   "react": {
+    "description": "Animates a text letter by letter (\"Text object\").",
+    "native": "HTMLSpanElement",
+    "props": [
+     {
+      "description": "In view: the visible fraction (0 to 1) that starts the animation. 3.",
+      "name": "amount",
+      "type": "number"
+     },
+     {
+      "description": "The text. Letters animate one after the other; assistive technologies read it whole.",
+      "name": "children",
+      "required": true,
+      "type": "string"
+     },
+     {
+      "description": "Wait before the entrance, ms.",
+      "name": "delay",
+      "type": "number"
+     },
+     {
+      "description": "Travel of directional variants, px.",
+      "name": "distance",
+      "type": "number"
+     },
+     {
+      "description": "Each letter's entrance, ms.",
+      "name": "duration",
+      "type": "number"
+     },
+     {
+      "default": "true",
+      "description": "Manual trigger: shown. Turning it off plays the exit.",
+      "name": "in",
+      "type": "boolean"
+     },
+     {
+      "description": "In view: plays only the first time (default). `false` also plays the exit when it leaves.",
+      "name": "once",
+      "type": "boolean"
+     },
+     {
+      "description": "Milliseconds between letters. Default 25.",
+      "name": "stagger",
+      "type": "number"
+     },
+     {
+      "description": "`inView` (default): plays when scrolled into view; `mount`: right away; `manual`: follows `in`.",
+      "name": "trigger",
+      "type": "\"inView\" | \"manual\" | \"mount\""
+     },
+     {
+      "default": "fadeIn",
+      "description": "Animation of each letter.",
+      "name": "variant",
+      "type": "MotionVariant"
+     }
+    ]
+   }
+  }
+ ],
+ "format": 1,
+ "name": "motion",
+ "title": "Motion",
+ "types": [
+  {
+   "name": "MotionState",
+   "type": "\"enter\" | \"exit\" | \"initial\""
+  }
+ ]
+}

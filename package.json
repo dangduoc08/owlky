@@ -28,7 +28,7 @@
     "check:packages": "node scripts/check-packages.mjs",
     "check:boundaries": "node scripts/check-boundaries.mjs",
     "check:size": "node scripts/check-size.mjs",
-    "check": "pnpm lint && pnpm build && pnpm typecheck && pnpm check:boundaries && pnpm check:size && pnpm check:packages && pnpm check:specs && pnpm check:manifest && pnpm test",
+    "check": "pnpm lint && pnpm build && pnpm typecheck && pnpm check:boundaries && pnpm check:size && pnpm check:packages && pnpm check:specs && pnpm check:api && pnpm check:manifest && pnpm test",
     "changeset": "changeset",
     "version-packages": "changeset version && node scripts/sync-versions.mjs && pnpm install --lockfile-only",
     "release": "pnpm build && pnpm -r --filter \"./packages/*\" publish --access public --no-git-checks",
@@ -38,6 +38,8 @@
     "specs:options": "node scripts/spec-options.mjs",
     "check:specs": "node scripts/spec-options.mjs --check",
     "check:docs": "node apps/storybook/scripts/check-docs-code.mjs",
+    "api": "node scripts/api-reference.mjs",
+    "check:api": "node scripts/api-reference.mjs --check",
     "manifest": "node scripts/manifest.mjs",
     "check:manifest": "node scripts/manifest.mjs --check",
     "smoke:mcp": "node scripts/smoke-mcp.mjs"

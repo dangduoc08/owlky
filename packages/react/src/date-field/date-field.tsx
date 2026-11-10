@@ -207,6 +207,7 @@ export interface DateFieldProps
   onClear?: (() => void) | undefined;
   /** The value can't be changed. */
   readOnly?: boolean | undefined;
+  /** Turns the field off. */
   disabled?: boolean | undefined;
   /** Empty sections take this date's parts on ArrowUp / ArrowDown. Default: today. */
   referenceDate?: Date | undefined;
@@ -220,12 +221,17 @@ export interface DateFieldProps
   localeText?: Partial<PickerLocaleText> | undefined;
   /** TextField props. */
   label?: ReactNode;
+  /** Text under the field, such as a hint or an error message. */
   helperText?: ReactNode;
   /** Error colors; default: the value is invalid. */
   error?: boolean | undefined;
+  /** The field's variant: `outlined`, `filled` or `standard`. */
   variant?: TextFieldVariant | undefined;
+  /** The field's size. */
   size?: SelectionControlSize | undefined;
+  /** Stretches the field to the container's width. */
   fullWidth?: boolean | undefined;
+  /** Marks the field as required (an asterisk on the label). */
   required?: boolean | undefined;
   /** Form field name (a hidden input carries the ISO value). */
   name?: string | undefined;

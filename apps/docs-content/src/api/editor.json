@@ -1,0 +1,609 @@
+{
+ "css": [
+  {
+   "name": "--ok-action-hover",
+   "value": "color-mix(in srgb, #919EAB 8%, transparent)"
+  },
+  {
+   "name": "--ok-action-selected",
+   "value": "color-mix(in srgb, #919EAB 16%, transparent)"
+  },
+  {
+   "dark": "#28323D",
+   "light": "#F4F6F8",
+   "name": "--ok-bg-neutral"
+  },
+  {
+   "dark": "#1C252E",
+   "light": "#FFFFFF",
+   "name": "--ok-bg-paper"
+  },
+  {
+   "name": "--ok-divider",
+   "value": "color-mix(in srgb, #919EAB 20%, transparent)"
+  },
+  {
+   "name": "--ok-duration-shorter",
+   "value": "200ms"
+  },
+  {
+   "name": "--ok-easing-standard",
+   "value": "cubic-bezier(0.4, 0, 0.2, 1)"
+  },
+  {
+   "name": "--ok-font-family",
+   "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+  },
+  {
+   "name": "--ok-font-family-mono",
+   "value": "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace"
+  },
+  {
+   "name": "--ok-font-size-lg",
+   "value": "0.9375rem"
+  },
+  {
+   "name": "--ok-font-size-md",
+   "value": "0.875rem"
+  },
+  {
+   "name": "--ok-font-size-sm",
+   "value": "0.8125rem"
+  },
+  {
+   "name": "--ok-font-size-xl",
+   "value": "1rem"
+  },
+  {
+   "name": "--ok-font-size-xs",
+   "value": "0.75rem"
+  },
+  {
+   "name": "--ok-font-weight-bold",
+   "value": "700"
+  },
+  {
+   "name": "--ok-font-weight-medium",
+   "value": "500"
+  },
+  {
+   "name": "--ok-font-weight-semibold",
+   "value": "600"
+  },
+  {
+   "name": "--ok-palette-common-white",
+   "value": "#FFFFFF"
+  },
+  {
+   "name": "--ok-palette-error-light",
+   "value": "#FFAC82"
+  },
+  {
+   "name": "--ok-palette-error-main",
+   "value": "#FF5630"
+  },
+  {
+   "dark": "#FFAC82",
+   "light": "#B71D18",
+   "name": "--ok-palette-error-text"
+  },
+  {
+   "name": "--ok-palette-grey-500",
+   "value": "#919EAB"
+  },
+  {
+   "name": "--ok-palette-grey-500-channel",
+   "value": "145 158 171"
+  },
+  {
+   "name": "--ok-palette-grey-800",
+   "value": "#1C252E"
+  },
+  {
+   "name": "--ok-palette-grey-900",
+   "value": "#141A21"
+  },
+  {
+   "name": "--ok-palette-info-light",
+   "value": "#61F3F3"
+  },
+  {
+   "name": "--ok-palette-primary-main",
+   "value": "#00A76F"
+  },
+  {
+   "name": "--ok-palette-secondary-light",
+   "value": "#C684FF"
+  },
+  {
+   "name": "--ok-palette-success-light",
+   "value": "#77ED8B"
+  },
+  {
+   "name": "--ok-palette-warning-light",
+   "value": "#FFD666"
+  },
+  {
+   "name": "--ok-radius-md",
+   "value": "8px"
+  },
+  {
+   "name": "--ok-radius-sm",
+   "value": "6px"
+  },
+  {
+   "name": "--ok-radius-xl",
+   "value": "16px"
+  },
+  {
+   "name": "--ok-radius-xs",
+   "value": "4px"
+  },
+  {
+   "name": "--ok-spacing",
+   "value": "0.25rem"
+  },
+  {
+   "dark": "#637381",
+   "light": "#919EAB",
+   "name": "--ok-text-disabled"
+  },
+  {
+   "dark": "#FFFFFF",
+   "light": "#1C252E",
+   "name": "--ok-text-primary"
+  },
+  {
+   "dark": "#919EAB",
+   "light": "#637381",
+   "name": "--ok-text-secondary"
+  },
+  {
+   "name": "--ok-typography-body1-font-family",
+   "value": "var(--ok-font-family)"
+  },
+  {
+   "name": "--ok-typography-body1-font-size",
+   "value": "1rem"
+  },
+  {
+   "name": "--ok-typography-body1-line-height",
+   "value": "1.5"
+  },
+  {
+   "name": "--ok-typography-body2-font-size",
+   "value": "0.875rem"
+  },
+  {
+   "name": "--ok-typography-body2-line-height",
+   "value": "1.5714"
+  },
+  {
+   "name": "--ok-typography-caption-font-size",
+   "value": "0.75rem"
+  },
+  {
+   "name": "--ok-typography-caption-line-height",
+   "value": "1.5"
+  },
+  {
+   "name": "--ok-typography-h1-font-family",
+   "value": "var(--ok-font-family-secondary)"
+  },
+  {
+   "name": "--ok-typography-h1-font-size",
+   "value": "2.5rem"
+  },
+  {
+   "name": "--ok-typography-h1-font-weight",
+   "value": "800"
+  },
+  {
+   "name": "--ok-typography-h1-line-height",
+   "value": "1.25"
+  },
+  {
+   "name": "--ok-typography-h2-font-family",
+   "value": "var(--ok-font-family-secondary)"
+  },
+  {
+   "name": "--ok-typography-h2-font-size",
+   "value": "2rem"
+  },
+  {
+   "name": "--ok-typography-h2-font-weight",
+   "value": "800"
+  },
+  {
+   "name": "--ok-typography-h2-line-height",
+   "value": "1.3333"
+  },
+  {
+   "name": "--ok-typography-h3-font-family",
+   "value": "var(--ok-font-family-secondary)"
+  },
+  {
+   "name": "--ok-typography-h3-font-size",
+   "value": "1.5rem"
+  },
+  {
+   "name": "--ok-typography-h3-font-weight",
+   "value": "700"
+  },
+  {
+   "name": "--ok-typography-h3-line-height",
+   "value": "1.5"
+  },
+  {
+   "name": "--ok-typography-h4-font-family",
+   "value": "var(--ok-font-family)"
+  },
+  {
+   "name": "--ok-typography-h4-font-size",
+   "value": "1.25rem"
+  },
+  {
+   "name": "--ok-typography-h4-font-weight",
+   "value": "700"
+  },
+  {
+   "name": "--ok-typography-h4-line-height",
+   "value": "1.5"
+  },
+  {
+   "name": "--ok-typography-h5-font-family",
+   "value": "var(--ok-font-family)"
+  },
+  {
+   "name": "--ok-typography-h5-font-size",
+   "value": "1.125rem"
+  },
+  {
+   "name": "--ok-typography-h5-font-weight",
+   "value": "700"
+  },
+  {
+   "name": "--ok-typography-h5-line-height",
+   "value": "1.5"
+  },
+  {
+   "name": "--ok-typography-h6-font-family",
+   "value": "var(--ok-font-family)"
+  },
+  {
+   "name": "--ok-typography-h6-font-size",
+   "value": "1.0625rem"
+  },
+  {
+   "name": "--ok-typography-h6-font-weight",
+   "value": "600"
+  },
+  {
+   "name": "--ok-typography-h6-line-height",
+   "value": "1.5556"
+  },
+  {
+   "name": "--ok-z-modal",
+   "value": "1300"
+  }
+ ],
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-editor",
+    "events": [
+     {
+      "cancelable": false,
+      "description": "After the content changed, with its HTML.",
+      "detail": "{ value: string; }",
+      "name": "ok:editor:change"
+     },
+     {
+      "cancelable": false,
+      "description": "After the editor entered or left full screen.",
+      "detail": "{ fullscreen: boolean; }",
+      "name": "ok:editor:fullscreen"
+     }
+    ],
+    "methods": [
+     {
+      "description": "The core controller (its `editor` is the Tiptap editor).",
+      "kind": "property",
+      "name": "controller",
+      "type": "EditorController"
+     },
+     {
+      "description": "Moves the focus into the editor.",
+      "kind": "method",
+      "name": "focus",
+      "type": "() => void"
+     },
+     {
+      "description": "Whether the editor is in full screen.",
+      "kind": "property",
+      "name": "fullscreen",
+      "type": "boolean"
+     },
+     {
+      "description": "Turns editing on or off.",
+      "kind": "method",
+      "name": "setEditable",
+      "type": "(editable: boolean) => void"
+     },
+     {
+      "description": "Enters or leaves full screen.",
+      "kind": "method",
+      "name": "setFullscreen",
+      "type": "(fullscreen: boolean) => void"
+     },
+     {
+      "description": "Replaces the content with an HTML string (parsed by the browser's `DOMParser`: pages that enforce Trusted Types need a policy for it). Emits no event.",
+      "kind": "method",
+      "name": "setValue",
+      "type": "(value: string) => void"
+     },
+     {
+      "description": "Current HTML, `\"\"` when empty.",
+      "kind": "property",
+      "name": "value",
+      "type": "string"
+     }
+    ],
+    "options": [
+     {
+      "attr": "data-ok-full-item",
+      "description": "Every toolbar group: adds code, code block, blockquote, horizontal rule, undo and redo.",
+      "kind": "flag",
+      "name": "fullItem"
+     },
+     {
+      "attr": "data-ok-error",
+      "description": "Error state: red border and helper text, `aria-invalid` on the textbox.",
+      "kind": "flag",
+      "name": "error"
+     },
+     {
+      "attr": "data-ok-editable",
+      "default": true,
+      "description": "The content can be changed (`false`: read only, toolbar disabled).",
+      "kind": "behavior",
+      "name": "editable"
+     },
+     {
+      "attr": "data-ok-fullscreen",
+      "description": "Fills the viewport (the toolbar's Fullscreen button, Escape leaves).",
+      "event": "ok:editor:fullscreen",
+      "kind": "state",
+      "name": "fullscreen"
+     },
+     {
+      "attr": "data-ok-editor-content",
+      "description": "The content: markup inside the content element.",
+      "event": "ok:editor:change",
+      "kind": "state",
+      "name": "value"
+     }
+    ],
+    "parts": [
+     {
+      "description": "A toolbar button and the command it runs, such as `bold`.",
+      "kind": "value",
+      "name": "data-ok-editor-action",
+      "value": "string"
+     },
+     {
+      "description": "A menu item of the heading menu and the block it sets.",
+      "kind": "value",
+      "name": "data-ok-editor-block",
+      "value": [
+       "h1",
+       "h2",
+       "h3",
+       "h4",
+       "h5",
+       "h6",
+       "paragraph"
+      ]
+     },
+     {
+      "description": "The scrolling area around the content.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-editor-body"
+     },
+     {
+      "description": "A code block of the content, with its language menu.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-editor-code-block"
+     },
+     {
+      "description": "A field of a toolbar form and what it sets, such as `href`.",
+      "kind": "value",
+      "name": "data-ok-editor-field",
+      "value": "string"
+     },
+     {
+      "description": "A toolbar form: the link or the image form.",
+      "kind": "value",
+      "name": "data-ok-editor-form",
+      "value": [
+       "image",
+       "link"
+      ]
+     },
+     {
+      "description": "A row of a toolbar form.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-editor-form-row"
+     },
+     {
+      "description": "The title of a toolbar form.",
+      "elements": [
+       "p"
+      ],
+      "kind": "part",
+      "name": "data-ok-editor-form-title"
+     },
+     {
+      "description": "A group of toolbar buttons.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-editor-group"
+     },
+     {
+      "description": "The button that opens the heading menu.",
+      "elements": [
+       "button"
+      ],
+      "kind": "part",
+      "name": "data-ok-editor-heading"
+     },
+     {
+      "description": "The current block's name in the heading button.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-editor-heading-label"
+     },
+     {
+      "description": "The helper text under the editor.",
+      "elements": [
+       "p"
+      ],
+      "kind": "part",
+      "name": "data-ok-editor-helper"
+     },
+     {
+      "description": "One of the full screen button's two icons.",
+      "kind": "value",
+      "name": "data-ok-editor-icon",
+      "value": [
+       "enter",
+       "exit"
+      ]
+     },
+     {
+      "description": "The language menu of a code block.",
+      "elements": [
+       "select"
+      ],
+      "kind": "part",
+      "name": "data-ok-editor-language"
+     },
+     {
+      "description": "The toolbar.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-editor-toolbar"
+     },
+     {
+      "description": "Marks a toolbar group that only the full toolbar shows.",
+      "kind": "state",
+      "name": "data-ok-full"
+     },
+     {
+      "description": "The text shown while the editor is empty.",
+      "kind": "value",
+      "name": "data-ok-placeholder",
+      "value": "string"
+     },
+     {
+      "description": "The text transform of a span of content, or of the toolbar's input.",
+      "kind": "value",
+      "name": "data-ok-text-transform",
+      "value": [
+       "capitalize",
+       "lowercase",
+       "uppercase"
+      ]
+     }
+    ],
+    "runtime": "editor"
+   },
+   "name": "Editor",
+   "react": {
+    "description": "A rich text editor built on Tiptap, through the core editor controller shared with the HTML runtime: a toolbar (heading menu, marks, lists, alignment, code, quote, link, image, undo, fullscreen) over a `contenteditable` textbox.",
+    "native": "HTMLDivElement",
+    "props": [
+     {
+      "description": "Accessible name of the textbox. Default \"Editor\" when no `aria-labelledby` is given.",
+      "name": "aria-label",
+      "type": "string"
+     },
+     {
+      "description": "Labels the textbox with another element.",
+      "name": "aria-labelledby",
+      "type": "string"
+     },
+     {
+      "description": "Initial content (HTML) when uncontrolled.",
+      "name": "defaultValue",
+      "type": "string"
+     },
+     {
+      "default": "true",
+      "description": "`false`: read only, the toolbar is disabled.",
+      "name": "editable",
+      "type": "boolean"
+     },
+     {
+      "description": "Error state: red border and helper text, `aria-invalid` on the textbox.",
+      "name": "error",
+      "type": "boolean"
+     },
+     {
+      "description": "Every toolbar group (code, code block, blockquote, horizontal rule, undo, redo).",
+      "name": "fullItem",
+      "type": "boolean"
+     },
+     {
+      "description": "Text under the editor; describes the textbox.",
+      "name": "helperText",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Syntax highlighting and the language menu of code blocks (for example lowlight).",
+      "name": "highlighter",
+      "type": "EditorHighlighter"
+     },
+     {
+      "description": "Called with the new HTML (`\"\"` when empty) after every change.",
+      "name": "onChange",
+      "type": "((value: string) => void)"
+     },
+     {
+      "description": "Called when the Fullscreen button or Escape changes fullscreen mode.",
+      "name": "onFullscreenChange",
+      "type": "((fullscreen: boolean) => void)"
+     },
+     {
+      "description": "Shown while the editor is empty. \".",
+      "name": "placeholder",
+      "type": "string"
+     },
+     {
+      "description": "Controlled content (HTML). `\"\"` is empty.",
+      "name": "value",
+      "type": "string"
+     }
+    ]
+   }
+  }
+ ],
+ "format": 1,
+ "name": "editor",
+ "title": "Editor"
+}

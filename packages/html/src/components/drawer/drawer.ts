@@ -1,15 +1,29 @@
 import { createModalController, drawerOptions, readStyle } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
-import type { ComponentInstance } from "../../runtime/types.js";
+import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
 
 export type DrawerCloseReason = "escape" | "backdrop" | "trigger" | "api" | "native";
 
+/** Events of this component (`ok:<name>:<event>` on the root). */
+export interface DrawerEvents {
+  /** Before the drawer opens. Call `preventDefault()` to keep it closed. */
+  beforeopen: EventSpec<{ trigger: HTMLElement | null }, true>;
+  /** After the drawer opened. */
+  open: EventSpec<{ trigger: HTMLElement | null }>;
+  /** Before the drawer closes. Call `preventDefault()` to keep it open. */
+  beforeclose: EventSpec<{ reason: DrawerCloseReason }, true>;
+  /** After the drawer closed, with what closed it. */
+  close: EventSpec<{ reason: DrawerCloseReason }>;
+}
+
 export interface DrawerInstance extends ComponentInstance {
+  /** Whether the drawer is open. */
   readonly isOpen: boolean;
   /** Opens the drawer. Returns `false` if `ok:drawer:beforeopen` was prevented. */
   open(trigger?: HTMLElement | null): boolean;
   /** Closes the drawer. Returns `false` if `ok:drawer:beforeclose` was prevented or it is permanent. */
   close(reason?: DrawerCloseReason): boolean;
+  /** Opens the drawer when it is closed, and closes it otherwise. */
   toggle(trigger?: HTMLElement | null): boolean;
 }
 
@@ -32,7 +46,7 @@ const { variant, disableEscapeKeyDown } = drawerOptions.options;
  * Events:   ok:drawer:beforeopen (cancelable), ok:drawer:open,
  *           ok:drawer:beforeclose (cancelable, detail.reason), ok:drawer:close (detail.reason)
  */
-export const drawer = defineComponent<DrawerInstance>({
+export const drawer = defineComponent<DrawerInstance, DrawerEvents>({
   name: "drawer",
   selector: "[data-ok-drawer]",
 

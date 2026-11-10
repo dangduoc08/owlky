@@ -1,4 +1,6 @@
 import { accordionOptions } from "@owlky/core";
+import accordionApi from "@owlky/docs-content/api/accordion.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { Accordion, AccordionDetails, AccordionSummary } from "@owlky/react";
 import { useState } from "react";
 import { CDN, capitalize, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
@@ -45,10 +47,16 @@ export function PasswordFaq() {
     title: "Choose a variant",
     body: "Three variants are available. `default` turns the open item into a raised card, `outlined` draws one bordered list, and `soft` shows each item as a filled block. Set `disableGutters` to remove the space around the open item.",
     html: htmlItem(FAQ[0][0], FAQ[0][1], 'data-ok-variant="outlined"'),
-    react: `<Accordion variant="outlined">
-  <AccordionSummary>How do I reset my password?</AccordionSummary>
-  <AccordionDetails>Open Settings, choose Security and select Reset password.</AccordionDetails>
-</Accordion>`,
+    react: `import { Accordion, AccordionDetails, AccordionSummary } from "@owlky/react";
+
+export function OutlinedAccordion() {
+  return (
+    <Accordion variant="outlined">
+      <AccordionSummary>How do I reset my password?</AccordionSummary>
+      <AccordionDetails>Open Settings, choose Security and select Reset password.</AccordionDetails>
+    </Accordion>
+  );
+}`,
   },
   {
     id: "exclusive",
@@ -57,12 +65,25 @@ export function PasswordFaq() {
     html: FAQ.map(([title, text]) =>
       htmlItem(title, text, 'data-ok-variant="default" name="faq"'),
     ).join("\n"),
-    react: `{faq.map((item) => (
-  <Accordion key={item.title} name="faq">
-    <AccordionSummary>{item.title}</AccordionSummary>
-    <AccordionDetails>{item.answer}</AccordionDetails>
-  </Accordion>
-))}`,
+    react: `import { Accordion, AccordionDetails, AccordionSummary } from "@owlky/react";
+
+const faq = [
+  { title: "How do I reset my password?", answer: "Open Settings, choose Security and select Reset password." },
+  { title: "Can I change my plan later?", answer: "Yes. You can upgrade or downgrade at any time from Billing." },
+];
+
+export function Faq() {
+  return (
+    <>
+      {faq.map((item) => (
+        <Accordion key={item.title} name="faq">
+          <AccordionSummary>{item.title}</AccordionSummary>
+          <AccordionDetails>{item.answer}</AccordionDetails>
+        </Accordion>
+      ))}
+    </>
+  );
+}`,
   },
   {
     id: "controlled",
@@ -73,12 +94,15 @@ export function PasswordFaq() {
     if (event.detail.open && !userIsSignedIn) event.preventDefault();
   });
 </script>`,
-    react: `export function BillingSection() {
+    react: `import { Accordion, AccordionDetails, AccordionSummary } from "@owlky/react";
+import { useState } from "react";
+
+export function BillingSection() {
   const [expanded, setExpanded] = useState(false);
   return (
     <Accordion expanded={expanded} onChange={setExpanded}>
       <AccordionSummary>Billing</AccordionSummary>
-      <AccordionDetails>…</AccordionDetails>
+      <AccordionDetails>Your plan renews on the first day of each month.</AccordionDetails>
     </Accordion>
   );
 }`,
@@ -114,6 +138,7 @@ export function PasswordFaq() {
 - A disabled item is marked \`aria-disabled="true"\` and removed from the tab order.
 - Content stays in the page when closed, so find-in-page can open the item that contains a match.`,
   },
+  apiReferenceSection(accordionApi),
 ];
 
 function FaqList({ variant, name }: { variant?: "default" | "outlined" | "soft"; name?: string }) {

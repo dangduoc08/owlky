@@ -109,15 +109,23 @@ export interface AutocompleteProps
   noOptionsText?: ReactNode;
   /** Names of the end buttons. */
   clearText?: string | undefined;
+  /** Label of the button that opens the list. Default `"Open"`. */
   openText?: string | undefined;
+  /** Label of the button that closes the list. Default `"Close"`. */
   closeText?: string | undefined;
   /** TextField props. */
   label?: ReactNode;
+  /** Placeholder of the input. */
   placeholder?: string | undefined;
+  /** Text under the field, such as a hint or an error message. */
   helperText?: ReactNode;
+  /** Shows the field in the error state. */
   error?: boolean | undefined;
+  /** The field's variant: `outlined`, `filled` or `standard`. */
   variant?: TextFieldVariant | undefined;
+  /** The field's size. */
   size?: SelectionControlSize | undefined;
+  /** Turns the field off. */
   disabled?: boolean | undefined;
   /** Id of the input (other ids derive from it). */
   id?: string | undefined;

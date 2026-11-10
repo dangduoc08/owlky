@@ -6,7 +6,15 @@ import {
   visibleTreeItems,
 } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
-import type { ComponentInstance } from "../../runtime/types.js";
+import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
+
+/** Events of this component (`ok:<name>:<event>` on the root). */
+export interface TreeViewEvents {
+  /** Before an item expands or collapses. Call `preventDefault()` to refuse. */
+  expand: EventSpec<{ itemId: string; expanded: boolean }, true>;
+  /** Before the selection changes. Call `preventDefault()` to keep the current one. */
+  select: EventSpec<{ selectedItems: string[] }, true>;
+}
 
 export interface TreeViewInstance extends ComponentInstance {
   /** Ids of the expanded items. */
@@ -37,7 +45,7 @@ const ITEM = '[role="treeitem"]';
  * Events:  ok:tree-view:expand (cancelable, `{ itemId, expanded }`),
  *          ok:tree-view:select (cancelable, `{ selectedItems }`).
  */
-export const treeView = defineComponent<TreeViewInstance>({
+export const treeView = defineComponent<TreeViewInstance, TreeViewEvents>({
   name: "tree-view",
   selector: "[data-ok-tree-view]",
 

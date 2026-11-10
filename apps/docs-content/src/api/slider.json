@@ -1,0 +1,456 @@
+{
+ "css": [
+  {
+   "name": "--ok-action-disabled",
+   "value": "color-mix(in srgb, #919EAB 80%, transparent)"
+  },
+  {
+   "name": "--ok-duration-shortest",
+   "value": "150ms"
+  },
+  {
+   "name": "--ok-easing-standard",
+   "value": "cubic-bezier(0.4, 0, 0.2, 1)"
+  },
+  {
+   "name": "--ok-font-family",
+   "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+  },
+  {
+   "name": "--ok-font-size-sm",
+   "value": "0.8125rem"
+  },
+  {
+   "name": "--ok-font-size-xs",
+   "value": "0.75rem"
+  },
+  {
+   "name": "--ok-font-weight-semibold",
+   "value": "600"
+  },
+  {
+   "name": "--ok-palette-common-white",
+   "value": "#FFFFFF"
+  },
+  {
+   "name": "--ok-palette-common-white-channel",
+   "value": "255 255 255"
+  },
+  {
+   "name": "--ok-palette-error-main",
+   "value": "#FF5630"
+  },
+  {
+   "name": "--ok-palette-error-main-channel",
+   "value": "255 86 48"
+  },
+  {
+   "name": "--ok-palette-grey-500",
+   "value": "#919EAB"
+  },
+  {
+   "name": "--ok-palette-grey-500-channel",
+   "value": "145 158 171"
+  },
+  {
+   "name": "--ok-palette-grey-800",
+   "value": "#1C252E"
+  },
+  {
+   "name": "--ok-palette-grey-800-channel",
+   "value": "28 37 46"
+  },
+  {
+   "name": "--ok-palette-info-main",
+   "value": "#00B8D9"
+  },
+  {
+   "name": "--ok-palette-info-main-channel",
+   "value": "0 184 217"
+  },
+  {
+   "name": "--ok-palette-primary-main",
+   "value": "#00A76F"
+  },
+  {
+   "name": "--ok-palette-primary-main-channel",
+   "value": "0 167 111"
+  },
+  {
+   "name": "--ok-palette-secondary-main",
+   "value": "#8E33FF"
+  },
+  {
+   "name": "--ok-palette-secondary-main-channel",
+   "value": "142 51 255"
+  },
+  {
+   "name": "--ok-palette-success-main",
+   "value": "#22C55E"
+  },
+  {
+   "name": "--ok-palette-success-main-channel",
+   "value": "34 197 94"
+  },
+  {
+   "name": "--ok-palette-warning-main",
+   "value": "#FFAB00"
+  },
+  {
+   "name": "--ok-palette-warning-main-channel",
+   "value": "255 171 0"
+  },
+  {
+   "name": "--ok-radius-full",
+   "value": "9999px"
+  },
+  {
+   "name": "--ok-radius-lg",
+   "value": "12px"
+  },
+  {
+   "name": "--ok-radius-md",
+   "value": "8px"
+  },
+  {
+   "name": "--ok-shadow-z1",
+   "value": "0px 1px 2px 0px color-mix(in srgb, var(--ok-shadow-color) 16%, transparent)"
+  },
+  {
+   "name": "--ok-spacing",
+   "value": "0.25rem"
+  },
+  {
+   "dark": "#FFFFFF",
+   "light": "#1C252E",
+   "name": "--ok-text-primary"
+  },
+  {
+   "dark": "#919EAB",
+   "light": "#637381",
+   "name": "--ok-text-secondary"
+  }
+ ],
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-slider",
+    "events": [
+     {
+      "cancelable": true,
+      "description": "Before a thumb moves. `value` holds every thumb. Call `preventDefault()` to keep the current value.",
+      "detail": "{ value: number[]; activeThumb: number; }",
+      "name": "ok:slider:change"
+     },
+     {
+      "cancelable": false,
+      "description": "After a drag or a key press ended, with the final value.",
+      "detail": "{ value: number[]; }",
+      "name": "ok:slider:commit"
+     }
+    ],
+    "methods": [
+     {
+      "description": "Moves the thumbs to `value` (snapped to the steps), without emitting events.",
+      "kind": "method",
+      "name": "setValue",
+      "type": "(value: number | readonly number[]) => void"
+     },
+     {
+      "description": "One value per thumb.",
+      "kind": "property",
+      "name": "value",
+      "type": "number[]"
+     }
+    ],
+    "options": [
+     {
+      "attr": "data-ok-color",
+      "default": "primary",
+      "description": "Palette color, or `inherit` (text).",
+      "kind": "style",
+      "name": "color",
+      "values": [
+       "inherit",
+       "primary",
+       "secondary",
+       "info",
+       "success",
+       "warning",
+       "error"
+      ]
+     },
+     {
+      "attr": "data-ok-size",
+      "default": "medium",
+      "description": "Rail 10 / 6px, thumb 20 / 16px.",
+      "kind": "style",
+      "name": "size",
+      "values": [
+       "medium",
+       "small"
+      ]
+     },
+     {
+      "attr": "data-ok-orientation",
+      "default": "horizontal",
+      "description": "A horizontal or a vertical slider (vertical fills its container's height).",
+      "kind": "style",
+      "name": "orientation",
+      "values": [
+       "horizontal",
+       "vertical"
+      ]
+     },
+     {
+      "attr": "data-ok-track",
+      "default": "normal",
+      "description": "`normal` fills up to the value, `inverted` from the value, `false` draws no track.",
+      "kind": "style",
+      "name": "track",
+      "values": [
+       "normal",
+       "inverted",
+       "false"
+      ]
+     },
+     {
+      "attr": "data-ok-value-label-display",
+      "default": "off",
+      "description": "Value bubble above the thumb: never, on hover / focus / drag (`auto`), or always.",
+      "kind": "style",
+      "name": "valueLabelDisplay",
+      "values": [
+       "off",
+       "auto",
+       "on"
+      ]
+     },
+     {
+      "attr": "data-ok-disabled",
+      "description": "Can't be changed (inputs disabled, grey).",
+      "kind": "flag",
+      "name": "disabled"
+     },
+     {
+      "attr": "data-ok-disable-swap",
+      "description": "Range: thumbs can't cross each other.",
+      "kind": "flag",
+      "name": "disableSwap"
+     },
+     {
+      "attr": "data-ok-min",
+      "default": 0,
+      "description": "Lowest value.",
+      "kind": "number",
+      "name": "min"
+     },
+     {
+      "attr": "data-ok-max",
+      "default": 100,
+      "description": "Highest value.",
+      "kind": "number",
+      "name": "max"
+     },
+     {
+      "attr": "data-ok-step",
+      "default": 1,
+      "description": "Step between values (HTML `marks`: only the marks).",
+      "kind": "number",
+      "min": 0,
+      "name": "step"
+     },
+     {
+      "attr": "value",
+      "description": "Value of each thumb (`value` / `defaultValue`).",
+      "event": "ok:slider:change",
+      "kind": "state",
+      "name": "value"
+     }
+    ],
+    "parts": [
+     {
+      "description": "On a thumb: its position among the thumbs.",
+      "kind": "value",
+      "name": "data-ok-index",
+      "value": "string"
+     },
+     {
+      "description": "The accessible value text pattern of a thumb, such as `{value} °C`.",
+      "kind": "value",
+      "name": "data-ok-label-value",
+      "value": "string"
+     },
+     {
+      "description": "A mark on the rail.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-slider-mark"
+     },
+     {
+      "description": "The label of a mark.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-slider-mark-label"
+     },
+     {
+      "description": "The rail.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-slider-rail"
+     },
+     {
+      "description": "A thumb.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-slider-thumb"
+     },
+     {
+      "description": "The filled part of the rail.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-slider-track"
+     },
+     {
+      "description": "The value shown over a thumb.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-slider-value-label"
+     }
+    ],
+    "runtime": "slider"
+   },
+   "name": "Slider",
+   "react": {
+    "description": "Native range inputs (keyboard, screen readers, forms) under drawn thumbs; pointer dragging and keys are core's `createSliderController`.",
+    "native": "HTMLSpanElement",
+    "props": [
+     {
+      "description": "Names the thumb(s) (or use `aria-labelledby`).",
+      "name": "aria-label",
+      "type": "string"
+     },
+     {
+      "description": "Names it with the id of a visible label.",
+      "name": "aria-labelledby",
+      "type": "string"
+     },
+     {
+      "default": "\"primary\"",
+      "description": "Palette color, or `inherit` (text).",
+      "name": "color",
+      "type": "\"error\" | \"info\" | \"inherit\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
+     },
+     {
+      "default": "min",
+      "description": "Uncontrolled initial value.",
+      "name": "defaultValue",
+      "type": "SliderValue"
+     },
+     {
+      "description": "Range: thumbs can't cross.",
+      "name": "disableSwap",
+      "type": "boolean"
+     },
+     {
+      "description": "Can't be changed (inputs disabled, grey).",
+      "name": "disabled",
+      "type": "boolean"
+     },
+     {
+      "description": "Name of each thumb (`aria-label`), for range sliders.",
+      "name": "getAriaLabel",
+      "type": "((index: number) => string)"
+     },
+     {
+      "description": "Text screen readers announce for a value (`aria-valuetext`).",
+      "name": "getAriaValueText",
+      "type": "((value: number, index: number) => string)"
+     },
+     {
+      "description": "`true`: a mark per step; or marks with optional labels.",
+      "name": "marks",
+      "type": "boolean | readonly SliderMark[]"
+     },
+     {
+      "description": "Default 100.",
+      "name": "max",
+      "type": "number"
+     },
+     {
+      "description": "Default 0.",
+      "name": "min",
+      "type": "number"
+     },
+     {
+      "description": "Form field name of the input(s).",
+      "name": "name",
+      "type": "string"
+     },
+     {
+      "description": "Called while the value changes, with the thumb that moved.",
+      "name": "onChange",
+      "type": "((value: SliderValue, activeThumb: number) => void)"
+     },
+     {
+      "description": "Called when a drag or a key press ends.",
+      "name": "onChangeCommitted",
+      "type": "((value: SliderValue) => void)"
+     },
+     {
+      "default": "\"horizontal\"",
+      "description": "(vertical fills its container's height).",
+      "name": "orientation",
+      "type": "\"horizontal\" | \"vertical\""
+     },
+     {
+      "default": "\"medium\"",
+      "description": "Rail 10 / 6px, thumb 20 / 16px.",
+      "name": "size",
+      "type": "\"medium\" | \"small\""
+     },
+     {
+      "description": "Default 1; `null`: only the marks are valid values.",
+      "name": "step",
+      "type": "number | null"
+     },
+     {
+      "description": "`\"normal\"` (default), `\"inverted\"` or `false` (no track).",
+      "name": "track",
+      "type": "\"inverted\" | \"normal\" | false"
+     },
+     {
+      "description": "Controlled: a number, or two numbers for a range.",
+      "name": "value",
+      "type": "SliderValue"
+     },
+     {
+      "description": "Value bubble: `\"off\"` (default), `\"auto\"` (hover, focus, drag) or `\"on\"`.",
+      "name": "valueLabelDisplay",
+      "type": "\"auto\" | \"off\" | \"on\""
+     },
+     {
+      "description": "Text of the value bubble. Default: the value.",
+      "name": "valueLabelFormat",
+      "type": "((value: number, index: number) => ReactNode)"
+     }
+    ]
+   }
+  }
+ ],
+ "format": 1,
+ "name": "slider",
+ "title": "Slider"
+}

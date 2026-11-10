@@ -1,11 +1,18 @@
 import { type PaginationItemData, paginationItems } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
-import type { ComponentInstance } from "../../runtime/types.js";
+import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
 import { byId, groupsOf, showGroup } from "../table/table.js";
+
+/** Events of this component (`ok:<name>:<event>` on the root). */
+export interface PaginationEvents {
+  /** Before the page changes. Call `preventDefault()` to stay on the current page. */
+  change: EventSpec<{ page: number }, true>;
+}
 
 export interface PaginationInstance extends ComponentInstance {
   /** Current page (1-based). */
   readonly page: number;
+  /** The number of pages. */
   readonly count: number;
   /** Returns `false` if out of range, the current page, or `ok:pagination:change` was prevented. */
   setPage(page: number): boolean;
@@ -37,7 +44,7 @@ const fill = (template: string, page: number) => template.split("{page}").join(S
  *          (data-ok-rows-per-page, default 10); the count follows the rows.
  * Events:  ok:pagination:change (cancelable, detail.page)
  */
-export const pagination = defineComponent<PaginationInstance>({
+export const pagination = defineComponent<PaginationInstance, PaginationEvents>({
   name: "pagination",
   selector: "[data-ok-pagination]",
 

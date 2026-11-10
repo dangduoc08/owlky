@@ -77,24 +77,39 @@ export interface CarouselAutoScrollApi {
 
 /** The carousel API (Embla's methods, v8 names). */
 export interface CarouselApi {
+  /** Scrolls to the next snap point (`jump`: without animation). */
   scrollNext(jump?: boolean): void;
+  /** Scrolls to the previous snap point (`jump`: without animation). */
   scrollPrev(jump?: boolean): void;
+  /** Scrolls to the snap point at `index`. */
   scrollTo(index: number, jump?: boolean): void;
+  /** Whether there is a next snap point (always with `loop`). */
   canScrollNext(): boolean;
+  /** Whether there is a previous snap point. */
   canScrollPrev(): boolean;
+  /** The index of the selected snap point. */
   selectedScrollSnap(): number;
+  /** The index of the snap point selected before. */
   previousScrollSnap(): number;
   /** Progress 0–1 of every snap. */
   scrollSnapList(): number[];
+  /** How far the carousel has scrolled, from 0 to 1. */
   scrollProgress(): number;
+  /** The indexes of the slides in view. */
   slidesInView(): number[];
+  /** The indexes of the slides out of view. */
   slidesNotInView(): number[];
+  /** The slide elements. */
   slideNodes(): HTMLElement[];
+  /** The root element. */
   rootNode(): HTMLElement;
+  /** The element that holds the slides. */
   containerNode(): HTMLElement | null;
   /** Measures again and re-reads the options. */
   reInit(): void;
+  /** Controls autoplay: `play()`, `stop()`, `reset()`, `isPlaying()`, `timeUntilNext()`. */
   autoplay: CarouselAutoplayApi;
+  /** Controls auto scroll: `play()`, `stop()`, `reset()`, `isPlaying()`. */
   autoScroll: CarouselAutoScrollApi;
 }
 

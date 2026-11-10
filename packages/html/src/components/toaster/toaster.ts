@@ -10,7 +10,7 @@ import {
   toastTypes,
 } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
-import type { ComponentInstance } from "../../runtime/types.js";
+import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
 
 export interface ToastShowOptions {
   /** Reuse an id to replace a toast in place. */
@@ -24,6 +24,16 @@ export interface ToastShowOptions {
   cancel?: { label: string; onClick?: ((event: Event) => void) | undefined } | undefined;
   /** `false`: no close button, Escape ignored. */
   dismissible?: boolean | undefined;
+}
+
+/** Events of this component (`ok:<name>:<event>` on the root). */
+export interface ToasterEvents {
+  /** After a toast showed. */
+  show: EventSpec<{ toast: Element }>;
+  /** After a toast was dismissed, with what dismissed it. */
+  dismiss: EventSpec<{ toast: Element; reason: string }>;
+  /** Before a toast's action or cancel button runs. Call `preventDefault()` to keep the toast. */
+  action: EventSpec<{ toast: Element; kind: string }, true>;
 }
 
 export interface ToasterInstance extends ComponentInstance {
@@ -162,7 +172,7 @@ function buildToast(options: ToastShowOptions, withClose: boolean): HTMLLIElemen
  *           "close" | "dismiss" | "action" | "cancel" | "timeout" | "escape" | "api" | "overflow");
  *           ok:toaster:action (cancelable, detail.toast, detail.kind) before an action closes it.
  */
-export const toaster = defineComponent<ToasterInstance>({
+export const toaster = defineComponent<ToasterInstance, ToasterEvents>({
   name: "toaster",
   selector: "[data-ok-toaster]",
 

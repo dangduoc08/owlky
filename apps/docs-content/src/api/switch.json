@@ -1,0 +1,191 @@
+{
+ "css": [
+  {
+   "name": "--ok-action-hover",
+   "value": "color-mix(in srgb, #919EAB 8%, transparent)"
+  },
+  {
+   "description": "The main color of the element's `data-ok-color`, as RGB channels.",
+   "name": "--ok-c-channel"
+  },
+  {
+   "description": "The main color of the element's `data-ok-color`.",
+   "name": "--ok-c-main"
+  },
+  {
+   "name": "--ok-duration-shortest",
+   "value": "150ms"
+  },
+  {
+   "name": "--ok-easing-standard",
+   "value": "cubic-bezier(0.4, 0, 0.2, 1)"
+  },
+  {
+   "name": "--ok-palette-common-white",
+   "value": "#FFFFFF"
+  },
+  {
+   "name": "--ok-palette-grey-500-channel",
+   "value": "145 158 171"
+  },
+  {
+   "name": "--ok-palette-grey-800",
+   "value": "#1C252E"
+  },
+  {
+   "name": "--ok-palette-primary-main",
+   "value": "#00A76F"
+  },
+  {
+   "name": "--ok-palette-primary-main-channel",
+   "value": "0 167 111"
+  },
+  {
+   "name": "--ok-radius-full",
+   "value": "9999px"
+  },
+  {
+   "name": "--ok-shadow-z1",
+   "value": "0px 1px 2px 0px color-mix(in srgb, var(--ok-shadow-color) 16%, transparent)"
+  },
+  {
+   "name": "--ok-spacing",
+   "value": "0.25rem"
+  },
+  {
+   "dark": "#FFFFFF",
+   "light": "#1C252E",
+   "name": "--ok-text-primary"
+  }
+ ],
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-switch",
+    "options": [
+     {
+      "attr": "data-ok-color",
+      "default": "primary",
+      "description": "Track color when on (`default` = text color).",
+      "kind": "style",
+      "name": "color",
+      "values": [
+       "default",
+       "primary",
+       "secondary",
+       "info",
+       "success",
+       "warning",
+       "error"
+      ]
+     },
+     {
+      "attr": "data-ok-size",
+      "default": "medium",
+      "description": "Track 34 × 20 / 26 × 16px.",
+      "kind": "style",
+      "name": "size",
+      "values": [
+       "medium",
+       "small"
+      ]
+     },
+     {
+      "attr": "data-ok-edge",
+      "default": "start",
+      "description": "Negative margin on that side, to align the track with content.",
+      "kind": "style",
+      "name": "edge",
+      "optional": true,
+      "values": [
+       "start",
+       "end"
+      ]
+     },
+     {
+      "attr": "disabled",
+      "children": ":scope > input",
+      "description": "Native `disabled` on the input.",
+      "kind": "native",
+      "name": "disabled"
+     },
+     {
+      "attr": "checked",
+      "description": "Native `checked` (`checked` / `defaultChecked` + `onChange(checked)`).",
+      "event": "ok:switch:change",
+      "kind": "state",
+      "name": "checked"
+     }
+    ],
+    "parts": [
+     {
+      "description": "The native checkbox (`role=\"switch\"`). It covers the control, invisible.",
+      "elements": [
+       "input"
+      ],
+      "kind": "part",
+      "name": "data-ok-switch-input"
+     },
+     {
+      "description": "The thumb.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-switch-thumb"
+     },
+     {
+      "description": "The track.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-switch-track"
+     }
+    ]
+   },
+   "name": "Switch",
+   "react": {
+    "description": "A native checkbox with `role=\"switch\"`; CSS only. `ref` and the remaining props go to the input. Name it with a `FormControlLabel`, `aria-label` or `aria-labelledby`.",
+    "native": "HTMLInputElement",
+    "props": [
+     {
+      "description": "Class of the root span (other props go to the input).",
+      "name": "className",
+      "type": "string"
+     },
+     {
+      "default": "\"primary\"",
+      "description": "Track color when on; `default` is the text color.",
+      "name": "color",
+      "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
+     },
+     {
+      "description": "Negative margin on that side, to align the track with content.",
+      "name": "edge",
+      "type": "\"end\" | \"start\" | false"
+     },
+     {
+      "description": "Called with the new checked state.",
+      "name": "onChange",
+      "type": "((checked: boolean) => void)"
+     },
+     {
+      "default": "\"medium\"",
+      "description": "`medium` (34 × 20px track) or `small` (26 × 16px).",
+      "name": "size",
+      "type": "\"medium\" | \"small\""
+     },
+     {
+      "description": "Style of the root span.",
+      "name": "style",
+      "type": "CSSProperties"
+     }
+    ]
+   }
+  }
+ ],
+ "format": 1,
+ "name": "switch",
+ "title": "Switch"
+}

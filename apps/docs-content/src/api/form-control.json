@@ -1,0 +1,468 @@
+{
+ "css": [
+  {
+   "description": "The accessible text tone of the element's `data-ok-color`.",
+   "name": "--ok-c-text"
+  },
+  {
+   "name": "--ok-font-family",
+   "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+  },
+  {
+   "dark": "#FFAC82",
+   "light": "#B71D18",
+   "name": "--ok-palette-error-text"
+  },
+  {
+   "name": "--ok-spacing",
+   "value": "0.25rem"
+  },
+  {
+   "dark": "#637381",
+   "light": "#919EAB",
+   "name": "--ok-text-disabled"
+  },
+  {
+   "dark": "#FFFFFF",
+   "light": "#1C252E",
+   "name": "--ok-text-primary"
+  },
+  {
+   "dark": "#919EAB",
+   "light": "#637381",
+   "name": "--ok-text-secondary"
+  },
+  {
+   "name": "--ok-typography-body2-font-size",
+   "value": "0.875rem"
+  },
+  {
+   "name": "--ok-typography-body2-font-weight",
+   "value": "400"
+  },
+  {
+   "name": "--ok-typography-body2-line-height",
+   "value": "1.5714"
+  },
+  {
+   "name": "--ok-typography-caption-font-size",
+   "value": "0.75rem"
+  },
+  {
+   "name": "--ok-typography-caption-font-weight",
+   "value": "400"
+  },
+  {
+   "name": "--ok-typography-caption-line-height",
+   "value": "1.5"
+  }
+ ],
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-form-control",
+    "options": [
+     {
+      "attr": "data-ok-color",
+      "default": "default",
+      "description": "Color of a focused label (`default` = text color, as on the reference; MUI's default is `primary`).",
+      "kind": "style",
+      "name": "color",
+      "optional": true,
+      "values": [
+       "default",
+       "primary",
+       "secondary",
+       "info",
+       "success",
+       "warning",
+       "error"
+      ]
+     },
+     {
+      "attr": "data-ok-size",
+      "default": "medium",
+      "description": "Size shared with the composed input.",
+      "kind": "style",
+      "name": "size",
+      "optional": true,
+      "values": [
+       "medium",
+       "small"
+      ]
+     },
+     {
+      "attr": "data-ok-variant",
+      "default": "outlined",
+      "description": "Variant shared with the composed input; `outlined` and `filled` indent the helper text.",
+      "kind": "style",
+      "name": "variant",
+      "optional": true,
+      "values": [
+       "outlined",
+       "filled",
+       "standard"
+      ]
+     },
+     {
+      "attr": "data-ok-margin",
+      "default": "none",
+      "description": "Vertical margin: 0, 8 / 4px or 16 / 8px.",
+      "kind": "style",
+      "name": "margin",
+      "optional": true,
+      "values": [
+       "none",
+       "dense",
+       "normal"
+      ]
+     },
+     {
+      "attr": "data-ok-full-width",
+      "description": "Stretch to the container width.",
+      "kind": "flag",
+      "name": "fullWidth"
+     },
+     {
+      "attr": "data-ok-disabled",
+      "description": "Disabled colors for the label and the helper text.",
+      "kind": "flag",
+      "name": "disabled"
+     },
+     {
+      "attr": "data-ok-error",
+      "description": "Error colors for the label and the helper text.",
+      "kind": "flag",
+      "name": "error"
+     },
+     {
+      "attr": "data-ok-required",
+      "description": "Marks the label and the helper text as required.",
+      "kind": "flag",
+      "name": "required"
+     },
+     {
+      "attr": "data-ok-focused",
+      "description": "Focused colors for the label and the helper text.",
+      "kind": "flag",
+      "name": "focused"
+     },
+     {
+      "attr": "data-ok-hidden-label",
+      "description": "A filled Select without a label: less padding above the value.",
+      "kind": "flag",
+      "name": "hiddenLabel"
+     }
+    ]
+   },
+   "name": "FormControl",
+   "react": {
+    "description": "Groups a control with its label and helper text and shares their states: attributes on the root (read by the parts' CSS) and a context for React parts and composed inputs.",
+    "native": "HTMLElement",
+    "props": [
+     {
+      "default": "\"default\"",
+      "description": "Color of a focused label; `default` is the text color.",
+      "name": "color",
+      "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
+     },
+     {
+      "default": "\"div\"",
+      "description": "The root element, such as `fieldset`.",
+      "name": "component",
+      "type": "ElementType"
+     },
+     {
+      "description": "Disabled label and helper text; a `fieldset` root also disables every control inside.",
+      "name": "disabled",
+      "type": "boolean"
+     },
+     {
+      "description": "Error colors for the label and the helper text.",
+      "name": "error",
+      "type": "boolean"
+     },
+     {
+      "description": "The label shows the focus color.",
+      "name": "focused",
+      "type": "boolean"
+     },
+     {
+      "description": "Stretch to the container width.",
+      "name": "fullWidth",
+      "type": "boolean"
+     },
+     {
+      "description": "A filled Select without a label: less padding above the value.",
+      "name": "hiddenLabel",
+      "type": "boolean"
+     },
+     {
+      "description": "Vertical margin: `none` (default), `dense` (8 / 4px) or `normal` (16 / 8px).",
+      "name": "margin",
+      "type": "\"dense\" | \"none\" | \"normal\""
+     },
+     {
+      "description": "The label shows an asterisk.",
+      "name": "required",
+      "type": "boolean"
+     },
+     {
+      "default": "\"medium\"",
+      "description": "Size shared with a composed input.",
+      "name": "size",
+      "type": "\"medium\" | \"small\""
+     },
+     {
+      "description": "Variant shared with a composed input; `outlined` and `filled` indent the helper text.",
+      "name": "variant",
+      "type": "\"filled\" | \"outlined\" | \"standard\""
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-form-group",
+    "options": [
+     {
+      "attr": "data-ok-row",
+      "description": "Controls side by side instead of a column.",
+      "kind": "flag",
+      "name": "row"
+     }
+    ]
+   },
+   "name": "FormGroup",
+   "react": {
+    "description": "A column (or `row`) of FormControlLabels. Server-safe.",
+    "native": "HTMLDivElement",
+    "props": [
+     {
+      "description": "Controls side by side instead of a column.",
+      "name": "row",
+      "type": "boolean"
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-form-helper-text",
+    "options": [
+     {
+      "attr": "data-ok-margin",
+      "default": "dense",
+      "description": "`dense`: 4px above instead of 6px; default: the form control's.",
+      "kind": "style",
+      "name": "margin",
+      "optional": true,
+      "values": [
+       "dense"
+      ]
+     },
+     {
+      "attr": "data-ok-variant",
+      "default": "outlined",
+      "description": "`outlined` and `filled` indent the text; default: the form control's.",
+      "kind": "style",
+      "name": "variant",
+      "optional": true,
+      "values": [
+       "outlined",
+       "filled",
+       "standard"
+      ]
+     },
+     {
+      "attr": "data-ok-disabled",
+      "description": "Disabled colors for the helper text.",
+      "kind": "flag",
+      "name": "disabled"
+     },
+     {
+      "attr": "data-ok-error",
+      "description": "Error colors for the helper text.",
+      "kind": "flag",
+      "name": "error"
+     },
+     {
+      "attr": "data-ok-required",
+      "description": "Marks the helper text as required.",
+      "kind": "flag",
+      "name": "required"
+     },
+     {
+      "attr": "data-ok-focused",
+      "description": "Focused colors for the helper text.",
+      "kind": "flag",
+      "name": "focused"
+     },
+     {
+      "attr": "data-ok-filled",
+      "description": "Marks the helper text of an input that has a value (no style).",
+      "kind": "flag",
+      "name": "filled"
+     }
+    ]
+   },
+   "name": "FormHelperText",
+   "react": {
+    "description": "A hint or an error message under a control: caption text in the secondary text color (the error tone with `error`). Reference it from the control (`aria-describedby`).",
+    "native": "HTMLElement",
+    "props": [
+     {
+      "default": "\"p\"",
+      "description": "The element.",
+      "name": "component",
+      "type": "ElementType"
+     },
+     {
+      "description": "Disabled colors for this part only (the FormControl's reach it through CSS).",
+      "name": "disabled",
+      "type": "boolean"
+     },
+     {
+      "description": "Error colors for this part only.",
+      "name": "error",
+      "type": "boolean"
+     },
+     {
+      "description": "Marks the part of an input that has a value (no style).",
+      "name": "filled",
+      "type": "boolean"
+     },
+     {
+      "description": "Focused colors for this part only.",
+      "name": "focused",
+      "type": "boolean"
+     },
+     {
+      "description": "`dense`: 4px above instead of 6px; default: the FormControl's margin.",
+      "name": "margin",
+      "type": "\"dense\""
+     },
+     {
+      "description": "Marks this part as required (FormLabel: shows the asterisk).",
+      "name": "required",
+      "type": "boolean"
+     },
+     {
+      "description": "`outlined` and `filled` indent the text; default: the FormControl's variant.",
+      "name": "variant",
+      "type": "\"filled\" | \"outlined\" | \"standard\""
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-form-label",
+    "options": [
+     {
+      "attr": "data-ok-color",
+      "default": "default",
+      "description": "Color when focused; default: the form control's.",
+      "kind": "style",
+      "name": "color",
+      "optional": true,
+      "values": [
+       "default",
+       "primary",
+       "secondary",
+       "info",
+       "success",
+       "warning",
+       "error"
+      ]
+     },
+     {
+      "attr": "data-ok-disabled",
+      "description": "Disabled colors for the label.",
+      "kind": "flag",
+      "name": "disabled"
+     },
+     {
+      "attr": "data-ok-error",
+      "description": "Error colors for the label.",
+      "kind": "flag",
+      "name": "error"
+     },
+     {
+      "attr": "data-ok-required",
+      "description": "Marks the label as required.",
+      "kind": "flag",
+      "name": "required"
+     },
+     {
+      "attr": "data-ok-focused",
+      "description": "Focused colors for the label.",
+      "kind": "flag",
+      "name": "focused"
+     },
+     {
+      "attr": "data-ok-filled",
+      "description": "Marks the label of an input that has a value (no style).",
+      "kind": "flag",
+      "name": "filled"
+     }
+    ],
+    "parts": [
+     {
+      "description": "The asterisk of a required field's label.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-form-label-asterisk"
+     }
+    ]
+   },
+   "name": "FormLabel",
+   "react": {
+    "description": "The label of a FormControl: body2 in the secondary text color, colored by the focused / error / disabled states. Shows an asterisk when it or its FormControl is required.",
+    "native": "HTMLElement",
+    "props": [
+     {
+      "description": "Color when focused; default: the FormControl's.",
+      "name": "color",
+      "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
+     },
+     {
+      "description": "The element: `label` (default; pair it with `htmlFor`), `legend` in a fieldset, or `span`.",
+      "name": "component",
+      "type": "ElementType"
+     },
+     {
+      "description": "Disabled colors for this part only (the FormControl's reach it through CSS).",
+      "name": "disabled",
+      "type": "boolean"
+     },
+     {
+      "description": "Error colors for this part only.",
+      "name": "error",
+      "type": "boolean"
+     },
+     {
+      "description": "Marks the part of an input that has a value (no style).",
+      "name": "filled",
+      "type": "boolean"
+     },
+     {
+      "description": "Focused colors for this part only.",
+      "name": "focused",
+      "type": "boolean"
+     },
+     {
+      "description": "Marks this part as required (FormLabel: shows the asterisk).",
+      "name": "required",
+      "type": "boolean"
+     }
+    ]
+   }
+  }
+ ],
+ "format": 1,
+ "name": "form-control",
+ "title": "Form control"
+}

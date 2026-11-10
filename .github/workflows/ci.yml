@@ -35,6 +35,8 @@ jobs:
       - run: pnpm check:size
       - run: pnpm check:packages
       - run: pnpm check:specs
+      # The API reference (ADR-0049) must match the code.
+      - run: pnpm check:api
       # The MCP server's manifest (ADR-0046) must match the code, and its tarball must start.
       - run: pnpm check:manifest
       - run: pnpm smoke:mcp

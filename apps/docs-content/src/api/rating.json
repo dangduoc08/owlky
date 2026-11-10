@@ -1,0 +1,319 @@
+{
+ "css": [
+  {
+   "name": "--ok-duration-shortest",
+   "value": "150ms"
+  },
+  {
+   "name": "--ok-easing-standard",
+   "value": "cubic-bezier(0.4, 0, 0.2, 1)"
+  },
+  {
+   "name": "--ok-palette-error-main",
+   "value": "#FF5630"
+  },
+  {
+   "name": "--ok-palette-grey-500-channel",
+   "value": "145 158 171"
+  },
+  {
+   "name": "--ok-palette-info-main",
+   "value": "#00B8D9"
+  },
+  {
+   "name": "--ok-palette-primary-main",
+   "value": "#00A76F"
+  },
+  {
+   "name": "--ok-palette-secondary-main",
+   "value": "#8E33FF"
+  },
+  {
+   "name": "--ok-palette-success-main",
+   "value": "#22C55E"
+  },
+  {
+   "name": "--ok-palette-warning-main",
+   "value": "#FFAB00"
+  },
+  {
+   "name": "--ok-radius-xs",
+   "value": "4px"
+  },
+  {
+   "name": "--ok-spacing",
+   "value": "0.25rem"
+  },
+  {
+   "dark": "#FFFFFF",
+   "light": "#1C252E",
+   "name": "--ok-text-primary"
+  }
+ ],
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-rating",
+    "events": [
+     {
+      "cancelable": false,
+      "description": "The value under the pointer or the focus changed (`null` once it leaves).",
+      "detail": "{ value: number | null; }",
+      "name": "ok:rating:active"
+     },
+     {
+      "cancelable": true,
+      "description": "Before the value changes. Call `preventDefault()` to check the previous value again.",
+      "detail": "{ value: number | null; previous: number | null; }",
+      "name": "ok:rating:change"
+     }
+    ],
+    "methods": [
+     {
+      "description": "Checks `value` (`null`: none) without emitting events.",
+      "kind": "method",
+      "name": "setValue",
+      "type": "(value: number | null) => void"
+     },
+     {
+      "description": "The checked value, or `null`.",
+      "kind": "property",
+      "name": "value",
+      "type": "number | null"
+     }
+    ],
+    "options": [
+     {
+      "attr": "data-ok-size",
+      "default": "medium",
+      "description": "Icon size: 12 / 16 / 20 / 24 / 28px.",
+      "kind": "style",
+      "name": "size",
+      "values": [
+       "xxSmall",
+       "xSmall",
+       "small",
+       "medium",
+       "large"
+      ]
+     },
+     {
+      "attr": "data-ok-color",
+      "default": "warning",
+      "description": "Color of the filled icons.",
+      "kind": "style",
+      "name": "color",
+      "values": [
+       "primary",
+       "secondary",
+       "info",
+       "success",
+       "warning",
+       "error"
+      ]
+     },
+     {
+      "attr": "data-ok-highlight-selected-only",
+      "description": "Only the selected icon is filled (icons that differ per value).",
+      "kind": "flag",
+      "name": "highlightSelectedOnly"
+     },
+     {
+      "attr": "data-ok-read-only",
+      "description": "Shows the value without inputs (`role=\"img\"`).",
+      "kind": "flag",
+      "name": "readOnly"
+     },
+     {
+      "attr": "data-ok-disabled",
+      "description": "Can't be changed (inputs disabled, dimmed).",
+      "kind": "flag",
+      "name": "disabled"
+     },
+     {
+      "attr": "checked",
+      "description": "Selected value (`value` / `defaultValue`).",
+      "event": "ok:rating:change",
+      "kind": "state",
+      "name": "value"
+     }
+    ],
+    "parts": [
+     {
+      "description": "On an icon of a fraction: the part of the icon it fills.",
+      "kind": "value",
+      "name": "data-ok-fraction",
+      "value": "string"
+     },
+     {
+      "description": "Set by the runtime on icons up to the one under the pointer.",
+      "kind": "state",
+      "name": "data-ok-hover"
+     },
+     {
+      "description": "The \"Empty\" choice that clears the value.",
+      "elements": [
+       "label"
+      ],
+      "kind": "part",
+      "name": "data-ok-rating-empty"
+     },
+     {
+      "description": "The label of one value: its icon.",
+      "elements": [
+       "label"
+      ],
+      "kind": "part",
+      "name": "data-ok-rating-icon"
+     },
+     {
+      "description": "The icon of an unfilled value.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-rating-icon-empty"
+     },
+     {
+      "description": "The icon of a filled value.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-rating-icon-filled"
+     },
+     {
+      "description": "The visually hidden radio of one value.",
+      "elements": [
+       "input"
+      ],
+      "kind": "part",
+      "name": "data-ok-rating-input"
+     },
+     {
+      "description": "The icons of one whole value.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-rating-item"
+     },
+     {
+      "description": "The visually hidden name of a value, such as \"2 Stars\".",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-rating-label-text"
+     }
+    ],
+    "runtime": "rating"
+   },
+   "name": "Rating",
+   "react": {
+    "description": "A radio group drawn as icons (MUI Rating): native radios carry the value, the keyboard and the labels; icons show it.",
+    "native": "HTMLSpanElement",
+    "props": [
+     {
+      "default": "\"warning\"",
+      "description": "Filled icon color.",
+      "name": "color",
+      "type": "\"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
+     },
+     {
+      "default": "null",
+      "description": "Uncontrolled initial value.",
+      "name": "defaultValue",
+      "type": "number | null"
+     },
+     {
+      "description": "Can't be changed (inputs disabled, dimmed).",
+      "name": "disabled",
+      "type": "boolean"
+     },
+     {
+      "description": "Empty icon (default: `icon`, greyed).",
+      "name": "emptyIcon",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Label of the \"no rating\" radio. Default \"Empty\".",
+      "name": "emptyLabelText",
+      "type": "string"
+     },
+     {
+      "description": "Accessible label of each value. Default \"2 Stars\".",
+      "name": "getLabelText",
+      "type": "((value: number) => string)"
+     },
+     {
+      "description": "Only the selected icon is filled.",
+      "name": "highlightSelectedOnly",
+      "type": "boolean"
+     },
+     {
+      "description": "Filled icon (default a star).",
+      "name": "icon",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Number of icons. Default 5.",
+      "name": "max",
+      "type": "number"
+     },
+     {
+      "description": "Name of the radio group (default: generated).",
+      "name": "name",
+      "type": "string"
+     },
+     {
+      "description": "Called with the chosen value; clicking the current value clears it (`null`).",
+      "name": "onChange",
+      "type": "((value: number | null) => void)"
+     },
+     {
+      "description": "Called with the value under the pointer, or `null` when it leaves.",
+      "name": "onChangeActive",
+      "type": "((value: number | null) => void)"
+     },
+     {
+      "description": "25.",
+      "name": "precision",
+      "type": "number"
+     },
+     {
+      "description": "Shows the value only (`role=\"img\"`).",
+      "name": "readOnly",
+      "type": "boolean"
+     },
+     {
+      "description": "An icon per value (overrides `icon` / `emptyIcon`), for example faces.",
+      "name": "renderIcon",
+      "type": "((value: number) => ReactNode)"
+     },
+     {
+      "default": "\"medium\"",
+      "description": "(24px).",
+      "name": "size",
+      "type": "\"large\" | \"medium\" | \"small\" | \"xSmall\" | \"xxSmall\""
+     },
+     {
+      "description": "Controlled value (`null`: no rating).",
+      "name": "value",
+      "type": "number | null"
+     }
+    ]
+   }
+  },
+  {
+   "name": "StarIcon",
+   "react": {
+    "description": "The default icon: a star (decorative).",
+    "props": []
+   }
+  }
+ ],
+ "format": 1,
+ "name": "rating",
+ "title": "Rating"
+}

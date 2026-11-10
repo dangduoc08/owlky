@@ -1,0 +1,1467 @@
+{
+ "css": [
+  {
+   "name": "--ok-duration-short",
+   "value": "250ms"
+  },
+  {
+   "name": "--ok-duration-shorter",
+   "value": "200ms"
+  },
+  {
+   "name": "--ok-easing-decelerate",
+   "value": "cubic-bezier(0, 0, 0.2, 1)"
+  },
+  {
+   "name": "--ok-easing-standard",
+   "value": "cubic-bezier(0.4, 0, 0.2, 1)"
+  },
+  {
+   "name": "--ok-font-family",
+   "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+  },
+  {
+   "name": "--ok-font-weight-semibold",
+   "value": "600"
+  },
+  {
+   "name": "--ok-palette-common-black",
+   "value": "#000000"
+  },
+  {
+   "name": "--ok-palette-common-black-channel",
+   "value": "0 0 0"
+  },
+  {
+   "name": "--ok-palette-common-white",
+   "value": "#FFFFFF"
+  },
+  {
+   "name": "--ok-palette-common-white-channel",
+   "value": "255 255 255"
+  },
+  {
+   "name": "--ok-palette-grey-900-channel",
+   "value": "20 26 33"
+  },
+  {
+   "name": "--ok-palette-primary-main",
+   "value": "#00A76F"
+  },
+  {
+   "name": "--ok-radius-md",
+   "value": "8px"
+  },
+  {
+   "name": "--ok-spacing",
+   "value": "0.25rem"
+  },
+  {
+   "dark": "#FFFFFF",
+   "light": "#1C252E",
+   "name": "--ok-text-primary"
+  },
+  {
+   "name": "--ok-typography-body2-font-size",
+   "value": "0.875rem"
+  },
+  {
+   "name": "--ok-typography-body2-line-height",
+   "value": "1.5714"
+  },
+  {
+   "name": "--ok-typography-h5-font-size",
+   "value": "1.125rem"
+  },
+  {
+   "name": "--ok-typography-h5-line-height",
+   "value": "1.5"
+  },
+  {
+   "name": "--ok-z-modal",
+   "value": "1300"
+  }
+ ],
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-lightbox",
+    "events": [
+     {
+      "cancelable": true,
+      "description": "Before the lightbox closes. Call `preventDefault()` to keep it open.",
+      "detail": "{ reason: string; }",
+      "name": "ok:lightbox:beforeclose"
+     },
+     {
+      "cancelable": true,
+      "description": "Before the lightbox opens at `index`. Call `preventDefault()` to keep it closed.",
+      "detail": "{ index: number; trigger: HTMLElement | null; }",
+      "name": "ok:lightbox:beforeopen"
+     },
+     {
+      "cancelable": false,
+      "description": "After the captions were shown or hidden.",
+      "detail": "{ visible: boolean; }",
+      "name": "ok:lightbox:captions"
+     },
+     {
+      "cancelable": false,
+      "description": "After a slide was clicked.",
+      "detail": "{ index: number; }",
+      "name": "ok:lightbox:click"
+     },
+     {
+      "cancelable": false,
+      "description": "After the lightbox closed, with what closed it.",
+      "detail": "{ reason: string; }",
+      "name": "ok:lightbox:close"
+     },
+     {
+      "cancelable": true,
+      "description": "Before the slide is downloaded. Call `preventDefault()` to download it yourself.",
+      "detail": "{ index: number; }",
+      "name": "ok:lightbox:download"
+     },
+     {
+      "cancelable": false,
+      "description": "After the lightbox entered or left full screen.",
+      "detail": "{ fullscreen: boolean; }",
+      "name": "ok:lightbox:fullscreen"
+     },
+     {
+      "cancelable": false,
+      "description": "After the lightbox opened.",
+      "detail": "{ index: number; trigger: HTMLElement | null; }",
+      "name": "ok:lightbox:open"
+     },
+     {
+      "cancelable": false,
+      "description": "After a slide was rotated, in degrees.",
+      "detail": "{ index: number; rotation: number; }",
+      "name": "ok:lightbox:rotate"
+     },
+     {
+      "cancelable": true,
+      "description": "Before the slide is shared. Call `preventDefault()` to share it yourself.",
+      "detail": "{ index: number; }",
+      "name": "ok:lightbox:share"
+     },
+     {
+      "cancelable": false,
+      "description": "After the slideshow started or paused.",
+      "detail": "{ playing: boolean; }",
+      "name": "ok:lightbox:slideshow"
+     },
+     {
+      "cancelable": false,
+      "description": "After the thumbnails were shown or hidden.",
+      "detail": "{ visible: boolean; }",
+      "name": "ok:lightbox:thumbnails"
+     },
+     {
+      "cancelable": false,
+      "description": "After another slide is shown.",
+      "detail": "{ index: number; }",
+      "name": "ok:lightbox:view"
+     },
+     {
+      "cancelable": false,
+      "description": "After the zoom level changed.",
+      "detail": "{ zoom: number; }",
+      "name": "ok:lightbox:zoom"
+     }
+    ],
+    "methods": [
+     {
+      "description": "Whether the captions are shown.",
+      "kind": "property",
+      "name": "captionsVisible",
+      "type": "boolean"
+     },
+     {
+      "description": "Sets the zoom; `rapid` skips the animation; `dx` / `dy` are offsets from the center.",
+      "kind": "property",
+      "name": "changeZoom",
+      "type": "(zoom: number, rapid?: boolean | undefined, dx?: number | undefined, dy?: number | undefined) => void"
+     },
+     {
+      "description": "Closes it. Returns `false` if `ok:lightbox:beforeclose` was prevented.",
+      "kind": "method",
+      "name": "close",
+      "type": "(reason?: LightboxHtmlCloseReason | undefined) => boolean"
+     },
+     {
+      "description": "Downloads the current slide.",
+      "kind": "property",
+      "name": "download",
+      "type": "() => Promise<void>"
+     },
+     {
+      "description": "Enters full screen.",
+      "kind": "property",
+      "name": "enterFullscreen",
+      "type": "() => Promise<void>"
+     },
+     {
+      "description": "Leaves full screen.",
+      "kind": "property",
+      "name": "exitFullscreen",
+      "type": "() => Promise<void>"
+     },
+     {
+      "description": "Whether the lightbox is in full screen.",
+      "kind": "property",
+      "name": "fullscreen",
+      "type": "boolean"
+     },
+     {
+      "description": "Whether full screen is unavailable (the browser refuses it).",
+      "kind": "property",
+      "name": "fullscreenDisabled",
+      "type": "boolean"
+     },
+     {
+      "description": "Shows the slide at `index` (`jump`: without animation).",
+      "kind": "property",
+      "name": "goTo",
+      "type": "(index: number, jump?: boolean | undefined) => void"
+     },
+     {
+      "description": "Hides the captions.",
+      "kind": "property",
+      "name": "hideCaptions",
+      "type": "() => void"
+     },
+     {
+      "description": "Hides the thumbnails.",
+      "kind": "property",
+      "name": "hideThumbnails",
+      "type": "() => void"
+     },
+     {
+      "description": "Current slide.",
+      "kind": "property",
+      "name": "index",
+      "type": "number"
+     },
+     {
+      "description": "Whether the lightbox is open.",
+      "kind": "property",
+      "name": "isOpen",
+      "type": "boolean"
+     },
+     {
+      "description": "The highest zoom level of the current slide.",
+      "kind": "property",
+      "name": "maxZoom",
+      "type": "number"
+     },
+     {
+      "description": "Shows the next slide.",
+      "kind": "property",
+      "name": "next",
+      "type": "() => void"
+     },
+     {
+      "description": "The horizontal pan of the zoomed slide, in pixels.",
+      "kind": "property",
+      "name": "offsetX",
+      "type": "number"
+     },
+     {
+      "description": "The vertical pan of the zoomed slide, in pixels.",
+      "kind": "property",
+      "name": "offsetY",
+      "type": "number"
+     },
+     {
+      "description": "Opens at `index`. Returns `false` if `ok:lightbox:beforeopen` was prevented.",
+      "kind": "method",
+      "name": "open",
+      "type": "(index?: number | undefined, trigger?: HTMLElement | null | undefined) => boolean"
+     },
+     {
+      "description": "Pauses the slideshow.",
+      "kind": "property",
+      "name": "pause",
+      "type": "() => void"
+     },
+     {
+      "description": "Starts the slideshow.",
+      "kind": "property",
+      "name": "play",
+      "type": "() => void"
+     },
+     {
+      "description": "Whether the slideshow plays.",
+      "kind": "property",
+      "name": "playing",
+      "type": "boolean"
+     },
+     {
+      "description": "Shows the previous slide.",
+      "kind": "property",
+      "name": "prev",
+      "type": "() => void"
+     },
+     {
+      "description": "Rotates the current slide by 90 degrees clockwise.",
+      "kind": "property",
+      "name": "rotateClockwise",
+      "type": "() => void"
+     },
+     {
+      "description": "Rotates the current slide by 90 degrees counterclockwise.",
+      "kind": "property",
+      "name": "rotateCounterClockwise",
+      "type": "() => void"
+     },
+     {
+      "description": "The rotation of the current slide, in degrees.",
+      "kind": "property",
+      "name": "rotation",
+      "type": "number"
+     },
+     {
+      "description": "Shares the current slide (the Web Share API).",
+      "kind": "property",
+      "name": "share",
+      "type": "() => Promise<void>"
+     },
+     {
+      "description": "Shows the captions.",
+      "kind": "property",
+      "name": "showCaptions",
+      "type": "() => void"
+     },
+     {
+      "description": "Shows the thumbnails.",
+      "kind": "property",
+      "name": "showThumbnails",
+      "type": "() => void"
+     },
+     {
+      "description": "Whether the thumbnails are shown.",
+      "kind": "property",
+      "name": "thumbnailsVisible",
+      "type": "boolean"
+     },
+     {
+      "description": "The zoom level (1: none).",
+      "kind": "property",
+      "name": "zoom",
+      "type": "number"
+     },
+     {
+      "description": "`true` when the current slide can't zoom.",
+      "kind": "property",
+      "name": "zoomDisabled",
+      "type": "boolean"
+     },
+     {
+      "description": "Zooms in one step.",
+      "kind": "property",
+      "name": "zoomIn",
+      "type": "() => void"
+     },
+     {
+      "description": "Zooms out one step.",
+      "kind": "property",
+      "name": "zoomOut",
+      "type": "() => void"
+     }
+    ],
+    "options": [
+     {
+      "attr": "data-ok-image-fit",
+      "default": "contain",
+      "description": "How images fill their slide: `contain` (whole image) or `cover` (cropped to fill).",
+      "kind": "style",
+      "name": "imageFit",
+      "values": [
+       "contain",
+       "cover"
+      ]
+     },
+     {
+      "attr": "data-ok-finite",
+      "description": "The slides don't wrap around: the first and last slides stop.",
+      "kind": "flag",
+      "name": "finite"
+     },
+     {
+      "attr": "data-ok-disable-zoom",
+      "description": "No zoom: hides the zoom buttons and ignores gestures.",
+      "kind": "flag",
+      "name": "disableZoom"
+     },
+     {
+      "attr": "data-ok-disable-total",
+      "description": "Hides the counter (`1 / 5`).",
+      "kind": "flag",
+      "name": "disableTotal"
+     },
+     {
+      "attr": "data-ok-disable-captions",
+      "description": "Hides the titles and descriptions.",
+      "kind": "flag",
+      "name": "disableCaptions"
+     },
+     {
+      "attr": "data-ok-disable-slideshow",
+      "description": "Hides the play / pause button.",
+      "kind": "flag",
+      "name": "disableSlideshow"
+     },
+     {
+      "attr": "data-ok-disable-thumbnails",
+      "description": "Hides the thumbnails.",
+      "kind": "flag",
+      "name": "disableThumbnails"
+     },
+     {
+      "attr": "data-ok-disable-fullscreen",
+      "description": "Hides the fullscreen button.",
+      "kind": "flag",
+      "name": "disableFullscreen"
+     },
+     {
+      "attr": "data-ok-download",
+      "description": "Shows a download button for the current slide.",
+      "kind": "flag",
+      "name": "download"
+     },
+     {
+      "attr": "data-ok-share",
+      "description": "Shows a share button (Web Share API; hidden where the browser can't share).",
+      "kind": "flag",
+      "name": "share"
+     },
+     {
+      "attr": "data-ok-rotate",
+      "description": "Shows buttons that rotate the current image by quarter turns.",
+      "kind": "flag",
+      "name": "rotate"
+     },
+     {
+      "attr": "data-ok-rotate-buttons",
+      "default": "both",
+      "description": "Rotate buttons: `both`, `clockwise` or `counterclockwise`.",
+      "kind": "style",
+      "name": "rotateButtons",
+      "values": [
+       "both",
+       "clockwise",
+       "counterclockwise"
+      ],
+      "when": "rotate"
+     },
+     {
+      "attr": "data-ok-captions-hidden",
+      "description": "Captions start hidden (the captions toggle shows them).",
+      "kind": "flag",
+      "name": "captionsHidden"
+     },
+     {
+      "attr": "data-ok-captions-show-toggle",
+      "description": "Shows a toolbar button that hides and shows the captions.",
+      "kind": "flag",
+      "name": "captionsShowToggle"
+     },
+     {
+      "attr": "data-ok-description-text-align",
+      "default": "start",
+      "description": "Alignment of the descriptions: `start`, `center` or `end`.",
+      "kind": "style",
+      "name": "descriptionTextAlign",
+      "values": [
+       "start",
+       "center",
+       "end"
+      ]
+     },
+     {
+      "attr": "data-ok-description-max-lines",
+      "default": 3,
+      "description": "Lines a description shows before it is cut.",
+      "kind": "number",
+      "min": 1,
+      "name": "descriptionMaxLines"
+     },
+     {
+      "attr": "data-ok-thumbnails-position",
+      "default": "bottom",
+      "description": "Where the thumbnails sit: `bottom`, `top`, `start` or `end`.",
+      "kind": "style",
+      "name": "thumbnailsPosition",
+      "values": [
+       "bottom",
+       "top",
+       "start",
+       "end"
+      ]
+     },
+     {
+      "attr": "data-ok-thumbnails-image-fit",
+      "default": "contain",
+      "description": "How images fill their thumbnail: `contain` or `cover`.",
+      "kind": "style",
+      "name": "thumbnailsImageFit",
+      "values": [
+       "contain",
+       "cover"
+      ]
+     },
+     {
+      "attr": "data-ok-thumbnails-width",
+      "default": 120,
+      "description": "Thumbnail width (px).",
+      "kind": "number",
+      "min": 0,
+      "name": "thumbnailsWidth"
+     },
+     {
+      "attr": "data-ok-thumbnails-height",
+      "default": 80,
+      "description": "Thumbnail height (px).",
+      "kind": "number",
+      "min": 0,
+      "name": "thumbnailsHeight"
+     },
+     {
+      "attr": "data-ok-thumbnails-border",
+      "default": 3,
+      "description": "Thumbnail border width (px).",
+      "kind": "number",
+      "min": 0,
+      "name": "thumbnailsBorder"
+     },
+     {
+      "attr": "data-ok-thumbnails-border-radius",
+      "default": 10,
+      "description": "Thumbnail corner radius (px).",
+      "kind": "number",
+      "min": 0,
+      "name": "thumbnailsBorderRadius"
+     },
+     {
+      "attr": "data-ok-thumbnails-padding",
+      "default": 0,
+      "description": "Space inside a thumbnail (px).",
+      "kind": "number",
+      "min": 0,
+      "name": "thumbnailsPadding"
+     },
+     {
+      "attr": "data-ok-thumbnails-gap",
+      "default": 16,
+      "description": "Space between thumbnails (px).",
+      "kind": "number",
+      "min": 0,
+      "name": "thumbnailsGap"
+     },
+     {
+      "attr": "data-ok-thumbnails-vignette",
+      "default": true,
+      "description": "The thumbnails fade out at the edges of their track; `false` turns it off.",
+      "kind": "behavior",
+      "name": "thumbnailsVignette"
+     },
+     {
+      "attr": "data-ok-thumbnails-hidden",
+      "description": "Thumbnails start hidden (the thumbnails toggle shows them).",
+      "kind": "flag",
+      "name": "thumbnailsHidden"
+     },
+     {
+      "attr": "data-ok-thumbnails-show-toggle",
+      "description": "Shows a toolbar button that hides and shows the thumbnails.",
+      "kind": "flag",
+      "name": "thumbnailsShowToggle"
+     },
+     {
+      "attr": "data-ok-slideshow-autoplay",
+      "description": "The slideshow starts when the lightbox opens (never with reduced motion).",
+      "kind": "flag",
+      "name": "slideshowAutoplay"
+     },
+     {
+      "attr": "data-ok-slideshow-delay",
+      "default": 3000,
+      "description": "Slideshow: milliseconds per slide.",
+      "kind": "number",
+      "min": 0,
+      "name": "slideshowDelay"
+     },
+     {
+      "attr": "data-ok-fullscreen-auto",
+      "description": "Enters fullscreen when the lightbox opens.",
+      "kind": "flag",
+      "name": "fullscreenAuto"
+     },
+     {
+      "attr": "data-ok-max-zoom-pixel-ratio",
+      "default": 1,
+      "description": "Largest zoom of an image: image pixels per screen pixel.",
+      "kind": "number",
+      "min": 0,
+      "name": "maxZoomPixelRatio"
+     },
+     {
+      "attr": "data-ok-zoom-in-multiplier",
+      "default": 2,
+      "description": "Zoom factor of one zoom step.",
+      "kind": "number",
+      "min": 1,
+      "name": "zoomInMultiplier"
+     },
+     {
+      "attr": "data-ok-double-click-max-stops",
+      "default": 2,
+      "description": "Zoom steps a double click or double tap goes through before it zooms out.",
+      "kind": "number",
+      "min": 0,
+      "name": "doubleClickMaxStops"
+     },
+     {
+      "attr": "data-ok-keyboard-move-distance",
+      "default": 50,
+      "description": "Pixels an arrow key moves a zoomed image.",
+      "kind": "number",
+      "min": 0,
+      "name": "keyboardMoveDistance"
+     },
+     {
+      "attr": "data-ok-wheel-zoom-distance-factor",
+      "default": 100,
+      "description": "Wheel distance for one zoom step (larger is slower).",
+      "kind": "number",
+      "min": 1,
+      "name": "wheelZoomDistanceFactor"
+     },
+     {
+      "attr": "data-ok-scroll-to-zoom",
+      "description": "The mouse wheel zooms without the Ctrl key.",
+      "kind": "flag",
+      "name": "scrollToZoom"
+     },
+     {
+      "attr": "data-ok-max-zoom",
+      "default": 8,
+      "description": "Largest zoom of custom zoomable slides.",
+      "kind": "number",
+      "min": 1,
+      "name": "maxZoom"
+     },
+     {
+      "attr": "data-ok-close-on-escape",
+      "default": true,
+      "description": "Escape closes; `false` turns it off.",
+      "kind": "behavior",
+      "name": "closeOnEscape"
+     },
+     {
+      "attr": "data-ok-close-on-backdrop-click",
+      "description": "A click beside the image closes the lightbox.",
+      "kind": "flag",
+      "name": "closeOnBackdropClick"
+     },
+     {
+      "attr": "data-ok-close-on-pull-down",
+      "description": "Pulling the slide down closes it.",
+      "kind": "flag",
+      "name": "closeOnPullDown"
+     },
+     {
+      "attr": "data-ok-close-on-pull-up",
+      "description": "Pulling the slide up closes it.",
+      "kind": "flag",
+      "name": "closeOnPullUp"
+     },
+     {
+      "attr": "data-ok-disable-swipe-navigation",
+      "description": "Swipes and drags don't change slides (buttons, keys and thumbnails still do).",
+      "kind": "flag",
+      "name": "disableSwipeNavigation"
+     },
+     {
+      "attr": "data-ok-padding",
+      "default": 16,
+      "description": "Space around each slide (px or `%`).",
+      "kind": "number",
+      "min": 0,
+      "name": "padding",
+      "units": [
+       "px",
+       "%"
+      ]
+     },
+     {
+      "attr": "data-ok-spacing",
+      "description": "Space between slides (px, or `%` of the slide area). Default `30%`.",
+      "kind": "number",
+      "min": 0,
+      "name": "spacing",
+      "units": [
+       "px",
+       "%"
+      ]
+     },
+     {
+      "attr": "data-ok-animation-fade",
+      "default": 250,
+      "description": "Fade-in duration on open (ms).",
+      "kind": "number",
+      "min": 0,
+      "name": "animationFade"
+     },
+     {
+      "attr": "data-ok-animation-swipe",
+      "default": 500,
+      "description": "Slide change duration (ms).",
+      "kind": "number",
+      "min": 0,
+      "name": "animationSwipe"
+     },
+     {
+      "attr": "data-ok-animation-zoom",
+      "default": 500,
+      "description": "Zoom animation duration (ms).",
+      "kind": "number",
+      "min": 0,
+      "name": "animationZoom"
+     },
+     {
+      "attr": "data-ok-inline",
+      "description": "Shown in the page (a carousel) instead of a modal overlay.",
+      "kind": "flag",
+      "name": "inline"
+     },
+     {
+      "attr": "open",
+      "description": "Open state (`open` / `onOpenChange`; HTML: a trigger or `open()`).",
+      "event": "ok:lightbox:close",
+      "kind": "state",
+      "name": "open"
+     },
+     {
+      "attr": "data-ok-snapped",
+      "description": "Current slide (`index` / `onIndexChange`; HTML: `data-ok-index` on triggers, `goTo()`).",
+      "event": "ok:lightbox:view",
+      "kind": "state",
+      "name": "index"
+     }
+    ],
+    "parts": [
+     {
+      "description": "On a slide: the file name of its download.",
+      "kind": "value",
+      "name": "data-ok-download-filename",
+      "value": "string"
+     },
+     {
+      "description": "On a trigger: the slide it opens at.",
+      "kind": "value",
+      "name": "data-ok-index",
+      "value": "string"
+     },
+     {
+      "description": "A caption of a slide: its title or its description.",
+      "kind": "value",
+      "name": "data-ok-lightbox-caption",
+      "value": [
+       "description",
+       "title"
+      ]
+     },
+     {
+      "description": "The button that shows and hides the captions.",
+      "elements": [
+       "button"
+      ],
+      "kind": "part",
+      "name": "data-ok-lightbox-captions"
+     },
+     {
+      "description": "The carousel of slides.",
+      "elements": [
+       "section"
+      ],
+      "kind": "part",
+      "name": "data-ok-lightbox-carousel"
+     },
+     {
+      "description": "The close button.",
+      "kind": "part",
+      "name": "data-ok-lightbox-close"
+     },
+     {
+      "description": "The \"2 / 8\" counter.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-lightbox-counter"
+     },
+     {
+      "description": "The current slide's number.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-lightbox-counter-current"
+     },
+     {
+      "description": "The number of slides.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-lightbox-counter-total"
+     },
+     {
+      "description": "The text of a description caption.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-lightbox-description-text"
+     },
+     {
+      "description": "The download button.",
+      "elements": [
+       "button"
+      ],
+      "kind": "part",
+      "name": "data-ok-lightbox-download"
+     },
+     {
+      "description": "The full screen button.",
+      "kind": "part",
+      "name": "data-ok-lightbox-fullscreen"
+     },
+     {
+      "description": "The picture of a slide.",
+      "elements": [
+       "img"
+      ],
+      "kind": "part",
+      "name": "data-ok-lightbox-image"
+     },
+     {
+      "description": "One of the full screen button's two labels.",
+      "kind": "value",
+      "name": "data-ok-lightbox-label",
+      "value": [
+       "enter",
+       "exit"
+      ]
+     },
+     {
+      "description": "A visually hidden live region that announces the slide.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-lightbox-live"
+     },
+     {
+      "description": "The content of a custom slide.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-lightbox-media"
+     },
+     {
+      "description": "The previous and next buttons.",
+      "elements": [
+       "button"
+      ],
+      "kind": "part",
+      "name": "data-ok-lightbox-nav"
+     },
+     {
+      "description": "Opens the lightbox whose `id` it names, at the slide `data-ok-index` gives.",
+      "kind": "trigger",
+      "name": "data-ok-lightbox-open",
+      "value": [
+       "id"
+      ]
+     },
+     {
+      "description": "The button that rotates the slide counterclockwise.",
+      "elements": [
+       "button"
+      ],
+      "kind": "part",
+      "name": "data-ok-lightbox-rotate-ccw"
+     },
+     {
+      "description": "The button that rotates the slide clockwise.",
+      "elements": [
+       "button"
+      ],
+      "kind": "part",
+      "name": "data-ok-lightbox-rotate-cw"
+     },
+     {
+      "description": "The share button.",
+      "elements": [
+       "button"
+      ],
+      "kind": "part",
+      "name": "data-ok-lightbox-share"
+     },
+     {
+      "description": "One slide.",
+      "kind": "part",
+      "name": "data-ok-lightbox-slide"
+     },
+     {
+      "description": "The button that plays and pauses the slideshow.",
+      "elements": [
+       "button"
+      ],
+      "kind": "part",
+      "name": "data-ok-lightbox-slideshow"
+     },
+     {
+      "description": "The play icon on a video's thumbnail.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-lightbox-thumbnail-play"
+     },
+     {
+      "description": "The row of thumbnails.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-lightbox-thumbnails"
+     },
+     {
+      "description": "The button that shows and hides the thumbnails.",
+      "kind": "part",
+      "name": "data-ok-lightbox-thumbnails-toggle"
+     },
+     {
+      "description": "The toolbar.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-lightbox-toolbar"
+     },
+     {
+      "description": "The video of a slide.",
+      "elements": [
+       "video"
+      ],
+      "kind": "part",
+      "name": "data-ok-lightbox-video"
+     },
+     {
+      "description": "The frame that zooms and pans a slide.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-lightbox-zoom"
+     },
+     {
+      "description": "The zoom in button.",
+      "kind": "part",
+      "name": "data-ok-lightbox-zoom-in"
+     },
+     {
+      "description": "The zoom out button.",
+      "kind": "part",
+      "name": "data-ok-lightbox-zoom-out"
+     },
+     {
+      "description": "Set by the runtime while a pull down gesture closes the lightbox.",
+      "kind": "state",
+      "name": "data-ok-pulling"
+     },
+     {
+      "description": "Set by the runtime once the lightbox is set up.",
+      "kind": "state",
+      "name": "data-ok-ready"
+     },
+     {
+      "description": "On a slide: the URL it shares.",
+      "kind": "value",
+      "name": "data-ok-share-url",
+      "value": "string"
+     },
+     {
+      "description": "Marks a custom slide that can zoom.",
+      "kind": "state",
+      "name": "data-ok-zoomable"
+     },
+     {
+      "description": "Set by the runtime while the slide is zoomed in.",
+      "kind": "state",
+      "name": "data-ok-zoomed"
+     },
+     {
+      "description": "Set by the runtime while the zoom animates.",
+      "kind": "state",
+      "name": "data-ok-zooming"
+     }
+    ],
+    "runtime": "lightbox"
+   },
+   "name": "Lightbox",
+   "react": {
+    "description": "A modal `<dialog data-ok-lightbox>` (or an inline carousel with `inline`) around a Carousel of the slides, with a toolbar (zoom, rotate, slideshow, fullscreen, download, share, captions and thumbnails toggles, counter, close), navigation buttons and thumbnails. Behavior is core's `createLightboxController`, which also writes the state into the DOM. Put `LightboxTrigger`s among the children to open it.",
+    "native": "HTMLElement",
+    "props": [
+     {
+      "default": "250",
+      "description": "Fade-in duration on open (ms).",
+      "name": "animationFade",
+      "type": "number"
+     },
+     {
+      "default": "500",
+      "description": "Slide change duration (ms).",
+      "name": "animationSwipe",
+      "type": "number"
+     },
+     {
+      "default": "500",
+      "description": "Zoom animation duration (ms).",
+      "name": "animationZoom",
+      "type": "number"
+     },
+     {
+      "description": "ref` and plugin refs).",
+      "name": "apiRef",
+      "type": "RefObject<LightboxApi | null>"
+     },
+     {
+      "description": "Captions start hidden (the captions toggle shows them).",
+      "name": "captionsHidden",
+      "type": "boolean"
+     },
+     {
+      "description": "Shows a toolbar button that hides and shows the captions.",
+      "name": "captionsShowToggle",
+      "type": "boolean"
+     },
+     {
+      "description": "Triggers (`LightboxTrigger`) and other content rendered before the lightbox.",
+      "name": "children",
+      "type": "ReactNode"
+     },
+     {
+      "description": "A click beside the image closes the lightbox.",
+      "name": "closeOnBackdropClick",
+      "type": "boolean"
+     },
+     {
+      "default": "true",
+      "description": "Escape closes; `false` turns it off.",
+      "name": "closeOnEscape",
+      "type": "boolean"
+     },
+     {
+      "description": "Pulling the slide down closes it.",
+      "name": "closeOnPullDown",
+      "type": "boolean"
+     },
+     {
+      "description": "Pulling the slide up closes it.",
+      "name": "closeOnPullUp",
+      "type": "boolean"
+     },
+     {
+      "default": "\" / \"",
+      "description": "Separator of the counter.",
+      "name": "counterSeparator",
+      "type": "string"
+     },
+     {
+      "description": "download`).",
+      "name": "customDownload",
+      "type": "((slide: LightboxSlide, index: number) => void)"
+     },
+     {
+      "description": "share`).",
+      "name": "customShare",
+      "type": "((slide: LightboxSlide, index: number) => void)"
+     },
+     {
+      "default": "0",
+      "description": "Initial slide when uncontrolled.",
+      "name": "defaultIndex",
+      "type": "number"
+     },
+     {
+      "default": "false",
+      "description": "Initial open state when uncontrolled.",
+      "name": "defaultOpen",
+      "type": "boolean"
+     },
+     {
+      "default": "3",
+      "description": "Lines a description shows before it is cut.",
+      "name": "descriptionMaxLines",
+      "type": "number"
+     },
+     {
+      "default": "start",
+      "description": "Alignment of the descriptions: `start`, `center` or `end`.",
+      "name": "descriptionTextAlign",
+      "type": "\"center\" | \"end\" | \"start\""
+     },
+     {
+      "description": "Hides the titles and descriptions.",
+      "name": "disableCaptions",
+      "type": "boolean"
+     },
+     {
+      "description": "Hides the fullscreen button.",
+      "name": "disableFullscreen",
+      "type": "boolean"
+     },
+     {
+      "description": "Hides the play / pause button.",
+      "name": "disableSlideshow",
+      "type": "boolean"
+     },
+     {
+      "description": "Swipes and drags don't change slides (buttons, keys and thumbnails still do).",
+      "name": "disableSwipeNavigation",
+      "type": "boolean"
+     },
+     {
+      "description": "Hides the thumbnails.",
+      "name": "disableThumbnails",
+      "type": "boolean"
+     },
+     {
+      "description": "Hides the counter (`1 / 5`).",
+      "name": "disableTotal",
+      "type": "boolean"
+     },
+     {
+      "description": "No zoom: hides the zoom buttons and ignores gestures.",
+      "name": "disableZoom",
+      "type": "boolean"
+     },
+     {
+      "default": "2",
+      "description": "Zoom steps a double click or double tap goes through before it zooms out.",
+      "name": "doubleClickMaxStops",
+      "type": "number"
+     },
+     {
+      "description": "Shows a download button for the current slide.",
+      "name": "download",
+      "type": "boolean"
+     },
+     {
+      "description": "The slides don't wrap around: the first and last slides stop.",
+      "name": "finite",
+      "type": "boolean"
+     },
+     {
+      "description": "Enters fullscreen when the lightbox opens.",
+      "name": "fullscreenAuto",
+      "type": "boolean"
+     },
+     {
+      "default": "contain",
+      "description": "How images fill their slide: `contain` (whole image) or `cover` (cropped to fill).",
+      "name": "imageFit",
+      "type": "\"contain\" | \"cover\""
+     },
+     {
+      "description": "Attributes of every image (or a function of the slide).",
+      "name": "imageProps",
+      "type": "ImgHTMLAttributes<HTMLImageElement> | ((slide: LightboxImageSlide) => ImgHTMLAttributes<HTMLImageElement>)"
+     },
+     {
+      "description": "Controlled current slide.",
+      "name": "index",
+      "type": "number"
+     },
+     {
+      "description": "Shown in the page (a carousel) instead of a modal overlay.",
+      "name": "inline",
+      "type": "boolean"
+     },
+     {
+      "default": "50",
+      "description": "Pixels an arrow key moves a zoomed image.",
+      "name": "keyboardMoveDistance",
+      "type": "number"
+     },
+     {
+      "description": "Texts and translations (`labels`).",
+      "name": "labels",
+      "type": "Partial<LightboxLabels>"
+     },
+     {
+      "default": "8",
+      "description": "Largest zoom of custom zoomable slides.",
+      "name": "maxZoom",
+      "type": "number"
+     },
+     {
+      "default": "1",
+      "description": "Largest zoom of an image: image pixels per screen pixel.",
+      "name": "maxZoomPixelRatio",
+      "type": "number"
+     },
+     {
+      "description": "Called when the captions are shown or hidden.",
+      "name": "onCaptionsChange",
+      "type": "((visible: boolean) => void)"
+     },
+     {
+      "description": "download`).",
+      "name": "onDownload",
+      "type": "((index: number) => void)"
+     },
+     {
+      "description": "Called when the lightbox enters or leaves full screen.",
+      "name": "onFullscreenChange",
+      "type": "((fullscreen: boolean) => void)"
+     },
+     {
+      "description": "view`).",
+      "name": "onIndexChange",
+      "type": "((index: number) => void)"
+     },
+     {
+      "description": "The lightbox asks to open or close: `\"escape\"`, `\"backdrop\"`, `\"pull\"` or `\"close\"`.",
+      "name": "onOpenChange",
+      "type": "((open: boolean, reason?: LightboxCloseReason | undefined) => void)"
+     },
+     {
+      "description": "Called when a slide is rotated, in degrees.",
+      "name": "onRotate",
+      "type": "((index: number, rotation: number) => void)"
+     },
+     {
+      "description": "share`).",
+      "name": "onShare",
+      "type": "((index: number) => void)"
+     },
+     {
+      "description": "click`).",
+      "name": "onSlideClick",
+      "type": "((index: number) => void)"
+     },
+     {
+      "description": "Called when the slideshow starts or pauses.",
+      "name": "onSlideshowChange",
+      "type": "((playing: boolean) => void)"
+     },
+     {
+      "description": "Called when the thumbnails are shown or hidden.",
+      "name": "onThumbnailsChange",
+      "type": "((visible: boolean) => void)"
+     },
+     {
+      "description": "Called when the zoom level changes.",
+      "name": "onZoomChange",
+      "type": "((zoom: number) => void)"
+     },
+     {
+      "description": "Controlled open state (ignored with `inline`).",
+      "name": "open",
+      "type": "boolean"
+     },
+     {
+      "default": "16",
+      "description": "Space around each slide (px or `%`).",
+      "name": "padding",
+      "type": "string | number"
+     },
+     {
+      "description": "Replaces parts of the lightbox (slides, buttons, icons) with your own render functions.",
+      "name": "render",
+      "type": "LightboxRender"
+     },
+     {
+      "description": "Shows buttons that rotate the current image by quarter turns.",
+      "name": "rotate",
+      "type": "boolean"
+     },
+     {
+      "default": "both",
+      "description": "Rotate buttons: `both`, `clockwise` or `counterclockwise`.",
+      "name": "rotateButtons",
+      "type": "\"both\" | \"clockwise\" | \"counterclockwise\""
+     },
+     {
+      "description": "The mouse wheel zooms without the Ctrl key.",
+      "name": "scrollToZoom",
+      "type": "boolean"
+     },
+     {
+      "description": "Shows a share button (Web Share API; hidden where the browser can't share).",
+      "name": "share",
+      "type": "boolean"
+     },
+     {
+      "description": "slide`).",
+      "name": "slides",
+      "required": true,
+      "type": "readonly LightboxSlide[]"
+     },
+     {
+      "description": "The slideshow starts when the lightbox opens (never with reduced motion).",
+      "name": "slideshowAutoplay",
+      "type": "boolean"
+     },
+     {
+      "default": "3000",
+      "description": "Slideshow: milliseconds per slide.",
+      "name": "slideshowDelay",
+      "type": "number"
+     },
+     {
+      "description": "Space between slides (px, or `%` of the slide area). Default `30%`.",
+      "name": "spacing",
+      "type": "string | number"
+     },
+     {
+      "default": "3",
+      "description": "Thumbnail border width (px).",
+      "name": "thumbnailsBorder",
+      "type": "number"
+     },
+     {
+      "default": "10",
+      "description": "Thumbnail corner radius (px).",
+      "name": "thumbnailsBorderRadius",
+      "type": "number"
+     },
+     {
+      "default": "16",
+      "description": "Space between thumbnails (px).",
+      "name": "thumbnailsGap",
+      "type": "number"
+     },
+     {
+      "default": "80",
+      "description": "Thumbnail height (px).",
+      "name": "thumbnailsHeight",
+      "type": "number"
+     },
+     {
+      "description": "Thumbnails start hidden (the thumbnails toggle shows them).",
+      "name": "thumbnailsHidden",
+      "type": "boolean"
+     },
+     {
+      "default": "contain",
+      "description": "How images fill their thumbnail: `contain` or `cover`.",
+      "name": "thumbnailsImageFit",
+      "type": "\"contain\" | \"cover\""
+     },
+     {
+      "default": "0",
+      "description": "Space inside a thumbnail (px).",
+      "name": "thumbnailsPadding",
+      "type": "number"
+     },
+     {
+      "default": "bottom",
+      "description": "Where the thumbnails sit: `bottom`, `top`, `start` or `end`.",
+      "name": "thumbnailsPosition",
+      "type": "\"bottom\" | \"end\" | \"start\" | \"top\""
+     },
+     {
+      "description": "Shows a toolbar button that hides and shows the thumbnails.",
+      "name": "thumbnailsShowToggle",
+      "type": "boolean"
+     },
+     {
+      "default": "true",
+      "description": "The thumbnails fade out at the edges of their track; `false` turns it off.",
+      "name": "thumbnailsVignette",
+      "type": "boolean"
+     },
+     {
+      "default": "120",
+      "description": "Thumbnail width (px).",
+      "name": "thumbnailsWidth",
+      "type": "number"
+     },
+     {
+      "description": "buttons`).",
+      "name": "toolbarButtons",
+      "type": "ReactNode"
+     },
+     {
+      "default": "{ controls: true, playsInline: true }",
+      "description": "Defaults of every video slide.",
+      "name": "video",
+      "type": "LightboxVideoOptions"
+     },
+     {
+      "default": "100",
+      "description": "Wheel distance for one zoom step (larger is slower).",
+      "name": "wheelZoomDistanceFactor",
+      "type": "number"
+     },
+     {
+      "default": "2",
+      "description": "Zoom factor of one zoom step.",
+      "name": "zoomInMultiplier",
+      "type": "number"
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-lightbox-trigger",
+    "description": "A thumbnail on the page that opens the lightbox.",
+    "elements": [
+     "button"
+    ]
+   },
+   "name": "LightboxTrigger",
+   "react": {
+    "description": "A button that opens the surrounding `Lightbox` at slide `index`; put the slide's thumbnail (an `img` with `alt`) inside so the button has a name.",
+    "native": "HTMLButtonElement",
+    "props": [
+     {
+      "default": "0",
+      "description": "Slide to open at.",
+      "name": "index",
+      "type": "number"
+     }
+    ]
+   }
+  }
+ ],
+ "format": 1,
+ "name": "lightbox",
+ "title": "Lightbox",
+ "types": [
+  {
+   "name": "LightboxCloseReason",
+   "type": "\"backdrop\" | \"close\" | \"escape\" | \"pull\""
+  },
+  {
+   "name": "LightboxHtmlCloseReason",
+   "type": "\"api\" | \"native\" | LightboxCloseReason"
+  },
+  {
+   "name": "LightboxSlide",
+   "type": "LightboxCustomSlide | LightboxImageSlide | LightboxVideoSlide"
+  }
+ ]
+}

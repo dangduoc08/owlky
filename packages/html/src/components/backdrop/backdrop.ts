@@ -1,9 +1,22 @@
 import { defineComponent } from "../../runtime/define.js";
-import type { ComponentInstance } from "../../runtime/types.js";
+import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
 
 export type BackdropCloseReason = "trigger" | "api";
 
+/** Events of this component (`ok:<name>:<event>` on the root). */
+export interface BackdropEvents {
+  /** Before the backdrop opens. Call `preventDefault()` to keep it closed. */
+  beforeopen: EventSpec<{ trigger: HTMLElement | null }, true>;
+  /** After the backdrop opened. */
+  open: EventSpec<{ trigger: HTMLElement | null }>;
+  /** Before the backdrop closes. Call `preventDefault()` to keep it open. */
+  beforeclose: EventSpec<{ reason: BackdropCloseReason }, true>;
+  /** After the backdrop closed. */
+  close: EventSpec<{ reason: BackdropCloseReason }>;
+}
+
 export interface BackdropInstance extends ComponentInstance {
+  /** Whether the backdrop is open. */
   readonly isOpen: boolean;
   /** Shows the backdrop. Returns `false` if `ok:backdrop:beforeopen` was prevented. */
   open(trigger?: HTMLElement | null): boolean;
@@ -27,7 +40,7 @@ const byId = (from: Element, id: string): Element | null =>
  * Events:   ok:backdrop:beforeopen (cancelable, detail.trigger), ok:backdrop:open,
  *           ok:backdrop:beforeclose (cancelable, detail.reason), ok:backdrop:close
  */
-export const backdrop = defineComponent<BackdropInstance>({
+export const backdrop = defineComponent<BackdropInstance, BackdropEvents>({
   name: "backdrop",
   selector: "[data-ok-backdrop]",
 

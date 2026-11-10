@@ -10,10 +10,42 @@ import {
 } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
 import { syncCustomProperties } from "../../runtime/style.js";
-import type { ComponentInstance } from "../../runtime/types.js";
+import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
 
 /** Why the lightbox closed: the controller's reasons, a trigger or the API. */
 export type LightboxHtmlCloseReason = LightboxCloseReason | "api" | "native";
+
+/** Events of this component (`ok:<name>:<event>` on the root). */
+export interface LightboxEvents {
+  /** Before the lightbox opens at `index`. Call `preventDefault()` to keep it closed. */
+  beforeopen: EventSpec<{ index: number; trigger: HTMLElement | null }, true>;
+  /** After the lightbox opened. */
+  open: EventSpec<{ index: number; trigger: HTMLElement | null }>;
+  /** Before the lightbox closes. Call `preventDefault()` to keep it open. */
+  beforeclose: EventSpec<{ reason: string }, true>;
+  /** After the lightbox closed, with what closed it. */
+  close: EventSpec<{ reason: string }>;
+  /** After another slide is shown. */
+  view: EventSpec<{ index: number }>;
+  /** After a slide was clicked. */
+  click: EventSpec<{ index: number }>;
+  /** After the zoom level changed. */
+  zoom: EventSpec<{ zoom: number }>;
+  /** After a slide was rotated, in degrees. */
+  rotate: EventSpec<{ index: number; rotation: number }>;
+  /** After the lightbox entered or left full screen. */
+  fullscreen: EventSpec<{ fullscreen: boolean }>;
+  /** After the slideshow started or paused. */
+  slideshow: EventSpec<{ playing: boolean }>;
+  /** After the captions were shown or hidden. */
+  captions: EventSpec<{ visible: boolean }>;
+  /** After the thumbnails were shown or hidden. */
+  thumbnails: EventSpec<{ visible: boolean }>;
+  /** Before the slide is downloaded. Call `preventDefault()` to download it yourself. */
+  download: EventSpec<{ index: number }, true>;
+  /** Before the slide is shared. Call `preventDefault()` to share it yourself. */
+  share: EventSpec<{ index: number }, true>;
+}
 
 /** The lightbox instance (`runtime.get(root, "lightbox")`). */
 export interface LightboxInstance extends ComponentInstance, Omit<LightboxApi, "open" | "close"> {
@@ -81,7 +113,7 @@ function readLabels(element: Element): Partial<LightboxLabels> {
  *          rotate { index, rotation }, fullscreen { fullscreen }, slideshow { playing },
  *          captions { visible }, thumbnails { visible }, download / share (cancelable, { index }).
  */
-export const lightbox = defineComponent<LightboxInstance>({
+export const lightbox = defineComponent<LightboxInstance, LightboxEvents>({
   name: "lightbox",
   selector: "[data-ok-lightbox]",
 

@@ -1,0 +1,558 @@
+{
+ "css": [
+  {
+   "dark": "#1C252E",
+   "light": "#FFFFFF",
+   "name": "--ok-bg-paper"
+  },
+  {
+   "description": "The main color of the element's `data-ok-color`.",
+   "name": "--ok-c-main"
+  },
+  {
+   "name": "--ok-duration-shorter",
+   "value": "200ms"
+  },
+  {
+   "name": "--ok-duration-shortest",
+   "value": "150ms"
+  },
+  {
+   "name": "--ok-easing-decelerate",
+   "value": "cubic-bezier(0, 0, 0.2, 1)"
+  },
+  {
+   "name": "--ok-easing-standard",
+   "value": "cubic-bezier(0.4, 0, 0.2, 1)"
+  },
+  {
+   "name": "--ok-font-family",
+   "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+  },
+  {
+   "name": "--ok-font-size-lg",
+   "value": "0.9375rem"
+  },
+  {
+   "name": "--ok-font-size-xl",
+   "value": "1rem"
+  },
+  {
+   "name": "--ok-font-size-xs",
+   "value": "0.75rem"
+  },
+  {
+   "name": "--ok-font-weight-regular",
+   "value": "400"
+  },
+  {
+   "name": "--ok-font-weight-semibold",
+   "value": "600"
+  },
+  {
+   "name": "--ok-palette-error-main",
+   "value": "#FF5630"
+  },
+  {
+   "name": "--ok-palette-error-main-channel",
+   "value": "255 86 48"
+  },
+  {
+   "dark": "#FFAC82",
+   "light": "#B71D18",
+   "name": "--ok-palette-error-text"
+  },
+  {
+   "name": "--ok-palette-grey-500-channel",
+   "value": "145 158 171"
+  },
+  {
+   "name": "--ok-palette-grey-700",
+   "value": "#454F5B"
+  },
+  {
+   "name": "--ok-radius-md",
+   "value": "8px"
+  },
+  {
+   "name": "--ok-spacing",
+   "value": "0.25rem"
+  },
+  {
+   "dark": "#637381",
+   "light": "#919EAB",
+   "name": "--ok-text-disabled"
+  },
+  {
+   "dark": "#FFFFFF",
+   "light": "#1C252E",
+   "name": "--ok-text-primary"
+  },
+  {
+   "dark": "#919EAB",
+   "light": "#637381",
+   "name": "--ok-text-secondary"
+  }
+ ],
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-select",
+    "events": [
+     {
+      "cancelable": true,
+      "description": "Before the value changes (`string[]` with `data-ok-multiple`). Call `preventDefault()` to keep the current one.",
+      "detail": "{ value: string | string[]; }",
+      "name": "ok:select:change"
+     },
+     {
+      "cancelable": false,
+      "description": "After the listbox closed, with what closed it.",
+      "detail": "{ reason: \"api\" | SelectCloseReason; }",
+      "name": "ok:select:close"
+     },
+     {
+      "cancelable": false,
+      "description": "After the listbox opened.",
+      "detail": "undefined",
+      "name": "ok:select:open"
+     }
+    ],
+    "methods": [
+     {
+      "description": "Closes the listbox. Returns `false` if `ok:popover:beforeclose` was prevented.",
+      "kind": "method",
+      "name": "close",
+      "type": "() => boolean"
+     },
+     {
+      "description": "Whether the listbox is open.",
+      "kind": "property",
+      "name": "isOpen",
+      "type": "boolean"
+     },
+     {
+      "description": "Opens the listbox. Returns `false` if `ok:popover:beforeopen` was prevented.",
+      "kind": "method",
+      "name": "open",
+      "type": "() => boolean"
+     },
+     {
+      "description": "Sets the value without emitting events.",
+      "kind": "method",
+      "name": "setValue",
+      "type": "(value: string | readonly string[]) => void"
+     },
+     {
+      "description": "The value: a string (`\"\"` = none), or a list with `data-ok-multiple`.",
+      "kind": "property",
+      "name": "value",
+      "type": "string | string[]"
+     }
+    ],
+    "options": [
+     {
+      "attr": "data-ok-variant",
+      "default": "outlined",
+      "description": "Outline, tinted fill or underline (default: the form control's).",
+      "kind": "style",
+      "name": "variant",
+      "values": [
+       "outlined",
+       "filled",
+       "standard"
+      ]
+     },
+     {
+      "attr": "data-ok-size",
+      "default": "medium",
+      "description": "Height 56 / 40px (outlined; default: the form control's).",
+      "kind": "style",
+      "name": "size",
+      "values": [
+       "medium",
+       "small"
+      ]
+     },
+     {
+      "attr": "data-ok-color",
+      "default": "default",
+      "description": "Focus color (`default` = text color; default: the form control's).",
+      "kind": "style",
+      "name": "color",
+      "values": [
+       "default",
+       "primary",
+       "secondary",
+       "info",
+       "success",
+       "warning",
+       "error"
+      ]
+     },
+     {
+      "attr": "data-ok-error",
+      "description": "Error colors; the trigger gets `aria-invalid`.",
+      "kind": "flag",
+      "name": "error"
+     },
+     {
+      "attr": "data-ok-full-width",
+      "description": "Stretch to the container width.",
+      "kind": "flag",
+      "name": "fullWidth"
+     },
+     {
+      "attr": "data-ok-multiple",
+      "description": "Several values: options toggle and the list stays open.",
+      "kind": "flag",
+      "name": "multiple"
+     },
+     {
+      "attr": "data-ok-auto-width",
+      "description": "The list takes its options' width instead of at least the field's.",
+      "kind": "flag",
+      "name": "autoWidth"
+     },
+     {
+      "attr": "data-ok-display-empty",
+      "description": "Show the empty value (its option, or the placeholder template) instead of nothing.",
+      "kind": "flag",
+      "name": "displayEmpty"
+     },
+     {
+      "attr": "aria-disabled",
+      "children": ":scope > [data-ok-select-display]",
+      "description": "`aria-disabled=\"true\"` on the trigger and `disabled` on the hidden input: it doesn't open.",
+      "kind": "native",
+      "name": "disabled"
+     },
+     {
+      "attr": "aria-readonly",
+      "children": ":scope > [data-ok-select-display]",
+      "description": "`aria-readonly=\"true\"` on the trigger: it doesn't open.",
+      "kind": "native",
+      "name": "readOnly"
+     },
+     {
+      "attr": "aria-selected",
+      "description": "Chosen option(s) (`value` / `defaultValue` + `onChange(value)`).",
+      "event": "ok:select:change",
+      "kind": "state",
+      "name": "value"
+     },
+     {
+      "attr": "aria-expanded",
+      "description": "Open state (`open` / `defaultOpen` + `onOpenChange(open, reason)`).",
+      "event": "ok:select:open",
+      "kind": "state",
+      "name": "open"
+     }
+    ],
+    "parts": [
+     {
+      "description": "HTML only: the template of the chip each value of a multiple select shows.",
+      "elements": [
+       "template"
+      ],
+      "kind": "part",
+      "name": "data-ok-select-chip"
+     },
+     {
+      "description": "The button that shows the value and opens the listbox.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-select-display"
+     },
+     {
+      "description": "The arrow icon.",
+      "elements": [
+       "svg"
+      ],
+      "kind": "part",
+      "name": "data-ok-select-icon"
+     },
+     {
+      "description": "The hidden input that carries the value in a form.",
+      "elements": [
+       "input"
+      ],
+      "kind": "part",
+      "name": "data-ok-select-input"
+     },
+     {
+      "description": "The list of options.",
+      "elements": [
+       "ul"
+      ],
+      "kind": "part",
+      "name": "data-ok-select-listbox"
+     },
+     {
+      "description": "A native `select`, with `data-ok-native`.",
+      "elements": [
+       "select"
+      ],
+      "kind": "part",
+      "name": "data-ok-select-native"
+     },
+     {
+      "description": "Opens the select whose `id` it names.",
+      "kind": "trigger",
+      "name": "data-ok-select-open",
+      "value": [
+       "id"
+      ]
+     },
+     {
+      "description": "The outline of the outlined variant.",
+      "elements": [
+       "fieldset"
+      ],
+      "kind": "part",
+      "name": "data-ok-select-outline"
+     },
+     {
+      "description": "HTML only: the template of what an empty value shows.",
+      "elements": [
+       "template"
+      ],
+      "kind": "part",
+      "name": "data-ok-select-placeholder"
+     }
+    ],
+    "runtime": "select"
+   },
+   "name": "Select",
+   "react": {
+    "description": "A field that opens a listbox of `MenuItem`s in a Popover (the WAI-ARIA select-only combobox; focus moves onto the options), or a native `<select>` with `native`. Put it in a `FormControl` with an `InputLabel`: it takes the FormControl's variant, size, color and states. `ref` goes to the field box.",
+    "native": "HTMLDivElement",
+    "props": [
+     {
+      "description": "The list takes its options' width instead of at least the field's.",
+      "name": "autoWidth",
+      "type": "boolean"
+     },
+     {
+      "description": "`MenuItem`s (and `ListSubheader`s), or `<option>`s with `native`.",
+      "name": "children",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Focus color; `default` is the text color. Default: the FormControl's, else `\"default\"`.",
+      "name": "color",
+      "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
+     },
+     {
+      "description": "Uncontrolled initial open state.",
+      "name": "defaultOpen",
+      "type": "boolean"
+     },
+     {
+      "default": "\"\"",
+      "description": "Uncontrolled initial value. (`[]` with `multiple`).",
+      "name": "defaultValue",
+      "type": "V"
+     },
+     {
+      "description": "Can't be opened or changed. Default: the FormControl's.",
+      "name": "disabled",
+      "type": "boolean"
+     },
+     {
+      "description": "Show the empty value (`renderValue(\"\")`, or the option whose value is `\"\"`).",
+      "name": "displayEmpty",
+      "type": "boolean"
+     },
+     {
+      "description": "Props of the trigger (`[role=combobox]`; MUI `SelectDisplayProps`).",
+      "name": "displayProps",
+      "type": "HTMLAttributes<HTMLDivElement>"
+     },
+     {
+      "description": "Error colors and `aria-invalid`. Default: the FormControl's.",
+      "name": "error",
+      "type": "boolean"
+     },
+     {
+      "description": "Stretch to the container width. Default: the FormControl's.",
+      "name": "fullWidth",
+      "type": "boolean"
+     },
+     {
+      "description": "`id` of the trigger (or of the native select). Default: generated.",
+      "name": "id",
+      "type": "string"
+     },
+     {
+      "description": "Props of the hidden input (or of the native select).",
+      "name": "inputProps",
+      "type": "InputHTMLAttributes<HTMLInputElement & HTMLSelectElement>"
+     },
+     {
+      "description": "Ref of the hidden input (or of the native select).",
+      "name": "inputRef",
+      "type": "Ref<HTMLInputElement & HTMLSelectElement>"
+     },
+     {
+      "description": "The outline's notch text: the same text as the InputLabel (outlined).",
+      "name": "label",
+      "type": "ReactNode"
+     },
+     {
+      "description": "`id` of the InputLabel that names the select.",
+      "name": "labelId",
+      "type": "string"
+     },
+     {
+      "description": "Props of the menu (placement, paper, list).",
+      "name": "menuProps",
+      "type": "SelectMenuProps"
+     },
+     {
+      "description": "Several values: options toggle and the list stays open.",
+      "name": "multiple",
+      "type": "boolean"
+     },
+     {
+      "description": "Name of the form value (the hidden input, or the native select).",
+      "name": "name",
+      "type": "string"
+     },
+     {
+      "description": "A native `<select>` (pass `<option>` elements) instead of the listbox.",
+      "name": "native",
+      "type": "boolean"
+     },
+     {
+      "description": "Called with the new value (the options' own values, numbers stay numbers).",
+      "name": "onChange",
+      "type": "((value: V) => void)"
+     },
+     {
+      "description": "Called when the select asks to open or close, with the reason of a close.",
+      "name": "onOpenChange",
+      "type": "((open: boolean, reason?: SelectCloseReason | undefined) => void)"
+     },
+     {
+      "description": "Controlled open state.",
+      "name": "open",
+      "type": "boolean"
+     },
+     {
+      "description": "Can't be opened (the value still shows).",
+      "name": "readOnly",
+      "type": "boolean"
+     },
+     {
+      "description": "What the field shows for the value. Default: the selected options' content.",
+      "name": "renderValue",
+      "type": "((value: V) => ReactNode)"
+     },
+     {
+      "description": "Required in a form. Default: the FormControl's.",
+      "name": "required",
+      "type": "boolean"
+     },
+     {
+      "description": "`medium` or `small`. Default: the FormControl's, else `\"medium\"`.",
+      "name": "size",
+      "type": "\"medium\" | \"small\""
+     },
+     {
+      "description": "Controlled value: one value (`\"\"` = none) or, with `multiple`, a list.",
+      "name": "value",
+      "type": "V"
+     },
+     {
+      "description": "Outline, tinted fill or underline. Default: the FormControl's, else `\"outlined\"`.",
+      "name": "variant",
+      "type": "\"filled\" | \"outlined\" | \"standard\""
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-input-label",
+    "options": [
+     {
+      "attr": "data-ok-shrink",
+      "description": "Keep the label above the field even when it is empty.",
+      "kind": "flag",
+      "name": "shrink"
+     },
+     {
+      "attr": "data-ok-disable-animation",
+      "description": "The label moves without a transition.",
+      "kind": "flag",
+      "name": "disableAnimation"
+     }
+    ]
+   },
+   "name": "InputLabel",
+   "react": {
+    "description": "The label of a Select in a FormControl: a FormLabel that floats in the field (resting inside it, above it with focus or a value). Give it an `id` and pass it to the Select's `labelId`.",
+    "native": "HTMLElement",
+    "props": [
+     {
+      "description": "Color when focused; default: the FormControl's.",
+      "name": "color",
+      "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
+     },
+     {
+      "description": "The element: `label` (default; pair it with `htmlFor`), `legend` in a fieldset, or `span`.",
+      "name": "component",
+      "type": "ElementType"
+     },
+     {
+      "description": "The label moves without a transition.",
+      "name": "disableAnimation",
+      "type": "boolean"
+     },
+     {
+      "description": "Disabled colors for this part only (the FormControl's reach it through CSS).",
+      "name": "disabled",
+      "type": "boolean"
+     },
+     {
+      "description": "Error colors for this part only.",
+      "name": "error",
+      "type": "boolean"
+     },
+     {
+      "description": "Marks the part of an input that has a value (no style).",
+      "name": "filled",
+      "type": "boolean"
+     },
+     {
+      "description": "Focused colors for this part only.",
+      "name": "focused",
+      "type": "boolean"
+     },
+     {
+      "description": "Marks this part as required (FormLabel: shows the asterisk).",
+      "name": "required",
+      "type": "boolean"
+     },
+     {
+      "description": "Keep the label above the field even when it is empty.",
+      "name": "shrink",
+      "type": "boolean"
+     }
+    ]
+   }
+  }
+ ],
+ "format": 1,
+ "name": "select",
+ "title": "Select",
+ "types": [
+  {
+   "name": "SelectCloseReason",
+   "type": "\"backdrop\" | \"escape\" | \"select\" | \"tab\" | \"toggle\""
+  }
+ ]
+}

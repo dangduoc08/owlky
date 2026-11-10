@@ -14,12 +14,12 @@ export type { KeyboardRow, PropRow } from "./tables-data.js";
  * `manifestOptionSchema()` (`./manifest.ts`).
  */
 
-const Code = ({ children }: { children: ReactNode }) => (
+export const Code = ({ children }: { children: ReactNode }) => (
   <code className="rounded bg-neutral px-1 py-0.5 font-mono text-[0.8125rem]">{children}</code>
 );
 
 /** Text with `inline code` (schema descriptions use backticks). */
-const Rich = ({ text }: { text: string }) => (
+export const Rich = ({ text }: { text: string }) => (
   <>
     {text.split("`").map((part, i) =>
       // biome-ignore lint/suspicious/noArrayIndexKey: static text fragments.
@@ -29,7 +29,7 @@ const Rich = ({ text }: { text: string }) => (
 );
 
 /** A horizontally scrollable, keyboard-reachable table frame (axe scrollable-region-focusable). */
-function TableFrame({
+export function TableFrame({
   label,
   wide = true,
   children,
@@ -55,8 +55,9 @@ function TableFrame({
   );
 }
 
-const th = "border-0 border-b border-solid border-divider bg-neutral px-3 py-2 font-semibold";
-const td = "border-0 border-b border-solid border-divider px-3 py-2 align-top";
+export const th =
+  "border-0 border-b border-solid border-divider bg-neutral px-3 py-2 font-semibold";
+export const td = "border-0 border-b border-solid border-divider px-3 py-2 align-top";
 
 function htmlOf(schema: OptionSchema, spec: OptionSpec): ReactNode {
   const where = spec.children ? ` on each ${spec.children.replace(":scope > ", "")}` : "";

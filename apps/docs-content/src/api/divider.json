@@ -1,0 +1,139 @@
+{
+ "css": [
+  {
+   "name": "--ok-divider",
+   "value": "color-mix(in srgb, #919EAB 20%, transparent)"
+  },
+  {
+   "name": "--ok-font-family",
+   "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+  },
+  {
+   "name": "--ok-spacing",
+   "value": "0.25rem"
+  },
+  {
+   "dark": "#919EAB",
+   "light": "#637381",
+   "name": "--ok-text-secondary"
+  },
+  {
+   "name": "--ok-typography-body2-font-size",
+   "value": "0.875rem"
+  },
+  {
+   "name": "--ok-typography-body2-line-height",
+   "value": "1.5714"
+  }
+ ],
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-divider",
+    "options": [
+     {
+      "attr": "data-ok-variant",
+      "default": "fullWidth",
+      "description": "`inset` starts 72px in (after an avatar or icon); `middle` leaves 16px on both sides.",
+      "kind": "style",
+      "name": "variant",
+      "values": [
+       "fullWidth",
+       "inset",
+       "middle"
+      ]
+     },
+     {
+      "attr": "data-ok-orientation",
+      "default": "horizontal",
+      "description": "A line across, or a line up and down (also `aria-orientation`).",
+      "kind": "style",
+      "name": "orientation",
+      "values": [
+       "horizontal",
+       "vertical"
+      ]
+     },
+     {
+      "attr": "data-ok-text-align",
+      "default": "center",
+      "description": "With text: where the text sits on the line.",
+      "kind": "style",
+      "name": "textAlign",
+      "optional": true,
+      "values": [
+       "center",
+       "left",
+       "right"
+      ]
+     },
+     {
+      "attr": "data-ok-flex-item",
+      "description": "Vertical, in a flex row: stretch to the row's height.",
+      "kind": "flag",
+      "name": "flexItem"
+     },
+     {
+      "attr": "data-ok-absolute",
+      "description": "Pinned to the bottom of the positioned parent.",
+      "kind": "flag",
+      "name": "absolute"
+     }
+    ],
+    "parts": [
+     {
+      "description": "The text in the middle of the divider.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-divider-text"
+     }
+    ]
+   },
+   "name": "Divider",
+   "react": {
+    "description": "An `<hr>` (a native separator); with children, a `div role=\"separator\"` with the text between two lines.",
+    "native": "HTMLElement",
+    "props": [
+     {
+      "description": "Pinned to the bottom of the positioned parent.",
+      "name": "absolute",
+      "type": "boolean"
+     },
+     {
+      "description": "Text (or a chip) on the line.",
+      "name": "children",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Vertical, in a flex row: stretch to the row's height.",
+      "name": "flexItem",
+      "type": "boolean"
+     },
+     {
+      "default": "\"horizontal\"",
+      "description": "A line across, or a line up and down (also `aria-orientation`).",
+      "name": "orientation",
+      "type": "\"horizontal\" | \"vertical\""
+     },
+     {
+      "default": "\"center\"",
+      "description": "With text: where the text sits.",
+      "name": "textAlign",
+      "type": "\"center\" | \"left\" | \"right\""
+     },
+     {
+      "default": "\"fullWidth\"",
+      "description": "`inset` starts 72px in (after an avatar or icon); `middle` leaves 16px on both sides.",
+      "name": "variant",
+      "type": "\"fullWidth\" | \"inset\" | \"middle\""
+     }
+    ]
+   }
+  }
+ ],
+ "format": 1,
+ "name": "divider",
+ "title": "Divider"
+}

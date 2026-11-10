@@ -1,0 +1,133 @@
+{
+ "css": [
+  {
+   "name": "--ok-font-family",
+   "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+  },
+  {
+   "name": "--ok-spacing",
+   "value": "0.25rem"
+  },
+  {
+   "dark": "#637381",
+   "light": "#919EAB",
+   "name": "--ok-text-disabled"
+  },
+  {
+   "dark": "#FFFFFF",
+   "light": "#1C252E",
+   "name": "--ok-text-primary"
+  },
+  {
+   "name": "--ok-typography-body2-font-size",
+   "value": "0.875rem"
+  },
+  {
+   "name": "--ok-typography-body2-font-weight",
+   "value": "400"
+  },
+  {
+   "name": "--ok-typography-body2-line-height",
+   "value": "1.5714"
+  }
+ ],
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-form-control-label",
+    "options": [
+     {
+      "attr": "data-ok-label-placement",
+      "default": "end",
+      "description": "Where the text sits around the control.",
+      "kind": "style",
+      "name": "labelPlacement",
+      "values": [
+       "end",
+       "start",
+       "top",
+       "bottom"
+      ]
+     },
+     {
+      "attr": "data-ok-required",
+      "description": "Shows an asterisk; the control gets `required`.",
+      "kind": "flag",
+      "name": "required"
+     }
+    ],
+    "parts": [
+     {
+      "description": "The asterisk of a required control's label.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-form-control-label-asterisk"
+     },
+     {
+      "description": "The label text.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-form-control-label-text"
+     }
+    ]
+   },
+   "name": "FormControlLabel",
+   "react": {
+    "description": "A `<label>` around a control and its text, so clicking the text toggles the control and names it. Server-safe (no hooks).",
+    "native": "HTMLLabelElement",
+    "props": [
+     {
+      "description": "Passed to the control.",
+      "name": "checked",
+      "type": "boolean"
+     },
+     {
+      "description": "The control: a `Checkbox` or a `Switch`.",
+      "name": "control",
+      "required": true,
+      "type": "ReactElement<unknown, string | JSXElementConstructor<any>>"
+     },
+     {
+      "description": "Passed to the control; the text turns grey.",
+      "name": "disabled",
+      "type": "boolean"
+     },
+     {
+      "description": "The visible text (or element) that names the control.",
+      "name": "label",
+      "required": true,
+      "type": "ReactNode"
+     },
+     {
+      "default": "\"end\"",
+      "description": "Where the text sits around the control.",
+      "name": "labelPlacement",
+      "type": "\"bottom\" | \"end\" | \"start\" | \"top\""
+     },
+     {
+      "description": "Passed to the control.",
+      "name": "onChange",
+      "type": "((checked: boolean) => void)"
+     },
+     {
+      "description": "Shows an asterisk and passes `required` to the control.",
+      "name": "required",
+      "type": "boolean"
+     },
+     {
+      "description": "Passed to the control.",
+      "name": "value",
+      "type": "string"
+     }
+    ]
+   }
+  }
+ ],
+ "format": 1,
+ "name": "form-control-label",
+ "title": "Form control label"
+}

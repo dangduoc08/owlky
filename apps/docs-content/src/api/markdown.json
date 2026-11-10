@@ -1,0 +1,662 @@
+{
+ "css": [
+  {
+   "dark": "#28323D",
+   "light": "#F4F6F8",
+   "name": "--ok-bg-neutral"
+  },
+  {
+   "name": "--ok-divider",
+   "value": "color-mix(in srgb, #919EAB 20%, transparent)"
+  },
+  {
+   "name": "--ok-font-family-mono",
+   "value": "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace"
+  },
+  {
+   "name": "--ok-font-weight-bold",
+   "value": "700"
+  },
+  {
+   "name": "--ok-palette-common-white",
+   "value": "#FFFFFF"
+  },
+  {
+   "name": "--ok-palette-error-light",
+   "value": "#FFAC82"
+  },
+  {
+   "name": "--ok-palette-grey-500",
+   "value": "#919EAB"
+  },
+  {
+   "name": "--ok-palette-grey-500-channel",
+   "value": "145 158 171"
+  },
+  {
+   "name": "--ok-palette-grey-900",
+   "value": "#141A21"
+  },
+  {
+   "name": "--ok-palette-info-light",
+   "value": "#61F3F3"
+  },
+  {
+   "name": "--ok-palette-primary-contrast-text",
+   "value": "#FFFFFF"
+  },
+  {
+   "name": "--ok-palette-primary-main",
+   "value": "#00A76F"
+  },
+  {
+   "name": "--ok-palette-secondary-light",
+   "value": "#C684FF"
+  },
+  {
+   "name": "--ok-palette-success-light",
+   "value": "#77ED8B"
+  },
+  {
+   "name": "--ok-palette-warning-light",
+   "value": "#FFD666"
+  },
+  {
+   "name": "--ok-radius-md",
+   "value": "8px"
+  },
+  {
+   "name": "--ok-radius-xl",
+   "value": "16px"
+  },
+  {
+   "name": "--ok-radius-xs",
+   "value": "4px"
+  },
+  {
+   "name": "--ok-spacing",
+   "value": "0.25rem"
+  },
+  {
+   "dark": "#637381",
+   "light": "#919EAB",
+   "name": "--ok-text-disabled"
+  },
+  {
+   "dark": "#FFFFFF",
+   "light": "#1C252E",
+   "name": "--ok-text-primary"
+  },
+  {
+   "dark": "#919EAB",
+   "light": "#637381",
+   "name": "--ok-text-secondary"
+  },
+  {
+   "name": "--ok-typography-body1-font-family",
+   "value": "var(--ok-font-family)"
+  },
+  {
+   "name": "--ok-typography-body1-font-size",
+   "value": "1rem"
+  },
+  {
+   "name": "--ok-typography-body1-line-height",
+   "value": "1.5"
+  },
+  {
+   "name": "--ok-typography-body2-font-size",
+   "value": "0.875rem"
+  },
+  {
+   "name": "--ok-typography-body2-line-height",
+   "value": "1.5714"
+  },
+  {
+   "name": "--ok-typography-h1-font-family",
+   "value": "var(--ok-font-family-secondary)"
+  },
+  {
+   "name": "--ok-typography-h1-font-size",
+   "value": "2.5rem"
+  },
+  {
+   "name": "--ok-typography-h1-font-weight",
+   "value": "800"
+  },
+  {
+   "name": "--ok-typography-h1-line-height",
+   "value": "1.25"
+  },
+  {
+   "name": "--ok-typography-h2-font-family",
+   "value": "var(--ok-font-family-secondary)"
+  },
+  {
+   "name": "--ok-typography-h2-font-size",
+   "value": "2rem"
+  },
+  {
+   "name": "--ok-typography-h2-font-weight",
+   "value": "800"
+  },
+  {
+   "name": "--ok-typography-h2-line-height",
+   "value": "1.3333"
+  },
+  {
+   "name": "--ok-typography-h3-font-family",
+   "value": "var(--ok-font-family-secondary)"
+  },
+  {
+   "name": "--ok-typography-h3-font-size",
+   "value": "1.5rem"
+  },
+  {
+   "name": "--ok-typography-h3-font-weight",
+   "value": "700"
+  },
+  {
+   "name": "--ok-typography-h3-line-height",
+   "value": "1.5"
+  },
+  {
+   "name": "--ok-typography-h4-font-family",
+   "value": "var(--ok-font-family)"
+  },
+  {
+   "name": "--ok-typography-h4-font-size",
+   "value": "1.25rem"
+  },
+  {
+   "name": "--ok-typography-h4-font-weight",
+   "value": "700"
+  },
+  {
+   "name": "--ok-typography-h4-line-height",
+   "value": "1.5"
+  },
+  {
+   "name": "--ok-typography-h5-font-family",
+   "value": "var(--ok-font-family)"
+  },
+  {
+   "name": "--ok-typography-h5-font-size",
+   "value": "1.125rem"
+  },
+  {
+   "name": "--ok-typography-h5-font-weight",
+   "value": "700"
+  },
+  {
+   "name": "--ok-typography-h5-line-height",
+   "value": "1.5"
+  },
+  {
+   "name": "--ok-typography-h6-font-family",
+   "value": "var(--ok-font-family)"
+  },
+  {
+   "name": "--ok-typography-h6-font-size",
+   "value": "1.0625rem"
+  },
+  {
+   "name": "--ok-typography-h6-font-weight",
+   "value": "600"
+  },
+  {
+   "name": "--ok-typography-h6-line-height",
+   "value": "1.5556"
+  }
+ ],
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-markdown",
+    "events": [
+     {
+      "cancelable": false,
+      "description": "After rendering failed (a plugin threw).",
+      "detail": "{ error: unknown; }",
+      "name": "ok:markdown:error"
+     },
+     {
+      "cancelable": false,
+      "description": "After the Markdown was rendered.",
+      "detail": "{ value: string; }",
+      "name": "ok:markdown:render"
+     }
+    ],
+    "methods": [
+     {
+      "description": "Renders again from the current source and option attributes.",
+      "kind": "method",
+      "name": "render",
+      "type": "() => void"
+     },
+     {
+      "description": "Replaces the Markdown and renders it (emits `ok:markdown:render`).",
+      "kind": "method",
+      "name": "setValue",
+      "type": "(markdown: string) => void"
+     },
+     {
+      "description": "The Markdown source (the source element's text).",
+      "kind": "property",
+      "name": "value",
+      "type": "string"
+     }
+    ],
+    "options": [
+     {
+      "attr": "data-ok-gfm",
+      "default": true,
+      "description": "GitHub Flavored Markdown: tables, task lists, strikethrough, autolinks and footnotes (`false`: CommonMark only).",
+      "kind": "behavior",
+      "name": "gfm"
+     },
+     {
+      "attr": "data-ok-raw-html",
+      "description": "HTML in the Markdown is rendered, limited to an allow list (sanitized). Off: it shows as text.",
+      "kind": "flag",
+      "name": "rawHtml"
+     },
+     {
+      "attr": "data-ok-skip-html",
+      "description": "HTML in the Markdown is dropped.",
+      "kind": "flag",
+      "name": "skipHtml"
+     },
+     {
+      "attr": "data-ok-unwrap-disallowed",
+      "description": "Elements removed by the element filters leave their children in place.",
+      "kind": "flag",
+      "name": "unwrapDisallowed"
+     },
+     {
+      "attr": "data-ok-external-links",
+      "description": "Absolute `http(s)` links open in a new tab (`target=\"_blank\"`, `rel=\"noopener noreferrer\"`).",
+      "kind": "flag",
+      "name": "externalLinks"
+     },
+     {
+      "attr": "data-ok-images",
+      "default": "native",
+      "description": "`image`: pictures render as Image components (lazy, placeholder, effect). `native`: plain `img`.",
+      "kind": "style",
+      "name": "images",
+      "optional": true,
+      "values": [
+       "native",
+       "image"
+      ]
+     },
+     {
+      "attr": "data-ok-images-ratio",
+      "default": "16/9",
+      "description": "With `images` `image`: the aspect ratio the pictures are cropped to (default: their own).",
+      "kind": "style",
+      "name": "imageRatio",
+      "optional": true,
+      "values": [
+       "1/1",
+       "2/3",
+       "3/2",
+       "3/4",
+       "4/3",
+       "4/6",
+       "6/4",
+       "9/16",
+       "16/9",
+       "9/21",
+       "21/9"
+      ]
+     },
+     {
+      "attr": "data-ok-markdown-source",
+      "description": "The Markdown: React `children`; HTML the text of the source element.",
+      "event": "ok:markdown:render",
+      "kind": "state",
+      "name": "value"
+     }
+    ],
+    "parts": [
+     {
+      "description": "Only these elements are rendered, separated by spaces.",
+      "kind": "value",
+      "name": "data-ok-allowed-elements",
+      "value": "string"
+     },
+     {
+      "description": "These elements are removed, separated by spaces.",
+      "kind": "value",
+      "name": "data-ok-disallowed-elements",
+      "value": "string"
+     }
+    ],
+    "runtime": "markdown"
+   },
+   "name": "Markdown",
+   "react": {
+    "description": "Renders Markdown (GitHub Flavored by default) as React elements: no `dangerouslySetInnerHTML`, unsafe URLs removed, raw HTML shown as text unless `rawHtml` (then sanitized). Synchronous: plugins must be too (else `MarkdownAsync` or `MarkdownHooks`).",
+    "native": "HTMLDivElement",
+    "props": [
+     {
+      "description": "Runs after `allowedElements` / `disallowedElements`: `false` removes the element.",
+      "name": "allowElement",
+      "type": "AllowElement | null"
+     },
+     {
+      "description": "Only these tag names stay (not with `disallowedElements`).",
+      "name": "allowedElements",
+      "type": "readonly string[] | null"
+     },
+     {
+      "description": "The Markdown source.",
+      "name": "children",
+      "type": "string | null"
+     },
+     {
+      "description": "Replaces elements by tag name.",
+      "name": "components",
+      "type": "Components | null"
+     },
+     {
+      "description": "These tag names are removed (not with `allowedElements`).",
+      "name": "disallowedElements",
+      "type": "readonly string[] | null"
+     },
+     {
+      "description": "Absolute `http(s)` links open in a new tab (`target=\"_blank\"`, `rel=\"noopener noreferrer\"`).",
+      "name": "externalLinks",
+      "type": "boolean | null"
+     },
+     {
+      "description": "GitHub Flavored Markdown: tables, task lists, strikethrough, autolinks, footnotes (default on).",
+      "name": "gfm",
+      "type": "boolean | null"
+     },
+     {
+      "description": "Syntax highlighting of fenced code with a language.",
+      "name": "highlighter",
+      "type": "MarkdownHighlighter | null"
+     },
+     {
+      "description": "With `images=\"image\"`: the aspect ratio pictures are cropped to. Default: their own.",
+      "name": "imageRatio",
+      "type": "\"1/1\" | \"16/9\" | \"2/3\" | \"21/9\" | \"3/2\" | \"3/4\" | \"4/3\" | \"4/6\" | \"6/4\" | \"9/16\" | \"9/21\""
+     },
+     {
+      "default": "\"native\"",
+      "description": "`\"image\"`: pictures render as `Image` (lazy, placeholder, effect).",
+      "name": "images",
+      "type": "\"image\" | \"native\""
+     },
+     {
+      "description": "HTML in the Markdown is parsed (rehype-raw), then sanitized with `sanitizeSchema`.",
+      "name": "rawHtml",
+      "type": "boolean | null"
+     },
+     {
+      "description": "rehype plugins (HTML syntax tree), after raw HTML and its sanitizer.",
+      "name": "rehypePlugins",
+      "type": "PluggableList | null"
+     },
+     {
+      "description": "remark plugins (Markdown syntax tree), after the GitHub Flavored Markdown one.",
+      "name": "remarkPlugins",
+      "type": "PluggableList | null"
+     },
+     {
+      "description": "Options of remark-rehype (`allowDangerousHtml` is always on: raw HTML is handled here).",
+      "name": "remarkRehypeOptions",
+      "type": "Readonly<Options> | null"
+     },
+     {
+      "description": "Allow list used for raw HTML (default `markdownSanitizeSchema`, GitHub's plus a few).",
+      "name": "sanitizeSchema",
+      "type": "Schema | null"
+     },
+     {
+      "description": "HTML in the Markdown is dropped (by default it shows as text).",
+      "name": "skipHtml",
+      "type": "boolean | null"
+     },
+     {
+      "description": "Removed elements leave their children in place.",
+      "name": "unwrapDisallowed",
+      "type": "boolean | null"
+     },
+     {
+      "description": "URL rewriting (default `defaultUrlTransform`: safe protocols only).",
+      "name": "urlTransform",
+      "type": "UrlTransform | null"
+     }
+    ]
+   }
+  },
+  {
+   "name": "MarkdownAsync",
+   "react": {
+    "description": "Markdown with asynchronous plugins, for servers (an async component).",
+    "native": "HTMLElement",
+    "props": [
+     {
+      "description": "Runs after `allowedElements` / `disallowedElements`: `false` removes the element.",
+      "name": "allowElement",
+      "type": "AllowElement | null"
+     },
+     {
+      "description": "Only these tag names stay (not with `disallowedElements`).",
+      "name": "allowedElements",
+      "type": "readonly string[] | null"
+     },
+     {
+      "description": "The Markdown source.",
+      "name": "children",
+      "type": "string | null"
+     },
+     {
+      "description": "Replaces elements by tag name.",
+      "name": "components",
+      "type": "Components | null"
+     },
+     {
+      "description": "These tag names are removed (not with `allowedElements`).",
+      "name": "disallowedElements",
+      "type": "readonly string[] | null"
+     },
+     {
+      "description": "Absolute `http(s)` links open in a new tab (`target=\"_blank\"`, `rel=\"noopener noreferrer\"`).",
+      "name": "externalLinks",
+      "type": "boolean | null"
+     },
+     {
+      "description": "GitHub Flavored Markdown: tables, task lists, strikethrough, autolinks, footnotes (default on).",
+      "name": "gfm",
+      "type": "boolean | null"
+     },
+     {
+      "description": "Syntax highlighting of fenced code with a language.",
+      "name": "highlighter",
+      "type": "MarkdownHighlighter | null"
+     },
+     {
+      "description": "With `images=\"image\"`: the aspect ratio pictures are cropped to. Default: their own.",
+      "name": "imageRatio",
+      "type": "\"1/1\" | \"16/9\" | \"2/3\" | \"21/9\" | \"3/2\" | \"3/4\" | \"4/3\" | \"4/6\" | \"6/4\" | \"9/16\" | \"9/21\""
+     },
+     {
+      "default": "\"native\"",
+      "description": "`\"image\"`: pictures render as `Image` (lazy, placeholder, effect).",
+      "name": "images",
+      "type": "\"image\" | \"native\""
+     },
+     {
+      "description": "HTML in the Markdown is parsed (rehype-raw), then sanitized with `sanitizeSchema`.",
+      "name": "rawHtml",
+      "type": "boolean | null"
+     },
+     {
+      "description": "rehype plugins (HTML syntax tree), after raw HTML and its sanitizer.",
+      "name": "rehypePlugins",
+      "type": "PluggableList | null"
+     },
+     {
+      "description": "remark plugins (Markdown syntax tree), after the GitHub Flavored Markdown one.",
+      "name": "remarkPlugins",
+      "type": "PluggableList | null"
+     },
+     {
+      "description": "Options of remark-rehype (`allowDangerousHtml` is always on: raw HTML is handled here).",
+      "name": "remarkRehypeOptions",
+      "type": "Readonly<Options> | null"
+     },
+     {
+      "description": "Allow list used for raw HTML (default `markdownSanitizeSchema`, GitHub's plus a few).",
+      "name": "sanitizeSchema",
+      "type": "Schema | null"
+     },
+     {
+      "description": "HTML in the Markdown is dropped (by default it shows as text).",
+      "name": "skipHtml",
+      "type": "boolean | null"
+     },
+     {
+      "description": "Removed elements leave their children in place.",
+      "name": "unwrapDisallowed",
+      "type": "boolean | null"
+     },
+     {
+      "description": "URL rewriting (default `defaultUrlTransform`: safe protocols only).",
+      "name": "urlTransform",
+      "type": "UrlTransform | null"
+     }
+    ]
+   }
+  },
+  {
+   "name": "MarkdownHooks",
+   "react": {
+    "description": "Markdown with asynchronous plugins in the browser: processes in an effect, shows `fallback` meanwhile (react-markdown's `MarkdownHooks`).",
+    "native": "HTMLDivElement",
+    "props": [
+     {
+      "description": "Runs after `allowedElements` / `disallowedElements`: `false` removes the element.",
+      "name": "allowElement",
+      "type": "AllowElement | null"
+     },
+     {
+      "description": "Only these tag names stay (not with `disallowedElements`).",
+      "name": "allowedElements",
+      "type": "readonly string[] | null"
+     },
+     {
+      "description": "The Markdown source.",
+      "name": "children",
+      "type": "string | null"
+     },
+     {
+      "description": "Replaces elements by tag name.",
+      "name": "components",
+      "type": "Components | null"
+     },
+     {
+      "description": "These tag names are removed (not with `allowedElements`).",
+      "name": "disallowedElements",
+      "type": "readonly string[] | null"
+     },
+     {
+      "description": "Absolute `http(s)` links open in a new tab (`target=\"_blank\"`, `rel=\"noopener noreferrer\"`).",
+      "name": "externalLinks",
+      "type": "boolean | null"
+     },
+     {
+      "description": "Shown while the Markdown is processed.",
+      "name": "fallback",
+      "type": "ReactNode"
+     },
+     {
+      "description": "GitHub Flavored Markdown: tables, task lists, strikethrough, autolinks, footnotes (default on).",
+      "name": "gfm",
+      "type": "boolean | null"
+     },
+     {
+      "description": "Syntax highlighting of fenced code with a language.",
+      "name": "highlighter",
+      "type": "MarkdownHighlighter | null"
+     },
+     {
+      "description": "With `images=\"image\"`: the aspect ratio pictures are cropped to. Default: their own.",
+      "name": "imageRatio",
+      "type": "\"1/1\" | \"16/9\" | \"2/3\" | \"21/9\" | \"3/2\" | \"3/4\" | \"4/3\" | \"4/6\" | \"6/4\" | \"9/16\" | \"9/21\""
+     },
+     {
+      "default": "\"native\"",
+      "description": "`\"image\"`: pictures render as `Image` (lazy, placeholder, effect).",
+      "name": "images",
+      "type": "\"image\" | \"native\""
+     },
+     {
+      "description": "Called when processing fails (the fallback stays).",
+      "name": "onError",
+      "type": "((error: unknown) => void)"
+     },
+     {
+      "description": "HTML in the Markdown is parsed (rehype-raw), then sanitized with `sanitizeSchema`.",
+      "name": "rawHtml",
+      "type": "boolean | null"
+     },
+     {
+      "description": "rehype plugins (HTML syntax tree), after raw HTML and its sanitizer.",
+      "name": "rehypePlugins",
+      "type": "PluggableList | null"
+     },
+     {
+      "description": "remark plugins (Markdown syntax tree), after the GitHub Flavored Markdown one.",
+      "name": "remarkPlugins",
+      "type": "PluggableList | null"
+     },
+     {
+      "description": "Options of remark-rehype (`allowDangerousHtml` is always on: raw HTML is handled here).",
+      "name": "remarkRehypeOptions",
+      "type": "Readonly<Options> | null"
+     },
+     {
+      "description": "Allow list used for raw HTML (default `markdownSanitizeSchema`, GitHub's plus a few).",
+      "name": "sanitizeSchema",
+      "type": "Schema | null"
+     },
+     {
+      "description": "HTML in the Markdown is dropped (by default it shows as text).",
+      "name": "skipHtml",
+      "type": "boolean | null"
+     },
+     {
+      "description": "Removed elements leave their children in place.",
+      "name": "unwrapDisallowed",
+      "type": "boolean | null"
+     },
+     {
+      "description": "URL rewriting (default `defaultUrlTransform`: safe protocols only).",
+      "name": "urlTransform",
+      "type": "UrlTransform | null"
+     }
+    ]
+   }
+  }
+ ],
+ "format": 1,
+ "name": "markdown",
+ "title": "Markdown",
+ "types": [
+  {
+   "name": "AllowElement",
+   "type": "(element: Readonly<Element>, index: number, parent: Readonly<Parents>) => boolean | null"
+  },
+  {
+   "name": "UrlTransform",
+   "type": "(url: string, key: string, node: Readonly<Element>) => string | null"
+  }
+ ]
+}

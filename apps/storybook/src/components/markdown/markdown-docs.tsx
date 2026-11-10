@@ -1,4 +1,6 @@
 import { markdownOptions } from "@owlky/core";
+import markdownApi from "@owlky/docs-content/api/markdown.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { Markdown } from "@owlky/react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
@@ -182,6 +184,7 @@ export function Snippet({ text }: { text: string }) {
 - Code blocks wrap long lines instead of scrolling, so they stay readable at 320 pixels wide without a keyboard trap.
 - The footnotes' heading is visually hidden but read by screen readers.`,
   },
+  apiReferenceSection(markdownApi),
 ];
 
 const PREVIEWS = {

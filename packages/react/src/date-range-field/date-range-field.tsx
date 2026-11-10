@@ -75,19 +75,27 @@ export interface RangeFieldProps
   format?: string | undefined;
   formatDensity?: "dense" | "spacious" | undefined;
   readOnly?: boolean | undefined;
+  /** Turns the field off. */
   disabled?: boolean | undefined;
   /** Empty sections take this date's parts on ArrowUp / ArrowDown. Default: today. */
   referenceDate?: Date | undefined;
+  /** Focuses the field when it mounts. */
   autoFocus?: boolean | undefined;
   /** "Today" (tests and fixed demos): empty sections start from it. Default: now. */
   today?: Date | undefined;
+  /** Replaces the text of the labels and buttons, such as for another language. */
   localeText?: Partial<PickerLocaleText> | undefined;
+  /** Text under the field, such as a hint or an error message. */
   helperText?: ReactNode;
   /** Error colors; default: the range is invalid. */
   error?: boolean | undefined;
+  /** The field's variant: `outlined`, `filled` or `standard`. */
   variant?: TextFieldVariant | undefined;
+  /** The field's size. */
   size?: SelectionControlSize | undefined;
+  /** Stretches the field to the container's width. */
   fullWidth?: boolean | undefined;
+  /** Marks the field as required (an asterisk on the label). */
   required?: boolean | undefined;
   /** Id of the field (other ids derive from it). */
   id?: string | undefined;
@@ -95,13 +103,18 @@ export interface RangeFieldProps
 
 /** A single field holding both dates. */
 export interface SingleInputRangeFieldProps extends RangeFieldProps {
+  /** The field's label. */
   label?: ReactNode;
   clearable?: boolean | undefined;
+  /** Called when the clear button empties the field. */
   onClear?: (() => void) | undefined;
+  /** The selected section of the field (its index, `null`: none), controlled. */
   selectedSections?: number | null | undefined;
+  /** Called when the selected section changes. */
   onSelectedSectionsChange?: ((section: number | null) => void) | undefined;
   /** Form field name: a hidden input carries the ISO interval `start/end`. */
   name?: string | undefined;
+  /** A ref to the hidden input that carries the value. */
   inputRef?: Ref<HTMLInputElement> | undefined;
 }
 
@@ -501,6 +514,7 @@ type DayOnly =
 export interface SingleInputTimeRangeFieldProps
   extends Omit<SingleInputRangeFieldProps, DayOnly>,
     RangeTimeFieldProps {
+  /** The time sections the fields show (`hours`, `minutes`, `seconds`). */
   views?: readonly TimeView[] | undefined;
 }
 
@@ -514,8 +528,11 @@ export const SingleInputTimeRangeField = forwardRef<HTMLDivElement, SingleInputT
 export interface SingleInputDateTimeRangeFieldProps
   extends SingleInputRangeFieldProps,
     RangeTimeFieldProps {
+  /** The earliest date and time that can be picked. */
   minDateTime?: Date | undefined;
+  /** The latest date and time that can be picked. */
   maxDateTime?: Date | undefined;
+  /** The date and time sections the fields show. */
   views?: readonly PickerView[] | undefined;
 }
 
@@ -537,6 +554,7 @@ export const MultiInputDateRangeField = forwardRef<HTMLDivElement, MultiInputRan
 export interface MultiInputTimeRangeFieldProps
   extends Omit<MultiInputRangeFieldProps, DayOnly>,
     RangeTimeFieldProps {
+  /** The time sections the field shows (`hours`, `minutes`, `seconds`). */
   views?: readonly TimeView[] | undefined;
 }
 
@@ -550,8 +568,11 @@ export const MultiInputTimeRangeField = forwardRef<HTMLDivElement, MultiInputTim
 export interface MultiInputDateTimeRangeFieldProps
   extends MultiInputRangeFieldProps,
     RangeTimeFieldProps {
+  /** The earliest date and time that can be picked. */
   minDateTime?: Date | undefined;
+  /** The latest date and time that can be picked. */
   maxDateTime?: Date | undefined;
+  /** The date and time sections the field shows. */
   views?: readonly PickerView[] | undefined;
 }
 

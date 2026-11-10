@@ -55,7 +55,9 @@ export interface GanttProps
   view?: GanttView | undefined;
   /** Zoom in px per day (controlled); the zoom buttons report changes through `onZoomChange`. */
   pixelsPerDay?: number | undefined;
+  /** The first zoom level in pixels per day, uncontrolled. */
   defaultPixelsPerDay?: number | undefined;
+  /** Called when the zoom level changes. */
   onZoomChange?: ((pixelsPerDay: number) => void) | undefined;
   rowHeight?: number | undefined;
   barMargin?: number | undefined;
@@ -102,10 +104,13 @@ export interface GanttProps
   collapsed?: readonly string[] | undefined;
   /** Initially collapsed parents (default: tasks with `collapsed`). */
   defaultCollapsed?: readonly string[] | undefined;
+  /** Called when summary tasks expand or collapse, with the collapsed ids. */
   onCollapsedChange?: ((ids: string[]) => void) | undefined;
   /** Selected task ids (controlled; needs `selection`). */
   selected?: readonly string[] | undefined;
+  /** The first selected task ids, uncontrolled. */
   defaultSelected?: readonly string[] | undefined;
+  /** Called when the selection changes, with the ids and how they were selected. */
   onSelectionChange?: ((ids: string[], mode: GanttSelectionMode) => void) | undefined;
   /** Texts: column titles, units, accessible names. */
   localeText?: Partial<GanttLocaleText> | undefined;

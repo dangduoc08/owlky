@@ -1,16 +1,30 @@
 import { createPopoverController, initialMenuItem, popoverOptions } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
-import type { ComponentInstance, Runtime } from "../../runtime/types.js";
+import type { ComponentInstance, EventSpec, Runtime } from "../../runtime/types.js";
 
 /** Why a popover closes: Escape, a press outside, a trigger, a chosen menu item, Tab, the API. */
 export type PopoverCloseReason = "escape" | "backdrop" | "trigger" | "select" | "tab" | "api";
 
+/** Events of this component (`ok:<name>:<event>` on the root). */
+export interface PopoverEvents {
+  /** Before the popover opens. Call `preventDefault()` to keep it closed. */
+  beforeopen: EventSpec<{ anchor: Element }, true>;
+  /** After the popover opened next to `anchor`. */
+  open: EventSpec<{ anchor: Element }>;
+  /** Before the popover closes. Call `preventDefault()` to keep it open. */
+  beforeclose: EventSpec<{ reason: PopoverCloseReason }, true>;
+  /** After the popover closed, with what closed it. */
+  close: EventSpec<{ reason: PopoverCloseReason }>;
+}
+
 export interface PopoverInstance extends ComponentInstance {
+  /** Whether the popover is open. */
   readonly isOpen: boolean;
   /** Opens next to `anchor`. Returns `false` if `ok:popover:beforeopen` was prevented. */
   open(anchor: Element): boolean;
   /** Returns `false` if `ok:popover:beforeclose` was prevented. */
   close(reason?: PopoverCloseReason): boolean;
+  /** Opens the popover next to `anchor` when it is closed, and closes it otherwise. */
   toggle(anchor: Element): boolean;
 }
 
@@ -44,7 +58,7 @@ function triggersOf(element: Element): Element[] {
  *           ok:popover:beforeclose (cancelable, detail.reason), ok:popover:close (detail.reason)
  * A popover holding a `[role=menu]` focuses its selected (or first) item when it opens.
  */
-export const popover = defineComponent<PopoverInstance>({
+export const popover = defineComponent<PopoverInstance, PopoverEvents>({
   name: "popover",
   selector: "[data-ok-popover]",
 

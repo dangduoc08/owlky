@@ -3,6 +3,7 @@ import {
   initialWalktourState,
   type WalktourAction,
   type WalktourApi,
+  type WalktourEventData,
   type WalktourOrigin,
   type WalktourState,
   walktourEvents,
@@ -10,7 +11,20 @@ import {
   walktourTransition,
 } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
-import type { ComponentInstance } from "../../runtime/types.js";
+import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
+
+/** Events of this component (`ok:<name>:<event>` on the root). */
+export interface WalktourEvents {
+  /** Before the tour moves to another step. Call `preventDefault()` to stay. */
+  beforechange: EventSpec<
+    { index: number; previousIndex: number; action: string; origin: string | null },
+    true
+  >;
+  /** After the state changed: the new state plus `previousIndex`. */
+  change: EventSpec<WalktourState & { previousIndex: number }>;
+  /** Each tour event (`tour:start`, `step:before`, `step:after`, `tour:end`…), with the tour's data. */
+  event: EventSpec<WalktourEventData>;
+}
 
 /** The walktour instance (`runtime.get(root, "walktour")`). */
 export interface WalktourInstance extends ComponentInstance, WalktourApi {}
@@ -54,7 +68,7 @@ function readIndex(element: Element, attr: string): number {
  *          ok:walktour:change (detail: the state + previousIndex),
  *          ok:walktour:event (detail: { type, action, origin, index, status, lifecycle, size }).
  */
-export const walktour = defineComponent<WalktourInstance>({
+export const walktour = defineComponent<WalktourInstance, WalktourEvents>({
   name: "walktour",
   selector: "[data-ok-walktour]",
 

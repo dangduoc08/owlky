@@ -1,10 +1,12 @@
 import { chipOptions } from "@owlky/core";
+import chipApi from "@owlky/docs-content/api/chip.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { Avatar, Chip } from "@owlky/react";
 import { useState } from "react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
 
-const DELETE = `<svg aria-hidden="true" viewBox="0 0 24 24">…</svg>`;
+const DELETE = `<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M9 3h6l1 2h4v2H4V5h4zm-3 6h12l-1 12H7z" fill="currentColor" /></svg>`;
 
 export const chipSections: GuideSection[] = [
   {
@@ -34,25 +36,45 @@ export function Tag() {
   <button type="button" data-ok-chip-action><span data-ok-chip-label>Paris</span></button>
   <button type="button" data-ok-chip-delete aria-label="Remove Paris">${DELETE}</button>
 </span>`,
-    react: `export function Cities() {
+    react: `import { Chip } from "@owlky/react";
+import { useState } from "react";
+
+export function Cities() {
   const [cities, setCities] = useState(["Paris", "Rome"]);
-  return cities.map((city) => (
-    <Chip
-      key={city}
-      label={city}
-      deleteLabel={\`Remove \${city}\`}
-      onClick={() => showCity(city)}
-      onDelete={() => setCities(cities.filter((c) => c !== city))}
-    />
-  ));
+  const [shown, setShown] = useState<string | null>(null);
+  return (
+    <>
+      {cities.map((city) => (
+        <Chip
+          key={city}
+          label={city}
+          deleteLabel={\`Remove \${city}\`}
+          onClick={() => setShown(city)}
+          onDelete={() => setCities(cities.filter((other) => other !== city))}
+        />
+      ))}
+      <p>{shown ? \`Showing \${shown}\` : "Pick a city"}</p>
+    </>
+  );
 }`,
   },
   {
     id: "variants",
     title: "Choose a variant, color and size",
     body: "The variant is `filled` (default), `outlined` or `soft`. Colors are `default` (neutral), the palette colors, `black` and `white`. The `small` size is 24px high, for dense lists such as table cells.",
-    html: `<span data-ok-chip data-ok-variant="outlined" data-ok-color="info" data-ok-size="small">…</span>`,
-    react: `<Chip variant="outlined" color="info" size="small" avatar={<Avatar>M</Avatar>} label="Mia" />`,
+    html: `<span data-ok-chip data-ok-variant="outlined" data-ok-color="info" data-ok-size="small">
+  <span data-ok-chip-action>
+    <span data-ok-avatar data-ok-variant="circular" data-ok-color="default">M</span>
+    <span data-ok-chip-label>Mia</span>
+  </span>
+</span>`,
+    react: `import { Avatar, Chip } from "@owlky/react";
+
+export function MiaChip() {
+  return (
+    <Chip variant="outlined" color="info" size="small" avatar={<Avatar>M</Avatar>} label="Mia" />
+  );
+}`,
   },
   {
     id: "options",
@@ -84,6 +106,7 @@ export function Tag() {
 - Focus is shown with a 2px outline. The delete button's target is 24 × 24px.
 - Neutral chips meet a contrast ratio of at least 4.5:1, and soft chips use the accessible text tone. Filled and outlined brand colors follow the design.`,
   },
+  apiReferenceSection(chipApi),
 ];
 
 function CitiesPreview() {

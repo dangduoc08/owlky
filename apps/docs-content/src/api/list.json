@@ -1,0 +1,525 @@
+{
+ "css": [
+  {
+   "name": "--ok-action-focus",
+   "value": "color-mix(in srgb, #919EAB 24%, transparent)"
+  },
+  {
+   "name": "--ok-action-hover",
+   "value": "color-mix(in srgb, #919EAB 8%, transparent)"
+  },
+  {
+   "dark": "#1C252E",
+   "light": "#FFFFFF",
+   "name": "--ok-bg-paper"
+  },
+  {
+   "name": "--ok-divider",
+   "value": "color-mix(in srgb, #919EAB 20%, transparent)"
+  },
+  {
+   "name": "--ok-duration-shorter",
+   "value": "200ms"
+  },
+  {
+   "name": "--ok-duration-shortest",
+   "value": "150ms"
+  },
+  {
+   "name": "--ok-easing-standard",
+   "value": "cubic-bezier(0.4, 0, 0.2, 1)"
+  },
+  {
+   "name": "--ok-font-family",
+   "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+  },
+  {
+   "name": "--ok-font-weight-medium",
+   "value": "500"
+  },
+  {
+   "name": "--ok-palette-grey-700",
+   "value": "#454F5B"
+  },
+  {
+   "name": "--ok-palette-primary-main",
+   "value": "#00A76F"
+  },
+  {
+   "name": "--ok-palette-primary-main-channel",
+   "value": "0 167 111"
+  },
+  {
+   "name": "--ok-spacing",
+   "value": "0.25rem"
+  },
+  {
+   "dark": "#FFFFFF",
+   "light": "#1C252E",
+   "name": "--ok-text-primary"
+  },
+  {
+   "dark": "#919EAB",
+   "light": "#637381",
+   "name": "--ok-text-secondary"
+  },
+  {
+   "name": "--ok-typography-body1-font-size",
+   "value": "1rem"
+  },
+  {
+   "name": "--ok-typography-body1-line-height",
+   "value": "1.5"
+  },
+  {
+   "name": "--ok-typography-body2-font-size",
+   "value": "0.875rem"
+  },
+  {
+   "name": "--ok-typography-body2-font-weight",
+   "value": "400"
+  },
+  {
+   "name": "--ok-typography-body2-line-height",
+   "value": "1.5714"
+  },
+  {
+   "name": "--ok-typography-subtitle2-font-size",
+   "value": "0.875rem"
+  },
+  {
+   "name": "--ok-typography-subtitle2-font-weight",
+   "value": "600"
+  },
+  {
+   "name": "--ok-typography-subtitle2-line-height",
+   "value": "1.5714"
+  }
+ ],
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-list",
+    "events": [
+     {
+      "cancelable": true,
+      "description": "Before a nested list opens or closes. Call `preventDefault()` to refuse.",
+      "detail": "{ open: boolean; list: HTMLElement; }",
+      "name": "ok:list:toggle"
+     }
+    ],
+    "methods": [
+     {
+      "description": "Opens or closes the nested list a button names in `aria-controls` (toggles without `open`). Returns `false` if `ok:list:toggle` was prevented or the button controls no list.",
+      "kind": "method",
+      "name": "toggle",
+      "type": "(button: Element, open?: boolean | undefined) => boolean"
+     }
+    ],
+    "options": [
+     {
+      "attr": "data-ok-dense",
+      "description": "Compact rows: 4px less padding above and below every item.",
+      "kind": "flag",
+      "name": "dense"
+     },
+     {
+      "attr": "data-ok-disable-padding",
+      "description": "No 8px padding above and below the list.",
+      "kind": "flag",
+      "name": "disablePadding"
+     },
+     {
+      "attr": "aria-expanded",
+      "description": "Nested lists: an item button with `aria-controls` opens or closes the list it names.",
+      "event": "ok:list:toggle",
+      "kind": "state",
+      "name": "expanded"
+     }
+    ],
+    "runtime": "list"
+   },
+   "name": "List",
+   "react": {
+    "description": "A `<ul>`; wrap it in a `<nav>` for navigation. Nested lists open and close from app state: the item button carries `aria-expanded` and `aria-controls`, the nested list `hidden`.",
+    "native": "HTMLUListElement",
+    "props": [
+     {
+      "description": "Compact rows: 4px less padding above and below every item.",
+      "name": "dense",
+      "type": "boolean"
+     },
+     {
+      "description": "No 8px padding above and below the list.",
+      "name": "disablePadding",
+      "type": "boolean"
+     },
+     {
+      "description": "Rendered first, usually a `ListSubheader`.",
+      "name": "subheader",
+      "type": "ReactNode"
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-list-item",
+    "options": [
+     {
+      "attr": "data-ok-align-items",
+      "default": "center",
+      "description": "`flex-start` aligns the icon or avatar with the first line (multi-line text).",
+      "kind": "style",
+      "name": "alignItems",
+      "optional": true,
+      "values": [
+       "center",
+       "flex-start"
+      ]
+     },
+     {
+      "attr": "data-ok-dense",
+      "description": "Compact: 4px padding above and below.",
+      "kind": "flag",
+      "name": "dense"
+     },
+     {
+      "attr": "data-ok-disable-gutters",
+      "description": "No 16px padding on the sides.",
+      "kind": "flag",
+      "name": "disableGutters"
+     },
+     {
+      "attr": "data-ok-disable-padding",
+      "description": "No padding: for an item that holds a list item button.",
+      "kind": "flag",
+      "name": "disablePadding"
+     },
+     {
+      "attr": "data-ok-show-divider",
+      "description": "A 1px line below the item.",
+      "kind": "flag",
+      "name": "divider"
+     }
+    ],
+    "parts": [
+     {
+      "description": "An action at the end of an item, such as a checkbox.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-list-item-secondary-action"
+     }
+    ]
+   },
+   "name": "ListItem",
+   "react": {
+    "description": "A list row (`<li>`).",
+    "native": "HTMLLIElement",
+    "props": [
+     {
+      "default": "\"center\"",
+      "description": "`flex-start` aligns the icon or avatar with the first line.",
+      "name": "alignItems",
+      "type": "\"center\" | \"flex-start\""
+     },
+     {
+      "description": "Compact rows: 4px less padding above and below every item.",
+      "name": "dense",
+      "type": "boolean"
+     },
+     {
+      "description": "No 16px padding on the sides.",
+      "name": "disableGutters",
+      "type": "boolean"
+     },
+     {
+      "description": "No padding: for an item that holds a `ListItemButton`.",
+      "name": "disablePadding",
+      "type": "boolean"
+     },
+     {
+      "description": "A 1px line below the item.",
+      "name": "divider",
+      "type": "boolean"
+     },
+     {
+      "description": "An action at the end of the row, such as an `IconButton`.",
+      "name": "secondaryAction",
+      "type": "ReactNode"
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-list-item-avatar",
+    "description": "An avatar at the start of an item.",
+    "elements": [
+     "span"
+    ]
+   },
+   "name": "ListItemAvatar",
+   "react": {
+    "description": "An `Avatar` at the start of a row.",
+    "native": "HTMLSpanElement",
+    "props": []
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-list-item-button",
+    "options": [
+     {
+      "attr": "data-ok-align-items",
+      "default": "center",
+      "description": "`flex-start` aligns the icon or avatar with the first line (multi-line text).",
+      "kind": "style",
+      "name": "alignItems",
+      "optional": true,
+      "values": [
+       "center",
+       "flex-start"
+      ]
+     },
+     {
+      "attr": "data-ok-dense",
+      "description": "Compact: 4px padding above and below.",
+      "kind": "flag",
+      "name": "dense"
+     },
+     {
+      "attr": "data-ok-disable-gutters",
+      "description": "No 16px padding on the sides.",
+      "kind": "flag",
+      "name": "disableGutters"
+     },
+     {
+      "attr": "data-ok-show-divider",
+      "description": "A 1px line below the item.",
+      "kind": "flag",
+      "name": "divider"
+     },
+     {
+      "attr": "data-ok-selected",
+      "description": "Highlighted as the current choice (add `aria-current` for navigation).",
+      "kind": "flag",
+      "name": "selected"
+     },
+     {
+      "attr": "disabled",
+      "description": "Native `disabled` (links: `aria-disabled`, no `href`).",
+      "kind": "native",
+      "name": "disabled"
+     }
+    ]
+   },
+   "name": "ListItemButton",
+   "react": {
+    "description": "A clickable row: a `<button type=\"button\">`, or an `<a>` when `href` is set.",
+    "native": "HTMLAnchorElement",
+    "props": [
+     {
+      "default": "center",
+      "description": "`flex-start` aligns the icon or avatar with the first line (multi-line text).",
+      "name": "alignItems",
+      "type": "\"center\" | \"flex-start\""
+     },
+     {
+      "description": "The content.",
+      "name": "children",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Compact rows: 4px less padding above and below every item.",
+      "name": "dense",
+      "type": "boolean"
+     },
+     {
+      "description": "No 16px padding on the sides.",
+      "name": "disableGutters",
+      "type": "boolean"
+     },
+     {
+      "description": "Removes `href` and sets `aria-disabled`, so the link can't be followed.",
+      "name": "disabled",
+      "type": "boolean"
+     },
+     {
+      "description": "A 1px line below the item.",
+      "name": "divider",
+      "type": "boolean"
+     },
+     {
+      "description": "Highlighted as the current choice. Add `aria-current` when it marks the current page.",
+      "name": "selected",
+      "type": "boolean"
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-list-item-expand-icon",
+    "description": "The expand icon of an item that opens a nested list.",
+    "elements": [
+     "span"
+    ]
+   },
+   "name": "ListItemExpandIcon",
+   "react": {
+    "description": "The chevron at the end of a button that opens a nested list. It points down while the button's `aria-expanded` is `false` and up while it is `true` (decorative).",
+    "native": "HTMLSpanElement",
+    "props": []
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-list-item-icon",
+    "description": "An icon at the start of an item.",
+    "elements": [
+     "span"
+    ]
+   },
+   "name": "ListItemIcon",
+   "react": {
+    "description": "An icon at the start of a row (decorative unless you label it).",
+    "native": "HTMLSpanElement",
+    "props": []
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-list-item-text",
+    "options": [
+     {
+      "attr": "data-ok-inset",
+      "description": "Starts 40px in, lined up with items that have an icon.",
+      "kind": "flag",
+      "name": "inset"
+     }
+    ],
+    "parts": [
+     {
+      "description": "The first line of an item's text.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-list-item-text-primary"
+     },
+     {
+      "description": "The second line, in the secondary text color.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-list-item-text-secondary"
+     }
+    ]
+   },
+   "name": "ListItemText",
+   "react": {
+    "description": "The text of a row: a primary line and an optional secondary line.",
+    "native": "HTMLSpanElement",
+    "props": [
+     {
+      "description": "The content.",
+      "name": "children",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Renders `primary` and `secondary` as given, without the typography wrappers.",
+      "name": "disableTypography",
+      "type": "boolean"
+     },
+     {
+      "description": "Starts 40px in, lined up with items that have an icon.",
+      "name": "inset",
+      "type": "boolean"
+     },
+     {
+      "description": "The main line. Defaults to `children`.",
+      "name": "primary",
+      "type": "ReactNode"
+     },
+     {
+      "description": "A second line in secondary text color.",
+      "name": "secondary",
+      "type": "ReactNode"
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-list-subheader",
+    "options": [
+     {
+      "attr": "data-ok-color",
+      "default": "default",
+      "description": "`default` (secondary text), `primary` or `inherit`.",
+      "kind": "style",
+      "name": "color",
+      "values": [
+       "default",
+       "primary",
+       "inherit"
+      ]
+     },
+     {
+      "attr": "data-ok-disable-gutters",
+      "description": "No 16px padding on the sides.",
+      "kind": "flag",
+      "name": "disableGutters"
+     },
+     {
+      "attr": "data-ok-disable-sticky",
+      "description": "Scrolls away with the list instead of sticking.",
+      "kind": "flag",
+      "name": "disableSticky"
+     },
+     {
+      "attr": "data-ok-inset",
+      "description": "Starts 56px in, lined up with item text after an icon.",
+      "kind": "flag",
+      "name": "inset"
+     }
+    ]
+   },
+   "name": "ListSubheader",
+   "react": {
+    "description": "A heading row of a list (`<li>`); point the list's `aria-labelledby` at its `id`.",
+    "native": "HTMLLIElement",
+    "props": [
+     {
+      "default": "\"default\"",
+      "description": "(secondary text color).",
+      "name": "color",
+      "type": "\"default\" | \"inherit\" | \"primary\""
+     },
+     {
+      "description": "No 16px padding on the sides.",
+      "name": "disableGutters",
+      "type": "boolean"
+     },
+     {
+      "description": "Scrolls away with the list instead of sticking to the top.",
+      "name": "disableSticky",
+      "type": "boolean"
+     },
+     {
+      "description": "Starts 56px in, lined up with item text after an icon.",
+      "name": "inset",
+      "type": "boolean"
+     }
+    ]
+   }
+  }
+ ],
+ "format": 1,
+ "name": "list",
+ "title": "List"
+}

@@ -47,19 +47,25 @@ export interface ImageProps
   extends Omit<HTMLAttributes<HTMLSpanElement>, "onLoad" | "onError" | "placeholder"> {
   /** Picture URL. */
   src?: string | undefined;
+  /** Candidate pictures at other resolutions (the `srcset` of the `img`). */
   srcSet?: string | undefined;
+  /** The `sizes` of the `img`, with `srcSet`. */
   sizes?: string | undefined;
   /** Text alternative (required). Use `""` for a decorative picture. */
   alt: string;
   /** Intrinsic size: reserves the picture's ratio before it loads (without `ratio`). */
   width?: number | string | undefined;
+  /** The picture's height (the `img` attribute), which reserves its space with `width`. */
   height?: number | string | undefined;
   /** Native lazy loading. Default `"lazy"` (`"eager"` with `visibleByDefault`). */
   loading?: "lazy" | "eager" | undefined;
-  /** Default `"async"`. */
+  /** How the browser decodes the picture (the `img` attribute). Default `"async"`. */
   decoding?: "async" | "auto" | "sync" | undefined;
+  /** How soon the browser fetches the picture (`fetchpriority`). */
   fetchPriority?: "high" | "low" | "auto" | undefined;
+  /** The `crossorigin` of the `img`. */
   crossOrigin?: ImgHTMLAttributes<HTMLImageElement>["crossOrigin"];
+  /** The `referrerpolicy` of the `img`. */
   referrerPolicy?: ImgHTMLAttributes<HTMLImageElement>["referrerPolicy"];
   /** Aspect ratio the picture is cropped to (`"16/9"`). Default: the picture's own ratio. */
   ratio?: ImageRatio | undefined;

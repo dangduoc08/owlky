@@ -1,4 +1,6 @@
 import { sliderOptions } from "@owlky/core";
+import sliderApi from "@owlky/docs-content/api/slider.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { Slider } from "@owlky/react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
@@ -151,6 +153,7 @@ export function Level() {
 - The focused thumb shows a ring and a halo. Mark labels use the secondary text color, with a contrast ratio of at least 4.5:1.
 - Pressing anywhere on the track moves a thumb, so people don't need to hit the 20px thumb exactly.`,
   },
+  apiReferenceSection(sliderApi),
 ];
 
 const PREVIEWS = {

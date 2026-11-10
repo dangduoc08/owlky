@@ -25,7 +25,7 @@ import {
   validateRange,
 } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
-import type { ComponentInstance } from "../../runtime/types.js";
+import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
 import {
   asFunction,
   type PickerDateApi,
@@ -43,6 +43,14 @@ import {
   toPickerDate,
 } from "../date-calendar/picker-dom.js";
 import { toRange } from "../date-range-calendar/date-range-calendar.js";
+
+/** Events of this component (`ok:<name>:<event>` on the root). */
+export interface DateFieldEvents {
+  /** Before the typed value is stored (ISO text, `null` when empty; ranges `start/end`). Call `preventDefault()` to refuse it. */
+  change: EventSpec<{ value: string | null; validationError: unknown }, true>;
+  /** After the clear button emptied the field. */
+  clear: EventSpec;
+}
 
 export interface DateFieldInstance extends ComponentInstance, PickerDateApi {
   /**
@@ -67,7 +75,9 @@ export interface DateFieldInstance extends ComponentInstance, PickerDateApi {
   focus(section?: number): void;
   /** Days, months or years that can't be picked (functions have no attribute). */
   setShouldDisableDate(fn: ((day: Date) => boolean) | null): void;
+  /** Disables the months for which the function returns `true` (`null`: none). */
   setShouldDisableMonth(fn: ((month: Date) => boolean) | null): void;
+  /** Disables the years for which the function returns `true` (`null`: none). */
   setShouldDisableYear(fn: ((year: Date) => boolean) | null): void;
   /** Times that can't be picked (time and date time fields). */
   setShouldDisableTime(fn: ((value: Date, view: TimeView) => boolean) | null): void;
@@ -94,7 +104,7 @@ export interface DateFieldInstance extends ComponentInstance, PickerDateApi {
  *          section texts, ARIA values, the hidden input and `data-ok-shrink` / `data-ok-error`.
  * Events:  ok:date-field:change (cancelable, `{ value, validationError }`), ok:date-field:clear.
  */
-export const dateField = defineComponent<DateFieldInstance>({
+export const dateField = defineComponent<DateFieldInstance, DateFieldEvents>({
   name: "date-field",
   selector: "[data-ok-date-field]",
 

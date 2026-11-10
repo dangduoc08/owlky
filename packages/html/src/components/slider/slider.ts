@@ -14,7 +14,15 @@ import {
 } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
 import { syncCustomProperties } from "../../runtime/style.js";
-import type { ComponentInstance } from "../../runtime/types.js";
+import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
+
+/** Events of this component (`ok:<name>:<event>` on the root). */
+export interface SliderEvents {
+  /** Before a thumb moves. `value` holds every thumb. Call `preventDefault()` to keep the current value. */
+  change: EventSpec<{ value: number[]; activeThumb: number }, true>;
+  /** After a drag or a key press ended, with the final value. */
+  commit: EventSpec<{ value: number[] }>;
+}
 
 export interface SliderInstance extends ComponentInstance {
   /** One value per thumb. */
@@ -40,7 +48,7 @@ const { min, max, step, track, disabled, disableSwap } = sliderOptions.options;
  *          `aria-valuetext`.
  * Events:  ok:slider:change (cancelable, detail `{ value, activeThumb }`), ok:slider:commit (`{ value }`).
  */
-export const slider = defineComponent<SliderInstance>({
+export const slider = defineComponent<SliderInstance, SliderEvents>({
   name: "slider",
   selector: "[data-ok-slider]",
 

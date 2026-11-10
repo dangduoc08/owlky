@@ -7,6 +7,8 @@ import {
   signIn,
   sparkle,
 } from "@owlky/core/illustrations";
+import illustrationApi from "@owlky/docs-content/api/illustration.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { Illustration, Upload } from "@owlky/react";
 import { Caption, CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { OptionsTable } from "../../helpers/guide-tables.js";
@@ -190,6 +192,7 @@ export function Pictures() {
     title: "Credits",
     body: "The illustrations are original artwork drawn for Owlky in the flat style of the Minimal dashboard. They are released under the MIT license, like the rest of the library.",
   },
+  apiReferenceSection(illustrationApi),
 ];
 
 const MY_ART: IllustrationData = {

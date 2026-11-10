@@ -134,6 +134,72 @@ describe("get_component", () => {
     expect(all).toContain(" on each `");
   });
 
+  it("returns the API reference per React component and HTML part (ADR-0049)", async () => {
+    type Api = {
+      api: {
+        entries: {
+          name: string;
+          react?: { props: { name: string; type: string }[]; native?: string };
+          html?: {
+            attribute: string;
+            parts?: { name: string; kind: string }[];
+            events?: { name: string; detail: string; cancelable: boolean | string }[];
+            methods?: { name: string }[];
+          };
+        }[];
+        css?: { name: string }[];
+        types?: { name: string; framework?: string }[];
+      };
+      apiEntries: string[];
+    };
+    const card = structured<Api>(await session.call("get_component", { name: "card" }));
+    expect(card.apiEntries[0]).toBe("Card");
+    const header = card.api.entries.find((entry) => entry.name === "CardHeader");
+    expect(header?.html?.attribute).toBe("data-ok-card-header");
+    expect(header?.react?.props.map((prop) => prop.name)).toContain("subheader");
+    expect(header?.html?.parts?.map((part) => part.name)).toContain("data-ok-card-header-avatar");
+    expect(card.api.css?.map((variable) => variable.name)).toContain("--ok-shadow-card");
+
+    const dialogResult = await session.call("get_component", { name: "dialog" });
+    const dialog = structured<Api>(dialogResult).api.entries[0];
+    expect(dialog?.html?.events).toContainEqual(
+      expect.objectContaining({ name: "ok:dialog:beforeclose", cancelable: true }),
+    );
+    expect(dialog?.html?.methods?.map((method) => method.name)).toEqual([
+      "close",
+      "isOpen",
+      "open",
+    ]);
+    expect(dialog?.html?.parts?.map((part) => part.name)).toContain("data-ok-dialog-open");
+    // Two packages name a type alike: each row says which one it is.
+    expect(structured<Api>(dialogResult).api.types).toContainEqual(
+      expect.objectContaining({ name: "DialogCloseReason", framework: "html" }),
+    );
+    const markdown = textOf(dialogResult);
+    expect(markdown).toContain("## API reference");
+    expect(markdown).toContain("| `ok:dialog:open` |");
+    expect(markdown).toContain("| `data-ok-dialog-paper` | element");
+  });
+
+  it("returns one API entry with `part`, and lists long references", async () => {
+    const one = await session.call("get_component", { name: "card", part: "data-ok-card-media" });
+    const data = structured<{ api: { entries: { name: string }[] } }>(one);
+    expect(data.api.entries.map((entry) => entry.name)).toEqual(["CardMedia"]);
+    expect(textOf(one)).toMatch(/^# Card: data-ok-card-media/);
+    const byName = await session.call("get_component", { name: "card", part: "cardheader" });
+    expect(textOf(byName)).toContain("### CardHeader");
+
+    const long = await session.call("get_component", { name: "date-picker" });
+    expect(structured<{ api?: unknown }>(long).api).toBeUndefined();
+    expect(textOf(long)).toContain("call get_component again with `part`");
+    const picker = await session.call("get_component", { name: "date-picker", part: "DatePicker" });
+    expect(textOf(picker)).toContain("| `onAccept` |");
+
+    const missing = await session.call("get_component", { name: "card", part: "Nope" });
+    expect(missing.isError).toBe(true);
+    expect(textOf(missing)).toContain("CardHeader");
+  });
+
   it("suggests close names for an unknown component", async () => {
     const result = await session.call("get_component", { name: "buton" });
     expect(result.isError).toBe(true);

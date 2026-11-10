@@ -43,7 +43,7 @@ export type PaginationIcons = Partial<Record<NavType, ReactNode>>;
 
 export interface PaginationItemProps
   extends Omit<ComponentPropsWithoutRef<"button">, "type" | "value"> {
-  /** Default `"page"`. */
+  /** What the item is: a page, an ellipsis or a navigation button. Default `"page"`. */
   type?: PaginationItemType | undefined;
   /** Target page (1-based); `null` for ellipses. */
   page?: number | null | undefined;
@@ -132,9 +132,13 @@ export interface PaginationProps extends Omit<ComponentPropsWithoutRef<"nav">, "
   boundaryCount?: number | undefined;
   /** Pages always shown on each side of the current one. Default 1. */
   siblingCount?: number | undefined;
+  /** Shows a button to the first page. */
   showFirstButton?: boolean | undefined;
+  /** Shows a button to the last page. */
   showLastButton?: boolean | undefined;
+  /** Hides the button to the previous page. */
   hidePrevButton?: boolean | undefined;
+  /** Hides the button to the next page. */
   hideNextButton?: boolean | undefined;
   /** Accessible name of each item (default as MUI: "Go to page 3", "page 2", "Go to next page"). */
   getItemAriaLabel?:

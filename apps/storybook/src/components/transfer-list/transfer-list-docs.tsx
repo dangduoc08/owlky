@@ -1,4 +1,6 @@
 import { transferListOptions } from "@owlky/core";
+import transferListApi from "@owlky/docs-content/api/transfer-list.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { TransferList } from "@owlky/react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
@@ -151,6 +153,7 @@ export function Fruits() {
 - Buttons that would move nothing are disabled.
 - Rows are 44px tall, and the whole row toggles its checkbox.`,
   },
+  apiReferenceSection(transferListApi),
 ];
 
 const PREVIEWS = {

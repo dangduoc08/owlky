@@ -1,0 +1,278 @@
+{
+ "css": [
+  {
+   "dark": "28 37 46",
+   "light": "255 255 255",
+   "name": "--ok-bg-paper-channel"
+  },
+  {
+   "name": "--ok-duration-shorter",
+   "value": "200ms"
+  },
+  {
+   "name": "--ok-easing-decelerate",
+   "value": "cubic-bezier(0, 0, 0.2, 1)"
+  },
+  {
+   "name": "--ok-font-family",
+   "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+  },
+  {
+   "name": "--ok-palette-error-main-channel",
+   "value": "255 86 48"
+  },
+  {
+   "name": "--ok-palette-info-main-channel",
+   "value": "0 184 217"
+  },
+  {
+   "name": "--ok-radius-md",
+   "value": "8px"
+  },
+  {
+   "name": "--ok-shadow-dropdown",
+   "value": "0px 0px 2px 0px color-mix(in srgb, var(--ok-shadow-color) 24%, transparent), -20px 20px 40px -4px color-mix(in srgb, var(--ok-shadow-color) 24%, transparent)"
+  },
+  {
+   "name": "--ok-spacing",
+   "value": "0.25rem"
+  },
+  {
+   "dark": "#FFFFFF",
+   "light": "#1C252E",
+   "name": "--ok-text-primary"
+  },
+  {
+   "name": "--ok-z-dropdown",
+   "value": "1200"
+  }
+ ],
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-popover",
+    "events": [
+     {
+      "cancelable": true,
+      "description": "Before the popover closes. Call `preventDefault()` to keep it open.",
+      "detail": "{ reason: PopoverCloseReason; }",
+      "name": "ok:popover:beforeclose"
+     },
+     {
+      "cancelable": true,
+      "description": "Before the popover opens. Call `preventDefault()` to keep it closed.",
+      "detail": "{ anchor: Element; }",
+      "name": "ok:popover:beforeopen"
+     },
+     {
+      "cancelable": false,
+      "description": "After the popover closed, with what closed it.",
+      "detail": "{ reason: PopoverCloseReason; }",
+      "name": "ok:popover:close"
+     },
+     {
+      "cancelable": false,
+      "description": "After the popover opened next to `anchor`.",
+      "detail": "{ anchor: Element; }",
+      "name": "ok:popover:open"
+     }
+    ],
+    "methods": [
+     {
+      "description": "Returns `false` if `ok:popover:beforeclose` was prevented.",
+      "kind": "method",
+      "name": "close",
+      "type": "(reason?: PopoverCloseReason | undefined) => boolean"
+     },
+     {
+      "description": "Whether the popover is open.",
+      "kind": "property",
+      "name": "isOpen",
+      "type": "boolean"
+     },
+     {
+      "description": "Opens next to `anchor`. Returns `false` if `ok:popover:beforeopen` was prevented.",
+      "kind": "method",
+      "name": "open",
+      "type": "(anchor: Element) => boolean"
+     },
+     {
+      "description": "Opens the popover next to `anchor` when it is closed, and closes it otherwise.",
+      "kind": "method",
+      "name": "toggle",
+      "type": "(anchor: Element) => boolean"
+     }
+    ],
+    "options": [
+     {
+      "attr": "data-ok-placement",
+      "default": "bottom",
+      "description": "Side of the anchor and alignment; flips to the other side when there is no room.",
+      "kind": "style",
+      "name": "placement",
+      "values": [
+       "top-start",
+       "top",
+       "top-end",
+       "bottom-start",
+       "bottom",
+       "bottom-end",
+       "left-start",
+       "left",
+       "left-end",
+       "right-start",
+       "right",
+       "right-end"
+      ]
+     },
+     {
+      "attr": "data-ok-arrow",
+      "description": "Draws an arrow pointing at the anchor.",
+      "kind": "flag",
+      "name": "arrow"
+     },
+     {
+      "attr": "data-ok-disable-escape-key-down",
+      "description": "Escape doesn't request close.",
+      "kind": "flag",
+      "name": "disableEscapeKeyDown"
+     },
+     {
+      "attr": "data-ok-disable-auto-focus",
+      "description": "Focus stays on the anchor when it opens (hover popovers).",
+      "kind": "flag",
+      "name": "disableAutoFocus"
+     },
+     {
+      "attr": "data-ok-disable-restore-focus",
+      "description": "Focus isn't moved back to the anchor on close.",
+      "kind": "flag",
+      "name": "disableRestoreFocus"
+     },
+     {
+      "attr": "data-ok-open",
+      "description": "Open state (`open` + `anchorEl` / `onOpenChange`; HTML: a trigger or `open()`).",
+      "event": "ok:popover:close",
+      "kind": "state",
+      "name": "open"
+     }
+    ],
+    "parts": [
+     {
+      "description": "Set by the runtime: the side the popover opened on after flipping.",
+      "kind": "value",
+      "name": "data-ok-current-placement",
+      "value": "string"
+     },
+     {
+      "description": "Set by the runtime when the browser lacks the Popover API.",
+      "kind": "state",
+      "name": "data-ok-fallback"
+     },
+     {
+      "description": "The arrow that points at the anchor (shown with `data-ok-arrow`).",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-popover-arrow"
+     },
+     {
+      "description": "Opens the popover whose `id` it names while the pointer hovers the element.",
+      "kind": "trigger",
+      "name": "data-ok-popover-hover",
+      "value": [
+       "id"
+      ]
+     },
+     {
+      "description": "Opens the popover whose `id` it names next to the element.",
+      "kind": "trigger",
+      "name": "data-ok-popover-open",
+      "value": [
+       "id"
+      ]
+     }
+    ],
+    "runtime": "popover"
+   },
+   "name": "Popover",
+   "react": {
+    "description": "A `div[popover=manual]` in the top layer, positioned next to `anchorEl` by the core popover controller. Controlled, like MUI: keep `open` in state and set it from `onOpenChange`.",
+    "native": "HTMLDivElement",
+    "props": [
+     {
+      "description": "The element the popover points at.",
+      "name": "anchorEl",
+      "required": true,
+      "type": "PopoverAnchor"
+     },
+     {
+      "description": "Draws an arrow pointing at the anchor.",
+      "name": "arrow",
+      "type": "boolean"
+     },
+     {
+      "description": "The content.",
+      "name": "children",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Focus stays on the anchor when the popover opens (hover popovers).",
+      "name": "disableAutoFocus",
+      "type": "boolean"
+     },
+     {
+      "description": "Escape doesn't ask to close.",
+      "name": "disableEscapeKeyDown",
+      "type": "boolean"
+     },
+     {
+      "description": "Focus isn't moved back to the anchor on close.",
+      "name": "disableRestoreFocus",
+      "type": "boolean"
+     },
+     {
+      "description": "Where focus goes on open; default: the first focusable element, else the popover.",
+      "name": "initialFocus",
+      "type": "(() => HTMLElement | null | undefined)"
+     },
+     {
+      "description": "Called when the user asks to close: `\"escape\"` or `\"backdrop\"` (a press outside).",
+      "name": "onOpenChange",
+      "type": "((open: boolean, reason?: PopoverDismissReason | undefined) => void)"
+     },
+     {
+      "description": "Controlled open state (needs `anchorEl`).",
+      "name": "open",
+      "required": true,
+      "type": "boolean"
+     },
+     {
+      "default": "\"bottom\"",
+      "description": "Side of the anchor and alignment. Flips when there is no room.",
+      "name": "placement",
+      "type": "\"bottom\" | \"bottom-end\" | \"bottom-start\" | \"left\" | \"left-end\" | \"left-start\" | \"right\" | \"right-end\" | \"right-start\" | \"top\" | \"top-end\" | \"top-start\""
+     }
+    ]
+   }
+  }
+ ],
+ "format": 1,
+ "name": "popover",
+ "title": "Popover",
+ "types": [
+  {
+   "name": "PopoverAnchor",
+   "type": "Element | (() => Element | null | undefined) | null"
+  },
+  {
+   "name": "PopoverCloseReason",
+   "type": "\"api\" | \"backdrop\" | \"escape\" | \"select\" | \"tab\" | \"trigger\""
+  },
+  {
+   "name": "PopoverDismissReason",
+   "type": "\"backdrop\" | \"escape\""
+  }
+ ]
+}

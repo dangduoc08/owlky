@@ -1,0 +1,1843 @@
+{
+ "css": [
+  {
+   "name": "--ok-action-disabled",
+   "value": "color-mix(in srgb, #919EAB 80%, transparent)"
+  },
+  {
+   "name": "--ok-action-hover",
+   "value": "color-mix(in srgb, #919EAB 8%, transparent)"
+  },
+  {
+   "dark": "#1C252E",
+   "light": "#FFFFFF",
+   "name": "--ok-bg-paper"
+  },
+  {
+   "description": "The main color of the element's `data-ok-color`.",
+   "name": "--ok-c-main"
+  },
+  {
+   "name": "--ok-divider",
+   "value": "color-mix(in srgb, #919EAB 20%, transparent)"
+  },
+  {
+   "name": "--ok-drop-shadow-z1",
+   "value": "drop-shadow(0px 1px 2px color-mix(in srgb, var(--ok-shadow-color) 16%, transparent))"
+  },
+  {
+   "name": "--ok-duration-shorter",
+   "value": "200ms"
+  },
+  {
+   "name": "--ok-duration-standard",
+   "value": "300ms"
+  },
+  {
+   "name": "--ok-easing-standard",
+   "value": "cubic-bezier(0.4, 0, 0.2, 1)"
+  },
+  {
+   "name": "--ok-font-weight-semibold",
+   "value": "600"
+  },
+  {
+   "name": "--ok-palette-common-white",
+   "value": "#FFFFFF"
+  },
+  {
+   "name": "--ok-palette-common-white-channel",
+   "value": "255 255 255"
+  },
+  {
+   "name": "--ok-palette-error-dark",
+   "value": "#B71D18"
+  },
+  {
+   "name": "--ok-palette-error-main",
+   "value": "#FF5630"
+  },
+  {
+   "name": "--ok-palette-grey-200",
+   "value": "#F4F6F8"
+  },
+  {
+   "name": "--ok-palette-grey-800",
+   "value": "#1C252E"
+  },
+  {
+   "name": "--ok-palette-grey-900-channel",
+   "value": "20 26 33"
+  },
+  {
+   "name": "--ok-palette-info-main",
+   "value": "#00B8D9"
+  },
+  {
+   "name": "--ok-palette-info-main-channel",
+   "value": "0 184 217"
+  },
+  {
+   "name": "--ok-palette-primary-main",
+   "value": "#00A76F"
+  },
+  {
+   "name": "--ok-palette-primary-main-channel",
+   "value": "0 167 111"
+  },
+  {
+   "name": "--ok-palette-secondary-dark",
+   "value": "#5119B7"
+  },
+  {
+   "name": "--ok-radius-full",
+   "value": "9999px"
+  },
+  {
+   "name": "--ok-radius-lg",
+   "value": "12px"
+  },
+  {
+   "name": "--ok-radius-md",
+   "value": "8px"
+  },
+  {
+   "name": "--ok-radius-sm",
+   "value": "6px"
+  },
+  {
+   "name": "--ok-radius-xs",
+   "value": "4px"
+  },
+  {
+   "name": "--ok-shadow-dropdown",
+   "value": "0px 0px 2px 0px color-mix(in srgb, var(--ok-shadow-color) 24%, transparent), -20px 20px 40px -4px color-mix(in srgb, var(--ok-shadow-color) 24%, transparent)"
+  },
+  {
+   "name": "--ok-shadow-z1",
+   "value": "0px 1px 2px 0px color-mix(in srgb, var(--ok-shadow-color) 16%, transparent)"
+  },
+  {
+   "name": "--ok-shadow-z4",
+   "value": "0px 4px 8px 0px color-mix(in srgb, var(--ok-shadow-color) 16%, transparent)"
+  },
+  {
+   "name": "--ok-spacing",
+   "value": "0.25rem"
+  },
+  {
+   "dark": "#FFFFFF",
+   "light": "#1C252E",
+   "name": "--ok-text-primary"
+  },
+  {
+   "dark": "#919EAB",
+   "light": "#637381",
+   "name": "--ok-text-secondary"
+  },
+  {
+   "name": "--ok-typography-body2-font-family",
+   "value": "var(--ok-font-family)"
+  },
+  {
+   "name": "--ok-typography-body2-font-size",
+   "value": "0.875rem"
+  },
+  {
+   "name": "--ok-typography-body2-line-height",
+   "value": "1.5714"
+  },
+  {
+   "name": "--ok-typography-caption-font-size",
+   "value": "0.75rem"
+  },
+  {
+   "name": "--ok-typography-caption-line-height",
+   "value": "1.5"
+  },
+  {
+   "name": "--ok-typography-subtitle1-font-size",
+   "value": "1rem"
+  },
+  {
+   "name": "--ok-z-modal",
+   "value": "1300"
+  }
+ ],
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-map",
+    "events": [
+     {
+      "cancelable": false,
+      "description": "After a click on the map.",
+      "detail": "MapEvent",
+      "name": "ok:map:click"
+     },
+     {
+      "cancelable": false,
+      "description": "After a right click or a long press on the map.",
+      "detail": "MapEvent",
+      "name": "ok:map:contextmenu"
+     },
+     {
+      "cancelable": false,
+      "description": "After a double click on the map.",
+      "detail": "MapEvent",
+      "name": "ok:map:dblclick"
+     },
+     {
+      "cancelable": false,
+      "description": "After MapLibre reported an error (a tile or a style failed).",
+      "detail": "MapEvent",
+      "name": "ok:map:error"
+     },
+     {
+      "cancelable": false,
+      "description": "After the map fell back to its static content (no WebGL, or MapLibre failed).",
+      "detail": "{ reason: string; }",
+      "name": "ok:map:fallback"
+     },
+     {
+      "cancelable": false,
+      "description": "After the map entered or left full screen.",
+      "detail": "{ fullscreen: boolean; }",
+      "name": "ok:map:fullscreen"
+     },
+     {
+      "cancelable": false,
+      "description": "After the geolocate control found the user's position.",
+      "detail": "{ coords: { longitude: number; latitude: number; accuracy: number; }; }",
+      "name": "ok:map:geolocate"
+     },
+     {
+      "cancelable": false,
+      "description": "After the geolocate control failed (`code` from the Geolocation API).",
+      "detail": "{ code: number; message: string; }",
+      "name": "ok:map:geolocateerror"
+     },
+     {
+      "cancelable": false,
+      "description": "After the map finished drawing.",
+      "detail": "MapEvent",
+      "name": "ok:map:idle"
+     },
+     {
+      "cancelable": false,
+      "description": "After the map and its first style loaded.",
+      "detail": "MapEvent",
+      "name": "ok:map:load"
+     },
+     {
+      "cancelable": false,
+      "description": "While a marker is dragged (dispatched on the marker).",
+      "detail": "{ lngLat: { lng: number; lat: number; }; }",
+      "name": "ok:map:markerdrag"
+     },
+     {
+      "cancelable": false,
+      "description": "After a marker was dropped; its `data-ok-longitude` and `data-ok-latitude` hold the new place.",
+      "detail": "{ lngLat: { lng: number; lat: number; }; }",
+      "name": "ok:map:markerdragend"
+     },
+     {
+      "cancelable": false,
+      "description": "When a draggable marker starts moving (dispatched on the marker).",
+      "detail": "{ lngLat: { lng: number; lat: number; }; }",
+      "name": "ok:map:markerdragstart"
+     },
+     {
+      "cancelable": false,
+      "description": "When the pointer enters the map.",
+      "detail": "MapEvent",
+      "name": "ok:map:mouseenter"
+     },
+     {
+      "cancelable": false,
+      "description": "When the pointer leaves the map.",
+      "detail": "MapEvent",
+      "name": "ok:map:mouseleave"
+     },
+     {
+      "cancelable": false,
+      "description": "While the pointer moves over the map.",
+      "detail": "MapEvent",
+      "name": "ok:map:mousemove"
+     },
+     {
+      "cancelable": false,
+      "description": "While the map moves.",
+      "detail": "MapEvent",
+      "name": "ok:map:move"
+     },
+     {
+      "cancelable": false,
+      "description": "After a move ended.",
+      "detail": "MapEvent",
+      "name": "ok:map:moveend"
+     },
+     {
+      "cancelable": false,
+      "description": "When a move (pan, zoom, rotation) starts.",
+      "detail": "MapEvent",
+      "name": "ok:map:movestart"
+     },
+     {
+      "cancelable": false,
+      "description": "After a pitch change ended.",
+      "detail": "MapEvent",
+      "name": "ok:map:pitchend"
+     },
+     {
+      "cancelable": true,
+      "description": "Before a popup closes (dispatched on the popup). Call `preventDefault()` to keep it open.",
+      "detail": "{ reason: string; }",
+      "name": "ok:map:popupclose"
+     },
+     {
+      "cancelable": false,
+      "description": "After a popup opened (dispatched on the popup).",
+      "detail": "Record<string, never>",
+      "name": "ok:map:popupopen"
+     },
+     {
+      "cancelable": false,
+      "description": "After a rotation ended.",
+      "detail": "MapEvent",
+      "name": "ok:map:rotateend"
+     },
+     {
+      "cancelable": false,
+      "description": "After tracking the user's location started or stopped.",
+      "detail": "{ tracking: boolean; }",
+      "name": "ok:map:trackuserlocation"
+     },
+     {
+      "cancelable": false,
+      "description": "After a zoom ended.",
+      "detail": "MapEvent",
+      "name": "ok:map:zoomend"
+     }
+    ],
+    "methods": [
+     {
+      "description": "Hides a popup of this map; no event.",
+      "kind": "method",
+      "name": "closePopup",
+      "type": "(popup: string | Element) => void"
+     },
+     {
+      "description": "The core controller.",
+      "kind": "property",
+      "name": "controller",
+      "type": "MapController"
+     },
+     {
+      "description": "Moves the camera to a place, with an animation.",
+      "kind": "property",
+      "name": "easeTo",
+      "type": "(options: EaseToOptions) => void"
+     },
+     {
+      "description": "Moves the camera so that the bounds fit the map.",
+      "kind": "property",
+      "name": "fitBounds",
+      "type": "(bounds: LngLatBoundsLike, options?: FitBoundsOptions | undefined) => void"
+     },
+     {
+      "description": "Flies the camera to a place, with an animation along a curve.",
+      "kind": "property",
+      "name": "flyTo",
+      "type": "(options: FlyToOptions) => void"
+     },
+     {
+      "description": "Whether the map is in full screen.",
+      "kind": "property",
+      "name": "fullscreen",
+      "type": "boolean"
+     },
+     {
+      "description": "The zoom level at which a cluster of a clustered source breaks apart.",
+      "kind": "method",
+      "name": "getClusterExpansionZoom",
+      "type": "(sourceId: string, clusterId: number) => Promise<number>"
+     },
+     {
+      "description": "Moves the camera to a place at once.",
+      "kind": "property",
+      "name": "jumpTo",
+      "type": "(options: JumpToOptions) => void"
+     },
+     {
+      "description": "The MapLibre map (escape hatch), or `null` without WebGL.",
+      "kind": "property",
+      "name": "map",
+      "type": "Map$1 | null"
+     },
+     {
+      "description": "Shows a popup of this map (an element or its id).",
+      "kind": "method",
+      "name": "openPopup",
+      "type": "(popup: string | Element) => void"
+     },
+     {
+      "description": "Enters or leaves full screen.",
+      "kind": "method",
+      "name": "setFullscreen",
+      "type": "(fullscreen: boolean) => void"
+     },
+     {
+      "description": "Replaces the data of a GeoJSON source (no markup change; for animations).",
+      "kind": "method",
+      "name": "setSourceData",
+      "type": "(id: string, data: unknown) => void"
+     },
+     {
+      "description": "The camera: longitude, latitude, zoom, pitch and bearing.",
+      "kind": "property",
+      "name": "viewState",
+      "type": "MapViewState"
+     }
+    ],
+    "options": [
+     {
+      "attr": "data-ok-longitude",
+      "default": 0,
+      "description": "Center longitude in degrees (HTML: changing it moves the map).",
+      "kind": "number",
+      "name": "longitude"
+     },
+     {
+      "attr": "data-ok-latitude",
+      "default": 0,
+      "description": "Center latitude in degrees (−85 to 85).",
+      "kind": "number",
+      "name": "latitude"
+     },
+     {
+      "attr": "data-ok-zoom",
+      "default": 0,
+      "description": "Zoom level (0: the whole world).",
+      "kind": "number",
+      "min": 0,
+      "name": "zoom"
+     },
+     {
+      "attr": "data-ok-pitch",
+      "default": 0,
+      "description": "Tilt in degrees (0: looking straight down).",
+      "kind": "number",
+      "min": 0,
+      "name": "pitch"
+     },
+     {
+      "attr": "data-ok-bearing",
+      "default": 0,
+      "description": "Rotation in degrees clockwise from north.",
+      "kind": "number",
+      "name": "bearing"
+     },
+     {
+      "attr": "data-ok-min-zoom",
+      "default": 0,
+      "description": "Lowest zoom level people can reach.",
+      "kind": "number",
+      "name": "minZoom"
+     },
+     {
+      "attr": "data-ok-max-zoom",
+      "default": 22,
+      "description": "Highest zoom level people can reach (at most 24).",
+      "kind": "number",
+      "name": "maxZoom"
+     },
+     {
+      "attr": "data-ok-min-pitch",
+      "default": 0,
+      "description": "Lowest tilt in degrees.",
+      "kind": "number",
+      "min": 0,
+      "name": "minPitch"
+     },
+     {
+      "attr": "data-ok-max-pitch",
+      "default": 60,
+      "description": "Highest tilt in degrees (at most 85).",
+      "kind": "number",
+      "min": 0,
+      "name": "maxPitch"
+     },
+     {
+      "attr": "data-ok-projection",
+      "default": "mercator",
+      "description": "Projection: a flat `mercator` map or a `globe` when zoomed out.",
+      "kind": "style",
+      "name": "projection",
+      "values": [
+       "mercator",
+       "globe"
+      ]
+     },
+     {
+      "attr": "data-ok-box-zoom",
+      "default": true,
+      "description": "Shift + drag zooms to the drawn box.",
+      "kind": "behavior",
+      "name": "boxZoom"
+     },
+     {
+      "attr": "data-ok-double-click-zoom",
+      "default": true,
+      "description": "Double click zooms in.",
+      "kind": "behavior",
+      "name": "doubleClickZoom"
+     },
+     {
+      "attr": "data-ok-drag-pan",
+      "default": true,
+      "description": "Dragging moves the map.",
+      "kind": "behavior",
+      "name": "dragPan"
+     },
+     {
+      "attr": "data-ok-drag-rotate",
+      "default": true,
+      "description": "Right-click drag (or Ctrl + drag) rotates and tilts the map.",
+      "kind": "behavior",
+      "name": "dragRotate"
+     },
+     {
+      "attr": "data-ok-keyboard",
+      "default": true,
+      "description": "Arrow keys pan, + and − zoom, Shift + arrows rotate and tilt (the map has focus).",
+      "kind": "behavior",
+      "name": "keyboard"
+     },
+     {
+      "attr": "data-ok-scroll-zoom",
+      "default": true,
+      "description": "The mouse wheel and trackpad zoom.",
+      "kind": "behavior",
+      "name": "scrollZoom"
+     },
+     {
+      "attr": "data-ok-touch-pitch",
+      "default": true,
+      "description": "Two-finger vertical drag tilts the map.",
+      "kind": "behavior",
+      "name": "touchPitch"
+     },
+     {
+      "attr": "data-ok-touch-zoom-rotate",
+      "default": true,
+      "description": "Pinch zooms and two-finger twist rotates.",
+      "kind": "behavior",
+      "name": "touchZoomRotate"
+     },
+     {
+      "attr": "data-ok-render-world-copies",
+      "default": true,
+      "description": "Repeats the world side by side when zoomed out.",
+      "kind": "behavior",
+      "name": "renderWorldCopies"
+     },
+     {
+      "attr": "data-ok-cooperative-gestures",
+      "description": "Page-friendly gestures: Ctrl + scroll zooms and two fingers pan, so the page keeps scrolling.",
+      "kind": "flag",
+      "name": "cooperativeGestures"
+     },
+     {
+      "attr": "data-ok-fullscreen",
+      "description": "Fills the screen (the fullscreen control; Escape leaves).",
+      "event": "ok:map:fullscreen",
+      "kind": "state",
+      "name": "fullscreen"
+     }
+    ],
+    "parts": [
+     {
+      "description": "On a source: its credit, shown in the attribution control.",
+      "kind": "value",
+      "name": "data-ok-attribution",
+      "value": "string"
+     },
+     {
+      "description": "On a layer: the id of the layer it is drawn under.",
+      "kind": "value",
+      "name": "data-ok-before-id",
+      "value": "string"
+     },
+     {
+      "description": "The area the map shows at first, `west,south,east,north`. On a source: the area its tiles cover.",
+      "kind": "value",
+      "name": "data-ok-bounds",
+      "value": "string"
+     },
+     {
+      "description": "On a GeoJSON source: the tile buffer.",
+      "kind": "value",
+      "name": "data-ok-buffer",
+      "value": "string"
+     },
+     {
+      "description": "On a GeoJSON source: groups nearby points into clusters.",
+      "kind": "state",
+      "name": "data-ok-cluster"
+     },
+     {
+      "description": "On a clustered source: the highest zoom level with clusters.",
+      "kind": "value",
+      "name": "data-ok-cluster-max-zoom",
+      "value": "string"
+     },
+     {
+      "description": "On a clustered source: the fewest points that make a cluster.",
+      "kind": "value",
+      "name": "data-ok-cluster-min-points",
+      "value": "string"
+     },
+     {
+      "description": "On a clustered source: properties computed per cluster, as JSON.",
+      "kind": "value",
+      "name": "data-ok-cluster-properties",
+      "value": "string"
+     },
+     {
+      "description": "On a clustered source: the cluster radius, in pixels.",
+      "kind": "value",
+      "name": "data-ok-cluster-radius",
+      "value": "string"
+     },
+     {
+      "description": "On an image or video source: its corners, as JSON.",
+      "kind": "value",
+      "name": "data-ok-coordinates",
+      "value": "string"
+     },
+     {
+      "description": "Set by the runtime on a popup: the side it opened on.",
+      "kind": "value",
+      "name": "data-ok-current-anchor",
+      "value": "string"
+     },
+     {
+      "description": "On a GeoJSON source: the data, as a URL or inline JSON.",
+      "kind": "value",
+      "name": "data-ok-data",
+      "value": "string"
+     },
+     {
+      "description": "Set by the runtime on a marker while it is dragged.",
+      "kind": "state",
+      "name": "data-ok-dragging"
+     },
+     {
+      "description": "On a raster DEM source: how heights are encoded.",
+      "kind": "value",
+      "name": "data-ok-encoding",
+      "value": [
+       "mapbox",
+       "terrarium"
+      ]
+     },
+     {
+      "description": "On the terrain control: how much heights are exaggerated.",
+      "kind": "value",
+      "name": "data-ok-exaggeration",
+      "value": "string"
+     },
+     {
+      "description": "Set by the runtime when the map shows its fallback content.",
+      "kind": "state",
+      "name": "data-ok-fallback"
+     },
+     {
+      "description": "On a layer: the features it draws, as a MapLibre filter in JSON.",
+      "kind": "value",
+      "name": "data-ok-filter",
+      "value": "string"
+     },
+     {
+      "description": "On a GeoJSON source: gives every feature an id.",
+      "kind": "state",
+      "name": "data-ok-generate-id"
+     },
+     {
+      "description": "On a source or a layer: its id.",
+      "kind": "value",
+      "name": "data-ok-id",
+      "value": "string"
+     },
+     {
+      "description": "The ids of the layers whose features pointer events report, separated by spaces.",
+      "kind": "value",
+      "name": "data-ok-interactive-layer-ids",
+      "value": "string"
+     },
+     {
+      "description": "On a GeoJSON source: computes line distances (for gradients).",
+      "kind": "state",
+      "name": "data-ok-line-metrics"
+     },
+     {
+      "description": "Set by the runtime once the map has drawn fully.",
+      "kind": "state",
+      "name": "data-ok-loaded"
+     },
+     {
+      "description": "A control's button and what it does.",
+      "kind": "value",
+      "name": "data-ok-map-action",
+      "value": [
+       "compass",
+       "fullscreen",
+       "geolocate",
+       "globe",
+       "terrain",
+       "zoom-in",
+       "zoom-out"
+      ]
+     },
+     {
+      "description": "The compass icon.",
+      "elements": [
+       "svg"
+      ],
+      "kind": "part",
+      "name": "data-ok-map-compass-icon"
+     },
+     {
+      "description": "The north half of the compass needle.",
+      "elements": [
+       "path"
+      ],
+      "kind": "part",
+      "name": "data-ok-map-compass-north"
+     },
+     {
+      "description": "The south half of the compass needle.",
+      "kind": "part",
+      "name": "data-ok-map-compass-south"
+     },
+     {
+      "description": "A corner that holds controls.",
+      "kind": "value",
+      "name": "data-ok-map-corner",
+      "value": [
+       "bottom-left",
+       "bottom-right",
+       "top-left",
+       "top-right"
+      ]
+     },
+     {
+      "description": "The map's text alternative. Visually hidden, and shown with the fallback.",
+      "elements": [
+       "p"
+      ],
+      "kind": "part",
+      "name": "data-ok-map-description"
+     },
+     {
+      "description": "What the map shows without WebGL or JavaScript.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-map-fallback"
+     },
+     {
+      "description": "Flies the map whose `id` it names to the place in `data-ok-longitude`, `data-ok-latitude` and `data-ok-zoom`.",
+      "kind": "trigger",
+      "name": "data-ok-map-fly-to",
+      "value": [
+       "id"
+      ]
+     },
+     {
+      "description": "One of the full screen button's two icons.",
+      "kind": "value",
+      "name": "data-ok-map-icon",
+      "value": [
+       "enter",
+       "exit"
+      ]
+     },
+     {
+      "description": "HTML only: a layer that draws a source (hidden).",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-map-layer"
+     },
+     {
+      "description": "HTML only: a data source (hidden).",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-map-source"
+     },
+     {
+      "description": "A visually hidden live region that announces the location.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-map-status"
+     },
+     {
+      "description": "The URL of the map style.",
+      "kind": "value",
+      "name": "data-ok-map-style",
+      "value": "string"
+     },
+     {
+      "description": "The URL of the map style in the dark scheme.",
+      "kind": "value",
+      "name": "data-ok-map-style-dark",
+      "value": "string"
+     },
+     {
+      "description": "The user's position, drawn by the geolocate control.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-map-user-location"
+     },
+     {
+      "description": "The area the map can't leave, `west,south,east,north`.",
+      "kind": "value",
+      "name": "data-ok-max-bounds",
+      "value": "string"
+     },
+     {
+      "description": "Set by the runtime on the attribution control on narrow maps.",
+      "kind": "state",
+      "name": "data-ok-narrow"
+     },
+     {
+      "description": "On a marker or a popup: its offset, in pixels, such as `0 -12`.",
+      "kind": "value",
+      "name": "data-ok-offset",
+      "value": "string"
+     },
+     {
+      "description": "On a layer: its paint properties, as JSON.",
+      "kind": "value",
+      "name": "data-ok-paint",
+      "value": "string"
+     },
+     {
+      "description": "On a vector or GeoJSON source: the property used as feature id.",
+      "kind": "value",
+      "name": "data-ok-promote-id",
+      "value": "string"
+     },
+     {
+      "description": "Set by the runtime once the first style is in.",
+      "kind": "state",
+      "name": "data-ok-ready"
+     },
+     {
+      "description": "On a tile source: its tile scheme.",
+      "kind": "value",
+      "name": "data-ok-scheme",
+      "value": [
+       "tms",
+       "xyz"
+      ]
+     },
+     {
+      "description": "Set by the runtime while the geolocate control shows the accuracy circle.",
+      "kind": "state",
+      "name": "data-ok-show-accuracy"
+     },
+     {
+      "description": "On a layer outside a source: the id of its source. On the terrain control: the DEM source.",
+      "kind": "value",
+      "name": "data-ok-source",
+      "value": "string"
+     },
+     {
+      "description": "On a layer: the layer of a vector source it draws.",
+      "kind": "value",
+      "name": "data-ok-source-layer",
+      "value": "string"
+     },
+     {
+      "description": "On a tile source: the tile size, in pixels.",
+      "kind": "value",
+      "name": "data-ok-tile-size",
+      "value": "string"
+     },
+     {
+      "description": "On a tile source: the tile URLs, separated by spaces.",
+      "kind": "value",
+      "name": "data-ok-tiles",
+      "value": "string"
+     },
+     {
+      "description": "On a GeoJSON source: how much lines are simplified.",
+      "kind": "value",
+      "name": "data-ok-tolerance",
+      "value": "string"
+     },
+     {
+      "description": "On a source: the URL of its TileJSON or data.",
+      "kind": "value",
+      "name": "data-ok-url",
+      "value": "string"
+     }
+    ],
+    "runtime": "map"
+   },
+   "name": "Map"
+  },
+  {
+   "name": "AttributionControl",
+   "react": {
+    "description": "The credits of the map's data, read from its style. `MapView` shows one unless `attributionControl={false}`.",
+    "props": [
+     {
+      "description": "Always folded behind an info button (default: only on maps narrower than 640px).",
+      "name": "compact",
+      "type": "boolean"
+     },
+     {
+      "default": "bottom-right",
+      "description": "The corner of the map that holds the control.",
+      "name": "position",
+      "type": "\"bottom-left\" | \"bottom-right\" | \"top-left\" | \"top-right\""
+     }
+    ]
+   }
+  },
+  {
+   "name": "FullscreenControl",
+   "react": {
+    "description": "The map fills the screen (Escape or the button again leaves).",
+    "props": [
+     {
+      "description": "The corner of the map that holds the control.",
+      "name": "position",
+      "type": "\"bottom-left\" | \"bottom-right\" | \"top-left\" | \"top-right\""
+     }
+    ]
+   }
+  },
+  {
+   "name": "GeolocateControl",
+   "react": {
+    "description": "Moves the map to the person's location (asks for permission).",
+    "props": [
+     {
+      "description": "Called when the position can't be found.",
+      "name": "onError",
+      "type": "((error: Error | GeolocationPositionError) => void)"
+     },
+     {
+      "description": "Called with the user's position.",
+      "name": "onGeolocate",
+      "type": "((position: GeolocationPosition) => void)"
+     },
+     {
+      "description": "Called when tracking the user's location ends.",
+      "name": "onTrackUserLocationEnd",
+      "type": "(() => void)"
+     },
+     {
+      "description": "Called when tracking the user's location starts.",
+      "name": "onTrackUserLocationStart",
+      "type": "(() => void)"
+     },
+     {
+      "description": "The corner of the map that holds the control.",
+      "name": "position",
+      "type": "\"bottom-left\" | \"bottom-right\" | \"top-left\" | \"top-right\""
+     },
+     {
+      "default": "true",
+      "description": "A circle as wide as the accuracy.",
+      "name": "showAccuracyCircle",
+      "type": "boolean"
+     },
+     {
+      "default": "true",
+      "description": "A dot at the location.",
+      "name": "showUserLocation",
+      "type": "boolean"
+     },
+     {
+      "description": "Keeps following the location; the button turns tracking on and off.",
+      "name": "trackUserLocation",
+      "type": "boolean"
+     }
+    ]
+   }
+  },
+  {
+   "name": "GlobeControl",
+   "react": {
+    "description": "Switches between the flat map and the globe.",
+    "props": [
+     {
+      "description": "The corner of the map that holds the control.",
+      "name": "position",
+      "type": "\"bottom-left\" | \"bottom-right\" | \"top-left\" | \"top-right\""
+     }
+    ]
+   }
+  },
+  {
+   "name": "Layer",
+   "react": {
+    "description": "How a source's data is drawn (`circle`, `fill`, `line`, `symbol`, `heatmap`…). No markup.",
+    "native": "HTMLElement",
+    "props": [
+     {
+      "description": "Draws the layer under this one.",
+      "name": "beforeId",
+      "type": "string"
+     },
+     {
+      "description": "Which features it draws (MapLibre expression); `undefined`: all. A expression specifying conditions on source features. Only features that match the filter are displayed. Zoom expressions in filters are only evaluated at integer zoom levels. The `feature-state` expression is not supported in filter expressions.",
+      "name": "filter",
+      "type": "MapLayerFilter"
+     },
+     {
+      "description": "Layer id (default: generated).",
+      "name": "id",
+      "type": "string"
+     },
+     {
+      "description": "Source id (default: the enclosing `Source`).",
+      "name": "source",
+      "type": "string"
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-map-attribution",
+    "options": [
+     {
+      "attr": "data-ok-compact",
+      "description": "Always folds the credits behind an info button (default: only on maps narrower than 640px).",
+      "kind": "flag",
+      "name": "compact"
+     }
+    ],
+    "parts": [
+     {
+      "description": "The text of the attribution control.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-map-attribution-text"
+     }
+    ]
+   },
+   "name": "MapAttribution"
+  },
+  {
+   "html": {
+    "attribute": "data-ok-map-control",
+    "description": "One control in a corner.",
+    "elements": [
+     "div"
+    ]
+   },
+   "name": "MapControl",
+   "react": {
+    "description": "A control box in a corner of the map, for your own buttons (`useMap()` reaches the map).",
+    "native": "HTMLElement",
+    "props": [
+     {
+      "description": "The content.",
+      "name": "children",
+      "type": "ReactNode"
+     },
+     {
+      "default": "top-right",
+      "description": "Corner of the map.",
+      "name": "position",
+      "type": "\"bottom-left\" | \"bottom-right\" | \"top-left\" | \"top-right\""
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-map-geolocate",
+    "options": [
+     {
+      "attr": "data-ok-track-user-location",
+      "description": "Keeps following the location: the button turns tracking on and off.",
+      "kind": "flag",
+      "name": "trackUserLocation"
+     },
+     {
+      "attr": "data-ok-show-user-location",
+      "default": true,
+      "description": "Shows a dot at the location.",
+      "kind": "behavior",
+      "name": "showUserLocation"
+     },
+     {
+      "attr": "data-ok-show-accuracy-circle",
+      "default": true,
+      "description": "Shows a circle as wide as the location's accuracy.",
+      "kind": "behavior",
+      "name": "showAccuracyCircle"
+     }
+    ]
+   },
+   "name": "MapGeolocate"
+  },
+  {
+   "html": {
+    "attribute": "data-ok-map-marker",
+    "options": [
+     {
+      "attr": "data-ok-longitude",
+      "description": "Longitude of the point it marks.",
+      "kind": "number",
+      "name": "longitude"
+     },
+     {
+      "attr": "data-ok-latitude",
+      "description": "Latitude of the point it marks.",
+      "kind": "number",
+      "name": "latitude"
+     },
+     {
+      "attr": "data-ok-anchor",
+      "default": "center",
+      "description": "Which part of the marker sits on the point (`bottom` for pins).",
+      "kind": "style",
+      "name": "anchor",
+      "values": [
+       "center",
+       "top",
+       "bottom",
+       "left",
+       "right",
+       "top-left",
+       "top-right",
+       "bottom-left",
+       "bottom-right"
+      ]
+     },
+     {
+      "attr": "data-ok-color",
+      "default": "primary",
+      "description": "Color of the default pin.",
+      "kind": "style",
+      "name": "color",
+      "values": [
+       "primary",
+       "secondary",
+       "info",
+       "success",
+       "warning",
+       "error"
+      ]
+     },
+     {
+      "attr": "data-ok-draggable",
+      "description": "People can drag the marker, or move it with the arrow keys once it has focus.",
+      "kind": "flag",
+      "name": "draggable"
+     },
+     {
+      "attr": "data-ok-rotation",
+      "description": "Rotation in degrees clockwise.",
+      "kind": "number",
+      "name": "rotation"
+     },
+     {
+      "attr": "data-ok-rotation-alignment",
+      "default": "auto",
+      "description": "`map`: turns with the map; `viewport` and `auto`: stays upright.",
+      "kind": "style",
+      "name": "rotationAlignment",
+      "optional": true,
+      "values": [
+       "auto",
+       "map",
+       "viewport"
+      ]
+     },
+     {
+      "attr": "data-ok-pitch-alignment",
+      "default": "auto",
+      "description": "`map`: lies flat on a tilted map; `viewport` and `auto`: faces the screen.",
+      "kind": "style",
+      "name": "pitchAlignment",
+      "optional": true,
+      "values": [
+       "auto",
+       "map",
+       "viewport"
+      ]
+     }
+    ]
+   },
+   "name": "MapMarker"
+  },
+  {
+   "html": {
+    "attribute": "data-ok-map-navigation",
+    "options": [
+     {
+      "attr": "data-ok-visualize-pitch",
+      "description": "The compass also tilts with the map.",
+      "kind": "flag",
+      "name": "visualizePitch"
+     }
+    ]
+   },
+   "name": "MapNavigation"
+  },
+  {
+   "html": {
+    "attribute": "data-ok-map-panel",
+    "description": "A panel over the map, such as a legend.",
+    "elements": [
+     "div"
+    ]
+   },
+   "name": "MapPanel",
+   "react": {
+    "description": "A dark, translucent card over the map for settings or readouts.",
+    "native": "HTMLDivElement",
+    "props": [
+     {
+      "description": "The content.",
+      "name": "children",
+      "type": "ReactNode"
+     },
+     {
+      "default": "top-right",
+      "description": "Corner it sits in.",
+      "name": "position",
+      "type": "\"bottom-left\" | \"bottom-right\" | \"top-left\" | \"top-right\""
+     },
+     {
+      "description": "Inline styles of the panel.",
+      "name": "style",
+      "type": "CSSProperties"
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-map-pin",
+    "description": "The default pin of a marker.",
+    "elements": [
+     "svg"
+    ]
+   },
+   "name": "MapPin",
+   "react": {
+    "description": "The default marker shape: a pin in the marker's color.",
+    "native": "HTMLElement",
+    "props": []
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-map-popup",
+    "options": [
+     {
+      "attr": "data-ok-longitude",
+      "description": "Longitude of the point it points at.",
+      "kind": "number",
+      "name": "longitude"
+     },
+     {
+      "attr": "data-ok-latitude",
+      "description": "Latitude of the point it points at.",
+      "kind": "number",
+      "name": "latitude"
+     },
+     {
+      "attr": "data-ok-anchor",
+      "default": "bottom",
+      "description": "Which side of the popup points at the point (default: picked so the popup fits).",
+      "kind": "style",
+      "name": "anchor",
+      "optional": true,
+      "values": [
+       "center",
+       "top",
+       "bottom",
+       "left",
+       "right",
+       "top-left",
+       "top-right",
+       "bottom-left",
+       "bottom-right"
+      ]
+     },
+     {
+      "attr": "data-ok-max-width",
+      "default": 240,
+      "description": "Widest the popup gets, in px.",
+      "kind": "number",
+      "min": 0,
+      "name": "maxWidth",
+      "units": [
+       "px",
+       "rem",
+       "em"
+      ]
+     },
+     {
+      "attr": "data-ok-close-on-click",
+      "default": true,
+      "description": "A click on the map closes it.",
+      "kind": "behavior",
+      "name": "closeOnClick"
+     },
+     {
+      "attr": "data-ok-close-on-move",
+      "description": "Moving the map closes it.",
+      "kind": "flag",
+      "name": "closeOnMove"
+     },
+     {
+      "attr": "data-ok-focus-after-open",
+      "default": true,
+      "description": "Moves focus into the popup when it opens (and back when it closes).",
+      "kind": "behavior",
+      "name": "focusAfterOpen"
+     }
+    ],
+    "parts": [
+     {
+      "description": "The close button of a popup.",
+      "kind": "part",
+      "name": "data-ok-map-popup-close"
+     },
+     {
+      "description": "The content of a popup.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-map-popup-content"
+     },
+     {
+      "description": "Opens the popup whose `id` it names.",
+      "kind": "trigger",
+      "name": "data-ok-map-popup-open",
+      "value": [
+       "id"
+      ]
+     },
+     {
+      "description": "The tip of a popup that points at its place.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-map-popup-tip"
+     }
+    ]
+   },
+   "name": "MapPopup"
+  },
+  {
+   "name": "MapProvider",
+   "react": {
+    "description": "Lets `useMap()` reach every map with an `id` inside it (for example, a map beside its controls).",
+    "props": [
+     {
+      "description": "The content.",
+      "name": "children",
+      "type": "ReactNode"
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-map-scale",
+    "options": [
+     {
+      "attr": "data-ok-unit",
+      "default": "metric",
+      "description": "Units: `metric`, `imperial` or `nautical`.",
+      "kind": "style",
+      "name": "unit",
+      "values": [
+       "metric",
+       "imperial",
+       "nautical"
+      ]
+     },
+     {
+      "attr": "data-ok-max-width",
+      "default": 100,
+      "description": "Longest the scale bar gets, in px.",
+      "kind": "number",
+      "min": 1,
+      "name": "maxWidth"
+     }
+    ]
+   },
+   "name": "MapScale"
+  },
+  {
+   "html": {
+    "attribute": "data-ok-map-view",
+    "description": "The element MapLibre draws in.",
+    "elements": [
+     "div"
+    ]
+   },
+   "name": "MapView",
+   "react": {
+    "description": "react-map-gl's `Map`, renamed so that it doesn't shadow the global `Map` in your modules. An interactive vector map drawn by MapLibre GL JS through the core map controller shared with the HTML runtime. Children: `Marker`, `Popup`, `Source` / `Layer`, controls (`NavigationControl`, `GeolocateControl`, `FullscreenControl`, `ScaleControl`, `AttributionControl`, `GlobeControl`, `TerrainControl`, `MapControl`) and `MapPanel`s. Props follow react-map-gl's.",
+    "native": "HTMLElement",
+    "props": [
+     {
+      "description": "Name of the map (its canvas). Default \"Map\".",
+      "name": "aria-label",
+      "type": "string"
+     },
+     {
+      "default": "true",
+      "description": "Shows the attribution control (bottom right). required by most map data.",
+      "name": "attributionControl",
+      "type": "boolean"
+     },
+     {
+      "default": "0",
+      "description": "Rotation in degrees clockwise from north.",
+      "name": "bearing",
+      "type": "number"
+     },
+     {
+      "description": "The content.",
+      "name": "children",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Page-friendly gestures: Ctrl + scroll zooms and two fingers pan, so the page keeps scrolling.",
+      "name": "cooperativeGestures",
+      "type": "boolean"
+     },
+     {
+      "description": "Cursor over the map (default: grab, pointer over interactive features).",
+      "name": "cursor",
+      "type": "string"
+     },
+     {
+      "description": "A text alternative for what the map shows (visually hidden; shown when it can't draw).",
+      "name": "description",
+      "type": "ReactNode"
+     },
+     {
+      "description": "fallback`).",
+      "name": "fallback",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Where the map starts (uncontrolled).",
+      "name": "initialViewState",
+      "type": "MapInitialViewState"
+     },
+     {
+      "description": "features`) and that show a pointer.",
+      "name": "interactiveLayerIds",
+      "type": "readonly string[]"
+     },
+     {
+      "description": "Texts: control names, status messages, the fallback (English by default).",
+      "name": "labels",
+      "type": "Partial<MapLabels>"
+     },
+     {
+      "default": "0",
+      "description": "Center latitude in degrees (−85 to 85).",
+      "name": "latitude",
+      "type": "number"
+     },
+     {
+      "default": "0",
+      "description": "Center longitude in degrees (HTML: changing it moves the map).",
+      "name": "longitude",
+      "type": "number"
+     },
+     {
+      "description": "Any other MapLibre option, read once (`transformRequest`, `fadeDuration`, `hash`…).",
+      "name": "mapOptions",
+      "type": "Partial<MapOptions>"
+     },
+     {
+      "description": "Style for light color schemes (and dark ones without `mapStyleDark`): a URL or a style object.",
+      "name": "mapStyle",
+      "type": "MapStyle"
+     },
+     {
+      "description": "Style used while the map sits in a dark color scheme (follows Owlky's theme).",
+      "name": "mapStyleDark",
+      "type": "MapStyle"
+     },
+     {
+      "description": "`[west, south, east, north]`: people can't move the map outside.",
+      "name": "maxBounds",
+      "type": "[number, number, number, number]"
+     },
+     {
+      "default": "60",
+      "description": "Highest tilt in degrees (at most 85).",
+      "name": "maxPitch",
+      "type": "number"
+     },
+     {
+      "default": "22",
+      "description": "Highest zoom level people can reach (at most 24).",
+      "name": "maxZoom",
+      "type": "number"
+     },
+     {
+      "default": "0",
+      "description": "Lowest tilt in degrees.",
+      "name": "minPitch",
+      "type": "number"
+     },
+     {
+      "default": "0",
+      "description": "Lowest zoom level people can reach.",
+      "name": "minZoom",
+      "type": "number"
+     },
+     {
+      "description": "Called when the map falls back to its static content (no WebGL, or an error).",
+      "name": "onFallback",
+      "type": "((reason: \"error\" | \"webgl\") => void)"
+     },
+     {
+      "description": "Called when the map enters or leaves full screen.",
+      "name": "onFullscreenChange",
+      "type": "((fullscreen: boolean) => void)"
+     },
+     {
+      "default": "0",
+      "description": "Tilt in degrees (0: looking straight down).",
+      "name": "pitch",
+      "type": "number"
+     },
+     {
+      "default": "mercator",
+      "description": "Projection: a flat `mercator` map or a `globe` when zoomed out.",
+      "name": "projection",
+      "type": "\"globe\" | \"mercator\""
+     },
+     {
+      "default": "true",
+      "description": "Repeats the world side by side when zoomed out.",
+      "name": "renderWorldCopies",
+      "type": "boolean"
+     },
+     {
+      "description": "3D terrain from a `raster-dem` source.",
+      "name": "terrain",
+      "type": "{ source: string; exaggeration?: number; } | null"
+     },
+     {
+      "description": "Controlled view: the map shows it; follow `onMove` to let people move the map.",
+      "name": "viewState",
+      "type": "Partial<MapViewState>"
+     },
+     {
+      "default": "0",
+      "description": "Zoom level (0: the whole world).",
+      "name": "zoom",
+      "type": "number"
+     }
+    ]
+   }
+  },
+  {
+   "name": "Marker",
+   "react": {
+    "description": "A point on the map: a pin, or any content. With `onClick` or `draggable` it is a button (name it with `aria-label`); Enter and Space click it, arrow keys move a draggable one.",
+    "native": "HTMLDivElement",
+    "props": [
+     {
+      "default": "center",
+      "description": "Which part sits on the point. (`bottom` suits pins).",
+      "name": "anchor",
+      "type": "\"bottom\" | \"bottom-left\" | \"bottom-right\" | \"center\" | \"left\" | \"right\" | \"top\" | \"top-left\" | \"top-right\""
+     },
+     {
+      "description": "Content (default: a pin).",
+      "name": "children",
+      "type": "ReactNode"
+     },
+     {
+      "default": "primary",
+      "description": "Color of the default pin.",
+      "name": "color",
+      "type": "\"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
+     },
+     {
+      "description": "People can drag it (or move it with the arrow keys once focused).",
+      "name": "draggable",
+      "type": "boolean"
+     },
+     {
+      "default": "0",
+      "description": "Center latitude in degrees (−85 to 85).",
+      "name": "latitude",
+      "required": true,
+      "type": "number"
+     },
+     {
+      "default": "0",
+      "description": "Center longitude in degrees (HTML: changing it moves the map).",
+      "name": "longitude",
+      "required": true,
+      "type": "number"
+     },
+     {
+      "description": "Shift in px from the anchor: `[x, y]`.",
+      "name": "offset",
+      "type": "MapOffset"
+     },
+     {
+      "description": "Called while the marker is dragged.",
+      "name": "onDrag",
+      "type": "((event: MarkerDragEvent) => void)"
+     },
+     {
+      "description": "Called when the marker is dropped.",
+      "name": "onDragEnd",
+      "type": "((event: MarkerDragEvent) => void)"
+     },
+     {
+      "description": "Called when a drag of the marker starts.",
+      "name": "onDragStart",
+      "type": "((event: MarkerDragEvent) => void)"
+     },
+     {
+      "default": "auto",
+      "description": "`map`: lies flat on a tilted map; `viewport` and `auto`: faces the screen.",
+      "name": "pitchAlignment",
+      "type": "\"auto\" | \"map\" | \"viewport\""
+     },
+     {
+      "description": "Rotation in degrees clockwise.",
+      "name": "rotation",
+      "type": "number"
+     },
+     {
+      "default": "auto",
+      "description": "`map`: turns with the map; `viewport` and `auto`: stays upright.",
+      "name": "rotationAlignment",
+      "type": "\"auto\" | \"map\" | \"viewport\""
+     }
+    ]
+   }
+  },
+  {
+   "name": "NavigationControl",
+   "react": {
+    "description": "Zoom in, zoom out and the compass.",
+    "props": [
+     {
+      "description": "The corner of the map that holds the control.",
+      "name": "position",
+      "type": "\"bottom-left\" | \"bottom-right\" | \"top-left\" | \"top-right\""
+     },
+     {
+      "default": "true",
+      "description": "A compass that resets north (drag it to rotate).",
+      "name": "showCompass",
+      "type": "boolean"
+     },
+     {
+      "default": "true",
+      "description": "Shows the zoom in and zoom out buttons.",
+      "name": "showZoom",
+      "type": "boolean"
+     },
+     {
+      "description": "The compass also tilts with the map, and resets the tilt.",
+      "name": "visualizePitch",
+      "type": "boolean"
+     }
+    ]
+   }
+  },
+  {
+   "name": "Popup",
+   "react": {
+    "description": "A dialog that points at a place. It shows while rendered; `onClose` asks to remove it.",
+    "native": "HTMLDivElement",
+    "props": [
+     {
+      "description": "Which side points at the point. Default: picked so the popup fits.",
+      "name": "anchor",
+      "type": "\"bottom\" | \"bottom-left\" | \"bottom-right\" | \"center\" | \"left\" | \"right\" | \"top\" | \"top-left\" | \"top-right\""
+     },
+     {
+      "description": "The content.",
+      "name": "children",
+      "type": "ReactNode"
+     },
+     {
+      "default": "true",
+      "description": "Shows a close button.",
+      "name": "closeButton",
+      "type": "boolean"
+     },
+     {
+      "default": "true",
+      "description": "A click on the map closes it.",
+      "name": "closeOnClick",
+      "type": "boolean"
+     },
+     {
+      "description": "Moving the map closes it.",
+      "name": "closeOnMove",
+      "type": "boolean"
+     },
+     {
+      "default": "true",
+      "description": "Moves focus into the popup when it opens (and back when it closes).",
+      "name": "focusAfterOpen",
+      "type": "boolean"
+     },
+     {
+      "default": "0",
+      "description": "Center latitude in degrees (−85 to 85).",
+      "name": "latitude",
+      "required": true,
+      "type": "number"
+     },
+     {
+      "default": "0",
+      "description": "Center longitude in degrees (HTML: changing it moves the map).",
+      "name": "longitude",
+      "required": true,
+      "type": "number"
+     },
+     {
+      "description": "Widest the popup gets: px or a CSS length (`\"20rem\"`). Default 240.",
+      "name": "maxWidth",
+      "type": "string | number"
+     },
+     {
+      "description": "Distance from the point in px, or `[x, y]`.",
+      "name": "offset",
+      "type": "MapOffset"
+     },
+     {
+      "description": "The popup asks to close (close button, map click, Escape, move): remove it.",
+      "name": "onClose",
+      "type": "((reason: MapPopupCloseReason) => void)"
+     },
+     {
+      "description": "Called once it is shown.",
+      "name": "onOpen",
+      "type": "(() => void)"
+     }
+    ]
+   }
+  },
+  {
+   "name": "ScaleControl",
+   "react": {
+    "description": "A bar with the distance it covers (\"500 km\").",
+    "props": [
+     {
+      "description": "Longest the bar gets, in px. Default 100.",
+      "name": "maxWidth",
+      "type": "number"
+     },
+     {
+      "default": "bottom-left",
+      "description": "The corner of the map that holds the control.",
+      "name": "position",
+      "type": "\"bottom-left\" | \"bottom-right\" | \"top-left\" | \"top-right\""
+     },
+     {
+      "default": "metric",
+      "description": "Units: `metric`, `imperial` or `nautical`.",
+      "name": "unit",
+      "type": "\"imperial\" | \"metric\" | \"nautical\""
+     }
+    ]
+   }
+  },
+  {
+   "name": "Source",
+   "react": {
+    "description": "Data for layers (GeoJSON, vector or raster tiles, images). Renders no markup.",
+    "native": "HTMLElement",
+    "props": [
+     {
+      "description": "The content.",
+      "name": "children",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Source id (default: generated). Layers inside use it.",
+      "name": "id",
+      "type": "string"
+     }
+    ]
+   }
+  },
+  {
+   "name": "TerrainControl",
+   "react": {
+    "description": "Turns 3D terrain on and off.",
+    "props": [
+     {
+      "description": "Height multiplier. Default 1.",
+      "name": "exaggeration",
+      "type": "number"
+     },
+     {
+      "description": "The corner of the map that holds the control.",
+      "name": "position",
+      "type": "\"bottom-left\" | \"bottom-right\" | \"top-left\" | \"top-right\""
+     },
+     {
+      "description": "The `raster-dem` source to raise the terrain from.",
+      "name": "source",
+      "required": true,
+      "type": "string"
+     }
+    ]
+   }
+  }
+ ],
+ "format": 1,
+ "name": "map",
+ "title": "Map",
+ "types": [
+  {
+   "name": "MapOffset",
+   "type": "number | readonly [number, number]"
+  },
+  {
+   "name": "MapStyle",
+   "type": "string | StyleSpecification"
+  }
+ ]
+}

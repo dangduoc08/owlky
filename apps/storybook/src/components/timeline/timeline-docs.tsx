@@ -1,4 +1,6 @@
 import { timelineDotOptions, timelineItemOptions, timelineOptions } from "@owlky/core";
+import timelineApi from "@owlky/docs-content/api/timeline.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import {
   Timeline,
   TimelineConnector,
@@ -115,6 +117,7 @@ export function OrderHistory() {
 - Content text uses the primary text color, with a contrast ratio of at least 4.5:1 in both themes.
 - On narrow screens, long words wrap inside their side instead of overflowing.`,
   },
+  apiReferenceSection(timelineApi),
 ];
 
 const PREVIEWS = {

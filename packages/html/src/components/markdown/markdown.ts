@@ -15,7 +15,15 @@ import {
   type UrlTransform,
 } from "@owlky/core/markdown";
 import { defineComponent } from "../../runtime/define.js";
-import type { ComponentInstance } from "../../runtime/types.js";
+import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
+
+/** Events of this component (`ok:<name>:<event>` on the root). */
+export interface MarkdownEvents {
+  /** After the Markdown was rendered. */
+  render: EventSpec<{ value: string }>;
+  /** After rendering failed (a plugin threw). */
+  error: EventSpec<{ error: unknown }>;
+}
 
 export interface MarkdownInstance extends ComponentInstance {
   /** The Markdown source (the source element's text). */
@@ -124,7 +132,7 @@ function build(
  * Events:  ok:markdown:render (detail `{ value }`), ok:markdown:error (detail `{ error }`).
  */
 export const createMarkdown = (setup: CreateMarkdownOptions = {}) =>
-  defineComponent<MarkdownInstance>({
+  defineComponent<MarkdownInstance, MarkdownEvents>({
     name: "markdown",
     selector: "[data-ok-markdown]",
 

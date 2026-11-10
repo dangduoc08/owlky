@@ -91,11 +91,13 @@ export function PickerArrowIcon({ direction }: { direction: "left" | "right" | "
 export interface PickerDayOwnerState {
   /** The day (the date adapter's type). */
   day: PickerValidDate;
+  /** The day is selected. */
   selected: boolean;
   /** Today (ringed unless `disableHighlightToday`). */
   today: boolean;
   /** A day of the previous or next month (`showDaysOutsideCurrentMonth`). */
   outsideCurrentMonth: boolean;
+  /** The day can't be picked. */
   disabled: boolean;
 }
 
@@ -775,13 +777,18 @@ interface ListCalendarProps
   extends DateValidationProps,
     Omit<HTMLAttributes<HTMLDivElement>, "onChange" | "defaultValue"> {
   value?: Date | null | undefined;
+  /** The first value, uncontrolled. */
   defaultValue?: Date | null | undefined;
+  /** Called when a month or a year is picked. */
   onChange?: ((value: Date) => void) | undefined;
   /** The year whose months are shown (MonthCalendar) or the focused year. Default: the value's, else today's. */
   referenceDate?: Date | undefined;
+  /** The date treated as today (the default is the current date). */
   today?: Date | undefined;
+  /** Turns the calendar off. */
   disabled?: boolean | undefined;
   readOnly?: boolean | undefined;
+  /** Focuses the selected month or year when the calendar mounts. */
   autoFocus?: boolean | undefined;
 }
 

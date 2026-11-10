@@ -1,4 +1,6 @@
 import { paginationOptions } from "@owlky/core";
+import paginationApi from "@owlky/docs-content/api/pagination.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { Pagination } from "@owlky/react";
 import { useState } from "react";
 import { Caption, CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
@@ -37,6 +39,7 @@ ${htmlNav(STYLE)}`,
     react: `// Load once, in your app's entry file
 import "@owlky/styles/owlky.css";
 import { Pagination } from "@owlky/react";
+import { useState } from "react";
 
 export function Results() {
   const [page, setPage] = useState(1);
@@ -119,6 +122,7 @@ const rows = orders.slice((page - 1) * ROWS_PER_PAGE, page * ROWS_PER_PAGE);
 - Ellipses are hidden from assistive technology.
 - Translate the labels with \`getItemAriaLabel\` in React, or \`data-ok-label-page\` and \`data-ok-label-current\` in HTML.`,
   },
+  apiReferenceSection(paginationApi),
 ];
 
 function ControlledPreview() {
