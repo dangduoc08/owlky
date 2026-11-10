@@ -131,6 +131,49 @@ export function gridRowWindowOf(
 export const gridDensityFactor = (density: GridDensity): number =>
   density === "compact" ? 0.7 : density === "comfortable" ? 1.3 : 1;
 
+export interface GridHeaderHeights {
+  /** px before density (MUI X `columnHeaderHeight`). */
+  columnHeaderHeight?: number | undefined;
+  /** px before density; default: `columnHeaderHeight`. */
+  columnGroupHeaderHeight?: number | undefined;
+  /** px before density; default: `columnHeaderHeight`, else the stylesheet's 56px. */
+  headerFilterHeight?: number | undefined;
+}
+
+/**
+ * The private properties of the header heights (px × the density factor, MUI X), for the root:
+ * only the heights given, so the stylesheet keeps its density heights otherwise.
+ */
+export function gridHeaderHeightProperties(
+  heights: GridHeaderHeights,
+  density: GridDensity,
+): Record<string, string> {
+  const factor = gridDensityFactor(density);
+  const px = (value: number | undefined) =>
+    value !== undefined && value > 0 ? `${Math.round(value * factor)}px` : undefined;
+  const out: Record<string, string> = {};
+  const header = px(heights.columnHeaderHeight);
+  const group = px(heights.columnGroupHeaderHeight);
+  const filter = px(heights.headerFilterHeight ?? heights.columnHeaderHeight);
+  if (header) out["--_ok-data-grid-header-height"] = header;
+  if (group) out["--_ok-data-grid-group-header-height"] = group;
+  if (filter) out["--_ok-data-grid-header-filter-height"] = filter;
+  return out;
+}
+
+/**
+ * Rows that fit the grid's scroll area without scrolling (MUI X `autoPageSize`): its height
+ * without the header and the pinned rows, divided by a row's step (height + border); at least 1.
+ */
+export function gridAutoPageSize(main: HTMLElement, rowStep: number): number {
+  let room = main.clientHeight;
+  for (const part of main.querySelectorAll<HTMLElement>(
+    ":scope > [data-ok-data-grid-header], :scope > [data-ok-data-grid-pinned-rows]",
+  ))
+    if (!part.hidden) room -= part.offsetHeight;
+  return Math.max(Math.floor(room / Math.max(rowStep, 1)), 1);
+}
+
 /** Extra room for a header's sort icon and menu button, which show on hover. */
 const HEADER_ICONS = 64;
 
@@ -145,7 +188,7 @@ export function measureGridColumn(
 ): number {
   const cells = [
     ...grid.querySelectorAll<HTMLElement>(
-      `[role="gridcell"][data-ok-field="${CSS.escape(field)}"]`,
+      `:is([role="gridcell"], [role="rowheader"])[data-ok-field="${CSS.escape(field)}"]`,
     ),
   ].filter((cell) => !cell.hidden && !cell.closest("[hidden]") && cell.isConnected);
   const header =

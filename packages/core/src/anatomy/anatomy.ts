@@ -3449,9 +3449,87 @@ export const dataGridOptions = defineOptions("data-grid", "data-ok-data-grid", {
     "Edits and pastes that Ctrl / Cmd + Z can undo (`0` turns undo and redo off).",
     { min: 0 },
   ),
+  hideFooterPagination: flag(
+    "data-ok-hide-footer-pagination",
+    "No pagination in the footer: every row shows, with the row count.",
+  ),
+  hideFooterRowCount: flag(
+    "data-ok-hide-footer-row-count",
+    "No row count in the footer (it shows only without pagination).",
+  ),
+  hideFooterSelectedRowCount: flag(
+    "data-ok-hide-footer-selected-row-count",
+    'No "n rows selected" in the footer.',
+  ),
+  tabNavigation: style(
+    "data-ok-tab-navigation",
+    ["none", "content", "header", "all"] as const,
+    "none",
+    "Tab moves between body cells (`content`), headers (`header`) or both (`all`); `none` leaves the grid.",
+    { optional: true },
+  ),
+  columnHeaderHeight: number(
+    "data-ok-column-header-height",
+    undefined,
+    "Column header height (px) before density. Default 56.",
+    { min: 1 },
+  ),
+  columnGroupHeaderHeight: number(
+    "data-ok-column-group-header-height",
+    undefined,
+    "Column group header height (px) before density (default: the column headers').",
+    { min: 1 },
+  ),
+  headerFilterHeight: number(
+    "data-ok-header-filter-height",
+    undefined,
+    "Header filter row height (px) before density (default: the column headers', else 56).",
+    { min: 1 },
+  ),
+  showCellVerticalBorder: flag(
+    "data-ok-show-cell-vertical-border",
+    "Vertical lines between the cells.",
+  ),
+  showColumnVerticalBorder: flag(
+    "data-ok-show-column-vertical-border",
+    "Full-height vertical lines between the column headers.",
+  ),
+  rowSpacingType: style(
+    "data-ok-row-spacing-type",
+    ["margin", "border"] as const,
+    "margin",
+    "`getRowSpacing` space outside each row (`margin`) or inside it, under its background (`border`).",
+    { optional: true },
+  ),
+  autoHeight: flag(
+    "data-ok-auto-height",
+    "The grid grows with its rows: no scroll area, so no virtualization.",
+  ),
+  autoPageSize: flag(
+    "data-ok-auto-page-size",
+    "The page size fits the grid's height (no rows per page choice). The grid needs a height.",
+  ),
+  rowSelection: behavior(
+    "data-ok-row-selection",
+    true,
+    'Rows can be selected (`"false"`: no selection, no checkboxes, no `aria-selected`).',
+  ),
 });
 
 export interface DataGridAnatomyOptions {
+  columnHeaderHeight?: number | undefined;
+  columnGroupHeaderHeight?: number | undefined;
+  headerFilterHeight?: number | undefined;
+  showCellVerticalBorder?: boolean | undefined;
+  showColumnVerticalBorder?: boolean | undefined;
+  rowSpacingType?: "margin" | "border" | undefined;
+  autoHeight?: boolean | undefined;
+  autoPageSize?: boolean | undefined;
+  rowSelection?: boolean | undefined;
+  hideFooterPagination?: boolean | undefined;
+  hideFooterRowCount?: boolean | undefined;
+  hideFooterSelectedRowCount?: boolean | undefined;
+  tabNavigation?: "none" | "content" | "header" | "all" | undefined;
   historyStackSize?: number | undefined;
   multipleColumnsSortingMode?: "withModifierKey" | "always" | undefined;
   statusBar?: boolean | undefined;

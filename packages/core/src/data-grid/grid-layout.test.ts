@@ -1,9 +1,11 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { cleanupDom, mount } from "../test-utils.js";
 import {
+  gridAutoPageSize,
   gridColSpans,
   gridDensityFactor,
   gridFormatValue,
+  gridHeaderHeightProperties,
   gridRowOffsets,
   gridRowSpans,
   gridRowWindowOf,
@@ -12,7 +14,18 @@ import {
   parseGridFormatOptions,
   sanitizeGridState,
 } from "./grid-layout.js";
-import { deDE, enUS, esES, frFR, gridDisplayedRows, jaJP, viVN, zhCN } from "./grid-locales.js";
+import {
+  deDE,
+  enUS,
+  esES,
+  frFR,
+  gridDisplayedRows,
+  gridFooterRowCount,
+  gridFooterRowSelected,
+  jaJP,
+  viVN,
+  zhCN,
+} from "./grid-locales.js";
 
 afterEach(cleanupDom);
 
@@ -224,5 +237,47 @@ describe("locales", () => {
     expect(gridDisplayedRows(viVN.paginationDisplayedRows, { from: 1, to: 10, count: 25 })).toBe(
       "1–10 trên 25",
     );
+  });
+
+  it("writes the footer's counts", () => {
+    expect(gridFooterRowSelected(enUS, 1)).toBe("1 row selected");
+    expect(gridFooterRowSelected(enUS, 3)).toBe("3 rows selected");
+    expect(gridFooterRowCount(enUS, 25, 25)).toBe("Total Rows: 25");
+    expect(gridFooterRowCount(enUS, 3, 25)).toBe("Total Rows: 3 of 25");
+    expect(gridFooterRowCount(frFR, 3, 25)).toBe("Total de lignes : 3 sur 25");
+  });
+});
+
+describe("header heights and page size", () => {
+  it("scales the given heights by the density; the header filters follow the headers", () => {
+    expect(gridHeaderHeightProperties({}, "standard")).toEqual({});
+    expect(gridHeaderHeightProperties({ columnHeaderHeight: 40 }, "comfortable")).toEqual({
+      "--_ok-data-grid-header-height": "52px",
+      "--_ok-data-grid-header-filter-height": "52px",
+    });
+    expect(
+      gridHeaderHeightProperties(
+        { columnGroupHeaderHeight: 30, headerFilterHeight: 50 },
+        "compact",
+      ),
+    ).toEqual({
+      "--_ok-data-grid-group-header-height": "21px",
+      "--_ok-data-grid-header-filter-height": "35px",
+    });
+    expect(gridHeaderHeightProperties({ columnHeaderHeight: 0 }, "standard")).toEqual({});
+  });
+
+  it("fits the rows under the header and pinned rows, at least one", () => {
+    const host = mount(`<div id="m" style="height: 300px; overflow: auto">
+      <div data-ok-data-grid-header style="height: 56px"></div>
+      <div data-ok-data-grid-pinned-rows="top" style="height: 30px"></div>
+      <div data-ok-data-grid-pinned-rows="bottom" hidden style="height: 30px"></div>
+      <div data-ok-data-grid-body style="height: 900px"></div>
+    </div>`);
+    const main = host.querySelector<HTMLElement>("#m") as HTMLElement;
+    expect(gridAutoPageSize(main, 53)).toBe(4);
+    main.style.height = "60px";
+    expect(gridAutoPageSize(main, 53)).toBe(1);
+    expect(gridAutoPageSize(main, 0)).toBe(1);
   });
 });

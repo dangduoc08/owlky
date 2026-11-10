@@ -8,6 +8,7 @@ import {
   gridAriaSort,
   gridColumnTemplate,
   gridCompare,
+  gridDescendantSelection,
   gridDirectedComparator,
   gridExportColumns,
   gridFilterOperators,
@@ -17,19 +18,25 @@ import {
   gridOperatorNeedsValue,
   gridQuickFilterValues,
   gridSelectAllState,
+  gridSetFilterSearch,
+  gridSetFilterSummary,
+  gridSetFilterValues,
   gridSortValue,
   gridToCsv,
   isGridFilterable,
   isGridHideable,
+  isGridSetFilter,
   isGridSortable,
   matchesGridFilter,
   nextGridSort,
   parseGridSortingOrder,
+  propagateGridSelection,
   pruneGridSelection,
   selectGridRow,
   sortGridRows,
   toggleGridRow,
   toggleGridRows,
+  toggleGridSetFilterValues,
   visibleGridColumns,
 } from "./data-grid.js";
 
@@ -570,5 +577,102 @@ describe("phase 4", () => {
     expect(csv).toBe("Ana;30\r\nbao;9");
     expect(csvField("a;b", ";")).toBe('"a;b"');
     expect(csvField("a;b")).toBe("a;b");
+  });
+});
+
+describe("selection propagation", () => {
+  // g (group) › a (row) › a1, a2; g › b. x is unselectable.
+  const parents: Record<string, string | null> = {
+    g: null,
+    a: "g",
+    a1: "a",
+    a2: "a",
+    b: "g",
+    x: "a",
+  };
+  const tree = {
+    children: (id: string) => Object.keys(parents).filter((k) => parents[k] === id),
+    parent: (id: string) => parents[id] ?? null,
+    selectable: (id: string) => id !== "g" && id !== "x",
+  };
+  const both = { parents: true, descendants: true };
+
+  it("descendants follow; all of them select the parent; groups never enter the model", () => {
+    expect(propagateGridSelection([], "a", true, tree, both)).toEqual(["a", "a1", "a2"]);
+    expect(propagateGridSelection([], "g", true, tree, both)).toEqual(["a", "a1", "a2", "b"]);
+    expect(propagateGridSelection(["a1"], "a2", true, tree, both)).toEqual(["a1", "a2", "a"]);
+    expect(propagateGridSelection(["a", "a1", "a2", "b"], "a1", false, tree, both)).toEqual([
+      "a2",
+      "b",
+    ]);
+    expect(propagateGridSelection(["z"], "a", true, tree, { descendants: true })).toEqual([
+      "z",
+      "a",
+      "a1",
+      "a2",
+    ]);
+    expect(propagateGridSelection(["a1"], "a2", true, tree, { parents: false })).toEqual([
+      "a1",
+      "a2",
+    ]);
+    // Unselectable ids never change.
+    expect(propagateGridSelection([], "x", true, tree, both)).toEqual([]);
+  });
+
+  it("reports how much of a row's descendants is selected", () => {
+    expect(gridDescendantSelection([], "g", tree)).toBe("none");
+    expect(gridDescendantSelection(["a1"], "a", tree)).toBe("some");
+    expect(gridDescendantSelection(["a", "a1", "a2", "b"], "g", tree)).toBe("all");
+    expect(gridDescendantSelection(["a"], "b", tree)).toBe("none");
+  });
+});
+
+describe("set filter", () => {
+  const rows = [
+    { team: "Docs", n: 3, label: "3 pts" },
+    { team: "Core", n: 12, label: "12 pts" },
+    { team: "Docs", n: 3, label: "3 pts" },
+    { team: "", n: null, label: "" },
+    { team: "Ćore", n: 2, label: "2 pts" },
+  ];
+  const raw = (row: (typeof rows)[number], field: string) => (field === "team" ? row.team : row.n);
+  const text = (row: (typeof rows)[number], field: string) =>
+    field === "team" ? row.team : row.label;
+
+  it("puts is any of first for set columns that have it", () => {
+    expect(gridFilterOperators("string", "set")[0]).toBe("isAnyOf");
+    expect(gridFilterOperators("string")[0]).toBe("contains");
+    expect(gridFilterOperators("date", "set")[0]).toBe("is");
+    expect(isGridSetFilter({ field: "a", filterVariant: "set" })).toBe(true);
+    expect(isGridSetFilter({ field: "a", type: "boolean", filterVariant: "set" })).toBe(false);
+    expect(isGridSetFilter({ field: "a" })).toBe(false);
+  });
+
+  it("lists distinct values: text by text, numbers by value in number order, no blanks", () => {
+    expect(gridSetFilterValues(rows, { field: "team" }, raw, text)).toEqual([
+      { value: "Core", label: "Core" },
+      { value: "Ćore", label: "Ćore" },
+      { value: "Docs", label: "Docs" },
+    ]);
+    expect(gridSetFilterValues(rows, { field: "n", type: "number" }, raw, text)).toEqual([
+      { value: "2", label: "2 pts" },
+      { value: "3", label: "3 pts" },
+      { value: "12", label: "12 pts" },
+    ]);
+  });
+
+  it("searches, toggles the shown values and sums the choice up", () => {
+    const values = gridSetFilterValues(rows, { field: "team" }, raw, text);
+    expect(gridSetFilterSearch(values, " co").map((v) => v.value)).toEqual(["Core"]);
+    expect(gridSetFilterSearch(values, "co", true).map((v) => v.value)).toEqual(["Core", "Ćore"]);
+    expect(gridSetFilterSearch(values, "").length).toBe(3);
+    const shown = gridSetFilterSearch(values, "co", true);
+    expect(toggleGridSetFilterValues(["Docs"], shown)).toEqual(["Docs", "Core", "Ćore"]);
+    expect(toggleGridSetFilterValues(["Docs", "Core", "Ćore"], shown)).toEqual(["Docs"]);
+    const labels = { filterValueAny: "any", setFilterSelected: "{count} selected" };
+    expect(gridSetFilterSummary(labels, values, [])).toBe("any");
+    expect(gridSetFilterSummary(labels, values, ["Docs"])).toBe("Docs");
+    expect(gridSetFilterSummary(labels, values, ["Gone"])).toBe("Gone");
+    expect(gridSetFilterSummary(labels, values, ["Docs", "Core"])).toBe("2 selected");
   });
 });

@@ -8,7 +8,7 @@
 
 import { isGridGroupingField } from "./grid-premium.js";
 
-const CELL = '[role="columnheader"], [role="gridcell"]';
+const CELL = '[role="columnheader"], [role="gridcell"], [role="rowheader"]';
 /** Controls that take focus instead of their cell (checkboxes, action buttons, links). */
 const INNER =
   'input:not([type="hidden"]), select, textarea, a[href], button:not([data-ok-data-grid-menu-button])';
@@ -41,6 +41,14 @@ export type GridEditStartReason =
   | "enterKeyDown"
   | "f2KeyDown"
   | "printableKeyDown";
+
+/**
+ * What Tab does inside the grid (MUI X `tabNavigation`, read from the root's
+ * `data-ok-tab-navigation`): `none` leaves the grid (one tab stop), `content` moves between body
+ * cells, `header` between column headers, `all` through both. Tab past the last cell (or Shift + Tab
+ * before the first) leaves the grid.
+ */
+export type GridTabNavigation = "none" | "content" | "header" | "all";
 
 export interface GridNavigation {
   /** Keeps exactly one tab stop after the owner re-rendered or re-paged rows. */
@@ -146,6 +154,26 @@ export function createGridNavigation(
     return { rows, row, col: cellsOf(rows[row] as HTMLElement).indexOf(cell) };
   };
 
+  /** The cell Tab (`back`: Shift + Tab) moves to, or `null` to leave the grid. */
+  const tabTarget = (cell: HTMLElement, back: boolean) => {
+    const mode = grid
+      .closest("[data-ok-data-grid]")
+      ?.getAttribute("data-ok-tab-navigation") as GridTabNavigation | null;
+    if (mode !== "content" && mode !== "header" && mode !== "all") return null;
+    const isHeader = (c: HTMLElement) => !!c.closest("[data-ok-data-grid-header]");
+    // Headers: the column headers' row (not column groups or header filters).
+    const inScope = (c: HTMLElement) =>
+      isHeader(c)
+        ? mode !== "content" &&
+          c.getAttribute("role") === "columnheader" &&
+          c.hasAttribute("data-ok-field")
+        : mode !== "header";
+    if (!inScope(cell)) return null;
+    const order = visibleRows(grid).flatMap(cellsOf).filter(inScope);
+    const at = order.indexOf(cell);
+    return at < 0 ? null : (order[at + (back ? -1 : 1)] ?? null);
+  };
+
   grid.addEventListener(
     "focusin",
     (event) => {
@@ -171,6 +199,16 @@ export function createGridNavigation(
       const header = cell.getAttribute("role") === "columnheader";
       const field = cell.getAttribute("data-ok-field") ?? "";
 
+      if (event.key === "Tab" && !ctrl && !event.altKey) {
+        const next = tabTarget(cell, event.shiftKey);
+        if (next) {
+          event.preventDefault();
+          setStop(next);
+          gridFocusTarget(next).focus();
+          next.scrollIntoView?.({ block: "nearest", inline: "nearest" });
+        }
+        return;
+      }
       if (event.key === "a" && ctrl) {
         event.preventDefault();
         options.onSelectAll();

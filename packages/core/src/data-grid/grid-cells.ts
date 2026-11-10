@@ -170,7 +170,8 @@ export function parseGridClipboard(text: string, delimiter = "\t"): string[][] {
 
 /* ------------------------------------------------------------------ controllers */
 
-const BODY_CELL = '[data-ok-data-grid-body] [role="gridcell"][data-ok-field]';
+const BODY_CELL =
+  '[data-ok-data-grid-body] :is([role="gridcell"], [role="rowheader"])[data-ok-field]';
 const CONTROL = "button, a, input, label, select, textarea, [contenteditable]";
 
 export interface GridCellSelectionOptions {
@@ -347,7 +348,10 @@ export function createGridClipboard(
       const key = event.key.toLowerCase();
       if (key !== "c" && key !== "v") return;
       const target = event.target as Element;
-      if (!target.closest('[role="gridcell"], [role="columnheader"]') || target.closest(EDITING))
+      if (
+        !target.closest('[role="gridcell"], [role="rowheader"], [role="columnheader"]') ||
+        target.closest(EDITING)
+      )
         return;
       if (key === "c") {
         // Text the person selected inside the grid is theirs to copy.

@@ -658,8 +658,22 @@ export interface DataGridParts {
   "data-ok-data-grid-reorder-handle": Part;
   /** The handle that resizes a column. */
   "data-ok-data-grid-resize": Part<"span">;
+  /** The footer's row count without pagination, such as "Total Rows: 25". Written by the grid. */
+  "data-ok-data-grid-row-count": Part<"span">;
   /** HTML only: the template of one row, copied by `setRows` and data sources. */
   "data-ok-data-grid-row": Part<"template">;
+  /** A set filter: a search, "Select all" and a checkbox per value of the column. */
+  "data-ok-data-grid-set-filter": Part<"div">;
+  /** A set filter's "Select all" checkbox (mixed while some shown values are checked). */
+  "data-ok-data-grid-set-all": Part<"input">;
+  /** A header filter's button that opens its set filter, with a summary such as "2 selected". */
+  "data-ok-data-grid-set-filter-button": Part<"button">;
+  /** On a set filter's checkbox: the value it stands for. */
+  "data-ok-data-grid-set-value": Value<string>;
+  /** The group of a set filter's value checkboxes. */
+  "data-ok-data-grid-set-values": Part<"div">;
+  /** The footer's number of selected rows, such as "2 rows selected". Written by the grid. */
+  "data-ok-data-grid-selected-row-count": Part<"span">;
   /** The placeholder of a cell that is still loading. */
   "data-ok-data-grid-skeleton": Part<"span">;
   /** The sort arrow of a column header. */
@@ -670,6 +684,8 @@ export interface DataGridParts {
   "data-ok-data-grid-status-item": Value<"count" | "sum" | "avg" | "min" | "max">;
   /** The toolbar. */
   "data-ok-data-grid-toolbar": Part<"div">;
+  /** The grid's label at the start of the toolbar. */
+  "data-ok-data-grid-toolbar-label": Part<"span">;
   /** The buttons at the end of the toolbar. */
   "data-ok-data-grid-toolbar-actions": Part<"div">;
   /** The number of children of a tree row. */
@@ -688,6 +704,12 @@ export interface DataGridParts {
   "data-ok-detail-height": Value<string>;
   /** On a chart panel field: turns it off. */
   "data-ok-disable": Value<string>;
+  /** On a header cell: the column stays out of exports (CSV, Excel, print). */
+  "data-ok-disable-export": State;
+  /** On a header cell: the column keeps its place (no drag, no moves that shift it). */
+  "data-ok-disable-reorder": State;
+  /** On a cell: `flex` lays its content out in a row, centered. */
+  "data-ok-display": Value<"flex">;
   /** Set by the runtime on a pivot field while a pointer drags it. */
   "data-ok-dragging": State;
   /** Set by the runtime on the row or column a drag would drop next to. */
@@ -700,6 +722,8 @@ export interface DataGridParts {
   "data-ok-excel-options": Value<string>;
   /** On a header or a cell: the column's field. */
   "data-ok-field": Value<string>;
+  /** On a header cell: `set` filters the column with a checklist of its values. */
+  "data-ok-filter-variant": Value<"set">;
   /** On a filter row: the field it filters. */
   "data-ok-filter-field": Value<string>;
   /** On a custom header filter field (or its parent): the operator of its filter, such as `>=`. */
@@ -734,6 +758,8 @@ export interface DataGridParts {
   "data-ok-parent": Value<string>;
   /** On a pin menu item: the field it pins. */
   "data-ok-pin-field": Value<string>;
+  /** On a header cell: `false` hides the pin items of the column menu. */
+  "data-ok-pinnable": Value<"false">;
   /** On a cell: the side its column is pinned to. */
   "data-ok-pinned": Value<"left" | "right">;
   /** The pivot model, as JSON. */
@@ -746,10 +772,23 @@ export interface DataGridParts {
   "data-ok-row-grouping-model": Value<string>;
   /** On a row: its id. */
   "data-ok-row-id": Value<string>;
+  /**
+   * Tree data and row groups: which related rows a selection reaches, as JSON
+   * (`{"parents":false,"descendants":true}`; default both). React writes it from
+   * `rowSelectionPropagation`.
+   */
+  "data-ok-row-selection-propagation": Value<string>;
+  /**
+   * On a cell: the value row spanning compares, instead of the cell's text (React writes it from
+   * `rowSpanValueGetter`).
+   */
+  "data-ok-row-span-value": Value<string>;
   /** On a header cell: `false` keeps the column out of the quick filter. */
   "data-ok-searchable": Value<"false">;
   /** On a row: `false` means the row can't be selected. */
   "data-ok-selectable": Value<"false">;
+  /** On a row: extra space below it, in pixels. */
+  "data-ok-spacing-bottom": Value<string>;
   /** On a row: extra space above it, in pixels. */
   "data-ok-spacing-top": Value<string>;
   /**

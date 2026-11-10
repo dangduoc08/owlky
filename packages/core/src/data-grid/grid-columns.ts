@@ -45,7 +45,14 @@ export function createGridColumnControls(
       // Right to left, the handle is on the left edge: dragging left widens.
       const sign = getComputedStyle(header).direction === "rtl" ? -1 : 1;
       let dragging = false;
-      if (!handle && (target.closest("button, input") || !options.canReorder())) return;
+      // A column with disableReorder stays: no drag (resizing still works).
+      if (
+        !handle &&
+        (target.closest("button, input") ||
+          !options.canReorder() ||
+          header.hasAttribute("data-ok-disable-reorder"))
+      )
+        return;
       if (handle) event.preventDefault();
       try {
         (target as Element).setPointerCapture?.(event.pointerId);

@@ -234,3 +234,11 @@ export const EditModes: StoryObj = {
   }),
   name: "Edit modes",
 };
+export const Footer: StoryObj = { ...story("footer"), name: "Footer and Tab navigation" };
+export const Dimensions: StoryObj = { ...story("dimensions"), name: "Layout options" };
+export const ColumnOptions: StoryObj = { ...story("columns"), name: "Column options" };
+export const SelectionPropagation: StoryObj = {
+  ...story("selection"),
+  name: "Selection propagation",
+};
+export const SetFilter: StoryObj = { ...story("set"), name: "Set filter" };

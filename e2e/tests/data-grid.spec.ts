@@ -556,5 +556,134 @@ for (const impl of implementations) {
       await expect(hours).toHaveText("38");
       await expect(page.getByRole("button", { name: "Save Bao Tran" })).toBeHidden();
     });
+
+    test("footer: row count, selected rows and Tab between cells", async ({ page }) => {
+      await openStory(page, storyId(impl, "datagrid", "footer"));
+      const footer = page.locator("[data-ok-data-grid-footer]");
+      await expect(page.getByRole("grid", { name: "Issues" })).toBeVisible();
+      await expect(footer.locator("[data-ok-data-grid-row-count]")).toHaveText("Total Rows: 6");
+      await expect(
+        page.locator('[data-ok-data-grid-body] > [role="row"]:not([hidden])'),
+      ).toHaveCount(6);
+      await page.getByRole("checkbox", { name: "Select row" }).first().check();
+      await expect(footer.locator("[data-ok-data-grid-selected-row-count]")).toHaveText(
+        "1 row selected",
+      );
+      await page.getByRole("textbox", { name: "Search" }).fill("docs");
+      await expect(footer.locator("[data-ok-data-grid-row-count]")).toHaveText(
+        "Total Rows: 1 of 6",
+      );
+      await page.getByRole("textbox", { name: "Search" }).fill("");
+      // tabNavigation="all": Tab moves from header to header.
+      await page.getByRole("columnheader", { name: /^Title/ }).focus();
+      await page.keyboard.press("Tab");
+      await expect(page.getByRole("columnheader", { name: /^Priority/ })).toBeFocused();
+      await page.keyboard.press("Shift+Tab");
+      await expect(page.getByRole("columnheader", { name: /^Title/ })).toBeFocused();
+    });
+
+    test("set filter: a checklist of values, by keyboard", async ({ page }) => {
+      await openStory(page, storyId(impl, "datagrid", "set-filter"));
+      const button = page.locator(
+        '[data-ok-filter-field="priority"] [data-ok-data-grid-set-filter-button]',
+      );
+      await expect(button).toHaveText("is any of: any");
+      await button.focus();
+      await page.keyboard.press("Enter");
+      const list = page.locator(
+        "#grid-set-header-filter-priority-set-filter [data-ok-data-grid-set-filter]",
+      );
+      await expect(list).toBeVisible();
+      await list.getByRole("textbox", { name: "Search values" }).fill("h");
+      await expect(list.getByRole("checkbox", { name: "Low" })).toBeHidden();
+      await list.getByRole("checkbox", { name: "Select all" }).focus();
+      await page.keyboard.press("Space");
+      await expect(list.getByRole("checkbox", { name: "High" })).toBeChecked();
+      await expect(button).toHaveText("is any of: High");
+      expect(await visible(page, "priority")).toEqual(["High", "High"]);
+      await list.getByRole("textbox", { name: "Search values" }).fill("");
+      await list.getByRole("checkbox", { name: "Select all" }).check();
+      await expect(button).toHaveText("is any of: 3 selected");
+    });
+
+    test("selection propagation: parents, children and group checkboxes", async ({ page }) => {
+      await openStory(page, storyId(impl, "datagrid", "selection-propagation"));
+      const tree = page.getByRole("treegrid", { name: "Work breakdown" });
+      const box = (scope: typeof tree, id: string) =>
+        scope.locator(`[data-ok-row-id="${id}"] [data-ok-data-grid-checkbox] input`);
+      await box(tree, "w-design").check();
+      await expect(box(tree, "w-icons")).toBeChecked();
+      await expect(box(tree, "w-colors")).toBeChecked();
+      await box(tree, "w-icons").uncheck();
+      await expect(box(tree, "w-design")).not.toBeChecked();
+      expect(
+        await box(tree, "w-design").evaluate((input) => (input as HTMLInputElement).indeterminate),
+      ).toBe(true);
+      // Keyboard: Space on the focused checkbox selects again.
+      await box(tree, "w-icons").focus();
+      await page.keyboard.press("Space");
+      await expect(box(tree, "w-design")).toBeChecked();
+      const groups = page.getByRole("treegrid", { name: "Team tasks" });
+      await box(groups, "auto-generated-row-team/Docs").check();
+      await expect(box(groups, "tt-3")).toBeChecked();
+      await expect(box(groups, "tt-4")).toBeChecked();
+      await expect(box(groups, "tt-1")).not.toBeChecked();
+    });
+
+    test("column options: row headers, merged owners, a fixed first column", async ({ page }) => {
+      await openStory(page, storyId(impl, "datagrid", "column-options"));
+      const grid = page.getByRole("grid", { name: "Team tasks" });
+      await expect(grid.getByRole("rowheader")).toHaveCount(5);
+      await expect(grid.locator('[data-ok-row-id="tt-1"] [data-ok-field="owner"]')).toHaveAttribute(
+        "aria-rowspan",
+        "2",
+      );
+      await expect(
+        grid.locator('[data-ok-row-id="tt-3"] [data-ok-field="owner"]'),
+      ).not.toHaveAttribute("data-ok-covered", "");
+      // Keyboard: the Team column can't move before Task; its menu has no pin items.
+      await grid.locator('[role="columnheader"][data-ok-field="team"]').focus();
+      await page.keyboard.press("ControlOrMeta+Enter");
+      await expect(page.getByRole("menuitem", { name: "Move left" })).toHaveAttribute(
+        "aria-disabled",
+        "true",
+      );
+      await expect(page.getByRole("menuitem", { name: "Pin to left" })).toHaveCount(0);
+      await page.getByRole("menuitem", { name: "Move right" }).click();
+      await expect(
+        grid.locator('[data-ok-data-grid-header] [role="columnheader"]').nth(2),
+      ).toHaveAttribute("data-ok-field", "team");
+      await expect(grid.locator('[role="columnheader"][data-ok-field="task"]')).toHaveAttribute(
+        "aria-colindex",
+        "1",
+      );
+    });
+
+    test("layout options: header heights, borders and a page size from the height", async ({
+      page,
+    }) => {
+      await openStory(page, storyId(impl, "datagrid", "dimensions"));
+      const issues = page.getByRole("grid", { name: "Issues" });
+      const title = issues.locator(
+        '[data-ok-data-grid-header] [role="columnheader"][data-ok-field="title"]',
+      );
+      expect((await title.boundingBox())?.height).toBe(44);
+      const cell = issues.locator('[role="gridcell"][data-ok-field="title"]').first();
+      await expect(cell).toHaveCSS("border-inline-end-width", "1px");
+      await expect(cell.locator("xpath=..")).toHaveCSS("padding-top", "4px");
+      const tasks = page.getByRole("grid", { name: "Tasks" });
+      const pager = page.locator("#grid-pages [data-ok-table-pagination]");
+      await expect(pager.locator("select")).toHaveCount(0);
+      // The page holds what the scroll area shows, without scrolling.
+      const fits = await tasks.evaluate((main) => {
+        const header = main.querySelector("[data-ok-data-grid-header]") as HTMLElement;
+        return Math.floor((main.clientHeight - header.offsetHeight) / 53);
+      });
+      await expect(pager).toHaveAttribute("data-ok-rows-per-page", String(fits));
+      await expect(
+        tasks.locator('[data-ok-data-grid-body] > [role="row"]:not([hidden])'),
+      ).toHaveCount(fits);
+      expect(await tasks.evaluate((main) => main.scrollHeight <= main.clientHeight + 1)).toBe(true);
+    });
   });
 }

@@ -56,7 +56,9 @@ import {
   type GridPivotSection,
   type GridPrintLayout,
   type GridRowModesModel,
+  type GridRowSelectionPropagation,
   type GridRowWindow,
+  type GridSelectionTree,
   type GridSortDirection,
   type GridSortModel,
   type GridState,
@@ -67,6 +69,7 @@ import {
   gridAggregationPositionOf,
   gridAlign,
   gridAriaSort,
+  gridAutoPageSize,
   gridCanMoveColumn,
   gridCellEdges,
   gridCellRange,
@@ -79,6 +82,7 @@ import {
   gridDefaultLabels,
   gridDensities,
   gridDensityFactor,
+  gridDescendantSelection,
   gridDirectedComparator,
   gridEditInputType,
   gridEditModes,
@@ -87,6 +91,9 @@ import {
   gridExpandedByDepth,
   gridExportColumns,
   gridFilterOperators,
+  gridFilterValues,
+  gridFooterRowCount,
+  gridFooterRowSelected,
   gridFormats,
   gridFormatValue,
   gridGroupComparator,
@@ -97,7 +104,9 @@ import {
   gridGroupRows,
   gridGroupsById,
   gridHeaderAlign,
+  gridHeaderHeightProperties,
   gridHistoryRow,
+  gridLockedFields,
   gridMissingRanges,
   gridOperatorNeedsValue,
   gridPinSide,
@@ -112,8 +121,12 @@ import {
   gridRowWindow,
   gridRowWindowOf,
   gridSelectAllState,
+  gridSelectableDescendants,
   gridSelectedBlock,
   gridSelectionStats,
+  gridSetFilterSearch,
+  gridSetFilterSummary,
+  gridSetFilterValues,
   gridStackableChartTypes,
   gridStatusItems,
   gridToCsv,
@@ -124,6 +137,7 @@ import {
   isGridCellSelected,
   isGridGroupingField,
   isGridResizable,
+  isGridSetFilter,
   isGridSortable,
   measureGridColumn,
   mergeGridCellSelection,
@@ -144,7 +158,9 @@ import {
   pinGridColumn,
   prepareGridPrint,
   printGridContent,
+  propagateGridSelection,
   pruneGridSelection,
+  readBehavior,
   readNumber,
   readStyle,
   renderChart,
@@ -161,6 +177,7 @@ import {
   syncGridPinning,
   toggleGridCell,
   toggleGridRows,
+  toggleGridSetFilterValues,
   visibleGridColumns,
 } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
@@ -309,6 +326,14 @@ export interface DataGridInstance extends ComponentInstance {
    * (`data-ok-value`, else the text) and rows. `null`: back to sorting by the column type.
    */
   setSortComparator(field: string, comparators: GridComparators<HTMLElement> | null): void;
+  /**
+   * A column's parser of pasted text (MUI X `pastedValueParser`): gets the text and the row's
+   * values, returns the value to write. `null`: back to parsing by the column type.
+   */
+  setPastedValueParser(
+    field: string,
+    parser: ((value: string, row: DataRow) => unknown) | null,
+  ): void;
   /** The cell being edited (cell mode), as a cell modes model. */
   readonly cellModesModel: GridCellModesModel;
   /** The row being edited (row mode), as a row modes model. */
@@ -441,6 +466,15 @@ const {
   multipleColumnsSortingMode,
   statusBar: statusBarOption,
   historyStackSize,
+  hideFooterPagination,
+  hideFooterRowCount,
+  hideFooterSelectedRowCount,
+  rowSelection: rowSelectionOption,
+  columnHeaderHeight,
+  columnGroupHeaderHeight,
+  headerFilterHeight,
+  rowSpacingType,
+  autoPageSize,
 } = dataGridOptions.options;
 
 type DataRow = Record<string, unknown>;
@@ -566,7 +600,20 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     ];
     const id = element.id;
     const byId = (suffix: string) => (id ? document.getElementById(`${id}-${suffix}`) : null);
-    const checkbox = element.hasAttribute("data-ok-checkbox-selection");
+    // `data-ok-row-selection="false"` turns selection off (React leaves the checkboxes out too).
+    const checkbox =
+      element.hasAttribute("data-ok-checkbox-selection") &&
+      readBehavior(element, rowSelectionOption);
+    // Selection propagation (tree data, row groups): `data-ok-row-selection-propagation` JSON.
+    const propagation = (): GridRowSelectionPropagation => {
+      const given = parseJson(element.getAttribute("data-ok-row-selection-propagation"));
+      const own = given && typeof given === "object" ? (given as Record<string, unknown>) : {};
+      return { parents: own["parents"] !== false, descendants: own["descendants"] !== false };
+    };
+    /** The shown tree (every level open) while selection propagates, from the last apply. */
+    let selectionTree: GridSelectionTree | null = null;
+    /** The ids in that tree (the filtered rows and their groups). */
+    let selectionIds = new Set<string>();
     const readSpecials = () =>
       [...headerRow.querySelectorAll<HTMLElement>('[role="columnheader"][data-ok-field]')]
         .map((header) => header.getAttribute("data-ok-field") as string)
@@ -606,6 +653,10 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         groupable: header.getAttribute("data-ok-groupable") !== "false",
         aggregable: header.getAttribute("data-ok-aggregable") !== "false",
         sortingOrder: parseGridSortingOrder(header.getAttribute("data-ok-sorting-order")),
+        disableReorder: header.hasAttribute("data-ok-disable-reorder"),
+        disableExport: header.hasAttribute("data-ok-disable-export"),
+        pinnable: header.getAttribute("data-ok-pinnable") !== "false",
+        filterVariant: header.getAttribute("data-ok-filter-variant") === "set" ? "set" : undefined,
       }));
     const baseColumns = readColumns();
     /** The columns: the markup's, or the pivot's while it shows. */
@@ -615,6 +666,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     const operators: Record<string, readonly GridFilterOperator<HTMLElement>[]> = {};
     const formatters = new Map<string, (value: unknown) => string>();
     const comparators = new Map<string, GridComparators<HTMLElement>>();
+    const pastedParsers = new Map<string, (value: string, row: DataRow) => unknown>();
     /** A column's own comparator for a direction (`setSortComparator`). */
     const comparatorOf = (field: string, direction: GridSortDirection) =>
       gridDirectedComparator(comparators.get(field), direction);
@@ -656,7 +708,9 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     });
     const rows = () => rowEls;
     const cellOf = (row: HTMLElement, field: string) =>
-      row.querySelector<HTMLElement>(`[role="gridcell"][data-ok-field="${CSS.escape(field)}"]`);
+      row.querySelector<HTMLElement>(
+        `:is([role="gridcell"], [role="rowheader"])[data-ok-field="${CSS.escape(field)}"]`,
+      );
     const cellText = (row: HTMLElement, field: string) => {
       const cell = cellOf(row, field);
       return cell ? (cell.getAttribute("data-ok-text") ?? (cell.textContent as string).trim()) : "";
@@ -684,8 +738,50 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       (element.hasAttribute(checkboxSelectionVisibleOnly.attr) ? pageList : filtered).filter(
         selectable,
       );
-    const toggle = (row: HTMLElement) => {
-      if (selectable(row)) select(selectGridRow(selection, idOf(row), multiple()));
+    const toggle = (row: HTMLElement, box = false) => {
+      if (!checkbox) return;
+      const rowId = idOf(row);
+      const group = row.hasAttribute("data-ok-generated");
+      if (selectionTree && (box || !group) && selectionIds.has(rowId)) {
+        if (!group && !selectionTree.selectable(rowId)) return;
+        const checked = group
+          ? gridDescendantSelection(selection, rowId, selectionTree) !== "all"
+          : !selection.includes(rowId);
+        select(propagateGridSelection(selection, rowId, checked, selectionTree, propagation()));
+        return;
+      }
+      if (selectable(row)) select(selectGridRow(selection, rowId, multiple()));
+    };
+    /** Builds the selection tree of the filtered rows (`items`: data rows and group rows). */
+    const buildSelectionTree = (
+      items: readonly HTMLElement[],
+      parentOf: (row: HTMLElement) => string | null,
+      keep: ((row: HTMLElement) => boolean) | undefined,
+    ) => {
+      const flags = propagation();
+      if (!checkbox || !multiple() || source || (!flags.parents && !flags.descendants)) {
+        selectionTree = null;
+        return;
+      }
+      const nodes = gridTreeRows(items, { idOf, parentOf, expanded: () => true, keep });
+      const parents = new Map<string, string | null>();
+      const kids = new Map<string, string[]>();
+      const byId = new Map<string, HTMLElement>();
+      for (const node of nodes) {
+        parents.set(node.id, node.parentId);
+        byId.set(node.id, node.row);
+        if (node.parentId !== null)
+          kids.set(node.parentId, [...(kids.get(node.parentId) ?? []), node.id]);
+      }
+      selectionIds = new Set(parents.keys());
+      selectionTree = {
+        children: (rowId) => kids.get(rowId) ?? [],
+        parent: (rowId) => parents.get(rowId) ?? null,
+        selectable: (rowId) => {
+          const row = byId.get(rowId);
+          return !!row && selectable(row);
+        },
+      };
     };
     const filterOptions = () => ({
       ignoreDiacritics: element.hasAttribute(ignoreDiacritics.attr),
@@ -970,6 +1066,51 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
           ) as TablePaginationInstance)
         : null;
     let pageSize = pager()?.rowsPerPage ?? Number.POSITIVE_INFINITY;
+    /** Pages show (a pagination in the footer, not turned off). */
+    const paging = () => !!pagination && !element.hasAttribute(hideFooterPagination.attr);
+    // Footer counts (MUI X footer): "2 rows selected" first, "Total Rows: n" without pagination.
+    // Built with DOM methods, in React's order, so the markup matches.
+    const footer = element.querySelector<HTMLElement>("[data-ok-data-grid-footer]");
+    const footerPart = (name: string, content: string | null, before: Node | null) => {
+      let part = footer?.querySelector<HTMLElement>(`:scope > [${name}]`) ?? null;
+      if (content === null) {
+        part?.remove();
+        return;
+      }
+      if (!footer) return;
+      if (!part) {
+        part = document.createElement("span");
+        part.setAttribute(name, "");
+        footer.insertBefore(part, before);
+      }
+      if (part.textContent !== content) part.textContent = content;
+    };
+    const syncFooter = () => {
+      if (!footer) return;
+      const noPages = element.hasAttribute(hideFooterPagination.attr);
+      if (pagination) pagination.hidden = noPages;
+      footerPart(
+        "data-ok-data-grid-selected-row-count",
+        !element.hasAttribute(hideFooterSelectedRowCount.attr) && selection.length > 0
+          ? gridFooterRowSelected(labels, selection.length)
+          : null,
+        footer.firstChild,
+      );
+      const data = () => rows().filter((row) => !row.hasAttribute("data-ok-generated"));
+      footerPart(
+        "data-ok-data-grid-row-count",
+        noPages && !element.hasAttribute(hideFooterRowCount.attr)
+          ? gridFooterRowCount(
+              labels,
+              serverSide(filterMode)
+                ? total
+                : filterGridRows(data(), filterModel, columns, value, text, filterOptions()).length,
+              serverSide(paginationMode) ? total : data().length,
+            )
+          : null,
+        pagination?.parentElement === footer ? pagination : null,
+      );
+    };
     const overlay = element.querySelector<HTMLElement>(
       "[data-ok-data-grid-overlay]",
     ) as HTMLElement;
@@ -1429,6 +1570,11 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         }
         sorted = tree.map((node) => node.row);
         filtered = sorted;
+        buildSelectionTree(
+          all,
+          (row) => row.getAttribute("data-ok-parent"),
+          pass ? (row) => pass.has(row) : undefined,
+        );
       } else if (pivot || grouping().length) {
         // Row grouping (and the pivot, which shows its groups only).
         const fields = grouping();
@@ -1480,6 +1626,13 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
           firstPlace.set(node.id, Math.min(...leaves.map((r) => place?.get(r) ?? 0)));
         }
         const generatedRow = (row: HTMLElement) => row.hasAttribute("data-ok-generated");
+        if (pivot) selectionTree = null;
+        else
+          buildSelectionTree(
+            items,
+            (row) => nodes.parentOf.get(idOf(row)) ?? null,
+            pass ? (row) => !generatedRow(row) && pass.has(row) : undefined,
+          );
         const depth = readNumber(element, defaultGroupingExpansionDepth) as number;
         const tree = gridTreeRows(items, {
           idOf,
@@ -1595,7 +1748,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
           sorted.length)
         : sorted.length;
       pagination?.setAttribute("data-ok-count", String(total));
-      const paged = Number.isFinite(pageSize) && !serverPage;
+      const paged = paging() && Number.isFinite(pageSize) && !serverPage;
       // Server pages count too: the page stays within the server's rows.
       const pages = Number.isFinite(pageSize) ? Math.max(Math.ceil(total / pageSize), 1) : 1;
       page = Math.min(page, pages - 1);
@@ -1710,7 +1863,109 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       bottomRowIndexes(first);
     };
     /** Header filters: each field shows the value of its column's first filter item. */
+    // Set filters (`data-ok-filter-variant="set"`): checklists of a column's values. The first one
+    // in the markup (a header filter's or the panel's) is the prototype of new ones.
+    const setProto = element
+      .querySelector<HTMLElement>("[data-ok-data-grid-set-filter]")
+      ?.cloneNode(true) as HTMLElement | undefined;
+    const setValues = (field: string) =>
+      gridSetFilterValues(
+        rows().filter((row) => !row.hasAttribute("data-ok-generated")),
+        columns.find((c) => c.field === field) as GridColumn,
+        value,
+        text,
+      );
+    const setInput = (label: Element) =>
+      label.querySelector<HTMLInputElement>('input[type="checkbox"]') as HTMLInputElement;
+    const setSearchOf = (list: HTMLElement) =>
+      list.querySelector<HTMLInputElement>('input:not([type="checkbox"])')?.value ?? "";
+    /** Draws a set list: one checkbox per value (copies of "Select all"), checks, the search. */
+    const syncSetList = (list: HTMLElement, selected: readonly string[]) => {
+      const field = list.getAttribute("data-ok-field") as string;
+      const values = setValues(field);
+      const box = list.querySelector<HTMLElement>("[data-ok-data-grid-set-values]") as HTMLElement;
+      const known = [...box.children].map((label) =>
+        setInput(label)?.getAttribute("data-ok-data-grid-set-value"),
+      );
+      if (known.join("\n") !== values.map((v) => v.value).join("\n")) {
+        const proto = (box.firstElementChild ??
+          list.querySelector("[data-ok-data-grid-set-all]")?.closest("label")) as HTMLElement;
+        box.replaceChildren(
+          ...values.map((item) => {
+            const label = proto.cloneNode(true) as HTMLElement;
+            const input = setInput(label);
+            input.removeAttribute("data-ok-data-grid-set-all");
+            input.setAttribute("data-ok-data-grid-set-value", item.value);
+            const name = label.querySelector("[data-ok-form-control-label-text]");
+            if (name) name.textContent = item.label;
+            return label;
+          }),
+        );
+      }
+      const shown = new Set(
+        gridSetFilterSearch(
+          values,
+          setSearchOf(list),
+          element.hasAttribute(ignoreDiacritics.attr),
+        ).map((v) => v.value),
+      );
+      for (const label of box.children as HTMLCollectionOf<HTMLElement>) {
+        const input = setInput(label);
+        const own = input.getAttribute("data-ok-data-grid-set-value") as string;
+        label.hidden = !shown.has(own);
+        markBox(input, selected.includes(own) ? "all" : "none");
+      }
+      markBox(
+        list.querySelector<HTMLInputElement>("[data-ok-data-grid-set-all]") as HTMLInputElement,
+        gridSelectAllState([...shown], selected),
+      );
+    };
+    /** The values checked in a set list. */
+    const setChecked = (list: HTMLElement) =>
+      [...list.querySelectorAll<HTMLInputElement>("[data-ok-data-grid-set-value]")]
+        .filter((input) => input.checked)
+        .map((input) => input.getAttribute("data-ok-data-grid-set-value") as string);
+    /**
+     * An event inside a set list: the search redraws it (`null`: no filter change); "Select all"
+     * checks or clears the shown values; the checked values come back.
+     */
+    const setListChange = (list: HTMLElement, target: Element): string[] | null => {
+      if (!target.matches('input[type="checkbox"]')) {
+        syncSetList(list, setChecked(list));
+        return null;
+      }
+      if (target.hasAttribute("data-ok-data-grid-set-all")) {
+        const shown = gridSetFilterSearch(
+          setValues(list.getAttribute("data-ok-field") as string),
+          setSearchOf(list),
+          element.hasAttribute(ignoreDiacritics.attr),
+        );
+        // The values' checkboxes still hold the state before this change.
+        const next = toggleGridSetFilterValues(setChecked(list), shown);
+        syncSetList(list, next);
+        return next;
+      }
+      return setChecked(list);
+    };
     const syncHeaderFilters = () => {
+      // Set filters of the header: the list and the button's summary.
+      for (const list of filterRowEl()?.querySelectorAll<HTMLElement>(
+        "[data-ok-data-grid-set-filter]",
+      ) ?? []) {
+        const field = list.getAttribute("data-ok-field") as string;
+        const item = filterModel.items.find((i) => i.field === field);
+        const selected = gridFilterValues(item?.value);
+        syncSetList(list, selected);
+        const button = list
+          .closest("[data-ok-data-grid-header-filter]")
+          ?.querySelector("[data-ok-data-grid-set-filter-button]");
+        const operator = labels.filterOperator["isAnyOf"] ?? "isAnyOf";
+        const summary = `${operator}: ${gridSetFilterSummary(labels, setValues(field), selected)}`;
+        if (button) {
+          const target = button.querySelector("[data-ok-button-label]") ?? button;
+          if (target.textContent !== summary) target.textContent = summary;
+        }
+      }
       for (const input of filterRowEl()?.querySelectorAll<HTMLInputElement | HTMLSelectElement>(
         "[data-ok-data-grid-header-filter] > [data-ok-text-field] :is(input, select)",
       ) ?? []) {
@@ -1744,8 +1999,12 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     const heights = () =>
       pageList.map((row) => {
         const own = Number(row.getAttribute("data-ok-row-height"));
-        const box = measured.get(row) ?? (own > 0 ? own : baseHeight()) + 1;
-        return box + spacingOf(row, "top") + spacingOf(row, "bottom");
+        const seen = measured.get(row);
+        const box = seen ?? (own > 0 ? own : baseHeight()) + 1;
+        // Border spacing is inside the row: a measured row already holds it.
+        return seen !== undefined && readStyle(element, rowSpacingType) === "border"
+          ? box
+          : box + spacingOf(row, "top") + spacingOf(row, "bottom");
       });
     let offsets: number[] | null = null;
     /** Row spans of the page (`rowSpanning`), recomputed on draw. */
@@ -1762,7 +2021,12 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       const fields = visibleGridColumns(columns, visibility)
         .filter((c) => c.type !== "actions")
         .map((c) => c.field);
-      return gridRowSpans(pageList, fields, text);
+      return gridRowSpans(
+        pageList,
+        fields,
+        (row, field) =>
+          cellOf(row, field)?.getAttribute("data-ok-row-span-value") ?? text(row, field),
+      );
     };
     // Master-detail: open panels (from the markup) and the templates of the others.
     const panels = new Map<string, HTMLElement>();
@@ -2012,6 +2276,24 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
 
     // Virtualization and the end of the rows (infinite loading).
     let endCount = -1;
+    // autoPageSize: the page size follows the scroll area's height (rows of the grid's height).
+    const fitPage = () => {
+      if (!element.hasAttribute(autoPageSize.attr) || !paging() || lazy()) return;
+      const size = gridAutoPageSize(main, baseHeight() + 1);
+      if (size === pageSize) return;
+      // The pagination reports each change (resetting the page): set the target after.
+      const target = Math.min(page, Math.max(Math.ceil(total / size), 1) - 1);
+      pagination?.setAttribute("data-ok-rows-per-page", String(size));
+      pager()?.setRowsPerPage(size);
+      pageSize = size;
+      page = target;
+      pager()?.setPage(target);
+    };
+    if (typeof ResizeObserver === "function") {
+      const fit = new ResizeObserver(() => fitPage());
+      fit.observe(main);
+      signal.addEventListener("abort", () => fit.disconnect());
+    }
     const scrollWatcher = createGridScrollWatcher(main, {
       onChange: (next) => {
         viewport = next;
@@ -2062,7 +2344,9 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
           }
         }
         row.setAttribute("data-ok-row-id", String(item["id"]));
-        for (const cell of row.querySelectorAll<HTMLElement>('[role="gridcell"][data-ok-field]')) {
+        for (const cell of row.querySelectorAll<HTMLElement>(
+          ':is([role="gridcell"], [role="rowheader"])[data-ok-field]',
+        )) {
           const field = cell.getAttribute("data-ok-field") as string;
           if (isSpecial(field)) continue;
           const raw = item[field];
@@ -2235,16 +2519,60 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     });
 
     /** Selection marks: rows, their checkboxes and "select all". */
+    /** Checked, mixed (some descendants selected) or clear, as React draws it. */
+    const markBox = (box: HTMLInputElement, state: "all" | "some" | "none") => {
+      box.checked = state === "all";
+      box.indeterminate = state === "some";
+      (box.closest("[data-ok-checkbox]") as Element).toggleAttribute(
+        "data-ok-indeterminate",
+        state === "some",
+      );
+    };
     const mark = () => {
+      syncFooter();
       if (!checkbox) return;
+      const tree = selectionTree;
       for (const row of rows()) {
-        const on = selection.includes(idOf(row));
+        const rowId = idOf(row);
+        const on = selection.includes(rowId);
         row.setAttribute("aria-selected", String(on));
         const box = row.querySelector(
           '[data-ok-data-grid-checkbox] input[type="checkbox"]',
         ) as HTMLInputElement;
-        box.checked = on;
+        markBox(
+          box,
+          on
+            ? "all"
+            : tree && gridDescendantSelection(selection, rowId, tree) !== "none"
+              ? "some"
+              : "none",
+        );
         box.disabled = !selectable(row);
+      }
+      // Group rows: a checkbox (a copy of a row's) while descendants follow their group.
+      const template = rows()[0]?.querySelector<HTMLElement>(
+        ":scope > [data-ok-data-grid-checkbox] > [data-ok-checkbox]",
+      );
+      for (const group of groupEls.values()) {
+        const cell = group.querySelector<HTMLElement>(
+          `:scope > [data-ok-field="${GRID_CHECKBOX_FIELD}"]`,
+        );
+        if (!cell) continue;
+        const want = !!tree && !!propagation().descendants && !!template;
+        let box = cell.querySelector<HTMLInputElement>('input[type="checkbox"]');
+        if (!want) {
+          cell.removeAttribute("data-ok-data-grid-checkbox");
+          cell.replaceChildren();
+          continue;
+        }
+        if (!box) {
+          cell.setAttribute("data-ok-data-grid-checkbox", "");
+          cell.replaceChildren((template as HTMLElement).cloneNode(true));
+          box = cell.querySelector<HTMLInputElement>('input[type="checkbox"]') as HTMLInputElement;
+        }
+        const groupId = idOf(group);
+        markBox(box, gridDescendantSelection(selection, groupId, tree as GridSelectionTree));
+        box.disabled = !gridSelectableDescendants(tree as GridSelectionTree, groupId).length;
       }
       const all = headerRow.querySelector<HTMLInputElement>(
         '[data-ok-data-grid-checkbox] input[type="checkbox"]',
@@ -2625,9 +2953,13 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     // Header filters: a field's value is the first filter item of its column.
     const operatorOf = (field: string) => {
       const type = columns.find((c) => c.field === field)?.type;
-      return operators[field]?.[0]?.value ?? (gridFilterOperators(type)[0] as string);
+      const column = columns.find((c) => c.field === field);
+      return (
+        operators[field]?.[0]?.value ??
+        (gridFilterOperators(type, column?.filterVariant)[0] as string)
+      );
     };
-    const setHeaderFilter = (field: string, input: string, operator?: string | null) => {
+    const setHeaderFilter = (field: string, input: string | string[], operator?: string | null) => {
       const index = filterModel.items.findIndex((item) => item.field === field);
       const current = filterModel.items[index];
       const item = {
@@ -2638,7 +2970,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       setFilter({
         ...filterModel,
         items:
-          input === ""
+          input === "" || (Array.isArray(input) && input.length === 0)
             ? filterModel.items.filter((_, i) => i !== index)
             : index < 0
               ? [...filterModel.items, item]
@@ -2648,6 +2980,17 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     const onHeaderFilter = (event: Event) => {
       const target = event.target as HTMLInputElement;
       if (target.closest("[data-ok-date-picker]")) return;
+      // Set filters: the search only narrows the list; a checkbox sets the checked values.
+      const list = target.closest<HTMLElement>("[data-ok-data-grid-set-filter]");
+      if (list) {
+        // Checkboxes act on `change` (their `input` event comes first).
+        const box = target.matches('input[type="checkbox"]');
+        if (box !== (event.type === "change")) return;
+        const checked = setListChange(list, target);
+        if (checked)
+          setHeaderFilter(list.getAttribute("data-ok-field") as string, checked, "isAnyOf");
+        return;
+      }
       const cell = target.closest("[data-ok-filter-field]") as Element;
       // A custom field (renderHeaderFilter) may name its operator.
       setHeaderFilter(
@@ -2668,7 +3011,10 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       "change",
       (event) => {
         const target = event.target as Element;
-        if (target.tagName === "SELECT" && target.closest("[data-ok-data-grid-header-filters]"))
+        if (
+          (target.tagName === "SELECT" || target.closest("[data-ok-data-grid-set-filter]")) &&
+          target.closest("[data-ok-data-grid-header-filters]")
+        )
           onHeaderFilter(event);
       },
       { signal },
@@ -2731,7 +3077,9 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     };
     const markCells = () => {
       syncStatus();
-      for (const cell of body.querySelectorAll<HTMLElement>('[role="gridcell"][aria-selected]')) {
+      for (const cell of body.querySelectorAll<HTMLElement>(
+        ':is([role="gridcell"], [role="rowheader"])[aria-selected]',
+      )) {
         cell.removeAttribute("aria-selected");
         cell.removeAttribute("data-ok-range-edge");
       }
@@ -2767,7 +3115,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     // Clipboard: the selected cells, else the selected rows, else the focused cell.
     const focusedCell = () =>
       (document.activeElement as Element | null)?.closest<HTMLElement>(
-        '[data-ok-data-grid-body] [role="gridcell"][data-ok-field]',
+        '[data-ok-data-grid-body] :is([role="gridcell"], [role="rowheader"])[data-ok-field]',
       );
     const clipboard = createGridClipboard(main, {
       copyText: () => {
@@ -2825,7 +3173,16 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
           const typed = fill ? data[0]?.[0] : data[r]?.[c];
           if (typed === undefined || !cellEditable(row, column)) return;
           if (fill && !isGridCellSelected(cellModel, rowId, field)) return;
-          values[field] = parseGridEditValue(typed, column.type);
+          const parser = pastedParsers.get(field);
+          values[field] = parser
+            ? parser(
+                typed,
+                valuesOf(
+                  row,
+                  baseColumns.map((c) => c.field),
+                ),
+              )
+            : parseGridEditValue(typed, column.type);
         });
         if (
           !Object.keys(values).length ||
@@ -3183,8 +3540,10 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       // isAnyOf with chips: an Autocomplete takes the value field's place; dates: a picker.
       const chips = row.querySelector<HTMLElement>("[data-ok-autocomplete]");
       const date = row.querySelector<HTMLElement>("[data-ok-date-picker]");
-      const input = chips || date ? null : (row.querySelector("input") as HTMLInputElement);
-      return { logic, field, operator, input, chips, date };
+      // A set filter's checklist (filterVariant "set" with "is any of").
+      const set = row.querySelector<HTMLElement>("[data-ok-data-grid-set-filter]");
+      const input = chips || date || set ? null : (row.querySelector("input") as HTMLInputElement);
+      return { logic, field, operator, input, chips, date, set };
     };
     const anyOfTemplate = filterPanel?.querySelector<HTMLTemplateElement>(
       "template[data-ok-data-grid-any-of]",
@@ -3214,8 +3573,40 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
      * other operators the text field.
      */
     const syncValueField = (row: HTMLElement) => {
-      const { field, operator, input, chips, date } = partsOf(row);
+      const { field, operator, input, chips, date, set } = partsOf(row);
       const own = !operators[field.value];
+      // Set filters: a checklist of the column's values (a copy of the markup's first one).
+      const column = columns.find((c) => c.field === field.value);
+      const wantSet = operator.value === "isAnyOf" && own && isGridSetFilter(column) && !!setProto;
+      const valueId = field.id.replace("-filter-field", "-filter-value");
+      if (set) {
+        if (wantSet && set.getAttribute("data-ok-field") === field.value) {
+          syncSetList(set, setChecked(set));
+          return;
+        }
+        const back = valueBoxes.get(row);
+        if (!back) return;
+        set.replaceWith(back);
+        (back.querySelector("input") as HTMLInputElement).value = "";
+        if (!wantSet) return syncValueField(row);
+      }
+      if (wantSet) {
+        const box = (input?.closest<HTMLElement>("[data-ok-text-field]") ??
+          chips ??
+          date) as HTMLElement;
+        if (input) valueBoxes.set(row, box);
+        const list = (setProto as HTMLElement).cloneNode(true) as HTMLElement;
+        const from = list.id;
+        for (const node of [list, ...list.querySelectorAll("*")])
+          for (const attr of [...node.attributes])
+            if (from && attr.value.includes(from))
+              attr.value = attr.value.replaceAll(from, valueId);
+        list.setAttribute("data-ok-field", field.value);
+        (list.querySelector('input:not([type="checkbox"])') as HTMLInputElement).value = "";
+        box.replaceWith(list);
+        syncSetList(list, []);
+        return;
+      }
       const type = columns.find((c) => c.field === field.value)?.type;
       const picker = type === "date" ? dateTemplate : type === "dateTime" ? dateTimeTemplate : null;
       const want =
@@ -3236,8 +3627,6 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         chips ??
         date) as HTMLElement;
       if (input) valueBoxes.set(row, box);
-      // The value field's id: the column field's, with "value" for "field".
-      const valueId = field.id.replace("-filter-field", "-filter-value");
       const next = want
         ? fieldFrom(
             want,
@@ -3252,10 +3641,11 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       if (!want) (next.querySelector("input") as HTMLInputElement).value = "";
     };
     const fillOperators = (operatorSelect: HTMLSelectElement, field: string) => {
-      const type = columns.find((c) => c.field === field)?.type;
+      const column = columns.find((c) => c.field === field);
+      const type = column?.type;
       const choices = operators[field]
         ? operators[field].map((o) => ({ value: o.value, label: o.label ?? o.value }))
-        : gridFilterOperators(type).map((o) => ({
+        : gridFilterOperators(type, column?.filterVariant).map((o) => ({
             value: o,
             label: labels.filterOperator[o] ?? o,
           }));
@@ -3276,7 +3666,8 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       return {
         ...filterModel,
         items: rowsNow.map((row) => {
-          const { field, operator, input, chips, date } = partsOf(row);
+          const { field, operator, input, chips, date, set } = partsOf(row);
+          if (set) return { field: field.value, operator: operator.value, value: setChecked(set) };
           if (chips)
             return { field: field.value, operator: operator.value, value: chipValues(chips) };
           if (date)
@@ -3356,6 +3747,13 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       "change",
       (event) => {
         const target = event.target as HTMLSelectElement;
+        // A set filter's checkbox: "Select all" checks the shown values first.
+        const list = target.closest<HTMLElement>("[data-ok-data-grid-set-filter]");
+        if (list) {
+          setListChange(list, target);
+          setFilter(readFilters());
+          return;
+        }
         const row = target.closest<HTMLElement>("[data-ok-data-grid-filter]");
         if (row && partsOf(row).field === target)
           fillOperators(partsOf(row).operator, target.value);
@@ -3369,7 +3767,21 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       },
       { signal },
     );
-    filterPanel?.addEventListener("input", () => setFilter(readFilters()), { signal });
+    filterPanel?.addEventListener(
+      "input",
+      (event) => {
+        // A set filter's search only narrows its list.
+        const list = (event.target as Element).closest<HTMLElement>(
+          "[data-ok-data-grid-set-filter]",
+        );
+        // Checkboxes act on `change` (their `input` event comes first).
+        if (list) {
+          if (!(event.target as Element).matches('input[type="checkbox"]'))
+            setListChange(list, event.target as Element);
+        } else setFilter(readFilters());
+      },
+      { signal },
+    );
     // Chips and date pickers change after their event: read them once it has applied.
     for (const type of ["ok:autocomplete:change", "ok:date-picker:change"])
       filterPanel?.addEventListener(type, () => queueMicrotask(() => setFilter(readFilters())), {
@@ -3499,7 +3911,9 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       const base = options.allColumns
         ? arrangeGridColumns(orderGridColumns(columns, order), pinned)
         : shownColumns();
-      const printed = base.filter((c) => c.type !== "actions" && (!keep || keep.has(c.field)));
+      const printed = base.filter(
+        (c) => c.type !== "actions" && !c.disableExport && (!keep || keep.has(c.field)),
+      );
       const boxes = checkbox && !!options.includeCheckboxes;
       printGridContent(
         element,
@@ -3562,7 +3976,9 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       onResize: resize,
       onMove: (field, target) => {
         if (groupPaths.size && !gridCanMoveColumn(groupPaths, field, target)) return;
-        setOrder(moveGridColumn(arrangedFields(), field, { to: target }));
+        setOrder(
+          moveGridColumn(arrangedFields(), field, { to: target }, gridLockedFields(baseColumns)),
+        );
       },
       canReorder: () => !element.hasAttribute(disableColumnReorder.attr),
       onAutosize: (field) => autosize({ columns: [field] }),
@@ -3836,7 +4252,9 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     main.addEventListener(
       "dblclick",
       (event) => {
-        const cell = (event.target as Element).closest<HTMLElement>('[role="gridcell"]');
+        const cell = (event.target as Element).closest<HTMLElement>(
+          ':is([role="gridcell"], [role="rowheader"])',
+        );
         const row = cell?.closest<HTMLElement>(ROW);
         if (!cell || !row) return;
         const field = cell.getAttribute("data-ok-field") as string;
@@ -3949,11 +4367,29 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       disable("filter", column.filterable === false || column.type === "actions");
       disable("hide", column.hideable === false);
       const fieldsNow = arrangedFields();
-      disable("left", fieldsNow.indexOf(field) <= 0);
-      disable("right", fieldsNow.indexOf(field) >= fieldsNow.length - 1);
+      // A move is possible when it changes the order (columns with disableReorder stay).
+      const movable = (delta: number) => {
+        const at = fieldsNow.indexOf(field);
+        if (at + delta < 0 || at + delta >= fieldsNow.length) return false;
+        return (
+          moveGridColumn(fieldsNow, field, delta, gridLockedFields(baseColumns)).join("\n") !==
+          fieldsNow.join("\n")
+        );
+      };
+      disable("left", !movable(-1));
+      disable("right", !movable(1));
       disable("pin-left", gridPinSide(pinned, field) === "left");
       disable("pin-right", gridPinSide(pinned, field) === "right");
       disable("unpin", !gridPinSide(pinned, field));
+      // pinnable: false hides the pin items (the grid's disableColumnPinning hides them too).
+      for (const action of ["pin-left", "pin-right", "unpin"]) {
+        const item = columnMenu.querySelector<HTMLElement>(
+          `[data-ok-data-grid-action="${action}"]`,
+        );
+        if (item)
+          item.hidden =
+            column.pinnable === false || element.hasAttribute(disableColumnPinning.attr);
+      }
       // Row grouping and aggregation: the item names the column; functions follow its type.
       const groupItem = columnMenu.querySelector('[data-ok-data-grid-action="group"]');
       if (groupItem)
@@ -4020,7 +4456,14 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
           const fieldsNow = arrangedFields();
           const neighbour = fieldsNow[fieldsNow.indexOf(field) + (action === "left" ? -1 : 1)];
           if (groupPaths.size && !gridCanMoveColumn(groupPaths, field, neighbour as string)) return;
-          setOrder(moveGridColumn(fieldsNow, field, action === "left" ? -1 : 1));
+          setOrder(
+            moveGridColumn(
+              fieldsNow,
+              field,
+              action === "left" ? -1 : 1,
+              gridLockedFields(baseColumns),
+            ),
+          );
         } else if (action === "pin-left" || action === "pin-right" || action === "unpin")
           setPinned(
             pinGridColumn(
@@ -4081,7 +4524,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         const row = target.closest<HTMLElement>(ROW);
         if (!row || !main.contains(row)) return;
         emit("rowclick", { id: idOf(row) });
-        const cell = target.closest<HTMLElement>('[role="gridcell"]');
+        const cell = target.closest<HTMLElement>(':is([role="gridcell"], [role="rowheader"])');
         const field = cell?.getAttribute("data-ok-field");
         if (field) emit("cellclick", { id: idOf(row), field, value: value(row, field) });
         if (
@@ -4099,9 +4542,10 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         const box = (event.target as Element).closest(
           '[data-ok-data-grid-checkbox] input[type="checkbox"]',
         );
-        if (!box) return;
+        // Selection off (`data-ok-row-selection="false"`): checkboxes left in the markup do nothing.
+        if (!box || !checkbox) return;
         const row = box.closest<HTMLElement>(ROW);
-        if (row) toggle(row);
+        if (row) toggle(row, true);
         else select(toggleGridRows(selection, allRows().map(idOf)));
         mark();
       },
@@ -4152,11 +4596,24 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       // A row height of the grid (with the density factor), through CSSOM.
       rootVars = syncCustomProperties(
         element,
-        element.hasAttribute(rowHeightOption.attr)
-          ? { "--_ok-data-grid-row-height": `${baseHeight()}px` }
-          : {},
+        {
+          ...(element.hasAttribute(rowHeightOption.attr)
+            ? { "--_ok-data-grid-row-height": `${baseHeight()}px` }
+            : {}),
+          ...gridHeaderHeightProperties(
+            {
+              columnHeaderHeight: readNumber(element, columnHeaderHeight) as number | undefined,
+              columnGroupHeaderHeight: readNumber(element, columnGroupHeaderHeight) as
+                | number
+                | undefined,
+              headerFilterHeight: readNumber(element, headerFilterHeight) as number | undefined,
+            },
+            readStyle(element, densityOption) as GridDensity,
+          ),
+        },
         rootVars,
       );
+      fitPage();
       syncOverlays(rows().length);
     };
     let rootVars: string[] = [];
@@ -4164,6 +4621,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     let pivotNow = pivotOn();
     let columnModeNow = readStyle(element, rowGroupingColumnMode);
     let positionsNow = element.getAttribute("data-ok-aggregation-position");
+    let pagingNow = paging();
     const options = new MutationObserver(() => {
       reflect();
       if (pivotOn() !== pivotNow) {
@@ -4179,6 +4637,11 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         positionsNow = element.getAttribute("data-ok-aggregation-position");
         apply();
       }
+      // Pages on or off: the rows page again; the footer's counts follow.
+      if (paging() !== pagingNow) {
+        pagingNow = paging();
+        apply();
+      } else syncFooter();
       markCells();
       // List view: column cells and headers hide, list cells show.
       if (element.hasAttribute(listView.attr) !== listNow) {
@@ -4205,6 +4668,13 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         cellSelectionOption.attr,
         rowGroupingColumnMode.attr,
         "data-ok-aggregation-position",
+        hideFooterPagination.attr,
+        hideFooterRowCount.attr,
+        hideFooterSelectedRowCount.attr,
+        columnHeaderHeight.attr,
+        columnGroupHeaderHeight.attr,
+        headerFilterHeight.attr,
+        autoPageSize.attr,
       ],
     });
 
@@ -4415,6 +4885,10 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         else comparators.delete(field);
         refresh();
       },
+      setPastedValueParser(field, parser) {
+        if (parser) pastedParsers.set(field, parser);
+        else pastedParsers.delete(field);
+      },
       setValueFormatter(field, format) {
         if (format) formatters.set(field, format);
         else formatters.delete(field);
@@ -4433,6 +4907,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         else pagination?.removeAttribute("data-ok-label-displayed-rows");
         pager()?.refresh();
         syncOverlays(rows().length);
+        syncFooter();
       },
       setRowChildrenExpansion(rowId, expanded) {
         const row = rows().find((r) => idOf(r) === rowId);

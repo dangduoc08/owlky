@@ -17,6 +17,7 @@ moved and `hidden`).
 ```
 div[data-ok-data-grid][data-ok-density][data-ok-checkbox-selection]?[data-ok-disable-*]?[id]
   div[data-ok-data-grid-toolbar]                                            (showToolbar)
+    span[data-ok-data-grid-toolbar-label]                                   (label)
     div[data-ok-data-grid-quick-filter] › TextField (search)
     div[data-ok-data-grid-toolbar-actions] › IconButton[data-ok-data-grid-history=undo|redo][disabled]? × 2 (undo on)
       › Button × (Columns, Filters, Density, Export)
@@ -40,6 +41,8 @@ div[data-ok-data-grid][data-ok-density][data-ok-checkbox-selection]?[data-ok-dis
          [data-ok-format=number|currency|percent|date|datetime][data-ok-format-options='{…}']? (HTML only)
          [data-ok-resizable=false]?[data-ok-editable]?[data-ok-value-options='["…"]']?[data-ok-pinned]?[hidden]?
          [data-ok-sorting-order='["desc","asc",null]']? (root too: the grid's cycle)
+         [data-ok-disable-reorder]?[data-ok-disable-export]?[data-ok-pinnable=false]?[class]? (4.18.51)
+         [data-ok-filter-variant=set]? (4.18.10)
         span[data-ok-data-grid-header-title] · span[data-ok-data-grid-sort-icon] · IconButton[data-ok-data-grid-menu-button]
         · span[data-ok-data-grid-resize][aria-hidden]                         (resizable)
     div[role=rowgroup][data-ok-data-grid-body]   (--_ok-data-grid-before|after: spacers of the row window)
@@ -49,7 +52,8 @@ div[data-ok-data-grid][data-ok-density][data-ok-checkbox-selection]?[data-ok-dis
         (hidden: other pages / filtered out; data-ok-editing: row edit mode)
         div[role=gridcell][data-ok-data-grid-checkbox] › Checkbox
         div[role=gridcell][aria-colindex][data-ok-field][data-ok-align][data-ok-value]?[data-ok-text]?
-           [data-ok-pinned]?[data-ok-editing]?[hidden]?   (editing: input|select[data-ok-data-grid-edit-input]
+           [data-ok-pinned]?[data-ok-editing]?[hidden]?[data-ok-display=flex]?[data-ok-row-span-value]?
+           (role=rowheader for rowHeader columns)   (editing: input|select[data-ok-data-grid-edit-input]
            [aria-invalid]? + span[data-ok-data-grid-edit-error][role=alert]?)
            [aria-colspan]? (covered cells: [hidden][data-ok-covered]) [aria-rowspan]? (covered:
            [data-ok-covered][aria-hidden=true], kept in place) [data-ok-editable=false]? [class]?
@@ -103,6 +107,14 @@ div[data-ok-data-grid][data-ok-density][data-ok-checkbox-selection]?[data-ok-dis
       › div[role=presentation][data-ok-data-grid-group-filler][data-ok-pin-field] (special columns)
       › div[role=columnheader][data-ok-data-grid-header-filter][data-ok-filter-field][aria-label="<name> filter"]
         › TextField | TextField select | DatePicker (date) | DateTimePicker (dateTime) ; unfilterable: role=presentation filler
+        › set columns with isAnyOf: Button[data-ok-data-grid-set-filter-button][aria-haspopup=dialog]
+          [aria-controls=<id>-header-filter-<field>-set-filter] ("is any of: 2 selected")
+          + Popover#<id>-header-filter-<field>-set-filter › set filter (id <id>-header-filter-<field>-set)
+    set filter: div[data-ok-data-grid-set-filter][data-ok-field][id] › TextField#<id>-search ("Search values")
+      › FormControlLabel(Checkbox[data-ok-data-grid-set-all]) "Select all"
+      › div[data-ok-data-grid-set-values][role=group][aria-label=Values]
+        › FormControlLabel[hidden]?(Checkbox[data-ok-data-grid-set-value="<value>"]) × values
+      (filter panel: in the value field's place, id <id>-filter-value[-n])
     cells with cellSelection: [aria-selected=true][data-ok-range-edge="top right bottom left"]?
     Menu#<id>-column-menu › MenuItem[data-ok-data-grid-action=group|aggregate-none|aggregate-<fn>][hidden]?[data-ok-selected]?
     Menu#<id>-export › MenuItem[data-ok-data-grid-export=excel]
@@ -133,7 +145,8 @@ div[data-ok-data-grid][data-ok-density][data-ok-checkbox-selection]?[data-ok-dis
   Menu#<id>-column-menu › MenuItem[data-ok-data-grid-action=asc|desc|unsort|left|right|pin-left|pin-right|unpin|filter|hide|columns]
   div[data-ok-data-grid-status-bar][role=status]   (statusBar with cellSelection; also with hideFooter)
     › span[data-ok-data-grid-status-item=count|sum|avg|min|max] (written by the owner)
-  div[data-ok-data-grid-footer] › TablePagination[data-ok-count]   (HTML: count written by the grid)
+  div[data-ok-data-grid-footer] › span[data-ok-data-grid-selected-row-count]? (selected rows; written by the grid)
+    › span[data-ok-data-grid-row-count]? (hideFooterPagination) › TablePagination[data-ok-count]?   (HTML: count written by the grid)
 ```
 Every cell, and every control inside one, renders `tabindex="-1"`; the navigation controller moves
 the single `tabindex="0"`.
@@ -193,6 +206,19 @@ Root: `data-ok-data-grid`. Unknown values fall back to the default.
 | `multipleColumnsSortingMode` | `data-ok-multiple-columns-sorting-mode="…"` | style | `withModifierKey` `always` | — | Sorting a column keeps the others with Shift, Ctrl or Cmd (`withModifierKey`), or `always`. |
 | `statusBar` | `data-ok-status-bar` | flag | boolean | off | With cell selection: a bar under the rows counts the selected cells and sums their numbers. |
 | `historyStackSize` | `data-ok-history-stack-size="…"` | number | number | `30` | Edits and pastes that Ctrl / Cmd + Z can undo (`0` turns undo and redo off). |
+| `hideFooterPagination` | `data-ok-hide-footer-pagination` | flag | boolean | off | No pagination in the footer: every row shows, with the row count. |
+| `hideFooterRowCount` | `data-ok-hide-footer-row-count` | flag | boolean | off | No row count in the footer (it shows only without pagination). |
+| `hideFooterSelectedRowCount` | `data-ok-hide-footer-selected-row-count` | flag | boolean | off | No "n rows selected" in the footer. |
+| `tabNavigation` | `data-ok-tab-navigation="…"` | style | `none` `content` `header` `all` | — | Tab moves between body cells (`content`), headers (`header`) or both (`all`); `none` leaves the grid. |
+| `columnHeaderHeight` | `data-ok-column-header-height="…"` | number | number | — | Column header height (px) before density. Default 56. |
+| `columnGroupHeaderHeight` | `data-ok-column-group-header-height="…"` | number | number | — | Column group header height (px) before density (default: the column headers'). |
+| `headerFilterHeight` | `data-ok-header-filter-height="…"` | number | number | — | Header filter row height (px) before density (default: the column headers', else 56). |
+| `showCellVerticalBorder` | `data-ok-show-cell-vertical-border` | flag | boolean | off | Vertical lines between the cells. |
+| `showColumnVerticalBorder` | `data-ok-show-column-vertical-border` | flag | boolean | off | Full-height vertical lines between the column headers. |
+| `rowSpacingType` | `data-ok-row-spacing-type="…"` | style | `margin` `border` | — | `getRowSpacing` space outside each row (`margin`) or inside it, under its background (`border`). |
+| `autoHeight` | `data-ok-auto-height` | flag | boolean | off | The grid grows with its rows: no scroll area, so no virtualization. |
+| `autoPageSize` | `data-ok-auto-page-size` | flag | boolean | off | The page size fits the grid's height (no rows per page choice). The grid needs a height. |
+| `rowSelection` | `data-ok-row-selection="false"` turns it off | behavior | boolean | on | Rows can be selected (`"false"`: no selection, no checkboxes, no `aria-selected`). |
 <!-- /options:data-grid -->
 
 React props (MUI X names): `rows`, `columns` (`GridColDef`: `field`, `headerName`, `type`
@@ -265,7 +291,14 @@ row grouping, aggregation, pivot, cell selection and chart setters. Batch E (roa
 `startCellEditMode`, `stopCellEditMode`, `startRowEditMode`, `stopRowEditMode`; (4.18.9)
 `historyStackSize` (30; 0: off), `onUndo` / `onRedo` (`{ ids }`), `showHistoryControls` (MUI X:
 `slotProps.toolbar.showHistoryControls`), apiRef `history` (`undo()` / `redo()` → `Promise<boolean>`,
-`clear()`, `canUndo()`, `canRedo()`). Beyond MUI X (4.18.11,
+`clear()`, `canUndo()`, `canRedo()`); (4.18.54) `hideFooterPagination`, `hideFooterRowCount`,
+`hideFooterSelectedRowCount`, `label`, `tabNavigation`; (4.18.53) `columnHeaderHeight`,
+`columnGroupHeaderHeight`, `headerFilterHeight`, `showCellVerticalBorder`, `showColumnVerticalBorder`,
+`rowSpacingType`, `autoHeight`, `autoPageSize`; (4.18.51) column `cellClassName`, `headerClassName`,
+`hideSortIcons`, `disableColumnMenu`, `disableReorder`, `disableExport`, `pinnable`, `rowSpanValueGetter`,
+`pastedValueParser`, `rowHeader`, `display`; (4.18.52) `rowSelection`, `rowSelectionPropagation`,
+`checkboxColDef`. Beyond MUI X (4.18.10): column `filterVariant: "set"`, locale keys `setFilterSearch`,
+`setFilterSelectAll`, `setFilterValues`, `setFilterSelected`. Beyond MUI X (4.18.11,
 ApexGrid / spreadsheets): `statusBar` with `cellSelection`, locale keys `statusBarCount`,
 `statusBarSum`, `statusBarAvg`, `statusBarMin`, `statusBarMax`. Beyond MUI X: Alt + Up / Down on a reorder handle (WCAG 2.5.7). Beyond MUI X (accessibility): Alt + Left / Right resizes, column menu
 Move left / Move right. Renamed: `rowSelectionModel` is an id array (MUI v8:
@@ -466,6 +499,61 @@ controlled, a start or stop only reports, and the edit follows the prop (an entr
 mode saves unless `ignoreModifications`; an invalid value stays open). Cells hide controls with
 `hidden` (a CSS rule beats the controls' own `display`).
 
+Footer and toolbar (4.18.54): the footer shows "n rows selected" (start; while the selection has
+ids, unless `hideFooterSelectedRowCount`), "Total Rows: n" (`hideFooterPagination` without
+`hideFooterRowCount`; "Total Rows: 3 of 25" while filters hide data rows; server modes: the total)
+and the pagination (unless `hideFooterPagination`, which also stops paging). Core
+`gridFooterRowSelected` / `gridFooterRowCount` write the texts; HTML adds and removes the spans
+with DOM methods and hides the TablePagination while `data-ok-hide-footer-pagination` is set.
+`label` is the grid's `aria-label` (over `aria-label`) and the toolbar's first part.
+`tabNavigation`: Tab / Shift + Tab move the tab stop (the one `tabindex=0`) to the next / previous
+cell in reading order within the mode's cells, and leave the grid past the ends (not prevented).
+
+Set filter (4.18.10): a column with `filterVariant: "set"` (string, number, singleSelect) lists
+`isAnyOf` first, so the header filter and a new filter row use it. Its value is a checklist (core
+`gridSetFilterValues`): each distinct value over every data row (numbers and single select choices
+by value, shown with the cell's text; text columns by text), blanks left out, in the type's order.
+The search (core `gridSetFilterSearch`, accents folded with `ignoreDiacritics`) hides the other
+values; "Select all" checks the shown values, or clears them when all are checked (core
+`toggleGridSetFilterValues`), and is mixed while some are. The checked values are the item's value;
+none checked removes the filter (a header filter) or leaves it without effect (the panel). The
+header filter's button sums the choice up (core `gridSetFilterSummary`: "any", the value, "2
+selected") and opens the checklist in a Popover; every control is native (Tab, Space). HTML: a copy
+of the markup's first set filter (a header filter's or the panel's) is the prototype of the panel's
+lists, and value checkboxes are copies of "Select all"; without one, the panel keeps the chips.
+Checkboxes act on `change`, the search on `input`.
+
+Selection options (4.18.52): `rowSelection={false}` renders no checkbox column and no
+`aria-selected`; clicks, Space and Ctrl / Cmd + A select nothing (HTML: checkboxes left in the
+markup do nothing). Propagation (tree data and row grouping, client side, `checkboxSelection`,
+several rows): core `propagateGridSelection(selected, id, checked, tree, propagation)` over the
+filtered tree (every level, open or not: core `GridSelectionTree`); `descendants`: checking or
+clearing a row or a group does the same to its shown, selectable descendants; `parents`: an ancestor
+row joins once all its selectable descendants are selected and leaves when one is cleared. A
+parent row that isn't selected with some selected descendants shows a mixed checkbox
+(`data-ok-indeterminate`, core `gridDescendantSelection`); a group row's checkbox (HTML: a copy of
+a row's) is checked when all its rows are, mixed when some are. Behavior change: tree data parents
+now select their children by default (MUI X v8).
+
+Column options (4.18.51): a column with `hideSortIcons` still sorts (`aria-sort`) without the
+arrow; `disableColumnMenu` drops its menu button (and Ctrl + Enter); `disableReorder` keeps the
+column's index: its header doesn't drag (resizing still works), drops and Move left / Move right
+that would shift it are refused (the items are disabled); `disableExport` leaves it out of CSV, Excel
+and print (also with `fields`); `pinnable: false` hides Pin to left / Pin to right / Unpin. Row spans
+compare `rowSpanValueGetter`'s value as text (HTML: `data-ok-row-span-value`, else the text).
+Pastes parse with `pastedValueParser` (HTML `setPastedValueParser`), else `valueParser`, else the
+type. Row header cells take part in navigation, selection, editing and spans like grid cells.
+
+Layout (4.18.53): `columnHeaderHeight` / `columnGroupHeaderHeight` / `headerFilterHeight` (px ×
+0.7 / 1 / 1.3, rounded) become `--_ok-data-grid-header-height`, `--_ok-data-grid-group-header-height`
+and `--_ok-data-grid-header-filter-height` on the root (only those given; the header filter row
+follows `columnHeaderHeight`). `showCellVerticalBorder` / `showColumnVerticalBorder` draw a 1px
+`--ok-divider` line at each cell's / header's end. `rowSpacingType="border"` turns the row spacing
+into padding (measured rows already hold it). `autoHeight`: the grid grows with its rows, so it
+never virtualizes. `autoPageSize` (paged grids): core `gridAutoPageSize(main, rowStep)` = the scroll
+area's height without the header and pinned rows, over the row height + 1px, at least 1; measured
+by a ResizeObserver and again when the row height changes; the page stays (clamped).
+
 Status bar (4.18.11): with `statusBar` and `cellSelection`, the selected cells of the page (data
 rows, shown columns) give Count (cells with a value) and, with numbers in `number` columns, Sum,
 Average, Min and Max through the aggregation functions of those names (core `gridSelectionStats`,
@@ -478,6 +566,7 @@ changes (no repeated announcements). React: custom `aggregationFunctions` apply;
 | Key | Action |
 |---|---|
 | Tab | Into / out of the grid (one stop) |
+| Tab / Shift + Tab (`tabNavigation`) | Next / previous body cell (`content`), column header (`header`) or both (`all`); past the end, out of the grid |
 | Arrow keys | Move between cells (header included); controls inside cells take the focus |
 | Home / End | First / last cell of the row (Ctrl: of the grid) |
 | Page Up / Page Down | One screen of rows |
@@ -536,7 +625,8 @@ Batch E: `ok:data-grid:undo` / `redo` (`{ ids }`), instance `history` (`undo()`,
 start or stop people make); instance `cellModesModel`, `rowModesModel`, `setCellModesModel(model)`,
 `setRowModesModel(model)` (no events), `setEditCellValue({ id, field, value })`;
 `setSortComparator(field, { sortComparator?, getSortComparator? } | null)`
-(values: `data-ok-value`, else the cell text; rows: the row elements).
+(values: `data-ok-value`, else the cell text; rows: the row elements); (4.18.51)
+`setPastedValueParser(field, parser | null)` (gets the pasted text and the row's values).
 Attributes: `data-ok-label-no-rows`, `data-ok-label-no-results`, `data-ok-export-file-name`,
 `data-ok-sorting-order` (root and headers, JSON).
 
@@ -559,19 +649,22 @@ the detailed record of what is kept.
 | Column def: `field`, `headerName`, `type`, `width` / `minWidth` / `maxWidth` / `flex`, `align` / `headerAlign`, `description`, `sortable`, `filterable`, `hideable`, `resizable`, `editable`, `valueOptions`, `valueGetter` / `valueFormatter` / `valueParser` / `valueSetter`, `renderCell`, `renderHeader`, `colSpan`, `filterOperators`, `getApplyQuickFilterFn`, `preProcessEditCellProps`, `groupable`, `aggregable`, `availableAggregationFunctions`, `pivotable` | same | kept | |
 | Column def: `sortComparator`, `getSortComparator`, `sortingOrder`; grid `sortingOrder`, `multipleColumnsSortingMode` | same | kept (4.18.49) | comparators get `{ id, field, row, value }` params (MUI X: `{ id, field, value, rowNode, api }`); HTML: `data-ok-sorting-order` (root, header), `data-ok-multiple-columns-sorting-mode`, `setSortComparator(field, { sortComparator, getSortComparator })` (values as text); grouped rows keep ordering groups by key |
 | Column def: `renderEditCell`, `renderHeaderFilter` | same | kept (4.18.50) | params `{ id, field, row, value, error, colDef, api }` (`api.setEditCellValue`) / `{ field, colDef, item, applyFilterChanges }`; HTML: `template[data-ok-data-grid-edit-cell="<field>"]` (+ `setEditCellValue`), custom header filter markup with `data-ok-filter-operator`; header filter operator menus: spec Deferred |
-| Column def: `cellClassName`, `headerClassName` | grid `getCellClassName` only | deferred | per column class names |
-| Column def: `hideSortIcons`, `disableColumnMenu`, `disableReorder`, `disableExport`, `pinnable` | — | deferred | per column opt-outs (grid-wide flags exist) |
-| Column def: `rowSpanValueGetter`, `pastedValueParser`, `groupingValueSetter`, `rowHeader`, `display: "flex"` | — | deferred | |
+| Column def: `cellClassName`, `headerClassName` | same | kept (4.18.51) | a string or a function (cells: with the grid's `getCellClassName`, column first); HTML: `class` in the markup |
+| Column def: `hideSortIcons`, `disableColumnMenu`, `disableReorder`, `disableExport`, `pinnable` | same | kept (4.18.51) | HTML: no sort icon span / no menu button in the header (Ctrl + Enter does nothing), header `data-ok-disable-reorder`, `data-ok-disable-export`, `data-ok-pinnable="false"`; `disableReorder`: the column doesn't drag and moves that would shift it are refused (core `moveGridColumn(…, locked)`, `gridLockedFields`); `pinnable: false` hides the pin items (`pinnedColumns` still pins it) |
+| Column def: `rowSpanValueGetter`, `pastedValueParser`, `rowHeader`, `display: "flex"` | same | kept (4.18.51) | `rowSpanValueGetter(value, row)` (MUI X: also `column`, `apiRef`); React writes it as the cells' `data-ok-row-span-value`, which HTML compares; `pastedValueParser(value, row)`, HTML `setPastedValueParser(field, parser)` (row: the cells' values); `rowHeader`: the cells are `role="rowheader"` (group rows keep `gridcell`); `display: "flex"`: cells `data-ok-display="flex"` (`text` is the default) |
+| Column def: `groupingValueSetter` | — | deferred | needs rows dragged between groups (row reordering is off while rows are grouped) |
 | Column def: `groupingValueGetter` | same | kept | value is `row[field]`; HTML: `data-ok-grouping-value` (React writes it) or `setGroupingValueGetter` |
 | Column def: `allowFormulas`, `chartable`, `examples` | — | not applicable | formulas and AI not proposed (roadmap 2.4 notes); `chartable` = every column of `chartModel` |
 | Selection: `checkboxSelection`, `rowSelectionModel` (id array), `disableRowSelectionOnClick`, `disableMultipleRowSelection`, `isRowSelectable`, `keepNonExistentRowsSelected`, `checkboxSelectionVisibleOnly` | same | kept | `rowSelectionModel` renamed shape (MUI v8 `{ type, ids }`) |
-| Selection: `rowSelection: false`, `rowSelectionPropagation` (groups / tree), `checkboxColDef`, `disableRowSelectionExcludeModel` | — | deferred | last one not applicable (id array model) |
+| Selection: `rowSelection: false`, `rowSelectionPropagation` (groups / tree), `checkboxColDef` | same | kept (4.18.52) | `rowSelection={false}` also drops the checkbox column; HTML `data-ok-row-selection="false"` (a behavior option). Propagation default `{ parents: true, descendants: true }` (MUI X v8), client side with several rows; group rows of row grouping get a checkbox with `descendants` (checked / mixed from their rows; group ids never enter the model); parents not selected with some selected descendants show mixed; HTML `data-ok-row-selection-propagation` (JSON). Not done: deselecting rows a new filter hides (MUI X). `checkboxColDef`: `width`, `headerName` (the header's label with single selection), `headerClassName`, `cellClassName`; HTML: the checkbox header's `data-ok-width` and class names in the markup |
+| Selection: `disableRowSelectionExcludeModel` | — | not applicable | id array model |
 | Sorting / filtering / quick filter: models + callbacks, `sortingMode`, `filterMode`, `disableColumnSorting`, `disableColumnFilter`, `disableMultipleColumnsSorting` / `-Filtering`, `quickFilter*`, `ignoreDiacritics` | same | kept | |
 | Filtering: `filterDebounceMs`, `columnFilterDebounceMs`, `disableChildrenFiltering`, `disableChildrenSorting` | — | deferred | |
 | Pagination: `pagination`, `paginationModel`, `paginationMode`, `pageSizeOptions`, `rowCount` | same | kept | |
-| Pagination: `autoPageSize`, `paginationMeta` / `onPaginationMetaChange`, `estimatedRowCount`, `onRowCountChange` | — | deferred | unknown row counts, page size from height |
+| Pagination: `autoPageSize` | same | kept (4.18.53) | rows of the grid's row height (not per-row heights); the rows per page select goes away; HTML: `data-ok-auto-page-size` (the runtime writes the pagination's `data-ok-rows-per-page`) |
+| Pagination: `paginationMeta` / `onPaginationMetaChange`, `estimatedRowCount`, `onRowCountChange` | — | deferred | unknown row counts (4.18.56) |
 | Layout: `density`, `rowHeight`, `getRowHeight`, `getEstimatedRowHeight`, `getRowSpacing`, `rowSpanning`, `listView` | same | kept | |
-| Layout: `columnHeaderHeight`, `columnGroupHeaderHeight`, `headerFilterHeight`, `rowSpacingType`, `showCellVerticalBorder`, `showColumnVerticalBorder`, `autoHeight` | — | deferred | `autoHeight` = unbounded grid (CSS) today |
+| Layout: `columnHeaderHeight`, `columnGroupHeaderHeight`, `headerFilterHeight`, `rowSpacingType`, `showCellVerticalBorder`, `showColumnVerticalBorder`, `autoHeight` | same | kept (4.18.53) | heights × the density factor as root private properties (core `gridHeaderHeightProperties`; HTML through CSSOM); `headerFilterHeight` defaults to `columnHeaderHeight`, else 56px (MUI X: the header height); `rowSpacingType="border"` is padding inside the row (its background covers it); `autoHeight` sets the root's `block-size: auto` and stops the scroll area's flex (an author height still wins) |
 | Layout: `height`, `scrollbarSize`, `resizeThrottleMs`, `throttleRowsMs`, `nonce`, `logger`, `logLevel`, `experimentalFeatures`, `featureDependencies` | — | not applicable | consumer CSS / engine internals (no injected styles) |
 | Columns: resize, reorder, pinning, visibility props + callbacks, `columnGroupingModel`, `autosizeOnMount`, `autosizeOptions` | same | kept | |
 | Columns: `disableAutosize`, `onColumnResize`, `keepColumnPositionIfDraggedOutside`, `pinnedColumnsSectionSeparator`, `pinnedRowsSectionSeparator` | — | deferred | |
@@ -580,10 +673,10 @@ the detailed record of what is kept.
 | Undo / redo: `historyStackSize`, `onUndo`, `onRedo`, `slotProps.toolbar.showHistoryControls`, apiRef `history` (`undo`, `redo`, `clear`, `canUndo`, `canRedo`) | same (`showHistoryControls` a grid prop) | kept (4.18.9) | steps: saved cell / row edits and pastes (not pastes with a data source; off with a data source without `updateRow`); `onUndo` / `onRedo` get `{ ids }`; HTML `data-ok-history-stack-size`, `button[data-ok-data-grid-history]`, instance `history`, `ok:data-grid:undo` / `redo` |
 | Undo / redo: `historyEventHandlers`, `historyValidationEvents`, `undoable` setters | — | not applicable | engine events of MUI X; each step checks its rows instead (see Behavior) |
 | Toolbar / footer: `showToolbar`, `hideFooter`, `disableColumnSelector`, `disableDensitySelector`, `disableColumnMenu` | same | kept | `toolbarVariant` added |
-| Toolbar / footer: `hideFooterPagination`, `hideFooterRowCount`, `hideFooterSelectedRowCount`, `label` (toolbar title) | — | deferred | |
+| Toolbar / footer: `hideFooterPagination`, `hideFooterRowCount`, `hideFooterSelectedRowCount`, `label` (toolbar title) | same | kept (4.18.54) | `hideFooterPagination` also shows every row (MUI X keeps paging at its page size); the row count shows only then (MUI X: without `pagination`); locale keys `footerRowSelected` / `footerRowSelectedOne` (MUI X: one function), `footerTotalRows`, `footerTotalVisibleRows`; HTML: the counts are written by the grid, the label is markup |
 | Events: `onRowClick`, `onRowDoubleClick`, `onCellClick`, `onCellDoubleClick`, `onCellKeyDown`, `onColumnHeaderClick`, `onRowsScrollEnd` | same | kept | |
 | Events: `onColumnHeaderDoubleClick`, `-ContextMenu`, `-Enter`, `-Leave`, `-Over`, `-Out`, `onMenuOpen` / `Close`, `onPreferencePanelOpen` / `Close`, `onSidebarOpen` / `Close`, `onResize`, `onFetchRows`, `onExcelExportStateChange` | — | deferred | |
-| Keyboard: `tabNavigation` (`none` · `content` · `header` · `all`) | — | deferred | Tab moves between cells |
+| Keyboard: `tabNavigation` (`none` · `content` · `header` · `all`) | same | kept (4.18.54) | core `createGridNavigation` reads the root's `data-ok-tab-navigation`; headers are the column headers' row (not groups or header filters) |
 | Data source / server: `dataSource`, `dataSourceCache`, `onDataSourceError`, `lazyLoading`, `lazyLoadingRequestThrottleMs`, `disableVirtualization`, `rowBufferPx`, `columnBufferPx` | same | kept | |
 | Data source: `dataSourceKeepPreviousData`, `dataSourceRevalidateMs`; `virtualizeColumnsWithAutoRowHeight` | — | deferred | |
 | Tree data / master-detail / row order / pinned rows: `treeData`, `getTreeDataPath`, `groupingColDef`, `defaultGroupingExpansionDepth`, `isGroupExpandedByDefault`, detail panel props, `rowReordering`, `onRowOrderChange`, `pinnedRows` | same | kept | |
@@ -596,6 +689,7 @@ the detailed record of what is kept.
 | Pivot: `pivotingColDef`, `pivotPanelOpen` / `onPivotPanelOpenChange` | — | deferred | |
 | Clipboard / cell selection / export: `cellSelection`, `cellSelectionModel`, `disableClipboardPaste`, `onClipboardCopy`, `onClipboardPasteStart` / `End`, `splitClipboardPastedText`, `clipboardCopyCellDelimiter`, `ignoreValueFormatterDuringExport`, `csvOptions`, `printOptions`, `excelOptions` | same | kept | |
 | (not in MUI X) status bar of the selected cells (ApexGrid, spreadsheets) | `statusBar` | added (4.18.11) | Count, Sum, Average, Min, Max through `aggregationFunctions`; `role=status` |
+| (not in MUI X) set filter (ApexGrid, spreadsheets): a checklist of a column's values | column `filterVariant: "set"` | added (4.18.10) | on the `isAnyOf` model (string, number, singleSelect columns); filter panel and header filter; HTML `data-ok-filter-variant="set"` on the header |
 | `cellSelectionFillHandle`, `onBeforeClipboardPasteStart` | — | deferred | fill handle drag (keyboard alternative needed, WCAG 2.5.7) |
 | Charts: `chartsIntegration`, `chartModel` (renamed, see above) | same | kept | |
 | Charts: several `GridChartsRendererProxy` (`id`, `label`), `initialState.chartsIntegration.charts`, `activeChartId` / `onActiveChartIdChange` | `chartModels` (+ model `label`), `activeChartId` | renamed | charts inside the grid; HTML `data-ok-chart-models`, `data-ok-active-chart-id` |

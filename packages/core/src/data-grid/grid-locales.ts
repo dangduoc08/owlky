@@ -118,6 +118,14 @@ export const viVN: GridLabels = {
   statusBarAvg: "Trung bình",
   statusBarMin: "Nhỏ nhất",
   statusBarMax: "Lớn nhất",
+  footerRowSelected: "Đã chọn {count} hàng",
+  footerRowSelectedOne: "Đã chọn {count} hàng",
+  footerTotalRows: "Tổng số hàng:",
+  footerTotalVisibleRows: "{visibleCount} trên {totalCount}",
+  setFilterSearch: "Tìm giá trị",
+  setFilterSelectAll: "Chọn tất cả",
+  setFilterValues: "Giá trị",
+  setFilterSelected: "Đã chọn {count}",
   filterOperator: {
     contains: "chứa",
     doesNotContain: "không chứa",
@@ -253,6 +261,14 @@ export const frFR: GridLabels = {
   statusBarAvg: "Moyenne",
   statusBarMin: "Min.",
   statusBarMax: "Max.",
+  footerRowSelected: "{count} lignes sélectionnées",
+  footerRowSelectedOne: "{count} ligne sélectionnée",
+  footerTotalRows: "Total de lignes :",
+  footerTotalVisibleRows: "{visibleCount} sur {totalCount}",
+  setFilterSearch: "Rechercher des valeurs",
+  setFilterSelectAll: "Tout sélectionner",
+  setFilterValues: "Valeurs",
+  setFilterSelected: "{count} sélectionnés",
   filterOperator: {
     contains: "contient",
     doesNotContain: "ne contient pas",
@@ -388,6 +404,14 @@ export const deDE: GridLabels = {
   statusBarAvg: "Durchschnitt",
   statusBarMin: "Min.",
   statusBarMax: "Max.",
+  footerRowSelected: "{count} Zeilen ausgewählt",
+  footerRowSelectedOne: "{count} Zeile ausgewählt",
+  footerTotalRows: "Gesamtzahl Zeilen:",
+  footerTotalVisibleRows: "{visibleCount} von {totalCount}",
+  setFilterSearch: "Werte suchen",
+  setFilterSelectAll: "Alle auswählen",
+  setFilterValues: "Werte",
+  setFilterSelected: "{count} ausgewählt",
   filterOperator: {
     contains: "enthält",
     doesNotContain: "enthält nicht",
@@ -523,6 +547,14 @@ export const esES: GridLabels = {
   statusBarAvg: "Promedio",
   statusBarMin: "Mín.",
   statusBarMax: "Máx.",
+  footerRowSelected: "{count} filas seleccionadas",
+  footerRowSelectedOne: "{count} fila seleccionada",
+  footerTotalRows: "Filas totales:",
+  footerTotalVisibleRows: "{visibleCount} de {totalCount}",
+  setFilterSearch: "Buscar valores",
+  setFilterSelectAll: "Seleccionar todo",
+  setFilterValues: "Valores",
+  setFilterSelected: "{count} seleccionados",
   filterOperator: {
     contains: "contiene",
     doesNotContain: "no contiene",
@@ -658,6 +690,14 @@ export const jaJP: GridLabels = {
   statusBarAvg: "平均",
   statusBarMin: "最小",
   statusBarMax: "最大",
+  footerRowSelected: "{count}行を選択中",
+  footerRowSelectedOne: "{count}行を選択中",
+  footerTotalRows: "総行数:",
+  footerTotalVisibleRows: "{visibleCount} / {totalCount}",
+  setFilterSearch: "値を検索",
+  setFilterSelectAll: "すべて選択",
+  setFilterValues: "値",
+  setFilterSelected: "{count}件選択",
   filterOperator: {
     contains: "を含む",
     doesNotContain: "を含まない",
@@ -793,6 +833,14 @@ export const zhCN: GridLabels = {
   statusBarAvg: "平均值",
   statusBarMin: "最小值",
   statusBarMax: "最大值",
+  footerRowSelected: "已选择 {count} 行",
+  footerRowSelectedOne: "已选择 {count} 行",
+  footerTotalRows: "总行数：",
+  footerTotalVisibleRows: "{visibleCount} / {totalCount}",
+  setFilterSearch: "搜索值",
+  setFilterSelectAll: "全选",
+  setFilterValues: "值",
+  setFilterSelected: "已选 {count} 项",
   filterOperator: {
     contains: "包含",
     doesNotContain: "不包含",
@@ -826,3 +874,27 @@ export const gridDisplayedRows = (
     .replaceAll("{from}", String(range.from))
     .replaceAll("{to}", String(range.to))
     .replaceAll("{count}", String(range.count));
+
+/** The footer's "2 rows selected" (`footerRowSelected`, `footerRowSelectedOne` for one row). */
+export const gridFooterRowSelected = (
+  labels: Pick<GridLabels, "footerRowSelected" | "footerRowSelectedOne">,
+  count: number,
+): string =>
+  (count === 1 ? labels.footerRowSelectedOne : labels.footerRowSelected).replaceAll(
+    "{count}",
+    String(count),
+  );
+
+/** The footer's "Total Rows: 25", or "Total Rows: 3 of 25" while filters hide rows. */
+export const gridFooterRowCount = (
+  labels: Pick<GridLabels, "footerTotalRows" | "footerTotalVisibleRows">,
+  visible: number,
+  total: number,
+): string =>
+  `${labels.footerTotalRows} ${
+    visible < total
+      ? labels.footerTotalVisibleRows
+          .replaceAll("{visibleCount}", String(visible))
+          .replaceAll("{totalCount}", String(total))
+      : String(total)
+  }`;

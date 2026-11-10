@@ -54,7 +54,10 @@ import {
   type GridPivotModel,
   type GridPivotSection,
   type GridRowModesModel,
+  type GridRowSelectionPropagation,
   type GridRowWindow,
+  type GridSelectionTree,
+  type GridSetFilterValue,
   type GridSortDirection,
   type GridSortingOrder,
   type GridSortModel,
@@ -67,6 +70,7 @@ import {
   gridAggregationFunctionsFor,
   gridAlign,
   gridAriaSort,
+  gridAutoPageSize,
   gridCanMoveColumn,
   gridCellEdges,
   gridCellRange,
@@ -80,6 +84,7 @@ import {
   gridDefaultLabels,
   gridDensities,
   gridDensityFactor,
+  gridDescendantSelection,
   gridDirectedComparator,
   gridDisplayedRows,
   gridEditInputType,
@@ -90,6 +95,8 @@ import {
   gridExportColumns,
   gridFilterOperators,
   gridFilterValues,
+  gridFooterRowCount,
+  gridFooterRowSelected,
   gridGroupComparator,
   gridGroupFooterId,
   gridGroupingField,
@@ -99,7 +106,9 @@ import {
   gridGroupRows,
   gridGroupsById,
   gridHeaderAlign,
+  gridHeaderHeightProperties,
   gridHistoryRow,
+  gridLockedFields,
   gridMissingRanges,
   gridOperatorNeedsValue,
   gridPinSide,
@@ -115,8 +124,12 @@ import {
   gridRowWindow,
   gridRowWindowOf,
   gridSelectAllState,
+  gridSelectableDescendants,
   gridSelectedBlock,
   gridSelectionStats,
+  gridSetFilterSearch,
+  gridSetFilterSummary,
+  gridSetFilterValues,
   gridStackableChartTypes,
   gridStatusItems,
   gridToCsv,
@@ -129,6 +142,7 @@ import {
   isGridFilterable,
   isGridHideable,
   isGridResizable,
+  isGridSetFilter,
   isGridSortable,
   measureGridColumn,
   mergeGridCellSelection,
@@ -146,6 +160,7 @@ import {
   pinGridColumn,
   prepareGridPrint,
   printGridContent,
+  propagateGridSelection,
   pruneGridSelection,
   sanitizeGridChartModels,
   sanitizeGridState,
@@ -155,6 +170,7 @@ import {
   syncGridPinning,
   toggleGridCell,
   toggleGridRows,
+  toggleGridSetFilterValues,
   visibleGridColumns,
 } from "@owlky/core";
 import {
@@ -271,6 +287,20 @@ export interface GridColDef<R = Record<string, unknown>> extends GridColumn {
   valueFormatter?: ((value: unknown, row: R) => string) | undefined;
   /** Custom cell content (the text still drives search and export). */
   renderCell?: ((params: GridRenderCellParams<R>) => ReactNode) | undefined;
+  /** Class names of the column's cells: a string, or one per cell (with `getCellClassName`). */
+  cellClassName?: string | ((params: GridCellParams<R>) => string) | undefined;
+  /** Class names of the column's header cell: a string, or from the column. */
+  headerClassName?:
+    | string
+    | ((params: { field: string; colDef: GridColDef<R> }) => string)
+    | undefined;
+  /**
+   * The value `rowSpanning` compares for this column, from the raw value and the row (default: the
+   * cell's text). Equal neighbours merge.
+   */
+  rowSpanValueGetter?: ((value: unknown, row: R) => unknown) | undefined;
+  /** A pasted text as a value (default: `valueParser`, else by the column type). */
+  pastedValueParser?: ((value: string, row: R) => unknown) | undefined;
   /** Sorts the column's values (ascending; reversed for descending). Default: by the column type. */
   sortComparator?: GridComparatorFn<R> | undefined;
   /**
@@ -453,6 +483,18 @@ export interface DataGridProps<R>
   /** Returns a row's id. Default `row.id`. */
   getRowId?: ((row: R) => string | number) | undefined;
   checkboxSelection?: boolean | undefined;
+  /** `false` turns row selection off: no checkboxes, clicks and keys don't select. Default `true`. */
+  rowSelection?: boolean | undefined;
+  /**
+   * Tree data and row grouping: selecting a parent or a group selects its shown descendants
+   * (`descendants`), and selecting all of them selects the parent (`parents`). Default both `true`.
+   * Not with a data source or one row at a time.
+   */
+  rowSelectionPropagation?: GridRowSelectionPropagation | undefined;
+  /** The checkbox column (`checkboxSelection`): its width, header label and class names. */
+  checkboxColDef?:
+    | Pick<GridColDef<R>, "width" | "headerName" | "headerClassName" | "cellClassName">
+    | undefined;
   disableRowSelectionOnClick?: boolean | undefined;
   /** The selected row ids, controlled. */
   rowSelectionModel?: readonly string[] | undefined;
@@ -505,6 +547,22 @@ export interface DataGridProps<R>
   multipleColumnsSortingMode?: "withModifierKey" | "always" | undefined;
   /** Hides the footer (row count and pagination). */
   hideFooter?: boolean | undefined;
+  /**
+   * Hides the footer's pagination: every row shows, and the footer shows the row count instead
+   * ("Total Rows: 25").
+   */
+  hideFooterPagination?: boolean | undefined;
+  /** Hides the footer's row count (it shows only without pagination). */
+  hideFooterRowCount?: boolean | undefined;
+  /** Hides the footer's "2 rows selected". */
+  hideFooterSelectedRowCount?: boolean | undefined;
+  /** The grid's name: the toolbar shows it (with `showToolbar`) and it names the grid. */
+  label?: string | undefined;
+  /**
+   * What Tab does inside the grid: `none` (default) leaves it, `content` moves between body cells,
+   * `header` between column headers, `all` through both. Tab past the last cell leaves the grid.
+   */
+  tabNavigation?: "none" | "content" | "header" | "all" | undefined;
   /** Labels (MUI X locale text keys). */
   localeText?: Partial<GridLabels> | undefined;
   /** Name of the CSV file (without `.csv`). Default "data". */
@@ -593,6 +651,31 @@ export interface DataGridProps<R>
   rowSpanning?: boolean | undefined;
   /** Row height, px, before the density factor. Default 52. */
   rowHeight?: number | undefined;
+  /** Column header height, px, before the density factor. Default 56. */
+  columnHeaderHeight?: number | undefined;
+  /** Column group header height, px, before the density factor. Default: `columnHeaderHeight`. */
+  columnGroupHeaderHeight?: number | undefined;
+  /**
+   * Header filter row height, px, before the density factor. Default: `columnHeaderHeight`, else
+   * 56.
+   */
+  headerFilterHeight?: number | undefined;
+  /** Vertical lines between the cells. */
+  showCellVerticalBorder?: boolean | undefined;
+  /** Full-height vertical lines between the column headers. */
+  showColumnVerticalBorder?: boolean | undefined;
+  /**
+   * Where `getRowSpacing` puts its space: outside the row (`margin`, default) or inside it, under
+   * its background (`border`).
+   */
+  rowSpacingType?: "margin" | "border" | undefined;
+  /** The grid grows with its rows (no scroll area, so no virtualization). Don't give it a height. */
+  autoHeight?: boolean | undefined;
+  /**
+   * The page size fits the grid's height, and the rows per page choice goes away. The grid needs a
+   * height.
+   */
+  autoPageSize?: boolean | undefined;
   /** A row's height: px, or `"auto"` (the content decides); `null`: the default. */
   getRowHeight?:
     | ((params: { id: string; model: R; densityFactor: number }) => number | "auto" | null)
@@ -962,6 +1045,86 @@ const isoValue = (date: Date | null, type: GridColDef["type"]) =>
 
 const NO_PIVOT: GridPivotModel = { rows: [], columns: [], values: [] };
 
+interface GridSetFilterProps {
+  /** Base id: the search field's id is `<id>-search`. */
+  id: string;
+  field: string;
+  values: readonly GridSetFilterValue[];
+  selected: readonly string[];
+  labels: GridLabels;
+  ignoreDiacritics: boolean | undefined;
+  onChange(values: string[]): void;
+}
+
+/**
+ * A set filter (`filterVariant: "set"`): a search, "Select all" (mixed while some shown values are
+ * checked) and one checkbox per value, in a labelled group. Nothing checked: no filter.
+ */
+function GridSetFilter({
+  id,
+  field,
+  values,
+  selected,
+  labels,
+  ignoreDiacritics,
+  onChange,
+}: GridSetFilterProps) {
+  const [search, setSearch] = useState("");
+  const shown = gridSetFilterSearch(values, search, ignoreDiacritics);
+  const all = gridSelectAllState(
+    shown.map((v) => v.value),
+    selected,
+  );
+  return (
+    <div data-ok-data-grid-set-filter="" data-ok-field={field} id={id}>
+      <TextField
+        id={`${id}-search`}
+        size="small"
+        fullWidth
+        label={labels.setFilterSearch}
+        value={search}
+        onChange={setSearch}
+      />
+      <FormControlLabel
+        label={labels.setFilterSelectAll}
+        control={
+          <Checkbox
+            size="small"
+            data-ok-data-grid-set-all=""
+            checked={all === "all"}
+            indeterminate={all === "some"}
+            onChange={() => onChange(toggleGridSetFilterValues(selected, shown))}
+          />
+        }
+      />
+      <div data-ok-data-grid-set-values="" role="group" aria-label={labels.setFilterValues}>
+        {values.map((item) => (
+          <FormControlLabel
+            key={item.value}
+            hidden={!shown.includes(item) || undefined}
+            label={item.label}
+            control={
+              <Checkbox
+                size="small"
+                data-ok-data-grid-set-value={item.value}
+                checked={selected.includes(item.value)}
+                onChange={() =>
+                  onChange(
+                    selected.includes(item.value)
+                      ? selected.filter((v) => v !== item.value)
+                      : [...selected, item.value],
+                  )
+                }
+              />
+            }
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+const DEFAULT_PROPAGATION: GridRowSelectionPropagation = { parents: true, descendants: true };
+
 type Panel = "columns" | "filters" | "density" | "export" | "pivot" | "charts" | null;
 
 function DataGridInner<R>(
@@ -969,7 +1132,10 @@ function DataGridInner<R>(
     rows,
     columns: columnsProp,
     getRowId = (row: R) => (row as { id: string | number }).id,
-    checkboxSelection,
+    checkboxSelection: checkboxSelectionProp,
+    rowSelection = true,
+    rowSelectionPropagation = DEFAULT_PROPAGATION,
+    checkboxColDef,
     disableRowSelectionOnClick,
     rowSelectionModel,
     onRowSelectionModelChange,
@@ -996,6 +1162,11 @@ function DataGridInner<R>(
     multipleColumnsSortingMode,
     statusBar,
     hideFooter,
+    hideFooterPagination,
+    hideFooterRowCount,
+    hideFooterSelectedRowCount,
+    label,
+    tabNavigation,
     localeText,
     exportFileName = "data",
     disableMultipleColumnsFiltering,
@@ -1038,6 +1209,14 @@ function DataGridInner<R>(
     autosizeOptions,
     rowSpanning,
     rowHeight,
+    columnHeaderHeight,
+    columnGroupHeaderHeight,
+    headerFilterHeight,
+    showCellVerticalBorder,
+    showColumnVerticalBorder,
+    rowSpacingType,
+    autoHeight,
+    autoPageSize,
     getRowHeight,
     getEstimatedRowHeight,
     getRowClassName,
@@ -1115,12 +1294,16 @@ function DataGridInner<R>(
     activeChartId: activeChartProp,
     onActiveChartIdChange,
     onChartModelChange,
-    "aria-label": ariaLabel,
+    "aria-label": ariaLabelProp,
     "aria-labelledby": ariaLabelledby,
     ...props
   }: DataGridProps<R>,
   ref: Ref<HTMLDivElement>,
 ) {
+  // `label` names the grid (MUI X: always its `aria-label`).
+  const ariaLabel = label ?? ariaLabelProp;
+  // `rowSelection={false}`: no selection at all (the checkbox column goes too).
+  const checkboxSelection = !!checkboxSelectionProp && rowSelection;
   const labels = { ...gridDefaultLabels, ...localeText };
   const generated = useId();
   // Parts are named after the grid's id, so pages (and snippets) get readable ids.
@@ -1416,6 +1599,11 @@ function DataGridInner<R>(
       : textOf(column, row);
   };
   const ordered = orderGridColumns(columns, order);
+  /** What row spanning compares: the column's `rowSpanValueGetter`, else the cell's text. */
+  const spanKeyOf = (column: GridColDef<R>, row: R) =>
+    column.rowSpanValueGetter && isData(row)
+      ? asText(column.rowSpanValueGetter(rawValue(column, row), row))
+      : textOf(column, row);
   // While printing (every row and the printed columns render, then the page prints).
   const [printing, setPrinting] = useState<GridPrintOptions | null>(null);
   const shown = visibleGridColumns(
@@ -1446,6 +1634,18 @@ function DataGridInner<R>(
         operators,
       },
     );
+  /** The values a set filter lists: each distinct value of the column over every data row. */
+  const setValuesOf = (column: GridColDef<R>) =>
+    gridSetFilterValues(
+      orderedRows.filter(isData),
+      column,
+      (row, field) => rawValue(columnOf(field), row),
+      (row, field) => textOf(columnOf(field), row),
+    );
+  const [setFilterOpen, setSetFilterOpen] = useState<{
+    field: string;
+    anchor: HTMLElement;
+  } | null>(null);
   const sortParams = (column: GridColDef<R>, row: R): GridCellParams<R> => ({
     id: idOf(row),
     field: column.field,
@@ -1670,7 +1870,7 @@ function DataGridInner<R>(
   const pageCount = Math.max(Math.ceil(total / pagination.pageSize), 1);
   const page = Math.min(pagination.page, pageCount - 1);
   // Rows of the page: all of them with server pagination or without a footer.
-  const unpaged = server.page || hideFooter || lazy;
+  const unpaged = server.page || hideFooter || hideFooterPagination || lazy;
   const pageStart = unpaged ? 0 : page * pagination.pageSize;
   const pageEnd = unpaged ? sorted.length : pageStart + pagination.pageSize;
   const onPage = (index: number) =>
@@ -1701,6 +1901,11 @@ function DataGridInner<R>(
   const variable =
     !!getRowHeight || !!getRowSpacing || (!!getDetailPanelContent && detailIds.length > 0);
   const baseHeight = Math.round((rowHeight ?? 52) * factor);
+  // Header heights of their own (px × the density factor), as private properties of the root.
+  const headerHeights = gridHeaderHeightProperties(
+    { columnHeaderHeight, columnGroupHeaderHeight, headerFilterHeight },
+    density,
+  );
   const measured = useRef(new Map<string, number>());
   const [, remeasured] = useState(0);
   // Virtualization starts once the grid is measured: the first render (and SSR) shows every row,
@@ -1715,12 +1920,16 @@ function DataGridInner<R>(
       const heights = pageRows.map((row, i) => {
         const own = heightOf(row);
         const space = spacingOf(row, i);
+        const seen = measured.current.get(idOf(row));
         const box =
-          measured.current.get(idOf(row)) ??
+          seen ??
           (typeof own === "number"
             ? own + 1
             : (getEstimatedRowHeight?.({ id: idOf(row), model: row }) ?? baseHeight) + 1);
-        return box + (space.top ?? 0) + (space.bottom ?? 0);
+        // Border spacing is inside the row: a measured row already holds it.
+        return seen !== undefined && rowSpacingType === "border"
+          ? box
+          : box + (space.top ?? 0) + (space.bottom ?? 0);
       });
       offsets = gridRowOffsets(heights);
       range = gridRowWindowOf(offsets, vp.offset, vp.viewport, rowBufferPx);
@@ -1738,7 +1947,7 @@ function DataGridInner<R>(
   // Row spans (on the page): cells merge with the rows below; the window starts at a span's top.
   const spanFields = shown.filter((c) => c.type !== "actions").map((c) => c.field);
   const spans = rowSpanning
-    ? gridRowSpans(pageRows, spanFields, (row, field) => textOf(columnOf(field), row))
+    ? gridRowSpans(pageRows, spanFields, (row, field) => spanKeyOf(columnOf(field), row))
     : null;
   if (range && spans && range.start > 0) {
     const start = spans.origin[range.start] as number;
@@ -1762,6 +1971,44 @@ function DataGridInner<R>(
   const rowOffset = server.page ? page * pagination.pageSize : 0;
   const multiple = !disableMultipleRowSelection;
   const selectable = (row: R) => isData(row) && (isRowSelectable?.({ id: idOf(row), row }) ?? true);
+  // Selection propagation (tree data, row groups; client side, several rows): the shown tree.
+  const selectionTree: GridSelectionTree | null = (() => {
+    if (!tree || !checkboxSelection || !multiple || dataSource) return null;
+    if (!rowSelectionPropagation.parents && !rowSelectionPropagation.descendants) return null;
+    const shownTree = tree;
+    const kids = new Map<string, string[]>();
+    for (const node of shownTree.values())
+      if (node.parentId !== null) {
+        const list = kids.get(node.parentId);
+        if (list) list.push(node.id);
+        else kids.set(node.parentId, [node.id]);
+      }
+    return {
+      children: (rowId) => kids.get(rowId) ?? [],
+      parent: (rowId) => shownTree.get(rowId)?.parentId ?? null,
+      selectable: (rowId) => {
+        const node = shownTree.get(rowId);
+        return !!node && !isGroup(node.row) && selectable(node.row);
+      },
+    };
+  })();
+  /** The checkbox column as a column (`checkboxColDef` class name functions get it). */
+  const checkboxColumn = {
+    field: GRID_CHECKBOX_FIELD,
+    headerName: checkboxColDef?.headerName ?? labels.checkboxSelectionHeaderName,
+    width: checkboxColDef?.width ?? GRID_CHECKBOX_WIDTH,
+  } as GridColDef<R>;
+  /** A row's checkbox: checked, mixed (some descendants) or clear; groups from their rows. */
+  const checkState = (row: R): "all" | "some" | "none" => {
+    const rowId = idOf(row);
+    if (selectionTree && isGroup(row)) {
+      return gridDescendantSelection(selection, rowId, selectionTree);
+    }
+    if (selection.includes(rowId)) return "all";
+    return selectionTree && gridDescendantSelection(selection, rowId, selectionTree) !== "none"
+      ? "some"
+      : "none";
+  };
   // Select all: the selectable rows of every page (or of this page only).
   const allIds = (
     checkboxSelectionVisibleOnly
@@ -1788,7 +2035,9 @@ function DataGridInner<R>(
   // Columns the grid adds before the others: reorder handle, checkbox, detail toggle, tree group.
   const specials = [
     ...(rowReordering ? [{ field: REORDER_FIELD, width: 50 }] : []),
-    ...(checkboxSelection ? [{ field: GRID_CHECKBOX_FIELD, width: GRID_CHECKBOX_WIDTH }] : []),
+    ...(checkboxSelection
+      ? [{ field: GRID_CHECKBOX_FIELD, width: checkboxColDef?.width ?? GRID_CHECKBOX_WIDTH }]
+      : []),
     ...(getDetailPanelContent ? [{ field: DETAIL_FIELD, width: 50 }] : []),
     ...(treeLike
       ? groupingColumns.map((field) => ({ field, width: groupingColDefOf(field).width ?? 200 }))
@@ -2054,6 +2303,24 @@ function DataGridInner<R>(
   // A new density or new rows: measure the rows again.
   // biome-ignore lint/correctness/useExhaustiveDependencies: re-measures when these change.
   useEffect(() => watcher.current?.measure(), [density, rendered.length > 0]);
+  // autoPageSize: the page size follows the scroll area's height (rows of the grid's height).
+  const fitPage = useRef<() => void>(undefined as never);
+  fitPage.current = () => {
+    const main = gridRef.current;
+    if (!autoPageSize || !main || hideFooter || hideFooterPagination || lazy) return;
+    const size = gridAutoPageSize(main, baseHeight + 1);
+    if (size === pagination.pageSize) return;
+    const last = Math.max(Math.ceil(total / size), 1) - 1;
+    setPagination({ page: Math.min(pagination.page, last), pageSize: size });
+  };
+  useEffect(() => {
+    if (!autoPageSize || typeof ResizeObserver !== "function") return;
+    const observer = new ResizeObserver(() => fitPage.current());
+    observer.observe(gridRef.current as HTMLDivElement);
+    return () => observer.disconnect();
+  }, [autoPageSize]);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: fits again when the rows' height changes.
+  useEffect(() => fitPage.current(), [autoPageSize, baseHeight]);
 
   const cache = dataSourceCache === undefined ? defaultCache : dataSourceCache;
   const request = JSON.stringify({
@@ -2183,7 +2450,7 @@ function DataGridInner<R>(
       refocus.current = null;
       gridRef.current
         ?.querySelector<HTMLElement>(
-          `[data-ok-row-id="${CSS.escape(rowId)}"] [role="gridcell"][data-ok-field="${CSS.escape(field)}"]`,
+          `[data-ok-row-id="${CSS.escape(rowId)}"] :is([role="gridcell"], [role="rowheader"])[data-ok-field="${CSS.escape(field)}"]`,
         )
         ?.focus();
     }
@@ -2205,7 +2472,19 @@ function DataGridInner<R>(
   };
   const toggleRow = useRef<(id: string) => void>(undefined as never);
   toggleRow.current = (rowId) => {
-    // Only rows with aria-selected (checkbox selection) reach here.
+    // Rows with aria-selected (checkbox selection) and group rows with a checkbox reach here.
+    const node = tree?.get(rowId);
+    if (selectionTree && node) {
+      const group = isGroup(node.row);
+      if (!group && !selectionTree.selectable(rowId)) return;
+      const checked = group
+        ? gridDescendantSelection(selection, rowId, selectionTree) !== "all"
+        : !selection.includes(rowId);
+      setSelection(
+        propagateGridSelection(selection, rowId, checked, selectionTree, rowSelectionPropagation),
+      );
+      return;
+    }
     const row = view.find((r) => idOf(r) === rowId);
     if (row && !selectable(row)) return;
     setSelection(selectGridRow(selection, rowId, multiple));
@@ -2277,7 +2556,7 @@ function DataGridInner<R>(
   const moveTo = useRef<(field: string, target: string) => void>(undefined as never);
   moveTo.current = (field, target) => {
     if (columnGroupingModel && !gridCanMoveColumn(groupPaths, field, target)) return;
-    setOrder(moveGridColumn(fields, field, { to: target }));
+    setOrder(moveGridColumn(fields, field, { to: target }, gridLockedFields(columns)));
   };
 
   /** A column's sort cycle: its own, the grid's, else asc → desc → none. */
@@ -2650,7 +2929,7 @@ function DataGridInner<R>(
     if (!block && chosen.length) block = chosen.map((row) => fields.map((c) => copyValue(c, row)));
     if (!block) {
       const cell = (document.activeElement as Element | null)?.closest(
-        '[data-ok-data-grid-body] [role="gridcell"][data-ok-field]',
+        '[data-ok-data-grid-body] :is([role="gridcell"], [role="rowheader"])[data-ok-field]',
       );
       const row = dataById.get(
         cell?.closest("[data-ok-row-id]")?.getAttribute("data-ok-row-id") ?? "",
@@ -2676,7 +2955,7 @@ function DataGridInner<R>(
       left = cellFields.indexOf(picked.fields[0] as string);
     } else {
       const cell = (document.activeElement as Element | null)?.closest(
-        '[data-ok-data-grid-body] [role="gridcell"][data-ok-field]',
+        '[data-ok-data-grid-body] :is([role="gridcell"], [role="rowheader"])[data-ok-field]',
       );
       top = cellRowIds.indexOf(
         cell?.closest("[data-ok-row-id]")?.getAttribute("data-ok-row-id") ?? "",
@@ -2703,7 +2982,9 @@ function DataGridInner<R>(
         const typed = fill ? data[0]?.[0] : data[r]?.[c];
         if (!column || typed === undefined || !cellEditable(column, row)) continue;
         if (fill && !isGridCellSelected(cellModel, idOf(row), column.field)) continue;
-        const value = parse(column, typed, row);
+        const value = column.pastedValueParser
+          ? column.pastedValueParser(typed, row)
+          : parse(column, typed, row);
         next = column.valueSetter
           ? column.valueSetter(value, next)
           : ({ ...next, [column.field]: value } as R);
@@ -2789,7 +3070,9 @@ function DataGridInner<R>(
     if (!printing) return;
     const options = printing;
     const keep = options.fields ? new Set(options.fields) : null;
-    const printed = shown.filter((c) => c.type !== "actions" && (!keep || keep.has(c.field)));
+    const printed = shown.filter(
+      (c) => c.type !== "actions" && !c.disableExport && (!keep || keep.has(c.field)),
+    );
     const boxes = !!checkboxSelection && !!options.includeCheckboxes;
     printGridContent(
       rootRef.current as HTMLElement,
@@ -2946,7 +3229,7 @@ function DataGridInner<R>(
   const operatorsOf = (column: GridColDef<R> | undefined) =>
     column?.filterOperators
       ? column.filterOperators.map((o) => ({ value: o.value, label: o.label ?? o.value }))
-      : gridFilterOperators(column?.type).map((value) => ({
+      : gridFilterOperators(column?.type, column?.filterVariant).map((value) => ({
           value,
           label: labels.filterOperator[value] ?? value,
         }));
@@ -2999,6 +3282,17 @@ function DataGridInner<R>(
   };
 
   const menuColumn = columns.find((c) => c.field === menuField);
+  /** Whether Move left / Move right can move the menu's column (columns with `disableReorder` stay). */
+  const movable = (field: string | null, delta: number) => {
+    // Closed menu (no column yet): Move left off, Move right on, as the HTML markup has them.
+    if (!field) return delta > 0;
+    const at = fields.indexOf(field);
+    if (at + delta < 0 || at + delta >= fields.length) return false;
+    const next = moveGridColumn(fields, field, delta, gridLockedFields(columns));
+    return next.join("\n") !== fields.join("\n");
+  };
+  /** `pinnable: false` hides the pin items of the column's menu. */
+  const menuPinnable = menuColumn?.pinnable !== false;
   const menuSorted = sortModel.find((s) => s.field === menuField)?.sort;
   /** Sort items outside the column's cycle are hidden. */
   const menuCycle = menuColumn ? sortCycle(menuColumn) : GRID_SORTING_ORDER;
@@ -3011,7 +3305,9 @@ function DataGridInner<R>(
     else if (action === "left" || action === "right") {
       const neighbour = fields[fields.indexOf(field) + (action === "left" ? -1 : 1)] as string;
       if (columnGroupingModel && !gridCanMoveColumn(groupPaths, field, neighbour)) return;
-      setOrder(moveGridColumn(fields, field, action === "left" ? -1 : 1));
+      setOrder(
+        moveGridColumn(fields, field, action === "left" ? -1 : 1, gridLockedFields(columns)),
+      );
     } else if (action === "pin-left" || action === "pin-right" || action === "unpin")
       setPinned(
         pinGridColumn(
@@ -3474,6 +3770,7 @@ function DataGridInner<R>(
   };
   const toolbar = showToolbar && (
     <div data-ok-data-grid-toolbar="">
+      {label !== undefined && <span data-ok-data-grid-toolbar-label="">{label}</span>}
       <div data-ok-data-grid-quick-filter="">
         <TextField
           id={`${id}-search`}
@@ -3629,7 +3926,19 @@ function DataGridInner<R>(
                       </option>
                     ))}
                   </TextField>
-                  {item.operator === "isAnyOf" && !column?.filterOperators ? (
+                  {item.operator === "isAnyOf" &&
+                  !column?.filterOperators &&
+                  isGridSetFilter(column) ? (
+                    <GridSetFilter
+                      id={`${id}-filter-value${suffix}`}
+                      field={item.field}
+                      values={setValuesOf(column as GridColDef<R>)}
+                      selected={gridFilterValues(item.value)}
+                      labels={labels}
+                      ignoreDiacritics={ignoreDiacritics}
+                      onChange={(values) => setFilterItem(index, { ...item, value: values })}
+                    />
+                  ) : item.operator === "isAnyOf" && !column?.filterOperators ? (
                     <Autocomplete
                       id={`${id}-filter-value${suffix}`}
                       size="small"
@@ -3755,7 +4064,7 @@ function DataGridInner<R>(
   );
 
   /** Header filters: the first filter item of a field holds its value (the type's operator). */
-  const setHeaderFilter = (column: GridColDef<R>, value: string) => {
+  const setHeaderFilter = (column: GridColDef<R>, value: string | string[]) => {
     const index = filterModel.items.findIndex((item) => item.field === column.field);
     const current = filterModel.items[index];
     const item: GridFilterItem = {
@@ -3764,7 +4073,7 @@ function DataGridInner<R>(
       value,
     };
     const items =
-      value === ""
+      value === "" || (Array.isArray(value) && value.length === 0)
         ? filterModel.items.filter((_, i) => i !== index)
         : index < 0
           ? [...filterModel.items, item]
@@ -3838,6 +4147,40 @@ function DataGridInner<R>(
             item: item ?? { field: column.field, operator },
             applyFilterChanges: (next) => applyHeaderFilter(column, next),
           })
+        ) : isGridSetFilter(column) && operator === "isAnyOf" ? (
+          <>
+            <Button
+              size="sm"
+              variant="outlined"
+              color="inherit"
+              data-ok-data-grid-set-filter-button=""
+              aria-haspopup="dialog"
+              aria-expanded={setFilterOpen?.field === column.field}
+              aria-controls={`${fieldId}-set-filter`}
+              onClick={(event) =>
+                setSetFilterOpen({ field: column.field, anchor: event.currentTarget })
+              }
+            >
+              {`${label}: ${gridSetFilterSummary(labels, setValuesOf(column), gridFilterValues(item?.value))}`}
+            </Button>
+            <Popover
+              id={`${fieldId}-set-filter`}
+              open={setFilterOpen?.field === column.field}
+              anchorEl={setFilterOpen?.field === column.field ? setFilterOpen.anchor : null}
+              placement="bottom-start"
+              onOpenChange={(next) => !next && setSetFilterOpen(null)}
+            >
+              <GridSetFilter
+                id={`${fieldId}-set`}
+                field={column.field}
+                values={setValuesOf(column)}
+                selected={gridFilterValues(item?.value)}
+                labels={labels}
+                ignoreDiacritics={ignoreDiacritics}
+                onChange={(values) => setHeaderFilter(column, values)}
+              />
+            </Popover>
+          </>
         ) : choices ? (
           <TextField
             id={fieldId}
@@ -4092,14 +4435,28 @@ function DataGridInner<R>(
           const colSpan = colSpans?.[c];
           const rowSpan = rowSpans?.get(column.field);
           const params = cellParams(column, row);
+          const classes = [
+            typeof column.cellClassName === "function"
+              ? column.cellClassName(params)
+              : column.cellClassName,
+            getCellClassName?.(params),
+          ]
+            .filter(Boolean)
+            .join(" ");
           return (
+            // biome-ignore lint/a11y/noStaticElementInteractions: a grid cell or a row header (the role is dynamic).
+            // biome-ignore lint/a11y/useAriaPropsSupportedByRole: both roles take aria-colindex.
             <div
               key={column.field}
-              role="gridcell"
+              role={column.rowHeader ? "rowheader" : "gridcell"}
               aria-colindex={c + colOffset}
               data-ok-field={column.field}
               data-ok-align={gridAlign(column)}
-              className={getCellClassName?.(params) || undefined}
+              className={classes || undefined}
+              {...(column.display === "flex" ? { "data-ok-display": "flex" } : {})}
+              {...(rowSpanning && column.rowSpanValueGetter
+                ? { "data-ok-row-span-value": spanKeyOf(column, row) }
+                : {})}
               {...(colSpan && colSpan.span > 1 ? { "aria-colspan": colSpan.span } : {})}
               {...(rowSpan && rowSpan.span > 1 ? { "aria-rowspan": rowSpan.span } : {})}
               {...(colSpan?.covered || rowSpan?.covered
@@ -4370,7 +4727,17 @@ function DataGridInner<R>(
       hidden: listView || undefined,
       tabIndex: -1,
     } as const;
-    if (place !== "body" || isFooter(row) || (isGroup(row) && field !== groupCellOf(row)))
+    // Group rows have a checkbox of their own with descendants propagation.
+    const groupBox =
+      isGroup(row) &&
+      field === GRID_CHECKBOX_FIELD &&
+      !!selectionTree &&
+      !!rowSelectionPropagation.descendants;
+    if (
+      place !== "body" ||
+      isFooter(row) ||
+      (isGroup(row) && field !== groupCellOf(row) && !groupBox)
+    )
       return <div {...common} />;
     if (field === REORDER_FIELD)
       return (
@@ -4385,19 +4752,29 @@ function DataGridInner<R>(
           </IconButton>
         </div>
       );
-    if (field === GRID_CHECKBOX_FIELD)
+    if (field === GRID_CHECKBOX_FIELD) {
+      const state = checkState(row);
+      const own = checkboxColDef?.cellClassName;
+      const className =
+        (typeof own === "function" ? own(cellParams(checkboxColumn, row)) : own) || undefined;
       return (
-        <div {...common} data-ok-data-grid-checkbox="">
+        <div {...common} data-ok-data-grid-checkbox="" className={className}>
           <Checkbox
             size="small"
             tabIndex={-1}
             aria-label={labels.checkboxSelectionSelectRow}
-            checked={selection.includes(rowId)}
-            disabled={!selectable(row)}
+            checked={state === "all"}
+            indeterminate={state === "some"}
+            disabled={
+              groupBox
+                ? !gridSelectableDescendants(selectionTree as GridSelectionTree, rowId).length
+                : !selectable(row)
+            }
             onChange={() => toggleRow.current(rowId)}
           />
         </div>
       );
+    }
     if (field === DETAIL_FIELD) {
       const content = getDetailPanelContent?.({ id: rowId, row });
       const shownPanel = detailIds.includes(rowId);
@@ -4463,12 +4840,21 @@ function DataGridInner<R>(
       ...(leftPinned ? { "data-ok-pinned": "left" } : {}),
       tabIndex: -1,
     } as const;
-    if (field === GRID_CHECKBOX_FIELD)
+    if (field === GRID_CHECKBOX_FIELD) {
+      const own = checkboxColDef?.headerClassName;
+      const className =
+        (typeof own === "function" ? own({ field, colDef: checkboxColumn }) : own) || undefined;
       return (
         <div
           {...common}
           data-ok-data-grid-checkbox=""
-          {...(multiple ? {} : { "aria-label": labels.checkboxSelectionHeaderName })}
+          {...(checkboxColDef?.width !== undefined
+            ? { "data-ok-width": checkboxColDef.width }
+            : {})}
+          className={className}
+          {...(multiple
+            ? {}
+            : { "aria-label": checkboxColDef?.headerName ?? labels.checkboxSelectionHeaderName })}
         >
           {multiple && (
             <Checkbox
@@ -4482,6 +4868,7 @@ function DataGridInner<R>(
           )}
         </div>
       );
+    }
     if (groupingColumns.includes(field)) {
       const def = groupingColDefOf(field);
       const own = gridGroupingFieldOf(field);
@@ -4620,8 +5007,29 @@ function DataGridInner<R>(
         multipleColumnsSortingMode,
         statusBar,
         historyStackSize: historyStackSize === 30 ? undefined : historyStackSize,
+        hideFooterPagination,
+        hideFooterRowCount,
+        hideFooterSelectedRowCount,
+        tabNavigation,
+        columnHeaderHeight,
+        columnGroupHeaderHeight,
+        headerFilterHeight,
+        showCellVerticalBorder,
+        showColumnVerticalBorder,
+        rowSpacingType,
+        autoHeight,
+        autoPageSize,
       })}
       {...(sortingOrder ? { "data-ok-sorting-order": JSON.stringify(sortingOrder) } : {})}
+      {...(rowSelection ? {} : { "data-ok-row-selection": "false" })}
+      {...(rowSelectionPropagation !== DEFAULT_PROPAGATION
+        ? {
+            "data-ok-row-selection-propagation": JSON.stringify({
+              parents: !!rowSelectionPropagation.parents,
+              descendants: !!rowSelectionPropagation.descendants,
+            }),
+          }
+        : {})}
       {...(groupingModel.length && !treeData
         ? { "data-ok-row-grouping-model": JSON.stringify(groupingModel) }
         : {})}
@@ -4663,9 +5071,15 @@ function DataGridInner<R>(
       data-ok-runtime="off"
       {...props}
       style={
-        rowHeight === undefined
+        rowHeight === undefined && !Object.keys(headerHeights).length
           ? props.style
-          : ({ "--_ok-data-grid-row-height": `${baseHeight}px`, ...props.style } as CSSProperties)
+          : ({
+              ...(rowHeight === undefined
+                ? {}
+                : { "--_ok-data-grid-row-height": `${baseHeight}px` }),
+              ...headerHeights,
+              ...props.style,
+            } as CSSProperties)
       }
     >
       {toolbar}
@@ -4741,6 +5155,15 @@ function DataGridInner<R>(
                   {...(column.sortingOrder
                     ? { "data-ok-sorting-order": JSON.stringify(column.sortingOrder) }
                     : {})}
+                  {...(column.disableReorder ? { "data-ok-disable-reorder": "" } : {})}
+                  {...(column.disableExport ? { "data-ok-disable-export": "" } : {})}
+                  {...(column.pinnable === false ? { "data-ok-pinnable": "false" } : {})}
+                  {...(column.filterVariant === "set" ? { "data-ok-filter-variant": "set" } : {})}
+                  className={
+                    (typeof column.headerClassName === "function"
+                      ? column.headerClassName({ field: column.field, colDef: column })
+                      : column.headerClassName) || undefined
+                  }
                   tabIndex={-1}
                   onClick={(event) => {
                     // A press that resized or moved the column doesn't sort it.
@@ -4760,12 +5183,12 @@ function DataGridInner<R>(
                       {aggLabel(aggregationOf(column) as string)}
                     </span>
                   )}
-                  {sortable && (
+                  {sortable && !column.hideSortIcons && (
                     <span data-ok-data-grid-sort-icon="">
                       <SortIcon />
                     </span>
                   )}
-                  {!disableColumnMenu && !pivot && (
+                  {!disableColumnMenu && !column.disableColumnMenu && !pivot && (
                     <IconButton
                       size="sm"
                       data-ok-data-grid-menu-button=""
@@ -4925,7 +5348,7 @@ function DataGridInner<R>(
           {!disableColumnReorder && (
             <MenuItem
               data-ok-data-grid-action="left"
-              disabled={fields.indexOf(menuField as string) <= 0}
+              disabled={!movable(menuField, -1)}
               onClick={() => menuAction("left")}
             >
               {labels.columnMenuMoveLeft}
@@ -4934,7 +5357,7 @@ function DataGridInner<R>(
           {!disableColumnReorder && (
             <MenuItem
               data-ok-data-grid-action="right"
-              disabled={fields.indexOf(menuField as string) >= fields.length - 1}
+              disabled={!movable(menuField, 1)}
               onClick={() => menuAction("right")}
             >
               {labels.columnMenuMoveRight}
@@ -4943,6 +5366,7 @@ function DataGridInner<R>(
           {!disableColumnPinning && (
             <MenuItem
               data-ok-data-grid-action="pin-left"
+              hidden={!menuPinnable || undefined}
               disabled={gridPinSide(pinned, menuField as string) === "left"}
               onClick={() => menuAction("pin-left")}
             >
@@ -4952,6 +5376,7 @@ function DataGridInner<R>(
           {!disableColumnPinning && (
             <MenuItem
               data-ok-data-grid-action="pin-right"
+              hidden={!menuPinnable || undefined}
               disabled={gridPinSide(pinned, menuField as string) === "right"}
               onClick={() => menuAction("pin-right")}
             >
@@ -4961,6 +5386,7 @@ function DataGridInner<R>(
           {!disableColumnPinning && (
             <MenuItem
               data-ok-data-grid-action="unpin"
+              hidden={!menuPinnable || undefined}
               disabled={!gridPinSide(pinned, menuField as string)}
               onClick={() => menuAction("unpin")}
             >
@@ -5036,21 +5462,38 @@ function DataGridInner<R>(
       )}
       {!hideFooter && (
         <div data-ok-data-grid-footer="">
-          <TablePagination
-            count={total}
-            page={page}
-            rowsPerPage={pagination.pageSize}
-            rowsPerPageOptions={pageSizeOptions}
-            onPageChange={(next) => setPagination({ ...pagination, page: next })}
-            onRowsPerPageChange={(pageSize) => setPagination({ page: 0, pageSize })}
-            labelRowsPerPage={labels.paginationRowsPerPage}
-            {...(localeText?.paginationDisplayedRows
-              ? {
-                  labelDisplayedRows: (range: { from: number; to: number; count: number }) =>
-                    gridDisplayedRows(labels.paginationDisplayedRows, range),
-                }
-              : {})}
-          />
+          {!hideFooterSelectedRowCount && selection.length > 0 && (
+            <span data-ok-data-grid-selected-row-count="">
+              {gridFooterRowSelected(labels, selection.length)}
+            </span>
+          )}
+          {hideFooterPagination && !hideFooterRowCount && (
+            <span data-ok-data-grid-row-count="">
+              {gridFooterRowCount(
+                labels,
+                server.filter ? total : localFilter(orderedRows.filter(isData)).length,
+                server.page ? total : orderedRows.filter(isData).length,
+              )}
+            </span>
+          )}
+          {!hideFooterPagination && (
+            <TablePagination
+              count={total}
+              page={page}
+              rowsPerPage={pagination.pageSize}
+              rowsPerPageOptions={autoPageSize ? [] : pageSizeOptions}
+              {...(autoPageSize ? { "data-ok-rows-per-page": pagination.pageSize } : {})}
+              onPageChange={(next) => setPagination({ ...pagination, page: next })}
+              onRowsPerPageChange={(pageSize) => setPagination({ page: 0, pageSize })}
+              labelRowsPerPage={labels.paginationRowsPerPage}
+              {...(localeText?.paginationDisplayedRows
+                ? {
+                    labelDisplayedRows: (range: { from: number; to: number; count: number }) =>
+                      gridDisplayedRows(labels.paginationDisplayedRows, range),
+                  }
+                : {})}
+            />
+          )}
         </div>
       )}
     </div>

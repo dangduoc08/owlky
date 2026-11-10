@@ -1054,6 +1054,11 @@
   color: var(--ok-text-secondary);
 }
 
+/* Data grid demo: cells a column's cellClassName marks (big tasks). */
+.sb-grid-big {
+  background-color: rgb(var(--ok-palette-warning-main-channel) / 0.16);
+}
+
 /* Data grids that grow with their rows, full width. */
 .sb-grid-wide {
   width: 100%;

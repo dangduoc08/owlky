@@ -54,6 +54,25 @@ export interface GridColumn {
   aggregable?: boolean | undefined;
   /** The sort cycle of this column's header (default: the grid's, else asc → desc → none). */
   sortingOrder?: GridSortingOrder | undefined;
+  /** The header shows no sort arrow (it still sorts). */
+  hideSortIcons?: boolean | undefined;
+  /** No column menu for this column. */
+  disableColumnMenu?: boolean | undefined;
+  /** The column stays in its place: it can't be moved, and moves that would shift it are refused. */
+  disableReorder?: boolean | undefined;
+  /** The column is left out of exports (CSV, Excel, print). */
+  disableExport?: boolean | undefined;
+  /** Default true; `false` hides the pin items of its column menu. */
+  pinnable?: boolean | undefined;
+  /** Its cells are row headers (`role="rowheader"`): they name their row. */
+  rowHeader?: boolean | undefined;
+  /** `flex` lays the cell's content out in a row, centered (default `text`: one line). */
+  display?: "text" | "flex" | undefined;
+  /**
+   * `set`: "is any of" comes first among the column's operators, and its value is a checklist of
+   * the column's values with a search and "Select all" (text, number and single select columns).
+   */
+  filterVariant?: "set" | undefined;
 }
 
 export type GridSortDirection = "asc" | "desc";
@@ -212,14 +231,19 @@ export function orderGridColumns<C extends GridColumn>(
     .map(({ column }) => column);
 }
 
-/** The field order after moving `field` by `delta` places (or before `to`, a field). */
+/**
+ * The field order after moving `field` by `delta` places (or before `to`, a field). `locked`
+ * fields (`disableReorder`) keep their place: a move of one, or a move that would shift one, gives
+ * the order back unchanged.
+ */
 export function moveGridColumn(
   fields: readonly string[],
   field: string,
   delta: number | { to: string },
+  locked: readonly string[] = [],
 ): string[] {
   const from = fields.indexOf(field);
-  if (from < 0) return [...fields];
+  if (from < 0 || locked.includes(field)) return [...fields];
   const rest = fields.filter((f) => f !== field);
   const target =
     typeof delta === "number"
@@ -227,8 +251,13 @@ export function moveGridColumn(
       : rest.indexOf(delta.to) < 0
         ? from
         : rest.indexOf(delta.to) + (fields.indexOf(delta.to) > from ? 1 : 0);
-  return [...rest.slice(0, target), field, ...rest.slice(target)];
+  const next = [...rest.slice(0, target), field, ...rest.slice(target)];
+  return locked.some((f) => next.indexOf(f) !== fields.indexOf(f)) ? [...fields] : next;
 }
+
+/** The fields of the columns that keep their place (`disableReorder`). */
+export const gridLockedFields = (columns: readonly GridColumn[]): string[] =>
+  columns.filter((c) => c.disableReorder).map((c) => c.field);
 
 export interface GridPinnedColumns {
   left?: string[] | undefined;
@@ -441,7 +470,87 @@ export function sortGridRows<R>(
 }
 
 /** Operators per column type (MUI X names). */
-export function gridFilterOperators(type: GridColumnType = "string"): string[] {
+export function gridFilterOperators(
+  type: GridColumnType = "string",
+  variant?: GridColumn["filterVariant"],
+): string[] {
+  const own = typeOperators(type);
+  // A set filter starts with "is any of" (its checklist), where the type has it.
+  return variant === "set" && own.includes("isAnyOf")
+    ? ["isAnyOf", ...own.filter((o) => o !== "isAnyOf")]
+    : own;
+}
+
+/** Whether a column filters with a checklist of its values (`filterVariant: "set"`). */
+export const isGridSetFilter = (column: GridColumn | undefined): boolean =>
+  column?.filterVariant === "set" && typeOperators(column.type).includes("isAnyOf");
+
+/** A value of a set filter's checklist: what "is any of" matches, and the text it shows. */
+export interface GridSetFilterValue {
+  value: string;
+  label: string;
+}
+
+/**
+ * The checklist of a set filter: each distinct value of the column (numbers and single select
+ * choices by value, text by the cell's text), blanks left out, in the column type's order.
+ */
+export function gridSetFilterValues<R>(
+  rows: readonly R[],
+  column: GridColumn,
+  raw: (row: R, field: string) => unknown,
+  text: (row: R, field: string) => string,
+): GridSetFilterValue[] {
+  const byValue = column.type === "number" || column.type === "singleSelect";
+  const seen = new Map<string, { item: GridSetFilterValue; raw: unknown }>();
+  for (const row of rows) {
+    const own = raw(row, column.field);
+    const label = text(row, column.field);
+    const value = byValue ? (own === null || own === undefined ? "" : String(own)) : label;
+    if (value === "" || seen.has(value)) continue;
+    seen.set(value, { item: { value, label: label || value }, raw: byValue ? own : label });
+  }
+  return [...seen.values()]
+    .sort((a, b) => gridCompare(a.raw, b.raw, column.type))
+    .map((entry) => entry.item);
+}
+
+/** The checklist values a set filter shows for a search (accents ignored with the option). */
+export const gridSetFilterSearch = (
+  values: readonly GridSetFilterValue[],
+  search: string,
+  ignoreDiacritics = false,
+): GridSetFilterValue[] => {
+  const query = gridFoldText(search.trim(), ignoreDiacritics);
+  return query
+    ? values.filter((v) => gridFoldText(v.label, ignoreDiacritics).includes(query))
+    : [...values];
+};
+
+/** "Select all" over the shown values: every one checked → those cleared, else those added. */
+export function toggleGridSetFilterValues(
+  selected: readonly string[],
+  shown: readonly GridSetFilterValue[],
+): string[] {
+  const ids = shown.map((v) => v.value);
+  return gridSelectAllState(ids, selected) === "all"
+    ? selected.filter((v) => !ids.includes(v))
+    : [...selected, ...ids.filter((v) => !selected.includes(v))];
+}
+
+/** The short text of a set filter's selection: "any", the one value, or "2 selected". */
+export function gridSetFilterSummary(
+  labels: Pick<GridLabels, "filterValueAny" | "setFilterSelected">,
+  values: readonly GridSetFilterValue[],
+  selected: readonly string[],
+): string {
+  if (selected.length === 0) return labels.filterValueAny;
+  if (selected.length === 1)
+    return values.find((v) => v.value === selected[0])?.label ?? (selected[0] as string);
+  return labels.setFilterSelected.replaceAll("{count}", String(selected.length));
+}
+
+function typeOperators(type: GridColumnType = "string"): string[] {
   if (type === "number")
     return ["=", "!=", ">", ">=", "<", "<=", "isEmpty", "isNotEmpty", "isAnyOf"];
   if (type === "date" || type === "dateTime")
@@ -659,6 +768,87 @@ export function toggleGridRows(selected: readonly string[], ids: readonly string
   return [...selected, ...ids.filter((id) => !selected.includes(id))];
 }
 
+/** Whether selecting a row also selects related rows (MUI X `rowSelectionPropagation`). */
+export interface GridRowSelectionPropagation {
+  /** Selecting every selectable descendant of a parent selects the parent; clearing one clears it. */
+  parents?: boolean | undefined;
+  /** Selecting a parent (or a group) selects its descendants; clearing it clears them. */
+  descendants?: boolean | undefined;
+}
+
+/** The rows of a tree (tree data or row groups) as selection propagation sees them. */
+export interface GridSelectionTree {
+  /** The shown (filtered) children of a row or group. */
+  children(id: string): readonly string[];
+  /** A row's parent row or group, or `null`. */
+  parent(id: string): string | null;
+  /** Whether the id goes in the selection model: selectable data rows (not group rows). */
+  selectable(id: string): boolean;
+}
+
+/** Every shown descendant of a row or group, depth first. */
+function gridDescendants(tree: GridSelectionTree, id: string): string[] {
+  const out: string[] = [];
+  const walk = (parent: string) => {
+    for (const child of tree.children(parent)) {
+      out.push(child);
+      walk(child);
+    }
+  };
+  walk(id);
+  return out;
+}
+
+/** The shown descendants of a row or group that can be selected (group rows never can). */
+export const gridSelectableDescendants = (tree: GridSelectionTree, id: string): string[] =>
+  gridDescendants(tree, id).filter(tree.selectable);
+
+/**
+ * How much of a row's or group's selectable descendants is selected: a group's checkbox and the
+ * mixed state of a parent row (`none` without any).
+ */
+export function gridDescendantSelection(
+  selected: readonly string[],
+  id: string,
+  tree: GridSelectionTree,
+): "all" | "some" | "none" {
+  const ids = gridSelectableDescendants(tree, id);
+  return ids.length ? gridSelectAllState(ids, selected) : "none";
+}
+
+/**
+ * The selection after checking (`checked`) or clearing a row or group, with propagation: its
+ * descendants follow it (`descendants`); ancestors whose selectable descendants are all selected
+ * join, and ancestors of a cleared row leave (`parents`). Group rows never enter the model.
+ */
+export function propagateGridSelection(
+  selected: readonly string[],
+  id: string,
+  checked: boolean,
+  tree: GridSelectionTree,
+  propagation: GridRowSelectionPropagation,
+): string[] {
+  const next = new Set(selected);
+  const set = (rowId: string) => {
+    if (!tree.selectable(rowId)) return;
+    if (checked) next.add(rowId);
+    else next.delete(rowId);
+  };
+  set(id);
+  if (propagation.descendants) for (const rowId of gridDescendants(tree, id)) set(rowId);
+  if (propagation.parents)
+    for (let parent = tree.parent(id); parent !== null; parent = tree.parent(parent)) {
+      if (!tree.selectable(parent)) continue;
+      const below = gridSelectableDescendants(tree, parent);
+      if (checked && below.length && below.every((rowId) => next.has(rowId))) next.add(parent);
+      if (!checked) next.delete(parent);
+    }
+  return [
+    ...selected.filter((rowId) => next.has(rowId)),
+    ...[...next].filter((rowId) => !selected.includes(rowId)),
+  ];
+}
+
 /**
  * One CSV field: quoted when needed, and neutralized against spreadsheet formulas (a leading `=`,
  * `+`, `-`, `@`, tab or carriage return gets a `'`): exported data may come from users.
@@ -696,7 +886,7 @@ export function gridExportColumns<C extends GridColumn>(
     : options.allColumns
       ? [...columns]
       : [...shown];
-  return picked.filter((column) => !isActions(column));
+  return picked.filter((column) => !isActions(column) && !column.disableExport);
 }
 
 /** CSV of the columns (header names) and rows (their text), CRLF lines, with a UTF-8 BOM. */
@@ -833,6 +1023,18 @@ export const gridDefaultLabels = {
   statusBarAvg: "Average",
   statusBarMin: "Min",
   statusBarMax: "Max",
+  /** `{count}` is replaced (several rows). */
+  footerRowSelected: "{count} rows selected",
+  /** `{count}` is replaced (one row). */
+  footerRowSelectedOne: "{count} row selected",
+  footerTotalRows: "Total Rows:",
+  /** `{visibleCount}` and `{totalCount}` are replaced (filtered rows). */
+  footerTotalVisibleRows: "{visibleCount} of {totalCount}",
+  setFilterSearch: "Search values",
+  setFilterSelectAll: "Select all",
+  setFilterValues: "Values",
+  /** `{count}` is replaced (a set filter's choice). */
+  setFilterSelected: "{count} selected",
   filterOperator: {
     contains: "contains",
     doesNotContain: "does not contain",

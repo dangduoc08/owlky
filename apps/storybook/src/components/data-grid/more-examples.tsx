@@ -115,6 +115,117 @@ const historyColumns: GridColDef<Issue>[] = [
   { field: "points", headerName: "Points", type: "number", width: 110, editable: true },
 ];
 
+/* Two dozen tasks for the page size story (story data). */
+export const TASKS: Issue[] = Array.from({ length: 24 }, (_, i) => ({
+  id: `task-${i + 1}`,
+  title: `Task ${i + 1}`,
+  priority: (["High", "Medium", "Low"] as const)[i % 3] as Issue["priority"],
+  due: null,
+  points: (i % 5) + 1,
+}));
+
+/* Tasks by team and owner for the column options story (story data). */
+export interface TeamTask {
+  id: string;
+  task: string;
+  team: string;
+  owner: string;
+  points: number;
+  due: string;
+}
+
+export const TEAM_TASKS: TeamTask[] = [
+  { id: "tt-1", task: "Plan the sprint", team: "Core", owner: "Ana", points: 3, due: "2025-05-12" },
+  { id: "tt-2", task: "Fix the build", team: "Core", owner: "Ana", points: 5, due: "2025-05-14" },
+  { id: "tt-3", task: "Write the guide", team: "Docs", owner: "Ana", points: 2, due: "2025-05-16" },
+  { id: "tt-4", task: "Review the API", team: "Docs", owner: "Bao", points: 8, due: "2025-05-20" },
+  {
+    id: "tt-5",
+    task: "Draw the icons",
+    team: "Design",
+    owner: "Bao",
+    points: 5,
+    due: "2025-05-21",
+  },
+];
+
+const teamColumns: GridColDef<TeamTask>[] = [
+  // Row headers name their row; this column stays first and has no menu.
+  {
+    field: "task",
+    headerName: "Task",
+    flex: 1,
+    minWidth: 160,
+    rowHeader: true,
+    disableReorder: true,
+    disableColumnMenu: true,
+  },
+  { field: "team", headerName: "Team", width: 120, pinnable: false },
+  {
+    field: "owner",
+    headerName: "Owner",
+    width: 130,
+    // Owners merge within a team only.
+    rowSpanValueGetter: (value, row) => `${row.team}/${String(value)}`,
+  },
+  {
+    field: "points",
+    headerName: "Points",
+    type: "number",
+    width: 110,
+    hideSortIcons: true,
+    display: "flex",
+    headerClassName: "sb-grid-points",
+    // Big tasks stand out.
+    cellClassName: ({ value }) => (Number(value) >= 5 ? "sb-grid-big" : ""),
+  },
+  // Left out of the CSV, Excel and print exports.
+  { field: "due", headerName: "Due", width: 130, disableExport: true },
+];
+
+/* A small work breakdown for the selection story (story data). */
+export interface WorkItem {
+  id: string;
+  path: string[];
+  name: string;
+  points: number;
+}
+
+export const WORK: WorkItem[] = [
+  { id: "w-design", path: ["Design"], name: "Design", points: 13 },
+  { id: "w-icons", path: ["Design", "Icons"], name: "Icons", points: 5 },
+  { id: "w-colors", path: ["Design", "Colors"], name: "Colors", points: 8 },
+  { id: "w-docs", path: ["Docs"], name: "Docs", points: 5 },
+  { id: "w-guide", path: ["Docs", "Guide"], name: "Guide", points: 3 },
+  { id: "w-api", path: ["Docs", "API"], name: "API", points: 2 },
+];
+
+/* Team tasks grouped by team. */
+const groupedColumns: GridColDef<TeamTask>[] = [
+  { field: "task", headerName: "Task", flex: 1, minWidth: 160 },
+  { field: "team", headerName: "Team", width: 120 },
+  { field: "points", headerName: "Points", type: "number", width: 110 },
+];
+
+const workColumns: GridColDef<WorkItem>[] = [
+  { field: "name", headerName: "Name", flex: 1, minWidth: 160 },
+  { field: "points", headerName: "Points", type: "number", width: 110 },
+];
+
+/* Issues with checklists of their priorities and points (set filters). */
+const setColumns: GridColDef<Issue>[] = [
+  { field: "title", headerName: "Title", flex: 1, minWidth: 180 },
+  { field: "priority", headerName: "Priority", width: 200, filterVariant: "set" },
+  { field: "points", headerName: "Points", type: "number", width: 200, filterVariant: "set" },
+];
+
+/* Read-only issues for the footer, layout and selection stories. */
+const plainColumns: GridColDef<Issue>[] = [
+  { field: "title", headerName: "Title", flex: 1, minWidth: 180 },
+  { field: "priority", headerName: "Priority", width: 130 },
+  { field: "points", headerName: "Points", type: "number", width: 110 },
+];
+
 /**
  * Story groups beyond the reference's sections (roadmap batch E). Snippets: `node
  * apps/storybook/scripts/data-grid-snippets.mjs`.
@@ -172,6 +283,143 @@ export const moreStories: Record<string, ReactGroup[]> = {
       ),
     },
   ],
+  footer: [
+    {
+      title: "Footer, label and Tab navigation",
+      content: (
+        // Every row shows with its count; selected rows are counted; Tab moves between cells.
+        <DataGrid
+          id="grid-footer"
+          label="Issues"
+          className="sb-grid"
+          rows={ISSUES}
+          columns={plainColumns}
+          showToolbar
+          checkboxSelection
+          hideFooterPagination
+          tabNavigation="all"
+        />
+      ),
+    },
+  ],
+  columns: [
+    {
+      title: "Column options",
+      content: (
+        <DataGrid
+          id="grid-columns"
+          aria-label="Team tasks"
+          className="sb-grid-wide"
+          rows={TEAM_TASKS}
+          columns={teamColumns}
+          rowSpanning
+          showToolbar
+          hideFooter
+        />
+      ),
+    },
+  ],
+  set: [
+    {
+      title: "Set filter",
+      content: (
+        // Priority and Points filter with a checklist of their values.
+        <DataGrid
+          id="grid-set"
+          aria-label="Issues"
+          className="sb-grid-wide"
+          rows={ISSUES}
+          columns={setColumns}
+          showToolbar
+          headerFilters
+          hideFooter
+        />
+      ),
+    },
+  ],
+  selection: [
+    {
+      title: "Tree data",
+      content: (
+        // Selecting a parent selects its children; selecting every child selects the parent.
+        <DataGrid
+          id="grid-selection-tree"
+          aria-label="Work breakdown"
+          className="sb-grid-wide"
+          rows={WORK}
+          columns={workColumns}
+          treeData
+          getTreeDataPath={(row) => row.path}
+          defaultGroupingExpansionDepth={-1}
+          checkboxSelection
+          checkboxColDef={{ width: 60 }}
+          hideFooter
+        />
+      ),
+    },
+    {
+      title: "Row groups",
+      content: (
+        // A group's checkbox selects its tasks; only the descendants follow (no parents).
+        <DataGrid
+          id="grid-selection-groups"
+          aria-label="Team tasks"
+          className="sb-grid-wide"
+          rows={TEAM_TASKS}
+          columns={groupedColumns}
+          initialState={{ rowGrouping: { model: ["team"] } }}
+          defaultGroupingExpansionDepth={-1}
+          checkboxSelection
+          rowSelectionPropagation={{ descendants: true, parents: false }}
+          hideFooter
+        />
+      ),
+    },
+  ],
+  dimensions: [
+    {
+      title: "Header heights, borders and row spacing",
+      content: (
+        // Lower headers, lines between cells and headers, 4px of space inside each row.
+        <DataGrid
+          id="grid-dimensions"
+          aria-label="Issues"
+          className="sb-grid-wide"
+          rows={ISSUES}
+          columns={plainColumns}
+          columnGroupingModel={[
+            {
+              groupId: "work",
+              headerName: "Work",
+              children: [{ field: "priority" }, { field: "points" }],
+            },
+          ]}
+          columnHeaderHeight={44}
+          columnGroupHeaderHeight={36}
+          showCellVerticalBorder
+          showColumnVerticalBorder
+          getRowSpacing={() => ({ top: 4, bottom: 4 })}
+          rowSpacingType="border"
+          autoHeight
+          hideFooter
+        />
+      ),
+    },
+    {
+      title: "Page size from the height",
+      content: (
+        // As many rows per page as the grid's height holds.
+        <DataGrid
+          id="grid-pages"
+          aria-label="Tasks"
+          className="sb-grid"
+          rows={TASKS}
+          columns={plainColumns}
+          autoPageSize
+        />
+      ),
+    },
+  ],
 };
 
 export const MORE_FILES = {
@@ -179,4 +427,15 @@ export const MORE_FILES = {
   editors: [["Custom edit and filter fields", "group"]],
   modes: [["Edit modes", "group"]],
   history: [["Undo and redo", "group"]],
+  footer: [["Footer, label and Tab navigation", "group"]],
+  columns: [["Column options", "group"]],
+  set: [["Set filter", "group"]],
+  selection: [
+    ["Tree data", "tree"],
+    ["Row groups", "groups"],
+  ],
+  dimensions: [
+    ["Header heights, borders and row spacing", "borders"],
+    ["Page size from the height", "pages"],
+  ],
 } as const;

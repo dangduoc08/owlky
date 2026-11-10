@@ -6,7 +6,11 @@ import cellsGroup from "../../../../../packages/html/src/components/data-grid/ex
 import cellsStatus from "../../../../../packages/html/src/components/data-grid/examples/cells-status.html?raw";
 import chartsGroup from "../../../../../packages/html/src/components/data-grid/examples/charts-group.html?raw";
 import chartsMultiple from "../../../../../packages/html/src/components/data-grid/examples/charts-multiple.html?raw";
+import columnsGroup from "../../../../../packages/html/src/components/data-grid/examples/columns-group.html?raw";
+import dimensionsBorders from "../../../../../packages/html/src/components/data-grid/examples/dimensions-borders.html?raw";
+import dimensionsPages from "../../../../../packages/html/src/components/data-grid/examples/dimensions-pages.html?raw";
 import editorsGroup from "../../../../../packages/html/src/components/data-grid/examples/editors-group.html?raw";
+import footerGroup from "../../../../../packages/html/src/components/data-grid/examples/footer-group.html?raw";
 import groupingFooters from "../../../../../packages/html/src/components/data-grid/examples/grouping-footers.html?raw";
 import groupingGroup from "../../../../../packages/html/src/components/data-grid/examples/grouping-group.html?raw";
 import groupingMultiple from "../../../../../packages/html/src/components/data-grid/examples/grouping-multiple.html?raw";
@@ -18,8 +22,11 @@ import lazyGroup from "../../../../../packages/html/src/components/data-grid/exa
 import modesGroup from "../../../../../packages/html/src/components/data-grid/examples/modes-group.html?raw";
 import pivotDerived from "../../../../../packages/html/src/components/data-grid/examples/pivot-derived.html?raw";
 import pivotGroup from "../../../../../packages/html/src/components/data-grid/examples/pivot-group.html?raw";
+import selectionGroups from "../../../../../packages/html/src/components/data-grid/examples/selection-groups.html?raw";
+import selectionTree from "../../../../../packages/html/src/components/data-grid/examples/selection-tree.html?raw";
 import serverAggregation from "../../../../../packages/html/src/components/data-grid/examples/server-aggregation-group.html?raw";
 import serverGroup from "../../../../../packages/html/src/components/data-grid/examples/server-group.html?raw";
+import setGroup from "../../../../../packages/html/src/components/data-grid/examples/set-group.html?raw";
 import sortingGroup from "../../../../../packages/html/src/components/data-grid/examples/sorting-group.html?raw";
 import validationGroup from "../../../../../packages/html/src/components/data-grid/examples/validation-group.html?raw";
 import { CDN, GuideDocs, type GuideSection } from "../../helpers/guide.js";
@@ -1571,6 +1578,222 @@ export function Issues() {
 }`,
   },
   {
+    id: "footer",
+    title: "Change the footer and the Tab key",
+    body: 'The footer shows "2 rows selected" while rows are selected, and the pagination. With `hideFooterPagination`, every row shows on one page and the footer shows the row count instead, such as "Total Rows: 6" ("Total Rows: 2 of 6" while filters hide rows). `hideFooterSelectedRowCount` and `hideFooterRowCount` hide the counts. `label` names the grid and shows at the start of the toolbar. By default, Tab moves into and out of the grid in one stop. `tabNavigation` makes Tab move from cell to cell: `content` through the body cells, `header` through the column headers and `all` through both. Tab past the last cell leaves the grid. In HTML, the grid writes both counts itself. Write the label in `span[data-ok-data-grid-toolbar-label]` at the start of the toolbar and in `aria-label` on the grid.',
+    html: `${gridOf(footerGroup)}`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+const issues = [
+  { id: 1, title: "Fix the login form", priority: "High", points: 3 },
+  { id: 2, title: "Update the docs", priority: "Low", points: 2 },
+  { id: 3, title: "Add dark mode", priority: "Medium", points: 8 },
+];
+
+const columns: GridColDef<(typeof issues)[number]>[] = [
+  { field: "title", headerName: "Title", flex: 1 },
+  { field: "priority", headerName: "Priority" },
+  { field: "points", headerName: "Points", type: "number" },
+];
+
+export function Issues() {
+  return (
+    <DataGrid
+      label="Issues"
+      rows={issues}
+      columns={columns}
+      showToolbar
+      checkboxSelection
+      // Every row on one page, with "Total Rows: 3" in the footer
+      hideFooterPagination
+      // Tab moves through the headers and the cells
+      tabNavigation="all"
+    />
+  );
+}`,
+  },
+  {
+    id: "set-filter",
+    title: "Filter with a checklist of values",
+    body: 'A column with `filterVariant: "set"` filters with a checklist of its values, like a spreadsheet. It works for text, number and single select columns. The list holds each value of the column once, in the column\'s order, with a search field and **Select all**. **Select all** checks the values the search shows, or clears them when they\'re all checked. The checked values make an `isAnyOf` filter item, so the filter model stays the same as with the other operators: `{ field, operator: "isAnyOf", value: ["High", "Low"] }`. Clear every value to remove the filter. With `headerFilters`, the header filter is a button that shows the choice, such as "2 selected", and opens the checklist. In the filter panel, the checklist takes the value field\'s place while the operator is "is any of". In HTML, write `data-ok-filter-variant="set"` on the header cell. The grid copies the first checklist of the markup, such as a header filter\'s, for the panel.',
+    html: `${gridOf(setGroup)}`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+const issues = [
+  { id: 1, title: "Fix the login form", priority: "High", points: 3 },
+  { id: 2, title: "Update the docs", priority: "Low", points: 2 },
+  { id: 3, title: "Add dark mode", priority: "Medium", points: 8 },
+];
+
+const columns: GridColDef<(typeof issues)[number]>[] = [
+  { field: "title", headerName: "Title", flex: 1 },
+  // A checklist of the priorities and of the points
+  { field: "priority", headerName: "Priority", width: 200, filterVariant: "set" },
+  { field: "points", headerName: "Points", type: "number", width: 200, filterVariant: "set" },
+];
+
+export function Issues() {
+  return <DataGrid aria-label="Issues" rows={issues} columns={columns} showToolbar headerFilters />;
+}`,
+  },
+  {
+    id: "selection-propagation",
+    title: "Select parents and children together",
+    body: 'With tree data or grouped rows and `checkboxSelection`, a selection reaches related rows. Selecting a parent selects its children, and selecting all children selects the parent. A parent with only some selected children shows a mixed checkbox. Each group row of grouped rows gets a checkbox that selects its rows. Group rows never enter the selection model: their checkbox shows the state of their rows. `rowSelectionPropagation` turns each direction on or off: `{ descendants: true, parents: false }` keeps parents out. Only rows that pass the filters follow. `checkboxColDef` sets the checkbox column\'s `width`, `headerClassName` and `cellClassName`. `rowSelection={false}` turns selection off, so no checkboxes show and clicks select nothing. In HTML, write the propagation as JSON in `data-ok-row-selection-propagation` and `data-ok-row-selection="false"` to turn selection off.',
+    html: `${gridOf(selectionTree)}
+${gridOf(selectionGroups)}`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+const work = [
+  { id: "design", path: ["Design"], name: "Design", points: 13 },
+  { id: "icons", path: ["Design", "Icons"], name: "Icons", points: 5 },
+  { id: "colors", path: ["Design", "Colors"], name: "Colors", points: 8 },
+];
+
+const columns: GridColDef<(typeof work)[number]>[] = [
+  { field: "name", headerName: "Name", flex: 1 },
+  { field: "points", headerName: "Points", type: "number" },
+];
+
+export function WorkBreakdown() {
+  return (
+    <DataGrid
+      aria-label="Work breakdown"
+      rows={work}
+      columns={columns}
+      treeData
+      getTreeDataPath={(row) => row.path}
+      defaultGroupingExpansionDepth={-1}
+      checkboxSelection
+      // Children follow their parent; parents stay as they are
+      rowSelectionPropagation={{ descendants: true, parents: false }}
+      checkboxColDef={{ width: 60 }}
+    />
+  );
+}`,
+  },
+  {
+    id: "column-options",
+    title: "Set options per column",
+    body: 'Each column can turn grid features off for itself. `hideSortIcons` hides the sort arrow, while the header still sorts. `disableColumnMenu` removes the column\'s menu. `disableReorder` keeps the column in its place: it doesn\'t drag, and other columns can\'t move past it. `disableExport` leaves it out of the CSV, Excel and print exports. `pinnable: false` hides the pin items of its menu. `cellClassName` and `headerClassName` add class names, as a string or from a function, so your CSS can style a column or single cells. `rowHeader: true` makes the column\'s cells row headers (`role="rowheader"`), so screen readers announce them with the other cells of the row. `display: "flex"` lays out cell content in a row, centered. With `rowSpanning`, `rowSpanValueGetter` returns the value that neighbouring cells compare to merge, such as the owner within a team. `pastedValueParser` turns pasted text into the cell\'s value. In HTML, write `data-ok-disable-reorder`, `data-ok-disable-export` and `data-ok-pinnable="false"` on the header, leave out the sort icon or the menu button, and write `role="rowheader"`, `class`, `data-ok-display` and `data-ok-row-span-value` on the cells. Set a paste parser with `setPastedValueParser(field, parser)`.',
+    html: `${gridOf(columnsGroup)}
+<script type="module">
+  const grid = window.Owlky.get(document.getElementById("grid-columns"), "data-grid");
+  // Pasted points such as "5 pts" become numbers
+  grid.setPastedValueParser("points", (text) => Number.parseInt(text, 10));
+</script>`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+const tasks = [
+  { id: 1, task: "Plan the sprint", team: "Core", owner: "Ana", points: 3, due: "2025-05-12" },
+  { id: 2, task: "Fix the build", team: "Core", owner: "Ana", points: 5, due: "2025-05-14" },
+  { id: 3, task: "Write the guide", team: "Docs", owner: "Ana", points: 2, due: "2025-05-16" },
+];
+
+const columns: GridColDef<(typeof tasks)[number]>[] = [
+  // Row headers name their row; this column stays first and has no menu
+  {
+    field: "task",
+    headerName: "Task",
+    flex: 1,
+    rowHeader: true,
+    disableReorder: true,
+    disableColumnMenu: true,
+  },
+  { field: "team", headerName: "Team", pinnable: false },
+  {
+    field: "owner",
+    headerName: "Owner",
+    // Owners merge within a team only
+    rowSpanValueGetter: (value, row) => \`\${row.team}/\${String(value)}\`,
+  },
+  {
+    field: "points",
+    headerName: "Points",
+    type: "number",
+    hideSortIcons: true,
+    // Big tasks get a class name of their own
+    cellClassName: ({ value }) => (Number(value) >= 5 ? "big-task" : ""),
+    // Pasted points such as "5 pts" become numbers
+    pastedValueParser: (text) => Number.parseInt(text, 10),
+  },
+  // Left out of the CSV, Excel and print exports
+  { field: "due", headerName: "Due", disableExport: true },
+];
+
+export function TeamTasks() {
+  return <DataGrid aria-label="Team tasks" rows={tasks} columns={columns} rowSpanning showToolbar />;
+}`,
+  },
+  {
+    id: "dimensions",
+    title: "Size the headers and draw cell borders",
+    body: "`columnHeaderHeight` sets the height of the column headers, `columnGroupHeaderHeight` the height of the column group rows and `headerFilterHeight` the height of the header filter row, in pixels. The density scales them, like the rows: compact by 0.7 and comfortable by 1.3. The header filter row takes the column headers' height unless it has its own. `showCellVerticalBorder` draws a line between the cells and `showColumnVerticalBorder` between the column headers. `getRowSpacing` adds space above and below rows. By default, the space is a margin outside the row. With `rowSpacingType=\"border\"`, the space is inside the row, so the hover and selection colors cover it. `autoHeight` makes the grid grow with its rows instead of scrolling, so don't give it a height. In HTML, write the same options as attributes, and the spacing of each row in `data-ok-spacing-top` and `data-ok-spacing-bottom`.",
+    html: `${gridOf(dimensionsBorders)}`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+const issues = [
+  { id: 1, title: "Fix the login form", priority: "High", points: 3 },
+  { id: 2, title: "Update the docs", priority: "Low", points: 2 },
+  { id: 3, title: "Add dark mode", priority: "Medium", points: 8 },
+];
+
+const columns: GridColDef<(typeof issues)[number]>[] = [
+  { field: "title", headerName: "Title", flex: 1 },
+  { field: "priority", headerName: "Priority" },
+  { field: "points", headerName: "Points", type: "number" },
+];
+
+export function Issues() {
+  return (
+    <DataGrid
+      aria-label="Issues"
+      rows={issues}
+      columns={columns}
+      columnGroupingModel={[
+        { groupId: "work", headerName: "Work", children: [{ field: "priority" }, { field: "points" }] },
+      ]}
+      columnHeaderHeight={44}
+      columnGroupHeaderHeight={36}
+      showCellVerticalBorder
+      showColumnVerticalBorder
+      // 4 pixels above and below each row, inside the row
+      getRowSpacing={() => ({ top: 4, bottom: 4 })}
+      rowSpacingType="border"
+      autoHeight
+      hideFooter
+    />
+  );
+}`,
+  },
+  {
+    id: "auto-page-size",
+    title: "Fit the page size to the height",
+    body: "With `autoPageSize`, each page holds as many rows as the grid's height shows without scrolling, and the footer drops its rows per page menu. The grid needs a height of its own, for example from a flex layout or a CSS `height`. It measures again when it's resized or its density changes, and keeps the current page when it can. `onPaginationModelChange` reports each new page size.",
+    html: `${gridOf(dimensionsPages)}`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+const tasks = Array.from({ length: 24 }, (_, i) => ({
+  id: i + 1,
+  title: \`Task \${i + 1}\`,
+  priority: ["High", "Medium", "Low"][i % 3],
+  points: (i % 5) + 1,
+}));
+
+const columns: GridColDef<(typeof tasks)[number]>[] = [
+  { field: "title", headerName: "Title", flex: 1 },
+  { field: "priority", headerName: "Priority" },
+  { field: "points", headerName: "Points", type: "number" },
+];
+
+export function Tasks() {
+  return (
+    // The grid needs a height: the page size follows it
+    <DataGrid aria-label="Tasks" rows={tasks} columns={columns} autoPageSize style={{ height: 520 }} />
+  );
+}`,
+  },
+  {
     id: "options",
     title: "Options",
     body: "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default.",
@@ -1602,7 +1825,7 @@ export function Issues() {
   {
     id: "accessibility",
     title: "Accessibility",
-    body: `- Give the grid a name with \`aria-label\` or \`aria-labelledby\`.
+    body: `- Give the grid a name with \`label\`, \`aria-label\` or \`aria-labelledby\`.
 - Sortable headers carry \`aria-sort\`, selected rows \`aria-selected\`, and the grid tells its full row and column count.
 - Buttons and checkboxes inside cells take part in the arrow-key navigation. Name them, such as "Edit Ana Silva".
 - The menu button of each column appears on hover and focus, and always on touch screens.
@@ -1874,6 +2097,10 @@ const PREVIEWS = {
         ["Ctrl + Z on a cell or a header", "Undoes the last edit or paste"],
         ["Ctrl + Shift + Z or Ctrl + Y on a cell or a header", "Redoes it"],
         ["Up / Down in a header filter", "Moves to the cell above / below"],
+        [
+          "Tab / Shift + Tab with tabNavigation",
+          "Moves to the next / previous cell or header, then out of the grid",
+        ],
       ]}
     />
   ),
