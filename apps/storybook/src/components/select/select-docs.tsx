@@ -1,4 +1,6 @@
 import { inputLabelOptions, selectOptions } from "@owlky/core";
+import selectApi from "@owlky/docs-content/api/select.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import {
   Chip,
   FormControl,
@@ -483,6 +485,7 @@ export function Size() {
 - The label, the value and the helper text keep a contrast ratio of at least 4.5:1 in the light and dark themes. A disabled field is dimmed.
 - A checkbox in an option only shows its state: mark it \`inert\`, so the option stays the one control.`,
   },
+  apiReferenceSection(selectApi),
 ];
 
 const PREVIEWS = {

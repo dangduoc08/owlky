@@ -1,4 +1,6 @@
 import { textFieldOptions } from "@owlky/core";
+import textFieldApi from "@owlky/docs-content/api/text-field.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { IconButton, InputAdornment, TextField } from "@owlky/react";
 import { useState } from "react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
@@ -186,6 +188,7 @@ export function TextFieldMultiline() {
 - Focus shows as a 2px border, line or ring in the text color.
 - Set \`autoComplete\` (such as \`email\` or \`current-password\`) so browsers and password managers can fill the field.`,
   },
+  apiReferenceSection(textFieldApi),
 ];
 
 function PasswordPreview() {

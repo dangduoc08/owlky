@@ -10,7 +10,24 @@ export interface EmitOptions {
   cancelable?: boolean;
 }
 
-export interface SetupContext {
+/**
+ * Declares one event of a component (`ok:<component>:<name>`) for its event map: the type of
+ * `event.detail` and whether `preventDefault()` refuses the change (`true`), never does
+ * (`false`) or only sometimes does (`boolean`, explained in the member's comment). Type only:
+ * the API reference (`scripts/api-reference.mjs`, ADR-0049) reads the maps and their comments.
+ */
+export interface EventSpec<Detail = undefined, Cancelable extends boolean = false> {
+  readonly detail: Detail;
+  readonly cancelable: Cancelable;
+}
+
+/** A component's events, by name (without the `ok:<component>:` prefix). */
+export type EventMap<E> = { [K in keyof E]: EventSpec<unknown, boolean> };
+
+/** Any events: what a definition without an event map may emit. */
+export type AnyEvents = Record<string, EventSpec<unknown, boolean>>;
+
+export interface SetupContext<E extends EventMap<E> = AnyEvents> {
   /** Aborted when the instance is destroyed. Pass it to every `addEventListener`. */
   readonly signal: AbortSignal;
   readonly runtime: Runtime;
@@ -18,7 +35,11 @@ export interface SetupContext {
    * Dispatches a bubbling `ok:<component>:<type>` CustomEvent on the element.
    * Returns `false` if a listener called `preventDefault()` on a cancelable event.
    */
-  emit(type: string, detail?: unknown, options?: EmitOptions): boolean;
+  emit<K extends keyof E & string>(
+    type: K,
+    detail?: E[K]["detail"],
+    options?: EmitOptions,
+  ): boolean;
 }
 
 /**

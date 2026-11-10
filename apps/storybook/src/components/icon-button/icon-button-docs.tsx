@@ -1,4 +1,6 @@
 import { iconButtonOptions } from "@owlky/core";
+import iconButtonApi from "@owlky/docs-content/api/icon-button.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { IconButton } from "@owlky/react";
 import { DocsIcon, type DocsIconName, iconMarkup } from "../../helpers/docs-icons.js";
 import { CDN, capitalize, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
@@ -121,6 +123,7 @@ export function IconButtonAnimate() {
 - While loading, the button is disabled and marked busy (\`aria-busy="true"\`).
 - Every size is at least 24 × 24px, and focus is shown with a 2px outline.`,
   },
+  apiReferenceSection(iconButtonApi),
 ];
 
 const PREVIEWS = {

@@ -7,9 +7,13 @@ import { createContext, type ReactNode, useContext } from "react";
 export type MarkerDragHandler = (phase: MapDragPhase, lngLat: { lng: number; lat: number }) => void;
 
 export interface GeolocateHandlers {
+  /** Called with the user's position. */
   onGeolocate?: ((position: GeolocationPosition) => void) | undefined;
+  /** Called when the position can't be found. */
   onError?: ((error: GeolocationPositionError | Error) => void) | undefined;
+  /** Called when tracking the user's location starts. */
   onTrackUserLocationStart?: (() => void) | undefined;
+  /** Called when tracking the user's location ends. */
   onTrackUserLocationEnd?: (() => void) | undefined;
 }
 

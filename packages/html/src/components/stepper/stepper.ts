@@ -1,6 +1,12 @@
 import { clampStep, readNumber, stepOptions, stepperOptions, stepState } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
-import type { ComponentInstance, Runtime } from "../../runtime/types.js";
+import type { ComponentInstance, EventSpec, Runtime } from "../../runtime/types.js";
+
+/** Events of this component (`ok:<name>:<event>` on the root). */
+export interface StepperEvents {
+  /** Before a trigger moves to another step. Call `preventDefault()` to stay. */
+  change: EventSpec<{ activeStep: number; previous: number }, true>;
+}
 
 export interface StepperInstance extends ComponentInstance {
   /** Index of the current step; equal to the step count once every step is completed. */
@@ -34,7 +40,7 @@ const TRIGGERS = {
  *          space-separated ids move steppers that show the same steps together).
  * Events:  ok:stepper:change (cancelable, detail `{ activeStep, previous }`).
  */
-export const stepper = defineComponent<StepperInstance>({
+export const stepper = defineComponent<StepperInstance, StepperEvents>({
   name: "stepper",
   selector: "[data-ok-stepper]",
 

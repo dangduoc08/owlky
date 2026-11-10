@@ -1,4 +1,6 @@
 import { lightboxOptions } from "@owlky/core";
+import lightboxApi from "@owlky/docs-content/api/lightbox.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { Lightbox } from "@owlky/react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
@@ -206,6 +208,7 @@ export function Controlled({ slides }) {
 - The slideshow never starts on its own when the system asks for reduced motion, and it has a pause button.
 - Zoom levels and failures (a download that didn't work) are read out in a polite live region.`,
   },
+  apiReferenceSection(lightboxApi),
 ];
 
 const PREVIEWS = {

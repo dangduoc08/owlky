@@ -1,4 +1,6 @@
 import { backdropOptions } from "@owlky/core";
+import backdropApi from "@owlky/docs-content/api/backdrop.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
 import { ExampleBackdropDemo } from "./backdrop-demos.js";
@@ -110,6 +112,7 @@ export function SavingOverlay({ saving }: { saving: boolean }) {
 - Put text on a paper inside the backdrop, not on the backdrop itself. White text directly on the light theme's backdrop has a contrast ratio of about 3:1, below the 4.5:1 that text needs.
 - Close the backdrop when the work ends. Keyboard users can't dismiss it themselves.`,
   },
+  apiReferenceSection(backdropApi),
 ];
 
 const PREVIEWS = {

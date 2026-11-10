@@ -1,4 +1,6 @@
 import { treeViewOptions } from "@owlky/core";
+import treeViewApi from "@owlky/docs-content/api/tree-view.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { RichTreeView } from "@owlky/react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
@@ -104,6 +106,7 @@ export function Projects() {
 - The focused item shows a focus ring. Item text uses the primary text color.
 - Icons and selection checkboxes are decorative: the item's state is in its ARIA attributes.`,
   },
+  apiReferenceSection(treeViewApi),
 ];
 
 const PREVIEWS = {

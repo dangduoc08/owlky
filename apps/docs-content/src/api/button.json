@@ -1,0 +1,313 @@
+{
+ "css": [
+  {
+   "name": "--ok-action-disabled",
+   "value": "color-mix(in srgb, #919EAB 80%, transparent)"
+  },
+  {
+   "name": "--ok-action-disabled-bg",
+   "value": "color-mix(in srgb, #919EAB 24%, transparent)"
+  },
+  {
+   "description": "The main color of the element's `data-ok-color`, as RGB channels.",
+   "name": "--ok-c-channel"
+  },
+  {
+   "description": "The text color on the main color.",
+   "name": "--ok-c-contrast"
+  },
+  {
+   "description": "The hover color of the element's `data-ok-color`.",
+   "name": "--ok-c-hover"
+  },
+  {
+   "description": "The main color of the element's `data-ok-color`.",
+   "name": "--ok-c-main"
+  },
+  {
+   "description": "The colored shadow of the element's `data-ok-color`.",
+   "name": "--ok-c-shadow"
+  },
+  {
+   "description": "The accessible text tone of the element's `data-ok-color`.",
+   "name": "--ok-c-text"
+  },
+  {
+   "name": "--ok-duration-short",
+   "value": "250ms"
+  },
+  {
+   "name": "--ok-easing-standard",
+   "value": "cubic-bezier(0.4, 0, 0.2, 1)"
+  },
+  {
+   "name": "--ok-font-family",
+   "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+  },
+  {
+   "name": "--ok-font-size-lg",
+   "value": "0.9375rem"
+  },
+  {
+   "name": "--ok-font-size-md",
+   "value": "0.875rem"
+  },
+  {
+   "name": "--ok-font-size-sm",
+   "value": "0.8125rem"
+  },
+  {
+   "dark": "#1C252E",
+   "light": "#FFFFFF",
+   "name": "--ok-inherit-contrast"
+  },
+  {
+   "dark": "#C4CDD5",
+   "light": "#454F5B",
+   "name": "--ok-inherit-hover"
+  },
+  {
+   "dark": "#FFFFFF",
+   "light": "#1C252E",
+   "name": "--ok-inherit-main"
+  },
+  {
+   "name": "--ok-palette-grey-500-channel",
+   "value": "145 158 171"
+  },
+  {
+   "name": "--ok-radius-full",
+   "value": "9999px"
+  },
+  {
+   "name": "--ok-radius-md",
+   "value": "8px"
+  },
+  {
+   "name": "--ok-shadow-z8",
+   "value": "0px 8px 16px 0px color-mix(in srgb, var(--ok-shadow-color) 16%, transparent)"
+  },
+  {
+   "name": "--ok-spacing",
+   "value": "0.25rem"
+  },
+  {
+   "dark": "#FFFFFF",
+   "light": "#1C252E",
+   "name": "--ok-text-primary"
+  },
+  {
+   "name": "--ok-typography-button-font-weight",
+   "value": "700"
+  },
+  {
+   "name": "--ok-typography-button-line-height",
+   "value": "1.7143"
+  }
+ ],
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-button",
+    "options": [
+     {
+      "attr": "data-ok-variant",
+      "default": "text",
+      "description": "Visual style.",
+      "kind": "style",
+      "name": "variant",
+      "values": [
+       "text",
+       "contained",
+       "outlined",
+       "soft"
+      ]
+     },
+     {
+      "attr": "data-ok-color",
+      "default": "inherit",
+      "description": "`inherit` (neutral), palette, `black` / `white`.",
+      "kind": "style",
+      "name": "color",
+      "values": [
+       "inherit",
+       "primary",
+       "secondary",
+       "info",
+       "success",
+       "warning",
+       "error",
+       "black",
+       "white"
+      ]
+     },
+     {
+      "attr": "data-ok-size",
+      "default": "md",
+      "description": "Height: 30 / 36 / 48 / 56px.",
+      "kind": "style",
+      "name": "size",
+      "values": [
+       "sm",
+       "md",
+       "lg",
+       "xl"
+      ]
+     },
+     {
+      "attr": "data-ok-full-width",
+      "description": "Stretch to the container width.",
+      "kind": "flag",
+      "name": "fullWidth"
+     },
+     {
+      "attr": "data-ok-disable-elevation",
+      "description": "No shadow on contained buttons.",
+      "kind": "flag",
+      "name": "disableElevation"
+     },
+     {
+      "attr": "data-ok-loading",
+      "description": "Loader + `disabled` + `aria-busy` (adds the loader part).",
+      "kind": "flag",
+      "name": "loading"
+     },
+     {
+      "attr": "data-ok-loading-position",
+      "default": "center",
+      "description": "Where the loader goes while loading.",
+      "kind": "style",
+      "name": "loadingPosition",
+      "values": [
+       "center",
+       "start",
+       "end"
+      ],
+      "when": "loading"
+     },
+     {
+      "attr": "disabled",
+      "description": "Native `disabled` (links: `aria-disabled`, no `href`).",
+      "kind": "native",
+      "name": "disabled"
+     }
+    ],
+    "parts": [
+     {
+      "description": "The decorative icon before (`start`) or after (`end`) the label.",
+      "kind": "value",
+      "name": "data-ok-button-icon",
+      "value": [
+       "end",
+       "start"
+      ]
+     },
+     {
+      "description": "The label: the button's accessible name.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-button-label"
+     },
+     {
+      "description": "Holds the loading indicator while `data-ok-loading` is set.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-button-loader"
+     },
+     {
+      "description": "The default loading indicator: a circular progress.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-button-spinner"
+     }
+    ]
+   },
+   "name": "Button",
+   "react": {
+    "description": "A native `<button type=\"button\">`, or an `<a>` when `href` is set.",
+    "native": "HTMLAnchorElement",
+    "props": [
+     {
+      "description": "The content.",
+      "name": "children",
+      "type": "ReactNode"
+     },
+     {
+      "default": "\"inherit\"",
+      "description": "(neutral). `black` / `white` are meant for light / dark surfaces.",
+      "name": "color",
+      "type": "ColorName"
+     },
+     {
+      "description": "No shadow on contained buttons (on by default inside a ButtonGroup).",
+      "name": "disableElevation",
+      "type": "boolean"
+     },
+     {
+      "description": "Removes `href` and sets `aria-disabled`, so the link can't be followed.",
+      "name": "disabled",
+      "type": "boolean"
+     },
+     {
+      "description": "Decorative icon after the label (hidden from assistive technology).",
+      "name": "endIcon",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Stretch to the container width.",
+      "name": "fullWidth",
+      "type": "boolean"
+     },
+     {
+      "description": "Shows a loading indicator, disables the button and sets `aria-busy`.",
+      "name": "loading",
+      "type": "boolean"
+     },
+     {
+      "description": "g. `\"Loading…\"`. Decorative: the label stays the accessible name.",
+      "name": "loadingIndicator",
+      "type": "ReactNode"
+     },
+     {
+      "default": "center",
+      "description": "Where the indicator goes: over the label (`center`) or in place of an icon.",
+      "name": "loadingPosition",
+      "type": "\"center\" | \"end\" | \"start\""
+     },
+     {
+      "default": "\"md\"",
+      "description": "`sm` 30px · `md` 36px · `lg` 48px · `xl` 56px.",
+      "name": "size",
+      "type": "\"lg\" | \"md\" | \"sm\" | \"xl\""
+     },
+     {
+      "description": "Decorative icon before the label (hidden from assistive technology).",
+      "name": "startIcon",
+      "type": "ReactNode"
+     },
+     {
+      "default": "\"text\"",
+      "description": "Visual style.",
+      "name": "variant",
+      "type": "\"contained\" | \"outlined\" | \"soft\" | \"text\""
+     }
+    ]
+   }
+  }
+ ],
+ "format": 1,
+ "name": "button",
+ "title": "Button",
+ "types": [
+  {
+   "name": "ColorName",
+   "type": "\"black\" | \"error\" | \"info\" | \"inherit\" | \"primary\" | \"secondary\" | \"success\" | \"warning\" | \"white\""
+  }
+ ]
+}

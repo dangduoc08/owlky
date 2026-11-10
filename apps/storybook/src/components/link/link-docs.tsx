@@ -1,4 +1,6 @@
 import { linkOptions } from "@owlky/core";
+import linkApi from "@owlky/docs-content/api/link.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { Link, Typography } from "@owlky/react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
@@ -140,6 +142,7 @@ export function Settings() {
 - A focused link shows a 2px focus ring in the primary text color.
 - Use a button, not a link without \`href\`, for actions: a link without \`href\` can't take focus.`,
   },
+  apiReferenceSection(linkApi),
 ];
 
 const PREVIEWS = {

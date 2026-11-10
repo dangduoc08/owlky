@@ -1,4 +1,6 @@
 import { menuItemOptions, menuOptions, popoverOptions } from "@owlky/core";
+import menuApi from "@owlky/docs-content/api/menu.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
 import { SimpleMenuDemo } from "./simple-demo.js";
@@ -102,6 +104,7 @@ export function AccountMenu() {
 - Disabled items have \`aria-disabled="true"\`: they stay visible but can't be chosen.
 - The selected item is bold and tinted. The tint alone isn't the only cue.`,
   },
+  apiReferenceSection(menuApi),
 ];
 
 const PREVIEWS = {

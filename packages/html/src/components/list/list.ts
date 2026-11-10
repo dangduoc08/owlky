@@ -1,5 +1,11 @@
 import { defineComponent } from "../../runtime/define.js";
-import type { ComponentInstance } from "../../runtime/types.js";
+import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
+
+/** Events of this component (`ok:<name>:<event>` on the root). */
+export interface ListEvents {
+  /** Before a nested list opens or closes. Call `preventDefault()` to refuse. */
+  toggle: EventSpec<{ open: boolean; list: HTMLElement }, true>;
+}
 
 export interface ListInstance extends ComponentInstance {
   /**
@@ -35,7 +41,7 @@ function controlled(button: Element): HTMLElement | null {
  * `aria-controls` + `aria-expanded` flips `aria-expanded` and the named list's `hidden`.
  * Events:  ok:list:toggle (cancelable, detail `{ open, list }`) on the button's list.
  */
-export const list = defineComponent<ListInstance>({
+export const list = defineComponent<ListInstance, ListEvents>({
   name: "list",
   selector: "[data-ok-list]",
 

@@ -1,0 +1,357 @@
+{
+ "css": [
+  {
+   "name": "--ok-action-focus",
+   "value": "color-mix(in srgb, #919EAB 24%, transparent)"
+  },
+  {
+   "name": "--ok-action-hover",
+   "value": "color-mix(in srgb, #919EAB 8%, transparent)"
+  },
+  {
+   "name": "--ok-duration-shortest",
+   "value": "150ms"
+  },
+  {
+   "name": "--ok-easing-standard",
+   "value": "cubic-bezier(0.4, 0, 0.2, 1)"
+  },
+  {
+   "name": "--ok-elevation-8",
+   "value": "0px 5px 5px -3px color-mix(in srgb, var(--ok-shadow-color) 20%, transparent), 0px 8px 10px 1px color-mix(in srgb, var(--ok-shadow-color) 14%, transparent), 0px 3px 14px 2px color-mix(in srgb, var(--ok-shadow-color) 12%, transparent)"
+  },
+  {
+   "name": "--ok-radius-xl",
+   "value": "16px"
+  },
+  {
+   "name": "--ok-shadow-card",
+   "value": "0px 0px 2px 0px color-mix(in srgb, var(--ok-shadow-color) 20%, transparent), 0px 12px 24px -4px color-mix(in srgb, var(--ok-shadow-color) 12%, transparent)"
+  },
+  {
+   "name": "--ok-spacing",
+   "value": "0.25rem"
+  },
+  {
+   "dark": "#FFFFFF",
+   "light": "#1C252E",
+   "name": "--ok-text-primary"
+  }
+ ],
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-card",
+    "options": [
+     {
+      "attr": "data-ok-variant",
+      "default": "elevation",
+      "description": "`elevation`: a shadow; `outlined`: a 1px outline and no shadow.",
+      "kind": "style",
+      "name": "variant",
+      "values": [
+       "elevation",
+       "outlined"
+      ]
+     },
+     {
+      "attr": "data-ok-elevation",
+      "default": "1",
+      "description": "Shadow depth from 0 (none) to 24 (`--ok-elevation-<n>`). Ignored by `outlined`.",
+      "kind": "style",
+      "name": "elevation",
+      "values": [
+       "0",
+       "1",
+       "2",
+       "3",
+       "4",
+       "5",
+       "6",
+       "7",
+       "8",
+       "9",
+       "10",
+       "11",
+       "12",
+       "13",
+       "14",
+       "15",
+       "16",
+       "17",
+       "18",
+       "19",
+       "20",
+       "21",
+       "22",
+       "23",
+       "24"
+      ]
+     },
+     {
+      "attr": "data-ok-square",
+      "description": "Square corners (no radius).",
+      "kind": "flag",
+      "name": "square"
+     },
+     {
+      "attr": "data-ok-raised",
+      "description": "A raised card: the shadow of elevation 8, whatever `elevation` says. Ignored by `outlined`.",
+      "kind": "flag",
+      "name": "raised"
+     }
+    ]
+   },
+   "name": "Card",
+   "react": {
+    "description": "A Paper surface (`data-ok-paper` + `data-ok-card`) for content and actions about one subject: Paper's options, the card's radius and shadow.",
+    "native": "HTMLElement",
+    "props": [
+     {
+      "description": "The content.",
+      "name": "children",
+      "type": "ReactNode"
+     },
+     {
+      "default": "\"div\"",
+      "description": "The element to render, such as `\"section\"` or `\"li\"`.",
+      "name": "component",
+      "type": "ElementType"
+     },
+     {
+      "default": "1",
+      "description": "Shadow depth, 0 (none) to 24. Ignored by `outlined`.",
+      "name": "elevation",
+      "type": "number"
+     },
+     {
+      "description": "The shadow of elevation 8, whatever `elevation` says. Ignored by `outlined`.",
+      "name": "raised",
+      "type": "boolean"
+     },
+     {
+      "description": "Square corners.",
+      "name": "square",
+      "type": "boolean"
+     },
+     {
+      "default": "\"elevation\"",
+      "description": "`elevation`: a shadow; `outlined`: a 1px outline and no shadow.",
+      "name": "variant",
+      "type": "\"elevation\" | \"outlined\""
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-card-action-area",
+    "description": "Makes the media and content one action: a button, or a link with `href`.",
+    "elements": [
+     "a",
+     "button"
+    ]
+   },
+   "name": "CardActionArea",
+   "react": {
+    "description": "The card's main action: a `<button type=\"button\">` (or an `<a>` with `href`) around media and content, tinted on hover and focus.",
+    "native": "HTMLAnchorElement",
+    "props": [
+     {
+      "description": "Removes `href` and sets `aria-disabled`, so the link can't be followed.",
+      "name": "disabled",
+      "type": "boolean"
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-card-actions",
+    "options": [
+     {
+      "attr": "data-ok-disable-spacing",
+      "description": "No space between the actions.",
+      "kind": "flag",
+      "name": "disableSpacing"
+     }
+    ]
+   },
+   "name": "CardActions",
+   "react": {
+    "description": "A row of actions, usually at the bottom of the card.",
+    "native": "HTMLDivElement",
+    "props": [
+     {
+      "description": "No space between the actions.",
+      "name": "disableSpacing",
+      "type": "boolean"
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-card-content",
+    "description": "The padded content.",
+    "elements": [
+     "div"
+    ]
+   },
+   "name": "CardContent",
+   "react": {
+    "description": "The card's padded content.",
+    "native": "HTMLElement",
+    "props": [
+     {
+      "default": "\"div\"",
+      "description": "The root element.",
+      "name": "component",
+      "type": "ElementType"
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-card-header",
+    "description": "The header: avatar, title, subheader and action.",
+    "elements": [
+     "div"
+    ],
+    "parts": [
+     {
+      "description": "The action at the end of the header, such as an icon button.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-card-header-action"
+     },
+     {
+      "description": "The avatar at the start of the header.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-card-header-avatar"
+     },
+     {
+      "description": "Holds the title and the subheader.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-card-header-content"
+     },
+     {
+      "description": "The second line of the header, in the secondary text color.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-card-header-subheader"
+     },
+     {
+      "description": "The main line of the header.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-card-header-title"
+     }
+    ]
+   },
+   "name": "CardHeader",
+   "react": {
+    "description": "The card's header: avatar, title and subheader, action.",
+    "native": "HTMLElement",
+    "props": [
+     {
+      "description": "An action at the end, such as an `IconButton`.",
+      "name": "action",
+      "type": "ReactNode"
+     },
+     {
+      "description": "An `Avatar` at the start.",
+      "name": "avatar",
+      "type": "ReactNode"
+     },
+     {
+      "default": "\"div\"",
+      "description": "The root element.",
+      "name": "component",
+      "type": "ElementType"
+     },
+     {
+      "description": "Renders `title` and `subheader` as given, without Typography.",
+      "name": "disableTypography",
+      "type": "boolean"
+     },
+     {
+      "description": "The second line: a Typography `body2` in the secondary text color.",
+      "name": "subheader",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Props of the subheader's Typography.",
+      "name": "subheaderProps",
+      "type": "TypographyProps"
+     },
+     {
+      "description": "The main line: a Typography `h6`.",
+      "name": "title",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Props of the title's Typography (`variant`, `component`…).",
+      "name": "titleProps",
+      "type": "TypographyProps"
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-card-media",
+    "description": "Media at the card's edge: an `img`, `video`, `picture`, `iframe` or `audio`, or an element that holds a cover image.",
+    "parts": [
+     {
+      "description": "The decorative cover image inside a media element that isn't media itself.",
+      "elements": [
+       "img"
+      ],
+      "kind": "part",
+      "name": "data-ok-card-media-image"
+     }
+    ]
+   },
+   "name": "CardMedia",
+   "react": {
+    "description": "Media at the card's edge. A media element (`img`, `video`…) or a component gets `src`; any other element holds the picture as a decorative cover `img` (it needs a height).",
+    "native": "HTMLElement",
+    "props": [
+     {
+      "default": "\"div\"",
+      "description": "The element: `\"img\"`, `\"video\"`, `\"picture\"`, `\"iframe\"` and `\"audio\"` show the media themselves (`src`); other elements hold a cover image; a component (such as `Image`) gets `src`.",
+      "name": "component",
+      "type": "ElementType"
+     },
+     {
+      "description": "The media URL.",
+      "name": "image",
+      "type": "string"
+     },
+     {
+      "description": "An alias of `image`.",
+      "name": "src",
+      "type": "string"
+     }
+    ]
+   }
+  }
+ ],
+ "format": 1,
+ "name": "card",
+ "title": "Card"
+}

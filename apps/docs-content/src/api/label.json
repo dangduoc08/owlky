@@ -1,0 +1,193 @@
+{
+ "css": [
+  {
+   "dark": "#1C252E",
+   "light": "#FFFFFF",
+   "name": "--ok-bg-paper"
+  },
+  {
+   "description": "The main color of the element's `data-ok-color`, as RGB channels.",
+   "name": "--ok-c-channel"
+  },
+  {
+   "description": "The text color on the main color.",
+   "name": "--ok-c-contrast"
+  },
+  {
+   "description": "The main color of the element's `data-ok-color`.",
+   "name": "--ok-c-main"
+  },
+  {
+   "description": "The accessible text tone of the element's `data-ok-color`.",
+   "name": "--ok-c-text"
+  },
+  {
+   "name": "--ok-font-family",
+   "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+  },
+  {
+   "name": "--ok-font-size-xs",
+   "value": "0.75rem"
+  },
+  {
+   "name": "--ok-font-weight-bold",
+   "value": "700"
+  },
+  {
+   "name": "--ok-palette-error-darker",
+   "value": "#7A0916"
+  },
+  {
+   "name": "--ok-palette-error-lighter",
+   "value": "#FFE9D5"
+  },
+  {
+   "name": "--ok-palette-grey-300",
+   "value": "#DFE3E8"
+  },
+  {
+   "name": "--ok-palette-grey-500-channel",
+   "value": "145 158 171"
+  },
+  {
+   "name": "--ok-palette-grey-700",
+   "value": "#454F5B"
+  },
+  {
+   "name": "--ok-palette-info-darker",
+   "value": "#003768"
+  },
+  {
+   "name": "--ok-palette-info-lighter",
+   "value": "#CAFDF5"
+  },
+  {
+   "name": "--ok-palette-primary-darker",
+   "value": "#004B50"
+  },
+  {
+   "name": "--ok-palette-primary-lighter",
+   "value": "#C8FAD6"
+  },
+  {
+   "name": "--ok-palette-secondary-darker",
+   "value": "#27097A"
+  },
+  {
+   "name": "--ok-palette-secondary-lighter",
+   "value": "#EFD6FF"
+  },
+  {
+   "name": "--ok-palette-success-darker",
+   "value": "#065E49"
+  },
+  {
+   "name": "--ok-palette-success-lighter",
+   "value": "#D3FCD2"
+  },
+  {
+   "name": "--ok-palette-warning-darker",
+   "value": "#7A4100"
+  },
+  {
+   "name": "--ok-palette-warning-lighter",
+   "value": "#FFF5CC"
+  },
+  {
+   "name": "--ok-radius-sm",
+   "value": "6px"
+  },
+  {
+   "name": "--ok-spacing",
+   "value": "0.25rem"
+  },
+  {
+   "dark": "#FFFFFF",
+   "light": "#1C252E",
+   "name": "--ok-text-primary"
+  }
+ ],
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-label",
+    "options": [
+     {
+      "attr": "data-ok-variant",
+      "default": "soft",
+      "description": "Fill, outline, tint or inverted tint.",
+      "kind": "style",
+      "name": "variant",
+      "values": [
+       "filled",
+       "outlined",
+       "soft",
+       "inverted"
+      ]
+     },
+     {
+      "attr": "data-ok-color",
+      "default": "default",
+      "description": "`default` (neutral), palette, `black` / `white`.",
+      "kind": "style",
+      "name": "color",
+      "values": [
+       "default",
+       "primary",
+       "secondary",
+       "info",
+       "success",
+       "warning",
+       "error",
+       "black",
+       "white"
+      ]
+     }
+    ],
+    "parts": [
+     {
+      "description": "An icon before or after the text.",
+      "kind": "value",
+      "name": "data-ok-label-icon",
+      "value": [
+       "end",
+       "start"
+      ]
+     }
+    ]
+   },
+   "name": "Label",
+   "react": {
+    "description": "A small status tag (not interactive).",
+    "native": "HTMLSpanElement",
+    "props": [
+     {
+      "default": "\"default\"",
+      "description": "`default` (neutral), palette, `black` / `white`.",
+      "name": "color",
+      "type": "\"black\" | \"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\" | \"white\""
+     },
+     {
+      "description": "Decorative icon after the text.",
+      "name": "endIcon",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Decorative icon before the text.",
+      "name": "startIcon",
+      "type": "ReactNode"
+     },
+     {
+      "default": "\"soft\"",
+      "description": "Fill, outline, tint or inverted tint.",
+      "name": "variant",
+      "type": "\"filled\" | \"inverted\" | \"outlined\" | \"soft\""
+     }
+    ]
+   }
+  }
+ ],
+ "format": 1,
+ "name": "label",
+ "title": "Label"
+}

@@ -1,5 +1,11 @@
 import { defineComponent } from "../../runtime/define.js";
-import type { ComponentInstance } from "../../runtime/types.js";
+import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
+
+/** Events of this component (`ok:<name>:<event>` on the root). */
+export interface ChipEvents {
+  /** Before the chip is removed (its delete icon, Backspace or Delete). Call `preventDefault()` to keep it. */
+  delete: EventSpec<undefined, true>;
+}
 
 export interface ChipInstance extends ComponentInstance {
   /** Removes the chip from view. Returns `false` if `ok:chip:delete` was prevented. */
@@ -16,7 +22,7 @@ export interface ChipInstance extends ComponentInstance {
  * Events:  ok:chip:delete (cancelable) — from the delete button, or Backspace / Delete on the
  *          chip's action button; then the chip gets `hidden`.
  */
-export const chip = defineComponent<ChipInstance>({
+export const chip = defineComponent<ChipInstance, ChipEvents>({
   name: "chip",
   selector: "[data-ok-chip]",
 

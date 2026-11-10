@@ -9,6 +9,7 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
+import { ApiReference } from "./api.js";
 import { writeClipboard } from "./clipboard.js";
 import { type FrameworkStore, PREVIEW_FRAME_CLASS, useGuideHost } from "./host.js";
 import type { GuideSection, Impl } from "./text.js";
@@ -209,7 +210,7 @@ function Section({
   return (
     <div className={sectionClassName}>
       <Prose section={section} />
-      {Live ? <Live /> : null}
+      {Live ? <Live /> : section.api ? <ApiReference data={section.api} /> : null}
       {section.html !== undefined || section.react !== undefined ? (
         <CodeTabs section={section} impl={impl} onImpl={onImpl} />
       ) : null}

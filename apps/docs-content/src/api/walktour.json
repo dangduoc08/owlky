@@ -1,0 +1,640 @@
+{
+ "css": [
+  {
+   "dark": "#1C252E",
+   "light": "#FFFFFF",
+   "name": "--ok-bg-paper"
+  },
+  {
+   "name": "--ok-duration-standard",
+   "value": "300ms"
+  },
+  {
+   "name": "--ok-easing-standard",
+   "value": "cubic-bezier(0.4, 0, 0.2, 1)"
+  },
+  {
+   "name": "--ok-palette-grey-900-channel",
+   "value": "20 26 33"
+  },
+  {
+   "name": "--ok-palette-primary-main",
+   "value": "#00A76F"
+  },
+  {
+   "name": "--ok-palette-primary-main-channel",
+   "value": "0 167 111"
+  },
+  {
+   "name": "--ok-radius-full",
+   "value": "9999px"
+  },
+  {
+   "name": "--ok-radius-xl",
+   "value": "16px"
+  },
+  {
+   "name": "--ok-shadow-dialog",
+   "value": "-40px 40px 80px -8px color-mix(in srgb, var(--ok-shadow-color) 24%, transparent)"
+  },
+  {
+   "name": "--ok-spacing",
+   "value": "0.25rem"
+  },
+  {
+   "dark": "#FFFFFF",
+   "light": "#1C252E",
+   "name": "--ok-text-primary"
+  },
+  {
+   "dark": "#919EAB",
+   "light": "#637381",
+   "name": "--ok-text-secondary"
+  },
+  {
+   "name": "--ok-typography-body1-font-family",
+   "value": "var(--ok-font-family)"
+  },
+  {
+   "name": "--ok-typography-body1-font-size",
+   "value": "1rem"
+  },
+  {
+   "name": "--ok-typography-body1-font-weight",
+   "value": "400"
+  },
+  {
+   "name": "--ok-typography-body1-line-height",
+   "value": "1.5"
+  },
+  {
+   "name": "--ok-typography-h6-font-family",
+   "value": "var(--ok-font-family)"
+  },
+  {
+   "name": "--ok-typography-h6-font-size",
+   "value": "1.0625rem"
+  },
+  {
+   "name": "--ok-typography-h6-font-weight",
+   "value": "600"
+  },
+  {
+   "name": "--ok-typography-h6-line-height",
+   "value": "1.5556"
+  },
+  {
+   "name": "--ok-z-tooltip",
+   "value": "1500"
+  }
+ ],
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-walktour",
+    "events": [
+     {
+      "cancelable": true,
+      "description": "Before the tour moves to another step. Call `preventDefault()` to stay.",
+      "detail": "{ index: number; previousIndex: number; action: string; origin: string | null; }",
+      "name": "ok:walktour:beforechange"
+     },
+     {
+      "cancelable": false,
+      "description": "After the state changed: the new state plus `previousIndex`.",
+      "detail": "WalktourState & { previousIndex: number; }",
+      "name": "ok:walktour:change"
+     },
+     {
+      "cancelable": false,
+      "description": "Each tour event (`tour:start`, `step:before`, `step:after`, `tour:end`…), with the tour's data.",
+      "detail": "WalktourEventData",
+      "name": "ok:walktour:event"
+     }
+    ],
+    "methods": [
+     {
+      "description": "Closes the current step (the next one opens with its beacon).",
+      "kind": "method",
+      "name": "close",
+      "type": "() => void"
+     },
+     {
+      "description": "Moves to step `index`.",
+      "kind": "method",
+      "name": "go",
+      "type": "(index: number) => void"
+     },
+     {
+      "description": "Moves to the next step.",
+      "kind": "method",
+      "name": "next",
+      "type": "() => void"
+     },
+     {
+      "description": "Opens the tooltip of a step that shows its beacon.",
+      "kind": "method",
+      "name": "open",
+      "type": "() => void"
+     },
+     {
+      "description": "Moves to the previous step.",
+      "kind": "method",
+      "name": "prev",
+      "type": "() => void"
+     },
+     {
+      "description": "Back to the first step, not running; `restart` starts it again.",
+      "kind": "method",
+      "name": "reset",
+      "type": "(restart?: boolean | undefined) => void"
+     },
+     {
+      "description": "Ends the tour (`skipped`).",
+      "kind": "method",
+      "name": "skip",
+      "type": "() => void"
+     },
+     {
+      "description": "Starts (or resumes) the tour, at `index` if given; a tour that ended starts over.",
+      "kind": "method",
+      "name": "start",
+      "type": "(index?: number | undefined) => void"
+     },
+     {
+      "description": "The current state.",
+      "kind": "property",
+      "name": "state",
+      "type": "WalktourState"
+     },
+     {
+      "description": "Pauses the tour where it is.",
+      "kind": "method",
+      "name": "stop",
+      "type": "() => void"
+     }
+    ],
+    "options": [
+     {
+      "attr": "data-ok-continuous",
+      "description": "Next and Back move from tooltip to tooltip (otherwise the primary button closes the step).",
+      "kind": "flag",
+      "name": "continuous"
+     },
+     {
+      "attr": "data-ok-show-progress",
+      "description": "Adds the step count to the Next button: `(2/5)`.",
+      "kind": "flag",
+      "name": "showProgress"
+     },
+     {
+      "attr": "data-ok-show-skip-button",
+      "description": "Shows a Skip button that ends the tour.",
+      "kind": "flag",
+      "name": "showSkipButton"
+     },
+     {
+      "attr": "data-ok-hide-back-button",
+      "description": "Hides the Back button.",
+      "kind": "flag",
+      "name": "hideBackButton"
+     },
+     {
+      "attr": "data-ok-hide-close-button",
+      "description": "Hides the close button (the X).",
+      "kind": "flag",
+      "name": "hideCloseButton"
+     },
+     {
+      "attr": "data-ok-disable-beacon",
+      "description": "Steps open their tooltip at once instead of a pulsing beacon on the target.",
+      "kind": "flag",
+      "name": "disableBeacon"
+     },
+     {
+      "attr": "data-ok-disable-close-on-esc",
+      "description": "Escape doesn't close the step.",
+      "kind": "flag",
+      "name": "disableCloseOnEsc"
+     },
+     {
+      "attr": "data-ok-disable-overlay",
+      "description": "No overlay and no spotlight: the page stays usable (the step is not modal).",
+      "kind": "flag",
+      "name": "disableOverlay"
+     },
+     {
+      "attr": "data-ok-disable-overlay-close",
+      "description": "A click on the overlay doesn't close the step.",
+      "kind": "flag",
+      "name": "disableOverlayClose"
+     },
+     {
+      "attr": "data-ok-spotlight-clicks",
+      "description": "The target in the spotlight can be clicked (the step is then not modal).",
+      "kind": "flag",
+      "name": "spotlightClicks"
+     },
+     {
+      "attr": "data-ok-disable-scrolling",
+      "description": "Doesn't scroll a target that is out of view into view.",
+      "kind": "flag",
+      "name": "disableScrolling"
+     },
+     {
+      "attr": "data-ok-scroll-to-first-step",
+      "description": "Scrolls to the first step's target too (only later steps scroll otherwise).",
+      "kind": "flag",
+      "name": "scrollToFirstStep"
+     },
+     {
+      "attr": "data-ok-spotlight-padding",
+      "default": 10,
+      "description": "Space between the target and the edge of the spotlight (px).",
+      "kind": "number",
+      "min": 0,
+      "name": "spotlightPadding"
+     },
+     {
+      "attr": "data-ok-spotlight-radius",
+      "default": 16,
+      "description": "Corner radius of the spotlight (px).",
+      "kind": "number",
+      "min": 0,
+      "name": "spotlightRadius"
+     },
+     {
+      "attr": "data-ok-scroll-offset",
+      "default": 20,
+      "description": "Space kept above a target scrolled into view (px).",
+      "kind": "number",
+      "min": 0,
+      "name": "scrollOffset"
+     },
+     {
+      "attr": "data-ok-run",
+      "description": "Runs the tour (`run`; HTML: the attribute, `start()` / `stop()`).",
+      "kind": "state",
+      "name": "run"
+     },
+     {
+      "attr": "data-ok-step-index",
+      "description": "The current step (`stepIndex` / `onStepChange`; HTML: the first step, `go()`).",
+      "event": "ok:walktour:change",
+      "kind": "state",
+      "name": "stepIndex"
+     }
+    ],
+    "parts": [
+     {
+      "description": "Set by the runtime on a step: the side it opened on after flipping.",
+      "kind": "value",
+      "name": "data-ok-current-placement",
+      "value": "string"
+     },
+     {
+      "description": "Set by the runtime when the browser lacks the Popover API.",
+      "kind": "state",
+      "name": "data-ok-fallback"
+     },
+     {
+      "description": "The progress text pattern, such as `Step {current} of {total}`.",
+      "kind": "value",
+      "name": "data-ok-format",
+      "value": "string"
+     },
+     {
+      "description": "Set by the runtime: the tour's status.",
+      "kind": "value",
+      "name": "data-ok-status",
+      "value": [
+       "finished",
+       "idle",
+       "paused",
+       "ready",
+       "running",
+       "skipped",
+       "waiting"
+      ]
+     },
+     {
+      "description": "On a step: a CSS selector of the element it points at (`body` centers it).",
+      "kind": "value",
+      "name": "data-ok-target",
+      "value": "string"
+     },
+     {
+      "description": "A step button and what it does.",
+      "kind": "value",
+      "name": "data-ok-walktour-action",
+      "value": [
+       "back",
+       "close",
+       "primary",
+       "skip"
+      ]
+     },
+     {
+      "description": "The pulsing button that opens a step.",
+      "elements": [
+       "button"
+      ],
+      "kind": "part",
+      "name": "data-ok-walktour-beacon"
+     },
+     {
+      "description": "The inner dot of the beacon.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-walktour-beacon-inner"
+     },
+     {
+      "description": "The content of a step.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-walktour-content"
+     },
+     {
+      "description": "The buttons of a step.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-walktour-footer"
+     },
+     {
+      "description": "The title and the close button of a step.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-walktour-header"
+     },
+     {
+      "description": "The spotlight's cut-out around the target.",
+      "elements": [
+       "path"
+      ],
+      "kind": "part",
+      "name": "data-ok-walktour-hole"
+     },
+     {
+      "description": "A visually hidden live region that announces the step.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-walktour-live"
+     },
+     {
+      "description": "The dimmed area around the cut-out.",
+      "elements": [
+       "path"
+      ],
+      "kind": "part",
+      "name": "data-ok-walktour-mask"
+     },
+     {
+      "description": "The overlay over the page.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-walktour-overlay"
+     },
+     {
+      "description": "The progress text of a step.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-walktour-progress"
+     },
+     {
+      "description": "The drawing of the mask and the cut-out.",
+      "elements": [
+       "svg"
+      ],
+      "kind": "part",
+      "name": "data-ok-walktour-spotlight"
+     },
+     {
+      "description": "Starts the tour whose `id` it names again, at `data-ok-index` if given.",
+      "kind": "trigger",
+      "name": "data-ok-walktour-start",
+      "value": [
+       "id"
+      ]
+     },
+     {
+      "description": "The title of a step.",
+      "elements": [
+       "h2"
+      ],
+      "kind": "part",
+      "name": "data-ok-walktour-title"
+     }
+    ],
+    "runtime": "walktour"
+   },
+   "name": "Walktour",
+   "react": {
+    "description": "A guided tour: each step is a dialog next to its target (a Popover), over an overlay with a spotlight cut-out around the target (a Backdrop), or a beacon to open it. The core walktour controller renders the state this component keeps; `run` starts it, `stepIndex` + `onStepChange` control the step.",
+    "native": "HTMLDivElement",
+    "props": [
+     {
+      "description": "Receives the tour's API: `start`, `stop`, `reset`, `next`, `prev`, `go`, `skip`…",
+      "name": "apiRef",
+      "type": "RefObject<WalktourApi | null>"
+     },
+     {
+      "description": "Next and Back move from tooltip to tooltip (otherwise the primary button closes the step).",
+      "name": "continuous",
+      "type": "boolean"
+     },
+     {
+      "description": "Steps open their tooltip at once instead of a pulsing beacon on the target.",
+      "name": "disableBeacon",
+      "type": "boolean"
+     },
+     {
+      "description": "Escape doesn't close the step.",
+      "name": "disableCloseOnEsc",
+      "type": "boolean"
+     },
+     {
+      "description": "No overlay and no spotlight: the page stays usable (the step is not modal).",
+      "name": "disableOverlay",
+      "type": "boolean"
+     },
+     {
+      "description": "A click on the overlay doesn't close the step.",
+      "name": "disableOverlayClose",
+      "type": "boolean"
+     },
+     {
+      "description": "Doesn't scroll a target that is out of view into view.",
+      "name": "disableScrolling",
+      "type": "boolean"
+     },
+     {
+      "description": "Hides the Back button.",
+      "name": "hideBackButton",
+      "type": "boolean"
+     },
+     {
+      "description": "Hides the close button (the X).",
+      "name": "hideCloseButton",
+      "type": "boolean"
+     },
+     {
+      "description": "The first step of an uncontrolled tour. Default 0.",
+      "name": "initialStepIndex",
+      "type": "number"
+     },
+     {
+      "description": "Button, beacon and live-region texts.",
+      "name": "locale",
+      "type": "Partial<WalktourLocale>"
+     },
+     {
+      "description": "Every tour event, in order (react-joyride's `callback`).",
+      "name": "onEvent",
+      "type": "((type: WalktourEventType, data: WalktourEventData) => void)"
+     },
+     {
+      "description": "The tour started, paused, finished or was skipped.",
+      "name": "onStatusChange",
+      "type": "| ((status: WalktourStatus, details: { action: WalktourAction; index: number }) => void)"
+     },
+     {
+      "description": "The step changed (or, controlled, should change) to `index`.",
+      "name": "onStepChange",
+      "type": "((index: number, details: WalktourChangeDetails) => void)"
+     },
+     {
+      "default": "false",
+      "description": "Runs the tour: `true` starts (or resumes) it, `false` pauses it.",
+      "name": "run",
+      "type": "boolean"
+     },
+     {
+      "default": "20",
+      "description": "Space kept above a target scrolled into view (px).",
+      "name": "scrollOffset",
+      "type": "number"
+     },
+     {
+      "description": "Scrolls to the first step's target too (only later steps scroll otherwise).",
+      "name": "scrollToFirstStep",
+      "type": "boolean"
+     },
+     {
+      "description": "Adds the step count to the Next button: `(2/5)`.",
+      "name": "showProgress",
+      "type": "boolean"
+     },
+     {
+      "description": "Shows a Skip button that ends the tour.",
+      "name": "showSkipButton",
+      "type": "boolean"
+     },
+     {
+      "description": "The target in the spotlight can be clicked (the step is then not modal).",
+      "name": "spotlightClicks",
+      "type": "boolean"
+     },
+     {
+      "default": "10",
+      "description": "Space between the target and the edge of the spotlight (px).",
+      "name": "spotlightPadding",
+      "type": "number"
+     },
+     {
+      "default": "16",
+      "description": "Corner radius of the spotlight (px).",
+      "name": "spotlightRadius",
+      "type": "number"
+     },
+     {
+      "description": "Controlled current step: change it from `onStepChange`.",
+      "name": "stepIndex",
+      "type": "number"
+     },
+     {
+      "description": "The tour's steps.",
+      "name": "steps",
+      "required": true,
+      "type": "readonly WalktourStep[]"
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-walktour-step",
+    "options": [
+     {
+      "attr": "data-ok-placement",
+      "default": "bottom",
+      "description": "Side of the target and alignment, `auto` (the side with the most room) or `center` (the middle of the screen, no target needed).",
+      "kind": "style",
+      "name": "placement",
+      "values": [
+       "top-start",
+       "top",
+       "top-end",
+       "bottom-start",
+       "bottom",
+       "bottom-end",
+       "left-start",
+       "left",
+       "left-end",
+       "right-start",
+       "right",
+       "right-end",
+       "auto",
+       "center"
+      ]
+     },
+     {
+      "attr": "data-ok-spotlight-padding",
+      "description": "This step's spotlight padding (px); default: the tour's.",
+      "kind": "number",
+      "min": 0,
+      "name": "spotlightPadding"
+     },
+     {
+      "attr": "data-ok-width",
+      "description": "Tooltip width (px). Default 360px.",
+      "kind": "number",
+      "min": 0,
+      "name": "width"
+     }
+    ]
+   },
+   "name": "WalktourStep"
+  }
+ ],
+ "format": 1,
+ "name": "walktour",
+ "title": "Walktour",
+ "types": [
+  {
+   "name": "WalktourAction",
+   "type": "\"close\" | \"go\" | \"next\" | \"open\" | \"prev\" | \"reset\" | \"skip\" | \"start\" | \"stop\""
+  },
+  {
+   "name": "WalktourEventType",
+   "type": "\"beacon\" | \"error:target-not-found\" | \"step:after\" | \"step:before\" | \"tooltip\" | \"tour:end\" | \"tour:start\" | \"tour:status\""
+  },
+  {
+   "name": "WalktourStatus",
+   "type": "\"finished\" | \"idle\" | \"paused\" | \"running\" | \"skipped\""
+  }
+ ]
+}

@@ -52,5 +52,6 @@ ADR that supersedes the old one — don't rewrite history.
 | [0046](0046-mcp-server.md) | MCP server: `@owlky/mcp` over stdio, answering from a generated manifest | Accepted |
 | [0047](0047-chart-sankey-and-stock-charts.md) | Chart: Sankey and stock charts in the shared engine (links table, indicators, panes, navigator) | Accepted |
 | [0048](0048-gantt.md) | Gantt: one treegrid with a timeline column, laid out by core, built in three phases | Accepted |
+| [0049](0049-api-reference.md) | API reference: generated from typed sources (props, parts, event maps, instances), shown on every docs page | Accepted |
 
 Template: **Context** (why decide) · **Decision** (what) · **Consequences** (trade-offs, follow-ups).

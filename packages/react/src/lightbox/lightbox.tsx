@@ -193,11 +193,17 @@ export interface LightboxProps
   onIndexChange?: ((index: number) => void) | undefined;
   /** A slide was clicked (`on.click`). */
   onSlideClick?: ((index: number) => void) | undefined;
+  /** Called when the zoom level changes. */
   onZoomChange?: ((zoom: number) => void) | undefined;
+  /** Called when a slide is rotated, in degrees. */
   onRotate?: ((index: number, rotation: number) => void) | undefined;
+  /** Called when the lightbox enters or leaves full screen. */
   onFullscreenChange?: ((fullscreen: boolean) => void) | undefined;
+  /** Called when the slideshow starts or pauses. */
   onSlideshowChange?: ((playing: boolean) => void) | undefined;
+  /** Called when the captions are shown or hidden. */
   onCaptionsChange?: ((visible: boolean) => void) | undefined;
+  /** Called when the thumbnails are shown or hidden. */
   onThumbnailsChange?: ((visible: boolean) => void) | undefined;
   /** A slide is being downloaded (`on.download`). */
   onDownload?: ((index: number) => void) | undefined;
@@ -220,6 +226,7 @@ export interface LightboxProps
     | undefined;
   /** Extra toolbar buttons, before the counter and the close button (`toolbar.buttons`). */
   toolbarButtons?: ReactNode;
+  /** Replaces parts of the lightbox (slides, buttons, icons) with your own render functions. */
   render?: LightboxRender | undefined;
   /** The lightbox API (yet-another-react-lightbox `controller.ref` and plugin refs). */
   apiRef?: RefObject<LightboxApi | null> | undefined;

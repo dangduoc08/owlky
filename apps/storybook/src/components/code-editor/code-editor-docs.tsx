@@ -3,6 +3,8 @@ import { CodeEditor } from "@owlky/react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
 import "./monaco-workers.js";
+import codeEditorApi from "@owlky/docs-content/api/code-editor.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 
 export const codeEditorSections: GuideSection[] = [
   {
@@ -260,6 +262,7 @@ export function Config() {
 - The loading message is a status that screen readers announce, and the text area keeps the value editable when Monaco can't load.
 - Syntax colors keep a contrast ratio of at least 4.5:1 with the editor background in Owlky's themes.`,
   },
+  apiReferenceSection(codeEditorApi),
 ];
 
 const PREVIEWS = {

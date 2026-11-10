@@ -5,7 +5,13 @@ import {
   readNumber,
 } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
-import type { ComponentInstance } from "../../runtime/types.js";
+import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
+
+/** Events of this component (`ok:<name>:<event>` on the root). */
+export interface BreadcrumbsEvents {
+  /** Before the collapsed items are shown. Call `preventDefault()` to keep them collapsed. */
+  expand: EventSpec<undefined, true>;
+}
 
 export interface BreadcrumbsInstance extends ComponentInstance {
   /** `true` while items are collapsed behind the expand button. */
@@ -48,7 +54,7 @@ function moreIcon(): SVGSVGElement {
  *          focuses the first one that was hidden.
  * Events:  ok:breadcrumbs:expand (cancelable).
  */
-export const breadcrumbs = defineComponent<BreadcrumbsInstance>({
+export const breadcrumbs = defineComponent<BreadcrumbsInstance, BreadcrumbsEvents>({
   name: "breadcrumbs",
   selector: "[data-ok-breadcrumbs]",
 

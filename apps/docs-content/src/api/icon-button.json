@@ -1,0 +1,168 @@
+{
+ "css": [
+  {
+   "name": "--ok-action-disabled",
+   "value": "color-mix(in srgb, #919EAB 80%, transparent)"
+  },
+  {
+   "description": "The main color of the element's `data-ok-color`, as RGB channels.",
+   "name": "--ok-c-channel"
+  },
+  {
+   "description": "The main color of the element's `data-ok-color`.",
+   "name": "--ok-c-main"
+  },
+  {
+   "name": "--ok-duration-short",
+   "value": "250ms"
+  },
+  {
+   "name": "--ok-easing-standard",
+   "value": "cubic-bezier(0.4, 0, 0.2, 1)"
+  },
+  {
+   "name": "--ok-palette-grey-500-channel",
+   "value": "145 158 171"
+  },
+  {
+   "name": "--ok-radius-full",
+   "value": "9999px"
+  },
+  {
+   "name": "--ok-spacing",
+   "value": "0.25rem"
+  },
+  {
+   "dark": "#FFFFFF",
+   "light": "#1C252E",
+   "name": "--ok-text-primary"
+  },
+  {
+   "dark": "#919EAB",
+   "light": "#637381",
+   "name": "--ok-text-secondary"
+  }
+ ],
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-icon-button",
+    "options": [
+     {
+      "attr": "data-ok-color",
+      "default": "default",
+      "description": "`default` (secondary text), `inherit`, palette.",
+      "kind": "style",
+      "name": "color",
+      "values": [
+       "default",
+       "inherit",
+       "primary",
+       "secondary",
+       "info",
+       "success",
+       "warning",
+       "error",
+       "black",
+       "white"
+      ]
+     },
+     {
+      "attr": "data-ok-size",
+      "default": "md",
+      "description": "28 / 36 / 48px (icon 18 / 20 / 24).",
+      "kind": "style",
+      "name": "size",
+      "values": [
+       "sm",
+       "md",
+       "lg"
+      ]
+     },
+     {
+      "attr": "data-ok-edge",
+      "default": "start",
+      "description": "Negative margin to align the icon with that edge (absent by default).",
+      "kind": "style",
+      "name": "edge",
+      "optional": true,
+      "values": [
+       "start",
+       "end"
+      ]
+     },
+     {
+      "attr": "data-ok-animate",
+      "description": "Scale up on hover, down while pressed.",
+      "kind": "flag",
+      "name": "animate"
+     },
+     {
+      "attr": "data-ok-loading",
+      "description": "Loader instead of the icon + `disabled` + `aria-busy`.",
+      "kind": "flag",
+      "name": "loading"
+     },
+     {
+      "attr": "disabled",
+      "description": "Native `disabled`.",
+      "kind": "native",
+      "name": "disabled"
+     }
+    ],
+    "parts": [
+     {
+      "description": "The loading indicator, while `data-ok-loading` is set.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-icon-button-loader"
+     }
+    ]
+   },
+   "name": "IconButton",
+   "react": {
+    "description": "A native round `<button type=\"button\">` holding a decorative icon. Give it an accessible name with `aria-label`.",
+    "native": "HTMLButtonElement",
+    "props": [
+     {
+      "description": "Scales up on hover and down while pressed (off with reduced motion).",
+      "name": "animate",
+      "type": "boolean"
+     },
+     {
+      "default": "\"default\"",
+      "description": "`default` (secondary text), `inherit` (text color) or a palette color.",
+      "name": "color",
+      "type": "\"black\" | \"default\" | \"error\" | \"info\" | \"inherit\" | \"primary\" | \"secondary\" | \"success\" | \"warning\" | \"white\""
+     },
+     {
+      "description": "Pull the button out by its padding so the icon lines up with that edge.",
+      "name": "edge",
+      "type": "\"end\" | \"start\""
+     },
+     {
+      "description": "Shows a loader instead of the icon, disables the button and sets `aria-busy`.",
+      "name": "loading",
+      "type": "boolean"
+     },
+     {
+      "description": "Replaces the spinner. Decorative: the button stays named by its `aria-label`.",
+      "name": "loadingIndicator",
+      "type": "ReactNode"
+     },
+     {
+      "default": "\"md\"",
+      "description": "`sm` 28px · `md` 36px · `lg` 48px.",
+      "name": "size",
+      "type": "\"lg\" | \"md\" | \"sm\""
+     }
+    ]
+   }
+  }
+ ],
+ "format": 1,
+ "name": "icon-button",
+ "title": "Icon button"
+}

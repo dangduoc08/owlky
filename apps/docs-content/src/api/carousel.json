@@ -1,0 +1,1432 @@
+{
+ "css": [
+  {
+   "dark": "#28323D",
+   "light": "#F4F6F8",
+   "name": "--ok-bg-neutral"
+  },
+  {
+   "dark": "#1C252E",
+   "light": "#FFFFFF",
+   "name": "--ok-bg-paper"
+  },
+  {
+   "description": "The main color of the element's `data-ok-color`, as RGB channels.",
+   "name": "--ok-c-channel"
+  },
+  {
+   "description": "The text color on the main color.",
+   "name": "--ok-c-contrast"
+  },
+  {
+   "description": "The hover color of the element's `data-ok-color`.",
+   "name": "--ok-c-hover"
+  },
+  {
+   "description": "The main color of the element's `data-ok-color`.",
+   "name": "--ok-c-main"
+  },
+  {
+   "name": "--ok-duration-exit",
+   "value": "480ms"
+  },
+  {
+   "name": "--ok-duration-shorter",
+   "value": "200ms"
+  },
+  {
+   "name": "--ok-easing-standard",
+   "value": "cubic-bezier(0.4, 0, 0.2, 1)"
+  },
+  {
+   "name": "--ok-font-family",
+   "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+  },
+  {
+   "name": "--ok-font-weight-semibold",
+   "value": "600"
+  },
+  {
+   "name": "--ok-palette-common-white",
+   "value": "#FFFFFF"
+  },
+  {
+   "name": "--ok-palette-common-white-channel",
+   "value": "255 255 255"
+  },
+  {
+   "name": "--ok-palette-grey-500-channel",
+   "value": "145 158 171"
+  },
+  {
+   "name": "--ok-palette-grey-800-channel",
+   "value": "28 37 46"
+  },
+  {
+   "name": "--ok-palette-primary-main",
+   "value": "#00A76F"
+  },
+  {
+   "name": "--ok-radius-full",
+   "value": "9999px"
+  },
+  {
+   "name": "--ok-radius-lg",
+   "value": "12px"
+  },
+  {
+   "name": "--ok-radius-md",
+   "value": "8px"
+  },
+  {
+   "name": "--ok-spacing",
+   "value": "0.25rem"
+  },
+  {
+   "dark": "#FFFFFF",
+   "light": "#1C252E",
+   "name": "--ok-text-primary"
+  },
+  {
+   "dark": "#919EAB",
+   "light": "#637381",
+   "name": "--ok-text-secondary"
+  },
+  {
+   "name": "--ok-typography-subtitle2-font-size",
+   "value": "0.875rem"
+  },
+  {
+   "name": "--ok-typography-subtitle2-line-height",
+   "value": "1.5714"
+  }
+ ],
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-carousel",
+    "events": [
+     {
+      "cancelable": false,
+      "description": "After autoplay started or stopped.",
+      "detail": "{ playing: boolean; }",
+      "name": "ok:carousel:autoplay"
+     },
+     {
+      "cancelable": false,
+      "description": "After auto scroll started or stopped.",
+      "detail": "{ playing: boolean; }",
+      "name": "ok:carousel:autoscroll"
+     },
+     {
+      "cancelable": false,
+      "description": "When a pointer pressed the viewport (a drag may start).",
+      "detail": "undefined",
+      "name": "ok:carousel:pointerdown"
+     },
+     {
+      "cancelable": false,
+      "description": "When the pointer was released.",
+      "detail": "undefined",
+      "name": "ok:carousel:pointerup"
+     },
+     {
+      "cancelable": false,
+      "description": "After the carousel set itself up again (options or slides changed).",
+      "detail": "{ snapCount: number; }",
+      "name": "ok:carousel:reinit"
+     },
+     {
+      "cancelable": false,
+      "description": "While the carousel scrolls; `progress` goes from 0 to 1.",
+      "detail": "{ progress: number; }",
+      "name": "ok:carousel:scroll"
+     },
+     {
+      "cancelable": false,
+      "description": "After another slide was selected.",
+      "detail": "{ index: number; previous: number; }",
+      "name": "ok:carousel:select"
+     },
+     {
+      "cancelable": false,
+      "description": "After scrolling settled on a slide.",
+      "detail": "{ index: number; }",
+      "name": "ok:carousel:settle"
+     },
+     {
+      "cancelable": false,
+      "description": "After a slide received the focus.",
+      "detail": "{ index: number; }",
+      "name": "ok:carousel:slidefocus"
+     },
+     {
+      "cancelable": false,
+      "description": "After the slides in view changed.",
+      "detail": "{ indexes: number[]; }",
+      "name": "ok:carousel:slidesinview"
+     }
+    ],
+    "methods": [
+     {
+      "description": "Controls auto scroll: `play()`, `stop()`, `reset()`, `isPlaying()`.",
+      "kind": "property",
+      "name": "autoScroll",
+      "type": "CarouselAutoScrollApi"
+     },
+     {
+      "description": "Controls autoplay: `play()`, `stop()`, `reset()`, `isPlaying()`, `timeUntilNext()`.",
+      "kind": "property",
+      "name": "autoplay",
+      "type": "CarouselAutoplayApi"
+     },
+     {
+      "description": "Whether there is a next snap point (always with `loop`).",
+      "kind": "method",
+      "name": "canScrollNext",
+      "type": "() => boolean"
+     },
+     {
+      "description": "Whether there is a previous snap point.",
+      "kind": "method",
+      "name": "canScrollPrev",
+      "type": "() => boolean"
+     },
+     {
+      "description": "The element that holds the slides.",
+      "kind": "method",
+      "name": "containerNode",
+      "type": "() => HTMLElement | null"
+     },
+     {
+      "description": "The index of the snap point selected before.",
+      "kind": "method",
+      "name": "previousScrollSnap",
+      "type": "() => number"
+     },
+     {
+      "description": "Measures again and re-reads the options.",
+      "kind": "method",
+      "name": "reInit",
+      "type": "() => void"
+     },
+     {
+      "description": "The root element.",
+      "kind": "method",
+      "name": "rootNode",
+      "type": "() => HTMLElement"
+     },
+     {
+      "description": "Scrolls to the next snap point (`jump`: without animation).",
+      "kind": "method",
+      "name": "scrollNext",
+      "type": "(jump?: boolean | undefined) => void"
+     },
+     {
+      "description": "Scrolls to the previous snap point (`jump`: without animation).",
+      "kind": "method",
+      "name": "scrollPrev",
+      "type": "(jump?: boolean | undefined) => void"
+     },
+     {
+      "description": "How far the carousel has scrolled, from 0 to 1.",
+      "kind": "method",
+      "name": "scrollProgress",
+      "type": "() => number"
+     },
+     {
+      "description": "Progress 0–1 of every snap.",
+      "kind": "method",
+      "name": "scrollSnapList",
+      "type": "() => number[]"
+     },
+     {
+      "description": "Scrolls to the snap point at `index`.",
+      "kind": "method",
+      "name": "scrollTo",
+      "type": "(index: number, jump?: boolean | undefined) => void"
+     },
+     {
+      "description": "The index of the selected snap point.",
+      "kind": "method",
+      "name": "selectedScrollSnap",
+      "type": "() => number"
+     },
+     {
+      "description": "The slide elements.",
+      "kind": "method",
+      "name": "slideNodes",
+      "type": "() => HTMLElement[]"
+     },
+     {
+      "description": "The indexes of the slides in view.",
+      "kind": "method",
+      "name": "slidesInView",
+      "type": "() => number[]"
+     },
+     {
+      "description": "The indexes of the slides out of view.",
+      "kind": "method",
+      "name": "slidesNotInView",
+      "type": "() => number[]"
+     }
+    ],
+    "options": [
+     {
+      "attr": "data-ok-align",
+      "default": "center",
+      "description": "Where the selected slides sit: `start`, `center`, `end` (or a fraction 0–1 of the viewport).",
+      "kind": "style",
+      "name": "align",
+      "values": [
+       "start",
+       "center",
+       "end"
+      ]
+     },
+     {
+      "attr": "data-ok-axis",
+      "default": "x",
+      "description": "Scroll direction: horizontal `x` or vertical `y`.",
+      "kind": "style",
+      "name": "axis",
+      "values": [
+       "x",
+       "y"
+      ]
+     },
+     {
+      "attr": "data-ok-contain-scroll",
+      "default": "trimSnaps",
+      "description": "Edges: `trimSnaps` merges the snaps clamped at the ends, `keepSnaps` keeps them, `false` leaves space.",
+      "kind": "style",
+      "name": "containScroll",
+      "values": [
+       "trimSnaps",
+       "keepSnaps",
+       "false"
+      ]
+     },
+     {
+      "attr": "data-ok-effect",
+      "default": "none",
+      "description": "Transition between slides: `fade`, or `opacity` / `scale` / `parallax` while scrolling.",
+      "kind": "style",
+      "name": "effect",
+      "values": [
+       "none",
+       "fade",
+       "opacity",
+       "scale",
+       "parallax"
+      ]
+     },
+     {
+      "attr": "data-ok-loop",
+      "description": "Endless: the first slide follows the last one.",
+      "kind": "flag",
+      "name": "loop"
+     },
+     {
+      "attr": "data-ok-drag-free",
+      "description": "Free scrolling with momentum, without snapping.",
+      "kind": "flag",
+      "name": "dragFree"
+     },
+     {
+      "attr": "data-ok-skip-snaps",
+      "description": "A strong swipe may pass several snaps.",
+      "kind": "flag",
+      "name": "skipSnaps"
+     },
+     {
+      "attr": "data-ok-auto-height",
+      "description": "The height follows the selected slides.",
+      "kind": "flag",
+      "name": "autoHeight"
+     },
+     {
+      "attr": "data-ok-height-event",
+      "default": "select",
+      "description": "Auto height from the selected slides, or from every slide in view.",
+      "kind": "style",
+      "name": "heightEvent",
+      "values": [
+       "select",
+       "slidesInView"
+      ],
+      "when": "autoHeight"
+     },
+     {
+      "attr": "data-ok-wheel-gestures",
+      "description": "The mouse wheel and the trackpad move one snap per gesture.",
+      "kind": "flag",
+      "name": "wheelGestures"
+     },
+     {
+      "attr": "data-ok-force-wheel-axis",
+      "default": "x",
+      "description": "Wheel axis that moves the carousel (`y`: the vertical wheel moves a horizontal carousel).",
+      "kind": "style",
+      "name": "forceWheelAxis",
+      "optional": true,
+      "values": [
+       "x",
+       "y"
+      ],
+      "when": "wheelGestures"
+     },
+     {
+      "attr": "data-ok-draggable",
+      "default": true,
+      "description": "Swipe and drag the slides; `false` turns it off.",
+      "kind": "behavior",
+      "name": "draggable"
+     },
+     {
+      "attr": "data-ok-focus",
+      "default": true,
+      "description": "Focusing an element in a slide scrolls to that slide; `false` turns it off.",
+      "kind": "behavior",
+      "name": "focus"
+     },
+     {
+      "attr": "data-ok-active",
+      "default": true,
+      "description": "`false` turns the carousel off (for example at a breakpoint).",
+      "kind": "behavior",
+      "name": "active"
+     },
+     {
+      "attr": "data-ok-start-index",
+      "default": 0,
+      "description": "Snap selected at first.",
+      "kind": "number",
+      "min": 0,
+      "name": "startIndex"
+     },
+     {
+      "attr": "data-ok-slides-to-scroll",
+      "default": 1,
+      "description": "Slides per step, or `auto` (as many as fit).",
+      "kind": "number",
+      "min": 1,
+      "name": "slidesToScroll"
+     },
+     {
+      "attr": "data-ok-slides-to-show",
+      "description": "Slides in view: a count, a percentage or `auto`; per breakpoint with `-sm`, `-md`, `-lg`, `-xl`.",
+      "kind": "number",
+      "min": 0,
+      "name": "slidesToShow",
+      "units": [
+       "%"
+      ]
+     },
+     {
+      "attr": "data-ok-slide-spacing",
+      "description": "Gap between slides (px).",
+      "kind": "number",
+      "min": 0,
+      "name": "slideSpacing",
+      "units": [
+       "px",
+       "rem",
+       "em"
+      ]
+     },
+     {
+      "attr": "data-ok-duration",
+      "default": 25,
+      "description": "Speed of animated scrolls, in Embla units (25 is about 500 ms).",
+      "kind": "number",
+      "min": 0,
+      "name": "duration"
+     },
+     {
+      "attr": "data-ok-drag-threshold",
+      "default": 10,
+      "description": "Pixels a mouse drag moves before clicks are ignored.",
+      "kind": "number",
+      "min": 0,
+      "name": "dragThreshold"
+     },
+     {
+      "attr": "data-ok-in-view-threshold",
+      "default": 0,
+      "description": "Share of a slide (0–1) that must show for it to count as in view.",
+      "kind": "number",
+      "min": 0,
+      "name": "inViewThreshold"
+     },
+     {
+      "attr": "data-ok-autoplay",
+      "description": "Moves to the next snap every `autoplayDelay`.",
+      "kind": "flag",
+      "name": "autoplay"
+     },
+     {
+      "attr": "data-ok-autoplay-delay",
+      "default": 4000,
+      "description": "Autoplay: milliseconds per snap.",
+      "kind": "number",
+      "min": 0,
+      "name": "autoplayDelay"
+     },
+     {
+      "attr": "data-ok-autoplay-jump",
+      "description": "Autoplay: change snaps without animation.",
+      "kind": "flag",
+      "name": "autoplayJump",
+      "when": "autoplay"
+     },
+     {
+      "attr": "data-ok-auto-scroll",
+      "description": "Scrolls continuously.",
+      "kind": "flag",
+      "name": "autoScroll"
+     },
+     {
+      "attr": "data-ok-auto-scroll-speed",
+      "default": 2,
+      "description": "Auto scroll: pixels per frame.",
+      "kind": "number",
+      "min": 0,
+      "name": "autoScrollSpeed"
+     },
+     {
+      "attr": "data-ok-auto-scroll-start-delay",
+      "default": 1000,
+      "description": "Auto scroll: milliseconds before it starts.",
+      "kind": "number",
+      "min": 0,
+      "name": "autoScrollStartDelay"
+     },
+     {
+      "attr": "data-ok-auto-scroll-direction",
+      "default": "forward",
+      "description": "Auto scroll: `forward` or `backward`.",
+      "kind": "style",
+      "name": "autoScrollDirection",
+      "values": [
+       "forward",
+       "backward"
+      ],
+      "when": "autoScroll"
+     },
+     {
+      "attr": "data-ok-play-on-init",
+      "default": true,
+      "description": "Autoplay and auto scroll start on their own (never with reduced motion); `false` waits for play.",
+      "kind": "behavior",
+      "name": "playOnInit"
+     },
+     {
+      "attr": "data-ok-stop-on-interaction",
+      "default": true,
+      "description": "Swipes and drags stop autoplay; `false` pauses it until the carousel settles.",
+      "kind": "behavior",
+      "name": "stopOnInteraction"
+     },
+     {
+      "attr": "data-ok-stop-on-mouse-enter",
+      "default": true,
+      "description": "Hovering pauses autoplay until the pointer leaves; `false` keeps playing.",
+      "kind": "behavior",
+      "name": "stopOnMouseEnter"
+     },
+     {
+      "attr": "data-ok-stop-on-focus-in",
+      "default": true,
+      "description": "Focus inside the carousel stops autoplay; `false` keeps playing.",
+      "kind": "behavior",
+      "name": "stopOnFocusIn"
+     },
+     {
+      "attr": "data-ok-stop-on-last-snap",
+      "description": "Autoplay stops at the last snap.",
+      "kind": "flag",
+      "name": "stopOnLastSnap"
+     },
+     {
+      "attr": "data-ok-snapped",
+      "description": "Selected snap: its slides carry `data-ok-snapped` (written by the controller).",
+      "event": "ok:carousel:select",
+      "kind": "state",
+      "name": "selected"
+     }
+    ],
+    "parts": [
+     {
+      "description": "Set by the runtime while auto scroll plays.",
+      "kind": "state",
+      "name": "data-ok-auto-scrolling"
+     },
+     {
+      "description": "Options per breakpoint, as JSON, such as `{\"md\": {\"slidesToShow\": 2}}`.",
+      "kind": "value",
+      "name": "data-ok-breakpoints",
+      "value": "string"
+     },
+     {
+      "description": "The row of slides inside the viewport.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-carousel-container"
+     },
+     {
+      "description": "The \"1/8\" counter of the current slide.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-carousel-counter"
+     },
+     {
+      "description": "One dot: a button that shows its slide.",
+      "elements": [
+       "button"
+      ],
+      "kind": "part",
+      "name": "data-ok-carousel-dot"
+     },
+     {
+      "description": "A visually hidden live region that announces the current slide.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-carousel-live"
+     },
+     {
+      "description": "The button to the next slide.",
+      "kind": "part",
+      "name": "data-ok-carousel-next"
+     },
+     {
+      "description": "The layer that moves more slowly than its slide, with the `parallax` effect.",
+      "kind": "part",
+      "name": "data-ok-carousel-parallax"
+     },
+     {
+      "description": "The button that plays and pauses autoplay.",
+      "elements": [
+       "button"
+      ],
+      "kind": "part",
+      "name": "data-ok-carousel-play"
+     },
+     {
+      "description": "One of the play button's two labels; the runtime shows the one that fits.",
+      "kind": "value",
+      "name": "data-ok-carousel-play-label",
+      "value": [
+       "pause",
+       "play"
+      ]
+     },
+     {
+      "description": "The button to the previous slide.",
+      "elements": [
+       "button"
+      ],
+      "kind": "part",
+      "name": "data-ok-carousel-prev"
+     },
+     {
+      "description": "Set by the runtime while a pointer drags the slides.",
+      "kind": "state",
+      "name": "data-ok-dragging"
+     },
+     {
+      "description": "Set by the runtime on each slide that is in view.",
+      "kind": "state",
+      "name": "data-ok-in-view"
+     },
+     {
+      "description": "Set by the runtime while `loop` is on and the slides can loop.",
+      "kind": "state",
+      "name": "data-ok-looping"
+     },
+     {
+      "description": "Set by the runtime while autoplay plays.",
+      "kind": "state",
+      "name": "data-ok-playing"
+     },
+     {
+      "description": "Set by the runtime while a pointer presses the viewport.",
+      "kind": "state",
+      "name": "data-ok-pointer-down"
+     },
+     {
+      "description": "Set by the runtime once the carousel is set up.",
+      "kind": "state",
+      "name": "data-ok-ready"
+     },
+     {
+      "description": "Set by the runtime while the slides scroll.",
+      "kind": "state",
+      "name": "data-ok-scrolling"
+     },
+     {
+      "description": "Slides in view from the `md` breakpoint up.",
+      "kind": "value",
+      "name": "data-ok-slides-to-show-md",
+      "value": "string"
+     },
+     {
+      "description": "Slides in view from the `sm` breakpoint up.",
+      "kind": "value",
+      "name": "data-ok-slides-to-show-sm",
+      "value": "string"
+     }
+    ],
+    "runtime": "carousel"
+   },
+   "name": "Carousel",
+   "react": {
+    "description": "A labelled `section` with `aria-roledescription=\"carousel\"`; scrolling, snapping and every control are wired by core's `createCarouselController`, which also writes the selected state into the DOM.",
+    "native": "HTMLElement",
+    "props": [
+     {
+      "default": "true",
+      "description": "`false` turns the carousel off (for example at a breakpoint).",
+      "name": "active",
+      "type": "boolean"
+     },
+     {
+      "description": "Where the selected slides sit: `start`, `center` (default), `end`, a fraction 0–1 of the viewport, or a function `(viewSize, snapSize, index) => offset`.",
+      "name": "align",
+      "type": "CarouselAlign"
+     },
+     {
+      "description": "Receives the carousel API (Embla's methods) once mounted.",
+      "name": "apiRef",
+      "type": "RefObject<CarouselApi | null>"
+     },
+     {
+      "description": "Names the carousel (required by the carousel pattern), for example \"Featured articles\".",
+      "name": "aria-label",
+      "type": "string"
+     },
+     {
+      "description": "The height follows the selected slides.",
+      "name": "autoHeight",
+      "type": "boolean"
+     },
+     {
+      "description": "Scrolls continuously.",
+      "name": "autoScroll",
+      "type": "boolean"
+     },
+     {
+      "default": "forward",
+      "description": "Auto scroll: `forward` or `backward`.",
+      "name": "autoScrollDirection",
+      "type": "\"backward\" | \"forward\""
+     },
+     {
+      "default": "2",
+      "description": "Auto scroll: pixels per frame.",
+      "name": "autoScrollSpeed",
+      "type": "number"
+     },
+     {
+      "default": "1000",
+      "description": "Auto scroll: milliseconds before it starts.",
+      "name": "autoScrollStartDelay",
+      "type": "number"
+     },
+     {
+      "description": "Moves to the next snap every `autoplayDelay`.",
+      "name": "autoplay",
+      "type": "boolean"
+     },
+     {
+      "default": "4000",
+      "description": "Autoplay: milliseconds per snap.",
+      "name": "autoplayDelay",
+      "type": "number"
+     },
+     {
+      "description": "Autoplay: change snaps without animation.",
+      "name": "autoplayJump",
+      "type": "boolean"
+     },
+     {
+      "default": "x",
+      "description": "Scroll direction: horizontal `x` or vertical `y`.",
+      "name": "axis",
+      "type": "\"x\" | \"y\""
+     },
+     {
+      "description": "Embla `breakpoints`: media query → behavior options (written as JSON).",
+      "name": "breakpoints",
+      "type": "Record<string, Partial<Pick<CarouselSettings, \"active\" | \"align\" | \"autoScroll\" | \"autoplay\" | \"dragFree\" | \"dragThreshold\" | \"draggable\" | \"duration\" | \"inViewThreshold\" | \"loop\" | \"skipSnaps\" | \"slidesToScroll\" | \"wheelGestures\"> & { containScroll: \"false\" | \"keepSnaps\" | \"trimSnaps\" | false; }>>"
+     },
+     {
+      "description": "The content.",
+      "name": "children",
+      "type": "ReactNode"
+     },
+     {
+      "default": "trimSnaps",
+      "description": "Edges: `trimSnaps` merges the snaps clamped at the ends, `keepSnaps` keeps them, `false` leaves space.",
+      "name": "containScroll",
+      "type": "\"false\" | \"keepSnaps\" | \"trimSnaps\" | false"
+     },
+     {
+      "description": "Free scrolling with momentum, without snapping.",
+      "name": "dragFree",
+      "type": "boolean"
+     },
+     {
+      "default": "10",
+      "description": "Pixels a mouse drag moves before clicks are ignored.",
+      "name": "dragThreshold",
+      "type": "number"
+     },
+     {
+      "default": "true",
+      "description": "Swipe and drag the slides; `false` turns it off.",
+      "name": "draggable",
+      "type": "boolean"
+     },
+     {
+      "default": "25",
+      "description": "Speed of animated scrolls, in Embla units (25 is about 500 ms).",
+      "name": "duration",
+      "type": "number"
+     },
+     {
+      "default": "none",
+      "description": "Transition between slides: `fade`, or `opacity` / `scale` / `parallax` while scrolling.",
+      "name": "effect",
+      "type": "\"fade\" | \"none\" | \"opacity\" | \"parallax\" | \"scale\""
+     },
+     {
+      "default": "true",
+      "description": "Focusing an element in a slide scrolls to that slide; `false` turns it off.",
+      "name": "focus",
+      "type": "boolean"
+     },
+     {
+      "default": "x",
+      "description": "Wheel axis that moves the carousel (`y`: the vertical wheel moves a horizontal carousel).",
+      "name": "forceWheelAxis",
+      "type": "\"x\" | \"y\""
+     },
+     {
+      "default": "select",
+      "description": "Auto height from the selected slides, or from every slide in view.",
+      "name": "heightEvent",
+      "type": "\"select\" | \"slidesInView\""
+     },
+     {
+      "default": "0",
+      "description": "Share of a slide (0–1) that must show for it to count as in view.",
+      "name": "inViewThreshold",
+      "type": "number"
+     },
+     {
+      "description": "Endless: the first slide follows the last one.",
+      "name": "loop",
+      "type": "boolean"
+     },
+     {
+      "description": "Auto scroll started or stopped.",
+      "name": "onAutoScrollChange",
+      "type": "((playing: boolean) => void)"
+     },
+     {
+      "description": "Autoplay started or stopped.",
+      "name": "onAutoplayChange",
+      "type": "((playing: boolean) => void)"
+     },
+     {
+      "description": "The carousel measured again: the number of snaps.",
+      "name": "onReInit",
+      "type": "((snapCount: number) => void)"
+     },
+     {
+      "description": "Scroll progress 0–1, once per frame while scrolling.",
+      "name": "onScroll",
+      "type": "((progress: number) => void)"
+     },
+     {
+      "description": "The selected snap changed.",
+      "name": "onSelect",
+      "type": "((index: number, previous: number) => void)"
+     },
+     {
+      "description": "Scrolling came to rest on snap `index`.",
+      "name": "onSettle",
+      "type": "((index: number) => void)"
+     },
+     {
+      "description": "An element inside slide `index` got keyboard focus.",
+      "name": "onSlideFocus",
+      "type": "((index: number) => void)"
+     },
+     {
+      "description": "The slides in view changed.",
+      "name": "onSlidesInView",
+      "type": "((indexes: number[]) => void)"
+     },
+     {
+      "default": "true",
+      "description": "Autoplay and auto scroll start on their own (never with reduced motion); `false` waits for play.",
+      "name": "playOnInit",
+      "type": "boolean"
+     },
+     {
+      "description": "A strong swipe may pass several snaps.",
+      "name": "skipSnaps",
+      "type": "boolean"
+     },
+     {
+      "description": "Gap between slides (px).",
+      "name": "slideSpacing",
+      "type": "string | number"
+     },
+     {
+      "default": "1",
+      "description": "Slides per step, or `auto` (as many as fit).",
+      "name": "slidesToScroll",
+      "type": "number | \"auto\""
+     },
+     {
+      "description": "Slides in view: a count, a percentage or `auto`; per breakpoint with `-sm`, `-md`, `-lg`, `-xl`.",
+      "name": "slidesToShow",
+      "type": "CarouselResponsive<CarouselSlidesToShow>"
+     },
+     {
+      "default": "0",
+      "description": "Snap selected at first.",
+      "name": "startIndex",
+      "type": "number"
+     },
+     {
+      "default": "true",
+      "description": "Focus inside the carousel stops autoplay; `false` keeps playing.",
+      "name": "stopOnFocusIn",
+      "type": "boolean"
+     },
+     {
+      "default": "true",
+      "description": "Swipes and drags stop autoplay; `false` pauses it until the carousel settles.",
+      "name": "stopOnInteraction",
+      "type": "boolean"
+     },
+     {
+      "description": "Autoplay stops at the last snap.",
+      "name": "stopOnLastSnap",
+      "type": "boolean"
+     },
+     {
+      "default": "true",
+      "description": "Hovering pauses autoplay until the pointer leaves; `false` keeps playing.",
+      "name": "stopOnMouseEnter",
+      "type": "boolean"
+     },
+     {
+      "description": "The mouse wheel and the trackpad move one snap per gesture.",
+      "name": "wheelGestures",
+      "type": "boolean"
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-carousel-arrows",
+    "options": [
+     {
+      "attr": "data-ok-variant",
+      "default": "basic",
+      "description": "`basic` icon buttons, `floating` on the sides of the slides, or `number` with a counter.",
+      "kind": "style",
+      "name": "variant",
+      "values": [
+       "basic",
+       "floating",
+       "number"
+      ]
+     },
+     {
+      "attr": "data-ok-color",
+      "default": "inherit",
+      "description": "`inherit` (neutral) or a palette color.",
+      "kind": "style",
+      "name": "color",
+      "values": [
+       "inherit",
+       "primary",
+       "secondary",
+       "info",
+       "success",
+       "warning",
+       "error",
+       "black",
+       "white"
+      ]
+     },
+     {
+      "attr": "data-ok-placement",
+      "default": "bottom-end",
+      "description": "Overlays the slides at that corner or side (absent: in the flow).",
+      "kind": "style",
+      "name": "placement",
+      "optional": true,
+      "values": [
+       "top-start",
+       "top",
+       "top-end",
+       "start",
+       "end",
+       "bottom-start",
+       "bottom",
+       "bottom-end"
+      ]
+     }
+    ]
+   },
+   "name": "CarouselArrows",
+   "react": {
+    "description": "Previous / next icon buttons (`aria-disabled` at the ends).",
+    "native": "HTMLDivElement",
+    "props": [
+     {
+      "default": "\"inherit\"",
+      "description": "(neutral).",
+      "name": "color",
+      "type": "\"black\" | \"error\" | \"info\" | \"inherit\" | \"primary\" | \"secondary\" | \"success\" | \"warning\" | \"white\""
+     },
+     {
+      "description": "Replaces the next chevron (decorative `svg`).",
+      "name": "nextIcon",
+      "type": "ReactElement<unknown, string | JSXElementConstructor<any>>"
+     },
+     {
+      "description": "Default \"Next slide\".",
+      "name": "nextLabel",
+      "type": "string"
+     },
+     {
+      "description": "Overlays the slides at that corner or side; absent: in the flow.",
+      "name": "placement",
+      "type": "\"bottom\" | \"bottom-end\" | \"bottom-start\" | \"end\" | \"start\" | \"top\" | \"top-end\" | \"top-start\""
+     },
+     {
+      "description": "Replaces the previous chevron (decorative `svg`).",
+      "name": "prevIcon",
+      "type": "ReactElement<unknown, string | JSXElementConstructor<any>>"
+     },
+     {
+      "description": "Default \"Previous slide\".",
+      "name": "prevLabel",
+      "type": "string"
+     },
+     {
+      "description": "`basic` (default), `floating` on the sides of the slides, or `number` with a counter.",
+      "name": "variant",
+      "type": "\"basic\" | \"floating\" | \"number\""
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-carousel-dots",
+    "options": [
+     {
+      "attr": "data-ok-variant",
+      "default": "circular",
+      "description": "`circular` dots, `rounded` (the selected dot is a bar) or `number` buttons.",
+      "kind": "style",
+      "name": "variant",
+      "values": [
+       "circular",
+       "rounded",
+       "number"
+      ]
+     },
+     {
+      "attr": "data-ok-color",
+      "default": "inherit",
+      "description": "`inherit` (neutral) or a palette color.",
+      "kind": "style",
+      "name": "color",
+      "values": [
+       "inherit",
+       "primary",
+       "secondary",
+       "info",
+       "success",
+       "warning",
+       "error",
+       "black",
+       "white"
+      ]
+     },
+     {
+      "attr": "data-ok-placement",
+      "default": "bottom",
+      "description": "Overlays the slides at that corner or side (absent: in the flow).",
+      "kind": "style",
+      "name": "placement",
+      "optional": true,
+      "values": [
+       "top-start",
+       "top",
+       "top-end",
+       "start",
+       "end",
+       "bottom-start",
+       "bottom",
+       "bottom-end"
+      ]
+     }
+    ]
+   },
+   "name": "CarouselDots",
+   "react": {
+    "description": "One button per snap; the selected one has `aria-current=\"true\"`.",
+    "native": "HTMLDivElement",
+    "props": [
+     {
+      "default": "\"inherit\"",
+      "description": "(the text color).",
+      "name": "color",
+      "type": "\"black\" | \"error\" | \"info\" | \"inherit\" | \"primary\" | \"secondary\" | \"success\" | \"warning\" | \"white\""
+     },
+     {
+      "description": "Name of the dot of snap `index`. Default \"Go to slide <n>\".",
+      "name": "getLabel",
+      "type": "((index: number) => string)"
+     },
+     {
+      "description": "Overlays the slides at that corner or side; absent: in the flow.",
+      "name": "placement",
+      "type": "\"bottom\" | \"bottom-end\" | \"bottom-start\" | \"end\" | \"start\" | \"top\" | \"top-end\" | \"top-start\""
+     },
+     {
+      "description": "`circular` (default), `rounded` (the selected dot is a bar) or `number`.",
+      "name": "variant",
+      "type": "\"circular\" | \"number\" | \"rounded\""
+     }
+    ]
+   }
+  },
+  {
+   "name": "CarouselPlayButton",
+   "react": {
+    "description": "2 pause control).",
+    "native": "HTMLButtonElement",
+    "props": [
+     {
+      "default": "\"inherit\"",
+      "description": "(neutral). `black` / `white` are meant for light / dark surfaces.",
+      "name": "color",
+      "type": "ColorName"
+     },
+     {
+      "description": "No shadow on contained buttons (on by default inside a ButtonGroup).",
+      "name": "disableElevation",
+      "type": "boolean"
+     },
+     {
+      "description": "Stretch to the container width.",
+      "name": "fullWidth",
+      "type": "boolean"
+     },
+     {
+      "description": "Renders an `<a>` with the button styling.",
+      "name": "href",
+      "type": "undefined"
+     },
+     {
+      "description": "Shows a loading indicator, disables the button and sets `aria-busy`.",
+      "name": "loading",
+      "type": "boolean"
+     },
+     {
+      "description": "g. `\"Loading…\"`. Decorative: the label stays the accessible name.",
+      "name": "loadingIndicator",
+      "type": "ReactNode"
+     },
+     {
+      "default": "center",
+      "description": "Where the indicator goes: over the label (`center`) or in place of an icon.",
+      "name": "loadingPosition",
+      "type": "\"center\" | \"end\" | \"start\""
+     },
+     {
+      "description": "Default \"Pause\".",
+      "name": "pauseLabel",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Default \"Play\".",
+      "name": "playLabel",
+      "type": "ReactNode"
+     },
+     {
+      "default": "\"md\"",
+      "description": "`sm` 30px · `md` 36px · `lg` 48px · `xl` 56px.",
+      "name": "size",
+      "type": "\"lg\" | \"md\" | \"sm\" | \"xl\""
+     },
+     {
+      "default": "\"text\"",
+      "description": "Visual style.",
+      "name": "variant",
+      "type": "\"contained\" | \"outlined\" | \"soft\" | \"text\""
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-carousel-progress",
+    "options": [
+     {
+      "attr": "data-ok-variant",
+      "default": "scroll",
+      "description": "`scroll` shows the scroll position, `autoplay` the time until the next snap.",
+      "kind": "style",
+      "name": "variant",
+      "values": [
+       "scroll",
+       "autoplay"
+      ]
+     },
+     {
+      "attr": "data-ok-color",
+      "default": "inherit",
+      "description": "`inherit` (neutral) or a palette color.",
+      "kind": "style",
+      "name": "color",
+      "values": [
+       "inherit",
+       "primary",
+       "secondary",
+       "info",
+       "success",
+       "warning",
+       "error",
+       "black",
+       "white"
+      ]
+     },
+     {
+      "attr": "data-ok-placement",
+      "default": "top-end",
+      "description": "Overlays the slides at that corner or side (absent: in the flow).",
+      "kind": "style",
+      "name": "placement",
+      "optional": true,
+      "values": [
+       "top-start",
+       "top",
+       "top-end",
+       "start",
+       "end",
+       "bottom-start",
+       "bottom",
+       "bottom-end"
+      ]
+     }
+    ]
+   },
+   "name": "CarouselProgress",
+   "react": {
+    "description": "A decorative bar (the dots or the counter carry the position).",
+    "native": "HTMLSpanElement",
+    "props": [
+     {
+      "default": "\"inherit\"",
+      "description": "(the text color).",
+      "name": "color",
+      "type": "\"black\" | \"error\" | \"info\" | \"inherit\" | \"primary\" | \"secondary\" | \"success\" | \"warning\" | \"white\""
+     },
+     {
+      "description": "Overlays the slides at that corner or side; absent: in the flow.",
+      "name": "placement",
+      "type": "\"bottom\" | \"bottom-end\" | \"bottom-start\" | \"end\" | \"start\" | \"top\" | \"top-end\" | \"top-start\""
+     },
+     {
+      "description": "`scroll` (default): the scroll position; `autoplay`: the time until the next snap.",
+      "name": "variant",
+      "type": "\"autoplay\" | \"scroll\""
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-carousel-slide",
+    "description": "One slide.",
+    "elements": [
+     "div"
+    ]
+   },
+   "name": "CarouselSlide",
+   "react": {
+    "description": "A `group` with `aria-roledescription=\"slide\"`, labelled \"n of total\".",
+    "native": "HTMLDivElement",
+    "props": [
+     {
+      "default": "\"<n> of <total>\"",
+      "description": "The slide's accessible name.",
+      "name": "aria-label",
+      "type": "string"
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-carousel-stage",
+    "description": "Positions the overlay controls over the slides.",
+    "elements": [
+     "div"
+    ]
+   },
+   "name": "CarouselStage",
+   "react": {
+    "description": "The area of the slides: controls with a `placement` overlay it.",
+    "native": "HTMLElement",
+    "props": []
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-carousel-thumb",
+    "description": "One thumbnail: a button that shows its slide.",
+    "elements": [
+     "button"
+    ]
+   },
+   "name": "CarouselThumb",
+   "react": {
+    "description": "A button showing a small image of its slide.",
+    "native": "HTMLButtonElement",
+    "props": [
+     {
+      "description": "Default \"Go to slide <n>\".",
+      "name": "aria-label",
+      "type": "string"
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-carousel-thumbs",
+    "options": [
+     {
+      "attr": "data-ok-orientation",
+      "default": "horizontal",
+      "description": "A row of thumbnails, or a column.",
+      "kind": "style",
+      "name": "orientation",
+      "values": [
+       "horizontal",
+       "vertical"
+      ]
+     },
+     {
+      "attr": "data-ok-placement",
+      "default": "end",
+      "description": "Overlays the slides at that corner or side (absent: in the flow).",
+      "kind": "style",
+      "name": "placement",
+      "optional": true,
+      "values": [
+       "top-start",
+       "top",
+       "top-end",
+       "start",
+       "end",
+       "bottom-start",
+       "bottom",
+       "bottom-end"
+      ]
+     }
+    ]
+   },
+   "name": "CarouselThumbs",
+   "react": {
+    "description": "A scrolling row (or column) of thumbnail buttons, one per slide.",
+    "native": "HTMLDivElement",
+    "props": [
+     {
+      "description": "One `CarouselThumb` per slide, in order.",
+      "name": "children",
+      "type": "ReactNode"
+     },
+     {
+      "description": "`horizontal` (default) or `vertical`.",
+      "name": "orientation",
+      "type": "\"horizontal\" | \"vertical\""
+     },
+     {
+      "description": "Overlays the slides at that corner or side; absent: in the flow.",
+      "name": "placement",
+      "type": "\"bottom\" | \"bottom-end\" | \"bottom-start\" | \"end\" | \"start\" | \"top\" | \"top-end\" | \"top-start\""
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-carousel-viewport",
+    "description": "The scroll container. Arrow keys, Home and End move between slides.",
+    "elements": [
+     "div"
+    ]
+   },
+   "name": "CarouselViewport",
+   "react": {
+    "description": "The scroll container (focusable: arrow keys, Home and End), its container of slides and a polite live region that announces slides the user moves to.",
+    "native": "HTMLDivElement",
+    "props": [
+     {
+      "description": "The `CarouselSlide`s.",
+      "name": "children",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Props of the inner container (the flex row of slides).",
+      "name": "containerProps",
+      "type": "HTMLAttributes<HTMLDivElement>"
+     }
+    ]
+   }
+  }
+ ],
+ "format": 1,
+ "name": "carousel",
+ "title": "Carousel",
+ "types": [
+  {
+   "name": "CarouselAlign",
+   "type": "number | \"center\" | \"end\" | \"start\" | ((viewSize: number, snapSize: number, index: number) => number)"
+  },
+  {
+   "name": "CarouselResponsive",
+   "type": "T | Partial<Record<\"lg\" | \"md\" | \"sm\" | \"xl\" | \"xs\", T>>"
+  },
+  {
+   "name": "CarouselSlidesToShow",
+   "type": "number | \"auto\" | `${number}%`"
+  },
+  {
+   "name": "ColorName",
+   "type": "\"black\" | \"error\" | \"info\" | \"inherit\" | \"primary\" | \"secondary\" | \"success\" | \"warning\" | \"white\""
+  }
+ ]
+}

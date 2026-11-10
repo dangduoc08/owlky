@@ -1,4 +1,6 @@
 import { popoverOptions } from "@owlky/core";
+import popoverApi from "@owlky/docs-content/api/popover.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
 import { ClickHoverDemo } from "./click-hover-demo.js";
@@ -112,6 +114,7 @@ export function Summary() {
 - Escape closes the top popover first, so nested popovers close one at a time.
 - Popovers that only appear on hover also open on keyboard focus.`,
   },
+  apiReferenceSection(popoverApi),
 ];
 
 const PREVIEWS = {

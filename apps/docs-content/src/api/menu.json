@@ -1,0 +1,216 @@
+{
+ "css": [
+  {
+   "name": "--ok-action-focus",
+   "value": "color-mix(in srgb, #919EAB 24%, transparent)"
+  },
+  {
+   "name": "--ok-action-hover",
+   "value": "color-mix(in srgb, #919EAB 8%, transparent)"
+  },
+  {
+   "name": "--ok-divider",
+   "value": "color-mix(in srgb, #919EAB 20%, transparent)"
+  },
+  {
+   "name": "--ok-font-weight-semibold",
+   "value": "600"
+  },
+  {
+   "name": "--ok-radius-sm",
+   "value": "6px"
+  },
+  {
+   "name": "--ok-spacing",
+   "value": "0.25rem"
+  },
+  {
+   "dark": "#FFFFFF",
+   "light": "#1C252E",
+   "name": "--ok-text-primary"
+  },
+  {
+   "name": "--ok-typography-body2-font-size",
+   "value": "0.875rem"
+  },
+  {
+   "name": "--ok-typography-body2-line-height",
+   "value": "1.5714"
+  }
+ ],
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-menu",
+    "events": [
+     {
+      "cancelable": true,
+      "description": "Before an item is chosen (then the popover closes). Call `preventDefault()` to keep the menu open.",
+      "detail": "{ item: Element; }",
+      "name": "ok:menu:select"
+     }
+    ],
+    "methods": [
+     {
+      "description": "Chooses an item: `ok:menu:select`, then the popover closes. `false` if prevented.",
+      "kind": "method",
+      "name": "select",
+      "type": "(item: Element) => boolean"
+     }
+    ],
+    "options": [
+     {
+      "attr": "data-ok-dense",
+      "description": "Compact items.",
+      "kind": "flag",
+      "name": "dense"
+     },
+     {
+      "attr": "data-ok-selected",
+      "description": "The selected item (`MenuItem selected`).",
+      "event": "ok:menu:select",
+      "kind": "state",
+      "name": "selected"
+     }
+    ],
+    "runtime": "menu"
+   },
+   "name": "Menu",
+   "react": {
+    "description": "A Popover holding a `ul[role=menu]`. Opening focuses the selected item (or the first); arrows, Home, End and typeahead move between items; Enter and Space choose; choosing an item closes the menu (reason `\"select\"`) unless its `onClick` calls `preventDefault()`.",
+    "native": "HTMLUListElement",
+    "props": [
+     {
+      "description": "The element the menu opens next to.",
+      "name": "anchorEl",
+      "required": true,
+      "type": "PopoverAnchor"
+     },
+     {
+      "description": "The content.",
+      "name": "children",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Compact items.",
+      "name": "dense",
+      "type": "boolean"
+     },
+     {
+      "description": "`id` of the menu's popover (point the trigger's `aria-controls` at it).",
+      "name": "id",
+      "type": "string"
+     },
+     {
+      "description": "Called when the menu asks to close, with the reason.",
+      "name": "onOpenChange",
+      "type": "((open: boolean, reason?: MenuCloseReason | undefined) => void)"
+     },
+     {
+      "description": "Shows the menu.",
+      "name": "open",
+      "required": true,
+      "type": "boolean"
+     },
+     {
+      "description": "Props of the popover paper (`className`, `style`, …).",
+      "name": "paperProps",
+      "type": "HTMLAttributes<HTMLDivElement>"
+     },
+     {
+      "default": "\"bottom-start\"",
+      "description": "Where the menu opens around its anchor.",
+      "name": "placement",
+      "type": "\"bottom\" | \"bottom-end\" | \"bottom-start\" | \"left\" | \"left-end\" | \"left-start\" | \"right\" | \"right-end\" | \"right-start\" | \"top\" | \"top-end\" | \"top-start\""
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-menu-item",
+    "options": [
+     {
+      "attr": "data-ok-selected",
+      "description": "The current choice (bold, tinted; `aria-current`).",
+      "kind": "flag",
+      "name": "selected"
+     },
+     {
+      "attr": "data-ok-dense",
+      "description": "Compact: 4px less padding above and below.",
+      "kind": "flag",
+      "name": "dense"
+     },
+     {
+      "attr": "data-ok-show-divider",
+      "description": "A 1px line below the item.",
+      "kind": "flag",
+      "name": "divider"
+     },
+     {
+      "attr": "data-ok-disable-gutters",
+      "description": "No 8px padding on the sides.",
+      "kind": "flag",
+      "name": "disableGutters"
+     },
+     {
+      "attr": "aria-disabled",
+      "description": "`aria-disabled=\"true\"`: skipped by the keyboard, not clickable.",
+      "kind": "native",
+      "name": "disabled"
+     }
+    ]
+   },
+   "name": "MenuItem",
+   "react": {
+    "description": "An item of a Menu (`li[role=menuitem]`).",
+    "native": "HTMLLIElement",
+    "props": [
+     {
+      "description": "Compact items.",
+      "name": "dense",
+      "type": "boolean"
+     },
+     {
+      "description": "No 8px padding on the sides.",
+      "name": "disableGutters",
+      "type": "boolean"
+     },
+     {
+      "description": "Can't be chosen and is skipped by the keyboard (`aria-disabled`).",
+      "name": "disabled",
+      "type": "boolean"
+     },
+     {
+      "description": "A 1px line below the item.",
+      "name": "divider",
+      "type": "boolean"
+     },
+     {
+      "description": "The current choice: bold and tinted; the menu focuses it when it opens.",
+      "name": "selected",
+      "type": "boolean"
+     }
+    ]
+   }
+  }
+ ],
+ "format": 1,
+ "name": "menu",
+ "title": "Menu",
+ "types": [
+  {
+   "name": "MenuCloseReason",
+   "type": "\"select\" | \"tab\" | PopoverDismissReason"
+  },
+  {
+   "name": "PopoverAnchor",
+   "type": "Element | (() => Element | null | undefined) | null"
+  },
+  {
+   "name": "PopoverDismissReason",
+   "type": "\"backdrop\" | \"escape\""
+  }
+ ]
+}

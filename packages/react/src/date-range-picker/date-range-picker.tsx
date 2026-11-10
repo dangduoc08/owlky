@@ -119,6 +119,7 @@ export interface DateRangePickerProps
   rangePosition?: RangePosition | undefined;
   /** Uncontrolled initial position. Default `"start"`. */
   defaultRangePosition?: RangePosition | undefined;
+  /** Called when the end being edited (`start` or `end`) changes. */
   onRangePositionChange?: ((position: RangePosition) => void) | undefined;
   /** Months in the desktop popover. Default 2 (the dialog and inline forms show 1). */
   calendars?: RangeCalendarCount | undefined;
@@ -148,34 +149,52 @@ export interface DateRangePickerProps
   desktopModeMediaQuery?: string | undefined;
   /** Desktop: the popover stays open while a field has focus. */
   keepOpenDuringFieldFocus?: boolean | undefined;
+  /** The date the calendar shows and the sections start from while there is no value. */
   referenceDate?: Date | undefined;
+  /** The date treated as today (the default is the current date). */
   today?: Date | undefined;
   displayWeekNumber?: boolean | undefined;
   fixedWeekNumber?: number | undefined;
   showDaysOutsideCurrentMonth?: boolean | undefined;
   disableHighlightToday?: boolean | undefined;
+  /** Formats the weekday headings of the calendar. */
   dayOfWeekFormatter?: ((date: Date) => string) | undefined;
   loading?: boolean | undefined;
+  /** Renders the calendar while `loading` is on. */
   renderLoading?: (() => ReactNode) | undefined;
   reduceAnimations?: boolean | undefined;
+  /** Called when the calendar shows another month. */
   onMonthChange?: ((month: Date) => void) | undefined;
   /** Single input: a clear button. */
   clearable?: boolean | undefined;
+  /** Called when the clear button empties the field. */
   onClear?: (() => void) | undefined;
   readOnly?: boolean | undefined;
+  /** Turns the field off. */
   disabled?: boolean | undefined;
+  /** Focuses the field when it mounts. */
   autoFocus?: boolean | undefined;
+  /** The selected section of the field (its index, `null`: none), controlled. */
   selectedSections?: number | null | undefined;
+  /** Called when the selected section changes. */
   onSelectedSectionsChange?: ((section: number | null) => void) | undefined;
+  /** Text under the field, such as a hint or an error message. */
   helperText?: ReactNode;
+  /** Shows the field in the error state. */
   error?: boolean | undefined;
+  /** The field's variant: `outlined`, `filled` or `standard`. */
   variant?: TextFieldVariant | undefined;
+  /** The field's size. */
   size?: SelectionControlSize | undefined;
+  /** Stretches the field to the container's width. */
   fullWidth?: boolean | undefined;
+  /** Marks the field as required (an asterisk on the label). */
   required?: boolean | undefined;
   /** Single input: a hidden input carries the ISO interval `start/end`. */
   name?: string | undefined;
+  /** A ref to the hidden input that carries the value. */
   inputRef?: Ref<HTMLInputElement> | undefined;
+  /** Replaces the text of the labels and buttons, such as for another language. */
   localeText?: Partial<PickerLocaleText> | undefined;
   /** Id of the field (other ids derive from it). */
   id?: string | undefined;

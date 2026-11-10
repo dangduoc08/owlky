@@ -1,6 +1,12 @@
 import { createTabsController, tabsOf, tabValue } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
-import type { ComponentInstance } from "../../runtime/types.js";
+import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
+
+/** Events of this component (`ok:<name>:<event>` on the root). */
+export interface TabsEvents {
+  /** Before another tab is selected. Call `preventDefault()` to keep the current one. */
+  change: EventSpec<{ value: string | null; previous: string | null; tab: Element }, true>;
+}
 
 export interface TabsInstance extends ComponentInstance {
   /** The selected tab's value (its `value` attribute, else its position), or `null`. */
@@ -29,7 +35,7 @@ export interface TabsInstance extends ComponentInstance {
  *          the tabs name in `aria-controls`.
  * Events:  ok:tabs:change (cancelable, detail `{ value, previous, tab }`).
  */
-export const tabs = defineComponent<TabsInstance>({
+export const tabs = defineComponent<TabsInstance, TabsEvents>({
   name: "tabs",
   selector: "[data-ok-tabs]",
 

@@ -35,7 +35,7 @@ import {
   withDay,
 } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
-import type { ComponentInstance } from "../../runtime/types.js";
+import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
 import type { PickerDayRenderer } from "../date-calendar/date-calendar.js";
 import {
   asFunction,
@@ -66,6 +66,20 @@ import type { PopoverInstance } from "../popover/popover.js";
 import type { TabsInstance } from "../tabs/tabs.js";
 import type { TimeClockInstance } from "../time-clock/time-clock.js";
 
+/** Events of this component (`ok:<name>:<event>` on the root). */
+export interface DateRangePickerEvents {
+  /** After the range changed (`start/end`, `null` when empty), with one validation error per end. */
+  change: EventSpec<{ value: string | null; validationError: unknown }>;
+  /** After a range was accepted. */
+  accept: EventSpec<{ value: string | null }>;
+  /** After the popover or dialog opened. */
+  open: EventSpec<{ reason: PickerOpenReason }>;
+  /** After the popover or dialog closed. */
+  close: EventSpec<{ reason: PickerOpenReason }>;
+  /** After the end being edited changed (`start` or `end`). */
+  rangepositionchange: EventSpec<{ rangePosition: RangePosition }>;
+}
+
 export interface DateRangePickerInstance extends ComponentInstance, PickerDateApi {
   /** The range as an ISO 8601 interval (`start/end`, by `data-ok-value-type`), or `null`. */
   readonly value: string | null;
@@ -73,14 +87,21 @@ export interface DateRangePickerInstance extends ComponentInstance, PickerDateAp
   setValue(value: string | readonly (Date | string | null)[] | null): void;
   /** The end the next pick edits. */
   readonly rangePosition: RangePosition;
+  /** Sets the end the next pick changes (`start` or `end`). */
   setRangePosition(position: RangePosition): void;
+  /** Whether the popover or dialog is open. */
   readonly isOpen: boolean;
+  /** Opens the popover or dialog, editing `position` (default `start`). */
   open(position?: RangePosition): void;
+  /** Closes it. */
   close(): void;
   /** Shortcut chips computed by functions (markup chips carry a fixed `data-ok-value`). */
   setShortcuts(shortcuts: readonly RangeShortcut[]): void;
+  /** Disables the days for which the function returns `true` (`null`: none). */
   setShouldDisableDate(fn: ((day: Date) => boolean) | null): void;
+  /** Disables the times for which the function returns `true` (`null`: none). */
   setShouldDisableTime(fn: ((value: Date, view: TimeView) => boolean) | null): void;
+  /** Replaces the text of the labels and buttons, such as for another language. */
   setLocaleText(text: Partial<PickerLocaleText>): void;
   /** Decorates each day button of the calendar (phase 4); `null` removes the renderer. */
   setDayRenderer(fn: PickerDayRenderer | null): void;
@@ -110,7 +131,7 @@ const sideOf = (position: RangePosition): 0 | 1 => (position === "start" ? 0 : 1
  * Events:  ok:date-range-picker:change (`{ value, validationError: [start, end] }`), :accept
  *          (`{ value }`), :open / :close (`{ reason }`), :rangepositionchange (`{ rangePosition }`).
  */
-export const dateRangePicker = defineComponent<DateRangePickerInstance>({
+export const dateRangePicker = defineComponent<DateRangePickerInstance, DateRangePickerEvents>({
   name: "date-range-picker",
   selector: "[data-ok-date-range-picker]",
 

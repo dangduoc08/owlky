@@ -1,4 +1,6 @@
 import { collapseOptions } from "@owlky/core";
+import collapseApi from "@owlky/docs-content/api/collapse.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
 import { CollapseDemo } from "./collapse-demo.js";
@@ -158,6 +160,7 @@ export function Folders({ open }: { open: boolean }) {
 - The animation honors the reduced motion setting: the collapse opens and closes at once.
 - When content opens below the button, focus stays on the button. Move focus into the content only when people asked for it, such as after a search.`,
   },
+  apiReferenceSection(collapseApi),
 ];
 
 const PREVIEWS = {

@@ -1,4 +1,6 @@
 import { sortableOptions } from "@owlky/core";
+import sortableApi from "@owlky/docs-content/api/sortable.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { Scrollbar, Sortable } from "@owlky/react";
 import { useState } from "react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
@@ -141,6 +143,7 @@ ${htmlItem("new task")}
 - The handle has \`aria-pressed="true"\` while its item is grabbed.
 - Moves are announced in a polite live region. Translate the messages with \`messages\` in React.`,
   },
+  apiReferenceSection(sortableApi),
 ];
 
 function TasksPreview() {

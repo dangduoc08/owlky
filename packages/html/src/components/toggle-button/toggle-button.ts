@@ -1,8 +1,15 @@
 import { defineComponent } from "../../runtime/define.js";
-import type { ComponentInstance } from "../../runtime/types.js";
+import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
 import type { ToggleGroupInstance } from "../toggle-group/toggle-group.js";
 
+/** Events of this component (`ok:<name>:<event>` on the root). */
+export interface ToggleButtonEvents {
+  /** Before a standalone button is pressed or released. `pressed` is the new state. Call `preventDefault()` to keep the current one. */
+  change: EventSpec<{ pressed: boolean }, true>;
+}
+
 export interface ToggleButtonInstance extends ComponentInstance {
+  /** Whether the button is pressed. */
   readonly pressed: boolean;
   /** Sets the pressed state without emitting events. */
   setPressed(pressed: boolean): void;
@@ -19,7 +26,7 @@ const isDisabled = (element: Element) => (element as HTMLButtonElement).disabled
  *          (inside [data-ok-toggle-group] the group owns the selection)
  * Events:  ok:toggle-button:change (cancelable, detail.pressed) — standalone buttons only
  */
-export const toggleButton = defineComponent<ToggleButtonInstance>({
+export const toggleButton = defineComponent<ToggleButtonInstance, ToggleButtonEvents>({
   name: "toggle-button",
   selector: "[data-ok-toggle-button]",
 

@@ -1,6 +1,6 @@
 import { createTypeahead, menuKeyTarget } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
-import type { ComponentInstance, Runtime } from "../../runtime/types.js";
+import type { ComponentInstance, EventSpec, Runtime } from "../../runtime/types.js";
 import type { PopoverInstance } from "../popover/popover.js";
 
 const ITEM = '[role="menuitem"]';
@@ -9,6 +9,12 @@ const typeahead = createTypeahead();
 /** The popover a menu sits in. */
 const popoverOf = (menu: Element, runtime: Runtime) =>
   runtime.get<PopoverInstance>(menu.closest("[data-ok-popover]"), "popover");
+
+/** Events of this component (`ok:<name>:<event>` on the root). */
+export interface MenuEvents {
+  /** Before an item is chosen (then the popover closes). Call `preventDefault()` to keep the menu open. */
+  select: EventSpec<{ item: Element }, true>;
+}
 
 /**
  * Menu — spec: specs/components/menu.md
@@ -29,7 +35,7 @@ export interface MenuInstance extends ComponentInstance {
   select(item: Element): boolean;
 }
 
-export const menu = defineComponent<MenuInstance>({
+export const menu = defineComponent<MenuInstance, MenuEvents>({
   name: "menu",
   selector: "[data-ok-menu]",
 

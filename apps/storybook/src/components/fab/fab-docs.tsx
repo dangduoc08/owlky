@@ -1,4 +1,6 @@
 import { fabOptions } from "@owlky/core";
+import fabApi from "@owlky/docs-content/api/fab.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { Fab } from "@owlky/react";
 import { DocsIcon, iconMarkup } from "../../helpers/docs-icons.js";
 import { CDN, capitalize, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
@@ -134,6 +136,7 @@ export function FabPosition() {
 - Focus is shown with a 2px outline, and every size is at least 24 × 24px.
 - Brand-colored fabs use white text on the main color, which can be below a contrast ratio of 4.5:1. The \`soft\` variant uses the accessible \`text\` tone.`,
   },
+  apiReferenceSection(fabApi),
 ];
 
 const PREVIEWS = {

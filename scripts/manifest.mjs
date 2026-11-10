@@ -10,6 +10,7 @@ import { readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { folderSpec as sharedFolderSpec } from "./component-folders.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const app = join(root, "apps/storybook");
@@ -151,22 +152,7 @@ for (const name of Object.keys(optionSchemas))
   if (!covered.has(name)) fail(`schema "${name}" has no <!-- options:${name} --> spec markers`);
 
 // ── React exports, by source folder ────────────────────────────────────────────────────────────
-// Folders whose name isn't a spec: the spec that documents them.
-const FOLDER_SPEC = {
-  "count-up": "motion",
-  "motion-border": "motion",
-  "diff-editor": "code-editor",
-  utils: "date-picker",
-  pickers: "date-picker",
-  "localization-provider": "date-picker",
-};
-const folderSpec = (folder) =>
-  FOLDER_SPEC[folder] ??
-  (specs.has(folder)
-    ? folder
-    : /^(date|time|multi-section|digital)-|-clock$/.test(folder)
-      ? "date-picker"
-      : undefined);
+const folderSpec = (folder) => sharedFolderSpec(folder, specs);
 const reactExports = new Map([...specs.keys()].map((name) => [name, new Set()]));
 const reactIndex = read("packages/react/src/index.ts");
 for (const match of reactIndex.matchAll(
@@ -174,7 +160,10 @@ for (const match of reactIndex.matchAll(
 )) {
   if (match[1]) continue;
   const spec = folderSpec(match[3]);
-  if (!spec) fail(`React folder "${match[3]}" maps to no spec (extend FOLDER_SPEC)`);
+  if (!spec)
+    fail(
+      `React folder "${match[3]}" maps to no spec (extend FOLDER_SPEC in component-folders.mjs)`,
+    );
   for (const item of match[2].split(",")) {
     const name = item.trim();
     if (name && !name.startsWith("type ")) reactExports.get(spec).add(name);
@@ -384,6 +373,16 @@ const parts = {};
 for (const [part, seen] of [...partSeen].sort(([a], [b]) => byName(a, b)))
   if (seen.outside === 0 && seen.inside > 0) parts[part] = seen.root;
 
+// ── API reference (ADR-0049) ───────────────────────────────────────────────────────────────────
+const API = "apps/docs-content/src/api";
+function apiReference(name) {
+  try {
+    return JSON.parse(read(`${API}/${name}.json`));
+  } catch {
+    fail(`${API}/${name}.json is missing. Run \`pnpm build && pnpm api\` first.`);
+  }
+}
+
 // ── Components ─────────────────────────────────────────────────────────────────────────────────
 const rootComponent = new Map(); // root attribute → component
 for (const [name, spec] of specs)
@@ -437,6 +436,10 @@ const components = [...specs.keys()].sort(byName).map((name) => {
   };
   if (main) component.root = main.root;
   if (spec.referenceUrl) component.referenceUrl = spec.referenceUrl;
+  // The API reference (ADR-0049): every prop, attribute, part, event, method, type and CSS
+  // variable, per React component and HTML part (scripts/api-reference.mjs writes it).
+  const { entries, types, css } = apiReference(name);
+  component.api = { entries, ...(types ? { types } : {}), ...(css ? { css } : {}) };
   if (guideEntries.some((guide) => guide.id === name)) component.guide = name;
   const storybookTitle = titles.get(`components/${name}`);
   if (storybookTitle) component.storybookTitle = storybookTitle;
@@ -510,6 +513,8 @@ const manifest = sortKeys({
   tokens: { variables, tailwind },
   attributes: [...attributes].sort(byName),
   parts,
+  // Attributes every component may carry (`data-ok-runtime`, `data-ok-theme`…), as API rows.
+  commonParts: apiReference("common").parts,
 });
 const text = `${JSON.stringify(manifest, null, 1)}\n`;
 const relativeOut = relative(root, OUT);

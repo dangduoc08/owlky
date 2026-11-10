@@ -23,6 +23,7 @@ export interface DateTimePickerProps
   openTo?: PickerView | undefined;
   /** Controlled view. */
   view?: PickerView | undefined;
+  /** Called when the view changes. */
   onViewChange?: ((view: PickerView) => void) | undefined;
   /** Called on every change (typing, picking), with the validation error. */
   onChange?:

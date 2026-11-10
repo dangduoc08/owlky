@@ -1,4 +1,6 @@
 import { alertOptions } from "@owlky/core";
+import alertApi from "@owlky/docs-content/api/alert.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { Alert, AlertTitle, Button } from "@owlky/react";
 import { useState } from "react";
 import { CDN, capitalize, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
@@ -105,6 +107,7 @@ export function UpdateNotice() {
 - Don't rely on color alone: the icon and the text should also say what kind of message it is.
 - Filled and outlined alerts follow the brand colors; standard alerts meet a contrast ratio of at least 4.5:1.`,
   },
+  apiReferenceSection(alertApi),
 ];
 
 function ClosePreview() {

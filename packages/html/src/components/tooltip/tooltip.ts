@@ -5,12 +5,22 @@ import {
   tooltipOptions,
 } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
-import type { ComponentInstance, Runtime } from "../../runtime/types.js";
+import type { ComponentInstance, EventSpec, Runtime } from "../../runtime/types.js";
+
+/** Events of this component (`ok:<name>:<event>` on the root). */
+export interface TooltipEvents {
+  /** After the tooltip showed for `trigger`. */
+  open: EventSpec<{ trigger: Element | null }>;
+  /** After the tooltip hid. */
+  close: EventSpec;
+}
 
 export interface TooltipInstance extends ComponentInstance {
+  /** Whether the tooltip shows. */
   readonly isOpen: boolean;
   /** Shows it next to `trigger` (default: the last trigger, else the first one in the page). */
   show(trigger?: Element): void;
+  /** Hides the tooltip. */
   hide(): void;
 }
 
@@ -51,7 +61,7 @@ const instanceFor = (trigger: Element, runtime: Runtime) =>
  *          (focus-visible), a touch long press (700 ms) open it; leaving, blur and Escape close it.
  *          The tooltip is hoverable. Events: ok:tooltip:open, ok:tooltip:close.
  */
-export const tooltip = defineComponent<TooltipInstance>({
+export const tooltip = defineComponent<TooltipInstance, TooltipEvents>({
   name: "tooltip",
   selector: "[data-ok-tooltip]",
 

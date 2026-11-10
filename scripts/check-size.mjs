@@ -131,8 +131,11 @@ const budgets = [
   // TablePagination and TextField compositions; about 1.3 kB): 49.6 kB.
   ["packages/styles/dist/owlky.min.css", 52_000, "All CSS (tokens + components)"],
   // The MCP server's data (ADR-0046, downloaded by `npx -y @owlky/mcp`): 0.69 MB gzip (6 MB raw)
-  // at first, most of it the HTML of the date picker and data grid stories.
-  ["packages/mcp/manifest.json", 900_000, "MCP manifest (npm tarball, not a browser download)"],
+  // at first, most of it the HTML of the date picker and data grid stories. 1 MB since the API
+  // reference (ADR-0049: every prop, attribute, part, event, method, type and CSS variable per
+  // component; about 145 kB gzip, 0.77 → 0.92 MB): gzip's 32 kB window can't share the props
+  // that the date picker family repeats per component, and agents need each one whole.
+  ["packages/mcp/manifest.json", 1_000_000, "MCP manifest (npm tarball, not a browser download)"],
 ];
 
 let failed = false;

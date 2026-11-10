@@ -39,7 +39,10 @@ export interface ButtonOwnProps {
 }
 
 export type ButtonAsButtonProps = ButtonOwnProps &
-  Omit<ButtonHTMLAttributes<HTMLButtonElement>, "color" | "children"> & { href?: undefined };
+  Omit<ButtonHTMLAttributes<HTMLButtonElement>, "color" | "children"> & {
+    /** Renders an `<a>` with the button styling. */
+    href?: undefined;
+  };
 
 export type ButtonAsLinkProps = ButtonOwnProps &
   Omit<AnchorHTMLAttributes<HTMLAnchorElement>, "color" | "children"> & {

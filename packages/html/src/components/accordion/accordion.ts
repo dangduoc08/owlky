@@ -1,8 +1,17 @@
 import { accordionOptions, closeOtherDetails } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
-import type { ComponentInstance } from "../../runtime/types.js";
+import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
+
+/** Events of this component (`ok:<name>:<event>` on the root). */
+export interface AccordionEvents {
+  /** Before the summary or the API opens or closes the panel. Call `preventDefault()` to refuse. */
+  beforetoggle: EventSpec<{ open: boolean }, true>;
+  /** After the panel opened or closed, whatever caused it (find-in-page, an exclusive group). */
+  toggle: EventSpec<{ open: boolean }>;
+}
 
 export interface AccordionInstance extends ComponentInstance {
+  /** Whether the panel is open. */
   readonly isOpen: boolean;
   /**
    * Opens (`true`), closes (`false`) or flips the item. Returns `false` if it is disabled or
@@ -26,7 +35,7 @@ const { disabled } = accordionOptions.options;
  * Works without the runtime (native <details>); the runtime adds the events, disabled and the
  * `name` fallback for browsers without exclusive <details>.
  */
-export const accordion = defineComponent<AccordionInstance>({
+export const accordion = defineComponent<AccordionInstance, AccordionEvents>({
   name: "accordion",
   selector: "[data-ok-accordion]",
 

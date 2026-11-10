@@ -10,6 +10,8 @@
     "./guide/host": "./src/guide/host.tsx",
     "./guide/tables": "./src/guide/tables.tsx",
     "./guide/tables-data": "./src/guide/tables-data.ts",
+    "./guide/api": "./src/guide/api.tsx",
+    "./guide/api-data": "./src/guide/api-data.ts",
     "./guide/text": "./src/guide/text.ts",
     "./guide/manifest": "./src/guide/manifest.ts",
     "./guide/clipboard": "./src/guide/clipboard.ts",
@@ -17,6 +19,7 @@
     "./foundations/colors/sections": "./src/foundations/colors/colors-docs-examples.ts",
     "./components/button": "./src/components/button/button-docs.tsx",
     "./components/button/sections": "./src/components/button/button-docs-examples.ts",
+    "./api/*": "./src/api/*",
     "./package.json": "./package.json"
   },
   "scripts": {

@@ -73,11 +73,15 @@ export function usePickerContext<TValue = PickerValidDate | null>(): PickerConte
 
 /** The parts a layout arranges (MUI X `usePickerLayout`): each is `null` when not shown. */
 export interface PickerLayoutProps {
+  /** The toolbar (the picked value, above the views). */
   toolbar: ReactNode;
+  /** The tabs that switch between the date and the time views. */
   tabs: ReactNode;
+  /** The shortcuts list. */
   shortcuts: ReactNode;
   /** The views (calendar, clocks), without their wrapper: put them in `PickerLayoutContent`. */
   content: ReactNode;
+  /** The action bar (Clear, Cancel, OK). */
   actionBar: ReactNode;
   orientation: PickerOrientation;
   /** Put it on the layout's root: the picker focuses the views inside it when it opens. */
@@ -91,6 +95,7 @@ export function PickerLayoutRoot({
   ...props
 }: HTMLAttributes<HTMLDivElement> & {
   orientation?: PickerOrientation | undefined;
+  /** A ref to the layout's root element. */
   rootRef?: Ref<HTMLDivElement> | undefined;
 }) {
   return (
@@ -130,9 +135,12 @@ export interface PickerActionBarProps {
   actions: readonly PickerAction[];
   /** The actions shown in the current form (the others are `hidden`). */
   shownActions: readonly PickerAction[];
+  /** Runs an action of the action bar (`accept`, `cancel`, `clear`, `today`, `nextOrAccept`). */
   onAction(action: PickerAction): void;
+  /** Turns the buttons off. */
   disabled: boolean;
   readOnly: boolean;
+  /** The text of the buttons. */
   localeText: PickerLocaleText;
   /** `nextOrAccept` reads "Next" (another view follows) or "OK". */
   hasNextStep: boolean;
@@ -192,6 +200,7 @@ export interface PickerShortcutItem {
 
 /** Props of the shortcuts list (the default `PickerShortcuts` or `slots.shortcuts`). */
 export interface PickerShortcutsProps {
+  /** The shortcuts: a label and the value each one picks. */
   items: readonly PickerShortcutItem[];
   /** Applies a shortcut: sets and accepts its value, then closes. */
   onShortcut(index: number): void;

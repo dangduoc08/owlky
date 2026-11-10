@@ -1,0 +1,1447 @@
+{
+ "css": [
+  {
+   "dark": "#1C252E",
+   "light": "#FFFFFF",
+   "name": "--ok-bg-paper"
+  },
+  {
+   "name": "--ok-duration-shorter",
+   "value": "200ms"
+  },
+  {
+   "name": "--ok-easing-standard",
+   "value": "cubic-bezier(0.4, 0, 0.2, 1)"
+  },
+  {
+   "name": "--ok-font-family",
+   "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+  },
+  {
+   "name": "--ok-font-weight-bold",
+   "value": "700"
+  },
+  {
+   "name": "--ok-font-weight-regular",
+   "value": "400"
+  },
+  {
+   "name": "--ok-palette-common-white",
+   "value": "#FFFFFF"
+  },
+  {
+   "name": "--ok-palette-error-main",
+   "value": "#FF5630"
+  },
+  {
+   "name": "--ok-palette-error-main-channel",
+   "value": "255 86 48"
+  },
+  {
+   "dark": "#FFAC82",
+   "light": "#B71D18",
+   "name": "--ok-palette-error-text"
+  },
+  {
+   "name": "--ok-palette-grey-500",
+   "value": "#919EAB"
+  },
+  {
+   "name": "--ok-palette-grey-500-channel",
+   "value": "145 158 171"
+  },
+  {
+   "name": "--ok-palette-grey-600",
+   "value": "#637381"
+  },
+  {
+   "name": "--ok-palette-grey-700",
+   "value": "#454F5B"
+  },
+  {
+   "name": "--ok-palette-grey-900-channel",
+   "value": "20 26 33"
+  },
+  {
+   "name": "--ok-palette-info-dark",
+   "value": "#006C9C"
+  },
+  {
+   "name": "--ok-palette-info-main",
+   "value": "#00B8D9"
+  },
+  {
+   "name": "--ok-palette-primary-main",
+   "value": "#00A76F"
+  },
+  {
+   "dark": "var(--_ok-primary-text-dark)",
+   "light": "var(--_ok-primary-text-light)",
+   "name": "--ok-palette-primary-text"
+  },
+  {
+   "name": "--ok-palette-secondary-main",
+   "value": "#8E33FF"
+  },
+  {
+   "name": "--ok-palette-success-dark",
+   "value": "#118D57"
+  },
+  {
+   "name": "--ok-palette-success-main",
+   "value": "#22C55E"
+  },
+  {
+   "name": "--ok-palette-warning-dark",
+   "value": "#B76E00"
+  },
+  {
+   "name": "--ok-palette-warning-main",
+   "value": "#FFAB00"
+  },
+  {
+   "name": "--ok-radius-full",
+   "value": "9999px"
+  },
+  {
+   "name": "--ok-radius-md",
+   "value": "8px"
+  },
+  {
+   "name": "--ok-spacing",
+   "value": "0.25rem"
+  },
+  {
+   "dark": "#FFFFFF",
+   "light": "#1C252E",
+   "name": "--ok-text-primary"
+  },
+  {
+   "dark": "#919EAB",
+   "light": "#637381",
+   "name": "--ok-text-secondary"
+  },
+  {
+   "name": "--ok-typography-body2-font-size",
+   "value": "0.875rem"
+  },
+  {
+   "name": "--ok-typography-body2-line-height",
+   "value": "1.5714"
+  },
+  {
+   "name": "--ok-typography-caption-font-size",
+   "value": "0.75rem"
+  },
+  {
+   "name": "--ok-typography-caption-line-height",
+   "value": "1.5"
+  },
+  {
+   "name": "--ok-typography-h6-font-size",
+   "value": "1.0625rem"
+  },
+  {
+   "name": "--ok-typography-h6-font-weight",
+   "value": "600"
+  },
+  {
+   "name": "--ok-typography-h6-line-height",
+   "value": "1.5556"
+  },
+  {
+   "name": "--ok-typography-subtitle2-font-size",
+   "value": "0.875rem"
+  },
+  {
+   "name": "--ok-typography-subtitle2-font-weight",
+   "value": "600"
+  },
+  {
+   "name": "--ok-typography-subtitle2-line-height",
+   "value": "1.5714"
+  }
+ ],
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-upload",
+    "events": [
+     {
+      "cancelable": false,
+      "description": "After the files changed, with the reason (`drop`, `remove`, `clear`, `api`).",
+      "detail": "{ files: File[]; reason: string; }",
+      "name": "ok:upload:change"
+     },
+     {
+      "cancelable": false,
+      "description": "After the file dialog closed without a choice.",
+      "detail": "undefined",
+      "name": "ok:upload:dialogcancel"
+     },
+     {
+      "cancelable": false,
+      "description": "After the file dialog opened.",
+      "detail": "undefined",
+      "name": "ok:upload:dialogopen"
+     },
+     {
+      "cancelable": false,
+      "description": "While files are dragged over the zone or the page.",
+      "detail": "UploadDragState",
+      "name": "ok:upload:drag"
+     },
+     {
+      "cancelable": true,
+      "description": "Before dropped or picked files are added. Call `preventDefault()` to refuse them all.",
+      "detail": "{ accepted: File[]; rejections: UploadRejection[]; }",
+      "name": "ok:upload:drop"
+     },
+     {
+      "cancelable": false,
+      "description": "After reading the files failed.",
+      "detail": "{ error: unknown; }",
+      "name": "ok:upload:error"
+     },
+     {
+      "cancelable": true,
+      "description": "Before a file is removed (`file` is `null` for the single preview). Call `preventDefault()` to keep it.",
+      "detail": "{ file: File | null; }",
+      "name": "ok:upload:remove"
+     },
+     {
+      "cancelable": false,
+      "description": "After a `data-ok-upload-submit` button was pressed, with the files.",
+      "detail": "{ files: File[]; }",
+      "name": "ok:upload:upload"
+     }
+    ],
+    "methods": [
+     {
+      "description": "Removes every file and the rejections, without events.",
+      "kind": "method",
+      "name": "clearFiles",
+      "type": "() => void"
+     },
+     {
+      "description": "The drag state: whether files are over the zone or the page, and whether they would be accepted.",
+      "kind": "property",
+      "name": "dragState",
+      "type": "UploadDragState"
+     },
+     {
+      "description": "The files the upload holds.",
+      "kind": "property",
+      "name": "files",
+      "type": "readonly File[]"
+     },
+     {
+      "description": "Whether the file dialog is open.",
+      "kind": "property",
+      "name": "isFileDialogActive",
+      "type": "boolean"
+     },
+     {
+      "description": "Whether dropped files are being read.",
+      "kind": "property",
+      "name": "isProcessing",
+      "type": "boolean"
+     },
+     {
+      "description": "Opens the file dialog (call it from a user action).",
+      "kind": "method",
+      "name": "open",
+      "type": "() => void"
+     },
+     {
+      "description": "Rejections of the last drop, pick or paste.",
+      "kind": "property",
+      "name": "rejections",
+      "type": "readonly UploadRejection[]"
+     },
+     {
+      "description": "Removes a file without events.",
+      "kind": "method",
+      "name": "removeFile",
+      "type": "(file: File) => void"
+     },
+     {
+      "description": "Rewrites rejection messages (localization); `null` restores the built-in ones.",
+      "kind": "method",
+      "name": "setErrorMessage",
+      "type": "(getErrorMessage: UploadErrorMessage | null) => void"
+     },
+     {
+      "description": "Replaces the files without checks or events.",
+      "kind": "method",
+      "name": "setFiles",
+      "type": "(files: readonly File[]) => void"
+     },
+     {
+      "description": "Reads files from events yourself; `null` restores the built-in readers.",
+      "kind": "method",
+      "name": "setFilesFromEvent",
+      "type": "(getFilesFromEvent: UploadFilesFromEvent | null) => void"
+     },
+     {
+      "description": "A custom check per file (may return a Promise); `null` removes it.",
+      "kind": "method",
+      "name": "setValidator",
+      "type": "(validator: UploadValidator | null) => void"
+     }
+    ],
+    "options": [
+     {
+      "attr": "data-ok-variant",
+      "default": "default",
+      "description": "`default`: a drop zone with an illustration; `avatar`: a round photo picker; `box`: a small box.",
+      "kind": "style",
+      "name": "variant",
+      "values": [
+       "default",
+       "avatar",
+       "box"
+      ]
+     },
+     {
+      "attr": "data-ok-layout",
+      "default": "vertical",
+      "description": "File list: rows with names and sizes, or a wrapping row of tiles.",
+      "kind": "style",
+      "name": "layout",
+      "values": [
+       "vertical",
+       "horizontal"
+      ]
+     },
+     {
+      "attr": "data-ok-thumbnail",
+      "default": true,
+      "description": "Image files show a preview; `false` shows the file type icon instead.",
+      "kind": "behavior",
+      "name": "thumbnail"
+     },
+     {
+      "attr": "multiple",
+      "children": "[data-ok-upload-input]",
+      "description": "Accepts several files and keeps adding them.",
+      "kind": "native",
+      "name": "multiple"
+     },
+     {
+      "attr": "disabled",
+      "children": "[data-ok-upload-input]",
+      "description": "Can't receive files (input disabled, dimmed).",
+      "kind": "native",
+      "name": "disabled"
+     },
+     {
+      "attr": "data-ok-error",
+      "description": "Error colors on the zone and the helper text.",
+      "kind": "flag",
+      "name": "error"
+     },
+     {
+      "attr": "data-ok-max-files",
+      "description": "Most files the upload holds (multiple; 0 = no limit). The others are rejected.",
+      "kind": "number",
+      "min": 0,
+      "name": "maxFiles"
+     },
+     {
+      "attr": "data-ok-max-size",
+      "description": "Largest accepted file, in bytes.",
+      "kind": "number",
+      "min": 0,
+      "name": "maxSize"
+     },
+     {
+      "attr": "data-ok-min-size",
+      "description": "Smallest accepted file, in bytes.",
+      "kind": "number",
+      "min": 0,
+      "name": "minSize"
+     },
+     {
+      "attr": "data-ok-no-click",
+      "description": "A press on the zone doesn't open the file dialog.",
+      "kind": "flag",
+      "name": "noClick"
+     },
+     {
+      "attr": "data-ok-no-keyboard",
+      "description": "The input leaves the tab order (give people another way to open the dialog).",
+      "kind": "flag",
+      "name": "noKeyboard"
+     },
+     {
+      "attr": "data-ok-no-drag",
+      "description": "Files can't be dropped on the zone.",
+      "kind": "flag",
+      "name": "noDrag"
+     },
+     {
+      "attr": "data-ok-no-drag-events-bubbling",
+      "description": "Drags handled here don't reach an outer upload.",
+      "kind": "flag",
+      "name": "noDragEventsBubbling"
+     },
+     {
+      "attr": "data-ok-no-paste",
+      "description": "Pasting files while the upload has focus does nothing.",
+      "kind": "flag",
+      "name": "noPaste"
+     },
+     {
+      "attr": "data-ok-prevent-drop-on-document",
+      "default": true,
+      "description": "Files dropped outside an upload don't open in the tab.",
+      "kind": "behavior",
+      "name": "preventDropOnDocument"
+     },
+     {
+      "attr": "data-ok-use-fs-access-api",
+      "description": "Opens the File System Access picker where supported (the input otherwise).",
+      "kind": "flag",
+      "name": "useFsAccessApi"
+     },
+     {
+      "attr": "files",
+      "description": "The files the upload holds (`value` / `defaultValue`).",
+      "event": "ok:upload:change",
+      "kind": "state",
+      "name": "value"
+     }
+    ],
+    "parts": [
+     {
+      "description": "Set by the runtime while files are dragged over the zone: whether they would be accepted.",
+      "kind": "value",
+      "name": "data-ok-drag",
+      "value": [
+       "accept",
+       "reject",
+       "unknown"
+      ]
+     },
+     {
+      "description": "Set by the runtime while files are dragged anywhere over the page.",
+      "kind": "state",
+      "name": "data-ok-drag-global"
+     },
+     {
+      "description": "On a file icon: the kind of file.",
+      "kind": "value",
+      "name": "data-ok-kind",
+      "value": [
+       "archive",
+       "audio",
+       "document",
+       "image",
+       "other",
+       "pdf",
+       "presentation",
+       "spreadsheet",
+       "video"
+      ]
+     },
+     {
+      "description": "The text of the avatar upload's overlay when it has a picture. Default \"Update photo\".",
+      "kind": "value",
+      "name": "data-ok-label-update",
+      "value": "string"
+     },
+     {
+      "description": "The text of the avatar upload's overlay when it is empty. Default \"Upload photo\".",
+      "kind": "value",
+      "name": "data-ok-label-upload",
+      "value": "string"
+     },
+     {
+      "description": "On a file icon: its color tone.",
+      "kind": "value",
+      "name": "data-ok-tone",
+      "value": "string"
+     },
+     {
+      "description": "The Remove all and Upload buttons.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-upload-actions"
+     },
+     {
+      "description": "The \"browse\" link text of the title.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-upload-browse"
+     },
+     {
+      "description": "The text under the title.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-upload-description"
+     },
+     {
+      "description": "The icon of a file that isn't a picture.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-upload-file"
+     },
+     {
+      "description": "The file extension on the icon.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-upload-file-ext"
+     },
+     {
+      "description": "The helper text under the zone.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-upload-helper-text"
+     },
+     {
+      "description": "The icon of the box variant.",
+      "elements": [
+       "svg"
+      ],
+      "kind": "part",
+      "name": "data-ok-upload-icon"
+     },
+     {
+      "description": "The picture of the zone.",
+      "elements": [
+       "svg"
+      ],
+      "kind": "part",
+      "name": "data-ok-upload-illustration"
+     },
+     {
+      "description": "The native file input. It covers the zone, invisible.",
+      "elements": [
+       "input"
+      ],
+      "kind": "part",
+      "name": "data-ok-upload-input"
+     },
+     {
+      "description": "One file of the list.",
+      "elements": [
+       "li"
+      ],
+      "kind": "part",
+      "name": "data-ok-upload-item"
+     },
+     {
+      "description": "The name of a file.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-upload-item-name"
+     },
+     {
+      "description": "The size of a file.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-upload-item-size"
+     },
+     {
+      "description": "The name and the size of a file.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-upload-item-text"
+     },
+     {
+      "description": "The list of files.",
+      "elements": [
+       "ul"
+      ],
+      "kind": "part",
+      "name": "data-ok-upload-list"
+     },
+     {
+      "description": "Opens the file dialog of the upload whose `id` it names, or of the upload it sits in.",
+      "kind": "trigger",
+      "name": "data-ok-upload-open",
+      "value": [
+       "id"
+      ]
+     },
+     {
+      "description": "What the zone shows while it is empty.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-upload-placeholder"
+     },
+     {
+      "description": "The text of the placeholder.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-upload-placeholder-text"
+     },
+     {
+      "description": "The preview of the single file.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-upload-preview"
+     },
+     {
+      "description": "The name of the single file.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-upload-preview-name"
+     },
+     {
+      "description": "The size of the single file.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-upload-preview-size"
+     },
+     {
+      "description": "Why a file was rejected.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-upload-rejection-error"
+     },
+     {
+      "description": "The name of a rejected file.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-upload-rejection-file"
+     },
+     {
+      "description": "The list of rejected files.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-upload-rejections"
+     },
+     {
+      "description": "Removes the file of the item it sits in, or the single file.",
+      "kind": "trigger",
+      "name": "data-ok-upload-remove",
+      "value": [
+       ""
+      ]
+     },
+     {
+      "description": "The Remove all button.",
+      "elements": [
+       "button"
+      ],
+      "kind": "part",
+      "name": "data-ok-upload-remove-all"
+     },
+     {
+      "description": "The text of the single file's remove button.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-upload-remove-text"
+     },
+     {
+      "description": "Fires `ok:upload:upload` with the files of the upload it sits in.",
+      "kind": "trigger",
+      "name": "data-ok-upload-submit",
+      "value": [
+       ""
+      ]
+     },
+     {
+      "description": "HTML only: the markup of a file item.",
+      "elements": [
+       "template"
+      ],
+      "kind": "part",
+      "name": "data-ok-upload-template"
+     },
+     {
+      "description": "The thumbnail of a picture.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-upload-thumb"
+     },
+     {
+      "description": "The title of the zone, such as \"Drop or select a file\".",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-upload-title"
+     },
+     {
+      "description": "The drop zone.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-upload-zone"
+     }
+    ],
+    "runtime": "upload"
+   },
+   "name": "Upload",
+   "react": {
+    "description": "A drop zone around a native file input (the accessible control): press or drop files, paste them, or open the dialog with Enter / Space. react-dropzone's options; the files it holds are mirrored into the input for forms.",
+    "native": "HTMLDivElement",
+    "props": [
+     {
+      "description": "jpg\"] }` or labeled groups.",
+      "name": "accept",
+      "type": "UploadAccept"
+     },
+     {
+      "description": "A ref to the upload's methods (open the dialog, set or clear files).",
+      "name": "apiRef",
+      "type": "Ref<UploadApi>"
+     },
+     {
+      "description": "Focuses the drop zone when it mounts.",
+      "name": "autoFocus",
+      "type": "boolean"
+     },
+     {
+      "description": "Asks for the camera on phones: `user` (front) or `environment` (back).",
+      "name": "capture",
+      "type": "\"environment\" | \"user\""
+     },
+     {
+      "description": "Uncontrolled initial files.",
+      "name": "defaultValue",
+      "type": "readonly UploadValue[]"
+     },
+     {
+      "description": "Text under the title.",
+      "name": "description",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Can't receive files (input disabled, dimmed).",
+      "name": "disabled",
+      "type": "boolean"
+     },
+     {
+      "description": "Error colors (zone and helper text); the input gets `aria-invalid`.",
+      "name": "error",
+      "type": "boolean"
+     },
+     {
+      "description": "The `form` the file input belongs to (its id).",
+      "name": "form",
+      "type": "string"
+     },
+     {
+      "description": "Returns the message shown for a rejected file.",
+      "name": "getErrorMessage",
+      "type": "UploadErrorMessage"
+     },
+     {
+      "description": "Reads the files of a drop or a change event (for example, to unpack folders).",
+      "name": "getFilesFromEvent",
+      "type": "UploadFilesFromEvent"
+     },
+     {
+      "description": "Text under the zone; it describes the input.",
+      "name": "helperText",
+      "type": "ReactNode"
+     },
+     {
+      "description": "The id of the file input.",
+      "name": "inputId",
+      "type": "string"
+     },
+     {
+      "description": "A ref to the file input.",
+      "name": "inputRef",
+      "type": "Ref<HTMLInputElement>"
+     },
+     {
+      "description": "Replaces the text of the labels and messages, such as for another language.",
+      "name": "labels",
+      "type": "Partial<UploadLabels>"
+     },
+     {
+      "description": "File list: `vertical` rows (default) or `horizontal` tiles.",
+      "name": "layout",
+      "type": "\"horizontal\" | \"vertical\""
+     },
+     {
+      "description": "Language of the file sizes (default: the page's).",
+      "name": "locale",
+      "type": "string"
+     },
+     {
+      "description": "Most files held (multiple; 0 = no limit).",
+      "name": "maxFiles",
+      "type": "number"
+     },
+     {
+      "description": "Largest file in bytes.",
+      "name": "maxSize",
+      "type": "number"
+     },
+     {
+      "description": "Smallest file in bytes.",
+      "name": "minSize",
+      "type": "number"
+     },
+     {
+      "default": "false",
+      "description": "Several files, added to the ones held. (a new file replaces the old one).",
+      "name": "multiple",
+      "type": "boolean"
+     },
+     {
+      "description": "Input `name`, `form`, `required`, `capture` and `id`.",
+      "name": "name",
+      "type": "string"
+     },
+     {
+      "description": "A press on the zone doesn't open the file dialog.",
+      "name": "noClick",
+      "type": "boolean"
+     },
+     {
+      "description": "Files can't be dropped on the zone.",
+      "name": "noDrag",
+      "type": "boolean"
+     },
+     {
+      "description": "Drags handled here don't reach an outer upload.",
+      "name": "noDragEventsBubbling",
+      "type": "boolean"
+     },
+     {
+      "description": "The input leaves the tab order (give people another way to open the dialog).",
+      "name": "noKeyboard",
+      "type": "boolean"
+     },
+     {
+      "description": "Pasting files while the upload has focus does nothing.",
+      "name": "noPaste",
+      "type": "boolean"
+     },
+     {
+      "description": "Called with the files the upload holds after a drop, a removal or a reset.",
+      "name": "onChange",
+      "type": "((files: UploadValue[]) => void)"
+     },
+     {
+      "description": "Every drop, pick or paste: the accepted and the rejected files.",
+      "name": "onDrop",
+      "type": "((accepted: File[], rejections: UploadRejection[]) => void)"
+     },
+     {
+      "description": "Called with the files that passed the checks.",
+      "name": "onDropAccepted",
+      "type": "((files: File[]) => void)"
+     },
+     {
+      "description": "Called with the files that were rejected and why.",
+      "name": "onDropRejected",
+      "type": "((rejections: UploadRejection[]) => void)"
+     },
+     {
+      "description": "A validator or `getFilesFromEvent` threw; the drop is discarded.",
+      "name": "onError",
+      "type": "((error: unknown) => void)"
+     },
+     {
+      "description": "Called when the file dialog closes without a choice.",
+      "name": "onFileDialogCancel",
+      "type": "(() => void)"
+     },
+     {
+      "description": "Called when the file dialog opens.",
+      "name": "onFileDialogOpen",
+      "type": "(() => void)"
+     },
+     {
+      "description": "A file was removed with its button (or `removeFile`).",
+      "name": "onRemove",
+      "type": "((file: UploadValue) => void)"
+     },
+     {
+      "description": "Shows a \"Remove all\" button (multiple).",
+      "name": "onRemoveAll",
+      "type": "(() => void)"
+     },
+     {
+      "description": "Shows an \"Upload\" button (multiple); it receives the files. Sending them is up to you.",
+      "name": "onUpload",
+      "type": "((files: UploadValue[]) => void)"
+     },
+     {
+      "description": "Replaces the zone's content; a function receives the drag state.",
+      "name": "placeholder",
+      "type": "((state: UploadState) => ReactNode) | ReactNode"
+     },
+     {
+      "default": "true",
+      "description": "Files dropped outside an upload don't open in the tab.",
+      "name": "preventDropOnDocument",
+      "type": "boolean"
+     },
+     {
+      "description": "Makes the file input required in a form.",
+      "name": "required",
+      "type": "boolean"
+     },
+     {
+      "default": "true",
+      "description": "Image previews in the list.",
+      "name": "thumbnail",
+      "type": "boolean"
+     },
+     {
+      "description": "Zone title (also the input's name).",
+      "name": "title",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Opens the File System Access picker where supported (the input otherwise).",
+      "name": "useFsAccessApi",
+      "type": "boolean"
+     },
+     {
+      "description": "Checks each file: return an error (or several) to reject it.",
+      "name": "validator",
+      "type": "UploadValidator"
+     },
+     {
+      "description": "Controlled files.",
+      "name": "value",
+      "type": "readonly UploadValue[]"
+     },
+     {
+      "description": "`default` (drop zone), `avatar` (round photo) or `box`. Set by UploadAvatar / UploadBox.",
+      "name": "variant",
+      "type": "\"avatar\" | \"box\" | \"default\""
+     }
+    ]
+   }
+  },
+  {
+   "name": "UploadAvatar",
+   "react": {
+    "description": "A round photo picker: one image, shown in the circle.",
+    "native": "HTMLDivElement",
+    "props": [
+     {
+      "description": "jpg\"] }` or labeled groups.",
+      "name": "accept",
+      "type": "UploadAccept"
+     },
+     {
+      "description": "A ref to the upload's methods (open the dialog, set or clear files).",
+      "name": "apiRef",
+      "type": "Ref<UploadApi>"
+     },
+     {
+      "description": "Focuses the drop zone when it mounts.",
+      "name": "autoFocus",
+      "type": "boolean"
+     },
+     {
+      "description": "Asks for the camera on phones: `user` (front) or `environment` (back).",
+      "name": "capture",
+      "type": "\"environment\" | \"user\""
+     },
+     {
+      "description": "Uncontrolled initial files.",
+      "name": "defaultValue",
+      "type": "readonly UploadValue[]"
+     },
+     {
+      "description": "Text under the title.",
+      "name": "description",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Can't receive files (input disabled, dimmed).",
+      "name": "disabled",
+      "type": "boolean"
+     },
+     {
+      "description": "Error colors (zone and helper text); the input gets `aria-invalid`.",
+      "name": "error",
+      "type": "boolean"
+     },
+     {
+      "description": "The `form` the file input belongs to (its id).",
+      "name": "form",
+      "type": "string"
+     },
+     {
+      "description": "Returns the message shown for a rejected file.",
+      "name": "getErrorMessage",
+      "type": "UploadErrorMessage"
+     },
+     {
+      "description": "Reads the files of a drop or a change event (for example, to unpack folders).",
+      "name": "getFilesFromEvent",
+      "type": "UploadFilesFromEvent"
+     },
+     {
+      "description": "Text under the zone; it describes the input.",
+      "name": "helperText",
+      "type": "ReactNode"
+     },
+     {
+      "description": "The id of the file input.",
+      "name": "inputId",
+      "type": "string"
+     },
+     {
+      "description": "A ref to the file input.",
+      "name": "inputRef",
+      "type": "Ref<HTMLInputElement>"
+     },
+     {
+      "description": "Replaces the text of the labels and messages, such as for another language.",
+      "name": "labels",
+      "type": "Partial<UploadLabels>"
+     },
+     {
+      "description": "Language of the file sizes (default: the page's).",
+      "name": "locale",
+      "type": "string"
+     },
+     {
+      "description": "Most files held (multiple; 0 = no limit).",
+      "name": "maxFiles",
+      "type": "number"
+     },
+     {
+      "description": "Largest file in bytes.",
+      "name": "maxSize",
+      "type": "number"
+     },
+     {
+      "description": "Smallest file in bytes.",
+      "name": "minSize",
+      "type": "number"
+     },
+     {
+      "description": "Input `name`, `form`, `required`, `capture` and `id`.",
+      "name": "name",
+      "type": "string"
+     },
+     {
+      "description": "A press on the zone doesn't open the file dialog.",
+      "name": "noClick",
+      "type": "boolean"
+     },
+     {
+      "description": "Files can't be dropped on the zone.",
+      "name": "noDrag",
+      "type": "boolean"
+     },
+     {
+      "description": "Drags handled here don't reach an outer upload.",
+      "name": "noDragEventsBubbling",
+      "type": "boolean"
+     },
+     {
+      "description": "The input leaves the tab order (give people another way to open the dialog).",
+      "name": "noKeyboard",
+      "type": "boolean"
+     },
+     {
+      "description": "Pasting files while the upload has focus does nothing.",
+      "name": "noPaste",
+      "type": "boolean"
+     },
+     {
+      "description": "Called with the files the upload holds after a drop, a removal or a reset.",
+      "name": "onChange",
+      "type": "((files: UploadValue[]) => void)"
+     },
+     {
+      "description": "Every drop, pick or paste: the accepted and the rejected files.",
+      "name": "onDrop",
+      "type": "((accepted: File[], rejections: UploadRejection[]) => void)"
+     },
+     {
+      "description": "Called with the files that passed the checks.",
+      "name": "onDropAccepted",
+      "type": "((files: File[]) => void)"
+     },
+     {
+      "description": "Called with the files that were rejected and why.",
+      "name": "onDropRejected",
+      "type": "((rejections: UploadRejection[]) => void)"
+     },
+     {
+      "description": "A validator or `getFilesFromEvent` threw; the drop is discarded.",
+      "name": "onError",
+      "type": "((error: unknown) => void)"
+     },
+     {
+      "description": "Called when the file dialog closes without a choice.",
+      "name": "onFileDialogCancel",
+      "type": "(() => void)"
+     },
+     {
+      "description": "Called when the file dialog opens.",
+      "name": "onFileDialogOpen",
+      "type": "(() => void)"
+     },
+     {
+      "description": "A file was removed with its button (or `removeFile`).",
+      "name": "onRemove",
+      "type": "((file: UploadValue) => void)"
+     },
+     {
+      "description": "Shows a \"Remove all\" button (multiple).",
+      "name": "onRemoveAll",
+      "type": "(() => void)"
+     },
+     {
+      "description": "Shows an \"Upload\" button (multiple); it receives the files. Sending them is up to you.",
+      "name": "onUpload",
+      "type": "((files: UploadValue[]) => void)"
+     },
+     {
+      "description": "Replaces the zone's content; a function receives the drag state.",
+      "name": "placeholder",
+      "type": "((state: UploadState) => ReactNode) | ReactNode"
+     },
+     {
+      "default": "true",
+      "description": "Files dropped outside an upload don't open in the tab.",
+      "name": "preventDropOnDocument",
+      "type": "boolean"
+     },
+     {
+      "description": "Makes the file input required in a form.",
+      "name": "required",
+      "type": "boolean"
+     },
+     {
+      "default": "true",
+      "description": "Image previews in the list.",
+      "name": "thumbnail",
+      "type": "boolean"
+     },
+     {
+      "description": "Zone title (also the input's name).",
+      "name": "title",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Opens the File System Access picker where supported (the input otherwise).",
+      "name": "useFsAccessApi",
+      "type": "boolean"
+     },
+     {
+      "description": "Checks each file: return an error (or several) to reject it.",
+      "name": "validator",
+      "type": "UploadValidator"
+     },
+     {
+      "description": "Controlled files.",
+      "name": "value",
+      "type": "readonly UploadValue[]"
+     }
+    ]
+   }
+  },
+  {
+   "name": "UploadBox",
+   "react": {
+    "description": "A small upload box whose placeholder is its content (an icon by default).",
+    "native": "HTMLDivElement",
+    "props": [
+     {
+      "description": "jpg\"] }` or labeled groups.",
+      "name": "accept",
+      "type": "UploadAccept"
+     },
+     {
+      "description": "A ref to the upload's methods (open the dialog, set or clear files).",
+      "name": "apiRef",
+      "type": "Ref<UploadApi>"
+     },
+     {
+      "description": "Focuses the drop zone when it mounts.",
+      "name": "autoFocus",
+      "type": "boolean"
+     },
+     {
+      "description": "Asks for the camera on phones: `user` (front) or `environment` (back).",
+      "name": "capture",
+      "type": "\"environment\" | \"user\""
+     },
+     {
+      "description": "Uncontrolled initial files.",
+      "name": "defaultValue",
+      "type": "readonly UploadValue[]"
+     },
+     {
+      "description": "Text under the title.",
+      "name": "description",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Can't receive files (input disabled, dimmed).",
+      "name": "disabled",
+      "type": "boolean"
+     },
+     {
+      "description": "Error colors (zone and helper text); the input gets `aria-invalid`.",
+      "name": "error",
+      "type": "boolean"
+     },
+     {
+      "description": "The `form` the file input belongs to (its id).",
+      "name": "form",
+      "type": "string"
+     },
+     {
+      "description": "Returns the message shown for a rejected file.",
+      "name": "getErrorMessage",
+      "type": "UploadErrorMessage"
+     },
+     {
+      "description": "Reads the files of a drop or a change event (for example, to unpack folders).",
+      "name": "getFilesFromEvent",
+      "type": "UploadFilesFromEvent"
+     },
+     {
+      "description": "Text under the zone; it describes the input.",
+      "name": "helperText",
+      "type": "ReactNode"
+     },
+     {
+      "description": "The id of the file input.",
+      "name": "inputId",
+      "type": "string"
+     },
+     {
+      "description": "A ref to the file input.",
+      "name": "inputRef",
+      "type": "Ref<HTMLInputElement>"
+     },
+     {
+      "description": "Replaces the text of the labels and messages, such as for another language.",
+      "name": "labels",
+      "type": "Partial<UploadLabels>"
+     },
+     {
+      "description": "Language of the file sizes (default: the page's).",
+      "name": "locale",
+      "type": "string"
+     },
+     {
+      "description": "Most files held (multiple; 0 = no limit).",
+      "name": "maxFiles",
+      "type": "number"
+     },
+     {
+      "description": "Largest file in bytes.",
+      "name": "maxSize",
+      "type": "number"
+     },
+     {
+      "description": "Smallest file in bytes.",
+      "name": "minSize",
+      "type": "number"
+     },
+     {
+      "default": "false",
+      "description": "Several files, added to the ones held. (a new file replaces the old one).",
+      "name": "multiple",
+      "type": "boolean"
+     },
+     {
+      "description": "Input `name`, `form`, `required`, `capture` and `id`.",
+      "name": "name",
+      "type": "string"
+     },
+     {
+      "description": "A press on the zone doesn't open the file dialog.",
+      "name": "noClick",
+      "type": "boolean"
+     },
+     {
+      "description": "Files can't be dropped on the zone.",
+      "name": "noDrag",
+      "type": "boolean"
+     },
+     {
+      "description": "Drags handled here don't reach an outer upload.",
+      "name": "noDragEventsBubbling",
+      "type": "boolean"
+     },
+     {
+      "description": "The input leaves the tab order (give people another way to open the dialog).",
+      "name": "noKeyboard",
+      "type": "boolean"
+     },
+     {
+      "description": "Pasting files while the upload has focus does nothing.",
+      "name": "noPaste",
+      "type": "boolean"
+     },
+     {
+      "description": "Called with the files the upload holds after a drop, a removal or a reset.",
+      "name": "onChange",
+      "type": "((files: UploadValue[]) => void)"
+     },
+     {
+      "description": "Every drop, pick or paste: the accepted and the rejected files.",
+      "name": "onDrop",
+      "type": "((accepted: File[], rejections: UploadRejection[]) => void)"
+     },
+     {
+      "description": "Called with the files that passed the checks.",
+      "name": "onDropAccepted",
+      "type": "((files: File[]) => void)"
+     },
+     {
+      "description": "Called with the files that were rejected and why.",
+      "name": "onDropRejected",
+      "type": "((rejections: UploadRejection[]) => void)"
+     },
+     {
+      "description": "A validator or `getFilesFromEvent` threw; the drop is discarded.",
+      "name": "onError",
+      "type": "((error: unknown) => void)"
+     },
+     {
+      "description": "Called when the file dialog closes without a choice.",
+      "name": "onFileDialogCancel",
+      "type": "(() => void)"
+     },
+     {
+      "description": "Called when the file dialog opens.",
+      "name": "onFileDialogOpen",
+      "type": "(() => void)"
+     },
+     {
+      "description": "A file was removed with its button (or `removeFile`).",
+      "name": "onRemove",
+      "type": "((file: UploadValue) => void)"
+     },
+     {
+      "description": "Shows a \"Remove all\" button (multiple).",
+      "name": "onRemoveAll",
+      "type": "(() => void)"
+     },
+     {
+      "description": "Shows an \"Upload\" button (multiple); it receives the files. Sending them is up to you.",
+      "name": "onUpload",
+      "type": "((files: UploadValue[]) => void)"
+     },
+     {
+      "description": "Replaces the zone's content; a function receives the drag state.",
+      "name": "placeholder",
+      "type": "((state: UploadState) => ReactNode) | ReactNode"
+     },
+     {
+      "default": "true",
+      "description": "Files dropped outside an upload don't open in the tab.",
+      "name": "preventDropOnDocument",
+      "type": "boolean"
+     },
+     {
+      "description": "Makes the file input required in a form.",
+      "name": "required",
+      "type": "boolean"
+     },
+     {
+      "description": "Zone title (also the input's name).",
+      "name": "title",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Opens the File System Access picker where supported (the input otherwise).",
+      "name": "useFsAccessApi",
+      "type": "boolean"
+     },
+     {
+      "description": "Checks each file: return an error (or several) to reject it.",
+      "name": "validator",
+      "type": "UploadValidator"
+     },
+     {
+      "description": "Controlled files.",
+      "name": "value",
+      "type": "readonly UploadValue[]"
+     }
+    ]
+   }
+  },
+  {
+   "name": "UploadCloudIcon",
+   "react": {
+    "description": "A cloud with an arrow (box placeholder, Upload button).",
+    "props": []
+   }
+  }
+ ],
+ "format": 1,
+ "name": "upload",
+ "title": "Upload",
+ "types": [
+  {
+   "name": "UploadAccept",
+   "type": "string | readonly UploadAcceptGroup[] | UploadAcceptMap"
+  },
+  {
+   "name": "UploadErrorMessage",
+   "type": "(error: UploadFileError, file: File) => string"
+  },
+  {
+   "name": "UploadFilesFromEvent",
+   "type": "(event: Event | readonly FileSystemFileHandle[]) => Promise<readonly File[]> | readonly File[]"
+  },
+  {
+   "name": "UploadValidator",
+   "type": "(file: File) => Promise<UploadValidatorResult> | UploadValidatorResult"
+  },
+  {
+   "name": "UploadValidatorResult",
+   "type": "readonly UploadFileError[] | UploadFileError | null"
+  },
+  {
+   "name": "UploadValue",
+   "type": "string | File"
+  }
+ ]
+}

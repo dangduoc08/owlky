@@ -1,4 +1,6 @@
 import { paperOptions } from "@owlky/core";
+import paperApi from "@owlky/docs-content/api/paper.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { Paper } from "@owlky/react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
@@ -117,6 +119,7 @@ export function Items() {
 - Text on paper uses the primary text color, with a contrast ratio of at least 4.5:1 in the light and dark themes.
 - Shadows and outlines are decorative. Don't use the elevation level alone to show which surface is selected or important.`,
   },
+  apiReferenceSection(paperApi),
 ];
 
 const PREVIEWS = {

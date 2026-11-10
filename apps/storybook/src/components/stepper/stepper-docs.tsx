@@ -1,4 +1,6 @@
 import { mobileStepperOptions, stepLabelOptions, stepOptions, stepperOptions } from "@owlky/core";
+import stepperApi from "@owlky/docs-content/api/stepper.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { MobileStepper, Step, StepLabel, Stepper } from "@owlky/react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
@@ -167,6 +169,7 @@ export function Setup() {
 - The dots and the bar of a mobile stepper are named "Step 2 of 3". Pass \`getStepLabel\` (React) or \`data-ok-label-step\` (HTML, with \`{step}\` and \`{steps}\`) to translate it.
 - Numbers on steps that aren't reached use a darker grey than the line, so they keep a contrast ratio of at least 4.5:1.`,
   },
+  apiReferenceSection(stepperApi),
 ];
 
 const PREVIEWS = {

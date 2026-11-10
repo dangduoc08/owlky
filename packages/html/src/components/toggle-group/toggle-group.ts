@@ -6,7 +6,13 @@ import {
   toSelection,
 } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
-import type { ComponentInstance } from "../../runtime/types.js";
+import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
+
+/** Events of this component (`ok:<name>:<event>` on the root). */
+export interface ToggleGroupEvents {
+  /** Before the group's value changes. Call `preventDefault()` to keep the current one. */
+  change: EventSpec<{ value: ToggleGroupValue; previous: ToggleGroupValue; button: Element }, true>;
+}
 
 export interface ToggleGroupInstance extends ComponentInstance {
   /** `string | null` with `data-ok-exclusive`, `string[]` otherwise. */
@@ -25,7 +31,7 @@ export interface ToggleGroupInstance extends ComponentInstance {
  * Events:  ok:toggle-group:change (cancelable, detail: { value, previous, button })
  * Selection rules come from core (`nextToggleSelection`), shared with React.
  */
-export const toggleGroup = defineComponent<ToggleGroupInstance>({
+export const toggleGroup = defineComponent<ToggleGroupInstance, ToggleGroupEvents>({
   name: "toggle-group",
   selector: "[data-ok-toggle-group]",
 

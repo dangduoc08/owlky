@@ -159,7 +159,9 @@ export interface MapProps
   description?: ReactNode;
   /** Shown instead of the map without WebGL (default: a sentence from `labels.fallback`). */
   fallback?: ReactNode;
+  /** Called when the map enters or leaves full screen. */
   onFullscreenChange?: ((fullscreen: boolean) => void) | undefined;
+  /** Called when the map falls back to its static content (no WebGL, or an error). */
   onFallback?: ((reason: "webgl" | "error") => void) | undefined;
   children?: ReactNode;
 }

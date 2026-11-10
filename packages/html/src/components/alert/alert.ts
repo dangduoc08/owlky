@@ -1,5 +1,11 @@
 import { defineComponent } from "../../runtime/define.js";
-import type { ComponentInstance } from "../../runtime/types.js";
+import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
+
+/** Events of this component (`ok:<name>:<event>` on the root). */
+export interface AlertEvents {
+  /** Before the alert closes. Call `preventDefault()` to keep it. */
+  close: EventSpec<undefined, true>;
+}
 
 export interface AlertInstance extends ComponentInstance {
   /** Hides the alert. Returns `false` if `ok:alert:close` was prevented. */
@@ -15,7 +21,7 @@ export interface AlertInstance extends ComponentInstance {
  *          </div>
  * Events:  ok:alert:close (cancelable) — then the alert gets `hidden`
  */
-export const alert = defineComponent<AlertInstance>({
+export const alert = defineComponent<AlertInstance, AlertEvents>({
   name: "alert",
   selector: "[data-ok-alert]",
 

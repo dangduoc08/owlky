@@ -1,0 +1,28 @@
+{
+ "format": 1,
+ "parts": [
+  {
+   "description": "Applies a color preset to this element and everything inside it, such as `purple`.",
+   "kind": "value",
+   "name": "data-ok-preset",
+   "value": "string"
+  },
+  {
+   "description": "`off` keeps the HTML runtime away from this element and everything inside it. React writes it on interactive roots.",
+   "kind": "value",
+   "name": "data-ok-runtime",
+   "value": [
+    "off"
+   ]
+  },
+  {
+   "description": "Applies a color scheme to this element and everything inside it.",
+   "kind": "value",
+   "name": "data-ok-theme",
+   "value": [
+    "dark",
+    "light"
+   ]
+  }
+ ]
+}

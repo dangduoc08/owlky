@@ -1,4 +1,6 @@
 import { dividerOptions } from "@owlky/core";
+import dividerApi from "@owlky/docs-content/api/divider.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { Divider } from "@owlky/react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
@@ -76,6 +78,7 @@ export function Sections() {
 - A purely decorative line between items that are already grouped can be hidden with \`aria-hidden="true"\`.
 - Text on a divider uses the secondary text color, with a contrast ratio of at least 4.5:1. The line itself is decorative and lighter.`,
   },
+  apiReferenceSection(dividerApi),
 ];
 
 const PREVIEWS = {

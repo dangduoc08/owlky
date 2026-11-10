@@ -1,4 +1,6 @@
 import { breadcrumbsOptions } from "@owlky/core";
+import breadcrumbsApi from "@owlky/docs-content/api/breadcrumbs.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { Breadcrumbs, BreadcrumbsDot, Link } from "@owlky/react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
@@ -111,6 +113,7 @@ export function Trail() {
 - Item text uses the secondary text color and the current page the primary one, both with a contrast ratio of at least 4.5:1.
 - Links and the expand button show a focus ring for keyboard users. The expand button is at least 24px tall.`,
   },
+  apiReferenceSection(breadcrumbsApi),
 ];
 
 const PREVIEWS = {

@@ -1,0 +1,223 @@
+{
+ "css": [
+  {
+   "dark": "#1C252E",
+   "light": "#FFFFFF",
+   "name": "--ok-bg-paper"
+  },
+  {
+   "description": "The text color on the main color.",
+   "name": "--ok-c-contrast"
+  },
+  {
+   "description": "The main color of the element's `data-ok-color`.",
+   "name": "--ok-c-main"
+  },
+  {
+   "name": "--ok-font-family",
+   "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+  },
+  {
+   "name": "--ok-font-weight-semibold",
+   "value": "600"
+  },
+  {
+   "name": "--ok-palette-grey-300",
+   "value": "#DFE3E8"
+  },
+  {
+   "name": "--ok-palette-grey-700",
+   "value": "#454F5B"
+  },
+  {
+   "name": "--ok-palette-primary-dark",
+   "value": "#007867"
+  },
+  {
+   "name": "--ok-palette-primary-lighter",
+   "value": "#C8FAD6"
+  },
+  {
+   "name": "--ok-radius-full",
+   "value": "9999px"
+  },
+  {
+   "name": "--ok-radius-lg",
+   "value": "12px"
+  },
+  {
+   "name": "--ok-spacing",
+   "value": "0.25rem"
+  }
+ ],
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-avatar",
+    "options": [
+     {
+      "attr": "data-ok-variant",
+      "default": "circular",
+      "description": "Circle, 12px corners or square.",
+      "kind": "style",
+      "name": "variant",
+      "values": [
+       "circular",
+       "rounded",
+       "square"
+      ]
+     },
+     {
+      "attr": "data-ok-color",
+      "default": "default",
+      "description": "Background for letters and icons.",
+      "kind": "style",
+      "name": "color",
+      "values": [
+       "default",
+       "primary",
+       "secondary",
+       "info",
+       "success",
+       "warning",
+       "error"
+      ]
+     },
+     {
+      "attr": "data-ok-size",
+      "default": 40,
+      "description": "Width and height: a number in px, or a CSS length.",
+      "kind": "number",
+      "min": 0,
+      "name": "size",
+      "units": [
+       "px",
+       "rem",
+       "em"
+      ]
+     }
+    ],
+    "parts": [
+     {
+      "description": "The fallback icon, shown when the picture fails or there is none.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-avatar-fallback"
+     },
+     {
+      "description": "The \"+n\" avatar of a group that shows more avatars than `max`.",
+      "kind": "part",
+      "name": "data-ok-avatar-surplus"
+     }
+    ],
+    "runtime": "avatar"
+   },
+   "name": "Avatar",
+   "react": {
+    "description": "An image, letters or an icon in a circle. Name a letters avatar for assistive technology with `aria-label` (and `role=\"img\"`) when it matters.",
+    "native": "HTMLSpanElement",
+    "props": [
+     {
+      "description": "Text alternative of the image (also the source of the fallback letter).",
+      "name": "alt",
+      "type": "string"
+     },
+     {
+      "default": "\"default\"",
+      "description": "Background for letters and icons. (grey).",
+      "name": "color",
+      "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
+     },
+     {
+      "description": "Other attributes of the `<img>`.",
+      "name": "imgProps",
+      "type": "ImgHTMLAttributes<HTMLImageElement>"
+     },
+     {
+      "default": "40",
+      "description": "Width and height: a number in px, or a CSS length.",
+      "name": "size",
+      "type": "string | number"
+     },
+     {
+      "description": "The `sizes` of the `img`, with `srcSet`.",
+      "name": "sizes",
+      "type": "string"
+     },
+     {
+      "description": "Image URL. If it fails to load, the avatar shows `children`, the first letter of `alt` or an icon.",
+      "name": "src",
+      "type": "string"
+     },
+     {
+      "description": "Candidate pictures for `src` at other resolutions (the `srcset` of the `img`).",
+      "name": "srcSet",
+      "type": "string"
+     },
+     {
+      "description": "Circle (default), 12px corners or square.",
+      "name": "variant",
+      "type": "\"circular\" | \"rounded\" | \"square\""
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-avatar-group",
+    "options": [
+     {
+      "attr": "data-ok-spacing",
+      "default": "medium",
+      "description": "Overlap: 8 / 16px.",
+      "kind": "style",
+      "name": "spacing",
+      "values": [
+       "medium",
+       "small"
+      ]
+     }
+    ]
+   },
+   "name": "AvatarGroup",
+   "react": {
+    "description": "Overlapping avatars with a \"+N\" surplus when there are more than `max`.",
+    "native": "HTMLDivElement",
+    "props": [
+     {
+      "default": "5",
+      "description": "Avatars shown at most, the surplus avatar included. (at least 2).",
+      "name": "max",
+      "type": "number"
+     },
+     {
+      "default": "+N",
+      "description": "Content of the surplus avatar.",
+      "name": "renderSurplus",
+      "type": "((surplus: number) => ReactNode)"
+     },
+     {
+      "description": "Overlap: `medium` (8px, default) or `small` (16px).",
+      "name": "spacing",
+      "type": "\"medium\" | \"small\""
+     },
+     {
+      "description": "Total count (default: the number of children), for the surplus.",
+      "name": "total",
+      "type": "number"
+     },
+     {
+      "description": "Shape of every avatar.",
+      "name": "variant",
+      "type": "\"circular\" | \"rounded\" | \"square\""
+     }
+    ]
+   }
+  }
+ ],
+ "format": 1,
+ "name": "avatar",
+ "title": "Avatar"
+}

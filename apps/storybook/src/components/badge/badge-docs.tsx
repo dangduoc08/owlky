@@ -1,4 +1,6 @@
 import { badgeOptions } from "@owlky/core";
+import badgeApi from "@owlky/docs-content/api/badge.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { Avatar, Badge } from "@owlky/react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
@@ -76,6 +78,7 @@ export function Inbox() {
 - Dots and statuses are visual only. Say the status in text too, for example in the avatar's name ("Deja Brady, online").
 - Grey badges use dark text; palette colors follow the design.`,
   },
+  apiReferenceSection(badgeApi),
 ];
 
 const PREVIEWS = {

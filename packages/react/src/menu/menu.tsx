@@ -24,11 +24,13 @@ import { Popover, type PopoverAnchor } from "../popover/popover.js";
 export type MenuCloseReason = PopoverDismissReason | "select" | "tab";
 
 export interface MenuProps extends Omit<HTMLAttributes<HTMLUListElement>, "onKeyDown"> {
+  /** Shows the menu. */
   open: boolean;
+  /** The element the menu opens next to. */
   anchorEl: PopoverAnchor;
   /** Called when the menu asks to close, with the reason. */
   onOpenChange?: ((open: boolean, reason?: MenuCloseReason) => void) | undefined;
-  /** Default `"bottom-start"`. */
+  /** Where the menu opens around its anchor. Default `"bottom-start"`. */
   placement?: Placement | undefined;
   /** Compact items. */
   dense?: boolean | undefined;

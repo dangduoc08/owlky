@@ -11,7 +11,7 @@ import {
   type TimeView,
 } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
-import type { ComponentInstance } from "../../runtime/types.js";
+import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
 import {
   asFunction,
   h,
@@ -27,11 +27,18 @@ import {
   toPickerDate,
 } from "../date-calendar/picker-dom.js";
 
+/** Events of this component (`ok:<name>:<event>` on the root). */
+export interface DigitalClockEvents {
+  /** Before a time is picked (`HH:mm:ss`). Call `preventDefault()` to refuse it. */
+  change: EventSpec<{ value: string; selectionState: string }, true>;
+}
+
 export interface DigitalClockInstance extends ComponentInstance, PickerDateApi {
   /** ISO time (`HH:mm:ss`), or `null`. */
   readonly value: string | null;
   /** Sets the value (ISO time or date time, `Date` or `null`) without events. A `Date` keeps its day. */
   setValue(value: string | Date | null): void;
+  /** Disables the times for which the function returns `true` (`null`: none). */
   setShouldDisableTime(fn: ((value: Date, view: TimeView) => boolean) | null): void;
   /** The list's name follows `aria-label` in the markup; texts don't change here. */
   setLocaleText(text: Partial<PickerLocaleText>): void;
@@ -83,7 +90,7 @@ export function renderOptionList(list: HTMLElement, options: ListOption[], off: 
  * Behavior: core `createDigitalClockController` (arrows move focus; Enter, Space or a press pick).
  * Events:  ok:digital-clock:change (cancelable, `{ value, selectionState: "finish" }`).
  */
-export const digitalClock = defineComponent<DigitalClockInstance>({
+export const digitalClock = defineComponent<DigitalClockInstance, DigitalClockEvents>({
   name: "digital-clock",
   selector: "[data-ok-digital-clock]",
 

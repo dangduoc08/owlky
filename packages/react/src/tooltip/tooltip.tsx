@@ -63,14 +63,18 @@ export interface TooltipProps
   leaveTouchDelay?: number | undefined;
   /** Controlled open state. */
   open?: boolean | undefined;
+  /** Called when the tooltip shows or hides. */
   onOpenChange?: ((open: boolean) => void) | undefined;
   /**
    * The tooltip describes its trigger (`aria-describedby`) instead of naming it
    * (`aria-labelledby`, the default: use it for icon-only buttons).
    */
   describeChild?: boolean | undefined;
+  /** Doesn't show the tooltip on hover. */
   disableHoverListener?: boolean | undefined;
+  /** Doesn't show the tooltip on focus. */
   disableFocusListener?: boolean | undefined;
+  /** Doesn't show the tooltip on a long press. */
   disableTouchListener?: boolean | undefined;
 }
 

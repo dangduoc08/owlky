@@ -1,4 +1,6 @@
 import { buttonGroupOptions } from "@owlky/core";
+import buttonGroupApi from "@owlky/docs-content/api/button-group.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { Button, ButtonGroup } from "@owlky/react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
@@ -99,6 +101,7 @@ export function ButtonGroupOrientation() {
 - Each button keeps its own name from its label.
 - A focused button is drawn above its neighbors, so its focus outline is never hidden.`,
   },
+  apiReferenceSection(buttonGroupApi),
 ];
 
 const PREVIEWS = {

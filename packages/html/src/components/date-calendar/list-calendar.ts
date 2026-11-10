@@ -13,7 +13,7 @@ import {
   setDateParts,
 } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
-import type { ComponentDefinition, ComponentInstance } from "../../runtime/types.js";
+import type { ComponentDefinition, ComponentInstance, EventSpec } from "../../runtime/types.js";
 import {
   asFunction,
   type PickerDateApi,
@@ -25,18 +25,26 @@ import {
   toDate,
 } from "./picker-dom.js";
 
+/** Events of this component (`ok:<name>:<event>` on the root). */
+export interface ListCalendarEvents {
+  /** Before a month or a year is picked (`YYYY-MM-DD`, the first day). Call `preventDefault()` to refuse it. */
+  change: EventSpec<{ value: string }, true>;
+}
+
 export interface ListCalendarInstance extends ComponentInstance, PickerDateApi {
   /** Selected date (ISO), or `null`. */
   readonly value: string | null;
   /** Sets the value without events (ISO string, `Date` or `null`). */
   setValue(value: string | Date | null): void;
+  /** Disables the months for which the function returns `true` (`null`: none). */
   setShouldDisableMonth(fn: ((month: Date) => boolean) | null): void;
+  /** Disables the years for which the function returns `true` (`null`: none). */
   setShouldDisableYear(fn: ((year: Date) => boolean) | null): void;
 }
 
 export function listCalendar(kind: "month" | "year"): ComponentDefinition<ListCalendarInstance> {
   const item = `[data-ok-picker-${kind}]`;
-  return defineComponent<ListCalendarInstance>({
+  return defineComponent<ListCalendarInstance, ListCalendarEvents>({
     name: `${kind}-calendar`,
     // Inside a date calendar, the date calendar runtime owns the list.
     selector: `[data-ok-${kind}-calendar]:not([data-ok-date-calendar] *)`,

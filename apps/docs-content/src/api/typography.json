@@ -1,0 +1,413 @@
+{
+ "css": [
+  {
+   "description": "The main color of the element's `data-ok-color`.",
+   "name": "--ok-c-main"
+  },
+  {
+   "dark": "#637381",
+   "light": "#919EAB",
+   "name": "--ok-text-disabled"
+  },
+  {
+   "dark": "#FFFFFF",
+   "light": "#1C252E",
+   "name": "--ok-text-primary"
+  },
+  {
+   "dark": "#919EAB",
+   "light": "#637381",
+   "name": "--ok-text-secondary"
+  },
+  {
+   "name": "--ok-typography-body1-font-family",
+   "value": "var(--ok-font-family)"
+  },
+  {
+   "name": "--ok-typography-body1-font-size",
+   "value": "1rem"
+  },
+  {
+   "name": "--ok-typography-body1-font-weight",
+   "value": "400"
+  },
+  {
+   "name": "--ok-typography-body1-line-height",
+   "value": "1.5"
+  },
+  {
+   "name": "--ok-typography-body1-text-transform",
+   "value": "none"
+  },
+  {
+   "name": "--ok-typography-body2-font-family",
+   "value": "var(--ok-font-family)"
+  },
+  {
+   "name": "--ok-typography-body2-font-size",
+   "value": "0.875rem"
+  },
+  {
+   "name": "--ok-typography-body2-font-weight",
+   "value": "400"
+  },
+  {
+   "name": "--ok-typography-body2-line-height",
+   "value": "1.5714"
+  },
+  {
+   "name": "--ok-typography-body2-text-transform",
+   "value": "none"
+  },
+  {
+   "name": "--ok-typography-button-font-family",
+   "value": "var(--ok-font-family)"
+  },
+  {
+   "name": "--ok-typography-button-font-size",
+   "value": "0.875rem"
+  },
+  {
+   "name": "--ok-typography-button-font-weight",
+   "value": "700"
+  },
+  {
+   "name": "--ok-typography-button-line-height",
+   "value": "1.7143"
+  },
+  {
+   "name": "--ok-typography-button-text-transform",
+   "value": "none"
+  },
+  {
+   "name": "--ok-typography-caption-font-family",
+   "value": "var(--ok-font-family)"
+  },
+  {
+   "name": "--ok-typography-caption-font-size",
+   "value": "0.75rem"
+  },
+  {
+   "name": "--ok-typography-caption-font-weight",
+   "value": "400"
+  },
+  {
+   "name": "--ok-typography-caption-line-height",
+   "value": "1.5"
+  },
+  {
+   "name": "--ok-typography-caption-text-transform",
+   "value": "none"
+  },
+  {
+   "name": "--ok-typography-h1-font-family",
+   "value": "var(--ok-font-family-secondary)"
+  },
+  {
+   "name": "--ok-typography-h1-font-size",
+   "value": "2.5rem"
+  },
+  {
+   "name": "--ok-typography-h1-font-weight",
+   "value": "800"
+  },
+  {
+   "name": "--ok-typography-h1-line-height",
+   "value": "1.25"
+  },
+  {
+   "name": "--ok-typography-h1-text-transform",
+   "value": "none"
+  },
+  {
+   "name": "--ok-typography-h2-font-family",
+   "value": "var(--ok-font-family-secondary)"
+  },
+  {
+   "name": "--ok-typography-h2-font-size",
+   "value": "2rem"
+  },
+  {
+   "name": "--ok-typography-h2-font-weight",
+   "value": "800"
+  },
+  {
+   "name": "--ok-typography-h2-line-height",
+   "value": "1.3333"
+  },
+  {
+   "name": "--ok-typography-h2-text-transform",
+   "value": "none"
+  },
+  {
+   "name": "--ok-typography-h3-font-family",
+   "value": "var(--ok-font-family-secondary)"
+  },
+  {
+   "name": "--ok-typography-h3-font-size",
+   "value": "1.5rem"
+  },
+  {
+   "name": "--ok-typography-h3-font-weight",
+   "value": "700"
+  },
+  {
+   "name": "--ok-typography-h3-line-height",
+   "value": "1.5"
+  },
+  {
+   "name": "--ok-typography-h3-text-transform",
+   "value": "none"
+  },
+  {
+   "name": "--ok-typography-h4-font-family",
+   "value": "var(--ok-font-family)"
+  },
+  {
+   "name": "--ok-typography-h4-font-size",
+   "value": "1.25rem"
+  },
+  {
+   "name": "--ok-typography-h4-font-weight",
+   "value": "700"
+  },
+  {
+   "name": "--ok-typography-h4-line-height",
+   "value": "1.5"
+  },
+  {
+   "name": "--ok-typography-h4-text-transform",
+   "value": "none"
+  },
+  {
+   "name": "--ok-typography-h5-font-family",
+   "value": "var(--ok-font-family)"
+  },
+  {
+   "name": "--ok-typography-h5-font-size",
+   "value": "1.125rem"
+  },
+  {
+   "name": "--ok-typography-h5-font-weight",
+   "value": "700"
+  },
+  {
+   "name": "--ok-typography-h5-line-height",
+   "value": "1.5"
+  },
+  {
+   "name": "--ok-typography-h5-text-transform",
+   "value": "none"
+  },
+  {
+   "name": "--ok-typography-h6-font-family",
+   "value": "var(--ok-font-family)"
+  },
+  {
+   "name": "--ok-typography-h6-font-size",
+   "value": "1.0625rem"
+  },
+  {
+   "name": "--ok-typography-h6-font-weight",
+   "value": "600"
+  },
+  {
+   "name": "--ok-typography-h6-line-height",
+   "value": "1.5556"
+  },
+  {
+   "name": "--ok-typography-h6-text-transform",
+   "value": "none"
+  },
+  {
+   "name": "--ok-typography-overline-font-family",
+   "value": "var(--ok-font-family)"
+  },
+  {
+   "name": "--ok-typography-overline-font-size",
+   "value": "0.75rem"
+  },
+  {
+   "name": "--ok-typography-overline-font-weight",
+   "value": "700"
+  },
+  {
+   "name": "--ok-typography-overline-line-height",
+   "value": "1.5"
+  },
+  {
+   "name": "--ok-typography-overline-text-transform",
+   "value": "uppercase"
+  },
+  {
+   "name": "--ok-typography-subtitle1-font-family",
+   "value": "var(--ok-font-family)"
+  },
+  {
+   "name": "--ok-typography-subtitle1-font-size",
+   "value": "1rem"
+  },
+  {
+   "name": "--ok-typography-subtitle1-font-weight",
+   "value": "600"
+  },
+  {
+   "name": "--ok-typography-subtitle1-line-height",
+   "value": "1.5"
+  },
+  {
+   "name": "--ok-typography-subtitle1-text-transform",
+   "value": "none"
+  },
+  {
+   "name": "--ok-typography-subtitle2-font-family",
+   "value": "var(--ok-font-family)"
+  },
+  {
+   "name": "--ok-typography-subtitle2-font-size",
+   "value": "0.875rem"
+  },
+  {
+   "name": "--ok-typography-subtitle2-font-weight",
+   "value": "600"
+  },
+  {
+   "name": "--ok-typography-subtitle2-line-height",
+   "value": "1.5714"
+  },
+  {
+   "name": "--ok-typography-subtitle2-text-transform",
+   "value": "none"
+  }
+ ],
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-typography",
+    "options": [
+     {
+      "attr": "data-ok-variant",
+      "default": "body1",
+      "description": "A step of the type scale (font, size, weight, line height, case); `inherit` keeps the parent's font.",
+      "kind": "style",
+      "name": "variant",
+      "values": [
+       "h1",
+       "h2",
+       "h3",
+       "h4",
+       "h5",
+       "h6",
+       "subtitle1",
+       "subtitle2",
+       "body1",
+       "body2",
+       "caption",
+       "overline",
+       "button",
+       "inherit"
+      ]
+     },
+     {
+      "attr": "data-ok-color",
+      "default": "textPrimary",
+      "description": "Text color: a palette's `main` tone or a text tone. Without it, the text keeps the parent's color.",
+      "kind": "style",
+      "name": "color",
+      "optional": true,
+      "values": [
+       "primary",
+       "secondary",
+       "info",
+       "success",
+       "warning",
+       "error",
+       "textPrimary",
+       "textSecondary",
+       "textDisabled"
+      ]
+     },
+     {
+      "attr": "data-ok-align",
+      "default": "inherit",
+      "description": "Text alignment. Without it, the text keeps the parent's alignment.",
+      "kind": "style",
+      "name": "align",
+      "optional": true,
+      "values": [
+       "inherit",
+       "left",
+       "center",
+       "right",
+       "justify"
+      ]
+     },
+     {
+      "attr": "data-ok-gutter-bottom",
+      "description": "A bottom margin of 0.35em.",
+      "kind": "flag",
+      "name": "gutterBottom"
+     },
+     {
+      "attr": "data-ok-no-wrap",
+      "description": "One line: overflowing text ends with an ellipsis (needs a block or inline-block with a width).",
+      "kind": "flag",
+      "name": "noWrap"
+     }
+    ]
+   },
+   "name": "Typography",
+   "react": {
+    "description": "Text in a step of the type scale; the element follows the variant (`variantMapping`) unless `component` picks one.",
+    "native": "HTMLElement",
+    "props": [
+     {
+      "description": "Text alignment. Default: the parent's alignment (`\"inherit\"`).",
+      "name": "align",
+      "type": "\"center\" | \"inherit\" | \"justify\" | \"left\" | \"right\""
+     },
+     {
+      "description": "A palette's `main` tone or a text tone. Default: the parent's color.",
+      "name": "color",
+      "type": "\"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"textDisabled\" | \"textPrimary\" | \"textSecondary\" | \"warning\""
+     },
+     {
+      "description": "The element to render, whatever the variant (for example `\"h2\"` with `variant=\"h4\"`).",
+      "name": "component",
+      "type": "ElementType"
+     },
+     {
+      "description": "35em.",
+      "name": "gutterBottom",
+      "type": "boolean"
+     },
+     {
+      "description": "One line; overflowing text ends with an ellipsis.",
+      "name": "noWrap",
+      "type": "boolean"
+     },
+     {
+      "default": "\"body1\"",
+      "description": "A step of the type scale, or `inherit`.",
+      "name": "variant",
+      "type": "\"body1\" | \"body2\" | \"button\" | \"caption\" | \"h1\" | \"h2\" | \"h3\" | \"h4\" | \"h5\" | \"h6\" | \"inherit\" | \"overline\" | \"subtitle1\" | \"subtitle2\""
+     },
+     {
+      "description": "The element per variant, over the default mapping (`h1`–`h6`, subtitles `h6`, body `p`, others `span`).",
+      "name": "variantMapping",
+      "type": "Partial<Record<TypographyVariantName, ElementType>>"
+     }
+    ]
+   }
+  }
+ ],
+ "format": 1,
+ "name": "typography",
+ "title": "Typography",
+ "types": [
+  {
+   "name": "TypographyVariantName",
+   "type": "\"body1\" | \"body2\" | \"button\" | \"caption\" | \"h1\" | \"h2\" | \"h3\" | \"h4\" | \"h5\" | \"h6\" | \"inherit\" | \"overline\" | \"subtitle1\" | \"subtitle2\""
+  }
+ ]
+}

@@ -1,3 +1,5 @@
+import buttonApi from "../../api/button.json" with { type: "json" };
+import { apiReferenceSection } from "../../guide/api-data.js";
 import type { KeyboardRow, PropRow } from "../../guide/tables-data.js";
 import { CDN, capitalize, type GuideSection } from "../../guide/text.js";
 
@@ -196,6 +198,7 @@ export function ButtonLink() {
 - Every size is at least 24 × 24px, so buttons are easy to hit on touch screens.
 - Brand-colored buttons use white text on the main color. Some of these combinations are below a contrast ratio of 4.5:1, so keep labels short. Soft buttons use the accessible \`text\` tone.`,
   },
+  apiReferenceSection(buttonApi),
 ];
 
 /** Props and markup that aren't options (the "Content and behavior" table). */

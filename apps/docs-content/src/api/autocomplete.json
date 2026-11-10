@@ -1,0 +1,395 @@
+{
+ "css": [
+  {
+   "name": "--ok-action-focus",
+   "value": "color-mix(in srgb, #919EAB 24%, transparent)"
+  },
+  {
+   "name": "--ok-action-selected",
+   "value": "color-mix(in srgb, #919EAB 16%, transparent)"
+  },
+  {
+   "name": "--ok-duration-shortest",
+   "value": "150ms"
+  },
+  {
+   "name": "--ok-easing-standard",
+   "value": "cubic-bezier(0.4, 0, 0.2, 1)"
+  },
+  {
+   "name": "--ok-font-family",
+   "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+  },
+  {
+   "name": "--ok-radius-sm",
+   "value": "6px"
+  },
+  {
+   "name": "--ok-spacing",
+   "value": "0.25rem"
+  },
+  {
+   "dark": "#FFFFFF",
+   "light": "#1C252E",
+   "name": "--ok-text-primary"
+  },
+  {
+   "dark": "#919EAB",
+   "light": "#637381",
+   "name": "--ok-text-secondary"
+  },
+  {
+   "name": "--ok-typography-body2-font-size",
+   "value": "0.875rem"
+  },
+  {
+   "name": "--ok-typography-body2-line-height",
+   "value": "1.5714"
+  }
+ ],
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-autocomplete",
+    "events": [
+     {
+      "cancelable": true,
+      "description": "Before the value changes. Call `preventDefault()` to keep the current one.",
+      "detail": "{ value: string | string[] | null; }",
+      "name": "ok:autocomplete:change"
+     },
+     {
+      "cancelable": false,
+      "description": "After the listbox closed.",
+      "detail": "{ reason: string; }",
+      "name": "ok:autocomplete:close"
+     },
+     {
+      "cancelable": false,
+      "description": "After the listbox opened.",
+      "detail": "{ reason: string; }",
+      "name": "ok:autocomplete:open"
+     }
+    ],
+    "methods": [
+     {
+      "description": "Closes the listbox.",
+      "kind": "method",
+      "name": "close",
+      "type": "() => void"
+     },
+     {
+      "description": "Whether the listbox is open.",
+      "kind": "property",
+      "name": "isOpen",
+      "type": "boolean"
+     },
+     {
+      "description": "Opens the listbox.",
+      "kind": "method",
+      "name": "open",
+      "type": "() => void"
+     },
+     {
+      "description": "Sets the value without emitting events.",
+      "kind": "method",
+      "name": "setValue",
+      "type": "(value: string | readonly string[] | null) => void"
+     },
+     {
+      "description": "Option value(s) or typed text: `string | null`, or `string[]` with `data-ok-multiple`.",
+      "kind": "property",
+      "name": "value",
+      "type": "string | string[] | null"
+     }
+    ],
+    "options": [
+     {
+      "attr": "data-ok-multiple",
+      "description": "Several values, shown as chips in the field.",
+      "kind": "flag",
+      "name": "multiple"
+     },
+     {
+      "attr": "data-ok-free-solo",
+      "description": "Any text is a value (Enter commits it).",
+      "kind": "flag",
+      "name": "freeSolo"
+     },
+     {
+      "attr": "data-ok-disable-close-on-select",
+      "description": "The list stays open after a pick (multiple select with checkboxes).",
+      "kind": "flag",
+      "name": "disableCloseOnSelect"
+     },
+     {
+      "attr": "data-ok-disable-clearable",
+      "description": "No clear button.",
+      "kind": "flag",
+      "name": "disableClearable"
+     },
+     {
+      "attr": "data-ok-open-on-focus",
+      "description": "The list opens when the field gets focus.",
+      "kind": "flag",
+      "name": "openOnFocus"
+     },
+     {
+      "attr": "data-ok-auto-highlight",
+      "description": "The first option is highlighted while typing.",
+      "kind": "flag",
+      "name": "autoHighlight"
+     },
+     {
+      "attr": "data-ok-limit-tags",
+      "description": "Multiple: chips shown when the field isn't focused (the rest as \"+3\").",
+      "kind": "number",
+      "min": 0,
+      "name": "limitTags"
+     },
+     {
+      "attr": "aria-selected",
+      "description": "Chosen option(s) (`value` / `defaultValue`).",
+      "event": "ok:autocomplete:change",
+      "kind": "state",
+      "name": "value"
+     }
+    ],
+    "parts": [
+     {
+      "description": "The button that clears the value.",
+      "kind": "trigger",
+      "name": "data-ok-autocomplete-clear",
+      "value": [
+       ""
+      ]
+     },
+     {
+      "description": "The \"+n\" text after the visible chips when `limitTags` hides some.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-autocomplete-more"
+     },
+     {
+      "description": "The text shown when no option matches.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-autocomplete-no-options"
+     },
+     {
+      "description": "The popover surface that holds the listbox.",
+      "kind": "part",
+      "name": "data-ok-autocomplete-paper"
+     },
+     {
+      "description": "HTML only: the template of the chip each value of a multiple autocomplete shows.",
+      "elements": [
+       "template"
+      ],
+      "kind": "part",
+      "name": "data-ok-autocomplete-tag"
+     },
+     {
+      "description": "The button that opens and closes the listbox.",
+      "kind": "trigger",
+      "name": "data-ok-autocomplete-toggle",
+      "value": [
+       ""
+      ]
+     },
+     {
+      "description": "The accessible name of the toggle button while the listbox is open. Default \"Close\".",
+      "kind": "value",
+      "name": "data-ok-label-close",
+      "value": "string"
+     },
+     {
+      "description": "The accessible name of the toggle button while the listbox is closed. Default \"Open\".",
+      "kind": "value",
+      "name": "data-ok-label-open",
+      "value": "string"
+     }
+    ],
+    "runtime": "autocomplete"
+   },
+   "name": "Autocomplete",
+   "react": {
+    "description": "A text field with a list of suggestions (WAI-ARIA combobox), built from TextField, Chip, IconButton and Popover. Keys, clicks and blur are core's `createComboboxController`; this component owns the value, the text and the list.",
+    "native": "HTMLDivElement",
+    "props": [
+     {
+      "description": "Highlight the first option while typing.",
+      "name": "autoHighlight",
+      "type": "boolean"
+     },
+     {
+      "description": "Names of the end buttons.",
+      "name": "clearText",
+      "type": "string"
+     },
+     {
+      "default": "\"Close\"",
+      "description": "Label of the button that closes the list.",
+      "name": "closeText",
+      "type": "string"
+     },
+     {
+      "description": "Uncontrolled initial value.",
+      "name": "defaultValue",
+      "type": "AutocompleteValue"
+     },
+     {
+      "description": "No clear button.",
+      "name": "disableClearable",
+      "type": "boolean"
+     },
+     {
+      "description": "Keep the list open after a pick.",
+      "name": "disableCloseOnSelect",
+      "type": "boolean"
+     },
+     {
+      "description": "Turns the field off.",
+      "name": "disabled",
+      "type": "boolean"
+     },
+     {
+      "description": "Shows the field in the error state.",
+      "name": "error",
+      "type": "boolean"
+     },
+     {
+      "description": "Which options match the text. Default: label contains the text (case and accents ignored).",
+      "name": "filterOptions",
+      "type": "((options: AutocompleteOption[], inputValue: string) => AutocompleteOption[])"
+     },
+     {
+      "description": "Any text is a value; Enter commits it.",
+      "name": "freeSolo",
+      "type": "boolean"
+     },
+     {
+      "description": "Text of the hidden chips count. Default \"+3\".",
+      "name": "getLimitTagsText",
+      "type": "((more: number) => string)"
+     },
+     {
+      "description": "Text under the field, such as a hint or an error message.",
+      "name": "helperText",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Id of the input (other ids derive from it).",
+      "name": "id",
+      "type": "string"
+     },
+     {
+      "description": "Controlled text of the input.",
+      "name": "inputValue",
+      "type": "string"
+     },
+     {
+      "description": "TextField props.",
+      "name": "label",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Multiple: chips shown when the field isn't focused. Default: all.",
+      "name": "limitTags",
+      "type": "number"
+     },
+     {
+      "description": "Several values, shown as chips.",
+      "name": "multiple",
+      "type": "boolean"
+     },
+     {
+      "description": "Form field name of the input.",
+      "name": "name",
+      "type": "string"
+     },
+     {
+      "description": "Shown when nothing matches. Default \"No options\".",
+      "name": "noOptionsText",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Called with the new value.",
+      "name": "onChange",
+      "type": "((value: AutocompleteValue) => void)"
+     },
+     {
+      "description": "Called with the input's text as it changes.",
+      "name": "onInputChange",
+      "type": "((value: string) => void)"
+     },
+     {
+      "description": "Called when the list opens or closes, with the reason.",
+      "name": "onOpenChange",
+      "type": "((open: boolean, reason?: \"focus\" | \"input\" | \"keyboard\" | AutocompleteCloseReason | undefined) => void)"
+     },
+     {
+      "description": "Controlled open state of the list.",
+      "name": "open",
+      "type": "boolean"
+     },
+     {
+      "description": "Open the list when the field gets focus.",
+      "name": "openOnFocus",
+      "type": "boolean"
+     },
+     {
+      "default": "\"Open\"",
+      "description": "Label of the button that opens the list.",
+      "name": "openText",
+      "type": "string"
+     },
+     {
+      "description": "The choices: strings, or `{ value, label, disabled? }`.",
+      "name": "options",
+      "required": true,
+      "type": "readonly (string | AutocompleteOption)[]"
+     },
+     {
+      "description": "Placeholder of the input.",
+      "name": "placeholder",
+      "type": "string"
+     },
+     {
+      "description": "Content of an option (default: its label).",
+      "name": "renderOption",
+      "type": "((option: AutocompleteOption, state: { selected: boolean; }) => ReactNode)"
+     },
+     {
+      "description": "The field's size.",
+      "name": "size",
+      "type": "\"medium\" | \"small\""
+     },
+     {
+      "description": "Controlled value: an option value (or typed text with `freeSolo`), values with `multiple`, or `null`.",
+      "name": "value",
+      "type": "AutocompleteValue"
+     },
+     {
+      "description": "The field's variant: `outlined`, `filled` or `standard`.",
+      "name": "variant",
+      "type": "\"filled\" | \"outlined\" | \"standard\""
+     }
+    ]
+   }
+  }
+ ],
+ "format": 1,
+ "name": "autocomplete",
+ "title": "Autocomplete",
+ "types": [
+  {
+   "name": "AutocompleteCloseReason",
+   "type": "\"blur\" | \"escape\" | \"outside\" | \"select\" | \"toggle\""
+  }
+ ]
+}

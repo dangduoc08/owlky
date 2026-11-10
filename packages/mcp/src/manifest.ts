@@ -51,6 +51,82 @@ export interface ManifestStory {
   readonly snippets: readonly string[];
 }
 
+/** A React prop (API reference, ADR-0049). */
+export interface ManifestApiProp {
+  readonly name: string;
+  readonly type: string;
+  readonly description: string;
+  readonly default?: string;
+  readonly required?: boolean;
+}
+
+/** A `data-ok-*` name that isn't an option: an element, a state, a value or a trigger. */
+export interface ManifestApiPart {
+  readonly name: string;
+  readonly kind: "part" | "state" | "value" | "trigger";
+  readonly description: string;
+  readonly elements?: readonly string[];
+  /** Values and triggers: the values it takes (`"string"`: free text). */
+  readonly value?: readonly string[] | "string";
+}
+
+export interface ManifestApiEvent {
+  /** `ok:<component>:<event>`. */
+  readonly name: string;
+  /** The type of `event.detail`. */
+  readonly detail: string;
+  readonly cancelable: boolean | "sometimes";
+  readonly description: string;
+}
+
+export interface ManifestApiMethod {
+  readonly name: string;
+  readonly kind: "method" | "property";
+  readonly type: string;
+  readonly description: string;
+}
+
+/** One React component and the HTML element it renders (Card, CardHeader…). */
+export interface ManifestApiEntry {
+  readonly name: string;
+  readonly react?: {
+    readonly description: string;
+    readonly props: readonly ManifestApiProp[];
+    /** Where other props and the `ref` go. */
+    readonly native?: string;
+    readonly ref?: string;
+  };
+  readonly html?: {
+    readonly attribute: string;
+    readonly description?: string;
+    readonly elements?: readonly string[];
+    readonly options?: readonly ManifestOption[];
+    readonly parts?: readonly ManifestApiPart[];
+    /** `runtime.get(element, runtime)`. */
+    readonly runtime?: string;
+    readonly events?: readonly ManifestApiEvent[];
+    readonly methods?: readonly ManifestApiMethod[];
+  };
+}
+
+export interface ManifestApi {
+  readonly entries: readonly ManifestApiEntry[];
+  /** Type names the tables use, with their definitions. */
+  readonly types?: readonly {
+    readonly name: string;
+    readonly type: string;
+    readonly framework?: string;
+  }[];
+  /** Public `--ok-*` variables the component's styles read. */
+  readonly css?: readonly {
+    readonly name: string;
+    readonly value?: string;
+    readonly light?: string;
+    readonly dark?: string;
+    readonly description?: string;
+  }[];
+}
+
 export interface ManifestComponent {
   readonly name: string;
   readonly title: string;
@@ -72,6 +148,8 @@ export interface ManifestComponent {
   /** Id of its docs guide. */
   readonly guide?: string;
   readonly storybookTitle?: string;
+  /** The API reference, per React component and HTML part (ADR-0049). */
+  readonly api?: ManifestApi;
 }
 
 export interface ManifestGuideSection {
@@ -121,6 +199,8 @@ export interface Manifest {
   readonly attributes: readonly string[];
   /** Part attribute → the root it always sits in. */
   readonly parts: Readonly<Record<string, string>>;
+  /** Attributes any component may carry (`data-ok-runtime`, `data-ok-theme`…). */
+  readonly commonParts?: readonly ManifestApiPart[];
 }
 
 /** Reads the manifest that ships with the package. */

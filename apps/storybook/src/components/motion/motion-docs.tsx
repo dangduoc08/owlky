@@ -5,6 +5,8 @@ import {
   motionOptions,
   motionTextOptions,
 } from "@owlky/core";
+import motionApi from "@owlky/docs-content/api/motion.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { CountUp, Motion, MotionBorder, MotionGroup, MotionText } from "@owlky/react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
@@ -243,6 +245,7 @@ export function ActiveUser() {
 - Avoid animations on content that people need to read right away, such as errors.
 - Directional animations start outside the content's box. Clip the container (\`overflow: clip\`) if they would widen the page on small screens.`,
   },
+  apiReferenceSection(motionApi),
 ];
 
 const PREVIEWS = {

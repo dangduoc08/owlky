@@ -49,6 +49,7 @@ export interface TimePickerProps
   openTo?: TimeView | undefined;
   /** Controlled view. */
   view?: TimeView | undefined;
+  /** Called when the view changes. */
   onViewChange?: ((view: TimeView) => void) | undefined;
   /** Called on every change (typing, picking), with the validation error. */
   onChange?:

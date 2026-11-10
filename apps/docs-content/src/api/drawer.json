@@ -1,0 +1,413 @@
+{
+ "css": [
+  {
+   "dark": "color-mix(in srgb, #141A21 64%, transparent)",
+   "light": "color-mix(in srgb, #1C252E 48%, transparent)",
+   "name": "--ok-backdrop"
+  },
+  {
+   "dark": "#1C252E",
+   "light": "#FFFFFF",
+   "name": "--ok-bg-paper"
+  },
+  {
+   "name": "--ok-divider",
+   "value": "color-mix(in srgb, #919EAB 20%, transparent)"
+  },
+  {
+   "name": "--ok-duration-short",
+   "value": "250ms"
+  },
+  {
+   "name": "--ok-easing-decelerate",
+   "value": "cubic-bezier(0, 0, 0.2, 1)"
+  },
+  {
+   "name": "--ok-easing-standard",
+   "value": "cubic-bezier(0.4, 0, 0.2, 1)"
+  },
+  {
+   "name": "--ok-font-family",
+   "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+  },
+  {
+   "name": "--ok-shadow-dialog",
+   "value": "-40px 40px 80px -8px color-mix(in srgb, var(--ok-shadow-color) 24%, transparent)"
+  },
+  {
+   "name": "--ok-shadow-dialog-start",
+   "value": "40px 40px 80px -8px color-mix(in srgb, var(--ok-shadow-color) 24%, transparent)"
+  },
+  {
+   "name": "--ok-shadow-z16",
+   "value": "0px 16px 32px -4px color-mix(in srgb, var(--ok-shadow-color) 16%, transparent)"
+  },
+  {
+   "name": "--ok-spacing",
+   "value": "0.25rem"
+  },
+  {
+   "dark": "#FFFFFF",
+   "light": "#1C252E",
+   "name": "--ok-text-primary"
+  },
+  {
+   "name": "--ok-z-modal",
+   "value": "1300"
+  }
+ ],
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-drawer",
+    "events": [
+     {
+      "cancelable": true,
+      "description": "Before the drawer closes. Call `preventDefault()` to keep it open.",
+      "detail": "{ reason: DrawerCloseReason; }",
+      "name": "ok:drawer:beforeclose"
+     },
+     {
+      "cancelable": true,
+      "description": "Before the drawer opens. Call `preventDefault()` to keep it closed.",
+      "detail": "{ trigger: HTMLElement | null; }",
+      "name": "ok:drawer:beforeopen"
+     },
+     {
+      "cancelable": false,
+      "description": "After the drawer closed, with what closed it.",
+      "detail": "{ reason: DrawerCloseReason; }",
+      "name": "ok:drawer:close"
+     },
+     {
+      "cancelable": false,
+      "description": "After the drawer opened.",
+      "detail": "{ trigger: HTMLElement | null; }",
+      "name": "ok:drawer:open"
+     }
+    ],
+    "methods": [
+     {
+      "description": "Closes the drawer. Returns `false` if `ok:drawer:beforeclose` was prevented or it is permanent.",
+      "kind": "method",
+      "name": "close",
+      "type": "(reason?: DrawerCloseReason | undefined) => boolean"
+     },
+     {
+      "description": "Whether the drawer is open.",
+      "kind": "property",
+      "name": "isOpen",
+      "type": "boolean"
+     },
+     {
+      "description": "Opens the drawer. Returns `false` if `ok:drawer:beforeopen` was prevented.",
+      "kind": "method",
+      "name": "open",
+      "type": "(trigger?: HTMLElement | null | undefined) => boolean"
+     },
+     {
+      "description": "Opens the drawer when it is closed, and closes it otherwise.",
+      "kind": "method",
+      "name": "toggle",
+      "type": "(trigger?: HTMLElement | null | undefined) => boolean"
+     }
+    ],
+    "options": [
+     {
+      "attr": "data-ok-anchor",
+      "default": "left",
+      "description": "Edge the drawer is attached to.",
+      "kind": "style",
+      "name": "anchor",
+      "values": [
+       "left",
+       "right",
+       "top",
+       "bottom"
+      ]
+     },
+     {
+      "attr": "data-ok-variant",
+      "default": "temporary",
+      "description": "`temporary`: modal `<dialog>`; `persistent`: docked `<aside>` that opens and closes; `permanent`: docked, always shown.",
+      "kind": "style",
+      "name": "variant",
+      "values": [
+       "temporary",
+       "persistent",
+       "permanent"
+      ]
+     },
+     {
+      "attr": "data-ok-hide-backdrop",
+      "description": "Temporary only: transparent backdrop (still modal).",
+      "kind": "flag",
+      "name": "hideBackdrop"
+     },
+     {
+      "attr": "data-ok-disable-escape-key-down",
+      "description": "Temporary only: Escape doesn't request close.",
+      "kind": "flag",
+      "name": "disableEscapeKeyDown"
+     },
+     {
+      "attr": "open | hidden",
+      "description": "Open state (`open` / `defaultOpen`; HTML initial: `data-ok-open`).",
+      "event": "ok:drawer:close",
+      "kind": "state",
+      "name": "open"
+     }
+    ],
+    "parts": [
+     {
+      "description": "Closes the drawer whose `id` it names, or, without a value, the drawer it sits in.",
+      "kind": "trigger",
+      "name": "data-ok-drawer-close",
+      "value": [
+       "",
+       "id"
+      ]
+     },
+     {
+      "description": "Opens the drawer whose `id` it names.",
+      "kind": "trigger",
+      "name": "data-ok-drawer-open",
+      "value": [
+       "id"
+      ]
+     }
+    ],
+    "runtime": "drawer"
+   },
+   "name": "Drawer",
+   "react": {
+    "description": "md. Provides state; renders no DOM.",
+    "props": [
+     {
+      "description": "The content.",
+      "name": "children",
+      "type": "ReactNode"
+     },
+     {
+      "default": "false",
+      "description": "Initial open state when uncontrolled.",
+      "name": "defaultOpen",
+      "type": "boolean"
+     },
+     {
+      "description": "Called whenever the drawer asks to open or close, with the reason for closing: `\"escape\"`, `\"backdrop\"` or `\"close\"` (a trigger or DrawerClose). Controlled drawers may refuse.",
+      "name": "onOpenChange",
+      "type": "((open: boolean, reason?: DrawerCloseReason | undefined) => void)"
+     },
+     {
+      "description": "Controlled open state (ignored by `permanent` drawers, always shown).",
+      "name": "open",
+      "type": "boolean"
+     },
+     {
+      "description": "`temporary` (default): modal, over the page. `persistent`: docked in the layout, opened and closed by its trigger. `permanent`: docked and always shown.",
+      "name": "variant",
+      "type": "\"permanent\" | \"persistent\" | \"temporary\""
+     }
+    ]
+   }
+  },
+  {
+   "name": "DrawerClose",
+   "react": {
+    "description": "A `Button` that closes the drawer.",
+    "native": "HTMLButtonElement",
+    "props": [
+     {
+      "description": "The content.",
+      "name": "children",
+      "type": "ReactNode"
+     },
+     {
+      "default": "\"inherit\"",
+      "description": "(neutral). `black` / `white` are meant for light / dark surfaces.",
+      "name": "color",
+      "type": "ColorName"
+     },
+     {
+      "description": "No shadow on contained buttons (on by default inside a ButtonGroup).",
+      "name": "disableElevation",
+      "type": "boolean"
+     },
+     {
+      "description": "Decorative icon after the label (hidden from assistive technology).",
+      "name": "endIcon",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Stretch to the container width.",
+      "name": "fullWidth",
+      "type": "boolean"
+     },
+     {
+      "description": "Renders an `<a>` with the button styling.",
+      "name": "href",
+      "type": "undefined"
+     },
+     {
+      "description": "Shows a loading indicator, disables the button and sets `aria-busy`.",
+      "name": "loading",
+      "type": "boolean"
+     },
+     {
+      "description": "g. `\"Loading…\"`. Decorative: the label stays the accessible name.",
+      "name": "loadingIndicator",
+      "type": "ReactNode"
+     },
+     {
+      "default": "center",
+      "description": "Where the indicator goes: over the label (`center`) or in place of an icon.",
+      "name": "loadingPosition",
+      "type": "\"center\" | \"end\" | \"start\""
+     },
+     {
+      "default": "\"md\"",
+      "description": "`sm` 30px · `md` 36px · `lg` 48px · `xl` 56px.",
+      "name": "size",
+      "type": "\"lg\" | \"md\" | \"sm\" | \"xl\""
+     },
+     {
+      "description": "Decorative icon before the label (hidden from assistive technology).",
+      "name": "startIcon",
+      "type": "ReactNode"
+     },
+     {
+      "default": "\"text\"",
+      "description": "Visual style.",
+      "name": "variant",
+      "type": "\"contained\" | \"outlined\" | \"soft\" | \"text\""
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-drawer-content",
+    "description": "The drawer's surface and its content.",
+    "elements": [
+     "div"
+    ]
+   },
+   "name": "DrawerContent",
+   "react": {
+    "description": "The panel: a modal `<dialog data-ok-drawer>` (temporary) or a docked `<aside>` (persistent, permanent), with the content paper. Always rendered, so its markup is SSR-safe and matches the HTML implementation. Name it with `aria-label` or `aria-labelledby`.",
+    "native": "HTMLDialogElement",
+    "props": [
+     {
+      "default": "\"left\"",
+      "description": "Edge the drawer is attached to.",
+      "name": "anchor",
+      "type": "\"bottom\" | \"left\" | \"right\" | \"top\""
+     },
+     {
+      "description": "Temporary only: Escape doesn't ask to close.",
+      "name": "disableEscapeKeyDown",
+      "type": "boolean"
+     },
+     {
+      "description": "Temporary only: transparent backdrop (still modal; a click outside still closes it).",
+      "name": "hideBackdrop",
+      "type": "boolean"
+     }
+    ]
+   }
+  },
+  {
+   "name": "DrawerTrigger",
+   "react": {
+    "description": "A `Button` that opens the drawer (temporary: `aria-haspopup=\"dialog\"`) or toggles it (persistent: `aria-expanded` + `aria-controls`).",
+    "native": "HTMLButtonElement",
+    "props": [
+     {
+      "description": "The content.",
+      "name": "children",
+      "type": "ReactNode"
+     },
+     {
+      "default": "\"inherit\"",
+      "description": "(neutral). `black` / `white` are meant for light / dark surfaces.",
+      "name": "color",
+      "type": "ColorName"
+     },
+     {
+      "description": "No shadow on contained buttons (on by default inside a ButtonGroup).",
+      "name": "disableElevation",
+      "type": "boolean"
+     },
+     {
+      "description": "Decorative icon after the label (hidden from assistive technology).",
+      "name": "endIcon",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Stretch to the container width.",
+      "name": "fullWidth",
+      "type": "boolean"
+     },
+     {
+      "description": "Renders an `<a>` with the button styling.",
+      "name": "href",
+      "type": "undefined"
+     },
+     {
+      "description": "Shows a loading indicator, disables the button and sets `aria-busy`.",
+      "name": "loading",
+      "type": "boolean"
+     },
+     {
+      "description": "g. `\"Loading…\"`. Decorative: the label stays the accessible name.",
+      "name": "loadingIndicator",
+      "type": "ReactNode"
+     },
+     {
+      "default": "center",
+      "description": "Where the indicator goes: over the label (`center`) or in place of an icon.",
+      "name": "loadingPosition",
+      "type": "\"center\" | \"end\" | \"start\""
+     },
+     {
+      "default": "\"md\"",
+      "description": "`sm` 30px · `md` 36px · `lg` 48px · `xl` 56px.",
+      "name": "size",
+      "type": "\"lg\" | \"md\" | \"sm\" | \"xl\""
+     },
+     {
+      "description": "Decorative icon before the label (hidden from assistive technology).",
+      "name": "startIcon",
+      "type": "ReactNode"
+     },
+     {
+      "default": "\"text\"",
+      "description": "Visual style.",
+      "name": "variant",
+      "type": "\"contained\" | \"outlined\" | \"soft\" | \"text\""
+     }
+    ]
+   }
+  }
+ ],
+ "format": 1,
+ "name": "drawer",
+ "title": "Drawer",
+ "types": [
+  {
+   "name": "ColorName",
+   "type": "\"black\" | \"error\" | \"info\" | \"inherit\" | \"primary\" | \"secondary\" | \"success\" | \"warning\" | \"white\""
+  },
+  {
+   "framework": "react",
+   "name": "DrawerCloseReason",
+   "type": "\"backdrop\" | \"close\" | \"escape\""
+  },
+  {
+   "framework": "html",
+   "name": "DrawerCloseReason",
+   "type": "\"api\" | \"backdrop\" | \"escape\" | \"native\" | \"trigger\""
+  }
+ ]
+}

@@ -1,4 +1,6 @@
 import { ganttOptions } from "@owlky/core";
+import ganttApi from "@owlky/docs-content/api/gantt.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { Gantt, type GanttTask } from "@owlky/react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
@@ -198,6 +200,7 @@ export function SelectablePlan() {
 - The tooltip shows on keyboard focus as well as on hover, stays while you hover it and closes with Escape.
 - Color is never the only cue: milestones are diamonds, and critical tasks are named as such.`,
   },
+  apiReferenceSection(ganttApi),
 ];
 
 const PREVIEWS = {

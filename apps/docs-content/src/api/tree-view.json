@@ -1,0 +1,456 @@
+{
+ "css": [
+  {
+   "name": "--ok-action-focus",
+   "value": "color-mix(in srgb, #919EAB 24%, transparent)"
+  },
+  {
+   "name": "--ok-action-hover",
+   "value": "color-mix(in srgb, #919EAB 8%, transparent)"
+  },
+  {
+   "name": "--ok-duration-shortest",
+   "value": "150ms"
+  },
+  {
+   "name": "--ok-easing-standard",
+   "value": "cubic-bezier(0.4, 0, 0.2, 1)"
+  },
+  {
+   "name": "--ok-font-family",
+   "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+  },
+  {
+   "name": "--ok-font-size-sm",
+   "value": "0.8125rem"
+  },
+  {
+   "name": "--ok-font-weight-medium",
+   "value": "500"
+  },
+  {
+   "name": "--ok-palette-grey-500-channel",
+   "value": "145 158 171"
+  },
+  {
+   "name": "--ok-palette-primary-main-channel",
+   "value": "0 167 111"
+  },
+  {
+   "dark": "var(--_ok-primary-text-dark)",
+   "light": "var(--_ok-primary-text-light)",
+   "name": "--ok-palette-primary-text"
+  },
+  {
+   "name": "--ok-radius-full",
+   "value": "9999px"
+  },
+  {
+   "name": "--ok-radius-md",
+   "value": "8px"
+  },
+  {
+   "name": "--ok-radius-xs",
+   "value": "4px"
+  },
+  {
+   "name": "--ok-spacing",
+   "value": "0.25rem"
+  },
+  {
+   "dark": "#FFFFFF",
+   "light": "#1C252E",
+   "name": "--ok-text-primary"
+  },
+  {
+   "name": "--ok-typography-body2-font-size",
+   "value": "0.875rem"
+  },
+  {
+   "name": "--ok-typography-body2-line-height",
+   "value": "1.5714"
+  }
+ ],
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-tree-view",
+    "events": [
+     {
+      "cancelable": true,
+      "description": "Before an item expands or collapses. Call `preventDefault()` to refuse.",
+      "detail": "{ itemId: string; expanded: boolean; }",
+      "name": "ok:tree-view:expand"
+     },
+     {
+      "cancelable": true,
+      "description": "Before the selection changes. Call `preventDefault()` to keep the current one.",
+      "detail": "{ selectedItems: string[]; }",
+      "name": "ok:tree-view:select"
+     }
+    ],
+    "methods": [
+     {
+      "description": "Ids of the expanded items.",
+      "kind": "property",
+      "name": "expandedItems",
+      "type": "string[]"
+     },
+     {
+      "description": "Ids of the selected items.",
+      "kind": "property",
+      "name": "selectedItems",
+      "type": "string[]"
+     },
+     {
+      "description": "Expands or collapses an item without emitting events.",
+      "kind": "method",
+      "name": "setExpanded",
+      "type": "(itemId: string, expanded: boolean) => void"
+     },
+     {
+      "description": "Selects exactly these items without emitting events.",
+      "kind": "method",
+      "name": "setSelected",
+      "type": "(itemIds: readonly string[]) => void"
+     }
+    ],
+    "options": [
+     {
+      "attr": "data-ok-variant",
+      "default": "standard",
+      "description": "`lines` draws dashed guides beside children and round expand icons.",
+      "kind": "style",
+      "name": "variant",
+      "values": [
+       "standard",
+       "lines"
+      ]
+     },
+     {
+      "attr": "data-ok-expansion-trigger",
+      "default": "content",
+      "description": "What expands an item on click: the whole row, or only its icon.",
+      "kind": "style",
+      "name": "expansionTrigger",
+      "values": [
+       "content",
+       "iconContainer"
+      ]
+     },
+     {
+      "attr": "data-ok-multi-select",
+      "description": "Several items can be selected (`aria-multiselectable`).",
+      "kind": "flag",
+      "name": "multiSelect"
+     },
+     {
+      "attr": "data-ok-checkbox-selection",
+      "description": "Each item shows a checkbox for its selection.",
+      "kind": "flag",
+      "name": "checkboxSelection"
+     },
+     {
+      "attr": "data-ok-disable-selection",
+      "description": "Items can't be selected (only expanded).",
+      "kind": "flag",
+      "name": "disableSelection"
+     },
+     {
+      "attr": "aria-expanded",
+      "description": "Expanded items (`expandedItems`).",
+      "event": "ok:tree-view:expand",
+      "kind": "state",
+      "name": "expanded"
+     },
+     {
+      "attr": "aria-selected",
+      "description": "Selected items (`selectedItems`).",
+      "event": "ok:tree-view:select",
+      "kind": "state",
+      "name": "selected"
+     }
+    ],
+    "parts": [
+     {
+      "description": "On an item: its id.",
+      "kind": "value",
+      "name": "data-ok-item-id",
+      "value": "string"
+     },
+     {
+      "description": "The default expand icon.",
+      "kind": "part",
+      "name": "data-ok-tree-chevron"
+     },
+     {
+      "description": "The icon of an expanded item.",
+      "kind": "part",
+      "name": "data-ok-tree-collapse-icon"
+     },
+     {
+      "description": "The icon of a collapsed item.",
+      "kind": "part",
+      "name": "data-ok-tree-expand-icon"
+     }
+    ],
+    "runtime": "tree-view"
+   },
+   "name": "TreeView"
+  },
+  {
+   "name": "RichTreeView",
+   "react": {
+    "description": "A tree view built from data (`items`); same markup as SimpleTreeView.",
+    "native": "HTMLUListElement",
+    "props": [
+     {
+      "description": "Names the tree (or use `aria-labelledby`).",
+      "name": "aria-label",
+      "type": "string"
+     },
+     {
+      "description": "Each item shows a checkbox for its selection (implies `multiSelect`).",
+      "name": "checkboxSelection",
+      "type": "boolean"
+     },
+     {
+      "description": "Icon of expanded items (with `expandIcon`).",
+      "name": "collapseIcon",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Uncontrolled expanded item ids. Default none.",
+      "name": "defaultExpandedItems",
+      "type": "readonly string[]"
+     },
+     {
+      "description": "Uncontrolled selection.",
+      "name": "defaultSelectedItems",
+      "type": "Selection"
+     },
+     {
+      "description": "Items can only be expanded, not selected.",
+      "name": "disableSelection",
+      "type": "boolean"
+     },
+     {
+      "description": "Icon of items without children.",
+      "name": "endIcon",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Icon of collapsed items (default: a chevron that turns).",
+      "name": "expandIcon",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Controlled expanded item ids.",
+      "name": "expandedItems",
+      "type": "readonly string[]"
+     },
+     {
+      "description": "What expands an item on click: `\"content\"` (default) or `\"iconContainer\"`.",
+      "name": "expansionTrigger",
+      "type": "\"content\" | \"iconContainer\""
+     },
+     {
+      "description": "The items, as data.",
+      "name": "items",
+      "required": true,
+      "type": "readonly TreeViewBaseItem[]"
+     },
+     {
+      "description": "Several items can be selected (Ctrl / ⌘ click, Shift click, Space).",
+      "name": "multiSelect",
+      "type": "boolean"
+     },
+     {
+      "description": "Called with the expanded ids after a toggle.",
+      "name": "onExpandedItemsChange",
+      "type": "((itemIds: string[]) => void)"
+     },
+     {
+      "description": "Called when one item expands or collapses.",
+      "name": "onItemExpansionToggle",
+      "type": "((itemId: string, isExpanded: boolean) => void)"
+     },
+     {
+      "description": "Called with the new selection (same shape as `selectedItems`).",
+      "name": "onSelectedItemsChange",
+      "type": "((itemIds: Selection) => void)"
+     },
+     {
+      "description": "Controlled selection: an id (single), ids (`multiSelect`) or `null`.",
+      "name": "selectedItems",
+      "type": "Selection"
+     },
+     {
+      "description": "`\"standard\"` (default) or `\"lines\"` (dashed guides, round expand icons).",
+      "name": "variant",
+      "type": "\"lines\" | \"standard\""
+     }
+    ]
+   }
+  },
+  {
+   "name": "SimpleTreeView",
+   "react": {
+    "description": "A WAI-ARIA tree of `TreeItem`s. Keyboard, clicks and typeahead are core's `createTreeController`; this component owns the expanded and selected items.",
+    "native": "HTMLUListElement",
+    "props": [
+     {
+      "description": "Names the tree (or use `aria-labelledby`).",
+      "name": "aria-label",
+      "type": "string"
+     },
+     {
+      "description": "Each item shows a checkbox for its selection (implies `multiSelect`).",
+      "name": "checkboxSelection",
+      "type": "boolean"
+     },
+     {
+      "description": "The content.",
+      "name": "children",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Icon of expanded items (with `expandIcon`).",
+      "name": "collapseIcon",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Uncontrolled expanded item ids. Default none.",
+      "name": "defaultExpandedItems",
+      "type": "readonly string[]"
+     },
+     {
+      "description": "Uncontrolled selection.",
+      "name": "defaultSelectedItems",
+      "type": "Selection"
+     },
+     {
+      "description": "Items can only be expanded, not selected.",
+      "name": "disableSelection",
+      "type": "boolean"
+     },
+     {
+      "description": "Icon of items without children.",
+      "name": "endIcon",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Icon of collapsed items (default: a chevron that turns).",
+      "name": "expandIcon",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Controlled expanded item ids.",
+      "name": "expandedItems",
+      "type": "readonly string[]"
+     },
+     {
+      "description": "What expands an item on click: `\"content\"` (default) or `\"iconContainer\"`.",
+      "name": "expansionTrigger",
+      "type": "\"content\" | \"iconContainer\""
+     },
+     {
+      "description": "Several items can be selected (Ctrl / ⌘ click, Shift click, Space).",
+      "name": "multiSelect",
+      "type": "boolean"
+     },
+     {
+      "description": "Called with the expanded ids after a toggle.",
+      "name": "onExpandedItemsChange",
+      "type": "((itemIds: string[]) => void)"
+     },
+     {
+      "description": "Called when one item expands or collapses.",
+      "name": "onItemExpansionToggle",
+      "type": "((itemId: string, isExpanded: boolean) => void)"
+     },
+     {
+      "description": "Called with the new selection (same shape as `selectedItems`).",
+      "name": "onSelectedItemsChange",
+      "type": "((itemIds: Selection) => void)"
+     },
+     {
+      "description": "Controlled selection: an id (single), ids (`multiSelect`) or `null`.",
+      "name": "selectedItems",
+      "type": "Selection"
+     },
+     {
+      "description": "`\"standard\"` (default) or `\"lines\"` (dashed guides, round expand icons).",
+      "name": "variant",
+      "type": "\"lines\" | \"standard\""
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-tree-item",
+    "description": "One item (`role=\"treeitem\"`).",
+    "parts": [
+     {
+      "description": "The checkbox of an item, with `checkboxSelection`.",
+      "kind": "part",
+      "name": "data-ok-tree-item-checkbox"
+     },
+     {
+      "description": "The row of an item: icon, checkbox and label.",
+      "kind": "part",
+      "name": "data-ok-tree-item-content"
+     },
+     {
+      "description": "The children of an item: a collapse.",
+      "kind": "part",
+      "name": "data-ok-tree-item-group"
+     },
+     {
+      "description": "The icon of an item.",
+      "kind": "part",
+      "name": "data-ok-tree-item-icon"
+     },
+     {
+      "description": "The label of an item.",
+      "kind": "part",
+      "name": "data-ok-tree-item-label"
+     }
+    ]
+   },
+   "name": "TreeItem",
+   "react": {
+    "description": "One row of a tree view, with optional child items.",
+    "native": "HTMLLIElement",
+    "props": [
+     {
+      "description": "Child `TreeItem`s.",
+      "name": "children",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Can't be selected or expanded; still focusable.",
+      "name": "disabled",
+      "type": "boolean"
+     },
+     {
+      "description": "Identifies the item (unique in the tree).",
+      "name": "itemId",
+      "required": true,
+      "type": "string"
+     },
+     {
+      "description": "The text of the row.",
+      "name": "label",
+      "required": true,
+      "type": "ReactNode"
+     }
+    ]
+   }
+  }
+ ],
+ "format": 1,
+ "name": "tree-view",
+ "title": "Tree view"
+}

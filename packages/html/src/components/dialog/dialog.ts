@@ -1,10 +1,23 @@
 import { createModalController, dialogOptions } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
-import type { ComponentInstance } from "../../runtime/types.js";
+import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
 
 export type DialogCloseReason = "escape" | "backdrop" | "trigger" | "api" | "native";
 
+/** Events of this component (`ok:<name>:<event>` on the root). */
+export interface DialogEvents {
+  /** Before the dialog opens. Call `preventDefault()` to keep it closed. */
+  beforeopen: EventSpec<{ trigger: HTMLElement | null }, true>;
+  /** After the dialog opened. `trigger` is the element that opened it, if any. */
+  open: EventSpec<{ trigger: HTMLElement | null }>;
+  /** Before the dialog closes. Call `preventDefault()` to keep it open. */
+  beforeclose: EventSpec<{ reason: DialogCloseReason }, true>;
+  /** After the dialog closed, with what closed it (`native`: a form with `method="dialog"`). */
+  close: EventSpec<{ reason: DialogCloseReason }>;
+}
+
 export interface DialogInstance extends ComponentInstance {
+  /** Whether the dialog is open. */
   readonly isOpen: boolean;
   /** Opens the dialog. Returns `false` if `ok:dialog:beforeopen` was prevented. */
   open(trigger?: HTMLElement | null): boolean;
@@ -34,7 +47,7 @@ const { disableEscapeKeyDown } = dialogOptions.options;
  * Events:   ok:dialog:beforeopen (cancelable), ok:dialog:open,
  *           ok:dialog:beforeclose (cancelable, detail.reason), ok:dialog:close (detail.reason)
  */
-export const dialog = defineComponent<DialogInstance>({
+export const dialog = defineComponent<DialogInstance, DialogEvents>({
   name: "dialog",
   selector: "[data-ok-dialog]",
 

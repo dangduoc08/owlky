@@ -1,4 +1,6 @@
 import { chartOptions } from "@owlky/core";
+import chartApi from "@owlky/docs-content/api/chart.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { Chart } from "@owlky/react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
@@ -630,6 +632,7 @@ export function EnergyUse() {
 - Legend buttons report their state with \`aria-pressed\`. A hidden series keeps a hollow marker and crossed-out text, so the state doesn't rely on color.
 - Axis labels use the secondary text color, which meets a contrast ratio of at least 4.5:1 in light and dark mode.`,
   },
+  apiReferenceSection(chartApi),
 ];
 
 const PREVIEWS = {

@@ -1,4 +1,6 @@
 import { autocompleteOptions } from "@owlky/core";
+import autocompleteApi from "@owlky/docs-content/api/autocomplete.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { Autocomplete } from "@owlky/react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
@@ -142,6 +144,7 @@ export function Favorites() {
 - Options are 34px tall. The highlighted and the chosen options have their own background.
 - "No options" is shown in the list when nothing matches.`,
   },
+  apiReferenceSection(autocompleteApi),
 ];
 
 const PREVIEWS = {

@@ -1,6 +1,6 @@
 import { type ImageState, imageLoadState } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
-import type { ComponentInstance } from "../../runtime/types.js";
+import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
 
 const SVG = "http://www.w3.org/2000/svg";
 
@@ -40,6 +40,14 @@ export interface ImageInstance extends ComponentInstance {
   readonly state: ImageState;
 }
 
+/** Events of this component (`ok:<name>:<event>` on the root). */
+export interface ImageEvents {
+  /** After the picture loaded. `src` is the source the browser picked (`currentSrc`). */
+  load: EventSpec<{ src: string }>;
+  /** After the picture failed to load. */
+  error: EventSpec<{ src: string }>;
+}
+
 /**
  * Image — spec: specs/components/image.md
  *
@@ -51,7 +59,7 @@ export interface ImageInstance extends ComponentInstance {
  * picture's `load` / `error` events (and `complete` at setup), `ok:image:load` /
  * `ok:image:error`, and a broken-image icon after an error. A new `src` / `srcset` loads again.
  */
-export const image = defineComponent({
+export const image = defineComponent<ComponentInstance, ImageEvents>({
   name: "image",
   selector: "[data-ok-image]",
 

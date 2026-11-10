@@ -40,7 +40,7 @@ import {
   weekNumber,
 } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
-import type { ComponentInstance } from "../../runtime/types.js";
+import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
 import type { PickerDayRenderer } from "../date-calendar/date-calendar.js";
 import {
   ARROW_LEFT,
@@ -59,6 +59,16 @@ import {
   strokeIcon,
 } from "../date-calendar/picker-dom.js";
 
+/** Events of this component (`ok:<name>:<event>` on the root). */
+export interface DateRangeCalendarEvents {
+  /** Before a day sets one end of the range (`start/end`). Call `preventDefault()` to refuse it. */
+  change: EventSpec<{ value: string; selectionState: "partial" | "finish" }, true>;
+  /** After the end being edited changed. */
+  rangepositionchange: EventSpec<{ rangePosition: RangePosition }>;
+  /** After another first month is shown (`YYYY-MM`). */
+  monthchange: EventSpec<{ month: string }>;
+}
+
 export interface DateRangeCalendarInstance extends ComponentInstance, PickerDateApi {
   /** The range as an ISO 8601 interval (`2025-05-20/2025-05-25`), or `null` when empty. */
   readonly value: string | null;
@@ -66,20 +76,27 @@ export interface DateRangeCalendarInstance extends ComponentInstance, PickerDate
   setValue(value: string | readonly (Date | string | null)[] | null): void;
   /** The end the next pick edits. */
   readonly rangePosition: RangePosition;
+  /** Sets the end the next pick changes (`start` or `end`). */
   setRangePosition(position: RangePosition): void;
   /** The ends a pick may edit (`null`: both). */
   setAvailableRangePositions(positions: readonly RangePosition[] | null): void;
   /** Months side by side (1–3). */
   readonly calendars: RangeCalendarCount;
+  /** Shows this many months side by side (1 to 3). */
   setCalendars(count: number): void;
   /** The first shown month (`YYYY-MM`). */
   readonly month: string;
   /** Focuses the current day. */
   focus(): void;
+  /** Disables the days for which the function returns `true` (`null`: none). */
   setShouldDisableDate(fn: ((day: Date) => boolean) | null): void;
+  /** Disables the months for which the function returns `true` (`null`: none). */
   setShouldDisableMonth(fn: ((month: Date) => boolean) | null): void;
+  /** Disables the years for which the function returns `true` (`null`: none). */
   setShouldDisableYear(fn: ((year: Date) => boolean) | null): void;
+  /** Formats the weekday headings (`null`: the default). */
   setDayOfWeekFormatter(fn: ((date: Date) => string) | null): void;
+  /** Replaces the text of the labels and buttons, such as for another language. */
   setLocaleText(text: Partial<PickerLocaleText>): void;
   /** Decorates each day button (phase 4); `null` removes the renderer. */
   setDayRenderer(fn: PickerDayRenderer | null): void;
@@ -123,7 +140,10 @@ export function toRange(
  * Events:  ok:date-range-calendar:change (cancelable, `{ value, selectionState }`),
  *          :rangepositionchange `{ rangePosition }`, :monthchange `{ month }`.
  */
-export const dateRangeCalendar = defineComponent<DateRangeCalendarInstance>({
+export const dateRangeCalendar = defineComponent<
+  DateRangeCalendarInstance,
+  DateRangeCalendarEvents
+>({
   name: "date-range-calendar",
   selector: "[data-ok-date-range-calendar]",
 

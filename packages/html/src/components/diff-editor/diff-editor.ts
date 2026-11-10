@@ -9,7 +9,7 @@ import {
 } from "@owlky/core/code-editor";
 import { defineComponent } from "../../runtime/define.js";
 import { syncCustomProperties } from "../../runtime/style.js";
-import type { ComponentInstance } from "../../runtime/types.js";
+import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
 import {
   labelOf,
   ownPart,
@@ -20,17 +20,34 @@ import {
   sizeProperties,
 } from "../code-editor/code-editor-dom.js";
 
+/** Events of this component (`ok:<name>:<event>` on the root). */
+export interface DiffEditorEvents {
+  /** Before the diff editor is created: configure `monaco` here. */
+  beforemount: EventSpec<{ monaco: unknown }>;
+  /** After the diff editor was created. */
+  mount: EventSpec<{ editor: unknown; monaco: unknown }>;
+  /** After Monaco failed to load. */
+  error: EventSpec<{ error: unknown }>;
+}
+
 export interface DiffEditorElementInstance extends ComponentInstance {
+  /** `loading`, `ready` or `error`. */
   readonly status: CodeEditorStatus;
   /** The original and modified texts (the `<textarea>`s' until Monaco is ready). */
   readonly original: string;
+  /** The text on the modified side. */
   readonly modified: string;
+  /** Replaces the text on the original side. */
   setOriginal(value: string): void;
   /** Replaces the modified text (an undoable edit). */
   setModified(value: string): void;
+  /** Changes Monaco's diff editor options. */
   updateOptions(options: DiffEditorOptions): void;
+  /** Monaco's diff editor once loaded, or `null`. */
   readonly editor: MonacoDiffEditor | null;
+  /** The Monaco namespace once loaded, or `null`. */
   readonly monaco: Monaco | null;
+  /** The core controller. */
   readonly controller: DiffEditorController;
 }
 
@@ -69,7 +86,7 @@ const WATCHED = [
  *          ok:diff-editor:error `{ error }`.
  */
 export const createDiffEditor = (hooks: CreateDiffEditorOptions = {}) =>
-  defineComponent<DiffEditorElementInstance>({
+  defineComponent<DiffEditorElementInstance, DiffEditorEvents>({
     name: "diff-editor",
     selector: ROOT,
 

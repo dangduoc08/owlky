@@ -336,7 +336,7 @@ export const CarouselViewport = forwardRef<HTMLDivElement, CarouselViewportProps
 );
 
 export interface CarouselSlideProps extends HTMLAttributes<HTMLDivElement> {
-  /** Default `"<n> of <total>"`. */
+  /** The slide's accessible name. Default `"<n> of <total>"`. */
   "aria-label"?: string | undefined;
 }
 

@@ -4,6 +4,7 @@
     "noEmit": true,
     "module": "ESNext",
     "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
     "types": []
   },
   "include": ["src"]

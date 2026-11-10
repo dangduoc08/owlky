@@ -5,6 +5,7 @@ import type { ComponentInstance } from "../../runtime/types.js";
 import { driveMotion, STATE } from "../motion/drive.js";
 
 export interface MotionGroupInstance extends ComponentInstance {
+  /** The motion's state (`initial`, `animate` or `exit`). */
   readonly state: MotionState;
   /** Plays the entrances again. */
   replay(): void;

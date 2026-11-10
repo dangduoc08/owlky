@@ -130,29 +130,117 @@ import {
 } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
 import { syncCustomProperties } from "../../runtime/style.js";
-import type { ComponentInstance } from "../../runtime/types.js";
+import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
 import type { AutocompleteInstance } from "../autocomplete/autocomplete.js";
 import type { ChartInstance } from "../chart/chart.js";
 import type { DatePickerInstance } from "../date-picker/date-picker.js";
 import type { PopoverInstance } from "../popover/popover.js";
 import type { TablePaginationInstance } from "../table-pagination/table-pagination.js";
 
+/** Events whose detail is `{ model }` (the model about to be set). */
+type GridModelEvent =
+  | "sort"
+  | "filter"
+  | "selection"
+  | "columns"
+  | "density"
+  | "order"
+  | "pinned"
+  | "rowgrouping"
+  | "aggregation"
+  | "cellselection"
+  | "chart";
+
+/** Events of this component (`ok:<name>:<event>` on the root). */
+export interface DataGridEvents {
+  /** Before the sort model changes. Call `preventDefault()` to keep it. */
+  sort: EventSpec<{ model: GridSortModel }, true>;
+  /** Before the filter model changes. Call `preventDefault()` to keep it. */
+  filter: EventSpec<{ model: GridFilterModel }, true>;
+  /** Before the row selection changes (row ids). Call `preventDefault()` to keep it. */
+  selection: EventSpec<{ model: string[] }, true>;
+  /** Before the column visibility changes. Call `preventDefault()` to keep it. */
+  columns: EventSpec<{ model: Record<string, boolean> }, true>;
+  /** Before the density changes. Call `preventDefault()` to keep it. */
+  density: EventSpec<{ model: GridDensity }, true>;
+  /** Before the column order changes (fields). Call `preventDefault()` to keep it. */
+  order: EventSpec<{ model: string[] }, true>;
+  /** Before the pinned columns change. Call `preventDefault()` to keep them. */
+  pinned: EventSpec<{ model: GridPinnedColumns }, true>;
+  /** Before the row grouping changes (fields). Call `preventDefault()` to keep it. */
+  rowgrouping: EventSpec<{ model: string[] }, true>;
+  /** Before the aggregation changes (field to function). Call `preventDefault()` to keep it. */
+  aggregation: EventSpec<{ model: Record<string, string> }, true>;
+  /** Before the cell selection changes. Call `preventDefault()` to keep it. */
+  cellselection: EventSpec<{ model: GridCellSelectionModel }, true>;
+  /** Before the chart panel's model changes. Call `preventDefault()` to keep it. */
+  chart: EventSpec<{ model: GridChartModel }, true>;
+  /** Before the pivot model or mode changes. Call `preventDefault()` to keep it. */
+  pivot: EventSpec<{ model: GridPivotModel; active: boolean }, true>;
+  /** After a column was resized, in pixels. */
+  resize: EventSpec<{ field: string; width: number | undefined }>;
+  /** Before an edited row is saved (`row`: the edited fields). Call `preventDefault()` to discard the edit. */
+  edit: EventSpec<{ id: string; row: Record<string, unknown> }, true>;
+  /** After editing started (`field` in cell mode). */
+  editstart: EventSpec<{ id: string; field?: string; reason: string }>;
+  /** After editing stopped. */
+  editstop: EventSpec<{ id: string; field?: string; reason: string }>;
+  /** While a cell is edited: set `detail.error` to `true` or a message to mark the value invalid. */
+  validate: EventSpec<{ id: string; field: string; value: unknown; error?: string | boolean }>;
+  /** After the rows were scrolled to the end (load more rows here). */
+  scrollend: EventSpec<{ visibleRowsCount: number }>;
+  /** After the data source failed to load rows. */
+  datasourceerror: EventSpec<{ error: unknown }>;
+  /** Before a tree row expands or collapses. Call `preventDefault()` to refuse. */
+  expand: EventSpec<{ id: string; expanded: boolean }, true>;
+  /** Before a row's detail panel opens or closes. Call `preventDefault()` to refuse. */
+  detailpanel: EventSpec<{ id: string; expanded: boolean }, true>;
+  /** Before a dragged row moves to `targetIndex`. Call `preventDefault()` to keep the order. */
+  roworder: EventSpec<{ id: string; oldIndex: number; targetIndex: number }, true>;
+  /** After cells were copied, with the copied text. */
+  clipboardcopy: EventSpec<{ data: string }>;
+  /** Before pasted cells are written. Call `preventDefault()` to refuse them. */
+  clipboardpaste: EventSpec<{ data: string[][] }, true>;
+  /** After a click on a row. */
+  rowclick: EventSpec<{ id: string }>;
+  /** After a double click on a row. */
+  rowdoubleclick: EventSpec<{ id: string }>;
+  /** After a click on a cell, with its raw value. */
+  cellclick: EventSpec<{ id: string; field: string; value: unknown }>;
+  /** After a double click on a cell. */
+  celldoubleclick: EventSpec<{ id: string; field: string; value: unknown }>;
+  /** After a click on a column header. */
+  columnheaderclick: EventSpec<{ field: string }>;
+}
+
 export interface DataGridInstance extends ComponentInstance {
+  /** The sort model. */
   readonly sortModel: GridSortModel;
+  /** The filter model. */
   readonly filterModel: GridFilterModel;
   /** Selected row ids. */
   readonly selection: string[];
+  /** Which columns are visible (field to `false` hides it). */
   readonly columnVisibilityModel: GridColumnVisibilityModel;
+  /** The fields in their display order. */
   readonly columnOrder: string[];
+  /** The columns pinned to the start and the end. */
   readonly pinnedColumns: GridPinnedColumns;
+  /** The width of each resized column, in pixels. */
   readonly columnWidths: GridColumnWidths;
   /** These setters don't emit events. */
   setColumnOrder(fields: readonly string[]): void;
+  /** Pins columns to the start and the end. */
   setPinnedColumns(model: GridPinnedColumns): void;
+  /** Sets a column's width, in pixels. */
   setColumnWidth(field: string, width: number): void;
+  /** Sorts the rows (no event). */
   setSortModel(model: GridSortModel): void;
+  /** Filters the rows (no event). */
   setFilterModel(model: GridFilterModel): void;
+  /** Selects these rows (no event). */
   setSelection(ids: readonly string[]): void;
+  /** Shows or hides columns (no event). */
   setColumnVisibilityModel(model: GridColumnVisibilityModel): void;
   /** The CSV of the filtered, sorted rows and shown columns (or the columns of `options`). */
   toCsv(options?: GridCsvOptions): string;
@@ -164,6 +252,7 @@ export interface DataGridInstance extends ComponentInstance {
   autosizeColumns(options?: { columns?: readonly string[]; includeHeaders?: boolean }): void;
   /** Scrolls a row (index on the current page) and / or a column (shown index) into view. */
   scrollToIndexes(indexes: { rowIndex?: number; colIndex?: number }): void;
+  /** Returns the grid's state (models, column widths), for `restoreState`. */
   exportState(): GridState;
   /** Applies a saved state (unknown keys and values are dropped). */
   restoreState(state: unknown): void;
@@ -187,16 +276,27 @@ export interface DataGridInstance extends ComponentInstance {
   setDataSource(source: GridDataSource<DataRow> | null): void;
   /** Phase 6 (MUI X Premium). These setters don't emit events. */
   readonly rowGroupingModel: string[];
+  /** The aggregation (field to function). */
   readonly aggregationModel: GridAggregationModel;
+  /** The pivot model. */
   readonly pivotModel: GridPivotModel;
+  /** Whether pivot mode is on. */
   readonly pivotActive: boolean;
+  /** The selected cells. */
   readonly cellSelectionModel: GridCellSelectionModel;
+  /** The chart panel's model. */
   readonly chartModel: GridChartModel;
+  /** Groups the rows by these fields. */
   setRowGroupingModel(model: readonly string[]): void;
+  /** Sets the aggregation. */
   setAggregationModel(model: GridAggregationModel): void;
+  /** Sets the pivot model. */
   setPivotModel(model: GridPivotModel): void;
+  /** Turns pivot mode on or off. */
   setPivotActive(active: boolean): void;
+  /** Selects these cells. */
   setCellSelectionModel(model: GridCellSelectionModel): void;
+  /** Sets the chart panel's model. */
   setChartModel(model: GridChartModel): void;
   /** The .xlsx file of the filtered, sorted rows (bytes). */
   toExcel(options?: GridExcelOptions): Uint8Array;
@@ -336,7 +436,7 @@ const parseJson = (json: string | null): unknown => {
  * Events:  ok:data-grid:sort | filter | selection | columns | density (cancelable, the new model in
  *          `detail.model`).
  */
-export const dataGrid = defineComponent<DataGridInstance>({
+export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
   name: "data-grid",
   selector: "[data-ok-data-grid]",
 
@@ -1889,8 +1989,9 @@ export const dataGrid = defineComponent<DataGridInstance>({
       );
     };
 
-    const change = <T>(event: string, model: T, commit: (model: T) => void) => {
-      if (!emit(event, { model }, { cancelable: true })) return false;
+    const change = <T>(event: GridModelEvent, model: T, commit: (model: T) => void) => {
+      const detail = { model } as DataGridEvents[GridModelEvent]["detail"];
+      if (!emit(event, detail, { cancelable: true })) return false;
       commit(model);
       return true;
     };

@@ -10,6 +10,8 @@ import {
   pickersFrFR,
   timeClockOptions,
 } from "@owlky/core";
+import datePickerApi from "@owlky/docs-content/api/date-picker.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import {
   DateField,
   DatePicker,
@@ -453,6 +455,7 @@ export function Planner() {
 - A range calendar's grids allow several selected days: every day of the range is selected, and the two ends are filled with the primary color. The open button of a single range field says the range ("Choose range, selected range is May 20, 2025 – May 25, 2025"). The dialog is named "Select date range".
 - Dragging the ends is an extra: the keyboard picks the start and the end with Enter, and the toolbar or the **Start** and **End** tabs choose the edited end.`,
   },
+  apiReferenceSection(datePickerApi),
 ];
 
 const PREVIEWS = {

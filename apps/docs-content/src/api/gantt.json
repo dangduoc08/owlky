@@ -1,0 +1,909 @@
+{
+ "css": [
+  {
+   "name": "--ok-action-focus",
+   "value": "color-mix(in srgb, #919EAB 24%, transparent)"
+  },
+  {
+   "name": "--ok-action-hover",
+   "value": "color-mix(in srgb, #919EAB 8%, transparent)"
+  },
+  {
+   "dark": "#28323D",
+   "light": "#F4F6F8",
+   "name": "--ok-bg-neutral"
+  },
+  {
+   "dark": "#1C252E",
+   "light": "#FFFFFF",
+   "name": "--ok-bg-paper"
+  },
+  {
+   "name": "--ok-divider",
+   "value": "color-mix(in srgb, #919EAB 20%, transparent)"
+  },
+  {
+   "name": "--ok-duration-shorter",
+   "value": "200ms"
+  },
+  {
+   "name": "--ok-easing-standard",
+   "value": "cubic-bezier(0.4, 0, 0.2, 1)"
+  },
+  {
+   "name": "--ok-font-family",
+   "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+  },
+  {
+   "name": "--ok-font-size-xs",
+   "value": "0.75rem"
+  },
+  {
+   "name": "--ok-font-weight-semibold",
+   "value": "600"
+  },
+  {
+   "name": "--ok-palette-error-main",
+   "value": "#FF5630"
+  },
+  {
+   "name": "--ok-palette-error-main-channel",
+   "value": "255 86 48"
+  },
+  {
+   "name": "--ok-palette-grey-500-channel",
+   "value": "145 158 171"
+  },
+  {
+   "name": "--ok-palette-info-main",
+   "value": "#00B8D9"
+  },
+  {
+   "name": "--ok-palette-info-main-channel",
+   "value": "0 184 217"
+  },
+  {
+   "name": "--ok-palette-primary-main",
+   "value": "#00A76F"
+  },
+  {
+   "name": "--ok-palette-primary-main-channel",
+   "value": "0 167 111"
+  },
+  {
+   "name": "--ok-palette-secondary-main",
+   "value": "#8E33FF"
+  },
+  {
+   "name": "--ok-palette-secondary-main-channel",
+   "value": "142 51 255"
+  },
+  {
+   "name": "--ok-palette-success-main",
+   "value": "#22C55E"
+  },
+  {
+   "name": "--ok-palette-success-main-channel",
+   "value": "34 197 94"
+  },
+  {
+   "name": "--ok-palette-warning-main",
+   "value": "#FFAB00"
+  },
+  {
+   "name": "--ok-palette-warning-main-channel",
+   "value": "255 171 0"
+  },
+  {
+   "name": "--ok-radius-full",
+   "value": "9999px"
+  },
+  {
+   "name": "--ok-radius-md",
+   "value": "8px"
+  },
+  {
+   "name": "--ok-radius-sm",
+   "value": "6px"
+  },
+  {
+   "name": "--ok-radius-xs",
+   "value": "4px"
+  },
+  {
+   "name": "--ok-shadow-dropdown",
+   "value": "0px 0px 2px 0px color-mix(in srgb, var(--ok-shadow-color) 24%, transparent), -20px 20px 40px -4px color-mix(in srgb, var(--ok-shadow-color) 24%, transparent)"
+  },
+  {
+   "name": "--ok-spacing",
+   "value": "0.25rem"
+  },
+  {
+   "dark": "#637381",
+   "light": "#919EAB",
+   "name": "--ok-text-disabled"
+  },
+  {
+   "dark": "#FFFFFF",
+   "light": "#1C252E",
+   "name": "--ok-text-primary"
+  },
+  {
+   "dark": "#919EAB",
+   "light": "#637381",
+   "name": "--ok-text-secondary"
+  },
+  {
+   "name": "--ok-typography-body2-font-size",
+   "value": "0.875rem"
+  },
+  {
+   "name": "--ok-typography-body2-font-weight",
+   "value": "400"
+  },
+  {
+   "name": "--ok-typography-body2-line-height",
+   "value": "1.5714"
+  },
+  {
+   "name": "--ok-typography-subtitle2-font-weight",
+   "value": "600"
+  },
+  {
+   "name": "--ok-z-tooltip",
+   "value": "1500"
+  }
+ ],
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-gantt",
+    "events": [
+     {
+      "cancelable": true,
+      "description": "Before the selection changes. Call `preventDefault()` to keep the current one.",
+      "detail": "{ selected: string[]; mode: string; }",
+      "name": "ok:gantt:selectionchange"
+     },
+     {
+      "cancelable": true,
+      "description": "Before a summary task expands or collapses. Call `preventDefault()` to refuse.",
+      "detail": "{ id: string; expanded: boolean; collapsed: string[]; }",
+      "name": "ok:gantt:toggle"
+     },
+     {
+      "cancelable": true,
+      "description": "Before the zoom level changes. Call `preventDefault()` to keep it.",
+      "detail": "{ pixelsPerDay: number; }",
+      "name": "ok:gantt:zoom"
+     }
+    ],
+    "methods": [
+     {
+      "description": "Collapsed parent ids (`data-ok-collapsed` on their table rows).",
+      "kind": "property",
+      "name": "collapsed",
+      "type": "readonly string[]"
+     },
+     {
+      "description": "The zoom in px per day.",
+      "kind": "property",
+      "name": "pixelsPerDay",
+      "type": "number"
+     },
+     {
+      "description": "Reads the table and the options again and redraws (done automatically on changes).",
+      "kind": "method",
+      "name": "refresh",
+      "type": "() => void"
+     },
+     {
+      "description": "Scrolls a task's row and bar into view; `false` for an unknown or hidden task.",
+      "kind": "method",
+      "name": "scrollToTask",
+      "type": "(id: string) => boolean"
+     },
+     {
+      "description": "Selected task ids (`data-ok-selected` on their table rows).",
+      "kind": "property",
+      "name": "selected",
+      "type": "readonly string[]"
+     },
+     {
+      "description": "Collapses exactly these parents (no event).",
+      "kind": "method",
+      "name": "setCollapsed",
+      "type": "(ids: readonly string[]) => void"
+     },
+     {
+      "description": "Replaces texts: column titles, units, accessible names. Redraws.",
+      "kind": "method",
+      "name": "setLocaleText",
+      "type": "(text: Partial<GanttLocaleText>) => void"
+     },
+     {
+      "description": "Selects exactly these tasks (no event).",
+      "kind": "method",
+      "name": "setSelected",
+      "type": "(ids: readonly string[]) => void"
+     },
+     {
+      "description": "The tasks read from the data table.",
+      "kind": "property",
+      "name": "tasks",
+      "type": "readonly GanttTask[]"
+     },
+     {
+      "description": "One zoom step in or out (no event).",
+      "kind": "method",
+      "name": "zoomIn",
+      "type": "() => void"
+     },
+     {
+      "description": "Zooms out one level.",
+      "kind": "method",
+      "name": "zoomOut",
+      "type": "() => void"
+     }
+    ],
+    "options": [
+     {
+      "attr": "data-ok-view",
+      "default": "week",
+      "description": "Zoom preset: `day`, `week`, `month`, `quarter` or `year` (36, 16, 5, 1.6 or 0.5 px per day). The header tiers follow the zoom.",
+      "kind": "style",
+      "name": "view",
+      "values": [
+       "day",
+       "week",
+       "month",
+       "quarter",
+       "year"
+      ]
+     },
+     {
+      "attr": "data-ok-pixels-per-day",
+      "description": "Zoom in px per day (0.25 to 120), instead of the view's. The zoom buttons write it.",
+      "kind": "number",
+      "min": 0.25,
+      "name": "pixelsPerDay"
+     },
+     {
+      "attr": "data-ok-row-height",
+      "default": 40,
+      "description": "Height of a task row in px (at least 24).",
+      "kind": "number",
+      "min": 24,
+      "name": "rowHeight"
+     },
+     {
+      "attr": "data-ok-bar-margin",
+      "default": 8,
+      "description": "Space above and below a bar inside its row, in px.",
+      "kind": "number",
+      "min": 0,
+      "name": "barMargin"
+     },
+     {
+      "attr": "data-ok-tasks-container-width",
+      "default": 440,
+      "description": "Width of the task list in px from 600px up (the name column takes what the other columns leave). Below 600px only the name column shows.",
+      "kind": "number",
+      "min": 120,
+      "name": "tasksContainerWidth"
+     },
+     {
+      "attr": "data-ok-bar-label",
+      "default": "right",
+      "description": "Where the task name sits: `right` of the bar, `inside` it, `left` of it, or `auto` (inside when it fits).",
+      "kind": "style",
+      "name": "barLabel",
+      "values": [
+       "right",
+       "inside",
+       "left",
+       "auto"
+      ]
+     },
+     {
+      "attr": "data-ok-week-start",
+      "default": 1,
+      "description": "First day of a week, 0 = Sunday (default Monday).",
+      "kind": "number",
+      "min": 0,
+      "name": "weekStart"
+     },
+     {
+      "attr": "data-ok-show-today",
+      "default": true,
+      "description": "Draws a line on today's date.",
+      "kind": "behavior",
+      "name": "showToday"
+     },
+     {
+      "attr": "data-ok-show-non-working-days",
+      "default": true,
+      "description": "Shades weekends and holidays at day and week zoom.",
+      "kind": "behavior",
+      "name": "showNonWorkingDays"
+     },
+     {
+      "attr": "data-ok-column-lines",
+      "default": true,
+      "description": "Vertical lines between the timeline's columns.",
+      "kind": "behavior",
+      "name": "columnLines"
+     },
+     {
+      "attr": "data-ok-critical-path",
+      "description": "Highlights the tasks and dependencies with no slack (the critical path).",
+      "kind": "flag",
+      "name": "criticalPath"
+     },
+     {
+      "attr": "data-ok-baseline",
+      "description": "Draws each task's planned dates as a thin bar under it.",
+      "kind": "flag",
+      "name": "baseline"
+     },
+     {
+      "attr": "data-ok-project-boundary",
+      "description": "Dashed lines at the project's first and last day.",
+      "kind": "flag",
+      "name": "projectBoundary"
+     },
+     {
+      "attr": "data-ok-toolbar",
+      "description": "A toolbar with zoom out and zoom in buttons.",
+      "kind": "flag",
+      "name": "toolbar"
+     },
+     {
+      "attr": "data-ok-selection",
+      "description": "Rows can be selected: click, Ctrl or Cmd + click, Shift + click, Space and Ctrl + A.",
+      "kind": "flag",
+      "name": "selection"
+     },
+     {
+      "attr": "data-ok-disable-tooltip",
+      "description": "No tooltip on bar hover or row focus.",
+      "kind": "flag",
+      "name": "disableTooltip"
+     },
+     {
+      "attr": "data-ok-collapsed",
+      "description": "Collapsed parent rows: `data-ok-collapsed` on their rows of the data table (`aria-expanded` on the grid rows).",
+      "event": "ok:gantt:toggle",
+      "kind": "state",
+      "name": "collapsed"
+     },
+     {
+      "attr": "data-ok-selected",
+      "description": "Selected rows: `data-ok-selected` on their rows of the data table (`aria-selected` on the grid rows).",
+      "event": "ok:gantt:selectionchange",
+      "kind": "state",
+      "name": "selected"
+     }
+    ],
+    "parts": [
+     {
+      "description": "The columns of the task list, such as `name startTime duration`.",
+      "kind": "value",
+      "name": "data-ok-columns",
+      "value": "string"
+     },
+     {
+      "description": "Marks a task on the critical path.",
+      "kind": "state",
+      "name": "data-ok-critical"
+     },
+     {
+      "description": "A task's bar.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-gantt-bar"
+     },
+     {
+      "description": "The label of a bar.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-gantt-bar-text"
+     },
+     {
+      "description": "The planned dates under a bar.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-gantt-baseline"
+     },
+     {
+      "description": "The rows.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-gantt-body"
+     },
+     {
+      "description": "The line between the task list and the timeline.",
+      "elements": [
+       "path"
+      ],
+      "kind": "part",
+      "name": "data-ok-gantt-boundary"
+     },
+     {
+      "description": "The drawing under the bars: grid lines, non-working days and today.",
+      "elements": [
+       "svg"
+      ],
+      "kind": "part",
+      "name": "data-ok-gantt-canvas"
+     },
+     {
+      "description": "A cell of the task list and its column, such as `name`.",
+      "kind": "value",
+      "name": "data-ok-gantt-cell",
+      "value": "string"
+     },
+     {
+      "description": "A column header of the task list.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-gantt-column"
+     },
+     {
+      "description": "HTML: the tasks, as a table. What the Gantt shows without JavaScript.",
+      "elements": [
+       "table"
+      ],
+      "kind": "part",
+      "name": "data-ok-gantt-data"
+     },
+     {
+      "description": "On a data table header cell: the task field the column holds.",
+      "kind": "value",
+      "name": "data-ok-gantt-field",
+      "value": [
+       "baselineEnd",
+       "baselineStart",
+       "dependency",
+       "endTime",
+       "name",
+       "progress",
+       "startTime"
+      ]
+     },
+     {
+      "description": "The task list and the timeline.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-gantt-grid"
+     },
+     {
+      "description": "The grid lines.",
+      "elements": [
+       "path"
+      ],
+      "kind": "part",
+      "name": "data-ok-gantt-grid-lines"
+     },
+     {
+      "description": "The column headers and the time scale.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-gantt-head"
+     },
+     {
+      "description": "Where a bar's label sits.",
+      "kind": "value",
+      "name": "data-ok-gantt-label",
+      "value": [
+       "inside",
+       "left",
+       "right"
+      ]
+     },
+     {
+      "description": "One dependency arrow.",
+      "elements": [
+       "g"
+      ],
+      "kind": "part",
+      "name": "data-ok-gantt-link"
+     },
+     {
+      "description": "The head of a dependency arrow.",
+      "elements": [
+       "path"
+      ],
+      "kind": "part",
+      "name": "data-ok-gantt-link-head"
+     },
+     {
+      "description": "The line of a dependency arrow.",
+      "elements": [
+       "path"
+      ],
+      "kind": "part",
+      "name": "data-ok-gantt-link-line"
+     },
+     {
+      "description": "The dependency arrows.",
+      "elements": [
+       "g"
+      ],
+      "kind": "part",
+      "name": "data-ok-gantt-links"
+     },
+     {
+      "description": "A task's name.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-gantt-name"
+     },
+     {
+      "description": "The shading of non-working days.",
+      "elements": [
+       "path"
+      ],
+      "kind": "part",
+      "name": "data-ok-gantt-non-working"
+     },
+     {
+      "description": "One task's row.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-gantt-row"
+     },
+     {
+      "description": "The time scale.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-gantt-scale"
+     },
+     {
+      "description": "One label of the time scale.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-gantt-tick"
+     },
+     {
+      "description": "One tier of the time scale.",
+      "kind": "value",
+      "name": "data-ok-gantt-tier",
+      "value": [
+       "bottom",
+       "top"
+      ]
+     },
+     {
+      "description": "The line at today.",
+      "elements": [
+       "path"
+      ],
+      "kind": "part",
+      "name": "data-ok-gantt-today"
+     },
+     {
+      "description": "The button that expands and collapses a summary task.",
+      "kind": "part",
+      "name": "data-ok-gantt-toggle"
+     },
+     {
+      "description": "The space of the toggle in a row without one.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-gantt-toggle-space"
+     },
+     {
+      "description": "The toolbar: the zoom buttons.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-gantt-toolbar"
+     },
+     {
+      "description": "The tooltip of a bar.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-gantt-tooltip"
+     },
+     {
+      "description": "One row of the tooltip.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-gantt-tooltip-row"
+     },
+     {
+      "description": "The title of the tooltip.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-gantt-tooltip-title"
+     },
+     {
+      "description": "The area that scrolls both ways.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-gantt-viewport"
+     },
+     {
+      "description": "Text for assistive technology only.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-gantt-visually-hidden"
+     },
+     {
+      "description": "A zoom button.",
+      "kind": "value",
+      "name": "data-ok-gantt-zoom",
+      "value": [
+       "in",
+       "out"
+      ]
+     },
+     {
+      "description": "Non-working dates, `YYYY-MM-DD` separated by spaces.",
+      "kind": "value",
+      "name": "data-ok-holidays",
+      "value": "string"
+     },
+     {
+      "description": "The locale that formats dates, such as `en-US`.",
+      "kind": "value",
+      "name": "data-ok-locale",
+      "value": "string"
+     },
+     {
+      "description": "On a task row: the id of its summary task.",
+      "kind": "value",
+      "name": "data-ok-parent-id",
+      "value": "string"
+     },
+     {
+      "description": "Set by the runtime once the Gantt is drawn: the data table hides.",
+      "kind": "state",
+      "name": "data-ok-ready"
+     },
+     {
+      "description": "On a task row: its id.",
+      "kind": "value",
+      "name": "data-ok-task-id",
+      "value": "string"
+     },
+     {
+      "description": "The date treated as today, `YYYY-MM-DD`.",
+      "kind": "value",
+      "name": "data-ok-today",
+      "value": "string"
+     },
+     {
+      "description": "The working days, such as `1 2 3 4 5` (Monday to Friday).",
+      "kind": "value",
+      "name": "data-ok-working-weekdays",
+      "value": "string"
+     }
+    ],
+    "runtime": "gantt"
+   },
+   "name": "Gantt",
+   "react": {
+    "description": "A task list and a timeline in one treegrid: scales from days to years, summary tasks, milestones, dependencies, baselines, the critical path, selection and tooltips. The data is also a table (hidden once drawn) like the HTML form.",
+    "native": "HTMLDivElement",
+    "props": [
+     {
+      "default": "right",
+      "description": "Where the task name sits: `right` of the bar, `inside` it, `left` of it, or `auto` (inside when it fits).",
+      "name": "barLabel",
+      "type": "\"auto\" | \"inside\" | \"left\" | \"right\""
+     },
+     {
+      "default": "8",
+      "description": "Space above and below a bar inside its row, in px.",
+      "name": "barMargin",
+      "type": "number"
+     },
+     {
+      "description": "Draws each task's planned dates as a thin bar under it.",
+      "name": "baseline",
+      "type": "boolean"
+     },
+     {
+      "description": "Collapsed parent ids (controlled).",
+      "name": "collapsed",
+      "type": "readonly string[]"
+     },
+     {
+      "default": "true",
+      "description": "Vertical lines between the timeline's columns.",
+      "name": "columnLines",
+      "type": "boolean"
+     },
+     {
+      "description": "Task-list columns (`name`, `startTime`, `endTime`, `duration`, `progress`).",
+      "name": "columns",
+      "type": "readonly (\"duration\" | \"endTime\" | \"name\" | \"progress\" | \"startTime\")[]"
+     },
+     {
+      "description": "Highlights the tasks and dependencies with no slack (the critical path).",
+      "name": "criticalPath",
+      "type": "boolean"
+     },
+     {
+      "description": "Initially collapsed parents (default: tasks with `collapsed`).",
+      "name": "defaultCollapsed",
+      "type": "readonly string[]"
+     },
+     {
+      "description": "The first zoom level in pixels per day, uncontrolled.",
+      "name": "defaultPixelsPerDay",
+      "type": "number"
+     },
+     {
+      "description": "The first selected task ids, uncontrolled.",
+      "name": "defaultSelected",
+      "type": "readonly string[]"
+     },
+     {
+      "description": "No tooltip on bar hover or row focus.",
+      "name": "disableTooltip",
+      "type": "boolean"
+     },
+     {
+      "description": "Non-working days (ISO dates).",
+      "name": "holidays",
+      "type": "readonly (string | Date)[]"
+     },
+     {
+      "description": "Accessible name of the Gantt and the caption of its data table.",
+      "name": "label",
+      "required": true,
+      "type": "string"
+     },
+     {
+      "description": "BCP 47 locale of dates (`en-US`).",
+      "name": "locale",
+      "type": "string"
+     },
+     {
+      "description": "Texts: column titles, units, accessible names.",
+      "name": "localeText",
+      "type": "Partial<GanttLocaleText>"
+     },
+     {
+      "description": "Called when summary tasks expand or collapse, with the collapsed ids.",
+      "name": "onCollapsedChange",
+      "type": "((ids: string[]) => void)"
+     },
+     {
+      "description": "Called when the selection changes, with the ids and how they were selected.",
+      "name": "onSelectionChange",
+      "type": "((ids: string[], mode: GanttSelectionMode) => void)"
+     },
+     {
+      "description": "Called when the zoom level changes.",
+      "name": "onZoomChange",
+      "type": "((pixelsPerDay: number) => void)"
+     },
+     {
+      "description": "Zoom in px per day (controlled); the zoom buttons report changes through `onZoomChange`.",
+      "name": "pixelsPerDay",
+      "type": "number"
+     },
+     {
+      "description": "Dashed lines at the project's first and last day.",
+      "name": "projectBoundary",
+      "type": "boolean"
+     },
+     {
+      "default": "40",
+      "description": "Height of a task row in px (at least 24).",
+      "name": "rowHeight",
+      "type": "number"
+     },
+     {
+      "description": "Selected task ids (controlled; needs `selection`).",
+      "name": "selected",
+      "type": "readonly string[]"
+     },
+     {
+      "description": "Rows can be selected: click, Ctrl or Cmd + click, Shift + click, Space and Ctrl + A.",
+      "name": "selection",
+      "type": "boolean"
+     },
+     {
+      "default": "true",
+      "description": "Shades weekends and holidays at day and week zoom.",
+      "name": "showNonWorkingDays",
+      "type": "boolean"
+     },
+     {
+      "default": "true",
+      "description": "Draws a line on today's date.",
+      "name": "showToday",
+      "type": "boolean"
+     },
+     {
+      "description": "The tasks: ids, names, ISO dates, progress, parents and dependencies.",
+      "name": "tasks",
+      "required": true,
+      "type": "readonly GanttTask[]"
+     },
+     {
+      "default": "440",
+      "description": "Width of the task list in px from 600px up (the name column takes what the other columns leave). Below 600px only the name column shows.",
+      "name": "tasksContainerWidth",
+      "type": "number"
+     },
+     {
+      "description": "The today line's day (default the current day).",
+      "name": "today",
+      "type": "string | Date"
+     },
+     {
+      "description": "A toolbar with zoom out and zoom in buttons.",
+      "name": "toolbar",
+      "type": "boolean"
+     },
+     {
+      "description": "Zoom preset (`week`).",
+      "name": "view",
+      "type": "\"day\" | \"month\" | \"quarter\" | \"week\" | \"year\""
+     },
+     {
+      "default": "1",
+      "description": "First day of a week, 0 = Sunday (default Monday).",
+      "name": "weekStart",
+      "type": "number"
+     },
+     {
+      "description": "Working weekdays, 0 = Sunday (Monday to Friday).",
+      "name": "workingWeekdays",
+      "type": "readonly number[]"
+     }
+    ]
+   }
+  }
+ ],
+ "format": 1,
+ "name": "gantt",
+ "title": "Gantt",
+ "types": [
+  {
+   "name": "GanttSelectionMode",
+   "type": "\"all\" | \"range\" | \"replace\" | \"toggle\""
+  }
+ ]
+}

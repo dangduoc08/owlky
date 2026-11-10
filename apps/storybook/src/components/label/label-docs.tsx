@@ -1,4 +1,6 @@
 import { labelOptions } from "@owlky/core";
+import labelApi from "@owlky/docs-content/api/label.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { Label } from "@owlky/react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
@@ -65,6 +67,7 @@ export function InvoiceStatus() {
 - Soft and inverted labels meet a contrast ratio of at least 4.5:1. Filled and outlined brand colors follow the design, so light colors such as \`warning\` are lower.
 - White labels are meant for dark surfaces.`,
   },
+  apiReferenceSection(labelApi),
 ];
 
 const PREVIEWS = {

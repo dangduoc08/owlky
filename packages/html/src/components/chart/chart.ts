@@ -52,7 +52,7 @@ import {
   zoomChartBy,
 } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
-import type { ComponentInstance } from "../../runtime/types.js";
+import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
 
 export interface ChartFormatters {
   /** Replaces the value text (tooltip, value axis; `series` is -1 for axis ticks). */
@@ -71,6 +71,16 @@ export interface ChartAppendOptions {
   readonly categories?: readonly (string | number | Date)[] | undefined;
   /** Keeps only the last `limit` points of each series (a sliding window for live data). */
   readonly limit?: number | undefined;
+}
+
+/** Events of this component (`ok:<name>:<event>` on the root). */
+export interface ChartEvents {
+  /** Before a legend item hides or shows a series. Call `preventDefault()` to refuse. */
+  toggle: EventSpec<{ index: number; hidden: boolean; hiddenSeries: number[] }, true>;
+  /** After the highlighted point or mark changed (`null`: none). */
+  active: EventSpec<{ active: ChartActive | null }>;
+  /** Before the zoom window changes. Cancelable only when `reason` is `user`; `range` is `null` once reset. */
+  zoom: EventSpec<{ range: ChartZoom | null; reason: ChartZoomReason }, boolean>;
 }
 
 export interface ChartInstance extends ComponentInstance {
@@ -272,7 +282,7 @@ let counter = 0;
  * Events:  ok:chart:toggle (cancelable, detail `{ index, hidden, hiddenSeries }`),
  *          ok:chart:active (detail `{ active }`).
  */
-export const chart = defineComponent<ChartInstance>({
+export const chart = defineComponent<ChartInstance, ChartEvents>({
   name: "chart",
   selector: "[data-ok-chart]",
 

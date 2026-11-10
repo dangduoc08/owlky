@@ -1,4 +1,6 @@
 import { tableOptions, tableSortLabelOptions } from "@owlky/core";
+import tableApi from "@owlky/docs-content/api/table.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import {
   Scrollbar,
   Table,
@@ -203,6 +205,7 @@ For selection, add a column of small **Checkbox** components: put \`data-ok-tabl
 - The "1–5 of 12" label is a polite live region, so page changes are announced.
 - Header text meets a contrast ratio of at least 4.5:1 in light and dark mode.`,
   },
+  apiReferenceSection(tableApi),
 ];
 
 const PREVIEWS = {

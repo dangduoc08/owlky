@@ -1,0 +1,516 @@
+{
+ "css": [
+  {
+   "name": "--ok-action-disabled",
+   "value": "color-mix(in srgb, #919EAB 80%, transparent)"
+  },
+  {
+   "name": "--ok-action-disabled-bg",
+   "value": "color-mix(in srgb, #919EAB 24%, transparent)"
+  },
+  {
+   "name": "--ok-action-hover",
+   "value": "color-mix(in srgb, #919EAB 8%, transparent)"
+  },
+  {
+   "name": "--ok-duration-shortest",
+   "value": "150ms"
+  },
+  {
+   "name": "--ok-easing-standard",
+   "value": "cubic-bezier(0.4, 0, 0.2, 1)"
+  },
+  {
+   "name": "--ok-font-family",
+   "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+  },
+  {
+   "name": "--ok-font-size-lg",
+   "value": "0.9375rem"
+  },
+  {
+   "name": "--ok-font-weight-regular",
+   "value": "400"
+  },
+  {
+   "name": "--ok-font-weight-semibold",
+   "value": "600"
+  },
+  {
+   "dark": "#1C252E",
+   "light": "#FFFFFF",
+   "name": "--ok-inherit-contrast"
+  },
+  {
+   "dark": "#C4CDD5",
+   "light": "#454F5B",
+   "name": "--ok-inherit-hover"
+  },
+  {
+   "dark": "#FFFFFF",
+   "light": "#1C252E",
+   "name": "--ok-inherit-main"
+  },
+  {
+   "name": "--ok-palette-error-contrast-text",
+   "value": "#FFFFFF"
+  },
+  {
+   "name": "--ok-palette-error-dark",
+   "value": "#B71D18"
+  },
+  {
+   "name": "--ok-palette-error-main",
+   "value": "#FF5630"
+  },
+  {
+   "name": "--ok-palette-error-main-channel",
+   "value": "255 86 48"
+  },
+  {
+   "dark": "#FFAC82",
+   "light": "#B71D18",
+   "name": "--ok-palette-error-text"
+  },
+  {
+   "name": "--ok-palette-grey-500-channel",
+   "value": "145 158 171"
+  },
+  {
+   "name": "--ok-palette-info-contrast-text",
+   "value": "#FFFFFF"
+  },
+  {
+   "name": "--ok-palette-info-dark",
+   "value": "#006C9C"
+  },
+  {
+   "name": "--ok-palette-info-main",
+   "value": "#00B8D9"
+  },
+  {
+   "name": "--ok-palette-info-main-channel",
+   "value": "0 184 217"
+  },
+  {
+   "dark": "#61F3F3",
+   "light": "#006C9C",
+   "name": "--ok-palette-info-text"
+  },
+  {
+   "name": "--ok-palette-primary-contrast-text",
+   "value": "#FFFFFF"
+  },
+  {
+   "name": "--ok-palette-primary-dark",
+   "value": "#007867"
+  },
+  {
+   "name": "--ok-palette-primary-main",
+   "value": "#00A76F"
+  },
+  {
+   "name": "--ok-palette-primary-main-channel",
+   "value": "0 167 111"
+  },
+  {
+   "dark": "var(--_ok-primary-text-dark)",
+   "light": "var(--_ok-primary-text-light)",
+   "name": "--ok-palette-primary-text"
+  },
+  {
+   "name": "--ok-palette-secondary-contrast-text",
+   "value": "#FFFFFF"
+  },
+  {
+   "name": "--ok-palette-secondary-dark",
+   "value": "#5119B7"
+  },
+  {
+   "name": "--ok-palette-secondary-main",
+   "value": "#8E33FF"
+  },
+  {
+   "name": "--ok-palette-secondary-main-channel",
+   "value": "142 51 255"
+  },
+  {
+   "dark": "#C684FF",
+   "light": "#5119B7",
+   "name": "--ok-palette-secondary-text"
+  },
+  {
+   "name": "--ok-palette-success-contrast-text",
+   "value": "#FFFFFF"
+  },
+  {
+   "name": "--ok-palette-success-dark",
+   "value": "#118D57"
+  },
+  {
+   "name": "--ok-palette-success-main",
+   "value": "#22C55E"
+  },
+  {
+   "name": "--ok-palette-success-main-channel",
+   "value": "34 197 94"
+  },
+  {
+   "dark": "#77ED8B",
+   "light": "#065E49",
+   "name": "--ok-palette-success-text"
+  },
+  {
+   "name": "--ok-palette-warning-contrast-text",
+   "value": "#1C252E"
+  },
+  {
+   "name": "--ok-palette-warning-dark",
+   "value": "#B76E00"
+  },
+  {
+   "name": "--ok-palette-warning-main",
+   "value": "#FFAB00"
+  },
+  {
+   "name": "--ok-palette-warning-main-channel",
+   "value": "255 171 0"
+  },
+  {
+   "dark": "#FFD666",
+   "light": "#7A4100",
+   "name": "--ok-palette-warning-text"
+  },
+  {
+   "name": "--ok-radius-full",
+   "value": "9999px"
+  },
+  {
+   "name": "--ok-radius-md",
+   "value": "8px"
+  },
+  {
+   "name": "--ok-spacing",
+   "value": "0.25rem"
+  },
+  {
+   "dark": "#FFFFFF",
+   "light": "#1C252E",
+   "name": "--ok-text-primary"
+  },
+  {
+   "name": "--ok-typography-body2-font-size",
+   "value": "0.875rem"
+  },
+  {
+   "name": "--ok-typography-body2-line-height",
+   "value": "1.5714"
+  }
+ ],
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-pagination",
+    "events": [
+     {
+      "cancelable": true,
+      "description": "Before the page changes. Call `preventDefault()` to stay on the current page.",
+      "detail": "{ page: number; }",
+      "name": "ok:pagination:change"
+     }
+    ],
+    "methods": [
+     {
+      "description": "The number of pages.",
+      "kind": "property",
+      "name": "count",
+      "type": "number"
+     },
+     {
+      "description": "Current page (1-based).",
+      "kind": "property",
+      "name": "page",
+      "type": "number"
+     },
+     {
+      "description": "Rebuilds the items from the attributes (after changing `data-ok-count`…).",
+      "kind": "method",
+      "name": "refresh",
+      "type": "() => void"
+     },
+     {
+      "description": "Returns `false` if out of range, the current page, or `ok:pagination:change` was prevented.",
+      "kind": "method",
+      "name": "setPage",
+      "type": "(page: number) => boolean"
+     }
+    ],
+    "options": [
+     {
+      "attr": "data-ok-variant",
+      "default": "text",
+      "description": "Look of the current page.",
+      "kind": "style",
+      "name": "variant",
+      "values": [
+       "text",
+       "outlined",
+       "soft"
+      ]
+     },
+     {
+      "attr": "data-ok-color",
+      "default": "standard",
+      "description": "Color of the current page (`standard` = neutral).",
+      "kind": "style",
+      "name": "color",
+      "values": [
+       "standard",
+       "primary",
+       "secondary",
+       "info",
+       "success",
+       "warning",
+       "error"
+      ]
+     },
+     {
+      "attr": "data-ok-shape",
+      "default": "circular",
+      "description": "Round or 8px corners.",
+      "kind": "style",
+      "name": "shape",
+      "values": [
+       "circular",
+       "rounded"
+      ]
+     },
+     {
+      "attr": "data-ok-size",
+      "default": "md",
+      "description": "Item size: 26 / 32 / 40px.",
+      "kind": "style",
+      "name": "size",
+      "values": [
+       "sm",
+       "md",
+       "lg"
+      ]
+     },
+     {
+      "attr": "data-ok-disabled",
+      "description": "Every item is disabled.",
+      "kind": "flag",
+      "name": "disabled"
+     },
+     {
+      "attr": "data-ok-page",
+      "description": "Current page, 1-based (`page` / `defaultPage` + `onChange(page)`).",
+      "event": "ok:pagination:change",
+      "kind": "state",
+      "name": "page"
+     }
+    ],
+    "parts": [
+     {
+      "description": "The pages always shown at each end. Default 1.",
+      "kind": "value",
+      "name": "data-ok-boundary-count",
+      "value": "string"
+     },
+     {
+      "description": "The number of pages.",
+      "kind": "value",
+      "name": "data-ok-count",
+      "value": "string"
+     },
+     {
+      "description": "The accessible name pattern of the current page, such as `page {page}`.",
+      "kind": "value",
+      "name": "data-ok-label-current",
+      "value": "string"
+     },
+     {
+      "description": "The accessible name pattern of the other pages, such as `Go to page {page}`.",
+      "kind": "value",
+      "name": "data-ok-label-page",
+      "value": "string"
+     },
+     {
+      "description": "An ellipsis that stands for hidden pages.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-pagination-ellipsis"
+     },
+     {
+      "description": "On a pagination linked to a table: the rows per page.",
+      "kind": "value",
+      "name": "data-ok-rows-per-page",
+      "value": "string"
+     },
+     {
+      "description": "The pages shown on each side of the current one. Default 1.",
+      "kind": "value",
+      "name": "data-ok-sibling-count",
+      "value": "string"
+     }
+    ],
+    "runtime": "pagination"
+   },
+   "name": "Pagination",
+   "react": {
+    "description": "",
+    "native": "HTMLElement",
+    "props": [
+     {
+      "description": "Pages always shown at each end. Default 1.",
+      "name": "boundaryCount",
+      "type": "number"
+     },
+     {
+      "default": "\"standard\"",
+      "description": "Color of the current page (`standard` = neutral).",
+      "name": "color",
+      "type": "\"error\" | \"info\" | \"primary\" | \"secondary\" | \"standard\" | \"success\" | \"warning\""
+     },
+     {
+      "description": "Total pages. Default 1.",
+      "name": "count",
+      "type": "number"
+     },
+     {
+      "description": "Initial page when uncontrolled. Default 1.",
+      "name": "defaultPage",
+      "type": "number"
+     },
+     {
+      "description": "Every item is disabled.",
+      "name": "disabled",
+      "type": "boolean"
+     },
+     {
+      "description": "Accessible name of each item (default as MUI: \"Go to page 3\", \"page 2\", \"Go to next page\").",
+      "name": "getItemAriaLabel",
+      "type": "((type: PaginationItemType, page: number | null, selected: boolean) => string)"
+     },
+     {
+      "description": "Hides the button to the next page.",
+      "name": "hideNextButton",
+      "type": "boolean"
+     },
+     {
+      "description": "Hides the button to the previous page.",
+      "name": "hidePrevButton",
+      "type": "boolean"
+     },
+     {
+      "description": "Replaces the first / previous / next / last icons.",
+      "name": "icons",
+      "type": "Partial<Record<NavType, ReactNode>>"
+     },
+     {
+      "description": "Called with the requested page.",
+      "name": "onChange",
+      "type": "((page: number) => void)"
+     },
+     {
+      "description": "Controlled current page (1-based).",
+      "name": "page",
+      "type": "number"
+     },
+     {
+      "description": "item} />`).",
+      "name": "renderItem",
+      "type": "((item: PaginationRenderItemParams) => ReactNode)"
+     },
+     {
+      "default": "\"circular\"",
+      "description": "Round or 8px corners.",
+      "name": "shape",
+      "type": "\"circular\" | \"rounded\""
+     },
+     {
+      "description": "Shows a button to the first page.",
+      "name": "showFirstButton",
+      "type": "boolean"
+     },
+     {
+      "description": "Shows a button to the last page.",
+      "name": "showLastButton",
+      "type": "boolean"
+     },
+     {
+      "description": "Pages always shown on each side of the current one. Default 1.",
+      "name": "siblingCount",
+      "type": "number"
+     },
+     {
+      "default": "\"md\"",
+      "description": "Item size: 26 / 32 / 40px.",
+      "name": "size",
+      "type": "\"lg\" | \"md\" | \"sm\""
+     },
+     {
+      "default": "\"text\"",
+      "description": "Look of the current page.",
+      "name": "variant",
+      "type": "\"outlined\" | \"soft\" | \"text\""
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-pagination-item",
+    "description": "A page or navigation button.",
+    "elements": [
+     "button"
+    ]
+   },
+   "name": "PaginationItem",
+   "react": {
+    "description": "One item: a page number, previous / next / first / last, or an ellipsis. Use it in `renderItem` for custom content or links.",
+    "native": "HTMLElement",
+    "props": [
+     {
+      "description": "Renders a link (`<a>`) instead of a button.",
+      "name": "href",
+      "type": "string"
+     },
+     {
+      "description": "Icon of a first / previous / next / last item (default chevrons).",
+      "name": "icon",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Target page (1-based); `null` for ellipses.",
+      "name": "page",
+      "type": "number | null"
+     },
+     {
+      "description": "The current page (`aria-current=\"page\"`).",
+      "name": "selected",
+      "type": "boolean"
+     },
+     {
+      "default": "\"page\"",
+      "description": "What the item is: a page, an ellipsis or a navigation button.",
+      "name": "type",
+      "type": "PaginationItemType"
+     }
+    ]
+   }
+  }
+ ],
+ "format": 1,
+ "name": "pagination",
+ "title": "Pagination",
+ "types": [
+  {
+   "name": "PaginationItemType",
+   "type": "\"end-ellipsis\" | \"first\" | \"last\" | \"next\" | \"page\" | \"previous\" | \"start-ellipsis\""
+  }
+ ]
+}

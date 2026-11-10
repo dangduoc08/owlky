@@ -1,0 +1,205 @@
+{
+ "css": [
+  {
+   "name": "--ok-action-disabled",
+   "value": "color-mix(in srgb, #919EAB 80%, transparent)"
+  },
+  {
+   "name": "--ok-action-hover",
+   "value": "color-mix(in srgb, #919EAB 8%, transparent)"
+  },
+  {
+   "dark": "#141A21",
+   "light": "#FFFFFF",
+   "name": "--ok-bg-default"
+  },
+  {
+   "description": "The main color of the element's `data-ok-color`, as RGB channels.",
+   "name": "--ok-c-channel"
+  },
+  {
+   "description": "The main color of the element's `data-ok-color`.",
+   "name": "--ok-c-main"
+  },
+  {
+   "name": "--ok-duration-shortest",
+   "value": "150ms"
+  },
+  {
+   "name": "--ok-easing-standard",
+   "value": "cubic-bezier(0.4, 0, 0.2, 1)"
+  },
+  {
+   "name": "--ok-palette-common-white",
+   "value": "#FFFFFF"
+  },
+  {
+   "name": "--ok-palette-primary-main",
+   "value": "#00A76F"
+  },
+  {
+   "name": "--ok-palette-primary-main-channel",
+   "value": "0 167 111"
+  },
+  {
+   "name": "--ok-radius-full",
+   "value": "9999px"
+  },
+  {
+   "name": "--ok-spacing",
+   "value": "0.25rem"
+  },
+  {
+   "dark": "#FFFFFF",
+   "light": "#1C252E",
+   "name": "--ok-text-primary"
+  },
+  {
+   "dark": "#919EAB",
+   "light": "#637381",
+   "name": "--ok-text-secondary"
+  }
+ ],
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-checkbox",
+    "options": [
+     {
+      "attr": "data-ok-color",
+      "default": "primary",
+      "description": "Color when checked or indeterminate (`default` = text color).",
+      "kind": "style",
+      "name": "color",
+      "values": [
+       "default",
+       "primary",
+       "secondary",
+       "info",
+       "success",
+       "warning",
+       "error"
+      ]
+     },
+     {
+      "attr": "data-ok-size",
+      "default": "medium",
+      "description": "Target 40 / 36px, icon 24 / 20px.",
+      "kind": "style",
+      "name": "size",
+      "values": [
+       "medium",
+       "small"
+      ]
+     },
+     {
+      "attr": "data-ok-indeterminate",
+      "description": "Mixed state: shows a dash and sets the input's `indeterminate` (`aria-checked=mixed`).",
+      "kind": "flag",
+      "name": "indeterminate"
+     },
+     {
+      "attr": "disabled",
+      "children": ":scope > input",
+      "description": "Native `disabled` on the input.",
+      "kind": "native",
+      "name": "disabled"
+     },
+     {
+      "attr": "checked",
+      "description": "Native `checked` (`checked` / `defaultChecked` + `onChange(checked)`).",
+      "event": "ok:checkbox:change",
+      "kind": "state",
+      "name": "checked"
+     }
+    ],
+    "parts": [
+     {
+      "description": "The icon of one state. The checkbox shows the one that matches.",
+      "kind": "value",
+      "name": "data-ok-checkbox-icon",
+      "value": [
+       "checked",
+       "indeterminate",
+       "unchecked"
+      ]
+     },
+     {
+      "description": "The native checkbox. It covers the control, invisible, and takes `name`, `value`, `checked`, `disabled` and `required`.",
+      "elements": [
+       "input"
+      ],
+      "kind": "part",
+      "name": "data-ok-checkbox-input"
+     },
+     {
+      "description": "The check mark inside the checked icon.",
+      "elements": [
+       "path"
+      ],
+      "kind": "part",
+      "name": "data-ok-checkbox-mark"
+     }
+    ],
+    "runtime": "checkbox"
+   },
+   "name": "Checkbox",
+   "react": {
+    "description": "A native `<input type=\"checkbox\">` with themed icons; `ref` and the remaining props go to the input. Name it with a `FormControlLabel`, `aria-label` or `aria-labelledby`.",
+    "native": "HTMLInputElement",
+    "props": [
+     {
+      "description": "Replaces the checked icon.",
+      "name": "checkedIcon",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Class of the root span (other props go to the input).",
+      "name": "className",
+      "type": "string"
+     },
+     {
+      "default": "\"primary\"",
+      "description": "Color when checked or indeterminate; `default` is the text color.",
+      "name": "color",
+      "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
+     },
+     {
+      "description": "Replaces the unchecked icon.",
+      "name": "icon",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Mixed state: shows a dash and sets the input's `indeterminate`.",
+      "name": "indeterminate",
+      "type": "boolean"
+     },
+     {
+      "description": "Replaces the indeterminate icon.",
+      "name": "indeterminateIcon",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Called with the new checked state.",
+      "name": "onChange",
+      "type": "((checked: boolean) => void)"
+     },
+     {
+      "default": "\"medium\"",
+      "description": "`medium` (40px target, 24px icon) or `small` (36 / 20px).",
+      "name": "size",
+      "type": "\"medium\" | \"small\""
+     },
+     {
+      "description": "Style of the root span.",
+      "name": "style",
+      "type": "CSSProperties"
+     }
+    ]
+   }
+  }
+ ],
+ "format": 1,
+ "name": "checkbox",
+ "title": "Checkbox"
+}

@@ -322,35 +322,54 @@ export type GridInitialState = GridState;
 
 export interface DataGridProps<R>
   extends Omit<HTMLAttributes<HTMLDivElement>, "children" | "onChange"> {
+  /** The rows: one object per row. */
   rows: readonly R[];
+  /** The columns: field, header, type, width and how cells render. */
   columns: readonly GridColDef<R>[];
-  /** Default `row.id`. */
+  /** Returns a row's id. Default `row.id`. */
   getRowId?: ((row: R) => string | number) | undefined;
   checkboxSelection?: boolean | undefined;
   disableRowSelectionOnClick?: boolean | undefined;
+  /** The selected row ids, controlled. */
   rowSelectionModel?: readonly string[] | undefined;
+  /** Called when the row selection changes. */
   onRowSelectionModelChange?: ((ids: string[]) => void) | undefined;
+  /** The sort model, controlled. */
   sortModel?: GridSortModel | undefined;
+  /** Called when the sort model changes. */
   onSortModelChange?: ((model: GridSortModel) => void) | undefined;
+  /** The filter model, controlled. */
   filterModel?: GridFilterModel | undefined;
+  /** Called when the filter model changes. */
   onFilterModelChange?: ((model: GridFilterModel) => void) | undefined;
+  /** The page and the page size, controlled. */
   paginationModel?: GridPaginationModel | undefined;
+  /** Called when the page or the page size changes. */
   onPaginationModelChange?: ((model: GridPaginationModel) => void) | undefined;
-  /** Default `[5, 10, 25]`. */
+  /** The page sizes the footer offers. Default `[5, 10, 25]`. */
   pageSizeOptions?: readonly number[] | undefined;
+  /** Which columns are visible (field to `false` hides it), controlled. */
   columnVisibilityModel?: GridColumnVisibilityModel | undefined;
+  /** Called when the column visibility changes. */
   onColumnVisibilityModelChange?: ((model: GridColumnVisibilityModel) => void) | undefined;
   density?: GridDensity | undefined;
+  /** Called when the density changes. */
   onDensityChange?: ((density: GridDensity) => void) | undefined;
+  /** The first state of the uncontrolled models (sort, filter, pagination, columns…). */
   initialState?: GridInitialState | undefined;
   /** Shows the toolbar: quick filter, columns, filters, density and export. */
   showToolbar?: boolean | undefined;
   disableColumnMenu?: boolean | undefined;
+  /** Turns sorting off for every column. */
   disableColumnSorting?: boolean | undefined;
+  /** Turns filtering off for every column. */
   disableColumnFilter?: boolean | undefined;
+  /** Hides the column selector of the toolbar and the column menu. */
   disableColumnSelector?: boolean | undefined;
+  /** Hides the density selector of the toolbar. */
   disableDensitySelector?: boolean | undefined;
   disableMultipleColumnsSorting?: boolean | undefined;
+  /** Hides the footer (row count and pagination). */
   hideFooter?: boolean | undefined;
   /** Labels (MUI X locale text keys). */
   localeText?: Partial<GridLabels> | undefined;
@@ -364,14 +383,18 @@ export interface DataGridProps<R>
   disableColumnReorder?: boolean | undefined;
   /** Column order (fields); missing fields follow in their place. */
   columnOrder?: readonly string[] | undefined;
+  /** Called when the column order changes, with the fields in their new order. */
   onColumnOrderChange?: ((fields: string[]) => void) | undefined;
   disableColumnPinning?: boolean | undefined;
+  /** The columns pinned to the start and the end, controlled. */
   pinnedColumns?: GridPinnedColumns | undefined;
+  /** Called when the pinned columns change. */
   onPinnedColumnsChange?: ((model: GridPinnedColumns) => void) | undefined;
   /** Editable columns: edit one `cell` (default) or every editable cell of a `row` together. */
   editMode?: "cell" | "row" | undefined;
   /** Called with the edited row; return (or resolve) the row to show. Reject to refuse it. */
   processRowUpdate?: ((newRow: R, oldRow: R) => R | Promise<R>) | undefined;
+  /** Called when `processRowUpdate` throws or rejects. */
   onProcessRowUpdateError?: ((error: unknown) => void) | undefined;
   /** Render every row of the page instead of the visible ones. */
   disableVirtualization?: boolean | undefined;
@@ -393,14 +416,17 @@ export interface DataGridProps<R>
   dataSource?: GridDataSource<R> | undefined;
   /** Responses kept per request; `null` turns caching off. Default: a cache of 50. */
   dataSourceCache?: GridDataSourceCache<R> | null | undefined;
+  /** Called when the data source fails to load rows. */
   onDataSourceError?: ((error: unknown) => void) | undefined;
   /** One row at a time (no select all). */
   disableMultipleRowSelection?: boolean | undefined;
+  /** Returns whether a row can be selected. */
   isRowSelectable?: ((params: { id: string; row: R }) => boolean) | undefined;
   keepNonExistentRowsSelected?: boolean | undefined;
   /** Select all selects the current page only. */
   checkboxSelectionVisibleOnly?: boolean | undefined;
   autosizeOnMount?: boolean | undefined;
+  /** How `autosizeColumns` measures (columns, header, outliers, extra width). */
   autosizeOptions?: GridAutosizeOptions | undefined;
   /** Neighbouring cells with the same value merge (per column). */
   rowSpanning?: boolean | undefined;
@@ -412,34 +438,47 @@ export interface DataGridProps<R>
     | undefined;
   /** The height to assume for `"auto"` rows before they are measured. */
   getEstimatedRowHeight?: ((params: { id: string; model: R }) => number) | undefined;
+  /** Returns a class name for a row. */
   getRowClassName?: ((params: GridRowParams<R>) => string) | undefined;
+  /** Returns a class name for a cell. */
   getCellClassName?: ((params: GridCellParams<R>) => string) | undefined;
   /** Space above and below a row, px. */
   getRowSpacing?:
     | ((params: GridRowParams<R>) => { top?: number | undefined; bottom?: number | undefined })
     | undefined;
+  /** Called on a click on a row. */
   onRowClick?: ((params: GridRowParams<R>, event: MouseEvent<HTMLElement>) => void) | undefined;
+  /** Called on a double click on a row. */
   onRowDoubleClick?:
     | ((params: GridRowParams<R>, event: MouseEvent<HTMLElement>) => void)
     | undefined;
+  /** Called on a click on a cell. */
   onCellClick?: ((params: GridCellParams<R>, event: MouseEvent<HTMLElement>) => void) | undefined;
+  /** Called on a double click on a cell. */
   onCellDoubleClick?:
     | ((params: GridCellParams<R>, event: MouseEvent<HTMLElement>) => void)
     | undefined;
+  /** Called on a key press in a cell. */
   onCellKeyDown?:
     | ((params: GridCellParams<R>, event: KeyboardEvent<HTMLElement>) => void)
     | undefined;
+  /** Called on a click on a column header. */
   onColumnHeaderClick?:
     | ((params: { field: string; colDef: GridColDef<R> }, event: MouseEvent<HTMLElement>) => void)
     | undefined;
   /** Receives the grid's methods. */
   apiRef?: RefObject<GridApi<R> | null> | undefined;
+  /** Returns whether a cell can be edited (over the column's `editable`). */
   isCellEditable?: ((params: GridCellParams<R>) => boolean) | undefined;
+  /** Called when a cell starts editing, with the reason. */
   onCellEditStart?: ((params: GridCellParams<R>, reason: GridEditStartReason) => void) | undefined;
+  /** Called when a cell stops editing, with the reason. */
   onCellEditStop?: ((params: GridCellParams<R>, reason: GridEditStopReason) => void) | undefined;
+  /** Called when a row starts editing (`editMode="row"`). */
   onRowEditStart?:
     | ((params: { id: string; row: R }, reason: GridEditStartReason) => void)
     | undefined;
+  /** Called when a row stops editing (`editMode="row"`). */
   onRowEditStop?:
     | ((params: { id: string; row: R }, reason: GridEditStopReason) => void)
     | undefined;
@@ -448,7 +487,9 @@ export interface DataGridProps<R>
   quickFilterExcludeHiddenColumns?: boolean | undefined;
   /** Searches and filters ignore accents. */
   ignoreDiacritics?: boolean | undefined;
+  /** Options of the CSV export (file name, delimiter, fields…). */
   csvOptions?: GridCsvOptions | undefined;
+  /** Options of the print export (title, fields…). */
   printOptions?: GridPrintOptions | undefined;
   /** Toolbar buttons with text (default) or icons with tooltips. */
   toolbarVariant?: "labeled" | "icon" | undefined;
@@ -456,18 +497,23 @@ export interface DataGridProps<R>
   treeData?: boolean | undefined;
   /** A row's path in the tree: its ancestors' keys, then its own (MUI X). */
   getTreeDataPath?: ((row: R) => readonly string[]) | undefined;
+  /** Overrides the grouping column (header, width…). */
   groupingColDef?: GridGroupingColDef | undefined;
   /** Levels open at first (`-1`: all). Default 0. */
   defaultGroupingExpansionDepth?: number | undefined;
+  /** Returns whether a group row starts expanded. */
   isGroupExpandedByDefault?: ((node: { id: string; depth: number; row: R }) => boolean) | undefined;
   /** A row's detail panel (`null`: none, no toggle). */
   getDetailPanelContent?: ((params: { id: string; row: R }) => ReactNode) | undefined;
   /** px, or `"auto"` (default): the content decides. */
   getDetailPanelHeight?: ((params: { id: string; row: R }) => number | "auto") | undefined;
+  /** The rows whose detail panel is open, controlled. */
   detailPanelExpandedRowIds?: readonly string[] | undefined;
+  /** Called when detail panels open or close. */
   onDetailPanelExpandedRowIdsChange?: ((ids: string[]) => void) | undefined;
   /** Rows move by dragging their handle (or Alt + Up / Down on it). */
   rowReordering?: boolean | undefined;
+  /** Called when a dragged row moves. */
   onRowOrderChange?:
     | ((params: { row: R; oldIndex: number; targetIndex: number }) => void)
     | undefined;
@@ -477,6 +523,7 @@ export interface DataGridProps<R>
   columnGroupingModel?: readonly GridColumnGroup[] | undefined;
   /** Each row shows as one cell (`listViewColumn`). */
   listView?: boolean | undefined;
+  /** The single column of the list view (`listView`). */
   listViewColumn?:
     | { field: string; renderCell?: ((params: GridRenderCellParams<R>) => ReactNode) | undefined }
     | undefined;
@@ -490,10 +537,12 @@ export interface DataGridProps<R>
   lazyLoadingRequestThrottleMs?: number | undefined;
   /** Fields the rows are grouped by, outermost first (MUI X Premium). */
   rowGroupingModel?: readonly string[] | undefined;
+  /** Called when the row grouping changes. */
   onRowGroupingModelChange?: ((model: string[]) => void) | undefined;
   disableRowGrouping?: boolean | undefined;
   /** Field → aggregation function (`sum`, `avg`, `min`, `max`, `size` or your own). */
   aggregationModel?: GridAggregationModel | undefined;
+  /** Called when the aggregation changes. */
   onAggregationModelChange?: ((model: GridAggregationModel) => void) | undefined;
   disableAggregation?: boolean | undefined;
   /** The functions offered (default: the built-in ones). */
@@ -504,21 +553,30 @@ export interface DataGridProps<R>
   getAggregationPosition?:
     | ((group: { id: string; depth: number; isRoot: boolean }) => GridAggregationPosition)
     | undefined;
+  /** The pivot model (rows, columns and values), controlled. */
   pivotModel?: GridPivotModel | undefined;
+  /** Called when the pivot model changes. */
   onPivotModelChange?: ((model: GridPivotModel) => void) | undefined;
   /** Shows the pivot of the rows instead of the rows. */
   pivotActive?: boolean | undefined;
+  /** Called when pivot mode turns on or off. */
   onPivotActiveChange?: ((active: boolean) => void) | undefined;
   disablePivoting?: boolean | undefined;
+  /** Options of the Excel export. */
   excelOptions?: GridExcelOptions | undefined;
   /** Cells are selected in ranges (press, drag, Shift + click, Shift + arrows). */
   cellSelection?: boolean | undefined;
+  /** The selected cells (row id to fields), controlled. */
   cellSelectionModel?: GridCellSelectionModel | undefined;
+  /** Called when the cell selection changes. */
   onCellSelectionModelChange?: ((model: GridCellSelectionModel) => void) | undefined;
   /** Ctrl / Cmd + V doesn't paste into editable cells. */
   disableClipboardPaste?: boolean | undefined;
+  /** Called after cells were copied, with the copied text. */
   onClipboardCopy?: ((data: string) => void) | undefined;
+  /** Called before pasted cells are written. */
   onClipboardPasteStart?: ((params: { data: string[][] }) => void) | undefined;
+  /** Called after pasted cells were written. */
   onClipboardPasteEnd?: (() => void) | undefined;
   /** Splits pasted text into cells (default: tab-separated lines). */
   splitClipboardPastedText?: ((text: string) => string[][]) | undefined;
@@ -530,7 +588,9 @@ export interface DataGridProps<R>
   headerFilters?: boolean | undefined;
   /** A chart of the rows (or top-level groups) under the grid. */
   chartsIntegration?: boolean | undefined;
+  /** The chart panel's model, controlled. */
   chartModel?: GridChartModel | undefined;
+  /** Called when the chart panel's model changes. */
   onChartModelChange?: ((model: GridChartModel) => void) | undefined;
 }
 

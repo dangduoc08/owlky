@@ -1,4 +1,6 @@
 import { tabOptions, tabsOptions } from "@owlky/core";
+import tabsApi from "@owlky/docs-content/api/tabs.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { Tab, Tabs } from "@owlky/react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
@@ -143,6 +145,7 @@ export function Account() {
 - Every tab and the selected panel show a focus ring for keyboard users.
 - Disabled tabs are skipped by the arrow keys and announced as unavailable.`,
   },
+  apiReferenceSection(tabsApi),
 ];
 
 const PREVIEWS = {

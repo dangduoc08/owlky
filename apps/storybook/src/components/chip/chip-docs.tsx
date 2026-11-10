@@ -1,4 +1,6 @@
 import { chipOptions } from "@owlky/core";
+import chipApi from "@owlky/docs-content/api/chip.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { Avatar, Chip } from "@owlky/react";
 import { useState } from "react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
@@ -84,6 +86,7 @@ export function Tag() {
 - Focus is shown with a 2px outline. The delete button's target is 24 × 24px.
 - Neutral chips meet a contrast ratio of at least 4.5:1, and soft chips use the accessible text tone. Filled and outlined brand colors follow the design.`,
   },
+  apiReferenceSection(chipApi),
 ];
 
 function CitiesPreview() {

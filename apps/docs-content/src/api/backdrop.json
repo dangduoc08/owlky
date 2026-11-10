@@ -1,0 +1,153 @@
+{
+ "css": [
+  {
+   "dark": "color-mix(in srgb, #141A21 64%, transparent)",
+   "light": "color-mix(in srgb, #1C252E 48%, transparent)",
+   "name": "--ok-backdrop"
+  },
+  {
+   "name": "--ok-duration-short",
+   "value": "250ms"
+  },
+  {
+   "name": "--ok-duration-shorter",
+   "value": "200ms"
+  },
+  {
+   "name": "--ok-easing-standard",
+   "value": "cubic-bezier(0.4, 0, 0.2, 1)"
+  },
+  {
+   "name": "--ok-font-family",
+   "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+  },
+  {
+   "name": "--ok-palette-common-white",
+   "value": "#FFFFFF"
+  },
+  {
+   "name": "--ok-z-modal",
+   "value": "1300"
+  }
+ ],
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-backdrop",
+    "events": [
+     {
+      "cancelable": true,
+      "description": "Before the backdrop closes. Call `preventDefault()` to keep it open.",
+      "detail": "{ reason: BackdropCloseReason; }",
+      "name": "ok:backdrop:beforeclose"
+     },
+     {
+      "cancelable": true,
+      "description": "Before the backdrop opens. Call `preventDefault()` to keep it closed.",
+      "detail": "{ trigger: HTMLElement | null; }",
+      "name": "ok:backdrop:beforeopen"
+     },
+     {
+      "cancelable": false,
+      "description": "After the backdrop closed.",
+      "detail": "{ reason: BackdropCloseReason; }",
+      "name": "ok:backdrop:close"
+     },
+     {
+      "cancelable": false,
+      "description": "After the backdrop opened.",
+      "detail": "{ trigger: HTMLElement | null; }",
+      "name": "ok:backdrop:open"
+     }
+    ],
+    "methods": [
+     {
+      "description": "Hides it. Returns `false` if `ok:backdrop:beforeclose` was prevented.",
+      "kind": "method",
+      "name": "close",
+      "type": "(reason?: BackdropCloseReason | undefined) => boolean"
+     },
+     {
+      "description": "Whether the backdrop is open.",
+      "kind": "property",
+      "name": "isOpen",
+      "type": "boolean"
+     },
+     {
+      "description": "Shows the backdrop. Returns `false` if `ok:backdrop:beforeopen` was prevented.",
+      "kind": "method",
+      "name": "open",
+      "type": "(trigger?: HTMLElement | null | undefined) => boolean"
+     }
+    ],
+    "options": [
+     {
+      "attr": "data-ok-invisible",
+      "description": "Transparent: blocks clicks without dimming the page (for example, behind a custom menu).",
+      "kind": "flag",
+      "name": "invisible"
+     },
+     {
+      "attr": "data-ok-open",
+      "description": "Open state (`open`; HTML: `data-ok-open`, a trigger or `open()`).",
+      "event": "ok:backdrop:close",
+      "kind": "state",
+      "name": "open"
+     }
+    ],
+    "parts": [
+     {
+      "description": "Closes the backdrop whose `id` it names, or, without a value, the backdrop it sits in.",
+      "kind": "trigger",
+      "name": "data-ok-backdrop-close",
+      "value": [
+       "",
+       "id"
+      ]
+     },
+     {
+      "description": "Opens the backdrop whose `id` it names.",
+      "kind": "trigger",
+      "name": "data-ok-backdrop-open",
+      "value": [
+       "id"
+      ]
+     }
+    ],
+    "runtime": "backdrop"
+   },
+   "name": "Backdrop",
+   "react": {
+    "description": "A fixed layer over the viewport. It reports nothing itself: close it from your own handler (for example, `onClick`) or when work ends.",
+    "native": "HTMLDivElement",
+    "props": [
+     {
+      "description": "Content shown in front of the page, centered (for example, a `CircularProgress`).",
+      "name": "children",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Transparent: blocks clicks without dimming the page.",
+      "name": "invisible",
+      "type": "boolean"
+     },
+     {
+      "description": "Shows the backdrop (it fades in and out; closed, it stays in the DOM, hidden).",
+      "name": "open",
+      "required": true,
+      "type": "boolean"
+     }
+    ]
+   }
+  }
+ ],
+ "format": 1,
+ "name": "backdrop",
+ "title": "Backdrop",
+ "types": [
+  {
+   "name": "BackdropCloseReason",
+   "type": "\"api\" | \"trigger\""
+  }
+ ]
+}

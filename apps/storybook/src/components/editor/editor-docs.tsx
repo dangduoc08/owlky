@@ -1,4 +1,6 @@
 import { editorOptions } from "@owlky/core";
+import editorApi from "@owlky/docs-content/api/editor.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { Editor } from "@owlky/react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
@@ -159,6 +161,7 @@ export function Snippet() {
 - Images need a text alternative: fill in **Alt text**, or leave it empty only for decoration.
 - Fullscreen mode can always be left with Escape. While it is on, Tab moves between the toolbar and the text box only, so focus never reaches controls hidden behind the editor.`,
   },
+  apiReferenceSection(editorApi),
 ];
 
 const PREVIEWS = {

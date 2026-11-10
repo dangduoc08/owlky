@@ -12,7 +12,7 @@ import {
   timeSectionOptions,
 } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
-import type { ComponentInstance } from "../../runtime/types.js";
+import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
 import {
   asFunction,
   type PickerDateApi,
@@ -28,12 +28,20 @@ import {
 } from "../date-calendar/picker-dom.js";
 import { renderOptionList } from "../digital-clock/digital-clock.js";
 
+/** Events of this component (`ok:<name>:<event>` on the root). */
+export interface MultiSectionDigitalClockEvents {
+  /** Before a section's value is picked (`HH:mm:ss`; `finish` on the last section). Call `preventDefault()` to refuse it. */
+  change: EventSpec<{ value: string; selectionState: string }, true>;
+}
+
 export interface MultiSectionDigitalClockInstance extends ComponentInstance, PickerDateApi {
   /** ISO time (`HH:mm:ss`), or `null`. */
   readonly value: string | null;
   /** Sets the value (ISO time or date time, `Date` or `null`) without events. A `Date` keeps its day. */
   setValue(value: string | Date | null): void;
+  /** Disables the times for which the function returns `true` (`null`: none). */
   setShouldDisableTime(fn: ((value: Date, view: TimeView) => boolean) | null): void;
+  /** Replaces the text of the labels and buttons, such as for another language. */
   setLocaleText(text: Partial<PickerLocaleText>): void;
 }
 
@@ -50,7 +58,10 @@ export interface MultiSectionDigitalClockInstance extends ComponentInstance, Pic
  * Events:  ok:multi-section-digital-clock:change (cancelable, `{ value, selectionState }`:
  *          `partial`, `finish` after the last column).
  */
-export const multiSectionDigitalClock = defineComponent<MultiSectionDigitalClockInstance>({
+export const multiSectionDigitalClock = defineComponent<
+  MultiSectionDigitalClockInstance,
+  MultiSectionDigitalClockEvents
+>({
   name: "multi-section-digital-clock",
   selector: "[data-ok-multi-section-digital-clock]",
 

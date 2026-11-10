@@ -4,6 +4,8 @@ import {
   formHelperTextOptions,
   formLabelOptions,
 } from "@owlky/core";
+import formControlApi from "@owlky/docs-content/api/form-control.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import {
   Checkbox,
   FormControl,
@@ -271,6 +273,7 @@ export function Mentions() {
 - Expose errors with \`aria-invalid\` and requirements with \`aria-required\` or \`required\` on the controls: the colors and the asterisk are visual only.
 - Labels and helper texts use the secondary text color, and errors the error text color, with a contrast ratio of at least 4.5:1 in the light and dark themes. Disabled labels are dimmed, like the disabled controls.`,
   },
+  apiReferenceSection(formControlApi),
 ];
 
 const PREVIEWS = {

@@ -1,4 +1,7 @@
 import type {
+  ManifestApi,
+  ManifestApiEntry,
+  ManifestApiPart,
   ManifestComponent,
   ManifestGuide,
   ManifestGuideSection,
@@ -127,4 +130,123 @@ export function guideMarkdown(
         .join("\n\n"),
     ),
   ].join("\n\n");
+}
+
+const partKind = (part: ManifestApiPart) =>
+  part.kind === "part"
+    ? `element${part.elements?.length ? ` (${part.elements.map(code).join(" / ")})` : ""}`
+    : part.kind === "value"
+      ? `value: ${Array.isArray(part.value) ? part.value.map(code).join(" ") : "text"}`
+      : part.kind === "trigger"
+        ? "trigger (the target's id)"
+        : "state";
+
+const table = (head: readonly string[], rows: readonly string[]) =>
+  [`| ${head.join(" | ")} |`, `|${head.map(() => "---|").join("")}`, ...rows].join("\n");
+
+/** One entry of the API reference (a React component and its HTML part) as Markdown. */
+export function apiEntryMarkdown(entry: ManifestApiEntry): string {
+  const out = [`### ${entry.name}`];
+  const description = entry.react?.description || entry.html?.description;
+  if (description) out.push(description);
+  const react = entry.react;
+  if (react) {
+    out.push(
+      `React props${react.native ? ` (other props and the ref go to the native ${code(react.native)})` : ""}:`,
+    );
+    if (react.props.length)
+      out.push(
+        table(
+          ["Prop", "Type", "Default", "Description"],
+          react.props.map(
+            (prop) =>
+              `| ${code(prop.name)} | ${code(cell(prop.type))} | ${prop.required ? "required" : prop.default ? code(cell(prop.default)) : "—"} | ${cell(prop.description)} |`,
+          ),
+        ),
+      );
+  }
+  const html = entry.html;
+  if (html) {
+    const on = html.elements?.length ? ` on ${html.elements.map(code).join(" / ")}` : "";
+    const instance = html.runtime ? `; instance \`runtime.get(element, "${html.runtime}")\`` : "";
+    out.push(`HTML: ${code(html.attribute)}${on}${instance}.`);
+    if (html.options?.length)
+      out.push(
+        table(
+          ["Attribute", "React prop", "Values", "Default", "Description"],
+          html.options.map(
+            (option) =>
+              `| ${htmlCell(option)} | ${code(option.name)} | ${valuesCell(option)} | ${defaultCell(option)} | ${cell(option.description)} |`,
+          ),
+        ),
+      );
+    if (html.parts?.length)
+      out.push(
+        table(
+          ["Part attribute", "Kind", "Description"],
+          html.parts.map(
+            (part) => `| ${code(part.name)} | ${partKind(part)} | ${cell(part.description)} |`,
+          ),
+        ),
+      );
+    if (html.events?.length)
+      out.push(
+        table(
+          ["Event", "Detail", "Cancelable", "Description"],
+          html.events.map(
+            (event) =>
+              `| ${code(event.name)} | ${code(cell(event.detail))} | ${event.cancelable === true ? "yes" : event.cancelable === false ? "no" : "sometimes"} | ${cell(event.description)} |`,
+          ),
+        ),
+      );
+    if (html.methods?.length)
+      out.push(
+        table(
+          ["Member", "Type", "Description"],
+          html.methods.map(
+            (method) =>
+              `| ${code(method.kind === "method" ? `${method.name}()` : method.name)} | ${code(cell(method.type))} | ${cell(method.description)} |`,
+          ),
+        ),
+      );
+  }
+  return out.join("\n\n");
+}
+
+/** The API reference of a component (or of the entries given) as Markdown. */
+export function apiMarkdown(
+  api: ManifestApi,
+  entries: readonly ManifestApiEntry[] = api.entries,
+): string {
+  const types = api.types ?? [];
+  const css = api.css ?? [];
+  return [
+    "## API reference",
+    ...entries.map(apiEntryMarkdown),
+    types.length
+      ? `### Types\n\n${table(
+          ["Type", "Definition"],
+          types.map(
+            (type) =>
+              `| ${code(type.name)}${type.framework ? ` (${type.framework})` : ""} | ${code(cell(type.type))} |`,
+          ),
+        )}`
+      : "",
+    css.length
+      ? `### CSS variables\n\n${table(
+          ["Variable", "Value", "Description"],
+          css.map((variable) => {
+            const value =
+              variable.value !== undefined
+                ? code(cell(variable.value))
+                : variable.light !== undefined
+                  ? `light ${code(cell(variable.light))}, dark ${code(cell(variable.dark ?? variable.light))}`
+                  : "per color";
+            return `| ${code(variable.name)} | ${value} | ${cell(variable.description ?? "")} |`;
+          }),
+        )}`
+      : "",
+  ]
+    .filter(Boolean)
+    .join("\n\n");
 }

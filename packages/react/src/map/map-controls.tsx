@@ -51,8 +51,9 @@ export function MapControl({ position = "top-right", children, ...props }: MapCo
 }
 
 export interface NavigationControlProps {
+  /** The corner of the map that holds the control. */
   position?: MapPosition | undefined;
-  /** Default `true`. */
+  /** Shows the zoom in and zoom out buttons. Default `true`. */
   showZoom?: boolean | undefined;
   /** Default `true`: a compass that resets north (drag it to rotate). */
   showCompass?: boolean | undefined;
@@ -100,6 +101,7 @@ export function NavigationControl({
 }
 
 export interface GeolocateControlProps extends GeolocateHandlers {
+  /** The corner of the map that holds the control. */
   position?: MapPosition | undefined;
   /** Keeps following the location; the button turns tracking on and off. */
   trackUserLocation?: boolean | undefined;
@@ -156,6 +158,7 @@ export function GeolocateControl({
 }
 
 export interface FullscreenControlProps {
+  /** The corner of the map that holds the control. */
   position?: MapPosition | undefined;
 }
 
@@ -180,7 +183,7 @@ export function FullscreenControl({ position = "top-right" }: FullscreenControlP
 }
 
 export interface ScaleControlProps {
-  /** Default `bottom-left`. */
+  /** The corner of the map that holds the control. Default `bottom-left`. */
   position?: MapPosition | undefined;
   /** Longest the bar gets, in px. Default 100. */
   maxWidth?: number | undefined;
@@ -198,7 +201,7 @@ export function ScaleControl({ position = "bottom-left", maxWidth, unit }: Scale
 }
 
 export interface AttributionControlProps {
-  /** Default `bottom-right`. */
+  /** The corner of the map that holds the control. Default `bottom-right`. */
   position?: MapPosition | undefined;
   /** Always folded behind an info button (default: only on maps narrower than 640px). */
   compact?: boolean | undefined;
@@ -226,6 +229,7 @@ export function AttributionControl({
 }
 
 export interface GlobeControlProps {
+  /** The corner of the map that holds the control. */
   position?: MapPosition | undefined;
 }
 
@@ -249,6 +253,7 @@ export function GlobeControl({ position = "top-right" }: GlobeControlProps) {
 }
 
 export interface TerrainControlProps {
+  /** The corner of the map that holds the control. */
   position?: MapPosition | undefined;
   /** The `raster-dem` source to raise the terrain from. */
   source: string;

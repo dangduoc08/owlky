@@ -7,8 +7,14 @@ import {
 } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
 import { syncCustomProperties } from "../../runtime/style.js";
-import type { ComponentInstance } from "../../runtime/types.js";
+import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
 import { driveMotion, STATE } from "./drive.js";
+
+/** Events of this component (`ok:<name>:<event>` on the root). */
+export interface MotionEvents {
+  /** After the root's own animation ended. `state` is its `data-ok-state`. */
+  end: EventSpec<{ state: string | null }>;
+}
 
 export interface MotionInstance extends ComponentInstance {
   /** `initial`, `enter` or `exit`. */
@@ -34,7 +40,7 @@ const LOOK = [variant.attr, duration.attr, distance.attr];
  *          hidden. A Motion inside a MotionGroup is driven by the group.
  * Events:  ok:motion:end (`{ state }`) when its animation ends.
  */
-export const motion = defineComponent<MotionInstance>({
+export const motion = defineComponent<MotionInstance, MotionEvents>({
   name: "motion",
   selector: "[data-ok-motion]",
 

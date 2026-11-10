@@ -7,7 +7,23 @@ import {
 } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
 import { syncCustomProperties } from "../../runtime/style.js";
-import type { ComponentInstance, Runtime } from "../../runtime/types.js";
+import type { ComponentInstance, EventSpec, Runtime } from "../../runtime/types.js";
+
+/** Events of this component (`ok:<name>:<event>` on the root). */
+export interface CollapseEvents {
+  /** Before the opening animation starts (`in` is `true`). */
+  enter: EventSpec<{ in: boolean }>;
+  /** When the opening animation starts. */
+  entering: EventSpec<{ in: boolean }>;
+  /** After the opening animation ended. */
+  entered: EventSpec<{ in: boolean }>;
+  /** Before the closing animation starts (`in` is `false`). */
+  exit: EventSpec<{ in: boolean }>;
+  /** When the closing animation starts. */
+  exiting: EventSpec<{ in: boolean }>;
+  /** After the closing animation ended. */
+  exited: EventSpec<{ in: boolean }>;
+}
 
 export interface CollapseInstance extends ComponentInstance {
   /** `true` while the element has no `hidden`. */
@@ -67,7 +83,7 @@ const targets = (trigger: Element, runtime: Runtime): CollapseInstance[] => {
  *          button toggles them and mirrors `aria-expanded`.
  * Events:  ok:collapse:enter, entering, entered, exit, exiting, exited.
  */
-export const collapse = defineComponent<CollapseInstance>({
+export const collapse = defineComponent<CollapseInstance, CollapseEvents>({
   name: "collapse",
   selector: "[data-ok-collapse]",
 

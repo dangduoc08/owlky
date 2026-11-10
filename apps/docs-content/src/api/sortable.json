@@ -1,0 +1,228 @@
+{
+ "css": [
+  {
+   "dark": "#1C252E",
+   "light": "#FFFFFF",
+   "name": "--ok-bg-paper"
+  },
+  {
+   "name": "--ok-duration-short",
+   "value": "250ms"
+  },
+  {
+   "name": "--ok-duration-shorter",
+   "value": "200ms"
+  },
+  {
+   "name": "--ok-easing-standard",
+   "value": "cubic-bezier(0.4, 0, 0.2, 1)"
+  },
+  {
+   "name": "--ok-palette-grey-500-channel",
+   "value": "145 158 171"
+  },
+  {
+   "name": "--ok-radius-lg",
+   "value": "12px"
+  },
+  {
+   "name": "--ok-shadow-z16",
+   "value": "0px 16px 32px -4px color-mix(in srgb, var(--ok-shadow-color) 16%, transparent)"
+  },
+  {
+   "name": "--ok-shadow-z8",
+   "value": "0px 8px 16px 0px color-mix(in srgb, var(--ok-shadow-color) 16%, transparent)"
+  },
+  {
+   "name": "--ok-spacing",
+   "value": "0.25rem"
+  },
+  {
+   "dark": "#919EAB",
+   "light": "#637381",
+   "name": "--ok-text-secondary"
+  }
+ ],
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-sortable",
+    "events": [
+     {
+      "cancelable": false,
+      "description": "After a copy of the new-item template was added: fill in its content here.",
+      "detail": "{ item: HTMLElement; index: number; }",
+      "name": "ok:sortable:add"
+     },
+     {
+      "cancelable": true,
+      "description": "Before an item moves from index `from` to `to`. Call `preventDefault()` to keep the order.",
+      "detail": "{ from: number; to: number; item: HTMLElement; }",
+      "name": "ok:sortable:move"
+     },
+     {
+      "cancelable": true,
+      "description": "Before an item is removed. Call `preventDefault()` to keep it.",
+      "detail": "{ index: number; item: HTMLElement; }",
+      "name": "ok:sortable:remove"
+     }
+    ],
+    "methods": [
+     {
+      "description": "Appends a clone of `template[data-ok-sortable-template]`; returns it (or `null`).",
+      "kind": "method",
+      "name": "add",
+      "type": "() => HTMLElement | null"
+     },
+     {
+      "description": "Moves an item. Returns `false` if out of range or `ok:sortable:move` was prevented.",
+      "kind": "method",
+      "name": "move",
+      "type": "(from: number, to: number) => boolean"
+     },
+     {
+      "description": "Removes an item. Returns `false` if out of range or `ok:sortable:remove` was prevented.",
+      "kind": "method",
+      "name": "remove",
+      "type": "(index: number) => boolean"
+     }
+    ],
+    "options": [
+     {
+      "attr": "data-ok-layout",
+      "default": "grid",
+      "description": "Grid, one column or one scrolling row.",
+      "kind": "style",
+      "name": "layout",
+      "values": [
+       "grid",
+       "vertical",
+       "horizontal"
+      ]
+     },
+     {
+      "attr": "data-ok-sortable-item",
+      "description": "Item order (`items` + `onReorder`).",
+      "event": "ok:sortable:move",
+      "kind": "state",
+      "name": "items"
+     }
+    ],
+    "parts": [
+     {
+      "description": "Set by the runtime on the item being dragged.",
+      "kind": "state",
+      "name": "data-ok-dragging"
+     },
+     {
+      "description": "Set by the runtime on the item grabbed with the keyboard.",
+      "kind": "state",
+      "name": "data-ok-grabbed"
+     },
+     {
+      "description": "The buttons at the end of an item.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-sortable-actions"
+     },
+     {
+      "description": "HTML only: the button that adds a copy of the new-item template.",
+      "elements": [
+       "button"
+      ],
+      "kind": "part",
+      "name": "data-ok-sortable-add"
+     },
+     {
+      "description": "A visually hidden live region that announces moves. Created once per page.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-sortable-announcer"
+     },
+     {
+      "description": "The handle that drags an item, or moves it with the keyboard.",
+      "elements": [
+       "button"
+      ],
+      "kind": "part",
+      "name": "data-ok-sortable-handle"
+     },
+     {
+      "description": "The button that removes its item.",
+      "kind": "part",
+      "name": "data-ok-sortable-remove"
+     },
+     {
+      "description": "HTML only: the markup of new items.",
+      "elements": [
+       "template"
+      ],
+      "kind": "part",
+      "name": "data-ok-sortable-template"
+     }
+    ],
+    "runtime": "sortable"
+   },
+   "name": "Sortable",
+   "react": {
+    "description": "A controlled list reordered by dragging the handle, by keyboard (Space, arrows, Escape) or by two taps. Name it with `aria-label`.",
+    "native": "HTMLUListElement",
+    "props": [
+     {
+      "default": "Item <n>",
+      "description": "Name used in the handle / remove labels (\"Reorder …\", \"Remove …\").",
+      "name": "getItemLabel",
+      "type": "((item: T, index: number) => string)"
+     },
+     {
+      "description": "Stable identity of an item (React key).",
+      "name": "getKey",
+      "required": true,
+      "type": "(item: T) => Key"
+     },
+     {
+      "description": "The items, in display order.",
+      "name": "items",
+      "required": true,
+      "type": "readonly T[]"
+     },
+     {
+      "default": "\"grid\"",
+      "description": "Grid, one column or one scrolling row.",
+      "name": "layout",
+      "type": "\"grid\" | \"horizontal\" | \"vertical\""
+     },
+     {
+      "description": "Screen reader announcements (localization).",
+      "name": "messages",
+      "type": "Partial<SortableMessages>"
+     },
+     {
+      "description": "Renders a remove button per item and is called when one is pressed.",
+      "name": "onRemove",
+      "type": "((item: T, index: number) => void)"
+     },
+     {
+      "description": "Called with the reordered items (controlled: render them to apply the move).",
+      "name": "onReorder",
+      "required": true,
+      "type": "(items: T[]) => void"
+     },
+     {
+      "description": "Content of an item.",
+      "name": "renderItem",
+      "required": true,
+      "type": "(item: T, index: number) => ReactNode"
+     }
+    ]
+   }
+  }
+ ],
+ "format": 1,
+ "name": "sortable",
+ "title": "Sortable"
+}

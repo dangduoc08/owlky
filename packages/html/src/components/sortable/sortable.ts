@@ -1,6 +1,16 @@
 import { createSortableController } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
-import type { ComponentInstance } from "../../runtime/types.js";
+import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
+
+/** Events of this component (`ok:<name>:<event>` on the root). */
+export interface SortableEvents {
+  /** Before an item moves from index `from` to `to`. Call `preventDefault()` to keep the order. */
+  move: EventSpec<{ from: number; to: number; item: HTMLElement }, true>;
+  /** Before an item is removed. Call `preventDefault()` to keep it. */
+  remove: EventSpec<{ index: number; item: HTMLElement }, true>;
+  /** After a copy of the new-item template was added: fill in its content here. */
+  add: EventSpec<{ item: HTMLElement; index: number }>;
+}
 
 export interface SortableInstance extends ComponentInstance {
   /** Moves an item. Returns `false` if out of range or `ok:sortable:move` was prevented. */
@@ -25,7 +35,7 @@ const ITEM = "[data-ok-sortable-item]";
  *          ok:sortable:remove (cancelable, detail: { index, item }),
  *          ok:sortable:add (detail: { item, index }) after a template clone is inserted.
  */
-export const sortable = defineComponent<SortableInstance>({
+export const sortable = defineComponent<SortableInstance, SortableEvents>({
   name: "sortable",
   selector: "[data-ok-sortable]",
 

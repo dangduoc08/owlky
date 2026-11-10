@@ -1,4 +1,6 @@
 import { toasterOptions } from "@owlky/core";
+import snackbarApi from "@owlky/docs-content/api/snackbar.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
 import { StatusDemo } from "./snackbar-demos.js";
@@ -99,6 +101,7 @@ toast.promise(save(), { loading: "Saving…", success: "Saved", error: "Not save
 - Don't rely on a toast for anything that must be done: it closes by itself. Use a Dialog instead.
 - Icons are decorative; the title carries the message. Typed toasts keep their text at a contrast ratio of at least 4.5:1.`,
   },
+  apiReferenceSection(snackbarApi),
 ];
 
 const PREVIEWS = {

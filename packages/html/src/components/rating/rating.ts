@@ -1,6 +1,14 @@
 import { nextRating, ratingOptions } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
-import type { ComponentInstance } from "../../runtime/types.js";
+import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
+
+/** Events of this component (`ok:<name>:<event>` on the root). */
+export interface RatingEvents {
+  /** Before the value changes. Call `preventDefault()` to check the previous value again. */
+  change: EventSpec<{ value: number | null; previous: number | null }, true>;
+  /** The value under the pointer or the focus changed (`null` once it leaves). */
+  active: EventSpec<{ value: number | null }>;
+}
 
 export interface RatingInstance extends ComponentInstance {
   /** The checked value, or `null`. */
@@ -27,7 +35,7 @@ const { highlightSelectedOnly, readOnly } = ratingOptions.options;
  * Events:  ok:rating:change (cancelable, detail `{ value, previous }`),
  *          ok:rating:active (detail `{ value }`: the value under the pointer, or null).
  */
-export const rating = defineComponent<RatingInstance>({
+export const rating = defineComponent<RatingInstance, RatingEvents>({
   name: "rating",
   selector: "[data-ok-rating]",
 

@@ -1,4 +1,6 @@
 import { avatarGroupOptions, avatarOptions } from "@owlky/core";
+import avatarApi from "@owlky/docs-content/api/avatar.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { Avatar, AvatarGroup } from "@owlky/react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
@@ -80,6 +82,7 @@ export function Author() {
 - Initials and icons are decorative by default. Give the avatar \`role="img"\` and \`aria-label\` when it's the only place that says who it is.
 - Grey avatars use dark grey initials, with a contrast ratio of at least 4.5:1. Palette colors follow the design.`,
   },
+  apiReferenceSection(avatarApi),
 ];
 
 const PREVIEWS = {

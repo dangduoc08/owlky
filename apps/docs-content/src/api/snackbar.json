@@ -1,0 +1,348 @@
+{
+ "css": [
+  {
+   "name": "--ok-action-hover",
+   "value": "color-mix(in srgb, #919EAB 8%, transparent)"
+  },
+  {
+   "dark": "#1C252E",
+   "light": "#FFFFFF",
+   "name": "--ok-bg-paper"
+  },
+  {
+   "name": "--ok-divider",
+   "value": "color-mix(in srgb, #919EAB 20%, transparent)"
+  },
+  {
+   "name": "--ok-duration-short",
+   "value": "250ms"
+  },
+  {
+   "name": "--ok-easing-decelerate",
+   "value": "cubic-bezier(0, 0, 0.2, 1)"
+  },
+  {
+   "name": "--ok-font-family",
+   "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+  },
+  {
+   "name": "--ok-font-size-sm",
+   "value": "0.8125rem"
+  },
+  {
+   "name": "--ok-font-size-xs",
+   "value": "0.75rem"
+  },
+  {
+   "name": "--ok-font-weight-bold",
+   "value": "700"
+  },
+  {
+   "name": "--ok-font-weight-medium",
+   "value": "500"
+  },
+  {
+   "name": "--ok-palette-common-white",
+   "value": "#FFFFFF"
+  },
+  {
+   "name": "--ok-palette-error-main",
+   "value": "#FF5630"
+  },
+  {
+   "name": "--ok-palette-error-main-channel",
+   "value": "255 86 48"
+  },
+  {
+   "name": "--ok-palette-grey-500",
+   "value": "#919EAB"
+  },
+  {
+   "name": "--ok-palette-grey-500-channel",
+   "value": "145 158 171"
+  },
+  {
+   "name": "--ok-palette-grey-600",
+   "value": "#637381"
+  },
+  {
+   "name": "--ok-palette-grey-800",
+   "value": "#1C252E"
+  },
+  {
+   "name": "--ok-palette-info-main",
+   "value": "#00B8D9"
+  },
+  {
+   "name": "--ok-palette-info-main-channel",
+   "value": "0 184 217"
+  },
+  {
+   "name": "--ok-palette-success-main",
+   "value": "#22C55E"
+  },
+  {
+   "name": "--ok-palette-success-main-channel",
+   "value": "34 197 94"
+  },
+  {
+   "name": "--ok-palette-warning-main",
+   "value": "#FFAB00"
+  },
+  {
+   "name": "--ok-palette-warning-main-channel",
+   "value": "255 171 0"
+  },
+  {
+   "name": "--ok-radius-full",
+   "value": "9999px"
+  },
+  {
+   "name": "--ok-radius-lg",
+   "value": "12px"
+  },
+  {
+   "name": "--ok-radius-sm",
+   "value": "6px"
+  },
+  {
+   "name": "--ok-shadow-z8",
+   "value": "0px 8px 16px 0px color-mix(in srgb, var(--ok-shadow-color) 16%, transparent)"
+  },
+  {
+   "name": "--ok-spacing",
+   "value": "0.25rem"
+  },
+  {
+   "dark": "#FFFFFF",
+   "light": "#1C252E",
+   "name": "--ok-text-primary"
+  },
+  {
+   "dark": "#919EAB",
+   "light": "#637381",
+   "name": "--ok-text-secondary"
+  },
+  {
+   "name": "--ok-z-toast",
+   "value": "1400"
+  }
+ ],
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-toaster",
+    "events": [
+     {
+      "cancelable": true,
+      "description": "Before a toast's action or cancel button runs. Call `preventDefault()` to keep the toast.",
+      "detail": "{ toast: Element; kind: string; }",
+      "name": "ok:toaster:action"
+     },
+     {
+      "cancelable": false,
+      "description": "After a toast was dismissed, with what dismissed it.",
+      "detail": "{ toast: Element; reason: string; }",
+      "name": "ok:toaster:dismiss"
+     },
+     {
+      "cancelable": false,
+      "description": "After a toast showed.",
+      "detail": "{ toast: Element; }",
+      "name": "ok:toaster:show"
+     }
+    ],
+    "methods": [
+     {
+      "description": "Closes one toast, or every toast.",
+      "kind": "method",
+      "name": "dismiss",
+      "type": "(id?: string | undefined) => void"
+     },
+     {
+      "description": "Shows `loading` until the promise settles, then `success` or `error` in the same toast.",
+      "kind": "method",
+      "name": "promise",
+      "type": "<T>(promise: Promise<T>, messages: { loading: string; success: string; error: string; }) => string"
+     },
+     {
+      "description": "Shows a toast built from text (never HTML). Returns its id.",
+      "kind": "method",
+      "name": "show",
+      "type": "(options: ToastShowOptions) => string"
+     },
+     {
+      "description": "Shows a copy of a `<template>`'s toast (`li[data-ok-toast]`). Returns its id.",
+      "kind": "method",
+      "name": "showTemplate",
+      "type": "(template: HTMLTemplateElement) => string | null"
+     }
+    ],
+    "options": [
+     {
+      "attr": "data-ok-position",
+      "default": "top-right",
+      "description": "Corner or edge of the viewport.",
+      "kind": "style",
+      "name": "position",
+      "values": [
+       "top-left",
+       "top-center",
+       "top-right",
+       "bottom-left",
+       "bottom-center",
+       "bottom-right"
+      ]
+     },
+     {
+      "attr": "data-ok-duration",
+      "default": 4000,
+      "description": "Milliseconds a toast stays (paused on hover / focus).",
+      "kind": "number",
+      "min": 0,
+      "name": "duration"
+     },
+     {
+      "attr": "data-ok-visible-toasts",
+      "default": 3,
+      "description": "Toasts shown at once; newer ones push out older.",
+      "kind": "number",
+      "min": 1,
+      "name": "visibleToasts"
+     },
+     {
+      "attr": "data-ok-close-button",
+      "description": "Every toast shows a close button.",
+      "kind": "flag",
+      "name": "closeButton"
+     }
+    ],
+    "parts": [
+     {
+      "description": "Marks a toast with custom content and no default styling.",
+      "kind": "state",
+      "name": "data-ok-custom"
+     },
+     {
+      "description": "HTML: the id of the toast template that replaces this one when its promise settles.",
+      "kind": "value",
+      "name": "data-ok-then",
+      "value": "string"
+     },
+     {
+      "description": "One toast.",
+      "kind": "part",
+      "name": "data-ok-toast"
+     },
+     {
+      "description": "The action button of a toast.",
+      "kind": "part",
+      "name": "data-ok-toast-action"
+     },
+     {
+      "description": "The buttons of a toast.",
+      "kind": "part",
+      "name": "data-ok-toast-actions"
+     },
+     {
+      "description": "The cancel button of a toast.",
+      "kind": "part",
+      "name": "data-ok-toast-cancel"
+     },
+     {
+      "description": "The close button of a toast.",
+      "kind": "part",
+      "name": "data-ok-toast-close"
+     },
+     {
+      "description": "The title and the description of a toast.",
+      "kind": "part",
+      "name": "data-ok-toast-content"
+     },
+     {
+      "description": "The description of a toast.",
+      "kind": "part",
+      "name": "data-ok-toast-description"
+     },
+     {
+      "description": "Dismisses the toast it sits in.",
+      "kind": "trigger",
+      "name": "data-ok-toast-dismiss",
+      "value": [
+       ""
+      ]
+     },
+     {
+      "description": "The icon of a toast.",
+      "kind": "part",
+      "name": "data-ok-toast-icon"
+     },
+     {
+      "description": "HTML: shows the toast from the template whose `id` it names.",
+      "kind": "trigger",
+      "name": "data-ok-toast-open",
+      "value": [
+       "id"
+      ]
+     },
+     {
+      "description": "The title of a toast.",
+      "kind": "part",
+      "name": "data-ok-toast-title"
+     },
+     {
+      "description": "The list of toasts in one corner.",
+      "elements": [
+       "ol"
+      ],
+      "kind": "part",
+      "name": "data-ok-toaster-list"
+     },
+     {
+      "description": "On a toast trigger: the corner it shows the toast in.",
+      "kind": "value",
+      "name": "data-ok-toaster-position",
+      "value": "string"
+     }
+    ],
+    "runtime": "toaster"
+   },
+   "name": "Toaster",
+   "react": {
+    "description": "md. A fixed `section` with a polite live region; render it once per page and call `toast()` anywhere.",
+    "native": "HTMLElement",
+    "props": [
+     {
+      "description": "Every toast shows a close button.",
+      "name": "closeButton",
+      "type": "boolean"
+     },
+     {
+      "description": "Milliseconds a toast stays (paused while the toaster is hovered or focused). Default 4000.",
+      "name": "duration",
+      "type": "number"
+     },
+     {
+      "default": "\"top-right\"",
+      "description": "Corner or edge of the viewport.",
+      "name": "position",
+      "type": "\"bottom-center\" | \"bottom-left\" | \"bottom-right\" | \"top-center\" | \"top-left\" | \"top-right\""
+     },
+     {
+      "description": "Another store than the page's `toastStore` (tests, several toasters).",
+      "name": "store",
+      "type": "ToastStore<ReactNode>"
+     },
+     {
+      "description": "Toasts shown at once. Default 3.",
+      "name": "visibleToasts",
+      "type": "number"
+     }
+    ]
+   }
+  }
+ ],
+ "format": 1,
+ "name": "snackbar",
+ "title": "Snackbar"
+}

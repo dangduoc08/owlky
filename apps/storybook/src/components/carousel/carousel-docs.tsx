@@ -5,6 +5,8 @@ import {
   carouselProgressOptions,
   carouselThumbsOptions,
 } from "@owlky/core";
+import carouselApi from "@owlky/docs-content/api/carousel.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import {
   Carousel,
   CarouselArrows,
@@ -235,6 +237,7 @@ export function FeaturedPhotos({ photos }) {
 - Faded-out slides are hidden from everyone, and loops never duplicate slides.
 - Dots and thumbnails are at least 24 by 24 pixels.`,
   },
+  apiReferenceSection(carouselApi),
 ];
 
 const PREVIEWS = {

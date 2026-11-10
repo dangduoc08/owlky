@@ -1,0 +1,448 @@
+{
+ "css": [
+  {
+   "dark": "#28323D",
+   "light": "#F4F6F8",
+   "name": "--ok-bg-neutral"
+  },
+  {
+   "dark": "#1C252E",
+   "light": "#FFFFFF",
+   "name": "--ok-bg-paper"
+  },
+  {
+   "name": "--ok-duration-short",
+   "value": "250ms"
+  },
+  {
+   "name": "--ok-duration-standard",
+   "value": "300ms"
+  },
+  {
+   "name": "--ok-easing-standard",
+   "value": "cubic-bezier(0.4, 0, 0.2, 1)"
+  },
+  {
+   "name": "--ok-font-family",
+   "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+  },
+  {
+   "name": "--ok-font-size-sm",
+   "value": "0.8125rem"
+  },
+  {
+   "name": "--ok-font-weight-medium",
+   "value": "500"
+  },
+  {
+   "name": "--ok-font-weight-semibold",
+   "value": "600"
+  },
+  {
+   "name": "--ok-palette-primary-main",
+   "value": "#00A76F"
+  },
+  {
+   "name": "--ok-palette-secondary-main",
+   "value": "#8E33FF"
+  },
+  {
+   "name": "--ok-radius-md",
+   "value": "8px"
+  },
+  {
+   "name": "--ok-radius-xs",
+   "value": "4px"
+  },
+  {
+   "name": "--ok-shadow-z1",
+   "value": "0px 1px 2px 0px color-mix(in srgb, var(--ok-shadow-color) 16%, transparent)"
+  },
+  {
+   "name": "--ok-spacing",
+   "value": "0.25rem"
+  },
+  {
+   "dark": "#FFFFFF",
+   "light": "#1C252E",
+   "name": "--ok-text-primary"
+  },
+  {
+   "dark": "#919EAB",
+   "light": "#637381",
+   "name": "--ok-text-secondary"
+  },
+  {
+   "name": "--ok-typography-subtitle2-font-size",
+   "value": "0.875rem"
+  },
+  {
+   "name": "--ok-typography-subtitle2-line-height",
+   "value": "1.5714"
+  }
+ ],
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-tabs",
+    "events": [
+     {
+      "cancelable": true,
+      "description": "Before another tab is selected. Call `preventDefault()` to keep the current one.",
+      "detail": "{ value: string | null; previous: string | null; tab: Element; }",
+      "name": "ok:tabs:change"
+     }
+    ],
+    "methods": [
+     {
+      "description": "Selects `tab` as the user would. Returns `false` if disabled, unknown or prevented.",
+      "kind": "method",
+      "name": "select",
+      "type": "(tab: Element) => boolean"
+     },
+     {
+      "description": "Selects the tab with `value` (shows its panel), without emitting events.",
+      "kind": "method",
+      "name": "setValue",
+      "type": "(value: string) => void"
+     },
+     {
+      "description": "The selected tab's value (its `value` attribute, else its position), or `null`.",
+      "kind": "property",
+      "name": "value",
+      "type": "string | null"
+     }
+    ],
+    "options": [
+     {
+      "attr": "data-ok-variant",
+      "default": "standard",
+      "description": "`scrollable` scrolls the tabs (with scroll buttons); `fullWidth` shares the width.",
+      "kind": "style",
+      "name": "variant",
+      "values": [
+       "standard",
+       "scrollable",
+       "fullWidth"
+      ]
+     },
+     {
+      "attr": "data-ok-orientation",
+      "default": "horizontal",
+      "description": "A row of tabs, or a column (also `aria-orientation`).",
+      "kind": "style",
+      "name": "orientation",
+      "values": [
+       "horizontal",
+       "vertical"
+      ]
+     },
+     {
+      "attr": "data-ok-text-color",
+      "default": "inherit",
+      "description": "Text color of the selected tab (`inherit`: the text color).",
+      "kind": "style",
+      "name": "textColor",
+      "values": [
+       "inherit",
+       "primary",
+       "secondary"
+      ]
+     },
+     {
+      "attr": "data-ok-indicator-color",
+      "default": "inherit",
+      "description": "Color of the selection line (`inherit`: the text color).",
+      "kind": "style",
+      "name": "indicatorColor",
+      "values": [
+       "inherit",
+       "primary",
+       "secondary"
+      ]
+     },
+     {
+      "attr": "data-ok-scroll-buttons",
+      "default": "auto",
+      "description": "Scrollable: `auto` shows them on overflow from 600px; `true` always; `false` never.",
+      "kind": "style",
+      "name": "scrollButtons",
+      "values": [
+       "auto",
+       "true",
+       "false"
+      ]
+     },
+     {
+      "attr": "data-ok-centered",
+      "description": "Center the tabs (standard variant).",
+      "kind": "flag",
+      "name": "centered"
+     },
+     {
+      "attr": "data-ok-allow-scroll-buttons-mobile",
+      "description": "Scrollable: show the scroll buttons below 600px too.",
+      "kind": "flag",
+      "name": "allowScrollButtonsMobile"
+     },
+     {
+      "attr": "data-ok-visible-scrollbar",
+      "description": "Scrollable: show the scrollbar.",
+      "kind": "flag",
+      "name": "visibleScrollbar"
+     },
+     {
+      "attr": "data-ok-segmented",
+      "description": "A filled bar where the selected tab is a raised pill (instead of a line).",
+      "kind": "flag",
+      "name": "segmented"
+     },
+     {
+      "attr": "data-ok-selection-follows-focus",
+      "description": "Arrow keys select the tab they move to (otherwise Enter / Space selects).",
+      "kind": "flag",
+      "name": "selectionFollowsFocus"
+     },
+     {
+      "attr": "aria-selected",
+      "description": "Selected tab (`value` / `defaultValue`).",
+      "event": "ok:tabs:change",
+      "kind": "state",
+      "name": "value"
+     }
+    ],
+    "parts": [
+     {
+      "description": "Set by the runtime while scrollable tabs can scroll toward the end.",
+      "kind": "state",
+      "name": "data-ok-can-scroll-end"
+     },
+     {
+      "description": "Set by the runtime while scrollable tabs can scroll toward the start.",
+      "kind": "state",
+      "name": "data-ok-can-scroll-start"
+     },
+     {
+      "description": "The line under the selected tab.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-tabs-indicator"
+     },
+     {
+      "description": "The list of tabs (`role=\"tablist\"`).",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-tabs-list"
+     },
+     {
+      "description": "A scroll button of scrollable tabs.",
+      "kind": "value",
+      "name": "data-ok-tabs-scroll-button",
+      "value": [
+       "end",
+       "start"
+      ]
+     },
+     {
+      "description": "The scrolling area of the tabs.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-tabs-scroller"
+     }
+    ],
+    "runtime": "tabs"
+   },
+   "name": "Tabs",
+   "react": {
+    "description": "A tab list (WAI-ARIA tabs) with a sliding indicator. Behavior (arrow keys, scroll buttons, the indicator) is core's `createTabsController`; this component owns the selection. Pair each `Tab` with a `TabPanel` through `id` / `aria-controls` / `aria-labelledby`.",
+    "native": "HTMLDivElement",
+    "props": [
+     {
+      "description": "Scrollable: show the scroll buttons below 600px too.",
+      "name": "allowScrollButtonsMobile",
+      "type": "boolean"
+     },
+     {
+      "description": "Names the tab list (or use `aria-labelledby`).",
+      "name": "aria-label",
+      "type": "string"
+     },
+     {
+      "description": "Names it with the id of a visible label.",
+      "name": "aria-labelledby",
+      "type": "string"
+     },
+     {
+      "description": "Center the tabs (standard variant).",
+      "name": "centered",
+      "type": "boolean"
+     },
+     {
+      "description": "The content.",
+      "name": "children",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Uncontrolled: the tab selected at first. Default: the first tab.",
+      "name": "defaultValue",
+      "type": "string | false"
+     },
+     {
+      "default": "\"inherit\"",
+      "description": "Indicator color. (the text color).",
+      "name": "indicatorColor",
+      "type": "\"inherit\" | \"primary\" | \"secondary\""
+     },
+     {
+      "description": "Called with the `value` of the tab the user selects.",
+      "name": "onChange",
+      "type": "((value: string) => void)"
+     },
+     {
+      "default": "\"horizontal\"",
+      "description": "A row of tabs, or a column (also `aria-orientation`).",
+      "name": "orientation",
+      "type": "\"horizontal\" | \"vertical\""
+     },
+     {
+      "description": "Scrollable: `\"auto\"` (default) shows them on overflow from 600px, `true` always, `false` never.",
+      "name": "scrollButtons",
+      "type": "\"auto\" | boolean"
+     },
+     {
+      "description": "A filled bar with a raised pill behind the selected tab.",
+      "name": "segmented",
+      "type": "boolean"
+     },
+     {
+      "description": "Arrow keys select the tab they move to. Default: Enter / Space selects.",
+      "name": "selectionFollowsFocus",
+      "type": "boolean"
+     },
+     {
+      "default": "\"inherit\"",
+      "description": "Selected text color. (the text color).",
+      "name": "textColor",
+      "type": "\"inherit\" | \"primary\" | \"secondary\""
+     },
+     {
+      "description": "Controlled: the selected tab's `value` (`false`: none).",
+      "name": "value",
+      "type": "string | false"
+     },
+     {
+      "default": "\"standard\"",
+      "description": "`scrollable` scrolls the tabs; `fullWidth` shares the width.",
+      "name": "variant",
+      "type": "\"fullWidth\" | \"scrollable\" | \"standard\""
+     },
+     {
+      "description": "Scrollable: show the scrollbar.",
+      "name": "visibleScrollbar",
+      "type": "boolean"
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-tab",
+    "options": [
+     {
+      "attr": "data-ok-icon-position",
+      "default": "top",
+      "description": "With an icon and a label: where the icon goes.",
+      "kind": "style",
+      "name": "iconPosition",
+      "optional": true,
+      "values": [
+       "top",
+       "bottom",
+       "start",
+       "end"
+      ]
+     },
+     {
+      "attr": "data-ok-wrapped",
+      "description": "Long labels wrap onto two lines.",
+      "kind": "flag",
+      "name": "wrapped"
+     },
+     {
+      "attr": "disabled",
+      "description": "Native `disabled`: can't be selected or focused.",
+      "kind": "native",
+      "name": "disabled"
+     }
+    ],
+    "parts": [
+     {
+      "description": "The label of a tab.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-tab-label"
+     }
+    ]
+   },
+   "name": "Tab",
+   "react": {
+    "description": "A `button[role=\"tab\"]` inside `Tabs`.",
+    "native": "HTMLButtonElement",
+    "props": [
+     {
+      "description": "An icon (decorative `svg`); icon-only tabs need an `aria-label`.",
+      "name": "icon",
+      "type": "ReactElement<unknown, string | JSXElementConstructor<any>>"
+     },
+     {
+      "default": "\"top\"",
+      "description": "With an icon and a label: where the icon goes.",
+      "name": "iconPosition",
+      "type": "\"bottom\" | \"end\" | \"start\" | \"top\""
+     },
+     {
+      "description": "The text of the tab.",
+      "name": "label",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Identifies the tab. Default: its position (`\"0\"`, `\"1\"`, …).",
+      "name": "value",
+      "type": "string"
+     },
+     {
+      "description": "Long labels wrap onto two lines.",
+      "name": "wrapped",
+      "type": "boolean"
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-tab-panel",
+    "description": "The panel of a tab.",
+    "elements": [
+     "div"
+    ]
+   },
+   "name": "TabPanel",
+   "react": {
+    "description": "The content of one tab: `role=\"tabpanel\"`, in the tab order (it may hold no focusable content). Hide the others with `hidden`.",
+    "native": "HTMLElement",
+    "props": []
+   }
+  }
+ ],
+ "format": 1,
+ "name": "tabs",
+ "title": "Tabs"
+}

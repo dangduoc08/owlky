@@ -1,4 +1,6 @@
 import { accordionOptions } from "@owlky/core";
+import accordionApi from "@owlky/docs-content/api/accordion.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { Accordion, AccordionDetails, AccordionSummary } from "@owlky/react";
 import { useState } from "react";
 import { CDN, capitalize, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
@@ -114,6 +116,7 @@ export function PasswordFaq() {
 - A disabled item is marked \`aria-disabled="true"\` and removed from the tab order.
 - Content stays in the page when closed, so find-in-page can open the item that contains a match.`,
   },
+  apiReferenceSection(accordionApi),
 ];
 
 function FaqList({ variant, name }: { variant?: "default" | "outlined" | "soft"; name?: string }) {

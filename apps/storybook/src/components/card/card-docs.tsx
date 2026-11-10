@@ -1,4 +1,6 @@
 import { cardActionsOptions, cardOptions } from "@owlky/core";
+import cardApi from "@owlky/docs-content/api/card.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import {
   Avatar,
   Button,
@@ -225,6 +227,7 @@ export function ArticleCard() {
 - Write \`alt\` on pictures that carry meaning. Cover images of other elements are decorative.
 - Text in the header and content uses the primary and secondary text colors, with a contrast ratio of at least 4.5:1 in the light and dark themes.`,
   },
+  apiReferenceSection(cardApi),
 ];
 
 const PREVIEWS = {

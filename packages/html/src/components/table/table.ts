@@ -8,7 +8,17 @@ import {
   tableSortLabelOptions,
 } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
-import type { ComponentInstance } from "../../runtime/types.js";
+import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
+
+/** Events of this component (`ok:<name>:<event>` on the root). */
+export interface TableEvents {
+  /** Before a column is sorted. Call `preventDefault()` to keep the current order. */
+  sort: EventSpec<{ column: number; direction: TableSortDirection }, true>;
+  /** Before a collapsible row opens or closes. Call `preventDefault()` to refuse. */
+  expand: EventSpec<{ row: Element; expanded: boolean }, true>;
+  /** After the selection changed through a row checkbox or the select-all checkbox. */
+  select: EventSpec<{ rows: HTMLTableRowElement[] }>;
+}
 
 export interface TableInstance extends ComponentInstance {
   /**
@@ -69,7 +79,7 @@ const own = (table: HTMLTableElement, selector: string) =>
  * Events:  ok:table:sort (cancelable, detail.column / direction), ok:table:select (detail.rows),
  *          ok:table:expand (cancelable, detail.row / expanded)
  */
-export const table = defineComponent<TableInstance>({
+export const table = defineComponent<TableInstance, TableEvents>({
   name: "table",
   selector: "table[data-ok-table]",
 

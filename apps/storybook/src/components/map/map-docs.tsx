@@ -7,6 +7,8 @@ import {
   mapPopupOptions,
   mapScaleOptions,
 } from "@owlky/core";
+import mapApi from "@owlky/docs-content/api/map.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { MapView, Marker, NavigationControl, ScaleControl } from "@owlky/react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
@@ -214,6 +216,7 @@ export function Quakes() {
 - Controls have names and states: fullscreen and globe report \`aria-pressed\`, and the location result is announced.
 - Moving content needs a way to pause it, and animations respect reduced motion.`,
   },
+  apiReferenceSection(mapApi),
 ];
 
 const PREVIEWS = {

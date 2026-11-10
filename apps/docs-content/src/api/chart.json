@@ -1,0 +1,1971 @@
+{
+ "css": [
+  {
+   "name": "--ok-action-hover",
+   "value": "color-mix(in srgb, #919EAB 8%, transparent)"
+  },
+  {
+   "name": "--ok-action-selected",
+   "value": "color-mix(in srgb, #919EAB 16%, transparent)"
+  },
+  {
+   "dark": "#1C252E",
+   "light": "#FFFFFF",
+   "name": "--ok-bg-paper"
+  },
+  {
+   "name": "--ok-divider",
+   "value": "color-mix(in srgb, #919EAB 20%, transparent)"
+  },
+  {
+   "name": "--ok-duration-enter",
+   "value": "640ms"
+  },
+  {
+   "name": "--ok-duration-standard",
+   "value": "300ms"
+  },
+  {
+   "name": "--ok-easing-decelerate",
+   "value": "cubic-bezier(0, 0, 0.2, 1)"
+  },
+  {
+   "name": "--ok-easing-standard",
+   "value": "cubic-bezier(0.4, 0, 0.2, 1)"
+  },
+  {
+   "name": "--ok-font-family",
+   "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+  },
+  {
+   "name": "--ok-font-size-md",
+   "value": "0.875rem"
+  },
+  {
+   "name": "--ok-font-size-sm",
+   "value": "0.8125rem"
+  },
+  {
+   "name": "--ok-font-size-xl",
+   "value": "1rem"
+  },
+  {
+   "name": "--ok-font-size-xs",
+   "value": "0.75rem"
+  },
+  {
+   "name": "--ok-font-weight-bold",
+   "value": "700"
+  },
+  {
+   "name": "--ok-font-weight-medium",
+   "value": "500"
+  },
+  {
+   "name": "--ok-font-weight-semibold",
+   "value": "600"
+  },
+  {
+   "name": "--ok-palette-common-white",
+   "value": "#FFFFFF"
+  },
+  {
+   "name": "--ok-palette-error-dark",
+   "value": "#B71D18"
+  },
+  {
+   "name": "--ok-palette-error-darker",
+   "value": "#7A0916"
+  },
+  {
+   "name": "--ok-palette-error-light",
+   "value": "#FFAC82"
+  },
+  {
+   "name": "--ok-palette-error-lighter",
+   "value": "#FFE9D5"
+  },
+  {
+   "name": "--ok-palette-error-main",
+   "value": "#FF5630"
+  },
+  {
+   "name": "--ok-palette-grey-500-channel",
+   "value": "145 158 171"
+  },
+  {
+   "name": "--ok-palette-grey-800-channel",
+   "value": "28 37 46"
+  },
+  {
+   "name": "--ok-palette-info-dark",
+   "value": "#006C9C"
+  },
+  {
+   "name": "--ok-palette-info-darker",
+   "value": "#003768"
+  },
+  {
+   "name": "--ok-palette-info-light",
+   "value": "#61F3F3"
+  },
+  {
+   "name": "--ok-palette-info-lighter",
+   "value": "#CAFDF5"
+  },
+  {
+   "name": "--ok-palette-info-main",
+   "value": "#00B8D9"
+  },
+  {
+   "name": "--ok-palette-primary-dark",
+   "value": "#007867"
+  },
+  {
+   "name": "--ok-palette-primary-darker",
+   "value": "#004B50"
+  },
+  {
+   "name": "--ok-palette-primary-light",
+   "value": "#5BE49B"
+  },
+  {
+   "name": "--ok-palette-primary-lighter",
+   "value": "#C8FAD6"
+  },
+  {
+   "name": "--ok-palette-primary-main",
+   "value": "#00A76F"
+  },
+  {
+   "name": "--ok-palette-primary-main-channel",
+   "value": "0 167 111"
+  },
+  {
+   "name": "--ok-palette-secondary-dark",
+   "value": "#5119B7"
+  },
+  {
+   "name": "--ok-palette-secondary-darker",
+   "value": "#27097A"
+  },
+  {
+   "name": "--ok-palette-secondary-light",
+   "value": "#C684FF"
+  },
+  {
+   "name": "--ok-palette-secondary-lighter",
+   "value": "#EFD6FF"
+  },
+  {
+   "name": "--ok-palette-secondary-main",
+   "value": "#8E33FF"
+  },
+  {
+   "name": "--ok-palette-success-dark",
+   "value": "#118D57"
+  },
+  {
+   "name": "--ok-palette-success-darker",
+   "value": "#065E49"
+  },
+  {
+   "name": "--ok-palette-success-light",
+   "value": "#77ED8B"
+  },
+  {
+   "name": "--ok-palette-success-lighter",
+   "value": "#D3FCD2"
+  },
+  {
+   "name": "--ok-palette-success-main",
+   "value": "#22C55E"
+  },
+  {
+   "name": "--ok-palette-warning-dark",
+   "value": "#B76E00"
+  },
+  {
+   "name": "--ok-palette-warning-darker",
+   "value": "#7A4100"
+  },
+  {
+   "name": "--ok-palette-warning-light",
+   "value": "#FFD666"
+  },
+  {
+   "name": "--ok-palette-warning-lighter",
+   "value": "#FFF5CC"
+  },
+  {
+   "name": "--ok-palette-warning-main",
+   "value": "#FFAB00"
+  },
+  {
+   "name": "--ok-radius-full",
+   "value": "9999px"
+  },
+  {
+   "name": "--ok-radius-md",
+   "value": "8px"
+  },
+  {
+   "name": "--ok-radius-sm",
+   "value": "6px"
+  },
+  {
+   "name": "--ok-shadow-dropdown",
+   "value": "0px 0px 2px 0px color-mix(in srgb, var(--ok-shadow-color) 24%, transparent), -20px 20px 40px -4px color-mix(in srgb, var(--ok-shadow-color) 24%, transparent)"
+  },
+  {
+   "name": "--ok-spacing",
+   "value": "0.25rem"
+  },
+  {
+   "dark": "#637381",
+   "light": "#919EAB",
+   "name": "--ok-text-disabled"
+  },
+  {
+   "dark": "#FFFFFF",
+   "light": "#1C252E",
+   "name": "--ok-text-primary"
+  },
+  {
+   "dark": "#919EAB",
+   "light": "#637381",
+   "name": "--ok-text-secondary"
+  }
+ ],
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-chart",
+    "events": [
+     {
+      "cancelable": false,
+      "description": "After the highlighted point or mark changed (`null`: none).",
+      "detail": "{ active: ChartActive | null; }",
+      "name": "ok:chart:active"
+     },
+     {
+      "cancelable": true,
+      "description": "Before a legend item hides or shows a series. Call `preventDefault()` to refuse.",
+      "detail": "{ index: number; hidden: boolean; hiddenSeries: number[]; }",
+      "name": "ok:chart:toggle"
+     },
+     {
+      "cancelable": "sometimes",
+      "description": "Before the zoom window changes. Cancelable only when `reason` is `user`; `range` is `null` once reset.",
+      "detail": "{ range: ChartZoom | null; reason: ChartZoomReason; }",
+      "name": "ok:chart:zoom"
+     }
+    ],
+    "methods": [
+     {
+      "description": "The active category or point, or `null`.",
+      "kind": "property",
+      "name": "active",
+      "type": "ChartActive | null"
+     },
+     {
+      "description": "Appends points to the series (and categories); `limit` drops the oldest. No event.",
+      "kind": "method",
+      "name": "appendData",
+      "type": "(data: ChartAppendData, options?: ChartAppendOptions | undefined) => void"
+     },
+     {
+      "description": "Downloads the chart as SVG, PNG or CSV (only during a user gesture: rejects otherwise).",
+      "kind": "method",
+      "name": "exportChart",
+      "type": "(format: ChartExportFormat) => Promise<void>"
+     },
+     {
+      "description": "Indexes of the series hidden through the legend.",
+      "kind": "property",
+      "name": "hiddenSeries",
+      "type": "readonly number[]"
+     },
+     {
+      "description": "Reads the table and the options again and redraws (done automatically on changes).",
+      "kind": "method",
+      "name": "refresh",
+      "type": "() => void"
+     },
+     {
+      "description": "Shows the tooltip for a category or point (`null` hides it; no event).",
+      "kind": "method",
+      "name": "setActive",
+      "type": "(active: ChartActive | null) => void"
+     },
+     {
+      "description": "Sets formatters (functions can't be attributes). Redraws.",
+      "kind": "method",
+      "name": "setFormatters",
+      "type": "(formatters: ChartFormatters) => void"
+     },
+     {
+      "description": "Hides exactly these series (no event).",
+      "kind": "method",
+      "name": "setHiddenSeries",
+      "type": "(hidden: readonly number[]) => void"
+     },
+     {
+      "description": "Localized texts: tool names, the export error and part labels (tables carry their own).",
+      "kind": "method",
+      "name": "setLocaleText",
+      "type": "(text: Readonly<Partial<Record<\"exportFailed\" | \"toolbar\" | ChartPart | ChartTool, string>>>) => void"
+     },
+     {
+      "description": "Zooms (`null`: the whole axis); its group and brush charts follow. No event.",
+      "kind": "method",
+      "name": "setZoomRange",
+      "type": "(range: ChartZoom | null) => void"
+     },
+     {
+      "description": "Replaces the data (and the categories, when given): rewrites the data table in place and redraws once. The active item and hidden series stay (by position). No event.",
+      "kind": "method",
+      "name": "updateSeries",
+      "type": "(series: readonly ChartSeries[], categories?: readonly (string | number | Date)[] | undefined) => void"
+     },
+     {
+      "description": "The visible window of the x axis (category indexes or x values), or `null`.",
+      "kind": "property",
+      "name": "zoomRange",
+      "type": "ChartZoom | null"
+     }
+    ],
+    "options": [
+     {
+      "attr": "data-ok-type",
+      "default": "line",
+      "description": "Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea` or `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts).",
+      "kind": "style",
+      "name": "type",
+      "values": [
+       "line",
+       "area",
+       "bar",
+       "scatter",
+       "pie",
+       "donut",
+       "radialBar",
+       "radar",
+       "boxPlot",
+       "heatmap",
+       "treemap",
+       "bubble",
+       "rangeArea",
+       "funnel",
+       "slope",
+       "candlestick",
+       "rangeBar",
+       "timeline",
+       "polarArea",
+       "sankey"
+      ]
+     },
+     {
+      "attr": "data-ok-x-type",
+      "default": "category",
+      "description": "X axis: `category` labels, `datetime` (ISO 8601 dates) or `numeric` values (scatter).",
+      "kind": "style",
+      "name": "xType",
+      "values": [
+       "category",
+       "datetime",
+       "numeric"
+      ]
+     },
+     {
+      "attr": "data-ok-curve",
+      "default": "smooth",
+      "description": "Line shape: `smooth`, `straight` or `stepline`.",
+      "kind": "style",
+      "name": "curve",
+      "values": [
+       "smooth",
+       "straight",
+       "stepline"
+      ]
+     },
+     {
+      "attr": "data-ok-legend",
+      "default": "top",
+      "description": "Legend position: `top`, `right`, `bottom` or `none` (never shown for a single series).",
+      "kind": "style",
+      "name": "legend",
+      "values": [
+       "top",
+       "right",
+       "bottom",
+       "none"
+      ]
+     },
+     {
+      "attr": "data-ok-fill",
+      "default": "gradient",
+      "description": "Area fill: a fading `gradient` or a `solid` tint.",
+      "kind": "style",
+      "name": "fill",
+      "values": [
+       "gradient",
+       "solid"
+      ]
+     },
+     {
+      "attr": "data-ok-stacked",
+      "description": "Stacks the series on each other (bars, lines, areas).",
+      "kind": "flag",
+      "name": "stacked"
+     },
+     {
+      "attr": "data-ok-horizontal",
+      "description": "Bars run left to right, categories down the side.",
+      "kind": "flag",
+      "name": "horizontal"
+     },
+     {
+      "attr": "data-ok-height",
+      "default": 320,
+      "description": "Height of the plot in px (at least 40, sparklines 8).",
+      "kind": "number",
+      "min": 8,
+      "name": "height"
+     },
+     {
+      "attr": "data-ok-marker-size",
+      "description": "Marker radius of line and area points in px (default none; scatter points 5).",
+      "kind": "number",
+      "min": 0,
+      "name": "markerSize"
+     },
+     {
+      "attr": "data-ok-column-width",
+      "default": 40,
+      "description": "Column width in % of a category.",
+      "kind": "number",
+      "min": 1,
+      "name": "columnWidth"
+     },
+     {
+      "attr": "data-ok-bar-height",
+      "description": "Horizontal bar thickness in % of a category (default 40; funnels 80).",
+      "kind": "number",
+      "min": 1,
+      "name": "barHeight"
+     },
+     {
+      "attr": "data-ok-y-min",
+      "description": "Lowest value on the value axis (default from the data).",
+      "kind": "number",
+      "name": "yMin"
+     },
+     {
+      "attr": "data-ok-y-max",
+      "description": "Highest value on the value axis (default from the data); radial bars: the value of a full ring (default 100).",
+      "kind": "number",
+      "name": "yMax"
+     },
+     {
+      "attr": "data-ok-data-labels",
+      "description": "Prints the values on the chart: percentages on pie and donut slices, values in bars and above points.",
+      "kind": "flag",
+      "name": "dataLabels"
+     },
+     {
+      "attr": "data-ok-start-angle",
+      "default": 0,
+      "description": "Pie, donut and radial bar: where the slices or rings start, in degrees clockwise from 12 o'clock.",
+      "kind": "number",
+      "name": "startAngle"
+     },
+     {
+      "attr": "data-ok-end-angle",
+      "default": 360,
+      "description": "Pie, donut and radial bar: where they end (at most one turn after `startAngle`).",
+      "kind": "number",
+      "name": "endAngle"
+     },
+     {
+      "attr": "data-ok-dash-array",
+      "description": "Dash length of lines and radial bars in px (default solid).",
+      "kind": "number",
+      "min": 0,
+      "name": "dashArray"
+     },
+     {
+      "attr": "data-ok-track-width",
+      "default": 50,
+      "description": "Radial bar track thickness in % of the bar.",
+      "kind": "number",
+      "min": 0,
+      "name": "trackWidth"
+     },
+     {
+      "attr": "data-ok-total",
+      "description": "Donut and radial bar center: the total shown under `totalLabel` (default the sum; radial bars the average).",
+      "kind": "number",
+      "name": "total"
+     },
+     {
+      "attr": "data-ok-sparkline",
+      "description": "No axes, grid or legend: the chart fills its container (cards, table cells). Its height is the container's, at least `height` (default 40px).",
+      "kind": "flag",
+      "name": "sparkline"
+     },
+     {
+      "attr": "data-ok-box-upper-color",
+      "default": "primary",
+      "description": "Box plots: color of the box above the median (default the series color).",
+      "kind": "style",
+      "name": "boxUpperColor",
+      "optional": true,
+      "values": [
+       "primary",
+       "primary-lighter",
+       "primary-light",
+       "primary-main",
+       "primary-dark",
+       "primary-darker",
+       "secondary",
+       "secondary-lighter",
+       "secondary-light",
+       "secondary-main",
+       "secondary-dark",
+       "secondary-darker",
+       "info",
+       "info-lighter",
+       "info-light",
+       "info-main",
+       "info-dark",
+       "info-darker",
+       "success",
+       "success-lighter",
+       "success-light",
+       "success-main",
+       "success-dark",
+       "success-darker",
+       "warning",
+       "warning-lighter",
+       "warning-light",
+       "warning-main",
+       "warning-dark",
+       "warning-darker",
+       "error",
+       "error-lighter",
+       "error-light",
+       "error-main",
+       "error-dark",
+       "error-darker"
+      ]
+     },
+     {
+      "attr": "data-ok-box-lower-color",
+      "default": "primary",
+      "description": "Box plots: color of the box below the median (default a lighter tone of the series color).",
+      "kind": "style",
+      "name": "boxLowerColor",
+      "optional": true,
+      "values": [
+       "primary",
+       "primary-lighter",
+       "primary-light",
+       "primary-main",
+       "primary-dark",
+       "primary-darker",
+       "secondary",
+       "secondary-lighter",
+       "secondary-light",
+       "secondary-main",
+       "secondary-dark",
+       "secondary-darker",
+       "info",
+       "info-lighter",
+       "info-light",
+       "info-main",
+       "info-dark",
+       "info-darker",
+       "success",
+       "success-lighter",
+       "success-light",
+       "success-main",
+       "success-dark",
+       "success-darker",
+       "warning",
+       "warning-lighter",
+       "warning-light",
+       "warning-main",
+       "warning-dark",
+       "warning-darker",
+       "error",
+       "error-lighter",
+       "error-light",
+       "error-main",
+       "error-dark",
+       "error-darker"
+      ]
+     },
+     {
+      "attr": "data-ok-candle-up-color",
+      "default": "success",
+      "description": "Candlesticks: color of rising candles (default `success`).",
+      "kind": "style",
+      "name": "candleUpColor",
+      "optional": true,
+      "values": [
+       "primary",
+       "primary-lighter",
+       "primary-light",
+       "primary-main",
+       "primary-dark",
+       "primary-darker",
+       "secondary",
+       "secondary-lighter",
+       "secondary-light",
+       "secondary-main",
+       "secondary-dark",
+       "secondary-darker",
+       "info",
+       "info-lighter",
+       "info-light",
+       "info-main",
+       "info-dark",
+       "info-darker",
+       "success",
+       "success-lighter",
+       "success-light",
+       "success-main",
+       "success-dark",
+       "success-darker",
+       "warning",
+       "warning-lighter",
+       "warning-light",
+       "warning-main",
+       "warning-dark",
+       "warning-darker",
+       "error",
+       "error-lighter",
+       "error-light",
+       "error-main",
+       "error-dark",
+       "error-darker"
+      ]
+     },
+     {
+      "attr": "data-ok-candle-down-color",
+      "default": "error",
+      "description": "Candlesticks: color of falling candles (default `error`).",
+      "kind": "style",
+      "name": "candleDownColor",
+      "optional": true,
+      "values": [
+       "primary",
+       "primary-lighter",
+       "primary-light",
+       "primary-main",
+       "primary-dark",
+       "primary-darker",
+       "secondary",
+       "secondary-lighter",
+       "secondary-light",
+       "secondary-main",
+       "secondary-dark",
+       "secondary-darker",
+       "info",
+       "info-lighter",
+       "info-light",
+       "info-main",
+       "info-dark",
+       "info-darker",
+       "success",
+       "success-lighter",
+       "success-light",
+       "success-main",
+       "success-dark",
+       "success-darker",
+       "warning",
+       "warning-lighter",
+       "warning-light",
+       "warning-main",
+       "warning-dark",
+       "warning-darker",
+       "error",
+       "error-lighter",
+       "error-light",
+       "error-main",
+       "error-dark",
+       "error-darker"
+      ]
+     },
+     {
+      "attr": "data-ok-donut-size",
+      "description": "Donut hole in % of the radius (10 to 95; default 72).",
+      "kind": "number",
+      "min": 10,
+      "name": "donutSize"
+     },
+     {
+      "attr": "data-ok-data-label-background",
+      "description": "Data labels above points sit on a badge (a paper box with a border).",
+      "kind": "flag",
+      "name": "dataLabelBackground"
+     },
+     {
+      "attr": "data-ok-legend-values",
+      "description": "Legend items show a value: the slice's or ring's, or the series' last one.",
+      "kind": "flag",
+      "name": "legendValues"
+     },
+     {
+      "attr": "data-ok-zoom",
+      "description": "Zoom and pan the x axis: drag to select (mouse), pinch or drag (touch), Ctrl + wheel, keys `+` `-` `0` and Shift + arrows.",
+      "kind": "flag",
+      "name": "zoom"
+     },
+     {
+      "attr": "data-ok-toolbar",
+      "description": "A toolbar with zoom buttons (with `zoom`) and downloads (SVG, PNG, CSV).",
+      "kind": "flag",
+      "name": "toolbar"
+     },
+     {
+      "attr": "data-ok-animations",
+      "description": "Series grow in when first drawn and move to new values on updates (never with reduced motion).",
+      "kind": "flag",
+      "name": "animations"
+     },
+     {
+      "attr": "data-ok-orientation",
+      "default": "horizontal",
+      "description": "Sankey charts: the flow runs left to right (`horizontal`, the default) or top to bottom (`vertical`).",
+      "kind": "style",
+      "name": "orientation",
+      "optional": true,
+      "values": [
+       "horizontal",
+       "vertical"
+      ]
+     },
+     {
+      "attr": "data-ok-node-width",
+      "default": 20,
+      "description": "Sankey charts: node thickness along the flow in px.",
+      "kind": "number",
+      "min": 1,
+      "name": "nodeWidth"
+     },
+     {
+      "attr": "data-ok-whitespace",
+      "default": 0.18,
+      "description": "Sankey charts: share of the fullest rank left between its nodes (0 to 0.9).",
+      "kind": "number",
+      "min": 0,
+      "name": "whitespace"
+     },
+     {
+      "attr": "data-ok-edge-opacity",
+      "default": 0.4,
+      "description": "Sankey charts: link opacity (0 to 1).",
+      "kind": "number",
+      "min": 0,
+      "name": "edgeOpacity"
+     },
+     {
+      "attr": "data-ok-navigator",
+      "description": "Stock charts: a navigator under the chart, the whole price line with the zoom as a brush (zooms like `zoom`).",
+      "kind": "flag",
+      "name": "navigator"
+     },
+     {
+      "attr": "data-ok-pane-height",
+      "default": 120,
+      "description": "Stock charts: height in px of each indicator pane (volume, RSI, MACD…) under the price.",
+      "kind": "number",
+      "min": 60,
+      "name": "paneHeight"
+     },
+     {
+      "attr": "aria-pressed",
+      "description": "Indexes of the series hidden through the legend (`aria-pressed=\"false\"` on their buttons); categories in pie, donut and radial bar charts.",
+      "event": "ok:chart:toggle",
+      "kind": "state",
+      "name": "hiddenSeries"
+     },
+     {
+      "attr": "instance.zoomRange",
+      "description": "The visible window of the x axis, `{ min, max }` (category indexes or x values), or `null`.",
+      "event": "ok:chart:zoom",
+      "kind": "state",
+      "name": "zoomRange"
+     }
+    ],
+    "parts": [
+     {
+      "description": "On an annotation list item: a vertical line (`x`), a horizontal line (`y`) or a point.",
+      "kind": "value",
+      "name": "data-ok-annotation",
+      "value": [
+       "point",
+       "x",
+       "y"
+      ]
+     },
+     {
+      "description": "Shows the axis titles of a radar chart.",
+      "kind": "state",
+      "name": "data-ok-axis-titles"
+     },
+     {
+      "description": "Marks a Sankey link that loops back to an earlier node.",
+      "kind": "state",
+      "name": "data-ok-back"
+     },
+     {
+      "description": "The `id` of the chart this brush chart controls.",
+      "kind": "value",
+      "name": "data-ok-brush-target",
+      "value": "string"
+     },
+     {
+      "description": "The highlight of the active point or category.",
+      "elements": [
+       "g"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-active"
+     },
+     {
+      "description": "The highlight of the active heatmap or treemap cell.",
+      "elements": [
+       "rect"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-active-cell"
+     },
+     {
+      "description": "The highlight of the active Sankey link.",
+      "elements": [
+       "path"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-active-link"
+     },
+     {
+      "description": "The marker of the active point.",
+      "elements": [
+       "circle"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-active-marker"
+     },
+     {
+      "description": "The highlight of the active slice.",
+      "elements": [
+       "path"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-active-slice"
+     },
+     {
+      "description": "One drawn annotation: a line, a band or a point.",
+      "kind": "value",
+      "name": "data-ok-chart-annotation",
+      "value": [
+       "point",
+       "x",
+       "y"
+      ]
+     },
+     {
+      "description": "The band of a range annotation.",
+      "elements": [
+       "rect"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-annotation-band"
+     },
+     {
+      "description": "The text of an annotation.",
+      "elements": [
+       "text"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-annotation-label"
+     },
+     {
+      "description": "The group that holds every drawn annotation.",
+      "elements": [
+       "g"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-annotation-layer"
+     },
+     {
+      "description": "The line of an annotation.",
+      "elements": [
+       "line"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-annotation-line"
+     },
+     {
+      "description": "The marker of a point annotation.",
+      "elements": [
+       "circle"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-annotation-marker"
+     },
+     {
+      "description": "The background of an annotation's label.",
+      "elements": [
+       "rect"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-annotation-tag"
+     },
+     {
+      "description": "The authored list of annotations, after the data table. Visually hidden once drawn.",
+      "elements": [
+       "ul"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-annotations"
+     },
+     {
+      "description": "The filled area of an area series.",
+      "elements": [
+       "path"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-area"
+     },
+     {
+      "description": "An axis.",
+      "kind": "value",
+      "name": "data-ok-chart-axis",
+      "value": [
+       "x",
+       "y"
+      ]
+     },
+     {
+      "description": "The title of an axis.",
+      "elements": [
+       "text"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-axis-title"
+     },
+     {
+      "description": "A band of a range area or a range bar.",
+      "elements": [
+       "rect"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-band"
+     },
+     {
+      "description": "One bar.",
+      "elements": [
+       "path"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-bar"
+     },
+     {
+      "description": "One half of a box plot's box.",
+      "kind": "value",
+      "name": "data-ok-chart-box",
+      "value": [
+       "lower",
+       "upper"
+      ]
+     },
+     {
+      "description": "The selected window of a brush chart.",
+      "elements": [
+       "g"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-brush"
+     },
+     {
+      "description": "One bubble.",
+      "elements": [
+       "circle"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-bubble"
+     },
+     {
+      "description": "The body of a candlestick: rising or falling.",
+      "kind": "value",
+      "name": "data-ok-chart-candle",
+      "value": [
+       "down",
+       "up"
+      ]
+     },
+     {
+      "description": "One heatmap or treemap cell.",
+      "elements": [
+       "rect"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-cell"
+     },
+     {
+      "description": "The text of a cell.",
+      "elements": [
+       "text"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-cell-label"
+     },
+     {
+      "description": "The center text of a donut or a radial bar.",
+      "elements": [
+       "g"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-center"
+     },
+     {
+      "description": "The label of the center text.",
+      "elements": [
+       "text"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-center-label"
+     },
+     {
+      "description": "The value of the center text.",
+      "elements": [
+       "text"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-center-value"
+     },
+     {
+      "description": "The crosshair that follows the pointer.",
+      "elements": [
+       "g"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-crosshair"
+     },
+     {
+      "description": "One line of the crosshair.",
+      "elements": [
+       "line"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-crosshair-line"
+     },
+     {
+      "description": "HTML: the data, as a table. Visually hidden once the chart is drawn; without JavaScript it shows.",
+      "elements": [
+       "table"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-data"
+     },
+     {
+      "description": "One data label.",
+      "elements": [
+       "text"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-data-label"
+     },
+     {
+      "description": "The background of a data label.",
+      "elements": [
+       "rect"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-data-label-badge"
+     },
+     {
+      "description": "The group of data labels. Only labels that fit are drawn.",
+      "elements": [
+       "g"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-data-labels"
+     },
+     {
+      "description": "The grid.",
+      "elements": [
+       "g"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-grid"
+     },
+     {
+      "description": "One grid line.",
+      "elements": [
+       "line"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-grid-line"
+     },
+     {
+      "description": "A guide line of a slope or funnel chart.",
+      "elements": [
+       "line"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-guide"
+     },
+     {
+      "description": "A handle of the brush window or the navigator.",
+      "elements": [
+       "rect"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-handle"
+     },
+     {
+      "description": "The legend. Absent with one series or `legend=\"none\"`.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-legend"
+     },
+     {
+      "description": "One legend item: a button that hides or shows its series.",
+      "elements": [
+       "button"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-legend-item"
+     },
+     {
+      "description": "The color marker of a legend item.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-legend-marker"
+     },
+     {
+      "description": "The value next to a legend item.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-legend-value"
+     },
+     {
+      "description": "The line of a series.",
+      "elements": [
+       "path"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-line"
+     },
+     {
+      "description": "One Sankey link.",
+      "elements": [
+       "path"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-link"
+     },
+     {
+      "description": "The marker of a point.",
+      "elements": [
+       "circle"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-marker"
+     },
+     {
+      "description": "On a data grid: the chart panel's model, as JSON.",
+      "kind": "value",
+      "name": "data-ok-chart-model",
+      "value": "string"
+     },
+     {
+      "description": "The navigator of a stock chart.",
+      "elements": [
+       "g"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-navigator"
+     },
+     {
+      "description": "The frame of the navigator's window.",
+      "elements": [
+       "rect"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-navigator-frame"
+     },
+     {
+      "description": "One Sankey node.",
+      "elements": [
+       "rect"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-node"
+     },
+     {
+      "description": "The label of a Sankey node.",
+      "elements": [
+       "text"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-node-label"
+     },
+     {
+      "description": "The pane a series is drawn in (stock charts), by index.",
+      "kind": "value",
+      "name": "data-ok-chart-pane",
+      "value": "string"
+     },
+     {
+      "description": "The line between two panes.",
+      "elements": [
+       "line"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-pane-divider"
+     },
+     {
+      "description": "The title of a pane.",
+      "elements": [
+       "text"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-pane-title"
+     },
+     {
+      "description": "The group of pane titles.",
+      "elements": [
+       "g"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-pane-titles"
+     },
+     {
+      "description": "The plot area that holds the SVG.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-plot"
+     },
+     {
+      "description": "One ring of a radial bar.",
+      "elements": [
+       "path"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-radial"
+     },
+     {
+      "description": "The rectangle drawn while selecting a zoom window.",
+      "elements": [
+       "rect"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-selection"
+     },
+     {
+      "description": "The group of one series.",
+      "elements": [
+       "g"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-series"
+     },
+     {
+      "description": "The group of the series of one kind: areas, bars, lines, then points.",
+      "elements": [
+       "g"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-series-group"
+     },
+     {
+      "description": "One pie or donut slice.",
+      "elements": [
+       "path"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-slice"
+     },
+     {
+      "description": "A visually hidden live region that announces failed downloads.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-status"
+     },
+     {
+      "description": "A gradient stop of a gradient area.",
+      "elements": [
+       "stop"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-stop"
+     },
+     {
+      "description": "The drawing.",
+      "elements": [
+       "svg"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-svg"
+     },
+     {
+      "description": "The background of an axis tag.",
+      "elements": [
+       "rect"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-tag"
+     },
+     {
+      "description": "The text of an axis tag.",
+      "elements": [
+       "text"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-tag-label"
+     },
+     {
+      "description": "The group of axis tags.",
+      "elements": [
+       "g"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-tags"
+     },
+     {
+      "description": "One axis label.",
+      "elements": [
+       "text"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-tick"
+     },
+     {
+      "description": "A toolbar button and what it does: zoom, pan, or download the chart as SVG, PNG or CSV.",
+      "kind": "value",
+      "name": "data-ok-chart-tool",
+      "value": [
+       "csv",
+       "pan",
+       "png",
+       "reset",
+       "svg",
+       "zoomIn",
+       "zoomOut"
+      ]
+     },
+     {
+      "description": "The icon of a toolbar button.",
+      "elements": [
+       "svg"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-tool-icon"
+     },
+     {
+      "description": "The toolbar.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-toolbar"
+     },
+     {
+      "description": "The tooltip.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-tooltip"
+     },
+     {
+      "description": "The color marker of a tooltip row.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-tooltip-marker"
+     },
+     {
+      "description": "One row of the tooltip.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-tooltip-row"
+     },
+     {
+      "description": "The rows of the tooltip.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-tooltip-rows"
+     },
+     {
+      "description": "The title of the tooltip.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-tooltip-title"
+     },
+     {
+      "description": "The value of a tooltip row.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-tooltip-value"
+     },
+     {
+      "description": "The track behind a radial bar.",
+      "elements": [
+       "path"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-track"
+     },
+     {
+      "description": "The web of a radar chart.",
+      "elements": [
+       "path"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-web"
+     },
+     {
+      "description": "A whisker of a box plot.",
+      "elements": [
+       "line"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-whisker"
+     },
+     {
+      "description": "A wick of a candlestick.",
+      "elements": [
+       "line"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-wick"
+     },
+     {
+      "description": "Colors per value range, such as `0 30 error; 30 70 warning`.",
+      "kind": "value",
+      "name": "data-ok-color-ranges",
+      "value": "string"
+     },
+     {
+      "description": "Marks a dashed series.",
+      "kind": "state",
+      "name": "data-ok-dashed"
+     },
+     {
+      "description": "The group of linked charts this chart belongs to: they share the hover and the zoom.",
+      "kind": "value",
+      "name": "data-ok-group",
+      "value": "string"
+     },
+     {
+      "description": "On a data cell or a legend item: its position.",
+      "kind": "value",
+      "name": "data-ok-index",
+      "value": "string"
+     },
+     {
+      "description": "On a data table column: the indicator it computes, such as `sma`.",
+      "kind": "value",
+      "name": "data-ok-indicator",
+      "value": "string"
+     },
+     {
+      "description": "The indicators of a stock chart.",
+      "kind": "value",
+      "name": "data-ok-indicators",
+      "value": "string"
+     },
+     {
+      "description": "The locale that formats numbers and dates, such as `en-US`.",
+      "kind": "value",
+      "name": "data-ok-locale",
+      "value": "string"
+     },
+     {
+      "description": "Marks a major tick of a date axis.",
+      "kind": "state",
+      "name": "data-ok-major"
+     },
+     {
+      "description": "On a data table header cell: which value of a point the column holds.",
+      "kind": "value",
+      "name": "data-ok-part",
+      "value": [
+       "high",
+       "low",
+       "max",
+       "median",
+       "min",
+       "q1",
+       "q3",
+       "y",
+       "z"
+      ]
+     },
+     {
+      "description": "Set by the runtime once the chart is drawn: the data table hides.",
+      "kind": "state",
+      "name": "data-ok-ready"
+     },
+     {
+      "description": "The label of the total in a donut's or a radial bar's center.",
+      "kind": "value",
+      "name": "data-ok-total-label",
+      "value": "string"
+     },
+     {
+      "description": "Text before every value, such as `$`.",
+      "kind": "value",
+      "name": "data-ok-value-prefix",
+      "value": "string"
+     },
+     {
+      "description": "Text after every value, such as `%`.",
+      "kind": "value",
+      "name": "data-ok-value-suffix",
+      "value": "string"
+     },
+     {
+      "description": "On an annotation: the x value.",
+      "kind": "value",
+      "name": "data-ok-x",
+      "value": "string"
+     },
+     {
+      "description": "On an annotation: the end of an x range.",
+      "kind": "value",
+      "name": "data-ok-x2",
+      "value": "string"
+     },
+     {
+      "description": "On an annotation: the y value.",
+      "kind": "value",
+      "name": "data-ok-y",
+      "value": "string"
+     },
+     {
+      "description": "The title of the y axis.",
+      "kind": "value",
+      "name": "data-ok-y-title",
+      "value": "string"
+     },
+     {
+      "description": "On an annotation: the end of a y range.",
+      "kind": "value",
+      "name": "data-ok-y2",
+      "value": "string"
+     }
+    ],
+    "runtime": "chart"
+   },
+   "name": "Chart",
+   "react": {
+    "description": "An SVG chart drawn by the shared core layout, with a legend that hides series, a tooltip for the pointer, touch and keyboard, and the data as a visually hidden table.",
+    "native": "HTMLElement",
+    "props": [
+     {
+      "description": "Series grow in when first drawn and move to new values (never with reduced motion).",
+      "name": "animations",
+      "type": "boolean"
+     },
+     {
+      "description": "Lines, bands and points with a label (vertical charts with an x axis).",
+      "name": "annotations",
+      "type": "readonly ChartAnnotation[]"
+     },
+     {
+      "description": "Sankey charts: a title above each rank (beside each row when vertical).",
+      "name": "axisTitles",
+      "type": "readonly string[]"
+     },
+     {
+      "description": "Horizontal bar thickness in % of a category. Default 40 (funnels 80).",
+      "name": "barHeight",
+      "type": "number"
+     },
+     {
+      "description": "Box plots: color of the box below the median (default a lighter tone of the series color).",
+      "name": "boxLowerColor",
+      "type": "ChartColor"
+     },
+     {
+      "description": "Box plots: color of the box above the median (default the series color).",
+      "name": "boxUpperColor",
+      "type": "ChartColor"
+     },
+     {
+      "description": "A brush chart: its selection zooms the chart with this `id`.",
+      "name": "brushTarget",
+      "type": "string"
+     },
+     {
+      "default": "\"error\"",
+      "description": "Candlesticks: color of falling candles.",
+      "name": "candleDownColor",
+      "type": "ChartColor"
+     },
+     {
+      "default": "\"success\"",
+      "description": "Candlesticks: color of rising candles.",
+      "name": "candleUpColor",
+      "type": "ChartColor"
+     },
+     {
+      "description": "Category labels, or dates when `xType` is `\"datetime\"`.",
+      "name": "categories",
+      "type": "readonly (string | number | Date)[]"
+     },
+     {
+      "description": "Heatmaps and treemaps: values in a range take its color.",
+      "name": "colorRanges",
+      "type": "readonly ChartColorRange[]"
+     },
+     {
+      "description": "Series colors in order (palette names or shades such as `\"primary-dark\"`).",
+      "name": "colors",
+      "type": "readonly ChartColor[]"
+     },
+     {
+      "description": "Column width in % of a category. Default 40.",
+      "name": "columnWidth",
+      "type": "number"
+     },
+     {
+      "default": "\"smooth\"",
+      "description": "Line shape: `smooth`, `straight` or `stepline`.",
+      "name": "curve",
+      "type": "\"smooth\" | \"stepline\" | \"straight\""
+     },
+     {
+      "description": "Dash length of lines and radial bars in px (default solid).",
+      "name": "dashArray",
+      "type": "number"
+     },
+     {
+      "description": "Data labels above points sit on a badge.",
+      "name": "dataLabelBackground",
+      "type": "boolean"
+     },
+     {
+      "description": "Replaces the values printed on the chart (pie and donut labels get the percentage).",
+      "name": "dataLabelFormatter",
+      "type": "((value: number, series: number, index: number) => string)"
+     },
+     {
+      "description": "Prints the values on the chart (percentages on pie and donut slices).",
+      "name": "dataLabels",
+      "type": "boolean"
+     },
+     {
+      "description": "Uncontrolled initial hidden series.",
+      "name": "defaultHiddenSeries",
+      "type": "readonly number[]"
+     },
+     {
+      "description": "Uncontrolled initial zoom.",
+      "name": "defaultZoomRange",
+      "type": "ChartZoom | null"
+     },
+     {
+      "description": "Donut hole in % of the radius (10 to 95). Default 72.",
+      "name": "donutSize",
+      "type": "number"
+     },
+     {
+      "description": "Sankey charts: link opacity (0 to 1). 4.",
+      "name": "edgeOpacity",
+      "type": "number"
+     },
+     {
+      "description": "Sankey charts: the links (`{ source, target, value, color }`, node ids).",
+      "name": "edges",
+      "type": "readonly ChartSankeyEdge[]"
+     },
+     {
+      "description": "Pie, donut and radial bar: end angle in degrees. Default 360.",
+      "name": "endAngle",
+      "type": "number"
+     },
+     {
+      "default": "\"gradient\"",
+      "description": "Area fill.",
+      "name": "fill",
+      "type": "\"gradient\" | \"solid\""
+     },
+     {
+      "description": "Synchronized charts: charts of one group share the active category and the zoom.",
+      "name": "group",
+      "type": "string"
+     },
+     {
+      "description": "Plot height in px. Default 320.",
+      "name": "height",
+      "type": "number"
+     },
+     {
+      "description": "Controlled: indexes of the series (pie, donut, radial bar: categories) hidden through the legend.",
+      "name": "hiddenSeries",
+      "type": "readonly number[]"
+     },
+     {
+      "description": "Bars run left to right, categories down the side.",
+      "name": "horizontal",
+      "type": "boolean"
+     },
+     {
+      "description": "Stock charts: indicators of the first series (the price), such as `{ type: \"sma\", period: 20 }`. Overlays (`sma`, `ema`, `bollinger`, `vwap`, `donchian`, `keltner`) draw over the price; `volume`, `rsi`, `macd`, `stochastic`, `atr`, `cci` and `pvt` get a pane each.",
+      "name": "indicators",
+      "type": "readonly ChartIndicator[]"
+     },
+     {
+      "description": "Accessible name of the chart and the caption of its data table.",
+      "name": "label",
+      "required": true,
+      "type": "string"
+     },
+     {
+      "description": "Replaces the x text in axis labels, the tooltip title and the table.",
+      "name": "labelFormatter",
+      "type": "((x: string | number) => string)"
+     },
+     {
+      "default": "\"top\"",
+      "description": "Never shown for a single series.",
+      "name": "legend",
+      "type": "\"bottom\" | \"none\" | \"right\" | \"top\""
+     },
+     {
+      "description": "Legend items show a value: the slice's or ring's, or the series' last one.",
+      "name": "legendValues",
+      "type": "boolean"
+     },
+     {
+      "default": "\"en-US\"",
+      "description": "Locale of numbers and month names.",
+      "name": "locale",
+      "type": "string"
+     },
+     {
+      "description": "Localized texts: part labels (\"Minimum\", \"Q1\"…), tool names and the export error.",
+      "name": "localeText",
+      "type": "Readonly<Partial<Record<\"exportFailed\" | \"toolbar\" | ChartPart | ChartTool, string>>>"
+     },
+     {
+      "description": "Marker radius of line and area points in px (default none; scatter 5).",
+      "name": "markerSize",
+      "type": "number"
+     },
+     {
+      "description": "Stock charts: a navigator under the chart (the whole price line, the zoom as a brush).",
+      "name": "navigator",
+      "type": "boolean"
+     },
+     {
+      "description": "Sankey charts: node thickness along the flow in px. Default 20.",
+      "name": "nodeWidth",
+      "type": "number"
+     },
+     {
+      "description": "Sankey charts: node titles and colors (`{ id, title, color }`); nodes without links aren't drawn.",
+      "name": "nodes",
+      "type": "readonly ChartSankeyNode[]"
+     },
+     {
+      "description": "Called when the active category or point changes (pointer, touch or keyboard).",
+      "name": "onActiveChange",
+      "type": "((active: ChartActive | null) => void)"
+     },
+     {
+      "description": "Called with the new hidden series when a legend item is toggled.",
+      "name": "onHiddenSeriesChange",
+      "type": "((hidden: number[]) => void)"
+     },
+     {
+      "description": "Called with the new zoom: the chart's own gestures (`\"user\"`), its group or a brush.",
+      "name": "onZoomRangeChange",
+      "type": "((range: ChartZoom | null, reason: ChartZoomReason) => void)"
+     },
+     {
+      "description": "Sankey charts: the flow runs left to right (default) or top to bottom.",
+      "name": "orientation",
+      "type": "\"horizontal\" | \"vertical\""
+     },
+     {
+      "description": "Stock charts: height of each indicator pane in px. Default 120.",
+      "name": "paneHeight",
+      "type": "number"
+     },
+     {
+      "description": "Series: values per category, `[x, y]` pairs (scatter, dates) or `{ x, y, color }`. Every type but `sankey` (which takes `nodes` and `edges`).",
+      "name": "series",
+      "type": "readonly ChartSeries[]"
+     },
+     {
+      "description": "No axes, grid or legend: the chart fills its container (cards, table cells). Its height is the container's, at least `height` (default 40px).",
+      "name": "sparkline",
+      "type": "boolean"
+     },
+     {
+      "description": "Stacks the series on each other (bars, lines, areas).",
+      "name": "stacked",
+      "type": "boolean"
+     },
+     {
+      "description": "Pie, donut and radial bar: start angle in degrees, clockwise from 12 o'clock. Default 0.",
+      "name": "startAngle",
+      "type": "number"
+     },
+     {
+      "description": "A toolbar with zoom buttons (with `zoom`) and downloads (SVG, PNG, CSV).",
+      "name": "toolbar",
+      "type": "boolean"
+     },
+     {
+      "description": "Donut and radial bar center: the total (default the sum; radial bars the average).",
+      "name": "total",
+      "type": "number"
+     },
+     {
+      "description": "Donut and radial bar center: the label of the total (\"Total\"); no total without it.",
+      "name": "totalLabel",
+      "type": "string"
+     },
+     {
+      "description": "Radial bar track thickness in % of the bar. Default 50.",
+      "name": "trackWidth",
+      "type": "number"
+     },
+     {
+      "default": "\"line\"",
+      "description": "`area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar` or `radar`. Pie, donut and radial bar draw the first series, one slice or ring per category.",
+      "name": "type",
+      "type": "ChartType"
+     },
+     {
+      "description": "Replaces the value text in the tooltip, the table and the value axis (`series` -1).",
+      "name": "valueFormatter",
+      "type": "((value: number, series: number) => string)"
+     },
+     {
+      "description": "Text before every value (\"$\").",
+      "name": "valuePrefix",
+      "type": "string"
+     },
+     {
+      "description": "Text after every value (\"%\").",
+      "name": "valueSuffix",
+      "type": "string"
+     },
+     {
+      "description": "9). 18.",
+      "name": "whitespace",
+      "type": "number"
+     },
+     {
+      "description": "Header of the data table's first column.",
+      "name": "xLabel",
+      "type": "string"
+     },
+     {
+      "default": "\"category\"",
+      "description": "(`\"numeric\"` for scatter).",
+      "name": "xType",
+      "type": "\"category\" | \"datetime\" | \"numeric\""
+     },
+     {
+      "description": "Highest value on the value axis; radial bars: the value of a full ring (default 100).",
+      "name": "yMax",
+      "type": "number"
+     },
+     {
+      "description": "Lowest value on the value axis (default from the data).",
+      "name": "yMin",
+      "type": "number"
+     },
+     {
+      "description": "Title of the value axis.",
+      "name": "yTitle",
+      "type": "string"
+     },
+     {
+      "description": "Zoom and pan the x axis (mouse, touch, Ctrl + wheel and keys).",
+      "name": "zoom",
+      "type": "boolean"
+     },
+     {
+      "description": "Controlled zoom: the visible window of the x axis (category indexes or x values), or `null`.",
+      "name": "zoomRange",
+      "type": "ChartZoom | null"
+     }
+    ]
+   }
+  }
+ ],
+ "format": 1,
+ "name": "chart",
+ "title": "Chart",
+ "types": [
+  {
+   "name": "ChartActive",
+   "type": "{ readonly kind: \"index\"; readonly index: number; } | { readonly kind: \"mark\"; readonly mark: number; }"
+  },
+  {
+   "name": "ChartAppendData",
+   "type": "readonly { readonly data: readonly ChartPointInput[]; }[]"
+  },
+  {
+   "name": "ChartExportFormat",
+   "type": "\"csv\" | \"png\" | \"svg\""
+  },
+  {
+   "name": "ChartPart",
+   "type": "\"close\" | \"end\" | \"high\" | \"incoming\" | \"low\" | \"max\" | \"median\" | \"min\" | \"open\" | \"outgoing\" | \"q1\" | \"q3\" | \"source\" | \"start\" | \"target\" | \"volume\" | \"y\" | \"z\""
+  },
+  {
+   "name": "ChartPointInput",
+   "type": "number | { readonly x?: string | number | Date; readonly y: number | readonly ChartRangeValue[] | null; readonly z?: number | undefined; readonly color?: ChartColor | undefined; readonly v?: number | undefined; } | readonly [x: string | number | Date, y: number | readonly ChartRangeValue[] | null, z?: number] | null"
+  },
+  {
+   "name": "ChartRangeValue",
+   "type": "string | number | Date"
+  },
+  {
+   "name": "ChartTool",
+   "type": "\"csv\" | \"pan\" | \"png\" | \"reset\" | \"svg\" | \"zoomIn\" | \"zoomOut\""
+  },
+  {
+   "name": "ChartType",
+   "type": "\"area\" | \"bar\" | \"boxPlot\" | \"bubble\" | \"candlestick\" | \"donut\" | \"funnel\" | \"heatmap\" | \"line\" | \"pie\" | \"polarArea\" | \"radar\" | \"radialBar\" | \"rangeArea\" | \"rangeBar\" | \"sankey\" | \"scatter\" | \"slope\" | \"timeline\" | \"treemap\""
+  },
+  {
+   "name": "ChartZoomReason",
+   "type": "\"brush\" | \"group\" | \"user\""
+  }
+ ]
+}

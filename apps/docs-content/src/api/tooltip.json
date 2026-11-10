@@ -1,0 +1,254 @@
+{
+ "css": [
+  {
+   "name": "--ok-duration-shortest",
+   "value": "150ms"
+  },
+  {
+   "name": "--ok-easing-decelerate",
+   "value": "cubic-bezier(0, 0, 0.2, 1)"
+  },
+  {
+   "name": "--ok-font-family",
+   "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
+  },
+  {
+   "name": "--ok-font-size-xs",
+   "value": "0.75rem"
+  },
+  {
+   "name": "--ok-font-weight-medium",
+   "value": "500"
+  },
+  {
+   "name": "--ok-palette-common-white",
+   "value": "#FFFFFF"
+  },
+  {
+   "name": "--ok-palette-grey-700",
+   "value": "#454F5B"
+  },
+  {
+   "name": "--ok-palette-grey-800",
+   "value": "#1C252E"
+  },
+  {
+   "name": "--ok-radius-sm",
+   "value": "6px"
+  },
+  {
+   "name": "--ok-spacing",
+   "value": "0.25rem"
+  },
+  {
+   "name": "--ok-z-tooltip",
+   "value": "1500"
+  }
+ ],
+ "entries": [
+  {
+   "html": {
+    "attribute": "data-ok-tooltip",
+    "events": [
+     {
+      "cancelable": false,
+      "description": "After the tooltip hid.",
+      "detail": "undefined",
+      "name": "ok:tooltip:close"
+     },
+     {
+      "cancelable": false,
+      "description": "After the tooltip showed for `trigger`.",
+      "detail": "{ trigger: Element | null; }",
+      "name": "ok:tooltip:open"
+     }
+    ],
+    "methods": [
+     {
+      "description": "Hides the tooltip.",
+      "kind": "method",
+      "name": "hide",
+      "type": "() => void"
+     },
+     {
+      "description": "Whether the tooltip shows.",
+      "kind": "property",
+      "name": "isOpen",
+      "type": "boolean"
+     },
+     {
+      "description": "Shows it next to `trigger` (default: the last trigger, else the first one in the page).",
+      "kind": "method",
+      "name": "show",
+      "type": "(trigger?: Element | undefined) => void"
+     }
+    ],
+    "options": [
+     {
+      "attr": "data-ok-placement",
+      "default": "bottom",
+      "description": "Side of the trigger and alignment.",
+      "kind": "style",
+      "name": "placement",
+      "values": [
+       "top-start",
+       "top",
+       "top-end",
+       "bottom-start",
+       "bottom",
+       "bottom-end",
+       "left-start",
+       "left",
+       "left-end",
+       "right-start",
+       "right",
+       "right-end"
+      ]
+     },
+     {
+      "attr": "data-ok-arrow",
+      "description": "Draws an arrow pointing at the trigger.",
+      "kind": "flag",
+      "name": "arrow"
+     },
+     {
+      "attr": "data-ok-transition",
+      "default": "grow",
+      "description": "Opening animation: grows, fades or zooms in.",
+      "kind": "style",
+      "name": "transition",
+      "optional": true,
+      "values": [
+       "grow",
+       "fade",
+       "zoom"
+      ]
+     },
+     {
+      "attr": "data-ok-enter-delay",
+      "default": 100,
+      "description": "Milliseconds before it opens on hover.",
+      "kind": "number",
+      "min": 0,
+      "name": "enterDelay"
+     },
+     {
+      "attr": "data-ok-leave-delay",
+      "default": 0,
+      "description": "Milliseconds before it closes on leave.",
+      "kind": "number",
+      "min": 0,
+      "name": "leaveDelay"
+     },
+     {
+      "attr": "data-ok-open",
+      "description": "Open state (`open` / `onOpenChange`; HTML: hover and focus).",
+      "event": "ok:tooltip:open",
+      "kind": "state",
+      "name": "open"
+     }
+    ],
+    "parts": [
+     {
+      "description": "The arrow that points at the trigger (shown with `data-ok-arrow`).",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-tooltip-arrow"
+     }
+    ],
+    "runtime": "tooltip"
+   },
+   "name": "Tooltip",
+   "react": {
+    "description": "Wraps one trigger element and renders a `div[role=tooltip][popover=manual]` after it. Hover (with delays), keyboard focus and a touch long press open it; Escape, blur and leaving close it. The tooltip itself is hoverable.",
+    "native": "HTMLElement",
+    "props": [
+     {
+      "description": "Draws an arrow pointing at the trigger.",
+      "name": "arrow",
+      "type": "boolean"
+     },
+     {
+      "description": "One element that takes focus and pointer events (a button, a link, a focusable span).",
+      "name": "children",
+      "required": true,
+      "type": "ReactElement<unknown, string | JSXElementConstructor<any>>"
+     },
+     {
+      "description": "The tooltip describes its trigger (`aria-describedby`) instead of naming it (`aria-labelledby`, the default: use it for icon-only buttons).",
+      "name": "describeChild",
+      "type": "boolean"
+     },
+     {
+      "description": "Doesn't show the tooltip on focus.",
+      "name": "disableFocusListener",
+      "type": "boolean"
+     },
+     {
+      "description": "Doesn't show the tooltip on hover.",
+      "name": "disableHoverListener",
+      "type": "boolean"
+     },
+     {
+      "description": "Doesn't show the tooltip on a long press.",
+      "name": "disableTouchListener",
+      "type": "boolean"
+     },
+     {
+      "description": "Default 100 ms.",
+      "name": "enterDelay",
+      "type": "number"
+     },
+     {
+      "description": "Default 700 ms (touch: a long press opens the tooltip).",
+      "name": "enterTouchDelay",
+      "type": "number"
+     },
+     {
+      "description": "Default 0 ms.",
+      "name": "leaveDelay",
+      "type": "number"
+     },
+     {
+      "description": "Default 1500 ms.",
+      "name": "leaveTouchDelay",
+      "type": "number"
+     },
+     {
+      "description": "Called when the tooltip shows or hides.",
+      "name": "onOpenChange",
+      "type": "((open: boolean) => void)"
+     },
+     {
+      "description": "Controlled open state.",
+      "name": "open",
+      "type": "boolean"
+     },
+     {
+      "default": "\"bottom\"",
+      "description": "Side of the trigger and alignment.",
+      "name": "placement",
+      "type": "\"bottom\" | \"bottom-end\" | \"bottom-start\" | \"left\" | \"left-end\" | \"left-start\" | \"right\" | \"right-end\" | \"right-start\" | \"top\" | \"top-end\" | \"top-start\""
+     },
+     {
+      "description": "The text. An empty title renders no tooltip.",
+      "name": "title",
+      "required": true,
+      "type": "ReactNode"
+     },
+     {
+      "default": "\"grow\"",
+      "description": "Opening animation.",
+      "name": "transition",
+      "type": "\"fade\" | \"grow\" | \"zoom\""
+     }
+    ]
+   }
+  }
+ ],
+ "format": 1,
+ "name": "tooltip",
+ "title": "Tooltip"
+}

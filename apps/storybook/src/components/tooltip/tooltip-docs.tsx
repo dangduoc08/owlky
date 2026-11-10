@@ -1,4 +1,6 @@
 import { tooltipOptions } from "@owlky/core";
+import tooltipApi from "@owlky/docs-content/api/tooltip.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { Fab, IconButton, Tooltip } from "@owlky/react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
@@ -93,6 +95,7 @@ export function DeleteButton() {
 - The text is white on dark grey, with a contrast ratio well above 4.5:1.
 - Don't put links or buttons in a tooltip: it closes when focus moves. Use a Popover instead.`,
   },
+  apiReferenceSection(tooltipApi),
 ];
 
 const PREVIEWS = {

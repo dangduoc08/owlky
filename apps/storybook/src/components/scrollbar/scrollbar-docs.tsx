@@ -1,4 +1,6 @@
 import { scrollbarOptions } from "@owlky/core";
+import scrollbarApi from "@owlky/docs-content/api/scrollbar.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { Scrollbar } from "@owlky/react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
@@ -73,6 +75,7 @@ export function ReleaseNotes() {
 - The scrollbar shows while focus is inside, so keyboard users can see where they are.
 - On Windows and Linux, the scrollbar takes a little space next to the content; on macOS, iOS and Android, the system's overlay scrollbars are used.`,
   },
+  apiReferenceSection(scrollbarApi),
 ];
 
 const PREVIEWS = {

@@ -13,31 +13,93 @@ import {
   readSourceDeclaration,
 } from "@owlky/core/map";
 import { defineComponent } from "../../runtime/define.js";
-import type { ComponentInstance } from "../../runtime/types.js";
+import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
+
+/** Events of this component (`ok:<name>:<event>` on the root). */
+export interface MapEvents {
+  /** After the map and its first style loaded. */
+  load: EventSpec<MapEvent>;
+  /** After MapLibre reported an error (a tile or a style failed). */
+  error: EventSpec<MapEvent>;
+  /** After the map finished drawing. */
+  idle: EventSpec<MapEvent>;
+  /** When a move (pan, zoom, rotation) starts. */
+  movestart: EventSpec<MapEvent>;
+  /** While the map moves. */
+  move: EventSpec<MapEvent>;
+  /** After a move ended. */
+  moveend: EventSpec<MapEvent>;
+  /** After a zoom ended. */
+  zoomend: EventSpec<MapEvent>;
+  /** After a rotation ended. */
+  rotateend: EventSpec<MapEvent>;
+  /** After a pitch change ended. */
+  pitchend: EventSpec<MapEvent>;
+  /** After a click on the map. */
+  click: EventSpec<MapEvent>;
+  /** After a double click on the map. */
+  dblclick: EventSpec<MapEvent>;
+  /** After a right click or a long press on the map. */
+  contextmenu: EventSpec<MapEvent>;
+  /** While the pointer moves over the map. */
+  mousemove: EventSpec<MapEvent>;
+  /** When the pointer enters the map. */
+  mouseenter: EventSpec<MapEvent>;
+  /** When the pointer leaves the map. */
+  mouseleave: EventSpec<MapEvent>;
+  /** After a popup opened (dispatched on the popup). */
+  popupopen: EventSpec<Record<string, never>>;
+  /** Before a popup closes (dispatched on the popup). Call `preventDefault()` to keep it open. */
+  popupclose: EventSpec<{ reason: string }, true>;
+  /** When a draggable marker starts moving (dispatched on the marker). */
+  markerdragstart: EventSpec<{ lngLat: { lng: number; lat: number } }>;
+  /** While a marker is dragged (dispatched on the marker). */
+  markerdrag: EventSpec<{ lngLat: { lng: number; lat: number } }>;
+  /** After a marker was dropped; its `data-ok-longitude` and `data-ok-latitude` hold the new place. */
+  markerdragend: EventSpec<{ lngLat: { lng: number; lat: number } }>;
+  /** After the map entered or left full screen. */
+  fullscreen: EventSpec<{ fullscreen: boolean }>;
+  /** After the geolocate control found the user's position. */
+  geolocate: EventSpec<{ coords: { longitude: number; latitude: number; accuracy: number } }>;
+  /** After the geolocate control failed (`code` from the Geolocation API). */
+  geolocateerror: EventSpec<{ code: number; message: string }>;
+  /** After tracking the user's location started or stopped. */
+  trackuserlocation: EventSpec<{ tracking: boolean }>;
+  /** After the map fell back to its static content (no WebGL, or MapLibre failed). */
+  fallback: EventSpec<{ reason: string }>;
+}
 
 export interface MapInstance extends ComponentInstance {
   /** The core controller. */
   readonly controller: MapController;
   /** The MapLibre map (escape hatch), or `null` without WebGL. */
   readonly map: MapLibreMap | null;
+  /** The camera: longitude, latitude, zoom, pitch and bearing. */
   readonly viewState: MapViewState;
+  /** Flies the camera to a place, with an animation along a curve. */
   flyTo: MapController["flyTo"];
+  /** Moves the camera to a place, with an animation. */
   easeTo: MapController["easeTo"];
+  /** Moves the camera to a place at once. */
   jumpTo: MapController["jumpTo"];
+  /** Moves the camera so that the bounds fit the map. */
   fitBounds: MapController["fitBounds"];
   /** Replaces the data of a GeoJSON source (no markup change; for animations). */
   setSourceData(id: string, data: unknown): void;
+  /** The zoom level at which a cluster of a clustered source breaks apart. */
   getClusterExpansionZoom(sourceId: string, clusterId: number): Promise<number>;
   /** Shows a popup of this map (an element or its id). */
   openPopup(popup: Element | string): void;
   /** Hides a popup of this map; no event. */
   closePopup(popup: Element | string): void;
+  /** Whether the map is in full screen. */
   readonly fullscreen: boolean;
+  /** Enters or leaves full screen. */
   setFullscreen(fullscreen: boolean): void;
 }
 
 /** Map events re-dispatched as `ok:map:<type>` (detail: the core `MapEvent`). */
-const EMITTED: readonly MapEventType[] = [
+const EMITTED = [
   "load",
   "error",
   "idle",
@@ -53,7 +115,7 @@ const EMITTED: readonly MapEventType[] = [
   "mousemove",
   "mouseenter",
   "mouseleave",
-];
+] as const satisfies readonly MapEventType[];
 const VIEW = ["longitude", "latitude", "zoom", "pitch", "bearing"] as const;
 const SETTINGS_ATTRIBUTES = [
   ...VIEW.map((key) => mapOptions.options[key].attr),
@@ -154,7 +216,7 @@ function readFlyTarget(trigger: Element) {
  *          ok:map:geolocate ({ coords }), ok:map:geolocateerror ({ code, message }),
  *          ok:map:trackuserlocation ({ tracking }), ok:map:fallback ({ reason }).
  */
-export const map = defineComponent<MapInstance>({
+export const map = defineComponent<MapInstance, MapEvents>({
   name: "map",
   selector: "[data-ok-map]",
 
@@ -171,7 +233,12 @@ export const map = defineComponent<MapInstance>({
         ? node
         : null;
     };
-    const dispatch = (target: Element, type: string, detail: unknown, cancelable = false) =>
+    const dispatch = <K extends keyof MapEvents>(
+      target: Element,
+      type: K,
+      detail: MapEvents[K]["detail"],
+      cancelable = false,
+    ) =>
       target.dispatchEvent(
         new CustomEvent(`ok:map:${type}`, { bubbles: true, cancelable, detail }),
       );
@@ -207,7 +274,9 @@ export const map = defineComponent<MapInstance>({
           marker.setAttribute("data-ok-longitude", String(Math.round(lngLat.lng * 1e6) / 1e6));
           marker.setAttribute("data-ok-latitude", String(Math.round(lngLat.lat * 1e6) / 1e6));
         }
-        dispatch(marker, phase === "drag" ? "markerdrag" : `markerdrag${phase}`, { lngLat });
+        dispatch(marker, phase === "drag" ? "markerdrag" : (`markerdrag${phase}` as const), {
+          lngLat,
+        });
       },
       onFullscreenChange: (fullscreen) => emit("fullscreen", { fullscreen }),
       onGeolocate: (position) =>

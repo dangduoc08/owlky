@@ -1,4 +1,6 @@
 import { typographyOptions } from "@owlky/core";
+import typographyApi from "@owlky/docs-content/api/typography.json" with { type: "json" };
+import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { Typography } from "@owlky/react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
@@ -145,6 +147,7 @@ export function FileName() {
 - The text tones \`textPrimary\` and \`textSecondary\` reach a contrast ratio of at least 4.5:1 on the theme's backgrounds. Palette colors use their main tone, which can be lower for small text, such as \`warning\` on white: keep them for large or short text.
 - \`textDisabled\` is for inactive content only.`,
   },
+  apiReferenceSection(typographyApi),
 ];
 
 const PREVIEWS = {

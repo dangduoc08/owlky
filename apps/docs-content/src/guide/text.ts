@@ -4,6 +4,8 @@
  * Writing style: AGENTS.md → "Writing documentation".
  */
 
+import type { ApiReferenceData } from "./api-data.js";
+
 export interface GuideSection {
   id: string;
   title: string;
@@ -13,6 +15,8 @@ export interface GuideSection {
   react?: string;
   /** Replaces `body` on a host whose own UI differs (Storybook's sidebar and toolbar). */
   bodyByHost?: { website?: string };
+  /** The generated API reference this section shows (`apiReferenceSection`). */
+  api?: ApiReferenceData;
 }
 
 /** An implementation shown in the code tabs. */
