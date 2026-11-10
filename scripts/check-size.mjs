@@ -161,8 +161,10 @@ const budgets = [
   // since the docs examples became complete (roadmap 3.4, `check:docs`): the guides' HTML repeats
   // whole snippets (data grids, date pickers, the editor, the lightbox) instead of shortened
   // copies, about 0.1 MB gzip.
+  // 1.25 MB since Phase 4 batch E shoulds (chart stacks, cues, tooltips, legends; button, text field,
+  // select and picker field options: their stories, docs sections and API entries): 1202.0 kB.
   // 1.2 MB since Phase 4 batch E (new chart and data grid stories, sections and API entries): 1154.6 kB.
-  ["packages/mcp/manifest.json", 1_200_000, "MCP manifest (npm tarball, not a browser download)"],
+  ["packages/mcp/manifest.json", 1_250_000, "MCP manifest (npm tarball, not a browser download)"],
 ];
 
 let failed = false;
