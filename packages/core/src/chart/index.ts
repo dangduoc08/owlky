@@ -27,6 +27,20 @@ export {
   readChartAnnotations,
 } from "./chart-annotations.js";
 export {
+  axisScale,
+  type ChartAxisSpec,
+  type ChartValueScale,
+  type ChartYAxis,
+  chartSeriesAxes,
+  chartYAxes,
+  chartYAxesText,
+  countScale,
+  logScale,
+  parseChartYAxes,
+  scaleValue,
+  withChartAxes,
+} from "./chart-axes.js";
+export {
   type ChartExportFormat,
   chartCsv,
   chartExportFormats,
@@ -126,6 +140,17 @@ export {
   layoutSankey,
   readChartSankeyTable,
 } from "./chart-sankey.js";
+export {
+  type ChartDataPoint,
+  type ChartSelectionDetail,
+  chartActiveMarks,
+  chartMarkAt,
+  chartMarkPoint,
+  chartSelectedNodes,
+  chartSelection,
+  hasChartDataPoint,
+  toggleChartSelection,
+} from "./chart-select.js";
 export { type ChartStockOptions, layoutStock } from "./chart-stock.js";
 export {
   CHART_TEXT_ATTRIBUTES,

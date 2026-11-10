@@ -38,6 +38,11 @@ export interface ChartGestureHost {
 export interface ChartGestures {
   /** A drag or pinch is in progress (owners skip their tooltip updates). */
   readonly dragging: boolean;
+  /**
+   * The last press moved the chart (a drag, a pan or a pinch; 4px or more): owners skip the
+   * click that ends it (data point selection).
+   */
+  readonly moved: boolean;
   destroy(): void;
 }
 
@@ -60,6 +65,8 @@ export function createChartGestures(plot: HTMLElement, host: ChartGestureHost): 
   const { signal } = controller;
   const pointers = new Map<number, number>();
   let drag: Drag | undefined;
+  let moved = false;
+  let pressX = 0;
 
   /** A client x position in the layout's px. */
   const local = (clientX: number) => {
@@ -104,6 +111,10 @@ export function createChartGestures(plot: HTMLElement, host: ChartGestureHost): 
   };
 
   const start = (event: PointerEvent) => {
+    if (pointers.size === 0) {
+      moved = false;
+      pressX = event.clientX;
+    }
     const layout = host.layout();
     const mode = host.mode();
     if (!layout?.x || mode === "none" || (event.pointerType === "mouse" && event.button !== 0))
@@ -157,6 +168,7 @@ export function createChartGestures(plot: HTMLElement, host: ChartGestureHost): 
     if (!pointers.has(event.pointerId) || !drag) return;
     const x = local(event.clientX);
     pointers.set(event.pointerId, x);
+    if (drag.kind === "pinch" || Math.abs(event.clientX - pressX) >= 4) moved = true;
     const layout = view();
     if (!layout) return;
     // Navigator drags act like a brush on the zoom (ADR-0047).
@@ -235,6 +247,9 @@ export function createChartGestures(plot: HTMLElement, host: ChartGestureHost): 
   return {
     get dragging() {
       return drag !== undefined && (drag.kind !== "select" || drag.moved);
+    },
+    get moved() {
+      return moved;
     },
     destroy() {
       controller.abort();

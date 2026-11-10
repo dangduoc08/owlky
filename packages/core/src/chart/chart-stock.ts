@@ -97,7 +97,7 @@ export function layoutStock(
   const last = panes.length - 1;
   // Volumes: compact ticks ("1.2M"), the axis stays narrow.
   const compact = new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 });
-  const lay = (index: number, plotLeft?: number) => {
+  const lay = (index: number, plotLeft?: number, plotRight?: number) => {
     const pane = panes[index] as (typeof panes)[number];
     const height = index === 0 ? mainHeight : paneHeight;
     const paneFormat: ChartFormat =
@@ -120,15 +120,24 @@ export function layoutStock(
       yMin: pane.scale?.min ?? (pane.pane === 0 ? options.yMin : undefined),
       yMax: pane.scale?.max ?? (pane.pane === 0 ? options.yMax : undefined),
       yTitle: pane.pane === 0 ? options.yTitle : undefined,
+      // Several value axes (4.18.59) belong to the price pane; the x title to the last pane.
+      yAxes: pane.pane === 0 ? options.yAxes : undefined,
+      xTitle: index === last ? options.xTitle : undefined,
       dataLabels: pane.pane === 0 ? options.dataLabels : false,
       // The price scale fits the prices; oscillators keep their zero.
       ...(pane.pane === 0 ? { zeroBased: false } : {}),
       ...(plotLeft !== undefined ? { plotLeft } : {}),
+      ...(plotRight !== undefined ? { plotRight } : {}),
     });
   };
-  // Two passes: measure every pane's value labels, then lay them out on the widest left edge.
-  const left = Math.max(...panes.map((_, i) => lay(i).plot.x));
-  const layouts = panes.map((_, i) => lay(i, left));
+  // Two passes: measure every pane's value labels, then lay them out on the widest edges (the
+  // right one holds `opposite` axes of the price pane).
+  const measured = panes.map((_, i) => lay(i));
+  const left = Math.max(...measured.map((layout) => layout.plot.x));
+  const right = Math.max(
+    ...measured.map((layout) => layout.width - layout.plot.x - layout.plot.width),
+  );
+  const layouts = panes.map((_, i) => lay(i, left, right));
   const main = layouts[0] as ChartLayout;
 
   const nodes: ChartNode[] = [];
@@ -186,6 +195,7 @@ export function layoutStock(
         ...mark,
         series: pane.global[mark.series] ?? mark.series,
         py: r2(mark.py + top),
+        ...(mark.box ? { box: { ...mark.box, y: r2(mark.box.y + top) } } : {}),
       });
     top += layout.height;
   });

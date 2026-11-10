@@ -249,6 +249,12 @@
       "name": "ok:chart:active"
      },
      {
+      "cancelable": false,
+      "description": "After a click, Enter or Space selected or cleared a point, slice or cell (one event per point it toggled), with the point, whether it is selected now and every selected point.",
+      "detail": "ChartSelectionDetail",
+      "name": "ok:chart:select"
+     },
+     {
       "cancelable": true,
       "description": "Before a legend item hides or shows a series. Call `preventDefault()` to refuse.",
       "detail": "{ index: number; hidden: boolean; hiddenSeries: number[]; }",
@@ -293,6 +299,12 @@
       "type": "() => void"
      },
      {
+      "description": "The selected points (`{ seriesIndex, dataPointIndex }`), in the order they were selected.",
+      "kind": "property",
+      "name": "selectedDataPoints",
+      "type": "readonly ChartDataPoint[]"
+     },
+     {
       "description": "Shows the tooltip for a category or point (`null` hides it; no event).",
       "kind": "method",
       "name": "setActive",
@@ -314,13 +326,25 @@
       "description": "Localized texts: tool names, the export error and part labels (tables carry their own).",
       "kind": "method",
       "name": "setLocaleText",
-      "type": "(text: Readonly<Partial<Record<\"exportFailed\" | \"toolbar\" | ChartPart | ChartTool, string>>>) => void"
+      "type": "(text: Readonly<Partial<Record<\"exportFailed\" | \"selected\" | \"toolbar\" | ChartPart | ChartTool, string>>>) => void"
+     },
+     {
+      "description": "Selects exactly these points (invalid entries are dropped; no event).",
+      "kind": "method",
+      "name": "setSelectedDataPoints",
+      "type": "(points: readonly ChartDataPoint[]) => void"
      },
      {
       "description": "Zooms (`null`: the whole axis); its group and brush charts follow. No event.",
       "kind": "method",
       "name": "setZoomRange",
       "type": "(range: ChartZoom | null) => void"
+     },
+     {
+      "description": "Selects a point, or clears it when it is selected (as a click does: without `data-ok-allow-multiple-data-points-selection`, the others are cleared; no event).",
+      "kind": "method",
+      "name": "toggleDataPointSelection",
+      "type": "(seriesIndex: number, dataPointIndex: number) => void"
      },
      {
       "description": "Replaces the data (and the categories, when given): rewrites the data table in place and redraws once. The active item and hidden series stay (by position). No event.",
@@ -786,11 +810,24 @@
       "name": "paneHeight"
      },
      {
+      "attr": "data-ok-allow-multiple-data-points-selection",
+      "description": "Clicks and Enter or Space add points to the selection instead of replacing it.",
+      "kind": "flag",
+      "name": "allowMultipleDataPointsSelection"
+     },
+     {
       "attr": "aria-pressed",
       "description": "Indexes of the series hidden through the legend (`aria-pressed=\"false\"` on their buttons); categories in pie, donut and radial bar charts.",
       "event": "ok:chart:toggle",
       "kind": "state",
       "name": "hiddenSeries"
+     },
+     {
+      "attr": "instance.selectedDataPoints",
+      "description": "The selected points, `{ seriesIndex, dataPointIndex }[]`: a click selects the point, slice or cell under the pointer, Enter or Space the active one.",
+      "event": "ok:chart:select",
+      "kind": "state",
+      "name": "selectedDataPoints"
      },
      {
       "attr": "instance.zoomRange",
@@ -951,12 +988,13 @@
       ]
      },
      {
-      "description": "The title of an axis.",
-      "elements": [
-       "text"
-      ],
-      "kind": "part",
-      "name": "data-ok-chart-axis-title"
+      "description": "The title of an axis: the value axes' are rotated; `x` marks the x axis title.",
+      "kind": "value",
+      "name": "data-ok-chart-axis-title",
+      "value": [
+       "",
+       "x"
+      ]
      },
      {
       "description": "A band of a range area or a range bar.",
@@ -1269,6 +1307,24 @@
       "name": "data-ok-chart-radial"
      },
      {
+      "description": "The outlines of the selected points, slices, blocks and cells. Absent without a selection.",
+      "elements": [
+       "g"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-selected"
+     },
+     {
+      "description": "The outline of one selected point (a ring), block or cell (a frame), or slice.",
+      "elements": [
+       "circle",
+       "path",
+       "rect"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-selected-mark"
+     },
+     {
       "description": "The rectangle drawn while selecting a zoom window.",
       "elements": [
        "rect"
@@ -1419,6 +1475,14 @@
       "name": "data-ok-chart-tooltip-rows"
      },
      {
+      "description": "The tooltip's \"Selected\" line, when its item has a selected point.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-tooltip-state"
+     },
+     {
       "description": "The title of the tooltip.",
       "elements": [
        "div"
@@ -1513,6 +1577,11 @@
       "name": "data-ok-major"
      },
      {
+      "description": "On a value axis group: the axis is on the right of the plot.",
+      "kind": "state",
+      "name": "data-ok-opposite"
+     },
+     {
       "description": "On a data table header cell: which value of a point the column holds.",
       "kind": "value",
       "name": "data-ok-part",
@@ -1558,6 +1627,12 @@
       "value": "string"
      },
      {
+      "description": "The title of the x axis, drawn under its labels.",
+      "kind": "value",
+      "name": "data-ok-x-title",
+      "value": "string"
+     },
+     {
       "description": "On an annotation: the end of an x range.",
       "kind": "value",
       "name": "data-ok-x2",
@@ -1567,6 +1642,12 @@
       "description": "On an annotation: the y value.",
       "kind": "value",
       "name": "data-ok-y",
+      "value": "string"
+     },
+     {
+      "description": "On a data table column header: the index of the value axis its series is drawn on.",
+      "kind": "value",
+      "name": "data-ok-y-axis",
       "value": "string"
      },
      {
@@ -1580,6 +1661,12 @@
       "kind": "value",
       "name": "data-ok-y2",
       "value": "string"
+     },
+     {
+      "description": "The value axes, such as `min 0 title Sales; opposite logarithmic title Visits`.",
+      "kind": "value",
+      "name": "data-ok-yaxis",
+      "value": "string"
      }
     ],
     "runtime": "chart"
@@ -1589,6 +1676,11 @@
     "description": "An SVG chart drawn by the shared core layout, with a legend that hides series, a tooltip for the pointer, touch and keyboard, and the data as a visually hidden table.",
     "native": "HTMLElement",
     "props": [
+     {
+      "description": "Clicks and Enter or Space add points to the selection instead of replacing it.",
+      "name": "allowMultipleDataPointsSelection",
+      "type": "boolean"
+     },
      {
       "description": "Series grow in when first drawn and move to new values (never with reduced motion).",
       "name": "animations",
@@ -1688,6 +1780,11 @@
       "type": "readonly number[]"
      },
      {
+      "description": "Uncontrolled initial selection.",
+      "name": "defaultSelectedDataPoints",
+      "type": "readonly ChartDataPoint[]"
+     },
+     {
       "description": "Uncontrolled initial zoom.",
       "name": "defaultZoomRange",
       "type": "ChartZoom | null"
@@ -1772,9 +1869,9 @@
       "type": "string"
      },
      {
-      "description": "Localized texts: part labels (\"Minimum\", \"Q1\"…), tool names and the export error.",
+      "description": "Localized texts: part labels (\"Minimum\", \"Q1\"…), tool names, the export error and `selected`.",
       "name": "localeText",
-      "type": "Readonly<Partial<Record<\"exportFailed\" | \"toolbar\" | ChartPart | ChartTool, string>>>"
+      "type": "Readonly<Partial<Record<\"exportFailed\" | \"selected\" | \"toolbar\" | ChartPart | ChartTool, string>>>"
      },
      {
       "description": "Marker radius of line and area points in px (default none; scatter 5).",
@@ -1802,6 +1899,11 @@
       "type": "((active: ChartActive | null) => void)"
      },
      {
+      "description": "Called for each point a click, Enter or Space selects or clears, with the point, whether it is selected now and every selected point (ApexCharts' `dataPointSelection`).",
+      "name": "onDataPointSelection",
+      "type": "((detail: ChartSelectionDetail) => void)"
+     },
+     {
       "description": "Called with the new hidden series when a legend item is toggled.",
       "name": "onHiddenSeriesChange",
       "type": "((hidden: number[]) => void)"
@@ -1820,6 +1922,11 @@
       "description": "Stock charts: height of each indicator pane in px. Default 120.",
       "name": "paneHeight",
       "type": "number"
+     },
+     {
+      "description": "Controlled: the selected points (`{ seriesIndex, dataPointIndex }`). A click selects the point, slice or cell under the pointer, Enter or Space the active one.",
+      "name": "selectedDataPoints",
+      "type": "readonly ChartDataPoint[]"
      },
      {
       "description": "Series: values per category, `[x, y]` pairs (scatter, dates) or `{ x, y, color }`. Every type but `sankey` (which takes `nodes` and `edges`).",
@@ -1893,6 +2000,11 @@
       "type": "string"
      },
      {
+      "description": "Title of the x axis, drawn under its labels (also the data table's first header by default).",
+      "name": "xTitle",
+      "type": "string"
+     },
+     {
       "default": "\"category\"",
       "description": "(`\"numeric\"` for scatter).",
       "name": "xType",
@@ -1912,6 +2024,11 @@
       "description": "Title of the value axis.",
       "name": "yTitle",
       "type": "string"
+     },
+     {
+      "description": "Value axes, as ApexCharts' `yaxis`: one object for the value axis, or a list for several (vertical charts with an x axis). Each takes `seriesName`, `opposite`, `logarithmic`, `logBase`, `reversed`, `tickAmount`, `min`, `max`, `title` and `show`. Series without a `seriesName` match go to the axis at their position.",
+      "name": "yaxis",
+      "type": "ChartYAxis | readonly ChartYAxis[]"
      },
      {
       "description": "Zoom and pan the x axis (mouse, touch, Ctrl + wheel and keys).",

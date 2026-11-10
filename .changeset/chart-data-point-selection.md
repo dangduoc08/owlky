@@ -1,0 +1,9 @@
+---
+"@owlky/core": minor
+"@owlky/styles": minor
+"@owlky/react": minor
+"@owlky/html": minor
+"@owlky/mcp": minor
+---
+
+Chart data point selection (ApexCharts `dataPointSelection`, `toggleDataPointSelection` and `states.active`). A click on the plot now selects the column, bar, box, candle, slice, ring, cell or point under the pointer (the nearest point within 16px), and a second click clears it; Enter or Space on the focused plot selects the item the tooltip shows (a category: the value of every visible series). Selected values get a 2px outline in the primary text color (`g[data-ok-chart-selected] › [data-ok-chart-selected-mark]`), and the tooltip of a selected item shows a **Selected** line (`div[data-ok-chart-tooltip-state]`, localizable as `localeText.selected`), so the state is announced and doesn't rely on color. A new selection replaces the previous one unless `allowMultipleDataPointsSelection` (`data-ok-allow-multiple-data-points-selection`) is set. React: `onDataPointSelection(detail)` with `seriesIndex`, `dataPointIndex`, `selected` and `selectedDataPoints`, and `selectedDataPoints` / `defaultSelectedDataPoints`. HTML: the `ok:chart:select` event with the same detail, and the instance's `selectedDataPoints`, `setSelectedDataPoints(list)` and `toggleDataPointSelection(seriesIndex, dataPointIndex)` (no events). Drags that zoom or pan, brush charts and Sankey charts don't select; the legend still hides series and slices. Core exports `chartMarkAt`, `chartActiveMarks`, `chartMarkPoint`, `chartSelectedNodes`, `chartSelection`, `hasChartDataPoint` and `toggleChartSelection`; chart marks carry `box` (blocks) and `point` (numeric axes), `chartTooltip` takes the selection, and `createChartGestures` reports `moved`. New story: Data point selection.

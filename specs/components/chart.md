@@ -45,9 +45,11 @@ figure[data-ok-chart][data-ok-type][data-ok-x-type][data-ok-curve][data-ok-legen
     svg[data-ok-chart-svg][aria-hidden][focusable=false][width][height][viewBox]
       defs › linearGradient[id][data-ok-color] › stop[data-ok-chart-stop]×2   (gradient areas)
       g[data-ok-chart-grid] › line[data-ok-chart-grid-line]
-      text[data-ok-chart-axis-title]?                    (yTitle, rotated)
+      text[data-ok-chart-axis-title]*                    (yTitle / yaxis[].title, rotated: -90° left, 90° opposite)
+      text[data-ok-chart-axis-title=x]?                  (xTitle, under the x labels)
       g[data-ok-chart-axis=x] › text[data-ok-chart-tick][data-ok-major]?
-      g[data-ok-chart-axis=y] › text[data-ok-chart-tick]
+      g[data-ok-chart-axis=y][data-ok-index]?[data-ok-opposite]? › text[data-ok-chart-tick]
+                                                         (one per drawn value axis; data-ok-index with several)
       g[data-ok-chart-crosshair] › rect[data-ok-chart-band] | line[data-ok-chart-crosshair-line]
       g[data-ok-chart-series-group]                      (areas, bars, lines, scatter: in that order)
         g[data-ok-chart-series][data-ok-type][data-ok-color][data-ok-index]
@@ -55,6 +57,9 @@ figure[data-ok-chart][data-ok-type][data-ok-x-type][data-ok-curve][data-ok-legen
           path[data-ok-chart-bar][data-ok-color]? · circle[data-ok-chart-marker][data-ok-color]?
       g[data-ok-chart-data-labels]?                      (dataLabels; only when a label fits)
         text[data-ok-chart-data-label="inside|outside"]  (inside slices / bars: white; outside: above points)
+      g[data-ok-chart-selected]?                         (selected points, 4.18.60; before the active group)
+        circle | rect | path[data-ok-chart-selected-mark] (ring around points, frame around blocks
+                                                          and cells, outline of slices and rings)
       g[data-ok-chart-active] › circle[data-ok-chart-active-marker][data-ok-color]
       g[data-ok-chart-center]?                           (donut / radial bar center)
         text[data-ok-chart-center-label] · text[data-ok-chart-center-value]
@@ -114,11 +119,13 @@ figure[data-ok-chart][data-ok-type][data-ok-x-type][data-ok-curve][data-ok-legen
       g[data-ok-chart-active]; g[data-ok-chart-pane-titles] › text[data-ok-chart-pane-title]
     data labels may also be text[data-ok-chart-data-label="plain"] (primary text on faint cells)
     div[data-ok-chart-tooltip][role=status][hidden]?
-      div[data-ok-chart-tooltip-title] + div[data-ok-chart-tooltip-rows]
+      div[data-ok-chart-tooltip-title] + div[data-ok-chart-tooltip-state]? ("Selected", localeText `selected`)
+        + div[data-ok-chart-tooltip-rows]
         div[data-ok-chart-tooltip-row] › span[data-ok-chart-tooltip-marker][data-ok-color] + span + span[data-ok-chart-tooltip-value]
   table[data-ok-chart-data]                              (HTML: the source; visually hidden once drawn)
     caption (the chart's name)
-    thead › tr › th[scope=col] (x label) + th[scope=col][data-ok-type]?[data-ok-color]? (one per series)
+    thead › tr › th[scope=col] (x label) + th[scope=col][data-ok-type]?[data-ok-color]?[data-ok-y-axis]? (one per series;
+      data-ok-y-axis: its value axis when the chart has several)
       Series of several values per point (box plot, range area, bubble): two header rows —
       tr › th[scope=col][rowspan=2] (x label) + th[scope=colgroup][colspan=n] (the series) |
            th[scope=col][rowspan=2] (single-value series)
@@ -146,6 +153,22 @@ value ticks about every 48px (vertical) or 200px (horizontal) on nice steps (1, 
 x labels are thinned to whole steps (every n categories, or whole days / months / years for dates)
 so they never overlap; dates with gaps (trading days) also drop a label that would come within 8px of the one before it. Label widths are estimated per glyph class, not measured, so the server,
 React and HTML lay out identically.
+
+Value axes (core `chart-axes.ts`, 4.18.59): `yaxis` as one object sets the value axis' scale
+(`logarithmic` with `logBase`, default 10: ticks at whole powers of the base, values ≤ 0 aren't
+drawn and log axes never stack; `reversed`: the highest value at the bottom, or the left for
+horizontal bars; `tickAmount`: exactly that many intervals on the smallest nice step that covers
+the data, evenly divided when `min` and `max` are both fixed; `min` / `max`, `title`, `show`).
+As a list (vertical charts with an x axis), each series is drawn on one axis: its own `yAxis`
+(HTML: its column header's `data-ok-y-axis`), else the first axis naming it in `seriesName`, else
+the axis at its position when that axis names no series, else the first. Axes are drawn when
+`show` isn't `false` and one of their series is visible: left ones from the plot outward,
+`opposite` ones on the right (labels start-anchored), each `labels + 14px` wide plus `22px` with a
+title (titles rotated -90° on the left, 90° on the right; the outermost left title at x = 12).
+Grid lines follow the primary axis (the first drawn); the other linear axes take its number of
+intervals, so their labels sit on its grid lines. Stacks are per axis. Stock charts keep the
+axes in the price pane; every pane gets the widest left and right edges. `xTitle` adds 20px under
+the x labels (`dy 0.71em` at the labels' line + 20px), centered on the plot.
 
 Polar geometry (core `chart-polar.ts`): angles in degrees clockwise from 12 o'clock; the chart is
 centered in the SVG, radius = half the smaller side - 4px. Donut hole 72 % of the radius. Radial
@@ -259,12 +282,17 @@ Root: `data-ok-chart`. Unknown values fall back to the default.
 | `edgeOpacity` | `data-ok-edge-opacity="…"` | number | number | `0.4` | Sankey charts: link opacity (0 to 1). |
 | `navigator` | `data-ok-navigator` | flag | boolean | off | Stock charts: a navigator under the chart, the whole price line with the zoom as a brush (zooms like `zoom`). |
 | `paneHeight` | `data-ok-pane-height="…"` | number | number | `120` | Stock charts: height in px of each indicator pane (volume, RSI, MACD…) under the price. |
+| `allowMultipleDataPointsSelection` | `data-ok-allow-multiple-data-points-selection` | flag | boolean | off | Clicks and Enter or Space add points to the selection instead of replacing it. |
 | `hiddenSeries` | `aria-pressed` · event `ok:chart:toggle` | state | — | — | Indexes of the series hidden through the legend (`aria-pressed="false"` on their buttons); categories in pie, donut and radial bar charts. |
+| `selectedDataPoints` | `instance.selectedDataPoints` · event `ok:chart:select` | state | — | — | The selected points, `{ seriesIndex, dataPointIndex }[]`: a click selects the point, slice or cell under the pointer, Enter or Space the active one. |
 | `zoomRange` | `instance.zoomRange` · event `ok:chart:zoom` | state | — | — | The visible window of the x axis, `{ min, max }` (category indexes or x values), or `null`. |
 <!-- /options:chart -->
 
 Text attributes (React prop ↔ HTML attribute, written by React too): `yTitle` ↔
-`data-ok-y-title`, `valuePrefix` ↔ `data-ok-value-prefix`, `valueSuffix` ↔ `data-ok-value-suffix`,
+`data-ok-y-title`, `xTitle` ↔ `data-ok-x-title`, `yaxis` ↔ `data-ok-yaxis` (core `chartYAxesText` /
+`parseChartYAxes`: axes separated by `;`, each the words `opposite`, `logarithmic`, `reversed`,
+`hidden`, `log-base <n>`, `tick-amount <n>`, `min <n>`, `max <n>`, then `title <text>`; series
+names stay out of it: each series column carries its axis, `th[data-ok-y-axis="<n>"]`), `valuePrefix` ↔ `data-ok-value-prefix`, `valueSuffix` ↔ `data-ok-value-suffix`,
 `locale` ↔ `data-ok-locale` (default `en-US`), `group` ↔ `data-ok-group`, `brushTarget` ↔
 `data-ok-brush-target`, `colorRanges` ↔ `data-ok-color-ranges` (`"from to color [name]; …"`, core
 `chartTextAttributes` / `parseChartColorRanges`). Always set as text (`textContent`), never markup.
@@ -321,6 +349,22 @@ plots list the five values, range areas `low – high`, bubbles the value and a 
   category axis by angle within the web + 24px (radar) is active;
   a mouse leaving the plot clears it; touch keeps it until the next tap.
 - Legend click toggles the series (React `onHiddenSeriesChange`, HTML cancelable `ok:chart:toggle`).
+- Selection (4.18.60, core `chart-select.ts`): a click on the plot selects the mark under it —
+  the block (bar, box, candle, range bar, funnel bar; 2px slack), the slice or ring, the cell, or
+  the nearest point within 16px (index charts) or the scatter / bubble rules of the pointer —
+  and a click on the selected mark clears it; empty space does nothing. Enter or Space on the
+  focused plot toggles the active item: a category's points together (every visible series), a
+  slice, ring, cell or point alone; when all of them are selected they clear, otherwise they are
+  selected. Without `allowMultipleDataPointsSelection` a selection replaces the previous one; with
+  it, points add up. A point is `{ seriesIndex, dataPointIndex }`: the category index (circular
+  charts: the slice), or on numeric axes the position among the series' points with a value. Not
+  after a drag that moved 4px or more (`createChartGestures().moved`), never on brush charts, not
+  on Sankey charts. The selection is kept by index across data updates and legend toggles (points
+  that aren't drawn show no outline). Each toggled point fires one `ok:chart:select` / one
+  `onDataPointSelection` call after the change. The tooltip of an item with a selected point shows
+  a "Selected" line. Methods (`setSelectedDataPoints`, `toggleDataPointSelection`) fire no event.
+  Selected outlines: `g[data-ok-chart-selected]` before `g[data-ok-chart-active]` (rings: hover
+  radius + 3px; frames: 2px outside, `rx 4`; slices: the slice with 4px more outer radius).
 - HTML redraws when the table (structure, text, attributes), an option attribute or the size changes.
   Redraws patch the SVG in place (same-tag elements keep their identity; only changed attributes
   and text are written) and read the size from the `ResizeObserver`, never forcing a layout.
@@ -380,6 +424,7 @@ plots list the five values, range areas `low – high`, bubbles the value and a 
 | Arrows (heatmap, treemap) | The nearest cell in the arrow's direction |
 | Arrows (Sankey) | Next / previous node or link, rank by rank (a rank's nodes top to bottom, then the links leaving it) |
 | Home / End | First / last (cells: top-left / bottom-right) |
+| Enter / Space | Selects the active category's points, slice, ring, cell or point; pressed again, clears them (not on Sankey or brush charts) |
 | Escape | Hides the tooltip; pressed again, resets the zoom (zoom and brush charts) |
 | `+` / `=`, `-` | Zoom in / out around the middle (zoom and brush charts) |
 | Shift + Left / Right | Pans the zoomed range by one category (a tenth on numeric axes) |
@@ -390,6 +435,11 @@ plots list the five values, range areas `low – high`, bubbles the value and a 
   `aria-hidden`: the data table (visually hidden, never `display: none`) is the accessible view and
   keeps hidden series.
 - The tooltip is `role=status`: values reached with the keyboard are announced.
+- Selection (4.18.60): points aren't focusable elements (the plot is one tab stop over an
+  `aria-hidden` SVG, keyboard model of ADR-0024), so neither `aria-selected` nor `aria-pressed`
+  applies: the selected state is announced by the tooltip's status ("Selected", localizable), and
+  drawn as an outline in the primary text color (not color alone). Enter / Space make it
+  reachable without a pointer.
 - Legend buttons: `aria-pressed`; hidden series show a hollow marker and crossed-out text (not color
   alone); targets at least 24 × 24px.
 - Axis labels use `--ok-text-secondary` (AA in light and dark); the reference's lighter grey is
@@ -416,17 +466,20 @@ plots list the five values, range areas `low – high`, bubbles the value and a 
   add page scroll (they did before phase 4: the page grew by the table's height).
 
 ## Events / API
-- HTML: `ok:chart:toggle` (cancelable, detail `{ index, hidden, hiddenSeries }`),
+- HTML: `ok:chart:select` (detail `{ seriesIndex, dataPointIndex, selected, selectedDataPoints }`,
+  after the change, one per toggled point), `ok:chart:toggle` (cancelable, detail `{ index, hidden, hiddenSeries }`),
   `ok:chart:active` (detail `{ active: { kind: "index", index } | { kind: "mark", mark } | null }`),
   `ok:chart:zoom` (detail `{ range: { min, max } | null, reason: "user" | "group" | "brush" }`;
   cancelable for `user`).
 - Instance: `{ hiddenSeries, setHiddenSeries(list), active, setActive(active), setFormatters(f),
   refresh(), updateSeries(series, categories?), appendData(data, { categories?, limit? }),
-  zoomRange, setZoomRange(range), exportChart(format), setLocaleText(text) }`;
+  zoomRange, setZoomRange(range), exportChart(format), setLocaleText(text), selectedDataPoints,
+  setSelectedDataPoints(list), toggleDataPointSelection(seriesIndex, dataPointIndex) }`;
   methods emit no events. `updateSeries` replaces the data (the current categories unless given);
   `appendData([{ data: [...] }, …])` appends points per series in order, `categories` adds theirs,
   `limit` keeps the last n (a sliding window). `refresh()` reads the table again.
-- React: `onHiddenSeriesChange(hidden)`, `onActiveChange(active)`; `hiddenSeries` (controlled) /
+- React: `onDataPointSelection(detail)`, `selectedDataPoints` (controlled) /
+  `defaultSelectedDataPoints`; `onHiddenSeriesChange(hidden)`, `onActiveChange(active)`; `hiddenSeries` (controlled) /
   `defaultHiddenSeries`; `zoomRange` / `defaultZoomRange` / `onZoomRangeChange(range, reason)` (also
   for group and brush changes, so controlled charts follow); `ref` → the `figure` (core
   `exportChart(figure, format)` for your own buttons).
@@ -509,13 +562,16 @@ Option areas not covered by the table above:
 | `chart.type: "tree"` (ApexTree layouts) | — | deferred (4.18.7) | |
 | `chart.stackType: "100%"`, `chart.stackOnlyBar` | `stacked` | deferred | percent stacks; stacking only the bar series of a mixed chart |
 | `chart.events` `dataPointMouseEnter` / `Leave`, `mouseMove`, `mouseLeave`, `legendClick`, `beforeZoom`, `zoomed`, `beforeResetZoom`, `scrolled`, `brushScrolled`, `selection` | `onActiveChange`, `onHiddenSeriesChange`, `onZoomRangeChange` · `ok:chart:active`, `-toggle`, `-zoom` (cancelable) | renamed | |
-| `chart.events` `click`, `dataPointSelection`, `markerClick`, `xAxisLabelClick`; method `toggleDataPointSelection` | — | deferred | a point / slice / label selection event (click, Enter) |
+| `chart.events.dataPointSelection` (`seriesIndex`, `dataPointIndex`, `w.globals.selectedDataPoints`) | React `onDataPointSelection(detail)` · HTML `ok:chart:select` (detail `{ seriesIndex, dataPointIndex, selected, selectedDataPoints }`) | renamed (4.18.60) | by click (block, slice, cell or the nearest point) and by Enter / Space on the active item; one call per toggled point |
+| method `toggleDataPointSelection(seriesIndex, dataPointIndex)` | HTML instance `toggleDataPointSelection`, `selectedDataPoints`, `setSelectedDataPoints(list)`; React: controlled `selectedDataPoints` / `defaultSelectedDataPoints` + core `toggleChartSelection(selected, points, multiple)` | renamed (4.18.60) | React has no chart instance (`ref` is the `figure`) |
+| `chart.events` `click` (any click), `markerClick`, `xAxisLabelClick` | — | deferred | axis labels are in the `aria-hidden` SVG (the table's row headers are their accessible view); a label selection needs focusable labels first |
 | `chart.events` `animationEnd`, `beforeMount`, `mounted`, `updated`, `keyDown`, `keyUp` | — | not applicable | lifecycle: React effects / runtime setup; DOM key events |
 | `chart.events` `crossFilter`, `filterChange`, `highlightFilterChanged`; `annotationDragged` / `Edited` / `Created` / `Styled` / `Deleted`, `measured` | — | deferred (4.18.19, 4.18.20) | |
 | drilldown: `drillDown` / `drillUp` / `drillToRoot` / `clearDrilldownCache`, events `drillDownStart` / `End` / `Error`, `drillUp` | — | deferred | category → child series, with a back control |
 | trellis / small multiples: `ApexCharts.trellis`, `rowSeries`, `getPanels`, `getPanel`, `promotePanel`, `restorePanels` | — | deferred | one chart per category on shared axes |
 | `beatChange`, `ApexCharts.registerUnitLayout` / `registerUnitMark` / `registerRowSource`, `registerTheme`, `refreshTokens`, `exec` | — | not applicable / deferred (4.18.21) | unit charts with 4.18.21; themes are tokens; `exec`: the element instance |
-| `states.active.allowMultipleDataPointsSelection`, `states.hover` / `.active.filter` | — | deferred | selected points (with the selection event); filters fixed by the design |
+| `states.active.allowMultipleDataPointsSelection` | `allowMultipleDataPointsSelection` (`data-ok-allow-multiple-data-points-selection`) | kept (4.18.60) | |
+| `states.active` (the selected look), `.filter`, `states.hover.filter`, `plotOptions.pie.expandOnClick` | the outline `[data-ok-chart-selected-mark]` | renamed (4.18.60) | fixed by the design: a 2px primary-text outline (not color alone); filters not applicable |
 | `chart.brush.targets` (several targets), `chart.brush.autoScaleYaxis` | `brushTarget` (one id) | deferred | several targets; y autoscale not applicable (zoom is x only) |
 | `chart.selection` (preselected range, fill, stroke) | the target's zoom | renamed | style fixed by the design |
 | crossfilter (Premium Linked Views / Highlight Filter) | — | deferred (4.18.19) | |
@@ -524,8 +580,10 @@ Option areas not covered by the table above:
 | `chart.locales`, `chart.defaultLocale` | `locale` (Intl) + `localeText` | renamed | |
 | `chart.dataReducer` (`enabled`, `algorithm`, `targetPoints`, `threshold`) | — | deferred | downsampling large series (LTTB) for drawing; the table keeps every point |
 | `chart.print`, `chart.perspectives`, `chart.license`, `chart.nonce`, `chart.injectStyleSheet`, `chart.redrawOn*Resize`, `chart.parentHeightOffset`, `chart.offsetX` / `Y`, `chart.width`, `chart.foreColor`, `chart.background`, `chart.dropShadow`, `theme` | — | not applicable | CSS / tokens / ResizeObserver; perspectives: app code (roadmap 2.4 notes) |
-| `yaxis` as an array (`seriesName`, `opposite`, `alignZero`), `yaxis.logarithmic` / `logBase`, `.reversed`, `.tickAmount`, `.stepSize`, `.forceNiceScale`, `.decimalsInFloat`, `.floating` | `yMin`, `yMax`, `yTitle` | deferred | several value axes (left / right), log scale, reversed, tick count |
-| `xaxis.title.text` | `xLabel` (table header only) | deferred | drawn x axis title |
+| `yaxis` (one object or an array), `.seriesName` (string or list), `.opposite`, `.logarithmic`, `.logBase`, `.reversed`, `.tickAmount`, `.min`, `.max`, `.show` | `yaxis` (same names; HTML `data-ok-yaxis` text, series' axes on `th[data-ok-y-axis]`) | kept (4.18.59) | several axes on vertical charts with an x axis; one axis: its options apply to the value axis (horizontal bars too); sparklines and timelines ignore them |
+| `yaxis.title.text` | `yaxis[].title` (axis 0 falls back to `yTitle`) | renamed (4.18.59) | |
+| `yaxis.alignZero`, `.stepSize`, `.forceNiceScale`, `.decimalsInFloat`, `.floating`, `.labels.formatter` (per axis), `.axisBorder` / `.axisTicks` / `.crosshairs` per axis | — | deferred | ticks are always nice (`tickAmount` keeps nice steps when it can); per-axis formatters with the tooltip / custom content row |
+| `xaxis.title.text` | `xTitle` (drawn under the x labels; also the table's first header unless `xLabel`) | renamed (4.18.59) | |
 | `xaxis.min` / `.max` / `.range`, `.tickAmount`, `.stepSize`, `.tickPlacement`, `.decimalsInFloat` | zoom window | deferred | fixed x window (`range`: sliding window, see `appendData` `limit`), tick count |
 | `xaxis.group.groups` (grouped categories), `xaxis.labels.rotate` / `.rotateAlways` / `.hideOverlappingLabels` / `.trim` | — | deferred | two-level category labels; label rotation (labels skip today) |
 | `xaxis.labels.datetimeFormatter`, `.format`, `.datetimeUTC` | `labelFormatter`, `locale` | renamed | |

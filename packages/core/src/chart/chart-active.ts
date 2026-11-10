@@ -3,6 +3,7 @@ import type { ChartArc, ChartLayout, ChartMark, ChartNode, ChartRect } from "./c
 import type { ChartColor, ChartData, ChartPart } from "./chart-model.js";
 import { polarPoint, slicePath } from "./chart-polar.js";
 import { onSankeyLink } from "./chart-sankey.js";
+import { type ChartDataPoint, chartMarkPoint, hasChartDataPoint } from "./chart-select.js";
 
 const BOX: readonly ChartPart[] = ["min", "q1", "median", "q3", "max"];
 const CANDLE: readonly ChartPart[] = ["open", "high", "low", "close"];
@@ -387,14 +388,38 @@ export interface ChartTooltipRow {
 
 export interface ChartTooltip {
   readonly title: string;
+  /** The item (or one of a category's points) is selected (4.18.60): the tooltip says so. */
+  readonly selected?: boolean | undefined;
   readonly rows: readonly ChartTooltipRow[];
   /** Where the tooltip points, in SVG px. */
   readonly x: number;
   readonly y: number;
 }
 
-/** Tooltip content for the active item. */
+/**
+ * Tooltip content for the active item; `selected` (the selection, 4.18.60) marks a tooltip whose
+ * item has a selected point.
+ */
 export function chartTooltip(
+  data: ChartData,
+  layout: ChartLayout,
+  format: ChartFormat,
+  active: ChartActive | null,
+  selected?: readonly ChartDataPoint[],
+): ChartTooltip | null {
+  const tooltip = tooltipOf(data, layout, format, active);
+  if (!tooltip || !selected?.length || !active) return tooltip;
+  const marks =
+    active.kind === "mark"
+      ? [layout.marks[active.mark]]
+      : layout.marks.filter((mark) => mark.index === active.index);
+  const on = marks.some(
+    (mark) => mark && !mark.flow && hasChartDataPoint(selected, chartMarkPoint(mark)),
+  );
+  return on ? { ...tooltip, selected: true } : tooltip;
+}
+
+function tooltipOf(
   data: ChartData,
   layout: ChartLayout,
   format: ChartFormat,

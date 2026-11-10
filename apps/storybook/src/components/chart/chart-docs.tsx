@@ -4,12 +4,15 @@ import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { Chart } from "@owlky/react";
 import animationsGroup from "../../../../../packages/html/src/components/chart/examples/animations-group.html?raw";
 import annotationsGroup from "../../../../../packages/html/src/components/chart/examples/annotations-group.html?raw";
+import axisScalesGroup from "../../../../../packages/html/src/components/chart/examples/axis-scales-group.html?raw";
 import brushGroup from "../../../../../packages/html/src/components/chart/examples/brush-group.html?raw";
 import columnSingle from "../../../../../packages/html/src/components/chart/examples/column-single-group.html?raw";
 import dataLabelsGroup from "../../../../../packages/html/src/components/chart/examples/data-labels-group.html?raw";
 import funnelGroup from "../../../../../packages/html/src/components/chart/examples/funnel-group.html?raw";
 import localizedGroup from "../../../../../packages/html/src/components/chart/examples/localized-group.html?raw";
 import mixedGroup from "../../../../../packages/html/src/components/chart/examples/mixed-group.html?raw";
+import multipleYAxesGroup from "../../../../../packages/html/src/components/chart/examples/multiple-y-axes-group.html?raw";
+import selectionGroup from "../../../../../packages/html/src/components/chart/examples/selection-group.html?raw";
 import sparklinesGroup from "../../../../../packages/html/src/components/chart/examples/sparklines-group.html?raw";
 import synchronizedGroup from "../../../../../packages/html/src/components/chart/examples/synchronized-group.html?raw";
 import timelineGroup from "../../../../../packages/html/src/components/chart/examples/timeline-group.html?raw";
@@ -714,6 +717,99 @@ export function ChartValues() {
 }`,
   },
   {
+    id: "axes",
+    title: "Add value axes and change their scale",
+    body: `Pass \`yaxis\` to set up the value axis, or a list of axes to draw series of different units on one chart, such as visits and mentions. In HTML, write the axes in \`data-ok-yaxis\`, separated by semicolons, and mark each series' column header with the index of its axis in \`data-ok-y-axis\`.
+
+- **\`seriesName\`:** the series drawn on this axis, by name. A series that no axis names goes to the axis at its own position.
+- **\`opposite\`:** draws the axis on the right of the plot (\`opposite\` in HTML).
+- **\`logarithmic\` and \`logBase\`:** a logarithmic scale for values that grow by factors, such as downloads. Ticks sit at whole powers of the base (10 by default). Values of zero and below aren't drawn, and series on the axis don't stack.
+- **\`reversed\`:** the highest value at the bottom, such as a ranking where 1 is best.
+- **\`tickAmount\`:** the number of intervals between ticks (\`tick-amount\` in HTML). Other axes take the number of intervals of the first axis, so their labels line up with its grid lines.
+- **\`min\`, \`max\`, \`title\` and \`show\`:** fix the range, name the axis, or hide its labels while its series keep its scale (\`min\`, \`max\`, \`title\` and \`hidden\` in HTML, with the title last).
+
+Several axes work on charts drawn from left to right with an x axis. \`xTitle\` (\`data-ok-x-title\` in HTML) names the x axis under its labels, and is also the header of the data table's first column unless you set \`xLabel\`.`,
+    html: `${snippetElement(multipleYAxesGroup, "data-ok-chart ")}
+${snippetElement(axisScalesGroup, "data-ok-chart ")}`,
+    react: `import { Chart } from "@owlky/react";
+
+const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
+const visits = [440, 505, 414, 671, 227, 413];
+const mentions = [23, 42, 35, 27, 43, 22];
+const downloads = [{ name: "Downloads", data: [12, 45, 180, 920, 3400, 15800] }];
+
+export function ChartAxes() {
+  return (
+    <>
+      <Chart
+        label="Blog visits and social mentions"
+        xTitle="Month"
+        yaxis={[
+          { title: "Blog visits" },
+          { seriesName: "Social mentions", opposite: true, title: "Social mentions" },
+        ]}
+        categories={months}
+        series={[
+          { name: "Blog visits", type: "bar", data: visits },
+          { name: "Social mentions", type: "line", data: mentions },
+        ]}
+      />
+      <Chart
+        label="Monthly downloads"
+        type="area"
+        yaxis={{ logarithmic: true, title: "Downloads" }}
+        categories={months}
+        series={downloads}
+      />
+    </>
+  );
+}`,
+  },
+  {
+    id: "select",
+    title: "Select data points",
+    body: `People can select a value to act on it, such as opening the orders of one weekday. A click selects the column, bar, slice, cell or point under the pointer, and a second click clears it. With the keyboard, Enter or Space selects the item the tooltip shows. On a category with several series, it selects the value of every series. A selected value gets an outline in the text color, and its tooltip says **Selected**, so screen readers announce it too.
+
+By default, a new selection replaces the previous one. Set \`allowMultipleDataPointsSelection\` (\`data-ok-allow-multiple-data-points-selection\` in HTML) to let selections add up.
+
+- **React:** \`onDataPointSelection(detail)\` is called with \`seriesIndex\`, \`dataPointIndex\`, \`selected\` and \`selectedDataPoints\`. Pass \`selectedDataPoints\` to control the selection, or \`defaultSelectedDataPoints\` to start with one.
+- **HTML:** \`ok:chart:select\` fires with the same \`detail\`. The instance has \`selectedDataPoints\`, \`setSelectedDataPoints(list)\` and \`toggleDataPointSelection(seriesIndex, dataPointIndex)\`.
+
+\`dataPointIndex\` is the category's index, or the slice's in pie and donut charts. On numeric axes, it is the point's position in its series. A drag that zooms or pans selects nothing, and brush charts don't select.`,
+    html: `${snippetElement(selectionGroup, "data-ok-chart ")}
+<script>
+  const chart = document.querySelector("[data-ok-chart]");
+  // Each selected or cleared value, and every selected one.
+  chart.addEventListener("ok:chart:select", (event) => {
+    const { dataPointIndex, selected, selectedDataPoints } = event.detail;
+    console.log(dataPointIndex, selected, selectedDataPoints.length);
+  });
+</script>`,
+    react: `import { Chart } from "@owlky/react";
+import { useState } from "react";
+
+const days = ["Mon", "Tue", "Wed", "Thu", "Fri"];
+const orders = [{ name: "Orders", data: [44, 55, 41, 67, 22] }];
+
+export function ChartSelection() {
+  const [day, setDay] = useState("none");
+  return (
+    <>
+      <Chart
+        label="Orders per weekday"
+        type="bar"
+        categories={days}
+        series={orders}
+        onDataPointSelection={(detail) =>
+          setDay(detail.selected ? (days[detail.dataPointIndex] ?? "none") : "none")
+        }
+      />
+      <p>Selected day: {day}</p>
+    </>
+  );
+}`,
+  },
+  {
     id: "legend",
     title: "Use the legend",
     body: "The legend shows one button per series, or one per category in pie, donut and radial bar charts. Selecting a button hides its series and fits the axis to the series that are left. Select it again to show the series. `legend` places the legend at the `top` (the default), `right` or `bottom`, or hides it with `none`. Charts with one series have no legend. On screens narrower than 600px, a right legend moves below the chart. Set `legendValues` to show each item's value next to its name: the slice or ring value, or the last value of a series. `donutSize` sets the size of a donut's hole in percent of its radius (72 by default).",
@@ -739,9 +835,11 @@ export function ChartValues() {
     body: `- **\`ok:chart:toggle\`** (cancelable) fires when a legend button is selected, with \`detail.index\`, \`detail.hidden\` and \`detail.hiddenSeries\`. Call \`preventDefault()\` to keep the series as it is.
 - **\`ok:chart:active\`** fires with \`detail.active\`: the category (\`{ kind: "index", index }\`) or point (\`{ kind: "mark", mark }\`) under the pointer or the keyboard, or \`null\`.
 - **Instance:** \`runtime.get(element, "chart")\` returns \`{ hiddenSeries, setHiddenSeries(list), active, setActive(active), setFormatters(formatters), refresh(), updateSeries(series, categories), appendData(data, options) }\`. The methods don't fire events. The chart redraws by itself when the table or an option changes. See "Update data live".
+- **\`ok:chart:select\`** fires for each value a click, Enter or Space selects or clears, with \`detail.seriesIndex\`, \`detail.dataPointIndex\`, \`detail.selected\` and \`detail.selectedDataPoints\`. See "Select data points".
 - **\`ok:chart:zoom\`** fires when the zoom changes, with \`detail.range\` (\`{ min, max }\` or \`null\`) and \`detail.reason\`: \`user\` for the chart's own gestures, keys and buttons (cancelable), \`group\` or \`brush\` when a linked chart zoomed it.
 - **Phase 4 methods:** \`zoomRange\`, \`setZoomRange(range)\` (its group and brushes follow), \`exportChart("svg" | "png" | "csv")\` (a promise that rejects outside a user gesture) and \`setLocaleText(text)\`.
-- **React:** \`onHiddenSeriesChange(hidden)\` and \`onActiveChange(active)\`; controlled with \`hiddenSeries\`, uncontrolled with \`defaultHiddenSeries\`. The zoom: \`zoomRange\` / \`defaultZoomRange\` and \`onZoomRangeChange(range, reason)\`. To export from your own button, call \`exportChart(figure, format)\` from \`@owlky/core\` with the chart's \`ref\`.`,
+- **Selection methods:** \`selectedDataPoints\`, \`setSelectedDataPoints(list)\` and \`toggleDataPointSelection(seriesIndex, dataPointIndex)\`.
+- **React:** \`onDataPointSelection(detail)\`, controlled with \`selectedDataPoints\`; \`onHiddenSeriesChange(hidden)\` and \`onActiveChange(active)\`; controlled with \`hiddenSeries\`, uncontrolled with \`defaultHiddenSeries\`. The zoom: \`zoomRange\` / \`defaultZoomRange\` and \`onZoomRangeChange(range, reason)\`. To export from your own button, call \`exportChart(figure, format)\` from \`@owlky/core\` with the chart's \`ref\`.`,
   },
   {
     id: "keyboard",
@@ -753,7 +851,8 @@ export function ChartValues() {
     title: "Accessibility",
     body: `- Give every chart a \`label\` (React) or a table \`caption\` (HTML). It names the plot and the data table.
 - The data table holds every value, including hidden series. Screen readers can read it instead of the drawing, which they skip.
-- The tooltip is a status region, so screen readers announce the values the keyboard moves to.
+- The tooltip is a status region, so screen readers announce the values the keyboard moves to, and whether they are selected.
+- Selected values get an outline, not only a color change, and Enter or Space selects them without a pointer.
 - Legend buttons report their state with \`aria-pressed\`. A hidden series keeps a hollow marker and crossed-out text, so the state doesn't rely on color.
 - Axis labels use the secondary text color, which meets a contrast ratio of at least 4.5:1 in light and dark mode.`,
   },
@@ -987,6 +1086,37 @@ const PREVIEWS = {
       />
     </Preview>
   ),
+  axes: () => (
+    <Preview>
+      <Chart
+        label="Blog visits and social mentions"
+        height={240}
+        xTitle="Month"
+        yaxis={[
+          { title: "Blog visits" },
+          { seriesName: "Social mentions", opposite: true, title: "Social mentions" },
+        ]}
+        categories={MONTHS}
+        series={[
+          { name: "Blog visits", type: "bar", data: [440, 505, 414, 671, 227, 413] },
+          { name: "Social mentions", type: "line", data: [23, 42, 35, 27, 43, 22] },
+        ]}
+      />
+    </Preview>
+  ),
+  select: () => (
+    <Preview>
+      <Chart
+        label="Orders per weekday (select a column)"
+        type="bar"
+        height={240}
+        colors={["info"]}
+        defaultSelectedDataPoints={[{ seriesIndex: 0, dataPointIndex: 3 }]}
+        categories={["Mon", "Tue", "Wed", "Thu", "Fri"]}
+        series={[{ name: "Orders", data: [44, 55, 41, 67, 22] }]}
+      />
+    </Preview>
+  ),
   options: () => <OptionsTable schema={chartOptions} />,
   props: () => (
     <PropsTable
@@ -1047,6 +1177,19 @@ const PREVIEWS = {
             "Value axis title, text around values, and the locale of numbers and months.",
         },
         {
+          react: "yaxis",
+          html: "data-ok-yaxis · data-ok-y-axis on column headers",
+          type: "ChartYAxis | ChartYAxis[]",
+          description:
+            'Value axes: `{ seriesName, opposite, logarithmic, logBase, reversed, tickAmount, min, max, title, show }`. HTML writes `"title Sales; opposite logarithmic title Visits"` and the axis index on each series\' column header.',
+        },
+        {
+          react: "xTitle",
+          html: "data-ok-x-title",
+          type: "string",
+          description: "Title of the x axis, drawn under its labels.",
+        },
+        {
           react: "totalLabel",
           html: "data-ok-total-label",
           type: "string",
@@ -1104,6 +1247,13 @@ const PREVIEWS = {
           description: "The visible window of the x axis: category indexes, or x values.",
         },
         {
+          react: "selectedDataPoints / defaultSelectedDataPoints / onDataPointSelection",
+          html: "instance.selectedDataPoints · setSelectedDataPoints · toggleDataPointSelection · ok:chart:select",
+          type: "{ seriesIndex, dataPointIndex }[]",
+          description:
+            "The selected values. A click selects the value under the pointer, Enter or Space the active one.",
+        },
+        {
           react: "dataLabelFormatter",
           html: "instance.setFormatters({ dataLabel })",
           type: "function",
@@ -1127,6 +1277,10 @@ const PREVIEWS = {
         ["Arrow keys (heatmap, treemap)", "Shows the nearest cell in the arrow's direction."],
         ["Arrow keys (Sankey)", "Shows the next or previous node or link, column by column."],
         ["Home / End", "Shows the first or last category or point."],
+        [
+          "Enter / Space",
+          "Selects the category, slice, cell or point the tooltip shows, or clears it.",
+        ],
         ["Escape", "Hides the tooltip. Pressed again, resets the zoom."],
         ["+ / -", "Zooms in or out (charts with zoom, brush charts)."],
         ["Shift + Left arrow / Right arrow", "Pans the zoomed range (and the navigator's window)."],

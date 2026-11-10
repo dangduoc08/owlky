@@ -4367,10 +4367,19 @@ export const chartOptions = defineOptions("chart", "data-ok-chart", {
     "Stock charts: height in px of each indicator pane (volume, RSI, MACD…) under the price.",
     { min: 60 },
   ),
+  allowMultipleDataPointsSelection: flag(
+    "data-ok-allow-multiple-data-points-selection",
+    "Clicks and Enter or Space add points to the selection instead of replacing it.",
+  ),
   hiddenSeries: state(
     "aria-pressed",
     'Indexes of the series hidden through the legend (`aria-pressed="false"` on their buttons); categories in pie, donut and radial bar charts.',
     "toggle",
+  ),
+  selectedDataPoints: state(
+    "instance.selectedDataPoints",
+    "The selected points, `{ seriesIndex, dataPointIndex }[]`: a click selects the point, slice or cell under the pointer, Enter or Space the active one.",
+    "select",
   ),
   zoomRange: state(
     "instance.zoomRange",
@@ -4416,6 +4425,7 @@ export interface ChartAnatomyOptions {
   edgeOpacity?: number | undefined;
   navigator?: boolean | undefined;
   paneHeight?: number | undefined;
+  allowMultipleDataPointsSelection?: boolean | undefined;
 }
 
 /** `data-ok-*` attributes of a chart root (numbers only when given). */

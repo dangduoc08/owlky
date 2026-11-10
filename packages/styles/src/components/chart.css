@@ -16,6 +16,7 @@
  *                 g[data-ok-chart-series-group] › g[data-ok-chart-series][data-ok-type][data-ok-color]
  *                   path[data-ok-chart-area | data-ok-chart-line | data-ok-chart-bar] · circle[data-ok-chart-marker]
  *                 g[data-ok-chart-data-labels] › text[data-ok-chart-data-label="inside|outside"]
+ *                 g[data-ok-chart-selected]? › circle | rect | path[data-ok-chart-selected-mark]
  *                 g[data-ok-chart-active] › circle[data-ok-chart-active-marker]
  *                 g[data-ok-chart-center] › text[data-ok-chart-center-label | data-ok-chart-center-value]
  *               Polar charts (phase 2): path[data-ok-chart-slice] (pie, donut),
@@ -32,7 +33,7 @@
  *                 + text[data-ok-chart-node-label], path[data-ok-chart-active-link];
  *                 [data-ok-sparkline] roots: no axes or legend, the plot fills the container
  *               div[data-ok-chart-tooltip][role="status"] (hidden unless a value is active)
- *                 div[data-ok-chart-tooltip-title] + div[data-ok-chart-tooltip-rows]
+ *                 div[data-ok-chart-tooltip-title] + div[data-ok-chart-tooltip-state]? + div[data-ok-chart-tooltip-rows]
  *                   div[data-ok-chart-tooltip-row] › span[data-ok-chart-tooltip-marker][data-ok-color] + span + span[data-ok-chart-tooltip-value]
  *             table[data-ok-chart-data]                       (the data; visually hidden once drawn)
  * Colors:   data-ok-color = <palette> | <palette>-<lighter|light|main|dark|darker> on series,
@@ -481,6 +482,14 @@
     pointer-events: none;
   }
 
+  /* Selected points, slices, blocks and cells (4.18.60): an outline in the text color. */
+  :where([data-ok-chart-selected-mark]) {
+    fill: none;
+    stroke: var(--ok-text-primary);
+    stroke-width: 2px;
+    pointer-events: none;
+  }
+
   :where([data-ok-chart-cell-label]) {
     fill: var(--ok-text-primary);
     font-size: var(--ok-font-size-md);
@@ -625,6 +634,14 @@
     padding: var(--ok-spacing) calc(var(--ok-spacing) * 3);
     background-color: rgb(var(--ok-palette-grey-500-channel) / 0.08);
     color: var(--ok-text-secondary);
+    font-weight: var(--ok-font-weight-semibold);
+    text-align: center;
+  }
+
+  /* The selected state of the active item (4.18.60): text under the title, not color alone. */
+  :where([data-ok-chart-tooltip-state]) {
+    padding: var(--ok-spacing) calc(var(--ok-spacing) * 3) 0;
+    color: var(--ok-text-primary);
     font-weight: var(--ok-font-weight-semibold);
     text-align: center;
   }

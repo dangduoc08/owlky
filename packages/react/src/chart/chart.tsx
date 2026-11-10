@@ -7,6 +7,7 @@ import {
   type ChartColor,
   type ChartColorRange,
   type ChartCurve,
+  type ChartDataPoint,
   type ChartExportFormat,
   type ChartFill,
   type ChartGestureMode,
@@ -19,17 +20,23 @@ import {
   type ChartOrientation,
   type ChartSankeyEdge,
   type ChartSankeyNode,
+  type ChartSelectionDetail,
   type ChartSeries,
   type ChartTool,
   type ChartType,
   type ChartXType,
+  type ChartYAxis,
   type ChartZoom,
   type ChartZoomReason,
   chartActiveAt,
+  chartActiveMarks,
   chartActiveNodes,
   chartAnnotationItems,
   chartAttributes,
   chartIdPrefix,
+  chartMarkAt,
+  chartMarkPoint,
+  chartSelection,
   chartTextAttributes,
   chartToolbar,
   chartToolLabels,
@@ -37,11 +44,13 @@ import {
   chartZoomKey,
   createChartGestures,
   exportChart,
+  hasChartDataPoint,
   linkChart,
   nextChartActive,
   placeChartTooltip,
   renderChart,
   sameChartActive,
+  toggleChartSelection,
   zoomChartBy,
 } from "@owlky/core";
 import {
@@ -50,6 +59,7 @@ import {
   forwardRef,
   type HTMLAttributes,
   type KeyboardEvent,
+  type MouseEvent,
   type PointerEvent,
   type ReactNode,
   useEffect,
@@ -150,6 +160,15 @@ export interface ChartProps extends Omit<HTMLAttributes<HTMLElement>, "children"
   total?: number | undefined;
   /** Title of the value axis. */
   yTitle?: string | undefined;
+  /**
+   * Value axes, as ApexCharts' `yaxis`: one object for the value axis, or a list for several
+   * (vertical charts with an x axis). Each takes `seriesName`, `opposite`, `logarithmic`,
+   * `logBase`, `reversed`, `tickAmount`, `min`, `max`, `title` and `show`. Series without a
+   * `seriesName` match go to the axis at their position.
+   */
+  yaxis?: ChartYAxis | readonly ChartYAxis[] | undefined;
+  /** Title of the x axis, drawn under its labels (also the data table's first header by default). */
+  xTitle?: string | undefined;
   /** Text before every value ("$"). */
   valuePrefix?: string | undefined;
   /** Text after every value ("%"). */
@@ -202,11 +221,26 @@ export interface ChartProps extends Omit<HTMLAttributes<HTMLElement>, "children"
   toolbar?: boolean | undefined;
   /** Series grow in when first drawn and move to new values (never with reduced motion). */
   animations?: boolean | undefined;
-  /** Localized texts: part labels ("Minimum", "Q1"…), tool names and the export error. */
+  /** Localized texts: part labels ("Minimum", "Q1"…), tool names, the export error and `selected`. */
   localeText?: ChartLocaleText | undefined;
+  /**
+   * Controlled: the selected points (`{ seriesIndex, dataPointIndex }`). A click selects the
+   * point, slice or cell under the pointer, Enter or Space the active one.
+   */
+  selectedDataPoints?: readonly ChartDataPoint[] | undefined;
+  /** Uncontrolled initial selection. */
+  defaultSelectedDataPoints?: readonly ChartDataPoint[] | undefined;
+  /**
+   * Called for each point a click, Enter or Space selects or clears, with the point, whether it is
+   * selected now and every selected point (ApexCharts' `dataPointSelection`).
+   */
+  onDataPointSelection?: ((detail: ChartSelectionDetail) => void) | undefined;
+  /** Clicks and Enter or Space add points to the selection instead of replacing it. */
+  allowMultipleDataPointsSelection?: boolean | undefined;
 }
 
 const NO_HIDDEN: readonly number[] = [];
+const NO_POINTS: readonly ChartDataPoint[] = [];
 const NO_SERIES: readonly ChartSeries[] = [];
 /** Least height of a sparkline without `height` (the CSS default of `--_ok-chart-height`). */
 const SPARKLINE_HEIGHT = 40;
@@ -272,6 +306,8 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     boxUpperColor,
     boxLowerColor,
     yTitle,
+    yaxis,
+    xTitle,
     valuePrefix,
     valueSuffix,
     valueFormatter,
@@ -299,6 +335,10 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     toolbar,
     animations,
     localeText,
+    selectedDataPoints,
+    defaultSelectedDataPoints = NO_POINTS,
+    onDataPointSelection,
+    allowMultipleDataPointsSelection,
     ...rest
   },
   ref,
@@ -340,6 +380,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     edgeOpacity,
     navigator,
     paneHeight,
+    allowMultipleDataPointsSelection,
   });
   const isSparkline = attributes["data-ok-sparkline"] !== undefined;
   const givenHeight = attributes["data-ok-height"];
@@ -403,6 +444,12 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
   const [preview, setPreview] = useState<ChartZoom | null>(null);
   const [selection, setSelection] = useState<ChartZoom | null>(null);
   const [status, setStatus] = useState("");
+  // Selected points (4.18.60): controlled, or kept here.
+  const [selected, setSelected] = useControllableState<readonly ChartDataPoint[]>({
+    value: selectedDataPoints,
+    defaultValue: defaultSelectedDataPoints,
+  });
+  const validSelected = useMemo(() => chartSelection(selected), [selected]);
 
   const render = useMemo(
     () =>
@@ -455,7 +502,10 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         zoomFrom: zoomControlled ? undefined : innerZoom.from,
         selection: brushTarget ? selection : preview,
         brush: Boolean(brushTarget),
+        selectedDataPoints: validSelected,
         yTitle,
+        yaxis,
+        xTitle,
         valuePrefix,
         valueSuffix,
         valueFormatter,
@@ -518,7 +568,10 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       brushTarget,
       selection,
       preview,
+      validSelected,
       yTitle,
+      yaxis,
+      xTitle,
       valuePrefix,
       valueSuffix,
       valueFormatter,
@@ -657,7 +710,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
   }, [isSparkline]);
 
   // A redraw (resize, hidden series, zoom) can remove the active item.
-  const tooltip = chartTooltip(render.data, layout, render.format, active);
+  const tooltip = chartTooltip(render.data, layout, render.format, active, validSelected);
   const shown = tooltip && tooltip.rows.length > 0 ? tooltip : null;
 
   // Tooltip position: measured after it renders, written as private properties.
@@ -683,7 +736,47 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       chartActiveAt(layout, (event.clientX - box.left) * scale, (event.clientY - box.top) * scale),
     );
   };
+  const onSelectionRef = useRef(onDataPointSelection);
+  onSelectionRef.current = onDataPointSelection;
+  /** Toggles points (a click, Enter or Space) and reports each one. */
+  const select = (points: readonly ChartDataPoint[]) => {
+    const next = toggleChartSelection(
+      validSelected,
+      points,
+      attributes["data-ok-allow-multiple-data-points-selection"] !== undefined,
+    );
+    setSelected(next);
+    for (const entry of chartSelection(points))
+      onSelectionRef.current?.({
+        ...entry,
+        selected: hasChartDataPoint(next, entry),
+        selectedDataPoints: [...next],
+      });
+  };
+  // A click selects the point, slice or cell under the pointer (not after a drag or on brushes).
+  const onClick = (event: MouseEvent<HTMLDivElement>) => {
+    if (brushTarget || gesturesRef.current?.moved) return;
+    const box = event.currentTarget.getBoundingClientRect();
+    const scale = layout.width / (box.width || layout.width);
+    const mark = chartMarkAt(
+      layout,
+      (event.clientX - box.left) * scale,
+      (event.clientY - box.top) * scale,
+    );
+    if (mark !== null)
+      select([chartMarkPoint(layout.marks[mark] as (typeof layout.marks)[number])]);
+  };
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if ((event.key === "Enter" || event.key === " ") && !event.repeat && !brushTarget) {
+      // Enter or Space selects the active item's points (a category: every series' point).
+      const marks = chartActiveMarks(layout, activeRef.current);
+      if (marks.length === 0) return;
+      event.preventDefault();
+      select(
+        marks.map((mark) => chartMarkPoint(layout.marks[mark] as (typeof layout.marks)[number])),
+      );
+      return;
+    }
     if (event.key === "Escape") {
       if (activeRef.current) {
         event.preventDefault();
@@ -762,6 +855,8 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         colorRanges,
         axisTitles,
         indicators,
+        yaxis,
+        xTitle,
       })}
       data-ok-ready=""
       data-ok-runtime="off"
@@ -830,6 +925,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
           if (event.pointerType === "mouse") setActive(null);
         }}
         onKeyDown={onKeyDown}
+        onClick={onClick}
         onFocus={(event) => {
           if (event.currentTarget.matches(":focus-visible") && !activeRef.current) {
             setActive(nextChartActive(layout, null, "Home") as ChartActive | null);
@@ -851,6 +947,11 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
           {shown && (
             <>
               <div data-ok-chart-tooltip-title="">{shown.title}</div>
+              {shown.selected && (
+                <div data-ok-chart-tooltip-state="">
+                  {localeText?.selected ?? chartToolLabels.selected}
+                </div>
+              )}
               <div data-ok-chart-tooltip-rows="">
                 {shown.rows.map((row, index) => (
                   // biome-ignore lint/suspicious/noArrayIndexKey: rows follow the series order

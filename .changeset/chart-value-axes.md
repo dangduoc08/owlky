@@ -1,0 +1,8 @@
+---
+"@owlky/core": minor
+"@owlky/react": minor
+"@owlky/html": minor
+"@owlky/mcp": minor
+---
+
+Chart value axes (ApexCharts `yaxis` and `xaxis.title`): `yaxis` takes one axis or a list of axes with `seriesName`, `opposite`, `logarithmic` (with `logBase`), `reversed`, `tickAmount`, `min`, `max`, `title` and `show`. Several axes draw on vertical charts with an x axis: the left ones from the plot outward, `opposite` ones on the right, each with its own scale and title; the others take the first axis' number of intervals, so their labels sit on its grid lines, and stacks are per axis. Logarithmic axes put their ticks at whole powers of the base and leave out values of zero and below; reversed axes put the highest value at the bottom (or the left of horizontal bars). Series pick their axis by name, by position, or with the new series field `yAxis`. `xTitle` draws the x axis title under its labels and names the data table's first column unless `xLabel` is set. In HTML, the axes are the root's `data-ok-yaxis` text (`"title Sales; opposite logarithmic title Visits"`), each series' axis is `data-ok-y-axis` on its column header, and the x title is `data-ok-x-title`. Stock charts keep several axes in the price pane, and every pane lines up on the widest left and right edges. Core exports `chartYAxes`, `chartYAxesText`, `parseChartYAxes`, `chartSeriesAxes`, `withChartAxes`, `axisScale`, `logScale`, `countScale` and `scaleValue`; chart axis maps carry `log` on logarithmic axes. New stories: Multiple Y axes and Axis scales. Charts without these options draw exactly as before.
