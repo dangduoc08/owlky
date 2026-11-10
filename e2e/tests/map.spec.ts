@@ -177,6 +177,82 @@ for (const impl of implementations) {
       await expect(root).not.toHaveAttribute("data-ok-fullscreen", "");
     });
 
+    test("lists the choropleth's regions for the keyboard and selects one", async ({ page }) => {
+      await openMap(page, impl, "choropleth");
+      const legend = page.getByRole("group", { name: "Population (millions)" });
+      await expect(legend.getByRole("button")).toHaveCount(5);
+      await expect(
+        page.getByRole("table", { name: "Population by state, 2020 census" }),
+      ).toBeAttached();
+      const list = page.getByRole("listbox", { name: "States" });
+      await expect(list.getByRole("option")).toHaveCount(51);
+      // Tab from the map reaches the regions list; its active region shows over the map.
+      await page.getByRole("region", { name: "Map of US states by population" }).focus();
+      await page.keyboard.press("Tab");
+      await expect(list).toBeFocused();
+      const active = page.locator("[data-ok-map-region][data-ok-active]");
+      await expect(active).toHaveText("Alabama: 5.02 million");
+      await expect(active).toBeVisible();
+      await page.keyboard.press("ArrowDown");
+      await expect(active).toHaveText("Alaska: 0.73 million");
+      await page.keyboard.press("t");
+      await expect(active).toHaveText("Tennessee: 6.91 million");
+      await page.keyboard.press("Enter");
+      await expect(list.getByRole("option", { name: "Tennessee: 6.91 million" })).toHaveAttribute(
+        "aria-selected",
+        "true",
+      );
+    });
+
+    test("mutes regions outside the pressed legend classes", async ({ page }) => {
+      await openMap(page, impl, "choropleth");
+      const legend = page.getByRole("group", { name: "Population (millions)" });
+      const first = legend.getByRole("button").first();
+      await first.click();
+      await expect(first).toHaveAttribute("aria-pressed", "true");
+      // The other swatches fade like their regions.
+      await expect(legend.locator("[data-ok-map-legend-swatch]").nth(1)).toHaveCSS(
+        "opacity",
+        "0.32",
+      );
+      await first.press("Enter");
+      await expect(first).toHaveAttribute("aria-pressed", "false");
+    });
+
+    test("names the region under the pointer", async ({ page }, info) => {
+      test.skip(info.project.name === "mobile", "Hover needs a mouse.");
+      await openMap(page, impl, "choropleth");
+      const box = (await page.locator("[data-ok-map-view]").boundingBox()) as {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+      };
+      const hovered = page.locator("[data-ok-map-region][data-ok-hovered]");
+      await expect
+        .poll(async () => {
+          await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+          await page.mouse.move(box.x + box.width / 2 + 2, box.y + box.height / 2 + 2);
+          return hovered.count();
+        })
+        .toBe(1);
+      await expect(hovered).toBeVisible();
+      await expect(hovered).toContainText("million");
+      await page.mouse.move(0, 0);
+      await expect(hovered).toHaveCount(0);
+    });
+
+    test("shows the choropleth's table without WebGL", async ({ page }) => {
+      await page.addInitScript(() => {
+        HTMLCanvasElement.prototype.getContext = () => null;
+      });
+      await openStory(page, storyId(impl, "map", "choropleth"));
+      await expect(page.locator("[data-ok-map]")).toHaveAttribute("data-ok-fallback", "");
+      const table = page.getByRole("table", { name: "Population by state, 2020 census" });
+      await expect(table).toBeVisible();
+      await expect(table.getByRole("row", { name: /California/ })).toContainText("39.54 million");
+    });
+
     test("shows the fallback and the description without WebGL", async ({ page }) => {
       await page.addInitScript(() => {
         HTMLCanvasElement.prototype.getContext = () => null;

@@ -427,6 +427,7 @@ const pairs: [component: string, story: string][] = [
   ["map", "highlight-by-filter"],
   ["map", "heatmap"],
   ["map", "side-by-side"],
+  ["map", "choropleth"],
   ["markdown", "html-content"],
   ["markdown", "markdown-content"],
 ];

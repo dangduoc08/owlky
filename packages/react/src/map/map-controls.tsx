@@ -25,7 +25,7 @@ function Icon({ name, part }: { name: MapIconName; part?: string }) {
 }
 
 /** Renders `children` in a corner of the enclosing map (after the map mounted). */
-function InCorner({ position, children }: { position: MapPosition; children: ReactNode }) {
+export function InCorner({ position, children }: { position: MapPosition; children: ReactNode }) {
   const { corners } = useMapContext("A map control");
   const inline = useContext(InlineCorners);
   const corner = corners[position];

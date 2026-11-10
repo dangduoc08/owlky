@@ -5083,6 +5083,36 @@ export const mapAttributionOptions = defineOptions("map-attribution", "data-ok-m
   ),
 });
 
+export const mapLegendVariants = ["classes", "gradient"] as const;
+export type MapLegendVariant = (typeof mapLegendVariants)[number];
+
+export const mapLegendOptions = defineOptions("map-legend", "data-ok-map-legend", {
+  variant: style(
+    "data-ok-variant",
+    mapLegendVariants,
+    "classes",
+    "`classes`: one swatch and range per class; `gradient`: one bar from the lowest value to the highest.",
+  ),
+  interactive: behavior(
+    "data-ok-interactive",
+    true,
+    "Classes are toggle buttons: pressing some mutes the regions outside them.",
+  ),
+});
+
+export type MapLegendAnatomyOptions = {
+  variant?: MapLegendVariant | undefined;
+  interactive?: boolean | undefined;
+};
+
+/** `data-ok-*` attributes of a map legend (`data-ok-interactive="false"` when it is static). */
+export const mapLegendAttributes = (options: MapLegendAnatomyOptions = {}): DataAttributes => {
+  const attributes = optionAttributes(mapLegendOptions, { ...options });
+  if (options.interactive === false)
+    attributes[mapLegendOptions.options.interactive.attr] = "false";
+  return attributes;
+};
+
 export type MapControlAnatomyOptions = {
   visualizePitch?: boolean | undefined;
   trackUserLocation?: boolean | undefined;
@@ -6094,6 +6124,7 @@ export const optionSchemas = {
   "map-geolocate": mapGeolocateOptions,
   "map-scale": mapScaleOptions,
   "map-attribution": mapAttributionOptions,
+  "map-legend": mapLegendOptions,
   lightbox: lightboxOptions,
   upload: uploadOptions,
   illustration: illustrationOptions,

@@ -298,6 +298,8 @@ export const MapView = forwardRef<MapRef, MapProps>(function MapView(props, ref)
   const drags = useMemo(() => new WeakMap(), []);
   const popups = useMemo(() => new WeakMap(), []);
   const geolocate = useMemo(() => new Set<GeolocateHandlers>(), []);
+  const regions = useMemo(() => new WeakMap(), []);
+  const legends = useMemo(() => new WeakMap(), []);
   const mergedLabels = useMemo<MapLabels>(
     () => ({ ...mapLabels, ...labels, ...(ariaLabel ? { map: ariaLabel } : {}) }),
     [labels, ariaLabel],
@@ -341,6 +343,8 @@ export const MapView = forwardRef<MapRef, MapProps>(function MapView(props, ref)
       onFullscreenChange: (on) => call("onFullscreenChange", on),
       onMarkerDrag: (marker, phase, lngLat) => drags.get(marker)?.(phase, lngLat),
       onPopupClose: (popup, reason) => popups.get(popup)?.(reason),
+      onRegionSelect: (part, id) => regions.get(part)?.(id),
+      onLegendToggle: (legend, index, active) => legends.get(legend)?.(index, active),
       onGeolocate: (position) => {
         for (const each of geolocate) each.onGeolocate?.(position);
       },
@@ -402,8 +406,17 @@ export const MapView = forwardRef<MapRef, MapProps>(function MapView(props, ref)
   }, [register, id, mapRef]);
 
   const context = useMemo<MapContextValue>(
-    () => ({ controller, corners, labels: mergedLabels, drags, popups, geolocate }),
-    [controller, corners, mergedLabels, drags, popups, geolocate],
+    () => ({
+      controller,
+      corners,
+      labels: mergedLabels,
+      drags,
+      popups,
+      geolocate,
+      regions,
+      legends,
+    }),
+    [controller, corners, mergedLabels, drags, popups, geolocate, regions, legends],
   );
   // One stable ref callback per corner (a new one each render would set state in a loop).
   const cornerRefs = useMemo(

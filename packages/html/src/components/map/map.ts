@@ -9,6 +9,7 @@ import {
   type MapSettings,
   type MapSourceSpec,
   type MapViewState,
+  mapScale,
   readLayerDeclaration,
   readSourceDeclaration,
 } from "@owlky/core/map";
@@ -67,6 +68,10 @@ export interface MapEvents {
   trackuserlocation: EventSpec<{ tracking: boolean }>;
   /** After the map fell back to its static content (no WebGL, or MapLibre failed). */
   fallback: EventSpec<{ reason: string }>;
+  /** After a region was selected or the selection cleared (dispatched on `[data-ok-map-regions]`; `id` is `null` when cleared). */
+  regionselect: EventSpec<{ id: string | number | null }>;
+  /** After a class of an interactive legend was pressed or released (dispatched on the legend; `active` lists the pressed classes). */
+  legendtoggle: EventSpec<{ classIndex: number; active: number[] }>;
 }
 
 export interface MapInstance extends ComponentInstance {
@@ -96,6 +101,8 @@ export interface MapInstance extends ComponentInstance {
   readonly fullscreen: boolean;
   /** Enters or leaves full screen. */
   setFullscreen(fullscreen: boolean): void;
+  /** Classifies values for a choropleth (core `mapScale`): class breaks, token colors and the MapLibre expressions. */
+  scale: typeof mapScale;
 }
 
 /** Map events re-dispatched as `ok:map:<type>` (detail: the core `MapEvent`). */
@@ -214,7 +221,11 @@ function readFlyTarget(trigger: Element) {
  *          ok:map:popupclose (cancelable, detail { reason }), ok:map:markerdragstart|markerdrag|
  *          markerdragend (on the marker, detail { lngLat }), ok:map:fullscreen ({ fullscreen }),
  *          ok:map:geolocate ({ coords }), ok:map:geolocateerror ({ code, message }),
- *          ok:map:trackuserlocation ({ tracking }), ok:map:fallback ({ reason }).
+ *          ok:map:trackuserlocation ({ tracking }), ok:map:fallback ({ reason }),
+ *          ok:map:regionselect (on the regions, { id }), ok:map:legendtoggle (on the legend,
+ *          { classIndex, active }). Choropleth: `[data-ok-map-regions]` (a listbox the runtime fills
+ *          and the data table) joins its rows to a source through feature state; legends mute the
+ *          regions outside their pressed classes.
  */
 export const map = defineComponent<MapInstance, MapEvents>({
   name: "map",
@@ -293,6 +304,9 @@ export const map = defineComponent<MapInstance, MapEvents>({
           message: error.message,
         }),
       onTrackUserLocationChange: (tracking) => emit("trackuserlocation", { tracking }),
+      onRegionSelect: (regions, id) => dispatch(regions, "regionselect", { id }),
+      onLegendToggle: (legend, classIndex, active) =>
+        dispatch(legend, "legendtoggle", { classIndex, active: [...active] }),
     });
     for (const type of EMITTED) controller.on(type, (event: MapEvent) => emit(type, event));
 
@@ -399,6 +413,7 @@ export const map = defineComponent<MapInstance, MapEvents>({
         return element.hasAttribute(mapOptions.options.fullscreen.attr);
       },
       setFullscreen: controller.setFullscreen,
+      scale: mapScale,
       destroy() {
         declarations.disconnect();
         attributes.disconnect();

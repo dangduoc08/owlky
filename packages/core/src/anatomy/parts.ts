@@ -1308,7 +1308,7 @@ export interface MapParts {
   "data-ok-filter": Value<string>;
   /** On a GeoJSON source: gives every feature an id. */
   "data-ok-generate-id": State;
-  /** On a source or a layer: its id. */
+  /** On a source or a layer: its id. On a row of the regions table: the feature id it joins. */
   "data-ok-id": Value<string>;
   /** The ids of the layers whose features pointer events report, separated by spaces. */
   "data-ok-interactive-layer-ids": Value<string>;
@@ -1382,9 +1382,9 @@ export interface MapParts {
   "data-ok-scheme": Value<"xyz" | "tms">;
   /** Set by the runtime while the geolocate control shows the accuracy circle. */
   "data-ok-show-accuracy": State;
-  /** On a layer outside a source: the id of its source. On the terrain control: the DEM source. */
+  /** On a layer outside a source: the id of its source. On the terrain control: the DEM source. On regions: the source of the regions. */
   "data-ok-source": Value<string>;
-  /** On a layer: the layer of a vector source it draws. */
+  /** On a layer: the layer of a vector source it draws. On regions: the source layer of the regions. */
   "data-ok-source-layer": Value<string>;
   /** On a tile source: the tile size, in pixels. */
   "data-ok-tile-size": Value<string>;
@@ -1394,6 +1394,48 @@ export interface MapParts {
   "data-ok-tolerance": Value<string>;
   /** On a source: the URL of its TileJSON or data. */
   "data-ok-url": Value<string>;
+  /** Set by the runtime on the region option the keyboard is on. */
+  "data-ok-active": State;
+  /** Set by the runtime on the region option under the pointer. */
+  "data-ok-hovered": State;
+  /** Set by the runtime on the regions list while the pointer is over a region. */
+  "data-ok-hovering": State;
+  /** On regions: the id of the fill layer that pointer hovers and clicks hit. */
+  "data-ok-layer": Value<string>;
+  /** A legend's swatches for each class, or its gradient bar. */
+  "data-ok-map-legend-bar": Part<"span">;
+  /** One class of a legend: a toggle button (interactive) or a list item. */
+  "data-ok-map-legend-class": Part;
+  /** The list of a legend's classes. */
+  "data-ok-map-legend-classes": Part<"ul">;
+  /** A gradient legend: the bar and its ticks. */
+  "data-ok-map-legend-gradient": Part<"div">;
+  /** The range text of a legend class. */
+  "data-ok-map-legend-label": Part<"span">;
+  /** One color of a gradient bar. */
+  "data-ok-map-legend-stop": Part<"span">;
+  /** The color square of a legend class. */
+  "data-ok-map-legend-swatch": Part<"span">;
+  /** The lowest and highest values under a gradient bar. */
+  "data-ok-map-legend-ticks": Part<"div">;
+  /** The title of a legend. */
+  "data-ok-map-legend-title": Part<"p">;
+  /** Set by the runtime: one region in the regions list (an option with its name and value). */
+  "data-ok-map-region": Part<"div">;
+  /** The regions of a choropleth: their keyboard list and their data table. */
+  "data-ok-map-regions": Part<"div">;
+  /** The regions' listbox; the runtime fills it from the table. */
+  "data-ok-map-regions-list": Part<"div">;
+  /** On a legend class: the highest value of the class. */
+  "data-ok-max": Value<string>;
+  /** On a legend class: the lowest value of the class. */
+  "data-ok-min": Value<string>;
+  /** On a legend class: the class of regions without a value. */
+  "data-ok-null": State;
+  /** On a legend swatch or gradient stop: its color, a CSS color or `var(--ok-…)` token. */
+  "data-ok-swatch": Value<string>;
+  /** On a cell of the regions table: the region's value, a number. */
+  "data-ok-value": Value<string>;
 }
 
 /** Markdown: parts, states, values and triggers. */

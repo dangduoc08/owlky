@@ -369,3 +369,81 @@ describe("map runtime", () => {
     expect(root.querySelector("canvas")).toBeNull();
   });
 });
+
+describe("map choropleth", () => {
+  const GEO = JSON.stringify({
+    type: "FeatureCollection",
+    features: ["A", "B"].map((name, i) => ({
+      type: "Feature",
+      properties: { name },
+      geometry: {
+        type: "Polygon",
+        coordinates: [
+          [
+            [-120 + i * 25, 30],
+            [-100 + i * 25, 30],
+            [-100 + i * 25, 45],
+            [-120 + i * 25, 45],
+            [-120 + i * 25, 30],
+          ],
+        ],
+      },
+    })),
+  });
+  const CHOROPLETH = BASIC(`
+    <div data-ok-map-source data-ok-id="boxes" data-ok-type="geojson" data-ok-promote-id="name" data-ok-data='${GEO}' hidden>
+      <div data-ok-map-layer data-ok-id="boxes-fill" data-ok-type="fill" data-ok-paint='{"fill-color":["step",["feature-state","value"],"#cccccc",5,"#333333"]}' hidden></div>
+    </div>
+    <div id="r" data-ok-map-regions data-ok-source="boxes" data-ok-layer="boxes-fill">
+      <div data-ok-map-regions-list role="listbox" tabindex="0" aria-label="Boxes"></div>
+      <table>
+        <caption>Values</caption>
+        <thead><tr><th scope="col">Box</th><th scope="col">Value</th></tr></thead>
+        <tbody>
+          <tr data-ok-id="A"><th scope="row">A</th><td data-ok-value="2">2</td></tr>
+          <tr data-ok-id="B"><th scope="row">B</th><td data-ok-value="8">8</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div data-ok-map-corner="bottom-left">
+      <div id="l" data-ok-map-legend data-ok-variant="classes" role="group" aria-label="Legend">
+        <ul data-ok-map-legend-classes>
+          <li><button type="button" data-ok-map-legend-class data-ok-min="2" data-ok-max="5" aria-pressed="false"><span data-ok-map-legend-swatch data-ok-swatch="#cccccc" aria-hidden="true"></span><span data-ok-map-legend-label>2 – 5</span></button></li>
+          <li><button type="button" data-ok-map-legend-class data-ok-min="5" data-ok-max="8" aria-pressed="false"><span data-ok-map-legend-swatch data-ok-swatch="#333333" aria-hidden="true"></span><span data-ok-map-legend-label>5 – 8</span></button></li>
+        </ul>
+      </div>
+    </div>`);
+
+  it("fills the regions list and reports selections and legend toggles", async () => {
+    const { host, instance } = await setup(CHOROPLETH);
+    const list = host.querySelector("[data-ok-map-regions-list]") as HTMLElement;
+    expect([...list.querySelectorAll('[role="option"]')].map((o) => o.textContent)).toEqual([
+      "A: 2",
+      "B: 8",
+    ]);
+    const regions = host.querySelector("#r") as HTMLElement;
+    const selected = next(regions, "regionselect");
+    list.focus();
+    list.dispatchEvent(new KeyboardEvent("keydown", { key: "End", bubbles: true }));
+    list.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    expect((await selected).detail).toEqual({ id: "B" });
+    const legend = host.querySelector("#l") as HTMLElement;
+    const toggled = next(legend, "legendtoggle");
+    (legend.querySelector("button") as HTMLButtonElement).click();
+    expect((await toggled).detail).toEqual({ classIndex: 0, active: [0] });
+    expect(instance.map?.getFeatureState({ source: "boxes", id: "B" })).toMatchObject({
+      value: 8,
+      muted: true,
+      selected: true,
+    });
+    // CDN pages classify their data with the instance's `scale`.
+    expect(instance.scale([1, 2, 3, 4], { classes: 2 }).breaks).toEqual([2.5]);
+    await expectNoAxeViolations(host);
+  });
+
+  it("passes axe with the choropleth snippet loaded", async () => {
+    const { host } = await setup(snippet("choropleth"));
+    expect(host.querySelectorAll("[data-ok-map-region]")).toHaveLength(51);
+    await expectNoAxeViolations(host);
+  });
+});
