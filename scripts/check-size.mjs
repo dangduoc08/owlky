@@ -155,7 +155,9 @@ const budgets = [
   // 56 kB since Phase 4 batch C's Snackbar (stacked toasts, swipe, rich colors, invert, a list
   // per position, offsets; about 0.6 kB): 52.27 kB, before the Tree view's drag and drop,
   // editing and loading states.
-  ["packages/styles/dist/owlky.min.css", 56_000, "All CSS (tokens + components)"],
+  // 60 kB since Phase 4 batch E (organization chart directions and highlight, data grid layout,
+  // footer, set filter and selection options, chart stacks and cues; about 2 kB): 56.2 kB.
+  ["packages/styles/dist/owlky.min.css", 60_000, "All CSS (tokens + components)"],
   // The MCP server's data (ADR-0046, downloaded by `npx -y @owlky/mcp`): 0.69 MB gzip (6 MB raw)
   // at first, most of it the HTML of the date picker and data grid stories. 1 MB since the API
   // reference (ADR-0049: every prop, attribute, part, event, method, type and CSS variable per
