@@ -182,6 +182,19 @@
   background-color: rgb(var(--ok-palette-grey-500-channel) / 0.04);
 }
 
+.sb-org-demo {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--ok-spacing) * 4);
+  width: 100%;
+}
+
+.sb-org-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--ok-spacing) * 2);
+}
+
 .sb-org-simple {
   display: inline-flex;
   flex-direction: column;

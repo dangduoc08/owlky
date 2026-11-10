@@ -1413,12 +1413,24 @@ export interface MotionParts {
 
 /** Organization chart: parts, states, values and triggers. */
 export interface OrganizationChartParts {
-  /** The list of a node's children. Absent without children. */
+  /** In a toggle: the number of hidden descendants, written by the script while the node is collapsed. Leave it out for no badge. */
+  "data-ok-organization-chart-badge": Part<"span">;
+  /** The list of a node's children. Absent without children; empty and `hidden` on a node whose children load on demand. */
   "data-ok-organization-chart-children": Part<"ul">;
   /** A node's content, such as a card. */
   "data-ok-organization-chart-label": Part<"div">;
   /** One node. */
   "data-ok-organization-chart-node": Part<"li">;
+  /** In a toggle: the loading indicator of a node whose children load on demand, shown while the toggle is `aria-busy`. */
+  "data-ok-organization-chart-spinner": Part<"span">;
+  /** The button after a label that expands and collapses the node's children (`aria-expanded`, `aria-controls`). */
+  "data-ok-organization-chart-toggle": Part<"button">;
+  /** The chevron icon of a toggle. */
+  "data-ok-organization-chart-toggle-icon": Part<"svg">;
+  /** The toggle's name, visually hidden, such as "Priya Raman's reports". The badge's count follows it in the name. */
+  "data-ok-organization-chart-toggle-label": Part<"span">;
+  /** On a node: its id, used by the instance methods and in the events. */
+  "data-ok-node-id": Value<string>;
 }
 
 /** Pagination: parts, states, values and triggers. */

@@ -1,12 +1,14 @@
-import { render, screen } from "@testing-library/react";
-import { createRef, StrictMode } from "react";
+import { act, render, screen } from "@testing-library/react";
+import { createRef, type MutableRefObject, type ReactNode, StrictMode } from "react";
 import { renderToString } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { expectNoAxeViolations } from "../test-utils.js";
 import {
   OrganizationChart,
+  type OrganizationChartApi,
   OrganizationChartNode,
   type OrganizationChartProps,
+  useOrganizationChartApiRef,
 } from "./organization-chart.js";
 
 const HOSTILE = '"><img src=x onerror=alert(1)>' as never;
@@ -317,5 +319,353 @@ describe("OrganizationChart", () => {
     expect(client.style.getPropertyValue("--_ok-org-line-height")).toBe("20px");
     const unstyled = (element: Element) => element.outerHTML.replace(/ style="[^"]*"/, "");
     expect(unstyled(client)).toBe(unstyled(server));
+  });
+});
+
+// --- Expand and collapse (ADR-0051) ------------------------------------------------------------
+
+/** lead › (a, b › (c › d), lazy (hasChildren)); every node has a `nodeId`. */
+function Collapsible(props: Partial<OrganizationChartProps>) {
+  return (
+    <OrganizationChart
+      aria-label="Team"
+      enableExpandCollapse
+      nodeId="lead"
+      toggleLabel="Lead's reports"
+      label={<span>Lead</span>}
+      {...props}
+    >
+      <OrganizationChartNode nodeId="a" label={<span>A</span>} />
+      <OrganizationChartNode nodeId="b" toggleLabel="B's reports" label={<span>B</span>}>
+        <OrganizationChartNode nodeId="c" label={<span>C</span>}>
+          <OrganizationChartNode nodeId="d" label={<span>D</span>} />
+        </OrganizationChartNode>
+      </OrganizationChartNode>
+      <OrganizationChartNode nodeId="lazy" hasChildren toggleLabel="Lazy reports" label="Lazy" />
+    </OrganizationChart>
+  );
+}
+
+const node = (id: string) => document.querySelector(`[data-ok-node-id="${id}"]`) as HTMLElement;
+const toggleOf = (id: string) =>
+  node(id).querySelector(":scope > [data-ok-organization-chart-toggle]") as HTMLButtonElement;
+const listOf = (id: string) =>
+  node(id).querySelector(":scope > [data-ok-organization-chart-children]") as HTMLElement;
+const badgeOf = (id: string) =>
+  toggleOf(id).querySelector("[data-ok-organization-chart-badge]")?.textContent;
+const click = (element: HTMLElement) => act(() => element.click());
+/** Collapse animations run (no reduced motion here): end them once they started. */
+async function finish() {
+  await act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  });
+  for (const animation of document.getAnimations())
+    if (animation.effect?.getComputedTiming().endTime !== Infinity) animation.finish();
+  await act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  });
+}
+
+let hookApi: OrganizationChartApi | undefined;
+/** A chart with its methods from the hook, and buttons that call them. */
+function WithHook({ onApi }: { onApi: (api: OrganizationChartApi | undefined) => void }) {
+  const ref = useOrganizationChartApiRef();
+  return (
+    <>
+      <button type="button" onClick={() => ref.current?.collapseAll()}>
+        Collapse all
+      </button>
+      <Collapsible apiRef={ref} collapseBadgeThreshold={2} />
+      <button type="button" onClick={() => onApi(ref.current)}>
+        Read
+      </button>
+    </>
+  );
+}
+
+describe("OrganizationChart expand and collapse", () => {
+  it("is off by default: no toggles, the same markup as before", () => {
+    const { container } = render(<Collapsible enableExpandCollapse={false} />);
+    expect(container.querySelector("[data-ok-organization-chart-toggle]")).toBeNull();
+    expect(container.querySelector("[data-ok-collapse]")).toBeNull();
+    // A lazy node outside a collapsible chart is a leaf.
+    expect(node("lazy").children).toHaveLength(1);
+    expect(chart().hasAttribute("data-ok-enable-expand-collapse")).toBe(false);
+  });
+
+  it("renders a toggle per branch that controls its Collapse list", () => {
+    render(<Collapsible />);
+    expect(chart().hasAttribute("data-ok-enable-expand-collapse")).toBe(true);
+    const toggle = screen.getByRole("button", { name: "B's reports" });
+    expect(toggle).toBe(toggleOf("b"));
+    expect(toggle.getAttribute("type")).toBe("button");
+    expect(toggle.getAttribute("aria-expanded")).toBe("true");
+    expect(toggle.getAttribute("aria-controls")).toBe(listOf("b").id);
+    expect(listOf("b").hasAttribute("data-ok-collapse")).toBe(true);
+    expect(listOf("b").hidden).toBe(false);
+    // Default label; leaves have no toggle.
+    expect(toggleOf("c").textContent?.trim()).toBe("Child nodes");
+    expect(node("a").querySelector("[data-ok-organization-chart-toggle]")).toBeNull();
+    // A lazy node: an empty, hidden list and a spinner.
+    expect(toggleOf("lazy").getAttribute("aria-expanded")).toBe("false");
+    expect(listOf("lazy").hidden).toBe(true);
+    expect(listOf("lazy").childElementCount).toBe(0);
+    expect(toggleOf("lazy").querySelector("[data-ok-organization-chart-spinner]")).not.toBeNull();
+  });
+
+  it("collapses and expands from the toggle, reports it and shows the hidden count", async () => {
+    const onExpand = vi.fn();
+    const onCollapse = vi.fn();
+    const onCollapsedNodesChange = vi.fn();
+    render(
+      <Collapsible
+        onExpand={onExpand}
+        onCollapse={onCollapse}
+        onCollapsedNodesChange={onCollapsedNodesChange}
+      />,
+    );
+    click(toggleOf("b"));
+    await finish();
+    expect(onCollapse).toHaveBeenCalledWith("b");
+    expect(onCollapsedNodesChange).toHaveBeenLastCalledWith(["b"]);
+    expect(listOf("b").hidden).toBe(true);
+    expect(toggleOf("b").getAttribute("aria-expanded")).toBe("false");
+    expect(badgeOf("b")).toBe("2");
+    expect(getComputedStyle(listOf("b")).display).toBe("none");
+    expect(screen.getByRole("button", { name: "B's reports 2" })).toBe(toggleOf("b"));
+    click(toggleOf("b"));
+    await finish();
+    expect(onExpand).toHaveBeenCalledWith("b");
+    expect(onCollapsedNodesChange).toHaveBeenLastCalledWith([]);
+    expect(listOf("b").hidden).toBe(false);
+    expect(badgeOf("b")).toBe("");
+  });
+
+  it("controlled: collapsedNodes decides; defaultCollapsedNodes starts collapsed", async () => {
+    const onCollapsedNodesChange = vi.fn();
+    const { rerender } = render(
+      <Collapsible collapsedNodes={["c"]} onCollapsedNodesChange={onCollapsedNodesChange} />,
+    );
+    expect(listOf("c").hidden).toBe(true);
+    expect(badgeOf("c")).toBe("1");
+    click(toggleOf("c"));
+    await finish();
+    expect(onCollapsedNodesChange).toHaveBeenCalledWith([]);
+    // Refused by the owner: still collapsed.
+    expect(listOf("c").hidden).toBe(true);
+    rerender(<Collapsible collapsedNodes={[]} />);
+    await finish();
+    expect(listOf("c").hidden).toBe(false);
+    rerender(<Collapsible key="other" defaultCollapsedNodes={["b"]} />);
+    expect(listOf("b").hidden).toBe(true);
+  });
+
+  it("toggles on label clicks with expandCollapseOnNodeClick, not from content buttons", async () => {
+    render(
+      <Collapsible
+        expandCollapseOnNodeClick
+        collapseBadgeThreshold={3}
+        label={
+          <span>
+            Lead <button type="button">Edit</button>
+          </span>
+        }
+      />,
+    );
+    expect(chart().hasAttribute("data-ok-expand-collapse-on-node-click")).toBe(true);
+    expect(chart().getAttribute("data-ok-collapse-badge-threshold")).toBe("3");
+    click(screen.getByText("B"));
+    await finish();
+    expect(listOf("b").hidden).toBe(true);
+    // Two hidden: under the threshold of 3.
+    expect(badgeOf("b")).toBe("");
+    click(screen.getByRole("button", { name: "Edit" }));
+    await finish();
+    expect(listOf("lead").hidden).toBe(false);
+    click(screen.getByText("Lead"));
+    await finish();
+    expect(listOf("lead").hidden).toBe(true);
+    expect(badgeOf("lead")).toBe("5");
+  });
+
+  it("collapseBadgeEnabled={false} renders no badge", () => {
+    render(<Collapsible collapseBadgeEnabled={false} defaultCollapsedNodes={["b"]} />);
+    expect(toggleOf("b").querySelector("[data-ok-organization-chart-badge]")).toBeNull();
+  });
+
+  it("loads lazy children on the first expand: busy, then rendered and expanded", async () => {
+    let resolve: (nodes: ReactNode) => void = () => undefined;
+    const loadChildren = vi.fn(
+      () =>
+        new Promise<ReactNode>((done) => {
+          resolve = done;
+        }),
+    );
+    render(<Collapsible loadChildren={loadChildren} />);
+    click(toggleOf("lazy"));
+    await finish();
+    expect(loadChildren).toHaveBeenCalledWith({ id: "lazy" });
+    expect(toggleOf("lazy").getAttribute("aria-busy")).toBe("true");
+    click(toggleOf("lazy"));
+    await finish();
+    expect(loadChildren).toHaveBeenCalledTimes(1);
+    await act(async () => {
+      resolve([
+        <OrganizationChartNode key="x" nodeId="x" label="X" />,
+        <OrganizationChartNode key="y" nodeId="y" label="Y">
+          <OrganizationChartNode nodeId="z" label="Z" />
+        </OrganizationChartNode>,
+      ]);
+    });
+    await finish();
+    expect(toggleOf("lazy").hasAttribute("aria-busy")).toBe(false);
+    expect(listOf("lazy").hidden).toBe(false);
+    expect(listOf("lazy").childElementCount).toBe(2);
+    expect(toggleOf("lazy").querySelector("[data-ok-organization-chart-spinner]")).toBeNull();
+    // Loaded nodes are collapsible too.
+    expect(toggleOf("y")).not.toBeNull();
+    click(toggleOf("lazy"));
+    await finish();
+    expect(badgeOf("lazy")).toBe("3");
+    click(toggleOf("lazy"));
+    await finish();
+    expect(loadChildren).toHaveBeenCalledTimes(1);
+  });
+
+  it("lazy: a rejection keeps it collapsed and retryable; no nodes make it a leaf", async () => {
+    const loadChildren = vi
+      .fn<(node: { id: string }) => Promise<ReactNode>>()
+      .mockRejectedValueOnce(new Error("offline"))
+      .mockResolvedValueOnce([]);
+    const apiRef = createRef<OrganizationChartApi>() as MutableRefObject<
+      OrganizationChartApi | undefined
+    >;
+    render(<Collapsible loadChildren={loadChildren} apiRef={apiRef} />);
+    click(toggleOf("lazy"));
+    await finish();
+    expect(listOf("lazy").hidden).toBe(true);
+    expect(toggleOf("lazy").hasAttribute("aria-busy")).toBe(false);
+    await act(() => apiRef.current?.expand("lazy") as Promise<void>);
+    await finish();
+    expect(loadChildren).toHaveBeenCalledTimes(2);
+    expect(node("lazy").children).toHaveLength(1);
+  });
+
+  it("a lazy node without loadChildren stays collapsed", async () => {
+    render(<Collapsible />);
+    click(toggleOf("lazy"));
+    await finish();
+    expect(listOf("lazy").hidden).toBe(true);
+  });
+
+  it("apiRef: batch methods, subtrees, expand and collapse, without callbacks", async () => {
+    const apiRef = createRef<OrganizationChartApi>() as MutableRefObject<
+      OrganizationChartApi | undefined
+    >;
+    const onCollapse = vi.fn();
+    const { unmount } = render(<Collapsible apiRef={apiRef} onCollapse={onCollapse} />);
+    const api = apiRef.current as OrganizationChartApi;
+    act(() => api.collapseAll());
+    await finish();
+    for (const id of ["lead", "b", "c", "lazy"]) expect(api.isExpanded(id)).toBe(false);
+    expect(listOf("lead").hidden).toBe(true);
+    act(() => api.expandToDepth(1));
+    await finish();
+    expect(api.isExpanded("lead")).toBe(true);
+    expect(api.isExpanded("b")).toBe(false);
+    act(() => api.expandSubtree("b"));
+    await finish();
+    expect(api.isExpanded("c")).toBe(true);
+    act(() => api.collapseSubtree("b"));
+    await finish();
+    expect(api.isExpanded("b")).toBe(false);
+    expect(api.isExpanded("c")).toBe(false);
+    act(() => api.expandAll());
+    await finish();
+    for (const id of ["lead", "b", "c"]) expect(api.isExpanded(id)).toBe(true);
+    expect(api.isExpanded("lazy")).toBe(false);
+    act(() => api.collapse("c"));
+    // Collapsing it again changes nothing.
+    act(() => api.collapse("c"));
+    await finish();
+    expect(listOf("c").hidden).toBe(true);
+    await act(() => api.expand("c"));
+    await finish();
+    expect(listOf("c").hidden).toBe(false);
+    // Unknown ids and leaves do nothing.
+    act(() => {
+      api.collapse("nobody");
+      api.collapse("a");
+      api.expandSubtree("nobody");
+      api.collapseSubtree("nobody");
+    });
+    expect(api.isExpanded("nobody")).toBe(false);
+    expect(onCollapse).not.toHaveBeenCalled();
+    unmount();
+    expect(apiRef.current).toBeUndefined();
+  });
+
+  it("useOrganizationChartApiRef gives a ref for apiRef", async () => {
+    render(<WithHook onApi={(value) => (hookApi = value)} />);
+    click(screen.getByRole("button", { name: "Collapse all" }));
+    await finish();
+    expect(listOf("lead").hidden).toBe(true);
+    // c hides one node: under the threshold of 2.
+    expect(badgeOf("c")).toBe("");
+    expect(badgeOf("lead")).toBe("5");
+    click(screen.getByRole("button", { name: "Read" }));
+    const api = hookApi as OrganizationChartApi | undefined;
+    expect(api?.isExpanded("lead")).toBe(false);
+    await act(() => (api as OrganizationChartApi).expand("a"));
+    await act(() => (api as OrganizationChartApi).expand("nobody"));
+  });
+
+  it("nodes without nodeId toggle too", async () => {
+    render(
+      <OrganizationChart aria-label="Team" enableExpandCollapse label="Lead">
+        <OrganizationChartNode label="B">
+          <OrganizationChartNode label="C" />
+        </OrganizationChartNode>
+      </OrganizationChart>,
+    );
+    const toggle = screen.getAllByRole("button", { name: "Child nodes" })[1] as HTMLButtonElement;
+    click(toggle);
+    await finish();
+    expect(toggle.getAttribute("aria-expanded")).toBe("false");
+  });
+
+  it("has no axe violations while collapsed and loading", async () => {
+    render(
+      <Collapsible
+        defaultCollapsedNodes={["b"]}
+        loadChildren={() => new Promise<ReactNode>(() => undefined)}
+      />,
+    );
+    click(toggleOf("lazy"));
+    await finish();
+    expect(toggleOf("lazy").getAttribute("aria-busy")).toBe("true");
+    await expectNoAxeViolations(document.body);
+  });
+
+  it("renders the same markup on the server", () => {
+    const markup = renderToString(<Collapsible defaultCollapsedNodes={["b"]} />);
+    expect(markup).toContain('data-ok-enable-expand-collapse=""');
+    expect(markup).toContain('aria-expanded="false"');
+    const { container } = render(
+      <StrictMode>
+        <Collapsible defaultCollapsedNodes={["b"]} />
+      </StrictMode>,
+    );
+    // The badge's count is written after mount; ids differ between renders.
+    const plain = (html: string) =>
+      html
+        .replace(/ style="[^"]*"/g, "")
+        .replace(/ (id|aria-controls)="[^"]*"/g, "")
+        .replace(/(<span data-ok-organization-chart-badge="">)[^<]*/g, "$1");
+    const server = new DOMParser().parseFromString(markup, "text/html").body
+      .firstElementChild as HTMLElement;
+    expect(plain((container.firstElementChild as HTMLElement).outerHTML)).toBe(
+      plain(server.outerHTML),
+    );
   });
 });

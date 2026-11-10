@@ -1,11 +1,25 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   organizationChartAttributes,
   organizationChartOptions,
   readNumber,
   readStyle,
 } from "../index.js";
-import { ORGANIZATION_CHART_LENGTHS, organizationChartStyle } from "./organization-chart.js";
+import {
+  createOrganizationChartController,
+  ORGANIZATION_CHART_LENGTHS,
+  organizationChartDepth,
+  organizationChartDescendants,
+  organizationChartExpanded,
+  organizationChartList,
+  organizationChartLoaded,
+  organizationChartNode,
+  organizationChartNodeId,
+  organizationChartNodes,
+  organizationChartPlan,
+  organizationChartStyle,
+  organizationChartToggle,
+} from "./organization-chart.js";
 
 const HOSTILE = '"><img src=x onerror=alert(1)>';
 
@@ -119,5 +133,195 @@ describe("organizationChartStyle", () => {
     ]);
     for (const name of Object.values(ORGANIZATION_CHART_LENGTHS))
       expect(name).toMatch(/^--_ok-org-/);
+  });
+});
+
+// --- Expand and collapse (ADR-0051) ------------------------------------------------------------
+
+describe("organizationChartAttributes: expand and collapse", () => {
+  it("writes the flags when on and a valid threshold; nothing by default", () => {
+    expect(
+      organizationChartAttributes({
+        enableExpandCollapse: true,
+        expandCollapseOnNodeClick: true,
+        collapseBadgeThreshold: 3,
+      }),
+    ).toEqual({
+      "data-ok-organization-chart": "",
+      "data-ok-line-color": "divider",
+      "data-ok-line-style": "solid",
+      "data-ok-enable-expand-collapse": "",
+      "data-ok-expand-collapse-on-node-click": "",
+      "data-ok-collapse-badge-threshold": "3",
+    });
+    expect(
+      organizationChartAttributes({ enableExpandCollapse: false, collapseBadgeThreshold: 0 }),
+    ).toEqual(organizationChartAttributes());
+  });
+});
+
+const branch = (id: string, children: string, hidden = false) =>
+  `<li data-ok-organization-chart-node data-ok-node-id="${id}"><div data-ok-organization-chart-label>${id}</div>` +
+  `<button type="button" data-ok-organization-chart-toggle aria-expanded="${!hidden && children !== ""}"><span data-ok-organization-chart-badge></span></button>` +
+  `<ul data-ok-organization-chart-children${hidden ? " hidden" : ""}>${children}</ul></li>`;
+const leaf = (id: string, content = id) =>
+  `<li data-ok-organization-chart-node data-ok-node-id="${id}"><div data-ok-organization-chart-label>${content}</div></li>`;
+/** lead › (a, b › (c › d), lazy); `a`'s label holds a nested chart (n1 › n2). */
+const NESTED = `<ul data-ok-organization-chart aria-label="Nested">${branch("n1", leaf("n2"))}</ul>`;
+function mountChart(): HTMLElement {
+  const host = document.createElement("div");
+  // Test markup only (library code never uses innerHTML).
+  host.innerHTML = `<ul data-ok-organization-chart data-ok-enable-expand-collapse aria-label="Team">${branch(
+    "lead",
+    leaf("a", NESTED) + branch("b", branch("c", leaf("d"))) + branch("lazy", "", true),
+  )}</ul>`;
+  document.body.append(host);
+  return host.firstElementChild as HTMLElement;
+}
+const byId = (root: Element, id: string) => organizationChartNode(root, id) as HTMLElement;
+const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
+
+describe("organization chart tree helpers", () => {
+  afterEach(() => document.body.replaceChildren());
+
+  it("finds the chart's own nodes, toggles, lists, ids and depths", () => {
+    const root = mountChart();
+    expect(organizationChartNodes(root).map(organizationChartNodeId)).toEqual([
+      "lead",
+      "a",
+      "b",
+      "c",
+      "d",
+      "lazy",
+    ]);
+    expect(organizationChartNode(root, "n1")).toBeNull();
+    expect(organizationChartToggle(byId(root, "a"))).toBeNull();
+    expect(organizationChartList(byId(root, "a"))).toBeNull();
+    expect(organizationChartDepth(byId(root, "lead"))).toBe(0);
+    expect(organizationChartDepth(byId(root, "d"))).toBe(3);
+    // A nested chart counts from its own root.
+    const nested = root.querySelector('[data-ok-node-id="n2"]') as Element;
+    expect(organizationChartDepth(nested)).toBe(1);
+    expect(organizationChartDescendants(root, byId(root, "lead"))).toBe(5);
+    expect(organizationChartDescendants(root, byId(root, "a"))).toBe(0);
+    expect(organizationChartLoaded(byId(root, "lazy"))).toBe(false);
+    expect(organizationChartLoaded(byId(root, "a"))).toBe(false);
+    expect(organizationChartExpanded(byId(root, "lazy"))).toBe(false);
+    expect(organizationChartExpanded(byId(root, "b"))).toBe(true);
+  });
+
+  it("plans the batch methods on loaded nodes with toggles only", () => {
+    const root = mountChart();
+    const ids = (plan: Map<HTMLElement, boolean>) =>
+      Object.fromEntries(
+        [...plan].map(([node, expand]) => [organizationChartNodeId(node), expand]),
+      );
+    expect(ids(organizationChartPlan(root, { type: "expandAll" }))).toEqual({
+      lead: true,
+      b: true,
+      c: true,
+    });
+    expect(ids(organizationChartPlan(root, { type: "collapseAll" }))).toEqual({
+      lead: false,
+      b: false,
+      c: false,
+      lazy: false,
+    });
+    expect(ids(organizationChartPlan(root, { type: "expandToDepth", depth: 1.7 }))).toEqual({
+      lead: true,
+      b: false,
+      c: false,
+      lazy: false,
+    });
+    expect(ids(organizationChartPlan(root, { type: "expandToDepth", depth: -3 }))).toEqual({
+      lead: false,
+      b: false,
+      c: false,
+      lazy: false,
+    });
+    const b = byId(root, "b");
+    expect(ids(organizationChartPlan(root, { type: "expandSubtree", node: b }))).toEqual({
+      b: true,
+      c: true,
+    });
+    expect(ids(organizationChartPlan(root, { type: "collapseSubtree", node: b }))).toEqual({
+      b: false,
+      c: false,
+    });
+  });
+});
+
+describe("createOrganizationChartController", () => {
+  afterEach(() => document.body.replaceChildren());
+
+  it("reports toggle clicks as intent and changes nothing itself", () => {
+    const root = mountChart();
+    const onToggle = vi.fn();
+    const controller = createOrganizationChartController(root, { onToggle });
+    (organizationChartToggle(byId(root, "b")) as HTMLButtonElement).click();
+    expect(onToggle).toHaveBeenLastCalledWith(byId(root, "b"), false);
+    expect(organizationChartExpanded(byId(root, "b"))).toBe(true);
+    (organizationChartToggle(byId(root, "lazy")) as HTMLButtonElement).click();
+    expect(onToggle).toHaveBeenLastCalledWith(byId(root, "lazy"), true);
+    // Busy toggles (loading) wait.
+    organizationChartToggle(byId(root, "lazy"))?.setAttribute("aria-busy", "true");
+    (organizationChartToggle(byId(root, "lazy")) as HTMLButtonElement).click();
+    expect(onToggle).toHaveBeenCalledTimes(2);
+    // Label clicks only with expandCollapseOnNodeClick; leaves and nested charts are ignored.
+    const label = (id: string) =>
+      byId(root, id).querySelector(":scope > [data-ok-organization-chart-label]") as HTMLElement;
+    label("b").click();
+    expect(onToggle).toHaveBeenCalledTimes(2);
+    controller.update({ onToggle, expandCollapseOnNodeClick: true });
+    // A focusable scroll area around the chart is outside the label: label clicks still count.
+    root.parentElement?.setAttribute("tabindex", "0");
+    label("b").click();
+    expect(onToggle).toHaveBeenCalledTimes(3);
+    label("a").click();
+    (root.querySelector('[data-ok-node-id="n1"] > button') as HTMLButtonElement).click();
+    (root.querySelector('[data-ok-node-id="n1"] > div') as HTMLElement).click();
+    expect(onToggle).toHaveBeenCalledTimes(3);
+    // Interactive content inside a label keeps its click; so do prevented clicks.
+    const inner = document.createElement("a");
+    inner.href = "#x";
+    label("b").append(inner);
+    inner.addEventListener("click", (event) => event.preventDefault());
+    inner.click();
+    const span = document.createElement("span");
+    label("b").append(span);
+    span.addEventListener("click", (event) => event.preventDefault());
+    span.click();
+    expect(onToggle).toHaveBeenCalledTimes(3);
+    controller.destroy();
+    (organizationChartToggle(byId(root, "b")) as HTMLButtonElement).click();
+    expect(onToggle).toHaveBeenCalledTimes(3);
+  });
+
+  it("writes the hidden count on collapsed nodes' badges and follows changes", async () => {
+    const root = mountChart();
+    const badge = (id: string) =>
+      organizationChartToggle(byId(root, id))?.querySelector("[data-ok-organization-chart-badge]")
+        ?.textContent;
+    const controller = createOrganizationChartController(root);
+    expect(badge("b")).toBe("");
+    (organizationChartList(byId(root, "b")) as HTMLElement).hidden = true;
+    await tick();
+    expect(badge("b")).toBe("2");
+    // Lazy loads add nodes: the count follows.
+    const added = document.createElement("li");
+    added.setAttribute("data-ok-organization-chart-node", "");
+    (organizationChartList(byId(root, "c")) as HTMLElement).append(added);
+    await tick();
+    expect(badge("b")).toBe("3");
+    controller.update({ collapseBadgeThreshold: 4 });
+    expect(badge("b")).toBe("");
+    controller.update({ collapseBadgeThreshold: 0 });
+    expect(badge("b")).toBe("3");
+    expect(badge("lazy")).toBe("");
+    controller.sync();
+    controller.destroy();
+    (organizationChartList(byId(root, "b")) as HTMLElement).hidden = false;
+    await tick();
+    expect(badge("b")).toBe("3");
   });
 });

@@ -59,7 +59,7 @@ const firstAfter = (host: Element) =>
   );
 
 describe("organization chart snippets", () => {
-  it("covers every story group", () => expect(snippets).toHaveLength(7));
+  it("covers every story group", () => expect(snippets).toHaveLength(9));
 
   it.each(snippets)("%s: valid anatomy", (_, html) => {
     const host = mount(local(html));
@@ -75,9 +75,31 @@ describe("organization chart snippets", () => {
         expect(item.tagName).toBe("LI");
         expect(item.firstElementChild?.hasAttribute("data-ok-organization-chart-label")).toBe(true);
         const list = item.querySelector(":scope > ul");
+        const toggle = item.querySelector(":scope > [data-ok-organization-chart-toggle]");
+        if (toggle) {
+          // Collapsible charts only: the toggle sits between the label and its list.
+          expect(root.hasAttribute("data-ok-enable-expand-collapse")).toBe(true);
+          expect(toggle.tagName).toBe("BUTTON");
+          expect(toggle.getAttribute("type")).toBe("button");
+          expect(
+            toggle.querySelector(":scope > [data-ok-organization-chart-toggle-label]")?.textContent,
+          ).toBeTruthy();
+          expect(
+            toggle.previousElementSibling?.hasAttribute("data-ok-organization-chart-label"),
+          ).toBe(true);
+          expect(toggle.getAttribute("aria-controls")).toBe(list?.id);
+          expect(toggle.getAttribute("aria-expanded")).toBe(
+            String(!!list && !(list as HTMLElement).hidden && list.children.length > 0),
+          );
+          expect(list?.hasAttribute("data-ok-collapse")).toBe(true);
+        }
         if (list) {
           expect(list.hasAttribute("data-ok-organization-chart-children")).toBe(true);
-          expect(list.children.length).toBeGreaterThan(0);
+          // An empty list is a lazy node's: hidden, behind a toggle.
+          if (list.children.length === 0) {
+            expect((list as HTMLElement).hidden).toBe(true);
+            expect(toggle).not.toBeNull();
+          }
         }
       }
     }
@@ -205,5 +227,332 @@ describe("organization chart runtime", () => {
     start();
     await settle();
     expect(rootOf(host).style.length).toBe(0);
+  });
+});
+
+// --- Expand and collapse (ADR-0051) ------------------------------------------------------------
+
+interface BranchOptions {
+  hidden?: boolean;
+  badge?: boolean;
+}
+const branch = (
+  id: string,
+  children: string,
+  { hidden = false, badge = true }: BranchOptions = {},
+) =>
+  `<li data-ok-organization-chart-node data-ok-node-id="${id}"><div data-ok-organization-chart-label>${id}</div>` +
+  `<button type="button" data-ok-organization-chart-toggle aria-expanded="${!hidden && children !== ""}" aria-controls="list-${id}">` +
+  `<span data-ok-organization-chart-toggle-label>${id} reports</span> <svg data-ok-organization-chart-toggle-icon aria-hidden="true" viewBox="0 0 24 24"></svg>${
+    badge ? "<span data-ok-organization-chart-badge></span>" : ""
+  }</button>` +
+  `<ul data-ok-collapse data-ok-organization-chart-children id="list-${id}"${hidden ? " hidden" : ""}>${children}</ul></li>`;
+const leaf = (id: string) =>
+  `<li data-ok-organization-chart-node data-ok-node-id="${id}"><div data-ok-organization-chart-label>${id}</div></li>`;
+/** lead › (a, b › (c › d), lazy (no children yet)) */
+const collapsible = (attrs = "", options: BranchOptions = {}) =>
+  `<ul data-ok-organization-chart data-ok-line-color="divider" data-ok-line-style="solid" data-ok-enable-expand-collapse aria-label="Team" ${attrs}>${branch(
+    "lead",
+    leaf("a") + branch("b", branch("c", leaf("d")), options) + branch("lazy", "", { hidden: true }),
+  )}</ul>`;
+
+interface ChartInstance {
+  expand(id: string): Promise<void>;
+  collapse(id: string): void;
+  isExpanded(id: string): boolean;
+  expandAll(): void;
+  collapseAll(): void;
+  expandToDepth(depth: number): void;
+  expandSubtree(id: string): void;
+  collapseSubtree(id: string): void;
+}
+const instanceOf = (host: Element) =>
+  runtime?.get(rootOf(host), "organization-chart") as unknown as ChartInstance;
+const toggle = (host: Element, id: string) =>
+  host.querySelector(
+    `[data-ok-node-id="${id}"] > [data-ok-organization-chart-toggle]`,
+  ) as HTMLButtonElement;
+const list = (host: Element, id: string) =>
+  host.querySelector(
+    `[data-ok-node-id="${id}"] > [data-ok-organization-chart-children]`,
+  ) as HTMLElement;
+const badge = (host: Element, id: string) =>
+  toggle(host, id).querySelector("[data-ok-organization-chart-badge]")?.textContent;
+/** Collapse animations run here (no reduced motion): end them (spinners loop forever: skip). */
+const finish = async () => {
+  // The Collapse starts its animation from a MutationObserver: let it start first.
+  await settle();
+  for (const animation of document.getAnimations())
+    if (animation.effect?.getComputedTiming().endTime !== Infinity) animation.finish();
+  await settle();
+};
+const answer = (event: Event) =>
+  (event as CustomEvent<{ nodeId: string | null; respondWith(nodes: unknown): void }>).detail;
+
+describe("organization chart expand and collapse", () => {
+  it("collapses and expands from the toggle, with events, aria-expanded and the badge", async () => {
+    const host = mount(collapsible());
+    start();
+    await settle();
+    const events: string[] = [];
+    for (const type of ["expand", "collapse"])
+      host.addEventListener(`ok:organization-chart:${type}`, (event) =>
+        events.push(`${type}:${(event as CustomEvent<{ nodeId: string }>).detail.nodeId}`),
+      );
+    expect(badge(host, "b")).toBe("");
+    toggle(host, "b").click();
+    await finish();
+    expect(list(host, "b").hidden).toBe(true);
+    expect(toggle(host, "b").getAttribute("aria-expanded")).toBe("false");
+    // Two hidden descendants (c and d), at every depth.
+    expect(badge(host, "b")).toBe("2");
+    // Hidden children draw no connectors: the list isn't rendered.
+    expect(getComputedStyle(list(host, "b")).display).toBe("none");
+    toggle(host, "b").click();
+    await finish();
+    expect(list(host, "b").hidden).toBe(false);
+    expect(toggle(host, "b").getAttribute("aria-expanded")).toBe("true");
+    expect(badge(host, "b")).toBe("");
+    expect(events).toEqual(["collapse:b", "expand:b"]);
+  });
+
+  it("cancels a toggle when a listener calls preventDefault()", async () => {
+    const host = mount(collapsible());
+    start();
+    host.addEventListener("ok:organization-chart:collapse", (event) => event.preventDefault());
+    toggle(host, "b").click();
+    await finish();
+    expect(list(host, "b").hidden).toBe(false);
+    expect(toggle(host, "b").getAttribute("aria-expanded")).toBe("true");
+  });
+
+  it("toggles on label clicks only with data-ok-expand-collapse-on-node-click", async () => {
+    const host = mount(collapsible());
+    start();
+    const label = host.querySelector(
+      '[data-ok-node-id="b"] > [data-ok-organization-chart-label]',
+    ) as HTMLElement;
+    label.click();
+    await finish();
+    expect(list(host, "b").hidden).toBe(false);
+    rootOf(host).setAttribute("data-ok-expand-collapse-on-node-click", "");
+    await settle();
+    label.click();
+    await finish();
+    expect(list(host, "b").hidden).toBe(true);
+    // A button inside the label keeps its own click.
+    const inner = document.createElement("button");
+    inner.type = "button";
+    inner.textContent = "Edit";
+    label.append(inner);
+    inner.click();
+    await finish();
+    expect(list(host, "b").hidden).toBe(true);
+  });
+
+  it("follows the badge threshold; charts without a badge span show none", async () => {
+    const host = mount(collapsible('data-ok-collapse-badge-threshold="3"', { hidden: true }));
+    start();
+    await settle();
+    // b hides 2 nodes: under the threshold of 3.
+    expect(badge(host, "b")).toBe("");
+    toggle(host, "lead").click();
+    await finish();
+    expect(badge(host, "lead")).toBe("5");
+    // Invalid → the default threshold, 1.
+    rootOf(host).setAttribute("data-ok-collapse-badge-threshold", "x");
+    await settle();
+    expect(badge(host, "b")).toBe("2");
+    const bare = mount(collapsible("", { badge: false }));
+    await settle();
+    toggle(bare, "b").click();
+    await finish();
+    expect(list(bare, "b").hidden).toBe(true);
+    expect(toggle(bare, "b").querySelector("[data-ok-organization-chart-badge]")).toBeNull();
+  });
+
+  it("instance methods: batch changes, subtrees, expand and collapse, no events", async () => {
+    const host = mount(collapsible());
+    start();
+    const chart = instanceOf(host);
+    const events: Event[] = [];
+    host.addEventListener("ok:organization-chart:collapse", (event) => events.push(event));
+    host.addEventListener("ok:organization-chart:expand", (event) => events.push(event));
+    chart.collapseAll();
+    await finish();
+    for (const id of ["lead", "b", "c", "lazy"]) expect(chart.isExpanded(id)).toBe(false);
+    chart.expandToDepth(1);
+    await finish();
+    expect(chart.isExpanded("lead")).toBe(true);
+    expect(chart.isExpanded("b")).toBe(false);
+    chart.expandSubtree("b");
+    await finish();
+    expect(chart.isExpanded("b")).toBe(true);
+    expect(chart.isExpanded("c")).toBe(true);
+    chart.collapseSubtree("b");
+    await finish();
+    expect(chart.isExpanded("b")).toBe(false);
+    expect(chart.isExpanded("c")).toBe(false);
+    chart.expandAll();
+    await finish();
+    for (const id of ["lead", "b", "c"]) expect(chart.isExpanded(id)).toBe(true);
+    // Batch methods never load lazy children.
+    expect(chart.isExpanded("lazy")).toBe(false);
+    chart.collapse("c");
+    await finish();
+    expect(chart.isExpanded("c")).toBe(false);
+    await chart.expand("c");
+    await finish();
+    expect(chart.isExpanded("c")).toBe(true);
+    expect(events).toHaveLength(0);
+    // Leaves, toggles without a list and unknown ids do nothing.
+    chart.collapse("a");
+    list(host, "c").remove();
+    chart.collapse("c");
+    expect(toggle(host, "c").getAttribute("aria-expanded")).toBe("true");
+    await chart.expand("nobody");
+    chart.collapse("nobody");
+    chart.expandSubtree("nobody");
+    chart.collapseSubtree("nobody");
+    expect(chart.isExpanded("nobody")).toBe(false);
+  });
+
+  it("loads lazy children through loadchildren: busy, then appended and expanded", async () => {
+    const host = mount(collapsible());
+    start();
+    let resolve: (nodes: unknown) => void = () => undefined;
+    const asked: (string | null)[] = [];
+    host.addEventListener("ok:organization-chart:loadchildren", (event) => {
+      asked.push(answer(event).nodeId);
+      answer(event).respondWith(
+        new Promise((done) => {
+          resolve = done;
+        }),
+      );
+    });
+    toggle(host, "lazy").click();
+    await settle();
+    expect(toggle(host, "lazy").getAttribute("aria-busy")).toBe("true");
+    // A second click (or expand call) while loading waits.
+    toggle(host, "lazy").click();
+    await instanceOf(host).expand("lazy");
+    await settle();
+    expect(asked).toEqual(["lazy"]);
+    const template = document.createElement("template");
+    template.innerHTML = leaf("x") + leaf("y");
+    resolve(template.content.cloneNode(true));
+    await finish();
+    expect(toggle(host, "lazy").hasAttribute("aria-busy")).toBe(false);
+    expect(list(host, "lazy").hidden).toBe(false);
+    expect(list(host, "lazy").children).toHaveLength(2);
+    expect(toggle(host, "lazy").getAttribute("aria-expanded")).toBe("true");
+    // Loaded once: collapsing and expanding again doesn't ask.
+    toggle(host, "lazy").click();
+    await finish();
+    expect(badge(host, "lazy")).toBe("2");
+    toggle(host, "lazy").click();
+    await finish();
+    expect(asked).toEqual(["lazy"]);
+  });
+
+  it("lazy: a rejection keeps it collapsed and retryable; no nodes make it a leaf", async () => {
+    const host = mount(collapsible());
+    start();
+    let calls = 0;
+    host.addEventListener("ok:organization-chart:loadchildren", (event) => {
+      calls++;
+      if (calls === 1) answer(event).respondWith(Promise.reject(new Error("offline")));
+      else answer(event).respondWith([]);
+    });
+    toggle(host, "lazy").click();
+    await finish();
+    expect(list(host, "lazy").hidden).toBe(true);
+    expect(toggle(host, "lazy").hasAttribute("aria-busy")).toBe(false);
+    await instanceOf(host).expand("lazy");
+    expect(calls).toBe(2);
+    // A leaf now: only the label is left.
+    expect(host.querySelector('[data-ok-node-id="lazy"]')?.children).toHaveLength(1);
+    // Arrays of elements are appended too.
+    const other = mount(collapsible());
+    await settle();
+    other.addEventListener("ok:organization-chart:loadchildren", (event) => {
+      const node = document.createElement("li");
+      node.setAttribute("data-ok-organization-chart-node", "");
+      answer(event).respondWith([node]);
+    });
+    toggle(other, "lazy").click();
+    await finish();
+    expect(list(other, "lazy").children).toHaveLength(1);
+    // No answer at all: no children, a leaf.
+    const silent = mount(collapsible());
+    await settle();
+    toggle(silent, "lazy").click();
+    await finish();
+    expect(silent.querySelector('[data-ok-node-id="lazy"]')?.children).toHaveLength(1);
+  });
+
+  it("has no axe violations while collapsed and loading", async () => {
+    const host = mount(collapsible());
+    start();
+    host.addEventListener("ok:organization-chart:loadchildren", (event) =>
+      answer(event).respondWith(new Promise(() => undefined)),
+    );
+    toggle(host, "b").click();
+    toggle(host, "lazy").click();
+    await finish();
+    expect(toggle(host, "lazy").getAttribute("aria-busy")).toBe("true");
+    await expectNoAxeViolations(host);
+  });
+
+  it("does nothing without data-ok-enable-expand-collapse, and stops when it goes", async () => {
+    const host = mount(collapsible());
+    rootOf(host).removeAttribute("data-ok-enable-expand-collapse");
+    start();
+    toggle(host, "b").click();
+    await finish();
+    expect(list(host, "b").hidden).toBe(false);
+    rootOf(host).setAttribute("data-ok-enable-expand-collapse", "");
+    await settle();
+    toggle(host, "b").click();
+    await finish();
+    expect(list(host, "b").hidden).toBe(true);
+    rootOf(host).removeAttribute("data-ok-enable-expand-collapse");
+    await settle();
+    toggle(host, "b").click();
+    await finish();
+    expect(list(host, "b").hidden).toBe(true);
+  });
+
+  it("collapsible snippet: the toggle and the methods", async () => {
+    const html = snippets.find(([path]) => path.endsWith("/collapsible-group.html"))?.[1] as string;
+    const host = mount(html);
+    start();
+    await settle();
+    expect(badge(host, "elias")).toBe("3");
+    toggle(host, "elias").click();
+    await finish();
+    expect(list(host, "elias").hidden).toBe(false);
+    instanceOf(host).expandToDepth(1);
+    await finish();
+    expect(badge(host, "priya")).toBe("4");
+  });
+
+  it("lazy snippet: a lead's reports come from its template", async () => {
+    const html = snippets.find(([path]) => path.endsWith("/lazy-group.html"))?.[1] as string;
+    const host = mount(html);
+    start();
+    await settle();
+    host.addEventListener("ok:organization-chart:loadchildren", (event) => {
+      const template = host.querySelector<HTMLTemplateElement>(`#org-lazy-${answer(event).nodeId}`);
+      answer(event).respondWith(template?.content.cloneNode(true));
+    });
+    toggle(host, "priya").click();
+    await finish();
+    expect(list(host, "priya").hidden).toBe(false);
+    // Loaded nodes carry their own toggles.
+    toggle(host, "elias").click();
+    await finish();
+    expect(badge(host, "elias")).toBe("3");
+    await expectNoAxeViolations(host);
   });
 });

@@ -16,6 +16,8 @@ async function withImports(file, seen = new Set()) {
 }
 
 const budgets = [
+  // 209 kB since Phase 4 batch E row 4.18.1: Organization chart collapsible nodes (the expand /
+  // collapse controller, badges, lazy children and eight methods; about 1.4 kB): 205.1 kB.
   // 205 kB since Phase 4 batch D: the data grid's row 4.15 (multiple grouping columns, grouping
   // values, group footers, server-side aggregation, derived pivot fields, the pivot panel's drag and
   // drop, several charts per grid; about 2.7 kB) on top of the Editor merge: 200.0 kB.
@@ -69,7 +71,7 @@ const budgets = [
   // Motion (trigger, count-up and five runtimes, the 62 variant names); 31 kB after
   // the composite inputs, 24 kB after the navigation components, 22 kB after the overlays. The CDN bundle carries every component; the npm ESM build
   // (`@owlky/html`) is tree-shaken.
-  ["packages/html/dist/owlky.js", 205_000, "HTML runtime + all components (IIFE)"],
+  ["packages/html/dist/owlky.js", 209_000, "HTML runtime + all components (IIFE)"],
   ["packages/html/dist/esm/runtime/runtime.js", 3_000, "HTML core runtime"],
   // The Editor is opt-in (ADR-0023): Tiptap, ProseMirror and its starter kit are about 125 kB of
   // it; owlky.js stays free of them. 155.1 kB after ADR-0050 (from 130.8 kB): tables

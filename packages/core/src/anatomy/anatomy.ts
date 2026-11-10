@@ -2449,6 +2449,20 @@ export const organizationChartOptions = defineOptions(
       "Space on each side of every node: a number in px, or a CSS length.",
       CHART_LENGTH,
     ),
+    enableExpandCollapse: flag(
+      "data-ok-enable-expand-collapse",
+      "Nodes with children can be collapsed and expanded with their toggle button.",
+    ),
+    expandCollapseOnNodeClick: flag(
+      "data-ok-expand-collapse-on-node-click",
+      "A click on a node's label (outside its buttons and links) also toggles its children.",
+    ),
+    collapseBadgeThreshold: number(
+      "data-ok-collapse-badge-threshold",
+      1,
+      "Smallest number of hidden descendants that a collapsed node's badge shows.",
+      { min: 1 },
+    ),
   },
 );
 
@@ -2459,6 +2473,9 @@ export interface OrganizationChartAnatomyOptions {
   lineStyle?: OrganizationChartLineStyle | undefined;
   lineBorderRadius?: number | string | undefined;
   nodePadding?: number | string | undefined;
+  enableExpandCollapse?: boolean | undefined;
+  expandCollapseOnNodeClick?: boolean | undefined;
+  collapseBadgeThreshold?: number | undefined;
 }
 
 /** `data-ok-*` attributes of an organization chart (the outer `ul`). */

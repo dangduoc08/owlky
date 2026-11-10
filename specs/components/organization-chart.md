@@ -1,7 +1,8 @@
 # Organization chart
 
 Reference: Minimal UI kit "Organization chart" page, sections Simple, Standard, Group (content
-only). Upstream: `react-organizational-chart` (`Tree`, `TreeNode`; ADR-0015, ADR-0036).
+only). Upstream: `react-organizational-chart` (`Tree`, `TreeNode`; ADR-0015, ADR-0036); expand and
+collapse after ApexTree (ADR-0051).
 Created with `/component`.
 Reference URL: https://minimals.cc/components/extra/organization-chart
 HTML source: written by us (the upstream is React only)
@@ -9,16 +10,29 @@ HTML source: written by us (the upstream is React only)
 ## Purpose
 A hierarchy (people of a company, parts of a product) as a top-down tree of nodes joined by
 connector lines. Node content is free (cards in the stories). CSS only; a small runtime turns the
-length options into private custom properties in HTML.
+length options into private custom properties in HTML. Opt-in (`enableExpandCollapse`): branches
+collapse and expand with a toggle button, their children list is a Collapse, children can load on
+demand.
 
 ## Anatomy
 ```
 ul[data-ok-organization-chart][data-ok-line-color][data-ok-line-style]
   [data-ok-line-height]? [data-ok-line-width]? [data-ok-line-border-radius]? [data-ok-node-padding]?
+  [data-ok-enable-expand-collapse]? [data-ok-expand-collapse-on-node-click]?
+  [data-ok-collapse-badge-threshold]?
   [aria-label | aria-labelledby]
-  li[data-ok-organization-chart-node]                     (the root node: React `label`)
+  li[data-ok-organization-chart-node][data-ok-node-id]?   (the root node: React `label`)
     div[data-ok-organization-chart-label]                 (any content)
-    ul[data-ok-organization-chart-children]?              (only when there are children)
+    button[data-ok-organization-chart-toggle][type=button][aria-expanded][aria-controls]
+          [aria-busy]?                                    (collapsible charts, branches only)
+      span[data-ok-organization-chart-toggle-label]       (the name, visually hidden)
+      svg[data-ok-organization-chart-toggle-icon]         (chevron, aria-hidden)
+      span[data-ok-circular-progress][data-ok-organization-chart-spinner][aria-hidden]?
+                                                          (lazy nodes: a CircularProgress)
+      span[data-ok-organization-chart-badge]?             (hidden count, written by the script)
+    ul[data-ok-organization-chart-children][data-ok-collapse]?[id]?[hidden]?
+                                                          (only when there are children, or
+                                                           empty + hidden on a lazy node)
       li[data-ok-organization-chart-node]                 (OrganizationChartNode, any depth)
         div[data-ok-organization-chart-label]
         ul[data-ok-organization-chart-children]?
@@ -37,11 +51,23 @@ Root: `data-ok-organization-chart`. Unknown values fall back to the default.
 | `lineStyle` | `data-ok-line-style="…"` | style | `solid` `dashed` `dotted` | `solid` | Line style of the connectors. |
 | `lineBorderRadius` | `data-ok-line-border-radius="…"` | number | number (px) or `px` `rem` `em` length | `24` | Corner radius where a connector turns: a number in px, or a CSS length. |
 | `nodePadding` | `data-ok-node-padding="…"` | number | number (px) or `px` `rem` `em` length | `4` | Space on each side of every node: a number in px, or a CSS length. |
+| `enableExpandCollapse` | `data-ok-enable-expand-collapse` | flag | boolean | off | Nodes with children can be collapsed and expanded with their toggle button. |
+| `expandCollapseOnNodeClick` | `data-ok-expand-collapse-on-node-click` | flag | boolean | off | A click on a node's label (outside its buttons and links) also toggles its children. |
+| `collapseBadgeThreshold` | `data-ok-collapse-badge-threshold="…"` | number | number | `1` | Smallest number of hidden descendants that a collapsed node's badge shows. |
 <!-- /options:organization-chart -->
 
 Content: `label` (ReactNode) on `OrganizationChart` and `OrganizationChartNode`; `children`
 (`OrganizationChartNode` elements). Rest props go to the root `ul` (chart) or the `li` (node);
 `style` is merged after the length properties.
+
+Expand and collapse (React, ADR-0051): `enableExpandCollapse` (default `false`),
+`expandCollapseOnNodeClick`, `collapseBadgeEnabled` (default `true`; HTML: leave the badge span
+out), `collapseBadgeThreshold` (default 1), `collapsedNodes` / `defaultCollapsedNodes` /
+`onCollapsedNodesChange` (ids; default: every node expanded), `onExpand(nodeId)` /
+`onCollapse(nodeId)` (user intent, before the change), `loadChildren({ id }) => Promise<ReactNode>`,
+`apiRef` (`useOrganizationChartApiRef()`). Per node (and on the chart for its root node): `nodeId`
+(`data-ok-node-id`; nodes without one get an internal id), `hasChildren` (children to load),
+`toggleLabel` (default "Child nodes").
 
 API mapping (`react-organizational-chart`): `Tree` → **renamed** `OrganizationChart` (a generic
 `Tree` would collide with Tree view), `TreeNode` → **renamed** `OrganizationChartNode`; kept
@@ -73,26 +99,54 @@ untrusted CSS. `lineStyle` keeps `solid` / `dashed` / `dotted` (other border sty
 - Logical properties throughout: right-to-left charts mirror.
 
 ## States
-None (static).
+Static unless `data-ok-enable-expand-collapse`. Then per branch: expanded (list without `hidden`,
+toggle `aria-expanded="true"`, chevron turned) · collapsed (list `hidden`, so it and its connectors
+aren't drawn; the badge shows the hidden count when ≥ threshold) · loading (toggle
+`aria-busy="true"`, the spinner replaces the chevron) · lazy (empty hidden list). Collapse's own
+`data-ok-state` while animating.
 
 ## Behavior
-No interaction. HTML runtime (`organization-chart`): reads `data-ok-line-height`,
+Without `enableExpandCollapse`, no interaction. HTML runtime (`organization-chart`): reads `data-ok-line-height`,
 `data-ok-line-width`, `data-ok-line-border-radius`, `data-ok-node-padding` through the schema
 (invalid → left out) and writes the private properties through CSSOM; follows changes to those
 attributes (`MutationObserver`); `destroy()` removes what it wrote. Without JavaScript the
 stylesheet defaults apply. React writes the same properties in `style` and renders
 `data-ok-runtime="off"`.
 
+Expand and collapse (ADR-0051): core `createOrganizationChartController(root, options)` reports a
+toggle click (and, with `expandCollapseOnNodeClick`, a click on a label outside its interactive
+content: links, buttons, form fields, `[tabindex]`, menu items, popovers, prevented clicks) as
+`onToggle(node, expanded)`, ignores busy toggles, and writes every collapsed node's badge (the
+node's descendants at every depth, nested charts left out; empty when expanded or under the
+threshold) from a MutationObserver. React keeps the collapsed ids and renders `hidden` /
+`aria-expanded`; the HTML runtime emits cancelable `expand` / `collapse` and writes them. The
+toggle straddles the label's bottom edge (half its 24px height over the label); the children
+list's connector starts below it, so collapsible charts are 12px taller per level. During the
+Collapse animation the list's top padding (the line from the parent) stays (ADR-0044). Lazy
+nodes: React calls `loadChildren` once, renders the resolved nodes as the node's children and
+expands it (empty → leaf: no toggle, no list; rejected → stays collapsed, retried on the next
+expand); HTML emits `loadchildren` with `respondWith(nodes | Promise<nodes>)` (elements, a
+fragment or nothing), appends them and expands, or removes toggle and list when nothing came.
+Batch methods (`organizationChartPlan`) change loaded nodes only and emit nothing.
+
 ## Keyboard
-None of its own. Controls in labels follow DOM order: a node, then its children.
+None of its own. Controls in labels follow DOM order: a node, its toggle, then its children.
+Toggles are native buttons (Enter / Space). Label clicks are a pointer shortcut only.
 
 ## Accessibility
 Nested lists: screen readers announce each level, its size and positions. Name the root `ul`
 (`aria-label` / `aria-labelledby`). Lines are decorative (borders on pseudo-elements). Wide
-charts go in a named, focusable Scrollbar (keyboard scrolling).
+charts go in a named, focusable Scrollbar (keyboard scrolling). Toggles: `aria-expanded`,
+`aria-controls` (the list's id), the name from the visually hidden label plus the visible count
+(label in name, WCAG 2.5.3), `aria-busy` while loading, a 24px target, a focus ring. Collapsed
+children are `hidden` (out of the accessibility tree).
 
 ## Events / API
-None. HTML instance: `destroy()` only (runtime-managed).
+HTML events (user intent only): `ok:organization-chart:expand` / `collapse` (cancelable, `{ nodeId,
+node }`), `ok:organization-chart:loadchildren` (`{ nodeId, node, respondWith }`). HTML instance:
+`expand(id)` (Promise; loads lazy children), `collapse(id)`, `isExpanded(id)`, `expandAll()`,
+`collapseAll()`, `expandToDepth(depth)` (root = 0), `expandSubtree(id)`, `collapseSubtree(id)`,
+`destroy()`. React: the same methods on `apiRef`.
 
 ## Responsive
 Same layout at every breakpoint: the chart never wraps (a tree keeps its shape). Narrower than its
@@ -112,8 +166,30 @@ README, checked 2026-11-09). ApexTree parity is roadmap 2.4.
 | `lineHeight`, `lineWidth`, `lineBorderRadius`, `nodePadding` (CSS lengths) | same (px number or `px` / `rem` / `em`) | kept | reference defaults (40 / 1 / 24 / 4) |
 | `lineColor` (any CSS color) | `lineColor` (`divider`, `inherit`, palette) | kept | allowlist; custom colors via `inherit` + `color` |
 | `lineStyle` (any border style) | `solid` · `dashed` · `dotted` | kept | others look solid at 1px |
-| ApexTree collapsible nodes, direction, grouped leaves, highlight / search, zoom / pan, per-node lines | — | deferred (4.18.1–4.18.6) | |
+
+ApexTree (`apexcharts.com/apextree/docs`: options, methods, expand-collapse and lazy-children pages,
+checked 2026-11-10; ADR-0051):
+
+| ApexTree | Owlky | Status | Note |
+|---|---|---|---|
+| `enableExpandCollapse` (default `true`) | same (default `false`) | kept | off keeps existing charts unchanged |
+| `expandCollapseOnNodeClick` | same | kept | skips interactive content in labels |
+| `collapseBadgeEnabled`, `collapseBadgeThreshold` | same | kept | |
+| `expand`, `collapse`, `expandAll`, `collapseAll`, `expandToDepth`, `expandSubtree`, `collapseSubtree` | same (React `apiRef`, HTML instance) + `isExpanded` | kept | `expand` returns a promise (lazy loads) |
+| node `id`, `hasChildren` | `nodeId`, `hasChildren` | renamed / kept | `id` would be the DOM id |
+| `loadChildren({ id, name, data })` → nodes | React `loadChildren({ id })` → `ReactNode`; HTML `loadchildren` + `respondWith` | renamed | name and data are the app's own |
+| — | `collapsedNodes` / `defaultCollapsedNodes` / `onCollapsedNodesChange`, `onExpand` / `onCollapse`, `toggleLabel`, `ok:organization-chart:expand` / `collapse` | added | React state, HTML events, the toggle's name (ApexTree has none) |
+| `expandCollapseButton*` colors and size, `collapseBadge*` colors and font size | tokens | not applicable | 24px target, line-colored border |
+| `locale.messages.loadingNodeLabel` | `aria-busy` | not applicable | a stable toggle name |
+| `countBadgeEnabled`, `countBadgeSource`, `countBadgeDataKey`, `countBadgeThreshold` | — | deferred | always-on counts; content badges belong in labels |
+| `enableExpandCollapseZoom`, `maxZoomNodeSpan` | — | deferred (4.18.5) | zoom / fit |
+| `enableAnimation`, `motion.stagger`, `motion.spring` | Collapse timing tokens | not applicable | reduced motion respected |
+| `onNodeClick`, `cardExpansion`, `expandCard` / `collapseCard` / `toggleCard` | — | not applicable | labels hold the app's content and handlers |
+| direction, grouped leaves, highlight / search, zoom / pan, per-node lines | — | deferred (4.18.2–4.18.6) | |
 
 ## Parity notes
 None: the same markup; React's `style` and the runtime's CSSOM properties are equal (parity
-ignores `style`).
+ignores `style`). Collapsible charts: React's list ids come from `useId` (parity ignores `id` and
+compares `aria-controls` as references; the snippet generator renames them `org-<story>-<n>`);
+badge counts are written by the shared controller in both. The lazy snippet ships the answers as
+`<template>`s (skipped by parity) that the story script clones.

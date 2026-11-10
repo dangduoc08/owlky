@@ -23,6 +23,10 @@ import { createElement } from "react";
 import { organizationChartStories, ORGANIZATION_CHART_FILES } from "${folder}/organization-chart-examples.tsx";
 import { StandardChartDemo } from "${folder}/standard-demo.tsx";
 import { GroupChartDemo } from "${folder}/group-demo.tsx";
+import { CollapsibleChartDemo } from "${folder}/collapsible-demo.tsx";
+import { LazyChartDemo, reportsOf } from "${folder}/lazy-demo.tsx";
+import { OrganizationChart } from "@owlky/react";
+import { PEOPLE } from "${folder}/organization-chart-data.ts";
 const html = {};
 for (const [story, groups] of Object.entries(organizationChartStories))
   groups.forEach((group, index) => {
@@ -30,6 +34,26 @@ for (const [story, groups] of Object.entries(organizationChartStories))
   });
 html["standard-group"] = renderToStaticMarkup(createElement(StandardChartDemo));
 html["group-group"] = renderToStaticMarkup(createElement(GroupChartDemo));
+html["collapsible-group"] = renderToStaticMarkup(createElement(CollapsibleChartDemo));
+// Lazy children: the chart as first rendered, then one template per lead with the nodes its
+// load answers (rendered inside a collapsible chart, so they carry their own toggles). Each
+// render numbers its ids from 1: the template's get the lead's id as a prefix.
+const OPEN = /<ul data-ok-collapse=""[^>]*data-ok-organization-chart-children=""[^>]*>/;
+const templates = PEOPLE.map((lead) => {
+  const chart = renderToStaticMarkup(
+    createElement(
+      OrganizationChart,
+      { enableExpandCollapse: true, label: "", "aria-label": "" },
+      reportsOf(lead.id),
+    ),
+  );
+  const start = chart.search(OPEN) + chart.match(OPEN)[0].length;
+  const nodes = chart
+    .slice(start, chart.length - "</ul></li></ul>".length)
+    .replaceAll("_R_", "_R" + lead.id + "_");
+  return '<template id="org-lazy-' + lead.id + '">' + nodes + "</template>";
+});
+html["lazy-group"] = renderToStaticMarkup(createElement(LazyChartDemo)) + templates.join("");
 export { html };
 `;
 const result = await build({
@@ -88,8 +112,17 @@ function pretty(markup) {
     .replace(/@@kept:(\d+)@@/g, (_, index) => kept[Number(index)]);
 }
 
+/** React's generated ids (`useId`) as readable ones, unique in the snippet: `org-<story>-<n>`. */
+function renameIds(markup, name) {
+  const ids = new Map();
+  return markup.replace(/_R[a-z]*_[0-9a-zA-Z]+_/g, (id) => {
+    if (!ids.has(id)) ids.set(id, `org-${name.replace(/-group$/, "")}-${ids.size + 1}`);
+    return ids.get(id);
+  });
+}
+
 for (const [name, markup] of Object.entries(html)) {
-  const snippet = markup
+  const snippet = renameIds(markup, name)
     .replace(/<link rel="preload"[^>]*>/g, "")
     .replace(/ data-ok-runtime="off"/g, "")
     .replace(/ style="[^"]*"/g, "")
@@ -98,9 +131,11 @@ for (const [name, markup] of Object.entries(html)) {
     .replace(/(<img\b[^>]*?)\/>/g, "$1>")
     // HTML triggers: the menu buttons open their menu through the popover runtime.
     .replace(
-      /(<button\b[^>]*aria-controls="([^"]+)")/g,
+      /(<button\b[^>]*aria-haspopup="menu"[^>]*aria-controls="([^"]+)")/g,
       (_, button, menu) => `${button} data-ok-popover-open="${menu}"`,
     );
-  writeFileSync(resolve(out, `${name}.html`), `${pretty(snippet)}\n`);
+  // An empty children list (lazy nodes) stays on one line: no whitespace inside it.
+  const lines = pretty(snippet).replace(/(<ul\b[^>]*>)\n\s*(<\/ul>)/g, "$1$2");
+  writeFileSync(resolve(out, `${name}.html`), `${lines}\n`);
   console.log(`${name}.html`);
 }

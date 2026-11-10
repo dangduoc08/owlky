@@ -12,7 +12,7 @@ import type { GroupFiles } from "../shared/snippets.js";
 import { CEO, PEOPLE, type Person, type PersonNode } from "./organization-chart-data.js";
 
 /** A simple node: the name and the role in a tinted box (`.sb-org-simple`, story CSS). */
-function SimpleCard({ person }: { person: Person }) {
+export function SimpleCard({ person }: { person: Person }) {
   return (
     <div className="sb-org-simple">
       <Typography className="sb-org-name" variant="subtitle2" component="span" noWrap>
