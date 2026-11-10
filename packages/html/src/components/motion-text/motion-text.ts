@@ -8,8 +8,16 @@ import {
 } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
 import { syncCustomProperties } from "../../runtime/style.js";
-import type { ComponentInstance } from "../../runtime/types.js";
-import { driveMotion, STATE } from "../motion/drive.js";
+import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
+import { driveMotion, type MotionViewportDetail, STATE } from "../motion/drive.js";
+
+/** Events of this component (`ok:<name>:<event>` on the root). */
+export interface MotionTextEvents {
+  /** In view trigger: the text entered the viewport. `ratio` is its visible fraction. */
+  enter: EventSpec<MotionViewportDetail>;
+  /** In view trigger with `data-ok-once="false"`: the text left the viewport. */
+  leave: EventSpec<MotionViewportDetail>;
+}
 
 export interface MotionTextInstance extends ComponentInstance {
   /** The motion's state (`initial`, `animate` or `exit`). */
@@ -56,12 +64,13 @@ function split(element: HTMLElement): void {
  *          </span>   (or just the text: the runtime builds the rest)
  * Behavior: letters enter one after the other (`--_ok-motion-index` through CSSOM); assistive
  *          technologies read the visually hidden label.
+ * Events:  ok:motion-text:enter / leave (`{ ratio }`) with the in-view trigger.
  */
-export const motionText = defineComponent<MotionTextInstance>({
+export const motionText = defineComponent<MotionTextInstance, MotionTextEvents>({
   name: "motion-text",
   selector: "[data-ok-motion-text]",
 
-  setup(element) {
+  setup(element, { emit }) {
     if (!element.querySelector(CHAR)) split(element);
     let written: string[] = [];
     const tune = () => {
@@ -84,7 +93,9 @@ export const motionText = defineComponent<MotionTextInstance>({
       if (state === null) element.removeAttribute(STATE);
       else element.setAttribute(STATE, state);
     };
-    const driver = driveMotion(element, write);
+    const driver = driveMotion(element, write, (inView, detail) =>
+      emit(inView ? "enter" : "leave", detail),
+    );
     const tuning = new MutationObserver((records) => {
       tune();
       const looks = records.some((record) => LOOK.includes(record.attributeName as string));

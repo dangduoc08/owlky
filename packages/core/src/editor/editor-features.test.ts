@@ -138,6 +138,120 @@ describe("Tiptap pass-through", () => {
   });
 });
 
+describe("Tiptap events and content access", () => {
+  /** Records every event's name; `next(name)` resolves on the next one of that name. */
+  const recorder = () => {
+    const names: string[] = [];
+    const waiting = new Map<string, (props: unknown) => void>();
+    const onEvent = (name: string, props: unknown) => {
+      names.push(name);
+      waiting.get(name)?.(props);
+      waiting.delete(name);
+    };
+    const next = (name: string) =>
+      new Promise<unknown>((resolve) => {
+        waiting.set(name, resolve);
+      });
+    return { names, onEvent, next };
+  };
+
+  it("reports beforeCreate at once, then create, focus, selection, transactions, delete and blur", async () => {
+    const { content, byId } = page();
+    const events = recorder();
+    const created = events.next("create");
+    const c = create(content, { onEvent: events.onEvent });
+    expect(events.names).toEqual(["beforeCreate"]);
+    expect(((await created) as { editor: unknown }).editor).toBe(c.editor);
+
+    const focused = events.next("focus");
+    c.editor.view.focus();
+    expect(((await focused) as { event: Event }).event.type).toBe("focus");
+
+    events.names.length = 0;
+    c.editor.commands.setTextSelection({ from: 1, to: 6 });
+    expect(events.names).toEqual(expect.arrayContaining(["transaction", "selectionUpdate"]));
+    expect(events.names).not.toContain("delete");
+
+    const deleted = events.next("delete");
+    c.editor.commands.deleteSelection();
+    expect(await deleted).toMatchObject({ type: "node", partial: true });
+
+    const blurred = events.next("blur");
+    (byId("bold-tool") as HTMLButtonElement).focus();
+    expect(((await blurred) as { event: Event }).event.type).toBe("blur");
+    expect(c.getText()).toBe(" world");
+
+    c.destroy();
+    expect(events.names.at(-1)).toBe("destroy");
+    controller = undefined;
+  });
+
+  it("reports paste and drop with their slices", () => {
+    const { content } = page();
+    const events = recorder();
+    const c = create(content, { onEvent: events.onEvent });
+    let pasted: unknown;
+    void events.next("paste").then((props) => {
+      pasted = props;
+    });
+    c.editor.view.pasteText("Pasted");
+    expect(c.getText()).toContain("Pasted");
+    const dropped = vi.fn();
+    c.setContent("<p>A</p>");
+    const slice = c.editor.state.doc.slice(0, 3);
+    const event = new Event("drop") as DragEvent;
+    void events.next("drop").then(dropped);
+    c.editor.emit("drop", { editor: c.editor, event, slice, moved: true });
+    return Promise.resolve().then(() => {
+      expect(pasted).toMatchObject({ editor: c.editor });
+      expect(dropped).toHaveBeenCalledWith({ editor: c.editor, event, slice, moved: true });
+    });
+  });
+
+  it("content check: invalid content reports contentError and loads without it", () => {
+    const { content } = page();
+    const events = recorder();
+    let error: unknown;
+    void events.next("contentError").then((props) => {
+      error = props;
+    });
+    const c = create(content, {
+      content: "<p>Kept</p><custom-element>Dropped</custom-element>",
+      enableContentCheck: true,
+      onEvent: events.onEvent,
+    });
+    return Promise.resolve().then(() => {
+      expect((error as { error: Error }).error).toBeInstanceOf(Error);
+      expect(c.getText()).toContain("Kept");
+      // A new invalid value is refused.
+      c.setContent("<custom-element>No</custom-element>");
+      expect(c.getText()).toContain("Kept");
+      expect(events.names.filter((name) => name === "contentError")).toHaveLength(2);
+      // Other errors still throw.
+      const failing = {
+        setContent: () => {
+          throw new TypeError("other");
+        },
+      };
+      vi.spyOn(c.editor, "commands", "get").mockReturnValue(failing as never);
+      expect(() => c.setContent("<p>x</p>")).toThrow("other");
+    });
+  });
+
+  it("without the check, invalid content loads silently", () => {
+    const { content } = page();
+    const onEvent = vi.fn();
+    const c = create(content, { content: "<p>A</p><custom-element>B</custom-element>", onEvent });
+    expect(onEvent.mock.calls.map(([name]) => name)).not.toContain("contentError");
+    expect(c.getJSON()).toEqual({
+      type: "doc",
+      content: expect.arrayContaining([
+        { type: "paragraph", attrs: expect.anything(), content: [{ type: "text", text: "A" }] },
+      ]),
+    });
+  });
+});
+
 describe("tables", () => {
   it("are off by default: table markup is dropped and the actions refused", () => {
     const { content } = page();

@@ -4050,6 +4050,14 @@ export const editorOptions = defineOptions("editor", "data-ok-editor", {
     true,
     "The same shortcuts on pasted text (`false`: off).",
   ),
+  enableContentCheck: flag(
+    "data-ok-enable-content-check",
+    "Checks content against what the editor supports: invalid content fires a content error event (initial content loads without the invalid parts; a new value is refused).",
+  ),
+  emitContentError: flag(
+    "data-ok-emit-content-error",
+    "Fires the content error event for invalid inserted content even without the check (the content is kept).",
+  ),
   name: native(
     "name",
     "Form field name: a hidden input holds the HTML value, so the editor submits with its form.",
@@ -4073,6 +4081,8 @@ export type EditorAnatomyOptions = {
   tables?: boolean | undefined;
   autofocus?: EditorFocusPosition | undefined;
   textDirection?: (typeof editorTextDirections)[number] | undefined;
+  enableContentCheck?: boolean | undefined;
+  emitContentError?: boolean | undefined;
 };
 
 /** `data-ok-*` attributes of an editor root. */

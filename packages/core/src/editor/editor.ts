@@ -5,6 +5,8 @@ import {
   Extension,
   type FocusPosition,
   getSchema,
+  type JSONContent,
+  type EditorEvents as TiptapEvents,
 } from "@tiptap/core";
 import Image from "@tiptap/extension-image";
 import { TableKit } from "@tiptap/extension-table";
@@ -94,13 +96,49 @@ export interface EditorControllerOptions {
   readonly tables?: boolean | undefined;
   /** Mentions (ADR-0050): the mention node and its suggestion list. */
   readonly mentions?: EditorMentionOptions | undefined;
+  /**
+   * Checks content against the schema (Tiptap's `enableContentCheck`): invalid initial content
+   * reports `contentError` and loads without its invalid parts; invalid `setContent` is refused.
+   * Default `false` (unknown markup is dropped silently).
+   */
+  readonly enableContentCheck?: boolean | undefined;
+  /** Reports `contentError` for invalid inserted content without the check (Tiptap's `emitContentError`). */
+  readonly emitContentError?: boolean | undefined;
+  /** Tiptap's events (`create`, `focus`, `blur`, `selectionUpdate`, `transaction`…), as Tiptap gives them. */
+  readonly onEvent?:
+    | (<K extends EditorEventName>(name: K, props: EditorEventProps[K]) => void)
+    | undefined;
 }
+
+/** Tiptap events the controller reports (`onEvent`); `update` is `onChange`. */
+export const editorEventNames = [
+  "beforeCreate",
+  "create",
+  "focus",
+  "blur",
+  "selectionUpdate",
+  "transaction",
+  "paste",
+  "drop",
+  "delete",
+  "contentError",
+  "destroy",
+] as const;
+export type EditorEventName = (typeof editorEventNames)[number];
+/** Each event's props: Tiptap's, with the editor on every one (Tiptap's `destroy` has none). */
+export type EditorEventProps = {
+  [K in EditorEventName]: K extends "destroy" ? { editor: Editor } : TiptapEvents[K];
+};
 
 export interface EditorController {
   /** The Tiptap editor (escape hatch: commands, events, extensions' storage). */
   readonly editor: Editor;
   /** Current HTML, `""` when empty. */
   getValue(): string;
+  /** The content as ProseMirror JSON (Tiptap's `getJSON()`). */
+  getJSON(): JSONContent;
+  /** The content as plain text, blocks separated by a blank line (Tiptap's `getText()`). */
+  getText(): string;
   getState(): EditorState;
   /** Runs a toolbar action; `false` when it can't run (invalid URL, not editable, …). */
   run(action: EditorAction, value?: EditorActionValue): boolean;
@@ -130,7 +168,10 @@ const ClearFormat = Extension.create({
 /** Tiptap settings given in the options (only those given: Tiptap keeps its defaults). */
 function settings(options: EditorControllerOptions) {
   const { autofocus, textDirection, enableInputRules, enablePasteRules, parseOptions } = options;
+  const { enableContentCheck, emitContentError } = options;
   return {
+    ...(enableContentCheck !== undefined ? { enableContentCheck } : {}),
+    ...(emitContentError !== undefined ? { emitContentError } : {}),
     ...(autofocus !== undefined ? { autofocus } : {}),
     ...(textDirection !== undefined ? { textDirection } : {}),
     ...(enableInputRules !== undefined ? { enableInputRules } : {}),
@@ -291,6 +332,8 @@ export function createEditorController(
   element.replaceChildren();
 
   const ownProps = options.editorProps;
+  const report = <K extends EditorEventName>(name: K, props: EditorEventProps[K]) =>
+    options.onEvent?.(name, props);
   let destroyed = false;
   let mounted: Editor | null = null;
   const editor: Editor = new Editor({
@@ -313,9 +356,21 @@ export function createEditorController(
       }),
     },
     onUpdate: () => options.onChange?.(controller.getValue()),
-    onTransaction: () => {
+    onTransaction: (props) => {
       if (mounted) options.onStateChange?.(readState(mounted));
+      report("transaction", props);
     },
+    onBeforeCreate: (props) => report("beforeCreate", props),
+    onCreate: (props) => report("create", props),
+    onFocus: (props) => report("focus", props),
+    onBlur: (props) => report("blur", props),
+    onSelectionUpdate: (props) => report("selectionUpdate", props),
+    onContentError: (props) => report("contentError", props),
+    onDelete: (props) => report("delete", props),
+    onPaste: (event, slice) => report("paste", { editor: mounted as Editor, event, slice }),
+    onDrop: (event, slice, moved) =>
+      report("drop", { editor: mounted as Editor, event, slice, moved }),
+    onDestroy: () => report("destroy", { editor: mounted as Editor }),
   });
   mounted = editor;
 
@@ -323,6 +378,8 @@ export function createEditorController(
     editor,
     // Tiptap counts a table of empty cells as empty: it is content.
     getValue: () => (editor.isEmpty && !hasTable(editor) ? "" : editor.getHTML()),
+    getJSON: () => editor.getJSON(),
+    getText: () => editor.getText(),
     getState: () => readState(editor),
     run(action, value = {}) {
       if (destroyed || !editor.isEditable) return false;
@@ -430,7 +487,15 @@ export function createEditorController(
     },
     setContent(value, emit = false) {
       if (destroyed) return;
-      editor.commands.setContent(value, { emitUpdate: emit });
+      try {
+        editor.commands.setContent(value, { emitUpdate: emit });
+      } catch (error) {
+        // With `enableContentCheck`, Tiptap throws on invalid content instead of reporting it:
+        // the content stays, and the owner hears the error as at creation.
+        if (!(error instanceof Error) || !/^\[tiptap error\]: Invalid/.test(error.message))
+          throw error;
+        report("contentError", { editor, error, disableCollaboration: () => {} });
+      }
     },
     setEditable(editable) {
       if (destroyed || editor.isEditable === editable) return;

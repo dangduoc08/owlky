@@ -342,10 +342,14 @@ export {
 export {
   Editor,
   type EditorBubbleMenuProps,
+  type EditorEventHandler,
+  type EditorEventName,
+  type EditorEventProps,
   type EditorHighlighter,
   type EditorMentionItem,
   type EditorMentionProps,
   type EditorProps,
+  type TiptapEditor,
 } from "./editor/editor.js";
 export { Fab, type FabAsButtonProps, type FabAsLinkProps, type FabProps } from "./fab/fab.js";
 export {

@@ -1069,6 +1069,7 @@ export {
   type MotionTriggerOptions,
   motionStyle,
   nextMotionState,
+  readMotionViewport,
   replayMotion,
   splitMotionText,
 } from "./motion/motion.js";

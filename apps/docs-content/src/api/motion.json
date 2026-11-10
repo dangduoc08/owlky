@@ -108,6 +108,18 @@
       "description": "After the root's own animation ended. `state` is its `data-ok-state`.",
       "detail": "{ state: string | null; }",
       "name": "ok:motion:end"
+     },
+     {
+      "cancelable": false,
+      "description": "In view trigger: the element entered the viewport (the `data-ok-amount` fraction is visible). `ratio` is the visible fraction. With `once` (the default) it fires the first time only.",
+      "detail": "MotionViewportDetail",
+      "name": "ok:motion:enter"
+     },
+     {
+      "cancelable": false,
+      "description": "In view trigger with `data-ok-once=\"false\"`: the element left the viewport (nothing visible).",
+      "detail": "MotionViewportDetail",
+      "name": "ok:motion:leave"
      }
     ],
     "methods": [
@@ -265,6 +277,18 @@
       ],
       "kind": "part",
       "name": "data-ok-motion-char"
+     },
+     {
+      "description": "In view: grows (or, with negative values, shrinks) the viewport's box, written like CSS margins in `px` or `%`, such as `0px 0px -100px`.",
+      "kind": "value",
+      "name": "data-ok-viewport-margin",
+      "value": "string"
+     },
+     {
+      "description": "In view: the id of the scrolling ancestor whose box counts as the viewport. Default: the browser viewport.",
+      "kind": "value",
+      "name": "data-ok-viewport-root",
+      "value": "string"
      }
     ],
     "runtime": "motion"
@@ -272,7 +296,7 @@
    "name": "Motion",
    "react": {
     "description": "Animates its box in (or out) when it scrolls into view, on mount or when `in` changes. Inside a MotionGroup it follows the group. To replay the entrance, change its `key`.",
-    "native": "HTMLDivElement",
+    "native": "HTMLElement",
     "props": [
      {
       "description": "In view: the visible fraction (0 to 1) that starts the animation. 3.",
@@ -283,6 +307,12 @@
       "description": "The content.",
       "name": "children",
       "type": "ReactNode"
+     },
+     {
+      "default": "\"div\"",
+      "description": "The element to render, such as `\"section\"` or `\"li\"`.",
+      "name": "component",
+      "type": "ElementType"
      },
      {
       "description": "Wait before the entrance, ms.",
@@ -306,6 +336,16 @@
       "type": "boolean"
      },
      {
+      "description": "In view: called when the element enters the viewport (the `amount` is visible). With `once`, the first time only.",
+      "name": "onViewportEnter",
+      "type": "((entry: IntersectionObserverEntry) => void)"
+     },
+     {
+      "description": "In view with `once={false}`: called when the element leaves the viewport (nothing is visible).",
+      "name": "onViewportLeave",
+      "type": "((entry: IntersectionObserverEntry) => void)"
+     },
+     {
       "description": "In view: plays only the first time (default). `false` also plays the exit when it leaves.",
       "name": "once",
       "type": "boolean"
@@ -325,6 +365,16 @@
       "description": "Animation.",
       "name": "variant",
       "type": "MotionVariant"
+     },
+     {
+      "description": "In view: grows (or, with negative values, shrinks) the viewport's box before the visible fraction is measured, written like CSS margins in `px` or `%`, such as `\"0px 0px -100px\"`.",
+      "name": "viewportMargin",
+      "type": "string"
+     },
+     {
+      "description": "In view: the scrolling ancestor whose box counts as the viewport. Default: the browser viewport.",
+      "name": "viewportRoot",
+      "type": "RefObject<Element | null>"
      }
     ]
    }
@@ -604,6 +654,20 @@
   {
    "html": {
     "attribute": "data-ok-motion-group",
+    "events": [
+     {
+      "cancelable": false,
+      "description": "In view trigger: the group entered the viewport. `ratio` is its visible fraction.",
+      "detail": "MotionViewportDetail",
+      "name": "ok:motion-group:enter"
+     },
+     {
+      "cancelable": false,
+      "description": "In view trigger with `data-ok-once=\"false\"`: the group left the viewport.",
+      "detail": "MotionViewportDetail",
+      "name": "ok:motion-group:leave"
+     }
+    ],
     "methods": [
      {
       "description": "Plays the entrances again.",
@@ -673,7 +737,7 @@
    "name": "MotionGroup",
    "react": {
     "description": "Plays the Motions inside it together, one direct child after the other (the reference's \"MultiItem\").",
-    "native": "HTMLDivElement",
+    "native": "HTMLElement",
     "props": [
      {
       "description": "In view: the visible fraction (0 to 1) that starts the animation. 3.",
@@ -686,6 +750,12 @@
       "type": "ReactNode"
      },
      {
+      "default": "\"div\"",
+      "description": "The element to render, such as `\"ul\"` or `\"section\"`.",
+      "name": "component",
+      "type": "ElementType"
+     },
+     {
       "description": "Wait before the entrance, ms.",
       "name": "delay",
       "type": "number"
@@ -695,6 +765,16 @@
       "description": "Manual trigger: shown. Turning it off plays the exit.",
       "name": "in",
       "type": "boolean"
+     },
+     {
+      "description": "In view: called when the element enters the viewport (the `amount` is visible). With `once`, the first time only.",
+      "name": "onViewportEnter",
+      "type": "((entry: IntersectionObserverEntry) => void)"
+     },
+     {
+      "description": "In view with `once={false}`: called when the element leaves the viewport (nothing is visible).",
+      "name": "onViewportLeave",
+      "type": "((entry: IntersectionObserverEntry) => void)"
      },
      {
       "description": "In view: plays only the first time (default). `false` also plays the exit when it leaves.",
@@ -710,6 +790,16 @@
       "description": "`inView` (default): plays when scrolled into view; `mount`: right away; `manual`: follows `in`.",
       "name": "trigger",
       "type": "\"inView\" | \"manual\" | \"mount\""
+     },
+     {
+      "description": "In view: grows (or, with negative values, shrinks) the viewport's box before the visible fraction is measured, written like CSS margins in `px` or `%`, such as `\"0px 0px -100px\"`.",
+      "name": "viewportMargin",
+      "type": "string"
+     },
+     {
+      "description": "In view: the scrolling ancestor whose box counts as the viewport. Default: the browser viewport.",
+      "name": "viewportRoot",
+      "type": "RefObject<Element | null>"
      }
     ]
    }
@@ -717,6 +807,20 @@
   {
    "html": {
     "attribute": "data-ok-motion-text",
+    "events": [
+     {
+      "cancelable": false,
+      "description": "In view trigger: the text entered the viewport. `ratio` is its visible fraction.",
+      "detail": "MotionViewportDetail",
+      "name": "ok:motion-text:enter"
+     },
+     {
+      "cancelable": false,
+      "description": "In view trigger with `data-ok-once=\"false\"`: the text left the viewport.",
+      "detail": "MotionViewportDetail",
+      "name": "ok:motion-text:leave"
+     }
+    ],
     "methods": [
      {
       "description": "Plays the entrance again.",
@@ -889,7 +993,7 @@
    "name": "MotionText",
    "react": {
     "description": "Animates a text letter by letter (\"Text object\").",
-    "native": "HTMLSpanElement",
+    "native": "HTMLElement",
     "props": [
      {
       "description": "In view: the visible fraction (0 to 1) that starts the animation. 3.",
@@ -901,6 +1005,12 @@
       "name": "children",
       "required": true,
       "type": "string"
+     },
+     {
+      "default": "\"span\"",
+      "description": "The element to render, such as `\"h2\"` or `\"p\"`.",
+      "name": "component",
+      "type": "ElementType"
      },
      {
       "description": "Wait before the entrance, ms.",
@@ -924,6 +1034,16 @@
       "type": "boolean"
      },
      {
+      "description": "In view: called when the element enters the viewport (the `amount` is visible). With `once`, the first time only.",
+      "name": "onViewportEnter",
+      "type": "((entry: IntersectionObserverEntry) => void)"
+     },
+     {
+      "description": "In view with `once={false}`: called when the element leaves the viewport (nothing is visible).",
+      "name": "onViewportLeave",
+      "type": "((entry: IntersectionObserverEntry) => void)"
+     },
+     {
       "description": "In view: plays only the first time (default). `false` also plays the exit when it leaves.",
       "name": "once",
       "type": "boolean"
@@ -943,6 +1063,16 @@
       "description": "Animation of each letter.",
       "name": "variant",
       "type": "MotionVariant"
+     },
+     {
+      "description": "In view: grows (or, with negative values, shrinks) the viewport's box before the visible fraction is measured, written like CSS margins in `px` or `%`, such as `\"0px 0px -100px\"`.",
+      "name": "viewportMargin",
+      "type": "string"
+     },
+     {
+      "description": "In view: the scrolling ancestor whose box counts as the viewport. Default: the browser viewport.",
+      "name": "viewportRoot",
+      "type": "RefObject<Element | null>"
      }
     ]
    }

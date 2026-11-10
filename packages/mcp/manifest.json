@@ -580,6 +580,8 @@
   "data-ok-editor-toolbar",
   "data-ok-effect",
   "data-ok-elevation",
+  "data-ok-emit-content-error",
+  "data-ok-enable-content-check",
   "data-ok-enable-expand-collapse",
   "data-ok-enable-input-rules",
   "data-ok-enable-paste-rules",
@@ -1483,6 +1485,8 @@
   "data-ok-variant",
   "data-ok-vertical",
   "data-ok-view",
+  "data-ok-viewport-margin",
+  "data-ok-viewport-root",
   "data-ok-views",
   "data-ok-virtualize",
   "data-ok-visible-by-default",
@@ -36144,9 +36148,57 @@
        "events": [
         {
          "cancelable": false,
+         "description": "Tiptap's `beforeCreate`: the editor is being built (the instance doesn't exist yet).",
+         "detail": "undefined",
+         "name": "ok:editor:beforecreate"
+        },
+        {
+         "cancelable": false,
+         "description": "Tiptap's `blur`: the focus left the text.",
+         "detail": "{ event: FocusEvent; }",
+         "name": "ok:editor:blur"
+        },
+        {
+         "cancelable": false,
          "description": "After the content changed, with its HTML.",
          "detail": "{ value: string; }",
          "name": "ok:editor:change"
+        },
+        {
+         "cancelable": false,
+         "description": "Tiptap's `contentError`: content didn't fit the editor's schema (with `data-ok-enable-content-check`).",
+         "detail": "{ message: string; }",
+         "name": "ok:editor:contenterror"
+        },
+        {
+         "cancelable": false,
+         "description": "Tiptap's `create`: the editor is ready, with its HTML.",
+         "detail": "{ value: string; }",
+         "name": "ok:editor:create"
+        },
+        {
+         "cancelable": false,
+         "description": "Tiptap's `delete`: a node or a mark was removed. `name` is its type (`paragraph`, `bold`…), `from` / `to` the removed range, `partial` when only part of it went.",
+         "detail": "{ type: \"mark\" | \"node\"; name: string; from: number; to: number; partial: boolean; }",
+         "name": "ok:editor:delete"
+        },
+        {
+         "cancelable": false,
+         "description": "Tiptap's `destroy`: the editor was destroyed (the runtime stopped or the element left).",
+         "detail": "undefined",
+         "name": "ok:editor:destroy"
+        },
+        {
+         "cancelable": false,
+         "description": "Tiptap's `drop`: content was dropped, with its plain text; `moved` when it was dragged from the editor.",
+         "detail": "{ event: DragEvent; text: string; moved: boolean; }",
+         "name": "ok:editor:drop"
+        },
+        {
+         "cancelable": false,
+         "description": "Tiptap's `focus`: the focus entered the text.",
+         "detail": "{ event: FocusEvent; }",
+         "name": "ok:editor:focus"
         },
         {
          "cancelable": false,
@@ -36159,6 +36211,24 @@
          "description": "The mention list needs items for `query` (the text after the trigger). `items` holds the matches from `template[data-ok-editor-mention-items]`; call `respondWith(itemsOrPromise)` to show others (for example from a server).",
          "detail": "{ query: string; char: string; items: readonly EditorMentionItem[]; respondWith(items: PromiseLike<readonly EditorMentionItem[]> | readonly EditorMentionItem[]): void; }",
          "name": "ok:editor:mentionsearch"
+        },
+        {
+         "cancelable": false,
+         "description": "Tiptap's `paste`: content was pasted, with its plain text.",
+         "detail": "{ event: ClipboardEvent; text: string; }",
+         "name": "ok:editor:paste"
+        },
+        {
+         "cancelable": false,
+         "description": "Tiptap's `selectionUpdate`: the selection moved, from `from` to `to` (document positions).",
+         "detail": "{ from: number; to: number; empty: boolean; }",
+         "name": "ok:editor:selectionupdate"
+        },
+        {
+         "cancelable": false,
+         "description": "Tiptap's `transaction`: any change of the editor's state; `docChanged` when the content changed.",
+         "detail": "{ docChanged: boolean; }",
+         "name": "ok:editor:transaction"
         }
        ],
        "methods": [
@@ -36167,6 +36237,12 @@
          "kind": "property",
          "name": "controller",
          "type": "EditorController"
+        },
+        {
+         "description": "The Tiptap editor: its commands, `on()` for events, `isEmpty`, `isFocused`, `setOptions()`.",
+         "kind": "property",
+         "name": "editor",
+         "type": "Editor"
         },
         {
          "description": "Moves the focus into the editor.",
@@ -36179,6 +36255,18 @@
          "kind": "property",
          "name": "fullscreen",
          "type": "boolean"
+        },
+        {
+         "description": "The content as ProseMirror JSON.",
+         "kind": "method",
+         "name": "getJSON",
+         "type": "() => JSONContent"
+        },
+        {
+         "description": "The content as plain text, blocks separated by a blank line.",
+         "kind": "method",
+         "name": "getText",
+         "type": "() => string"
         },
         {
          "description": "Turns editing on or off.",
@@ -36270,6 +36358,18 @@
          "description": "The same shortcuts on pasted text (`false`: off).",
          "kind": "behavior",
          "name": "enablePasteRules"
+        },
+        {
+         "attr": "data-ok-enable-content-check",
+         "description": "Checks content against what the editor supports: invalid content fires a content error event (initial content loads without the invalid parts; a new value is refused).",
+         "kind": "flag",
+         "name": "enableContentCheck"
+        },
+        {
+         "attr": "data-ok-emit-content-error",
+         "description": "Fires the content error event for invalid inserted content even without the check (the content is kept).",
+         "kind": "flag",
+         "name": "emitContentError"
         },
         {
          "attr": "name",
@@ -36574,6 +36674,21 @@
          "type": "EditorProps<any>"
         },
         {
+         "description": "Receives the Tiptap editor once it exists, and `null` when it is destroyed: its commands, `getJSON()`, `getText()`, `isEmpty`, `isFocused`, `on()` and `setOptions()`.",
+         "name": "editorRef",
+         "type": "Ref<Editor | null>"
+        },
+        {
+         "description": "Calls `onContentError` for invalid inserted content even without the check (the content is kept). Read at creation.",
+         "name": "emitContentError",
+         "type": "boolean"
+        },
+        {
+         "description": "Checks content against what the editor supports: invalid content calls `onContentError`. The initial content loads without its invalid parts; a new invalid `value` is refused. Read at creation.",
+         "name": "enableContentCheck",
+         "type": "boolean"
+        },
+        {
          "default": "true",
          "description": "Markdown-like shortcuts while typing, such as `# ` for a heading.",
          "name": "enableInputRules",
@@ -36621,14 +36736,69 @@
          "type": "string"
         },
         {
+         "description": "Tiptap's `beforeCreate`: the editor is being built.",
+         "name": "onBeforeCreate",
+         "type": "EditorEventHandler<\"beforeCreate\">"
+        },
+        {
          "description": "Called with the new HTML (`\"\"` when empty) after every change.",
          "name": "onChange",
          "type": "((value: string) => void)"
         },
         {
+         "description": "Tiptap's `contentError`: content didn't fit the editor's schema (see `enableContentCheck`).",
+         "name": "onContentError",
+         "type": "EditorEventHandler<\"contentError\">"
+        },
+        {
+         "description": "Tiptap's `create`: the editor is ready.",
+         "name": "onCreate",
+         "type": "EditorEventHandler<\"create\">"
+        },
+        {
+         "description": "Tiptap's `delete`: a node or a mark was removed.",
+         "name": "onDelete",
+         "type": "EditorEventHandler<\"delete\">"
+        },
+        {
+         "description": "Tiptap's `destroy`: the editor was destroyed (unmount, or a new editor for new settings).",
+         "name": "onDestroy",
+         "type": "EditorEventHandler<\"destroy\">"
+        },
+        {
+         "description": "Tiptap's `blur`: the focus left the text.",
+         "name": "onEditorBlur",
+         "type": "EditorEventHandler<\"blur\">"
+        },
+        {
+         "description": "Tiptap's `drop`: content was dropped into the text (`moved` when dragged from the editor).",
+         "name": "onEditorDrop",
+         "type": "EditorEventHandler<\"drop\">"
+        },
+        {
+         "description": "Tiptap's `focus`: the focus entered the text (the root's `onFocus` hears every part).",
+         "name": "onEditorFocus",
+         "type": "EditorEventHandler<\"focus\">"
+        },
+        {
+         "description": "Tiptap's `paste`: content was pasted into the text, with its ProseMirror `slice`.",
+         "name": "onEditorPaste",
+         "type": "EditorEventHandler<\"paste\">"
+        },
+        {
          "description": "Called when the Fullscreen button or Escape changes fullscreen mode.",
          "name": "onFullscreenChange",
          "type": "((fullscreen: boolean) => void)"
+        },
+        {
+         "description": "Tiptap's `selectionUpdate`: the selection moved.",
+         "name": "onSelectionUpdate",
+         "type": "EditorEventHandler<\"selectionUpdate\">"
+        },
+        {
+         "description": "Tiptap's `transaction`: any change of the editor's state.",
+         "name": "onTransaction",
+         "type": "EditorEventHandler<\"transaction\">"
         },
         {
          "description": "ProseMirror parse options for the content (Tiptap's `parseOptions`). Read at creation.",
@@ -36658,6 +36828,12 @@
         }
        ]
       }
+     }
+    ],
+    "types": [
+     {
+      "name": "EditorEventHandler",
+      "type": "((props: EditorEventProps[K]) => void)"
      }
     ]
    },
@@ -36762,6 +36938,18 @@
        "name": "enablePasteRules"
       },
       {
+       "attr": "data-ok-enable-content-check",
+       "description": "Checks content against what the editor supports: invalid content fires a content error event (initial content loads without the invalid parts; a new value is refused).",
+       "kind": "flag",
+       "name": "enableContentCheck"
+      },
+      {
+       "attr": "data-ok-emit-content-error",
+       "description": "Fires the content error event for invalid inserted content even without the check (the content is kept).",
+       "kind": "flag",
+       "name": "emitContentError"
+      },
+      {
        "attr": "name",
        "children": ":scope > input[data-ok-editor-input]",
        "description": "Form field name: a hidden input holds the HTML value, so the editor submits with its form.",
@@ -36808,7 +36996,7 @@
      "title": "Layout and tokens"
     },
     {
-     "body": "- Initial content: React `value ?? defaultValue` (HTML string); HTML: the markup inside the content\n  element, parsed from the DOM (no string, no Trusted Types sink). Content keeps only what the\n  schema knows (no scripts, handlers or unknown elements); links and images are checked with\n  `safeEditorUrl` (http(s), mailto, tel, relative; images http(s) / relative; no `data:`).\n- Tiptap's trailing node keeps an empty paragraph after a final block that isn't one.\n- Controlled (`value`): a new `value` replaces the content; late echoes of values the editor\n  reported itself are skipped (fast typing, batched renders). Edits the owner ignores are not\n  undone (as Tiptap): rich text can't be held back key by key.\n- Toolbar state (`aria-pressed`, `disabled`, heading label, selected menu item) follows every\n  transaction (`onStateChange`). Undo / Redo / Remove link are disabled when they can't run.\n- Link / image: the button opens its form popover (link prefilled with the current `href`); Apply\n  is disabled until the URL is valid; submit (button or Enter) runs the action and closes it.\n  A link with an empty selection inserts the URL as text.\n- Fullscreen: the button toggles `data-ok-fullscreen` and opens the root's Backdrop\n  (`data-ok-open`); Escape (outside popovers) leaves it. While fullscreen (core\n  `holdEditorFullscreen`): page scroll locked (shared `lockScroll`), and focus leaving for the page\n  wraps to the first tab stop (Tab) or the last one (Shift+Tab; links and the language menu inside\n  the content aren't stops of their own). Focus leaving for the browser UI is let go. HTML markup\n  that starts with `data-ok-fullscreen` is held at setup.\n- Text transform: `span` with an allowed `text-transform` style or `data-ok-text-transform` is kept\n  (other spans and values are dropped); output is always the `style` form (portable HTML).\n- `editable=false`: `contenteditable=false`, `aria-readonly`, toolbar disabled and hidden.\n- Tiptap's injected `<style>` is off (`injectCSS: false`, CSP); editor.css carries ProseMirror's rules.\n- Tables (`tables`, ADR-0050): TableKit (Table, TableRow, TableHeader, TableCell; no column\n  resizing). The table menu runs `insertTable` (3 × 3 with a header row), add / delete column and\n  row, toggle header row / column, merge / split cells (a cell selection), delete table; items are\n  `aria-disabled` when their command can't run (`can()`), like the toolbar's `disabled`. A run is\n  checked with `can()` first (a refused chain would still move the focus). `getValue()` keeps a\n  table of empty cells (Tiptap's `isEmpty` counts it as empty).\n- Mentions (`mentions`): Tiptap's Mention + Suggestion; the list is a Popover (`bottom-start`) on\n  the suggestion's rectangle, opened while there are items (async items: shown when they arrive),\n  closed when there are none, on Escape and when the query ends. Core writes the options\n  (`li[role=option]`, label text) into the owner's listbox; the textbox gets `aria-controls` and\n  `aria-activedescendant` while it is open. Presses on the list keep the focus in the text. HTML\n  items: the template's `[data-ok-value]` entries whose text contains the query (case-insensitive,\n  10 at most), replaced by `respondWith()` of `ok:editor:mentionsearch`.\n- Bubble menu (`bubbleMenu`): core `createEditorBubbleMenu`; shows after `updateDelay` (250 ms)\n  when `shouldShow` holds (default: a non-empty text selection, editable, focus in the text or the\n  menu), placed `top` of the selection (`posToDOMRect`); hides on blur unless focus moved into it,\n  and when focus leaves it for the page. Its buttons are toolbar buttons (state, disabled, link /\n  image forms). Presses don't take the focus (`mousedown` default prevented).\n- Pass-through: `extensions` are added after the built-in set (a top-level one with the same name\n  replaces it); `editorProps` merge with the editor's (`aria-readonly` wins); `parseOptions` also\n  parse the HTML markup; `autofocus`, `textDirection`, `enableInputRules`, `enablePasteRules` go to\n  Tiptap as given. These and `tables` / `mentions` are read when the editor is created (React:\n  remount with `key` for new extensions).\n- `name`: a hidden input (`data-ok-editor-input`) carries `getValue()` after every change and\n  `setValue()`.",
+     "body": "- Initial content: React `value ?? defaultValue` (HTML string); HTML: the markup inside the content\n  element, parsed from the DOM (no string, no Trusted Types sink). Content keeps only what the\n  schema knows (no scripts, handlers or unknown elements); links and images are checked with\n  `safeEditorUrl` (http(s), mailto, tel, relative; images http(s) / relative; no `data:`).\n- Tiptap's trailing node keeps an empty paragraph after a final block that isn't one.\n- Controlled (`value`): a new `value` replaces the content; late echoes of values the editor\n  reported itself are skipped (fast typing, batched renders). Edits the owner ignores are not\n  undone (as Tiptap): rich text can't be held back key by key.\n- Toolbar state (`aria-pressed`, `disabled`, heading label, selected menu item) follows every\n  transaction (`onStateChange`). Undo / Redo / Remove link are disabled when they can't run.\n- Link / image: the button opens its form popover (link prefilled with the current `href`); Apply\n  is disabled until the URL is valid; submit (button or Enter) runs the action and closes it.\n  A link with an empty selection inserts the URL as text.\n- Fullscreen: the button toggles `data-ok-fullscreen` and opens the root's Backdrop\n  (`data-ok-open`); Escape (outside popovers) leaves it. While fullscreen (core\n  `holdEditorFullscreen`): page scroll locked (shared `lockScroll`), and focus leaving for the page\n  wraps to the first tab stop (Tab) or the last one (Shift+Tab; links and the language menu inside\n  the content aren't stops of their own). Focus leaving for the browser UI is let go. HTML markup\n  that starts with `data-ok-fullscreen` is held at setup.\n- Text transform: `span` with an allowed `text-transform` style or `data-ok-text-transform` is kept\n  (other spans and values are dropped); output is always the `style` form (portable HTML).\n- `editable=false`: `contenteditable=false`, `aria-readonly`, toolbar disabled and hidden.\n- Tiptap's injected `<style>` is off (`injectCSS: false`, CSP); editor.css carries ProseMirror's rules.\n- Tables (`tables`, ADR-0050): TableKit (Table, TableRow, TableHeader, TableCell; no column\n  resizing). The table menu runs `insertTable` (3 × 3 with a header row), add / delete column and\n  row, toggle header row / column, merge / split cells (a cell selection), delete table; items are\n  `aria-disabled` when their command can't run (`can()`), like the toolbar's `disabled`. A run is\n  checked with `can()` first (a refused chain would still move the focus). `getValue()` keeps a\n  table of empty cells (Tiptap's `isEmpty` counts it as empty).\n- Mentions (`mentions`): Tiptap's Mention + Suggestion; the list is a Popover (`bottom-start`) on\n  the suggestion's rectangle, opened while there are items (async items: shown when they arrive),\n  closed when there are none, on Escape and when the query ends. Core writes the options\n  (`li[role=option]`, label text) into the owner's listbox; the textbox gets `aria-controls` and\n  `aria-activedescendant` while it is open. Presses on the list keep the focus in the text. HTML\n  items: the template's `[data-ok-value]` entries whose text contains the query (case-insensitive,\n  10 at most), replaced by `respondWith()` of `ok:editor:mentionsearch`.\n- Bubble menu (`bubbleMenu`): core `createEditorBubbleMenu`; shows after `updateDelay` (250 ms)\n  when `shouldShow` holds (default: a non-empty text selection, editable, focus in the text or the\n  menu), placed `top` of the selection (`posToDOMRect`); hides on blur unless focus moved into it,\n  and when focus leaves it for the page. Its buttons are toolbar buttons (state, disabled, link /\n  image forms). Presses don't take the focus (`mousedown` default prevented).\n- Pass-through: `extensions` are added after the built-in set (a top-level one with the same name\n  replaces it); `editorProps` merge with the editor's (`aria-readonly` wins); `parseOptions` also\n  parse the HTML markup; `autofocus`, `textDirection`, `enableInputRules`, `enablePasteRules` go to\n  Tiptap as given. These and `tables` / `mentions` are read when the editor is created (React:\n  remount with `key` for new extensions).\n- `name`: a hidden input (`data-ok-editor-input`) carries `getValue()` after every change and\n  `setValue()`.\n- Tiptap events (row 4.18.33): core `onEvent(name, props)` reports `beforeCreate` (during the\n  constructor), `create` (a task after mount), `focus`, `blur`, `selectionUpdate`, `transaction`,\n  `paste`, `drop`, `delete` (a task later, as Tiptap), `contentError`, `destroy` with Tiptap's\n  props (`destroy` gets `{ editor }`). React calls the latest handler without a new editor; HTML\n  relays them as `ok:editor:<lowercase>` with plain details (no transactions, slices or nodes).\n  `update` stays `onChange` / `ok:editor:change`.\n- Content check: `enableContentCheck` (Tiptap's): invalid initial content reports `contentError`\n  and loads without the invalid parts; an invalid `setContent` (React `value`, HTML `setValue`)\n  is refused and reported (Tiptap throws there; the controller catches its content errors only).\n  `emitContentError` passes through (Tiptap reports invalid inserted content and keeps it). HTML\n  snippet markup is parsed from the DOM by the schema, so it never reports a content error.\n- Editor access: React `editorRef` gets the Tiptap editor after each creation and `null` after\n  destroy (also `onCreate({ editor })`); HTML instance `editor`; both have `getJSON()` /\n  `getText()` (controller and HTML instance).",
      "id": "behavior",
      "title": "Behavior"
     },
@@ -36823,7 +37011,7 @@
      "title": "Accessibility"
     },
     {
-     "body": "HTML `ok:editor:change` (`{ value }`), `ok:editor:fullscreen` (`{ fullscreen }`). Instance\n`{ value, setValue(html), fullscreen, setFullscreen(on), setEditable(on), focus(), controller }`.\nCore: `EditorState.textTransform` (value at the selection), `run(\"textTransform\", { textTransform:\n\"uppercase\" | \"lowercase\" | \"capitalize\" | null })`, `TextTransform` (the mark),\n`editorTextTransforms`, `readTextTransform`, `holdEditorFullscreen(root)`.\nRegistration is opt-in: `@owlky/html/editor`, `owlky-editor.js`, or `createEditor({ highlighter })`.\nReact: `onChange(html)`, `onFullscreenChange(fullscreen)`.\nADR-0050: HTML `ok:editor:mentionsearch` (`{ query, char, items, respondWith(itemsOrPromise) }`),\n`createEditor({ extensions, editorProps, parseOptions })`. Core: `createEditorBubbleMenu(editor,\nmenu, options)` (`isOpen`, `update()`, `focus()`, `setOptions()`, `destroy()`),\n`defaultBubbleMenuShow`, `editorToolbarShortcut(root, content, bubble)`, `editorTableActions`,\n`editorBubbleMenuActions`, `editorToolButton(action)`, `EditorMentionItem`, controller options\n`tables`, `mentions`, `extensions`, `editorProps`, `parseOptions`, `autofocus`, `textDirection`,\n`enableInputRules`, `enablePasteRules`; table actions through `run()`.",
+     "body": "HTML `ok:editor:change` (`{ value }`), `ok:editor:fullscreen` (`{ fullscreen }`). Instance\n`{ value, setValue(html), fullscreen, setFullscreen(on), setEditable(on), focus(), controller,\neditor, getJSON(), getText() }`. Tiptap events: `ok:editor:beforecreate` (no detail), `create`\n(`{ value }`), `focus` / `blur` (`{ event }`), `selectionupdate` (`{ from, to, empty }`),\n`transaction` (`{ docChanged }`), `paste` (`{ event, text }`), `drop` (`{ event, text, moved }`),\n`delete` (`{ type, name, from, to, partial }`), `contenterror` (`{ message }`), `destroy` (no detail).\nCore: `EditorState.textTransform` (value at the selection), `run(\"textTransform\", { textTransform:\n\"uppercase\" | \"lowercase\" | \"capitalize\" | null })`, `TextTransform` (the mark),\n`editorTextTransforms`, `readTextTransform`, `holdEditorFullscreen(root)`.\nRegistration is opt-in: `@owlky/html/editor`, `owlky-editor.js`, or `createEditor({ highlighter })`.\nReact: `onChange(html)`, `onFullscreenChange(fullscreen)`, `editorRef`, `onBeforeCreate`,\n`onCreate`, `onEditorFocus`, `onEditorBlur`, `onSelectionUpdate`, `onTransaction`,\n`onEditorPaste`, `onEditorDrop`, `onDelete`, `onContentError`, `onDestroy` (Tiptap's props;\n`onFocus` / `onBlur` / `onPaste` / `onDrop` stay the root's DOM handlers, so the Tiptap ones are\nprefixed), `enableContentCheck`, `emitContentError`. Core: controller `getJSON()`, `getText()`,\noptions `onEvent`, `enableContentCheck`, `emitContentError`; `editorEventNames`,\n`EditorEventName`, `EditorEventProps`, `TiptapEditor`, `EditorJSONContent`.\nADR-0050: HTML `ok:editor:mentionsearch` (`{ query, char, items, respondWith(itemsOrPromise) }`),\n`createEditor({ extensions, editorProps, parseOptions })`. Core: `createEditorBubbleMenu(editor,\nmenu, options)` (`isOpen`, `update()`, `focus()`, `setOptions()`, `destroy()`),\n`defaultBubbleMenuShow`, `editorToolbarShortcut(root, content, bubble)`, `editorTableActions`,\n`editorBubbleMenuActions`, `editorToolButton(action)`, `EditorMentionItem`, controller options\n`tables`, `mentions`, `extensions`, `editorProps`, `parseOptions`, `autofocus`, `textDirection`,\n`enableInputRules`, `enablePasteRules`; table actions through `run()`.",
      "id": "events-api",
      "title": "Events / API"
     },
@@ -36833,7 +37021,7 @@
      "title": "Responsive"
     },
     {
-     "body": "Upstream: the Minimals `Editor` wrapper's props and Tiptap 3 (tiptap.dev/docs/editor/api/editor,\n/api/events).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| Minimals `value`, `onChange`, `editable`, `fullItem`, `error`, `helperText`, `placeholder` | same | kept | `onChange(html)`, `\"\"` when empty |\n| Minimals `resetValue` | `value=\"\"` | not applicable | |\n| Minimals `className`, `sx`, `slotProps` | root `className` | not applicable | ADR-0015 |\n| Tiptap `content` | `value` / `defaultValue`; HTML: markup in the content element | renamed | |\n| Tiptap `editable`, `setEditable()` | `editable`, `setEditable(on)` | kept | |\n| Tiptap `element`, `mount()` / `unmount()` | `[data-ok-editor-content]` | not applicable | the anatomy owns the mount |\n| Tiptap `injectCSS`, `injectNonce` | — | not applicable | `injectCSS: false` (CSP); editor.css |\n| Tiptap `extensions` | `extensions` (after the built-in set; a same-named one replaces it) · HTML `createEditor({ extensions })` | kept | ADR-0050; read at creation |\n| Tiptap `schemaSpec`, `coreExtensionOptions`, `enableExtensionDispatchTransaction` | — | deferred | |\n| Tiptap `editorProps`, `parseOptions` | same (merged; read at creation) · HTML `createEditor({ editorProps, parseOptions })` | kept | |\n| Tiptap `enableInputRules`, `enablePasteRules`, `textDirection`, `autofocus` | same · `data-ok-enable-input-rules`, `-enable-paste-rules`, `-text-direction`, `-autofocus` | kept | rule lists (arrays) in React only; HTML autofocus `start` · `end` · `all` |\n| `@tiptap/extension-table` (TableKit) | `tables` / `data-ok-tables` + the table menu | kept | `resizable` and its options deferred |\n| `@tiptap/extension-mention` + `@tiptap/suggestion` | `mentions` (`char`, `items`, `allowSpaces`) · HTML list markup + template / `ok:editor:mentionsearch` | kept | `suggestions` (several triggers), `renderText` / `renderHTML`, `deleteTriggerWithBackspace` deferred |\n| event `update` | `onChange(html)`, `ok:editor:change` | renamed | |\n| events `beforeCreate`, `create`, `selectionUpdate`, `transaction`, `focus`, `blur`, `destroy`, `paste`, `drop`, `delete`, `contentError` | — | deferred | HTML: `controller.editor.on()`; React: no editor handle |\n| `getHTML()` | `getValue()`, instance `value` | renamed | |\n| `getJSON()`, `getText()`, `isEmpty`, `isFocused`, `registerPlugin()`, `setOptions()` | — | deferred | HTML through `controller.editor`; React none |\n| `chain()`, `can()`, `isActive()`, `getAttributes()` | `run(action, value)`, `EditorState` (`active`, `disabled`, `link`, `textTransform`) | renamed | |\n| `commands.focus()`, `destroy()` | `focus()`, `destroy({ restore })` | kept | |\n| `@tiptap/react` `BubbleMenu` (`shouldShow`, `updateDelay`, `options.placement`) | `bubbleMenu` (`actions`, `placement`, `updateDelay`, `shouldShow`) · HTML bubble menu markup | renamed | Owlky's own (popover controller, Alt+F10); `pluginKey`, `appendTo`, `resizeDelay`, other Floating UI options not applicable |\n| `@tiptap/react` `useEditor`, `EditorContent`, `useCurrentEditor`, `FloatingMenu` | — | deferred | |\n| form `name` (hidden input) | `name` · `input[data-ok-editor-input][name]` | kept | |\n\nBeyond upstream: `defaultValue`, `highlighter`, `onFullscreenChange`, `aria-label` /\n`aria-labelledby`, fullscreen.",
+     "body": "Upstream: the Minimals `Editor` wrapper's props and Tiptap 3 (tiptap.dev/docs/editor/api/editor,\n/api/events).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| Minimals `value`, `onChange`, `editable`, `fullItem`, `error`, `helperText`, `placeholder` | same | kept | `onChange(html)`, `\"\"` when empty |\n| Minimals `resetValue` | `value=\"\"` | not applicable | |\n| Minimals `className`, `sx`, `slotProps` | root `className` | not applicable | ADR-0015 |\n| Tiptap `content` | `value` / `defaultValue`; HTML: markup in the content element | renamed | |\n| Tiptap `editable`, `setEditable()` | `editable`, `setEditable(on)` | kept | |\n| Tiptap `element`, `mount()` / `unmount()` | `[data-ok-editor-content]` | not applicable | the anatomy owns the mount |\n| Tiptap `injectCSS`, `injectNonce` | — | not applicable | `injectCSS: false` (CSP); editor.css |\n| Tiptap `extensions` | `extensions` (after the built-in set; a same-named one replaces it) · HTML `createEditor({ extensions })` | kept | ADR-0050; read at creation |\n| Tiptap `schemaSpec`, `coreExtensionOptions`, `enableExtensionDispatchTransaction` | — | deferred | |\n| Tiptap `editorProps`, `parseOptions` | same (merged; read at creation) · HTML `createEditor({ editorProps, parseOptions })` | kept | |\n| Tiptap `enableInputRules`, `enablePasteRules`, `textDirection`, `autofocus` | same · `data-ok-enable-input-rules`, `-enable-paste-rules`, `-text-direction`, `-autofocus` | kept | rule lists (arrays) in React only; HTML autofocus `start` · `end` · `all` |\n| `@tiptap/extension-table` (TableKit) | `tables` / `data-ok-tables` + the table menu | kept | `resizable` and its options deferred |\n| `@tiptap/extension-mention` + `@tiptap/suggestion` | `mentions` (`char`, `items`, `allowSpaces`) · HTML list markup + template / `ok:editor:mentionsearch` | kept | `suggestions` (several triggers), `renderText` / `renderHTML`, `deleteTriggerWithBackspace` deferred |\n| event `update` | `onChange(html)`, `ok:editor:change` | renamed | |\n| events `beforeCreate`, `create`, `selectionUpdate`, `transaction`, `destroy`, `delete`, `contentError` | React `onBeforeCreate`, `onCreate`, `onSelectionUpdate`, `onTransaction`, `onDestroy`, `onDelete`, `onContentError` · `ok:editor:beforecreate`, `create`, `selectionupdate`, `transaction`, `destroy`, `delete`, `contenterror` | kept | HTML details are plain values |\n| events `focus`, `blur`, `paste`, `drop` | React `onEditorFocus`, `onEditorBlur`, `onEditorPaste`, `onEditorDrop` · `ok:editor:focus`, `blur`, `paste`, `drop` | renamed | the root's DOM `onFocus`… keep their names |\n| events `mount`, `unmount`, `beforeTransaction` | — | not applicable / deferred | the anatomy owns the mount; `beforeTransaction` through `editorRef` / `editor.on()` |\n| Tiptap `enableContentCheck`, `emitContentError` | same · `data-ok-enable-content-check`, `data-ok-emit-content-error` | kept | read at creation; invalid `setContent` reported, not thrown |\n| `getHTML()` | `getValue()`, instance `value` | renamed | |\n| `getJSON()`, `getText()` | controller and HTML instance `getJSON()`, `getText()`; React through `editorRef` | kept | |\n| `isEmpty`, `isFocused`, `registerPlugin()`, `setOptions()`, `on()` / `off()` | the Tiptap editor: React `editorRef` / `onCreate`, HTML instance `editor` | kept | escape hatch |\n| `chain()`, `can()`, `isActive()`, `getAttributes()` | `run(action, value)`, `EditorState` (`active`, `disabled`, `link`, `textTransform`) | renamed | |\n| `commands.focus()`, `destroy()` | `focus()`, `destroy({ restore })` | kept | |\n| `@tiptap/react` `BubbleMenu` (`shouldShow`, `updateDelay`, `options.placement`) | `bubbleMenu` (`actions`, `placement`, `updateDelay`, `shouldShow`) · HTML bubble menu markup | renamed | Owlky's own (popover controller, Alt+F10); `pluginKey`, `appendTo`, `resizeDelay`, other Floating UI options not applicable |\n| `@tiptap/react` `useEditor` (the editor instance, its event options) | `editorRef`, `onCreate` and the event props | renamed | the component creates the editor |\n| `@tiptap/react` `EditorContent`, `useCurrentEditor`, `FloatingMenu` | — | deferred | |\n| form `name` (hidden input) | `name` · `input[data-ok-editor-input][name]` | kept | |\n\nBeyond upstream: `defaultValue`, `highlighter`, `onFullscreenChange`, `aria-label` /\n`aria-labelledby`, fullscreen.",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
@@ -49487,6 +49675,18 @@
          "description": "After the root's own animation ended. `state` is its `data-ok-state`.",
          "detail": "{ state: string | null; }",
          "name": "ok:motion:end"
+        },
+        {
+         "cancelable": false,
+         "description": "In view trigger: the element entered the viewport (the `data-ok-amount` fraction is visible). `ratio` is the visible fraction. With `once` (the default) it fires the first time only.",
+         "detail": "MotionViewportDetail",
+         "name": "ok:motion:enter"
+        },
+        {
+         "cancelable": false,
+         "description": "In view trigger with `data-ok-once=\"false\"`: the element left the viewport (nothing visible).",
+         "detail": "MotionViewportDetail",
+         "name": "ok:motion:leave"
         }
        ],
        "methods": [
@@ -49644,6 +49844,18 @@
          ],
          "kind": "part",
          "name": "data-ok-motion-char"
+        },
+        {
+         "description": "In view: grows (or, with negative values, shrinks) the viewport's box, written like CSS margins in `px` or `%`, such as `0px 0px -100px`.",
+         "kind": "value",
+         "name": "data-ok-viewport-margin",
+         "value": "string"
+        },
+        {
+         "description": "In view: the id of the scrolling ancestor whose box counts as the viewport. Default: the browser viewport.",
+         "kind": "value",
+         "name": "data-ok-viewport-root",
+         "value": "string"
         }
        ],
        "runtime": "motion"
@@ -49651,7 +49863,7 @@
       "name": "Motion",
       "react": {
        "description": "Animates its box in (or out) when it scrolls into view, on mount or when `in` changes. Inside a MotionGroup it follows the group. To replay the entrance, change its `key`.",
-       "native": "HTMLDivElement",
+       "native": "HTMLElement",
        "props": [
         {
          "description": "In view: the visible fraction (0 to 1) that starts the animation. 3.",
@@ -49662,6 +49874,12 @@
          "description": "The content.",
          "name": "children",
          "type": "ReactNode"
+        },
+        {
+         "default": "\"div\"",
+         "description": "The element to render, such as `\"section\"` or `\"li\"`.",
+         "name": "component",
+         "type": "ElementType"
         },
         {
          "description": "Wait before the entrance, ms.",
@@ -49685,6 +49903,16 @@
          "type": "boolean"
         },
         {
+         "description": "In view: called when the element enters the viewport (the `amount` is visible). With `once`, the first time only.",
+         "name": "onViewportEnter",
+         "type": "((entry: IntersectionObserverEntry) => void)"
+        },
+        {
+         "description": "In view with `once={false}`: called when the element leaves the viewport (nothing is visible).",
+         "name": "onViewportLeave",
+         "type": "((entry: IntersectionObserverEntry) => void)"
+        },
+        {
          "description": "In view: plays only the first time (default). `false` also plays the exit when it leaves.",
          "name": "once",
          "type": "boolean"
@@ -49704,6 +49932,16 @@
          "description": "Animation.",
          "name": "variant",
          "type": "MotionVariant"
+        },
+        {
+         "description": "In view: grows (or, with negative values, shrinks) the viewport's box before the visible fraction is measured, written like CSS margins in `px` or `%`, such as `\"0px 0px -100px\"`.",
+         "name": "viewportMargin",
+         "type": "string"
+        },
+        {
+         "description": "In view: the scrolling ancestor whose box counts as the viewport. Default: the browser viewport.",
+         "name": "viewportRoot",
+         "type": "RefObject<Element | null>"
         }
        ]
       }
@@ -49983,6 +50221,20 @@
      {
       "html": {
        "attribute": "data-ok-motion-group",
+       "events": [
+        {
+         "cancelable": false,
+         "description": "In view trigger: the group entered the viewport. `ratio` is its visible fraction.",
+         "detail": "MotionViewportDetail",
+         "name": "ok:motion-group:enter"
+        },
+        {
+         "cancelable": false,
+         "description": "In view trigger with `data-ok-once=\"false\"`: the group left the viewport.",
+         "detail": "MotionViewportDetail",
+         "name": "ok:motion-group:leave"
+        }
+       ],
        "methods": [
         {
          "description": "Plays the entrances again.",
@@ -50052,7 +50304,7 @@
       "name": "MotionGroup",
       "react": {
        "description": "Plays the Motions inside it together, one direct child after the other (the reference's \"MultiItem\").",
-       "native": "HTMLDivElement",
+       "native": "HTMLElement",
        "props": [
         {
          "description": "In view: the visible fraction (0 to 1) that starts the animation. 3.",
@@ -50065,6 +50317,12 @@
          "type": "ReactNode"
         },
         {
+         "default": "\"div\"",
+         "description": "The element to render, such as `\"ul\"` or `\"section\"`.",
+         "name": "component",
+         "type": "ElementType"
+        },
+        {
          "description": "Wait before the entrance, ms.",
          "name": "delay",
          "type": "number"
@@ -50074,6 +50332,16 @@
          "description": "Manual trigger: shown. Turning it off plays the exit.",
          "name": "in",
          "type": "boolean"
+        },
+        {
+         "description": "In view: called when the element enters the viewport (the `amount` is visible). With `once`, the first time only.",
+         "name": "onViewportEnter",
+         "type": "((entry: IntersectionObserverEntry) => void)"
+        },
+        {
+         "description": "In view with `once={false}`: called when the element leaves the viewport (nothing is visible).",
+         "name": "onViewportLeave",
+         "type": "((entry: IntersectionObserverEntry) => void)"
         },
         {
          "description": "In view: plays only the first time (default). `false` also plays the exit when it leaves.",
@@ -50089,6 +50357,16 @@
          "description": "`inView` (default): plays when scrolled into view; `mount`: right away; `manual`: follows `in`.",
          "name": "trigger",
          "type": "\"inView\" | \"manual\" | \"mount\""
+        },
+        {
+         "description": "In view: grows (or, with negative values, shrinks) the viewport's box before the visible fraction is measured, written like CSS margins in `px` or `%`, such as `\"0px 0px -100px\"`.",
+         "name": "viewportMargin",
+         "type": "string"
+        },
+        {
+         "description": "In view: the scrolling ancestor whose box counts as the viewport. Default: the browser viewport.",
+         "name": "viewportRoot",
+         "type": "RefObject<Element | null>"
         }
        ]
       }
@@ -50096,6 +50374,20 @@
      {
       "html": {
        "attribute": "data-ok-motion-text",
+       "events": [
+        {
+         "cancelable": false,
+         "description": "In view trigger: the text entered the viewport. `ratio` is its visible fraction.",
+         "detail": "MotionViewportDetail",
+         "name": "ok:motion-text:enter"
+        },
+        {
+         "cancelable": false,
+         "description": "In view trigger with `data-ok-once=\"false\"`: the text left the viewport.",
+         "detail": "MotionViewportDetail",
+         "name": "ok:motion-text:leave"
+        }
+       ],
        "methods": [
         {
          "description": "Plays the entrance again.",
@@ -50268,7 +50560,7 @@
       "name": "MotionText",
       "react": {
        "description": "Animates a text letter by letter (\"Text object\").",
-       "native": "HTMLSpanElement",
+       "native": "HTMLElement",
        "props": [
         {
          "description": "In view: the visible fraction (0 to 1) that starts the animation. 3.",
@@ -50280,6 +50572,12 @@
          "name": "children",
          "required": true,
          "type": "string"
+        },
+        {
+         "default": "\"span\"",
+         "description": "The element to render, such as `\"h2\"` or `\"p\"`.",
+         "name": "component",
+         "type": "ElementType"
         },
         {
          "description": "Wait before the entrance, ms.",
@@ -50303,6 +50601,16 @@
          "type": "boolean"
         },
         {
+         "description": "In view: called when the element enters the viewport (the `amount` is visible). With `once`, the first time only.",
+         "name": "onViewportEnter",
+         "type": "((entry: IntersectionObserverEntry) => void)"
+        },
+        {
+         "description": "In view with `once={false}`: called when the element leaves the viewport (nothing is visible).",
+         "name": "onViewportLeave",
+         "type": "((entry: IntersectionObserverEntry) => void)"
+        },
+        {
          "description": "In view: plays only the first time (default). `false` also plays the exit when it leaves.",
          "name": "once",
          "type": "boolean"
@@ -50322,6 +50630,16 @@
          "description": "Animation of each letter.",
          "name": "variant",
          "type": "MotionVariant"
+        },
+        {
+         "description": "In view: grows (or, with negative values, shrinks) the viewport's box before the visible fraction is measured, written like CSS margins in `px` or `%`, such as `\"0px 0px -100px\"`.",
+         "name": "viewportMargin",
+         "type": "string"
+        },
+        {
+         "description": "In view: the scrolling ancestor whose box counts as the viewport. Default: the browser viewport.",
+         "name": "viewportRoot",
+         "type": "RefObject<Element | null>"
         }
        ]
       }
@@ -50845,12 +51163,12 @@
      "title": "Purpose"
     },
     {
-     "body": "```\n[data-ok-motion][data-ok-variant][data-ok-trigger][data-ok-once=\"false\"]?[data-ok-amount]?[data-ok-in]?\n  [data-ok-duration]?[data-ok-delay]?[data-ok-distance]?[data-ok-paused]?[data-ok-state=initial|enter|exit]\n  › content (draw: an svg whose shapes have pathLength=\"1\")\n[data-ok-motion-group][trigger options][data-ok-stagger]? › [data-ok-motion]…   (direct children staggered)\nspan[data-ok-motion-text][data-ok-variant][trigger options][data-ok-stagger]?[data-ok-state]\n  › span[data-ok-motion-text-label] (visually hidden text)\n  + span[aria-hidden=true] › span[data-ok-motion-text-word] › span[data-ok-motion-char]…\nspan[data-ok-count-up][data-ok-end][data-ok-start]?[data-ok-decimals]?[data-ok-duration]?[trigger options]\n  › span[data-ok-count-up-label] (visually hidden end value) + span[aria-hidden=true] › prefix,\n    span[data-ok-count-up-value], suffix\ndiv[data-ok-motion-border][data-ok-shape][data-ok-color][data-ok-secondary-color]?[data-ok-width]?[data-ok-duration]?\n  [data-ok-paused]? › content\nDialog: div[data-ok-dialog-paper][data-ok-motion][data-ok-variant][data-ok-trigger=mount]   (`transition`)\n```\nPrivate properties (React `style`, HTML CSSOM): `--_ok-motion-duration | -delay | -distance |\n-stagger | -index`, `--_ok-motion-border-width | -duration | -fill`; CSS-only\n`--_ok-motion-border-light | -light-channel | -light-2 | -light-2-channel` (reset to `initial` on\nevery root so nested borders don't inherit them).",
+     "body": "```\n[data-ok-motion][data-ok-variant][data-ok-trigger][data-ok-once=\"false\"]?[data-ok-amount]?[data-ok-in]?\n  [data-ok-duration]?[data-ok-delay]?[data-ok-distance]?[data-ok-paused]?[data-ok-state=initial|enter|exit]\n  [data-ok-viewport-margin=<rootMargin>]?[data-ok-viewport-root=<id>]?\n  › content (draw: an svg whose shapes have pathLength=\"1\")\n  (any element: React `component`, default `div`; MotionGroup `div`, MotionText `span`; the\n   viewport attributes also go on MotionGroup and MotionText roots)\n[data-ok-motion-group][trigger options][data-ok-stagger]? › [data-ok-motion]…   (direct children staggered)\nspan[data-ok-motion-text][data-ok-variant][trigger options][data-ok-stagger]?[data-ok-state]\n  › span[data-ok-motion-text-label] (visually hidden text)\n  + span[aria-hidden=true] › span[data-ok-motion-text-word] › span[data-ok-motion-char]…\nspan[data-ok-count-up][data-ok-end][data-ok-start]?[data-ok-decimals]?[data-ok-duration]?[trigger options]\n  › span[data-ok-count-up-label] (visually hidden end value) + span[aria-hidden=true] › prefix,\n    span[data-ok-count-up-value], suffix\ndiv[data-ok-motion-border][data-ok-shape][data-ok-color][data-ok-secondary-color]?[data-ok-width]?[data-ok-duration]?\n  [data-ok-paused]? › content\nDialog: div[data-ok-dialog-paper][data-ok-motion][data-ok-variant][data-ok-trigger=mount]   (`transition`)\n```\nPrivate properties (React `style`, HTML CSSOM): `--_ok-motion-duration | -delay | -distance |\n-stagger | -index`, `--_ok-motion-border-width | -duration | -fill`; CSS-only\n`--_ok-motion-border-light | -light-channel | -light-2 | -light-2-channel` (reset to `initial` on\nevery root so nested borders don't inherit them).",
      "id": "anatomy",
      "title": "Anatomy"
     },
     {
-     "body": "(Options of `motion`: listed under \"options\".)\n\nMotionGroup:\n(Options of `motion-group`: listed under \"options\".)\n\nMotionText:\n(Options of `motion-text`: listed under \"options\".)\n\nCountUp:\n(Options of `count-up`: listed under \"options\".)\n\nMotionBorder:\n(Options of `motion-border`: listed under \"options\".)\n\nContent: `children` (MotionText: a string), CountUp `prefix` / `suffix`. API mapping (Framer\nMotion): variants → `variant` (the reference's 48 entrance / exit names, its background and its\nother effects); `whileInView` + `viewport.once` / `amount` → `trigger=\"inView\"`, `once`, `amount`;\n`animate` / `exit` / `AnimatePresence` → `trigger=\"manual\"` + `in` (exits play the entrance\nbackwards); `transition.duration` / `delay` → `duration`, `delay`; `staggerChildren` → MotionGroup /\nMotionText `stagger`; `whileHover` / `whileTap` → `variant=\"interactive\"`; `pathLength` → `draw`.\nMotionBorder (the reference's own animated border): `slotProps.primaryBorder` → `color`, `width`;\n`slotProps.secondaryBorder` → `secondaryColor` (the two lights share one ring); per-side `padding` /\nper-corner radius → the root's CSS `border-width` / `border-radius` (zero specificity, so author\nrules win). Beyond the reference: `paused` (WCAG 2.2.2). Deferred: `component` (Motion always renders a\n`div`), spring physics, custom keyframes, layout animations, scroll-linked progress (Scroll\nprogress page), exit of a Dialog, the reference's logo rings (shape-morphing,\ncustom keyframes: Motion full version, phase 1). Not applicable: `motion.*` element factories, `useAnimate`.",
+     "body": "(Options of `motion`: listed under \"options\".)\n\nMotionGroup:\n(Options of `motion-group`: listed under \"options\".)\n\nMotionText:\n(Options of `motion-text`: listed under \"options\".)\n\nCountUp:\n(Options of `count-up`: listed under \"options\".)\n\nMotionBorder:\n(Options of `motion-border`: listed under \"options\".)\n\nContent: `children` (MotionText: a string), CountUp `prefix` / `suffix`. API mapping (Framer\nMotion): variants → `variant` (the reference's 48 entrance / exit names, its background and its\nother effects); `whileInView` + `viewport.once` / `amount` → `trigger=\"inView\"`, `once`, `amount`;\n`animate` / `exit` / `AnimatePresence` → `trigger=\"manual\"` + `in` (exits play the entrance\nbackwards); `transition.duration` / `delay` → `duration`, `delay`; `staggerChildren` → MotionGroup /\nMotionText `stagger`; `whileHover` / `whileTap` → `variant=\"interactive\"`; `pathLength` → `draw`.\nMotionBorder (the reference's own animated border): `slotProps.primaryBorder` → `color`, `width`;\n`slotProps.secondaryBorder` → `secondaryColor` (the two lights share one ring); per-side `padding` /\nper-corner radius → the root's CSS `border-width` / `border-radius` (zero specificity, so author\nrules win). Beyond the reference: `paused` (WCAG 2.2.2). `viewport.margin` / `viewport.root` →\n`viewportMargin` / `viewportRoot` (HTML `data-ok-viewport-margin`, `data-ok-viewport-root=\"<id>\"`;\nfree text, so not in the option schemas: React writes the margin attribute, a ref root has none),\n`onViewportEnter` / `onViewportLeave` → `ok:motion:enter` / `leave` (also `ok:motion-group:*`,\n`ok:motion-text:*`), `component` (Motion, MotionGroup, MotionText; HTML: any element). Deferred:\nCountUp `component` / viewport options / viewport events (not in the row), spring physics, custom keyframes, layout animations, scroll-linked progress (Scroll\nprogress page), exit of a Dialog, the reference's logo rings (shape-morphing,\ncustom keyframes: Motion full version, phase 1). Not applicable: `motion.*` element factories, `useAnimate`.",
      "id": "options",
      "title": "Options"
     },
@@ -50860,7 +51178,7 @@
      "title": "Layout and tokens"
     },
     {
-     "body": "`initial` holds in-variants at their start (paused animation) and out-variants as themselves;\n`enter` plays; `exit` plays the other way (other keyframe name, so it restarts). An entered\nin-variant drops the animation at its end (`animation-fill-mode: backwards`): no transform is left.\n`inView` (IntersectionObserver; none → shown at once): plays when `amount` is visible; `once=false`\nexits when it leaves. `mount`: at once. `manual`: follows `in` / `data-ok-in`. Changing `variant`,\n`duration` or `distance` replays an entered Motion (React too). MotionGroup drives every Motion\nwhose closest group it is. Loops run while entered, `paused` stops them. Reduced motion: entrances\nand exits take 1ms, loops and the border don't run, interactive doesn't transition, CountUp shows\nthe end at once.",
+     "body": "`initial` holds in-variants at their start (paused animation) and out-variants as themselves;\n`enter` plays; `exit` plays the other way (other keyframe name, so it restarts). An entered\nin-variant drops the animation at its end (`animation-fill-mode: backwards`): no transform is left.\n`inView` (IntersectionObserver; none → shown at once): plays when `amount` is visible; `once=false`\nexits when it leaves. `viewportMargin` is the observer's `rootMargin` (invalid → none),\n`viewportRoot` its `root` (HTML: the element with that id; unknown → the browser viewport). Both\nare read when the trigger starts. Viewport events: enter once per crossing into view (the\n`amount` visible), leave when nothing is visible after an entrance; with `once`, the first\nentrance only. Only the element that owns the trigger reports (a Motion in a group doesn't);\n`mount` and `manual` triggers don't observe, so they report nothing. `mount`: at once. `manual`: follows `in` / `data-ok-in`. Changing `variant`,\n`duration` or `distance` replays an entered Motion (React too). MotionGroup drives every Motion\nwhose closest group it is. Loops run while entered, `paused` stops them. Reduced motion: entrances\nand exits take 1ms, loops and the border don't run, interactive doesn't transition, CountUp shows\nthe end at once.",
      "id": "behavior",
      "title": "Behavior"
     },
@@ -50875,7 +51193,7 @@
      "title": "Accessibility"
     },
     {
-     "body": "HTML: `ok:motion:end` (`{ state }`) on a Motion. Instances: motion / motion-group / motion-text\n`{ state, replay() }`, count-up `{ replay() }`, motion-border `{}` (width and duration only).\nReact: native `onAnimationEnd`; change the `key` to replay.",
+     "body": "HTML: `ok:motion:end` (`{ state }`) on a Motion; `ok:motion:enter` / `ok:motion:leave`\n(`{ ratio }`: the visible fraction), also `ok:motion-group:enter|leave` and\n`ok:motion-text:enter|leave`. Instances: motion / motion-group / motion-text\n`{ state, replay() }`, count-up `{ replay() }`, motion-border `{}` (width and duration only).\nReact: native `onAnimationEnd`, `onViewportEnter(entry)` / `onViewportLeave(entry)`\n(`IntersectionObserverEntry`, as Motion for React); change the `key` to replay.\nCore: `createMotionTrigger` options `margin`, `root`, `onViewport(inView, entry)`;\n`readMotionViewport(element)`.",
      "id": "events-api",
      "title": "Events / API"
     },
@@ -50885,7 +51203,7 @@
      "title": "Responsive"
     },
     {
-     "body": "Upstream: Framer Motion / Motion for React `motion` component props (motion.dev/docs/react-motion-component,\nchecked 2026-11-09), as used by the Minimals Animate page. CountUp and MotionBorder are the\nreference's own components (rows in the paragraph above).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `variants` + `initial` / `animate` / `exit` (named variants) | `variant` (the reference's names) | renamed | CSS keyframes |\n| `animate` / `exit` / `AnimatePresence` | `trigger=\"manual\"` + `in` | renamed | exit = entrance backwards |\n| `whileInView`, `viewport.once`, `viewport.amount` | `trigger=\"inView\"`, `once`, `amount` | renamed | |\n| `viewport.margin`, `viewport.root` | — | deferred | IntersectionObserver `rootMargin` / scroll root |\n| `transition.duration`, `.delay`, `staggerChildren` | `duration`, `delay`, MotionGroup / MotionText `stagger` | renamed | |\n| `transition` springs, easing, custom keyframes (`animate` objects), `style` motion values, `transformTemplate` | — | deferred (5.1) | |\n| `onAnimationStart`, `onAnimationComplete` | `ok:motion:end` / native `onAnimationEnd` | renamed | start event deferred with 5.1 |\n| `onUpdate` | — | deferred (5.1) | |\n| `onViewportEnter`, `onViewportLeave` | — | deferred | in-view events |\n| `whileHover`, `whileTap` | `variant=\"interactive\"` | renamed | springs, `onHoverStart` / `End`, `onTap*`, `tap`: deferred (5.3) |\n| `whileFocus` | — | deferred (5.3) | |\n| `drag*`, `whileDrag`, `dragControls`, `onDrag*`, `onDirectionLock`, `onPan*`, `pinch`, `whilePinch`, `propagate` | — | deferred (5.3) | |\n| `layout`, `layoutId`, `layoutDependency`, `layoutAnchor`, `layoutScroll`, `layoutRoot`, `onLayoutAnimation*` | — | deferred (5.4) | shared elements 5.5 |\n| `useScroll` (scroll progress) | — | deferred (5.2) | |\n| `inherit`, `custom` | MotionGroup sets the children's timing | renamed | dynamic variants not applicable (named CSS variants) |\n| `motion.*` element factories / `component` | always a `div` | deferred | `component` (spec Deferred) |\n| `useAnimate`, `animate()` | — | deferred (5.1) | core `animate(element, keyframes, options)` |\n| — | `paused`, MotionBorder, CountUp, background and path variants | kept | Owlky / reference additions |",
+     "body": "Upstream: Framer Motion / Motion for React `motion` component props (motion.dev/docs/react-motion-component,\nchecked 2026-11-09), as used by the Minimals Animate page. CountUp and MotionBorder are the\nreference's own components (rows in the paragraph above).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `variants` + `initial` / `animate` / `exit` (named variants) | `variant` (the reference's names) | renamed | CSS keyframes |\n| `animate` / `exit` / `AnimatePresence` | `trigger=\"manual\"` + `in` | renamed | exit = entrance backwards |\n| `whileInView`, `viewport.once`, `viewport.amount` | `trigger=\"inView\"`, `once`, `amount` | renamed | |\n| `viewport.margin`, `viewport.root` | `viewportMargin`, `viewportRoot` · `data-ok-viewport-margin`, `data-ok-viewport-root=\"<id>\"` | renamed | IntersectionObserver `rootMargin` / `root`; React root is a ref, HTML an id |\n| `transition.duration`, `.delay`, `staggerChildren` | `duration`, `delay`, MotionGroup / MotionText `stagger` | renamed | |\n| `transition` springs, easing, custom keyframes (`animate` objects), `style` motion values, `transformTemplate` | — | deferred (5.1) | |\n| `onAnimationStart`, `onAnimationComplete` | `ok:motion:end` / native `onAnimationEnd` | renamed | start event deferred with 5.1 |\n| `onUpdate` | — | deferred (5.1) | |\n| `onViewportEnter`, `onViewportLeave` | same (`IntersectionObserverEntry`) · `ok:motion:enter` / `leave` (`{ ratio }`) | kept | in-view trigger only; group and text roots too |\n| `whileHover`, `whileTap` | `variant=\"interactive\"` | renamed | springs, `onHoverStart` / `End`, `onTap*`, `tap`: deferred (5.3) |\n| `whileFocus` | — | deferred (5.3) | |\n| `drag*`, `whileDrag`, `dragControls`, `onDrag*`, `onDirectionLock`, `onPan*`, `pinch`, `whilePinch`, `propagate` | — | deferred (5.3) | |\n| `layout`, `layoutId`, `layoutDependency`, `layoutAnchor`, `layoutScroll`, `layoutRoot`, `onLayoutAnimation*` | — | deferred (5.4) | shared elements 5.5 |\n| `useScroll` (scroll progress) | — | deferred (5.2) | |\n| `inherit`, `custom` | MotionGroup sets the children's timing | renamed | dynamic variants not applicable (named CSS variants) |\n| `motion.*` element factories / `component` | `component` (Motion, MotionGroup, MotionText) · HTML: any element | renamed | factories not applicable; inline elements need `display: inline-block` for transforms |\n| `useAnimate`, `animate()` | — | deferred (5.1) | core `animate(element, keyframes, options)` |\n| — | `paused`, MotionBorder, CountUp, background and path variants | kept | Owlky / reference additions |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
@@ -70597,6 +70915,13 @@
      "title": "Configure Tiptap"
     },
     {
+     "body": "You can reach the Tiptap editor itself for anything the component doesn't offer, such as its commands, `isEmpty` or `on()`. In React, pass `editorRef`: it receives the editor once it exists and `null` when it is destroyed. `onCreate` also receives it when the editor is ready. In HTML, the instance's `editor` is the Tiptap editor. `getJSON()` and `getText()` return the content as ProseMirror JSON and as plain text.\n\nTiptap's events reach you as props in React and as `ok:editor:*` events in HTML:\n- **Life cycle:** `onBeforeCreate`, `onCreate` and `onDestroy`. In HTML, `ok:editor:beforecreate`, `ok:editor:create` and `ok:editor:destroy`.\n- **Focus:** `onEditorFocus` and `onEditorBlur` fire when the focus enters or leaves the text. The root's `onFocus` and `onBlur` fire for every part, such as the toolbar. In HTML, `ok:editor:focus` and `ok:editor:blur`.\n- **Changes:** `onSelectionUpdate`, `onTransaction` and `onDelete`. In HTML, `ok:editor:selectionupdate`, `ok:editor:transaction` and `ok:editor:delete`. For the content as HTML, use `onChange` and `ok:editor:change`.\n- **Clipboard and dragging:** `onEditorPaste` and `onEditorDrop`. In HTML, `ok:editor:paste` and `ok:editor:drop`, with the pasted or dropped text in `detail.text`.\n- **Invalid content:** with `enableContentCheck`, content that the editor doesn't support calls `onContentError` (HTML: `ok:editor:contenterror`, with `detail.message`). The initial content loads without the parts it doesn't support, and a new value with such parts is refused. Without the check, those parts are dropped silently.\n\nReact handlers receive Tiptap's own arguments. HTML events carry plain values instead, such as positions and text.",
+     "html": "<div data-ok-editor data-ok-full-item data-ok-enable-content-check>\n  <div data-ok-backdrop></div>\n  <div data-ok-editor-toolbar role=\"toolbar\" aria-label=\"Formatting\" aria-controls=\"notes-content\">\n    <button type=\"button\" data-ok-editor-heading id=\"notes-heading\" data-ok-popover-open=\"notes-menu\" aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"notes-menu\" tabindex=\"0\"><span data-ok-editor-heading-label>Paragraph</span><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M6 9l6 6 6-6\"></path></svg></button>\n    <div data-ok-editor-group>\n      <button type=\"button\" data-ok-editor-action=\"bold\" aria-label=\"Bold\" aria-keyshortcuts=\"Control+B Meta+B\" aria-pressed=\"false\" tabindex=\"-1\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M7 5h6a3.5 3.5 0 0 1 0 7H7z M7 12h7a3.5 3.5 0 0 1 0 7H7z\"></path></svg></button>\n      <button type=\"button\" data-ok-editor-action=\"italic\" aria-label=\"Italic\" aria-keyshortcuts=\"Control+I Meta+I\" aria-pressed=\"false\" tabindex=\"-1\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M10 5h8 M6 19h8 M14 5l-4 14\"></path></svg></button>\n      <button type=\"button\" data-ok-editor-action=\"underline\" aria-label=\"Underline\" aria-keyshortcuts=\"Control+U Meta+U\" aria-pressed=\"false\" tabindex=\"-1\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M7 4v7a5 5 0 0 0 10 0V4 M5 20h14\"></path></svg></button>\n      <button type=\"button\" data-ok-editor-action=\"strike\" aria-label=\"Strikethrough\" aria-keyshortcuts=\"Control+Shift+S Meta+Shift+S\" aria-pressed=\"false\" tabindex=\"-1\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M5 12h14 M16.5 7C15.8 5.5 14.2 4.5 12 4.5 9.5 4.5 7.5 5.8 7.5 8c0 1.4.8 2.4 2 3 M8 16.5c.7 1.8 2.3 3 4.5 3 2.6 0 4.5-1.4 4.5-3.5 0-.6-.1-1.1-.4-1.5\"></path></svg></button>\n    </div>\n    <div data-ok-editor-group>\n      <button type=\"button\" data-ok-editor-action=\"bulletList\" aria-label=\"Bullet list\" aria-keyshortcuts=\"Control+Shift+8 Meta+Shift+8\" aria-pressed=\"false\" tabindex=\"-1\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M10 6h10 M10 12h10 M10 18h10 M5 6h.01 M5 12h.01 M5 18h.01\"></path></svg></button>\n      <button type=\"button\" data-ok-editor-action=\"orderedList\" aria-label=\"Ordered list\" aria-keyshortcuts=\"Control+Shift+7 Meta+Shift+7\" aria-pressed=\"false\" tabindex=\"-1\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M10 6h10 M10 12h10 M10 18h10 M4 4h1.5v5 M4 9h3 M4 14.5a1.5 1.5 0 0 1 3 0c0 1.2-3 2.3-3 4h3\"></path></svg></button>\n    </div>\n    <div data-ok-editor-group>\n      <button type=\"button\" data-ok-editor-action=\"alignLeft\" aria-label=\"Align left\" aria-keyshortcuts=\"Control+Shift+L Meta+Shift+L\" aria-pressed=\"false\" tabindex=\"-1\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M4 6h16 M4 10h10 M4 14h16 M4 18h10\"></path></svg></button>\n      <button type=\"button\" data-ok-editor-action=\"alignCenter\" aria-label=\"Align center\" aria-keyshortcuts=\"Control+Shift+E Meta+Shift+E\" aria-pressed=\"false\" tabindex=\"-1\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M4 6h16 M7 10h10 M4 14h16 M7 18h10\"></path></svg></button>\n      <button type=\"button\" data-ok-editor-action=\"alignRight\" aria-label=\"Align right\" aria-keyshortcuts=\"Control+Shift+R Meta+Shift+R\" aria-pressed=\"false\" tabindex=\"-1\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M4 6h16 M10 10h10 M4 14h16 M10 18h10\"></path></svg></button>\n      <button type=\"button\" data-ok-editor-action=\"alignJustify\" aria-label=\"Justify\" aria-keyshortcuts=\"Control+Shift+J Meta+Shift+J\" aria-pressed=\"false\" tabindex=\"-1\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M4 6h16 M4 10h16 M4 14h16 M4 18h16\"></path></svg></button>\n    </div>\n    <div data-ok-editor-group data-ok-full>\n      <button type=\"button\" data-ok-editor-action=\"code\" aria-label=\"Code\" aria-keyshortcuts=\"Control+E Meta+E\" aria-pressed=\"false\" tabindex=\"-1\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M9 7l-5 5 5 5 M15 7l5 5-5 5\"></path></svg></button>\n      <button type=\"button\" data-ok-editor-action=\"codeBlock\" aria-label=\"Code block\" aria-keyshortcuts=\"Control+Alt+C Meta+Alt+C\" aria-pressed=\"false\" tabindex=\"-1\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z M10 9.5L7.5 12l2.5 2.5 M14 9.5l2.5 2.5-2.5 2.5\"></path></svg></button>\n    </div>\n    <div data-ok-editor-group data-ok-full>\n      <button type=\"button\" data-ok-editor-action=\"blockquote\" aria-label=\"Blockquote\" aria-keyshortcuts=\"Control+Shift+B Meta+Shift+B\" aria-pressed=\"false\" tabindex=\"-1\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M10 7H5v5h5zm0 5c0 2.5-1.2 4-3.5 5 M19 7h-5v5h5zm0 5c0 2.5-1.2 4-3.5 5\"></path></svg></button>\n      <button type=\"button\" data-ok-editor-action=\"horizontalRule\" aria-label=\"Horizontal rule\" tabindex=\"-1\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M4 12h3 M10.5 12h3 M17 12h3\"></path></svg></button>\n    </div>\n    <div data-ok-editor-group>\n      <button type=\"button\" data-ok-editor-action=\"link\" aria-label=\"Insert link\" aria-haspopup=\"dialog\" aria-expanded=\"false\" aria-controls=\"notes-link\" data-ok-popover-open=\"notes-link\" tabindex=\"-1\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1 M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1\"></path></svg></button>\n      <button type=\"button\" data-ok-editor-action=\"unlink\" aria-label=\"Remove link\" disabled=\"\" tabindex=\"-1\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1 M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1 M4 4l16 16\"></path></svg></button>\n      <button type=\"button\" data-ok-editor-action=\"image\" aria-label=\"Insert image\" aria-haspopup=\"dialog\" aria-expanded=\"false\" aria-controls=\"notes-image\" data-ok-popover-open=\"notes-image\" tabindex=\"-1\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z M4 16l5-5 4 4 2-2 5 5 M15 8.5h.01\"></path></svg></button>\n    </div>\n    <div data-ok-editor-group>\n      <button type=\"button\" data-ok-editor-action=\"hardBreak\" aria-label=\"Line break\" aria-keyshortcuts=\"Shift+Enter\" tabindex=\"-1\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M4 6h16 M4 12h13a3 3 0 0 1 0 6h-4 M15 16l-2 2 2 2 M4 18h5\"></path></svg></button>\n      <button type=\"button\" data-ok-editor-action=\"clearFormat\" aria-label=\"Clear formatting\" aria-keyshortcuts=\"Control+Shift+X Meta+Shift+X\" tabindex=\"-1\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M7 5h12 M13 5l-4 14 M4 4l16 16\"></path></svg></button>\n    </div>\n    <div data-ok-editor-group data-ok-full>\n      <button type=\"button\" data-ok-editor-action=\"undo\" aria-label=\"Undo\" aria-keyshortcuts=\"Control+Z Meta+Z\" disabled=\"\" tabindex=\"-1\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M9 14L4 9l5-5 M4 9h10a6 6 0 0 1 0 12h-3\"></path></svg></button>\n      <button type=\"button\" data-ok-editor-action=\"redo\" aria-label=\"Redo\" aria-keyshortcuts=\"Control+Shift+Z Meta+Shift+Z\" disabled=\"\" tabindex=\"-1\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M15 14l5-5-5-5 M20 9H10a6 6 0 0 0 0 12h3\"></path></svg></button>\n    </div>\n    <div data-ok-editor-group>\n      <button type=\"button\" data-ok-editor-action=\"fullscreen\" aria-label=\"Fullscreen\" aria-pressed=\"false\" tabindex=\"-1\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\" data-ok-editor-icon=\"enter\"><path d=\"M4 9V4h5 M15 4h5v5 M20 15v5h-5 M9 20H4v-5\"></path></svg><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\" data-ok-editor-icon=\"exit\"><path d=\"M9 4v5H4 M20 9h-5V4 M15 20v-5h5 M4 15h5v5\"></path></svg></button>\n    </div>\n  </div>\n  <div data-ok-editor-body>\n    <div data-ok-editor-content id=\"notes-content\" role=\"textbox\" aria-multiline=\"true\" aria-label=\"Notes\">\n      <p>Write your notes here.</p>\n    </div>\n  </div>\n  <div popover=\"manual\" data-ok-popover data-ok-placement=\"bottom-start\" id=\"notes-menu\"><span data-ok-popover-arrow aria-hidden=\"true\"></span>\n    <ul role=\"menu\" data-ok-menu aria-labelledby=\"notes-heading\">\n      <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item data-ok-selected data-ok-editor-block=\"paragraph\">Paragraph</li>\n      <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item data-ok-editor-block=\"h1\">Heading 1</li>\n      <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item data-ok-editor-block=\"h2\">Heading 2</li>\n      <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item data-ok-editor-block=\"h3\">Heading 3</li>\n      <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item data-ok-editor-block=\"h4\">Heading 4</li>\n      <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item data-ok-editor-block=\"h5\">Heading 5</li>\n      <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item data-ok-editor-block=\"h6\">Heading 6</li>\n    </ul>\n  </div>\n  <div popover=\"manual\" data-ok-popover data-ok-placement=\"bottom-start\" id=\"notes-link\" role=\"dialog\" aria-labelledby=\"notes-link-title\"><span data-ok-popover-arrow aria-hidden=\"true\"></span>\n    <form data-ok-editor-form=\"link\" novalidate>\n      <p data-ok-editor-form-title id=\"notes-link-title\">Link URL</p>\n      <div data-ok-editor-form-row>\n        <div data-ok-text-field data-ok-variant=\"outlined\" data-ok-size=\"small\" data-ok-color=\"default\" data-ok-margin=\"none\">\n          <div data-ok-text-field-control><input aria-labelledby=\"notes-link-title\" data-ok-editor-field=\"href\" id=\"notes-link-url\" data-ok-text-field-input type=\"url\" placeholder=\"Enter URL\" value=\"\"/><fieldset data-ok-text-field-outline aria-hidden=\"true\"></fieldset></div>\n        </div>\n        <button type=\"submit\" data-ok-button data-ok-variant=\"contained\" data-ok-color=\"inherit\" data-ok-size=\"md\" disabled=\"\"><span data-ok-button-label>Apply</span></button>\n      </div>\n    </form>\n  </div>\n  <div popover=\"manual\" data-ok-popover data-ok-placement=\"bottom-start\" id=\"notes-image\" role=\"dialog\" aria-labelledby=\"notes-image-title\"><span data-ok-popover-arrow aria-hidden=\"true\"></span>\n    <form data-ok-editor-form=\"image\" novalidate>\n      <p data-ok-editor-form-title id=\"notes-image-title\">Add image</p>\n      <div data-ok-text-field data-ok-variant=\"outlined\" data-ok-size=\"small\" data-ok-color=\"default\" data-ok-margin=\"none\">\n        <div data-ok-text-field-control><input aria-label=\"Image URL\" data-ok-editor-field=\"src\" id=\"notes-image-url\" data-ok-text-field-input type=\"url\" placeholder=\"Image URL\" value=\"\"/><fieldset data-ok-text-field-outline aria-hidden=\"true\"></fieldset></div>\n      </div>\n      <div data-ok-text-field data-ok-variant=\"outlined\" data-ok-size=\"small\" data-ok-color=\"default\" data-ok-margin=\"none\">\n        <div data-ok-text-field-control><input aria-label=\"Alt text\" data-ok-editor-field=\"alt\" id=\"notes-image-alt\" data-ok-text-field-input placeholder=\"Alt text\" value=\"\"/><fieldset data-ok-text-field-outline aria-hidden=\"true\"></fieldset></div>\n      </div>\n      <button type=\"submit\" data-ok-button data-ok-variant=\"contained\" data-ok-color=\"inherit\" data-ok-size=\"md\" disabled=\"\"><span data-ok-button-label>Apply</span></button>\n    </form>\n  </div>\n</div>\n<p id=\"notes-status\" aria-live=\"polite\"></p>\n\n<script>\n  const notes = document.getElementById(\"notes-content\").closest(\"[data-ok-editor]\");\n  const status = document.getElementById(\"notes-status\");\n  // Count the characters when the editor is ready and when the focus leaves the text\n  const count = () => {\n    const editor = window.Owlky.get(notes, \"editor\");\n    status.textContent = `${editor.getText().length} characters`;\n  };\n  notes.addEventListener(\"ok:editor:create\", count);\n  notes.addEventListener(\"ok:editor:blur\", count);\n  notes.addEventListener(\"ok:editor:contenterror\", (event) => {\n    status.textContent = `Some content isn't supported: ${event.detail.message}`;\n  });\n</script>",
+     "id": "tiptap-events",
+     "react": "import { Editor, type TiptapEditor } from \"@owlky/react\";\nimport { useRef, useState } from \"react\";\n\nexport function Notes() {\n  const editorRef = useRef<TiptapEditor | null>(null);\n  const [status, setStatus] = useState(\"\");\n  const count = () => setStatus(`${editorRef.current?.getText().length ?? 0} characters`);\n  return (\n    <>\n      <Editor\n        aria-label=\"Notes\"\n        fullItem\n        editorRef={editorRef}\n        enableContentCheck\n        onCreate={count}\n        onEditorBlur={count}\n        onContentError={({ error }) => setStatus(`Some content isn't supported: ${error.message}`)}\n      />\n      <p aria-live=\"polite\">{status}</p>\n    </>\n  );\n}",
+     "title": "Use the Tiptap editor and its events"
+    },
+    {
      "body": "`name` lets the editor take part in a form: a hidden input with that name holds the content as HTML, kept up to date after every change. In HTML, add `<input type=\"hidden\" data-ok-editor-input name=\"…\">` as the last child of the editor. Check the HTML on the server before you store or show it, as you would for any form field.",
      "html": "<form method=\"post\" action=\"/posts\">\n  <div data-ok-editor data-ok-full-item>\n    <div data-ok-backdrop></div>\n    <div data-ok-editor-toolbar role=\"toolbar\" aria-label=\"Formatting\" aria-controls=\"post-content\">\n      <button type=\"button\" data-ok-editor-heading id=\"post-heading\" data-ok-popover-open=\"post-menu\" aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"post-menu\" tabindex=\"0\"><span data-ok-editor-heading-label>Paragraph</span><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M6 9l6 6 6-6\"></path></svg></button>\n      <div data-ok-editor-group>\n        <button type=\"button\" data-ok-editor-action=\"bold\" aria-label=\"Bold\" aria-keyshortcuts=\"Control+B Meta+B\" aria-pressed=\"false\" tabindex=\"-1\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M7 5h6a3.5 3.5 0 0 1 0 7H7z M7 12h7a3.5 3.5 0 0 1 0 7H7z\"></path></svg></button>\n        <button type=\"button\" data-ok-editor-action=\"italic\" aria-label=\"Italic\" aria-keyshortcuts=\"Control+I Meta+I\" aria-pressed=\"false\" tabindex=\"-1\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M10 5h8 M6 19h8 M14 5l-4 14\"></path></svg></button>\n        <button type=\"button\" data-ok-editor-action=\"underline\" aria-label=\"Underline\" aria-keyshortcuts=\"Control+U Meta+U\" aria-pressed=\"false\" tabindex=\"-1\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M7 4v7a5 5 0 0 0 10 0V4 M5 20h14\"></path></svg></button>\n        <button type=\"button\" data-ok-editor-action=\"strike\" aria-label=\"Strikethrough\" aria-keyshortcuts=\"Control+Shift+S Meta+Shift+S\" aria-pressed=\"false\" tabindex=\"-1\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M5 12h14 M16.5 7C15.8 5.5 14.2 4.5 12 4.5 9.5 4.5 7.5 5.8 7.5 8c0 1.4.8 2.4 2 3 M8 16.5c.7 1.8 2.3 3 4.5 3 2.6 0 4.5-1.4 4.5-3.5 0-.6-.1-1.1-.4-1.5\"></path></svg></button>\n      </div>\n      <div data-ok-editor-group>\n        <button type=\"button\" data-ok-editor-action=\"bulletList\" aria-label=\"Bullet list\" aria-keyshortcuts=\"Control+Shift+8 Meta+Shift+8\" aria-pressed=\"false\" tabindex=\"-1\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M10 6h10 M10 12h10 M10 18h10 M5 6h.01 M5 12h.01 M5 18h.01\"></path></svg></button>\n        <button type=\"button\" data-ok-editor-action=\"orderedList\" aria-label=\"Ordered list\" aria-keyshortcuts=\"Control+Shift+7 Meta+Shift+7\" aria-pressed=\"false\" tabindex=\"-1\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M10 6h10 M10 12h10 M10 18h10 M4 4h1.5v5 M4 9h3 M4 14.5a1.5 1.5 0 0 1 3 0c0 1.2-3 2.3-3 4h3\"></path></svg></button>\n      </div>\n      <div data-ok-editor-group>\n        <button type=\"button\" data-ok-editor-action=\"alignLeft\" aria-label=\"Align left\" aria-keyshortcuts=\"Control+Shift+L Meta+Shift+L\" aria-pressed=\"false\" tabindex=\"-1\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M4 6h16 M4 10h10 M4 14h16 M4 18h10\"></path></svg></button>\n        <button type=\"button\" data-ok-editor-action=\"alignCenter\" aria-label=\"Align center\" aria-keyshortcuts=\"Control+Shift+E Meta+Shift+E\" aria-pressed=\"false\" tabindex=\"-1\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M4 6h16 M7 10h10 M4 14h16 M7 18h10\"></path></svg></button>\n        <button type=\"button\" data-ok-editor-action=\"alignRight\" aria-label=\"Align right\" aria-keyshortcuts=\"Control+Shift+R Meta+Shift+R\" aria-pressed=\"false\" tabindex=\"-1\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M4 6h16 M10 10h10 M4 14h16 M10 18h10\"></path></svg></button>\n        <button type=\"button\" data-ok-editor-action=\"alignJustify\" aria-label=\"Justify\" aria-keyshortcuts=\"Control+Shift+J Meta+Shift+J\" aria-pressed=\"false\" tabindex=\"-1\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M4 6h16 M4 10h16 M4 14h16 M4 18h16\"></path></svg></button>\n      </div>\n      <div data-ok-editor-group data-ok-full>\n        <button type=\"button\" data-ok-editor-action=\"code\" aria-label=\"Code\" aria-keyshortcuts=\"Control+E Meta+E\" aria-pressed=\"false\" tabindex=\"-1\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M9 7l-5 5 5 5 M15 7l5 5-5 5\"></path></svg></button>\n        <button type=\"button\" data-ok-editor-action=\"codeBlock\" aria-label=\"Code block\" aria-keyshortcuts=\"Control+Alt+C Meta+Alt+C\" aria-pressed=\"false\" tabindex=\"-1\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z M10 9.5L7.5 12l2.5 2.5 M14 9.5l2.5 2.5-2.5 2.5\"></path></svg></button>\n      </div>\n      <div data-ok-editor-group data-ok-full>\n        <button type=\"button\" data-ok-editor-action=\"blockquote\" aria-label=\"Blockquote\" aria-keyshortcuts=\"Control+Shift+B Meta+Shift+B\" aria-pressed=\"false\" tabindex=\"-1\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M10 7H5v5h5zm0 5c0 2.5-1.2 4-3.5 5 M19 7h-5v5h5zm0 5c0 2.5-1.2 4-3.5 5\"></path></svg></button>\n        <button type=\"button\" data-ok-editor-action=\"horizontalRule\" aria-label=\"Horizontal rule\" tabindex=\"-1\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M4 12h3 M10.5 12h3 M17 12h3\"></path></svg></button>\n      </div>\n      <div data-ok-editor-group>\n        <button type=\"button\" data-ok-editor-action=\"link\" aria-label=\"Insert link\" aria-haspopup=\"dialog\" aria-expanded=\"false\" aria-controls=\"post-link\" data-ok-popover-open=\"post-link\" tabindex=\"-1\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1 M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1\"></path></svg></button>\n        <button type=\"button\" data-ok-editor-action=\"unlink\" aria-label=\"Remove link\" disabled=\"\" tabindex=\"-1\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1 M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1 M4 4l16 16\"></path></svg></button>\n        <button type=\"button\" data-ok-editor-action=\"image\" aria-label=\"Insert image\" aria-haspopup=\"dialog\" aria-expanded=\"false\" aria-controls=\"post-image\" data-ok-popover-open=\"post-image\" tabindex=\"-1\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z M4 16l5-5 4 4 2-2 5 5 M15 8.5h.01\"></path></svg></button>\n      </div>\n      <div data-ok-editor-group>\n        <button type=\"button\" data-ok-editor-action=\"hardBreak\" aria-label=\"Line break\" aria-keyshortcuts=\"Shift+Enter\" tabindex=\"-1\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M4 6h16 M4 12h13a3 3 0 0 1 0 6h-4 M15 16l-2 2 2 2 M4 18h5\"></path></svg></button>\n        <button type=\"button\" data-ok-editor-action=\"clearFormat\" aria-label=\"Clear formatting\" aria-keyshortcuts=\"Control+Shift+X Meta+Shift+X\" tabindex=\"-1\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M7 5h12 M13 5l-4 14 M4 4l16 16\"></path></svg></button>\n      </div>\n      <div data-ok-editor-group data-ok-full>\n        <button type=\"button\" data-ok-editor-action=\"undo\" aria-label=\"Undo\" aria-keyshortcuts=\"Control+Z Meta+Z\" disabled=\"\" tabindex=\"-1\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M9 14L4 9l5-5 M4 9h10a6 6 0 0 1 0 12h-3\"></path></svg></button>\n        <button type=\"button\" data-ok-editor-action=\"redo\" aria-label=\"Redo\" aria-keyshortcuts=\"Control+Shift+Z Meta+Shift+Z\" disabled=\"\" tabindex=\"-1\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M15 14l5-5-5-5 M20 9H10a6 6 0 0 0 0 12h3\"></path></svg></button>\n      </div>\n      <div data-ok-editor-group>\n        <button type=\"button\" data-ok-editor-action=\"fullscreen\" aria-label=\"Fullscreen\" aria-pressed=\"false\" tabindex=\"-1\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\" data-ok-editor-icon=\"enter\"><path d=\"M4 9V4h5 M15 4h5v5 M20 15v5h-5 M9 20H4v-5\"></path></svg><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\" focusable=\"false\" data-ok-editor-icon=\"exit\"><path d=\"M9 4v5H4 M20 9h-5V4 M15 20v-5h5 M4 15h5v5\"></path></svg></button>\n      </div>\n    </div>\n    <div data-ok-editor-body>\n      <div data-ok-editor-content id=\"post-content\" role=\"textbox\" aria-multiline=\"true\" aria-label=\"Post\">\n        <p>Write your notes here.</p>\n      </div>\n    </div>\n    <div popover=\"manual\" data-ok-popover data-ok-placement=\"bottom-start\" id=\"post-menu\"><span data-ok-popover-arrow aria-hidden=\"true\"></span>\n      <ul role=\"menu\" data-ok-menu aria-labelledby=\"post-heading\">\n        <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item data-ok-selected data-ok-editor-block=\"paragraph\">Paragraph</li>\n        <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item data-ok-editor-block=\"h1\">Heading 1</li>\n        <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item data-ok-editor-block=\"h2\">Heading 2</li>\n        <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item data-ok-editor-block=\"h3\">Heading 3</li>\n        <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item data-ok-editor-block=\"h4\">Heading 4</li>\n        <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item data-ok-editor-block=\"h5\">Heading 5</li>\n        <li role=\"menuitem\" tabindex=\"-1\" data-ok-menu-item data-ok-editor-block=\"h6\">Heading 6</li>\n      </ul>\n    </div>\n    <div popover=\"manual\" data-ok-popover data-ok-placement=\"bottom-start\" id=\"post-link\" role=\"dialog\" aria-labelledby=\"post-link-title\"><span data-ok-popover-arrow aria-hidden=\"true\"></span>\n      <form data-ok-editor-form=\"link\" novalidate>\n        <p data-ok-editor-form-title id=\"post-link-title\">Link URL</p>\n        <div data-ok-editor-form-row>\n          <div data-ok-text-field data-ok-variant=\"outlined\" data-ok-size=\"small\" data-ok-color=\"default\" data-ok-margin=\"none\">\n            <div data-ok-text-field-control><input aria-labelledby=\"post-link-title\" data-ok-editor-field=\"href\" id=\"post-link-url\" data-ok-text-field-input type=\"url\" placeholder=\"Enter URL\" value=\"\"/><fieldset data-ok-text-field-outline aria-hidden=\"true\"></fieldset></div>\n          </div>\n          <button type=\"submit\" data-ok-button data-ok-variant=\"contained\" data-ok-color=\"inherit\" data-ok-size=\"md\" disabled=\"\"><span data-ok-button-label>Apply</span></button>\n        </div>\n      </form>\n    </div>\n    <div popover=\"manual\" data-ok-popover data-ok-placement=\"bottom-start\" id=\"post-image\" role=\"dialog\" aria-labelledby=\"post-image-title\"><span data-ok-popover-arrow aria-hidden=\"true\"></span>\n      <form data-ok-editor-form=\"image\" novalidate>\n        <p data-ok-editor-form-title id=\"post-image-title\">Add image</p>\n        <div data-ok-text-field data-ok-variant=\"outlined\" data-ok-size=\"small\" data-ok-color=\"default\" data-ok-margin=\"none\">\n          <div data-ok-text-field-control><input aria-label=\"Image URL\" data-ok-editor-field=\"src\" id=\"post-image-url\" data-ok-text-field-input type=\"url\" placeholder=\"Image URL\" value=\"\"/><fieldset data-ok-text-field-outline aria-hidden=\"true\"></fieldset></div>\n        </div>\n        <div data-ok-text-field data-ok-variant=\"outlined\" data-ok-size=\"small\" data-ok-color=\"default\" data-ok-margin=\"none\">\n          <div data-ok-text-field-control><input aria-label=\"Alt text\" data-ok-editor-field=\"alt\" id=\"post-image-alt\" data-ok-text-field-input placeholder=\"Alt text\" value=\"\"/><fieldset data-ok-text-field-outline aria-hidden=\"true\"></fieldset></div>\n        </div>\n        <button type=\"submit\" data-ok-button data-ok-variant=\"contained\" data-ok-color=\"inherit\" data-ok-size=\"md\" disabled=\"\"><span data-ok-button-label>Apply</span></button>\n      </form>\n    </div>\n    <input type=\"hidden\" data-ok-editor-input name=\"body\">\n  </div>\n  <button type=\"submit\" data-ok-button data-ok-variant=\"contained\" data-ok-color=\"primary\" data-ok-size=\"md\"><span data-ok-button-label>Publish</span></button>\n</form>",
      "id": "form",
@@ -70614,7 +70939,7 @@
      "title": "Content and behavior"
     },
     {
-     "body": "- **`ok:editor:change`** fires on the editor after every change, with the HTML in `detail.value`.\n- **`ok:editor:fullscreen`** fires when fullscreen mode changes, with `detail.fullscreen`.\n- **`ok:editor:mentionsearch`** fires when the mention list needs items, with `detail.query`, `detail.char`, the template's matches in `detail.items` and `detail.respondWith(items)`.\n- **Instance:** `runtime.get(element, \"editor\")` returns `{ value, setValue(html), fullscreen, setFullscreen(on), setEditable(on), focus(), controller }`. `controller.editor` is the Tiptap editor.\n- **React:** `onChange(value)` and `onFullscreenChange(fullscreen)`.\n- **Trusted Types:** `setValue` and the React `value` prop parse an HTML string with the browser's `DOMParser`. Pages that enforce Trusted Types need a policy for it. Content written in the markup needs none.",
+     "body": "- **`ok:editor:change`** fires on the editor after every change, with the HTML in `detail.value`.\n- **`ok:editor:fullscreen`** fires when fullscreen mode changes, with `detail.fullscreen`.\n- **`ok:editor:mentionsearch`** fires when the mention list needs items, with `detail.query`, `detail.char`, the template's matches in `detail.items` and `detail.respondWith(items)`.\n- **Tiptap's events:** `ok:editor:beforecreate`, `create` (`detail.value`), `focus` and `blur` (`detail.event`), `selectionupdate` (`detail.from`, `detail.to`, `detail.empty`), `transaction` (`detail.docChanged`), `paste` (`detail.text`), `drop` (`detail.text`, `detail.moved`), `delete` (`detail.type`, `detail.name`, `detail.from`, `detail.to`, `detail.partial`), `contenterror` (`detail.message`) and `destroy`.\n- **Instance:** `runtime.get(element, \"editor\")` returns `{ value, setValue(html), fullscreen, setFullscreen(on), setEditable(on), focus(), getJSON(), getText(), editor, controller }`. `editor` is the Tiptap editor.\n- **React:** `onChange(value)`, `onFullscreenChange(fullscreen)`, `editorRef` and Tiptap's events as props: `onBeforeCreate`, `onCreate`, `onEditorFocus`, `onEditorBlur`, `onSelectionUpdate`, `onTransaction`, `onEditorPaste`, `onEditorDrop`, `onDelete`, `onContentError` and `onDestroy`.\n- **Trusted Types:** `setValue` and the React `value` prop parse an HTML string with the browser's `DOMParser`. Pages that enforce Trusted Types need a policy for it. Content written in the markup needs none.",
      "id": "events",
      "title": "Events and methods"
     },
@@ -72147,6 +72472,13 @@
      "title": "Decide when it plays"
     },
     {
+     "body": "With the `inView` trigger, two options change what counts as the view:\n- **`viewportMargin`:** grows the view, or shrinks it with negative values, before the visible part is measured. Write it like CSS margins in `px` or `%`. For example, `0px 0px -100px` plays the animation once the content is 100 pixels above the bottom edge. In HTML, use the `data-ok-viewport-margin` attribute.\n- **`viewportRoot`:** a scrolling container that holds the content, used as the view instead of the browser window. In React, pass a ref to it. In HTML, write its `id` in `data-ok-viewport-root`.\n\n`onViewportEnter` runs when the content enters the view, and `onViewportLeave` when it leaves. In HTML, listen for the `ok:motion:enter` and `ok:motion:leave` events. MotionGroup and MotionText have the same options and events. With `once` on (the default), only the first entrance is reported, so set `once` to `false` to hear every one.",
+     "html": "<style>\n  #feed { height: 240px; overflow: auto; }\n</style>\n\n<div id=\"feed\" tabindex=\"0\" aria-label=\"News feed\">\n  <section\n    id=\"latest\"\n    data-ok-motion\n    data-ok-variant=\"fadeInUp\"\n    data-ok-once=\"false\"\n    data-ok-viewport-root=\"feed\"\n    data-ok-viewport-margin=\"0px 0px -40px\"\n  >\n    <h2>Latest news</h2>\n  </section>\n</div>\n\n<script>\n  // Mark the section as read while it is in view\n  const latest = document.getElementById(\"latest\");\n  latest.addEventListener(\"ok:motion:enter\", () => latest.classList.add(\"seen\"));\n  latest.addEventListener(\"ok:motion:leave\", () => latest.classList.remove(\"seen\"));\n</script>",
+     "id": "viewport",
+     "react": "import { Motion } from \"@owlky/react\";\nimport { useRef, useState } from \"react\";\n\nexport function LatestNews() {\n  const feed = useRef<HTMLDivElement>(null);\n  const [seen, setSeen] = useState(false);\n  return (\n    <div ref={feed} tabIndex={0} aria-label=\"News feed\" style={{ height: 240, overflow: \"auto\" }}>\n      <Motion\n        component=\"section\"\n        variant=\"fadeInUp\"\n        once={false}\n        viewportRoot={feed}\n        viewportMargin=\"0px 0px -40px\"\n        onViewportEnter={() => setSeen(true)}\n        onViewportLeave={() => setSeen(false)}\n        className={seen ? \"seen\" : undefined}\n      >\n        <h2>Latest news</h2>\n      </Motion>\n    </div>\n  );\n}",
+     "title": "Tune the viewport and react to it"
+    },
+    {
      "body": "MotionGroup plays the Motions inside it together, one direct child after the other. `stagger` sets the time between two children, 50 milliseconds by default. The group's trigger replaces the trigger of its Motions.",
      "html": "<ul data-ok-motion-group data-ok-stagger=\"80\">\n  <li data-ok-motion data-ok-variant=\"slideInUp\">Design</li>\n  <li data-ok-motion data-ok-variant=\"slideInUp\">Develop</li>\n  <li data-ok-motion data-ok-variant=\"slideInUp\">Release</li>\n</ul>",
      "id": "group",
@@ -72159,6 +72491,13 @@
      "id": "text",
      "react": "import { MotionText } from \"@owlky/react\";\n\nexport function Title() {\n  return (\n    <h2>\n      <MotionText variant=\"fadeInUp\">Owlky moves</MotionText>\n    </h2>\n  );\n}",
      "title": "Animate text letter by letter"
+    },
+    {
+     "body": "Motion renders a `div`, MotionGroup a `div` and MotionText a `span`. Set `component` to render another element, such as a `section`, a list or a heading, so the page keeps its structure without an extra wrapper. In HTML, put the attributes on the element you need. Transforms don't apply to inline elements such as `a`: give them `display: inline-block`.",
+     "html": "<ul data-ok-motion-group>\n  <li data-ok-motion data-ok-variant=\"fadeInLeft\">Design</li>\n  <li data-ok-motion data-ok-variant=\"fadeInLeft\">Develop</li>\n</ul>\n<h2 data-ok-motion-text data-ok-variant=\"fadeIn\">Our process</h2>",
+     "id": "component",
+     "react": "import { Motion, MotionGroup, MotionText } from \"@owlky/react\";\n\nexport function Process() {\n  return (\n    <>\n      <MotionGroup component=\"ul\">\n        <Motion component=\"li\" variant=\"fadeInLeft\">\n          Design\n        </Motion>\n        <Motion component=\"li\" variant=\"fadeInLeft\">\n          Develop\n        </Motion>\n      </MotionGroup>\n      <MotionText component=\"h2\" variant=\"fadeIn\">\n        Our process\n      </MotionText>\n    </>\n  );\n}",
+     "title": "Render another element"
     },
     {
      "body": "Set `transition` on a Dialog to open its paper with a Motion entrance, such as `slideInUp` or `zoomIn`. Without it, the paper fades and scales in briefly.",
@@ -72206,7 +72545,7 @@
      "title": "Content and behavior"
     },
     {
-     "body": "- **`ok:motion:end`** fires on a Motion when its animation ends, with the state in `detail.state`: `enter` or `exit`.\n- **Instance:** `runtime.get(element, \"motion\")` returns `{ state, replay() }`. MotionGroup (`\"motion-group\"`) and MotionText (`\"motion-text\"`) have the same instance. `replay()` plays the entrance again.\n- **React:** use `onAnimationEnd`, and change the `key` to play the entrance again.",
+     "body": "- **`ok:motion:end`** fires on a Motion when its animation ends, with the state in `detail.state`: `enter` or `exit`.\n- **`ok:motion:enter` and `ok:motion:leave`** fire on a Motion with the `inView` trigger when it enters or leaves the view, with the visible fraction in `detail.ratio`. MotionGroup and MotionText fire `ok:motion-group:enter`, `ok:motion-text:enter` and the matching `leave` events. A Motion inside a group fires none: the group reports for it.\n- **Instance:** `runtime.get(element, \"motion\")` returns `{ state, replay() }`. MotionGroup (`\"motion-group\"`) and MotionText (`\"motion-text\"`) have the same instance. `replay()` plays the entrance again.\n- **React:** use `onAnimationEnd`, `onViewportEnter` and `onViewportLeave` (they receive the `IntersectionObserverEntry`), and change the `key` to play the entrance again.",
      "id": "events",
      "title": "Events and methods"
     },

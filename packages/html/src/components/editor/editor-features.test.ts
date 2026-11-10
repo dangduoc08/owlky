@@ -239,3 +239,113 @@ describe("editor settings (attributes and createEditor options)", () => {
     expect(instance.value).toContain("One   two");
   });
 });
+
+describe("editor Tiptap events and content access", () => {
+  const MARKUP = (attributes = "") => `
+    <div data-ok-editor ${attributes}>
+      <div data-ok-editor-toolbar role="toolbar" aria-label="Formatting"><button type="button">Tool</button></div>
+      <div data-ok-editor-body><div data-ok-editor-content role="textbox" aria-label="Notes"><p>Hello world</p></div></div>
+    </div>`;
+  const NAMES = [
+    "beforecreate",
+    "create",
+    "focus",
+    "blur",
+    "selectionupdate",
+    "transaction",
+    "paste",
+    "drop",
+    "delete",
+    "contenterror",
+    "destroy",
+  ];
+  /** Records `ok:editor:*` events on the document (beforecreate fires during setup). */
+  const record = () => {
+    const events: { name: string; detail: Record<string, unknown> }[] = [];
+    const controller = new AbortController();
+    for (const name of NAMES)
+      document.addEventListener(
+        `ok:editor:${name}`,
+        (event) => events.push({ name, detail: (event as CustomEvent).detail }),
+        { signal: controller.signal },
+      );
+    const next = (name: string) =>
+      new Promise<Record<string, unknown>>((resolve) =>
+        document.addEventListener(
+          `ok:editor:${name}`,
+          (event) => resolve((event as CustomEvent).detail),
+          { once: true, signal: controller.signal },
+        ),
+      );
+    return { events, next, stop: () => controller.abort() };
+  };
+
+  it("relays Tiptap's events with plain details; the instance exposes the editor", async () => {
+    const recorder = record();
+    const created = recorder.next("create");
+    const { root, content, instance } = await setup(MARKUP());
+    expect(recorder.events[0]?.name).toBe("beforecreate");
+    expect(await created).toEqual({ value: "<p>Hello world</p>" });
+    expect(instance.editor).toBe(instance.controller.editor);
+    expect(instance.getText()).toBe("Hello world");
+    expect(instance.getJSON()).toMatchObject({ type: "doc", content: [{ type: "paragraph" }] });
+
+    const focused = recorder.next("focus");
+    content.focus();
+    expect((await focused)["event"]).toBeInstanceOf(FocusEvent);
+
+    const selected = recorder.next("selectionupdate");
+    instance.editor.commands.setTextSelection({ from: 1, to: 6 });
+    expect(await selected).toEqual({ from: 1, to: 6, empty: false });
+    expect(recorder.events.some((each) => each.name === "transaction")).toBe(true);
+
+    const deleted = recorder.next("delete");
+    const changed = recorder.next("transaction");
+    instance.editor.commands.deleteSelection();
+    expect(await deleted).toMatchObject({ type: "node", name: "paragraph", partial: true });
+    expect(await changed).toEqual({ docChanged: true });
+
+    const pasted = recorder.next("paste");
+    instance.editor.view.pasteText("Pasted");
+    expect(await pasted).toMatchObject({ text: "Pasted" });
+    expect((await pasted)["event"]).toBeInstanceOf(ClipboardEvent);
+
+    const dropped = recorder.next("drop");
+    const event = new Event("drop") as DragEvent;
+    const slice = instance.editor.state.doc.slice(0, 3);
+    instance.editor.emit("drop", { editor: instance.editor, event, slice, moved: false });
+    expect(await dropped).toEqual({
+      event,
+      text: slice.content.textBetween(0, 3, "\n\n"),
+      moved: false,
+    });
+
+    const blurred = recorder.next("blur");
+    (root.querySelector("button") as HTMLButtonElement).focus();
+    expect((await blurred)["event"]).toBeInstanceOf(FocusEvent);
+
+    const destroyed = recorder.next("destroy");
+    runtime?.stop();
+    runtime = undefined;
+    expect(await destroyed).toBeNull();
+    recorder.stop();
+  });
+
+  it("data-ok-enable-content-check reports invalid content with its message", async () => {
+    const recorder = record();
+    const { instance } = await setup(MARKUP("data-ok-enable-content-check"));
+    expect(instance.controller.editor.options.enableContentCheck).toBe(true);
+    expect(instance.controller.editor.options.emitContentError).toBe(false);
+    const failed = recorder.next("contenterror");
+    instance.setValue("<custom-element>No</custom-element>");
+    expect((await failed)["message"]).toMatch(/Invalid HTML content/);
+    expect(instance.value).toBe("<p>Hello world</p>");
+    recorder.stop();
+  });
+
+  it("data-ok-emit-content-error turns Tiptap's option on", async () => {
+    const { instance } = await setup(MARKUP("data-ok-emit-content-error"));
+    expect(instance.controller.editor.options.emitContentError).toBe(true);
+    expect(instance.controller.editor.options.enableContentCheck).toBe(false);
+  });
+});

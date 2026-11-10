@@ -7,7 +7,10 @@ import {
   type EditorBubbleMenu,
   type EditorController,
   type EditorControllerOptions,
+  type EditorEventName,
+  type EditorEventProps,
   type EditorHighlighter,
+  type EditorJSONContent,
   type EditorMentionItem,
   type EditorState,
   editorActions,
@@ -15,9 +18,10 @@ import {
   editorToolbarShortcut,
   holdEditorFullscreen,
   safeEditorUrl,
+  type TiptapEditor,
 } from "@owlky/core/editor";
 import { defineComponent } from "../../runtime/define.js";
-import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
+import type { ComponentInstance, EventSpec, SetupContext } from "../../runtime/types.js";
 
 /** Events of this component (`ok:<name>:<event>` on the root). */
 export interface EditorEvents {
@@ -38,6 +42,37 @@ export interface EditorEvents {
       items: readonly EditorMentionItem[] | PromiseLike<readonly EditorMentionItem[]>,
     ): void;
   }>;
+  /** Tiptap's `beforeCreate`: the editor is being built (the instance doesn't exist yet). */
+  beforecreate: EventSpec;
+  /** Tiptap's `create`: the editor is ready, with its HTML. */
+  create: EventSpec<{ value: string }>;
+  /** Tiptap's `focus`: the focus entered the text. */
+  focus: EventSpec<{ event: FocusEvent }>;
+  /** Tiptap's `blur`: the focus left the text. */
+  blur: EventSpec<{ event: FocusEvent }>;
+  /** Tiptap's `selectionUpdate`: the selection moved, from `from` to `to` (document positions). */
+  selectionupdate: EventSpec<{ from: number; to: number; empty: boolean }>;
+  /** Tiptap's `transaction`: any change of the editor's state; `docChanged` when the content changed. */
+  transaction: EventSpec<{ docChanged: boolean }>;
+  /** Tiptap's `paste`: content was pasted, with its plain text. */
+  paste: EventSpec<{ event: ClipboardEvent; text: string }>;
+  /** Tiptap's `drop`: content was dropped, with its plain text; `moved` when it was dragged from the editor. */
+  drop: EventSpec<{ event: DragEvent; text: string; moved: boolean }>;
+  /**
+   * Tiptap's `delete`: a node or a mark was removed. `name` is its type (`paragraph`, `bold`…),
+   * `from` / `to` the removed range, `partial` when only part of it went.
+   */
+  delete: EventSpec<{
+    type: "node" | "mark";
+    name: string;
+    from: number;
+    to: number;
+    partial: boolean;
+  }>;
+  /** Tiptap's `contentError`: content didn't fit the editor's schema (with `data-ok-enable-content-check`). */
+  contenterror: EventSpec<{ message: string }>;
+  /** Tiptap's `destroy`: the editor was destroyed (the runtime stopped or the element left). */
+  destroy: EventSpec;
 }
 
 export interface EditorInstance extends ComponentInstance {
@@ -58,6 +93,12 @@ export interface EditorInstance extends ComponentInstance {
   focus(): void;
   /** The core controller (its `editor` is the Tiptap editor). */
   readonly controller: EditorController;
+  /** The Tiptap editor: its commands, `on()` for events, `isEmpty`, `isFocused`, `setOptions()`. */
+  readonly editor: TiptapEditor;
+  /** The content as ProseMirror JSON. */
+  getJSON(): EditorJSONContent;
+  /** The content as plain text, blocks separated by a blank line. */
+  getText(): string;
 }
 
 export interface CreateEditorOptions {
@@ -79,7 +120,73 @@ const {
   textDirection: textDirectionOption,
   enableInputRules: inputRulesOption,
   enablePasteRules: pasteRulesOption,
+  enableContentCheck: contentCheckOption,
+  emitContentError: contentErrorOption,
 } = editorOptions.options;
+
+/**
+ * Emits a Tiptap event as `ok:editor:<lowercase name>`, with a detail of plain values: no
+ * ProseMirror objects (transactions, slices, nodes), so listeners need no Tiptap types.
+ */
+function relay(
+  emit: SetupContext<EditorEvents>["emit"],
+  controller: () => EditorController | undefined,
+): NonNullable<EditorControllerOptions["onEvent"]> {
+  return (name, props) => {
+    const all = props as EditorEventProps[EditorEventName];
+    switch (name) {
+      case "beforeCreate":
+        emit("beforecreate");
+        break;
+      case "create":
+        emit("create", { value: controller()?.getValue() ?? "" });
+        break;
+      case "focus":
+      case "blur":
+        emit(name, { event: (all as EditorEventProps["focus"]).event });
+        break;
+      case "selectionUpdate": {
+        const { from, to, empty } = all.editor.state.selection;
+        emit("selectionupdate", { from, to, empty });
+        break;
+      }
+      case "transaction":
+        emit("transaction", {
+          docChanged: (all as EditorEventProps["transaction"]).transaction.docChanged,
+        });
+        break;
+      case "paste": {
+        const { event, slice } = all as EditorEventProps["paste"];
+        emit("paste", { event, text: slice.content.textBetween(0, slice.content.size, "\n\n") });
+        break;
+      }
+      case "drop": {
+        const { event, slice, moved } = all as EditorEventProps["drop"];
+        const text = slice.content.textBetween(0, slice.content.size, "\n\n");
+        emit("drop", { event, text, moved });
+        break;
+      }
+      case "delete": {
+        const removed = all as EditorEventProps["delete"];
+        emit("delete", {
+          type: removed.type,
+          name: removed.type === "node" ? removed.node.type.name : removed.mark.type.name,
+          from: removed.deletedRange.from,
+          to: removed.deletedRange.to,
+          partial: removed.partial,
+        });
+        break;
+      }
+      case "contentError":
+        emit("contenterror", {
+          message: (all as EditorEventProps["contentError"]).error.message,
+        });
+        break;
+      default:
+        emit("destroy");
+    }
+  };
+}
 /** Most mentions the list shows from the template. */
 const MENTION_LIMIT = 10;
 
@@ -119,7 +226,10 @@ const isAction = (value: string | null): value is EditorAction =>
  * Behavior: mounts Tiptap on the content (its markup is the initial value), keeps the toolbar's
  *          `aria-pressed` / `disabled` / heading label in step, runs toolbar actions, the heading
  *          menu and the link / image forms; Fullscreen and Escape toggle `data-ok-fullscreen`.
- * Events:  ok:editor:change (detail `{ value }`), ok:editor:fullscreen (detail `{ fullscreen }`).
+ * Events:  ok:editor:change (detail `{ value }`), ok:editor:fullscreen (detail `{ fullscreen }`),
+ *          Tiptap's events in lowercase (`create`, `focus`, `blur`, `selectionupdate`,
+ *          `transaction`, `paste`, `drop`, `delete`, `contenterror`, `beforecreate`, `destroy`)
+ *          with plain details; the instance's `editor` is the Tiptap editor.
  */
 export const createEditor = ({
   highlighter,
@@ -197,6 +307,8 @@ export const createEditor = ({
         textDirection: choice(textDirectionOption),
         enableInputRules: readBehavior(element, inputRulesOption),
         enablePasteRules: readBehavior(element, pasteRulesOption),
+        enableContentCheck: element.hasAttribute(contentCheckOption.attr),
+        emitContentError: element.hasAttribute(contentErrorOption.attr),
         extensions,
         editorProps,
         parseOptions,
@@ -204,11 +316,14 @@ export const createEditor = ({
 
       const input = own<HTMLInputElement>("input[data-ok-editor-input]")[0];
       const navigation = createToolbarNavigation(toolbar);
+      // `beforeCreate` (and an initial content error) fire while the controller is being built.
+      let built: EditorController | undefined;
       const controller = createEditorController(content, {
         editable,
         placeholder: element.getAttribute("data-ok-placeholder") ?? DEFAULT_PLACEHOLDER,
         highlighter,
         ...settings,
+        onEvent: relay(emit, () => built),
         ...(mentionList
           ? {
               mentions: {
@@ -241,6 +356,7 @@ export const createEditor = ({
         },
         onStateChange: paint,
       });
+      built = controller;
       if (input) input.value = controller.getValue();
       paint(controller.getState());
 
@@ -402,6 +518,11 @@ export const createEditor = ({
           controller.focus();
         },
         controller,
+        get editor() {
+          return controller.editor;
+        },
+        getJSON: () => controller.getJSON(),
+        getText: () => controller.getText(),
         destroy() {
           release?.();
           releaseShortcut();

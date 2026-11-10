@@ -3,8 +3,15 @@
  * entry so that `@owlky/core` and the main HTML bundle don't load ProseMirror.
  */
 
-/** A Tiptap extension (`extensions` option). */
-export type { AnyExtension as EditorExtension } from "@tiptap/core";
+/**
+ * A Tiptap extension (`extensions` option), the Tiptap editor (`controller.editor`, React
+ * `editorRef`) and its JSON content.
+ */
+export type {
+  AnyExtension as EditorExtension,
+  Editor as TiptapEditor,
+  JSONContent as EditorJSONContent,
+} from "@tiptap/core";
 export {
   createEditorBubbleMenu,
   defaultBubbleMenuShow,
@@ -19,8 +26,11 @@ export {
   type EditorActionValue,
   type EditorController,
   type EditorControllerOptions,
+  type EditorEventName,
+  type EditorEventProps,
   type EditorState,
   type EditorTextDirection,
+  editorEventNames,
 } from "./editor.js";
 export { holdEditorFullscreen } from "./fullscreen.js";
 export { type EditorIconName, editorIcons } from "./icons.js";

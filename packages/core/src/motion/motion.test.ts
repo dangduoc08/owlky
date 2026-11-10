@@ -4,6 +4,7 @@ import {
   createMotionTrigger,
   motionStyle,
   nextMotionState,
+  readMotionViewport,
   replayMotion,
   splitMotionText,
 } from "./motion.js";
@@ -156,6 +157,84 @@ describe("createMotionTrigger", () => {
     handle.update(false);
     handle.destroy();
     expect(instances[0]?.disconnected).toBe(true);
+  });
+
+  it("in view: margin and root reach the observer; viewport events once per crossing", () => {
+    const { instances, fire } = stubObserver();
+    const onChange = vi.fn();
+    const onViewport = vi.fn();
+    const root = element();
+    const handle = createMotionTrigger(element(), {
+      trigger: "inView",
+      once: false,
+      amount: 0.5,
+      margin: "0px 0px -100px",
+      root,
+      onChange,
+      onViewport,
+    });
+    expect(instances[0]?.options).toEqual({
+      threshold: [0, 0.5],
+      root,
+      rootMargin: "0px 0px -100px",
+    });
+    // Off screen at first: no leave before an entrance.
+    fire(false, 0);
+    fire(true, 0.2);
+    expect(onViewport).not.toHaveBeenCalled();
+    fire(true, 0.6);
+    fire(true, 0.9);
+    expect(onViewport.mock.calls.map(([inView]) => inView)).toEqual([true]);
+    expect(onViewport.mock.calls[0]?.[1]).toMatchObject({ intersectionRatio: 0.6 });
+    fire(false, 0);
+    fire(false, 0);
+    fire(true, 1);
+    expect(onViewport.mock.calls.map(([inView]) => inView)).toEqual([true, false, true]);
+    handle.destroy();
+  });
+
+  it("in view: an invalid margin is dropped", () => {
+    const onChange = vi.fn();
+    const handle = createMotionTrigger(element(), {
+      trigger: "inView",
+      once: true,
+      amount: 0,
+      margin: "ten pixels",
+      onChange,
+    });
+    handle.destroy();
+    expect(onChange).not.toHaveBeenCalledWith(false);
+  });
+
+  it("in view: once reports the first entrance only", () => {
+    const { fire } = stubObserver();
+    const onViewport = vi.fn();
+    createMotionTrigger(element(), {
+      trigger: "inView",
+      once: true,
+      amount: 0,
+      onChange: vi.fn(),
+      onViewport,
+    });
+    fire(true, 1);
+    fire(false, 0);
+    expect(onViewport.mock.calls.map(([inView]) => inView)).toEqual([true]);
+  });
+
+  it("reads the viewport attributes", () => {
+    const host = mount(
+      '<div id="scroller"><div data-ok-viewport-margin=" 10% " data-ok-viewport-root="scroller"></div><div data-ok-viewport-root="nope" data-ok-viewport-margin=""></div></div>',
+    );
+    const [first, second] = [...(host.querySelectorAll("[data-ok-viewport-root]") as never)] as [
+      Element,
+      Element,
+    ];
+    expect(readMotionViewport(first)).toEqual({
+      margin: "10%",
+      root: host.querySelector("#scroller"),
+    });
+    expect(readMotionViewport(second)).toEqual({ margin: undefined, root: null });
+    expect(readMotionViewport(host)).toEqual({ margin: undefined, root: null });
   });
 
   it("without IntersectionObserver the content shows at once", () => {
