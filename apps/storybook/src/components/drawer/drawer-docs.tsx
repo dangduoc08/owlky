@@ -33,20 +33,36 @@ The drawer is a native \`<dialog>\`, so the browser keeps focus inside it and cl
 <dialog id="filters" data-ok-drawer data-ok-anchor="right" data-ok-variant="temporary" aria-label="Filters">
   <div data-ok-drawer-content>
     <section data-ok-scrollbar aria-label="Filter options" tabindex="0">
-      …
+      <label data-ok-form-control-label data-ok-label-placement="end"><span data-ok-checkbox data-ok-color="primary" data-ok-size="medium"><input type="checkbox" data-ok-checkbox-input id="filter-shoes"><span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="4.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span><span data-ok-checkbox-icon="checked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" /><path data-ok-checkbox-mark d="m7.75 12.25 2.75 2.75 5.75-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></span></span><span data-ok-form-control-label-text>Shoes</span></label>
+      <label data-ok-form-control-label data-ok-label-placement="end"><span data-ok-checkbox data-ok-color="primary" data-ok-size="medium"><input type="checkbox" data-ok-checkbox-input id="filter-bags"><span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="4.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span><span data-ok-checkbox-icon="checked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" /><path data-ok-checkbox-mark d="m7.75 12.25 2.75 2.75 5.75-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></span></span><span data-ok-form-control-label-text>Bags</span></label>
+      <label data-ok-form-control-label data-ok-label-placement="end"><span data-ok-checkbox data-ok-color="primary" data-ok-size="medium"><input type="checkbox" data-ok-checkbox-input id="filter-jackets"><span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="4.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span><span data-ok-checkbox-icon="checked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" /><path data-ok-checkbox-mark d="m7.75 12.25 2.75 2.75 5.75-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></span></span><span data-ok-form-control-label-text>Jackets</span></label>
     </section>
   </div>
 </dialog>`,
     react: `// Load once, in your app's entry file
 import "@owlky/styles/owlky.css";
-import { Drawer, DrawerContent, DrawerTrigger, Scrollbar } from "@owlky/react";
+import {
+  Checkbox,
+  Drawer,
+  DrawerContent,
+  DrawerTrigger,
+  FormControlLabel,
+  FormGroup,
+  Scrollbar,
+} from "@owlky/react";
 
 export function Filters() {
   return (
     <Drawer>
       <DrawerTrigger variant="outlined">Filters</DrawerTrigger>
       <DrawerContent anchor="right" aria-label="Filters">
-        <Scrollbar aria-label="Filter options">…</Scrollbar>
+        <Scrollbar aria-label="Filter options">
+          <FormGroup>
+            <FormControlLabel control={<Checkbox />} label="Shoes" />
+            <FormControlLabel control={<Checkbox />} label="Bags" />
+            <FormControlLabel control={<Checkbox />} label="Jackets" />
+          </FormGroup>
+        </Scrollbar>
       </DrawerContent>
     </Drawer>
   );
@@ -56,14 +72,42 @@ export function Filters() {
     id: "anchor",
     title: "Choose the edge",
     body: "Set `anchor` to `left` (the default), `right`, `top` or `bottom`. Side drawers take the full height; top and bottom drawers take the full width. A drawer never covers the whole screen: a 56px gap keeps the backdrop visible, so people can tap it to close the drawer.",
-    html: `<dialog id="menu" data-ok-drawer data-ok-anchor="bottom" data-ok-variant="temporary" aria-label="Menu">
-  <div data-ok-drawer-content>…</div>
+    html: `<button type="button" data-ok-button data-ok-variant="outlined" data-ok-color="inherit" data-ok-size="md" aria-haspopup="dialog" data-ok-drawer-open="menu">
+  <span data-ok-button-label>Menu</span>
+</button>
+<dialog id="menu" data-ok-drawer data-ok-anchor="bottom" data-ok-variant="temporary" aria-label="Menu">
+  <div data-ok-drawer-content>
+    <nav aria-label="Main">
+      <ul data-ok-list>
+        <li data-ok-list-item data-ok-disable-padding><a href="/dashboard" data-ok-list-item-button><span data-ok-list-item-text><span data-ok-list-item-text-primary>Dashboard</span></span></a></li>
+        <li data-ok-list-item data-ok-disable-padding><a href="/orders" data-ok-list-item-button><span data-ok-list-item-text><span data-ok-list-item-text-primary>Orders</span></span></a></li>
+      </ul>
+    </nav>
+  </div>
 </dialog>`,
-    react: `import { DrawerContent, Menu } from "@owlky/react";
+    react: `import { Drawer, DrawerContent, DrawerTrigger, List, ListItem, ListItemButton, ListItemText } from "@owlky/react";
 
-export function DrawerAnchor() {
+export function BottomMenu() {
   return (
-    <DrawerContent anchor="bottom" aria-label="Menu">…</DrawerContent>
+    <Drawer>
+      <DrawerTrigger variant="outlined">Menu</DrawerTrigger>
+      <DrawerContent anchor="bottom" aria-label="Menu">
+        <nav aria-label="Main">
+          <List>
+            <ListItem disablePadding>
+              <ListItemButton href="/dashboard">
+                <ListItemText primary="Dashboard" />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton href="/orders">
+                <ListItemText primary="Orders" />
+              </ListItemButton>
+            </ListItem>
+          </List>
+        </nav>
+      </DrawerContent>
+    </Drawer>
   );
 }`,
   },
@@ -73,22 +117,39 @@ export function DrawerAnchor() {
     body: "Escape and a click on the backdrop ask the drawer to close. Add your own close button with `DrawerClose` in React, or `data-ok-drawer-close` in HTML. Set `disableEscapeKeyDown` or `hideBackdrop` to turn those ways off.",
     html: `<dialog id="filters" data-ok-drawer data-ok-anchor="right" data-ok-variant="temporary" aria-label="Filters">
   <div data-ok-drawer-content>
-    …
+    <label data-ok-form-control-label data-ok-label-placement="end"><span data-ok-checkbox data-ok-color="primary" data-ok-size="medium"><input type="checkbox" data-ok-checkbox-input id="close-filter-shoes"><span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="4.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span><span data-ok-checkbox-icon="checked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" /><path data-ok-checkbox-mark d="m7.75 12.25 2.75 2.75 5.75-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></span></span><span data-ok-form-control-label-text>Shoes</span></label>
+          <label data-ok-form-control-label data-ok-label-placement="end"><span data-ok-checkbox data-ok-color="primary" data-ok-size="medium"><input type="checkbox" data-ok-checkbox-input id="close-filter-bags"><span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="4.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span><span data-ok-checkbox-icon="checked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" /><path data-ok-checkbox-mark d="m7.75 12.25 2.75 2.75 5.75-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></span></span><span data-ok-form-control-label-text>Bags</span></label>
+          <label data-ok-form-control-label data-ok-label-placement="end"><span data-ok-checkbox data-ok-color="primary" data-ok-size="medium"><input type="checkbox" data-ok-checkbox-input id="close-filter-jackets"><span data-ok-checkbox-icon="unchecked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.75" y="3.75" width="16.5" height="16.5" rx="4.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg></span><span data-ok-checkbox-icon="checked" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor" /><path data-ok-checkbox-mark d="m7.75 12.25 2.75 2.75 5.75-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg></span></span><span data-ok-form-control-label-text>Jackets</span></label>
     <button type="button" data-ok-button data-ok-variant="contained" data-ok-color="primary" data-ok-size="md" data-ok-drawer-close>
       <span data-ok-button-label>Apply</span>
     </button>
   </div>
 </dialog>`,
-    react: `import { DrawerClose, DrawerContent } from "@owlky/react";
+    react: `import {
+  Checkbox,
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerTrigger,
+  FormControlLabel,
+  FormGroup,
+} from "@owlky/react";
 
-export function DrawerClose() {
+export function FilterPanel() {
   return (
-    <DrawerContent anchor="right" aria-label="Filters">
-      …
-      <DrawerClose variant="contained" color="primary">
-        Apply
-      </DrawerClose>
-    </DrawerContent>
+    <Drawer>
+      <DrawerTrigger variant="outlined">Filters</DrawerTrigger>
+      <DrawerContent anchor="right" aria-label="Filters">
+        <FormGroup>
+          <FormControlLabel control={<Checkbox />} label="Shoes" />
+          <FormControlLabel control={<Checkbox />} label="Bags" />
+          <FormControlLabel control={<Checkbox />} label="Jackets" />
+        </FormGroup>
+        <DrawerClose variant="contained" color="primary">
+          Apply
+        </DrawerClose>
+      </DrawerContent>
+    </Drawer>
   );
 }`,
   },
@@ -101,11 +162,13 @@ export function DrawerClose() {
     if (event.detail.reason === "backdrop" && formHasChanges) event.preventDefault();
   });
 </script>`,
-    react: `import { Drawer } from "@owlky/react";
+    react: `import { Drawer, DrawerContent, DrawerTrigger, TextField } from "@owlky/react";
 import { useState } from "react";
 
 export function EditPanel() {
   const [open, setOpen] = useState(false);
+  const [name, setName] = useState("");
+  const formHasChanges = name !== "";
   return (
     <Drawer
       open={open}
@@ -114,7 +177,10 @@ export function EditPanel() {
         setOpen(next);
       }}
     >
-      …
+      <DrawerTrigger variant="outlined">Edit</DrawerTrigger>
+      <DrawerContent anchor="right" aria-label="Edit the project">
+        <TextField label="Name" value={name} onChange={setName} />
+      </DrawerContent>
     </Drawer>
   );
 }`,
@@ -125,19 +191,45 @@ export function EditPanel() {
     body: "Set `variant` to `persistent` for a drawer that people can show and hide next to the content, or `permanent` for one that is always visible. Docked drawers have no backdrop and don't trap focus. Place the drawer and the page area in a flex row (left and right) or column (top and bottom).",
     html: `<div style="display: flex">
   <aside data-ok-drawer data-ok-anchor="left" data-ok-variant="permanent" aria-label="Navigation">
-    <div data-ok-drawer-content>…</div>
+    <div data-ok-drawer-content>
+      <nav aria-label="Main">
+        <ul data-ok-list>
+          <li data-ok-list-item data-ok-disable-padding><a href="/dashboard" data-ok-list-item-button><span data-ok-list-item-text><span data-ok-list-item-text-primary>Dashboard</span></span></a></li>
+          <li data-ok-list-item data-ok-disable-padding><a href="/orders" data-ok-list-item-button><span data-ok-list-item-text><span data-ok-list-item-text-primary>Orders</span></span></a></li>
+        </ul>
+      </nav>
+    </div>
   </aside>
-  <main>…</main>
+  <main>
+    <h1>Dashboard</h1>
+  </main>
 </div>`,
-    react: `import { Drawer, DrawerContent } from "@owlky/react";
+    react: `import { Drawer, DrawerContent, List, ListItem, ListItemButton, ListItemText } from "@owlky/react";
 
 export function DrawerDocked() {
   return (
     <div style={{ display: "flex" }}>
       <Drawer variant="permanent">
-        <DrawerContent aria-label="Navigation">…</DrawerContent>
+        <DrawerContent aria-label="Navigation">
+          <nav aria-label="Main">
+            <List>
+              <ListItem disablePadding>
+                <ListItemButton href="/dashboard">
+                  <ListItemText primary="Dashboard" />
+                </ListItemButton>
+              </ListItem>
+              <ListItem disablePadding>
+                <ListItemButton href="/orders">
+                  <ListItemText primary="Orders" />
+                </ListItemButton>
+              </ListItem>
+            </List>
+          </nav>
+        </DrawerContent>
       </Drawer>
-      <main>…</main>
+      <main>
+        <h1>Dashboard</h1>
+      </main>
     </div>
   );
 }`,

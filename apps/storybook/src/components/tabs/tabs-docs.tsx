@@ -2,8 +2,15 @@ import { tabOptions, tabsOptions } from "@owlky/core";
 import tabsApi from "@owlky/docs-content/api/tabs.json" with { type: "json" };
 import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { Tab, Tabs } from "@owlky/react";
+import colorsBoth from "../../../../../packages/html/src/components/tabs/examples/colors-both.html?raw";
+import fullWidth from "../../../../../packages/html/src/components/tabs/examples/custom-full-width.html?raw";
+import iconOnly from "../../../../../packages/html/src/components/tabs/examples/icon-icon-only.html?raw";
+import iconStart from "../../../../../packages/html/src/components/tabs/examples/icon-start.html?raw";
+import scrollableGroup from "../../../../../packages/html/src/components/tabs/examples/scrollable-group.html?raw";
+import verticalGroup from "../../../../../packages/html/src/components/tabs/examples/vertical-group.html?raw";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
+import { snippetElement } from "../../helpers/snippet-markup.js";
 import { DemoIcon } from "../shared/demo-icon.js";
 import { TextDemo } from "./text-demo.js";
 import { VerticalDemo } from "./vertical-demo.js";
@@ -28,8 +35,8 @@ export const tabsSections: GuideSection[] = [
     <span data-ok-tabs-indicator></span>
   </div>
 </div>
-<div role="tabpanel" data-ok-tab-panel id="panel-profile" aria-labelledby="tab-profile" tabindex="0">…</div>
-<div role="tabpanel" data-ok-tab-panel id="panel-billing" aria-labelledby="tab-billing" tabindex="0" hidden>…</div>`,
+<div role="tabpanel" data-ok-tab-panel id="panel-profile" aria-labelledby="tab-profile" tabindex="0">Your name and photo.</div>
+<div role="tabpanel" data-ok-tab-panel id="panel-billing" aria-labelledby="tab-billing" tabindex="0" hidden>Your plan and invoices.</div>`,
     react: `import { Tab, TabPanel, Tabs } from "@owlky/react";
 import { useState } from "react";
 
@@ -41,8 +48,12 @@ export function Account() {
         <Tab value="profile" label="Profile" id="tab-profile" aria-controls="panel-profile" />
         <Tab value="billing" label="Billing" id="tab-billing" aria-controls="panel-billing" />
       </Tabs>
-      <TabPanel id="panel-profile" aria-labelledby="tab-profile" hidden={tab !== "profile"}>…</TabPanel>
-      <TabPanel id="panel-billing" aria-labelledby="tab-billing" hidden={tab !== "billing"}>…</TabPanel>
+      <TabPanel id="panel-profile" aria-labelledby="tab-profile" hidden={tab !== "profile"}>
+        Your name and photo.
+      </TabPanel>
+      <TabPanel id="panel-billing" aria-labelledby="tab-billing" hidden={tab !== "billing"}>
+        Your plan and invoices.
+      </TabPanel>
     </>
   );
 }`,
@@ -56,14 +67,10 @@ export function Account() {
     id: "icons",
     title: "Add icons to tabs",
     body: "Pass an icon with `icon`. With a label, `iconPosition` puts the icon above (`top`, the default), below (`bottom`), before (`start`) or after (`end`) the label. Tabs with an icon above or below are 72px tall. Icon-only tabs have no visible text, so give each one an `aria-label`.",
-    html: `<button type="button" role="tab" data-ok-tab data-ok-icon-position="start" aria-selected="true" tabindex="0">
-  <svg aria-hidden="true" viewBox="0 0 24 24">…</svg>
-  <span data-ok-tab-label>Calls</span>
-</button>
-<!-- Icon only: name the tab -->
-<button type="button" role="tab" data-ok-tab aria-label="Favorites" aria-selected="false" tabindex="-1">
-  <svg aria-hidden="true" viewBox="0 0 24 24">…</svg>
-</button>`,
+    html: `${snippetElement(iconStart, "data-ok-tabs ")}
+
+<!-- Icon only: name each tab -->
+${snippetElement(iconOnly, "data-ok-tabs ")}`,
     react: `import { Tab, Tabs } from "@owlky/react";
 import { HeartIcon, PhoneIcon } from "lucide-react";
 
@@ -80,12 +87,18 @@ export function TabsIcons() {
     id: "colors",
     title: "Color the selected tab",
     body: "`textColor` sets the color of the selected tab's text, and `indicatorColor` the color of the line. Both default to `inherit`, the text color. Use `primary` or `secondary` to match your brand. Tabs that aren't selected keep the secondary text color, which has a contrast ratio of at least 4.5:1 in both themes.",
-    html: `<div data-ok-tabs data-ok-text-color="primary" data-ok-indicator-color="primary">…</div>`,
-    react: `import { Tabs } from "@owlky/react";
+    html: `${snippetElement(colorsBoth, 'data-ok-text-color="primary"')}`,
+    react: `import { Tab, Tabs } from "@owlky/react";
+import { useState } from "react";
 
 export function TabsColors() {
+  const [tab, setTab] = useState("calls");
   return (
-    <Tabs textColor="primary" indicatorColor="primary" aria-label="Contacts">…</Tabs>
+    <Tabs value={tab} onChange={setTab} textColor="primary" indicatorColor="primary" aria-label="Contacts">
+      <Tab value="calls" label="Calls" />
+      <Tab value="favorites" label="Favorites" />
+      <Tab value="nearby" label="Nearby" />
+    </Tabs>
   );
 }`,
   },
@@ -93,12 +106,10 @@ export function TabsColors() {
     id: "scrollable",
     title: "Scroll many tabs",
     body: 'When tabs don\'t fit, set `variant` to `scrollable`. The tabs scroll inside their bar, and selecting a tab scrolls it into view. Scroll buttons appear at the edges that have more tabs. By default (`scrollButtons="auto"`) they show only when the tabs overflow, and only from 600px up: on phones, people swipe. Set `allowScrollButtonsMobile` to show them on phones too, `scrollButtons` to `false` to hide them, or `visibleScrollbar` to keep the scrollbar. In HTML, add the scroll buttons to the markup as the stories show.',
-    html: `<div data-ok-tabs data-ok-variant="scrollable" data-ok-scroll-buttons="auto">
-  <div data-ok-tabs-scroll-button="start" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24">…</svg></div>
-  <div data-ok-tabs-scroller>…</div>
-  <div data-ok-tabs-scroll-button="end" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24">…</svg></div>
-</div>`,
+    html: `${snippetElement(scrollableGroup, "data-ok-tabs ")}`,
     react: `import { Tab, Tabs } from "@owlky/react";
+
+const topics = ["Design", "Development", "Marketing", "Sales", "Support", "Finance", "Legal", "People"];
 
 export function TabsScrollable() {
   return (
@@ -114,17 +125,18 @@ export function TabsScrollable() {
     id: "layout",
     title: "Fill the width or stack the tabs",
     body: "Set `variant` to `fullWidth` to share the width between the tabs, or `centered` to center them. Set `orientation` to `vertical` to stack the tabs in a column, with the line on their right. Vertical tabs answer the Up and Down arrow keys. Long labels stay on one line, unless you set `wrapped` on the tab.",
-    html: `<div data-ok-tabs data-ok-orientation="vertical">
-  <div data-ok-tabs-scroller>
-    <div role="tablist" data-ok-tabs-list aria-label="Settings" aria-orientation="vertical">…</div>
-    <span data-ok-tabs-indicator></span>
-  </div>
-</div>`,
-    react: `import { Tabs } from "@owlky/react";
+    html: `${snippetElement(verticalGroup, "data-ok-tabs ")}`,
+    react: `import { Tab, Tabs } from "@owlky/react";
+import { useState } from "react";
 
 export function TabsLayout() {
+  const [tab, setTab] = useState("general");
   return (
-    <Tabs orientation="vertical" value={tab} onChange={setTab} aria-label="Settings">…</Tabs>
+    <Tabs orientation="vertical" value={tab} onChange={setTab} aria-label="Settings">
+      <Tab value="general" label="General" />
+      <Tab value="security" label="Security" />
+      <Tab value="billing" label="Billing" />
+    </Tabs>
   );
 }`,
   },
@@ -132,7 +144,7 @@ export function TabsLayout() {
     id: "segmented",
     title: "Use the segmented look",
     body: "Set `segmented` to draw the tabs on a filled bar, with the selected tab on a raised pill instead of a line. The pill slides like the line does. It works with every variant and both orientations, for example as a compact switch between two or three views.",
-    html: `<div data-ok-tabs data-ok-segmented data-ok-variant="fullWidth">…</div>`,
+    html: `${snippetElement(fullWidth, "data-ok-tabs ").replace("<div data-ok-tabs ", "<div data-ok-tabs data-ok-segmented ").replace("<div data-ok-tabs ", "<div data-ok-tabs data-ok-segmented ")}`,
     react: `import { Tab, Tabs } from "@owlky/react";
 
 export function TabsSegmented() {
