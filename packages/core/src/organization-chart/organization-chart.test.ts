@@ -8,18 +8,23 @@ import {
 } from "../index.js";
 import {
   createOrganizationChartController,
+  createOrganizationChartHighlight,
   ORGANIZATION_CHART_LENGTHS,
+  organizationChartAncestors,
   organizationChartDepth,
   organizationChartDescendants,
   organizationChartExpanded,
+  organizationChartHighlighted,
   organizationChartList,
   organizationChartLoaded,
   organizationChartNode,
   organizationChartNodeId,
   organizationChartNodes,
+  organizationChartPathStyle,
   organizationChartPlan,
   organizationChartStyle,
   organizationChartToggle,
+  revealOrganizationChartNode,
 } from "./organization-chart.js";
 
 const HOSTILE = '"><img src=x onerror=alert(1)>';
@@ -337,5 +342,214 @@ describe("createOrganizationChartController", () => {
     (organizationChartList(byId(root, "b")) as HTMLElement).hidden = false;
     await tick();
     expect(badge("b")).toBe("3");
+  });
+});
+
+// --- Lineage highlight and search ---------------------------------------------------------------
+
+describe("organizationChartStyle: dimOpacity", () => {
+  it("writes the dim strength, capped at 1; invalid values are left out", () => {
+    expect(organizationChartStyle({ dimOpacity: 0.5 })).toEqual({ "--_ok-org-dim-opacity": "0.5" });
+    expect(organizationChartStyle({ dimOpacity: "0" })).toEqual({ "--_ok-org-dim-opacity": "0" });
+    expect(organizationChartStyle({ dimOpacity: 4 })).toEqual({ "--_ok-org-dim-opacity": "1" });
+    expect(organizationChartStyle({ dimOpacity: -1 })).toEqual({});
+    expect(organizationChartStyle({ dimOpacity: HOSTILE })).toEqual({});
+    expect(organizationChartAttributes({ highlightOnHover: true, dimOpacity: 0.4 })).toMatchObject({
+      "data-ok-highlight-on-hover": "",
+      "data-ok-dim-opacity": "0.4",
+    });
+    expect(organizationChartAttributes()["data-ok-highlight-on-hover"]).toBeUndefined();
+  });
+});
+
+/** A lead over three children 100px, 50px and 150px wide (or tall): the list's center is at 150px. */
+function mountRow(attrs = "", listAttrs = "") {
+  const across = attrs.includes('"left"') || attrs.includes('"right"');
+  const size = (px: number) => (across ? `height:${px}px;width:40px` : `width:${px}px;height:40px`);
+  const child = (id: string, px: number) =>
+    `<li data-ok-organization-chart-node data-ok-node-id="${id}" style="flex:none;padding:0;${size(px)}"><div data-ok-organization-chart-label>${id}</div></li>`;
+  const host = document.createElement("div");
+  // Test markup only (library code never uses innerHTML).
+  host.innerHTML = `<ul data-ok-organization-chart aria-label="Row" ${attrs}><li data-ok-organization-chart-node data-ok-node-id="lead"><div data-ok-organization-chart-label>lead</div><ul data-ok-organization-chart-children ${listAttrs} style="display:flex;flex-direction:${across ? "column" : "row"};padding:0;width:max-content">${child("x", 100)}${child("y", 50)}${child("z", 150)}</ul></li></ul>`;
+  document.body.append(host);
+  return host.firstElementChild as HTMLElement;
+}
+const pathOf = (root: Element, id: string) =>
+  organizationChartPathStyle(organizationChartNode(root, id) as HTMLElement);
+
+describe("organization chart lineage helpers", () => {
+  afterEach(() => document.body.replaceChildren());
+
+  it("lists a node's ancestors, nearest first, within its own chart", () => {
+    const root = mountChart();
+    expect(organizationChartAncestors(byId(root, "d")).map(organizationChartNodeId)).toEqual([
+      "c",
+      "b",
+      "lead",
+    ]);
+    expect(organizationChartAncestors(byId(root, "lead"))).toEqual([]);
+    const nested = root.querySelector('[data-ok-node-id="n2"]') as Element;
+    expect(organizationChartAncestors(nested).map(organizationChartNodeId)).toEqual(["n1"]);
+    expect(organizationChartHighlighted(root)).toEqual([]);
+    byId(root, "c").setAttribute("data-ok-highlighted", "");
+    expect(organizationChartHighlighted(root)).toEqual([byId(root, "c")]);
+  });
+
+  it("measures each child's way to its list's center, in logical px", () => {
+    const root = mountRow();
+    expect(pathOf(root, "lead")).toBeNull();
+    expect(pathOf(root, "x")).toEqual({
+      "--_ok-org-path-offset": "100px",
+      "--_ok-org-path-forward": "1",
+      "--_ok-org-path-round": "1",
+    });
+    expect(pathOf(root, "y")).toEqual({
+      "--_ok-org-path-offset": "25px",
+      "--_ok-org-path-forward": "1",
+      "--_ok-org-path-round": "0",
+    });
+    expect(pathOf(root, "z")).toEqual({
+      "--_ok-org-path-offset": "-75px",
+      "--_ok-org-path-forward": "0",
+      "--_ok-org-path-round": "1",
+    });
+  });
+
+  it("measures along the block axis for left and right charts, and from the end in RTL", () => {
+    const left = mountRow('data-ok-direction="left"');
+    expect(pathOf(left, "z")?.["--_ok-org-path-offset"]).toBe("-75px");
+    document.body.replaceChildren();
+    const rtl = mountRow("", 'dir="rtl"');
+    expect(pathOf(rtl, "x")?.["--_ok-org-path-offset"]).toBe("100px");
+    expect(pathOf(rtl, "z")?.["--_ok-org-path-forward"]).toBe("0");
+  });
+
+  it("measures in layout px inside a scaled container", () => {
+    const root = mountRow();
+    (root.parentElement as HTMLElement).style.transform = "scale(0.5)";
+    expect(pathOf(root, "x")?.["--_ok-org-path-offset"]).toBe("100px");
+  });
+
+  it("an only child sits on its parent's line; hidden lists measure nothing", () => {
+    const root = mountChart();
+    expect(pathOf(root, "d")?.["--_ok-org-path-round"]).toBe("0");
+    (organizationChartList(byId(root, "b")) as HTMLElement).hidden = true;
+    expect(pathOf(root, "c")?.["--_ok-org-path-offset"]).toBe("0px");
+  });
+});
+
+describe("createOrganizationChartHighlight", () => {
+  afterEach(() => document.body.replaceChildren());
+  const offset = (root: Element, id: string) =>
+    (organizationChartNode(root, id) as HTMLElement).style.getPropertyValue(
+      "--_ok-org-path-offset",
+    );
+  const over = (element: Element, related: Element | null = null) =>
+    element.dispatchEvent(
+      new PointerEvent("pointerover", { bubbles: true, relatedTarget: related }),
+    );
+  const out = (element: Element, related: Element | null) =>
+    element.dispatchEvent(
+      new PointerEvent("pointerout", { bubbles: true, relatedTarget: related }),
+    );
+  const label = (root: Element, id: string) =>
+    (organizationChartNode(root, id) as HTMLElement).firstElementChild as HTMLElement;
+
+  it("measures the hovered and focused paths only with data-ok-highlight-on-hover", () => {
+    const root = mountRow();
+    const highlight = createOrganizationChartHighlight(root);
+    over(label(root, "z"));
+    expect(offset(root, "z")).toBe("");
+    root.setAttribute("data-ok-highlight-on-hover", "");
+    out(label(root, "z"), document.body);
+    over(label(root, "z"));
+    expect(offset(root, "z")).toBe("-75px");
+    // Moving to another node moves the measures.
+    out(label(root, "z"), label(root, "x"));
+    over(label(root, "x"));
+    expect(offset(root, "x")).toBe("100px");
+    expect(offset(root, "z")).toBe("");
+    // Leaving: the stale measures stay until the next change (CSS no longer shows them).
+    out(label(root, "x"), null);
+    highlight.sync();
+    expect(offset(root, "x")).toBe("");
+    // Focus inside a label counts too.
+    const button = document.createElement("button");
+    button.textContent = "Open";
+    label(root, "y").append(button);
+    button.focus();
+    expect(offset(root, "y")).toBe("25px");
+    button.blur();
+    highlight.sync();
+    expect(offset(root, "y")).toBe("");
+    // Targets outside labels and toggles change nothing.
+    over(root);
+    expect(offset(root, "x")).toBe("");
+    highlight.destroy();
+  });
+
+  it("follows data-ok-highlighted and layout changes, and cleans up", async () => {
+    const root = mountRow();
+    const highlight = createOrganizationChartHighlight(root);
+    const z = organizationChartNode(root, "z") as HTMLElement;
+    z.setAttribute("data-ok-highlighted", "");
+    await tick();
+    expect(offset(root, "z")).toBe("-75px");
+    // A sibling goes away: the list's center moves.
+    (organizationChartNode(root, "y") as HTMLElement).remove();
+    await tick();
+    expect(offset(root, "z")).toBe("-50px");
+    highlight.destroy();
+    expect(offset(root, "z")).toBe("");
+    z.removeAttribute("data-ok-highlighted");
+    z.setAttribute("data-ok-highlighted", "");
+    await tick();
+    expect(offset(root, "z")).toBe("");
+  });
+});
+
+describe("revealOrganizationChartNode", () => {
+  afterEach(() => {
+    document.body.replaceChildren();
+    vi.restoreAllMocks();
+  });
+
+  it("scrolls the label into view after the ancestors' animations", async () => {
+    const root = mountChart();
+    const d = byId(root, "d");
+    const target = d.firstElementChild as HTMLElement;
+    const scroll = vi.spyOn(target, "scrollIntoView").mockImplementation(() => {});
+    const list = organizationChartList(byId(root, "b")) as HTMLElement;
+    const animation = list.animate([{ opacity: 0 }, { opacity: 1 }], 10_000);
+    const done = revealOrganizationChartNode(d);
+    await tick();
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    expect(scroll).not.toHaveBeenCalled();
+    animation.finish();
+    await done;
+    expect(scroll).toHaveBeenCalledTimes(1);
+    expect(scroll.mock.calls[0]?.[0]).toMatchObject({ block: "nearest", inline: "nearest" });
+    // A cancelled animation (an interrupted Collapse) counts as done too.
+    const cancelled = list.animate([{ opacity: 0 }, { opacity: 1 }], 10_000);
+    const second = revealOrganizationChartNode(d);
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    await tick();
+    cancelled.cancel();
+    await second;
+    expect(scroll).toHaveBeenCalledTimes(2);
+  });
+
+  it("jumps with reduced motion and skips nodes that went away", async () => {
+    const root = mountChart();
+    const d = byId(root, "d");
+    const target = d.firstElementChild as HTMLElement;
+    const scroll = vi.spyOn(target, "scrollIntoView").mockImplementation(() => {});
+    vi.spyOn(window, "matchMedia").mockReturnValue({ matches: true } as MediaQueryList);
+    await revealOrganizationChartNode(d);
+    expect(scroll.mock.calls[0]?.[0]).toMatchObject({ behavior: "auto" });
+    const gone = revealOrganizationChartNode(d);
+    d.remove();
+    await gone;
+    expect(scroll).toHaveBeenCalledTimes(1);
   });
 });

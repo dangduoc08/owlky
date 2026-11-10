@@ -4,8 +4,11 @@ import organizationChartApi from "@owlky/docs-content/api/organization-chart.jso
 };
 import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { OrganizationChart, OrganizationChartNode, Scrollbar } from "@owlky/react";
+import searchGroup from "../../../../../packages/html/src/components/organization-chart/examples/search-group.html?raw";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
+import { snippetElement } from "../../helpers/snippet-markup.js";
+import { SearchChartDemo } from "./search-demo.js";
 
 export const organizationChartSections: GuideSection[] = [
   {
@@ -282,6 +285,95 @@ export function CompanyWithActions() {
 }`,
   },
   {
+    id: "highlight",
+    title: "Highlight a path and find a node",
+    body: `- **Highlight on hover:** with \`highlightOnHover\`, hovering a node or moving the focus into it highlights its path to the top node: the lines on the path take the primary color, and the other nodes fade. \`dimOpacity\` sets how much they fade, from 0 (not at all) to 1 (hidden), and is 0.7 by default.
+- **Highlight from code:** \`highlightNode(nodeId)\` highlights a node and its path until \`clearHighlight()\`. It opens the collapsed nodes above it, then scrolls it into view, and returns a promise that resolves once it is in view. The node gets a ring and \`data-ok-highlighted\`, and nothing fades, so that every node keeps its text contrast while the result shows. Hovering another node highlights that node instead, for as long as the pointer stays.
+- **Search:** put an \`Autocomplete\` next to the chart, with one option per node and the node's id as the option's value. When the value changes, call \`highlightNode(value)\`, and write what happened in a \`role="status"\` element, so that screen readers announce it politely.
+
+In React, the highlighted node is the \`highlightedNode\` prop (or \`defaultHighlightedNode\`), reported through \`onHighlightedNodeChange\`. In HTML, it is the \`data-ok-highlighted\` attribute on the node, and the instance has \`highlightNode(nodeId)\`, \`clearHighlight()\` and \`getHighlightedNode()\`.`,
+    html: `<!-- Load once per page: the styles and the script -->
+<link rel="stylesheet" href="${CDN}/owlky.css">
+<script src="${CDN}/owlky.js" defer></script>
+
+${snippetElement(searchGroup, "data-ok-autocomplete ")}
+<p data-ok-typography data-ok-variant="body2" id="org-search-status" role="status"></p>
+
+${snippetElement(searchGroup, "data-ok-scrollbar ")}
+
+<script type="module">
+  const chart = Owlky.runtime.get(document.getElementById("org-search"), "organization-chart");
+  const field = document.querySelector("[data-ok-autocomplete]");
+  const status = document.getElementById("org-search-status");
+
+  // The options' values are the nodes' data-ok-node-id
+  field.addEventListener("ok:autocomplete:change", (event) => {
+    const { value } = event.detail;
+    const option = value && field.querySelector(\`[role="option"][data-ok-value="\${CSS.escape(value)}"]\`);
+    if (option) {
+      chart.highlightNode(value);
+      status.textContent = \`\${option.textContent.trim()} is highlighted in the chart.\`;
+    } else {
+      chart.clearHighlight();
+      status.textContent = "";
+    }
+  });
+</script>`,
+    react: `import {
+  Autocomplete,
+  OrganizationChart,
+  OrganizationChartNode,
+  Typography,
+  useOrganizationChartApiRef,
+} from "@owlky/react";
+import { useState } from "react";
+
+const people = [
+  { value: "maya", label: "Maya Lindqvist" },
+  { value: "priya", label: "Priya Raman" },
+  { value: "elias", label: "Elias Novak" },
+];
+
+export function SearchableCompany() {
+  const apiRef = useOrganizationChartApiRef();
+  const [status, setStatus] = useState("");
+  return (
+    <>
+      <Autocomplete
+        label="Find a person"
+        options={people}
+        onChange={(value) => {
+          const person = people.find((item) => item.value === value);
+          if (person) {
+            void apiRef.current?.highlightNode(person.value);
+            setStatus(\`\${person.label} is highlighted in the chart.\`);
+          } else {
+            apiRef.current?.clearHighlight();
+            setStatus("");
+          }
+        }}
+      />
+      <Typography role="status" variant="body2">
+        {status}
+      </Typography>
+      <OrganizationChart
+        aria-label="Company"
+        apiRef={apiRef}
+        enableExpandCollapse
+        highlightOnHover
+        defaultCollapsedNodes={["priya"]}
+        nodeId="maya"
+        label="Maya Lindqvist, CEO"
+      >
+        <OrganizationChartNode nodeId="priya" label="Priya Raman, development">
+          <OrganizationChartNode nodeId="elias" label="Elias Novak" />
+        </OrganizationChartNode>
+      </OrganizationChart>
+    </>
+  );
+}`,
+  },
+  {
     id: "lazy",
     title: "Load children on demand",
     body: 'A node can load its children the first time it expands, such as from a server. In React, set `hasChildren` on the node and pass `loadChildren` to the chart: it receives the node\'s id and resolves with the child nodes. In HTML, give the node a toggle and an empty, hidden children list, then answer the `ok:organization-chart:loadchildren` event with `detail.respondWith()`, which takes child node elements or a promise of them. While the children load, the toggle shows a progress indicator and has `aria-busy="true"`. When no children come back, the node becomes a leaf. When the promise is rejected, the node stays collapsed and the next expand tries again. Children load once: catch errors in your loader to show a message, and reject so that people can retry.',
@@ -358,8 +450,8 @@ export function LazyCompany() {
     body: `- **\`ok:organization-chart:expand\`** (cancelable) fires on the chart before someone expands a node, with \`detail.nodeId\` and \`detail.node\`. Call \`preventDefault()\` to keep the node collapsed.
 - **\`ok:organization-chart:collapse\`** (cancelable) fires before someone collapses a node, with the same details.
 - **\`ok:organization-chart:loadchildren\`** fires the first time a node with an empty children list expands, with \`detail.nodeId\`, \`detail.node\` and \`detail.respondWith(nodes)\`.
-- **Instance:** \`runtime.get(element, "organization-chart")\` returns \`{ expand(id), collapse(id), isExpanded(id), expandAll(), collapseAll(), expandToDepth(depth), expandSubtree(id), collapseSubtree(id) }\`. \`expand(id)\` returns a promise that resolves once the children are loaded and shown. The methods don't fire events.
-- **React:** \`onExpand(nodeId)\`, \`onCollapse(nodeId)\`, \`onCollapsedNodesChange(nodeIds)\` and the same methods on \`apiRef\`.`,
+- **Instance:** \`runtime.get(element, "organization-chart")\` returns \`{ expand(id), collapse(id), isExpanded(id), expandAll(), collapseAll(), expandToDepth(depth), expandSubtree(id), collapseSubtree(id), highlightNode(id), clearHighlight(), getHighlightedNode() }\`. \`expand(id)\` returns a promise that resolves once the children are loaded and shown, and \`highlightNode(id)\` one that resolves once the node is in view. The methods don't fire events.
+- **React:** \`onExpand(nodeId)\`, \`onCollapse(nodeId)\`, \`onCollapsedNodesChange(nodeIds)\`, \`onHighlightedNodeChange(nodeId)\` and the same methods on \`apiRef\`.`,
   },
   {
     id: "keyboard",
@@ -377,7 +469,9 @@ export function LazyCompany() {
 - Every \`direction\` keeps the tree's reading order: a node, then its children.
 - Toggle buttons have \`aria-expanded\` and \`aria-controls\`. Their name is the hidden \`toggleLabel\` followed by the visible number of hidden nodes, so that speech input users can say what they see. Make each \`toggleLabel\` unique, such as the person's name and "reports".
 - Collapsed children are hidden from screen readers too. While children load, the toggle has \`aria-busy="true"\`.
-- A click on a label is a shortcut for pointer users: keyboard users reach the toggle button with **Tab**.`,
+- A click on a label is a shortcut for pointer users: keyboard users reach the toggle button with **Tab**.
+- The hover highlight follows the keyboard focus too, so keyboard users see the same path. Faded nodes stay readable but drop below the text contrast minimum while the highlight lasts: set \`dimOpacity\` to 0 to keep full contrast, as the path's colors still show it.
+- A node found by a search gets a ring and a colored path, and nothing fades. Announce the result in a \`role="status"\` element: the highlight itself is visual only.`,
   },
   apiReferenceSection(organizationChartApi),
 ];
@@ -460,6 +554,11 @@ const PREVIEWS = {
       </OrganizationChart>
     </Preview>
   ),
+  highlight: () => (
+    <Preview>
+      <SearchChartDemo />
+    </Preview>
+  ),
   lazy: () => (
     <Preview>
       <OrganizationChart
@@ -526,6 +625,13 @@ const PREVIEWS = {
           type: "boolean",
           description:
             "Shows the number of hidden nodes on collapsed toggles. Default true. In HTML, leave the span out for no badge.",
+        },
+        {
+          react: "highlightedNode",
+          html: "data-ok-highlighted",
+          type: "string | null",
+          description:
+            "The highlighted node: its nodeId on the chart in React, the attribute on the node in HTML. Set by highlightNode().",
         },
       ]}
     />

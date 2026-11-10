@@ -2495,6 +2495,16 @@ export const organizationChartOptions = defineOptions(
       "Smallest number of hidden descendants that a collapsed node's badge shows.",
       { min: 1 },
     ),
+    highlightOnHover: flag(
+      "data-ok-highlight-on-hover",
+      "Hovering or focusing a node highlights its path to the root and dims the other nodes.",
+    ),
+    dimOpacity: number(
+      "data-ok-dim-opacity",
+      0.7,
+      "How much nodes outside a highlighted path fade, from 0 (not at all) to 1 (hidden).",
+      { min: 0 },
+    ),
   },
 );
 
@@ -2509,6 +2519,8 @@ export interface OrganizationChartAnatomyOptions {
   enableExpandCollapse?: boolean | undefined;
   expandCollapseOnNodeClick?: boolean | undefined;
   collapseBadgeThreshold?: number | undefined;
+  highlightOnHover?: boolean | undefined;
+  dimOpacity?: number | undefined;
 }
 
 /** `data-ok-*` attributes of an organization chart (the outer `ul`). */

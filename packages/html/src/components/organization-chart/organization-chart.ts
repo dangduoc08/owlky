@@ -1,10 +1,13 @@
 import {
   createOrganizationChartController,
+  createOrganizationChartHighlight,
   ORGANIZATION_CHART_LENGTHS,
   type OrganizationChartAction,
   type OrganizationChartController,
   type OrganizationChartLength,
+  organizationChartAncestors,
   organizationChartExpanded,
+  organizationChartHighlighted,
   organizationChartList,
   organizationChartLoaded,
   organizationChartNode,
@@ -14,6 +17,7 @@ import {
   organizationChartStyle,
   organizationChartToggle,
   readNumber,
+  revealOrganizationChartNode,
 } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
 import { syncCustomProperties } from "../../runtime/style.js";
@@ -21,9 +25,10 @@ import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
 
 const { options } = organizationChartOptions;
 const LENGTHS = Object.keys(ORGANIZATION_CHART_LENGTHS) as OrganizationChartLength[];
-/** Attributes the runtime follows: the lengths and the expand / collapse options. */
+/** Attributes the runtime follows: the lengths, the dim strength and the expand / collapse options. */
 const OBSERVED = [
   ...LENGTHS.map((key) => options[key].attr),
+  options.dimOpacity.attr,
   options.enableExpandCollapse.attr,
   options.expandCollapseOnNodeClick.attr,
   options.collapseBadgeThreshold.attr,
@@ -73,6 +78,16 @@ export interface OrganizationChartInstance extends ComponentInstance {
   expandSubtree(nodeId: string): void;
   /** Collapses a node and every node under it. */
   collapseSubtree(nodeId: string): void;
+  /**
+   * Highlights the node with this `data-ok-node-id` and its path to the root (`data-ok-highlighted`,
+   * the others fade), expands its collapsed ancestors and scrolls it into view. Resolves once it
+   * is in view. Replaces an earlier highlight.
+   */
+  highlightNode(nodeId: string): Promise<void>;
+  /** Removes the highlight. */
+  clearHighlight(): void;
+  /** The `data-ok-node-id` of the highlighted node, or `null`. */
+  getHighlightedNode(): string | null;
 }
 
 const isNodes = (value: unknown): value is Iterable<Node> =>
@@ -97,7 +112,9 @@ const isNodes = (value: unknown): value is Iterable<Node> =>
  * (`button[data-ok-organization-chart-toggle][aria-expanded][aria-controls]`) before a children
  * list with `data-ok-collapse`; the runtime writes the list's `hidden` and the toggle's
  * `aria-expanded` (state lives in the markup), loads lazy children through `loadchildren`, and
- * the core controller writes the badges.
+ * the core controller writes the badges. With `data-ok-highlight-on-hover` (or a
+ * `data-ok-highlighted` node, `highlightNode(id)`) the core highlight controller measures the
+ * highlighted path's bar segments; the stylesheet does the rest.
  */
 export const organizationChart = defineComponent<
   OrganizationChartInstance,
@@ -109,6 +126,7 @@ export const organizationChart = defineComponent<
   setup(element, { emit }) {
     let written: string[] = [];
     let controller: OrganizationChartController | null = null;
+    const highlight = createOrganizationChartHighlight(element);
     const pending = new Set<Element>();
 
     /** A branch's toggle and children list; `null` for leaves (or a toggle without a list). */
@@ -170,7 +188,9 @@ export const organizationChart = defineComponent<
     const byId = (id: string) => organizationChartNode(element, id);
 
     const sync = () => {
-      const values: Partial<Record<OrganizationChartLength, string | null>> = {};
+      const values: Partial<Record<OrganizationChartLength | "dimOpacity", string | null>> = {
+        dimOpacity: element.getAttribute(options.dimOpacity.attr),
+      };
       for (const key of LENGTHS) values[key] = element.getAttribute(options[key].attr);
       written = syncCustomProperties(element, organizationChartStyle(values), written);
 
@@ -220,8 +240,28 @@ export const organizationChart = defineComponent<
         const node = byId(id);
         if (node) plan({ type: "collapseSubtree", node });
       },
+      highlightNode: (id) => {
+        const node = byId(id);
+        if (!node) return Promise.resolve();
+        for (const other of organizationChartHighlighted(element))
+          if (other !== node) other.removeAttribute("data-ok-highlighted");
+        node.setAttribute("data-ok-highlighted", "");
+        // Collapsed ancestors open first (no events, like the other methods).
+        for (const ancestor of organizationChartAncestors(node))
+          if (!organizationChartExpanded(ancestor)) void change(ancestor, true);
+        return revealOrganizationChartNode(node);
+      },
+      clearHighlight: () => {
+        for (const node of organizationChartHighlighted(element))
+          node.removeAttribute("data-ok-highlighted");
+      },
+      getHighlightedNode: () => {
+        const [node] = organizationChartHighlighted(element);
+        return node ? organizationChartNodeId(node) : null;
+      },
       destroy() {
         observer.disconnect();
+        highlight.destroy();
         controller?.destroy();
         syncCustomProperties(element, {}, written);
       },

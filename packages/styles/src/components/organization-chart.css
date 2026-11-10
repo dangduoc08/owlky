@@ -41,6 +41,9 @@
     --_ok-org-line: var(--_ok-org-line-width) var(--_ok-org-line-style) var(--_ok-org-line-color);
     /* Where a collapsed toggle's chevron points: toward the children (ADR-0052). */
     --_ok-org-chevron: 0deg;
+    /* Lineage highlight: how much the other nodes fade, and the path's color. */
+    --_ok-org-dim-opacity: 0.7;
+    --_ok-org-highlight-color: var(--ok-palette-primary-main);
 
     display: flex;
     justify-content: center;
@@ -665,7 +668,204 @@
     margin-inline-end: calc(var(--_ok-org-toggle-size) / -2);
   }
 
+  /* Lineage highlight. While a node is hovered or focused (data-ok-highlight-on-hover), the other
+     labels and toggles fade; the path to the root of that node, or else of the
+     data-ok-highlighted node (search), turns the highlight color: the lines from each parent,
+     and on each node of the path the bar segment from its parent's line to its label (the
+     label's ::before, placed by the core controller's --_ok-org-path-* measures). A highlighted
+     node fades nothing: faded text would stay below the contrast minimum for as long as the
+     result is shown. */
+  :where([data-ok-organization-chart-label], [data-ok-organization-chart-toggle]) {
+    transition: opacity var(--ok-duration-shorter) var(--ok-easing-standard);
+  }
+
+  :where(
+    [data-ok-organization-chart][data-ok-highlight-on-hover]:has(
+        :is(
+            [data-ok-organization-chart-label]:hover,
+            [data-ok-organization-chart-label]:focus-within,
+            [data-ok-organization-chart-toggle]:hover,
+            [data-ok-organization-chart-toggle]:focus-visible
+          )
+      )
+      :is([data-ok-organization-chart-label], [data-ok-organization-chart-toggle])
+  ) {
+    opacity: calc(1 - var(--_ok-org-dim-opacity));
+  }
+
+  /* The path: its labels and toggles, the lines from its parents. */
+  :where(
+    [data-ok-organization-chart][data-ok-highlight-on-hover]
+      [data-ok-organization-chart-node]:has(
+        :is(
+            [data-ok-organization-chart-label]:hover,
+            [data-ok-organization-chart-label]:focus-within,
+            [data-ok-organization-chart-toggle]:hover,
+            [data-ok-organization-chart-toggle]:focus-visible
+          )
+      )
+      > :is([data-ok-organization-chart-label], [data-ok-organization-chart-toggle])
+  ) {
+    opacity: 1;
+  }
+
+  :where(
+    [data-ok-organization-chart][data-ok-highlight-on-hover]
+      [data-ok-organization-chart-children]:has(
+        :is(
+            [data-ok-organization-chart-label]:hover,
+            [data-ok-organization-chart-label]:focus-within,
+            [data-ok-organization-chart-toggle]:hover,
+            [data-ok-organization-chart-toggle]:focus-visible
+          )
+      ),
+    [data-ok-organization-chart]:not(
+        [data-ok-highlight-on-hover]:has(
+          :is(
+              [data-ok-organization-chart-label]:hover,
+              [data-ok-organization-chart-label]:focus-within,
+              [data-ok-organization-chart-toggle]:hover,
+              [data-ok-organization-chart-toggle]:focus-visible
+            )
+        )
+      )
+      [data-ok-organization-chart-children]:has(
+        [data-ok-organization-chart-node][data-ok-highlighted]
+      )
+  )::before {
+    border-color: var(--_ok-org-highlight-color);
+  }
+
+  :where(
+    [data-ok-organization-chart][data-ok-highlight-on-hover]
+      [data-ok-organization-chart-children]
+      > [data-ok-organization-chart-node]:has(
+        :is(
+            [data-ok-organization-chart-label]:hover,
+            [data-ok-organization-chart-label]:focus-within,
+            [data-ok-organization-chart-toggle]:hover,
+            [data-ok-organization-chart-toggle]:focus-visible
+          )
+      )
+      > [data-ok-organization-chart-label],
+    [data-ok-organization-chart]:not(
+        [data-ok-highlight-on-hover]:has(
+          :is(
+              [data-ok-organization-chart-label]:hover,
+              [data-ok-organization-chart-label]:focus-within,
+              [data-ok-organization-chart-toggle]:hover,
+              [data-ok-organization-chart-toggle]:focus-visible
+            )
+        )
+      )
+      [data-ok-organization-chart-children]
+      > :is(
+        [data-ok-organization-chart-node][data-ok-highlighted],
+        [data-ok-organization-chart-node]:has(
+          [data-ok-organization-chart-node][data-ok-highlighted]
+        )
+      )
+      > [data-ok-organization-chart-label]
+  )::before {
+    content: "";
+  }
+
+  /* The bar segment (no content, so not drawn, until the node is on the path). Positioned on the
+     node, from its line to the label (start border) or the other way (end border). */
+  :where(
+    [data-ok-organization-chart-children]
+      > [data-ok-organization-chart-node]
+      > [data-ok-organization-chart-label]
+  )::before {
+    --_ok-org-path-size: max(var(--_ok-org-path-offset, 0px), -1 * var(--_ok-org-path-offset, 0px));
+    --_ok-org-path-fwd: var(--_ok-org-path-forward, 1);
+    --_ok-org-path-r: calc(var(--_ok-org-line-radius) * var(--_ok-org-path-round, 0));
+    --_ok-org-path-near: calc(var(--_ok-org-line-width) * var(--_ok-org-path-fwd))
+      var(--_ok-org-line-style) var(--_ok-org-highlight-color);
+    --_ok-org-path-far: calc(var(--_ok-org-line-width) * (1 - var(--_ok-org-path-fwd)))
+      var(--_ok-org-line-style) var(--_ok-org-highlight-color);
+
+    position: absolute;
+    z-index: 1;
+    inset-block-start: 0;
+    inset-inline-start: calc(50% + min(0px, var(--_ok-org-path-offset, 0px)));
+    box-sizing: border-box;
+    inline-size: calc(var(--_ok-org-path-size) + var(--_ok-org-line-width));
+    block-size: var(--_ok-org-line-height);
+    border-block-start: var(--_ok-org-line-width) var(--_ok-org-line-style)
+      var(--_ok-org-highlight-color);
+    border-inline-start: var(--_ok-org-path-near);
+    border-inline-end: var(--_ok-org-path-far);
+    border-start-start-radius: calc(var(--_ok-org-path-r) * var(--_ok-org-path-fwd));
+    border-start-end-radius: calc(var(--_ok-org-path-r) * (1 - var(--_ok-org-path-fwd)));
+    pointer-events: none;
+  }
+
+  :where(
+    [data-ok-organization-chart][data-ok-direction="bottom"]
+      [data-ok-organization-chart-children]
+      > [data-ok-organization-chart-node]
+      > [data-ok-organization-chart-label]
+  )::before {
+    inset-block: auto 0;
+    border-block-start: 0;
+    border-block-end: var(--_ok-org-line-width) var(--_ok-org-line-style)
+      var(--_ok-org-highlight-color);
+    border-start-start-radius: 0;
+    border-start-end-radius: 0;
+    border-end-start-radius: calc(var(--_ok-org-path-r) * var(--_ok-org-path-fwd));
+    border-end-end-radius: calc(var(--_ok-org-path-r) * (1 - var(--_ok-org-path-fwd)));
+  }
+
+  :where(
+    [data-ok-organization-chart]:is([data-ok-direction="left"], [data-ok-direction="right"])
+      [data-ok-organization-chart-children]
+      > [data-ok-organization-chart-node]
+      > [data-ok-organization-chart-label]
+  )::before {
+    inset-block-start: calc(50% + min(0px, var(--_ok-org-path-offset, 0px)));
+    inset-inline-start: 0;
+    inline-size: var(--_ok-org-line-height);
+    block-size: calc(var(--_ok-org-path-size) + var(--_ok-org-line-width));
+    border: 0;
+    border-inline-start: var(--_ok-org-line-width) var(--_ok-org-line-style)
+      var(--_ok-org-highlight-color);
+    border-block-start: var(--_ok-org-path-near);
+    border-block-end: var(--_ok-org-path-far);
+    border-start-end-radius: 0;
+    border-end-start-radius: calc(var(--_ok-org-path-r) * (1 - var(--_ok-org-path-fwd)));
+  }
+
+  :where(
+    [data-ok-organization-chart][data-ok-direction="right"]
+      [data-ok-organization-chart-children]
+      > [data-ok-organization-chart-node]
+      > [data-ok-organization-chart-label]
+  )::before {
+    inset-inline: auto 0;
+    border-inline-start: 0;
+    border-inline-end: var(--_ok-org-line-width) var(--_ok-org-line-style)
+      var(--_ok-org-highlight-color);
+    border-start-start-radius: 0;
+    border-end-start-radius: 0;
+    border-start-end-radius: calc(var(--_ok-org-path-r) * var(--_ok-org-path-fwd));
+    border-end-end-radius: calc(var(--_ok-org-path-r) * (1 - var(--_ok-org-path-fwd)));
+  }
+
+  /* The node a search found: a ring around its label. */
+  :where(
+    [data-ok-organization-chart-node][data-ok-highlighted] > [data-ok-organization-chart-label]
+  ) {
+    border-radius: var(--ok-radius-lg);
+    outline: 2px solid var(--_ok-org-highlight-color);
+    outline-offset: var(--ok-spacing);
+  }
+
   @media (prefers-reduced-motion: reduce) {
+    :where([data-ok-organization-chart-label], [data-ok-organization-chart-toggle]) {
+      transition: none;
+    }
+
     :where([data-ok-organization-chart-toggle-icon]) {
       transition: none;
     }

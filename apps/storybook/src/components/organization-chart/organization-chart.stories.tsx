@@ -20,7 +20,11 @@ import {
   collapsibleScript,
   LAZY_SCRIPT_SOURCE,
   lazyScript,
+  SEARCH_SCRIPT_SOURCE,
+  searchScript,
 } from "./organization-chart-scripts.js";
+import { SearchChartDemo } from "./search-demo.js";
+import searchSource from "./search-demo.tsx?raw";
 import { StandardChartDemo } from "./standard-demo.js";
 import standardSource from "./standard-demo.tsx?raw";
 
@@ -132,6 +136,29 @@ export const Collapsible: StoryObj = {
     ),
   }),
   name: "Expand and collapse",
+};
+
+/** Lineage highlight and search: composes an Autocomplete; stateful in React, a page script in HTML. */
+export const Search: StoryObj = {
+  ...frameworkStory({
+    html: snippetStory(
+      snippets,
+      "search",
+      [["Highlight and search", "group"]],
+      htmlSetup(
+        [...COLLAPSIBLE, "text-field.css", "icon-button.css", "popover.css", "autocomplete.css"],
+        true,
+      ),
+      undefined,
+      { group: { script: searchScript, scriptSource: SEARCH_SCRIPT_SOURCE } },
+    ),
+    react: reactGroupsStory(
+      [{ title: "Highlight and search", content: <SearchChartDemo /> }],
+      undefined,
+      searchSource,
+    ),
+  }),
+  name: "Highlight and search",
 };
 
 export const LazyChildren: StoryObj = {

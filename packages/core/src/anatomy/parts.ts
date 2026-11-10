@@ -1532,6 +1532,8 @@ export interface OrganizationChartParts {
   "data-ok-organization-chart-toggle-label": Part<"span">;
   /** On a node: its id, used by the instance methods and in the events. */
   "data-ok-node-id": Value<string>;
+  /** On a node: it is highlighted (a search result). Its path to the root keeps its colors while the other nodes fade. Written by `highlightNode(id)`. */
+  "data-ok-highlighted": State;
 }
 
 /** Pagination: parts, states, values and triggers. */

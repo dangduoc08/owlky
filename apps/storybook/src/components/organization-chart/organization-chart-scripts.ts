@@ -63,3 +63,53 @@ element.addEventListener("ok:organization-chart:loadchildren", (event) => {
     ),
   );
 });`;
+
+/** The highlight methods the search story calls. */
+interface HighlightApi {
+  highlightNode(nodeId: string): Promise<void>;
+  clearHighlight(): void;
+}
+
+/** Search (HTML): a pick in the Autocomplete highlights that person; the status line says so. */
+export function searchScript(row: HTMLElement) {
+  const element = row.querySelector("#org-search") as HTMLElement;
+  const field = row.querySelector("[data-ok-autocomplete]") as HTMLElement;
+  const status = row.querySelector("#org-search-status") as HTMLElement;
+  const chart = () => getRuntime().get(element, "organization-chart") as unknown as HighlightApi;
+  const pick = (event: Event) => {
+    const { value } = (event as CustomEvent<{ value: string | string[] | null }>).detail;
+    const option =
+      typeof value === "string"
+        ? field.querySelector(`[role="option"][data-ok-value="${CSS.escape(value)}"]`)
+        : null;
+    if (typeof value === "string" && option) {
+      void chart().highlightNode(value);
+      status.textContent = `${option.textContent?.trim()} is highlighted in the chart.`;
+    } else {
+      chart().clearHighlight();
+      status.textContent = "";
+    }
+  };
+  field.addEventListener("ok:autocomplete:change", pick);
+  return () => field.removeEventListener("ok:autocomplete:change", pick);
+}
+
+export const SEARCH_SCRIPT_SOURCE = `import { getRuntime } from "@owlky/html";
+
+const chart = getRuntime().get(document.getElementById("org-search"), "organization-chart");
+const field = document.querySelector("[data-ok-autocomplete]");
+const status = document.getElementById("org-search-status");
+
+// The options' values are the nodes' data-ok-node-id
+field.addEventListener("ok:autocomplete:change", (event) => {
+  const { value } = event.detail;
+  const option = value && field.querySelector(\`[role="option"][data-ok-value="\${CSS.escape(value)}"]\`);
+  if (option) {
+    // Opens the collapsed branches above the node, scrolls to it and highlights its path
+    chart.highlightNode(value);
+    status.textContent = \`\${option.textContent.trim()} is highlighted in the chart.\`;
+  } else {
+    chart.clearHighlight();
+    status.textContent = "";
+  }
+});`;

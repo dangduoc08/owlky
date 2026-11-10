@@ -2,7 +2,8 @@ import { act, render, screen } from "@testing-library/react";
 import { createRef, type MutableRefObject, type ReactNode, StrictMode } from "react";
 import { renderToString } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
-import { expectNoAxeViolations } from "../test-utils.js";
+import { userEvent } from "vitest/browser";
+import { expectNoAxeViolations, parkPointer, settled } from "../test-utils.js";
 import {
   OrganizationChart,
   type OrganizationChartApi,
@@ -849,5 +850,173 @@ describe("OrganizationChart direction", () => {
       await expectNoAxeViolations(document.body);
       unmount();
     }
+  });
+});
+
+// --- Lineage highlight and search -------------------------------------------------------------
+
+describe("OrganizationChart highlight", () => {
+  const opacity = (id: string) => getComputedStyle(node(id).firstElementChild as Element).opacity;
+  const segment = (id: string) =>
+    getComputedStyle(node(id).firstElementChild as Element, "::before");
+  /** Waits for the labels' opacity transitions. */
+  const still = () =>
+    Promise.all(
+      [...document.querySelectorAll("[data-ok-organization-chart-label]")].map((label) =>
+        settled(label),
+      ),
+    );
+
+  it("writes the options as attributes and the dim strength as a private property", () => {
+    render(<Collapsible highlightOnHover dimOpacity={0.4} />);
+    expect(chart().hasAttribute("data-ok-highlight-on-hover")).toBe(true);
+    expect(chart().getAttribute("data-ok-dim-opacity")).toBe("0.4");
+    expect(chart().style.getPropertyValue("--_ok-org-dim-opacity")).toBe("0.4");
+  });
+
+  it("is off by default: hovering changes nothing", async () => {
+    render(<Collapsible />);
+    await userEvent.hover(screen.getByText("D"));
+    await still();
+    expect(opacity("a")).toBe("1");
+    expect(segment("d").content).toBe("none");
+  });
+
+  it("hovering a node keeps its path to the root and fades the rest", async () => {
+    render(
+      <div style={{ width: 800 }}>
+        <Collapsible highlightOnHover dimOpacity={0.5} />
+      </div>,
+    );
+    await userEvent.hover(screen.getByText("D"));
+    await still();
+    expect(opacity("a")).toBe("0.5");
+    expect(opacity("lazy")).toBe("0.5");
+    for (const id of ["lead", "b", "c", "d"]) expect(opacity(id)).toBe("1");
+    expect(getComputedStyle(toggleOf("b")).opacity).toBe("1");
+    expect(getComputedStyle(toggleOf("lazy")).opacity).toBe("0.5");
+    // B's segment runs from its label's line to the lead's line, in the highlight color.
+    const b = segment("b");
+    expect(b.content).not.toBe("none");
+    const highlight = getComputedStyle(listOf("lead"), "::before").borderLeftColor;
+    expect(b.borderTopColor).toBe(highlight);
+    expect(highlight).not.toBe(divider());
+    const segmentEnd = box(node("b")).left + Number.parseFloat(b.left) + Number.parseFloat(b.width);
+    const stem =
+      box(listOf("lead")).left +
+      Number.parseFloat(getComputedStyle(listOf("lead"), "::before").left);
+    expect(Math.abs(segmentEnd - (stem + 1))).toBeLessThan(1.5);
+    expect(segment("a").content).toBe("none");
+    await parkPointer();
+    await still();
+    expect(opacity("a")).toBe("1");
+  });
+
+  it("highlightNode opens the collapsed ancestors, marks the node and reports it", async () => {
+    const onHighlightedNodeChange = vi.fn();
+    const onExpand = vi.fn();
+    const apiRef: MutableRefObject<OrganizationChartApi | undefined> = { current: undefined };
+    render(
+      <Collapsible
+        apiRef={apiRef}
+        defaultCollapsedNodes={["b", "c"]}
+        onExpand={onExpand}
+        onHighlightedNodeChange={onHighlightedNodeChange}
+      />,
+    );
+    expect(listOf("b").hidden).toBe(true);
+    const scroll = vi.spyOn(Element.prototype, "scrollIntoView");
+    await act(async () => {
+      await apiRef.current?.highlightNode("d");
+    });
+    await finish();
+    expect(listOf("b").hidden).toBe(false);
+    expect(listOf("c").hidden).toBe(false);
+    expect(node("d").hasAttribute("data-ok-highlighted")).toBe(true);
+    expect(onHighlightedNodeChange).toHaveBeenCalledWith("d");
+    expect(onExpand).not.toHaveBeenCalled();
+    expect(apiRef.current?.getHighlightedNode()).toBe("d");
+    expect(scroll).toHaveBeenCalled();
+    await still();
+    // A search result fades nothing (contrast); its path turns the highlight color.
+    expect(opacity("a")).toBe("1");
+    expect(getComputedStyle(listOf("c"), "::before").borderLeftColor).not.toBe(divider());
+    expect(getComputedStyle(listOf("lead"), "::before").borderLeftColor).toBe(
+      getComputedStyle(listOf("c"), "::before").borderLeftColor,
+    );
+    expect(getComputedStyle(node("d").firstElementChild as Element).outlineStyle).toBe("solid");
+    // Another node replaces it; unknown ids change nothing.
+    await act(async () => {
+      await apiRef.current?.highlightNode("a");
+      await apiRef.current?.highlightNode("nobody");
+    });
+    expect(node("d").hasAttribute("data-ok-highlighted")).toBe(false);
+    expect(node("a").hasAttribute("data-ok-highlighted")).toBe(true);
+    act(() => apiRef.current?.clearHighlight());
+    expect(document.querySelector("[data-ok-highlighted]")).toBeNull();
+    expect(onHighlightedNodeChange).toHaveBeenLastCalledWith(null);
+    expect(apiRef.current?.getHighlightedNode()).toBeNull();
+    scroll.mockRestore();
+  });
+
+  it("controlled: highlightedNode decides; works without expand and collapse", async () => {
+    const { rerender } = render(<Team highlightedNode={null} />);
+    expect(document.querySelector("[data-ok-highlighted]")).toBeNull();
+    const ids = (highlightedNode: string | null) => (
+      <OrganizationChart aria-label="Team" label="Lead" highlightedNode={highlightedNode}>
+        <OrganizationChartNode nodeId="one" label="One" />
+        <OrganizationChartNode nodeId="two" label="Two" />
+      </OrganizationChart>
+    );
+    rerender(ids("two"));
+    expect(node("two").hasAttribute("data-ok-highlighted")).toBe(true);
+    await still();
+    expect(getComputedStyle(node("one").firstElementChild as Element).opacity).toBe("1");
+    rerender(ids(null));
+    expect(document.querySelector("[data-ok-highlighted]")).toBeNull();
+  });
+
+  it("highlightNode works on charts without expand and collapse; repeats report once", async () => {
+    const onHighlightedNodeChange = vi.fn();
+    const apiRef: MutableRefObject<OrganizationChartApi | undefined> = { current: undefined };
+    render(
+      <OrganizationChart
+        aria-label="Team"
+        label="Lead"
+        apiRef={apiRef}
+        onHighlightedNodeChange={onHighlightedNodeChange}
+      >
+        <OrganizationChartNode nodeId="one" label="One">
+          <OrganizationChartNode nodeId="two" label="Two" />
+        </OrganizationChartNode>
+      </OrganizationChart>,
+    );
+    await act(async () => {
+      await apiRef.current?.highlightNode("two");
+    });
+    await act(async () => {
+      await apiRef.current?.highlightNode("two");
+    });
+    expect(node("two").hasAttribute("data-ok-highlighted")).toBe(true);
+    expect(onHighlightedNodeChange).toHaveBeenCalledTimes(1);
+    act(() => apiRef.current?.clearHighlight());
+    act(() => apiRef.current?.clearHighlight());
+    expect(onHighlightedNodeChange).toHaveBeenCalledTimes(2);
+  });
+
+  it("hover wins over a highlighted node", async () => {
+    render(<Collapsible highlightOnHover defaultHighlightedNode="d" />);
+    await still();
+    expect(opacity("a")).toBe("1");
+    await userEvent.hover(screen.getByText("A"));
+    await still();
+    expect(opacity("a")).toBe("1");
+    expect(opacity("d")).toBe("0.3");
+    await parkPointer();
+  });
+
+  it("has no axe violations with a highlighted node", async () => {
+    render(<Collapsible highlightOnHover defaultHighlightedNode="c" />);
+    await expectNoAxeViolations(document.body);
   });
 });

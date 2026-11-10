@@ -59,7 +59,7 @@ const firstAfter = (host: Element) =>
   );
 
 describe("organization chart snippets", () => {
-  it("covers every story group", () => expect(snippets).toHaveLength(14));
+  it("covers every story group", () => expect(snippets).toHaveLength(15));
 
   it.each(snippets)("%s: valid anatomy", (_, html) => {
     const host = mount(local(html));
@@ -635,6 +635,102 @@ describe("organization chart expand and collapse", () => {
     toggle(host, "elias").click();
     await finish();
     expect(badge(host, "elias")).toBe("3");
+    await expectNoAxeViolations(host);
+  });
+});
+
+interface HighlightInstance {
+  highlightNode(id: string): Promise<void>;
+  clearHighlight(): void;
+  getHighlightedNode(): string | null;
+}
+
+describe("organization chart highlight and search", () => {
+  const search = () => {
+    const html = snippets.find(([path]) => path.endsWith("/search-group.html"))?.[1] as string;
+    return mount(local(html));
+  };
+  const chartOf = (host: Element) => host.querySelector("#org-search") as HTMLElement;
+  const api = (host: Element) =>
+    runtime?.get(chartOf(host), "organization-chart") as unknown as HighlightInstance;
+  const nodeOf = (host: Element, id: string) =>
+    host.querySelector(`[data-ok-node-id="${id}"]`) as HTMLElement;
+  const opacity = (host: Element, id: string) =>
+    getComputedStyle(nodeOf(host, id).firstElementChild as Element).opacity;
+  const still = async (host: Element) => {
+    for (const animation of host.ownerDocument.getAnimations())
+      if (animation.effect?.getComputedTiming().endTime !== Infinity) animation.finish();
+    await settle();
+  };
+
+  it("highlightNode opens the collapsed ancestors, marks the node, and clears", async () => {
+    const host = search();
+    start();
+    await settle();
+    expect(list(host, "priya").hidden).toBe(true);
+    const done = api(host).highlightNode("sofia");
+    await finish();
+    await done;
+    expect(list(host, "priya").hidden).toBe(false);
+    expect(list(host, "elias").hidden).toBe(false);
+    expect(toggle(host, "priya").getAttribute("aria-expanded")).toBe("true");
+    expect(nodeOf(host, "sofia").hasAttribute("data-ok-highlighted")).toBe(true);
+    expect(api(host).getHighlightedNode()).toBe("sofia");
+    await still(host);
+    // A search result fades nothing (contrast).
+    expect(opacity(host, "jonah")).toBe("1");
+    // The path's segments are measured on its nodes.
+    expect(nodeOf(host, "sofia").style.getPropertyValue("--_ok-org-path-offset")).not.toBe("");
+    expect(nodeOf(host, "jonah").style.getPropertyValue("--_ok-org-path-offset")).toBe("");
+    await api(host).highlightNode("leila");
+    expect(nodeOf(host, "sofia").hasAttribute("data-ok-highlighted")).toBe(false);
+    await api(host).highlightNode("nobody");
+    expect(api(host).getHighlightedNode()).toBe("leila");
+    api(host).clearHighlight();
+    expect(host.querySelector("[data-ok-highlighted]")).toBeNull();
+    expect(api(host).getHighlightedNode()).toBeNull();
+    await still(host);
+    expect(opacity(host, "jonah")).toBe("1");
+  });
+
+  it("writes data-ok-dim-opacity as a private property and follows it", async () => {
+    const host = mount(chart('data-ok-dim-opacity="0.25" data-ok-highlight-on-hover'));
+    start();
+    await settle();
+    const root = rootOf(host);
+    expect(root.style.getPropertyValue("--_ok-org-dim-opacity")).toBe("0.25");
+    root.setAttribute("data-ok-dim-opacity", "nope");
+    await settle();
+    expect(root.style.getPropertyValue("--_ok-org-dim-opacity")).toBe("");
+    runtime?.stop();
+    runtime = undefined;
+    expect(root.style.getPropertyValue("--_ok-org-dim-opacity")).toBe("");
+  });
+
+  it("the search field highlights the picked person (story script pattern)", async () => {
+    const host = search();
+    start();
+    await settle();
+    const field = host.querySelector("[data-ok-autocomplete]") as HTMLElement;
+    field.addEventListener("ok:autocomplete:change", (event) => {
+      const { value } = (event as CustomEvent<{ value: string | null }>).detail;
+      if (value) void api(host).highlightNode(value);
+    });
+    const input = host.querySelector('[role="combobox"]') as HTMLInputElement;
+    input.focus();
+    input.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
+    (host.querySelector('[role="option"][data-ok-value="zara"]') as HTMLElement).click();
+    await finish();
+    expect(nodeOf(host, "zara").hasAttribute("data-ok-highlighted")).toBe(true);
+    expect(list(host, "leila").hidden).toBe(false);
+  });
+
+  it("has no axe violations with a highlighted node", async () => {
+    const host = search();
+    start();
+    await settle();
+    await api(host).highlightNode("tomas");
+    await finish();
     await expectNoAxeViolations(host);
   });
 });

@@ -68,6 +68,7 @@ for (const impl of implementations) {
         "lines",
         "direction",
         "collapsible",
+        "search",
         "lazy-children",
       ]) {
         await openStory(page, storyId(impl, "organization-chart", story));
@@ -234,6 +235,73 @@ for (const impl of implementations) {
       await expect(engineer).toBeFocused();
       const gaps = await connectorGaps(page);
       for (const gap of gaps) expect(gap).toBeLessThan(1.5);
+    });
+
+    test("hovering a card highlights its path to the root and fades the others", async ({
+      page,
+      isMobile,
+    }) => {
+      test.skip(isMobile, "Hover needs a mouse.");
+      await openStory(page, storyId(impl, "organization-chart", "search"));
+      const chart = page.getByRole("list", { name: "Searchable organization chart" });
+      const opacity = (id: string) =>
+        chart
+          .locator(`[data-ok-node-id="${id}"] > [data-ok-organization-chart-label]`)
+          .evaluate((label) => getComputedStyle(label).opacity);
+      await chart.getByText("Aiko Tanaka", { exact: true }).hover();
+      await expect.poll(() => opacity("leila")).toBe("0.3");
+      expect(await opacity("aiko")).toBe("1");
+      expect(await opacity("jonah")).toBe("1");
+      expect(await opacity("maya")).toBe("1");
+      // Jonah's bar segment runs from the CEO's line to his own, in the highlight color.
+      const meets = await chart.evaluate((root) => {
+        const jonah = root.querySelector('[data-ok-node-id="jonah"]') as HTMLElement;
+        const list = jonah.parentElement as HTMLElement;
+        const segment = getComputedStyle(jonah.firstElementChild as Element, "::before");
+        const stem = getComputedStyle(list, "::before");
+        const start = jonah.getBoundingClientRect().left + Number.parseFloat(segment.left);
+        const end = start + Number.parseFloat(segment.width);
+        const line = list.getBoundingClientRect().left + Number.parseFloat(stem.left);
+        return {
+          gap: Math.abs(end - (line + Number.parseFloat(stem.borderLeftWidth))),
+          same: segment.borderTopColor === stem.borderLeftColor,
+        };
+      });
+      expect(meets.gap).toBeLessThan(1.5);
+      expect(meets.same).toBe(true);
+      await page.mouse.move(1, 1);
+      await expect.poll(() => opacity("leila")).toBe("1");
+    });
+
+    test("the search opens, scrolls to and highlights a person, and says so", async ({ page }) => {
+      await page.setViewportSize({ width: 375, height: 812 });
+      await openStory(page, storyId(impl, "organization-chart", "search"));
+      const zara = page.locator('[data-ok-node-id="zara"]');
+      await expect(page.getByText("Zara Okafor", { exact: true }).last()).toBeHidden();
+      const field = page.getByRole("combobox", { name: "Find a person" });
+      await field.click();
+      await field.fill("Zara");
+      await page.getByRole("option", { name: "Zara Okafor" }).click();
+      await expect(zara).toHaveAttribute("data-ok-highlighted", "");
+      await expect(page.getByRole("status")).toHaveText("Zara Okafor is highlighted in the chart.");
+      const label = zara.locator(":scope > [data-ok-organization-chart-label]");
+      await expect(label).toBeInViewport();
+      const area = page.getByRole("region", { name: "Searchable organization chart, scrollable" });
+      await expect.poll(() => area.evaluate((element) => element.scrollLeft)).toBeGreaterThan(0);
+      await expect(
+        page.locator('[data-ok-node-id="leila"] > [data-ok-organization-chart-toggle]'),
+      ).toHaveAttribute("aria-expanded", "true");
+      // Nothing fades for a search result.
+      expect(
+        await page
+          .locator('[data-ok-node-id="jonah"] > [data-ok-organization-chart-label]')
+          .evaluate((element) => getComputedStyle(element).opacity),
+      ).toBe("1");
+      // Clearing the field removes the highlight.
+      await field.focus();
+      await page.getByRole("button", { name: "Clear" }).click({ force: true });
+      await expect(page.locator("[data-ok-highlighted]")).toHaveCount(0);
+      await expect(page.getByRole("status")).toHaveText("");
     });
 
     test("lazy children load on the first expand", async ({ page }) => {

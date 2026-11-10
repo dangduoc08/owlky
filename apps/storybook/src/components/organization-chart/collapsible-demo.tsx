@@ -9,7 +9,7 @@ import { CEO, PEOPLE, type PersonNode } from "./organization-chart-data.js";
 import { SimpleCard } from "./organization-chart-examples.js";
 
 /** One person and, below them, their reports; the toggle is named after the person. */
-function PersonNodeItem({ person }: { person: PersonNode }) {
+export function PersonNodeItem({ person }: { person: PersonNode }) {
   return (
     <OrganizationChartNode
       nodeId={person.id}

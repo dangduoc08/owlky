@@ -1,0 +1,144 @@
+<div class="sb-org-demo">
+  <div data-ok-autocomplete class="sb-org-search">
+    <div data-ok-text-field data-ok-variant="outlined" data-ok-size="medium" data-ok-color="default" data-ok-full-width data-ok-margin="none">
+      <label data-ok-text-field-label for="org-search-field">Find a person</label>
+      <div data-ok-text-field-control>
+        <input role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="org-search-field-listbox" autocomplete="off" id="org-search-field" data-ok-text-field-input placeholder=" " value="">
+        <span data-ok-text-field-adornment="end"><button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-autocomplete-clear tabindex="-1" hidden aria-label="Clear"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"></path></svg></button><button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-autocomplete-toggle tabindex="-1" aria-label="Open" data-ok-label-open="Open" data-ok-label-close="Close"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg></button></span>
+        <fieldset data-ok-text-field-outline aria-hidden="true">
+          <legend>
+            <span>Find a person</span>
+          </legend>
+        </fieldset>
+      </div>
+    </div>
+    <div popover="manual" data-ok-popover data-ok-placement="bottom-start" data-ok-disable-auto-focus data-ok-disable-restore-focus data-ok-autocomplete-paper>
+      <span data-ok-popover-arrow aria-hidden="true"></span>
+      <ul role="listbox" id="org-search-field-listbox" aria-label="Find a person">
+        <li role="option" id="org-search-field-option-0" data-ok-value="maya" aria-selected="false">Maya Lindqvist</li>
+        <li role="option" id="org-search-field-option-1" data-ok-value="jonah" aria-selected="false">Jonah Pereira</li>
+        <li role="option" id="org-search-field-option-2" data-ok-value="aiko" aria-selected="false">Aiko Tanaka</li>
+        <li role="option" id="org-search-field-option-3" data-ok-value="priya" aria-selected="false">Priya Raman</li>
+        <li role="option" id="org-search-field-option-4" data-ok-value="elias" aria-selected="false">Elias Novak</li>
+        <li role="option" id="org-search-field-option-5" data-ok-value="sofia" aria-selected="false">Sofia Marchetti</li>
+        <li role="option" id="org-search-field-option-6" data-ok-value="tomas" aria-selected="false">Tomás Rivera</li>
+        <li role="option" id="org-search-field-option-7" data-ok-value="noah" aria-selected="false">Noah Brennan</li>
+        <li role="option" id="org-search-field-option-8" data-ok-value="leila" aria-selected="false">Leila Haddad</li>
+        <li role="option" id="org-search-field-option-9" data-ok-value="oskar" aria-selected="false">Oskar Berg</li>
+        <li role="option" id="org-search-field-option-10" data-ok-value="zara" aria-selected="false">Zara Okafor</li>
+      </ul>
+      <div data-ok-autocomplete-no-options hidden>No options</div>
+    </div>
+  </div>
+  <p data-ok-typography data-ok-variant="body2" data-ok-color="textSecondary" id="org-search-status" role="status"></p>
+  <section data-ok-scrollbar aria-label="Searchable organization chart, scrollable" tabindex="0" class="sb-org-scroll">
+    <ul data-ok-organization-chart data-ok-line-height="20" data-ok-line-color="primary" data-ok-line-style="solid" data-ok-enable-expand-collapse data-ok-highlight-on-hover id="org-search" aria-label="Searchable organization chart">
+      <li data-ok-organization-chart-node data-ok-node-id="maya">
+        <div data-ok-organization-chart-label>
+          <div class="sb-org-simple">
+            <span data-ok-typography data-ok-variant="subtitle2" data-ok-no-wrap class="sb-org-name">Maya Lindqvist</span>
+            <span data-ok-typography data-ok-variant="caption" data-ok-no-wrap class="sb-org-role">CEO, Co-founder</span>
+          </div>
+        </div>
+        <button type="button" data-ok-organization-chart-toggle aria-expanded="true" aria-controls="org-search-1"><span data-ok-organization-chart-toggle-label>Maya Lindqvist&#x27;s reports</span> <svg data-ok-organization-chart-toggle-icon aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg><span data-ok-organization-chart-badge></span></button>
+        <ul data-ok-collapse data-ok-organization-chart-children id="org-search-1">
+          <li data-ok-organization-chart-node data-ok-node-id="jonah">
+            <div data-ok-organization-chart-label>
+              <div class="sb-org-simple">
+                <span data-ok-typography data-ok-variant="subtitle2" data-ok-no-wrap class="sb-org-name">Jonah Pereira</span>
+                <span data-ok-typography data-ok-variant="caption" data-ok-no-wrap class="sb-org-role">Lead</span>
+              </div>
+            </div>
+            <button type="button" data-ok-organization-chart-toggle aria-expanded="true" aria-controls="org-search-2"><span data-ok-organization-chart-toggle-label>Jonah Pereira&#x27;s reports</span> <svg data-ok-organization-chart-toggle-icon aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg><span data-ok-organization-chart-badge></span></button>
+            <ul data-ok-collapse data-ok-organization-chart-children id="org-search-2">
+              <li data-ok-organization-chart-node data-ok-node-id="aiko">
+                <div data-ok-organization-chart-label>
+                  <div class="sb-org-simple">
+                    <span data-ok-typography data-ok-variant="subtitle2" data-ok-no-wrap class="sb-org-name">Aiko Tanaka</span>
+                    <span data-ok-typography data-ok-variant="caption" data-ok-no-wrap class="sb-org-role">Senior</span>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </li>
+          <li data-ok-organization-chart-node data-ok-node-id="priya">
+            <div data-ok-organization-chart-label>
+              <div class="sb-org-simple">
+                <span data-ok-typography data-ok-variant="subtitle2" data-ok-no-wrap class="sb-org-name">Priya Raman</span>
+                <span data-ok-typography data-ok-variant="caption" data-ok-no-wrap class="sb-org-role">Lead</span>
+              </div>
+            </div>
+            <button type="button" data-ok-organization-chart-toggle aria-expanded="false" aria-controls="org-search-3"><span data-ok-organization-chart-toggle-label>Priya Raman&#x27;s reports</span> <svg data-ok-organization-chart-toggle-icon aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg><span data-ok-organization-chart-badge></span></button>
+            <ul data-ok-collapse hidden data-ok-organization-chart-children id="org-search-3">
+              <li data-ok-organization-chart-node data-ok-node-id="elias">
+                <div data-ok-organization-chart-label>
+                  <div class="sb-org-simple">
+                    <span data-ok-typography data-ok-variant="subtitle2" data-ok-no-wrap class="sb-org-name">Elias Novak</span>
+                    <span data-ok-typography data-ok-variant="caption" data-ok-no-wrap class="sb-org-role">Senior</span>
+                  </div>
+                </div>
+                <button type="button" data-ok-organization-chart-toggle aria-expanded="true" aria-controls="org-search-4"><span data-ok-organization-chart-toggle-label>Elias Novak&#x27;s reports</span> <svg data-ok-organization-chart-toggle-icon aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg><span data-ok-organization-chart-badge></span></button>
+                <ul data-ok-collapse data-ok-organization-chart-children id="org-search-4">
+                  <li data-ok-organization-chart-node data-ok-node-id="sofia">
+                    <div data-ok-organization-chart-label>
+                      <div class="sb-org-simple">
+                        <span data-ok-typography data-ok-variant="subtitle2" data-ok-no-wrap class="sb-org-name">Sofia Marchetti</span>
+                        <span data-ok-typography data-ok-variant="caption" data-ok-no-wrap class="sb-org-role">Back end developer</span>
+                      </div>
+                    </div>
+                    <button type="button" data-ok-organization-chart-toggle aria-expanded="true" aria-controls="org-search-5"><span data-ok-organization-chart-toggle-label>Sofia Marchetti&#x27;s reports</span> <svg data-ok-organization-chart-toggle-icon aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg><span data-ok-organization-chart-badge></span></button>
+                    <ul data-ok-collapse data-ok-organization-chart-children id="org-search-5">
+                      <li data-ok-organization-chart-node data-ok-node-id="tomas">
+                        <div data-ok-organization-chart-label>
+                          <div class="sb-org-simple">
+                            <span data-ok-typography data-ok-variant="subtitle2" data-ok-no-wrap class="sb-org-name">Tomás Rivera</span>
+                            <span data-ok-typography data-ok-variant="caption" data-ok-no-wrap class="sb-org-role">Back end developer</span>
+                          </div>
+                        </div>
+                      </li>
+                    </ul>
+                  </li>
+                  <li data-ok-organization-chart-node data-ok-node-id="noah">
+                    <div data-ok-organization-chart-label>
+                      <div class="sb-org-simple">
+                        <span data-ok-typography data-ok-variant="subtitle2" data-ok-no-wrap class="sb-org-name">Noah Brennan</span>
+                        <span data-ok-typography data-ok-variant="caption" data-ok-no-wrap class="sb-org-role">Front end</span>
+                      </div>
+                    </div>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+          <li data-ok-organization-chart-node data-ok-node-id="leila">
+            <div data-ok-organization-chart-label>
+              <div class="sb-org-simple">
+                <span data-ok-typography data-ok-variant="subtitle2" data-ok-no-wrap class="sb-org-name">Leila Haddad</span>
+                <span data-ok-typography data-ok-variant="caption" data-ok-no-wrap class="sb-org-role">Lead</span>
+              </div>
+            </div>
+            <button type="button" data-ok-organization-chart-toggle aria-expanded="false" aria-controls="org-search-6"><span data-ok-organization-chart-toggle-label>Leila Haddad&#x27;s reports</span> <svg data-ok-organization-chart-toggle-icon aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg><span data-ok-organization-chart-badge></span></button>
+            <ul data-ok-collapse hidden data-ok-organization-chart-children id="org-search-6">
+              <li data-ok-organization-chart-node data-ok-node-id="oskar">
+                <div data-ok-organization-chart-label>
+                  <div class="sb-org-simple">
+                    <span data-ok-typography data-ok-variant="subtitle2" data-ok-no-wrap class="sb-org-name">Oskar Berg</span>
+                    <span data-ok-typography data-ok-variant="caption" data-ok-no-wrap class="sb-org-role">Support</span>
+                  </div>
+                </div>
+              </li>
+              <li data-ok-organization-chart-node data-ok-node-id="zara">
+                <div data-ok-organization-chart-label>
+                  <div class="sb-org-simple">
+                    <span data-ok-typography data-ok-variant="subtitle2" data-ok-no-wrap class="sb-org-name">Zara Okafor</span>
+                    <span data-ok-typography data-ok-variant="caption" data-ok-no-wrap class="sb-org-role">Content writer</span>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </section>
+</div>

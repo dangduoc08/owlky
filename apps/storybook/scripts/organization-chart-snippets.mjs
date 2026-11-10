@@ -25,6 +25,7 @@ import { StandardChartDemo } from "${folder}/standard-demo.tsx";
 import { GroupChartDemo } from "${folder}/group-demo.tsx";
 import { CollapsibleChartDemo } from "${folder}/collapsible-demo.tsx";
 import { LazyChartDemo, reportsOf } from "${folder}/lazy-demo.tsx";
+import { SearchChartDemo } from "${folder}/search-demo.tsx";
 import { OrganizationChart } from "@owlky/react";
 import { PEOPLE } from "${folder}/organization-chart-data.ts";
 const html = {};
@@ -35,6 +36,7 @@ for (const [story, groups] of Object.entries(organizationChartStories))
 html["standard-group"] = renderToStaticMarkup(createElement(StandardChartDemo));
 html["group-group"] = renderToStaticMarkup(createElement(GroupChartDemo));
 html["collapsible-group"] = renderToStaticMarkup(createElement(CollapsibleChartDemo));
+html["search-group"] = renderToStaticMarkup(createElement(SearchChartDemo));
 // Lazy children: the chart as first rendered, then one template per lead with the nodes its
 // load answers (rendered inside a collapsible chart, so they carry their own toggles). Each
 // render numbers its ids from 1: the template's get the lead's id as a prefix.
@@ -128,14 +130,16 @@ for (const [name, markup] of Object.entries(html)) {
     .replace(/ style="[^"]*"/g, "")
     .replace(/ (data-ok-[a-z-]+)=""/g, " $1")
     .replace(/ (disabled|hidden)=""/g, " $1")
-    .replace(/(<img\b[^>]*?)\/>/g, "$1>")
+    .replace(/(<(?:img|input)\b[^>]*?)\/>/g, "$1>")
+    // React's camelCase attribute names (the search field's input) as HTML writes them.
+    .replace(/ autoComplete="/g, ' autocomplete="')
     // HTML triggers: the menu buttons open their menu through the popover runtime.
     .replace(
       /(<button\b[^>]*aria-haspopup="menu"[^>]*aria-controls="([^"]+)")/g,
       (_, button, menu) => `${button} data-ok-popover-open="${menu}"`,
     );
-  // An empty children list (lazy nodes) stays on one line: no whitespace inside it.
-  const lines = pretty(snippet).replace(/(<ul\b[^>]*>)\n\s*(<\/ul>)/g, "$1$2");
+  // An empty children list (lazy nodes) or status line stays on one line: no whitespace inside it.
+  const lines = pretty(snippet).replace(/(<(ul|p)\b[^>]*>)\n\s*(<\/\2>)/g, "$1$3");
   writeFileSync(resolve(out, `${name}.html`), `${lines}\n`);
   console.log(`${name}.html`);
 }
