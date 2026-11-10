@@ -16,6 +16,8 @@ async function withImports(file, seen = new Set()) {
 }
 
 const budgets = [
+  // 210 kB since Phase 4 batch E (chart value axes and selection; data grid sort comparators, status
+  // bar, custom editors and edit modes, undo / redo): 206.8 kB.
   // 205 kB since Phase 4 batch D: the data grid's row 4.15 (multiple grouping columns, grouping
   // values, group footers, server-side aggregation, derived pivot fields, the pivot panel's drag and
   // drop, several charts per grid; about 2.7 kB) on top of the Editor merge: 200.0 kB.
@@ -69,7 +71,7 @@ const budgets = [
   // Motion (trigger, count-up and five runtimes, the 62 variant names); 31 kB after
   // the composite inputs, 24 kB after the navigation components, 22 kB after the overlays. The CDN bundle carries every component; the npm ESM build
   // (`@owlky/html`) is tree-shaken.
-  ["packages/html/dist/owlky.js", 205_000, "HTML runtime + all components (IIFE)"],
+  ["packages/html/dist/owlky.js", 210_000, "HTML runtime + all components (IIFE)"],
   ["packages/html/dist/esm/runtime/runtime.js", 3_000, "HTML core runtime"],
   // The Editor is opt-in (ADR-0023): Tiptap, ProseMirror and its starter kit are about 125 kB of
   // it; owlky.js stays free of them. 155.1 kB after ADR-0050 (from 130.8 kB): tables
@@ -154,7 +156,8 @@ const budgets = [
   // since the docs examples became complete (roadmap 3.4, `check:docs`): the guides' HTML repeats
   // whole snippets (data grids, date pickers, the editor, the lightbox) instead of shortened
   // copies, about 0.1 MB gzip.
-  ["packages/mcp/manifest.json", 1_150_000, "MCP manifest (npm tarball, not a browser download)"],
+  // 1.2 MB since Phase 4 batch E (new chart and data grid stories, sections and API entries): 1154.6 kB.
+  ["packages/mcp/manifest.json", 1_200_000, "MCP manifest (npm tarball, not a browser download)"],
 ];
 
 let failed = false;
