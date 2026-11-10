@@ -58,12 +58,38 @@ export function DiscardDraft() {
     id: "size",
     title: "Size the dialog",
     body: "The paper is as wide as its content, up to `maxWidth`: `xs` (444px), `sm` (600px, the default), `md` (900px), `lg` (1200px), `xl` (1536px) or `none`. Add `fullWidth` to always take that width. On phones the paper keeps 16px from the edges, and 32px from 600px up. `fullScreen` covers the whole viewport.",
-    html: `<dialog id="settings" data-ok-dialog data-ok-max-width="md" data-ok-full-width data-ok-scroll="paper" aria-labelledby="settings-title">…</dialog>`,
-    react: `import { Dialog } from "@owlky/react";
+    html: `<button type="button" data-ok-button data-ok-variant="outlined" data-ok-color="inherit" data-ok-size="md" data-ok-dialog-open="settings" aria-haspopup="dialog"><span data-ok-button-label>Open</span></button>
+<dialog id="settings" data-ok-dialog data-ok-max-width="md" data-ok-full-width data-ok-scroll="paper" aria-labelledby="settings-title">
+  <div data-ok-dialog-paper>
+    <h2 data-ok-dialog-title id="settings-title">Settings</h2>
+    <div data-ok-dialog-content>
+      <p data-ok-dialog-content-text>The dialog grows up to the md width and fills it.</p>
+    </div>
+    <div data-ok-dialog-actions>
+      <button type="button" data-ok-button data-ok-variant="text" data-ok-color="inherit" data-ok-size="md" data-ok-dialog-close><span data-ok-button-label>Close</span></button>
+    </div>
+  </div>
+</dialog>`,
+    react: `import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@owlky/react";
+import { useState } from "react";
 
-export function DialogSize() {
+export function SettingsDialog() {
+  const [open, setOpen] = useState(false);
   return (
-    <Dialog open={open} onOpenChange={setOpen} maxWidth="md" fullWidth>…</Dialog>
+    <>
+      <Button variant="outlined" onClick={() => setOpen(true)}>
+        Open
+      </Button>
+      <Dialog open={open} onOpenChange={setOpen} maxWidth="md" fullWidth aria-labelledby="settingsdialog-title">
+        <DialogTitle id="settingsdialog-title">Settings</DialogTitle>
+        <DialogContent>
+          <DialogContentText>The dialog grows up to the md width and fills it.</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpen(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 }`,
   },
@@ -71,12 +97,48 @@ export function DialogSize() {
     id: "scroll",
     title: "Scroll long content",
     body: 'With `scroll` set to `paper` (default), the title and actions stay in view and the content scrolls. Make the content focusable (`tabindex="0"` and a name) so keyboard users can scroll it. With `body`, the whole dialog scrolls with the page. Add `dividers` to draw lines above and below the content.',
-    html: `<div data-ok-dialog-content data-ok-dividers tabindex="0" aria-label="Terms">…</div>`,
-    react: `import { DialogContent } from "@owlky/react";
+    html: `<button type="button" data-ok-button data-ok-variant="outlined" data-ok-color="inherit" data-ok-size="md" data-ok-dialog-open="terms" aria-haspopup="dialog"><span data-ok-button-label>Open</span></button>
+<dialog id="terms" data-ok-dialog data-ok-max-width="sm" data-ok-scroll="paper" aria-labelledby="terms-title">
+  <div data-ok-dialog-paper>
+    <h2 data-ok-dialog-title id="terms-title">Terms of service</h2>
+    <div data-ok-dialog-content data-ok-dividers tabindex="0" aria-label="Terms">
+      <p>Section 1. You agree to use the service as described in these terms.</p>
+      <p>Section 2. You agree to use the service as described in these terms.</p>
+      <p>Section 3. You agree to use the service as described in these terms.</p>
+      <p>Section 4. You agree to use the service as described in these terms.</p>
+      <p>Section 5. You agree to use the service as described in these terms.</p>
+      <p>Section 6. You agree to use the service as described in these terms.</p>
+    </div>
+    <div data-ok-dialog-actions>
+      <button type="button" data-ok-button data-ok-variant="text" data-ok-color="inherit" data-ok-size="md" data-ok-dialog-close><span data-ok-button-label>Close</span></button>
+    </div>
+  </div>
+</dialog>`,
+    react: `import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from "@owlky/react";
+import { useState } from "react";
 
-export function DialogScroll() {
+export function TermsDialog() {
+  const [open, setOpen] = useState(false);
   return (
-    <DialogContent dividers tabIndex={0} aria-label="Terms">…</DialogContent>
+    <>
+      <Button variant="outlined" onClick={() => setOpen(true)}>
+        Open
+      </Button>
+      <Dialog open={open} onOpenChange={setOpen} scroll="paper" aria-labelledby="termsdialog-title">
+        <DialogTitle id="termsdialog-title">Terms of service</DialogTitle>
+        <DialogContent dividers tabIndex={0} aria-label="Terms">
+        <p>Section 1. You agree to use the service as described in these terms.</p>
+        <p>Section 2. You agree to use the service as described in these terms.</p>
+        <p>Section 3. You agree to use the service as described in these terms.</p>
+        <p>Section 4. You agree to use the service as described in these terms.</p>
+        <p>Section 5. You agree to use the service as described in these terms.</p>
+        <p>Section 6. You agree to use the service as described in these terms.</p>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpen(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 }`,
   },
@@ -84,12 +146,38 @@ export function DialogScroll() {
     id: "transition",
     title: "Animate the entrance",
     body: "By default, the paper fades and scales in briefly. Set `transition` to a Motion entrance, such as `slideInUp` or `zoomIn`, to play that animation instead. In HTML, the paper becomes a Motion that plays when the dialog opens, so the page also needs the Motion styles. With reduced motion, the dialog appears at once.",
-    html: `<div data-ok-dialog-paper data-ok-motion data-ok-variant="slideInUp" data-ok-trigger="mount">…</div>`,
-    react: `import { Dialog } from "@owlky/react";
+    html: `<button type="button" data-ok-button data-ok-variant="outlined" data-ok-color="inherit" data-ok-size="md" data-ok-dialog-open="welcome" aria-haspopup="dialog"><span data-ok-button-label>Open</span></button>
+<dialog id="welcome" data-ok-dialog data-ok-max-width="sm" data-ok-scroll="paper" aria-labelledby="welcome-title">
+  <div data-ok-dialog-paper data-ok-motion data-ok-variant="slideInUp" data-ok-trigger="mount">
+    <h2 data-ok-dialog-title id="welcome-title">Welcome</h2>
+    <div data-ok-dialog-content>
+      <p data-ok-dialog-content-text>The dialog slides up as it opens.</p>
+    </div>
+    <div data-ok-dialog-actions>
+      <button type="button" data-ok-button data-ok-variant="text" data-ok-color="inherit" data-ok-size="md" data-ok-dialog-close><span data-ok-button-label>Close</span></button>
+    </div>
+  </div>
+</dialog>`,
+    react: `import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@owlky/react";
+import { useState } from "react";
 
-export function DialogTransition() {
+export function WelcomeDialog() {
+  const [open, setOpen] = useState(false);
   return (
-    <Dialog open={open} onOpenChange={setOpen} transition="slideInUp">…</Dialog>
+    <>
+      <Button variant="outlined" onClick={() => setOpen(true)}>
+        Open
+      </Button>
+      <Dialog open={open} onOpenChange={setOpen} transition="slideInUp" aria-labelledby="welcomedialog-title">
+        <DialogTitle id="welcomedialog-title">Welcome</DialogTitle>
+        <DialogContent>
+          <DialogContentText>The dialog slides up as it opens.</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpen(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 }`,
   },
