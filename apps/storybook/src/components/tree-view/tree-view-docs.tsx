@@ -92,6 +92,152 @@ export function TreeViewIcons() {
 }`,
   },
   {
+    id: "propagation",
+    title: "Spread the selection and follow it",
+    body: 'With `multiSelect`, set `selectionPropagation` to `{ parents: true, descendants: true }`: selecting an item selects its descendants, and a parent is selected exactly when all its children are. `onItemSelectionToggle(itemId, isSelected)` reports each item whose selection changed, `onItemClick(itemId)` each click on a row and `onItemFocus(itemId)` each item that gets the focus. Disabled items are skipped by the arrow keys unless you set `disabledItemsFocusable`. `disableSelection` on a `TreeItem` (or `isItemSelectionDisabled` on a `RichTreeView`) keeps an item from being selected while it still expands. In HTML, write `data-ok-selection-propagation="parents descendants"` on the tree, `data-ok-disable-selection` on an item, and listen to `ok:tree-view:selectiontoggle`, `ok:tree-view:itemclick` and `ok:tree-view:itemfocus`.',
+    html: `<ul data-ok-tree-view role="tree" data-ok-variant="standard" data-ok-expansion-trigger="content" data-ok-multi-select aria-multiselectable="true" data-ok-selection-propagation="parents descendants" aria-label="Export">
+  <li role="treeitem" data-ok-tree-item data-ok-item-id="design" aria-expanded="false" aria-selected="false" tabindex="0">
+    <div data-ok-tree-item-content><span data-ok-tree-item-icon></span><span data-ok-tree-item-label>Design</span></div>
+    <ul data-ok-collapse role="group" data-ok-tree-item-group hidden>
+      <li role="treeitem" data-ok-tree-item data-ok-item-id="mockups" aria-selected="false" tabindex="-1">
+        <div data-ok-tree-item-content><span data-ok-tree-item-icon></span><span data-ok-tree-item-label>Mockups</span></div>
+      </li>
+    </ul>
+  </li>
+</ul>
+<script type="module">
+  document.addEventListener("ok:tree-view:selectiontoggle", (event) => {
+    console.log(event.detail.itemId, event.detail.selected);
+  });
+</script>`,
+    react: `import { SimpleTreeView, TreeItem } from "@owlky/react";
+
+export function ExportTree() {
+  return (
+    <SimpleTreeView
+      aria-label="Export"
+      multiSelect
+      selectionPropagation={{ parents: true, descendants: true }}
+      onItemSelectionToggle={(itemId, isSelected) => console.log(itemId, isSelected)}
+    >
+      <TreeItem itemId="design" label="Design">
+        <TreeItem itemId="mockups" label="Mockups" />
+        <TreeItem itemId="assets" label="Assets" disableSelection />
+      </TreeItem>
+    </SimpleTreeView>
+  );
+}`,
+  },
+  {
+    id: "editing",
+    title: "Edit labels",
+    body: "On a `RichTreeView`, set `isItemEditable` to `true`, or to a function that picks the items. Press **F2** or double-click a label to edit it, **Enter** to save and **Escape** to cancel. Moving the focus away saves too. `onItemLabelChange(itemId, label)` reports the new label. In HTML, put `data-ok-editable` on the items (or on the tree for every item) and listen to `ok:tree-view:labelchange`: call `preventDefault()` to keep the old label.",
+    html: `<script type="module">
+  document.addEventListener("ok:tree-view:labelchange", (event) => {
+    if (event.detail.label.trim() === "") event.preventDefault();
+  });
+</script>`,
+    react: `import { RichTreeView } from "@owlky/react";
+
+const items = [{ id: "notes", label: "Notes" }, { id: "drafts", label: "Drafts" }];
+
+export function RenameTree() {
+  return (
+    <RichTreeView
+      aria-label="Folders"
+      items={items}
+      isItemEditable={(item) => item.id !== "drafts"}
+      onItemLabelChange={(itemId, label) => console.log(itemId, label)}
+    />
+  );
+}`,
+  },
+  {
+    id: "reorder",
+    title: "Reorder items",
+    body: 'Set `itemsReordering` on a `RichTreeView` to let people drag an item by its row. Drop it on the top or bottom edge of another row to place it before or after, or on the middle to make it a child. The keyboard does the same with **Ctrl + Shift** (**⌘ + Shift** on a Mac) and an arrow: up and down move it among its siblings, right moves it into the item above, and left moves it out of its parent. `isItemReorderable(itemId)` keeps some items in place, `canMoveItemToNewPosition` refuses a move by returning `false`, and `onItemPositionChange` reports each move with the old and new `{ parentId, index }`. In HTML, use `data-ok-items-reordering` on the tree, `data-ok-reorderable="false"` on an item, and the cancelable `ok:tree-view:move` event.',
+    html: `<script type="module">
+  document.addEventListener("ok:tree-view:move", (event) => {
+    // Keep everything at the top level.
+    if (event.detail.newPosition.parentId !== null) event.preventDefault();
+  });
+</script>`,
+    react: `import { RichTreeView } from "@owlky/react";
+
+const items = [
+  { id: "inbox", label: "Inbox", children: [{ id: "invoices", label: "Invoices" }] },
+  { id: "archive", label: "Archive" },
+];
+
+export function SortableFolders() {
+  return (
+    <RichTreeView
+      aria-label="Folders"
+      items={items}
+      itemsReordering
+      isItemReorderable={(itemId) => itemId !== "inbox"}
+      onItemPositionChange={({ itemId, newPosition }) => console.log(itemId, newPosition)}
+    />
+  );
+}`,
+  },
+  {
+    id: "lazy",
+    title: "Load children on demand",
+    body: "Pass a `dataSource` to a `RichTreeView` to load items when they are needed. `getChildrenCount(item)` tells whether an item has children: `0` for none, a number, or `-1` when you don't know yet. `getTreeItems(parentId)` returns a promise of the children, or of the root's items when `parentId` is undefined and there are no `items`. While the children load, the item shows a progress indicator and is marked `aria-busy`. If loading fails, the item shows the error and loads again when it is expanded again. In HTML, mark the items with `data-ok-lazy` and an empty group, and pass the data source to the instance's `setDataSource()`: its items are `{ id, label, childrenCount }` and are built as text.",
+    html: `<script type="module">
+  const tree = document.querySelector("[data-ok-tree-view]");
+  Owlky.runtime.get(tree, "tree-view").setDataSource({
+    getTreeItems: (parentId) => fetch(\`/api/folders?parent=\${parentId ?? ""}\`).then((response) => response.json()),
+  });
+</script>`,
+    react: `import { RichTreeView, type TreeViewBaseItem } from "@owlky/react";
+
+type Folder = TreeViewBaseItem & { childCount: number };
+
+const dataSource = {
+  getChildrenCount: (folder: Folder) => folder.childCount,
+  getTreeItems: (parentId?: string): Promise<Folder[]> =>
+    fetch(\`/api/folders?parent=\${parentId ?? ""}\`).then((response) => response.json()),
+};
+
+export function RemoteFolders() {
+  return <RichTreeView<Folder> aria-label="Folders" dataSource={dataSource} />;
+}`,
+  },
+  {
+    id: "methods",
+    title: "Expand everything and highlight matches",
+    body: "Pass a ref from `useTreeViewApiRef()` as `apiRef` to control the tree from your code. `expandAll()`, `collapseAll()`, `expandToDepth(depth)` and `expandSubtree(itemId)` open many items at once, and `focusItem`, `selectItem`, `setItemExpansion`, `getItem`, `getItemTree` and `setEditedItem` work on one. Set `highlight` to a search text: matching labels are marked and their ancestors' labels are bold, so people see where the matches are. In HTML, the instance has the same expansion methods, and `data-ok-highlight` or `highlight(query)` marks the matches.",
+    html: `<script type="module">
+  const tree = document.querySelector("[data-ok-tree-view]");
+  const instance = Owlky.runtime.get(tree, "tree-view");
+  instance.expandToDepth(2);
+  document.querySelector("#tree-search").addEventListener("input", (event) => {
+    instance.highlight(event.target.value);
+  });
+</script>`,
+    react: `import { Button, RichTreeView, useTreeViewApiRef } from "@owlky/react";
+import { useState } from "react";
+
+const items = [
+  { id: "design", label: "Design", children: [{ id: "mockups", label: "Mockups" }] },
+  { id: "development", label: "Development", children: [{ id: "frontend", label: "Frontend" }] },
+];
+
+export function SearchableTree() {
+  const apiRef = useTreeViewApiRef();
+  const [query, setQuery] = useState("");
+  return (
+    <>
+      <input aria-label="Search" value={query} onChange={(event) => setQuery(event.target.value)} />
+      <Button onClick={() => apiRef.current?.expandAll()}>Expand all</Button>
+      <RichTreeView aria-label="Projects" items={items} apiRef={apiRef} highlight={query} />
+    </>
+  );
+}`,
+  },
+  {
     id: "options",
     title: "Options",
     body: "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default.",
@@ -106,8 +252,11 @@ export function TreeViewIcons() {
     title: "Events and methods",
     body: `- **\`ok:tree-view:expand\`** (cancelable) fires on the tree with \`detail.itemId\` and \`detail.expanded\`.
 - **\`ok:tree-view:select\`** (cancelable) fires with \`detail.selectedItems\`.
-- **Instance:** \`runtime.get(element, "tree-view")\` returns \`{ expandedItems, selectedItems, setExpanded(id, expanded), setSelected(ids) }\`. The setters don't fire events.
-- **React:** \`onExpandedItemsChange(ids)\`, \`onItemExpansionToggle(id, expanded)\` and \`onSelectedItemsChange(selection)\`.`,
+- **\`ok:tree-view:selectiontoggle\`** fires once per item whose selection changed, with \`detail.itemId\` and \`detail.selected\`. **\`ok:tree-view:itemclick\`** and **\`ok:tree-view:itemfocus\`** fire with \`detail.itemId\`.
+- **\`ok:tree-view:labelchange\`** (cancelable) fires before an edited label is saved, with \`detail.itemId\` and \`detail.label\`.
+- **\`ok:tree-view:move\`** (cancelable) fires before an item moves, and **\`ok:tree-view:positionchange\`** after it, with \`detail.itemId\`, \`detail.oldPosition\` and \`detail.newPosition\`.
+- **Instance:** \`runtime.get(element, "tree-view")\` returns \`{ expandedItems, selectedItems, setExpanded(id, expanded), setSelected(ids), expandAll(), collapseAll(), expandToDepth(depth), expandSubtree(id), focusItem(id), getItemOrderedChildrenIds(id), setEditedItem(id), updateItemLabel(id, label), highlight(query), setDataSource(source) }\`. The setters don't fire events.
+- **React:** \`onExpandedItemsChange(ids)\`, \`onItemExpansionToggle(id, expanded)\`, \`onSelectedItemsChange(selection)\`, \`onItemSelectionToggle(id, selected)\`, \`onItemClick(id)\`, \`onItemFocus(id)\`, \`onItemLabelChange(id, label)\`, \`onItemPositionChange(change)\` and the methods of \`apiRef\`.`,
   },
   {
     id: "keyboard",
@@ -120,7 +269,10 @@ export function TreeViewIcons() {
     body: `- Name the tree with \`aria-label\` or \`aria-labelledby\`.
 - Items carry \`aria-expanded\` and \`aria-selected\`. A multi-select tree has \`aria-multiselectable\`.
 - The focused item shows a focus ring. Item text uses the primary text color.
-- Icons and selection checkboxes are decorative: the item's state is in its ARIA attributes.`,
+- Icons and selection checkboxes are decorative: the item's state is in its ARIA attributes.
+- Dragging is never the only way to reorder: Ctrl / ⌘ + Shift and the arrow keys move the focused item, and it keeps the focus after the move.
+- An item that loads its children is marked \`aria-busy\`, and its progress indicator is named "Loading". The label input is named "Item label".
+- The highlight is visual. Pair it with a text such as the number of matches when the search is the main task.`,
   },
   apiReferenceSection(treeViewApi),
 ];
@@ -199,6 +351,11 @@ const PREVIEWS = {
         ["Space", "Selects the item (multi-select: adds or removes it)."],
         ["*", "Opens every sibling of the focused item."],
         ["A letter", "Focuses the next item that starts with it."],
+        ["F2", "Edits the label of an editable item. Enter saves, Escape cancels."],
+        [
+          "Ctrl + Shift + arrows (⌘ + Shift on a Mac)",
+          "Moves the item, with reordering: up and down among its siblings, right into the item above, left out of its parent.",
+        ],
       ]}
     />
   ),

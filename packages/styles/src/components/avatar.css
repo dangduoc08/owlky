@@ -6,7 +6,8 @@
  * Modifiers: data-ok-variant = circular (default) | rounded | square
  *            data-ok-color   = default (grey) | primary | secondary | info | success | warning | error
  *            data-ok-size    = a number (px) or length → --_ok-avatar-size (React style / HTML runtime)
- *            data-ok-spacing = medium (default) | small (group overlap)
+ *            data-ok-spacing = medium (default) | small | <px> (group overlap; px: --_ok-overlap
+ *            from React's style or the avatar-group runtime, CSSOM)
  *
  * Letters scale with the size (0.45 × size). Single :where() selectors in @layer components.
  */

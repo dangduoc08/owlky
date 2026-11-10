@@ -168,6 +168,7 @@ export default defineConfig({
         "packages/html/src/components/accordion/**": COMPONENT_THRESHOLDS,
         "packages/html/src/components/alert/**": COMPONENT_THRESHOLDS,
         "packages/html/src/components/avatar/**": COMPONENT_THRESHOLDS,
+        "packages/html/src/components/avatar-group/**": COMPONENT_THRESHOLDS,
         "packages/html/src/components/checkbox/**": COMPONENT_THRESHOLDS,
         "packages/html/src/components/chip/**": COMPONENT_THRESHOLDS,
         "packages/html/src/components/circular-progress/**": COMPONENT_THRESHOLDS,

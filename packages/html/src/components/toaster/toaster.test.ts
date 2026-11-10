@@ -204,4 +204,84 @@ describe("toaster runtime", () => {
     await wait(100);
     expect(titles(host2)).toEqual([]);
   });
+
+  it("per-toast position, invert, rich colors, close button; history; promise finally", async () => {
+    const host = mount(markup('data-ok-rich-colors data-ok-duration="10000"'));
+    const rt = start();
+    const toaster = host.querySelector("[data-ok-toaster]") as HTMLElement;
+    const instance = rt.get<ToasterInstance>(toaster, "toaster") as ToasterInstance;
+    instance.show({ type: "success", title: "Rich", closeButton: true });
+    const moved = instance.show({ title: "Away", position: "bottom-left", invert: true });
+    instance.show({ title: "Here too", position: "top-right" });
+    instance.show({ type: "info", title: "Plain", richColors: false });
+    const other = toaster.querySelector<HTMLElement>(
+      '[data-ok-toaster-list][data-ok-position="bottom-left"]',
+    );
+    expect(other?.getAttribute("aria-live")).toBe("polite");
+    expect(getComputedStyle(other as Element).position).toBe("fixed");
+    expect(other?.textContent).toContain("Away");
+    expect(titles(host)).toEqual(["Plain", "Here too", "Rich"]);
+    const rich = list(host).lastElementChild as HTMLElement;
+    expect(getComputedStyle(rich).backgroundColor).toBe("rgb(211, 252, 210)");
+    expect(rich.querySelector("[data-ok-toast-close]")).not.toBeNull();
+    expect((list(host).firstElementChild as HTMLElement).dataset["okRichColors"]).toBe("false");
+    expect(((other as HTMLElement).firstElementChild as HTMLElement).dataset["okInvert"]).toBe("");
+    expect(instance.getToasts()).toHaveLength(4);
+    instance.dismiss(moved);
+    expect(instance.getToasts()).toHaveLength(3);
+    expect(instance.getHistory()).toHaveLength(4);
+    const after = vi.fn();
+    instance.promise(Promise.resolve(), {
+      loading: "L",
+      success: "S",
+      error: "E",
+      description: "d",
+      finally: after,
+    });
+    expect(list(host).querySelector("[data-ok-toast-description]")?.textContent).toBe("d");
+    await wait(0);
+    expect(after).toHaveBeenCalledTimes(1);
+  });
+
+  it("offset / gap attributes, stacking, hotkey, swipe, named toasters", async () => {
+    const host =
+      mount(`${markup('id="main" data-ok-expand="false" data-ok-gap="20" data-ok-offset="40" data-ok-hotkey="ctrlKey+KeyM" data-ok-duration="10000"')}
+      <section id="side" data-ok-toaster data-ok-position="top-left" data-ok-swipe-directions="top" aria-label="Side"><ol data-ok-toaster-list aria-live="polite"></ol></section>
+      <button type="button" id="bs" data-ok-toast-open="t1" data-ok-toast-toaster="side">Side</button>`);
+    const rt = start();
+    const toaster = host.querySelector("#main") as HTMLElement;
+    const instance = rt.get<ToasterInstance>(toaster, "toaster") as ToasterInstance;
+    expect(toaster.style.getPropertyValue("--_ok-toast-gap")).toBe("20px");
+    expect(toaster.style.getPropertyValue("--_ok-toaster-top")).toBe("40px");
+    toaster.setAttribute("data-ok-gap", "4");
+    await wait(0);
+    expect(toaster.style.getPropertyValue("--_ok-toast-gap")).toBe("4px");
+    instance.show({ title: "A" });
+    instance.show({ title: "B" });
+    const second = list(host).children[1] as HTMLElement;
+    expect(getComputedStyle(second).position).toBe("absolute");
+    document.dispatchEvent(new KeyboardEvent("keydown", { altKey: true, code: "KeyT" }));
+    expect(toaster.hasAttribute("data-ok-expanded")).toBe(false);
+    document.dispatchEvent(new KeyboardEvent("keydown", { ctrlKey: true, code: "KeyM" }));
+    expect(toaster.hasAttribute("data-ok-expanded")).toBe(true);
+    expect(document.activeElement).toBe(list(host));
+    // Swipe the newest toast to the right (top-right: up or right).
+    const front = list(host).firstElementChild as HTMLElement;
+    const at = (type: string, x: number) =>
+      new PointerEvent(type, { bubbles: true, clientX: x, clientY: 0, pointerId: 1 });
+    front.dispatchEvent(at("pointerdown", 0));
+    front.dispatchEvent(at("pointermove", 30));
+    front.dispatchEvent(at("pointerup", 80));
+    expect(titles(host)).toEqual(["A"]);
+    (host.querySelector("#bs") as HTMLElement).click();
+    expect(host.querySelector("#side")?.textContent).toContain("Saved");
+    const sideToast = host.querySelector("#side [data-ok-toast]") as HTMLElement;
+    sideToast.dispatchEvent(at("pointerdown", 0));
+    sideToast.dispatchEvent(at("pointermove", -30));
+    sideToast.dispatchEvent(at("pointerup", -80));
+    // Only upward swipes there.
+    expect(host.querySelector("#side [data-ok-toast]")).not.toBeNull();
+    rt.destroy(toaster);
+    expect(toaster.style.length).toBe(0);
+  });
 });

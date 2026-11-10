@@ -10,7 +10,8 @@ A compact element for an attribute, filter, choice or action; optionally clickab
 ## Anatomy
 ```
 span[data-ok-chip][data-ok-variant][data-ok-color][data-ok-size]
-  (button[type=button] | span)[data-ok-chip-action]       button when clickable
+  (button[type=button] | a | span)[data-ok-chip-action]   button when clickable; a link chip: a[href]
+                                                          (disabled: no href, role=link, aria-disabled)
     span[data-ok-avatar]? | span[data-ok-chip-icon]? › svg
     span[data-ok-chip-label]
   button[type=button][data-ok-chip-delete][aria-label]? › svg[aria-hidden]
@@ -29,10 +30,13 @@ Root: `data-ok-chip`. Unknown values fall back to the default.
 | `disabled` | `disabled` on each `button` | native | boolean | off | Native `disabled` on the chip's buttons. |
 <!-- /options:chip -->
 
-React: `label`, `avatar`, `icon`, `clickable` / `onClick`, `onDelete()`, `deleteIcon`, `disabled`.
+React: `label`, `avatar`, `icon`, `clickable` / `onClick`, `href` / `target` / `rel`, `component` /
+`actionProps` (the action element, such as a router link, and its props), `onDelete()`,
+`deleteIcon`, `disabled`.
 Renamed / beyond: `variant` gains `soft` and `color` gains `black` / `white` (reference);
 `deleteLabel` (default "Remove", a11y — MUI's delete icon has no name). Not applicable: `sx`,
-`classes`, `component`, `skipFocusWhenDisabled` (native disabled buttons leave the tab order).
+`classes`, `skipFocusWhenDisabled` (native disabled buttons leave the tab order). `component`
+applies to the action, not the root (the root holds the action and the delete button).
 
 ## Layout and tokens
 Height 32 / 24px, radius `--ok-radius-md` × 1.25 / `--ok-radius-md`; label 13px medium, padding 12 /
@@ -44,7 +48,7 @@ Focus: 2px text-primary outline, offset 2px. Disabled: `--ok-action-disabled-bg`
 `--ok-action-disabled`.
 
 ## Behavior
-HTML runtime `chip`: the delete button (click) or Backspace / Delete on the action button →
+HTML runtime `chip`: the delete button (click) or Backspace / Delete on the action button or link →
 cancelable `ok:chip:delete` → `hidden`. React: `onDelete()` for both.
 
 ## Keyboard
@@ -52,7 +56,7 @@ cancelable `ok:chip:delete` → `hidden`. React: `onDelete()` for both.
 |---|---|
 | Tab | Action button, then the delete button |
 | Enter / Space | Press the focused button |
-| Backspace / Delete | Delete the chip (focus on its action button) |
+| Backspace / Delete | Delete the chip (focus on its action button or link) |
 
 ## Accessibility
 Native buttons; the label names the action; the delete button needs a name (`deleteLabel`).
@@ -70,7 +74,7 @@ Audit 2026-11-09 against MUI API page Chip.
 | `onClick` | same | kept | |
 | `onDelete(event)` | `onDelete()`; HTML `ok:chip:delete` (cancelable) | renamed | no event argument |
 | — | `deleteLabel` ("Remove") | kept | beyond upstream: names the delete button |
-| `component` + `href` (link chip, `clickable`) | — (action is a `button` or `span`) | deferred | new batch E row |
+| `component` + `href` (link chip, `clickable`) | `href` / `target` / `rel` on the action (`a`), `component` = the action's element, `actionProps` for its other props | renamed | Phase 4 row 4.18.36: the root stays a `span` (it holds the delete button); disabled links drop `href` + `aria-disabled` (ButtonBase) |
 | `children` | — | not applicable | unsupported upstream too |
 | `skipFocusWhenDisabled`, `nativeButton` | native `button` + `disabled` | not applicable | |
 | `sx`, `classes`, `slots` / `slotProps`, `components` / `componentsProps` | — | not applicable | ADR-0015: CSS and composition |

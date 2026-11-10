@@ -155,6 +155,37 @@ for (const impl of implementations) {
         "bottom-center",
       );
     });
+    test("snackbar: stacked toasts expand with the hotkey; a swipe dismisses one", async ({
+      page,
+    }) => {
+      await openStory(page, storyId(impl, "snackbar", "expand"));
+      const show = page.getByRole("button", { name: "Show toast" });
+      for (let i = 0; i < 3; i++) await show.click();
+      const toasts = page.locator("[data-ok-toast]");
+      await expect(toasts).toHaveCount(3);
+      await page.mouse.move(0, 0);
+      await expect
+        .poll(() => toasts.nth(1).evaluate((el) => getComputedStyle(el).position))
+        .toBe("absolute");
+      await page.keyboard.press("Alt+t");
+      await expect(page.locator("[data-ok-toaster]")).toHaveAttribute("data-ok-expanded", "");
+      await expect
+        .poll(() => toasts.nth(1).evaluate((el) => getComputedStyle(el).position))
+        .toBe("relative");
+      await page.keyboard.press("Escape");
+      await expect(page.locator("[data-ok-toaster]")).not.toHaveAttribute("data-ok-expanded", "");
+      const box = await toasts.first().boundingBox();
+      if (!box) throw new Error("no toast");
+      const x = box.x + 24;
+      const y = box.y + box.height / 2;
+      await page.mouse.move(x, y);
+      await page.mouse.down();
+      await page.mouse.move(x + 40, y, { steps: 4 });
+      await page.mouse.move(x + 120, y, { steps: 4 });
+      await page.mouse.up();
+      await expect(toasts).toHaveCount(2);
+    });
+
     test("backdrop: covers the page, keeps focus on the trigger, a click anywhere closes it", async ({
       page,
     }) => {

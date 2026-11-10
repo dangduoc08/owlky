@@ -58,6 +58,21 @@ export function SentLabel() {
 }`,
   },
   {
+    id: "disabled",
+    title: "Show an inactive status",
+    body: "Set `disabled` to dim a label, for example for an archived item or an option that isn't available. A disabled label has an opacity of 0.48 and ignores the pointer. Say why the status is inactive in the surrounding text: the dimmed color alone doesn't tell people.",
+    html: `<span data-ok-label data-ok-variant="soft" data-ok-color="info" data-ok-disabled>Archived</span>`,
+    react: `import { Label } from "@owlky/react";
+
+export function ArchivedLabel() {
+  return (
+    <Label color="info" disabled>
+      Archived
+    </Label>
+  );
+}`,
+  },
+  {
     id: "options",
     title: "Options",
     body: "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default.",
@@ -82,7 +97,8 @@ export function SentLabel() {
     title: "Accessibility",
     body: `- The text is the label's meaning: don't rely on its color alone.
 - Soft and inverted labels meet a contrast ratio of at least 4.5:1. Filled and outlined brand colors follow the design, so light colors such as \`warning\` are lower.
-- White labels are meant for dark surfaces.`,
+- White labels are meant for dark surfaces.
+- A disabled label is dimmed below that ratio, like other inactive components. Keep its meaning in the text around it.`,
   },
   apiReferenceSection(labelApi),
 ];
@@ -106,6 +122,14 @@ const PREVIEWS = {
     <Preview>
       <Label variant="filled" color="primary" startIcon={<MailIcon />}>
         Sent
+      </Label>
+    </Preview>
+  ),
+  disabled: () => (
+    <Preview>
+      <Label color="info">Active</Label>
+      <Label color="info" disabled>
+        Archived
       </Label>
     </Preview>
   ),

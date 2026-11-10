@@ -11,15 +11,18 @@ ADR-0007). HTML runtime: `toaster` (behavior-only folder; markup in `snackbar/ex
 
 ## Anatomy
 ```
-section[data-ok-toaster][data-ok-position][aria-label]
-  › ol[data-ok-toaster-list][aria-live=polite]
-      › li[data-ok-toast][data-ok-type][data-ok-custom]?
+section[data-ok-toaster][data-ok-position][aria-label][dir]?[data-ok-expanded]?   (hotkey state)
+  › ol[data-ok-toaster-list][aria-live=polite]                 the toaster's position
+  › ol[data-ok-toaster-list][data-ok-position][aria-live]*     one per other position a toast asked for
+      › li[data-ok-toast][data-ok-type][data-ok-custom]?[data-ok-position]?[data-ok-invert]?
+          [data-ok-rich-colors]?[data-ok-swiping]?             (invert / rich colors: "" on, "false" off)
           › span[data-ok-toast-icon][aria-hidden]? › svg | CircularProgress
           › div[data-ok-toast-content] › div[data-ok-toast-title] + div[data-ok-toast-description]?
           › button[data-ok-toast-cancel]? + button[data-ok-toast-action]? | div[data-ok-toast-actions]
           › button[data-ok-toast-close][aria-label]?
 template[id] › li[data-ok-toast][data-ok-duration]?[data-ok-then]?        (HTML)
-button[data-ok-toast-open="template id"][data-ok-toaster-position]?        (HTML)
+button[data-ok-toast-open="template id"][data-ok-toaster-position]?[data-ok-toast-toaster]?  (HTML)
+HTML toaster attributes beyond the options: data-ok-hotkey="altKey+KeyT", data-ok-swipe-directions="top right"
 ```
 
 ## Options
@@ -32,19 +35,39 @@ Root: `data-ok-toaster`. Unknown values fall back to the default.
 | `duration` | `data-ok-duration="…"` | number | number | `4000` | Milliseconds a toast stays (paused on hover / focus). |
 | `visibleToasts` | `data-ok-visible-toasts="…"` | number | number | `3` | Toasts shown at once; newer ones push out older. |
 | `closeButton` | `data-ok-close-button` | flag | boolean | off | Every toast shows a close button. |
+| `expand` | `data-ok-expand="false"` turns it off | behavior | boolean | on | Toasts are listed one under another; `false` stacks them and expands the stack on hover, focus or the hotkey. |
+| `richColors` | `data-ok-rich-colors` | flag | boolean | off | Typed toasts take their status color. |
+| `invert` | `data-ok-invert` | flag | boolean | off | Reverses the toasts' colors (dark on light pages). |
+| `offset` | `data-ok-offset="…"` | number | number (px) or `px` `rem` `em` `vh` `vw` `%` length | `16` | Distance from the viewport's edges: px or a CSS length. |
+| `mobileOffset` | `data-ok-mobile-offset="…"` | number | number (px) or `px` `rem` `em` `vh` `vw` `%` length | `16` | Distance from the edges on screens under 600px wide: px or a CSS length. |
+| `gap` | `data-ok-gap="…"` | number | number | `12` | Space between expanded toasts, in px. |
 <!-- /options:toaster -->
 
 React: `toast(title, options)`, `toast.message|info|success|warning|error|loading|promise|custom`,
 `toast.dismiss(id?)`; options `id`, `description`, `action` (`{ label, onClick }` or your nodes),
 `cancel`, `duration`, `icon`, `dismissible`, `onDismiss`, `onAutoClose`; `<Toaster store>`.
-Kept from Sonner: `position`, `duration` (4000), `visibleToasts` (3), `closeButton`. Deferred:
-`expand` / stacked collapse (always expanded, like the reference), swipe to dismiss, `hotkey`,
-`richColors`, `theme` (follows the page scheme), `offset` / `gap`, per-toast `position`,
-`toast.getHistory`. Not applicable: `className` / `style` / `unstyled` per toast (CSS).
+Toast options also `position`, `closeButton`, `invert`, `richColors`, `toasterId`;
+`toast.promise(promise, { loading, success, error, description, finally, …toast options })` returns
+the id boxed with `unwrap()` (as Sonner); `toast.getHistory()`, `toast.getToasts()`; `useSonner()`.
+Toaster: `position`, `duration` (4000), `visibleToasts` (3), `closeButton`, `expand` (default
+**true**: the reference lists the toasts; `false` = Sonner's stack), `richColors`, `invert`,
+`hotkey` (`["altKey", "KeyT"]`), `offset` / `mobileOffset` (16px; number, length or per side),
+`gap` (12), `swipeDirections`, `toastOptions` (defaults: `duration`, `closeButton`, `invert`,
+`richColors`, `dismissible`), `icons` (`info` · `success` · `warning` · `error` · `loading` ·
+`close`), `id` (+ toast `toasterId`), `dir` (native attribute). Not applicable: `className` /
+`style` / `unstyled` per toast (CSS), `theme` (follows the page scheme).
 
 ## Layout and tokens
-Toaster fixed 16px from the edges, width min(300px, 100% − 32px), gap 12px; bottom positions stack
-newest nearest the edge. Default toast: inverted (grey-800 / white, dark scheme reversed via
+Toaster fixed `offset` from the edges (16px; `mobileOffset` under 600px, mobile-first: private
+`--_ok-toaster-[mobile-]<side>` from React `style` / the HTML runtime through CSSOM), width
+min(300px, 100% − the side offsets), gap `--_ok-toast-gap` (12px); centered positions use
+`margin-inline: auto` (no transform: lists of other positions are `position: fixed` inside the
+section); bottom positions stack newest nearest the edge. Stacked (`expand` false): toasts 2–3
+sit behind the newest at its size (`inset: 0`), 16 / 32px lower (higher at the bottom), scaled
+0.95 / 0.9, content hidden; later ones hidden; `:hover`, `:focus-within` or `data-ok-expanded`
+lists them. Rich colors: status `lighter` background, `darker` text (as Label inverted). Invert:
+default toasts paper, typed toasts grey-800 (reversed in dark). Logical properties inside the
+toast (padding, close button at the inline start), so `dir="rtl"` mirrors it. Default toast: inverted (grey-800 / white, dark scheme reversed via
 `light-dark()`), padding 8px 8px 8px 12px. Typed toasts: `--ok-bg-paper`, padding 4px 8px 4px 4px,
 icon box 48px radius `--ok-radius-lg` tinted with the status channel / 0.08, icon 24px in the
 status main color. Radius `--ok-radius-lg`, `--ok-shadow-z8`, 13px (`--ok-font-size-sm`), title
@@ -57,11 +80,23 @@ Never wider than the viewport minus 32px; centered positions stay centered.
 ## Keyboard / Accessibility
 Polite live region; toasts never take focus. Time pauses while the toaster is hovered or focused.
 Escape closes a focused toast (unless not dismissible). The loading toast has a named progress.
+Swipe to dismiss (core `createToastSwipe`, both owners): a pointer drag from the toast (not its
+buttons) along an allowed direction past 45px or faster than 0.11px/ms closes it; otherwise it
+springs back; directions default to the toaster's edges (`top` / `bottom`, plus `left` / `right`
+for corners). The close button and Escape stay the single-pointer / keyboard path (WCAG 2.5.7):
+with `closeButton` it is always shown on touch screens. Hotkey (core `createToasterHotkey`):
+expands the toaster (`data-ok-expanded`) and focuses its first non-empty list (`tabindex=-1`,
+written then); Escape or the focus leaving collapses it.
 
 ## Events / API
-HTML: `ok:toaster:show`, `ok:toaster:dismiss` (`detail.reason`), `ok:toaster:action` (cancelable).
-Instance: `{ show(options), showTemplate(template), promise(promise, messages), dismiss(id?) }` —
-`show()` builds nodes from text only.
+HTML: `ok:toaster:show`, `ok:toaster:dismiss` (`detail.reason`, now also `"swipe"`),
+`ok:toaster:action` (cancelable). Instance: `{ show(options), showTemplate(template),
+promise(promise, messages), dismiss(id?), getToasts(), getHistory() }` — `show()` builds nodes
+from text only and takes `position`, `closeButton`, `invert`, `richColors`; `promise` takes
+`description` and `finally` (the HTML instance returns the id string: the caller holds the
+promise, so no `unwrap()`). Several toasters: one instance each; triggers pick one with
+`data-ok-toast-toaster`. `toastOptions` / `icons` are React-only by nature (nodes): HTML toaster
+attributes are the defaults, and templates carry their own icons.
 
 ## Upstream API mapping
 Audit 2026-11-09 against Sonner docs (`toast()`, `<Toaster>`) and its `types.ts` / `state.ts`.
@@ -71,15 +106,15 @@ Audit 2026-11-09 against Sonner docs (`toast()`, `<Toaster>`) and its `types.ts`
 | `toast()`, `toast.message` / `info` / `success` / `warning` / `error` / `loading` / `promise` / `custom` / `dismiss(id?)` | same (React `toast`; HTML instance `show` / `showTemplate` / `promise` / `dismiss`) | kept | |
 | `toast.custom(jsx(id))` | `toast.custom(content)` | renamed | content, not a function of the id |
 | toast `id`, `description`, `action`, `cancel`, `duration`, `icon`, `dismissible`, `onDismiss`, `onAutoClose` | same | kept | |
-| toast `position` | — (Toaster's) | deferred (4.14) | |
-| toast `richColors`, Toaster `richColors` | — | deferred (4.14) | |
-| toast `closeButton`, `invert`; Toaster `invert`, `toastOptions`, `icons` | Toaster `closeButton` only | deferred | new batch E row |
-| `toasterId`, Toaster `id` (several toasters) | `<Toaster store>` | deferred | new batch E row |
-| `toast.promise` result `unwrap()`, promise options (`finally`, `id`, other toast options) | returns the id | deferred | new batch E row |
-| `toast.getHistory()`, `toast.getToasts()`, `useSonner()` | — | deferred | new batch E row |
+| toast `position` | same; HTML `show({ position })` / `li[data-ok-position]` | kept | 4.14: a list per position |
+| toast `richColors`, Toaster `richColors` | same; HTML `data-ok-rich-colors` | kept | 4.14 |
+| toast `closeButton`, `invert`; Toaster `invert`, `toastOptions`, `icons` | same (React); HTML `data-ok-invert`, `show({ closeButton, invert })` | kept | 4.18.38; `toastOptions` / `icons` React only (HTML: toaster attributes, templates) |
+| `toasterId`, Toaster `id` (several toasters) | same; HTML one instance per toaster, trigger `data-ok-toast-toaster` | kept | 4.18.40 |
+| `toast.promise` result `unwrap()`, promise options (`finally`, `id`, other toast options) | same (React); HTML `finally`, `description` | kept | 4.18.41: the id is boxed (`ok.valueOf()` for `===`) like Sonner |
+| `toast.getHistory()`, `toast.getToasts()`, `useSonner()` | same; HTML instance `getHistory()` / `getToasts()` (elements) | kept | 4.18.41 |
 | Toaster `position`, `duration`, `visibleToasts`, `closeButton` | same | kept | |
-| Toaster `expand`, `swipeDirections` (swipe to dismiss), `hotkey`, `offset` / `mobileOffset`, `gap` | — | deferred (4.14) | |
-| Toaster `dir` | — (physical properties) | deferred | new batch E row |
+| Toaster `expand`, `swipeDirections` (swipe to dismiss), `hotkey`, `offset` / `mobileOffset`, `gap` | same; HTML `data-ok-expand="false"`, `data-ok-swipe-directions`, `data-ok-hotkey`, `data-ok-offset` / `data-ok-mobile-offset` (one length), `data-ok-gap` | renamed | 4.14: `expand` defaults to `true` (the reference); per-side offsets React only |
+| Toaster `dir` | native `dir` (React prop passes through) | kept | 4.18.37: logical properties in the toast |
 | Toaster `theme` | page scheme | not applicable | follows `data-ok-theme` |
 | Toaster `containerAriaLabel` / `customAriaLabel` | `aria-label` ("Notifications") | renamed | |
 | `className`, `classNames`, `style`, `unstyled`, `descriptionClassName`, `actionButtonStyle`, `cancelButtonStyle`, `testId` | — | not applicable | CSS on `[data-ok-toast*]`; DOM attributes |

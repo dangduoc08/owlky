@@ -175,7 +175,7 @@ const GUIDES = [
 
 /** Component docs pages and their option schema: the Options table lists every option. */
 const OPTION_TABLES: [string, (keyof typeof optionSchemas)[]][] = [
-  ["components-accordion--docs", ["accordion"]],
+  ["components-accordion--docs", ["accordion", "accordion-actions"]],
   ["components-alert--docs", ["alert"]],
   ["components-avatar--docs", ["avatar", "avatar-group"]],
   ["components-badge--docs", ["badge"]],

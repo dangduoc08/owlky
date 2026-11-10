@@ -82,6 +82,26 @@ describe("Accordion anatomy", () => {
     expect(() => render(<AccordionSummary>x</AccordionSummary>)).toThrow(/inside <Accordion>/);
     vi.restoreAllMocks();
   });
+
+  it("actions: 8px between the actions; disableSpacing removes it", () => {
+    render(
+      <Accordion defaultExpanded>
+        <AccordionSummary>Item</AccordionSummary>
+        <AccordionActions data-testid="a">
+          <button type="button">One</button>
+          <button type="button">Two</button>
+        </AccordionActions>
+        <AccordionActions data-testid="b" disableSpacing>
+          <button type="button">Three</button>
+        </AccordionActions>
+      </Accordion>,
+    );
+    const spaced = screen.getByTestId("a");
+    expect(spaced.dataset["okDisableSpacing"]).toBeUndefined();
+    expect(getComputedStyle(spaced).columnGap).toBe("8px");
+    expect(screen.getByTestId("b").dataset["okDisableSpacing"]).toBe("");
+    expect(getComputedStyle(screen.getByTestId("b")).columnGap).toBe("0px");
+  });
 });
 
 function Group() {

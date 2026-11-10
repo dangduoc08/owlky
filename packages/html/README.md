@@ -18,7 +18,7 @@ and **Form control label** (CSS only: native checkbox with `role="switch"`;
 parts `label|legend[data-ok-form-label]` (› `span[data-ok-form-label-asterisk]`), `div[data-ok-form-group][data-ok-row]`,
 `p[data-ok-form-helper-text]`)
 **Avatar** (runtime `avatar`: `data-ok-size`, broken images fall back to the alt's letter; group:
-`data-ok-avatar-group`, surplus `data-ok-avatar-surplus`) **Badge** and **Label** (CSS only) **Chip**
+`data-ok-avatar-group`, `data-ok-spacing` `medium` · `small` · px (runtime `avatar-group`), surplus `data-ok-avatar-surplus`) **Badge** and **Label** (CSS only) **Chip**
 (runtime `chip`: delete button / Backspace → cancelable `ok:chip:delete`, then hidden)
 **Divider** (CSS only: `hr[data-ok-divider]`, with text `div[role=separator][data-ok-divider] › span[data-ok-divider-text]`)
 **Card** (CSS only, a Paper root: `data-ok-paper data-ok-card` + Paper's attributes, `data-ok-raised`; parts
@@ -38,7 +38,7 @@ text, subheader, `data-ok-list-item-secondary-action`; runtime `list` opens / cl
 (runtime `tooltip`: `div[data-ok-tooltip][role=tooltip]`, found from `aria-labelledby` / `aria-describedby`)
 **Dialog** (runtime `dialog`: `dialog[data-ok-dialog]`, triggers `data-ok-dialog-open` / `data-ok-dialog-close`,
 events `ok:dialog:*`) **Snackbar** (runtime `toaster`: `section[data-ok-toaster]`, `<template>` toasts shown by
-`data-ok-toast-open`, instance `show()` / `promise()` / `dismiss()`, events `ok:toaster:*`)
+`data-ok-toast-open` (`data-ok-toast-toaster` picks a toaster), instance `show()` / `promise()` / `dismiss()` / `getToasts()` / `getHistory()`, swipe to dismiss, `data-ok-expand="false"` stack + `data-ok-hotkey`, `data-ok-rich-colors`, `data-ok-invert`, `data-ok-offset` / `data-ok-gap`, events `ok:toaster:*`)
 **Radio** (CSS only: `div[role=radiogroup][data-ok-radio-group]` › `span[data-ok-radio]` › native radio)
 **Text field** (CSS only, plus runtime `text-field` for `data-ok-min-rows` / `data-ok-max-rows` and the
 `data-ok-text-field-reveal` password button; inputs keep a `placeholder`, " " when none)
@@ -74,7 +74,11 @@ inputs as thumbs, `data-ok-min|max|step`, marks, value labels from `data-ok-labe
 `ok:slider:change` (cancelable) and `ok:slider:commit`) **Transfer list** (runtime `transfer-list`:
 two checkbox lists and move buttons; event `ok:transfer-list:change` (cancelable)) **Tree view**
 (runtime `tree-view`: `ul[role=tree]` › `li[role=treeitem]`; WAI-ARIA keyboard and typeahead; events
-`ok:tree-view:expand` and `ok:tree-view:select` (cancelable)) **Autocomplete** (runtime
+`ok:tree-view:expand`, `select`, `labelchange`, `move` (cancelable), `selectiontoggle`, `itemclick`,
+`itemfocus`, `positionchange`; label editing `data-ok-editable`, reordering
+`data-ok-items-reordering` (drag or Ctrl / ⌘ + Shift + arrows), `data-ok-selection-propagation`,
+`data-ok-highlight`, lazy children through `setDataSource()`, `expandAll()` / `expandToDepth()`)
+**Autocomplete** (runtime
 `autocomplete`: a TextField combobox with a Popover listbox; chips from
 `<template data-ok-autocomplete-tag>`; events `ok:autocomplete:change` (cancelable),
 `ok:autocomplete:open|close`) **Motion** (runtimes `motion`, `motion-group`, `motion-text`:

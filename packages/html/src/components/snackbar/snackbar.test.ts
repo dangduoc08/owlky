@@ -6,7 +6,7 @@ const snippets = Object.entries(
 ) as [string, string][];
 
 describe("snackbar snippets", () => {
-  it("covers every story group", () => expect(snippets).toHaveLength(4));
+  it("covers every story group", () => expect(snippets).toHaveLength(6));
 
   it.each(snippets)("%s: one toaster; every trigger has a template with one toast", (_, html) => {
     const host = mount(html);

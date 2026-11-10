@@ -170,16 +170,13 @@
     "options": [
      {
       "attr": "data-ok-spacing",
-      "default": "medium",
-      "description": "Overlap: 8 / 16px.",
-      "kind": "style",
-      "name": "spacing",
-      "values": [
-       "medium",
-       "small"
-      ]
+      "description": "Overlap between avatars: `medium` (8px, the default), `small` (16px) or a number in px.",
+      "kind": "number",
+      "min": 0,
+      "name": "spacing"
      }
-    ]
+    ],
+    "runtime": "avatar-group"
    },
    "name": "AvatarGroup",
    "react": {
@@ -199,9 +196,9 @@
       "type": "((surplus: number) => ReactNode)"
      },
      {
-      "description": "Overlap: `medium` (8px, default) or `small` (16px).",
+      "description": "Overlap: `medium` (8px, default), `small` (16px) or a number in px.",
       "name": "spacing",
-      "type": "\"medium\" | \"small\""
+      "type": "number | \"medium\" | \"small\""
      },
      {
       "description": "Total count (default: the number of children), for the surplus.",

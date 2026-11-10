@@ -403,6 +403,19 @@ export interface AccordionAnatomyOptions {
 export const accordionAttributes = (options: AccordionAnatomyOptions = {}): DataAttributes =>
   optionAttributes(accordionOptions, { ...options });
 
+export const accordionActionsOptions = defineOptions(
+  "accordion-actions",
+  "data-ok-accordion-actions",
+  {
+    disableSpacing: flag("data-ok-disable-spacing", "No space between the actions."),
+  },
+);
+
+/** `data-ok-*` attributes of an accordion's actions row. */
+export const accordionActionsAttributes = (
+  options: { disableSpacing?: boolean | undefined } = {},
+): DataAttributes => optionAttributes(accordionActionsOptions, { ...options });
+
 // --- Alert ------------------------------------------------------------------------------------
 
 export const alertSeverities = ["success", "info", "warning", "error"] as const;
@@ -1130,13 +1143,38 @@ export const avatarAttributes = (options: AvatarAnatomyOptions = {}): DataAttrib
   optionAttributes(avatarOptions, { ...options });
 
 export const avatarGroupOptions = defineOptions("avatar-group", "data-ok-avatar-group", {
-  spacing: style("data-ok-spacing", avatarGroupSpacings, "medium", "Overlap: 8 / 16px."),
+  spacing: number(
+    "data-ok-spacing",
+    undefined,
+    "Overlap between avatars: `medium` (8px, the default), `small` (16px) or a number in px.",
+    { min: 0 },
+  ),
 });
 
-/** `data-ok-*` attributes of an avatar group. */
+/**
+ * The group's overlap: a keyword (`medium` · `small`), or a number of px (MUI's numeric
+ * `spacing`). Anything else → `medium`.
+ */
+export const parseAvatarGroupSpacing = (value: unknown): AvatarGroupSpacing | number => {
+  if ((avatarGroupSpacings as readonly unknown[]).includes(value))
+    return value as AvatarGroupSpacing;
+  const amount = parseNumber(avatarGroupOptions.options.spacing, value);
+  return typeof amount === "number" ? amount : "medium";
+};
+
+/** The overlap a numeric spacing sets (`--_ok-overlap`, a negative length), else none. */
+export const avatarGroupStyle = (value: unknown): Partial<Record<"--_ok-overlap", string>> => {
+  const spacing = parseAvatarGroupSpacing(value);
+  return typeof spacing === "number" ? { "--_ok-overlap": `${-spacing}px` } : {};
+};
+
+/** `data-ok-*` attributes of an avatar group: the spacing is always written (keyword or px). */
 export const avatarGroupAttributes = (
-  options: { spacing?: AvatarGroupSpacing | undefined } = {},
-): DataAttributes => optionAttributes(avatarGroupOptions, { ...options });
+  options: { spacing?: AvatarGroupSpacing | number | undefined } = {},
+): DataAttributes => ({
+  "data-ok-avatar-group": "",
+  "data-ok-spacing": String(parseAvatarGroupSpacing(options.spacing)),
+});
 
 // --- Badge ------------------------------------------------------------------------------------
 
@@ -1257,11 +1295,13 @@ export const labelOptions = defineOptions("label", "data-ok-label", {
     "default",
     "`default` (neutral), palette, `black` / `white`.",
   ),
+  disabled: flag("data-ok-disabled", "Dimmed and ignores the pointer, for an inactive status."),
 });
 
 export interface LabelAnatomyOptions {
   variant?: LabelVariant | undefined;
   color?: ChipColor | undefined;
+  disabled?: boolean | undefined;
 }
 
 /** `data-ok-*` attributes of a label. */
@@ -1866,6 +1906,24 @@ export const toasterOptions = defineOptions("toaster", "data-ok-toaster", {
     },
   ),
   closeButton: flag("data-ok-close-button", "Every toast shows a close button."),
+  expand: behavior(
+    "data-ok-expand",
+    true,
+    "Toasts are listed one under another; `false` stacks them and expands the stack on hover, focus or the hotkey.",
+  ),
+  richColors: flag("data-ok-rich-colors", "Typed toasts take their status color."),
+  invert: flag("data-ok-invert", "Reverses the toasts' colors (dark on light pages)."),
+  offset: number("data-ok-offset", 16, "Distance from the viewport's edges: px or a CSS length.", {
+    min: 0,
+    units: ["px", "rem", "em", "vh", "vw", "%"],
+  }),
+  mobileOffset: number(
+    "data-ok-mobile-offset",
+    16,
+    "Distance from the edges on screens under 600px wide: px or a CSS length.",
+    { min: 0, units: ["px", "rem", "em", "vh", "vw", "%"] },
+  ),
+  gap: number("data-ok-gap", 12, "Space between expanded toasts, in px.", { min: 0 }),
 });
 
 export interface ToasterAnatomyOptions {
@@ -1873,11 +1931,22 @@ export interface ToasterAnatomyOptions {
   duration?: number | undefined;
   visibleToasts?: number | undefined;
   closeButton?: boolean | undefined;
+  expand?: boolean | undefined;
+  richColors?: boolean | undefined;
+  invert?: boolean | undefined;
+  offset?: number | string | undefined;
+  mobileOffset?: number | string | undefined;
+  gap?: number | undefined;
 }
 
-/** `data-ok-*` attributes of a toaster (`section`). */
-export const toasterAttributes = (options: ToasterAnatomyOptions = {}): DataAttributes =>
-  optionAttributes(toasterOptions, { ...options });
+/** `data-ok-*` attributes of a toaster (`section`): `expand` is written only when off. */
+export const toasterAttributes = ({
+  expand,
+  ...options
+}: ToasterAnatomyOptions = {}): DataAttributes => ({
+  ...optionAttributes(toasterOptions, { ...options }),
+  ...(expand === false ? { "data-ok-expand": "false" } : {}),
+});
 
 // --- Tabs ---------------------------------------------------------------------------------------
 
@@ -2494,6 +2563,20 @@ export const treeViewOptions = defineOptions("tree-view", "data-ok-tree-view", {
     "Each item shows a checkbox for its selection.",
   ),
   disableSelection: flag("data-ok-disable-selection", "Items can't be selected (only expanded)."),
+  disabledItemsFocusable: flag(
+    "data-ok-disabled-items-focusable",
+    "Disabled items stay in the arrow-key focus order.",
+  ),
+  itemsReordering: flag(
+    "data-ok-items-reordering",
+    "Items can be dragged to a new position (or moved with Ctrl / ⌘ + Shift + arrows).",
+  ),
+  itemChildrenIndentation: number(
+    "data-ok-item-children-indentation",
+    12,
+    "Indentation of each level of children: px or a CSS length.",
+    { min: 0, units: ["px", "rem", "em"] },
+  ),
   expanded: state("aria-expanded", "Expanded items (`expandedItems`).", "expand"),
   selected: state("aria-selected", "Selected items (`selectedItems`).", "select"),
 });
@@ -2504,11 +2587,24 @@ export interface TreeViewAnatomyOptions {
   multiSelect?: boolean | undefined;
   checkboxSelection?: boolean | undefined;
   disableSelection?: boolean | undefined;
+  disabledItemsFocusable?: boolean | undefined;
+  itemsReordering?: boolean | undefined;
+  itemChildrenIndentation?: number | string | undefined;
 }
 
 /** `data-ok-*` attributes of a tree view (`ul[role=tree]`). */
 export const treeViewAttributes = (options: TreeViewAnatomyOptions = {}): DataAttributes =>
   optionAttributes(treeViewOptions, { ...options });
+
+/** The indentation as `--_ok-tree-indent` (a number is px), or nothing when invalid. */
+export const treeViewStyle = (
+  indentation: unknown,
+): Partial<Record<"--_ok-tree-indent", string>> => {
+  const value = parseNumber(treeViewOptions.options.itemChildrenIndentation, indentation);
+  return value === undefined
+    ? {}
+    : { "--_ok-tree-indent": typeof value === "number" ? `${value}px` : value };
+};
 
 // --- Autocomplete -------------------------------------------------------------------------------
 
@@ -5532,6 +5628,7 @@ export const linkRel = (target: unknown, rel: unknown): string | undefined => {
 
 export const optionSchemas = {
   accordion: accordionOptions,
+  "accordion-actions": accordionActionsOptions,
   alert: alertOptions,
   button: buttonOptions,
   "icon-button": iconButtonOptions,

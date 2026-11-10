@@ -2,19 +2,28 @@
 
 import {
   createToastApi,
+  createToasterHotkey,
   createToastStore,
+  createToastSwipe,
   createToastTimer,
   isToastButton,
+  type SwipeDirection,
+  TOASTER_HOTKEY,
   type Toast,
   type ToastApi,
   type ToastButton,
+  type ToasterOffset,
   type ToastPosition,
   type ToastStore,
   type ToastTimer,
   toastDuration,
   toasterAttributes,
+  toasterStyle,
+  toastPositions,
+  toastSwipeDirections,
 } from "@owlky/core";
 import {
+  type CSSProperties,
   type HTMLAttributes,
   type MouseEvent,
   type ReactNode,
@@ -75,6 +84,39 @@ const CLOSE_ICON = (
   </svg>
 );
 
+/** Defaults for every toast of a toaster (Sonner `toastOptions`); a toast's own options win. */
+export interface ToasterToastOptions {
+  /** Milliseconds a toast stays. */
+  duration?: number | undefined;
+  /** Shows the close button. */
+  closeButton?: boolean | undefined;
+  /** Reverses the colors. */
+  invert?: boolean | undefined;
+  /** Colors typed toasts with their status color. */
+  richColors?: boolean | undefined;
+  /** `false`: no close button, Escape and swipes are ignored. */
+  dismissible?: boolean | undefined;
+}
+
+/** Replacements for the toaster's icons (Sonner `icons`). */
+export type ToasterIcons = Partial<
+  Record<"info" | "success" | "warning" | "error" | "loading" | "close", ReactNode>
+>;
+
+/**
+ * The toasts of a store, kept up to date (Sonner `useSonner()`): `{ toasts }`, newest first.
+ */
+export function useSonner(store: ToastStore<ReactNode> = toastStore): {
+  toasts: readonly Toast<ReactNode>[];
+} {
+  const toasts = useSyncExternalStore(
+    store.subscribe,
+    () => store.toasts,
+    () => store.toasts,
+  );
+  return { toasts };
+}
+
 export interface ToasterProps extends HTMLAttributes<HTMLElement> {
   /** Default `"top-right"`. */
   position?: ToastPosition | undefined;
@@ -82,9 +124,31 @@ export interface ToasterProps extends HTMLAttributes<HTMLElement> {
   duration?: number | undefined;
   /** Toasts shown at once. Default 3. */
   visibleToasts?: number | undefined;
-  /** Every toast shows a close button. */
+  /** Every toast shows a close button. Default: shown while toasts can be swiped away; `false` hides it. */
   closeButton?: boolean | undefined;
-  /** Another store than the page's `toastStore` (tests, several toasters). */
+  /** `false` stacks the toasts and expands them on hover, focus or the hotkey. Default `true`. */
+  expand?: boolean | undefined;
+  /** Typed toasts take their status color. */
+  richColors?: boolean | undefined;
+  /** Reverses the toasts' colors (dark on light pages). */
+  invert?: boolean | undefined;
+  /** Keys that expand the toaster and move the focus to it. Default `["altKey", "KeyT"]`; `[]` turns it off. */
+  hotkey?: readonly string[] | undefined;
+  /** Distance from the viewport's edges: px, a CSS length or one per side. Default 16px. */
+  offset?: ToasterOffset | undefined;
+  /** `offset` on screens under 600px wide. Default 16px. */
+  mobileOffset?: ToasterOffset | undefined;
+  /** Space between expanded toasts, in px. Default 12. */
+  gap?: number | undefined;
+  /** Directions a toast can be swiped away in. Default: toward the toaster's edges; `[]` turns swiping off. */
+  swipeDirections?: readonly SwipeDirection[] | undefined;
+  /** Defaults for every toast. */
+  toastOptions?: ToasterToastOptions | undefined;
+  /** Replaces the type icons and the close icon. */
+  icons?: ToasterIcons | undefined;
+  /** Names the toaster: it shows the toasts whose `toasterId` is this id (and is the element's `id`). */
+  id?: string | undefined;
+  /** Another store than the page's `toastStore` (tests, separate queues). */
   store?: ToastStore<ReactNode> | undefined;
 }
 
@@ -97,17 +161,45 @@ export function Toaster({
   duration,
   visibleToasts,
   closeButton,
+  expand,
+  richColors,
+  invert,
+  hotkey = TOASTER_HOTKEY,
+  offset,
+  mobileOffset,
+  gap,
+  swipeDirections,
+  toastOptions,
+  icons,
+  id,
   store = toastStore,
+  style,
   "aria-label": label = "Notifications",
   ...props
 }: ToasterProps) {
-  const toasts = useSyncExternalStore(
-    store.subscribe,
-    () => store.toasts,
-    () => store.toasts,
-  );
+  const { toasts } = useSonner(store);
   const [paused, setPaused] = useState(false);
-  const visible = toasts.slice(0, Math.max(1, visibleToasts ?? 3));
+  const ref = useRef<HTMLElement>(null);
+  const keys = useRef(hotkey);
+  keys.current = hotkey;
+  useEffect(() => {
+    const created = createToasterHotkey(ref.current as HTMLElement, { hotkey: () => keys.current });
+    return () => created.destroy();
+  }, []);
+  const home = toastPositions.includes(position as ToastPosition)
+    ? (position as ToastPosition)
+    : "top-right";
+  const mine = toasts.filter((item) => item.toasterId === id);
+  const max = Math.max(1, visibleToasts ?? 3);
+  // One list per position: the toaster's own first, then the toasts that asked for another one.
+  const lists = [home, ...toastPositions.filter((p) => p !== home)]
+    .map((at) => ({
+      at,
+      items: mine.filter((item) => (item.position ?? home) === at).slice(0, max),
+    }))
+    .filter((list) => list.at === home || list.items.length > 0);
+  const single = (value: unknown) =>
+    typeof value === "number" || typeof value === "string" ? value : undefined;
   const pause = () => setPaused(true);
   const resume = (event: { currentTarget: Element; relatedTarget: EventTarget | null }) => {
     if (event.relatedTarget instanceof Node && event.currentTarget.contains(event.relatedTarget))
@@ -116,9 +208,23 @@ export function Toaster({
   };
   return (
     <section
-      {...toasterAttributes({ position, duration, visibleToasts, closeButton })}
+      ref={ref}
+      {...toasterAttributes({
+        position,
+        duration,
+        visibleToasts,
+        closeButton,
+        expand,
+        richColors,
+        invert,
+        offset: single(offset),
+        mobileOffset: single(mobileOffset),
+        gap,
+      })}
       data-ok-runtime="off"
+      id={id}
       aria-label={label}
+      style={{ ...(toasterStyle({ offset, mobileOffset, gap }) as CSSProperties), ...style }}
       onPointerEnter={pause}
       onPointerLeave={(event) => {
         if (!event.currentTarget.contains(document.activeElement)) setPaused(false);
@@ -127,18 +233,30 @@ export function Toaster({
       onBlur={resume}
       {...props}
     >
-      <ol data-ok-toaster-list="" aria-live="polite">
-        {visible.map((item) => (
-          <ToastItem
-            key={item.id}
-            toast={item}
-            store={store}
-            duration={toastDuration(item.duration, toastDuration(duration))}
-            paused={paused}
-            closeButton={closeButton}
-          />
-        ))}
-      </ol>
+      {lists.map((list) => (
+        <ol
+          key={list.at}
+          data-ok-toaster-list=""
+          {...(list.at === home ? {} : { "data-ok-position": list.at })}
+          aria-live="polite"
+        >
+          {list.items.map((item) => (
+            <ToastItem
+              key={item.id}
+              toast={{ ...toastOptions, ...item }}
+              store={store}
+              duration={toastDuration(
+                item.duration ?? toastOptions?.duration,
+                toastDuration(duration),
+              )}
+              paused={paused}
+              closeButton={closeButton}
+              directions={swipeDirections ?? toastSwipeDirections(list.at)}
+              icons={icons}
+            />
+          ))}
+        </ol>
+      ))}
     </section>
   );
 }
@@ -149,13 +267,29 @@ function ToastItem({
   duration,
   paused,
   closeButton,
+  directions,
+  icons,
 }: {
   toast: Toast<ReactNode>;
   store: ToastStore<ReactNode>;
   duration: number;
   paused: boolean;
   closeButton: boolean | undefined;
+  directions: readonly SwipeDirection[];
+  icons: ToasterIcons | undefined;
 }) {
+  const element = useRef<HTMLLIElement>(null);
+  const latest = useRef({ directions, item });
+  latest.current = { directions, item };
+  // biome-ignore lint/correctness/useExhaustiveDependencies: one swipe controller per toast; it reads the latest values.
+  useEffect(() => {
+    const swipe = createToastSwipe(element.current as HTMLLIElement, {
+      directions: () => latest.current.directions,
+      enabled: () => latest.current.item.dismissible !== false,
+      onDismiss: () => store.dismiss(latest.current.item.id),
+    });
+    return () => swipe.destroy();
+  }, [store]);
   const timer = useRef<ToastTimer | null>(null);
   useEffect(() => {
     const created = createToastTimer(duration, () => store.expire(item.id));
@@ -201,15 +335,16 @@ function ToastItem({
   };
   const icon =
     item.icon ??
-    (type === "loading" ? (
-      <CircularProgress color="inherit" />
-    ) : type === "default" ? null : (
-      TOAST_ICONS[type]
-    ));
-  // Like the reference: a close button when the toaster asks for one, except on toasts with
-  // actions (they close themselves) and custom content.
+    (type === "loading"
+      ? (icons?.loading ?? <CircularProgress color="inherit" />)
+      : type === "default"
+        ? null
+        : (icons?.[type] ?? TOAST_ICONS[type]));
+  // Like the reference: a close button when the toaster (or the toast) asks for one, except on
+  // toasts with actions (they close themselves) and custom content.
   const showClose =
-    closeButton === true &&
+    // A swipeable toast always gets one unless asked not to: the single-pointer path (WCAG 2.5.7).
+    (item.closeButton ?? closeButton ?? directions.length > 0) === true &&
     item.dismissible !== false &&
     item.type !== "loading" &&
     item.action == null &&
@@ -218,8 +353,14 @@ function ToastItem({
   return (
     <li
       data-ok-toast=""
+      ref={element}
       data-ok-type={type}
       {...(item.custom !== undefined ? { "data-ok-custom": "" } : {})}
+      {...(item.position !== undefined ? { "data-ok-position": item.position } : {})}
+      {...(item.invert !== undefined ? { "data-ok-invert": item.invert ? "" : "false" } : {})}
+      {...(item.richColors !== undefined
+        ? { "data-ok-rich-colors": item.richColors ? "" : "false" }
+        : {})}
       onKeyDown={(event) => {
         if (event.key === "Escape" && item.dismissible !== false) dismiss();
       }}
@@ -243,7 +384,7 @@ function ToastItem({
       )}
       {showClose && (
         <button type="button" data-ok-toast-close="" aria-label="Close" onClick={dismiss}>
-          {CLOSE_ICON}
+          {icons?.close ?? CLOSE_ICON}
         </button>
       )}
     </li>

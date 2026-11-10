@@ -218,13 +218,27 @@
     "description": "A row of actions under the details.",
     "elements": [
      "div"
+    ],
+    "options": [
+     {
+      "attr": "data-ok-disable-spacing",
+      "description": "No space between the actions.",
+      "kind": "flag",
+      "name": "disableSpacing"
+     }
     ]
    },
    "name": "AccordionActions",
    "react": {
     "description": "Buttons at the end of the content.",
     "native": "HTMLDivElement",
-    "props": []
+    "props": [
+     {
+      "description": "Removes the space between the actions.",
+      "name": "disableSpacing",
+      "type": "boolean"
+     }
+    ]
    }
   },
   {

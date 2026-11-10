@@ -144,6 +144,7 @@ export {
 export {
   Accordion,
   AccordionActions,
+  type AccordionActionsProps,
   AccordionDetails,
   type AccordionProps,
   AccordionSummary,
@@ -576,9 +577,12 @@ export { Slider, type SliderProps } from "./slider/slider.js";
 export {
   TOAST_ICONS,
   Toaster,
+  type ToasterIcons,
   type ToasterProps,
+  type ToasterToastOptions,
   toast,
   toastStore,
+  useSonner,
 } from "./snackbar/snackbar.js";
 export { arrayMove, Sortable, type SortableProps } from "./sortable/sortable.js";
 export {
@@ -664,7 +668,12 @@ export {
   type SimpleTreeViewProps,
   TreeItem,
   type TreeItemProps,
+  type TreeViewApi,
   type TreeViewBaseItem,
+  type TreeViewDataSource,
+  type TreeViewItemPositionChange,
+  type TreeViewItemTree,
+  useTreeViewApiRef,
 } from "./tree-view/tree-view.js";
 export { Typography, type TypographyProps } from "./typography/typography.js";
 export {

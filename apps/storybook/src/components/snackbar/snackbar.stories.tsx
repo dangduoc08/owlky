@@ -2,7 +2,14 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import type { JSX } from "react";
 import { frameworkStory, reactGroupsStory } from "../../helpers/groups.js";
 import { type GroupFiles, htmlSetup, snippetStory } from "../shared/snippets.js";
-import { AnchorOriginDemo, CustomDemo, DefaultDemo, StatusDemo } from "./snackbar-demos.js";
+import {
+  AnchorOriginDemo,
+  CustomDemo,
+  DefaultDemo,
+  ExpandDemo,
+  RichColorsDemo,
+  StatusDemo,
+} from "./snackbar-demos.js";
 import source from "./snackbar-demos.tsx?raw";
 import { SnackbarDocs } from "./snackbar-docs.js";
 
@@ -40,4 +47,9 @@ export const Custom: StoryObj = story("custom", "Custom", <CustomDemo />);
 export const AnchorOrigin: StoryObj = {
   ...story("anchor-origin", "Anchor origin", <AnchorOriginDemo />),
   name: "Anchor origin",
+};
+export const Expand: StoryObj = story("expand", "Expand", <ExpandDemo />);
+export const RichColors: StoryObj = {
+  ...story("rich-colors", "Rich colors", <RichColorsDemo />),
+  name: "Rich colors",
 };

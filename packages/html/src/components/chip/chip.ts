@@ -20,7 +20,8 @@ export interface ChipInstance extends ComponentInstance {
  *            <button type="button" data-ok-chip-delete aria-label="Remove">…</button>
  *          </span>
  * Events:  ok:chip:delete (cancelable) — from the delete button, or Backspace / Delete on the
- *          chip's action button; then the chip gets `hidden`.
+ *          chip's action button or link; then the chip gets `hidden`. Link chips: an
+ *          `<a data-ok-chip-action href>` (disabled: no `href`, `role="link"`, `aria-disabled`).
  */
 export const chip = defineComponent<ChipInstance, ChipEvents>({
   name: "chip",
@@ -46,7 +47,7 @@ export const chip = defineComponent<ChipInstance, ChipEvents>({
     },
     {
       event: "keydown",
-      selector: "[data-ok-chip] > button[data-ok-chip-action]",
+      selector: "[data-ok-chip] > :is(button, a)[data-ok-chip-action]",
       handle(button, event, runtime) {
         const key = (event as KeyboardEvent).key;
         const root = button.closest("[data-ok-chip]");

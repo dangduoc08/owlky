@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
+  accordionActionsAttributes,
   accordionAttributes,
   alertAttributes,
   ariaSort,
   autocompleteAttributes,
   avatarAttributes,
   avatarGroupAttributes,
+  avatarGroupStyle,
   avatarVariants,
   backdropAttributes,
   badgeAttributes,
@@ -71,6 +73,7 @@ import {
   paperElevations,
   paperOptions,
   paperVariants,
+  parseAvatarGroupSpacing,
   popoverAttributes,
   popoverPlacements,
   progressColors,
@@ -180,6 +183,19 @@ describe("accordionAttributes", () => {
       "data-ok-disabled": "",
     });
     expect(accordionAttributes({ variant: "x" as never })["data-ok-variant"]).toBe("default");
+  });
+});
+
+describe("accordionActionsAttributes", () => {
+  it("marker, and disableSpacing only when on", () => {
+    expect(accordionActionsAttributes()).toEqual({ "data-ok-accordion-actions": "" });
+    expect(accordionActionsAttributes({ disableSpacing: true })).toEqual({
+      "data-ok-accordion-actions": "",
+      "data-ok-disable-spacing": "",
+    });
+    expect(accordionActionsAttributes({ disableSpacing: "x" as never })).toEqual(
+      accordionActionsAttributes(),
+    );
   });
 });
 
@@ -679,6 +695,10 @@ describe("avatar, badge, chip and label attributes", () => {
   it.each(labelVariants)("label variant %s", (variant) => {
     expect(labelAttributes({ variant })["data-ok-variant"]).toBe(variant);
   });
+  it("label disabled only when on", () => {
+    expect(labelAttributes({ disabled: true })["data-ok-disabled"]).toBe("");
+    expect(labelAttributes({ disabled: HOSTILE })).toEqual(labelAttributes());
+  });
   it.each(chipVariants)("chip variant %s", (variant) => {
     expect(chipAttributes({ variant })["data-ok-variant"]).toBe(variant);
   });
@@ -690,6 +710,14 @@ describe("avatar, badge, chip and label attributes", () => {
     });
     expect(avatarAttributes({ size: "3rem" })["data-ok-size"]).toBe("3rem");
     expect(avatarGroupAttributes({ spacing: "small" })["data-ok-spacing"]).toBe("small");
+    expect(avatarGroupAttributes({ spacing: 12 })["data-ok-spacing"]).toBe("12");
+    expect(avatarGroupAttributes({ spacing: -1 })["data-ok-spacing"]).toBe("medium");
+    expect(avatarGroupStyle(12)).toEqual({ "--_ok-overlap": "-12px" });
+    expect(avatarGroupStyle("4.5")).toEqual({ "--_ok-overlap": "-4.5px" });
+    expect(avatarGroupStyle(0)).toEqual({ "--_ok-overlap": "0px" });
+    for (const value of ["small", "medium", "1e400", "12px", null, HOSTILE])
+      expect(avatarGroupStyle(value)).toEqual({});
+    expect(parseAvatarGroupSpacing("8")).toBe(8);
     expect(
       badgeAttributes({
         overlap: "circular",

@@ -42,3 +42,9 @@ export const Rich: StoryObj = story("rich", "Rich tree view");
 export const CustomIcons: StoryObj = story("custom-icons", "Custom icons");
 export const Checkbox: StoryObj = story("checkbox", "Checkbox selection");
 export const CustomStyling: StoryObj = story("custom-styling", "Custom styling");
+export const DragAndDrop: StoryObj = story("drag-and-drop", "Drag and drop");
+export const LabelEditing: StoryObj = story("label-editing", "Label editing");
+export const SelectionPropagation: StoryObj = story(
+  "selection-propagation",
+  "Selection propagation",
+);

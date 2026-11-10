@@ -71,7 +71,9 @@ None (not focusable).
 ## Accessibility
 `role="progressbar"`, named by the author. Determinate / buffer: `aria-valuenow` (clamped),
 `aria-valuemin`, `aria-valuemax`; the buffer is visual only. `aria-valuetext` passes through.
-Brand colors follow the reference (ADR-0014). Left to right only (right-to-left: backlog).
+Brand colors follow the reference (ADR-0014). Right to left: under `dir="rtl"` the root is
+mirrored (`scale: -1 1`, `:dir(rtl)`; without `:dir()` support, a `[dir="rtl"]` ancestor or the
+bar's own `dir`), so every variant fills from the right.
 
 ## Events / API
 None. HTML: change the attributes above. React: props; `ref` = the root span.
@@ -83,7 +85,7 @@ Audit 2026-11-09 against MUI API page LinearProgress.
 |---|---|---|---|
 | `variant` (`determinate` `indeterminate` `buffer` `query`), `value`, `valueBuffer`, `min`, `max` | same (HTML: `aria-value*`, `data-ok-value-buffer`) | kept | |
 | `color` | every palette color + `inherit` | kept | |
-| right to left (MUI flips the bars under `dir="rtl"`) | left to right only | deferred (4.13) | |
+| right to left (MUI flips the bars under `dir="rtl"`) | same: the bar mirrors under `dir="rtl"` | kept | Phase 4 row 4.13 (CSS only) |
 | `sx`, `classes` | — | not applicable | ADR-0015 |
 
 ## Parity notes

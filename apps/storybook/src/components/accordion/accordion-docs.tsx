@@ -1,7 +1,13 @@
-import { accordionOptions } from "@owlky/core";
+import { accordionActionsOptions, accordionOptions } from "@owlky/core";
 import accordionApi from "@owlky/docs-content/api/accordion.json" with { type: "json" };
 import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
-import { Accordion, AccordionDetails, AccordionSummary } from "@owlky/react";
+import {
+  Accordion,
+  AccordionActions,
+  AccordionDetails,
+  AccordionSummary,
+  Button,
+} from "@owlky/react";
 import { useState } from "react";
 import { CDN, capitalize, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
@@ -31,7 +37,13 @@ export const accordionSections: GuideSection[] = [
 ${htmlItem(FAQ[0][0], FAQ[0][1])}`,
     react: `// Load once, in your app's entry file
 import "@owlky/styles/owlky.css";
-import { Accordion, AccordionDetails, AccordionSummary } from "@owlky/react";
+import {
+  Accordion,
+  AccordionActions,
+  AccordionDetails,
+  AccordionSummary,
+  Button,
+} from "@owlky/react";
 
 export function PasswordFaq() {
   return (
@@ -103,6 +115,33 @@ export function BillingSection() {
     <Accordion expanded={expanded} onChange={setExpanded}>
       <AccordionSummary>Billing</AccordionSummary>
       <AccordionDetails>Your plan renews on the first day of each month.</AccordionDetails>
+    </Accordion>
+  );
+}`,
+  },
+  {
+    id: "actions",
+    title: "Add actions",
+    body: "Put buttons for the open item in `AccordionActions`, after the details. The actions sit at the end of the row with 8px between them. Set `disableSpacing` to remove that space, for example when the buttons already have their own margins.",
+    html: `<details data-ok-accordion data-ok-variant="default" open>
+  <summary data-ok-accordion-summary>Terms of service${PLUS}</summary>
+  <div data-ok-accordion-details>You agree to the terms when you create an account.</div>
+  <div data-ok-accordion-actions data-ok-disable-spacing>
+    <button data-ok-button data-ok-variant="text" data-ok-color="inherit" data-ok-size="md" type="button">Cancel</button>
+    <button data-ok-button data-ok-variant="contained" data-ok-color="inherit" data-ok-size="md" type="button">Agree</button>
+  </div>
+</details>`,
+    react: `import { Accordion, AccordionActions, AccordionDetails, AccordionSummary, Button } from "@owlky/react";
+
+export function TermsAccordion() {
+  return (
+    <Accordion defaultExpanded>
+      <AccordionSummary>Terms of service</AccordionSummary>
+      <AccordionDetails>You agree to the terms when you create an account.</AccordionDetails>
+      <AccordionActions disableSpacing>
+        <Button variant="text">Cancel</Button>
+        <Button variant="contained">Agree</Button>
+      </AccordionActions>
     </Accordion>
   );
 }`,
@@ -188,7 +227,24 @@ const PREVIEWS = {
     </Preview>
   ),
   controlled: ControlledPreview,
-  options: () => <OptionsTable schema={accordionOptions} />,
+  actions: () => (
+    <Preview className="flex-col items-stretch!">
+      <Accordion defaultExpanded>
+        <AccordionSummary>Terms of service</AccordionSummary>
+        <AccordionDetails>You agree to the terms when you create an account.</AccordionDetails>
+        <AccordionActions disableSpacing>
+          <Button variant="text">Cancel</Button>
+          <Button variant="contained">Agree</Button>
+        </AccordionActions>
+      </Accordion>
+    </Preview>
+  ),
+  options: () => (
+    <>
+      <OptionsTable schema={accordionOptions} />
+      <OptionsTable schema={accordionActionsOptions} />
+    </>
+  ),
   props: () => (
     <PropsTable
       label="Accordion content props"

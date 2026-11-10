@@ -9,6 +9,11 @@
    "value": "color-mix(in srgb, #919EAB 8%, transparent)"
   },
   {
+   "dark": "#1C252E",
+   "light": "#FFFFFF",
+   "name": "--ok-bg-paper"
+  },
+  {
    "name": "--ok-duration-shortest",
    "value": "150ms"
   },
@@ -29,8 +34,25 @@
    "value": "500"
   },
   {
+   "name": "--ok-font-weight-semibold",
+   "value": "600"
+  },
+  {
+   "name": "--ok-palette-error-main",
+   "value": "#FF5630"
+  },
+  {
+   "dark": "#FFAC82",
+   "light": "#B71D18",
+   "name": "--ok-palette-error-text"
+  },
+  {
    "name": "--ok-palette-grey-500-channel",
    "value": "145 158 171"
+  },
+  {
+   "name": "--ok-palette-primary-main",
+   "value": "#00A76F"
   },
   {
    "name": "--ok-palette-primary-main-channel",
@@ -42,12 +64,20 @@
    "name": "--ok-palette-primary-text"
   },
   {
+   "name": "--ok-palette-warning-main-channel",
+   "value": "255 171 0"
+  },
+  {
    "name": "--ok-radius-full",
    "value": "9999px"
   },
   {
    "name": "--ok-radius-md",
    "value": "8px"
+  },
+  {
+   "name": "--ok-radius-sm",
+   "value": "6px"
   },
   {
    "name": "--ok-radius-xs",
@@ -69,6 +99,14 @@
   {
    "name": "--ok-typography-body2-line-height",
    "value": "1.5714"
+  },
+  {
+   "name": "--ok-typography-caption-font-size",
+   "value": "0.75rem"
+  },
+  {
+   "name": "--ok-typography-caption-line-height",
+   "value": "1.5"
   }
  ],
  "entries": [
@@ -83,13 +121,73 @@
       "name": "ok:tree-view:expand"
      },
      {
+      "cancelable": false,
+      "description": "An item's row was clicked.",
+      "detail": "{ itemId: string; }",
+      "name": "ok:tree-view:itemclick"
+     },
+     {
+      "cancelable": false,
+      "description": "An item got the focus.",
+      "detail": "{ itemId: string; }",
+      "name": "ok:tree-view:itemfocus"
+     },
+     {
+      "cancelable": true,
+      "description": "Before an edited label is saved. Call `preventDefault()` to keep the old one.",
+      "detail": "{ itemId: string; label: string; }",
+      "name": "ok:tree-view:labelchange"
+     },
+     {
+      "cancelable": true,
+      "description": "Before an item moves. Call `preventDefault()` to refuse (MUI `canMoveItemToNewPosition`).",
+      "detail": "{ itemId: string; oldPosition: TreeItemPosition; newPosition: TreeItemPosition; }",
+      "name": "ok:tree-view:move"
+     },
+     {
+      "cancelable": false,
+      "description": "After an item moved.",
+      "detail": "{ itemId: string; oldPosition: TreeItemPosition; newPosition: TreeItemPosition; }",
+      "name": "ok:tree-view:positionchange"
+     },
+     {
       "cancelable": true,
       "description": "Before the selection changes. Call `preventDefault()` to keep the current one.",
       "detail": "{ selectedItems: string[]; }",
       "name": "ok:tree-view:select"
+     },
+     {
+      "cancelable": false,
+      "description": "After an item's selection changed, once per item.",
+      "detail": "{ itemId: string; selected: boolean; }",
+      "name": "ok:tree-view:selectiontoggle"
      }
     ],
     "methods": [
+     {
+      "description": "Collapses every item.",
+      "kind": "method",
+      "name": "collapseAll",
+      "type": "() => void"
+     },
+     {
+      "description": "Expands every item that has children.",
+      "kind": "method",
+      "name": "expandAll",
+      "type": "() => void"
+     },
+     {
+      "description": "Expands an item and all its descendants.",
+      "kind": "method",
+      "name": "expandSubtree",
+      "type": "(itemId: string) => void"
+     },
+     {
+      "description": "Expands the items down to `depth` levels (1: the root's items) and collapses the rest.",
+      "kind": "method",
+      "name": "expandToDepth",
+      "type": "(depth: number) => void"
+     },
      {
       "description": "Ids of the expanded items.",
       "kind": "property",
@@ -97,10 +195,40 @@
       "type": "string[]"
      },
      {
+      "description": "Moves the focus to an item.",
+      "kind": "method",
+      "name": "focusItem",
+      "type": "(itemId: string) => void"
+     },
+     {
+      "description": "The ids of an item's children (`null`: the root's), in order.",
+      "kind": "method",
+      "name": "getItemOrderedChildrenIds",
+      "type": "(itemId: string | null) => string[]"
+     },
+     {
+      "description": "Highlights the items whose label contains `query`, and their ancestors (`\"\"` clears).",
+      "kind": "method",
+      "name": "highlight",
+      "type": "(query: string) => void"
+     },
+     {
       "description": "Ids of the selected items.",
       "kind": "property",
       "name": "selectedItems",
       "type": "string[]"
+     },
+     {
+      "description": "Loads children on expand from `source` (items with `data-ok-lazy`), and the root's items if the tree is empty.",
+      "kind": "method",
+      "name": "setDataSource",
+      "type": "(source: TreeViewDataSource | null) => void"
+     },
+     {
+      "description": "Starts (or with `null`, stops) editing an item's label.",
+      "kind": "method",
+      "name": "setEditedItem",
+      "type": "(itemId: string | null) => void"
      },
      {
       "description": "Expands or collapses an item without emitting events.",
@@ -113,6 +241,12 @@
       "kind": "method",
       "name": "setSelected",
       "type": "(itemIds: readonly string[]) => void"
+     },
+     {
+      "description": "Changes an item's label text without emitting events.",
+      "kind": "method",
+      "name": "updateItemLabel",
+      "type": "(itemId: string, label: string) => void"
      }
     ],
     "options": [
@@ -157,6 +291,31 @@
       "name": "disableSelection"
      },
      {
+      "attr": "data-ok-disabled-items-focusable",
+      "description": "Disabled items stay in the arrow-key focus order.",
+      "kind": "flag",
+      "name": "disabledItemsFocusable"
+     },
+     {
+      "attr": "data-ok-items-reordering",
+      "description": "Items can be dragged to a new position (or moved with Ctrl / ⌘ + Shift + arrows).",
+      "kind": "flag",
+      "name": "itemsReordering"
+     },
+     {
+      "attr": "data-ok-item-children-indentation",
+      "default": 12,
+      "description": "Indentation of each level of children: px or a CSS length.",
+      "kind": "number",
+      "min": 0,
+      "name": "itemChildrenIndentation",
+      "units": [
+       "px",
+       "rem",
+       "em"
+      ]
+     },
+     {
       "attr": "aria-expanded",
       "description": "Expanded items (`expandedItems`).",
       "event": "ok:tree-view:expand",
@@ -173,9 +332,83 @@
     ],
     "parts": [
      {
+      "description": "On an item: the item can't be selected (it still expands).",
+      "kind": "state",
+      "name": "data-ok-disable-selection"
+     },
+     {
+      "description": "Set by the controller on the item being dragged.",
+      "kind": "state",
+      "name": "data-ok-dragging"
+     },
+     {
+      "description": "Set by the controller on the item a dragged item would land on: before it, after it or inside it.",
+      "kind": "value",
+      "name": "data-ok-drop-position",
+      "value": [
+       "after",
+       "before",
+       "inside"
+      ]
+     },
+     {
+      "description": "On an item: its label can be edited (F2, double click); on the tree: every item's. `\"false\"` opts an item out.",
+      "kind": "value",
+      "name": "data-ok-editable",
+      "value": [
+       "",
+       "false"
+      ]
+     },
+     {
+      "description": "On an item: its children failed to load.",
+      "kind": "state",
+      "name": "data-ok-error"
+     },
+     {
+      "description": "Set on the label input once saved or cancelled, so its blur doesn't save it again.",
+      "kind": "state",
+      "name": "data-ok-finished"
+     },
+     {
+      "description": "On the tree: highlights the items whose label contains this text, and their ancestors.",
+      "kind": "value",
+      "name": "data-ok-highlight",
+      "value": "string"
+     },
+     {
+      "description": "Set on an item whose label matches the highlight.",
+      "kind": "state",
+      "name": "data-ok-highlighted"
+     },
+     {
+      "description": "Set on an ancestor of an item that matches the highlight.",
+      "kind": "state",
+      "name": "data-ok-highlighted-ancestor"
+     },
+     {
       "description": "On an item: its id.",
       "kind": "value",
       "name": "data-ok-item-id",
+      "value": "string"
+     },
+     {
+      "description": "On an item: children to load from the data source when it expands.",
+      "kind": "state",
+      "name": "data-ok-lazy"
+     },
+     {
+      "description": "On an item, with `data-ok-items-reordering`: `\"false\"` keeps it in place.",
+      "kind": "value",
+      "name": "data-ok-reorderable",
+      "value": [
+       "false"
+      ]
+     },
+     {
+      "description": "On the tree: `parents`, `descendants` or both: how a selection spreads.",
+      "kind": "value",
+      "name": "data-ok-selection-propagation",
       "value": "string"
      },
      {
@@ -187,6 +420,14 @@
       "description": "The icon of an expanded item.",
       "kind": "part",
       "name": "data-ok-tree-collapse-icon"
+     },
+     {
+      "description": "The icon of an item whose children failed to load.",
+      "elements": [
+       "svg"
+      ],
+      "kind": "part",
+      "name": "data-ok-tree-error-icon"
      },
      {
       "description": "The icon of a collapsed item.",
@@ -205,9 +446,19 @@
     "native": "HTMLUListElement",
     "props": [
      {
+      "description": "Receives the tree's methods (`useTreeViewApiRef()`).",
+      "name": "apiRef",
+      "type": "MutableRefObject<TreeViewApi | undefined>"
+     },
+     {
       "description": "Names the tree (or use `aria-labelledby`).",
       "name": "aria-label",
       "type": "string"
+     },
+     {
+      "description": "Refuses a move by returning `false`.",
+      "name": "canMoveItemToNewPosition",
+      "type": "((change: TreeViewItemPositionChange) => boolean)"
      },
      {
       "description": "Each item shows a checkbox for its selection (implies `multiSelect`).",
@@ -218,6 +469,16 @@
       "description": "Icon of expanded items (with `expandIcon`).",
       "name": "collapseIcon",
       "type": "ReactNode"
+     },
+     {
+      "description": "Loads the root's items (without `items`) and children on expand.",
+      "name": "dataSource",
+      "type": "TreeViewDataSource<R>"
+     },
+     {
+      "description": "Text of an item whose children failed to load. Default \"Couldn't load the items\".",
+      "name": "dataSourceErrorLabel",
+      "type": "string"
      },
      {
       "description": "Uncontrolled expanded item ids. Default none.",
@@ -232,6 +493,11 @@
      {
       "description": "Items can only be expanded, not selected.",
       "name": "disableSelection",
+      "type": "boolean"
+     },
+     {
+      "description": "Disabled items stay in the arrow-key focus order.",
+      "name": "disabledItemsFocusable",
       "type": "boolean"
      },
      {
@@ -255,10 +521,63 @@
       "type": "\"content\" | \"iconContainer\""
      },
      {
-      "description": "The items, as data.",
+      "default": "item.children",
+      "description": "An item's children.",
+      "name": "getItemChildren",
+      "type": "((item: R) => readonly R[] | undefined)"
+     },
+     {
+      "default": "item.id",
+      "description": "An item's id.",
+      "name": "getItemId",
+      "type": "((item: R) => string)"
+     },
+     {
+      "default": "item.label",
+      "description": "An item's label.",
+      "name": "getItemLabel",
+      "type": "((item: R) => ReactNode)"
+     },
+     {
+      "description": "Highlights the items whose label contains this text, and their ancestors.",
+      "name": "highlight",
+      "type": "string"
+     },
+     {
+      "default": "item.disabled",
+      "description": "Whether an item is disabled.",
+      "name": "isItemDisabled",
+      "type": "((item: R) => boolean)"
+     },
+     {
+      "description": "Labels can be edited (F2, double click; Enter saves, Escape cancels): every item or some.",
+      "name": "isItemEditable",
+      "type": "boolean | ((item: R) => boolean)"
+     },
+     {
+      "description": "Whether an item can be moved. Default every item.",
+      "name": "isItemReorderable",
+      "type": "((itemId: string) => boolean)"
+     },
+     {
+      "description": "Whether an item can't be selected (it still expands).",
+      "name": "isItemSelectionDisabled",
+      "type": "((item: R) => boolean)"
+     },
+     {
+      "description": "Indentation of each level of children: px or a CSS length. Default 12px.",
+      "name": "itemChildrenIndentation",
+      "type": "string | number"
+     },
+     {
+      "description": "The items, as data (or loaded by `dataSource`).",
       "name": "items",
-      "required": true,
-      "type": "readonly TreeViewBaseItem[]"
+      "type": "readonly R[]"
+     },
+     {
+      "description": "Items can be dragged to a new position (or moved with Ctrl / ⌘ + Shift + arrows).",
+      "name": "itemsReordering",
+      "type": "boolean"
      },
      {
       "description": "Several items can be selected (Ctrl / ⌘ click, Shift click, Space).",
@@ -271,9 +590,34 @@
       "type": "((itemIds: string[]) => void)"
      },
      {
+      "description": "Called when an item's row is clicked.",
+      "name": "onItemClick",
+      "type": "((itemId: string) => void)"
+     },
+     {
       "description": "Called when one item expands or collapses.",
       "name": "onItemExpansionToggle",
       "type": "((itemId: string, isExpanded: boolean) => void)"
+     },
+     {
+      "description": "Called when an item gets the focus.",
+      "name": "onItemFocus",
+      "type": "((itemId: string) => void)"
+     },
+     {
+      "description": "Called with an item's new label.",
+      "name": "onItemLabelChange",
+      "type": "((itemId: string, label: string) => void)"
+     },
+     {
+      "description": "Called after an item moved.",
+      "name": "onItemPositionChange",
+      "type": "((change: TreeViewItemPositionChange) => void)"
+     },
+     {
+      "description": "Called for each item whose selection changed.",
+      "name": "onItemSelectionToggle",
+      "type": "((itemId: string, isSelected: boolean) => void)"
      },
      {
       "description": "Called with the new selection (same shape as `selectedItems`).",
@@ -284,6 +628,11 @@
       "description": "Controlled selection: an id (single), ids (`multiSelect`) or `null`.",
       "name": "selectedItems",
       "type": "Selection"
+     },
+     {
+      "description": "Selecting an item also selects its descendants, and / or a parent whose children all are.",
+      "name": "selectionPropagation",
+      "type": "TreeSelectionPropagation"
      },
      {
       "description": "`\"standard\"` (default) or `\"lines\"` (dashed guides, round expand icons).",
@@ -299,6 +648,11 @@
     "description": "A WAI-ARIA tree of `TreeItem`s. Keyboard, clicks and typeahead are core's `createTreeController`; this component owns the expanded and selected items.",
     "native": "HTMLUListElement",
     "props": [
+     {
+      "description": "Receives the tree's methods (`useTreeViewApiRef()`).",
+      "name": "apiRef",
+      "type": "MutableRefObject<TreeViewApi | undefined>"
+     },
      {
       "description": "Names the tree (or use `aria-labelledby`).",
       "name": "aria-label",
@@ -335,6 +689,11 @@
       "type": "boolean"
      },
      {
+      "description": "Disabled items stay in the arrow-key focus order.",
+      "name": "disabledItemsFocusable",
+      "type": "boolean"
+     },
+     {
       "description": "Icon of items without children.",
       "name": "endIcon",
       "type": "ReactNode"
@@ -355,6 +714,16 @@
       "type": "\"content\" | \"iconContainer\""
      },
      {
+      "description": "Highlights the items whose label contains this text, and their ancestors.",
+      "name": "highlight",
+      "type": "string"
+     },
+     {
+      "description": "Indentation of each level of children: px or a CSS length. Default 12px.",
+      "name": "itemChildrenIndentation",
+      "type": "string | number"
+     },
+     {
       "description": "Several items can be selected (Ctrl / ⌘ click, Shift click, Space).",
       "name": "multiSelect",
       "type": "boolean"
@@ -365,9 +734,24 @@
       "type": "((itemIds: string[]) => void)"
      },
      {
+      "description": "Called when an item's row is clicked.",
+      "name": "onItemClick",
+      "type": "((itemId: string) => void)"
+     },
+     {
       "description": "Called when one item expands or collapses.",
       "name": "onItemExpansionToggle",
       "type": "((itemId: string, isExpanded: boolean) => void)"
+     },
+     {
+      "description": "Called when an item gets the focus.",
+      "name": "onItemFocus",
+      "type": "((itemId: string) => void)"
+     },
+     {
+      "description": "Called for each item whose selection changed.",
+      "name": "onItemSelectionToggle",
+      "type": "((itemId: string, isSelected: boolean) => void)"
      },
      {
       "description": "Called with the new selection (same shape as `selectedItems`).",
@@ -378,6 +762,11 @@
       "description": "Controlled selection: an id (single), ids (`multiSelect`) or `null`.",
       "name": "selectedItems",
       "type": "Selection"
+     },
+     {
+      "description": "Selecting an item also selects its descendants, and / or a parent whose children all are.",
+      "name": "selectionPropagation",
+      "type": "TreeSelectionPropagation"
      },
      {
       "description": "`\"standard\"` (default) or `\"lines\"` (dashed guides, round expand icons).",
@@ -403,6 +792,14 @@
       "name": "data-ok-tree-item-content"
      },
      {
+      "description": "Why an item's children couldn't load, in its row.",
+      "elements": [
+       "span"
+      ],
+      "kind": "part",
+      "name": "data-ok-tree-item-error"
+     },
+     {
       "description": "The children of an item: a collapse.",
       "kind": "part",
       "name": "data-ok-tree-item-group"
@@ -416,6 +813,14 @@
       "description": "The label of an item.",
       "kind": "part",
       "name": "data-ok-tree-item-label"
+     },
+     {
+      "description": "The input that replaces the label while it is edited.",
+      "elements": [
+       "input"
+      ],
+      "kind": "part",
+      "name": "data-ok-tree-item-label-input"
      }
     ]
    },
@@ -430,7 +835,12 @@
       "type": "ReactNode"
      },
      {
-      "description": "Can't be selected or expanded; still focusable.",
+      "description": "The item can't be selected, but still expands.",
+      "name": "disableSelection",
+      "type": "boolean"
+     },
+     {
+      "description": "Can't be selected or expanded (and isn't focusable unless `disabledItemsFocusable`).",
       "name": "disabled",
       "type": "boolean"
      },

@@ -58,16 +58,37 @@ describe("Label", () => {
     expect(css(screen.getByTestId("s").parentElement as Element).width).toBe("16px");
   });
 
+  it("disabled: dimmed, ignores the pointer; only when on", () => {
+    render(
+      <>
+        <Label disabled>Off</Label>
+        <Label disabled={HOSTILE}>On</Label>
+      </>,
+    );
+    const off = screen.getByText("Off");
+    expect(off.dataset["okDisabled"]).toBe("");
+    expect(css(off).opacity).toBe("0.48");
+    expect(css(off).pointerEvents).toBe("none");
+    expect(screen.getByText("On").dataset["okDisabled"]).toBeUndefined();
+    expect(css(screen.getByText("On")).opacity).toBe("1");
+  });
+
   it("renders on the server and has no axe violations", async () => {
     expect(renderToString(<Label>x</Label>)).toContain('data-ok-label=""');
     const { container } = render(
-      (["soft", "inverted"] as const).flatMap((variant) =>
-        (["default", "primary", "warning", "error"] as const).map((color) => (
-          <Label key={variant + color} variant={variant} color={color}>
-            {color}
-          </Label>
-        )),
-      ),
+      (["soft", "inverted"] as const)
+        .flatMap((variant) =>
+          (["default", "primary", "warning", "error"] as const).map((color) => (
+            <Label key={variant + color} variant={variant} color={color}>
+              {color}
+            </Label>
+          )),
+        )
+        .concat(
+          <Label key="disabled" disabled>
+            disabled
+          </Label>,
+        ),
     );
     await expectNoAxeViolations(container);
   });

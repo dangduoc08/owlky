@@ -116,6 +116,27 @@ export function LinearProgressLabel() {
 }`,
   },
   {
+    id: "rtl",
+    title: "Use right-to-left layouts",
+    body: 'Set `dir="rtl"` on the page, on a section or on the bar itself. Every variant then fills from the right, the way people read in languages such as Arabic and Hebrew. No option is needed, because the bar follows the direction of its text.',
+    html: `<div dir="rtl">
+  ${htmlProgress(
+    'data-ok-variant="determinate" data-ok-color="primary" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"',
+    "Upload",
+    '<span data-ok-linear-progress-bar="1"></span>',
+  )}
+</div>`,
+    react: `import { LinearProgress } from "@owlky/react";
+
+export function RightToLeftProgress() {
+  return (
+    <div dir="rtl">
+      <LinearProgress variant="determinate" value={60} aria-label="Upload" />
+    </div>
+  );
+}`,
+  },
+  {
     id: "options",
     title: "Options",
     body: "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed or aren't valid numbers fall back to the default.",
@@ -145,7 +166,7 @@ export function LinearProgressLabel() {
 - When an indicator stands for a region that is loading, set \`aria-busy="true"\` on that region until it's ready, and point the region's \`aria-describedby\` at the indicator.
 - With reduced motion turned on, the bars sweep at half speed, the dots stop and values change without easing.
 - Brand colors follow the design. Light colors such as \`warning\` have a contrast ratio below 3:1 on white, so don't rely on the bar alone to tell people something important.
-- The bar fills from left to right in every language.`,
+- In a right-to-left page or section (\`dir="rtl"\`), the bar fills from right to left.`,
   },
   apiReferenceSection(linearProgressApi),
 ];
@@ -164,6 +185,15 @@ const PREVIEWS = {
   buffer: () => (
     <Preview className="flex-col items-stretch!">
       <LinearProgress variant="buffer" value={30} valueBuffer={45} aria-label="Video" />
+    </Preview>
+  ),
+  rtl: () => (
+    <Preview className="flex-col items-stretch!">
+      <div dir="rtl" className="flex flex-col gap-4">
+        <LinearProgress variant="determinate" value={60} aria-label="Upload" />
+        <LinearProgress variant="buffer" value={40} valueBuffer={60} aria-label="Video" />
+        <LinearProgress aria-label="Loading" />
+      </div>
     </Preview>
   ),
   query: () => (

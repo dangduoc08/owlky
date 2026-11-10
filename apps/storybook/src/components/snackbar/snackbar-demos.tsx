@@ -150,3 +150,38 @@ export function AnchorOriginDemo() {
     </>
   );
 }
+
+/** Expand (Sonner's demo): stacked toasts that expand on hover, focus or Alt + T. */
+export function ExpandDemo() {
+  return (
+    <>
+      <Button variant="contained" onClick={() => toast("Event has been created")}>
+        Show toast
+      </Button>
+      <Toaster expand={false} closeButton />
+    </>
+  );
+}
+
+/** Rich colors (Sonner's "Other" demo): typed toasts in their status colors. */
+export function RichColorsDemo() {
+  return (
+    <>
+      <Button
+        variant="contained"
+        color="success"
+        onClick={() => toast.success("Event has been created")}
+      >
+        Success
+      </Button>
+      <Button
+        variant="contained"
+        color="error"
+        onClick={() => toast.error("Event has not been created")}
+      >
+        Error
+      </Button>
+      <Toaster richColors closeButton />
+    </>
+  );
+}

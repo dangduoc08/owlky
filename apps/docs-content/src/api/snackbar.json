@@ -22,6 +22,10 @@
    "value": "cubic-bezier(0, 0, 0.2, 1)"
   },
   {
+   "name": "--ok-easing-standard",
+   "value": "cubic-bezier(0.4, 0, 0.2, 1)"
+  },
+  {
    "name": "--ok-font-family",
    "value": "\"Public Sans Variable\", \"Public Sans\", ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif"
   },
@@ -44,6 +48,14 @@
   {
    "name": "--ok-palette-common-white",
    "value": "#FFFFFF"
+  },
+  {
+   "name": "--ok-palette-error-darker",
+   "value": "#7A0916"
+  },
+  {
+   "name": "--ok-palette-error-lighter",
+   "value": "#FFE9D5"
   },
   {
    "name": "--ok-palette-error-main",
@@ -70,6 +82,14 @@
    "value": "#1C252E"
   },
   {
+   "name": "--ok-palette-info-darker",
+   "value": "#003768"
+  },
+  {
+   "name": "--ok-palette-info-lighter",
+   "value": "#CAFDF5"
+  },
+  {
    "name": "--ok-palette-info-main",
    "value": "#00B8D9"
   },
@@ -78,12 +98,28 @@
    "value": "0 184 217"
   },
   {
+   "name": "--ok-palette-success-darker",
+   "value": "#065E49"
+  },
+  {
+   "name": "--ok-palette-success-lighter",
+   "value": "#D3FCD2"
+  },
+  {
    "name": "--ok-palette-success-main",
    "value": "#22C55E"
   },
   {
    "name": "--ok-palette-success-main-channel",
    "value": "34 197 94"
+  },
+  {
+   "name": "--ok-palette-warning-darker",
+   "value": "#7A4100"
+  },
+  {
+   "name": "--ok-palette-warning-lighter",
+   "value": "#FFF5CC"
   },
   {
    "name": "--ok-palette-warning-main",
@@ -160,10 +196,22 @@
       "type": "(id?: string | undefined) => void"
      },
      {
+      "description": "Every toast shown since the toaster started, dismissed ones too (oldest first).",
+      "kind": "method",
+      "name": "getHistory",
+      "type": "() => HTMLElement[]"
+     },
+     {
+      "description": "The toasts shown now, newest first.",
+      "kind": "method",
+      "name": "getToasts",
+      "type": "() => HTMLElement[]"
+     },
+     {
       "description": "Shows `loading` until the promise settles, then `success` or `error` in the same toast.",
       "kind": "method",
       "name": "promise",
-      "type": "<T>(promise: Promise<T>, messages: { loading: string; success: string; error: string; }) => string"
+      "type": "<T>(promise: Promise<T>, messages: ToastPromiseMessages) => string"
      },
      {
       "description": "Shows a toast built from text (never HTML). Returns its id.",
@@ -215,6 +263,65 @@
       "description": "Every toast shows a close button.",
       "kind": "flag",
       "name": "closeButton"
+     },
+     {
+      "attr": "data-ok-expand",
+      "default": true,
+      "description": "Toasts are listed one under another; `false` stacks them and expands the stack on hover, focus or the hotkey.",
+      "kind": "behavior",
+      "name": "expand"
+     },
+     {
+      "attr": "data-ok-rich-colors",
+      "description": "Typed toasts take their status color.",
+      "kind": "flag",
+      "name": "richColors"
+     },
+     {
+      "attr": "data-ok-invert",
+      "description": "Reverses the toasts' colors (dark on light pages).",
+      "kind": "flag",
+      "name": "invert"
+     },
+     {
+      "attr": "data-ok-offset",
+      "default": 16,
+      "description": "Distance from the viewport's edges: px or a CSS length.",
+      "kind": "number",
+      "min": 0,
+      "name": "offset",
+      "units": [
+       "px",
+       "rem",
+       "em",
+       "vh",
+       "vw",
+       "%"
+      ]
+     },
+     {
+      "attr": "data-ok-mobile-offset",
+      "default": 16,
+      "description": "Distance from the edges on screens under 600px wide: px or a CSS length.",
+      "kind": "number",
+      "min": 0,
+      "name": "mobileOffset",
+      "units": [
+       "px",
+       "rem",
+       "em",
+       "vh",
+       "vw",
+       "%"
+      ]
+     },
+     {
+      "attr": "data-ok-gap",
+      "default": 12,
+      "description": "Space between expanded toasts, in px.",
+      "kind": "number",
+      "min": 0,
+      "name": "gap"
      }
     ],
     "parts": [
@@ -222,6 +329,28 @@
       "description": "Marks a toast with custom content and no default styling.",
       "kind": "state",
       "name": "data-ok-custom"
+     },
+     {
+      "description": "Set on a stacked toaster (`data-ok-expand=\"false\"`) while the hotkey keeps it expanded.",
+      "kind": "state",
+      "name": "data-ok-expanded"
+     },
+     {
+      "description": "HTML: the keys that expand the toaster and focus it, such as `altKey+KeyT` (the default).",
+      "kind": "value",
+      "name": "data-ok-hotkey",
+      "value": "string"
+     },
+     {
+      "description": "HTML: the directions a toast can be swiped away in, such as `top right`. Default: toward the toaster's edges.",
+      "kind": "value",
+      "name": "data-ok-swipe-directions",
+      "value": "string"
+     },
+     {
+      "description": "Set on a toast while a pointer swipes it.",
+      "kind": "state",
+      "name": "data-ok-swiping"
      },
      {
       "description": "HTML: the id of the toast template that replaces this one when its promise settles.",
@@ -291,6 +420,12 @@
       "name": "data-ok-toast-title"
      },
      {
+      "description": "HTML: on a toast trigger, the `id` of the toaster that shows the toast (default: the page's first).",
+      "kind": "value",
+      "name": "data-ok-toast-toaster",
+      "value": "string"
+     },
+     {
       "description": "The list of toasts in one corner.",
       "elements": [
        "ol"
@@ -313,7 +448,7 @@
     "native": "HTMLElement",
     "props": [
      {
-      "description": "Every toast shows a close button.",
+      "description": "Every toast shows a close button. Default: shown while toasts can be swiped away; `false` hides it.",
       "name": "closeButton",
       "type": "boolean"
      },
@@ -323,15 +458,72 @@
       "type": "number"
      },
      {
+      "default": "true",
+      "description": "`false` stacks the toasts and expands them on hover, focus or the hotkey.",
+      "name": "expand",
+      "type": "boolean"
+     },
+     {
+      "description": "Space between expanded toasts, in px. Default 12.",
+      "name": "gap",
+      "type": "number"
+     },
+     {
+      "default": "[\"altKey\", \"KeyT\"]",
+      "description": "Keys that expand the toaster and move the focus to it. `[]` turns it off.",
+      "name": "hotkey",
+      "type": "readonly string[]"
+     },
+     {
+      "description": "Replaces the type icons and the close icon.",
+      "name": "icons",
+      "type": "Partial<Record<\"close\" | \"error\" | \"info\" | \"loading\" | \"success\" | \"warning\", ReactNode>>"
+     },
+     {
+      "description": "Names the toaster: it shows the toasts whose `toasterId` is this id (and is the element's `id`).",
+      "name": "id",
+      "type": "string"
+     },
+     {
+      "description": "Reverses the toasts' colors (dark on light pages).",
+      "name": "invert",
+      "type": "boolean"
+     },
+     {
+      "description": "`offset` on screens under 600px wide. Default 16px.",
+      "name": "mobileOffset",
+      "type": "ToasterOffset"
+     },
+     {
+      "description": "Distance from the viewport's edges: px, a CSS length or one per side. Default 16px.",
+      "name": "offset",
+      "type": "ToasterOffset"
+     },
+     {
       "default": "\"top-right\"",
       "description": "Corner or edge of the viewport.",
       "name": "position",
       "type": "\"bottom-center\" | \"bottom-left\" | \"bottom-right\" | \"top-center\" | \"top-left\" | \"top-right\""
      },
      {
-      "description": "Another store than the page's `toastStore` (tests, several toasters).",
+      "description": "Typed toasts take their status color.",
+      "name": "richColors",
+      "type": "boolean"
+     },
+     {
+      "description": "Another store than the page's `toastStore` (tests, separate queues).",
       "name": "store",
       "type": "ToastStore<ReactNode>"
+     },
+     {
+      "description": "Directions a toast can be swiped away in. Default: toward the toaster's edges; `[]` turns swiping off.",
+      "name": "swipeDirections",
+      "type": "readonly (\"bottom\" | \"left\" | \"right\" | \"top\")[]"
+     },
+     {
+      "description": "Defaults for every toast.",
+      "name": "toastOptions",
+      "type": "ToasterToastOptions"
      },
      {
       "description": "Toasts shown at once. Default 3.",
@@ -344,5 +536,11 @@
  ],
  "format": 1,
  "name": "snackbar",
- "title": "Snackbar"
+ "title": "Snackbar",
+ "types": [
+  {
+   "name": "ToasterOffset",
+   "type": "string | number | { top?: string | number; right?: string | number; bottom?: string | number; left?: string | number; }"
+  }
+ ]
 }

@@ -11,6 +11,7 @@ import {
   imageGroups,
   letterGroups,
   sizeGroups,
+  spacingGroups,
   variantGroups,
   withBadgeGroups,
 } from "./avatar-examples.js";
@@ -64,3 +65,4 @@ export const WithBadge: StoryObj = {
   name: "With badge",
 };
 export const Sizes: StoryObj = story("sizes", "Sizes", sizeGroups);
+export const Spacing: StoryObj = story("spacing", "Spacing", spacingGroups);

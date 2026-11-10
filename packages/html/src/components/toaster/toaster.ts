@@ -1,15 +1,23 @@
 import {
+  createToasterHotkey,
+  createToastSwipe,
   createToastTimer,
+  parseHotkey,
+  parseSwipeDirections,
   readNumber,
+  readStyle,
   type ToastPosition,
   type ToastTimer,
   type ToastType,
   toastDuration,
   toasterOptions,
+  toasterStyle,
   toastPositions,
+  toastSwipeDirections,
   toastTypes,
 } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
+import { syncCustomProperties } from "../../runtime/style.js";
 import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
 
 export interface ToastShowOptions {
@@ -22,8 +30,27 @@ export interface ToastShowOptions {
   duration?: number | undefined;
   action?: { label: string; onClick?: ((event: Event) => void) | undefined } | undefined;
   cancel?: { label: string; onClick?: ((event: Event) => void) | undefined } | undefined;
-  /** `false`: no close button, Escape ignored. */
+  /** `false`: no close button, Escape and swipes ignored. */
   dismissible?: boolean | undefined;
+  /** Shows this toast at another position than the toaster's. */
+  position?: ToastPosition | undefined;
+  /** Shows or hides the close button. Default: the toaster's `data-ok-close-button`. */
+  closeButton?: boolean | undefined;
+  /** Reverses this toast's colors. Default: the toaster's `data-ok-invert`. */
+  invert?: boolean | undefined;
+  /** Colors this typed toast with its status color. Default: the toaster's `data-ok-rich-colors`. */
+  richColors?: boolean | undefined;
+}
+
+/** Messages of `promise()`. */
+export interface ToastPromiseMessages {
+  loading: string;
+  success: string;
+  error: string;
+  /** Shown under the loading title. */
+  description?: string | undefined;
+  /** Runs once the promise settled, after the toast shows the result. */
+  finally?: (() => void) | undefined;
 }
 
 /** Events of this component (`ok:<name>:<event>` on the root). */
@@ -42,12 +69,13 @@ export interface ToasterInstance extends ComponentInstance {
   /** Shows a copy of a `<template>`'s toast (`li[data-ok-toast]`). Returns its id. */
   showTemplate(template: HTMLTemplateElement): string | null;
   /** Shows `loading` until the promise settles, then `success` or `error` in the same toast. */
-  promise<T>(
-    promise: Promise<T>,
-    messages: { loading: string; success: string; error: string },
-  ): string;
+  promise<T>(promise: Promise<T>, messages: ToastPromiseMessages): string;
   /** Closes one toast, or every toast. */
   dismiss(id?: string): void;
+  /** The toasts shown now, newest first. */
+  getToasts(): HTMLElement[];
+  /** Every toast shown since the toaster started, dismissed ones too (oldest first). */
+  getHistory(): HTMLElement[];
 }
 
 const ICONS: Record<"info" | "success" | "warning" | "error", string> = {
@@ -112,13 +140,21 @@ function closeButtonElement(): HTMLButtonElement {
 }
 
 /** A toast element built with createElement / textContent only. */
-function buildToast(options: ToastShowOptions, withClose: boolean): HTMLLIElement {
+function buildToast(options: ToastShowOptions, toasterClose: boolean): HTMLLIElement {
+  const withClose = options.closeButton ?? toasterClose;
   const type = toastTypes.includes(options.type as ToastType)
     ? (options.type as ToastType)
     : "default";
   const li = document.createElement("li");
   li.setAttribute("data-ok-toast", "");
   li.setAttribute("data-ok-type", type);
+  if (toastPositions.includes(options.position as ToastPosition))
+    li.setAttribute("data-ok-position", options.position as string);
+  for (const [key, attr] of [
+    ["invert", "data-ok-invert"],
+    ["richColors", "data-ok-rich-colors"],
+  ] as const)
+    if (options[key] !== undefined) li.setAttribute(attr, options[key] ? "" : "false");
   if (type !== "default") {
     const icon = document.createElement("span");
     icon.setAttribute("data-ok-toast-icon", "");
@@ -165,9 +201,15 @@ function buildToast(options: ToastShowOptions, withClose: boolean): HTMLLIElemen
  *           toaster of the page; with data-ok-toaster-position it moves the toaster first.
  *           A toast may carry data-ok-duration (ms; "Infinity" keeps it) and data-ok-then
  *           ("<template id>": replaces it when its time runs out — a loading toast, then the result).
+ *           data-ok-toast-toaster="<toaster id>" on the trigger picks another toaster.
  * Toasts:   [data-ok-toast-close], [data-ok-toast-action], [data-ok-toast-cancel] and your own
  *           [data-ok-toast-dismiss] buttons close it; time
- *           pauses while the toaster is hovered or focused; Escape on a focused toast closes it.
+ *           pauses while the toaster is hovered or focused; Escape on a focused toast closes it;
+ *           a swipe toward data-ok-swipe-directions (default: the toaster's edges) closes it.
+ *           A toast's data-ok-position puts it in a list of its own at that position.
+ * Toaster:  data-ok-expand="false" stacks the toasts (expanded on hover, focus or the hotkey,
+ *           data-ok-hotkey, default "altKey+KeyT"); data-ok-offset / data-ok-mobile-offset /
+ *           data-ok-gap become private properties (CSSOM).
  * Events:   ok:toaster:show (detail.toast), ok:toaster:dismiss (detail.toast, detail.reason:
  *           "close" | "dismiss" | "action" | "cancel" | "timeout" | "escape" | "api" | "overflow");
  *           ok:toaster:action (cancelable, detail.toast, detail.kind) before an action closes it.
@@ -184,8 +226,70 @@ export const toaster = defineComponent<ToasterInstance, ToasterEvents>({
       list.setAttribute("aria-live", "polite");
       element.append(list);
     }
+    const home = list;
     const timers = new Map<Element, ToastTimer>();
     const handlers = new Map<Element, ToastShowOptions>();
+    const swipes = new Map<Element, { destroy(): void }>();
+    const history: HTMLElement[] = [];
+    const lists = () => [
+      ...element.querySelectorAll<HTMLOListElement>(":scope > [data-ok-toaster-list]"),
+    ];
+    const toasts = () => lists().flatMap((l) => [...l.children] as HTMLElement[]);
+    /** The list for a toast: the toaster's own, or one per other position (made on demand). */
+    const listFor = (toast: Element) => {
+      const at = toast.getAttribute("data-ok-position");
+      if (!toastPositions.includes(at as ToastPosition) || at === readStyle(element, position))
+        return home;
+      const found = lists().find((l) => l.getAttribute("data-ok-position") === at);
+      if (found) return found;
+      const made = document.createElement("ol");
+      made.setAttribute("data-ok-toaster-list", "");
+      made.setAttribute("data-ok-position", at as string);
+      made.setAttribute("aria-live", "polite");
+      element.append(made);
+      return made;
+    };
+    const directions = (toast: Element) =>
+      parseSwipeDirections(element.getAttribute("data-ok-swipe-directions")) ??
+      toastSwipeDirections(
+        (toastPositions.includes(toast.getAttribute("data-ok-position") as ToastPosition)
+          ? toast.getAttribute("data-ok-position")
+          : readStyle(element, position)) as ToastPosition,
+      );
+    const swipeable = (toast: HTMLElement) => {
+      swipes.get(toast)?.destroy();
+      swipes.set(
+        toast,
+        createToastSwipe(toast, {
+          directions: () => directions(toast),
+          enabled: () => !toast.hasAttribute("data-ok-persistent"),
+          onDismiss: () => remove(toast, "swipe"),
+        }),
+      );
+    };
+    const hotkey = createToasterHotkey(element, {
+      hotkey: () => parseHotkey(element.getAttribute("data-ok-hotkey") ?? undefined),
+    });
+    let written: string[] = [];
+    const drawStyle = () => {
+      written = syncCustomProperties(
+        element,
+        toasterStyle({
+          offset: element.getAttribute(toasterOptions.options.offset.attr) ?? undefined,
+          mobileOffset: element.getAttribute(toasterOptions.options.mobileOffset.attr) ?? undefined,
+          gap: element.getAttribute(toasterOptions.options.gap.attr) ?? undefined,
+        }),
+        written,
+      );
+    };
+    drawStyle();
+    const styleObserver = new MutationObserver(drawStyle);
+    styleObserver.observe(element, {
+      attributes: true,
+      attributeFilter: ["offset", "mobileOffset", "gap"].map(
+        (key) => toasterOptions.options[key as "gap"].attr,
+      ),
+    });
     let counter = 0;
     let paused = false;
 
@@ -193,6 +297,8 @@ export const toaster = defineComponent<ToasterInstance, ToasterEvents>({
       timers.get(toast)?.stop();
       timers.delete(toast);
       handlers.delete(toast);
+      swipes.get(toast)?.destroy();
+      swipes.delete(toast);
       if (!toast.isConnected) return;
       toast.remove();
       emit("dismiss", { toast, reason });
@@ -211,7 +317,11 @@ export const toaster = defineComponent<ToasterInstance, ToasterEvents>({
             );
             timers.get(toast)?.stop();
             timers.delete(toast);
+            swipes.get(toast)?.destroy();
+            swipes.delete(toast);
             toast.replaceWith(replacement);
+            history.push(replacement);
+            swipeable(replacement);
             track(replacement);
             return;
           }
@@ -238,18 +348,20 @@ export const toaster = defineComponent<ToasterInstance, ToasterEvents>({
     const insert = (toast: HTMLElement) => {
       const id = toast.getAttribute("data-ok-toast-id") || `toast-${++counter}`;
       toast.setAttribute("data-ok-toast-id", id);
-      const existing = [...(list as HTMLOListElement).children].find(
-        (t) => t.getAttribute("data-ok-toast-id") === id,
-      );
+      const existing = byId(id);
       if (existing) {
         timers.get(existing)?.stop();
         timers.delete(existing);
+        swipes.get(existing)?.destroy();
+        swipes.delete(existing);
         existing.replaceWith(toast);
-      } else (list as HTMLOListElement).prepend(toast);
+      } else listFor(toast).prepend(toast);
+      history.push(toast);
+      swipeable(toast);
       track(toast);
       const max = readNumber(element, visibleToasts) as number;
-      for (const old of [...(list as HTMLOListElement).children].slice(max))
-        remove(old, "overflow");
+      const target = toast.parentElement as HTMLElement;
+      for (const old of [...target.children].slice(max)) remove(old, "overflow");
       emit("show", { toast });
       return id;
     };
@@ -259,10 +371,7 @@ export const toaster = defineComponent<ToasterInstance, ToasterEvents>({
       return source ? (source.cloneNode(true) as HTMLElement) : null;
     };
 
-    const byId = (id: string) =>
-      [...(list as HTMLOListElement).children].find(
-        (t) => t.getAttribute("data-ok-toast-id") === id,
-      );
+    const byId = (id: string) => toasts().find((t) => t.getAttribute("data-ok-toast-id") === id);
 
     const pause = (on: boolean) => {
       paused = on;
@@ -293,7 +402,7 @@ export const toaster = defineComponent<ToasterInstance, ToasterEvents>({
       (event) => {
         const target = event.target as Element;
         const toast = target.closest("[data-ok-toast]");
-        if (!toast || !list?.contains(toast)) return;
+        if (!toast || toast.parentElement?.parentElement !== element) return;
         if (target.closest("[data-ok-toast-close]")) remove(toast, "close");
         if (target.closest("[data-ok-toast-dismiss]")) remove(toast, "dismiss");
         for (const kind of ["action", "cancel"] as const) {
@@ -316,15 +425,23 @@ export const toaster = defineComponent<ToasterInstance, ToasterEvents>({
       { signal },
     );
     // Toasts in the markup on load are timed too.
-    for (const toast of list.children) {
+    for (const toast of toasts()) {
       if (!toast.getAttribute("data-ok-toast-id"))
         toast.setAttribute("data-ok-toast-id", `toast-${++counter}`);
+      history.push(toast);
+      swipeable(toast);
       track(toast);
     }
 
     const instance: ToasterInstance = {
       show(options) {
-        const toast = buildToast(options, element.hasAttribute(closeButton.attr));
+        // A swipeable toast always gets a close button: the single-pointer path (WCAG 2.5.7).
+        const probe = document.createElement("li");
+        if (options.position) probe.setAttribute("data-ok-position", options.position);
+        const toast = buildToast(
+          options,
+          element.hasAttribute(closeButton.attr) || directions(probe).length > 0,
+        );
         if (options.id) toast.setAttribute("data-ok-toast-id", options.id);
         if (options.duration !== undefined)
           toast.setAttribute(
@@ -342,20 +459,33 @@ export const toaster = defineComponent<ToasterInstance, ToasterEvents>({
         return toast ? insert(toast) : null;
       },
       promise(promise, messages) {
-        const id = instance.show({ type: "loading", title: messages.loading });
-        promise.then(
-          () => instance.show({ id, type: "success", title: messages.success }),
-          () => instance.show({ id, type: "error", title: messages.error }),
-        );
+        const id = instance.show({
+          type: "loading",
+          title: messages.loading,
+          description: messages.description,
+        });
+        promise
+          .then(
+            () => instance.show({ id, type: "success", title: messages.success }),
+            () => instance.show({ id, type: "error", title: messages.error }),
+          )
+          .then(() => messages.finally?.());
         return id;
       },
       dismiss(id) {
-        const targets = id === undefined ? [...(list as HTMLOListElement).children] : [byId(id)];
+        const targets = id === undefined ? toasts() : [byId(id)];
         for (const toast of targets) if (toast) remove(toast, "api");
       },
+      getToasts: () => toasts(),
+      getHistory: () => [...history],
       destroy() {
         for (const timer of timers.values()) timer.stop();
         timers.clear();
+        for (const swipe of swipes.values()) swipe.destroy();
+        swipes.clear();
+        hotkey.destroy();
+        styleObserver.disconnect();
+        syncCustomProperties(element, {}, written);
       },
     };
     return instance;
@@ -368,7 +498,10 @@ export const toaster = defineComponent<ToasterInstance, ToasterEvents>({
       handle(trigger, event, runtime) {
         const root = trigger.getRootNode() as Document | ShadowRoot;
         const template = root.getElementById(trigger.getAttribute("data-ok-toast-open") as string);
-        const target = root.querySelector("[data-ok-toaster]");
+        const named = trigger.getAttribute("data-ok-toast-toaster");
+        const target = named
+          ? root.querySelector(`[data-ok-toaster][id="${CSS.escape(named)}"]`)
+          : root.querySelector("[data-ok-toaster]");
         const instance = runtime.getOrCreate<ToasterInstance>(target, "toaster");
         if (!(template instanceof HTMLTemplateElement) || !instance || !target) {
           console.warn("[owlky] No toast template or toaster for this trigger.", trigger);

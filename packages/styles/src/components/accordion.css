@@ -3,7 +3,8 @@
  *
  * Anatomy:  details[data-ok-accordion] › summary[data-ok-accordion-summary]
  *             (… + [data-ok-accordion-icon]) › [data-ok-accordion-details] + [data-ok-accordion-actions]?
- * Modifiers: data-ok-variant = default | outlined | soft, data-ok-disable-gutters, data-ok-disabled
+ * Modifiers: data-ok-variant = default | outlined | soft, data-ok-disable-gutters, data-ok-disabled;
+ *            actions: data-ok-disable-spacing
  * States:    [open], :focus-visible on the summary, :hover (hover-capable devices)
  *
  * Single :where() selectors in @layer components (zero specificity). Translucent colors use
@@ -118,6 +119,10 @@
     justify-content: flex-end;
     gap: calc(var(--ok-spacing) * 2);
     padding: 0 calc(var(--ok-spacing) * 4) calc(var(--ok-spacing) * 4);
+  }
+
+  :where([data-ok-accordion-actions][data-ok-disable-spacing]) {
+    gap: 0;
   }
 
   /* Outlined: one bordered list. */

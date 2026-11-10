@@ -24,7 +24,7 @@ export const STORIES: [component: string, story: string][] = [
     "non-linear",
   ].map((s) => ["slider", s] as [string, string]),
   ...["simple", "enhanced"].map((s) => ["transfer-list", s] as [string, string]),
-  ...["simple", "rich", "custom-icons", "checkbox", "custom-styling"].map(
+  ...["simple", "rich", "custom-icons", "checkbox", "custom-styling", "drag-and-drop"].map(
     (s) => ["tree-view", s] as [string, string],
   ),
   ["autocomplete", "playground"],
