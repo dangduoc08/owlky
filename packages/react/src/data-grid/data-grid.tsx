@@ -19,6 +19,7 @@ import {
   GRID_CHECKBOX_FIELD,
   GRID_CHECKBOX_WIDTH,
   GRID_GROUPING_FIELD,
+  GRID_SORTING_ORDER,
   GRID_TREE_FIELD,
   GRID_XLSX_TYPE,
   type GridAggregationFunction,
@@ -47,6 +48,8 @@ import {
   type GridPivotModel,
   type GridPivotSection,
   type GridRowWindow,
+  type GridSortDirection,
+  type GridSortingOrder,
   type GridSortModel,
   type GridState,
   type GridTreeRow,
@@ -70,6 +73,7 @@ import {
   gridDefaultLabels,
   gridDensities,
   gridDensityFactor,
+  gridDirectedComparator,
   gridDisplayedRows,
   gridEditInputType,
   gridEditText,
@@ -125,6 +129,7 @@ import {
   parseGridEditValue,
   parseGridExcelOptions,
   parseGridExportOptions,
+  parseGridSortingOrder,
   parseIsoDate,
   pinGridColumn,
   prepareGridPrint,
@@ -202,6 +207,17 @@ export interface GridRowParams<R> {
   isLastVisible: boolean;
 }
 
+/**
+ * Compares two values for sorting (MUI X `GridComparatorFn`): negative when `v1` goes first. The
+ * params give each value's row.
+ */
+export type GridComparatorFn<R> = (
+  v1: unknown,
+  v2: unknown,
+  cellParams1: GridCellParams<R>,
+  cellParams2: GridCellParams<R>,
+) => number;
+
 export interface GridPreProcessEditCellProps<R> {
   id: string;
   row: R;
@@ -218,6 +234,15 @@ export interface GridColDef<R = Record<string, unknown>> extends GridColumn {
   valueFormatter?: ((value: unknown, row: R) => string) | undefined;
   /** Custom cell content (the text still drives search and export). */
   renderCell?: ((params: GridRenderCellParams<R>) => ReactNode) | undefined;
+  /** Sorts the column's values (ascending; reversed for descending). Default: by the column type. */
+  sortComparator?: GridComparatorFn<R> | undefined;
+  /**
+   * A comparator per direction, used as it is (such as empty values last in both directions).
+   * `undefined` falls back to `sortComparator`.
+   */
+  getSortComparator?:
+    | ((sortDirection: GridSortDirection) => GridComparatorFn<R> | undefined)
+    | undefined;
   /** Custom header content (the header name still labels the column). */
   renderHeader?: ((params: { field: string; colDef: GridColDef<R> }) => ReactNode) | undefined;
   /** Columns a cell spans (a number, or per cell). */
@@ -407,6 +432,16 @@ export interface DataGridProps<R>
   /** Hides the density selector of the toolbar. */
   disableDensitySelector?: boolean | undefined;
   disableMultipleColumnsSorting?: boolean | undefined;
+  /**
+   * The directions a header click goes through, in order (`null`: not sorted). Default
+   * `["asc", "desc", null]`. A column's `sortingOrder` overrides it.
+   */
+  sortingOrder?: GridSortingOrder | undefined;
+  /**
+   * `always`: a header click adds the column to the sort. Default `withModifierKey`: only with
+   * Shift.
+   */
+  multipleColumnsSortingMode?: "withModifierKey" | "always" | undefined;
   /** Hides the footer (row count and pagination). */
   hideFooter?: boolean | undefined;
   /** Labels (MUI X locale text keys). */
@@ -852,6 +887,8 @@ function DataGridInner<R>(
     disableColumnSelector,
     disableDensitySelector,
     disableMultipleColumnsSorting,
+    sortingOrder,
+    multipleColumnsSortingMode,
     hideFooter,
     localeText,
     exportFileName = "data",
@@ -1295,8 +1332,47 @@ function DataGridInner<R>(
         operators,
       },
     );
+  const sortParams = (column: GridColDef<R>, row: R): GridCellParams<R> => ({
+    id: idOf(row),
+    field: column.field,
+    row,
+    value: rawValue(column, row),
+  });
+  /** A column's own comparator for a direction, called with MUI X's cell params. */
+  const comparatorOf = (field: string, direction: GridSortDirection) => {
+    const column = columns.find((c) => c.field === field);
+    const own = gridDirectedComparator<R>(
+      column && {
+        sortComparator: column.sortComparator
+          ? (a, b, rowA, rowB) =>
+              (column.sortComparator as GridComparatorFn<R>)(
+                a,
+                b,
+                sortParams(column, rowA),
+                sortParams(column, rowB),
+              )
+          : undefined,
+        getSortComparator: column.getSortComparator
+          ? (d) => {
+              const fn = column.getSortComparator?.(d);
+              return fn
+                ? (a, b, rowA, rowB) => fn(a, b, sortParams(column, rowA), sortParams(column, rowB))
+                : undefined;
+            }
+          : undefined,
+      },
+      direction,
+    );
+    return own;
+  };
   const localSort = (list: readonly R[]) =>
-    sortGridRows(list, sortModel, columns, (row, field) => rawValue(columnOf(field), row));
+    sortGridRows(
+      list,
+      sortModel,
+      columns,
+      (row, field) => rawValue(columnOf(field), row),
+      comparatorOf,
+    );
   // Tree data: which rows are open (absent: the default depth).
   const [expansion, setExpansion] = useState<ReadonlyMap<string, boolean>>(new Map());
   const serverParents = new Map<string, string>();
@@ -2002,7 +2078,14 @@ function DataGridInner<R>(
   sortBy.current = (field, multi) => {
     const column = columns.find((c) => c.field === field);
     if (!column || disableColumnSorting || !isGridSortable(column)) return;
-    setSortModel(nextGridSort(sortModel, field, multi && !disableMultipleColumnsSorting));
+    setSortModel(
+      nextGridSort(
+        sortModel,
+        field,
+        (multi || multipleColumnsSortingMode === "always") && !disableMultipleColumnsSorting,
+        sortCycle(column),
+      ),
+    );
   };
   const toggleRow = useRef<(id: string) => void>(undefined as never);
   toggleRow.current = (rowId) => {
@@ -2081,6 +2164,14 @@ function DataGridInner<R>(
     setOrder(moveGridColumn(fields, field, { to: target }));
   };
 
+  /** A column's sort cycle: its own, the grid's, else asc → desc → none. */
+  function sortCycle(column: GridColDef<R>): GridSortingOrder {
+    return (
+      parseGridSortingOrder(column.sortingOrder) ??
+      parseGridSortingOrder(sortingOrder) ??
+      GRID_SORTING_ORDER
+    );
+  }
   const cellParams = (column: GridColDef<R>, row: R): GridCellParams<R> => ({
     id: idOf(row),
     field: column.field,
@@ -2544,6 +2635,8 @@ function DataGridInner<R>(
 
   const menuColumn = columns.find((c) => c.field === menuField);
   const menuSorted = sortModel.find((s) => s.field === menuField)?.sort;
+  /** Sort items outside the column's cycle are hidden. */
+  const menuCycle = menuColumn ? sortCycle(menuColumn) : GRID_SORTING_ORDER;
   const menuAction = (action: string) => {
     const field = menuField as string;
     setMenuAnchor(null);
@@ -4084,7 +4177,9 @@ function DataGridInner<R>(
         disableClipboardPaste,
         headerFilters,
         chartsIntegration,
+        multipleColumnsSortingMode,
       })}
+      {...(sortingOrder ? { "data-ok-sorting-order": JSON.stringify(sortingOrder) } : {})}
       {...(groupingModel.length && !treeData
         ? { "data-ok-row-grouping-model": JSON.stringify(groupingModel) }
         : {})}
@@ -4201,6 +4296,9 @@ function DataGridInner<R>(
                     ? { "data-ok-pinned": gridPinSide(pinned, column.field) }
                     : {})}
                   {...(sortable ? { "aria-sort": gridAriaSort(sortModel, column) } : {})}
+                  {...(column.sortingOrder
+                    ? { "data-ok-sorting-order": JSON.stringify(column.sortingOrder) }
+                    : {})}
                   tabIndex={-1}
                   onClick={(event) => {
                     // A press that resized or moved the column doesn't sort it.
@@ -4360,6 +4458,7 @@ function DataGridInner<R>(
         >
           <MenuItem
             data-ok-data-grid-action="asc"
+            hidden={!menuCycle.includes("asc") || undefined}
             disabled={!menuColumn || !isGridSortable(menuColumn) || menuSorted === "asc"}
             onClick={() => menuAction("asc")}
           >
@@ -4367,6 +4466,7 @@ function DataGridInner<R>(
           </MenuItem>
           <MenuItem
             data-ok-data-grid-action="desc"
+            hidden={!menuCycle.includes("desc") || undefined}
             disabled={!menuColumn || !isGridSortable(menuColumn) || menuSorted === "desc"}
             onClick={() => menuAction("desc")}
           >
@@ -4374,6 +4474,7 @@ function DataGridInner<R>(
           </MenuItem>
           <MenuItem
             data-ok-data-grid-action="unsort"
+            hidden={!menuCycle.includes(null) || undefined}
             disabled={!menuSorted}
             onClick={() => menuAction("unsort")}
           >

@@ -684,6 +684,11 @@ export interface DataGridParts {
   "data-ok-selectable": Value<"false">;
   /** On a row: extra space above it, in pixels. */
   "data-ok-spacing-top": Value<string>;
+  /**
+   * On the root or a header cell: the directions a header click goes through, as JSON (such as
+   * `["desc","asc",null]`; `null` is "not sorted").
+   */
+  "data-ok-sorting-order": Value<string>;
   /** On a cell: the text the quick filter and the export use, when the cell shows something else. */
   "data-ok-text": Value<string>;
   /** On a header cell: the options of a single select column, as JSON. */

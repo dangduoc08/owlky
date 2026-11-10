@@ -11,8 +11,10 @@ import {
   lazyScript,
   SERVER_AGGREGATION_SCRIPT_SOURCE,
   SERVER_SCRIPT_SOURCE,
+  SORTING_SCRIPT_SOURCE,
   serverAggregationScript,
   serverScript,
+  sortingScript,
   VALIDATION_SCRIPT_SOURCE,
   validationScript,
 } from "./data-grid-scripts.js";
@@ -181,3 +183,19 @@ export const CellSelection: StoryObj = {
   name: "Cell selection and clipboard",
 };
 export const Charts: StoryObj = { ...story("charts"), name: "Charts integration" };
+export const Sorting: StoryObj = {
+  ...frameworkStory({
+    html: snippetStory(
+      snippets,
+      "sorting",
+      DATA_GRID_FILES["sorting"] ?? [],
+      SETUP,
+      DATA_GRID_CONTROLS,
+      {
+        group: { script: sortingScript, scriptSource: SORTING_SCRIPT_SOURCE },
+      },
+    ),
+    react: reactGroupsStory(dataGridStories["sorting"] ?? [], controls),
+  }),
+  name: "Sorting",
+};

@@ -3370,9 +3370,17 @@ export const dataGridOptions = defineOptions("data-grid", "data-ok-data-grid", {
     "data-ok-charts-integration",
     "A chart of the grid's rows (or top-level groups) follows its filters, sorting and grouping.",
   ),
+  multipleColumnsSortingMode: style(
+    "data-ok-multiple-columns-sorting-mode",
+    ["withModifierKey", "always"] as const,
+    "withModifierKey",
+    "Sorting a column keeps the others with Shift, Ctrl or Cmd (`withModifierKey`), or `always`.",
+    { optional: true },
+  ),
 });
 
 export interface DataGridAnatomyOptions {
+  multipleColumnsSortingMode?: "withModifierKey" | "always" | undefined;
   disableRowGrouping?: boolean | undefined;
   rowGroupingColumnMode?: "single" | "multiple" | undefined;
   disableAggregation?: boolean | undefined;

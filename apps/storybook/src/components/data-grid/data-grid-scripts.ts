@@ -153,3 +153,53 @@ grid.setDataSource({
     return response.json(); // { rows, rowCount }
   },
 });`;
+
+const PRIORITY_RANK: Record<string, number> = { High: 0, Medium: 1, Low: 2 };
+type Comparator = (a: unknown, b: unknown) => number;
+interface SortingApi {
+  setSortComparator(
+    field: string,
+    comparators: {
+      sortComparator?: Comparator;
+      getSortComparator?: (direction: "asc" | "desc") => Comparator;
+    } | null,
+  ): void;
+}
+
+/** Sorting (HTML): the comparators React gets from its columns. */
+export function sortingScript(row: HTMLElement) {
+  const grid = gridIn(row).api as unknown as SortingApi;
+  grid.setSortComparator("priority", {
+    sortComparator: (a, b) => (PRIORITY_RANK[String(a)] ?? 3) - (PRIORITY_RANK[String(b)] ?? 3),
+  });
+  grid.setSortComparator("due", {
+    getSortComparator: (direction) => (a, b) => {
+      if (!a || !b) return a === b ? 0 : a ? -1 : 1;
+      const order = String(a).localeCompare(String(b));
+      return direction === "asc" ? order : -order;
+    },
+  });
+  return () => {
+    grid.setSortComparator("priority", null);
+    grid.setSortComparator("due", null);
+  };
+}
+
+export const SORTING_SCRIPT_SOURCE = `import { getRuntime } from "@owlky/html";
+
+const grid = getRuntime().get(document.getElementById("grid-sorting"), "data-grid");
+const rank = { High: 0, Medium: 1, Low: 2 };
+
+// Priorities sort by rank, not by name (values are the cells' text)
+grid.setSortComparator("priority", {
+  sortComparator: (a, b) => (rank[a] ?? 3) - (rank[b] ?? 3),
+});
+
+// Issues without a due date stay last in both directions
+grid.setSortComparator("due", {
+  getSortComparator: (direction) => (a, b) => {
+    if (!a || !b) return a === b ? 0 : a ? -1 : 1;
+    const order = a.localeCompare(b);
+    return direction === "asc" ? order : -order;
+  },
+});`;

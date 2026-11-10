@@ -16,6 +16,7 @@ import pivotDerived from "../../../../../packages/html/src/components/data-grid/
 import pivotGroup from "../../../../../packages/html/src/components/data-grid/examples/pivot-group.html?raw";
 import serverAggregation from "../../../../../packages/html/src/components/data-grid/examples/server-aggregation-group.html?raw";
 import serverGroup from "../../../../../packages/html/src/components/data-grid/examples/server-group.html?raw";
+import sortingGroup from "../../../../../packages/html/src/components/data-grid/examples/sorting-group.html?raw";
 import validationGroup from "../../../../../packages/html/src/components/data-grid/examples/validation-group.html?raw";
 import { CDN, GuideDocs, type GuideSection } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
@@ -1304,6 +1305,69 @@ export function DataGridChartsConfiguration() {
 }`,
   },
   {
+    id: "sorting",
+    title: "Change how columns sort",
+    body: 'A click on a header goes through ascending, descending and not sorted. `sortingOrder` changes that cycle for every column, and a column\'s own `sortingOrder` for that column. For example, `["desc", "asc", null]` sorts the biggest values first, and a cycle without `null` never goes back to not sorted. The column menu only offers the directions of the cycle. A column\'s `sortComparator` compares two values in ascending order, and the grid reverses it for descending. `getSortComparator(direction)` returns a comparator per direction that the grid uses as it is, for example to keep empty values last in both directions. In HTML, write the cycle as JSON in `data-ok-sorting-order` on the grid or on a header, and set comparators with `setSortComparator(field, { sortComparator, getSortComparator })`. HTML comparators get the cells\' values as text. With `multipleColumnsSortingMode="always"`, every click adds the column to the sort, without Shift.',
+    html: `${gridOf(sortingGroup)}
+<script type="module">
+  const grid = window.Owlky.get(document.getElementById("grid-sorting"), "data-grid");
+  const rank = { High: 0, Medium: 1, Low: 2 };
+  // Priorities sort by rank, not by name
+  grid.setSortComparator("priority", {
+    sortComparator: (a, b) => (rank[a] ?? 3) - (rank[b] ?? 3),
+  });
+  // Issues without a due date stay last in both directions
+  grid.setSortComparator("due", {
+    getSortComparator: (direction) => (a, b) => {
+      if (!a || !b) return a === b ? 0 : a ? -1 : 1;
+      return direction === "asc" ? a.localeCompare(b) : b.localeCompare(a);
+    },
+  });
+</script>`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+const issues = [
+  { id: 1, title: "Fix the login form", priority: "High", due: "2025-05-14", points: 3 },
+  { id: 2, title: "Update the docs", priority: "Low", due: null, points: 2 },
+  { id: 3, title: "Add dark mode", priority: "Medium", due: "2025-06-02", points: 8 },
+];
+
+const rank: Record<string, number> = { High: 0, Medium: 1, Low: 2 };
+
+const columns: GridColDef<(typeof issues)[number]>[] = [
+  { field: "title", headerName: "Title", flex: 1 },
+  {
+    field: "priority",
+    headerName: "Priority",
+    // Priorities sort by rank, not by name
+    sortComparator: (a, b) => (rank[String(a)] ?? 3) - (rank[String(b)] ?? 3),
+  },
+  {
+    field: "due",
+    headerName: "Due",
+    // Issues without a due date stay last in both directions
+    getSortComparator: (direction) => (a, b) => {
+      if (!a || !b) return a === b ? 0 : a ? -1 : 1;
+      const order = String(a).localeCompare(String(b));
+      return direction === "asc" ? order : -order;
+    },
+  },
+  // The biggest issues first
+  { field: "points", headerName: "Points", type: "number", sortingOrder: ["desc", "asc", null] },
+];
+
+export function Issues() {
+  return (
+    <DataGrid
+      aria-label="Issues"
+      rows={issues}
+      columns={columns}
+      multipleColumnsSortingMode="always"
+    />
+  );
+}`,
+  },
+  {
     id: "options",
     title: "Options",
     body: "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default.",
@@ -1321,7 +1385,7 @@ export function DataGridChartsConfiguration() {
 - **Instance:** \`runtime.get(element, "data-grid")\` returns \`{ sortModel, filterModel, selection, columnVisibilityModel, columnOrder, pinnedColumns, columnWidths }\` with a setter for each (\`setSortModel(model)\`, \`setColumnWidth(field, width)\` and so on; setters fire no events), \`toCsv()\`, \`exportCsv()\`, \`setRows(rows)\` and \`setDataSource(source)\` (\`null\` stops it).
 - **\`ok:data-grid:rowclick\`**, **\`ok:data-grid:rowdoubleclick\`**, **\`ok:data-grid:cellclick\`**, **\`ok:data-grid:celldoubleclick\`** and **\`ok:data-grid:columnheaderclick\`** report the row id, the field and the value. **\`ok:data-grid:editstart\`** and **\`ok:data-grid:editstop\`** report the cell and the reason. **\`ok:data-grid:validate\`** asks for an error in \`detail.error\`.
 - **\`ok:data-grid:expand\`**, **\`ok:data-grid:detailpanel\`** and **\`ok:data-grid:roworder\`** report a row opening, a panel opening and a row moving. They're cancelable. \`setRowChildrenExpansion(id, open)\` and \`toggleDetailPanel(id)\` do the same from code.
-- **More methods:** \`print(options)\`, \`autosizeColumns(options)\`, \`scrollToIndexes({ rowIndex, colIndex })\`, \`exportState()\`, \`restoreState(state)\`, \`setFilterOperators(field, operators)\`, \`setValueFormatter(field, format)\`, \`setGroupingValueGetter(field, getter)\`, \`setPivotDerivedColumns(getter)\` and \`setLocaleText(labels)\`. \`toCsv\` and \`exportCsv\` take CSV options.
+- **More methods:** \`print(options)\`, \`autosizeColumns(options)\`, \`scrollToIndexes({ rowIndex, colIndex })\`, \`exportState()\`, \`restoreState(state)\`, \`setFilterOperators(field, operators)\`, \`setSortComparator(field, comparators)\`, \`setValueFormatter(field, format)\`, \`setGroupingValueGetter(field, getter)\`, \`setPivotDerivedColumns(getter)\` and \`setLocaleText(labels)\`. \`toCsv\` and \`exportCsv\` take CSV options.
 - **\`ok:data-grid:rowgrouping\`**, **\`ok:data-grid:aggregation\`**, **\`ok:data-grid:cellselection\`** and **\`ok:data-grid:chart\`** fire with the new model in \`detail.model\`. **\`ok:data-grid:pivot\`** reports \`detail.model\` and \`detail.active\`. **\`ok:data-grid:activechart\`** reports the chart the panel switches to in \`detail.id\`. They're cancelable. **\`ok:data-grid:clipboardcopy\`** reports the copied text in \`detail.data\`, and the cancelable **\`ok:data-grid:clipboardpaste\`** the pasted cells. The instance has \`rowGroupingModel\`, \`aggregationModel\`, \`pivotModel\`, \`pivotActive\`, \`cellSelectionModel\` and \`chartModel\` with their setters, \`toExcel(options)\` and \`exportExcel(options)\`.
 - **\`ok:data-grid:scrollend\`** reports \`detail.visibleRowsCount\` when people scroll to the end of the rows. **\`ok:data-grid:datasourceerror\`** reports \`detail.error\` when a data source fails.`,
   },
@@ -1376,6 +1440,12 @@ const PREVIEWS = {
           html: "ok:data-grid:filter",
           type: "GridFilterModel",
           description: "The filter and the search words.",
+        },
+        {
+          react: "sortingOrder · sortComparator · getSortComparator (column)",
+          html: "data-ok-sorting-order · setSortComparator()",
+          type: "(asc | desc | null)[] · (a, b, params1, params2) => number",
+          description: "The sort cycle of a header, and a column's own comparison.",
         },
         {
           react: "paginationModel / pageSizeOptions",

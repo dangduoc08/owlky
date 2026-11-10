@@ -549,6 +549,12 @@
       "type": "(ids: readonly string[]) => void"
      },
      {
+      "description": "A column's own sorting (MUI X `sortComparator` / `getSortComparator`), given the cells' values (`data-ok-value`, else the text) and rows. `null`: back to sorting by the column type.",
+      "kind": "method",
+      "name": "setSortComparator",
+      "type": "(field: string, comparators: GridComparators<HTMLElement> | null) => void"
+     },
+     {
       "description": "Sorts the rows (no event).",
       "kind": "method",
       "name": "setSortModel",
@@ -924,6 +930,18 @@
       "description": "A chart of the grid's rows (or top-level groups) follows its filters, sorting and grouping.",
       "kind": "flag",
       "name": "chartsIntegration"
+     },
+     {
+      "attr": "data-ok-multiple-columns-sorting-mode",
+      "default": "withModifierKey",
+      "description": "Sorting a column keeps the others with Shift, Ctrl or Cmd (`withModifierKey`), or `always`.",
+      "kind": "style",
+      "name": "multipleColumnsSortingMode",
+      "optional": true,
+      "values": [
+       "withModifierKey",
+       "always"
+      ]
      }
     ],
     "parts": [
@@ -1635,6 +1653,12 @@
       ]
      },
      {
+      "description": "On the root or a header cell: the directions a header click goes through, as JSON (such as `[\"desc\",\"asc\",null]`; `null` is \"not sorted\").",
+      "kind": "value",
+      "name": "data-ok-sorting-order",
+      "value": "string"
+     },
+     {
       "description": "On a row: extra space above it, in pixels.",
       "kind": "value",
       "name": "data-ok-spacing-top",
@@ -2046,6 +2070,12 @@
       "type": "Partial<GridLabels>"
      },
      {
+      "default": "withModifierKey",
+      "description": "`always`: a header click adds the column to the sort. only with Shift.",
+      "name": "multipleColumnsSortingMode",
+      "type": "\"always\" | \"withModifierKey\""
+     },
+     {
       "description": "Called when the chart panel switches to another chart.",
       "name": "onActiveChartIdChange",
       "type": "((id: string) => void)"
@@ -2344,6 +2374,12 @@
       "type": "\"client\" | \"server\""
      },
      {
+      "default": "[\"asc\", \"desc\", null]",
+      "description": "The directions a header click goes through, in order (`null`: not sorted). A column's `sortingOrder` overrides it.",
+      "name": "sortingOrder",
+      "type": "GridSortingOrder"
+     },
+     {
       "description": "Splits pasted text into cells (default: tab-separated lines).",
       "name": "splitClipboardPastedText",
       "type": "((text: string) => string[][])"
@@ -2395,8 +2431,16 @@
    "type": "\"cellDoubleClick\" | \"enterKeyDown\" | \"f2KeyDown\" | \"printableKeyDown\""
   },
   {
+   "name": "GridSortDirection",
+   "type": "\"asc\" | \"desc\""
+  },
+  {
    "name": "GridSortModel",
    "type": "GridSortItem[]"
+  },
+  {
+   "name": "GridSortingOrder",
+   "type": "readonly (GridSortDirection | null)[]"
   }
  ]
 }

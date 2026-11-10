@@ -38,6 +38,7 @@ div[data-ok-data-grid][data-ok-density][data-ok-checkbox-selection]?[data-ok-dis
          [data-ok-searchable=false]?[aria-describedby → Tooltip#<id>-<field>-description]?
          [data-ok-format=number|currency|percent|date|datetime][data-ok-format-options='{…}']? (HTML only)
          [data-ok-resizable=false]?[data-ok-editable]?[data-ok-value-options='["…"]']?[data-ok-pinned]?[hidden]?
+         [data-ok-sorting-order='["desc","asc",null]']? (root too: the grid's cycle)
         span[data-ok-data-grid-header-title] · span[data-ok-data-grid-sort-icon] · IconButton[data-ok-data-grid-menu-button]
         · span[data-ok-data-grid-resize][aria-hidden]                         (resizable)
     div[role=rowgroup][data-ok-data-grid-body]   (--_ok-data-grid-before|after: spacers of the row window)
@@ -184,6 +185,7 @@ Root: `data-ok-data-grid`. Unknown values fall back to the default.
 | `disableClipboardPaste` | `data-ok-disable-clipboard-paste` | flag | boolean | off | Ctrl / Cmd + V doesn't paste into editable cells (copying still works). |
 | `headerFilters` | `data-ok-header-filters` | flag | boolean | off | A row of filter fields under the column headers. |
 | `chartsIntegration` | `data-ok-charts-integration` | flag | boolean | off | A chart of the grid's rows (or top-level groups) follows its filters, sorting and grouping. |
+| `multipleColumnsSortingMode` | `data-ok-multiple-columns-sorting-mode="…"` | style | `withModifierKey` `always` | — | Sorting a column keeps the others with Shift, Ctrl or Cmd (`withModifierKey`), or `always`. |
 <!-- /options:data-grid -->
 
 React props (MUI X names): `rows`, `columns` (`GridColDef`: `field`, `headerName`, `type`
@@ -248,7 +250,9 @@ columns; `null`: none); `excelOptions` (`fileName`, `sheetName`, `fields`, `allC
 `onChartModelChange` / `initialState.chartsIntegration.model`; `chartModels` / `onChartModelsChange` /
 `initialState.chartsIntegration.charts`, `activeChartId` / `onActiveChartIdChange` /
 `initialState.chartsIntegration.activeChartId`, `apiRef.setChartModels` / `setActiveChartId`; data source `groupFields`; `apiRef`
-row grouping, aggregation, pivot, cell selection and chart setters. Beyond MUI X: Alt + Up / Down on a reorder handle (WCAG 2.5.7). Beyond MUI X (accessibility): Alt + Left / Right resizes, column menu
+row grouping, aggregation, pivot, cell selection and chart setters. Batch E (roadmap 4.18.49): grid
+`sortingOrder`, `multipleColumnsSortingMode` (`withModifierKey` | `always`), column `sortingOrder`,
+`sortComparator(v1, v2, params1, params2)`, `getSortComparator(direction)`. Beyond MUI X: Alt + Up / Down on a reorder handle (WCAG 2.5.7). Beyond MUI X (accessibility): Alt + Left / Right resizes, column menu
 Move left / Move right. Renamed: `rowSelectionModel` is an id array (MUI v8:
 `{ type, ids }`). Later phases: see ADR-0021 (tree data, master-detail, row reordering / pinning,
 column groups, row grouping, aggregation, pivoting, Excel, clipboard, cell selection, header
@@ -409,6 +413,14 @@ sorting, paging, grouping, aggregation, pivoting, the model) redraws through the
 path: React passes new `series`, HTML calls `updateSeries` (the data table follows in place). Navigation ignores grids inside cells
 (a date picker's calendar) and leaves their tab stops alone.
 
+Sorting (4.18.49): a header goes to the next direction of its cycle (the column's `sortingOrder`,
+else the grid's, else asc → desc → none; a direction outside the cycle starts it); the column menu
+hides the sort items outside the cycle. `sortComparator` compares ascending (reversed for desc);
+`getSortComparator(direction)` is used as it is (`undefined`: `sortComparator`, else the type's);
+a 0 or NaN goes on to the next sort key. `multipleColumnsSortingMode="always"` adds every clicked
+column to the sort (Shift not needed; `disableMultipleColumnsSorting` still wins). Grouped rows and
+the pivot order groups as before (by key or aggregated value).
+
 ## Keyboard
 | Key | Action |
 |---|---|
@@ -464,7 +476,10 @@ the active chart's), `chartModels`, `activeChartId`, `setChartModels(models)`,
 `setActiveChartId(id)`; `ok:data-grid:chart` carries `id` with several charts;
 `ok:data-grid:activechart` (cancelable, `{ id }`);
 `toExcel(options)`, `exportExcel(options)`.
-Attributes: `data-ok-label-no-rows`, `data-ok-label-no-results`, `data-ok-export-file-name`.
+Batch E: instance `setSortComparator(field, { sortComparator?, getSortComparator? } | null)`
+(values: `data-ok-value`, else the cell text; rows: the row elements).
+Attributes: `data-ok-label-no-rows`, `data-ok-label-no-results`, `data-ok-export-file-name`,
+`data-ok-sorting-order` (root and headers, JSON).
 
 ## Responsive
 The grid scrolls horizontally inside its main area (header sticky); the toolbar wraps; panels fit
@@ -483,7 +498,7 @@ the detailed record of what is kept.
 |---|---|---|---|
 | Data: `rows`, `columns`, `getRowId`, `initialState`, `localeText`, `apiRef` | same | kept | `apiRef` covers the setters / getters listed above |
 | Column def: `field`, `headerName`, `type`, `width` / `minWidth` / `maxWidth` / `flex`, `align` / `headerAlign`, `description`, `sortable`, `filterable`, `hideable`, `resizable`, `editable`, `valueOptions`, `valueGetter` / `valueFormatter` / `valueParser` / `valueSetter`, `renderCell`, `renderHeader`, `colSpan`, `filterOperators`, `getApplyQuickFilterFn`, `preProcessEditCellProps`, `groupable`, `aggregable`, `availableAggregationFunctions`, `pivotable` | same | kept | |
-| Column def: `sortComparator`, `getSortComparator`, `sortingOrder`; grid `sortingOrder`, `multipleColumnsSortingMode` | — | deferred | custom sort; sort cycle; multi-sort without Shift |
+| Column def: `sortComparator`, `getSortComparator`, `sortingOrder`; grid `sortingOrder`, `multipleColumnsSortingMode` | same | kept (4.18.49) | comparators get `{ id, field, row, value }` params (MUI X: `{ id, field, value, rowNode, api }`); HTML: `data-ok-sorting-order` (root, header), `data-ok-multiple-columns-sorting-mode`, `setSortComparator(field, { sortComparator, getSortComparator })` (values as text); grouped rows keep ordering groups by key |
 | Column def: `renderEditCell`, `renderHeaderFilter` | — | deferred | custom editors / header filter inputs (header filter operator menus: spec Deferred) |
 | Column def: `cellClassName`, `headerClassName` | grid `getCellClassName` only | deferred | per column class names |
 | Column def: `hideSortIcons`, `disableColumnMenu`, `disableReorder`, `disableExport`, `pinnable` | — | deferred | per column opt-outs (grid-wide flags exist) |

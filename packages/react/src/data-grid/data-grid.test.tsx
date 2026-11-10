@@ -2526,4 +2526,98 @@ describe("DataGrid", () => {
       expect(html).toContain('role="treegrid"');
     });
   });
+
+  describe("sorting options", () => {
+    it("follows the grid's and a column's sortingOrder; always adds columns", async () => {
+      const onSortModelChange = vi.fn();
+      const columns: GridColDef<Row>[] = [
+        { field: "name", headerName: "Name", sortingOrder: ["desc", null] },
+        { field: "age", headerName: "Age", type: "number" },
+      ];
+      render(
+        <DataGrid
+          aria-label="People"
+          rows={ROWS}
+          columns={columns}
+          sortingOrder={["desc", "asc"]}
+          multipleColumnsSortingMode="always"
+          onSortModelChange={onSortModelChange}
+        />,
+      );
+      const root = grid().closest("[data-ok-data-grid]") as HTMLElement;
+      expect(root.getAttribute("data-ok-sorting-order")).toBe('["desc","asc"]');
+      expect(root.getAttribute("data-ok-multiple-columns-sorting-mode")).toBe("always");
+      expect(header(/Name/).getAttribute("data-ok-sorting-order")).toBe('["desc",null]');
+      expect(header(/Age/).hasAttribute("data-ok-sorting-order")).toBe(false);
+      fireEvent.click(header(/Age/));
+      expect(names()).toEqual(["Diego", "Ana", "Bao", "Chloe"]);
+      fireEvent.click(header(/Age/));
+      expect(header(/Age/).getAttribute("aria-sort")).toBe("ascending");
+      // The grid's cycle has no null: asc goes back to desc.
+      fireEvent.click(header(/Age/));
+      expect(header(/Age/).getAttribute("aria-sort")).toBe("descending");
+      // "always": a click without Shift adds the column.
+      fireEvent.click(header(/Name/));
+      expect(onSortModelChange).toHaveBeenLastCalledWith([
+        { field: "age", sort: "desc" },
+        { field: "name", sort: "desc" },
+      ]);
+      fireEvent.click(header(/Name/));
+      expect(onSortModelChange).toHaveBeenLastCalledWith([{ field: "age", sort: "desc" }]);
+    });
+
+    it("hides the column menu's sort items outside the cycle", async () => {
+      render(
+        <DataGrid
+          aria-label="People"
+          rows={ROWS}
+          columns={[{ field: "name", headerName: "Name", sortingOrder: ["asc"] }]}
+        />,
+      );
+      await userEvent.hover(header(/Name/));
+      await userEvent.click(screen.getByRole("button", { name: "Name column menu" }));
+      expect(screen.getByRole("menuitem", { name: "Sort by ASC" })).toBeTruthy();
+      expect(screen.queryByRole("menuitem", { name: "Sort by DESC" })).toBeNull();
+      expect(screen.queryByRole("menuitem", { name: "Unsort" })).toBeNull();
+    });
+
+    it("sorts with sortComparator and getSortComparator (cell params)", () => {
+      const params: unknown[] = [];
+      const columns: GridColDef<Row>[] = [
+        {
+          field: "name",
+          headerName: "Name",
+          // By length, then by name.
+          sortComparator: (a, b, p1) => {
+            params.push(p1);
+            return String(a).length - String(b).length || String(a).localeCompare(String(b));
+          },
+        },
+        {
+          field: "age",
+          headerName: "Age",
+          type: "number",
+          // Empty ages last in both directions.
+          getSortComparator: (direction) => (a, b) =>
+            a === null
+              ? 1
+              : b === null
+                ? -1
+                : direction === "asc"
+                  ? Number(a) - Number(b)
+                  : Number(b) - Number(a),
+        },
+      ];
+      render(<DataGrid aria-label="People" rows={ROWS} columns={columns} />);
+      fireEvent.click(header(/Name/));
+      expect(names()).toEqual(["Ana", "Bao", "Chloe", "Diego"]);
+      expect(params[0]).toMatchObject({ field: "name", row: expect.any(Object) });
+      fireEvent.click(header(/Name/));
+      expect(names()).toEqual(["Diego", "Chloe", "Bao", "Ana"]);
+      fireEvent.click(header(/Age/));
+      expect(names()).toEqual(["Bao", "Ana", "Diego", "Chloe"]);
+      fireEvent.click(header(/Age/));
+      expect(names()).toEqual(["Diego", "Ana", "Bao", "Chloe"]);
+    });
+  });
 });

@@ -18,6 +18,7 @@ import {
   GRID_CHECKBOX_FIELD,
   GRID_CHECKBOX_WIDTH,
   GRID_GROUPING_FIELD,
+  GRID_SORTING_ORDER,
   GRID_TREE_FIELD,
   GRID_XLSX_TYPE,
   type GridAggregationModel,
@@ -30,6 +31,7 @@ import {
   type GridColumnType,
   type GridColumnVisibilityModel,
   type GridColumnWidths,
+  type GridComparators,
   type GridCsvOptions,
   type GridDataSource,
   type GridDensity,
@@ -48,6 +50,7 @@ import {
   type GridPivotSection,
   type GridPrintLayout,
   type GridRowWindow,
+  type GridSortDirection,
   type GridSortModel,
   type GridState,
   type GridViewport,
@@ -69,6 +72,7 @@ import {
   gridDefaultLabels,
   gridDensities,
   gridDensityFactor,
+  gridDirectedComparator,
   gridEditInputType,
   gridEditText,
   gridExpandedByDepth,
@@ -123,6 +127,7 @@ import {
   parseGridExcelOptions,
   parseGridExportOptions,
   parseGridFormatOptions,
+  parseGridSortingOrder,
   pick,
   pinGridColumn,
   prepareGridPrint,
@@ -277,6 +282,11 @@ export interface DataGridInstance extends ComponentInstance {
   restoreState(state: unknown): void;
   /** Operators of a column's filter (they replace the type's operators). */
   setFilterOperators(field: string, operators: readonly GridFilterOperator<HTMLElement>[]): void;
+  /**
+   * A column's own sorting (MUI X `sortComparator` / `getSortComparator`), given the cells' values
+   * (`data-ok-value`, else the text) and rows. `null`: back to sorting by the column type.
+   */
+  setSortComparator(field: string, comparators: GridComparators<HTMLElement> | null): void;
   /** The text of a column's values in `setRows` and after editing (`null`: back to the default). */
   setValueFormatter(field: string, format: ((value: unknown) => string) | null): void;
   /**
@@ -391,6 +401,7 @@ const {
   pivotActive: pivotActiveOption,
   cellSelection: cellSelectionOption,
   disableClipboardPaste,
+  multipleColumnsSortingMode,
 } = dataGridOptions.options;
 
 type DataRow = Record<string, unknown>;
@@ -555,6 +566,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         valueOptions: stringList(header.getAttribute("data-ok-value-options")),
         groupable: header.getAttribute("data-ok-groupable") !== "false",
         aggregable: header.getAttribute("data-ok-aggregable") !== "false",
+        sortingOrder: parseGridSortingOrder(header.getAttribute("data-ok-sorting-order")),
       }));
     const baseColumns = readColumns();
     /** The columns: the markup's, or the pivot's while it shows. */
@@ -563,6 +575,15 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     let labels: GridLabels = gridDefaultLabels;
     const operators: Record<string, readonly GridFilterOperator<HTMLElement>[]> = {};
     const formatters = new Map<string, (value: unknown) => string>();
+    const comparators = new Map<string, GridComparators<HTMLElement>>();
+    /** A column's own comparator for a direction (`setSortComparator`). */
+    const comparatorOf = (field: string, direction: GridSortDirection) =>
+      gridDirectedComparator(comparators.get(field), direction);
+    /** A column's sort cycle: its `data-ok-sorting-order`, the root's, else asc → desc → none. */
+    const sortCycle = (column: GridColumn) =>
+      column.sortingOrder ??
+      parseGridSortingOrder(element.getAttribute("data-ok-sorting-order")) ??
+      GRID_SORTING_ORDER;
     /** A value as the column shows it: its formatter, its `data-ok-format`, or plain text. */
     const formatted = (field: string, raw: unknown) => {
       const own = formatters.get(field);
@@ -1328,7 +1349,9 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
           : new Set(filterGridRows(all, filterModel, columns, value, text, filterOptions()));
         const place = serverSide(sortingMode)
           ? null
-          : new Map(sortGridRows(all, sortModel, columns, value).map((row, i) => [row, i]));
+          : new Map(
+              sortGridRows(all, sortModel, columns, value, comparatorOf).map((row, i) => [row, i]),
+            );
         const depth = readNumber(element, defaultGroupingExpansionDepth) as number;
         const tree = gridTreeRows(all, {
           idOf,
@@ -1388,7 +1411,12 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         const pass = passed ? new Set(passed) : null;
         const place = serverSide(sortingMode)
           ? null
-          : new Map(sortGridRows(source, sortModel, columns, value).map((row, i) => [row, i]));
+          : new Map(
+              sortGridRows(source, sortModel, columns, value, comparatorOf).map((row, i) => [
+                row,
+                i,
+              ]),
+            );
         const model = activeAggregation();
         const levels = positions();
         const groupValues = new Map<string, Record<string, unknown>>();
@@ -1519,7 +1547,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
           : filterGridRows(all, filterModel, columns, value, text, filterOptions());
         sorted = serverSide(sortingMode)
           ? filtered
-          : sortGridRows(filtered, sortModel, columns, value);
+          : sortGridRows(filtered, sortModel, columns, value, comparatorOf);
       }
       const serverPage = serverSide(paginationMode);
       total = serverPage
@@ -2202,10 +2230,12 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     const sortBy = (field: string, multi: boolean) => {
       const column = columns.find((c) => c.field === field);
       if (!column || !isGridSortable(column)) return;
+      const always = readStyle(element, multipleColumnsSortingMode) === "always";
       const next = nextGridSort(
         sortModel,
         field,
-        multi && !element.hasAttribute(disableMultipleColumnsSorting.attr),
+        (multi || always) && !element.hasAttribute(disableMultipleColumnsSorting.attr),
+        sortCycle(column),
       );
       change("sort", next, (model) => {
         sortModel = model;
@@ -3225,6 +3255,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         sortModel,
         baseColumns,
         cellValue,
+        comparatorOf,
       ).filter((row) => !row.hasAttribute("data-ok-generated"));
     const exportShown = () =>
       visibleGridColumns(
@@ -3596,6 +3627,18 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       disable("asc", !isGridSortable(column) || sorted === "asc");
       disable("desc", !isGridSortable(column) || sorted === "desc");
       disable("unsort", !sorted);
+      // Sort items outside the column's cycle are hidden.
+      const cycle = sortCycle(column);
+      for (const [action, direction] of [
+        ["asc", "asc"],
+        ["desc", "desc"],
+        ["unsort", null],
+      ] as const) {
+        const item = columnMenu.querySelector<HTMLElement>(
+          `[data-ok-data-grid-action="${action}"]`,
+        );
+        if (item) item.hidden = !cycle.includes(direction);
+      }
       disable("filter", column.filterable === false || column.type === "actions");
       disable("hide", column.hideable === false);
       const fieldsNow = arrangedFields();
@@ -4024,6 +4067,11 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         for (const row of filterRows())
           if (partsOf(row).field.value === field) fillOperators(partsOf(row).operator, field);
         apply();
+      },
+      setSortComparator(field, own) {
+        if (own) comparators.set(field, own);
+        else comparators.delete(field);
+        refresh();
       },
       setValueFormatter(field, format) {
         if (format) formatters.set(field, format);

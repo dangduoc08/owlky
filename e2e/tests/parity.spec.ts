@@ -24,6 +24,7 @@ const pairs: [component: string, story: string][] = [
   ["datagrid", "pivoting"],
   ["datagrid", "cell-selection"],
   ["datagrid", "charts"],
+  ["datagrid", "sorting"],
   ["motion", "in-view"],
   ["motion", "text"],
   ["motion", "scroll"],

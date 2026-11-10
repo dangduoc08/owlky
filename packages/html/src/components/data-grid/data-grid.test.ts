@@ -48,7 +48,7 @@ const header = (host: Element, field: string) =>
   host.querySelector<HTMLElement>(`[role="columnheader"][data-ok-field="${field}"]`) as HTMLElement;
 
 describe("data grid snippets", () => {
-  it("covers every story group", () => expect(snippets).toHaveLength(27));
+  it("covers every story group", () => expect(snippets).toHaveLength(28));
 
   // Grids whose rows come from JavaScript (setRows, data sources) ship no rows.
   const scripted = (path: string) => /(large|server|lazy|server-aggregation)-group/.test(path);
@@ -72,7 +72,9 @@ describe("data grid snippets", () => {
 
   // Layout and validation grids: their own rows, no pages.
   const unpaged = (path: string) =>
-    /(layout|validation|tree|detail|ordering|groups|list|grouping|pivot|cells|charts)-/.test(path);
+    /(layout|validation|tree|detail|ordering|groups|list|grouping|pivot|cells|charts|sorting)-/.test(
+      path,
+    );
 
   it.each(snippets.filter(([path]) => unpaged(path)))(
     "%s: CSP-safe; no axe violations once running",
@@ -1928,5 +1930,77 @@ describe("data grid runtime, phase 5", () => {
     expect(stock().textContent).toBe("99");
     expect(events.some(([n]) => n === "datasourceerror")).toBe(true);
     expect(root).toBeTruthy();
+  });
+});
+
+describe("data grid sorting options", () => {
+  it("sort cycles from the root and the headers; always adds columns; menu items follow", async () => {
+    const host = mount(BASIC);
+    const root = host.querySelector<HTMLElement>("[data-ok-data-grid]") as HTMLElement;
+    root.setAttribute("data-ok-sorting-order", '["desc","asc"]');
+    root.setAttribute("data-ok-multiple-columns-sorting-mode", "always");
+    header(host, "firstName").setAttribute("data-ok-sorting-order", '["asc"]');
+    start();
+    const instance = runtime?.get<DataGridInstance>(root, "data-grid") as DataGridInstance;
+    const age = header(host, "age");
+    age.click();
+    expect(age.getAttribute("aria-sort")).toBe("descending");
+    age.click();
+    expect(age.getAttribute("aria-sort")).toBe("ascending");
+    age.click();
+    expect(age.getAttribute("aria-sort")).toBe("descending");
+    header(host, "firstName").click();
+    expect(instance.sortModel).toEqual([
+      { field: "age", sort: "desc" },
+      { field: "firstName", sort: "asc" },
+    ]);
+    // A one-direction cycle stays sorted.
+    header(host, "firstName").click();
+    expect(instance.sortModel).toHaveLength(2);
+    const menu = header(host, "firstName").querySelector(
+      "[data-ok-data-grid-menu-button]",
+    ) as HTMLElement;
+    await userEvent.hover(header(host, "firstName"));
+    await userEvent.click(menu);
+    const item = (action: string) =>
+      host.querySelector(
+        `#${root.id}-column-menu [data-ok-data-grid-action="${action}"]`,
+      ) as HTMLElement;
+    expect(item("asc").hidden).toBe(false);
+    expect(item("desc").hidden).toBe(true);
+    expect(item("unsort").hidden).toBe(true);
+    await userEvent.keyboard("{Escape}");
+  });
+
+  it("setSortComparator: a column's own comparators, then back to the type", () => {
+    const { host, instance } = setup();
+    const lengths: unknown[] = [];
+    instance.setSortComparator("firstName", {
+      sortComparator: (a, b, rowA) => {
+        lengths.push(rowA);
+        return String(a).length - String(b).length || String(a).localeCompare(String(b));
+      },
+    });
+    header(host, "firstName").click();
+    const asc = visible(host);
+    expect(asc.map((name) => String(name).length)).toEqual(
+      [...asc].map((name) => String(name).length).sort((x, y) => x - y),
+    );
+    expect(lengths[0]).toBeInstanceOf(HTMLElement);
+    header(host, "firstName").click();
+    const desc = visible(host);
+    expect(String(desc[0]).length).toBeGreaterThanOrEqual(String(desc.at(-1)).length);
+    // getSortComparator is used as it is (here: asc puts the oldest first).
+    instance.setSortComparator("age", {
+      getSortComparator: (direction) => (a, b) =>
+        direction === "asc" ? Number(b) - Number(a) : Number(a) - Number(b),
+    });
+    instance.setSortModel([{ field: "age", sort: "asc" }]);
+    const ages = visible(host, "age").map(Number);
+    expect(ages).toEqual([...ages].sort((x, y) => y - x));
+    instance.setSortComparator("age", null);
+    instance.setSortModel([{ field: "age", sort: "asc" }]);
+    const plain = visible(host, "age").map(Number);
+    expect(plain).toEqual([...plain].sort((x, y) => x - y));
   });
 });

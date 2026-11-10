@@ -455,5 +455,36 @@ for (const impl of implementations) {
       await expect(charts.nth(1)).toHaveAttribute("data-ok-type", "area");
       await expect(charts.nth(0)).toHaveAttribute("data-ok-type", "bar");
     });
+
+    test("sorting: comparators, a sort cycle and adding columns without Shift", async ({
+      page,
+    }) => {
+      await openStory(page, storyId(impl, "datagrid", "sorting"));
+      // Priorities by rank (the initial sort).
+      expect(await visible(page, "priority")).toEqual([
+        "High",
+        "High",
+        "Medium",
+        "Medium",
+        "Low",
+        "Low",
+      ]);
+      // Points: descending first; every click adds to the sort.
+      const points = page.getByRole("columnheader", { name: /^Points/ });
+      await points.click();
+      await expect(points).toHaveAttribute("aria-sort", "descending");
+      expect(await visible(page, "points")).toEqual(["5", "3", "8", "3", "2", "1"]);
+      // Due: empty dates last in both directions.
+      const due = page.getByRole("columnheader", { name: /^Due/ });
+      await page.getByRole("columnheader", { name: /^Priority/ }).click();
+      await page.getByRole("columnheader", { name: /^Priority/ }).click();
+      await points.click();
+      await points.click();
+      await due.click();
+      expect((await visible(page, "due")).slice(-2)).toEqual(["", ""]);
+      await due.click();
+      expect((await visible(page, "due")).slice(-2)).toEqual(["", ""]);
+      expect((await visible(page, "due"))[0]).toBe("2025-07-01");
+    });
   });
 }
