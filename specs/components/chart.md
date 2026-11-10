@@ -38,18 +38,22 @@ figure[data-ok-chart][data-ok-type][data-ok-x-type][data-ok-curve][data-ok-legen
       › svg[data-ok-chart-tool-icon][aria-hidden] › path       (zoom tools: with zoom on an x axis)
     button[type=button][data-ok-chart-tool="svg|png|csv"][aria-label][title] › "SVG" | "PNG" | "CSV"
     span[data-ok-chart-status][role=status]                 (visually hidden; announces failed downloads)
-  div[data-ok-chart-legend]                              (absent: one series, legend "none")
+  div[data-ok-chart-legend]                              (absent: one series unless showForSingleSeries, legend "none")
     button[type=button][data-ok-chart-legend-item][data-ok-color][aria-pressed]
-      span[data-ok-chart-legend-marker] + text + span[data-ok-chart-legend-value]? (legendValues)
+      | span[data-ok-chart-legend-item][data-ok-color]   (disableLegendToggle, 4.18.64)
+      span[data-ok-chart-legend-marker][data-ok-shape]?[data-ok-pattern]? + text + span[data-ok-chart-legend-value]? (legendValues)
   div[data-ok-chart-plot][role=group][aria-roledescription=chart][aria-label][tabindex=0]
     svg[data-ok-chart-svg][aria-hidden][focusable=false][width][height][viewBox]
       defs › linearGradient[id][data-ok-color] › stop[data-ok-chart-stop]×2   (gradient areas)
-      g[data-ok-chart-grid] › line[data-ok-chart-grid-line]
+      g[data-ok-chart-grid] › rect[data-ok-chart-stripe="row|column"][fill-opacity][data-ok-color]?* (4.18.64)
+        + line[data-ok-chart-grid-line]                  (grid: horizontal, vertical, both or none)
       text[data-ok-chart-axis-title]*                    (yTitle / yaxis[].title, rotated: -90° left, 90° opposite)
       text[data-ok-chart-axis-title=x]?                  (xTitle, under the x labels)
       g[data-ok-chart-axis=x] › text[data-ok-chart-tick][data-ok-major]?
       g[data-ok-chart-axis=y][data-ok-index]?[data-ok-opposite]? › text[data-ok-chart-tick]
                                                          (one per drawn value axis; data-ok-index with several)
+      g[data-ok-chart-background-bars]?                  (4.18.61: backgroundBars / backgroundBarColors)
+        rect[data-ok-chart-background-bar][rx][data-ok-color]?[fill-opacity]? (one per bar slot)
       g[data-ok-chart-crosshair] › rect[data-ok-chart-band] | line[data-ok-chart-crosshair-line]
       g[data-ok-chart-series-group]                      (areas, bars, lines, scatter: in that order)
         g[data-ok-chart-series][data-ok-type][data-ok-color][data-ok-index]
@@ -57,6 +61,13 @@ figure[data-ok-chart][data-ok-type][data-ok-x-type][data-ok-curve][data-ok-legen
           path[data-ok-chart-bar][data-ok-color]? · circle[data-ok-chart-marker][data-ok-color]?
       g[data-ok-chart-data-labels]?                      (dataLabels; only when a label fits)
         text[data-ok-chart-data-label="inside|outside"]  (inside slices / bars: white; outside: above points)
+        text[data-ok-chart-data-label="total"]           (stackTotals: past each stack's end, 4.18.61)
+      Non-color cues (4.18.62): defs › pattern[id][patternUnits=userSpaceOnUse][width=8][height=8]
+        [data-ok-chart-pattern="slantedLines|squares|circles|horizontalLines|verticalLines"][data-ok-color]
+        › rect[data-ok-chart-pattern-tint][fill-opacity] + path | circle[data-ok-chart-pattern-mark]
+        (bars, areas and slices then carry fill=url(#…)); markers may be
+        path[data-ok-chart-marker][data-ok-shape="square|triangle|diamond|cross|plus|star"][data-ok-color]?
+        (hover markers too); lines path[data-ok-chart-line][stroke-width]?[stroke-dasharray]?
       g[data-ok-chart-selected]?                         (selected points, 4.18.60; before the active group)
         circle | rect | path[data-ok-chart-selected-mark] (ring around points, frame around blocks
                                                           and cells, outline of slices and rings)
@@ -118,14 +129,18 @@ figure[data-ok-chart][data-ok-type][data-ok-x-type][data-ok-curve][data-ok-legen
         the price) + g[data-ok-chart-brush] › rect[data-ok-chart-selection] + rect[data-ok-chart-handle]×2
       g[data-ok-chart-active]; g[data-ok-chart-pane-titles] › text[data-ok-chart-pane-title]
     data labels may also be text[data-ok-chart-data-label="plain"] (primary text on faint cells)
-    div[data-ok-chart-tooltip][role=status][hidden]?
+    div[data-ok-chart-tooltip][role=status][hidden]?     (tooltip="none": visually hidden, 4.18.63)
       div[data-ok-chart-tooltip-title] + div[data-ok-chart-tooltip-state]? ("Selected", localeText `selected`)
         + div[data-ok-chart-tooltip-rows]
-        div[data-ok-chart-tooltip-row] › span[data-ok-chart-tooltip-marker][data-ok-color] + span + span[data-ok-chart-tooltip-value]
+        div[data-ok-chart-tooltip-row] › span[data-ok-chart-tooltip-marker][data-ok-color][data-ok-shape]?[data-ok-pattern]? + span + span[data-ok-chart-tooltip-value]
   table[data-ok-chart-data]                              (HTML: the source; visually hidden once drawn)
+  template[data-ok-chart-tooltip]?                       (HTML: custom tooltip content, 4.18.63; React: tooltipContent)
+    [data-ok-chart-tooltip-slot="title|state|row|name|value|marker"] (text slots; row repeated per value,
+      marker gets data-ok-color / data-ok-shape / data-ok-pattern; state removed unless selected)
     caption (the chart's name)
     thead › tr › th[scope=col] (x label) + th[scope=col][data-ok-type]?[data-ok-color]?[data-ok-y-axis]? (one per series;
-      data-ok-y-axis: its value axis when the chart has several)
+      data-ok-y-axis: its value axis when the chart has several; series cues, 4.18.62:
+      [data-ok-marker-shape]?[data-ok-fill-pattern]?[data-ok-stroke-width]?[data-ok-dash-array]?)
       Series of several values per point (box plot, range area, bubble): two header rows —
       tr › th[scope=col][rowspan=2] (x label) + th[scope=colgroup][colspan=n] (the series) |
            th[scope=col][rowspan=2] (single-value series)
@@ -169,6 +184,36 @@ Grid lines follow the primary axis (the first drawn); the other linear axes take
 intervals, so their labels sit on its grid lines. Stacks are per axis. Stock charts keep the
 axes in the price pane; every pane gets the widest left and right edges. `xTitle` adds 20px under
 the x labels (`dy 0.71em` at the labels' line + 20px), centered on the plot.
+
+Stacks and bars (4.18.61): `stackType: "100%"` (stacked charts) turns each category's stacked
+values into shares of their absolute sum per value axis: the axis runs to 100 (ticks `"<n>%"`, no
+prefix, suffix or formatter), data labels print the share (one decimal, `dataLabelFormatter` gets
+the share), tooltips and the table keep the values. `stackOnlyBar`: only bar series stack; lines
+and areas keep their values. `stackTotals`: stacked bar charts print each stack's sum
+(`valueFormatter(sum, -1)`) 12px past its end (vertical; positives above, negatives below) or 6px
+(horizontal, start / end anchored). `dataLabelPosition` moves bar labels from the middle to the
+value end (`top`) or the base (`bottom`), 4px plus half a label inside. `colorRanges` color the bars
+whose value they hold (from ≤ value ≤ to, first range wins; a point's own `color` wins). Background
+bars: one rect per bar slot (stacked: per category) across the plot, `backgroundBarRadius` (default
+4, at most half the slot), colors from `backgroundBarColors` by category index (else a 12 % grey),
+`fill-opacity` from `backgroundBarOpacity` (an attribute: CSS never sets it); drawn before the
+crosshair group.
+
+Non-color cues (core `chart-cues.ts`, 4.18.62, WCAG 1.4.1): `withChartCues` resolves per series
+its marker `shape` (series `markerShape`, else `markerShape`, else with `colorBlindMode` the n-th of
+circle, square, triangle, diamond, cross, plus, star; only where markers are drawn: scatter, or
+lines and areas with `markerSize` or `colorBlindMode`, which draws 4px markers), its `pattern`
+(bars and areas: series `fillPattern`, else `fillPattern`, else with `fill="pattern"` or
+`colorBlindMode` the n-th of slantedLines, squares, circles, horizontalLines, verticalLines; slices
+of pie, donut and polar area charts take it by category), its dash (series `dashArray`, else
+`dashArray`, else with `colorBlindMode` solid, `6 4`, `2 3`, `8 3 2 3`, `12 4`) and its line width
+(series `strokeWidth`, else `strokeWidth`; CSS 2.5px without). Shapes: squares 0.9r, triangles and
+diamonds about 1.2r, stars 1.3r / 0.55r, crosses and pluses as strokes. Patterns: one 8px
+`userSpaceOnUse` tile per pattern and color (`<prefix>-pattern-<style>-<color>`), a 0.24 tint and
+marks of the color; a pattern replaces an area's gradient. `discreteMarkers` draw a marker on one
+point of a line, area or scatter series (radius `size`, default the series' size and at least 5;
+`color`, `shape`), whatever its markers; `dataPointIndex` as in the selection. Legend and tooltip
+markers repeat the shape (`clip-path`) or the pattern (CSS gradients). Stock charts ignore cues.
 
 Polar geometry (core `chart-polar.ts`): angles in degrees clockwise from 12 o'clock; the chart is
 centered in the SVG, radius = half the smaller side - 4px. Donut hole 72 % of the radius. Radial
@@ -250,7 +295,7 @@ Root: `data-ok-chart`. Unknown values fall back to the default.
 | `xType` | `data-ok-x-type="…"` | style | `category` `datetime` `numeric` | `category` | X axis: `category` labels, `datetime` (ISO 8601 dates) or `numeric` values (scatter). |
 | `curve` | `data-ok-curve="…"` | style | `smooth` `straight` `stepline` | `smooth` | Line shape: `smooth`, `straight` or `stepline`. |
 | `legend` | `data-ok-legend="…"` | style | `top` `right` `bottom` `none` | `top` | Legend position: `top`, `right`, `bottom` or `none` (never shown for a single series). |
-| `fill` | `data-ok-fill="…"` | style | `gradient` `solid` | `gradient` | Area fill: a fading `gradient` or a `solid` tint. |
+| `fill` | `data-ok-fill="…"` | style | `gradient` `solid` `pattern` | `gradient` | Area fill: a fading `gradient`, a `solid` tint or a `pattern` (bars, areas and slices too; a different pattern per series unless `fillPattern` is set). |
 | `stacked` | `data-ok-stacked` | flag | boolean | off | Stacks the series on each other (bars, lines, areas). |
 | `horizontal` | `data-ok-horizontal` | flag | boolean | off | Bars run left to right, categories down the side. |
 | `height` | `data-ok-height="…"` | number | number | `320` | Height of the plot in px (at least 40, sparklines 8). |
@@ -283,6 +328,25 @@ Root: `data-ok-chart`. Unknown values fall back to the default.
 | `navigator` | `data-ok-navigator` | flag | boolean | off | Stock charts: a navigator under the chart, the whole price line with the zoom as a brush (zooms like `zoom`). |
 | `paneHeight` | `data-ok-pane-height="…"` | number | number | `120` | Stock charts: height in px of each indicator pane (volume, RSI, MACD…) under the price. |
 | `allowMultipleDataPointsSelection` | `data-ok-allow-multiple-data-points-selection` | flag | boolean | off | Clicks and Enter or Space add points to the selection instead of replacing it. |
+| `stackType` | `data-ok-stack-type="…"` | style | `normal` `100%` | — | Stacked charts: `normal` stacks the values, `100%` stacks each category's values as shares of their total (the value axis runs to 100%). |
+| `stackOnlyBar` | `data-ok-stack-only-bar` | flag | boolean | off | Stacked mixed charts: only the bar series stack; lines and areas keep their own values. |
+| `stackTotals` | `data-ok-stack-totals` | flag | boolean | off | Stacked bars: prints the total of each stack past its end. |
+| `dataLabelPosition` | `data-ok-data-label-position="…"` | style | `center` `top` `bottom` | — | Bars: where data labels sit inside the bar: `center`, `top` (by the value end) or `bottom` (by the base). |
+| `backgroundBars` | `data-ok-background-bars` | flag | boolean | off | Bars: a grey track the height of the plot behind each bar. |
+| `backgroundBarOpacity` | `data-ok-background-bar-opacity="…"` | number | number | — | Bars: opacity of the tracks behind the bars (0 to 1; default 1). |
+| `backgroundBarRadius` | `data-ok-background-bar-radius="…"` | number | number | — | Bars: corner radius of the tracks in px (default 4). |
+| `markerShape` | `data-ok-marker-shape="…"` | style | `circle` `square` `triangle` `diamond` `cross` `plus` `star` | — | Shape of the markers of every series: `circle`, `square`, `triangle`, `diamond`, `cross`, `plus` or `star` (series may set their own). |
+| `fillPattern` | `data-ok-fill-pattern="…"` | style | `slantedLines` `squares` `circles` `horizontalLines` `verticalLines` | — | Pattern of every bar, area and slice: `slantedLines`, `squares`, `circles`, `horizontalLines` or `verticalLines` (turns patterns on; series may set their own). |
+| `strokeWidth` | `data-ok-stroke-width="…"` | number | number | — | Line width of every series in px (default 2.5; series may set their own). |
+| `colorBlindMode` | `data-ok-color-blind-mode` | flag | boolean | off | Series differ by more than their color: a different marker shape (lines get markers), pattern and dash per series. |
+| `tooltip` | `data-ok-tooltip="…"` | style | `shared` `point` `none` | — | Tooltip: `shared` lists every series of the category, `point` only the value under the pointer (or the keyboard), `none` shows none (the values are still announced). |
+| `tooltipFixed` | `data-ok-tooltip-fixed="…"` | style | `topLeft` `topRight` `bottomLeft` `bottomRight` | — | The tooltip stays in a corner of the plot: `topLeft`, `topRight`, `bottomLeft` or `bottomRight` (default beside the value). |
+| `legendAlign` | `data-ok-legend-align="…"` | style | `left` `center` `right` | — | Legend items line up `left`, `center` or `right` (default right above the plot, centered below it and around circular charts). |
+| `showForSingleSeries` | `data-ok-show-for-single-series` | flag | boolean | off | Shows the legend for a single series too. |
+| `disableLegendToggle` | `data-ok-disable-legend-toggle` | flag | boolean | off | Legend items are plain labels: clicks don't hide series. |
+| `grid` | `data-ok-grid="…"` | style | `y` `x` `both` `none` | — | Grid lines: `y` horizontal (along the value ticks, or between the bars of horizontal bar charts), `x` vertical, `both` or `none`. |
+| `gridRowOpacity` | `data-ok-grid-row-opacity="…"` | number | number | — | Opacity of the row stripes (0 to 1; default 0.5). |
+| `gridColumnOpacity` | `data-ok-grid-column-opacity="…"` | number | number | — | Opacity of the column stripes (0 to 1; default 0.5). |
 | `hiddenSeries` | `aria-pressed` · event `ok:chart:toggle` | state | — | — | Indexes of the series hidden through the legend (`aria-pressed="false"` on their buttons); categories in pie, donut and radial bar charts. |
 | `selectedDataPoints` | `instance.selectedDataPoints` · event `ok:chart:select` | state | — | — | The selected points, `{ seriesIndex, dataPointIndex }[]`: a click selects the point, slice or cell under the pointer, Enter or Space the active one. |
 | `zoomRange` | `instance.zoomRange` · event `ok:chart:zoom` | state | — | — | The visible window of the x axis, `{ min, max }` (category indexes or x values), or `null`. |
@@ -293,7 +357,13 @@ Text attributes (React prop ↔ HTML attribute, written by React too): `yTitle` 
 `parseChartYAxes`: axes separated by `;`, each the words `opposite`, `logarithmic`, `reversed`,
 `hidden`, `log-base <n>`, `tick-amount <n>`, `min <n>`, `max <n>`, then `title <text>`; series
 names stay out of it: each series column carries its axis, `th[data-ok-y-axis="<n>"]`), `valuePrefix` ↔ `data-ok-value-prefix`, `valueSuffix` ↔ `data-ok-value-suffix`,
-`locale` ↔ `data-ok-locale` (default `en-US`), `group` ↔ `data-ok-group`, `brushTarget` ↔
+`locale` ↔ `data-ok-locale` (default `en-US`), `backgroundBarColors` ↔
+`data-ok-background-bar-colors` (palette names separated by spaces), `discreteMarkers` ↔
+`data-ok-discrete-markers` (`"<series> <point> [color] [shape] [size]; …"`, core
+`chartDiscreteMarkersText` / `parseChartDiscreteMarkers`), `customLegendItems` ↔
+`data-ok-custom-legend-items` (`; `-separated), `gridRowColors` / `gridColumnColors` ↔
+`data-ok-grid-row-colors` / `data-ok-grid-column-colors` (space-separated: palette names, `grey`,
+`transparent`; core `parseChartStripeColors`), `group` ↔ `data-ok-group`, `brushTarget` ↔
 `data-ok-brush-target`, `colorRanges` ↔ `data-ok-color-ranges` (`"from to color [name]; …"`, core
 `chartTextAttributes` / `parseChartColorRanges`). Always set as text (`textContent`), never markup.
 
@@ -348,6 +418,20 @@ plots list the five values, range areas `low – high`, bubbles the value and a 
   or ring (its whole track) under the pointer with 8px of slack (circular charts), or the nearest
   category axis by angle within the web + 24px (radar) is active;
   a mouse leaving the plot clears it; touch keeps it until the next tap.
+- Tooltips (4.18.63): `tooltip="point"` turns an index chart's layout (not radars) into `point`
+  mode: the block under the pointer (2px of slack), else the nearest point within 24px; one row;
+  blocks show their category's band, points their marker; arrows move mark by mark (left to right,
+  then top to bottom); Enter / Space select that mark alone. `tooltip="none"` keeps the status
+  visually hidden (keyboard values announced) and the hover highlight. `tooltipFixed` places the
+  tooltip 8px inside a corner of the plot area (`chartTooltipFixed` + `placeChartTooltip(…, fixed)`).
+  Custom content: core `chartTooltipContext(layout, tooltip, active)`; React renders
+  `tooltipContent(context)` in the tooltip instead of its parts, the HTML runtime clones
+  `template[data-ok-chart-tooltip]` (direct child of the root) on each change.
+- Legend (4.18.64): `legendAlign` lines items up (CSS), `showForSingleSeries` shows one item,
+  `customLegendItems` renames items (item n is series n), `disableLegendToggle` makes them labels.
+  Grid (core `layoutChart`): row positions (horizontal lines) and column positions (vertical) per
+  layout; stripes (`rect[data-ok-chart-stripe]`, CSS fill grey or the palette color, `fill-opacity`
+  an attribute) between consecutive positions before the lines; transparent entries draw nothing.
 - Legend click toggles the series (React `onHiddenSeriesChange`, HTML cancelable `ok:chart:toggle`).
 - Selection (4.18.60, core `chart-select.ts`): a click on the plot selects the mark under it —
   the block (bar, box, candle, range bar, funnel bar; 2px slack), the slice or ring, the cell, or
@@ -442,6 +526,8 @@ plots list the five values, range areas `low – high`, bubbles the value and a 
   reachable without a pointer.
 - Legend buttons: `aria-pressed`; hidden series show a hollow marker and crossed-out text (not color
   alone); targets at least 24 × 24px.
+- Non-color cues (4.18.62, WCAG 1.4.1): marker shapes, patterns and dashes tell series apart without
+  color; `colorBlindMode` turns all three on, and legend and tooltip markers repeat them.
 - Axis labels use `--ok-text-secondary` (AA in light and dark); the reference's lighter grey is
   under 4.5:1 (ADR-0014). Center labels too (the reference paints a gauge's name in the
   disabled grey or the series color).
@@ -560,7 +646,7 @@ Option areas not covered by the table above:
 |---|---|---|---|
 | ApexCharts v8 types `waterfall`, `dumbbell` (`plotOptions.bar.isDumbbell`, `dumbbellColors`, `dumbbell.*`), `streamgraph`, `sunburst`, `icicle`, `violin`, `beeswarm`, `waffle`, `unit` | — | deferred (4.18.21) | prop-level mapping here when built |
 | `chart.type: "tree"` (ApexTree layouts) | — | deferred (4.18.7) | |
-| `chart.stackType: "100%"`, `chart.stackOnlyBar` | `stacked` | deferred | percent stacks; stacking only the bar series of a mixed chart |
+| `chart.stackType` (`"normal"`, `"100%"`), `chart.stackOnlyBar` | `stackType` (`data-ok-stack-type`, optional), `stackOnlyBar` (`data-ok-stack-only-bar`) | kept (4.18.61) | `stackOnlyBar` is off by default (ApexCharts: on), so stacked lines keep stacking as before |
 | `chart.events` `dataPointMouseEnter` / `Leave`, `mouseMove`, `mouseLeave`, `legendClick`, `beforeZoom`, `zoomed`, `beforeResetZoom`, `scrolled`, `brushScrolled`, `selection` | `onActiveChange`, `onHiddenSeriesChange`, `onZoomRangeChange` · `ok:chart:active`, `-toggle`, `-zoom` (cancelable) | renamed | |
 | `chart.events.dataPointSelection` (`seriesIndex`, `dataPointIndex`, `w.globals.selectedDataPoints`) | React `onDataPointSelection(detail)` · HTML `ok:chart:select` (detail `{ seriesIndex, dataPointIndex, selected, selectedDataPoints }`) | renamed (4.18.60) | by click (block, slice, cell or the nearest point) and by Enter / Space on the active item; one call per toggled point |
 | method `toggleDataPointSelection(seriesIndex, dataPointIndex)` | HTML instance `toggleDataPointSelection`, `selectedDataPoints`, `setSelectedDataPoints(list)`; React: controlled `selectedDataPoints` / `defaultSelectedDataPoints` + core `toggleChartSelection(selected, points, multiple)` | renamed (4.18.60) | React has no chart instance (`ref` is the `figure`) |
@@ -589,22 +675,37 @@ Option areas not covered by the table above:
 | `xaxis.labels.datetimeFormatter`, `.format`, `.datetimeUTC` | `labelFormatter`, `locale` | renamed | |
 | `xaxis.crosshairs`, `yaxis.crosshairs`, `xaxis.tooltip` | the hover crosshair | kept | style fixed by the design |
 | axis `style` / `cssClass` / `offsetX` / `offsetY`, `axisBorder`, `axisTicks` | — | not applicable | tokens / CSS |
-| `grid.show`, `grid.xaxis.lines.show`, `grid.yaxis.lines.show`, `grid.row` / `.column` stripes, `grid.padding` | always y lines | deferred | grid lines on / off per axis; stripes |
+| `grid.show`, `grid.xaxis.lines.show`, `grid.yaxis.lines.show` | `grid` (`data-ok-grid`, optional): `y` (default), `x`, `both`, `none` | renamed (4.18.64) | by drawn direction: `y` = horizontal lines (value ticks; between the bars of horizontal bar charts), `x` = vertical lines (x ticks, band edges or category positions; value ticks of horizontal bars) |
+| `grid.row.colors` / `.opacity`, `grid.column.colors` / `.opacity` | `gridRowColors` / `gridColumnColors` (palette names, `grey`, `transparent`; HTML `data-ok-grid-row-colors` / `data-ok-grid-column-colors` text), `gridRowOpacity` / `gridColumnOpacity` (default 0.5) | renamed (4.18.64) | stripes between the horizontal / vertical grid positions, colors in turn from the top / left; CSS colors: not applicable (tokens) |
+| `grid.padding` | — | not applicable | the layout reserves its own room |
 | `grid.borderColor`, `.strokeDashArray`, `.position` | — | not applicable | tokens |
-| `tooltip.enabled`, `.shared`, `.intersect`, `.followCursor`, `.fixed`, `.inverseOrder`, `.hideEmptySeries` | the tooltip (shared by category) | deferred | `tooltip: false`; fixed position; per-point (non-shared) mode |
-| `tooltip.custom`, `tooltip.x.formatter`, `.y.title.formatter`, `.z.title` / `.z.formatter` | `valueFormatter`, `labelFormatter` | deferred | custom tooltip content (React node / HTML `<template>`) |
+| `tooltip.enabled`, `tooltip.shared` (+ `.intersect`) | `tooltip` (`data-ok-tooltip`, optional): `shared` (default), `point`, `none` | renamed (4.18.63) | `none` keeps a visually hidden status, so keyboard values are still announced; `point` = shared off with intersect (the block under the pointer, else the nearest point within 24px) |
+| `tooltip.fixed.enabled` / `.position` (`topLeft`, `topRight`, `bottomLeft`, `bottomRight`) | `tooltipFixed` (`data-ok-tooltip-fixed`, optional) | renamed (4.18.63) | 8px inside that corner of the plot area; `fixed.offsetX` / `Y`: not applicable |
+| `tooltip.custom({ series, seriesIndex, dataPointIndex, w })` | React `tooltipContent(context)` (a node) · HTML `template[data-ok-chart-tooltip]` with `[data-ok-chart-tooltip-slot]` | renamed (4.18.63) | context `{ title, rows, selected, points, active }`; the runtime clones the template and fills slots with `textContent` (never markup) |
+| `tooltip.followCursor`, `.inverseOrder`, `.hideEmptySeries` | — | deferred | follow the pointer; reversed rows; leaving out empty series |
+| `tooltip.x.formatter`, `.y.title.formatter`, `.z.title` / `.z.formatter` | `valueFormatter`, `labelFormatter`, `localeText` (`z`) | renamed | series names: custom content |
 | `tooltip.theme`, `.style`, `.fillSeriesColor`, `.marker`, `.onDatasetHover` | — | not applicable | tokens; series highlight always on |
-| `legend.horizontalAlign`, `.inverseOrder`, `.showForSingleSeries`, `.showForNullSeries`, `.showForZeroSeries`, `.onItemClick.toggleDataSeries`, `.onItemHover.highlightDataSeries`, `.customLegendItems`, `.clusterGroupedSeries` | `legend` (position) | deferred | alignment, single-series legend, toggle opt-out, custom items |
+| `legend.horizontalAlign` (`left`, `center`, `right`) | `legendAlign` (`data-ok-legend-align`, optional) | renamed (4.18.64) | top and bottom legends (right legends stay a column) |
+| `legend.showForSingleSeries` | `showForSingleSeries` (`data-ok-show-for-single-series`) | kept (4.18.64) | |
+| `legend.onItemClick.toggleDataSeries: false` | `disableLegendToggle` (`data-ok-disable-legend-toggle`) | renamed (4.18.64) | items become `span` labels (no `aria-pressed`, no click) |
+| `legend.customLegendItems` | `customLegendItems` (HTML `data-ok-custom-legend-items`, `; `-separated) | kept (4.18.64) | item n stands for series (slice) n: its color, hidden state and toggle; extra items take the default colors |
+| `legend.inverseOrder`, `.showForNullSeries`, `.showForZeroSeries`, `.onItemHover.highlightDataSeries`, `.clusterGroupedSeries` | — | deferred | |
 | `legend.markers.shape`, `.fontSize` / `.offset*` / `.itemMargin` / `.labels.colors`, `.floating`, `.width` / `.height`, `.tooltipHoverFormatter` | — | not applicable | design / CSS |
-| `markers.shape`, `.discrete` (per-point markers), `.hover.size`, `.showNullDataPoints`, `.strokeWidth` | `markerSize` | deferred | marker shapes (also non-color series cues, WCAG 1.4.1) and per-point markers |
+| `markers.shape` (one or a list per series: `circle`, `square`, `triangle`, `diamond`, `cross`, `plus`, `star`) | `markerShape` (`data-ok-marker-shape`, optional) + series `markerShape` (`th[data-ok-marker-shape]`) | renamed (4.18.62) | ApexCharts' list → the series field; `rect`, `line`, `sparkle`: not built (square, star cover them) |
+| `markers.discrete` (`seriesIndex`, `dataPointIndex`, `fillColor`, `size`, `shape`) | `discreteMarkers` (`color`, `size`, `shape`; HTML `data-ok-discrete-markers` text) | renamed (4.18.62) | `strokeColor`: not applicable (the paper ring); also on series without markers |
+| `markers.hover.size`, `.showNullDataPoints`, `.strokeWidth` | — | not applicable | hover size fixed by the design; gaps break the line |
 | `markers.colors` / `.strokeColors` / `.fillOpacity` / `.offset*`, `largeDatasetThreshold`, `onClick` / `onDblClick` | — | not applicable | series colors; selection event above |
-| `stroke.width` (per series), `.lineCap`, `.colors`, `stroke.fill` | `dashArray` | deferred | line width per series |
-| `fill.type: "pattern"` (`verticalLines`, `horizontalLines`, `slantedLines`, `squares`, `circles`) | `fill` (`gradient` · `solid`) | deferred | pattern fills (non-color cue, WCAG 1.4.1) |
+| `stroke.width` (one or a list), `stroke.dashArray` (one or a list) | `strokeWidth` (`data-ok-stroke-width`), `dashArray` + series `strokeWidth` / `dashArray` (`th[data-ok-stroke-width]`, `th[data-ok-dash-array]`) | renamed (4.18.62) | lines and areas; lists → the series fields |
+| `stroke.lineCap`, `.colors`, `stroke.fill` | — | not applicable | design / series colors |
+| `fill.type: "pattern"`, `fill.pattern.style` (`verticalLines`, `horizontalLines`, `slantedLines`, `squares`, `circles`; one or a list) | `fill="pattern"`, `fillPattern` (`data-ok-fill-pattern`, optional) + series `fillPattern` (`th[data-ok-fill-pattern]`) | renamed (4.18.62) | bars, areas, pie / donut / polar slices; without `fillPattern` each series (slice) gets the next pattern; `pattern.width` / `.height` / `.strokeWidth`: fixed by the design (8px tiles) |
 | `fill.type: "image"`, `fill.gradient.*`, `fill.opacity`, `fill.colors` | — | not applicable | design / tokens; `colors` |
 | `plotOptions.bar.borderRadius`, `.borderRadiusApplication`, `.borderRadiusWhenStacked` | fixed radius | not applicable | design |
 | `plotOptions.bar.distributed` | point `color` | renamed | |
-| `plotOptions.bar.colors.ranges`, `.backgroundBarColors` / `-Opacity` / `-Radius` | `colorRanges` (heatmap, treemap) | deferred | value ranges on bars; background (track) bars |
-| `plotOptions.bar.dataLabels.total` (stacked totals), `.position`, `.orientation`, `.maxItems`, `.hideOverflowingLabels` | `dataLabels` | deferred | totals on stacks; inside / end positions |
+| `plotOptions.bar.colors.ranges` (`from`, `to`, `color`) | `colorRanges` (heatmaps, treemaps and bars) | renamed (4.18.61) | a bar's own point `color` wins over its range |
+| `plotOptions.bar.colors.backgroundBarColors` / `.backgroundBarOpacity` / `.backgroundBarRadius` | `backgroundBars` (grey tracks), `backgroundBarColors` (palette names; HTML `data-ok-background-bar-colors`), `backgroundBarOpacity`, `backgroundBarRadius` | kept (4.18.61) | one track per bar slot, colors per category in turn; radius default 4 (ApexCharts 0: Owlky bars are rounded) |
+| `plotOptions.bar.dataLabels.total.enabled` | `stackTotals` (`data-ok-stack-totals`) | renamed (4.18.61) | `total.formatter` → `valueFormatter` (series -1); `total.style` / `offset*`: not applicable |
+| `plotOptions.bar.dataLabels.position` (`top`, `center`, `bottom`) | `dataLabelPosition` (`data-ok-data-label-position`, optional) | renamed (4.18.61) | inside the bar; `top` = by the value end |
+| `plotOptions.bar.dataLabels.orientation`, `.maxItems`, `.hideOverflowingLabels` | — | not applicable | labels are always horizontal and only drawn where they fit |
 | `plotOptions.bar.rangeBarGroupRows`, `.rangeBarOverlap`, `.hideZeroBarsWhenGrouped`, `.isFunnel3d` | — | deferred | timeline rows shared by series; 3D funnel not applicable |
 | `forecastDataPoints` (`count`, `fillOpacity`, `strokeWidth`, `dashArray`) | — | deferred | dashed forecast tail |
 | `title.text` (`align`, `floating`, `style`…) | `label` → `caption` | renamed | style not applicable (tokens); a subtitle: compose a Card header |
@@ -612,7 +713,7 @@ Option areas not covered by the table above:
 | `responsive` (`breakpoint`, `options` overrides) | — | not applicable | container width drives the layout; options per breakpoint are app code |
 | `theme.palette`, `.mode`, `.tokens`, `.follow`, `.name`, `.designSystem` | `colors` (palette names), `data-ok-theme` | renamed | |
 | `theme.monochrome` | — | not applicable | shades of one palette color: `colors` |
-| `theme.accessibility.colorBlindMode` | — | deferred | with the non-color cues row (markers, patterns) |
+| `theme.accessibility.colorBlindMode` (`deuteranopia`, `protanopia`, `tritanopia`, `highContrast`) | `colorBlindMode` flag (`data-ok-color-blind-mode`) | renamed (4.18.62) | no palette swap (colors are tokens): each series gets a distinct marker shape (lines get 4px markers), pattern and dash instead, so color is never the only cue (WCAG 1.4.1) |
 | `annotations.texts`, points `click` / `mouseEnter` / `mouseLeave` / `tooltip`, `yAxisIndex` | `annotations` | deferred | free text annotations; interactive point annotations |
 | `annotations.images`, points `image` / `customSVG`, label `style` / `offset*`, `fillColor` / `borderColor` | — | not applicable | design / tokens |
 | methods `render`, `updateOptions`, `appendSeries`, `add*Annotation` / `removeAnnotation` / `clearAnnotations`, `destroy`, `highlightSeries`, `showSeries` / `hideSeries`, `dataURI`, `setLocale`, `getRadialScales` | instance API above | renamed | see the table above; `setLocale` → `setLocaleText`; `destroy` = runtime `stop()` / unmount; `getRadialScales` not applicable |
@@ -636,5 +737,11 @@ Option areas not covered by the table above:
 - Stock stories (ADR-0047): Stock chart, Overlays, Oscillators, Large dataset. Snippets hold the
   computed indicator columns (generated by React's `renderChart`); the runtime rewrites them to the
   same text.
+- Stack and bar stories (4.18.61): Column stacked 100%, Stack totals, Column data labels, Column
+  range colors.
+- Cue stories (4.18.62): Marker shapes, Dashed lines, Pattern fills, Color blind mode.
+- Tooltip stories (4.18.63): Tooltip options; Custom tooltip (a React demo with `?raw` source and
+  the HTML template; no Controls; the tooltip is hidden at rest, so parity compares the same markup).
+- Legend and grid stories (4.18.64): Legend options, Grid lines and stripes.
 - Story "Live data": React keeps the points in state, the HTML page script calls `appendData` /
   `updateSeries`; both start from the same data and add the same points, so they stay identical.

@@ -6,16 +6,24 @@ import animationsGroup from "../../../../../packages/html/src/components/chart/e
 import annotationsGroup from "../../../../../packages/html/src/components/chart/examples/annotations-group.html?raw";
 import axisScalesGroup from "../../../../../packages/html/src/components/chart/examples/axis-scales-group.html?raw";
 import brushGroup from "../../../../../packages/html/src/components/chart/examples/brush-group.html?raw";
+import colorBlindGroup from "../../../../../packages/html/src/components/chart/examples/color-blind-group.html?raw";
+import columnDataLabelsGroup from "../../../../../packages/html/src/components/chart/examples/column-data-labels-group.html?raw";
+import columnRangesGroup from "../../../../../packages/html/src/components/chart/examples/column-ranges-group.html?raw";
 import columnSingle from "../../../../../packages/html/src/components/chart/examples/column-single-group.html?raw";
 import dataLabelsGroup from "../../../../../packages/html/src/components/chart/examples/data-labels-group.html?raw";
 import funnelGroup from "../../../../../packages/html/src/components/chart/examples/funnel-group.html?raw";
+import gridGroup from "../../../../../packages/html/src/components/chart/examples/grid-group.html?raw";
+import legendGroup from "../../../../../packages/html/src/components/chart/examples/legend-group.html?raw";
 import localizedGroup from "../../../../../packages/html/src/components/chart/examples/localized-group.html?raw";
+import markerShapesGroup from "../../../../../packages/html/src/components/chart/examples/marker-shapes-group.html?raw";
 import mixedGroup from "../../../../../packages/html/src/components/chart/examples/mixed-group.html?raw";
 import multipleYAxesGroup from "../../../../../packages/html/src/components/chart/examples/multiple-y-axes-group.html?raw";
 import selectionGroup from "../../../../../packages/html/src/components/chart/examples/selection-group.html?raw";
 import sparklinesGroup from "../../../../../packages/html/src/components/chart/examples/sparklines-group.html?raw";
+import stackTotalsGroup from "../../../../../packages/html/src/components/chart/examples/stack-totals-group.html?raw";
 import synchronizedGroup from "../../../../../packages/html/src/components/chart/examples/synchronized-group.html?raw";
 import timelineGroup from "../../../../../packages/html/src/components/chart/examples/timeline-group.html?raw";
+import tooltipCustomGroup from "../../../../../packages/html/src/components/chart/examples/tooltip-custom-group.html?raw";
 import zoomGroup from "../../../../../packages/html/src/components/chart/examples/zoom-group.html?raw";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
@@ -696,7 +704,132 @@ export function ChartLabels() {
   {
     id: "stacked",
     title: "Stack and compare series",
-    body: "Set `stacked` to put the series of a category on top of each other, so the column shows their total. Without it, columns of several series stand side by side. Only the end of each column is rounded.",
+    body: `Set \`stacked\` to put the series of a category on top of each other, so the column shows their total. Without it, columns of several series stand side by side. Only the end of each column is rounded.
+
+- **Shares:** set \`stackType="100%"\` (\`data-ok-stack-type="100%"\` in HTML) to stack each category's values as shares of their total. The value axis runs to 100%, and data labels print the shares. The tooltip and the data table keep the values.
+- **Totals:** set \`stackTotals\` (\`data-ok-stack-totals\`) to print the total of each stack past its end. Negative stacks get their total below.
+- **Bars only:** in a mixed chart, set \`stackOnlyBar\` (\`data-ok-stack-only-bar\`) to stack the bar series and keep a line, such as a target, on its own values.`,
+    html: `${snippetElement(stackTotalsGroup, "data-ok-chart ", 1)}`,
+    react: `import { Chart } from "@owlky/react";
+
+const weeks = ["W1", "W2", "W3", "W4", "W5", "W6"];
+const orders = [
+  { name: "Store A", data: [30, 42, 28, 51, 39, 47] },
+  { name: "Store B", data: [21, 18, 26, 22, 31, 25] },
+  { name: "Target", type: "line" as const, data: [50, 55, 55, 60, 65, 65] },
+];
+
+export function ChartStackTotals() {
+  return (
+    <Chart
+      label="Orders by store and the weekly target"
+      type="bar"
+      stacked
+      stackOnlyBar
+      stackTotals
+      colors={["info", "info-dark", "error"]}
+      categories={weeks}
+      series={orders}
+    />
+  );
+}`,
+  },
+  {
+    id: "bars",
+    title: "Style bars",
+    body: `Bars take options of their own:
+
+- **Label position:** \`dataLabelPosition\` (\`data-ok-data-label-position\`) puts data labels by the value end (\`top\`), in the middle (\`center\`, the default) or by the base (\`bottom\`) of each bar.
+- **Value ranges:** \`colorRanges\` colors each bar by the range that holds its value, such as red for losses and green for profits. A point's own \`color\` wins. In HTML, write the ranges as text: \`data-ok-color-ranges="-100 -1 error Loss; 0 100 success Profit"\`.
+- **Tracks:** \`backgroundBars\` (\`data-ok-background-bars\`) draws a grey track the height of the plot behind each bar, which helps when values are parts of a fixed maximum. \`backgroundBarColors\` (\`data-ok-background-bar-colors\`, palette names separated by spaces) colors the tracks category by category, \`backgroundBarOpacity\` sets their opacity from 0 to 1, and \`backgroundBarRadius\` their corner radius in pixels.
+
+Color alone shouldn't carry the meaning of a range: name the ranges in the label or the text around the chart, as the data table only holds the values.`,
+    html: `${snippetElement(columnRangesGroup, "data-ok-chart ")}
+${snippetElement(columnDataLabelsGroup, "data-ok-chart ")}`,
+    react: `import { Chart } from "@owlky/react";
+
+const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
+const balance = [{ name: "Balance", data: [12, 18, -7, -21, 9, 27] }];
+const inflation = [{ name: "Inflation", data: [2.3, 3.1, 4.0, 10.1, 4.0, 3.6] }];
+
+export function ChartBars() {
+  return (
+    <>
+      <Chart
+        label="Monthly balance: losses in red, profits in green"
+        type="bar"
+        colorRanges={[
+          { from: -100, to: -1, color: "error", name: "Loss" },
+          { from: 0, to: 100, color: "success", name: "Profit" },
+        ]}
+        categories={months}
+        series={balance}
+      />
+      <Chart
+        label="Monthly inflation"
+        type="bar"
+        dataLabels
+        dataLabelPosition="top"
+        backgroundBars
+        valueSuffix="%"
+        categories={months}
+        series={inflation}
+      />
+    </>
+  );
+}`,
+  },
+  {
+    id: "cues",
+    title: "Tell series apart without color",
+    body: `Some people can't tell the series of a chart apart by color, and printed charts often lose it. Give series a second cue, so color is never the only way to read the chart:
+
+- **Marker shapes:** \`markerShape\` (\`data-ok-marker-shape\`) sets the shape of every marker: \`circle\`, \`square\`, \`triangle\`, \`diamond\`, \`cross\`, \`plus\` or \`star\`. A series can set its own \`markerShape\`. In HTML, write it on the series' column header. Lines draw markers only with \`markerSize\`, and scatter points always.
+- **Patterns:** \`fill="pattern"\` fills bars, areas and pie, donut and polar area slices with a pattern, a different one per series or slice. \`fillPattern\` (\`data-ok-fill-pattern\`) picks one for all of them: \`slantedLines\`, \`squares\`, \`circles\`, \`horizontalLines\` or \`verticalLines\`. A series can set its own \`fillPattern\`.
+- **Dashes and widths:** \`dashArray\` and \`strokeWidth\` set the dash length and line width of every line in pixels. A series can set its own \`dashArray\` and \`strokeWidth\` (\`data-ok-dash-array\` and \`data-ok-stroke-width\` on its column header).
+- **All at once:** \`colorBlindMode\` (\`data-ok-color-blind-mode\`) gives each series its own marker shape, pattern and dash, and adds markers to lines.
+
+The legend and the tooltip repeat each series' shape or pattern on its marker. To call out single points, such as a record, pass \`discreteMarkers\`: \`{ seriesIndex, dataPointIndex, color, size, shape }\` objects in React, or text such as \`data-ok-discrete-markers="0 4 error star 8"\` in HTML. They draw a marker on that point even when its series has none.`,
+    html: `${snippetElement(markerShapesGroup, "data-ok-chart ")}
+${snippetElement(colorBlindGroup, "data-ok-chart ", 1)}`,
+    react: `import { Chart } from "@owlky/react";
+
+const weeks = ["W1", "W2", "W3", "W4", "W5", "W6", "W7"];
+const sessions = [
+  { name: "Search", markerShape: "circle" as const, data: [45, 52, 38, 24, 33, 26, 21] },
+  { name: "Social", markerShape: "square" as const, data: [35, 41, 62, 42, 13, 18, 29] },
+  { name: "Email", markerShape: "triangle" as const, data: [87, 57, 74, 99, 75, 38, 62] },
+];
+const quarters = ["Q1", "Q2", "Q3", "Q4"];
+const revenue = [
+  { name: "Free", data: [8, 12, 15, 19] },
+  { name: "Pro", data: [21, 25, 30, 34] },
+  { name: "Team", data: [14, 18, 17, 24] },
+];
+
+export function ChartCues() {
+  return (
+    <>
+      <Chart
+        label="Weekly sessions by source"
+        markerSize={5}
+        curve="straight"
+        discreteMarkers={[
+          { seriesIndex: 0, dataPointIndex: 4, color: "error", size: 8, shape: "star" },
+        ]}
+        categories={weeks}
+        series={sessions}
+      />
+      <Chart
+        label="Revenue by plan per quarter"
+        type="bar"
+        colorBlindMode
+        categories={quarters}
+        series={revenue}
+      />
+    </>
+  );
+}`,
   },
   {
     id: "values",
@@ -766,6 +899,54 @@ export function ChartAxes() {
 }`,
   },
   {
+    id: "tooltip",
+    title: "Change the tooltip",
+    body: `By default, the tooltip lists the values of every series in the category under the pointer or the keyboard. Change it with these options:
+
+- **One value:** \`tooltip="point"\` (\`data-ok-tooltip="point"\` in HTML) shows only the column, bar or point under the pointer, and the arrow keys move value by value.
+- **No tooltip:** \`tooltip="none"\` shows no tooltip. Screen readers still announce the values the keyboard moves to, because the tooltip stays as a hidden status region.
+- **Fixed position:** \`tooltipFixed\` (\`data-ok-tooltip-fixed\`) keeps the tooltip in a corner of the plot, so it never covers the values: \`topLeft\`, \`topRight\`, \`bottomLeft\` or \`bottomRight\`.
+
+To show your own content, pass \`tooltipContent(context)\` in React. It gets the \`title\`, the \`rows\` (\`name\`, \`value\` and \`color\` of each value), \`selected\` and the data \`points\`, and returns what the tooltip shows. In HTML, add a \`<template data-ok-chart-tooltip>\` to the chart. The chart copies it into the tooltip and writes text into its slots: \`data-ok-chart-tooltip-slot="title"\`, \`"state"\` (removed unless the value is selected), and \`"row"\`, which is repeated for each value with its \`"name"\`, \`"value"\` and \`"marker"\`. The slots only ever get text, so data can't inject markup.`,
+    html: `${snippetElement(tooltipCustomGroup, "data-ok-chart ")}`,
+    react: `import { Chart } from "@owlky/react";
+
+const days = ["Mon", "Tue", "Wed", "Thu", "Fri"];
+const orders = [
+  { name: "Online", data: [44, 55, 41, 67, 22] },
+  { name: "In store", data: [13, 23, 20, 8, 13] },
+];
+
+export function ChartTooltip() {
+  return (
+    <Chart
+      label="Orders per weekday"
+      type="bar"
+      categories={days}
+      series={orders}
+      tooltipContent={({ title, rows, selected }) => (
+        <>
+          <div data-ok-chart-tooltip-title="">
+            <span>Orders on </span>
+            <span>{title}</span>
+          </div>
+          {selected && <div data-ok-chart-tooltip-state="">Selected</div>}
+          <div data-ok-chart-tooltip-rows="">
+            {rows.map((row) => (
+              <div key={row.name} data-ok-chart-tooltip-row="">
+                <span data-ok-chart-tooltip-marker="" data-ok-color={row.color} />
+                <span>{row.name}</span>
+                <span data-ok-chart-tooltip-value="">{row.value}</span>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    />
+  );
+}`,
+  },
+  {
     id: "select",
     title: "Select data points",
     body: `People can select a value to act on it, such as opening the orders of one weekday. A click selects the column, bar, slice, cell or point under the pointer, and a second click clears it. With the keyboard, Enter or Space selects the item the tooltip shows. On a category with several series, it selects the value of every series. A selected value gets an outline in the text color, and its tooltip says **Selected**, so screen readers announce it too.
@@ -812,7 +993,54 @@ export function ChartSelection() {
   {
     id: "legend",
     title: "Use the legend",
-    body: "The legend shows one button per series, or one per category in pie, donut and radial bar charts. Selecting a button hides its series and fits the axis to the series that are left. Select it again to show the series. `legend` places the legend at the `top` (the default), `right` or `bottom`, or hides it with `none`. Charts with one series have no legend. On screens narrower than 600px, a right legend moves below the chart. Set `legendValues` to show each item's value next to its name: the slice or ring value, or the last value of a series. `donutSize` sets the size of a donut's hole in percent of its radius (72 by default).",
+    body: "The legend shows one button per series, or one per category in pie, donut and radial bar charts. Selecting a button hides its series and fits the axis to the series that are left. Select it again to show the series. `legend` places the legend at the `top` (the default), `right` or `bottom`, or hides it with `none`. Charts with one series have no legend, unless you set `showForSingleSeries`. On screens narrower than 600px, a right legend moves below the chart. Set `legendValues` to show each item's value next to its name: the slice or ring value, or the last value of a series. `donutSize` sets the size of a donut's hole in percent of its radius (72 by default).",
+  },
+  {
+    id: "legend-grid",
+    title: "Customize the legend and the grid",
+    body: `Change how the legend looks and works:
+
+- **Alignment:** \`legendAlign\` (\`data-ok-legend-align\`) lines the items up on the \`left\`, in the \`center\` or on the \`right\`.
+- **Names:** \`customLegendItems\` shows these names instead of the series names. The first name stands for the first series, with its color and its button. In HTML, separate the names with semicolons in \`data-ok-custom-legend-items\`.
+- **Fixed series:** \`disableLegendToggle\` (\`data-ok-disable-legend-toggle\`) turns the items into labels, for charts whose series must always show.
+
+The grid draws horizontal lines along the value ticks by default. \`grid\` (\`data-ok-grid\`) draws \`x\` (vertical) lines, \`both\` or \`none\`. Stripes make rows or columns easier to follow: \`gridRowColors\` and \`gridColumnColors\` take colors in turn, such as palette names, \`grey\` or \`transparent\` (in HTML, separated by spaces in \`data-ok-grid-row-colors\` and \`data-ok-grid-column-colors\`). \`gridRowOpacity\` and \`gridColumnOpacity\` set their opacity, 0.5 by default.`,
+    html: `${snippetElement(legendGroup, "data-ok-chart ", 1)}
+${snippetElement(gridGroup, "data-ok-chart ")}`,
+    react: `import { Chart } from "@owlky/react";
+
+const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
+const money = [
+  { name: "Income", data: [42, 48, 45, 51, 49, 56] },
+  { name: "Spending", data: [38, 40, 47, 44, 46, 49] },
+];
+const visits = [{ name: "Visits", data: [10, 41, 35, 51, 49, 62] }];
+
+export function ChartLegendGrid() {
+  return (
+    <>
+      <Chart
+        label="Income and spending"
+        legend="bottom"
+        legendAlign="center"
+        disableLegendToggle
+        customLegendItems={["Income (after tax)", "Spending (all accounts)"]}
+        colors={["success", "error"]}
+        categories={months}
+        series={money}
+      />
+      <Chart
+        label="Monthly visits"
+        curve="straight"
+        markerSize={4}
+        grid="both"
+        gridRowColors={["grey", "transparent"]}
+        categories={months}
+        series={visits}
+      />
+    </>
+  );
+}`,
   },
   {
     id: "size",
@@ -853,6 +1081,7 @@ export function ChartSelection() {
 - The data table holds every value, including hidden series. Screen readers can read it instead of the drawing, which they skip.
 - The tooltip is a status region, so screen readers announce the values the keyboard moves to, and whether they are selected.
 - Selected values get an outline, not only a color change, and Enter or Space selects them without a pointer.
+- Marker shapes, patterns and dashes (\`colorBlindMode\` turns them all on) tell series apart without color, and the legend and the tooltip repeat them.
 - Legend buttons report their state with \`aria-pressed\`. A hidden series keeps a hollow marker and crossed-out text, so the state doesn't rely on color.
 - Axis labels use the secondary text color, which meets a contrast ratio of at least 4.5:1 in light and dark mode.`,
   },
@@ -984,9 +1213,109 @@ const PREVIEWS = {
         label="Sales by channel"
         type="bar"
         stacked
+        stackTotals
         legend="right"
         categories={MONTHS}
         series={SALES}
+      />
+      <Chart
+        label="Share of sales by channel"
+        type="bar"
+        stacked
+        stackType="100%"
+        dataLabels
+        height={240}
+        categories={MONTHS}
+        series={SALES}
+      />
+    </Preview>
+  ),
+  "legend-grid": () => (
+    <Preview>
+      <Chart
+        label="Monthly visits"
+        height={240}
+        curve="straight"
+        markerSize={4}
+        grid="both"
+        gridRowColors={["grey", "transparent"]}
+        showForSingleSeries
+        legendAlign="left"
+        categories={MONTHS}
+        series={[{ name: "Visits", data: [10, 41, 35, 51, 49, 62] }]}
+      />
+    </Preview>
+  ),
+  tooltip: () => (
+    <Preview>
+      <Chart
+        label="Orders per weekday (one tooltip per column)"
+        type="bar"
+        height={240}
+        tooltip="point"
+        tooltipFixed="topRight"
+        categories={["Mon", "Tue", "Wed", "Thu", "Fri"]}
+        series={[
+          { name: "Online", data: [44, 55, 41, 67, 22] },
+          { name: "In store", data: [13, 23, 20, 8, 13] },
+        ]}
+      />
+    </Preview>
+  ),
+  cues: () => (
+    <Preview>
+      <Chart
+        label="Weekly sessions by source"
+        height={240}
+        markerSize={5}
+        curve="straight"
+        discreteMarkers={[
+          { seriesIndex: 0, dataPointIndex: 4, color: "error", size: 8, shape: "star" },
+        ]}
+        categories={["W1", "W2", "W3", "W4", "W5", "W6", "W7"]}
+        series={[
+          { name: "Search", markerShape: "circle", data: [45, 52, 38, 24, 33, 26, 21] },
+          { name: "Social", markerShape: "square", data: [35, 41, 62, 42, 13, 18, 29] },
+          { name: "Email", markerShape: "triangle", data: [87, 57, 74, 99, 75, 38, 62] },
+        ]}
+      />
+      <Chart
+        label="Revenue by plan per quarter"
+        type="bar"
+        height={240}
+        colorBlindMode
+        categories={["Q1", "Q2", "Q3", "Q4"]}
+        series={[
+          { name: "Free", data: [8, 12, 15, 19] },
+          { name: "Pro", data: [21, 25, 30, 34] },
+          { name: "Team", data: [14, 18, 17, 24] },
+        ]}
+      />
+    </Preview>
+  ),
+  bars: () => (
+    <Preview>
+      <Chart
+        label="Monthly balance: losses in red, profits in green"
+        type="bar"
+        height={240}
+        colorRanges={[
+          { from: -100, to: -1, color: "error", name: "Loss" },
+          { from: 0, to: 100, color: "success", name: "Profit" },
+        ]}
+        categories={MONTHS}
+        series={[{ name: "Balance", data: [12, 18, -7, -21, 9, 27] }]}
+      />
+      <Chart
+        label="Monthly inflation"
+        type="bar"
+        height={240}
+        dataLabels
+        dataLabelPosition="top"
+        backgroundBars
+        valueSuffix="%"
+        categories={MONTHS}
+        series={[{ name: "Inflation", data: [2.3, 3.1, 4.0, 10.1, 4.0, 3.6] }]}
       />
     </Preview>
   ),

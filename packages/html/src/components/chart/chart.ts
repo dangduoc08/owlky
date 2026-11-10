@@ -3,25 +3,33 @@ import {
   type ChartActive,
   type ChartColor,
   type ChartCurve,
+  type ChartDataLabelPosition,
   type ChartDataPoint,
   type ChartExportFormat,
   type ChartFill,
   type ChartGestureMode,
+  type ChartGrid,
   type ChartLegend,
   type ChartLegendItem,
   type ChartLink,
   type ChartLocaleText,
+  type ChartMarkerShape,
   type ChartNode,
   type ChartOrientation,
   type ChartPart,
+  type ChartPattern,
   type ChartPointInput,
   type ChartRender,
   type ChartSelectionDetail,
   type ChartSeries,
+  type ChartStackType,
   type ChartTableCell,
   type ChartTableModel,
   type ChartTool,
   type ChartToolItem,
+  type ChartTooltip,
+  type ChartTooltipCorner,
+  type ChartTooltipMode,
   type ChartType,
   type ChartXType,
   type ChartZoom,
@@ -39,6 +47,8 @@ import {
   chartToolLabels,
   chartTools,
   chartTooltip,
+  chartTooltipContext,
+  chartTooltipFixed,
   chartZoomKey,
   createChartGestures,
   exportChart,
@@ -46,8 +56,11 @@ import {
   linkChart,
   nextChartActive,
   parseChartColorRanges,
+  parseChartColors,
+  parseChartDiscreteMarkers,
   parseChartIndicators,
   parseChartList,
+  parseChartStripeColors,
   parseChartYAxes,
   placeChartTooltip,
   readChartAnnotations,
@@ -383,22 +396,35 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
         created.push(box);
       }
       const buttons = [
-        ...box.querySelectorAll<HTMLButtonElement>(":scope > [data-ok-chart-legend-item]"),
+        ...box.querySelectorAll<HTMLElement>(":scope > [data-ok-chart-legend-item]"),
       ];
+      // Without toggling (4.18.64), items are labels (`span`), not buttons.
+      const tag = element.hasAttribute(o.disableLegendToggle.attr) ? "span" : "button";
       // Update in place: the button being clicked keeps its focus.
       items.forEach((item, index) => {
         let button = buttons[index];
-        if (!button) {
-          button = document.createElement("button");
-          button.type = "button";
-          button.setAttribute("data-ok-chart-legend-item", "");
-          (box as HTMLElement).append(button);
+        if (!button || button.localName !== tag) {
+          const fresh = document.createElement(tag);
+          if (fresh instanceof HTMLButtonElement) fresh.type = "button";
+          fresh.setAttribute("data-ok-chart-legend-item", "");
+          if (button) button.replaceWith(fresh);
+          else (box as HTMLElement).append(fresh);
+          button = fresh;
         }
         button.setAttribute("data-ok-color", item.color);
-        button.setAttribute("aria-pressed", String(!item.hidden));
-        if (button.textContent !== item.name + (item.value ?? "") || !button.firstElementChild) {
+        if (tag === "button") button.setAttribute("aria-pressed", String(!item.hidden));
+        const current = button.firstElementChild;
+        if (
+          button.textContent !== item.name + (item.value ?? "") ||
+          !current ||
+          current.getAttribute("data-ok-shape") !== (item.shape ?? null) ||
+          current.getAttribute("data-ok-pattern") !== (item.pattern ?? null)
+        ) {
           const marker = document.createElement("span");
           marker.setAttribute("data-ok-chart-legend-marker", "");
+          // Non-color cues (4.18.62): the series' shape or pattern.
+          if (item.shape) marker.setAttribute("data-ok-shape", item.shape);
+          if (item.pattern) marker.setAttribute("data-ok-pattern", item.pattern);
           const parts: (Node | string)[] = [marker, item.name];
           if (item.value !== undefined) {
             const value = document.createElement("span");
@@ -425,6 +451,33 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
         tip.replaceChildren();
         return;
       }
+      // Custom content (4.18.63): the author's template, its slots filled as text.
+      const template = element.querySelector<HTMLTemplateElement>(
+        ":scope > template[data-ok-chart-tooltip]",
+      );
+      if (template && active) fillTooltip(tip, template, shown, active);
+      else defaultTooltip(shown);
+      tip.hidden = false;
+      const scale = plot.clientWidth / current.layout.width || 1;
+      const { left, top } = placeChartTooltip(
+        { x: shown.x * scale, y: shown.y * scale },
+        { width: tip.offsetWidth, height: tip.offsetHeight },
+        { width: plot.clientWidth, height: plot.clientHeight },
+        chartTooltipFixed(
+          element.hasAttribute(o.tooltipFixed.attr)
+            ? (readStyle(element, o.tooltipFixed) as ChartTooltipCorner)
+            : undefined,
+          current.layout,
+          scale,
+        ),
+      );
+      // CSSOM, not a style string (strict CSP).
+      tip.style.setProperty("--_ok-chart-tip-x", `${left}px`);
+      tip.style.setProperty("--_ok-chart-tip-y", `${top}px`);
+    };
+
+    /** The built-in tooltip: title, the "Selected" state and one row per value. */
+    const defaultTooltip = (shown: ChartTooltip) => {
       const title = document.createElement("div");
       title.setAttribute("data-ok-chart-tooltip-title", "");
       title.textContent = shown.title;
@@ -436,6 +489,8 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
         const marker = document.createElement("span");
         marker.setAttribute("data-ok-chart-tooltip-marker", "");
         marker.setAttribute("data-ok-color", row.color);
+        if (row.shape) marker.setAttribute("data-ok-shape", row.shape);
+        if (row.pattern) marker.setAttribute("data-ok-pattern", row.pattern);
         const name = document.createElement("span");
         name.textContent = row.name;
         const value = document.createElement("span");
@@ -451,16 +506,45 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
         state.textContent = localeText.selected ?? chartToolLabels.selected;
         tip.replaceChildren(title, state, rows);
       } else tip.replaceChildren(title, rows);
-      tip.hidden = false;
-      const scale = plot.clientWidth / current.layout.width || 1;
-      const { left, top } = placeChartTooltip(
-        { x: shown.x * scale, y: shown.y * scale },
-        { width: tip.offsetWidth, height: tip.offsetHeight },
-        { width: plot.clientWidth, height: plot.clientHeight },
-      );
-      // CSSOM, not a style string (strict CSP).
-      tip.style.setProperty("--_ok-chart-tip-x", `${left}px`);
-      tip.style.setProperty("--_ok-chart-tip-y", `${top}px`);
+    };
+
+    /**
+     * A custom tooltip from `template[data-ok-chart-tooltip]`: `[data-ok-chart-tooltip-slot]`
+     * elements get the `title`, the `state` (removed unless selected), one copy of `row` per value
+     * with its `name`, `value` and `marker` (color and cues); never markup.
+     */
+    const fillTooltip = (
+      box: HTMLElement,
+      template: HTMLTemplateElement,
+      shown: ChartTooltip,
+      item: ChartActive,
+    ) => {
+      const context = chartTooltipContext((render as ChartRender).layout, shown, item);
+      const content = template.content.cloneNode(true) as DocumentFragment;
+      const slots = (root: ParentNode, name: string) => [
+        ...root.querySelectorAll<HTMLElement>(`[data-ok-chart-tooltip-slot="${name}"]`),
+      ];
+      for (const slot of slots(content, "title")) slot.textContent = context.title;
+      for (const slot of slots(content, "state")) {
+        if (!context.selected) slot.remove();
+        else if (!slot.textContent?.trim())
+          slot.textContent = localeText.selected ?? chartToolLabels.selected;
+      }
+      for (const proto of slots(content, "row")) {
+        for (const row of context.rows) {
+          const copy = proto.cloneNode(true) as HTMLElement;
+          for (const slot of slots(copy, "name")) slot.textContent = row.name;
+          for (const slot of slots(copy, "value")) slot.textContent = row.value;
+          for (const slot of slots(copy, "marker")) {
+            slot.setAttribute("data-ok-color", row.color);
+            if (row.shape) slot.setAttribute("data-ok-shape", row.shape);
+            if (row.pattern) slot.setAttribute("data-ok-pattern", row.pattern);
+          }
+          proto.before(copy);
+        }
+        proto.remove();
+      }
+      box.replaceChildren(content);
     };
 
     const draw = () => {
@@ -506,6 +590,45 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
         fill: readStyle(element, o.fill) as ChartFill,
         legend: readStyle(element, o.legend) as ChartLegend,
         stacked: element.hasAttribute(o.stacked.attr),
+        stackType: readStyle(element, o.stackType) as ChartStackType | undefined,
+        stackOnlyBar: element.hasAttribute(o.stackOnlyBar.attr),
+        stackTotals: element.hasAttribute(o.stackTotals.attr),
+        dataLabelPosition: readStyle(element, o.dataLabelPosition) as
+          | ChartDataLabelPosition
+          | undefined,
+        backgroundBars: element.hasAttribute(o.backgroundBars.attr),
+        backgroundBarColors: parseChartColors(
+          element.getAttribute(CHART_TEXT_ATTRIBUTES.backgroundBarColors),
+        ),
+        backgroundBarOpacity: readNumber(element, o.backgroundBarOpacity) as number | undefined,
+        backgroundBarRadius: readNumber(element, o.backgroundBarRadius) as number | undefined,
+        markerShape: element.hasAttribute(o.markerShape.attr)
+          ? (readStyle(element, o.markerShape) as ChartMarkerShape)
+          : undefined,
+        fillPattern: element.hasAttribute(o.fillPattern.attr)
+          ? (readStyle(element, o.fillPattern) as ChartPattern)
+          : undefined,
+        strokeWidth: readNumber(element, o.strokeWidth) as number | undefined,
+        colorBlindMode: element.hasAttribute(o.colorBlindMode.attr),
+        tooltip: readStyle(element, o.tooltip) as ChartTooltipMode,
+        showForSingleSeries: element.hasAttribute(o.showForSingleSeries.attr),
+        customLegendItems: parseChartList(
+          element.getAttribute(CHART_TEXT_ATTRIBUTES.customLegendItems),
+        ),
+        grid: element.hasAttribute(o.grid.attr)
+          ? (readStyle(element, o.grid) as ChartGrid)
+          : undefined,
+        gridRowColors: parseChartStripeColors(
+          element.getAttribute(CHART_TEXT_ATTRIBUTES.gridRowColors),
+        ),
+        gridColumnColors: parseChartStripeColors(
+          element.getAttribute(CHART_TEXT_ATTRIBUTES.gridColumnColors),
+        ),
+        gridRowOpacity: readNumber(element, o.gridRowOpacity) as number | undefined,
+        gridColumnOpacity: readNumber(element, o.gridColumnOpacity) as number | undefined,
+        discreteMarkers: parseChartDiscreteMarkers(
+          element.getAttribute(CHART_TEXT_ATTRIBUTES.discreteMarkers),
+        ),
         horizontal: element.hasAttribute(o.horizontal.attr),
         markerSize: readNumber(element, o.markerSize) as number | undefined,
         columnWidth: Number(readNumber(element, o.columnWidth)),
@@ -838,7 +961,7 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
           if (chartTools.includes(name)) runTool(name);
           return;
         }
-        const item = (event.target as Element).closest?.("[data-ok-chart-legend-item]");
+        const item = (event.target as Element).closest?.("button[data-ok-chart-legend-item]");
         // Only this chart's own legend (not nested charts or look-alike buttons elsewhere).
         const box = element.querySelector(":scope > [data-ok-chart-legend]");
         if (!item || item.parentElement !== box) return;

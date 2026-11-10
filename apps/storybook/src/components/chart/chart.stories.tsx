@@ -7,6 +7,7 @@ import { ChartDocs } from "./chart-docs.js";
 import { CHART_CONTROLS, CHART_FILES, chartCode, chartStories } from "./chart-examples.js";
 import liveSource from "./chart-live.tsx?raw";
 import { LIVE_SCRIPT_SOURCE, liveScript } from "./chart-scripts.js";
+import tooltipSource from "./chart-tooltip.tsx?raw";
 
 const controls: StoryControls = { ...CHART_CONTROLS, target: Chart };
 
@@ -37,6 +38,15 @@ const liveStory = (name: string): StoryObj => ({
       group: { script: liveScript, scriptSource: LIVE_SCRIPT_SOURCE },
     }),
     react: reactGroupsStory(chartStories[name] ?? [], undefined, liveSource),
+  }),
+  name: chartExamples[name]?.title ?? name,
+});
+
+/** Custom tooltip: a React render prop and an HTML template (no Controls). */
+const customStory = (name: string, source: string): StoryObj => ({
+  ...frameworkStory({
+    html: snippetStory(snippets, name, CHART_FILES[name] ?? [], SETUP),
+    react: reactGroupsStory(chartStories[name] ?? [], undefined, source),
   }),
   name: chartExamples[name]?.title ?? name,
 });
@@ -101,6 +111,22 @@ export const MultipleYAxes: StoryObj = story("multiple-y-axes");
 export const AxisScales: StoryObj = story("axis-scales");
 // Roadmap 4.18.60: data point selection.
 export const Selection: StoryObj = story("selection");
+// Roadmap 4.18.61: stack types and totals, label positions, value ranges, background bars.
+export const ColumnStacked100: StoryObj = story("column-stacked-100");
+export const StackTotals: StoryObj = story("stack-totals");
+export const ColumnDataLabels: StoryObj = story("column-data-labels");
+export const ColumnRanges: StoryObj = story("column-ranges");
+// Roadmap 4.18.62: non-color series cues.
+export const MarkerShapes: StoryObj = story("marker-shapes");
+export const DashedLines: StoryObj = story("dashed-lines");
+export const Patterns: StoryObj = story("patterns");
+export const ColorBlind: StoryObj = story("color-blind");
+// Roadmap 4.18.63: tooltip modes, fixed tooltips and custom content.
+export const Tooltip: StoryObj = story("tooltip");
+export const TooltipCustom: StoryObj = customStory("tooltip-custom", tooltipSource);
+// Roadmap 4.18.64: legend and grid options.
+export const Legend: StoryObj = story("legend");
+export const Grid: StoryObj = story("grid");
 // Phase 2.1 (ADR-0047): Sankey charts.
 export const Sankey: StoryObj = story("sankey");
 export const SankeyVertical: StoryObj = story("sankey-vertical");

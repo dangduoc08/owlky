@@ -1,3 +1,4 @@
+import { chartPatternDefs } from "./chart-cues.js";
 import type { ChartFormat } from "./chart-format.js";
 import {
   type ChartArc,
@@ -156,6 +157,14 @@ export function layoutCircular(
   );
   // `chartData` colors every point of a circular chart.
   const color = (point: { color?: ChartColor | undefined }) => point.color as ChartColor;
+  // Pattern fills per slice (4.18.62): one definition per pattern and color.
+  const patterns = chartPatternDefs(options.idPrefix);
+  const patternOf = (point: { x: number; color?: ChartColor | undefined }) => {
+    const pattern = options.slicePatterns?.[point.x];
+    return pattern
+      ? { cue: { pattern }, fill: { fill: patterns.fill(pattern, color(point)) } }
+      : { cue: {}, fill: {} };
+  };
 
   if (data.type === "radialBar") {
     const n = points.length;
@@ -300,6 +309,7 @@ export function layoutCircular(
           inner: 0,
           outer: r2(r),
         },
+        ...patternOf(point).cue,
       });
       slots.push({ index: point.x, pos: point.x });
       if (r > 0)
@@ -308,6 +318,7 @@ export function layoutCircular(
             d: slicePath(cx, cy, 0, r, start, start + sweep),
             "data-ok-chart-slice": "",
             "data-ok-color": color(point),
+            ...patternOf(point).fill,
           }),
         );
       if (options.dataLabels && r >= FONT * 2 && sweep >= 12)
@@ -353,6 +364,7 @@ export function layoutCircular(
         py: r2(py),
         color: color(point),
         arc: sliceArc,
+        ...patternOf(point).cue,
       });
       slots.push({ index: point.x, pos: point.x });
       shapes.push(
@@ -360,6 +372,7 @@ export function layoutCircular(
           d: slicePath(cx, cy, inner, outer, angle, angle + sweep),
           "data-ok-chart-slice": "",
           "data-ok-color": color(point),
+          ...patternOf(point).fill,
         }),
       );
       // Percentages on slices wide enough for them.
@@ -374,6 +387,7 @@ export function layoutCircular(
   }
 
   const nodes: ChartNode[] = [];
+  defs.push(...patterns.nodes());
   if (defs.length) nodes.push(node("defs", {}, defs));
   if (grid.length) nodes.push(node("g", { "data-ok-chart-grid": "" }, grid));
   nodes.push(

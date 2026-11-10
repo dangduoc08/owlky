@@ -34,14 +34,58 @@ export const chartCircularTypes = ["pie", "donut", "radialBar", "polarArea"] as 
 export const chartCurves = ["smooth", "straight", "stepline"] as const;
 export const chartLegends = ["top", "right", "bottom", "none"] as const;
 export const chartXTypes = ["category", "datetime", "numeric"] as const;
-export const chartFills = ["gradient", "solid"] as const;
+export const chartFills = ["gradient", "solid", "pattern"] as const;
 export const chartShades = ["lighter", "light", "main", "dark", "darker"] as const;
+/** Stacks (4.18.61): values on each other (`normal`) or as shares of their category (`100%`). */
+export const chartStackTypes = ["normal", "100%"] as const;
+/** Where values sit inside bars (4.18.61): the middle, the value end or the base. */
+export const chartDataLabelPositions = ["center", "top", "bottom"] as const;
 
 export type ChartType = (typeof chartTypes)[number];
 export type ChartCurve = (typeof chartCurves)[number];
 export type ChartLegend = (typeof chartLegends)[number];
 export type ChartXType = (typeof chartXTypes)[number];
 export type ChartFill = (typeof chartFills)[number];
+export type ChartStackType = (typeof chartStackTypes)[number];
+/** Marker shapes (4.18.62, ApexCharts `markers.shape`). */
+export const chartMarkerShapes = [
+  "circle",
+  "square",
+  "triangle",
+  "diamond",
+  "cross",
+  "plus",
+  "star",
+] as const;
+export type ChartMarkerShape = (typeof chartMarkerShapes)[number];
+/** Pattern fills (4.18.62, ApexCharts `fill.pattern.style`); `colorBlindMode` uses them in this order. */
+export const chartPatterns = [
+  "slantedLines",
+  "squares",
+  "circles",
+  "horizontalLines",
+  "verticalLines",
+] as const;
+export type ChartPattern = (typeof chartPatterns)[number];
+export const isChartMarkerShape = (value: unknown): value is ChartMarkerShape =>
+  chartMarkerShapes.includes(value as ChartMarkerShape);
+export const isChartPattern = (value: unknown): value is ChartPattern =>
+  chartPatterns.includes(value as ChartPattern);
+export type ChartDataLabelPosition = (typeof chartDataLabelPositions)[number];
+/** Tooltip modes (4.18.63): every series of a category, the point under the pointer, or none. */
+export const chartTooltipModes = ["shared", "point", "none"] as const;
+export type ChartTooltipMode = (typeof chartTooltipModes)[number];
+/** Corners of the plot a fixed tooltip sits in (ApexCharts `tooltip.fixed.position`). */
+export const chartTooltipCorners = ["topLeft", "topRight", "bottomLeft", "bottomRight"] as const;
+export type ChartTooltipCorner = (typeof chartTooltipCorners)[number];
+/** Grid lines (4.18.64): horizontal (`y`), vertical (`x`), both or none. */
+export const chartGrids = ["y", "x", "both", "none"] as const;
+export type ChartGrid = (typeof chartGrids)[number];
+/** Legend alignment (4.18.64, ApexCharts `legend.horizontalAlign`). */
+export const chartLegendAligns = ["left", "center", "right"] as const;
+export type ChartLegendAlign = (typeof chartLegendAligns)[number];
+/** A grid stripe color: a palette color, the neutral `grey`, or `transparent` (no stripe). */
+export type ChartStripeColor = ChartColor | "grey" | "transparent";
 type Palette = (typeof paletteColorNames)[number];
 export type ChartCircularType = (typeof chartCircularTypes)[number];
 
@@ -198,6 +242,14 @@ export interface ChartSeries {
    * naming it in `seriesName`, else the axis at its position).
    */
   readonly yAxis?: number | undefined;
+  /** Marker shape of this series (4.18.62; default the chart's `markerShape`). */
+  readonly markerShape?: ChartMarkerShape | undefined;
+  /** Pattern fill of this series' bars or area (4.18.62). */
+  readonly fillPattern?: ChartPattern | undefined;
+  /** Line width of this series in px (4.18.62; default the chart's `strokeWidth`). */
+  readonly strokeWidth?: number | undefined;
+  /** Dash length of this series' line in px (4.18.62; default the chart's `dashArray`). */
+  readonly dashArray?: number | undefined;
 }
 
 export interface ChartPoint {
@@ -230,6 +282,16 @@ export interface ChartDataSeries {
   readonly guides?: readonly number[] | undefined;
   /** Charts with several value axes: the axis it is drawn on (an index in `yaxis`). */
   readonly axis?: number | undefined;
+  /** The series' own cues as given (4.18.62; written on its table column). */
+  readonly markerShape?: ChartMarkerShape | undefined;
+  readonly fillPattern?: ChartPattern | undefined;
+  readonly strokeWidth?: number | undefined;
+  readonly dashArray?: number | undefined;
+  /** Resolved cues (`withChartCues`): drawn marker shape, pattern, dash and line width. */
+  readonly shape?: ChartMarkerShape | undefined;
+  readonly pattern?: ChartPattern | undefined;
+  readonly dash?: string | undefined;
+  readonly width?: number | undefined;
 }
 
 export interface ChartData {
@@ -372,6 +434,8 @@ export function chartData(input: {
     const fallback =
       palette[index] ?? (chartDefaultColors[index % chartDefaultColors.length] as ChartColor);
     const axis = entry.yAxis;
+    const strokeWidth = parseChartNumber(entry.strokeWidth);
+    const dashArray = parseChartNumber(entry.dashArray);
     return {
       name: String(entry.name),
       type: seriesType,
@@ -380,6 +444,10 @@ export function chartData(input: {
       ...(Number.isInteger(axis) && (axis as number) >= 0 && (axis as number) < 10
         ? { axis: axis as number }
         : {}),
+      ...(isChartMarkerShape(entry.markerShape) ? { markerShape: entry.markerShape } : {}),
+      ...(isChartPattern(entry.fillPattern) ? { fillPattern: entry.fillPattern } : {}),
+      ...(strokeWidth !== null && strokeWidth >= 0 && strokeWidth <= 50 ? { strokeWidth } : {}),
+      ...(dashArray !== null && dashArray >= 0 && dashArray <= 500 ? { dashArray } : {}),
     };
   });
   return { type, xType, categories, series };
@@ -458,6 +526,15 @@ export function chartTable(
           "data-ok-color": series.color,
           // Several value axes (4.18.59): the series' axis, read back by the HTML runtime.
           ...(series.axis !== undefined ? { "data-ok-y-axis": String(series.axis) } : {}),
+          // Series cues (4.18.62), read back by the HTML runtime.
+          ...(series.markerShape ? { "data-ok-marker-shape": series.markerShape } : {}),
+          ...(series.fillPattern ? { "data-ok-fill-pattern": series.fillPattern } : {}),
+          ...(series.strokeWidth !== undefined
+            ? { "data-ok-stroke-width": String(series.strokeWidth) }
+            : {}),
+          ...(series.dashArray !== undefined
+            ? { "data-ok-dash-array": String(series.dashArray) }
+            : {}),
         },
         ...(count > 0 ? { colSpan: count } : two ? { rowSpan: 2 } : {}),
       };
@@ -621,10 +698,18 @@ export function readChartTable(
     const type = header.getAttribute("data-ok-type");
     const color = header.getAttribute("data-ok-color");
     const axis = header.getAttribute("data-ok-y-axis");
+    const shape = header.getAttribute("data-ok-marker-shape");
+    const pattern = header.getAttribute("data-ok-fill-pattern");
+    const width = parseChartNumber(header.getAttribute("data-ok-stroke-width"));
+    const dash = parseChartNumber(header.getAttribute("data-ok-dash-array"));
     return [
       {
         name: cellText(header),
         ...(axis !== null && /^\d$/.test(axis) ? { yAxis: Number(axis) } : {}),
+        ...(isChartMarkerShape(shape) ? { markerShape: shape } : {}),
+        ...(isChartPattern(pattern) ? { fillPattern: pattern } : {}),
+        ...(width !== null ? { strokeWidth: width } : {}),
+        ...(dash !== null ? { dashArray: dash } : {}),
         data:
           xType === "numeric"
             ? data.filter((point) => (point as readonly unknown[])[1] !== null)

@@ -39,14 +39,30 @@ import {
 import {
   type ChartColor,
   type ChartCurve,
+  type ChartDataLabelPosition,
   type ChartFill,
+  type ChartGrid,
   type ChartLegend,
+  type ChartLegendAlign,
+  type ChartMarkerShape,
+  type ChartPattern,
+  type ChartStackType,
+  type ChartTooltipCorner,
+  type ChartTooltipMode,
   type ChartType,
   type ChartXType,
   chartColors,
   chartCurves,
+  chartDataLabelPositions,
   chartFills,
+  chartGrids,
+  chartLegendAligns,
   chartLegends,
+  chartMarkerShapes,
+  chartPatterns,
+  chartStackTypes,
+  chartTooltipCorners,
+  chartTooltipModes,
   chartTypes,
   chartXTypes,
 } from "../chart/chart-model.js";
@@ -4252,7 +4268,7 @@ export const chartOptions = defineOptions("chart", "data-ok-chart", {
     "data-ok-fill",
     chartFills,
     "gradient",
-    "Area fill: a fading `gradient` or a `solid` tint.",
+    "Area fill: a fading `gradient`, a `solid` tint or a `pattern` (bars, areas and slices too; a different pattern per series unless `fillPattern` is set).",
   ),
   stacked: flag("data-ok-stacked", "Stacks the series on each other (bars, lines, areas)."),
   horizontal: flag("data-ok-horizontal", "Bars run left to right, categories down the side."),
@@ -4408,6 +4424,116 @@ export const chartOptions = defineOptions("chart", "data-ok-chart", {
     "data-ok-allow-multiple-data-points-selection",
     "Clicks and Enter or Space add points to the selection instead of replacing it.",
   ),
+  stackType: style(
+    "data-ok-stack-type",
+    chartStackTypes,
+    "normal",
+    "Stacked charts: `normal` stacks the values, `100%` stacks each category's values as shares of their total (the value axis runs to 100%).",
+    { optional: true },
+  ),
+  stackOnlyBar: flag(
+    "data-ok-stack-only-bar",
+    "Stacked mixed charts: only the bar series stack; lines and areas keep their own values.",
+  ),
+  stackTotals: flag(
+    "data-ok-stack-totals",
+    "Stacked bars: prints the total of each stack past its end.",
+  ),
+  dataLabelPosition: style(
+    "data-ok-data-label-position",
+    chartDataLabelPositions,
+    "center",
+    "Bars: where data labels sit inside the bar: `center`, `top` (by the value end) or `bottom` (by the base).",
+    { optional: true },
+  ),
+  backgroundBars: flag(
+    "data-ok-background-bars",
+    "Bars: a grey track the height of the plot behind each bar.",
+  ),
+  backgroundBarOpacity: number(
+    "data-ok-background-bar-opacity",
+    undefined,
+    "Bars: opacity of the tracks behind the bars (0 to 1; default 1).",
+    { min: 0 },
+  ),
+  backgroundBarRadius: number(
+    "data-ok-background-bar-radius",
+    undefined,
+    "Bars: corner radius of the tracks in px (default 4).",
+    { min: 0 },
+  ),
+  markerShape: style(
+    "data-ok-marker-shape",
+    chartMarkerShapes,
+    "circle",
+    "Shape of the markers of every series: `circle`, `square`, `triangle`, `diamond`, `cross`, `plus` or `star` (series may set their own).",
+    { optional: true },
+  ),
+  fillPattern: style(
+    "data-ok-fill-pattern",
+    chartPatterns,
+    "slantedLines",
+    "Pattern of every bar, area and slice: `slantedLines`, `squares`, `circles`, `horizontalLines` or `verticalLines` (turns patterns on; series may set their own).",
+    { optional: true },
+  ),
+  strokeWidth: number(
+    "data-ok-stroke-width",
+    undefined,
+    "Line width of every series in px (default 2.5; series may set their own).",
+    { min: 0 },
+  ),
+  colorBlindMode: flag(
+    "data-ok-color-blind-mode",
+    "Series differ by more than their color: a different marker shape (lines get markers), pattern and dash per series.",
+  ),
+  tooltip: style(
+    "data-ok-tooltip",
+    chartTooltipModes,
+    "shared",
+    "Tooltip: `shared` lists every series of the category, `point` only the value under the pointer (or the keyboard), `none` shows none (the values are still announced).",
+    { optional: true },
+  ),
+  tooltipFixed: style(
+    "data-ok-tooltip-fixed",
+    chartTooltipCorners,
+    "topRight",
+    "The tooltip stays in a corner of the plot: `topLeft`, `topRight`, `bottomLeft` or `bottomRight` (default beside the value).",
+    { optional: true },
+  ),
+  legendAlign: style(
+    "data-ok-legend-align",
+    chartLegendAligns,
+    "right",
+    "Legend items line up `left`, `center` or `right` (default right above the plot, centered below it and around circular charts).",
+    { optional: true },
+  ),
+  showForSingleSeries: flag(
+    "data-ok-show-for-single-series",
+    "Shows the legend for a single series too.",
+  ),
+  disableLegendToggle: flag(
+    "data-ok-disable-legend-toggle",
+    "Legend items are plain labels: clicks don't hide series.",
+  ),
+  grid: style(
+    "data-ok-grid",
+    chartGrids,
+    "y",
+    "Grid lines: `y` horizontal (along the value ticks, or between the bars of horizontal bar charts), `x` vertical, `both` or `none`.",
+    { optional: true },
+  ),
+  gridRowOpacity: number(
+    "data-ok-grid-row-opacity",
+    undefined,
+    "Opacity of the row stripes (0 to 1; default 0.5).",
+    { min: 0 },
+  ),
+  gridColumnOpacity: number(
+    "data-ok-grid-column-opacity",
+    undefined,
+    "Opacity of the column stripes (0 to 1; default 0.5).",
+    { min: 0 },
+  ),
   hiddenSeries: state(
     "aria-pressed",
     'Indexes of the series hidden through the legend (`aria-pressed="false"` on their buttons); categories in pie, donut and radial bar charts.',
@@ -4463,6 +4589,25 @@ export interface ChartAnatomyOptions {
   navigator?: boolean | undefined;
   paneHeight?: number | undefined;
   allowMultipleDataPointsSelection?: boolean | undefined;
+  stackType?: ChartStackType | undefined;
+  stackOnlyBar?: boolean | undefined;
+  stackTotals?: boolean | undefined;
+  dataLabelPosition?: ChartDataLabelPosition | undefined;
+  backgroundBars?: boolean | undefined;
+  backgroundBarOpacity?: number | undefined;
+  backgroundBarRadius?: number | undefined;
+  markerShape?: ChartMarkerShape | undefined;
+  fillPattern?: ChartPattern | undefined;
+  strokeWidth?: number | undefined;
+  colorBlindMode?: boolean | undefined;
+  tooltip?: ChartTooltipMode | undefined;
+  tooltipFixed?: ChartTooltipCorner | undefined;
+  legendAlign?: ChartLegendAlign | undefined;
+  showForSingleSeries?: boolean | undefined;
+  disableLegendToggle?: boolean | undefined;
+  grid?: ChartGrid | undefined;
+  gridRowOpacity?: number | undefined;
+  gridColumnOpacity?: number | undefined;
 }
 
 /** `data-ok-*` attributes of a chart root (numbers only when given). */

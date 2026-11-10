@@ -1,7 +1,13 @@
 import { type ChartYAxis, chartYAxesText } from "./chart-axes.js";
+import { type ChartDiscreteMarker, chartDiscreteMarkersText } from "./chart-cues.js";
 import { type ChartIndicator, chartIndicatorsText } from "./chart-indicators.js";
 import type { ChartColorRange } from "./chart-layout.js";
-import { type ChartColor, chartColors, parseChartNumber } from "./chart-model.js";
+import {
+  type ChartColor,
+  type ChartStripeColor,
+  chartColors,
+  parseChartNumber,
+} from "./chart-model.js";
 
 /*
  * Text attributes of a chart root (written by React and read by the HTML runtime): texts that
@@ -28,6 +34,15 @@ export interface ChartTextOptions {
   readonly yaxis?: ChartYAxis | readonly ChartYAxis[] | undefined;
   /** The x axis title. */
   readonly xTitle?: string | undefined;
+  /** Bars: track colors (`"info-lighter warning-lighter"`, 4.18.61). */
+  readonly backgroundBarColors?: readonly ChartColor[] | undefined;
+  /** Markers on single points (`"0 3 error square 6; 1 2"`, 4.18.62). */
+  readonly discreteMarkers?: readonly ChartDiscreteMarker[] | undefined;
+  /** Legend names (`"Income; Spending"`, 4.18.64). */
+  readonly customLegendItems?: readonly string[] | undefined;
+  /** Grid stripes (`"grey transparent"`, 4.18.64). */
+  readonly gridRowColors?: readonly ChartStripeColor[] | undefined;
+  readonly gridColumnColors?: readonly ChartStripeColor[] | undefined;
 }
 
 export const CHART_TEXT_ATTRIBUTES = {
@@ -43,6 +58,11 @@ export const CHART_TEXT_ATTRIBUTES = {
   indicators: "data-ok-indicators",
   yaxis: "data-ok-yaxis",
   xTitle: "data-ok-x-title",
+  backgroundBarColors: "data-ok-background-bar-colors",
+  discreteMarkers: "data-ok-discrete-markers",
+  customLegendItems: "data-ok-custom-legend-items",
+  gridRowColors: "data-ok-grid-row-colors",
+  gridColumnColors: "data-ok-grid-column-colors",
 } as const;
 
 const isColor = (value: unknown): value is ChartColor => chartColors.includes(value as ChartColor);
@@ -80,6 +100,21 @@ export function chartColorRangesText(ranges: readonly ChartColorRange[]): string
     .join("; ");
 }
 
+/** Palette colors from text separated by spaces (`"info warning-light"`); others are dropped. */
+export function parseChartColors(text: string | null | undefined): ChartColor[] {
+  if (!text || text.length > 2000) return [];
+  return text.trim().split(/\s+/).filter(isColor).slice(0, 100);
+}
+
+const isStripe = (value: unknown): value is ChartStripeColor =>
+  value === "grey" || value === "transparent" || isColor(value);
+
+/** Stripe colors from text separated by spaces (palette names, `grey`, `transparent`). */
+export function parseChartStripeColors(text: string | null | undefined): ChartStripeColor[] {
+  if (!text || text.length > 2000) return [];
+  return text.trim().split(/\s+/).filter(isStripe).slice(0, 100);
+}
+
 /** A list as attribute text: items separated by `; ` (a `;` inside an item becomes a space). */
 export function chartListText(items: readonly string[]): string {
   return items
@@ -113,6 +148,20 @@ export function chartTextAttributes(options: ChartTextOptions): Record<string, s
       if (text) out[attr] = text;
     } else if (key === "axisTitles") {
       const text = chartListText((value as readonly string[] | undefined) ?? []);
+      if (text) out[attr] = text;
+    } else if (key === "gridRowColors" || key === "gridColumnColors") {
+      const text = ((value as readonly ChartStripeColor[] | undefined) ?? [])
+        .filter(isStripe)
+        .join(" ");
+      if (text) out[attr] = text;
+    } else if (key === "customLegendItems") {
+      const text = chartListText((value as readonly string[] | undefined) ?? []);
+      if (text) out[attr] = text;
+    } else if (key === "discreteMarkers") {
+      const text = chartDiscreteMarkersText(value as readonly ChartDiscreteMarker[] | undefined);
+      if (text) out[attr] = text;
+    } else if (key === "backgroundBarColors") {
+      const text = ((value as readonly ChartColor[] | undefined) ?? []).filter(isColor).join(" ");
       if (text) out[attr] = text;
     } else if (key === "colorRanges") {
       const text = chartColorRangesText((value as readonly ChartColorRange[] | undefined) ?? []);

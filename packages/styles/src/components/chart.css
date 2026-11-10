@@ -225,6 +225,33 @@
     justify-content: center;
   }
 
+  /* Legend alignment (4.18.64), for top and bottom legends. */
+  :where([data-ok-chart][data-ok-legend-align="left"] > [data-ok-chart-legend]) {
+    justify-content: flex-start;
+  }
+
+  :where([data-ok-chart][data-ok-legend-align="center"] > [data-ok-chart-legend]) {
+    justify-content: center;
+  }
+
+  :where([data-ok-chart][data-ok-legend-align="right"] > [data-ok-chart-legend]) {
+    justify-content: flex-end;
+  }
+
+  /* Legend items without toggling are labels. */
+  :where(span[data-ok-chart-legend-item]) {
+    cursor: default;
+  }
+
+  /* Grid stripes (4.18.64): grey, or the palette color they name; the opacity is an attribute. */
+  :where([data-ok-chart-stripe]) {
+    fill: rgb(var(--ok-palette-grey-500-channel) / 0.24);
+  }
+
+  :where([data-ok-chart-stripe][data-ok-color]) {
+    fill: var(--_ok-chart-c);
+  }
+
   /* Right legends sit below the plot on phones and beside it from 600px. */
   :where([data-ok-chart][data-ok-legend="right"] > [data-ok-chart-legend]) {
     order: 1;
@@ -279,6 +306,151 @@
     background-color: var(--_ok-chart-c);
   }
 
+  /* Non-color cues (4.18.62) on legend and tooltip markers: the series' marker shape or its
+     pattern (an outline of the color around lines or dots of it). */
+  :where(
+    [data-ok-chart-legend-marker][data-ok-shape="square"],
+    [data-ok-chart-tooltip-marker][data-ok-shape="square"]
+  ) {
+    border-radius: 2px;
+  }
+
+  :where(
+    [data-ok-chart-legend-marker][data-ok-shape="triangle"],
+    [data-ok-chart-tooltip-marker][data-ok-shape="triangle"]
+  ) {
+    border-radius: 0;
+    clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  }
+
+  :where(
+    [data-ok-chart-legend-marker][data-ok-shape="diamond"],
+    [data-ok-chart-tooltip-marker][data-ok-shape="diamond"]
+  ) {
+    border-radius: 0;
+    clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+  }
+
+  :where(
+    [data-ok-chart-legend-marker][data-ok-shape="cross"],
+    [data-ok-chart-tooltip-marker][data-ok-shape="cross"]
+  ) {
+    border-radius: 0;
+    clip-path: polygon(
+      20% 0,
+      50% 30%,
+      80% 0,
+      100% 20%,
+      70% 50%,
+      100% 80%,
+      80% 100%,
+      50% 70%,
+      20% 100%,
+      0 80%,
+      30% 50%,
+      0 20%
+    );
+  }
+
+  :where(
+    [data-ok-chart-legend-marker][data-ok-shape="plus"],
+    [data-ok-chart-tooltip-marker][data-ok-shape="plus"]
+  ) {
+    border-radius: 0;
+    clip-path: polygon(
+      35% 0,
+      65% 0,
+      65% 35%,
+      100% 35%,
+      100% 65%,
+      65% 65%,
+      65% 100%,
+      35% 100%,
+      35% 65%,
+      0 65%,
+      0 35%,
+      35% 35%
+    );
+  }
+
+  :where(
+    [data-ok-chart-legend-marker][data-ok-shape="star"],
+    [data-ok-chart-tooltip-marker][data-ok-shape="star"]
+  ) {
+    border-radius: 0;
+    clip-path: polygon(
+      50% 0,
+      61% 35%,
+      98% 35%,
+      68% 57%,
+      79% 91%,
+      50% 70%,
+      21% 91%,
+      32% 57%,
+      2% 35%,
+      39% 35%
+    );
+  }
+
+  :where(
+    [data-ok-chart-legend-marker][data-ok-pattern],
+    [data-ok-chart-tooltip-marker][data-ok-pattern]
+  ) {
+    box-sizing: border-box;
+    border: 2px solid var(--_ok-chart-c);
+    border-radius: 2px;
+    background-color: transparent;
+  }
+
+  :where(
+    [data-ok-chart-legend-marker][data-ok-pattern="slantedLines"],
+    [data-ok-chart-tooltip-marker][data-ok-pattern="slantedLines"]
+  ) {
+    background-image: repeating-linear-gradient(
+      45deg,
+      var(--_ok-chart-c) 0 1.5px,
+      transparent 1.5px 4px
+    );
+  }
+
+  :where(
+    [data-ok-chart-legend-marker][data-ok-pattern="verticalLines"],
+    [data-ok-chart-tooltip-marker][data-ok-pattern="verticalLines"]
+  ) {
+    background-image: repeating-linear-gradient(
+      90deg,
+      var(--_ok-chart-c) 0 1.5px,
+      transparent 1.5px 4px
+    );
+  }
+
+  :where(
+    [data-ok-chart-legend-marker][data-ok-pattern="horizontalLines"],
+    [data-ok-chart-tooltip-marker][data-ok-pattern="horizontalLines"]
+  ) {
+    background-image: repeating-linear-gradient(
+      0deg,
+      var(--_ok-chart-c) 0 1.5px,
+      transparent 1.5px 4px
+    );
+  }
+
+  :where(
+    [data-ok-chart-legend-marker][data-ok-pattern="squares"],
+    [data-ok-chart-tooltip-marker][data-ok-pattern="squares"]
+  ) {
+    background-image: repeating-conic-gradient(var(--_ok-chart-c) 0 25%, transparent 0 50%);
+    background-size: 4px 4px;
+  }
+
+  :where(
+    [data-ok-chart-legend-marker][data-ok-pattern="circles"],
+    [data-ok-chart-tooltip-marker][data-ok-pattern="circles"]
+  ) {
+    background-image: radial-gradient(var(--_ok-chart-c) 35%, transparent 45%);
+    background-size: 4px 4px;
+  }
+
   /* A hidden series: hollow marker, secondary text (still AA). */
   :where([data-ok-chart-legend-item][aria-pressed="false"]) {
     color: var(--ok-text-secondary);
@@ -290,7 +462,7 @@
   }
 
   @media (hover: hover) {
-    :where([data-ok-chart-legend-item]:hover) {
+    :where(button[data-ok-chart-legend-item]:hover) {
       background-color: var(--ok-action-hover);
     }
   }
@@ -334,8 +506,12 @@
   :where([data-ok-chart-line]) {
     fill: none;
     stroke: var(--_ok-chart-c);
-    stroke-width: 2.5px;
     stroke-linejoin: round;
+  }
+
+  /* A series' own line width (4.18.62) is an attribute from the layout. */
+  :where([data-ok-chart-line]:not([stroke-width])) {
+    stroke-width: 2.5px;
   }
 
   :where([data-ok-chart-area]) {
@@ -352,7 +528,8 @@
     stop-color: var(--_ok-chart-c);
   }
 
-  :where([data-ok-chart-bar]) {
+  /* Bars and slices with a pattern (4.18.62) carry their own fill. */
+  :where([data-ok-chart-bar]:not([fill])) {
     fill: var(--_ok-chart-c);
   }
 
@@ -370,6 +547,58 @@
     stroke-width: 3px;
   }
 
+  /* Marker shapes (4.18.62): crosses and pluses are strokes of the series color. */
+  :where(
+    [data-ok-chart-marker][data-ok-shape="cross"],
+    [data-ok-chart-marker][data-ok-shape="plus"]
+  ) {
+    fill: none;
+    stroke: var(--_ok-chart-c);
+    stroke-width: 2.5px;
+    stroke-linecap: round;
+  }
+
+  :where(
+    [data-ok-chart-active-marker][data-ok-shape="cross"],
+    [data-ok-chart-active-marker][data-ok-shape="plus"]
+  ) {
+    fill: none;
+    stroke: var(--_ok-chart-c);
+    stroke-width: 4px;
+    stroke-linecap: round;
+  }
+
+  /* Pattern fills (4.18.62): a faint tint of the color (its opacity is an attribute) under lines,
+     squares or dots of the color. */
+  :where([data-ok-chart-pattern-tint]) {
+    fill: var(--_ok-chart-c);
+  }
+
+  :where([data-ok-chart-pattern-mark]) {
+    fill: none;
+    stroke: var(--_ok-chart-c);
+    stroke-width: 1.5px;
+    stroke-linecap: square;
+  }
+
+  :where(
+    [data-ok-chart-pattern="squares"] > [data-ok-chart-pattern-mark],
+    [data-ok-chart-pattern="circles"] > [data-ok-chart-pattern-mark]
+  ) {
+    fill: var(--_ok-chart-c);
+    stroke: none;
+  }
+
+  /* Background bars (4.18.61): a grey track behind each bar, or the palette color it names. The
+     opacity is an attribute from the layout: CSS never sets fill-opacity here. */
+  :where([data-ok-chart-background-bar]) {
+    fill: rgb(var(--ok-palette-grey-500-channel) / 0.12);
+  }
+
+  :where([data-ok-chart-background-bar][data-ok-color]) {
+    fill: var(--_ok-chart-c);
+  }
+
   :where([data-ok-chart-band]) {
     fill: rgb(var(--ok-palette-grey-500-channel) / 0.12);
   }
@@ -380,7 +609,7 @@
   }
 
   /* Pie and donut slices; the active one gets a halo of its color behind it. */
-  :where([data-ok-chart-slice]) {
+  :where([data-ok-chart-slice]:not([fill])) {
     fill: var(--_ok-chart-c);
   }
 
@@ -628,6 +857,18 @@
 
   :where([data-ok-chart-tooltip][hidden]) {
     display: none;
+  }
+
+  /* No tooltip (4.18.63): it stays a visually hidden status, so the keyboard's values are still
+     announced. */
+  :where([data-ok-chart][data-ok-tooltip="none"] > [data-ok-chart-plot] > [data-ok-chart-tooltip]) {
+    width: 1px;
+    min-width: 0;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 
   :where([data-ok-chart-tooltip-title]) {

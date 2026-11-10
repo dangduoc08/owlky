@@ -1,6 +1,14 @@
+import { chartMarkerNode } from "./chart-cues.js";
 import type { ChartFormat } from "./chart-format.js";
 import type { ChartArc, ChartLayout, ChartMark, ChartNode, ChartRect } from "./chart-layout.js";
-import type { ChartColor, ChartData, ChartPart } from "./chart-model.js";
+import type {
+  ChartColor,
+  ChartData,
+  ChartMarkerShape,
+  ChartPart,
+  ChartPattern,
+  ChartTooltipCorner,
+} from "./chart-model.js";
 import { polarPoint, slicePath } from "./chart-polar.js";
 import { onSankeyLink } from "./chart-sankey.js";
 import { type ChartDataPoint, chartMarkPoint, hasChartDataPoint } from "./chart-select.js";
@@ -101,6 +109,16 @@ export function chartActiveAt(layout: ChartLayout, x: number, y: number): ChartA
     return null;
   }
   if (layout.mode === "point") {
+    // Per-point tooltips of index charts (4.18.63): the block under the pointer (2px of slack).
+    const block = layout.marks.findIndex(
+      ({ box }) =>
+        box &&
+        x >= box.x - 2 &&
+        x <= box.x + box.width + 2 &&
+        y >= box.y - 2 &&
+        y <= box.y + box.height + 2,
+    );
+    if (block >= 0) return { kind: "mark", mark: block };
     // The nearest point within 24px, or inside its bubble.
     let best = -1;
     let distance = Number.POSITIVE_INFINITY;
@@ -228,16 +246,28 @@ const BLOCKS: readonly string[] = [
 /** Series types whose points have their own colors in the tooltip (not the series color). */
 const OWN_COLORS: readonly string[] = ["funnel", "boxPlot", "candlestick", "rangeBar", "timeline"];
 
-const circle = (cx: number, cy: number, r: number, color: ChartColor): ChartNode => ({
-  tag: "circle",
-  attrs: {
-    cx: String(cx),
-    cy: String(cy),
-    r: String(r),
-    "data-ok-chart-active-marker": "",
-    "data-ok-color": color,
-  },
-});
+const circle = (
+  cx: number,
+  cy: number,
+  r: number,
+  color: ChartColor,
+  shape?: ChartMarkerShape,
+): ChartNode =>
+  shape
+    ? chartMarkerNode(shape, cx, cy, r, {
+        "data-ok-chart-active-marker": "",
+        "data-ok-color": color,
+      })
+    : {
+        tag: "circle",
+        attrs: {
+          cx: String(cx),
+          cy: String(cy),
+          r: String(r),
+          "data-ok-chart-active-marker": "",
+          "data-ok-color": color,
+        },
+      };
 
 /**
  * Hover nodes: `under` goes into the crosshair group (behind the series: the category band or a
@@ -273,8 +303,16 @@ export function chartActiveNodes(
         ],
       };
     }
+    // A block of a per-point tooltip (4.18.63): its category's band behind it.
+    if (mark.box) {
+      const band = bandNode(
+        layout,
+        layout.horizontal ? mark.box.y + mark.box.height / 2 : mark.box.x + mark.box.width / 2,
+      );
+      return { under: band ? [band] : [], over: [] };
+    }
     const r = mark.r !== undefined ? mark.r + 2 : layout.activeRadius;
-    return { under: [], over: [circle(mark.px, mark.py, r, mark.color)] };
+    return { under: [], over: [circle(mark.px, mark.py, r, mark.color, mark.shape)] };
   }
   const slot = layout.slots.find((entry) => entry.index === active.index);
   if (!slot) return { under: [], over: [] };
@@ -344,9 +382,37 @@ export function chartActiveNodes(
     layout.activeRadius > 0
       ? layout.marks
           .filter((mark) => mark.index === active.index && !BLOCKS.includes(mark.type))
-          .map((mark) => circle(mark.px, mark.py, layout.activeRadius, mark.color))
+          .map((mark) => circle(mark.px, mark.py, layout.activeRadius, mark.color, mark.shape))
       : [];
   return { under, over };
+}
+
+/** The band of the category nearest `pos` (banded charts), or `undefined`. */
+function bandNode(layout: ChartLayout, pos: number): ChartNode | undefined {
+  if (!layout.banded || layout.slots.length === 0) return undefined;
+  let slot = layout.slots[0] as (typeof layout.slots)[number];
+  for (const entry of layout.slots)
+    if (Math.abs(entry.pos - pos) < Math.abs(slot.pos - pos)) slot = entry;
+  const { plot } = layout;
+  const at = String(Math.round((slot.pos - layout.band / 2) * 100) / 100);
+  return {
+    tag: "rect",
+    attrs: layout.horizontal
+      ? {
+          x: String(plot.x),
+          y: at,
+          width: String(plot.width),
+          height: String(layout.band),
+          "data-ok-chart-band": "",
+        }
+      : {
+          x: at,
+          y: String(plot.y),
+          width: String(layout.band),
+          height: String(plot.height),
+          "data-ok-chart-band": "",
+        },
+  };
 }
 
 /** Sankey highlight: the active link, or a node's links and an outline around the node. */
@@ -384,6 +450,9 @@ export interface ChartTooltipRow {
   readonly name: string;
   readonly value: string;
   readonly color: ChartColor;
+  /** Non-color cues (4.18.62) on the row's marker. */
+  readonly shape?: ChartMarkerShape | undefined;
+  readonly pattern?: ChartPattern | undefined;
 }
 
 export interface ChartTooltip {
@@ -433,7 +502,17 @@ function tooltipOf(
         ? (data.categories[index] as number)
         : (data.categories[index] ?? String(index + 1));
   /** Rows of a mark: one value, a range (low – high), five box values or a value and a size. */
-  const rowsOf = (mark: ChartMark, color: ChartColor): ChartTooltipRow[] => {
+  const rowsOf = (mark: ChartMark, color: ChartColor): ChartTooltipRow[] =>
+    cueRows(rowsOfMark(mark, color), mark);
+  const cueRows = (rows: ChartTooltipRow[], mark: ChartMark): ChartTooltipRow[] =>
+    mark.shape || mark.pattern
+      ? rows.map((row) => ({
+          ...row,
+          ...(mark.shape ? { shape: mark.shape } : {}),
+          ...(mark.pattern ? { pattern: mark.pattern } : {}),
+        }))
+      : rows;
+  const rowsOfMark = (mark: ChartMark, color: ChartColor): ChartTooltipRow[] => {
     const series = data.series[mark.series] as (typeof data.series)[number];
     const value = (v: number) => format.value(v, mark.series);
     const { range } = mark;
@@ -484,13 +563,16 @@ function tooltipOf(
     if (!mark) return null;
     return {
       title: format.title(x),
-      rows: [
-        {
-          name: (data.series[0] as (typeof data.series)[number]).name,
-          value: format.value(mark.value, 0),
-          color: mark.color,
-        },
-      ],
+      rows: cueRows(
+        [
+          {
+            name: (data.series[0] as (typeof data.series)[number]).name,
+            value: format.value(mark.value, 0),
+            color: mark.color,
+          },
+        ],
+        mark,
+      ),
       x: mark.px,
       y: mark.py,
     };
@@ -534,15 +616,51 @@ function tooltipOf(
   };
 }
 
+/** A fixed tooltip (4.18.63): a corner of the plot area (in the plot box's px). */
+export interface ChartTooltipFixed {
+  readonly corner: ChartTooltipCorner;
+  readonly plot: {
+    readonly x: number;
+    readonly y: number;
+    readonly width: number;
+    readonly height: number;
+  };
+}
+
+/** A fixed tooltip's corner and the plot area scaled to the drawn size (`undefined`: not fixed). */
+export function chartTooltipFixed(
+  corner: ChartTooltipCorner | undefined,
+  layout: ChartLayout,
+  scale: number,
+): ChartTooltipFixed | undefined {
+  if (!corner) return undefined;
+  const { x, y, width, height } = layout.plot;
+  return {
+    corner,
+    plot: { x: x * scale, y: y * scale, width: width * scale, height: height * scale },
+  };
+}
+
 /**
  * Tooltip position inside the plot box: beside the anchor (right, or left when there's no
- * room), vertically centered on it, kept inside `[0, width] × [0, height]`.
+ * room), vertically centered on it, kept inside `[0, width] × [0, height]`; or 8px inside a
+ * corner of the plot area (`fixed`).
  */
 export function placeChartTooltip(
   anchor: { x: number; y: number },
   size: { width: number; height: number },
   box: { width: number; height: number },
+  fixed?: ChartTooltipFixed,
 ): { left: number; top: number } {
+  if (fixed) {
+    const { plot, corner } = fixed;
+    const left = corner.endsWith("Left") ? plot.x + 8 : plot.x + plot.width - 8 - size.width;
+    const top = corner.startsWith("top") ? plot.y + 8 : plot.y + plot.height - 8 - size.height;
+    return {
+      left: Math.round(Math.max(0, Math.min(left, box.width - size.width))),
+      top: Math.round(Math.max(0, Math.min(top, box.height - size.height))),
+    };
+  }
   const gap = 16;
   let left = anchor.x + gap;
   if (left + size.width > box.width) left = anchor.x - gap - size.width;

@@ -5,6 +5,12 @@ import {
 } from "./chart-annotations.js";
 import { type ChartYAxis, chartYAxes, withChartAxes } from "./chart-axes.js";
 import { layoutHeatmap, layoutTreemap } from "./chart-cells.js";
+import {
+  type ChartDiscreteMarker,
+  chartDiscreteMarkers,
+  chartPatternAt,
+  withChartCues,
+} from "./chart-cues.js";
 import { type ChartFormat, type ChartFormatOptions, chartFormat } from "./chart-format.js";
 import { type ChartIndicator, chartIndicatorSeries } from "./chart-indicators.js";
 import {
@@ -20,13 +26,21 @@ import {
   type ChartColor,
   type ChartCurve,
   type ChartData,
+  type ChartDataLabelPosition,
   type ChartFill,
+  type ChartGrid,
   type ChartLegend,
+  type ChartMarkerShape,
+  type ChartPattern,
   type ChartSeries,
+  type ChartStackType,
+  type ChartStripeColor,
   type ChartTableModel,
+  type ChartTooltipMode,
   type ChartType,
   type ChartXType,
   chartData,
+  chartDefaultColors,
   chartTable,
   isCircularChart,
   isWholeChart,
@@ -81,6 +95,46 @@ export interface ChartRenderInput extends ChartFormatOptions {
   readonly curve?: ChartCurve | undefined;
   readonly fill?: ChartFill | undefined;
   readonly stacked?: boolean | undefined;
+  /** Stacks (4.18.61): `100%` draws each category's stacked values as shares of their sum. */
+  readonly stackType?: ChartStackType | undefined;
+  /** Stacks only the bar series of a mixed chart. */
+  readonly stackOnlyBar?: boolean | undefined;
+  /** Stacked bars: each stack's total past its end. */
+  readonly stackTotals?: boolean | undefined;
+  /** Bars: where data labels sit (`center`, `top`: by the value end, `bottom`: by the base). */
+  readonly dataLabelPosition?: ChartDataLabelPosition | undefined;
+  /** Bars: a grey track behind each bar (or `backgroundBarColors`). */
+  readonly backgroundBars?: boolean | undefined;
+  /** Bars: track colors, one per category in turn. */
+  readonly backgroundBarColors?: readonly ChartColor[] | undefined;
+  /** Bars: track opacity (0 to 1). */
+  readonly backgroundBarOpacity?: number | undefined;
+  /** Bars: track corner radius in px. Default 4. */
+  readonly backgroundBarRadius?: number | undefined;
+  /** Marker shape of every series (4.18.62; series may set their own). */
+  readonly markerShape?: ChartMarkerShape | undefined;
+  /** Pattern of every series or slice (turns patterns on, like `fill: "pattern"`). */
+  readonly fillPattern?: ChartPattern | undefined;
+  /** Line width of every series in px. */
+  readonly strokeWidth?: number | undefined;
+  /** A distinct marker shape, pattern and dash per series (non-color cues, WCAG 1.4.1). */
+  readonly colorBlindMode?: boolean | undefined;
+  /** Markers on single points (ApexCharts `markers.discrete`). */
+  readonly discreteMarkers?: readonly ChartDiscreteMarker[] | undefined;
+  /** Tooltips (4.18.63): `point` gives index charts one tooltip per point (block or nearest point). */
+  readonly tooltip?: ChartTooltipMode | undefined;
+  /** Legend (4.18.64): shown for a single series too. */
+  readonly showForSingleSeries?: boolean | undefined;
+  /** Legend: these names instead of the series' (item n stands for series n and its color). */
+  readonly customLegendItems?: readonly string[] | undefined;
+  /** Grid lines (4.18.64): `y` (default), `x`, `both` or `none`. */
+  readonly grid?: ChartGrid | undefined;
+  /** Stripes between the horizontal / vertical grid positions, colors in turn. */
+  readonly gridRowColors?: readonly ChartStripeColor[] | undefined;
+  readonly gridColumnColors?: readonly ChartStripeColor[] | undefined;
+  /** Stripe opacity (0 to 1). Default 0.5. */
+  readonly gridRowOpacity?: number | undefined;
+  readonly gridColumnOpacity?: number | undefined;
   readonly horizontal?: boolean | undefined;
   readonly markerSize?: number | undefined;
   readonly columnWidth?: number | undefined;
@@ -113,7 +167,7 @@ export interface ChartRenderInput extends ChartFormatOptions {
   readonly candleDownColor?: ChartColor | undefined;
   /** Donut hole in % of the radius. Default 72. */
   readonly donutSize?: number | undefined;
-  /** Heatmaps and treemaps: values in a range take its color. */
+  /** Heatmaps, treemaps and bars: values in a range take its color. */
   readonly colorRanges?: readonly ChartColorRange[] | undefined;
   /** Outside data labels sit on a badge (a paper box with a border). */
   readonly dataLabelBackground?: boolean | undefined;
@@ -149,6 +203,9 @@ export interface ChartLegendItem {
   readonly hidden: boolean;
   /** `legendValues`: the item's value as text. */
   readonly value?: string | undefined;
+  /** Non-color cues (4.18.62): the series' marker shape or pattern, shown on its marker. */
+  readonly shape?: ChartMarkerShape | undefined;
+  readonly pattern?: ChartPattern | undefined;
 }
 
 export interface ChartRender {
@@ -189,6 +246,7 @@ export function renderChart(input: ChartRenderInput): ChartRender {
     plain.type !== "scatter" &&
     plain.type !== "bubble";
   const priceAxis = plain.series[0]?.axis;
+  const cued = stock ? plain : withChartCues(plain, input);
   const data: ChartData = stock
     ? {
         ...plain,
@@ -200,7 +258,7 @@ export function renderChart(input: ChartRenderInput): ChartRender {
           ),
         ],
       }
-    : plain;
+    : cued;
   // Radial bars show percentages unless told otherwise.
   const format = chartFormat(data, {
     ...input,
@@ -208,6 +266,9 @@ export function renderChart(input: ChartRenderInput): ChartRender {
   });
   const hidden = new Set(input.hidden ?? []);
   const circular = isCircularChart(data.type);
+  /** Pie, donut and polar area slices: their pattern (4.18.62; rings have none). */
+  const slicePattern = (x: number) =>
+    circular && data.type !== "radialBar" ? chartPatternAt(input, x) : undefined;
   type Layout = (d: ChartData, o: Parameters<typeof layoutChart>[1]) => ChartLayout;
   const layouts: Partial<Record<ChartType, Layout>> = {
     radar: (d, o) => layoutRadar(d, o, format),
@@ -235,6 +296,14 @@ export function renderChart(input: ChartRenderInput): ChartRender {
     curve: input.curve,
     fill: input.fill,
     stacked: input.stacked,
+    stackType: input.stackType,
+    stackOnlyBar: input.stackOnlyBar,
+    stackTotals: input.stackTotals,
+    dataLabelPosition: input.dataLabelPosition,
+    backgroundBars: input.backgroundBars,
+    backgroundBarColors: input.backgroundBarColors,
+    backgroundBarOpacity: input.backgroundBarOpacity,
+    backgroundBarRadius: input.backgroundBarRadius,
     horizontal: input.horizontal,
     markerSize: input.markerSize,
     columnWidth: input.columnWidth,
@@ -259,6 +328,17 @@ export function renderChart(input: ChartRenderInput): ChartRender {
     candleDownColor: input.candleDownColor,
     donutSize: input.donutSize,
     colorRanges: input.colorRanges,
+    discreteMarkers: chartDiscreteMarkers(input.discreteMarkers),
+    grid: input.grid,
+    gridRowColors: input.gridRowColors,
+    gridColumnColors: input.gridColumnColors,
+    gridRowOpacity: input.gridRowOpacity,
+    gridColumnOpacity: input.gridColumnOpacity,
+    cueMarkers: input.colorBlindMode,
+    strokeWidth: input.strokeWidth,
+    slicePatterns: circular
+      ? (data.series[0]?.points ?? []).map((point) => slicePattern(point.x))
+      : undefined,
     zoom,
   });
   const zoomable = base.x !== undefined && extent !== null && !input.sparkline;
@@ -285,7 +365,9 @@ export function renderChart(input: ChartRenderInput): ChartRender {
   // Selected points (4.18.60): outlines over the series, under the hover highlight.
   const marked = chartSelectedNodes(base, chartSelection(input.selectedDataPoints));
   if (marked.length) nodes.splice(before("data-ok-chart-active"), 0, ...marked);
-  const layout: ChartLayout = { ...base, nodes };
+  // Per-point tooltips (4.18.63): index charts (not radars) point at one mark at a time.
+  const perPoint = input.tooltip === "point" && base.mode === "index" && !base.polar;
+  const layout: ChartLayout = { ...base, nodes, ...(perPoint ? { mode: "point" as const } : {}) };
   // Circular charts list their categories (slices, rings); the others their series.
   const items: ChartLegendItem[] = circular
     ? (data.series[0]?.points ?? []).map((point) => ({
@@ -295,6 +377,7 @@ export function renderChart(input: ChartRenderInput): ChartRender {
         color: point.color as ChartColor,
         hidden: hidden.has(point.x),
         ...(input.legendValues && point.y !== null ? { value: format.value(point.y, 0) } : {}),
+        ...(slicePattern(point.x) ? { pattern: slicePattern(point.x) } : {}),
       }))
     : data.series.map((series, index) => {
         const last = [...series.points].reverse().find((point) => point.y !== null)?.y;
@@ -306,9 +389,30 @@ export function renderChart(input: ChartRenderInput): ChartRender {
           ...(input.legendValues && typeof last === "number"
             ? { value: format.value(last, index) }
             : {}),
+          ...(series.shape ? { shape: series.shape } : {}),
+          ...(series.pattern ? { pattern: series.pattern } : {}),
         };
       });
-  const legend = input.legend === "none" || input.sparkline || items.length < 2 ? null : items;
+  // Custom items (4.18.64): their names, each standing for the series (or slice) at its position.
+  const custom = input.customLegendItems?.length
+    ? input.customLegendItems.slice(0, 100).map(
+        (name, index): ChartLegendItem =>
+          items[index]
+            ? { ...items[index], name: String(name) }
+            : {
+                index,
+                name: String(name),
+                color: chartDefaultColors[index % chartDefaultColors.length] as ChartColor,
+                hidden: hidden.has(index),
+              },
+      )
+    : items;
+  const legend =
+    input.legend === "none" ||
+    input.sparkline ||
+    custom.length < (input.showForSingleSeries ? 1 : 2)
+      ? null
+      : custom;
   const xLabel =
     input.xLabel ??
     input.xTitle ??
@@ -340,7 +444,7 @@ function renderSankey(input: ChartRenderInput): ChartRender {
       nodeWidth: input.nodeWidth,
       whitespace: input.whitespace,
       edgeOpacity: input.edgeOpacity,
-      fill: input.fill,
+      fill: input.fill === "pattern" ? undefined : input.fill,
       axisTitles: input.axisTitles,
       dataLabels: input.dataLabels,
     },

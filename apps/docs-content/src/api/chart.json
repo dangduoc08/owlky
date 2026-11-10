@@ -429,12 +429,13 @@
      {
       "attr": "data-ok-fill",
       "default": "gradient",
-      "description": "Area fill: a fading `gradient` or a `solid` tint.",
+      "description": "Area fill: a fading `gradient`, a `solid` tint or a `pattern` (bars, areas and slices too; a different pattern per series unless `fillPattern` is set).",
       "kind": "style",
       "name": "fill",
       "values": [
        "gradient",
-       "solid"
+       "solid",
+       "pattern"
       ]
      },
      {
@@ -816,6 +817,188 @@
       "name": "allowMultipleDataPointsSelection"
      },
      {
+      "attr": "data-ok-stack-type",
+      "default": "normal",
+      "description": "Stacked charts: `normal` stacks the values, `100%` stacks each category's values as shares of their total (the value axis runs to 100%).",
+      "kind": "style",
+      "name": "stackType",
+      "optional": true,
+      "values": [
+       "normal",
+       "100%"
+      ]
+     },
+     {
+      "attr": "data-ok-stack-only-bar",
+      "description": "Stacked mixed charts: only the bar series stack; lines and areas keep their own values.",
+      "kind": "flag",
+      "name": "stackOnlyBar"
+     },
+     {
+      "attr": "data-ok-stack-totals",
+      "description": "Stacked bars: prints the total of each stack past its end.",
+      "kind": "flag",
+      "name": "stackTotals"
+     },
+     {
+      "attr": "data-ok-data-label-position",
+      "default": "center",
+      "description": "Bars: where data labels sit inside the bar: `center`, `top` (by the value end) or `bottom` (by the base).",
+      "kind": "style",
+      "name": "dataLabelPosition",
+      "optional": true,
+      "values": [
+       "center",
+       "top",
+       "bottom"
+      ]
+     },
+     {
+      "attr": "data-ok-background-bars",
+      "description": "Bars: a grey track the height of the plot behind each bar.",
+      "kind": "flag",
+      "name": "backgroundBars"
+     },
+     {
+      "attr": "data-ok-background-bar-opacity",
+      "description": "Bars: opacity of the tracks behind the bars (0 to 1; default 1).",
+      "kind": "number",
+      "min": 0,
+      "name": "backgroundBarOpacity"
+     },
+     {
+      "attr": "data-ok-background-bar-radius",
+      "description": "Bars: corner radius of the tracks in px (default 4).",
+      "kind": "number",
+      "min": 0,
+      "name": "backgroundBarRadius"
+     },
+     {
+      "attr": "data-ok-marker-shape",
+      "default": "circle",
+      "description": "Shape of the markers of every series: `circle`, `square`, `triangle`, `diamond`, `cross`, `plus` or `star` (series may set their own).",
+      "kind": "style",
+      "name": "markerShape",
+      "optional": true,
+      "values": [
+       "circle",
+       "square",
+       "triangle",
+       "diamond",
+       "cross",
+       "plus",
+       "star"
+      ]
+     },
+     {
+      "attr": "data-ok-fill-pattern",
+      "default": "slantedLines",
+      "description": "Pattern of every bar, area and slice: `slantedLines`, `squares`, `circles`, `horizontalLines` or `verticalLines` (turns patterns on; series may set their own).",
+      "kind": "style",
+      "name": "fillPattern",
+      "optional": true,
+      "values": [
+       "slantedLines",
+       "squares",
+       "circles",
+       "horizontalLines",
+       "verticalLines"
+      ]
+     },
+     {
+      "attr": "data-ok-stroke-width",
+      "description": "Line width of every series in px (default 2.5; series may set their own).",
+      "kind": "number",
+      "min": 0,
+      "name": "strokeWidth"
+     },
+     {
+      "attr": "data-ok-color-blind-mode",
+      "description": "Series differ by more than their color: a different marker shape (lines get markers), pattern and dash per series.",
+      "kind": "flag",
+      "name": "colorBlindMode"
+     },
+     {
+      "attr": "data-ok-tooltip",
+      "default": "shared",
+      "description": "Tooltip: `shared` lists every series of the category, `point` only the value under the pointer (or the keyboard), `none` shows none (the values are still announced).",
+      "kind": "style",
+      "name": "tooltip",
+      "optional": true,
+      "values": [
+       "shared",
+       "point",
+       "none"
+      ]
+     },
+     {
+      "attr": "data-ok-tooltip-fixed",
+      "default": "topRight",
+      "description": "The tooltip stays in a corner of the plot: `topLeft`, `topRight`, `bottomLeft` or `bottomRight` (default beside the value).",
+      "kind": "style",
+      "name": "tooltipFixed",
+      "optional": true,
+      "values": [
+       "topLeft",
+       "topRight",
+       "bottomLeft",
+       "bottomRight"
+      ]
+     },
+     {
+      "attr": "data-ok-legend-align",
+      "default": "right",
+      "description": "Legend items line up `left`, `center` or `right` (default right above the plot, centered below it and around circular charts).",
+      "kind": "style",
+      "name": "legendAlign",
+      "optional": true,
+      "values": [
+       "left",
+       "center",
+       "right"
+      ]
+     },
+     {
+      "attr": "data-ok-show-for-single-series",
+      "description": "Shows the legend for a single series too.",
+      "kind": "flag",
+      "name": "showForSingleSeries"
+     },
+     {
+      "attr": "data-ok-disable-legend-toggle",
+      "description": "Legend items are plain labels: clicks don't hide series.",
+      "kind": "flag",
+      "name": "disableLegendToggle"
+     },
+     {
+      "attr": "data-ok-grid",
+      "default": "y",
+      "description": "Grid lines: `y` horizontal (along the value ticks, or between the bars of horizontal bar charts), `x` vertical, `both` or `none`.",
+      "kind": "style",
+      "name": "grid",
+      "optional": true,
+      "values": [
+       "y",
+       "x",
+       "both",
+       "none"
+      ]
+     },
+     {
+      "attr": "data-ok-grid-row-opacity",
+      "description": "Opacity of the row stripes (0 to 1; default 0.5).",
+      "kind": "number",
+      "min": 0,
+      "name": "gridRowOpacity"
+     },
+     {
+      "attr": "data-ok-grid-column-opacity",
+      "description": "Opacity of the column stripes (0 to 1; default 0.5).",
+      "kind": "number",
+      "min": 0,
+      "name": "gridColumnOpacity"
+     },
+     {
       "attr": "aria-pressed",
       "description": "Indexes of the series hidden through the legend (`aria-pressed=\"false\"` on their buttons); categories in pie, donut and radial bar charts.",
       "event": "ok:chart:toggle",
@@ -859,6 +1042,12 @@
       "name": "data-ok-back"
      },
      {
+      "description": "Track colors behind the bars, palette names separated by spaces, such as `info-lighter warning-lighter`.",
+      "kind": "value",
+      "name": "data-ok-background-bar-colors",
+      "value": "string"
+     },
+     {
       "description": "The `id` of the chart this brush chart controls.",
       "kind": "value",
       "name": "data-ok-brush-target",
@@ -889,9 +1078,10 @@
       "name": "data-ok-chart-active-link"
      },
      {
-      "description": "The marker of the active point.",
+      "description": "The marker of the active point: a circle, or a path for other shapes.",
       "elements": [
-       "circle"
+       "circle",
+       "path"
       ],
       "kind": "part",
       "name": "data-ok-chart-active-marker"
@@ -995,6 +1185,22 @@
        "",
        "x"
       ]
+     },
+     {
+      "description": "One track behind a bar (`backgroundBars`, `backgroundBarColors`).",
+      "elements": [
+       "rect"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-background-bar"
+     },
+     {
+      "description": "The group of tracks behind the bars, before the crosshair.",
+      "elements": [
+       "g"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-background-bars"
      },
      {
       "description": "A band of a range area or a range bar.",
@@ -1175,9 +1381,10 @@
       "name": "data-ok-chart-legend"
      },
      {
-      "description": "One legend item: a button that hides or shows its series.",
+      "description": "One legend item: a button that hides or shows its series, or a label with \\`disableLegendToggle\\`.",
       "elements": [
-       "button"
+       "button",
+       "span"
       ],
       "kind": "part",
       "name": "data-ok-chart-legend-item"
@@ -1215,9 +1422,10 @@
       "name": "data-ok-chart-link"
      },
      {
-      "description": "The marker of a point.",
+      "description": "The marker of a point: a circle, or a path for other shapes.",
       "elements": [
-       "circle"
+       "circle",
+       "path"
       ],
       "kind": "part",
       "name": "data-ok-chart-marker"
@@ -1289,6 +1497,35 @@
       ],
       "kind": "part",
       "name": "data-ok-chart-pane-titles"
+     },
+     {
+      "description": "One pattern definition (\\`fill=\"pattern\"\\`, \\`fillPattern\\`, \\`colorBlindMode\\`): its style.",
+      "kind": "value",
+      "name": "data-ok-chart-pattern",
+      "value": [
+       "circles",
+       "horizontalLines",
+       "slantedLines",
+       "squares",
+       "verticalLines"
+      ]
+     },
+     {
+      "description": "The lines, squares or dots of a pattern.",
+      "elements": [
+       "circle",
+       "path"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-pattern-mark"
+     },
+     {
+      "description": "The faint tint under a pattern's marks.",
+      "elements": [
+       "rect"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-pattern-tint"
      },
      {
       "description": "The plot area that holds the SVG.",
@@ -1373,6 +1610,15 @@
       "name": "data-ok-chart-stop"
      },
      {
+      "description": "A grid stripe between two horizontal (\\`row\\`) or vertical (\\`column\\`) grid positions.",
+      "kind": "value",
+      "name": "data-ok-chart-stripe",
+      "value": [
+       "column",
+       "row"
+      ]
+     },
+     {
       "description": "The drawing.",
       "elements": [
        "svg"
@@ -1443,9 +1689,10 @@
       "name": "data-ok-chart-toolbar"
      },
      {
-      "description": "The tooltip.",
+      "description": "The tooltip; on a \\`template\\` child of the chart (HTML), its custom content.",
       "elements": [
-       "div"
+       "div",
+       "template"
       ],
       "kind": "part",
       "name": "data-ok-chart-tooltip"
@@ -1473,6 +1720,19 @@
       ],
       "kind": "part",
       "name": "data-ok-chart-tooltip-rows"
+     },
+     {
+      "description": "In a custom tooltip template: what the element receives, as text (\\`row\\` is repeated per value).",
+      "kind": "value",
+      "name": "data-ok-chart-tooltip-slot",
+      "value": [
+       "marker",
+       "name",
+       "row",
+       "state",
+       "title",
+       "value"
+      ]
      },
      {
       "description": "The tooltip's \"Selected\" line, when its item has a selected point.",
@@ -1537,9 +1797,51 @@
       "value": "string"
      },
      {
+      "description": "Legend names instead of the series' names, separated by \\`;\\`.",
+      "kind": "value",
+      "name": "data-ok-custom-legend-items",
+      "value": "string"
+     },
+     {
+      "description": "On a data table column header: the series' dash length in px.",
+      "kind": "value",
+      "name": "data-ok-dash-array",
+      "value": "string"
+     },
+     {
       "description": "Marks a dashed series.",
       "kind": "state",
       "name": "data-ok-dashed"
+     },
+     {
+      "description": "Markers on single points, such as \\`0 3 error star 8; 1 2\\`.",
+      "kind": "value",
+      "name": "data-ok-discrete-markers",
+      "value": "string"
+     },
+     {
+      "description": "On a data table column header: the series' pattern.",
+      "kind": "value",
+      "name": "data-ok-fill-pattern",
+      "value": [
+       "circles",
+       "horizontalLines",
+       "slantedLines",
+       "squares",
+       "verticalLines"
+      ]
+     },
+     {
+      "description": "Column stripe colors separated by spaces: palette names, \\`grey\\` or \\`transparent\\`.",
+      "kind": "value",
+      "name": "data-ok-grid-column-colors",
+      "value": "string"
+     },
+     {
+      "description": "Row stripe colors separated by spaces: palette names, \\`grey\\` or \\`transparent\\`.",
+      "kind": "value",
+      "name": "data-ok-grid-row-colors",
+      "value": "string"
      },
      {
       "description": "The group of linked charts this chart belongs to: they share the hover and the zoom.",
@@ -1577,6 +1879,20 @@
       "name": "data-ok-major"
      },
      {
+      "description": "On a data table column header: the series' marker shape.",
+      "kind": "value",
+      "name": "data-ok-marker-shape",
+      "value": [
+       "circle",
+       "cross",
+       "diamond",
+       "plus",
+       "square",
+       "star",
+       "triangle"
+      ]
+     },
+     {
       "description": "On a value axis group: the axis is on the right of the plot.",
       "kind": "state",
       "name": "data-ok-opposite"
@@ -1598,9 +1914,40 @@
       ]
      },
      {
+      "description": "On a legend or tooltip marker: the series' pattern.",
+      "kind": "value",
+      "name": "data-ok-pattern",
+      "value": [
+       "circles",
+       "horizontalLines",
+       "slantedLines",
+       "squares",
+       "verticalLines"
+      ]
+     },
+     {
       "description": "Set by the runtime once the chart is drawn: the data table hides.",
       "kind": "state",
       "name": "data-ok-ready"
+     },
+     {
+      "description": "On a marker, a legend marker or a tooltip marker: the series' marker shape.",
+      "kind": "value",
+      "name": "data-ok-shape",
+      "value": [
+       "cross",
+       "diamond",
+       "plus",
+       "square",
+       "star",
+       "triangle"
+      ]
+     },
+     {
+      "description": "On a data table column header: the series' line width in px.",
+      "kind": "value",
+      "name": "data-ok-stroke-width",
+      "value": "string"
      },
      {
       "description": "The label of the total in a donut's or a radial bar's center.",
@@ -1697,6 +2044,26 @@
       "type": "readonly string[]"
      },
      {
+      "description": "Bars: track colors (palette names), one per category in turn. Turns the tracks on.",
+      "name": "backgroundBarColors",
+      "type": "readonly ChartColor[]"
+     },
+     {
+      "description": "Bars: opacity of the tracks (0 to 1). Default 1.",
+      "name": "backgroundBarOpacity",
+      "type": "number"
+     },
+     {
+      "description": "Bars: corner radius of the tracks in px. Default 4.",
+      "name": "backgroundBarRadius",
+      "type": "number"
+     },
+     {
+      "description": "Bars: a grey track the height of the plot behind each bar.",
+      "name": "backgroundBars",
+      "type": "boolean"
+     },
+     {
       "description": "Horizontal bar thickness in % of a category. Default 40 (funnels 80).",
       "name": "barHeight",
       "type": "number"
@@ -1734,7 +2101,12 @@
       "type": "readonly (string | number | Date)[]"
      },
      {
-      "description": "Heatmaps and treemaps: values in a range take its color.",
+      "description": "Series differ by more than color: each gets its own marker shape (lines get markers), pattern and dash.",
+      "name": "colorBlindMode",
+      "type": "boolean"
+     },
+     {
+      "description": "Heatmaps, treemaps and bars: values in a range take its color (a point's own color wins on bars).",
       "name": "colorRanges",
       "type": "readonly ChartColorRange[]"
      },
@@ -1755,6 +2127,11 @@
       "type": "\"smooth\" | \"stepline\" | \"straight\""
      },
      {
+      "description": "Legend names instead of the series' names: item n stands for series n (its color and toggle).",
+      "name": "customLegendItems",
+      "type": "readonly string[]"
+     },
+     {
       "description": "Dash length of lines and radial bars in px (default solid).",
       "name": "dashArray",
       "type": "number"
@@ -1768,6 +2145,12 @@
       "description": "Replaces the values printed on the chart (pie and donut labels get the percentage).",
       "name": "dataLabelFormatter",
       "type": "((value: number, series: number, index: number) => string)"
+     },
+     {
+      "default": "\"center\"",
+      "description": "Bars: where data labels sit inside the bar. `\"top\"` by the value end, `\"bottom\"` by the base.",
+      "name": "dataLabelPosition",
+      "type": "\"bottom\" | \"center\" | \"top\""
      },
      {
       "description": "Prints the values on the chart (percentages on pie and donut slices).",
@@ -1788,6 +2171,16 @@
       "description": "Uncontrolled initial zoom.",
       "name": "defaultZoomRange",
       "type": "ChartZoom | null"
+     },
+     {
+      "description": "Legend items are plain labels: clicks don't hide series.",
+      "name": "disableLegendToggle",
+      "type": "boolean"
+     },
+     {
+      "description": "Markers on single points (`{ seriesIndex, dataPointIndex, color, size, shape }`), also on series without markers.",
+      "name": "discreteMarkers",
+      "type": "readonly ChartDiscreteMarker[]"
      },
      {
       "description": "Donut hole in % of the radius (10 to 95). Default 72.",
@@ -1811,9 +2204,39 @@
      },
      {
       "default": "\"gradient\"",
-      "description": "Area fill.",
+      "description": "Area fill. `\"solid\"`, or `\"pattern\"`: bars, areas and slices get a different pattern per series (or `fillPattern`).",
       "name": "fill",
-      "type": "\"gradient\" | \"solid\""
+      "type": "\"gradient\" | \"pattern\" | \"solid\""
+     },
+     {
+      "description": "Pattern of every bar, area and slice (turns patterns on): `\"slantedLines\"`, `\"squares\"`, `\"circles\"`, `\"horizontalLines\"` or `\"verticalLines\"`. Series may set `fillPattern`.",
+      "name": "fillPattern",
+      "type": "\"circles\" | \"horizontalLines\" | \"slantedLines\" | \"squares\" | \"verticalLines\""
+     },
+     {
+      "description": "Grid lines: `\"y\"` (default) horizontal, along the value ticks (between the bars of horizontal bar charts); `\"x\"` vertical; `\"both\"` or `\"none\"`.",
+      "name": "grid",
+      "type": "\"both\" | \"none\" | \"x\" | \"y\""
+     },
+     {
+      "description": "Stripes between the vertical grid positions: colors in turn.",
+      "name": "gridColumnColors",
+      "type": "readonly ChartStripeColor[]"
+     },
+     {
+      "description": "Opacity of the column stripes (0 to 1). 5.",
+      "name": "gridColumnOpacity",
+      "type": "number"
+     },
+     {
+      "description": "Stripes between the horizontal grid lines: colors in turn (palette names, `\"grey\"` or `\"transparent\"`).",
+      "name": "gridRowColors",
+      "type": "readonly ChartStripeColor[]"
+     },
+     {
+      "description": "Opacity of the row stripes (0 to 1). 5.",
+      "name": "gridRowOpacity",
+      "type": "number"
      },
      {
       "description": "Synchronized charts: charts of one group share the active category and the zoom.",
@@ -1858,6 +2281,11 @@
       "type": "\"bottom\" | \"none\" | \"right\" | \"top\""
      },
      {
+      "description": "Legend items line up `\"left\"`, `\"center\"` or `\"right\"` (default right above the plot, centered below it).",
+      "name": "legendAlign",
+      "type": "\"center\" | \"left\" | \"right\""
+     },
+     {
       "description": "Legend items show a value: the slice's or ring's, or the series' last one.",
       "name": "legendValues",
       "type": "boolean"
@@ -1872,6 +2300,11 @@
       "description": "Localized texts: part labels (\"Minimum\", \"Q1\"…), tool names, the export error and `selected`.",
       "name": "localeText",
       "type": "Readonly<Partial<Record<\"exportFailed\" | \"selected\" | \"toolbar\" | ChartPart | ChartTool, string>>>"
+     },
+     {
+      "description": "Marker shape of every series: `\"circle\"` (default), `\"square\"`, `\"triangle\"`, `\"diamond\"`, `\"cross\"`, `\"plus\"` or `\"star\"`. Series may set `markerShape` themselves.",
+      "name": "markerShape",
+      "type": "\"circle\" | \"cross\" | \"diamond\" | \"plus\" | \"square\" | \"star\" | \"triangle\""
      },
      {
       "description": "Marker radius of line and area points in px (default none; scatter 5).",
@@ -1934,9 +2367,29 @@
       "type": "readonly ChartSeries[]"
      },
      {
+      "description": "Shows the legend for a single series too.",
+      "name": "showForSingleSeries",
+      "type": "boolean"
+     },
+     {
       "description": "No axes, grid or legend: the chart fills its container (cards, table cells). Its height is the container's, at least `height` (default 40px).",
       "name": "sparkline",
       "type": "boolean"
+     },
+     {
+      "description": "Stacked mixed charts: only the bar series stack; lines and areas keep their own values.",
+      "name": "stackOnlyBar",
+      "type": "boolean"
+     },
+     {
+      "description": "Stacked bars: prints the total of each stack past its end.",
+      "name": "stackTotals",
+      "type": "boolean"
+     },
+     {
+      "description": "Stacked charts: `\"normal\"` (default) stacks the values; `\"100%\"` stacks each category's values as shares of their total, on a value axis from 0 to 100%. Tooltips keep the values.",
+      "name": "stackType",
+      "type": "\"100%\" | \"normal\""
      },
      {
       "description": "Stacks the series on each other (bars, lines, areas).",
@@ -1949,9 +2402,30 @@
       "type": "number"
      },
      {
+      "description": "Line width of every series in px. 5. Series may set `strokeWidth`.",
+      "name": "strokeWidth",
+      "type": "number"
+     },
+     {
       "description": "A toolbar with zoom buttons (with `zoom`) and downloads (SVG, PNG, CSV).",
       "name": "toolbar",
       "type": "boolean"
+     },
+     {
+      "default": "\"shared\"",
+      "description": "Tooltip. every series of the category. `\"point\"`: only the value under the pointer or the keyboard. `\"none\"`: no tooltip is shown, but the values the keyboard moves to are still announced.",
+      "name": "tooltip",
+      "type": "\"none\" | \"point\" | \"shared\""
+     },
+     {
+      "description": "Custom tooltip content: called with the title, the rows (name, value, color), whether the item is selected and its data points; returns what the tooltip shows.",
+      "name": "tooltipContent",
+      "type": "((context: ChartTooltipContext) => ReactNode)"
+     },
+     {
+      "description": "The tooltip stays in this corner of the plot instead of following the value.",
+      "name": "tooltipFixed",
+      "type": "\"bottomLeft\" | \"bottomRight\" | \"topLeft\" | \"topRight\""
      },
      {
       "description": "Donut and radial bar center: the total (default the sum; radial bars the average).",
@@ -2071,6 +2545,10 @@
   {
    "name": "ChartRangeValue",
    "type": "string | number | Date"
+  },
+  {
+   "name": "ChartStripeColor",
+   "type": "\"grey\" | \"transparent\" | ChartColor"
   },
   {
    "name": "ChartTool",

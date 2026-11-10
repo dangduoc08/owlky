@@ -1,4 +1,9 @@
-import { type ChartActive, chartActiveAt } from "./chart-active.js";
+import {
+  type ChartActive,
+  type ChartTooltip,
+  type ChartTooltipRow,
+  chartActiveAt,
+} from "./chart-active.js";
 import { type ChartLayout, type ChartMark, type ChartNode, fmt, node } from "./chart-layout.js";
 import { slicePath } from "./chart-polar.js";
 
@@ -116,6 +121,37 @@ export function chartActiveMarks(layout: ChartLayout, active: ChartActive | null
   if (!active || layout.mode === "flow") return [];
   if (active.kind === "mark") return layout.marks[active.mark] ? [active.mark] : [];
   return layout.marks.flatMap((mark, index) => (mark.index === active.index ? [index] : []));
+}
+
+/** What a custom tooltip gets (4.18.63, ApexCharts `tooltip.custom`). */
+export interface ChartTooltipContext {
+  /** The category, date or x value. */
+  readonly title: string;
+  /** One row per value: series name, value text, color (and cues). */
+  readonly rows: readonly ChartTooltipRow[];
+  /** The item has a selected point. */
+  readonly selected: boolean;
+  /** The data points shown: `{ seriesIndex, dataPointIndex }` (none for Sankey charts). */
+  readonly points: readonly ChartDataPoint[];
+  /** The active item. */
+  readonly active: ChartActive;
+}
+
+/** The context of a custom tooltip for the active item's tooltip. */
+export function chartTooltipContext(
+  layout: ChartLayout,
+  tooltip: ChartTooltip,
+  active: ChartActive,
+): ChartTooltipContext {
+  return {
+    title: tooltip.title,
+    rows: tooltip.rows,
+    selected: tooltip.selected === true,
+    points: chartActiveMarks(layout, active).map((index) =>
+      chartMarkPoint(layout.marks[index] as ChartMark),
+    ),
+    active,
+  };
 }
 
 /**

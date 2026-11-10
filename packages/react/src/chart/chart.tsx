@@ -7,22 +7,33 @@ import {
   type ChartColor,
   type ChartColorRange,
   type ChartCurve,
+  type ChartDataLabelPosition,
   type ChartDataPoint,
+  type ChartDiscreteMarker,
   type ChartExportFormat,
   type ChartFill,
   type ChartGestureMode,
   type ChartGestures,
+  type ChartGrid,
   type ChartIndicator,
   type ChartLegend,
+  type ChartLegendAlign,
   type ChartLink,
   type ChartLocaleText,
+  type ChartMarkerShape,
   type ChartNode,
   type ChartOrientation,
+  type ChartPattern,
   type ChartSankeyEdge,
   type ChartSankeyNode,
   type ChartSelectionDetail,
   type ChartSeries,
+  type ChartStackType,
+  type ChartStripeColor,
   type ChartTool,
+  type ChartTooltipContext,
+  type ChartTooltipCorner,
+  type ChartTooltipMode,
   type ChartType,
   type ChartXType,
   type ChartYAxis,
@@ -41,6 +52,8 @@ import {
   chartToolbar,
   chartToolLabels,
   chartTooltip,
+  chartTooltipContext,
+  chartTooltipFixed,
   chartZoomKey,
   createChartGestures,
   exportChart,
@@ -120,9 +133,92 @@ export interface ChartProps extends Omit<HTMLAttributes<HTMLElement>, "children"
   curve?: ChartCurve | undefined;
   /** Default `"top"`. Never shown for a single series. */
   legend?: ChartLegend | undefined;
-  /** Area fill. Default `"gradient"`. */
+  /**
+   * Area fill. Default `"gradient"`; `"solid"`, or `"pattern"`: bars, areas and slices get a
+   * different pattern per series (or `fillPattern`).
+   */
   fill?: ChartFill | undefined;
+  /**
+   * Marker shape of every series: `"circle"` (default), `"square"`, `"triangle"`, `"diamond"`,
+   * `"cross"`, `"plus"` or `"star"`. Series may set `markerShape` themselves.
+   */
+  markerShape?: ChartMarkerShape | undefined;
+  /**
+   * Pattern of every bar, area and slice (turns patterns on): `"slantedLines"`, `"squares"`,
+   * `"circles"`, `"horizontalLines"` or `"verticalLines"`. Series may set `fillPattern`.
+   */
+  fillPattern?: ChartPattern | undefined;
+  /** Line width of every series in px. Default 2.5. Series may set `strokeWidth`. */
+  strokeWidth?: number | undefined;
+  /**
+   * Series differ by more than color: each gets its own marker shape (lines get markers), pattern
+   * and dash.
+   */
+  colorBlindMode?: boolean | undefined;
+  /**
+   * Markers on single points (`{ seriesIndex, dataPointIndex, color, size, shape }`), also on
+   * series without markers.
+   */
+  discreteMarkers?: readonly ChartDiscreteMarker[] | undefined;
+  /**
+   * Tooltip. Default `"shared"`: every series of the category. `"point"`: only the value under
+   * the pointer or the keyboard. `"none"`: no tooltip is shown, but the values the keyboard moves to
+   * are still announced.
+   */
+  tooltip?: ChartTooltipMode | undefined;
+  /** The tooltip stays in this corner of the plot instead of following the value. */
+  tooltipFixed?: ChartTooltipCorner | undefined;
+  /**
+   * Custom tooltip content: called with the title, the rows (name, value, color), whether the
+   * item is selected and its data points; returns what the tooltip shows.
+   */
+  tooltipContent?: ((context: ChartTooltipContext) => ReactNode) | undefined;
+  /** Legend items line up `"left"`, `"center"` or `"right"` (default right above the plot, centered below it). */
+  legendAlign?: ChartLegendAlign | undefined;
+  /** Shows the legend for a single series too. */
+  showForSingleSeries?: boolean | undefined;
+  /** Legend items are plain labels: clicks don't hide series. */
+  disableLegendToggle?: boolean | undefined;
+  /** Legend names instead of the series' names: item n stands for series n (its color and toggle). */
+  customLegendItems?: readonly string[] | undefined;
+  /**
+   * Grid lines: `"y"` (default) horizontal, along the value ticks (between the bars of horizontal
+   * bar charts); `"x"` vertical; `"both"` or `"none"`.
+   */
+  grid?: ChartGrid | undefined;
+  /** Stripes between the horizontal grid lines: colors in turn (palette names, `"grey"` or `"transparent"`). */
+  gridRowColors?: readonly ChartStripeColor[] | undefined;
+  /** Stripes between the vertical grid positions: colors in turn. */
+  gridColumnColors?: readonly ChartStripeColor[] | undefined;
+  /** Opacity of the row stripes (0 to 1). Default 0.5. */
+  gridRowOpacity?: number | undefined;
+  /** Opacity of the column stripes (0 to 1). Default 0.5. */
+  gridColumnOpacity?: number | undefined;
+  /** Stacks the series on each other (bars, lines, areas). */
   stacked?: boolean | undefined;
+  /**
+   * Stacked charts: `"normal"` (default) stacks the values; `"100%"` stacks each category's values
+   * as shares of their total, on a value axis from 0 to 100%. Tooltips keep the values.
+   */
+  stackType?: ChartStackType | undefined;
+  /** Stacked mixed charts: only the bar series stack; lines and areas keep their own values. */
+  stackOnlyBar?: boolean | undefined;
+  /** Stacked bars: prints the total of each stack past its end. */
+  stackTotals?: boolean | undefined;
+  /**
+   * Bars: where data labels sit inside the bar. Default `"center"`; `"top"` by the value end,
+   * `"bottom"` by the base.
+   */
+  dataLabelPosition?: ChartDataLabelPosition | undefined;
+  /** Bars: a grey track the height of the plot behind each bar. */
+  backgroundBars?: boolean | undefined;
+  /** Bars: track colors (palette names), one per category in turn. Turns the tracks on. */
+  backgroundBarColors?: readonly ChartColor[] | undefined;
+  /** Bars: opacity of the tracks (0 to 1). Default 1. */
+  backgroundBarOpacity?: number | undefined;
+  /** Bars: corner radius of the tracks in px. Default 4. */
+  backgroundBarRadius?: number | undefined;
+  /** Bars run left to right, categories down the side. */
   horizontal?: boolean | undefined;
   /** Plot height in px. Default 320. */
   height?: number | undefined;
@@ -201,7 +297,7 @@ export interface ChartProps extends Omit<HTMLAttributes<HTMLElement>, "children"
   dataLabelFormatter?: ((value: number, series: number, index: number) => string) | undefined;
   /** Legend items show a value: the slice's or ring's, or the series' last one. */
   legendValues?: boolean | undefined;
-  /** Heatmaps and treemaps: values in a range take its color. */
+  /** Heatmaps, treemaps and bars: values in a range take its color (a point's own color wins on bars). */
   colorRanges?: readonly ChartColorRange[] | undefined;
   /** Lines, bands and points with a label (vertical charts with an x axis). */
   annotations?: readonly ChartAnnotation[] | undefined;
@@ -288,6 +384,14 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     legend,
     fill,
     stacked,
+    stackType,
+    stackOnlyBar,
+    stackTotals,
+    dataLabelPosition,
+    backgroundBars,
+    backgroundBarColors,
+    backgroundBarOpacity,
+    backgroundBarRadius,
     horizontal,
     height,
     markerSize,
@@ -339,6 +443,23 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     defaultSelectedDataPoints = NO_POINTS,
     onDataPointSelection,
     allowMultipleDataPointsSelection,
+    markerShape,
+    fillPattern,
+    strokeWidth,
+    colorBlindMode,
+    discreteMarkers,
+    tooltip: tooltipMode,
+    tooltipFixed,
+    tooltipContent,
+    legendAlign,
+    showForSingleSeries,
+    disableLegendToggle,
+    customLegendItems,
+    grid,
+    gridRowColors,
+    gridColumnColors,
+    gridRowOpacity,
+    gridColumnOpacity,
     ...rest
   },
   ref,
@@ -350,6 +471,13 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     legend,
     fill,
     stacked,
+    stackType,
+    stackOnlyBar,
+    stackTotals,
+    dataLabelPosition,
+    backgroundBars,
+    backgroundBarOpacity,
+    backgroundBarRadius,
     horizontal,
     height,
     markerSize,
@@ -381,6 +509,18 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     navigator,
     paneHeight,
     allowMultipleDataPointsSelection,
+    markerShape,
+    fillPattern,
+    strokeWidth,
+    colorBlindMode,
+    tooltip: tooltipMode,
+    tooltipFixed,
+    legendAlign,
+    showForSingleSeries,
+    disableLegendToggle,
+    grid,
+    gridRowOpacity,
+    gridColumnOpacity,
   });
   const isSparkline = attributes["data-ok-sparkline"] !== undefined;
   const givenHeight = attributes["data-ok-height"];
@@ -432,6 +572,23 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
   const validNodeWidth = number("data-ok-node-width");
   const validWhitespace = number("data-ok-whitespace");
   const validEdgeOpacity = number("data-ok-edge-opacity");
+  const validStackType = attributes["data-ok-stack-type"] as ChartStackType | undefined;
+  const validLabelPosition = attributes["data-ok-data-label-position"] as
+    | ChartDataLabelPosition
+    | undefined;
+  const validTrackOpacity = number("data-ok-background-bar-opacity");
+  const validTrackRadius = number("data-ok-background-bar-radius");
+  const validShape = attributes["data-ok-marker-shape"] as ChartMarkerShape | undefined;
+  const validPattern = attributes["data-ok-fill-pattern"] as ChartPattern | undefined;
+  const validStrokeWidth = number("data-ok-stroke-width");
+  const blind = attributes["data-ok-color-blind-mode"] !== undefined;
+  const validTooltip = attributes["data-ok-tooltip"] as ChartTooltipMode | undefined;
+  const validCorner = attributes["data-ok-tooltip-fixed"] as ChartTooltipCorner | undefined;
+  const validGrid = attributes["data-ok-grid"] as ChartGrid | undefined;
+  const validRowOpacity = number("data-ok-grid-row-opacity");
+  const validColumnOpacity = number("data-ok-grid-column-opacity");
+  const single = attributes["data-ok-show-for-single-series"] !== undefined;
+  const legendToggle = attributes["data-ok-disable-legend-toggle"] === undefined;
 
   // Zoom (phase 4): controlled, or kept with the x axis it was set on (so it follows live data).
   const [innerZoom, setInnerZoom] = useState<{
@@ -473,6 +630,27 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         fill: chartFill,
         legend: chartLegend,
         stacked,
+        stackType: validStackType,
+        stackOnlyBar,
+        stackTotals,
+        dataLabelPosition: validLabelPosition,
+        backgroundBars,
+        backgroundBarColors,
+        backgroundBarOpacity: validTrackOpacity,
+        backgroundBarRadius: validTrackRadius,
+        markerShape: validShape,
+        fillPattern: validPattern,
+        strokeWidth: validStrokeWidth,
+        colorBlindMode: blind,
+        discreteMarkers,
+        tooltip: validTooltip,
+        showForSingleSeries: single,
+        customLegendItems,
+        grid: validGrid,
+        gridRowColors,
+        gridColumnColors,
+        gridRowOpacity: validRowOpacity,
+        gridColumnOpacity: validColumnOpacity,
         horizontal,
         markerSize: validMarkerSize,
         columnWidth: validColumnWidth,
@@ -537,6 +715,27 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       chartFill,
       chartLegend,
       stacked,
+      validStackType,
+      stackOnlyBar,
+      stackTotals,
+      validLabelPosition,
+      backgroundBars,
+      backgroundBarColors,
+      validTrackOpacity,
+      validTrackRadius,
+      validShape,
+      validPattern,
+      validStrokeWidth,
+      blind,
+      discreteMarkers,
+      validTooltip,
+      single,
+      customLegendItems,
+      validGrid,
+      gridRowColors,
+      gridColumnColors,
+      validRowOpacity,
+      validColumnOpacity,
       horizontal,
       validMarkerSize,
       validColumnWidth,
@@ -723,6 +922,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       { x: shown.x * scale, y: shown.y * scale },
       { width: tip.offsetWidth, height: tip.offsetHeight },
       { width: plot.clientWidth, height: plot.clientHeight },
+      chartTooltipFixed(validCorner, layout, scale),
     );
     tip.style.setProperty("--_ok-chart-tip-x", `${left}px`);
     tip.style.setProperty("--_ok-chart-tip-y", `${top}px`);
@@ -857,6 +1057,11 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         indicators,
         yaxis,
         xTitle,
+        backgroundBarColors,
+        discreteMarkers,
+        customLegendItems,
+        gridRowColors,
+        gridColumnColors,
       })}
       data-ok-ready=""
       data-ok-runtime="off"
@@ -889,20 +1094,38 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       )}
       {render.legend && (
         <div data-ok-chart-legend="">
-          {render.legend.map((item) => (
-            <button
-              key={item.index}
-              type="button"
-              data-ok-chart-legend-item=""
-              data-ok-color={item.color}
-              aria-pressed={!item.hidden}
-              onClick={() => toggle(item.index)}
-            >
-              <span data-ok-chart-legend-marker="" />
-              {item.name}
-              {item.value !== undefined && <span data-ok-chart-legend-value="">{item.value}</span>}
-            </button>
-          ))}
+          {render.legend.map((item) => {
+            const content = (
+              <>
+                <span
+                  data-ok-chart-legend-marker=""
+                  data-ok-shape={item.shape}
+                  data-ok-pattern={item.pattern}
+                />
+                {item.name}
+                {item.value !== undefined && (
+                  <span data-ok-chart-legend-value="">{item.value}</span>
+                )}
+              </>
+            );
+            // Without toggling (4.18.64), items are labels, not buttons.
+            return legendToggle ? (
+              <button
+                key={item.index}
+                type="button"
+                data-ok-chart-legend-item=""
+                data-ok-color={item.color}
+                aria-pressed={!item.hidden}
+                onClick={() => toggle(item.index)}
+              >
+                {content}
+              </button>
+            ) : (
+              <span key={item.index} data-ok-chart-legend-item="" data-ok-color={item.color}>
+                {content}
+              </span>
+            );
+          })}
         </div>
       )}
       {/* A focusable group (biome.json override): arrow keys move through the chart's values. */}
@@ -944,26 +1167,33 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
           {toElements(nodes)}
         </svg>
         <div ref={tipRef} data-ok-chart-tooltip="" role="status" hidden={!shown}>
-          {shown && (
-            <>
-              <div data-ok-chart-tooltip-title="">{shown.title}</div>
-              {shown.selected && (
-                <div data-ok-chart-tooltip-state="">
-                  {localeText?.selected ?? chartToolLabels.selected}
-                </div>
-              )}
-              <div data-ok-chart-tooltip-rows="">
-                {shown.rows.map((row, index) => (
-                  // biome-ignore lint/suspicious/noArrayIndexKey: rows follow the series order
-                  <div key={index} data-ok-chart-tooltip-row="">
-                    <span data-ok-chart-tooltip-marker="" data-ok-color={row.color} />
-                    <span>{row.name}</span>
-                    <span data-ok-chart-tooltip-value="">{row.value}</span>
+          {shown && tooltipContent && active
+            ? tooltipContent(chartTooltipContext(layout, shown, active))
+            : shown && (
+                <>
+                  <div data-ok-chart-tooltip-title="">{shown.title}</div>
+                  {shown.selected && (
+                    <div data-ok-chart-tooltip-state="">
+                      {localeText?.selected ?? chartToolLabels.selected}
+                    </div>
+                  )}
+                  <div data-ok-chart-tooltip-rows="">
+                    {shown.rows.map((row, index) => (
+                      // biome-ignore lint/suspicious/noArrayIndexKey: rows follow the series order
+                      <div key={index} data-ok-chart-tooltip-row="">
+                        <span
+                          data-ok-chart-tooltip-marker=""
+                          data-ok-color={row.color}
+                          data-ok-shape={row.shape}
+                          data-ok-pattern={row.pattern}
+                        />
+                        <span>{row.name}</span>
+                        <span data-ok-chart-tooltip-value="">{row.value}</span>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </>
-          )}
+                </>
+              )}
         </div>
       </div>
       <table data-ok-chart-data="">

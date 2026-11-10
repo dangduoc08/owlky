@@ -12,6 +12,8 @@ export interface ChartExample {
   readonly props: ChartProps;
   /** More charts in the same group (sparklines). */
   readonly more?: readonly ChartProps[];
+  /** HTML only: markup inside the first figure, after its table (a custom tooltip template). */
+  readonly html?: readonly string[];
 }
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep"];
@@ -994,6 +996,356 @@ export const chartExamples: Record<string, ChartExample> = {
         colors: ["primary-dark", "warning", "info-dark"],
         categories: ["Desktop", "Mobile", "Tablet"],
         series: [{ name: "Visits", data: [44, 55, 13] }],
+      },
+    ],
+  },
+  // Roadmap 4.18.61: 100% stacks, stack totals, label positions, value ranges, background bars.
+  "column-stacked-100": {
+    title: "Column stacked 100%",
+    props: {
+      label: "Share of series A to C per month",
+      type: "bar",
+      stacked: true,
+      stackType: "100%",
+      dataLabels: true,
+      categories: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+      series: [
+        { name: "Series A", data: [44, 55, 41, 67, 22, 43] },
+        { name: "Series B", data: [13, 23, 20, 8, 13, 27] },
+        { name: "Series C", data: [11, 17, 15, 15, 21, 14] },
+      ],
+    },
+    more: [
+      {
+        label: "Share of visits by device per country",
+        type: "bar",
+        horizontal: true,
+        stacked: true,
+        stackType: "100%",
+        barHeight: 50,
+        colors: ["primary", "warning", "info"],
+        categories: ["Italy", "Japan", "Canada", "France", "Germany"],
+        series: [
+          { name: "Desktop", data: [44, 55, 41, 37, 22] },
+          { name: "Mobile", data: [53, 32, 33, 52, 13] },
+          { name: "Tablet", data: [12, 17, 11, 9, 15] },
+        ],
+      },
+    ],
+  },
+  "stack-totals": {
+    title: "Stack totals",
+    props: {
+      label: "Support tickets per week by channel",
+      type: "bar",
+      stacked: true,
+      stackTotals: true,
+      categories: ["W1", "W2", "W3", "W4", "W5", "W6"],
+      series: [
+        { name: "Email", data: [44, 55, 41, 67, 22, 43] },
+        { name: "Chat", data: [13, 23, 20, 8, 13, 27] },
+        { name: "Phone", data: [11, 17, 15, 15, 21, 14] },
+      ],
+    },
+    more: [
+      {
+        label: "Orders by store and the weekly target (only the bars stack)",
+        type: "bar",
+        stacked: true,
+        stackOnlyBar: true,
+        stackTotals: true,
+        colors: ["info", "info-dark", "error"],
+        categories: ["W1", "W2", "W3", "W4", "W5", "W6"],
+        series: [
+          { name: "Store A", data: [30, 42, 28, 51, 39, 47] },
+          { name: "Store B", data: [21, 18, 26, 22, 31, 25] },
+          { name: "Target", type: "line", data: [50, 55, 55, 60, 65, 65] },
+        ],
+      },
+    ],
+  },
+  "column-data-labels": {
+    title: "Column data labels",
+    props: {
+      label: "Monthly inflation",
+      type: "bar",
+      dataLabels: true,
+      dataLabelPosition: "top",
+      columnWidth: 64,
+      backgroundBars: true,
+      valueSuffix: "%",
+      categories: MONTHS,
+      series: [{ name: "Inflation", data: [2.3, 3.1, 4.0, 10.1, 4.0, 3.6, 3.2, 2.3, 1.4] }],
+    },
+    more: [
+      {
+        label: "Tasks done per team",
+        type: "bar",
+        horizontal: true,
+        dataLabels: true,
+        dataLabelPosition: "bottom",
+        barHeight: 50,
+        colors: ["success"],
+        backgroundBarColors: ["success-lighter", "info-lighter"],
+        backgroundBarOpacity: 0.48,
+        yMax: 100,
+        categories: ["Design", "Web", "Mobile", "Data", "Support"],
+        series: [{ name: "Done", data: [72, 54, 88, 35, 61] }],
+      },
+    ],
+  },
+  "column-ranges": {
+    title: "Column range colors",
+    props: {
+      label: "Monthly balance",
+      type: "bar",
+      columnWidth: 60,
+      colorRanges: [
+        { from: -100, to: -1, color: "error", name: "Loss" },
+        { from: 0, to: 100, color: "success", name: "Profit" },
+      ],
+      categories: MONTHS,
+      series: [{ name: "Balance", data: [12, 18, -7, -21, 9, 27, -4, 15, 31] }],
+    },
+  },
+  // Roadmap 4.18.62: non-color series cues (WCAG 1.4.1).
+  "marker-shapes": {
+    title: "Marker shapes",
+    props: {
+      label: "Weekly sessions by source",
+      type: "line",
+      markerSize: 5,
+      curve: "straight",
+      categories: ["W1", "W2", "W3", "W4", "W5", "W6", "W7"],
+      discreteMarkers: [
+        { seriesIndex: 0, dataPointIndex: 4, color: "error", size: 8, shape: "star" },
+      ],
+      series: [
+        { name: "Search", markerShape: "circle", data: [45, 52, 38, 24, 33, 26, 21] },
+        { name: "Social", markerShape: "square", data: [35, 41, 62, 42, 13, 18, 29] },
+        { name: "Email", markerShape: "triangle", data: [87, 57, 74, 99, 75, 38, 62] },
+      ],
+    },
+    more: [
+      {
+        label: "Samples of series A and B",
+        type: "scatter",
+        markerSize: 6,
+        colors: ["primary", "warning"],
+        series: [
+          {
+            name: "Series A",
+            markerShape: "diamond",
+            data: [
+              [4, 12],
+              [8, 18],
+              [12, 9],
+              [16, 22],
+              [20, 15],
+              [24, 27],
+            ],
+          },
+          {
+            name: "Series B",
+            markerShape: "cross",
+            data: [
+              [6, 20],
+              [10, 7],
+              [14, 25],
+              [18, 11],
+              [22, 19],
+              [26, 8],
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  "dashed-lines": {
+    title: "Dashed lines",
+    props: {
+      label: "Session duration, page views and total visits",
+      type: "line",
+      curve: "straight",
+      categories: ["01 Jan", "02 Jan", "03 Jan", "04 Jan", "05 Jan", "06 Jan", "07 Jan", "08 Jan"],
+      series: [
+        { name: "Session duration", strokeWidth: 4, data: [45, 52, 38, 24, 33, 26, 21, 20] },
+        {
+          name: "Page views",
+          strokeWidth: 5,
+          dashArray: 8,
+          data: [35, 41, 62, 42, 13, 18, 29, 37],
+        },
+        {
+          name: "Total visits",
+          strokeWidth: 3,
+          dashArray: 4,
+          data: [87, 57, 74, 99, 75, 38, 62, 47],
+        },
+      ],
+    },
+  },
+  patterns: {
+    title: "Pattern fills",
+    props: {
+      label: "Points scored by players, by match",
+      type: "bar",
+      horizontal: true,
+      stacked: true,
+      fill: "pattern",
+      barHeight: 60,
+      categories: ["Match 1", "Match 2", "Match 3", "Match 4"],
+      series: [
+        { name: "Ana", data: [44, 55, 41, 37] },
+        { name: "Bao", data: [53, 32, 33, 52] },
+        { name: "Chi", data: [12, 17, 11, 9] },
+      ],
+    },
+    more: [
+      {
+        label: "Share of visits by device",
+        type: "pie",
+        height: 260,
+        fill: "pattern",
+        colors: ["primary-dark", "warning", "info-dark"],
+        categories: ["Desktop", "Mobile", "Tablet"],
+        series: [{ name: "Visits", data: [44, 55, 13] }],
+      },
+    ],
+  },
+  "color-blind": {
+    title: "Color blind mode",
+    props: {
+      label: "Monthly signups by plan",
+      type: "line",
+      colorBlindMode: true,
+      categories: MONTHS,
+      series: [
+        { name: "Free", data: [30, 41, 35, 51, 49, 62, 69, 91, 99] },
+        { name: "Pro", data: [12, 21, 28, 30, 37, 42, 40, 51, 60] },
+        { name: "Team", data: [4, 9, 12, 18, 16, 22, 27, 31, 38] },
+      ],
+    },
+    more: [
+      {
+        label: "Revenue by plan per quarter",
+        type: "bar",
+        colorBlindMode: true,
+        categories: ["Q1", "Q2", "Q3", "Q4"],
+        series: [
+          { name: "Free", data: [8, 12, 15, 19] },
+          { name: "Pro", data: [21, 25, 30, 34] },
+          { name: "Team", data: [14, 18, 17, 24] },
+        ],
+      },
+    ],
+  },
+  // Roadmap 4.18.63: tooltip modes, fixed tooltips and custom content.
+  tooltip: {
+    title: "Tooltip options",
+    props: {
+      label: "Orders per weekday (one tooltip per column)",
+      type: "bar",
+      tooltip: "point",
+      categories: ["Mon", "Tue", "Wed", "Thu", "Fri"],
+      series: [
+        { name: "Online", data: [44, 55, 41, 67, 22] },
+        { name: "In store", data: [13, 23, 20, 8, 13] },
+      ],
+    },
+    more: [
+      {
+        label: "Visits per hour (fixed tooltip)",
+        type: "area",
+        tooltipFixed: "topLeft",
+        categories: ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00"],
+        series: [{ name: "Visits", data: [31, 40, 28, 51, 42, 109, 100] }],
+      },
+      {
+        label: "Temperature per day (no tooltip)",
+        type: "line",
+        tooltip: "none",
+        markerSize: 4,
+        valueSuffix: " °C",
+        categories: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+        series: [{ name: "Temperature", data: [18, 21, 19, 24, 26, 23, 20] }],
+      },
+    ],
+  },
+  "tooltip-custom": {
+    title: "Custom tooltip",
+    props: {
+      label: "Orders per weekday (custom tooltip)",
+      type: "bar",
+      categories: ["Mon", "Tue", "Wed", "Thu", "Fri"],
+      series: [
+        { name: "Online", data: [44, 55, 41, 67, 22] },
+        { name: "In store", data: [13, 23, 20, 8, 13] },
+      ],
+    },
+    html: [
+      "  <template data-ok-chart-tooltip>",
+      '    <div data-ok-chart-tooltip-title><span>Orders on </span><span data-ok-chart-tooltip-slot="title"></span></div>',
+      '    <div data-ok-chart-tooltip-state data-ok-chart-tooltip-slot="state">Selected</div>',
+      "    <div data-ok-chart-tooltip-rows>",
+      '      <div data-ok-chart-tooltip-row data-ok-chart-tooltip-slot="row">',
+      '        <span data-ok-chart-tooltip-marker data-ok-chart-tooltip-slot="marker"></span>',
+      '        <span data-ok-chart-tooltip-slot="name"></span>',
+      '        <span data-ok-chart-tooltip-value data-ok-chart-tooltip-slot="value"></span>',
+      "      </div>",
+      "    </div>",
+      "  </template>",
+    ],
+  },
+  // Roadmap 4.18.64: legend alignment, single series, toggle opt-out, custom items; grid options.
+  legend: {
+    title: "Legend options",
+    props: {
+      label: "Monthly net profit (one series, legend on the left)",
+      type: "bar",
+      legendAlign: "left",
+      showForSingleSeries: true,
+      categories: MONTHS,
+      series: [{ name: "Net profit", data: [33, 47, 29, 51, 62, 72, 54, 81, 99] }],
+    },
+    more: [
+      {
+        label: "Income and spending (fixed legend with custom names)",
+        type: "line",
+        legend: "bottom",
+        legendAlign: "center",
+        disableLegendToggle: true,
+        customLegendItems: ["Income (after tax)", "Spending (all accounts)"],
+        colors: ["success", "error"],
+        categories: MONTHS,
+        series: [
+          { name: "Income", data: [42, 48, 45, 51, 49, 56, 58, 61, 64] },
+          { name: "Spending", data: [38, 40, 47, 44, 46, 49, 52, 50, 55] },
+        ],
+      },
+    ],
+  },
+  grid: {
+    title: "Grid lines and stripes",
+    props: {
+      label: "Monthly visits (row stripes, every grid line)",
+      type: "line",
+      curve: "straight",
+      markerSize: 4,
+      grid: "both",
+      gridRowColors: ["grey", "transparent"],
+      categories: MONTHS,
+      series: [{ name: "Visits", data: [10, 41, 35, 51, 49, 62, 69, 91, 148] }],
+    },
+    more: [
+      {
+        label: "Weekly orders (column stripes, no grid lines)",
+        type: "bar",
+        grid: "none",
+        gridColumnColors: ["info", "transparent"],
+        gridColumnOpacity: 0.12,
+        categories: ["W1", "W2", "W3", "W4", "W5", "W6"],
+        series: [{ name: "Orders", data: [44, 55, 41, 67, 22, 43] }],
       },
     ],
   },
