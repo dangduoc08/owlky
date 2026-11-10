@@ -15,8 +15,12 @@ export const walktourSections: GuideSection[] = [
 <link rel="stylesheet" href="${CDN}/owlky.css">
 <script src="${CDN}/owlky.js" defer></script>
 
-<button type="button" data-ok-button data-ok-variant="outlined" data-ok-walktour-start="tour">Start the tour</button>
-<section id="inbox">…</section>
+<button type="button" data-ok-button data-ok-variant="outlined" data-ok-color="inherit" data-ok-size="md" data-ok-walktour-start="tour"><span data-ok-button-label>Start the tour</span></button>
+<section id="inbox">
+  <h2>Inbox</h2>
+  <p>3 new messages</p>
+</section>
+<button type="button" id="compose" data-ok-button data-ok-variant="contained" data-ok-color="primary" data-ok-size="md"><span data-ok-button-label>Compose</span></button>
 
 <div id="tour" data-ok-walktour data-ok-continuous data-ok-show-progress data-ok-disable-beacon>
   <div data-ok-backdrop data-ok-invisible data-ok-walktour-overlay popover="manual" aria-hidden="true">
@@ -33,29 +37,48 @@ export const walktourSections: GuideSection[] = [
     <span data-ok-popover-arrow aria-hidden="true"></span>
     <div data-ok-walktour-header>
       <h2 data-ok-walktour-title id="tour-1-title">Your inbox</h2>
-      <button type="button" data-ok-icon-button data-ok-size="sm" data-ok-walktour-action="close" aria-label="Close">…</button>
+      <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-walktour-action="close" aria-label="Close"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><path fill="currentColor" d="m12 13.41 5.66 5.66a1 1 0 0 0 1.41-1.41L13.41 12l5.66-5.66a1 1 0 0 0-1.41-1.41L12 10.59 6.34 4.93a1 1 0 0 0-1.41 1.41L10.59 12l-5.66 5.66a1 1 0 1 0 1.41 1.41z"></path></svg></button>
     </div>
     <div data-ok-walktour-content id="tour-1-content">New messages arrive here.</div>
-    <span role="progressbar" data-ok-linear-progress data-ok-variant="determinate" data-ok-value="50" aria-hidden="true">…</span>
+    <span role="progressbar" data-ok-linear-progress data-ok-variant="determinate" data-ok-color="primary" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" aria-hidden="true">
+      <span data-ok-linear-progress-bar="1"></span>
+    </span>
     <div data-ok-walktour-footer>
-      <button type="button" data-ok-button data-ok-variant="text" data-ok-walktour-action="skip">Skip</button>
-      <button type="button" data-ok-button data-ok-variant="outlined" data-ok-walktour-action="back">Back</button>
-      <button type="button" data-ok-button data-ok-variant="contained" data-ok-walktour-action="primary">Next<span data-ok-walktour-progress> (1/2)</span></button>
+      <button type="button" data-ok-button data-ok-variant="text" data-ok-color="inherit" data-ok-size="md" data-ok-walktour-action="skip"><span data-ok-button-label>Skip</span></button>
+      <button type="button" data-ok-button data-ok-variant="outlined" data-ok-color="inherit" data-ok-size="md" data-ok-walktour-action="back"><span data-ok-button-label>Back</span></button>
+      <button type="button" data-ok-button data-ok-variant="contained" data-ok-color="inherit" data-ok-size="md" data-ok-walktour-action="primary"><span data-ok-button-label>Next<span data-ok-walktour-progress> (1/2)</span></span></button>
     </div>
   </div>
-  <!-- One step element per step -->
+  <div popover="manual" data-ok-popover data-ok-arrow data-ok-walktour-step data-ok-placement="left-start"
+    data-ok-target="#compose" role="dialog" aria-labelledby="tour-2-title" aria-describedby="tour-2-content">
+    <span data-ok-popover-arrow aria-hidden="true"></span>
+    <div data-ok-walktour-header>
+      <h2 data-ok-walktour-title id="tour-2-title">Write</h2>
+      <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-walktour-action="close" aria-label="Close"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><path fill="currentColor" d="m12 13.41 5.66 5.66a1 1 0 0 0 1.41-1.41L13.41 12l5.66-5.66a1 1 0 0 0-1.41-1.41L12 10.59 6.34 4.93a1 1 0 0 0-1.41 1.41L10.59 12l-5.66 5.66a1 1 0 1 0 1.41 1.41z"></path></svg></button>
+    </div>
+    <div data-ok-walktour-content id="tour-2-content">Start a new message.</div>
+    <span role="progressbar" data-ok-linear-progress data-ok-variant="determinate" data-ok-color="primary" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" aria-hidden="true">
+      <span data-ok-linear-progress-bar="1"></span>
+    </span>
+    <div data-ok-walktour-footer>
+      <button type="button" data-ok-button data-ok-variant="text" data-ok-color="inherit" data-ok-size="md" data-ok-walktour-action="skip"><span data-ok-button-label>Skip</span></button>
+      <button type="button" data-ok-button data-ok-variant="outlined" data-ok-color="inherit" data-ok-size="md" data-ok-walktour-action="back"><span data-ok-button-label>Back</span></button>
+      <button type="button" data-ok-button data-ok-variant="contained" data-ok-color="inherit" data-ok-size="md" data-ok-walktour-action="primary"><span data-ok-button-label>Next<span data-ok-walktour-progress> (2/2)</span></span></button>
+    </div>
+  </div>
   <span data-ok-walktour-live aria-live="polite" aria-atomic="true" data-ok-format="Step {current} of {total}"></span>
 </div>`,
-    react: `import { Button, Walktour } from "@owlky/react";
+    react: `import type { WalktourApi } from "@owlky/core";
+import { Button, Walktour, type WalktourStep } from "@owlky/react";
 import { useRef } from "react";
 
-const steps = [
+const steps: WalktourStep[] = [
   { target: "#inbox", title: "Your inbox", content: "New messages arrive here." },
   { target: "#compose", title: "Write", content: "Start a new message.", placement: "left" },
 ];
 
 export function Tour() {
-  const tour = useRef(null);
+  const tour = useRef<WalktourApi>(null);
   return (
     <>
       <Button variant="outlined" onClick={() => tour.current?.reset(true)}>
@@ -70,22 +93,49 @@ export function Tour() {
     id: "steps",
     title: "Describe the steps",
     body: "In React, pass the steps as data. Each step has a `target`, which is a CSS selector, an element, a ref or a function that returns the element. It also has its `content` and, usually, a `title` that names the dialog. `placement` puts the step on a side of the target, such as `bottom` or `left-start`. Use `auto` to pick the side with the most room, or `center` for a step in the middle of the screen with no target. A step can override most options of the tour, such as `disableBeacon`, `spotlightClicks` or `showSkipButton`. In HTML, write one step element per step. `data-ok-target` holds the selector, and an option attribute on a step overrides the tour's. The value `false` turns a tour option off for that step.",
-    html: `<div popover="manual" data-ok-popover data-ok-arrow data-ok-walktour-step
-  data-ok-target="#compose" data-ok-placement="left-start" data-ok-spotlight-clicks
+    html: `<div popover="manual" data-ok-popover data-ok-arrow data-ok-walktour-step data-ok-placement="left-start"
+  data-ok-target="#compose" data-ok-spotlight-clicks
   data-ok-show-skip-button="false" role="dialog" aria-labelledby="tour-2-title" aria-describedby="tour-2-content">
-  …
+  <span data-ok-popover-arrow aria-hidden="true"></span>
+  <div data-ok-walktour-header>
+    <h2 data-ok-walktour-title id="tour-2-title">Write</h2>
+    <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-walktour-action="close" aria-label="Close"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><path fill="currentColor" d="m12 13.41 5.66 5.66a1 1 0 0 0 1.41-1.41L13.41 12l5.66-5.66a1 1 0 0 0-1.41-1.41L12 10.59 6.34 4.93a1 1 0 0 0-1.41 1.41L10.59 12l-5.66 5.66a1 1 0 1 0 1.41 1.41z"></path></svg></button>
+  </div>
+  <div data-ok-walktour-content id="tour-2-content">Start a new message.</div>
+  <span role="progressbar" data-ok-linear-progress data-ok-variant="determinate" data-ok-color="primary" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" aria-hidden="true">
+    <span data-ok-linear-progress-bar="1"></span>
+  </span>
+  <div data-ok-walktour-footer>
+    <button type="button" data-ok-button data-ok-variant="text" data-ok-color="inherit" data-ok-size="md" data-ok-walktour-action="skip"><span data-ok-button-label>Skip</span></button>
+    <button type="button" data-ok-button data-ok-variant="outlined" data-ok-color="inherit" data-ok-size="md" data-ok-walktour-action="back"><span data-ok-button-label>Back</span></button>
+    <button type="button" data-ok-button data-ok-variant="contained" data-ok-color="inherit" data-ok-size="md" data-ok-walktour-action="primary"><span data-ok-button-label>Next<span data-ok-walktour-progress> (2/2)</span></span></button>
+  </div>
 </div>`,
-    react: `const steps = [
-  { target: "body", placement: "center", title: "Welcome", content: "A quick tour." },
-  {
-    target: composeRef,
-    title: "Write",
-    content: "Start a new message.",
-    placement: "left-start",
-    spotlightClicks: true,
-    showSkipButton: false,
-  },
-];`,
+    react: `import { Button, Walktour, type WalktourStep } from "@owlky/react";
+import { useRef } from "react";
+
+export function ComposeTour() {
+  const composeRef = useRef<HTMLButtonElement>(null);
+  const steps: WalktourStep[] = [
+    { target: "body", placement: "center", title: "Welcome", content: "A quick tour." },
+    {
+      target: composeRef,
+      title: "Write",
+      content: "Start a new message.",
+      placement: "left-start",
+      spotlightClicks: true,
+      showSkipButton: false,
+    },
+  ];
+  return (
+    <>
+      <Button ref={composeRef} variant="contained" color="primary">
+        Compose
+      </Button>
+      <Walktour steps={steps} run continuous />
+    </>
+  );
+}`,
   },
   {
     id: "run",
@@ -99,10 +149,10 @@ export function Tour() {
   tour.start();
   tour.go(2);
 </script>`,
-    react: `import { useState } from "react";
-import { Walktour } from "@owlky/react";
+    react: `import { Walktour, type WalktourStep } from "@owlky/react";
+import { useState } from "react";
 
-export function ControlledTour({ steps }) {
+export function ControlledTour({ steps }: { steps: WalktourStep[] }) {
   const [run, setRun] = useState(true);
   const [step, setStep] = useState(0);
   return (
@@ -123,8 +173,64 @@ export function ControlledTour({ steps }) {
     id: "beacons",
     title: "Use beacons",
     body: "Without `continuous`, the primary button reads **Close**: it closes the step and shows a beacon on the next target. People select the beacon to open that step. In a continuous tour, **Next** and **Back** go from step to step without beacons, and closing a step with the close button, Escape or the overlay shows the next step's beacon. `disableBeacon` opens steps at once, for the whole tour or for one step.",
-    html: `<div id="tour" data-ok-walktour data-ok-run data-ok-show-skip-button>…</div>`,
-    react: `import { Walktour } from "@owlky/react";
+    html: `<section id="inbox">
+  <h2>Inbox</h2>
+  <p>3 new messages</p>
+</section>
+<button type="button" id="compose" data-ok-button data-ok-variant="contained" data-ok-color="primary" data-ok-size="md"><span data-ok-button-label>Compose</span></button>
+
+<div id="tour" data-ok-walktour data-ok-run data-ok-show-skip-button>
+  <div data-ok-backdrop data-ok-invisible data-ok-walktour-overlay popover="manual" aria-hidden="true">
+    <svg data-ok-walktour-spotlight aria-hidden="true" focusable="false">
+      <path data-ok-walktour-mask fill-rule="evenodd"></path>
+      <path data-ok-walktour-hole></path>
+    </svg>
+  </div>
+  <button type="button" data-ok-walktour-beacon aria-label="Open the dialog" aria-haspopup="dialog">
+    <span data-ok-walktour-beacon-inner></span>
+  </button>
+  <div popover="manual" data-ok-popover data-ok-arrow data-ok-walktour-step data-ok-placement="bottom"
+    data-ok-target="#inbox" role="dialog" aria-labelledby="tour-1-title" aria-describedby="tour-1-content">
+    <span data-ok-popover-arrow aria-hidden="true"></span>
+    <div data-ok-walktour-header>
+      <h2 data-ok-walktour-title id="tour-1-title">Your inbox</h2>
+      <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-walktour-action="close" aria-label="Close"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><path fill="currentColor" d="m12 13.41 5.66 5.66a1 1 0 0 0 1.41-1.41L13.41 12l5.66-5.66a1 1 0 0 0-1.41-1.41L12 10.59 6.34 4.93a1 1 0 0 0-1.41 1.41L10.59 12l-5.66 5.66a1 1 0 1 0 1.41 1.41z"></path></svg></button>
+    </div>
+    <div data-ok-walktour-content id="tour-1-content">New messages arrive here.</div>
+    <span role="progressbar" data-ok-linear-progress data-ok-variant="determinate" data-ok-color="primary" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" aria-hidden="true">
+      <span data-ok-linear-progress-bar="1"></span>
+    </span>
+    <div data-ok-walktour-footer>
+      <button type="button" data-ok-button data-ok-variant="text" data-ok-color="inherit" data-ok-size="md" data-ok-walktour-action="skip"><span data-ok-button-label>Skip</span></button>
+      <button type="button" data-ok-button data-ok-variant="outlined" data-ok-color="inherit" data-ok-size="md" data-ok-walktour-action="back"><span data-ok-button-label>Back</span></button>
+      <button type="button" data-ok-button data-ok-variant="contained" data-ok-color="inherit" data-ok-size="md" data-ok-walktour-action="primary"><span data-ok-button-label>Next<span data-ok-walktour-progress> (1/2)</span></span></button>
+    </div>
+  </div>
+  <div popover="manual" data-ok-popover data-ok-arrow data-ok-walktour-step data-ok-placement="left-start"
+    data-ok-target="#compose" role="dialog" aria-labelledby="tour-2-title" aria-describedby="tour-2-content">
+    <span data-ok-popover-arrow aria-hidden="true"></span>
+    <div data-ok-walktour-header>
+      <h2 data-ok-walktour-title id="tour-2-title">Write</h2>
+      <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-walktour-action="close" aria-label="Close"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><path fill="currentColor" d="m12 13.41 5.66 5.66a1 1 0 0 0 1.41-1.41L13.41 12l5.66-5.66a1 1 0 0 0-1.41-1.41L12 10.59 6.34 4.93a1 1 0 0 0-1.41 1.41L10.59 12l-5.66 5.66a1 1 0 1 0 1.41 1.41z"></path></svg></button>
+    </div>
+    <div data-ok-walktour-content id="tour-2-content">Start a new message.</div>
+    <span role="progressbar" data-ok-linear-progress data-ok-variant="determinate" data-ok-color="primary" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" aria-hidden="true">
+      <span data-ok-linear-progress-bar="1"></span>
+    </span>
+    <div data-ok-walktour-footer>
+      <button type="button" data-ok-button data-ok-variant="text" data-ok-color="inherit" data-ok-size="md" data-ok-walktour-action="skip"><span data-ok-button-label>Skip</span></button>
+      <button type="button" data-ok-button data-ok-variant="outlined" data-ok-color="inherit" data-ok-size="md" data-ok-walktour-action="back"><span data-ok-button-label>Back</span></button>
+      <button type="button" data-ok-button data-ok-variant="contained" data-ok-color="inherit" data-ok-size="md" data-ok-walktour-action="primary"><span data-ok-button-label>Next<span data-ok-walktour-progress> (2/2)</span></span></button>
+    </div>
+  </div>
+  <span data-ok-walktour-live aria-live="polite" aria-atomic="true" data-ok-format="Step {current} of {total}"></span>
+</div>`,
+    react: `import { Walktour, type WalktourStep } from "@owlky/react";
+
+const steps: WalktourStep[] = [
+  { target: "#inbox", title: "Your inbox", content: "New messages arrive here." },
+  { target: "#compose", title: "Write", content: "Start a new message.", placement: "left" },
+];
 
 export function WalktourBeacons() {
   return <Walktour steps={steps} run showSkipButton />;
@@ -134,9 +240,65 @@ export function WalktourBeacons() {
     id: "overlay",
     title: "Configure the overlay and the spotlight",
     body: "The overlay blocks the page while a step is open, so the step is a modal dialog. `spotlightClicks` lets people use the element in the spotlight, and `disableOverlay` removes the overlay: in both cases the step is no longer modal. `disableOverlayClose` keeps a click on the overlay from closing the step. `spotlightPadding` sets the space around the target and `spotlightRadius` the spotlight's corners, in pixels. When a target is out of view, the tour scrolls it into view and keeps `scrollOffset` pixels above it. `disableScrolling` turns that off, and `scrollToFirstStep` scrolls for the first step too.",
-    html: `<div id="tour" data-ok-walktour data-ok-spotlight-clicks data-ok-spotlight-padding="12"
-  data-ok-spotlight-radius="16" data-ok-scroll-offset="80">…</div>`,
-    react: `import { Walktour } from "@owlky/react";
+    html: `<section id="inbox">
+  <h2>Inbox</h2>
+  <p>3 new messages</p>
+</section>
+<button type="button" id="compose" data-ok-button data-ok-variant="contained" data-ok-color="primary" data-ok-size="md"><span data-ok-button-label>Compose</span></button>
+
+<div id="tour" data-ok-walktour data-ok-spotlight-clicks data-ok-spotlight-padding="12"
+  data-ok-spotlight-radius="16" data-ok-scroll-offset="80">
+  <div data-ok-backdrop data-ok-invisible data-ok-walktour-overlay popover="manual" aria-hidden="true">
+    <svg data-ok-walktour-spotlight aria-hidden="true" focusable="false">
+      <path data-ok-walktour-mask fill-rule="evenodd"></path>
+      <path data-ok-walktour-hole></path>
+    </svg>
+  </div>
+  <button type="button" data-ok-walktour-beacon aria-label="Open the dialog" aria-haspopup="dialog" hidden>
+    <span data-ok-walktour-beacon-inner></span>
+  </button>
+  <div popover="manual" data-ok-popover data-ok-arrow data-ok-walktour-step data-ok-placement="bottom"
+    data-ok-target="#inbox" role="dialog" aria-labelledby="tour-1-title" aria-describedby="tour-1-content">
+    <span data-ok-popover-arrow aria-hidden="true"></span>
+    <div data-ok-walktour-header>
+      <h2 data-ok-walktour-title id="tour-1-title">Your inbox</h2>
+      <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-walktour-action="close" aria-label="Close"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><path fill="currentColor" d="m12 13.41 5.66 5.66a1 1 0 0 0 1.41-1.41L13.41 12l5.66-5.66a1 1 0 0 0-1.41-1.41L12 10.59 6.34 4.93a1 1 0 0 0-1.41 1.41L10.59 12l-5.66 5.66a1 1 0 1 0 1.41 1.41z"></path></svg></button>
+    </div>
+    <div data-ok-walktour-content id="tour-1-content">New messages arrive here.</div>
+    <span role="progressbar" data-ok-linear-progress data-ok-variant="determinate" data-ok-color="primary" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" aria-hidden="true">
+      <span data-ok-linear-progress-bar="1"></span>
+    </span>
+    <div data-ok-walktour-footer>
+      <button type="button" data-ok-button data-ok-variant="text" data-ok-color="inherit" data-ok-size="md" data-ok-walktour-action="skip"><span data-ok-button-label>Skip</span></button>
+      <button type="button" data-ok-button data-ok-variant="outlined" data-ok-color="inherit" data-ok-size="md" data-ok-walktour-action="back"><span data-ok-button-label>Back</span></button>
+      <button type="button" data-ok-button data-ok-variant="contained" data-ok-color="inherit" data-ok-size="md" data-ok-walktour-action="primary"><span data-ok-button-label>Next<span data-ok-walktour-progress> (1/2)</span></span></button>
+    </div>
+  </div>
+  <div popover="manual" data-ok-popover data-ok-arrow data-ok-walktour-step data-ok-placement="left-start"
+    data-ok-target="#compose" role="dialog" aria-labelledby="tour-2-title" aria-describedby="tour-2-content">
+    <span data-ok-popover-arrow aria-hidden="true"></span>
+    <div data-ok-walktour-header>
+      <h2 data-ok-walktour-title id="tour-2-title">Write</h2>
+      <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-walktour-action="close" aria-label="Close"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><path fill="currentColor" d="m12 13.41 5.66 5.66a1 1 0 0 0 1.41-1.41L13.41 12l5.66-5.66a1 1 0 0 0-1.41-1.41L12 10.59 6.34 4.93a1 1 0 0 0-1.41 1.41L10.59 12l-5.66 5.66a1 1 0 1 0 1.41 1.41z"></path></svg></button>
+    </div>
+    <div data-ok-walktour-content id="tour-2-content">Start a new message.</div>
+    <span role="progressbar" data-ok-linear-progress data-ok-variant="determinate" data-ok-color="primary" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" aria-hidden="true">
+      <span data-ok-linear-progress-bar="1"></span>
+    </span>
+    <div data-ok-walktour-footer>
+      <button type="button" data-ok-button data-ok-variant="text" data-ok-color="inherit" data-ok-size="md" data-ok-walktour-action="skip"><span data-ok-button-label>Skip</span></button>
+      <button type="button" data-ok-button data-ok-variant="outlined" data-ok-color="inherit" data-ok-size="md" data-ok-walktour-action="back"><span data-ok-button-label>Back</span></button>
+      <button type="button" data-ok-button data-ok-variant="contained" data-ok-color="inherit" data-ok-size="md" data-ok-walktour-action="primary"><span data-ok-button-label>Next<span data-ok-walktour-progress> (2/2)</span></span></button>
+    </div>
+  </div>
+  <span data-ok-walktour-live aria-live="polite" aria-atomic="true" data-ok-format="Step {current} of {total}"></span>
+</div>`,
+    react: `import { Walktour, type WalktourStep } from "@owlky/react";
+
+const steps: WalktourStep[] = [
+  { target: "#inbox", title: "Your inbox", content: "New messages arrive here." },
+  { target: "#compose", title: "Write", content: "Start a new message.", placement: "left" },
+];
 
 export function WalktourOverlay() {
   return (
@@ -169,7 +331,12 @@ export function WalktourOverlay() {
     if (event.detail.type === "tour:end") console.log("Tour ended:", event.detail.status);
   });
 </script>`,
-    react: `import { Walktour } from "@owlky/react";
+    react: `import { Walktour, type WalktourStep } from "@owlky/react";
+
+const steps: WalktourStep[] = [
+  { target: "#inbox", title: "Your inbox", content: "New messages arrive here." },
+  { target: "#compose", title: "Write", content: "Start a new message.", placement: "left" },
+];
 
 export function WalktourEvents() {
   return (
