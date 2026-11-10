@@ -3,6 +3,7 @@ import {
   type ChartActive,
   type ChartColor,
   type ChartCurve,
+  type ChartDataPoint,
   type ChartExportFormat,
   type ChartFill,
   type ChartGestureMode,
@@ -15,6 +16,7 @@ import {
   type ChartPart,
   type ChartPointInput,
   type ChartRender,
+  type ChartSelectionDetail,
   type ChartSeries,
   type ChartTableCell,
   type ChartTableModel,
@@ -25,10 +27,14 @@ import {
   type ChartZoom,
   type ChartZoomReason,
   chartActiveAt,
+  chartActiveMarks,
   chartActiveNodes,
   chartColors,
   chartIdPrefix,
+  chartMarkAt,
+  chartMarkPoint,
   chartOptions,
+  chartSelection,
   chartToolbar,
   chartToolLabels,
   chartTools,
@@ -36,6 +42,7 @@ import {
   chartZoomKey,
   createChartGestures,
   exportChart,
+  hasChartDataPoint,
   linkChart,
   nextChartActive,
   parseChartColorRanges,
@@ -50,6 +57,7 @@ import {
   readStyle,
   renderChart,
   sameChartActive,
+  toggleChartSelection,
   zoomChartBy,
 } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
@@ -82,6 +90,11 @@ export interface ChartEvents {
   active: EventSpec<{ active: ChartActive | null }>;
   /** Before the zoom window changes. Cancelable only when `reason` is `user`; `range` is `null` once reset. */
   zoom: EventSpec<{ range: ChartZoom | null; reason: ChartZoomReason }, boolean>;
+  /**
+   * After a click, Enter or Space selected or cleared a point, slice or cell (one event per point
+   * it toggled), with the point, whether it is selected now and every selected point.
+   */
+  select: EventSpec<ChartSelectionDetail>;
 }
 
 export interface ChartInstance extends ComponentInstance {
@@ -115,6 +128,15 @@ export interface ChartInstance extends ComponentInstance {
   exportChart(format: ChartExportFormat): Promise<void>;
   /** Localized texts: tool names, the export error and part labels (tables carry their own). */
   setLocaleText(text: ChartLocaleText): void;
+  /** The selected points (`{ seriesIndex, dataPointIndex }`), in the order they were selected. */
+  readonly selectedDataPoints: readonly ChartDataPoint[];
+  /** Selects exactly these points (invalid entries are dropped; no event). */
+  setSelectedDataPoints(points: readonly ChartDataPoint[]): void;
+  /**
+   * Selects a point, or clears it when it is selected (as a click does: without
+   * `data-ok-allow-multiple-data-points-selection`, the others are cleared; no event).
+   */
+  toggleDataPointSelection(seriesIndex: number, dataPointIndex: number): void;
 }
 
 const SVG = "http://www.w3.org/2000/svg";
@@ -281,7 +303,8 @@ let counter = 0;
  *          place). `updateSeries` / `appendData` set the data from JavaScript and rewrite the table
  *          to match (ADR-0029). Without JavaScript the table stays visible.
  * Events:  ok:chart:toggle (cancelable, detail `{ index, hidden, hiddenSeries }`),
- *          ok:chart:active (detail `{ active }`).
+ *          ok:chart:active (detail `{ active }`), ok:chart:zoom, ok:chart:select (detail
+ *          `{ seriesIndex, dataPointIndex, selected, selectedDataPoints }`).
  */
 export const chart = defineComponent<ChartInstance, ChartEvents>({
   name: "chart",
@@ -308,6 +331,8 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
     let selection: ChartZoom | null = null;
     let link: ChartLink | undefined;
     let linkKey = "";
+    /** Selected data points (4.18.60). */
+    let selected: ChartDataPoint[] = [];
     let drawnZoom = "";
     const annotationsList = () => element.querySelector(":scope > [data-ok-chart-annotations]");
 
@@ -390,7 +415,7 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
     // Only called after the first draw.
     const drawActive = () => {
       const current = render as ChartRender;
-      const tooltip = chartTooltip(current.data, current.layout, current.format, active);
+      const tooltip = chartTooltip(current.data, current.layout, current.format, active, selected);
       const shown = tooltip && tooltip.rows.length > 0 ? tooltip : null;
       const hover = chartActiveNodes(current.layout, shown ? active : null);
       svg.querySelector("[data-ok-chart-crosshair]")?.replaceChildren(...build(hover.under));
@@ -419,7 +444,13 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
         line.append(marker, name, value);
         rows.append(line);
       }
-      tip.replaceChildren(title, rows);
+      if (shown.selected) {
+        // The selection is announced with the values (the drawing is hidden from screen readers).
+        const state = document.createElement("div");
+        state.setAttribute("data-ok-chart-tooltip-state", "");
+        state.textContent = localeText.selected ?? chartToolLabels.selected;
+        tip.replaceChildren(title, state, rows);
+      } else tip.replaceChildren(title, rows);
       tip.hidden = false;
       const scale = plot.clientWidth / current.layout.width || 1;
       const { left, top } = placeChartTooltip(
@@ -504,6 +535,7 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
         zoomFrom: zoomState.from,
         selection: brushTarget ? selection : preview,
         brush: brushTarget !== undefined,
+        selectedDataPoints: selected,
         // Rewritten tables keep the author's first header.
         xLabel: (table?.tHead ?? table)?.rows[0]?.cells[0]?.textContent?.trim() || undefined,
         yTitle: text(element, "data-ok-y-title"),
@@ -692,6 +724,40 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
         true,
       );
     };
+    /** Toggles points (a click, Enter or Space) and reports each one (`ok:chart:select`). */
+    const select = (points: readonly ChartDataPoint[]) => {
+      const next = toggleChartSelection(
+        selected,
+        points,
+        element.hasAttribute(o.allowMultipleDataPointsSelection.attr),
+      );
+      selected = next;
+      draw();
+      for (const entry of chartSelection(points))
+        emit("select", {
+          ...entry,
+          selected: hasChartDataPoint(next, entry),
+          selectedDataPoints: [...next],
+        });
+    };
+    // A click selects the point, slice or cell under the pointer (not after a drag or on brushes).
+    plot.addEventListener(
+      "click",
+      (event) => {
+        if (mode() === "brush" || gestures.moved) return;
+        const layout = (render as ChartRender).layout;
+        const box = plot.getBoundingClientRect();
+        const scale = layout.width / (box.width || layout.width);
+        const mark = chartMarkAt(
+          layout,
+          (event.clientX - box.left) * scale,
+          (event.clientY - box.top) * scale,
+        );
+        if (mark !== null)
+          select([chartMarkPoint(layout.marks[mark] as ChartRender["layout"]["marks"][number])]);
+      },
+      { signal },
+    );
     plot.addEventListener("pointermove", point, { signal });
     plot.addEventListener("pointerdown", point, { signal });
     plot.addEventListener(
@@ -729,6 +795,19 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
             commitRange(range);
             return;
           }
+        }
+        if ((event.key === "Enter" || event.key === " ") && !event.repeat && mode() !== "brush") {
+          // Enter or Space selects the active item's points (a category: every series' point).
+          const layout = (render as ChartRender).layout;
+          const marks = chartActiveMarks(layout, active);
+          if (marks.length === 0) return;
+          event.preventDefault();
+          select(
+            marks.map((mark) =>
+              chartMarkPoint(layout.marks[mark] as (typeof layout.marks)[number]),
+            ),
+          );
+          return;
         }
         const next = nextChartActive((render as ChartRender).layout, active, event.key);
         if (next === undefined) return;
@@ -886,6 +965,21 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
       },
       setLocaleText(next) {
         localeText = { ...next };
+        draw();
+      },
+      get selectedDataPoints() {
+        return [...selected];
+      },
+      setSelectedDataPoints(points) {
+        selected = chartSelection(points);
+        draw();
+      },
+      toggleDataPointSelection(seriesIndex, dataPointIndex) {
+        selected = toggleChartSelection(
+          selected,
+          [{ seriesIndex, dataPointIndex }],
+          element.hasAttribute(o.allowMultipleDataPointsSelection.attr),
+        );
         draw();
       },
       destroy() {

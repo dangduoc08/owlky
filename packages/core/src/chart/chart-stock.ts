@@ -195,6 +195,7 @@ export function layoutStock(
         ...mark,
         series: pane.global[mark.series] ?? mark.series,
         py: r2(mark.py + top),
+        ...(mark.box ? { box: { ...mark.box, y: r2(mark.box.y + top) } } : {}),
       });
     top += layout.height;
   });

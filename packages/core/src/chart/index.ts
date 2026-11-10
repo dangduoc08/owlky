@@ -140,6 +140,17 @@ export {
   layoutSankey,
   readChartSankeyTable,
 } from "./chart-sankey.js";
+export {
+  type ChartDataPoint,
+  type ChartSelectionDetail,
+  chartActiveMarks,
+  chartMarkAt,
+  chartMarkPoint,
+  chartSelectedNodes,
+  chartSelection,
+  hasChartDataPoint,
+  toggleChartSelection,
+} from "./chart-select.js";
 export { type ChartStockOptions, layoutStock } from "./chart-stock.js";
 export {
   CHART_TEXT_ATTRIBUTES,

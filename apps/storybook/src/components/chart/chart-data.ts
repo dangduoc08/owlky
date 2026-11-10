@@ -975,6 +975,28 @@ export const chartExamples: Record<string, ChartExample> = {
       },
     ],
   },
+  // Roadmap 4.18.60: data point selection (ApexCharts `dataPointSelection`, `states.active`).
+  selection: {
+    title: "Data point selection",
+    props: {
+      label: "Orders per weekday (select a column)",
+      type: "bar",
+      colors: ["info"],
+      categories: ["Mon", "Tue", "Wed", "Thu", "Fri"],
+      series: [{ name: "Orders", data: [44, 55, 41, 67, 22] }],
+    },
+    more: [
+      {
+        label: "Visits by device (select several slices)",
+        type: "donut",
+        height: 240,
+        allowMultipleDataPointsSelection: true,
+        colors: ["primary-dark", "warning", "info-dark"],
+        categories: ["Desktop", "Mobile", "Tablet"],
+        series: [{ name: "Visits", data: [44, 55, 13] }],
+      },
+    ],
+  },
   // Phase 2.2 (ADR-0047): stock charts, one per ApexStock demo section that applies.
   stock: {
     title: "Stock chart",

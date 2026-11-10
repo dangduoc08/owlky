@@ -135,6 +135,7 @@ const pairs: [component: string, story: string][] = [
   ["chart", "stock-line"],
   ["chart", "multiple-y-axes"],
   ["chart", "axis-scales"],
+  ["chart", "selection"],
   ["rating", "controlled"],
   ["rating", "read-only"],
   ["rating", "disabled"],

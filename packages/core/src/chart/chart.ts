@@ -40,6 +40,7 @@ import {
   chartSankeyTable,
   layoutSankey,
 } from "./chart-sankey.js";
+import { type ChartDataPoint, chartSelectedNodes, chartSelection } from "./chart-select.js";
 import { layoutFunnel, layoutSlope } from "./chart-shapes.js";
 import { layoutStock } from "./chart-stock.js";
 import {
@@ -128,6 +129,8 @@ export interface ChartRenderInput extends ChartFormatOptions {
   readonly selection?: ChartZoom | null | undefined;
   /** A brush chart: the selection (all of the axis when `null`) has handles. */
   readonly brush?: boolean | undefined;
+  /** Selected data points (4.18.60): drawn with an outline (`g[data-ok-chart-selected]`). */
+  readonly selectedDataPoints?: readonly ChartDataPoint[] | undefined;
   /** Header of the data table's first column. Default "Category", "Date" or "X". */
   readonly xLabel?: string | undefined;
   /** Indexes of the series hidden through the legend (categories for circular charts). */
@@ -279,6 +282,9 @@ export function renderChart(input: ChartRenderInput): ChartRender {
     nodes.splice(at < 0 ? before("data-ok-chart-active") : at, 0, ...annotations);
   }
   if (selection.length) nodes.splice(before("data-ok-chart-active"), 0, ...selection);
+  // Selected points (4.18.60): outlines over the series, under the hover highlight.
+  const marked = chartSelectedNodes(base, chartSelection(input.selectedDataPoints));
+  if (marked.length) nodes.splice(before("data-ok-chart-active"), 0, ...marked);
   const layout: ChartLayout = { ...base, nodes };
   // Circular charts list their categories (slices, rings); the others their series.
   const items: ChartLegendItem[] = circular

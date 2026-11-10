@@ -52,6 +52,7 @@ const STORIES = [
   "stock-line",
   "multiple-y-axes",
   "axis-scales",
+  "selection",
 ];
 
 /** The SVG as plain data (gradient ids normalized): parity doesn't walk into SVG. */
@@ -513,3 +514,63 @@ for (const impl of implementations) {
     });
   });
 }
+
+// Roadmap 4.18.60: data point selection.
+for (const impl of implementations) {
+  test.describe(`chart selection (${impl})`, () => {
+    test("a click or Enter selects a column; the outline and the tooltip show it", async ({
+      page,
+    }) => {
+      await openStory(page, storyId(impl, "chart", "selection"));
+      const first = page.locator("[data-ok-chart]").first();
+      const outlines = first.locator("[data-ok-chart-selected-mark]");
+      await first.locator("[data-ok-chart-bar]").nth(3).click();
+      await expect(outlines).toHaveCount(1);
+      await expect(first.locator("[data-ok-chart-tooltip-state]")).toHaveText("Selected");
+      await plot(page).focus();
+      await page.keyboard.press("Home");
+      await page.keyboard.press("Enter");
+      // One at a time: Monday replaces Thursday.
+      await expect(outlines).toHaveCount(1);
+      await expect(first.locator("[data-ok-chart-tooltip-state]")).toHaveText("Selected");
+      await page.keyboard.press("Space");
+      await expect(outlines).toHaveCount(0);
+    });
+
+    test("donut: several slices, the legend still hides them", async ({ page }) => {
+      await openStory(page, storyId(impl, "chart", "selection"));
+      const donut = page.locator("[data-ok-chart]").nth(1);
+      const slices = donut.locator("[data-ok-chart-slice]");
+      await donut.locator("[data-ok-chart-plot]").focus();
+      await page.keyboard.press("Home");
+      await page.keyboard.press("Enter");
+      await page.keyboard.press("ArrowRight");
+      await page.keyboard.press("Space");
+      await expect(donut.locator("[data-ok-chart-selected-mark]")).toHaveCount(2);
+      await donut.getByRole("button", { name: "Tablet" }).click();
+      await expect(slices).toHaveCount(2);
+      await expect(donut.locator("[data-ok-chart-selected-mark]")).toHaveCount(2);
+    });
+  });
+}
+
+test("chart selection: after the same clicks, React and HTML draw the same SVG", async ({
+  page,
+  browserName,
+}) => {
+  test.skip(browserName !== "chromium", "Structure is browser-independent.");
+  const after = async (impl: "react" | "html") => {
+    await openStory(page, storyId(impl, "chart", "selection"));
+    await page.locator("[data-ok-chart-bar]").nth(1).click();
+    await page.locator("[data-ok-chart-plot]").nth(1).focus();
+    await page.keyboard.press("End");
+    await page.keyboard.press("Enter");
+    await page.keyboard.press("Escape");
+    await page.mouse.move(0, 0);
+    await expect(page.locator("[data-ok-chart-selected-mark]")).toHaveCount(2);
+    return svgTree(page);
+  };
+  const react = await after("react");
+  const html = await after("html");
+  expect(html).toEqual(react);
+});

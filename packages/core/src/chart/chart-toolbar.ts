@@ -20,10 +20,12 @@ export const chartTools: readonly ChartTool[] = [
 
 /** Texts a chart shows or announces (localizable): part labels, tool names and messages. */
 export type ChartLocaleText = Readonly<
-  Partial<Record<ChartPart | ChartTool | "toolbar" | "exportFailed", string>>
+  Partial<Record<ChartPart | ChartTool | "toolbar" | "exportFailed" | "selected", string>>
 >;
 
-export const chartToolLabels: Readonly<Record<ChartTool | "toolbar" | "exportFailed", string>> = {
+export const chartToolLabels: Readonly<
+  Record<ChartTool | "toolbar" | "exportFailed" | "selected", string>
+> = {
   zoomIn: "Zoom in",
   zoomOut: "Zoom out",
   reset: "Reset zoom",
@@ -33,6 +35,8 @@ export const chartToolLabels: Readonly<Record<ChartTool | "toolbar" | "exportFai
   csv: "Download CSV",
   toolbar: "Chart tools",
   exportFailed: "The download failed.",
+  // The tooltip's state line when its item is selected (4.18.60).
+  selected: "Selected",
 };
 
 export interface ChartToolItem {

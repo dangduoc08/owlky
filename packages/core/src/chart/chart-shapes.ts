@@ -91,6 +91,7 @@ export function layoutFunnel(
       px: r2(x + w),
       py: r2(cy),
       color: point.color ?? series.color,
+      box: { x: r2(x), y: r2(cy - thickness / 2), width: r2(w), height: r2(thickness) },
     });
     bars.push(
       node("rect", {

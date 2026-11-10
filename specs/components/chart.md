@@ -57,6 +57,9 @@ figure[data-ok-chart][data-ok-type][data-ok-x-type][data-ok-curve][data-ok-legen
           path[data-ok-chart-bar][data-ok-color]? · circle[data-ok-chart-marker][data-ok-color]?
       g[data-ok-chart-data-labels]?                      (dataLabels; only when a label fits)
         text[data-ok-chart-data-label="inside|outside"]  (inside slices / bars: white; outside: above points)
+      g[data-ok-chart-selected]?                         (selected points, 4.18.60; before the active group)
+        circle | rect | path[data-ok-chart-selected-mark] (ring around points, frame around blocks
+                                                          and cells, outline of slices and rings)
       g[data-ok-chart-active] › circle[data-ok-chart-active-marker][data-ok-color]
       g[data-ok-chart-center]?                           (donut / radial bar center)
         text[data-ok-chart-center-label] · text[data-ok-chart-center-value]
@@ -116,7 +119,8 @@ figure[data-ok-chart][data-ok-type][data-ok-x-type][data-ok-curve][data-ok-legen
       g[data-ok-chart-active]; g[data-ok-chart-pane-titles] › text[data-ok-chart-pane-title]
     data labels may also be text[data-ok-chart-data-label="plain"] (primary text on faint cells)
     div[data-ok-chart-tooltip][role=status][hidden]?
-      div[data-ok-chart-tooltip-title] + div[data-ok-chart-tooltip-rows]
+      div[data-ok-chart-tooltip-title] + div[data-ok-chart-tooltip-state]? ("Selected", localeText `selected`)
+        + div[data-ok-chart-tooltip-rows]
         div[data-ok-chart-tooltip-row] › span[data-ok-chart-tooltip-marker][data-ok-color] + span + span[data-ok-chart-tooltip-value]
   table[data-ok-chart-data]                              (HTML: the source; visually hidden once drawn)
     caption (the chart's name)
@@ -278,7 +282,9 @@ Root: `data-ok-chart`. Unknown values fall back to the default.
 | `edgeOpacity` | `data-ok-edge-opacity="…"` | number | number | `0.4` | Sankey charts: link opacity (0 to 1). |
 | `navigator` | `data-ok-navigator` | flag | boolean | off | Stock charts: a navigator under the chart, the whole price line with the zoom as a brush (zooms like `zoom`). |
 | `paneHeight` | `data-ok-pane-height="…"` | number | number | `120` | Stock charts: height in px of each indicator pane (volume, RSI, MACD…) under the price. |
+| `allowMultipleDataPointsSelection` | `data-ok-allow-multiple-data-points-selection` | flag | boolean | off | Clicks and Enter or Space add points to the selection instead of replacing it. |
 | `hiddenSeries` | `aria-pressed` · event `ok:chart:toggle` | state | — | — | Indexes of the series hidden through the legend (`aria-pressed="false"` on their buttons); categories in pie, donut and radial bar charts. |
+| `selectedDataPoints` | `instance.selectedDataPoints` · event `ok:chart:select` | state | — | — | The selected points, `{ seriesIndex, dataPointIndex }[]`: a click selects the point, slice or cell under the pointer, Enter or Space the active one. |
 | `zoomRange` | `instance.zoomRange` · event `ok:chart:zoom` | state | — | — | The visible window of the x axis, `{ min, max }` (category indexes or x values), or `null`. |
 <!-- /options:chart -->
 
@@ -343,6 +349,22 @@ plots list the five values, range areas `low – high`, bubbles the value and a 
   category axis by angle within the web + 24px (radar) is active;
   a mouse leaving the plot clears it; touch keeps it until the next tap.
 - Legend click toggles the series (React `onHiddenSeriesChange`, HTML cancelable `ok:chart:toggle`).
+- Selection (4.18.60, core `chart-select.ts`): a click on the plot selects the mark under it —
+  the block (bar, box, candle, range bar, funnel bar; 2px slack), the slice or ring, the cell, or
+  the nearest point within 16px (index charts) or the scatter / bubble rules of the pointer —
+  and a click on the selected mark clears it; empty space does nothing. Enter or Space on the
+  focused plot toggles the active item: a category's points together (every visible series), a
+  slice, ring, cell or point alone; when all of them are selected they clear, otherwise they are
+  selected. Without `allowMultipleDataPointsSelection` a selection replaces the previous one; with
+  it, points add up. A point is `{ seriesIndex, dataPointIndex }`: the category index (circular
+  charts: the slice), or on numeric axes the position among the series' points with a value. Not
+  after a drag that moved 4px or more (`createChartGestures().moved`), never on brush charts, not
+  on Sankey charts. The selection is kept by index across data updates and legend toggles (points
+  that aren't drawn show no outline). Each toggled point fires one `ok:chart:select` / one
+  `onDataPointSelection` call after the change. The tooltip of an item with a selected point shows
+  a "Selected" line. Methods (`setSelectedDataPoints`, `toggleDataPointSelection`) fire no event.
+  Selected outlines: `g[data-ok-chart-selected]` before `g[data-ok-chart-active]` (rings: hover
+  radius + 3px; frames: 2px outside, `rx 4`; slices: the slice with 4px more outer radius).
 - HTML redraws when the table (structure, text, attributes), an option attribute or the size changes.
   Redraws patch the SVG in place (same-tag elements keep their identity; only changed attributes
   and text are written) and read the size from the `ResizeObserver`, never forcing a layout.
@@ -402,6 +424,7 @@ plots list the five values, range areas `low – high`, bubbles the value and a 
 | Arrows (heatmap, treemap) | The nearest cell in the arrow's direction |
 | Arrows (Sankey) | Next / previous node or link, rank by rank (a rank's nodes top to bottom, then the links leaving it) |
 | Home / End | First / last (cells: top-left / bottom-right) |
+| Enter / Space | Selects the active category's points, slice, ring, cell or point; pressed again, clears them (not on Sankey or brush charts) |
 | Escape | Hides the tooltip; pressed again, resets the zoom (zoom and brush charts) |
 | `+` / `=`, `-` | Zoom in / out around the middle (zoom and brush charts) |
 | Shift + Left / Right | Pans the zoomed range by one category (a tenth on numeric axes) |
@@ -412,6 +435,11 @@ plots list the five values, range areas `low – high`, bubbles the value and a 
   `aria-hidden`: the data table (visually hidden, never `display: none`) is the accessible view and
   keeps hidden series.
 - The tooltip is `role=status`: values reached with the keyboard are announced.
+- Selection (4.18.60): points aren't focusable elements (the plot is one tab stop over an
+  `aria-hidden` SVG, keyboard model of ADR-0024), so neither `aria-selected` nor `aria-pressed`
+  applies: the selected state is announced by the tooltip's status ("Selected", localizable), and
+  drawn as an outline in the primary text color (not color alone). Enter / Space make it
+  reachable without a pointer.
 - Legend buttons: `aria-pressed`; hidden series show a hollow marker and crossed-out text (not color
   alone); targets at least 24 × 24px.
 - Axis labels use `--ok-text-secondary` (AA in light and dark); the reference's lighter grey is
@@ -438,17 +466,20 @@ plots list the five values, range areas `low – high`, bubbles the value and a 
   add page scroll (they did before phase 4: the page grew by the table's height).
 
 ## Events / API
-- HTML: `ok:chart:toggle` (cancelable, detail `{ index, hidden, hiddenSeries }`),
+- HTML: `ok:chart:select` (detail `{ seriesIndex, dataPointIndex, selected, selectedDataPoints }`,
+  after the change, one per toggled point), `ok:chart:toggle` (cancelable, detail `{ index, hidden, hiddenSeries }`),
   `ok:chart:active` (detail `{ active: { kind: "index", index } | { kind: "mark", mark } | null }`),
   `ok:chart:zoom` (detail `{ range: { min, max } | null, reason: "user" | "group" | "brush" }`;
   cancelable for `user`).
 - Instance: `{ hiddenSeries, setHiddenSeries(list), active, setActive(active), setFormatters(f),
   refresh(), updateSeries(series, categories?), appendData(data, { categories?, limit? }),
-  zoomRange, setZoomRange(range), exportChart(format), setLocaleText(text) }`;
+  zoomRange, setZoomRange(range), exportChart(format), setLocaleText(text), selectedDataPoints,
+  setSelectedDataPoints(list), toggleDataPointSelection(seriesIndex, dataPointIndex) }`;
   methods emit no events. `updateSeries` replaces the data (the current categories unless given);
   `appendData([{ data: [...] }, …])` appends points per series in order, `categories` adds theirs,
   `limit` keeps the last n (a sliding window). `refresh()` reads the table again.
-- React: `onHiddenSeriesChange(hidden)`, `onActiveChange(active)`; `hiddenSeries` (controlled) /
+- React: `onDataPointSelection(detail)`, `selectedDataPoints` (controlled) /
+  `defaultSelectedDataPoints`; `onHiddenSeriesChange(hidden)`, `onActiveChange(active)`; `hiddenSeries` (controlled) /
   `defaultHiddenSeries`; `zoomRange` / `defaultZoomRange` / `onZoomRangeChange(range, reason)` (also
   for group and brush changes, so controlled charts follow); `ref` → the `figure` (core
   `exportChart(figure, format)` for your own buttons).
@@ -531,13 +562,16 @@ Option areas not covered by the table above:
 | `chart.type: "tree"` (ApexTree layouts) | — | deferred (4.18.7) | |
 | `chart.stackType: "100%"`, `chart.stackOnlyBar` | `stacked` | deferred | percent stacks; stacking only the bar series of a mixed chart |
 | `chart.events` `dataPointMouseEnter` / `Leave`, `mouseMove`, `mouseLeave`, `legendClick`, `beforeZoom`, `zoomed`, `beforeResetZoom`, `scrolled`, `brushScrolled`, `selection` | `onActiveChange`, `onHiddenSeriesChange`, `onZoomRangeChange` · `ok:chart:active`, `-toggle`, `-zoom` (cancelable) | renamed | |
-| `chart.events` `click`, `dataPointSelection`, `markerClick`, `xAxisLabelClick`; method `toggleDataPointSelection` | — | deferred | a point / slice / label selection event (click, Enter) |
+| `chart.events.dataPointSelection` (`seriesIndex`, `dataPointIndex`, `w.globals.selectedDataPoints`) | React `onDataPointSelection(detail)` · HTML `ok:chart:select` (detail `{ seriesIndex, dataPointIndex, selected, selectedDataPoints }`) | renamed (4.18.60) | by click (block, slice, cell or the nearest point) and by Enter / Space on the active item; one call per toggled point |
+| method `toggleDataPointSelection(seriesIndex, dataPointIndex)` | HTML instance `toggleDataPointSelection`, `selectedDataPoints`, `setSelectedDataPoints(list)`; React: controlled `selectedDataPoints` / `defaultSelectedDataPoints` + core `toggleChartSelection(selected, points, multiple)` | renamed (4.18.60) | React has no chart instance (`ref` is the `figure`) |
+| `chart.events` `click` (any click), `markerClick`, `xAxisLabelClick` | — | deferred | axis labels are in the `aria-hidden` SVG (the table's row headers are their accessible view); a label selection needs focusable labels first |
 | `chart.events` `animationEnd`, `beforeMount`, `mounted`, `updated`, `keyDown`, `keyUp` | — | not applicable | lifecycle: React effects / runtime setup; DOM key events |
 | `chart.events` `crossFilter`, `filterChange`, `highlightFilterChanged`; `annotationDragged` / `Edited` / `Created` / `Styled` / `Deleted`, `measured` | — | deferred (4.18.19, 4.18.20) | |
 | drilldown: `drillDown` / `drillUp` / `drillToRoot` / `clearDrilldownCache`, events `drillDownStart` / `End` / `Error`, `drillUp` | — | deferred | category → child series, with a back control |
 | trellis / small multiples: `ApexCharts.trellis`, `rowSeries`, `getPanels`, `getPanel`, `promotePanel`, `restorePanels` | — | deferred | one chart per category on shared axes |
 | `beatChange`, `ApexCharts.registerUnitLayout` / `registerUnitMark` / `registerRowSource`, `registerTheme`, `refreshTokens`, `exec` | — | not applicable / deferred (4.18.21) | unit charts with 4.18.21; themes are tokens; `exec`: the element instance |
-| `states.active.allowMultipleDataPointsSelection`, `states.hover` / `.active.filter` | — | deferred | selected points (with the selection event); filters fixed by the design |
+| `states.active.allowMultipleDataPointsSelection` | `allowMultipleDataPointsSelection` (`data-ok-allow-multiple-data-points-selection`) | kept (4.18.60) | |
+| `states.active` (the selected look), `.filter`, `states.hover.filter`, `plotOptions.pie.expandOnClick` | the outline `[data-ok-chart-selected-mark]` | renamed (4.18.60) | fixed by the design: a 2px primary-text outline (not color alone); filters not applicable |
 | `chart.brush.targets` (several targets), `chart.brush.autoScaleYaxis` | `brushTarget` (one id) | deferred | several targets; y autoscale not applicable (zoom is x only) |
 | `chart.selection` (preselected range, fill, stroke) | the target's zoom | renamed | style fixed by the design |
 | crossfilter (Premium Linked Views / Highlight Filter) | — | deferred (4.18.19) | |

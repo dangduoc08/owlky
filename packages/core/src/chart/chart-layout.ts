@@ -183,6 +183,13 @@ export interface ChartMark {
   readonly cell?: ChartRect | undefined;
   /** Sankey charts: the node or link, its tooltip and its highlight. */
   readonly flow?: ChartFlow | undefined;
+  /** Blocks (bars, boxes, candles, range bars, funnel bars): the rectangle they cover. */
+  readonly box?: ChartRect | undefined;
+  /**
+   * The point's `dataPointIndex` when it differs from `index`: its position among the series'
+   * points with a value (numeric axes).
+   */
+  readonly point?: number | undefined;
 }
 
 /**
@@ -951,6 +958,14 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
   const boxSeries = indexesOf(["boxPlot"]);
   const candleSeries = indexesOf(["candlestick"]);
   const rangeSeries = indexesOf(["rangeBar", "timeline"]);
+  /** The rectangle a block mark covers (4.18.60: clicks select it, an outline shows it). */
+  const box = (a: number, size: number, v0: number, v1: number): ChartRect => {
+    const lo = r2(Math.min(v0, v1));
+    const length = r2(Math.abs(v1 - v0));
+    return horizontal
+      ? { x: lo, y: r2(a), width: length, height: r2(size) }
+      : { x: r2(a), y: lo, width: r2(size), height: length };
+  };
   /** A rectangle across `[a, a + size]` between two value positions (either axis). */
   const span = (a: number, size: number, v0: number, v1: number, least = 0) => {
     const lo = Math.min(v0, v1);
@@ -1004,6 +1019,12 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
       : inWindow;
     const stackedValue = (point: { x: number; y: number }) =>
       stacks ? (stack.get(`${index}:${point.x}`) as readonly [number, number])[1] : point.y;
+    // Numeric axes (4.18.60): a point is named by its position among the series' points with a
+    // value (`dataPointIndex`); category axes name it by its category.
+    const positions = numeric
+      ? new Map(series.points.filter((p) => p.y !== null).map((p, i) => [p as object, i]))
+      : undefined;
+    const pointOf = (point: object) => (positions ? { point: positions.get(point) as number } : {});
     if (series.type === "bar" && !numeric) {
       const slot = barSeries.indexOf(index);
       const size = stacks ? groupSize : groupSize / Math.max(1, barSeries.length);
@@ -1028,6 +1049,7 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
           px: r2(horizontal ? end : a + size / 2),
           py: r2(horizontal ? a + size / 2 : end),
           color,
+          box: box(a, size, start, end),
         });
         if (from === to) continue;
         if (options.dataLabels) {
@@ -1090,6 +1112,8 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
           py: r2(py),
           color: upper,
           range: point.range,
+          box: box(a, size, min, max),
+          ...pointOf(point),
         });
         const whisker = (from: Pt, to: Pt) =>
           node("line", {
@@ -1143,6 +1167,8 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
           py: r2(toValue(high)),
           color,
           range: point.range,
+          box: box(a, size, toValue(high), toValue(low)),
+          ...pointOf(point),
         });
         const top = Math.min(toValue(open), toValue(close));
         children.push(
@@ -1189,6 +1215,8 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
           py: r2(horizontal ? a + size / 2 : end),
           color: point.color ?? series.color,
           range: point.range,
+          box: box(a, size, from, to),
+          ...pointOf(point),
         });
         children.push(
           node("rect", {
@@ -1243,6 +1271,7 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
           py: r2(toValue(high)),
           color: series.color,
           range: point.range,
+          ...pointOf(point),
         });
       }
       if (current.length) segments.push(current);
@@ -1294,6 +1323,7 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
           color: point.color ?? series.color,
           r: r2(r),
           ...(point.z !== undefined ? { z: point.z } : {}),
+          ...pointOf(point),
         });
         children.push(
           node("circle", {
@@ -1324,6 +1354,7 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
         px: r2(px),
         py: r2(py),
         color: series.color,
+        ...pointOf(point),
       });
       if (options.dataLabels && series.type !== "scatter")
         labels.push(

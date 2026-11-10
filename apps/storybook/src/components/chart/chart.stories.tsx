@@ -99,6 +99,8 @@ export const Animations: StoryObj = story("animations");
 // Roadmap 4.18.59: value axes and axis titles.
 export const MultipleYAxes: StoryObj = story("multiple-y-axes");
 export const AxisScales: StoryObj = story("axis-scales");
+// Roadmap 4.18.60: data point selection.
+export const Selection: StoryObj = story("selection");
 // Phase 2.1 (ADR-0047): Sankey charts.
 export const Sankey: StoryObj = story("sankey");
 export const SankeyVertical: StoryObj = story("sankey-vertical");

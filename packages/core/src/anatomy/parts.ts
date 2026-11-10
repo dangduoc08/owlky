@@ -331,6 +331,10 @@ export interface ChartParts {
   "data-ok-chart-plot": Part<"div">;
   /** One ring of a radial bar. */
   "data-ok-chart-radial": Part<"path">;
+  /** The outlines of the selected points, slices, blocks and cells. Absent without a selection. */
+  "data-ok-chart-selected": Part<"g">;
+  /** The outline of one selected point (a ring), block or cell (a frame), or slice. */
+  "data-ok-chart-selected-mark": Part<"circle" | "rect" | "path">;
   /** The rectangle drawn while selecting a zoom window. */
   "data-ok-chart-selection": Part<"rect">;
   /** The group of one series. */
@@ -367,6 +371,8 @@ export interface ChartParts {
   "data-ok-chart-tooltip-row": Part<"div">;
   /** The rows of the tooltip. */
   "data-ok-chart-tooltip-rows": Part<"div">;
+  /** The tooltip's "Selected" line, when its item has a selected point. */
+  "data-ok-chart-tooltip-state": Part<"div">;
   /** The title of the tooltip. */
   "data-ok-chart-tooltip-title": Part<"div">;
   /** The value of a tooltip row. */
