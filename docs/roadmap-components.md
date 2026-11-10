@@ -80,9 +80,9 @@ then 4.22–4.24, then 4.25 with its ADR).
 | 4.17 | D | Walktour | `before` / `after` hooks, `targetWaitTimeout`, `beaconTrigger: "hover"`, `closeButtonAction`, `scrollTarget`, `spotlightTarget`, `isFixed`, `disableFocusTrap`, `beaconPlacement`, `scrollDuration` | ✅ |
 | 4.18 | E — from the audits | any | rows added by 2.4 and 3.1 | ⬜ |
 | 4.18.1 | E — ApexTree (must, **ADR** superseding ADR-0036) | Organization chart | collapsible nodes (`enableExpandCollapse`, `expandCollapseOnNodeClick`, a badge with the hidden count), `expandAll` / `collapseAll` / `expandToDepth`, lazy children (`loadChildren`), `ok:organization-chart:expand`, a toggle button per branch (`aria-expanded`), Collapse for the children list | ✅ |
-| 4.18.2 | E (should, **ADR**) | Organization chart | `direction` `top` · `bottom` · `left` · `right` (connectors on logical properties, right to left mirrors) | 🔄 |
+| 4.18.2 | E (should, **ADR**) | Organization chart | `direction` `top` · `bottom` · `left` · `right` (connectors on logical properties, right to left mirrors) | ✅ |
 | 4.18.3 | E (could) | Organization chart | `groupLeafNodes`: leaf children stacked in one column under their parent (CSS) | ⬜ |
-| 4.18.4 | E (should) | Organization chart | lineage highlight on hover and focus (`highlightOnHover`, `dimOpacity`, path to the root through `:has()`), search that scrolls to and highlights a node (composed Autocomplete) | 🔄 |
+| 4.18.4 | E (should) | Organization chart | lineage highlight on hover and focus (`highlightOnHover`, `dimOpacity`, path to the root through `:has()`), search that scrolls to and highlights a node (composed Autocomplete) | ✅ |
 | 4.18.5 | E (could, **ADR**) | Organization chart | zoom / fit / center (`enableZoomPan`, `fitScreen`, `zoom`, `centerOnNode`, a toolbar), beyond the Scrollbar's pan | ⬜ |
 | 4.18.6 | E (could) | Organization chart | per-node line options (`edgeColorMode: "node"`: `lineColor` / `lineStyle` on a node) | ⬜ |
 | 4.18.7 | E (could, **ADR**) | Chart | `tree` type: radial and dendrogram hierarchy layouts in the SVG engine (ApexTree `layoutType`) | ⬜ |
