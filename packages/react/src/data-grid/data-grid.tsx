@@ -106,7 +106,9 @@ import {
   gridRowWindowOf,
   gridSelectAllState,
   gridSelectedBlock,
+  gridSelectionStats,
   gridStackableChartTypes,
+  gridStatusItems,
   gridToCsv,
   gridToTsv,
   gridToXlsx,
@@ -680,6 +682,11 @@ export interface DataGridProps<R>
   ignoreValueFormatterDuringExport?: boolean | undefined;
   /** A row of filter fields under the column headers. */
   headerFilters?: boolean | undefined;
+  /**
+   * With `cellSelection`: a status bar under the grid shows the count of the selected cells and
+   * the sum, average, min and max of their numbers (through `aggregationFunctions`).
+   */
+  statusBar?: boolean | undefined;
   /** A chart of the rows (or top-level groups) under the grid. */
   chartsIntegration?: boolean | undefined;
   /** The chart panel's model, controlled. */
@@ -889,6 +896,7 @@ function DataGridInner<R>(
     disableMultipleColumnsSorting,
     sortingOrder,
     multipleColumnsSortingMode,
+    statusBar,
     hideFooter,
     localeText,
     exportFileName = "data",
@@ -2288,6 +2296,22 @@ function DataGridInner<R>(
     }
     setCellModel(mergeGridCellSelection(cellBase.current, range));
   };
+  // Status bar: figures of the selected cells of the page, through the aggregation functions.
+  const statusItems =
+    statusBar && cellSelection
+      ? gridStatusItems(
+          gridSelectionStats(
+            cellRows.flatMap((row) =>
+              shown
+                .filter((column) => isGridCellSelected(cellModel, idOf(row), column.field))
+                .map((column) => ({ value: rawValue(column, row), column })),
+            ),
+            aggregationFunctions,
+          ),
+          labels,
+          typeof document === "undefined" ? undefined : document.documentElement.lang || undefined,
+        )
+      : [];
   const cellOn = useRef(false);
   cellOn.current = !!cellSelection;
   // Clipboard: the selected cells, else the selected rows, else the focused cell.
@@ -4178,6 +4202,7 @@ function DataGridInner<R>(
         headerFilters,
         chartsIntegration,
         multipleColumnsSortingMode,
+        statusBar,
       })}
       {...(sortingOrder ? { "data-ok-sorting-order": JSON.stringify(sortingOrder) } : {})}
       {...(groupingModel.length && !treeData
@@ -4582,6 +4607,15 @@ function DataGridInner<R>(
             </MenuItem>
           )}
         </Menu>
+      )}
+      {statusBar && cellSelection && (
+        <div data-ok-data-grid-status-bar="" role="status">
+          {statusItems.map((item) => (
+            <span key={item.key} data-ok-data-grid-status-item={item.key}>
+              {item.text}
+            </span>
+          ))}
+        </div>
       )}
       {!hideFooter && (
         <div data-ok-data-grid-footer="">

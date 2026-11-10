@@ -602,6 +602,10 @@ export interface DataGridParts {
   "data-ok-data-grid-skeleton": Part<"span">;
   /** The sort arrow of a column header. */
   "data-ok-data-grid-sort-icon": Part<"span">;
+  /** The status bar (`statusBar` with cell selection): a polite live region of figures. */
+  "data-ok-data-grid-status-bar": Part<"div">;
+  /** One figure of the status bar, such as "Sum: 141". Written by the grid. */
+  "data-ok-data-grid-status-item": Value<"count" | "sum" | "avg" | "min" | "max">;
   /** The toolbar. */
   "data-ok-data-grid-toolbar": Part<"div">;
   /** The buttons at the end of the toolbar. */

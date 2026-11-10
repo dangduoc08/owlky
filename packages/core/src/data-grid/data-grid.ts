@@ -826,6 +826,11 @@ export const gridDefaultLabels = {
   filterValueAny: "any",
   filterValueTrue: "true",
   filterValueFalse: "false",
+  statusBarCount: "Count",
+  statusBarSum: "Sum",
+  statusBarAvg: "Average",
+  statusBarMin: "Min",
+  statusBarMax: "Max",
   filterOperator: {
     contains: "contains",
     doesNotContain: "does not contain",

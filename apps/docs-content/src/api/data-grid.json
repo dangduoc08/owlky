@@ -498,7 +498,7 @@
       "description": "Labels of the text the runtime writes (a locale pack, such as `viVN`).",
       "kind": "method",
       "name": "setLocaleText",
-      "type": "(labels: Partial<{ toolbarColumns: string; toolbarFilters: string; toolbarDensity: string; toolbarExport: string; toolbarExportCSV: string; toolbarQuickFilterPlaceholder: string; toolbarQuickFilterLabel: string; ... 95 more ...; filterOperator: Record<...>; }>) => void"
+      "type": "(labels: Partial<{ toolbarColumns: string; toolbarFilters: string; toolbarDensity: string; toolbarExport: string; toolbarExportCSV: string; toolbarQuickFilterPlaceholder: string; toolbarQuickFilterLabel: string; ... 100 more ...; filterOperator: Record<...>; }>) => void"
      },
      {
       "description": "Pins columns to the start and the end.",
@@ -942,6 +942,12 @@
        "withModifierKey",
        "always"
       ]
+     },
+     {
+      "attr": "data-ok-status-bar",
+      "description": "With cell selection: a bar under the rows counts the selected cells and sums their numbers.",
+      "kind": "flag",
+      "name": "statusBar"
      }
     ],
     "parts": [
@@ -1385,6 +1391,26 @@
       ],
       "kind": "part",
       "name": "data-ok-data-grid-sort-icon"
+     },
+     {
+      "description": "The status bar (`statusBar` with cell selection): a polite live region of figures.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-status-bar"
+     },
+     {
+      "description": "One figure of the status bar, such as \"Sum: 141\". Written by the grid.",
+      "kind": "value",
+      "name": "data-ok-data-grid-status-item",
+      "value": [
+       "avg",
+       "count",
+       "max",
+       "min",
+       "sum"
+      ]
      },
      {
       "description": "The toolbar.",
@@ -2383,6 +2409,11 @@
       "description": "Splits pasted text into cells (default: tab-separated lines).",
       "name": "splitClipboardPastedText",
       "type": "((text: string) => string[][])"
+     },
+     {
+      "description": "With `cellSelection`: a status bar under the grid shows the count of the selected cells and the sum, average, min and max of their numbers (through `aggregationFunctions`).",
+      "name": "statusBar",
+      "type": "boolean"
      },
      {
       "description": "Toolbar buttons with text (default) or icons with tooltips.",

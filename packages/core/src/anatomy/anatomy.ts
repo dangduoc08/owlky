@@ -3377,10 +3377,15 @@ export const dataGridOptions = defineOptions("data-grid", "data-ok-data-grid", {
     "Sorting a column keeps the others with Shift, Ctrl or Cmd (`withModifierKey`), or `always`.",
     { optional: true },
   ),
+  statusBar: flag(
+    "data-ok-status-bar",
+    "With cell selection: a bar under the rows counts the selected cells and sums their numbers.",
+  ),
 });
 
 export interface DataGridAnatomyOptions {
   multipleColumnsSortingMode?: "withModifierKey" | "always" | undefined;
+  statusBar?: boolean | undefined;
   disableRowGrouping?: boolean | undefined;
   rowGroupingColumnMode?: "single" | "multiple" | undefined;
   disableAggregation?: boolean | undefined;

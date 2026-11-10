@@ -3,6 +3,7 @@ import dataGridApi from "@owlky/docs-content/api/data-grid.json" with { type: "j
 import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import basicGroup from "../../../../../packages/html/src/components/data-grid/examples/basic-group.html?raw";
 import cellsGroup from "../../../../../packages/html/src/components/data-grid/examples/cells-group.html?raw";
+import cellsStatus from "../../../../../packages/html/src/components/data-grid/examples/cells-status.html?raw";
 import chartsGroup from "../../../../../packages/html/src/components/data-grid/examples/charts-group.html?raw";
 import chartsMultiple from "../../../../../packages/html/src/components/data-grid/examples/charts-multiple.html?raw";
 import groupingFooters from "../../../../../packages/html/src/components/data-grid/examples/grouping-footers.html?raw";
@@ -1305,6 +1306,31 @@ export function DataGridChartsConfiguration() {
 }`,
   },
   {
+    id: "status-bar",
+    title: "Show figures of the selected cells",
+    body: 'With `cellSelection` and `statusBar`, a bar under the grid shows figures of the selected cells, like a spreadsheet. **Count** is the number of selected cells with a value. With numbers in `number` columns, the bar also shows their **Sum**, **Average**, **Min** and **Max**, with at most 2 decimals. The figures come from the aggregation functions of those names, so a `sum` in React\'s `aggregationFunctions` changes the bar too. The bar is a polite live region (`role="status"`): screen readers read the new figures once the selection stops changing. Rename the figures with the locale keys `statusBarCount`, `statusBarSum`, `statusBarAvg`, `statusBarMin` and `statusBarMax`.',
+    html: `${gridOf(cellsStatus)}`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+const sales = [
+  { id: 1, region: "North", units: 10, revenue: 40 },
+  { id: 2, region: "South", units: 47, revenue: 235 },
+  { id: 3, region: "East", units: 84, revenue: 504 },
+];
+
+const columns: GridColDef<(typeof sales)[number]>[] = [
+  { field: "region", headerName: "Region", flex: 1 },
+  { field: "units", headerName: "Units", type: "number" },
+  { field: "revenue", headerName: "Revenue", type: "number" },
+];
+
+export function SalesFigures() {
+  return (
+    <DataGrid aria-label="Sales figures" rows={sales} columns={columns} cellSelection statusBar />
+  );
+}`,
+  },
+  {
     id: "sorting",
     title: "Change how columns sort",
     body: 'A click on a header goes through ascending, descending and not sorted. `sortingOrder` changes that cycle for every column, and a column\'s own `sortingOrder` for that column. For example, `["desc", "asc", null]` sorts the biggest values first, and a cycle without `null` never goes back to not sorted. The column menu only offers the directions of the cycle. A column\'s `sortComparator` compares two values in ascending order, and the grid reverses it for descending. `getSortComparator(direction)` returns a comparator per direction that the grid uses as it is, for example to keep empty values last in both directions. In HTML, write the cycle as JSON in `data-ok-sorting-order` on the grid or on a header, and set comparators with `setSortComparator(field, { sortComparator, getSortComparator })`. HTML comparators get the cells\' values as text. With `multipleColumnsSortingMode="always"`, every click adds the column to the sort, without Shift.',
@@ -1406,6 +1432,7 @@ export function Issues() {
 - Header descriptions describe their header. With the icon toolbar, each button is named by its tooltip.
 - Group rows are tree rows: \`aria-level\`, \`aria-expanded\` and their position among their siblings. The grid is a \`treegrid\` while rows are grouped.
 - Selected cells carry \`aria-selected\`. Header filter cells are named after their column, such as "Name filter".
+- The status bar of the selected cells is a polite live region (\`role="status"\`). It changes only when its figures change.
 - While rows load, the grid sets \`aria-busy\` and the loading overlay is a \`status\` named "Loading". The grid keeps the full row count and each row's index, also when only some rows are in the page.`,
   },
   apiReferenceSection(dataGridApi),

@@ -992,6 +992,67 @@ const pressed = (el: Element, init: PointerEventInit = {}) =>
   });
 
 describe("DataGrid cell selection and clipboard", () => {
+  it("status bar: count, sum, average, min and max of the selected cells (polite)", async () => {
+    const { rerender } = render(
+      <DataGrid
+        aria-label="Sales"
+        disableVirtualization
+        rows={SALES}
+        columns={COLUMNS}
+        cellSelection
+        statusBar
+        hideFooter
+      />,
+    );
+    const bar = document.querySelector("[data-ok-data-grid-status-bar]") as HTMLElement;
+    expect(bar.getAttribute("role")).toBe("status");
+    expect(bar.textContent).toBe("");
+    expect(bar.closest("[data-ok-data-grid]")?.hasAttribute("data-ok-status-bar")).toBe(true);
+    pressed(cell("1", "region"));
+    pressed(cell("4", "units"), { shiftKey: true });
+    document.dispatchEvent(new PointerEvent("pointerup"));
+    const items = () =>
+      [...bar.querySelectorAll("[data-ok-data-grid-status-item]")].map((item) => [
+        item.getAttribute("data-ok-data-grid-status-item"),
+        item.textContent,
+      ]);
+    // 4 rows × 4 columns; years and units are numbers: 2024 + 2025 + 2025 + 2024 + 65 units.
+    expect(items()).toEqual([
+      ["count", "Count: 16"],
+      ["sum", "Sum: 8,163"],
+      ["avg", "Average: 1,020.38"],
+      ["min", "Min: 5"],
+      ["max", "Max: 2,025"],
+    ]);
+    // Text cells only: the count.
+    pressed(cell("1", "region"));
+    document.dispatchEvent(new PointerEvent("pointerup"));
+    expect(items()).toEqual([["count", "Count: 1"]]);
+    await expectNoAxeViolations(document.body);
+    // The grid's aggregation functions and labels.
+    rerender(
+      <DataGrid
+        aria-label="Sales"
+        disableVirtualization
+        rows={SALES}
+        columns={COLUMNS}
+        cellSelectionModel={{ "2": { units: true } }}
+        cellSelection
+        statusBar
+        localeText={{ statusBarCount: "Cells", statusBarSum: "Total" }}
+        aggregationFunctions={{ sum: { apply: (values) => `${values.length} value` } }}
+        hideFooter
+      />,
+    );
+    expect(items()).toEqual([
+      ["count", "Cells: 1"],
+      ["sum", "Total: 1 value"],
+    ]);
+    // Without cell selection: no status bar.
+    rerender(<DataGrid aria-label="Sales" rows={SALES} columns={COLUMNS} statusBar hideFooter />);
+    expect(document.querySelector("[data-ok-data-grid-status-bar]")).toBeNull();
+  });
+
   it("selects ranges by press, Shift, Ctrl and keys, with edges", () => {
     const onCells = vi.fn();
     render(

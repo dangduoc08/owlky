@@ -103,7 +103,9 @@ import {
   gridRowWindowOf,
   gridSelectAllState,
   gridSelectedBlock,
+  gridSelectionStats,
   gridStackableChartTypes,
+  gridStatusItems,
   gridToCsv,
   gridToTsv,
   gridToXlsx,
@@ -402,6 +404,7 @@ const {
   cellSelection: cellSelectionOption,
   disableClipboardPaste,
   multipleColumnsSortingMode,
+  statusBar: statusBarOption,
 } = dataGridOptions.options;
 
 type DataRow = Record<string, unknown>;
@@ -2646,7 +2649,43 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         cellModel = next;
         markCells();
       });
+    // Status bar: figures of the selected cells of the page (written only when they change).
+    const statusBarEl = element.querySelector<HTMLElement>(
+      ":scope > [data-ok-data-grid-status-bar]",
+    );
+    let statusNow = "";
+    const syncStatus = () => {
+      if (!statusBarEl) return;
+      const on = cellsOn() && element.hasAttribute(statusBarOption.attr);
+      const shown = on ? shownNow : [];
+      const cells = on
+        ? pageList
+            .filter((row) => !row.hasAttribute("data-ok-generated"))
+            .flatMap((row) =>
+              shown
+                .filter((column) => isGridCellSelected(cellModel, idOf(row), column.field))
+                .map((column) => ({ value: value(row, column.field), column })),
+            )
+        : [];
+      const items = gridStatusItems(
+        gridSelectionStats(cells),
+        labels,
+        document.documentElement.lang || undefined,
+      );
+      const next = JSON.stringify(items);
+      if (next === statusNow) return;
+      statusNow = next;
+      statusBarEl.replaceChildren(
+        ...items.map((item) => {
+          const span = document.createElement("span");
+          span.setAttribute("data-ok-data-grid-status-item", item.key);
+          span.textContent = item.text;
+          return span;
+        }),
+      );
+    };
     const markCells = () => {
+      syncStatus();
       for (const cell of body.querySelectorAll<HTMLElement>('[role="gridcell"][aria-selected]')) {
         cell.removeAttribute("aria-selected");
         cell.removeAttribute("data-ok-range-edge");

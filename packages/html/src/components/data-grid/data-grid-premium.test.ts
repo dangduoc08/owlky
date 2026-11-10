@@ -576,6 +576,41 @@ describe("data grid cell selection, clipboard and header filters (HTML)", () => 
     return true;
   };
 
+  it("status bar: figures of the selected cells, written when they change", async () => {
+    const { host, root, instance } = setup("cells-status");
+    const bar = host.querySelector("[data-ok-data-grid-status-bar]") as HTMLElement;
+    const items = () =>
+      [...bar.querySelectorAll("[data-ok-data-grid-status-item]")].map((item) => [
+        item.getAttribute("data-ok-data-grid-status-item"),
+        item.textContent,
+      ]);
+    expect(items()).toEqual([]);
+    pressed(cell(host, "s-01", "units"));
+    pressed(cell(host, "s-03", "units"), { shiftKey: true });
+    expect(items()).toEqual([
+      ["count", "Count: 3"],
+      ["sum", "Sum: 141"],
+      ["avg", "Average: 47"],
+      ["min", "Min: 10"],
+      ["max", "Max: 84"],
+    ]);
+    // Unchanged figures keep the same nodes (no new announcement).
+    const first = bar.firstElementChild;
+    instance.setCellSelectionModel({ ...instance.cellSelectionModel });
+    root.setAttribute("data-ok-density", "compact");
+    await settle();
+    expect(bar.firstElementChild).toBe(first);
+    pressed(cell(host, "s-01", "region"));
+    expect(items()).toEqual([["count", "Count: 1"]]);
+    instance.setLocaleText({ statusBarCount: "Cells" });
+    instance.setCellSelectionModel({ "s-02": { region: true, product: true } });
+    expect(items()).toEqual([["count", "Cells: 2"]]);
+    // Off without the flag (or without cell selection).
+    root.removeAttribute("data-ok-status-bar");
+    instance.setCellSelectionModel({ "s-02": { region: true } });
+    expect(items()).toEqual([]);
+  });
+
   it("selects ranges, copies them and pastes into editable cells", () => {
     const { host, root, instance } = setup("cells-group");
     const onCells = vi.fn();

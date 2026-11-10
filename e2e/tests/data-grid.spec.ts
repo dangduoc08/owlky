@@ -422,6 +422,15 @@ for (const impl of implementations) {
       await expect(
         page.locator('[data-ok-data-grid-body] > [role="row"]:not([hidden])'),
       ).toHaveCount(1);
+      // Status bar: figures of the selected cells, also from the keyboard (Shift + arrows).
+      const status = page.locator("#grid-cells-status [data-ok-data-grid-status-bar]");
+      await expect(status).toHaveAttribute("role", "status");
+      const units = (id: string) =>
+        page.locator(`#grid-cells-status [data-ok-row-id="${id}"] [data-ok-field="units"]`);
+      await units("s-01").click();
+      await page.keyboard.press("Shift+ArrowDown");
+      await page.keyboard.press("Shift+ArrowDown");
+      await expect(status).toHaveText(/Count: 3\s*Sum: 141\s*Average: 47\s*Min: 10\s*Max: 84/);
     });
 
     test("charts integration follows the grid", async ({ page }) => {

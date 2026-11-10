@@ -7,6 +7,7 @@
  *                  › div[role=rowgroup][data-ok-data-grid-header] › div[role=row] › div[role=columnheader]
  *                  › div[role=rowgroup][data-ok-data-grid-body] › div[role=row] › div[role=gridcell]
  *              › div[data-ok-data-grid-overlay] (no rows / no results)
+ *              › div[data-ok-data-grid-status-bar][role=status] (statusBar with cellSelection)
  *              › div[data-ok-data-grid-footer] › TablePagination
  * Modifiers: data-ok-density = compact | standard (default) | comfortable; cells: data-ok-align,
  *            data-ok-pinned = left | right (sticky, --_ok-data-grid-pin offset), data-ok-editing
@@ -300,6 +301,25 @@
     display: flex;
     justify-content: flex-end;
     border-top: 1px dashed var(--ok-divider);
+  }
+
+  /* Status bar (cell selection): figures of the selected cells, at the end of the row. */
+  :where([data-ok-data-grid-status-bar]) {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: calc(var(--ok-spacing) * 1) calc(var(--ok-spacing) * 4);
+    min-height: calc(var(--ok-spacing) * 10);
+    box-sizing: border-box;
+    padding: calc(var(--ok-spacing) * 2.5) calc(var(--ok-spacing) * 4);
+    border-top: 1px dashed var(--ok-divider);
+    color: var(--ok-text-secondary);
+    font-size: var(--ok-typography-body2-font-size);
+    line-height: var(--ok-typography-body2-line-height);
+  }
+
+  :where([data-ok-data-grid-status-item]) {
+    font-variant-numeric: tabular-nums;
   }
 
   /* Panels (columns, filters) inside their Popover. */

@@ -128,6 +128,8 @@ div[data-ok-data-grid][data-ok-density][data-ok-checkbox-selection]?[data-ok-dis
     › LinearProgress | CircularProgress | span[data-ok-data-grid-skeleton] × 5
   div[data-ok-data-grid-overlay][role=status][hidden]?   ("No rows" / "No results found."; hidden while loading)
   Menu#<id>-column-menu › MenuItem[data-ok-data-grid-action=asc|desc|unsort|left|right|pin-left|pin-right|unpin|filter|hide|columns]
+  div[data-ok-data-grid-status-bar][role=status]   (statusBar with cellSelection; also with hideFooter)
+    › span[data-ok-data-grid-status-item=count|sum|avg|min|max] (written by the owner)
   div[data-ok-data-grid-footer] › TablePagination[data-ok-count]   (HTML: count written by the grid)
 ```
 Every cell, and every control inside one, renders `tabindex="-1"`; the navigation controller moves
@@ -186,6 +188,7 @@ Root: `data-ok-data-grid`. Unknown values fall back to the default.
 | `headerFilters` | `data-ok-header-filters` | flag | boolean | off | A row of filter fields under the column headers. |
 | `chartsIntegration` | `data-ok-charts-integration` | flag | boolean | off | A chart of the grid's rows (or top-level groups) follows its filters, sorting and grouping. |
 | `multipleColumnsSortingMode` | `data-ok-multiple-columns-sorting-mode="…"` | style | `withModifierKey` `always` | — | Sorting a column keeps the others with Shift, Ctrl or Cmd (`withModifierKey`), or `always`. |
+| `statusBar` | `data-ok-status-bar` | flag | boolean | off | With cell selection: a bar under the rows counts the selected cells and sums their numbers. |
 <!-- /options:data-grid -->
 
 React props (MUI X names): `rows`, `columns` (`GridColDef`: `field`, `headerName`, `type`
@@ -252,7 +255,9 @@ columns; `null`: none); `excelOptions` (`fileName`, `sheetName`, `fields`, `allC
 `initialState.chartsIntegration.activeChartId`, `apiRef.setChartModels` / `setActiveChartId`; data source `groupFields`; `apiRef`
 row grouping, aggregation, pivot, cell selection and chart setters. Batch E (roadmap 4.18.49): grid
 `sortingOrder`, `multipleColumnsSortingMode` (`withModifierKey` | `always`), column `sortingOrder`,
-`sortComparator(v1, v2, params1, params2)`, `getSortComparator(direction)`. Beyond MUI X: Alt + Up / Down on a reorder handle (WCAG 2.5.7). Beyond MUI X (accessibility): Alt + Left / Right resizes, column menu
+`sortComparator(v1, v2, params1, params2)`, `getSortComparator(direction)`. Beyond MUI X (4.18.11,
+ApexGrid / spreadsheets): `statusBar` with `cellSelection`, locale keys `statusBarCount`,
+`statusBarSum`, `statusBarAvg`, `statusBarMin`, `statusBarMax`. Beyond MUI X: Alt + Up / Down on a reorder handle (WCAG 2.5.7). Beyond MUI X (accessibility): Alt + Left / Right resizes, column menu
 Move left / Move right. Renamed: `rowSelectionModel` is an id array (MUI v8:
 `{ type, ids }`). Later phases: see ADR-0021 (tree data, master-detail, row reordering / pinning,
 column groups, row grouping, aggregation, pivoting, Excel, clipboard, cell selection, header
@@ -420,6 +425,13 @@ hides the sort items outside the cycle. `sortComparator` compares ascending (rev
 a 0 or NaN goes on to the next sort key. `multipleColumnsSortingMode="always"` adds every clicked
 column to the sort (Shift not needed; `disableMultipleColumnsSorting` still wins). Grouped rows and
 the pivot order groups as before (by key or aggregated value).
+Status bar (4.18.11): with `statusBar` and `cellSelection`, the selected cells of the page (data
+rows, shown columns) give Count (cells with a value) and, with numbers in `number` columns, Sum,
+Average, Min and Max through the aggregation functions of those names (core `gridSelectionStats`,
+`gridStatusItems`; numbers `Intl` with at most 2 decimals, the page's `lang`); a function that is
+missing or refuses `number` leaves its figure out. The bar is a `role=status` region (polite) that
+exists while the flag is on and is empty without a selection; HTML rewrites it only when the text
+changes (no repeated announcements). React: custom `aggregationFunctions` apply; HTML: built-ins.
 
 ## Keyboard
 | Key | Action |
@@ -535,6 +547,7 @@ the detailed record of what is kept.
 | Pivot panel drag and drop (Rows / Columns / Values) | same | kept | handle drag (core `createGridPivotDrag`) + role select + Move up / Move down; no field search or field menu |
 | Pivot: `pivotingColDef`, `pivotPanelOpen` / `onPivotPanelOpenChange` | — | deferred | |
 | Clipboard / cell selection / export: `cellSelection`, `cellSelectionModel`, `disableClipboardPaste`, `onClipboardCopy`, `onClipboardPasteStart` / `End`, `splitClipboardPastedText`, `clipboardCopyCellDelimiter`, `ignoreValueFormatterDuringExport`, `csvOptions`, `printOptions`, `excelOptions` | same | kept | |
+| (not in MUI X) status bar of the selected cells (ApexGrid, spreadsheets) | `statusBar` | added (4.18.11) | Count, Sum, Average, Min, Max through `aggregationFunctions`; `role=status` |
 | `cellSelectionFillHandle`, `onBeforeClipboardPasteStart` | — | deferred | fill handle drag (keyboard alternative needed, WCAG 2.5.7) |
 | Charts: `chartsIntegration`, `chartModel` (renamed, see above) | same | kept | |
 | Charts: several `GridChartsRendererProxy` (`id`, `label`), `initialState.chartsIntegration.charts`, `activeChartId` / `onActiveChartIdChange` | `chartModels` (+ model `label`), `activeChartId` | renamed | charts inside the grid; HTML `data-ok-chart-models`, `data-ok-active-chart-id` |
