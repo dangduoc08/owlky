@@ -333,7 +333,14 @@ export {
   type DrawerProps,
   DrawerTrigger,
 } from "./drawer/drawer.js";
-export { Editor, type EditorHighlighter, type EditorProps } from "./editor/editor.js";
+export {
+  Editor,
+  type EditorBubbleMenuProps,
+  type EditorHighlighter,
+  type EditorMentionItem,
+  type EditorMentionProps,
+  type EditorProps,
+} from "./editor/editor.js";
 export { Fab, type FabAsButtonProps, type FabAsLinkProps, type FabProps } from "./fab/fab.js";
 export {
   FormControl,

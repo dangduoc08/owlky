@@ -76,6 +76,20 @@ function setup(
   return { root, controller, onIntent, steps: steps$, overlay, beacon, mask, hole, action };
 }
 
+/** A tour whose second step points at an element far below the fold. */
+function tall(rootAttributes: string, stepAttributes = "") {
+  const result = setup(rootAttributes, [
+    'data-ok-target="#t1"',
+    `data-ok-target="#far" ${stepAttributes}`,
+  ]);
+  const far = document.createElement("div");
+  far.id = "far";
+  far.style.cssText = "position: absolute; top: 3000px; left: 10px; width: 50px; height: 50px";
+  document.body.append(far);
+  const scrollTo = vi.spyOn(document.documentElement, "scrollTo");
+  return { ...result, scrollTo, far };
+}
+
 const state = (
   index: number,
   lifecycle: WalktourState["lifecycle"] = "tooltip",
@@ -449,21 +463,10 @@ describe("createWalktourController", () => {
   });
 
   describe("scrolling", () => {
-    const tall = (rootAttributes: string, stepAttributes = "") => {
-      const result = setup(rootAttributes, [
-        'data-ok-target="#t1"',
-        `data-ok-target="#far" ${stepAttributes}`,
-      ]);
-      const far = document.createElement("div");
-      far.id = "far";
-      far.style.cssText = "position: absolute; top: 3000px; left: 10px; width: 50px; height: 50px";
-      document.body.append(far);
-      const scrollTo = vi.spyOn(document.documentElement, "scrollTo");
-      return { ...result, scrollTo, far };
-    };
-
     it("scrolls a target out of view into view, keeping the scroll offset above it", () => {
-      const { controller, scrollTo } = tall("data-ok-scroll-offset='40'");
+      const { controller, scrollTo } = tall(
+        "data-ok-scroll-offset='40' data-ok-scroll-duration='0'",
+      );
       controller.render(state(1));
       expect(scrollTo).toHaveBeenCalledTimes(1);
       const top = (scrollTo.mock.calls[0] as unknown as [ScrollToOptions])[0].top as number;
@@ -491,7 +494,7 @@ describe("createWalktourController", () => {
           <div style="height: 1000px"></div><div id="deep" style="height: 40px">Deep</div>
         </div>
         <div id="tour" data-ok-walktour data-ok-scroll-to-first-step>
-          ${step(0, 'data-ok-target="#deep" data-ok-placement="top"')}
+          ${step(0, 'data-ok-target="#deep" data-ok-placement="top" data-ok-scroll-duration="0"')}
         </div>`);
       const box = document.getElementById("box") as HTMLElement;
       const scrollTo = vi.spyOn(box, "scrollTo");
@@ -514,6 +517,177 @@ describe("createWalktourController", () => {
       const { controller, scrollTo } = tall("data-ok-scroll-to-first-step");
       controller.render(state(0));
       expect(scrollTo).not.toHaveBeenCalled();
+    });
+
+    it("animates over scrollDuration, frame by frame, and ends on the target", async () => {
+      const { controller, scrollTo } = tall("data-ok-scroll-duration='120'");
+      scrollTo.mockImplementation(() => {});
+      controller.render(state(1));
+      expect(scrollTo).not.toHaveBeenCalled();
+      await new Promise((resolve) => setTimeout(resolve, 250));
+      const tops = scrollTo.mock.calls.map(
+        (call) => (call as unknown as [ScrollToOptions])[0].top as number,
+      );
+      expect(tops.length).toBeGreaterThan(1);
+      expect(tops.at(-1)).toBeCloseTo(2970, 0);
+      expect(tops[0]).toBeLessThan(2970);
+    });
+
+    it("scrolls to scrollTarget (or spotlightTarget) instead, on its own", () => {
+      const { controller, scrollTo, far } = tall(
+        "data-ok-scroll-duration='0'",
+        'data-ok-scroll-target="#other"',
+      );
+      far.style.top = "100px";
+      const other = document.createElement("div");
+      other.id = "other";
+      other.style.cssText = "position: absolute; top: 5000px; width: 10px; height: 10px";
+      document.body.append(other);
+      controller.render(state(1));
+      // Its top − scroll offset 20, no spotlight padding.
+      expect((scrollTo.mock.calls[0] as unknown as [ScrollToOptions])[0].top).toBeCloseTo(4980, 0);
+    });
+
+    it("doesn't scroll to a fixed target (isFixed, or found on its own)", () => {
+      const fixed = tall("data-ok-scroll-duration='0'", "data-ok-is-fixed");
+      fixed.controller.render(state(1));
+      expect(fixed.scrollTo).not.toHaveBeenCalled();
+      fixed.controller.destroy();
+      cleanupDom();
+      const auto = tall("data-ok-scroll-duration='0'");
+      auto.far.style.position = "fixed";
+      auto.far.style.top = "3000px";
+      auto.controller.render(state(1));
+      expect(auto.scrollTo).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("options of batch 4.17", () => {
+    it("puts spotlightTarget in the spotlight; the tooltip stays on the target", () => {
+      const { controller, hole } = setup("", [
+        'data-ok-target="#t1" data-ok-spotlight-target="#t2" data-ok-spotlight-padding="0" data-ok-spotlight-radius="0"',
+      ]);
+      controller.render(state(0));
+      expect(hole.getAttribute("d")).toBe(
+        "M400 300H500A0 0 0 0 1 500 300V350A0 0 0 0 1 500 350H400A0 0 0 0 1 400 350V300A0 0 0 0 1 400 300Z",
+      );
+    });
+
+    it("places the beacon with beaconPlacement", () => {
+      const { controller, beacon } = setup("", [
+        'data-ok-target="#t1" data-ok-placement="bottom" data-ok-beacon-placement="right-start"',
+      ]);
+      controller.render(state(0, "beacon"));
+      // Right edge (200), at the start of it: top 100 + half the beacon (18).
+      expect(beacon.style.getPropertyValue("--_ok-walktour-beacon-x")).toBe("200px");
+      expect(beacon.style.getPropertyValue("--_ok-walktour-beacon-y")).toBe("118px");
+    });
+
+    it("opens a step when a mouse hovers its beacon with beaconTrigger hover", async () => {
+      const hover = setup("data-ok-beacon-trigger='hover'", ['data-ok-target="#t1"']);
+      hover.controller.render(state(0, "beacon"));
+      await userEvent.hover(hover.beacon);
+      expect(hover.onIntent).toHaveBeenCalledWith("open", "beacon");
+      hover.controller.destroy();
+      cleanupDom();
+      const click = setup("", ['data-ok-target="#t1"']);
+      click.controller.render(state(0, "beacon"));
+      await userEvent.hover(click.beacon);
+      expect(click.onIntent).not.toHaveBeenCalled();
+    });
+
+    it("skips the tour from the close button with closeButtonAction skip", () => {
+      const { controller, onIntent, action } = setup("data-ok-close-button-action='skip'");
+      controller.render(state(0));
+      action(0, "close").click();
+      expect(onIntent).toHaveBeenCalledWith("skip", "close");
+      controller.render(state(1));
+      // A step can turn it back.
+      (controller.steps[1] as HTMLElement).setAttribute("data-ok-close-button-action", "close");
+      action(1, "close").click();
+      expect(onIntent).toHaveBeenLastCalledWith("close", "close");
+    });
+
+    it("isn't modal with disableFocusTrap: no aria-modal, the page stays reachable", () => {
+      const { controller, steps } = setup("data-ok-disable-focus-trap");
+      controller.render(state(0));
+      expect(steps()[0]?.hasAttribute("aria-modal")).toBe(false);
+      expect(document.getElementById("before")?.hasAttribute("inert")).toBe(false);
+    });
+
+    it("hides everything while waiting, keeping the tour running", () => {
+      const { root, controller, steps, overlay } = setup();
+      controller.render(state(0));
+      controller.render({ ...state(0), waiting: true });
+      expect(steps()[0]?.hasAttribute("data-ok-open")).toBe(false);
+      expect(overlay.hasAttribute("data-ok-open")).toBe(false);
+      expect(root.getAttribute("data-ok-status")).toBe("running");
+      controller.render(state(1));
+      expect(steps()[1]?.hasAttribute("data-ok-open")).toBe(true);
+    });
+
+    it("reads the waits of a step, else the tour's, else the defaults", () => {
+      const { controller } = setup("data-ok-target-wait-timeout='200'", [
+        'data-ok-target="#t1" data-ok-before-timeout="0"',
+        'data-ok-target="#t2" data-ok-target-wait-timeout="0"',
+      ]);
+      const ctx = controller.context();
+      expect([ctx.targetWaitTimeout?.(0), ctx.targetWaitTimeout?.(1)]).toEqual([200, 0]);
+      expect([ctx.beforeTimeout?.(0), ctx.beforeTimeout?.(1)]).toEqual([0, 5000]);
+      // No such step: the tour's.
+      expect([ctx.targetWaitTimeout?.(9), ctx.beforeTimeout?.(9)]).toEqual([200, 5000]);
+    });
+
+    it("can start waiting: focus returns where it was when the tour ends", () => {
+      const { controller, root } = setup();
+      const before = document.getElementById("before") as HTMLButtonElement;
+      before.focus();
+      controller.render({ ...state(0), waiting: true });
+      expect(root.getAttribute("data-ok-status")).toBe("running");
+      controller.render(state(0));
+      controller.render(state(0, "tooltip", "finished"));
+      expect(document.activeElement).toBe(before);
+    });
+
+    it("scrolls a short way in 50 ms, restarts on a new render, stops when destroyed", async () => {
+      const { controller, scrollTo, far } = tall("");
+      const spacer = document.createElement("div");
+      spacer.style.cssText = "position: absolute; top: 8000px; height: 10px; width: 10px";
+      document.body.append(spacer);
+      document.documentElement.scrollTop = 3040;
+      // 40px above the viewport: 70px to go.
+      far.style.top = "3000px";
+      scrollTo.mockImplementation(() => {});
+      controller.render(state(1));
+      controller.render(state(0, "beacon"));
+      controller.render(state(1));
+      await new Promise((resolve) => setTimeout(resolve, 120));
+      const last = (scrollTo.mock.calls.at(-1) as unknown as [ScrollToOptions])[0].top as number;
+      // 3040 − 40 − padding 10 − offset 20.
+      expect(last).toBeCloseTo(2970, 0);
+      scrollTo.mockClear();
+      controller.render(state(0, "beacon"));
+      controller.render(state(1));
+      controller.destroy();
+      await new Promise((resolve) => setTimeout(resolve, 80));
+      expect(scrollTo).not.toHaveBeenCalled();
+    });
+
+    it("leaves a scroll target that is in view where it is", () => {
+      // The tour's root sits at the top of the page (its parts are fixed or hidden).
+      const { controller, scrollTo } = tall("", 'data-ok-scroll-target="#tour"');
+      controller.render(state(1));
+      expect(scrollTo).not.toHaveBeenCalled();
+      // One that starts in view but ends below it scrolls to its top.
+      const long = document.createElement("div");
+      long.id = "long";
+      long.style.cssText = "position: absolute; top: 100px; width: 10px; height: 5000px";
+      document.body.append(long);
+      (controller.steps[1] as HTMLElement).setAttribute("data-ok-scroll-target", "#long");
+      (controller.steps[1] as HTMLElement).setAttribute("data-ok-scroll-duration", "0");
+      controller.render(state(0));
+      controller.render(state(1));
+      expect((scrollTo.mock.calls[0] as unknown as [ScrollToOptions])[0].top).toBeCloseTo(80, 0);
     });
   });
 

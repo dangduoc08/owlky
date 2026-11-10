@@ -99,4 +99,61 @@ describe("walktourStepAttributes", () => {
     });
     expect(walktourStepAttributes({ target: "" })).not.toHaveProperty("data-ok-target");
   });
+
+  it("writes the step options of 4.17 only when given, and other targets as selectors", () => {
+    expect(
+      walktourStepAttributes({
+        beaconPlacement: "left-end",
+        isFixed: true,
+        beaconTrigger: "hover",
+        closeButtonAction: "skip",
+        scrollDuration: 0,
+        targetWaitTimeout: 500,
+        beforeTimeout: 0,
+        disableFocusTrap: true,
+        scrollTarget: "#list",
+        spotlightTarget: "#card",
+      }),
+    ).toEqual({
+      "data-ok-walktour-step": "",
+      "data-ok-placement": "bottom",
+      "data-ok-beacon-placement": "left-end",
+      "data-ok-is-fixed": "",
+      "data-ok-beacon-trigger": "hover",
+      "data-ok-close-button-action": "skip",
+      "data-ok-scroll-duration": "0",
+      "data-ok-target-wait-timeout": "500",
+      "data-ok-before-timeout": "0",
+      "data-ok-disable-focus-trap": "",
+      "data-ok-scroll-target": "#list",
+      "data-ok-spotlight-target": "#card",
+    });
+    expect(walktourStepAttributes({ beaconTrigger: "wiggle" as never })).toEqual({
+      "data-ok-walktour-step": "",
+      "data-ok-placement": "bottom",
+    });
+  });
+});
+
+describe("walktourAttributes (4.17)", () => {
+  it("writes the trigger and close action only when given, and the waits", () => {
+    expect(
+      walktourAttributes({
+        beaconTrigger: "hover",
+        closeButtonAction: "skip",
+        disableFocusTrap: true,
+        scrollDuration: 600,
+        targetWaitTimeout: 0,
+        beforeTimeout: 2000,
+      }),
+    ).toEqual({
+      "data-ok-walktour": "",
+      "data-ok-beacon-trigger": "hover",
+      "data-ok-close-button-action": "skip",
+      "data-ok-disable-focus-trap": "",
+      "data-ok-scroll-duration": "600",
+      "data-ok-target-wait-timeout": "0",
+      "data-ok-before-timeout": "2000",
+    });
+  });
 });

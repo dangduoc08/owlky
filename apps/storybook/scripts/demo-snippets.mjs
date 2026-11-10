@@ -31,6 +31,44 @@ const popoverTriggers = (markup) => {
   });
 };
 
+const editorContent = await import("../src/components/editor/editor-feature-content.ts");
+
+/**
+ * Editor demos (ADR-0050): React fills the content after mount, HTML carries it in the markup;
+ * the bubble menu and the mention list are the editor runtime's own (`data-ok-runtime="off"`
+ * keeps the popover runtime away), and the mention items come from a template.
+ */
+const editorSnippet =
+  (content, { people = false } = {}) =>
+  (markup) => {
+    const editor = /data-ok-editor="" id="([^"]+)"/.exec(markup)?.[1] ?? "editor";
+    let field = 0;
+    let html = popoverTriggers(markup)
+      // The forms' text fields get readable ids instead of React's generated ones.
+      .replace(/ id="_R_[^"]*_"/g, () => ` id="${editor}-field-${++field}"`)
+      .replaceAll(' noValidate=""', " novalidate")
+      .replace(/(<div data-ok-editor-content=""[^>]*>)(<\/div>)/, `$1${content}$2`)
+      .replace(
+        / data-ok-editor-(bubble-menu|mentions)=""/g,
+        ' data-ok-editor-$1="" data-ok-runtime="off"',
+      )
+      .replace(
+        /(<div[^>]*data-ok-editor-bubble-menu[^>]*>)([\s\S]*?)(<\/div>)/,
+        (_, open, body, close) =>
+          `${open}${body.replace(/ data-ok-popover-open="[^"]*"/g, "")}${close}`,
+      );
+    if (people) {
+      const items = editorContent.PEOPLE.map(
+        (person) => `<li data-ok-value="${person.id}">${person.label}</li>`,
+      ).join("");
+      html = html.replace(
+        /(<div[^>]*data-ok-editor-mentions[^>]*>[\s\S]*?<\/ul><\/div>)/,
+        `$1<template data-ok-editor-mention-items>${items}</template>`,
+      );
+    }
+    return html;
+  };
+
 /** [component, demo file, export, snippet name, HTML transform?] */
 const DEMOS = [
   [
@@ -44,6 +82,27 @@ const DEMOS = [
   ["menu", "nested-demo.tsx", "NestedMenuDemo", "nested-group", popoverTriggers],
   ["menu", "menu-list-demo.tsx", "MenuListDemo", "menu-list-group"],
   ["tabs", "nav-demo.tsx", "NavTabsDemo", "nav-group"],
+  [
+    "editor",
+    "bubble-menu-demo.tsx",
+    "BubbleMenuDemo",
+    "bubble-menu-group",
+    editorSnippet(editorContent.BUBBLE_CONTENT),
+  ],
+  [
+    "editor",
+    "table-demo.tsx",
+    "TableDemo",
+    "table-group",
+    editorSnippet(editorContent.TABLE_CONTENT),
+  ],
+  [
+    "editor",
+    "mentions-demo.tsx",
+    "MentionsDemo",
+    "mentions-group",
+    editorSnippet(editorContent.MENTION_CONTENT, { people: true }),
+  ],
 ];
 
 const only = process.argv.slice(2);
@@ -73,8 +132,9 @@ const result = await build({
       },
     },
   ],
-  // The React package's dist imports other opt-in engines lazily; never needed for static markup.
-  external: ["monaco-editor", "monaco-editor/*", "maplibre-gl", "@tiptap/*"],
+  // The React package's dist imports other opt-in engines lazily; never needed for static
+  // markup. Tiptap is bundled: the Editor demos import it (nothing runs before mount).
+  external: ["monaco-editor", "monaco-editor/*", "maplibre-gl"],
   // react-dom/server reaches Node built-ins through require().
   banner: {
     js: 'import { createRequire } from "node:module"; const require = createRequire(import.meta.url);',

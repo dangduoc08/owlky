@@ -69,8 +69,10 @@ const budgets = [
   ["packages/html/dist/owlky.js", 200_000, "HTML runtime + all components (IIFE)"],
   ["packages/html/dist/esm/runtime/runtime.js", 3_000, "HTML core runtime"],
   // The Editor is opt-in (ADR-0023): Tiptap, ProseMirror and its starter kit are about 125 kB of
-  // it; owlky.js stays free of them.
-  ["packages/html/dist/owlky-editor.js", 135_000, "Editor + Tiptap (IIFE, loaded after owlky.js)"],
+  // it; owlky.js stays free of them. 155.1 kB after ADR-0050 (from 130.8 kB): tables
+  // (prosemirror-tables + Tiptap's table nodes, about 13 kB), mentions (Tiptap's Mention and
+  // Suggestion, about 4 kB; Floating UI is stubbed out), the bubble menu and the popover controller.
+  ["packages/html/dist/owlky-editor.js", 163_000, "Editor + Tiptap (IIFE, loaded after owlky.js)"],
   // The Code editor is opt-in (ADR-0034): owlky-code-editor.js holds the runtimes, the controller,
   // the Owlky themes and the loader (about 10.7 kB); Monaco loads on demand from dist/monaco/.
   ["packages/html/dist/owlky-code-editor.js", 12_000, "Code editor runtime + loader (IIFE)"],

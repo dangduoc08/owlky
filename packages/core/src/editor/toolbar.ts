@@ -29,8 +29,64 @@ export const editorActions = [
   "undo",
   "redo",
   "textTransform",
+  "insertTable",
+  "addColumnBefore",
+  "addColumnAfter",
+  "deleteColumn",
+  "addRowBefore",
+  "addRowAfter",
+  "deleteRow",
+  "toggleHeaderRow",
+  "toggleHeaderColumn",
+  "mergeCells",
+  "splitCell",
+  "deleteTable",
 ] as const;
 export type EditorAction = (typeof editorActions)[number];
+
+/** Table actions (`tables`): the toolbar's table menu, in order, with their labels. */
+export const editorTableActions: readonly {
+  readonly action: EditorTableAction;
+  readonly label: string;
+}[] = [
+  { action: "insertTable", label: "Insert table" },
+  { action: "addColumnBefore", label: "Add column before" },
+  { action: "addColumnAfter", label: "Add column after" },
+  { action: "deleteColumn", label: "Delete column" },
+  { action: "addRowBefore", label: "Add row before" },
+  { action: "addRowAfter", label: "Add row after" },
+  { action: "deleteRow", label: "Delete row" },
+  { action: "toggleHeaderRow", label: "Header row" },
+  { action: "toggleHeaderColumn", label: "Header column" },
+  { action: "mergeCells", label: "Merge cells" },
+  { action: "splitCell", label: "Split cell" },
+  { action: "deleteTable", label: "Delete table" },
+];
+export type EditorTableAction = Extract<
+  EditorAction,
+  | "insertTable"
+  | "addColumnBefore"
+  | "addColumnAfter"
+  | "deleteColumn"
+  | "addRowBefore"
+  | "addRowAfter"
+  | "deleteRow"
+  | "toggleHeaderRow"
+  | "toggleHeaderColumn"
+  | "mergeCells"
+  | "splitCell"
+  | "deleteTable"
+>;
+
+/** Actions the bubble menu shows by default (Tiptap's demo: marks and a link). */
+export const editorBubbleMenuActions = [
+  "bold",
+  "italic",
+  "underline",
+  "strike",
+  "code",
+  "link",
+] as const satisfies readonly EditorToolButton["action"][];
 
 export const headingLevels = [1, 2, 3, 4, 5, 6] as const;
 export type HeadingLevel = (typeof headingLevels)[number];
@@ -40,7 +96,9 @@ export type EditorBlock = "paragraph" | `h${HeadingLevel}` | "other";
 
 export interface EditorToolButton {
   /** `data-ok-editor-action` value. */
-  readonly action: Exclude<EditorAction, "paragraph" | "heading" | "textTransform"> | "fullscreen";
+  readonly action:
+    | Exclude<EditorAction, "paragraph" | "heading" | "textTransform" | EditorTableAction>
+    | "fullscreen";
   /** Accessible name (`aria-label`). */
   readonly label: string;
   /** `aria-keyshortcuts` (Tiptap's default keys), when the action has one. */
@@ -155,6 +213,12 @@ export const editorToolbar: readonly {
   { buttons: [{ action: "fullscreen", label: "Fullscreen", toggle: true }] },
 ];
 
+/** The toolbar button of `action` (the bubble menu renders the same buttons). */
+export const editorToolButton = (
+  action: EditorToolButton["action"],
+): EditorToolButton | undefined =>
+  editorToolbar.flatMap((group) => group.buttons).find((button) => button.action === action);
+
 /** Labels of the heading menu, by block. */
 export const editorBlockLabels: Readonly<Record<Exclude<EditorBlock, "other">, string>> = {
   paragraph: "Paragraph",
@@ -199,17 +263,19 @@ export function createToolbarNavigation(toolbar: HTMLElement): {
   sync(): void;
   destroy(): void;
 } {
+  // Controls of popovers inside the toolbar aren't its own; a toolbar may be a popover itself
+  // (the bubble menu).
+  const own = (item: HTMLElement) => {
+    const popover = item.closest("[popover], [data-ok-popover]");
+    return popover === null || popover.contains(toolbar);
+  };
   const items = () =>
     [...toolbar.querySelectorAll<HTMLElement>("button, [data-ok-editor-tool]")].filter(
       (item) =>
-        !(item as HTMLButtonElement).disabled &&
-        item.getClientRects().length > 0 &&
-        item.closest("[popover], [data-ok-popover]") === null,
+        !(item as HTMLButtonElement).disabled && item.getClientRects().length > 0 && own(item),
     );
   const all = () =>
-    [...toolbar.querySelectorAll<HTMLElement>("button, [data-ok-editor-tool]")].filter(
-      (item) => item.closest("[popover], [data-ok-popover]") === null,
-    );
+    [...toolbar.querySelectorAll<HTMLElement>("button, [data-ok-editor-tool]")].filter(own);
   let current: HTMLElement | null = null;
 
   const setCurrent = (item: HTMLElement | null) => {

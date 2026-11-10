@@ -10,6 +10,7 @@ import {
   createToolbarNavigation,
   editorActions,
   editorBlockLabels,
+  editorTableActions,
   editorToolbar,
   safeEditorUrl,
 } from "./toolbar.js";
@@ -96,10 +97,13 @@ describe("toolbar table", () => {
   it("names every button and covers every action except the block and text transform ones", () => {
     const actions = editorToolbar.flatMap((group) => group.buttons.map((button) => button.action));
     expect(new Set(actions).size).toBe(actions.length);
+    // Table actions live in the table menu (`editorTableActions`).
+    const menus = new Set<string>(editorTableActions.map((item) => item.action));
     for (const action of editorActions) {
       if (action === "paragraph" || action === "heading" || action === "textTransform") continue;
-      expect(actions).toContain(action);
+      expect(menus.has(action) ? [...menus] : actions).toContain(action);
     }
+    expect(menus.size).toBe(editorTableActions.length);
     expect(actions).toContain("fullscreen");
     for (const group of editorToolbar)
       for (const button of group.buttons) expect(button.label).not.toMatch(/[⌘⇧⌥]/);

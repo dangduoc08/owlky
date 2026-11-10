@@ -1,0 +1,158 @@
+<div data-ok-editor data-ok-tables id="table-editor">
+  <div data-ok-backdrop>
+  </div>
+  <div data-ok-editor-toolbar role="toolbar" aria-label="Formatting" aria-controls="table-editor-content">
+    <button type="button" data-ok-editor-heading id="table-editor-heading" aria-haspopup="menu" aria-expanded="false" aria-controls="table-editor-menu" tabindex="0" data-ok-popover-open="table-editor-menu"><span data-ok-editor-heading-label>Paragraph</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 9l6 6 6-6"></path></svg></button>
+    <div data-ok-editor-group>
+      <button type="button" data-ok-editor-action="bold" aria-label="Bold" aria-keyshortcuts="Control+B Meta+B" aria-pressed="false" tabindex="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M7 5h6a3.5 3.5 0 0 1 0 7H7z M7 12h7a3.5 3.5 0 0 1 0 7H7z"></path></svg></button>
+      <button type="button" data-ok-editor-action="italic" aria-label="Italic" aria-keyshortcuts="Control+I Meta+I" aria-pressed="false" tabindex="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M10 5h8 M6 19h8 M14 5l-4 14"></path></svg></button>
+      <button type="button" data-ok-editor-action="underline" aria-label="Underline" aria-keyshortcuts="Control+U Meta+U" aria-pressed="false" tabindex="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M7 4v7a5 5 0 0 0 10 0V4 M5 20h14"></path></svg></button>
+      <button type="button" data-ok-editor-action="strike" aria-label="Strikethrough" aria-keyshortcuts="Control+Shift+S Meta+Shift+S" aria-pressed="false" tabindex="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h14 M16.5 7C15.8 5.5 14.2 4.5 12 4.5 9.5 4.5 7.5 5.8 7.5 8c0 1.4.8 2.4 2 3 M8 16.5c.7 1.8 2.3 3 4.5 3 2.6 0 4.5-1.4 4.5-3.5 0-.6-.1-1.1-.4-1.5"></path></svg></button>
+    </div>
+    <div data-ok-editor-group>
+      <button type="button" data-ok-editor-action="bulletList" aria-label="Bullet list" aria-keyshortcuts="Control+Shift+8 Meta+Shift+8" aria-pressed="false" tabindex="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M10 6h10 M10 12h10 M10 18h10 M5 6h.01 M5 12h.01 M5 18h.01"></path></svg></button>
+      <button type="button" data-ok-editor-action="orderedList" aria-label="Ordered list" aria-keyshortcuts="Control+Shift+7 Meta+Shift+7" aria-pressed="false" tabindex="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M10 6h10 M10 12h10 M10 18h10 M4 4h1.5v5 M4 9h3 M4 14.5a1.5 1.5 0 0 1 3 0c0 1.2-3 2.3-3 4h3"></path></svg></button>
+    </div>
+    <div data-ok-editor-group>
+      <button type="button" data-ok-editor-action="alignLeft" aria-label="Align left" aria-keyshortcuts="Control+Shift+L Meta+Shift+L" aria-pressed="false" tabindex="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 6h16 M4 10h10 M4 14h16 M4 18h10"></path></svg></button>
+      <button type="button" data-ok-editor-action="alignCenter" aria-label="Align center" aria-keyshortcuts="Control+Shift+E Meta+Shift+E" aria-pressed="false" tabindex="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 6h16 M7 10h10 M4 14h16 M7 18h10"></path></svg></button>
+      <button type="button" data-ok-editor-action="alignRight" aria-label="Align right" aria-keyshortcuts="Control+Shift+R Meta+Shift+R" aria-pressed="false" tabindex="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 6h16 M10 10h10 M4 14h16 M10 18h10"></path></svg></button>
+      <button type="button" data-ok-editor-action="alignJustify" aria-label="Justify" aria-keyshortcuts="Control+Shift+J Meta+Shift+J" aria-pressed="false" tabindex="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 6h16 M4 10h16 M4 14h16 M4 18h16"></path></svg></button>
+    </div>
+    <div data-ok-editor-group data-ok-full>
+      <button type="button" data-ok-editor-action="code" aria-label="Code" aria-keyshortcuts="Control+E Meta+E" aria-pressed="false" tabindex="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 7l-5 5 5 5 M15 7l5 5-5 5"></path></svg></button>
+      <button type="button" data-ok-editor-action="codeBlock" aria-label="Code block" aria-keyshortcuts="Control+Alt+C Meta+Alt+C" aria-pressed="false" tabindex="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z M10 9.5L7.5 12l2.5 2.5 M14 9.5l2.5 2.5-2.5 2.5"></path></svg></button>
+    </div>
+    <div data-ok-editor-group data-ok-full>
+      <button type="button" data-ok-editor-action="blockquote" aria-label="Blockquote" aria-keyshortcuts="Control+Shift+B Meta+Shift+B" aria-pressed="false" tabindex="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M10 7H5v5h5zm0 5c0 2.5-1.2 4-3.5 5 M19 7h-5v5h5zm0 5c0 2.5-1.2 4-3.5 5"></path></svg></button>
+      <button type="button" data-ok-editor-action="horizontalRule" aria-label="Horizontal rule" tabindex="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12h3 M10.5 12h3 M17 12h3"></path></svg></button>
+    </div>
+    <div data-ok-editor-group>
+      <button type="button" data-ok-editor-action="link" aria-label="Insert link" aria-haspopup="dialog" aria-expanded="false" aria-controls="table-editor-link" tabindex="-1" data-ok-popover-open="table-editor-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1 M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"></path></svg></button>
+      <button type="button" data-ok-editor-action="unlink" aria-label="Remove link" disabled tabindex="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1 M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1 M4 4l16 16"></path></svg></button>
+      <button type="button" data-ok-editor-action="image" aria-label="Insert image" aria-haspopup="dialog" aria-expanded="false" aria-controls="table-editor-image" tabindex="-1" data-ok-popover-open="table-editor-image"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z M4 16l5-5 4 4 2-2 5 5 M15 8.5h.01"></path></svg></button>
+    </div>
+    <div data-ok-editor-group>
+      <button type="button" data-ok-editor-action="hardBreak" aria-label="Line break" aria-keyshortcuts="Shift+Enter" tabindex="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 6h16 M4 12h13a3 3 0 0 1 0 6h-4 M15 16l-2 2 2 2 M4 18h5"></path></svg></button>
+      <button type="button" data-ok-editor-action="clearFormat" aria-label="Clear formatting" aria-keyshortcuts="Control+Shift+X Meta+Shift+X" tabindex="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M7 5h12 M13 5l-4 14 M4 4l16 16"></path></svg></button>
+    </div>
+    <div data-ok-editor-group data-ok-full>
+      <button type="button" data-ok-editor-action="undo" aria-label="Undo" aria-keyshortcuts="Control+Z Meta+Z" disabled tabindex="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 14L4 9l5-5 M4 9h10a6 6 0 0 1 0 12h-3"></path></svg></button>
+      <button type="button" data-ok-editor-action="redo" aria-label="Redo" aria-keyshortcuts="Control+Shift+Z Meta+Shift+Z" disabled tabindex="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M15 14l5-5-5-5 M20 9H10a6 6 0 0 0 0 12h3"></path></svg></button>
+    </div>
+    <div data-ok-editor-group>
+      <button type="button" data-ok-editor-action="table" id="table-editor-table" aria-label="Table" aria-haspopup="menu" aria-expanded="false" aria-controls="table-editor-table-menu" tabindex="-1" data-ok-popover-open="table-editor-table-menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z M4 10h16 M4 15h16 M10 4v16"></path></svg></button>
+    </div>
+    <div data-ok-editor-group>
+      <button type="button" data-ok-editor-action="fullscreen" aria-label="Fullscreen" aria-pressed="false" tabindex="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false" data-ok-editor-icon="enter"><path d="M4 9V4h5 M15 4h5v5 M20 15v5h-5 M9 20H4v-5"></path></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false" data-ok-editor-icon="exit"><path d="M9 4v5H4 M20 9h-5V4 M15 20v-5h5 M4 15h5v5"></path></svg></button>
+    </div>
+  </div>
+  <div data-ok-editor-body>
+    <div data-ok-editor-content id="table-editor-content" role="textbox" aria-multiline="true" aria-label="Content">
+      <p>Release plan</p>
+      <table>
+        <tbody>
+          <tr>
+            <th>
+              <p>Phase</p>
+            </th>
+            <th>
+              <p>Owner</p>
+            </th>
+            <th>
+              <p>Status</p>
+            </th>
+          </tr>
+          <tr>
+            <td>
+              <p>Design</p>
+            </td>
+            <td>
+              <p>Ada</p>
+            </td>
+            <td>
+              <p>Done</p>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <p>Build</p>
+            </td>
+            <td>
+              <p>Alan</p>
+            </td>
+            <td>
+              <p>In progress</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div popover="manual" data-ok-popover data-ok-placement="bottom-start" id="table-editor-menu">
+    <span data-ok-popover-arrow aria-hidden="true"></span>
+    <ul role="menu" data-ok-menu aria-labelledby="table-editor-heading">
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-selected data-ok-editor-block="paragraph">Paragraph</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-editor-block="h1">Heading 1</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-editor-block="h2">Heading 2</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-editor-block="h3">Heading 3</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-editor-block="h4">Heading 4</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-editor-block="h5">Heading 5</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-editor-block="h6">Heading 6</li>
+    </ul>
+  </div>
+  <div popover="manual" data-ok-popover data-ok-placement="bottom-start" id="table-editor-link" role="dialog" aria-labelledby="table-editor-link-title">
+    <span data-ok-popover-arrow aria-hidden="true"></span>
+    <form data-ok-editor-form="link" novalidate>
+      <p data-ok-editor-form-title id="table-editor-link-title">Link URL</p>
+      <div data-ok-editor-form-row>
+        <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none">
+          <div data-ok-text-field-control>
+            <input aria-labelledby="table-editor-link-title" data-ok-editor-field="href" id="editor-field-1" data-ok-text-field-input type="url" placeholder="Enter URL" value="">
+            <fieldset data-ok-text-field-outline aria-hidden="true">
+            </fieldset>
+          </div>
+        </div>
+        <button type="submit" data-ok-button data-ok-variant="contained" data-ok-color="inherit" data-ok-size="md" disabled><span data-ok-button-label>Apply</span></button>
+      </div>
+    </form>
+  </div>
+  <div popover="manual" data-ok-popover data-ok-placement="bottom-start" id="table-editor-image" role="dialog" aria-labelledby="table-editor-image-title">
+    <span data-ok-popover-arrow aria-hidden="true"></span>
+    <form data-ok-editor-form="image" novalidate>
+      <p data-ok-editor-form-title id="table-editor-image-title">Add image</p>
+      <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none">
+        <div data-ok-text-field-control>
+          <input aria-label="Image URL" data-ok-editor-field="src" id="editor-field-2" data-ok-text-field-input type="url" placeholder="Image URL" value="">
+          <fieldset data-ok-text-field-outline aria-hidden="true">
+          </fieldset>
+        </div>
+      </div>
+      <div data-ok-text-field data-ok-variant="outlined" data-ok-size="small" data-ok-color="default" data-ok-margin="none">
+        <div data-ok-text-field-control>
+          <input aria-label="Alt text" data-ok-editor-field="alt" id="editor-field-3" data-ok-text-field-input placeholder="Alt text" value="">
+          <fieldset data-ok-text-field-outline aria-hidden="true">
+          </fieldset>
+        </div>
+      </div>
+      <button type="submit" data-ok-button data-ok-variant="contained" data-ok-color="inherit" data-ok-size="md" disabled><span data-ok-button-label>Apply</span></button>
+    </form>
+  </div>
+  <div popover="manual" data-ok-popover data-ok-placement="bottom-start" id="table-editor-table-menu">
+    <span data-ok-popover-arrow aria-hidden="true"></span>
+    <ul role="menu" data-ok-menu aria-labelledby="table-editor-table">
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-editor-table-action="insertTable">Insert table</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-editor-table-action="addColumnBefore">Add column before</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-editor-table-action="addColumnAfter">Add column after</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-editor-table-action="deleteColumn">Delete column</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-editor-table-action="addRowBefore">Add row before</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-editor-table-action="addRowAfter">Add row after</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-editor-table-action="deleteRow">Delete row</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-editor-table-action="toggleHeaderRow">Header row</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-editor-table-action="toggleHeaderColumn">Header column</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-editor-table-action="mergeCells">Merge cells</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-editor-table-action="splitCell">Split cell</li>
+      <li role="menuitem" tabindex="-1" data-ok-menu-item data-ok-editor-table-action="deleteTable">Delete table</li>
+    </ul>
+  </div>
+</div>

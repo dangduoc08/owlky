@@ -25,6 +25,20 @@ export function editorScript(row: HTMLElement) {
   };
 }
 
+const plainEditor = createEditor();
+
+/** HTML: registers the editor (Bubble menu, Table and Mentions stories). */
+export function plainEditorScript(row: HTMLElement): undefined {
+  getRuntime().register(plainEditor).init(row);
+  return undefined;
+}
+
+export const PLAIN_EDITOR_SCRIPT_SOURCE = `import { editor, getRuntime } from "@owlky/html";
+
+// The editor isn't in the default components (it loads Tiptap): register it
+// (or import "@owlky/html/editor", or load owlky-editor.js after owlky.js).
+getRuntime().register(editor).start();`;
+
 export const EDITOR_SCRIPT_SOURCE = `import { createEditor, createMarkdown, getRuntime } from "@owlky/html";
 import { common, createLowlight } from "lowlight";
 

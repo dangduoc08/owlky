@@ -122,6 +122,67 @@ for (const impl of implementations) {
       await expect(page.getByRole("button", { name: "Bold" })).toBeVisible();
     });
 
+    test("shows the bubble menu over a selection and reaches it with Alt+F10", async ({ page }) => {
+      await openStory(page, storyId(impl, "editor", "bubble-menu"));
+      const content = page.getByRole("textbox", { name: "Content" });
+      await expect(content).toHaveAttribute("contenteditable", "true");
+      const menu = page.getByRole("toolbar", { name: "Text formatting" });
+      await expect(menu).toBeHidden();
+      await content.focus();
+      await content.locator("strong").dblclick();
+      await editorSelected(content);
+      await expect(menu).toBeVisible();
+      await page.keyboard.press("Alt+F10");
+      await expect(menu.getByRole("button", { name: "Bold" })).toBeFocused();
+      await page.keyboard.press("ArrowRight");
+      await page.keyboard.press("Enter");
+      await expect(content.locator("em strong, strong em")).toHaveCount(1);
+      await page.keyboard.press("Escape");
+      await expect(content).toBeFocused();
+    });
+
+    test("edits a table from the table menu", async ({ page }) => {
+      await openStory(page, storyId(impl, "editor", "tables"));
+      const content = page.getByRole("textbox", { name: "Content" });
+      await expect(content).toHaveAttribute("contenteditable", "true");
+      await expect(content.locator("tr")).toHaveCount(3);
+      // Focus first (WebKit restores its own selection on focus), then put the caret in a cell.
+      await content.focus();
+      await content.getByText("Design").click();
+      await expect
+        .poll(() =>
+          content.evaluate((element) =>
+            (element as unknown as { editor: { isActive(name: string): boolean } }).editor.isActive(
+              "table",
+            ),
+          ),
+        )
+        .toBe(true);
+      await page.getByRole("button", { name: "Table" }).click();
+      await page.getByRole("menuitem", { name: "Add row after" }).click();
+      await expect(content.locator("tr")).toHaveCount(4);
+      await page.getByRole("button", { name: "Table" }).click();
+      await page.getByRole("menuitem", { name: "Delete column" }).click();
+      await expect(content.locator("tr").first().locator("th")).toHaveCount(2);
+    });
+
+    test("suggests people after @ and inserts a mention", async ({ page }) => {
+      await openStory(page, storyId(impl, "editor", "mentions"));
+      const content = page.getByRole("textbox", { name: "Content" });
+      await expect(content).toHaveAttribute("contenteditable", "true");
+      await content.focus();
+      await content.getByText("such as").click();
+      await page.keyboard.press("End");
+      await page.keyboard.type(" @mar");
+      const list = page.getByRole("listbox", { name: "Suggestions" });
+      await expect(list.getByRole("option")).toHaveText(["Margaret Hamilton"]);
+      await page.keyboard.press("Enter");
+      await expect(list).toBeHidden();
+      await expect(content.locator('[data-type="mention"][data-id="margaret"]')).toHaveText(
+        "@Margaret Hamilton",
+      );
+    });
+
     test("works with touch on a phone", async ({ browser, browserName }) => {
       test.skip(browserName !== "chromium", "Touch emulation (isMobile) is Chromium-only.");
       const context = await browser.newContext({

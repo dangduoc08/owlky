@@ -1,14 +1,11 @@
 import {
   createWalktourController,
+  createWalktourFlow,
   initialWalktourState,
-  type WalktourAction,
   type WalktourApi,
   type WalktourEventData,
-  type WalktourOrigin,
   type WalktourState,
-  walktourEvents,
   walktourOptions,
-  walktourTransition,
 } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
 import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
@@ -24,6 +21,11 @@ export interface WalktourEvents {
   change: EventSpec<WalktourState & { previousIndex: number }>;
   /** Each tour event (`tour:start`, `step:before`, `step:after`, `tour:end`…), with the tour's data. */
   event: EventSpec<WalktourEventData>;
+  /**
+   * A step is about to show (react-joyride's `before` hook). Call `waitUntil(promise)` from the
+   * listener to make the tour wait for it (up to `data-ok-before-timeout`).
+   */
+  beforestep: EventSpec<WalktourEventData & { waitUntil(promise: PromiseLike<unknown>): void }>;
 }
 
 /** The walktour instance (`runtime.get(root, "walktour")`). */
@@ -66,7 +68,8 @@ function readIndex(element: Element, attr: string): number {
  * State:   data-ok-run (present: running; removing it pauses), data-ok-step-index (first step).
  * Events:  ok:walktour:beforechange (cancelable, detail { index, previousIndex, action, origin }),
  *          ok:walktour:change (detail: the state + previousIndex),
- *          ok:walktour:event (detail: { type, action, origin, index, status, lifecycle, size }).
+ *          ok:walktour:event (detail: { type, action, origin, index, status, lifecycle, size }),
+ *          ok:walktour:beforestep (the step's data + waitUntil(promise): the `before` hook).
  */
 export const walktour = defineComponent<WalktourInstance, WalktourEvents>({
   name: "walktour",
@@ -78,30 +81,40 @@ export const walktour = defineComponent<WalktourInstance, WalktourEvents>({
       onIntent: (intent, origin) => dispatch(intent, origin),
     });
 
-    function dispatch(action: WalktourAction, origin: WalktourOrigin = "api", index?: number) {
-      const context = controller.context();
-      const { state: next, notFound } = walktourTransition(state, action, context, {
-        index,
-        origin,
-      });
-      if (next === state) return;
-      const previous = state;
-      if (
-        next.index !== previous.index &&
-        next.status === "running" &&
-        !emit(
+    const flow = createWalktourFlow({
+      state: () => state,
+      context: () => controller.context(),
+      allow: (next, previous, { action, origin }) =>
+        emit(
           "beforechange",
           { index: next.index, previousIndex: previous.index, action, origin },
           { cancelable: true },
-        )
-      )
-        return;
-      state = next;
-      controller.render(state);
-      emit("change", { ...state, previousIndex: previous.index });
-      for (const event of walktourEvents(previous, next, context.size, notFound))
+        ),
+      commit(next, previous) {
+        state = next;
+        controller.render(state);
+        emit("change", { ...state, previousIndex: previous.index });
+      },
+      wait(next) {
+        state = next;
+        controller.render(state);
+      },
+      emit: (event) => {
         emit("event", event);
-    }
+      },
+      // The `before` hook: listeners hand the tour a promise to wait for.
+      before(data) {
+        const pending: PromiseLike<unknown>[] = [];
+        emit("beforestep", {
+          ...data,
+          waitUntil(promise) {
+            pending.push(promise);
+          },
+        });
+        return pending.length ? Promise.all(pending) : undefined;
+      },
+    });
+    const dispatch = flow.dispatch;
 
     // `data-ok-run` runs and pauses the tour, like React's `run`; other options show at once.
     const observer = new MutationObserver((records) => {
@@ -130,6 +143,7 @@ export const walktour = defineComponent<WalktourInstance, WalktourEvents>({
       open: () => dispatch("open"),
       destroy() {
         observer.disconnect();
+        flow.cancel();
         controller.destroy();
       },
     };
