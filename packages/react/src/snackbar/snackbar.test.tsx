@@ -18,6 +18,18 @@ function Count() {
 }
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+// Resolves once the toast titles read `expected` (a MutationObserver, never a poll).
+const untilTitles = (expected: string[]) =>
+  new Promise<void>((resolve) => {
+    const done = () => JSON.stringify(titles()) === JSON.stringify(expected);
+    if (done()) return resolve();
+    const observer = new MutationObserver(() => {
+      if (!done()) return;
+      observer.disconnect();
+      resolve();
+    });
+    observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+  });
 const titles = () =>
   [...document.querySelectorAll("[data-ok-toast-title]")].map((t) => t.textContent);
 
@@ -66,19 +78,20 @@ describe("Toaster", () => {
     act(() => {
       toast("One");
     });
-    await wait(250);
-    expect(titles()).toEqual([]);
+    await untilTitles([]);
     act(() => {
       // Long enough that a loaded CI runner's click-to-hover delay can't use it up.
       toast("Two", { duration: 1500 });
     });
     const region = screen.getByRole("region");
-    await userEvent.hover(region, { force: true });
+    // Hover the toast once it has slid in: mid-animation it can sit outside the viewport.
+    const two = region.querySelector("[data-ok-toast]") as HTMLElement;
+    for (const animation of two.getAnimations({ subtree: true })) animation.finish();
+    await userEvent.hover(two);
     await wait(2000);
     expect(titles()).toEqual(["Two"]);
-    await userEvent.unhover(region);
-    await wait(2000);
-    expect(titles()).toEqual([]);
+    await userEvent.unhover(two);
+    await untilTitles([]);
     act(() => {
       toast("Three", { action: { label: "Undo" } });
     });
