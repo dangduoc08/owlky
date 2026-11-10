@@ -4,7 +4,7 @@ import {
   type SwitchEdge,
   switchAttributes,
 } from "@owlky/core";
-import { type CSSProperties, forwardRef, type InputHTMLAttributes } from "react";
+import { type CSSProperties, forwardRef, type InputHTMLAttributes, type ReactNode } from "react";
 
 export interface SwitchProps
   extends Omit<InputHTMLAttributes<HTMLInputElement>, "type" | "size" | "color" | "onChange"> {
@@ -16,6 +16,10 @@ export interface SwitchProps
   edge?: SwitchEdge | false | undefined;
   /** Called with the new checked state. */
   onChange?: ((checked: boolean) => void) | undefined;
+  /** Content of the thumb (such as an icon); also shown when on unless `checkedIcon` is set. */
+  icon?: ReactNode;
+  /** Content of the thumb while the switch is on. */
+  checkedIcon?: ReactNode;
   /** Class of the root span (other props go to the input). */
   className?: string | undefined;
   /** Style of the root span. */
@@ -28,7 +32,7 @@ export interface SwitchProps
  * or `aria-labelledby`.
  */
 export const Switch = forwardRef<HTMLInputElement, SwitchProps>(function Switch(
-  { color, size, edge, onChange, className, style, ...props },
+  { color, size, edge, onChange, icon, checkedIcon, className, style, ...props },
   ref,
 ) {
   return (
@@ -42,7 +46,10 @@ export const Switch = forwardRef<HTMLInputElement, SwitchProps>(function Switch(
         onChange={(event) => onChange?.(event.currentTarget.checked)}
       />
       <span data-ok-switch-track="" aria-hidden="true" />
-      <span data-ok-switch-thumb="" aria-hidden="true" />
+      <span data-ok-switch-thumb="" aria-hidden="true">
+        {icon != null && <span data-ok-switch-icon="">{icon}</span>}
+        {checkedIcon != null && <span data-ok-switch-checked-icon="">{checkedIcon}</span>}
+      </span>
     </span>
   );
 });

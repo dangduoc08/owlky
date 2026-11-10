@@ -234,6 +234,7 @@ const pairs: [component: string, story: string][] = [
   ["switch", "sizes"],
   ["switch", "placements"],
   ["switch", "colors"],
+  ["switch", "customization"],
   ["radio", "basic"],
   ["radio", "sizes"],
   ["radio", "placement"],

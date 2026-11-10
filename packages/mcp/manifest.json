@@ -1108,6 +1108,8 @@
   "data-ok-stop-on-mouse-enter",
   "data-ok-stroke",
   "data-ok-switch",
+  "data-ok-switch-checked-icon",
+  "data-ok-switch-icon",
   "data-ok-switch-input",
   "data-ok-switch-thumb",
   "data-ok-switch-track",
@@ -15825,12 +15827,12 @@
      "title": "Purpose"
     },
     {
-     "body": "```\nspan[data-ok-switch][data-ok-color][data-ok-size][data-ok-edge]?\n  input[type=checkbox][role=switch][data-ok-switch-input]   (covers the target, opacity 0)\n  span[data-ok-switch-track][aria-hidden=\"true\"]\n  span[data-ok-switch-thumb][aria-hidden=\"true\"]\n```\nReact `ref` and the remaining props go to the **input**; `className` / `style` to the root.",
+     "body": "```\nspan[data-ok-switch][data-ok-color][data-ok-size][data-ok-edge]?\n  input[type=checkbox][role=switch][data-ok-switch-input]   (covers the target, opacity 0)\n  span[data-ok-switch-track][aria-hidden=\"true\"]\n  span[data-ok-switch-thumb][aria-hidden=\"true\"]\n    span[data-ok-switch-icon]?            (icon: shown while off, and while on without a checked icon)\n    span[data-ok-switch-checked-icon]?    (checkedIcon: shown while on)\n```\nReact `ref` and the remaining props go to the **input**; `className` / `style` to the root.",
      "id": "anatomy",
      "title": "Anatomy"
     },
     {
-     "body": "(Options of `switch`: listed under \"options\".)\n\nReact only: `onChange(checked)`. Deferred: `icon` / `checkedIcon` (thumb content; not on the\nreference — backlog). Upstream `disableRipple`, `sx`, `classes`, `slots`, `slotProps` don't apply.",
+     "body": "(Options of `switch`: listed under \"options\".)\n\nReact only: `onChange(checked)`. `icon` / `checkedIcon` (React nodes) render the thumb's\nicon parts; HTML writes the same parts in the thumb. CSS picks the one for the state (`:has(> input:checked)`):\nicons are centered in the thumb at 80% of its size, `--ok-text-secondary`, the checked icon in the\ntrack color (`--_ok-main`). Upstream `disableRipple`, `sx`, `classes`, `slots`, `slotProps` don't apply.",
      "id": "options",
      "title": "Options"
     },
@@ -15870,7 +15872,7 @@
      "title": "Events / API"
     },
     {
-     "body": "Upstream: MUI `Switch`, mui.com/material-ui/api/switch/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `checked`, `defaultChecked`, `disabled`, `required`, `id`, `value` | native props on the input | kept | |\n| `color`, `size`, `edge` | same | kept | `color` + `default` |\n| `onChange(event, checked)` | `onChange(checked)` | renamed | value-first (ADR-0015) |\n| `slotProps.input` (`inputProps`, `inputRef`) | `ref` and rest props → the input | renamed | |\n| `icon`, `checkedIcon` | — | deferred (4.3) | thumb content |\n| `disableRipple` | — | not applicable | no ripple |\n| `sx`, `classes`, `slots`, `slotProps` | — | not applicable | ADR-0015 |",
+     "body": "Upstream: MUI `Switch`, mui.com/material-ui/api/switch/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `checked`, `defaultChecked`, `disabled`, `required`, `id`, `value` | native props on the input | kept | |\n| `color`, `size`, `edge` | same | kept | `color` + `default` |\n| `onChange(event, checked)` | `onChange(checked)` | renamed | value-first (ADR-0015) |\n| `slotProps.input` (`inputProps`, `inputRef`) | `ref` and rest props → the input | renamed | |\n| `icon`, `checkedIcon` | same | kept | thumb content (`data-ok-switch-icon` / `-checked-icon`); the thumb stays (MUI's icon replaces it) |\n| `disableRipple` | — | not applicable | no ripple |\n| `sx`, `classes`, `slots`, `slotProps` | — | not applicable | ADR-0015 |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
@@ -15917,6 +15919,15 @@
      "snippets": [
       "colors-default.html",
       "colors-disabled.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/switch.css from @owlky/styles); no JavaScript needed. -->\n\n<!-- Thumb icons -->\n<span data-ok-switch data-ok-color=\"primary\" data-ok-size=\"medium\">\n  <input type=\"checkbox\" role=\"switch\" data-ok-switch-input aria-label=\"Icons\" checked>\n  <span data-ok-switch-track aria-hidden=\"true\"></span>\n  <span data-ok-switch-thumb aria-hidden=\"true\">\n    <span data-ok-switch-icon><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M18 6 6 18\"></path><path d=\"M6 6l12 12\"></path></svg></span>\n    <span data-ok-switch-checked-icon><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M5 12.5l4.5 4.5L19 7.5\"></path></svg></span>\n  </span>\n</span>\n<span data-ok-switch data-ok-color=\"primary\" data-ok-size=\"medium\">\n  <input type=\"checkbox\" role=\"switch\" data-ok-switch-input aria-label=\"Icons off\">\n  <span data-ok-switch-track aria-hidden=\"true\"></span>\n  <span data-ok-switch-thumb aria-hidden=\"true\">\n    <span data-ok-switch-icon><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M18 6 6 18\"></path><path d=\"M6 6l12 12\"></path></svg></span>\n    <span data-ok-switch-checked-icon><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M5 12.5l4.5 4.5L19 7.5\"></path></svg></span>\n  </span>\n</span>\n<span data-ok-switch data-ok-color=\"primary\" data-ok-size=\"medium\">\n  <input type=\"checkbox\" role=\"switch\" data-ok-switch-input aria-label=\"Daylight\" checked>\n  <span data-ok-switch-track aria-hidden=\"true\"></span>\n  <span data-ok-switch-thumb aria-hidden=\"true\">\n    <span data-ok-switch-icon><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z\"></path><path d=\"M12 2v2\"></path><path d=\"M12 20v2\"></path><path d=\"M2 12h2\"></path><path d=\"M20 12h2\"></path><path d=\"m4.9 4.9 1.4 1.4\"></path><path d=\"m17.7 17.7 1.4 1.4\"></path><path d=\"m4.9 19.1 1.4-1.4\"></path><path d=\"m17.7 6.3 1.4-1.4\"></path></svg></span>\n  </span>\n</span>",
+     "id": "components-switch--customization",
+     "name": "Customization",
+     "react": "import \"@owlky/styles/owlky.css\";\nimport { Switch } from \"@owlky/react\";\n// DemoIcon: your own decorative SVG icons (aria-hidden=\"true\").\n\n{/* Thumb icons */}\n<Switch aria-label=\"Icons\" icon={<DemoIcon name=\"close\" />} checkedIcon={<DemoIcon name=\"check\" />} defaultChecked />\n<Switch aria-label=\"Icons off\" icon={<DemoIcon name=\"close\" />} checkedIcon={<DemoIcon name=\"check\" />} />\n<Switch aria-label=\"Daylight\" icon={<DemoIcon name=\"sun\" />} defaultChecked />\n",
+     "snippets": [
+      "customization-group.html"
      ]
     }
    ],
@@ -22682,6 +22693,13 @@
      "title": "Place the label"
     },
     {
+     "body": "Pass `icon` to draw an icon in the thumb, and `checkedIcon` for the one shown while the switch is on. Without `checkedIcon`, the `icon` shows in both states. In HTML, put the icons in the thumb as a `span[data-ok-switch-icon]` and a `span[data-ok-switch-checked-icon]`: CSS shows the one for the state, so no JavaScript is needed. The thumb is hidden from screen readers, so the icons are decorative: the label still names the switch.",
+     "html": "<span data-ok-switch data-ok-color=\"primary\" data-ok-size=\"medium\">\n  <input type=\"checkbox\" role=\"switch\" data-ok-switch-input aria-label=\"Icons\" checked>\n  <span data-ok-switch-track aria-hidden=\"true\"></span>\n  <span data-ok-switch-thumb aria-hidden=\"true\">\n    <span data-ok-switch-icon><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M18 6 6 18\"></path><path d=\"M6 6l12 12\"></path></svg></span>\n    <span data-ok-switch-checked-icon><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M5 12.5l4.5 4.5L19 7.5\"></path></svg></span>\n  </span>\n</span>",
+     "id": "icons",
+     "react": "import { Switch } from \"@owlky/react\";\nimport { Check, X } from \"lucide-react\";\n\nexport function SwitchIcons() {\n  return <Switch aria-label=\"Icons\" icon={<X />} checkedIcon={<Check />} defaultChecked />;\n}",
+     "title": "Show an icon in the thumb"
+    },
+    {
      "body": "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default. The form control label has its own options.",
      "id": "options",
      "title": "Options"
@@ -23720,6 +23738,8 @@
   "data-ok-step-label-optional": "data-ok-step-label",
   "data-ok-step-label-text": "data-ok-step-label",
   "data-ok-step-label-title": "data-ok-step-label",
+  "data-ok-switch-checked-icon": "data-ok-switch",
+  "data-ok-switch-icon": "data-ok-switch",
   "data-ok-switch-input": "data-ok-switch",
   "data-ok-switch-thumb": "data-ok-switch",
   "data-ok-switch-track": "data-ok-switch",

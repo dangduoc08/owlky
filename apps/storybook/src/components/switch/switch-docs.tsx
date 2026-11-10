@@ -64,6 +64,25 @@ export function SwitchPlacement() {
 }`,
   },
   {
+    id: "icons",
+    title: "Show an icon in the thumb",
+    body: "Pass `icon` to draw an icon in the thumb, and `checkedIcon` for the one shown while the switch is on. Without `checkedIcon`, the `icon` shows in both states. In HTML, put the icons in the thumb as a `span[data-ok-switch-icon]` and a `span[data-ok-switch-checked-icon]`: CSS shows the one for the state, so no JavaScript is needed. The thumb is hidden from screen readers, so the icons are decorative: the label still names the switch.",
+    html: `<span data-ok-switch data-ok-color="primary" data-ok-size="medium">
+  <input type="checkbox" role="switch" data-ok-switch-input aria-label="Icons" checked>
+  <span data-ok-switch-track aria-hidden="true"></span>
+  <span data-ok-switch-thumb aria-hidden="true">
+    <span data-ok-switch-icon><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="M6 6l12 12"></path></svg></span>
+    <span data-ok-switch-checked-icon><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></span>
+  </span>
+</span>`,
+    react: `import { Switch } from "@owlky/react";
+import { Check, X } from "lucide-react";
+
+export function SwitchIcons() {
+  return <Switch aria-label="Icons" icon={<X />} checkedIcon={<Check />} defaultChecked />;
+}`,
+  },
+  {
     id: "options",
     title: "Options",
     body: "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default. The form control label has its own options.",

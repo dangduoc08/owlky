@@ -7,6 +7,7 @@ import {
   basicGroups,
   COLOR_FILES,
   colorGroups,
+  customizationGroups,
   files,
   placementGroups,
   SWITCH_CONTROLS,
@@ -55,4 +56,9 @@ export const Placements: StoryObj = frameworkStory({
 export const Colors: StoryObj = frameworkStory({
   html: snippetStory(snippets, "colors", COLOR_FILES, labelled, SWITCH_CONTROLS),
   react: reactGroupsStory(colorGroups, controls),
+});
+
+export const Customization: StoryObj = frameworkStory({
+  html: snippetStory(snippets, "customization", [["Thumb icons", "group"]], setup, SWITCH_CONTROLS),
+  react: reactGroupsStory(customizationGroups, controls),
 });

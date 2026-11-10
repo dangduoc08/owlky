@@ -2,6 +2,7 @@ import { switchOptions } from "@owlky/core";
 import { FormControlLabel, Switch } from "@owlky/react";
 import type { ReactGroup } from "../../helpers/groups.js";
 import { CONTROL_COLORS } from "../checkbox/checkbox-examples.js";
+import { DemoIcon } from "../shared/demo-icon.js";
 import type { GroupFiles } from "../shared/snippets.js";
 
 const capitalize = (value: string) => value[0]?.toUpperCase() + value.slice(1);
@@ -60,6 +61,28 @@ const colorList = (disabled: boolean) => [
     label="Unchecked"
     control={<Switch color="error" disabled={disabled} />}
   />,
+];
+
+export const customizationGroups: ReactGroup[] = [
+  {
+    title: "Thumb icons",
+    content: [
+      <Switch
+        key="1"
+        aria-label="Icons"
+        icon={<DemoIcon name="close" />}
+        checkedIcon={<DemoIcon name="check" />}
+        defaultChecked
+      />,
+      <Switch
+        key="2"
+        aria-label="Icons off"
+        icon={<DemoIcon name="close" />}
+        checkedIcon={<DemoIcon name="check" />}
+      />,
+      <Switch key="3" aria-label="Daylight" icon={<DemoIcon name="sun" />} defaultChecked />,
+    ],
+  },
 ];
 
 export const colorGroups: ReactGroup[] = [

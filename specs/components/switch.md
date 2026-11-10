@@ -1,6 +1,7 @@
 # Switch
 
-Reference: Minimal UI kit "Switch" page, sections Basic, Sizes, Placements, Colors (content only).
+Reference: Minimal UI kit "Switch" page, sections Basic, Sizes, Placements, Colors (content only);
+MUI demo section Customization (thumb icons).
 Upstream: MUI `Switch` (ADR-0015). Created with `/component`.
 Reference URL: https://minimals.cc/components/mui/switch
 
@@ -14,6 +15,8 @@ span[data-ok-switch][data-ok-color][data-ok-size][data-ok-edge]?
   input[type=checkbox][role=switch][data-ok-switch-input]   (covers the target, opacity 0)
   span[data-ok-switch-track][aria-hidden="true"]
   span[data-ok-switch-thumb][aria-hidden="true"]
+    span[data-ok-switch-icon]?            (icon: shown while off, and while on without a checked icon)
+    span[data-ok-switch-checked-icon]?    (checkedIcon: shown while on)
 ```
 React `ref` and the remaining props go to the **input**; `className` / `style` to the root.
 
@@ -30,8 +33,10 @@ Root: `data-ok-switch`. Unknown values fall back to the default.
 | `checked` | `checked` · event `ok:switch:change` | state | — | — | Native `checked` (`checked` / `defaultChecked` + `onChange(checked)`). |
 <!-- /options:switch -->
 
-React only: `onChange(checked)`. Deferred: `icon` / `checkedIcon` (thumb content; not on the
-reference — backlog). Upstream `disableRipple`, `sx`, `classes`, `slots`, `slotProps` don't apply.
+React only: `onChange(checked)`. `icon` / `checkedIcon` (React nodes) render the thumb's
+icon parts; HTML writes the same parts in the thumb. CSS picks the one for the state (`:has(> input:checked)`):
+icons are centered in the thumb at 80% of its size, `--ok-text-secondary`, the checked icon in the
+track color (`--_ok-main`). Upstream `disableRipple`, `sx`, `classes`, `slots`, `slotProps` don't apply.
 
 ## Layout and tokens
 - Medium: track 34 × 20px (`--ok-spacing` × 8.5 × 5), thumb 14px (× 3.5), inset 3px (× 0.75),
@@ -76,7 +81,7 @@ Upstream: MUI `Switch`, mui.com/material-ui/api/switch/.
 | `color`, `size`, `edge` | same | kept | `color` + `default` |
 | `onChange(event, checked)` | `onChange(checked)` | renamed | value-first (ADR-0015) |
 | `slotProps.input` (`inputProps`, `inputRef`) | `ref` and rest props → the input | renamed | |
-| `icon`, `checkedIcon` | — | deferred (4.3) | thumb content |
+| `icon`, `checkedIcon` | same | kept | thumb content (`data-ok-switch-icon` / `-checked-icon`); the thumb stays (MUI's icon replaces it) |
 | `disableRipple` | — | not applicable | no ripple |
 | `sx`, `classes`, `slots`, `slotProps` | — | not applicable | ADR-0015 |
 
