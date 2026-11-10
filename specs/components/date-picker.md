@@ -188,6 +188,9 @@ Root: `data-ok-date-field`. Unknown values fall back to the default.
 |---|---|---|---|---|---|
 | `formatDensity` | `data-ok-format-density="…"` | style | `dense` `spacious` | `dense` | `spacious` puts spaces around the separators (`05 / 25 / 2025`). |
 | `clearable` | `data-ok-clearable` | flag | boolean | off | A clear button at the end of the field. |
+| `clearButtonPosition` | `data-ok-clear-button-position="…"` | style | `start` `end` | — | Side of the clear button. HTML: put the button in the adornment on that side. |
+| `openPickerButtonPosition` | `data-ok-open-picker-button-position="…"` | style | `start` `end` | — | Pickers: side of the open button. HTML: put the button in the adornment on that side. |
+| `shouldRespectLeadingZeros` | `data-ok-should-respect-leading-zeros` | flag | boolean | off | Digit sections keep the format's padding (`D` shows `5`); by default they show two digits (`05`). |
 | `readOnly` | `data-ok-read-only` | flag | boolean | off | The value can't be changed (it can still be focused and copied). |
 | `valueType` | `data-ok-value-type="…"` | style | `date` `time` `date-time` | — | What the value holds (ADR-0026): `time` (TimeField, TimePicker family: ISO `HH:mm:ss`), `date-time` (DateTimeField, DateTimePicker family: ISO `YYYY-MM-DDTHH:mm:ss`); absent = a date. React: the component. |
 | `range` | `data-ok-range` | flag | boolean | off | Single input range field (ADR-0028): the start and the end in one field, the value an ISO 8601 interval `start/end`. React: the component (`SingleInputDateRangeField`, `SingleInputTimeRangeField`, `SingleInputDateTimeRangeField`). |
@@ -480,7 +483,7 @@ Applies to every picker, field, calendar and clock that has the prop upstream.
 | `onOpen` / `onClose` / `onCancel` | `onOpenChange(open, reason)` | renamed | reasons `button` · `escape` · `clickaway` · `accept` · `cancel` · `select` · `clear` · `today` · `shortcut` · `api` |
 | `open`, `views`, `openTo`, `view` / `onViewChange` | same | kept | date and time views |
 | `format`, `formatDensity`, `referenceDate`, `autoFocus`, `readOnly`, `disabled`, `label`, `name`, `inputRef`, `localeText` | same | kept | `inputRef` = the hidden input |
-| `selectedSections` / `onSelectedSectionsChange` | same | kept | a section index (MUI also `"all"` / a section type) |
+| `selectedSections` / `onSelectedSectionsChange` | same | kept | 4.18.29: a section index, a section type (its first section), `"all"` or `null` (`FieldSelectedSections`); the callback reports the focused section's index, or `"all"` on select-all (Ctrl / ⌘ + A). HTML: instance `setSelectedSections` |
 | `minDate`, `maxDate`, `disablePast`, `disableFuture`, `shouldDisableDate` / `Month` / `Year` | same | kept | |
 | `closeOnSelect`, `desktopModeMediaQuery`, `keepOpenDuringFieldFocus`, `reduceAnimations`, `orientation`, `loading`, `renderLoading` | same | kept | time / date time: no close on pick, Cancel + OK (MUI v9, reference) |
 | `displayWeekNumber`, `fixedWeekNumber`, `showDaysOutsideCurrentMonth`, `disableHighlightToday`, `dayOfWeekFormatter`, `monthsPerRow`, `yearsPerRow`, `yearsOrder`, `onMonthChange`, `onYearChange` | same | kept | |
@@ -491,7 +494,7 @@ Applies to every picker, field, calendar and clock that has the prop upstream.
 | `slots` `layout`, `toolbar`, `actionBar`, `shortcuts`, `day`, `openPickerIcon`, `leftArrowIcon`, `rightArrowIcon`, `switchViewIcon`; `slotProps` `toolbar.hidden`, `tabs.hidden`, `day`, `layout` | same | kept | |
 | `slotProps.actionBar.actions`, `slotProps.shortcuts.items` | `actions`, `shortcuts` | renamed | |
 | `slotProps.field.clearable` / `onClear`; fields `clearable`, `onClear` | `clearable`, `onClear` | renamed | |
-| `slotProps.textField` | TextField props `helperText`, `error`, `variant`, `size`, `fullWidth`, `required` | renamed | |
+| `slotProps.textField` | TextField props `helperText`, `error`, `variant`, `size`, `fullWidth`, `required`, `color`, `margin`, `hiddenLabel`, `focused` | renamed | 4.18.29 added `color` / `margin` / `hiddenLabel` / `focused` (`data-ok-color`, `data-ok-margin`, `data-ok-hidden-label`, `data-ok-focused` on the TextField root; an empty field shows its sections when focused, with a hidden label or a start adornment) |
 | range `slots.field` (multi input) / per-end `slotProps.textField` | `multiInput`, `startLabel` / `endLabel` | renamed | |
 | `usePickerContext()` | same | kept | ranges add `rangePosition` / `setRangePosition` |
 | `PickersDay`, `PickersLayout`, `PickersActionBar`, `PickersShortcuts` | `PickerDay`, `PickerLayout` (+ `PickerLayoutRoot`, `PickerLayoutContent`), `PickerActionBar`, `PickerShortcuts` | renamed | |
@@ -499,11 +502,11 @@ Applies to every picker, field, calendar and clock that has the prop upstream.
 | LocalizationProvider `adapterLocale`, `localeText`, `dateAdapter`; `PickerValidDate` | same | kept | |
 | adapter classes (`AdapterDayjs`…), `dateLibInstance` | `createDayjsAdapter(dayjs)`, `createDateFnsAdapter({ TZDate })`, `createLuxonAdapter(DateTime)`, `createMomentAdapter(moment)` | renamed | the library is the factory's argument |
 | Jalali / Hijri adapters | adapter `calendar`, `LocalizationProvider calendar`, locale `-u-ca-` | renamed | any `Intl` calendar |
-| fields `clearButtonPosition`, `openPickerButtonPosition` | — | deferred | buttons always at the end |
-| fields `startAdornment` / `endAdornment` | — | deferred | `endAdornment` internal (open button) |
-| fields `shouldRespectLeadingZeros` | — | deferred | |
-| fields `fieldRef` (field API) | — | deferred | |
-| fields TextField props `color`, `margin`, `hiddenLabel`, `focused` | — | deferred | |
+| fields `clearButtonPosition`, `openPickerButtonPosition` | same | kept | 4.18.29: `start` puts the button in a start adornment (open button first, `edge="start"`); `data-ok-clear-button-position` / `data-ok-open-picker-button-position` on the field root mark it, HTML markup places the button. Fields, single input range fields (clear), single-value pickers; range pickers keep their buttons at the end (deferred) |
+| fields `startAdornment` / `endAdornment` | same | kept | 4.18.29: an `InputAdornment` around the sections; the end one comes before the buttons' adornment. Fields, single input range fields, single-value pickers |
+| fields `shouldRespectLeadingZeros` | same | kept | 4.18.29: default `false` as in MUI: digit sections without padding (`D`, `M`, `H`, `h`, `m`, `s`) show two digits (`fieldSections`); `data-ok-should-respect-leading-zeros` keeps the format's padding. Behavior change: such formats used to keep their padding |
+| fields `fieldRef` (field API) | same | kept | 4.18.29: `getSections` (type, format token, content type, value, placeholder, separators), `getActiveSectionIndex`, `setSelectedSections`, `focusField`, `isFieldFocused` (core `createFieldApi`); HTML: the same methods on the `date-field` instance (pickers: the field's instance). Fields, single input range fields, single-value pickers |
+| fields TextField props `color`, `margin`, `hiddenLabel`, `focused` | same | kept | 4.18.29, see `slotProps.textField`. Multi input range fields and range pickers: deferred (each end is a field of its own) |
 | single input range fields `dateSeparator` | — | deferred | fixed `" – "` |
 | calendars / clocks `focusedView` / `onFocusedViewChange` | — | deferred | |
 | TimeClock `showViewSwitcher` | — | deferred | |

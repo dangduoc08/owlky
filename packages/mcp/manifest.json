@@ -253,6 +253,7 @@
   "data-ok-circular-progress",
   "data-ok-circular-progress-circle",
   "data-ok-circular-progress-svg",
+  "data-ok-clear-button-position",
   "data-ok-clear-on-blur",
   "data-ok-clear-on-escape",
   "data-ok-clearable",
@@ -928,6 +929,7 @@
   "data-ok-once",
   "data-ok-open",
   "data-ok-open-on-focus",
+  "data-ok-open-picker-button-position",
   "data-ok-open-to",
   "data-ok-opposite",
   "data-ok-options",
@@ -1103,6 +1105,7 @@
   "data-ok-share-title",
   "data-ok-share-url",
   "data-ok-shift-step",
+  "data-ok-should-respect-leading-zeros",
   "data-ok-show-accuracy",
   "data-ok-show-accuracy-circle",
   "data-ok-show-days-outside-current-month",
@@ -19206,6 +19209,12 @@
          "type": "boolean"
         },
         {
+         "default": "\"end\"",
+         "description": "Side of the clear button.",
+         "name": "clearButtonPosition",
+         "type": "\"end\" | \"start\""
+        },
+        {
          "description": "Field props.",
          "name": "clearable",
          "type": "boolean"
@@ -19214,6 +19223,12 @@
          "description": "Picking a day closes the picker. Default: desktop only.",
          "name": "closeOnSelect",
          "type": "boolean"
+        },
+        {
+         "default": "\"default\"",
+         "description": "The field's focus color; `default` is the text color.",
+         "name": "color",
+         "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
         },
         {
          "description": "Formats the weekday headings of the calendar.",
@@ -19257,14 +19272,29 @@
          "type": "boolean"
         },
         {
+         "description": "An `InputAdornment` with `position=\"end\"`, after the field's sections (before the buttons).",
+         "name": "endAdornment",
+         "type": "ReactNode"
+        },
+        {
          "description": "Shows the field in the error state.",
          "name": "error",
          "type": "boolean"
         },
         {
+         "description": "The field API: `getSections`, `getActiveSectionIndex`, `setSelectedSections`, `focusField`, `isFieldFocused`.",
+         "name": "fieldRef",
+         "type": "Ref<FieldApi>"
+        },
+        {
          "description": "Always show this many weeks (6 keeps the height the same every month).",
          "name": "fixedWeekNumber",
          "type": "number"
+        },
+        {
+         "description": "Show the field's focus colors even when it doesn't have focus.",
+         "name": "focused",
+         "type": "boolean"
         },
         {
          "description": "js tokens). Default: from the views and the locale.",
@@ -19286,6 +19316,11 @@
          "description": "Text under the field, such as a hint or an error message.",
          "name": "helperText",
          "type": "ReactNode"
+        },
+        {
+         "description": "Hide the field's label visually (it still names the field).",
+         "name": "hiddenLabel",
+         "type": "boolean"
         },
         {
          "description": "Id of the field (other ids derive from it).",
@@ -19316,6 +19351,12 @@
          "description": "Text overrides.",
          "name": "localeText",
          "type": "Partial<PickerLocaleText>"
+        },
+        {
+         "default": "\"none\"",
+         "description": "The field's vertical margin.",
+         "name": "margin",
+         "type": "\"dense\" | \"none\" | \"normal\""
         },
         {
          "description": "Latest valid day. Default 31 December 2099.",
@@ -19369,9 +19410,9 @@
          "type": "((open: boolean, reason: PickerOpenReason) => void)"
         },
         {
-         "description": "Called when the selected section changes.",
+         "description": "Called when the selected section changes (its index, or `\"all\"`).",
          "name": "onSelectedSectionsChange",
-         "type": "((section: number | null) => void)"
+         "type": "((section: FieldSelectedSections) => void)"
         },
         {
          "description": "Called when the view changes.",
@@ -19387,6 +19428,12 @@
          "description": "Controlled open state.",
          "name": "open",
          "type": "boolean"
+        },
+        {
+         "default": "\"end\"",
+         "description": "Side of the button that opens the picker.",
+         "name": "openPickerButtonPosition",
+         "type": "\"end\" | \"start\""
         },
         {
          "description": "The view the picker opens on.",
@@ -19425,9 +19472,9 @@
          "type": "boolean"
         },
         {
-         "description": "The selected section of the field (its index, `null`: none), controlled.",
+         "description": "The selected section of the field (controlled): its index, the first section of a type (`\"day\"`), every section (`\"all\"`), or `null` for none.",
          "name": "selectedSections",
-         "type": "number | null"
+         "type": "FieldSelectedSections"
         },
         {
          "description": "Shortcut chips beside the calendar.",
@@ -19450,6 +19497,12 @@
          "type": "((year: PickerValidDate) => boolean)"
         },
         {
+         "default": "false",
+         "description": "Digit sections keep the format's padding (`D` shows `5`). they always show two digits (`05`).",
+         "name": "shouldRespectLeadingZeros",
+         "type": "boolean"
+        },
+        {
          "description": "Days of the previous and next months fill the first and last weeks.",
          "name": "showDaysOutsideCurrentMonth",
          "type": "boolean"
@@ -19468,6 +19521,11 @@
          "description": "Replaced parts (phase 4): `layout`, `toolbar`, `actionBar`, `shortcuts`, `day`, the arrow and open icons. Custom parts read the picker through `usePickerContext()`.",
          "name": "slots",
          "type": "PickerSlots<PickerValidDate | null>"
+        },
+        {
+         "description": "An `InputAdornment` with `position=\"start\"`, before the field's sections.",
+         "name": "startAdornment",
+         "type": "ReactNode"
         },
         {
          "description": "Time zone of the value (MUI X): `\"default\"` (the value's own zone, else the computer's), `\"system\"`, `\"UTC\"` or an IANA name such as `\"America/New_York\"`. The pickers show and edit the wall time in that zone.",
@@ -20030,6 +20088,30 @@
          "type": "(section?: number | undefined) => void"
         },
         {
+         "description": "Focuses the field: the first section, or the given one.",
+         "kind": "method",
+         "name": "focusField",
+         "type": "(selected?: number | \"day\" | \"hours\" | \"meridiem\" | \"minutes\" | \"month\" | \"seconds\" | \"weekDay\" | \"year\" | undefined) => void"
+        },
+        {
+         "description": "The selected section's index, or `null` when no section is selected.",
+         "kind": "method",
+         "name": "getActiveSectionIndex",
+         "type": "() => number | null"
+        },
+        {
+         "description": "Every section with its text.",
+         "kind": "method",
+         "name": "getSections",
+         "type": "() => FieldSection[]"
+        },
+        {
+         "description": "The field has focus.",
+         "kind": "method",
+         "name": "isFieldFocused",
+         "type": "() => boolean"
+        },
+        {
          "description": "Sets the value from the adapter's dates (or `Date` instants), without events.",
          "kind": "method",
          "name": "setDate",
@@ -20052,6 +20134,12 @@
          "kind": "method",
          "name": "setLocaleText",
          "type": "(text: Partial<PickerLocaleText>) => void"
+        },
+        {
+         "description": "Selects a section by index or type, every section (`\"all\"`) or none (`null`).",
+         "kind": "method",
+         "name": "setSelectedSections",
+         "type": "(selected: FieldSelectedSections) => void"
         },
         {
          "description": "Days, months or years that can't be picked (functions have no attribute).",
@@ -20113,6 +20201,36 @@
          "description": "A clear button at the end of the field.",
          "kind": "flag",
          "name": "clearable"
+        },
+        {
+         "attr": "data-ok-clear-button-position",
+         "default": "end",
+         "description": "Side of the clear button. HTML: put the button in the adornment on that side.",
+         "kind": "style",
+         "name": "clearButtonPosition",
+         "optional": true,
+         "values": [
+          "start",
+          "end"
+         ]
+        },
+        {
+         "attr": "data-ok-open-picker-button-position",
+         "default": "end",
+         "description": "Pickers: side of the open button. HTML: put the button in the adornment on that side.",
+         "kind": "style",
+         "name": "openPickerButtonPosition",
+         "optional": true,
+         "values": [
+          "start",
+          "end"
+         ]
+        },
+        {
+         "attr": "data-ok-should-respect-leading-zeros",
+         "description": "Digit sections keep the format's padding (`D` shows `5`); by default they show two digits (`05`).",
+         "kind": "flag",
+         "name": "shouldRespectLeadingZeros"
         },
         {
          "attr": "data-ok-read-only",
@@ -20208,9 +20326,21 @@
          "type": "boolean"
         },
         {
+         "default": "\"end\"",
+         "description": "Side of the clear button.",
+         "name": "clearButtonPosition",
+         "type": "\"end\" | \"start\""
+        },
+        {
          "description": "A clear button at the end.",
          "name": "clearable",
          "type": "boolean"
+        },
+        {
+         "default": "\"default\"",
+         "description": "Focus color; `default` is the text color.",
+         "name": "color",
+         "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
         },
         {
          "description": "Uncontrolled initial value.",
@@ -20233,13 +20363,23 @@
          "type": "boolean"
         },
         {
-         "description": "More content at the end (a picker's open button).",
+         "description": "An `InputAdornment` with `position=\"end\"`, after the sections (before the buttons).",
          "name": "endAdornment",
          "type": "ReactNode"
         },
         {
          "description": "Error colors; default: the value is invalid.",
          "name": "error",
+         "type": "boolean"
+        },
+        {
+         "description": "The field API: `getSections`, `getActiveSectionIndex`, `setSelectedSections`, `focusField`, `isFieldFocused`.",
+         "name": "fieldRef",
+         "type": "Ref<FieldApi>"
+        },
+        {
+         "description": "Show the focus colors even when the field doesn't have focus.",
+         "name": "focused",
          "type": "boolean"
         },
         {
@@ -20264,6 +20404,11 @@
          "type": "ReactNode"
         },
         {
+         "description": "Hide the label visually (it still names the field); the field is laid out as without one.",
+         "name": "hiddenLabel",
+         "type": "boolean"
+        },
+        {
          "description": "Id of the sections group (other ids derive from it).",
          "name": "id",
          "type": "string"
@@ -20282,6 +20427,12 @@
          "description": "Text overrides for this field.",
          "name": "localeText",
          "type": "Partial<PickerLocaleText>"
+        },
+        {
+         "default": "\"none\"",
+         "description": "Vertical margin.",
+         "name": "margin",
+         "type": "\"dense\" | \"none\" | \"normal\""
         },
         {
          "description": "Latest valid day. Default 31 December 2099.",
@@ -20314,9 +20465,9 @@
          "type": "((error: DateValidationError | null, value: PickerValidDate | null) => void)"
         },
         {
-         "description": "Called when another section gets focus.",
+         "description": "Called when another section gets focus (its index), or every section is selected (`\"all\"`).",
          "name": "onSelectedSectionsChange",
-         "type": "((section: number | null) => void)"
+         "type": "((section: FieldSelectedSections) => void)"
         },
         {
          "description": "The value can't be changed.",
@@ -20334,9 +20485,9 @@
          "type": "boolean"
         },
         {
-         "description": "The focused section (controlled), `null` when none.",
+         "description": "The selected section (controlled): its index, the first section of a type (`\"day\"`), every section (`\"all\"`), or `null` for none.",
          "name": "selectedSections",
-         "type": "number | null"
+         "type": "FieldSelectedSections"
         },
         {
          "description": "Days that can't be picked.",
@@ -20354,9 +20505,20 @@
          "type": "((year: PickerValidDate) => boolean)"
         },
         {
+         "default": "false",
+         "description": "Digit sections keep the format's padding (`D` shows `5`). they always show two digits (`05`).",
+         "name": "shouldRespectLeadingZeros",
+         "type": "boolean"
+        },
+        {
          "description": "The field's size.",
          "name": "size",
          "type": "\"medium\" | \"small\""
+        },
+        {
+         "description": "An `InputAdornment` with `position=\"start\"`, before the sections.",
+         "name": "startAdornment",
+         "type": "ReactNode"
         },
         {
          "description": "Time zone of the value (MUI X): `\"default\"` (the value's own zone, else the computer's), `\"system\"`, `\"UTC\"` or an IANA name such as `\"America/New_York\"`. The pickers show and edit the wall time in that zone.",
@@ -21267,9 +21429,9 @@
          "type": "((position: \"end\" | \"start\") => void)"
         },
         {
-         "description": "Called when the selected section changes.",
+         "description": "Called when the selected section changes (its index, or `\"all\"`).",
          "name": "onSelectedSectionsChange",
-         "type": "((section: number | null) => void)"
+         "type": "((section: FieldSelectedSections) => void)"
         },
         {
          "description": "Controlled open state.",
@@ -21307,9 +21469,9 @@
          "type": "boolean"
         },
         {
-         "description": "The selected section of the field (its index, `null`: none), controlled.",
+         "description": "The selected section of the field (controlled): its index, the first section of a type (`\"day\"`), every section (`\"all\"`), or `null` for none.",
          "name": "selectedSections",
-         "type": "number | null"
+         "type": "FieldSelectedSections"
         },
         {
          "description": "Shortcut chips beside the calendar (\"Last 7 days\"…).",
@@ -21407,9 +21569,21 @@
          "type": "boolean"
         },
         {
+         "default": "\"end\"",
+         "description": "Side of the clear button.",
+         "name": "clearButtonPosition",
+         "type": "\"end\" | \"start\""
+        },
+        {
          "description": "A clear button at the end.",
          "name": "clearable",
          "type": "boolean"
+        },
+        {
+         "default": "\"default\"",
+         "description": "Focus color; `default` is the text color.",
+         "name": "color",
+         "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
         },
         {
          "description": "Uncontrolled initial value.",
@@ -21437,13 +21611,23 @@
          "type": "boolean"
         },
         {
-         "description": "More content at the end (a picker's open button).",
+         "description": "An `InputAdornment` with `position=\"end\"`, after the sections (before the buttons).",
          "name": "endAdornment",
          "type": "ReactNode"
         },
         {
          "description": "Error colors; default: the value is invalid.",
          "name": "error",
+         "type": "boolean"
+        },
+        {
+         "description": "The field API: `getSections`, `getActiveSectionIndex`, `setSelectedSections`, `focusField`, `isFieldFocused`.",
+         "name": "fieldRef",
+         "type": "Ref<FieldApi>"
+        },
+        {
+         "description": "Show the focus colors even when the field doesn't have focus.",
+         "name": "focused",
          "type": "boolean"
         },
         {
@@ -21468,6 +21652,11 @@
          "type": "ReactNode"
         },
         {
+         "description": "Hide the label visually (it still names the field); the field is laid out as without one.",
+         "name": "hiddenLabel",
+         "type": "boolean"
+        },
+        {
          "description": "Id of the sections group (other ids derive from it).",
          "name": "id",
          "type": "string"
@@ -21486,6 +21675,12 @@
          "description": "Text overrides for this field.",
          "name": "localeText",
          "type": "Partial<PickerLocaleText>"
+        },
+        {
+         "default": "\"none\"",
+         "description": "Vertical margin.",
+         "name": "margin",
+         "type": "\"dense\" | \"none\" | \"normal\""
         },
         {
          "description": "Latest valid day. Default 31 December 2099.",
@@ -21543,9 +21738,9 @@
          "type": "((error: PickerValidationError | null, value: PickerValidDate | null) => void)"
         },
         {
-         "description": "Called when another section gets focus.",
+         "description": "Called when another section gets focus (its index), or every section is selected (`\"all\"`).",
          "name": "onSelectedSectionsChange",
-         "type": "((section: number | null) => void)"
+         "type": "((section: FieldSelectedSections) => void)"
         },
         {
          "description": "The value can't be changed.",
@@ -21563,9 +21758,9 @@
          "type": "boolean"
         },
         {
-         "description": "The focused section (controlled), `null` when none.",
+         "description": "The selected section (controlled): its index, the first section of a type (`\"day\"`), every section (`\"all\"`), or `null` for none.",
          "name": "selectedSections",
-         "type": "number | null"
+         "type": "FieldSelectedSections"
         },
         {
          "description": "Days that can't be picked.",
@@ -21588,9 +21783,20 @@
          "type": "((year: PickerValidDate) => boolean)"
         },
         {
+         "default": "false",
+         "description": "Digit sections keep the format's padding (`D` shows `5`). they always show two digits (`05`).",
+         "name": "shouldRespectLeadingZeros",
+         "type": "boolean"
+        },
+        {
          "description": "The field's size.",
          "name": "size",
          "type": "\"medium\" | \"small\""
+        },
+        {
+         "description": "An `InputAdornment` with `position=\"start\"`, before the sections.",
+         "name": "startAdornment",
+         "type": "ReactNode"
         },
         {
          "description": "Time zone of the value (MUI X): `\"default\"` (the value's own zone, else the computer's), `\"system\"`, `\"UTC\"` or an IANA name such as `\"America/New_York\"`. The pickers show and edit the wall time in that zone.",
@@ -21643,6 +21849,12 @@
          "type": "boolean"
         },
         {
+         "default": "\"end\"",
+         "description": "Side of the clear button.",
+         "name": "clearButtonPosition",
+         "type": "\"end\" | \"start\""
+        },
+        {
          "description": "Field props.",
          "name": "clearable",
          "type": "boolean"
@@ -21651,6 +21863,12 @@
          "description": "Picking a day closes the picker. Default: desktop only.",
          "name": "closeOnSelect",
          "type": "boolean"
+        },
+        {
+         "default": "\"default\"",
+         "description": "The field's focus color; `default` is the text color.",
+         "name": "color",
+         "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
         },
         {
          "description": "Formats the weekday headings of the calendar.",
@@ -21699,14 +21917,29 @@
          "type": "boolean"
         },
         {
+         "description": "An `InputAdornment` with `position=\"end\"`, after the field's sections (before the buttons).",
+         "name": "endAdornment",
+         "type": "ReactNode"
+        },
+        {
          "description": "Shows the field in the error state.",
          "name": "error",
          "type": "boolean"
         },
         {
+         "description": "The field API: `getSections`, `getActiveSectionIndex`, `setSelectedSections`, `focusField`, `isFieldFocused`.",
+         "name": "fieldRef",
+         "type": "Ref<FieldApi>"
+        },
+        {
          "description": "Always show this many weeks (6 keeps the height the same every month).",
          "name": "fixedWeekNumber",
          "type": "number"
+        },
+        {
+         "description": "Show the field's focus colors even when it doesn't have focus.",
+         "name": "focused",
+         "type": "boolean"
         },
         {
          "description": "js tokens). Default: from the views and the locale.",
@@ -21728,6 +21961,11 @@
          "description": "Text under the field, such as a hint or an error message.",
          "name": "helperText",
          "type": "ReactNode"
+        },
+        {
+         "description": "Hide the field's label visually (it still names the field).",
+         "name": "hiddenLabel",
+         "type": "boolean"
         },
         {
          "description": "Id of the field (other ids derive from it).",
@@ -21758,6 +21996,12 @@
          "description": "Text overrides.",
          "name": "localeText",
          "type": "Partial<PickerLocaleText>"
+        },
+        {
+         "default": "\"none\"",
+         "description": "The field's vertical margin.",
+         "name": "margin",
+         "type": "\"dense\" | \"none\" | \"normal\""
         },
         {
          "description": "Latest valid day. Default 31 December 2099.",
@@ -21836,9 +22080,9 @@
          "type": "((open: boolean, reason: PickerOpenReason) => void)"
         },
         {
-         "description": "Called when the selected section changes.",
+         "description": "Called when the selected section changes (its index, or `\"all\"`).",
          "name": "onSelectedSectionsChange",
-         "type": "((section: number | null) => void)"
+         "type": "((section: FieldSelectedSections) => void)"
         },
         {
          "description": "Called when the view changes.",
@@ -21854,6 +22098,12 @@
          "description": "Controlled open state.",
          "name": "open",
          "type": "boolean"
+        },
+        {
+         "default": "\"end\"",
+         "description": "Side of the button that opens the picker.",
+         "name": "openPickerButtonPosition",
+         "type": "\"end\" | \"start\""
         },
         {
          "description": "The view the picker opens on.",
@@ -21892,9 +22142,9 @@
          "type": "boolean"
         },
         {
-         "description": "The selected section of the field (its index, `null`: none), controlled.",
+         "description": "The selected section of the field (controlled): its index, the first section of a type (`\"day\"`), every section (`\"all\"`), or `null` for none.",
          "name": "selectedSections",
-         "type": "number | null"
+         "type": "FieldSelectedSections"
         },
         {
          "description": "Shortcut chips beside the calendar.",
@@ -21922,6 +22172,12 @@
          "type": "((year: PickerValidDate) => boolean)"
         },
         {
+         "default": "false",
+         "description": "Digit sections keep the format's padding (`D` shows `5`). they always show two digits (`05`).",
+         "name": "shouldRespectLeadingZeros",
+         "type": "boolean"
+        },
+        {
          "description": "Days of the previous and next months fill the first and last weeks.",
          "name": "showDaysOutsideCurrentMonth",
          "type": "boolean"
@@ -21945,6 +22201,11 @@
          "description": "Replaced parts (phase 4): `layout`, `toolbar`, `actionBar`, `shortcuts`, `day`, the arrow and open icons. Custom parts read the picker through `usePickerContext()`.",
          "name": "slots",
          "type": "PickerSlots<PickerValidDate | null>"
+        },
+        {
+         "description": "An `InputAdornment` with `position=\"start\"`, before the field's sections.",
+         "name": "startAdornment",
+         "type": "ReactNode"
         },
         {
          "description": "Desktop: up to this many options a day render one list (DigitalClock). Default 24.",
@@ -22255,9 +22516,9 @@
          "type": "((position: \"end\" | \"start\") => void)"
         },
         {
-         "description": "Called when the selected section changes.",
+         "description": "Called when the selected section changes (its index, or `\"all\"`).",
          "name": "onSelectedSectionsChange",
-         "type": "((section: number | null) => void)"
+         "type": "((section: FieldSelectedSections) => void)"
         },
         {
          "description": "Controlled open state.",
@@ -22295,9 +22556,9 @@
          "type": "boolean"
         },
         {
-         "description": "The selected section of the field (its index, `null`: none), controlled.",
+         "description": "The selected section of the field (controlled): its index, the first section of a type (`\"day\"`), every section (`\"all\"`), or `null` for none.",
          "name": "selectedSections",
-         "type": "number | null"
+         "type": "FieldSelectedSections"
         },
         {
          "description": "Shortcut chips beside the calendar (\"Last 7 days\"…).",
@@ -22417,6 +22678,12 @@
          "type": "boolean"
         },
         {
+         "default": "\"end\"",
+         "description": "Side of the clear button.",
+         "name": "clearButtonPosition",
+         "type": "\"end\" | \"start\""
+        },
+        {
          "description": "Field props.",
          "name": "clearable",
          "type": "boolean"
@@ -22425,6 +22692,12 @@
          "description": "Picking a day closes the picker. Default: desktop only.",
          "name": "closeOnSelect",
          "type": "boolean"
+        },
+        {
+         "default": "\"default\"",
+         "description": "The field's focus color; `default` is the text color.",
+         "name": "color",
+         "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
         },
         {
          "description": "Formats the weekday headings of the calendar.",
@@ -22468,14 +22741,29 @@
          "type": "boolean"
         },
         {
+         "description": "An `InputAdornment` with `position=\"end\"`, after the field's sections (before the buttons).",
+         "name": "endAdornment",
+         "type": "ReactNode"
+        },
+        {
          "description": "Shows the field in the error state.",
          "name": "error",
          "type": "boolean"
         },
         {
+         "description": "The field API: `getSections`, `getActiveSectionIndex`, `setSelectedSections`, `focusField`, `isFieldFocused`.",
+         "name": "fieldRef",
+         "type": "Ref<FieldApi>"
+        },
+        {
          "description": "Always show this many weeks (6 keeps the height the same every month).",
          "name": "fixedWeekNumber",
          "type": "number"
+        },
+        {
+         "description": "Show the field's focus colors even when it doesn't have focus.",
+         "name": "focused",
+         "type": "boolean"
         },
         {
          "description": "js tokens). Default: from the views and the locale.",
@@ -22497,6 +22785,11 @@
          "description": "Text under the field, such as a hint or an error message.",
          "name": "helperText",
          "type": "ReactNode"
+        },
+        {
+         "description": "Hide the field's label visually (it still names the field).",
+         "name": "hiddenLabel",
+         "type": "boolean"
         },
         {
          "description": "Id of the field (other ids derive from it).",
@@ -22527,6 +22820,12 @@
          "description": "Text overrides.",
          "name": "localeText",
          "type": "Partial<PickerLocaleText>"
+        },
+        {
+         "default": "\"none\"",
+         "description": "The field's vertical margin.",
+         "name": "margin",
+         "type": "\"dense\" | \"none\" | \"normal\""
         },
         {
          "description": "Latest valid day. Default 31 December 2099.",
@@ -22580,9 +22879,9 @@
          "type": "((open: boolean, reason: PickerOpenReason) => void)"
         },
         {
-         "description": "Called when the selected section changes.",
+         "description": "Called when the selected section changes (its index, or `\"all\"`).",
          "name": "onSelectedSectionsChange",
-         "type": "((section: number | null) => void)"
+         "type": "((section: FieldSelectedSections) => void)"
         },
         {
          "description": "Called when the view changes.",
@@ -22598,6 +22897,12 @@
          "description": "Controlled open state.",
          "name": "open",
          "type": "boolean"
+        },
+        {
+         "default": "\"end\"",
+         "description": "Side of the button that opens the picker.",
+         "name": "openPickerButtonPosition",
+         "type": "\"end\" | \"start\""
         },
         {
          "description": "The view the picker opens on.",
@@ -22636,9 +22941,9 @@
          "type": "boolean"
         },
         {
-         "description": "The selected section of the field (its index, `null`: none), controlled.",
+         "description": "The selected section of the field (controlled): its index, the first section of a type (`\"day\"`), every section (`\"all\"`), or `null` for none.",
          "name": "selectedSections",
-         "type": "number | null"
+         "type": "FieldSelectedSections"
         },
         {
          "description": "Shortcut chips beside the calendar.",
@@ -22661,6 +22966,12 @@
          "type": "((year: PickerValidDate) => boolean)"
         },
         {
+         "default": "false",
+         "description": "Digit sections keep the format's padding (`D` shows `5`). they always show two digits (`05`).",
+         "name": "shouldRespectLeadingZeros",
+         "type": "boolean"
+        },
+        {
          "description": "Days of the previous and next months fill the first and last weeks.",
          "name": "showDaysOutsideCurrentMonth",
          "type": "boolean"
@@ -22679,6 +22990,11 @@
          "description": "Replaced parts (phase 4): `layout`, `toolbar`, `actionBar`, `shortcuts`, `day`, the arrow and open icons. Custom parts read the picker through `usePickerContext()`.",
          "name": "slots",
          "type": "PickerSlots<PickerValidDate | null>"
+        },
+        {
+         "description": "An `InputAdornment` with `position=\"start\"`, before the field's sections.",
+         "name": "startAdornment",
+         "type": "ReactNode"
         },
         {
          "description": "Time zone of the value (MUI X): `\"default\"` (the value's own zone, else the computer's), `\"system\"`, `\"UTC\"` or an IANA name such as `\"America/New_York\"`. The pickers show and edit the wall time in that zone.",
@@ -22978,9 +23294,9 @@
          "type": "((position: \"end\" | \"start\") => void)"
         },
         {
-         "description": "Called when the selected section changes.",
+         "description": "Called when the selected section changes (its index, or `\"all\"`).",
          "name": "onSelectedSectionsChange",
-         "type": "((section: number | null) => void)"
+         "type": "((section: FieldSelectedSections) => void)"
         },
         {
          "description": "Controlled open state.",
@@ -23018,9 +23334,9 @@
          "type": "boolean"
         },
         {
-         "description": "The selected section of the field (its index, `null`: none), controlled.",
+         "description": "The selected section of the field (controlled): its index, the first section of a type (`\"day\"`), every section (`\"all\"`), or `null` for none.",
          "name": "selectedSections",
-         "type": "number | null"
+         "type": "FieldSelectedSections"
         },
         {
          "description": "Shortcut chips beside the calendar (\"Last 7 days\"…).",
@@ -23123,6 +23439,12 @@
          "type": "boolean"
         },
         {
+         "default": "\"end\"",
+         "description": "Side of the clear button.",
+         "name": "clearButtonPosition",
+         "type": "\"end\" | \"start\""
+        },
+        {
          "description": "Field props.",
          "name": "clearable",
          "type": "boolean"
@@ -23131,6 +23453,12 @@
          "description": "Picking a day closes the picker. Default: desktop only.",
          "name": "closeOnSelect",
          "type": "boolean"
+        },
+        {
+         "default": "\"default\"",
+         "description": "The field's focus color; `default` is the text color.",
+         "name": "color",
+         "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
         },
         {
          "description": "Formats the weekday headings of the calendar.",
@@ -23179,14 +23507,29 @@
          "type": "boolean"
         },
         {
+         "description": "An `InputAdornment` with `position=\"end\"`, after the field's sections (before the buttons).",
+         "name": "endAdornment",
+         "type": "ReactNode"
+        },
+        {
          "description": "Shows the field in the error state.",
          "name": "error",
          "type": "boolean"
         },
         {
+         "description": "The field API: `getSections`, `getActiveSectionIndex`, `setSelectedSections`, `focusField`, `isFieldFocused`.",
+         "name": "fieldRef",
+         "type": "Ref<FieldApi>"
+        },
+        {
          "description": "Always show this many weeks (6 keeps the height the same every month).",
          "name": "fixedWeekNumber",
          "type": "number"
+        },
+        {
+         "description": "Show the field's focus colors even when it doesn't have focus.",
+         "name": "focused",
+         "type": "boolean"
         },
         {
          "description": "js tokens). Default: from the views and the locale.",
@@ -23208,6 +23551,11 @@
          "description": "Text under the field, such as a hint or an error message.",
          "name": "helperText",
          "type": "ReactNode"
+        },
+        {
+         "description": "Hide the field's label visually (it still names the field).",
+         "name": "hiddenLabel",
+         "type": "boolean"
         },
         {
          "description": "Id of the field (other ids derive from it).",
@@ -23238,6 +23586,12 @@
          "description": "Text overrides.",
          "name": "localeText",
          "type": "Partial<PickerLocaleText>"
+        },
+        {
+         "default": "\"none\"",
+         "description": "The field's vertical margin.",
+         "name": "margin",
+         "type": "\"dense\" | \"none\" | \"normal\""
         },
         {
          "description": "Latest valid day. Default 31 December 2099.",
@@ -23316,9 +23670,9 @@
          "type": "((open: boolean, reason: PickerOpenReason) => void)"
         },
         {
-         "description": "Called when the selected section changes.",
+         "description": "Called when the selected section changes (its index, or `\"all\"`).",
          "name": "onSelectedSectionsChange",
-         "type": "((section: number | null) => void)"
+         "type": "((section: FieldSelectedSections) => void)"
         },
         {
          "description": "Called when the view changes.",
@@ -23334,6 +23688,12 @@
          "description": "Controlled open state.",
          "name": "open",
          "type": "boolean"
+        },
+        {
+         "default": "\"end\"",
+         "description": "Side of the button that opens the picker.",
+         "name": "openPickerButtonPosition",
+         "type": "\"end\" | \"start\""
         },
         {
          "description": "The view the picker opens on.",
@@ -23372,9 +23732,9 @@
          "type": "boolean"
         },
         {
-         "description": "The selected section of the field (its index, `null`: none), controlled.",
+         "description": "The selected section of the field (controlled): its index, the first section of a type (`\"day\"`), every section (`\"all\"`), or `null` for none.",
          "name": "selectedSections",
-         "type": "number | null"
+         "type": "FieldSelectedSections"
         },
         {
          "description": "Shortcut chips beside the calendar.",
@@ -23402,6 +23762,12 @@
          "type": "((year: PickerValidDate) => boolean)"
         },
         {
+         "default": "false",
+         "description": "Digit sections keep the format's padding (`D` shows `5`). they always show two digits (`05`).",
+         "name": "shouldRespectLeadingZeros",
+         "type": "boolean"
+        },
+        {
          "description": "Days of the previous and next months fill the first and last weeks.",
          "name": "showDaysOutsideCurrentMonth",
          "type": "boolean"
@@ -23425,6 +23791,11 @@
          "description": "Replaced parts (phase 4): `layout`, `toolbar`, `actionBar`, `shortcuts`, `day`, the arrow and open icons. Custom parts read the picker through `usePickerContext()`.",
          "name": "slots",
          "type": "PickerSlots<PickerValidDate | null>"
+        },
+        {
+         "description": "An `InputAdornment` with `position=\"start\"`, before the field's sections.",
+         "name": "startAdornment",
+         "type": "ReactNode"
         },
         {
          "description": "Desktop: up to this many options a day render one list (DigitalClock). Default 24.",
@@ -23735,9 +24106,9 @@
          "type": "((position: \"end\" | \"start\") => void)"
         },
         {
-         "description": "Called when the selected section changes.",
+         "description": "Called when the selected section changes (its index, or `\"all\"`).",
          "name": "onSelectedSectionsChange",
-         "type": "((section: number | null) => void)"
+         "type": "((section: FieldSelectedSections) => void)"
         },
         {
          "description": "Controlled open state.",
@@ -23775,9 +24146,9 @@
          "type": "boolean"
         },
         {
-         "description": "The selected section of the field (its index, `null`: none), controlled.",
+         "description": "The selected section of the field (controlled): its index, the first section of a type (`\"day\"`), every section (`\"all\"`), or `null` for none.",
          "name": "selectedSections",
-         "type": "number | null"
+         "type": "FieldSelectedSections"
         },
         {
          "description": "Shortcut chips beside the calendar (\"Last 7 days\"…).",
@@ -23902,6 +24273,12 @@
          "type": "boolean"
         },
         {
+         "default": "\"end\"",
+         "description": "Side of the clear button.",
+         "name": "clearButtonPosition",
+         "type": "\"end\" | \"start\""
+        },
+        {
          "description": "Field props.",
          "name": "clearable",
          "type": "boolean"
@@ -23910,6 +24287,12 @@
          "description": "Picking a day closes the picker. Default: desktop only.",
          "name": "closeOnSelect",
          "type": "boolean"
+        },
+        {
+         "default": "\"default\"",
+         "description": "The field's focus color; `default` is the text color.",
+         "name": "color",
+         "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
         },
         {
          "description": "Uncontrolled initial value.",
@@ -23943,8 +24326,23 @@
          "type": "boolean"
         },
         {
+         "description": "An `InputAdornment` with `position=\"end\"`, after the field's sections (before the buttons).",
+         "name": "endAdornment",
+         "type": "ReactNode"
+        },
+        {
          "description": "Shows the field in the error state.",
          "name": "error",
+         "type": "boolean"
+        },
+        {
+         "description": "The field API: `getSections`, `getActiveSectionIndex`, `setSelectedSections`, `focusField`, `isFieldFocused`.",
+         "name": "fieldRef",
+         "type": "Ref<FieldApi>"
+        },
+        {
+         "description": "Show the field's focus colors even when it doesn't have focus.",
+         "name": "focused",
          "type": "boolean"
         },
         {
@@ -23967,6 +24365,11 @@
          "description": "Text under the field, such as a hint or an error message.",
          "name": "helperText",
          "type": "ReactNode"
+        },
+        {
+         "description": "Hide the field's label visually (it still names the field).",
+         "name": "hiddenLabel",
+         "type": "boolean"
         },
         {
          "description": "Id of the field (other ids derive from it).",
@@ -23992,6 +24395,12 @@
          "description": "Text overrides.",
          "name": "localeText",
          "type": "Partial<PickerLocaleText>"
+        },
+        {
+         "default": "\"none\"",
+         "description": "The field's vertical margin.",
+         "name": "margin",
+         "type": "\"dense\" | \"none\" | \"normal\""
         },
         {
          "description": "Latest valid time.",
@@ -24039,9 +24448,9 @@
          "type": "((open: boolean, reason: PickerOpenReason) => void)"
         },
         {
-         "description": "Called when the selected section changes.",
+         "description": "Called when the selected section changes (its index, or `\"all\"`).",
          "name": "onSelectedSectionsChange",
-         "type": "((section: number | null) => void)"
+         "type": "((section: FieldSelectedSections) => void)"
         },
         {
          "description": "Called when the view changes.",
@@ -24052,6 +24461,12 @@
          "description": "Controlled open state.",
          "name": "open",
          "type": "boolean"
+        },
+        {
+         "default": "\"end\"",
+         "description": "Side of the button that opens the picker.",
+         "name": "openPickerButtonPosition",
+         "type": "\"end\" | \"start\""
         },
         {
          "description": "The view the picker opens on.",
@@ -24085,14 +24500,20 @@
          "type": "boolean"
         },
         {
-         "description": "The selected section of the field (its index, `null`: none), controlled.",
+         "description": "The selected section of the field (controlled): its index, the first section of a type (`\"day\"`), every section (`\"all\"`), or `null` for none.",
          "name": "selectedSections",
-         "type": "number | null"
+         "type": "FieldSelectedSections"
         },
         {
          "description": "Times that can't be picked, per view.",
          "name": "shouldDisableTime",
          "type": "((value: PickerValidDate, view: \"hours\" | \"minutes\" | \"seconds\") => boolean)"
+        },
+        {
+         "default": "false",
+         "description": "Digit sections keep the format's padding (`D` shows `5`). they always show two digits (`05`).",
+         "name": "shouldRespectLeadingZeros",
+         "type": "boolean"
         },
         {
          "description": "The field's size.",
@@ -24113,6 +24534,11 @@
          "description": "Replaced parts (phase 4): `layout`, `toolbar`, `actionBar`, `shortcuts`, `day`, the arrow and open icons. Custom parts read the picker through `usePickerContext()`.",
          "name": "slots",
          "type": "PickerSlots<PickerValidDate | null>"
+        },
+        {
+         "description": "An `InputAdornment` with `position=\"start\"`, before the field's sections.",
+         "name": "startAdornment",
+         "type": "ReactNode"
         },
         {
          "description": "Desktop: up to this many options a day render one list (DigitalClock). Default 24.",
@@ -24345,9 +24771,9 @@
          "type": "((position: \"end\" | \"start\") => void)"
         },
         {
-         "description": "Called when the selected section changes.",
+         "description": "Called when the selected section changes (its index, or `\"all\"`).",
          "name": "onSelectedSectionsChange",
-         "type": "((section: number | null) => void)"
+         "type": "((section: FieldSelectedSections) => void)"
         },
         {
          "description": "Controlled open state.",
@@ -24380,9 +24806,9 @@
          "type": "boolean"
         },
         {
-         "description": "The selected section of the field (its index, `null`: none), controlled.",
+         "description": "The selected section of the field (controlled): its index, the first section of a type (`\"day\"`), every section (`\"all\"`), or `null` for none.",
          "name": "selectedSections",
-         "type": "number | null"
+         "type": "FieldSelectedSections"
         },
         {
          "description": "Shortcut chips beside the calendar (\"Last 7 days\"…).",
@@ -24773,6 +25199,12 @@
          "type": "boolean"
         },
         {
+         "default": "\"end\"",
+         "description": "Side of the clear button.",
+         "name": "clearButtonPosition",
+         "type": "\"end\" | \"start\""
+        },
+        {
          "description": "Field props.",
          "name": "clearable",
          "type": "boolean"
@@ -24781,6 +25213,12 @@
          "description": "Picking a day closes the picker. Default: desktop only.",
          "name": "closeOnSelect",
          "type": "boolean"
+        },
+        {
+         "default": "\"default\"",
+         "description": "The field's focus color; `default` is the text color.",
+         "name": "color",
+         "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
         },
         {
          "description": "Formats the weekday headings of the calendar.",
@@ -24824,14 +25262,29 @@
          "type": "boolean"
         },
         {
+         "description": "An `InputAdornment` with `position=\"end\"`, after the field's sections (before the buttons).",
+         "name": "endAdornment",
+         "type": "ReactNode"
+        },
+        {
          "description": "Shows the field in the error state.",
          "name": "error",
          "type": "boolean"
         },
         {
+         "description": "The field API: `getSections`, `getActiveSectionIndex`, `setSelectedSections`, `focusField`, `isFieldFocused`.",
+         "name": "fieldRef",
+         "type": "Ref<FieldApi>"
+        },
+        {
          "description": "Always show this many weeks (6 keeps the height the same every month).",
          "name": "fixedWeekNumber",
          "type": "number"
+        },
+        {
+         "description": "Show the field's focus colors even when it doesn't have focus.",
+         "name": "focused",
+         "type": "boolean"
         },
         {
          "description": "js tokens). Default: from the views and the locale.",
@@ -24853,6 +25306,11 @@
          "description": "Text under the field, such as a hint or an error message.",
          "name": "helperText",
          "type": "ReactNode"
+        },
+        {
+         "description": "Hide the field's label visually (it still names the field).",
+         "name": "hiddenLabel",
+         "type": "boolean"
         },
         {
          "description": "Id of the field (other ids derive from it).",
@@ -24883,6 +25341,12 @@
          "description": "Text overrides.",
          "name": "localeText",
          "type": "Partial<PickerLocaleText>"
+        },
+        {
+         "default": "\"none\"",
+         "description": "The field's vertical margin.",
+         "name": "margin",
+         "type": "\"dense\" | \"none\" | \"normal\""
         },
         {
          "description": "Latest valid day. Default 31 December 2099.",
@@ -24936,9 +25400,9 @@
          "type": "((open: boolean, reason: PickerOpenReason) => void)"
         },
         {
-         "description": "Called when the selected section changes.",
+         "description": "Called when the selected section changes (its index, or `\"all\"`).",
          "name": "onSelectedSectionsChange",
-         "type": "((section: number | null) => void)"
+         "type": "((section: FieldSelectedSections) => void)"
         },
         {
          "description": "Called when the view changes.",
@@ -24954,6 +25418,12 @@
          "description": "Controlled open state.",
          "name": "open",
          "type": "boolean"
+        },
+        {
+         "default": "\"end\"",
+         "description": "Side of the button that opens the picker.",
+         "name": "openPickerButtonPosition",
+         "type": "\"end\" | \"start\""
         },
         {
          "description": "The view the picker opens on.",
@@ -24992,9 +25462,9 @@
          "type": "boolean"
         },
         {
-         "description": "The selected section of the field (its index, `null`: none), controlled.",
+         "description": "The selected section of the field (controlled): its index, the first section of a type (`\"day\"`), every section (`\"all\"`), or `null` for none.",
          "name": "selectedSections",
-         "type": "number | null"
+         "type": "FieldSelectedSections"
         },
         {
          "description": "Shortcut chips beside the calendar.",
@@ -25017,6 +25487,12 @@
          "type": "((year: PickerValidDate) => boolean)"
         },
         {
+         "default": "false",
+         "description": "Digit sections keep the format's padding (`D` shows `5`). they always show two digits (`05`).",
+         "name": "shouldRespectLeadingZeros",
+         "type": "boolean"
+        },
+        {
          "description": "Days of the previous and next months fill the first and last weeks.",
          "name": "showDaysOutsideCurrentMonth",
          "type": "boolean"
@@ -25035,6 +25511,11 @@
          "description": "Replaced parts (phase 4): `layout`, `toolbar`, `actionBar`, `shortcuts`, `day`, the arrow and open icons. Custom parts read the picker through `usePickerContext()`.",
          "name": "slots",
          "type": "PickerSlots<PickerValidDate | null>"
+        },
+        {
+         "description": "An `InputAdornment` with `position=\"start\"`, before the field's sections.",
+         "name": "startAdornment",
+         "type": "ReactNode"
         },
         {
          "description": "Time zone of the value (MUI X): `\"default\"` (the value's own zone, else the computer's), `\"system\"`, `\"UTC\"` or an IANA name such as `\"America/New_York\"`. The pickers show and edit the wall time in that zone.",
@@ -25334,9 +25815,9 @@
          "type": "((position: \"end\" | \"start\") => void)"
         },
         {
-         "description": "Called when the selected section changes.",
+         "description": "Called when the selected section changes (its index, or `\"all\"`).",
          "name": "onSelectedSectionsChange",
-         "type": "((section: number | null) => void)"
+         "type": "((section: FieldSelectedSections) => void)"
         },
         {
          "description": "Controlled open state.",
@@ -25374,9 +25855,9 @@
          "type": "boolean"
         },
         {
-         "description": "The selected section of the field (its index, `null`: none), controlled.",
+         "description": "The selected section of the field (controlled): its index, the first section of a type (`\"day\"`), every section (`\"all\"`), or `null` for none.",
          "name": "selectedSections",
-         "type": "number | null"
+         "type": "FieldSelectedSections"
         },
         {
          "description": "Shortcut chips beside the calendar (\"Last 7 days\"…).",
@@ -25479,6 +25960,12 @@
          "type": "boolean"
         },
         {
+         "default": "\"end\"",
+         "description": "Side of the clear button.",
+         "name": "clearButtonPosition",
+         "type": "\"end\" | \"start\""
+        },
+        {
          "description": "Field props.",
          "name": "clearable",
          "type": "boolean"
@@ -25487,6 +25974,12 @@
          "description": "Picking a day closes the picker. Default: desktop only.",
          "name": "closeOnSelect",
          "type": "boolean"
+        },
+        {
+         "default": "\"default\"",
+         "description": "The field's focus color; `default` is the text color.",
+         "name": "color",
+         "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
         },
         {
          "description": "Formats the weekday headings of the calendar.",
@@ -25535,14 +26028,29 @@
          "type": "boolean"
         },
         {
+         "description": "An `InputAdornment` with `position=\"end\"`, after the field's sections (before the buttons).",
+         "name": "endAdornment",
+         "type": "ReactNode"
+        },
+        {
          "description": "Shows the field in the error state.",
          "name": "error",
          "type": "boolean"
         },
         {
+         "description": "The field API: `getSections`, `getActiveSectionIndex`, `setSelectedSections`, `focusField`, `isFieldFocused`.",
+         "name": "fieldRef",
+         "type": "Ref<FieldApi>"
+        },
+        {
          "description": "Always show this many weeks (6 keeps the height the same every month).",
          "name": "fixedWeekNumber",
          "type": "number"
+        },
+        {
+         "description": "Show the field's focus colors even when it doesn't have focus.",
+         "name": "focused",
+         "type": "boolean"
         },
         {
          "description": "js tokens). Default: from the views and the locale.",
@@ -25564,6 +26072,11 @@
          "description": "Text under the field, such as a hint or an error message.",
          "name": "helperText",
          "type": "ReactNode"
+        },
+        {
+         "description": "Hide the field's label visually (it still names the field).",
+         "name": "hiddenLabel",
+         "type": "boolean"
         },
         {
          "description": "Id of the field (other ids derive from it).",
@@ -25594,6 +26107,12 @@
          "description": "Text overrides.",
          "name": "localeText",
          "type": "Partial<PickerLocaleText>"
+        },
+        {
+         "default": "\"none\"",
+         "description": "The field's vertical margin.",
+         "name": "margin",
+         "type": "\"dense\" | \"none\" | \"normal\""
         },
         {
          "description": "Latest valid day. Default 31 December 2099.",
@@ -25672,9 +26191,9 @@
          "type": "((open: boolean, reason: PickerOpenReason) => void)"
         },
         {
-         "description": "Called when the selected section changes.",
+         "description": "Called when the selected section changes (its index, or `\"all\"`).",
          "name": "onSelectedSectionsChange",
-         "type": "((section: number | null) => void)"
+         "type": "((section: FieldSelectedSections) => void)"
         },
         {
          "description": "Called when the view changes.",
@@ -25690,6 +26209,12 @@
          "description": "Controlled open state.",
          "name": "open",
          "type": "boolean"
+        },
+        {
+         "default": "\"end\"",
+         "description": "Side of the button that opens the picker.",
+         "name": "openPickerButtonPosition",
+         "type": "\"end\" | \"start\""
         },
         {
          "description": "The view the picker opens on.",
@@ -25728,9 +26253,9 @@
          "type": "boolean"
         },
         {
-         "description": "The selected section of the field (its index, `null`: none), controlled.",
+         "description": "The selected section of the field (controlled): its index, the first section of a type (`\"day\"`), every section (`\"all\"`), or `null` for none.",
          "name": "selectedSections",
-         "type": "number | null"
+         "type": "FieldSelectedSections"
         },
         {
          "description": "Shortcut chips beside the calendar.",
@@ -25758,6 +26283,12 @@
          "type": "((year: PickerValidDate) => boolean)"
         },
         {
+         "default": "false",
+         "description": "Digit sections keep the format's padding (`D` shows `5`). they always show two digits (`05`).",
+         "name": "shouldRespectLeadingZeros",
+         "type": "boolean"
+        },
+        {
          "description": "Days of the previous and next months fill the first and last weeks.",
          "name": "showDaysOutsideCurrentMonth",
          "type": "boolean"
@@ -25781,6 +26312,11 @@
          "description": "Replaced parts (phase 4): `layout`, `toolbar`, `actionBar`, `shortcuts`, `day`, the arrow and open icons. Custom parts read the picker through `usePickerContext()`.",
          "name": "slots",
          "type": "PickerSlots<PickerValidDate | null>"
+        },
+        {
+         "description": "An `InputAdornment` with `position=\"start\"`, before the field's sections.",
+         "name": "startAdornment",
+         "type": "ReactNode"
         },
         {
          "description": "Desktop: up to this many options a day render one list (DigitalClock). Default 24.",
@@ -26091,9 +26627,9 @@
          "type": "((position: \"end\" | \"start\") => void)"
         },
         {
-         "description": "Called when the selected section changes.",
+         "description": "Called when the selected section changes (its index, or `\"all\"`).",
          "name": "onSelectedSectionsChange",
-         "type": "((section: number | null) => void)"
+         "type": "((section: FieldSelectedSections) => void)"
         },
         {
          "description": "Controlled open state.",
@@ -26131,9 +26667,9 @@
          "type": "boolean"
         },
         {
-         "description": "The selected section of the field (its index, `null`: none), controlled.",
+         "description": "The selected section of the field (controlled): its index, the first section of a type (`\"day\"`), every section (`\"all\"`), or `null` for none.",
          "name": "selectedSections",
-         "type": "number | null"
+         "type": "FieldSelectedSections"
         },
         {
          "description": "Shortcut chips beside the calendar (\"Last 7 days\"…).",
@@ -26258,6 +26794,12 @@
          "type": "boolean"
         },
         {
+         "default": "\"end\"",
+         "description": "Side of the clear button.",
+         "name": "clearButtonPosition",
+         "type": "\"end\" | \"start\""
+        },
+        {
          "description": "Field props.",
          "name": "clearable",
          "type": "boolean"
@@ -26266,6 +26808,12 @@
          "description": "Picking a day closes the picker. Default: desktop only.",
          "name": "closeOnSelect",
          "type": "boolean"
+        },
+        {
+         "default": "\"default\"",
+         "description": "The field's focus color; `default` is the text color.",
+         "name": "color",
+         "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
         },
         {
          "description": "Uncontrolled initial value.",
@@ -26299,8 +26847,23 @@
          "type": "boolean"
         },
         {
+         "description": "An `InputAdornment` with `position=\"end\"`, after the field's sections (before the buttons).",
+         "name": "endAdornment",
+         "type": "ReactNode"
+        },
+        {
          "description": "Shows the field in the error state.",
          "name": "error",
+         "type": "boolean"
+        },
+        {
+         "description": "The field API: `getSections`, `getActiveSectionIndex`, `setSelectedSections`, `focusField`, `isFieldFocused`.",
+         "name": "fieldRef",
+         "type": "Ref<FieldApi>"
+        },
+        {
+         "description": "Show the field's focus colors even when it doesn't have focus.",
+         "name": "focused",
          "type": "boolean"
         },
         {
@@ -26323,6 +26886,11 @@
          "description": "Text under the field, such as a hint or an error message.",
          "name": "helperText",
          "type": "ReactNode"
+        },
+        {
+         "description": "Hide the field's label visually (it still names the field).",
+         "name": "hiddenLabel",
+         "type": "boolean"
         },
         {
          "description": "Id of the field (other ids derive from it).",
@@ -26348,6 +26916,12 @@
          "description": "Text overrides.",
          "name": "localeText",
          "type": "Partial<PickerLocaleText>"
+        },
+        {
+         "default": "\"none\"",
+         "description": "The field's vertical margin.",
+         "name": "margin",
+         "type": "\"dense\" | \"none\" | \"normal\""
         },
         {
          "description": "Latest valid time.",
@@ -26395,9 +26969,9 @@
          "type": "((open: boolean, reason: PickerOpenReason) => void)"
         },
         {
-         "description": "Called when the selected section changes.",
+         "description": "Called when the selected section changes (its index, or `\"all\"`).",
          "name": "onSelectedSectionsChange",
-         "type": "((section: number | null) => void)"
+         "type": "((section: FieldSelectedSections) => void)"
         },
         {
          "description": "Called when the view changes.",
@@ -26408,6 +26982,12 @@
          "description": "Controlled open state.",
          "name": "open",
          "type": "boolean"
+        },
+        {
+         "default": "\"end\"",
+         "description": "Side of the button that opens the picker.",
+         "name": "openPickerButtonPosition",
+         "type": "\"end\" | \"start\""
         },
         {
          "description": "The view the picker opens on.",
@@ -26441,14 +27021,20 @@
          "type": "boolean"
         },
         {
-         "description": "The selected section of the field (its index, `null`: none), controlled.",
+         "description": "The selected section of the field (controlled): its index, the first section of a type (`\"day\"`), every section (`\"all\"`), or `null` for none.",
          "name": "selectedSections",
-         "type": "number | null"
+         "type": "FieldSelectedSections"
         },
         {
          "description": "Times that can't be picked, per view.",
          "name": "shouldDisableTime",
          "type": "((value: PickerValidDate, view: \"hours\" | \"minutes\" | \"seconds\") => boolean)"
+        },
+        {
+         "default": "false",
+         "description": "Digit sections keep the format's padding (`D` shows `5`). they always show two digits (`05`).",
+         "name": "shouldRespectLeadingZeros",
+         "type": "boolean"
         },
         {
          "description": "The field's size.",
@@ -26469,6 +27055,11 @@
          "description": "Replaced parts (phase 4): `layout`, `toolbar`, `actionBar`, `shortcuts`, `day`, the arrow and open icons. Custom parts read the picker through `usePickerContext()`.",
          "name": "slots",
          "type": "PickerSlots<PickerValidDate | null>"
+        },
+        {
+         "description": "An `InputAdornment` with `position=\"start\"`, before the field's sections.",
+         "name": "startAdornment",
+         "type": "ReactNode"
         },
         {
          "description": "Desktop: up to this many options a day render one list (DigitalClock). Default 24.",
@@ -26701,9 +27292,9 @@
          "type": "((position: \"end\" | \"start\") => void)"
         },
         {
-         "description": "Called when the selected section changes.",
+         "description": "Called when the selected section changes (its index, or `\"all\"`).",
          "name": "onSelectedSectionsChange",
-         "type": "((section: number | null) => void)"
+         "type": "((section: FieldSelectedSections) => void)"
         },
         {
          "description": "Controlled open state.",
@@ -26736,9 +27327,9 @@
          "type": "boolean"
         },
         {
-         "description": "The selected section of the field (its index, `null`: none), controlled.",
+         "description": "The selected section of the field (controlled): its index, the first section of a type (`\"day\"`), every section (`\"all\"`), or `null` for none.",
          "name": "selectedSections",
-         "type": "number | null"
+         "type": "FieldSelectedSections"
         },
         {
          "description": "Shortcut chips beside the calendar (\"Last 7 days\"…).",
@@ -27096,6 +27687,12 @@
          "type": "((year: PickerValidDate) => boolean)"
         },
         {
+         "default": "false",
+         "description": "Digit sections keep the format's padding (`D` shows `5`). they always show two digits (`05`).",
+         "name": "shouldRespectLeadingZeros",
+         "type": "boolean"
+        },
+        {
          "description": "The field's size.",
          "name": "size",
          "type": "\"medium\" | \"small\""
@@ -27291,6 +27888,12 @@
          "description": "Years that can't be picked (gets 1 January).",
          "name": "shouldDisableYear",
          "type": "((year: PickerValidDate) => boolean)"
+        },
+        {
+         "default": "false",
+         "description": "Digit sections keep the format's padding (`D` shows `5`). they always show two digits (`05`).",
+         "name": "shouldRespectLeadingZeros",
+         "type": "boolean"
         },
         {
          "description": "The field's size.",
@@ -27524,6 +28127,12 @@
          "description": "Times that can't be picked, per view.",
          "name": "shouldDisableTime",
          "type": "((value: PickerValidDate, view: \"hours\" | \"minutes\" | \"seconds\") => boolean)"
+        },
+        {
+         "default": "false",
+         "description": "Digit sections keep the format's padding (`D` shows `5`). they always show two digits (`05`).",
+         "name": "shouldRespectLeadingZeros",
+         "type": "boolean"
         },
         {
          "description": "The field's size.",
@@ -28017,9 +28626,21 @@
          "type": "boolean"
         },
         {
+         "default": "\"end\"",
+         "description": "Side of the clear button.",
+         "name": "clearButtonPosition",
+         "type": "\"end\" | \"start\""
+        },
+        {
          "description": "A clear button at the end of the field.",
          "name": "clearable",
          "type": "boolean"
+        },
+        {
+         "default": "\"default\"",
+         "description": "Focus color; `default` is the text color.",
+         "name": "color",
+         "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
         },
         {
          "description": "Uncontrolled initial range.",
@@ -28042,8 +28663,23 @@
          "type": "boolean"
         },
         {
+         "description": "An `InputAdornment` with `position=\"end\"`, after the sections (before the buttons).",
+         "name": "endAdornment",
+         "type": "ReactNode"
+        },
+        {
          "description": "Error colors; default: the range is invalid.",
          "name": "error",
+         "type": "boolean"
+        },
+        {
+         "description": "The field API: `getSections`, `getActiveSectionIndex`, `setSelectedSections`, `focusField`, `isFieldFocused`.",
+         "name": "fieldRef",
+         "type": "Ref<FieldApi>"
+        },
+        {
+         "description": "Show the focus colors even when the field doesn't have focus.",
+         "name": "focused",
          "type": "boolean"
         },
         {
@@ -28068,6 +28704,11 @@
          "type": "ReactNode"
         },
         {
+         "description": "Hide the label visually (it still names the field).",
+         "name": "hiddenLabel",
+         "type": "boolean"
+        },
+        {
          "description": "Id of the field (other ids derive from it).",
          "name": "id",
          "type": "string"
@@ -28086,6 +28727,12 @@
          "description": "Replaces the text of the labels and buttons, such as for another language.",
          "name": "localeText",
          "type": "Partial<PickerLocaleText>"
+        },
+        {
+         "default": "\"none\"",
+         "description": "Vertical margin.",
+         "name": "margin",
+         "type": "\"dense\" | \"none\" | \"normal\""
         },
         {
          "description": "Latest valid day. Default 31 December 2099.",
@@ -28118,9 +28765,9 @@
          "type": "((error: [RangeValidationError | null, RangeValidationError | null], value: [PickerValidDate | null, PickerValidDate | null]) => void)"
         },
         {
-         "description": "Called when the selected section changes.",
+         "description": "Called when the selected section changes (its index, or `\"all\"`).",
          "name": "onSelectedSectionsChange",
-         "type": "((section: number | null) => void)"
+         "type": "((section: FieldSelectedSections) => void)"
         },
         {
          "description": "Days can be browsed but not picked.",
@@ -28138,9 +28785,9 @@
          "type": "boolean"
         },
         {
-         "description": "The selected section of the field (its index, `null`: none), controlled.",
+         "description": "The selected section of the field (controlled): its index, the first section of a type (`\"day\"`), every section (`\"all\"`), or `null` for none.",
          "name": "selectedSections",
-         "type": "number | null"
+         "type": "FieldSelectedSections"
         },
         {
          "description": "Days that can't be picked.",
@@ -28158,9 +28805,20 @@
          "type": "((year: PickerValidDate) => boolean)"
         },
         {
+         "default": "false",
+         "description": "Digit sections keep the format's padding (`D` shows `5`). they always show two digits (`05`).",
+         "name": "shouldRespectLeadingZeros",
+         "type": "boolean"
+        },
+        {
          "description": "The field's size.",
          "name": "size",
          "type": "\"medium\" | \"small\""
+        },
+        {
+         "description": "An `InputAdornment` with `position=\"start\"`, before the sections.",
+         "name": "startAdornment",
+         "type": "ReactNode"
         },
         {
          "description": "Time zone of the value (MUI X): `\"default\"` (the value's own zone, else the computer's), `\"system\"`, `\"UTC\"` or an IANA name such as `\"America/New_York\"`. The pickers show and edit the wall time in that zone.",
@@ -28202,9 +28860,21 @@
          "type": "boolean"
         },
         {
+         "default": "\"end\"",
+         "description": "Side of the clear button.",
+         "name": "clearButtonPosition",
+         "type": "\"end\" | \"start\""
+        },
+        {
          "description": "A clear button at the end of the field.",
          "name": "clearable",
          "type": "boolean"
+        },
+        {
+         "default": "\"default\"",
+         "description": "Focus color; `default` is the text color.",
+         "name": "color",
+         "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
         },
         {
          "description": "Uncontrolled initial range.",
@@ -28232,8 +28902,23 @@
          "type": "boolean"
         },
         {
+         "description": "An `InputAdornment` with `position=\"end\"`, after the sections (before the buttons).",
+         "name": "endAdornment",
+         "type": "ReactNode"
+        },
+        {
          "description": "Error colors; default: the range is invalid.",
          "name": "error",
+         "type": "boolean"
+        },
+        {
+         "description": "The field API: `getSections`, `getActiveSectionIndex`, `setSelectedSections`, `focusField`, `isFieldFocused`.",
+         "name": "fieldRef",
+         "type": "Ref<FieldApi>"
+        },
+        {
+         "description": "Show the focus colors even when the field doesn't have focus.",
+         "name": "focused",
          "type": "boolean"
         },
         {
@@ -28258,6 +28943,11 @@
          "type": "ReactNode"
         },
         {
+         "description": "Hide the label visually (it still names the field).",
+         "name": "hiddenLabel",
+         "type": "boolean"
+        },
+        {
          "description": "Id of the field (other ids derive from it).",
          "name": "id",
          "type": "string"
@@ -28276,6 +28966,12 @@
          "description": "Replaces the text of the labels and buttons, such as for another language.",
          "name": "localeText",
          "type": "Partial<PickerLocaleText>"
+        },
+        {
+         "default": "\"none\"",
+         "description": "Vertical margin.",
+         "name": "margin",
+         "type": "\"dense\" | \"none\" | \"normal\""
         },
         {
          "description": "Latest valid day. Default 31 December 2099.",
@@ -28333,9 +29029,9 @@
          "type": "((error: [RangeValidationError | null, RangeValidationError | null], value: [PickerValidDate | null, PickerValidDate | null]) => void)"
         },
         {
-         "description": "Called when the selected section changes.",
+         "description": "Called when the selected section changes (its index, or `\"all\"`).",
          "name": "onSelectedSectionsChange",
-         "type": "((section: number | null) => void)"
+         "type": "((section: FieldSelectedSections) => void)"
         },
         {
          "description": "Days can be browsed but not picked.",
@@ -28353,9 +29049,9 @@
          "type": "boolean"
         },
         {
-         "description": "The selected section of the field (its index, `null`: none), controlled.",
+         "description": "The selected section of the field (controlled): its index, the first section of a type (`\"day\"`), every section (`\"all\"`), or `null` for none.",
          "name": "selectedSections",
-         "type": "number | null"
+         "type": "FieldSelectedSections"
         },
         {
          "description": "Days that can't be picked.",
@@ -28378,9 +29074,20 @@
          "type": "((year: PickerValidDate) => boolean)"
         },
         {
+         "default": "false",
+         "description": "Digit sections keep the format's padding (`D` shows `5`). they always show two digits (`05`).",
+         "name": "shouldRespectLeadingZeros",
+         "type": "boolean"
+        },
+        {
          "description": "The field's size.",
          "name": "size",
          "type": "\"medium\" | \"small\""
+        },
+        {
+         "description": "An `InputAdornment` with `position=\"start\"`, before the sections.",
+         "name": "startAdornment",
+         "type": "ReactNode"
         },
         {
          "description": "Time zone of the value (MUI X): `\"default\"` (the value's own zone, else the computer's), `\"system\"`, `\"UTC\"` or an IANA name such as `\"America/New_York\"`. The pickers show and edit the wall time in that zone.",
@@ -28427,9 +29134,21 @@
          "type": "boolean"
         },
         {
+         "default": "\"end\"",
+         "description": "Side of the clear button.",
+         "name": "clearButtonPosition",
+         "type": "\"end\" | \"start\""
+        },
+        {
          "description": "A clear button at the end of the field.",
          "name": "clearable",
          "type": "boolean"
+        },
+        {
+         "default": "\"default\"",
+         "description": "Focus color; `default` is the text color.",
+         "name": "color",
+         "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
         },
         {
          "description": "Uncontrolled initial range.",
@@ -28457,8 +29176,23 @@
          "type": "boolean"
         },
         {
+         "description": "An `InputAdornment` with `position=\"end\"`, after the sections (before the buttons).",
+         "name": "endAdornment",
+         "type": "ReactNode"
+        },
+        {
          "description": "Error colors; default: the range is invalid.",
          "name": "error",
+         "type": "boolean"
+        },
+        {
+         "description": "The field API: `getSections`, `getActiveSectionIndex`, `setSelectedSections`, `focusField`, `isFieldFocused`.",
+         "name": "fieldRef",
+         "type": "Ref<FieldApi>"
+        },
+        {
+         "description": "Show the focus colors even when the field doesn't have focus.",
+         "name": "focused",
          "type": "boolean"
         },
         {
@@ -28483,6 +29217,11 @@
          "type": "ReactNode"
         },
         {
+         "description": "Hide the label visually (it still names the field).",
+         "name": "hiddenLabel",
+         "type": "boolean"
+        },
+        {
          "description": "Id of the field (other ids derive from it).",
          "name": "id",
          "type": "string"
@@ -28501,6 +29240,12 @@
          "description": "Replaces the text of the labels and buttons, such as for another language.",
          "name": "localeText",
          "type": "Partial<PickerLocaleText>"
+        },
+        {
+         "default": "\"none\"",
+         "description": "Vertical margin.",
+         "name": "margin",
+         "type": "\"dense\" | \"none\" | \"normal\""
         },
         {
          "description": "Latest valid time.",
@@ -28538,9 +29283,9 @@
          "type": "((error: [RangeValidationError | null, RangeValidationError | null], value: [PickerValidDate | null, PickerValidDate | null]) => void)"
         },
         {
-         "description": "Called when the selected section changes.",
+         "description": "Called when the selected section changes (its index, or `\"all\"`).",
          "name": "onSelectedSectionsChange",
-         "type": "((section: number | null) => void)"
+         "type": "((section: FieldSelectedSections) => void)"
         },
         {
          "description": "Days can be browsed but not picked.",
@@ -28558,9 +29303,9 @@
          "type": "boolean"
         },
         {
-         "description": "The selected section of the field (its index, `null`: none), controlled.",
+         "description": "The selected section of the field (controlled): its index, the first section of a type (`\"day\"`), every section (`\"all\"`), or `null` for none.",
          "name": "selectedSections",
-         "type": "number | null"
+         "type": "FieldSelectedSections"
         },
         {
          "description": "Times that can't be picked, per view.",
@@ -28568,9 +29313,20 @@
          "type": "((value: PickerValidDate, view: \"hours\" | \"minutes\" | \"seconds\") => boolean)"
         },
         {
+         "default": "false",
+         "description": "Digit sections keep the format's padding (`D` shows `5`). they always show two digits (`05`).",
+         "name": "shouldRespectLeadingZeros",
+         "type": "boolean"
+        },
+        {
          "description": "The field's size.",
          "name": "size",
          "type": "\"medium\" | \"small\""
+        },
+        {
+         "description": "An `InputAdornment` with `position=\"start\"`, before the sections.",
+         "name": "startAdornment",
+         "type": "ReactNode"
         },
         {
          "description": "Time zone of the value (MUI X): `\"default\"` (the value's own zone, else the computer's), `\"system\"`, `\"UTC\"` or an IANA name such as `\"America/New_York\"`. The pickers show and edit the wall time in that zone.",
@@ -29112,9 +29868,21 @@
          "type": "boolean"
         },
         {
+         "default": "\"end\"",
+         "description": "Side of the clear button.",
+         "name": "clearButtonPosition",
+         "type": "\"end\" | \"start\""
+        },
+        {
          "description": "Picking a day closes the picker. Default: desktop only.",
          "name": "closeOnSelect",
          "type": "boolean"
+        },
+        {
+         "default": "\"default\"",
+         "description": "The field's focus color; `default` is the text color.",
+         "name": "color",
+         "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
         },
         {
          "description": "Formats the weekday headings of the calendar.",
@@ -29157,9 +29925,29 @@
          "type": "boolean"
         },
         {
+         "description": "An `InputAdornment` with `position=\"end\"`, after the field's sections (before the buttons).",
+         "name": "endAdornment",
+         "type": "ReactNode"
+        },
+        {
+         "description": "The field API: `getSections`, `getActiveSectionIndex`, `setSelectedSections`, `focusField`, `isFieldFocused`.",
+         "name": "fieldRef",
+         "type": "Ref<FieldApi>"
+        },
+        {
          "description": "Always show this many weeks (6 keeps the height the same every month).",
          "name": "fixedWeekNumber",
          "type": "number"
+        },
+        {
+         "description": "Show the field's focus colors even when it doesn't have focus.",
+         "name": "focused",
+         "type": "boolean"
+        },
+        {
+         "description": "Hide the field's label visually (it still names the field).",
+         "name": "hiddenLabel",
+         "type": "boolean"
         },
         {
          "description": "Id of the field (other ids derive from it).",
@@ -29175,6 +29963,12 @@
          "description": "Text overrides.",
          "name": "localeText",
          "type": "Partial<PickerLocaleText>"
+        },
+        {
+         "default": "\"none\"",
+         "description": "The field's vertical margin.",
+         "name": "margin",
+         "type": "\"dense\" | \"none\" | \"normal\""
         },
         {
          "description": "Latest valid day. Default 31 December 2099.",
@@ -29248,6 +30042,12 @@
          "type": "((year: PickerValidDate) => void)"
         },
         {
+         "default": "\"end\"",
+         "description": "Side of the button that opens the picker.",
+         "name": "openPickerButtonPosition",
+         "type": "\"end\" | \"start\""
+        },
+        {
          "description": "The view the picker opens on.",
          "name": "openTo",
          "type": "PickerView"
@@ -29304,6 +30104,12 @@
          "type": "((year: PickerValidDate) => boolean)"
         },
         {
+         "default": "false",
+         "description": "Digit sections keep the format's padding (`D` shows `5`). they always show two digits (`05`).",
+         "name": "shouldRespectLeadingZeros",
+         "type": "boolean"
+        },
+        {
          "description": "Days of the previous and next months fill the first and last weeks.",
          "name": "showDaysOutsideCurrentMonth",
          "type": "boolean"
@@ -29322,6 +30128,11 @@
          "description": "Replaced parts (phase 4): `layout`, `toolbar`, `actionBar`, `shortcuts`, `day`, the arrow and open icons. Custom parts read the picker through `usePickerContext()`.",
          "name": "slots",
          "type": "PickerSlots<PickerValidDate | null>"
+        },
+        {
+         "description": "An `InputAdornment` with `position=\"start\"`, before the field's sections.",
+         "name": "startAdornment",
+         "type": "ReactNode"
         },
         {
          "description": "Desktop: up to this many options a day render one list (DigitalClock). Default 24.",
@@ -29402,9 +30213,21 @@
          "type": "boolean"
         },
         {
+         "default": "\"end\"",
+         "description": "Side of the clear button.",
+         "name": "clearButtonPosition",
+         "type": "\"end\" | \"start\""
+        },
+        {
          "description": "Picking a day closes the picker. Default: desktop only.",
          "name": "closeOnSelect",
          "type": "boolean"
+        },
+        {
+         "default": "\"default\"",
+         "description": "The field's focus color; `default` is the text color.",
+         "name": "color",
+         "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
         },
         {
          "description": "Uncontrolled initial value.",
@@ -29432,6 +30255,26 @@
          "type": "boolean"
         },
         {
+         "description": "An `InputAdornment` with `position=\"end\"`, after the field's sections (before the buttons).",
+         "name": "endAdornment",
+         "type": "ReactNode"
+        },
+        {
+         "description": "The field API: `getSections`, `getActiveSectionIndex`, `setSelectedSections`, `focusField`, `isFieldFocused`.",
+         "name": "fieldRef",
+         "type": "Ref<FieldApi>"
+        },
+        {
+         "description": "Show the field's focus colors even when it doesn't have focus.",
+         "name": "focused",
+         "type": "boolean"
+        },
+        {
+         "description": "Hide the field's label visually (it still names the field).",
+         "name": "hiddenLabel",
+         "type": "boolean"
+        },
+        {
          "description": "Id of the field (other ids derive from it).",
          "name": "id",
          "type": "string"
@@ -29440,6 +30283,12 @@
          "description": "Text overrides.",
          "name": "localeText",
          "type": "Partial<PickerLocaleText>"
+        },
+        {
+         "default": "\"none\"",
+         "description": "The field's vertical margin.",
+         "name": "margin",
+         "type": "\"dense\" | \"none\" | \"normal\""
         },
         {
          "description": "Latest valid time.",
@@ -29477,6 +30326,12 @@
          "type": "((view: \"hours\" | \"minutes\" | \"seconds\") => void)"
         },
         {
+         "default": "\"end\"",
+         "description": "Side of the button that opens the picker.",
+         "name": "openPickerButtonPosition",
+         "type": "\"end\" | \"start\""
+        },
+        {
          "description": "The view the picker opens on.",
          "name": "openTo",
          "type": "\"hours\" | \"minutes\" | \"seconds\""
@@ -29508,6 +30363,12 @@
          "type": "((value: PickerValidDate, view: \"hours\" | \"minutes\" | \"seconds\") => boolean)"
         },
         {
+         "default": "false",
+         "description": "Digit sections keep the format's padding (`D` shows `5`). they always show two digits (`05`).",
+         "name": "shouldRespectLeadingZeros",
+         "type": "boolean"
+        },
+        {
          "description": "Digital clocks leave out the options that can't be picked.",
          "name": "skipDisabled",
          "type": "boolean"
@@ -29521,6 +30382,11 @@
          "description": "Replaced parts (phase 4): `layout`, `toolbar`, `actionBar`, `shortcuts`, `day`, the arrow and open icons. Custom parts read the picker through `usePickerContext()`.",
          "name": "slots",
          "type": "PickerSlots<PickerValidDate | null>"
+        },
+        {
+         "description": "An `InputAdornment` with `position=\"start\"`, before the field's sections.",
+         "name": "startAdornment",
+         "type": "ReactNode"
         },
         {
          "description": "Desktop: up to this many options a day render one list (DigitalClock). Default 24.",
@@ -29921,9 +30787,21 @@
          "type": "boolean"
         },
         {
+         "default": "\"end\"",
+         "description": "Side of the clear button.",
+         "name": "clearButtonPosition",
+         "type": "\"end\" | \"start\""
+        },
+        {
          "description": "A clear button at the end.",
          "name": "clearable",
          "type": "boolean"
+        },
+        {
+         "default": "\"default\"",
+         "description": "Focus color; `default` is the text color.",
+         "name": "color",
+         "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
         },
         {
          "description": "Uncontrolled initial value.",
@@ -29951,13 +30829,23 @@
          "type": "boolean"
         },
         {
-         "description": "More content at the end (a picker's open button).",
+         "description": "An `InputAdornment` with `position=\"end\"`, after the sections (before the buttons).",
          "name": "endAdornment",
          "type": "ReactNode"
         },
         {
          "description": "Error colors; default: the value is invalid.",
          "name": "error",
+         "type": "boolean"
+        },
+        {
+         "description": "The field API: `getSections`, `getActiveSectionIndex`, `setSelectedSections`, `focusField`, `isFieldFocused`.",
+         "name": "fieldRef",
+         "type": "Ref<FieldApi>"
+        },
+        {
+         "description": "Show the focus colors even when the field doesn't have focus.",
+         "name": "focused",
          "type": "boolean"
         },
         {
@@ -29982,6 +30870,11 @@
          "type": "ReactNode"
         },
         {
+         "description": "Hide the label visually (it still names the field); the field is laid out as without one.",
+         "name": "hiddenLabel",
+         "type": "boolean"
+        },
+        {
          "description": "Id of the sections group (other ids derive from it).",
          "name": "id",
          "type": "string"
@@ -30000,6 +30893,12 @@
          "description": "Text overrides for this field.",
          "name": "localeText",
          "type": "Partial<PickerLocaleText>"
+        },
+        {
+         "default": "\"none\"",
+         "description": "Vertical margin.",
+         "name": "margin",
+         "type": "\"dense\" | \"none\" | \"normal\""
         },
         {
          "description": "Latest valid time.",
@@ -30037,9 +30936,9 @@
          "type": "((error: TimeValidationError | null, value: PickerValidDate | null) => void)"
         },
         {
-         "description": "Called when another section gets focus.",
+         "description": "Called when another section gets focus (its index), or every section is selected (`\"all\"`).",
          "name": "onSelectedSectionsChange",
-         "type": "((section: number | null) => void)"
+         "type": "((section: FieldSelectedSections) => void)"
         },
         {
          "description": "The value can't be changed.",
@@ -30057,9 +30956,9 @@
          "type": "boolean"
         },
         {
-         "description": "The focused section (controlled), `null` when none.",
+         "description": "The selected section (controlled): its index, the first section of a type (`\"day\"`), every section (`\"all\"`), or `null` for none.",
          "name": "selectedSections",
-         "type": "number | null"
+         "type": "FieldSelectedSections"
         },
         {
          "description": "Times that can't be picked, per view.",
@@ -30067,9 +30966,20 @@
          "type": "((value: PickerValidDate, view: \"hours\" | \"minutes\" | \"seconds\") => boolean)"
         },
         {
+         "default": "false",
+         "description": "Digit sections keep the format's padding (`D` shows `5`). they always show two digits (`05`).",
+         "name": "shouldRespectLeadingZeros",
+         "type": "boolean"
+        },
+        {
          "description": "The field's size.",
          "name": "size",
          "type": "\"medium\" | \"small\""
+        },
+        {
+         "description": "An `InputAdornment` with `position=\"start\"`, before the sections.",
+         "name": "startAdornment",
+         "type": "ReactNode"
         },
         {
          "description": "Time zone of the value (MUI X): `\"default\"` (the value's own zone, else the computer's), `\"system\"`, `\"UTC\"` or an IANA name such as `\"America/New_York\"`. The pickers show and edit the wall time in that zone.",
@@ -30122,6 +31032,12 @@
          "type": "boolean"
         },
         {
+         "default": "\"end\"",
+         "description": "Side of the clear button.",
+         "name": "clearButtonPosition",
+         "type": "\"end\" | \"start\""
+        },
+        {
          "description": "Field props.",
          "name": "clearable",
          "type": "boolean"
@@ -30130,6 +31046,12 @@
          "description": "Picking a day closes the picker. Default: desktop only.",
          "name": "closeOnSelect",
          "type": "boolean"
+        },
+        {
+         "default": "\"default\"",
+         "description": "The field's focus color; `default` is the text color.",
+         "name": "color",
+         "type": "\"default\" | \"error\" | \"info\" | \"primary\" | \"secondary\" | \"success\" | \"warning\""
         },
         {
          "description": "Uncontrolled initial value.",
@@ -30163,8 +31085,23 @@
          "type": "boolean"
         },
         {
+         "description": "An `InputAdornment` with `position=\"end\"`, after the field's sections (before the buttons).",
+         "name": "endAdornment",
+         "type": "ReactNode"
+        },
+        {
          "description": "Shows the field in the error state.",
          "name": "error",
+         "type": "boolean"
+        },
+        {
+         "description": "The field API: `getSections`, `getActiveSectionIndex`, `setSelectedSections`, `focusField`, `isFieldFocused`.",
+         "name": "fieldRef",
+         "type": "Ref<FieldApi>"
+        },
+        {
+         "description": "Show the field's focus colors even when it doesn't have focus.",
+         "name": "focused",
          "type": "boolean"
         },
         {
@@ -30187,6 +31124,11 @@
          "description": "Text under the field, such as a hint or an error message.",
          "name": "helperText",
          "type": "ReactNode"
+        },
+        {
+         "description": "Hide the field's label visually (it still names the field).",
+         "name": "hiddenLabel",
+         "type": "boolean"
         },
         {
          "description": "Id of the field (other ids derive from it).",
@@ -30212,6 +31154,12 @@
          "description": "Text overrides.",
          "name": "localeText",
          "type": "Partial<PickerLocaleText>"
+        },
+        {
+         "default": "\"none\"",
+         "description": "The field's vertical margin.",
+         "name": "margin",
+         "type": "\"dense\" | \"none\" | \"normal\""
         },
         {
          "description": "Latest valid time.",
@@ -30259,9 +31207,9 @@
          "type": "((open: boolean, reason: PickerOpenReason) => void)"
         },
         {
-         "description": "Called when the selected section changes.",
+         "description": "Called when the selected section changes (its index, or `\"all\"`).",
          "name": "onSelectedSectionsChange",
-         "type": "((section: number | null) => void)"
+         "type": "((section: FieldSelectedSections) => void)"
         },
         {
          "description": "Called when the view changes.",
@@ -30272,6 +31220,12 @@
          "description": "Controlled open state.",
          "name": "open",
          "type": "boolean"
+        },
+        {
+         "default": "\"end\"",
+         "description": "Side of the button that opens the picker.",
+         "name": "openPickerButtonPosition",
+         "type": "\"end\" | \"start\""
         },
         {
          "description": "The view the picker opens on.",
@@ -30305,14 +31259,20 @@
          "type": "boolean"
         },
         {
-         "description": "The selected section of the field (its index, `null`: none), controlled.",
+         "description": "The selected section of the field (controlled): its index, the first section of a type (`\"day\"`), every section (`\"all\"`), or `null` for none.",
          "name": "selectedSections",
-         "type": "number | null"
+         "type": "FieldSelectedSections"
         },
         {
          "description": "Times that can't be picked, per view.",
          "name": "shouldDisableTime",
          "type": "((value: PickerValidDate, view: \"hours\" | \"minutes\" | \"seconds\") => boolean)"
+        },
+        {
+         "default": "false",
+         "description": "Digit sections keep the format's padding (`D` shows `5`). they always show two digits (`05`).",
+         "name": "shouldRespectLeadingZeros",
+         "type": "boolean"
         },
         {
          "description": "The field's size.",
@@ -30333,6 +31293,11 @@
          "description": "Replaced parts (phase 4): `layout`, `toolbar`, `actionBar`, `shortcuts`, `day`, the arrow and open icons. Custom parts read the picker through `usePickerContext()`.",
          "name": "slots",
          "type": "PickerSlots<PickerValidDate | null>"
+        },
+        {
+         "description": "An `InputAdornment` with `position=\"start\"`, before the field's sections.",
+         "name": "startAdornment",
+         "type": "ReactNode"
         },
         {
          "description": "Desktop: up to this many options a day render one list (DigitalClock). Default 24.",
@@ -30565,9 +31530,9 @@
          "type": "((position: \"end\" | \"start\") => void)"
         },
         {
-         "description": "Called when the selected section changes.",
+         "description": "Called when the selected section changes (its index, or `\"all\"`).",
          "name": "onSelectedSectionsChange",
-         "type": "((section: number | null) => void)"
+         "type": "((section: FieldSelectedSections) => void)"
         },
         {
          "description": "Controlled open state.",
@@ -30600,9 +31565,9 @@
          "type": "boolean"
         },
         {
-         "description": "The selected section of the field (its index, `null`: none), controlled.",
+         "description": "The selected section of the field (controlled): its index, the first section of a type (`\"day\"`), every section (`\"all\"`), or `null` for none.",
          "name": "selectedSections",
-         "type": "number | null"
+         "type": "FieldSelectedSections"
         },
         {
          "description": "Shortcut chips beside the calendar (\"Last 7 days\"…).",
@@ -30851,6 +31816,10 @@
      {
       "name": "DateValidationError",
       "type": "\"disableFuture\" | \"disablePast\" | \"invalidDate\" | \"maxDate\" | \"minDate\" | \"shouldDisableDate\" | \"shouldDisableMonth\" | \"shouldDisableYear\""
+     },
+     {
+      "name": "FieldSelectedSections",
+      "type": "number | \"all\" | \"day\" | \"hours\" | \"meridiem\" | \"minutes\" | \"month\" | \"seconds\" | \"weekDay\" | \"year\" | null"
      },
      {
       "name": "PickerDayRenderer",
@@ -31184,6 +32153,36 @@
        "description": "A clear button at the end of the field.",
        "kind": "flag",
        "name": "clearable"
+      },
+      {
+       "attr": "data-ok-clear-button-position",
+       "default": "end",
+       "description": "Side of the clear button. HTML: put the button in the adornment on that side.",
+       "kind": "style",
+       "name": "clearButtonPosition",
+       "optional": true,
+       "values": [
+        "start",
+        "end"
+       ]
+      },
+      {
+       "attr": "data-ok-open-picker-button-position",
+       "default": "end",
+       "description": "Pickers: side of the open button. HTML: put the button in the adornment on that side.",
+       "kind": "style",
+       "name": "openPickerButtonPosition",
+       "optional": true,
+       "values": [
+        "start",
+        "end"
+       ]
+      },
+      {
+       "attr": "data-ok-should-respect-leading-zeros",
+       "description": "Digit sections keep the format's padding (`D` shows `5`); by default they show two digits (`05`).",
+       "kind": "flag",
+       "name": "shouldRespectLeadingZeros"
       },
       {
        "attr": "data-ok-read-only",
@@ -31613,7 +32612,7 @@
      "title": "Events / API"
     },
     {
-     "body": "Upstream: MUI X Date and Time Pickers v9 (Community + Pro), mui.com/x/api/date-pickers/.\nApplies to every picker, field, calendar and clock that has the prop upstream.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `value` / `defaultValue`, `onChange(value, { validationError })`, `onAccept`, `onError` | same | kept | ranges `[start, end]`; error `invalidRange` |\n| `onOpen` / `onClose` / `onCancel` | `onOpenChange(open, reason)` | renamed | reasons `button` · `escape` · `clickaway` · `accept` · `cancel` · `select` · `clear` · `today` · `shortcut` · `api` |\n| `open`, `views`, `openTo`, `view` / `onViewChange` | same | kept | date and time views |\n| `format`, `formatDensity`, `referenceDate`, `autoFocus`, `readOnly`, `disabled`, `label`, `name`, `inputRef`, `localeText` | same | kept | `inputRef` = the hidden input |\n| `selectedSections` / `onSelectedSectionsChange` | same | kept | a section index (MUI also `\"all\"` / a section type) |\n| `minDate`, `maxDate`, `disablePast`, `disableFuture`, `shouldDisableDate` / `Month` / `Year` | same | kept | |\n| `closeOnSelect`, `desktopModeMediaQuery`, `keepOpenDuringFieldFocus`, `reduceAnimations`, `orientation`, `loading`, `renderLoading` | same | kept | time / date time: no close on pick, Cancel + OK (MUI v9, reference) |\n| `displayWeekNumber`, `fixedWeekNumber`, `showDaysOutsideCurrentMonth`, `disableHighlightToday`, `dayOfWeekFormatter`, `monthsPerRow`, `yearsPerRow`, `yearsOrder`, `onMonthChange`, `onYearChange` | same | kept | |\n| `ampm`, `ampmInClock`, `minTime`, `maxTime`, `minDateTime`, `maxDateTime`, `minutesStep`, `shouldDisableTime`, `disableIgnoringDatePartForTimeValidation`, `timeSteps`, `timeStep`, `thresholdToRenderTimeInASingleColumn`, `skipDisabled` | same | kept | clocks' `onChange(value, selectionState)` |\n| Pro: `calendars`, `currentMonthCalendarPosition`, `rangePosition` / `defaultRangePosition` / `onRangePositionChange`, `availableRangePositions`, `disableDragEditing`, `disableAutoMonthSwitching`, range `shortcuts` | same | kept | |\n| `timezone` | same | kept | `\"default\"` · `\"system\"` · `\"UTC\"` · IANA |\n| `viewRenderers` (`renderDateViewCalendar`, `renderTimeViewClock`, `renderDigitalClockTimeView`, `renderMultiSectionDigitalClockTimeView`, `null`) | same | kept | range pickers: `null` only |\n| `slots` `layout`, `toolbar`, `actionBar`, `shortcuts`, `day`, `openPickerIcon`, `leftArrowIcon`, `rightArrowIcon`, `switchViewIcon`; `slotProps` `toolbar.hidden`, `tabs.hidden`, `day`, `layout` | same | kept | |\n| `slotProps.actionBar.actions`, `slotProps.shortcuts.items` | `actions`, `shortcuts` | renamed | |\n| `slotProps.field.clearable` / `onClear`; fields `clearable`, `onClear` | `clearable`, `onClear` | renamed | |\n| `slotProps.textField` | TextField props `helperText`, `error`, `variant`, `size`, `fullWidth`, `required` | renamed | |\n| range `slots.field` (multi input) / per-end `slotProps.textField` | `multiInput`, `startLabel` / `endLabel` | renamed | |\n| `usePickerContext()` | same | kept | ranges add `rangePosition` / `setRangePosition` |\n| `PickersDay`, `PickersLayout`, `PickersActionBar`, `PickersShortcuts` | `PickerDay`, `PickerLayout` (+ `PickerLayoutRoot`, `PickerLayoutContent`), `PickerActionBar`, `PickerShortcuts` | renamed | |\n| locale packs (`frFR`…) | `pickersFrFR`, `pickersDeDE`, `pickersEsES`, `pickersJaJP`, `pickersZhCN`, `pickersFaIR`, `pickersArSD` | renamed | |\n| LocalizationProvider `adapterLocale`, `localeText`, `dateAdapter`; `PickerValidDate` | same | kept | |\n| adapter classes (`AdapterDayjs`…), `dateLibInstance` | `createDayjsAdapter(dayjs)`, `createDateFnsAdapter({ TZDate })`, `createLuxonAdapter(DateTime)`, `createMomentAdapter(moment)` | renamed | the library is the factory's argument |\n| Jalali / Hijri adapters | adapter `calendar`, `LocalizationProvider calendar`, locale `-u-ca-` | renamed | any `Intl` calendar |\n| fields `clearButtonPosition`, `openPickerButtonPosition` | — | deferred | buttons always at the end |\n| fields `startAdornment` / `endAdornment` | — | deferred | `endAdornment` internal (open button) |\n| fields `shouldRespectLeadingZeros` | — | deferred | |\n| fields `fieldRef` (field API) | — | deferred | |\n| fields TextField props `color`, `margin`, `hiddenLabel`, `focused` | — | deferred | |\n| single input range fields `dateSeparator` | — | deferred | fixed `\" – \"` |\n| calendars / clocks `focusedView` / `onFocusedViewChange` | — | deferred | |\n| TimeClock `showViewSwitcher` | — | deferred | |\n| static pickers `displayStaticWrapperAs` | — | deferred | |\n| `dateFormats` | — | not applicable | `format` per picker |\n| `disableOpenPicker` (deprecated) | `viewRenderers` with `null` | not applicable | |\n| `enableAccessibleFieldDOMStructure` | — | not applicable | always the accessible structure |\n| other `slots` (`textField`, `field`, `popper`, `dialog`, `desktopPaper`, `mobilePaper`, `desktopTrapFocus`, transitions), `sx`, `classes`, `className` of parts | TextField props, Popover, Dialog | not applicable | ADR-0015 |\n\nBeyond MUI: `today` (React: pins \"today\"), `aria-current=\"date\"`, HTML `data-ok-locale` /\n`data-ok-timezone` / `data-ok-calendar`, a hidden ISO input for forms, ISO 8601 intervals in HTML,\nopen buttons on range fields (`openRangePickerDialogue`), Start / End tabs on every time range form,\ncalendar systems through `Intl` for any adapter, HTML instance `date` / `setDate` /\n`setDateAdapter` / `setDayRenderer`.",
+     "body": "Upstream: MUI X Date and Time Pickers v9 (Community + Pro), mui.com/x/api/date-pickers/.\nApplies to every picker, field, calendar and clock that has the prop upstream.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `value` / `defaultValue`, `onChange(value, { validationError })`, `onAccept`, `onError` | same | kept | ranges `[start, end]`; error `invalidRange` |\n| `onOpen` / `onClose` / `onCancel` | `onOpenChange(open, reason)` | renamed | reasons `button` · `escape` · `clickaway` · `accept` · `cancel` · `select` · `clear` · `today` · `shortcut` · `api` |\n| `open`, `views`, `openTo`, `view` / `onViewChange` | same | kept | date and time views |\n| `format`, `formatDensity`, `referenceDate`, `autoFocus`, `readOnly`, `disabled`, `label`, `name`, `inputRef`, `localeText` | same | kept | `inputRef` = the hidden input |\n| `selectedSections` / `onSelectedSectionsChange` | same | kept | 4.18.29: a section index, a section type (its first section), `\"all\"` or `null` (`FieldSelectedSections`); the callback reports the focused section's index, or `\"all\"` on select-all (Ctrl / ⌘ + A). HTML: instance `setSelectedSections` |\n| `minDate`, `maxDate`, `disablePast`, `disableFuture`, `shouldDisableDate` / `Month` / `Year` | same | kept | |\n| `closeOnSelect`, `desktopModeMediaQuery`, `keepOpenDuringFieldFocus`, `reduceAnimations`, `orientation`, `loading`, `renderLoading` | same | kept | time / date time: no close on pick, Cancel + OK (MUI v9, reference) |\n| `displayWeekNumber`, `fixedWeekNumber`, `showDaysOutsideCurrentMonth`, `disableHighlightToday`, `dayOfWeekFormatter`, `monthsPerRow`, `yearsPerRow`, `yearsOrder`, `onMonthChange`, `onYearChange` | same | kept | |\n| `ampm`, `ampmInClock`, `minTime`, `maxTime`, `minDateTime`, `maxDateTime`, `minutesStep`, `shouldDisableTime`, `disableIgnoringDatePartForTimeValidation`, `timeSteps`, `timeStep`, `thresholdToRenderTimeInASingleColumn`, `skipDisabled` | same | kept | clocks' `onChange(value, selectionState)` |\n| Pro: `calendars`, `currentMonthCalendarPosition`, `rangePosition` / `defaultRangePosition` / `onRangePositionChange`, `availableRangePositions`, `disableDragEditing`, `disableAutoMonthSwitching`, range `shortcuts` | same | kept | |\n| `timezone` | same | kept | `\"default\"` · `\"system\"` · `\"UTC\"` · IANA |\n| `viewRenderers` (`renderDateViewCalendar`, `renderTimeViewClock`, `renderDigitalClockTimeView`, `renderMultiSectionDigitalClockTimeView`, `null`) | same | kept | range pickers: `null` only |\n| `slots` `layout`, `toolbar`, `actionBar`, `shortcuts`, `day`, `openPickerIcon`, `leftArrowIcon`, `rightArrowIcon`, `switchViewIcon`; `slotProps` `toolbar.hidden`, `tabs.hidden`, `day`, `layout` | same | kept | |\n| `slotProps.actionBar.actions`, `slotProps.shortcuts.items` | `actions`, `shortcuts` | renamed | |\n| `slotProps.field.clearable` / `onClear`; fields `clearable`, `onClear` | `clearable`, `onClear` | renamed | |\n| `slotProps.textField` | TextField props `helperText`, `error`, `variant`, `size`, `fullWidth`, `required`, `color`, `margin`, `hiddenLabel`, `focused` | renamed | 4.18.29 added `color` / `margin` / `hiddenLabel` / `focused` (`data-ok-color`, `data-ok-margin`, `data-ok-hidden-label`, `data-ok-focused` on the TextField root; an empty field shows its sections when focused, with a hidden label or a start adornment) |\n| range `slots.field` (multi input) / per-end `slotProps.textField` | `multiInput`, `startLabel` / `endLabel` | renamed | |\n| `usePickerContext()` | same | kept | ranges add `rangePosition` / `setRangePosition` |\n| `PickersDay`, `PickersLayout`, `PickersActionBar`, `PickersShortcuts` | `PickerDay`, `PickerLayout` (+ `PickerLayoutRoot`, `PickerLayoutContent`), `PickerActionBar`, `PickerShortcuts` | renamed | |\n| locale packs (`frFR`…) | `pickersFrFR`, `pickersDeDE`, `pickersEsES`, `pickersJaJP`, `pickersZhCN`, `pickersFaIR`, `pickersArSD` | renamed | |\n| LocalizationProvider `adapterLocale`, `localeText`, `dateAdapter`; `PickerValidDate` | same | kept | |\n| adapter classes (`AdapterDayjs`…), `dateLibInstance` | `createDayjsAdapter(dayjs)`, `createDateFnsAdapter({ TZDate })`, `createLuxonAdapter(DateTime)`, `createMomentAdapter(moment)` | renamed | the library is the factory's argument |\n| Jalali / Hijri adapters | adapter `calendar`, `LocalizationProvider calendar`, locale `-u-ca-` | renamed | any `Intl` calendar |\n| fields `clearButtonPosition`, `openPickerButtonPosition` | same | kept | 4.18.29: `start` puts the button in a start adornment (open button first, `edge=\"start\"`); `data-ok-clear-button-position` / `data-ok-open-picker-button-position` on the field root mark it, HTML markup places the button. Fields, single input range fields (clear), single-value pickers; range pickers keep their buttons at the end (deferred) |\n| fields `startAdornment` / `endAdornment` | same | kept | 4.18.29: an `InputAdornment` around the sections; the end one comes before the buttons' adornment. Fields, single input range fields, single-value pickers |\n| fields `shouldRespectLeadingZeros` | same | kept | 4.18.29: default `false` as in MUI: digit sections without padding (`D`, `M`, `H`, `h`, `m`, `s`) show two digits (`fieldSections`); `data-ok-should-respect-leading-zeros` keeps the format's padding. Behavior change: such formats used to keep their padding |\n| fields `fieldRef` (field API) | same | kept | 4.18.29: `getSections` (type, format token, content type, value, placeholder, separators), `getActiveSectionIndex`, `setSelectedSections`, `focusField`, `isFieldFocused` (core `createFieldApi`); HTML: the same methods on the `date-field` instance (pickers: the field's instance). Fields, single input range fields, single-value pickers |\n| fields TextField props `color`, `margin`, `hiddenLabel`, `focused` | same | kept | 4.18.29, see `slotProps.textField`. Multi input range fields and range pickers: deferred (each end is a field of its own) |\n| single input range fields `dateSeparator` | — | deferred | fixed `\" – \"` |\n| calendars / clocks `focusedView` / `onFocusedViewChange` | — | deferred | |\n| TimeClock `showViewSwitcher` | — | deferred | |\n| static pickers `displayStaticWrapperAs` | — | deferred | |\n| `dateFormats` | — | not applicable | `format` per picker |\n| `disableOpenPicker` (deprecated) | `viewRenderers` with `null` | not applicable | |\n| `enableAccessibleFieldDOMStructure` | — | not applicable | always the accessible structure |\n| other `slots` (`textField`, `field`, `popper`, `dialog`, `desktopPaper`, `mobilePaper`, `desktopTrapFocus`, transitions), `sx`, `classes`, `className` of parts | TextField props, Popover, Dialog | not applicable | ADR-0015 |\n\nBeyond MUI: `today` (React: pins \"today\"), `aria-current=\"date\"`, HTML `data-ok-locale` /\n`data-ok-timezone` / `data-ok-calendar`, a hidden ISO input for forms, ISO 8601 intervals in HTML,\nopen buttons on range fields (`openRangePickerDialogue`), Start / End tabs on every time range form,\ncalendar systems through `Intl` for any adapter, HTML instance `date` / `setDate` /\n`setDateAdapter` / `setDayRenderer`.",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
@@ -67179,6 +68178,13 @@
      "id": "customization",
      "react": "import {\n  DateCalendar,\n  DesktopTimePicker,\n  PickerDay,\n  type PickerDayProps,\n  renderTimeViewClock,\n} from \"@owlky/react\";\n\nconst events = new Set([2, 9, 16, 23, 30]);\n\nfunction EventDay(props: PickerDayProps) {\n  const marked = !props.outsideCurrentMonth && events.has(props.day.getDate());\n  return (\n    <PickerDay {...props}>\n      {props.children}\n      {marked && <span className=\"day-dot\" aria-hidden=\"true\" />}\n    </PickerDay>\n  );\n}\n\nexport function Planner() {\n  return (\n    <>\n      <DateCalendar slots={{ day: EventDay }} />\n      <DesktopTimePicker\n        label=\"Alarm\"\n        viewRenderers={{ hours: renderTimeViewClock, minutes: renderTimeViewClock }}\n      />\n    </>\n  );\n}",
      "title": "Customize the layout and the views"
+    },
+    {
+     "body": "The field takes the props of a text field and a few of its own:\n- **Text field props:** `label`, `helperText`, `variant`, `size`, `color`, `margin`, `fullWidth`, `required`, `hiddenLabel` and `focused` work as they do on **Text field**.\n- **Adornments:** `startAdornment` and `endAdornment` take an `InputAdornment`, such as a unit or a hint. The end adornment comes before the field's buttons.\n- **Button positions:** `clearButtonPosition` and `openPickerButtonPosition` put the clear button and the picker's open button at the `start` or the `end` (the default). In HTML, put the button in the adornment of that side.\n- **Leading zeros:** digit sections show two digits by default, so `M/D/YYYY` shows \"05/07/2025\". Set `shouldRespectLeadingZeros` to keep the format's padding (\"5/7/2025\").\n- **Field API:** `fieldRef` gives `getSections()`, `getActiveSectionIndex()`, `setSelectedSections(selected)`, `focusField(section)` and `isFieldFocused()`. A selection is a section index, a section type such as `\"day\"`, `\"all\"`, or `null` for none. `selectedSections` takes the same values. In HTML, the field's instance (`\"date-field\"`) has the same methods.",
+     "html": "<div data-ok-text-field data-ok-variant=\"outlined\" data-ok-size=\"medium\" data-ok-color=\"default\" data-ok-margin=\"none\" data-ok-shrink data-ok-date-field data-ok-format-density=\"dense\" data-ok-clearable data-ok-clear-button-position=\"start\" data-ok-value=\"2025-05-25\" data-ok-format=\"MM/DD/YYYY\">\n  <label data-ok-text-field-label id=\"dv-clearable-label\" for=\"dv-clearable\">Clearable</label>\n  <div data-ok-text-field-control>\n    <span data-ok-text-field-adornment=\"start\">\n      <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-date-field-clear aria-label=\"Clear\">\n        <svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M18 6 6 18M6 6l12 12\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"></path></svg>\n      </button>\n    </span>\n    <div id=\"dv-clearable\" role=\"group\" data-ok-text-field-input data-ok-date-field-sections aria-labelledby=\"dv-clearable-label\">\n      <span data-ok-date-field-section>\n        <span data-ok-date-field-content data-ok-section=\"month\" role=\"spinbutton\" aria-label=\"Month\" aria-valuenow=\"5\" aria-valuemin=\"1\" aria-valuemax=\"12\" aria-valuetext=\"May\" tabindex=\"0\" contenteditable=\"true\" inputmode=\"numeric\" spellcheck=\"false\" autocapitalize=\"off\" autocorrect=\"off\" enterkeyhint=\"next\">05</span>\n        <span data-ok-date-field-separator>/</span>\n      </span>\n      <span data-ok-date-field-section>\n        <span data-ok-date-field-content data-ok-section=\"day\" role=\"spinbutton\" aria-label=\"Day\" aria-valuenow=\"25\" aria-valuemin=\"1\" aria-valuemax=\"31\" aria-valuetext=\"25\" tabindex=\"-1\" contenteditable=\"true\" inputmode=\"numeric\" spellcheck=\"false\" autocapitalize=\"off\" autocorrect=\"off\" enterkeyhint=\"next\">25</span>\n        <span data-ok-date-field-separator>/</span>\n      </span>\n      <span data-ok-date-field-section>\n        <span data-ok-date-field-content data-ok-section=\"year\" role=\"spinbutton\" aria-label=\"Year\" aria-valuenow=\"2025\" aria-valuemin=\"0\" aria-valuemax=\"9999\" aria-valuetext=\"2025\" tabindex=\"-1\" contenteditable=\"true\" inputmode=\"numeric\" spellcheck=\"false\" autocapitalize=\"off\" autocorrect=\"off\" enterkeyhint=\"done\">2025</span>\n      </span>\n    </div>\n    <input type=\"hidden\" data-ok-date-field-input value=\"2025-05-25\">\n    <fieldset data-ok-text-field-outline aria-hidden=\"true\">\n      <legend>\n        <span>Clearable</span>\n      </legend>\n    </fieldset>\n  </div>\n</div>\n\n<script type=\"module\">\n  // The field API: select the day, as fieldRef does in React.\n  const field = document.getElementById(\"dv-clearable\").closest(\"[data-ok-date-field]\");\n  window.Owlky.get(field, \"date-field\").setSelectedSections(\"day\");\n</script>",
+     "id": "field",
+     "react": "import type { FieldApi } from \"@owlky/core\";\nimport { DatePicker, InputAdornment } from \"@owlky/react\";\nimport { useRef } from \"react\";\n\nexport function DepartureDate() {\n  const fieldRef = useRef<FieldApi>(null);\n  return (\n    <>\n      <DatePicker\n        label=\"Departure\"\n        clearable\n        clearButtonPosition=\"start\"\n        openPickerButtonPosition=\"start\"\n        format=\"M/D/YYYY\"\n        shouldRespectLeadingZeros\n        endAdornment={<InputAdornment position=\"end\">local time</InputAdornment>}\n        fieldRef={fieldRef}\n      />\n      <button type=\"button\" onClick={() => fieldRef.current?.setSelectedSections(\"day\")}>\n        Edit the day\n      </button>\n    </>\n  );\n}",
+     "title": "Customize the field"
     },
     {
      "body": "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default. Pickers pass the field and calendar options on to their field and calendar.",

@@ -32,8 +32,13 @@
     transition: opacity var(--ok-duration-shorter) var(--ok-easing-standard);
   }
 
+  /* The resting label covers the sections, unless it floats (focus, a value, a start adornment). */
   :where(
-    [data-ok-date-field]:has(> [data-ok-text-field-label]):not([data-ok-shrink]):not(:focus-within)
+    [data-ok-date-field]:has(> [data-ok-text-field-label]):not([data-ok-shrink]):not(
+        :focus-within
+      ):not([data-ok-focused], [data-ok-hidden-label]):not(
+        :has(> [data-ok-text-field-control] > [data-ok-text-field-adornment="start"])
+      )
       > [data-ok-text-field-control]
       > [data-ok-date-field-sections]
   ) {

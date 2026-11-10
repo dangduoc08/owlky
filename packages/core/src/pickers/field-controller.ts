@@ -26,6 +26,8 @@ export interface FieldControllerOptions {
   onValuesChange(values: string[]): void;
   /** The section that has (or last had) focus; render `tabindex="0"` on it. */
   onActiveSectionChange?(index: number): void;
+  /** Every section was selected (Ctrl / ⌘ + A, `selectAll()`). */
+  onSelectAll?(): void;
 }
 
 export interface FieldController {
@@ -33,6 +35,14 @@ export interface FieldController {
   sync(): void;
   /** Focuses a section (`"last"`: the last one). */
   focusSection(index: number | "last"): void;
+  /** Focuses the field and selects every section (as Ctrl / ⌘ + A does). */
+  selectAll(): void;
+  /** Leaves no section selected (focus stays where it is). */
+  clearSelection(): void;
+  /** The section that holds focus, or `null` when the field doesn't have focus. */
+  focusedSection(): number | null;
+  /** Every section is selected. */
+  isAllSelected(): boolean;
   destroy(): void;
 }
 
@@ -168,6 +178,7 @@ export function createFieldController(
       if ((event.ctrlKey || event.metaKey) && key.toLowerCase() === "a") {
         event.preventDefault();
         setAllSelected(true);
+        options.onSelectAll?.();
         return;
       }
       if (key === "ArrowLeft" || key === "ArrowRight") {
@@ -295,8 +306,117 @@ export function createFieldController(
       select(focused);
     },
     focusSection,
+    selectAll() {
+      const list = spinbuttons();
+      const element = list[Math.max(active, 0)] ?? list[0];
+      if (!element) return;
+      if (!group.contains(doc.activeElement)) element.focus();
+      setAllSelected(true);
+      options.onSelectAll?.();
+    },
+    clearSelection() {
+      setAllSelected(false);
+      if (group.contains(doc.activeElement)) doc.getSelection()?.removeAllRanges();
+    },
+    focusedSection() {
+      const index = indexOf(doc.activeElement);
+      return index === -1 ? null : index;
+    },
+    isAllSelected: () => allSelected,
     destroy() {
       controller.abort();
+    },
+  };
+}
+
+/** What `selectedSections` and `setSelectedSections` take (MUI `FieldSelectedSections`). */
+export type FieldSelectedSections = number | FormatSection["type"] | "all" | null;
+
+/** One section of a field, as the field API reports it (MUI `FieldSection`, the parts Owlky has). */
+export interface FieldSection {
+  /** `"day"`, `"month"`, `"year"`, `"hours"`… */
+  type: FormatSection["type"];
+  /** The token, such as `MM`. */
+  format: string;
+  /** Digits or letters. */
+  contentType: FormatSection["contentType"];
+  /** The section's text, `""` when empty. */
+  value: string;
+  /** What the section shows when empty, such as `MM`. */
+  placeholder: string;
+  /** Text before the section (only on the first one). */
+  startSeparator: string;
+  /** Text after the section. */
+  endSeparator: string;
+}
+
+/** The field API (MUI `fieldRef`): React `fieldRef`, HTML instance methods. */
+export interface FieldApi {
+  /** Every section with its text. */
+  getSections(): FieldSection[];
+  /** The selected section's index, or `null` when no section is selected. */
+  getActiveSectionIndex(): number | null;
+  /** Selects a section by index or type, every section (`"all"`) or none (`null`). */
+  setSelectedSections(selected: FieldSelectedSections): void;
+  /** Focuses the field: the first section, or the given one. */
+  focusField(selected?: number | FormatSection["type"]): void;
+  /** The field has focus. */
+  isFieldFocused(): boolean;
+}
+
+/** The index a `selectedSections` value names: an index, or the first section of a type. */
+export function resolveSelectedSection(
+  selected: FieldSelectedSections | undefined,
+  sections: readonly FormatSection[],
+): number | "all" | null {
+  if (selected === "all") return "all";
+  if (typeof selected === "number")
+    return Number.isInteger(selected) && selected >= 0 && selected < sections.length
+      ? selected
+      : null;
+  if (typeof selected !== "string") return null;
+  const index = sections.findIndex((section) => section.type === selected);
+  return index === -1 ? null : index;
+}
+
+/** The field API on a controller (shared by React's `fieldRef` and the HTML instance). */
+export function createFieldApi(
+  controller: FieldController,
+  read: () => {
+    sections: readonly FormatSection[];
+    values: readonly string[];
+    placeholders: readonly string[];
+  },
+): FieldApi {
+  return {
+    getSections() {
+      const { sections, values, placeholders } = read();
+      return sections.map((section, i) => ({
+        type: section.type,
+        format: section.token,
+        contentType: section.contentType,
+        value: values[i] ?? "",
+        placeholder: placeholders[i] ?? "",
+        startSeparator: section.startSeparator,
+        endSeparator: section.endSeparator,
+      }));
+    },
+    getActiveSectionIndex() {
+      if (controller.isAllSelected()) return 0;
+      return controller.focusedSection();
+    },
+    setSelectedSections(selected) {
+      const target = resolveSelectedSection(selected, read().sections);
+      if (target === "all") controller.selectAll();
+      else if (target === null) controller.clearSelection();
+      else controller.focusSection(target);
+    },
+    focusField(selected = 0) {
+      const target = resolveSelectedSection(selected, read().sections);
+      controller.focusSection(typeof target === "number" ? target : 0);
+    },
+    isFieldFocused() {
+      return controller.focusedSection() !== null;
     },
   };
 }

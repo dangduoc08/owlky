@@ -1,14 +1,16 @@
 import {
+  createFieldApi,
   createFieldController,
   type DateRange,
   defaultPickerFormat,
+  type FieldApi,
   type FormatSection,
+  fieldSections,
   formatIsoRange,
   isSamePickerValue,
   isValidDate,
   type PickerLocaleText,
   type PickerValidationError,
-  parseFormat,
   parseIsoRange,
   parsePickerValue,
   pickerValueIso,
@@ -52,7 +54,7 @@ export interface DateFieldEvents {
   clear: EventSpec;
 }
 
-export interface DateFieldInstance extends ComponentInstance, PickerDateApi {
+export interface DateFieldInstance extends ComponentInstance, PickerDateApi, FieldApi {
   /**
    * ISO value, or `null` when empty or partly filled: `YYYY-MM-DD`, `HH:mm:ss` (time fields) or
    * `YYYY-MM-DDTHH:mm:ss` (date time fields). Range fields (`data-ok-range`, ADR-0028): the ISO
@@ -103,6 +105,9 @@ export interface DateFieldInstance extends ComponentInstance, PickerDateApi {
  * Behavior: core `createFieldController` handles keys, typing and paste; this runtime writes the
  *          section texts, ARIA values, the hidden input and `data-ok-shrink` / `data-ok-error`.
  * Events:  ok:date-field:change (cancelable, `{ value, validationError }`), ok:date-field:clear.
+ * Field API (MUI `fieldRef`): getSections, getActiveSectionIndex, setSelectedSections, focusField,
+ *          isFieldFocused. The clear and open buttons sit in the adornment of their side
+ *          (`data-ok-clear-button-position` / `data-ok-open-picker-button-position` mark it).
  */
 export const dateField = defineComponent<DateFieldInstance, DateFieldEvents>({
   name: "date-field",
@@ -130,9 +135,11 @@ export const dateField = defineComponent<DateFieldInstance, DateFieldEvents>({
       );
     // Range fields: the format twice, joined by " – " (each section knows its side).
     const isRange = element.hasAttribute("data-ok-range");
+    // Digit sections show two digits unless the format's padding is kept (MUI default).
+    const respectZeros = element.hasAttribute("data-ok-should-respect-leading-zeros");
     const { sections, count } = isRange
-      ? rangeFieldSections(format)
-      : { sections: parseFormat(format), count: 0 };
+      ? rangeFieldSections(format, respectZeros)
+      : { sections: fieldSections(format, respectZeros), count: 0 };
     const sides = isRange ? 2 : 1;
     const part = (side: number): [number, number] =>
       isRange ? [side * count, side * count + count] : [0, sections.length];
@@ -273,6 +280,11 @@ export const dateField = defineComponent<DateFieldInstance, DateFieldEvents>({
     );
 
     render();
+    const fieldApi = createFieldApi(controller, () => ({
+      sections,
+      values: texts,
+      placeholders: placeholders(),
+    }));
     const dates = pickerDateApi(
       element,
       () => instance.value,
@@ -313,6 +325,11 @@ export const dateField = defineComponent<DateFieldInstance, DateFieldEvents>({
       focus(section = 0) {
         controller.focusSection(section);
       },
+      getSections: fieldApi.getSections,
+      getActiveSectionIndex: fieldApi.getActiveSectionIndex,
+      setSelectedSections: fieldApi.setSelectedSections,
+      focusField: fieldApi.focusField,
+      isFieldFocused: fieldApi.isFieldFocused,
       setShouldDisableDate(fn) {
         functions.shouldDisableDate = asFunction(fn);
         render();

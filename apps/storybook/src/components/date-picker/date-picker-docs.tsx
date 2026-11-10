@@ -18,6 +18,7 @@ import {
   DateRangePicker,
   DateTimePicker,
   DesktopTimePicker,
+  InputAdornment,
   LocalizationProvider,
   renderTimeViewClock,
   StaticDatePicker,
@@ -35,6 +36,7 @@ import rangeFilter from "../../../../../packages/html/src/components/date-picker
 import rtl from "../../../../../packages/html/src/components/date-picker/examples/right-to-left-rtl.html?raw";
 import timeBasic from "../../../../../packages/html/src/components/date-picker/examples/time-basic.html?raw";
 import timeZones from "../../../../../packages/html/src/components/date-picker/examples/time-zones-zones.html?raw";
+import validationStates from "../../../../../packages/html/src/components/date-picker/examples/validation-states.html?raw";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
 import { snippetElement } from "../../helpers/snippet-markup.js";
@@ -43,6 +45,24 @@ const VALUE = new Date(2025, 4, 25);
 const TIME = new Date(2025, 4, 25, 9, 30);
 const RANGE: [Date, Date] = [new Date(2025, 4, 20), new Date(2025, 4, 25)];
 const INSTANT = new Date(Date.UTC(2025, 4, 25, 13, 30));
+
+/** The validation snippet's clearable field, with its clear button in a start adornment. */
+const clearAtStart = () => {
+  const root = snippetElement(validationStates, "data-ok-clearable");
+  const end = snippetElement(root, 'data-ok-text-field-adornment="end"');
+  const indent = (text: string) =>
+    text
+      .split("\n")
+      .map((line) => `    ${line}`)
+      .join("\n");
+  return root
+    .replace(" data-ok-clearable ", ' data-ok-clearable data-ok-clear-button-position="start" ')
+    .replace(`${indent(end)}\n`, "")
+    .replace(
+      "<div data-ok-text-field-control>\n",
+      `<div data-ok-text-field-control>\n${indent(end.replace('"end"', '"start"'))}\n`,
+    );
+};
 
 export const datePickerSections: GuideSection[] = [
   {
@@ -468,6 +488,47 @@ export function Planner() {
 }`,
   },
   {
+    id: "field",
+    title: "Customize the field",
+    body: `The field takes the props of a text field and a few of its own:
+- **Text field props:** \`label\`, \`helperText\`, \`variant\`, \`size\`, \`color\`, \`margin\`, \`fullWidth\`, \`required\`, \`hiddenLabel\` and \`focused\` work as they do on **Text field**.
+- **Adornments:** \`startAdornment\` and \`endAdornment\` take an \`InputAdornment\`, such as a unit or a hint. The end adornment comes before the field's buttons.
+- **Button positions:** \`clearButtonPosition\` and \`openPickerButtonPosition\` put the clear button and the picker's open button at the \`start\` or the \`end\` (the default). In HTML, put the button in the adornment of that side.
+- **Leading zeros:** digit sections show two digits by default, so \`M/D/YYYY\` shows "05/07/2025". Set \`shouldRespectLeadingZeros\` to keep the format's padding ("5/7/2025").
+- **Field API:** \`fieldRef\` gives \`getSections()\`, \`getActiveSectionIndex()\`, \`setSelectedSections(selected)\`, \`focusField(section)\` and \`isFieldFocused()\`. A selection is a section index, a section type such as \`"day"\`, \`"all"\`, or \`null\` for none. \`selectedSections\` takes the same values. In HTML, the field's instance (\`"date-field"\`) has the same methods.`,
+    html: `${clearAtStart()}
+
+<script type="module">
+  // The field API: select the day, as fieldRef does in React.
+  const field = document.getElementById("dv-clearable").closest("[data-ok-date-field]");
+  window.Owlky.get(field, "date-field").setSelectedSections("day");
+</script>`,
+    react: `import type { FieldApi } from "@owlky/core";
+import { DatePicker, InputAdornment } from "@owlky/react";
+import { useRef } from "react";
+
+export function DepartureDate() {
+  const fieldRef = useRef<FieldApi>(null);
+  return (
+    <>
+      <DatePicker
+        label="Departure"
+        clearable
+        clearButtonPosition="start"
+        openPickerButtonPosition="start"
+        format="M/D/YYYY"
+        shouldRespectLeadingZeros
+        endAdornment={<InputAdornment position="end">local time</InputAdornment>}
+        fieldRef={fieldRef}
+      />
+      <button type="button" onClick={() => fieldRef.current?.setSelectedSections("day")}>
+        Edit the day
+      </button>
+    </>
+  );
+}`,
+  },
+  {
     id: "options",
     title: "Options",
     body: "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default. Pickers pass the field and calendar options on to their field and calendar.",
@@ -663,6 +724,21 @@ const PREVIEWS = {
       <OptionsTable schema={dateRangePickerOptions} />
       <OptionsTable schema={dateRangeCalendarOptions} />
     </>
+  ),
+  field: () => (
+    <Preview>
+      <DatePicker
+        label="Departure"
+        clearable
+        clearButtonPosition="start"
+        openPickerButtonPosition="start"
+        format="M/D/YYYY"
+        shouldRespectLeadingZeros
+        defaultValue={VALUE}
+        endAdornment={<InputAdornment position="end">local time</InputAdornment>}
+      />
+      <DateField label="Padded" format="M/D/YYYY" defaultValue={VALUE} />
+    </Preview>
   ),
   props: () => (
     <PropsTable

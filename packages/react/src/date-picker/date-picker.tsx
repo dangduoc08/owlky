@@ -8,6 +8,8 @@ import {
   defaultDateTimePickerActions,
   defaultPickerActions,
   defaultTimePickerActions,
+  type FieldApi,
+  type FieldSelectedSections,
   focusCalendar,
   focusPickerView,
   formatAccessibleDate,
@@ -20,6 +22,7 @@ import {
   nextPickerView,
   normalizeTimeSteps,
   type PickerAction,
+  type PickerButtonPosition,
   type PickerLocaleText,
   type PickerOpenReason,
   type PickerOrientation,
@@ -32,6 +35,7 @@ import {
   pickerViewsOf,
   resolveAmpm,
   resolvePickerMode,
+  type SelectionControlColor,
   type SelectionControlSize,
   scrollDigitalClocks,
   setDateParts,
@@ -39,6 +43,7 @@ import {
   shouldRenderSingleColumn,
   splitViews,
   startOfDay,
+  type TextFieldMargin,
   type TextFieldVariant,
   type TimeSteps,
   type TimeView,
@@ -166,17 +171,35 @@ export interface DatePickerProps
   onYearChange?: ((year: Date) => void) | undefined;
   /** Field props. */
   clearable?: boolean | undefined;
+  /** Side of the clear button. Default `"end"`. */
+  clearButtonPosition?: PickerButtonPosition | undefined;
+  /** Side of the button that opens the picker. Default `"end"`. */
+  openPickerButtonPosition?: PickerButtonPosition | undefined;
   /** Called when the clear button empties the field. */
   onClear?: (() => void) | undefined;
+  /**
+   * Digit sections keep the format's padding (`D` shows `5`). Default `false`: they always show
+   * two digits (`05`).
+   */
+  shouldRespectLeadingZeros?: boolean | undefined;
   readOnly?: boolean | undefined;
   /** Turns the field off. */
   disabled?: boolean | undefined;
   /** Focuses the field when it mounts. */
   autoFocus?: boolean | undefined;
-  /** The selected section of the field (its index, `null`: none), controlled. */
-  selectedSections?: number | null | undefined;
-  /** Called when the selected section changes. */
-  onSelectedSectionsChange?: ((section: number | null) => void) | undefined;
+  /**
+   * The selected section of the field (controlled): its index, the first section of a type
+   * (`"day"`), every section (`"all"`), or `null` for none.
+   */
+  selectedSections?: FieldSelectedSections | undefined;
+  /** Called when the selected section changes (its index, or `"all"`). */
+  onSelectedSectionsChange?: ((section: FieldSelectedSections) => void) | undefined;
+  /** The field API: `getSections`, `getActiveSectionIndex`, `setSelectedSections`, `focusField`, `isFieldFocused`. */
+  fieldRef?: Ref<FieldApi> | undefined;
+  /** An `InputAdornment` with `position="start"`, before the field's sections. */
+  startAdornment?: ReactNode;
+  /** An `InputAdornment` with `position="end"`, after the field's sections (before the buttons). */
+  endAdornment?: ReactNode;
   /** The field's label. */
   label?: ReactNode;
   /** Text under the field, such as a hint or an error message. */
@@ -187,6 +210,14 @@ export interface DatePickerProps
   variant?: TextFieldVariant | undefined;
   /** The field's size. */
   size?: SelectionControlSize | undefined;
+  /** The field's focus color; `default` is the text color. Default `"default"`. */
+  color?: SelectionControlColor | undefined;
+  /** The field's vertical margin. Default `"none"`. */
+  margin?: TextFieldMargin | undefined;
+  /** Hide the field's label visually (it still names the field). */
+  hiddenLabel?: boolean | undefined;
+  /** Show the field's focus colors even when it doesn't have focus. */
+  focused?: boolean | undefined;
   /** Stretches the field to the container's width. */
   fullWidth?: boolean | undefined;
   /** Marks the field as required (an asterisk on the label). */
@@ -296,17 +327,27 @@ export const PickerBase = forwardRef<HTMLDivElement, PickerBaseProps>(function P
     onMonthChange,
     onYearChange,
     clearable,
+    clearButtonPosition,
+    openPickerButtonPosition,
     onClear,
+    shouldRespectLeadingZeros,
     readOnly,
     disabled,
     autoFocus,
     selectedSections,
     onSelectedSectionsChange,
+    fieldRef,
+    startAdornment,
+    endAdornment,
     label,
     helperText,
     error,
     variant,
     size,
+    color,
+    margin,
+    hiddenLabel,
+    focused,
     fullWidth,
     required,
     name,
@@ -882,31 +923,41 @@ export const PickerBase = forwardRef<HTMLDivElement, PickerBaseProps>(function P
             today={today}
             formatDensity={formatDensity}
             clearable={clearable}
+            clearButtonPosition={clearButtonPosition}
+            openPickerButtonPosition={openPickerButtonPosition}
             onClear={onClear}
+            shouldRespectLeadingZeros={shouldRespectLeadingZeros}
             readOnly={readOnly}
             disabled={disabled}
             referenceDate={referenceDate}
             autoFocus={autoFocus}
             selectedSections={selectedSections}
             onSelectedSectionsChange={onSelectedSectionsChange}
+            fieldRef={fieldRef}
+            startAdornment={startAdornment}
+            endAdornment={endAdornment}
             localeText={localeTextProp}
             label={label}
             helperText={helperText}
             error={error}
             variant={variant}
             size={size}
+            color={color}
+            margin={margin}
+            hiddenLabel={hiddenLabel}
+            focused={focused}
             fullWidth={fullWidth}
             required={required}
             name={name}
             inputRef={inputRef}
             {...validation}
             {...(isDate ? {} : timeValidation)}
-            endAdornment={
+            openButton={
               !fieldOnly && (
                 <IconButton
                   ref={openButtonRef}
                   data-ok-date-picker-open=""
-                  edge="end"
+                  edge={openPickerButtonPosition === "start" ? "start" : "end"}
                   aria-label={openLabel}
                   aria-haspopup="dialog"
                   disabled={disabled || readOnly}
@@ -1010,11 +1061,21 @@ export interface StaticDatePickerProps
     | "name"
     | "inputRef"
     | "clearable"
+    | "clearButtonPosition"
+    | "openPickerButtonPosition"
     | "onClear"
+    | "shouldRespectLeadingZeros"
     | "format"
     | "formatDensity"
     | "selectedSections"
     | "onSelectedSectionsChange"
+    | "fieldRef"
+    | "startAdornment"
+    | "endAdornment"
+    | "color"
+    | "margin"
+    | "hiddenLabel"
+    | "focused"
   > {}
 
 /** StaticDatePicker — the picker's layout inline, without a field. */
