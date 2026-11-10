@@ -54,6 +54,20 @@ export interface GridColumn {
   aggregable?: boolean | undefined;
   /** The sort cycle of this column's header (default: the grid's, else asc → desc → none). */
   sortingOrder?: GridSortingOrder | undefined;
+  /** The header shows no sort arrow (it still sorts). */
+  hideSortIcons?: boolean | undefined;
+  /** No column menu for this column. */
+  disableColumnMenu?: boolean | undefined;
+  /** The column stays in its place: it can't be moved, and moves that would shift it are refused. */
+  disableReorder?: boolean | undefined;
+  /** The column is left out of exports (CSV, Excel, print). */
+  disableExport?: boolean | undefined;
+  /** Default true; `false` hides the pin items of its column menu. */
+  pinnable?: boolean | undefined;
+  /** Its cells are row headers (`role="rowheader"`): they name their row. */
+  rowHeader?: boolean | undefined;
+  /** `flex` lays the cell's content out in a row, centered (default `text`: one line). */
+  display?: "text" | "flex" | undefined;
 }
 
 export type GridSortDirection = "asc" | "desc";
@@ -212,14 +226,19 @@ export function orderGridColumns<C extends GridColumn>(
     .map(({ column }) => column);
 }
 
-/** The field order after moving `field` by `delta` places (or before `to`, a field). */
+/**
+ * The field order after moving `field` by `delta` places (or before `to`, a field). `locked`
+ * fields (`disableReorder`) keep their place: a move of one, or a move that would shift one, gives
+ * the order back unchanged.
+ */
 export function moveGridColumn(
   fields: readonly string[],
   field: string,
   delta: number | { to: string },
+  locked: readonly string[] = [],
 ): string[] {
   const from = fields.indexOf(field);
-  if (from < 0) return [...fields];
+  if (from < 0 || locked.includes(field)) return [...fields];
   const rest = fields.filter((f) => f !== field);
   const target =
     typeof delta === "number"
@@ -227,8 +246,13 @@ export function moveGridColumn(
       : rest.indexOf(delta.to) < 0
         ? from
         : rest.indexOf(delta.to) + (fields.indexOf(delta.to) > from ? 1 : 0);
-  return [...rest.slice(0, target), field, ...rest.slice(target)];
+  const next = [...rest.slice(0, target), field, ...rest.slice(target)];
+  return locked.some((f) => next.indexOf(f) !== fields.indexOf(f)) ? [...fields] : next;
 }
+
+/** The fields of the columns that keep their place (`disableReorder`). */
+export const gridLockedFields = (columns: readonly GridColumn[]): string[] =>
+  columns.filter((c) => c.disableReorder).map((c) => c.field);
 
 export interface GridPinnedColumns {
   left?: string[] | undefined;
@@ -696,7 +720,7 @@ export function gridExportColumns<C extends GridColumn>(
     : options.allColumns
       ? [...columns]
       : [...shown];
-  return picked.filter((column) => !isActions(column));
+  return picked.filter((column) => !isActions(column) && !column.disableExport);
 }
 
 /** CSV of the columns (header names) and rows (their text), CRLF lines, with a UTF-8 BOM. */

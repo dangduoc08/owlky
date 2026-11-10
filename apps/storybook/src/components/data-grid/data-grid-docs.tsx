@@ -6,6 +6,7 @@ import cellsGroup from "../../../../../packages/html/src/components/data-grid/ex
 import cellsStatus from "../../../../../packages/html/src/components/data-grid/examples/cells-status.html?raw";
 import chartsGroup from "../../../../../packages/html/src/components/data-grid/examples/charts-group.html?raw";
 import chartsMultiple from "../../../../../packages/html/src/components/data-grid/examples/charts-multiple.html?raw";
+import columnsGroup from "../../../../../packages/html/src/components/data-grid/examples/columns-group.html?raw";
 import dimensionsBorders from "../../../../../packages/html/src/components/data-grid/examples/dimensions-borders.html?raw";
 import dimensionsPages from "../../../../../packages/html/src/components/data-grid/examples/dimensions-pages.html?raw";
 import editorsGroup from "../../../../../packages/html/src/components/data-grid/examples/editors-group.html?raw";
@@ -1606,6 +1607,59 @@ export function Issues() {
       tabNavigation="all"
     />
   );
+}`,
+  },
+  {
+    id: "column-options",
+    title: "Set options per column",
+    body: 'Each column can turn grid features off for itself. `hideSortIcons` hides the sort arrow, while the header still sorts. `disableColumnMenu` removes the column\'s menu. `disableReorder` keeps the column in its place: it doesn\'t drag, and other columns can\'t move past it. `disableExport` leaves it out of the CSV, Excel and print exports. `pinnable: false` hides the pin items of its menu. `cellClassName` and `headerClassName` add class names, as a string or from a function, so your CSS can style a column or single cells. `rowHeader: true` makes the column\'s cells row headers (`role="rowheader"`), so screen readers announce them with the other cells of the row. `display: "flex"` lays out cell content in a row, centered. With `rowSpanning`, `rowSpanValueGetter` returns the value that neighbouring cells compare to merge, such as the owner within a team. `pastedValueParser` turns pasted text into the cell\'s value. In HTML, write `data-ok-disable-reorder`, `data-ok-disable-export` and `data-ok-pinnable="false"` on the header, leave out the sort icon or the menu button, and write `role="rowheader"`, `class`, `data-ok-display` and `data-ok-row-span-value` on the cells. Set a paste parser with `setPastedValueParser(field, parser)`.',
+    html: `${gridOf(columnsGroup)}
+<script type="module">
+  const grid = window.Owlky.get(document.getElementById("grid-columns"), "data-grid");
+  // Pasted points such as "5 pts" become numbers
+  grid.setPastedValueParser("points", (text) => Number.parseInt(text, 10));
+</script>`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+const tasks = [
+  { id: 1, task: "Plan the sprint", team: "Core", owner: "Ana", points: 3, due: "2025-05-12" },
+  { id: 2, task: "Fix the build", team: "Core", owner: "Ana", points: 5, due: "2025-05-14" },
+  { id: 3, task: "Write the guide", team: "Docs", owner: "Ana", points: 2, due: "2025-05-16" },
+];
+
+const columns: GridColDef<(typeof tasks)[number]>[] = [
+  // Row headers name their row; this column stays first and has no menu
+  {
+    field: "task",
+    headerName: "Task",
+    flex: 1,
+    rowHeader: true,
+    disableReorder: true,
+    disableColumnMenu: true,
+  },
+  { field: "team", headerName: "Team", pinnable: false },
+  {
+    field: "owner",
+    headerName: "Owner",
+    // Owners merge within a team only
+    rowSpanValueGetter: (value, row) => \`\${row.team}/\${String(value)}\`,
+  },
+  {
+    field: "points",
+    headerName: "Points",
+    type: "number",
+    hideSortIcons: true,
+    // Big tasks get a class name of their own
+    cellClassName: ({ value }) => (Number(value) >= 5 ? "big-task" : ""),
+    // Pasted points such as "5 pts" become numbers
+    pastedValueParser: (text) => Number.parseInt(text, 10),
+  },
+  // Left out of the CSV, Excel and print exports
+  { field: "due", headerName: "Due", disableExport: true },
+];
+
+export function TeamTasks() {
+  return <DataGrid aria-label="Team tasks" rows={tasks} columns={columns} rowSpanning showToolbar />;
 }`,
   },
   {

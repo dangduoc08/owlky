@@ -236,3 +236,4 @@ export const EditModes: StoryObj = {
 };
 export const Footer: StoryObj = { ...story("footer"), name: "Footer and Tab navigation" };
 export const Dimensions: StoryObj = { ...story("dimensions"), name: "Layout options" };
+export const ColumnOptions: StoryObj = { ...story("columns"), name: "Column options" };

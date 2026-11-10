@@ -41,6 +41,7 @@ div[data-ok-data-grid][data-ok-density][data-ok-checkbox-selection]?[data-ok-dis
          [data-ok-format=number|currency|percent|date|datetime][data-ok-format-options='{…}']? (HTML only)
          [data-ok-resizable=false]?[data-ok-editable]?[data-ok-value-options='["…"]']?[data-ok-pinned]?[hidden]?
          [data-ok-sorting-order='["desc","asc",null]']? (root too: the grid's cycle)
+         [data-ok-disable-reorder]?[data-ok-disable-export]?[data-ok-pinnable=false]?[class]? (4.18.51)
         span[data-ok-data-grid-header-title] · span[data-ok-data-grid-sort-icon] · IconButton[data-ok-data-grid-menu-button]
         · span[data-ok-data-grid-resize][aria-hidden]                         (resizable)
     div[role=rowgroup][data-ok-data-grid-body]   (--_ok-data-grid-before|after: spacers of the row window)
@@ -50,7 +51,8 @@ div[data-ok-data-grid][data-ok-density][data-ok-checkbox-selection]?[data-ok-dis
         (hidden: other pages / filtered out; data-ok-editing: row edit mode)
         div[role=gridcell][data-ok-data-grid-checkbox] › Checkbox
         div[role=gridcell][aria-colindex][data-ok-field][data-ok-align][data-ok-value]?[data-ok-text]?
-           [data-ok-pinned]?[data-ok-editing]?[hidden]?   (editing: input|select[data-ok-data-grid-edit-input]
+           [data-ok-pinned]?[data-ok-editing]?[hidden]?[data-ok-display=flex]?[data-ok-row-span-value]?
+           (role=rowheader for rowHeader columns)   (editing: input|select[data-ok-data-grid-edit-input]
            [aria-invalid]? + span[data-ok-data-grid-edit-error][role=alert]?)
            [aria-colspan]? (covered cells: [hidden][data-ok-covered]) [aria-rowspan]? (covered:
            [data-ok-covered][aria-hidden=true], kept in place) [data-ok-editable=false]? [class]?
@@ -282,7 +284,9 @@ row grouping, aggregation, pivot, cell selection and chart setters. Batch E (roa
 `clear()`, `canUndo()`, `canRedo()`); (4.18.54) `hideFooterPagination`, `hideFooterRowCount`,
 `hideFooterSelectedRowCount`, `label`, `tabNavigation`; (4.18.53) `columnHeaderHeight`,
 `columnGroupHeaderHeight`, `headerFilterHeight`, `showCellVerticalBorder`, `showColumnVerticalBorder`,
-`rowSpacingType`, `autoHeight`, `autoPageSize`. Beyond MUI X (4.18.11,
+`rowSpacingType`, `autoHeight`, `autoPageSize`; (4.18.51) column `cellClassName`, `headerClassName`,
+`hideSortIcons`, `disableColumnMenu`, `disableReorder`, `disableExport`, `pinnable`, `rowSpanValueGetter`,
+`pastedValueParser`, `rowHeader`, `display`. Beyond MUI X (4.18.11,
 ApexGrid / spreadsheets): `statusBar` with `cellSelection`, locale keys `statusBarCount`,
 `statusBarSum`, `statusBarAvg`, `statusBarMin`, `statusBarMax`. Beyond MUI X: Alt + Up / Down on a reorder handle (WCAG 2.5.7). Beyond MUI X (accessibility): Alt + Left / Right resizes, column menu
 Move left / Move right. Renamed: `rowSelectionModel` is an id array (MUI v8:
@@ -493,6 +497,15 @@ with DOM methods and hides the TablePagination while `data-ok-hide-footer-pagina
 `tabNavigation`: Tab / Shift + Tab move the tab stop (the one `tabindex=0`) to the next / previous
 cell in reading order within the mode's cells, and leave the grid past the ends (not prevented).
 
+Column options (4.18.51): a column with `hideSortIcons` still sorts (`aria-sort`) without the
+arrow; `disableColumnMenu` drops its menu button (and Ctrl + Enter); `disableReorder` keeps the
+column's index: its header doesn't drag (resizing still works), drops and Move left / Move right
+that would shift it are refused (the items are disabled); `disableExport` leaves it out of CSV, Excel
+and print (also with `fields`); `pinnable: false` hides Pin to left / Pin to right / Unpin. Row spans
+compare `rowSpanValueGetter`'s value as text (HTML: `data-ok-row-span-value`, else the text).
+Pastes parse with `pastedValueParser` (HTML `setPastedValueParser`), else `valueParser`, else the
+type. Row header cells take part in navigation, selection, editing and spans like grid cells.
+
 Layout (4.18.53): `columnHeaderHeight` / `columnGroupHeaderHeight` / `headerFilterHeight` (px ×
 0.7 / 1 / 1.3, rounded) become `--_ok-data-grid-header-height`, `--_ok-data-grid-group-header-height`
 and `--_ok-data-grid-header-filter-height` on the root (only those given; the header filter row
@@ -574,7 +587,8 @@ Batch E: `ok:data-grid:undo` / `redo` (`{ ids }`), instance `history` (`undo()`,
 start or stop people make); instance `cellModesModel`, `rowModesModel`, `setCellModesModel(model)`,
 `setRowModesModel(model)` (no events), `setEditCellValue({ id, field, value })`;
 `setSortComparator(field, { sortComparator?, getSortComparator? } | null)`
-(values: `data-ok-value`, else the cell text; rows: the row elements).
+(values: `data-ok-value`, else the cell text; rows: the row elements); (4.18.51)
+`setPastedValueParser(field, parser | null)` (gets the pasted text and the row's values).
 Attributes: `data-ok-label-no-rows`, `data-ok-label-no-results`, `data-ok-export-file-name`,
 `data-ok-sorting-order` (root and headers, JSON).
 
@@ -597,9 +611,10 @@ the detailed record of what is kept.
 | Column def: `field`, `headerName`, `type`, `width` / `minWidth` / `maxWidth` / `flex`, `align` / `headerAlign`, `description`, `sortable`, `filterable`, `hideable`, `resizable`, `editable`, `valueOptions`, `valueGetter` / `valueFormatter` / `valueParser` / `valueSetter`, `renderCell`, `renderHeader`, `colSpan`, `filterOperators`, `getApplyQuickFilterFn`, `preProcessEditCellProps`, `groupable`, `aggregable`, `availableAggregationFunctions`, `pivotable` | same | kept | |
 | Column def: `sortComparator`, `getSortComparator`, `sortingOrder`; grid `sortingOrder`, `multipleColumnsSortingMode` | same | kept (4.18.49) | comparators get `{ id, field, row, value }` params (MUI X: `{ id, field, value, rowNode, api }`); HTML: `data-ok-sorting-order` (root, header), `data-ok-multiple-columns-sorting-mode`, `setSortComparator(field, { sortComparator, getSortComparator })` (values as text); grouped rows keep ordering groups by key |
 | Column def: `renderEditCell`, `renderHeaderFilter` | same | kept (4.18.50) | params `{ id, field, row, value, error, colDef, api }` (`api.setEditCellValue`) / `{ field, colDef, item, applyFilterChanges }`; HTML: `template[data-ok-data-grid-edit-cell="<field>"]` (+ `setEditCellValue`), custom header filter markup with `data-ok-filter-operator`; header filter operator menus: spec Deferred |
-| Column def: `cellClassName`, `headerClassName` | grid `getCellClassName` only | deferred | per column class names |
-| Column def: `hideSortIcons`, `disableColumnMenu`, `disableReorder`, `disableExport`, `pinnable` | — | deferred | per column opt-outs (grid-wide flags exist) |
-| Column def: `rowSpanValueGetter`, `pastedValueParser`, `groupingValueSetter`, `rowHeader`, `display: "flex"` | — | deferred | |
+| Column def: `cellClassName`, `headerClassName` | same | kept (4.18.51) | a string or a function (cells: with the grid's `getCellClassName`, column first); HTML: `class` in the markup |
+| Column def: `hideSortIcons`, `disableColumnMenu`, `disableReorder`, `disableExport`, `pinnable` | same | kept (4.18.51) | HTML: no sort icon span / no menu button in the header (Ctrl + Enter does nothing), header `data-ok-disable-reorder`, `data-ok-disable-export`, `data-ok-pinnable="false"`; `disableReorder`: the column doesn't drag and moves that would shift it are refused (core `moveGridColumn(…, locked)`, `gridLockedFields`); `pinnable: false` hides the pin items (`pinnedColumns` still pins it) |
+| Column def: `rowSpanValueGetter`, `pastedValueParser`, `rowHeader`, `display: "flex"` | same | kept (4.18.51) | `rowSpanValueGetter(value, row)` (MUI X: also `column`, `apiRef`); React writes it as the cells' `data-ok-row-span-value`, which HTML compares; `pastedValueParser(value, row)`, HTML `setPastedValueParser(field, parser)` (row: the cells' values); `rowHeader`: the cells are `role="rowheader"` (group rows keep `gridcell`); `display: "flex"`: cells `data-ok-display="flex"` (`text` is the default) |
+| Column def: `groupingValueSetter` | — | deferred | needs rows dragged between groups (row reordering is off while rows are grouped) |
 | Column def: `groupingValueGetter` | same | kept | value is `row[field]`; HTML: `data-ok-grouping-value` (React writes it) or `setGroupingValueGetter` |
 | Column def: `allowFormulas`, `chartable`, `examples` | — | not applicable | formulas and AI not proposed (roadmap 2.4 notes); `chartable` = every column of `chartModel` |
 | Selection: `checkboxSelection`, `rowSelectionModel` (id array), `disableRowSelectionOnClick`, `disableMultipleRowSelection`, `isRowSelectable`, `keepNonExistentRowsSelected`, `checkboxSelectionVisibleOnly` | same | kept | `rowSelectionModel` renamed shape (MUI v8 `{ type, ids }`) |

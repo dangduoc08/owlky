@@ -104,6 +104,7 @@ import {
   gridHeaderAlign,
   gridHeaderHeightProperties,
   gridHistoryRow,
+  gridLockedFields,
   gridMissingRanges,
   gridOperatorNeedsValue,
   gridPinSide,
@@ -275,6 +276,20 @@ export interface GridColDef<R = Record<string, unknown>> extends GridColumn {
   valueFormatter?: ((value: unknown, row: R) => string) | undefined;
   /** Custom cell content (the text still drives search and export). */
   renderCell?: ((params: GridRenderCellParams<R>) => ReactNode) | undefined;
+  /** Class names of the column's cells: a string, or one per cell (with `getCellClassName`). */
+  cellClassName?: string | ((params: GridCellParams<R>) => string) | undefined;
+  /** Class names of the column's header cell: a string, or from the column. */
+  headerClassName?:
+    | string
+    | ((params: { field: string; colDef: GridColDef<R> }) => string)
+    | undefined;
+  /**
+   * The value `rowSpanning` compares for this column, from the raw value and the row (default: the
+   * cell's text). Equal neighbours merge.
+   */
+  rowSpanValueGetter?: ((value: unknown, row: R) => unknown) | undefined;
+  /** A pasted text as a value (default: `valueParser`, else by the column type). */
+  pastedValueParser?: ((value: string, row: R) => unknown) | undefined;
   /** Sorts the column's values (ascending; reversed for descending). Default: by the column type. */
   sortComparator?: GridComparatorFn<R> | undefined;
   /**
@@ -1476,6 +1491,11 @@ function DataGridInner<R>(
       : textOf(column, row);
   };
   const ordered = orderGridColumns(columns, order);
+  /** What row spanning compares: the column's `rowSpanValueGetter`, else the cell's text. */
+  const spanKeyOf = (column: GridColDef<R>, row: R) =>
+    column.rowSpanValueGetter && isData(row)
+      ? asText(column.rowSpanValueGetter(rawValue(column, row), row))
+      : textOf(column, row);
   // While printing (every row and the printed columns render, then the page prints).
   const [printing, setPrinting] = useState<GridPrintOptions | null>(null);
   const shown = visibleGridColumns(
@@ -1807,7 +1827,7 @@ function DataGridInner<R>(
   // Row spans (on the page): cells merge with the rows below; the window starts at a span's top.
   const spanFields = shown.filter((c) => c.type !== "actions").map((c) => c.field);
   const spans = rowSpanning
-    ? gridRowSpans(pageRows, spanFields, (row, field) => textOf(columnOf(field), row))
+    ? gridRowSpans(pageRows, spanFields, (row, field) => spanKeyOf(columnOf(field), row))
     : null;
   if (range && spans && range.start > 0) {
     const start = spans.origin[range.start] as number;
@@ -2270,7 +2290,7 @@ function DataGridInner<R>(
       refocus.current = null;
       gridRef.current
         ?.querySelector<HTMLElement>(
-          `[data-ok-row-id="${CSS.escape(rowId)}"] [role="gridcell"][data-ok-field="${CSS.escape(field)}"]`,
+          `[data-ok-row-id="${CSS.escape(rowId)}"] :is([role="gridcell"], [role="rowheader"])[data-ok-field="${CSS.escape(field)}"]`,
         )
         ?.focus();
     }
@@ -2364,7 +2384,7 @@ function DataGridInner<R>(
   const moveTo = useRef<(field: string, target: string) => void>(undefined as never);
   moveTo.current = (field, target) => {
     if (columnGroupingModel && !gridCanMoveColumn(groupPaths, field, target)) return;
-    setOrder(moveGridColumn(fields, field, { to: target }));
+    setOrder(moveGridColumn(fields, field, { to: target }, gridLockedFields(columns)));
   };
 
   /** A column's sort cycle: its own, the grid's, else asc → desc → none. */
@@ -2737,7 +2757,7 @@ function DataGridInner<R>(
     if (!block && chosen.length) block = chosen.map((row) => fields.map((c) => copyValue(c, row)));
     if (!block) {
       const cell = (document.activeElement as Element | null)?.closest(
-        '[data-ok-data-grid-body] [role="gridcell"][data-ok-field]',
+        '[data-ok-data-grid-body] :is([role="gridcell"], [role="rowheader"])[data-ok-field]',
       );
       const row = dataById.get(
         cell?.closest("[data-ok-row-id]")?.getAttribute("data-ok-row-id") ?? "",
@@ -2763,7 +2783,7 @@ function DataGridInner<R>(
       left = cellFields.indexOf(picked.fields[0] as string);
     } else {
       const cell = (document.activeElement as Element | null)?.closest(
-        '[data-ok-data-grid-body] [role="gridcell"][data-ok-field]',
+        '[data-ok-data-grid-body] :is([role="gridcell"], [role="rowheader"])[data-ok-field]',
       );
       top = cellRowIds.indexOf(
         cell?.closest("[data-ok-row-id]")?.getAttribute("data-ok-row-id") ?? "",
@@ -2790,7 +2810,9 @@ function DataGridInner<R>(
         const typed = fill ? data[0]?.[0] : data[r]?.[c];
         if (!column || typed === undefined || !cellEditable(column, row)) continue;
         if (fill && !isGridCellSelected(cellModel, idOf(row), column.field)) continue;
-        const value = parse(column, typed, row);
+        const value = column.pastedValueParser
+          ? column.pastedValueParser(typed, row)
+          : parse(column, typed, row);
         next = column.valueSetter
           ? column.valueSetter(value, next)
           : ({ ...next, [column.field]: value } as R);
@@ -2876,7 +2898,9 @@ function DataGridInner<R>(
     if (!printing) return;
     const options = printing;
     const keep = options.fields ? new Set(options.fields) : null;
-    const printed = shown.filter((c) => c.type !== "actions" && (!keep || keep.has(c.field)));
+    const printed = shown.filter(
+      (c) => c.type !== "actions" && !c.disableExport && (!keep || keep.has(c.field)),
+    );
     const boxes = !!checkboxSelection && !!options.includeCheckboxes;
     printGridContent(
       rootRef.current as HTMLElement,
@@ -3086,6 +3110,17 @@ function DataGridInner<R>(
   };
 
   const menuColumn = columns.find((c) => c.field === menuField);
+  /** Whether Move left / Move right can move the menu's column (columns with `disableReorder` stay). */
+  const movable = (field: string | null, delta: number) => {
+    // Closed menu (no column yet): Move left off, Move right on, as the HTML markup has them.
+    if (!field) return delta > 0;
+    const at = fields.indexOf(field);
+    if (at + delta < 0 || at + delta >= fields.length) return false;
+    const next = moveGridColumn(fields, field, delta, gridLockedFields(columns));
+    return next.join("\n") !== fields.join("\n");
+  };
+  /** `pinnable: false` hides the pin items of the column's menu. */
+  const menuPinnable = menuColumn?.pinnable !== false;
   const menuSorted = sortModel.find((s) => s.field === menuField)?.sort;
   /** Sort items outside the column's cycle are hidden. */
   const menuCycle = menuColumn ? sortCycle(menuColumn) : GRID_SORTING_ORDER;
@@ -3098,7 +3133,9 @@ function DataGridInner<R>(
     else if (action === "left" || action === "right") {
       const neighbour = fields[fields.indexOf(field) + (action === "left" ? -1 : 1)] as string;
       if (columnGroupingModel && !gridCanMoveColumn(groupPaths, field, neighbour)) return;
-      setOrder(moveGridColumn(fields, field, action === "left" ? -1 : 1));
+      setOrder(
+        moveGridColumn(fields, field, action === "left" ? -1 : 1, gridLockedFields(columns)),
+      );
     } else if (action === "pin-left" || action === "pin-right" || action === "unpin")
       setPinned(
         pinGridColumn(
@@ -4180,14 +4217,28 @@ function DataGridInner<R>(
           const colSpan = colSpans?.[c];
           const rowSpan = rowSpans?.get(column.field);
           const params = cellParams(column, row);
+          const classes = [
+            typeof column.cellClassName === "function"
+              ? column.cellClassName(params)
+              : column.cellClassName,
+            getCellClassName?.(params),
+          ]
+            .filter(Boolean)
+            .join(" ");
           return (
+            // biome-ignore lint/a11y/noStaticElementInteractions: a grid cell or a row header (the role is dynamic).
+            // biome-ignore lint/a11y/useAriaPropsSupportedByRole: both roles take aria-colindex.
             <div
               key={column.field}
-              role="gridcell"
+              role={column.rowHeader ? "rowheader" : "gridcell"}
               aria-colindex={c + colOffset}
               data-ok-field={column.field}
               data-ok-align={gridAlign(column)}
-              className={getCellClassName?.(params) || undefined}
+              className={classes || undefined}
+              {...(column.display === "flex" ? { "data-ok-display": "flex" } : {})}
+              {...(rowSpanning && column.rowSpanValueGetter
+                ? { "data-ok-row-span-value": spanKeyOf(column, row) }
+                : {})}
               {...(colSpan && colSpan.span > 1 ? { "aria-colspan": colSpan.span } : {})}
               {...(rowSpan && rowSpan.span > 1 ? { "aria-rowspan": rowSpan.span } : {})}
               {...(colSpan?.covered || rowSpan?.covered
@@ -4847,6 +4898,14 @@ function DataGridInner<R>(
                   {...(column.sortingOrder
                     ? { "data-ok-sorting-order": JSON.stringify(column.sortingOrder) }
                     : {})}
+                  {...(column.disableReorder ? { "data-ok-disable-reorder": "" } : {})}
+                  {...(column.disableExport ? { "data-ok-disable-export": "" } : {})}
+                  {...(column.pinnable === false ? { "data-ok-pinnable": "false" } : {})}
+                  className={
+                    (typeof column.headerClassName === "function"
+                      ? column.headerClassName({ field: column.field, colDef: column })
+                      : column.headerClassName) || undefined
+                  }
                   tabIndex={-1}
                   onClick={(event) => {
                     // A press that resized or moved the column doesn't sort it.
@@ -4866,12 +4925,12 @@ function DataGridInner<R>(
                       {aggLabel(aggregationOf(column) as string)}
                     </span>
                   )}
-                  {sortable && (
+                  {sortable && !column.hideSortIcons && (
                     <span data-ok-data-grid-sort-icon="">
                       <SortIcon />
                     </span>
                   )}
-                  {!disableColumnMenu && !pivot && (
+                  {!disableColumnMenu && !column.disableColumnMenu && !pivot && (
                     <IconButton
                       size="sm"
                       data-ok-data-grid-menu-button=""
@@ -5031,7 +5090,7 @@ function DataGridInner<R>(
           {!disableColumnReorder && (
             <MenuItem
               data-ok-data-grid-action="left"
-              disabled={fields.indexOf(menuField as string) <= 0}
+              disabled={!movable(menuField, -1)}
               onClick={() => menuAction("left")}
             >
               {labels.columnMenuMoveLeft}
@@ -5040,7 +5099,7 @@ function DataGridInner<R>(
           {!disableColumnReorder && (
             <MenuItem
               data-ok-data-grid-action="right"
-              disabled={fields.indexOf(menuField as string) >= fields.length - 1}
+              disabled={!movable(menuField, 1)}
               onClick={() => menuAction("right")}
             >
               {labels.columnMenuMoveRight}
@@ -5049,6 +5108,7 @@ function DataGridInner<R>(
           {!disableColumnPinning && (
             <MenuItem
               data-ok-data-grid-action="pin-left"
+              hidden={!menuPinnable || undefined}
               disabled={gridPinSide(pinned, menuField as string) === "left"}
               onClick={() => menuAction("pin-left")}
             >
@@ -5058,6 +5118,7 @@ function DataGridInner<R>(
           {!disableColumnPinning && (
             <MenuItem
               data-ok-data-grid-action="pin-right"
+              hidden={!menuPinnable || undefined}
               disabled={gridPinSide(pinned, menuField as string) === "right"}
               onClick={() => menuAction("pin-right")}
             >
@@ -5067,6 +5128,7 @@ function DataGridInner<R>(
           {!disableColumnPinning && (
             <MenuItem
               data-ok-data-grid-action="unpin"
+              hidden={!menuPinnable || undefined}
               disabled={!gridPinSide(pinned, menuField as string)}
               onClick={() => menuAction("unpin")}
             >

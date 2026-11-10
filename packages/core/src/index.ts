@@ -728,6 +728,7 @@ export {
   gridFilterValues,
   gridFoldText,
   gridHeaderAlign,
+  gridLockedFields,
   gridOperatorNeedsValue,
   gridPinSide,
   gridQuickFilterValues,

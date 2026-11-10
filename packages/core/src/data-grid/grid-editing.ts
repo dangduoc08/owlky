@@ -270,7 +270,7 @@ export function createGridHistoryKeys(
       const key = event.key.toLowerCase();
       if (key !== "z" && key !== "y") return;
       const target = event.target as Element;
-      if (!target.closest('[role="gridcell"], [role="columnheader"]')) return;
+      if (!target.closest('[role="gridcell"], [role="rowheader"], [role="columnheader"]')) return;
       if (target.closest(HISTORY_EDITING) || !options.enabled()) return;
       event.preventDefault();
       if (key === "z" && !event.shiftKey) options.undo();

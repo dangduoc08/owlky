@@ -102,6 +102,7 @@ import {
   gridHeaderAlign,
   gridHeaderHeightProperties,
   gridHistoryRow,
+  gridLockedFields,
   gridMissingRanges,
   gridOperatorNeedsValue,
   gridPinSide,
@@ -313,6 +314,14 @@ export interface DataGridInstance extends ComponentInstance {
    * (`data-ok-value`, else the text) and rows. `null`: back to sorting by the column type.
    */
   setSortComparator(field: string, comparators: GridComparators<HTMLElement> | null): void;
+  /**
+   * A column's parser of pasted text (MUI X `pastedValueParser`): gets the text and the row's
+   * values, returns the value to write. `null`: back to parsing by the column type.
+   */
+  setPastedValueParser(
+    field: string,
+    parser: ((value: string, row: DataRow) => unknown) | null,
+  ): void;
   /** The cell being edited (cell mode), as a cell modes model. */
   readonly cellModesModel: GridCellModesModel;
   /** The row being edited (row mode), as a row modes model. */
@@ -618,6 +627,9 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         groupable: header.getAttribute("data-ok-groupable") !== "false",
         aggregable: header.getAttribute("data-ok-aggregable") !== "false",
         sortingOrder: parseGridSortingOrder(header.getAttribute("data-ok-sorting-order")),
+        disableReorder: header.hasAttribute("data-ok-disable-reorder"),
+        disableExport: header.hasAttribute("data-ok-disable-export"),
+        pinnable: header.getAttribute("data-ok-pinnable") !== "false",
       }));
     const baseColumns = readColumns();
     /** The columns: the markup's, or the pivot's while it shows. */
@@ -627,6 +639,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     const operators: Record<string, readonly GridFilterOperator<HTMLElement>[]> = {};
     const formatters = new Map<string, (value: unknown) => string>();
     const comparators = new Map<string, GridComparators<HTMLElement>>();
+    const pastedParsers = new Map<string, (value: string, row: DataRow) => unknown>();
     /** A column's own comparator for a direction (`setSortComparator`). */
     const comparatorOf = (field: string, direction: GridSortDirection) =>
       gridDirectedComparator(comparators.get(field), direction);
@@ -668,7 +681,9 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     });
     const rows = () => rowEls;
     const cellOf = (row: HTMLElement, field: string) =>
-      row.querySelector<HTMLElement>(`[role="gridcell"][data-ok-field="${CSS.escape(field)}"]`);
+      row.querySelector<HTMLElement>(
+        `:is([role="gridcell"], [role="rowheader"])[data-ok-field="${CSS.escape(field)}"]`,
+      );
     const cellText = (row: HTMLElement, field: string) => {
       const cell = cellOf(row, field);
       return cell ? (cell.getAttribute("data-ok-text") ?? (cell.textContent as string).trim()) : "";
@@ -1823,7 +1838,12 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       const fields = visibleGridColumns(columns, visibility)
         .filter((c) => c.type !== "actions")
         .map((c) => c.field);
-      return gridRowSpans(pageList, fields, text);
+      return gridRowSpans(
+        pageList,
+        fields,
+        (row, field) =>
+          cellOf(row, field)?.getAttribute("data-ok-row-span-value") ?? text(row, field),
+      );
     };
     // Master-detail: open panels (from the markup) and the templates of the others.
     const panels = new Map<string, HTMLElement>();
@@ -2141,7 +2161,9 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
           }
         }
         row.setAttribute("data-ok-row-id", String(item["id"]));
-        for (const cell of row.querySelectorAll<HTMLElement>('[role="gridcell"][data-ok-field]')) {
+        for (const cell of row.querySelectorAll<HTMLElement>(
+          ':is([role="gridcell"], [role="rowheader"])[data-ok-field]',
+        )) {
           const field = cell.getAttribute("data-ok-field") as string;
           if (isSpecial(field)) continue;
           const raw = item[field];
@@ -2811,7 +2833,9 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     };
     const markCells = () => {
       syncStatus();
-      for (const cell of body.querySelectorAll<HTMLElement>('[role="gridcell"][aria-selected]')) {
+      for (const cell of body.querySelectorAll<HTMLElement>(
+        ':is([role="gridcell"], [role="rowheader"])[aria-selected]',
+      )) {
         cell.removeAttribute("aria-selected");
         cell.removeAttribute("data-ok-range-edge");
       }
@@ -2847,7 +2871,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     // Clipboard: the selected cells, else the selected rows, else the focused cell.
     const focusedCell = () =>
       (document.activeElement as Element | null)?.closest<HTMLElement>(
-        '[data-ok-data-grid-body] [role="gridcell"][data-ok-field]',
+        '[data-ok-data-grid-body] :is([role="gridcell"], [role="rowheader"])[data-ok-field]',
       );
     const clipboard = createGridClipboard(main, {
       copyText: () => {
@@ -2905,7 +2929,16 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
           const typed = fill ? data[0]?.[0] : data[r]?.[c];
           if (typed === undefined || !cellEditable(row, column)) return;
           if (fill && !isGridCellSelected(cellModel, rowId, field)) return;
-          values[field] = parseGridEditValue(typed, column.type);
+          const parser = pastedParsers.get(field);
+          values[field] = parser
+            ? parser(
+                typed,
+                valuesOf(
+                  row,
+                  baseColumns.map((c) => c.field),
+                ),
+              )
+            : parseGridEditValue(typed, column.type);
         });
         if (
           !Object.keys(values).length ||
@@ -3579,7 +3612,9 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       const base = options.allColumns
         ? arrangeGridColumns(orderGridColumns(columns, order), pinned)
         : shownColumns();
-      const printed = base.filter((c) => c.type !== "actions" && (!keep || keep.has(c.field)));
+      const printed = base.filter(
+        (c) => c.type !== "actions" && !c.disableExport && (!keep || keep.has(c.field)),
+      );
       const boxes = checkbox && !!options.includeCheckboxes;
       printGridContent(
         element,
@@ -3642,7 +3677,9 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       onResize: resize,
       onMove: (field, target) => {
         if (groupPaths.size && !gridCanMoveColumn(groupPaths, field, target)) return;
-        setOrder(moveGridColumn(arrangedFields(), field, { to: target }));
+        setOrder(
+          moveGridColumn(arrangedFields(), field, { to: target }, gridLockedFields(baseColumns)),
+        );
       },
       canReorder: () => !element.hasAttribute(disableColumnReorder.attr),
       onAutosize: (field) => autosize({ columns: [field] }),
@@ -3916,7 +3953,9 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     main.addEventListener(
       "dblclick",
       (event) => {
-        const cell = (event.target as Element).closest<HTMLElement>('[role="gridcell"]');
+        const cell = (event.target as Element).closest<HTMLElement>(
+          ':is([role="gridcell"], [role="rowheader"])',
+        );
         const row = cell?.closest<HTMLElement>(ROW);
         if (!cell || !row) return;
         const field = cell.getAttribute("data-ok-field") as string;
@@ -4029,11 +4068,29 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       disable("filter", column.filterable === false || column.type === "actions");
       disable("hide", column.hideable === false);
       const fieldsNow = arrangedFields();
-      disable("left", fieldsNow.indexOf(field) <= 0);
-      disable("right", fieldsNow.indexOf(field) >= fieldsNow.length - 1);
+      // A move is possible when it changes the order (columns with disableReorder stay).
+      const movable = (delta: number) => {
+        const at = fieldsNow.indexOf(field);
+        if (at + delta < 0 || at + delta >= fieldsNow.length) return false;
+        return (
+          moveGridColumn(fieldsNow, field, delta, gridLockedFields(baseColumns)).join("\n") !==
+          fieldsNow.join("\n")
+        );
+      };
+      disable("left", !movable(-1));
+      disable("right", !movable(1));
       disable("pin-left", gridPinSide(pinned, field) === "left");
       disable("pin-right", gridPinSide(pinned, field) === "right");
       disable("unpin", !gridPinSide(pinned, field));
+      // pinnable: false hides the pin items (the grid's disableColumnPinning hides them too).
+      for (const action of ["pin-left", "pin-right", "unpin"]) {
+        const item = columnMenu.querySelector<HTMLElement>(
+          `[data-ok-data-grid-action="${action}"]`,
+        );
+        if (item)
+          item.hidden =
+            column.pinnable === false || element.hasAttribute(disableColumnPinning.attr);
+      }
       // Row grouping and aggregation: the item names the column; functions follow its type.
       const groupItem = columnMenu.querySelector('[data-ok-data-grid-action="group"]');
       if (groupItem)
@@ -4100,7 +4157,14 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
           const fieldsNow = arrangedFields();
           const neighbour = fieldsNow[fieldsNow.indexOf(field) + (action === "left" ? -1 : 1)];
           if (groupPaths.size && !gridCanMoveColumn(groupPaths, field, neighbour as string)) return;
-          setOrder(moveGridColumn(fieldsNow, field, action === "left" ? -1 : 1));
+          setOrder(
+            moveGridColumn(
+              fieldsNow,
+              field,
+              action === "left" ? -1 : 1,
+              gridLockedFields(baseColumns),
+            ),
+          );
         } else if (action === "pin-left" || action === "pin-right" || action === "unpin")
           setPinned(
             pinGridColumn(
@@ -4161,7 +4225,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         const row = target.closest<HTMLElement>(ROW);
         if (!row || !main.contains(row)) return;
         emit("rowclick", { id: idOf(row) });
-        const cell = target.closest<HTMLElement>('[role="gridcell"]');
+        const cell = target.closest<HTMLElement>(':is([role="gridcell"], [role="rowheader"])');
         const field = cell?.getAttribute("data-ok-field");
         if (field) emit("cellclick", { id: idOf(row), field, value: value(row, field) });
         if (
@@ -4520,6 +4584,10 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         if (own) comparators.set(field, own);
         else comparators.delete(field);
         refresh();
+      },
+      setPastedValueParser(field, parser) {
+        if (parser) pastedParsers.set(field, parser);
+        else pastedParsers.delete(field);
       },
       setValueFormatter(field, format) {
         if (format) formatters.set(field, format);

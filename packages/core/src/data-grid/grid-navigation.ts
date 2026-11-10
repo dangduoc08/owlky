@@ -8,7 +8,7 @@
 
 import { isGridGroupingField } from "./grid-premium.js";
 
-const CELL = '[role="columnheader"], [role="gridcell"]';
+const CELL = '[role="columnheader"], [role="gridcell"], [role="rowheader"]';
 /** Controls that take focus instead of their cell (checkboxes, action buttons, links). */
 const INNER =
   'input:not([type="hidden"]), select, textarea, a[href], button:not([data-ok-data-grid-menu-button])';

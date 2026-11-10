@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { userEvent } from "vitest/browser";
 import { expectNoAxeViolations } from "../test-utils.js";
-import { DataGrid, type GridColDef } from "./data-grid.js";
+import { DataGrid, type GridApi, type GridColDef } from "./data-grid.js";
 
 // Roadmap batch E (Data grid shoulds): footer and toolbar, layout, column options, selection
 // options and the set filter.
@@ -283,5 +283,165 @@ describe("DataGrid layout options", () => {
       () => pagination.getAttribute("data-ok-rows-per-page") === String(fits()),
     );
     expect(shownRows()).toHaveLength(Math.min(fits(), 12));
+  });
+});
+
+describe("DataGrid column options", () => {
+  interface Task {
+    id: string;
+    task: string;
+    team: string;
+    owner: string;
+    points: number;
+  }
+  const TASKS: Task[] = [
+    { id: "t1", task: "Plan", team: "Core", owner: "Ana", points: 3 },
+    { id: "t2", task: "Build", team: "Core", owner: "Ana", points: 5 },
+    { id: "t3", task: "Guide", team: "Docs", owner: "Ana", points: 2 },
+  ];
+  const columns: GridColDef<Task>[] = [
+    {
+      field: "task",
+      headerName: "Task",
+      rowHeader: true,
+      disableReorder: true,
+      disableColumnMenu: true,
+      headerClassName: "head-task",
+    },
+    { field: "team", headerName: "Team", pinnable: false, disableExport: true },
+    {
+      field: "owner",
+      headerName: "Owner",
+      rowSpanValueGetter: (value, row) => `${row.team}/${String(value)}`,
+      headerClassName: ({ field }) => `head-${field}`,
+    },
+    {
+      field: "points",
+      headerName: "Points",
+      type: "number",
+      hideSortIcons: true,
+      display: "flex",
+      editable: true,
+      cellClassName: ({ value }) => (Number(value) >= 5 ? "big" : ""),
+      pastedValueParser: (value) => Number.parseInt(value, 10) * 10,
+    },
+  ];
+  const cell = (id: string, field: string) =>
+    grid().querySelector(`[data-ok-row-id="${id}"] [data-ok-field="${field}"]`) as HTMLElement;
+  const headerOf = (field: string) =>
+    grid().querySelector(
+      `[data-ok-data-grid-header] [role="columnheader"][data-ok-field="${field}"]`,
+    ) as HTMLElement;
+
+  it("row headers, class names, display, opt-out attributes and no sort icon or menu", async () => {
+    render(
+      <DataGrid
+        aria-label="Tasks"
+        rows={TASKS}
+        columns={columns}
+        getCellClassName={({ field }) => (field === "points" ? "num" : "")}
+        hideFooter
+      />,
+    );
+    expect(screen.getAllByRole("rowheader").map((c) => c.textContent)).toEqual([
+      "Plan",
+      "Build",
+      "Guide",
+    ]);
+    expect(cell("t2", "points").className).toBe("big num");
+    expect(cell("t1", "points").className).toBe("num");
+    expect(cell("t1", "points").getAttribute("data-ok-display")).toBe("flex");
+    expect(getComputedStyle(cell("t1", "points")).display).toBe("flex");
+    expect(headerOf("task").className).toBe("head-task");
+    expect(headerOf("owner").className).toBe("head-owner");
+    expect(headerOf("task").hasAttribute("data-ok-disable-reorder")).toBe(true);
+    expect(headerOf("team").getAttribute("data-ok-pinnable")).toBe("false");
+    expect(headerOf("team").hasAttribute("data-ok-disable-export")).toBe(true);
+    expect(headerOf("task").querySelector("[data-ok-data-grid-menu-button]")).toBeNull();
+    expect(headerOf("team").querySelector("[data-ok-data-grid-menu-button]")).not.toBeNull();
+    // Still sortable, without the arrow.
+    expect(headerOf("points").getAttribute("aria-sort")).toBe("none");
+    expect(headerOf("points").querySelector("[data-ok-data-grid-sort-icon]")).toBeNull();
+    // Arrow keys reach row headers like cells.
+    cell("t1", "task").focus();
+    await userEvent.keyboard("{ArrowDown}");
+    expect(document.activeElement).toBe(cell("t2", "task"));
+    await expectNoAxeViolations(document.body);
+  });
+
+  it("rowSpanValueGetter decides which neighbours merge", () => {
+    render(<DataGrid aria-label="Tasks" rows={TASKS} columns={columns} rowSpanning hideFooter />);
+    expect(cell("t1", "owner").getAttribute("aria-rowspan")).toBe("2");
+    expect(cell("t1", "owner").getAttribute("data-ok-row-span-value")).toBe("Core/Ana");
+    expect(cell("t2", "owner").hasAttribute("data-ok-covered")).toBe(true);
+    // Another team: no merge with the Ana above.
+    expect(cell("t3", "owner").hasAttribute("data-ok-covered")).toBe(false);
+  });
+
+  it("disableReorder keeps the column in place; pinnable false hides the pin items", async () => {
+    const onColumnOrderChange = vi.fn();
+    render(
+      <DataGrid
+        aria-label="Tasks"
+        rows={TASKS}
+        columns={columns}
+        hideFooter
+        onColumnOrderChange={onColumnOrderChange}
+      />,
+    );
+    // Team can't move left: the Task column would shift.
+    headerOf("team").focus();
+    await userEvent.keyboard("{Control>}{Enter}{/Control}");
+    expect(screen.getByRole("menuitem", { name: "Move left" }).getAttribute("aria-disabled")).toBe(
+      "true",
+    );
+    for (const name of ["Pin to left", "Pin to right", "Unpin"])
+      expect(screen.queryByRole("menuitem", { name })).toBeNull();
+    await userEvent.click(screen.getByRole("menuitem", { name: "Move right" }));
+    expect(onColumnOrderChange).toHaveBeenLastCalledWith(["task", "owner", "team", "points"]);
+    headerOf("owner").focus();
+    await userEvent.keyboard("{Control>}{Enter}{/Control}");
+    expect(screen.getByRole("menuitem", { name: "Move left" }).getAttribute("aria-disabled")).toBe(
+      "true",
+    );
+    expect(screen.getByRole("menuitem", { name: "Pin to left" })).toBeTruthy();
+  });
+
+  it("disableExport leaves the column out of the CSV", () => {
+    const apiRef = { current: null } as { current: GridApi<Task> | null };
+    render(
+      <DataGrid aria-label="Tasks" rows={TASKS} columns={columns} apiRef={apiRef} hideFooter />,
+    );
+    const csv = apiRef.current?.getDataAsCsv() as string;
+    expect(csv.split("\r\n")[0]).toBe("﻿Task,Owner,Points");
+  });
+
+  it("pastedValueParser turns pasted text into the value", async () => {
+    const processRowUpdate = vi.fn((row: Task) => row);
+    render(
+      <DataGrid
+        aria-label="Tasks"
+        rows={TASKS}
+        columns={columns}
+        cellSelection
+        processRowUpdate={processRowUpdate}
+        hideFooter
+      />,
+    );
+    const target = cell("t1", "points");
+    target.focus();
+    // Ctrl + V moves the focus to the grid's text area, which takes the browser's paste.
+    target.dispatchEvent(
+      new KeyboardEvent("keydown", { bubbles: true, cancelable: true, key: "v", ctrlKey: true }),
+    );
+    const transfer = new DataTransfer();
+    transfer.setData("text/plain", "4");
+    const read = vi.spyOn(DataTransfer.prototype, "getData").mockReturnValue("4");
+    (document.activeElement as HTMLElement).dispatchEvent(
+      new ClipboardEvent("paste", { bubbles: true, cancelable: true, clipboardData: transfer }),
+    );
+    read.mockRestore();
+    await vi.waitUntil(() => processRowUpdate.mock.calls.length > 0);
+    expect(processRowUpdate.mock.calls[0]?.[0]).toMatchObject({ id: "t1", points: 40 });
   });
 });

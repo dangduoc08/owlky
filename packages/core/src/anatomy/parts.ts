@@ -694,6 +694,12 @@ export interface DataGridParts {
   "data-ok-detail-height": Value<string>;
   /** On a chart panel field: turns it off. */
   "data-ok-disable": Value<string>;
+  /** On a header cell: the column stays out of exports (CSV, Excel, print). */
+  "data-ok-disable-export": State;
+  /** On a header cell: the column keeps its place (no drag, no moves that shift it). */
+  "data-ok-disable-reorder": State;
+  /** On a cell: `flex` lays its content out in a row, centered. */
+  "data-ok-display": Value<"flex">;
   /** Set by the runtime on a pivot field while a pointer drags it. */
   "data-ok-dragging": State;
   /** Set by the runtime on the row or column a drag would drop next to. */
@@ -740,6 +746,8 @@ export interface DataGridParts {
   "data-ok-parent": Value<string>;
   /** On a pin menu item: the field it pins. */
   "data-ok-pin-field": Value<string>;
+  /** On a header cell: `false` hides the pin items of the column menu. */
+  "data-ok-pinnable": Value<"false">;
   /** On a cell: the side its column is pinned to. */
   "data-ok-pinned": Value<"left" | "right">;
   /** The pivot model, as JSON. */
@@ -752,6 +760,11 @@ export interface DataGridParts {
   "data-ok-row-grouping-model": Value<string>;
   /** On a row: its id. */
   "data-ok-row-id": Value<string>;
+  /**
+   * On a cell: the value row spanning compares, instead of the cell's text (React writes it from
+   * `rowSpanValueGetter`).
+   */
+  "data-ok-row-span-value": Value<string>;
   /** On a header cell: `false` keeps the column out of the quick filter. */
   "data-ok-searchable": Value<"false">;
   /** On a row: `false` means the row can't be selected. */

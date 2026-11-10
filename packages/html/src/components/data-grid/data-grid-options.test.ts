@@ -173,3 +173,100 @@ describe("data grid layout options", () => {
     expect(shown(host)).toHaveLength(fits());
   });
 });
+
+describe("data grid column options", () => {
+  const cell = (host: Element, id: string, field: string) =>
+    host.querySelector(`[data-ok-row-id="${id}"] [data-ok-field="${field}"]`) as HTMLElement;
+  const headerOf = (host: Element, field: string) =>
+    host.querySelector(
+      `[data-ok-data-grid-header] [role="columnheader"][data-ok-field="${field}"]`,
+    ) as HTMLElement;
+  const menuItem = (host: Element, action: string) =>
+    host.querySelector(
+      `#grid-columns-column-menu [data-ok-data-grid-action="${action}"]`,
+    ) as HTMLElement;
+
+  it("row headers sort, merge by their span value and take the arrow keys", async () => {
+    const { host, instance } = setup(snippet("columns-group"));
+    expect(cell(host, "tt-1", "owner").getAttribute("aria-rowspan")).toBe("2");
+    // Same owner, another team: no merge.
+    expect(cell(host, "tt-3", "owner").hasAttribute("data-ok-covered")).toBe(false);
+    instance.setSortModel([{ field: "task", sort: "asc" }]);
+    await settle();
+    expect(
+      [...host.querySelectorAll('[data-ok-data-grid-body] [role="rowheader"]')].map(
+        (c) => c.textContent,
+      ),
+    ).toEqual([
+      "Draw the icons",
+      "Fix the build",
+      "Plan the sprint",
+      "Review the API",
+      "Write the guide",
+    ]);
+    cell(host, "tt-5", "task").focus();
+    await userEvent.keyboard("{ArrowDown}");
+    expect(document.activeElement).toBe(cell(host, "tt-2", "task"));
+    await expectNoAxeViolations(host);
+  });
+
+  it("disableReorder keeps the column first; pinnable false hides the pin items", async () => {
+    const { host } = setup(snippet("columns-group"));
+    // Ctrl + Enter opens a column's menu; the Task column has none.
+    headerOf(host, "task").focus();
+    await userEvent.keyboard("{Control>}{Enter}{/Control}");
+    expect(menuItem(host, "left").closest("[data-ok-open]")).toBeNull();
+    headerOf(host, "team").focus();
+    await userEvent.keyboard("{Control>}{Enter}{/Control}");
+    expect(menuItem(host, "left").getAttribute("aria-disabled")).toBe("true");
+    expect(menuItem(host, "right").hasAttribute("aria-disabled")).toBe(false);
+    for (const action of ["pin-left", "pin-right", "unpin"])
+      expect(menuItem(host, action).hidden).toBe(true);
+    await userEvent.keyboard("{Escape}");
+    headerOf(host, "owner").focus();
+    await userEvent.keyboard("{Control>}{Enter}{/Control}");
+    expect(menuItem(host, "pin-left").hidden).toBe(false);
+    await userEvent.keyboard("{Escape}");
+  });
+
+  it("disableExport leaves the column out of the CSV; no sort icon on hideSortIcons", () => {
+    const { host, instance } = setup(snippet("columns-group"));
+    expect(instance.toCsv().split("\r\n")[0]).toBe("﻿Task,Team,Owner,Points");
+    expect(headerOf(host, "points").querySelector("[data-ok-data-grid-sort-icon]")).toBeNull();
+    expect(headerOf(host, "points").getAttribute("aria-sort")).toBe("none");
+    expect(getComputedStyle(cell(host, "tt-1", "points")).display).toBe("flex");
+  });
+
+  it("setPastedValueParser turns pasted text into the value", async () => {
+    const markup = snippet("columns-group")
+      .replace("data-ok-data-grid ", "data-ok-data-grid data-ok-cell-selection ")
+      .replace(
+        'data-ok-field="points" data-ok-type="number"',
+        'data-ok-field="points" data-ok-type="number" data-ok-editable',
+      );
+    const { host, root, instance } = setup(markup);
+    const edits: unknown[] = [];
+    root.addEventListener("ok:data-grid:edit", (event) =>
+      edits.push((event as CustomEvent<{ row: unknown }>).detail.row),
+    );
+    instance.setPastedValueParser(
+      "points",
+      (value, row) => Number(value) * 10 + Number(row["points"]),
+    );
+    const target = cell(host, "tt-1", "points");
+    target.focus();
+    target.dispatchEvent(
+      new KeyboardEvent("keydown", { bubbles: true, cancelable: true, key: "v", ctrlKey: true }),
+    );
+    const transfer = new DataTransfer();
+    transfer.setData("text/plain", "4");
+    const read = vi.spyOn(DataTransfer.prototype, "getData").mockReturnValue("4");
+    (document.activeElement as HTMLElement).dispatchEvent(
+      new ClipboardEvent("paste", { bubbles: true, cancelable: true, clipboardData: transfer }),
+    );
+    read.mockRestore();
+    expect(edits).toEqual([{ points: 43 }]);
+    expect(cell(host, "tt-1", "points").textContent).toBe("43");
+    instance.setPastedValueParser("points", null);
+  });
+});

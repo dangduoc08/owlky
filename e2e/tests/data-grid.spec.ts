@@ -582,6 +582,35 @@ for (const impl of implementations) {
       await expect(page.getByRole("columnheader", { name: /^Title/ })).toBeFocused();
     });
 
+    test("column options: row headers, merged owners, a fixed first column", async ({ page }) => {
+      await openStory(page, storyId(impl, "datagrid", "column-options"));
+      const grid = page.getByRole("grid", { name: "Team tasks" });
+      await expect(grid.getByRole("rowheader")).toHaveCount(5);
+      await expect(grid.locator('[data-ok-row-id="tt-1"] [data-ok-field="owner"]')).toHaveAttribute(
+        "aria-rowspan",
+        "2",
+      );
+      await expect(
+        grid.locator('[data-ok-row-id="tt-3"] [data-ok-field="owner"]'),
+      ).not.toHaveAttribute("data-ok-covered", "");
+      // Keyboard: the Team column can't move before Task; its menu has no pin items.
+      await grid.locator('[role="columnheader"][data-ok-field="team"]').focus();
+      await page.keyboard.press("ControlOrMeta+Enter");
+      await expect(page.getByRole("menuitem", { name: "Move left" })).toHaveAttribute(
+        "aria-disabled",
+        "true",
+      );
+      await expect(page.getByRole("menuitem", { name: "Pin to left" })).toHaveCount(0);
+      await page.getByRole("menuitem", { name: "Move right" }).click();
+      await expect(
+        grid.locator('[data-ok-data-grid-header] [role="columnheader"]').nth(2),
+      ).toHaveAttribute("data-ok-field", "team");
+      await expect(grid.locator('[role="columnheader"][data-ok-field="task"]')).toHaveAttribute(
+        "aria-colindex",
+        "1",
+      );
+    });
+
     test("layout options: header heights, borders and a page size from the height", async ({
       page,
     }) => {

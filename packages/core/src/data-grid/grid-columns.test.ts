@@ -8,6 +8,8 @@ import {
   gridColumnTemplate,
   gridEditInputType,
   gridEditText,
+  gridExportColumns,
+  gridLockedFields,
   gridPinSide,
   isGridResizable,
   moveGridColumn,
@@ -79,6 +81,29 @@ describe("column sizing, order and pinning", () => {
     expect(moveGridColumn(f, "d", { to: "b" })).toEqual(["a", "d", "b", "c"]);
     expect(moveGridColumn(f, "a", { to: "zz" })).toEqual(f);
     expect(moveGridColumn(f, "zz", 1)).toEqual(f);
+  });
+
+  it("disableReorder: locked columns don't move and keep their index", () => {
+    const f = ["a", "b", "c", "d"];
+    const locked = gridLockedFields([{ field: "a", disableReorder: true }, { field: "b" }]);
+    expect(locked).toEqual(["a"]);
+    expect(moveGridColumn(f, "a", 1, locked)).toEqual(f);
+    // b can't go before a; c can move between b and d.
+    expect(moveGridColumn(f, "b", -1, locked)).toEqual(f);
+    expect(moveGridColumn(f, "d", { to: "a" }, locked)).toEqual(f);
+    expect(moveGridColumn(f, "c", -1, locked)).toEqual(["a", "c", "b", "d"]);
+  });
+
+  it("disableExport and actions columns stay out of exports", () => {
+    const columns: GridColumn[] = [
+      { field: "a" },
+      { field: "b", disableExport: true },
+      { field: "c", type: "actions" },
+    ];
+    expect(gridExportColumns(columns, columns).map((c) => c.field)).toEqual(["a"]);
+    expect(gridExportColumns(columns, columns, { fields: ["b", "a"] }).map((c) => c.field)).toEqual(
+      ["a"],
+    );
   });
 
   it("arranges pinned columns at the sides; pins and unpins", () => {
@@ -182,6 +207,27 @@ describe("createGridColumnControls", () => {
     expect(header.hasAttribute("data-ok-just-dragged")).toBe(true);
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(header.hasAttribute("data-ok-just-dragged")).toBe(false);
+  });
+
+  it("a header with disableReorder doesn't drag (its resize handle still works)", () => {
+    const grid = mount(
+      GRID.replace('data-ok-field="a"', 'data-ok-field="a" data-ok-disable-reorder'),
+    ).firstElementChild as HTMLElement;
+    const onMove = vi.fn();
+    const onResize = vi.fn();
+    createGridColumnControls(grid, { onResize, onMove, canReorder: () => true });
+    const a = grid.querySelector('[data-ok-field="a"]') as HTMLElement;
+    const b = grid.querySelector('[data-ok-field="b"]') as HTMLElement;
+    const bx = b.getBoundingClientRect().left + 20;
+    pointer(a, "pointerdown", 10);
+    pointer(a, "pointermove", bx);
+    pointer(a, "pointerup", bx);
+    expect(a.hasAttribute("data-ok-dragging")).toBe(false);
+    expect(onMove).not.toHaveBeenCalled();
+    const handle = grid.querySelector("[data-ok-data-grid-resize]") as HTMLElement;
+    pointer(handle, "pointerdown", 100);
+    pointer(handle, "pointerup", 120);
+    expect(onResize).toHaveBeenCalled();
   });
 
   it("dragging a header onto another reorders; small moves, buttons, cells and refused reorders don't", () => {

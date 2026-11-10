@@ -125,7 +125,9 @@
   }
 
   /* Cells: text truncates; element content sits in a row. */
-  :where([data-ok-data-grid-main] :is([role="columnheader"], [role="gridcell"])) {
+  :where(
+    [data-ok-data-grid-main] :is([role="columnheader"], [role="gridcell"], [role="rowheader"])
+  ) {
     box-sizing: border-box;
     min-width: 0;
     padding-inline: var(--_ok-data-grid-pad);
@@ -135,34 +137,45 @@
     outline: none;
   }
 
-  :where([data-ok-data-grid-main] [role="gridcell"]) {
+  :where([data-ok-data-grid-main] :is([role="gridcell"], [role="rowheader"])) {
     isolation: isolate;
     height: var(--_ok-data-grid-row-height);
     line-height: var(--_ok-data-grid-row-height);
   }
 
-  :where([data-ok-data-grid-main] [role="gridcell"]:has(> *)) {
+  /* display: "flex" cells lay out any content in a row, centered (text too). */
+  :where(
+    [data-ok-data-grid-main] :is([role="gridcell"], [role="rowheader"]):has(> *),
+    [data-ok-data-grid-main] [data-ok-display="flex"]
+  ) {
     display: flex;
     align-items: center;
     gap: calc(var(--ok-spacing) * 2);
     line-height: inherit;
   }
 
-  :where([data-ok-data-grid-main] :is([role="columnheader"], [role="gridcell"])[hidden]) {
+  :where(
+    [data-ok-data-grid-main]
+      :is([role="columnheader"], [role="gridcell"], [role="rowheader"])[hidden]
+  ) {
     display: none;
   }
 
   /* Controls a cell hides (such as Save and Cancel outside row editing): author `display` beats the UA rule. */
-  :where([data-ok-data-grid-main] [role="gridcell"] > [hidden]) {
+  :where([data-ok-data-grid-main] :is([role="gridcell"], [role="rowheader"]) > [hidden]) {
     display: none;
   }
 
-  :where([data-ok-data-grid-main] [role="gridcell"][data-ok-align="right"]) {
+  :where(
+    [data-ok-data-grid-main] :is([role="gridcell"], [role="rowheader"])[data-ok-align="right"]
+  ) {
     justify-content: flex-end;
     text-align: right;
   }
 
-  :where([data-ok-data-grid-main] [role="gridcell"][data-ok-align="center"]) {
+  :where(
+    [data-ok-data-grid-main] :is([role="gridcell"], [role="rowheader"])[data-ok-align="center"]
+  ) {
     justify-content: center;
     text-align: center;
   }
@@ -295,7 +308,10 @@
   }
 
   /* Focus: the focused cell gets an inset ring. */
-  :where([data-ok-data-grid-main] :is([role="columnheader"], [role="gridcell"]):focus-visible) {
+  :where(
+    [data-ok-data-grid-main]
+      :is([role="columnheader"], [role="gridcell"], [role="rowheader"]):focus-visible
+  ) {
     outline: 2px solid var(--ok-palette-primary-main);
     outline-offset: -2px;
   }
@@ -456,7 +472,7 @@
   }
 
   /* Editing: the field fills the cell. */
-  :where([data-ok-data-grid-main] [role="gridcell"][data-ok-editing]) {
+  :where([data-ok-data-grid-main] :is([role="gridcell"], [role="rowheader"])[data-ok-editing]) {
     padding: 0;
   }
 
@@ -486,7 +502,7 @@
   }
 
   /* Validation: the field and a message under the cell. */
-  :where([data-ok-data-grid-main] [role="gridcell"][data-ok-editing]) {
+  :where([data-ok-data-grid-main] :is([role="gridcell"], [role="rowheader"])[data-ok-editing]) {
     position: relative;
     z-index: 4;
     overflow: visible;
@@ -519,12 +535,15 @@
   }
 
   /* Column spans: the cell takes the next columns' place (they are hidden). */
-  :where([data-ok-data-grid-main] :is([role="gridcell"], [role="columnheader"])[aria-colspan]) {
+  :where(
+    [data-ok-data-grid-main]
+      :is(:is([role="gridcell"], [role="rowheader"]), [role="columnheader"])[aria-colspan]
+  ) {
     grid-column: span var(--_ok-data-grid-colspan, 1);
   }
 
   /* Row spans: the first cell grows over the next rows, whose cells keep their place unseen. */
-  :where([data-ok-data-grid-main] [role="gridcell"][aria-rowspan]) {
+  :where([data-ok-data-grid-main] :is([role="gridcell"], [role="rowheader"])[aria-rowspan]) {
     display: flex;
     align-items: center;
     align-self: start;
@@ -543,7 +562,10 @@
   }
 
   /* Over the rows below; a pinned spanning cell stays sticky (and above, as pinned cells are). */
-  :where([data-ok-data-grid-main] [role="gridcell"][aria-rowspan]:not([data-ok-pinned])) {
+  :where(
+    [data-ok-data-grid-main]
+      :is([role="gridcell"], [role="rowheader"])[aria-rowspan]:not([data-ok-pinned])
+  ) {
     position: relative;
     z-index: 1;
   }
@@ -553,7 +575,7 @@
     grid-template-rows: var(--_ok-data-grid-row-height);
   }
 
-  :where([data-ok-data-grid-main] [role="gridcell"][data-ok-covered]) {
+  :where([data-ok-data-grid-main] :is([role="gridcell"], [role="rowheader"])[data-ok-covered]) {
     visibility: hidden;
   }
 
@@ -570,7 +592,11 @@
     padding-block: var(--_ok-data-grid-spacing-top, 0px) var(--_ok-data-grid-spacing-bottom, 0px);
   }
 
-  :where([data-ok-data-grid-body] > [role="row"][data-ok-row-height="auto"] > [role="gridcell"]) {
+  :where(
+    [data-ok-data-grid-body]
+      > [role="row"][data-ok-row-height="auto"]
+      > :is([role="gridcell"], [role="rowheader"])
+  ) {
     display: flex;
     align-items: center;
     height: auto;
@@ -641,7 +667,7 @@
      none); its toggle turns when open. */
   :where(
     [data-ok-data-grid-main]
-      [role="gridcell"]:is(
+      :is([role="gridcell"], [role="rowheader"]):is(
         [data-ok-field="__tree_data_group__"],
         [data-ok-field^="__row_group_by_columns_group_"]
       )
@@ -676,7 +702,11 @@
   }
 
   /* Master-detail: a panel row under its row, its one cell across every column. */
-  :where([data-ok-data-grid-body] > [data-ok-data-grid-detail] > [role="gridcell"]) {
+  :where(
+    [data-ok-data-grid-body]
+      > [data-ok-data-grid-detail]
+      > :is([role="gridcell"], [role="rowheader"])
+  ) {
     grid-column: 1 / -1;
     display: block;
     box-sizing: border-box;
@@ -754,7 +784,7 @@
     [data-ok-data-grid][data-ok-list-view]
       [data-ok-data-grid-body]
       > [role="row"]
-      > [role="gridcell"]
+      > :is([role="gridcell"], [role="rowheader"])
   ) {
     display: none;
   }
@@ -783,7 +813,7 @@
   }
 
   /* Lazy loading: rows not loaded yet show placeholder bars. */
-  :where([role="gridcell"] > [data-ok-data-grid-skeleton]) {
+  :where(:is([role="gridcell"], [role="rowheader"]) > [data-ok-data-grid-skeleton]) {
     display: inline-block;
     width: 70%;
     vertical-align: middle;
@@ -813,12 +843,16 @@
   }
 
   /* Cell selection: presses select cells, not text (Ctrl + C copies the cells). */
-  :where([data-ok-cell-selection] [data-ok-data-grid-body] [role="gridcell"]) {
+  :where(
+    [data-ok-cell-selection] [data-ok-data-grid-body] :is([role="gridcell"], [role="rowheader"])
+  ) {
     user-select: none;
   }
 
   /* Cell selection: selected cells tint; a range's edges draw a line. */
-  :where([data-ok-data-grid-body] [role="gridcell"][aria-selected="true"]) {
+  :where(
+    [data-ok-data-grid-body] :is([role="gridcell"], [role="rowheader"])[aria-selected="true"]
+  ) {
     --_ok-data-grid-edge: var(--ok-palette-primary-main);
     box-shadow:
       var(--_ok-data-grid-edge-top, 0 0 transparent),
@@ -828,19 +862,19 @@
     background-color: rgb(var(--ok-palette-primary-main-channel) / 0.08);
   }
 
-  :where([role="gridcell"][data-ok-range-edge~="top"]) {
+  :where(:is([role="gridcell"], [role="rowheader"])[data-ok-range-edge~="top"]) {
     --_ok-data-grid-edge-top: inset 0 1px 0 var(--_ok-data-grid-edge);
   }
 
-  :where([role="gridcell"][data-ok-range-edge~="right"]) {
+  :where(:is([role="gridcell"], [role="rowheader"])[data-ok-range-edge~="right"]) {
     --_ok-data-grid-edge-right: inset -1px 0 0 var(--_ok-data-grid-edge);
   }
 
-  :where([role="gridcell"][data-ok-range-edge~="bottom"]) {
+  :where(:is([role="gridcell"], [role="rowheader"])[data-ok-range-edge~="bottom"]) {
     --_ok-data-grid-edge-bottom: inset 0 -1px 0 var(--_ok-data-grid-edge);
   }
 
-  :where([role="gridcell"][data-ok-range-edge~="left"]) {
+  :where(:is([role="gridcell"], [role="rowheader"])[data-ok-range-edge~="left"]) {
     --_ok-data-grid-edge-left: inset 1px 0 0 var(--_ok-data-grid-edge);
   }
 
@@ -861,7 +895,7 @@
   :where(
     [data-ok-data-grid][data-ok-show-cell-vertical-border]
       [data-ok-data-grid-main]
-      [role="gridcell"]
+      :is([role="gridcell"], [role="rowheader"])
   ) {
     border-inline-end: 1px solid var(--ok-divider);
   }

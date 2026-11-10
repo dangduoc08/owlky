@@ -124,6 +124,65 @@ export const TASKS: Issue[] = Array.from({ length: 24 }, (_, i) => ({
   points: (i % 5) + 1,
 }));
 
+/* Tasks by team and owner for the column options story (story data). */
+export interface TeamTask {
+  id: string;
+  task: string;
+  team: string;
+  owner: string;
+  points: number;
+  due: string;
+}
+
+export const TEAM_TASKS: TeamTask[] = [
+  { id: "tt-1", task: "Plan the sprint", team: "Core", owner: "Ana", points: 3, due: "2025-05-12" },
+  { id: "tt-2", task: "Fix the build", team: "Core", owner: "Ana", points: 5, due: "2025-05-14" },
+  { id: "tt-3", task: "Write the guide", team: "Docs", owner: "Ana", points: 2, due: "2025-05-16" },
+  { id: "tt-4", task: "Review the API", team: "Docs", owner: "Bao", points: 8, due: "2025-05-20" },
+  {
+    id: "tt-5",
+    task: "Draw the icons",
+    team: "Design",
+    owner: "Bao",
+    points: 5,
+    due: "2025-05-21",
+  },
+];
+
+const teamColumns: GridColDef<TeamTask>[] = [
+  // Row headers name their row; this column stays first and has no menu.
+  {
+    field: "task",
+    headerName: "Task",
+    flex: 1,
+    minWidth: 160,
+    rowHeader: true,
+    disableReorder: true,
+    disableColumnMenu: true,
+  },
+  { field: "team", headerName: "Team", width: 120, pinnable: false },
+  {
+    field: "owner",
+    headerName: "Owner",
+    width: 130,
+    // Owners merge within a team only.
+    rowSpanValueGetter: (value, row) => `${row.team}/${String(value)}`,
+  },
+  {
+    field: "points",
+    headerName: "Points",
+    type: "number",
+    width: 110,
+    hideSortIcons: true,
+    display: "flex",
+    headerClassName: "sb-grid-points",
+    // Big tasks stand out.
+    cellClassName: ({ value }) => (Number(value) >= 5 ? "sb-grid-big" : ""),
+  },
+  // Left out of the CSV, Excel and print exports.
+  { field: "due", headerName: "Due", width: 130, disableExport: true },
+];
+
 /* Read-only issues for the footer, layout and selection stories. */
 const plainColumns: GridColDef<Issue>[] = [
   { field: "title", headerName: "Title", flex: 1, minWidth: 180 },
@@ -207,6 +266,23 @@ export const moreStories: Record<string, ReactGroup[]> = {
       ),
     },
   ],
+  columns: [
+    {
+      title: "Column options",
+      content: (
+        <DataGrid
+          id="grid-columns"
+          aria-label="Team tasks"
+          className="sb-grid-wide"
+          rows={TEAM_TASKS}
+          columns={teamColumns}
+          rowSpanning
+          showToolbar
+          hideFooter
+        />
+      ),
+    },
+  ],
   dimensions: [
     {
       title: "Header heights, borders and row spacing",
@@ -259,6 +335,7 @@ export const MORE_FILES = {
   modes: [["Edit modes", "group"]],
   history: [["Undo and redo", "group"]],
   footer: [["Footer, label and Tab navigation", "group"]],
+  columns: [["Column options", "group"]],
   dimensions: [
     ["Header heights, borders and row spacing", "borders"],
     ["Page size from the height", "pages"],

@@ -188,7 +188,7 @@ export function measureGridColumn(
 ): number {
   const cells = [
     ...grid.querySelectorAll<HTMLElement>(
-      `[role="gridcell"][data-ok-field="${CSS.escape(field)}"]`,
+      `:is([role="gridcell"], [role="rowheader"])[data-ok-field="${CSS.escape(field)}"]`,
     ),
   ].filter((cell) => !cell.hidden && !cell.closest("[hidden]") && cell.isConnected);
   const header =

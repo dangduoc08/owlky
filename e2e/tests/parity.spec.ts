@@ -30,6 +30,7 @@ const pairs: [component: string, story: string][] = [
   ["datagrid", "undo-redo"],
   ["datagrid", "footer"],
   ["datagrid", "dimensions"],
+  ["datagrid", "column-options"],
   ["motion", "in-view"],
   ["motion", "text"],
   ["motion", "scroll"],

@@ -567,6 +567,12 @@
       "type": "(labels: Partial<{ toolbarColumns: string; toolbarFilters: string; toolbarDensity: string; toolbarExport: string; toolbarExportCSV: string; toolbarQuickFilterPlaceholder: string; toolbarQuickFilterLabel: string; ... 106 more ...; filterOperator: Record<...>; }>) => void"
      },
      {
+      "description": "A column's parser of pasted text (MUI X `pastedValueParser`): gets the text and the row's values, returns the value to write. `null`: back to parsing by the column type.",
+      "kind": "method",
+      "name": "setPastedValueParser",
+      "type": "(field: string, parser: ((value: string, row: DataRow) => unknown) | null) => void"
+     },
+     {
       "description": "Pins columns to the start and the end.",
       "kind": "method",
       "name": "setPinnedColumns",
@@ -1691,6 +1697,24 @@
       "value": "string"
      },
      {
+      "description": "On a header cell: the column stays out of exports (CSV, Excel, print).",
+      "kind": "state",
+      "name": "data-ok-disable-export"
+     },
+     {
+      "description": "On a header cell: the column keeps its place (no drag, no moves that shift it).",
+      "kind": "state",
+      "name": "data-ok-disable-reorder"
+     },
+     {
+      "description": "On a cell: `flex` lays its content out in a row, centered.",
+      "kind": "value",
+      "name": "data-ok-display",
+      "value": [
+       "flex"
+      ]
+     },
+     {
       "description": "Set by the runtime on a pivot field while a pointer drags it.",
       "kind": "state",
       "name": "data-ok-dragging"
@@ -1838,6 +1862,14 @@
       "value": "string"
      },
      {
+      "description": "On a header cell: `false` hides the pin items of the column menu.",
+      "kind": "value",
+      "name": "data-ok-pinnable",
+      "value": [
+       "false"
+      ]
+     },
+     {
       "description": "On a cell: the side its column is pinned to.",
       "kind": "value",
       "name": "data-ok-pinned",
@@ -1876,6 +1908,12 @@
       "description": "On a row: its id.",
       "kind": "value",
       "name": "data-ok-row-id",
+      "value": "string"
+     },
+     {
+      "description": "On a cell: the value row spanning compares, instead of the cell's text (React writes it from `rowSpanValueGetter`).",
+      "kind": "value",
+      "name": "data-ok-row-span-value",
       "value": "string"
      },
      {
