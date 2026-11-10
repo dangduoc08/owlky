@@ -62,7 +62,7 @@ Upstream: MUI `ButtonGroup`, mui.com/material-ui/api/button-group/.
 | `variant` | `variant` | kept | default `outlined` (as MUI); + `soft` |
 | `color` | `color` | kept | default `inherit` (MUI `primary`); + `black` / `white` |
 | `size` (`small` · `medium` · `large`) | `size` (`sm` · `md` · `lg` · `xl`) | renamed | |
-| `component` | — | deferred | root is always `div[role=group]` |
+| `component` | same | kept | 4.18.22: the root element (default `div`), always with `role="group"`; HTML: write any element |
 | `disableRipple`, `disableFocusRipple` | — | not applicable | no ripple |
 | `sx`, `classes` | — | not applicable | ADR-0015 |
 

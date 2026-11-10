@@ -54,4 +54,14 @@ describe("fab CSS without JavaScript", () => {
     expect(box(fallback).height).toBe(48);
     expect(getComputedStyle(fallback as HTMLElement).backgroundColor).toBe("rgb(223, 227, 232)");
   });
+
+  it("a disabled router link that keeps its href gets no pointer events", () => {
+    const host = mount(
+      '<a href="/new" data-ok-fab data-ok-variant="contained" data-ok-color="primary" data-ok-size="md" aria-label="New"><svg aria-hidden="true" viewBox="0 0 24 24"></svg></a>' +
+        '<a href="/off" aria-disabled="true" tabindex="-1" data-ok-fab data-ok-variant="contained" data-ok-color="primary" data-ok-size="md" aria-label="Off"><svg aria-hidden="true" viewBox="0 0 24 24"></svg></a>',
+    );
+    const [link, off] = [...host.querySelectorAll<HTMLElement>("[data-ok-fab]")] as HTMLElement[];
+    expect(getComputedStyle(link as HTMLElement).pointerEvents).toBe("auto");
+    expect(getComputedStyle(off as HTMLElement).pointerEvents).toBe("none");
+  });
 });

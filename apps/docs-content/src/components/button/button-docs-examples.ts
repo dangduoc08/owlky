@@ -174,6 +174,30 @@ export function ButtonLink() {
 }`,
   },
   {
+    id: "routing",
+    title: "Use a routing library",
+    body: "To navigate on the client without a full page load, pass your router's link component in `component`, with the props it needs, such as `to`. You can also keep `href` and pass the component in `LinkComponent`: Button renders it whenever `href` is set. Button adds its attributes to that component, which must pass them, and its `ref`, to the element it renders. A disabled router link keeps its URL, because the router may need it. It gets `aria-disabled`, leaves the tab order and ignores pointer clicks. In HTML, the router renders the `a` element: add the button attributes to it.",
+    react: `import { Button } from "@owlky/react";
+import type { ComponentProps } from "react";
+
+// Stands in for a router's link component, such as the one of React Router.
+function RouterLink({ to, ...props }: { to: string } & ComponentProps<"a">) {
+  return <a href={to} {...props} />;
+}
+
+export function ButtonRouterLink() {
+  return (
+    <Button component={RouterLink} to="/settings" variant="contained">
+      Settings
+    </Button>
+  );
+}`,
+    html: `<!-- The router renders the element; add the button attributes to it. -->
+<a href="/settings" data-ok-button data-ok-variant="contained" data-ok-color="inherit" data-ok-size="md">
+  <span data-ok-button-label>Settings</span>
+</a>`,
+  },
+  {
     id: "options",
     title: "Options",
     body: "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default.",
@@ -227,6 +251,19 @@ export const buttonPropRows: PropRow[] = [
     type: "string",
     description:
       "Renders a link. A disabled or loading link loses its href and gets aria-disabled.",
+  },
+  {
+    react: "component",
+    html: "<a>",
+    type: "ElementType",
+    description:
+      "The element or component to render, such as a router link. It gets the button's attributes and its ref.",
+  },
+  {
+    react: "LinkComponent",
+    html: "<a>",
+    type: "ElementType",
+    description: "The component that renders the link when href is set. Default a.",
   },
   {
     react: "ref",

@@ -5086,9 +5086,15 @@
       },
       "name": "Button",
       "react": {
-       "description": "A native `<button type=\"button\">`, or an `<a>` when `href` is set.",
-       "native": "HTMLAnchorElement",
+       "description": "A native `<button type=\"button\">`, an `<a>` when `href` is set (or the `LinkComponent`), or the `component`, such as a router link.",
+       "native": "HTMLElement",
        "props": [
+        {
+         "default": "\"a\"",
+         "description": "The component that renders the link instead of an `<a>`, such as a router link. It gets `href` and the button's attributes.",
+         "name": "LinkComponent",
+         "type": "ElementType"
+        },
         {
          "description": "The content.",
          "name": "children",
@@ -5101,12 +5107,17 @@
          "type": "ColorName"
         },
         {
+         "description": "The element or component to render, such as a router link.",
+         "name": "component",
+         "type": "C"
+        },
+        {
          "description": "No shadow on contained buttons (on by default inside a ButtonGroup).",
          "name": "disableElevation",
          "type": "boolean"
         },
         {
-         "description": "Removes `href` and sets `aria-disabled`, so the link can't be followed.",
+         "description": "Turns the button off: links get `aria-disabled` and leave the tab order.",
          "name": "disabled",
          "type": "boolean"
         },
@@ -5315,7 +5326,7 @@
      "title": "Events / API"
     },
     {
-     "body": "Upstream: MUI `Button` (+ `ButtonBase`), mui.com/material-ui/api/button/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `variant` (`text` · `contained` · `outlined`) | `variant` | kept | + `soft` (reference) |\n| `color` | `color` | kept | default `inherit` (reference; MUI `primary`); + `black` / `white` |\n| `size` (`small` · `medium` · `large`) | `size` (`sm` · `md` · `lg` · `xl`) | renamed | + `xl` (reference) |\n| `children`, `disabled`, `fullWidth`, `disableElevation`, `href`, `startIcon`, `endIcon` | same | kept | disabled link: no `href`, `aria-disabled` |\n| `loading`, `loadingIndicator`, `loadingPosition` | same | kept | `loading` boolean (MUI `null` = no loader slot) |\n| `type` (ButtonBase, default `button`) | native `type` | kept | |\n| `component`, `LinkComponent` (ButtonBase) | — | deferred | `<button>` or `<a href>` only; router links can't be passed |\n| `action`, `focusVisibleClassName`, `onFocusVisible` (ButtonBase) | `ref.focus()`, `:focus-visible` | not applicable | |\n| `nativeButton` (ButtonBase) | — | not applicable | always a native element |\n| `disableRipple`, `disableFocusRipple`, `disableTouchRipple`, `centerRipple`, `focusRipple`, `TouchRippleProps`, `touchRippleRef` | — | not applicable | no ripple (CSS states) |\n| `sx`, `classes` | — | not applicable | ADR-0015 |",
+     "body": "Upstream: MUI `Button` (+ `ButtonBase`), mui.com/material-ui/api/button/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `variant` (`text` · `contained` · `outlined`) | `variant` | kept | + `soft` (reference) |\n| `color` | `color` | kept | default `inherit` (reference; MUI `primary`); + `black` / `white` |\n| `size` (`small` · `medium` · `large`) | `size` (`sm` · `md` · `lg` · `xl`) | renamed | + `xl` (reference) |\n| `children`, `disabled`, `fullWidth`, `disableElevation`, `href`, `startIcon`, `endIcon` | same | kept | disabled link: no `href`, `aria-disabled` |\n| `loading`, `loadingIndicator`, `loadingPosition` | same | kept | `loading` boolean (MUI `null` = no loader slot) |\n| `type` (ButtonBase, default `button`) | native `type` | kept | |\n| `component`, `LinkComponent` (ButtonBase) | same | kept | 4.18.22: `component` renders that element or component (a router link gets the attributes, `ref` and its own props such as `to`); `LinkComponent` replaces the `<a>` when `href` is set; `component=\"button\"` + `href` still renders the link (MUI). Elements other than `button` are links: a disabled router link keeps its `href` (routers need it), gets `aria-disabled` + `tabindex=-1`, and CSS turns pointer events off (`[href][aria-disabled=true]`). Non-interactive elements (`span`, `label`) aren't supported: no `role=button` or key handling is added (native first; Upload covers MUI's `component=\"label\"` file buttons). HTML: the router renders the `a`, with the same attributes |\n| `action`, `focusVisibleClassName`, `onFocusVisible` (ButtonBase) | `ref.focus()`, `:focus-visible` | not applicable | |\n| `nativeButton` (ButtonBase) | — | not applicable | always a native element |\n| `disableRipple`, `disableFocusRipple`, `disableTouchRipple`, `centerRipple`, `focusRipple`, `TouchRippleProps`, `touchRippleRef` | — | not applicable | no ripple (CSS states) |\n| `sx`, `classes` | — | not applicable | ADR-0015 |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
@@ -5551,6 +5562,12 @@
          "type": "ColorName"
         },
         {
+         "default": "\"div\"",
+         "description": "The root element, such as `\"nav\"` or `\"span\"`. It keeps `role=\"group\"`.",
+         "name": "component",
+         "type": "ElementType"
+        },
+        {
          "default": "true",
          "description": "Passed to every child Button. (as in the reference).",
          "name": "disableElevation",
@@ -5739,7 +5756,7 @@
      "title": "Responsive"
     },
     {
-     "body": "Upstream: MUI `ButtonGroup`, mui.com/material-ui/api/button-group/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `children`, `orientation`, `fullWidth`, `disabled`, `disableElevation` | same | kept | reach **direct** child Buttons only (`cloneElement`); `disableElevation` on by default (reference) |\n| `variant` | `variant` | kept | default `outlined` (as MUI); + `soft` |\n| `color` | `color` | kept | default `inherit` (MUI `primary`); + `black` / `white` |\n| `size` (`small` · `medium` · `large`) | `size` (`sm` · `md` · `lg` · `xl`) | renamed | |\n| `component` | — | deferred | root is always `div[role=group]` |\n| `disableRipple`, `disableFocusRipple` | — | not applicable | no ripple |\n| `sx`, `classes` | — | not applicable | ADR-0015 |",
+     "body": "Upstream: MUI `ButtonGroup`, mui.com/material-ui/api/button-group/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `children`, `orientation`, `fullWidth`, `disabled`, `disableElevation` | same | kept | reach **direct** child Buttons only (`cloneElement`); `disableElevation` on by default (reference) |\n| `variant` | `variant` | kept | default `outlined` (as MUI); + `soft` |\n| `color` | `color` | kept | default `inherit` (MUI `primary`); + `black` / `white` |\n| `size` (`small` · `medium` · `large`) | `size` (`sm` · `md` · `lg` · `xl`) | renamed | |\n| `component` | same | kept | 4.18.22: the root element (default `div`), always with `role=\"group\"`; HTML: write any element |\n| `disableRipple`, `disableFocusRipple` | — | not applicable | no ripple |\n| `sx`, `classes` | — | not applicable | ADR-0015 |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
@@ -7526,6 +7543,11 @@
          "description": "(neutral). `black` / `white` are meant for light / dark surfaces.",
          "name": "color",
          "type": "ColorName"
+        },
+        {
+         "description": "The element to render: `\"button\"` (the default).",
+         "name": "component",
+         "type": "\"button\""
         },
         {
          "description": "No shadow on contained buttons (on by default inside a ButtonGroup).",
@@ -33086,6 +33108,11 @@
          "type": "ColorName"
         },
         {
+         "description": "The element to render: `\"button\"` (the default).",
+         "name": "component",
+         "type": "\"button\""
+        },
+        {
          "description": "No shadow on contained buttons (on by default inside a ButtonGroup).",
          "name": "disableElevation",
          "type": "boolean"
@@ -33215,6 +33242,11 @@
          "description": "(neutral). `black` / `white` are meant for light / dark surfaces.",
          "name": "color",
          "type": "ColorName"
+        },
+        {
+         "description": "The element to render: `\"button\"` (the default).",
+         "name": "component",
+         "type": "\"button\""
         },
         {
          "description": "No shadow on contained buttons (on by default inside a ButtonGroup).",
@@ -34734,9 +34766,15 @@
       },
       "name": "Fab",
       "react": {
-       "description": "A native `<button type=\"button\">`, or an `<a>` when `href` is set; round fabs need `aria-label`, extended fabs are named by their label.",
-       "native": "HTMLAnchorElement",
+       "description": "A native `<button type=\"button\">`, an `<a>` when `href` is set (or the `LinkComponent`), or the `component`; round fabs need `aria-label`, extended fabs are named by their label.",
+       "native": "HTMLElement",
        "props": [
+        {
+         "default": "\"a\"",
+         "description": "The component that renders the link instead of an `<a>`, such as a router link. It gets `href` and the fab's attributes.",
+         "name": "LinkComponent",
+         "type": "ElementType"
+        },
         {
          "description": "Scales up on hover and down while pressed (off with reduced motion).",
          "name": "animate",
@@ -34749,7 +34787,12 @@
          "type": "\"black\" | \"default\" | \"error\" | \"info\" | \"inherit\" | \"primary\" | \"secondary\" | \"success\" | \"warning\" | \"white\""
         },
         {
-         "description": "Removes `href` and sets `aria-disabled`, so the link can't be followed.",
+         "description": "The element or component to render, such as a router link.",
+         "name": "component",
+         "type": "C"
+        },
+        {
+         "description": "Turns the fab off: links get `aria-disabled` and leave the tab order.",
          "name": "disabled",
          "type": "boolean"
         },
@@ -34870,7 +34913,7 @@
      "title": "Options"
     },
     {
-     "body": "Native `<button>` — CSS only, no runtime. Positioning (fixed / absolute) is up to the page.",
+     "body": "Native `<button>`, or `<a href>` for a link — CSS only, no runtime. Positioning (fixed / absolute) is up to the page.",
      "id": "behavior",
      "title": "Behavior"
     },
@@ -34895,7 +34938,7 @@
      "title": "Responsive"
     },
     {
-     "body": "Upstream: MUI `Fab` (+ `ButtonBase`), mui.com/material-ui/api/fab/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `variant` (`circular` · `extended`) | `extended` flag | renamed | Owlky's `variant` is the fill style (`contained` · `outlined` · `soft`, reference) |\n| `color` (default `default`) | `color` | kept | + `inherit`, `black` / `white` |\n| `size` (`small` · `medium` · `large`, default `large`) | `size` (`sm` · `md` · `lg`, default `md`) | renamed | |\n| `children`, `disabled`, `href` | same | kept | |\n| `component`, `LinkComponent` (ButtonBase) | — | deferred | router links can't be passed |\n| `action`, `focusVisibleClassName`, `onFocusVisible`, `nativeButton` (ButtonBase) | `ref.focus()`, `:focus-visible` | not applicable | |\n| `disableRipple`, `disableFocusRipple` (+ ButtonBase ripple props) | — | not applicable | no ripple |\n| `sx`, `classes` | — | not applicable | ADR-0015 |\n\nBeyond MUI: `animate` (reference).",
+     "body": "Upstream: MUI `Fab` (+ `ButtonBase`), mui.com/material-ui/api/fab/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `variant` (`circular` · `extended`) | `extended` flag | renamed | Owlky's `variant` is the fill style (`contained` · `outlined` · `soft`, reference) |\n| `color` (default `default`) | `color` | kept | + `inherit`, `black` / `white` |\n| `size` (`small` · `medium` · `large`, default `large`) | `size` (`sm` · `md` · `lg`, default `md`) | renamed | |\n| `children`, `disabled`, `href` | same | kept | |\n| `component`, `LinkComponent` (ButtonBase) | same | kept | 4.18.22: as on Button (router links; a disabled router link keeps its `href`, `aria-disabled`, `tabindex=-1`, no pointer events) |\n| `action`, `focusVisibleClassName`, `onFocusVisible`, `nativeButton` (ButtonBase) | `ref.focus()`, `:focus-visible` | not applicable | |\n| `disableRipple`, `disableFocusRipple` (+ ButtonBase ripple props) | — | not applicable | no ripple |\n| `sx`, `classes` | — | not applicable | ADR-0015 |\n\nBeyond MUI: `animate` (reference).",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
@@ -37626,19 +37669,40 @@
       },
       "name": "IconButton",
       "react": {
-       "description": "A native round `<button type=\"button\">` holding a decorative icon. Give it an accessible name with `aria-label`.",
-       "native": "HTMLButtonElement",
+       "description": "A native round `<button type=\"button\">` holding a decorative icon, an `<a>` when `href` is set (an icon link; or the `LinkComponent`), or the `component`. Give it an accessible name with `aria-label`.",
+       "native": "HTMLElement",
        "props": [
+        {
+         "default": "\"a\"",
+         "description": "The component that renders the link instead of an `<a>`, such as a router link. It gets `href` and the button's attributes.",
+         "name": "LinkComponent",
+         "type": "ElementType"
+        },
         {
          "description": "Scales up on hover and down while pressed (off with reduced motion).",
          "name": "animate",
          "type": "boolean"
         },
         {
+         "description": "The icon.",
+         "name": "children",
+         "type": "ReactNode"
+        },
+        {
          "default": "\"default\"",
          "description": "`default` (secondary text), `inherit` (text color) or a palette color.",
          "name": "color",
          "type": "\"black\" | \"default\" | \"error\" | \"info\" | \"inherit\" | \"primary\" | \"secondary\" | \"success\" | \"warning\" | \"white\""
+        },
+        {
+         "description": "The element or component to render, such as a router link.",
+         "name": "component",
+         "type": "C"
+        },
+        {
+         "description": "Turns the button off: links get `aria-disabled` and leave the tab order.",
+         "name": "disabled",
+         "type": "boolean"
         },
         {
          "description": "Pull the button out by its padding so the icon lines up with that edge.",
@@ -37751,7 +37815,7 @@
      "title": "Purpose"
     },
     {
-     "body": "```\nbutton[type=\"button\"][data-ok-icon-button][data-ok-color][data-ok-size][data-ok-animate]?[aria-label]\n  svg[aria-hidden=\"true\"]            (any decorative SVG or img)\n  span[data-ok-icon-button-loader][aria-hidden=\"true\"]   only while loading (data-ok-loading)\n    span[data-ok-circular-progress][data-ok-color=\"inherit\"][data-ok-button-spinner]   default loader: a CircularProgress (React: `loadingIndicator` replaces it)\n```",
+     "body": "```\n(button[type=\"button\"] | a[href])[data-ok-icon-button][data-ok-color][data-ok-size][data-ok-animate]?[aria-label]\n  svg[aria-hidden=\"true\"]            (any decorative SVG or img)\n  span[data-ok-icon-button-loader][aria-hidden=\"true\"]   only while loading (data-ok-loading)\n    span[data-ok-circular-progress][data-ok-color=\"inherit\"][data-ok-button-spinner]   default loader: a CircularProgress (React: `loadingIndicator` replaces it)\n```",
      "id": "anatomy",
      "title": "Anatomy"
     },
@@ -37766,7 +37830,7 @@
      "title": "States"
     },
     {
-     "body": "Native `<button>` — CSS only, no runtime. Circular (`--ok-radius-full`), transparent background.\n`data-ok-animate` transitions `transform`; `prefers-reduced-motion` disables the scale.",
+     "body": "Native `<button>`, or `<a href>` for an icon link — CSS only, no runtime. Circular (`--ok-radius-full`), transparent background.\n`data-ok-animate` transitions `transform`; `prefers-reduced-motion` disables the scale.",
      "id": "behavior",
      "title": "Behavior"
     },
@@ -37791,7 +37855,7 @@
      "title": "Responsive"
     },
     {
-     "body": "Upstream: MUI `IconButton` (+ `ButtonBase`), mui.com/material-ui/api/icon-button/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `children`, `color`, `edge`, `disabled`, `loading`, `loadingIndicator` | same | kept | `color` + `black` / `white`; `edge` `false` = absent |\n| `size` (`small` · `medium` · `large`) | `size` (`sm` · `md` · `lg`) | renamed | |\n| `type` (ButtonBase) | native `type` | kept | |\n| `href`, `component`, `LinkComponent` (ButtonBase) | — | deferred | always a `<button>`: no icon links |\n| `action`, `focusVisibleClassName`, `onFocusVisible`, `nativeButton` (ButtonBase) | `ref.focus()`, `:focus-visible` | not applicable | |\n| `disableRipple`, `disableFocusRipple` (+ ButtonBase ripple props) | — | not applicable | no ripple |\n| `sx`, `classes` | — | not applicable | ADR-0015 |\n\nBeyond MUI: `animate` (reference).",
+     "body": "Upstream: MUI `IconButton` (+ `ButtonBase`), mui.com/material-ui/api/icon-button/.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `children`, `color`, `edge`, `disabled`, `loading`, `loadingIndicator` | same | kept | `color` + `black` / `white`; `edge` `false` = absent |\n| `size` (`small` · `medium` · `large`) | `size` (`sm` · `md` · `lg`) | renamed | |\n| `type` (ButtonBase) | native `type` | kept | |\n| `href`, `component`, `LinkComponent` (ButtonBase) | same | kept | 4.18.22: `href` renders an `<a data-ok-icon-button>` (an icon link; disabled / loading: no `href`, `role=link`, `aria-disabled`); `component` / `LinkComponent` as on Button (router links) |\n| `action`, `focusVisibleClassName`, `onFocusVisible`, `nativeButton` (ButtonBase) | `ref.focus()`, `:focus-visible` | not applicable | |\n| `disableRipple`, `disableFocusRipple` (+ ButtonBase ripple props) | — | not applicable | no ripple |\n| `sx`, `classes` | — | not applicable | ADR-0015 |\n\nBeyond MUI: `animate` (reference).",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
@@ -41695,7 +41759,6 @@
         {
          "description": "The element or component to render, such as a router link.",
          "name": "component",
-         "required": true,
          "type": "C"
         },
         {
@@ -65724,6 +65787,13 @@
      "title": "Use a button as a link"
     },
     {
+     "body": "To navigate on the client without a full page load, pass your router's link component in `component`, with the props it needs, such as `to`. You can also keep `href` and pass the component in `LinkComponent`: Button renders it whenever `href` is set. Button adds its attributes to that component, which must pass them, and its `ref`, to the element it renders. A disabled router link keeps its URL, because the router may need it. It gets `aria-disabled`, leaves the tab order and ignores pointer clicks. In HTML, the router renders the `a` element: add the button attributes to it.",
+     "html": "<!-- The router renders the element; add the button attributes to it. -->\n<a href=\"/settings\" data-ok-button data-ok-variant=\"contained\" data-ok-color=\"inherit\" data-ok-size=\"md\">\n  <span data-ok-button-label>Settings</span>\n</a>",
+     "id": "routing",
+     "react": "import { Button } from \"@owlky/react\";\nimport type { ComponentProps } from \"react\";\n\n// Stands in for a router's link component, such as the one of React Router.\nfunction RouterLink({ to, ...props }: { to: string } & ComponentProps<\"a\">) {\n  return <a href={to} {...props} />;\n}\n\nexport function ButtonRouterLink() {\n  return (\n    <Button component={RouterLink} to=\"/settings\" variant=\"contained\">\n      Settings\n    </Button>\n  );\n}",
+     "title": "Use a routing library"
+    },
+    {
      "body": "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default.",
      "id": "options",
      "title": "Options"
@@ -68063,6 +68133,13 @@
      "title": "Add a press animation"
     },
     {
+     "body": "When an icon button navigates, render it as a link. In React, pass `href`; in HTML, use an `<a>` element with the same attributes. A disabled link loses its `href` and gets `aria-disabled`, so it can't be followed. To navigate with a routing library, pass your router's link component in `component` (with the props it needs, such as `to`) or in `LinkComponent` (with `href`). A disabled router link keeps its URL, leaves the tab order and ignores pointer clicks.",
+     "html": "<a href=\"/messages\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"md\" aria-label=\"Messages\">\n  <svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\" /><path d=\"m3 7 9 6 9-6\" /></svg>\n</a>",
+     "id": "link",
+     "react": "import { IconButton } from \"@owlky/react\";\nimport { MailIcon } from \"lucide-react\";\n\nexport function MessagesLink() {\n  return (\n    <IconButton href=\"/messages\" aria-label=\"Messages\">\n      <MailIcon />\n    </IconButton>\n  );\n}",
+     "title": "Use an icon button as a link"
+    },
+    {
      "body": "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't listed fall back to the default.",
      "id": "options",
      "title": "Options"
@@ -68073,7 +68150,7 @@
      "title": "Content and behavior"
     },
     {
-     "body": "Icon buttons are native buttons, so the browser provides the keyboard behavior.",
+     "body": "Icon buttons and icon links are native elements, so the browser provides the keyboard behavior.",
      "id": "keyboard",
      "title": "Keyboard"
     },

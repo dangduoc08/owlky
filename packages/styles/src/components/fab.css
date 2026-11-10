@@ -1,7 +1,7 @@
 /*
  * Fab — spec: specs/components/fab.md
  *
- * Anatomy:  button[data-ok-fab] › svg [+ label text when extended]
+ * Anatomy:  (button|a)[data-ok-fab] › svg [+ label text when extended]
  * Modifiers: data-ok-variant = contained (default) | outlined | soft
  *            data-ok-color   = default (default) | inherit | primary … error | black | white
  *            data-ok-size    = md (default) | sm | lg,  data-ok-extended, data-ok-animate
@@ -161,6 +161,11 @@
   :where([data-ok-fab][data-ok-variant="outlined"]:is(:disabled, [aria-disabled="true"])) {
     border-color: var(--ok-action-disabled-bg);
     background-color: transparent;
+  }
+
+  /* A disabled router link keeps its href (the router needs it): no clicks reach it. */
+  :where([data-ok-fab][href][aria-disabled="true"]) {
+    pointer-events: none;
   }
 
   @media (prefers-reduced-motion: reduce) {

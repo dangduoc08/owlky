@@ -2,7 +2,7 @@
 
 import { buttonOptions } from "@owlky/core";
 import { Button } from "@owlky/react";
-import type { ReactNode } from "react";
+import type { ComponentProps, ReactNode } from "react";
 import { GuideSections, Preview } from "../../guide/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../guide/tables.js";
 import { capitalize } from "../../guide/text.js";
@@ -13,6 +13,11 @@ import {
   COLORS,
   VARIANTS,
 } from "./button-docs-examples.js";
+
+/** Stands in for a router's link component in the routing preview. */
+function PreviewLink({ to, ...props }: { to: string } & ComponentProps<"a">) {
+  return <a href={to} {...props} />;
+}
 
 function MailIcon() {
   return (
@@ -115,6 +120,13 @@ export const buttonPreviews: Record<string, () => ReactNode> = {
     <Preview>
       <Button variant="outlined" href="#read-the-docs">
         Read the docs
+      </Button>
+    </Preview>
+  ),
+  routing: () => (
+    <Preview>
+      <Button component={PreviewLink} to="#docs-settings" variant="contained">
+        Settings
       </Button>
     </Preview>
   ),

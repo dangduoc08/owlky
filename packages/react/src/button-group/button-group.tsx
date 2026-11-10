@@ -8,6 +8,8 @@ import {
 import {
   Children,
   cloneElement,
+  createElement,
+  type ElementType,
   forwardRef,
   type HTMLAttributes,
   isValidElement,
@@ -27,6 +29,8 @@ export interface ButtonGroupProps extends HTMLAttributes<HTMLDivElement> {
   orientation?: Orientation | undefined;
   /** Stretch to the container width; the buttons share it. */
   fullWidth?: boolean | undefined;
+  /** The root element, such as `"nav"` or `"span"`. It keeps `role="group"`. Default `"div"`. */
+  component?: ElementType | undefined;
 }
 
 type ShareableProps = Pick<
@@ -48,25 +52,25 @@ export const ButtonGroup = forwardRef<HTMLDivElement, ButtonGroupProps>(function
     disableElevation = true,
     orientation,
     fullWidth,
+    component = "div",
     children,
     ...props
   },
   ref,
 ) {
   const shared: ShareableProps = { variant, color, size, disabled, disableElevation };
-  return (
-    // biome-ignore lint/a11y/useSemanticElements: a group of buttons, not form fields (<fieldset> would add form semantics and default styles).
-    <div ref={ref} role="group" {...buttonGroupAttributes({ orientation, fullWidth })} {...props}>
-      {Children.map(children, (child) => {
-        if (!isValidElement<ShareableProps>(child)) return child;
-        const own = child.props;
-        const merged: ShareableProps = {};
-        for (const key of ["variant", "color", "size", "disabled", "disableElevation"] as const) {
-          const value = own[key] ?? shared[key];
-          if (value !== undefined) (merged as Record<string, unknown>)[key] = value;
-        }
-        return cloneElement(child as ReactElement<ShareableProps>, merged);
-      })}
-    </div>
+  return createElement(
+    component,
+    { ref, role: "group", ...buttonGroupAttributes({ orientation, fullWidth }), ...props },
+    Children.map(children, (child) => {
+      if (!isValidElement<ShareableProps>(child)) return child;
+      const own = child.props;
+      const merged: ShareableProps = {};
+      for (const key of ["variant", "color", "size", "disabled", "disableElevation"] as const) {
+        const value = own[key] ?? shared[key];
+        if (value !== undefined) (merged as Record<string, unknown>)[key] = value;
+      }
+      return cloneElement(child as ReactElement<ShareableProps>, merged);
+    }),
   );
 });

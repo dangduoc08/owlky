@@ -198,6 +198,19 @@ const PREVIEWS = {
           description: "Renders a link. A disabled link loses its href and gets aria-disabled.",
         },
         {
+          react: "component",
+          html: "<a>",
+          type: "ElementType",
+          description:
+            "The element or component to render, such as a router link. It gets the fab's attributes and its ref. A disabled router link keeps its href, leaves the tab order and ignores pointer clicks.",
+        },
+        {
+          react: "LinkComponent",
+          html: "<a>",
+          type: "ElementType",
+          description: "The component that renders the link when href is set. Default a.",
+        },
+        {
           react: "ref",
           type: "HTMLButtonElement | HTMLAnchorElement",
           description: "Forwarded to the button or link. Every native attribute is passed through.",
