@@ -114,6 +114,14 @@ export function chartXAt(map: ChartAxisMap, px: number): number {
 /** The px position of an x value on an axis map. */
 export function chartPxOf(map: ChartAxisMap, x: number): number {
   if (map.max === map.min) return map.from;
+  if (map.log !== undefined) {
+    // Logarithmic value axes (4.18.59): values ≤ 0 have no position.
+    if (!(x > 0)) return Number.NaN;
+    const log = (value: number) => Math.log(value);
+    return (
+      map.from + ((log(x) - log(map.min)) / (log(map.max) - log(map.min))) * (map.to - map.from)
+    );
+  }
   return map.from + ((x - map.min) / (map.max - map.min)) * (map.to - map.from);
 }
 

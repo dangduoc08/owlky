@@ -251,8 +251,8 @@ export interface ChartParts {
   "data-ok-chart-area": Part<"path">;
   /** An axis. */
   "data-ok-chart-axis": Value<"x" | "y">;
-  /** The title of an axis. */
-  "data-ok-chart-axis-title": Part<"text">;
+  /** The title of an axis: the value axes' are rotated; `x` marks the x axis title. */
+  "data-ok-chart-axis-title": Value<"" | "x">;
   /** A band of a range area or a range bar. */
   "data-ok-chart-band": Part<"rect">;
   /** One bar. */
@@ -395,6 +395,8 @@ export interface ChartParts {
   "data-ok-locale": Value<string>;
   /** Marks a major tick of a date axis. */
   "data-ok-major": State;
+  /** On a value axis group: the axis is on the right of the plot. */
+  "data-ok-opposite": State;
   /** On a data table header cell: which value of a point the column holds. */
   "data-ok-part": Value<"min" | "q1" | "median" | "q3" | "max" | "low" | "high" | "y" | "z">;
   /** Set by the runtime once the chart is drawn: the data table hides. */
@@ -413,6 +415,12 @@ export interface ChartParts {
   "data-ok-y": Value<string>;
   /** The title of the y axis. */
   "data-ok-y-title": Value<string>;
+  /** On a data table column header: the index of the value axis its series is drawn on. */
+  "data-ok-y-axis": Value<string>;
+  /** The value axes, such as `min 0 title Sales; opposite logarithmic title Visits`. */
+  "data-ok-yaxis": Value<string>;
+  /** The title of the x axis, drawn under its labels. */
+  "data-ok-x-title": Value<string>;
   /** On an annotation: the end of a y range. */
   "data-ok-y2": Value<string>;
 }

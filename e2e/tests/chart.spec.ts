@@ -50,6 +50,8 @@ const STORIES = [
   "stock-overlays",
   "stock-oscillators",
   "stock-line",
+  "multiple-y-axes",
+  "axis-scales",
 ];
 
 /** The SVG as plain data (gradient ids normalized): parity doesn't walk into SVG. */

@@ -3,6 +3,7 @@ import {
   chartAnnotationNodes,
   chartAnnotations,
 } from "./chart-annotations.js";
+import { type ChartYAxis, chartYAxes, withChartAxes } from "./chart-axes.js";
 import { layoutHeatmap, layoutTreemap } from "./chart-cells.js";
 import { type ChartFormat, type ChartFormatOptions, chartFormat } from "./chart-format.js";
 import { type ChartIndicator, chartIndicatorSeries } from "./chart-indicators.js";
@@ -86,6 +87,13 @@ export interface ChartRenderInput extends ChartFormatOptions {
   readonly yMin?: number | undefined;
   readonly yMax?: number | undefined;
   readonly yTitle?: string | undefined;
+  /**
+   * Value axes (ApexCharts `yaxis`): one object for the value axis, or a list (several axes on
+   * vertical charts with an x axis; series pick theirs by `seriesName` or position).
+   */
+  readonly yaxis?: ChartYAxis | readonly ChartYAxis[] | undefined;
+  /** The x axis title, drawn under the labels (and the data table's first header by default). */
+  readonly xTitle?: string | undefined;
   readonly legend?: ChartLegend | undefined;
   readonly dataLabels?: boolean | undefined;
   readonly startAngle?: number | undefined;
@@ -165,7 +173,9 @@ export const chartIdPrefix = (raw: string): string =>
 /** Data, formatters, layout, legend and table for one render. */
 export function renderChart(input: ChartRenderInput): ChartRender {
   if (input.type === "sankey") return renderSankey(input);
-  const plain = chartData({ ...input, series: input.series ?? [] });
+  const axes = chartYAxes(input.yaxis);
+  // Several value axes (4.18.59): every series gets its axis (written on its table column).
+  const plain = withChartAxes(chartData({ ...input, series: input.series ?? [] }), axes);
   // Stock charts (ADR-0047): indicators become generated series; panes share one x axis.
   const stock =
     (input.indicators?.length || input.navigator) &&
@@ -175,10 +185,17 @@ export function renderChart(input: ChartRenderInput): ChartRender {
     !isWholeChart(plain.type) &&
     plain.type !== "scatter" &&
     plain.type !== "bubble";
+  const priceAxis = plain.series[0]?.axis;
   const data: ChartData = stock
     ? {
         ...plain,
-        series: [...plain.series, ...chartIndicatorSeries(plain, input.indicators ?? [])],
+        series: [
+          ...plain.series,
+          // Overlays of the price are drawn on the price's axis.
+          ...chartIndicatorSeries(plain, input.indicators ?? []).map((series) =>
+            priceAxis !== undefined && !series.pane ? { ...series, axis: priceAxis } : series,
+          ),
+        ],
       }
     : plain;
   // Radial bars show percentages unless told otherwise.
@@ -222,6 +239,8 @@ export function renderChart(input: ChartRenderInput): ChartRender {
     yMin: input.yMin,
     yMax: input.yMax,
     yTitle: input.yTitle,
+    yAxes: axes,
+    xTitle: input.xTitle,
     hidden: [...hidden],
     dataLabels: input.dataLabels,
     startAngle: input.startAngle,
@@ -286,6 +305,7 @@ export function renderChart(input: ChartRenderInput): ChartRender {
   const legend = input.legend === "none" || input.sparkline || items.length < 2 ? null : items;
   const xLabel =
     input.xLabel ??
+    input.xTitle ??
     (data.xType === "datetime" ? "Date" : data.xType === "numeric" ? "X" : "Category");
   const table = chartTable(data, {
     xLabel,

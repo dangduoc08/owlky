@@ -41,6 +41,7 @@ import {
   parseChartColorRanges,
   parseChartIndicators,
   parseChartList,
+  parseChartYAxes,
   placeChartTooltip,
   readChartAnnotations,
   readChartSankeyTable,
@@ -506,6 +507,8 @@ export const chart = defineComponent<ChartInstance, ChartEvents>({
         // Rewritten tables keep the author's first header.
         xLabel: (table?.tHead ?? table)?.rows[0]?.cells[0]?.textContent?.trim() || undefined,
         yTitle: text(element, "data-ok-y-title"),
+        yaxis: parseChartYAxes(element.getAttribute(CHART_TEXT_ATTRIBUTES.yaxis)),
+        xTitle: text(element, CHART_TEXT_ATTRIBUTES.xTitle),
         valuePrefix: text(element, "data-ok-value-prefix"),
         valueSuffix: text(element, "data-ok-value-suffix"),
         locale: text(element, "data-ok-locale"),

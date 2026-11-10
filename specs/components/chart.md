@@ -45,9 +45,11 @@ figure[data-ok-chart][data-ok-type][data-ok-x-type][data-ok-curve][data-ok-legen
     svg[data-ok-chart-svg][aria-hidden][focusable=false][width][height][viewBox]
       defs › linearGradient[id][data-ok-color] › stop[data-ok-chart-stop]×2   (gradient areas)
       g[data-ok-chart-grid] › line[data-ok-chart-grid-line]
-      text[data-ok-chart-axis-title]?                    (yTitle, rotated)
+      text[data-ok-chart-axis-title]*                    (yTitle / yaxis[].title, rotated: -90° left, 90° opposite)
+      text[data-ok-chart-axis-title=x]?                  (xTitle, under the x labels)
       g[data-ok-chart-axis=x] › text[data-ok-chart-tick][data-ok-major]?
-      g[data-ok-chart-axis=y] › text[data-ok-chart-tick]
+      g[data-ok-chart-axis=y][data-ok-index]?[data-ok-opposite]? › text[data-ok-chart-tick]
+                                                         (one per drawn value axis; data-ok-index with several)
       g[data-ok-chart-crosshair] › rect[data-ok-chart-band] | line[data-ok-chart-crosshair-line]
       g[data-ok-chart-series-group]                      (areas, bars, lines, scatter: in that order)
         g[data-ok-chart-series][data-ok-type][data-ok-color][data-ok-index]
@@ -118,7 +120,8 @@ figure[data-ok-chart][data-ok-type][data-ok-x-type][data-ok-curve][data-ok-legen
         div[data-ok-chart-tooltip-row] › span[data-ok-chart-tooltip-marker][data-ok-color] + span + span[data-ok-chart-tooltip-value]
   table[data-ok-chart-data]                              (HTML: the source; visually hidden once drawn)
     caption (the chart's name)
-    thead › tr › th[scope=col] (x label) + th[scope=col][data-ok-type]?[data-ok-color]? (one per series)
+    thead › tr › th[scope=col] (x label) + th[scope=col][data-ok-type]?[data-ok-color]?[data-ok-y-axis]? (one per series;
+      data-ok-y-axis: its value axis when the chart has several)
       Series of several values per point (box plot, range area, bubble): two header rows —
       tr › th[scope=col][rowspan=2] (x label) + th[scope=colgroup][colspan=n] (the series) |
            th[scope=col][rowspan=2] (single-value series)
@@ -146,6 +149,22 @@ value ticks about every 48px (vertical) or 200px (horizontal) on nice steps (1, 
 x labels are thinned to whole steps (every n categories, or whole days / months / years for dates)
 so they never overlap; dates with gaps (trading days) also drop a label that would come within 8px of the one before it. Label widths are estimated per glyph class, not measured, so the server,
 React and HTML lay out identically.
+
+Value axes (core `chart-axes.ts`, 4.18.59): `yaxis` as one object sets the value axis' scale
+(`logarithmic` with `logBase`, default 10: ticks at whole powers of the base, values ≤ 0 aren't
+drawn and log axes never stack; `reversed`: the highest value at the bottom, or the left for
+horizontal bars; `tickAmount`: exactly that many intervals on the smallest nice step that covers
+the data, evenly divided when `min` and `max` are both fixed; `min` / `max`, `title`, `show`).
+As a list (vertical charts with an x axis), each series is drawn on one axis: its own `yAxis`
+(HTML: its column header's `data-ok-y-axis`), else the first axis naming it in `seriesName`, else
+the axis at its position when that axis names no series, else the first. Axes are drawn when
+`show` isn't `false` and one of their series is visible: left ones from the plot outward,
+`opposite` ones on the right (labels start-anchored), each `labels + 14px` wide plus `22px` with a
+title (titles rotated -90° on the left, 90° on the right; the outermost left title at x = 12).
+Grid lines follow the primary axis (the first drawn); the other linear axes take its number of
+intervals, so their labels sit on its grid lines. Stacks are per axis. Stock charts keep the
+axes in the price pane; every pane gets the widest left and right edges. `xTitle` adds 20px under
+the x labels (`dy 0.71em` at the labels' line + 20px), centered on the plot.
 
 Polar geometry (core `chart-polar.ts`): angles in degrees clockwise from 12 o'clock; the chart is
 centered in the SVG, radius = half the smaller side - 4px. Donut hole 72 % of the radius. Radial
@@ -264,7 +283,10 @@ Root: `data-ok-chart`. Unknown values fall back to the default.
 <!-- /options:chart -->
 
 Text attributes (React prop ↔ HTML attribute, written by React too): `yTitle` ↔
-`data-ok-y-title`, `valuePrefix` ↔ `data-ok-value-prefix`, `valueSuffix` ↔ `data-ok-value-suffix`,
+`data-ok-y-title`, `xTitle` ↔ `data-ok-x-title`, `yaxis` ↔ `data-ok-yaxis` (core `chartYAxesText` /
+`parseChartYAxes`: axes separated by `;`, each the words `opposite`, `logarithmic`, `reversed`,
+`hidden`, `log-base <n>`, `tick-amount <n>`, `min <n>`, `max <n>`, then `title <text>`; series
+names stay out of it: each series column carries its axis, `th[data-ok-y-axis="<n>"]`), `valuePrefix` ↔ `data-ok-value-prefix`, `valueSuffix` ↔ `data-ok-value-suffix`,
 `locale` ↔ `data-ok-locale` (default `en-US`), `group` ↔ `data-ok-group`, `brushTarget` ↔
 `data-ok-brush-target`, `colorRanges` ↔ `data-ok-color-ranges` (`"from to color [name]; …"`, core
 `chartTextAttributes` / `parseChartColorRanges`). Always set as text (`textContent`), never markup.
@@ -524,8 +546,10 @@ Option areas not covered by the table above:
 | `chart.locales`, `chart.defaultLocale` | `locale` (Intl) + `localeText` | renamed | |
 | `chart.dataReducer` (`enabled`, `algorithm`, `targetPoints`, `threshold`) | — | deferred | downsampling large series (LTTB) for drawing; the table keeps every point |
 | `chart.print`, `chart.perspectives`, `chart.license`, `chart.nonce`, `chart.injectStyleSheet`, `chart.redrawOn*Resize`, `chart.parentHeightOffset`, `chart.offsetX` / `Y`, `chart.width`, `chart.foreColor`, `chart.background`, `chart.dropShadow`, `theme` | — | not applicable | CSS / tokens / ResizeObserver; perspectives: app code (roadmap 2.4 notes) |
-| `yaxis` as an array (`seriesName`, `opposite`, `alignZero`), `yaxis.logarithmic` / `logBase`, `.reversed`, `.tickAmount`, `.stepSize`, `.forceNiceScale`, `.decimalsInFloat`, `.floating` | `yMin`, `yMax`, `yTitle` | deferred | several value axes (left / right), log scale, reversed, tick count |
-| `xaxis.title.text` | `xLabel` (table header only) | deferred | drawn x axis title |
+| `yaxis` (one object or an array), `.seriesName` (string or list), `.opposite`, `.logarithmic`, `.logBase`, `.reversed`, `.tickAmount`, `.min`, `.max`, `.show` | `yaxis` (same names; HTML `data-ok-yaxis` text, series' axes on `th[data-ok-y-axis]`) | kept (4.18.59) | several axes on vertical charts with an x axis; one axis: its options apply to the value axis (horizontal bars too); sparklines and timelines ignore them |
+| `yaxis.title.text` | `yaxis[].title` (axis 0 falls back to `yTitle`) | renamed (4.18.59) | |
+| `yaxis.alignZero`, `.stepSize`, `.forceNiceScale`, `.decimalsInFloat`, `.floating`, `.labels.formatter` (per axis), `.axisBorder` / `.axisTicks` / `.crosshairs` per axis | — | deferred | ticks are always nice (`tickAmount` keeps nice steps when it can); per-axis formatters with the tooltip / custom content row |
+| `xaxis.title.text` | `xTitle` (drawn under the x labels; also the table's first header unless `xLabel`) | renamed (4.18.59) | |
 | `xaxis.min` / `.max` / `.range`, `.tickAmount`, `.stepSize`, `.tickPlacement`, `.decimalsInFloat` | zoom window | deferred | fixed x window (`range`: sliding window, see `appendData` `limit`), tick count |
 | `xaxis.group.groups` (grouped categories), `xaxis.labels.rotate` / `.rotateAlways` / `.hideOverlappingLabels` / `.trim` | — | deferred | two-level category labels; label rotation (labels skip today) |
 | `xaxis.labels.datetimeFormatter`, `.format`, `.datetimeUTC` | `labelFormatter`, `locale` | renamed | |

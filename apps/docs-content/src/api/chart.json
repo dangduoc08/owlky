@@ -951,12 +951,13 @@
       ]
      },
      {
-      "description": "The title of an axis.",
-      "elements": [
-       "text"
-      ],
-      "kind": "part",
-      "name": "data-ok-chart-axis-title"
+      "description": "The title of an axis: the value axes' are rotated; `x` marks the x axis title.",
+      "kind": "value",
+      "name": "data-ok-chart-axis-title",
+      "value": [
+       "",
+       "x"
+      ]
      },
      {
       "description": "A band of a range area or a range bar.",
@@ -1513,6 +1514,11 @@
       "name": "data-ok-major"
      },
      {
+      "description": "On a value axis group: the axis is on the right of the plot.",
+      "kind": "state",
+      "name": "data-ok-opposite"
+     },
+     {
       "description": "On a data table header cell: which value of a point the column holds.",
       "kind": "value",
       "name": "data-ok-part",
@@ -1558,6 +1564,12 @@
       "value": "string"
      },
      {
+      "description": "The title of the x axis, drawn under its labels.",
+      "kind": "value",
+      "name": "data-ok-x-title",
+      "value": "string"
+     },
+     {
       "description": "On an annotation: the end of an x range.",
       "kind": "value",
       "name": "data-ok-x2",
@@ -1570,6 +1582,12 @@
       "value": "string"
      },
      {
+      "description": "On a data table column header: the index of the value axis its series is drawn on.",
+      "kind": "value",
+      "name": "data-ok-y-axis",
+      "value": "string"
+     },
+     {
       "description": "The title of the y axis.",
       "kind": "value",
       "name": "data-ok-y-title",
@@ -1579,6 +1597,12 @@
       "description": "On an annotation: the end of a y range.",
       "kind": "value",
       "name": "data-ok-y2",
+      "value": "string"
+     },
+     {
+      "description": "The value axes, such as `min 0 title Sales; opposite logarithmic title Visits`.",
+      "kind": "value",
+      "name": "data-ok-yaxis",
       "value": "string"
      }
     ],
@@ -1893,6 +1917,11 @@
       "type": "string"
      },
      {
+      "description": "Title of the x axis, drawn under its labels (also the data table's first header by default).",
+      "name": "xTitle",
+      "type": "string"
+     },
+     {
       "default": "\"category\"",
       "description": "(`\"numeric\"` for scatter).",
       "name": "xType",
@@ -1912,6 +1941,11 @@
       "description": "Title of the value axis.",
       "name": "yTitle",
       "type": "string"
+     },
+     {
+      "description": "Value axes, as ApexCharts' `yaxis`: one object for the value axis, or a list for several (vertical charts with an x axis). Each takes `seriesName`, `opposite`, `logarithmic`, `logBase`, `reversed`, `tickAmount`, `min`, `max`, `title` and `show`. Series without a `seriesName` match go to the axis at their position.",
+      "name": "yaxis",
+      "type": "ChartYAxis | readonly ChartYAxis[]"
      },
      {
       "description": "Zoom and pan the x axis (mouse, touch, Ctrl + wheel and keys).",

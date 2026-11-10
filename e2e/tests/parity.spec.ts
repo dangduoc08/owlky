@@ -133,6 +133,8 @@ const pairs: [component: string, story: string][] = [
   ["chart", "stock-overlays"],
   ["chart", "stock-oscillators"],
   ["chart", "stock-line"],
+  ["chart", "multiple-y-axes"],
+  ["chart", "axis-scales"],
   ["rating", "controlled"],
   ["rating", "read-only"],
   ["rating", "disabled"],

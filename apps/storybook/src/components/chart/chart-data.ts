@@ -930,6 +930,51 @@ export const chartExamples: Record<string, ChartExample> = {
       series: [{ name: "Deploys", data: [14, 22, 19, 25, 9] }],
     },
   },
+  // Roadmap 4.18.59: value axes (ApexCharts `yaxis`) and the x axis title.
+  "multiple-y-axes": {
+    title: "Multiple Y axes",
+    props: {
+      label: "Blog visits and social mentions",
+      type: "line",
+      xTitle: "Month",
+      yaxis: [
+        { title: "Blog visits" },
+        { seriesName: "Social mentions", opposite: true, title: "Social mentions" },
+      ],
+      categories: MONTHS,
+      series: [
+        { name: "Blog visits", type: "bar", data: [440, 505, 414, 671, 227, 413, 201, 352, 752] },
+        { name: "Social mentions", data: [23, 42, 35, 27, 43, 22, 17, 31, 22] },
+      ],
+    },
+  },
+  "axis-scales": {
+    title: "Axis scales",
+    props: {
+      label: "Monthly downloads (logarithmic scale)",
+      type: "area",
+      yaxis: { logarithmic: true, title: "Downloads" },
+      categories: MONTHS,
+      series: [
+        {
+          name: "Downloads",
+          data: [12, 45, 180, 920, 3400, 15_800, 61_000, 240_000, 870_000],
+        },
+      ],
+    },
+    more: [
+      {
+        label: "Team ranking (1 is best)",
+        type: "line",
+        curve: "straight",
+        markerSize: 4,
+        yaxis: { reversed: true, min: 1, max: 5, tickAmount: 4, title: "Rank" },
+        xTitle: "Week",
+        categories: ["W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8"],
+        series: [{ name: "Rank", data: [5, 3, 4, 2, 2, 1, 3, 1] }],
+      },
+    ],
+  },
   // Phase 2.2 (ADR-0047): stock charts, one per ApexStock demo section that applies.
   stock: {
     title: "Stock chart",

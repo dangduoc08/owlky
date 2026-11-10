@@ -23,6 +23,7 @@ import {
   type ChartTool,
   type ChartType,
   type ChartXType,
+  type ChartYAxis,
   type ChartZoom,
   type ChartZoomReason,
   chartActiveAt,
@@ -150,6 +151,15 @@ export interface ChartProps extends Omit<HTMLAttributes<HTMLElement>, "children"
   total?: number | undefined;
   /** Title of the value axis. */
   yTitle?: string | undefined;
+  /**
+   * Value axes, as ApexCharts' `yaxis`: one object for the value axis, or a list for several
+   * (vertical charts with an x axis). Each takes `seriesName`, `opposite`, `logarithmic`,
+   * `logBase`, `reversed`, `tickAmount`, `min`, `max`, `title` and `show`. Series without a
+   * `seriesName` match go to the axis at their position.
+   */
+  yaxis?: ChartYAxis | readonly ChartYAxis[] | undefined;
+  /** Title of the x axis, drawn under its labels (also the data table's first header by default). */
+  xTitle?: string | undefined;
   /** Text before every value ("$"). */
   valuePrefix?: string | undefined;
   /** Text after every value ("%"). */
@@ -272,6 +282,8 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     boxUpperColor,
     boxLowerColor,
     yTitle,
+    yaxis,
+    xTitle,
     valuePrefix,
     valueSuffix,
     valueFormatter,
@@ -456,6 +468,8 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         selection: brushTarget ? selection : preview,
         brush: Boolean(brushTarget),
         yTitle,
+        yaxis,
+        xTitle,
         valuePrefix,
         valueSuffix,
         valueFormatter,
@@ -519,6 +533,8 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       selection,
       preview,
       yTitle,
+      yaxis,
+      xTitle,
       valuePrefix,
       valueSuffix,
       valueFormatter,
@@ -762,6 +778,8 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         colorRanges,
         axisTitles,
         indicators,
+        yaxis,
+        xTitle,
       })}
       data-ok-ready=""
       data-ok-runtime="off"

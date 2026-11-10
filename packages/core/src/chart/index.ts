@@ -27,6 +27,20 @@ export {
   readChartAnnotations,
 } from "./chart-annotations.js";
 export {
+  axisScale,
+  type ChartAxisSpec,
+  type ChartValueScale,
+  type ChartYAxis,
+  chartSeriesAxes,
+  chartYAxes,
+  chartYAxesText,
+  countScale,
+  logScale,
+  parseChartYAxes,
+  scaleValue,
+  withChartAxes,
+} from "./chart-axes.js";
+export {
   type ChartExportFormat,
   chartCsv,
   chartExportFormats,

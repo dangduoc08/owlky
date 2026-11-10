@@ -193,6 +193,11 @@ export interface ChartSeries {
   /** Mixed charts: how this series is drawn (default: the chart's `type`). */
   readonly type?: ChartType | undefined;
   readonly color?: ChartColor | undefined;
+  /**
+   * Charts with several value axes: the index of this series' axis in `yaxis` (default the axis
+   * naming it in `seriesName`, else the axis at its position).
+   */
+  readonly yAxis?: number | undefined;
 }
 
 export interface ChartPoint {
@@ -223,6 +228,8 @@ export interface ChartDataSeries {
   /** Stock panes: a fixed value scale (RSI 0–100) and dashed reference lines. */
   readonly scale?: { readonly min: number; readonly max: number } | undefined;
   readonly guides?: readonly number[] | undefined;
+  /** Charts with several value axes: the axis it is drawn on (an index in `yaxis`). */
+  readonly axis?: number | undefined;
 }
 
 export interface ChartData {
@@ -364,11 +371,15 @@ export function chartData(input: {
     });
     const fallback =
       palette[index] ?? (chartDefaultColors[index % chartDefaultColors.length] as ChartColor);
+    const axis = entry.yAxis;
     return {
       name: String(entry.name),
       type: seriesType,
       color: isColor(entry.color) ? entry.color : fallback,
       points,
+      ...(Number.isInteger(axis) && (axis as number) >= 0 && (axis as number) < 10
+        ? { axis: axis as number }
+        : {}),
     };
   });
   return { type, xType, categories, series };
@@ -445,6 +456,8 @@ export function chartTable(
           ...(series.indicator ? { "data-ok-indicator": series.indicator } : {}),
           ...(options.seriesTypes && !series.indicator ? { "data-ok-type": series.type } : {}),
           "data-ok-color": series.color,
+          // Several value axes (4.18.59): the series' axis, read back by the HTML runtime.
+          ...(series.axis !== undefined ? { "data-ok-y-axis": String(series.axis) } : {}),
         },
         ...(count > 0 ? { colSpan: count } : two ? { rowSpan: 2 } : {}),
       };
@@ -607,9 +620,11 @@ export function readChartTable(
     });
     const type = header.getAttribute("data-ok-type");
     const color = header.getAttribute("data-ok-color");
+    const axis = header.getAttribute("data-ok-y-axis");
     return [
       {
         name: cellText(header),
+        ...(axis !== null && /^\d$/.test(axis) ? { yAxis: Number(axis) } : {}),
         data:
           xType === "numeric"
             ? data.filter((point) => (point as readonly unknown[])[1] !== null)

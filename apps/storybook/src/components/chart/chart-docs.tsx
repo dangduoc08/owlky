@@ -4,12 +4,14 @@ import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { Chart } from "@owlky/react";
 import animationsGroup from "../../../../../packages/html/src/components/chart/examples/animations-group.html?raw";
 import annotationsGroup from "../../../../../packages/html/src/components/chart/examples/annotations-group.html?raw";
+import axisScalesGroup from "../../../../../packages/html/src/components/chart/examples/axis-scales-group.html?raw";
 import brushGroup from "../../../../../packages/html/src/components/chart/examples/brush-group.html?raw";
 import columnSingle from "../../../../../packages/html/src/components/chart/examples/column-single-group.html?raw";
 import dataLabelsGroup from "../../../../../packages/html/src/components/chart/examples/data-labels-group.html?raw";
 import funnelGroup from "../../../../../packages/html/src/components/chart/examples/funnel-group.html?raw";
 import localizedGroup from "../../../../../packages/html/src/components/chart/examples/localized-group.html?raw";
 import mixedGroup from "../../../../../packages/html/src/components/chart/examples/mixed-group.html?raw";
+import multipleYAxesGroup from "../../../../../packages/html/src/components/chart/examples/multiple-y-axes-group.html?raw";
 import sparklinesGroup from "../../../../../packages/html/src/components/chart/examples/sparklines-group.html?raw";
 import synchronizedGroup from "../../../../../packages/html/src/components/chart/examples/synchronized-group.html?raw";
 import timelineGroup from "../../../../../packages/html/src/components/chart/examples/timeline-group.html?raw";
@@ -714,6 +716,55 @@ export function ChartValues() {
 }`,
   },
   {
+    id: "axes",
+    title: "Add value axes and change their scale",
+    body: `Pass \`yaxis\` to set up the value axis, or a list of axes to draw series of different units on one chart, such as visits and mentions. In HTML, write the axes in \`data-ok-yaxis\`, separated by semicolons, and mark each series' column header with the index of its axis in \`data-ok-y-axis\`.
+
+- **\`seriesName\`:** the series drawn on this axis, by name. A series that no axis names goes to the axis at its own position.
+- **\`opposite\`:** draws the axis on the right of the plot (\`opposite\` in HTML).
+- **\`logarithmic\` and \`logBase\`:** a logarithmic scale for values that grow by factors, such as downloads. Ticks sit at whole powers of the base (10 by default). Values of zero and below aren't drawn, and series on the axis don't stack.
+- **\`reversed\`:** the highest value at the bottom, such as a ranking where 1 is best.
+- **\`tickAmount\`:** the number of intervals between ticks (\`tick-amount\` in HTML). Other axes take the number of intervals of the first axis, so their labels line up with its grid lines.
+- **\`min\`, \`max\`, \`title\` and \`show\`:** fix the range, name the axis, or hide its labels while its series keep its scale (\`min\`, \`max\`, \`title\` and \`hidden\` in HTML, with the title last).
+
+Several axes work on charts drawn from left to right with an x axis. \`xTitle\` (\`data-ok-x-title\` in HTML) names the x axis under its labels, and is also the header of the data table's first column unless you set \`xLabel\`.`,
+    html: `${snippetElement(multipleYAxesGroup, "data-ok-chart ")}
+${snippetElement(axisScalesGroup, "data-ok-chart ")}`,
+    react: `import { Chart } from "@owlky/react";
+
+const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
+const visits = [440, 505, 414, 671, 227, 413];
+const mentions = [23, 42, 35, 27, 43, 22];
+const downloads = [{ name: "Downloads", data: [12, 45, 180, 920, 3400, 15800] }];
+
+export function ChartAxes() {
+  return (
+    <>
+      <Chart
+        label="Blog visits and social mentions"
+        xTitle="Month"
+        yaxis={[
+          { title: "Blog visits" },
+          { seriesName: "Social mentions", opposite: true, title: "Social mentions" },
+        ]}
+        categories={months}
+        series={[
+          { name: "Blog visits", type: "bar", data: visits },
+          { name: "Social mentions", type: "line", data: mentions },
+        ]}
+      />
+      <Chart
+        label="Monthly downloads"
+        type="area"
+        yaxis={{ logarithmic: true, title: "Downloads" }}
+        categories={months}
+        series={downloads}
+      />
+    </>
+  );
+}`,
+  },
+  {
     id: "legend",
     title: "Use the legend",
     body: "The legend shows one button per series, or one per category in pie, donut and radial bar charts. Selecting a button hides its series and fits the axis to the series that are left. Select it again to show the series. `legend` places the legend at the `top` (the default), `right` or `bottom`, or hides it with `none`. Charts with one series have no legend. On screens narrower than 600px, a right legend moves below the chart. Set `legendValues` to show each item's value next to its name: the slice or ring value, or the last value of a series. `donutSize` sets the size of a donut's hole in percent of its radius (72 by default).",
@@ -987,6 +1038,24 @@ const PREVIEWS = {
       />
     </Preview>
   ),
+  axes: () => (
+    <Preview>
+      <Chart
+        label="Blog visits and social mentions"
+        height={240}
+        xTitle="Month"
+        yaxis={[
+          { title: "Blog visits" },
+          { seriesName: "Social mentions", opposite: true, title: "Social mentions" },
+        ]}
+        categories={MONTHS}
+        series={[
+          { name: "Blog visits", type: "bar", data: [440, 505, 414, 671, 227, 413] },
+          { name: "Social mentions", type: "line", data: [23, 42, 35, 27, 43, 22] },
+        ]}
+      />
+    </Preview>
+  ),
   options: () => <OptionsTable schema={chartOptions} />,
   props: () => (
     <PropsTable
@@ -1045,6 +1114,19 @@ const PREVIEWS = {
           type: "string",
           description:
             "Value axis title, text around values, and the locale of numbers and months.",
+        },
+        {
+          react: "yaxis",
+          html: "data-ok-yaxis · data-ok-y-axis on column headers",
+          type: "ChartYAxis | ChartYAxis[]",
+          description:
+            'Value axes: `{ seriesName, opposite, logarithmic, logBase, reversed, tickAmount, min, max, title, show }`. HTML writes `"title Sales; opposite logarithmic title Visits"` and the axis index on each series\' column header.',
+        },
+        {
+          react: "xTitle",
+          html: "data-ok-x-title",
+          type: "string",
+          description: "Title of the x axis, drawn under its labels.",
         },
         {
           react: "totalLabel",

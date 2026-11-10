@@ -1,3 +1,4 @@
+import { axisScale, type ChartAxisSpec, type ChartValueScale, scaleValue } from "./chart-axes.js";
 import type { ChartFormat } from "./chart-format.js";
 import {
   type ChartColor,
@@ -100,6 +101,15 @@ export interface ChartLayoutOptions {
   readonly fitZoom?: boolean | undefined;
   /** Stock panes: the plot's left edge in px (panes line up on one x axis). */
   readonly plotLeft?: number | undefined;
+  /** Stock panes: the space right of the plot in px (room for `opposite` axes in every pane). */
+  readonly plotRight?: number | undefined;
+  /**
+   * Value axes (4.18.59, validated by `chartYAxes`): several on vertical charts with an x axis
+   * (series pick theirs through `axis`), else the first one's scale options.
+   */
+  readonly yAxes?: readonly ChartAxisSpec[] | undefined;
+  /** The x axis title, drawn under the labels. */
+  readonly xTitle?: string | undefined;
   /** Stock panes: `false` leaves out the x axis labels (only the last pane prints them). */
   readonly xLabels?: boolean | undefined;
   /** Stock panes: categories are bands even without bars (every pane places x the same way). */
@@ -128,6 +138,8 @@ export interface ChartAxisMap {
   readonly to: number;
   /** Banded categories (bars): the band width in px. */
   readonly band?: number | undefined;
+  /** A logarithmic value axis: its base (`from` and `to` are the px of `min` and `max`). */
+  readonly log?: number | undefined;
 }
 
 /** A rectangle in SVG px (heatmap and treemap cells). */
@@ -472,16 +484,39 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
   const inView = (x: number) =>
     numeric ? !zoom || (x >= zoom.min && x <= zoom.max) : x >= first && x <= last;
 
-  // Stacked values: running totals per category, positives and negatives apart.
-  const pos = new Array<number>(count).fill(0);
-  const neg = new Array<number>(count).fill(0);
+  // Value axes (4.18.59): several on vertical charts with an x axis, else one. Each has its own
+  // scale (linear, logarithmic or a fixed tick count) and may be reversed.
+  const specs = sparkline || timeline ? [] : (options.yAxes ?? []);
+  const multi = specs.length > 1 && !horizontal;
+  const axisCount = multi ? specs.length : 1;
+  const axisOf = (index: number) =>
+    multi ? Math.min(axisCount - 1, data.series[index]?.axis ?? 0) : 0;
+  const specOf = (axis: number) => specs[axis];
+  const isLog = (axis: number) => specOf(axis)?.logarithmic === true;
+  const fixedOf = (axis: number) => ({
+    min: specOf(axis)?.min ?? (axis === 0 ? options.yMin : undefined),
+    max: specOf(axis)?.max ?? (axis === 0 ? options.yMax : undefined),
+  });
+  const titleOf = (axis: number) =>
+    sparkline ? undefined : (specOf(axis)?.title ?? (axis === 0 ? options.yTitle : undefined));
+  const onAxis = (axis: number) => visible.filter(({ index }) => axisOf(index) === axis);
+
+  // Stacked values: running totals per category and axis, positives and negatives apart (never
+  // on logarithmic axes).
+  const totals = Array.from({ length: axisCount }, () => ({
+    pos: new Array<number>(count).fill(0),
+    neg: new Array<number>(count).fill(0),
+  }));
   const stack = new Map<string, readonly [number, number]>();
-  let lo = Number.POSITIVE_INFINITY;
-  let hi = Number.NEGATIVE_INFINITY;
+  const los = new Array<number>(axisCount).fill(Number.POSITIVE_INFINITY);
+  const his = new Array<number>(axisCount).fill(Number.NEGATIVE_INFINITY);
   let xlo = Number.POSITIVE_INFINITY;
   let xhi = Number.NEGATIVE_INFINITY;
   const fitZoom = options.fitZoom === true && zoom !== undefined && zoom !== null;
   for (const { series, index } of visible) {
+    const axis = axisOf(index);
+    const log = isLog(axis);
+    const stacks = stacked && !numeric && !log;
     for (const point of series.points) {
       if (fitZoom && !inView(point.x)) continue;
       if (numeric) {
@@ -489,45 +524,57 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
         xhi = Math.max(xhi, point.x);
       }
       if (point.y === null) continue;
+      // Logarithmic axes leave out values they can't draw (zero and below).
+      const values = point.range ?? [point.y];
+      if (log && values.some((value) => value <= 0)) continue;
       if (point.range) {
         // Box plots, ranges and candles span their values (never stacked).
-        lo = Math.min(lo, ...point.range);
-        hi = Math.max(hi, ...point.range);
-      } else if (stacked && !numeric) {
-        const totals = point.y >= 0 ? pos : neg;
-        const start = totals[point.x] as number;
-        totals[point.x] = start + point.y;
+        los[axis] = Math.min(los[axis] as number, ...point.range);
+        his[axis] = Math.max(his[axis] as number, ...point.range);
+      } else if (stacks) {
+        const sums =
+          point.y >= 0
+            ? (totals[axis] as { pos: number[] }).pos
+            : (totals[axis] as { neg: number[] }).neg;
+        const start = sums[point.x] as number;
+        sums[point.x] = start + point.y;
         stack.set(`${index}:${point.x}`, [start, start + point.y]);
-        lo = Math.min(lo, start + point.y, start);
-        hi = Math.max(hi, start + point.y, start);
+        los[axis] = Math.min(los[axis] as number, start + point.y, start);
+        his[axis] = Math.max(his[axis] as number, start + point.y, start);
       } else {
-        lo = Math.min(lo, point.y);
-        hi = Math.max(hi, point.y);
+        los[axis] = Math.min(los[axis] as number, point.y);
+        his[axis] = Math.max(his[axis] as number, point.y);
       }
     }
   }
-  if (lo === Number.POSITIVE_INFINITY) {
-    lo = 0;
-    hi = 1;
+  for (let axis = 0; axis < axisCount; axis++) {
+    const own = onAxis(axis);
+    if (los[axis] === Number.POSITIVE_INFINITY) {
+      los[axis] = isLog(axis) ? 1 : 0;
+      his[axis] = isLog(axis) ? 10 : 1;
+    }
+    // Values start at zero, except where box plots, range areas, bubbles or sparkline lines fit
+    // the scale to their data (bars and areas, filled from zero, keep it) and on log axes.
+    const fitted = sparkline || own.some(({ series }) => FITTED.includes(series.type));
+    const zeroBased = own.some(({ series }) =>
+      fitted
+        ? series.type === "bar" || series.type === "area"
+        : ["line", "area", "bar", "scatter"].includes(series.type),
+    );
+    if (!isLog(axis) && ((zeroBased && options.zeroBased !== false) || own.length === 0)) {
+      los[axis] = Math.min(los[axis] as number, 0);
+      his[axis] = Math.max(his[axis] as number, 0);
+    }
   }
-  // Values start at zero, except where box plots, range areas, bubbles or sparkline lines fit the
-  // scale to their data (bars and areas, filled from zero, keep it).
-  const fitted = sparkline || visible.some(({ series }) => FITTED.includes(series.type));
-  const zeroBased = visible.some(({ series }) =>
-    fitted
-      ? series.type === "bar" || series.type === "area"
-      : ["line", "area", "bar", "scatter"].includes(series.type),
-  );
-  if ((zeroBased && options.zeroBased !== false) || visible.length === 0) {
-    lo = Math.min(lo, 0);
-    hi = Math.max(hi, 0);
-  }
+  const lo = los[0] as number;
+  const hi = his[0] as number;
 
   const gap = 12;
   const xLabels = options.xLabels !== false;
-  const labelHeight = sparkline ? 0 : xLabels ? FONT + gap + 6 : 6;
+  const xTitle = !sparkline && xLabels && options.xTitle ? options.xTitle : undefined;
+  const labelHeight = (sparkline ? 0 : xLabels ? FONT + gap + 6 : 6) + (xTitle ? FONT + 8 : 0);
   const top = sparkline ? 0 : 10;
-  const yTitleSpace = options.yTitle && !sparkline ? FONT + 10 : 0;
+  const yTitleSpace = titleOf(0) ? FONT + 10 : 0;
 
   // Value axis ticks: about one per 48px of height (vertical) or 200px of width (horizontal).
   // Sparklines have no ticks: their scale is the data's own range.
@@ -542,18 +589,54 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
       ticks: timeTicks(lo, end, Math.max(2, Math.floor(valueSpan / 110)), format.timeUnit),
     };
   };
-  const valueScale = sparkline
-    ? flatScale(options.yMin ?? lo, options.yMax ?? hi)
-    : timeline
-      ? timeScale()
-      : niceScale(lo, hi, Math.max(2, Math.round(valueSpan / (horizontal ? 200 : 48))), {
-          min: options.yMin,
-          max: options.yMax,
-        });
-  const decimals = stepDecimals(valueScale.step);
-  const tickTexts = valueScale.ticks.map((tick) =>
-    timeline ? format.timeTick(tick).text : format.tick(tick, decimals),
+  const tickCount = Math.max(2, Math.round(valueSpan / (horizontal ? 200 : 48)));
+  // An axis is drawn when shown and when it has a visible series (one axis is always drawn).
+  const drawn = (axis: number) =>
+    specOf(axis)?.show !== false && (!multi || onAxis(axis).length > 0);
+  const primary = Math.max(
+    0,
+    Array.from({ length: axisCount }, (_, axis) => axis).findIndex(drawn),
   );
+  const scales: ChartValueScale[] = new Array(axisCount);
+  const scaleOf = (axis: number, count: number): ChartValueScale =>
+    sparkline
+      ? flatScale(options.yMin ?? lo, options.yMax ?? hi)
+      : timeline
+        ? timeScale()
+        : axisScale(
+            los[axis] as number,
+            his[axis] as number,
+            tickCount,
+            {
+              ...(specOf(axis) as ChartAxisSpec | undefined),
+              ...(count > 0 && !isLog(axis) && specOf(axis)?.tickAmount === undefined
+                ? { tickAmount: count }
+                : {}),
+              logarithmic: isLog(axis),
+              logBase: specOf(axis)?.logBase ?? 10,
+            },
+            fixedOf(axis),
+          );
+  scales[primary] = scaleOf(primary, 0);
+  // The other axes take the primary's number of intervals, so their labels sit on its grid lines.
+  const intervals = scales[primary].log === undefined ? scales[primary].ticks.length - 1 : 0;
+  for (let axis = 0; axis < axisCount; axis++)
+    if (axis !== primary) scales[axis] = scaleOf(axis, intervals);
+  const valueScale = scales[0] as ChartValueScale;
+  const textsOf = (axis: number) => {
+    const scale = scales[axis] as ChartValueScale;
+    const decimals =
+      scale.log !== undefined
+        ? Math.max(0, ...scale.ticks.map((tick) => stepDecimals(tick)))
+        : Math.min(
+            stepDecimals(scale.step),
+            specOf(axis)?.tickAmount !== undefined || axis !== primary ? 2 : 10,
+          );
+    return scale.ticks.map((tick) =>
+      timeline ? format.timeTick(tick).text : format.tick(tick, decimals),
+    );
+  };
+  const tickTexts = textsOf(0);
   const nodes: ChartNode[] = [];
   const marks: ChartMark[] = [];
   const slots: ChartSlot[] = [];
@@ -562,12 +645,36 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
   let band = 0;
   let toValue: (value: number) => number;
   let toCat: (index: number) => number;
+  /** Px of a scale's min and max along the value axis (before `reversed` swaps them). */
+  let valuePx: readonly [number, number] = [0, 1];
+  const toValueOf = (axis: number) => {
+    const scale = scales[axis] as ChartValueScale;
+    const [r0, r1] = specOf(axis)?.reversed ? [valuePx[1], valuePx[0]] : valuePx;
+    return (value: number) => scaleValue(scale, value, r0, r1);
+  };
   let xMin = 0;
   let xMax = 1;
 
   const grid: ChartNode[] = [];
   const axisX: ChartNode[] = [];
   const axisY: ChartNode[] = [];
+  /** Value axis groups (vertical charts: one per drawn axis) and their titles. */
+  let yAxisNodes: ChartNode[] | undefined;
+  const yTitles: ChartNode[] = [];
+  const axisTitle = (x: number, y: number, angle: number, text: string) =>
+    node(
+      "text",
+      {
+        x: fmt(x),
+        y: fmt(y),
+        dy: "0.35em",
+        "text-anchor": "middle",
+        transform: `rotate(${angle} ${fmt(x)} ${fmt(y)})`,
+        "data-ok-chart-axis-title": "",
+      },
+      undefined,
+      text,
+    );
   const tickNode = (
     x: number,
     y: number,
@@ -619,9 +726,8 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
         : shown > 1
           ? start + band * (index - first)
           : start + along / 2;
-    toValue = horizontal
-      ? (value) => scaleLinear(value, valueScale.min, valueScale.max, plot.x, plot.x + plot.width)
-      : (value) => scaleLinear(value, valueScale.min, valueScale.max, plot.y + plot.height, plot.y);
+    valuePx = horizontal ? [plot.x, plot.x + plot.width] : [plot.y + plot.height, plot.y];
+    toValue = toValueOf(0);
   } else if (horizontal) {
     // Categories down the left, values along the bottom.
     const catWidth = Math.max(0, ...categoryLabels.map((label) => chartTextWidth(label.text)));
@@ -634,8 +740,8 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
       height: Math.max(10, height - top - labelHeight),
     };
     band = plot.height / Math.max(1, count);
-    toValue = (value) =>
-      scaleLinear(value, valueScale.min, valueScale.max, plot.x, plot.x + plot.width);
+    valuePx = [plot.x, plot.x + plot.width];
+    toValue = toValueOf(0);
     toCat = (index) => plot.y + band * (index + 0.5);
     for (let i = 0; i <= count; i++) {
       const y = fmt(plot.y + band * i);
@@ -666,8 +772,29 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
       if (show(i)) axisY.push(tickNode(plot.x - 12, toCat(i), "end", label.text, label.major));
     });
   } else {
-    const valueWidth = Math.max(...tickTexts.map((text) => chartTextWidth(text)));
-    const left = options.plotLeft ?? valueWidth + 14 + yTitleSpace;
+    // Value axes beside the plot: the left ones from the plot outward, `opposite` ones on the right.
+    const sides = Array.from({ length: axisCount }, (_, axis) => {
+      const texts = textsOf(axis);
+      const shown = drawn(axis);
+      const labels = shown ? Math.max(0, ...texts.map((text) => chartTextWidth(text))) + 14 : 0;
+      return {
+        axis,
+        texts,
+        shown,
+        opposite: specOf(axis)?.opposite === true,
+        width: labels + (shown && titleOf(axis) ? FONT + 10 : 0),
+        offset: 0,
+      };
+    });
+    let leftWidth = 0;
+    let rightWidth = 0;
+    for (const side of sides) {
+      if (!side.shown) continue;
+      side.offset = side.opposite ? rightWidth : leftWidth;
+      if (side.opposite) rightWidth += side.width;
+      else leftWidth += side.width;
+    }
+    const left = options.plotLeft ?? Math.max(8, leftWidth);
     let xTicks: number[] = [];
     let xDecimals = 0;
     let right = 8;
@@ -683,6 +810,7 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
       xTicks = [...xScale.ticks];
       xDecimals = stepDecimals(xScale.step);
       right = Math.max(8, Math.ceil(chartTextWidth(format.axis(xScale.max, xDecimals).text) / 2));
+      right = options.plotRight ?? Math.max(right, rightWidth);
       plot = {
         x: left,
         y: top,
@@ -698,6 +826,7 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
           Math.ceil(chartTextWidth((categoryLabels[last] as DateLabel).text) / 2),
         );
       }
+      right = options.plotRight ?? Math.max(right, rightWidth);
       plot = {
         x: left,
         y: top,
@@ -710,16 +839,18 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
       : shown > 1
         ? plot.width / (shown - 1)
         : plot.width;
-    toValue = (value) =>
-      scaleLinear(value, valueScale.min, valueScale.max, plot.y + plot.height, plot.y);
+    valuePx = [plot.y + plot.height, plot.y];
+    toValue = toValueOf(0);
     toCat = (index) =>
       banded
         ? plot.x + band * (index - first + 0.5)
         : shown > 1
           ? plot.x + (plot.width * (index - first)) / (shown - 1)
           : plot.x + plot.width / 2;
-    valueScale.ticks.forEach((tick, i) => {
-      const y = fmt(toValue(tick));
+    // Grid lines follow the primary axis (the first one drawn); the others share its intervals.
+    const gridAt = toValueOf(primary);
+    for (const tick of (scales[primary] as ChartValueScale).ticks) {
+      const y = fmt(gridAt(tick));
       grid.push(
         node("line", {
           x1: fmt(plot.x),
@@ -729,8 +860,40 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
           "data-ok-chart-grid-line": "",
         }),
       );
-      axisY.push(tickNode(plot.x - 14, toValue(tick), "end", tickTexts[i] as string));
-    });
+    }
+    yAxisNodes = [];
+    const middle = plot.y + plot.height / 2;
+    for (const side of sides) {
+      if (!side.shown) continue;
+      const at = toValueOf(side.axis);
+      const right = plot.x + plot.width;
+      const children = (scales[side.axis] as ChartValueScale).ticks.map((tick, i) =>
+        side.opposite
+          ? tickNode(right + side.offset + 14, at(tick), "start", side.texts[i] as string)
+          : tickNode(plot.x - side.offset - 14, at(tick), "end", side.texts[i] as string),
+      );
+      yAxisNodes.push(
+        node(
+          "g",
+          {
+            "data-ok-chart-axis": "y",
+            ...(multi ? { "data-ok-index": String(side.axis) } : {}),
+            ...(side.opposite ? { "data-ok-opposite": "" } : {}),
+          },
+          children,
+        ),
+      );
+      const title = titleOf(side.axis);
+      if (!title) continue;
+      // Titles read upward on the left, downward on the right; the outermost left one sits at the edge.
+      const x = side.opposite
+        ? right + side.offset + side.width - FONT
+        : side.offset + side.width >= leftWidth
+          ? FONT
+          : plot.x - side.offset - side.width + FONT;
+      yTitles.push(axisTitle(x, middle, side.opposite ? 90 : -90, title));
+    }
+    if (yAxisNodes.length === 0) yAxisNodes.push(node("g", { "data-ok-chart-axis": "y" }, []));
     const labelY = plot.y + plot.height + gap;
     if (!xLabels) {
       // Stock panes above the last one: the x axis is printed once, under the last pane.
@@ -766,7 +929,11 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
   }
   for (let i = first; i <= last; i++) slots.push({ index: i, pos: r2(toCat(i)) });
 
-  const base = toValue(Math.min(Math.max(0, valueScale.min), valueScale.max));
+  /** Where bars and areas start on an axis: zero, or the edge nearest to it. */
+  const baseOf = (axis: number) => {
+    const scale = scales[axis] as ChartValueScale;
+    return toValueOf(axis)(Math.min(Math.max(0, scale.min), scale.max));
+  };
   const defs: ChartNode[] = [];
   const areas: ChartNode[] = [];
   const bars: ChartNode[] = [];
@@ -802,11 +969,13 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
 
   // Topmost / bottommost stacked bar per category: only stack ends are rounded.
   const ends = new Map<string, number>();
+  const endKey = (index: number, y: number, x: number) =>
+    `${axisOf(index)}${y > 0 ? "+" : "-"}${x}`;
   if (stacked) {
     for (const index of barSeries) {
       for (const point of (data.series[index] as ChartDataSeries).points) {
         if (point.y === null || point.y === 0) continue;
-        ends.set(`${point.y > 0 ? "+" : "-"}${point.x}`, index);
+        ends.set(endKey(index, point.y, point.x), index);
       }
     }
   }
@@ -818,26 +987,37 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
       "data-ok-color": series.color,
       "data-ok-index": String(index),
     };
-    // Zoomed charts draw the points in their window only.
-    const points = zoom ? series.points.filter((point) => inView(point.x)) : series.points;
+    // The series' value axis (4.18.59): its scale, its base and whether it stacks.
+    const axis = axisOf(index);
+    const toValue = toValueOf(axis);
+    const base = baseOf(axis);
+    const log = isLog(axis);
+    const stacks = stacked && !numeric && !log;
+    // Zoomed charts draw the points in their window only; log axes skip values ≤ 0 (gaps).
+    const inWindow = zoom ? series.points.filter((point) => inView(point.x)) : series.points;
+    const points = log
+      ? inWindow.map((point) =>
+          point.y !== null && (point.range ?? [point.y]).every((value) => value > 0)
+            ? point
+            : { x: point.x, y: null },
+        )
+      : inWindow;
     const stackedValue = (point: { x: number; y: number }) =>
-      stacked && !numeric
-        ? (stack.get(`${index}:${point.x}`) as readonly [number, number])[1]
-        : point.y;
+      stacks ? (stack.get(`${index}:${point.x}`) as readonly [number, number])[1] : point.y;
     if (series.type === "bar" && !numeric) {
       const slot = barSeries.indexOf(index);
-      const size = stacked ? groupSize : groupSize / Math.max(1, barSeries.length);
-      const offset = stacked ? 0 : slot * size;
+      const size = stacks ? groupSize : groupSize / Math.max(1, barSeries.length);
+      const offset = stacks ? 0 : slot * size;
       const children: ChartNode[] = [];
       for (const point of points) {
         if (point.y === null) continue;
-        const [from, to] = stacked
+        const [from, to] = stacks
           ? (stack.get(`${index}:${point.x}`) as readonly [number, number])
-          : [0, point.y];
+          : [log ? (scales[axis] as ChartValueScale).min : 0, point.y];
         const a = toCat(point.x) - groupSize / 2 + offset;
         const start = toValue(from);
         const end = toValue(to);
-        const rounded = !stacked || ends.get(`${point.y > 0 ? "+" : "-"}${point.x}`) === index;
+        const rounded = !stacks || ends.get(endKey(index, point.y, point.x)) === index;
         const color = point.color ?? series.color;
         marks.push({
           series: index,
@@ -1244,28 +1424,30 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
 
   if (defs.length) nodes.push(node("defs", {}, defs));
   if (!sparkline) nodes.push(node("g", { "data-ok-chart-grid": "" }, grid));
-  if (options.yTitle && !sparkline) {
-    const x = FONT;
-    const y = plot.y + plot.height / 2;
+  // Horizontal bars: the value axis title beside the categories, at the left edge.
+  const title0 = titleOf(0);
+  if (horizontal && title0) yTitles.push(axisTitle(FONT, plot.y + plot.height / 2, -90, title0));
+  nodes.push(...yTitles);
+  if (xTitle) {
+    // The x axis title (4.18.59), centered under the labels.
     nodes.push(
       node(
         "text",
         {
-          x: fmt(x),
-          y: fmt(y),
-          dy: "0.35em",
+          x: fmt(plot.x + plot.width / 2),
+          y: fmt(plot.y + plot.height + gap + FONT + 8),
+          dy: "0.71em",
           "text-anchor": "middle",
-          transform: `rotate(-90 ${fmt(x)} ${fmt(y)})`,
-          "data-ok-chart-axis-title": "",
+          "data-ok-chart-axis-title": "x",
         },
         undefined,
-        options.yTitle,
+        xTitle,
       ),
     );
   }
   if (!sparkline) {
     nodes.push(node("g", { "data-ok-chart-axis": "x" }, axisX));
-    nodes.push(node("g", { "data-ok-chart-axis": "y" }, axisY));
+    nodes.push(...(yAxisNodes ?? [node("g", { "data-ok-chart-axis": "y" }, axisY)]));
   }
   nodes.push(node("g", { "data-ok-chart-crosshair": "" }, []));
   nodes.push(
@@ -1308,8 +1490,9 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
             kind: "value",
             min: valueScale.min,
             max: valueScale.max,
-            from: r2(plot.y + plot.height),
-            to: r2(plot.y),
+            from: r2(toValue(valueScale.min)),
+            to: r2(toValue(valueScale.max)),
+            ...(valueScale.log !== undefined ? { log: valueScale.log } : {}),
           },
         }),
   };
