@@ -423,6 +423,9 @@ for (const [id, lastHeading] of GUIDES) {
     for (const theme of ["light", "dark"] as const) {
       test(`has no WCAG 2.2 AA violations (${theme})`, async ({ page, browserName }) => {
         test.skip(browserName !== "chromium", "axe results are engine-independent.");
+        // The longest guides (data grid, date pickers: full examples and the API reference) take
+        // axe more than the default 30 s on the mobile CI runners.
+        test.setTimeout(120_000);
         await openDocs(page, theme);
         // Brand-colored examples follow the reference (ADR-0014); demo pairs that show a failing
         // combination on purpose are marked data-demo-disabled.
