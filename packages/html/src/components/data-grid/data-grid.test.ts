@@ -2153,9 +2153,9 @@ describe("data grid custom editors and edit modes", () => {
     );
   });
 
-  it("edit modes story: the row buttons drive the row modes model", async () => {
+  it("edit modes story: Save and Cancel start hidden (display none)", async () => {
     const { host, cell } = open("modes-group");
-    const edit = host.querySelector('[aria-label="Edit Ana Silva"]') as HTMLButtonElement;
+    expect(host.querySelector('[aria-label="Edit Ana Silva"]')?.hasAttribute("hidden")).toBe(false);
     const save = host.querySelector('[aria-label="Save Ana Silva"]') as HTMLButtonElement;
     expect(save.hidden).toBe(true);
     expect(getComputedStyle(save).display).toBe("none");
