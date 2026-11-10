@@ -33,14 +33,40 @@ export function Sections() {
     title: "Inset or shorten the line",
     body: "By default the line spans its container (`fullWidth`). Use `inset` in lists whose rows start with an avatar or an icon: the line starts 72px in, under the text. Use `middle` to leave 16px on both sides.",
     html: `<hr data-ok-divider data-ok-variant="inset" data-ok-orientation="horizontal">`,
-    react: `<Divider variant="inset" />`,
+    react: `import { Divider, List, ListItem, ListItemText } from "@owlky/react";
+
+export function Inbox() {
+  return (
+    <List>
+      <ListItem>
+        <ListItemText primary="Photos" secondary="Jan 9, 2026" />
+      </ListItem>
+      <li>
+        <Divider variant="inset" />
+      </li>
+      <ListItem>
+        <ListItemText primary="Work" secondary="Jan 7, 2026" />
+      </ListItem>
+    </List>
+  );
+}`,
   },
   {
     id: "vertical",
     title: "Separate items in a row",
     body: 'Set `orientation` to `vertical` for a line between items side by side; in HTML, also write `aria-orientation="vertical"`. In a flex row, add `flexItem` so the line takes the row\'s height.',
     html: `<hr data-ok-divider data-ok-variant="middle" data-ok-orientation="vertical" data-ok-flex-item aria-orientation="vertical">`,
-    react: `<Divider orientation="vertical" variant="middle" flexItem />`,
+    react: `import { Button, Divider } from "@owlky/react";
+
+export function Toolbar() {
+  return (
+    <div style={{ display: "flex" }}>
+      <Button>Cut</Button>
+      <Divider orientation="vertical" variant="middle" flexItem />
+      <Button>Paste</Button>
+    </div>
+  );
+}`,
   },
   {
     id: "text",
@@ -49,7 +75,13 @@ export function Sections() {
     html: `<div role="separator" aria-orientation="horizontal" data-ok-divider data-ok-variant="fullWidth" data-ok-orientation="horizontal">
   <span data-ok-divider-text>or</span>
 </div>`,
-    react: `<Divider>or</Divider>`,
+    react: `import { Divider } from "@owlky/react";
+
+export function OrDivider() {
+  return (
+    <Divider>or</Divider>
+  );
+}`,
   },
   {
     id: "options",

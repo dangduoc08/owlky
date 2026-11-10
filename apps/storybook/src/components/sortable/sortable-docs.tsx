@@ -44,6 +44,7 @@ ${TASKS.slice(0, 2)
     react: `// Load once, in your app's entry file
 import "@owlky/styles/owlky.css";
 import { Scrollbar, Sortable } from "@owlky/react";
+import { useState } from "react";
 
 export function Tasks() {
   const [tasks, setTasks] = useState(["Design", "Build", "Test", "Release"]);

@@ -39,6 +39,7 @@ ${htmlNav(STYLE)}`,
     react: `// Load once, in your app's entry file
 import "@owlky/styles/owlky.css";
 import { Pagination } from "@owlky/react";
+import { useState } from "react";
 
 export function Results() {
   const [page, setPage] = useState(1);

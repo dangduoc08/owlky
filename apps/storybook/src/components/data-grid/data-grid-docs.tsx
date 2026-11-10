@@ -159,7 +159,9 @@ export function People({ rows }: { rows: Person[] }) {
     },
   });
 </script>`,
-    react: `const customers = {
+    react: `import { DataGrid } from "@owlky/react";
+
+const customers = {
   // params: { sortModel, filterModel, paginationModel: { page, pageSize } }
   async getRows(params) {
     const response = await fetch("/api/customers", {

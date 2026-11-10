@@ -89,7 +89,10 @@ export function Filters() {
     if (event.detail.reason === "backdrop" && formHasChanges) event.preventDefault();
   });
 </script>`,
-    react: `export function EditPanel() {
+    react: `import { Drawer } from "@owlky/react";
+import { useState } from "react";
+
+export function EditPanel() {
   const [open, setOpen] = useState(false);
   return (
     <Drawer

@@ -43,7 +43,9 @@ export function LoadingOrders() {
   // Later, as the upload goes on
   document.querySelector("[aria-label='Upload']").setAttribute("aria-valuenow", "80");
 </script>`,
-    react: `export function Upload({ percent }: { percent: number }) {
+    react: `import { LinearProgress } from "@owlky/react";
+
+export function Upload({ percent }: { percent: number }) {
   return <LinearProgress variant="determinate" value={percent} aria-label="Upload" />;
 }`,
   },

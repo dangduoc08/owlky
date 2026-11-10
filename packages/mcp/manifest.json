@@ -60880,21 +60880,21 @@
      "body": "Three variants are available. `default` turns the open item into a raised card, `outlined` draws one bordered list, and `soft` shows each item as a filled block. Set `disableGutters` to remove the space around the open item.",
      "html": "<details data-ok-accordion data-ok-variant=\"outlined\">\n  <summary data-ok-accordion-summary>How do I reset my password?<span data-ok-accordion-icon aria-hidden=\"true\"><svg data-ok-accordion-plus aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"><path d=\"M5 12h14\" /><path d=\"M12 5v14\" /></svg></span></summary>\n  <div data-ok-accordion-details>Open Settings, choose Security and select Reset password.</div>\n</details>",
      "id": "variants",
-     "react": "<Accordion variant=\"outlined\">\n  <AccordionSummary>How do I reset my password?</AccordionSummary>\n  <AccordionDetails>Open Settings, choose Security and select Reset password.</AccordionDetails>\n</Accordion>",
+     "react": "import { Accordion, AccordionDetails, AccordionSummary } from \"@owlky/react\";\n\nexport function OutlinedAccordion() {\n  return (\n    <Accordion variant=\"outlined\">\n      <AccordionSummary>How do I reset my password?</AccordionSummary>\n      <AccordionDetails>Open Settings, choose Security and select Reset password.</AccordionDetails>\n    </Accordion>\n  );\n}",
      "title": "Choose a variant"
     },
     {
      "body": "Give every item in the group the same `name`. Opening one item then closes the others, as the browser does for `<details name>`. Where a browser doesn't support it yet, Owlky closes the others itself.",
      "html": "<details data-ok-accordion data-ok-variant=\"default\" name=\"faq\">\n  <summary data-ok-accordion-summary>How do I reset my password?<span data-ok-accordion-icon aria-hidden=\"true\"><svg data-ok-accordion-plus aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"><path d=\"M5 12h14\" /><path d=\"M12 5v14\" /></svg></span></summary>\n  <div data-ok-accordion-details>Open Settings, choose Security and select Reset password.</div>\n</details>\n<details data-ok-accordion data-ok-variant=\"default\" name=\"faq\">\n  <summary data-ok-accordion-summary>Can I change my plan later?<span data-ok-accordion-icon aria-hidden=\"true\"><svg data-ok-accordion-plus aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"><path d=\"M5 12h14\" /><path d=\"M12 5v14\" /></svg></span></summary>\n  <div data-ok-accordion-details>Yes. You can upgrade or downgrade at any time from Billing.</div>\n</details>\n<details data-ok-accordion data-ok-variant=\"default\" name=\"faq\">\n  <summary data-ok-accordion-summary>Where can I download invoices?<span data-ok-accordion-icon aria-hidden=\"true\"><svg data-ok-accordion-plus aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"><path d=\"M5 12h14\" /><path d=\"M12 5v14\" /></svg></span></summary>\n  <div data-ok-accordion-details>Every invoice is listed in Billing, under History.</div>\n</details>",
      "id": "exclusive",
-     "react": "{faq.map((item) => (\n  <Accordion key={item.title} name=\"faq\">\n    <AccordionSummary>{item.title}</AccordionSummary>\n    <AccordionDetails>{item.answer}</AccordionDetails>\n  </Accordion>\n))}",
+     "react": "import { Accordion, AccordionDetails, AccordionSummary } from \"@owlky/react\";\n\nconst faq = [\n  { title: \"How do I reset my password?\", answer: \"Open Settings, choose Security and select Reset password.\" },\n  { title: \"Can I change my plan later?\", answer: \"Yes. You can upgrade or downgrade at any time from Billing.\" },\n];\n\nexport function Faq() {\n  return (\n    <>\n      {faq.map((item) => (\n        <Accordion key={item.title} name=\"faq\">\n          <AccordionSummary>{item.title}</AccordionSummary>\n          <AccordionDetails>{item.answer}</AccordionDetails>\n        </Accordion>\n      ))}\n    </>\n  );\n}",
      "title": "Open one item at a time"
     },
     {
      "body": "In React, pass `expanded` and `onChange` to decide when an item opens, or `defaultExpanded` to only set the initial state. To refuse a change, don't update `expanded`. In HTML, listen to `ok:accordion:beforetoggle` and call `preventDefault()`.",
      "html": "<script type=\"module\">\n  document.addEventListener(\"ok:accordion:beforetoggle\", (event) => {\n    if (event.detail.open && !userIsSignedIn) event.preventDefault();\n  });\n</script>",
      "id": "controlled",
-     "react": "export function BillingSection() {\n  const [expanded, setExpanded] = useState(false);\n  return (\n    <Accordion expanded={expanded} onChange={setExpanded}>\n      <AccordionSummary>Billing</AccordionSummary>\n      <AccordionDetails>…</AccordionDetails>\n    </Accordion>\n  );\n}",
+     "react": "import { Accordion, AccordionDetails, AccordionSummary } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nexport function BillingSection() {\n  const [expanded, setExpanded] = useState(false);\n  return (\n    <Accordion expanded={expanded} onChange={setExpanded}>\n      <AccordionSummary>Billing</AccordionSummary>\n      <AccordionDetails>Your plan renews on the first day of each month.</AccordionDetails>\n    </Accordion>\n  );\n}",
      "title": "Control the open state"
     },
     {
@@ -60946,21 +60946,21 @@
      "body": "Three variants are available: `standard` (the default) is a soft tinted panel, `filled` uses the full color for urgent messages, and `outlined` adds a border. Set `color` to use a different color than the severity's.",
      "html": "<div role=\"alert\" data-ok-alert data-ok-severity=\"info\" data-ok-variant=\"filled\" data-ok-color=\"info\">\n  <div data-ok-alert-icon><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z\" /><path d=\"M12 11v5\" /><path d=\"M12 8h.01\" /></svg></div>\n  <div data-ok-alert-message>A new version is available.</div>\n</div>",
      "id": "variants",
-     "react": "<Alert severity=\"info\" variant=\"filled\">A new version is available.</Alert>",
+     "react": "import { Alert } from \"@owlky/react\";\n\nexport function UpdateAlert() {\n  return (\n    <Alert severity=\"info\" variant=\"filled\">\n      A new version is available.\n    </Alert>\n  );\n}",
      "title": "Choose a variant"
     },
     {
      "body": "A title sums up the message when it needs more than one sentence. In React, use `AlertTitle`; in HTML, add a `data-ok-alert-title` element at the start of the message.",
      "html": "<div role=\"alert\" data-ok-alert data-ok-severity=\"info\" data-ok-variant=\"standard\" data-ok-color=\"info\">\n  <div data-ok-alert-icon><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z\" /><path d=\"M12 11v5\" /><path d=\"M12 8h.01\" /></svg></div>\n  <div data-ok-alert-message>\n    <div data-ok-alert-title>Update available</div>Version 2.4 adds offline mode. Restart the app to install it.</div>\n</div>",
      "id": "title",
-     "react": "<Alert severity=\"info\">\n  <AlertTitle>Update available</AlertTitle>\n  Version 2.4 adds offline mode. Restart the app to install it.\n</Alert>",
+     "react": "import { Alert, AlertTitle } from \"@owlky/react\";\n\nexport function UpdateAlert() {\n  return (\n    <Alert severity=\"info\">\n      <AlertTitle>Update available</AlertTitle>\n      Version 2.4 adds offline mode. Restart the app to install it.\n    </Alert>\n  );\n}",
      "title": "Add a title"
     },
     {
      "body": "In React, pass buttons with `action`, or pass `onClose` to show a close button and remove the alert yourself. In HTML, put the buttons in `data-ok-alert-action`; a button with `data-ok-alert-close` closes the alert, with the script loaded.",
      "html": "<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n\n<div role=\"alert\" data-ok-alert data-ok-severity=\"info\" data-ok-variant=\"standard\" data-ok-color=\"info\">\n  <div data-ok-alert-icon><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z\" /><path d=\"M12 11v5\" /><path d=\"M12 8h.01\" /></svg></div>\n  <div data-ok-alert-message>A new version is available.</div>\n  <div data-ok-alert-action>\n    <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-alert-close aria-label=\"Close\" title=\"Close\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"><path d=\"M7 7l10 10M17 7 7 17\" /></svg></button>\n  </div>\n</div>",
      "id": "actions",
-     "react": "export function UpdateNotice() {\n  const [open, setOpen] = useState(true);\n  if (!open) return null;\n  return (\n    <Alert severity=\"info\" onClose={() => setOpen(false)}>\n      A new version is available.\n    </Alert>\n  );\n}",
+     "react": "import { Alert } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nexport function UpdateNotice() {\n  const [open, setOpen] = useState(true);\n  if (!open) return null;\n  return (\n    <Alert severity=\"info\" onClose={() => setOpen(false)}>\n      A new version is available.\n    </Alert>\n  );\n}",
      "title": "Add actions or a close button"
     },
     {
@@ -61084,21 +61084,21 @@
      "body": "Without a picture, put initials or an icon inside. Set `color` to tint the background: `default` is grey, the palette colors use white or dark text. Initials scale with the avatar. When the avatar is the only place that names a person, give it `role=\"img\"` and an `aria-label`.",
      "html": "<span data-ok-avatar data-ok-variant=\"circular\" data-ok-color=\"primary\" role=\"img\" aria-label=\"Deja Brady\">DB</span>",
      "id": "letters",
-     "react": "<Avatar color=\"primary\" role=\"img\" aria-label=\"Deja Brady\">DB</Avatar>",
+     "react": "import { Avatar } from \"@owlky/react\";\n\nexport function DejaAvatar() {\n  return (\n    <Avatar color=\"primary\" role=\"img\" aria-label=\"Deja Brady\">\n      DB\n    </Avatar>\n  );\n}",
      "title": "Show initials or an icon"
     },
     {
      "body": "Set `variant` to `rounded` (12px corners) or `square`. The default size is 40px. Set `size` to a number of pixels, or to a length in `px`, `rem` or `em`. In HTML, the script turns `data-ok-size` into the avatar's size.",
-     "html": "<span data-ok-avatar data-ok-variant=\"rounded\" data-ok-color=\"default\" data-ok-size=\"56\">…</span>",
+     "html": "<span data-ok-avatar data-ok-variant=\"rounded\" data-ok-color=\"default\" data-ok-size=\"56\">\n  <img src=\"/people/lucian.jpg\" alt=\"Lucian Obrien\">\n</span>",
      "id": "size",
-     "react": "<Avatar variant=\"rounded\" size={56} src=\"/people/lucian.jpg\" alt=\"Lucian Obrien\" />",
+     "react": "import { Avatar } from \"@owlky/react\";\n\nexport function LargeAvatar() {\n  return (\n    <Avatar variant=\"rounded\" size={56} src=\"/people/lucian.jpg\" alt=\"Lucian Obrien\" />\n  );\n}",
      "title": "Change the shape and size"
     },
     {
      "body": "An avatar group overlaps its avatars and rings each one with the surface color. In React, set `max` (default 5): extra avatars collapse into a \"+N\" avatar, counted from `total` when you have more people than you render. In HTML, write the visible avatars and the surplus avatar with `data-ok-avatar-surplus`. Set `spacing` to `small` for a tighter overlap.",
      "html": "<div data-ok-avatar-group data-ok-spacing=\"medium\">\n  <span data-ok-avatar data-ok-variant=\"circular\" data-ok-color=\"secondary\">D</span>\n  <span data-ok-avatar data-ok-variant=\"circular\" data-ok-color=\"error\">H</span>\n  <span data-ok-avatar data-ok-variant=\"circular\" data-ok-color=\"default\" data-ok-avatar-surplus>+5</span>\n</div>",
      "id": "group",
-     "react": "<AvatarGroup max={3} total={7}>\n  <Avatar color=\"secondary\">D</Avatar>\n  <Avatar color=\"error\">H</Avatar>\n  <Avatar color=\"info\">R</Avatar>\n</AvatarGroup>",
+     "react": "import { Avatar, AvatarGroup } from \"@owlky/react\";\n\nexport function Team() {\n  return (\n    <AvatarGroup max={3} total={7}>\n      <Avatar color=\"secondary\">D</Avatar>\n      <Avatar color=\"error\">H</Avatar>\n      <Avatar color=\"info\">R</Avatar>\n    </AvatarGroup>\n  );\n}",
      "title": "Group avatars"
     },
     {
@@ -61148,7 +61148,7 @@
     },
     {
      "body": "Open the backdrop when the work starts and close it when the work ends, whether it succeeds or fails. People can't dismiss a backdrop with the keyboard, so never leave it open after the work is done. In HTML, call `open()` and `close()` on the instance. In React, derive `open` from your loading state.",
-     "html": "<div id=\"saving\" data-ok-backdrop>…</div>\n\n<script type=\"module\">\n  const backdrop = window.Owlky.get(document.getElementById(\"saving\"), \"backdrop\");\n  backdrop.open();\n  try {\n    await saveDraft();\n  } finally {\n    // Close it on success and on failure.\n    backdrop.close();\n  }\n</script>",
+     "html": "<div id=\"saving\" data-ok-backdrop>\n  <span role=\"progressbar\" data-ok-circular-progress data-ok-variant=\"indeterminate\" data-ok-color=\"inherit\" aria-label=\"Saving\">\n    <svg data-ok-circular-progress-svg aria-hidden=\"true\" viewBox=\"22 22 44 44\"><circle data-ok-circular-progress-circle cx=\"44\" cy=\"44\" r=\"20.2\" stroke-width=\"3.6\" /></svg>\n  </span>\n</div>\n\n<script type=\"module\">\n  const backdrop = window.Owlky.get(document.getElementById(\"saving\"), \"backdrop\");\n  backdrop.open();\n  try {\n    // Your own work, such as saving a form.\n    await fetch(\"/api/drafts\", { method: \"POST\", body: new FormData(document.forms[0]) });\n  } finally {\n    // Close it on success and on failure.\n    backdrop.close();\n  }\n</script>",
      "id": "loading",
      "react": "import { Backdrop, CircularProgress } from \"@owlky/react\";\n\nexport function SavingOverlay({ saving }: { saving: boolean }) {\n  return (\n    <Backdrop open={saving}>\n      <CircularProgress color=\"inherit\" aria-label=\"Saving\" />\n    </Backdrop>\n  );\n}",
      "title": "Show a backdrop while work runs"
@@ -61157,7 +61157,7 @@
      "body": "Set `invisible` to make the backdrop transparent. It still covers the page and catches clicks, so a click outside a custom menu or panel can close it without the page behind reacting.",
      "html": "<div id=\"catcher\" data-ok-backdrop data-ok-invisible data-ok-backdrop-close></div>",
      "id": "invisible",
-     "react": "<Backdrop open={open} invisible onClick={() => setOpen(false)} />",
+     "react": "import { Backdrop, Button } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nexport function ClickShield() {\n  const [open, setOpen] = useState(false);\n  return (\n    <>\n      <Button onClick={() => setOpen(true)}>Block clicks</Button>\n      <Backdrop open={open} invisible onClick={() => setOpen(false)} />\n    </>\n  );\n}",
      "title": "Block clicks without dimming"
     },
     {
@@ -61210,23 +61210,23 @@
    "sections": [
     {
      "body": "A badge puts a small count, dot or status on the corner of something else: an icon, an avatar or text. Wrap the element in the badge, and the badge sits on its top-right corner. Badges need no JavaScript.",
-     "html": "<!-- Load once per page -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n\n<span data-ok-badge data-ok-variant=\"standard\" data-ok-color=\"error\" data-ok-overlap=\"rectangular\" data-ok-vertical=\"top\" data-ok-horizontal=\"right\">\n  <span role=\"img\" aria-label=\"4 new messages\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\">…</svg></span>\n  <span data-ok-badge-badge>4</span>\n</span>",
+     "html": "<!-- Load once per page -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n\n<span data-ok-badge data-ok-variant=\"standard\" data-ok-color=\"error\" data-ok-overlap=\"rectangular\" data-ok-vertical=\"top\" data-ok-horizontal=\"right\">\n  <span role=\"img\" aria-label=\"4 new messages\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"5\" width=\"18\" height=\"14\" rx=\"2\" /><path d=\"m3 7 9 6 9-6\" /></svg></span>\n  <span data-ok-badge-badge>4</span>\n</span>",
      "id": "overview",
-     "react": "// Load once, in your app's entry file\nimport \"@owlky/styles/owlky.css\";\nimport { Badge } from \"@owlky/react\";\n\nexport function Inbox() {\n  return (\n    <Badge color=\"error\" badgeContent={4}>\n      <span role=\"img\" aria-label=\"4 new messages\">\n        <MailIcon />\n      </span>\n    </Badge>\n  );\n}",
+     "react": "// Load once, in your app's entry file\nimport \"@owlky/styles/owlky.css\";\nimport { Badge } from \"@owlky/react\";\nimport { MailIcon } from \"lucide-react\";\n\nexport function Inbox() {\n  return (\n    <Badge color=\"error\" badgeContent={4}>\n      <span role=\"img\" aria-label=\"4 new messages\">\n        <MailIcon />\n      </span>\n    </Badge>\n  );\n}",
      "title": "Overview"
     },
     {
      "body": "In React, pass a number as `badgeContent`. A count of 0 hides the badge unless you set `showZero`, and counts above `max` (default 99) show as \"99+\". In HTML, write the text you want in the badge part, and add `data-ok-invisible` to hide it.",
      "html": "<span data-ok-badge-badge>99+</span>",
      "id": "count",
-     "react": "<Badge color=\"error\" badgeContent={120} max={99}>…</Badge>",
+     "react": "import { Badge } from \"@owlky/react\";\nimport { MailIcon } from \"lucide-react\";\n\nexport function InboxBadge() {\n  return (\n    <Badge color=\"error\" badgeContent={120} max={99}>\n      <MailIcon role=\"img\" aria-label=\"120 new messages\" />\n    </Badge>\n  );\n}",
      "title": "Show a count"
     },
     {
      "body": "Set `variant` to `dot` for a small dot without text. For a person's presence, use `online`, `always`, `busy`, `offline` or `invisible` on an avatar, with `overlap=\"circular\"` and the bottom-right corner.",
-     "html": "<span data-ok-badge data-ok-variant=\"online\" data-ok-color=\"default\" data-ok-overlap=\"circular\" data-ok-vertical=\"bottom\" data-ok-horizontal=\"right\">\n  <span data-ok-avatar data-ok-variant=\"circular\" data-ok-color=\"default\">…</span>\n  <span data-ok-badge-badge></span>\n</span>",
+     "html": "<span data-ok-badge data-ok-variant=\"online\" data-ok-color=\"default\" data-ok-overlap=\"circular\" data-ok-vertical=\"bottom\" data-ok-horizontal=\"right\">\n  <span data-ok-avatar data-ok-variant=\"circular\" data-ok-color=\"default\"><img src=\"/people/deja.jpg\" alt=\"Deja Brady\"></span>\n  <span data-ok-badge-badge></span>\n</span>",
      "id": "dot",
-     "react": "<Badge variant=\"online\" overlap=\"circular\" anchorOrigin={{ vertical: \"bottom\", horizontal: \"right\" }}>\n  <Avatar src=\"/people/deja.jpg\" alt=\"Deja Brady\" />\n</Badge>",
+     "react": "import { Avatar, Badge } from \"@owlky/react\";\n\nexport function OnlineAvatar() {\n  return (\n    <Badge variant=\"online\" overlap=\"circular\" anchorOrigin={{ vertical: \"bottom\", horizontal: \"right\" }}>\n      <Avatar src=\"/people/deja.jpg\" alt=\"Deja Brady\" />\n    </Badge>\n  );\n}",
      "title": "Show a dot or a status"
     },
     {
@@ -61276,16 +61276,16 @@
     },
     {
      "body": "Put a decorative `svg` before the text of an item. Icons are 20px and follow the item's color. In React, every child of `Breadcrumbs` becomes an item and the separator goes between them. Pass `separator` to replace the slash with text, an icon or `<BreadcrumbsDot />`. In HTML, write each separator in its own `li` with `aria-hidden=\"true\"`, and use `<span data-ok-breadcrumbs-dot></span>` for a dot.",
-     "html": "<li data-ok-breadcrumbs-item>\n  <a href=\"/\" data-ok-typography data-ok-link data-ok-variant=\"inherit\" data-ok-color=\"inherit\" data-ok-underline=\"hover\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\">…</svg>Home</a>\n</li>\n<li data-ok-breadcrumbs-separator aria-hidden=\"true\"><span data-ok-breadcrumbs-dot></span></li>",
+     "html": "<nav data-ok-breadcrumbs aria-label=\"breadcrumb\">\n  <ol data-ok-breadcrumbs-list>\n    <li data-ok-breadcrumbs-item><a href=\"/\" data-ok-typography data-ok-link data-ok-variant=\"inherit\" data-ok-color=\"inherit\" data-ok-underline=\"hover\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 10 12 3l9 7v10a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1Z\" /></svg>Home</a></li>\n    <li data-ok-breadcrumbs-separator aria-hidden=\"true\"><span data-ok-breadcrumbs-dot></span></li>\n    <li data-ok-breadcrumbs-item><span aria-current=\"page\">Desk lamp</span></li>\n  </ol>\n</nav>",
      "id": "icons",
-     "react": "import { Breadcrumbs, BreadcrumbsDot, Link } from \"@owlky/react\";\n\nexport function Trail() {\n  return (\n    <Breadcrumbs separator={<BreadcrumbsDot />}>\n      <Link href=\"/\" color=\"inherit\" underline=\"hover\">\n        <HomeIcon />\n        Home\n      </Link>\n      <span aria-current=\"page\">Desk lamp</span>\n    </Breadcrumbs>\n  );\n}",
+     "react": "import { Breadcrumbs, BreadcrumbsDot, Link } from \"@owlky/react\";\nimport { HouseIcon } from \"lucide-react\";\n\nexport function Trail() {\n  return (\n    <Breadcrumbs separator={<BreadcrumbsDot />}>\n      <Link href=\"/\" color=\"inherit\" underline=\"hover\">\n        <HouseIcon aria-hidden=\"true\" />\n        Home\n      </Link>\n      <span aria-current=\"page\">Desk lamp</span>\n    </Breadcrumbs>\n  );\n}",
      "title": "Add icons and change the separator"
     },
     {
      "body": "A trail with more than `maxItems` items (8 by default) collapses. It keeps `itemsBeforeCollapse` items at the start and `itemsAfterCollapse` at the end (1 each by default), and replaces the others with a button. Pressing the button shows the whole trail and moves focus to the first item that was hidden. In HTML, the runtime collapses the trail when it starts. `data-ok-expand-text` names the button (default \"Show path\").",
-     "html": "<nav data-ok-breadcrumbs aria-label=\"breadcrumb\" data-ok-max-items=\"3\" data-ok-expand-text=\"Show the full path\">\n  <ol data-ok-breadcrumbs-list>…</ol>\n</nav>",
+     "html": "<nav data-ok-breadcrumbs aria-label=\"breadcrumb\" data-ok-max-items=\"3\" data-ok-expand-text=\"Show the full path\">\n  <ol data-ok-breadcrumbs-list>\n    <li data-ok-breadcrumbs-item><a href=\"/\" data-ok-typography data-ok-link data-ok-variant=\"inherit\" data-ok-color=\"inherit\" data-ok-underline=\"hover\">Home</a></li>\n    <li data-ok-breadcrumbs-separator aria-hidden=\"true\">/</li>\n    <li data-ok-breadcrumbs-item><a href=\"/catalog\" data-ok-typography data-ok-link data-ok-variant=\"inherit\" data-ok-color=\"inherit\" data-ok-underline=\"hover\">Catalog</a></li>\n    <li data-ok-breadcrumbs-separator aria-hidden=\"true\">/</li>\n    <li data-ok-breadcrumbs-item><a href=\"/catalog/lighting\" data-ok-typography data-ok-link data-ok-variant=\"inherit\" data-ok-color=\"inherit\" data-ok-underline=\"hover\">Lighting</a></li>\n    <li data-ok-breadcrumbs-separator aria-hidden=\"true\">/</li>\n    <li data-ok-breadcrumbs-item><a href=\"/catalog/lighting/desk\" data-ok-typography data-ok-link data-ok-variant=\"inherit\" data-ok-color=\"inherit\" data-ok-underline=\"hover\">Desk</a></li>\n    <li data-ok-breadcrumbs-separator aria-hidden=\"true\">/</li>\n    <li data-ok-breadcrumbs-item><span aria-current=\"page\">Desk lamp</span></li>\n  </ol>\n</nav>",
      "id": "collapse",
-     "react": "<Breadcrumbs maxItems={3} expandText=\"Show the full path\">\n  <Link href=\"/\" color=\"inherit\" underline=\"hover\">Home</Link>\n  <Link href=\"/catalog\" color=\"inherit\" underline=\"hover\">Catalog</Link>\n  <Link href=\"/catalog/lighting\" color=\"inherit\" underline=\"hover\">Lighting</Link>\n  <Link href=\"/catalog/lighting/desk\" color=\"inherit\" underline=\"hover\">Desk</Link>\n  <span aria-current=\"page\">Desk lamp</span>\n</Breadcrumbs>",
+     "react": "import { Breadcrumbs, Link } from \"@owlky/react\";\n\nexport function ProductTrail() {\n  return (\n    <Breadcrumbs maxItems={3} expandText=\"Show the full path\">\n      <Link href=\"/\" color=\"inherit\" underline=\"hover\">\n        Home\n      </Link>\n      <Link href=\"/catalog\" color=\"inherit\" underline=\"hover\">\n        Catalog\n      </Link>\n      <Link href=\"/catalog/lighting\" color=\"inherit\" underline=\"hover\">\n        Lighting\n      </Link>\n      <Link href=\"/catalog/lighting/desk\" color=\"inherit\" underline=\"hover\">\n        Desk\n      </Link>\n      <span aria-current=\"page\">Desk lamp</span>\n    </Breadcrumbs>\n  );\n}",
      "title": "Collapse long trails"
     },
     {
@@ -61942,16 +61942,16 @@
     },
     {
      "body": "A clickable chip is a button: pass `onClick` in React, or use a `<button data-ok-chip-action>` in HTML. Pass `onDelete` to add a delete button; Backspace or Delete on the focused chip deletes it too. In HTML, the delete button fires a cancelable `ok:chip:delete` event, then the script hides the chip. In React, remove the chip from your state in `onDelete`.",
-     "html": "<span data-ok-chip data-ok-variant=\"filled\" data-ok-color=\"default\" data-ok-size=\"medium\">\n  <button type=\"button\" data-ok-chip-action><span data-ok-chip-label>Paris</span></button>\n  <button type=\"button\" data-ok-chip-delete aria-label=\"Remove Paris\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\">…</svg></button>\n</span>",
+     "html": "<span data-ok-chip data-ok-variant=\"filled\" data-ok-color=\"default\" data-ok-size=\"medium\">\n  <button type=\"button\" data-ok-chip-action><span data-ok-chip-label>Paris</span></button>\n  <button type=\"button\" data-ok-chip-delete aria-label=\"Remove Paris\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\"><path d=\"M9 3h6l1 2h4v2H4V5h4zm-3 6h12l-1 12H7z\" fill=\"currentColor\" /></svg></button>\n</span>",
      "id": "actions",
-     "react": "export function Cities() {\n  const [cities, setCities] = useState([\"Paris\", \"Rome\"]);\n  return cities.map((city) => (\n    <Chip\n      key={city}\n      label={city}\n      deleteLabel={`Remove ${city}`}\n      onClick={() => showCity(city)}\n      onDelete={() => setCities(cities.filter((c) => c !== city))}\n    />\n  ));\n}",
+     "react": "import { Chip } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nexport function Cities() {\n  const [cities, setCities] = useState([\"Paris\", \"Rome\"]);\n  const [shown, setShown] = useState<string | null>(null);\n  return (\n    <>\n      {cities.map((city) => (\n        <Chip\n          key={city}\n          label={city}\n          deleteLabel={`Remove ${city}`}\n          onClick={() => setShown(city)}\n          onDelete={() => setCities(cities.filter((other) => other !== city))}\n        />\n      ))}\n      <p>{shown ? `Showing ${shown}` : \"Pick a city\"}</p>\n    </>\n  );\n}",
      "title": "Make a chip clickable or deletable"
     },
     {
      "body": "The variant is `filled` (default), `outlined` or `soft`. Colors are `default` (neutral), the palette colors, `black` and `white`. The `small` size is 24px high, for dense lists such as table cells.",
-     "html": "<span data-ok-chip data-ok-variant=\"outlined\" data-ok-color=\"info\" data-ok-size=\"small\">…</span>",
+     "html": "<span data-ok-chip data-ok-variant=\"outlined\" data-ok-color=\"info\" data-ok-size=\"small\">\n  <span data-ok-chip-action>\n    <span data-ok-avatar data-ok-variant=\"circular\" data-ok-color=\"default\">M</span>\n    <span data-ok-chip-label>Mia</span>\n  </span>\n</span>",
      "id": "variants",
-     "react": "<Chip variant=\"outlined\" color=\"info\" size=\"small\" avatar={<Avatar>M</Avatar>} label=\"Mia\" />",
+     "react": "import { Avatar, Chip } from \"@owlky/react\";\n\nexport function MiaChip() {\n  return (\n    <Chip variant=\"outlined\" color=\"info\" size=\"small\" avatar={<Avatar>M</Avatar>} label=\"Mia\" />\n  );\n}",
      "title": "Choose a variant, color and size"
     },
     {
@@ -62003,7 +62003,7 @@
      "body": "Set `variant` to `determinate` and pass `value`, from `min` (default 0) to `max` (default 100). In HTML, the value is the `aria-valuenow` attribute: change it, and the runtime redraws the arc. Values outside the range are clamped.",
      "html": "<span role=\"progressbar\" aria-label=\"Upload\" data-ok-circular-progress data-ok-variant=\"determinate\" data-ok-color=\"primary\" aria-valuenow=\"60\" aria-valuemin=\"0\" aria-valuemax=\"100\">\n  <svg data-ok-circular-progress-svg aria-hidden=\"true\" viewBox=\"22 22 44 44\"><circle data-ok-circular-progress-circle cx=\"44\" cy=\"44\" r=\"20.2\" stroke-width=\"3.6\" /></svg>\n</span>\n\n<script>\n  // Later, as the upload goes on\n  document.querySelector(\"[aria-label='Upload']\").setAttribute(\"aria-valuenow\", \"80\");\n</script>",
      "id": "determinate",
-     "react": "export function Upload({ percent }: { percent: number }) {\n  return <CircularProgress variant=\"determinate\" value={percent} aria-label=\"Upload\" />;\n}",
+     "react": "import { CircularProgress } from \"@owlky/react\";\n\nexport function Upload({ percent }: { percent: number }) {\n  return <CircularProgress variant=\"determinate\" value={percent} aria-label=\"Upload\" />;\n}",
      "title": "Show how far a task has got"
     },
     {
@@ -62125,7 +62125,7 @@
      "body": "Owlky never loads Monaco from another site. `owlky-code-editor.js` loads it from the `monaco/` folder next to itself. To serve that folder somewhere else, copy `@owlky/html/dist/monaco/` to your server and set `data-ok-monaco-path` on the script. The folder must be on the same origin as the page, because browsers run web workers only from there.\n\nWith a bundler, Monaco is imported from the `monaco-editor` package. If your bundler doesn't find Monaco's workers by itself, pass them to `loader.config({ getWorker })`. `loader.config()` also takes `paths.vs` for your own copy of the `monaco/` folder, a `monaco` instance you already imported, and the UI language. Call it before the first editor appears.\n\nUntil Monaco is ready, the frame shows `loading` (default \"Loading...\"). If Monaco can't load, the text area comes back so that people can still edit the value, and `onError` or `ok:code-editor:error` reports the reason.",
      "html": "<!-- Your own copy of the monaco/ folder, in German -->\n<script src=\"/assets/owlky-code-editor.js\" data-ok-monaco-path=\"/assets/monaco/\" defer></script>\n\n<script type=\"module\">\n  // With a bundler: import \"@owlky/html/code-editor\" instead\n  import { loader } from \"@owlky/html/code-editor\";\n\n  loader.config({ paths: { vs: \"/assets/monaco/\" }, \"vs/nls\": { availableLanguages: { \"*\": \"de\" } } });\n</script>",
      "id": "loading",
-     "react": "import { CodeEditor, loader } from \"@owlky/react\";\n// Vite: Monaco's workers as worker modules\nimport EditorWorker from \"monaco-editor/editor/editor.worker.js?worker\";\nimport JsonWorker from \"monaco-editor/language/json/json.worker.js?worker\";\n\nloader.config({\n  getWorker: (label) => (label === \"json\" ? new JsonWorker() : new EditorWorker()),\n});\n\nexport function Config() {\n  return <CodeEditor aria-label=\"Config\" defaultLanguage=\"json\" loading=\"Loading the editor…\" />;\n}",
+     "react": "import { CodeEditor, loader, type Monaco } from \"@owlky/react\";\n// Vite: Monaco's workers as worker modules\nimport EditorWorker from \"monaco-editor/editor/editor.worker.js?worker\";\nimport JsonWorker from \"monaco-editor/language/json/json.worker.js?worker\";\n\nloader.config({\n  getWorker: (label) => (label === \"json\" ? new JsonWorker() : new EditorWorker()),\n});\n\nexport function Config() {\n  return <CodeEditor aria-label=\"Config\" defaultLanguage=\"json\" loading=\"Loading the editor…\" />;\n}",
      "title": "Host Monaco and set up loading"
     },
     {
@@ -62305,7 +62305,7 @@
      "body": "A data source lets the server sort, filter and page the rows. The grid calls `getRows()` with the sort model, the filter model and the page, and shows the rows it returns. `rowCount` is the total number of rows on the server, for the pagination. Responses are kept in a cache, so going back to a page doesn't ask the server again. Pass `dataSourceCache={null}` to turn the cache off. Errors go to `onDataSourceError` in React and to `ok:data-grid:datasourceerror` in HTML. To handle the requests yourself, set `sortingMode`, `filterMode` and `paginationMode` to `\"server\"`, pass `rowCount`, and load the rows in the change callbacks. While data loads, `loadingVariant` picks a progress bar, a spinner or placeholder rows (`\"skeleton\"`).",
      "html": "<script type=\"module\">\n  const element = document.getElementById(\"customers\");\n  const grid = window.Owlky.get(element, \"data-grid\");\n  grid.setDataSource({\n    // params: { sortModel, filterModel, paginationModel: { page, pageSize } }\n    async getRows(params) {\n      const response = await fetch(\"/api/customers\", {\n        method: \"POST\",\n        body: JSON.stringify(params),\n      });\n      return response.json(); // { rows, rowCount }\n    },\n  });\n</script>",
      "id": "server",
-     "react": "const customers = {\n  // params: { sortModel, filterModel, paginationModel: { page, pageSize } }\n  async getRows(params) {\n    const response = await fetch(\"/api/customers\", {\n      method: \"POST\",\n      body: JSON.stringify(params),\n    });\n    return response.json(); // { rows, rowCount }\n  },\n};\n\nexport function Customers() {\n  return <DataGrid aria-label=\"Customers\" rows={[]} columns={columns} dataSource={customers} />;\n}",
+     "react": "import { DataGrid } from \"@owlky/react\";\n\nconst customers = {\n  // params: { sortModel, filterModel, paginationModel: { page, pageSize } }\n  async getRows(params) {\n    const response = await fetch(\"/api/customers\", {\n      method: \"POST\",\n      body: JSON.stringify(params),\n    });\n    return response.json(); // { rows, rowCount }\n  },\n};\n\nexport function Customers() {\n  return <DataGrid aria-label=\"Customers\" rows={[]} columns={columns} dataSource={customers} />;\n}",
      "title": "Load rows from a server"
     },
     {
@@ -62717,21 +62717,21 @@
      "body": "By default the line spans its container (`fullWidth`). Use `inset` in lists whose rows start with an avatar or an icon: the line starts 72px in, under the text. Use `middle` to leave 16px on both sides.",
      "html": "<hr data-ok-divider data-ok-variant=\"inset\" data-ok-orientation=\"horizontal\">",
      "id": "variants",
-     "react": "<Divider variant=\"inset\" />",
+     "react": "import { Divider, List, ListItem, ListItemText } from \"@owlky/react\";\n\nexport function Inbox() {\n  return (\n    <List>\n      <ListItem>\n        <ListItemText primary=\"Photos\" secondary=\"Jan 9, 2026\" />\n      </ListItem>\n      <li>\n        <Divider variant=\"inset\" />\n      </li>\n      <ListItem>\n        <ListItemText primary=\"Work\" secondary=\"Jan 7, 2026\" />\n      </ListItem>\n    </List>\n  );\n}",
      "title": "Inset or shorten the line"
     },
     {
      "body": "Set `orientation` to `vertical` for a line between items side by side; in HTML, also write `aria-orientation=\"vertical\"`. In a flex row, add `flexItem` so the line takes the row's height.",
      "html": "<hr data-ok-divider data-ok-variant=\"middle\" data-ok-orientation=\"vertical\" data-ok-flex-item aria-orientation=\"vertical\">",
      "id": "vertical",
-     "react": "<Divider orientation=\"vertical\" variant=\"middle\" flexItem />",
+     "react": "import { Button, Divider } from \"@owlky/react\";\n\nexport function Toolbar() {\n  return (\n    <div style={{ display: \"flex\" }}>\n      <Button>Cut</Button>\n      <Divider orientation=\"vertical\" variant=\"middle\" flexItem />\n      <Button>Paste</Button>\n    </div>\n  );\n}",
      "title": "Separate items in a row"
     },
     {
      "body": "Pass children to show text, or a chip, on the line, such as \"or\" between two sign-in options. Set `textAlign` to `left` or `right` to move it. With children, the divider is a `div` with `role=\"separator\"` and the text in a `data-ok-divider-text` span.",
      "html": "<div role=\"separator\" aria-orientation=\"horizontal\" data-ok-divider data-ok-variant=\"fullWidth\" data-ok-orientation=\"horizontal\">\n  <span data-ok-divider-text>or</span>\n</div>",
      "id": "text",
-     "react": "<Divider>or</Divider>",
+     "react": "import { Divider } from \"@owlky/react\";\n\nexport function OrDivider() {\n  return (\n    <Divider>or</Divider>\n  );\n}",
      "title": "Put text on the line"
     },
     {
@@ -62797,7 +62797,7 @@
      "body": "In React, pass `open` and `onOpenChange` to `Drawer`. `onOpenChange` receives the requested state and the reason: `escape`, `backdrop` or `close`. To keep the drawer open, don't update `open`. In HTML, listen to `ok:drawer:beforeclose` and call `preventDefault()`.",
      "html": "<script type=\"module\">\n  document.addEventListener(\"ok:drawer:beforeclose\", (event) => {\n    if (event.detail.reason === \"backdrop\" && formHasChanges) event.preventDefault();\n  });\n</script>",
      "id": "controlled",
-     "react": "export function EditPanel() {\n  const [open, setOpen] = useState(false);\n  return (\n    <Drawer\n      open={open}\n      onOpenChange={(next, reason) => {\n        if (!next && reason === \"backdrop\" && formHasChanges) return; // keep it open\n        setOpen(next);\n      }}\n    >\n      …\n    </Drawer>\n  );\n}",
+     "react": "import { Drawer } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nexport function EditPanel() {\n  const [open, setOpen] = useState(false);\n  return (\n    <Drawer\n      open={open}\n      onOpenChange={(next, reason) => {\n        if (!next && reason === \"backdrop\" && formHasChanges) return; // keep it open\n        setOpen(next);\n      }}\n    >\n      …\n    </Drawer>\n  );\n}",
      "title": "Control when it opens and closes"
     },
     {
@@ -63733,14 +63733,14 @@
      "body": "The default `soft` variant tints the background. Use `filled` for strong emphasis, `outlined` for a light one, and `inverted` for a pale background with dark text. Pick the color from what the status means: `success` for done, `warning` for pending, `error` for failed.",
      "html": "<span data-ok-label data-ok-variant=\"inverted\" data-ok-color=\"warning\">Pending</span>",
      "id": "variants",
-     "react": "<Label variant=\"inverted\" color=\"warning\">Pending</Label>",
+     "react": "import { Label } from \"@owlky/react\";\n\nexport function PendingLabel() {\n  return (\n    <Label variant=\"inverted\" color=\"warning\">\n      Pending\n    </Label>\n  );\n}",
      "title": "Choose a variant and color"
     },
     {
      "body": "Pass `startIcon` or `endIcon`. Icons are 16px and decorative: the text says what the label means.",
-     "html": "<span data-ok-label data-ok-variant=\"filled\" data-ok-color=\"primary\">\n  <span data-ok-label-icon=\"start\" aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\">…</svg></span>\n  Sent\n</span>",
+     "html": "<span data-ok-label data-ok-variant=\"filled\" data-ok-color=\"primary\">\n  <span data-ok-label-icon=\"start\" aria-hidden=\"true\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"5\" width=\"18\" height=\"14\" rx=\"2\" /><path d=\"m3 7 9 6 9-6\" /></svg></span>\n  Sent\n</span>",
      "id": "icons",
-     "react": "<Label variant=\"filled\" color=\"primary\" startIcon={<MailIcon />}>Sent</Label>",
+     "react": "import { Label } from \"@owlky/react\";\nimport { MailIcon } from \"lucide-react\";\n\nexport function SentLabel() {\n  return (\n    <Label variant=\"filled\" color=\"primary\" startIcon={<MailIcon />}>\n      Sent\n    </Label>\n  );\n}",
      "title": "Add an icon"
     },
     {
@@ -63886,7 +63886,7 @@
      "body": "Set `variant` to `determinate` and pass `value`, from `min` (default 0) to `max` (default 100). The determinate bar has one part. In HTML, the value is the `aria-valuenow` attribute: change it, and the runtime moves the bar. Values outside the range are clamped.",
      "html": "<span role=\"progressbar\" aria-label=\"Upload\" data-ok-linear-progress data-ok-variant=\"determinate\" data-ok-color=\"primary\" aria-valuenow=\"40\" aria-valuemin=\"0\" aria-valuemax=\"100\"><span data-ok-linear-progress-bar=\"1\"></span></span>\n\n<script>\n  // Later, as the upload goes on\n  document.querySelector(\"[aria-label='Upload']\").setAttribute(\"aria-valuenow\", \"80\");\n</script>",
      "id": "determinate",
-     "react": "export function Upload({ percent }: { percent: number }) {\n  return <LinearProgress variant=\"determinate\" value={percent} aria-label=\"Upload\" />;\n}",
+     "react": "import { LinearProgress } from \"@owlky/react\";\n\nexport function Upload({ percent }: { percent: number }) {\n  return <LinearProgress variant=\"determinate\" value={percent} aria-label=\"Upload\" />;\n}",
      "title": "Show how far a task has got"
     },
     {
@@ -64032,7 +64032,7 @@
      "body": "A list shows rows of text, icons, avatars and controls, one below the other. It is a native `<ul>`, so assistive technology announces the number of items. Rows are plain list items, or buttons and links when people can choose them. Lists need no JavaScript, except to open and close nested lists in HTML.",
      "html": "<!-- Load once per page -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n\n<nav aria-label=\"Mailbox\">\n  <ul data-ok-list>\n    <li data-ok-list-item data-ok-disable-padding>\n      <button type=\"button\" data-ok-list-item-button>\n        <span data-ok-list-item-icon><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 13h4l1.5 2h5l1.5-2h4M4 13l2.5-7h11l2.5 7v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z\" /></svg></span>\n        <span data-ok-list-item-text>\n          <span data-ok-list-item-text-primary>Inbox</span>\n        </span>\n      </button>\n    </li>\n  </ul>\n</nav>",
      "id": "overview",
-     "react": "// Load once, in your app's entry file\nimport \"@owlky/styles/owlky.css\";\nimport { List, ListItem, ListItemButton, ListItemIcon, ListItemText } from \"@owlky/react\";\n\nexport function Mailbox() {\n  return (\n    <nav aria-label=\"Mailbox\">\n      <List>\n        <ListItem disablePadding>\n          <ListItemButton>\n            <ListItemIcon>\n              <InboxIcon />\n            </ListItemIcon>\n            <ListItemText primary=\"Inbox\" />\n          </ListItemButton>\n        </ListItem>\n      </List>\n    </nav>\n  );\n}",
+     "react": "// Load once, in your app's entry file\nimport \"@owlky/styles/owlky.css\";\nimport { List, ListItem, ListItemButton, ListItemIcon, ListItemText } from \"@owlky/react\";\nimport { InboxIcon } from \"lucide-react\";\n\nexport function Mailbox() {\n  return (\n    <nav aria-label=\"Mailbox\">\n      <List>\n        <ListItem disablePadding>\n          <ListItemButton>\n            <ListItemIcon>\n              <InboxIcon />\n            </ListItemIcon>\n            <ListItemText primary=\"Inbox\" />\n          </ListItemButton>\n        </ListItem>\n      </List>\n    </nav>\n  );\n}",
      "title": "Overview"
     },
     {
@@ -64291,21 +64291,21 @@
      "body": "A menu shows a list of choices on a popover. Opening it moves focus to the selected item, or the first one. Choosing an item closes the menu, and focus returns to the button that opened it.",
      "html": "<!-- Load once per page: the styles and the runtime -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n\n<button type=\"button\" id=\"account-button\" data-ok-button data-ok-variant=\"outlined\" data-ok-color=\"inherit\" data-ok-size=\"md\"\n  aria-haspopup=\"menu\" aria-expanded=\"false\" aria-controls=\"account-menu\" data-ok-popover-open=\"account-menu\">\n  <span data-ok-button-label>Account</span>\n</button>\n<div id=\"account-menu\" popover=\"manual\" data-ok-popover data-ok-placement=\"bottom-start\">\n  <ul data-ok-menu role=\"menu\" aria-labelledby=\"account-button\">\n    <li data-ok-menu-item role=\"menuitem\" tabindex=\"-1\">Profile</li>\n    <li data-ok-menu-item role=\"menuitem\" tabindex=\"-1\">Logout</li>\n  </ul>\n</div>",
      "id": "overview",
-     "react": "import { Button, Menu, MenuItem } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nexport function AccountMenu() {\n  const [anchor, setAnchor] = useState<HTMLElement | null>(null);\n  return (\n    <>\n      <Button\n        id=\"account-button\"\n        variant=\"outlined\"\n        aria-haspopup=\"menu\"\n        aria-expanded={anchor !== null}\n        onClick={(event) => setAnchor(anchor ? null : event.currentTarget)}\n      >\n        Account\n      </Button>\n      <Menu\n        aria-labelledby=\"account-button\"\n        open={anchor !== null}\n        anchorEl={anchor}\n        onOpenChange={() => setAnchor(null)}\n      >\n        <MenuItem onClick={openProfile}>Profile</MenuItem>\n        <MenuItem onClick={logout}>Logout</MenuItem>\n      </Menu>\n    </>\n  );\n}",
+     "react": "import { Button, Menu, MenuItem } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nexport function AccountMenu() {\n  const [anchor, setAnchor] = useState<HTMLElement | null>(null);\n  return (\n    <>\n      <Button\n        id=\"account-button\"\n        variant=\"outlined\"\n        aria-haspopup=\"menu\"\n        aria-expanded={anchor !== null}\n        onClick={(event) => setAnchor(anchor ? null : event.currentTarget)}\n      >\n        Account\n      </Button>\n      <Menu\n        aria-labelledby=\"account-button\"\n        open={anchor !== null}\n        anchorEl={anchor}\n        onOpenChange={() => setAnchor(null)}\n      >\n        <MenuItem onClick={() => window.location.assign(\"/profile\")}>Profile</MenuItem>\n        <MenuItem onClick={() => window.location.assign(\"/logout\")}>Logout</MenuItem>\n      </Menu>\n    </>\n  );\n}",
      "title": "Overview"
     },
     {
      "body": "Mark the current choice with `selected`: it is bold and tinted, and the menu focuses it when it opens. Use `disabled` for a choice that isn't available: the keyboard skips it and clicks are ignored.",
      "html": "<li data-ok-menu-item role=\"menuitem\" tabindex=\"-1\" aria-disabled=\"true\">Choose an option</li>\n<li data-ok-menu-item role=\"menuitem\" tabindex=\"-1\" data-ok-selected>Show all</li>",
      "id": "selected",
-     "react": "<MenuItem disabled>Choose an option</MenuItem>\n<MenuItem selected>Show all</MenuItem>",
+     "react": "import { Button, Menu, MenuItem } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nexport function FilterMenu() {\n  const [anchor, setAnchor] = useState<HTMLElement | null>(null);\n  return (\n    <>\n      <Button id=\"filter-button\" aria-haspopup=\"menu\" onClick={(event) => setAnchor(event.currentTarget)}>\n        Filter\n      </Button>\n      <Menu aria-labelledby=\"filter-button\" open={anchor !== null} anchorEl={anchor} onOpenChange={() => setAnchor(null)}>\n        <MenuItem disabled>Choose an option</MenuItem>\n        <MenuItem selected>Show all</MenuItem>\n      </Menu>\n    </>\n  );\n}",
      "title": "Show the current choice"
     },
     {
      "body": "In React, handle `onClick` on each `MenuItem`. The menu then asks to close with the reason `select`; call `event.preventDefault()` in the handler to keep it open. In HTML, listen for `ok:menu:select` on the menu: `event.detail.item` is the item, and `preventDefault()` keeps the menu open.",
      "html": "<script type=\"module\">\n  document.querySelector(\"#account-menu [data-ok-menu]\").addEventListener(\"ok:menu:select\", (event) => {\n    console.log(event.detail.item.textContent);\n  });\n</script>",
      "id": "choose",
-     "react": "<MenuItem onClick={() => setSort(\"name\")}>Sort by name</MenuItem>",
+     "react": "import { Button, Menu, MenuItem } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nexport function SortMenu() {\n  const [anchor, setAnchor] = useState<HTMLElement | null>(null);\n  const [sort, setSort] = useState(\"name\");\n  return (\n    <>\n      <Button id=\"sort-button\" aria-haspopup=\"menu\" onClick={(event) => setAnchor(event.currentTarget)}>\n        Sort by {sort}\n      </Button>\n      <Menu aria-labelledby=\"sort-button\" open={anchor !== null} anchorEl={anchor} onOpenChange={() => setAnchor(null)}>\n        <MenuItem onClick={() => setSort(\"name\")}>Sort by name</MenuItem>\n        <MenuItem onClick={() => setSort(\"date\")}>Sort by date</MenuItem>\n      </Menu>\n    </>\n  );\n}",
      "title": "Handle a choice"
     },
     {
@@ -64519,7 +64519,7 @@
      "body": "Pagination lets people move through content that is split into pages, such as search results or a long table. It shows the current page, nearby pages, the first and last pages, and previous and next buttons. Long ranges are shortened with an ellipsis.\n\nIn HTML, write the previous and next buttons; the script builds the page buttons from `data-ok-count` and `data-ok-page`.",
      "html": "<!-- Load once per page, with the script for interactive components -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n\n<nav aria-label=\"pagination navigation\" data-ok-pagination data-ok-variant=\"text\" data-ok-color=\"standard\" data-ok-shape=\"circular\" data-ok-size=\"md\" data-ok-count=\"10\" data-ok-page=\"1\">\n  <ul>\n    <li><button type=\"button\" data-ok-pagination-item data-ok-type=\"previous\" aria-label=\"Go to previous page\" disabled><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m15 18-6-6 6-6\" /></svg></button></li>\n    <li><button type=\"button\" data-ok-pagination-item data-ok-type=\"page\" value=\"1\" aria-label=\"page 1\" aria-current=\"page\">1</button></li>\n    <li><button type=\"button\" data-ok-pagination-item data-ok-type=\"next\" aria-label=\"Go to next page\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m9 18 6-6-6-6\" /></svg></button></li>\n  </ul>\n</nav>",
      "id": "overview",
-     "react": "// Load once, in your app's entry file\nimport \"@owlky/styles/owlky.css\";\nimport { Pagination } from \"@owlky/react\";\n\nexport function Results() {\n  const [page, setPage] = useState(1);\n  return <Pagination count={10} page={page} onChange={setPage} />;\n}",
+     "react": "// Load once, in your app's entry file\nimport \"@owlky/styles/owlky.css\";\nimport { Pagination } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nexport function Results() {\n  const [page, setPage] = useState(1);\n  return <Pagination count={10} page={page} onChange={setPage} />;\n}",
      "title": "Overview"
     },
     {
@@ -65157,7 +65157,7 @@
      "body": "A sortable list lets people put items in their own order, such as tasks by priority or widgets on a dashboard. Each item has a handle: drag it with a mouse, finger or pen, move it with the keyboard, or tap two handles to swap places. Items can also have a remove button.\n\nEvery move is announced to screen reader users, such as \"Moved to position 2 of 4\".",
      "html": "<!-- Load once per page, with the script for interactive components -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n\n<section data-ok-scrollbar aria-label=\"Tasks list\" tabindex=\"0\">\n  <ul id=\"tasks\" data-ok-sortable data-ok-layout=\"vertical\" aria-label=\"Tasks\">\n    <li data-ok-sortable-item>\n      <span>Design</span>\n      <div data-ok-sortable-actions>\n        <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-sortable-handle aria-label=\"Reorder Design\" aria-pressed=\"false\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\"><path d=\"M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01\" /></svg></button>\n      </div>\n    </li>\n    <li data-ok-sortable-item>\n      <span>Build</span>\n      <div data-ok-sortable-actions>\n        <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-sortable-handle aria-label=\"Reorder Build\" aria-pressed=\"false\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\"><path d=\"M9 6h.01M15 6h.01M9 12h.01M15 12h.01M9 18h.01M15 18h.01\" /></svg></button>\n      </div>\n    </li>\n  </ul>\n</section>",
      "id": "overview",
-     "react": "// Load once, in your app's entry file\nimport \"@owlky/styles/owlky.css\";\nimport { Scrollbar, Sortable } from \"@owlky/react\";\n\nexport function Tasks() {\n  const [tasks, setTasks] = useState([\"Design\", \"Build\", \"Test\", \"Release\"]);\n  return (\n    <Scrollbar aria-label=\"Tasks list\">\n      <Sortable\n        layout=\"vertical\"\n        aria-label=\"Tasks\"\n        items={tasks}\n        getKey={(task) => task}\n        getItemLabel={(task) => task}\n        renderItem={(task) => <span>{task}</span>}\n        onReorder={setTasks}\n      />\n    </Scrollbar>\n  );\n}",
+     "react": "// Load once, in your app's entry file\nimport \"@owlky/styles/owlky.css\";\nimport { Scrollbar, Sortable } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nexport function Tasks() {\n  const [tasks, setTasks] = useState([\"Design\", \"Build\", \"Test\", \"Release\"]);\n  return (\n    <Scrollbar aria-label=\"Tasks list\">\n      <Sortable\n        layout=\"vertical\"\n        aria-label=\"Tasks\"\n        items={tasks}\n        getKey={(task) => task}\n        getItemLabel={(task) => task}\n        renderItem={(task) => <span>{task}</span>}\n        onReorder={setTasks}\n      />\n    </Scrollbar>\n  );\n}",
      "title": "Overview"
     },
     {

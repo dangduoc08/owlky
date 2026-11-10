@@ -28,17 +28,34 @@ export function InvoiceStatus() {
     title: "Choose a variant and color",
     body: "The default `soft` variant tints the background. Use `filled` for strong emphasis, `outlined` for a light one, and `inverted` for a pale background with dark text. Pick the color from what the status means: `success` for done, `warning` for pending, `error` for failed.",
     html: `<span data-ok-label data-ok-variant="inverted" data-ok-color="warning">Pending</span>`,
-    react: `<Label variant="inverted" color="warning">Pending</Label>`,
+    react: `import { Label } from "@owlky/react";
+
+export function PendingLabel() {
+  return (
+    <Label variant="inverted" color="warning">
+      Pending
+    </Label>
+  );
+}`,
   },
   {
     id: "icons",
     title: "Add an icon",
     body: "Pass `startIcon` or `endIcon`. Icons are 16px and decorative: the text says what the label means.",
     html: `<span data-ok-label data-ok-variant="filled" data-ok-color="primary">
-  <span data-ok-label-icon="start" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24">…</svg></span>
+  <span data-ok-label-icon="start" aria-hidden="true"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3 7 9 6 9-6" /></svg></span>
   Sent
 </span>`,
-    react: `<Label variant="filled" color="primary" startIcon={<MailIcon />}>Sent</Label>`,
+    react: `import { Label } from "@owlky/react";
+import { MailIcon } from "lucide-react";
+
+export function SentLabel() {
+  return (
+    <Label variant="filled" color="primary" startIcon={<MailIcon />}>
+      Sent
+    </Label>
+  );
+}`,
   },
   {
     id: "options",

@@ -209,7 +209,7 @@ export function Notes() {
 
   loader.config({ paths: { vs: "/assets/monaco/" }, "vs/nls": { availableLanguages: { "*": "de" } } });
 </script>`,
-    react: `import { CodeEditor, loader } from "@owlky/react";
+    react: `import { CodeEditor, loader, type Monaco } from "@owlky/react";
 // Vite: Monaco's workers as worker modules
 import EditorWorker from "monaco-editor/editor/editor.worker.js?worker";
 import JsonWorker from "monaco-editor/language/json/json.worker.js?worker";

@@ -46,6 +46,7 @@ export const listSections: GuideSection[] = [
     react: `// Load once, in your app's entry file
 import "@owlky/styles/owlky.css";
 import { List, ListItem, ListItemButton, ListItemIcon, ListItemText } from "@owlky/react";
+import { InboxIcon } from "lucide-react";
 
 export function Mailbox() {
   return (

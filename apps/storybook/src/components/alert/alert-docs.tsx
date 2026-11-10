@@ -38,7 +38,15 @@ export function UpdateNotice() {
   ${INFO_ICON}
   <div data-ok-alert-message>A new version is available.</div>
 </div>`,
-    react: `<Alert severity="info" variant="filled">A new version is available.</Alert>`,
+    react: `import { Alert } from "@owlky/react";
+
+export function UpdateAlert() {
+  return (
+    <Alert severity="info" variant="filled">
+      A new version is available.
+    </Alert>
+  );
+}`,
   },
   {
     id: "title",
@@ -49,10 +57,16 @@ export function UpdateNotice() {
   <div data-ok-alert-message>
     <div data-ok-alert-title>Update available</div>Version 2.4 adds offline mode. Restart the app to install it.</div>
 </div>`,
-    react: `<Alert severity="info">
-  <AlertTitle>Update available</AlertTitle>
-  Version 2.4 adds offline mode. Restart the app to install it.
-</Alert>`,
+    react: `import { Alert, AlertTitle } from "@owlky/react";
+
+export function UpdateAlert() {
+  return (
+    <Alert severity="info">
+      <AlertTitle>Update available</AlertTitle>
+      Version 2.4 adds offline mode. Restart the app to install it.
+    </Alert>
+  );
+}`,
   },
   {
     id: "actions",
@@ -67,7 +81,10 @@ export function UpdateNotice() {
     ${CLOSE}
   </div>
 </div>`,
-    react: `export function UpdateNotice() {
+    react: `import { Alert } from "@owlky/react";
+import { useState } from "react";
+
+export function UpdateNotice() {
   const [open, setOpen] = useState(true);
   if (!open) return null;
   return (

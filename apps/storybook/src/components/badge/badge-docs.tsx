@@ -15,12 +15,13 @@ export const badgeSections: GuideSection[] = [
 <link rel="stylesheet" href="${CDN}/owlky.css">
 
 <span data-ok-badge data-ok-variant="standard" data-ok-color="error" data-ok-overlap="rectangular" data-ok-vertical="top" data-ok-horizontal="right">
-  <span role="img" aria-label="4 new messages"><svg aria-hidden="true" viewBox="0 0 24 24">…</svg></span>
+  <span role="img" aria-label="4 new messages"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3 7 9 6 9-6" /></svg></span>
   <span data-ok-badge-badge>4</span>
 </span>`,
     react: `// Load once, in your app's entry file
 import "@owlky/styles/owlky.css";
 import { Badge } from "@owlky/react";
+import { MailIcon } from "lucide-react";
 
 export function Inbox() {
   return (
@@ -37,19 +38,34 @@ export function Inbox() {
     title: "Show a count",
     body: 'In React, pass a number as `badgeContent`. A count of 0 hides the badge unless you set `showZero`, and counts above `max` (default 99) show as "99+". In HTML, write the text you want in the badge part, and add `data-ok-invisible` to hide it.',
     html: `<span data-ok-badge-badge>99+</span>`,
-    react: `<Badge color="error" badgeContent={120} max={99}>…</Badge>`,
+    react: `import { Badge } from "@owlky/react";
+import { MailIcon } from "lucide-react";
+
+export function InboxBadge() {
+  return (
+    <Badge color="error" badgeContent={120} max={99}>
+      <MailIcon role="img" aria-label="120 new messages" />
+    </Badge>
+  );
+}`,
   },
   {
     id: "dot",
     title: "Show a dot or a status",
     body: 'Set `variant` to `dot` for a small dot without text. For a person\'s presence, use `online`, `always`, `busy`, `offline` or `invisible` on an avatar, with `overlap="circular"` and the bottom-right corner.',
     html: `<span data-ok-badge data-ok-variant="online" data-ok-color="default" data-ok-overlap="circular" data-ok-vertical="bottom" data-ok-horizontal="right">
-  <span data-ok-avatar data-ok-variant="circular" data-ok-color="default">…</span>
+  <span data-ok-avatar data-ok-variant="circular" data-ok-color="default"><img src="/people/deja.jpg" alt="Deja Brady"></span>
   <span data-ok-badge-badge></span>
 </span>`,
-    react: `<Badge variant="online" overlap="circular" anchorOrigin={{ vertical: "bottom", horizontal: "right" }}>
-  <Avatar src="/people/deja.jpg" alt="Deja Brady" />
-</Badge>`,
+    react: `import { Avatar, Badge } from "@owlky/react";
+
+export function OnlineAvatar() {
+  return (
+    <Badge variant="online" overlap="circular" anchorOrigin={{ vertical: "bottom", horizontal: "right" }}>
+      <Avatar src="/people/deja.jpg" alt="Deja Brady" />
+    </Badge>
+  );
+}`,
   },
   {
     id: "options",
