@@ -4,7 +4,9 @@ Reference: Minimal UI kit "Walktour" page (one section: a dashboard tour of five
 progress line, a step count on the Next button, Skip / Back / Next, a dark last step and a
 "Done" button; content only). Upstream: react-joyride (v3, the version the reference runs; the
 owner's list uses the v2 names), as a behavior and API reference (ADR-0015, ADR-0039). Created
-with `/component`.
+with `/component`; updated with `/component` (2026-11-10, Phase 4 row 4.17: `before` / `after`
+hooks, `targetWaitTimeout`, `beforeTimeout`, `beaconTrigger`, `closeButtonAction`, `scrollTarget`,
+`spotlightTarget`, `isFixed`, `disableFocusTrap`, `beaconPlacement`, `scrollDuration`).
 Reference URL: https://minimals.cc/components/extra/walktour
 HTML source: written by us (react-joyride is React only)
 
@@ -67,6 +69,12 @@ Root: `data-ok-walktour`. Unknown values fall back to the default.
 | `spotlightPadding` | `data-ok-spotlight-padding="…"` | number | number | `10` | Space between the target and the edge of the spotlight (px). |
 | `spotlightRadius` | `data-ok-spotlight-radius="…"` | number | number | `16` | Corner radius of the spotlight (px). |
 | `scrollOffset` | `data-ok-scroll-offset="…"` | number | number | `20` | Space kept above a target scrolled into view (px). |
+| `scrollDuration` | `data-ok-scroll-duration="…"` | number | number | `300` | How long scrolling to a target takes (ms); `0` jumps. Instant with reduced motion. |
+| `beaconTrigger` | `data-ok-beacon-trigger="…"` | style | `click` `hover` | — | What opens a step from its beacon: `click`, or `hover` (a mouse over it; keys and taps still select it). |
+| `closeButtonAction` | `data-ok-close-button-action="…"` | style | `close` `skip` | — | What the close button (the X) does: `close` (the next step's beacon) or `skip` (ends the tour). |
+| `disableFocusTrap` | `data-ok-disable-focus-trap` | flag | boolean | off | Tab can leave the step: it is not modal, and the page stays reachable by keyboard. |
+| `targetWaitTimeout` | `data-ok-target-wait-timeout="…"` | number | number | `1000` | How long a step waits for its target to appear before it is skipped (ms); `0` skips at once. |
+| `beforeTimeout` | `data-ok-before-timeout="…"` | number | number | `5000` | How long the tour waits for a step's `before` hook (HTML: `waitUntil()`) before it goes on (ms); `0` waits without a limit. |
 | `run` | `data-ok-run` | state | — | — | Runs the tour (`run`; HTML: the attribute, `start()` / `stop()`). |
 | `stepIndex` | `data-ok-step-index` · event `ok:walktour:change` | state | — | — | The current step (`stepIndex` / `onStepChange`; HTML: the first step, `go()`). |
 <!-- /options:walktour -->
@@ -80,6 +88,13 @@ Root: `data-ok-walktour-step`. Unknown values fall back to the default.
 | `placement` | `data-ok-placement="…"` | style | `top-start` `top` `top-end` `bottom-start` `bottom` `bottom-end` `left-start` `left` `left-end` `right-start` `right` `right-end` `auto` `center` | `bottom` | Side of the target and alignment, `auto` (the side with the most room) or `center` (the middle of the screen, no target needed). |
 | `spotlightPadding` | `data-ok-spotlight-padding="…"` | number | number | — | This step's spotlight padding (px); default: the tour's. |
 | `width` | `data-ok-width="…"` | number | number | — | Tooltip width (px). Default 360px. |
+| `beaconPlacement` | `data-ok-beacon-placement="…"` | style | `top-start` `top` `top-end` `bottom-start` `bottom` `bottom-end` `left-start` `left` `left-end` `right-start` `right` `right-end` | — | Side and alignment of the beacon on the target; default: the step's placement. |
+| `isFixed` | `data-ok-is-fixed` | flag | boolean | off | The target doesn't move when the page scrolls (it is found on its own for fixed elements): the tour doesn't scroll to it. |
+| `beaconTrigger` | `data-ok-beacon-trigger="…"` | style | `click` `hover` | — | This step's beacon trigger; default: the tour's. |
+| `closeButtonAction` | `data-ok-close-button-action="…"` | style | `close` `skip` | — | This step's close button action; default: the tour's. |
+| `scrollDuration` | `data-ok-scroll-duration="…"` | number | number | — | This step's scroll duration (ms); default: the tour's. |
+| `targetWaitTimeout` | `data-ok-target-wait-timeout="…"` | number | number | — | This step's target wait (ms); default: the tour's. |
+| `beforeTimeout` | `data-ok-before-timeout="…"` | number | number | — | This step's `before` hook limit (ms); default: the tour's. |
 <!-- /options:walktour-step -->
 
 - **Step overrides:** every boolean option of the tour except `scrollToFirstStep` can be set on a
@@ -87,7 +102,18 @@ Root: `data-ok-walktour-step`. Unknown values fall back to the default.
   present = on, `"false"` = off, absent = the tour's.
 - **target:** React `string` (CSS selector) · element · ref · `() => element`; HTML
   `data-ok-target="<selector>"`. `"body"` or `placement="center"` centers the step. A target that
-  isn't in the page skips the step (`error:target-not-found`). Invalid selectors are no target.
+  isn't in the page is waited for (`targetWaitTimeout`, default 1000 ms, polled every 100 ms), then
+  the step is skipped (`error:target-not-found`). Invalid selectors are no target.
+- **scrollTarget / spotlightTarget:** same types (HTML `data-ok-scroll-target`,
+  `data-ok-spotlight-target`). The tour scrolls to `scrollTarget` (else `spotlightTarget`, else the
+  target) and cuts the spotlight around `spotlightTarget`; the tooltip and the beacon stay on the
+  target. Missing ones fall back to the target.
+- **before / after** (React, tour prop and step field; the step's replaces the tour's):
+  `before(data)` runs when a step is about to show, before its target is looked up; a returned
+  promise makes the tour wait (`waiting`, nothing shown) up to `beforeTimeout` (default 5000 ms,
+  `0` = no limit); a rejection or the time limit reports `error` and the tour goes on. `after(data)`
+  runs when a step ended (fire and forget, errors swallowed). HTML: `ok:walktour:beforestep` with
+  `detail.waitUntil(promise)`; `after` = the `step:after` event.
 - **content / title:** React nodes; HTML: the step's markup. **stepProps** (React): extra
   attributes of the step element (`data-ok-theme="dark"`).
 - **locale:** `back`, `close`, `last`, `next`, `open` (beacon), `skip`, `progress`
@@ -107,6 +133,11 @@ Core `walktourTransition` (react-joyride's rules):
   step: `finished`. `prev`: previous step (tooltip when continuous). `go(index)`.
 - `skip` → `skipped`; `stop` → `paused`; `open` (beacon) → tooltip; `reset` → `idle`, index 0.
 - Steps whose target is missing are passed over in the direction of travel.
+- Owners dispatch through core `createWalktourFlow` (React and HTML): it asks the owner first
+  (HTML `beforechange`), ends the showing step (`step:after`, then its `after`), runs the next
+  step's `before` (`step:before-hook`), waits for its target, then commits the state and reports
+  the remaining events. Without a hook or a missing target it settles synchronously. While waiting
+  the state carries `waiting: true` with the previous index; a later action cancels the wait.
 
 ## Behavior
 - Tooltip: the step opens as a Popover anchored to its target, `offset` = spotlight padding +
@@ -117,8 +148,18 @@ Core `walktourTransition` (react-joyride's rules):
   radius) drawn `evenodd`; recomputed on scroll, resize and target resize (rAF).
 - Scrolling: a target (with its tooltip) out of view scrolls into view in its scroll parent,
   `scrollOffset` px from the top (not for the first step without `scrollToFirstStep`; never with
-  `disableScrolling`); instant with reduced motion.
-- Beacon: a 36px button centered on the edge the placement faces (alignment = the placement's).
+  `disableScrolling`), eased over `scrollDuration` ms (default 300; 50 ms under 100 px, as
+  react-joyride; `0` or reduced motion: instant; frames of `scrollTo({ behavior: "instant" })`).
+  A `scrollTarget` / `spotlightTarget` scrolls on its own (no room kept for the tooltip). A target
+  in the page's flow that is `isFixed` or has a `position: fixed` ancestor isn't scrolled to.
+- Beacon: a 36px button centered on the edge the placement faces (alignment = the placement's);
+  `beaconPlacement` replaces the placement for the beacon only. `beaconTrigger: "hover"`: a mouse
+  entering the beacon (`pointerover`, `pointerType` mouse) opens the step; clicks, keys and taps
+  still do.
+- Close button: `closeButtonAction` `close` (default: the next step's beacon) or `skip` (ends the
+  tour, origin `close`). react-joyride's `replay` isn't offered (not in the backlog row).
+- `disableFocusTrap`: the step isn't modal (no `aria-modal`, no Tab wrap, no `inert` page), though
+  the overlay still blocks presses: a modal dialog must keep Tab inside.
 - Decorations per step: Back hidden on the first step or with `hideBackButton`; Skip shown with
   `showSkipButton` except on the last step; close hidden with `hideCloseButton`; progress shown
   with `showProgress` except on the last step; `--_ok-walktour-width` from `width`.
@@ -133,8 +174,8 @@ Core `walktourTransition` (react-joyride's rules):
 
 ## Accessibility
 - Each step is `role="dialog"` named by its title (or "Step 1 of 5") and described by its content;
-  `aria-modal="true"` while the overlay blocks the page (not with `spotlightClicks` or
-  `disableOverlay`), then Tab stays inside and the page outside the tour is `inert` (core
+  `aria-modal="true"` while the overlay blocks the page (not with `spotlightClicks`,
+  `disableOverlay` or `disableFocusTrap`), then Tab stays inside and the page outside the tour is `inert` (core
   `inertOutside`; `aria-hidden` where `inert` is unsupported) until the step closes.
 - Focus: the primary button when a step opens (else the first control); the beacon when a step
   closes to it; back to where it was when the tour ends. Starting with a beacon doesn't move focus.
@@ -145,12 +186,15 @@ Core `walktourTransition` (react-joyride's rules):
 ## Events / API
 - React: `onStepChange(index, { action, origin, status, lifecycle })` (controlled: the request),
   `onStatusChange(status, { action, index })`, `onEvent(type, data)` with `type` in
-  `tour:start`, `step:before`, `beacon`, `tooltip`, `step:after`, `tour:end`, `tour:status`,
-  `error:target-not-found` and `data` = `{ type, action, origin, index, status, lifecycle, size }`
-  (react-joyride's `callback`, value first).
+  `tour:start`, `step:before-hook`, `step:before`, `beacon`, `tooltip`, `step:after`,
+  `step:after-hook`, `tour:end`, `tour:status`, `error:target-not-found`, `error` and `data` =
+  `{ type, action, origin, index, status, lifecycle, size, error? }` (react-joyride's `callback`,
+  value first). `step:after` of the step that showed comes before the next step's change
+  (`onStepChange`, `ok:walktour:change`), so an `after` runs before the next `before`.
 - HTML: `ok:walktour:beforechange` (cancelable; `{ index, previousIndex, action, origin }`),
   `ok:walktour:change` (the state + `previousIndex`), `ok:walktour:event` (the same data as
-  `onEvent`). Trigger `[data-ok-walktour-start="<id>"]` (+ `data-ok-index`) starts the tour over.
+  `onEvent`), `ok:walktour:beforestep` (the step's data + `waitUntil(promise)`: the `before` hook).
+  Trigger `[data-ok-walktour-start="<id>"]` (+ `data-ok-index`) starts the tour over.
 - API (`apiRef` / `runtime.get(root, "walktour")`): `state`, `start(index?)`, `stop()`,
   `reset(restart?)`, `next()`, `prev()`, `go(index)`, `close()`, `skip()`, `open()`.
 
@@ -164,7 +208,7 @@ Core `walktourTransition` (react-joyride's rules):
 | `getHelpers` / `useJoyride().controls` | `apiRef` |
 | `locale.nextWithProgress` | `next` + `progress` (`"({current}/{total})"`, the reference's look) |
 | `styles`, `floatingOptions`, `*Component` (tooltip, beacon, arrow, loader), `portalElement`, `nonce`, `debug`, `zIndex`, colors, arrow sizes | not applicable (CSS tokens, top layer, `data-ok-theme`; markup is the component in HTML) |
-| `before` / `after` hooks, `targetWaitTimeout`, `beaconTrigger: "hover"`, `closeButtonAction`, `scrollTarget`, `spotlightTarget`, `isFixed`, `disableFocusTrap`, `beaconPlacement`, `scrollDuration` | deferred (roadmap backlog) |
+| `before` / `after` hooks, `beforeTimeout`, `targetWaitTimeout`, `beaconTrigger` (`click` · `hover`), `closeButtonAction` (`close` · `skip`), `scrollTarget`, `spotlightTarget`, `isFixed`, `disableFocusTrap`, `beaconPlacement`, `scrollDuration` (v3) | kept (HTML `before`: `ok:walktour:beforestep` + `waitUntil`; `after`: the `step:after` event) |
 
 ## Upstream API mapping
 
@@ -180,14 +224,16 @@ status per row.
 | Options `buttons` (`back`, `close`, `primary`, `skip`) | `hideBackButton`, `hideCloseButton`, `showSkipButton` | renamed | v2 flags |
 | Options `showProgress`, `spotlightPadding`, `spotlightRadius`, `scrollOffset`, `width` | same | kept | reference defaults (radius 16, width 360) |
 | Options `skipBeacon`, `hideOverlay`, `skipScroll`, `blockTargetInteraction` | `disableBeacon`, `disableOverlay`, `disableScrolling`, `spotlightClicks` | renamed | v2 names (inverse for `spotlightClicks`) |
-| Options `dismissKeyAction`, `overlayClickAction` (`close` · `next` · `false`) | `disableCloseOnEsc`, `disableOverlayClose` | renamed | `next` action deferred with `closeButtonAction` (4.17) |
-| Options `closeButtonAction`, `beaconTrigger`, `disableFocusTrap`, `scrollDuration`, `targetWaitTimeout`, `before` / `after` | — | deferred (4.17) | |
-| Options `beforeTimeout`, `loaderDelay`, `loaderComponent` | — | deferred (4.17) | with the `before` hook |
+| Options `dismissKeyAction`, `overlayClickAction` (`close` · `next` · `replay` · `false`) | `disableCloseOnEsc`, `disableOverlayClose` | renamed | the `next` and `replay` actions are deferred |
+| Options `closeButtonAction` (`close` · `skip`), `beaconTrigger`, `disableFocusTrap`, `scrollDuration`, `targetWaitTimeout`, `beforeTimeout` | same (`data-ok-close-button-action`, `-beacon-trigger`, `-disable-focus-trap`, `-scroll-duration`, `-target-wait-timeout`, `-before-timeout`) | kept | tour and step; `closeButtonAction: "replay"` deferred |
+| Options `before` / `after` | same (React, tour and step) · HTML `ok:walktour:beforestep` (`waitUntil`) / the `step:after` event | kept | events `step:before-hook`, `step:after-hook`, `error` |
+| Options `loaderDelay`, `loaderComponent` | — | deferred | nothing shows while the tour waits |
+| Event data `controlled`, `scroll`, `scrolling`, `step`; events `scroll:start` / `scroll:end` | `waiting` on the state | deferred | |
 | Options `offset` (tooltip distance from the target) | fixed | deferred | |
 | Options `backgroundColor`, `primaryColor`, `textColor`, `overlayColor`, `arrowColor`, `arrowBase`, `arrowSize`, `arrowSpacing`, `beaconSize`, `zIndex` | — | not applicable | tokens, top layer |
 | Step `target`, `content`, `title`, `placement` (`auto`, `center`) | same | kept | |
 | Step `id`, `data` | — | deferred | step identity and custom data in events |
-| Step `isFixed`, `scrollTarget`, `spotlightTarget`, `beaconPlacement` | — | deferred (4.17) | |
+| Step `isFixed`, `scrollTarget`, `spotlightTarget`, `beaconPlacement` | same · HTML `data-ok-is-fixed`, `-scroll-target`, `-spotlight-target` (selectors), `-beacon-placement` | kept | fixed targets are also found on their own |
 | Step option overrides | every boolean option on a step | kept | |
 | `styles`, `floatingOptions`, `tooltipComponent`, `beaconComponent`, `arrowComponent`, `portalElement`, `nonce`, `debug` | — | not applicable | CSS tokens, `data-ok-theme`; HTML markup is the component |
 

@@ -73,6 +73,29 @@ function Controlled({
   );
 }
 
+/** A target that mounts once "Show" is pressed. */
+function Late() {
+  const [shown, setShown] = useState(false);
+  return (
+    <>
+      <button type="button" onClick={() => setShown(true)}>
+        Show
+      </button>
+      {shown && <div id="late">Late</div>}
+      <Page
+        run
+        continuous
+        disableBeacon
+        targetWaitTimeout={2000}
+        steps={[
+          { target: "#first", title: "First", content: "One" },
+          { target: "#late", title: "Late", content: "Two" },
+        ]}
+      />
+    </>
+  );
+}
+
 function Paused() {
   const [run, setRun] = useState(false);
   const [index, setIndex] = useState(0);
@@ -316,6 +339,7 @@ describe("Walktour", () => {
         run
         continuous
         disableBeacon
+        targetWaitTimeout={0}
         onEvent={onEvent}
         steps={[
           { target: "#missing", title: "Missing", content: "Gone" },
@@ -331,6 +355,138 @@ describe("Walktour", () => {
         .filter(([type]) => type === "error:target-not-found")
         .map(([, d]) => d.index),
     ).toEqual([0, 1, 2]);
+  });
+
+  it("waits for before hooks (step first, else the tour's) and runs after hooks", async () => {
+    const order: string[] = [];
+    let resolve = () => {};
+    const tourBefore = vi.fn(() => {
+      order.push("tour before");
+    });
+    const after = vi.fn(() => order.push("after"));
+    const onEvent = vi.fn((type: string) => order.push(type));
+    render(
+      <Page
+        run
+        continuous
+        disableBeacon
+        before={tourBefore}
+        after={after}
+        onEvent={onEvent}
+        steps={[
+          { target: "#first", title: "First", content: "One" },
+          {
+            target: "#third",
+            title: "Third",
+            content: "Three",
+            before: () => {
+              order.push("step before");
+              return new Promise<void>((done) => (resolve = done));
+            },
+          },
+        ]}
+      />,
+    );
+    expect(openTitle()).toBe("First");
+    expect(tourBefore).toHaveBeenCalledWith(expect.objectContaining({ index: 0 }));
+    order.length = 0;
+    press(button("primary"));
+    expect(open()).toBeNull();
+    expect(order).toEqual([
+      "step:after",
+      "after",
+      "step:after-hook",
+      "step before",
+      "step:before-hook",
+    ]);
+    await act(async () => resolve());
+    expect(openTitle()).toBe("Third");
+    expect(order.slice(5)).toEqual(["step:before", "tooltip"]);
+  });
+
+  it("waits for a target that mounts late (targetWaitTimeout)", async () => {
+    render(<Late />);
+    press(button("primary"));
+    expect(open()).toBeNull();
+    const shown = new Promise<void>((done) => {
+      const observer = new MutationObserver(() => {
+        if (openTitle() === "Late") {
+          observer.disconnect();
+          done();
+        }
+      });
+      observer.observe(document.body, { attributes: true, subtree: true });
+    });
+    press(screen.getByRole("button", { name: "Show", hidden: true }));
+    await shown;
+    expect(openTitle()).toBe("Late");
+  });
+
+  it("writes the new options and resolves scroll and spotlight targets", () => {
+    const spot = createRef<HTMLDivElement>();
+    const onStatusChange = vi.fn();
+    const page = () => {
+      return (
+        <>
+          <div
+            ref={spot}
+            id="spot"
+            style={{ position: "fixed", left: 300, top: 40, width: 20, height: 20 }}
+          />
+          <Page
+            run
+            disableBeacon
+            onStatusChange={onStatusChange}
+            beaconTrigger="hover"
+            closeButtonAction="skip"
+            disableFocusTrap
+            scrollDuration={0}
+            targetWaitTimeout={0}
+            beforeTimeout={100}
+            spotlightPadding={0}
+            spotlightRadius={0}
+            steps={[
+              {
+                target: "#first",
+                title: "First",
+                content: "One",
+                spotlightTarget: spot,
+                scrollTarget: "#third",
+                isFixed: true,
+                beaconPlacement: "left",
+                beaconTrigger: "click",
+                closeButtonAction: "close",
+                scrollDuration: 50,
+                targetWaitTimeout: 10,
+                beforeTimeout: 0,
+                disableFocusTrap: false,
+              },
+            ]}
+          />
+        </>
+      );
+    };
+    render(page());
+    const root = document.querySelector("[data-ok-walktour]") as HTMLElement;
+    expect(root.getAttribute("data-ok-beacon-trigger")).toBe("hover");
+    expect(root.getAttribute("data-ok-close-button-action")).toBe("skip");
+    expect(root.hasAttribute("data-ok-disable-focus-trap")).toBe(true);
+    expect(root.getAttribute("data-ok-scroll-duration")).toBe("0");
+    expect(root.getAttribute("data-ok-target-wait-timeout")).toBe("0");
+    expect(root.getAttribute("data-ok-before-timeout")).toBe("100");
+    const step = open() as HTMLElement;
+    expect(step.getAttribute("data-ok-scroll-target")).toBe("#third");
+    expect(step.hasAttribute("data-ok-spotlight-target")).toBe(false);
+    expect(step.hasAttribute("data-ok-is-fixed")).toBe(true);
+    expect(step.getAttribute("data-ok-beacon-placement")).toBe("left");
+    expect(step.getAttribute("data-ok-disable-focus-trap")).toBe("false");
+    // The step turns the focus trap back on: modal.
+    expect(step.getAttribute("aria-modal")).toBe("true");
+    const hole = document.querySelector("[data-ok-walktour-hole]") as SVGPathElement;
+    expect(hole.getAttribute("d")?.startsWith("M300 40H320")).toBe(true);
+    // The step's own close button action: close (past the last step: finished, not skipped).
+    press(button("close"));
+    expect(onStatusChange).toHaveBeenLastCalledWith("finished", expect.anything());
   });
 
   it("gets ids of its own without an id", () => {

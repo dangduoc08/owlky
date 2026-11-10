@@ -105,7 +105,8 @@ describe("walktour runtime", () => {
     events.length = 0;
     action("primary").click();
     expect(open()?.getAttribute("aria-label")).toBe("Step 2");
-    expect(events.slice(0, 2)).toEqual(["beforechange", "change"]);
+    // The step that showed ends before the next one is entered (its `after` before the next `before`).
+    expect(events.slice(0, 3)).toEqual(["beforechange", "event:step:after", "change"]);
     action("back").click();
     expect(instance.state.index).toBe(0);
     instance.next();
@@ -213,6 +214,67 @@ describe("walktour runtime", () => {
     expect(instance.state).toMatchObject({ index: 1, lifecycle: "beacon", origin: "escape" });
     (element.querySelector("[data-ok-walktour-beacon]") as HTMLElement).click();
     expect(open()?.getAttribute("aria-label")).toBe("Step 2");
+  });
+
+  it("waits for promises handed to waitUntil in ok:walktour:beforestep", async () => {
+    const { element, instance, events, open } = setup();
+    let resolve = () => {};
+    const seen: number[] = [];
+    element.addEventListener("ok:walktour:beforestep", (event) => {
+      const detail = (event as CustomEvent).detail;
+      seen.push(detail.index);
+      detail.waitUntil(new Promise<void>((done) => (resolve = done)));
+    });
+    events.length = 0;
+    instance.next();
+    expect(seen).toEqual([1]);
+    expect(open()).toBeNull();
+    expect(instance.state).toMatchObject({ index: 0, waiting: true });
+    expect(events).toEqual(["beforechange", "event:step:after", "event:step:before-hook"]);
+    resolve();
+    await settle();
+    expect(open()?.getAttribute("aria-label")).toBe("Step 2");
+    expect(instance.state.waiting).toBeUndefined();
+  });
+
+  it("waits for a target added later, up to data-ok-target-wait-timeout", async () => {
+    const { host, instance, open } = setup(
+      "data-ok-run data-ok-continuous data-ok-disable-beacon data-ok-target-wait-timeout='2000'",
+    );
+    host.querySelector("#b")?.remove();
+    instance.next();
+    expect(open()).toBeNull();
+    const shown = new Promise<void>((done) => {
+      const observer = new MutationObserver(() => {
+        if (open()) {
+          observer.disconnect();
+          done();
+        }
+      });
+      observer.observe(host, { attributes: true, subtree: true });
+    });
+    const b = document.createElement("div");
+    b.id = "b";
+    host.prepend(b);
+    await shown;
+    expect(open()?.getAttribute("aria-label")).toBe("Step 2");
+  });
+
+  it("follows the new options set on the root (close button action, focus trap)", async () => {
+    const { element, instance, open } = setup(
+      "data-ok-run data-ok-continuous data-ok-disable-beacon data-ok-close-button-action='skip'",
+    );
+    expect(open()?.getAttribute("aria-modal")).toBe("true");
+    element.setAttribute("data-ok-disable-focus-trap", "");
+    await settle();
+    expect(open()?.hasAttribute("aria-modal")).toBe(false);
+    const close = document.createElement("button");
+    close.type = "button";
+    close.setAttribute("data-ok-walktour-action", "close");
+    close.textContent = "Close";
+    open()?.append(close);
+    close.click();
+    expect(instance.state.status).toBe("skipped");
   });
 
   it("cleans up when destroyed", () => {

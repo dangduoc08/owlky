@@ -84,7 +84,14 @@ import {
   popoverAnchorReferences,
 } from "../popover/position.js";
 import { type ToastPosition, toastPositions } from "../toast/toast-store.js";
-import { type WalktourPlacement, walktourPlacements } from "../walktour/walktour-model.js";
+import {
+  type WalktourBeaconTrigger,
+  type WalktourCloseButtonAction,
+  type WalktourPlacement,
+  walktourBeaconTriggers,
+  walktourCloseButtonActions,
+  walktourPlacements,
+} from "../walktour/walktour-model.js";
 
 /*
  * Anatomy: each component's option schema (ADR-0015) and the `<name>Attributes(options)` helper
@@ -5382,6 +5389,42 @@ export const walktourOptions = defineOptions("walktour", "data-ok-walktour", {
     "Space kept above a target scrolled into view (px).",
     { min: 0 },
   ),
+  scrollDuration: number(
+    "data-ok-scroll-duration",
+    300,
+    "How long scrolling to a target takes (ms); `0` jumps. Instant with reduced motion.",
+    { min: 0 },
+  ),
+  beaconTrigger: style(
+    "data-ok-beacon-trigger",
+    walktourBeaconTriggers,
+    "click",
+    "What opens a step from its beacon: `click`, or `hover` (a mouse over it; keys and taps still select it).",
+    { optional: true },
+  ),
+  closeButtonAction: style(
+    "data-ok-close-button-action",
+    walktourCloseButtonActions,
+    "close",
+    "What the close button (the X) does: `close` (the next step's beacon) or `skip` (ends the tour).",
+    { optional: true },
+  ),
+  disableFocusTrap: flag(
+    "data-ok-disable-focus-trap",
+    "Tab can leave the step: it is not modal, and the page stays reachable by keyboard.",
+  ),
+  targetWaitTimeout: number(
+    "data-ok-target-wait-timeout",
+    1000,
+    "How long a step waits for its target to appear before it is skipped (ms); `0` skips at once.",
+    { min: 0 },
+  ),
+  beforeTimeout: number(
+    "data-ok-before-timeout",
+    5000,
+    "How long the tour waits for a step's `before` hook (HTML: `waitUntil()`) before it goes on (ms); `0` waits without a limit.",
+    { min: 0 },
+  ),
   run: state("data-ok-run", "Runs the tour (`run`; HTML: the attribute, `start()` / `stop()`)."),
   stepIndex: state(
     "data-ok-step-index",
@@ -5406,6 +5449,12 @@ export interface WalktourAnatomyOptions {
   spotlightPadding?: number | undefined;
   spotlightRadius?: number | undefined;
   scrollOffset?: number | undefined;
+  scrollDuration?: number | undefined;
+  beaconTrigger?: WalktourBeaconTrigger | undefined;
+  closeButtonAction?: WalktourCloseButtonAction | undefined;
+  disableFocusTrap?: boolean | undefined;
+  targetWaitTimeout?: number | undefined;
+  beforeTimeout?: number | undefined;
 }
 
 /** `data-ok-*` attributes of a walktour root. */
@@ -5426,6 +5475,49 @@ export const walktourStepOptions = defineOptions("walktour-step", "data-ok-walkt
     { min: 0 },
   ),
   width: number("data-ok-width", undefined, "Tooltip width (px). Default 360px.", { min: 0 }),
+  beaconPlacement: style(
+    "data-ok-beacon-placement",
+    placements,
+    "bottom",
+    "Side and alignment of the beacon on the target; default: the step's placement.",
+    { optional: true },
+  ),
+  isFixed: flag(
+    "data-ok-is-fixed",
+    "The target doesn't move when the page scrolls (it is found on its own for fixed elements): the tour doesn't scroll to it.",
+  ),
+  beaconTrigger: style(
+    "data-ok-beacon-trigger",
+    walktourBeaconTriggers,
+    "click",
+    "This step's beacon trigger; default: the tour's.",
+    { optional: true },
+  ),
+  closeButtonAction: style(
+    "data-ok-close-button-action",
+    walktourCloseButtonActions,
+    "close",
+    "This step's close button action; default: the tour's.",
+    { optional: true },
+  ),
+  scrollDuration: number(
+    "data-ok-scroll-duration",
+    undefined,
+    "This step's scroll duration (ms); default: the tour's.",
+    { min: 0 },
+  ),
+  targetWaitTimeout: number(
+    "data-ok-target-wait-timeout",
+    undefined,
+    "This step's target wait (ms); default: the tour's.",
+    { min: 0 },
+  ),
+  beforeTimeout: number(
+    "data-ok-before-timeout",
+    undefined,
+    "This step's `before` hook limit (ms); default: the tour's.",
+    { min: 0 },
+  ),
 });
 
 /** Step overrides of the tour's boolean options (`false` turns a tour option off for the step). */
@@ -5441,6 +5533,7 @@ export const walktourStepOverrides = [
   "disableOverlayClose",
   "spotlightClicks",
   "disableScrolling",
+  "disableFocusTrap",
 ] as const;
 export type WalktourStepOverride = (typeof walktourStepOverrides)[number];
 
@@ -5449,8 +5542,19 @@ export interface WalktourStepAnatomyOptions
   placement?: WalktourPlacement | undefined;
   spotlightPadding?: number | undefined;
   width?: number | undefined;
+  beaconPlacement?: Placement | undefined;
+  isFixed?: boolean | undefined;
+  beaconTrigger?: WalktourBeaconTrigger | undefined;
+  closeButtonAction?: WalktourCloseButtonAction | undefined;
+  scrollDuration?: number | undefined;
+  targetWaitTimeout?: number | undefined;
+  beforeTimeout?: number | undefined;
   /** A CSS selector (`data-ok-target`); elements and refs are resolved by the component. */
   target?: string | undefined;
+  /** A CSS selector of the element to scroll to instead (`data-ok-scroll-target`). */
+  scrollTarget?: string | undefined;
+  /** A CSS selector of the element to put in the spotlight instead (`data-ok-spotlight-target`). */
+  spotlightTarget?: string | undefined;
 }
 
 /**
@@ -5465,6 +5569,10 @@ export function walktourStepAttributes(options: WalktourStepAnatomyOptions = {})
   }
   if (typeof options.target === "string" && options.target)
     attributes["data-ok-target"] = options.target;
+  if (typeof options.scrollTarget === "string" && options.scrollTarget)
+    attributes["data-ok-scroll-target"] = options.scrollTarget;
+  if (typeof options.spotlightTarget === "string" && options.spotlightTarget)
+    attributes["data-ok-spotlight-target"] = options.spotlightTarget;
   return attributes;
 }
 

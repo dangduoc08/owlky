@@ -6,6 +6,58 @@ import { useRef } from "react";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
 
+const CLOSE_ICON =
+  '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><path fill="currentColor" d="m12 13.41 5.66 5.66a1 1 0 0 0 1.41-1.41L13.41 12l5.66-5.66a1 1 0 0 0-1.41-1.41L12 10.59 6.34 4.93a1 1 0 0 0-1.41 1.41L10.59 12l-5.66 5.66a1 1 0 1 0 1.41 1.41z"></path></svg>';
+
+/** The markup of one step, as React renders it (`attributes`: its options and target). */
+function htmlStep(
+  number: number,
+  total: number,
+  attributes: string,
+  title: string,
+  content: string,
+  continuous = false,
+): string {
+  const id = `tour-${number}`;
+  const last = number === total;
+  const label = continuous ? "Next" : "Close";
+  return `<div popover="manual" data-ok-popover data-ok-arrow data-ok-walktour-step data-ok-placement="bottom"
+    ${attributes} role="dialog" aria-labelledby="${id}-title" aria-describedby="${id}-content">
+    <span data-ok-popover-arrow aria-hidden="true"></span>
+    <div data-ok-walktour-header>
+      <h2 data-ok-walktour-title id="${id}-title">${title}</h2>
+      <button type="button" data-ok-icon-button data-ok-color="default" data-ok-size="sm" data-ok-walktour-action="close" aria-label="Close">${CLOSE_ICON}</button>
+    </div>
+    <div data-ok-walktour-content id="${id}-content">${content}</div>
+    <span role="progressbar" data-ok-linear-progress data-ok-variant="determinate" data-ok-color="primary" aria-valuenow="${Math.round((number / total) * 100)}" aria-valuemin="0" aria-valuemax="100" aria-hidden="true">
+      <span data-ok-linear-progress-bar="1"></span>
+    </span>
+    <div data-ok-walktour-footer>
+      <button type="button" data-ok-button data-ok-variant="text" data-ok-color="inherit" data-ok-size="md" data-ok-walktour-action="skip"><span data-ok-button-label>Skip</span></button>
+      <button type="button" data-ok-button data-ok-variant="outlined" data-ok-color="inherit" data-ok-size="md" data-ok-walktour-action="back"><span data-ok-button-label>Back</span></button>
+      <button type="button" data-ok-button data-ok-variant="contained" data-ok-color="${last ? "primary" : "inherit"}" data-ok-size="md" data-ok-walktour-action="primary"><span data-ok-button-label>${last ? "Last" : `${label}<span data-ok-walktour-progress> (${number}/${total})</span>`}</span></button>
+    </div>
+  </div>`;
+}
+
+/** A whole tour: the overlay, the beacon, `steps` and the live region. */
+const htmlTour = (
+  rootAttributes: string,
+  steps: string[],
+) => `<div id="tour" data-ok-walktour ${rootAttributes}>
+  <div data-ok-backdrop data-ok-invisible data-ok-walktour-overlay popover="manual" aria-hidden="true">
+    <svg data-ok-walktour-spotlight aria-hidden="true" focusable="false">
+      <path data-ok-walktour-mask fill-rule="evenodd"></path>
+      <path data-ok-walktour-hole></path>
+    </svg>
+  </div>
+  <button type="button" data-ok-walktour-beacon aria-label="Open the dialog" aria-haspopup="dialog" hidden>
+    <span data-ok-walktour-beacon-inner></span>
+  </button>
+  ${steps.join("\n  ")}
+  <span data-ok-walktour-live aria-live="polite" aria-atomic="true" data-ok-format="Step {current} of {total}"></span>
+</div>`;
+
 export const walktourSections: GuideSection[] = [
   {
     id: "overview",
@@ -307,6 +359,154 @@ export function WalktourOverlay() {
 }`,
   },
   {
+    id: "hooks",
+    title: "Run code before and after a step",
+    body: "A step can point at an element that isn't on the page yet, such as an item in a closed menu. `before` runs when the step is about to show, before the tour looks for its target. Return a promise, and the tour waits for it before it shows the step, for up to `beforeTimeout` milliseconds (5000 by default, `0` for no limit). If the promise rejects or takes too long, the tour reports an `error` event and goes on. `after` runs once the step has ended, for example to close the menu again. The tour doesn't wait for it. Set both on the tour for every step, or on a step for that step only. In HTML, listen for `ok:walktour:beforestep` and pass a promise to `event.detail.waitUntil()`. For `after`, listen for the `step:after` event. The step that ends always reports `step:after` before the next step's `before` runs.",
+    html: `<script type="module">
+  const root = document.getElementById("tour");
+  const menu = document.getElementById("menu");
+  root.addEventListener("ok:walktour:beforestep", (event) => {
+    // Step 2 points at an item in the menu: open the menu and wait for its animation.
+    if (event.detail.index === 1) {
+      menu.hidden = false;
+      event.detail.waitUntil(new Promise((resolve) => setTimeout(resolve, 300)));
+    }
+  });
+  root.addEventListener("ok:walktour:event", (event) => {
+    if (event.detail.type === "step:after" && event.detail.index === 1) menu.hidden = true;
+  });
+</script>`,
+    react: `import { Button, Walktour, type WalktourStep } from "@owlky/react";
+import { useState } from "react";
+
+export function MenuTour() {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const steps: WalktourStep[] = [
+    { target: "#menu-button", title: "Menu", content: "Your account lives here." },
+    {
+      target: "#settings-item",
+      title: "Settings",
+      content: "Change your preferences.",
+      // Open the menu and wait for its animation before the step looks for its target.
+      before: () => {
+        setMenuOpen(true);
+        return new Promise((resolve) => setTimeout(resolve, 300));
+      },
+      after: () => setMenuOpen(false),
+    },
+  ];
+  return (
+    <>
+      <Button id="menu-button" variant="outlined" onClick={() => setMenuOpen(!menuOpen)}>
+        Account
+      </Button>
+      {menuOpen && (
+        <ul>
+          <li id="settings-item">Settings</li>
+        </ul>
+      )}
+      <Walktour steps={steps} run continuous disableBeacon />
+    </>
+  );
+}`,
+  },
+  {
+    id: "wait",
+    title: "Wait for targets",
+    body: "A step whose target isn't on the page yet waits for it for `targetWaitTimeout` milliseconds, 1000 by default. The tour looks for the target every 100 milliseconds and shows the step as soon as it appears, such as after a route change or a lazy load. If the target doesn't come, the step is skipped with an `error:target-not-found` event. Set `targetWaitTimeout` to `0` to skip such steps at once. Nothing shows while the tour waits, and the tour's `state.waiting` is `true`.",
+    html: `<!-- Skip missing targets at once, but give the chart up to 3 seconds. -->
+${htmlTour('data-ok-run data-ok-continuous data-ok-target-wait-timeout="0"', [
+  htmlStep(1, 2, 'data-ok-target="#inbox"', "Your inbox", "New messages arrive here.", true),
+  htmlStep(
+    2,
+    2,
+    'data-ok-target="#chart" data-ok-target-wait-timeout="3000"',
+    "Sales",
+    "Your sales, week by week.",
+    true,
+  ),
+])}`,
+    react: `import { Walktour, type WalktourStep } from "@owlky/react";
+
+const steps: WalktourStep[] = [
+  { target: "#inbox", title: "Your inbox", content: "New messages arrive here." },
+  // The chart loads later: give it up to 3 seconds.
+  { target: "#chart", title: "Sales", content: "Your sales, week by week.", targetWaitTimeout: 3000 },
+];
+
+export function WaitingTour() {
+  return <Walktour steps={steps} run continuous targetWaitTimeout={0} />;
+}`,
+  },
+  {
+    id: "scroll-and-spotlight",
+    title: "Scroll to and highlight other elements",
+    body: "By default, a step scrolls its target into view and puts it in the spotlight. `scrollTarget` scrolls to another element instead, such as the section a small button sits in. `spotlightTarget` highlights another element instead, such as the whole card around a button. The tooltip and the beacon stay on the target. Scrolling takes `scrollDuration` milliseconds, 300 by default, and is instant at `0` or when the system asks for reduced motion. A target that doesn't move when the page scrolls, such as a fixed header, isn't scrolled to. The tour finds fixed elements on its own, and `isFixed` marks a target that it can't detect. In HTML, `data-ok-scroll-target` and `data-ok-spotlight-target` take CSS selectors.",
+    html: htmlTour('data-ok-run data-ok-continuous data-ok-scroll-duration="600"', [
+      htmlStep(
+        1,
+        2,
+        'data-ok-target="#compose" data-ok-spotlight-target="#toolbar" data-ok-scroll-target="#mail"',
+        "Write",
+        "Start a new message from the toolbar.",
+        true,
+      ),
+      htmlStep(
+        2,
+        2,
+        'data-ok-target="#header" data-ok-is-fixed',
+        "Search",
+        "Find any message.",
+        true,
+      ),
+    ]),
+    react: `import { Walktour, type WalktourStep } from "@owlky/react";
+
+const steps: WalktourStep[] = [
+  {
+    target: "#compose",
+    // Highlight the whole toolbar, and scroll to the section it sits in.
+    spotlightTarget: "#toolbar",
+    scrollTarget: "#mail",
+    title: "Write",
+    content: "Start a new message from the toolbar.",
+  },
+  { target: "#header", isFixed: true, title: "Search", content: "Find any message." },
+];
+
+export function ToolbarTour() {
+  return <Walktour steps={steps} run continuous scrollDuration={600} />;
+}`,
+  },
+  {
+    id: "beacon-and-close",
+    title: "Change the beacon and the close button",
+    body: "`beaconTrigger` sets what opens a step from its beacon. `click` is the default. With `hover`, the step opens as soon as a mouse moves over the beacon, while keyboard and touch users still select it. `beaconPlacement` puts the beacon on another side of the target than the tooltip, such as `left` for a tooltip at the `bottom`. `closeButtonAction` sets what the close button does: `close` closes the step and shows the next step's beacon, and `skip` ends the tour, like **Skip**. All three can be set on the tour or on one step.",
+    html: htmlTour(
+      'data-ok-run data-ok-beacon-trigger="hover" data-ok-close-button-action="skip"',
+      [
+        htmlStep(
+          1,
+          2,
+          'data-ok-target="#inbox" data-ok-beacon-placement="left"',
+          "Your inbox",
+          "New messages arrive here.",
+        ),
+        htmlStep(2, 2, 'data-ok-target="#compose"', "Write", "Start a new message."),
+      ],
+    ),
+    react: `import { Walktour, type WalktourStep } from "@owlky/react";
+
+const steps: WalktourStep[] = [
+  { target: "#inbox", beaconPlacement: "left", title: "Your inbox", content: "New messages arrive here." },
+  { target: "#compose", title: "Write", content: "Start a new message." },
+];
+
+export function HoverTour() {
+  return <Walktour steps={steps} run beaconTrigger="hover" closeButtonAction="skip" />;
+}`,
+  },
+  {
     id: "options",
     title: "Options",
     body: "Options of the tour. In React, pass them as props. In HTML, write the attributes on the `data-ok-walktour` element. Every boolean option can also go on a step.",
@@ -324,7 +524,7 @@ export function WalktourOverlay() {
   {
     id: "events",
     title: "Events and methods",
-    body: "React reports changes with `onStepChange(index, details)`, `onStatusChange(status, details)` and `onEvent(type, data)`. `onEvent` receives every event of the tour in order: `tour:start`, `step:before`, `beacon`, `tooltip`, `step:after`, `tour:end`, `tour:status` and `error:target-not-found`. Each comes with the action, the control that asked for it, the step, the status and the number of steps. In HTML, listen for `ok:walktour:change` (the new state), `ok:walktour:event` (the same events as `onEvent`) and `ok:walktour:beforechange`, which you can cancel to keep the current step. A step whose target isn't in the page is skipped.",
+    body: "React reports changes with `onStepChange(index, details)`, `onStatusChange(status, details)` and `onEvent(type, data)`. `onEvent` receives every event of the tour in order: `tour:start`, `step:before-hook`, `step:before`, `beacon`, `tooltip`, `step:after`, `step:after-hook`, `tour:end`, `tour:status`, `error:target-not-found` and `error`. Each comes with the action, the control that asked for it, the step, the status and the number of steps, and `error` events also carry the `error`. In HTML, listen for `ok:walktour:change` (the new state), `ok:walktour:event` (the same events as `onEvent`), `ok:walktour:beforestep` (a step is about to show) and `ok:walktour:beforechange`, which you can cancel to keep the current step. A step whose target doesn't appear in time is skipped.",
     html: `<script type="module">
   const root = document.getElementById("tour");
   root.addEventListener("ok:walktour:event", (event) => {
@@ -359,6 +559,8 @@ export function WalktourEvents() {
     id: "accessibility",
     title: "Accessibility",
     body: `- Each step is a dialog named by its title (or "Step 2 of 5" without one) and described by its content. While the overlay blocks the page, the step is modal: Tab stays inside it and the rest of the page is inert.
+- \`disableFocusTrap\` lets Tab leave the step. The step is then no longer modal, so screen readers can reach the page too. Use it when the step asks people to use something outside it.
+- \`beaconTrigger="hover"\` only adds a way to open a step: keyboard and touch users still select the beacon.
 - Focus moves to the step's primary button when a step opens, to the beacon when a step closes to one, and back to where it was when the tour ends.
 - A polite live region announces "Step 2 of 5" when a step opens.
 - The beacon is a button named "Open the dialog". Change the text with \`locale.open\`.
@@ -427,6 +629,26 @@ const PREVIEWS = {
           html: "data-ok-target",
           type: "selector | element | ref | () => element",
           description: 'The element the step points at; `"body"` centers the step.',
+        },
+        {
+          react: "step.scrollTarget / step.spotlightTarget",
+          html: "data-ok-scroll-target / data-ok-spotlight-target",
+          type: "selector | element | ref | () => element",
+          description:
+            "The element to scroll to, and the one to put in the spotlight, instead of the target.",
+        },
+        {
+          react: "before / step.before",
+          html: "ok:walktour:beforestep, event.detail.waitUntil(promise)",
+          type: "(data) => Promise | void",
+          description:
+            "Runs before a step shows; the tour waits for a returned promise. A step's replaces the tour's.",
+        },
+        {
+          react: "after / step.after",
+          html: "the step:after event",
+          type: "(data) => void",
+          description: "Runs after a step ended. Not awaited.",
         },
         {
           react: "step.stepProps",

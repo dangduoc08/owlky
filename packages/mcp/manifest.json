@@ -78,8 +78,11 @@
   "data-ok-bar-label",
   "data-ok-bar-margin",
   "data-ok-baseline",
+  "data-ok-beacon-placement",
+  "data-ok-beacon-trigger",
   "data-ok-bearing",
   "data-ok-before-id",
+  "data-ok-before-timeout",
   "data-ok-between",
   "data-ok-blur-on-select",
   "data-ok-boundary-count",
@@ -243,6 +246,7 @@
   "data-ok-clear-on-escape",
   "data-ok-clearable",
   "data-ok-close-button",
+  "data-ok-close-button-action",
   "data-ok-close-on-backdrop-click",
   "data-ok-close-on-click",
   "data-ok-close-on-escape",
@@ -424,6 +428,7 @@
   "data-ok-disable-elevation",
   "data-ok-disable-escape-key-down",
   "data-ok-disable-export",
+  "data-ok-disable-focus-trap",
   "data-ok-disable-fullscreen",
   "data-ok-disable-future",
   "data-ok-disable-gutters",
@@ -669,6 +674,7 @@
   "data-ok-interactive-layer-ids",
   "data-ok-invert",
   "data-ok-invisible",
+  "data-ok-is-fixed",
   "data-ok-item-children-indentation",
   "data-ok-item-id",
   "data-ok-item-index",
@@ -1015,8 +1021,10 @@
   "data-ok-scheme",
   "data-ok-scroll",
   "data-ok-scroll-buttons",
+  "data-ok-scroll-duration",
   "data-ok-scroll-end-threshold",
   "data-ok-scroll-offset",
+  "data-ok-scroll-target",
   "data-ok-scroll-to-first-step",
   "data-ok-scroll-to-zoom",
   "data-ok-scroll-zoom",
@@ -1101,6 +1109,7 @@
   "data-ok-spotlight-clicks",
   "data-ok-spotlight-padding",
   "data-ok-spotlight-radius",
+  "data-ok-spotlight-target",
   "data-ok-square",
   "data-ok-stacked",
   "data-ok-stagger",
@@ -1167,6 +1176,7 @@
   "data-ok-tabs-scroll-button",
   "data-ok-tabs-scroller",
   "data-ok-target",
+  "data-ok-target-wait-timeout",
   "data-ok-task-drag",
   "data-ok-task-id",
   "data-ok-task-resize",
@@ -62710,6 +62720,12 @@
         },
         {
          "cancelable": false,
+         "description": "A step is about to show (react-joyride's `before` hook). Call `waitUntil(promise)` from the listener to make the tour wait for it (up to `data-ok-before-timeout`).",
+         "detail": "WalktourEventData & { waitUntil(promise: PromiseLike<unknown>): void; }",
+         "name": "ok:walktour:beforestep"
+        },
+        {
+         "cancelable": false,
          "description": "After the state changed: the new state plus `previousIndex`.",
          "detail": "WalktourState & { previousIndex: number; }",
          "name": "ok:walktour:change"
@@ -62881,6 +62897,60 @@
          "name": "scrollOffset"
         },
         {
+         "attr": "data-ok-scroll-duration",
+         "default": 300,
+         "description": "How long scrolling to a target takes (ms); `0` jumps. Instant with reduced motion.",
+         "kind": "number",
+         "min": 0,
+         "name": "scrollDuration"
+        },
+        {
+         "attr": "data-ok-beacon-trigger",
+         "default": "click",
+         "description": "What opens a step from its beacon: `click`, or `hover` (a mouse over it; keys and taps still select it).",
+         "kind": "style",
+         "name": "beaconTrigger",
+         "optional": true,
+         "values": [
+          "click",
+          "hover"
+         ]
+        },
+        {
+         "attr": "data-ok-close-button-action",
+         "default": "close",
+         "description": "What the close button (the X) does: `close` (the next step's beacon) or `skip` (ends the tour).",
+         "kind": "style",
+         "name": "closeButtonAction",
+         "optional": true,
+         "values": [
+          "close",
+          "skip"
+         ]
+        },
+        {
+         "attr": "data-ok-disable-focus-trap",
+         "description": "Tab can leave the step: it is not modal, and the page stays reachable by keyboard.",
+         "kind": "flag",
+         "name": "disableFocusTrap"
+        },
+        {
+         "attr": "data-ok-target-wait-timeout",
+         "default": 1000,
+         "description": "How long a step waits for its target to appear before it is skipped (ms); `0` skips at once.",
+         "kind": "number",
+         "min": 0,
+         "name": "targetWaitTimeout"
+        },
+        {
+         "attr": "data-ok-before-timeout",
+         "default": 5000,
+         "description": "How long the tour waits for a step's `before` hook (HTML: `waitUntil()`) before it goes on (ms); `0` waits without a limit.",
+         "kind": "number",
+         "min": 0,
+         "name": "beforeTimeout"
+        },
+        {
          "attr": "data-ok-run",
          "description": "Runs the tour (`run`; HTML: the attribute, `start()` / `stop()`).",
          "kind": "state",
@@ -62910,6 +62980,18 @@
          "description": "The progress text pattern, such as `Step {current} of {total}`.",
          "kind": "value",
          "name": "data-ok-format",
+         "value": "string"
+        },
+        {
+         "description": "On a step: a CSS selector of the element to scroll to instead of the target.",
+         "kind": "value",
+         "name": "data-ok-scroll-target",
+         "value": "string"
+        },
+        {
+         "description": "On a step: a CSS selector of the element to put in the spotlight instead of the target.",
+         "kind": "value",
+         "name": "data-ok-spotlight-target",
          "value": "string"
         },
         {
@@ -63056,9 +63138,37 @@
        "native": "HTMLDivElement",
        "props": [
         {
+         "description": "Runs after each step ended (react-joyride's `after`), for example to close that menu. Not awaited.",
+         "name": "after",
+         "type": "((data: WalktourEventData) => void)"
+        },
+        {
          "description": "Receives the tour's API: `start`, `stop`, `reset`, `next`, `prev`, `go`, `skip`…",
          "name": "apiRef",
          "type": "RefObject<WalktourApi | null>"
+        },
+        {
+         "default": "click",
+         "description": "What opens a step from its beacon: `click`, or `hover` (a mouse over it; keys and taps still select it).",
+         "name": "beaconTrigger",
+         "type": "\"click\" | \"hover\""
+        },
+        {
+         "description": "Runs before each step shows (react-joyride's `before`), for example to open a menu the target is in. The tour waits for a returned promise, up to `beforeTimeout`.",
+         "name": "before",
+         "type": "((data: WalktourEventData) => void | Promise<unknown>)"
+        },
+        {
+         "default": "5000",
+         "description": "How long the tour waits for a step's `before` hook (HTML: `waitUntil()`) before it goes on (ms); `0` waits without a limit.",
+         "name": "beforeTimeout",
+         "type": "number"
+        },
+        {
+         "default": "close",
+         "description": "What the close button (the X) does: `close` (the next step's beacon) or `skip` (ends the tour).",
+         "name": "closeButtonAction",
+         "type": "\"close\" | \"skip\""
         },
         {
          "description": "Next and Back move from tooltip to tooltip (otherwise the primary button closes the step).",
@@ -63073,6 +63183,11 @@
         {
          "description": "Escape doesn't close the step.",
          "name": "disableCloseOnEsc",
+         "type": "boolean"
+        },
+        {
+         "description": "Tab can leave the step: it is not modal, and the page stays reachable by keyboard.",
+         "name": "disableFocusTrap",
          "type": "boolean"
         },
         {
@@ -63132,6 +63247,12 @@
          "type": "boolean"
         },
         {
+         "default": "300",
+         "description": "How long scrolling to a target takes (ms); `0` jumps. Instant with reduced motion.",
+         "name": "scrollDuration",
+         "type": "number"
+        },
+        {
          "default": "20",
          "description": "Space kept above a target scrolled into view (px).",
          "name": "scrollOffset",
@@ -63179,6 +63300,12 @@
          "name": "steps",
          "required": true,
          "type": "readonly WalktourStep[]"
+        },
+        {
+         "default": "1000",
+         "description": "How long a step waits for its target to appear before it is skipped (ms); `0` skips at once.",
+         "name": "targetWaitTimeout",
+         "type": "number"
         }
        ]
       }
@@ -63223,6 +63350,79 @@
          "kind": "number",
          "min": 0,
          "name": "width"
+        },
+        {
+         "attr": "data-ok-beacon-placement",
+         "default": "bottom",
+         "description": "Side and alignment of the beacon on the target; default: the step's placement.",
+         "kind": "style",
+         "name": "beaconPlacement",
+         "optional": true,
+         "values": [
+          "top-start",
+          "top",
+          "top-end",
+          "bottom-start",
+          "bottom",
+          "bottom-end",
+          "left-start",
+          "left",
+          "left-end",
+          "right-start",
+          "right",
+          "right-end"
+         ]
+        },
+        {
+         "attr": "data-ok-is-fixed",
+         "description": "The target doesn't move when the page scrolls (it is found on its own for fixed elements): the tour doesn't scroll to it.",
+         "kind": "flag",
+         "name": "isFixed"
+        },
+        {
+         "attr": "data-ok-beacon-trigger",
+         "default": "click",
+         "description": "This step's beacon trigger; default: the tour's.",
+         "kind": "style",
+         "name": "beaconTrigger",
+         "optional": true,
+         "values": [
+          "click",
+          "hover"
+         ]
+        },
+        {
+         "attr": "data-ok-close-button-action",
+         "default": "close",
+         "description": "This step's close button action; default: the tour's.",
+         "kind": "style",
+         "name": "closeButtonAction",
+         "optional": true,
+         "values": [
+          "close",
+          "skip"
+         ]
+        },
+        {
+         "attr": "data-ok-scroll-duration",
+         "description": "This step's scroll duration (ms); default: the tour's.",
+         "kind": "number",
+         "min": 0,
+         "name": "scrollDuration"
+        },
+        {
+         "attr": "data-ok-target-wait-timeout",
+         "description": "This step's target wait (ms); default: the tour's.",
+         "kind": "number",
+         "min": 0,
+         "name": "targetWaitTimeout"
+        },
+        {
+         "attr": "data-ok-before-timeout",
+         "description": "This step's `before` hook limit (ms); default: the tour's.",
+         "kind": "number",
+         "min": 0,
+         "name": "beforeTimeout"
         }
        ]
       },
@@ -63236,7 +63436,7 @@
      },
      {
       "name": "WalktourEventType",
-      "type": "\"beacon\" | \"error:target-not-found\" | \"step:after\" | \"step:before\" | \"tooltip\" | \"tour:end\" | \"tour:start\" | \"tour:status\""
+      "type": "\"beacon\" | \"error\" | \"error:target-not-found\" | \"step:after\" | \"step:after-hook\" | \"step:before\" | \"step:before-hook\" | \"tooltip\" | \"tour:end\" | \"tour:start\" | \"tour:status\""
      },
      {
       "name": "WalktourStatus",
@@ -63380,6 +63580,60 @@
        "name": "scrollOffset"
       },
       {
+       "attr": "data-ok-scroll-duration",
+       "default": 300,
+       "description": "How long scrolling to a target takes (ms); `0` jumps. Instant with reduced motion.",
+       "kind": "number",
+       "min": 0,
+       "name": "scrollDuration"
+      },
+      {
+       "attr": "data-ok-beacon-trigger",
+       "default": "click",
+       "description": "What opens a step from its beacon: `click`, or `hover` (a mouse over it; keys and taps still select it).",
+       "kind": "style",
+       "name": "beaconTrigger",
+       "optional": true,
+       "values": [
+        "click",
+        "hover"
+       ]
+      },
+      {
+       "attr": "data-ok-close-button-action",
+       "default": "close",
+       "description": "What the close button (the X) does: `close` (the next step's beacon) or `skip` (ends the tour).",
+       "kind": "style",
+       "name": "closeButtonAction",
+       "optional": true,
+       "values": [
+        "close",
+        "skip"
+       ]
+      },
+      {
+       "attr": "data-ok-disable-focus-trap",
+       "description": "Tab can leave the step: it is not modal, and the page stays reachable by keyboard.",
+       "kind": "flag",
+       "name": "disableFocusTrap"
+      },
+      {
+       "attr": "data-ok-target-wait-timeout",
+       "default": 1000,
+       "description": "How long a step waits for its target to appear before it is skipped (ms); `0` skips at once.",
+       "kind": "number",
+       "min": 0,
+       "name": "targetWaitTimeout"
+      },
+      {
+       "attr": "data-ok-before-timeout",
+       "default": 5000,
+       "description": "How long the tour waits for a step's `before` hook (HTML: `waitUntil()`) before it goes on (ms); `0` waits without a limit.",
+       "kind": "number",
+       "min": 0,
+       "name": "beforeTimeout"
+      },
+      {
        "attr": "data-ok-run",
        "description": "Runs the tour (`run`; HTML: the attribute, `start()` / `stop()`).",
        "kind": "state",
@@ -63434,6 +63688,79 @@
        "kind": "number",
        "min": 0,
        "name": "width"
+      },
+      {
+       "attr": "data-ok-beacon-placement",
+       "default": "bottom",
+       "description": "Side and alignment of the beacon on the target; default: the step's placement.",
+       "kind": "style",
+       "name": "beaconPlacement",
+       "optional": true,
+       "values": [
+        "top-start",
+        "top",
+        "top-end",
+        "bottom-start",
+        "bottom",
+        "bottom-end",
+        "left-start",
+        "left",
+        "left-end",
+        "right-start",
+        "right",
+        "right-end"
+       ]
+      },
+      {
+       "attr": "data-ok-is-fixed",
+       "description": "The target doesn't move when the page scrolls (it is found on its own for fixed elements): the tour doesn't scroll to it.",
+       "kind": "flag",
+       "name": "isFixed"
+      },
+      {
+       "attr": "data-ok-beacon-trigger",
+       "default": "click",
+       "description": "This step's beacon trigger; default: the tour's.",
+       "kind": "style",
+       "name": "beaconTrigger",
+       "optional": true,
+       "values": [
+        "click",
+        "hover"
+       ]
+      },
+      {
+       "attr": "data-ok-close-button-action",
+       "default": "close",
+       "description": "This step's close button action; default: the tour's.",
+       "kind": "style",
+       "name": "closeButtonAction",
+       "optional": true,
+       "values": [
+        "close",
+        "skip"
+       ]
+      },
+      {
+       "attr": "data-ok-scroll-duration",
+       "description": "This step's scroll duration (ms); default: the tour's.",
+       "kind": "number",
+       "min": 0,
+       "name": "scrollDuration"
+      },
+      {
+       "attr": "data-ok-target-wait-timeout",
+       "description": "This step's target wait (ms); default: the tour's.",
+       "kind": "number",
+       "min": 0,
+       "name": "targetWaitTimeout"
+      },
+      {
+       "attr": "data-ok-before-timeout",
+       "description": "This step's `before` hook limit (ms); default: the tour's.",
+       "kind": "number",
+       "min": 0,
+       "name": "beforeTimeout"
       }
      ],
      "root": "data-ok-walktour-step"
@@ -63451,17 +63778,17 @@
      "title": "Anatomy"
     },
     {
-     "body": "(Options of `walktour`: listed under \"options\".)\n\nStep options (React step fields; HTML attributes on the step element):\n(Options of `walktour-step`: listed under \"options\".)\n\n- **Step overrides:** every boolean option of the tour except `scrollToFirstStep` can be set on a\n  step (`disableBeacon: true`, `showSkipButton: false`). HTML: the same attribute on the step;\n  present = on, `\"false\"` = off, absent = the tour's.\n- **target:** React `string` (CSS selector) · element · ref · `() => element`; HTML\n  `data-ok-target=\"<selector>\"`. `\"body\"` or `placement=\"center\"` centers the step. A target that\n  isn't in the page skips the step (`error:target-not-found`). Invalid selectors are no target.\n- **content / title:** React nodes; HTML: the step's markup. **stepProps** (React): extra\n  attributes of the step element (`data-ok-theme=\"dark\"`).\n- **locale:** `back`, `close`, `last`, `next`, `open` (beacon), `skip`, `progress`\n  (`\"({current}/{total})\"`), `stepOf` (`\"Step {current} of {total}\"`: live region, name of a step\n  without a title); per tour and per step. HTML: the text in the markup, `data-ok-format` on the\n  live region.\n- **run** (default `false`), **stepIndex** (controlled), **initialStepIndex** (HTML\n  `data-ok-step-index`), **apiRef**.",
+     "body": "(Options of `walktour`: listed under \"options\".)\n\nStep options (React step fields; HTML attributes on the step element):\n(Options of `walktour-step`: listed under \"options\".)\n\n- **Step overrides:** every boolean option of the tour except `scrollToFirstStep` can be set on a\n  step (`disableBeacon: true`, `showSkipButton: false`). HTML: the same attribute on the step;\n  present = on, `\"false\"` = off, absent = the tour's.\n- **target:** React `string` (CSS selector) · element · ref · `() => element`; HTML\n  `data-ok-target=\"<selector>\"`. `\"body\"` or `placement=\"center\"` centers the step. A target that\n  isn't in the page is waited for (`targetWaitTimeout`, default 1000 ms, polled every 100 ms), then\n  the step is skipped (`error:target-not-found`). Invalid selectors are no target.\n- **scrollTarget / spotlightTarget:** same types (HTML `data-ok-scroll-target`,\n  `data-ok-spotlight-target`). The tour scrolls to `scrollTarget` (else `spotlightTarget`, else the\n  target) and cuts the spotlight around `spotlightTarget`; the tooltip and the beacon stay on the\n  target. Missing ones fall back to the target.\n- **before / after** (React, tour prop and step field; the step's replaces the tour's):\n  `before(data)` runs when a step is about to show, before its target is looked up; a returned\n  promise makes the tour wait (`waiting`, nothing shown) up to `beforeTimeout` (default 5000 ms,\n  `0` = no limit); a rejection or the time limit reports `error` and the tour goes on. `after(data)`\n  runs when a step ended (fire and forget, errors swallowed). HTML: `ok:walktour:beforestep` with\n  `detail.waitUntil(promise)`; `after` = the `step:after` event.\n- **content / title:** React nodes; HTML: the step's markup. **stepProps** (React): extra\n  attributes of the step element (`data-ok-theme=\"dark\"`).\n- **locale:** `back`, `close`, `last`, `next`, `open` (beacon), `skip`, `progress`\n  (`\"({current}/{total})\"`), `stepOf` (`\"Step {current} of {total}\"`: live region, name of a step\n  without a title); per tour and per step. HTML: the text in the markup, `data-ok-format` on the\n  live region.\n- **run** (default `false`), **stepIndex** (controlled), **initialStepIndex** (HTML\n  `data-ok-step-index`), **apiRef**.",
      "id": "options",
      "title": "Options"
     },
     {
-     "body": "`idle` → `running` (lifecycle `beacon` | `tooltip`) → `paused` | `finished` | `skipped`.\nCore `walktourTransition` (react-joyride's rules):\n- `start`: the first available step from the given / current index (an ended tour starts over),\n  with its beacon unless `disableBeacon`.\n- `next` (primary in a continuous tour): next step's tooltip; `close` (X, Escape, overlay, primary\n  in a non-continuous tour): next step's beacon (tooltip with `disableBeacon`); past the last\n  step: `finished`. `prev`: previous step (tooltip when continuous). `go(index)`.\n- `skip` → `skipped`; `stop` → `paused`; `open` (beacon) → tooltip; `reset` → `idle`, index 0.\n- Steps whose target is missing are passed over in the direction of travel.",
+     "body": "`idle` → `running` (lifecycle `beacon` | `tooltip`) → `paused` | `finished` | `skipped`.\nCore `walktourTransition` (react-joyride's rules):\n- `start`: the first available step from the given / current index (an ended tour starts over),\n  with its beacon unless `disableBeacon`.\n- `next` (primary in a continuous tour): next step's tooltip; `close` (X, Escape, overlay, primary\n  in a non-continuous tour): next step's beacon (tooltip with `disableBeacon`); past the last\n  step: `finished`. `prev`: previous step (tooltip when continuous). `go(index)`.\n- `skip` → `skipped`; `stop` → `paused`; `open` (beacon) → tooltip; `reset` → `idle`, index 0.\n- Steps whose target is missing are passed over in the direction of travel.\n- Owners dispatch through core `createWalktourFlow` (React and HTML): it asks the owner first\n  (HTML `beforechange`), ends the showing step (`step:after`, then its `after`), runs the next\n  step's `before` (`step:before-hook`), waits for its target, then commits the state and reports\n  the remaining events. Without a hook or a missing target it settles synchronously. While waiting\n  the state carries `waiting: true` with the previous index; a later action cancels the wait.",
      "id": "states",
      "title": "States"
     },
     {
-     "body": "- Tooltip: the step opens as a Popover anchored to its target, `offset` = spotlight padding +\n  20px (arrow), flipping and shifting to stay in the viewport; `auto` = the side with the most\n  room; centered steps are placed by CSS (`data-ok-centered`, no arrow, no cut-out).\n- Overlay: shown under the step in the top layer (fallback: fixed + z-index) unless\n  `disableOverlay`; the mask path is `M0 0HwVhH0Z` + a rounded rectangle (spotlight padding and\n  radius) drawn `evenodd`; recomputed on scroll, resize and target resize (rAF).\n- Scrolling: a target (with its tooltip) out of view scrolls into view in its scroll parent,\n  `scrollOffset` px from the top (not for the first step without `scrollToFirstStep`; never with\n  `disableScrolling`); instant with reduced motion.\n- Beacon: a 36px button centered on the edge the placement faces (alignment = the placement's).\n- Decorations per step: Back hidden on the first step or with `hideBackButton`; Skip shown with\n  `showSkipButton` except on the last step; close hidden with `hideCloseButton`; progress shown\n  with `showProgress` except on the last step; `--_ok-walktour-width` from `width`.\n- HTML: `data-ok-run` starts / pauses (observed); other option attributes re-render at once.",
+     "body": "- Tooltip: the step opens as a Popover anchored to its target, `offset` = spotlight padding +\n  20px (arrow), flipping and shifting to stay in the viewport; `auto` = the side with the most\n  room; centered steps are placed by CSS (`data-ok-centered`, no arrow, no cut-out).\n- Overlay: shown under the step in the top layer (fallback: fixed + z-index) unless\n  `disableOverlay`; the mask path is `M0 0HwVhH0Z` + a rounded rectangle (spotlight padding and\n  radius) drawn `evenodd`; recomputed on scroll, resize and target resize (rAF).\n- Scrolling: a target (with its tooltip) out of view scrolls into view in its scroll parent,\n  `scrollOffset` px from the top (not for the first step without `scrollToFirstStep`; never with\n  `disableScrolling`), eased over `scrollDuration` ms (default 300; 50 ms under 100 px, as\n  react-joyride; `0` or reduced motion: instant; frames of `scrollTo({ behavior: \"instant\" })`).\n  A `scrollTarget` / `spotlightTarget` scrolls on its own (no room kept for the tooltip). A target\n  in the page's flow that is `isFixed` or has a `position: fixed` ancestor isn't scrolled to.\n- Beacon: a 36px button centered on the edge the placement faces (alignment = the placement's);\n  `beaconPlacement` replaces the placement for the beacon only. `beaconTrigger: \"hover\"`: a mouse\n  entering the beacon (`pointerover`, `pointerType` mouse) opens the step; clicks, keys and taps\n  still do.\n- Close button: `closeButtonAction` `close` (default: the next step's beacon) or `skip` (ends the\n  tour, origin `close`). react-joyride's `replay` isn't offered (not in the backlog row).\n- `disableFocusTrap`: the step isn't modal (no `aria-modal`, no Tab wrap, no `inert` page), though\n  the overlay still blocks presses: a modal dialog must keep Tab inside.\n- Decorations per step: Back hidden on the first step or with `hideBackButton`; Skip shown with\n  `showSkipButton` except on the last step; close hidden with `hideCloseButton`; progress shown\n  with `showProgress` except on the last step; `--_ok-walktour-width` from `width`.\n- HTML: `data-ok-run` starts / pauses (observed); other option attributes re-render at once.",
      "id": "behavior",
      "title": "Behavior"
     },
@@ -63471,22 +63798,22 @@
      "title": "Keyboard"
     },
     {
-     "body": "- Each step is `role=\"dialog\"` named by its title (or \"Step 1 of 5\") and described by its content;\n  `aria-modal=\"true\"` while the overlay blocks the page (not with `spotlightClicks` or\n  `disableOverlay`), then Tab stays inside and the page outside the tour is `inert` (core\n  `inertOutside`; `aria-hidden` where `inert` is unsupported) until the step closes.\n- Focus: the primary button when a step opens (else the first control); the beacon when a step\n  closes to it; back to where it was when the tour ends. Starting with a beacon doesn't move focus.\n- A polite live region announces \"Step 2 of 5\" when a step opens. The progress bar is\n  `aria-hidden` (the live region and the button say the same).\n- The beacon's pulse stops with reduced motion; buttons are ≥ 24px.",
+     "body": "- Each step is `role=\"dialog\"` named by its title (or \"Step 1 of 5\") and described by its content;\n  `aria-modal=\"true\"` while the overlay blocks the page (not with `spotlightClicks`,\n  `disableOverlay` or `disableFocusTrap`), then Tab stays inside and the page outside the tour is `inert` (core\n  `inertOutside`; `aria-hidden` where `inert` is unsupported) until the step closes.\n- Focus: the primary button when a step opens (else the first control); the beacon when a step\n  closes to it; back to where it was when the tour ends. Starting with a beacon doesn't move focus.\n- A polite live region announces \"Step 2 of 5\" when a step opens. The progress bar is\n  `aria-hidden` (the live region and the button say the same).\n- The beacon's pulse stops with reduced motion; buttons are ≥ 24px.",
      "id": "accessibility",
      "title": "Accessibility"
     },
     {
-     "body": "- React: `onStepChange(index, { action, origin, status, lifecycle })` (controlled: the request),\n  `onStatusChange(status, { action, index })`, `onEvent(type, data)` with `type` in\n  `tour:start`, `step:before`, `beacon`, `tooltip`, `step:after`, `tour:end`, `tour:status`,\n  `error:target-not-found` and `data` = `{ type, action, origin, index, status, lifecycle, size }`\n  (react-joyride's `callback`, value first).\n- HTML: `ok:walktour:beforechange` (cancelable; `{ index, previousIndex, action, origin }`),\n  `ok:walktour:change` (the state + `previousIndex`), `ok:walktour:event` (the same data as\n  `onEvent`). Trigger `[data-ok-walktour-start=\"<id>\"]` (+ `data-ok-index`) starts the tour over.\n- API (`apiRef` / `runtime.get(root, \"walktour\")`): `state`, `start(index?)`, `stop()`,\n  `reset(restart?)`, `next()`, `prev()`, `go(index)`, `close()`, `skip()`, `open()`.",
+     "body": "- React: `onStepChange(index, { action, origin, status, lifecycle })` (controlled: the request),\n  `onStatusChange(status, { action, index })`, `onEvent(type, data)` with `type` in\n  `tour:start`, `step:before-hook`, `step:before`, `beacon`, `tooltip`, `step:after`,\n  `step:after-hook`, `tour:end`, `tour:status`, `error:target-not-found`, `error` and `data` =\n  `{ type, action, origin, index, status, lifecycle, size, error? }` (react-joyride's `callback`,\n  value first). `step:after` of the step that showed comes before the next step's change\n  (`onStepChange`, `ok:walktour:change`), so an `after` runs before the next `before`.\n- HTML: `ok:walktour:beforechange` (cancelable; `{ index, previousIndex, action, origin }`),\n  `ok:walktour:change` (the state + `previousIndex`), `ok:walktour:event` (the same data as\n  `onEvent`), `ok:walktour:beforestep` (the step's data + `waitUntil(promise)`: the `before` hook).\n  Trigger `[data-ok-walktour-start=\"<id>\"]` (+ `data-ok-index`) starts the tour over.\n- API (`apiRef` / `runtime.get(root, \"walktour\")`): `state`, `start(index?)`, `stop()`,\n  `reset(restart?)`, `next()`, `prev()`, `go(index)`, `close()`, `skip()`, `open()`.",
      "id": "events-api",
      "title": "Events / API"
     },
     {
-     "body": "| Upstream | Owlky |\n|---|---|\n| `steps`, `run`, `stepIndex`, `continuous`, `showProgress`, `scrollToFirstStep`, `scrollOffset`, `spotlightPadding`, `spotlightRadius` (v3), `locale`, step `target` / `content` / `title` / `placement` (incl. `auto`, `center`) | kept |\n| `showSkipButton`, `hideBackButton`, `hideCloseButton`, `disableBeacon`, `disableCloseOnEsc`, `disableOverlay`, `disableOverlayClose`, `disableScrolling`, `spotlightClicks` (v2) | kept (v3: `buttons`, `skipBeacon`, `dismissKeyAction`, `hideOverlay`, `overlayClickAction`, `skipScroll`, `blockTargetInteraction`) |\n| `initialStepIndex` (v3), step `width` (v3) | kept |\n| `callback` / `onEvent` | `onEvent(type, data)` + `onStepChange`, `onStatusChange` (ADR-0015) |\n| `getHelpers` / `useJoyride().controls` | `apiRef` |\n| `locale.nextWithProgress` | `next` + `progress` (`\"({current}/{total})\"`, the reference's look) |\n| `styles`, `floatingOptions`, `*Component` (tooltip, beacon, arrow, loader), `portalElement`, `nonce`, `debug`, `zIndex`, colors, arrow sizes | not applicable (CSS tokens, top layer, `data-ok-theme`; markup is the component in HTML) |\n| `before` / `after` hooks, `targetWaitTimeout`, `beaconTrigger: \"hover\"`, `closeButtonAction`, `scrollTarget`, `spotlightTarget`, `isFixed`, `disableFocusTrap`, `beaconPlacement`, `scrollDuration` | deferred (roadmap backlog) |",
+     "body": "| Upstream | Owlky |\n|---|---|\n| `steps`, `run`, `stepIndex`, `continuous`, `showProgress`, `scrollToFirstStep`, `scrollOffset`, `spotlightPadding`, `spotlightRadius` (v3), `locale`, step `target` / `content` / `title` / `placement` (incl. `auto`, `center`) | kept |\n| `showSkipButton`, `hideBackButton`, `hideCloseButton`, `disableBeacon`, `disableCloseOnEsc`, `disableOverlay`, `disableOverlayClose`, `disableScrolling`, `spotlightClicks` (v2) | kept (v3: `buttons`, `skipBeacon`, `dismissKeyAction`, `hideOverlay`, `overlayClickAction`, `skipScroll`, `blockTargetInteraction`) |\n| `initialStepIndex` (v3), step `width` (v3) | kept |\n| `callback` / `onEvent` | `onEvent(type, data)` + `onStepChange`, `onStatusChange` (ADR-0015) |\n| `getHelpers` / `useJoyride().controls` | `apiRef` |\n| `locale.nextWithProgress` | `next` + `progress` (`\"({current}/{total})\"`, the reference's look) |\n| `styles`, `floatingOptions`, `*Component` (tooltip, beacon, arrow, loader), `portalElement`, `nonce`, `debug`, `zIndex`, colors, arrow sizes | not applicable (CSS tokens, top layer, `data-ok-theme`; markup is the component in HTML) |\n| `before` / `after` hooks, `beforeTimeout`, `targetWaitTimeout`, `beaconTrigger` (`click` · `hover`), `closeButtonAction` (`close` · `skip`), `scrollTarget`, `spotlightTarget`, `isFixed`, `disableFocusTrap`, `beaconPlacement`, `scrollDuration` (v3) | kept (HTML `before`: `ok:walktour:beforestep` + `waitUntil`; `after`: the `step:after` event) |",
      "id": "api-mapping-react-joyride",
      "title": "API mapping (react-joyride)"
     },
     {
-     "body": "Upstream: react-joyride v3 props, options and step fields (react-joyride.com/docs/props,\n/props/options, /step, checked 2026-11-09). Completes \"API mapping (react-joyride)\" above with a\nstatus per row.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| Tour `steps`, `run`, `stepIndex`, `initialStepIndex`, `continuous`, `scrollToFirstStep`, `locale` | same / `data-ok-run`, `-step-index`, `-continuous`, … | kept | |\n| Tour `onEvent` | `onEvent(type, data)` + `onStepChange`, `onStatusChange` · `ok:walktour:*` | renamed | ADR-0015 |\n| `useJoyride().controls` | `apiRef` / HTML instance | renamed | |\n| Options `buttons` (`back`, `close`, `primary`, `skip`) | `hideBackButton`, `hideCloseButton`, `showSkipButton` | renamed | v2 flags |\n| Options `showProgress`, `spotlightPadding`, `spotlightRadius`, `scrollOffset`, `width` | same | kept | reference defaults (radius 16, width 360) |\n| Options `skipBeacon`, `hideOverlay`, `skipScroll`, `blockTargetInteraction` | `disableBeacon`, `disableOverlay`, `disableScrolling`, `spotlightClicks` | renamed | v2 names (inverse for `spotlightClicks`) |\n| Options `dismissKeyAction`, `overlayClickAction` (`close` · `next` · `false`) | `disableCloseOnEsc`, `disableOverlayClose` | renamed | `next` action deferred with `closeButtonAction` (4.17) |\n| Options `closeButtonAction`, `beaconTrigger`, `disableFocusTrap`, `scrollDuration`, `targetWaitTimeout`, `before` / `after` | — | deferred (4.17) | |\n| Options `beforeTimeout`, `loaderDelay`, `loaderComponent` | — | deferred (4.17) | with the `before` hook |\n| Options `offset` (tooltip distance from the target) | fixed | deferred | |\n| Options `backgroundColor`, `primaryColor`, `textColor`, `overlayColor`, `arrowColor`, `arrowBase`, `arrowSize`, `arrowSpacing`, `beaconSize`, `zIndex` | — | not applicable | tokens, top layer |\n| Step `target`, `content`, `title`, `placement` (`auto`, `center`) | same | kept | |\n| Step `id`, `data` | — | deferred | step identity and custom data in events |\n| Step `isFixed`, `scrollTarget`, `spotlightTarget`, `beaconPlacement` | — | deferred (4.17) | |\n| Step option overrides | every boolean option on a step | kept | |\n| `styles`, `floatingOptions`, `tooltipComponent`, `beaconComponent`, `arrowComponent`, `portalElement`, `nonce`, `debug` | — | not applicable | CSS tokens, `data-ok-theme`; HTML markup is the component |",
+     "body": "Upstream: react-joyride v3 props, options and step fields (react-joyride.com/docs/props,\n/props/options, /step, checked 2026-11-09). Completes \"API mapping (react-joyride)\" above with a\nstatus per row.\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| Tour `steps`, `run`, `stepIndex`, `initialStepIndex`, `continuous`, `scrollToFirstStep`, `locale` | same / `data-ok-run`, `-step-index`, `-continuous`, … | kept | |\n| Tour `onEvent` | `onEvent(type, data)` + `onStepChange`, `onStatusChange` · `ok:walktour:*` | renamed | ADR-0015 |\n| `useJoyride().controls` | `apiRef` / HTML instance | renamed | |\n| Options `buttons` (`back`, `close`, `primary`, `skip`) | `hideBackButton`, `hideCloseButton`, `showSkipButton` | renamed | v2 flags |\n| Options `showProgress`, `spotlightPadding`, `spotlightRadius`, `scrollOffset`, `width` | same | kept | reference defaults (radius 16, width 360) |\n| Options `skipBeacon`, `hideOverlay`, `skipScroll`, `blockTargetInteraction` | `disableBeacon`, `disableOverlay`, `disableScrolling`, `spotlightClicks` | renamed | v2 names (inverse for `spotlightClicks`) |\n| Options `dismissKeyAction`, `overlayClickAction` (`close` · `next` · `replay` · `false`) | `disableCloseOnEsc`, `disableOverlayClose` | renamed | the `next` and `replay` actions are deferred |\n| Options `closeButtonAction` (`close` · `skip`), `beaconTrigger`, `disableFocusTrap`, `scrollDuration`, `targetWaitTimeout`, `beforeTimeout` | same (`data-ok-close-button-action`, `-beacon-trigger`, `-disable-focus-trap`, `-scroll-duration`, `-target-wait-timeout`, `-before-timeout`) | kept | tour and step; `closeButtonAction: \"replay\"` deferred |\n| Options `before` / `after` | same (React, tour and step) · HTML `ok:walktour:beforestep` (`waitUntil`) / the `step:after` event | kept | events `step:before-hook`, `step:after-hook`, `error` |\n| Options `loaderDelay`, `loaderComponent` | — | deferred | nothing shows while the tour waits |\n| Event data `controlled`, `scroll`, `scrolling`, `step`; events `scroll:start` / `scroll:end` | `waiting` on the state | deferred | |\n| Options `offset` (tooltip distance from the target) | fixed | deferred | |\n| Options `backgroundColor`, `primaryColor`, `textColor`, `overlayColor`, `arrowColor`, `arrowBase`, `arrowSize`, `arrowSpacing`, `beaconSize`, `zIndex` | — | not applicable | tokens, top layer |\n| Step `target`, `content`, `title`, `placement` (`auto`, `center`) | same | kept | |\n| Step `id`, `data` | — | deferred | step identity and custom data in events |\n| Step `isFixed`, `scrollTarget`, `spotlightTarget`, `beaconPlacement` | same · HTML `data-ok-is-fixed`, `-scroll-target`, `-spotlight-target` (selectors), `-beacon-placement` | kept | fixed targets are also found on their own |\n| Step option overrides | every boolean option on a step | kept | |\n| `styles`, `floatingOptions`, `tooltipComponent`, `beaconComponent`, `arrowComponent`, `portalElement`, `nonce`, `debug` | — | not applicable | CSS tokens, `data-ok-theme`; HTML markup is the component |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
@@ -69077,6 +69404,34 @@
      "title": "Configure the overlay and the spotlight"
     },
     {
+     "body": "A step can point at an element that isn't on the page yet, such as an item in a closed menu. `before` runs when the step is about to show, before the tour looks for its target. Return a promise, and the tour waits for it before it shows the step, for up to `beforeTimeout` milliseconds (5000 by default, `0` for no limit). If the promise rejects or takes too long, the tour reports an `error` event and goes on. `after` runs once the step has ended, for example to close the menu again. The tour doesn't wait for it. Set both on the tour for every step, or on a step for that step only. In HTML, listen for `ok:walktour:beforestep` and pass a promise to `event.detail.waitUntil()`. For `after`, listen for the `step:after` event. The step that ends always reports `step:after` before the next step's `before` runs.",
+     "html": "<script type=\"module\">\n  const root = document.getElementById(\"tour\");\n  const menu = document.getElementById(\"menu\");\n  root.addEventListener(\"ok:walktour:beforestep\", (event) => {\n    // Step 2 points at an item in the menu: open the menu and wait for its animation.\n    if (event.detail.index === 1) {\n      menu.hidden = false;\n      event.detail.waitUntil(new Promise((resolve) => setTimeout(resolve, 300)));\n    }\n  });\n  root.addEventListener(\"ok:walktour:event\", (event) => {\n    if (event.detail.type === \"step:after\" && event.detail.index === 1) menu.hidden = true;\n  });\n</script>",
+     "id": "hooks",
+     "react": "import { Button, Walktour, type WalktourStep } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nexport function MenuTour() {\n  const [menuOpen, setMenuOpen] = useState(false);\n  const steps: WalktourStep[] = [\n    { target: \"#menu-button\", title: \"Menu\", content: \"Your account lives here.\" },\n    {\n      target: \"#settings-item\",\n      title: \"Settings\",\n      content: \"Change your preferences.\",\n      // Open the menu and wait for its animation before the step looks for its target.\n      before: () => {\n        setMenuOpen(true);\n        return new Promise((resolve) => setTimeout(resolve, 300));\n      },\n      after: () => setMenuOpen(false),\n    },\n  ];\n  return (\n    <>\n      <Button id=\"menu-button\" variant=\"outlined\" onClick={() => setMenuOpen(!menuOpen)}>\n        Account\n      </Button>\n      {menuOpen && (\n        <ul>\n          <li id=\"settings-item\">Settings</li>\n        </ul>\n      )}\n      <Walktour steps={steps} run continuous disableBeacon />\n    </>\n  );\n}",
+     "title": "Run code before and after a step"
+    },
+    {
+     "body": "A step whose target isn't on the page yet waits for it for `targetWaitTimeout` milliseconds, 1000 by default. The tour looks for the target every 100 milliseconds and shows the step as soon as it appears, such as after a route change or a lazy load. If the target doesn't come, the step is skipped with an `error:target-not-found` event. Set `targetWaitTimeout` to `0` to skip such steps at once. Nothing shows while the tour waits, and the tour's `state.waiting` is `true`.",
+     "html": "<!-- Skip missing targets at once, but give the chart up to 3 seconds. -->\n<div id=\"tour\" data-ok-walktour data-ok-run data-ok-continuous data-ok-target-wait-timeout=\"0\">\n  <div data-ok-backdrop data-ok-invisible data-ok-walktour-overlay popover=\"manual\" aria-hidden=\"true\">\n    <svg data-ok-walktour-spotlight aria-hidden=\"true\" focusable=\"false\">\n      <path data-ok-walktour-mask fill-rule=\"evenodd\"></path>\n      <path data-ok-walktour-hole></path>\n    </svg>\n  </div>\n  <button type=\"button\" data-ok-walktour-beacon aria-label=\"Open the dialog\" aria-haspopup=\"dialog\" hidden>\n    <span data-ok-walktour-beacon-inner></span>\n  </button>\n  <div popover=\"manual\" data-ok-popover data-ok-arrow data-ok-walktour-step data-ok-placement=\"bottom\"\n    data-ok-target=\"#inbox\" role=\"dialog\" aria-labelledby=\"tour-1-title\" aria-describedby=\"tour-1-content\">\n    <span data-ok-popover-arrow aria-hidden=\"true\"></span>\n    <div data-ok-walktour-header>\n      <h2 data-ok-walktour-title id=\"tour-1-title\">Your inbox</h2>\n      <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-walktour-action=\"close\" aria-label=\"Close\"><svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" aria-hidden=\"true\" focusable=\"false\"><path fill=\"currentColor\" d=\"m12 13.41 5.66 5.66a1 1 0 0 0 1.41-1.41L13.41 12l5.66-5.66a1 1 0 0 0-1.41-1.41L12 10.59 6.34 4.93a1 1 0 0 0-1.41 1.41L10.59 12l-5.66 5.66a1 1 0 1 0 1.41 1.41z\"></path></svg></button>\n    </div>\n    <div data-ok-walktour-content id=\"tour-1-content\">New messages arrive here.</div>\n    <span role=\"progressbar\" data-ok-linear-progress data-ok-variant=\"determinate\" data-ok-color=\"primary\" aria-valuenow=\"50\" aria-valuemin=\"0\" aria-valuemax=\"100\" aria-hidden=\"true\">\n      <span data-ok-linear-progress-bar=\"1\"></span>\n    </span>\n    <div data-ok-walktour-footer>\n      <button type=\"button\" data-ok-button data-ok-variant=\"text\" data-ok-color=\"inherit\" data-ok-size=\"md\" data-ok-walktour-action=\"skip\"><span data-ok-button-label>Skip</span></button>\n      <button type=\"button\" data-ok-button data-ok-variant=\"outlined\" data-ok-color=\"inherit\" data-ok-size=\"md\" data-ok-walktour-action=\"back\"><span data-ok-button-label>Back</span></button>\n      <button type=\"button\" data-ok-button data-ok-variant=\"contained\" data-ok-color=\"inherit\" data-ok-size=\"md\" data-ok-walktour-action=\"primary\"><span data-ok-button-label>Next<span data-ok-walktour-progress> (1/2)</span></span></button>\n    </div>\n  </div>\n  <div popover=\"manual\" data-ok-popover data-ok-arrow data-ok-walktour-step data-ok-placement=\"bottom\"\n    data-ok-target=\"#chart\" data-ok-target-wait-timeout=\"3000\" role=\"dialog\" aria-labelledby=\"tour-2-title\" aria-describedby=\"tour-2-content\">\n    <span data-ok-popover-arrow aria-hidden=\"true\"></span>\n    <div data-ok-walktour-header>\n      <h2 data-ok-walktour-title id=\"tour-2-title\">Sales</h2>\n      <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-walktour-action=\"close\" aria-label=\"Close\"><svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" aria-hidden=\"true\" focusable=\"false\"><path fill=\"currentColor\" d=\"m12 13.41 5.66 5.66a1 1 0 0 0 1.41-1.41L13.41 12l5.66-5.66a1 1 0 0 0-1.41-1.41L12 10.59 6.34 4.93a1 1 0 0 0-1.41 1.41L10.59 12l-5.66 5.66a1 1 0 1 0 1.41 1.41z\"></path></svg></button>\n    </div>\n    <div data-ok-walktour-content id=\"tour-2-content\">Your sales, week by week.</div>\n    <span role=\"progressbar\" data-ok-linear-progress data-ok-variant=\"determinate\" data-ok-color=\"primary\" aria-valuenow=\"100\" aria-valuemin=\"0\" aria-valuemax=\"100\" aria-hidden=\"true\">\n      <span data-ok-linear-progress-bar=\"1\"></span>\n    </span>\n    <div data-ok-walktour-footer>\n      <button type=\"button\" data-ok-button data-ok-variant=\"text\" data-ok-color=\"inherit\" data-ok-size=\"md\" data-ok-walktour-action=\"skip\"><span data-ok-button-label>Skip</span></button>\n      <button type=\"button\" data-ok-button data-ok-variant=\"outlined\" data-ok-color=\"inherit\" data-ok-size=\"md\" data-ok-walktour-action=\"back\"><span data-ok-button-label>Back</span></button>\n      <button type=\"button\" data-ok-button data-ok-variant=\"contained\" data-ok-color=\"primary\" data-ok-size=\"md\" data-ok-walktour-action=\"primary\"><span data-ok-button-label>Last</span></button>\n    </div>\n  </div>\n  <span data-ok-walktour-live aria-live=\"polite\" aria-atomic=\"true\" data-ok-format=\"Step {current} of {total}\"></span>\n</div>",
+     "id": "wait",
+     "react": "import { Walktour, type WalktourStep } from \"@owlky/react\";\n\nconst steps: WalktourStep[] = [\n  { target: \"#inbox\", title: \"Your inbox\", content: \"New messages arrive here.\" },\n  // The chart loads later: give it up to 3 seconds.\n  { target: \"#chart\", title: \"Sales\", content: \"Your sales, week by week.\", targetWaitTimeout: 3000 },\n];\n\nexport function WaitingTour() {\n  return <Walktour steps={steps} run continuous targetWaitTimeout={0} />;\n}",
+     "title": "Wait for targets"
+    },
+    {
+     "body": "By default, a step scrolls its target into view and puts it in the spotlight. `scrollTarget` scrolls to another element instead, such as the section a small button sits in. `spotlightTarget` highlights another element instead, such as the whole card around a button. The tooltip and the beacon stay on the target. Scrolling takes `scrollDuration` milliseconds, 300 by default, and is instant at `0` or when the system asks for reduced motion. A target that doesn't move when the page scrolls, such as a fixed header, isn't scrolled to. The tour finds fixed elements on its own, and `isFixed` marks a target that it can't detect. In HTML, `data-ok-scroll-target` and `data-ok-spotlight-target` take CSS selectors.",
+     "html": "<div id=\"tour\" data-ok-walktour data-ok-run data-ok-continuous data-ok-scroll-duration=\"600\">\n  <div data-ok-backdrop data-ok-invisible data-ok-walktour-overlay popover=\"manual\" aria-hidden=\"true\">\n    <svg data-ok-walktour-spotlight aria-hidden=\"true\" focusable=\"false\">\n      <path data-ok-walktour-mask fill-rule=\"evenodd\"></path>\n      <path data-ok-walktour-hole></path>\n    </svg>\n  </div>\n  <button type=\"button\" data-ok-walktour-beacon aria-label=\"Open the dialog\" aria-haspopup=\"dialog\" hidden>\n    <span data-ok-walktour-beacon-inner></span>\n  </button>\n  <div popover=\"manual\" data-ok-popover data-ok-arrow data-ok-walktour-step data-ok-placement=\"bottom\"\n    data-ok-target=\"#compose\" data-ok-spotlight-target=\"#toolbar\" data-ok-scroll-target=\"#mail\" role=\"dialog\" aria-labelledby=\"tour-1-title\" aria-describedby=\"tour-1-content\">\n    <span data-ok-popover-arrow aria-hidden=\"true\"></span>\n    <div data-ok-walktour-header>\n      <h2 data-ok-walktour-title id=\"tour-1-title\">Write</h2>\n      <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-walktour-action=\"close\" aria-label=\"Close\"><svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" aria-hidden=\"true\" focusable=\"false\"><path fill=\"currentColor\" d=\"m12 13.41 5.66 5.66a1 1 0 0 0 1.41-1.41L13.41 12l5.66-5.66a1 1 0 0 0-1.41-1.41L12 10.59 6.34 4.93a1 1 0 0 0-1.41 1.41L10.59 12l-5.66 5.66a1 1 0 1 0 1.41 1.41z\"></path></svg></button>\n    </div>\n    <div data-ok-walktour-content id=\"tour-1-content\">Start a new message from the toolbar.</div>\n    <span role=\"progressbar\" data-ok-linear-progress data-ok-variant=\"determinate\" data-ok-color=\"primary\" aria-valuenow=\"50\" aria-valuemin=\"0\" aria-valuemax=\"100\" aria-hidden=\"true\">\n      <span data-ok-linear-progress-bar=\"1\"></span>\n    </span>\n    <div data-ok-walktour-footer>\n      <button type=\"button\" data-ok-button data-ok-variant=\"text\" data-ok-color=\"inherit\" data-ok-size=\"md\" data-ok-walktour-action=\"skip\"><span data-ok-button-label>Skip</span></button>\n      <button type=\"button\" data-ok-button data-ok-variant=\"outlined\" data-ok-color=\"inherit\" data-ok-size=\"md\" data-ok-walktour-action=\"back\"><span data-ok-button-label>Back</span></button>\n      <button type=\"button\" data-ok-button data-ok-variant=\"contained\" data-ok-color=\"inherit\" data-ok-size=\"md\" data-ok-walktour-action=\"primary\"><span data-ok-button-label>Next<span data-ok-walktour-progress> (1/2)</span></span></button>\n    </div>\n  </div>\n  <div popover=\"manual\" data-ok-popover data-ok-arrow data-ok-walktour-step data-ok-placement=\"bottom\"\n    data-ok-target=\"#header\" data-ok-is-fixed role=\"dialog\" aria-labelledby=\"tour-2-title\" aria-describedby=\"tour-2-content\">\n    <span data-ok-popover-arrow aria-hidden=\"true\"></span>\n    <div data-ok-walktour-header>\n      <h2 data-ok-walktour-title id=\"tour-2-title\">Search</h2>\n      <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-walktour-action=\"close\" aria-label=\"Close\"><svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" aria-hidden=\"true\" focusable=\"false\"><path fill=\"currentColor\" d=\"m12 13.41 5.66 5.66a1 1 0 0 0 1.41-1.41L13.41 12l5.66-5.66a1 1 0 0 0-1.41-1.41L12 10.59 6.34 4.93a1 1 0 0 0-1.41 1.41L10.59 12l-5.66 5.66a1 1 0 1 0 1.41 1.41z\"></path></svg></button>\n    </div>\n    <div data-ok-walktour-content id=\"tour-2-content\">Find any message.</div>\n    <span role=\"progressbar\" data-ok-linear-progress data-ok-variant=\"determinate\" data-ok-color=\"primary\" aria-valuenow=\"100\" aria-valuemin=\"0\" aria-valuemax=\"100\" aria-hidden=\"true\">\n      <span data-ok-linear-progress-bar=\"1\"></span>\n    </span>\n    <div data-ok-walktour-footer>\n      <button type=\"button\" data-ok-button data-ok-variant=\"text\" data-ok-color=\"inherit\" data-ok-size=\"md\" data-ok-walktour-action=\"skip\"><span data-ok-button-label>Skip</span></button>\n      <button type=\"button\" data-ok-button data-ok-variant=\"outlined\" data-ok-color=\"inherit\" data-ok-size=\"md\" data-ok-walktour-action=\"back\"><span data-ok-button-label>Back</span></button>\n      <button type=\"button\" data-ok-button data-ok-variant=\"contained\" data-ok-color=\"primary\" data-ok-size=\"md\" data-ok-walktour-action=\"primary\"><span data-ok-button-label>Last</span></button>\n    </div>\n  </div>\n  <span data-ok-walktour-live aria-live=\"polite\" aria-atomic=\"true\" data-ok-format=\"Step {current} of {total}\"></span>\n</div>",
+     "id": "scroll-and-spotlight",
+     "react": "import { Walktour, type WalktourStep } from \"@owlky/react\";\n\nconst steps: WalktourStep[] = [\n  {\n    target: \"#compose\",\n    // Highlight the whole toolbar, and scroll to the section it sits in.\n    spotlightTarget: \"#toolbar\",\n    scrollTarget: \"#mail\",\n    title: \"Write\",\n    content: \"Start a new message from the toolbar.\",\n  },\n  { target: \"#header\", isFixed: true, title: \"Search\", content: \"Find any message.\" },\n];\n\nexport function ToolbarTour() {\n  return <Walktour steps={steps} run continuous scrollDuration={600} />;\n}",
+     "title": "Scroll to and highlight other elements"
+    },
+    {
+     "body": "`beaconTrigger` sets what opens a step from its beacon. `click` is the default. With `hover`, the step opens as soon as a mouse moves over the beacon, while keyboard and touch users still select it. `beaconPlacement` puts the beacon on another side of the target than the tooltip, such as `left` for a tooltip at the `bottom`. `closeButtonAction` sets what the close button does: `close` closes the step and shows the next step's beacon, and `skip` ends the tour, like **Skip**. All three can be set on the tour or on one step.",
+     "html": "<div id=\"tour\" data-ok-walktour data-ok-run data-ok-beacon-trigger=\"hover\" data-ok-close-button-action=\"skip\">\n  <div data-ok-backdrop data-ok-invisible data-ok-walktour-overlay popover=\"manual\" aria-hidden=\"true\">\n    <svg data-ok-walktour-spotlight aria-hidden=\"true\" focusable=\"false\">\n      <path data-ok-walktour-mask fill-rule=\"evenodd\"></path>\n      <path data-ok-walktour-hole></path>\n    </svg>\n  </div>\n  <button type=\"button\" data-ok-walktour-beacon aria-label=\"Open the dialog\" aria-haspopup=\"dialog\" hidden>\n    <span data-ok-walktour-beacon-inner></span>\n  </button>\n  <div popover=\"manual\" data-ok-popover data-ok-arrow data-ok-walktour-step data-ok-placement=\"bottom\"\n    data-ok-target=\"#inbox\" data-ok-beacon-placement=\"left\" role=\"dialog\" aria-labelledby=\"tour-1-title\" aria-describedby=\"tour-1-content\">\n    <span data-ok-popover-arrow aria-hidden=\"true\"></span>\n    <div data-ok-walktour-header>\n      <h2 data-ok-walktour-title id=\"tour-1-title\">Your inbox</h2>\n      <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-walktour-action=\"close\" aria-label=\"Close\"><svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" aria-hidden=\"true\" focusable=\"false\"><path fill=\"currentColor\" d=\"m12 13.41 5.66 5.66a1 1 0 0 0 1.41-1.41L13.41 12l5.66-5.66a1 1 0 0 0-1.41-1.41L12 10.59 6.34 4.93a1 1 0 0 0-1.41 1.41L10.59 12l-5.66 5.66a1 1 0 1 0 1.41 1.41z\"></path></svg></button>\n    </div>\n    <div data-ok-walktour-content id=\"tour-1-content\">New messages arrive here.</div>\n    <span role=\"progressbar\" data-ok-linear-progress data-ok-variant=\"determinate\" data-ok-color=\"primary\" aria-valuenow=\"50\" aria-valuemin=\"0\" aria-valuemax=\"100\" aria-hidden=\"true\">\n      <span data-ok-linear-progress-bar=\"1\"></span>\n    </span>\n    <div data-ok-walktour-footer>\n      <button type=\"button\" data-ok-button data-ok-variant=\"text\" data-ok-color=\"inherit\" data-ok-size=\"md\" data-ok-walktour-action=\"skip\"><span data-ok-button-label>Skip</span></button>\n      <button type=\"button\" data-ok-button data-ok-variant=\"outlined\" data-ok-color=\"inherit\" data-ok-size=\"md\" data-ok-walktour-action=\"back\"><span data-ok-button-label>Back</span></button>\n      <button type=\"button\" data-ok-button data-ok-variant=\"contained\" data-ok-color=\"inherit\" data-ok-size=\"md\" data-ok-walktour-action=\"primary\"><span data-ok-button-label>Close<span data-ok-walktour-progress> (1/2)</span></span></button>\n    </div>\n  </div>\n  <div popover=\"manual\" data-ok-popover data-ok-arrow data-ok-walktour-step data-ok-placement=\"bottom\"\n    data-ok-target=\"#compose\" role=\"dialog\" aria-labelledby=\"tour-2-title\" aria-describedby=\"tour-2-content\">\n    <span data-ok-popover-arrow aria-hidden=\"true\"></span>\n    <div data-ok-walktour-header>\n      <h2 data-ok-walktour-title id=\"tour-2-title\">Write</h2>\n      <button type=\"button\" data-ok-icon-button data-ok-color=\"default\" data-ok-size=\"sm\" data-ok-walktour-action=\"close\" aria-label=\"Close\"><svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" aria-hidden=\"true\" focusable=\"false\"><path fill=\"currentColor\" d=\"m12 13.41 5.66 5.66a1 1 0 0 0 1.41-1.41L13.41 12l5.66-5.66a1 1 0 0 0-1.41-1.41L12 10.59 6.34 4.93a1 1 0 0 0-1.41 1.41L10.59 12l-5.66 5.66a1 1 0 1 0 1.41 1.41z\"></path></svg></button>\n    </div>\n    <div data-ok-walktour-content id=\"tour-2-content\">Start a new message.</div>\n    <span role=\"progressbar\" data-ok-linear-progress data-ok-variant=\"determinate\" data-ok-color=\"primary\" aria-valuenow=\"100\" aria-valuemin=\"0\" aria-valuemax=\"100\" aria-hidden=\"true\">\n      <span data-ok-linear-progress-bar=\"1\"></span>\n    </span>\n    <div data-ok-walktour-footer>\n      <button type=\"button\" data-ok-button data-ok-variant=\"text\" data-ok-color=\"inherit\" data-ok-size=\"md\" data-ok-walktour-action=\"skip\"><span data-ok-button-label>Skip</span></button>\n      <button type=\"button\" data-ok-button data-ok-variant=\"outlined\" data-ok-color=\"inherit\" data-ok-size=\"md\" data-ok-walktour-action=\"back\"><span data-ok-button-label>Back</span></button>\n      <button type=\"button\" data-ok-button data-ok-variant=\"contained\" data-ok-color=\"primary\" data-ok-size=\"md\" data-ok-walktour-action=\"primary\"><span data-ok-button-label>Last</span></button>\n    </div>\n  </div>\n  <span data-ok-walktour-live aria-live=\"polite\" aria-atomic=\"true\" data-ok-format=\"Step {current} of {total}\"></span>\n</div>",
+     "id": "beacon-and-close",
+     "react": "import { Walktour, type WalktourStep } from \"@owlky/react\";\n\nconst steps: WalktourStep[] = [\n  { target: \"#inbox\", beaconPlacement: \"left\", title: \"Your inbox\", content: \"New messages arrive here.\" },\n  { target: \"#compose\", title: \"Write\", content: \"Start a new message.\" },\n];\n\nexport function HoverTour() {\n  return <Walktour steps={steps} run beaconTrigger=\"hover\" closeButtonAction=\"skip\" />;\n}",
+     "title": "Change the beacon and the close button"
+    },
+    {
      "body": "Options of the tour. In React, pass them as props. In HTML, write the attributes on the `data-ok-walktour` element. Every boolean option can also go on a step.",
      "id": "options",
      "title": "Options"
@@ -69092,7 +69447,7 @@
      "title": "Content and behavior"
     },
     {
-     "body": "React reports changes with `onStepChange(index, details)`, `onStatusChange(status, details)` and `onEvent(type, data)`. `onEvent` receives every event of the tour in order: `tour:start`, `step:before`, `beacon`, `tooltip`, `step:after`, `tour:end`, `tour:status` and `error:target-not-found`. Each comes with the action, the control that asked for it, the step, the status and the number of steps. In HTML, listen for `ok:walktour:change` (the new state), `ok:walktour:event` (the same events as `onEvent`) and `ok:walktour:beforechange`, which you can cancel to keep the current step. A step whose target isn't in the page is skipped.",
+     "body": "React reports changes with `onStepChange(index, details)`, `onStatusChange(status, details)` and `onEvent(type, data)`. `onEvent` receives every event of the tour in order: `tour:start`, `step:before-hook`, `step:before`, `beacon`, `tooltip`, `step:after`, `step:after-hook`, `tour:end`, `tour:status`, `error:target-not-found` and `error`. Each comes with the action, the control that asked for it, the step, the status and the number of steps, and `error` events also carry the `error`. In HTML, listen for `ok:walktour:change` (the new state), `ok:walktour:event` (the same events as `onEvent`), `ok:walktour:beforestep` (a step is about to show) and `ok:walktour:beforechange`, which you can cancel to keep the current step. A step whose target doesn't appear in time is skipped.",
      "html": "<script type=\"module\">\n  const root = document.getElementById(\"tour\");\n  root.addEventListener(\"ok:walktour:event\", (event) => {\n    if (event.detail.type === \"tour:end\") console.log(\"Tour ended:\", event.detail.status);\n  });\n</script>",
      "id": "events",
      "react": "import { Walktour, type WalktourStep } from \"@owlky/react\";\n\nconst steps: WalktourStep[] = [\n  { target: \"#inbox\", title: \"Your inbox\", content: \"New messages arrive here.\" },\n  { target: \"#compose\", title: \"Write\", content: \"Start a new message.\", placement: \"left\" },\n];\n\nexport function WalktourEvents() {\n  return (\n    <Walktour\n      steps={steps}\n      run\n      onEvent={(type, data) => {\n        if (type === \"tour:end\") console.log(\"Tour ended:\", data.status);\n      }}\n    />\n  );\n}",
@@ -69104,7 +69459,7 @@
      "title": "Keyboard"
     },
     {
-     "body": "- Each step is a dialog named by its title (or \"Step 2 of 5\" without one) and described by its content. While the overlay blocks the page, the step is modal: Tab stays inside it and the rest of the page is inert.\n- Focus moves to the step's primary button when a step opens, to the beacon when a step closes to one, and back to where it was when the tour ends.\n- A polite live region announces \"Step 2 of 5\" when a step opens.\n- The beacon is a button named \"Open the dialog\". Change the text with `locale.open`.\n- Escape closes a step unless `disableCloseOnEsc` is set. Keep it on: it is the quickest way out for keyboard users.\n- The beacon's pulse stops when the system asks for reduced motion, and scrolling to a target is instant then.",
+     "body": "- Each step is a dialog named by its title (or \"Step 2 of 5\" without one) and described by its content. While the overlay blocks the page, the step is modal: Tab stays inside it and the rest of the page is inert.\n- `disableFocusTrap` lets Tab leave the step. The step is then no longer modal, so screen readers can reach the page too. Use it when the step asks people to use something outside it.\n- `beaconTrigger=\"hover\"` only adds a way to open a step: keyboard and touch users still select the beacon.\n- Focus moves to the step's primary button when a step opens, to the beacon when a step closes to one, and back to where it was when the tour ends.\n- A polite live region announces \"Step 2 of 5\" when a step opens.\n- The beacon is a button named \"Open the dialog\". Change the text with `locale.open`.\n- Escape closes a step unless `disableCloseOnEsc` is set. Keep it on: it is the quickest way out for keyboard users.\n- The beacon's pulse stops when the system asks for reduced motion, and scrolling to a target is instant then.",
      "id": "accessibility",
      "title": "Accessibility"
     },

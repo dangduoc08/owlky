@@ -1288,8 +1288,15 @@ export {
   type WalktourControllerOptions,
   type WalktourIntent,
   type WalktourStepFlag,
+  type WalktourTargetKind,
   walktourStepFlags,
 } from "./walktour/walktour-controller.js";
+export {
+  createWalktourFlow,
+  type WalktourFlow,
+  type WalktourFlowHost,
+  type WalktourRequest,
+} from "./walktour/walktour-flow.js";
 export {
   autoPlacement,
   beaconPoint,
@@ -1301,6 +1308,8 @@ export {
   roundedRectPath,
   type WalktourAction,
   type WalktourApi,
+  type WalktourBeaconTrigger,
+  type WalktourCloseButtonAction,
   type WalktourContext,
   type WalktourEventData,
   type WalktourEventType,
@@ -1312,6 +1321,9 @@ export {
   type WalktourStatus,
   type WalktourTransition,
   walktourActions,
+  walktourBeaconTriggers,
+  walktourCloseButtonActions,
+  walktourEventData,
   walktourEvents,
   walktourEventTypes,
   walktourPlacements,

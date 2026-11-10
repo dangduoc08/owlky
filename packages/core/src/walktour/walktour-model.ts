@@ -17,6 +17,14 @@ export type WalktourLifecycle = "beacon" | "tooltip";
 export const walktourPlacements = [...placements, "auto", "center"] as const;
 export type WalktourPlacement = (typeof walktourPlacements)[number];
 
+/** What opens a step from its beacon (react-joyride's `beaconTrigger`). */
+export const walktourBeaconTriggers = ["click", "hover"] as const;
+export type WalktourBeaconTrigger = (typeof walktourBeaconTriggers)[number];
+
+/** What the close button (the X) does (react-joyride's `closeButtonAction`). */
+export const walktourCloseButtonActions = ["close", "skip"] as const;
+export type WalktourCloseButtonAction = (typeof walktourCloseButtonActions)[number];
+
 /**
  * What changed the state. `next` / `prev` / `close` / `skip` come from the tooltip's buttons,
  * Escape or the overlay; `open` from the beacon; the rest from the API (`start`, `stop`, `reset`,
@@ -49,13 +57,16 @@ export type WalktourOrigin =
 /** The events a state change reports (`onEvent` / `ok:walktour:event`), in order. */
 export const walktourEventTypes = [
   "tour:start",
+  "step:before-hook",
   "step:before",
   "beacon",
   "tooltip",
   "step:after",
+  "step:after-hook",
   "tour:end",
   "tour:status",
   "error:target-not-found",
+  "error",
 ] as const;
 export type WalktourEventType = (typeof walktourEventTypes)[number];
 
@@ -67,6 +78,11 @@ export interface WalktourState {
   /** The action that produced this state. */
   readonly action: WalktourAction;
   readonly origin: WalktourOrigin;
+  /**
+   * The tour waits for a step's `before` hook or for its target to appear (`targetWaitTimeout`):
+   * nothing is shown until that step is ready. The state still holds the step that was showing.
+   */
+  readonly waiting?: boolean | undefined;
 }
 
 export interface WalktourEventData {
@@ -79,6 +95,8 @@ export interface WalktourEventData {
   readonly lifecycle: WalktourLifecycle;
   /** Number of steps. */
   readonly size: number;
+  /** `error` events: what failed (a `before` hook that threw, rejected or timed out). */
+  readonly error?: Error | undefined;
 }
 
 /** What the transition needs to know about the tour (read from the options when it runs). */
@@ -90,6 +108,10 @@ export interface WalktourContext {
   readonly disableBeacon: (index: number) => boolean;
   /** The step's target is in the page (a missing target skips the step). Default: always. */
   readonly available?: ((index: number) => boolean) | undefined;
+  /** How long to wait for a missing target before skipping its step (ms; 0 = don't wait). */
+  readonly targetWaitTimeout?: ((index: number) => number) | undefined;
+  /** How long to wait for a step's `before` hook (ms; 0 = no limit). */
+  readonly beforeTimeout?: ((index: number) => number) | undefined;
 }
 
 export interface WalktourTransition {
@@ -251,6 +273,22 @@ export function walktourTransition(
     }
   }
 }
+
+/** The data of event `type` about `state`'s step (or step `index`). */
+export const walktourEventData = (
+  type: WalktourEventType,
+  state: WalktourState,
+  size: number,
+  index = state.index,
+): WalktourEventData => ({
+  type,
+  action: state.action,
+  origin: state.origin,
+  index,
+  status: state.status,
+  lifecycle: state.lifecycle,
+  size,
+});
 
 /** The events between two states, in the order they happen (react-joyride's `EVENTS`). */
 export function walktourEvents(

@@ -1851,6 +1851,10 @@ export interface WalktourParts {
   >;
   /** On a step: a CSS selector of the element it points at (`body` centers it). */
   "data-ok-target": Value<string>;
+  /** On a step: a CSS selector of the element to scroll to instead of the target. */
+  "data-ok-scroll-target": Value<string>;
+  /** On a step: a CSS selector of the element to put in the spotlight instead of the target. */
+  "data-ok-spotlight-target": Value<string>;
   /** A step button and what it does. */
   "data-ok-walktour-action": Value<"back" | "close" | "primary" | "skip">;
   /** The pulsing button that opens a step. */

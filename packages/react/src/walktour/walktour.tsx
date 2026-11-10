@@ -2,15 +2,20 @@
 
 import {
   createWalktourController,
+  createWalktourFlow,
   defaultWalktourLocale,
   formatWalktour,
   initialWalktourState,
+  type Placement,
   type WalktourAction,
   type WalktourAnatomyOptions,
   type WalktourApi,
+  type WalktourBeaconTrigger,
+  type WalktourCloseButtonAction,
   type WalktourController,
   type WalktourEventData,
   type WalktourEventType,
+  type WalktourFlow,
   type WalktourLifecycle,
   type WalktourLocale,
   type WalktourOrigin,
@@ -19,10 +24,8 @@ import {
   type WalktourStatus,
   type WalktourStepOverride,
   walktourAttributes,
-  walktourEvents,
   walktourStepAttributes,
   walktourStepOverrides,
-  walktourTransition,
 } from "@owlky/core";
 import {
   forwardRef,
@@ -67,6 +70,28 @@ export interface WalktourStep extends Partial<Record<WalktourStepOverride, boole
   locale?: Partial<WalktourLocale> | undefined;
   /** Attributes for the step's element (for example `data-ok-theme="dark"` or a `className`). */
   stepProps?: HTMLAttributes<HTMLDivElement> | undefined;
+  /** Scroll to this element instead of the target (the tooltip and the spotlight stay on the target). */
+  scrollTarget?: WalktourTarget | undefined;
+  /** Put this element in the spotlight instead of the target (the tooltip stays on the target). */
+  spotlightTarget?: WalktourTarget | undefined;
+  /** The target doesn't move when the page scrolls: don't scroll to it. Found on its own for fixed elements. */
+  isFixed?: boolean | undefined;
+  /** Side and alignment of the beacon. Default: `placement`. */
+  beaconPlacement?: Placement | undefined;
+  /** What opens this step from its beacon. Default: the tour's `beaconTrigger`. */
+  beaconTrigger?: WalktourBeaconTrigger | undefined;
+  /** What this step's close button does. Default: the tour's `closeButtonAction`. */
+  closeButtonAction?: WalktourCloseButtonAction | undefined;
+  /** This step's scroll duration (ms). Default: the tour's `scrollDuration`. */
+  scrollDuration?: number | undefined;
+  /** How long this step waits for its target (ms). Default: the tour's `targetWaitTimeout`. */
+  targetWaitTimeout?: number | undefined;
+  /** How long the tour waits for this step's `before` (ms). Default: the tour's `beforeTimeout`. */
+  beforeTimeout?: number | undefined;
+  /** Runs before the step shows; the tour waits for a returned promise. Replaces the tour's `before`. */
+  before?: ((data: WalktourEventData) => Promise<unknown> | void) | undefined;
+  /** Runs after the step ended (not awaited). Replaces the tour's `after`. */
+  after?: ((data: WalktourEventData) => void) | undefined;
 }
 
 export interface WalktourChangeDetails {
@@ -99,6 +124,13 @@ export interface WalktourProps
   onEvent?: ((type: WalktourEventType, data: WalktourEventData) => void) | undefined;
   /** Receives the tour's API: `start`, `stop`, `reset`, `next`, `prev`, `go`, `skip`… */
   apiRef?: RefObject<WalktourApi | null> | undefined;
+  /**
+   * Runs before each step shows (react-joyride's `before`), for example to open a menu the
+   * target is in. The tour waits for a returned promise, up to `beforeTimeout`.
+   */
+  before?: ((data: WalktourEventData) => Promise<unknown> | void) | undefined;
+  /** Runs after each step ended (react-joyride's `after`), for example to close that menu. Not awaited. */
+  after?: ((data: WalktourEventData) => void) | undefined;
 }
 
 const CloseIcon = () => (
@@ -149,6 +181,14 @@ export const Walktour = forwardRef<HTMLDivElement, WalktourProps>(function Walkt
     spotlightPadding,
     spotlightRadius,
     scrollOffset,
+    scrollDuration,
+    beaconTrigger,
+    closeButtonAction,
+    disableFocusTrap,
+    targetWaitTimeout,
+    beforeTimeout,
+    before,
+    after,
     id: idProp,
     ...props
   },
@@ -167,22 +207,40 @@ export const Walktour = forwardRef<HTMLDivElement, WalktourProps>(function Walkt
   const current: WalktourState = controlled ? { ...state, index: stepIndex } : state;
 
   // The latest values for the controller's callbacks and the API.
-  const latest = useRef({ current, steps, onStepChange, onStatusChange, onEvent, controlled });
-  latest.current = { current, steps, onStepChange, onStatusChange, onEvent, controlled };
+  const latest = useRef({
+    current,
+    steps,
+    onStepChange,
+    onStatusChange,
+    onEvent,
+    controlled,
+    before,
+    after,
+  });
+  latest.current = {
+    current,
+    steps,
+    onStepChange,
+    onStatusChange,
+    onEvent,
+    controlled,
+    before,
+    after,
+  };
 
-  const dispatch = useRef(
-    (action: WalktourAction, origin: WalktourOrigin = "api", index?: number) => {
-      // Always set: the layout effect creates it before any effect or the API can dispatch.
-      const controller = controllerRef.current as WalktourController;
-      const { current: from, onStepChange, onStatusChange, onEvent } = latest.current;
-      const context = controller.context();
-      const { state: next, notFound } = walktourTransition(from, action, context, {
-        index,
-        origin,
-      });
-      if (next === from) return;
-      latest.current.current = latest.current.controlled ? { ...next, index: from.index } : next;
+  const flowRef = useRef<WalktourFlow | null>(null);
+  flowRef.current ??= createWalktourFlow({
+    state: () => latest.current.current,
+    // Always set: the layout effect creates it before any effect or the API can dispatch.
+    context: () => (controllerRef.current as WalktourController).context(),
+    commit(next, from, { action, origin, external }) {
+      const { onStepChange, onStatusChange, controlled } = latest.current;
       setState(next);
+      if (external) {
+        latest.current.current = next;
+        return;
+      }
+      latest.current.current = controlled ? { ...next, index: from.index } : next;
       if (next.index !== from.index)
         onStepChange?.(next.index, {
           action,
@@ -191,24 +249,49 @@ export const Walktour = forwardRef<HTMLDivElement, WalktourProps>(function Walkt
           lifecycle: next.lifecycle,
         });
       if (next.status !== from.status) onStatusChange?.(next.status, { action, index: next.index });
-      for (const event of walktourEvents(from, next, context.size, notFound))
-        onEvent?.(event.type, event);
     },
-  ).current;
+    wait(next) {
+      latest.current.current = next;
+      setState(next);
+    },
+    emit: (event) => latest.current.onEvent?.(event.type, event),
+    before(data) {
+      const step = latest.current.steps[data.index];
+      return (step?.before ?? latest.current.before)?.(data);
+    },
+    after(data) {
+      const step = latest.current.steps[data.index];
+      const hook = step?.after ?? latest.current.after;
+      if (!hook) return false;
+      try {
+        hook(data);
+      } catch {
+        // Not awaited, never breaks the tour (react-joyride).
+      }
+      return true;
+    },
+  });
+  const flow = flowRef.current;
+  const dispatch = flow.dispatch;
 
   useLayoutEffect(() => {
     const controller = createWalktourController(rootRef.current as HTMLDivElement, {
       onIntent: (intent, origin) => dispatch(intent, origin),
       // The controller asks only for steps it renders (one element per step).
-      resolveTarget: (_, index) =>
-        resolveTarget((latest.current.steps[index] as WalktourStep).target),
+      resolveTarget: (_, index, kind) => {
+        const step = latest.current.steps[index] as WalktourStep;
+        if (kind === "target") return resolveTarget(step.target);
+        const other = kind === "scroll" ? step.scrollTarget : step.spotlightTarget;
+        return other === undefined ? null : resolveTarget(other);
+      },
     });
     controllerRef.current = controller;
     return () => {
+      flow.cancel();
       controller.destroy();
       controllerRef.current = null;
     };
-  }, [dispatch]);
+  }, [dispatch, flow]);
 
   // `run` starts and pauses the tour.
   // biome-ignore lint/correctness/useExhaustiveDependencies: runs when `run` changes.
@@ -225,15 +308,8 @@ export const Walktour = forwardRef<HTMLDivElement, WalktourProps>(function Walkt
       setState((previous) => ({ ...previous, index: stepIndex }));
       return;
     }
-    const controller = controllerRef.current as WalktourController;
-    const context = controller.context();
-    const from = { ...state, index: state.index };
-    const { state: next, notFound } = walktourTransition(from, "go", context, {
-      index: stepIndex,
-    });
-    setState(next === from ? { ...state, index: stepIndex } : next);
-    for (const event of walktourEvents(from, next, context.size, notFound))
-      latest.current.onEvent?.(event.type, event);
+    if (!dispatch("go", "api", stepIndex, { from: state, external: true }))
+      setState({ ...state, index: stepIndex });
   }, [stepIndex]);
 
   // Render the state (after React has written the steps).
@@ -289,6 +365,12 @@ export const Walktour = forwardRef<HTMLDivElement, WalktourProps>(function Walkt
         spotlightPadding,
         spotlightRadius,
         scrollOffset,
+        scrollDuration,
+        beaconTrigger,
+        closeButtonAction,
+        disableFocusTrap,
+        targetWaitTimeout,
+        beforeTimeout,
       })}
       {...(run ? { "data-ok-run": "" } : {})}
       data-ok-runtime="off"
@@ -334,7 +416,17 @@ export const Walktour = forwardRef<HTMLDivElement, WalktourProps>(function Walkt
               placement: step.placement,
               spotlightPadding: step.spotlightPadding,
               width: step.width,
+              beaconPlacement: step.beaconPlacement,
+              isFixed: step.isFixed,
+              beaconTrigger: step.beaconTrigger,
+              closeButtonAction: step.closeButtonAction,
+              scrollDuration: step.scrollDuration,
+              targetWaitTimeout: step.targetWaitTimeout,
+              beforeTimeout: step.beforeTimeout,
               target: typeof step.target === "string" ? step.target : undefined,
+              scrollTarget: typeof step.scrollTarget === "string" ? step.scrollTarget : undefined,
+              spotlightTarget:
+                typeof step.spotlightTarget === "string" ? step.spotlightTarget : undefined,
             })}
             role="dialog"
             {...(step.title !== undefined
