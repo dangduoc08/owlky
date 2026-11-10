@@ -1,9 +1,10 @@
 import { act, render, screen } from "@testing-library/react";
+import { createRef } from "react";
 import { renderToString } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { userEvent } from "vitest/browser";
 import { expectNoAxeViolations } from "../test-utils.js";
-import { Editor } from "./editor.js";
+import { Editor, type TiptapEditor } from "./editor.js";
 
 const frame = () => new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
 const textbox = (name = "Notes") => screen.getByRole("textbox", { name });
@@ -243,5 +244,103 @@ describe("Editor settings", () => {
     expect(html).toContain('data-ok-editor-mentions=""');
     expect(html).toContain('id="e-table"');
     expect(html).toContain('name="n"');
+  });
+});
+
+describe("Editor access to Tiptap", () => {
+  it("gives the editor through editorRef and onCreate, and null after unmount", async () => {
+    const editorRef = createRef<TiptapEditor | null>();
+    let resolveCreate: (props: { editor: TiptapEditor }) => void = () => {};
+    const created = new Promise<{ editor: TiptapEditor }>((resolve) => {
+      resolveCreate = resolve;
+    });
+    const onBeforeCreate = vi.fn();
+    const { unmount } = render(
+      <Editor
+        aria-label="Notes"
+        defaultValue="<p>Hello world</p>"
+        editorRef={editorRef}
+        onBeforeCreate={onBeforeCreate}
+        onCreate={resolveCreate}
+      />,
+    );
+    const editor = editorRef.current as TiptapEditor;
+    expect(onBeforeCreate).toHaveBeenCalledWith({ editor });
+    expect((await created).editor).toBe(editor);
+    expect(editor.getText()).toBe("Hello world");
+    expect(editor.getJSON()).toMatchObject({ type: "doc", content: [{ type: "paragraph" }] });
+    unmount();
+    expect(editorRef.current).toBeNull();
+  });
+
+  it("calls the latest event handlers; DOM focus handlers stay on the root", async () => {
+    const calls: string[] = [];
+    const log = (name: string) => () => calls.push(name);
+    const onFocus = vi.fn();
+    let resolveDelete: () => void = () => {};
+    const deleted = new Promise<void>((resolve) => {
+      resolveDelete = resolve;
+    });
+    const editorRef = createRef<TiptapEditor | null>();
+    const props = {
+      "aria-label": "Notes",
+      defaultValue: "<p>Hello world</p>",
+      editorRef,
+      onFocus,
+      onSelectionUpdate: log("selectionUpdate"),
+      onTransaction: log("transaction"),
+      // Tiptap reports deletions on a later task.
+      onDelete: () => resolveDelete(),
+      onEditorPaste: log("paste"),
+      onEditorDrop: log("drop"),
+      onEditorBlur: log("blur"),
+      onDestroy: log("destroy"),
+    };
+    const { rerender, unmount } = render(<Editor {...props} onEditorFocus={log("focus")} />);
+    // A new handler is used without a new editor.
+    rerender(<Editor {...props} onEditorFocus={log("focus 2")} />);
+    const editor = editorRef.current as TiptapEditor;
+    act(() => textbox().focus());
+    await until(textbox(), () => calls.includes("focus 2"));
+    expect(onFocus).toHaveBeenCalled();
+    act(() => {
+      editor.commands.setTextSelection({ from: 1, to: 6 });
+      editor.commands.deleteSelection();
+      editor.view.pasteText("Hi");
+      editor.emit("drop", {
+        editor,
+        event: new Event("drop") as DragEvent,
+        slice: editor.state.doc.slice(0, 1),
+        moved: false,
+      });
+    });
+    expect(calls).toEqual(
+      expect.arrayContaining(["selectionUpdate", "transaction", "paste", "drop"]),
+    );
+    await deleted;
+    expect(calls).not.toContain("focus");
+    act(() => screen.getByRole("button", { name: "Bold" }).focus());
+    expect(calls).toContain("blur");
+    unmount();
+    expect(calls.at(-1)).toBe("destroy");
+  });
+
+  it("enableContentCheck reports invalid content and writes the option", () => {
+    const onContentError = vi.fn();
+    render(
+      <Editor
+        aria-label="Notes"
+        defaultValue="<p>Kept</p><custom-element>x</custom-element>"
+        enableContentCheck
+        emitContentError
+        onContentError={onContentError}
+      />,
+    );
+    const root = document.querySelector("[data-ok-editor]") as HTMLElement;
+    expect(root.hasAttribute("data-ok-enable-content-check")).toBe(true);
+    expect(root.hasAttribute("data-ok-emit-content-error")).toBe(true);
+    expect(onContentError).toHaveBeenCalledTimes(1);
+    expect(onContentError.mock.calls[0]?.[0].error).toBeInstanceOf(Error);
+    expect(textbox().textContent).toContain("Kept");
   });
 });

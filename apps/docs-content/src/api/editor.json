@@ -298,9 +298,57 @@
     "events": [
      {
       "cancelable": false,
+      "description": "Tiptap's `beforeCreate`: the editor is being built (the instance doesn't exist yet).",
+      "detail": "undefined",
+      "name": "ok:editor:beforecreate"
+     },
+     {
+      "cancelable": false,
+      "description": "Tiptap's `blur`: the focus left the text.",
+      "detail": "{ event: FocusEvent; }",
+      "name": "ok:editor:blur"
+     },
+     {
+      "cancelable": false,
       "description": "After the content changed, with its HTML.",
       "detail": "{ value: string; }",
       "name": "ok:editor:change"
+     },
+     {
+      "cancelable": false,
+      "description": "Tiptap's `contentError`: content didn't fit the editor's schema (with `data-ok-enable-content-check`).",
+      "detail": "{ message: string; }",
+      "name": "ok:editor:contenterror"
+     },
+     {
+      "cancelable": false,
+      "description": "Tiptap's `create`: the editor is ready, with its HTML.",
+      "detail": "{ value: string; }",
+      "name": "ok:editor:create"
+     },
+     {
+      "cancelable": false,
+      "description": "Tiptap's `delete`: a node or a mark was removed. `name` is its type (`paragraph`, `bold`…), `from` / `to` the removed range, `partial` when only part of it went.",
+      "detail": "{ type: \"mark\" | \"node\"; name: string; from: number; to: number; partial: boolean; }",
+      "name": "ok:editor:delete"
+     },
+     {
+      "cancelable": false,
+      "description": "Tiptap's `destroy`: the editor was destroyed (the runtime stopped or the element left).",
+      "detail": "undefined",
+      "name": "ok:editor:destroy"
+     },
+     {
+      "cancelable": false,
+      "description": "Tiptap's `drop`: content was dropped, with its plain text; `moved` when it was dragged from the editor.",
+      "detail": "{ event: DragEvent; text: string; moved: boolean; }",
+      "name": "ok:editor:drop"
+     },
+     {
+      "cancelable": false,
+      "description": "Tiptap's `focus`: the focus entered the text.",
+      "detail": "{ event: FocusEvent; }",
+      "name": "ok:editor:focus"
      },
      {
       "cancelable": false,
@@ -313,6 +361,24 @@
       "description": "The mention list needs items for `query` (the text after the trigger). `items` holds the matches from `template[data-ok-editor-mention-items]`; call `respondWith(itemsOrPromise)` to show others (for example from a server).",
       "detail": "{ query: string; char: string; items: readonly EditorMentionItem[]; respondWith(items: PromiseLike<readonly EditorMentionItem[]> | readonly EditorMentionItem[]): void; }",
       "name": "ok:editor:mentionsearch"
+     },
+     {
+      "cancelable": false,
+      "description": "Tiptap's `paste`: content was pasted, with its plain text.",
+      "detail": "{ event: ClipboardEvent; text: string; }",
+      "name": "ok:editor:paste"
+     },
+     {
+      "cancelable": false,
+      "description": "Tiptap's `selectionUpdate`: the selection moved, from `from` to `to` (document positions).",
+      "detail": "{ from: number; to: number; empty: boolean; }",
+      "name": "ok:editor:selectionupdate"
+     },
+     {
+      "cancelable": false,
+      "description": "Tiptap's `transaction`: any change of the editor's state; `docChanged` when the content changed.",
+      "detail": "{ docChanged: boolean; }",
+      "name": "ok:editor:transaction"
      }
     ],
     "methods": [
@@ -321,6 +387,12 @@
       "kind": "property",
       "name": "controller",
       "type": "EditorController"
+     },
+     {
+      "description": "The Tiptap editor: its commands, `on()` for events, `isEmpty`, `isFocused`, `setOptions()`.",
+      "kind": "property",
+      "name": "editor",
+      "type": "Editor"
      },
      {
       "description": "Moves the focus into the editor.",
@@ -333,6 +405,18 @@
       "kind": "property",
       "name": "fullscreen",
       "type": "boolean"
+     },
+     {
+      "description": "The content as ProseMirror JSON.",
+      "kind": "method",
+      "name": "getJSON",
+      "type": "() => JSONContent"
+     },
+     {
+      "description": "The content as plain text, blocks separated by a blank line.",
+      "kind": "method",
+      "name": "getText",
+      "type": "() => string"
      },
      {
       "description": "Turns editing on or off.",
@@ -424,6 +508,18 @@
       "description": "The same shortcuts on pasted text (`false`: off).",
       "kind": "behavior",
       "name": "enablePasteRules"
+     },
+     {
+      "attr": "data-ok-enable-content-check",
+      "description": "Checks content against what the editor supports: invalid content fires a content error event (initial content loads without the invalid parts; a new value is refused).",
+      "kind": "flag",
+      "name": "enableContentCheck"
+     },
+     {
+      "attr": "data-ok-emit-content-error",
+      "description": "Fires the content error event for invalid inserted content even without the check (the content is kept).",
+      "kind": "flag",
+      "name": "emitContentError"
      },
      {
       "attr": "name",
@@ -728,6 +824,21 @@
       "type": "EditorProps<any>"
      },
      {
+      "description": "Receives the Tiptap editor once it exists, and `null` when it is destroyed: its commands, `getJSON()`, `getText()`, `isEmpty`, `isFocused`, `on()` and `setOptions()`.",
+      "name": "editorRef",
+      "type": "Ref<Editor | null>"
+     },
+     {
+      "description": "Calls `onContentError` for invalid inserted content even without the check (the content is kept). Read at creation.",
+      "name": "emitContentError",
+      "type": "boolean"
+     },
+     {
+      "description": "Checks content against what the editor supports: invalid content calls `onContentError`. The initial content loads without its invalid parts; a new invalid `value` is refused. Read at creation.",
+      "name": "enableContentCheck",
+      "type": "boolean"
+     },
+     {
       "default": "true",
       "description": "Markdown-like shortcuts while typing, such as `# ` for a heading.",
       "name": "enableInputRules",
@@ -775,14 +886,69 @@
       "type": "string"
      },
      {
+      "description": "Tiptap's `beforeCreate`: the editor is being built.",
+      "name": "onBeforeCreate",
+      "type": "EditorEventHandler<\"beforeCreate\">"
+     },
+     {
       "description": "Called with the new HTML (`\"\"` when empty) after every change.",
       "name": "onChange",
       "type": "((value: string) => void)"
      },
      {
+      "description": "Tiptap's `contentError`: content didn't fit the editor's schema (see `enableContentCheck`).",
+      "name": "onContentError",
+      "type": "EditorEventHandler<\"contentError\">"
+     },
+     {
+      "description": "Tiptap's `create`: the editor is ready.",
+      "name": "onCreate",
+      "type": "EditorEventHandler<\"create\">"
+     },
+     {
+      "description": "Tiptap's `delete`: a node or a mark was removed.",
+      "name": "onDelete",
+      "type": "EditorEventHandler<\"delete\">"
+     },
+     {
+      "description": "Tiptap's `destroy`: the editor was destroyed (unmount, or a new editor for new settings).",
+      "name": "onDestroy",
+      "type": "EditorEventHandler<\"destroy\">"
+     },
+     {
+      "description": "Tiptap's `blur`: the focus left the text.",
+      "name": "onEditorBlur",
+      "type": "EditorEventHandler<\"blur\">"
+     },
+     {
+      "description": "Tiptap's `drop`: content was dropped into the text (`moved` when dragged from the editor).",
+      "name": "onEditorDrop",
+      "type": "EditorEventHandler<\"drop\">"
+     },
+     {
+      "description": "Tiptap's `focus`: the focus entered the text (the root's `onFocus` hears every part).",
+      "name": "onEditorFocus",
+      "type": "EditorEventHandler<\"focus\">"
+     },
+     {
+      "description": "Tiptap's `paste`: content was pasted into the text, with its ProseMirror `slice`.",
+      "name": "onEditorPaste",
+      "type": "EditorEventHandler<\"paste\">"
+     },
+     {
       "description": "Called when the Fullscreen button or Escape changes fullscreen mode.",
       "name": "onFullscreenChange",
       "type": "((fullscreen: boolean) => void)"
+     },
+     {
+      "description": "Tiptap's `selectionUpdate`: the selection moved.",
+      "name": "onSelectionUpdate",
+      "type": "EditorEventHandler<\"selectionUpdate\">"
+     },
+     {
+      "description": "Tiptap's `transaction`: any change of the editor's state.",
+      "name": "onTransaction",
+      "type": "EditorEventHandler<\"transaction\">"
      },
      {
       "description": "ProseMirror parse options for the content (Tiptap's `parseOptions`). Read at creation.",
@@ -816,5 +982,11 @@
  ],
  "format": 1,
  "name": "editor",
- "title": "Editor"
+ "title": "Editor",
+ "types": [
+  {
+   "name": "EditorEventHandler",
+   "type": "((props: EditorEventProps[K]) => void)"
+  }
+ ]
 }

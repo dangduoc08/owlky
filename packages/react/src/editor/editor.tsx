@@ -11,6 +11,8 @@ import {
   type EditorBubbleMenuOptions,
   type EditorController,
   type EditorControllerOptions,
+  type EditorEventName,
+  type EditorEventProps,
   type EditorHighlighter,
   type EditorIconName,
   type EditorMentionOptions,
@@ -26,6 +28,7 @@ import {
   editorToolbarShortcut,
   holdEditorFullscreen,
   safeEditorUrl,
+  type TiptapEditor,
 } from "@owlky/core/editor";
 import {
   type FormEvent,
@@ -33,6 +36,7 @@ import {
   type HTMLAttributes,
   type KeyboardEvent,
   type ReactNode,
+  type Ref,
   useEffect,
   useId,
   useLayoutEffect,
@@ -44,9 +48,15 @@ import { Button } from "../button/button.js";
 import { Menu, MenuItem } from "../menu/menu.js";
 import { Popover } from "../popover/popover.js";
 import { TextField } from "../text-field/text-field.js";
-import { useMergedRefs } from "../utils/refs.js";
+import { setRef, useMergedRefs } from "../utils/refs.js";
 
-export type { EditorHighlighter, EditorMentionItem } from "@owlky/core/editor";
+export type {
+  EditorEventName,
+  EditorEventProps,
+  EditorHighlighter,
+  EditorMentionItem,
+  TiptapEditor,
+} from "@owlky/core/editor";
 
 export interface EditorProps
   extends Omit<HTMLAttributes<HTMLDivElement>, "onChange" | "defaultValue" | "placeholder"> {
@@ -106,7 +116,62 @@ export interface EditorProps
   enableInputRules?: EditorControllerOptions["enableInputRules"];
   /** The same shortcuts on pasted text. Default `true`. */
   enablePasteRules?: EditorControllerOptions["enablePasteRules"];
+  /**
+   * Checks content against what the editor supports: invalid content calls `onContentError`.
+   * The initial content loads without its invalid parts; a new invalid `value` is refused. Read at creation.
+   */
+  enableContentCheck?: boolean | undefined;
+  /** Calls `onContentError` for invalid inserted content even without the check (the content is kept). Read at creation. */
+  emitContentError?: boolean | undefined;
+  /**
+   * Receives the Tiptap editor once it exists, and `null` when it is destroyed: its commands,
+   * `getJSON()`, `getText()`, `isEmpty`, `isFocused`, `on()` and `setOptions()`.
+   */
+  editorRef?: Ref<TiptapEditor | null> | undefined;
+  /** Tiptap's `beforeCreate`: the editor is being built. */
+  onBeforeCreate?: EditorEventHandler<"beforeCreate">;
+  /** Tiptap's `create`: the editor is ready. */
+  onCreate?: EditorEventHandler<"create">;
+  /** Tiptap's `focus`: the focus entered the text (the root's `onFocus` hears every part). */
+  onEditorFocus?: EditorEventHandler<"focus">;
+  /** Tiptap's `blur`: the focus left the text. */
+  onEditorBlur?: EditorEventHandler<"blur">;
+  /** Tiptap's `selectionUpdate`: the selection moved. */
+  onSelectionUpdate?: EditorEventHandler<"selectionUpdate">;
+  /** Tiptap's `transaction`: any change of the editor's state. */
+  onTransaction?: EditorEventHandler<"transaction">;
+  /** Tiptap's `paste`: content was pasted into the text, with its ProseMirror `slice`. */
+  onEditorPaste?: EditorEventHandler<"paste">;
+  /** Tiptap's `drop`: content was dropped into the text (`moved` when dragged from the editor). */
+  onEditorDrop?: EditorEventHandler<"drop">;
+  /** Tiptap's `delete`: a node or a mark was removed. */
+  onDelete?: EditorEventHandler<"delete">;
+  /** Tiptap's `contentError`: content didn't fit the editor's schema (see `enableContentCheck`). */
+  onContentError?: EditorEventHandler<"contentError">;
+  /** Tiptap's `destroy`: the editor was destroyed (unmount, or a new editor for new settings). */
+  onDestroy?: EditorEventHandler<"destroy">;
 }
+
+/** A handler of a Tiptap event: its props, as `@tiptap/react` gives them. */
+export type EditorEventHandler<K extends EditorEventName> =
+  | ((props: EditorEventProps[K]) => void)
+  | undefined;
+
+/** Each Tiptap event's React prop. */
+const EVENT_PROPS = {
+  beforeCreate: "onBeforeCreate",
+  create: "onCreate",
+  focus: "onEditorFocus",
+  blur: "onEditorBlur",
+  selectionUpdate: "onSelectionUpdate",
+  transaction: "onTransaction",
+  paste: "onEditorPaste",
+  drop: "onEditorDrop",
+  delete: "onDelete",
+  contentError: "onContentError",
+  destroy: "onDestroy",
+} as const satisfies Record<EditorEventName, keyof EditorProps>;
+type EventHandlers = Pick<EditorProps, (typeof EVENT_PROPS)[EditorEventName]>;
 
 export interface EditorMentionProps {
   /** The character that opens the list. Default `"@"`. */
@@ -193,12 +258,43 @@ export const Editor = forwardRef<HTMLDivElement, EditorProps>(function Editor(
     textDirection,
     enableInputRules,
     enablePasteRules,
+    enableContentCheck,
+    emitContentError,
+    editorRef,
+    onBeforeCreate,
+    onCreate,
+    onEditorFocus,
+    onEditorBlur,
+    onSelectionUpdate,
+    onTransaction,
+    onEditorPaste,
+    onEditorDrop,
+    onDelete,
+    onContentError,
+    onDestroy,
     id,
     onKeyDown,
     ...props
   },
   ref,
 ) {
+  // The latest handlers and ref, without a new editor when they change.
+  const handlersRef = useRef<EventHandlers>({});
+  handlersRef.current = {
+    onBeforeCreate,
+    onCreate,
+    onEditorFocus,
+    onEditorBlur,
+    onSelectionUpdate,
+    onTransaction,
+    onEditorPaste,
+    onEditorDrop,
+    onDelete,
+    onContentError,
+    onDestroy,
+  };
+  const editorRefRef = useRef(editorRef);
+  editorRefRef.current = editorRef;
   const reactId = useId();
   // Every part id derives from `id` when one is given (readable snippets), else from useId.
   const base = id ? `${id}-` : reactId;
@@ -246,6 +342,8 @@ export const Editor = forwardRef<HTMLDivElement, EditorProps>(function Editor(
     textDirection,
     enableInputRules,
     enablePasteRules,
+    enableContentCheck,
+    emitContentError,
   });
   const mentionsRef = useRef(mentions);
   mentionsRef.current = mentions;
@@ -289,6 +387,12 @@ export const Editor = forwardRef<HTMLDivElement, EditorProps>(function Editor(
           }
         : {}),
       ...setup,
+      onEvent: (event, props) => {
+        const handler = handlersRef.current[EVENT_PROPS[event]] as
+          | ((value: typeof props) => void)
+          | undefined;
+        handler?.(props);
+      },
       onChange: (next) => {
         valueRef.current = next;
         loadedRef.current = null;
@@ -299,11 +403,14 @@ export const Editor = forwardRef<HTMLDivElement, EditorProps>(function Editor(
       onStateChange: setState,
     });
     controllerRef.current = controller;
+    const handle = editorRefRef.current;
+    setRef(handle, controller.editor);
     if (inputRef.current) inputRef.current.value = controller.getValue();
     setState(controller.getState());
     return () => {
       controller.destroy();
       controllerRef.current = null;
+      setRef(handle, null);
     };
   }, [placeholder, highlighter, tables, hasMentions, mentionChar, mentionSpaces]);
 
@@ -468,6 +575,8 @@ export const Editor = forwardRef<HTMLDivElement, EditorProps>(function Editor(
         tables,
         autofocus: typeof autofocus === "string" ? autofocus : undefined,
         textDirection,
+        enableContentCheck,
+        emitContentError,
       })}
       data-ok-editable={editable ? undefined : "false"}
       data-ok-enable-input-rules={enableInputRules === false ? "false" : undefined}

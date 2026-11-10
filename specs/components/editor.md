@@ -6,7 +6,7 @@ preview), content only. Upstream: Tiptap 3 (ADR-0023), the Minimals `Editor` wra
 fullscreen Backdrop with scroll lock and Tab containment, heading menu typography, language menu rule;
 2026-11-10, Phase 4 row 4.16 with 4.18.34–35, ADR-0050: tables, mentions, a bubble menu, Tiptap
 `extensions` / `editorProps` / `parseOptions` pass-through, `autofocus`, `textDirection`, input and
-paste rules, a form `name`).
+paste rules, a form `name`; row 4.18.33: Tiptap events, editor access, `getJSON` / `getText`, content check).
 Reference URL: https://minimals.cc/components/extra/editor
 HTML source: built from Tiptap
 
@@ -74,6 +74,8 @@ Root: `data-ok-editor`. Unknown values fall back to the default.
 | `textDirection` | `data-ok-text-direction="…"` | style | `ltr` `rtl` `auto` | — | Text direction of the content: `ltr`, `rtl` or `auto`. Default: inherited. |
 | `enableInputRules` | `data-ok-enable-input-rules="false"` turns it off | behavior | boolean | on | Markdown-like shortcuts while typing, such as `# ` for a heading (`false`: off). |
 | `enablePasteRules` | `data-ok-enable-paste-rules="false"` turns it off | behavior | boolean | on | The same shortcuts on pasted text (`false`: off). |
+| `enableContentCheck` | `data-ok-enable-content-check` | flag | boolean | off | Checks content against what the editor supports: invalid content fires a content error event (initial content loads without the invalid parts; a new value is refused). |
+| `emitContentError` | `data-ok-emit-content-error` | flag | boolean | off | Fires the content error event for invalid inserted content even without the check (the content is kept). |
 | `name` | `name` on each `input[data-ok-editor-input]` | native | boolean | off | Form field name: a hidden input holds the HTML value, so the editor submits with its form. |
 | `fullscreen` | `data-ok-fullscreen` · event `ok:editor:fullscreen` | state | — | — | Fills the viewport (the toolbar's Fullscreen button, Escape leaves). |
 | `value` | `data-ok-editor-content` · event `ok:editor:change` | state | — | — | The content: markup inside the content element. |
@@ -156,6 +158,20 @@ only: toolbar hidden.
   remount with `key` for new extensions).
 - `name`: a hidden input (`data-ok-editor-input`) carries `getValue()` after every change and
   `setValue()`.
+- Tiptap events (row 4.18.33): core `onEvent(name, props)` reports `beforeCreate` (during the
+  constructor), `create` (a task after mount), `focus`, `blur`, `selectionUpdate`, `transaction`,
+  `paste`, `drop`, `delete` (a task later, as Tiptap), `contentError`, `destroy` with Tiptap's
+  props (`destroy` gets `{ editor }`). React calls the latest handler without a new editor; HTML
+  relays them as `ok:editor:<lowercase>` with plain details (no transactions, slices or nodes).
+  `update` stays `onChange` / `ok:editor:change`.
+- Content check: `enableContentCheck` (Tiptap's): invalid initial content reports `contentError`
+  and loads without the invalid parts; an invalid `setContent` (React `value`, HTML `setValue`)
+  is refused and reported (Tiptap throws there; the controller catches its content errors only).
+  `emitContentError` passes through (Tiptap reports invalid inserted content and keeps it). HTML
+  snippet markup is parsed from the DOM by the schema, so it never reports a content error.
+- Editor access: React `editorRef` gets the Tiptap editor after each creation and `null` after
+  destroy (also `onCreate({ editor })`); HTML instance `editor`; both have `getJSON()` /
+  `getText()` (controller and HTML instance).
 
 ## Keyboard
 Toolbar: one tab stop (roving tabindex, `createToolbarNavigation`): ArrowLeft / ArrowRight
@@ -181,12 +197,22 @@ on a tint (ADR-0014).
 
 ## Events / API
 HTML `ok:editor:change` (`{ value }`), `ok:editor:fullscreen` (`{ fullscreen }`). Instance
-`{ value, setValue(html), fullscreen, setFullscreen(on), setEditable(on), focus(), controller }`.
+`{ value, setValue(html), fullscreen, setFullscreen(on), setEditable(on), focus(), controller,
+editor, getJSON(), getText() }`. Tiptap events: `ok:editor:beforecreate` (no detail), `create`
+(`{ value }`), `focus` / `blur` (`{ event }`), `selectionupdate` (`{ from, to, empty }`),
+`transaction` (`{ docChanged }`), `paste` (`{ event, text }`), `drop` (`{ event, text, moved }`),
+`delete` (`{ type, name, from, to, partial }`), `contenterror` (`{ message }`), `destroy` (no detail).
 Core: `EditorState.textTransform` (value at the selection), `run("textTransform", { textTransform:
 "uppercase" | "lowercase" | "capitalize" | null })`, `TextTransform` (the mark),
 `editorTextTransforms`, `readTextTransform`, `holdEditorFullscreen(root)`.
 Registration is opt-in: `@owlky/html/editor`, `owlky-editor.js`, or `createEditor({ highlighter })`.
-React: `onChange(html)`, `onFullscreenChange(fullscreen)`.
+React: `onChange(html)`, `onFullscreenChange(fullscreen)`, `editorRef`, `onBeforeCreate`,
+`onCreate`, `onEditorFocus`, `onEditorBlur`, `onSelectionUpdate`, `onTransaction`,
+`onEditorPaste`, `onEditorDrop`, `onDelete`, `onContentError`, `onDestroy` (Tiptap's props;
+`onFocus` / `onBlur` / `onPaste` / `onDrop` stay the root's DOM handlers, so the Tiptap ones are
+prefixed), `enableContentCheck`, `emitContentError`. Core: controller `getJSON()`, `getText()`,
+options `onEvent`, `enableContentCheck`, `emitContentError`; `editorEventNames`,
+`EditorEventName`, `EditorEventProps`, `TiptapEditor`, `EditorJSONContent`.
 ADR-0050: HTML `ok:editor:mentionsearch` (`{ query, char, items, respondWith(itemsOrPromise) }`),
 `createEditor({ extensions, editorProps, parseOptions })`. Core: `createEditorBubbleMenu(editor,
 menu, options)` (`isOpen`, `update()`, `focus()`, `setOptions()`, `destroy()`),
@@ -222,13 +248,18 @@ Upstream: the Minimals `Editor` wrapper's props and Tiptap 3 (tiptap.dev/docs/ed
 | `@tiptap/extension-table` (TableKit) | `tables` / `data-ok-tables` + the table menu | kept | `resizable` and its options deferred |
 | `@tiptap/extension-mention` + `@tiptap/suggestion` | `mentions` (`char`, `items`, `allowSpaces`) · HTML list markup + template / `ok:editor:mentionsearch` | kept | `suggestions` (several triggers), `renderText` / `renderHTML`, `deleteTriggerWithBackspace` deferred |
 | event `update` | `onChange(html)`, `ok:editor:change` | renamed | |
-| events `beforeCreate`, `create`, `selectionUpdate`, `transaction`, `focus`, `blur`, `destroy`, `paste`, `drop`, `delete`, `contentError` | — | deferred | HTML: `controller.editor.on()`; React: no editor handle |
+| events `beforeCreate`, `create`, `selectionUpdate`, `transaction`, `destroy`, `delete`, `contentError` | React `onBeforeCreate`, `onCreate`, `onSelectionUpdate`, `onTransaction`, `onDestroy`, `onDelete`, `onContentError` · `ok:editor:beforecreate`, `create`, `selectionupdate`, `transaction`, `destroy`, `delete`, `contenterror` | kept | HTML details are plain values |
+| events `focus`, `blur`, `paste`, `drop` | React `onEditorFocus`, `onEditorBlur`, `onEditorPaste`, `onEditorDrop` · `ok:editor:focus`, `blur`, `paste`, `drop` | renamed | the root's DOM `onFocus`… keep their names |
+| events `mount`, `unmount`, `beforeTransaction` | — | not applicable / deferred | the anatomy owns the mount; `beforeTransaction` through `editorRef` / `editor.on()` |
+| Tiptap `enableContentCheck`, `emitContentError` | same · `data-ok-enable-content-check`, `data-ok-emit-content-error` | kept | read at creation; invalid `setContent` reported, not thrown |
 | `getHTML()` | `getValue()`, instance `value` | renamed | |
-| `getJSON()`, `getText()`, `isEmpty`, `isFocused`, `registerPlugin()`, `setOptions()` | — | deferred | HTML through `controller.editor`; React none |
+| `getJSON()`, `getText()` | controller and HTML instance `getJSON()`, `getText()`; React through `editorRef` | kept | |
+| `isEmpty`, `isFocused`, `registerPlugin()`, `setOptions()`, `on()` / `off()` | the Tiptap editor: React `editorRef` / `onCreate`, HTML instance `editor` | kept | escape hatch |
 | `chain()`, `can()`, `isActive()`, `getAttributes()` | `run(action, value)`, `EditorState` (`active`, `disabled`, `link`, `textTransform`) | renamed | |
 | `commands.focus()`, `destroy()` | `focus()`, `destroy({ restore })` | kept | |
 | `@tiptap/react` `BubbleMenu` (`shouldShow`, `updateDelay`, `options.placement`) | `bubbleMenu` (`actions`, `placement`, `updateDelay`, `shouldShow`) · HTML bubble menu markup | renamed | Owlky's own (popover controller, Alt+F10); `pluginKey`, `appendTo`, `resizeDelay`, other Floating UI options not applicable |
-| `@tiptap/react` `useEditor`, `EditorContent`, `useCurrentEditor`, `FloatingMenu` | — | deferred | |
+| `@tiptap/react` `useEditor` (the editor instance, its event options) | `editorRef`, `onCreate` and the event props | renamed | the component creates the editor |
+| `@tiptap/react` `EditorContent`, `useCurrentEditor`, `FloatingMenu` | — | deferred | |
 | form `name` (hidden input) | `name` · `input[data-ok-editor-input][name]` | kept | |
 
 Beyond upstream: `defaultValue`, `highlighter`, `onFullscreenChange`, `aria-label` /

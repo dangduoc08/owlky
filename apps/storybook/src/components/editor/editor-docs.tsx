@@ -293,6 +293,59 @@ export function Draft() {
 }`,
   },
   {
+    id: "tiptap-events",
+    title: "Use the Tiptap editor and its events",
+    body: `You can reach the Tiptap editor itself for anything the component doesn't offer, such as its commands, \`isEmpty\` or \`on()\`. In React, pass \`editorRef\`: it receives the editor once it exists and \`null\` when it is destroyed. \`onCreate\` also receives it when the editor is ready. In HTML, the instance's \`editor\` is the Tiptap editor. \`getJSON()\` and \`getText()\` return the content as ProseMirror JSON and as plain text.
+
+Tiptap's events reach you as props in React and as \`ok:editor:*\` events in HTML:
+- **Life cycle:** \`onBeforeCreate\`, \`onCreate\` and \`onDestroy\`. In HTML, \`ok:editor:beforecreate\`, \`ok:editor:create\` and \`ok:editor:destroy\`.
+- **Focus:** \`onEditorFocus\` and \`onEditorBlur\` fire when the focus enters or leaves the text. The root's \`onFocus\` and \`onBlur\` fire for every part, such as the toolbar. In HTML, \`ok:editor:focus\` and \`ok:editor:blur\`.
+- **Changes:** \`onSelectionUpdate\`, \`onTransaction\` and \`onDelete\`. In HTML, \`ok:editor:selectionupdate\`, \`ok:editor:transaction\` and \`ok:editor:delete\`. For the content as HTML, use \`onChange\` and \`ok:editor:change\`.
+- **Clipboard and dragging:** \`onEditorPaste\` and \`onEditorDrop\`. In HTML, \`ok:editor:paste\` and \`ok:editor:drop\`, with the pasted or dropped text in \`detail.text\`.
+- **Invalid content:** with \`enableContentCheck\`, content that the editor doesn't support calls \`onContentError\` (HTML: \`ok:editor:contenterror\`, with \`detail.message\`). The initial content loads without the parts it doesn't support, and a new value with such parts is refused. Without the check, those parts are dropped silently.
+
+React handlers receive Tiptap's own arguments. HTML events carry plain values instead, such as positions and text.`,
+    html: `${htmlEditor({ id: "notes", label: "Notes", attrs: "data-ok-full-item data-ok-enable-content-check" })}
+<p id="notes-status" aria-live="polite"></p>
+
+<script>
+  const notes = document.getElementById("notes-content").closest("[data-ok-editor]");
+  const status = document.getElementById("notes-status");
+  // Count the characters when the editor is ready and when the focus leaves the text
+  const count = () => {
+    const editor = window.Owlky.get(notes, "editor");
+    status.textContent = \`\${editor.getText().length} characters\`;
+  };
+  notes.addEventListener("ok:editor:create", count);
+  notes.addEventListener("ok:editor:blur", count);
+  notes.addEventListener("ok:editor:contenterror", (event) => {
+    status.textContent = \`Some content isn't supported: \${event.detail.message}\`;
+  });
+</script>`,
+    react: `import { Editor, type TiptapEditor } from "@owlky/react";
+import { useRef, useState } from "react";
+
+export function Notes() {
+  const editorRef = useRef<TiptapEditor | null>(null);
+  const [status, setStatus] = useState("");
+  const count = () => setStatus(\`\${editorRef.current?.getText().length ?? 0} characters\`);
+  return (
+    <>
+      <Editor
+        aria-label="Notes"
+        fullItem
+        editorRef={editorRef}
+        enableContentCheck
+        onCreate={count}
+        onEditorBlur={count}
+        onContentError={({ error }) => setStatus(\`Some content isn't supported: \${error.message}\`)}
+      />
+      <p aria-live="polite">{status}</p>
+    </>
+  );
+}`,
+  },
+  {
     id: "form",
     title: "Submit the content with a form",
     body: '`name` lets the editor take part in a form: a hidden input with that name holds the content as HTML, kept up to date after every change. In HTML, add `<input type="hidden" data-ok-editor-input name="…">` as the last child of the editor. Check the HTML on the server before you store or show it, as you would for any form field.',
@@ -332,8 +385,9 @@ export function NewPost() {
     body: `- **\`ok:editor:change\`** fires on the editor after every change, with the HTML in \`detail.value\`.
 - **\`ok:editor:fullscreen\`** fires when fullscreen mode changes, with \`detail.fullscreen\`.
 - **\`ok:editor:mentionsearch\`** fires when the mention list needs items, with \`detail.query\`, \`detail.char\`, the template's matches in \`detail.items\` and \`detail.respondWith(items)\`.
-- **Instance:** \`runtime.get(element, "editor")\` returns \`{ value, setValue(html), fullscreen, setFullscreen(on), setEditable(on), focus(), controller }\`. \`controller.editor\` is the Tiptap editor.
-- **React:** \`onChange(value)\` and \`onFullscreenChange(fullscreen)\`.
+- **Tiptap's events:** \`ok:editor:beforecreate\`, \`create\` (\`detail.value\`), \`focus\` and \`blur\` (\`detail.event\`), \`selectionupdate\` (\`detail.from\`, \`detail.to\`, \`detail.empty\`), \`transaction\` (\`detail.docChanged\`), \`paste\` (\`detail.text\`), \`drop\` (\`detail.text\`, \`detail.moved\`), \`delete\` (\`detail.type\`, \`detail.name\`, \`detail.from\`, \`detail.to\`, \`detail.partial\`), \`contenterror\` (\`detail.message\`) and \`destroy\`.
+- **Instance:** \`runtime.get(element, "editor")\` returns \`{ value, setValue(html), fullscreen, setFullscreen(on), setEditable(on), focus(), getJSON(), getText(), editor, controller }\`. \`editor\` is the Tiptap editor.
+- **React:** \`onChange(value)\`, \`onFullscreenChange(fullscreen)\`, \`editorRef\` and Tiptap's events as props: \`onBeforeCreate\`, \`onCreate\`, \`onEditorFocus\`, \`onEditorBlur\`, \`onSelectionUpdate\`, \`onTransaction\`, \`onEditorPaste\`, \`onEditorDrop\`, \`onDelete\`, \`onContentError\` and \`onDestroy\`.
 - **Trusted Types:** \`setValue\` and the React \`value\` prop parse an HTML string with the browser's \`DOMParser\`. Pages that enforce Trusted Types need a policy for it. Content written in the markup needs none.`,
   },
   {
@@ -434,6 +488,30 @@ const PREVIEWS = {
           html: "input[type=hidden][data-ok-editor-input][name]",
           type: "string",
           description: "Submits the HTML value with the form.",
+        },
+        {
+          react: "editorRef / onCreate",
+          html: "instance editor · ok:editor:create",
+          type: "Ref<TiptapEditor | null>",
+          description: "The Tiptap editor, once it exists.",
+        },
+        {
+          react: "onEditorFocus / onEditorBlur / onSelectionUpdate / onTransaction / onDelete",
+          html: "ok:editor:focus · blur · selectionupdate · transaction · delete",
+          type: "(props) => void",
+          description: "Tiptap's events, with Tiptap's arguments.",
+        },
+        {
+          react: "onEditorPaste / onEditorDrop / onBeforeCreate / onDestroy",
+          html: "ok:editor:paste · drop · beforecreate · destroy",
+          type: "(props) => void",
+          description: "Pasted or dropped content, and the editor's life cycle.",
+        },
+        {
+          react: "onContentError",
+          html: "ok:editor:contenterror",
+          type: "(props) => void",
+          description: "Content the editor doesn't support, with `enableContentCheck`.",
         },
       ]}
     />
