@@ -7,6 +7,7 @@ import {
   createGridCellSelection,
   createGridClipboard,
   createGridColumnControls,
+  createGridContextMenu,
   createGridDataSourceCache,
   createGridHistoryKeys,
   createGridHistoryStack,
@@ -33,16 +34,20 @@ import {
   type GridChartModels,
   type GridChartsState,
   type GridChartType,
+  type GridClipboard,
   type GridColumn,
   type GridColumnGroup,
   type GridColumnVisibilityModel,
   type GridColumnWidths,
+  type GridContextMenuItemName,
+  type GridContextMenuPoint,
   type GridCsvOptions,
   type GridDataSource,
   type GridDataSourceCache,
   type GridDensity,
   type GridEditStartReason,
   type GridExcelOptions,
+  type GridFilterGroup,
   type GridFilterItem,
   type GridFilterModel,
   type GridFilterOperator,
@@ -87,12 +92,14 @@ import {
   gridColSpans,
   gridColumnTemplate,
   gridColumnWindow,
+  gridContextMenuEntries,
   gridCrossFilter,
   gridCrossFilterBase,
   gridCrossFilterField,
   gridCrossFilterPoints,
   gridCrossFilterSelection,
   gridCrossFilterValues,
+  gridDefaultContextMenuItems,
   gridDefaultLabels,
   gridDensities,
   gridDensityFactor,
@@ -105,6 +112,8 @@ import {
   gridEditText,
   gridExpandedByDepth,
   gridExportColumns,
+  gridFilterGroupName,
+  gridFilterGroupSuffix,
   gridFilterOperators,
   gridFilterValues,
   gridFooterRowCount,
@@ -188,6 +197,7 @@ import {
   toggleGridCell,
   toggleGridRows,
   toggleGridSetFilterValues,
+  updateGridFilterGroup,
   visibleGridColumns,
 } from "@owlky/core";
 import {
@@ -219,7 +229,7 @@ import { DateTimePicker } from "../date-time-picker/date-time-picker.js";
 import { FormControlLabel } from "../form-control-label/form-control-label.js";
 import { IconButton } from "../icon-button/icon-button.js";
 import { LinearProgress } from "../linear-progress/linear-progress.js";
-import { Menu, MenuItem } from "../menu/menu.js";
+import { Menu, MenuItem, MenuSubmenu } from "../menu/menu.js";
 import { Popover } from "../popover/popover.js";
 import { Switch } from "../switch/switch.js";
 import { TablePagination } from "../table/table.js";
@@ -502,7 +512,7 @@ export interface GridPaginationModel {
 export type GridInitialState = GridState;
 
 export interface DataGridProps<R>
-  extends Omit<HTMLAttributes<HTMLDivElement>, "children" | "onChange"> {
+  extends Omit<HTMLAttributes<HTMLDivElement>, "children" | "onChange" | "contextMenu"> {
   /** The rows: one object per row. */
   rows: readonly R[];
   /** The columns: field, header, type, width and how cells render. */
@@ -900,6 +910,49 @@ export interface DataGridProps<R>
   activeChartId?: string | undefined;
   /** Called when the chart panel switches to another chart. */
   onActiveChartIdChange?: ((id: string) => void) | undefined;
+  /**
+   * A menu on the cells: a right click, Shift + F10 or the Menu key opens it at the cell, with
+   * Copy, Paste, Export, Chart from selection and Pin column (the ones the grid's options allow).
+   */
+  contextMenu?: boolean | undefined;
+  /**
+   * The cell menu's items for a cell: built-in names, `"separator"` and your own items. Gets the
+   * cell and `defaultItems`. Default: `defaultItems`.
+   */
+  getContextMenuItems?:
+    | ((
+        params: GridContextMenuParams<R>,
+      ) => readonly (GridContextMenuItemName | GridContextMenuItemDef<R>)[])
+    | undefined;
+  /**
+   * The filter panel nests groups of filters (**Add group**), each with its own And / Or; the
+   * model keeps them in `filterModel.groups`.
+   */
+  filterGroups?: boolean | undefined;
+}
+
+/** The cell a context menu opened on (`getContextMenuItems`, an item's `onClick`). */
+export interface GridContextMenuParams<R> {
+  id: string;
+  field: string;
+  row: R;
+  /** The cell's value. */
+  value: unknown;
+  colDef: GridColDef<R>;
+  /** The items the grid shows by default for this cell. */
+  defaultItems: GridContextMenuItemName[];
+}
+
+/** Your own item of the cell menu. */
+export interface GridContextMenuItemDef<R> {
+  /** Names the item: its `data-ok-data-grid-context-action`. */
+  name: string;
+  /** What the item shows. */
+  label: ReactNode;
+  /** Runs when the item is chosen, with the cell. */
+  onClick?: ((params: GridContextMenuParams<R>) => void) | undefined;
+  /** The item can't be chosen. */
+  disabled?: boolean | undefined;
 }
 
 export type GridEditStopReason = "enterKeyDown" | "escapeKeyDown" | "cellFocusOut";
@@ -1152,6 +1205,15 @@ function GridSetFilter({
 }
 const DEFAULT_PROPAGATION: GridRowSelectionPropagation = { parents: true, descendants: true };
 
+/** Where a filter row sits: its id suffix, its group's And / Or, and how it changes. */
+interface FilterRowAt {
+  suffix: string;
+  logic: "and" | "or";
+  onLogic: (logic: "and" | "or") => void;
+  onItem: (item: GridFilterItem) => void;
+  onRemove: () => void;
+}
+
 type Panel = "columns" | "filters" | "density" | "export" | "pivot" | "charts" | null;
 
 function DataGridInner<R>(
@@ -1321,6 +1383,9 @@ function DataGridInner<R>(
     activeChartId: activeChartProp,
     onActiveChartIdChange,
     onChartModelChange,
+    contextMenu,
+    getContextMenuItems,
+    filterGroups,
     "aria-label": ariaLabelProp,
     "aria-labelledby": ariaLabelledby,
     ...props
@@ -3042,6 +3107,64 @@ function DataGridInner<R>(
   };
   const copied = useRef(onClipboardCopy);
   copied.current = onClipboardCopy;
+  const clipboardApi = useRef<GridClipboard | null>(null);
+
+  // The cell menu (contextMenu): the cell it opened on and where.
+  const [cellMenu, setCellMenu] = useState<{
+    id: string;
+    field: string;
+    point: GridContextMenuPoint;
+  } | null>(null);
+  const cellMenuOn = useRef(false);
+  cellMenuOn.current = !!contextMenu;
+  const openCellMenu = useRef<(cell: HTMLElement, point: GridContextMenuPoint) => boolean>(
+    undefined as never,
+  );
+  openCellMenu.current = (cell, point) => {
+    const id = cell.closest("[data-ok-row-id]")?.getAttribute("data-ok-row-id");
+    const field = cell.getAttribute("data-ok-field") as string;
+    const column = columns.find((c) => c.field === field);
+    // Data cells only: special and generated rows keep the browser's menu.
+    if (!id || !column || column.type === "actions" || !dataById.has(id)) return false;
+    // A cell outside the selected cells becomes the selection (spreadsheets).
+    if (cellSelection && !isGridCellSelected(cellModel, id, field))
+      cellSelect.current({ id, field }, { id, field }, "replace");
+    setCellMenu({ id, field, point });
+    return true;
+  };
+  const menuFeatures = {
+    paste: !disableClipboardPaste && columns.some(editable),
+    chart: !!cellSelection && !!chartsIntegration,
+    pin: !disableColumnPinning,
+  };
+  /** Runs a cell menu item on the cell it opened on (the focus goes back to that cell first). */
+  const runCellMenu = (action: string) => {
+    if (!cellMenu) return;
+    const { id: rowId, field } = cellMenu;
+    const cell = gridRef.current?.querySelector<HTMLElement>(
+      `[data-ok-row-id="${CSS.escape(rowId)}"] > [data-ok-field="${CSS.escape(field)}"]`,
+    );
+    cell?.focus({ preventScroll: true });
+    if (action === "copy") {
+      const text = clipboard.current.copyText();
+      if (text !== null) void clipboardApi.current?.copy(text);
+    } else if (action === "paste")
+      void clipboardApi.current?.paste().then((pasted) => {
+        if (!pasted) setAnnouncement(labels.contextMenuPasteRefused);
+      });
+    else if (action === "export-csv") exportCsv();
+    else if (action === "export-excel") exportExcel();
+    else if (action === "print") print();
+    else if (action === "chart-range") rangeChart.current({}, true);
+    else if (action === "pin-left" || action === "pin-right" || action === "unpin")
+      setPinned(
+        pinGridColumn(
+          pinned,
+          field,
+          action === "unpin" ? null : (action.slice(4) as "left" | "right"),
+        ),
+      );
+  };
   useEffect(() => {
     const grid = gridRef.current as HTMLDivElement;
     const cells = createGridCellSelection(grid, {
@@ -3055,9 +3178,16 @@ function DataGridInner<R>(
       onPaste: (text) => clipboard.current.pasteText(text),
       onCopy: (text) => copied.current?.(text),
     });
+    clipboardApi.current = handle;
+    const menu = createGridContextMenu(grid, {
+      enabled: () => cellMenuOn.current,
+      onOpen: (cell, point) => openCellMenu.current(cell, point),
+    });
     return () => {
       cells.destroy();
       handle.destroy();
+      menu.destroy();
+      clipboardApi.current = null;
     };
   }, []);
 
@@ -3364,6 +3494,230 @@ function DataGridInner<R>(
   const setFilterItem = (index: number, item: GridFilterItem) =>
     setFilterItems(filterItems.map((current, i) => (i === index ? item : current)));
 
+  /** One row of the filter panel (in the panel or in a group). */
+  const filterPanelRow = (item: GridFilterItem, index: number, at: FilterRowAt) => {
+    const { suffix } = at;
+    // Filters (and the columns panel) work on the data's columns, also in the pivot.
+    const column = columnsProp.find((c) => c.field === item.field);
+    const Picker = column?.type === "dateTime" ? DateTimePicker : DatePicker;
+    return (
+      <div key={suffix || "0"} data-ok-data-grid-filter="">
+        <IconButton
+          size="sm"
+          data-ok-data-grid-filter-remove=""
+          aria-label={labels.filterPanelRemoveFilter}
+          onClick={at.onRemove}
+        >
+          <CloseIcon />
+        </IconButton>
+        {index > 0 && (
+          <TextField
+            id={`${id}-filter-logic${suffix}`}
+            select
+            size="small"
+            label={labels.filterPanelLogicOperator}
+            disabled={index > 1}
+            value={at.logic}
+            onChange={(logic) => at.onLogic(logic as "and" | "or")}
+          >
+            <option value="and">{labels.filterPanelOperatorAnd}</option>
+            <option value="or">{labels.filterPanelOperatorOr}</option>
+          </TextField>
+        )}
+        <TextField
+          id={`${id}-filter-field${suffix}`}
+          select
+          size="small"
+          label={labels.filterPanelColumns}
+          value={item.field}
+          onChange={(field) =>
+            at.onItem({
+              field,
+              operator: operatorsOf(columnsProp.find((c) => c.field === field))[0]?.value as string,
+            })
+          }
+        >
+          {columnsProp.filter(isGridFilterable).map((c) => (
+            <option key={c.field} value={c.field}>
+              {c.headerName ?? c.field}
+            </option>
+          ))}
+        </TextField>
+        <TextField
+          id={`${id}-filter-operator${suffix}`}
+          select
+          size="small"
+          label={labels.filterPanelOperator}
+          value={item.operator}
+          onChange={(operator) => at.onItem({ ...item, operator })}
+        >
+          {operatorsOf(column).map((operator) => (
+            <option key={operator.value} value={operator.value}>
+              {operator.label}
+            </option>
+          ))}
+        </TextField>
+        {item.operator === "isAnyOf" && !column?.filterOperators && isGridSetFilter(column) ? (
+          <GridSetFilter
+            id={`${id}-filter-value${suffix}`}
+            field={item.field}
+            values={setValuesOf(column as GridColDef<R>)}
+            selected={gridFilterValues(item.value)}
+            labels={labels}
+            ignoreDiacritics={ignoreDiacritics}
+            onChange={(values) => at.onItem({ ...item, value: values })}
+          />
+        ) : item.operator === "isAnyOf" && !column?.filterOperators ? (
+          <Autocomplete
+            id={`${id}-filter-value${suffix}`}
+            size="small"
+            label={labels.filterPanelInputLabel}
+            multiple
+            freeSolo
+            options={column?.valueOptions ?? []}
+            value={gridFilterValues(item.value)}
+            onChange={(value) => at.onItem({ ...item, value: (value as string[] | null) ?? [] })}
+          />
+        ) : (column?.type === "date" || column?.type === "dateTime") &&
+          !column.filterOperators &&
+          gridOperatorNeedsValue(item.operator) ? (
+          <Picker
+            id={`${id}-filter-value${suffix}`}
+            size="small"
+            label={labels.filterPanelInputLabel}
+            value={pickerValue(
+              `${id}-filter-value${suffix}`,
+              typeof item.value === "string" ? item.value : "",
+            )}
+            onChange={(date) =>
+              pickDate(`${id}-filter-value${suffix}`, date, column.type, (iso) =>
+                at.onItem({ ...item, value: iso }),
+              )
+            }
+          />
+        ) : (
+          <TextField
+            id={`${id}-filter-value${suffix}`}
+            size="small"
+            label={labels.filterPanelInputLabel}
+            placeholder={labels.filterPanelInputPlaceholder}
+            disabled={!gridOperatorNeedsValue(item.operator, column?.filterOperators)}
+            value={typeof item.value === "string" ? item.value : (item.value ?? []).join(", ")}
+            onChange={(value) => at.onItem({ ...item, value })}
+          />
+        )}
+      </div>
+    );
+  };
+  // Filter groups: each has its own And / Or; paths index `groups` from the model.
+  const canAddGroup = !!filterGroups && !disableMultipleColumnsFiltering;
+  const updateGroup = (
+    path: readonly number[],
+    update: (g: GridFilterGroup) => GridFilterGroup | null,
+  ) => {
+    // The panel's placeholder row stays out of the model (as at the top level).
+    setFilterModel(updateGridFilterGroup(filterModel, path, update));
+    setPagination({ ...pagination, page: 0 });
+  };
+  const addGroupButton = (path: readonly number[]) => (
+    <Button
+      size="sm"
+      variant="text"
+      data-ok-data-grid-filter-add-group=""
+      startIcon={<PlusIcon />}
+      onClick={() =>
+        updateGroup(path, (g) => ({ ...g, groups: [...(g.groups ?? []), { items: [newItem()] }] }))
+      }
+    >
+      {labels.filterPanelAddGroup}
+    </Button>
+  );
+  /** A group of the filter panel: its header, rows, nested groups and buttons. */
+  const filterGroup = (
+    group: GridFilterGroup,
+    path: readonly number[],
+    entry: number,
+    parentLogic: GridFilterGroup["logicOperator"],
+  ): ReactNode => {
+    const own = gridFilterGroupSuffix(path);
+    const parent = path.slice(0, -1);
+    const logic = group.logicOperator ?? "and";
+    const setLogic = (next: "and" | "or") =>
+      updateGroup(path, (g) => ({ ...g, logicOperator: next }));
+    return (
+      <div
+        key={own}
+        data-ok-data-grid-filter-group=""
+        role="group"
+        aria-label={labels.filterPanelGroup.replaceAll("{index}", gridFilterGroupName(path))}
+        id={`${id}-filter-group${own}`}
+      >
+        <div data-ok-data-grid-filter-group-header="">
+          <IconButton
+            size="sm"
+            data-ok-data-grid-filter-group-remove=""
+            aria-label={labels.filterPanelRemoveGroup}
+            onClick={() => updateGroup(path, () => null)}
+          >
+            <CloseIcon />
+          </IconButton>
+          {entry > 0 && (
+            <TextField
+              id={`${id}-filter-logic${own}`}
+              select
+              size="small"
+              label={labels.filterPanelLogicOperator}
+              disabled={entry > 1}
+              value={parentLogic ?? "and"}
+              onChange={(next) =>
+                updateGroup(parent, (g) => ({ ...g, logicOperator: next as "and" | "or" }))
+              }
+            >
+              <option value="and">{labels.filterPanelOperatorAnd}</option>
+              <option value="or">{labels.filterPanelOperatorOr}</option>
+            </TextField>
+          )}
+        </div>
+        {group.items.map((item, index) =>
+          filterPanelRow(item, index, {
+            suffix: `${own}-${index}`,
+            logic,
+            onLogic: setLogic,
+            onItem: (next) =>
+              updateGroup(path, (g) => ({
+                ...g,
+                items: g.items.map((current, i) => (i === index ? next : current)),
+              })),
+            // A group without rows or groups goes away.
+            onRemove: () =>
+              updateGroup(path, (g) => {
+                const items = g.items.filter((_, i) => i !== index);
+                return items.length || g.groups?.length ? { ...g, items } : null;
+              }),
+          }),
+        )}
+        {(group.groups ?? []).map((child, index) =>
+          filterGroup(child, [...path, index], group.items.length + index, group.logicOperator),
+        )}
+        {(!disableMultipleColumnsFiltering || canAddGroup) && (
+          <div data-ok-data-grid-filter-group-actions="">
+            {!disableMultipleColumnsFiltering && (
+              <Button
+                size="sm"
+                variant="text"
+                data-ok-data-grid-filter-add=""
+                startIcon={<PlusIcon />}
+                onClick={() => updateGroup(path, (g) => ({ ...g, items: [...g.items, newItem()] }))}
+              >
+                {labels.filterPanelAddFilter}
+              </Button>
+            )}
+            {canAddGroup && addGroupButton(path)}
+          </div>
+        )}
+      </div>
+    );
+  };
   const onRowClick = (row: R, i: number) => (event: MouseEvent<HTMLElement>) => {
     onRowClickProp?.(rowParams(row, i), event);
     if (!checkboxSelection || disableRowSelectionOnClick) return;
@@ -4035,130 +4389,18 @@ function DataGridInner<R>(
           onOpenChange={(next) => !next && closePanel()}
         >
           <div data-ok-data-grid-panel="" role="group" aria-label={labels.toolbarFilters}>
-            {filterItems.map((item, index) => {
-              const suffix = index === 0 ? "" : `-${index}`;
-              // Filters (and the columns panel) work on the data's columns, also in the pivot.
-              const column = columnsProp.find((c) => c.field === item.field);
-              const Picker = column?.type === "dateTime" ? DateTimePicker : DatePicker;
-              return (
-                // biome-ignore lint/suspicious/noArrayIndexKey: filter rows are positional.
-                <div key={index} data-ok-data-grid-filter="">
-                  <IconButton
-                    size="sm"
-                    data-ok-data-grid-filter-remove=""
-                    aria-label={labels.filterPanelRemoveFilter}
-                    onClick={() => setFilterItems(filterItems.filter((_, i) => i !== index))}
-                  >
-                    <CloseIcon />
-                  </IconButton>
-                  {index > 0 && (
-                    <TextField
-                      id={`${id}-filter-logic${suffix}`}
-                      select
-                      size="small"
-                      label={labels.filterPanelLogicOperator}
-                      disabled={index > 1}
-                      value={filterModel.logicOperator ?? "and"}
-                      onChange={(logic) =>
-                        setFilterModel({ ...filterModel, logicOperator: logic as "and" | "or" })
-                      }
-                    >
-                      <option value="and">{labels.filterPanelOperatorAnd}</option>
-                      <option value="or">{labels.filterPanelOperatorOr}</option>
-                    </TextField>
-                  )}
-                  <TextField
-                    id={`${id}-filter-field${suffix}`}
-                    select
-                    size="small"
-                    label={labels.filterPanelColumns}
-                    value={item.field}
-                    onChange={(field) =>
-                      setFilterItem(index, {
-                        field,
-                        operator: operatorsOf(columnsProp.find((c) => c.field === field))[0]
-                          ?.value as string,
-                      })
-                    }
-                  >
-                    {columnsProp.filter(isGridFilterable).map((c) => (
-                      <option key={c.field} value={c.field}>
-                        {c.headerName ?? c.field}
-                      </option>
-                    ))}
-                  </TextField>
-                  <TextField
-                    id={`${id}-filter-operator${suffix}`}
-                    select
-                    size="small"
-                    label={labels.filterPanelOperator}
-                    value={item.operator}
-                    onChange={(operator) => setFilterItem(index, { ...item, operator })}
-                  >
-                    {operatorsOf(column).map((operator) => (
-                      <option key={operator.value} value={operator.value}>
-                        {operator.label}
-                      </option>
-                    ))}
-                  </TextField>
-                  {item.operator === "isAnyOf" &&
-                  !column?.filterOperators &&
-                  isGridSetFilter(column) ? (
-                    <GridSetFilter
-                      id={`${id}-filter-value${suffix}`}
-                      field={item.field}
-                      values={setValuesOf(column as GridColDef<R>)}
-                      selected={gridFilterValues(item.value)}
-                      labels={labels}
-                      ignoreDiacritics={ignoreDiacritics}
-                      onChange={(values) => setFilterItem(index, { ...item, value: values })}
-                    />
-                  ) : item.operator === "isAnyOf" && !column?.filterOperators ? (
-                    <Autocomplete
-                      id={`${id}-filter-value${suffix}`}
-                      size="small"
-                      label={labels.filterPanelInputLabel}
-                      multiple
-                      freeSolo
-                      options={column?.valueOptions ?? []}
-                      value={gridFilterValues(item.value)}
-                      onChange={(value) =>
-                        setFilterItem(index, { ...item, value: (value as string[] | null) ?? [] })
-                      }
-                    />
-                  ) : (column?.type === "date" || column?.type === "dateTime") &&
-                    !column.filterOperators &&
-                    gridOperatorNeedsValue(item.operator) ? (
-                    <Picker
-                      id={`${id}-filter-value${suffix}`}
-                      size="small"
-                      label={labels.filterPanelInputLabel}
-                      value={pickerValue(
-                        `${id}-filter-value${suffix}`,
-                        typeof item.value === "string" ? item.value : "",
-                      )}
-                      onChange={(date) =>
-                        pickDate(`${id}-filter-value${suffix}`, date, column.type, (iso) =>
-                          setFilterItem(index, { ...item, value: iso }),
-                        )
-                      }
-                    />
-                  ) : (
-                    <TextField
-                      id={`${id}-filter-value${suffix}`}
-                      size="small"
-                      label={labels.filterPanelInputLabel}
-                      placeholder={labels.filterPanelInputPlaceholder}
-                      disabled={!gridOperatorNeedsValue(item.operator, column?.filterOperators)}
-                      value={
-                        typeof item.value === "string" ? item.value : (item.value ?? []).join(", ")
-                      }
-                      onChange={(value) => setFilterItem(index, { ...item, value })}
-                    />
-                  )}
-                </div>
-              );
-            })}
+            {filterItems.map((item, index) =>
+              filterPanelRow(item, index, {
+                suffix: index === 0 ? "" : `-${index}`,
+                logic: filterModel.logicOperator ?? "and",
+                onLogic: (logic) => setFilterModel({ ...filterModel, logicOperator: logic }),
+                onItem: (next) => setFilterItem(index, next),
+                onRemove: () => setFilterItems(filterItems.filter((_, i) => i !== index)),
+              }),
+            )}
+            {(filterModel.groups ?? []).map((group, index) =>
+              filterGroup(group, [index], filterItems.length + index, filterModel.logicOperator),
+            )}
             {!disableMultipleColumnsFiltering && (
               <Button
                 size="sm"
@@ -4170,6 +4412,7 @@ function DataGridInner<R>(
                 {labels.filterPanelAddFilter}
               </Button>
             )}
+            {canAddGroup && addGroupButton([])}
           </div>
         </Popover>
       )}
@@ -4404,6 +4647,100 @@ function DataGridInner<R>(
       </div>
     );
   };
+  // The cell menu: its items for the cell it opened on (at rest: the default items).
+  const menuRow = cellMenu ? dataById.get(cellMenu.id) : undefined;
+  const menuColDef = cellMenu ? columns.find((c) => c.field === cellMenu.field) : undefined;
+  const defaultMenuItems = gridDefaultContextMenuItems(menuFeatures);
+  const menuParams: GridContextMenuParams<R> | null =
+    cellMenu && menuRow !== undefined && menuColDef
+      ? {
+          id: cellMenu.id,
+          field: cellMenu.field,
+          row: menuRow,
+          value: rawValue(menuColDef, menuRow),
+          colDef: menuColDef,
+          defaultItems: defaultMenuItems,
+        }
+      : null;
+  const menuEntries = gridContextMenuEntries<GridContextMenuItemName | GridContextMenuItemDef<R>>(
+    menuParams && getContextMenuItems ? getContextMenuItems(menuParams) : defaultMenuItems,
+  );
+  const menuSide = cellMenu ? gridPinSide(pinned, cellMenu.field) : undefined;
+  const menuItem = (action: string, text: ReactNode, divider: boolean, disabled?: boolean) => (
+    <MenuItem
+      key={action}
+      data-ok-data-grid-context-action={action}
+      divider={divider}
+      disabled={disabled}
+      onClick={() => runCellMenu(action)}
+    >
+      {text}
+    </MenuItem>
+  );
+  const builtInMenuEntry = (name: GridContextMenuItemName, divider: boolean): ReactNode => {
+    const line = divider ? { "data-ok-show-divider": "" } : {};
+    if (name === "copy") return menuItem("copy", labels.contextMenuCopy, divider);
+    if (name === "paste") return menuItem("paste", labels.contextMenuPaste, divider);
+    if (name === "chart-range") return menuItem("chart-range", labels.chartsRange, divider);
+    if (name === "export")
+      return (
+        <MenuSubmenu
+          key="export"
+          id={`${id}-context-menu-export`}
+          label={labels.contextMenuExport}
+          triggerProps={{ "data-ok-data-grid-context-action": "export", ...line } as never}
+        >
+          {menuItem("export-csv", labels.toolbarExportCSV, false)}
+          {menuItem("export-excel", labels.toolbarExportExcel, false)}
+          {menuItem("print", labels.toolbarExportPrint, false)}
+        </MenuSubmenu>
+      );
+    if (name === "pin")
+      return (
+        <MenuSubmenu
+          key="pin"
+          id={`${id}-context-menu-pin`}
+          label={labels.contextMenuPin}
+          disabled={menuColDef?.pinnable === false}
+          triggerProps={{ "data-ok-data-grid-context-action": "pin", ...line } as never}
+        >
+          {menuItem("pin-left", labels.pinToLeft, false, menuSide === "left")}
+          {menuItem("pin-right", labels.pinToRight, false, menuSide === "right")}
+          {menuItem("unpin", labels.unpin, false, !menuSide)}
+        </MenuSubmenu>
+      );
+    return null;
+  };
+  const cellContextMenu = (
+    <Menu
+      id={`${id}-context-menu`}
+      open={cellMenu !== null}
+      anchorEl={null}
+      anchorReference="anchorPosition"
+      anchorPosition={cellMenu?.point}
+      aria-label={labels.contextMenuLabel}
+      onOpenChange={(next) => !next && setCellMenu(null)}
+    >
+      {menuEntries.map(({ item, divider }) =>
+        typeof item === "string" ? (
+          builtInMenuEntry(item, divider)
+        ) : (
+          <MenuItem
+            key={item.name}
+            data-ok-data-grid-context-action={item.name}
+            divider={divider}
+            disabled={item.disabled}
+            onClick={() => {
+              runCellMenu("");
+              if (menuParams) item.onClick?.(menuParams);
+            }}
+          >
+            {item.label}
+          </MenuItem>
+        ),
+      )}
+    </Menu>
+  );
   const headerFilterRow = (
     <div role="row" aria-rowindex={headerLevels + 2} data-ok-data-grid-header-filters="">
       {specials.map((special) => (
@@ -5194,6 +5531,8 @@ function DataGridInner<R>(
         rowSpacingType,
         autoHeight,
         autoPageSize,
+        contextMenu,
+        filterGroups,
       })}
       {...(sortingOrder ? { "data-ok-sorting-order": JSON.stringify(sortingOrder) } : {})}
       {...(rowSelection ? {} : { "data-ok-row-selection": "false" })}
@@ -5459,7 +5798,7 @@ function DataGridInner<R>(
             </div>
           );
         })}
-      {(rowReordering || chartsIntegration) && (
+      {(rowReordering || chartsIntegration || contextMenu) && (
         <div data-ok-data-grid-live="" role="status">
           {announcement}
         </div>
@@ -5628,6 +5967,7 @@ function DataGridInner<R>(
           )}
         </Menu>
       )}
+      {contextMenu && cellContextMenu}
       {statusBar && cellSelection && (
         <div data-ok-data-grid-status-bar="" role="status">
           {statusItems.map((item) => (

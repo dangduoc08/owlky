@@ -700,6 +700,7 @@ export {
   filterGridRows,
   GRID_CHECKBOX_FIELD,
   GRID_CHECKBOX_WIDTH,
+  GRID_FILTER_MAX_DEPTH,
   GRID_SORTING_ORDER,
   type GridAlign,
   type GridColumn,
@@ -710,6 +711,7 @@ export {
   type GridComparators,
   type GridCsvOptions,
   type GridDensity,
+  type GridFilterGroup,
   type GridFilterItem,
   type GridFilterModel,
   type GridFilterOperator,
@@ -735,6 +737,10 @@ export {
   gridEditInputType,
   gridEditText,
   gridExportColumns,
+  gridFilterGroupAt,
+  gridFilterGroupName,
+  gridFilterGroupSuffix,
+  gridFilterItemActive,
   gridFilterOperators,
   gridFilterValues,
   gridFoldText,
@@ -770,6 +776,7 @@ export {
   toggleGridRow,
   toggleGridRows,
   toggleGridSetFilterValues,
+  updateGridFilterGroup,
   visibleGridColumns,
 } from "./data-grid/data-grid.js";
 export {
@@ -816,6 +823,18 @@ export {
   prepareGridPrint,
   printGridContent,
 } from "./data-grid/grid-columns.js";
+export {
+  createGridContextMenu,
+  type GridContextMenuController,
+  type GridContextMenuEntry,
+  type GridContextMenuFeatures,
+  type GridContextMenuItemName,
+  type GridContextMenuOptions,
+  type GridContextMenuPoint,
+  gridContextMenuEntries,
+  gridContextMenuItemNames,
+  gridDefaultContextMenuItems,
+} from "./data-grid/grid-context-menu.js";
 export {
   createGridHistoryKeys,
   createGridHistoryStack,
@@ -867,6 +886,7 @@ export {
   isGridRtl,
   measureGridColumn,
   parseGridFormatOptions,
+  sanitizeGridFilterGroup,
   sanitizeGridState,
 } from "./data-grid/grid-layout.js";
 export {

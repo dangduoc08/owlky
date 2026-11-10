@@ -3,7 +3,10 @@ import {
   clampGridWidth,
   csvField,
   filterGridRows,
+  GRID_FILTER_MAX_DEPTH,
   type GridColumn,
+  type GridFilterGroup,
+  type GridFilterModel,
   gridAlign,
   gridAriaSort,
   gridColumnTemplate,
@@ -11,6 +14,10 @@ import {
   gridDescendantSelection,
   gridDirectedComparator,
   gridExportColumns,
+  gridFilterGroupAt,
+  gridFilterGroupName,
+  gridFilterGroupSuffix,
+  gridFilterItemActive,
   gridFilterOperators,
   gridFilterValues,
   gridFoldText,
@@ -37,8 +44,10 @@ import {
   toggleGridRow,
   toggleGridRows,
   toggleGridSetFilterValues,
+  updateGridFilterGroup,
   visibleGridColumns,
 } from "./data-grid.js";
+import { sanitizeGridFilterGroup, sanitizeGridState } from "./grid-layout.js";
 
 type Row = Record<string, unknown>;
 const rows: Row[] = [
@@ -674,5 +683,123 @@ describe("set filter", () => {
     expect(gridSetFilterSummary(labels, values, ["Docs"])).toBe("Docs");
     expect(gridSetFilterSummary(labels, values, ["Gone"])).toBe("Gone");
     expect(gridSetFilterSummary(labels, values, ["Docs", "Core"])).toBe("2 selected");
+  });
+});
+
+describe("filter groups", () => {
+  const run = (model: GridFilterModel, options = {}) =>
+    ids(filterGridRows(rows, model, columns, value, text, options));
+  const ana = { field: "name", operator: "equals", value: "ana" };
+  const adult = { field: "age", operator: ">", value: "18" };
+  const red = { field: "team", operator: "is", value: "red" };
+
+  it("combines items and nested groups with each group's And / Or", () => {
+    // Red, and (Ana or over 18).
+    expect(run({ items: [red], groups: [{ logicOperator: "or", items: [ana, adult] }] })).toEqual([
+      "1",
+    ]);
+    // Red, or (Ana and over 18 and (blue or no team)).
+    expect(
+      run({
+        logicOperator: "or",
+        items: [red],
+        groups: [
+          {
+            items: [ana, adult],
+            groups: [
+              {
+                logicOperator: "or",
+                items: [
+                  { field: "team", operator: "is", value: "blue" },
+                  { field: "team", operator: "isEmpty" },
+                ],
+              },
+            ],
+          },
+        ],
+      }),
+    ).toEqual(["1", "3", "4"]);
+  });
+
+  it("leaves out items without a value and groups with nothing to filter", () => {
+    const empty = { field: "name", operator: "contains", value: "" };
+    expect(run({ logicOperator: "or", items: [empty, ana] })).toEqual(["1", "4"]);
+    expect(run({ items: [], groups: [{ logicOperator: "or", items: [empty] }] })).toHaveLength(4);
+    expect(run({ items: [], groups: [{ items: [], groups: [] }] })).toHaveLength(4);
+    expect(run({ items: [{ field: "name", operator: "isAnyOf", value: [] }] })).toHaveLength(4);
+    expect(
+      run({ logicOperator: "or", items: [ana, { field: "team", operator: "isAnyOf", value: [] }] }),
+    ).toEqual(["1", "4"]);
+    expect(gridFilterItemActive({ field: "team", operator: "isEmpty" })).toBe(true);
+    expect(gridFilterItemActive({ field: "team", operator: "is", value: " " })).toBe(false);
+    expect(
+      gridFilterItemActive(
+        { field: "name", operator: "long" },
+        { name: [{ value: "long", requiresValue: false, getApplyFilterFn: () => null }] },
+      ),
+    ).toBe(true);
+  });
+
+  it("ignores groups nested deeper than the limit", () => {
+    let deep: GridFilterGroup = { items: [{ field: "name", operator: "equals", value: "none" }] };
+    for (let i = 0; i < GRID_FILTER_MAX_DEPTH; i++) deep = { items: [], groups: [deep] };
+    expect(run({ items: [], groups: [deep] })).toHaveLength(4);
+  });
+
+  it("reads and updates groups by path", () => {
+    const model: GridFilterModel = {
+      items: [red],
+      quickFilterValues: ["a"],
+      groups: [{ items: [ana] }, { items: [adult], groups: [{ items: [ana] }] }],
+    };
+    expect(gridFilterGroupAt(model, [])).toBe(model);
+    expect(gridFilterGroupAt(model, [1, 0])).toEqual({ items: [ana] });
+    expect(gridFilterGroupAt(model, [3])).toBeUndefined();
+    const logic = updateGridFilterGroup(model, [1, 0], (g) => ({ ...g, logicOperator: "or" }));
+    expect(logic.groups?.[1]?.groups?.[0]).toEqual({ items: [ana], logicOperator: "or" });
+    expect(logic.quickFilterValues).toEqual(["a"]);
+    expect(model.groups?.[1]?.groups?.[0]).toEqual({ items: [ana] });
+    const removed = updateGridFilterGroup(model, [1, 0], () => null);
+    expect(removed.groups?.[1]).toEqual({ items: [adult] });
+    expect(updateGridFilterGroup(model, [0], () => null).groups).toHaveLength(1);
+    expect(
+      updateGridFilterGroup({ items: [], groups: [{ items: [ana] }] }, [0], () => null),
+    ).toEqual({ items: [] });
+    expect(updateGridFilterGroup(model, [], () => null)).toEqual({
+      items: [],
+      quickFilterValues: ["a"],
+    });
+    expect(updateGridFilterGroup(model, [5, 1], () => null)).toEqual(model);
+    expect(gridFilterGroupSuffix([0, 2])).toBe("-g0-g2");
+    expect(gridFilterGroupName([0, 2])).toBe("1.3");
+  });
+
+  it("restores groups from untrusted state", () => {
+    const state = sanitizeGridState({
+      filter: {
+        filterModel: {
+          items: [red, { field: 1 }],
+          logicOperator: "or",
+          groups: [
+            { logicOperator: "xor", items: [ana], groups: [{ items: "no" }, "bad"] },
+            { __proto__: { items: [] }, items: [adult] },
+          ],
+        },
+      },
+    });
+    expect(state.filter?.filterModel).toEqual({
+      items: [red],
+      logicOperator: "or",
+      groups: [{ items: [ana], groups: [{ items: [] }, { items: [] }] }, { items: [adult] }],
+    });
+    let deep: unknown = { items: [ana] };
+    for (let i = 0; i < 12; i++) deep = { items: [], groups: [deep] };
+    let depth = 0;
+    let group = sanitizeGridFilterGroup(deep);
+    while (group.groups?.[0]) {
+      group = group.groups[0];
+      depth++;
+    }
+    expect(depth).toBe(GRID_FILTER_MAX_DEPTH);
   });
 });

@@ -293,6 +293,16 @@ export interface GridClipboardOptions {
 }
 
 export interface GridClipboard {
+  /**
+   * Copies `text` from a menu or a button (call it in the press: browsers copy only then). Uses
+   * the Clipboard API, else the browser's copy command. `false` when neither copied.
+   */
+  copy(text: string): Promise<boolean>;
+  /**
+   * Reads the clipboard's text (the browser may ask the person first) and pastes it like
+   * Ctrl / Cmd + V. `false` when pasting is off, or the browser can't or won't give the text.
+   */
+  paste(): Promise<boolean>;
   destroy(): void;
 }
 
@@ -376,7 +386,29 @@ export function createGridClipboard(
     },
     { signal },
   );
+  const api = doc.defaultView?.navigator.clipboard;
   return {
+    async copy(text) {
+      try {
+        if (!api?.writeText) throw new Error("no clipboard");
+        await api.writeText(text);
+        options.onCopy?.(text);
+        return true;
+      } catch {
+        // Older paths: the copy command on the relay's text area (the press is still on).
+        relay(text);
+        return doc.execCommand("copy");
+      }
+    },
+    async paste() {
+      if (!options.canPaste() || !api?.readText) return false;
+      try {
+        options.onPaste(await api.readText());
+        return true;
+      } catch {
+        return false;
+      }
+    },
     destroy() {
       abort.abort();
     },

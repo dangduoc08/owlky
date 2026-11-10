@@ -133,10 +133,18 @@ export interface GridFilterItem {
   /** Text; a list for `isAnyOf`. */
   value?: string | readonly string[] | undefined;
 }
-export interface GridFilterModel {
+/**
+ * A group of filters (beyond MUI X; ApexGrid's filter builder): its items and nested groups
+ * combine with its own `logicOperator`. Plain data, so a model stores as JSON.
+ */
+export interface GridFilterGroup {
   items: GridFilterItem[];
-  /** How the items combine (MUI X Pro): every one (`and`, default) or any one (`or`). */
+  /** How the items and groups combine: every one (`and`, default) or any one (`or`). */
   logicOperator?: "and" | "or" | undefined;
+  /** Groups inside this one, after its items. */
+  groups?: GridFilterGroup[] | undefined;
+}
+export interface GridFilterModel extends GridFilterGroup {
   /** Words typed in the quick filter: every word (or, with `or`, any word) must match a column. */
   quickFilterValues?: string[] | undefined;
 }
@@ -672,8 +680,9 @@ export function matchesGridFilter(
 }
 
 /**
- * Rows kept by the filter items (all must pass, or any with `or`) and the quick filter words (each
- * must match a searched column, or any word with `quickFilterLogicOperator: "or"`).
+ * Rows kept by the filter items and groups (all must pass, or any with `or`; items without a value
+ * are left out) and the quick filter words (each must match a searched column, or any word with
+ * `quickFilterLogicOperator: "or"`).
  */
 export function filterGridRows<R>(
   rows: readonly R[],
@@ -684,50 +693,107 @@ export function filterGridRows<R>(
   options: GridFilterOptions<R> = {},
 ): R[] {
   const ignore = !!options.ignoreDiacritics;
-  const items = model.items.filter((item) => columns.some((c) => c.field === item.field));
+  const known = (item: GridFilterItem) => columns.some((c) => c.field === item.field);
   const words = (model.quickFilterValues ?? [])
     .map((w) => gridFoldText(w.trim(), ignore))
     .filter(Boolean);
   const searched = (options.quickFilterColumns ?? columns).filter(
     (c) => isGridFilterable(c) && c.searchable !== false,
   );
-  if (items.length === 0 && words.length === 0) return [...rows];
-  // Custom operators: one test per item, built once (`null`: the item filters nothing).
-  const tests = items.map((item) => {
+  /** One test per item, built once (custom operators: `getApplyFilterFn` once). */
+  const testOf = (item: GridFilterItem): ((row: R) => boolean) => {
     const column = columns.find((c) => c.field === item.field) as GridColumn;
     const custom = options.operators?.[item.field]?.find((o) => o.value === item.operator);
-    if (!custom) return null;
-    const test = custom.getApplyFilterFn(item, column);
-    return test ? (row: R) => test(value(row, item.field), row) : () => true;
-  });
-  const passes = (row: R, index: number) => {
-    const test = tests[index];
-    if (test) return test(row);
-    const item = items[index] as GridFilterItem;
-    const column = columns.find((c) => c.field === item.field) as GridColumn;
-    return matchesGridFilter(
-      value(row, item.field),
-      text(row, item.field),
-      item,
-      column.type,
-      ignore,
-    );
-  };
-  const indexes = items.map((_, i) => i);
-  return rows.filter((row) => {
-    if (items.length > 0) {
-      const kept =
-        model.logicOperator === "or"
-          ? indexes.some((i) => passes(row, i))
-          : indexes.every((i) => passes(row, i));
-      if (!kept) return false;
+    if (custom) {
+      const test = custom.getApplyFilterFn(item, column);
+      return test ? (row: R) => test(value(row, item.field), row) : () => true;
     }
+    return (row: R) =>
+      matchesGridFilter(value(row, item.field), text(row, item.field), item, column.type, ignore);
+  };
+  /**
+   * A group's test (`null`: nothing in it filters). Items that filter nothing yet (no value) are
+   * left out, so an empty item never lets every row through an `or` (MUI X).
+   */
+  const groupTest = (group: GridFilterGroup, depth: number): ((row: R) => boolean) | null => {
+    if (depth > GRID_FILTER_MAX_DEPTH) return null;
+    const own = [
+      ...group.items
+        .filter((item) => known(item) && gridFilterItemActive(item, options.operators))
+        .map(testOf),
+      ...(group.groups ?? []).flatMap((g) => groupTest(g, depth + 1) ?? []),
+    ];
+    if (own.length === 0) return null;
+    return group.logicOperator === "or"
+      ? (row) => own.some((test) => test(row))
+      : (row) => own.every((test) => test(row));
+  };
+  const test = groupTest(model, 0);
+  if (!test && words.length === 0) return [...rows];
+  return rows.filter((row) => {
+    if (test && !test(row)) return false;
     if (words.length === 0) return true;
     const found = (word: string) =>
       searched.some((column) => gridFoldText(text(row, column.field), ignore).includes(word));
     return options.quickFilterLogicOperator === "or" ? words.some(found) : words.every(found);
   });
 }
+
+/** How deep filter groups may nest (deeper ones are ignored; untrusted input stays bounded). */
+export const GRID_FILTER_MAX_DEPTH = 8;
+
+/** Whether an item filters anything: an operator without a value, or a value (a list: not empty). */
+export function gridFilterItemActive<R>(
+  item: GridFilterItem,
+  operators?: Readonly<Record<string, readonly GridFilterOperator<R>[]>>,
+): boolean {
+  if (!gridOperatorNeedsValue(item.operator, operators?.[item.field] as never)) return true;
+  return Array.isArray(item.value)
+    ? item.value.length > 0
+    : typeof item.value === "string" && item.value.trim() !== "";
+}
+
+/** The group at `path` (indexes into `groups`, from the model); the model itself for `[]`. */
+export function gridFilterGroupAt(
+  model: GridFilterGroup,
+  path: readonly number[],
+): GridFilterGroup | undefined {
+  let group: GridFilterGroup | undefined = model;
+  for (const index of path) group = group?.groups?.[index];
+  return group;
+}
+
+/**
+ * The model with the group at `path` replaced by `update(group)`; `null` removes that group (for
+ * `[]`, the model itself, `null` leaves it with no items and no groups).
+ */
+export function updateGridFilterGroup<M extends GridFilterGroup>(
+  model: M,
+  path: readonly number[],
+  update: (group: GridFilterGroup) => GridFilterGroup | null,
+): M {
+  const walk = (group: GridFilterGroup, rest: readonly number[]): GridFilterGroup | null => {
+    if (rest.length === 0) return update(group);
+    const [index, ...tail] = rest as [number, ...number[]];
+    const child = group.groups?.[index];
+    if (!child) return group;
+    const next = walk(child, tail);
+    const groups = (group.groups ?? []).flatMap((g, i) => (i !== index ? [g] : next ? [next] : []));
+    const { groups: _, ...own } = group;
+    return groups.length ? { ...own, groups } : own;
+  };
+  const next = walk(model, path);
+  const { groups: _, ...rest } = model;
+  return (next ? { ...rest, ...next } : { ...rest, items: [] }) as M;
+}
+
+/** The id suffix of a filter group's fields (`-g0-g1`): one `-g<index>` per level. */
+export const gridFilterGroupSuffix = (path: readonly number[]): string =>
+  path.map((index) => `-g${index}`).join("");
+
+/** A filter group's number as people read it ("1", "1.2"). */
+export const gridFilterGroupName = (path: readonly number[]): string =>
+  path.map((index) => index + 1).join(".");
 
 /** Splits a quick filter text into words (MUI X `quickFilterValues`). */
 export const gridQuickFilterValues = (text: string): string[] =>
@@ -938,6 +1004,10 @@ export const gridDefaultLabels = {
   filterPanelLogicOperator: "Logic operator",
   filterPanelOperatorAnd: "And",
   filterPanelOperatorOr: "Or",
+  filterPanelAddGroup: "Add group",
+  filterPanelRemoveGroup: "Remove group",
+  /** `{index}` is replaced (the group's number, such as "1.2"). */
+  filterPanelGroup: "Filter group {index}",
   toolbarExportPrint: "Print",
   editLabel: "Edit",
   filterPanelColumns: "Columns",
@@ -1040,6 +1110,12 @@ export const gridDefaultLabels = {
   footerTotalRows: "Total Rows:",
   /** `{visibleCount}` and `{totalCount}` are replaced (filtered rows). */
   footerTotalVisibleRows: "{visibleCount} of {totalCount}",
+  contextMenuLabel: "Cell actions",
+  contextMenuCopy: "Copy",
+  contextMenuPaste: "Paste",
+  contextMenuExport: "Export",
+  contextMenuPin: "Pin column",
+  contextMenuPasteRefused: "Press Ctrl + V (Cmd + V on a Mac) to paste",
   setFilterSearch: "Search values",
   setFilterSelectAll: "Select all",
   setFilterValues: "Values",

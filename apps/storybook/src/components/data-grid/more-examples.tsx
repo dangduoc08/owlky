@@ -337,6 +337,58 @@ export const moreStories: Record<string, ReactGroup[]> = {
       ),
     },
   ],
+  context: [
+    {
+      title: "Context menu",
+      content: (
+        // Right click a cell, or press Shift + F10 or the Menu key on it.
+        <DataGrid
+          id="grid-context"
+          aria-label="Issues"
+          className="sb-grid"
+          rows={ISSUES}
+          columns={historyColumns}
+          contextMenu
+          cellSelection
+          hideFooter
+        />
+      ),
+    },
+  ],
+  filters: [
+    {
+      title: "Filter groups",
+      content: (
+        // (Priority is High or Medium) and more than 2 points.
+        <DataGrid
+          id="grid-filters"
+          aria-label="Issues"
+          className="sb-grid"
+          rows={ISSUES}
+          columns={plainColumns}
+          showToolbar
+          filterGroups
+          hideFooter
+          initialState={{
+            filter: {
+              filterModel: {
+                items: [{ field: "points", operator: ">", value: "2" }],
+                groups: [
+                  {
+                    logicOperator: "or",
+                    items: [
+                      { field: "priority", operator: "equals", value: "High" },
+                      { field: "priority", operator: "equals", value: "Medium" },
+                    ],
+                  },
+                ],
+              },
+            },
+          }}
+        />
+      ),
+    },
+  ],
   selection: [
     {
       title: "Tree data",
@@ -430,6 +482,8 @@ export const MORE_FILES = {
   footer: [["Footer, label and Tab navigation", "group"]],
   columns: [["Column options", "group"]],
   set: [["Set filter", "group"]],
+  context: [["Context menu", "group"]],
+  filters: [["Filter groups", "group"]],
   selection: [
     ["Tree data", "tree"],
     ["Row groups", "groups"],

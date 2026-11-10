@@ -48,7 +48,7 @@ const header = (host: Element, field: string) =>
   host.querySelector<HTMLElement>(`[role="columnheader"][data-ok-field="${field}"]`) as HTMLElement;
 
 describe("data grid snippets", () => {
-  it("covers every story group", () => expect(snippets).toHaveLength(40));
+  it("covers every story group", () => expect(snippets).toHaveLength(42));
 
   // Grids whose rows come from JavaScript (setRows, data sources) ship no rows.
   const scripted = (path: string) => /(large|server|lazy|server-aggregation)-group/.test(path);
@@ -72,7 +72,7 @@ describe("data grid snippets", () => {
 
   // Layout and validation grids: their own rows, no pages.
   const unpaged = (path: string) =>
-    /(layout|validation|tree|detail|ordering|groups|list|grouping|pivot|cells|charts|sorting|editors|modes|history|footer|dimensions|columns|selection|set)-/.test(
+    /(layout|validation|tree|detail|ordering|groups|list|grouping|pivot|cells|charts|sorting|editors|modes|history|footer|dimensions|columns|selection|set|context|filters)-/.test(
       path,
     );
 
