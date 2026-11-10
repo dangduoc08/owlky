@@ -159,6 +159,7 @@ const pairs: [component: string, story: string][] = [
   ["breadcrumbs", "customized"],
   ["stepper", "horizontal"],
   ["stepper", "alternative-label"],
+  ["stepper", "non-linear"],
   ["stepper", "vertical"],
   ["stepper", "customized"],
   ["stepper", "mobile"],

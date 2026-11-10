@@ -7,6 +7,7 @@ import { expectNoAxeViolations } from "../test-utils.js";
 import {
   MobileStepper,
   Step,
+  StepButton,
   StepConnector,
   StepContent,
   StepLabel,
@@ -359,5 +360,64 @@ describe("MobileStepper", () => {
     const html = renderToString(element);
     const { container } = render(element);
     expect(html).toBe(container.innerHTML);
+  });
+});
+
+function NonLinear() {
+  const [active, setActive] = useState(0);
+  return (
+    <Stepper nonLinear activeStep={active} aria-label="Setup" orientation="vertical">
+      {["One", "Two", "Three"].map((label, index) => (
+        <Step key={label} completed={index === 2} disabled={label === "Two" && active === 2}>
+          <StepButton optional="Optional" onClick={() => setActive(index)}>
+            {label}
+          </StepButton>
+          <StepContent transitionDuration={0}>Content {label}</StepContent>
+        </Step>
+      ))}
+    </Stepper>
+  );
+}
+
+describe("Non-linear steppers", () => {
+  it("step buttons move to any step; completed and disabled are the app's", async () => {
+    render(<NonLinear />);
+    const stepper = screen.getByRole("list", { name: "Setup" });
+    expect(stepper.hasAttribute("data-ok-non-linear")).toBe(true);
+    const [one, two, three] = steps();
+    expect(two?.hasAttribute("data-ok-disabled")).toBe(false);
+    expect(three?.hasAttribute("data-ok-completed")).toBe(true);
+    expect(one?.hasAttribute("data-ok-completed")).toBe(false);
+    await userEvent.click(screen.getByRole("button", { name: /Three/ }));
+    expect(three?.getAttribute("aria-current")).toBe("step");
+    expect(screen.getByRole("button", { name: /Two/ })).toHaveProperty("disabled", true);
+    expect(
+      ((three as HTMLElement).querySelector("[data-ok-step-content]") as HTMLElement).hasAttribute(
+        "hidden",
+      ),
+    ).toBe(false);
+    await expectNoAxeViolations(document.body);
+  });
+
+  it("expanded keeps the content shown; last marks the last step", () => {
+    render(
+      <Stepper activeStep={0} orientation="vertical" aria-label="E">
+        <Step>
+          <StepLabel>A</StepLabel>
+          <StepContent>Shown A</StepContent>
+        </Step>
+        <Step expanded last>
+          <StepLabel>B</StepLabel>
+          <StepContent>Shown B</StepContent>
+        </Step>
+      </Stepper>,
+    );
+    const [, second] = steps();
+    expect(second?.dataset).toMatchObject({ okExpanded: "", okLast: "" });
+    expect(
+      ((second as HTMLElement).querySelector("[data-ok-step-content]") as HTMLElement).hasAttribute(
+        "hidden",
+      ),
+    ).toBe(false);
   });
 });

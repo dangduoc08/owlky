@@ -17,8 +17,8 @@ export interface StepperInstance extends ComponentInstance {
   go(step: number): boolean;
 }
 
-const { activeStep } = stepperOptions.options;
-const { active, completed, disabled } = stepOptions.options;
+const { activeStep, nonLinear } = stepperOptions.options;
+const { active, completed, disabled, expanded } = stepOptions.options;
 const TRIGGERS = {
   next: "data-ok-stepper-next",
   back: "data-ok-stepper-back",
@@ -58,16 +58,22 @@ export const stepper = defineComponent<StepperInstance, StepperEvents>({
 
     const apply = (step: number) => {
       element.setAttribute(activeStep.attr, String(step));
+      // Non-linear: completed and disabled steps are the page's (left as written).
+      const free = element.hasAttribute(nonLinear.attr);
       steps().forEach((item, index) => {
         const state = stepState(index, step);
         item.toggleAttribute(active.attr, state.active);
-        item.toggleAttribute(completed.attr, state.completed);
-        item.toggleAttribute(disabled.attr, state.disabled);
+        if (!free) {
+          item.toggleAttribute(completed.attr, state.completed);
+          item.toggleAttribute(disabled.attr, state.disabled);
+        }
+        const button = item.querySelector<HTMLButtonElement>("[data-ok-step-button]");
+        if (button) button.disabled = item.hasAttribute(disabled.attr);
         if (state.active) item.setAttribute("aria-current", "step");
         else item.removeAttribute("aria-current");
         // Vertical steppers: the content is a Collapse, closed on the other steps.
         const content = item.querySelector<HTMLElement>(":scope > [data-ok-step-content]");
-        if (content) content.hidden = !state.active;
+        if (content) content.hidden = !(state.active || item.hasAttribute(expanded.attr));
       });
       linked("data-ok-stepper-panel").forEach((panel, index) => {
         const own = Number(panel.getAttribute("data-ok-stepper-panel-step") ?? index);
@@ -96,22 +102,36 @@ export const stepper = defineComponent<StepperInstance, StepperEvents>({
     return instance;
   },
 
-  delegate: (Object.entries(TRIGGERS) as [keyof typeof TRIGGERS, string][]).map(
-    ([action, attribute]) => ({
+  delegate: [
+    {
+      // A step button moves to its step (non-linear steppers).
       event: "click" as const,
-      selector: `[${attribute}]`,
-      handle(trigger: Element, _event: Event, runtime: Runtime) {
-        const root = trigger.getRootNode() as Document | ShadowRoot;
-        // One trigger may move several steppers that show the same steps (space-separated ids).
-        for (const id of (trigger.getAttribute(attribute) as string).split(/\s+/)) {
-          const target = id ? root.getElementById(id) : null;
-          if (!target?.hasAttribute("data-ok-stepper")) continue;
-          const instance = runtime.getOrCreate<StepperInstance>(target, "stepper");
-          if (!instance) continue;
-          const step = instance.activeStep;
-          instance.go(action === "next" ? step + 1 : action === "back" ? step - 1 : 0);
-        }
+      selector: "[data-ok-step-button]",
+      handle(button: Element, _event: Event, runtime: Runtime) {
+        const step = button.closest("[data-ok-step]");
+        const owner = step?.parentElement;
+        if (!step || !owner?.hasAttribute("data-ok-stepper")) return;
+        const index = [...owner.children].filter((child) => child.matches("[data-ok-step]"));
+        runtime.getOrCreate<StepperInstance>(owner, "stepper")?.go(index.indexOf(step));
       },
-    }),
-  ),
+    },
+    ...(Object.entries(TRIGGERS) as [keyof typeof TRIGGERS, string][]).map(
+      ([action, attribute]) => ({
+        event: "click" as const,
+        selector: `[${attribute}]`,
+        handle(trigger: Element, _event: Event, runtime: Runtime) {
+          const root = trigger.getRootNode() as Document | ShadowRoot;
+          // One trigger may move several steppers that show the same steps (space-separated ids).
+          for (const id of (trigger.getAttribute(attribute) as string).split(/\s+/)) {
+            const target = id ? root.getElementById(id) : null;
+            if (!target?.hasAttribute("data-ok-stepper")) continue;
+            const instance = runtime.getOrCreate<StepperInstance>(target, "stepper");
+            if (!instance) continue;
+            const step = instance.activeStep;
+            instance.go(action === "next" ? step + 1 : action === "back" ? step - 1 : 0);
+          }
+        },
+      }),
+    ),
+  ],
 });

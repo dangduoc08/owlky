@@ -14,6 +14,7 @@ import {
   stepState,
 } from "@owlky/core";
 import {
+  type ButtonHTMLAttributes,
   Children,
   cloneElement,
   createContext,
@@ -29,19 +30,29 @@ import { LinearProgress } from "../linear-progress/linear-progress.js";
 interface StepperContextValue {
   activeStep: number;
   connector: ReactNode;
+  nonLinear: boolean;
 }
 
 interface StepContextValue {
   index: number;
   active: boolean;
   completed: boolean;
+  disabled: boolean;
+  expanded: boolean;
 }
 
 const StepperContext = createContext<StepperContextValue>({
   activeStep: 0,
   connector: null,
+  nonLinear: false,
 });
-const StepContext = createContext<StepContextValue>({ index: 0, active: false, completed: false });
+const StepContext = createContext<StepContextValue>({
+  index: 0,
+  active: false,
+  completed: false,
+  disabled: false,
+  expanded: false,
+});
 
 export interface StepperProps extends HTMLAttributes<HTMLOListElement> {
   /** Index of the current step (0-based). Earlier steps are completed. Default 0. */
@@ -54,6 +65,11 @@ export interface StepperProps extends HTMLAttributes<HTMLOListElement> {
   variant?: StepperVariant | undefined;
   /** The line between steps. Default `<StepConnector />`; `null` draws none. */
   connector?: ReactNode;
+  /**
+   * Steps can be visited in any order (with `StepButton`): only the active step is derived;
+   * set `completed` and `disabled` on the steps yourself.
+   */
+  nonLinear?: boolean | undefined;
   /** `Step` elements. */
   children?: ReactNode;
 }
@@ -70,6 +86,7 @@ export const Stepper = forwardRef<HTMLOListElement, StepperProps>(function Stepp
     alternativeLabel,
     variant,
     connector = <StepConnector />,
+    nonLinear,
     children,
     ...props
   },
@@ -82,10 +99,12 @@ export const Stepper = forwardRef<HTMLOListElement, StepperProps>(function Stepp
   return (
     <ol
       ref={ref}
-      {...stepperAttributes({ orientation, alternativeLabel, variant, activeStep })}
+      {...stepperAttributes({ orientation, alternativeLabel, variant, activeStep, nonLinear })}
       {...props}
     >
-      <StepperContext.Provider value={{ activeStep, connector }}>{steps}</StepperContext.Provider>
+      <StepperContext.Provider value={{ activeStep, connector, nonLinear: nonLinear === true }}>
+        {steps}
+      </StepperContext.Provider>
     </ol>
   );
 });
@@ -93,30 +112,41 @@ export const Stepper = forwardRef<HTMLOListElement, StepperProps>(function Stepp
 export interface StepProps extends HTMLAttributes<HTMLLIElement> {
   /** Set by the `Stepper` (its position). */
   index?: number | undefined;
-  /** Overrides the state the stepper computes. */
+  /** Overrides the state the stepper computes: the current step. */
   active?: boolean | undefined;
+  /** Overrides the state the stepper computes: done (a check icon). */
   completed?: boolean | undefined;
+  /** Overrides the state the stepper computes: not reachable (dimmed; its `StepButton` is disabled). */
   disabled?: boolean | undefined;
+  /** Vertical steppers: the step's `StepContent` stays shown, also when it isn't active. */
+  expanded?: boolean | undefined;
+  /** The last step (no line below its content), when it isn't the list's last element. */
+  last?: boolean | undefined;
   /** `StepLabel` and, in a vertical stepper, `StepContent`. */
   children?: ReactNode;
 }
 
 /** Step — spec: specs/components/stepper.md. One `li` of a `Stepper`. */
 export const Step = forwardRef<HTMLLIElement, StepProps>(function Step(
-  { index = 0, active, completed, disabled, children, ...props },
+  { index = 0, active, completed, disabled, expanded, last, children, ...props },
   ref,
 ) {
   const stepper = useContext(StepperContext);
-  const state = stepState(index, stepper.activeStep, { active, completed, disabled });
+  const state = stepState(
+    index,
+    stepper.activeStep,
+    { active, completed, disabled },
+    stepper.nonLinear,
+  );
   return (
     <li
       ref={ref}
-      {...stepAttributes(state)}
+      {...stepAttributes({ ...state, expanded, last })}
       aria-current={state.active ? "step" : undefined}
       {...props}
     >
       {index > 0 && stepper.connector}
-      <StepContext.Provider value={{ index, active: state.active, completed: state.completed }}>
+      <StepContext.Provider value={{ index, ...state, expanded: expanded === true }}>
         {children}
       </StepContext.Provider>
     </li>
@@ -204,20 +234,60 @@ export function StepConnector() {
   );
 }
 
-export type StepContentProps = HTMLAttributes<HTMLDivElement>;
+export interface StepContentProps extends HTMLAttributes<HTMLDivElement> {
+  /**
+   * Length of the open and close animation: ms, or `"auto"` (default: from the height, as MUI).
+   * The Collapse's `timeout`.
+   */
+  transitionDuration?: number | "auto" | undefined;
+}
 
 /**
- * StepContent — spec: specs/components/stepper.md. Vertical steppers: what the active step shows
- * below its label. A Collapse (`timeout="auto"`, as MUI): `hidden` on the other steps.
+ * StepContent — spec: specs/components/stepper.md. Vertical steppers: what the active (or
+ * `expanded`) step shows below its label. A Collapse: `hidden` on the other steps.
  */
-export const StepContent = forwardRef<HTMLDivElement, StepContentProps>(
-  function StepContent(props, ref) {
-    const step = useContext(StepContext);
-    return (
-      <Collapse ref={ref} in={step.active} timeout="auto" data-ok-step-content="" {...props} />
-    );
-  },
-);
+export const StepContent = forwardRef<HTMLDivElement, StepContentProps>(function StepContent(
+  { transitionDuration = "auto", ...props },
+  ref,
+) {
+  const step = useContext(StepContext);
+  return (
+    <Collapse
+      ref={ref}
+      in={step.active || step.expanded}
+      timeout={transitionDuration}
+      data-ok-step-content=""
+      {...props}
+    />
+  );
+});
+
+export interface StepButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  /** Replaces the step number: a number or text, or any node (a decorative `svg`). */
+  icon?: ReactNode;
+  /** A second line, such as "Optional". */
+  optional?: ReactNode;
+  /** The step's title. */
+  children?: ReactNode;
+}
+
+/**
+ * StepButton — spec: specs/components/stepper.md. A step's label as a button, to move to that
+ * step in a `nonLinear` stepper (set `activeStep` in `onClick`). Disabled with its step.
+ */
+export const StepButton = forwardRef<HTMLButtonElement, StepButtonProps>(function StepButton(
+  { icon, optional, children, ...props },
+  ref,
+) {
+  const step = useContext(StepContext);
+  return (
+    <button ref={ref} type="button" data-ok-step-button="" disabled={step.disabled} {...props}>
+      <StepLabel icon={icon} optional={optional}>
+        {children}
+      </StepLabel>
+    </button>
+  );
+});
 
 export interface MobileStepperProps extends HTMLAttributes<HTMLDivElement> {
   /** Number of steps. */

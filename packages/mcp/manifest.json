@@ -690,6 +690,7 @@
   "data-ok-label-value",
   "data-ok-labels",
   "data-ok-language",
+  "data-ok-last",
   "data-ok-latitude",
   "data-ok-layout",
   "data-ok-lazy-loading",
@@ -864,6 +865,7 @@
   "data-ok-no-wrap",
   "data-ok-node-padding",
   "data-ok-node-width",
+  "data-ok-non-linear",
   "data-ok-offset",
   "data-ok-once",
   "data-ok-open",
@@ -1092,6 +1094,7 @@
   "data-ok-state",
   "data-ok-status",
   "data-ok-step",
+  "data-ok-step-button",
   "data-ok-step-connector",
   "data-ok-step-connector-line",
   "data-ok-step-content",
@@ -52912,6 +52915,10 @@
    "api": {
     "css": [
      {
+      "name": "--ok-action-hover",
+      "value": "color-mix(in srgb, #919EAB 8%, transparent)"
+     },
+     {
       "dark": "#1C252E",
       "light": "#FFFFFF",
       "name": "--ok-bg-paper"
@@ -52980,6 +52987,10 @@
      {
       "name": "--ok-radius-full",
       "value": "9999px"
+     },
+     {
+      "name": "--ok-radius-sm",
+      "value": "6px"
      },
      {
       "name": "--ok-shadow-z8",
@@ -53089,6 +53100,12 @@
          "kind": "number",
          "min": 0,
          "name": "activeStep"
+        },
+        {
+         "attr": "data-ok-non-linear",
+         "description": "Steps can be visited in any order: only the active step is derived, completed and disabled steps are yours to set.",
+         "kind": "flag",
+         "name": "nonLinear"
         }
        ],
        "parts": [
@@ -53163,6 +53180,11 @@
          "description": "The line between steps. `null` draws none.",
          "name": "connector",
          "type": "ReactNode"
+        },
+        {
+         "description": "Steps can be visited in any order (with `StepButton`): only the active step is derived; set `completed` and `disabled` on the steps yourself.",
+         "name": "nonLinear",
+         "type": "boolean"
         },
         {
          "default": "\"horizontal\"",
@@ -53375,6 +53397,18 @@
          "description": "Not reached yet (dimmed).",
          "kind": "flag",
          "name": "disabled"
+        },
+        {
+         "attr": "data-ok-expanded",
+         "description": "Vertical steppers: the step's content stays shown, also when it isn't active.",
+         "kind": "flag",
+         "name": "expanded"
+        },
+        {
+         "attr": "data-ok-last",
+         "description": "The last step (no line below its content), when it isn't the list's last element.",
+         "kind": "flag",
+         "name": "last"
         }
        ],
        "parts": [
@@ -53418,7 +53452,7 @@
        "native": "HTMLLIElement",
        "props": [
         {
-         "description": "Overrides the state the stepper computes.",
+         "description": "Overrides the state the stepper computes: the current step.",
          "name": "active",
          "type": "boolean"
         },
@@ -53428,19 +53462,60 @@
          "type": "ReactNode"
         },
         {
-         "description": "Done: the icon shows a check.",
+         "description": "Overrides the state the stepper computes: done (a check icon).",
          "name": "completed",
          "type": "boolean"
         },
         {
-         "description": "Not reached yet (dimmed).",
+         "description": "Overrides the state the stepper computes: not reachable (dimmed; its `StepButton` is disabled).",
          "name": "disabled",
+         "type": "boolean"
+        },
+        {
+         "description": "Vertical steppers: the step's `StepContent` stays shown, also when it isn't active.",
+         "name": "expanded",
          "type": "boolean"
         },
         {
          "description": "Set by the `Stepper` (its position).",
          "name": "index",
          "type": "number"
+        },
+        {
+         "description": "The last step (no line below its content), when it isn't the list's last element.",
+         "name": "last",
+         "type": "boolean"
+        }
+       ]
+      }
+     },
+     {
+      "html": {
+       "attribute": "data-ok-step-button",
+       "description": "A step's label as a button that moves to the step (non-linear steppers).",
+       "elements": [
+        "button"
+       ]
+      },
+      "name": "StepButton",
+      "react": {
+       "description": "A step's label as a button, to move to that step in a `nonLinear` stepper (set `activeStep` in `onClick`). Disabled with its step.",
+       "native": "HTMLButtonElement",
+       "props": [
+        {
+         "description": "The step's title.",
+         "name": "children",
+         "type": "ReactNode"
+        },
+        {
+         "description": "Replaces the step number: a number or text, or any node (a decorative `svg`).",
+         "name": "icon",
+         "type": "ReactNode"
+        },
+        {
+         "description": "A second line, such as \"Optional\".",
+         "name": "optional",
+         "type": "ReactNode"
         }
        ]
       }
@@ -53479,9 +53554,15 @@
       },
       "name": "StepContent",
       "react": {
-       "description": "Vertical steppers: what the active step shows below its label. A Collapse (`timeout=\"auto\"`, as MUI): `hidden` on the other steps.",
-       "native": "HTMLElement",
-       "props": []
+       "description": "Vertical steppers: what the active (or `expanded`) step shows below its label. A Collapse: `hidden` on the other steps.",
+       "native": "HTMLDivElement",
+       "props": [
+        {
+         "description": "Length of the open and close animation: ms, or `\"auto\"` (default: from the height, as MUI). The Collapse's `timeout`.",
+         "name": "transitionDuration",
+         "type": "number | \"auto\""
+        }
+       ]
       }
      },
      {
@@ -53557,6 +53638,7 @@
    "react": [
     "MobileStepper",
     "Step",
+    "StepButton",
     "StepConnector",
     "StepContent",
     "StepLabel",
@@ -53617,6 +53699,12 @@
        "kind": "number",
        "min": 0,
        "name": "activeStep"
+      },
+      {
+       "attr": "data-ok-non-linear",
+       "description": "Steps can be visited in any order: only the active step is derived, completed and disabled steps are yours to set.",
+       "kind": "flag",
+       "name": "nonLinear"
       }
      ],
      "root": "data-ok-stepper"
@@ -53641,6 +53729,18 @@
        "description": "Not reached yet (dimmed).",
        "kind": "flag",
        "name": "disabled"
+      },
+      {
+       "attr": "data-ok-expanded",
+       "description": "Vertical steppers: the step's content stays shown, also when it isn't active.",
+       "kind": "flag",
+       "name": "expanded"
+      },
+      {
+       "attr": "data-ok-last",
+       "description": "The last step (no line below its content), when it isn't the list's last element.",
+       "kind": "flag",
+       "name": "last"
       }
      ],
      "root": "data-ok-step"
@@ -53755,7 +53855,7 @@
      "title": "Responsive"
     },
     {
-     "body": "Upstream: MUI `Stepper`, `Step`, `StepLabel`, `StepContent`, `StepIcon`, `StepConnector`,\n`StepButton`, `MobileStepper` (mui.com/material-ui/api/stepper …, checked 2026-11-09).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| Stepper `activeStep`, `alternativeLabel`, `orientation` | same / `data-ok-active-step`, `-alternative-label`, `-orientation` | kept | |\n| Stepper `connector` | `connector` / `div[data-ok-step-connector]` | kept | `null`: none |\n| Stepper `children` | `children` | kept | |\n| Stepper `nonLinear` | — | deferred (4.10) | |\n| Stepper `component` | — | not applicable | root is `ol` |\n| — | Stepper `variant` (`dot`, `circle`) | kept | Owlky addition (reference \"Customized\") |\n| Step `active`, `completed`, `disabled`, `index` | same / `data-ok-active`, `-completed`, `-disabled` | kept | |\n| Step `expanded`, `last` | — | deferred (4.10) | |\n| Step `component` | — | not applicable | `li` |\n| StepButton (`icon`, `optional`) | — | deferred (4.10) | |\n| StepLabel `children`, `error`, `optional`, `icon` | same / `data-ok-error`, `-step-label-optional`, `-step-icon` | kept | |\n| StepLabel `slots.stepIcon` / `StepIconComponent` | `icon` (node) | renamed | composition |\n| StepIcon `active`, `completed`, `error`, `icon` | step / label state | not applicable | internal part, state from the step |\n| StepContent `children` | `StepContent` (a Collapse, `timeout=\"auto\"`) | kept | |\n| StepContent `transitionDuration` | — | deferred | Collapse `timeout` pass-through (Collapse already has it) |\n| MobileStepper `steps`, `activeStep`, `variant`, `position`, `backButton`, `nextButton` | same / `data-ok-steps`, … | kept | |\n| — | MobileStepper `getStepLabel` / `data-ok-label-step` | kept | Owlky addition (name of dots / bar) |\n| MobileStepper Paper props (`elevation`, `square`) | — | not applicable | bar keeps the paper background; compose a Paper around it |\n| MobileStepper `slots` / `slotProps` (`root`, `dot`, `dots`, `progress`) | — | not applicable | composition |\n| `classes`, `sx`, StepContent `slots.transition` | — | not applicable | by decision |",
+     "body": "Upstream: MUI `Stepper`, `Step`, `StepLabel`, `StepContent`, `StepIcon`, `StepConnector`,\n`StepButton`, `MobileStepper` (mui.com/material-ui/api/stepper …, checked 2026-11-09).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| Stepper `activeStep`, `alternativeLabel`, `orientation` | same / `data-ok-active-step`, `-alternative-label`, `-orientation` | kept | |\n| Stepper `connector` | `connector` / `div[data-ok-step-connector]` | kept | `null`: none |\n| Stepper `children` | `children` | kept | |\n| Stepper `nonLinear` | same / `data-ok-non-linear` | kept (4.10) | core `stepState(…, nonLinear)`: only the active step is derived; HTML leaves `data-ok-completed` / `-disabled` as written |\n| Stepper `component` | — | not applicable | root is `ol` |\n| — | Stepper `variant` (`dot`, `circle`) | kept | Owlky addition (reference \"Customized\") |\n| Step `active`, `completed`, `disabled`, `index` | same / `data-ok-active`, `-completed`, `-disabled` | kept | |\n| Step `expanded`, `last` | same / `data-ok-expanded`, `data-ok-last` | kept (4.10) | `expanded` keeps `StepContent` open; `last` = `:last-child` for wrapped lists |\n| Step `component` | — | not applicable | `li` |\n| StepButton (`icon`, `optional`, `children`) | `StepButton` / `button[data-ok-step-button]` › StepLabel markup | kept (4.10) | disabled with its step; HTML runtime moves to the pressed step |\n| StepLabel `children`, `error`, `optional`, `icon` | same / `data-ok-error`, `-step-label-optional`, `-step-icon` | kept | |\n| StepLabel `slots.stepIcon` / `StepIconComponent` | `icon` (node) | renamed | composition |\n| StepIcon `active`, `completed`, `error`, `icon` | step / label state | not applicable | internal part, state from the step |\n| StepContent `children` | `StepContent` (a Collapse, `timeout=\"auto\"`) | kept | |\n| StepContent `transitionDuration` | same (React) → Collapse `timeout`; HTML `data-ok-timeout` on the content | kept (4.18.74) | ms or `auto` (default) |\n| MobileStepper `steps`, `activeStep`, `variant`, `position`, `backButton`, `nextButton` | same / `data-ok-steps`, … | kept | |\n| — | MobileStepper `getStepLabel` / `data-ok-label-step` | kept | Owlky addition (name of dots / bar) |\n| MobileStepper Paper props (`elevation`, `square`) | — | not applicable | bar keeps the paper background; compose a Paper around it |\n| MobileStepper `slots` / `slotProps` (`root`, `dot`, `dots`, `progress`) | — | not applicable | composition |\n| `classes`, `sx`, StepContent `slots.transition` | — | not applicable | by decision |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
@@ -53783,6 +53883,15 @@
      "react": "import { Button, Paper, Step, StepLabel, Stepper, Typography } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nconst STEPS = [\n  { label: \"Choose a plan\", text: \"Pick the plan and the billing period that suit your team.\" },\n  {\n    label: \"Add details\",\n    optional: \"Optional\",\n    text: \"Name the project and invite the people who will work on it.\",\n  },\n  { label: \"Review and confirm\", text: \"Check the summary, then confirm to create the project.\" },\n];\n\n/** A linear stepper: Next completes the current step, Back returns to the previous one. */\nexport function HorizontalDemo({ alternativeLabel = false }: { alternativeLabel?: boolean }) {\n  const [active, setActive] = useState(0);\n  return (\n    <div className=\"sb-stepper-demo\">\n      <Stepper activeStep={active} alternativeLabel={alternativeLabel} aria-label=\"Project setup\">\n        {STEPS.map((step) => (\n          <Step key={step.label}>\n            <StepLabel optional={step.optional}>{step.label}</StepLabel>\n          </Step>\n        ))}\n      </Stepper>\n      <Paper elevation={0} className=\"sb-stepper-panel\">\n        {active < STEPS.length ? (\n          <Typography variant=\"body2\">{STEPS[active]?.text}</Typography>\n        ) : (\n          <div>\n            <Typography variant=\"body2\">All steps completed. Your project is ready.</Typography>\n            <Button color=\"inherit\" onClick={() => setActive(0)}>\n              Reset\n            </Button>\n          </div>\n        )}\n      </Paper>\n      <div className=\"sb-stepper-actions\">\n        <Button color=\"inherit\" disabled={active === 0} onClick={() => setActive(active - 1)}>\n          Back\n        </Button>\n        <Button\n          variant=\"contained\"\n          color=\"inherit\"\n          onClick={() => setActive(Math.min(active + 1, STEPS.length))}\n        >\n          Next\n        </Button>\n      </div>\n    </div>\n  );\n}\n",
      "snippets": [
       "alternative-label-group.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/paper.css + components/typography.css + components/stepper.css + components/button.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Non-linear -->\n<div class=\"sb-stepper-demo\">\n  <ol id=\"stepper-non-linear\" data-ok-stepper data-ok-orientation=\"horizontal\" data-ok-variant=\"standard\" data-ok-active-step=\"0\" data-ok-non-linear aria-label=\"Project setup\">\n    <li data-ok-step data-ok-active aria-current=\"step\"><button type=\"button\" data-ok-step-button><span data-ok-step-label><span data-ok-step-icon aria-hidden=\"true\"><span data-ok-step-icon-text>1</span><svg data-ok-step-icon-check aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M20 6 9 17l-5-5\" /></svg><svg data-ok-step-icon-error aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\"><path d=\"M12 6v7M12 18h.01\" /></svg></span><span data-ok-step-label-text><span data-ok-step-label-title>Choose a plan</span></span></span></button></li>\n    <li data-ok-step>\n      <div data-ok-step-connector aria-hidden=\"true\"><span data-ok-step-connector-line></span></div>\n      <button type=\"button\" data-ok-step-button><span data-ok-step-label><span data-ok-step-icon aria-hidden=\"true\"><span data-ok-step-icon-text>2</span><svg data-ok-step-icon-check aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M20 6 9 17l-5-5\" /></svg><svg data-ok-step-icon-error aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\"><path d=\"M12 6v7M12 18h.01\" /></svg></span><span data-ok-step-label-text><span data-ok-step-label-title>Add details</span><span data-ok-step-label-optional>Optional</span></span></span></button>\n    </li>\n    <li data-ok-step>\n      <div data-ok-step-connector aria-hidden=\"true\"><span data-ok-step-connector-line></span></div>\n      <button type=\"button\" data-ok-step-button><span data-ok-step-label><span data-ok-step-icon aria-hidden=\"true\"><span data-ok-step-icon-text>3</span><svg data-ok-step-icon-check aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M20 6 9 17l-5-5\" /></svg><svg data-ok-step-icon-error aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\"><path d=\"M12 6v7M12 18h.01\" /></svg></span><span data-ok-step-label-text><span data-ok-step-label-title>Review and confirm</span></span></span></button>\n    </li>\n  </ol>\n  <div data-ok-paper data-ok-variant=\"elevation\" data-ok-elevation=\"0\" class=\"sb-stepper-panel\">\n    <p data-ok-typography data-ok-variant=\"body2\" data-ok-stepper-panel=\"stepper-non-linear\">Pick the plan and the billing period that suit your team.</p>\n    <p data-ok-typography data-ok-variant=\"body2\" data-ok-stepper-panel=\"stepper-non-linear\" hidden>Name the project and invite the people who will work on it.</p>\n    <p data-ok-typography data-ok-variant=\"body2\" data-ok-stepper-panel=\"stepper-non-linear\" hidden>Check the summary, then confirm to create the project.</p>\n    <div data-ok-stepper-panel=\"stepper-non-linear\" hidden>\n      <p data-ok-typography data-ok-variant=\"body2\">All steps visited. Your project is ready.</p>\n      <button data-ok-stepper-reset=\"stepper-non-linear\" type=\"button\" data-ok-button data-ok-variant=\"text\" data-ok-color=\"inherit\" data-ok-size=\"md\"><span data-ok-button-label>Reset</span></button>\n    </div>\n  </div>\n  <div class=\"sb-stepper-actions\">\n    <button data-ok-stepper-back=\"stepper-non-linear\" type=\"button\" data-ok-button data-ok-variant=\"text\" data-ok-color=\"inherit\" data-ok-size=\"md\" disabled><span data-ok-button-label>Back</span></button>\n    <button data-ok-stepper-next=\"stepper-non-linear\" type=\"button\" data-ok-button data-ok-variant=\"contained\" data-ok-color=\"inherit\" data-ok-size=\"md\"><span data-ok-button-label>Next</span></button>\n  </div>\n</div>",
+     "id": "components-stepper--non-linear",
+     "name": "Non-linear",
+     "react": "import { Button, Paper, Step, StepButton, Stepper, Typography } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nconst STEPS = [\n  { label: \"Choose a plan\", text: \"Pick the plan and the billing period that suit your team.\" },\n  {\n    label: \"Add details\",\n    optional: \"Optional\",\n    text: \"Name the project and invite the people who will work on it.\",\n  },\n  { label: \"Review and confirm\", text: \"Check the summary, then confirm to create the project.\" },\n];\n\n/** A non-linear stepper: every step is a button, so steps can be visited in any order. */\nexport function NonLinearDemo() {\n  const [active, setActive] = useState(0);\n  return (\n    <div className=\"sb-stepper-demo\">\n      <Stepper nonLinear activeStep={active} aria-label=\"Project setup\">\n        {STEPS.map((step, index) => (\n          <Step key={step.label}>\n            <StepButton optional={step.optional} onClick={() => setActive(index)}>\n              {step.label}\n            </StepButton>\n          </Step>\n        ))}\n      </Stepper>\n      <Paper elevation={0} className=\"sb-stepper-panel\">\n        {active < STEPS.length ? (\n          <Typography variant=\"body2\">{STEPS[active]?.text}</Typography>\n        ) : (\n          <div>\n            <Typography variant=\"body2\">All steps visited. Your project is ready.</Typography>\n            <Button color=\"inherit\" onClick={() => setActive(0)}>\n              Reset\n            </Button>\n          </div>\n        )}\n      </Paper>\n      <div className=\"sb-stepper-actions\">\n        <Button color=\"inherit\" disabled={active === 0} onClick={() => setActive(active - 1)}>\n          Back\n        </Button>\n        <Button\n          variant=\"contained\"\n          color=\"inherit\"\n          onClick={() => setActive(Math.min(active + 1, STEPS.length))}\n        >\n          Next\n        </Button>\n      </div>\n    </div>\n  );\n}\n",
+     "snippets": [
+      "non-linear-group.html"
      ]
     },
     {
@@ -67032,6 +67141,20 @@
      "title": "Use a mobile stepper"
     },
     {
+     "body": "Add `nonLinear` to the stepper and put a `StepButton` in each step instead of a `StepLabel`. The stepper then only derives the active step: no step is completed or disabled until you say so with `completed` and `disabled` on the step. A disabled step's button is disabled too. In HTML, the runtime moves to a step when its `[data-ok-step-button]` is pressed, and leaves `data-ok-completed` and `data-ok-disabled` as you wrote them.",
+     "html": "<ol id=\"setup\" data-ok-stepper data-ok-orientation=\"horizontal\" data-ok-variant=\"standard\" data-ok-active-step=\"0\"\n  data-ok-non-linear aria-label=\"Setup\">\n  <li data-ok-step data-ok-active aria-current=\"step\">\n    <button type=\"button\" data-ok-step-button><span data-ok-step-label><span data-ok-step-icon aria-hidden=\"true\"><span data-ok-step-icon-text>1</span></span><span data-ok-step-label-text><span data-ok-step-label-title>Account</span></span></span></button>\n  </li>\n  <li data-ok-step data-ok-completed>\n    <div data-ok-step-connector aria-hidden=\"true\"><span data-ok-step-connector-line></span></div>\n    <button type=\"button\" data-ok-step-button><span data-ok-step-label><span data-ok-step-icon aria-hidden=\"true\"><span data-ok-step-icon-text>2</span></span><span data-ok-step-label-text><span data-ok-step-label-title>Profile</span></span></span></button>\n  </li>\n</ol>",
+     "id": "non-linear",
+     "react": "import { Step, StepButton, Stepper } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nexport function SetupSteps() {\n  const [active, setActive] = useState(0);\n  const completed = [false, true];\n  return (\n    <Stepper nonLinear activeStep={active} aria-label=\"Setup\">\n      {[\"Account\", \"Profile\"].map((label, index) => (\n        <Step key={label} completed={completed[index]}>\n          <StepButton onClick={() => setActive(index)}>{label}</StepButton>\n        </Step>\n      ))}\n    </Stepper>\n  );\n}",
+     "title": "Let people visit steps in any order"
+    },
+    {
+     "body": "In a vertical stepper, `StepContent` shows only under the active step. Add `expanded` to a step to keep its content open, for example a summary that stays visible. `transitionDuration` on `StepContent` sets how long it takes to open and close, in milliseconds (`auto` by default: from its height); in HTML, it is the content's `data-ok-timeout`. Mark the last step with `last` when it isn't the list's last element, so no line is drawn below it.",
+     "html": "<ol data-ok-stepper data-ok-orientation=\"vertical\" data-ok-variant=\"standard\" data-ok-active-step=\"0\" aria-label=\"Order\">\n  <li data-ok-step data-ok-active aria-current=\"step\">\n    <span data-ok-step-label><span data-ok-step-icon aria-hidden=\"true\"><span data-ok-step-icon-text>1</span></span><span data-ok-step-label-text><span data-ok-step-label-title>Shipping</span></span></span>\n    <div data-ok-step-content data-ok-collapse data-ok-timeout=\"200\"><p data-ok-typography data-ok-variant=\"body2\">Choose a delivery address.</p></div>\n  </li>\n  <li data-ok-step data-ok-disabled data-ok-expanded>\n    <div data-ok-step-connector aria-hidden=\"true\"><span data-ok-step-connector-line></span></div>\n    <span data-ok-step-label><span data-ok-step-icon aria-hidden=\"true\"><span data-ok-step-icon-text>2</span></span><span data-ok-step-label-text><span data-ok-step-label-title>Summary</span></span></span>\n    <div data-ok-step-content data-ok-collapse data-ok-timeout=\"200\"><p data-ok-typography data-ok-variant=\"body2\">2 items, free delivery.</p></div>\n  </li>\n</ol>",
+     "id": "expanded",
+     "react": "import { Step, StepContent, StepLabel, Stepper, Typography } from \"@owlky/react\";\n\nexport function OrderSteps() {\n  return (\n    <Stepper activeStep={0} orientation=\"vertical\" aria-label=\"Order\">\n      <Step>\n        <StepLabel>Shipping</StepLabel>\n        <StepContent transitionDuration={200}>\n          <Typography variant=\"body2\">Choose a delivery address.</Typography>\n        </StepContent>\n      </Step>\n      <Step expanded>\n        <StepLabel>Summary</StepLabel>\n        <StepContent transitionDuration={200}>\n          <Typography variant=\"body2\">2 items, free delivery.</Typography>\n        </StepContent>\n      </Step>\n    </Stepper>\n  );\n}",
+     "title": "Keep step content open"
+    },
+    {
      "body": "Every option works the same way in both versions: a prop in React, an attribute in HTML. Values that aren't valid fall back to the default. The tables list the options of `Stepper`, `Step`, `StepLabel` and `MobileStepper`.",
      "id": "options",
      "title": "Options"
@@ -68219,6 +68342,7 @@
   "data-ok-sortable-item": "data-ok-sortable",
   "data-ok-sortable-remove": "data-ok-sortable",
   "data-ok-sortable-template": "data-ok-sortable",
+  "data-ok-step-button": "data-ok-step",
   "data-ok-step-connector": "data-ok-step",
   "data-ok-step-connector-line": "data-ok-step",
   "data-ok-step-content": "data-ok-step",

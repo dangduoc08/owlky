@@ -1525,6 +1525,8 @@ export interface StepperParts {
   "data-ok-mobile-stepper-progress": Part<"span">;
   /** The "2 / 6" text of the `text` variant. */
   "data-ok-mobile-stepper-text": Part<"span">;
+  /** A step's label as a button that moves to the step (non-linear steppers). */
+  "data-ok-step-button": Part<"button">;
   /** The line before a step (not on the first one). */
   "data-ok-step-connector": Part<"div">;
   /** The line itself. */

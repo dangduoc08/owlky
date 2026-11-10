@@ -593,6 +593,8 @@ export {
   MobileStepper,
   type MobileStepperProps,
   Step,
+  StepButton,
+  type StepButtonProps,
   StepConnector,
   StepContent,
   type StepContentProps,

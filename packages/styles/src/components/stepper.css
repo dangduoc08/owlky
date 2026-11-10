@@ -80,6 +80,36 @@
     min-width: 0;
   }
 
+  /* StepButton: the label as a button (non-linear steppers). */
+  :where([data-ok-step-button]) {
+    display: flex;
+    min-width: 0;
+    margin: calc(var(--ok-spacing) * -2);
+    padding: calc(var(--ok-spacing) * 2);
+    border: 0;
+    border-radius: var(--ok-radius-sm);
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: inherit;
+    cursor: pointer;
+  }
+
+  :where([data-ok-step-button]:disabled) {
+    cursor: default;
+  }
+
+  @media (hover: hover) {
+    :where([data-ok-step-button]:enabled:hover) {
+      background-color: var(--ok-action-hover);
+    }
+  }
+
+  :where([data-ok-step-button]:focus-visible) {
+    outline: 2px solid var(--ok-text-primary);
+    outline-offset: -2px;
+  }
+
   :where([data-ok-step-icon]) {
     display: inline-flex;
     flex-shrink: 0;
@@ -269,7 +299,7 @@
     border-inline-start: var(--_ok-step-line) solid var(--_ok-step-line-color);
   }
 
-  :where([data-ok-step]:last-child > [data-ok-step-content]) {
+  :where([data-ok-step]:is(:last-child, [data-ok-last]) > [data-ok-step-content]) {
     border-inline-start-color: transparent;
   }
 

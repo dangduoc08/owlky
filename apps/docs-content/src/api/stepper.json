@@ -1,6 +1,10 @@
 {
  "css": [
   {
+   "name": "--ok-action-hover",
+   "value": "color-mix(in srgb, #919EAB 8%, transparent)"
+  },
+  {
    "dark": "#1C252E",
    "light": "#FFFFFF",
    "name": "--ok-bg-paper"
@@ -69,6 +73,10 @@
   {
    "name": "--ok-radius-full",
    "value": "9999px"
+  },
+  {
+   "name": "--ok-radius-sm",
+   "value": "6px"
   },
   {
    "name": "--ok-shadow-z8",
@@ -178,6 +186,12 @@
       "kind": "number",
       "min": 0,
       "name": "activeStep"
+     },
+     {
+      "attr": "data-ok-non-linear",
+      "description": "Steps can be visited in any order: only the active step is derived, completed and disabled steps are yours to set.",
+      "kind": "flag",
+      "name": "nonLinear"
      }
     ],
     "parts": [
@@ -252,6 +266,11 @@
       "description": "The line between steps. `null` draws none.",
       "name": "connector",
       "type": "ReactNode"
+     },
+     {
+      "description": "Steps can be visited in any order (with `StepButton`): only the active step is derived; set `completed` and `disabled` on the steps yourself.",
+      "name": "nonLinear",
+      "type": "boolean"
      },
      {
       "default": "\"horizontal\"",
@@ -464,6 +483,18 @@
       "description": "Not reached yet (dimmed).",
       "kind": "flag",
       "name": "disabled"
+     },
+     {
+      "attr": "data-ok-expanded",
+      "description": "Vertical steppers: the step's content stays shown, also when it isn't active.",
+      "kind": "flag",
+      "name": "expanded"
+     },
+     {
+      "attr": "data-ok-last",
+      "description": "The last step (no line below its content), when it isn't the list's last element.",
+      "kind": "flag",
+      "name": "last"
      }
     ],
     "parts": [
@@ -507,7 +538,7 @@
     "native": "HTMLLIElement",
     "props": [
      {
-      "description": "Overrides the state the stepper computes.",
+      "description": "Overrides the state the stepper computes: the current step.",
       "name": "active",
       "type": "boolean"
      },
@@ -517,19 +548,60 @@
       "type": "ReactNode"
      },
      {
-      "description": "Done: the icon shows a check.",
+      "description": "Overrides the state the stepper computes: done (a check icon).",
       "name": "completed",
       "type": "boolean"
      },
      {
-      "description": "Not reached yet (dimmed).",
+      "description": "Overrides the state the stepper computes: not reachable (dimmed; its `StepButton` is disabled).",
       "name": "disabled",
+      "type": "boolean"
+     },
+     {
+      "description": "Vertical steppers: the step's `StepContent` stays shown, also when it isn't active.",
+      "name": "expanded",
       "type": "boolean"
      },
      {
       "description": "Set by the `Stepper` (its position).",
       "name": "index",
       "type": "number"
+     },
+     {
+      "description": "The last step (no line below its content), when it isn't the list's last element.",
+      "name": "last",
+      "type": "boolean"
+     }
+    ]
+   }
+  },
+  {
+   "html": {
+    "attribute": "data-ok-step-button",
+    "description": "A step's label as a button that moves to the step (non-linear steppers).",
+    "elements": [
+     "button"
+    ]
+   },
+   "name": "StepButton",
+   "react": {
+    "description": "A step's label as a button, to move to that step in a `nonLinear` stepper (set `activeStep` in `onClick`). Disabled with its step.",
+    "native": "HTMLButtonElement",
+    "props": [
+     {
+      "description": "The step's title.",
+      "name": "children",
+      "type": "ReactNode"
+     },
+     {
+      "description": "Replaces the step number: a number or text, or any node (a decorative `svg`).",
+      "name": "icon",
+      "type": "ReactNode"
+     },
+     {
+      "description": "A second line, such as \"Optional\".",
+      "name": "optional",
+      "type": "ReactNode"
      }
     ]
    }
@@ -568,9 +640,15 @@
    },
    "name": "StepContent",
    "react": {
-    "description": "Vertical steppers: what the active step shows below its label. A Collapse (`timeout=\"auto\"`, as MUI): `hidden` on the other steps.",
-    "native": "HTMLElement",
-    "props": []
+    "description": "Vertical steppers: what the active (or `expanded`) step shows below its label. A Collapse: `hidden` on the other steps.",
+    "native": "HTMLDivElement",
+    "props": [
+     {
+      "description": "Length of the open and close animation: ms, or `\"auto\"` (default: from the height, as MUI). The Collapse's `timeout`.",
+      "name": "transitionDuration",
+      "type": "number | \"auto\""
+     }
+    ]
    }
   },
   {

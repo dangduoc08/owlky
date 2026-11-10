@@ -11,17 +11,19 @@ export interface StepState {
 
 /**
  * A linear step's state from its index: the active step, completed steps before it, disabled
- * (not reached) steps after it. Explicit values (a step's own `completed`, …) win.
+ * (not reached) steps after it. Non-linear steppers (`nonLinear`) only derive the active step:
+ * completion and availability are the app's. Explicit values (a step's own `completed`, …) win.
  */
 export function stepState(
   index: number,
   activeStep: number,
   overrides: Partial<Record<keyof StepState, boolean | undefined>> = {},
+  nonLinear = false,
 ): StepState {
   return {
     active: overrides.active ?? index === activeStep,
-    completed: overrides.completed ?? index < activeStep,
-    disabled: overrides.disabled ?? index > activeStep,
+    completed: overrides.completed ?? (!nonLinear && index < activeStep),
+    disabled: overrides.disabled ?? (!nonLinear && index > activeStep),
   };
 }
 

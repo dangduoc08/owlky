@@ -2180,6 +2180,10 @@ export const stepperOptions = defineOptions("stepper", "data-ok-stepper", {
     "Index of the current step; earlier steps are completed.",
     { min: 0 },
   ),
+  nonLinear: flag(
+    "data-ok-non-linear",
+    "Steps can be visited in any order: only the active step is derived, completed and disabled steps are yours to set.",
+  ),
 });
 
 export interface StepperAnatomyOptions {
@@ -2187,6 +2191,7 @@ export interface StepperAnatomyOptions {
   alternativeLabel?: boolean | undefined;
   variant?: StepperVariant | undefined;
   activeStep?: number | undefined;
+  nonLinear?: boolean | undefined;
 }
 
 /** `data-ok-*` attributes of a stepper (`ol`). */
@@ -2197,12 +2202,22 @@ export const stepOptions = defineOptions("step", "data-ok-step", {
   active: flag("data-ok-active", 'The current step (`aria-current="step"` on its label).'),
   completed: flag("data-ok-completed", "Done: the icon shows a check."),
   disabled: flag("data-ok-disabled", "Not reached yet (dimmed)."),
+  expanded: flag(
+    "data-ok-expanded",
+    "Vertical steppers: the step's content stays shown, also when it isn't active.",
+  ),
+  last: flag(
+    "data-ok-last",
+    "The last step (no line below its content), when it isn't the list's last element.",
+  ),
 });
 
 export interface StepAnatomyOptions {
   active?: boolean | undefined;
   completed?: boolean | undefined;
   disabled?: boolean | undefined;
+  expanded?: boolean | undefined;
+  last?: boolean | undefined;
 }
 
 /** `data-ok-*` attributes of a step (`li`); written by the stepper (React) or the runtime (HTML). */
