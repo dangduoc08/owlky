@@ -175,6 +175,19 @@ describe("submenus", () => {
       hover.cancel();
       vi.advanceTimersByTime(200);
       expect(onOpen).toHaveBeenCalledTimes(1);
+      // A menu that closed while the timer ran doesn't open a submenu.
+      const paper = document.createElement("div");
+      paper.setAttribute("data-ok-popover", "");
+      byId("root").before(paper);
+      paper.append(byId("root"));
+      byId("t").setAttribute("aria-expanded", "false");
+      hover.over(byId("t"));
+      vi.advanceTimersByTime(100);
+      expect(onOpen).toHaveBeenCalledTimes(1);
+      paper.setAttribute("data-ok-open", "");
+      hover.over(byId("t"));
+      vi.advanceTimersByTime(100);
+      expect(onOpen).toHaveBeenCalledTimes(2);
     } finally {
       vi.useRealTimers();
     }

@@ -184,7 +184,10 @@ export function createSubmenuHover(options: SubmenuHoverOptions): SubmenuHover {
       timer = setTimeout(() => {
         timer = undefined;
         for (const trigger of close) options.onClose(trigger);
-        if (open?.isConnected) options.onOpen(open);
+        // The menu may have closed meanwhile (Tab, a choice): only open in a menu still shown.
+        const paper = open?.closest("[data-ok-popover]");
+        if (open?.isConnected && (!paper || paper.hasAttribute("data-ok-open")))
+          options.onOpen(open);
       }, options.delay ?? 100);
     },
     cancel,
