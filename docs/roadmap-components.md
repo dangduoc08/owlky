@@ -81,10 +81,10 @@ then 4.22–4.24, then 4.25 with its ADR).
 | 4.18 | E — from the audits | any | rows added by 2.4 and 3.1 | ⬜ |
 | 4.18.1 | E — ApexTree (must, **ADR** superseding ADR-0036) | Organization chart | collapsible nodes (`enableExpandCollapse`, `expandCollapseOnNodeClick`, a badge with the hidden count), `expandAll` / `collapseAll` / `expandToDepth`, lazy children (`loadChildren`), `ok:organization-chart:expand`, a toggle button per branch (`aria-expanded`), Collapse for the children list | ✅ |
 | 4.18.2 | E (should, **ADR**) | Organization chart | `direction` `top` · `bottom` · `left` · `right` (connectors on logical properties, right to left mirrors) | ✅ |
-| 4.18.3 | E (must, owner 2026-11-10) | Organization chart | `groupLeafNodes`: leaf children stacked in one column under their parent (CSS) | ⬜ |
+| 4.18.3 | E (must, owner 2026-11-10) | Organization chart | `groupLeafNodes`: leaf children stacked in one column under their parent (CSS) | 🔄 |
 | 4.18.4 | E (should) | Organization chart | lineage highlight on hover and focus (`highlightOnHover`, `dimOpacity`, path to the root through `:has()`), search that scrolls to and highlights a node (composed Autocomplete) | ✅ |
-| 4.18.5 | E (must, owner 2026-11-10, **ADR**) | Organization chart | zoom / fit / center (`enableZoomPan`, `fitScreen`, `zoom`, `centerOnNode`, a toolbar), beyond the Scrollbar's pan | ⬜ |
-| 4.18.6 | E (must, owner 2026-11-10) | Organization chart | per-node line options (`edgeColorMode: "node"`: `lineColor` / `lineStyle` on a node) | ⬜ |
+| 4.18.5 | E (must, owner 2026-11-10, **ADR**) | Organization chart | zoom / fit / center (`enableZoomPan`, `fitScreen`, `zoom`, `centerOnNode`, a toolbar), beyond the Scrollbar's pan | 🔄 |
+| 4.18.6 | E (must, owner 2026-11-10) | Organization chart | per-node line options (`edgeColorMode: "node"`: `lineColor` / `lineStyle` on a node) | 🔄 |
 | 4.18.7 | E (must, owner 2026-11-10, **ADR**) | Chart | `tree` type: radial and dendrogram hierarchy layouts in the SVG engine (ApexTree `layoutType`) | ⬜ |
 | 4.18.8 | E (should) | Tree view | `expandAll` / `collapseAll` / `expandToDepth(depth)` / `expandSubtree(id)` (instance, React `apiRef`), search highlight of matching items and their ancestors | ✅ |
 | 4.18.9 | E — ApexGrid (must) | Data grid | undo / redo of edits (`history: { enabled, stackSize }`, MUI X undo-redo): Ctrl / Cmd + Z, Ctrl / Cmd + Shift + Z, a paste or bulk edit is one step, `processRowUpdate` on each | ✅ |
