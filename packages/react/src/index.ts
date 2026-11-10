@@ -629,6 +629,8 @@ export {
 } from "./table/table.js";
 export {
   Tab,
+  TabContext,
+  type TabContextProps,
   TabPanel,
   type TabPanelProps,
   type TabProps,

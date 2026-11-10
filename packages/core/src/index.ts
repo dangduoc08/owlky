@@ -1133,6 +1133,8 @@ export {
 } from "./table/table.js";
 export {
   createTabsController,
+  isSelectedTab,
+  markTab,
   TABS_INDICATOR_READY,
   TABS_SCROLL_END,
   TABS_SCROLL_START,

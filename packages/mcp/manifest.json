@@ -55634,9 +55634,19 @@
       },
       "name": "Tab",
       "react": {
-       "description": "A `button[role=\"tab\"]` inside `Tabs`.",
-       "native": "HTMLButtonElement",
+       "description": "A `button[role=\"tab\"]` inside `Tabs`; with `href` or `component`, a link (`aria-current=\"page\"` when selected).",
+       "native": "HTMLElement",
        "props": [
+        {
+         "description": "The element or component to render, such as a router link (its own props pass through).",
+         "name": "component",
+         "type": "ElementType"
+        },
+        {
+         "description": "Makes the tab a link (`a[href]`): the navigation pattern. The selected link gets `aria-current=\"page\"`, the tab list becomes plain links in a `navigation` landmark.",
+         "name": "href",
+         "type": "string"
+        },
         {
          "description": "An icon (decorative `svg`); icon-only tabs need an `aria-label`.",
          "name": "icon",
@@ -55667,6 +55677,25 @@
       }
      },
      {
+      "name": "TabContext",
+      "react": {
+       "description": "Shares the selected `value` between a `Tabs` and its `TabPanel value=\"…\"`s, and links them (`id`, `aria-controls`, `aria-labelledby`). Keep the value in state and set it from `Tabs onChange`.",
+       "props": [
+        {
+         "description": "`Tabs` and the `TabPanel`s that go with it.",
+         "name": "children",
+         "type": "ReactNode"
+        },
+        {
+         "description": "The selected tab's `value`.",
+         "name": "value",
+         "required": true,
+         "type": "string | false"
+        }
+       ]
+      }
+     },
+     {
       "html": {
        "attribute": "data-ok-tab-panel",
        "description": "The panel of a tab.",
@@ -55676,9 +55705,21 @@
       },
       "name": "TabPanel",
       "react": {
-       "description": "The content of one tab: `role=\"tabpanel\"`, in the tab order (it may hold no focusable content). Hide the others with `hidden`.",
-       "native": "HTMLElement",
-       "props": []
+       "description": "The content of one tab: `role=\"tabpanel\"`, in the tab order (it may hold no focusable content). Hide the others with `hidden`, or give each a `value` inside a `TabContext`.",
+       "native": "HTMLDivElement",
+       "props": [
+        {
+         "default": "false",
+         "description": "With `value`: keep the children rendered while the panel is hidden.",
+         "name": "keepMounted",
+         "type": "boolean"
+        },
+        {
+         "description": "In a `TabContext`: the tab this panel belongs to. The panel then links itself to its tab and hides itself while another tab is selected.",
+         "name": "value",
+         "type": "string"
+        }
+       ]
       }
      }
     ]
@@ -55687,6 +55728,7 @@
    "name": "tabs",
    "react": [
     "Tab",
+    "TabContext",
     "TabPanel",
     "Tabs"
    ],
@@ -55889,7 +55931,7 @@
      "title": "Responsive"
     },
     {
-     "body": "Upstream: MUI `Tabs`, `Tab`; MUI Lab `TabContext`, `TabList`, `TabPanel`\n(mui.com/material-ui/api/tabs, /api/tab, /api/tab-panel, checked 2026-11-09).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `value`, `onChange(event, value)` | `value` / `defaultValue` / `onChange(value)` · `aria-selected`, `ok:tabs:change` | kept | value-first callback; `defaultValue` added |\n| `variant`, `orientation`, `centered` | same / `data-ok-variant`, `-orientation`, `-centered` | kept | |\n| `textColor`, `indicatorColor` | same | kept | `inherit` added (reference default); arbitrary color strings not applicable |\n| `scrollButtons`, `allowScrollButtonsMobile`, `visibleScrollbar` | same | kept | |\n| `selectionFollowsFocus` | same | kept | |\n| `aria-label`, `aria-labelledby` | same (on the tablist) | kept | |\n| `action` (`updateIndicator`, `updateScrollButtons`) | — | not applicable | the controller re-measures itself (ResizeObserver, fonts) |\n| `component` | — | not applicable | root is a `div` |\n| — | `segmented` | kept | Owlky addition (reference \"Custom\") |\n| Tab `value`, `label`, `icon`, `iconPosition`, `wrapped`, `disabled` | same | kept | |\n| Tab `disableRipple`, `disableFocusRipple` | — | not applicable | no ripple |\n| Tab ButtonBase props (`href`, `component`: link tabs) | — | deferred | tabs as links (navigation tabs, router links) |\n| Lab `TabPanel` `value`, `keepMounted` | `TabPanel` (app sets `hidden`) | deferred | panel picks its tab from context (Lab `TabContext`); panels stay mounted |\n| Lab `TabContext`, `TabList` | `Tabs` | not applicable | `Tabs` owns the value |\n| `slots` / `slotProps` (indicator, scroll buttons and icons, scroller, list, scrollbar) | — | not applicable | composition / by decision |\n| `classes`, `sx` | — | not applicable | by decision |",
+     "body": "Upstream: MUI `Tabs`, `Tab`; MUI Lab `TabContext`, `TabList`, `TabPanel`\n(mui.com/material-ui/api/tabs, /api/tab, /api/tab-panel, checked 2026-11-09).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `value`, `onChange(event, value)` | `value` / `defaultValue` / `onChange(value)` · `aria-selected`, `ok:tabs:change` | kept | value-first callback; `defaultValue` added |\n| `variant`, `orientation`, `centered` | same / `data-ok-variant`, `-orientation`, `-centered` | kept | |\n| `textColor`, `indicatorColor` | same | kept | `inherit` added (reference default); arbitrary color strings not applicable |\n| `scrollButtons`, `allowScrollButtonsMobile`, `visibleScrollbar` | same | kept | |\n| `selectionFollowsFocus` | same | kept | |\n| `aria-label`, `aria-labelledby` | same (on the tablist) | kept | |\n| `action` (`updateIndicator`, `updateScrollButtons`) | — | not applicable | the controller re-measures itself (ResizeObserver, fonts) |\n| `component` | — | not applicable | root is a `div` |\n| — | `segmented` | kept | Owlky addition (reference \"Custom\") |\n| Tab `value`, `label`, `icon`, `iconPosition`, `wrapped`, `disabled` | same | kept | |\n| Tab `disableRipple`, `disableFocusRipple` | — | not applicable | no ripple |\n| Tab ButtonBase props (`href`, `component`: link tabs) | same: `a[data-ok-tab][href]` (or the component), `data-ok-value`, `aria-current=\"page\"`; the root becomes `role=\"navigation\"` (named), the list loses `role=\"tablist\"` | kept (4.18.71) | navigation pattern: no roving tabindex or arrow keys (core controller: `a[data-ok-tab]`, `isSelectedTab`, `markTab`) |\n| Lab `TabPanel` `value`, `keepMounted` | same (React, in a `TabContext`): links itself, `hidden` while another tab is selected, no children unless `keepMounted` | kept (4.18.72) | HTML: the runtime shows the panel named by `aria-controls` |\n| Lab `TabContext` | `TabContext` (React): `value` + generated ids for tabs and panels | kept (4.18.72) | |\n| Lab `TabList` | `Tabs` (reads the `TabContext` value) | not applicable | `Tabs` owns the list |\n| `slots` / `slotProps` (indicator, scroll buttons and icons, scroller, list, scrollbar) | — | not applicable | composition / by decision |\n| `classes`, `sx` | — | not applicable | by decision |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
@@ -55961,6 +56003,15 @@
       "custom-dynamic.html",
       "custom-full-width.html",
       "custom-scrollable.html"
+     ]
+    },
+    {
+     "html": "<!-- Once per page (CDN): -->\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.css\">\n<script src=\"https://cdn.jsdelivr.net/npm/@owlky/html@0/dist/owlky.js\" defer></script>\n<!-- npm: import \"@owlky/styles/owlky.css\" (or tokens.css + components/tabs.css + components/typography.css from @owlky/styles) and import \"@owlky/html/auto\". -->\n\n<!-- Nav tabs -->\n<div data-ok-tabs data-ok-variant=\"standard\" data-ok-orientation=\"horizontal\" data-ok-text-color=\"inherit\" data-ok-indicator-color=\"inherit\" data-ok-scroll-buttons=\"auto\" role=\"navigation\" aria-label=\"Project pages\">\n  <div data-ok-tabs-scroller>\n    <div data-ok-tabs-list>\n      <a href=\"#overview\" data-ok-tab data-ok-value=\"overview\" aria-current=\"page\"><span data-ok-tab-label>Overview</span></a>\n      <a href=\"#activity\" data-ok-tab data-ok-value=\"activity\"><span data-ok-tab-label>Activity</span></a>\n      <a href=\"#settings\" data-ok-tab data-ok-value=\"settings\"><span data-ok-tab-label>Settings</span></a>\n    </div>\n    <span data-ok-tabs-indicator></span>\n  </div>\n</div>",
+     "id": "components-tabs--nav",
+     "name": "Nav tabs",
+     "react": "import { Tab, Tabs } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nconst PAGES = [\n  { value: \"overview\", label: \"Overview\" },\n  { value: \"activity\", label: \"Activity\" },\n  { value: \"settings\", label: \"Settings\" },\n];\n\n/** Tabs as links: a navigation landmark, the current page marked with `aria-current`. */\nexport function NavTabsDemo() {\n  const [page, setPage] = useState(\"overview\");\n  return (\n    <Tabs value={page} onChange={setPage} aria-label=\"Project pages\">\n      {PAGES.map((item) => (\n        <Tab key={item.value} value={item.value} label={item.label} href={`#${item.value}`} />\n      ))}\n    </Tabs>\n  );\n}\n",
+     "snippets": [
+      "nav-group.html"
      ]
     }
    ],
@@ -67347,6 +67398,20 @@
      "body": "Give each tab an `id` and an `aria-controls` that names its panel. Give each panel the matching `id` and an `aria-labelledby` that names its tab. Screen readers then announce which tab a panel belongs to. In HTML, the runtime shows the panel of the tab you select and hides the others with `hidden`. In React, the app owns the selection: pass `value` and `onChange`, and set `hidden` on the panels yourself. `defaultValue` keeps the selection inside `Tabs` when you don't need it.",
      "id": "panels",
      "title": "Connect tabs to their panels"
+    },
+    {
+     "body": "In React, wrap `Tabs` and its panels in a `TabContext` with the selected `value`. Give each `TabPanel` the `value` of its tab: the panel then links itself to its tab (`id`, `aria-controls` and `aria-labelledby`) and hides itself while another tab is selected. A hidden panel renders no children unless you add `keepMounted`. HTML doesn't need it: the runtime shows the panel that the selected tab's `aria-controls` names.",
+     "html": "<div data-ok-tabs data-ok-variant=\"standard\" data-ok-orientation=\"horizontal\" data-ok-text-color=\"inherit\" data-ok-indicator-color=\"inherit\" data-ok-scroll-buttons=\"auto\">\n  <div data-ok-tabs-scroller>\n    <div role=\"tablist\" data-ok-tabs-list aria-label=\"Views\">\n      <button type=\"button\" role=\"tab\" data-ok-tab id=\"view-list\" aria-controls=\"panel-list\" value=\"list\" aria-selected=\"true\" tabindex=\"0\"><span data-ok-tab-label>List</span></button>\n      <button type=\"button\" role=\"tab\" data-ok-tab id=\"view-board\" aria-controls=\"panel-board\" value=\"board\" aria-selected=\"false\" tabindex=\"-1\"><span data-ok-tab-label>Board</span></button>\n    </div>\n    <span data-ok-tabs-indicator></span>\n  </div>\n</div>\n<div role=\"tabpanel\" data-ok-tab-panel id=\"panel-list\" aria-labelledby=\"view-list\" tabindex=\"0\">The list view.</div>\n<div role=\"tabpanel\" data-ok-tab-panel id=\"panel-board\" aria-labelledby=\"view-board\" tabindex=\"0\" hidden>The board view.</div>",
+     "id": "tab-context",
+     "react": "import { Tab, TabContext, TabPanel, Tabs } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nexport function Views() {\n  const [view, setView] = useState(\"list\");\n  return (\n    <TabContext value={view}>\n      <Tabs onChange={setView} aria-label=\"Views\">\n        <Tab value=\"list\" label=\"List\" />\n        <Tab value=\"board\" label=\"Board\" />\n      </Tabs>\n      <TabPanel value=\"list\">The list view.</TabPanel>\n      <TabPanel value=\"board\" keepMounted>\n        The board view.\n      </TabPanel>\n    </TabContext>\n  );\n}",
+     "title": "Let panels follow the selection"
+    },
+    {
+     "body": "When each tab opens a page, make the tabs links: give each `Tab` an `href`, or a router link component in `component` (its own props, such as `to`, pass through). The tab bar then becomes a `navigation` landmark of plain links named by `aria-label`, and the selected link gets `aria-current=\"page\"` instead of `aria-selected`. Links keep the usual Tab order, without arrow-key movement, as people expect from navigation. In HTML, write `a[data-ok-tab][href]` in a list without a role, and `role=\"navigation\"` on the root.",
+     "html": "<div data-ok-tabs data-ok-variant=\"standard\" data-ok-orientation=\"horizontal\" data-ok-text-color=\"inherit\" data-ok-indicator-color=\"inherit\" data-ok-scroll-buttons=\"auto\" role=\"navigation\" aria-label=\"Project pages\">\n  <div data-ok-tabs-scroller>\n    <div data-ok-tabs-list>\n      <a href=\"/overview\" data-ok-tab data-ok-value=\"overview\" aria-current=\"page\"><span data-ok-tab-label>Overview</span></a>\n      <a href=\"/activity\" data-ok-tab data-ok-value=\"activity\"><span data-ok-tab-label>Activity</span></a>\n    </div>\n    <span data-ok-tabs-indicator></span>\n  </div>\n</div>",
+     "id": "links",
+     "react": "import { Tab, Tabs } from \"@owlky/react\";\nimport { useState } from \"react\";\n\nexport function ProjectNav() {\n  const [page, setPage] = useState(\"overview\");\n  return (\n    <Tabs value={page} onChange={setPage} aria-label=\"Project pages\">\n      <Tab value=\"overview\" label=\"Overview\" href=\"/overview\" />\n      <Tab value=\"activity\" label=\"Activity\" href=\"/activity\" />\n    </Tabs>\n  );\n}",
+     "title": "Use tabs to navigate between pages"
     },
     {
      "body": "Pass an icon with `icon`. With a label, `iconPosition` puts the icon above (`top`, the default), below (`bottom`), before (`start`) or after (`end`) the label. Tabs with an icon above or below are 72px tall. Icon-only tabs have no visible text, so give each one an `aria-label`.",

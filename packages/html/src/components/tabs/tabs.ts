@@ -1,4 +1,4 @@
-import { createTabsController, tabsOf, tabValue } from "@owlky/core";
+import { createTabsController, isSelectedTab, markTab, tabsOf, tabValue } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
 import type { ComponentInstance, EventSpec } from "../../runtime/types.js";
 
@@ -46,13 +46,11 @@ export const tabs = defineComponent<TabsInstance, TabsEvents>({
       return id ? root.getElementById(id) : null;
     };
     const valueOfTab = (tab: Element) => tabValue(tab, tabsOf(element).indexOf(tab as HTMLElement));
-    const selected = () =>
-      tabsOf(element).find((tab) => tab.getAttribute("aria-selected") === "true") ?? null;
+    const selected = () => tabsOf(element).find(isSelectedTab) ?? null;
 
     const apply = (next: Element) => {
       for (const tab of tabsOf(element)) {
-        tab.setAttribute("aria-selected", String(tab === next));
-        tab.tabIndex = tab === next ? 0 : -1;
+        markTab(tab, tab === next);
         const target = panel(tab);
         if (target) target.hidden = tab !== next;
       }

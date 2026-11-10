@@ -43,6 +43,7 @@ const DEMOS = [
   ["popover", "virtual-element-demo.tsx", "VirtualElementDemo", "virtual-element-group"],
   ["menu", "nested-demo.tsx", "NestedMenuDemo", "nested-group", popoverTriggers],
   ["menu", "menu-list-demo.tsx", "MenuListDemo", "menu-list-group"],
+  ["tabs", "nav-demo.tsx", "NavTabsDemo", "nav-group"],
 ];
 
 const only = process.argv.slice(2);

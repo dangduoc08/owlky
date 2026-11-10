@@ -144,9 +144,10 @@ Upstream: MUI `Tabs`, `Tab`; MUI Lab `TabContext`, `TabList`, `TabPanel`
 | — | `segmented` | kept | Owlky addition (reference "Custom") |
 | Tab `value`, `label`, `icon`, `iconPosition`, `wrapped`, `disabled` | same | kept | |
 | Tab `disableRipple`, `disableFocusRipple` | — | not applicable | no ripple |
-| Tab ButtonBase props (`href`, `component`: link tabs) | — | deferred | tabs as links (navigation tabs, router links) |
-| Lab `TabPanel` `value`, `keepMounted` | `TabPanel` (app sets `hidden`) | deferred | panel picks its tab from context (Lab `TabContext`); panels stay mounted |
-| Lab `TabContext`, `TabList` | `Tabs` | not applicable | `Tabs` owns the value |
+| Tab ButtonBase props (`href`, `component`: link tabs) | same: `a[data-ok-tab][href]` (or the component), `data-ok-value`, `aria-current="page"`; the root becomes `role="navigation"` (named), the list loses `role="tablist"` | kept (4.18.71) | navigation pattern: no roving tabindex or arrow keys (core controller: `a[data-ok-tab]`, `isSelectedTab`, `markTab`) |
+| Lab `TabPanel` `value`, `keepMounted` | same (React, in a `TabContext`): links itself, `hidden` while another tab is selected, no children unless `keepMounted` | kept (4.18.72) | HTML: the runtime shows the panel named by `aria-controls` |
+| Lab `TabContext` | `TabContext` (React): `value` + generated ids for tabs and panels | kept (4.18.72) | |
+| Lab `TabList` | `Tabs` (reads the `TabContext` value) | not applicable | `Tabs` owns the list |
 | `slots` / `slotProps` (indicator, scroll buttons and icons, scroller, list, scrollbar) | — | not applicable | composition / by decision |
 | `classes`, `sx` | — | not applicable | by decision |
 

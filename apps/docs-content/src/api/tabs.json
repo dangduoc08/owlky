@@ -394,9 +394,19 @@
    },
    "name": "Tab",
    "react": {
-    "description": "A `button[role=\"tab\"]` inside `Tabs`.",
-    "native": "HTMLButtonElement",
+    "description": "A `button[role=\"tab\"]` inside `Tabs`; with `href` or `component`, a link (`aria-current=\"page\"` when selected).",
+    "native": "HTMLElement",
     "props": [
+     {
+      "description": "The element or component to render, such as a router link (its own props pass through).",
+      "name": "component",
+      "type": "ElementType"
+     },
+     {
+      "description": "Makes the tab a link (`a[href]`): the navigation pattern. The selected link gets `aria-current=\"page\"`, the tab list becomes plain links in a `navigation` landmark.",
+      "name": "href",
+      "type": "string"
+     },
      {
       "description": "An icon (decorative `svg`); icon-only tabs need an `aria-label`.",
       "name": "icon",
@@ -427,6 +437,25 @@
    }
   },
   {
+   "name": "TabContext",
+   "react": {
+    "description": "Shares the selected `value` between a `Tabs` and its `TabPanel value=\"…\"`s, and links them (`id`, `aria-controls`, `aria-labelledby`). Keep the value in state and set it from `Tabs onChange`.",
+    "props": [
+     {
+      "description": "`Tabs` and the `TabPanel`s that go with it.",
+      "name": "children",
+      "type": "ReactNode"
+     },
+     {
+      "description": "The selected tab's `value`.",
+      "name": "value",
+      "required": true,
+      "type": "string | false"
+     }
+    ]
+   }
+  },
+  {
    "html": {
     "attribute": "data-ok-tab-panel",
     "description": "The panel of a tab.",
@@ -436,9 +465,21 @@
    },
    "name": "TabPanel",
    "react": {
-    "description": "The content of one tab: `role=\"tabpanel\"`, in the tab order (it may hold no focusable content). Hide the others with `hidden`.",
-    "native": "HTMLElement",
-    "props": []
+    "description": "The content of one tab: `role=\"tabpanel\"`, in the tab order (it may hold no focusable content). Hide the others with `hidden`, or give each a `value` inside a `TabContext`.",
+    "native": "HTMLDivElement",
+    "props": [
+     {
+      "default": "false",
+      "description": "With `value`: keep the children rendered while the panel is hidden.",
+      "name": "keepMounted",
+      "type": "boolean"
+     },
+     {
+      "description": "In a `TabContext`: the tab this panel belongs to. The panel then links itself to its tab and hides itself while another tab is selected.",
+      "name": "value",
+      "type": "string"
+     }
+    ]
    }
   }
  ],

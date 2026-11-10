@@ -2,6 +2,8 @@ import { Tabs } from "@owlky/react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { frameworkStory, reactGroupsStory, type StoryControls } from "../../helpers/groups.js";
 import { htmlSetup, snippetStory } from "../shared/snippets.js";
+import { NavTabsDemo } from "./nav-demo.js";
+import navSource from "./nav-demo.tsx?raw";
 import { TabsDocs } from "./tabs-docs.js";
 import { TABS_CONTROLS, TABS_FILES, tabsStories } from "./tabs-examples.js";
 import { TextDemo } from "./text-demo.js";
@@ -61,3 +63,15 @@ export const Vertical: StoryObj = frameworkStory({
 });
 
 export const Custom: StoryObj = story("custom");
+
+export const Nav: StoryObj = {
+  ...frameworkStory({
+    html: snippetStory(snippets, "nav", [["Nav tabs", "group"]], SETUP),
+    react: reactGroupsStory(
+      [{ title: "Nav tabs", content: <NavTabsDemo /> }],
+      undefined,
+      navSource,
+    ),
+  }),
+  name: "Nav tabs",
+};

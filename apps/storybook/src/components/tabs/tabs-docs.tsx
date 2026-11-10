@@ -64,6 +64,66 @@ export function Account() {
     body: "Give each tab an `id` and an `aria-controls` that names its panel. Give each panel the matching `id` and an `aria-labelledby` that names its tab. Screen readers then announce which tab a panel belongs to. In HTML, the runtime shows the panel of the tab you select and hides the others with `hidden`. In React, the app owns the selection: pass `value` and `onChange`, and set `hidden` on the panels yourself. `defaultValue` keeps the selection inside `Tabs` when you don't need it.",
   },
   {
+    id: "tab-context",
+    title: "Let panels follow the selection",
+    body: "In React, wrap `Tabs` and its panels in a `TabContext` with the selected `value`. Give each `TabPanel` the `value` of its tab: the panel then links itself to its tab (`id`, `aria-controls` and `aria-labelledby`) and hides itself while another tab is selected. A hidden panel renders no children unless you add `keepMounted`. HTML doesn't need it: the runtime shows the panel that the selected tab's `aria-controls` names.",
+    html: `<div data-ok-tabs data-ok-variant="standard" data-ok-orientation="horizontal" data-ok-text-color="inherit" data-ok-indicator-color="inherit" data-ok-scroll-buttons="auto">
+  <div data-ok-tabs-scroller>
+    <div role="tablist" data-ok-tabs-list aria-label="Views">
+      <button type="button" role="tab" data-ok-tab id="view-list" aria-controls="panel-list" value="list" aria-selected="true" tabindex="0"><span data-ok-tab-label>List</span></button>
+      <button type="button" role="tab" data-ok-tab id="view-board" aria-controls="panel-board" value="board" aria-selected="false" tabindex="-1"><span data-ok-tab-label>Board</span></button>
+    </div>
+    <span data-ok-tabs-indicator></span>
+  </div>
+</div>
+<div role="tabpanel" data-ok-tab-panel id="panel-list" aria-labelledby="view-list" tabindex="0">The list view.</div>
+<div role="tabpanel" data-ok-tab-panel id="panel-board" aria-labelledby="view-board" tabindex="0" hidden>The board view.</div>`,
+    react: `import { Tab, TabContext, TabPanel, Tabs } from "@owlky/react";
+import { useState } from "react";
+
+export function Views() {
+  const [view, setView] = useState("list");
+  return (
+    <TabContext value={view}>
+      <Tabs onChange={setView} aria-label="Views">
+        <Tab value="list" label="List" />
+        <Tab value="board" label="Board" />
+      </Tabs>
+      <TabPanel value="list">The list view.</TabPanel>
+      <TabPanel value="board" keepMounted>
+        The board view.
+      </TabPanel>
+    </TabContext>
+  );
+}`,
+  },
+  {
+    id: "links",
+    title: "Use tabs to navigate between pages",
+    body: 'When each tab opens a page, make the tabs links: give each `Tab` an `href`, or a router link component in `component` (its own props, such as `to`, pass through). The tab bar then becomes a `navigation` landmark of plain links named by `aria-label`, and the selected link gets `aria-current="page"` instead of `aria-selected`. Links keep the usual Tab order, without arrow-key movement, as people expect from navigation. In HTML, write `a[data-ok-tab][href]` in a list without a role, and `role="navigation"` on the root.',
+    html: `<div data-ok-tabs data-ok-variant="standard" data-ok-orientation="horizontal" data-ok-text-color="inherit" data-ok-indicator-color="inherit" data-ok-scroll-buttons="auto" role="navigation" aria-label="Project pages">
+  <div data-ok-tabs-scroller>
+    <div data-ok-tabs-list>
+      <a href="/overview" data-ok-tab data-ok-value="overview" aria-current="page"><span data-ok-tab-label>Overview</span></a>
+      <a href="/activity" data-ok-tab data-ok-value="activity"><span data-ok-tab-label>Activity</span></a>
+    </div>
+    <span data-ok-tabs-indicator></span>
+  </div>
+</div>`,
+    react: `import { Tab, Tabs } from "@owlky/react";
+import { useState } from "react";
+
+export function ProjectNav() {
+  const [page, setPage] = useState("overview");
+  return (
+    <Tabs value={page} onChange={setPage} aria-label="Project pages">
+      <Tab value="overview" label="Overview" href="/overview" />
+      <Tab value="activity" label="Activity" href="/activity" />
+    </Tabs>
+  );
+}`,
+  },
+  {
     id: "icons",
     title: "Add icons to tabs",
     body: "Pass an icon with `icon`. With a label, `iconPosition` puts the icon above (`top`, the default), below (`bottom`), before (`start`) or after (`end`) the label. Tabs with an icon above or below are 72px tall. Icon-only tabs have no visible text, so give each one an `aria-label`.",

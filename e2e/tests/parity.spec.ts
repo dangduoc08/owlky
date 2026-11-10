@@ -154,6 +154,7 @@ const pairs: [component: string, story: string][] = [
   ["tabs", "scrollable"],
   ["tabs", "vertical"],
   ["tabs", "custom"],
+  ["tabs", "nav"],
   ["breadcrumbs", "text"],
   ["breadcrumbs", "with-icon"],
   ["breadcrumbs", "customized"],
