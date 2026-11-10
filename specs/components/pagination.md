@@ -104,7 +104,7 @@ Upstream: MUI `Pagination`, `PaginationItem`, `usePagination` (mui.com/material-
 | `renderItem` | `renderItem` (React) | kept | HTML: author the markup |
 | PaginationItem `type`, `page`, `selected`, `disabled` | same | kept | |
 | PaginationItem `color`, `shape`, `size`, `variant` | root options | not applicable | items read the root's attributes |
-| PaginationItem `component` (router links) | `href` → `a` only | deferred | router `Link` as the item element (like Link's `component`) |
+| PaginationItem `component` (router links) | same (React): the item's attributes, content and other props (a router link's `to`) go to the component; disabled → `aria-disabled` | kept (4.18.73) | HTML: `a[data-ok-pagination-item][href]` |
 | PaginationItem `slots` (`first` / `last` / `next` / `previous` icons) | `icons` / `icon` | renamed | composition |
 | `usePagination` | core `paginationItems` | renamed | framework-free; no React hook |
 | `classes`, `sx`, `slots` / `slotProps` | — | not applicable | by decision |

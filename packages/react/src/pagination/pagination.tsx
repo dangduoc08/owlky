@@ -11,7 +11,16 @@ import {
   paginationAttributes,
   paginationItems,
 } from "@owlky/core";
-import { type ComponentPropsWithoutRef, forwardRef, type ReactNode, type Ref } from "react";
+import {
+  type ComponentPropsWithoutRef,
+  createElement,
+  type ElementType,
+  type ForwardRefExoticComponent,
+  forwardRef,
+  type ReactNode,
+  type Ref,
+  type RefAttributes,
+} from "react";
 import { useControllableState } from "../utils/use-controllable-state.js";
 
 type NavType = "first" | "previous" | "next" | "last";
@@ -53,6 +62,12 @@ export interface PaginationItemProps
   icon?: ReactNode;
   /** Renders a link (`<a>`) instead of a button. */
   href?: string | undefined;
+  /**
+   * The element or component to render the item as, such as a router link: it gets the item's
+   * attributes, content and other props (a router link's `to`). Disabled items get
+   * `aria-disabled`.
+   */
+  component?: ElementType | undefined;
 }
 
 /**
@@ -60,7 +75,17 @@ export interface PaginationItemProps
  * `renderItem` for custom content or links.
  */
 export const PaginationItem = forwardRef<HTMLElement, PaginationItemProps>(function PaginationItem(
-  { type = "page", page = null, selected = false, disabled, icon, href, children, ...props },
+  {
+    type = "page",
+    page = null,
+    selected = false,
+    disabled,
+    icon,
+    href,
+    component,
+    children,
+    ...props
+  },
   ref,
 ) {
   if (type === "start-ellipsis" || type === "end-ellipsis") {
@@ -70,12 +95,26 @@ export const PaginationItem = forwardRef<HTMLElement, PaginationItemProps>(funct
       </span>
     );
   }
-  const content = children ?? (type === "page" ? page : (icon ?? <NavIcon type={type} />));
+  const content = (children ??
+    (type === "page" ? page : ((icon as ReactNode) ?? <NavIcon type={type} />))) as ReactNode;
   const shared = {
     "data-ok-pagination-item": "",
     "data-ok-type": type,
     "aria-current": selected ? ("page" as const) : undefined,
   };
+  if (component !== undefined) {
+    return createElement(
+      component,
+      {
+        ref,
+        ...shared,
+        ...(href === undefined ? {} : { href }),
+        "aria-disabled": disabled ? true : undefined,
+        ...props,
+      },
+      content,
+    );
+  }
   if (href !== undefined) {
     return (
       <a
@@ -95,13 +134,15 @@ export const PaginationItem = forwardRef<HTMLElement, PaginationItemProps>(funct
       type="button"
       {...shared}
       value={type === "page" && page !== null ? page : undefined}
-      disabled={disabled}
-      {...props}
+      disabled={disabled as boolean | undefined}
+      {...(props as ComponentPropsWithoutRef<"button">)}
     >
       {content}
     </button>
   );
-});
+}) as ForwardRefExoticComponent<
+  PaginationItemProps & Record<string, unknown> & RefAttributes<HTMLElement>
+>;
 
 /** What `renderItem` receives: spread it onto a `PaginationItem`. */
 export interface PaginationRenderItemParams extends PaginationItemData {

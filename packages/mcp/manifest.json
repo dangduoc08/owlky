@@ -48080,6 +48080,11 @@
        "native": "HTMLElement",
        "props": [
         {
+         "description": "The element or component to render the item as, such as a router link: it gets the item's attributes, content and other props (a router link's `to`). Disabled items get `aria-disabled`.",
+         "name": "component",
+         "type": "ElementType"
+        },
+        {
          "description": "Renders a link (`<a>`) instead of a button.",
          "name": "href",
          "type": "string"
@@ -48253,7 +48258,7 @@
      "title": "Responsive"
     },
     {
-     "body": "Upstream: MUI `Pagination`, `PaginationItem`, `usePagination` (mui.com/material-ui/api/pagination,\n/api/pagination-item, checked 2026-11-09).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `count`, `page`, `defaultPage`, `onChange(event, page)` | same / `data-ok-count`, `data-ok-page`, `ok:pagination:change` | kept | React `onChange(page)` (no event) |\n| `siblingCount`, `boundaryCount` | same / `data-ok-sibling-count`, `-boundary-count` | kept | |\n| `showFirstButton`, `showLastButton`, `hidePrevButton`, `hideNextButton` | same / the buttons the markup contains | kept | |\n| `color` | `color` / `data-ok-color` | kept | adds `info` … `error`; arbitrary strings not applicable |\n| `shape`, `disabled` | same | kept | |\n| `size` `small` / `medium` / `large` | `size` `sm` / `md` / `lg` | renamed | project size names |\n| `variant` `text` / `outlined` | `variant` | kept | `soft` added (reference) |\n| `getItemAriaLabel(type, page, selected)` | same / `data-ok-label-page`, `-label-current` | kept | HTML: templates for page items only |\n| `renderItem` | `renderItem` (React) | kept | HTML: author the markup |\n| PaginationItem `type`, `page`, `selected`, `disabled` | same | kept | |\n| PaginationItem `color`, `shape`, `size`, `variant` | root options | not applicable | items read the root's attributes |\n| PaginationItem `component` (router links) | `href` → `a` only | deferred | router `Link` as the item element (like Link's `component`) |\n| PaginationItem `slots` (`first` / `last` / `next` / `previous` icons) | `icons` / `icon` | renamed | composition |\n| `usePagination` | core `paginationItems` | renamed | framework-free; no React hook |\n| `classes`, `sx`, `slots` / `slotProps` | — | not applicable | by decision |",
+     "body": "Upstream: MUI `Pagination`, `PaginationItem`, `usePagination` (mui.com/material-ui/api/pagination,\n/api/pagination-item, checked 2026-11-09).\n\n| Upstream | Owlky | Status | Note |\n|---|---|---|---|\n| `count`, `page`, `defaultPage`, `onChange(event, page)` | same / `data-ok-count`, `data-ok-page`, `ok:pagination:change` | kept | React `onChange(page)` (no event) |\n| `siblingCount`, `boundaryCount` | same / `data-ok-sibling-count`, `-boundary-count` | kept | |\n| `showFirstButton`, `showLastButton`, `hidePrevButton`, `hideNextButton` | same / the buttons the markup contains | kept | |\n| `color` | `color` / `data-ok-color` | kept | adds `info` … `error`; arbitrary strings not applicable |\n| `shape`, `disabled` | same | kept | |\n| `size` `small` / `medium` / `large` | `size` `sm` / `md` / `lg` | renamed | project size names |\n| `variant` `text` / `outlined` | `variant` | kept | `soft` added (reference) |\n| `getItemAriaLabel(type, page, selected)` | same / `data-ok-label-page`, `-label-current` | kept | HTML: templates for page items only |\n| `renderItem` | `renderItem` (React) | kept | HTML: author the markup |\n| PaginationItem `type`, `page`, `selected`, `disabled` | same | kept | |\n| PaginationItem `color`, `shape`, `size`, `variant` | root options | not applicable | items read the root's attributes |\n| PaginationItem `component` (router links) | same (React): the item's attributes, content and other props (a router link's `to`) go to the component; disabled → `aria-disabled` | kept (4.18.73) | HTML: `a[data-ok-pagination-item][href]` |\n| PaginationItem `slots` (`first` / `last` / `next` / `previous` icons) | `icons` / `icon` | renamed | composition |\n| `usePagination` | core `paginationItems` | renamed | framework-free; no React hook |\n| `classes`, `sx`, `slots` / `slotProps` | — | not applicable | by decision |",
      "id": "upstream-api-mapping",
      "title": "Upstream API mapping"
     },
@@ -66439,6 +66444,13 @@
      "id": "ranges",
      "react": "import { Pagination } from \"@owlky/react\";\n\nexport function PaginationRanges() {\n  return <Pagination count={20} defaultPage={10} siblingCount={2} showFirstButton showLastButton />;\n}",
      "title": "Control which pages are shown"
+    },
+    {
+     "body": "When each page has its own URL, render the items as links. In React, return a `PaginationItem` from `renderItem` with an `href`, or with your router's link component in `component`: the item passes its attributes, content and other props (such as `to`) to it, and disabled items get `aria-disabled`. In HTML, write the items as `a[data-ok-pagination-item][href]`, with `aria-current=\"page\"` on the current one.",
+     "html": "<nav aria-label=\"Pages\" data-ok-pagination data-ok-variant=\"text\" data-ok-color=\"standard\" data-ok-shape=\"circular\" data-ok-size=\"md\">\n  <ul>\n    <li><a data-ok-pagination-item data-ok-type=\"page\" href=\"/posts?page=1\" aria-label=\"Go to page 1\">1</a></li>\n    <li><a data-ok-pagination-item data-ok-type=\"page\" href=\"/posts?page=2\" aria-current=\"page\" aria-label=\"page 2\">2</a></li>\n    <li><a data-ok-pagination-item data-ok-type=\"page\" href=\"/posts?page=3\" aria-label=\"Go to page 3\">3</a></li>\n  </ul>\n</nav>",
+     "id": "links",
+     "react": "import { Pagination, PaginationItem } from \"@owlky/react\";\nimport { type AnchorHTMLAttributes, forwardRef } from \"react\";\n\n// Stands for your router's link component, which takes `to` instead of `href`.\nconst RouterLink = forwardRef<HTMLAnchorElement, AnchorHTMLAttributes<HTMLAnchorElement> & { to: string }>(\n  function RouterLink({ to, ...props }, ref) {\n    return <a ref={ref} href={to} {...props} />;\n  },\n);\n\nexport function PostPages({ page }: { page: number }) {\n  return (\n    <Pagination\n      count={3}\n      page={page}\n      aria-label=\"Pages\"\n      renderItem={(item) => (\n        <PaginationItem component={RouterLink} to={`/posts?page=${item.page ?? 1}`} {...item} />\n      )}\n    />\n  );\n}",
+     "title": "Use links for the pages"
     },
     {
      "body": "In React, slice your rows for the current page. In HTML, point the pagination at a table with `data-ok-pagination=\"<table id>\"` and set `data-ok-rows-per-page`: the script shows only that page's rows and counts the pages for you. For a rows-per-page menu and a \"1–5 of 12\" label, use the table's own `TablePagination` instead.",
