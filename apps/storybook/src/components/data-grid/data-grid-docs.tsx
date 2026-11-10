@@ -6,6 +6,7 @@ import cellsGroup from "../../../../../packages/html/src/components/data-grid/ex
 import cellsStatus from "../../../../../packages/html/src/components/data-grid/examples/cells-status.html?raw";
 import chartsGroup from "../../../../../packages/html/src/components/data-grid/examples/charts-group.html?raw";
 import chartsMultiple from "../../../../../packages/html/src/components/data-grid/examples/charts-multiple.html?raw";
+import chartsRange from "../../../../../packages/html/src/components/data-grid/examples/charts-range.html?raw";
 import columnsGroup from "../../../../../packages/html/src/components/data-grid/examples/columns-group.html?raw";
 import dimensionsBorders from "../../../../../packages/html/src/components/data-grid/examples/dimensions-borders.html?raw";
 import dimensionsPages from "../../../../../packages/html/src/components/data-grid/examples/dimensions-pages.html?raw";
@@ -1316,6 +1317,165 @@ export function DataGridChartsConfiguration() {
 }`,
   },
   {
+    id: "charts-range",
+    title: "Chart a range of cells",
+    body: "With `cellSelection` and `chartsIntegration`, people can chart the cells they select, as in a spreadsheet. Select the cells, then press Alt + F1 on a cell, or select **Chart from selection** in the chart panel. The first column of the range names the categories, unless it holds numbers: then the categories are the rows' positions. Each number column of the range becomes a series, named by its header. Rows with the same category merge into one, with the column's aggregation function or a sum. With several charts, the new chart is added after the others and the panel edits it, so you can pick its type right away. With one chart, the range replaces what the chart shows. The grid announces the new chart to screen readers. A range without numbers creates no chart, and the grid says so. From code, call `createRangeChart()`, with an optional `cellRange`, `chartType`, `label` and `id`. It returns the new chart's `id` and model, or `null` when the range holds no number. A range chart keeps its rows in the model's `rows`: it shows the ones that pass the filters, in the grid's sort order. In HTML, the grid builds the new chart's region itself and fires the cancelable `ok:data-grid:chart` first.",
+    html: `${gridOf(chartsRange, { rows: 4 })}
+<script type="module">
+  const element = document.getElementById("grid-charts-range");
+  const grid = window.Owlky.get(element, "data-grid");
+  // Chart the region and revenue of the first two rows as a line chart
+  grid.createRangeChart({
+    cellRange: { "s-01": { region: true, revenue: true }, "s-02": { region: true, revenue: true } },
+    chartType: "line",
+  });
+</script>`,
+    react: `import { Button, DataGrid, type GridColDef, useGridApiRef } from "@owlky/react";
+
+const sales = [
+  { id: "s-01", region: "North", product: "Tea", units: 10, revenue: 40 },
+  { id: "s-02", region: "South", product: "Juice", units: 47, revenue: 329 },
+  { id: "s-03", region: "East", product: "Coffee", units: 84, revenue: 420 },
+];
+
+const columns: GridColDef<(typeof sales)[number]>[] = [
+  { field: "region", headerName: "Region" },
+  { field: "product", headerName: "Product" },
+  { field: "units", headerName: "Units", type: "number" },
+  { field: "revenue", headerName: "Revenue", type: "number" },
+];
+
+export function DataGridRangeCharts() {
+  const apiRef = useGridApiRef<(typeof sales)[number]>();
+  return (
+    <>
+      <Button
+        onClick={() =>
+          apiRef.current?.createRangeChart({
+            cellRange: { "s-01": { region: true, revenue: true }, "s-02": { region: true, revenue: true } },
+            chartType: "line",
+          })
+        }
+      >
+        Chart two rows
+      </Button>
+      <DataGrid
+        aria-label="Sales by region"
+        rows={sales}
+        columns={columns}
+        apiRef={apiRef}
+        showToolbar
+        cellSelection
+        chartsIntegration
+        initialState={{
+          chartsIntegration: {
+            charts: { revenue: { label: "Revenue by region", dimension: "region", values: ["revenue"] } },
+          },
+        }}
+      />
+    </>
+  );
+}`,
+  },
+  {
+    id: "charts-cross-filter",
+    title: "Filter the grid from a chart",
+    body: "Set `crossFilter` on a chart model, or turn on **Filter the grid** in the chart panel, to filter the grid from the chart. Clicking a bar, a point or a slice filters the grid to its category. Clicking it again clears the filter. On the keyboard, move to a category with the arrow keys in the chart, then press Enter or Space. The filter is an \"is any of\" item on the chart's category field: the grouping field when the chart shows groups, or else its `dimension`. It's part of the grid's filter model like any other filter, so the filter panel shows it, `onFilterModelChange` reports it, and in HTML the cancelable `ok:data-grid:filter` fires first. The chart itself shows the rows that pass the other filters, so it keeps every category and outlines the filtered ones. A filter on that field from the filter panel or from code shows on the chart the same way. The grid announces each change to screen readers. Pivoted grids, server-side filtering and scatter charts of a number column don't cross-filter.",
+    html: `<!-- The chart model's crossFilter option, in data-ok-chart-models -->
+${gridOf(chartsRange, { rows: 4 })}`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+const sales = [
+  { id: 1, region: "North", product: "Tea", revenue: 40 },
+  { id: 2, region: "South", product: "Juice", revenue: 329 },
+  { id: 3, region: "North", product: "Coffee", revenue: 420 },
+];
+
+const columns: GridColDef<(typeof sales)[number]>[] = [
+  { field: "region", headerName: "Region" },
+  { field: "product", headerName: "Product" },
+  { field: "revenue", headerName: "Revenue", type: "number" },
+];
+
+export function DataGridCrossFilter() {
+  return (
+    <DataGrid
+      aria-label="Sales by region"
+      rows={sales}
+      columns={columns}
+      showToolbar
+      chartsIntegration
+      onFilterModelChange={(model) => console.log(model.items)}
+      initialState={{
+        chartsIntegration: {
+          charts: {
+            revenue: {
+              label: "Revenue by region",
+              dimension: "region",
+              values: ["revenue"],
+              crossFilter: true,
+            },
+          },
+        },
+      }}
+    />
+  );
+}`,
+  },
+  {
+    id: "charts-config",
+    title: "Save and restore the charts",
+    body: "`chartsToJSON()` returns every chart model, the active chart and the one chart's model as plain JSON: types, fields, range rows and configuration. Store it where your app keeps settings. `restoreCharts(config)` applies it again later. It checks what it receives and drops unknown keys and values, so a config from storage or a URL can't change anything else. It's the same object as the `chartsIntegration` part of `exportState()`, so `restoreState()` restores the charts too. In HTML, the grid adds and removes chart regions to match the restored charts.",
+    html: `<script type="module">
+  const element = document.getElementById("grid-charts-range");
+  const grid = window.Owlky.get(element, "data-grid");
+  // Restore the charts from the last visit, and save them when the chart panel changes them
+  grid.restoreCharts(JSON.parse(localStorage.getItem("sales-charts") ?? "{}"));
+  element.addEventListener("ok:data-grid:chart", () =>
+    queueMicrotask(() => localStorage.setItem("sales-charts", JSON.stringify(grid.chartsToJSON()))),
+  );
+</script>`,
+    react: `import { Button, DataGrid, type GridColDef, useGridApiRef } from "@owlky/react";
+
+const sales = [
+  { id: 1, region: "North", revenue: 40 },
+  { id: 2, region: "South", revenue: 329 },
+];
+
+const columns: GridColDef<(typeof sales)[number]>[] = [
+  { field: "region", headerName: "Region" },
+  { field: "revenue", headerName: "Revenue", type: "number" },
+];
+
+export function DataGridSavedCharts() {
+  const apiRef = useGridApiRef<(typeof sales)[number]>();
+  const save = () => {
+    const config = apiRef.current?.chartsToJSON();
+    localStorage.setItem("sales-charts", JSON.stringify(config));
+  };
+  const restore = () => {
+    apiRef.current?.restoreCharts(JSON.parse(localStorage.getItem("sales-charts") ?? "{}"));
+  };
+  return (
+    <>
+      <Button onClick={save}>Save charts</Button>
+      <Button onClick={restore}>Restore charts</Button>
+      <DataGrid
+        aria-label="Sales"
+        rows={sales}
+        columns={columns}
+        apiRef={apiRef}
+        showToolbar
+        chartsIntegration
+        initialState={{
+          chartsIntegration: { charts: { revenue: { dimension: "region", values: ["revenue"] } } },
+        }}
+      />
+    </>
+  );
+}`,
+  },
+  {
     id: "undo-redo",
     title: "Undo and redo edits",
     body: "Ctrl + Z (Cmd + Z on macOS) undoes the last saved edit, and Ctrl + Shift + Z or Ctrl + Y redoes it, while the focus is on a cell or a header. Each edited cell or row is one step, and so is each paste, whatever the number of cells it fills. Undo and redo save the rows again through `processRowUpdate` (HTML: a cancelable `ok:data-grid:edit`), so your server sees them like any edit. If a row changed in another way since the step, for example new `rows` from your code, the step can't apply and the steps before it are dropped. A refused save does the same. `historyStackSize` sets how many steps the grid keeps (30 by default; `0` turns undo and redo off). With `showToolbar`, the toolbar has **Undo** and **Redo** buttons. In React, `showHistoryControls={false}` hides them. In HTML, they're the toolbar buttons with `data-ok-data-grid-history`. `apiRef.current.history` (HTML: the instance's `history`) has `undo()`, `redo()`, `canUndo()`, `canRedo()` and `clear()`. `onUndo` and `onRedo` (HTML: `ok:data-grid:undo` and `ok:data-grid:redo`) report the ids of the rows that changed. Typing in a field keeps the field's own undo.",
@@ -2063,6 +2223,12 @@ const PREVIEWS = {
           description: "The chart of the rows, and the Excel file.",
         },
         {
+          react: "apiRef createRangeChart() · chartsToJSON() · restoreCharts()",
+          html: "createRangeChart() · chartsToJSON() · restoreCharts()",
+          type: "GridRangeChartParams · GridChartsState",
+          description: "A chart of the selected cells, and the charts' config as JSON.",
+        },
+        {
           react: "showToolbar · localeText · exportFileName",
           html: "the toolbar markup",
           type: "—",
@@ -2093,6 +2259,7 @@ const PREVIEWS = {
         ],
         ["Alt + Up / Alt + Down on a row handle", "Moves the row up / down"],
         ["Shift + arrow keys (cell selection)", "Extends the selected range"],
+        ["Alt + F1 on a cell (cell selection)", "Charts the selected cells"],
         ["Ctrl + C / Ctrl + V on a cell", "Copies the selection / pastes into editable cells"],
         ["Ctrl + Z on a cell or a header", "Undoes the last edit or paste"],
         ["Ctrl + Shift + Z or Ctrl + Y on a cell or a header", "Redoes it"],

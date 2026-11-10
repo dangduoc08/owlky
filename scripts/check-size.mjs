@@ -16,6 +16,9 @@ async function withImports(file, seen = new Set()) {
 }
 
 const budgets = [
+  // Phase 4 batch E's data grid range charts (4.18.12, ADR-0055: createRangeChart and
+  // Alt + F1, cross-filtering, chartsToJSON / restoreCharts, chart regions built by the runtime;
+  // about 1.9 kB): 226.1 kB.
   // 230 kB since the batch E coulds (sortable swap, Embla v9 names, lightbox render functions,
   // walktour offset) on top of the chart types and crossfilter: 225.7 kB.
   // 225 kB since the sortable and data grid shoulds merged together: 221.0 kB.

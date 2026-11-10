@@ -1,5 +1,7 @@
 import {
   arrangeGridColumns,
+  type ChartDataPoint,
+  type ChartSelectionDetail,
   chartAttributes,
   chartOptions,
   chartTextAttributes,
@@ -28,6 +30,7 @@ import {
   type GridCellSelectionModel,
   type GridChartModel,
   type GridChartModels,
+  type GridChartsState,
   type GridChartType,
   type GridColumn,
   type GridColumnGroup,
@@ -55,6 +58,8 @@ import {
   type GridPivotResult,
   type GridPivotSection,
   type GridPrintLayout,
+  type GridRangeChart,
+  type GridRangeChartParams,
   type GridRowModesModel,
   type GridRowSelectionPropagation,
   type GridRowWindow,
@@ -75,10 +80,18 @@ import {
   gridCellRange,
   gridChartData,
   gridChartFields,
+  gridChartGroups,
   gridChartOptions,
+  gridChartsState,
   gridColumnTemplate,
   gridColumnTypes,
   gridColumnWindow,
+  gridCrossFilter,
+  gridCrossFilterBase,
+  gridCrossFilterField,
+  gridCrossFilterPoints,
+  gridCrossFilterSelection,
+  gridCrossFilterValues,
   gridDefaultLabels,
   gridDensities,
   gridDensityFactor,
@@ -115,6 +128,8 @@ import {
   gridPivotRole,
   gridPivotSections,
   gridQuickFilterValues,
+  gridRangeChartId,
+  gridRangeChartModel,
   gridRowGroups,
   gridRowOffsets,
   gridRowSpans,
@@ -136,6 +151,7 @@ import {
   gridWithGroupFooters,
   isGridCellSelected,
   isGridGroupingField,
+  isGridRangeChart,
   isGridResizable,
   isGridSetFilter,
   isGridSortable,
@@ -168,6 +184,7 @@ import {
   sanitizeGridCellSelection,
   sanitizeGridChartModel,
   sanitizeGridChartModels,
+  sanitizeGridChartsState,
   sanitizeGridPivotModel,
   sanitizeGridRowModes,
   sanitizeGridState,
@@ -395,6 +412,17 @@ export interface DataGridInstance extends ComponentInstance {
   setChartModels(models: GridChartModels): void;
   /** Several charts: the chart the panel edits (no events). */
   setActiveChartId(id: string): void;
+  /**
+   * Charts the selected cells (or `cellRange`; no events): categories from the range's first
+   * column, series from its number columns. With several charts it adds a chart (and its region)
+   * and makes it active, otherwise it replaces the chart's model. `null` when the range holds no
+   * number.
+   */
+  createRangeChart(params?: GridRangeChartParams): GridRangeChart | null;
+  /** The charts' models as JSON, for `restoreCharts` (the charts part of `exportState()`). */
+  chartsToJSON(): GridChartsState;
+  /** Applies a charts config from `chartsToJSON()` (no events; unknown keys are dropped). */
+  restoreCharts(config: unknown): void;
   /** Groups the rows by these fields. */
   setRowGroupingModel(model: readonly string[]): void;
   /** Sets the aggregation. */
@@ -3102,6 +3130,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     };
     const cellSelection = createGridCellSelection(main, {
       enabled: cellsOn,
+      onRangeChart: () => rangeChart({}, true),
       onSelect: (anchor, focus, mode) => {
         const range = gridCellRange(pageIds(), shownFields(), anchor, focus);
         if (mode === "replace") setCells(range);
@@ -3323,6 +3352,16 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     ];
     const chartKeys = new WeakMap<HTMLElement, string>();
     let chartSeriesCount = 0;
+    /** Cross-filtering charts: their field, categories and selection (from the last draw). */
+    const chartCross = new WeakMap<
+      HTMLElement,
+      { field: string; categories: string[]; selected: ChartDataPoint[] }
+    >();
+    const samePoints = (a: readonly ChartDataPoint[], b: readonly ChartDataPoint[]) =>
+      a.length === b.length &&
+      a.every(
+        (p, i) => p.seriesIndex === b[i]?.seriesIndex && p.dataPointIndex === b[i]?.dataPointIndex,
+      );
     /** Panel fields show the model (it may come from `setChartModel` or `restoreState`). */
     const syncChartPanel = () => {
       const panel = byId("charts");
@@ -3357,6 +3396,10 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         "[data-ok-data-grid-chart-item-label]",
       );
       if (labelsSwitch) labelsSwitch.checked = chartModel.itemLabel === "value";
+      const crossSwitch = panel.querySelector<HTMLInputElement>(
+        "[data-ok-data-grid-chart-cross-filter]",
+      );
+      if (crossSwitch) crossSwitch.checked = !!chartModel.crossFilter;
     };
     const syncChart = () => {
       for (const region of chartRegions()) {
@@ -3369,6 +3412,17 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       }
       syncChartPanel();
     };
+    /** Data rows that pass `model` (server filters: every row), sorted: range and cross charts. */
+    const chartDataRows = (model: GridFilterModel) =>
+      sortGridRows(
+        serverSide(filterMode)
+          ? rows()
+          : filterGridRows(rows(), model, columns, value, text, filterOptions()),
+        sortModel,
+        columns,
+        value,
+        comparatorOf,
+      ).filter((row) => !row.hasAttribute("data-ok-generated"));
     /** One chart: its data from its model, through the Chart's update path. */
     const drawChart = (chartRegion: HTMLElement, chartModel: GridChartModel, active: boolean) => {
       const figure = chartRegion.querySelector<HTMLElement>("[data-ok-chart]");
@@ -3378,8 +3432,31 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       const candidates = pivot ? columns : chartColumns;
       const fields = gridChartFields(chartModel, candidates);
       const dimension = chartColumns.find((c) => c.field === chartModel.dimension);
+      // Range charts (ADR-0055) draw their rows that pass the filters, groups and pages aside.
+      const range = isGridRangeChart(chartModel) && !pivot ? new Set(chartModel.rows) : null;
+      const grouped = grouping().length > 0 && !source && !range;
+      const numeric = chartModel.type === "scatter" && dimension?.type === "number";
+      // Cross-filtering: the chart draws the rows that pass the other filters (not its own).
+      const crossField = gridCrossFilterField(
+        chartModel,
+        grouped ? (grouping()[0] as string) : null,
+        { pivot: !!pivot || serverSide(filterMode), numeric },
+      );
+      const sourceRows = range
+        ? chartDataRows(filterModel).filter((row) => range.has(idOf(row)))
+        : crossField
+          ? chartDataRows(gridCrossFilterBase(filterModel, crossField))
+          : null;
+      // Their categories merge rows of the same text (or group key), aggregated (ApexGrid).
+      const keyField = grouped ? (grouping()[0] as string) : dimension?.field;
+      const merged =
+        sourceRows && keyField && !numeric
+          ? gridChartGroups(sourceRows, (row) =>
+              grouped ? groupingKey(row, keyField) : cellText(row, keyField),
+            )
+          : null;
       const top =
-        grouping().length && !source
+        grouped && !sourceRows
           ? sortedList.filter(
               (row) =>
                 row.hasAttribute("data-ok-generated") && row.getAttribute("aria-level") === "1",
@@ -3389,36 +3466,68 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       const pass = top ? new Set(filtered) : null;
       const byRowId = top ? new Map(rowEls.map((row) => [idOf(row), row])) : null;
       const aggregation = activeAggregation();
+      const aggregateOf = (list: HTMLElement[], field: string) =>
+        gridAggregate(
+          list,
+          { [field]: aggregation[field] ?? aggregationModel[field] ?? "sum" },
+          candidates,
+          value,
+        )[field];
+      const rowItems =
+        sourceRows ?? pageList.filter((row) => !row.hasAttribute("data-ok-generated"));
       const data =
-        fields.length && (dimension || top)
-          ? top
+        fields.length && (dimension || top || merged || range)
+          ? merged
             ? gridChartData(
-                top,
+                merged,
                 chartModel,
                 candidates,
-                (row) => (groupNodes.get(idOf(row)) as GridGroupNode).key,
-                (row, field) =>
-                  gridAggregate(
-                    (groupNodes.get(idOf(row)) as GridGroupNode).leafIds
-                      .map((leaf) => byRowId?.get(leaf) as HTMLElement)
-                      .filter((leaf) => leaf && pass?.has(leaf)),
-                    { [field]: aggregation[field] ?? aggregationModel[field] ?? "sum" },
-                    candidates,
-                    value,
-                  )[field],
+                (group) => group.key,
+                (group, field) => aggregateOf(group.rows, field),
               )
-            : gridChartData(
-                pageList.filter((row) => !row.hasAttribute("data-ok-generated")),
-                chartModel,
-                candidates,
-                (row) => cellText(row, (dimension as GridColumn).field),
-                value,
-                dimension?.type === "number"
-                  ? (row) => cellValue(row, (dimension as GridColumn).field)
-                  : undefined,
-              )
+            : top
+              ? gridChartData(
+                  top,
+                  chartModel,
+                  candidates,
+                  (row) => (groupNodes.get(idOf(row)) as GridGroupNode).key,
+                  (row, field) =>
+                    aggregateOf(
+                      (groupNodes.get(idOf(row)) as GridGroupNode).leafIds
+                        .map((leaf) => byRowId?.get(leaf) as HTMLElement)
+                        .filter((leaf) => leaf && pass?.has(leaf)),
+                      field,
+                    ),
+                )
+              : gridChartData(
+                  rowItems,
+                  chartModel,
+                  candidates,
+                  dimension
+                    ? (row) => cellText(row, dimension.field)
+                    : (row) => String(rowItems.indexOf(row) + 1),
+                  value,
+                  dimension?.type === "number"
+                    ? (row) => cellValue(row, dimension.field)
+                    : undefined,
+                )
           : null;
       chartRegion.hidden = !data;
+      // The chart's selection shows its filter: every series' point of the filtered categories.
+      const cross =
+        crossField && data
+          ? {
+              field: crossField,
+              categories: data.categories,
+              selected: gridCrossFilterPoints(
+                data.categories,
+                gridCrossFilterValues(filterModel, crossField),
+                data.series.length,
+              ),
+            }
+          : null;
+      if (cross) chartCross.set(chartRegion, cross);
+      else chartCross.delete(chartRegion);
       if (active) chartSeriesCount = data?.series.length ?? 0;
       const { yTitle, ...options } = gridChartOptions(chartModel, data);
       const attributes: Record<string, string> = {
@@ -3432,13 +3541,16 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       for (const [name, attr] of Object.entries(attributes))
         if (figure.getAttribute(name) !== attr) figure.setAttribute(name, attr);
       const key = JSON.stringify([data, options.type, options.xType]);
+      const chart = runtime.getOrCreate<ChartInstance>(figure, "chart");
+      if (chart && cross && !samePoints(chart.selectedDataPoints, cross.selected))
+        chart.setSelectedDataPoints(cross.selected);
       if (key === chartKeys.get(chartRegion)) return;
       chartKeys.set(chartRegion, key);
       const series = data?.series ?? [];
       const categories = data?.categories ?? [];
-      const chart = runtime.getOrCreate<ChartInstance>(figure, "chart");
       if (chart) {
         chart.updateSeries(series, categories);
+        if (cross) chart.setSelectedDataPoints(cross.selected);
         return;
       }
       // Without the chart runtime, the data table is the chart: write it.
@@ -3515,7 +3627,9 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
           setChart({ ...chartModel, stacked: target.checked });
         else if (target.hasAttribute("data-ok-data-grid-chart-item-label"))
           setChart({ ...chartModel, itemLabel: target.checked ? "value" : "none" });
-        else {
+        else if (target.hasAttribute("data-ok-data-grid-chart-cross-filter"))
+          setChart({ ...chartModel, crossFilter: target.checked });
+        else if (target.hasAttribute("data-ok-data-grid-chart-value")) {
           // The panel's other fields are the series switches.
           const field = target.getAttribute("data-ok-data-grid-chart-value") as string;
           const others = values.filter((f) => f !== field);
@@ -3526,6 +3640,149 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       },
       { signal },
     );
+    /** Several charts: one region per model, in order (built and removed with DOM methods). */
+    const syncChartRegions = () => {
+      const ids = Object.keys(chartModels);
+      const regions = chartRegions();
+      const last = regions.at(-1);
+      if (!activeChart || !last) return;
+      for (const region of regions) {
+        const chartId = region.getAttribute("data-ok-chart-id");
+        if (chartId && !ids.includes(chartId)) region.remove();
+      }
+      let after: HTMLElement = last;
+      for (const chartId of ids) {
+        const label = chartModels[chartId]?.label;
+        let region = element.querySelector<HTMLElement>(
+          `:scope > [data-ok-data-grid-chart][data-ok-chart-id="${CSS.escape(chartId)}"]`,
+        );
+        if (!region) {
+          region = document.createElement("div");
+          region.setAttribute("data-ok-data-grid-chart", "");
+          region.setAttribute("data-ok-chart-id", chartId);
+          const figure = document.createElement("figure");
+          figure.setAttribute("data-ok-chart", "");
+          if (id) figure.id = `${id}-chart-${chartId}`;
+          const table = document.createElement("table");
+          table.setAttribute("data-ok-chart-data", "");
+          const caption = document.createElement("caption");
+          caption.textContent = label ?? labels.chartLabel;
+          table.append(caption, document.createElement("thead"), document.createElement("tbody"));
+          figure.append(table);
+          region.append(figure);
+          after.after(region);
+        }
+        after = region;
+      }
+      // The panel's Chart list names every chart.
+      const select = byId("chart-active") as HTMLSelectElement | null;
+      if (!select) return;
+      for (const option of [...select.options]) if (!ids.includes(option.value)) option.remove();
+      ids.forEach((chartId, index) => {
+        let option = [...select.options].find((o) => o.value === chartId);
+        if (!option) {
+          option = document.createElement("option");
+          option.value = chartId;
+          select.add(option, index);
+        }
+        const text = chartModels[chartId]?.label ?? chartId;
+        if (option.textContent !== text) option.textContent = text;
+      });
+    };
+    const announce = (message: string) => {
+      if (live) live.textContent = message;
+    };
+    /** Range charts (ADR-0055): the selected cells become a chart (Alt + F1, the chart panel). */
+    const rangeChart = (params: GridRangeChartParams = {}, user = false): GridRangeChart | null => {
+      const range = params.cellRange ? sanitizeGridCellSelection(params.cellRange) : cellModel;
+      const fresh = gridRangeChartId(chartModels, params.id);
+      const label = params.label ?? labels.chartsRangeLabel.replace("{index}", String(fresh.index));
+      const model = chartRegion
+        ? gridRangeChartModel(
+            range,
+            chartDataRows(filterModel).map(idOf),
+            shownNow,
+            // The range's rows are data rows of the grid.
+            (rowId, field) =>
+              cellValue(rowEls.find((r) => idOf(r) === rowId) as HTMLElement, field),
+            { chartType: params.chartType, label },
+          )
+        : null;
+      if (!model) {
+        if (user) announce(labels.chartsRangeRefused);
+        return null;
+      }
+      const chartId = activeChart ? fresh.id : null;
+      if (
+        user &&
+        !emit("chart", { model, ...(chartId ? { id: chartId } : {}) }, { cancelable: true })
+      )
+        return null;
+      if (chartId) {
+        chartModels = { ...chartModels, [chartId]: model };
+        element.setAttribute("data-ok-chart-models", JSON.stringify(chartModels));
+        syncChartRegions();
+        showActiveChart(chartId);
+      } else {
+        chartModel = model;
+        element.setAttribute("data-ok-chart-model", JSON.stringify(model));
+        syncChart();
+      }
+      if (user) announce(labels.chartsRangeCreated.replace("{label}", label));
+      return { id: chartId, model };
+    };
+    element.addEventListener(
+      "click",
+      (event) => {
+        const button = (event.target as Element).closest("[data-ok-data-grid-chart-range]");
+        if (button && byId("charts")?.contains(button)) rangeChart({}, true);
+      },
+      { signal },
+    );
+    // Cross-filtering: a chart's category selection becomes its field's `isAnyOf` filter.
+    element.addEventListener(
+      "ok:chart:select",
+      (event) => {
+        const region = (event.target as Element).closest<HTMLElement>("[data-ok-data-grid-chart]");
+        const cross = region?.parentElement === element ? chartCross.get(region) : undefined;
+        if (!cross) return;
+        const next = gridCrossFilterSelection(
+          cross.categories,
+          (event as CustomEvent<ChartSelectionDetail>).detail,
+        );
+        const current = gridCrossFilterValues(filterModel, cross.field);
+        if (next.length !== current.length || next.some((v, i) => v !== current[i])) {
+          setFilter(gridCrossFilter(filterModel, cross.field, next));
+          const column = columns.find((c) => c.field === cross.field);
+          announce(
+            next.length
+              ? labels.chartsCrossFilterApplied
+                  .replace("{field}", column?.headerName ?? cross.field)
+                  .replace("{values}", next.join(", "))
+              : labels.chartsCrossFilterCleared,
+          );
+        }
+        // A refused filter (canceled event) puts the chart's selection back.
+        syncChart();
+      },
+      { signal },
+    );
+    const restoreCharts = (input: unknown) => {
+      const config = sanitizeGridChartsState(input);
+      if (config.model) {
+        chartModel = config.model;
+        element.setAttribute("data-ok-chart-model", JSON.stringify(chartModel));
+      }
+      if (config.charts) {
+        chartModels = config.charts;
+        element.setAttribute("data-ok-chart-models", JSON.stringify(chartModels));
+      }
+      if (config.charts || config.activeChartId) {
+        activeChart = gridActiveChartId(chartModels, config.activeChartId ?? activeChart);
+        if (activeChart) element.setAttribute("data-ok-active-chart-id", activeChart);
+        syncChartRegions();
+      }
+    };
 
     // Filter panel: rows of (logic,) column, operator, value; Add filter clones the first row.
     const filterPanel = byId("filters");
@@ -4821,13 +5078,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         if (state.pinnedColumns) pinned = state.pinnedColumns;
         if (state.density) element.setAttribute(densityOption.attr, state.density);
         if (state.aggregation?.model) aggregationModel = state.aggregation.model;
-        if (state.chartsIntegration?.model) chartModel = state.chartsIntegration.model;
-        if (state.chartsIntegration?.charts) chartModels = state.chartsIntegration.charts;
-        if (state.chartsIntegration?.charts || state.chartsIntegration?.activeChartId)
-          activeChart = gridActiveChartId(
-            chartModels,
-            state.chartsIntegration.activeChartId ?? activeChart,
-          );
+        if (state.chartsIntegration) restoreCharts(state.chartsIntegration);
         if (state.pivoting?.model) pivotModel = state.pivoting.model;
         if (state.pivoting?.active !== undefined)
           element.toggleAttribute(pivotActiveOption.attr, state.pivoting.active);
@@ -4954,10 +5205,22 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       setChartModels(models) {
         chartModels = sanitizeGridChartModels(models);
         element.setAttribute("data-ok-chart-models", JSON.stringify(chartModels));
+        activeChart = gridActiveChartId(chartModels, activeChart);
+        syncChartRegions();
         showActiveChart(activeChart ?? "");
       },
       setActiveChartId(chartId) {
         showActiveChart(chartId);
+      },
+      createRangeChart(params) {
+        return rangeChart(params);
+      },
+      chartsToJSON() {
+        return gridChartsState(chartModel, chartModels, activeChart);
+      },
+      restoreCharts(config) {
+        restoreCharts(config);
+        syncChart();
       },
       get chartModel() {
         return panelModel();

@@ -594,6 +594,10 @@ export interface DataGridParts {
   "data-ok-chart-models": Value<string>;
   /** The chart panel's chart. */
   "data-ok-data-grid-chart": Part<"div">;
+  /** The chart panel's switch that lets a category selection filter the grid (`crossFilter`). */
+  "data-ok-data-grid-chart-cross-filter": Part;
+  /** With cell selection: the chart panel's button that charts the selected cells. */
+  "data-ok-data-grid-chart-range": Part<"button">;
   /** The chart panel's switch for item labels. */
   "data-ok-data-grid-chart-item-label": Part;
   /** The chart panel's switch for stacked series. */

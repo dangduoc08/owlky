@@ -466,6 +466,49 @@ for (const impl of implementations) {
       await expect(charts.nth(0)).toHaveAttribute("data-ok-type", "bar");
     });
 
+    test("range charts and cross-filtering (ADR-0055)", async ({ page }) => {
+      await openStory(page, storyId(impl, "datagrid", "charts"));
+      const grid = page.locator("#grid-charts-range");
+      const live = grid.locator("[data-ok-data-grid-live]");
+      const rows = grid.locator('[data-ok-data-grid-body] > [role="row"]:not([hidden])');
+      await expect(rows).toHaveCount(12);
+      // Keyboard: select region to revenue of two rows, then Alt + F1.
+      await grid.locator('[data-ok-row-id="s-01"] [data-ok-field="region"]').click();
+      for (let i = 0; i < 4; i++) await page.keyboard.press("Shift+ArrowRight");
+      await page.keyboard.press("Shift+ArrowDown");
+      await page.keyboard.press("Alt+F1");
+      await expect(live).toHaveText("Chart created: Range chart 1");
+      const range = grid.locator('[data-ok-chart-id="range-1"]');
+      await expect(range.locator("[data-ok-chart-data] tbody tr")).toHaveCount(2);
+      await expect(range.locator("[data-ok-chart-svg]")).toBeVisible();
+      // A range without numbers is refused.
+      await grid.locator('[data-ok-row-id="s-03"] [data-ok-field="product"]').click();
+      await page.keyboard.press("Alt+F1");
+      await expect(live).toHaveText("Select cells with numbers to create a chart");
+      await expect(grid.locator("[data-ok-data-grid-chart]")).toHaveCount(2);
+      // Cross-filtering by keyboard: the chart's plot, Home, Enter.
+      const regions = grid.locator('[data-ok-chart-id="regions"]');
+      const plot = regions.locator("[data-ok-chart-plot]");
+      // The grid shrinks when it filters: a resting mouse would end up over the chart and move
+      // its active category.
+      await page.mouse.move(0, 0);
+      await plot.focus();
+      await page.keyboard.press("Home");
+      await page.keyboard.press("Enter");
+      await expect(live).toHaveText("Filtered by Region: North");
+      await expect(rows).toHaveCount(3);
+      await expect(regions.locator("[data-ok-chart-data] tbody tr")).toHaveCount(4);
+      await page.keyboard.press("Enter");
+      await expect(live).toHaveText("Filter cleared");
+      await expect(rows).toHaveCount(12);
+      // Pointer: a click on a bar filters to its category.
+      const box = await regions.locator("[data-ok-chart-bar]").nth(1).boundingBox();
+      if (!box) throw new Error("no bar");
+      await page.mouse.click(box.x + box.width / 2, box.y + box.height - 2);
+      await expect(live).toHaveText("Filtered by Region: South");
+      await expect(rows).toHaveCount(3);
+    });
+
     test("sorting: comparators, a sort cycle and adding columns without Shift", async ({
       page,
     }) => {

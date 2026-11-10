@@ -182,6 +182,8 @@ export interface GridCellSelectionOptions {
    * anchor, or `add` the range (Ctrl / Cmd).
    */
   onSelect(anchor: GridCellPosition, focus: GridCellPosition, mode: "replace" | "add"): void;
+  /** Alt + F1 on a cell: chart the selected cells (spreadsheets' quick chart; ADR-0055). */
+  onRangeChart?(): void;
 }
 
 export interface GridCellSelectionController {
@@ -196,8 +198,8 @@ const positionOf = (cell: Element): GridCellPosition | null => {
 
 /**
  * Cell range selection: press a cell (Shift: extend from the anchor, Ctrl / Cmd: add a range),
- * drag across cells, or Shift + arrows from the focused cell. Reports intent; the owner keeps the
- * model. Register it after the navigation controller (Shift + arrows read the moved focus).
+ * drag across cells, or Shift + arrows from the focused cell; Alt + F1 asks for a range chart.
+ * Reports intent; the owner keeps the model. Register it after the navigation controller (Shift + arrows read the moved focus).
  */
 export function createGridCellSelection(
   grid: HTMLElement,
@@ -247,6 +249,18 @@ export function createGridCellSelection(
       if (!options.enabled()) return;
       const arrow = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key);
       const cell = (event.target as Element).closest(BODY_CELL);
+      if (
+        cell &&
+        options.onRangeChart &&
+        event.key === "F1" &&
+        event.altKey &&
+        !event.ctrlKey &&
+        !event.metaKey
+      ) {
+        event.preventDefault();
+        options.onRangeChart();
+        return;
+      }
       if (!arrow || !cell) return;
       const before = positionOf(cell) as GridCellPosition;
       if (!event.shiftKey) {

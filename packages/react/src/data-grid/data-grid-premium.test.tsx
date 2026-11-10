@@ -5,7 +5,7 @@ import { renderToString } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { userEvent } from "vitest/browser";
 import { expectNoAxeViolations } from "../test-utils.js";
-import { DataGrid, type GridApi, type GridColDef } from "./data-grid.js";
+import { DataGrid, type DataGridProps, type GridApi, type GridColDef } from "./data-grid.js";
 
 interface Sale {
   id: string;
@@ -1750,5 +1750,245 @@ describe("DataGrid charts integration and date filters", () => {
         />,
       ),
     ).not.toThrow();
+  });
+});
+
+describe("DataGrid range charts and cross-filtering (ADR-0055)", () => {
+  const live = () => document.querySelector("[data-ok-data-grid-live]")?.textContent;
+  const chartBody = (chartId: string) =>
+    [
+      ...document.querySelectorAll<HTMLTableRowElement>(
+        `[data-ok-chart-id="${chartId}"] table[data-ok-chart-data] tbody tr`,
+      ),
+    ].map((tr) => [...tr.cells].map((c) => c.textContent?.trim()).join(""));
+  const plotKey = (chartId: string, key: string) =>
+    fireEvent.keyDown(
+      document.querySelector(`[data-ok-chart-id="${chartId}"] [data-ok-chart-plot]`) as Element,
+      { key },
+    );
+  const sales = (props: Partial<DataGridProps<Sale>> = {}) => (
+    <DataGrid
+      id="rc"
+      aria-label="Sales"
+      disableVirtualization
+      rows={SALES}
+      columns={COLUMNS}
+      showToolbar
+      chartsIntegration
+      cellSelection
+      initialState={{
+        chartsIntegration: {
+          charts: {
+            regions: { label: "Units by region", dimension: "region", values: ["units"] },
+          },
+        },
+      }}
+      hideFooter
+      {...props}
+    />
+  );
+
+  it("filters the grid from a chart's category selection and clears it", async () => {
+    const onFilter = vi.fn();
+    const apiRef = createRef<GridApi<Sale> | null>() as { current: GridApi<Sale> | null };
+    render(
+      sales({
+        apiRef,
+        onFilterModelChange: onFilter,
+        initialState: {
+          chartsIntegration: {
+            charts: {
+              regions: {
+                label: "Units by region",
+                dimension: "region",
+                values: ["units"],
+                crossFilter: true,
+              },
+            },
+          },
+        },
+      }),
+    );
+    expect(chartBody("regions")).toEqual(["North15", "South30", "East20"]);
+    plotKey("regions", "Home");
+    plotKey("regions", "Enter");
+    expect(onFilter).toHaveBeenLastCalledWith({
+      items: [{ field: "region", operator: "isAnyOf", value: ["North"] }],
+    });
+    expect(bodyRows()).toHaveLength(2);
+    // The chart keeps every category (it doesn't filter itself).
+    expect(chartBody("regions")).toHaveLength(3);
+    expect(live()).toBe("Filtered by Region: North");
+    // Another category replaces it.
+    plotKey("regions", "ArrowRight");
+    plotKey("regions", "Enter");
+    expect(live()).toBe("Filtered by Region: South");
+    plotKey("regions", "Enter");
+    expect(onFilter.mock.lastCall?.[0].items).toEqual([]);
+    expect(bodyRows()).toHaveLength(4);
+    expect(live()).toBe("Filter cleared");
+    // The filter set elsewhere shows as the chart's selection; turning the option off in the
+    // panel draws the filtered rows again.
+    act(() =>
+      (apiRef.current as GridApi<Sale>).setFilterModel({
+        items: [{ field: "region", operator: "isAnyOf", value: ["east"] }],
+      }),
+    );
+    expect(bodyRows()).toHaveLength(1);
+    expect(chartBody("regions")).toHaveLength(3);
+    await userEvent.click(screen.getByRole("button", { name: "Chart" }));
+    const panel = document.getElementById("rc-charts") as HTMLElement;
+    const crossSwitch = within(panel).getByLabelText("Filter the grid") as HTMLInputElement;
+    expect(crossSwitch.checked).toBe(true);
+    fireEvent.click(crossSwitch);
+    expect(chartBody("regions")).toEqual(["East20"]);
+    await expectNoAxeViolations(document.body);
+  });
+
+  it("charts the selected cells with Alt + F1 or the panel's button", async () => {
+    const onModels = vi.fn();
+    const onActive = vi.fn();
+    const apiRef = createRef<GridApi<Sale> | null>() as { current: GridApi<Sale> | null };
+    render(sales({ apiRef, onChartModelsChange: onModels, onActiveChartIdChange: onActive }));
+    act(() =>
+      (apiRef.current as GridApi<Sale>).setCellSelectionModel({
+        "1": { region: true, units: true },
+        "3": { region: true, units: true, year: true },
+        "2": { region: true },
+      }),
+    );
+    fireEvent.keyDown(cell("1", "units"), { key: "F1", altKey: true });
+    expect(onModels.mock.lastCall?.[0]["range-1"]).toEqual({
+      label: "Range chart 1",
+      type: "column",
+      dimension: "region",
+      values: ["year", "units"],
+      rows: ["1", "2", "3"],
+    });
+    expect(onActive).toHaveBeenLastCalledWith("range-1");
+    expect(
+      [...document.querySelectorAll("[data-ok-data-grid-chart]")].map((r) =>
+        r.getAttribute("data-ok-chart-id"),
+      ),
+    ).toEqual(["regions", "range-1"]);
+    // Rows of one category merge (summed, as ApexGrid does).
+    expect(chartBody("range-1")).toEqual(["North4,04915", "South2,02530"]);
+    expect(live()).toBe("Chart created: Range chart 1");
+    // The panel picks the new chart's type.
+    await userEvent.click(screen.getByRole("button", { name: "Chart" }));
+    const panel = document.getElementById("rc-charts") as HTMLElement;
+    expect((panel.querySelector("#rc-chart-active") as HTMLSelectElement).value).toBe("range-1");
+    fireEvent.change(within(panel).getByLabelText("Chart type"), { target: { value: "line" } });
+    expect(
+      document.querySelector('[data-ok-chart-id="range-1"] figure')?.getAttribute("data-ok-type"),
+    ).toBe("line");
+    // A range without numbers is refused and announced.
+    act(() => (apiRef.current as GridApi<Sale>).setCellSelectionModel({ "1": { region: true } }));
+    fireEvent.click(panel.querySelector("[data-ok-data-grid-chart-range]") as HTMLElement);
+    expect(live()).toBe("Select cells with numbers to create a chart");
+    expect(document.querySelectorAll("[data-ok-data-grid-chart]")).toHaveLength(2);
+    let made: ReturnType<GridApi<Sale>["createRangeChart"]> = null;
+    act(() => {
+      made = (apiRef.current as GridApi<Sale>).createRangeChart({
+        cellRange: { "4": { units: true } },
+        chartType: "pie",
+        label: "Units",
+        id: "units",
+      });
+    });
+    expect(made).toEqual({
+      id: "units",
+      model: { label: "Units", type: "pie", dimension: null, values: ["units"], rows: ["4"] },
+    });
+    expect(chartBody("units")).toEqual(["120"]);
+    await expectNoAxeViolations(document.body);
+  });
+
+  it("saves and restores the charts' config", () => {
+    const apiRef = createRef<GridApi<Sale> | null>() as { current: GridApi<Sale> | null };
+    render(sales({ apiRef }));
+    const api = () => apiRef.current as GridApi<Sale>;
+    act(() => {
+      api().createRangeChart({ cellRange: { "1": { region: true, units: true } } });
+    });
+    const config = api().chartsToJSON();
+    expect(config).toEqual({
+      model: {},
+      charts: {
+        regions: { label: "Units by region", dimension: "region", values: ["units"] },
+        "range-1": expect.objectContaining({ rows: ["1"] }),
+      },
+      activeChartId: "range-1",
+    });
+    act(() => api().restoreCharts({ charts: { regions: config.charts?.["regions"] }, bad: 1 }));
+    expect(document.querySelectorAll("[data-ok-data-grid-chart]")).toHaveLength(1);
+    act(() => api().restoreState({ chartsIntegration: config }));
+    expect(document.querySelectorAll("[data-ok-data-grid-chart]")).toHaveLength(2);
+    expect(api().exportState().chartsIntegration).toEqual(config);
+  });
+
+  it("replaces the one chart's model without several charts", async () => {
+    const onChart = vi.fn();
+    render(
+      sales({
+        initialState: { chartsIntegration: { model: { values: ["units"] } } },
+        onChartModelChange: onChart,
+        cellSelectionModel: { "1": { region: true, units: true }, "3": { units: true } },
+      }),
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Chart" }));
+    fireEvent.click(
+      document.querySelector("#rc-charts [data-ok-data-grid-chart-range]") as HTMLElement,
+    );
+    expect(onChart).toHaveBeenLastCalledWith({
+      label: "Range chart 1",
+      type: "column",
+      dimension: "region",
+      values: ["units"],
+      rows: ["1", "3"],
+    });
+    expect(
+      [
+        ...document.querySelectorAll<HTMLElement>(
+          "[data-ok-data-grid-chart] table[data-ok-chart-data] tbody tr",
+        ),
+      ].map((tr) => tr.textContent?.replace(/\s/g, "")),
+    ).toEqual(["North15"]);
+  });
+
+  it("cross-filters a chart of groups by the grouping field", () => {
+    const onFilter = vi.fn();
+    render(
+      sales({
+        rowGroupingModel: ["product"],
+        onFilterModelChange: onFilter,
+        initialState: { chartsIntegration: { model: { values: ["units"], crossFilter: true } } },
+      }),
+    );
+    const plot = document.querySelector("[data-ok-data-grid-chart] [data-ok-chart-plot]");
+    fireEvent.keyDown(plot as Element, { key: "Home" });
+    fireEvent.keyDown(plot as Element, { key: "Enter" });
+    expect(onFilter).toHaveBeenLastCalledWith({
+      items: [{ field: "product", operator: "isAnyOf", value: ["Tea"] }],
+    });
+    expect(live()).toBe("Filtered by Product: Tea");
+    expect(
+      document.querySelectorAll("[data-ok-data-grid-chart] [data-ok-chart-data] tbody tr"),
+    ).toHaveLength(3);
+  });
+
+  it("needs the charts integration", () => {
+    const apiRef = createRef<GridApi<Sale> | null>() as { current: GridApi<Sale> | null };
+    render(
+      sales({ apiRef, chartsIntegration: false, cellSelectionModel: { "1": { units: true } } }),
+    );
+    fireEvent.keyDown(cell("1", "units"), { key: "F1", altKey: true });
+    expect((apiRef.current as GridApi<Sale>).createRangeChart()).toBeNull();
+    expect(document.querySelector("[data-ok-data-grid-chart]")).toBeNull();
+  });
+
+  it("renders no range button without cell selection", () => {
+    render(sales({ cellSelection: false }));
+    expect(document.querySelector("[data-ok-data-grid-chart-range]")).toBeNull();
   });
 });
