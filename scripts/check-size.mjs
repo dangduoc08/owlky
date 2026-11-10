@@ -16,6 +16,9 @@ async function withImports(file, seen = new Set()) {
 }
 
 const budgets = [
+  // 235 kB since the data grid's cell menu, filter groups (4.18.13, ADR-0057; 229.5 kB) and
+  // generated columns (4.18.14: the HTML runtime builds headers, rows and panel lists from a data
+  // table): 231.1 kB. Optimization is deferred to 1.0 prep.
   // Phase 4 batch E's data grid range charts (4.18.12, ADR-0055: createRangeChart and
   // Alt + F1, cross-filtering, chartsToJSON / restoreCharts, chart regions built by the runtime;
   // about 1.9 kB): 226.1 kB.
@@ -88,7 +91,7 @@ const budgets = [
   // Motion (trigger, count-up and five runtimes, the 62 variant names); 31 kB after
   // the composite inputs, 24 kB after the navigation components, 22 kB after the overlays. The CDN bundle carries every component; the npm ESM build
   // (`@owlky/html`) is tree-shaken.
-  ["packages/html/dist/owlky.js", 230_000, "HTML runtime + all components (IIFE)"],
+  ["packages/html/dist/owlky.js", 235_000, "HTML runtime + all components (IIFE)"],
   ["packages/html/dist/esm/runtime/runtime.js", 3_000, "HTML core runtime"],
   // The Editor is opt-in (ADR-0023): Tiptap, ProseMirror and its starter kit are about 125 kB of
   // it; owlky.js stays free of them. 155.1 kB after ADR-0050 (from 130.8 kB): tables

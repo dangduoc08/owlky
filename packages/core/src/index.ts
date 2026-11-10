@@ -780,6 +780,14 @@ export {
   visibleGridColumns,
 } from "./data-grid/data-grid.js";
 export {
+  GRID_AUTO_SAMPLE,
+  type GridAutoColumnsOptions,
+  gridAutoColumns,
+  gridAutoValue,
+  gridHeaderName,
+  gridInferColumnType,
+} from "./data-grid/grid-auto-columns.js";
+export {
   createGridCellSelection,
   createGridClipboard,
   type GridCellPosition,

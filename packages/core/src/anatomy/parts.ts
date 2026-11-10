@@ -584,6 +584,11 @@ export interface DataGridParts {
   "data-ok-data-grid-any-of": Part<"template">;
   /** The rows. */
   "data-ok-data-grid-body": Part<"div">;
+  /**
+   * HTML only, with `data-ok-auto-generate`: the data the runtime builds the columns and rows from
+   * (header cells name the fields, or carry `data-ok-field`); removed once read.
+   */
+  "data-ok-data-grid-data": Part<"table">;
   /** HTML only: the template of a column's custom cells, named by its field. */
   "data-ok-data-grid-cell": Part<"template">;
   /** Several charts: the chart the panel edits. */

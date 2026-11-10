@@ -1,6 +1,7 @@
 import { dataGridOptions } from "@owlky/core";
 import dataGridApi from "@owlky/docs-content/api/data-grid.json" with { type: "json" };
 import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
+import autoGroup from "../../../../../packages/html/src/components/data-grid/examples/auto-group.html?raw";
 import basicGroup from "../../../../../packages/html/src/components/data-grid/examples/basic-group.html?raw";
 import cellsGroup from "../../../../../packages/html/src/components/data-grid/examples/cells-group.html?raw";
 import cellsStatus from "../../../../../packages/html/src/components/data-grid/examples/cells-status.html?raw";
@@ -1856,7 +1857,7 @@ export function Issues() {
   {
     id: "filter-groups",
     title: "Group filters with And and Or",
-    body: "Set `filterGroups` to let people group filters in the filter panel, such as (Priority is High or Priority is Medium) and Points is more than 2. **Add group** adds a group with one filter, in the panel or inside another group. Each group has its own **Logic operator**: its filters and groups must all match (And), or any of them (Or). The group's place among its neighbours shows the operator that joins them. The remove button of a group removes it with everything in it, and a group whose last filter you remove goes away. Filters without a value don't count, so an empty filter never makes an Or match every row. The filter model keeps the groups in `groups`, nested up to eight levels, each with its own `items` and `logicOperator`. It's plain JSON, so you can store it with `exportState()` and apply it again with `restoreState()` or `filterModel`. Each group is a named group for screen readers, such as \"Filter group 1.2\", and every field in it is a native control. In HTML, add `data-ok-filter-groups` to the grid; the `ok:data-grid:filter` event carries the groups.",
+    body: "Set `filterGroups` to let people group filters in the filter panel, such as (Priority is High or Priority is Medium) and Points is more than 2. **Add group** adds a group with one filter, in the panel or inside another group. Each group has its own **Logic operator**: its filters and groups must all match (And), or any of them (Or). The group's place among its neighbours shows the operator that joins them. The remove button of a group removes it with everything in it, and a group whose last filter you remove goes away. Filters without a value don't count, so an empty filter never makes an Or match every row. The filter model keeps the groups in `groups`, nested up to eight levels, each with its own `items` and `logicOperator`. It's plain JSON, so you can store it with `exportState()` and apply it again with `restoreState()` or `filterModel`. Each group is a named group for screen readers, such as \"Filter group 1.2\", and every field in it is a native control. In HTML, add `data-ok-filter-groups` to the grid. The `ok:data-grid:filter` event carries the groups.",
     html: `${gridOf(filtersGroup)}`,
     react: `import { DataGrid, type GridColDef, type GridFilterModel } from "@owlky/react";
 
@@ -1897,6 +1898,24 @@ export function Issues() {
       initialState={{ filter: { filterModel } }}
     />
   );
+}`,
+  },
+  {
+    id: "generated-columns",
+    title: "Generate the columns from the data",
+    body: 'Leave `columns` out and the grid makes one column per field of the rows, in the order the fields first appear. Each column\'s type comes from its values: numbers make a `number` column, `true` and `false` a `boolean` column, dates or `YYYY-MM-DD` text a `date` column, dates with a time a `dateTime` column, and anything else a `string` column. Empty values don\'t count. Headers come from the field names in sentence case: `releaseDate` becomes "Release date" and `id` becomes "ID". The columns share the width and are at least 120px wide. They sort, filter, hide and export like any column. With `autoGenerate`, an empty `columns` array generates them too. Columns you give always win. The grid looks at the first 200 rows. In HTML, add `data-ok-auto-generate` to a grid without columns and put the data in a `<table data-ok-data-grid-data>` inside it: a header cell per field, then one row per data row. The script reads the text of the cells ("42" is a number, "true" a boolean), builds the headers, the rows and the panels\' lists, and removes the table. To name a column yourself, write the field in the header cell\'s `data-ok-field` and the header as its text. A field named `id` gives the rows their ids. Without one, the rows are numbered from 1.',
+    html: gridElement(autoGroup),
+    react: `import { DataGrid } from "@owlky/react";
+
+const releases = [
+  { id: 1, name: "Alpha", downloads: 120, stable: false, releaseDate: "2025-01-15" },
+  { id: 2, name: "Beta", downloads: 860, stable: false, releaseDate: "2025-03-02" },
+  { id: 3, name: "First release", downloads: 4210, stable: true, releaseDate: "2025-05-20" },
+];
+
+export function Releases() {
+  // No columns: ID and Downloads are numbers, Stable a boolean, Release date a date
+  return <DataGrid aria-label="Releases" rows={releases} showToolbar />;
 }`,
   },
   {
@@ -2126,6 +2145,12 @@ const PREVIEWS = {
           html: "aria-sort · ok:data-grid:sort",
           type: "GridSortModel",
           description: "Sorted columns, in order.",
+        },
+        {
+          react: "columns left out · autoGenerate",
+          html: "data-ok-auto-generate · table[data-ok-data-grid-data]",
+          type: "boolean",
+          description: "Columns made from the rows' fields, typed from their values.",
         },
         {
           react: "contextMenu · getContextMenuItems",

@@ -226,6 +226,14 @@ const plainColumns: GridColDef<Issue>[] = [
   { field: "points", headerName: "Points", type: "number", width: 110 },
 ];
 
+/* Releases with numbers, yes / no values and dates, for generated columns (story data). */
+export const RELEASES = [
+  { id: 1, name: "Alpha", downloads: 120, stable: false, releaseDate: "2025-01-15" },
+  { id: 2, name: "Beta", downloads: 860, stable: false, releaseDate: "2025-03-02" },
+  { id: 3, name: "First release", downloads: 4210, stable: true, releaseDate: "2025-05-20" },
+  { id: 4, name: "Fixes", downloads: 2975, stable: true, releaseDate: "2025-06-11" },
+];
+
 /**
  * Story groups beyond the reference's sections (roadmap batch E). Snippets: `node
  * apps/storybook/scripts/data-grid-snippets.mjs`.
@@ -389,6 +397,22 @@ export const moreStories: Record<string, ReactGroup[]> = {
       ),
     },
   ],
+  auto: [
+    {
+      title: "Generated columns",
+      content: (
+        // No columns: one per field, typed from the values, named from the fields.
+        <DataGrid
+          id="grid-auto"
+          aria-label="Releases"
+          className="sb-grid"
+          rows={RELEASES}
+          showToolbar
+          hideFooter
+        />
+      ),
+    },
+  ],
   selection: [
     {
       title: "Tree data",
@@ -484,6 +508,7 @@ export const MORE_FILES = {
   set: [["Set filter", "group"]],
   context: [["Context menu", "group"]],
   filters: [["Filter groups", "group"]],
+  auto: [["Generated columns", "group"]],
   selection: [
     ["Tree data", "tree"],
     ["Row groups", "groups"],

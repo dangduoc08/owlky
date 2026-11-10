@@ -1176,6 +1176,12 @@
       "description": "The filter panel nests groups of filters, each with its own And / Or (Add group).",
       "kind": "flag",
       "name": "filterGroups"
+     },
+     {
+      "attr": "data-ok-auto-generate",
+      "description": "Columns from the data when none are given: one per field, typed from the values (HTML: from `table[data-ok-data-grid-data]`).",
+      "kind": "flag",
+      "name": "autoGenerate"
      }
     ],
     "parts": [
@@ -1329,6 +1335,14 @@
       "kind": "value",
       "name": "data-ok-data-grid-context-action",
       "value": "string"
+     },
+     {
+      "description": "HTML only, with `data-ok-auto-generate`: the data the runtime builds the columns and rows from (header cells name the fields, or carry `data-ok-field`); removed once read.",
+      "elements": [
+       "table"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-data"
      },
      {
       "description": "HTML only: the template of the date filter input.",
@@ -2160,6 +2174,11 @@
       "type": "RefObject<GridApi<R> | null>"
      },
      {
+      "description": "Generates the columns from the rows when `columns` is empty: one per field, typed number, boolean, date, date time or string from the values, headers from the field names. Leaving `columns` out does the same.",
+      "name": "autoGenerate",
+      "type": "boolean"
+     },
+     {
       "description": "The grid grows with its rows (no scroll area, so no virtualization). Don't give it a height.",
       "name": "autoHeight",
       "type": "boolean"
@@ -2261,9 +2280,8 @@
       "type": "GridColumnVisibilityModel"
      },
      {
-      "description": "The columns: field, header, type, width and how cells render.",
+      "description": "The columns: field, header, type, width and how cells render. Left out (or empty with `autoGenerate`): one column per field of the rows, typed from their values.",
       "name": "columns",
-      "required": true,
       "type": "readonly GridColDef<R>[]"
      },
      {

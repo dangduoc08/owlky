@@ -77,7 +77,9 @@ import {
   gridAggregationPositionOf,
   gridAlign,
   gridAriaSort,
+  gridAutoColumns,
   gridAutoPageSize,
+  gridAutoValue,
   gridCanMoveColumn,
   gridCellEdges,
   gridCellRange,
@@ -607,6 +609,203 @@ const parseJson = (json: string | null): unknown => {
   }
 };
 
+/** The column menu button's three dots (the React icon). */
+const dotsIcon = () => {
+  const svg = document.createElementNS(SVG, "svg");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("aria-hidden", "true");
+  svg.setAttribute("fill", "currentColor");
+  for (const cy of ["5", "12", "19"]) {
+    const circle = document.createElementNS(SVG, "circle");
+    circle.setAttribute("cx", "12");
+    circle.setAttribute("cy", cy);
+    circle.setAttribute("r", "2");
+    svg.append(circle);
+  }
+  return svg;
+};
+
+/** A switch of the columns panel (the FormControlLabel + Switch markup React renders). */
+const columnSwitch = (field: string, name: string) => {
+  const label = document.createElement("label");
+  label.setAttribute("data-ok-form-control-label", "");
+  label.setAttribute("data-ok-label-placement", "end");
+  const box = document.createElement("span");
+  box.setAttribute("data-ok-switch", "");
+  box.setAttribute("data-ok-color", "primary");
+  box.setAttribute("data-ok-size", "small");
+  const input = document.createElement("input");
+  input.type = "checkbox";
+  input.setAttribute("role", "switch");
+  input.setAttribute("data-ok-switch-input", "");
+  input.setAttribute("data-ok-field", field);
+  input.defaultChecked = true;
+  input.checked = true;
+  const part = (name: string) => {
+    const span = document.createElement("span");
+    span.setAttribute(name, "");
+    span.setAttribute("aria-hidden", "true");
+    return span;
+  };
+  box.append(input, part("data-ok-switch-track"), part("data-ok-switch-thumb"));
+  const text = document.createElement("span");
+  text.setAttribute("data-ok-form-control-label-text", "");
+  text.textContent = name;
+  label.append(box, text);
+  return label;
+};
+
+/**
+ * `data-ok-auto-generate` (ApexGrid `autoGenerate`): a grid whose markup has no data columns gets
+ * them from its `table[data-ok-data-grid-data]` — headers, body rows, a row template, the columns
+ * panel's switches and the filter fields' columns — before the grid reads its markup. A header
+ * cell's `data-ok-field` names the field (its text the header); else its text is the field.
+ */
+function generateColumns(element: HTMLElement, main: HTMLElement, headerRow: HTMLElement): void {
+  const table = element.querySelector<HTMLTableElement>(":scope > table[data-ok-data-grid-data]");
+  if (!table || !element.hasAttribute("data-ok-auto-generate")) return;
+  const own = [...headerRow.querySelectorAll('[role="columnheader"][data-ok-field]')].filter(
+    (header) => !isSpecial(header.getAttribute("data-ok-field") ?? ""),
+  );
+  if (own.length) return;
+  const heads = [...(table.tHead?.rows[0]?.cells ?? [])];
+  const fields = heads.map((th) =>
+    (th.getAttribute("data-ok-field") ?? th.textContent ?? "").trim(),
+  );
+  const texts = [...table.tBodies]
+    .flatMap((section) => [...section.rows])
+    .map((tr) => ({
+      tr,
+      values: Object.fromEntries(fields.map((field, i) => [field, tr.cells[i]?.textContent ?? ""])),
+    }));
+  const columns = gridAutoColumns(
+    texts.map((row) => row.values),
+    { fromText: true, sample: Number.POSITIVE_INFINITY },
+  ).map((column, i) => {
+    const th = heads[fields.indexOf(column.field)] ?? heads[i];
+    return th?.hasAttribute("data-ok-field")
+      ? { ...column, headerName: th.textContent?.trim() || column.headerName }
+      : column;
+  });
+  const specials = [
+    ...headerRow.querySelectorAll<HTMLElement>('[role="columnheader"][data-ok-field]'),
+  ];
+  const offset = specials.length;
+  const id = element.id;
+  const noMenu = element.hasAttribute("data-ok-disable-column-menu");
+  const noResize = element.hasAttribute("data-ok-disable-column-resize");
+  const labels = gridDefaultLabels;
+  columns.forEach((column, i) => {
+    const header = document.createElement("div");
+    header.setAttribute("role", "columnheader");
+    header.setAttribute("aria-colindex", String(i + 1 + offset));
+    header.setAttribute("data-ok-field", column.field);
+    header.setAttribute("data-ok-type", column.type ?? "string");
+    header.setAttribute("data-ok-align", gridHeaderAlign(column));
+    header.setAttribute("data-ok-min-width", String(column.minWidth));
+    header.setAttribute("data-ok-flex", String(column.flex));
+    header.setAttribute("aria-sort", "none");
+    header.tabIndex = -1;
+    const title = document.createElement("span");
+    title.setAttribute("data-ok-data-grid-header-title", "");
+    title.textContent = column.headerName ?? column.field;
+    const sortIcon = document.createElement("span");
+    sortIcon.setAttribute("data-ok-data-grid-sort-icon", "");
+    sortIcon.append(icon(SORT_ARROW));
+    header.append(title, sortIcon);
+    if (!noMenu) {
+      const button = document.createElement("button");
+      button.type = "button";
+      for (const [name, value] of [
+        ["data-ok-icon-button", ""],
+        ["data-ok-color", "default"],
+        ["data-ok-size", "sm"],
+        ["data-ok-data-grid-menu-button", ""],
+        ["tabindex", "-1"],
+        ["aria-label", `${column.headerName} ${labels.columnHeaderMenuLabel}`],
+        ["aria-haspopup", "menu"],
+        ["aria-expanded", "false"],
+        ["aria-controls", `${id}-column-menu`],
+      ])
+        button.setAttribute(name as string, value as string);
+      button.append(dotsIcon());
+      header.append(button);
+    }
+    if (!noResize) {
+      const resize = document.createElement("span");
+      resize.setAttribute("data-ok-data-grid-resize", "");
+      resize.setAttribute("aria-hidden", "true");
+      header.append(resize);
+    }
+    headerRow.append(header);
+  });
+  // Body rows (and a template for setRows), cells as React writes them.
+  const body = main.querySelector("[data-ok-data-grid-body]") as HTMLElement;
+  const checkHeader = specials.find((s) => s.getAttribute("data-ok-field") === GRID_CHECKBOX_FIELD);
+  const rowOf = (values: Record<string, string>, rowId: string, index: number) => {
+    const row = document.createElement("div");
+    row.setAttribute("role", "row");
+    row.setAttribute("aria-rowindex", String(index + 2));
+    row.setAttribute("data-ok-row-id", rowId);
+    if (checkHeader) {
+      const cell = checkHeader.cloneNode(true) as HTMLElement;
+      cell.setAttribute("role", "gridcell");
+      cell.querySelector("input")?.setAttribute("aria-label", labels.checkboxSelectionSelectRow);
+      row.append(cell);
+    }
+    columns.forEach((column, c) => {
+      const cell = document.createElement("div");
+      cell.setAttribute("role", "gridcell");
+      cell.setAttribute("aria-colindex", String(c + 1 + offset));
+      cell.setAttribute("data-ok-field", column.field);
+      cell.setAttribute("data-ok-align", gridAlign(column));
+      const text = values[column.field] ?? "";
+      const value = gridAutoValue(text, column.type ?? "string");
+      // Raw values that aren't the text they show (numbers, booleans, blanks), as React writes.
+      if (typeof value !== "string")
+        cell.setAttribute("data-ok-value", value === null ? "" : String(value));
+      cell.tabIndex = -1;
+      cell.textContent = value === null ? "" : text.trim();
+      row.append(cell);
+    });
+    return row;
+  };
+  body.replaceChildren(
+    ...texts.map(({ tr, values }, index) =>
+      rowOf(
+        values,
+        values["id"]?.trim() || tr.getAttribute("data-ok-row-id") || String(index + 1),
+        index,
+      ),
+    ),
+  );
+  if (!element.querySelector("template[data-ok-data-grid-row]")) {
+    const template = document.createElement("template");
+    template.setAttribute("data-ok-data-grid-row", "");
+    template.content.append(rowOf({}, "", 0));
+    element.append(template);
+  }
+  main.setAttribute("aria-colcount", String(columns.length + offset));
+  main.setAttribute("aria-rowcount", String(texts.length + 1));
+  // The toolbar's panels list the columns.
+  const panel = id
+    ? document.getElementById(`${id}-columns`)?.querySelector("[data-ok-data-grid-panel]")
+    : null;
+  panel?.append(...columns.map((c) => columnSwitch(c.field, c.headerName ?? c.field)));
+  const filters = id ? document.getElementById(`${id}-filters`) : null;
+  for (const select of filters?.querySelectorAll<HTMLSelectElement>(
+    'select[id*="-filter-field"]',
+  ) ?? [])
+    select.replaceChildren(
+      ...columns.map((column) => {
+        const option = document.createElement("option");
+        option.value = column.field;
+        option.textContent = column.headerName ?? column.field;
+        return option;
+      }),
+    );
+  table.remove();
+}
 /**
  * DataGrid — spec: specs/components/data-grid.md (ADR-0020, phase 1)
  *
@@ -635,6 +834,8 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     const headerRow = headerGroup.querySelector<HTMLElement>(
       ':scope > [role="row"]:not([data-ok-data-grid-group-row])',
     ) as HTMLElement;
+    // data-ok-auto-generate: the columns and rows from the data table, before anything reads them.
+    generateColumns(element, main, headerRow);
     const pinnedRowEls = () => [
       ...main.querySelectorAll<HTMLElement>('[data-ok-data-grid-pinned-rows] > [role="row"]'),
     ];

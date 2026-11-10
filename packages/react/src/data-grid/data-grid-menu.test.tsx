@@ -204,6 +204,30 @@ describe("DataGrid context menu", () => {
     ]);
   });
 
+  it("prints, unpins and skips unknown item names", () => {
+    const print = vi.spyOn(window, "print").mockImplementation(() => undefined);
+    const onPinned = vi.fn();
+    render(
+      grid({
+        initialState: { pinnedColumns: { left: ["title"] } },
+        onPinnedColumnsChange: onPinned,
+        getContextMenuItems: ({ defaultItems }) => [
+          "nope" as never,
+          ...defaultItems.filter((name) => name !== "paste"),
+        ],
+      }),
+    );
+    fireEvent.contextMenu(cell("1", "title"));
+    expect(topItems()).toEqual(["Copy", "Export", "Pin column"]);
+    expect(action("pin-left").getAttribute("aria-disabled")).toBe("true");
+    fireEvent.click(action("unpin"));
+    expect(onPinned).toHaveBeenLastCalledWith({ left: [], right: [] });
+    fireEvent.contextMenu(cell("1", "title"));
+    fireEvent.click(action("print"));
+    expect(menu().hasAttribute("data-ok-open")).toBe(false);
+    print.mockRestore();
+  });
+
   it("leaves the browser's menu off the grid's options and in fields", () => {
     const { rerender } = render(grid({ contextMenu: false }));
     expect(menu()).toBeNull();
@@ -295,6 +319,22 @@ describe("DataGrid filter groups", () => {
     // The nested group follows the group's two rows: its And / Or is shown, disabled.
     expect((panel().querySelector("#g-filter-logic-g0-g0") as HTMLSelectElement).disabled).toBe(
       true,
+    );
+    fireEvent.change(panel().querySelector("#g-filter-value-g0-1") as HTMLInputElement, {
+      target: { value: "s" },
+    });
+    expect(onFilter.mock.lastCall?.[0].groups[0].items[1].value).toBe("s");
+    // Removing one of two rows keeps the group.
+    fireEvent.click(
+      panel().querySelector(
+        "#g-filter-group-g0 > [data-ok-data-grid-filter]:nth-of-type(3) [data-ok-data-grid-filter-remove]",
+      ) as Element,
+    );
+    expect(onFilter.mock.lastCall?.[0].groups[0].items).toHaveLength(1);
+    fireEvent.click(
+      group.querySelector(
+        ":scope > [data-ok-data-grid-filter-group-actions] > [data-ok-data-grid-filter-add]",
+      ) as Element,
     );
     fireEvent.change(panel().querySelector("#g-filter-value-g0-g0-0") as HTMLInputElement, {
       target: { value: "o" },

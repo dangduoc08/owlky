@@ -705,6 +705,27 @@ for (const impl of implementations) {
       await expect.poll(() => visible(page, "title")).toHaveLength(4);
     });
 
+    test("generated columns: typed from the data, sorted and filtered", async ({ page }) => {
+      await openStory(page, storyId(impl, "datagrid", "generated-columns"));
+      await expect(page.locator('[role="columnheader"][data-ok-field]')).toHaveText([
+        /^ID/,
+        /^Name/,
+        /^Downloads/,
+        /^Stable/,
+        /^Release date/,
+      ]);
+      const downloads = page.getByRole("columnheader", { name: /^Downloads/ });
+      await expect(downloads).toHaveAttribute("data-ok-type", "number");
+      await downloads.click();
+      expect(await visible(page, "downloads")).toEqual(["120", "860", "2975", "4210"]);
+      await page.getByRole("button", { name: "Filters" }).click();
+      const panel = page.getByRole("group", { name: "Filters" });
+      await panel.getByLabel("Columns").selectOption("downloads");
+      await panel.getByLabel("Operator").selectOption(">");
+      await panel.getByLabel("Value").fill("1000");
+      await expect.poll(() => visible(page, "name")).toEqual(["Fixes", "First release"]);
+    });
+
     test("selection propagation: parents, children and group checkboxes", async ({ page }) => {
       await openStory(page, storyId(impl, "datagrid", "selection-propagation"));
       const tree = page.getByRole("treegrid", { name: "Work breakdown" });

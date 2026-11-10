@@ -28,12 +28,17 @@ import { phase6Stories, PHASE6_FILES } from "${folder}/phase6-examples.tsx";
 import { moreStories, MORE_FILES } from "${folder}/more-examples.tsx";
 const html = {};
 const data = {};
+const tables = {};
 const stories = { ...phase6Stories, ...moreStories };
 const files = { ...PHASE6_FILES, ...MORE_FILES };
 for (const [story, groups] of Object.entries(stories))
   groups.forEach((group, index) => {
     const name = story + "-" + files[story][index][1];
-    html[name] = renderToStaticMarkup(group.content);
+    // Generated columns (autoGenerate): the HTML is the empty grid plus a data table of the rows.
+    if (group.content.props.columns === undefined) {
+      html[name] = renderToStaticMarkup(cloneElement(group.content, { rows: [] }));
+      tables[name] = group.content.props.rows;
+    } else html[name] = renderToStaticMarkup(group.content);
     // Pivoted grids: the HTML holds the data (the runtime pivots it), rendered unpivoted.
     const initial = group.content.props.initialState;
     if (initial?.pivoting?.active)
@@ -43,7 +48,7 @@ for (const [story, groups] of Object.entries(stories))
         }),
       );
   });
-export { html, data };
+export { html, data, tables };
 `;
 const result = await build({
   stdin: { contents: entry, resolveDir: resolve(here, ".."), loader: "tsx" },
@@ -73,7 +78,7 @@ const result = await build({
 });
 const file = resolve(out, ".render.mjs");
 writeFileSync(file, result.outputFiles[0].text);
-const { html, data } = await import(file);
+const { html, data, tables } = await import(file);
 rmSync(file);
 
 const VOID = new Set(["input", "img", "br", "hr", "link", "meta", "col", "source"]);
@@ -215,7 +220,30 @@ for (const [name, markup] of Object.entries(html)) {
         / (contentEditable|inputMode|spellCheck|autoCapitalize|autoCorrect|enterKeyHint)=/g,
         (_, attr) => ` ${attr.toLowerCase()}=`,
       );
-  let snippet = pretty(data[name] ? pivoted(clean(markup), clean(data[name])) : clean(markup));
+  let base = clean(markup);
+  // Generated columns: the runtime builds the columns and rows from this table.
+  if (tables[name]) {
+    const escapeText = (text) =>
+      String(text ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;");
+    const fields = [...new Set(tables[name].flatMap((row) => Object.keys(row)))];
+    const cells = (tag, values) => values.map((v) => `<${tag}>${escapeText(v)}</${tag}>`).join("");
+    const table = `<table data-ok-data-grid-data><thead><tr>${cells("th", fields)}</tr></thead><tbody>${tables[
+      name
+    ]
+      .map(
+        (row) =>
+          `<tr>${cells(
+            "td",
+            fields.map((f) => row[f]),
+          )}</tr>`,
+      )
+      .join("")}</tbody></table>`;
+    const end = base.lastIndexOf("</div>");
+    base = `${base.slice(0, end)}${table}${base.slice(end)}`;
+  }
+  let snippet = pretty(data[name] ? pivoted(base, clean(data[name])) : base);
   // HTML triggers: toolbar buttons that open a popover or a menu name it (the runtime opens the
   // column menu itself).
   snippet = snippet.replace(

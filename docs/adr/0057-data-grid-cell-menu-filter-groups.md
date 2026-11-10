@@ -1,13 +1,13 @@
-# ADR-0057: Data grid cell menu and nested filter groups
+# ADR-0057: Data grid cell menu, nested filter groups and generated columns
 
 **Status:** Accepted (2026-11-10, auto-approved under the roadmap's autorun). Extends ADR-0020 /
 0021 (data grid) and ADR-0055 (range charts); builds on the Menu's submenus (roadmap 4.5) and the
 Popover's `anchorPosition` (4.7). Nothing is superseded.
 
 ## Context
-The owner decided that ApexGrid must be complete in Owlky (roadmap 4.18.13). ApexGrid (and AG
+The owner decided that ApexGrid must be complete in Owlky (roadmap 4.18.13–14). ApexGrid (and AG
 Grid) have a context menu on cells and an advanced filter builder (nested AND / OR groups that save
-as JSON). MUI X has neither:
+as JSON); ApexGrid's `autoGenerate` builds the columns from the data. MUI X has none of the three:
 its filter model is one flat list of items with one `logicOperator`, and a cell menu is left to
 `slotProps.cell.onContextMenu`. Every existing snippet must stay byte-identical, so new markup can't
 appear in grids that don't ask for it.
@@ -54,6 +54,18 @@ appear in grids that don't ask for it.
    keeps the panel as the state (as before): the runtime reads the whole tree, builds groups from
    copies of the panel's first row and buttons, and renames ids after every change. Every control
    is native (Tab, Space, Enter); groups are named for screen readers.
+
+6. **Generated columns (roadmap 4.18.14, ApexGrid `autoGenerate`).** Core `gridAutoColumns` makes one
+   column per field of the first 200 rows, typed by `gridInferColumnType` (number, boolean, date,
+   date time, string) and named by `gridHeaderName`; they share the width (`flex: 1`, `minWidth:
+   120`). React: `columns` becomes optional; left out (or empty with `autoGenerate`) the grid
+   generates and writes `data-ok-auto-generate`. HTML grids are their markup, so the data comes the
+   way the Chart's and the Gantt's do: a `table[data-ok-data-grid-data]` the runtime reads as text
+   (`fromText`) at setup, before anything reads the columns, building headers, rows, a row template
+   and the panels' lists with DOM methods in React's markup, then removing the table. The story's
+   HTML is that empty grid plus the table, so pixel and DOM parity test the generation itself. Late
+   data (fetched JSON) isn't generated in HTML: the columns are read once (`setRows` fills
+   generated columns).
 
 ## Consequences
 - The menu works by keyboard (WCAG 2.1.1) and offers pointer-free paths to copy, paste, export,

@@ -79,6 +79,7 @@ import {
   gridAggregationFunctionsFor,
   gridAlign,
   gridAriaSort,
+  gridAutoColumns,
   gridAutoPageSize,
   gridCanMoveColumn,
   gridCellEdges,
@@ -515,8 +516,17 @@ export interface DataGridProps<R>
   extends Omit<HTMLAttributes<HTMLDivElement>, "children" | "onChange" | "contextMenu"> {
   /** The rows: one object per row. */
   rows: readonly R[];
-  /** The columns: field, header, type, width and how cells render. */
-  columns: readonly GridColDef<R>[];
+  /**
+   * The columns: field, header, type, width and how cells render. Left out (or empty with
+   * `autoGenerate`): one column per field of the rows, typed from their values.
+   */
+  columns?: readonly GridColDef<R>[] | undefined;
+  /**
+   * Generates the columns from the rows when `columns` is empty: one per field, typed number,
+   * boolean, date, date time or string from the values, headers from the field names. Leaving
+   * `columns` out does the same.
+   */
+  autoGenerate?: boolean | undefined;
   /** Returns a row's id. Default `row.id`. */
   getRowId?: ((row: R) => string | number) | undefined;
   checkboxSelection?: boolean | undefined;
@@ -1219,7 +1229,8 @@ type Panel = "columns" | "filters" | "density" | "export" | "pivot" | "charts" |
 function DataGridInner<R>(
   {
     rows,
-    columns: columnsProp,
+    columns: columnsGiven,
+    autoGenerate,
     getRowId = (row: R) => (row as { id: string | number }).id,
     checkboxSelection: checkboxSelectionProp,
     rowSelection = true,
@@ -1392,6 +1403,15 @@ function DataGridInner<R>(
   }: DataGridProps<R>,
   ref: Ref<HTMLDivElement>,
 ) {
+  // No columns given: generated from the rows' fields (ApexGrid `autoGenerate`).
+  const autoColumns = !columnsGiven?.length && (autoGenerate || columnsGiven === undefined);
+  const columnsProp = useMemo(
+    () =>
+      autoColumns
+        ? (gridAutoColumns(rows) as GridColDef<R>[])
+        : (columnsGiven as readonly GridColDef<R>[]),
+    [autoColumns, columnsGiven, rows],
+  );
   // `label` names the grid (MUI X: always its `aria-label`).
   const ariaLabel = label ?? ariaLabelProp;
   // `rowSelection={false}`: no selection at all (the checkbox column goes too).
@@ -3139,15 +3159,14 @@ function DataGridInner<R>(
   };
   /** Runs a cell menu item on the cell it opened on (the focus goes back to that cell first). */
   const runCellMenu = (action: string) => {
-    if (!cellMenu) return;
-    const { id: rowId, field } = cellMenu;
+    // Items run only while the menu is open on a cell.
+    const { id: rowId, field } = cellMenu as NonNullable<typeof cellMenu>;
     const cell = gridRef.current?.querySelector<HTMLElement>(
       `[data-ok-row-id="${CSS.escape(rowId)}"] > [data-ok-field="${CSS.escape(field)}"]`,
     );
     cell?.focus({ preventScroll: true });
     if (action === "copy") {
-      const text = clipboard.current.copyText();
-      if (text !== null) void clipboardApi.current?.copy(text);
+      void clipboardApi.current?.copy(clipboard.current.copyText() ?? "");
     } else if (action === "paste")
       void clipboardApi.current?.paste().then((pasted) => {
         if (!pasted) setAnnouncement(labels.contextMenuPasteRefused);
@@ -4732,7 +4751,7 @@ function DataGridInner<R>(
             disabled={item.disabled}
             onClick={() => {
               runCellMenu("");
-              if (menuParams) item.onClick?.(menuParams);
+              item.onClick?.(menuParams as GridContextMenuParams<R>);
             }}
           >
             {item.label}
@@ -5533,6 +5552,7 @@ function DataGridInner<R>(
         autoPageSize,
         contextMenu,
         filterGroups,
+        autoGenerate: autoColumns,
       })}
       {...(sortingOrder ? { "data-ok-sorting-order": JSON.stringify(sortingOrder) } : {})}
       {...(rowSelection ? {} : { "data-ok-row-selection": "false" })}
