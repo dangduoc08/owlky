@@ -183,6 +183,35 @@ const teamColumns: GridColDef<TeamTask>[] = [
   { field: "due", headerName: "Due", width: 130, disableExport: true },
 ];
 
+/* A small work breakdown for the selection story (story data). */
+export interface WorkItem {
+  id: string;
+  path: string[];
+  name: string;
+  points: number;
+}
+
+export const WORK: WorkItem[] = [
+  { id: "w-design", path: ["Design"], name: "Design", points: 13 },
+  { id: "w-icons", path: ["Design", "Icons"], name: "Icons", points: 5 },
+  { id: "w-colors", path: ["Design", "Colors"], name: "Colors", points: 8 },
+  { id: "w-docs", path: ["Docs"], name: "Docs", points: 5 },
+  { id: "w-guide", path: ["Docs", "Guide"], name: "Guide", points: 3 },
+  { id: "w-api", path: ["Docs", "API"], name: "API", points: 2 },
+];
+
+/* Team tasks grouped by team. */
+const groupedColumns: GridColDef<TeamTask>[] = [
+  { field: "task", headerName: "Task", flex: 1, minWidth: 160 },
+  { field: "team", headerName: "Team", width: 120 },
+  { field: "points", headerName: "Points", type: "number", width: 110 },
+];
+
+const workColumns: GridColDef<WorkItem>[] = [
+  { field: "name", headerName: "Name", flex: 1, minWidth: 160 },
+  { field: "points", headerName: "Points", type: "number", width: 110 },
+];
+
 /* Read-only issues for the footer, layout and selection stories. */
 const plainColumns: GridColDef<Issue>[] = [
   { field: "title", headerName: "Title", flex: 1, minWidth: 180 },
@@ -283,6 +312,45 @@ export const moreStories: Record<string, ReactGroup[]> = {
       ),
     },
   ],
+  selection: [
+    {
+      title: "Tree data",
+      content: (
+        // Selecting a parent selects its children; selecting every child selects the parent.
+        <DataGrid
+          id="grid-selection-tree"
+          aria-label="Work breakdown"
+          className="sb-grid-wide"
+          rows={WORK}
+          columns={workColumns}
+          treeData
+          getTreeDataPath={(row) => row.path}
+          defaultGroupingExpansionDepth={-1}
+          checkboxSelection
+          checkboxColDef={{ width: 60 }}
+          hideFooter
+        />
+      ),
+    },
+    {
+      title: "Row groups",
+      content: (
+        // A group's checkbox selects its tasks; only the descendants follow (no parents).
+        <DataGrid
+          id="grid-selection-groups"
+          aria-label="Team tasks"
+          className="sb-grid-wide"
+          rows={TEAM_TASKS}
+          columns={groupedColumns}
+          initialState={{ rowGrouping: { model: ["team"] } }}
+          defaultGroupingExpansionDepth={-1}
+          checkboxSelection
+          rowSelectionPropagation={{ descendants: true, parents: false }}
+          hideFooter
+        />
+      ),
+    },
+  ],
   dimensions: [
     {
       title: "Header heights, borders and row spacing",
@@ -336,6 +404,10 @@ export const MORE_FILES = {
   history: [["Undo and redo", "group"]],
   footer: [["Footer, label and Tab navigation", "group"]],
   columns: [["Column options", "group"]],
+  selection: [
+    ["Tree data", "tree"],
+    ["Row groups", "groups"],
+  ],
   dimensions: [
     ["Header heights, borders and row spacing", "borders"],
     ["Page size from the height", "pages"],

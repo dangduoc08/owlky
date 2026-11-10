@@ -22,6 +22,8 @@ import lazyGroup from "../../../../../packages/html/src/components/data-grid/exa
 import modesGroup from "../../../../../packages/html/src/components/data-grid/examples/modes-group.html?raw";
 import pivotDerived from "../../../../../packages/html/src/components/data-grid/examples/pivot-derived.html?raw";
 import pivotGroup from "../../../../../packages/html/src/components/data-grid/examples/pivot-group.html?raw";
+import selectionGroups from "../../../../../packages/html/src/components/data-grid/examples/selection-groups.html?raw";
+import selectionTree from "../../../../../packages/html/src/components/data-grid/examples/selection-tree.html?raw";
 import serverAggregation from "../../../../../packages/html/src/components/data-grid/examples/server-aggregation-group.html?raw";
 import serverGroup from "../../../../../packages/html/src/components/data-grid/examples/server-group.html?raw";
 import sortingGroup from "../../../../../packages/html/src/components/data-grid/examples/sorting-group.html?raw";
@@ -1605,6 +1607,42 @@ export function Issues() {
       hideFooterPagination
       // Tab moves through the headers and the cells
       tabNavigation="all"
+    />
+  );
+}`,
+  },
+  {
+    id: "selection-propagation",
+    title: "Select parents and children together",
+    body: 'With tree data or grouped rows and `checkboxSelection`, a selection reaches related rows. Selecting a parent selects its children, and selecting all children selects the parent. A parent with only some selected children shows a mixed checkbox. Each group row of grouped rows gets a checkbox that selects its rows. Group rows never enter the selection model: their checkbox shows the state of their rows. `rowSelectionPropagation` turns each direction on or off: `{ descendants: true, parents: false }` keeps parents out. Only rows that pass the filters follow. `checkboxColDef` sets the checkbox column\'s `width`, `headerClassName` and `cellClassName`. `rowSelection={false}` turns selection off, so no checkboxes show and clicks select nothing. In HTML, write the propagation as JSON in `data-ok-row-selection-propagation` and `data-ok-row-selection="false"` to turn selection off.',
+    html: `${gridOf(selectionTree)}
+${gridOf(selectionGroups)}`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+const work = [
+  { id: "design", path: ["Design"], name: "Design", points: 13 },
+  { id: "icons", path: ["Design", "Icons"], name: "Icons", points: 5 },
+  { id: "colors", path: ["Design", "Colors"], name: "Colors", points: 8 },
+];
+
+const columns: GridColDef<(typeof work)[number]>[] = [
+  { field: "name", headerName: "Name", flex: 1 },
+  { field: "points", headerName: "Points", type: "number" },
+];
+
+export function WorkBreakdown() {
+  return (
+    <DataGrid
+      aria-label="Work breakdown"
+      rows={work}
+      columns={columns}
+      treeData
+      getTreeDataPath={(row) => row.path}
+      defaultGroupingExpansionDepth={-1}
+      checkboxSelection
+      // Children follow their parent; parents stay as they are
+      rowSelectionPropagation={{ descendants: true, parents: false }}
+      checkboxColDef={{ width: 60 }}
     />
   );
 }`,

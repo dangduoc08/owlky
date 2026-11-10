@@ -270,3 +270,74 @@ describe("data grid column options", () => {
     instance.setPastedValueParser("points", null);
   });
 });
+
+describe("data grid selection options", () => {
+  const box = (host: Element, id: string) =>
+    host.querySelector(
+      `[data-ok-row-id="${id}"] [data-ok-data-grid-checkbox] input`,
+    ) as HTMLInputElement;
+
+  it("tree data: a parent selects its children; all children select the parent; mixed parents", async () => {
+    const { host, root, instance } = setup(snippet("selection-tree"));
+    const models: string[][] = [];
+    root.addEventListener("ok:data-grid:selection", (event) =>
+      models.push((event as CustomEvent<{ model: string[] }>).detail.model),
+    );
+    const head = host.querySelector(
+      '[role="columnheader"][data-ok-field="__check__"]',
+    ) as HTMLElement;
+    expect(head.getAttribute("data-ok-width")).toBe("60");
+    expect(
+      (host.querySelector("[data-ok-data-grid-main]") as HTMLElement).style
+        .getPropertyValue("--_ok-data-grid-columns")
+        .startsWith("60px"),
+    ).toBe(true);
+    await userEvent.click(box(host, "w-design"));
+    expect(instance.selection).toEqual(["w-design", "w-icons", "w-colors"]);
+    await userEvent.click(box(host, "w-icons"));
+    expect(instance.selection).toEqual(["w-colors"]);
+    expect(box(host, "w-design").indeterminate).toBe(true);
+    expect(
+      box(host, "w-design").closest("[data-ok-checkbox]")?.hasAttribute("data-ok-indeterminate"),
+    ).toBe(true);
+    await userEvent.click(box(host, "w-icons"));
+    expect(instance.selection).toEqual(["w-colors", "w-icons", "w-design"]);
+    expect(box(host, "w-design").checked).toBe(true);
+    expect(models).toHaveLength(3);
+    await expectNoAxeViolations(host);
+  });
+
+  it("row groups: a group's checkbox (built like React's) selects its rows, parents stay out", async () => {
+    const { host, instance } = setup(snippet("selection-groups"));
+    const group = () => box(host, "auto-generated-row-team/Docs");
+    expect(group()).not.toBeNull();
+    await userEvent.click(group());
+    expect(instance.selection).toEqual(["tt-3", "tt-4"]);
+    expect(group().checked).toBe(true);
+    await userEvent.click(box(host, "tt-4"));
+    expect(group().indeterminate).toBe(true);
+    await userEvent.click(group());
+    expect(instance.selection).toEqual(["tt-3", "tt-4"]);
+    await userEvent.click(group());
+    expect(instance.selection).toEqual([]);
+    await expectNoAxeViolations(host);
+  });
+
+  it("data-ok-row-selection=false: no selection from clicks or Space", async () => {
+    const markup = snippet("basic-group").replace(
+      "data-ok-data-grid ",
+      'data-ok-data-grid data-ok-row-selection="false" ',
+    );
+    const { host, instance } = setup(markup);
+    const cell = host.querySelector(
+      '[data-ok-data-grid-body] [role="row"] [data-ok-field="firstName"]',
+    ) as HTMLElement;
+    await userEvent.click(cell);
+    expect(instance.selection).toEqual([]);
+    // Checkboxes left in the markup do nothing either.
+    await userEvent.click(
+      cell.closest('[role="row"]')?.querySelector('input[type="checkbox"]') as HTMLInputElement,
+    );
+    expect(instance.selection).toEqual([]);
+  });
+});

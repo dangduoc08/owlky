@@ -683,6 +683,87 @@ export function toggleGridRows(selected: readonly string[], ids: readonly string
   return [...selected, ...ids.filter((id) => !selected.includes(id))];
 }
 
+/** Whether selecting a row also selects related rows (MUI X `rowSelectionPropagation`). */
+export interface GridRowSelectionPropagation {
+  /** Selecting every selectable descendant of a parent selects the parent; clearing one clears it. */
+  parents?: boolean | undefined;
+  /** Selecting a parent (or a group) selects its descendants; clearing it clears them. */
+  descendants?: boolean | undefined;
+}
+
+/** The rows of a tree (tree data or row groups) as selection propagation sees them. */
+export interface GridSelectionTree {
+  /** The shown (filtered) children of a row or group. */
+  children(id: string): readonly string[];
+  /** A row's parent row or group, or `null`. */
+  parent(id: string): string | null;
+  /** Whether the id goes in the selection model: selectable data rows (not group rows). */
+  selectable(id: string): boolean;
+}
+
+/** Every shown descendant of a row or group, depth first. */
+function gridDescendants(tree: GridSelectionTree, id: string): string[] {
+  const out: string[] = [];
+  const walk = (parent: string) => {
+    for (const child of tree.children(parent)) {
+      out.push(child);
+      walk(child);
+    }
+  };
+  walk(id);
+  return out;
+}
+
+/** The shown descendants of a row or group that can be selected (group rows never can). */
+export const gridSelectableDescendants = (tree: GridSelectionTree, id: string): string[] =>
+  gridDescendants(tree, id).filter(tree.selectable);
+
+/**
+ * How much of a row's or group's selectable descendants is selected: a group's checkbox and the
+ * mixed state of a parent row (`none` without any).
+ */
+export function gridDescendantSelection(
+  selected: readonly string[],
+  id: string,
+  tree: GridSelectionTree,
+): "all" | "some" | "none" {
+  const ids = gridSelectableDescendants(tree, id);
+  return ids.length ? gridSelectAllState(ids, selected) : "none";
+}
+
+/**
+ * The selection after checking (`checked`) or clearing a row or group, with propagation: its
+ * descendants follow it (`descendants`); ancestors whose selectable descendants are all selected
+ * join, and ancestors of a cleared row leave (`parents`). Group rows never enter the model.
+ */
+export function propagateGridSelection(
+  selected: readonly string[],
+  id: string,
+  checked: boolean,
+  tree: GridSelectionTree,
+  propagation: GridRowSelectionPropagation,
+): string[] {
+  const next = new Set(selected);
+  const set = (rowId: string) => {
+    if (!tree.selectable(rowId)) return;
+    if (checked) next.add(rowId);
+    else next.delete(rowId);
+  };
+  set(id);
+  if (propagation.descendants) for (const rowId of gridDescendants(tree, id)) set(rowId);
+  if (propagation.parents)
+    for (let parent = tree.parent(id); parent !== null; parent = tree.parent(parent)) {
+      if (!tree.selectable(parent)) continue;
+      const below = gridSelectableDescendants(tree, parent);
+      if (checked && below.length && below.every((rowId) => next.has(rowId))) next.add(parent);
+      if (!checked) next.delete(parent);
+    }
+  return [
+    ...selected.filter((rowId) => next.has(rowId)),
+    ...[...next].filter((rowId) => !selected.includes(rowId)),
+  ];
+}
+
 /**
  * One CSV field: quoted when needed, and neutralized against spreadsheet formulas (a leading `=`,
  * `+`, `-`, `@`, tab or carriage return gets a `'`): exported data may come from users.

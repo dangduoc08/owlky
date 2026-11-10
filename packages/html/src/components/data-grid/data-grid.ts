@@ -56,7 +56,9 @@ import {
   type GridPivotSection,
   type GridPrintLayout,
   type GridRowModesModel,
+  type GridRowSelectionPropagation,
   type GridRowWindow,
+  type GridSelectionTree,
   type GridSortDirection,
   type GridSortModel,
   type GridState,
@@ -80,6 +82,7 @@ import {
   gridDefaultLabels,
   gridDensities,
   gridDensityFactor,
+  gridDescendantSelection,
   gridDirectedComparator,
   gridEditInputType,
   gridEditModes,
@@ -117,6 +120,7 @@ import {
   gridRowWindow,
   gridRowWindowOf,
   gridSelectAllState,
+  gridSelectableDescendants,
   gridSelectedBlock,
   gridSelectionStats,
   gridStackableChartTypes,
@@ -149,7 +153,9 @@ import {
   pinGridColumn,
   prepareGridPrint,
   printGridContent,
+  propagateGridSelection,
   pruneGridSelection,
+  readBehavior,
   readNumber,
   readStyle,
   renderChart,
@@ -457,6 +463,7 @@ const {
   hideFooterPagination,
   hideFooterRowCount,
   hideFooterSelectedRowCount,
+  rowSelection: rowSelectionOption,
   columnHeaderHeight,
   columnGroupHeaderHeight,
   headerFilterHeight,
@@ -587,7 +594,20 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     ];
     const id = element.id;
     const byId = (suffix: string) => (id ? document.getElementById(`${id}-${suffix}`) : null);
-    const checkbox = element.hasAttribute("data-ok-checkbox-selection");
+    // `data-ok-row-selection="false"` turns selection off (React leaves the checkboxes out too).
+    const checkbox =
+      element.hasAttribute("data-ok-checkbox-selection") &&
+      readBehavior(element, rowSelectionOption);
+    // Selection propagation (tree data, row groups): `data-ok-row-selection-propagation` JSON.
+    const propagation = (): GridRowSelectionPropagation => {
+      const given = parseJson(element.getAttribute("data-ok-row-selection-propagation"));
+      const own = given && typeof given === "object" ? (given as Record<string, unknown>) : {};
+      return { parents: own["parents"] !== false, descendants: own["descendants"] !== false };
+    };
+    /** The shown tree (every level open) while selection propagates, from the last apply. */
+    let selectionTree: GridSelectionTree | null = null;
+    /** The ids in that tree (the filtered rows and their groups). */
+    let selectionIds = new Set<string>();
     const readSpecials = () =>
       [...headerRow.querySelectorAll<HTMLElement>('[role="columnheader"][data-ok-field]')]
         .map((header) => header.getAttribute("data-ok-field") as string)
@@ -711,8 +731,50 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       (element.hasAttribute(checkboxSelectionVisibleOnly.attr) ? pageList : filtered).filter(
         selectable,
       );
-    const toggle = (row: HTMLElement) => {
-      if (selectable(row)) select(selectGridRow(selection, idOf(row), multiple()));
+    const toggle = (row: HTMLElement, box = false) => {
+      if (!checkbox) return;
+      const rowId = idOf(row);
+      const group = row.hasAttribute("data-ok-generated");
+      if (selectionTree && (box || !group) && selectionIds.has(rowId)) {
+        if (!group && !selectionTree.selectable(rowId)) return;
+        const checked = group
+          ? gridDescendantSelection(selection, rowId, selectionTree) !== "all"
+          : !selection.includes(rowId);
+        select(propagateGridSelection(selection, rowId, checked, selectionTree, propagation()));
+        return;
+      }
+      if (selectable(row)) select(selectGridRow(selection, rowId, multiple()));
+    };
+    /** Builds the selection tree of the filtered rows (`items`: data rows and group rows). */
+    const buildSelectionTree = (
+      items: readonly HTMLElement[],
+      parentOf: (row: HTMLElement) => string | null,
+      keep: ((row: HTMLElement) => boolean) | undefined,
+    ) => {
+      const flags = propagation();
+      if (!checkbox || !multiple() || source || (!flags.parents && !flags.descendants)) {
+        selectionTree = null;
+        return;
+      }
+      const nodes = gridTreeRows(items, { idOf, parentOf, expanded: () => true, keep });
+      const parents = new Map<string, string | null>();
+      const kids = new Map<string, string[]>();
+      const byId = new Map<string, HTMLElement>();
+      for (const node of nodes) {
+        parents.set(node.id, node.parentId);
+        byId.set(node.id, node.row);
+        if (node.parentId !== null)
+          kids.set(node.parentId, [...(kids.get(node.parentId) ?? []), node.id]);
+      }
+      selectionIds = new Set(parents.keys());
+      selectionTree = {
+        children: (rowId) => kids.get(rowId) ?? [],
+        parent: (rowId) => parents.get(rowId) ?? null,
+        selectable: (rowId) => {
+          const row = byId.get(rowId);
+          return !!row && selectable(row);
+        },
+      };
     };
     const filterOptions = () => ({
       ignoreDiacritics: element.hasAttribute(ignoreDiacritics.attr),
@@ -1501,6 +1563,11 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         }
         sorted = tree.map((node) => node.row);
         filtered = sorted;
+        buildSelectionTree(
+          all,
+          (row) => row.getAttribute("data-ok-parent"),
+          pass ? (row) => pass.has(row) : undefined,
+        );
       } else if (pivot || grouping().length) {
         // Row grouping (and the pivot, which shows its groups only).
         const fields = grouping();
@@ -1552,6 +1619,13 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
           firstPlace.set(node.id, Math.min(...leaves.map((r) => place?.get(r) ?? 0)));
         }
         const generatedRow = (row: HTMLElement) => row.hasAttribute("data-ok-generated");
+        if (pivot) selectionTree = null;
+        else
+          buildSelectionTree(
+            items,
+            (row) => nodes.parentOf.get(idOf(row)) ?? null,
+            pass ? (row) => !generatedRow(row) && pass.has(row) : undefined,
+          );
         const depth = readNumber(element, defaultGroupingExpansionDepth) as number;
         const tree = gridTreeRows(items, {
           idOf,
@@ -2336,17 +2410,60 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     });
 
     /** Selection marks: rows, their checkboxes and "select all". */
+    /** Checked, mixed (some descendants selected) or clear, as React draws it. */
+    const markBox = (box: HTMLInputElement, state: "all" | "some" | "none") => {
+      box.checked = state === "all";
+      box.indeterminate = state === "some";
+      (box.closest("[data-ok-checkbox]") as Element).toggleAttribute(
+        "data-ok-indeterminate",
+        state === "some",
+      );
+    };
     const mark = () => {
       syncFooter();
       if (!checkbox) return;
+      const tree = selectionTree;
       for (const row of rows()) {
-        const on = selection.includes(idOf(row));
+        const rowId = idOf(row);
+        const on = selection.includes(rowId);
         row.setAttribute("aria-selected", String(on));
         const box = row.querySelector(
           '[data-ok-data-grid-checkbox] input[type="checkbox"]',
         ) as HTMLInputElement;
-        box.checked = on;
+        markBox(
+          box,
+          on
+            ? "all"
+            : tree && gridDescendantSelection(selection, rowId, tree) !== "none"
+              ? "some"
+              : "none",
+        );
         box.disabled = !selectable(row);
+      }
+      // Group rows: a checkbox (a copy of a row's) while descendants follow their group.
+      const template = rows()[0]?.querySelector<HTMLElement>(
+        ":scope > [data-ok-data-grid-checkbox] > [data-ok-checkbox]",
+      );
+      for (const group of groupEls.values()) {
+        const cell = group.querySelector<HTMLElement>(
+          `:scope > [data-ok-field="${GRID_CHECKBOX_FIELD}"]`,
+        );
+        if (!cell) continue;
+        const want = !!tree && !!propagation().descendants && !!template;
+        let box = cell.querySelector<HTMLInputElement>('input[type="checkbox"]');
+        if (!want) {
+          cell.removeAttribute("data-ok-data-grid-checkbox");
+          cell.replaceChildren();
+          continue;
+        }
+        if (!box) {
+          cell.setAttribute("data-ok-data-grid-checkbox", "");
+          cell.replaceChildren((template as HTMLElement).cloneNode(true));
+          box = cell.querySelector<HTMLInputElement>('input[type="checkbox"]') as HTMLInputElement;
+        }
+        const groupId = idOf(group);
+        markBox(box, gridDescendantSelection(selection, groupId, tree as GridSelectionTree));
+        box.disabled = !gridSelectableDescendants(tree as GridSelectionTree, groupId).length;
       }
       const all = headerRow.querySelector<HTMLInputElement>(
         '[data-ok-data-grid-checkbox] input[type="checkbox"]',
@@ -4243,9 +4360,10 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         const box = (event.target as Element).closest(
           '[data-ok-data-grid-checkbox] input[type="checkbox"]',
         );
-        if (!box) return;
+        // Selection off (`data-ok-row-selection="false"`): checkboxes left in the markup do nothing.
+        if (!box || !checkbox) return;
         const row = box.closest<HTMLElement>(ROW);
-        if (row) toggle(row);
+        if (row) toggle(row, true);
         else select(toggleGridRows(selection, allRows().map(idOf)));
         mark();
       },

@@ -3487,6 +3487,11 @@ export const dataGridOptions = defineOptions("data-grid", "data-ok-data-grid", {
     "data-ok-auto-page-size",
     "The page size fits the grid's height (no rows per page choice). The grid needs a height.",
   ),
+  rowSelection: behavior(
+    "data-ok-row-selection",
+    true,
+    'Rows can be selected (`"false"`: no selection, no checkboxes, no `aria-selected`).',
+  ),
 });
 
 export interface DataGridAnatomyOptions {
@@ -3498,6 +3503,7 @@ export interface DataGridAnatomyOptions {
   rowSpacingType?: "margin" | "border" | undefined;
   autoHeight?: boolean | undefined;
   autoPageSize?: boolean | undefined;
+  rowSelection?: boolean | undefined;
   hideFooterPagination?: boolean | undefined;
   hideFooterRowCount?: boolean | undefined;
   hideFooterSelectedRowCount?: boolean | undefined;

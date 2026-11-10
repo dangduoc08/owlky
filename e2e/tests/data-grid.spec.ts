@@ -582,6 +582,30 @@ for (const impl of implementations) {
       await expect(page.getByRole("columnheader", { name: /^Title/ })).toBeFocused();
     });
 
+    test("selection propagation: parents, children and group checkboxes", async ({ page }) => {
+      await openStory(page, storyId(impl, "datagrid", "selection-propagation"));
+      const tree = page.getByRole("treegrid", { name: "Work breakdown" });
+      const box = (scope: typeof tree, id: string) =>
+        scope.locator(`[data-ok-row-id="${id}"] [data-ok-data-grid-checkbox] input`);
+      await box(tree, "w-design").check();
+      await expect(box(tree, "w-icons")).toBeChecked();
+      await expect(box(tree, "w-colors")).toBeChecked();
+      await box(tree, "w-icons").uncheck();
+      await expect(box(tree, "w-design")).not.toBeChecked();
+      expect(
+        await box(tree, "w-design").evaluate((input) => (input as HTMLInputElement).indeterminate),
+      ).toBe(true);
+      // Keyboard: Space on the focused checkbox selects again.
+      await box(tree, "w-icons").focus();
+      await page.keyboard.press("Space");
+      await expect(box(tree, "w-design")).toBeChecked();
+      const groups = page.getByRole("treegrid", { name: "Team tasks" });
+      await box(groups, "auto-generated-row-team/Docs").check();
+      await expect(box(groups, "tt-3")).toBeChecked();
+      await expect(box(groups, "tt-4")).toBeChecked();
+      await expect(box(groups, "tt-1")).not.toBeChecked();
+    });
+
     test("column options: row headers, merged owners, a fixed first column", async ({ page }) => {
       await openStory(page, storyId(impl, "datagrid", "column-options"));
       const grid = page.getByRole("grid", { name: "Team tasks" });

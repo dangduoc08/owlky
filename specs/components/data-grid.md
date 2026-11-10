@@ -209,6 +209,7 @@ Root: `data-ok-data-grid`. Unknown values fall back to the default.
 | `rowSpacingType` | `data-ok-row-spacing-type="…"` | style | `margin` `border` | — | `getRowSpacing` space outside each row (`margin`) or inside it, under its background (`border`). |
 | `autoHeight` | `data-ok-auto-height` | flag | boolean | off | The grid grows with its rows: no scroll area, so no virtualization. |
 | `autoPageSize` | `data-ok-auto-page-size` | flag | boolean | off | The page size fits the grid's height (no rows per page choice). The grid needs a height. |
+| `rowSelection` | `data-ok-row-selection="false"` turns it off | behavior | boolean | on | Rows can be selected (`"false"`: no selection, no checkboxes, no `aria-selected`). |
 <!-- /options:data-grid -->
 
 React props (MUI X names): `rows`, `columns` (`GridColDef`: `field`, `headerName`, `type`
@@ -286,7 +287,8 @@ row grouping, aggregation, pivot, cell selection and chart setters. Batch E (roa
 `columnGroupHeaderHeight`, `headerFilterHeight`, `showCellVerticalBorder`, `showColumnVerticalBorder`,
 `rowSpacingType`, `autoHeight`, `autoPageSize`; (4.18.51) column `cellClassName`, `headerClassName`,
 `hideSortIcons`, `disableColumnMenu`, `disableReorder`, `disableExport`, `pinnable`, `rowSpanValueGetter`,
-`pastedValueParser`, `rowHeader`, `display`. Beyond MUI X (4.18.11,
+`pastedValueParser`, `rowHeader`, `display`; (4.18.52) `rowSelection`, `rowSelectionPropagation`,
+`checkboxColDef`. Beyond MUI X (4.18.11,
 ApexGrid / spreadsheets): `statusBar` with `cellSelection`, locale keys `statusBarCount`,
 `statusBarSum`, `statusBarAvg`, `statusBarMin`, `statusBarMax`. Beyond MUI X: Alt + Up / Down on a reorder handle (WCAG 2.5.7). Beyond MUI X (accessibility): Alt + Left / Right resizes, column menu
 Move left / Move right. Renamed: `rowSelectionModel` is an id array (MUI v8:
@@ -497,6 +499,18 @@ with DOM methods and hides the TablePagination while `data-ok-hide-footer-pagina
 `tabNavigation`: Tab / Shift + Tab move the tab stop (the one `tabindex=0`) to the next / previous
 cell in reading order within the mode's cells, and leave the grid past the ends (not prevented).
 
+Selection options (4.18.52): `rowSelection={false}` renders no checkbox column and no
+`aria-selected`; clicks, Space and Ctrl / Cmd + A select nothing (HTML: checkboxes left in the
+markup do nothing). Propagation (tree data and row grouping, client side, `checkboxSelection`,
+several rows): core `propagateGridSelection(selected, id, checked, tree, propagation)` over the
+filtered tree (every level, open or not: core `GridSelectionTree`); `descendants`: checking or
+clearing a row or a group does the same to its shown, selectable descendants; `parents`: an ancestor
+row joins once all its selectable descendants are selected and leaves when one is cleared. A
+parent row that isn't selected with some selected descendants shows a mixed checkbox
+(`data-ok-indeterminate`, core `gridDescendantSelection`); a group row's checkbox (HTML: a copy of
+a row's) is checked when all its rows are, mixed when some are. Behavior change: tree data parents
+now select their children by default (MUI X v8).
+
 Column options (4.18.51): a column with `hideSortIcons` still sorts (`aria-sort`) without the
 arrow; `disableColumnMenu` drops its menu button (and Ctrl + Enter); `disableReorder` keeps the
 column's index: its header doesn't drag (resizing still works), drops and Move left / Move right
@@ -618,7 +632,8 @@ the detailed record of what is kept.
 | Column def: `groupingValueGetter` | same | kept | value is `row[field]`; HTML: `data-ok-grouping-value` (React writes it) or `setGroupingValueGetter` |
 | Column def: `allowFormulas`, `chartable`, `examples` | — | not applicable | formulas and AI not proposed (roadmap 2.4 notes); `chartable` = every column of `chartModel` |
 | Selection: `checkboxSelection`, `rowSelectionModel` (id array), `disableRowSelectionOnClick`, `disableMultipleRowSelection`, `isRowSelectable`, `keepNonExistentRowsSelected`, `checkboxSelectionVisibleOnly` | same | kept | `rowSelectionModel` renamed shape (MUI v8 `{ type, ids }`) |
-| Selection: `rowSelection: false`, `rowSelectionPropagation` (groups / tree), `checkboxColDef`, `disableRowSelectionExcludeModel` | — | deferred | last one not applicable (id array model) |
+| Selection: `rowSelection: false`, `rowSelectionPropagation` (groups / tree), `checkboxColDef` | same | kept (4.18.52) | `rowSelection={false}` also drops the checkbox column; HTML `data-ok-row-selection="false"` (a behavior option). Propagation default `{ parents: true, descendants: true }` (MUI X v8), client side with several rows; group rows of row grouping get a checkbox with `descendants` (checked / mixed from their rows; group ids never enter the model); parents not selected with some selected descendants show mixed; HTML `data-ok-row-selection-propagation` (JSON). Not done: deselecting rows a new filter hides (MUI X). `checkboxColDef`: `width`, `headerName` (the header's label with single selection), `headerClassName`, `cellClassName`; HTML: the checkbox header's `data-ok-width` and class names in the markup |
+| Selection: `disableRowSelectionExcludeModel` | — | not applicable | id array model |
 | Sorting / filtering / quick filter: models + callbacks, `sortingMode`, `filterMode`, `disableColumnSorting`, `disableColumnFilter`, `disableMultipleColumnsSorting` / `-Filtering`, `quickFilter*`, `ignoreDiacritics` | same | kept | |
 | Filtering: `filterDebounceMs`, `columnFilterDebounceMs`, `disableChildrenFiltering`, `disableChildrenSorting` | — | deferred | |
 | Pagination: `pagination`, `paginationModel`, `paginationMode`, `pageSizeOptions`, `rowCount` | same | kept | |

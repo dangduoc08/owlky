@@ -1123,6 +1123,13 @@
       "description": "The page size fits the grid's height (no rows per page choice). The grid needs a height.",
       "kind": "flag",
       "name": "autoPageSize"
+     },
+     {
+      "attr": "data-ok-row-selection",
+      "default": true,
+      "description": "Rows can be selected (`\"false\"`: no selection, no checkboxes, no `aria-selected`).",
+      "kind": "behavior",
+      "name": "rowSelection"
      }
     ],
     "parts": [
@@ -1911,6 +1918,12 @@
       "value": "string"
      },
      {
+      "description": "Tree data and row groups: which related rows a selection reaches, as JSON (`{\"parents\":false,\"descendants\":true}`; default both). React writes it from `rowSelectionPropagation`.",
+      "kind": "value",
+      "name": "data-ok-row-selection-propagation",
+      "value": "string"
+     },
+     {
       "description": "On a cell: the value row spanning compares, instead of the cell's text (React writes it from `rowSpanValueGetter`).",
       "kind": "value",
       "name": "data-ok-row-span-value",
@@ -2044,6 +2057,11 @@
       "description": "A chart of the rows (or top-level groups) under the grid.",
       "name": "chartsIntegration",
       "type": "boolean"
+     },
+     {
+      "description": "The checkbox column (`checkboxSelection`): its width, header label and class names.",
+      "name": "checkboxColDef",
+      "type": "Pick<GridColDef<R>, \"cellClassName\" | \"headerClassName\" | \"headerName\" | \"width\">"
      },
      {
       "description": "A first column of checkboxes selects rows.",
@@ -2706,9 +2724,20 @@
       "type": "boolean"
      },
      {
+      "default": "true",
+      "description": "`false` turns row selection off: no checkboxes, clicks and keys don't select.",
+      "name": "rowSelection",
+      "type": "boolean"
+     },
+     {
       "description": "The selected row ids, controlled.",
       "name": "rowSelectionModel",
       "type": "readonly string[]"
+     },
+     {
+      "description": "Tree data and row grouping: selecting a parent or a group selects its shown descendants (`descendants`), and selecting all of them selects the parent (`parents`). Default both `true`. Not with a data source or one row at a time.",
+      "name": "rowSelectionPropagation",
+      "type": "GridRowSelectionPropagation"
      },
      {
       "description": "Where `getRowSpacing` puts its space: outside the row (`margin`, default) or inside it, under its background (`border`).",

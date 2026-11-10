@@ -54,7 +54,9 @@ import {
   type GridPivotModel,
   type GridPivotSection,
   type GridRowModesModel,
+  type GridRowSelectionPropagation,
   type GridRowWindow,
+  type GridSelectionTree,
   type GridSortDirection,
   type GridSortingOrder,
   type GridSortModel,
@@ -81,6 +83,7 @@ import {
   gridDefaultLabels,
   gridDensities,
   gridDensityFactor,
+  gridDescendantSelection,
   gridDirectedComparator,
   gridDisplayedRows,
   gridEditInputType,
@@ -120,6 +123,7 @@ import {
   gridRowWindow,
   gridRowWindowOf,
   gridSelectAllState,
+  gridSelectableDescendants,
   gridSelectedBlock,
   gridSelectionStats,
   gridStackableChartTypes,
@@ -151,6 +155,7 @@ import {
   pinGridColumn,
   prepareGridPrint,
   printGridContent,
+  propagateGridSelection,
   pruneGridSelection,
   sanitizeGridChartModels,
   sanitizeGridState,
@@ -472,6 +477,18 @@ export interface DataGridProps<R>
   /** Returns a row's id. Default `row.id`. */
   getRowId?: ((row: R) => string | number) | undefined;
   checkboxSelection?: boolean | undefined;
+  /** `false` turns row selection off: no checkboxes, clicks and keys don't select. Default `true`. */
+  rowSelection?: boolean | undefined;
+  /**
+   * Tree data and row grouping: selecting a parent or a group selects its shown descendants
+   * (`descendants`), and selecting all of them selects the parent (`parents`). Default both `true`.
+   * Not with a data source or one row at a time.
+   */
+  rowSelectionPropagation?: GridRowSelectionPropagation | undefined;
+  /** The checkbox column (`checkboxSelection`): its width, header label and class names. */
+  checkboxColDef?:
+    | Pick<GridColDef<R>, "width" | "headerName" | "headerClassName" | "cellClassName">
+    | undefined;
   disableRowSelectionOnClick?: boolean | undefined;
   /** The selected row ids, controlled. */
   rowSelectionModel?: readonly string[] | undefined;
@@ -1021,6 +1038,7 @@ const isoValue = (date: Date | null, type: GridColDef["type"]) =>
     : "";
 
 const NO_PIVOT: GridPivotModel = { rows: [], columns: [], values: [] };
+const DEFAULT_PROPAGATION: GridRowSelectionPropagation = { parents: true, descendants: true };
 
 type Panel = "columns" | "filters" | "density" | "export" | "pivot" | "charts" | null;
 
@@ -1029,7 +1047,10 @@ function DataGridInner<R>(
     rows,
     columns: columnsProp,
     getRowId = (row: R) => (row as { id: string | number }).id,
-    checkboxSelection,
+    checkboxSelection: checkboxSelectionProp,
+    rowSelection = true,
+    rowSelectionPropagation = DEFAULT_PROPAGATION,
+    checkboxColDef,
     disableRowSelectionOnClick,
     rowSelectionModel,
     onRowSelectionModelChange,
@@ -1196,6 +1217,8 @@ function DataGridInner<R>(
 ) {
   // `label` names the grid (MUI X: always its `aria-label`).
   const ariaLabel = label ?? ariaLabelProp;
+  // `rowSelection={false}`: no selection at all (the checkbox column goes too).
+  const checkboxSelection = !!checkboxSelectionProp && rowSelection;
   const labels = { ...gridDefaultLabels, ...localeText };
   const generated = useId();
   // Parts are named after the grid's id, so pages (and snippets) get readable ids.
@@ -1851,6 +1874,44 @@ function DataGridInner<R>(
   const rowOffset = server.page ? page * pagination.pageSize : 0;
   const multiple = !disableMultipleRowSelection;
   const selectable = (row: R) => isData(row) && (isRowSelectable?.({ id: idOf(row), row }) ?? true);
+  // Selection propagation (tree data, row groups; client side, several rows): the shown tree.
+  const selectionTree: GridSelectionTree | null = (() => {
+    if (!tree || !checkboxSelection || !multiple || dataSource) return null;
+    if (!rowSelectionPropagation.parents && !rowSelectionPropagation.descendants) return null;
+    const shownTree = tree;
+    const kids = new Map<string, string[]>();
+    for (const node of shownTree.values())
+      if (node.parentId !== null) {
+        const list = kids.get(node.parentId);
+        if (list) list.push(node.id);
+        else kids.set(node.parentId, [node.id]);
+      }
+    return {
+      children: (rowId) => kids.get(rowId) ?? [],
+      parent: (rowId) => shownTree.get(rowId)?.parentId ?? null,
+      selectable: (rowId) => {
+        const node = shownTree.get(rowId);
+        return !!node && !isGroup(node.row) && selectable(node.row);
+      },
+    };
+  })();
+  /** The checkbox column as a column (`checkboxColDef` class name functions get it). */
+  const checkboxColumn = {
+    field: GRID_CHECKBOX_FIELD,
+    headerName: checkboxColDef?.headerName ?? labels.checkboxSelectionHeaderName,
+    width: checkboxColDef?.width ?? GRID_CHECKBOX_WIDTH,
+  } as GridColDef<R>;
+  /** A row's checkbox: checked, mixed (some descendants) or clear; groups from their rows. */
+  const checkState = (row: R): "all" | "some" | "none" => {
+    const rowId = idOf(row);
+    if (selectionTree && isGroup(row)) {
+      return gridDescendantSelection(selection, rowId, selectionTree);
+    }
+    if (selection.includes(rowId)) return "all";
+    return selectionTree && gridDescendantSelection(selection, rowId, selectionTree) !== "none"
+      ? "some"
+      : "none";
+  };
   // Select all: the selectable rows of every page (or of this page only).
   const allIds = (
     checkboxSelectionVisibleOnly
@@ -1877,7 +1938,9 @@ function DataGridInner<R>(
   // Columns the grid adds before the others: reorder handle, checkbox, detail toggle, tree group.
   const specials = [
     ...(rowReordering ? [{ field: REORDER_FIELD, width: 50 }] : []),
-    ...(checkboxSelection ? [{ field: GRID_CHECKBOX_FIELD, width: GRID_CHECKBOX_WIDTH }] : []),
+    ...(checkboxSelection
+      ? [{ field: GRID_CHECKBOX_FIELD, width: checkboxColDef?.width ?? GRID_CHECKBOX_WIDTH }]
+      : []),
     ...(getDetailPanelContent ? [{ field: DETAIL_FIELD, width: 50 }] : []),
     ...(treeLike
       ? groupingColumns.map((field) => ({ field, width: groupingColDefOf(field).width ?? 200 }))
@@ -2312,7 +2375,19 @@ function DataGridInner<R>(
   };
   const toggleRow = useRef<(id: string) => void>(undefined as never);
   toggleRow.current = (rowId) => {
-    // Only rows with aria-selected (checkbox selection) reach here.
+    // Rows with aria-selected (checkbox selection) and group rows with a checkbox reach here.
+    const node = tree?.get(rowId);
+    if (selectionTree && node) {
+      const group = isGroup(node.row);
+      if (!group && !selectionTree.selectable(rowId)) return;
+      const checked = group
+        ? gridDescendantSelection(selection, rowId, selectionTree) !== "all"
+        : !selection.includes(rowId);
+      setSelection(
+        propagateGridSelection(selection, rowId, checked, selectionTree, rowSelectionPropagation),
+      );
+      return;
+    }
     const row = view.find((r) => idOf(r) === rowId);
     if (row && !selectable(row)) return;
     setSelection(selectGridRow(selection, rowId, multiple));
@@ -4509,7 +4584,17 @@ function DataGridInner<R>(
       hidden: listView || undefined,
       tabIndex: -1,
     } as const;
-    if (place !== "body" || isFooter(row) || (isGroup(row) && field !== groupCellOf(row)))
+    // Group rows have a checkbox of their own with descendants propagation.
+    const groupBox =
+      isGroup(row) &&
+      field === GRID_CHECKBOX_FIELD &&
+      !!selectionTree &&
+      !!rowSelectionPropagation.descendants;
+    if (
+      place !== "body" ||
+      isFooter(row) ||
+      (isGroup(row) && field !== groupCellOf(row) && !groupBox)
+    )
       return <div {...common} />;
     if (field === REORDER_FIELD)
       return (
@@ -4524,19 +4609,29 @@ function DataGridInner<R>(
           </IconButton>
         </div>
       );
-    if (field === GRID_CHECKBOX_FIELD)
+    if (field === GRID_CHECKBOX_FIELD) {
+      const state = checkState(row);
+      const own = checkboxColDef?.cellClassName;
+      const className =
+        (typeof own === "function" ? own(cellParams(checkboxColumn, row)) : own) || undefined;
       return (
-        <div {...common} data-ok-data-grid-checkbox="">
+        <div {...common} data-ok-data-grid-checkbox="" className={className}>
           <Checkbox
             size="small"
             tabIndex={-1}
             aria-label={labels.checkboxSelectionSelectRow}
-            checked={selection.includes(rowId)}
-            disabled={!selectable(row)}
+            checked={state === "all"}
+            indeterminate={state === "some"}
+            disabled={
+              groupBox
+                ? !gridSelectableDescendants(selectionTree as GridSelectionTree, rowId).length
+                : !selectable(row)
+            }
             onChange={() => toggleRow.current(rowId)}
           />
         </div>
       );
+    }
     if (field === DETAIL_FIELD) {
       const content = getDetailPanelContent?.({ id: rowId, row });
       const shownPanel = detailIds.includes(rowId);
@@ -4602,12 +4697,21 @@ function DataGridInner<R>(
       ...(leftPinned ? { "data-ok-pinned": "left" } : {}),
       tabIndex: -1,
     } as const;
-    if (field === GRID_CHECKBOX_FIELD)
+    if (field === GRID_CHECKBOX_FIELD) {
+      const own = checkboxColDef?.headerClassName;
+      const className =
+        (typeof own === "function" ? own({ field, colDef: checkboxColumn }) : own) || undefined;
       return (
         <div
           {...common}
           data-ok-data-grid-checkbox=""
-          {...(multiple ? {} : { "aria-label": labels.checkboxSelectionHeaderName })}
+          {...(checkboxColDef?.width !== undefined
+            ? { "data-ok-width": checkboxColDef.width }
+            : {})}
+          className={className}
+          {...(multiple
+            ? {}
+            : { "aria-label": checkboxColDef?.headerName ?? labels.checkboxSelectionHeaderName })}
         >
           {multiple && (
             <Checkbox
@@ -4621,6 +4725,7 @@ function DataGridInner<R>(
           )}
         </div>
       );
+    }
     if (groupingColumns.includes(field)) {
       const def = groupingColDefOf(field);
       const own = gridGroupingFieldOf(field);
@@ -4773,6 +4878,15 @@ function DataGridInner<R>(
         autoPageSize,
       })}
       {...(sortingOrder ? { "data-ok-sorting-order": JSON.stringify(sortingOrder) } : {})}
+      {...(rowSelection ? {} : { "data-ok-row-selection": "false" })}
+      {...(rowSelectionPropagation !== DEFAULT_PROPAGATION
+        ? {
+            "data-ok-row-selection-propagation": JSON.stringify({
+              parents: !!rowSelectionPropagation.parents,
+              descendants: !!rowSelectionPropagation.descendants,
+            }),
+          }
+        : {})}
       {...(groupingModel.length && !treeData
         ? { "data-ok-row-grouping-model": JSON.stringify(groupingModel) }
         : {})}

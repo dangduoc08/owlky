@@ -244,9 +244,9 @@ describe("DataGrid row grouping and aggregation", () => {
       />,
     );
     expect(texts()[0]?.[5]).toBe("15 u");
-    // Counts are plain numbers; group rows have no checkbox.
+    // Counts are plain numbers; group rows have a checkbox that selects their rows (propagation).
     expect(texts()[0]?.[2]).toBe("2");
-    expect(bodyRows()[0]?.querySelector('input[type="checkbox"]')).toBeNull();
+    expect(bodyRows()[0]?.querySelector('input[type="checkbox"]')).not.toBeNull();
     const api = apiRef.current as GridApi<Sale>;
     expect(api.getDataAsCsv().split("\r\n").length).toBe(5);
     expect(api.getDataAsCsv()).toContain("North,Coffee,2025,5 u");

@@ -8,6 +8,7 @@ import {
   gridAriaSort,
   gridColumnTemplate,
   gridCompare,
+  gridDescendantSelection,
   gridDirectedComparator,
   gridExportColumns,
   gridFilterOperators,
@@ -25,6 +26,7 @@ import {
   matchesGridFilter,
   nextGridSort,
   parseGridSortingOrder,
+  propagateGridSelection,
   pruneGridSelection,
   selectGridRow,
   sortGridRows,
@@ -570,5 +572,52 @@ describe("phase 4", () => {
     expect(csv).toBe("Ana;30\r\nbao;9");
     expect(csvField("a;b", ";")).toBe('"a;b"');
     expect(csvField("a;b")).toBe("a;b");
+  });
+});
+
+describe("selection propagation", () => {
+  // g (group) › a (row) › a1, a2; g › b. x is unselectable.
+  const parents: Record<string, string | null> = {
+    g: null,
+    a: "g",
+    a1: "a",
+    a2: "a",
+    b: "g",
+    x: "a",
+  };
+  const tree = {
+    children: (id: string) => Object.keys(parents).filter((k) => parents[k] === id),
+    parent: (id: string) => parents[id] ?? null,
+    selectable: (id: string) => id !== "g" && id !== "x",
+  };
+  const both = { parents: true, descendants: true };
+
+  it("descendants follow; all of them select the parent; groups never enter the model", () => {
+    expect(propagateGridSelection([], "a", true, tree, both)).toEqual(["a", "a1", "a2"]);
+    expect(propagateGridSelection([], "g", true, tree, both)).toEqual(["a", "a1", "a2", "b"]);
+    expect(propagateGridSelection(["a1"], "a2", true, tree, both)).toEqual(["a1", "a2", "a"]);
+    expect(propagateGridSelection(["a", "a1", "a2", "b"], "a1", false, tree, both)).toEqual([
+      "a2",
+      "b",
+    ]);
+    expect(propagateGridSelection(["z"], "a", true, tree, { descendants: true })).toEqual([
+      "z",
+      "a",
+      "a1",
+      "a2",
+    ]);
+    expect(propagateGridSelection(["a1"], "a2", true, tree, { parents: false })).toEqual([
+      "a1",
+      "a2",
+    ]);
+    // Unselectable ids never change.
+    expect(propagateGridSelection([], "x", true, tree, both)).toEqual([]);
+  });
+
+  it("reports how much of a row's descendants is selected", () => {
+    expect(gridDescendantSelection([], "g", tree)).toBe("none");
+    expect(gridDescendantSelection(["a1"], "a", tree)).toBe("some");
+    expect(gridDescendantSelection(["a", "a1", "a2", "b"], "g", tree)).toBe("all");
+    expect(gridDescendantSelection(["a"], "b", tree)).toBe("none");
   });
 });

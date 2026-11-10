@@ -445,3 +445,157 @@ describe("DataGrid column options", () => {
     expect(processRowUpdate.mock.calls[0]?.[0]).toMatchObject({ id: "t1", points: 40 });
   });
 });
+
+describe("DataGrid selection options", () => {
+  interface Item {
+    id: string;
+    path: string[];
+    name: string;
+    team: string;
+  }
+  const ITEMS: Item[] = [
+    { id: "a", path: ["A"], name: "A", team: "X" },
+    { id: "a1", path: ["A", "A1"], name: "A1", team: "X" },
+    { id: "a2", path: ["A", "A2"], name: "A2", team: "Y" },
+    { id: "b", path: ["B"], name: "B", team: "Y" },
+  ];
+  const itemColumns: GridColDef<Item>[] = [
+    { field: "name", headerName: "Name", width: 120 },
+    { field: "team", headerName: "Team", width: 100 },
+  ];
+  const box = (id: string) =>
+    grid().querySelector(
+      `[data-ok-row-id="${id}"] [data-ok-data-grid-checkbox] input`,
+    ) as HTMLInputElement;
+
+  it("rowSelection={false}: no checkboxes, no aria-selected, clicks don't select", async () => {
+    const onRowSelectionModelChange = vi.fn();
+    render(
+      <DataGrid
+        aria-label="Items"
+        rows={ITEMS}
+        columns={itemColumns}
+        checkboxSelection
+        rowSelection={false}
+        onRowSelectionModelChange={onRowSelectionModelChange}
+        hideFooter
+      />,
+    );
+    expect(
+      document.querySelector("[data-ok-data-grid]")?.getAttribute("data-ok-row-selection"),
+    ).toBe("false");
+    expect(grid().querySelector("[data-ok-data-grid-checkbox]")).toBeNull();
+    expect(grid().querySelector("[aria-selected]")).toBeNull();
+    await userEvent.click(
+      grid().querySelector('[data-ok-row-id="b"] [data-ok-field="name"]') as HTMLElement,
+    );
+    expect(onRowSelectionModelChange).not.toHaveBeenCalled();
+  });
+
+  it("tree data: a parent selects its children; all children select the parent; mixed parents", async () => {
+    const onRowSelectionModelChange = vi.fn();
+    render(
+      <DataGrid
+        aria-label="Items"
+        rows={ITEMS}
+        columns={itemColumns}
+        treeData
+        getTreeDataPath={(row) => row.path}
+        defaultGroupingExpansionDepth={-1}
+        checkboxSelection
+        checkboxColDef={{ width: 64, headerClassName: "checks", cellClassName: "check" }}
+        onRowSelectionModelChange={onRowSelectionModelChange}
+        hideFooter
+      />,
+    );
+    const head = grid().querySelector(
+      '[role="columnheader"][data-ok-field="__check__"]',
+    ) as HTMLElement;
+    expect(head.getAttribute("data-ok-width")).toBe("64");
+    expect(head.className).toBe("checks");
+    expect(box("a").closest("[data-ok-data-grid-checkbox]")?.className).toBe("check");
+    expect(grid().style.getPropertyValue("--_ok-data-grid-columns").startsWith("64px")).toBe(true);
+    await userEvent.click(box("a"));
+    expect(onRowSelectionModelChange).toHaveBeenLastCalledWith(["a", "a1", "a2"]);
+    await userEvent.click(box("a1"));
+    // Clearing a child clears its parent; the parent shows mixed.
+    expect(onRowSelectionModelChange).toHaveBeenLastCalledWith(["a2"]);
+    expect(box("a").indeterminate).toBe(true);
+    expect(box("a").closest("[data-ok-checkbox]")?.hasAttribute("data-ok-indeterminate")).toBe(
+      true,
+    );
+    await userEvent.click(box("a1"));
+    expect(onRowSelectionModelChange).toHaveBeenLastCalledWith(["a2", "a1", "a"]);
+    expect(box("a").checked).toBe(true);
+    await expectNoAxeViolations(document.body);
+  });
+
+  it("propagation follows the filters and can be turned off", async () => {
+    const onRowSelectionModelChange = vi.fn();
+    const { rerender } = render(
+      <DataGrid
+        aria-label="Items"
+        rows={ITEMS}
+        columns={itemColumns}
+        treeData
+        getTreeDataPath={(row) => row.path}
+        defaultGroupingExpansionDepth={-1}
+        checkboxSelection
+        filterModel={{ items: [{ field: "team", operator: "equals", value: "X" }] }}
+        onRowSelectionModelChange={onRowSelectionModelChange}
+        hideFooter
+      />,
+    );
+    await userEvent.click(box("a"));
+    // A2 is filtered out: it stays as it was.
+    expect(onRowSelectionModelChange).toHaveBeenLastCalledWith(["a", "a1"]);
+    rerender(
+      <DataGrid
+        aria-label="Items"
+        rows={ITEMS}
+        columns={itemColumns}
+        treeData
+        getTreeDataPath={(row) => row.path}
+        defaultGroupingExpansionDepth={-1}
+        checkboxSelection
+        rowSelectionPropagation={{ parents: false, descendants: false }}
+        onRowSelectionModelChange={onRowSelectionModelChange}
+        hideFooter
+      />,
+    );
+    expect(
+      document
+        .querySelector("[data-ok-data-grid]")
+        ?.getAttribute("data-ok-row-selection-propagation"),
+    ).toBe('{"parents":false,"descendants":false}');
+    await userEvent.click(box("b"));
+    expect(onRowSelectionModelChange).toHaveBeenLastCalledWith(["a", "a1", "b"]);
+  });
+
+  it("row groups: a group's checkbox selects its rows; its state follows them", async () => {
+    const onRowSelectionModelChange = vi.fn();
+    render(
+      <DataGrid
+        aria-label="Items"
+        rows={ITEMS}
+        columns={itemColumns}
+        initialState={{ rowGrouping: { model: ["team"] } }}
+        defaultGroupingExpansionDepth={-1}
+        checkboxSelection
+        rowSelectionPropagation={{ descendants: true }}
+        onRowSelectionModelChange={onRowSelectionModelChange}
+        hideFooter
+      />,
+    );
+    const group = box("auto-generated-row-team/Y");
+    expect(group).not.toBeNull();
+    await userEvent.click(group);
+    expect(onRowSelectionModelChange).toHaveBeenLastCalledWith(["a2", "b"]);
+    expect(box("auto-generated-row-team/Y").checked).toBe(true);
+    await userEvent.click(box("b"));
+    expect(box("auto-generated-row-team/Y").indeterminate).toBe(true);
+    await userEvent.click(box("auto-generated-row-team/Y"));
+    expect(onRowSelectionModelChange).toHaveBeenLastCalledWith(["a2", "b"]);
+    await expectNoAxeViolations(document.body);
+  });
+});

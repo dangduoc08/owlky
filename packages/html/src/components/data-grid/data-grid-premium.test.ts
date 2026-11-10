@@ -336,7 +336,8 @@ describe("data grid row grouping and aggregation (HTML)", () => {
     expect(header(host, "__row_group_by_columns_group__")?.getAttribute("aria-colindex")).toBe("2");
     const first = bodyRows(host)[0] as HTMLElement;
     expect(first.hasAttribute("data-ok-generated")).toBe(true);
-    expect(first.querySelector('[data-ok-field="__check__"]')?.children).toHaveLength(0);
+    // A group's checkbox selects its rows (propagation); the group row itself isn't selected.
+    expect(first.querySelector('[data-ok-field="__check__"]')?.children).toHaveLength(1);
     // Generated rows can't be selected or edited.
     first.click();
     expect(instance.selection).toEqual([]);

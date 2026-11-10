@@ -701,6 +701,11 @@
     color: var(--ok-text-secondary);
   }
 
+  /* On a selected row's tint the secondary text falls under 4.5:1: the count takes the row's text. */
+  :where([aria-selected="true"] [data-ok-data-grid-tree-count]) {
+    color: inherit;
+  }
+
   /* Master-detail: a panel row under its row, its one cell across every column. */
   :where(
     [data-ok-data-grid-body]

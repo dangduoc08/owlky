@@ -761,6 +761,12 @@ export interface DataGridParts {
   /** On a row: its id. */
   "data-ok-row-id": Value<string>;
   /**
+   * Tree data and row groups: which related rows a selection reaches, as JSON
+   * (`{"parents":false,"descendants":true}`; default both). React writes it from
+   * `rowSelectionPropagation`.
+   */
+  "data-ok-row-selection-propagation": Value<string>;
+  /**
    * On a cell: the value row spanning compares, instead of the cell's text (React writes it from
    * `rowSpanValueGetter`).
    */
