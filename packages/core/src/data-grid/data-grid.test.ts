@@ -18,10 +18,14 @@ import {
   gridOperatorNeedsValue,
   gridQuickFilterValues,
   gridSelectAllState,
+  gridSetFilterSearch,
+  gridSetFilterSummary,
+  gridSetFilterValues,
   gridSortValue,
   gridToCsv,
   isGridFilterable,
   isGridHideable,
+  isGridSetFilter,
   isGridSortable,
   matchesGridFilter,
   nextGridSort,
@@ -32,6 +36,7 @@ import {
   sortGridRows,
   toggleGridRow,
   toggleGridRows,
+  toggleGridSetFilterValues,
   visibleGridColumns,
 } from "./data-grid.js";
 
@@ -619,5 +624,55 @@ describe("selection propagation", () => {
     expect(gridDescendantSelection(["a1"], "a", tree)).toBe("some");
     expect(gridDescendantSelection(["a", "a1", "a2", "b"], "g", tree)).toBe("all");
     expect(gridDescendantSelection(["a"], "b", tree)).toBe("none");
+  });
+});
+
+describe("set filter", () => {
+  const rows = [
+    { team: "Docs", n: 3, label: "3 pts" },
+    { team: "Core", n: 12, label: "12 pts" },
+    { team: "Docs", n: 3, label: "3 pts" },
+    { team: "", n: null, label: "" },
+    { team: "Ćore", n: 2, label: "2 pts" },
+  ];
+  const raw = (row: (typeof rows)[number], field: string) => (field === "team" ? row.team : row.n);
+  const text = (row: (typeof rows)[number], field: string) =>
+    field === "team" ? row.team : row.label;
+
+  it("puts is any of first for set columns that have it", () => {
+    expect(gridFilterOperators("string", "set")[0]).toBe("isAnyOf");
+    expect(gridFilterOperators("string")[0]).toBe("contains");
+    expect(gridFilterOperators("date", "set")[0]).toBe("is");
+    expect(isGridSetFilter({ field: "a", filterVariant: "set" })).toBe(true);
+    expect(isGridSetFilter({ field: "a", type: "boolean", filterVariant: "set" })).toBe(false);
+    expect(isGridSetFilter({ field: "a" })).toBe(false);
+  });
+
+  it("lists distinct values: text by text, numbers by value in number order, no blanks", () => {
+    expect(gridSetFilterValues(rows, { field: "team" }, raw, text)).toEqual([
+      { value: "Core", label: "Core" },
+      { value: "Ćore", label: "Ćore" },
+      { value: "Docs", label: "Docs" },
+    ]);
+    expect(gridSetFilterValues(rows, { field: "n", type: "number" }, raw, text)).toEqual([
+      { value: "2", label: "2 pts" },
+      { value: "3", label: "3 pts" },
+      { value: "12", label: "12 pts" },
+    ]);
+  });
+
+  it("searches, toggles the shown values and sums the choice up", () => {
+    const values = gridSetFilterValues(rows, { field: "team" }, raw, text);
+    expect(gridSetFilterSearch(values, " co").map((v) => v.value)).toEqual(["Core"]);
+    expect(gridSetFilterSearch(values, "co", true).map((v) => v.value)).toEqual(["Core", "Ćore"]);
+    expect(gridSetFilterSearch(values, "").length).toBe(3);
+    const shown = gridSetFilterSearch(values, "co", true);
+    expect(toggleGridSetFilterValues(["Docs"], shown)).toEqual(["Docs", "Core", "Ćore"]);
+    expect(toggleGridSetFilterValues(["Docs", "Core", "Ćore"], shown)).toEqual(["Docs"]);
+    const labels = { filterValueAny: "any", setFilterSelected: "{count} selected" };
+    expect(gridSetFilterSummary(labels, values, [])).toBe("any");
+    expect(gridSetFilterSummary(labels, values, ["Docs"])).toBe("Docs");
+    expect(gridSetFilterSummary(labels, values, ["Gone"])).toBe("Gone");
+    expect(gridSetFilterSummary(labels, values, ["Docs", "Core"])).toBe("2 selected");
   });
 });

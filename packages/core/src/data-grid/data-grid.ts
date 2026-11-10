@@ -68,6 +68,11 @@ export interface GridColumn {
   rowHeader?: boolean | undefined;
   /** `flex` lays the cell's content out in a row, centered (default `text`: one line). */
   display?: "text" | "flex" | undefined;
+  /**
+   * `set`: "is any of" comes first among the column's operators, and its value is a checklist of
+   * the column's values with a search and "Select all" (text, number and single select columns).
+   */
+  filterVariant?: "set" | undefined;
 }
 
 export type GridSortDirection = "asc" | "desc";
@@ -465,7 +470,87 @@ export function sortGridRows<R>(
 }
 
 /** Operators per column type (MUI X names). */
-export function gridFilterOperators(type: GridColumnType = "string"): string[] {
+export function gridFilterOperators(
+  type: GridColumnType = "string",
+  variant?: GridColumn["filterVariant"],
+): string[] {
+  const own = typeOperators(type);
+  // A set filter starts with "is any of" (its checklist), where the type has it.
+  return variant === "set" && own.includes("isAnyOf")
+    ? ["isAnyOf", ...own.filter((o) => o !== "isAnyOf")]
+    : own;
+}
+
+/** Whether a column filters with a checklist of its values (`filterVariant: "set"`). */
+export const isGridSetFilter = (column: GridColumn | undefined): boolean =>
+  column?.filterVariant === "set" && typeOperators(column.type).includes("isAnyOf");
+
+/** A value of a set filter's checklist: what "is any of" matches, and the text it shows. */
+export interface GridSetFilterValue {
+  value: string;
+  label: string;
+}
+
+/**
+ * The checklist of a set filter: each distinct value of the column (numbers and single select
+ * choices by value, text by the cell's text), blanks left out, in the column type's order.
+ */
+export function gridSetFilterValues<R>(
+  rows: readonly R[],
+  column: GridColumn,
+  raw: (row: R, field: string) => unknown,
+  text: (row: R, field: string) => string,
+): GridSetFilterValue[] {
+  const byValue = column.type === "number" || column.type === "singleSelect";
+  const seen = new Map<string, { item: GridSetFilterValue; raw: unknown }>();
+  for (const row of rows) {
+    const own = raw(row, column.field);
+    const label = text(row, column.field);
+    const value = byValue ? (own === null || own === undefined ? "" : String(own)) : label;
+    if (value === "" || seen.has(value)) continue;
+    seen.set(value, { item: { value, label: label || value }, raw: byValue ? own : label });
+  }
+  return [...seen.values()]
+    .sort((a, b) => gridCompare(a.raw, b.raw, column.type))
+    .map((entry) => entry.item);
+}
+
+/** The checklist values a set filter shows for a search (accents ignored with the option). */
+export const gridSetFilterSearch = (
+  values: readonly GridSetFilterValue[],
+  search: string,
+  ignoreDiacritics = false,
+): GridSetFilterValue[] => {
+  const query = gridFoldText(search.trim(), ignoreDiacritics);
+  return query
+    ? values.filter((v) => gridFoldText(v.label, ignoreDiacritics).includes(query))
+    : [...values];
+};
+
+/** "Select all" over the shown values: every one checked → those cleared, else those added. */
+export function toggleGridSetFilterValues(
+  selected: readonly string[],
+  shown: readonly GridSetFilterValue[],
+): string[] {
+  const ids = shown.map((v) => v.value);
+  return gridSelectAllState(ids, selected) === "all"
+    ? selected.filter((v) => !ids.includes(v))
+    : [...selected, ...ids.filter((v) => !selected.includes(v))];
+}
+
+/** The short text of a set filter's selection: "any", the one value, or "2 selected". */
+export function gridSetFilterSummary(
+  labels: Pick<GridLabels, "filterValueAny" | "setFilterSelected">,
+  values: readonly GridSetFilterValue[],
+  selected: readonly string[],
+): string {
+  if (selected.length === 0) return labels.filterValueAny;
+  if (selected.length === 1)
+    return values.find((v) => v.value === selected[0])?.label ?? (selected[0] as string);
+  return labels.setFilterSelected.replaceAll("{count}", String(selected.length));
+}
+
+function typeOperators(type: GridColumnType = "string"): string[] {
   if (type === "number")
     return ["=", "!=", ">", ">=", "<", "<=", "isEmpty", "isNotEmpty", "isAnyOf"];
   if (type === "date" || type === "dateTime")
@@ -945,6 +1030,11 @@ export const gridDefaultLabels = {
   footerTotalRows: "Total Rows:",
   /** `{visibleCount}` and `{totalCount}` are replaced (filtered rows). */
   footerTotalVisibleRows: "{visibleCount} of {totalCount}",
+  setFilterSearch: "Search values",
+  setFilterSelectAll: "Select all",
+  setFilterValues: "Values",
+  /** `{count}` is replaced (a set filter's choice). */
+  setFilterSelected: "{count} selected",
   filterOperator: {
     contains: "contains",
     doesNotContain: "does not contain",

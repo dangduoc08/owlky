@@ -42,6 +42,7 @@ div[data-ok-data-grid][data-ok-density][data-ok-checkbox-selection]?[data-ok-dis
          [data-ok-resizable=false]?[data-ok-editable]?[data-ok-value-options='["…"]']?[data-ok-pinned]?[hidden]?
          [data-ok-sorting-order='["desc","asc",null]']? (root too: the grid's cycle)
          [data-ok-disable-reorder]?[data-ok-disable-export]?[data-ok-pinnable=false]?[class]? (4.18.51)
+         [data-ok-filter-variant=set]? (4.18.10)
         span[data-ok-data-grid-header-title] · span[data-ok-data-grid-sort-icon] · IconButton[data-ok-data-grid-menu-button]
         · span[data-ok-data-grid-resize][aria-hidden]                         (resizable)
     div[role=rowgroup][data-ok-data-grid-body]   (--_ok-data-grid-before|after: spacers of the row window)
@@ -106,6 +107,14 @@ div[data-ok-data-grid][data-ok-density][data-ok-checkbox-selection]?[data-ok-dis
       › div[role=presentation][data-ok-data-grid-group-filler][data-ok-pin-field] (special columns)
       › div[role=columnheader][data-ok-data-grid-header-filter][data-ok-filter-field][aria-label="<name> filter"]
         › TextField | TextField select | DatePicker (date) | DateTimePicker (dateTime) ; unfilterable: role=presentation filler
+        › set columns with isAnyOf: Button[data-ok-data-grid-set-filter-button][aria-haspopup=dialog]
+          [aria-controls=<id>-header-filter-<field>-set-filter] ("is any of: 2 selected")
+          + Popover#<id>-header-filter-<field>-set-filter › set filter (id <id>-header-filter-<field>-set)
+    set filter: div[data-ok-data-grid-set-filter][data-ok-field][id] › TextField#<id>-search ("Search values")
+      › FormControlLabel(Checkbox[data-ok-data-grid-set-all]) "Select all"
+      › div[data-ok-data-grid-set-values][role=group][aria-label=Values]
+        › FormControlLabel[hidden]?(Checkbox[data-ok-data-grid-set-value="<value>"]) × values
+      (filter panel: in the value field's place, id <id>-filter-value[-n])
     cells with cellSelection: [aria-selected=true][data-ok-range-edge="top right bottom left"]?
     Menu#<id>-column-menu › MenuItem[data-ok-data-grid-action=group|aggregate-none|aggregate-<fn>][hidden]?[data-ok-selected]?
     Menu#<id>-export › MenuItem[data-ok-data-grid-export=excel]
@@ -288,7 +297,8 @@ row grouping, aggregation, pivot, cell selection and chart setters. Batch E (roa
 `rowSpacingType`, `autoHeight`, `autoPageSize`; (4.18.51) column `cellClassName`, `headerClassName`,
 `hideSortIcons`, `disableColumnMenu`, `disableReorder`, `disableExport`, `pinnable`, `rowSpanValueGetter`,
 `pastedValueParser`, `rowHeader`, `display`; (4.18.52) `rowSelection`, `rowSelectionPropagation`,
-`checkboxColDef`. Beyond MUI X (4.18.11,
+`checkboxColDef`. Beyond MUI X (4.18.10): column `filterVariant: "set"`, locale keys `setFilterSearch`,
+`setFilterSelectAll`, `setFilterValues`, `setFilterSelected`. Beyond MUI X (4.18.11,
 ApexGrid / spreadsheets): `statusBar` with `cellSelection`, locale keys `statusBarCount`,
 `statusBarSum`, `statusBarAvg`, `statusBarMin`, `statusBarMax`. Beyond MUI X: Alt + Up / Down on a reorder handle (WCAG 2.5.7). Beyond MUI X (accessibility): Alt + Left / Right resizes, column menu
 Move left / Move right. Renamed: `rowSelectionModel` is an id array (MUI v8:
@@ -499,6 +509,20 @@ with DOM methods and hides the TablePagination while `data-ok-hide-footer-pagina
 `tabNavigation`: Tab / Shift + Tab move the tab stop (the one `tabindex=0`) to the next / previous
 cell in reading order within the mode's cells, and leave the grid past the ends (not prevented).
 
+Set filter (4.18.10): a column with `filterVariant: "set"` (string, number, singleSelect) lists
+`isAnyOf` first, so the header filter and a new filter row use it. Its value is a checklist (core
+`gridSetFilterValues`): each distinct value over every data row (numbers and single select choices
+by value, shown with the cell's text; text columns by text), blanks left out, in the type's order.
+The search (core `gridSetFilterSearch`, accents folded with `ignoreDiacritics`) hides the other
+values; "Select all" checks the shown values, or clears them when all are checked (core
+`toggleGridSetFilterValues`), and is mixed while some are. The checked values are the item's value;
+none checked removes the filter (a header filter) or leaves it without effect (the panel). The
+header filter's button sums the choice up (core `gridSetFilterSummary`: "any", the value, "2
+selected") and opens the checklist in a Popover; every control is native (Tab, Space). HTML: a copy
+of the markup's first set filter (a header filter's or the panel's) is the prototype of the panel's
+lists, and value checkboxes are copies of "Select all"; without one, the panel keeps the chips.
+Checkboxes act on `change`, the search on `input`.
+
 Selection options (4.18.52): `rowSelection={false}` renders no checkbox column and no
 `aria-selected`; clicks, Space and Ctrl / Cmd + A select nothing (HTML: checkboxes left in the
 markup do nothing). Propagation (tree data and row grouping, client side, `checkboxSelection`,
@@ -665,6 +689,7 @@ the detailed record of what is kept.
 | Pivot: `pivotingColDef`, `pivotPanelOpen` / `onPivotPanelOpenChange` | — | deferred | |
 | Clipboard / cell selection / export: `cellSelection`, `cellSelectionModel`, `disableClipboardPaste`, `onClipboardCopy`, `onClipboardPasteStart` / `End`, `splitClipboardPastedText`, `clipboardCopyCellDelimiter`, `ignoreValueFormatterDuringExport`, `csvOptions`, `printOptions`, `excelOptions` | same | kept | |
 | (not in MUI X) status bar of the selected cells (ApexGrid, spreadsheets) | `statusBar` | added (4.18.11) | Count, Sum, Average, Min, Max through `aggregationFunctions`; `role=status` |
+| (not in MUI X) set filter (ApexGrid, spreadsheets): a checklist of a column's values | column `filterVariant: "set"` | added (4.18.10) | on the `isAnyOf` model (string, number, singleSelect columns); filter panel and header filter; HTML `data-ok-filter-variant="set"` on the header |
 | `cellSelectionFillHandle`, `onBeforeClipboardPasteStart` | — | deferred | fill handle drag (keyboard alternative needed, WCAG 2.5.7) |
 | Charts: `chartsIntegration`, `chartModel` (renamed, see above) | same | kept | |
 | Charts: several `GridChartsRendererProxy` (`id`, `label`), `initialState.chartsIntegration.charts`, `activeChartId` / `onActiveChartIdChange` | `chartModels` (+ model `label`), `activeChartId` | renamed | charts inside the grid; HTML `data-ok-chart-models`, `data-ok-active-chart-id` |

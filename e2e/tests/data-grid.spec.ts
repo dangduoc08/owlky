@@ -582,6 +582,30 @@ for (const impl of implementations) {
       await expect(page.getByRole("columnheader", { name: /^Title/ })).toBeFocused();
     });
 
+    test("set filter: a checklist of values, by keyboard", async ({ page }) => {
+      await openStory(page, storyId(impl, "datagrid", "set-filter"));
+      const button = page.locator(
+        '[data-ok-filter-field="priority"] [data-ok-data-grid-set-filter-button]',
+      );
+      await expect(button).toHaveText("is any of: any");
+      await button.focus();
+      await page.keyboard.press("Enter");
+      const list = page.locator(
+        "#grid-set-header-filter-priority-set-filter [data-ok-data-grid-set-filter]",
+      );
+      await expect(list).toBeVisible();
+      await list.getByRole("textbox", { name: "Search values" }).fill("h");
+      await expect(list.getByRole("checkbox", { name: "Low" })).toBeHidden();
+      await list.getByRole("checkbox", { name: "Select all" }).focus();
+      await page.keyboard.press("Space");
+      await expect(list.getByRole("checkbox", { name: "High" })).toBeChecked();
+      await expect(button).toHaveText("is any of: High");
+      expect(await visible(page, "priority")).toEqual(["High", "High"]);
+      await list.getByRole("textbox", { name: "Search values" }).fill("");
+      await list.getByRole("checkbox", { name: "Select all" }).check();
+      await expect(button).toHaveText("is any of: 3 selected");
+    });
+
     test("selection propagation: parents, children and group checkboxes", async ({ page }) => {
       await openStory(page, storyId(impl, "datagrid", "selection-propagation"));
       const tree = page.getByRole("treegrid", { name: "Work breakdown" });

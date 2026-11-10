@@ -57,6 +57,7 @@ import {
   type GridRowSelectionPropagation,
   type GridRowWindow,
   type GridSelectionTree,
+  type GridSetFilterValue,
   type GridSortDirection,
   type GridSortingOrder,
   type GridSortModel,
@@ -126,6 +127,9 @@ import {
   gridSelectableDescendants,
   gridSelectedBlock,
   gridSelectionStats,
+  gridSetFilterSearch,
+  gridSetFilterSummary,
+  gridSetFilterValues,
   gridStackableChartTypes,
   gridStatusItems,
   gridToCsv,
@@ -138,6 +142,7 @@ import {
   isGridFilterable,
   isGridHideable,
   isGridResizable,
+  isGridSetFilter,
   isGridSortable,
   measureGridColumn,
   mergeGridCellSelection,
@@ -165,6 +170,7 @@ import {
   syncGridPinning,
   toggleGridCell,
   toggleGridRows,
+  toggleGridSetFilterValues,
   visibleGridColumns,
 } from "@owlky/core";
 import {
@@ -1038,6 +1044,85 @@ const isoValue = (date: Date | null, type: GridColDef["type"]) =>
     : "";
 
 const NO_PIVOT: GridPivotModel = { rows: [], columns: [], values: [] };
+
+interface GridSetFilterProps {
+  /** Base id: the search field's id is `<id>-search`. */
+  id: string;
+  field: string;
+  values: readonly GridSetFilterValue[];
+  selected: readonly string[];
+  labels: GridLabels;
+  ignoreDiacritics: boolean | undefined;
+  onChange(values: string[]): void;
+}
+
+/**
+ * A set filter (`filterVariant: "set"`): a search, "Select all" (mixed while some shown values are
+ * checked) and one checkbox per value, in a labelled group. Nothing checked: no filter.
+ */
+function GridSetFilter({
+  id,
+  field,
+  values,
+  selected,
+  labels,
+  ignoreDiacritics,
+  onChange,
+}: GridSetFilterProps) {
+  const [search, setSearch] = useState("");
+  const shown = gridSetFilterSearch(values, search, ignoreDiacritics);
+  const all = gridSelectAllState(
+    shown.map((v) => v.value),
+    selected,
+  );
+  return (
+    <div data-ok-data-grid-set-filter="" data-ok-field={field} id={id}>
+      <TextField
+        id={`${id}-search`}
+        size="small"
+        fullWidth
+        label={labels.setFilterSearch}
+        value={search}
+        onChange={setSearch}
+      />
+      <FormControlLabel
+        label={labels.setFilterSelectAll}
+        control={
+          <Checkbox
+            size="small"
+            data-ok-data-grid-set-all=""
+            checked={all === "all"}
+            indeterminate={all === "some"}
+            onChange={() => onChange(toggleGridSetFilterValues(selected, shown))}
+          />
+        }
+      />
+      <div data-ok-data-grid-set-values="" role="group" aria-label={labels.setFilterValues}>
+        {values.map((item) => (
+          <FormControlLabel
+            key={item.value}
+            hidden={!shown.includes(item) || undefined}
+            label={item.label}
+            control={
+              <Checkbox
+                size="small"
+                data-ok-data-grid-set-value={item.value}
+                checked={selected.includes(item.value)}
+                onChange={() =>
+                  onChange(
+                    selected.includes(item.value)
+                      ? selected.filter((v) => v !== item.value)
+                      : [...selected, item.value],
+                  )
+                }
+              />
+            }
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
 const DEFAULT_PROPAGATION: GridRowSelectionPropagation = { parents: true, descendants: true };
 
 type Panel = "columns" | "filters" | "density" | "export" | "pivot" | "charts" | null;
@@ -1549,6 +1634,18 @@ function DataGridInner<R>(
         operators,
       },
     );
+  /** The values a set filter lists: each distinct value of the column over every data row. */
+  const setValuesOf = (column: GridColDef<R>) =>
+    gridSetFilterValues(
+      orderedRows.filter(isData),
+      column,
+      (row, field) => rawValue(columnOf(field), row),
+      (row, field) => textOf(columnOf(field), row),
+    );
+  const [setFilterOpen, setSetFilterOpen] = useState<{
+    field: string;
+    anchor: HTMLElement;
+  } | null>(null);
   const sortParams = (column: GridColDef<R>, row: R): GridCellParams<R> => ({
     id: idOf(row),
     field: column.field,
@@ -3132,7 +3229,7 @@ function DataGridInner<R>(
   const operatorsOf = (column: GridColDef<R> | undefined) =>
     column?.filterOperators
       ? column.filterOperators.map((o) => ({ value: o.value, label: o.label ?? o.value }))
-      : gridFilterOperators(column?.type).map((value) => ({
+      : gridFilterOperators(column?.type, column?.filterVariant).map((value) => ({
           value,
           label: labels.filterOperator[value] ?? value,
         }));
@@ -3829,7 +3926,19 @@ function DataGridInner<R>(
                       </option>
                     ))}
                   </TextField>
-                  {item.operator === "isAnyOf" && !column?.filterOperators ? (
+                  {item.operator === "isAnyOf" &&
+                  !column?.filterOperators &&
+                  isGridSetFilter(column) ? (
+                    <GridSetFilter
+                      id={`${id}-filter-value${suffix}`}
+                      field={item.field}
+                      values={setValuesOf(column as GridColDef<R>)}
+                      selected={gridFilterValues(item.value)}
+                      labels={labels}
+                      ignoreDiacritics={ignoreDiacritics}
+                      onChange={(values) => setFilterItem(index, { ...item, value: values })}
+                    />
+                  ) : item.operator === "isAnyOf" && !column?.filterOperators ? (
                     <Autocomplete
                       id={`${id}-filter-value${suffix}`}
                       size="small"
@@ -3955,7 +4064,7 @@ function DataGridInner<R>(
   );
 
   /** Header filters: the first filter item of a field holds its value (the type's operator). */
-  const setHeaderFilter = (column: GridColDef<R>, value: string) => {
+  const setHeaderFilter = (column: GridColDef<R>, value: string | string[]) => {
     const index = filterModel.items.findIndex((item) => item.field === column.field);
     const current = filterModel.items[index];
     const item: GridFilterItem = {
@@ -3964,7 +4073,7 @@ function DataGridInner<R>(
       value,
     };
     const items =
-      value === ""
+      value === "" || (Array.isArray(value) && value.length === 0)
         ? filterModel.items.filter((_, i) => i !== index)
         : index < 0
           ? [...filterModel.items, item]
@@ -4038,6 +4147,40 @@ function DataGridInner<R>(
             item: item ?? { field: column.field, operator },
             applyFilterChanges: (next) => applyHeaderFilter(column, next),
           })
+        ) : isGridSetFilter(column) && operator === "isAnyOf" ? (
+          <>
+            <Button
+              size="sm"
+              variant="outlined"
+              color="inherit"
+              data-ok-data-grid-set-filter-button=""
+              aria-haspopup="dialog"
+              aria-expanded={setFilterOpen?.field === column.field}
+              aria-controls={`${fieldId}-set-filter`}
+              onClick={(event) =>
+                setSetFilterOpen({ field: column.field, anchor: event.currentTarget })
+              }
+            >
+              {`${label}: ${gridSetFilterSummary(labels, setValuesOf(column), gridFilterValues(item?.value))}`}
+            </Button>
+            <Popover
+              id={`${fieldId}-set-filter`}
+              open={setFilterOpen?.field === column.field}
+              anchorEl={setFilterOpen?.field === column.field ? setFilterOpen.anchor : null}
+              placement="bottom-start"
+              onOpenChange={(next) => !next && setSetFilterOpen(null)}
+            >
+              <GridSetFilter
+                id={`${fieldId}-set`}
+                field={column.field}
+                values={setValuesOf(column)}
+                selected={gridFilterValues(item?.value)}
+                labels={labels}
+                ignoreDiacritics={ignoreDiacritics}
+                onChange={(values) => setHeaderFilter(column, values)}
+              />
+            </Popover>
+          </>
         ) : choices ? (
           <TextField
             id={fieldId}
@@ -5015,6 +5158,7 @@ function DataGridInner<R>(
                   {...(column.disableReorder ? { "data-ok-disable-reorder": "" } : {})}
                   {...(column.disableExport ? { "data-ok-disable-export": "" } : {})}
                   {...(column.pinnable === false ? { "data-ok-pinnable": "false" } : {})}
+                  {...(column.filterVariant === "set" ? { "data-ok-filter-variant": "set" } : {})}
                   className={
                     (typeof column.headerClassName === "function"
                       ? column.headerClassName({ field: column.field, colDef: column })

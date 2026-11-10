@@ -26,6 +26,7 @@ import selectionGroups from "../../../../../packages/html/src/components/data-gr
 import selectionTree from "../../../../../packages/html/src/components/data-grid/examples/selection-tree.html?raw";
 import serverAggregation from "../../../../../packages/html/src/components/data-grid/examples/server-aggregation-group.html?raw";
 import serverGroup from "../../../../../packages/html/src/components/data-grid/examples/server-group.html?raw";
+import setGroup from "../../../../../packages/html/src/components/data-grid/examples/set-group.html?raw";
 import sortingGroup from "../../../../../packages/html/src/components/data-grid/examples/sorting-group.html?raw";
 import validationGroup from "../../../../../packages/html/src/components/data-grid/examples/validation-group.html?raw";
 import { CDN, GuideDocs, type GuideSection } from "../../helpers/guide.js";
@@ -1609,6 +1610,30 @@ export function Issues() {
       tabNavigation="all"
     />
   );
+}`,
+  },
+  {
+    id: "set-filter",
+    title: "Filter with a checklist of values",
+    body: 'A column with `filterVariant: "set"` filters with a checklist of its values, like a spreadsheet. It works for text, number and single select columns. The list holds each value of the column once, in the column\'s order, with a search field and **Select all**. **Select all** checks the values the search shows, or clears them when they\'re all checked. The checked values make an `isAnyOf` filter item, so the filter model stays the same as with the other operators: `{ field, operator: "isAnyOf", value: ["High", "Low"] }`. Clear every value to remove the filter. With `headerFilters`, the header filter is a button that shows the choice, such as "2 selected", and opens the checklist. In the filter panel, the checklist takes the value field\'s place while the operator is "is any of". In HTML, write `data-ok-filter-variant="set"` on the header cell. The grid copies the first checklist of the markup, such as a header filter\'s, for the panel.',
+    html: `${gridOf(setGroup)}`,
+    react: `import { DataGrid, type GridColDef } from "@owlky/react";
+
+const issues = [
+  { id: 1, title: "Fix the login form", priority: "High", points: 3 },
+  { id: 2, title: "Update the docs", priority: "Low", points: 2 },
+  { id: 3, title: "Add dark mode", priority: "Medium", points: 8 },
+];
+
+const columns: GridColDef<(typeof issues)[number]>[] = [
+  { field: "title", headerName: "Title", flex: 1 },
+  // A checklist of the priorities and of the points
+  { field: "priority", headerName: "Priority", width: 200, filterVariant: "set" },
+  { field: "points", headerName: "Points", type: "number", width: 200, filterVariant: "set" },
+];
+
+export function Issues() {
+  return <DataGrid aria-label="Issues" rows={issues} columns={columns} showToolbar headerFilters />;
 }`,
   },
   {

@@ -91,6 +91,7 @@ import {
   gridExpandedByDepth,
   gridExportColumns,
   gridFilterOperators,
+  gridFilterValues,
   gridFooterRowCount,
   gridFooterRowSelected,
   gridFormats,
@@ -123,6 +124,9 @@ import {
   gridSelectableDescendants,
   gridSelectedBlock,
   gridSelectionStats,
+  gridSetFilterSearch,
+  gridSetFilterSummary,
+  gridSetFilterValues,
   gridStackableChartTypes,
   gridStatusItems,
   gridToCsv,
@@ -133,6 +137,7 @@ import {
   isGridCellSelected,
   isGridGroupingField,
   isGridResizable,
+  isGridSetFilter,
   isGridSortable,
   measureGridColumn,
   mergeGridCellSelection,
@@ -172,6 +177,7 @@ import {
   syncGridPinning,
   toggleGridCell,
   toggleGridRows,
+  toggleGridSetFilterValues,
   visibleGridColumns,
 } from "@owlky/core";
 import { defineComponent } from "../../runtime/define.js";
@@ -650,6 +656,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         disableReorder: header.hasAttribute("data-ok-disable-reorder"),
         disableExport: header.hasAttribute("data-ok-disable-export"),
         pinnable: header.getAttribute("data-ok-pinnable") !== "false",
+        filterVariant: header.getAttribute("data-ok-filter-variant") === "set" ? "set" : undefined,
       }));
     const baseColumns = readColumns();
     /** The columns: the markup's, or the pivot's while it shows. */
@@ -1856,7 +1863,109 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       bottomRowIndexes(first);
     };
     /** Header filters: each field shows the value of its column's first filter item. */
+    // Set filters (`data-ok-filter-variant="set"`): checklists of a column's values. The first one
+    // in the markup (a header filter's or the panel's) is the prototype of new ones.
+    const setProto = element
+      .querySelector<HTMLElement>("[data-ok-data-grid-set-filter]")
+      ?.cloneNode(true) as HTMLElement | undefined;
+    const setValues = (field: string) =>
+      gridSetFilterValues(
+        rows().filter((row) => !row.hasAttribute("data-ok-generated")),
+        columns.find((c) => c.field === field) as GridColumn,
+        value,
+        text,
+      );
+    const setInput = (label: Element) =>
+      label.querySelector<HTMLInputElement>('input[type="checkbox"]') as HTMLInputElement;
+    const setSearchOf = (list: HTMLElement) =>
+      list.querySelector<HTMLInputElement>('input:not([type="checkbox"])')?.value ?? "";
+    /** Draws a set list: one checkbox per value (copies of "Select all"), checks, the search. */
+    const syncSetList = (list: HTMLElement, selected: readonly string[]) => {
+      const field = list.getAttribute("data-ok-field") as string;
+      const values = setValues(field);
+      const box = list.querySelector<HTMLElement>("[data-ok-data-grid-set-values]") as HTMLElement;
+      const known = [...box.children].map((label) =>
+        setInput(label)?.getAttribute("data-ok-data-grid-set-value"),
+      );
+      if (known.join("\n") !== values.map((v) => v.value).join("\n")) {
+        const proto = (box.firstElementChild ??
+          list.querySelector("[data-ok-data-grid-set-all]")?.closest("label")) as HTMLElement;
+        box.replaceChildren(
+          ...values.map((item) => {
+            const label = proto.cloneNode(true) as HTMLElement;
+            const input = setInput(label);
+            input.removeAttribute("data-ok-data-grid-set-all");
+            input.setAttribute("data-ok-data-grid-set-value", item.value);
+            const name = label.querySelector("[data-ok-form-control-label-text]");
+            if (name) name.textContent = item.label;
+            return label;
+          }),
+        );
+      }
+      const shown = new Set(
+        gridSetFilterSearch(
+          values,
+          setSearchOf(list),
+          element.hasAttribute(ignoreDiacritics.attr),
+        ).map((v) => v.value),
+      );
+      for (const label of box.children as HTMLCollectionOf<HTMLElement>) {
+        const input = setInput(label);
+        const own = input.getAttribute("data-ok-data-grid-set-value") as string;
+        label.hidden = !shown.has(own);
+        markBox(input, selected.includes(own) ? "all" : "none");
+      }
+      markBox(
+        list.querySelector<HTMLInputElement>("[data-ok-data-grid-set-all]") as HTMLInputElement,
+        gridSelectAllState([...shown], selected),
+      );
+    };
+    /** The values checked in a set list. */
+    const setChecked = (list: HTMLElement) =>
+      [...list.querySelectorAll<HTMLInputElement>("[data-ok-data-grid-set-value]")]
+        .filter((input) => input.checked)
+        .map((input) => input.getAttribute("data-ok-data-grid-set-value") as string);
+    /**
+     * An event inside a set list: the search redraws it (`null`: no filter change); "Select all"
+     * checks or clears the shown values; the checked values come back.
+     */
+    const setListChange = (list: HTMLElement, target: Element): string[] | null => {
+      if (!target.matches('input[type="checkbox"]')) {
+        syncSetList(list, setChecked(list));
+        return null;
+      }
+      if (target.hasAttribute("data-ok-data-grid-set-all")) {
+        const shown = gridSetFilterSearch(
+          setValues(list.getAttribute("data-ok-field") as string),
+          setSearchOf(list),
+          element.hasAttribute(ignoreDiacritics.attr),
+        );
+        // The values' checkboxes still hold the state before this change.
+        const next = toggleGridSetFilterValues(setChecked(list), shown);
+        syncSetList(list, next);
+        return next;
+      }
+      return setChecked(list);
+    };
     const syncHeaderFilters = () => {
+      // Set filters of the header: the list and the button's summary.
+      for (const list of filterRowEl()?.querySelectorAll<HTMLElement>(
+        "[data-ok-data-grid-set-filter]",
+      ) ?? []) {
+        const field = list.getAttribute("data-ok-field") as string;
+        const item = filterModel.items.find((i) => i.field === field);
+        const selected = gridFilterValues(item?.value);
+        syncSetList(list, selected);
+        const button = list
+          .closest("[data-ok-data-grid-header-filter]")
+          ?.querySelector("[data-ok-data-grid-set-filter-button]");
+        const operator = labels.filterOperator["isAnyOf"] ?? "isAnyOf";
+        const summary = `${operator}: ${gridSetFilterSummary(labels, setValues(field), selected)}`;
+        if (button) {
+          const target = button.querySelector("[data-ok-button-label]") ?? button;
+          if (target.textContent !== summary) target.textContent = summary;
+        }
+      }
       for (const input of filterRowEl()?.querySelectorAll<HTMLInputElement | HTMLSelectElement>(
         "[data-ok-data-grid-header-filter] > [data-ok-text-field] :is(input, select)",
       ) ?? []) {
@@ -2844,9 +2953,13 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     // Header filters: a field's value is the first filter item of its column.
     const operatorOf = (field: string) => {
       const type = columns.find((c) => c.field === field)?.type;
-      return operators[field]?.[0]?.value ?? (gridFilterOperators(type)[0] as string);
+      const column = columns.find((c) => c.field === field);
+      return (
+        operators[field]?.[0]?.value ??
+        (gridFilterOperators(type, column?.filterVariant)[0] as string)
+      );
     };
-    const setHeaderFilter = (field: string, input: string, operator?: string | null) => {
+    const setHeaderFilter = (field: string, input: string | string[], operator?: string | null) => {
       const index = filterModel.items.findIndex((item) => item.field === field);
       const current = filterModel.items[index];
       const item = {
@@ -2857,7 +2970,7 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       setFilter({
         ...filterModel,
         items:
-          input === ""
+          input === "" || (Array.isArray(input) && input.length === 0)
             ? filterModel.items.filter((_, i) => i !== index)
             : index < 0
               ? [...filterModel.items, item]
@@ -2867,6 +2980,17 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
     const onHeaderFilter = (event: Event) => {
       const target = event.target as HTMLInputElement;
       if (target.closest("[data-ok-date-picker]")) return;
+      // Set filters: the search only narrows the list; a checkbox sets the checked values.
+      const list = target.closest<HTMLElement>("[data-ok-data-grid-set-filter]");
+      if (list) {
+        // Checkboxes act on `change` (their `input` event comes first).
+        const box = target.matches('input[type="checkbox"]');
+        if (box !== (event.type === "change")) return;
+        const checked = setListChange(list, target);
+        if (checked)
+          setHeaderFilter(list.getAttribute("data-ok-field") as string, checked, "isAnyOf");
+        return;
+      }
       const cell = target.closest("[data-ok-filter-field]") as Element;
       // A custom field (renderHeaderFilter) may name its operator.
       setHeaderFilter(
@@ -2887,7 +3011,10 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       "change",
       (event) => {
         const target = event.target as Element;
-        if (target.tagName === "SELECT" && target.closest("[data-ok-data-grid-header-filters]"))
+        if (
+          (target.tagName === "SELECT" || target.closest("[data-ok-data-grid-set-filter]")) &&
+          target.closest("[data-ok-data-grid-header-filters]")
+        )
           onHeaderFilter(event);
       },
       { signal },
@@ -3413,8 +3540,10 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       // isAnyOf with chips: an Autocomplete takes the value field's place; dates: a picker.
       const chips = row.querySelector<HTMLElement>("[data-ok-autocomplete]");
       const date = row.querySelector<HTMLElement>("[data-ok-date-picker]");
-      const input = chips || date ? null : (row.querySelector("input") as HTMLInputElement);
-      return { logic, field, operator, input, chips, date };
+      // A set filter's checklist (filterVariant "set" with "is any of").
+      const set = row.querySelector<HTMLElement>("[data-ok-data-grid-set-filter]");
+      const input = chips || date || set ? null : (row.querySelector("input") as HTMLInputElement);
+      return { logic, field, operator, input, chips, date, set };
     };
     const anyOfTemplate = filterPanel?.querySelector<HTMLTemplateElement>(
       "template[data-ok-data-grid-any-of]",
@@ -3444,8 +3573,40 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
      * other operators the text field.
      */
     const syncValueField = (row: HTMLElement) => {
-      const { field, operator, input, chips, date } = partsOf(row);
+      const { field, operator, input, chips, date, set } = partsOf(row);
       const own = !operators[field.value];
+      // Set filters: a checklist of the column's values (a copy of the markup's first one).
+      const column = columns.find((c) => c.field === field.value);
+      const wantSet = operator.value === "isAnyOf" && own && isGridSetFilter(column) && !!setProto;
+      const valueId = field.id.replace("-filter-field", "-filter-value");
+      if (set) {
+        if (wantSet && set.getAttribute("data-ok-field") === field.value) {
+          syncSetList(set, setChecked(set));
+          return;
+        }
+        const back = valueBoxes.get(row);
+        if (!back) return;
+        set.replaceWith(back);
+        (back.querySelector("input") as HTMLInputElement).value = "";
+        if (!wantSet) return syncValueField(row);
+      }
+      if (wantSet) {
+        const box = (input?.closest<HTMLElement>("[data-ok-text-field]") ??
+          chips ??
+          date) as HTMLElement;
+        if (input) valueBoxes.set(row, box);
+        const list = (setProto as HTMLElement).cloneNode(true) as HTMLElement;
+        const from = list.id;
+        for (const node of [list, ...list.querySelectorAll("*")])
+          for (const attr of [...node.attributes])
+            if (from && attr.value.includes(from))
+              attr.value = attr.value.replaceAll(from, valueId);
+        list.setAttribute("data-ok-field", field.value);
+        (list.querySelector('input:not([type="checkbox"])') as HTMLInputElement).value = "";
+        box.replaceWith(list);
+        syncSetList(list, []);
+        return;
+      }
       const type = columns.find((c) => c.field === field.value)?.type;
       const picker = type === "date" ? dateTemplate : type === "dateTime" ? dateTimeTemplate : null;
       const want =
@@ -3466,8 +3627,6 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
         chips ??
         date) as HTMLElement;
       if (input) valueBoxes.set(row, box);
-      // The value field's id: the column field's, with "value" for "field".
-      const valueId = field.id.replace("-filter-field", "-filter-value");
       const next = want
         ? fieldFrom(
             want,
@@ -3482,10 +3641,11 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       if (!want) (next.querySelector("input") as HTMLInputElement).value = "";
     };
     const fillOperators = (operatorSelect: HTMLSelectElement, field: string) => {
-      const type = columns.find((c) => c.field === field)?.type;
+      const column = columns.find((c) => c.field === field);
+      const type = column?.type;
       const choices = operators[field]
         ? operators[field].map((o) => ({ value: o.value, label: o.label ?? o.value }))
-        : gridFilterOperators(type).map((o) => ({
+        : gridFilterOperators(type, column?.filterVariant).map((o) => ({
             value: o,
             label: labels.filterOperator[o] ?? o,
           }));
@@ -3506,7 +3666,8 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       return {
         ...filterModel,
         items: rowsNow.map((row) => {
-          const { field, operator, input, chips, date } = partsOf(row);
+          const { field, operator, input, chips, date, set } = partsOf(row);
+          if (set) return { field: field.value, operator: operator.value, value: setChecked(set) };
           if (chips)
             return { field: field.value, operator: operator.value, value: chipValues(chips) };
           if (date)
@@ -3586,6 +3747,13 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       "change",
       (event) => {
         const target = event.target as HTMLSelectElement;
+        // A set filter's checkbox: "Select all" checks the shown values first.
+        const list = target.closest<HTMLElement>("[data-ok-data-grid-set-filter]");
+        if (list) {
+          setListChange(list, target);
+          setFilter(readFilters());
+          return;
+        }
         const row = target.closest<HTMLElement>("[data-ok-data-grid-filter]");
         if (row && partsOf(row).field === target)
           fillOperators(partsOf(row).operator, target.value);
@@ -3599,7 +3767,21 @@ export const dataGrid = defineComponent<DataGridInstance, DataGridEvents>({
       },
       { signal },
     );
-    filterPanel?.addEventListener("input", () => setFilter(readFilters()), { signal });
+    filterPanel?.addEventListener(
+      "input",
+      (event) => {
+        // A set filter's search only narrows its list.
+        const list = (event.target as Element).closest<HTMLElement>(
+          "[data-ok-data-grid-set-filter]",
+        );
+        // Checkboxes act on `change` (their `input` event comes first).
+        if (list) {
+          if (!(event.target as Element).matches('input[type="checkbox"]'))
+            setListChange(list, event.target as Element);
+        } else setFilter(readFilters());
+      },
+      { signal },
+    );
     // Chips and date pickers change after their event: read them once it has applied.
     for (const type of ["ok:autocomplete:change", "ok:date-picker:change"])
       filterPanel?.addEventListener(type, () => queueMicrotask(() => setFilter(readFilters())), {

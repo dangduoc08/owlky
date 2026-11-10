@@ -32,6 +32,7 @@ const pairs: [component: string, story: string][] = [
   ["datagrid", "dimensions"],
   ["datagrid", "column-options"],
   ["datagrid", "selection-propagation"],
+  ["datagrid", "set-filter"],
   ["motion", "in-view"],
   ["motion", "text"],
   ["motion", "scroll"],

@@ -341,3 +341,76 @@ describe("data grid selection options", () => {
     expect(instance.selection).toEqual([]);
   });
 });
+
+describe("data grid set filter", () => {
+  const values = (list: Element) =>
+    [...list.querySelectorAll<HTMLInputElement>("[data-ok-data-grid-set-value]")].map((input) =>
+      input.getAttribute("data-ok-data-grid-set-value"),
+    );
+  const valueBox = (list: Element, value: string) =>
+    list.querySelector(`[data-ok-data-grid-set-value="${value}"]`) as HTMLInputElement;
+  const headerList = (host: Element, field: string) =>
+    host.querySelector(
+      `[data-ok-filter-field="${field}"] [data-ok-data-grid-set-filter]`,
+    ) as HTMLElement;
+
+  it("header filter: the checklist filters with is any of; search and Select all", async () => {
+    const { host, root, instance } = setup(snippet("set-group"));
+    const button = host.querySelector(
+      '[data-ok-filter-field="priority"] [data-ok-data-grid-set-filter-button]',
+    ) as HTMLElement;
+    await userEvent.click(button);
+    const list = headerList(host, "priority");
+    expect(values(list)).toEqual(["High", "Low", "Medium"]);
+    await userEvent.click(valueBox(list, "High"));
+    expect(instance.filterModel.items).toEqual([
+      { field: "priority", operator: "isAnyOf", value: ["High"] },
+    ]);
+    expect(shown(host)).toHaveLength(2);
+    expect(button.textContent).toBe("is any of: High");
+    const all = list.querySelector("[data-ok-data-grid-set-all]") as HTMLInputElement;
+    expect(all.indeterminate).toBe(true);
+    await userEvent.type(
+      list.querySelector('input:not([type="checkbox"])') as HTMLInputElement,
+      "l",
+    );
+    // "High" has no l: hidden; Low and Medium stay.
+    expect((valueBox(list, "High").closest("label") as HTMLElement).hidden).toBe(true);
+    expect(instance.filterModel.items[0]?.value).toEqual(["High"]);
+    await userEvent.click(all);
+    expect(instance.filterModel.items[0]?.value).toEqual(["High", "Low"]);
+    expect(button.textContent).toBe("is any of: 2 selected");
+    // Clearing every box removes the filter.
+    await userEvent.click(all);
+    await userEvent.clear(list.querySelector('input:not([type="checkbox"])') as HTMLInputElement);
+    expect((valueBox(list, "High").closest("label") as HTMLElement).hidden).toBe(false);
+    await userEvent.click(valueBox(list, "High"));
+    expect(instance.filterModel.items).toEqual([]);
+    expect(button.textContent).toBe("is any of: any");
+    expect(root.querySelectorAll("[data-ok-data-grid-set-filter]")).toHaveLength(2);
+    await expectNoAxeViolations(host);
+  });
+
+  it("filter panel: a set column's checklist replaces the value field and back", async () => {
+    const { host, instance } = setup(snippet("set-group"));
+    const panel = host.querySelector("#grid-set-filters") as HTMLElement;
+    const field = panel.querySelector("#grid-set-filter-field") as HTMLSelectElement;
+    field.value = "points";
+    field.dispatchEvent(new Event("change", { bubbles: true }));
+    const operator = panel.querySelector("#grid-set-filter-operator") as HTMLSelectElement;
+    expect(operator.value).toBe("isAnyOf");
+    const list = panel.querySelector("[data-ok-data-grid-set-filter]") as HTMLElement;
+    expect(list.id).toBe("grid-set-filter-value");
+    expect(values(list)).toEqual(["1", "2", "3", "5", "8"]);
+    valueBox(list, "3").click();
+    expect(instance.filterModel.items).toEqual([
+      { field: "points", operator: "isAnyOf", value: ["3"] },
+    ]);
+    expect(shown(host)).toHaveLength(2);
+    // Another operator brings the text field back.
+    operator.value = ">";
+    operator.dispatchEvent(new Event("change", { bubbles: true }));
+    expect(panel.querySelector("[data-ok-data-grid-set-filter]")).toBeNull();
+    expect(panel.querySelector<HTMLInputElement>("#grid-set-filter-value")?.type).toBe("text");
+  });
+});

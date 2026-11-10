@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { userEvent } from "vitest/browser";
 import { expectNoAxeViolations } from "../test-utils.js";
@@ -597,5 +597,112 @@ describe("DataGrid selection options", () => {
     await userEvent.click(box("auto-generated-row-team/Y"));
     expect(onRowSelectionModelChange).toHaveBeenLastCalledWith(["a2", "b"]);
     await expectNoAxeViolations(document.body);
+  });
+});
+
+describe("DataGrid set filter", () => {
+  const setColumns: GridColDef<Row>[] = [
+    { field: "name", headerName: "Name", width: 140 },
+    { field: "team", headerName: "Team", width: 200, filterVariant: "set" },
+    { field: "age", headerName: "Age", type: "number", width: 200, filterVariant: "set" },
+  ];
+  const values = (list: Element) =>
+    [...list.querySelectorAll<HTMLInputElement>("[data-ok-data-grid-set-value]")].map((input) =>
+      input.getAttribute("data-ok-data-grid-set-value"),
+    );
+  const valueBox = (list: Element, value: string) =>
+    list.querySelector(`[data-ok-data-grid-set-value="${value}"]`) as HTMLInputElement;
+
+  it("header filter: a checklist of the column's values filters with is any of", async () => {
+    const onFilterModelChange = vi.fn();
+    render(
+      <DataGrid
+        id="g"
+        aria-label="People"
+        rows={ROWS}
+        columns={setColumns}
+        headerFilters
+        hideFooter
+        onFilterModelChange={onFilterModelChange}
+      />,
+    );
+    const button = document.querySelector(
+      '[data-ok-filter-field="team"] [data-ok-data-grid-set-filter-button]',
+    ) as HTMLElement;
+    expect(button.textContent).toBe("is any of: any");
+    expect(button.getAttribute("aria-controls")).toBe("g-header-filter-team-set-filter");
+    await userEvent.click(button);
+    const list = document.querySelector(
+      "#g-header-filter-team-set-filter [data-ok-data-grid-set-filter]",
+    ) as HTMLElement;
+    expect(values(list)).toEqual(["Core", "Design", "Docs"]);
+    expect(list.querySelector('[role="group"]')?.getAttribute("aria-label")).toBe("Values");
+    await userEvent.click(valueBox(list, "Docs"));
+    expect(onFilterModelChange).toHaveBeenLastCalledWith({
+      items: [{ field: "team", operator: "isAnyOf", value: ["Docs"] }],
+    });
+    expect(shownRows()).toHaveLength(4);
+    const all = list.querySelector("[data-ok-data-grid-set-all]") as HTMLInputElement;
+    expect(all.indeterminate).toBe(true);
+    expect(button.textContent).toBe("is any of: Docs");
+    // The search narrows the list; "Select all" takes the shown values.
+    await userEvent.type(
+      list.querySelector('input:not([type="checkbox"])') as HTMLInputElement,
+      "co",
+    );
+    expect((valueBox(list, "Docs").closest("label") as HTMLElement).hidden).toBe(true);
+    expect((valueBox(list, "Core").closest("label") as HTMLElement).hidden).toBe(false);
+    expect(all.checked).toBe(false);
+    await userEvent.click(all);
+    expect(onFilterModelChange).toHaveBeenLastCalledWith({
+      items: [{ field: "team", operator: "isAnyOf", value: ["Docs", "Core"] }],
+    });
+    expect(all.checked).toBe(true);
+    expect(button.textContent).toBe("is any of: 2 selected");
+    await userEvent.click(all);
+    expect(onFilterModelChange).toHaveBeenLastCalledWith({
+      items: [{ field: "team", operator: "isAnyOf", value: ["Docs"] }],
+    });
+    await expectNoAxeViolations(document.body);
+    // Clearing the last value removes the item; Escape closes the checklist.
+    await userEvent.clear(list.querySelector('input:not([type="checkbox"])') as HTMLInputElement);
+    await userEvent.click(valueBox(list, "Core"));
+    await userEvent.click(valueBox(list, "Docs"));
+    expect(onFilterModelChange).toHaveBeenLastCalledWith({
+      items: [{ field: "team", operator: "isAnyOf", value: ["Core"] }],
+    });
+    await userEvent.click(valueBox(list, "Core"));
+    expect(onFilterModelChange).toHaveBeenLastCalledWith({ items: [] });
+    await userEvent.keyboard("{Escape}");
+    expect(button.getAttribute("aria-expanded")).toBe("false");
+  });
+
+  it("numbers list by value; the panel shows the checklist for is any of", async () => {
+    render(
+      <DataGrid
+        id="g"
+        aria-label="People"
+        rows={ROWS.slice(0, 4)}
+        columns={setColumns}
+        showToolbar
+        hideFooter
+        initialState={{
+          filter: {
+            filterModel: { items: [{ field: "age", operator: "isAnyOf", value: ["21"] }] },
+          },
+        }}
+      />,
+    );
+    const list = document.querySelector("#g-filters [data-ok-data-grid-set-filter]") as HTMLElement;
+    expect(list.id).toBe("g-filter-value");
+    expect(values(list)).toEqual(["20", "21", "22", "23"]);
+    expect(valueBox(list, "21").checked).toBe(true);
+    expect(shownRows()).toHaveLength(1);
+    // Checking a value in the panel adds it to the item.
+    act(() => valueBox(list, "23").click());
+    expect(shownRows()).toHaveLength(2);
+    // A set column's operators start with is any of.
+    const operator = document.querySelector("#g-filter-operator") as HTMLSelectElement;
+    expect(operator.options[0]?.value).toBe("isAnyOf");
   });
 });

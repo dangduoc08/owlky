@@ -564,7 +564,7 @@
       "description": "Labels of the text the runtime writes (a locale pack, such as `viVN`).",
       "kind": "method",
       "name": "setLocaleText",
-      "type": "(labels: Partial<{ toolbarColumns: string; toolbarFilters: string; toolbarDensity: string; toolbarExport: string; toolbarExportCSV: string; toolbarQuickFilterPlaceholder: string; toolbarQuickFilterLabel: string; ... 106 more ...; filterOperator: Record<...>; }>) => void"
+      "type": "(labels: Partial<{ toolbarColumns: string; toolbarFilters: string; toolbarDensity: string; toolbarExport: string; toolbarExportCSV: string; toolbarQuickFilterPlaceholder: string; toolbarQuickFilterLabel: string; ... 110 more ...; filterOperator: Record<...>; }>) => void"
      },
      {
       "description": "A column's parser of pasted text (MUI X `pastedValueParser`): gets the text and the row's values, returns the value to write. `null`: back to parsing by the column type.",
@@ -1592,6 +1592,44 @@
       "name": "data-ok-data-grid-selected-row-count"
      },
      {
+      "description": "A set filter's \"Select all\" checkbox (mixed while some shown values are checked).",
+      "elements": [
+       "input"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-set-all"
+     },
+     {
+      "description": "A set filter: a search, \"Select all\" and a checkbox per value of the column.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-set-filter"
+     },
+     {
+      "description": "A header filter's button that opens its set filter, with a summary such as \"2 selected\".",
+      "elements": [
+       "button"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-set-filter-button"
+     },
+     {
+      "description": "On a set filter's checkbox: the value it stands for.",
+      "kind": "value",
+      "name": "data-ok-data-grid-set-value",
+      "value": "string"
+     },
+     {
+      "description": "The group of a set filter's value checkboxes.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-set-values"
+     },
+     {
       "description": "The placeholder of a cell that is still loading.",
       "elements": [
        "span"
@@ -1768,6 +1806,14 @@
       "kind": "value",
       "name": "data-ok-filter-operator",
       "value": "string"
+     },
+     {
+      "description": "On a header cell: `set` filters the column with a checklist of its values.",
+      "kind": "value",
+      "name": "data-ok-filter-variant",
+      "value": [
+       "set"
+      ]
      },
      {
       "description": "On a header cell: `false` turns filtering off for the column.",

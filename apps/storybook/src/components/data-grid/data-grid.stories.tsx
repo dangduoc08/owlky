@@ -241,3 +241,4 @@ export const SelectionPropagation: StoryObj = {
   ...story("selection"),
   name: "Selection propagation",
 };
+export const SetFilter: StoryObj = { ...story("set"), name: "Set filter" };

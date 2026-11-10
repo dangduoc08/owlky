@@ -212,6 +212,13 @@ const workColumns: GridColDef<WorkItem>[] = [
   { field: "points", headerName: "Points", type: "number", width: 110 },
 ];
 
+/* Issues with checklists of their priorities and points (set filters). */
+const setColumns: GridColDef<Issue>[] = [
+  { field: "title", headerName: "Title", flex: 1, minWidth: 180 },
+  { field: "priority", headerName: "Priority", width: 200, filterVariant: "set" },
+  { field: "points", headerName: "Points", type: "number", width: 200, filterVariant: "set" },
+];
+
 /* Read-only issues for the footer, layout and selection stories. */
 const plainColumns: GridColDef<Issue>[] = [
   { field: "title", headerName: "Title", flex: 1, minWidth: 180 },
@@ -312,6 +319,24 @@ export const moreStories: Record<string, ReactGroup[]> = {
       ),
     },
   ],
+  set: [
+    {
+      title: "Set filter",
+      content: (
+        // Priority and Points filter with a checklist of their values.
+        <DataGrid
+          id="grid-set"
+          aria-label="Issues"
+          className="sb-grid-wide"
+          rows={ISSUES}
+          columns={setColumns}
+          showToolbar
+          headerFilters
+          hideFooter
+        />
+      ),
+    },
+  ],
   selection: [
     {
       title: "Tree data",
@@ -404,6 +429,7 @@ export const MORE_FILES = {
   history: [["Undo and redo", "group"]],
   footer: [["Footer, label and Tab navigation", "group"]],
   columns: [["Column options", "group"]],
+  set: [["Set filter", "group"]],
   selection: [
     ["Tree data", "tree"],
     ["Row groups", "groups"],

@@ -662,6 +662,16 @@ export interface DataGridParts {
   "data-ok-data-grid-row-count": Part<"span">;
   /** HTML only: the template of one row, copied by `setRows` and data sources. */
   "data-ok-data-grid-row": Part<"template">;
+  /** A set filter: a search, "Select all" and a checkbox per value of the column. */
+  "data-ok-data-grid-set-filter": Part<"div">;
+  /** A set filter's "Select all" checkbox (mixed while some shown values are checked). */
+  "data-ok-data-grid-set-all": Part<"input">;
+  /** A header filter's button that opens its set filter, with a summary such as "2 selected". */
+  "data-ok-data-grid-set-filter-button": Part<"button">;
+  /** On a set filter's checkbox: the value it stands for. */
+  "data-ok-data-grid-set-value": Value<string>;
+  /** The group of a set filter's value checkboxes. */
+  "data-ok-data-grid-set-values": Part<"div">;
   /** The footer's number of selected rows, such as "2 rows selected". Written by the grid. */
   "data-ok-data-grid-selected-row-count": Part<"span">;
   /** The placeholder of a cell that is still loading. */
@@ -712,6 +722,8 @@ export interface DataGridParts {
   "data-ok-excel-options": Value<string>;
   /** On a header or a cell: the column's field. */
   "data-ok-field": Value<string>;
+  /** On a header cell: `set` filters the column with a checklist of its values. */
+  "data-ok-filter-variant": Value<"set">;
   /** On a filter row: the field it filters. */
   "data-ok-filter-field": Value<string>;
   /** On a custom header filter field (or its parent): the operator of its filter, such as `>=`. */

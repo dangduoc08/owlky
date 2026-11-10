@@ -943,6 +943,36 @@
     min-width: 0;
   }
 
+  /* Set filters: a search, "Select all" and a scrolling column of the column's values. */
+  :where([data-ok-data-grid-set-filter]) {
+    display: flex;
+    flex: 1 1 calc(var(--ok-spacing) * 56);
+    flex-direction: column;
+    gap: calc(var(--ok-spacing) * 1);
+    min-width: 0;
+  }
+
+  :where([data-ok-data-grid-set-values]) {
+    display: flex;
+    flex-direction: column;
+    max-height: calc(var(--ok-spacing) * 60);
+    overflow-y: auto;
+    padding-inline-start: calc(var(--ok-spacing) * 4);
+  }
+
+  :where([data-ok-data-grid-set-values] > [hidden]) {
+    display: none;
+  }
+
+  /* A header filter's set button: the summary on one line. */
+  :where([data-ok-data-grid-set-filter-button]) {
+    justify-content: flex-start;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
   /* Pivot and chart panels: a column of fields; a pivot line (role, function) wraps when narrow. */
   :where([data-ok-data-grid-form-panel]) {
     display: flex;
