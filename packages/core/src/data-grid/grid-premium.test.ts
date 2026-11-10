@@ -22,6 +22,8 @@ import {
   gridPivotField,
   gridPivotRole,
   gridRowGroups,
+  gridSelectionStats,
+  gridStatusItems,
   gridTreeGroups,
   gridWithGroupFooters,
   isGridGroupingField,
@@ -204,6 +206,51 @@ describe("aggregation", () => {
     expect(parseGridAggregationModel("{")).toEqual({});
     expect(parseGridAggregationModel(null)).toEqual({});
     expect(({} as Record<string, unknown>)["x"]).toBeUndefined();
+  });
+});
+
+describe("selection status", () => {
+  const number: GridColumn = { field: "n", type: "number" };
+  const text: GridColumn = { field: "t" };
+  const labels = {
+    statusBarCount: "Count",
+    statusBarSum: "Sum",
+    statusBarAvg: "Average",
+    statusBarMin: "Min",
+    statusBarMax: "Max",
+  };
+  it("counts cells with a value and sums the numbers of number columns", () => {
+    const stats = gridSelectionStats([
+      { value: 1200, column: number },
+      { value: "40.5", column: number },
+      { value: "x", column: number },
+      { value: "", column: number },
+      { value: null, column: text },
+      { value: "7", column: text },
+    ]);
+    expect(stats).toEqual({ count: 4, numbers: 2, sum: 1240.5, avg: 620.25, min: 40.5, max: 1200 });
+    expect(gridStatusItems(stats, labels, "en-US")).toEqual([
+      { key: "count", text: "Count: 4" },
+      { key: "sum", text: "Sum: 1,240.5" },
+      { key: "avg", text: "Average: 620.25" },
+      { key: "min", text: "Min: 40.5" },
+      { key: "max", text: "Max: 1,200" },
+    ]);
+  });
+  it("uses the grid's functions; text only shows the count; nothing selected shows nothing", () => {
+    const own = {
+      sum: { apply: (values: unknown[]) => `${values.length} values` },
+      avg: { apply: () => 1, columnTypes: ["string" as const] },
+    };
+    const stats = gridSelectionStats([{ value: 3, column: number }], own);
+    expect(stats).toMatchObject({ sum: "1 values", avg: null, min: null, max: null });
+    expect(gridStatusItems(stats, labels, "en-US").map((i) => i.text)).toEqual([
+      "Count: 1",
+      "Sum: 1 values",
+    ]);
+    const words = gridSelectionStats([{ value: "a", column: text }]);
+    expect(gridStatusItems(words, labels).map((i) => i.key)).toEqual(["count"]);
+    expect(gridStatusItems(gridSelectionStats([]), labels)).toEqual([]);
   });
 });
 

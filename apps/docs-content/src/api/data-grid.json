@@ -140,6 +140,12 @@
      },
      {
       "cancelable": true,
+      "description": "Before a cell starts or stops editing (cell mode), with the next cell modes model. Call `preventDefault()` to refuse.",
+      "detail": "{ model: GridCellModesModel; }",
+      "name": "ok:data-grid:cellmodes"
+     },
+     {
+      "cancelable": true,
       "description": "Before the cell selection changes. Call `preventDefault()` to keep it.",
       "detail": "{ model: GridCellSelectionModel; }",
       "name": "ok:data-grid:cellselection"
@@ -242,6 +248,12 @@
      },
      {
       "cancelable": false,
+      "description": "After a redo changed rows again, with their ids.",
+      "detail": "{ ids: string[]; }",
+      "name": "ok:data-grid:redo"
+     },
+     {
+      "cancelable": false,
       "description": "After a column was resized, in pixels.",
       "detail": "{ field: string; width: number | undefined; }",
       "name": "ok:data-grid:resize"
@@ -263,6 +275,12 @@
       "description": "Before the row grouping changes (fields). Call `preventDefault()` to keep it.",
       "detail": "{ model: string[]; }",
       "name": "ok:data-grid:rowgrouping"
+     },
+     {
+      "cancelable": true,
+      "description": "Before a row starts or stops editing (row mode), with the next row modes model. Call `preventDefault()` to refuse.",
+      "detail": "{ model: GridRowModesModel; }",
+      "name": "ok:data-grid:rowmodes"
      },
      {
       "cancelable": true,
@@ -290,6 +308,12 @@
      },
      {
       "cancelable": false,
+      "description": "undo()`) restored rows, with their ids.",
+      "detail": "{ ids: string[]; }",
+      "name": "ok:data-grid:undo"
+     },
+     {
+      "cancelable": false,
       "description": "error` to `true` or a message to mark the value invalid.",
       "detail": "{ id: string; field: string; value: unknown; error?: string | boolean; }",
       "name": "ok:data-grid:validate"
@@ -313,6 +337,12 @@
       "kind": "method",
       "name": "autosizeColumns",
       "type": "(options?: { columns?: readonly string[]; includeHeaders?: boolean; } | undefined) => void"
+     },
+     {
+      "description": "The cell being edited (cell mode), as a cell modes model.",
+      "kind": "property",
+      "name": "cellModesModel",
+      "type": "GridCellModesModel"
      },
      {
       "description": "The selected cells.",
@@ -375,6 +405,12 @@
       "type": "GridFilterModel"
      },
      {
+      "description": "history`), without the keys.",
+      "kind": "property",
+      "name": "history",
+      "type": "GridHistoryApi"
+     },
+     {
       "description": "The columns pinned to the start and the end.",
       "kind": "property",
       "name": "pinnedColumns",
@@ -411,6 +447,12 @@
       "type": "string[]"
      },
      {
+      "description": "The row being edited (row mode), as a row modes model.",
+      "kind": "property",
+      "name": "rowModesModel",
+      "type": "GridRowModesModel"
+     },
+     {
       "description": "Scrolls a row (index on the current page) and / or a column (shown index) into view.",
       "kind": "method",
       "name": "scrollToIndexes",
@@ -433,6 +475,12 @@
       "kind": "method",
       "name": "setAggregationModel",
       "type": "(model: GridAggregationModel) => void"
+     },
+     {
+      "description": "Starts or stops editing a cell (cell mode; no events): the first `edit` entry opens, a cell left out (or `view`) closes, saving unless `ignoreModifications`.",
+      "kind": "method",
+      "name": "setCellModesModel",
+      "type": "(model: GridCellModesModel) => void"
      },
      {
       "description": "Selects these cells.",
@@ -477,6 +525,12 @@
       "type": "(source: GridDataSource<DataRow> | null) => void"
      },
      {
+      "description": "Sets the value of a field being edited, such as from a custom editor's widget.",
+      "kind": "method",
+      "name": "setEditCellValue",
+      "type": "(params: { id: string; field: string; value: unknown; }) => void"
+     },
+     {
       "description": "Filters the rows (no event).",
       "kind": "method",
       "name": "setFilterModel",
@@ -498,7 +552,7 @@
       "description": "Labels of the text the runtime writes (a locale pack, such as `viVN`).",
       "kind": "method",
       "name": "setLocaleText",
-      "type": "(labels: Partial<{ toolbarColumns: string; toolbarFilters: string; toolbarDensity: string; toolbarExport: string; toolbarExportCSV: string; toolbarQuickFilterPlaceholder: string; toolbarQuickFilterLabel: string; ... 95 more ...; filterOperator: Record<...>; }>) => void"
+      "type": "(labels: Partial<{ toolbarColumns: string; toolbarFilters: string; toolbarDensity: string; toolbarExport: string; toolbarExportCSV: string; toolbarQuickFilterPlaceholder: string; toolbarQuickFilterLabel: string; ... 102 more ...; filterOperator: Record<...>; }>) => void"
      },
      {
       "description": "Pins columns to the start and the end.",
@@ -537,6 +591,12 @@
       "type": "(model: readonly string[]) => void"
      },
      {
+      "description": "Starts or stops editing a row (row mode; no events), like `setCellModesModel`.",
+      "kind": "method",
+      "name": "setRowModesModel",
+      "type": "(model: GridRowModesModel) => void"
+     },
+     {
       "description": "Replaces the rows with data: each row is a copy of `<template data-ok-data-grid-row>`, its cells filled as text (or from `<template data-ok-data-grid-cell=\"<field>\">`, whose `[data-ok-data-grid-value]` elements get the value). Needs `id` on each row.",
       "kind": "method",
       "name": "setRows",
@@ -547,6 +607,12 @@
       "kind": "method",
       "name": "setSelection",
       "type": "(ids: readonly string[]) => void"
+     },
+     {
+      "description": "A column's own sorting (MUI X `sortComparator` / `getSortComparator`), given the cells' values (`data-ok-value`, else the text) and rows. `null`: back to sorting by the column type.",
+      "kind": "method",
+      "name": "setSortComparator",
+      "type": "(field: string, comparators: GridComparators<HTMLElement> | null) => void"
      },
      {
       "description": "Sorts the rows (no event).",
@@ -924,6 +990,32 @@
       "description": "A chart of the grid's rows (or top-level groups) follows its filters, sorting and grouping.",
       "kind": "flag",
       "name": "chartsIntegration"
+     },
+     {
+      "attr": "data-ok-multiple-columns-sorting-mode",
+      "default": "withModifierKey",
+      "description": "Sorting a column keeps the others with Shift, Ctrl or Cmd (`withModifierKey`), or `always`.",
+      "kind": "style",
+      "name": "multipleColumnsSortingMode",
+      "optional": true,
+      "values": [
+       "withModifierKey",
+       "always"
+      ]
+     },
+     {
+      "attr": "data-ok-status-bar",
+      "description": "With cell selection: a bar under the rows counts the selected cells and sums their numbers.",
+      "kind": "flag",
+      "name": "statusBar"
+     },
+     {
+      "attr": "data-ok-history-stack-size",
+      "default": 30,
+      "description": "Edits and pastes that Ctrl / Cmd + Z can undo (`0` turns undo and redo off).",
+      "kind": "number",
+      "min": 0,
+      "name": "historyStackSize"
      }
     ],
     "parts": [
@@ -1097,6 +1189,14 @@
       "name": "data-ok-data-grid-detail-toggle"
      },
      {
+      "description": "HTML only: a column's own editor (renderEditCell), named by its field; copied into the edited cell.",
+      "elements": [
+       "template"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-edit-cell"
+     },
+     {
       "description": "The error message of an invalid edited value.",
       "elements": [
        "span"
@@ -1105,7 +1205,7 @@
       "name": "data-ok-data-grid-edit-error"
      },
      {
-      "description": "The input of an edited cell.",
+      "description": "The input of an edited cell (in an editor template: the field that holds the value).",
       "elements": [
        "select"
       ],
@@ -1203,6 +1303,15 @@
       ],
       "kind": "part",
       "name": "data-ok-data-grid-header-title"
+     },
+     {
+      "description": "A toolbar button that undoes or redoes the last edit (disabled when there is none).",
+      "kind": "value",
+      "name": "data-ok-data-grid-history",
+      "value": [
+       "redo",
+       "undo"
+      ]
      },
      {
       "description": "The single cell of a row in the list view.",
@@ -1369,6 +1478,26 @@
       "name": "data-ok-data-grid-sort-icon"
      },
      {
+      "description": "The status bar (`statusBar` with cell selection): a polite live region of figures.",
+      "elements": [
+       "div"
+      ],
+      "kind": "part",
+      "name": "data-ok-data-grid-status-bar"
+     },
+     {
+      "description": "One figure of the status bar, such as \"Sum: 141\". Written by the grid.",
+      "kind": "value",
+      "name": "data-ok-data-grid-status-item",
+      "value": [
+       "avg",
+       "count",
+       "max",
+       "min",
+       "sum"
+      ]
+     },
+     {
       "description": "The toolbar.",
       "elements": [
        "div"
@@ -1476,6 +1605,12 @@
       "description": "On a filter row: the field it filters.",
       "kind": "value",
       "name": "data-ok-filter-field",
+      "value": "string"
+     },
+     {
+      "description": "On a custom header filter field (or its parent): the operator of its filter, such as `>=`.",
+      "kind": "value",
+      "name": "data-ok-filter-operator",
       "value": "string"
      },
      {
@@ -1635,6 +1770,12 @@
       ]
      },
      {
+      "description": "On the root or a header cell: the directions a header click goes through, as JSON (such as `[\"desc\",\"asc\",null]`; `null` is \"not sorted\").",
+      "kind": "value",
+      "name": "data-ok-sorting-order",
+      "value": "string"
+     },
+     {
       "description": "On a row: extra space above it, in pixels.",
       "kind": "value",
       "name": "data-ok-spacing-top",
@@ -1694,6 +1835,11 @@
       "description": "How `autosizeColumns` measures (columns, header, outliers, extra width).",
       "name": "autosizeOptions",
       "type": "GridAutosizeOptions"
+     },
+     {
+      "description": "Which cells are in edit mode (`editMode=\"cell\"`), controlled: `{ [id]: { [field]: { mode } } }` with `mode` `\"edit\"` or `\"view\"` (`ignoreModifications: true` leaves without saving). The grid edits one cell at a time: the first `edit` entry.",
+      "name": "cellModesModel",
+      "type": "GridCellModesModel"
      },
      {
       "description": "Cells are selected in ranges (press, drag, Shift + click, Shift + arrows).",
@@ -1975,6 +2121,12 @@
       "type": "boolean"
      },
      {
+      "default": "30",
+      "description": "Edits that Ctrl / Cmd + Z can undo (Ctrl / Cmd + Shift + Z or Ctrl + Y redo). Each saved cell or row edit, and each paste, is one step; undo and redo go through `processRowUpdate`. `0` turns undo and redo off.",
+      "name": "historyStackSize",
+      "type": "number"
+     },
+     {
       "description": "Searches and filters ignore accents.",
       "name": "ignoreDiacritics",
       "type": "boolean"
@@ -2046,6 +2198,12 @@
       "type": "Partial<GridLabels>"
      },
      {
+      "default": "withModifierKey",
+      "description": "`always`: a header click adds the column to the sort. only with Shift.",
+      "name": "multipleColumnsSortingMode",
+      "type": "\"always\" | \"withModifierKey\""
+     },
+     {
       "description": "Called when the chart panel switches to another chart.",
       "name": "onActiveChartIdChange",
       "type": "((id: string) => void)"
@@ -2079,6 +2237,11 @@
       "description": "Called on a key press in a cell.",
       "name": "onCellKeyDown",
       "type": "((params: GridCellParams<R>, event: KeyboardEvent<HTMLElement>) => void)"
+     },
+     {
+      "description": "Called when a cell starts or stops editing, with the next cell modes model.",
+      "name": "onCellModesModelChange",
+      "type": "((model: GridCellModesModel) => void)"
      },
      {
       "description": "Called when the cell selection changes.",
@@ -2176,6 +2339,11 @@
       "type": "((error: unknown) => void)"
      },
      {
+      "description": "Called after a redo, with the ids of the rows it changed again.",
+      "name": "onRedo",
+      "type": "((params: { ids: string[]; }) => void)"
+     },
+     {
       "description": "Called on a click on a row.",
       "name": "onRowClick",
       "type": "((params: GridRowParams<R>, event: MouseEvent<HTMLElement, MouseEvent>) => void)"
@@ -2201,6 +2369,11 @@
       "type": "((model: string[]) => void)"
      },
      {
+      "description": "Called when a row starts or stops editing, with the next row modes model.",
+      "name": "onRowModesModelChange",
+      "type": "((model: GridRowModesModel) => void)"
+     },
+     {
       "description": "Called when a dragged row moves.",
       "name": "onRowOrderChange",
       "type": "((params: { row: R; oldIndex: number; targetIndex: number; }) => void)"
@@ -2219,6 +2392,11 @@
       "description": "Called when the sort model changes.",
       "name": "onSortModelChange",
       "type": "((model: GridSortModel) => void)"
+     },
+     {
+      "description": "Called after an undo, with the ids of the rows it restored.",
+      "name": "onUndo",
+      "type": "((params: { ids: string[]; }) => void)"
      },
      {
       "default": "[5, 10, 25]",
@@ -2302,6 +2480,11 @@
       "type": "number"
      },
      {
+      "description": "Which rows are in edit mode (`editMode=\"row\"`), controlled: `{ [id]: { mode, fieldToFocus? } }`. The grid edits one row at a time: the first `edit` entry.",
+      "name": "rowModesModel",
+      "type": "GridRowModesModel"
+     },
+     {
       "description": "Rows move by dragging their handle (or Alt + Up / Down on it).",
       "name": "rowReordering",
       "type": "boolean"
@@ -2328,6 +2511,12 @@
       "type": "number"
      },
      {
+      "default": "true",
+      "description": "Undo and Redo buttons in the toolbar (with `showToolbar` and undo on).",
+      "name": "showHistoryControls",
+      "type": "boolean"
+     },
+     {
       "description": "Shows the toolbar: quick filter, columns, filters, density and export.",
       "name": "showToolbar",
       "type": "boolean"
@@ -2344,9 +2533,20 @@
       "type": "\"client\" | \"server\""
      },
      {
+      "default": "[\"asc\", \"desc\", null]",
+      "description": "The directions a header click goes through, in order (`null`: not sorted). A column's `sortingOrder` overrides it.",
+      "name": "sortingOrder",
+      "type": "GridSortingOrder"
+     },
+     {
       "description": "Splits pasted text into cells (default: tab-separated lines).",
       "name": "splitClipboardPastedText",
       "type": "((text: string) => string[][])"
+     },
+     {
+      "description": "With `cellSelection`: a status bar under the grid shows the count of the selected cells and the sum, average, min and max of their numbers (through `aggregationFunctions`).",
+      "name": "statusBar",
+      "type": "boolean"
      },
      {
       "description": "Toolbar buttons with text (default) or icons with tooltips.",
@@ -2375,6 +2575,10 @@
    "type": "\"footer\" | \"inline\" | null"
   },
   {
+   "name": "GridCellModesModel",
+   "type": "{ [x: string]: Record<string, GridCellModeEntry>; }"
+  },
+  {
    "name": "GridCellSelectionModel",
    "type": "{ [x: string]: Record<string, boolean>; }"
   },
@@ -2395,8 +2599,20 @@
    "type": "\"cellDoubleClick\" | \"enterKeyDown\" | \"f2KeyDown\" | \"printableKeyDown\""
   },
   {
+   "name": "GridRowModesModel",
+   "type": "{ [x: string]: GridRowModeEntry; }"
+  },
+  {
+   "name": "GridSortDirection",
+   "type": "\"asc\" | \"desc\""
+  },
+  {
    "name": "GridSortModel",
    "type": "GridSortItem[]"
+  },
+  {
+   "name": "GridSortingOrder",
+   "type": "readonly (GridSortDirection | null)[]"
   }
  ]
 }

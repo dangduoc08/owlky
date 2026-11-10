@@ -48,7 +48,7 @@ const header = (host: Element, field: string) =>
   host.querySelector<HTMLElement>(`[role="columnheader"][data-ok-field="${field}"]`) as HTMLElement;
 
 describe("data grid snippets", () => {
-  it("covers every story group", () => expect(snippets).toHaveLength(27));
+  it("covers every story group", () => expect(snippets).toHaveLength(32));
 
   // Grids whose rows come from JavaScript (setRows, data sources) ship no rows.
   const scripted = (path: string) => /(large|server|lazy|server-aggregation)-group/.test(path);
@@ -72,7 +72,9 @@ describe("data grid snippets", () => {
 
   // Layout and validation grids: their own rows, no pages.
   const unpaged = (path: string) =>
-    /(layout|validation|tree|detail|ordering|groups|list|grouping|pivot|cells|charts)-/.test(path);
+    /(layout|validation|tree|detail|ordering|groups|list|grouping|pivot|cells|charts|sorting|editors|modes|history)-/.test(
+      path,
+    );
 
   it.each(snippets.filter(([path]) => unpaged(path)))(
     "%s: CSP-safe; no axe violations once running",
@@ -1928,5 +1930,347 @@ describe("data grid runtime, phase 5", () => {
     expect(stock().textContent).toBe("99");
     expect(events.some(([n]) => n === "datasourceerror")).toBe(true);
     expect(root).toBeTruthy();
+  });
+});
+
+describe("data grid sorting options", () => {
+  it("sort cycles from the root and the headers; always adds columns; menu items follow", async () => {
+    const host = mount(BASIC);
+    const root = host.querySelector<HTMLElement>("[data-ok-data-grid]") as HTMLElement;
+    root.setAttribute("data-ok-sorting-order", '["desc","asc"]');
+    root.setAttribute("data-ok-multiple-columns-sorting-mode", "always");
+    header(host, "firstName").setAttribute("data-ok-sorting-order", '["asc"]');
+    start();
+    const instance = runtime?.get<DataGridInstance>(root, "data-grid") as DataGridInstance;
+    const age = header(host, "age");
+    age.click();
+    expect(age.getAttribute("aria-sort")).toBe("descending");
+    age.click();
+    expect(age.getAttribute("aria-sort")).toBe("ascending");
+    age.click();
+    expect(age.getAttribute("aria-sort")).toBe("descending");
+    header(host, "firstName").click();
+    expect(instance.sortModel).toEqual([
+      { field: "age", sort: "desc" },
+      { field: "firstName", sort: "asc" },
+    ]);
+    // A one-direction cycle stays sorted.
+    header(host, "firstName").click();
+    expect(instance.sortModel).toHaveLength(2);
+    const menu = header(host, "firstName").querySelector(
+      "[data-ok-data-grid-menu-button]",
+    ) as HTMLElement;
+    await userEvent.hover(header(host, "firstName"));
+    await userEvent.click(menu);
+    const item = (action: string) =>
+      host.querySelector(
+        `#${root.id}-column-menu [data-ok-data-grid-action="${action}"]`,
+      ) as HTMLElement;
+    expect(item("asc").hidden).toBe(false);
+    expect(item("desc").hidden).toBe(true);
+    expect(item("unsort").hidden).toBe(true);
+    await userEvent.keyboard("{Escape}");
+  });
+
+  it("setSortComparator: a column's own comparators, then back to the type", () => {
+    const { host, instance } = setup();
+    const lengths: unknown[] = [];
+    instance.setSortComparator("firstName", {
+      sortComparator: (a, b, rowA) => {
+        lengths.push(rowA);
+        return String(a).length - String(b).length || String(a).localeCompare(String(b));
+      },
+    });
+    header(host, "firstName").click();
+    const asc = visible(host);
+    expect(asc.map((name) => String(name).length)).toEqual(
+      [...asc].map((name) => String(name).length).sort((x, y) => x - y),
+    );
+    expect(lengths[0]).toBeInstanceOf(HTMLElement);
+    header(host, "firstName").click();
+    const desc = visible(host);
+    expect(String(desc[0]).length).toBeGreaterThanOrEqual(String(desc.at(-1)).length);
+    // getSortComparator is used as it is (here: asc puts the oldest first).
+    instance.setSortComparator("age", {
+      getSortComparator: (direction) => (a, b) =>
+        direction === "asc" ? Number(b) - Number(a) : Number(a) - Number(b),
+    });
+    instance.setSortModel([{ field: "age", sort: "asc" }]);
+    const ages = visible(host, "age").map(Number);
+    expect(ages).toEqual([...ages].sort((x, y) => y - x));
+    instance.setSortComparator("age", null);
+    instance.setSortModel([{ field: "age", sort: "asc" }]);
+    const plain = visible(host, "age").map(Number);
+    expect(plain).toEqual([...plain].sort((x, y) => x - y));
+  });
+});
+
+describe("data grid custom editors and edit modes", () => {
+  const snippet = (name: string) =>
+    snippets.find(([path]) => path.endsWith(`${name}.html`))?.[1] as string;
+  const open = (name: string, edit?: (root: HTMLElement) => void) => {
+    const host = mount(snippet(name));
+    const root = host.querySelector<HTMLElement>("[data-ok-data-grid]") as HTMLElement;
+    edit?.(root);
+    start();
+    const instance = runtime?.get<DataGridInstance>(root, "data-grid") as DataGridInstance;
+    const cell = (id: string, field: string) =>
+      host.querySelector<HTMLElement>(
+        `[data-ok-row-id="${id}"] [role="gridcell"][data-ok-field="${field}"]`,
+      ) as HTMLElement;
+    return { host, root, instance, cell };
+  };
+  const key = (target: Element, k: string) =>
+    target.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, cancelable: true, key: k }));
+
+  it("a template editor: cloned into the cell, setEditCellValue, keys and focus", async () => {
+    const { root, instance, cell } = open("editors-group");
+    const edits: unknown[] = [];
+    root.addEventListener("ok:data-grid:edit", (event) =>
+      edits.push((event as CustomEvent).detail),
+    );
+    cell("is-1", "points").dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
+    const slider = cell("is-1", "points").querySelector("[data-ok-slider]") as HTMLElement;
+    expect(slider).not.toBeNull();
+    expect(document.activeElement).toBe(slider.querySelector("input"));
+    instance.setEditCellValue({ id: "is-1", field: "points", value: 8 });
+    // Another cell or row is ignored.
+    instance.setEditCellValue({ id: "is-1", field: "title", value: "x" });
+    instance.setEditCellValue({ id: "is-2", field: "points", value: 1 });
+    key(slider.querySelector("input") as HTMLElement, "Enter");
+    expect(edits.at(-1)).toEqual({ id: "is-1", row: { points: 8 } });
+    expect(cell("is-1", "points").textContent).toBe("8");
+    expect(cell("is-1", "points").getAttribute("data-ok-value")).toBe("8");
+    // Escape restores the cell; focus moving inside the cell keeps the edit.
+    cell("is-4", "points").dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
+    const input = cell("is-4", "points").querySelector("input") as HTMLInputElement;
+    input.dispatchEvent(new FocusEvent("focusout", { bubbles: true, relatedTarget: input }));
+    expect(cell("is-4", "points").hasAttribute("data-ok-editing")).toBe(true);
+    key(input, "Escape");
+    expect(cell("is-4", "points").textContent).toBe("5");
+    // A built-in editor still works next to it, and a checkbox value can be set.
+    cell("is-4", "priority").dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
+    instance.setEditCellValue({ id: "is-4", field: "priority", value: "Low" });
+    expect((cell("is-4", "priority").querySelector("select") as HTMLSelectElement).value).toBe(
+      "Low",
+    );
+    cell("is-4", "priority")
+      .querySelector("select")
+      ?.dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
+    expect(cell("is-4", "priority").textContent).toBe("Low");
+    await settle();
+  });
+
+  it("a template's own field holds the value; validation marks it", () => {
+    const { root, instance, cell } = open("editors-group", (r) => {
+      const template = r.querySelector(
+        'template[data-ok-data-grid-edit-cell="points"]',
+      ) as HTMLTemplateElement;
+      const field = document.createElement("input");
+      field.type = "number";
+      field.setAttribute("data-ok-data-grid-edit-input", "");
+      field.setAttribute("aria-label", "Points");
+      template.content.replaceChildren(field);
+    });
+    root.addEventListener("ok:data-grid:validate", (event) => {
+      const detail = (event as CustomEvent<{ value: unknown; error?: string }>).detail;
+      if (Number(detail.value) > 13) detail.error = "At most 13";
+    });
+    cell("is-2", "points").dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
+    const field = cell("is-2", "points").querySelector("input") as HTMLInputElement;
+    expect(field.value).toBe("2");
+    field.value = "20";
+    field.dispatchEvent(new Event("change", { bubbles: true }));
+    expect(field.getAttribute("aria-invalid")).toBe("true");
+    key(field, "Enter");
+    expect(cell("is-2", "points").hasAttribute("data-ok-editing")).toBe(true);
+    field.value = "6";
+    field.dispatchEvent(new Event("input", { bubbles: true }));
+    key(field, "Enter");
+    expect(cell("is-2", "points").textContent).toBe("6");
+    expect(instance.cellModesModel).toEqual({});
+  });
+
+  it("a custom header filter names its operator", () => {
+    const { host, instance } = open("editors-group");
+    const select = host.querySelector("#grid-editors-points-filter") as HTMLSelectElement;
+    expect(select.getAttribute("data-ok-filter-operator")).toBe(">=");
+    select.value = "5";
+    select.dispatchEvent(new Event("change", { bubbles: true }));
+    expect(instance.filterModel.items).toEqual([{ field: "points", operator: ">=", value: "5" }]);
+    expect(visible(host, "points")).toEqual(["8", "5"]);
+  });
+
+  it("cell and row modes: events, setters without events, refusals", () => {
+    const { root, instance, cell } = open("editors-group");
+    const modes: unknown[] = [];
+    root.addEventListener("ok:data-grid:cellmodes", (event) =>
+      modes.push((event as CustomEvent).detail.model),
+    );
+    cell("is-1", "title").dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
+    expect(modes.at(-1)).toEqual({ "is-1": { title: { mode: "edit" } } });
+    expect(instance.cellModesModel).toEqual({ "is-1": { title: { mode: "edit" } } });
+    expect(instance.rowModesModel).toEqual({});
+    key(cell("is-1", "title").querySelector("input") as HTMLElement, "Escape");
+    expect(modes.at(-1)).toEqual({
+      "is-1": { title: { mode: "view", ignoreModifications: true } },
+    });
+    // Refused: the cell doesn't open (or doesn't close).
+    root.addEventListener("ok:data-grid:cellmodes", (event) => event.preventDefault(), {
+      once: true,
+    });
+    cell("is-2", "title").dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
+    expect(cell("is-2", "title").hasAttribute("data-ok-editing")).toBe(false);
+    // Setters: no events; ignoreModifications cancels; another cell moves the edit.
+    const count = modes.length;
+    instance.setCellModesModel({ "is-2": { title: { mode: "edit" } } });
+    const input = cell("is-2", "title").querySelector("input") as HTMLInputElement;
+    input.value = "Changed";
+    instance.setCellModesModel({ "is-2": { title: { mode: "view", ignoreModifications: true } } });
+    expect(cell("is-2", "title").textContent).toBe("Update the docs");
+    instance.setCellModesModel({ "is-2": { title: { mode: "edit" } } });
+    (cell("is-2", "title").querySelector("input") as HTMLInputElement).value = "Docs";
+    instance.setCellModesModel({ "is-3": { title: { mode: "edit" } } });
+    expect(cell("is-2", "title").textContent).toBe("Docs");
+    expect(cell("is-3", "title").hasAttribute("data-ok-editing")).toBe(true);
+    instance.setCellModesModel({});
+    expect(cell("is-3", "title").hasAttribute("data-ok-editing")).toBe(false);
+    expect(modes).toHaveLength(count);
+    // Row setters only work in row mode (and the reverse).
+    instance.setRowModesModel({ "is-1": { mode: "edit" } });
+    expect(instance.rowModesModel).toEqual({});
+    root.setAttribute("data-ok-edit-mode", "row");
+    instance.setCellModesModel({ "is-1": { title: { mode: "edit" } } });
+    expect(instance.cellModesModel).toEqual({});
+    instance.setRowModesModel({ "is-1": { mode: "edit", fieldToFocus: "priority" } });
+    expect(document.activeElement).toBe(cell("is-1", "priority").querySelector("select"));
+    expect(instance.rowModesModel).toEqual({
+      "is-1": { mode: "edit" },
+    });
+    instance.setRowModesModel({ "is-1": { mode: "view" } });
+    expect(root.querySelector('[data-ok-row-id="is-1"]')?.hasAttribute("data-ok-editing")).toBe(
+      false,
+    );
+  });
+
+  it("edit modes story: Save and Cancel start hidden (display none)", async () => {
+    const { host, cell } = open("modes-group");
+    expect(host.querySelector('[aria-label="Edit Ana Silva"]')?.hasAttribute("hidden")).toBe(false);
+    const save = host.querySelector('[aria-label="Save Ana Silva"]') as HTMLButtonElement;
+    expect(save.hidden).toBe(true);
+    expect(getComputedStyle(save).display).toBe("none");
+    await expectNoAxeViolations(host);
+    expect(cell("m-1", "hours").textContent).toBe("32");
+  });
+});
+
+describe("data grid undo and redo", () => {
+  const snippet = (name: string) =>
+    snippets.find(([path]) => path.endsWith(`${name}.html`))?.[1] as string;
+  const open = (name: string, edit?: (root: HTMLElement) => void) => {
+    const host = mount(snippet(name));
+    const root = host.querySelector<HTMLElement>("[data-ok-data-grid]") as HTMLElement;
+    root.setAttribute("data-ok-disable-virtualization", "");
+    edit?.(root);
+    start();
+    const instance = runtime?.get<DataGridInstance>(root, "data-grid") as DataGridInstance;
+    const cell = (id: string, field: string) =>
+      host.querySelector<HTMLElement>(
+        `[data-ok-row-id="${id}"] [role="gridcell"][data-ok-field="${field}"]`,
+      ) as HTMLElement;
+    return { host, root, instance, cell };
+  };
+  const key = (target: Element, k: string, init: KeyboardEventInit = {}) =>
+    target.dispatchEvent(
+      new KeyboardEvent("keydown", { bubbles: true, cancelable: true, key: k, ...init }),
+    );
+  const editTo = (cell: HTMLElement, text: string) => {
+    cell.dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
+    const input = cell.querySelector("input") as HTMLInputElement;
+    input.value = text;
+    key(input, "Enter");
+  };
+
+  it("Ctrl + Z undoes an edit, Shift + Z and Y redo it; the toolbar buttons follow", async () => {
+    const { host, root, instance, cell } = open("cells-group");
+    const events: [string, unknown][] = [];
+    for (const name of ["edit", "undo", "redo"])
+      root.addEventListener(`ok:data-grid:${name}`, (event) =>
+        events.push([name, (event as CustomEvent).detail]),
+      );
+    const undo = host.querySelector('[data-ok-data-grid-history="undo"]') as HTMLButtonElement;
+    const redo = host.querySelector('[data-ok-data-grid-history="redo"]') as HTMLButtonElement;
+    expect(undo.disabled).toBe(true);
+    editTo(cell("i-1", "name"), "Pot");
+    expect(cell("i-1", "name").textContent).toBe("Pot");
+    expect(undo.disabled).toBe(false);
+    key(cell("i-1", "name"), "z", { ctrlKey: true });
+    expect(cell("i-1", "name").textContent).toBe("Kettle");
+    expect(events.slice(-2)).toEqual([
+      ["edit", { id: "i-1", row: { name: "Kettle" } }],
+      ["undo", { ids: ["i-1"] }],
+    ]);
+    expect(redo.disabled).toBe(false);
+    key(cell("i-1", "name"), "z", { metaKey: true, shiftKey: true });
+    expect(cell("i-1", "name").textContent).toBe("Pot");
+    expect(events.at(-1)).toEqual(["redo", { ids: ["i-1"] }]);
+    undo.click();
+    expect(cell("i-1", "name").textContent).toBe("Kettle");
+    key(cell("i-1", "name"), "y", { ctrlKey: true });
+    expect(cell("i-1", "name").textContent).toBe("Pot");
+    expect(instance.history.canUndo()).toBe(true);
+    expect(instance.history.canRedo()).toBe(false);
+    redo.click();
+    expect(await instance.history.redo()).toBe(false);
+    // A refused undo fails and forgets the steps.
+    root.addEventListener("ok:data-grid:edit", (event) => event.preventDefault(), { once: true });
+    expect(await instance.history.undo()).toBe(false);
+    expect(instance.history.canUndo()).toBe(false);
+    expect(undo.disabled).toBe(true);
+    await expectNoAxeViolations(host);
+  });
+
+  it("a paste is one step; changed rows and new rows stop a step; the size and clear", async () => {
+    const { root, instance, cell } = open("cells-group", (r) =>
+      r.setAttribute("data-ok-history-stack-size", "2"),
+    );
+    // Paste two rows of two cells into name / category.
+    cell("i-1", "name").focus();
+    key(cell("i-1", "name"), "v", { ctrlKey: true });
+    const area = document.activeElement as HTMLElement;
+    const read = vi.spyOn(DataTransfer.prototype, "getData").mockReturnValue("A\tTools\nB\tTools");
+    area.dispatchEvent(
+      new ClipboardEvent("paste", {
+        bubbles: true,
+        cancelable: true,
+        clipboardData: new DataTransfer(),
+      }),
+    );
+    read.mockRestore();
+    expect(cell("i-2", "name").textContent).toBe("B");
+    expect(await instance.history.undo()).toBe(true);
+    expect(cell("i-1", "name").textContent).toBe("Kettle");
+    expect(cell("i-2", "category").textContent).toBe("Serving");
+    expect(await instance.history.redo()).toBe(true);
+    expect(cell("i-2", "category").textContent).toBe("Tools");
+    // Three edits, two kept.
+    editTo(cell("i-3", "name"), "C");
+    editTo(cell("i-3", "name"), "D");
+    editTo(cell("i-3", "name"), "E");
+    expect(await instance.history.undo()).toBe(true);
+    expect(await instance.history.undo()).toBe(true);
+    expect(await instance.history.undo()).toBe(false);
+    expect(cell("i-3", "name").textContent).toBe("C");
+    // Changed outside the history: the step can't apply.
+    instance.history.clear();
+    editTo(cell("i-4", "name"), "F");
+    cell("i-4", "name").setAttribute("data-ok-value", "G");
+    expect(await instance.history.undo()).toBe(false);
+    // Turned off: no steps, no keys.
+    root.setAttribute("data-ok-history-stack-size", "0");
+    editTo(cell("i-5", "name"), "H");
+    key(cell("i-5", "name"), "z", { ctrlKey: true });
+    expect(cell("i-5", "name").textContent).toBe("H");
+    expect(instance.history.canUndo()).toBe(false);
   });
 });

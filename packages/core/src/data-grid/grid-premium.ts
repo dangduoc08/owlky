@@ -17,6 +17,7 @@ import {
 import {
   type GridColumn,
   type GridColumnType,
+  type GridLabels,
   type GridSortModel,
   gridCompare,
   gridSortValue,
@@ -269,6 +270,94 @@ export function gridAggregate<R>(
 }
 
 /** An aggregation model from untrusted input (JSON attributes): field → known function name. */
+/** The status bar of a cell selection: how many cells hold a value, and their numbers' figures. */
+export interface GridSelectionStats {
+  /** Selected cells with a value. */
+  count: number;
+  /** Selected cells of `number` columns with a number. */
+  numbers: number;
+  sum: unknown;
+  avg: unknown;
+  min: unknown;
+  max: unknown;
+}
+
+const STATUS_COLUMN: GridColumn = { field: "", type: "number" };
+
+/**
+ * Figures of the selected cells (`value` and its column): a count of the cells with a value, and
+ * `sum`, `avg`, `min` and `max` of the numbers in `number` columns, through the aggregation
+ * functions of those names (a missing or refused function gives `null`).
+ */
+export function gridSelectionStats(
+  cells: readonly { value: unknown; column: GridColumn }[],
+  functions: Readonly<Record<string, GridAggregationFunction>> = gridAggregationFunctions,
+): GridSelectionStats {
+  let count = 0;
+  const values: number[] = [];
+  for (const { value, column } of cells) {
+    if (value === null || value === undefined || value === "") continue;
+    count++;
+    if (column.type !== "number") continue;
+    const n = gridSortValue(value, "number");
+    if (typeof n === "number") values.push(n);
+  }
+  const run = (name: string) => {
+    const fn = Object.hasOwn(functions, name) ? functions[name] : undefined;
+    if (!fn || !values.length || (fn.columnTypes && !fn.columnTypes.includes("number")))
+      return null;
+    return fn.apply(values, STATUS_COLUMN);
+  };
+  return {
+    count,
+    numbers: values.length,
+    sum: run("sum"),
+    avg: run("avg"),
+    min: run("min"),
+    max: run("max"),
+  };
+}
+
+/** One item of the status bar: its key and its text ("Sum: 1,240"). */
+export interface GridStatusItem {
+  key: "count" | "sum" | "avg" | "min" | "max";
+  text: string;
+}
+
+/**
+ * The status bar's items: the count, then (with numbers) sum, average, min and max. Numbers are
+ * formatted for `locale` with at most 2 decimals; values that aren't numbers show as text.
+ */
+export function gridStatusItems(
+  stats: GridSelectionStats,
+  labels: Pick<
+    GridLabels,
+    "statusBarCount" | "statusBarSum" | "statusBarAvg" | "statusBarMin" | "statusBarMax"
+  >,
+  locale?: string,
+): GridStatusItem[] {
+  if (stats.count === 0) return [];
+  const format = new Intl.NumberFormat(locale, { maximumFractionDigits: 2 });
+  const show = (value: unknown) =>
+    typeof value === "number" && Number.isFinite(value) ? format.format(value) : String(value);
+  const items: GridStatusItem[] = [
+    { key: "count", text: `${labels.statusBarCount}: ${format.format(stats.count)}` },
+  ];
+  if (stats.numbers === 0) return items;
+  const named = [
+    ["sum", labels.statusBarSum],
+    ["avg", labels.statusBarAvg],
+    ["min", labels.statusBarMin],
+    ["max", labels.statusBarMax],
+  ] as const;
+  for (const [key, label] of named) {
+    const value = stats[key];
+    if (value !== null && value !== undefined)
+      items.push({ key, text: `${label}: ${show(value)}` });
+  }
+  return items;
+}
+
 export function parseGridAggregationModel(
   json: string | null,
   functions: Readonly<Record<string, GridAggregationFunction>> = gridAggregationFunctions,

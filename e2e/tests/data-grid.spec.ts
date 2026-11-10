@@ -419,9 +419,19 @@ for (const impl of implementations) {
       }
       const filter = page.locator("#grid-cells-header-filter-name");
       await filter.fill("teapot");
+      // The story has a second grid (the status bar): count this grid's rows.
       await expect(
-        page.locator('[data-ok-data-grid-body] > [role="row"]:not([hidden])'),
+        page.locator('#grid-cells [data-ok-data-grid-body] > [role="row"]:not([hidden])'),
       ).toHaveCount(1);
+      // Status bar: figures of the selected cells, also from the keyboard (Shift + arrows).
+      const status = page.locator("#grid-cells-status [data-ok-data-grid-status-bar]");
+      await expect(status).toHaveAttribute("role", "status");
+      const units = (id: string) =>
+        page.locator(`#grid-cells-status [data-ok-row-id="${id}"] [data-ok-field="units"]`);
+      await units("s-01").click();
+      await page.keyboard.press("Shift+ArrowDown");
+      await page.keyboard.press("Shift+ArrowDown");
+      await expect(status).toHaveText(/Count: 3\s*Sum: 141\s*Average: 47\s*Min: 10\s*Max: 84/);
     });
 
     test("charts integration follows the grid", async ({ page }) => {
@@ -454,6 +464,97 @@ for (const impl of implementations) {
       await page.locator("#grid-charts-multiple-chart-type").selectOption("area");
       await expect(charts.nth(1)).toHaveAttribute("data-ok-type", "area");
       await expect(charts.nth(0)).toHaveAttribute("data-ok-type", "bar");
+    });
+
+    test("sorting: comparators, a sort cycle and adding columns without Shift", async ({
+      page,
+    }) => {
+      await openStory(page, storyId(impl, "datagrid", "sorting"));
+      // Priorities by rank (the initial sort).
+      expect(await visible(page, "priority")).toEqual([
+        "High",
+        "High",
+        "Medium",
+        "Medium",
+        "Low",
+        "Low",
+      ]);
+      // Points: descending first; every click adds to the sort.
+      const points = page.getByRole("columnheader", { name: /^Points/ });
+      await points.click();
+      await expect(points).toHaveAttribute("aria-sort", "descending");
+      expect(await visible(page, "points")).toEqual(["5", "3", "8", "3", "2", "1"]);
+      // Due: empty dates last in both directions.
+      const due = page.getByRole("columnheader", { name: /^Due/ });
+      await page.getByRole("columnheader", { name: /^Priority/ }).click();
+      await page.getByRole("columnheader", { name: /^Priority/ }).click();
+      await points.click();
+      await points.click();
+      await due.click();
+      expect((await visible(page, "due")).slice(-2)).toEqual(["", ""]);
+      await due.click();
+      expect((await visible(page, "due")).slice(-2)).toEqual(["", ""]);
+      expect((await visible(page, "due"))[0]).toBe("2025-07-01");
+    });
+
+    test("custom editors: a slider edits by keyboard; a list filters the header", async ({
+      page,
+    }) => {
+      await openStory(page, storyId(impl, "datagrid", "editors"));
+      const points = page.locator(
+        '[data-ok-row-id="is-1"] [role="gridcell"][data-ok-field="points"]',
+      );
+      await points.click();
+      await page.keyboard.press("Enter");
+      const slider = page.getByRole("slider", { name: "Points" });
+      await expect(slider).toBeFocused();
+      // Keyboard alternative to dragging: arrows move the thumb, Enter saves.
+      await page.keyboard.press("ArrowRight");
+      await page.keyboard.press("ArrowRight");
+      await page.keyboard.press("Enter");
+      await expect(points).toHaveText("5");
+      await expect(points).toBeFocused();
+      await page.locator("#grid-editors-points-filter").selectOption("5");
+      expect(await visible(page, "points")).toEqual(["5", "8", "5"]);
+    });
+
+    test("undo and redo: keys and toolbar buttons undo an edit", async ({ page }) => {
+      await openStory(page, storyId(impl, "datagrid", "undo-redo"));
+      const title = page.locator(
+        '[data-ok-row-id="is-2"] [role="gridcell"][data-ok-field="title"]',
+      );
+      const undo = page.getByRole("button", { name: "Undo" });
+      await expect(undo).toBeDisabled();
+      await title.dblclick();
+      const field = page.getByRole("textbox", { name: "Edit Title" });
+      await field.fill("Write the docs");
+      await field.press("Enter");
+      await expect(title).toHaveText("Write the docs");
+      await expect(title).toBeFocused();
+      await page.keyboard.press("ControlOrMeta+z");
+      await expect(title).toHaveText("Update the docs");
+      await page.keyboard.press("ControlOrMeta+Shift+z");
+      await expect(title).toHaveText("Write the docs");
+      await undo.click();
+      await expect(title).toHaveText("Update the docs");
+      await page.getByRole("button", { name: "Redo" }).click();
+      await expect(title).toHaveText("Write the docs");
+    });
+
+    test("edit modes: Edit, Save and Cancel buttons drive row editing", async ({ page }) => {
+      await openStory(page, storyId(impl, "datagrid", "edit-modes"));
+      const hours = page.locator('[data-ok-row-id="m-2"] [data-ok-field="hours"]');
+      await page.getByRole("button", { name: "Edit Bao Tran" }).click();
+      const field = page.getByRole("spinbutton", { name: "Edit Hours" });
+      await field.fill("38");
+      await page.getByRole("button", { name: "Save Bao Tran" }).click();
+      await expect(hours).toHaveText("38");
+      await expect(page.getByRole("button", { name: "Edit Bao Tran" })).toBeVisible();
+      await page.getByRole("button", { name: "Edit Bao Tran" }).click();
+      await page.getByRole("spinbutton", { name: "Edit Hours" }).fill("10");
+      await page.getByRole("button", { name: "Cancel Bao Tran" }).click();
+      await expect(hours).toHaveText("38");
+      await expect(page.getByRole("button", { name: "Save Bao Tran" })).toBeHidden();
     });
   });
 }

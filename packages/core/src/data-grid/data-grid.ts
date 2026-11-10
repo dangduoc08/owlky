@@ -52,9 +52,56 @@ export interface GridColumn {
   groupable?: boolean | undefined;
   /** The column can be aggregated. Default true. */
   aggregable?: boolean | undefined;
+  /** The sort cycle of this column's header (default: the grid's, else asc → desc → none). */
+  sortingOrder?: GridSortingOrder | undefined;
 }
 
 export type GridSortDirection = "asc" | "desc";
+/** The directions a header goes through, in order; `null` is "not sorted" (MUI X `sortingOrder`). */
+export type GridSortingOrder = readonly (GridSortDirection | null)[];
+/** The default sort cycle: asc → desc → none. */
+export const GRID_SORTING_ORDER: GridSortingOrder = ["asc", "desc", null];
+/**
+ * Compares two values for a sort (MUI X `GridComparatorFn`): `a` and `b` are the values, `rowA` and
+ * `rowB` the rows they come from.
+ */
+export type GridComparator<R = unknown> = (a: unknown, b: unknown, rowA: R, rowB: R) => number;
+/** A column's own sorting: `sortComparator` (ascending, reversed for desc) or `getSortComparator`. */
+export interface GridComparators<R = unknown> {
+  sortComparator?: GridComparator<R> | undefined;
+  /** A comparator per direction, used as it is (`undefined`: the default comparison). */
+  getSortComparator?: ((direction: GridSortDirection) => GridComparator<R> | undefined) | undefined;
+}
+
+/** The comparator of a direction (already reversed for desc), or `undefined` for the default. */
+export function gridDirectedComparator<R>(
+  comparators: GridComparators<R> | undefined,
+  direction: GridSortDirection,
+): GridComparator<R> | undefined {
+  const own = comparators?.getSortComparator?.(direction);
+  if (own) return own;
+  const base = comparators?.sortComparator;
+  if (!base) return undefined;
+  return direction === "asc" ? base : (a, b, rowA, rowB) => -base(a, b, rowA, rowB);
+}
+
+/** A sort cycle from untrusted input (JSON text or an array): known directions once each. */
+export function parseGridSortingOrder(input: unknown): GridSortingOrder | undefined {
+  let list = input;
+  if (typeof input === "string") {
+    try {
+      list = JSON.parse(input);
+    } catch {
+      return undefined;
+    }
+  }
+  if (!Array.isArray(list)) return undefined;
+  const order: (GridSortDirection | null)[] = [];
+  for (const item of list)
+    if ((item === "asc" || item === "desc" || item === null) && !order.includes(item))
+      order.push(item);
+  return order.length ? order : undefined;
+}
 export interface GridSortItem {
   field: string;
   sort: GridSortDirection;
@@ -331,16 +378,20 @@ export function gridCompare(a: unknown, b: unknown, type: GridColumnType = "stri
 }
 
 /**
- * The sort model after activating a column header: none → asc → desc → none. With `multi`
- * (Shift, MUI X Pro) the column is added to or cycled in the model; otherwise it replaces it.
+ * The sort model after activating a column header: the next direction of `order` (default none →
+ * asc → desc → none; a direction not in it starts the cycle). With `multi` (Shift, MUI X Pro) the
+ * column is added to or cycled in the model; otherwise it replaces it.
  */
-export function nextGridSort(model: GridSortModel, field: string, multi = false): GridSortModel {
+export function nextGridSort(
+  model: GridSortModel,
+  field: string,
+  multi = false,
+  order: GridSortingOrder = GRID_SORTING_ORDER,
+): GridSortModel {
   const current = model.find((item) => item.field === field);
-  const next: GridSortItem | null = !current
-    ? { field, sort: "asc" }
-    : current.sort === "asc"
-      ? { field, sort: "desc" }
-      : null;
+  const at = order.indexOf(current?.sort ?? null);
+  const sort = order[(at + 1) % order.length] ?? null;
+  const next: GridSortItem | null = sort ? { field, sort } : null;
   if (!multi) return next ? [next] : [];
   const rest = model.filter((item) => item.field !== field);
   if (!next) return rest;
@@ -349,24 +400,37 @@ export function nextGridSort(model: GridSortModel, field: string, multi = false)
 
 type Read<R> = (row: R, field: string) => unknown;
 
-/** Rows sorted by the model (stable; empty values last). */
+/**
+ * Rows sorted by the model (stable; empty values last). `comparator` gives a field's own
+ * comparator for a direction (`gridDirectedComparator`): its result is used as it is.
+ */
 export function sortGridRows<R>(
   rows: readonly R[],
   model: GridSortModel,
   columns: readonly GridColumn[],
   value: Read<R>,
+  comparator?: (field: string, direction: GridSortDirection) => GridComparator<R> | undefined,
 ): R[] {
   const keys = model
-    .map((item) => ({ item, column: columns.find((c) => c.field === item.field) }))
+    .map((item) => ({
+      item,
+      column: columns.find((c) => c.field === item.field),
+      own: comparator?.(item.field, item.sort),
+    }))
     .filter((key) => key.column !== undefined);
   if (keys.length === 0) return [...rows];
   return rows
     .map((row, index) => ({ row, index }))
     .sort((a, b) => {
-      for (const { item, column } of keys) {
+      for (const { item, column, own } of keys) {
         const type = (column as GridColumn).type;
         const x = value(a.row, item.field);
         const y = value(b.row, item.field);
+        if (own) {
+          const result = own(x, y, a.row, b.row);
+          if (result !== 0 && !Number.isNaN(result)) return result;
+          continue;
+        }
         const empty = gridSortValue(x, type) === null || gridSortValue(y, type) === null;
         const order = gridCompare(x, y, type);
         if (order !== 0) return empty || item.sort === "asc" ? order : -order;
@@ -762,6 +826,13 @@ export const gridDefaultLabels = {
   filterValueAny: "any",
   filterValueTrue: "true",
   filterValueFalse: "false",
+  toolbarUndo: "Undo",
+  toolbarRedo: "Redo",
+  statusBarCount: "Count",
+  statusBarSum: "Sum",
+  statusBarAvg: "Average",
+  statusBarMin: "Min",
+  statusBarMax: "Max",
   filterOperator: {
     contains: "contains",
     doesNotContain: "does not contain",

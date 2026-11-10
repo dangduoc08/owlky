@@ -3370,9 +3370,29 @@ export const dataGridOptions = defineOptions("data-grid", "data-ok-data-grid", {
     "data-ok-charts-integration",
     "A chart of the grid's rows (or top-level groups) follows its filters, sorting and grouping.",
   ),
+  multipleColumnsSortingMode: style(
+    "data-ok-multiple-columns-sorting-mode",
+    ["withModifierKey", "always"] as const,
+    "withModifierKey",
+    "Sorting a column keeps the others with Shift, Ctrl or Cmd (`withModifierKey`), or `always`.",
+    { optional: true },
+  ),
+  statusBar: flag(
+    "data-ok-status-bar",
+    "With cell selection: a bar under the rows counts the selected cells and sums their numbers.",
+  ),
+  historyStackSize: number(
+    "data-ok-history-stack-size",
+    30,
+    "Edits and pastes that Ctrl / Cmd + Z can undo (`0` turns undo and redo off).",
+    { min: 0 },
+  ),
 });
 
 export interface DataGridAnatomyOptions {
+  historyStackSize?: number | undefined;
+  multipleColumnsSortingMode?: "withModifierKey" | "always" | undefined;
+  statusBar?: boolean | undefined;
   disableRowGrouping?: boolean | undefined;
   rowGroupingColumnMode?: "single" | "multiple" | undefined;
   disableAggregation?: boolean | undefined;

@@ -1,4 +1,4 @@
-// Writes the Data grid HTML snippets of the phase 6 stories
+// Writes the Data grid HTML snippets of the phase 6 stories and the later ones (more-examples.tsx)
 // (packages/html/src/components/data-grid/examples/<story>-<file>.html) from the React examples, so
 // both implementations start from the same markup. HTML-only parts the React render doesn't have
 // are added: `data-ok-popover-open` on the toolbar buttons that open a panel or a menu, and the
@@ -25,11 +25,14 @@ const entry = `
 import { cloneElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { phase6Stories, PHASE6_FILES } from "${folder}/phase6-examples.tsx";
+import { moreStories, MORE_FILES } from "${folder}/more-examples.tsx";
 const html = {};
 const data = {};
-for (const [story, groups] of Object.entries(phase6Stories))
+const stories = { ...phase6Stories, ...moreStories };
+const files = { ...PHASE6_FILES, ...MORE_FILES };
+for (const [story, groups] of Object.entries(stories))
   groups.forEach((group, index) => {
-    const name = story + "-" + PHASE6_FILES[story][index][1];
+    const name = story + "-" + files[story][index][1];
     html[name] = renderToStaticMarkup(group.content);
     // Pivoted grids: the HTML holds the data (the runtime pivots it), rendered unpivoted.
     const initial = group.content.props.initialState;
@@ -181,6 +184,14 @@ function templates(text) {
   return found;
 }
 
+/** The custom editor `<template>` blocks of a snippet (with their indentation). */
+function editTemplates(text) {
+  const found = [];
+  const re = /^( *)<template data-ok-data-grid-edit-cell="[^"]+"[^>]*>[\s\S]*?^\1<\/template>\n/gm;
+  for (let m = re.exec(text); m; m = re.exec(text)) found.push(m[0]);
+  return found;
+}
+
 const previous = (name) => {
   const path = resolve(out, `${name}.html`);
   return existsSync(path) ? readFileSync(path, "utf8") : null;
@@ -229,6 +240,12 @@ for (const [name, markup] of Object.entries(html)) {
     const start = snippet.indexOf("\n", at) + 1;
     const blocks = templates(source).map((block) => block.replaceAll(oldId, id));
     snippet = snippet.slice(0, start) + blocks.join("") + snippet.slice(start);
+  }
+  // Custom editors (renderEditCell) are hand-written templates at the end of the grid: kept.
+  const editors = old ? editTemplates(old) : [];
+  if (editors.length) {
+    const end = snippet.lastIndexOf("\n</div>");
+    snippet = `${snippet.slice(0, end + 1)}${editors.join("")}${snippet.slice(end + 1)}`;
   }
   writeFileSync(resolve(out, `${name}.html`), `${snippet}\n`);
   console.log(`${name}.html`);

@@ -13,6 +13,7 @@ import type { ReactGroup } from "../../helpers/groups.js";
 import { DemoIcon } from "../shared/demo-icon.js";
 import type { GroupFiles } from "../shared/snippets.js";
 import { layoutGroups, validationGroups } from "./layout-examples.js";
+import { MORE_FILES, moreStories } from "./more-examples.js";
 import { PHASE5_FILES, phase5Stories } from "./phase5-examples.js";
 import { PHASE6_FILES, phase6Stories } from "./phase6-examples.js";
 
@@ -363,6 +364,7 @@ export const dataGridStories: Record<string, ReactGroup[]> = {
   validation: validationGroups,
   ...phase5Stories,
   ...phase6Stories,
+  ...moreStories,
 };
 
 export const DATA_GRID_FILES: Record<string, GroupFiles> = {
@@ -376,6 +378,7 @@ export const DATA_GRID_FILES: Record<string, GroupFiles> = {
   validation: [["Editing and validation", "group"]],
   ...PHASE5_FILES,
   ...PHASE6_FILES,
+  ...MORE_FILES,
 };
 
 /** Story Controls shared by the React and HTML stories (ADR-0015). */

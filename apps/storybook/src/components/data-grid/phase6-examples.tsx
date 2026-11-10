@@ -299,6 +299,21 @@ export const phase6Stories: Record<string, ReactGroup[]> = {
         />
       ),
     },
+    {
+      title: "Status bar",
+      content: (
+        <DataGrid
+          id="grid-cells-status"
+          aria-label="Sales figures"
+          className="sb-grid"
+          rows={SALES.slice(0, 8)}
+          columns={salesColumns}
+          cellSelection
+          statusBar
+          hideFooter
+        />
+      ),
+    },
   ],
   charts: [
     {
@@ -411,7 +426,10 @@ export const PHASE6_FILES = {
     ["Pivoting", "group"],
     ["Derived columns", "derived"],
   ],
-  cells: [["Cell selection, clipboard and header filters", "group"]],
+  cells: [
+    ["Cell selection, clipboard and header filters", "group"],
+    ["Status bar", "status"],
+  ],
   charts: [
     ["Charts integration", "group"],
     ["Pivot chart", "pivot"],

@@ -8,6 +8,7 @@ import {
   gridAriaSort,
   gridColumnTemplate,
   gridCompare,
+  gridDirectedComparator,
   gridExportColumns,
   gridFilterOperators,
   gridFilterValues,
@@ -23,6 +24,7 @@ import {
   isGridSortable,
   matchesGridFilter,
   nextGridSort,
+  parseGridSortingOrder,
   pruneGridSelection,
   selectGridRow,
   sortGridRows,
@@ -158,6 +160,81 @@ describe("data grid sorting", () => {
         true,
       ),
     ).toEqual([{ field: "b", sort: "asc" }]);
+  });
+
+  it("follows a sort cycle (sortingOrder)", () => {
+    const order = ["desc", "asc"] as const;
+    expect(nextGridSort([], "a", false, order)).toEqual([{ field: "a", sort: "desc" }]);
+    expect(nextGridSort([{ field: "a", sort: "desc" }], "a", false, order)).toEqual([
+      { field: "a", sort: "asc" },
+    ]);
+    // No null in the cycle: the column never goes back to unsorted.
+    expect(nextGridSort([{ field: "a", sort: "asc" }], "a", false, order)).toEqual([
+      { field: "a", sort: "desc" },
+    ]);
+    expect(nextGridSort([{ field: "a", sort: "asc" }], "a", false, ["desc", null])).toEqual([
+      { field: "a", sort: "desc" },
+    ]);
+    expect(nextGridSort([{ field: "a", sort: "desc" }], "a", true, ["desc", null])).toEqual([]);
+    expect(parseGridSortingOrder('["desc", null, "desc", "up", 1]')).toEqual(["desc", null]);
+    expect(parseGridSortingOrder(["asc"])).toEqual(["asc"]);
+    expect(parseGridSortingOrder("[]")).toBeUndefined();
+    expect(parseGridSortingOrder("{")).toBeUndefined();
+    expect(parseGridSortingOrder('{"a":1}')).toBeUndefined();
+    expect(parseGridSortingOrder(null)).toBeUndefined();
+  });
+
+  it("sorts with a column's own comparators", () => {
+    const byLength = (a: unknown, b: unknown) => String(a).length - String(b).length;
+    expect(gridDirectedComparator(undefined, "asc")).toBeUndefined();
+    expect(gridDirectedComparator({ sortComparator: byLength }, "asc")?.("ab", "a", {}, {})).toBe(
+      1,
+    );
+    expect(gridDirectedComparator({ sortComparator: byLength }, "desc")?.("ab", "a", {}, {})).toBe(
+      -1,
+    );
+    // getSortComparator wins and is used as it is; undefined falls back to sortComparator.
+    const directed = {
+      sortComparator: byLength,
+      getSortComparator: (direction: "asc" | "desc") => (direction === "asc" ? () => 7 : undefined),
+    };
+    expect(gridDirectedComparator(directed, "asc")?.("a", "b", {}, {})).toBe(7);
+    expect(gridDirectedComparator(directed, "desc")?.("ab", "a", {}, {})).toBe(-1);
+    const own = (field: string, direction: "asc" | "desc") =>
+      field === "name"
+        ? gridDirectedComparator<Row>(
+            {
+              sortComparator: (a, b, rowA, rowB) =>
+                byLength(a, b) || Number(rowB["id"]) - Number(rowA["id"]),
+            },
+            direction,
+          )
+        : undefined;
+    expect(ids(sortGridRows(rows, [{ field: "name", sort: "asc" }], columns, value, own))).toEqual([
+      "4",
+      "2",
+      "1",
+      "3",
+    ]);
+    expect(ids(sortGridRows(rows, [{ field: "name", sort: "desc" }], columns, value, own))).toEqual(
+      ["3", "1", "2", "4"],
+    );
+    // A tie (or NaN) goes on to the next key.
+    const tie = () => () => Number.NaN;
+    expect(
+      ids(
+        sortGridRows(
+          rows,
+          [
+            { field: "team", sort: "asc" },
+            { field: "age", sort: "asc" },
+          ],
+          columns,
+          value,
+          (field) => (field === "team" ? tie() : undefined),
+        ),
+      ),
+    ).toEqual(["2", "1", "4", "3"]);
   });
 
   it("sorts stably, by several keys, empty values last in both directions", () => {

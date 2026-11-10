@@ -255,10 +255,14 @@ export {
   DataGrid,
   type DataGridProps,
   type GridApi,
+  type GridCellParams,
   type GridColDef,
+  type GridComparatorFn,
   type GridInitialState,
   type GridPaginationModel,
   type GridRenderCellParams,
+  type GridRenderEditCellParams,
+  type GridRenderHeaderFilterParams,
   useGridApiRef,
 } from "./data-grid/data-grid.js";
 export {

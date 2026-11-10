@@ -5,17 +5,25 @@ import { htmlSetup, snippetStory } from "../shared/snippets.js";
 import { DataGridDocs } from "./data-grid-docs.js";
 import { DATA_GRID_CONTROLS, DATA_GRID_FILES, dataGridStories } from "./data-grid-examples.js";
 import {
+  EDITORS_SCRIPT_SOURCE,
+  editorsScript,
   LARGE_SCRIPT_SOURCE,
   LAZY_SCRIPT_SOURCE,
   largeScript,
   lazyScript,
+  MODES_SCRIPT_SOURCE,
+  modesScript,
   SERVER_AGGREGATION_SCRIPT_SOURCE,
   SERVER_SCRIPT_SOURCE,
+  SORTING_SCRIPT_SOURCE,
   serverAggregationScript,
   serverScript,
+  sortingScript,
   VALIDATION_SCRIPT_SOURCE,
   validationScript,
 } from "./data-grid-scripts.js";
+import { EditModesDemo } from "./edit-modes-demo.js";
+import editModesSource from "./edit-modes-demo.tsx?raw";
 import { LargeDemo } from "./large-demo.js";
 import largeSource from "./large-demo.tsx?raw";
 import { LazyDemo } from "./lazy-demo.js";
@@ -46,6 +54,7 @@ const SETUP = htmlSetup(
     "avatar.css",
     "label.css",
     "rating.css",
+    "slider.css",
     "linear-progress.css",
     "tooltip.css",
     "autocomplete.css",
@@ -181,3 +190,47 @@ export const CellSelection: StoryObj = {
   name: "Cell selection and clipboard",
 };
 export const Charts: StoryObj = { ...story("charts"), name: "Charts integration" };
+export const Sorting: StoryObj = {
+  ...frameworkStory({
+    html: snippetStory(
+      snippets,
+      "sorting",
+      DATA_GRID_FILES["sorting"] ?? [],
+      SETUP,
+      DATA_GRID_CONTROLS,
+      {
+        group: { script: sortingScript, scriptSource: SORTING_SCRIPT_SOURCE },
+      },
+    ),
+    react: reactGroupsStory(dataGridStories["sorting"] ?? [], controls),
+  }),
+  name: "Sorting",
+};
+export const UndoRedo: StoryObj = { ...story("history"), name: "Undo and redo" };
+export const Editors: StoryObj = {
+  ...frameworkStory({
+    html: snippetStory(
+      snippets,
+      "editors",
+      DATA_GRID_FILES["editors"] ?? [],
+      SETUP,
+      DATA_GRID_CONTROLS,
+      { group: { script: editorsScript, scriptSource: EDITORS_SCRIPT_SOURCE } },
+    ),
+    react: reactGroupsStory(dataGridStories["editors"] ?? [], controls),
+  }),
+  name: "Custom editors",
+};
+export const EditModes: StoryObj = {
+  ...frameworkStory({
+    html: snippetStory(snippets, "modes", [["Edit modes", "group"]], SETUP, undefined, {
+      group: { script: modesScript, scriptSource: MODES_SCRIPT_SOURCE },
+    }),
+    react: reactGroupsStory(
+      [{ title: "Edit modes", content: <EditModesDemo /> }],
+      undefined,
+      editModesSource,
+    ),
+  }),
+  name: "Edit modes",
+};
