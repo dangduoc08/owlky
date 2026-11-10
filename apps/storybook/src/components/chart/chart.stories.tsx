@@ -101,6 +101,11 @@ export const MultipleYAxes: StoryObj = story("multiple-y-axes");
 export const AxisScales: StoryObj = story("axis-scales");
 // Roadmap 4.18.60: data point selection.
 export const Selection: StoryObj = story("selection");
+// Roadmap 4.18.61: stack types and totals, label positions, value ranges, background bars.
+export const ColumnStacked100: StoryObj = story("column-stacked-100");
+export const StackTotals: StoryObj = story("stack-totals");
+export const ColumnDataLabels: StoryObj = story("column-data-labels");
+export const ColumnRanges: StoryObj = story("column-ranges");
 // Phase 2.1 (ADR-0047): Sankey charts.
 export const Sankey: StoryObj = story("sankey");
 export const SankeyVertical: StoryObj = story("sankey-vertical");

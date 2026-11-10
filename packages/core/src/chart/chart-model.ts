@@ -36,12 +36,18 @@ export const chartLegends = ["top", "right", "bottom", "none"] as const;
 export const chartXTypes = ["category", "datetime", "numeric"] as const;
 export const chartFills = ["gradient", "solid"] as const;
 export const chartShades = ["lighter", "light", "main", "dark", "darker"] as const;
+/** Stacks (4.18.61): values on each other (`normal`) or as shares of their category (`100%`). */
+export const chartStackTypes = ["normal", "100%"] as const;
+/** Where values sit inside bars (4.18.61): the middle, the value end or the base. */
+export const chartDataLabelPositions = ["center", "top", "bottom"] as const;
 
 export type ChartType = (typeof chartTypes)[number];
 export type ChartCurve = (typeof chartCurves)[number];
 export type ChartLegend = (typeof chartLegends)[number];
 export type ChartXType = (typeof chartXTypes)[number];
 export type ChartFill = (typeof chartFills)[number];
+export type ChartStackType = (typeof chartStackTypes)[number];
+export type ChartDataLabelPosition = (typeof chartDataLabelPositions)[number];
 type Palette = (typeof paletteColorNames)[number];
 export type ChartCircularType = (typeof chartCircularTypes)[number];
 

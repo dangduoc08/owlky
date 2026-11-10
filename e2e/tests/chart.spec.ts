@@ -53,6 +53,10 @@ const STORIES = [
   "multiple-y-axes",
   "axis-scales",
   "selection",
+  "column-stacked-100",
+  "stack-totals",
+  "column-data-labels",
+  "column-ranges",
 ];
 
 /** The SVG as plain data (gradient ids normalized): parity doesn't walk into SVG. */

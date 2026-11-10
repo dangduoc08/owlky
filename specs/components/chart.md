@@ -50,6 +50,8 @@ figure[data-ok-chart][data-ok-type][data-ok-x-type][data-ok-curve][data-ok-legen
       g[data-ok-chart-axis=x] › text[data-ok-chart-tick][data-ok-major]?
       g[data-ok-chart-axis=y][data-ok-index]?[data-ok-opposite]? › text[data-ok-chart-tick]
                                                          (one per drawn value axis; data-ok-index with several)
+      g[data-ok-chart-background-bars]?                  (4.18.61: backgroundBars / backgroundBarColors)
+        rect[data-ok-chart-background-bar][rx][data-ok-color]?[fill-opacity]? (one per bar slot)
       g[data-ok-chart-crosshair] › rect[data-ok-chart-band] | line[data-ok-chart-crosshair-line]
       g[data-ok-chart-series-group]                      (areas, bars, lines, scatter: in that order)
         g[data-ok-chart-series][data-ok-type][data-ok-color][data-ok-index]
@@ -57,6 +59,7 @@ figure[data-ok-chart][data-ok-type][data-ok-x-type][data-ok-curve][data-ok-legen
           path[data-ok-chart-bar][data-ok-color]? · circle[data-ok-chart-marker][data-ok-color]?
       g[data-ok-chart-data-labels]?                      (dataLabels; only when a label fits)
         text[data-ok-chart-data-label="inside|outside"]  (inside slices / bars: white; outside: above points)
+        text[data-ok-chart-data-label="total"]           (stackTotals: past each stack's end, 4.18.61)
       g[data-ok-chart-selected]?                         (selected points, 4.18.60; before the active group)
         circle | rect | path[data-ok-chart-selected-mark] (ring around points, frame around blocks
                                                           and cells, outline of slices and rings)
@@ -169,6 +172,20 @@ Grid lines follow the primary axis (the first drawn); the other linear axes take
 intervals, so their labels sit on its grid lines. Stacks are per axis. Stock charts keep the
 axes in the price pane; every pane gets the widest left and right edges. `xTitle` adds 20px under
 the x labels (`dy 0.71em` at the labels' line + 20px), centered on the plot.
+
+Stacks and bars (4.18.61): `stackType: "100%"` (stacked charts) turns each category's stacked
+values into shares of their absolute sum per value axis: the axis runs to 100 (ticks `"<n>%"`, no
+prefix, suffix or formatter), data labels print the share (one decimal, `dataLabelFormatter` gets
+the share), tooltips and the table keep the values. `stackOnlyBar`: only bar series stack; lines
+and areas keep their values. `stackTotals`: stacked bar charts print each stack's sum
+(`valueFormatter(sum, -1)`) 12px past its end (vertical; positives above, negatives below) or 6px
+(horizontal, start / end anchored). `dataLabelPosition` moves bar labels from the middle to the
+value end (`top`) or the base (`bottom`), 4px plus half a label inside. `colorRanges` color the bars
+whose value they hold (from ≤ value ≤ to, first range wins; a point's own `color` wins). Background
+bars: one rect per bar slot (stacked: per category) across the plot, `backgroundBarRadius` (default
+4, at most half the slot), colors from `backgroundBarColors` by category index (else a 12 % grey),
+`fill-opacity` from `backgroundBarOpacity` (an attribute: CSS never sets it); drawn before the
+crosshair group.
 
 Polar geometry (core `chart-polar.ts`): angles in degrees clockwise from 12 o'clock; the chart is
 centered in the SVG, radius = half the smaller side - 4px. Donut hole 72 % of the radius. Radial
@@ -283,6 +300,13 @@ Root: `data-ok-chart`. Unknown values fall back to the default.
 | `navigator` | `data-ok-navigator` | flag | boolean | off | Stock charts: a navigator under the chart, the whole price line with the zoom as a brush (zooms like `zoom`). |
 | `paneHeight` | `data-ok-pane-height="…"` | number | number | `120` | Stock charts: height in px of each indicator pane (volume, RSI, MACD…) under the price. |
 | `allowMultipleDataPointsSelection` | `data-ok-allow-multiple-data-points-selection` | flag | boolean | off | Clicks and Enter or Space add points to the selection instead of replacing it. |
+| `stackType` | `data-ok-stack-type="…"` | style | `normal` `100%` | — | Stacked charts: `normal` stacks the values, `100%` stacks each category's values as shares of their total (the value axis runs to 100%). |
+| `stackOnlyBar` | `data-ok-stack-only-bar` | flag | boolean | off | Stacked mixed charts: only the bar series stack; lines and areas keep their own values. |
+| `stackTotals` | `data-ok-stack-totals` | flag | boolean | off | Stacked bars: prints the total of each stack past its end. |
+| `dataLabelPosition` | `data-ok-data-label-position="…"` | style | `center` `top` `bottom` | — | Bars: where data labels sit inside the bar: `center`, `top` (by the value end) or `bottom` (by the base). |
+| `backgroundBars` | `data-ok-background-bars` | flag | boolean | off | Bars: a grey track the height of the plot behind each bar. |
+| `backgroundBarOpacity` | `data-ok-background-bar-opacity="…"` | number | number | — | Bars: opacity of the tracks behind the bars (0 to 1; default 1). |
+| `backgroundBarRadius` | `data-ok-background-bar-radius="…"` | number | number | — | Bars: corner radius of the tracks in px (default 4). |
 | `hiddenSeries` | `aria-pressed` · event `ok:chart:toggle` | state | — | — | Indexes of the series hidden through the legend (`aria-pressed="false"` on their buttons); categories in pie, donut and radial bar charts. |
 | `selectedDataPoints` | `instance.selectedDataPoints` · event `ok:chart:select` | state | — | — | The selected points, `{ seriesIndex, dataPointIndex }[]`: a click selects the point, slice or cell under the pointer, Enter or Space the active one. |
 | `zoomRange` | `instance.zoomRange` · event `ok:chart:zoom` | state | — | — | The visible window of the x axis, `{ min, max }` (category indexes or x values), or `null`. |
@@ -293,7 +317,8 @@ Text attributes (React prop ↔ HTML attribute, written by React too): `yTitle` 
 `parseChartYAxes`: axes separated by `;`, each the words `opposite`, `logarithmic`, `reversed`,
 `hidden`, `log-base <n>`, `tick-amount <n>`, `min <n>`, `max <n>`, then `title <text>`; series
 names stay out of it: each series column carries its axis, `th[data-ok-y-axis="<n>"]`), `valuePrefix` ↔ `data-ok-value-prefix`, `valueSuffix` ↔ `data-ok-value-suffix`,
-`locale` ↔ `data-ok-locale` (default `en-US`), `group` ↔ `data-ok-group`, `brushTarget` ↔
+`locale` ↔ `data-ok-locale` (default `en-US`), `backgroundBarColors` ↔
+`data-ok-background-bar-colors` (palette names separated by spaces), `group` ↔ `data-ok-group`, `brushTarget` ↔
 `data-ok-brush-target`, `colorRanges` ↔ `data-ok-color-ranges` (`"from to color [name]; …"`, core
 `chartTextAttributes` / `parseChartColorRanges`). Always set as text (`textContent`), never markup.
 
@@ -560,7 +585,7 @@ Option areas not covered by the table above:
 |---|---|---|---|
 | ApexCharts v8 types `waterfall`, `dumbbell` (`plotOptions.bar.isDumbbell`, `dumbbellColors`, `dumbbell.*`), `streamgraph`, `sunburst`, `icicle`, `violin`, `beeswarm`, `waffle`, `unit` | — | deferred (4.18.21) | prop-level mapping here when built |
 | `chart.type: "tree"` (ApexTree layouts) | — | deferred (4.18.7) | |
-| `chart.stackType: "100%"`, `chart.stackOnlyBar` | `stacked` | deferred | percent stacks; stacking only the bar series of a mixed chart |
+| `chart.stackType` (`"normal"`, `"100%"`), `chart.stackOnlyBar` | `stackType` (`data-ok-stack-type`, optional), `stackOnlyBar` (`data-ok-stack-only-bar`) | kept (4.18.61) | `stackOnlyBar` is off by default (ApexCharts: on), so stacked lines keep stacking as before |
 | `chart.events` `dataPointMouseEnter` / `Leave`, `mouseMove`, `mouseLeave`, `legendClick`, `beforeZoom`, `zoomed`, `beforeResetZoom`, `scrolled`, `brushScrolled`, `selection` | `onActiveChange`, `onHiddenSeriesChange`, `onZoomRangeChange` · `ok:chart:active`, `-toggle`, `-zoom` (cancelable) | renamed | |
 | `chart.events.dataPointSelection` (`seriesIndex`, `dataPointIndex`, `w.globals.selectedDataPoints`) | React `onDataPointSelection(detail)` · HTML `ok:chart:select` (detail `{ seriesIndex, dataPointIndex, selected, selectedDataPoints }`) | renamed (4.18.60) | by click (block, slice, cell or the nearest point) and by Enter / Space on the active item; one call per toggled point |
 | method `toggleDataPointSelection(seriesIndex, dataPointIndex)` | HTML instance `toggleDataPointSelection`, `selectedDataPoints`, `setSelectedDataPoints(list)`; React: controlled `selectedDataPoints` / `defaultSelectedDataPoints` + core `toggleChartSelection(selected, points, multiple)` | renamed (4.18.60) | React has no chart instance (`ref` is the `figure`) |
@@ -603,8 +628,11 @@ Option areas not covered by the table above:
 | `fill.type: "image"`, `fill.gradient.*`, `fill.opacity`, `fill.colors` | — | not applicable | design / tokens; `colors` |
 | `plotOptions.bar.borderRadius`, `.borderRadiusApplication`, `.borderRadiusWhenStacked` | fixed radius | not applicable | design |
 | `plotOptions.bar.distributed` | point `color` | renamed | |
-| `plotOptions.bar.colors.ranges`, `.backgroundBarColors` / `-Opacity` / `-Radius` | `colorRanges` (heatmap, treemap) | deferred | value ranges on bars; background (track) bars |
-| `plotOptions.bar.dataLabels.total` (stacked totals), `.position`, `.orientation`, `.maxItems`, `.hideOverflowingLabels` | `dataLabels` | deferred | totals on stacks; inside / end positions |
+| `plotOptions.bar.colors.ranges` (`from`, `to`, `color`) | `colorRanges` (heatmaps, treemaps and bars) | renamed (4.18.61) | a bar's own point `color` wins over its range |
+| `plotOptions.bar.colors.backgroundBarColors` / `.backgroundBarOpacity` / `.backgroundBarRadius` | `backgroundBars` (grey tracks), `backgroundBarColors` (palette names; HTML `data-ok-background-bar-colors`), `backgroundBarOpacity`, `backgroundBarRadius` | kept (4.18.61) | one track per bar slot, colors per category in turn; radius default 4 (ApexCharts 0: Owlky bars are rounded) |
+| `plotOptions.bar.dataLabels.total.enabled` | `stackTotals` (`data-ok-stack-totals`) | renamed (4.18.61) | `total.formatter` → `valueFormatter` (series -1); `total.style` / `offset*`: not applicable |
+| `plotOptions.bar.dataLabels.position` (`top`, `center`, `bottom`) | `dataLabelPosition` (`data-ok-data-label-position`, optional) | renamed (4.18.61) | inside the bar; `top` = by the value end |
+| `plotOptions.bar.dataLabels.orientation`, `.maxItems`, `.hideOverflowingLabels` | — | not applicable | labels are always horizontal and only drawn where they fit |
 | `plotOptions.bar.rangeBarGroupRows`, `.rangeBarOverlap`, `.hideZeroBarsWhenGrouped`, `.isFunnel3d` | — | deferred | timeline rows shared by series; 3D funnel not applicable |
 | `forecastDataPoints` (`count`, `fillOpacity`, `strokeWidth`, `dashArray`) | — | deferred | dashed forecast tail |
 | `title.text` (`align`, `floating`, `style`…) | `label` → `caption` | renamed | style not applicable (tokens); a subtitle: compose a Card header |
@@ -636,5 +664,7 @@ Option areas not covered by the table above:
 - Stock stories (ADR-0047): Stock chart, Overlays, Oscillators, Large dataset. Snippets hold the
   computed indicator columns (generated by React's `renderChart`); the runtime rewrites them to the
   same text.
+- Stack and bar stories (4.18.61): Column stacked 100%, Stack totals, Column data labels, Column
+  range colors.
 - Story "Live data": React keeps the points in state, the HTML page script calls `appendData` /
   `updateSeries`; both start from the same data and add the same points, so they stay identical.

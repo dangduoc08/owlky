@@ -4,8 +4,10 @@ import {
   type ChartColor,
   type ChartCurve,
   type ChartData,
+  type ChartDataLabelPosition,
   type ChartDataSeries,
   type ChartFill,
+  type ChartStackType,
   type ChartType,
   lighterTone,
 } from "./chart-model.js";
@@ -116,6 +118,22 @@ export interface ChartLayoutOptions {
   readonly banded?: boolean | undefined;
   /** Stock price panes: `false` fits the value scale to the data (lines and areas too). */
   readonly zeroBased?: boolean | undefined;
+  /** Stacks (4.18.61): `100%` draws each category's stacked values as shares of their sum. */
+  readonly stackType?: ChartStackType | undefined;
+  /** Stacks only the bar series of a mixed chart (lines and areas keep their values). */
+  readonly stackOnlyBar?: boolean | undefined;
+  /** Stacked bars: the total of each stack printed past its end. */
+  readonly stackTotals?: boolean | undefined;
+  /** Bars: where the data labels sit (default `center`). */
+  readonly dataLabelPosition?: ChartDataLabelPosition | undefined;
+  /** Bars: a track the height of the plot behind each bar (grey, or `backgroundBarColors`). */
+  readonly backgroundBars?: boolean | undefined;
+  /** Bars: track colors, one per category in turn (implies `backgroundBars`). */
+  readonly backgroundBarColors?: readonly ChartColor[] | undefined;
+  /** Bars: track opacity (0 to 1; an attribute, CSS never sets it). */
+  readonly backgroundBarOpacity?: number | undefined;
+  /** Bars: track corner radius in px. Default 4. */
+  readonly backgroundBarRadius?: number | undefined;
 }
 
 /** A heatmap / treemap color range: values from `from` to `to` (inclusive) take `color`. */
@@ -307,6 +325,7 @@ export const chartTextWidth = (text: string, size = FONT): number => {
 };
 
 export const r2 = (value: number) => Math.round(value * 100) / 100;
+const r1 = (value: number) => Math.round(value * 10) / 10;
 export const fmt = (value: number) => String(r2(value));
 export const node = (
   tag: ChartNodeTag,
@@ -507,6 +526,30 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
   const titleOf = (axis: number) =>
     sparkline ? undefined : (specOf(axis)?.title ?? (axis === 0 ? options.yTitle : undefined));
   const onAxis = (axis: number) => visible.filter(({ index }) => axisOf(index) === axis);
+  /** Whether a series stacks: stacked charts (never numeric or logarithmic), bars only with `stackOnlyBar`. */
+  const stacksOn = (series: ChartDataSeries, axis: number) =>
+    stacked && !numeric && !isLog(axis) && (options.stackOnlyBar !== true || series.type === "bar");
+  // 100% stacks (4.18.61): each category's stacked values become shares of their absolute sum.
+  const percent = stacked && options.stackType === "100%";
+  const shares = percent
+    ? Array.from({ length: axisCount }, () => new Array<number>(count).fill(0))
+    : undefined;
+  if (shares)
+    for (const { series, index } of visible) {
+      const axis = axisOf(index);
+      if (!stacksOn(series, axis)) continue;
+      const sums = shares[axis] as number[];
+      for (const point of series.points)
+        if (point.y !== null && !point.range)
+          sums[point.x] = (sums[point.x] ?? 0) + Math.abs(point.y);
+    }
+  /** A stacked value: itself, or its share of the category in % (100% stacks). */
+  const stackValue = (axis: number, x: number, y: number) => {
+    const sum = shares?.[axis]?.[x];
+    return sum === undefined ? y : sum > 0 ? (y / sum) * 100 : 0;
+  };
+  const percentAxis = (axis: number) =>
+    percent && onAxis(axis).some(({ series }) => stacksOn(series, axis));
 
   // Stacked values: running totals per category and axis, positives and negatives apart (never
   // on logarithmic axes).
@@ -523,7 +566,7 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
   for (const { series, index } of visible) {
     const axis = axisOf(index);
     const log = isLog(axis);
-    const stacks = stacked && !numeric && !log;
+    const stacks = stacksOn(series, axis);
     for (const point of series.points) {
       if (fitZoom && !inView(point.x)) continue;
       if (numeric) {
@@ -544,10 +587,11 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
             ? (totals[axis] as { pos: number[] }).pos
             : (totals[axis] as { neg: number[] }).neg;
         const start = sums[point.x] as number;
-        sums[point.x] = start + point.y;
-        stack.set(`${index}:${point.x}`, [start, start + point.y]);
-        los[axis] = Math.min(los[axis] as number, start + point.y, start);
-        his[axis] = Math.max(his[axis] as number, start + point.y, start);
+        const value = stackValue(axis, point.x, point.y);
+        sums[point.x] = start + value;
+        stack.set(`${index}:${point.x}`, [start, start + value]);
+        los[axis] = Math.min(los[axis] as number, start + value, start);
+        his[axis] = Math.max(his[axis] as number, start + value, start);
       } else {
         los[axis] = Math.min(los[axis] as number, point.y);
         his[axis] = Math.max(his[axis] as number, point.y);
@@ -571,6 +615,11 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
     if (!isLog(axis) && ((zeroBased && options.zeroBased !== false) || own.length === 0)) {
       los[axis] = Math.min(los[axis] as number, 0);
       his[axis] = Math.max(his[axis] as number, 0);
+    }
+    // 100% stacks end at ±100 (sums of shares may round past it).
+    if (percentAxis(axis)) {
+      los[axis] = Math.max(los[axis] as number, -100);
+      his[axis] = Math.min(his[axis] as number, 100);
     }
   }
   const lo = los[0] as number;
@@ -639,6 +688,8 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
             stepDecimals(scale.step),
             specOf(axis)?.tickAmount !== undefined || axis !== primary ? 2 : 10,
           );
+    // 100% stacks: the axis shows shares, not values.
+    if (percentAxis(axis)) return scale.ticks.map((tick) => `${format.number(tick)}%`);
     return scale.ticks.map((tick) =>
       timeline ? format.timeTick(tick).text : format.tick(tick, decimals),
     );
@@ -974,6 +1025,9 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
       ? { x: fmt(lo), y: fmt(a), width: fmt(length), height: fmt(size) }
       : { x: fmt(a), y: fmt(lo), width: fmt(size), height: fmt(length) };
   };
+  /** The color of the first value range (`colorRanges`) holding a bar's value. */
+  const rangeColor = (value: number) =>
+    options.colorRanges?.find((range) => value >= range.from && value <= range.to)?.color;
   // Bubbles: the largest size gets a tenth of the plot's smaller side (at least 8px).
   let zMax = 0;
   for (const { series } of visible)
@@ -1007,7 +1061,7 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
     const toValue = toValueOf(axis);
     const base = baseOf(axis);
     const log = isLog(axis);
-    const stacks = stacked && !numeric && !log;
+    const stacks = stacksOn(series, axis);
     // Zoomed charts draw the points in their window only; log axes skip values ≤ 0 (gaps).
     const inWindow = zoom ? series.points.filter((point) => inView(point.x)) : series.points;
     const points = log
@@ -1039,7 +1093,9 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
         const start = toValue(from);
         const end = toValue(to);
         const rounded = !stacks || ends.get(endKey(index, point.y, point.x)) === index;
-        const color = point.color ?? series.color;
+        // Value ranges (4.18.61) color the bars whose value they hold; a point's own color wins.
+        const own = point.color ?? rangeColor(point.y);
+        const color = own ?? series.color;
         marks.push({
           series: index,
           type: series.type,
@@ -1053,14 +1109,27 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
         });
         if (from === to) continue;
         if (options.dataLabels) {
-          // Inside the bar, only where the value fits.
-          const text = format.dataLabel(point.y, index, point.x, format.value(point.y, index));
+          // Inside the bar, only where the value fits; 100% stacks print the share.
+          const share = percent && stacks ? to - from : undefined;
+          const text =
+            share === undefined
+              ? format.dataLabel(point.y, index, point.x, format.value(point.y, index))
+              : format.dataLabel(share, index, point.x, `${format.number(r1(share))}%`);
           const length = Math.abs(end - start);
           const fits = horizontal
             ? length >= chartTextWidth(text) + 8 && size >= FONT + 2
             : length >= FONT + 6 && size >= chartTextWidth(text) + 4;
           if (fits) {
-            const mid = (start + end) / 2;
+            // `top`: by the value end, `bottom`: by the base (4.18.61), else the middle.
+            const sign = end >= start ? 1 : -1;
+            const half = (horizontal ? chartTextWidth(text) : FONT) / 2 + 4;
+            const place = options.dataLabelPosition;
+            const mid =
+              place === "top"
+                ? end - sign * half
+                : place === "bottom"
+                  ? start + sign * half
+                  : (start + end) / 2;
             const across = a + size / 2;
             labels.push(
               dataLabel(horizontal ? mid : across, horizontal ? across : mid, text, "inside"),
@@ -1071,7 +1140,7 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
           node("path", {
             d: barPath(a, size, start, end, rounded ? 4 : 0, horizontal),
             "data-ok-chart-bar": "",
-            ...(point.color ? { "data-ok-color": point.color } : {}),
+            ...(own ? { "data-ok-color": own } : {}),
           }),
         );
       }
@@ -1356,15 +1425,24 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
         color: series.color,
         ...pointOf(point),
       });
-      if (options.dataLabels && series.type !== "scatter")
+      if (options.dataLabels && series.type !== "scatter") {
+        const entry = percent && stacks ? stack.get(`${index}:${point.x}`) : undefined;
         labels.push(
           dataLabel(
             px,
             Math.max(FONT / 2, py - 12),
-            format.dataLabel(point.y, index, point.x, format.value(point.y, index)),
+            entry
+              ? format.dataLabel(
+                  entry[1] - entry[0],
+                  index,
+                  point.x,
+                  `${format.number(r1(entry[1] - entry[0]))}%`,
+                )
+              : format.dataLabel(point.y, index, point.x, format.value(point.y, index)),
             "outside",
           ),
         );
+      }
     }
     if (series.type === "scatter") {
       const radius = options.markerSize ?? 5;
@@ -1453,6 +1531,77 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
     (series.type === "area" ? areas : lines).push(node("g", seriesAttrs, children));
   }
 
+  // Stack totals (4.18.61): past the end of each category's stacked bars (positives and negatives).
+  if (options.stackTotals && stacked && !numeric) {
+    const sums = new Map<string, { sum: number; end: number; x: number; axis: number }>();
+    for (const { series, index } of visible) {
+      const axis = axisOf(index);
+      if (series.type !== "bar" || !stacksOn(series, axis)) continue;
+      for (const point of series.points) {
+        if (point.y === null || point.y === 0 || !inView(point.x)) continue;
+        const key = endKey(index, point.y, point.x);
+        const end = (stack.get(`${index}:${point.x}`) as readonly [number, number])[1];
+        const entry = sums.get(key) ?? { sum: 0, end, x: point.x, axis };
+        entry.sum += point.y;
+        entry.end = point.y > 0 ? Math.max(entry.end, end) : Math.min(entry.end, end);
+        sums.set(key, entry);
+      }
+    }
+    for (const { sum, end, x, axis } of sums.values()) {
+      const at = toValueOf(axis)(end);
+      const up = sum > 0 !== (specOf(axis)?.reversed === true);
+      const text = format.value(sum, -1);
+      labels.push(
+        node(
+          "text",
+          horizontal
+            ? {
+                x: fmt(at + (up ? 6 : -6)),
+                y: fmt(toCat(x)),
+                dy: "0.35em",
+                "text-anchor": up ? "start" : "end",
+                "data-ok-chart-data-label": "total",
+              }
+            : {
+                x: fmt(toCat(x)),
+                y: fmt(up ? Math.max(FONT / 2, at - 12) : at + 12),
+                dy: "0.35em",
+                "text-anchor": "middle",
+                "data-ok-chart-data-label": "total",
+              },
+          undefined,
+          text,
+        ),
+      );
+    }
+  }
+  // Background bars (4.18.61): a track the height of the plot behind each bar slot.
+  const tracks: ChartNode[] = [];
+  const trackColors = options.backgroundBarColors ?? [];
+  if ((options.backgroundBars || trackColors.length > 0) && barSeries.length > 0 && !numeric) {
+    const slots = stacked ? 1 : barSeries.length;
+    const size = groupSize / slots;
+    const radius = fmt(Math.max(0, Math.min(options.backgroundBarRadius ?? 4, size / 2)));
+    const opacity = options.backgroundBarOpacity;
+    for (let i = first; i <= last; i++) {
+      const color = trackColors[i % Math.max(1, trackColors.length)];
+      for (let slot = 0; slot < slots; slot++) {
+        const a = toCat(i) - groupSize / 2 + slot * size;
+        tracks.push(
+          node("rect", {
+            ...(horizontal
+              ? { x: fmt(plot.x), y: fmt(a), width: fmt(plot.width), height: fmt(size) }
+              : { x: fmt(a), y: fmt(plot.y), width: fmt(size), height: fmt(plot.height) }),
+            rx: radius,
+            "data-ok-chart-background-bar": "",
+            ...(color ? { "data-ok-color": color } : {}),
+            ...(opacity !== undefined ? { "fill-opacity": fmt(clamp(opacity, 0, 1)) } : {}),
+          }),
+        );
+      }
+    }
+  }
+
   if (defs.length) nodes.push(node("defs", {}, defs));
   if (!sparkline) nodes.push(node("g", { "data-ok-chart-grid": "" }, grid));
   // Horizontal bars: the value axis title beside the categories, at the left edge.
@@ -1480,6 +1629,7 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
     nodes.push(node("g", { "data-ok-chart-axis": "x" }, axisX));
     nodes.push(...(yAxisNodes ?? [node("g", { "data-ok-chart-axis": "y" }, axisY)]));
   }
+  if (tracks.length) nodes.push(node("g", { "data-ok-chart-background-bars": "" }, tracks));
   nodes.push(node("g", { "data-ok-chart-crosshair": "" }, []));
   nodes.push(
     node("g", { "data-ok-chart-series-group": "" }, [...areas, ...bars, ...lines, ...scatters]),

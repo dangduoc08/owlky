@@ -20,9 +20,11 @@ import {
   type ChartColor,
   type ChartCurve,
   type ChartData,
+  type ChartDataLabelPosition,
   type ChartFill,
   type ChartLegend,
   type ChartSeries,
+  type ChartStackType,
   type ChartTableModel,
   type ChartType,
   type ChartXType,
@@ -81,6 +83,22 @@ export interface ChartRenderInput extends ChartFormatOptions {
   readonly curve?: ChartCurve | undefined;
   readonly fill?: ChartFill | undefined;
   readonly stacked?: boolean | undefined;
+  /** Stacks (4.18.61): `100%` draws each category's stacked values as shares of their sum. */
+  readonly stackType?: ChartStackType | undefined;
+  /** Stacks only the bar series of a mixed chart. */
+  readonly stackOnlyBar?: boolean | undefined;
+  /** Stacked bars: each stack's total past its end. */
+  readonly stackTotals?: boolean | undefined;
+  /** Bars: where data labels sit (`center`, `top`: by the value end, `bottom`: by the base). */
+  readonly dataLabelPosition?: ChartDataLabelPosition | undefined;
+  /** Bars: a grey track behind each bar (or `backgroundBarColors`). */
+  readonly backgroundBars?: boolean | undefined;
+  /** Bars: track colors, one per category in turn. */
+  readonly backgroundBarColors?: readonly ChartColor[] | undefined;
+  /** Bars: track opacity (0 to 1). */
+  readonly backgroundBarOpacity?: number | undefined;
+  /** Bars: track corner radius in px. Default 4. */
+  readonly backgroundBarRadius?: number | undefined;
   readonly horizontal?: boolean | undefined;
   readonly markerSize?: number | undefined;
   readonly columnWidth?: number | undefined;
@@ -113,7 +131,7 @@ export interface ChartRenderInput extends ChartFormatOptions {
   readonly candleDownColor?: ChartColor | undefined;
   /** Donut hole in % of the radius. Default 72. */
   readonly donutSize?: number | undefined;
-  /** Heatmaps and treemaps: values in a range take its color. */
+  /** Heatmaps, treemaps and bars: values in a range take its color. */
   readonly colorRanges?: readonly ChartColorRange[] | undefined;
   /** Outside data labels sit on a badge (a paper box with a border). */
   readonly dataLabelBackground?: boolean | undefined;
@@ -235,6 +253,14 @@ export function renderChart(input: ChartRenderInput): ChartRender {
     curve: input.curve,
     fill: input.fill,
     stacked: input.stacked,
+    stackType: input.stackType,
+    stackOnlyBar: input.stackOnlyBar,
+    stackTotals: input.stackTotals,
+    dataLabelPosition: input.dataLabelPosition,
+    backgroundBars: input.backgroundBars,
+    backgroundBarColors: input.backgroundBarColors,
+    backgroundBarOpacity: input.backgroundBarOpacity,
+    backgroundBarRadius: input.backgroundBarRadius,
     horizontal: input.horizontal,
     markerSize: input.markerSize,
     columnWidth: input.columnWidth,

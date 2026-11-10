@@ -997,6 +997,115 @@ export const chartExamples: Record<string, ChartExample> = {
       },
     ],
   },
+  // Roadmap 4.18.61: 100% stacks, stack totals, label positions, value ranges, background bars.
+  "column-stacked-100": {
+    title: "Column stacked 100%",
+    props: {
+      label: "Share of series A to C per month",
+      type: "bar",
+      stacked: true,
+      stackType: "100%",
+      dataLabels: true,
+      categories: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+      series: [
+        { name: "Series A", data: [44, 55, 41, 67, 22, 43] },
+        { name: "Series B", data: [13, 23, 20, 8, 13, 27] },
+        { name: "Series C", data: [11, 17, 15, 15, 21, 14] },
+      ],
+    },
+    more: [
+      {
+        label: "Share of visits by device per country",
+        type: "bar",
+        horizontal: true,
+        stacked: true,
+        stackType: "100%",
+        barHeight: 50,
+        colors: ["primary", "warning", "info"],
+        categories: ["Italy", "Japan", "Canada", "France", "Germany"],
+        series: [
+          { name: "Desktop", data: [44, 55, 41, 37, 22] },
+          { name: "Mobile", data: [53, 32, 33, 52, 13] },
+          { name: "Tablet", data: [12, 17, 11, 9, 15] },
+        ],
+      },
+    ],
+  },
+  "stack-totals": {
+    title: "Stack totals",
+    props: {
+      label: "Support tickets per week by channel",
+      type: "bar",
+      stacked: true,
+      stackTotals: true,
+      categories: ["W1", "W2", "W3", "W4", "W5", "W6"],
+      series: [
+        { name: "Email", data: [44, 55, 41, 67, 22, 43] },
+        { name: "Chat", data: [13, 23, 20, 8, 13, 27] },
+        { name: "Phone", data: [11, 17, 15, 15, 21, 14] },
+      ],
+    },
+    more: [
+      {
+        label: "Orders by store and the weekly target (only the bars stack)",
+        type: "bar",
+        stacked: true,
+        stackOnlyBar: true,
+        stackTotals: true,
+        colors: ["info", "info-dark", "error"],
+        categories: ["W1", "W2", "W3", "W4", "W5", "W6"],
+        series: [
+          { name: "Store A", data: [30, 42, 28, 51, 39, 47] },
+          { name: "Store B", data: [21, 18, 26, 22, 31, 25] },
+          { name: "Target", type: "line", data: [50, 55, 55, 60, 65, 65] },
+        ],
+      },
+    ],
+  },
+  "column-data-labels": {
+    title: "Column data labels",
+    props: {
+      label: "Monthly inflation",
+      type: "bar",
+      dataLabels: true,
+      dataLabelPosition: "top",
+      columnWidth: 64,
+      backgroundBars: true,
+      valueSuffix: "%",
+      categories: MONTHS,
+      series: [{ name: "Inflation", data: [2.3, 3.1, 4.0, 10.1, 4.0, 3.6, 3.2, 2.3, 1.4] }],
+    },
+    more: [
+      {
+        label: "Tasks done per team",
+        type: "bar",
+        horizontal: true,
+        dataLabels: true,
+        dataLabelPosition: "bottom",
+        barHeight: 50,
+        colors: ["success"],
+        backgroundBarColors: ["success-lighter", "info-lighter"],
+        backgroundBarOpacity: 0.48,
+        yMax: 100,
+        categories: ["Design", "Web", "Mobile", "Data", "Support"],
+        series: [{ name: "Done", data: [72, 54, 88, 35, 61] }],
+      },
+    ],
+  },
+  "column-ranges": {
+    title: "Column range colors",
+    props: {
+      label: "Monthly balance",
+      type: "bar",
+      columnWidth: 60,
+      colorRanges: [
+        { from: -100, to: -1, color: "error", name: "Loss" },
+        { from: 0, to: 100, color: "success", name: "Profit" },
+      ],
+      categories: MONTHS,
+      series: [{ name: "Balance", data: [12, 18, -7, -21, 9, 27, -4, 15, 31] }],
+    },
+  },
   // Phase 2.2 (ADR-0047): stock charts, one per ApexStock demo section that applies.
   stock: {
     title: "Stock chart",

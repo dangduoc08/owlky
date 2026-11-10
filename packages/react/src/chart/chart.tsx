@@ -7,6 +7,7 @@ import {
   type ChartColor,
   type ChartColorRange,
   type ChartCurve,
+  type ChartDataLabelPosition,
   type ChartDataPoint,
   type ChartExportFormat,
   type ChartFill,
@@ -22,6 +23,7 @@ import {
   type ChartSankeyNode,
   type ChartSelectionDetail,
   type ChartSeries,
+  type ChartStackType,
   type ChartTool,
   type ChartType,
   type ChartXType,
@@ -122,7 +124,31 @@ export interface ChartProps extends Omit<HTMLAttributes<HTMLElement>, "children"
   legend?: ChartLegend | undefined;
   /** Area fill. Default `"gradient"`. */
   fill?: ChartFill | undefined;
+  /** Stacks the series on each other (bars, lines, areas). */
   stacked?: boolean | undefined;
+  /**
+   * Stacked charts: `"normal"` (default) stacks the values; `"100%"` stacks each category's values
+   * as shares of their total, on a value axis from 0 to 100%. Tooltips keep the values.
+   */
+  stackType?: ChartStackType | undefined;
+  /** Stacked mixed charts: only the bar series stack; lines and areas keep their own values. */
+  stackOnlyBar?: boolean | undefined;
+  /** Stacked bars: prints the total of each stack past its end. */
+  stackTotals?: boolean | undefined;
+  /**
+   * Bars: where data labels sit inside the bar. Default `"center"`; `"top"` by the value end,
+   * `"bottom"` by the base.
+   */
+  dataLabelPosition?: ChartDataLabelPosition | undefined;
+  /** Bars: a grey track the height of the plot behind each bar. */
+  backgroundBars?: boolean | undefined;
+  /** Bars: track colors (palette names), one per category in turn. Turns the tracks on. */
+  backgroundBarColors?: readonly ChartColor[] | undefined;
+  /** Bars: opacity of the tracks (0 to 1). Default 1. */
+  backgroundBarOpacity?: number | undefined;
+  /** Bars: corner radius of the tracks in px. Default 4. */
+  backgroundBarRadius?: number | undefined;
+  /** Bars run left to right, categories down the side. */
   horizontal?: boolean | undefined;
   /** Plot height in px. Default 320. */
   height?: number | undefined;
@@ -201,7 +227,7 @@ export interface ChartProps extends Omit<HTMLAttributes<HTMLElement>, "children"
   dataLabelFormatter?: ((value: number, series: number, index: number) => string) | undefined;
   /** Legend items show a value: the slice's or ring's, or the series' last one. */
   legendValues?: boolean | undefined;
-  /** Heatmaps and treemaps: values in a range take its color. */
+  /** Heatmaps, treemaps and bars: values in a range take its color (a point's own color wins on bars). */
   colorRanges?: readonly ChartColorRange[] | undefined;
   /** Lines, bands and points with a label (vertical charts with an x axis). */
   annotations?: readonly ChartAnnotation[] | undefined;
@@ -288,6 +314,14 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     legend,
     fill,
     stacked,
+    stackType,
+    stackOnlyBar,
+    stackTotals,
+    dataLabelPosition,
+    backgroundBars,
+    backgroundBarColors,
+    backgroundBarOpacity,
+    backgroundBarRadius,
     horizontal,
     height,
     markerSize,
@@ -350,6 +384,13 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     legend,
     fill,
     stacked,
+    stackType,
+    stackOnlyBar,
+    stackTotals,
+    dataLabelPosition,
+    backgroundBars,
+    backgroundBarOpacity,
+    backgroundBarRadius,
     horizontal,
     height,
     markerSize,
@@ -432,6 +473,12 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
   const validNodeWidth = number("data-ok-node-width");
   const validWhitespace = number("data-ok-whitespace");
   const validEdgeOpacity = number("data-ok-edge-opacity");
+  const validStackType = attributes["data-ok-stack-type"] as ChartStackType | undefined;
+  const validLabelPosition = attributes["data-ok-data-label-position"] as
+    | ChartDataLabelPosition
+    | undefined;
+  const validTrackOpacity = number("data-ok-background-bar-opacity");
+  const validTrackRadius = number("data-ok-background-bar-radius");
 
   // Zoom (phase 4): controlled, or kept with the x axis it was set on (so it follows live data).
   const [innerZoom, setInnerZoom] = useState<{
@@ -473,6 +520,14 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         fill: chartFill,
         legend: chartLegend,
         stacked,
+        stackType: validStackType,
+        stackOnlyBar,
+        stackTotals,
+        dataLabelPosition: validLabelPosition,
+        backgroundBars,
+        backgroundBarColors,
+        backgroundBarOpacity: validTrackOpacity,
+        backgroundBarRadius: validTrackRadius,
         horizontal,
         markerSize: validMarkerSize,
         columnWidth: validColumnWidth,
@@ -537,6 +592,14 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       chartFill,
       chartLegend,
       stacked,
+      validStackType,
+      stackOnlyBar,
+      stackTotals,
+      validLabelPosition,
+      backgroundBars,
+      backgroundBarColors,
+      validTrackOpacity,
+      validTrackRadius,
       horizontal,
       validMarkerSize,
       validColumnWidth,
@@ -857,6 +920,7 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         indicators,
         yaxis,
         xTitle,
+        backgroundBarColors,
       })}
       data-ok-ready=""
       data-ok-runtime="off"

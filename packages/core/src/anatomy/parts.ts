@@ -219,6 +219,8 @@ export interface ChartParts {
   "data-ok-axis-titles": State;
   /** Marks a Sankey link that loops back to an earlier node. */
   "data-ok-back": State;
+  /** Track colors behind the bars, palette names separated by spaces, such as `info-lighter warning-lighter`. */
+  "data-ok-background-bar-colors": Value<string>;
   /** The `id` of the chart this brush chart controls. */
   "data-ok-brush-target": Value<string>;
   /** The highlight of the active point or category. */
@@ -259,6 +261,10 @@ export interface ChartParts {
   "data-ok-chart-bar": Part<"path">;
   /** One half of a box plot's box. */
   "data-ok-chart-box": Value<"upper" | "lower">;
+  /** One track behind a bar (`backgroundBars`, `backgroundBarColors`). */
+  "data-ok-chart-background-bar": Part<"rect">;
+  /** The group of tracks behind the bars, before the crosshair. */
+  "data-ok-chart-background-bars": Part<"g">;
   /** The selected window of a brush chart. */
   "data-ok-chart-brush": Part<"g">;
   /** One bubble. */

@@ -28,6 +28,8 @@ export interface ChartTextOptions {
   readonly yaxis?: ChartYAxis | readonly ChartYAxis[] | undefined;
   /** The x axis title. */
   readonly xTitle?: string | undefined;
+  /** Bars: track colors (`"info-lighter warning-lighter"`, 4.18.61). */
+  readonly backgroundBarColors?: readonly ChartColor[] | undefined;
 }
 
 export const CHART_TEXT_ATTRIBUTES = {
@@ -43,6 +45,7 @@ export const CHART_TEXT_ATTRIBUTES = {
   indicators: "data-ok-indicators",
   yaxis: "data-ok-yaxis",
   xTitle: "data-ok-x-title",
+  backgroundBarColors: "data-ok-background-bar-colors",
 } as const;
 
 const isColor = (value: unknown): value is ChartColor => chartColors.includes(value as ChartColor);
@@ -80,6 +83,12 @@ export function chartColorRangesText(ranges: readonly ChartColorRange[]): string
     .join("; ");
 }
 
+/** Palette colors from text separated by spaces (`"info warning-light"`); others are dropped. */
+export function parseChartColors(text: string | null | undefined): ChartColor[] {
+  if (!text || text.length > 2000) return [];
+  return text.trim().split(/\s+/).filter(isColor).slice(0, 100);
+}
+
 /** A list as attribute text: items separated by `; ` (a `;` inside an item becomes a space). */
 export function chartListText(items: readonly string[]): string {
   return items
@@ -113,6 +122,9 @@ export function chartTextAttributes(options: ChartTextOptions): Record<string, s
       if (text) out[attr] = text;
     } else if (key === "axisTitles") {
       const text = chartListText((value as readonly string[] | undefined) ?? []);
+      if (text) out[attr] = text;
+    } else if (key === "backgroundBarColors") {
+      const text = ((value as readonly ChartColor[] | undefined) ?? []).filter(isColor).join(" ");
       if (text) out[attr] = text;
     } else if (key === "colorRanges") {
       const text = chartColorRangesText((value as readonly ChartColorRange[] | undefined) ?? []);

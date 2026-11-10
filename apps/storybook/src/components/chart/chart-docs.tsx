@@ -6,6 +6,8 @@ import animationsGroup from "../../../../../packages/html/src/components/chart/e
 import annotationsGroup from "../../../../../packages/html/src/components/chart/examples/annotations-group.html?raw";
 import axisScalesGroup from "../../../../../packages/html/src/components/chart/examples/axis-scales-group.html?raw";
 import brushGroup from "../../../../../packages/html/src/components/chart/examples/brush-group.html?raw";
+import columnDataLabelsGroup from "../../../../../packages/html/src/components/chart/examples/column-data-labels-group.html?raw";
+import columnRangesGroup from "../../../../../packages/html/src/components/chart/examples/column-ranges-group.html?raw";
 import columnSingle from "../../../../../packages/html/src/components/chart/examples/column-single-group.html?raw";
 import dataLabelsGroup from "../../../../../packages/html/src/components/chart/examples/data-labels-group.html?raw";
 import funnelGroup from "../../../../../packages/html/src/components/chart/examples/funnel-group.html?raw";
@@ -14,6 +16,7 @@ import mixedGroup from "../../../../../packages/html/src/components/chart/exampl
 import multipleYAxesGroup from "../../../../../packages/html/src/components/chart/examples/multiple-y-axes-group.html?raw";
 import selectionGroup from "../../../../../packages/html/src/components/chart/examples/selection-group.html?raw";
 import sparklinesGroup from "../../../../../packages/html/src/components/chart/examples/sparklines-group.html?raw";
+import stackTotalsGroup from "../../../../../packages/html/src/components/chart/examples/stack-totals-group.html?raw";
 import synchronizedGroup from "../../../../../packages/html/src/components/chart/examples/synchronized-group.html?raw";
 import timelineGroup from "../../../../../packages/html/src/components/chart/examples/timeline-group.html?raw";
 import zoomGroup from "../../../../../packages/html/src/components/chart/examples/zoom-group.html?raw";
@@ -696,7 +699,80 @@ export function ChartLabels() {
   {
     id: "stacked",
     title: "Stack and compare series",
-    body: "Set `stacked` to put the series of a category on top of each other, so the column shows their total. Without it, columns of several series stand side by side. Only the end of each column is rounded.",
+    body: `Set \`stacked\` to put the series of a category on top of each other, so the column shows their total. Without it, columns of several series stand side by side. Only the end of each column is rounded.
+
+- **Shares:** set \`stackType="100%"\` (\`data-ok-stack-type="100%"\` in HTML) to stack each category's values as shares of their total. The value axis runs to 100%, and data labels print the shares. The tooltip and the data table keep the values.
+- **Totals:** set \`stackTotals\` (\`data-ok-stack-totals\`) to print the total of each stack past its end. Negative stacks get their total below.
+- **Bars only:** in a mixed chart, set \`stackOnlyBar\` (\`data-ok-stack-only-bar\`) to stack the bar series and keep a line, such as a target, on its own values.`,
+    html: `${snippetElement(stackTotalsGroup, "data-ok-chart ", 1)}`,
+    react: `import { Chart } from "@owlky/react";
+
+const weeks = ["W1", "W2", "W3", "W4", "W5", "W6"];
+const orders = [
+  { name: "Store A", data: [30, 42, 28, 51, 39, 47] },
+  { name: "Store B", data: [21, 18, 26, 22, 31, 25] },
+  { name: "Target", type: "line" as const, data: [50, 55, 55, 60, 65, 65] },
+];
+
+export function ChartStackTotals() {
+  return (
+    <Chart
+      label="Orders by store and the weekly target"
+      type="bar"
+      stacked
+      stackOnlyBar
+      stackTotals
+      colors={["info", "info-dark", "error"]}
+      categories={weeks}
+      series={orders}
+    />
+  );
+}`,
+  },
+  {
+    id: "bars",
+    title: "Style bars",
+    body: `Bars take options of their own:
+
+- **Label position:** \`dataLabelPosition\` (\`data-ok-data-label-position\`) puts data labels by the value end (\`top\`), in the middle (\`center\`, the default) or by the base (\`bottom\`) of each bar.
+- **Value ranges:** \`colorRanges\` colors each bar by the range that holds its value, such as red for losses and green for profits. A point's own \`color\` wins. In HTML, write the ranges as text: \`data-ok-color-ranges="-100 -1 error Loss; 0 100 success Profit"\`.
+- **Tracks:** \`backgroundBars\` (\`data-ok-background-bars\`) draws a grey track the height of the plot behind each bar, which helps when values are parts of a fixed maximum. \`backgroundBarColors\` (\`data-ok-background-bar-colors\`, palette names separated by spaces) colors the tracks category by category, \`backgroundBarOpacity\` sets their opacity from 0 to 1, and \`backgroundBarRadius\` their corner radius in pixels.
+
+Color alone shouldn't carry the meaning of a range: name the ranges in the label or the text around the chart, as the data table only holds the values.`,
+    html: `${snippetElement(columnRangesGroup, "data-ok-chart ")}
+${snippetElement(columnDataLabelsGroup, "data-ok-chart ")}`,
+    react: `import { Chart } from "@owlky/react";
+
+const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
+const balance = [{ name: "Balance", data: [12, 18, -7, -21, 9, 27] }];
+const inflation = [{ name: "Inflation", data: [2.3, 3.1, 4.0, 10.1, 4.0, 3.6] }];
+
+export function ChartBars() {
+  return (
+    <>
+      <Chart
+        label="Monthly balance: losses in red, profits in green"
+        type="bar"
+        colorRanges={[
+          { from: -100, to: -1, color: "error", name: "Loss" },
+          { from: 0, to: 100, color: "success", name: "Profit" },
+        ]}
+        categories={months}
+        series={balance}
+      />
+      <Chart
+        label="Monthly inflation"
+        type="bar"
+        dataLabels
+        dataLabelPosition="top"
+        backgroundBars
+        valueSuffix="%"
+        categories={months}
+        series={inflation}
+      />
+    </>
+  );
+}`,
   },
   {
     id: "values",
@@ -984,9 +1060,46 @@ const PREVIEWS = {
         label="Sales by channel"
         type="bar"
         stacked
+        stackTotals
         legend="right"
         categories={MONTHS}
         series={SALES}
+      />
+      <Chart
+        label="Share of sales by channel"
+        type="bar"
+        stacked
+        stackType="100%"
+        dataLabels
+        height={240}
+        categories={MONTHS}
+        series={SALES}
+      />
+    </Preview>
+  ),
+  bars: () => (
+    <Preview>
+      <Chart
+        label="Monthly balance: losses in red, profits in green"
+        type="bar"
+        height={240}
+        colorRanges={[
+          { from: -100, to: -1, color: "error", name: "Loss" },
+          { from: 0, to: 100, color: "success", name: "Profit" },
+        ]}
+        categories={MONTHS}
+        series={[{ name: "Balance", data: [12, 18, -7, -21, 9, 27] }]}
+      />
+      <Chart
+        label="Monthly inflation"
+        type="bar"
+        height={240}
+        dataLabels
+        dataLabelPosition="top"
+        backgroundBars
+        valueSuffix="%"
+        categories={MONTHS}
+        series={[{ name: "Inflation", data: [2.3, 3.1, 4.0, 10.1, 4.0, 3.6] }]}
       />
     </Preview>
   ),

@@ -816,6 +816,63 @@
       "name": "allowMultipleDataPointsSelection"
      },
      {
+      "attr": "data-ok-stack-type",
+      "default": "normal",
+      "description": "Stacked charts: `normal` stacks the values, `100%` stacks each category's values as shares of their total (the value axis runs to 100%).",
+      "kind": "style",
+      "name": "stackType",
+      "optional": true,
+      "values": [
+       "normal",
+       "100%"
+      ]
+     },
+     {
+      "attr": "data-ok-stack-only-bar",
+      "description": "Stacked mixed charts: only the bar series stack; lines and areas keep their own values.",
+      "kind": "flag",
+      "name": "stackOnlyBar"
+     },
+     {
+      "attr": "data-ok-stack-totals",
+      "description": "Stacked bars: prints the total of each stack past its end.",
+      "kind": "flag",
+      "name": "stackTotals"
+     },
+     {
+      "attr": "data-ok-data-label-position",
+      "default": "center",
+      "description": "Bars: where data labels sit inside the bar: `center`, `top` (by the value end) or `bottom` (by the base).",
+      "kind": "style",
+      "name": "dataLabelPosition",
+      "optional": true,
+      "values": [
+       "center",
+       "top",
+       "bottom"
+      ]
+     },
+     {
+      "attr": "data-ok-background-bars",
+      "description": "Bars: a grey track the height of the plot behind each bar.",
+      "kind": "flag",
+      "name": "backgroundBars"
+     },
+     {
+      "attr": "data-ok-background-bar-opacity",
+      "description": "Bars: opacity of the tracks behind the bars (0 to 1; default 1).",
+      "kind": "number",
+      "min": 0,
+      "name": "backgroundBarOpacity"
+     },
+     {
+      "attr": "data-ok-background-bar-radius",
+      "description": "Bars: corner radius of the tracks in px (default 4).",
+      "kind": "number",
+      "min": 0,
+      "name": "backgroundBarRadius"
+     },
+     {
       "attr": "aria-pressed",
       "description": "Indexes of the series hidden through the legend (`aria-pressed=\"false\"` on their buttons); categories in pie, donut and radial bar charts.",
       "event": "ok:chart:toggle",
@@ -857,6 +914,12 @@
       "description": "Marks a Sankey link that loops back to an earlier node.",
       "kind": "state",
       "name": "data-ok-back"
+     },
+     {
+      "description": "Track colors behind the bars, palette names separated by spaces, such as `info-lighter warning-lighter`.",
+      "kind": "value",
+      "name": "data-ok-background-bar-colors",
+      "value": "string"
      },
      {
       "description": "The `id` of the chart this brush chart controls.",
@@ -995,6 +1058,22 @@
        "",
        "x"
       ]
+     },
+     {
+      "description": "One track behind a bar (`backgroundBars`, `backgroundBarColors`).",
+      "elements": [
+       "rect"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-background-bar"
+     },
+     {
+      "description": "The group of tracks behind the bars, before the crosshair.",
+      "elements": [
+       "g"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-background-bars"
      },
      {
       "description": "A band of a range area or a range bar.",
@@ -1697,6 +1776,26 @@
       "type": "readonly string[]"
      },
      {
+      "description": "Bars: track colors (palette names), one per category in turn. Turns the tracks on.",
+      "name": "backgroundBarColors",
+      "type": "readonly ChartColor[]"
+     },
+     {
+      "description": "Bars: opacity of the tracks (0 to 1). Default 1.",
+      "name": "backgroundBarOpacity",
+      "type": "number"
+     },
+     {
+      "description": "Bars: corner radius of the tracks in px. Default 4.",
+      "name": "backgroundBarRadius",
+      "type": "number"
+     },
+     {
+      "description": "Bars: a grey track the height of the plot behind each bar.",
+      "name": "backgroundBars",
+      "type": "boolean"
+     },
+     {
       "description": "Horizontal bar thickness in % of a category. Default 40 (funnels 80).",
       "name": "barHeight",
       "type": "number"
@@ -1734,7 +1833,7 @@
       "type": "readonly (string | number | Date)[]"
      },
      {
-      "description": "Heatmaps and treemaps: values in a range take its color.",
+      "description": "Heatmaps, treemaps and bars: values in a range take its color (a point's own color wins on bars).",
       "name": "colorRanges",
       "type": "readonly ChartColorRange[]"
      },
@@ -1768,6 +1867,12 @@
       "description": "Replaces the values printed on the chart (pie and donut labels get the percentage).",
       "name": "dataLabelFormatter",
       "type": "((value: number, series: number, index: number) => string)"
+     },
+     {
+      "default": "\"center\"",
+      "description": "Bars: where data labels sit inside the bar. `\"top\"` by the value end, `\"bottom\"` by the base.",
+      "name": "dataLabelPosition",
+      "type": "\"bottom\" | \"center\" | \"top\""
      },
      {
       "description": "Prints the values on the chart (percentages on pie and donut slices).",
@@ -1937,6 +2042,21 @@
       "description": "No axes, grid or legend: the chart fills its container (cards, table cells). Its height is the container's, at least `height` (default 40px).",
       "name": "sparkline",
       "type": "boolean"
+     },
+     {
+      "description": "Stacked mixed charts: only the bar series stack; lines and areas keep their own values.",
+      "name": "stackOnlyBar",
+      "type": "boolean"
+     },
+     {
+      "description": "Stacked bars: prints the total of each stack past its end.",
+      "name": "stackTotals",
+      "type": "boolean"
+     },
+     {
+      "description": "Stacked charts: `\"normal\"` (default) stacks the values; `\"100%\"` stacks each category's values as shares of their total, on a value axis from 0 to 100%. Tooltips keep the values.",
+      "name": "stackType",
+      "type": "\"100%\" | \"normal\""
      },
      {
       "description": "Stacks the series on each other (bars, lines, areas).",

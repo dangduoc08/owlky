@@ -39,14 +39,18 @@ import {
 import {
   type ChartColor,
   type ChartCurve,
+  type ChartDataLabelPosition,
   type ChartFill,
   type ChartLegend,
+  type ChartStackType,
   type ChartType,
   type ChartXType,
   chartColors,
   chartCurves,
+  chartDataLabelPositions,
   chartFills,
   chartLegends,
+  chartStackTypes,
   chartTypes,
   chartXTypes,
 } from "../chart/chart-model.js";
@@ -4408,6 +4412,44 @@ export const chartOptions = defineOptions("chart", "data-ok-chart", {
     "data-ok-allow-multiple-data-points-selection",
     "Clicks and Enter or Space add points to the selection instead of replacing it.",
   ),
+  stackType: style(
+    "data-ok-stack-type",
+    chartStackTypes,
+    "normal",
+    "Stacked charts: `normal` stacks the values, `100%` stacks each category's values as shares of their total (the value axis runs to 100%).",
+    { optional: true },
+  ),
+  stackOnlyBar: flag(
+    "data-ok-stack-only-bar",
+    "Stacked mixed charts: only the bar series stack; lines and areas keep their own values.",
+  ),
+  stackTotals: flag(
+    "data-ok-stack-totals",
+    "Stacked bars: prints the total of each stack past its end.",
+  ),
+  dataLabelPosition: style(
+    "data-ok-data-label-position",
+    chartDataLabelPositions,
+    "center",
+    "Bars: where data labels sit inside the bar: `center`, `top` (by the value end) or `bottom` (by the base).",
+    { optional: true },
+  ),
+  backgroundBars: flag(
+    "data-ok-background-bars",
+    "Bars: a grey track the height of the plot behind each bar.",
+  ),
+  backgroundBarOpacity: number(
+    "data-ok-background-bar-opacity",
+    undefined,
+    "Bars: opacity of the tracks behind the bars (0 to 1; default 1).",
+    { min: 0 },
+  ),
+  backgroundBarRadius: number(
+    "data-ok-background-bar-radius",
+    undefined,
+    "Bars: corner radius of the tracks in px (default 4).",
+    { min: 0 },
+  ),
   hiddenSeries: state(
     "aria-pressed",
     'Indexes of the series hidden through the legend (`aria-pressed="false"` on their buttons); categories in pie, donut and radial bar charts.',
@@ -4463,6 +4505,13 @@ export interface ChartAnatomyOptions {
   navigator?: boolean | undefined;
   paneHeight?: number | undefined;
   allowMultipleDataPointsSelection?: boolean | undefined;
+  stackType?: ChartStackType | undefined;
+  stackOnlyBar?: boolean | undefined;
+  stackTotals?: boolean | undefined;
+  dataLabelPosition?: ChartDataLabelPosition | undefined;
+  backgroundBars?: boolean | undefined;
+  backgroundBarOpacity?: number | undefined;
+  backgroundBarRadius?: number | undefined;
 }
 
 /** `data-ok-*` attributes of a chart root (numbers only when given). */

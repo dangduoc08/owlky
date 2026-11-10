@@ -370,6 +370,16 @@
     stroke-width: 3px;
   }
 
+  /* Background bars (4.18.61): a grey track behind each bar, or the palette color it names. The
+     opacity is an attribute from the layout: CSS never sets fill-opacity here. */
+  :where([data-ok-chart-background-bar]) {
+    fill: rgb(var(--ok-palette-grey-500-channel) / 0.12);
+  }
+
+  :where([data-ok-chart-background-bar][data-ok-color]) {
+    fill: var(--_ok-chart-c);
+  }
+
   :where([data-ok-chart-band]) {
     fill: rgb(var(--ok-palette-grey-500-channel) / 0.12);
   }
