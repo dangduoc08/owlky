@@ -2,8 +2,14 @@ import { mobileStepperOptions, stepLabelOptions, stepOptions, stepperOptions } f
 import stepperApi from "@owlky/docs-content/api/stepper.json" with { type: "json" };
 import { apiReferenceSection } from "@owlky/docs-content/guide/api-data";
 import { MobileStepper, Step, StepLabel, Stepper } from "@owlky/react";
+import alternativeGroup from "../../../../../packages/html/src/components/stepper/examples/alternative-label-group.html?raw";
+import customizedGroup from "../../../../../packages/html/src/components/stepper/examples/customized-group.html?raw";
+import horizontalGroup from "../../../../../packages/html/src/components/stepper/examples/horizontal-group.html?raw";
+import mobileDots from "../../../../../packages/html/src/components/stepper/examples/mobile-dots.html?raw";
+import verticalGroup from "../../../../../packages/html/src/components/stepper/examples/vertical-group.html?raw";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
+import { snippetElement } from "../../helpers/snippet-markup.js";
 import { HorizontalDemo } from "./horizontal-demo.js";
 import { MobileDemo } from "./mobile-demo.js";
 import { VerticalDemo } from "./vertical-demo.js";
@@ -19,24 +25,9 @@ export const stepperSections: GuideSection[] = [
 <link rel="stylesheet" href="${CDN}/owlky.css">
 <script src="${CDN}/owlky.js" defer></script>
 
-<ol id="setup" data-ok-stepper data-ok-orientation="horizontal" data-ok-variant="standard" data-ok-active-step="0" aria-label="Project setup">
-  <li data-ok-step>
-    <span data-ok-step-label>
-      <span data-ok-step-icon aria-hidden="true">
-        <span data-ok-step-icon-text>1</span>
-        <svg data-ok-step-icon-check aria-hidden="true" viewBox="0 0 24 24">…</svg>
-        <svg data-ok-step-icon-error aria-hidden="true" viewBox="0 0 24 24">…</svg>
-      </span>
-      <span data-ok-step-label-text><span data-ok-step-label-title>Choose a plan</span></span>
-    </span>
-  </li>
-  <li data-ok-step>
-    <div data-ok-step-connector aria-hidden="true"><span data-ok-step-connector-line></span></div>
-    …
-  </li>
-</ol>
-<button type="button" data-ok-button data-ok-stepper-back="setup">…Back…</button>
-<button type="button" data-ok-button data-ok-stepper-next="setup">…Next…</button>`,
+${snippetElement(horizontalGroup, "data-ok-stepper ")}
+${snippetElement(horizontalGroup, "data-ok-stepper-back")}
+${snippetElement(horizontalGroup, "data-ok-stepper-next")}`,
     react: `import { Button, Step, StepLabel, Stepper } from "@owlky/react";
 import { useState } from "react";
 
@@ -73,6 +64,8 @@ export function Setup() {
     react: `import { Step, StepLabel, Stepper } from "@owlky/react";
 
 export function StepperState() {
+  // The step in progress (0-based)
+  const active = 2;
   return (
     <Stepper activeStep={active}>
       <Step>
@@ -90,40 +83,64 @@ export function StepperState() {
     id: "labels",
     title: "Write step labels",
     body: 'Keep titles short, two or three words. `optional` adds a second line, such as "Optional". Set `error` on a `StepLabel` to show that a step failed: the icon turns into an exclamation mark and the text takes the error color. `icon` replaces the number with other text, or with any node such as an `svg`.',
-    react: `import { Card, StepLabel } from "@owlky/react";
+    react: `import { Step, StepLabel, Stepper } from "@owlky/react";
 import { SettingsIcon } from "lucide-react";
 
 export function StepperLabels() {
   return (
-    <>
-      <StepLabel optional="Optional">Add details</StepLabel>
-      <StepLabel error optional="Card declined">Payment</StepLabel>
-      <StepLabel icon={<SettingsIcon />}>Choose a plan</StepLabel>
-    </>
+    <Stepper activeStep={2}>
+      <Step>
+        <StepLabel icon={<SettingsIcon />}>Choose a plan</StepLabel>
+      </Step>
+      <Step>
+        <StepLabel optional="Optional">Add details</StepLabel>
+      </Step>
+      <Step>
+        <StepLabel error optional="Card declined">
+          Payment
+        </StepLabel>
+      </Step>
+    </Stepper>
   );
 }`,
-    html: `<span data-ok-step-label data-ok-error>…</span>
-<span data-ok-step-label-optional>Card declined</span>`,
+    html: `<ol data-ok-stepper data-ok-orientation="horizontal" data-ok-variant="standard" data-ok-active-step="1" aria-label="Checkout">
+  <li data-ok-step data-ok-completed>
+    <span data-ok-step-label><span data-ok-step-icon aria-hidden="true"><span data-ok-step-icon-text>1</span><svg data-ok-step-icon-check aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg><svg data-ok-step-icon-error aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 6v7M12 18h.01" /></svg></span><span data-ok-step-label-text><span data-ok-step-label-title>Add details</span></span></span>
+  </li>
+  <li data-ok-step data-ok-active aria-current="step">
+    <div data-ok-step-connector aria-hidden="true"><span data-ok-step-connector-line></span></div>
+    <span data-ok-step-label data-ok-error><span data-ok-step-icon aria-hidden="true"><span data-ok-step-icon-text>2</span><svg data-ok-step-icon-check aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg><svg data-ok-step-icon-error aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 6v7M12 18h.01" /></svg></span><span data-ok-step-label-text><span data-ok-step-label-title>Payment</span><span data-ok-step-label-optional>Card declined</span></span></span>
+  </li>
+</ol>`,
   },
   {
     id: "layout",
     title: "Lay out the steps",
     body: "Steps sit in a row, joined by lines. Set `alternativeLabel` to put the labels below the icons, and the steps share the width. Set `orientation` to `vertical` to stack the steps. In a vertical stepper, `StepContent` holds what the active step shows below its title, such as a form and its buttons. It is a Collapse: it opens with a height animation on the active step and carries `hidden` on the others. On narrow screens, the titles wrap inside their steps so the row never overflows. A vertical stepper or a mobile stepper reads better on phones.",
-    html: `<ol data-ok-stepper data-ok-orientation="vertical" data-ok-active-step="0">
-  <li data-ok-step>
-    <span data-ok-step-label>…</span>
-    <div data-ok-collapse data-ok-timeout="auto" data-ok-step-content>…</div>
-  </li>
-</ol>`,
-    react: `import { Step, StepContent, StepLabel, Stepper } from "@owlky/react";
+    html: `${snippetElement(verticalGroup, "data-ok-stepper ")}`,
+    react: `import { Button, Step, StepContent, StepLabel, Stepper } from "@owlky/react";
+import { useState } from "react";
 
-export function StepperLayout() {
+const steps = [
+  { label: "Choose a plan", text: "Pick the plan and the billing period that suit your team." },
+  { label: "Create the project", text: "Name the project and invite the people who will work on it." },
+];
+
+export function VerticalSetup() {
+  const [active, setActive] = useState(0);
   return (
     <Stepper activeStep={active} orientation="vertical">
-      <Step>
-        <StepLabel>Choose a plan</StepLabel>
-        <StepContent>…</StepContent>
-      </Step>
+      {steps.map((step, index) => (
+        <Step key={step.label}>
+          <StepLabel>{step.label}</StepLabel>
+          <StepContent>
+            <p>{step.text}</p>
+            <Button variant="contained" onClick={() => setActive(index + 1)}>
+              {index === steps.length - 1 ? "Finish" : "Continue"}
+            </Button>
+          </StepContent>
+        </Step>
+      ))}
     </Stepper>
   );
 }`,
@@ -132,15 +149,20 @@ export function StepperLayout() {
     id: "variants",
     title: "Change the look",
     body: "`variant` sets how the steps look. `standard` shows numbered icons. `dot` shows small dots and thicker lines in the primary color. `circle` shows large circles that hold an icon (pass one per step with `icon`), with a gradient on the active and completed steps. To draw a line of your own, pass `connector`, or `null` for no line.",
-    html: `<ol data-ok-stepper data-ok-variant="dot" data-ok-alternative-label …>…</ol>`,
+    html: `${snippetElement(customizedGroup, 'data-ok-variant="dot"')}
+
+${snippetElement(alternativeGroup, "data-ok-stepper ")}`,
     react: `import { Step, StepLabel, Stepper } from "@owlky/react";
 import { SettingsIcon } from "lucide-react";
 
 export function StepperVariants() {
   return (
-    <Stepper activeStep={active} alternativeLabel variant="circle">
+    <Stepper activeStep={0} alternativeLabel variant="circle">
       <Step>
         <StepLabel icon={<SettingsIcon />}>Choose a plan</StepLabel>
+      </Step>
+      <Step>
+        <StepLabel>Create the project</StepLabel>
       </Step>
     </Stepper>
   );
@@ -150,16 +172,12 @@ export function StepperVariants() {
     id: "mobile",
     title: "Use a mobile stepper",
     body: '`MobileStepper` is a compact bar for small screens: a Back button, the progress, and a Next button. The progress is a text such as "2 / 3" (`text`), a row of dots (`dots`, the default) or a bar (`progress`). By default the bar is fixed to the bottom of the viewport. Set `position` to `top`, or to `static` to keep it in the page. In HTML, Back and Next buttons inside the bar move it, and the runtime disables them at the ends.',
-    html: `<div data-ok-mobile-stepper data-ok-variant="dots" data-ok-position="static" data-ok-steps="3" data-ok-active-step="0">
-  <button type="button" data-ok-button data-ok-mobile-stepper-back>…Back…</button>
-  <span data-ok-mobile-stepper-dots role="img" aria-label="Step 1 of 3">
-    <span data-ok-mobile-stepper-dot data-ok-active></span><span data-ok-mobile-stepper-dot></span><span data-ok-mobile-stepper-dot></span>
-  </span>
-  <button type="button" data-ok-button data-ok-mobile-stepper-next>…Next…</button>
-</div>`,
+    html: `${snippetElement(mobileDots, "data-ok-mobile-stepper ")}`,
     react: `import { Button, MobileStepper } from "@owlky/react";
+import { useState } from "react";
 
 export function StepperMobile() {
+  const [active, setActive] = useState(0);
   return (
     <MobileStepper
       steps={3}
