@@ -167,6 +167,14 @@ export interface ChartRenderInput extends ChartFormatOptions {
   readonly candleDownColor?: ChartColor | undefined;
   /** Donut hole in % of the radius. Default 72. */
   readonly donutSize?: number | undefined;
+  /** Waterfall charts (4.18.21): rising and falling steps (default `success` and `error`). */
+  readonly waterfallPositiveColor?: ChartColor | undefined;
+  readonly waterfallNegativeColor?: ChartColor | undefined;
+  /** Waterfall charts: total bars (default the series color) and subtotals (default the total's). */
+  readonly waterfallTotalColor?: ChartColor | undefined;
+  readonly waterfallSubtotalColor?: ChartColor | undefined;
+  /** Waterfall charts: no connectors between the bars. */
+  readonly hideConnectors?: boolean | undefined;
   /** Heatmaps, treemaps and bars: values in a range take its color. */
   readonly colorRanges?: readonly ChartColorRange[] | undefined;
   /** Outside data labels sit on a badge (a paper box with a border). */
@@ -327,6 +335,11 @@ export function renderChart(input: ChartRenderInput): ChartRender {
     candleUpColor: input.candleUpColor,
     candleDownColor: input.candleDownColor,
     donutSize: input.donutSize,
+    waterfallPositiveColor: input.waterfallPositiveColor,
+    waterfallNegativeColor: input.waterfallNegativeColor,
+    waterfallTotalColor: input.waterfallTotalColor,
+    waterfallSubtotalColor: input.waterfallSubtotalColor,
+    hideConnectors: input.hideConnectors,
     colorRanges: input.colorRanges,
     discreteMarkers: chartDiscreteMarkers(input.discreteMarkers),
     grid: input.grid,

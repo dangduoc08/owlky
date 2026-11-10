@@ -4384,7 +4384,7 @@ export const chartOptions = defineOptions("chart", "data-ok-chart", {
     "data-ok-type",
     chartTypes,
     "line",
-    "Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea` or `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts).",
+    "Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML) or `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts).",
   ),
   xType: style(
     "data-ok-x-type",
@@ -4674,6 +4674,38 @@ export const chartOptions = defineOptions("chart", "data-ok-chart", {
     "Opacity of the column stripes (0 to 1; default 0.5).",
     { min: 0 },
   ),
+  waterfallPositiveColor: style(
+    "data-ok-waterfall-positive-color",
+    chartColors,
+    "success",
+    "Waterfall charts: color of the steps that raise the total (default `success`).",
+    { optional: true },
+  ),
+  waterfallNegativeColor: style(
+    "data-ok-waterfall-negative-color",
+    chartColors,
+    "error",
+    "Waterfall charts: color of the steps that lower the total (default `error`).",
+    { optional: true },
+  ),
+  waterfallTotalColor: style(
+    "data-ok-waterfall-total-color",
+    chartColors,
+    "primary",
+    "Waterfall charts: color of the total bars (default the series color).",
+    { optional: true },
+  ),
+  waterfallSubtotalColor: style(
+    "data-ok-waterfall-subtotal-color",
+    chartColors,
+    "primary",
+    "Waterfall charts: color of the subtotal bars (default the total color).",
+    { optional: true },
+  ),
+  hideConnectors: flag(
+    "data-ok-hide-connectors",
+    "Waterfall charts: no dashed lines from the end of each bar to the next one.",
+  ),
   hiddenSeries: state(
     "aria-pressed",
     'Indexes of the series hidden through the legend (`aria-pressed="false"` on their buttons); categories in pie, donut and radial bar charts.',
@@ -4748,6 +4780,11 @@ export interface ChartAnatomyOptions {
   grid?: ChartGrid | undefined;
   gridRowOpacity?: number | undefined;
   gridColumnOpacity?: number | undefined;
+  waterfallPositiveColor?: ChartColor | undefined;
+  waterfallNegativeColor?: ChartColor | undefined;
+  waterfallTotalColor?: ChartColor | undefined;
+  waterfallSubtotalColor?: ChartColor | undefined;
+  hideConnectors?: boolean | undefined;
 }
 
 /** `data-ok-*` attributes of a chart root (numbers only when given). */

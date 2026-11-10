@@ -11,7 +11,8 @@ annotations, animations, export (SVG, PNG, CSV) and a toolbar; data label format
 legend with values, the donut hole size, heatmap color ranges, horizontal box plots and localized
 texts. ADR-0047 adds the commercial add-ons' features (behavior and option names only): Sankey
 charts (ApexSankey, phase 2.1) and stock charts (ApexStock, phase 2.2: indicators, panes, a
-navigator). Upstream: ApexCharts (`react-apexcharts`, ADR-0015), ApexSankey and ApexStock.
+navigator). Roadmap 4.18.21 adds ApexCharts v8's waterfall charts. Upstream: ApexCharts
+(`react-apexcharts`, ADR-0015), ApexSankey and ApexStock.
 Created with `/component`.
 Reference URL: https://minimals.cc/components/extra/chart
 HTML source: written by us (ApexCharts' framework-free core is not MIT: the owner chose to write our
@@ -128,6 +129,10 @@ figure[data-ok-chart][data-ok-type][data-ok-x-type][data-ok-curve][data-ok-legen
       g[data-ok-chart-navigator] › rect[data-ok-chart-navigator-frame] + g[transform] › (sparkline of
         the price) + g[data-ok-chart-brush] › rect[data-ok-chart-selection] + rect[data-ok-chart-handle]×2
       g[data-ok-chart-active]; g[data-ok-chart-pane-titles] › text[data-ok-chart-pane-title]
+    Waterfall (4.18.21; root [data-ok-waterfall-positive-color]?[data-ok-waterfall-negative-color]?
+      [data-ok-waterfall-total-color]?[data-ok-waterfall-subtotal-color]?[data-ok-hide-connectors]?):
+      g[data-ok-chart-series][data-ok-type=waterfall] › line[data-ok-chart-connector]* (unless hideConnectors)
+        + rect[data-ok-chart-bar][data-ok-chart-step="up|down|total|subtotal"][data-ok-color][rx]×n
     data labels may also be text[data-ok-chart-data-label="plain"] (primary text on faint cells)
     div[data-ok-chart-tooltip][role=status][hidden]?     (tooltip="none": visually hidden, 4.18.63)
       div[data-ok-chart-tooltip-title] + div[data-ok-chart-tooltip-state]? ("Selected", localeText `selected`)
@@ -151,6 +156,8 @@ figure[data-ok-chart][data-ok-type][data-ok-x-type][data-ok-curve][data-ok-legen
     Stock: the price series gets a th[data-ok-part="volume"] column after its values when a point has
       `v`; indicator columns th[data-ok-indicator="sma|…"][data-ok-color] (rowspan 2) are written by
       React and the runtime and skipped when the table is read (volume bars have none)
+    Waterfall: one cell per point, the change; total and subtotal cells td[data-ok-sum="total|subtotal"]
+      show the running total as text (read back as `isTotal` / `isSubtotal`: the text isn't input)
     Sankey: thead › tr › th[scope=col][data-ok-part="source|target|y"]×3; one row per link:
       tbody › tr › th[scope=row][data-ok-value]?[data-ok-color] (source title; id when it differs)
         + td[data-ok-value]?[data-ok-color] (target) + td[data-ok-value]?[data-ok-color]? (value; own link color)
@@ -268,6 +275,26 @@ Stock geometry (core `chart-stock.ts`, `chart-indicators.ts`, ADR-0047):
 - Navigator: 12px under the panes, 48px tall, the price's line over the whole axis (a sparkline),
   its own axis map (`layout.navigator`), the zoom (or the whole axis) as a brush selection.
 
+Waterfall geometry (core `chart-model.ts` running totals, `layoutChart`, 4.18.21):
+- Data: each value is a step; `{ isTotal: true }` / `{ isSubtotal: true }` points (their `y` is
+  ignored) show the running total so far. `chartData` keeps the step in `y` and writes
+  `range = [before, after]` (sums: `[0, total]`, `y` = the total), in x order; gaps (`null`) add
+  nothing and break the connectors. A whole type: every series is a waterfall, side by side in its
+  band slot like range bars; `horizontal` turns it. The value scale includes zero.
+- Bars: from `before` to `after`, `rx` = min(4, half the thickness, half the length), at least 1px
+  long. Colors: the point's `color`, else `waterfallTotalColor` (default the series color) for
+  totals, `waterfallSubtotalColor` (default the total color) for subtotals,
+  `waterfallPositiveColor` (`success`) for steps that don't lower the total, `waterfallNegativeColor`
+  (`error`) for the others; always written on the bar (`data-ok-color`).
+- Connectors: a line at the running total from each bar's far edge to the next drawn bar's near
+  edge (CSS: 1px secondary text, dashes 3), before the bars; `hideConnectors` drops them.
+- Data labels (inside, where they fit): steps signed (`+85`, core `chartSigned`), sums plain.
+  Tooltip rows: steps `series: +85` and `Total: <after>` (part label `total`, localizable;
+  "Series (Total)" with several waterfall series); sums one row with the total. Marks are blocks
+  (band highlight, no hover marker; clicks select the bar).
+- The legend lists the series (none for one series): the step colors are explained by the signed
+  values in the tooltip, the labels and the table, so color is never the only cue.
+
 Phase 3 geometry (core `chart-layout.ts`, `chart-cells.ts`, `chart-shapes.ts`):
 - Value scales start at 0 unless a box plot, range area, bubble or sparkline series fits them to
   the data (bars and areas next to them keep 0).
@@ -291,7 +318,7 @@ Root: `data-ok-chart`. Unknown values fall back to the default.
 
 | React | HTML | Kind | Values | Default | Description |
 |---|---|---|---|---|---|
-| `type` | `data-ok-type="…"` | style | `line` `area` `bar` `scatter` `pie` `donut` `radialBar` `radar` `boxPlot` `heatmap` `treemap` `bubble` `rangeArea` `funnel` `slope` `candlestick` `rangeBar` `timeline` `polarArea` `sankey` | `line` | Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea` or `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts). |
+| `type` | `data-ok-type="…"` | style | `line` `area` `bar` `scatter` `pie` `donut` `radialBar` `radar` `boxPlot` `heatmap` `treemap` `bubble` `rangeArea` `funnel` `slope` `candlestick` `rangeBar` `timeline` `polarArea` `sankey` `waterfall` | `line` | Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML) or `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts). |
 | `xType` | `data-ok-x-type="…"` | style | `category` `datetime` `numeric` | `category` | X axis: `category` labels, `datetime` (ISO 8601 dates) or `numeric` values (scatter). |
 | `curve` | `data-ok-curve="…"` | style | `smooth` `straight` `stepline` | `smooth` | Line shape: `smooth`, `straight` or `stepline`. |
 | `legend` | `data-ok-legend="…"` | style | `top` `right` `bottom` `none` | `top` | Legend position: `top`, `right`, `bottom` or `none` (never shown for a single series). |
@@ -347,6 +374,11 @@ Root: `data-ok-chart`. Unknown values fall back to the default.
 | `grid` | `data-ok-grid="…"` | style | `y` `x` `both` `none` | — | Grid lines: `y` horizontal (along the value ticks, or between the bars of horizontal bar charts), `x` vertical, `both` or `none`. |
 | `gridRowOpacity` | `data-ok-grid-row-opacity="…"` | number | number | — | Opacity of the row stripes (0 to 1; default 0.5). |
 | `gridColumnOpacity` | `data-ok-grid-column-opacity="…"` | number | number | — | Opacity of the column stripes (0 to 1; default 0.5). |
+| `waterfallPositiveColor` | `data-ok-waterfall-positive-color="…"` | style | `primary` `primary-lighter` `primary-light` `primary-main` `primary-dark` `primary-darker` `secondary` `secondary-lighter` `secondary-light` `secondary-main` `secondary-dark` `secondary-darker` `info` `info-lighter` `info-light` `info-main` `info-dark` `info-darker` `success` `success-lighter` `success-light` `success-main` `success-dark` `success-darker` `warning` `warning-lighter` `warning-light` `warning-main` `warning-dark` `warning-darker` `error` `error-lighter` `error-light` `error-main` `error-dark` `error-darker` | — | Waterfall charts: color of the steps that raise the total (default `success`). |
+| `waterfallNegativeColor` | `data-ok-waterfall-negative-color="…"` | style | `primary` `primary-lighter` `primary-light` `primary-main` `primary-dark` `primary-darker` `secondary` `secondary-lighter` `secondary-light` `secondary-main` `secondary-dark` `secondary-darker` `info` `info-lighter` `info-light` `info-main` `info-dark` `info-darker` `success` `success-lighter` `success-light` `success-main` `success-dark` `success-darker` `warning` `warning-lighter` `warning-light` `warning-main` `warning-dark` `warning-darker` `error` `error-lighter` `error-light` `error-main` `error-dark` `error-darker` | — | Waterfall charts: color of the steps that lower the total (default `error`). |
+| `waterfallTotalColor` | `data-ok-waterfall-total-color="…"` | style | `primary` `primary-lighter` `primary-light` `primary-main` `primary-dark` `primary-darker` `secondary` `secondary-lighter` `secondary-light` `secondary-main` `secondary-dark` `secondary-darker` `info` `info-lighter` `info-light` `info-main` `info-dark` `info-darker` `success` `success-lighter` `success-light` `success-main` `success-dark` `success-darker` `warning` `warning-lighter` `warning-light` `warning-main` `warning-dark` `warning-darker` `error` `error-lighter` `error-light` `error-main` `error-dark` `error-darker` | — | Waterfall charts: color of the total bars (default the series color). |
+| `waterfallSubtotalColor` | `data-ok-waterfall-subtotal-color="…"` | style | `primary` `primary-lighter` `primary-light` `primary-main` `primary-dark` `primary-darker` `secondary` `secondary-lighter` `secondary-light` `secondary-main` `secondary-dark` `secondary-darker` `info` `info-lighter` `info-light` `info-main` `info-dark` `info-darker` `success` `success-lighter` `success-light` `success-main` `success-dark` `success-darker` `warning` `warning-lighter` `warning-light` `warning-main` `warning-dark` `warning-darker` `error` `error-lighter` `error-light` `error-main` `error-dark` `error-darker` | — | Waterfall charts: color of the subtotal bars (default the total color). |
+| `hideConnectors` | `data-ok-hide-connectors` | flag | boolean | off | Waterfall charts: no dashed lines from the end of each bar to the next one. |
 | `hiddenSeries` | `aria-pressed` · event `ok:chart:toggle` | state | — | — | Indexes of the series hidden through the legend (`aria-pressed="false"` on their buttons); categories in pie, donut and radial bar charts. |
 | `selectedDataPoints` | `instance.selectedDataPoints` · event `ok:chart:select` | state | — | — | The selected points, `{ seriesIndex, dataPointIndex }[]`: a click selects the point, slice or cell under the pointer, Enter or Space the active one. |
 | `zoomRange` | `instance.zoomRange` · event `ok:chart:zoom` | state | — | — | The visible window of the x axis, `{ min, max }` (category indexes or x values), or `null`. |
@@ -644,7 +676,13 @@ Option areas not covered by the table above:
 
 | Upstream | Owlky | Status | Note |
 |---|---|---|---|
-| ApexCharts v8 types `waterfall`, `dumbbell` (`plotOptions.bar.isDumbbell`, `dumbbellColors`, `dumbbell.*`), `streamgraph`, `sunburst`, `icicle`, `violin`, `beeswarm`, `waffle`, `unit` | — | deferred (4.18.21) | prop-level mapping here when built |
+| `chart.type: "waterfall"` (ApexCharts 7.1+) | `type="waterfall"` | kept (4.18.21) | a whole type (every series is a waterfall); `plotOptions.bar.horizontal` → `horizontal` |
+| waterfall datum `isTotal`, `isSubtotal` (no `y`) | point `{ isTotal: true }` / `{ isSubtotal: true }` · HTML `td[data-ok-sum="total|subtotal"]` | kept (4.18.21) | the cell's text is the computed total (the accessible view), never read back |
+| waterfall datum `fillColor` | point `color` | renamed (4.18.21) | |
+| `plotOptions.waterfall.colors.positive` / `.negative` / `.total` / `.subtotal` | `waterfallPositiveColor` (default `success`), `waterfallNegativeColor` (`error`), `waterfallTotalColor` (the series color), `waterfallSubtotalColor` (the total color) | renamed (4.18.21) | palette names (tokens), not CSS colors |
+| `plotOptions.waterfall.connectors.show` | `hideConnectors` (`data-ok-hide-connectors`) | renamed (4.18.21) | on by default as upstream; a flag that turns them off |
+| `plotOptions.waterfall.connectors.color` / `.strokeWidth` / `.strokeDashArray` | — | not applicable | fixed by the design: 1px secondary text, dashes of 3px |
+| ApexCharts v8 types `streamgraph`, `sunburst`, `icicle`, `violin`, `beeswarm`, `waffle`, `unit` | — | deferred (4.18.21) | not built in this batch (waterfall and dumbbell first); prop-level mapping here when built |
 | `chart.type: "tree"` (ApexTree layouts) | — | deferred (4.18.7) | |
 | `chart.stackType` (`"normal"`, `"100%"`), `chart.stackOnlyBar` | `stackType` (`data-ok-stack-type`, optional), `stackOnlyBar` (`data-ok-stack-only-bar`) | kept (4.18.61) | `stackOnlyBar` is off by default (ApexCharts: on), so stacked lines keep stacking as before |
 | `chart.events` `dataPointMouseEnter` / `Leave`, `mouseMove`, `mouseLeave`, `legendClick`, `beforeZoom`, `zoomed`, `beforeResetZoom`, `scrolled`, `brushScrolled`, `selection` | `onActiveChange`, `onHiddenSeriesChange`, `onZoomRangeChange` · `ok:chart:active`, `-toggle`, `-zoom` (cancelable) | renamed | |
@@ -743,5 +781,7 @@ Option areas not covered by the table above:
 - Tooltip stories (4.18.63): Tooltip options; Custom tooltip (a React demo with `?raw` source and
   the HTML template; no Controls; the tooltip is hidden at rest, so parity compares the same markup).
 - Legend and grid stories (4.18.64): Legend options, Grid lines and stripes.
+- Waterfall story (4.18.21): Waterfall (a vertical cash flow with a subtotal, a total, data labels
+  and a prefix; a horizontal headcount change with own colors).
 - Story "Live data": React keeps the points in state, the HTML page script calls `appendData` /
   `updateSeries`; both start from the same data and add the same points, so they stay identical.

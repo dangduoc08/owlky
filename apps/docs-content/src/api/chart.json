@@ -363,7 +363,7 @@
      {
       "attr": "data-ok-type",
       "default": "line",
-      "description": "Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea` or `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts).",
+      "description": "Chart type: `line`, `area`, `bar` (columns; rows with `horizontal`), `scatter`, `pie`, `donut`, `radialBar`, `radar`, `boxPlot`, `heatmap`, `treemap`, `bubble`, `rangeArea`, `funnel`, `slope`, `candlestick`, `rangeBar`, `timeline`, `polarArea`, `sankey` (links between nodes: `nodes` and `edges` in React, one table row per link in HTML) or `waterfall` (each value a step from the running total; `isTotal` / `isSubtotal` points show the total). Series may override it in line, area, bar, scatter, box plot, bubble, range area and candlestick charts (mixed charts).",
       "kind": "style",
       "name": "type",
       "values": [
@@ -386,7 +386,8 @@
        "rangeBar",
        "timeline",
        "polarArea",
-       "sankey"
+       "sankey",
+       "waterfall"
       ]
      },
      {
@@ -999,6 +1000,196 @@
       "name": "gridColumnOpacity"
      },
      {
+      "attr": "data-ok-waterfall-positive-color",
+      "default": "success",
+      "description": "Waterfall charts: color of the steps that raise the total (default `success`).",
+      "kind": "style",
+      "name": "waterfallPositiveColor",
+      "optional": true,
+      "values": [
+       "primary",
+       "primary-lighter",
+       "primary-light",
+       "primary-main",
+       "primary-dark",
+       "primary-darker",
+       "secondary",
+       "secondary-lighter",
+       "secondary-light",
+       "secondary-main",
+       "secondary-dark",
+       "secondary-darker",
+       "info",
+       "info-lighter",
+       "info-light",
+       "info-main",
+       "info-dark",
+       "info-darker",
+       "success",
+       "success-lighter",
+       "success-light",
+       "success-main",
+       "success-dark",
+       "success-darker",
+       "warning",
+       "warning-lighter",
+       "warning-light",
+       "warning-main",
+       "warning-dark",
+       "warning-darker",
+       "error",
+       "error-lighter",
+       "error-light",
+       "error-main",
+       "error-dark",
+       "error-darker"
+      ]
+     },
+     {
+      "attr": "data-ok-waterfall-negative-color",
+      "default": "error",
+      "description": "Waterfall charts: color of the steps that lower the total (default `error`).",
+      "kind": "style",
+      "name": "waterfallNegativeColor",
+      "optional": true,
+      "values": [
+       "primary",
+       "primary-lighter",
+       "primary-light",
+       "primary-main",
+       "primary-dark",
+       "primary-darker",
+       "secondary",
+       "secondary-lighter",
+       "secondary-light",
+       "secondary-main",
+       "secondary-dark",
+       "secondary-darker",
+       "info",
+       "info-lighter",
+       "info-light",
+       "info-main",
+       "info-dark",
+       "info-darker",
+       "success",
+       "success-lighter",
+       "success-light",
+       "success-main",
+       "success-dark",
+       "success-darker",
+       "warning",
+       "warning-lighter",
+       "warning-light",
+       "warning-main",
+       "warning-dark",
+       "warning-darker",
+       "error",
+       "error-lighter",
+       "error-light",
+       "error-main",
+       "error-dark",
+       "error-darker"
+      ]
+     },
+     {
+      "attr": "data-ok-waterfall-total-color",
+      "default": "primary",
+      "description": "Waterfall charts: color of the total bars (default the series color).",
+      "kind": "style",
+      "name": "waterfallTotalColor",
+      "optional": true,
+      "values": [
+       "primary",
+       "primary-lighter",
+       "primary-light",
+       "primary-main",
+       "primary-dark",
+       "primary-darker",
+       "secondary",
+       "secondary-lighter",
+       "secondary-light",
+       "secondary-main",
+       "secondary-dark",
+       "secondary-darker",
+       "info",
+       "info-lighter",
+       "info-light",
+       "info-main",
+       "info-dark",
+       "info-darker",
+       "success",
+       "success-lighter",
+       "success-light",
+       "success-main",
+       "success-dark",
+       "success-darker",
+       "warning",
+       "warning-lighter",
+       "warning-light",
+       "warning-main",
+       "warning-dark",
+       "warning-darker",
+       "error",
+       "error-lighter",
+       "error-light",
+       "error-main",
+       "error-dark",
+       "error-darker"
+      ]
+     },
+     {
+      "attr": "data-ok-waterfall-subtotal-color",
+      "default": "primary",
+      "description": "Waterfall charts: color of the subtotal bars (default the total color).",
+      "kind": "style",
+      "name": "waterfallSubtotalColor",
+      "optional": true,
+      "values": [
+       "primary",
+       "primary-lighter",
+       "primary-light",
+       "primary-main",
+       "primary-dark",
+       "primary-darker",
+       "secondary",
+       "secondary-lighter",
+       "secondary-light",
+       "secondary-main",
+       "secondary-dark",
+       "secondary-darker",
+       "info",
+       "info-lighter",
+       "info-light",
+       "info-main",
+       "info-dark",
+       "info-darker",
+       "success",
+       "success-lighter",
+       "success-light",
+       "success-main",
+       "success-dark",
+       "success-darker",
+       "warning",
+       "warning-lighter",
+       "warning-light",
+       "warning-main",
+       "warning-dark",
+       "warning-darker",
+       "error",
+       "error-lighter",
+       "error-light",
+       "error-main",
+       "error-dark",
+       "error-darker"
+      ]
+     },
+     {
+      "attr": "data-ok-hide-connectors",
+      "description": "Waterfall charts: no dashed lines from the end of each bar to the next one.",
+      "kind": "flag",
+      "name": "hideConnectors"
+     },
+     {
       "attr": "aria-pressed",
       "description": "Indexes of the series hidden through the legend (`aria-pressed=\"false\"` on their buttons); categories in pie, donut and radial bar charts.",
       "event": "ok:chart:toggle",
@@ -1291,6 +1482,14 @@
       ],
       "kind": "part",
       "name": "data-ok-chart-center-value"
+     },
+     {
+      "description": "A waterfall connector: the dashed line from the end of a bar to the next bar.",
+      "elements": [
+       "line"
+      ],
+      "kind": "part",
+      "name": "data-ok-chart-connector"
      },
      {
       "description": "The crosshair that follows the pointer.",
@@ -1600,6 +1799,17 @@
       ],
       "kind": "part",
       "name": "data-ok-chart-status"
+     },
+     {
+      "description": "On a waterfall bar: a step that raises (`up`) or lowers (`down`) the total, a `total` or a `subtotal`.",
+      "kind": "value",
+      "name": "data-ok-chart-step",
+      "value": [
+       "down",
+       "subtotal",
+       "total",
+       "up"
+      ]
      },
      {
       "description": "A gradient stop of a gradient area.",
@@ -1950,6 +2160,15 @@
       "value": "string"
      },
      {
+      "description": "On a waterfall data cell: the bar shows the running total (`total` or `subtotal`); the cell's text is that total.",
+      "kind": "value",
+      "name": "data-ok-sum",
+      "value": [
+       "subtotal",
+       "total"
+      ]
+     },
+     {
       "description": "The label of the total in a donut's or a radial bar's center.",
       "kind": "value",
       "name": "data-ok-total-label",
@@ -2254,6 +2473,11 @@
       "type": "readonly number[]"
      },
      {
+      "description": "Waterfall charts: no dashed lines from the end of each bar to the next one.",
+      "name": "hideConnectors",
+      "type": "boolean"
+     },
+     {
       "description": "Bars run left to right, categories down the side.",
       "name": "horizontal",
       "type": "boolean"
@@ -2464,6 +2688,28 @@
       "type": "string"
      },
      {
+      "default": "\"error\"",
+      "description": "Waterfall charts: color of the steps that lower the total.",
+      "name": "waterfallNegativeColor",
+      "type": "ChartColor"
+     },
+     {
+      "default": "\"success\"",
+      "description": "Waterfall charts: color of the steps that raise the total.",
+      "name": "waterfallPositiveColor",
+      "type": "ChartColor"
+     },
+     {
+      "description": "Waterfall charts: color of the subtotal bars (`isSubtotal` points). Default the total color.",
+      "name": "waterfallSubtotalColor",
+      "type": "ChartColor"
+     },
+     {
+      "description": "Waterfall charts: color of the total bars (`isTotal` points). Default the series color.",
+      "name": "waterfallTotalColor",
+      "type": "ChartColor"
+     },
+     {
       "description": "9). 18.",
       "name": "whitespace",
       "type": "number"
@@ -2536,15 +2782,7 @@
   },
   {
    "name": "ChartPart",
-   "type": "\"close\" | \"end\" | \"high\" | \"incoming\" | \"low\" | \"max\" | \"median\" | \"min\" | \"open\" | \"outgoing\" | \"q1\" | \"q3\" | \"source\" | \"start\" | \"target\" | \"volume\" | \"y\" | \"z\""
-  },
-  {
-   "name": "ChartPointInput",
-   "type": "number | { readonly x?: string | number | Date; readonly y: number | readonly ChartRangeValue[] | null; readonly z?: number | undefined; readonly color?: ChartColor | undefined; readonly v?: number | undefined; } | readonly [x: string | number | Date, y: number | readonly ChartRangeValue[] | null, z?: number] | null"
-  },
-  {
-   "name": "ChartRangeValue",
-   "type": "string | number | Date"
+   "type": "\"close\" | \"end\" | \"high\" | \"incoming\" | \"low\" | \"max\" | \"median\" | \"min\" | \"open\" | \"outgoing\" | \"q1\" | \"q3\" | \"source\" | \"start\" | \"target\" | \"total\" | \"volume\" | \"y\" | \"z\""
   },
   {
    "name": "ChartStripeColor",
@@ -2556,7 +2794,7 @@
   },
   {
    "name": "ChartType",
-   "type": "\"area\" | \"bar\" | \"boxPlot\" | \"bubble\" | \"candlestick\" | \"donut\" | \"funnel\" | \"heatmap\" | \"line\" | \"pie\" | \"polarArea\" | \"radar\" | \"radialBar\" | \"rangeArea\" | \"rangeBar\" | \"sankey\" | \"scatter\" | \"slope\" | \"timeline\" | \"treemap\""
+   "type": "\"area\" | \"bar\" | \"boxPlot\" | \"bubble\" | \"candlestick\" | \"donut\" | \"funnel\" | \"heatmap\" | \"line\" | \"pie\" | \"polarArea\" | \"radar\" | \"radialBar\" | \"rangeArea\" | \"rangeBar\" | \"sankey\" | \"scatter\" | \"slope\" | \"timeline\" | \"treemap\" | \"waterfall\""
   },
   {
    "name": "ChartZoomReason",

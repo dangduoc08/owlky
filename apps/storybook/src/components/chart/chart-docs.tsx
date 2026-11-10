@@ -24,6 +24,7 @@ import stackTotalsGroup from "../../../../../packages/html/src/components/chart/
 import synchronizedGroup from "../../../../../packages/html/src/components/chart/examples/synchronized-group.html?raw";
 import timelineGroup from "../../../../../packages/html/src/components/chart/examples/timeline-group.html?raw";
 import tooltipCustomGroup from "../../../../../packages/html/src/components/chart/examples/tooltip-custom-group.html?raw";
+import waterfallGroup from "../../../../../packages/html/src/components/chart/examples/waterfall-group.html?raw";
 import zoomGroup from "../../../../../packages/html/src/components/chart/examples/zoom-group.html?raw";
 import { CDN, GuideDocs, type GuideSection, Preview } from "../../helpers/guide.js";
 import { KeyboardTable, OptionsTable, PropsTable } from "../../helpers/guide-tables.js";
@@ -104,6 +105,7 @@ export function MonthlySales() {
 - **\`funnel\` and \`slope\`:** stages that narrow, or the change between a few categories. See "Show stages and changes".
 - **Stock charts:** add \`indicators\`, panes and a \`navigator\` to a candlestick, line, area or column chart of dates. See "Show stock prices with indicators".
 - **\`sankey\`:** flows between nodes, each as wide as its value. See "Show flows between stages".
+- **\`waterfall\`:** how a start value changes step by step into an end value. See "Show changes step by step".
 
 To mix types in line, area, bar, scatter, box plot, bubble and range area charts, give a series its own \`type\`. In HTML, set \`data-ok-type\` on the column header of the series.`,
     html: `${snippetElement(mixedGroup, "data-ok-chart ")}`,
@@ -525,6 +527,40 @@ export function ChartFinance() {
       label="Release plan"
       type="timeline"
       series={[{ name: "Release", data: [{ x: "Design", y: ["2026-03-02", "2026-03-13"] }] }]}
+    />
+  );
+}`,
+  },
+  {
+    id: "waterfall",
+    title: "Show changes step by step",
+    body: `A waterfall chart shows how a start value becomes an end value through gains and losses, such as a cash flow. Set \`type\` to \`waterfall\` and give each step its change: a positive number raises the running total, a negative number lowers it. Each bar floats from the total before the step to the total after it, and a dashed connector joins it to the next bar.
+
+- **Totals:** a point \`{ isTotal: true }\` draws the running total as a bar from zero, such as a closing balance. \`{ isSubtotal: true }\` does the same in the middle of the chart. In HTML, the cell carries \`data-ok-sum="total"\` or \`data-ok-sum="subtotal"\` and shows the total as its text.
+- **Colors:** rising steps use \`waterfallPositiveColor\` (\`success\` by default) and falling steps \`waterfallNegativeColor\` (\`error\`). Totals use \`waterfallTotalColor\` (the series color) and subtotals \`waterfallSubtotalColor\` (the total color). A point's own \`color\` wins.
+- **Connectors:** \`hideConnectors\` (\`data-ok-hide-connectors\`) removes the dashed lines.
+- **Direction:** \`horizontal\` draws the bars from left to right.
+
+The tooltip and the data labels show each change with its sign, such as +85, so the direction doesn't rely on color. The tooltip also shows the running total after the step.`,
+    html: `${snippetElement(waterfallGroup, "data-ok-chart ")}`,
+    react: `import { Chart } from "@owlky/react";
+
+const items = ["Opening", "Sales", "Services", "Salaries", "Rent", "First half", "Taxes", "Closing"];
+const cash = [
+  {
+    name: "Cash",
+    data: [120, 260, 85, -190, -45, { isSubtotal: true }, -60, { isTotal: true }],
+  },
+];
+
+export function CashFlowWaterfall() {
+  return (
+    <Chart
+      label="Cash flow in 2025 (thousands of dollars)"
+      type="waterfall"
+      dataLabels
+      categories={items}
+      series={cash}
     />
   );
 }`,
@@ -1410,6 +1446,32 @@ const PREVIEWS = {
               { x: "Build", y: ["2026-03-09", "2026-04-03"] },
               { x: "Test", y: ["2026-03-30", "2026-04-17"], color: "warning" },
             ],
+          },
+        ]}
+      />
+    </Preview>
+  ),
+  waterfall: () => (
+    <Preview>
+      <Chart
+        label="Cash flow in 2025 (thousands of dollars)"
+        type="waterfall"
+        height={260}
+        dataLabels
+        categories={[
+          "Opening",
+          "Sales",
+          "Services",
+          "Salaries",
+          "Rent",
+          "First half",
+          "Taxes",
+          "Closing",
+        ]}
+        series={[
+          {
+            name: "Cash",
+            data: [120, 260, 85, -190, -45, { isSubtotal: true }, -60, { isTotal: true }],
           },
         ]}
       />

@@ -291,6 +291,16 @@ export interface ChartProps extends Omit<HTMLAttributes<HTMLElement>, "children"
   candleDownColor?: ChartColor | undefined;
   /** Donut hole in % of the radius (10 to 95). Default 72. */
   donutSize?: number | undefined;
+  /** Waterfall charts: color of the steps that raise the total. Default `"success"`. */
+  waterfallPositiveColor?: ChartColor | undefined;
+  /** Waterfall charts: color of the steps that lower the total. Default `"error"`. */
+  waterfallNegativeColor?: ChartColor | undefined;
+  /** Waterfall charts: color of the total bars (`isTotal` points). Default the series color. */
+  waterfallTotalColor?: ChartColor | undefined;
+  /** Waterfall charts: color of the subtotal bars (`isSubtotal` points). Default the total color. */
+  waterfallSubtotalColor?: ChartColor | undefined;
+  /** Waterfall charts: no dashed lines from the end of each bar to the next one. */
+  hideConnectors?: boolean | undefined;
   /** Data labels above points sit on a badge. */
   dataLabelBackground?: boolean | undefined;
   /** Replaces the values printed on the chart (pie and donut labels get the percentage). */
@@ -425,6 +435,11 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     candleUpColor,
     candleDownColor,
     donutSize,
+    waterfallPositiveColor,
+    waterfallNegativeColor,
+    waterfallTotalColor,
+    waterfallSubtotalColor,
+    hideConnectors,
     dataLabelBackground,
     dataLabelFormatter,
     legendValues,
@@ -521,6 +536,11 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
     grid,
     gridRowOpacity,
     gridColumnOpacity,
+    waterfallPositiveColor,
+    waterfallNegativeColor,
+    waterfallTotalColor,
+    waterfallSubtotalColor,
+    hideConnectors,
   });
   const isSparkline = attributes["data-ok-sparkline"] !== undefined;
   const givenHeight = attributes["data-ok-height"];
@@ -564,6 +584,12 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
   const validUpColor = attributes["data-ok-candle-up-color"] as ChartColor | undefined;
   const validDownColor = attributes["data-ok-candle-down-color"] as ChartColor | undefined;
   const validDonutSize = number("data-ok-donut-size");
+  const color = (name: `data-ok-${string}`) => attributes[name] as ChartColor | undefined;
+  const validPositive = color("data-ok-waterfall-positive-color");
+  const validNegative = color("data-ok-waterfall-negative-color");
+  const validTotalColor = color("data-ok-waterfall-total-color");
+  const validSubtotal = color("data-ok-waterfall-subtotal-color");
+  const connectorsOff = attributes["data-ok-hide-connectors"] !== undefined;
   const navigatorOn = attributes["data-ok-navigator"] !== undefined;
   // A navigator zooms the chart: its gestures and keys are on.
   const zoomOn = attributes["data-ok-zoom"] !== undefined || navigatorOn;
@@ -670,6 +696,11 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
         candleUpColor: validUpColor,
         candleDownColor: validDownColor,
         donutSize: validDonutSize,
+        waterfallPositiveColor: validPositive,
+        waterfallNegativeColor: validNegative,
+        waterfallTotalColor: validTotalColor,
+        waterfallSubtotalColor: validSubtotal,
+        hideConnectors: connectorsOff,
         dataLabelBackground,
         dataLabelFormatter,
         legendValues,
@@ -755,6 +786,11 @@ export const Chart = forwardRef<HTMLElement, ChartProps>(function Chart(
       validUpColor,
       validDownColor,
       validDonutSize,
+      validPositive,
+      validNegative,
+      validTotalColor,
+      validSubtotal,
+      connectorsOff,
       dataLabelBackground,
       dataLabelFormatter,
       legendValues,

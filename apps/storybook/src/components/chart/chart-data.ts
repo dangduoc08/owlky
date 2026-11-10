@@ -1550,4 +1550,42 @@ export const chartExamples: Record<string, ChartExample> = {
       ],
     },
   },
+  // Roadmap 4.18.21: waterfall charts (ApexCharts `waterfall`, `isTotal`, `isSubtotal`).
+  waterfall: {
+    title: "Waterfall",
+    props: {
+      label: "Cash flow in 2025 (thousands of dollars)",
+      type: "waterfall",
+      dataLabels: true,
+      categories: [
+        "Opening",
+        "Sales",
+        "Services",
+        "Salaries",
+        "Rent",
+        "First half",
+        "Taxes",
+        "Closing",
+      ],
+      series: [
+        {
+          name: "Cash",
+          data: [120, 260, 85, -190, -45, { isSubtotal: true }, -60, { isTotal: true }],
+        },
+      ],
+    },
+    more: [
+      {
+        label: "Change in headcount by team",
+        type: "waterfall",
+        horizontal: true,
+        barHeight: 60,
+        waterfallPositiveColor: "info",
+        waterfallNegativeColor: "warning-dark",
+        waterfallTotalColor: "secondary",
+        categories: ["Last year", "Design", "Engineering", "Sales", "Support", "This year"],
+        series: [{ name: "People", data: [48, 4, 12, -3, -2, { isTotal: true }] }],
+      },
+    ],
+  },
 };

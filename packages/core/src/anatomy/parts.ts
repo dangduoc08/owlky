@@ -283,6 +283,8 @@ export interface ChartParts {
   "data-ok-chart-center-label": Part<"text">;
   /** The value of the center text. */
   "data-ok-chart-center-value": Part<"text">;
+  /** A waterfall connector: the dashed line from the end of a bar to the next bar. */
+  "data-ok-chart-connector": Part<"line">;
   /** The crosshair that follows the pointer. */
   "data-ok-chart-crosshair": Part<"g">;
   /** One line of the crosshair. */
@@ -345,6 +347,8 @@ export interface ChartParts {
   "data-ok-chart-selected-mark": Part<"circle" | "rect" | "path">;
   /** The rectangle drawn while selecting a zoom window. */
   "data-ok-chart-selection": Part<"rect">;
+  /** On a waterfall bar: a step that raises (`up`) or lowers (`down`) the total, a `total` or a `subtotal`. */
+  "data-ok-chart-step": Value<"up" | "down" | "total" | "subtotal">;
   /** The group of one series. */
   "data-ok-chart-series": Part<"g">;
   /** The group of the series of one kind: areas, bars, lines, then points. */
@@ -451,6 +455,8 @@ export interface ChartParts {
   "data-ok-part": Value<"min" | "q1" | "median" | "q3" | "max" | "low" | "high" | "y" | "z">;
   /** Set by the runtime once the chart is drawn: the data table hides. */
   "data-ok-ready": State;
+  /** On a waterfall data cell: the bar shows the running total (`total` or `subtotal`); the cell's text is that total. */
+  "data-ok-sum": Value<"total" | "subtotal">;
   /** The label of the total in a donut's or a radial bar's center. */
   "data-ok-total-label": Value<string>;
   /** Text before every value, such as `$`. */

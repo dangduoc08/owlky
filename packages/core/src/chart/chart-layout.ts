@@ -17,6 +17,7 @@ import {
   type ChartMarkerShape,
   type ChartStackType,
   type ChartStripeColor,
+  type ChartSum,
   type ChartType,
   lighterTone,
 } from "./chart-model.js";
@@ -164,6 +165,14 @@ export interface ChartLayoutOptions {
   /** Stripe opacity (0 to 1; an attribute). Default 0.5. */
   readonly gridRowOpacity?: number | undefined;
   readonly gridColumnOpacity?: number | undefined;
+  /** Waterfall charts (4.18.21): colors of rising and falling steps (default `success`, `error`). */
+  readonly waterfallPositiveColor?: ChartColor | undefined;
+  readonly waterfallNegativeColor?: ChartColor | undefined;
+  /** Waterfall charts: total bars (default the series color) and subtotals (default the total's). */
+  readonly waterfallTotalColor?: ChartColor | undefined;
+  readonly waterfallSubtotalColor?: ChartColor | undefined;
+  /** Waterfall charts: no dashed lines from each bar's end to the next bar. */
+  readonly hideConnectors?: boolean | undefined;
 }
 
 /** A heatmap / treemap color range: values from `from` to `to` (inclusive) take `color`. */
@@ -241,6 +250,8 @@ export interface ChartMark {
    * points with a value (numeric axes).
    */
   readonly point?: number | undefined;
+  /** Waterfall charts: a total or subtotal bar (`range` is `[0, total]`). */
+  readonly sum?: ChartSum | undefined;
 }
 
 /**
@@ -358,6 +369,9 @@ export const chartTextWidth = (text: string, size = FONT): number => {
 };
 
 export const r2 = (value: number) => Math.round(value * 100) / 100;
+/** A change as text with its sign: `+12` (rising waterfall steps; falling ones carry their minus). */
+export const chartSigned = (value: number, text: string) =>
+  value > 0 && !text.startsWith("+") ? `+${text}` : text;
 const r1 = (value: number) => Math.round(value * 10) / 10;
 export const fmt = (value: number) => String(r2(value));
 export const node = (
@@ -491,9 +505,16 @@ const flatScale = (min: number, max: number) => {
 // --- Layout -----------------------------------------------------------------------------------
 
 /** Series types that `horizontal` turns (left to right). */
-const TURNABLE: readonly ChartType[] = ["bar", "boxPlot", "rangeBar"];
+const TURNABLE: readonly ChartType[] = ["bar", "boxPlot", "rangeBar", "waterfall"];
 /** Series types drawn in category bands. */
-const BANDED: readonly ChartType[] = ["bar", "boxPlot", "candlestick", "rangeBar", "timeline"];
+const BANDED: readonly ChartType[] = [
+  "bar",
+  "boxPlot",
+  "candlestick",
+  "rangeBar",
+  "timeline",
+  "waterfall",
+];
 /** Series types that fit the value scale to their data (no zero baseline). */
 const FITTED: readonly ChartType[] = [
   "boxPlot",
@@ -643,7 +664,7 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
     const zeroBased = own.some(({ series }) =>
       fitted
         ? series.type === "bar" || series.type === "area"
-        : ["line", "area", "bar", "scatter"].includes(series.type),
+        : ["line", "area", "bar", "scatter", "waterfall"].includes(series.type),
     );
     if (!isLog(axis) && ((zeroBased && options.zeroBased !== false) || own.length === 0)) {
       los[axis] = Math.min(los[axis] as number, 0);
@@ -1040,6 +1061,7 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
   const boxSeries = indexesOf(["boxPlot"]);
   const candleSeries = indexesOf(["candlestick"]);
   const rangeSeries = indexesOf(["rangeBar", "timeline"]);
+  const waterfallSeries = indexesOf(["waterfall"]);
   /** The rectangle a block mark covers (4.18.60: clicks select it, an outline shows it). */
   const box = (a: number, size: number, v0: number, v1: number): ChartRect => {
     const lo = r2(Math.min(v0, v1));
@@ -1349,6 +1371,90 @@ export function layoutChart(data: ChartData, options: ChartLayoutOptions): Chart
         }
       }
       bars.push(node("g", seriesAttrs, children));
+      continue;
+    }
+    if (series.type === "waterfall") {
+      // Steps float from the running total before them to the total after (4.18.21); totals
+      // and subtotals rise from zero. Dashed connectors join each bar's end to the next bar.
+      const slot = waterfallSeries.indexOf(index);
+      const size = groupSize / Math.max(1, waterfallSeries.length);
+      const connectors: ChartNode[] = [];
+      const children: ChartNode[] = [];
+      let previous: { edge: number; at: number } | undefined;
+      for (const point of [...points].sort((a, b) => a.x - b.x)) {
+        if (!point.range || point.y === null) {
+          previous = undefined;
+          continue;
+        }
+        const [start, end] = point.range as [number, number];
+        const from = toValue(start);
+        const to = toValue(end);
+        const a = posOf(point.x) - groupSize / 2 + slot * size;
+        const step = point.sum ?? (end >= start ? "up" : "down");
+        const total = options.waterfallTotalColor ?? series.color;
+        const color =
+          point.color ??
+          (step === "total"
+            ? total
+            : step === "subtotal"
+              ? (options.waterfallSubtotalColor ?? total)
+              : step === "up"
+                ? (options.waterfallPositiveColor ?? "success")
+                : (options.waterfallNegativeColor ?? "error"));
+        const length = Math.abs(to - from);
+        // The tooltip points at the running total after the bar.
+        marks.push({
+          series: index,
+          type: series.type,
+          index: point.x,
+          x: point.x,
+          value: point.y,
+          px: r2(horizontal ? to : a + size / 2),
+          py: r2(horizontal ? a + size / 2 : to),
+          color,
+          range: point.range,
+          box: box(a, size, from, to),
+          ...pointOf(point),
+          ...(point.sum ? { sum: point.sum } : {}),
+        });
+        if (previous && !options.hideConnectors) {
+          const at = fmt(previous.at);
+          const ends = horizontal
+            ? { x1: at, x2: at, y1: fmt(previous.edge), y2: fmt(a) }
+            : { x1: fmt(previous.edge), x2: fmt(a), y1: at, y2: at };
+          connectors.push(node("line", { ...ends, "data-ok-chart-connector": "" }));
+        }
+        previous = { edge: a + size, at: to };
+        children.push(
+          node("rect", {
+            ...span(a, size, from, to, 1),
+            rx: fmt(Math.min(4, size / 2, length / 2)),
+            "data-ok-chart-bar": "",
+            "data-ok-chart-step": step,
+            "data-ok-color": color,
+          }),
+        );
+        if (options.dataLabels) {
+          const text = format.dataLabel(
+            point.y,
+            index,
+            point.x,
+            point.sum
+              ? format.value(point.y, index)
+              : chartSigned(point.y, format.value(point.y, index)),
+          );
+          const fits = horizontal
+            ? length >= chartTextWidth(text) + 8 && size >= FONT + 2
+            : length >= FONT + 6 && size >= chartTextWidth(text) + 4;
+          const mid = (from + to) / 2;
+          const across = a + size / 2;
+          if (fits)
+            labels.push(
+              dataLabel(horizontal ? mid : across, horizontal ? across : mid, text, "inside"),
+            );
+        }
+      }
+      bars.push(node("g", seriesAttrs, [...connectors, ...children]));
       continue;
     }
     if (series.type === "rangeArea") {

@@ -65,6 +65,7 @@ const STORIES = [
   "tooltip-custom",
   "legend",
   "grid",
+  "waterfall",
 ];
 
 /** The SVG as plain data (gradient ids normalized): parity doesn't walk into SVG. */
@@ -586,3 +587,23 @@ test("chart selection: after the same clicks, React and HTML draw the same SVG",
   const html = await after("html");
   expect(html).toEqual(react);
 });
+
+// Roadmap 4.18.21: waterfall charts.
+for (const impl of implementations) {
+  test.describe(`chart waterfall (${impl})`, () => {
+    test("the keyboard reads each signed step and the running total", async ({ page }) => {
+      await openStory(page, storyId(impl, "chart", "waterfall"));
+      const first = page.locator("[data-ok-chart]").first();
+      await expect(first.locator("[data-ok-chart-connector]")).toHaveCount(7);
+      await first.locator("[data-ok-chart-plot]").focus();
+      await page.keyboard.press("Home");
+      for (let step = 0; step < 3; step++) await page.keyboard.press("ArrowRight");
+      await expect(first.locator("[data-ok-chart-tooltip-row]")).toHaveText([
+        "Cash-190",
+        "Total275",
+      ]);
+      await page.keyboard.press("End");
+      await expect(first.locator("[data-ok-chart-tooltip-row]")).toHaveText(["Cash170"]);
+    });
+  });
+}

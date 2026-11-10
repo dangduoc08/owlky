@@ -28,6 +28,7 @@ export const chartTypes = [
   "timeline",
   "polarArea",
   "sankey",
+  "waterfall",
 ] as const;
 /** Charts of one series whose categories are slices or rings (legend items are categories). */
 export const chartCircularTypes = ["pie", "donut", "radialBar", "polarArea"] as const;
@@ -104,6 +105,7 @@ const wholeTypes: readonly ChartType[] = [
   "rangeBar",
   "timeline",
   "sankey",
+  "waterfall",
 ];
 /** Whether a chart type draws every series the same way (no mixed charts). */
 export const isWholeChart = (type: ChartType): boolean => wholeTypes.includes(type);
@@ -131,7 +133,8 @@ export type ChartPart =
   | "target"
   | "incoming"
   | "outgoing"
-  | "volume";
+  | "volume"
+  | "total";
 const PARTS: Partial<Record<ChartType, readonly ChartPart[]>> = {
   boxPlot: ["min", "q1", "median", "q3", "max"],
   rangeArea: ["low", "high"],
@@ -162,6 +165,7 @@ export const chartPartNames: readonly ChartPart[] = [
   "incoming",
   "outgoing",
   "volume",
+  "total",
 ];
 /** Default text of each part (table headers and tooltip rows). */
 export const chartPartLabels: Readonly<Record<ChartPart, string>> = {
@@ -185,6 +189,8 @@ export const chartPartLabels: Readonly<Record<ChartPart, string>> = {
   outgoing: "Outgoing",
   // Stock charts (ADR-0047): a price point's volume (`v`).
   volume: "Volume",
+  // Waterfall charts (4.18.21): the running total after a step (tooltip rows).
+  total: "Total",
 };
 
 /** One value of a point that has several: a number, or a date (timelines: ISO 8601, ms or Date). */
@@ -229,6 +235,18 @@ export type ChartPointInput =
       readonly color?: ChartColor | undefined;
       /** Stock charts: the bar's traded volume (ApexStock's `v`). */
       readonly v?: number | undefined;
+      /** Waterfall charts: the bar shows the running total (its `y` is ignored). */
+      readonly isTotal?: boolean | undefined;
+      /** Waterfall charts: a subtotal bar, the running total in the subtotal color. */
+      readonly isSubtotal?: boolean | undefined;
+    }
+  | {
+      readonly x?: number | string | Date;
+      /** Waterfall charts: a bar of the running total so far (ApexCharts `isTotal`). */
+      readonly isTotal?: boolean | undefined;
+      /** Waterfall charts: a subtotal bar (ApexCharts `isSubtotal`). */
+      readonly isSubtotal?: boolean | undefined;
+      readonly color?: ChartColor | undefined;
     };
 
 export interface ChartSeries {
@@ -264,7 +282,17 @@ export interface ChartPoint {
   readonly z?: number | undefined;
   /** Stock charts: the volume of the bar. */
   readonly volume?: number | undefined;
+  /**
+   * Waterfall charts (4.18.21): a bar of the running total (`range` is `[0, total]`, `y` the
+   * total). Steps have none: `range` is `[before, after]`, `y` the change.
+   */
+  readonly sum?: ChartSum | undefined;
 }
+
+/** Waterfall bars that show the running total (ApexCharts `isTotal` / `isSubtotal`). */
+export type ChartSum = "total" | "subtotal";
+export const isChartSum = (value: unknown): value is ChartSum =>
+  value === "total" || value === "subtotal";
 
 export interface ChartDataSeries {
   readonly name: string;
@@ -380,6 +408,7 @@ export function chartData(input: {
       let rawZ: unknown;
       let rawV: unknown;
       let color: ChartColor | undefined;
+      let sum: ChartSum | undefined;
       if (Array.isArray(raw)) {
         const [rx, ry, rz] = raw as readonly [unknown, unknown, unknown];
         x = xType === "numeric" ? numericX(rx) : categoryOf(rx, position);
@@ -392,12 +421,17 @@ export function chartData(input: {
           z?: unknown;
           v?: unknown;
           color?: unknown;
+          isTotal?: unknown;
+          isSubtotal?: unknown;
         };
         x = xType === "numeric" ? numericX(point.x) : categoryOf(point.x, position);
         rawY = point.y;
         rawZ = point.z;
         rawV = point.v;
         if (isColor(point.color)) color = point.color;
+        if (seriesType === "waterfall")
+          sum =
+            point.isTotal === true ? "total" : point.isSubtotal === true ? "subtotal" : undefined;
       }
       if (x === undefined) return;
       let y: number | null;
@@ -429,8 +463,10 @@ export function chartData(input: {
         ...(range ? { range } : {}),
         ...(z !== null ? { z } : {}),
         ...(volume !== null && volume >= 0 ? { volume } : {}),
+        ...(sum ? { sum } : {}),
       });
     });
+    if (seriesType === "waterfall") runningTotals(points);
     const fallback =
       palette[index] ?? (chartDefaultColors[index % chartDefaultColors.length] as ChartColor);
     const axis = entry.yAxis;
@@ -451,6 +487,25 @@ export function chartData(input: {
     };
   });
   return { type, xType, categories, series };
+}
+
+/**
+ * Waterfall charts (4.18.21): each step floats from the running total before it to the total
+ * after it; total and subtotal bars run from 0 to the running total (in x order, gaps skipped).
+ */
+function runningTotals(points: ChartPoint[]) {
+  let total = 0;
+  const order = points
+    .map((point, index) => ({ point, index }))
+    .sort((a, b) => a.point.x - b.point.x);
+  for (const { point, index } of order) {
+    if (point.sum) {
+      points[index] = { ...point, y: total, range: [0, total] };
+    } else if (point.y !== null) {
+      points[index] = { ...point, range: [total, total + point.y] };
+      total += point.y;
+    }
+  }
 }
 
 // --- Data table (the accessible view of the data; the HTML source) ------------------------------
@@ -592,6 +647,11 @@ export function chartTable(
               : [];
         if (!point || point.y === null)
           return [...Array.from({ length: width }, () => empty), ...tail];
+        // Waterfall charts: one cell per point, the change or (sums) the running total.
+        if (data.series[index]?.type === "waterfall") {
+          const own = cell(point.y, options.formatValue(point.y, index), point.color);
+          return [point.sum ? { ...own, attrs: { ...own.attrs, "data-ok-sum": point.sum } } : own];
+        }
         if (point.range)
           return [
             ...point.range.map((value, i) =>
@@ -674,6 +734,8 @@ export function readChartTable(
         return dates ? (toTimestamp(text) ?? null) : parseChartNumber(text);
       };
       const color = cell?.getAttribute("data-ok-color");
+      // Waterfall charts: a cell of the running total (its text is the computed total).
+      const sum = cell?.getAttribute("data-ok-sum");
       const v = volumeAt >= 0 ? value(first + volumeAt) : null;
       let y: number | number[] | null;
       let z: number | null = null;
@@ -687,9 +749,11 @@ export function readChartTable(
       } else y = value(first);
       if (xType === "numeric")
         return z === null ? [xs[index] as string, y] : [xs[index] as string, y, z];
-      if (!Array.isArray(y) && z === null && v === null && !isColor(color)) return y;
+      if (!Array.isArray(y) && z === null && v === null && !isColor(color) && !isChartSum(sum))
+        return y;
       return {
         y,
+        ...(sum === "total" ? { isTotal: true } : sum === "subtotal" ? { isSubtotal: true } : {}),
         ...(z !== null ? { z } : {}),
         ...(v !== null ? { v } : {}),
         ...(isColor(color) ? { color } : {}),

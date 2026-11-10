@@ -1043,6 +1043,14 @@
     stroke-width: 1.5px;
   }
 
+  /* Waterfall connectors (4.18.21): a dashed line from each bar's end to the next bar. */
+  :where([data-ok-chart-connector]) {
+    stroke: var(--ok-text-secondary);
+    stroke-width: 1px;
+    stroke-dasharray: 3;
+    shape-rendering: crispEdges;
+  }
+
   :where([data-ok-chart-series][data-ok-type="polarArea"] > [data-ok-chart-slice]) {
     fill-opacity: 0.8;
     stroke: var(--ok-bg-paper);

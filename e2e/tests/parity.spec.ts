@@ -161,6 +161,7 @@ const pairs: [component: string, story: string][] = [
   ["chart", "tooltip-custom"],
   ["chart", "legend"],
   ["chart", "grid"],
+  ["chart", "waterfall"],
   ["rating", "controlled"],
   ["rating", "read-only"],
   ["rating", "disabled"],

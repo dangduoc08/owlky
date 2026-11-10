@@ -104,6 +104,7 @@ export {
   type ChartNodeTag,
   type ChartRect,
   type ChartSlot,
+  chartSigned,
   chartTextWidth,
   layoutChart,
 } from "./chart-layout.js";
@@ -128,6 +129,7 @@ export {
   type ChartSeries,
   type ChartStackType,
   type ChartStripeColor,
+  type ChartSum,
   type ChartTableCell,
   type ChartTableModel,
   type ChartTooltipCorner,
@@ -158,6 +160,7 @@ export {
   chartXTypes,
   isChartMarkerShape,
   isChartPattern,
+  isChartSum,
   isCircularChart,
   isPolarChart,
   isWholeChart,
