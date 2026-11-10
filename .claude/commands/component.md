@@ -1,6 +1,6 @@
 ---
 name: component
-description: Create or update a component from a reference URL (e.g. a Minimal UI kit component page) — capture what the reference shows, then build it, or bring the existing component in line with it, the project's way in React + HTML with tokens, parity tests, full test coverage, responsive and visual regression checks, a security checklist and Storybook docs. $ARGUMENTS is the URL, optionally followed by the component name, or an existing component's name (its spec's Reference URL is used); several run in parallel agents (Multi-URL mode).
+description: Create or update a component from a reference page (URL, or a component name whose spec has a Reference URL): capture, propose, build in React + HTML with tests, parity, visual and security checks, docs. Several targets run in parallel agents.
 ---
 
 # Mission
@@ -191,8 +191,7 @@ project. Never copy the reference's source code, branding or assets.
    - extend `e2e/tests/visual.spec.ts` from foundations to component stories with the
      [Viewport matrix](#viewport-matrix) widths (see [Visual regression](#visual-regression)).
 
-7. **Implement** with `/implement`'s checklist (AGENTS.md → "Adding a component"), using the
-   removed pattern references at commit `bd5fb2d` as the model (ADR-0011). **Create** writes
+7. **Implement** with AGENTS.md → "Adding a component" (model: Button). **Create** writes
    every slice below. **Update** edits the existing slices in place — spec first, then every
    slice the approved gaps touch, always React **and** HTML together — keeping existing names,
    defaults and DOM unless a breaking change was approved; add the missing slices if any:
@@ -217,7 +216,7 @@ project. Never copy the reference's source code, branding or assets.
    6. `apps/storybook/src/components/<name>/<name>.stories.tsx` (title `Components/<Name>`) —
       **one story per reference section**, each `frameworkStory({ html, react })` (ADR-0018), plus the
       **docs page** `<name>-docs.tsx` (ADR-0019, model: Button) listed in `GUIDES` / `OPTION_TABLES`, default
-      Storybook UI (no custom page chrome), no docs page or Playground: stories built with
+      Storybook UI (no custom page chrome), no Playground: stories built with
       `reactGroupsStory()` / `snippetStory(…, htmlSetup())` so the Code panel shows the source,
       the imports and a copy button; both stories get the same Controls from the option schema
       (`<NAME>_CONTROLS`, see AGENTS.md) and the component joins `options-parity.spec.ts`
@@ -443,7 +442,7 @@ pnpm audit --audit-level=high
 
 ## Report Format
 
-Report in **two versions — English first, then Vietnamese**.
+Report in Vietnamese (code, identifiers and file names stay in English), in this format:
 
 ```
 ## Component Report: <Name> — Created | Updated
@@ -518,79 +517,6 @@ Checklist: S1–S17 → ✅ / ❌ fixed / N/A (reason)
 Unit: N/N (3 browsers) · E2E: N/N (4 projects) · Visual: N/N (or pending) · Size: before → after (gzip) · a11y: ✅ · audit: ✅
 ```
 
-```
----
-## Báo Cáo Component: <Tên> — Tạo mới | Cập nhật
-
-Tham chiếu: <url>
-
-### Đã xây dựng / thay đổi
-| Phần | File | Tạo mới / thay đổi |
-|------|------|--------------------|
-
-### Thay đổi so với phiên bản trước (chế độ Update)
-| Khác biệt (tham chiếu ↔ bản trước) | Thay đổi đã làm | Ảnh hưởng API (không / bổ sung / breaking) |
-|------------------------------------|-----------------|--------------------------------------------|
-Mức changeset: patch | minor | major · Ghi chú migration: …
-
-### Giá trị tham chiếu → token
-| Giá trị tham chiếu | Token | Ghi chú |
-|--------------------|-------|---------|
-
-### Stories
-| Story (= mục của trang tham chiếu) | React | HTML | Parity |
-|------------------------------------|-------|------|--------|
-
-### Responsive (React / HTML)
-| Viewport | Tràn ngang | Bị cắt | Chồng lấn | Xuống dòng | Khoảng cách & kích thước | Chạm | React ↔ HTML |
-|----------|------------|--------|-----------|------------|--------------------------|------|--------------|
-| Mobile 375×812 | | | | | | | |
-| Mobile Large 430×932 | | | | | | | |
-| Tablet 768×1024 | | | | | | | |
-| Laptop 1280×800 | | | | | | — | |
-| Desktop 1440×900 | | | | | | — | |
-
-### Visual regression
-Công cụ: Playwright `@visual` (Docker) | Chromatic | Storybook Visual Tests
-| Story | Theme | Viewport | Trạng thái baseline (✅ / 🆕 / ⚠️ / ❌ / ⏸) |
-|-------|-------|----------|--------------------------------------------|
-Thay đổi có chủ đích đang chờ duyệt: …
-
-### Parity React ↔ HTML
-Bản HTML của upstream: không có | <url> — build từ bản đó | tự viết (người dùng chọn)
-| Story | Anatomy | Pixel (sáng / tối) |
-|-------|---------|--------------------|
-
-### Accessibility
-| Kiểm tra | Kết quả |
-|----------|---------|
-| axe WCAG 2.2 AA (mọi story, sáng + tối) | |
-| Bàn phím | |
-| Quản lý focus | |
-| Reflow 320px / giãn chữ | |
-| Khác biệt tương phản so với tham chiếu | |
-
-### Coverage
-| Package | Statements | Branches | Functions | Lines |
-|---------|------------|----------|-----------|-------|
-Ma trận: N/N hạng mục đã có test (hoặc "chỉ ma trận — chưa có công cụ coverage")
-
-### Bảo mật
-| Mức độ | Phát hiện | Kiểm tra | Trạng thái (đã sửa / chấp nhận / làm sau) |
-|--------|-----------|----------|-------------------------------------------|
-| Critical | | | |
-| High | | | |
-| Medium | | | |
-| Low | | | |
-Checklist: S1–S17 → ✅ / ❌ đã sửa / N/A (lý do)
-
-### Khác biệt có chủ đích so với tham chiếu
-| Khác biệt | Lý do (AA / tài sản / kiến trúc) |
-|-----------|----------------------------------|
-
-### Kiểm chứng
-Unit: N/N (3 trình duyệt) · E2E: N/N (4 project) · Visual: N/N (hoặc pending) · Kích thước: trước → sau (gzip) · a11y: ✅ · audit: ✅
-```
 
 ---
 
@@ -675,7 +601,7 @@ For each finished agent, in dependency order:
    fails.
 2. Run `/integrate <name>` for each new component whose spec or roadmap rows unlock dependents
    (it may itself run in Multi-component mode).
-3. Report **in Vietnamese, then English**: one summary table (component, mode, branch, commit,
+3. Report **in Vietnamese**: one summary table (component, mode, branch, commit,
    tests, e2e, size, open items), each agent's report condensed, merge conflicts and how they
    were resolved, visual baselines pending (Docker), and anything left for the user.
 

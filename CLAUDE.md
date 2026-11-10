@@ -104,18 +104,14 @@ pnpm smoke:mcp                              # pack @owlky/mcp, start it with npx
 
 | Command | Use |
 |---|---|
-| `/component <url> [name] \| <name> …` | Create or update a component from a reference page: capture, propose (gap table + API impact on update), then build it the project's way (React + HTML) with viewport matrix, visual regression, coverage and security checklist. A name alone updates that component from its spec's `Reference URL:`. Several targets: parallel agents, one git worktree and branch each (max 3 at a time), merged one by one |
-| `/integrate [component \| url …]` | Backward-compatible updates: find every wait on a component that now exists, re-capture dependents from their spec's Reference URL, report (unlocked vs other gaps), then implement the approved items via `/component` Update. URLs resolve through the specs' `Reference URL:`. No argument: finds and integrates every open wait. Several components: one parallel agent per dependent (max 3) |
-| `/illustration <name> "<description>"` | Add a picture to the illustration set: compose it from the parts per `docs/illustrations-style.md`, catalog it (export, stories, snippets, size), rule tests, contact sheet (the **All** story, light / dark / mobile) |
-| `/implement <component or file>` | Build/upgrade a feature in React + HTML with tests, parity, docs |
-| `/refactor <file>` | Clarity only — no logic, API or DOM change |
-| `/optimize <file>` | Bytes, main-thread work, leaks — measured before/after |
-| `/doc <package or component>` | Package README or component spec + docs pages |
+| `/component <url> [name] \| <name> …` | Create or update a component from a reference page (a name alone uses its spec's `Reference URL:`): capture, propose, build React + HTML with viewport matrix, visual, coverage and security checks. Several targets: parallel agents, one worktree each (max 3), merged one by one |
+| `/integrate [component \| url …]` | Close every wait on a component that now exists, then implement via `/component` Update. No argument: every open wait. Several: one agent per dependent (max 3) |
+| `/illustration <name> "<description>"` | Add a picture to the illustration set (`docs/illustrations-style.md`), catalog it, rule tests, **All** contact sheet |
+| `/implement <description \| component \| file>` | Work without a reference page (roadmap rows, upstream props): runs `/component` steps 7–12 |
+| `/refactor [optimize] <file>` | No API or DOM change: clarity (default) or bytes / main thread / leaks, measured |
+| `/sync-docs [package \| component \| kb \| audit [readiness]]` | All docs in sync with code: README or spec + docs page; `kb` (default) the knowledge base; `audit` read-only report, `readiness` simulates a new agent |
 | `/check-staged` | Impact report of staged changes (read-only) |
-| `/commit [message]` | Conventional commits from staged changes, after confirmation |
-| `/update-ai-knowledge-base` | Bring CLAUDE.md, AGENTS.md, docs, ADRs, specs in sync with code |
-| `/audit-ai-knowledge-base` | Read-only audit of the knowledge base |
-| `/ai-readiness-review` | Simulate a new agent; score AI readiness (read-only) |
+| `/commit [message]` | Conventional commits from staged changes, no trailers |
 
 ## Key decisions (details in docs/adr/)
 
@@ -131,7 +127,7 @@ pnpm smoke:mcp                              # pack @owlky/mcp, start it with npx
 - Component API comes from the upstream component (MUI…), mapped prop by prop; one option schema
   per component in `core` drives React, HTML, Controls and parity (ADR-0015).
 - Storybook: one story per component section; the toolbar's Framework menu picks HTML or React (ADR-0018).
-- Every component has a Storybook usage guide page (Docs), built like the Foundations guides; `/doc <component>` refreshes spec + page (ADR-0019).
+- Every component has a Storybook usage guide page (Docs), built like the Foundations guides; `/sync-docs <component>` refreshes spec + page (ADR-0019).
 - Map: MapLibre GL JS behind opt-in entries (`@owlky/core/map`, `@owlky/html/map`, `owlky-map.js`
   + `owlky-map-worker.js`); Owlky draws controls, markers and popups around the canvas; no tile
   service built in (ADR-0025).

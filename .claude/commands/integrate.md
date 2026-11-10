@@ -1,6 +1,6 @@
 ---
 name: integrate
-description: Integrate newly available components into the existing ones (backward-compatible updates) — find every stand-in, deferred story or "needs <Name>" note waiting for a component that now exists, re-capture each dependent's section from its spec's Reference URL, report, then implement the approved items through /component's Update steps. $ARGUMENTS is optional component names or reference URLs (several run in parallel agents); without it every open wait on an existing component is found and integrated.
+description: Close every wait on a component that now exists (stand-ins, deferred stories, "needs <Name>" notes): find them, re-capture dependents from their Reference URL, report, implement through /component Update. $ARGUMENTS: optional names or URLs; none = every open wait.
 ---
 
 # Mission

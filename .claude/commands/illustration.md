@@ -1,6 +1,6 @@
 ---
 name: illustration
-description: Add a picture to the illustration set (Foundations › Illustrations) in the set's style — read the style guide and the parts, propose the composition, write the data from the parts, catalog it (export, story, snippets, size), run the style rule tests and check a contact sheet of the All story before hand-off. $ARGUMENTS is `<name> "<description>"`; several pictures run in parallel agents.
+description: Add a picture to the illustration set in its style ($ARGUMENTS: <name> "<description>"): compose from the parts, catalog it, run the style tests, check the All contact sheet. Several pictures run in parallel agents.
 ---
 
 # Mission
