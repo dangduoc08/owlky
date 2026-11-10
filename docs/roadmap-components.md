@@ -155,12 +155,12 @@ then 4.22–4.24, then 4.25 with its ADR).
 | 4.18.74 | E — audit 3.1 (could) | Stepper | StepContent `transitionDuration` (Collapse `timeout` pass-through) | ✅ |
 | 4.18.75 | E — audit 3.1 (should, **ADR**) | Sortable | move between lists (`group` / `accept`, a kanban story), keyboard and announcements across lists | ✅ |
 | 4.18.76 | E — audit 3.1 (should) | Sortable | auto scroll near Scrollbar / page edges while dragging; disabled items; `onDragStart` / `onDragOver` / `onDragCancel`; HTML `messages` | ✅ |
-| 4.18.77 | E — audit 3.1 (could) | Sortable | swapping strategy; drag by the whole item (no handle) | 🔄 |
+| 4.18.77 | E — audit 3.1 (could) | Sortable | swapping strategy; drag by the whole item (no handle) | ✅ |
 | 4.18.78 | E — audit 3.1 (should) | Motion | `component` (any element); `viewport.margin` / `root`; in-view events (`onViewportEnter` / `Leave`, `ok:motion:enter` / `leave`) | ✅ |
 | 4.18.79 | E — audit 3.1 (could) | Map | reactive `light` / `sky`, `styleDiffing`, camera `padding`; Marker `scale`, `clickTolerance` | ⬜ |
-| 4.18.80 | E — audit 3.1 (could) | Carousel | Embla v9 method aliases (`goTo`, `goToNext`, `selectedSnap`, `snapList`…), `snapIndex(slide)`, events `resize`, `slideschanged`, `pointermove` | 🔄 |
-| 4.18.81 | E — audit 3.1 (could) | Lightbox | `render.slideContainer`, `render.buttonPrev` / `buttonNext` / `buttonClose` (+ plugin buttons), `render.iconLoading` / `iconError` | 🔄 |
-| 4.18.82 | E — audit 3.1 (could) | Walktour | option `offset`; step `id` and `data` (in events) | 🔄 |
+| 4.18.80 | E — audit 3.1 (could) | Carousel | Embla v9 method aliases (`goTo`, `goToNext`, `selectedSnap`, `snapList`…), `snapIndex(slide)`, events `resize`, `slideschanged`, `pointermove` | ✅ |
+| 4.18.81 | E — audit 3.1 (could) | Lightbox | `render.slideContainer`, `render.buttonPrev` / `buttonNext` / `buttonClose` (+ plugin buttons), `render.iconLoading` / `iconError` | ✅ |
+| 4.18.82 | E — audit 3.1 (could) | Walktour | option `offset`; step `id` and `data` (in events) | ✅ |
 | 4.19 | F — Minimals Utilities, spread across components (owner's decision 2026-11-09: no Utilities group) | Typography (+ Link) | "Text max line": a `maxLines` option (CSS `line-clamp`, beside `noWrap`), a "Text max line" story with 1–4 lines and "As link" | ⬜ |
 | 4.20 | F | Text field (+ Snackbar) | "Copy to clipboard": a copy IconButton in an end adornment and copy on double click, a core helper on a user gesture with the refused path handled, a "Copied" toast | ⬜ |
 | 4.21 | F | Foundations › Colors (+ Paper / Card, Typography) | "Gradient": `--ok-gradient-*` tokens from the palette (follow presets and dark mode), gradient text, border, background and paper examples | ⬜ |
