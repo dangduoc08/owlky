@@ -88,7 +88,7 @@ then 4.22–4.24, then 4.25 with its ADR).
 | 4.18.7 | E (could, **ADR**) | Chart | `tree` type: radial and dendrogram hierarchy layouts in the SVG engine (ApexTree `layoutType`) | ⬜ |
 | 4.18.8 | E (should) | Tree view | `expandAll` / `collapseAll` / `expandToDepth(depth)` / `expandSubtree(id)` (instance, React `apiRef`), search highlight of matching items and their ancestors | ✅ |
 | 4.18.9 | E — ApexGrid (must) | Data grid | undo / redo of edits (`history: { enabled, stackSize }`, MUI X undo-redo): Ctrl / Cmd + Z, Ctrl / Cmd + Shift + Z, a paste or bulk edit is one step, `processRowUpdate` on each | ✅ |
-| 4.18.10 | E (should) | Data grid | set filter: a checklist of the column's distinct values with search and "Select all", on the `isAnyOf` model | 🔄 |
+| 4.18.10 | E (should) | Data grid | set filter: a checklist of the column's distinct values with search and "Select all", on the `isAnyOf` model | ✅ |
 | 4.18.11 | E (must) | Data grid | status bar for `cellSelection`: count, sum, average, min, max of the selected cells, a polite live region, with `aggregationFunctions` | ✅ |
 | 4.18.12 | E (should) | Data grid (+ Chart) | a chart from a cell range (`createRangeChart`, Alt + F1), cross-filtering (a category click filters the grid), chart config `toJSON` / `restore` | ⬜ |
 | 4.18.13 | E (could) | Data grid | context menu on cells (right click, Shift + F10, Menu key: copy, paste, export, chart range, pin), extensible, after 4.7 `anchorPosition`; nested filter groups (AND / OR, JSON) in the filter panel | ⬜ |
@@ -129,10 +129,10 @@ then 4.22–4.24, then 4.25 with its ADR).
 | 4.18.48 | E — audit 3.1 (could) | Label | `disabled` | ✅ |
 | 4.18.49 | E — audit 3.1 (must) | Data grid | column `sortComparator` / `getSortComparator` / `sortingOrder`, grid `sortingOrder`, `multipleColumnsSortingMode` | ✅ |
 | 4.18.50 | E — audit 3.1 (must) | Data grid | column `renderEditCell`, `renderHeaderFilter`; controlled `cellModesModel` / `rowModesModel` | ✅ |
-| 4.18.51 | E — audit 3.1 (should) | Data grid | per-column hooks and opt-outs: `cellClassName`, `headerClassName`, `hideSortIcons`, `disableColumnMenu`, `disableReorder`, `disableExport`, `pinnable`, `rowSpanValueGetter`, `pastedValueParser`, `groupingValueSetter`, `rowHeader`, `display: "flex"` | 🔄 |
-| 4.18.52 | E — audit 3.1 (should) | Data grid | selection: `rowSelection: false`, `rowSelectionPropagation` (groups / tree), `checkboxColDef` | 🔄 |
-| 4.18.53 | E — audit 3.1 (should) | Data grid | layout: `columnHeaderHeight`, `columnGroupHeaderHeight`, `headerFilterHeight`, `showCellVerticalBorder`, `showColumnVerticalBorder`, `rowSpacingType`, `autoHeight`, `autoPageSize` | 🔄 |
-| 4.18.54 | E — audit 3.1 (should) | Data grid | footer / toolbar: `hideFooterPagination`, `hideFooterRowCount`, `hideFooterSelectedRowCount`, `label`; `tabNavigation` | 🔄 |
+| 4.18.51 | E — audit 3.1 (should) | Data grid | per-column hooks and opt-outs: `cellClassName`, `headerClassName`, `hideSortIcons`, `disableColumnMenu`, `disableReorder`, `disableExport`, `pinnable`, `rowSpanValueGetter`, `pastedValueParser`, `groupingValueSetter`, `rowHeader`, `display: "flex"` | ✅ |
+| 4.18.52 | E — audit 3.1 (should) | Data grid | selection: `rowSelection: false`, `rowSelectionPropagation` (groups / tree), `checkboxColDef` | ✅ |
+| 4.18.53 | E — audit 3.1 (should) | Data grid | layout: `columnHeaderHeight`, `columnGroupHeaderHeight`, `headerFilterHeight`, `showCellVerticalBorder`, `showColumnVerticalBorder`, `rowSpacingType`, `autoHeight`, `autoPageSize` | ✅ |
+| 4.18.54 | E — audit 3.1 (should) | Data grid | footer / toolbar: `hideFooterPagination`, `hideFooterRowCount`, `hideFooterSelectedRowCount`, `label`; `tabNavigation` | ✅ |
 | 4.18.55 | E — audit 3.1 (could) | Data grid | events: column header double click / context menu / enter / leave / over / out, `onMenuOpen` / `Close`, `onPreferencePanelOpen` / `Close`, `onSidebarOpen` / `Close`, `onResize`, `onColumnResize`, `onFetchRows`, `onExcelExportStateChange`, `onBeforeClipboardPasteStart` | ⬜ |
 | 4.18.56 | E — audit 3.1 (could) | Data grid | server: `paginationMeta` / `estimatedRowCount` / `onRowCountChange`, `dataSourceKeepPreviousData`, `dataSourceRevalidateMs`, `filterDebounceMs` / `columnFilterDebounceMs`, `disableChildrenFiltering` / `-Sorting` | ⬜ |
 | 4.18.57 | E — audit 3.1 (could) | Data grid | `disableAutosize`, `keepColumnPositionIfDraggedOutside`, pinned section separators, `isRowReorderable` / `isValidRowReorder` / `setTreeDataPath`, `pivotingColDef`, `pivotPanelOpen`, `virtualizeColumnsWithAutoRowHeight` | ⬜ |
